@@ -19,6 +19,7 @@
 #include "d3d8_vulkan_graphics_compat.h"
 #include "vector3.h"  // Phase 39.4: For Convert_Color parameter type
 #include "vector4.h"  // Phase 39.4: For Convert_Color return type
+#include "rddesc.h"  // Phase 39.4: For RenderDeviceDescClass
 
 // ============================================================================
 // DIRECTX 8 DEFINES & ENUMS (Phase 39.4 Stub Layer)
@@ -138,6 +139,17 @@ class LightClass;
 class DynamicVBAccessClass;
 class DynamicIBAccessClass;
 
+// Stub IDirect3DDevice8 (Phase 39.4: TestCooperativeLevel stub for ww3d.cpp line 801)
+class IDirect3DDevice8Stub {
+public:
+    virtual ~IDirect3DDevice8Stub() {}
+    virtual int TestCooperativeLevel() { return 0; }  // D3D_OK
+};
+
+// Global instance for _Get_D3D_Device8() (Phase 39.4)
+extern IDirect3DDevice8Stub* GetStubD3DDevice8();
+static IDirect3DDevice8Stub* g_stub_d3d_device8 = nullptr;
+
 // Forward declarations for vertex format classes
 class VertexFormatXYZNDUV2;
 class VertexFormatXYZ;
@@ -159,8 +171,11 @@ public:
     // ========================================================================
     static bool Init(void* hwnd, bool lite) { return true; }
     static void Shutdown() {}
-    static bool Set_Render_Device(const char* dev_name, int width, int height, int bits, 
-                                   bool windowed, bool resize_window) { return true; }
+    static bool Set_Render_Device(int dev, int width, int height, int bits, int windowed, 
+                                   bool resize_window, bool reset_device, bool restore_assets) { return true; }
+    // Phase 39.4: Overload for 6-parameter version (ww3d.cpp line 396)
+    static bool Set_Render_Device(const char* dev_name, int width, int height, int bits, int windowed,
+                                   bool resize_window) { return true; }
     static bool Set_Any_Render_Device() { return true; }
     static bool Set_Next_Render_Device() { return true; }
     static bool Is_Initted() { return true; }
@@ -302,6 +317,7 @@ public:
     static void Set_Light(int index, void* light) {}
     static void Set_DX8_Light(int index, void* d3d_light) {}
     static void Set_Ambient(const void* color) {}
+    static void Set_Ambient(const Vector3& color) {}  // Phase 39.4: Overload for Vector3 (ww3d.cpp line 969)
     static void Set_Light_Environment(void* light_env) {}
 
     // ========================================================================
@@ -325,8 +341,31 @@ public:
     static int Get_Render_Device() { return 0; }
     static int Get_Render_Device_Count() { return 1; }
     static const char* Get_Render_Device_Name(int device_index) { return "Default"; }
-    static void* Get_Render_Device_Desc(int device_index) { return nullptr; }
+    static const RenderDeviceDescClass& Get_Render_Device_Desc(int device_index) { 
+        // Static stub instance (Phase 39.4)
+        static RenderDeviceDescClass stub_desc;
+        return stub_desc;
+    }
     static int getBackBufferFormat() { return 0; }
+
+    // ========================================================================
+    // Registry and Configuration (Phase 39.4)
+    // ========================================================================
+    static bool Registry_Load_Render_Device(const char* sub_key, char* device, int device_len, 
+                                           int& width, int& height, int& depth, int& windowed, int& texture_depth) 
+    {
+        // Stub implementation - set reasonable defaults
+        if (device && device_len > 0) {
+            strncpy(device, "Default", device_len - 1);
+            device[device_len - 1] = '\0';
+        }
+        width = 1024;
+        height = 768;
+        depth = 32;
+        windowed = 1;
+        texture_depth = 32;
+        return true;
+    }
 
     // ========================================================================
     // Utility Functions
@@ -396,7 +435,12 @@ public:
     // ========================================================================
     // Direct Device Access (Advanced)
     // ========================================================================
-    static void* _Get_D3D_Device8() { return nullptr; }
+    static IDirect3DDevice8Stub* _Get_D3D_Device8() { 
+        if (!g_stub_d3d_device8) {
+            g_stub_d3d_device8 = new IDirect3DDevice8Stub();
+        }
+        return g_stub_d3d_device8;
+    }
     static void* _Get_D3D8() { return nullptr; }
 
     // ========================================================================
@@ -489,6 +533,14 @@ public:
     virtual DX8Caps& Get_DX8_Caps() { return *this; }
 };
 
+// DirectX Texture Manager stub (Phase 39.4)
+class DX8TextureManagerClass {
+public:
+    // Static methods for texture management
+    static void Shutdown() {}  // Phase 39.4: Shutdown texture manager (no-op stub)
+    static void Free_Video_Memory(void*) {}  // Phase 39.4: Free video memory (no-op stub)
+};
+
 // DirectX Mesh Renderer stub
 class DX8MeshRenderer {
 public:
@@ -496,6 +548,8 @@ public:
     virtual void Render() {}
     virtual void Invalidate() {}  // Phase 39.4: Add Invalidate method for WW3DAssetManager compatibility
     virtual void Flush() {}  // Phase 39.4: Flush any pending render commands (no-op for stub)
+    virtual void Set_Camera(void*) {}  // Phase 39.4: Set camera for rendering (no-op stub)
+    virtual void Clear_Pending_Delete_Lists() {}  // Phase 39.4: Clear deletion lists (no-op stub)
     // Phase 39.4: Mesh type registration (no-ops for stub)
     virtual void Register_Mesh_Type(void*) {}  // Called in MeshModelClass constructor
     virtual void Unregister_Mesh_Type(void*) {}  // Called in MeshModelClass destructor
@@ -541,6 +595,12 @@ public:
         return stub_fvf;
     }
     
+    // Phase 39.4: Reset buffer (no-op for stub)
+    void _Reset() {}
+    
+    // Phase 39.4: Static Reset for use without instance (ww3d.cpp line 824)
+    static void _Reset(bool force_physical_reset) {}
+    
     class WriteLockClass {
     public:
         WriteLockClass(DynamicVBAccessClass* vb) : m_vb(vb) {}
@@ -570,6 +630,12 @@ class DynamicIBAccessClass {
 public:
     DynamicIBAccessClass(int buffer_type, int index_count) {}
     virtual ~DynamicIBAccessClass() {}
+    
+    // Phase 39.4: Reset buffer (no-op for stub)
+    void _Reset() {}
+    
+    // Phase 39.4: Static Reset for use without instance (ww3d.cpp line 825)
+    static void _Reset(bool force_physical_reset) {}
     
     class WriteLockClass {
     public:

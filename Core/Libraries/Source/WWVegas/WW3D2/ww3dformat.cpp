@@ -42,6 +42,7 @@
 #include "wwdebug.h"
 #include "TARGA.h"
 #include "dx8wrapper.h"
+#include "ww3d.h"
 // #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "d3d8_vulkan_graphics_compat.h"
 

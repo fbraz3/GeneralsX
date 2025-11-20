@@ -72,6 +72,9 @@ class SurfaceClass : public W3DMPO, public RefCountClass
 
 		// Create the surface from a D3D pointer
 		SurfaceClass(IDirect3DSurface8 *d3d_surface);
+		
+		// Phase 39.4: Create surface from void pointer (stub compatibility for ww3d.cpp line 1361)
+		SurfaceClass(void *d3d_surface) : SurfaceClass((IDirect3DSurface8*)d3d_surface) {}
 
 		~SurfaceClass(void);
 

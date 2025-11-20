@@ -25,6 +25,114 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/crc.h"
+#include "GameNetwork/Transport.h"
+#include "GameNetwork/NetworkInterface.h"
+
+
+//--------------------------------------------------------------------------
+// Packet-level encryption is an XOR operation, for speed reasons.  To get
+// the max throughput, we only XOR whole 4-byte words, so the last bytes
+// can be non-XOR'd.
+
+// This assumes the buf is a multiple of 4 bytes.  Extra is not encrypted.
+static inline void encryptBuf( unsigned char *buf, Int len )
+{
+	UnsignedInt mask = 0x0000Fade;
+
+	UnsignedInt *uintPtr = (UnsignedInt *) (buf);
+
+	for (int i=0 ; i<len/4 ; i++) {
+		*uintPtr = (*uintPtr) ^ mask;
+		*uintPtr = htonl(*uintPtr);
+		uintPtr++;
+		mask += 0x00000321; // just for fun
+	}
+}
+
+// This assumes the buf is a multiple of 4 bytes.  Extra is not encrypted.
+static inline void decryptBuf( unsigned char *buf, Int len )
+{
+	UnsignedInt mask = 0x0000Fade;
+
+	UnsignedInt *uintPtr = (UnsignedInt *) (buf);
+
+	for (int i=0 ; i<len/4 ; i++) {
+		*uintPtr = htonl(*uintPtr);
+		*uintPtr = (*uintPtr) ^ mask;
+		uintPtr++;
+		mask += 0x00000321; // just for fun
+	}
+}
+
+//--------------------------------------------------------------------------
+
+Transport::Transport(void)
+{
+	m_winsockInit = false;
+	m_udpsock = NULL;
+}
+
+Transport::~Transport(void)
+{
+	reset();
+}
+
+Bool Transport::init( AsciiString ip, UnsignedShort port )
+{
+	return init(ResolveIP(ip), port);
+}
+
+Bool Transport::init( UnsignedInt ip, UnsignedShort port )
+{
+	// ----- Initialize Winsock -----
+	if (!m_winsockInit)
+	{
+		WORD verReq = MAKEWORD(2, 2);
+		WSADATA wsadata;
+
+		int err = WSAStartup(verReq, &wsadata);
+		if (err != 0) {
+			return false;
+		}
+
+		if ((LOBYTE(wsadata.wVersion) != 2) || (HIBYTE(wsadata.wVersion) !=2)) {
+			WSACleanup();
+			return false;
+		}
+		m_winsockInit = true;
+	}
+
+	// ------- Bind our port --------
+	delete m_udpsock;
+	m_udpsock = NEW UDP();
+
+	if (!m_udpsock)
+		return false;
+
+	int retval = -1;
+	time_t now = timeGetTime();
+	while ((retval != 0) && ((timeGetTime() - now) < 1000)) {
+		retval = m_udpsock->Bind(ip, port);
+	}
+
+	if (retval != 0) {
+		DEBUG_CRASH(("Could not bind to 0x%8.8X:%d", ip, port));
+		DEBUG_LOG(("Transport::init - Failure to bind socket with error code %x", retval));
+		delete m_udpsock;
+		m_udpsock = NULL;
+		return false;
+	}
+
+	// ------- Clear buffers --------
+	int i=0;
+	for (; i<MAX_MESSAGES; ++i)
+	{
+		m_outBuffer[i].length = 0;
+		m_inBuffer[i].length = 0;
+#if defined(RTS_DEBUG)
+		m_delayedInBuffer[i].message.length = 0;
+#endif
 	}
 	for (i=0; i<MAX_TRANSPORT_STATISTICS_SECONDS; ++i)
 	{
@@ -393,4 +501,4 @@ Real Transport::getUnknownPacketsPerSecond( void )
 }
 
 
-#endif // _WIN32
+

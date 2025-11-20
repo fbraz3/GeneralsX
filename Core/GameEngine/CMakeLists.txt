@@ -1107,20 +1107,20 @@ set(GAMEENGINE_SRC
     #Source/GameNetwork/GameSpyChat.cpp # unused
     #Source/GameNetwork/GameSpyGameInfo.cpp # unused
     #Source/GameNetwork/GameSpyGP.cpp # unused
-    Source/GameNetwork/GameSpy/Chat.cpp
-    Source/GameNetwork/GameSpy/GSConfig.cpp
-    Source/GameNetwork/GameSpy/LadderDefs.cpp
-    Source/GameNetwork/GameSpy/LobbyUtils.cpp
-    Source/GameNetwork/GameSpy/MainMenuUtils.cpp
-    Source/GameNetwork/GameSpy/PeerDefs.cpp
-    Source/GameNetwork/GameSpy/StagingRoomGameInfo.cpp
-    Source/GameNetwork/GameSpy/Thread/BuddyThread.cpp
-    Source/GameNetwork/GameSpy/Thread/GameResultsThread.cpp
-    Source/GameNetwork/GameSpy/Thread/PeerThread.cpp
-    Source/GameNetwork/GameSpy/Thread/PersistentStorageThread.cpp
-    Source/GameNetwork/GameSpy/Thread/PingThread.cpp
-    Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
-    Source/GameNetwork/GameSpyOverlay.cpp
+    #Source/GameNetwork/GameSpy/Chat.cpp
+    #Source/GameNetwork/GameSpy/GSConfig.cpp
+    #Source/GameNetwork/GameSpy/LadderDefs.cpp
+    #Source/GameNetwork/GameSpy/LobbyUtils.cpp
+    #Source/GameNetwork/GameSpy/MainMenuUtils.cpp
+    #Source/GameNetwork/GameSpy/PeerDefs.cpp
+    #Source/GameNetwork/GameSpy/StagingRoomGameInfo.cpp
+    #Source/GameNetwork/GameSpy/Thread/BuddyThread.cpp
+    #Source/GameNetwork/GameSpy/Thread/GameResultsThread.cpp
+    #Source/GameNetwork/GameSpy/Thread/PeerThread.cpp
+    #Source/GameNetwork/GameSpy/Thread/PersistentStorageThread.cpp
+    #Source/GameNetwork/GameSpy/Thread/PingThread.cpp
+    #Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
+    #Source/GameNetwork/GameSpyOverlay.cpp
 #    Source/GameNetwork/GUIUtil.cpp
     Source/GameNetwork/IPEnumeration.cpp
     Source/GameNetwork/LANAPI.cpp
@@ -1136,8 +1136,8 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/NetPacket.cpp
     Source/GameNetwork/Network.cpp
     Source/GameNetwork/NetworkUtil.cpp
-    Source/GameNetwork/Transport.cpp
-    Source/GameNetwork/udp.cpp
+    #Source/GameNetwork/Transport.cpp # Phase 39.4: Disabled for cross-platform
+    #Source/GameNetwork/udp.cpp # Phase 39.4: Disabled for cross-platform
     Source/GameNetwork/User.cpp
     Source/GameNetwork/WOLBrowser/WebBrowser.cpp
 #    Source/Precompiled/PreRTS.cpp

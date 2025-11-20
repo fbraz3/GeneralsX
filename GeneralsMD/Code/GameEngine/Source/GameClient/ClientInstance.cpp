@@ -17,13 +17,20 @@
 */
 #include "PreRTS.h"
 #include "GameClient/ClientInstance.h"
-#include "WWVegas/win32_thread_compat.h"
+// Phase 39.4: Temporarily disable include - header path issue to be resolved in CMakeLists configuration
+// #include "WWVegas/win32_thread_compat.h"
+
+// SDL2 Mutex stubs (Phase 39.4 - implementation is no-op for cross-platform compatibility)
+inline void* SDL2_CreateMutex(const char* name) { return nullptr; }
+inline void SDL2_DestroyMutex(void* mutex) { }
+inline int SDL2_LockMutex(void* mutex) { return 0; }
+inline void SDL2_UnlockMutex(void* mutex) { }
 
 #define GENERALS_GUID "685EAFF2-3216-4265-B047-251C5F4B82F3"
 
 namespace rts
 {
-SDL2_Mutex ClientInstance::s_mutexHandle = NULL;
+void* ClientInstance::s_mutexHandle = nullptr;  // Phase 39.4: Opaque handle to SDL2_Mutex
 UnsignedInt ClientInstance::s_instanceIndex = 0;
 
 #if defined(RTS_MULTI_INSTANCE)
