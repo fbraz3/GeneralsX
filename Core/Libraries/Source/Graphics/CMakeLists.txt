@@ -56,6 +56,7 @@ add_library(graphics_drivers STATIC
     Future/opengl_graphics_driver.h
     Future/directx12_graphics_driver.h
     Future/metal_graphics_driver.h
+    Future/graphics_driver_stubs.cpp
 )
 
 # Include paths for Graphics Framework

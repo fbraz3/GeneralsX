@@ -2438,10 +2438,34 @@ void* VulkanGraphicsDriver::GetGraphicsQueue() const
 // Factory Function
 // ============================================================================
 
-IGraphicsDriver* CreateVulkanGraphicsDriver()
+/**
+ * Factory function for creating Vulkan graphics driver instances.
+ * 
+ * This is called by GraphicsDriverFactory to create Vulkan drivers
+ * with full initialization parameters.
+ * 
+ * @param windowHandle Platform-specific window handle (HWND on Windows, NSWindow* on macOS, etc)
+ * @param width Display width in pixels
+ * @param height Display height in pixels  
+ * @param fullscreen Full-screen mode flag
+ * @return New IGraphicsDriver instance (Vulkan implementation), or nullptr on failure
+ */
+IGraphicsDriver* CreateVulkanGraphicsDriver(void* windowHandle, uint32_t width,
+                                          uint32_t height, bool fullscreen)
 {
     printf("[CreateVulkanGraphicsDriver] Creating new VulkanGraphicsDriver instance\n");
-    return new VulkanGraphicsDriver();
+    printf("[CreateVulkanGraphicsDriver] Window: %p, Size: %ux%u, Fullscreen: %d\n",
+           windowHandle, width, height, fullscreen);
+    
+    // Create driver instance
+    VulkanGraphicsDriver* driver = new VulkanGraphicsDriver();
+    
+    // Initialize driver with provided parameters
+    // Note: Initialization deferred - callers must call driver->Initialize()
+    // This allows for error handling and recovery during initialization
+    
+    printf("[CreateVulkanGraphicsDriver] VulkanGraphicsDriver instance created successfully\n");
+    return driver;
 }
 
 }  // namespace Graphics
