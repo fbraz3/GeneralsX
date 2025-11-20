@@ -1112,33 +1112,441 @@ void VulkanGraphicsDriver::DrawIndexedPrimitiveUP(PrimitiveType primType, uint32
            topology, primCount * 3);  // Assuming triangle list
 }
 
+// ============================================================================
+// Render State Conversion Helpers
+// ============================================================================
+
+/**
+ * Convert BlendMode to VkBlendFactor for Vulkan blending
+ */
+static VkBlendFactor BlendModeToVkBlendFactor(BlendMode mode)
+{
+    switch (mode) {
+        case BlendMode::Zero:
+            return VK_BLEND_FACTOR_ZERO;
+        case BlendMode::One:
+            return VK_BLEND_FACTOR_ONE;
+        case BlendMode::SrcColor:
+            return VK_BLEND_FACTOR_SRC_COLOR;
+        case BlendMode::InvSrcColor:
+            return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+        case BlendMode::SrcAlpha:
+            return VK_BLEND_FACTOR_SRC_ALPHA;
+        case BlendMode::InvSrcAlpha:
+            return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        case BlendMode::DstAlpha:
+            return VK_BLEND_FACTOR_DST_ALPHA;
+        case BlendMode::InvDstAlpha:
+            return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        case BlendMode::DstColor:
+            return VK_BLEND_FACTOR_DST_COLOR;
+        case BlendMode::InvDstColor:
+            return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+        case BlendMode::SrcAlphaSat:
+            return VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
+        case BlendMode::BlendFactor:
+            return VK_BLEND_FACTOR_CONSTANT_COLOR;
+        case BlendMode::InvBlendFactor:
+            return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
+        case BlendMode::BothSrcAlpha:
+        case BlendMode::BothInvSrcAlpha:
+        case BlendMode::SrcColor1:
+        case BlendMode::InvSrcColor1:
+            printf("[Vulkan] WARNING: BlendMode %d not directly supported, using SrcAlpha\n", (int)mode);
+            return VK_BLEND_FACTOR_SRC_ALPHA;
+        default:
+            printf("[Vulkan] ERROR: Unknown BlendMode %d\n", (int)mode);
+            return VK_BLEND_FACTOR_ONE;
+    }
+}
+
+/**
+ * Convert ComparisonFunc to VkCompareOp for Vulkan depth/stencil comparisons
+ */
+static VkCompareOp ComparisonFuncToVkCompareOp(ComparisonFunc func)
+{
+    switch (func) {
+        case ComparisonFunc::Never:
+            return VK_COMPARE_OP_NEVER;
+        case ComparisonFunc::Less:
+            return VK_COMPARE_OP_LESS;
+        case ComparisonFunc::Equal:
+            return VK_COMPARE_OP_EQUAL;
+        case ComparisonFunc::LessEqual:
+            return VK_COMPARE_OP_LESS_OR_EQUAL;
+        case ComparisonFunc::Greater:
+            return VK_COMPARE_OP_GREATER;
+        case ComparisonFunc::NotEqual:
+            return VK_COMPARE_OP_NOT_EQUAL;
+        case ComparisonFunc::GreaterEqual:
+            return VK_COMPARE_OP_GREATER_OR_EQUAL;
+        case ComparisonFunc::Always:
+            return VK_COMPARE_OP_ALWAYS;
+        default:
+            printf("[Vulkan] ERROR: Unknown ComparisonFunc %d\n", (int)func);
+            return VK_COMPARE_OP_ALWAYS;
+    }
+}
+
+/**
+ * Convert StencilOp to VkStencilOp for Vulkan stencil operations
+ */
+static VkStencilOp StencilOpToVkStencilOp(StencilOp op)
+{
+    switch (op) {
+        case StencilOp::Keep:
+            return VK_STENCIL_OP_KEEP;
+        case StencilOp::Zero:
+            return VK_STENCIL_OP_ZERO;
+        case StencilOp::Replace:
+            return VK_STENCIL_OP_REPLACE;
+        case StencilOp::IncrSat:
+            return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
+        case StencilOp::DecrSat:
+            return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
+        case StencilOp::Invert:
+            return VK_STENCIL_OP_INVERT;
+        case StencilOp::Incr:
+            return VK_STENCIL_OP_INCREMENT_AND_WRAP;
+        case StencilOp::Decr:
+            return VK_STENCIL_OP_DECREMENT_AND_WRAP;
+        default:
+            printf("[Vulkan] ERROR: Unknown StencilOp %d\n", (int)op);
+            return VK_STENCIL_OP_KEEP;
+    }
+}
+
+/**
+ * Convert CullMode to VkCullModeFlagBits for Vulkan rasterization
+ */
+static VkCullModeFlagBits CullModeToVkCullMode(CullMode mode)
+{
+    switch (mode) {
+        case CullMode::None:
+            return VK_CULL_MODE_NONE;
+        case CullMode::Clockwise:
+            return VK_CULL_MODE_BACK_BIT;  // DirectX convention differs - map CW to back
+        case CullMode::CounterClockwise:
+            return VK_CULL_MODE_FRONT_BIT;
+        default:
+            printf("[Vulkan] ERROR: Unknown CullMode %d\n", (int)mode);
+            return VK_CULL_MODE_BACK_BIT;
+    }
+}
+
+/**
+ * Convert FillMode to VkPolygonMode for Vulkan rasterization
+ */
+static VkPolygonMode FillModeToVkPolygonMode(FillMode mode)
+{
+    switch (mode) {
+        case FillMode::Point:
+            return VK_POLYGON_MODE_POINT;
+        case FillMode::Wireframe:
+            return VK_POLYGON_MODE_LINE;
+        case FillMode::Solid:
+            return VK_POLYGON_MODE_FILL;
+        default:
+            printf("[Vulkan] ERROR: Unknown FillMode %d\n", (int)mode);
+            return VK_POLYGON_MODE_FILL;
+    }
+}
+
 bool VulkanGraphicsDriver::SetRenderState(RenderState state, uint64_t value)
 {
+    // Initialize cache if needed
+    if (m_render_state_cache.empty()) {
+        m_render_state_cache.resize(static_cast<size_t>(RenderState::SliceCount) + 1, 0);
+    }
+    
+    // Cache the state value for GetRenderState() retrieval
+    size_t index = static_cast<size_t>(state);
+    if (index <= static_cast<size_t>(RenderState::SliceCount)) {
+        m_render_state_cache[index] = value;
+    }
+    
+    // Handle specific render states that affect Vulkan pipeline
+    // Note: Some states (like Lighting, Fog, etc.) are shader-related and handled in future phases
+    // Phase 41 focuses on core graphics states (blend, depth/stencil, rasterizer)
+    
+    switch (state) {
+        case RenderState::Lighting:
+            // TODO: Will be handled in lighting phase (convert to shader uniform)
+            printf("[Vulkan] SetRenderState: Lighting=%llu (lighting pass TBD)\n", value);
+            break;
+            
+        case RenderState::FogEnable:
+            // TODO: Will be handled in fog phase (shader uniform)
+            printf("[Vulkan] SetRenderState: FogEnable=%llu (fog pass TBD)\n", value);
+            break;
+            
+        case RenderState::AlphaBlendEnable:
+            // TODO: Integrate with SetBlendState() - for now cache only
+            printf("[Vulkan] SetRenderState: AlphaBlendEnable=%llu (blend state TBD)\n", value);
+            break;
+            
+        case RenderState::SrcBlend:
+        case RenderState::DstBlend:
+        case RenderState::SrcBlendAlpha:
+        case RenderState::DstBlendAlpha:
+            // TODO: These are handled via SetBlendState() descriptor
+            printf("[Vulkan] SetRenderState: BlendMode (blend state TBD)\n");
+            break;
+            
+        case RenderState::ZEnable:
+            // TODO: Integrate with SetDepthStencilState()
+            printf("[Vulkan] SetRenderState: ZEnable=%llu (depth state TBD)\n", value);
+            break;
+            
+        case RenderState::ZWriteEnable:
+            // TODO: Integrate with SetDepthStencilState()
+            printf("[Vulkan] SetRenderState: ZWriteEnable=%llu (depth state TBD)\n", value);
+            break;
+            
+        case RenderState::ZFunc:
+            // TODO: Integrate with SetDepthStencilState()
+            printf("[Vulkan] SetRenderState: ZFunc=%llu (depth state TBD)\n", value);
+            break;
+            
+        case RenderState::CullMode:
+            // TODO: Integrate with SetRasterizerState()
+            printf("[Vulkan] SetRenderState: CullMode=%llu (raster state TBD)\n", value);
+            break;
+            
+        case RenderState::FillMode:
+            // TODO: Integrate with SetRasterizerState()
+            printf("[Vulkan] SetRenderState: FillMode=%llu (raster state TBD)\n", value);
+            break;
+            
+        case RenderState::ScissorTestEnable:
+            // TODO: Integrate with SetScissorRect()
+            printf("[Vulkan] SetRenderState: ScissorTestEnable=%llu (scissor TBD)\n", value);
+            break;
+            
+        case RenderState::Stencil:
+        case RenderState::StencilFunc:
+        case RenderState::StencilRef:
+        case RenderState::StencilMask:
+        case RenderState::StencilFail:
+        case RenderState::StencilZFail:
+        case RenderState::StencilPass:
+            // TODO: Handled via SetDepthStencilState()
+            printf("[Vulkan] SetRenderState: StencilOp (stencil state TBD)\n");
+            break;
+            
+        case RenderState::Ambient:
+        case RenderState::Specular:
+        case RenderState::AlphaFunc:
+        case RenderState::AlphaRef:
+        case RenderState::TextureFactor:
+        case RenderState::FogStart:
+        case RenderState::FogEnd:
+        case RenderState::FogDensity:
+        case RenderState::FogColor:
+        case RenderState::ColorWriteEnable:
+        case RenderState::PointSize:
+        case RenderState::BlendFactor:
+        case RenderState::BlendOp:
+        case RenderState::BlendOpAlpha:
+        case RenderState::MultisampleAntialias:
+        case RenderState::NormalizeNormals:
+        case RenderState::ClipPlaneEnable:
+        case RenderState::DitherEnable:
+        case RenderState::SeparateAlphaBlendEnable:
+        case RenderState::PointScaleEnable:
+        case RenderState::PointSizeMin:
+        case RenderState::PointSizeMax:
+        case RenderState::PointScaleA:
+        case RenderState::PointScaleB:
+        case RenderState::PointScaleC:
+        case RenderState::MultisampleType:
+        case RenderState::DebugMonitorToken:
+        case RenderState::IndexedVertexBlendEnable:
+        case RenderState::TweenFactor:
+        case RenderState::PositionDegree:
+        case RenderState::NormalDegree:
+        case RenderState::SliceEnable:
+        case RenderState::SliceCount:
+            // These states are either shader-related or not directly used in Vulkan rendering
+            printf("[Vulkan] SetRenderState: State %d = %llu (cached, not directly applied)\n", (int)state, value);
+            break;
+    }
+    
     return true;
 }
 
 uint64_t VulkanGraphicsDriver::GetRenderState(RenderState state) const
 {
-    return 0;
+    // Return cached render state value
+    size_t index = static_cast<size_t>(state);
+    
+    if (m_render_state_cache.empty() || index > static_cast<size_t>(RenderState::SliceCount)) {
+        printf("[Vulkan] GetRenderState: Invalid state index %zu\n", index);
+        return 0;
+    }
+    
+    return m_render_state_cache[index];
 }
 
 bool VulkanGraphicsDriver::SetBlendState(const BlendStateDescriptor& desc)
 {
+    // TODO: Create Vulkan pipeline for this blend state
+    // For now, cache the blend state and log it
+    
+    printf("[Vulkan] SetBlendState: enabled=%d srcBlend=%d dstBlend=%d\n",
+           desc.enabled, (int)desc.srcBlend, (int)desc.dstBlend);
+    printf("[Vulkan] SetBlendState: srcBlendAlpha=%d dstBlendAlpha=%d\n",
+           (int)desc.srcBlendAlpha, (int)desc.dstBlendAlpha);
+    
+    if (!desc.enabled) {
+        printf("[Vulkan] SetBlendState: Blending disabled\n");
+        // TODO: Create pipeline with blending disabled
+        return true;
+    }
+    
+    // Convert blend modes to Vulkan factors
+    VkBlendFactor vk_src_blend = BlendModeToVkBlendFactor(desc.srcBlend);
+    VkBlendFactor vk_dst_blend = BlendModeToVkBlendFactor(desc.dstBlend);
+    VkBlendFactor vk_src_blend_alpha = BlendModeToVkBlendFactor(desc.srcBlendAlpha);
+    VkBlendFactor vk_dst_blend_alpha = BlendModeToVkBlendFactor(desc.dstBlendAlpha);
+    
+    printf("[Vulkan] SetBlendState: Converted to VkBlendFactor (RGB: %u->%u, Alpha: %u->%u)\n",
+           vk_src_blend, vk_dst_blend, vk_src_blend_alpha, vk_dst_blend_alpha);
+    
+    // TODO: Build VkPipelineColorBlendAttachmentState
+    // VkPipelineColorBlendAttachmentState blend_attachment = {};
+    // blend_attachment.blendEnable = VK_TRUE;
+    // blend_attachment.srcColorBlendFactor = vk_src_blend;
+    // blend_attachment.dstColorBlendFactor = vk_dst_blend;
+    // blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+    // blend_attachment.srcAlphaBlendFactor = vk_src_blend_alpha;
+    // blend_attachment.dstAlphaBlendFactor = vk_dst_blend_alpha;
+    // blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    // blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+    //                                   VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    
+    // TODO: Create or retrieve cached Vulkan pipeline with this blend state
+    // TODO: Bind pipeline in next DrawPrimitive() call
+    
+    printf("[Vulkan] SetBlendState: Blend state configured (pipeline binding TBD)\n");
+    
     return true;
 }
 
 bool VulkanGraphicsDriver::SetDepthStencilState(const DepthStencilStateDescriptor& desc)
 {
+    printf("[Vulkan] SetDepthStencilState: depthEnable=%d depthWriteEnable=%d depthFunc=%d\n",
+           desc.depthEnable, desc.depthWriteEnable, (int)desc.depthFunc);
+    printf("[Vulkan] SetDepthStencilState: stencilEnable=%d\n", desc.stencilEnable);
+    
+    if (desc.depthEnable) {
+        VkCompareOp vk_depth_func = ComparisonFuncToVkCompareOp(desc.depthFunc);
+        printf("[Vulkan] SetDepthStencilState: Depth test enabled, func converted to %u\n", vk_depth_func);
+    }
+    
+    if (desc.stencilEnable) {
+        printf("[Vulkan] SetDepthStencilState: Stencil test enabled\n");
+        
+        // Convert stencil functions and operations
+        VkCompareOp vk_front_func = ComparisonFuncToVkCompareOp(desc.frontStencilFunc);
+        VkStencilOp vk_front_fail = StencilOpToVkStencilOp(desc.frontStencilFail);
+        VkStencilOp vk_front_z_fail = StencilOpToVkStencilOp(desc.frontStencilZFail);
+        VkStencilOp vk_front_pass = StencilOpToVkStencilOp(desc.frontStencilPass);
+        
+        printf("[Vulkan] SetDepthStencilState: Front stencil - func=%u fail=%u zfail=%u pass=%u\n",
+               vk_front_func, vk_front_fail, vk_front_z_fail, vk_front_pass);
+        
+        VkCompareOp vk_back_func = ComparisonFuncToVkCompareOp(desc.backStencilFunc);
+        VkStencilOp vk_back_fail = StencilOpToVkStencilOp(desc.backStencilFail);
+        VkStencilOp vk_back_z_fail = StencilOpToVkStencilOp(desc.backStencilZFail);
+        VkStencilOp vk_back_pass = StencilOpToVkStencilOp(desc.backStencilPass);
+        
+        printf("[Vulkan] SetDepthStencilState: Back stencil - func=%u fail=%u zfail=%u pass=%u\n",
+               vk_back_func, vk_back_fail, vk_back_z_fail, vk_back_pass);
+    }
+    
+    // TODO: Build VkPipelineDepthStencilStateCreateInfo
+    // VkPipelineDepthStencilStateCreateInfo depth_stencil = {};
+    // depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    // depth_stencil.depthTestEnable = desc.depthEnable ? VK_TRUE : VK_FALSE;
+    // depth_stencil.depthWriteEnable = desc.depthWriteEnable ? VK_TRUE : VK_FALSE;
+    // depth_stencil.depthCompareOp = ComparisonFuncToVkCompareOp(desc.depthFunc);
+    // depth_stencil.stencilTestEnable = desc.stencilEnable ? VK_TRUE : VK_FALSE;
+    // if (desc.stencilEnable) {
+    //     depth_stencil.front.compareOp = ComparisonFuncToVkCompareOp(desc.front.function);
+    //     depth_stencil.front.failOp = StencilOpToVkStencilOp(desc.front.failOp);
+    //     depth_stencil.front.depthFailOp = StencilOpToVkStencilOp(desc.front.depthFailOp);
+    //     depth_stencil.front.passOp = StencilOpToVkStencilOp(desc.front.passOp);
+    //     // ... similar for back face
+    // }
+    
+    // TODO: Create or retrieve cached Vulkan pipeline with this depth/stencil state
+    // TODO: Bind pipeline in next DrawPrimitive() call
+    
+    printf("[Vulkan] SetDepthStencilState: Depth/Stencil state configured (pipeline binding TBD)\n");
+    
     return true;
 }
 
 bool VulkanGraphicsDriver::SetRasterizerState(const RasterizerStateDescriptor& desc)
 {
+    printf("[Vulkan] SetRasterizerState: fillMode=%d cullMode=%d\n",
+           (int)desc.fillMode, (int)desc.cullMode);
+    printf("[Vulkan] SetRasterizerState: frontCounterClockwise=%d scissorEnable=%d\n",
+           desc.frontCounterClockwise, desc.scissorEnable);
+    
+    // Convert fill mode and cull mode
+    VkPolygonMode vk_fill_mode = FillModeToVkPolygonMode(desc.fillMode);
+    VkCullModeFlagBits vk_cull_mode = CullModeToVkCullMode(desc.cullMode);
+    
+    printf("[Vulkan] SetRasterizerState: Converted to VkPolygonMode=%u VkCullMode=%u\n",
+           vk_fill_mode, vk_cull_mode);
+    
+    // TODO: Build VkPipelineRasterizationStateCreateInfo
+    // VkPipelineRasterizationStateCreateInfo rasterizer = {};
+    // rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    // rasterizer.polygonMode = vk_fill_mode;
+    // rasterizer.cullMode = vk_cull_mode;
+    // rasterizer.frontFace = desc.frontCounterClockwise ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE;
+    // rasterizer.depthBiasEnable = (desc.depthBias != 0 || desc.depthBiasClamp != 0.0f) ? VK_TRUE : VK_FALSE;
+    // rasterizer.depthBiasConstantFactor = static_cast<float>(desc.depthBias);
+    // rasterizer.depthBiasClamp = desc.depthBiasClamp;
+    // rasterizer.depthBiasSlopeFactor = desc.slopeScaledDepthBias;
+    // rasterizer.lineWidth = 1.0f;  // TODO: Support dynamic line width
+    // rasterizer.rasterizerDiscardEnable = VK_FALSE;
+    // rasterizer.depthClampEnable = desc.depthClipEnable ? VK_FALSE : VK_TRUE;  // Note: logic inverted
+    
+    // TODO: Create or retrieve cached Vulkan pipeline with this rasterizer state
+    // TODO: Bind pipeline in next DrawPrimitive() call
+    
+    printf("[Vulkan] SetRasterizerState: Rasterizer state configured (pipeline binding TBD)\n");
+    
     return true;
 }
 
 bool VulkanGraphicsDriver::SetScissorRect(const Rect& rect)
 {
+    printf("[Vulkan] SetScissorRect: left=%d top=%d right=%d bottom=%d\n",
+           rect.left, rect.top, rect.right, rect.bottom);
+    
+    // Validate scissor rect dimensions
+    if (rect.left >= rect.right || rect.top >= rect.bottom) {
+        printf("[Vulkan] ERROR: Invalid scissor rect (left >= right or top >= bottom)\n");
+        return false;
+    }
+    
+    // TODO: Create VkRect2D and record vkCmdSetScissor() in command buffer
+    // VkRect2D scissor = {};
+    // scissor.offset.x = rect.left;
+    // scissor.offset.y = rect.top;
+    // scissor.extent.width = rect.right - rect.left;
+    // scissor.extent.height = rect.bottom - rect.top;
+    // 
+    // TODO: Record command in current command buffer:
+    // vkCmdSetScissor(m_command_buffer, 0, 1, &scissor);
+    
+    printf("[Vulkan] SetScissorRect: Scissor configured (vkCmd binding TBD)\n");
+    
     return true;
 }
 
