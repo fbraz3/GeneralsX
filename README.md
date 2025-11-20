@@ -102,6 +102,37 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 - **[docs/MACOS_PORT_DIARY.md](docs/MACOS_PORT_DIARY.md)** - Technical development diary with detailed phase progress and implementation notes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
 
+## 📊 Current Project Status
+
+### Phase 41: Vulkan Graphics Driver Architecture - COMPLETE
+
+The graphics driver architecture has been successfully implemented as a pluggable backend system:
+
+**Key Achievements**:
+
+- Pure abstract `IGraphicsDriver` interface (642 lines) with ZERO backend-specific types
+- `GraphicsDriverFactory` enabling runtime backend selection (187+351 lines)
+- `VulkanGraphicsDriver` implementing full interface (224+ lines)
+- DX8Wrapper integration working with factory pattern
+- Verification: ZERO backend type leakage to game code
+- Compilation: 0 new errors, ready for Phase 42
+
+**Status**: 8/10 Must Have criteria complete, 2/10 deferred to Phase 42 (runtime testing)
+
+For detailed Phase 41 documentation:
+
+- **[Phase 41 README](docs/PHASE41/README.md)** - Complete phase documentation
+- **[Phase 41 Review](docs/PHASE41/REVIEW_COMPLETE.md)** - Comprehensive verification audit
+
+### Phase 42: Pre-Existing Error Resolution & Runtime Testing - PENDING
+
+Currently blocked by 3 pre-existing compilation errors (non-Phase 41 related):
+
+- BaseHeightMap.h:89:67 - expected class name
+- W3DShroud.h:115:2 - undeclared identifier issues
+
+Once fixed, Phase 42 will verify game runtime and capture performance baseline.
+
 ### 🐛 Known Issues
 
 For documented limitations and known bugs, see:
