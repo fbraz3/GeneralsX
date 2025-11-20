@@ -867,26 +867,211 @@ void VulkanGraphicsDriver::Clear(float r, float g, float b, float a, bool clearD
     // This will be integrated with d3d8_vulkan_renderloop.cpp
 }
 
+// ============================================================================
+// Resource Storage (Internal to VulkanGraphicsDriver)
+// ============================================================================
+
+// Simple buffer storage for vertex/index buffers
+struct VulkanBufferAllocation {
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    void* mapped_ptr = nullptr;
+    uint32_t size = 0;
+    bool is_dynamic = false;
+};
+
+struct VulkanTextureAllocation {
+    VkImage image = VK_NULL_HANDLE;
+    VkImageView imageView = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    VkSampler sampler = VK_NULL_HANDLE;
+    VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+    VkBuffer stagingBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory stagingMemory = VK_NULL_HANDLE;
+    void* mappedStagingPtr = nullptr;
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint32_t depth = 1;
+    uint32_t mipLevels = 1;
+    TextureFormat format = TextureFormat::A8R8G8B8;
+    bool cubeMap = false;
+    bool renderTarget = false;
+    bool depthStencil = false;
+    bool dynamic = false;
+};
+
+// Storage for created buffers (simple map)
+static std::vector<VulkanBufferAllocation> g_vertex_buffers;
+static std::vector<VulkanBufferAllocation> g_index_buffers;
+static std::vector<VulkanTextureAllocation> g_textures;
+
 void VulkanGraphicsDriver::SetClearColor(float r, float g, float b, float a)
 {
     m_clear_color = Color(r, g, b, a);
 }
 
+/**
+ * Convert PrimitiveType (backend-agnostic) to VkPrimitiveTopology (Vulkan-specific)
+ */
+static VkPrimitiveTopology PrimitiveTypeToVkTopology(PrimitiveType primType)
+{
+    switch (primType) {
+        case PrimitiveType::PointList:
+            return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        case PrimitiveType::LineList:
+            return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        case PrimitiveType::LineStrip:
+            return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+        case PrimitiveType::TriangleList:
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        case PrimitiveType::TriangleStrip:
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        case PrimitiveType::TriangleFan:
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+        case PrimitiveType::QuadList:
+            // Vulkan doesn't have native quad support - convert to triangle list
+            // (2 triangles per quad)
+            printf("[Vulkan] WARNING: QuadList converted to TriangleList (2 tris per quad)\n");
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        case PrimitiveType::QuadStrip:
+            // Convert to triangle strip
+            printf("[Vulkan] WARNING: QuadStrip converted to TriangleStrip\n");
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        case PrimitiveType::TrianglePatch:
+        case PrimitiveType::RectPatch:
+        case PrimitiveType::TriNPatch:
+            // Tessellation patches require different handling
+            printf("[Vulkan] WARNING: Tessellation patch types not yet supported, using triangle list\n");
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        default:
+            printf("[Vulkan] ERROR: Unknown primitive type %d\n", (int)primType);
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    }
+}
+
+/**
+ * Calculate vertex count from primitive type and primitive count
+ */
+static uint32_t CalculateVertexCount(PrimitiveType primType, uint32_t primCount)
+{
+    switch (primType) {
+        case PrimitiveType::PointList:
+            return primCount;
+        case PrimitiveType::LineList:
+            return primCount * 2;
+        case PrimitiveType::LineStrip:
+            return primCount + 1;
+        case PrimitiveType::TriangleList:
+            return primCount * 3;
+        case PrimitiveType::TriangleStrip:
+        case PrimitiveType::TriangleFan:
+            return primCount + 2;
+        case PrimitiveType::QuadList:
+            return primCount * 4;
+        case PrimitiveType::QuadStrip:
+            return primCount * 2 + 2;
+        case PrimitiveType::TrianglePatch:
+        case PrimitiveType::RectPatch:
+        case PrimitiveType::TriNPatch:
+            return primCount;  // Patch count varies
+        default:
+            return 0;
+    }
+}
+
 void VulkanGraphicsDriver::DrawPrimitive(PrimitiveType primType, uint32_t vertexCount)
 {
-    // Stub
+    if (!m_initialized || !m_device) {
+        printf("[Vulkan] DrawPrimitive: Driver not initialized\n");
+        return;
+    }
+    
+    printf("[Vulkan] DrawPrimitive: primType=%d vertexCount=%u\n", (int)primType, vertexCount);
+    
+    // Convert primitive type to Vulkan topology
+    VkPrimitiveTopology topology = PrimitiveTypeToVkTopology(primType);
+    
+    // TODO Phase 41 Week 2 Day 3: Implement actual draw command recording
+    // - Validate vertex buffer is bound
+    // - Validate vertex format is set
+    // - Validate render state is applied
+    // - Record vkCmdDraw() command to command buffer
+    // - Handle primitive count calculation for native Vulkan types
+    // - Convert QuadList/QuadStrip to triangle topology if needed
+    // - Track bound resources for descriptor binding
+    
+    // For now, just log the operation
+    printf("[Vulkan] DrawPrimitive: topology=%u vertexCount=%u (implementation TBD)\n", topology, vertexCount);
 }
 
 void VulkanGraphicsDriver::DrawIndexedPrimitive(PrimitiveType primType, uint32_t indexCount,
                                                IndexBufferHandle ibHandle, uint32_t startIndex)
 {
-    // Stub
+    if (!m_initialized || !m_device) {
+        printf("[Vulkan] DrawIndexedPrimitive: Driver not initialized\n");
+        return;
+    }
+    
+    if (ibHandle >= g_index_buffers.size()) {
+        printf("[Vulkan] DrawIndexedPrimitive: Invalid index buffer handle %llu\n", ibHandle);
+        return;
+    }
+    
+    printf("[Vulkan] DrawIndexedPrimitive: primType=%d indexCount=%u startIndex=%u\n",
+           (int)primType, indexCount, startIndex);
+    
+    // Convert primitive type to Vulkan topology
+    VkPrimitiveTopology topology = PrimitiveTypeToVkTopology(primType);
+    
+    // Get index buffer allocation
+    VulkanBufferAllocation& ibAlloc = g_index_buffers[ibHandle];
+    
+    // TODO Phase 41 Week 2 Day 3: Implement actual indexed draw command recording
+    // - Validate index buffer is properly allocated
+    // - Validate primitive topology
+    // - Validate vertex buffer is bound
+    // - Bind index buffer with vkCmdBindIndexBuffer()
+    // - Record vkCmdDrawIndexed() command with startIndex offset
+    // - Handle index type detection (16-bit vs 32-bit)
+    // - Validate index count doesn't exceed buffer bounds
+    // - Apply scissor/viewport before draw
+    
+    // For now, log the operation
+    printf("[Vulkan] DrawIndexedPrimitive: ibHandle=%llu topology=%u indexCount=%u (implementation TBD)\n",
+           ibHandle, topology, indexCount);
 }
 
 void VulkanGraphicsDriver::DrawPrimitiveUP(PrimitiveType primType, uint32_t primCount,
                                           const void* vertexData, uint32_t vertexStride)
 {
-    // Stub
+    if (!m_initialized || !m_device) {
+        printf("[Vulkan] DrawPrimitiveUP: Driver not initialized\n");
+        return;
+    }
+    
+    if (!vertexData) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - NULL vertex data\n");
+        return;
+    }
+    
+    uint32_t vertexCount = CalculateVertexCount(primType, primCount);
+    printf("[Vulkan] DrawPrimitiveUP: primType=%d primCount=%u vertexCount=%u stride=%u\n",
+           (int)primType, primCount, vertexCount, vertexStride);
+    
+    // Convert primitive type to Vulkan topology
+    VkPrimitiveTopology topology = PrimitiveTypeToVkTopology(primType);
+    
+    // TODO Phase 41 Week 2 Day 3: Implement user-provided vertex data drawing
+    // - Create temporary vertex buffer from provided data
+    // - Copy vertexData to GPU memory
+    // - Bind temporary vertex buffer
+    // - Record vkCmdDraw() command
+    // - Track temporary buffers for cleanup after frame
+    // - Handle stride for proper vertex layout
+    // - Support various vertex formats
+    
+    // For now, log the operation
+    printf("[Vulkan] DrawPrimitiveUP: topology=%u vertexCount=%u (implementation TBD)\n", topology, vertexCount);
 }
 
 void VulkanGraphicsDriver::DrawIndexedPrimitiveUP(PrimitiveType primType, uint32_t minVertexIndex,
@@ -894,7 +1079,37 @@ void VulkanGraphicsDriver::DrawIndexedPrimitiveUP(PrimitiveType primType, uint32
                                                  const void* indexData, const void* vertexData,
                                                  uint32_t vertexStride)
 {
-    // Stub
+    if (!m_initialized || !m_device) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: Driver not initialized\n");
+        return;
+    }
+    
+    if (!indexData || !vertexData) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - NULL data (indexData=%p vertexData=%p)\n",
+               indexData, vertexData);
+        return;
+    }
+    
+    printf("[Vulkan] DrawIndexedPrimitiveUP: primType=%d primCount=%u vertexCount=%u stride=%u\n",
+           (int)primType, primCount, vertexCount, vertexStride);
+    
+    // Convert primitive type to Vulkan topology
+    VkPrimitiveTopology topology = PrimitiveTypeToVkTopology(primType);
+    
+    // TODO Phase 41 Week 2 Day 3: Implement user-provided vertex+index data drawing
+    // - Create temporary vertex buffer from vertexData
+    // - Create temporary index buffer from indexData
+    // - Copy both to GPU memory
+    // - Bind both buffers
+    // - Determine index type (16-bit vs 32-bit)
+    // - Record vkCmdDrawIndexed() command
+    // - Track temporary buffers for cleanup
+    // - Calculate correct index count from primCount
+    // - Apply minVertexIndex offset to vertex buffer binding
+    
+    // For now, log the operation
+    printf("[Vulkan] DrawIndexedPrimitiveUP: topology=%u indexCount=%u (implementation TBD)\n",
+           topology, primCount * 3);  // Assuming triangle list
 }
 
 bool VulkanGraphicsDriver::SetRenderState(RenderState state, uint64_t value)
@@ -936,44 +1151,6 @@ Viewport VulkanGraphicsDriver::GetViewport() const
 {
     return m_viewport;
 }
-
-// ============================================================================
-// Resource Storage (Internal to VulkanGraphicsDriver)
-// ============================================================================
-
-// Simple buffer storage for vertex/index buffers
-struct VulkanBufferAllocation {
-    VkBuffer buffer = VK_NULL_HANDLE;
-    VkDeviceMemory memory = VK_NULL_HANDLE;
-    void* mapped_ptr = nullptr;
-    uint32_t size = 0;
-    bool is_dynamic = false;
-};
-
-struct VulkanTextureAllocation {
-    VkImage image = VK_NULL_HANDLE;
-    VkImageView imageView = VK_NULL_HANDLE;
-    VkDeviceMemory memory = VK_NULL_HANDLE;
-    VkSampler sampler = VK_NULL_HANDLE;
-    VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
-    VkBuffer stagingBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory stagingMemory = VK_NULL_HANDLE;
-    void* mappedStagingPtr = nullptr;
-    uint32_t width = 0;
-    uint32_t height = 0;
-    uint32_t depth = 1;
-    uint32_t mipLevels = 1;
-    TextureFormat format = TextureFormat::A8R8G8B8;
-    bool cubeMap = false;
-    bool renderTarget = false;
-    bool depthStencil = false;
-    bool dynamic = false;
-};
-
-// Storage for created buffers (simple map)
-static std::vector<VulkanBufferAllocation> g_vertex_buffers;
-static std::vector<VulkanBufferAllocation> g_index_buffers;
-static std::vector<VulkanTextureAllocation> g_textures;
 
 // ============================================================================
 // Buffer Management Implementation (REAL Vulkan)
