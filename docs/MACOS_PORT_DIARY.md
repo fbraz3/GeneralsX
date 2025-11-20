@@ -1,5 +1,93 @@
 # GeneralsX macOS Port Development Diary
 
+---
+
+## PHASE 40 WEEK 2 CONTINUATION: SDL2 Core API Migration - In Progress
+
+**SESSION START**: November 22, 2025, ~01:30 UTC  
+**OBJECTIVE**: Complete Phase 40 Week 2 Days 1-5 core Win32 API migrations  
+**STATUS**: 🔄 **IN PROGRESS - BUILD VALIDATION**
+
+### Phase 40 Week 2 Completed Tasks (Days 1-5)
+
+#### ✅ Day 1-2: HWND ApplicationHWnd → SDL2 Migration
+
+- Changed `HWND ApplicationHWnd` to `void*` in Generals/WinMain.cpp (line 71)
+- Updated WinMain.h extern declaration (line 43)
+- Replaced `::SetWindowText()` calls with `SDL_SetWindowTitle()` in both Generals and GeneralsMD GameEngine.cpp (line 243)
+- Added SDL2_AppWindow.h includes for window management
+- Removed unused `extern HWND ApplicationHWnd` declarations from GameEngine.cpp
+- Files modified: 2 (WinMain.cpp, WinMain.h, GameEngine.cpp x2)
+
+#### ✅ Day 3-4: GetModuleFileName → SDL2_GetModuleFilePath Migration
+
+- Replaced GetModuleFileName with SDL2_GetModuleFilePath calls in:
+  - FEBDispatch.h (line 62) - COM type library loading
+  - GameMemoryInit.cpp (line 115) - Memory pool configuration
+  - ReplaySimulation.cpp (line 137) - Replay worker path
+  - Debug.cpp (line 445) - Debug log path setup
+- Updated path handling: converted backslashes to forward slashes for cross-platform compatibility
+- Added path separator conversion utilities in GameMemoryInit.cpp
+- Files modified: 4 (FEBDispatch.h, GameMemoryInit.cpp, ReplaySimulation.cpp, Debug.cpp)
+
+#### ✅ Day 5: File Copy & Platform Conditionals Cleanup
+
+- Eliminated `#ifdef _WIN32` from PopupReplay.cpp (both Generals and GeneralsMD)
+  - Replaced Win32 `CopyFile()` with `std::filesystem::copy_file()` for cross-platform file copying
+  - Error handling: std::filesystem::filesystem_error with proper exception handling
+  - Already had `#include <filesystem>` present
+
+- Eliminated `#ifdef _WIN32` from Debug.cpp crash dialog
+  - Replaced Win32 `MessageBox()` with `SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, ...)`
+  - Added `#include <SDL2/SDL.h>` for SDL_ShowSimpleMessageBox
+  - Crash dialog now cross-platform compatible
+
+- Documented WorldBuilder launcher in MainMenu.cpp as Windows-specific (left conditional)
+  - `_spawnl("WorldBuilder.exe")` - Windows-only tool launcher, acceptable to keep conditional
+
+- Retained conditionals in architecture-specific files:
+  - WorkerProcess.cpp: All 4 blocks are Windows-specific process launching (CreateProcessW, job management)
+  - SDL2_AppWindow.cpp: Platform detection for GetModuleFileName implementation (legitimate)
+
+### Files Modified in This Session
+
+```bash
+Core/GameEngine/Include/GameNetwork/WOLBrowser/FEBDispatch.h
+Core/GameEngine/Source/Common/ReplaySimulation.cpp
+Core/GameEngine/Source/Common/System/Debug.cpp
+Core/GameEngine/Source/Common/System/GameMemoryInit.cpp
+Generals/Code/GameEngine/Source/Common/GameEngine.cpp
+Generals/Code/Main/WinMain.cpp
+Generals/Code/Main/WinMain.h
+Generals/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/PopupReplay.cpp
+GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp
+GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/PopupReplay.cpp
+GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/MainMenu.cpp
+```
+
+### Git Commit
+
+- **Commit**: `0615d980...`
+- **Message**: `feat(phase40): Complete SDL2 migration for core Win32 APIs`
+- **Changes**: 11 files, 66 insertions(+), 60 deletions(-)
+- **Scope**: HWND/SetWindowText/GetModuleFileName/CopyFile/MessageBox replacements
+
+### Current Build Status
+
+- **Configure**: ✅ CMake preset `macos-arm64-vulkan` reconfigured successfully
+- **Build**: 🔄 In progress - `z_generals` target compilation
+- **Log**: `/logs/phase40_week2_build.log` (tee output in progress)
+
+### Next Steps (Week 3-4)
+
+- ⏳ Wait for build completion and validation
+- ⏳ Address GetTickCount() → SDL_GetTicks() replacements (8 files identified)
+- ⏳ Address Sleep() → SDL_Delay() replacements (8 files identified)
+- ⏳ Remove all remaining `#ifdef _WIN32` blocks from game code (keep only in Core/Libraries)
+- ⏳ Cross-platform build testing on Windows/Linux if possible
+
+---
+
 ## Current Session: **PHASE 40 WEEK 2 SDL2 MIGRATION IMPLEMENTATION COMPLETE**
 
 ### Session Focus: Phase 40 Priority 1 Win32 → SDL2 API Migration Implementation (Continuation Session)
