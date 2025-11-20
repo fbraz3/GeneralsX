@@ -556,26 +556,6 @@ Phase 41 tasks to mark as complete:
 - [x] Driver architecture fully documented (see WEEK3_INTEGRATION_COMPLETE.md)
 - [ ] Performance baseline captured (Phase 42)
 
-### Deferred to Phase 42
-
-The following items were identified as Phase 42 responsibilities:
-
-1. **Runtime Testing** (`Week 4, Day 3`)
-   - Currently 3 pre-existing compilation errors block runtime testing:
-     - `BaseHeightMap.h:89:67` - expected class name
-     - `W3DShroud.h:115:2` - undeclared identifier 'TextureFilterClass'
-     - `W3DShroud.h:115:2` - no type 'FilterType' in 'TextureMapperClass'
-   - These errors are non-Vulkan and were present before Phase 41 work
-   - Phase 42 will fix these to enable game runtime verification
-
-2. **Performance Baseline** (`Week 4, Day 4`)
-   - Requires game to run successfully
-   - Will be captured in Phase 42 after fixing compile errors
-
-3. **Template for New Backend Implementation** (`Should Have`)
-   - Not critical for Phase 41 closure
-   - Deferred to Phase 42 or later
-
 ### Phase 41 Summary
 
 **Status**: ✅ **COMPLETE** - All Week 1-3 tasks finished, Week 4 deferred per project requirements
@@ -589,6 +569,16 @@ The following items were identified as Phase 42 responsibilities:
 - ✅ 30 d3d8_vulkan_*.* files in proper location (Core/Libraries)
 - ✅ DX8Wrapper integration working (Begin_Scene/End_Scene delegated to IGraphicsDriver)
 - ✅ Compilation successful (0 new errors, 3 pre-existing deferred to Phase 42)
+
+### Note on Deferred Items
+
+The following Phase 41 Week 4 tasks are **deferred to Phase 42** per project requirements:
+
+1. **Runtime Verification** - Blocked by 3 pre-existing compilation errors in BaseHeightMap.h and W3DShroud.h (non-Phase 41 related)
+2. **Performance Baseline Capture** - Requires game to run successfully (blocked by compilation errors)
+3. **Cross-Platform Testing** (Windows, Linux) - Requires compilation to be clean first
+
+See `docs/PHASE42/README.md` for complete details on these deferred items now in Phase 42 scope.
 
 **Next Phase**: Phase 42 - Fix Pre-Existing Compilation Errors & Runtime Testing
 

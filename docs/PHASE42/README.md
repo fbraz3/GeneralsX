@@ -30,6 +30,33 @@ Phase 42 (renamed from 39.6) is the final polish phase that removes all remainin
 
 ## Current State Analysis
 
+### Blocked Issues from Phase 41
+
+The following items MUST be fixed in Phase 42 before runtime testing can proceed:
+
+**Pre-existing Compilation Errors** (NOT Phase 41 responsibility, but blocker for Phase 42):
+
+1. **BaseHeightMap.h:89:67** - `expected class name`
+   - Location: `GeneralsMD/Code/GameEngineDevice/Include/W3DDevice/GameClient/BaseHeightMap.h`
+   - Line 89: `class BaseHeightMapRenderObjClass : public RenderObjClass, public DX8_CleanupHook, public Snapshot`
+   - Issue: Missing or incorrectly inherited base class
+   - Task: Investigate inheritance chain and fix class definition
+
+2. **W3DShroud.h:115:2** - `use of undeclared identifier 'TextureFilterClass'`
+   - Location: `GeneralsMD/Code/GameEngineDevice/Include/W3DDevice/GameClient/W3DShroud.h`
+   - Line 115: `TextureFilterClass::FilterType m_shroudFilter;`
+   - Issue: TextureFilterClass not found or incorrect namespace/header
+   - Task: Find correct texture filter class or implement proper abstraction
+
+3. **W3DShroud.h:115:2** - `no type named 'FilterType' in 'TextureMapperClass'`
+   - Location: Same file
+   - Issue: TextureMapperClass does not have FilterType member
+   - Task: Fix the class definition or use correct filter type
+
+**Impact**: These 3 errors prevent successful compilation of z_generals target. Must fix before runtime verification.
+
+**Task for Phase 42 Week 1**: Resolve all 3 errors, verify clean compilation (0 errors).
+
 ### Phase 41 Completion Status
 
 From Phase 41 documentation:
@@ -38,31 +65,55 @@ From Phase 41 documentation:
 - ✅ `GraphicsDriverFactory` implemented
 - ✅ `VulkanGraphicsDriver` operational
 - ✅ All game code uses abstract driver interface
-- ✅ Performance baseline captured
+- ⏳ Performance baseline NOT yet captured (deferred from Phase 41 Week 4)
+- ⏳ Runtime testing NOT yet performed (blocked by 3 compilation errors above)
 
 ### Remaining Work (Phase 42 Scope)
 
-1. **Legacy Wrapper Code Removal**
+**Priority 1 (BLOCKER - Must fix first)**:
+
+1. Fix 3 pre-existing compilation errors (see "Blocked Issues from Phase 41" above)
+   - BaseHeightMap.h class definition
+   - W3DShroud.h TextureFilterClass references
+   - Verify clean compilation after fixes
+
+2. Runtime verification (Week 4 from Phase 41, deferred here)
+   - Game initialization
+   - Vulkan driver creation
+   - Graphics output verification
+   - Input handling validation
+   - No crash logs generated
+
+3. Performance baseline capture (Week 4 from Phase 41, deferred here)
+   - Frame time measurement (ms/frame)
+   - FPS stability tracking
+   - CPU/GPU utilization metrics
+   - Memory consumption tracking
+   - Startup time measurement
+
+**Priority 2 (Standard Phase 42 cleanup)**:
+
+1. Legacy Wrapper Code Removal
    - Remove old wrapper files (marked for deprecation)
    - Clean up CMakeLists.txt (remove unused targets)
    - Remove #ifdef conditionals in game code directories
 
-2. **Code Quality Validation**
+2. Code Quality Validation
    - Static analysis (clang-tidy, cppcheck)
    - Memory leak detection (valgrind, ASAN)
    - Dead code analysis
 
-3. **Cross-Platform Testing**
+3. Cross-Platform Testing
    - Validation on all three platforms
    - Identical rendering output verification
    - Performance consistency across platforms
 
-4. **Documentation Finalization**
+4. Documentation Finalization
    - Architecture documentation complete
    - Build instructions for each platform
    - Deployment & distribution guide
 
-5. **Performance Optimization**
+5. Performance Optimization
    - Compare Phase 41 baseline with Phase 42 final
    - Profile render loop
    - Optimize hot paths if needed
