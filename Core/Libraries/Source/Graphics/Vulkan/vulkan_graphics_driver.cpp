@@ -799,7 +799,14 @@ bool VulkanGraphicsDriver::BeginFrame()
     }
     
     m_in_frame = true;
-    printf("[Vulkan] BeginFrame - Starting frame rendering\n");
+    printf("[Vulkan] BeginFrame - Starting frame rendering (frame_index=%u)\n", 
+           m_swapchain->current_image_index);
+    
+    // TODO Phase 41 Week 2: Implement actual command buffer recording
+    // - Acquire next image from swapchain
+    // - Begin command buffer recording
+    // - Begin render pass
+    // This will be integrated with d3d8_vulkan_renderloop.cpp
     
     return true;
 }
@@ -810,8 +817,15 @@ void VulkanGraphicsDriver::EndFrame()
         return;
     }
     
-    m_in_frame = false;
     printf("[Vulkan] EndFrame - Frame rendering complete\n");
+    
+    // TODO Phase 41 Week 2: Implement actual command buffer completion
+    // - End render pass
+    // - End command buffer recording
+    // - Submit command buffer to graphics queue
+    // This will be integrated with d3d8_vulkan_renderloop.cpp
+    
+    m_in_frame = false;
 }
 
 bool VulkanGraphicsDriver::Present()
@@ -821,9 +835,16 @@ bool VulkanGraphicsDriver::Present()
         return false;
     }
     
-    printf("[Vulkan] Present - Presenting frame to screen\n");
+    printf("[Vulkan] Present - Presenting frame to screen (image_index=%u)\n", 
+           m_swapchain->current_image_index);
     
-    // Update current frame for next iteration
+    // TODO Phase 41 Week 2: Implement actual present operations
+    // - Wait for graphics queue submissions to complete
+    // - Present swapchain image
+    // - Update current frame for next iteration
+    // This will be integrated with d3d8_vulkan_renderloop.cpp
+    
+    // Placeholder: Update current frame for next iteration
     m_swapchain->current_image_index = (m_swapchain->current_image_index + 1) % m_swapchain->images.size();
     m_swapchain->UpdateCurrentFramebuffer();
     
@@ -832,7 +853,18 @@ bool VulkanGraphicsDriver::Present()
 
 void VulkanGraphicsDriver::Clear(float r, float g, float b, float a, bool clearDepth)
 {
-    // Stub
+    if (!m_initialized) {
+        printf("[Vulkan] Clear: Not initialized\n");
+        return;
+    }
+    
+    printf("[Vulkan] Clear - Color(%.2f, %.2f, %.2f, %.2f) depth=%d\n", r, g, b, a, clearDepth);
+    
+    // TODO Phase 41 Week 2: Implement actual Vulkan clear operations
+    // - Record VkCmdClearColorImage or VkCmdClearAttachments
+    // - Set clear values from parameters
+    // - Handle depth buffer clearing if clearDepth is true
+    // This will be integrated with d3d8_vulkan_renderloop.cpp
 }
 
 void VulkanGraphicsDriver::SetClearColor(float r, float g, float b, float a)
