@@ -21,6 +21,7 @@
 // Author: Matthew D. Campbell, June 2002
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <SDL2/SDL.h>  // Phase 40: SDL timing (SDL_GetTicks replaces GetTickCount)
 #include <set>
 
 #include "Common/GameState.h"
@@ -534,7 +535,7 @@ void GameSpyInfo::markAsStagingRoomHost( void )
 
   m_localStagingRoom.reset();
 	m_localStagingRoom.enterGame();
-	m_localStagingRoom.setSeed(GetTickCount());
+	m_localStagingRoom.setSeed(SDL_GetTicks());
 
   m_localStagingRoom.setUseStats( useStats );
   m_localStagingRoom.setOldFactionsOnly( oldFactionsOnly );

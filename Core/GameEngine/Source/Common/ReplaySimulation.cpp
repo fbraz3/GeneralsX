@@ -17,6 +17,7 @@
 */
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <SDL2/SDL.h>  // Phase 40: SDL timing (SDL_GetTicks replaces GetTickCount)
 
 #include "Common/ReplaySimulation.h"
 
@@ -75,13 +76,13 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 		return numErrors != 0 ? 1 : 0;
 	}
 	// Note that we use printf here because this is run from cmd.
-	DWORD totalStartTimeMillis = GetTickCount();
+	DWORD totalStartTimeMillis = SDL_GetTicks();
 	for (size_t i = 0; i < filenames.size(); i++)
 	{
 		AsciiString filename = filenames[i];
 		printf("Simulating Replay \"%s\"\n", filename.str());
 		fflush(stdout);
-		DWORD startTimeMillis = GetTickCount();
+		DWORD startTimeMillis = SDL_GetTicks();
 		if (TheRecorder->simulateReplay(filename))
 		{
 			UnsignedInt totalTimeSec = TheRecorder->getPlaybackFrameCount() / LOGICFRAMES_PER_SECOND;
@@ -94,7 +95,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 				{
 					// Print progress report
 					UnsignedInt gameTimeSec = TheGameLogic->getFrame() / LOGICFRAMES_PER_SECOND;
-					UnsignedInt realTimeSec = (GetTickCount()-startTimeMillis) / 1000;
+					UnsignedInt realTimeSec = (SDL_GetTicks()-startTimeMillis) / 1000;
 					printf("Elapsed Time: %02d:%02d Game Time: %02d:%02d/%02d:%02d\n",
 							realTimeSec/60, realTimeSec%60, gameTimeSec/60, gameTimeSec%60, totalTimeSec/60, totalTimeSec%60);
 					fflush(stdout);
@@ -107,7 +108,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 				}
 			}
 			UnsignedInt gameTimeSec = TheGameLogic->getFrame() / LOGICFRAMES_PER_SECOND;
-			UnsignedInt realTimeSec = (GetTickCount()-startTimeMillis) / 1000;
+			UnsignedInt realTimeSec = (SDL_GetTicks()-startTimeMillis) / 1000;
 			printf("Elapsed Time: %02d:%02d Game Time: %02d:%02d/%02d:%02d\n",
 					realTimeSec/60, realTimeSec%60, gameTimeSec/60, gameTimeSec%60, totalTimeSec/60, totalTimeSec%60);
 			fflush(stdout);
@@ -122,7 +123,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 	{
 		printf("Simulation of all replays completed. Errors occurred: %d\n", numErrors);
 
-		UnsignedInt realTime = (GetTickCount()-totalStartTimeMillis) / 1000;
+		UnsignedInt realTime = (SDL_GetTicks()-totalStartTimeMillis) / 1000;
 		printf("Total Time: %d:%02d:%02d\n", realTime/60/60, realTime/60%60, realTime%60);
 		fflush(stdout);
 	}
@@ -132,7 +133,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 
 int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiString> &filenames, int maxProcesses)
 {
-	DWORD totalStartTimeMillis = GetTickCount();
+	DWORD totalStartTimeMillis = SDL_GetTicks();
 
 	char exePathA[1024];
 	// Phase 40: Use SDL2 cross-platform path retrieval
@@ -202,7 +203,7 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 
 	printf("Simulation of all replays completed. Errors occurred: %d\n", numErrors);
 
-	UnsignedInt realTime = (GetTickCount()-totalStartTimeMillis) / 1000;
+	UnsignedInt realTime = (SDL_GetTicks()-totalStartTimeMillis) / 1000;
 	printf("Total Wall Time: %d:%02d:%02d\n", realTime/60/60, realTime/60%60, realTime%60);
 	fflush(stdout);
 

@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <SDL2/SDL.h>  // Phase 40: SDL timing (SDL_GetTicks replaces GetTickCount)
 
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 
@@ -881,7 +882,7 @@ void LANAPI::RequestGameCreate( UnicodeString gameName, Bool isDirectConnect )
 	m_inLobby = false;
 	LANGameInfo *myGame = NEW LANGameInfo;
 
-	myGame->setSeed(GetTickCount());
+	myGame->setSeed(SDL_GetTicks());
 
 //	myGame->setInProgress(false);
 	myGame->enterGame();

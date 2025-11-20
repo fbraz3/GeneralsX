@@ -27,6 +27,7 @@
 // Author: Matthew D. Campbell, February 2002
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <SDL2/SDL.h>  // Phase 40: SDL timing (SDL_GetTicks replaces GetTickCount)
 
 #include "gamespy/gp/gp.h"
 #include "gamespy/gstats/gpersist.h"
@@ -1033,7 +1034,7 @@ void createRoomCallback(PEER peer, PEERBool success, PEERJoinResult result, Room
 		name.translate(TheGameSpyChat->getLoginName());
 		TheGameSpyGame->enterGame();
 //	TheGameSpyGame->setSeed(GameClientRandomValue(0, INT_MAX - 1));
-		TheGameSpyGame->setSeed(GetTickCount());
+		TheGameSpyGame->setSeed(SDL_GetTicks());
 		GameSlot newSlot;
 		newSlot.setState(SLOT_PLAYER, name);
 		newSlot.setIP(localIP);

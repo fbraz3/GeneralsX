@@ -29,6 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <SDL2/SDL.h>  // Phase 40: SDL timing (SDL_GetTicks replaces GetTickCount)
 
 
 #include "Common/BattleHonors.h"
@@ -1283,7 +1284,7 @@ void SkirmishGameOptionsMenuInit( WindowLayout *layout, void *userData )
 	TheSkirmishGameInfo->setSlot(1, gSlot);
 
 	ParseAsciiStringToGameInfo(TheSkirmishGameInfo, prefs.getSlotList());
-	TheSkirmishGameInfo->setSeed(GetTickCount());
+	TheSkirmishGameInfo->setSeed(SDL_GetTicks());
 
 	UnsignedInt isPreorder = 0;
 	GetUnsignedIntFromRegistry("", "Preorder", isPreorder);
