@@ -1,15 +1,18 @@
 /*
  * DX8Wrapper_Stubs.h
  * 
- * Phase 39.4 Compatibility Layer
+ * Phase 39.4 Compatibility Layer (Extended Phase 41 Week 3)
  * Provides no-op/stub implementations of DX8Wrapper for cross-platform compilation.
- * All graphics operations are routed to the Vulkan backend (Phase 39.3).
+ * All graphics operations are routed to the Graphics::IGraphicsDriver backend (factory-based).
  * 
  * Created: November 18, 2025
- * Purpose: Allow legacy DirectX 8 game code to compile without modification while
- *          the actual graphics rendering is handled by the Vulkan backend.
+ * Updated: Phase 41 Week 3 - Integrated Graphics::IGraphicsDriver factory
  * 
- * Note: These are intentional no-ops. Real rendering happens in VulkanGraphicsBackend.
+ * Purpose: Allow legacy DirectX 8 game code to compile without modification while
+ *          the actual graphics rendering is handled by the abstract graphics driver backend.
+ * 
+ * Integration: DX8Wrapper::Begin_Scene/End_Scene now delegates to Graphics::IGraphicsDriver
+ * via the factory pattern. This ensures game code uses pure abstraction without backend coupling.
  */
 
 #ifndef __DX8WRAPPER_STUBS_H__
@@ -20,6 +23,15 @@
 #include "vector3.h"  // Phase 39.4: For Convert_Color parameter type
 #include "vector4.h"  // Phase 39.4: For Convert_Color return type
 #include "rddesc.h"  // Phase 39.4: For RenderDeviceDescClass
+
+// Phase 41 Week 3: Graphics driver factory integration
+// Forward declare to avoid header dependencies
+namespace Graphics {
+    class IGraphicsDriver;
+}
+
+// Phase 41 Week 3: Get the current graphics driver instance (from DX8Wrapper_Stubs.cpp)
+extern Graphics::IGraphicsDriver* GetCurrentGraphicsDriver();
 
 // ============================================================================
 // DIRECTX 8 DEFINES & ENUMS (Phase 39.4 Stub Layer)
@@ -170,8 +182,9 @@ public:
     // ========================================================================
     // Initialization & Device Management
     // ========================================================================
-    static bool Init(void* hwnd, bool lite) { return true; }
-    static void Shutdown() {}
+    // Phase 41 Week 3: Initialize graphics driver via factory
+    static bool Init(void* hwnd, bool lite);  // Implementation in DX8Wrapper_Stubs.cpp
+    static void Shutdown();  // Implementation in DX8Wrapper_Stubs.cpp
     static bool Set_Render_Device(int dev, int width, int height, int bits, int windowed, 
                                    bool resize_window, bool reset_device, bool restore_assets) { return true; }
     // Phase 39.4: Overload for 6-parameter version (ww3d.cpp line 396)
@@ -183,7 +196,7 @@ public:
     static bool Reset_Device() { return true; }
     static bool Set_Device_Resolution(int width, int height, int bits, bool windowed, 
                                        bool resize_window) { return true; }
-    static bool Toggle_Windowed() { return true; }
+    static bool Toggle_Windowed() { return false; }
     static bool Is_Windowed() { return false; }
 
     // ========================================================================
@@ -197,8 +210,9 @@ public:
     // ========================================================================
     // Scene Rendering
     // ========================================================================
-    static void Begin_Scene() {}
-    static void End_Scene(bool flip_frame) {}
+    // Phase 41 Week 3: Delegate to Graphics::IGraphicsDriver factory
+    static void Begin_Scene();  // Implementation in DX8Wrapper_Stubs.cpp
+    static void End_Scene(bool flip_frame);  // Implementation in DX8Wrapper_Stubs.cpp
     static void Clear(bool clear_color, bool clear_z, const Vector3 &color, 
                       float dest_alpha = 1.0f) {}
     static void Flip_To_Primary() {}
