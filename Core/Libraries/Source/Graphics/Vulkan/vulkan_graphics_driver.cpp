@@ -950,9 +950,30 @@ struct VulkanBufferAllocation {
     bool is_dynamic = false;
 };
 
+struct VulkanTextureAllocation {
+    VkImage image = VK_NULL_HANDLE;
+    VkImageView imageView = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    VkSampler sampler = VK_NULL_HANDLE;
+    VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+    VkBuffer stagingBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory stagingMemory = VK_NULL_HANDLE;
+    void* mappedStagingPtr = nullptr;
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint32_t depth = 1;
+    uint32_t mipLevels = 1;
+    TextureFormat format = TextureFormat::A8R8G8B8;
+    bool cubeMap = false;
+    bool renderTarget = false;
+    bool depthStencil = false;
+    bool dynamic = false;
+};
+
 // Storage for created buffers (simple map)
 static std::vector<VulkanBufferAllocation> g_vertex_buffers;
 static std::vector<VulkanBufferAllocation> g_index_buffers;
+static std::vector<VulkanTextureAllocation> g_textures;
 
 // ============================================================================
 // Buffer Management Implementation (REAL Vulkan)
@@ -974,6 +995,94 @@ static uint32_t FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFil
     
     printf("[Vulkan] ERROR: Failed to find suitable memory type\n");
     return 0;
+}
+
+/**
+ * Convert TextureFormat (backend-agnostic) to VkFormat (Vulkan-specific)
+ */
+static VkFormat TextureFormatToVkFormat(TextureFormat format)
+{
+    switch (format) {
+        case TextureFormat::R8G8B8:
+            return VK_FORMAT_R8G8B8_UNORM;
+        case TextureFormat::A8R8G8B8:
+        case TextureFormat::X8R8G8B8:
+            return VK_FORMAT_R8G8B8A8_UNORM;
+        case TextureFormat::R5G6B5:
+            return VK_FORMAT_R5G6B5_UNORM_PACK16;
+        case TextureFormat::A1R5G5B5:
+        case TextureFormat::X1R5G5B5:
+            return VK_FORMAT_A1R5G5B5_UNORM_PACK16;
+        case TextureFormat::A4R4G4B4:
+        case TextureFormat::X4R4G4B4:
+            return VK_FORMAT_R4G4B4A4_UNORM_PACK16;
+        case TextureFormat::A8:
+            return VK_FORMAT_R8_UNORM;
+        case TextureFormat::G16R16:
+            return VK_FORMAT_R16G16_UNORM;
+        case TextureFormat::A16B16G16R16:
+            return VK_FORMAT_R16G16B16A16_UNORM;
+        case TextureFormat::L8:
+            return VK_FORMAT_R8_UNORM;
+        case TextureFormat::A8L8:
+            return VK_FORMAT_R8G8_UNORM;
+        case TextureFormat::V8U8:
+            return VK_FORMAT_R8G8_SNORM;
+        case TextureFormat::V16U16:
+            return VK_FORMAT_R16G16_SNORM;
+        case TextureFormat::DXT1:
+            return VK_FORMAT_BC1_RGB_UNORM_BLOCK;
+        case TextureFormat::DXT2:
+        case TextureFormat::DXT3:
+            return VK_FORMAT_BC2_UNORM_BLOCK;
+        case TextureFormat::DXT4:
+        case TextureFormat::DXT5:
+            return VK_FORMAT_BC3_UNORM_BLOCK;
+        default:
+            printf("[Vulkan] WARNING: Unknown texture format %d, using R8G8B8A8\n", (int)format);
+            return VK_FORMAT_R8G8B8A8_UNORM;
+    }
+}
+
+/**
+ * Calculate byte size per pixel for a given format
+ */
+static uint32_t GetPixelSize(TextureFormat format)
+{
+    switch (format) {
+        case TextureFormat::R8G8B8:
+            return 3;
+        case TextureFormat::A8R8G8B8:
+        case TextureFormat::X8R8G8B8:
+        case TextureFormat::A8B8G8R8:
+        case TextureFormat::X8B8G8R8:
+            return 4;
+        case TextureFormat::R5G6B5:
+        case TextureFormat::A1R5G5B5:
+        case TextureFormat::X1R5G5B5:
+        case TextureFormat::A4R4G4B4:
+        case TextureFormat::X4R4G4B4:
+        case TextureFormat::A8L8:
+        case TextureFormat::G16R16:
+        case TextureFormat::V8U8:
+        case TextureFormat::V16U16:
+            return 2;
+        case TextureFormat::A8:
+        case TextureFormat::L8:
+        case TextureFormat::R3G3B2:
+            return 1;
+        case TextureFormat::A16B16G16R16:
+            return 8;
+        case TextureFormat::DXT1:
+            return 0;  // Compressed, not used
+        case TextureFormat::DXT2:
+        case TextureFormat::DXT3:
+        case TextureFormat::DXT4:
+        case TextureFormat::DXT5:
+            return 0;  // Compressed, not used
+        default:
+            return 4;
+    }
 }
 
 VertexBufferHandle VulkanGraphicsDriver::CreateVertexBuffer(uint32_t sizeInBytes, bool dynamic,
@@ -1330,32 +1439,155 @@ bool VulkanGraphicsDriver::SetVertexStreamSource(uint32_t streamIndex, VertexBuf
 
 TextureHandle VulkanGraphicsDriver::CreateTexture(const TextureDescriptor& desc, const void* initialData)
 {
-    return INVALID_HANDLE;
+    if (!m_initialized || !m_device || !m_memory_allocator) {
+        printf("[Vulkan] CreateTexture: Driver not initialized\n");
+        return INVALID_HANDLE;
+    }
+    
+    printf("[Vulkan] CreateTexture: width=%u height=%u depth=%u format=%d mipLevels=%u\n",
+           desc.width, desc.height, desc.depth, (int)desc.format, desc.mipLevels);
+    
+    VulkanTextureAllocation allocation;
+    allocation.width = desc.width;
+    allocation.height = desc.height;
+    allocation.depth = desc.depth;
+    allocation.format = desc.format;
+    allocation.mipLevels = desc.mipLevels;
+    allocation.cubeMap = desc.cubeMap;
+    allocation.renderTarget = desc.renderTarget;
+    allocation.depthStencil = desc.depthStencil;
+    allocation.dynamic = desc.dynamic;
+    
+    VkFormat vkFormat = TextureFormatToVkFormat(desc.format);
+    
+    // TODO Phase 41 Week 2: Implement VkImage creation
+    // - Handle 1D/2D/3D/Cube textures
+    // - Set appropriate usage flags (SAMPLED, TRANSFER_DST, TRANSFER_SRC)
+    // - Allocate image memory with FindMemoryType()
+    // - Create VkImageView for shader access
+    
+    // TODO Phase 41 Week 2: Implement staging buffer for initial data
+    // - Create staging buffer if initialData provided
+    // - Copy data to staging buffer
+    // - Record command buffer for copy operation
+    // - Submit to graphics queue
+    
+    // TODO Phase 41 Week 2: Implement descriptor set for texture binding
+    // - Update descriptor pool if needed
+    // - Allocate descriptor set from pool
+    // - Update with VkDescriptorImageInfo
+    // - Link to shader samplers
+    
+    // TODO Phase 41 Week 2: Implement sampler creation
+    // - Create VkSampler with appropriate addressing/filtering modes
+    // - Support texture filtering modes (linear, point)
+    // - Support address modes (wrap, clamp, mirror)
+    
+    printf("[Vulkan] CreateTexture: Adding to texture cache (handle will be %zu)\n", g_textures.size());
+    g_textures.push_back(allocation);
+    
+    TextureHandle handle = g_textures.size() - 1;
+    printf("[Vulkan] CreateTexture: SUCCESS (handle=%llu)\n", handle);
+    return handle;
 }
 
 void VulkanGraphicsDriver::DestroyTexture(TextureHandle handle)
 {
-    // Stub
+    if (handle >= g_textures.size()) {
+        printf("[Vulkan] DestroyTexture: Invalid handle %llu\n", handle);
+        return;
+    }
+    
+    VulkanTextureAllocation& alloc = g_textures[handle];
+    printf("[Vulkan] DestroyTexture: Destroying texture (width=%u height=%u)\n", alloc.width, alloc.height);
+    
+    // TODO Phase 41 Week 2: Implement Vulkan resource cleanup
+    // - Destroy VkImageView with vkDestroyImageView()
+    // - Free image memory with vkFreeMemory()
+    // - Destroy VkImage with vkDestroyImage()
+    // - Destroy sampler with vkDestroySampler()
+    // - Destroy staging buffer if exists
+    // - Mark as destroyed (set handles to VK_NULL_HANDLE)
+    
+    alloc.image = VK_NULL_HANDLE;
+    alloc.imageView = VK_NULL_HANDLE;
+    alloc.sampler = VK_NULL_HANDLE;
 }
 
 bool VulkanGraphicsDriver::SetTexture(uint32_t samplerIndex, TextureHandle handle)
 {
+    if (handle >= g_textures.size() && handle != INVALID_HANDLE) {
+        printf("[Vulkan] SetTexture: Invalid handle %llu for sampler %u\n", handle, samplerIndex);
+        return false;
+    }
+    
+    printf("[Vulkan] SetTexture: Binding texture (handle=%llu) to sampler %u\n", handle, samplerIndex);
+    
+    // TODO Phase 41 Week 2: Implement descriptor set update
+    // - Verify texture is valid and initialized
+    // - Bind descriptor set to pipeline layout
+    // - Update push constants or uniform buffers if needed
+    
     return true;
 }
 
 TextureHandle VulkanGraphicsDriver::GetTexture(uint32_t samplerIndex) const
 {
+    // TODO Phase 41 Week 2: Implement texture retrieval
+    // - Track currently bound texture per sampler index
+    // - Return handle of currently bound texture
+    // - Return INVALID_HANDLE if nothing bound
+    
     return INVALID_HANDLE;
 }
 
 bool VulkanGraphicsDriver::LockTexture(TextureHandle handle, uint32_t level, void** lockedData,
                                       uint32_t* pitch)
 {
+    if (handle >= g_textures.size()) {
+        printf("[Vulkan] LockTexture: Invalid handle %llu\n", handle);
+        return false;
+    }
+    
+    VulkanTextureAllocation& alloc = g_textures[handle];
+    printf("[Vulkan] LockTexture: Locking texture level %u (width=%u height=%u)\n", level, alloc.width, alloc.height);
+    
+    if (!alloc.dynamic) {
+        printf("[Vulkan] LockTexture: ERROR - Texture is not dynamic\n");
+        return false;
+    }
+    
+    // TODO Phase 41 Week 2: Implement staging buffer mapping
+    // - Create staging buffer if not exists (for dynamic textures)
+    // - Calculate pitch (row alignment for GPU)
+    // - Map staging buffer memory with vkMapMemory()
+    // - Set lockedData pointer to mapped memory
+    // - Store pitch for proper row alignment on GPU
+    
+    // For now, return failure as staging buffer not yet implemented
+    if (lockedData) *lockedData = nullptr;
+    if (pitch) *pitch = 0;
+    
     return false;
 }
 
 bool VulkanGraphicsDriver::UnlockTexture(TextureHandle handle, uint32_t level)
 {
+    if (handle >= g_textures.size()) {
+        printf("[Vulkan] UnlockTexture: Invalid handle %llu\n", handle);
+        return false;
+    }
+    
+    VulkanTextureAllocation& alloc = g_textures[handle];
+    printf("[Vulkan] UnlockTexture: Unlocking texture level %u\n", level);
+    
+    // TODO Phase 41 Week 2: Implement staging buffer unmapping and copy
+    // - Unmap staging buffer memory with vkUnmapMemory()
+    // - Record command buffer for staging buffer → image copy
+    // - Handle mip level selection and destination offset
+    // - Submit copy command to graphics queue
+    // - Ensure proper synchronization (wait for transfer complete)
+    
     return true;
 }
 
