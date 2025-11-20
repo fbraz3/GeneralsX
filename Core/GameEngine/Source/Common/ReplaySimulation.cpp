@@ -24,6 +24,7 @@
 #include "Common/LocalFileSystem.h"
 #include "Common/Recorder.h"
 #include "Common/WorkerProcess.h"
+#include "Common/System/SDL2_AppWindow.h"  // Phase 40: SDL2 path replacement
 #include "GameLogic/GameLogic.h"
 #include "GameClient/GameClient.h"
 
@@ -134,7 +135,8 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 	DWORD totalStartTimeMillis = GetTickCount();
 
 	char exePathA[1024];
-	GetModuleFileName(NULL, exePathA, ARRAY_SIZE(exePathA));
+	// Phase 40: Use SDL2 cross-platform path retrieval
+	SDL2_GetModuleFilePath(exePathA, ARRAY_SIZE(exePathA));
 	
 	// Convert ASCII path to wide string for command building
 	UnicodeString exePath;

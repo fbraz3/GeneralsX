@@ -76,6 +76,7 @@ extern bool DX8Wrapper_IsWindowed;
 
 // Phase 40: SDL2 window replacement for Win32 HWND
 #include "../../../Include/Common/System/SDL2_AppWindow.h"
+#include <SDL2/SDL.h>  // For SDL_ShowSimpleMessageBox
 
 extern const char *gAppPrefix; /// So WB can have a different log file name.
 
@@ -442,8 +443,17 @@ void DebugInit(int flags)
 			return;
 
 		char dirbuf[ _MAX_PATH ];
-		::GetModuleFileName( NULL, dirbuf, sizeof( dirbuf ) );
-		if (char *pEnd = strrchr(dirbuf, '\\'))
+		// Phase 40: Use SDL2 cross-platform path retrieval
+		SDL2_GetModuleFilePath( dirbuf, sizeof( dirbuf ) );
+		
+		// Convert backslashes to forward slashes
+		char* p = dirbuf;
+		while (*p) {
+			if (*p == '\\') *p = '/';
+			p++;
+		}
+		
+		if (char *pEnd = strrchr(dirbuf, '/'))
 		{
 			*(pEnd + 1) = 0;
 		}
@@ -848,11 +858,11 @@ void ReleaseCrash(const char *reason)
 //	::MessageBox(NULL, "You have encountered a serious error.  Serious errors can be caused by many things including viruses, overheated hardware and hardware that does not meet the minimum specifications for the game. Please visit the forums at www.generals.ea.com for suggested courses of action or consult your manual for Technical Support contact information.", "Technical Difficulties...", MB_OK|MB_TASKMODAL|MB_ICONERROR);
 
 // crash error message changed again 8/22/03 M Lorenzen... made this message box modal to the system so it will appear on top of any task-modal windows, splash-screen, etc.
-#ifdef _WIN32
-  ::MessageBox(NULL, "You have encountered a serious error.  Serious errors can be caused by many things including viruses, overheated hardware and hardware that does not meet the minimum specifications for the game. Please visit the forums at www.generals.ea.com for suggested courses of action or consult your manual for Technical Support contact information.",
-   "Technical Difficulties...",
-   MB_OK|MB_SYSTEMMODAL|MB_ICONERROR);
-#endif
+// Phase 40: Use SDL2 cross-platform message box
+SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+  "Technical Difficulties...",
+  "You have encountered a serious error.  Serious errors can be caused by many things including viruses, overheated hardware and hardware that does not meet the minimum specifications for the game. Please visit the forums at www.generals.ea.com for suggested courses of action or consult your manual for Technical Support contact information.",
+  NULL);
 
 	_exit(1);
 }

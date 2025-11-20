@@ -70,6 +70,7 @@
 #include "Common/XferCRC.h"
 #include "Common/GameLOD.h"
 #include "Common/Registry.h"
+#include "Common/System/SDL2_AppWindow.h"
 
 #include "GameLogic/Armor.h"
 #include "GameLogic/AI.h"
@@ -237,11 +238,10 @@ static void updateWindowTitle()
 		AsciiString titleA;
 		titleA.translate(title);	//get ASCII version for Win 9x
 
-		extern HWND ApplicationHWnd;  ///< our application window handle
-		if (ApplicationHWnd) {
-			//Set it twice because Win 9x does not support SetWindowTextW.
-			::SetWindowText(ApplicationHWnd, titleA.str());
-			::SetWindowTextW(ApplicationHWnd, title.str());
+		// Phase 40: Convert to SDL2 window title update
+		SDL_Window* sdlWindow = (SDL_Window*)g_applicationWindow;
+		if (sdlWindow) {
+			SDL_SetWindowTitle(sdlWindow, titleA.str());
 		}
 	}
 }
@@ -758,7 +758,6 @@ void GameEngine::update( void )
 
 // Horrible reference, but we really, really need to know if we are windowed.
 extern bool DX8Wrapper_IsWindowed;
-extern HWND ApplicationHWnd;
 
 /** -----------------------------------------------------------------------------------------------
  * The "main loop" of the game engine. It will not return until the game exits.

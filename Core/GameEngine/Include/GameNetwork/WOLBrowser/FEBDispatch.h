@@ -35,6 +35,7 @@ extern CComModule _Module;
 #include <comutil.h>    // For _bstr_t.
 
 #include "oleauto.h"
+#include "Common/System/SDL2_AppWindow.h"  // Phase 40: SDL2 window path replacement
 
 template <class T, class C, const IID *I>
 class FEBDispatch :
@@ -59,7 +60,8 @@ public:
 		HRESULT TypeLibraryLoadResult;
 		char filename[256];
 
-		GetModuleFileName(NULL, filename, sizeof(filename));
+		// Phase 40: Replace GetModuleFileName with SDL2 cross-platform path
+		SDL2_GetModuleFilePath(filename, sizeof(filename));
 		_bstr_t bstr(filename);
 
 		TypeLibraryLoadResult = LoadTypeLib(bstr, &ptlib);

@@ -308,30 +308,20 @@ void reallySaveReplay(void)
 	}
 
 	// copy the replay to the right place
-#ifdef _WIN32
-	if(CopyFile(oldFilename.str(),filename.str(), FALSE) == 0)
-	{
-		wchar_t buffer[1024];
-		FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, ARRAY_SIZE(buffer), NULL);
+	// Phase 40: Cross-platform file copy using std::filesystem
+	try {
+		std::filesystem::copy_file(oldFilename.str(), filename.str(), std::filesystem::copy_options::overwrite_existing);
+	} catch (const std::filesystem::filesystem_error& e) {
 		UnicodeString errorStr;
-		errorStr.set(buffer);
-		errorStr.trim();
+		errorStr.format(L"File copy failed: %s", e.what());
 		if(messageBoxWin)
 		{
 			TheWindowManager->winUnsetModal(messageBoxWin);
 			messageBoxWin = NULL;
 		}
-		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
+		MessageBoxOk(TheGameText->fetch("GUI:Error"), errorStr, NULL);
 		return;
 	}
-#else
-	// Phase 39.4: Cross-platform file copy using STL (placeholder for SDL2/cross-platform implementation)
-	// TODO: Implement proper cross-platform file copy using std::filesystem or TheFileSystem
-	if(false)  // Disabled until cross-platform implementation
-	{
-		return;
-	}
-#endif
 
 	// get the listbox that will have the save games in it
 	GameWindow *listboxGames = TheWindowManager->winGetWindowFromId( parent, listboxGamesKey );

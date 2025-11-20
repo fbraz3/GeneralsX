@@ -1497,10 +1497,11 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 			else if( controlID == worldBuilderID )
 			{
-			#ifdef _WIN32
+				// Phase 40: WorldBuilder is Windows-specific tool, skip on other platforms
+				#ifdef _WIN32
 				if(_spawnl(_P_NOWAIT,"WorldBuilder.exe","WorldBuilder.exe", NULL) < 0)
 					MessageBoxOk(TheGameText->fetch("GUI:WorldBuilder"), TheGameText->fetch("GUI:WorldBuilderLoadFailed"),NULL);
-#endif // _WIN32
+				#endif // _WIN32
 			}
 			else if( controlID == getUpdateID )
 			{

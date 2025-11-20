@@ -40,5 +40,5 @@
 
 // EXTERNAL ///////////////////////////////////////////////////////////////////
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
-extern HWND ApplicationHWnd;  ///< our application window handle
+extern void* ApplicationHWnd;  ///< our application window handle (SDL2 window cast to void*)
 extern Win32Mouse *TheWin32Mouse;  ///< global for win32 mouse only!

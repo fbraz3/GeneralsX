@@ -48,6 +48,7 @@
 // USER INCLUDES
 #include "Lib/BaseType.h"
 #include "Common/GameMemory.h"
+#include "Common/System/SDL2_AppWindow.h"  // Phase 40: SDL2 path replacement
 
 struct PoolSizeRec
 {
@@ -111,13 +112,25 @@ void userMemoryManagerInitPools()
 
 	// since we're called prior to main, the cur dir might not be what
 	// we expect. so do it the hard way.
+	// Phase 40: Use SDL2 cross-platform path retrieval
 	char buf[_MAX_PATH];
-	::GetModuleFileName(NULL, buf, sizeof(buf));
-	if (char* pEnd = strrchr(buf, '\\'))
+	SDL2_GetModuleFilePath(buf, sizeof(buf));
+	
+	// Convert path separators from backslash to forward slash for cross-platform compatibility
+	char* p = buf;
+	while (*p) {
+		if (*p == '\\') *p = '/';
+		p++;
+	}
+	
+	// Remove filename to get directory
+	if (char* pEnd = strrchr(buf, '/'))
 	{
 		*pEnd = 0;
 	}
-	strlcat(buf, "\\Data\\INI\\MemoryPools.ini", ARRAY_SIZE(buf));
+	
+	// Append data path (using forward slashes)
+	strlcat(buf, "/Data/INI/MemoryPools.ini", ARRAY_SIZE(buf));
 
 	FILE* fp = fopen(buf, "r");
 	if (fp)
