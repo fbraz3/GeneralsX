@@ -252,6 +252,32 @@ DX8IndexBufferClass::~DX8IndexBufferClass()
     }
 }
 
+// Initialize index buffer (for alternative constructor - Phase 42 legacy support)
+void DX8IndexBufferClass::InitializeIndexBuffer()
+{
+    uint32_t totalSize = m_indexSize * m_numIndices;
+
+    // Get the graphics driver
+    m_driver = Graphics::GetGraphicsDriver();
+    if (!m_driver) {
+        printf("DX8IndexBufferClass::InitializeIndexBuffer - ERROR: Graphics driver unavailable\n");
+        return;
+    }
+
+    // Create buffer via driver
+    bool is_dynamic = (m_usage == USAGE_DYNAMIC);
+    bool is_32bit = (m_format == INDEX_32BIT);
+    m_handle = m_driver->CreateIndexBuffer(totalSize, is_32bit, is_dynamic, nullptr);
+
+    if (m_handle == Graphics::INVALID_HANDLE) {
+        printf("DX8IndexBufferClass::InitializeIndexBuffer - ERROR: Failed to create index buffer (%u bytes, %u indices, %s)\n",
+               totalSize, m_numIndices, is_32bit ? "32-bit" : "16-bit");
+    } else {
+        printf("DX8IndexBufferClass::InitializeIndexBuffer - Created index buffer (handle=%llu, %u bytes, %u indices, %s)\n",
+               m_handle, totalSize, m_numIndices, is_32bit ? "32-bit" : "16-bit");
+    }
+}
+
 // Lock the index buffer
 void* DX8IndexBufferClass::Lock(uint32_t flags)
 {

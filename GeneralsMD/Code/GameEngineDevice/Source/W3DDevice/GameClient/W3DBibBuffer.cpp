@@ -56,6 +56,7 @@
 #include "W3DDevice/GameClient/W3DDynamicLight.h"
 #include "WW3D2/camera.h"
 #include "WW3D2/dx8wrapper.h"
+#include "WW3D2/seglinerenderer.h"  // Phase 42: VertexFormatXYZDUV1 definition
 // #include "WW3D2/dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "WW3D2/mesh.h"
 #include "WW3D2/meshmdl.h"
@@ -106,7 +107,7 @@ void W3DBibBuffer::loadBibsInVertexAndIndexBuffers(void)
 	DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexBib, D3DLOCK_DISCARD);
 	DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_vertexBib, D3DLOCK_DISCARD);
 	vb=(VertexFormatXYZDUV1*)lockVtxBuffer.Get_Vertex_Array();
-	ib = lockIdxBuffer.Get_Index_Array();
+	ib = (UnsignedShort*)lockIdxBuffer.Get_Index_Array();
 	// Add to the index buffer & vertex buffer.
 	UnsignedShort *curIb = ib;
 
