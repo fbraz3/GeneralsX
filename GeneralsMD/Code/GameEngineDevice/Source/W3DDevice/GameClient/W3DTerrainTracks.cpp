@@ -599,7 +599,7 @@ void TerrainTracksRenderObjClassSystem::ReAcquireResources(void)
 	// Fill up the IB
 	{
 		DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexBuffer);
-		UnsignedShort *ib=lockIdxBuffer.Get_Index_Array();
+		UnsignedShort *ib=(UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 
 		for (i=0; i<(m_maxTankTrackEdges-1); i++)
 		{
@@ -902,7 +902,8 @@ Try improving the fit to vertical surfaces like cliffs.
 			if (mod->m_activeEdgeCount >= 2 && mod->Is_Really_Visible())
 			{
 				DX8Wrapper::Set_Texture(0,mod->m_stageZeroTexture);
-				DX8Wrapper::Set_Index_Buffer_Index_Offset(trackStartIndex);
+				// Phase 42: Set_Index_Buffer_Index_Offset not available in Vulkan - trackStartIndex unused
+				// DX8Wrapper::Set_Index_Buffer_Index_Offset(trackStartIndex);
 				DX8Wrapper::Draw_Triangles(	0,(mod->m_activeEdgeCount-1)*2, 0, mod->m_activeEdgeCount*2);
 
 				trackStartIndex += mod->m_activeEdgeCount*2;

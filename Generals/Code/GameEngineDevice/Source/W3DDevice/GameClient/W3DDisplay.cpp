@@ -92,6 +92,7 @@ static void drawFramerateBar(void);
 #include "WW3D2/render2dsentence.h"
 #include "WW3D2/sortingrenderer.h"
 #include "WW3D2/textureloader.h"
+#include "WW3D2/statistics.h"  // Phase 42: Required for Debug_Statistics namespace
 // #include "WW3D2/dx8webbrowser.h // Phase 39.4: Removed with DirectX 8 cleanup"
 #include "WW3D2/mesh.h"
 #include "WW3D2/hlod.h"
@@ -411,8 +412,8 @@ W3DDisplay::~W3DDisplay()
 	if (!TheGlobalData->m_headless)
 		WW3D::Shutdown();
 	WWMath::Shutdown();
-	if (!TheGlobalData->m_headless)
-		DX8WebBrowser::Shutdown();
+	// if (!TheGlobalData->m_headless)
+	// 	DX8WebBrowser::Shutdown();  // Phase 42: Web browser feature not implemented
 	delete TheW3DFileSystem;
 	TheW3DFileSystem = NULL;
 
@@ -486,7 +487,7 @@ void W3DDisplay::setGamma(Real gamma, Real bright, Real contrast, Bool calibrate
 	if (m_windowed)
 		return;	//we don't allow gamma to change in window because it would affect desktop.
 
-	DX8Wrapper::Set_Gamma(gamma,bright,contrast,calibrate, false);
+	DX8Wrapper::Set_Gamma(gamma,bright,contrast,calibrate);
 }
 
 /** Set resolution of display */
@@ -780,7 +781,7 @@ void W3DDisplay::init( void )
 			m_nativeDebugDisplay->setFontWidth( 9 );
 		}
 
-		DX8WebBrowser::Initialize();
+		// DX8WebBrowser::Initialize();  // Phase 42: Web browser feature not implemented
 	}
 
 	// we're now online

@@ -1059,6 +1059,7 @@ Int ShroudTextureShader::init(void)
 //Setup a texture projection in the given stage that applies our shroud.
 Int ShroudTextureShader::set(Int stage)
 {
+#ifdef _WIN32
 	//force WW3D2 system to set it's states so it won't later overwrite our custom settings.
 	VertexMaterialClass *vmat=VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_DIFFUSE);
 	DX8Wrapper::Set_Material(vmat);
@@ -1078,7 +1079,6 @@ Int ShroudTextureShader::set(Int stage)
 #else
 	DX8Wrapper::Set_Shader(ShaderClass::_PresetMultiplicativeSpriteShader);
 #endif
-	}
 	DX8Wrapper::Apply_Render_State_Changes();
 
 	DX8Wrapper::Set_DX8_Texture_Stage_State(stage,  D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION);
@@ -1124,6 +1124,11 @@ Int ShroudTextureShader::set(Int stage)
 	}
 	m_stageOfSet=stage;
 	return TRUE;
+#else // _WIN32
+	// Non-Windows: Shroud texture projection not available (DirectX-only matrix operations)
+	m_stageOfSet=stage;
+	return FALSE;
+#endif // _WIN32
 }
 
 void ShroudTextureShader::reset(void)

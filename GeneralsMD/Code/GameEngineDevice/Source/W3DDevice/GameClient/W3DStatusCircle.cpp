@@ -155,7 +155,7 @@ Int W3DStatusCircle::initData(void)
 
 	// Fill up the IB
 	DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexBuffer);
-	UnsignedShort *ib=lockIdxBuffer.Get_Index_Array();
+	UnsignedShort *ib=(UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 
 	for (i=0; i<3*m_numTriangles; i+=3)
 	{

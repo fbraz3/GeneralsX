@@ -24,6 +24,7 @@
 #include "vector4.h"  // Phase 39.4: For Convert_Color return type
 #include "rddesc.h"  // Phase 39.4: For RenderDeviceDescClass
 #include "dx8fvf_vertex_formats.h"  // Phase 42: Vertex format definitions
+#include "ww3dformat.h"  // Phase 42: For WW3DFormat enum and constants
 
 // Phase 41 Week 3: Graphics driver factory integration
 // Forward declare to avoid header dependencies
@@ -161,6 +162,33 @@ class IDirect3DDevice8Stub {
 public:
     virtual ~IDirect3DDevice8Stub() {}
     virtual int TestCooperativeLevel() { return 0; }  // D3D_OK
+    
+    // Phase 42: Add missing methods for W3DShaderManager compatibility
+    virtual int SetTexture(int stage, void* texture) { return 0; }
+    virtual int SetPixelShader(int shader) { return 0; }
+    virtual int DeletePixelShader(int shader) { return 0; }
+    virtual int DeleteVertexShader(int shader) { return 0; }
+    
+    // Add more common methods for other callers
+    virtual int SetStreamSource(int stream_number, void* stream_data, int stride) { return 0; }
+    virtual int SetVertexShader(int shader) { return 0; }
+    virtual int SetIndices(void* index_data, int base_vertex_index) { return 0; }
+    virtual int DrawIndexedPrimitive(int type, int min_index, int num_vertices, int start_index, int prim_count) { return 0; }
+    virtual int ProcessVertices(int src_start_index, int dest_index, int vertex_count, void* dest_buffer, int flags) { return 0; }
+    
+    // Phase 42: Additional methods for W3DShaderManager render target access
+    virtual int GetRenderTarget(void** renderTarget) { 
+        if (renderTarget) *renderTarget = nullptr;
+        return 0; 
+    }
+    virtual int CreateTexture(int width, int height, int levels, int usage, int format, int pool, void** texture) { 
+        if (texture) *texture = nullptr;
+        return 0; 
+    }
+    virtual int GetDepthStencilSurface(void** depthSurface) { 
+        if (depthSurface) *depthSurface = nullptr;
+        return 0; 
+    }
 };
 
 // Global instance for _Get_D3D_Device8() (Phase 39.4)
@@ -366,7 +394,7 @@ public:
         static RenderDeviceDescClass stub_desc;
         return stub_desc;
     }
-    static int getBackBufferFormat() { return 0; }
+    static WW3DFormat getBackBufferFormat() { return WW3D_FORMAT_X8R8G8B8; }  // Phase 42: Fixed return type from int to WW3DFormat
 
     // ========================================================================
     // Registry and Configuration (Phase 39.4)

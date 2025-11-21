@@ -22,13 +22,13 @@
 
 #include "GameClient/Smudge.h"
 #include "sharebuf.h"
+#include "WW3D2/dx8buffer_compat.h"
 
 class SmudgeGroupClass;	//forward reference.
 class Vector3;
 class Vector4;
 class TextureClass;
 class RenderInfoClass;
-class DX8IndexBufferClass;
 
 //#define USE_COPY_RECTS	1	//this was the old method that didn't render to texture. Just copied backbuffer into texture. Slow on Nvidia.
 

@@ -56,6 +56,7 @@
 #include "WW3D2/camera.h"
 #include "WW3D2/rinfo.h"
 #include "WW3D2/light.h"
+#include "WW3D2/lightenvironment.h"  // Phase 42: Required for LightEnvironmentClass
 #include "WW3D2/dx8wrapper.h"
 // #include "WW3D2/dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "W3DDevice/GameClient/Module/W3DPropDraw.h"

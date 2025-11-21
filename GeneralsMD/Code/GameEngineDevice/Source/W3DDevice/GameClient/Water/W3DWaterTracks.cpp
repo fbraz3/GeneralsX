@@ -650,7 +650,7 @@ void WaterTracksRenderSystem::ReAcquireResources(void)
 	// Fill up the IB
 	{
 		DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexBuffer);
-		UnsignedShort *ib=lockIdxBuffer.Get_Index_Array();
+		UnsignedShort *ib=(UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 
 		for (i=0,j=0,k=0; i<idxCount; j++)
 		{

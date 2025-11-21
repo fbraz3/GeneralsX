@@ -1242,7 +1242,7 @@ void W3DRoadBuffer::loadRoadsInVertexAndIndexBuffers()
 	DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_roadTypes[m_curRoadType].getIB());
 	DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_roadTypes[m_curRoadType].getVB());
 	vb=(VertexFormatXYZDUV1*)lockVtxBuffer.Get_Vertex_Array();
-	ib = lockIdxBuffer.Get_Index_Array();
+	ib = (UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 	// Add to the index buffer & vertex buffer.
 
 	Int curRoad;
@@ -1278,7 +1278,7 @@ void W3DRoadBuffer::loadLitRoadsInVertexAndIndexBuffers(RefRenderObjListIterator
 	DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_roadTypes[m_curRoadType].getIB());
 	DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_roadTypes[m_curRoadType].getVB());
 	vb=(VertexFormatXYZDUV1*)lockVtxBuffer.Get_Vertex_Array();
-	ib = lockIdxBuffer.Get_Index_Array();
+	ib = (UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 	// Add to the index buffer & vertex buffer.
 
 	Int curRoad;

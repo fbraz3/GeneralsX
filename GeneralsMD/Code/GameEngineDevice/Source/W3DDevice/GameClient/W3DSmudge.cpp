@@ -97,7 +97,7 @@ void W3DSmudgeManager::ReAcquireResources(void)
 	// Fill up the IB with static vertex indices that will be used for all smudges.
 	{
 		DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexBuffer);
-		UnsignedShort *ib=lockIdxBuffer.Get_Index_Array();
+		UnsignedShort *ib=(UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 		//quad of 4 triangles:
 		//	0-----3
 		//  |\   /|

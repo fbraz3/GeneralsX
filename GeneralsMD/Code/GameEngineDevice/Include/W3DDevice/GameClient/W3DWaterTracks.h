@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include "seglinerenderer.h"
+
 enum waveType CPP_11(: Int);	//forward reference
 
 /// Custom render object that draws animated tracks/waves on the water.

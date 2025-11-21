@@ -30,6 +30,7 @@
 
 class AABoxClass;
 class WorldHeightMap;
+class CameraClass;  // Phase 42: Forward declaration for render method
 
 typedef UnsignedByte W3DShroudLevel;
 // In Global Data now

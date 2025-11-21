@@ -194,7 +194,7 @@ void W3DTerrainBackground::doPartialUpdate(const IRegion2D &partialRange, WorldH
 	if (m_curNumTerrainIndices == 0) {
 		// Only do the index buffer if it has never been done.  Index values don't change. jba.
 		DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexTerrain);
-		ib = lockIdxBuffer.Get_Index_Array();
+		ib = (UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 		UnsignedShort *curIb = ib;
 		Int yOffset = ((maxX - minX)/STEP+1);
 		Int width = yOffset;
@@ -553,7 +553,7 @@ void W3DTerrainBackground::doTesselatedUpdate(const IRegion2D &partialRange, Wor
 
 	UnsignedShort *ib;
 	DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexTerrain);
-	ib = lockIdxBuffer.Get_Index_Array();
+	ib = (UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 	fillVBRecursive(ib, 0, 0, m_width, ndx, m_curNumTerrainIndices);
 	delete[] ndx;
 	ndx = NULL;

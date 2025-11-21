@@ -380,7 +380,7 @@ void WaterRenderObjClass::ReAcquireResources(void)
 	// Fill up the IB
 	{
 		DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexBuffer);
-		UnsignedShort *ib=lockIdxBuffer.Get_Index_Array();
+		UnsignedShort *ib=(UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 		//quad of 2 triangles:
 		//	3-----2
 		//  |    /|
@@ -1490,14 +1490,15 @@ void WaterRenderObjClass::renderSkyBody(Matrix3D *mat)
 
 //-------------------------------------------------------------------------------------------------
 /** Renders (draws) the water surface mesh geometry.
-	*	This is a work-in-progress!  Do not use this code! */
+	*	This is a work-in-progress!  Do not use this code! 
+	* PHASE 42: Disconnected code - commented out for compilation */
 //-------------------------------------------------------------------------------------------------
+/*
 #ifdef DO_WATER_SIMULATION		//Debug code used to create a dummy water animation
 #endif
 #ifdef USE_MESH_NORMALS
 #endif
 #ifdef SCROLL_UV
-#else
 #endif
 	//DX8Wrapper::Set_Shader(ShaderClass::_PresetOpaqueShader);
 	DX8Wrapper::Set_Texture(0,setting->waterTexture);
@@ -1507,22 +1508,23 @@ void WaterRenderObjClass::renderSkyBody(Matrix3D *mat)
 	DX8Wrapper::Set_Light(1,NULL);
 	DX8Wrapper::Set_Light(2,NULL);
 	DX8Wrapper::Set_Light(3,NULL);
-/*
+
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_AMBIENT,0);	//turn off scene ambient
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_SPECULARENABLE,TRUE);
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_LOCALVIEWER,TRUE);
-*/
 
 	DX8Wrapper::Apply_Render_State_Changes();	//force update of view and projection matrices
 
 
-//	m_pDev->SetRenderState(D3DRS_ZFUNC,D3DCMP_ALWAYS);	//used to display grid under map.
+	m_pDev->SetRenderState(D3DRS_ZFUNC,D3DCMP_ALWAYS);	//used to display grid under map.
 
 	m_pDev->SetIndices(m_indexBufferD3D,m_vertexBufferD3DOffset);
 	m_pDev->SetStreamSource(0,m_vertexBufferD3D,sizeof(MaterMeshVertexFormat));
 	m_pDev->SetVertexShader(WATER_MESH_FVF);
 
+*/	// End of disconnected code comment - Phase 42
 
+/*
 	if (TheTerrainRenderObject->getShroud() && !m_trapezoidWaterPixelShader)
 	{	//we have a shroud to apply and can't do it inside the pixel shader.
 		//so do it in stage1
@@ -1545,13 +1547,16 @@ void WaterRenderObjClass::renderSkyBody(Matrix3D *mat)
 	else
 		m_pDev->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,mx*my,0,m_numIndices-2);
 
+
+	/*
 	Debug_Statistics::Record_DX8_Polys_And_Vertices(m_numIndices-2,mx*my,ShaderClass::_PresetOpaqueShader);
 
-//	m_pDev->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
+	m_pDev->SetRenderState(D3DRS_FILLMODE,D3DFILL_SOLID);
 
 	if (m_trapezoidWaterPixelShader) DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(NULL);
 
 	m_vertexBufferD3DOffset += mx*my;	//advance past vertices already in buffer
+	*/
 
 	DX8Wrapper::Set_Texture(0,NULL);
 	DX8Wrapper::Set_Texture(1,NULL);

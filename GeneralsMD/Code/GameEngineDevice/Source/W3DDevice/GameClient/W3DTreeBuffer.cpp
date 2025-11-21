@@ -123,8 +123,10 @@ W3DTreeBuffer::W3DTreeTextureClass::W3DTreeTextureClass(unsigned width, unsigned
 	pixel borders around them, so that when the tiles are scaled and bilinearly
 	interpolated, you don't get seams between the tiles.  */
 //=============================================================================
-#ifdef RTS_DEBUG
-#endif
+#ifdef _WIN32
+int W3DTreeBuffer::W3DTreeTextureClass::update(W3DTreeBuffer *buffer)
+{
+	{
 		for (tileNdx=0; tileNdx < buffer->getNumTiles(); tileNdx++) {
 			TileData *pTile = buffer->getSourceTile(tileNdx);
 			if (!pTile) continue;
@@ -701,7 +703,7 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 		DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_vertexTree[bNdx], D3DLOCK_DISCARD);
 	#endif
 		vb=(VertexFormatXYZNDUV1*)lockVtxBuffer.Get_Vertex_Array();
-		ib = lockIdxBuffer.Get_Index_Array();
+		ib = (UnsignedShort *)lockIdxBuffer.Get_Index_Array();
 		// Add to the index buffer & vertex buffer.
 		Vector2 lookAtVector(m_cameraLookAtVector.X, m_cameraLookAtVector.Y);
 		lookAtVector.Normalize();

@@ -603,8 +603,8 @@ Int ShroudTextureShader::init(void)
 //Setup a texture projection in the given stage that applies our shroud.
 Int ShroudTextureShader::set(Int stage)
 {
+#ifdef _WIN32
 	DX8Wrapper::Set_Shader(ShaderClass::_PresetMultiplicativeSpriteShader);
-	}
 	DX8Wrapper::Apply_Render_State_Changes();
 
 	DX8Wrapper::Set_DX8_Texture_Stage_State(stage,  D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION);
@@ -1110,6 +1110,7 @@ void W3DShaderManager::init(void)
 	{
 		m_currentChipset = res;	//cache the current chipset.
 
+#ifdef _WIN32
 		//Some of our effects require an offscreen render target, so try creating it here.
 		HRESULT hr=DX8Wrapper::_Get_D3D_Device8()->GetRenderTarget(&m_oldRenderSurface);
 
@@ -1141,6 +1142,13 @@ void W3DShaderManager::init(void)
 				}
 			}
 		}
+#else  // _WIN32
+		// Non-Windows: Render target creation not available (DirectX-only)
+		m_oldRenderSurface = NULL;
+		m_renderTexture = NULL;
+		m_newRenderSurface = NULL;
+		m_oldDepthSurface = NULL;
+#endif // _WIN32
 	}
 
 	W3DShaderInterface **shaders;
@@ -1378,6 +1386,7 @@ Bool W3DShaderManager::testMinimumRequirements(ChipsetType *videoChipType, CpuTy
 	{
 		*cpuType = XX;	//unknown
 
+#ifdef _WIN32
 		//Check if it's an Athlon
 		if (CPUDetectClass::Get_Processor_Manufacturer() == CPUDetectClass::MANUFACTURER_AMD &&
 				CPUDetectClass::Get_AMD_Processor() >= CPUDetectClass::AMD_PROCESSOR_ATHLON_025)
@@ -1391,13 +1400,22 @@ Bool W3DShaderManager::testMinimumRequirements(ChipsetType *videoChipType, CpuTy
 		if (CPUDetectClass::Get_Processor_Manufacturer() == CPUDetectClass::MANUFACTURER_INTEL &&
 				CPUDetectClass::Get_Intel_Processor() >= CPUDetectClass::INTEL_PROCESSOR_PENTIUM4)
 				*cpuType = P4;
+#endif // _WIN32
 	}
 
 	if (cpuFreq)
+#ifdef _WIN32
 		*cpuFreq=CPUDetectClass::Get_Processor_Speed();
+#else // _WIN32
+		*cpuFreq=0;
+#endif // _WIN32
 
 	if (numRAM)
+#ifdef _WIN32
 		*numRAM=CPUDetectClass::Get_Total_Physical_Memory();
+#else // _WIN32
+		*numRAM=0;
+#endif // _WIN32
 
 	if (intBenchIndex && floatBenchIndex && memBenchIndex)
 	{
