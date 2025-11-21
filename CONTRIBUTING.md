@@ -155,9 +155,11 @@ The text body continues with a description of the change in appropriate detail. 
 - **Testing Requirements**: All macOS contributions must compile all core libraries (libww3d2.a, libwwlib.a, libwwmath.a) successfully
 
 **Resources for macOS Contributors:**
-- **[MACOS_PORT_DIARY.md](./docs/MACOS_PORT_DIARY.md)** - Technical development diary documenting phase-by-phase port progress with implementation details
-- **[TESTING.md](./docs/TESTING.md)** - macOS testing procedures and validation steps
-- **[Misc/OPENGL_TESTING.md](./docs/Misc/OPENGL_TESTING.md)** - OpenGL-specific testing for cross-platform graphics
+
+* **[Development Diary](./docs/DEV_BLOG/)** - Technical development diary organized by month
+* **[Phase Documentation](./docs/PLANNING/)** - Phase-by-phase port progress with implementation details
+* **[TESTING.md](./docs/TESTING.md)** - macOS testing procedures and validation steps
+* **[Misc/OPENGL_TESTING.md](./docs/MISC/OPENGL_TESTING.md)** - OpenGL-specific testing for cross-platform graphics
 
 ### Linux and Other Platforms
 

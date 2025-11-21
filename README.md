@@ -99,7 +99,8 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 
 - **[docs/MACOS_BUILD_INSTRUCTIONS.md](docs/MACOS_BUILD_INSTRUCTIONS.md)** - Complete macOS build instructions and troubleshooting
 - **[docs/LINUX_BUILD_INSTRUCTIONS.md](docs/LINUX_BUILD_INSTRUCTIONS.md)** - Linux port status and contribution guidelines
-- **[docs/MACOS_PORT_DIARY.md](docs/MACOS_PORT_DIARY.md)** - Technical development diary with detailed phase progress and implementation notes
+- **[docs/DEV_BLOG/](docs/DEV_BLOG/)** - Technical development diary organized by month
+- **[docs/PLANNING/](docs/PLANNING/)** - Phase planning, implementation notes, and strategic decisions
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
 
 ## 📊 Current Project Status
@@ -121,8 +122,8 @@ The graphics driver architecture has been successfully implemented as a pluggabl
 
 For detailed Phase 41 documentation:
 
-- **[Phase 41 README](docs/PHASE41/README.md)** - Complete phase documentation
-- **[Phase 41 Review](docs/PHASE41/REVIEW_COMPLETE.md)** - Comprehensive verification audit
+- **[Phase 41 README](docs/PLANNING/4/PHASE41/README.md)** - Complete phase documentation
+- **[Phase 41 Review](docs/PLANNING/4/PHASE41/REVIEW_COMPLETE.md)** - Comprehensive verification audit
 
 ### Phase 42: Pre-Existing Error Resolution & Runtime Testing - PENDING
 

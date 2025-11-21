@@ -165,7 +165,8 @@ bool isValidMemoryPointer(void* ptr, size_t minSize) {
 - @TODO: Fill in phase-specific docs as needed
 
 ### Critical Reference Files
-- `docs/MACOS_PORT_DIARY.md` - **UPDATE AFTER EVERY SESSION** - Technical development diary (project requirement)
+- `docs/DEV_BLOG/` - **UPDATE AFTER EVERY SESSION** - Technical development diary organized by year-month (project requirement)
+- `docs/PLANNING/` - Phase planning and implementation notes
 - `docs/MISC/BIG_FILES_REFERENCE.md` - Asset structure (INI.big, INIZH.big contents)
 - `docs/MISC/CRITICAL_FIXES.md` - Emergency fixes (fullscreen lock, NULL crashes)
 - `.github/instructions/project.instructions.md` - Compilation/debugging commands
@@ -254,7 +255,7 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 
 ## When to Update Documentation
 
-**ALWAYS update** `docs/MACOS_PORT_DIARY.md` (development diary) at session end with:
+**ALWAYS update** `docs/DEV_BLOG/YYYY-MM-DIARY.md` (development diary) at session end with:
 - Phase progress (e.g., "Phase 28.4 complete - 7 textures loaded")
 - Critical discoveries (e.g., "VFS integration failed, switched to DirectX interception")
 - Commit hashes for reference
