@@ -51,6 +51,8 @@
 #include "rendobj.h"
 #include "w3d_file.h"
 #include "dx8buffer_compat.h"    // Phase 41: DirectX 8 buffer compatibility layer
+#include "seglinerenderer.h"     // Phase 42: Vertex format definitions (VertexFormatXYZDUV1)
+#include "dx8fvf_vertex_formats.h"  // Phase 42: Additional vertex formats
 
 #include "shader.h"
 #include "vertmaterial.h"

@@ -26,6 +26,7 @@
 
 #include "WW3D2/matpass.h"
 #include "WW3D2/dx8wrapper.h"
+#include "WW3D2/texturefilter.h"  // Phase 42: TextureFilterClass definition
 
 class AABoxClass;
 class WorldHeightMap;

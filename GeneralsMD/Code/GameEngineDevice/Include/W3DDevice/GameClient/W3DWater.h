@@ -29,7 +29,8 @@
 #include "always.h"
 #include "rendobj.h"
 #include "w3d_file.h"
-#include "dx8buffer_compat.h"    // Phase 41: DirectX 8 buffer compatibility layer
+#include "WW3D2/dx8buffer_compat.h"  // Phase 42: DirectX 8 buffer classes and types
+#include "WW3D2/d3d8_vulkan_graphics_compat.h"  // Phase 42: DirectX 8 types for cross-platform
 
 #include "shader.h"
 #include "vertmaterial.h"

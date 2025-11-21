@@ -80,6 +80,7 @@
 #include "W3DDevice/GameClient/W3DWater.h"
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "WW3D2/dx8wrapper.h"
+#include "WW3D2/dx8buffer_compat.h"  // Phase 42: DX8 buffer classes and FVF constants
 #include "WW3D2/light.h"
 #include "WW3D2/scene.h"
 #include "W3DDevice/GameClient/W3DPoly.h"

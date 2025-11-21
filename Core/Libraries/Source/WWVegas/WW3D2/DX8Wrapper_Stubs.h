@@ -23,6 +23,7 @@
 #include "vector3.h"  // Phase 39.4: For Convert_Color parameter type
 #include "vector4.h"  // Phase 39.4: For Convert_Color return type
 #include "rddesc.h"  // Phase 39.4: For RenderDeviceDescClass
+#include "dx8fvf_vertex_formats.h"  // Phase 42: Vertex format definitions
 
 // Phase 41 Week 3: Graphics driver factory integration
 // Forward declare to avoid header dependencies
@@ -482,32 +483,10 @@ private:
 // We use forward declarations for additional classes not in those headers.
 
 // ============================================================================
-// VERTEX FORMATS (Phase 39.4)
-// Define vertex format structs BEFORE classes that use them
+// VERTEX FORMATS (Phase 42)
+// Vertex format structs are now defined in dx8fvf_vertex_formats.h
+// to avoid duplication and ensure consistent definitions across the codebase
 // ============================================================================
-
-struct VertexFormatXYZNDUV2 {
-    float x, y, z;
-    float nx, ny, nz;
-    unsigned int diffuse;
-    float tu, tv;           // First UV set
-    float tu2, tv2;         // Second UV set
-    float u1, v1;           // Alternative naming for first UV (legacy compatibility)
-    float u2, v2;           // Alternative naming for second UV (legacy compatibility)
-};
-
-struct VertexFormatXYZDUV2 {
-    float x, y, z;
-    unsigned int diffuse;
-    float tu, tv;           // First UV set
-    float tu2, tv2;         // Second UV set
-    float u1, v1;           // Alternative naming for first UV (legacy compatibility)
-    float u2, v2;           // Alternative naming for second UV (legacy compatibility)
-};
-
-struct VertexFormatXYZ {
-    float x, y, z;
-};
 
 // Forward declaration for DX8Caps
 class DX8Caps {
@@ -812,6 +791,40 @@ public:
     
 private:
     int m_ref_count;
+};
+
+/**
+ * @brief DX8_CleanupHook Interface
+ * 
+ * Phase 42: Virtual interface for DirectX 8 device reset cleanup
+ * 
+ * This virtual interface is called before resetting the DirectX 8 device
+ * to ensure that all DirectX 8 resources are properly released.
+ * Objects that manage DirectX 8 resources (like heightmaps, water, etc.)
+ * inherit from this interface and implement ReleaseResources() and
+ * ReAcquireResources() to handle device resets gracefully.
+ * 
+ * Usage Pattern:
+ *   - Resource objects inherit from DX8_CleanupHook
+ *   - Implement ReleaseResources() to release DirectX 8 buffers/textures
+ *   - Implement ReAcquireResources() to restore DirectX 8 buffers/textures
+ *   - Call DX8Wrapper::SetCleanupHook() to register the hook
+ */
+class DX8_CleanupHook {
+public:
+    virtual ~DX8_CleanupHook() {}
+    
+    /**
+     * Release all DirectX 8 resources so the device can be reset.
+     * Called before DX8 device reset.
+     */
+    virtual void ReleaseResources(void) = 0;
+    
+    /**
+     * Reacquire all DirectX 8 resources after device reset.
+     * Called after DX8 device reset.
+     */
+    virtual void ReAcquireResources(void) = 0;
 };
 
 #endif // __DX8WRAPPER_STUBS_H__

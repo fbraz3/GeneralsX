@@ -88,6 +88,24 @@
 #define D3DFVF_UNLITVERTEX        (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 
 /* ============================================================================
+ * Game-Specific Vertex Format Constants (DX8_FVF_* naming convention)
+ * ============================================================================
+ * These define vertex formats commonly used in Generals game code
+ */
+
+/** Position + Diffuse + 1 Texture Coordinate (used in terrain, roads, scorches) */
+#define DX8_FVF_XYZDUV1           (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)   /* 0x0142 */
+
+/** Position + Diffuse + 2 Texture Coordinates */
+#define DX8_FVF_XYZDUV2           (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX2)   /* 0x0242 */
+
+/** Position + Normal + Diffuse + 1 Texture Coordinate */
+#define DX8_FVF_XYZN DUV1         (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1) /* 0x0152 */
+
+/** Position + Normal + Diffuse + 2 Texture Coordinates */
+#define DX8_FVF_XYZNDUV2          (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX2) /* 0x0252 */
+
+/* ============================================================================
  * D3DDP (Device Dependent Primitive) Constants
  * ============================================================================
  * These define device-dependent primitive limitations
