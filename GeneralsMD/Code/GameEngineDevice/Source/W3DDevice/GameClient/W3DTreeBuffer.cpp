@@ -126,8 +126,7 @@ W3DTreeBuffer::W3DTreeTextureClass::W3DTreeTextureClass(unsigned width, unsigned
 #ifdef _WIN32
 int W3DTreeBuffer::W3DTreeTextureClass::update(W3DTreeBuffer *buffer)
 {
-	{
-		for (tileNdx=0; tileNdx < buffer->getNumTiles(); tileNdx++) {
+	for (tileNdx=0; tileNdx < buffer->getNumTiles(); tileNdx++) {
 			TileData *pTile = buffer->getSourceTile(tileNdx);
 			if (!pTile) continue;
 			ICoord2D position = pTile->m_tileLocationInTexture;
@@ -152,8 +151,7 @@ int W3DTreeBuffer::W3DTreeTextureClass::update(W3DTreeBuffer *buffer)
 				}
 			}
 		}
-
-	}
+	
 	DX8_ErrorCode(surface_level->UnlockRect());
 	surface_level->Release();
 	DX8_ErrorCode(D3DXFilterTexture(Peek_D3D_Texture(), NULL, (UINT)0, D3DX_FILTER_BOX));
