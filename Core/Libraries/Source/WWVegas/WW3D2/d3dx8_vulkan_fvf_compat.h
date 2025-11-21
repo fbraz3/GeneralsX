@@ -100,7 +100,7 @@
 #define DX8_FVF_XYZDUV2           (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX2)   /* 0x0242 */
 
 /** Position + Normal + Diffuse + 1 Texture Coordinate */
-#define DX8_FVF_XYZN DUV1         (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1) /* 0x0152 */
+#define DX8_FVF_XYZNDUV1          (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1) /* 0x0152 */
 
 /** Position + Normal + Diffuse + 2 Texture Coordinates */
 #define DX8_FVF_XYZNDUV2          (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX2) /* 0x0252 */

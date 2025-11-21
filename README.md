@@ -125,14 +125,20 @@ For detailed Phase 41 documentation:
 - **[Phase 41 README](docs/PLANNING/4/PHASE41/README.md)** - Complete phase documentation
 - **[Phase 41 Review](docs/PLANNING/4/PHASE41/REVIEW_COMPLETE.md)** - Comprehensive verification audit
 
-### Phase 42: Pre-Existing Error Resolution & Runtime Testing - PENDING
+### ✅ Phase 42 Week 1: Pre-Existing Error Resolution - COMPLETE
 
-Currently blocked by 3 pre-existing compilation errors (non-Phase 41 related):
+**Resolved 6 compilation errors** in legacy W3D buffer code:
 
-- BaseHeightMap.h:89:67 - expected class name
-- W3DShroud.h:115:2 - undeclared identifier issues
+1. ✅ **W3DCustomEdging.cpp:130** - Added `(UnsignedShort*)` cast for void pointer compatibility
+2. ✅ **W3DCustomEdging.cpp:350,378** - Restored missing `TextureClass *edgeTex` declaration from Generals base
+3. ✅ **W3DCustomEdging.cpp:389** - Removed orphaned `#endif // _WIN32` preprocessor directive
+4. ✅ **W3DBridgeBuffer.cpp:699** - Added `(UnsignedShort*)` cast for index buffer pointer
+5. ✅ **W3DBridgeBuffer.cpp:769** - Fixed `DX8_FVF_XYZNDUV1` constant definition (removed space from macro name)
+6. ✅ **W3DBibBuffer.cpp** - Added seglinerenderer.h include and fixed type casting
 
-Once fixed, Phase 42 will verify game runtime and capture performance baseline.
+**Build Status**: All 6 target errors eliminated. Game builds with 27 warnings (pre-existing Phase 41 items)
+
+**Remaining Issues**: W3DDisplay.cpp errors are pre-existing Phase 41 Debug_Statistics stub issues (deferred)
 
 ### 🐛 Known Issues
 
