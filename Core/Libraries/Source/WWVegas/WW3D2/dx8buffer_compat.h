@@ -37,13 +37,14 @@
 
 #pragma once
 
-#ifndef DX8_BUFFER_COMPAT_H
-#define DX8_BUFFER_COMPAT_H
+#ifndef WW3D2_DX8_BUFFER_COMPAT_H
+#define WW3D2_DX8_BUFFER_COMPAT_H
 
 #include "d3d8_vulkan_graphics_compat.h"
 #include "d3dx8_vulkan_fvf_compat.h"  // Phase 42: FVF constants (DX8_FVF_*)
 
-// Include Graphics-level buffer compatibility layer if available
-#include "../../../Libraries/Source/Graphics/dx8buffer_compat.h"
+// Include Graphics-level buffer compatibility layer
+// This provides DX8VertexBufferClass and DX8IndexBufferClass definitions
+#include "../../Graphics/dx8buffer_compat.h"
 
-#endif // DX8_BUFFER_COMPAT_H
+#endif // WW3D2_DX8_BUFFER_COMPAT_H

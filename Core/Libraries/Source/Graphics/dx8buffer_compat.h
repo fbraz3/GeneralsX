@@ -14,6 +14,7 @@
 #define DX8BUFFER_COMPAT_H
 
 #include "IGraphicsDriver.h"
+#include "../WWVegas/WW3D2/d3dx8_vulkan_fvf_compat.h"  // Phase 42: FVF vertex format defines
 
 namespace Graphics {
 
@@ -41,6 +42,8 @@ void SetGraphicsDriver(IGraphicsDriver* driver);
  * 
  * This class provides the interface the old game code expects while
  * delegating to the new Vulkan-based graphics driver.
+ * 
+ * Supports reference counting (Add_Ref/Release_Ref) for memory management.
  */
 class DX8VertexBufferClass
 {
@@ -51,6 +54,9 @@ public:
         USAGE_SOFTWAREPROCESSING = 2
     };
 
+    // Forward declare WriteLockClass for nested class support
+    class WriteLockClass;
+
     /**
      * Create a vertex buffer with the specified parameters.
      * @param fvf Flexible vertex format (compatible with D3D8 FVF codes)
@@ -59,7 +65,22 @@ public:
      */
     DX8VertexBufferClass(uint32_t fvf, uint32_t numVertices, UsageFlags usage = USAGE_DEFAULT);
     
-    ~DX8VertexBufferClass();
+    virtual ~DX8VertexBufferClass();
+
+    /**
+     * Reference counting: increment reference count
+     */
+    virtual void Add_Ref() { m_refCount++; }
+
+    /**
+     * Reference counting: decrement and delete if count reaches 0
+     */
+    virtual void Release_Ref() 
+    { 
+        if (--m_refCount <= 0) {
+            delete this;
+        }
+    }
 
     /**
      * Lock the buffer for CPU access.
@@ -92,12 +113,13 @@ public:
      */
     uint32_t GetFormat() const { return m_fvf; }
 
-    /**\n     * Get the graphics driver handle for this buffer.
+    /**
+     * Get the graphics driver handle for this buffer.
      * @return Handle used by the graphics driver
      */
     Graphics::VertexBufferHandle GetDriverHandle() const { return m_handle; }
 
-private:
+protected:
     uint32_t m_fvf;                           // Flexible vertex format
     uint32_t m_numVertices;                   // Number of vertices
     uint32_t m_vertexSize;                    // Size per vertex in bytes
@@ -106,14 +128,48 @@ private:
     bool m_isLocked;                          // Is currently locked
     Graphics::VertexBufferHandle m_handle;   // Driver handle
     Graphics::IGraphicsDriver* m_driver;     // Cached driver pointer
+    int m_refCount = 1;                       // Reference count (starts at 1)
 
     // Helper to calculate vertex size from FVF
     uint32_t CalculateVertexSize(uint32_t fvf);
+
+public:
+    /**
+     * Nested WriteLockClass for RAII-style buffer locking.
+     * Allows: DX8VertexBufferClass::WriteLockClass lock(buffer, flags);
+     */
+    class WriteLockClass
+    {
+    public:
+        WriteLockClass(DX8VertexBufferClass* buffer, uint32_t flags = 0)
+            : m_buffer(buffer), m_data(nullptr)
+        {
+            if (m_buffer) {
+                m_data = m_buffer->Lock(flags);
+            }
+        }
+
+        ~WriteLockClass()
+        {
+            if (m_buffer && m_data) {
+                m_buffer->Unlock();
+            }
+        }
+
+        void* Get_Vertex_Array() { return m_data; }
+        void* GetData() { return m_data; }
+
+    private:
+        DX8VertexBufferClass* m_buffer;
+        void* m_data;
+    };
 };
 
 
 /**
  * Compatibility wrapper for legacy DirectX 8 index buffer operations.
+ * 
+ * Supports reference counting for memory management.
  */
 class DX8IndexBufferClass
 {
@@ -129,6 +185,9 @@ public:
         USAGE_SOFTWAREPROCESSING = 2
     };
 
+    // Forward declare WriteLockClass for nested class support
+    class WriteLockClass;
+
     /**
      * Create an index buffer with the specified parameters.
      * @param format Index format (16-bit or 32-bit)
@@ -137,7 +196,34 @@ public:
      */
     DX8IndexBufferClass(IndexFormat format, uint32_t numIndices, UsageFlags usage = USAGE_DEFAULT);
     
-    ~DX8IndexBufferClass();
+    /**
+     * Alternative constructor that takes just count (defaults to 16-bit format)
+     * @param numIndices Number of indices to allocate
+     */
+    DX8IndexBufferClass(uint32_t numIndices)
+        : m_format(INDEX_16BIT), m_numIndices(numIndices), m_indexSize(2),
+          m_usage(USAGE_DEFAULT), m_lockedPtr(nullptr), m_isLocked(false),
+          m_handle(0), m_driver(nullptr), m_refCount(1)
+    {
+        // Delegates to main constructor
+    }
+
+    virtual ~DX8IndexBufferClass();
+
+    /**
+     * Reference counting: increment reference count
+     */
+    virtual void Add_Ref() { m_refCount++; }
+
+    /**
+     * Reference counting: decrement and delete if count reaches 0
+     */
+    virtual void Release_Ref() 
+    { 
+        if (--m_refCount <= 0) {
+            delete this;
+        }
+    }
 
     /**
      * Lock the buffer for CPU access.
@@ -176,7 +262,7 @@ public:
      */
     Graphics::IndexBufferHandle GetDriverHandle() const { return m_handle; }
 
-private:
+protected:
     IndexFormat m_format;                     // Index format (16 or 32 bit)
     uint32_t m_numIndices;                    // Number of indices
     uint32_t m_indexSize;                     // Size per index in bytes
@@ -185,104 +271,47 @@ private:
     bool m_isLocked;                          // Is currently locked
     Graphics::IndexBufferHandle m_handle;    // Driver handle
     Graphics::IGraphicsDriver* m_driver;     // Cached driver pointer
+    int m_refCount = 1;                       // Reference count (starts at 1)
+
+public:
+    /**
+     * Nested WriteLockClass for RAII-style buffer locking.
+     * Allows: DX8IndexBufferClass::WriteLockClass lock(buffer, flags);
+     */
+    class WriteLockClass
+    {
+    public:
+        WriteLockClass(DX8IndexBufferClass* buffer, uint32_t flags = 0)
+            : m_buffer(buffer), m_data(nullptr)
+        {
+            if (m_buffer) {
+                m_data = m_buffer->Lock(flags);
+            }
+        }
+
+        ~WriteLockClass()
+        {
+            if (m_buffer && m_data) {
+                m_buffer->Unlock();
+            }
+        }
+
+        void* Get_Index_Array() { return m_data; }
+        void* GetData() { return m_data; }
+
+    private:
+        DX8IndexBufferClass* m_buffer;
+        void* m_data;
+    };
 };
 
 
 /**
  * Helper class for RAII-style buffer locking.
  * 
- * Used in game code like:
- *   DX8VertexBufferClass::WriteLockClass lock(vertexBuffer, D3DLOCK_DISCARD);
- *   void* data = lock.GetData();
- *   // Modify data...
- *   // Unlock happens automatically in destructor
+ * Legacy support - WriteLockClass is now nested in DX8VertexBufferClass/DX8IndexBufferClass
+ * Use: DX8VertexBufferClass::WriteLockClass lock(buffer, flags);
+ * Or:  DX8IndexBufferClass::WriteLockClass lock(buffer, flags);
  */
-class WriteLockHelper
-{
-public:
-    WriteLockHelper() = default;
-    virtual ~WriteLockHelper() = default;
-    virtual void* GetData() = 0;
-};
-
-// Vertex buffer lock helper
-class VertexBufferWriteLock : public WriteLockHelper
-{
-public:
-    VertexBufferWriteLock(DX8VertexBufferClass* buffer, uint32_t flags = 0)
-        : m_buffer(buffer), m_data(nullptr)
-    {
-        if (m_buffer) {
-            m_data = m_buffer->Lock(flags);
-        }
-    }
-
-    ~VertexBufferWriteLock()
-    {
-        if (m_buffer && m_data) {
-            m_buffer->Unlock();
-        }
-    }
-
-    void* GetData() override { return m_data; }
-
-private:
-    DX8VertexBufferClass* m_buffer;
-    void* m_data;
-};
-
-// Index buffer lock helper
-class IndexBufferWriteLock : public WriteLockHelper
-{
-public:
-    IndexBufferWriteLock(DX8IndexBufferClass* buffer, uint32_t flags = 0)
-        : m_buffer(buffer), m_data(nullptr)
-    {
-        if (m_buffer) {
-            m_data = m_buffer->Lock(flags);
-        }
-    }
-
-    ~IndexBufferWriteLock()
-    {
-        if (m_buffer && m_data) {
-            m_buffer->Unlock();
-        }
-    }
-
-    void* GetData() override { return m_data; }
-
-private:
-    DX8IndexBufferClass* m_buffer;
-    void* m_data;
-};
-
-// Macro to support old code patterns:
-// DX8VertexBufferClass::WriteLockClass lock(buffer, flags);
-template<typename BufferType>
-class WriteLockClass;
-
-template<>
-class WriteLockClass<DX8VertexBufferClass> : public VertexBufferWriteLock
-{
-public:
-    using VertexBufferWriteLock::VertexBufferWriteLock;
-};
-
-template<>
-class WriteLockClass<DX8IndexBufferClass> : public IndexBufferWriteLock
-{
-public:
-    using IndexBufferWriteLock::IndexBufferWriteLock;
-};
-
-// Static accessor pattern support for old code
-namespace DX8VertexBufferClassHelper {
-    template<typename T>
-    class WriteLockClass {
-    public:
-        // This allows: DX8VertexBufferClass::WriteLockClass lock(buffer, flags);
-    };
-}
 
 #endif // DX8BUFFER_COMPAT_H

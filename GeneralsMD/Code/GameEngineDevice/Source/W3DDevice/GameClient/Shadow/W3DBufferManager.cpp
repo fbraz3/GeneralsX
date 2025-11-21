@@ -24,7 +24,9 @@
 
 
 #include "Common/Debug.h"
+#include "WWLib/always.h"  // Phase 42: Needed for W3DNEW macro
 #include "W3DDevice/GameClient/W3DBufferManager.h"
+#include "../../../Core/Libraries/Source/Graphics/dx8buffer_compat.h"  // Phase 42: Explicit DX8 buffer class definitions
 
 W3DBufferManager *TheW3DBufferManager=NULL;	//singleton
 
@@ -188,7 +190,8 @@ Bool W3DBufferManager::ReAcquireResources(void)
 		W3DVertexBuffer *vb = m_W3DVertexBuffers[i];
 		while (vb)
 		{	DEBUG_ASSERTCRASH( vb->m_DX8VertexBuffer == NULL, ("ReAcquire of existing vertex buffer"));
-			vb->m_DX8VertexBuffer=NEW_REF(DX8VertexBufferClass,(FVFTypeIndexList[vb->m_format],vb->m_size,DX8VertexBufferClass::USAGE_DEFAULT));
+			// Phase 42: Create DX8VertexBufferClass instance directly instead of using NEW_REF macro
+			vb->m_DX8VertexBuffer = W3DNEW DX8VertexBufferClass(FVFTypeIndexList[vb->m_format], vb->m_size, DX8VertexBufferClass::USAGE_DEFAULT);
 			DEBUG_ASSERTCRASH( vb->m_DX8VertexBuffer, ("Failed ReAcquire of vertex buffer"));
 			if (!vb->m_DX8VertexBuffer)
 				return FALSE;
@@ -199,7 +202,8 @@ Bool W3DBufferManager::ReAcquireResources(void)
 	W3DIndexBuffer *ib = m_W3DIndexBuffers;
 	while (ib)
 	{	DEBUG_ASSERTCRASH( ib->m_DX8IndexBuffer == NULL, ("ReAcquire of existing index buffer"));
-		ib->m_DX8IndexBuffer=NEW_REF(DX8IndexBufferClass,(ib->m_size,DX8IndexBufferClass::USAGE_DEFAULT));
+		// Phase 42: Create DX8IndexBufferClass instance directly instead of using NEW_REF macro
+		ib->m_DX8IndexBuffer = W3DNEW DX8IndexBufferClass(ib->m_size, DX8IndexBufferClass::USAGE_DEFAULT);
 		DEBUG_ASSERTCRASH( ib->m_DX8IndexBuffer, ("Failed ReAcquire of index buffer"));
 		if (!ib->m_DX8IndexBuffer)
 			return FALSE;
@@ -310,7 +314,8 @@ W3DBufferManager::W3DVertexBufferSlot * W3DBufferManager::allocateSlotStorage(VB
 
 		Int vbSize=__max(DEFAULT_VERTEX_BUFFER_SIZE,size);
 
-		pVB->m_DX8VertexBuffer=NEW_REF(DX8VertexBufferClass,(FVFTypeIndexList[fvfType],vbSize,DX8VertexBufferClass::USAGE_DEFAULT));
+	// Phase 42: Create DX8VertexBufferClass instance directly instead of using NEW_REF macro
+	pVB->m_DX8VertexBuffer = W3DNEW DX8VertexBufferClass(FVFTypeIndexList[fvfType], vbSize, DX8VertexBufferClass::USAGE_DEFAULT);
 		pVB->m_format=fvfType;
 		pVB->m_startFreeIndex=size;
 		pVB->m_size=vbSize;
@@ -430,7 +435,8 @@ W3DBufferManager::W3DIndexBufferSlot * W3DBufferManager::allocateSlotStorage(Int
 
 		Int ibSize=__max(DEFAULT_INDEX_BUFFER_SIZE,size);
 
-		pIB->m_DX8IndexBuffer=NEW_REF(DX8IndexBufferClass,(ibSize,DX8IndexBufferClass::USAGE_DEFAULT));
+	// Phase 42: Create DX8IndexBufferClass instance directly instead of using NEW_REF macro
+	pIB->m_DX8IndexBuffer = W3DNEW DX8IndexBufferClass(ibSize, DX8IndexBufferClass::USAGE_DEFAULT);
 		pIB->m_startFreeIndex=size;
 		pIB->m_size=ibSize;
 		ibSlot=&m_W3DIndexBufferEmptySlots[m_numEmptyIndexSlotsAllocated];

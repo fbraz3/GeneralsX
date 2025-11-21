@@ -32,6 +32,12 @@
 #include "Lib/BaseType.h"
 #include "dx8buffer_compat.h"    // Phase 41: DirectX 8 buffer compatibility layer
 
+// Phase 42: Forward declarations for DX8 buffer classes to ensure proper linking
+// These are actually defined in Core/Libraries/Source/Graphics/dx8buffer_compat.h
+// but we need to ensure they're properly visible in this translation unit
+class DX8VertexBufferClass;
+class DX8IndexBufferClass;
+
 
 // TheSuperHackers @info The max sizes correspond to a number of vertices and indices of a mesh casting shadows
 // in the scene. The more vertices the meshes are supposed to have, the higher these limits need to be.

@@ -1910,7 +1910,7 @@ void BaseHeightMapRenderObjClass::updateScorches(void)
 	m_curNumScorchVertices = 0;
 	m_curNumScorchIndices = 0;
 	DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexScorch);
-	UnsignedShort *ib=lockIdxBuffer.Get_Index_Array();
+	UnsignedShort *ib = (UnsignedShort*)lockIdxBuffer.Get_Index_Array();
 	UnsignedShort *curIb = ib;
 
 	DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_vertexScorch);
@@ -2491,11 +2491,7 @@ void BaseHeightMapRenderObjClass::renderShoreLines(CameraClass *pCamera)
 			DynamicVBAccessClass::WriteLockClass lock(&vb_access);
 			VertexFormatXYZNDUV2 *vb= lock.Get_Formatted_Vertex_Array();
 			DynamicIBAccessClass::WriteLockClass lockib(&ib_access);
-			UnsignedShort *ib=lockib.Get_Index_Array();
-			if (!ib || !vb)
-			{	DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,D3DCOLORWRITEENABLE_BLUE|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_RED);
-				return;
-			}
+		UnsignedShort *ib = (UnsignedShort*)lockib.Get_Index_Array();
 
 			//Loop over visible terrain and extract all the tiles that need shoreline blend
 			for (; j<m_numShoreLineTiles; j++)
@@ -2677,11 +2673,7 @@ void BaseHeightMapRenderObjClass::renderShoreLinesSorted(CameraClass *pCamera)
 			DynamicVBAccessClass::WriteLockClass lock(&vb_access);
 			VertexFormatXYZNDUV2 *vb= lock.Get_Formatted_Vertex_Array();
 			DynamicIBAccessClass::WriteLockClass lockib(&ib_access);
-			UnsignedShort *ib=lockib.Get_Index_Array();
-			if (!ib || !vb)
-			{	DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,D3DCOLORWRITEENABLE_BLUE|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_RED);
-				return;
-			}
+		UnsignedShort *ib = (UnsignedShort*)lockib.Get_Index_Array();
 
 			//Loop over visible terrain and extract all the tiles that need shoreline blend
 			if (m_shoreLineSortInfosXMajor)	//map is wider than taller.

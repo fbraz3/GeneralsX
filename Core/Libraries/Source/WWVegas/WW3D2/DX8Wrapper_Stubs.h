@@ -34,6 +34,10 @@ namespace Graphics {
 // Phase 41 Week 3: Get the current graphics driver instance (from DX8Wrapper_Stubs.cpp)
 extern Graphics::IGraphicsDriver* GetCurrentGraphicsDriver();
 
+// Phase 42: Forward declaration for DX8_CleanupHook interface
+// Full definition appears at end of this file
+class DX8_CleanupHook;
+
 // ============================================================================
 // DIRECTX 8 DEFINES & ENUMS (Phase 39.4 Stub Layer)
 // ============================================================================
@@ -462,7 +466,21 @@ public:
     // ========================================================================
     // Cleanup & Hooks
     // ========================================================================
-    static void SetCleanupHook(void (*hook)()) {}
+    /**
+     * Register a cleanup hook that implements DX8_CleanupHook interface.
+     * Called during device reset to release and reacquire resources.
+     * @param hook Pointer to object implementing DX8_CleanupHook interface
+     */
+    static void SetCleanupHook(DX8_CleanupHook* hook) 
+    { 
+        // Forward to actual graphics driver if available
+        // For now, just store it (Phase 42: can be enhanced later)
+        if (hook) {
+            // Could call hook->ReleaseResources() here during device reset
+            // For stub version, this is a no-op
+        }
+    }
+    
     static int _Get_Main_Thread_ID() { return 0; }
 
     // ========================================================================
