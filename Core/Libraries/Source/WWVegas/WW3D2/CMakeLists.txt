@@ -182,7 +182,7 @@ set(WW3D2_SRC
     texproject.h
     # textdraw.cpp  # Phase 42: Temporarily commented - Font Peek_Texture method signature mismatch
     textdraw.h
-    # texture.cpp  # Phase 42: Temporarily commented - TextureBaseClass and DX8Wrapper API incompatibilities
+    # texture.cpp  # Phase 41 Day 2: Commented - Member accessibility and signature mismatches in TextureClass hierarchy
     texture.h
     # texturefilter.cpp  # Phase 42: Temporarily commented - D3DCAPS8 conversion and DX8 filter capabilities
     texturefilter.h
