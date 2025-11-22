@@ -17,6 +17,8 @@ add_library(graphics_drivers STATIC
     # Phase 41: Stub implementations for missing methods
     phase41_missing_implementations.cpp
     phase41_global_stubs.cpp
+    phase41_cpp_stubs.cpp
+    phase41_final_stubs.cpp
     
     # Vulkan Backend (Primary Implementation)
     Vulkan/vulkan_graphics_driver.h
