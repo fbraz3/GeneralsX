@@ -31,7 +31,6 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Registry.h"
-#include "WWVegas/win32_thread_compat.h"
 #include <filesystem>
 #include <fstream>
 #include <sstream>
