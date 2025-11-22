@@ -584,7 +584,7 @@ WWINLINE int WWMath::Float_To_Int_Floor (const float& f)
 	int mantissa	= (a&((1<<23)-1));								// extract mantissa (without the hidden bit)
 	int r			= ((unsigned int)(mantissa|(1<<23))<<8)>>(31-exponent);	// ((1<<exponent)*(mantissa|hidden bit))>>24 -- (we know that mantissa > (1<<24))
 
-	r = ((r & expsign) ^ (sign)) + ((!((mantissa<<8)&imask)&(expsign^((a-1)>>31)))&sign);	// if (fabs(value)<1.0) value = 0; copy sign; if (value < 0 && value==(int)(value)) value++;
+	r = ((r & expsign) ^ (sign)) + ((!(((mantissa<<8)&imask)&(expsign^((a-1)>>31))))&sign);	// if (fabs(value)<1.0) value = 0; copy sign; if (value < 0 && value==(int)(value)) value++;
 	return r;
 }
 
