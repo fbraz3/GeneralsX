@@ -189,6 +189,8 @@ public:
         if (depthSurface) *depthSurface = nullptr;
         return 0; 
     }
+    virtual int SetRenderState(int state, int value) { return 0; }
+    virtual int SetTextureStageState(int stage, int type, int value) { return 0; }
 };
 
 // Global instance for _Get_D3D_Device8() (Phase 39.4)
@@ -280,6 +282,8 @@ public:
                                int vertex_count) {}
     static void Draw_Triangles(unsigned int buffer_type, int start_index, int polygon_count,
                                int min_vertex_index, int vertex_count) {}
+    // Draw a triangle strip primitive
+    static void Draw_Strip(int start_index, int primitive_count, int min_vertex_index, int vertex_count) {}
 
     // ========================================================================
     // Texture Operations

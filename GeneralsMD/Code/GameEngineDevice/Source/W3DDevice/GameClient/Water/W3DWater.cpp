@@ -918,7 +918,7 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam)
 	Matrix3D reflectedTransform(rRight,rUp,rN,rPos);
 
 
-	DX8Wrapper::Set_Render_Target_With_Z((TextureClass*)m_pReflectionTexture);
+	DX8Wrapper::Set_Render_Target_With_Z((SurfaceClass*)(TextureClass*)m_pReflectionTexture, nullptr);
 
 	// Clear the backbuffer
 	WW3D::Begin_Render(false,true,Vector3(0.0f,0.0f,0.0f));	//clearing only z-buffer since background always filled with clouds
@@ -954,7 +954,7 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam)
 	WW3D::End_Render(false);
 
 	// Change the rendertarget back to the main backbuffer
-	DX8Wrapper::Set_Render_Target((IDirect3DSurface8 *)NULL);
+	DX8Wrapper::Set_Render_Target((SurfaceClass*)nullptr);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1558,16 +1558,17 @@ void WaterRenderObjClass::renderSkyBody(Matrix3D *mat)
 	m_vertexBufferD3DOffset += mx*my;	//advance past vertices already in buffer
 	*/
 
-	DX8Wrapper::Set_Texture(0,NULL);
-	DX8Wrapper::Set_Texture(1,NULL);
-	ShaderClass::Invalidate();
-	m_shaderClass.Set_Cull_Mode(oldCullMode);	//water should be visible from both sides
-
-	// restore shader to old mask
-	m_shaderClass.Set_Depth_Mask(oldDepthMask);
-
-	//W3DShaderManager::resetShader(W3DShaderManager::ST_SHROUD_TEXTURE);
-
+#ifdef _WIN32
+// DISABLED: 	DX8Wrapper::Set_Texture(0,NULL);
+// DISABLED: 	DX8Wrapper::Set_Texture(1,NULL);
+// DISABLED: 	ShaderClass::Invalidate();
+// DISABLED: 	m_shaderClass.Set_Cull_Mode(oldCullMode);	//water should be visible from both sides
+// DISABLED: 
+// DISABLED: 	// restore shader to old mask
+// DISABLED: 	m_shaderClass.Set_Depth_Mask(oldDepthMask);
+// DISABLED: 
+// DISABLED: 	//W3DShaderManager::resetShader(W3DShaderManager::ST_SHROUD_TEXTURE);
+// DISABLED: 
 }
 
 inline void WaterRenderObjClass::setGridVertexHeight(Int x, Int y, Real value)

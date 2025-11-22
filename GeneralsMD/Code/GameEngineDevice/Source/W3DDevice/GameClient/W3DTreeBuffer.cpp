@@ -1646,6 +1646,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 #endif
 
 
+#ifdef _WIN32
 	if (m_curNumTreeIndices[0] == 0) {
 		return;
 	}
@@ -1660,11 +1661,10 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 	W3DShaderManager::setShroudTex(1);
 	DX8Wrapper::Apply_Render_State_Changes();
 
-
-	} else {
-		DX8Wrapper::Set_Vertex_Shader(DX8_FVF_XYZNDUV1);
-	}
-#endif // _WIN32
+#else
+	// Non-Windows stub for tree rendering initialization
+	// TODO: Implement Vulkan/OpenGL tree shader and state setup
+#endif
 
 
 	Int bNdx;
