@@ -115,12 +115,8 @@ inline DamageTypeFlags clearDamageTypeFlag(DamageTypeFlags flags, DamageType dt)
 // Instead of checking against a single damage type, gather the question here so we can have more than one
 inline Bool IsSubdualDamage( DamageType type )
 {
-        // Checks if damage is subdual (non-lethal) category
-        // Unhandled types: DAMAGE_EXPLOSION, DAMAGE_CRUSH, DAMAGE_ARMOR_PIERCING, etc.
-        // These intentionally return FALSE - only specific subdual types are considered subdual damage
-		case DAMAGE_SUBDUAL_VEHICLE:
-		case DAMAGE_SUBDUAL_BUILDING:
-		case DAMAGE_SUBDUAL_UNRESISTABLE:
+	switch(type)
+	{
 			return TRUE;
 	}
 
@@ -132,14 +128,8 @@ inline Bool IsHealthDamagingDamage( DamageType type )
 {
 	// The need for this function brought to you by "Have the guy with no game experience write the weapon code" Foundation.
 	// Health Damage should be one type of WeaponEffect.  Thinking "Weapons can only do damage" is why AoE is boring.
-        // Returns FALSE for non-health-damaging types (status, subdual, killpilot, garrison, etc.)
-        // Unhandled types: DAMAGE_EXPLOSION, DAMAGE_CRUSH, DAMAGE_ARMOR_PIERCING, etc.
-        // These intentionally return FALSE - only specific types modify health values
-		case DAMAGE_SUBDUAL_BUILDING:
-		case DAMAGE_SUBDUAL_UNRESISTABLE:
-		case DAMAGE_KILLPILOT:
-		case DAMAGE_KILL_GARRISONED:
-			return FALSE;
+	switch(type)
+	{
 	}
 
 	return TRUE;
