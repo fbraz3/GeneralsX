@@ -1170,6 +1170,7 @@ target_include_directories(z_gameengine PRIVATE
 target_link_libraries(z_gameengine PRIVATE
     corei_gameengine_private
     zi_always
+    graphics_drivers
 )
 
 target_link_libraries(z_gameengine PUBLIC
