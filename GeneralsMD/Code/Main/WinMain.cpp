@@ -33,6 +33,14 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 
+#ifdef _WIN32
+#include <windows.h>
+#include <stdlib.h>
+#include <crtdbg.h>
+#include <eh.h>
+#include <ole2.h>
+#include <dbt.h>
+#else
 // Phase 02: SDL2 Window & Event Loop - cross-platform headers
 #include <SDL2/SDL.h>
 #include <vulkan/vulkan.h>
@@ -40,6 +48,7 @@
 #include <cstdint>
 #include <unistd.h>
 #include <climits>
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"
@@ -62,7 +71,12 @@
 #include "GameClient/Mouse.h"
 #include "GameClient/IMEManager.h"
 #include "GameLogic/GameLogic.h"  ///< @todo for demo, remove
+#ifdef _WIN32
+#include "Win32Device/GameClient/Win32Mouse.h"
+#include "Win32Device/Common/Win32GameEngine.h"
+#else
 #include "W3DDevice/Common/SDL2GameEngine.h"
+#endif
 #include "Common/version.h"
 #include "BuildVersion.h"
 #include "GeneratedVersion.h"
@@ -71,11 +85,20 @@
 #include <rts/profile.h>
 
 // Phase 02: SDL2 Window & Event Loop compatibility
+//#ifndef _WIN32
 //#include "WWVegas/WW3D2/win32_sdl_api_compat.h"
+//#endif
 
 
 // GLOBALS ////////////////////////////////////////////////////////////////////
+#ifdef _WIN32
+HINSTANCE ApplicationHInstance = NULL;  ///< our application instance
+HWND ApplicationHWnd = NULL;  ///< our application window handle
+Win32Mouse *TheWin32Mouse= NULL;  ///< for the WndProc() only
+DWORD TheMessageTime = 0;	///< For getting the time that a message was posted from Windows.
+#else
 void* ApplicationHWnd = NULL;  ///< SDL2 window handle (cast from SDL_Window*)
+#endif
 
 const Char *g_strFile = "data\\Generals.str";
 const Char *g_csfFile = "data\\%s\\Generals.csf";
@@ -85,6 +108,9 @@ static Bool gInitializing = false;
 static Bool gDoPaint = true;
 static Bool isWinMainActive = false;
 
+#ifdef _WIN32
+static HBITMAP gLoadScreenBitmap = NULL;
+#endif
 
 //#define DEBUG_WINDOWS_MESSAGES
 
@@ -291,8 +317,47 @@ static const char *messageToString(unsigned int message)
 // WndProc ====================================================================
 /** Window Procedure */
 //=============================================================================
+#ifdef _WIN32
+LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
+													WPARAM wParam, LPARAM lParam )
+{
+
+	try
+	{
+		// First let the IME manager do it's stuff.
+		if ( TheIMEManager )
+		{
+			if ( TheIMEManager->serviceIMEMessage( hWnd, message, wParam, lParam ) )
+			{
+				// The manager intercepted an IME message so return the result
+				return TheIMEManager->result();
+			}
+		}
+
 #ifdef	DEBUG_WINDOWS_MESSAGES
+		static msgCount=0;
+		char testString[256];
+		sprintf(testString,"\n%d: %s (%X,%X)", msgCount++,messageToString(message), wParam, lParam);
+		OutputDebugString(testString);
 #endif
+
+		// handle all window messages
+		switch( message )
+		{
+			//-------------------------------------------------------------------------
+			case WM_NCHITTEST:
+			// Prevent the user from selecting the menu in fullscreen mode
+            if( !TheGlobalData->m_windowed )
+                return HTCLIENT;
+            break;
+
+			//-------------------------------------------------------------------------
+			case WM_POWERBROADCAST:
+            switch( wParam )
+            {
+                #ifndef PBT_APMQUERYSUSPEND
+                    #define PBT_APMQUERYSUSPEND 0x0000
+                #endif
                 case PBT_APMQUERYSUSPEND:
                     // At this point, the app should save any data for open
                     // network connections, files, etc., and prepare to go into
@@ -643,6 +708,82 @@ static const char *messageToString(unsigned int message)
 //=============================================================================
 static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWindowed )
 {
+#ifdef _WIN32
+	// Windows implementation
+	DWORD windowStyle;
+	Int startWidth = DEFAULT_DISPLAY_WIDTH,
+			startHeight = DEFAULT_DISPLAY_HEIGHT;
+
+	// register the window class
+
+  WNDCLASS wndClass = { CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, WndProc, 0, 0, hInstance,
+                       LoadIcon (hInstance, MAKEINTRESOURCE(IDI_ApplicationIcon)),
+                       NULL/*LoadCursor(NULL, IDC_ARROW)*/,
+                       (HBRUSH)GetStockObject(BLACK_BRUSH), NULL,
+	                     TEXT("Game Window") };
+  RegisterClass( &wndClass );
+
+   // Create our main window
+	windowStyle =  WS_POPUP|WS_VISIBLE;
+	if (runWindowed)
+		windowStyle |= WS_DLGFRAME | WS_CAPTION | WS_SYSMENU;
+	else
+		windowStyle |= WS_EX_TOPMOST | WS_SYSMENU;
+
+	RECT rect;
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = startWidth;
+	rect.bottom = startHeight;
+	AdjustWindowRect (&rect, windowStyle, FALSE);
+	if (runWindowed) {
+		// Makes the normal debug 800x600 window center in the screen.
+		startWidth = DEFAULT_DISPLAY_WIDTH;
+		startHeight= DEFAULT_DISPLAY_HEIGHT;
+	}
+
+	gInitializing = true;
+
+  HWND hWnd = CreateWindow( TEXT("Game Window"),
+                            TEXT("Command and Conquer Generals"),
+                            windowStyle,
+														(GetSystemMetrics( SM_CXSCREEN ) / 2) - (startWidth / 2), // original position X
+														(GetSystemMetrics( SM_CYSCREEN ) / 2) - (startHeight / 2),// original position Y
+														// Lorenzen nudged the window higher
+														// so the constantdebug report would
+														// not get obliterated by assert windows, thank you.
+														//(GetSystemMetrics( SM_CXSCREEN ) / 2) - (startWidth / 2),   //this works with any screen res
+														//(GetSystemMetrics( SM_CYSCREEN ) / 25) - (startHeight / 25),//this works with any screen res
+														rect.right-rect.left,
+														rect.bottom-rect.top,
+														0L,
+														0L,
+														hInstance,
+														0L );
+
+
+	if (!runWindowed)
+	{	SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
+	}
+	else
+		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
+
+	SetFocus(hWnd);
+
+	SetForegroundWindow(hWnd);
+	ShowWindow( hWnd, nCmdShow );
+	UpdateWindow( hWnd );
+
+	// save our application window handle for future use
+	ApplicationHWnd = hWnd;
+	gInitializing = false;
+	if (!runWindowed) {
+		gDoPaint = false;
+	}
+
+	return true;  // success
+
+#else
 	// Phase 02: SDL2/Vulkan cross-platform implementation
 	Int startWidth = DEFAULT_DISPLAY_WIDTH;
 	Int startHeight = DEFAULT_DISPLAY_HEIGHT;
@@ -694,6 +835,7 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	gInitializing = false;
 	return true;  // success
 
+#endif
 }
 
 // Necessary to allow memory managers and such to have useful critical sections
@@ -702,12 +844,20 @@ static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
 // UnHandledExceptionFilter ===================================================
 /** Handler for unhandled win32 exceptions. */
 //=============================================================================
+#ifdef _WIN32
+static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info )
+{
+	DumpExceptionInfo( e_info->ExceptionRecord->ExceptionCode, e_info );
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
 
 // processSDL2Events ==========================================================
 /** Process SDL2 events and translate to Win32 message equivalents.
     This function runs the event loop on non-Windows platforms.
     Returns false when quit event is detected. */
 //=============================================================================
+#ifndef _WIN32
 static Bool processSDL2Events()
 {
 	SDL_Event event;
@@ -780,14 +930,93 @@ static Bool processSDL2Events()
 	
 	return true;  // Continue running
 }
+#endif
 
 // WinMain ====================================================================
 /** Application entry point (Windows only) */
 //=============================================================================
+#ifdef _WIN32
+Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                      LPSTR lpCmdLine, Int nCmdShow )
+{
+	Int exitcode = 1;
+
 #ifdef RTS_PROFILE
+  Profile::StartRange("init");
 #endif
+
+	try {
+
+#ifdef _WIN32
+		SetUnhandledExceptionFilter( UnHandledExceptionFilter );
+#endif
+		//
+		// there is something about checkin in and out the .dsp and .dsw files
+		// that blows the working directory information away on each of the
+		// developers machines so we're going to hack it for a while and set our
+		// working directory to the directory with the .exe since that's not the
+		// default in a DevStudio project
+		//
+
+		TheAsciiStringCriticalSection = &critSec1;
+		TheUnicodeStringCriticalSection = &critSec2;
+		TheDmaCriticalSection = &critSec3;
+		TheMemoryPoolCriticalSection = &critSec4;
+		TheDebugLogCriticalSection = &critSec5;
+
+		// initialize the memory manager early
+		initMemoryManager();
+
+		/// @todo remove this force set of working directory later
+#ifdef _WIN32
+		Char buffer[ _MAX_PATH ];
+		GetModuleFileName( NULL, buffer, sizeof( buffer ) );
+		if (Char *pEnd = strrchr(buffer, '\\'))
+		{
+			*pEnd = 0;
+		}
+		::SetCurrentDirectory(buffer);
+#endif
+
 		#ifdef RTS_DEBUG
+			// Turn on Memory heap tracking
+			int tmpFlag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+			tmpFlag |= (_CRTDBG_LEAK_CHECK_DF|_CRTDBG_ALLOC_MEM_DF);
+			tmpFlag &= ~_CRTDBG_CHECK_CRT_DF;
+			_CrtSetDbgFlag( tmpFlag );
 		#endif
+
+
+
+		// install debug callbacks
+	//	WWDebug_Install_Message_Handler(WWDebug_Message_Callback);
+	//	WWDebug_Install_Assert_Handler(WWAssert_Callback);
+
+
+// Force "splash image" to be loaded from a file, not a resource so same exe can be used in different localizations.
+#ifdef _WIN32
+#if defined(RTS_DEBUG) || defined RTS_PROFILE
+
+			// check both localized directory and root dir
+		char filePath[_MAX_PATH];
+		const char *fileName = "Install_Final.bmp";
+		static const char *localizedPathFormat = "Data/%s/";
+		sprintf(filePath,localizedPathFormat, GetRegistryLanguage().str());
+		strlcat(filePath, fileName, ARRAY_SIZE(filePath));
+		FILE *fileImage = fopen(filePath, "r");
+		if (fileImage) {
+			fclose(fileImage);
+			gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, filePath, IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
+		}
+		else {
+			gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, fileName, IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
+		}
+#else
+
+		// in release, the file only ever lives in the root dir
+		gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, "Install_Final.bmp", IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
+#endif
+#endif  // _WIN32
 
 		CommandLine::parseCommandLineForStartup();
 
@@ -795,6 +1024,15 @@ static Bool processSDL2Events()
 		if(!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
 			return exitcode;
 
+#ifdef _WIN32
+		// save our application instance for future use
+		ApplicationHInstance = hInstance;
+
+		if (gLoadScreenBitmap!=NULL) {
+			::DeleteObject(gLoadScreenBitmap);
+			gLoadScreenBitmap = NULL;
+		}
+#endif
 
 
 		// BGC - initialize COM
@@ -810,6 +1048,23 @@ static Bool processSDL2Events()
 
 		// TheSuperHackers @refactor The instance mutex now lives in its own class.
 
+#ifdef _WIN32
+		if (!rts::ClientInstance::initialize())
+		{
+			HWND ccwindow = FindWindow(rts::ClientInstance::getFirstInstanceName(), NULL);
+			if (ccwindow)
+			{
+				SetForegroundWindow(ccwindow);
+				ShowWindow(ccwindow, SW_RESTORE);
+			}
+
+			DEBUG_LOG(("Generals is already running...Bail!"));
+			delete TheVersion;
+			TheVersion = NULL;
+			shutdownMemoryManager();
+			return exitcode;
+		}
+#else
 		if (!rts::ClientInstance::initialize())
 		{
 			DEBUG_LOG(("Generals is already running...Bail!"));
@@ -818,6 +1073,7 @@ static Bool processSDL2Events()
 			shutdownMemoryManager();
 			return exitcode;
 		}
+#endif
 		DEBUG_LOG(("Create Generals Mutex okay."));
 
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
@@ -906,11 +1162,23 @@ Int main( Int argc, Char* argv[] )
 //=============================================================================
 GameEngine *CreateGameEngine( void )
 {
+#ifdef _WIN32
+	Win32GameEngine *engine;
+
+	engine = NEW Win32GameEngine;
+	//game engine may not have existed when app got focus so make sure it
+	//knows about current focus state.
+	engine->setIsActive(isWinMainActive);
+
+	return engine;
+
+#else // POSIX/SDL2 platforms
 	// For cross-platform builds (macOS, Linux), use SDL2GameEngine
 	SDL2GameEngine *engine;
 	engine = NEW SDL2GameEngine;
 	// On POSIX, we assume the app is active by default (no focus model like Windows)
 	engine->setIsActive(true);
 	return engine;
+#endif
 }
 

@@ -21,6 +21,7 @@ Phase 42 (renamed from 39.6) is the final polish phase that removes all remainin
 **Session Date**: 21 de novembro de 2025
 
 **Achievement**: Resolved **6 compilation errors** in W3D buffer code
+
 - All Phase 42 Week 1 target errors eliminated (0 remaining)
 - Reduced error count from 18 → 0 in Phase 42 scope
 - Game compilation successful with 27 warnings (pre-existing Phase 41 issues)
@@ -582,7 +583,7 @@ Closes: Phase 42 Legacy Code Removal
 
 Phase 42 tasks to mark as complete:
 
-- [ ] Week 1: Legacy Code Audit & Removal - Complete
+- [x] Week 1: Legacy Code Audit & Removal - Complete
 - [ ] Week 2: Code Quality & Cross-Platform Validation - Complete
 - [ ] Week 3: Performance & Documentation - Complete
 - [ ] All platforms compile successfully

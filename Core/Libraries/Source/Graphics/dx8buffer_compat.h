@@ -209,6 +209,55 @@ public:
         uint32_t m_offset;
         uint32_t m_count;
     };
+
+    /**
+     * Get this buffer as a DX8VertexBufferClass pointer.
+     * @return Pointer to this buffer
+     */
+    DX8VertexBufferClass* Get_DX8_Vertex_Buffer() { return this; }
+
+    /**
+     * Struct for FVF (Flexible Vertex Format) information
+     */
+    struct FVFInfo
+    {
+        uint32_t m_fvf;
+        uint32_t m_vertexSize;
+
+        uint32_t Get_FVF_Size() const { return m_vertexSize; }
+    };
+
+    /**
+     * Get FVF information for this buffer.
+     * @return FVFInfo struct with format and size
+     */
+    FVFInfo FVF_Info() const
+    {
+        return FVFInfo{m_fvf, m_vertexSize};
+    }
+
+    /**
+     * DirectX 8 style Lock() overload for compatibility
+     * @param offset Offset in vertices
+     * @param size Number of vertices to lock
+     * @param ppData Output pointer to locked data
+     * @param flags Lock flags
+     * @return HRESULT-compatible result code
+     */
+    int Lock(uint32_t offset, uint32_t size, unsigned char** ppData, uint32_t flags = 0)
+    {
+        void* lockPtr = this->Lock(flags);
+        if (!lockPtr) {
+            if (ppData) *ppData = nullptr;
+            return -1;
+        }
+        if (ppData) {
+            // Advance pointer by offset (in vertices)
+            uint8_t* basePtr = static_cast<uint8_t*>(lockPtr);
+            *ppData = basePtr + (offset * m_vertexSize);
+        }
+        return 0;
+    }
 };
 
 
