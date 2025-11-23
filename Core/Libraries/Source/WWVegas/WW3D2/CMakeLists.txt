@@ -178,6 +178,10 @@ set(WW3D2_SRC
     stripoptimizer.h
     # surfaceclass.cpp  # Phase: Temporarily commented - DirectX types and D3DXLoadSurfaceFromSurface API
     surfaceclass.h
+    
+    # Phase 43.1: Surface & Texture Foundation (Real implementations)
+    phase43_surface_texture.cpp
+    
     # texproject.cpp  # Phase: Temporarily commented - DX8Wrapper render target API incompatibilities
     texproject.h
     # textdraw.cpp  # Phase 42: Temporarily commented - Font Peek_Texture method signature mismatch
