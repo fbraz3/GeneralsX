@@ -292,7 +292,8 @@ public:
     static void Set_DX8_Texture(int stage, void* d3d_texture) {}
     static void* _Create_DX8_Texture(int width, int height, int format) { return nullptr; }
     static void* _Create_DX8_Texture(int width, int height, int format, int mip_levels) { return nullptr; }
-    static void* _Create_DX8_Surface(int width, int height, int format) { return nullptr; }
+    static IDirect3DSurface8* _Create_DX8_Surface(int width, int height, int format);
+    static IDirect3DSurface8* _Create_DX8_Surface(const char* filename);
     static void* _Create_DX8_ZTexture(int width, int height, int format) { return nullptr; }
     static void* _Create_DX8_Cube_Texture(int width, int height, int format) { return nullptr; }
     static void* _Create_DX8_Volume_Texture(int width, int height, int depth, int format) 

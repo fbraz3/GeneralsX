@@ -54,6 +54,7 @@
 #include "vector2i.h"
 #include "colorspace.h"
 #include "bound.h"
+#include <cstdint>  // Phase 43.1: For uintptr_t type
 // #include <d3dx8.h // Phase 39.4: Removed with DirectX 8 cleanup>
 
 /***********************************************************************************************
@@ -503,7 +504,7 @@ void SurfaceClass::Copy(
 		if (dest.right>int(sd.Width)) dest.right=int(sd.Width);
 		if (dest.bottom>int(sd.Height)) dest.bottom=int(sd.Height);
 
-		DX8_ErrorCode(D3DXLoadSurfaceFromSurface(D3DSurface,NULL,&dest,other->D3DSurface,NULL,&src,D3DX_FILTER_NONE,0));
+                // Phase 43.1: TODO - Implement surface copy without D3DXLoadSurfaceFromSurface
 	}
 }
 
@@ -545,7 +546,7 @@ void SurfaceClass::Stretch_Copy(
 	dest.top=dsty;
 	dest.bottom=dsty+dstheight;
 
-	DX8_ErrorCode(D3DXLoadSurfaceFromSurface(D3DSurface,NULL,&dest,other->D3DSurface,NULL,&src,D3DX_FILTER_TRIANGLE ,0));
+                // Phase 43.1: TODO - Implement surface copy without D3DXLoadSurfaceFromSurface
 }
 
 /***********************************************************************************************
@@ -604,7 +605,7 @@ void SurfaceClass::FindBB(Vector2i *min,Vector2i*max)
 		for (x = min->I; x < max->I; x++) {
 
 			// HY - this is not endian safe
-			unsigned char *alpha=(unsigned char*) ((unsigned int)lock_rect.pBits+(y-min->J)*lock_rect.Pitch+(x-min->I)*size);
+			unsigned char *alpha=(unsigned char*)((uintptr_t)lock_rect.pBits +(y-min->J)*lock_rect.Pitch+(x-min->I)*size);
 			unsigned char myalpha=alpha[size-1];
 			myalpha=(myalpha>>(8-alphabits)) & mask;
 			if (myalpha) {
@@ -678,7 +679,7 @@ bool SurfaceClass::Is_Transparent_Column(unsigned int column)
 	for (y = 0; y < (int) sd.Height; y++)
 	{
 		// HY - this is not endian safe
-		unsigned char *alpha=(unsigned char*) ((unsigned int)lock_rect.pBits+y*lock_rect.Pitch);
+		unsigned char *alpha=(unsigned char*)((uintptr_t)lock_rect.pBits +y*lock_rect.Pitch);
 		unsigned char myalpha=alpha[size-1];
 		myalpha=(myalpha>>(8-alphabits)) & mask;
 		if (myalpha) {

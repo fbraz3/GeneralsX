@@ -170,3 +170,40 @@ extern DX8Caps* Get_DX8_Caps_Ptr() {
  */
 const int dynamic_fvf_type = 0;
 
+// ============================================================================
+// Phase 43.1: Surface Creation (for texture system foundation)
+// ============================================================================
+
+/**
+ * Create an off-screen plain surface for texture data
+ * Phase 43.1: Provides cross-platform surface creation
+ * 
+ * Parameter format is expected to be a WW3DFormat enum value cast to int
+ */
+IDirect3DSurface8* DX8Wrapper::_Create_DX8_Surface(int width, int height, int format)
+{
+    // Phase 43.1: This method creates a surface using the graphics backend
+    // For now, we return nullptr as a placeholder
+    // The actual implementation will be in the graphics backend layer
+    printf("[Phase 43.1] DX8Wrapper::_Create_DX8_Surface(width=%d, height=%d, format=%d)\n", 
+           width, height, format);
+    
+    // TODO: Replace with actual graphics backend surface creation
+    // return g_graphics_driver->CreateSurface(width, height, (WW3DFormat)format);
+    return nullptr;
+}
+
+/**
+ * Load a surface from a file
+ * Phase 43.1: Provides cross-platform surface loading from disk
+ */
+IDirect3DSurface8* DX8Wrapper::_Create_DX8_Surface(const char* filename)
+{
+    // Phase 43.1: This method loads a surface from a file
+    printf("[Phase 43.1] DX8Wrapper::_Create_DX8_Surface(filename='%s')\n", filename);
+    
+    // TODO: Replace with actual file loading implementation
+    // return TextureLoader::Load_Surface_Immediate(filename, WW3D_FORMAT_UNKNOWN, true);
+    return nullptr;
+}
+
