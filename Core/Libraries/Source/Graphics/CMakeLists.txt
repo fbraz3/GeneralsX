@@ -19,6 +19,7 @@ add_library(graphics_drivers STATIC
     phase41_global_stubs.cpp
     phase41_cpp_stubs.cpp
     phase41_final_stubs.cpp
+    phase41_texture_stubs_extended.cpp
     
     # Vulkan Backend (Primary Implementation)
     Vulkan/vulkan_graphics_driver.h
