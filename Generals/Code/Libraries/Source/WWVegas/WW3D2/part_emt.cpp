@@ -49,8 +49,6 @@
 #include "win32_sdl_types_compat.h"  // For _strdup macro
 #include <limits.h>
 #include <gcd_lcm.h>
-#include "texture.h"
-#include "part_ldr.h"
 
 
 // Global variable which is only used to communicate the worldspace emitter

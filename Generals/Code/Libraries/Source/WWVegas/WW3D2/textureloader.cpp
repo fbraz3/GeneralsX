@@ -32,7 +32,6 @@
 #include "TARGA.h"
 // #include <d3dx8tex.h> // Phase 39.4: Removed with DirectX 8 cleanup
 #include "wwmemlog.h"
-#include "texture.h"
 #include "formconv.h"
 #include "texturethumbnail.h"
 #include "ddsfile.h"
