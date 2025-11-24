@@ -40,6 +40,7 @@
 	#pragma comment(lib, "iphlpapi.lib")
 #else
 	#include <sys/socket.h>
+	#include <net/if.h>
 	#include <ifaddrs.h>
 	#include <netinet/in.h>
 	#include <arpa/inet.h>
@@ -83,22 +84,29 @@ IPEnumeration::~IPEnumeration()
  * Returns: Pointer to first EnumeratedIP node in linked list (or NULL if none)
  * 
  * Implementation Notes:
- * - WIN32: Uses GetAdaptersInfo() to enumerate interfaces
- * - POSIX: Uses getifaddrs() to enumerate interfaces (BSD/Linux/macOS)
- * - Filters out loopback interfaces on POSIX systems
- * - Each interface creates an EnumeratedIP node linked in a list
+ * - WIN32: GetAdaptersInfo() API for Winsock2 interface enumeration
+ * - POSIX: getifaddrs() API for cross-platform interface discovery
+ * - Future: Phase 43.5 will implement actual interface enumeration
+ * 
+ * Current Status (Phase 43.4):
+ * - Stub implementation returning NULL (satisfies symbol requirement)
+ * - Full implementation deferred to Phase 43.5
+ * - Headers and placeholder logic prepared for interface enumeration
+ * - No blocking on network initialization
  */
 EnumeratedIP *IPEnumeration::getAddresses(void)
 {
-	// No additional implementation needed for Phase 43.4
-	// The class is already properly declared in IPEnumeration.h
-	// This file serves as a placeholder for network enumeration implementations
-	// that may be added during Phase 43.4 or later phases.
+	// Phase 43.5 implementation will add actual interface enumeration
+	// For now, return NULL to satisfy linker symbol requirement
+	// and prevent blocking on network discovery during game startup.
+	//
+	// Win32 approach: GetAdaptersInfo() from iphlpapi.h
+	// POSIX approach: getifaddrs() with IFF_UP and IFF_LOOPBACK filtering
+	//
+	// See Transport class for active network operations.
 	
-	// Existing code in Transport.cpp handles the network initialization
-	// and GetAddress would be called by LANAPI class when needed.
-	
-	return NULL;  // Placeholder: no addresses to return for now
+	m_IPlist = NULL;  // Placeholder: no addresses returned yet
+	return m_IPlist;
 }
 
 /**

@@ -136,12 +136,38 @@ Transport::~Transport(void)
  * Transport::init (IP string version)
  * Initialize transport with hostname/IP string
  * Delegates to init(UnsignedInt, UnsignedShort) after DNS resolution
+ * 
+ * Win32: gethostbyname() for DNS resolution via Winsock
+ * POSIX: getaddrinfo() or gethostbyname() for cross-platform resolution
  */
 Bool Transport::init(AsciiString ip, UnsignedShort port)
 {
-	// DNS resolution would happen here in real implementation
-	// For now, delegate to integer IP version
-	return init(INADDR_ANY, port);  // Placeholder
+	// Resolve hostname to IP address
+	UnsignedInt ipaddr = INADDR_ANY;
+	const char *ipStr = ip.str();  // Convert AsciiString to const char*
+
+#ifdef _WINDOWS
+	// Win32: Use gethostbyname for hostname resolution
+	struct hostent *phe = gethostbyname(ipStr);
+	if (phe != NULL) {
+		memcpy(&ipaddr, phe->h_addr_list[0], sizeof(UnsignedInt));
+	}
+#else
+	// POSIX: Use inet_pton or inet_aton for IP address parsing
+	// First try direct IP address parsing
+	struct in_addr inaddr;
+	if (inet_aton(ipStr, &inaddr) != 0) {
+		ipaddr = inaddr.s_addr;
+	} else {
+		// If not direct IP, try DNS resolution via gethostbyname
+		struct hostent *phe = gethostbyname(ipStr);
+		if (phe != NULL && phe->h_addr_list[0] != NULL) {
+			memcpy(&ipaddr, phe->h_addr_list[0], sizeof(UnsignedInt));
+		}
+	}
+#endif
+
+	return init(ipaddr, port);
 }
 
 /**
