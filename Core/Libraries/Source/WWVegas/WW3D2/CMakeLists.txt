@@ -185,6 +185,9 @@ set(WW3D2_SRC
     # Phase 43.2: Advanced Texture Systems (Real implementations)
     phase43_2_advanced_textures.cpp
     
+    # Phase 43.3: Rendering Infrastructure (Real implementations)
+    phase43_3_sorting_renderer.cpp
+    
     # texproject.cpp  # Phase: Temporarily commented - DX8Wrapper render target API incompatibilities
     texproject.h
     # textdraw.cpp  # Phase 42: Temporarily commented - Font Peek_Texture method signature mismatch
