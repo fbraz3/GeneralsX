@@ -1143,6 +1143,10 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/phase43_4_transport.cpp
     Source/GameNetwork/phase43_4_udp.cpp
     Source/GameNetwork/phase43_4_ip_enumeration.cpp
+    # Phase 43.5: GameSpy Integration (Globals, Staging, UI)
+    Source/GameNetwork/phase43_5_gamespy_globals.cpp
+    Source/GameNetwork/phase43_5_gamespy_staging.cpp
+    Source/GameNetwork/phase43_5_gamespy_ui.cpp
     Source/GameNetwork/User.cpp
     Source/GameNetwork/WOLBrowser/WebBrowser.cpp
 #    Source/Precompiled/PreRTS.cpp
