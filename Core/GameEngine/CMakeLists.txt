@@ -1139,6 +1139,10 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/NetworkUtil.cpp
     #Source/GameNetwork/Transport.cpp # Phase 39.4: Disabled for cross-platform
     #Source/GameNetwork/udp.cpp # Phase 39.4: Disabled for cross-platform
+    # Phase 43.4: Transport Layer Implementation
+    Source/GameNetwork/phase43_4_transport.cpp
+    Source/GameNetwork/phase43_4_udp.cpp
+    Source/GameNetwork/phase43_4_ip_enumeration.cpp
     Source/GameNetwork/User.cpp
     Source/GameNetwork/WOLBrowser/WebBrowser.cpp
 #    Source/Precompiled/PreRTS.cpp
