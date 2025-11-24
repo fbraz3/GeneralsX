@@ -20,33 +20,210 @@
  * Phase 43.5: GameSpy Integration - UI & Overlay Implementation
  * 
  * Overlay windows and UI functions for GameSpy features.
- * Cross-platform: Win32 (GameSpy UI SDK), POSIX (SDL2 UI)
+ * Real implementations copied from GameSpyOverlay.cpp production code.
  * 
  * Architecture:
- * - Win32: GameSpy native overlays via UI SDK
- * - POSIX: SDL2-based overlay rendering
+ * - Cross-platform: WindowLayout system used for both Win32 and POSIX
  * - Vulkan: Render integration via existing UI system
- * - SDL2: Event handling and window management
+ * - Message boxes: GameWindow system with callback support
  */
 
 #include "PreRTS.h"
 
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameClient/WindowLayout.h"
+#include "GameClient/MessageBox.h"
+#include "GameClient/GameWindowManager.h"
 #include "GameClient/Gadget.h"
 
 // ============================================================================
-// Static Overlay State Management
+// Static Message Box Management
 // ============================================================================
 
 /**
- * Static overlay state tracking
- * Maintains which overlay windows are currently open
+ * Static message box window and callback tracking
+ * Maintains pointer to active message box and callback functions
  */
-static Bool g_overlayOpen[GSOVERLAY_MAX] = {FALSE};
+static GameWindow *g_messageBoxWindow = NULL;
+static GameWinMsgBoxFunc g_okFunc = NULL;
+static GameWinMsgBoxFunc g_cancelFunc = NULL;
+
+/**
+ * Static overlay layout storage
+ * Maintains WindowLayout pointers for each overlay type
+ */
+static WindowLayout *g_overlayLayouts[GSOVERLAY_MAX] = {
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
+
+/**
+ * Overlay window file paths
+ * Must be in same order as GSOverlayType enum
+ */
+static const char * g_gsOverlayFiles[GSOVERLAY_MAX] =
+{
+	"Menus/PopupPlayerInfo.wnd",		// GSOVERLAY_PLAYERINFO
+	"Menus/WOLMapSelectMenu.wnd",		// GSOVERLAY_MAPSELECT
+	"Menus/WOLBuddyOverlay.wnd",		// GSOVERLAY_BUDDY
+	"Menus/WOLPageOverlay.wnd",			// GSOVERLAY_PAGE
+	"Menus/PopupHostGame.wnd",			// GSOVERLAY_GAMEOPTIONS
+	"Menus/PopupJoinGame.wnd",			// GSOVERLAY_GAMEPASSWORD
+	"Menus/PopupLadderSelect.wnd",		// GSOVERLAY_LADDERSELECT
+	"Menus/PopupLocaleSelect.wnd",		// GSOVERLAY_LOCALESELECT
+	"Menus/OptionsMenu.wnd",				// GSOVERLAY_OPTIONS
+};
 
 // ============================================================================
-// GameSpy Overlay Functions
+// Static Message Box Callbacks
+// ============================================================================
+
+/**
+ * messageBoxOk
+ * Internal callback when Ok button is clicked in message box
+ */
+static void messageBoxOk(void)
+{
+	g_messageBoxWindow = NULL;
+	if (g_okFunc) {
+		g_okFunc();
+		g_okFunc = NULL;
+	}
+}
+
+/**
+ * messageBoxCancel
+ * Internal callback when Cancel button is clicked in message box
+ */
+static void messageBoxCancel(void)
+{
+	g_messageBoxWindow = NULL;
+	if (g_cancelFunc) {
+		g_cancelFunc();
+		g_cancelFunc = NULL;
+	}
+}
+
+// ============================================================================
+// Message Box Functions (Real Implementation)
+// ============================================================================
+
+/**
+ * ClearGSMessageBoxes
+ * Tear down any active GameSpy message boxes
+ * 
+ * Implementation:
+ * - Destroys active message box window via WindowManager
+ * - Clears all callback pointers
+ * - Called before opening new message boxes (ensures only one at a time)
+ * ✅ COMPLETE: Real implementation
+ */
+void ClearGSMessageBoxes(void)
+{
+	if (g_messageBoxWindow) {
+		TheWindowManager->winDestroy(g_messageBoxWindow);
+		g_messageBoxWindow = NULL;
+	}
+
+	if (g_okFunc) {
+		g_okFunc = NULL;
+	}
+
+	if (g_cancelFunc) {
+		g_cancelFunc = NULL;
+	}
+}
+
+/**
+ * GSMessageBoxOk
+ * Display a message box with single "Ok" button
+ * 
+ * Parameters:
+ * - titleString: Window title
+ * - bodyString: Message text
+ * - okFunc: Callback function when Ok pressed (optional, may be NULL)
+ * 
+ * Implementation:
+ * - Clears any previous message box first
+ * - Creates new message box via MessageBoxOk()
+ * - Saves callback for execution when user clicks Ok
+ * ✅ COMPLETE: Real implementation
+ */
+void GSMessageBoxOk(UnicodeString titleString, UnicodeString bodyString, GameWinMsgBoxFunc okFunc)
+{
+	ClearGSMessageBoxes();
+	g_messageBoxWindow = MessageBoxOk(titleString, bodyString, messageBoxOk);
+	g_okFunc = okFunc;
+}
+
+/**
+ * GSMessageBoxOkCancel
+ * Display a message box with "Ok" and "Cancel" buttons
+ * 
+ * Parameters:
+ * - title: Window title
+ * - message: Message text
+ * - okFunc: Callback for Ok button
+ * - cancelFunc: Callback for Cancel button
+ * 
+ * Implementation:
+ * - Clears any previous message box first
+ * - Creates two-button message box via MessageBoxOkCancel()
+ * - Saves both callbacks for execution on button click
+ * ✅ COMPLETE: Real implementation
+ */
+void GSMessageBoxOkCancel(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc okFunc, GameWinMsgBoxFunc cancelFunc)
+{
+	ClearGSMessageBoxes();
+	g_messageBoxWindow = MessageBoxOkCancel(title, message, messageBoxOk, messageBoxCancel);
+	g_okFunc = okFunc;
+	g_cancelFunc = cancelFunc;
+}
+
+/**
+ * GSMessageBoxYesNo
+ * Display a message box with "Yes" and "No" buttons
+ * 
+ * Parameters:
+ * - title: Window title
+ * - message: Message text
+ * - yesFunc: Callback for Yes button
+ * - noFunc: Callback for No button
+ * 
+ * Implementation:
+ * - Clears any previous message box first
+ * - Creates two-button message box via MessageBoxYesNo()
+ * - Saves both callbacks (yes->okFunc, no->cancelFunc) for execution
+ * ✅ COMPLETE: Real implementation
+ */
+void GSMessageBoxYesNo(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc yesFunc, GameWinMsgBoxFunc noFunc)
+{
+	ClearGSMessageBoxes();
+	g_messageBoxWindow = MessageBoxYesNo(title, message, messageBoxOk, messageBoxCancel);
+	g_okFunc = yesFunc;
+	g_cancelFunc = noFunc;
+}
+
+/**
+ * RaiseGSMessageBox
+ * Bring GameSpy message box to foreground
+ * 
+ * Implementation:
+ * - Called when transitioning screens while message box is active
+ * - Ensures message box remains visible above new screen
+ * - Calls winBringToTop() on message box window
+ * ✅ COMPLETE: Real implementation
+ */
+void RaiseGSMessageBox(void)
+{
+	if (!g_messageBoxWindow) {
+		return;
+	}
+
+	g_messageBoxWindow->winBringToTop();
+}
+
+// ============================================================================
+// Overlay Functions (Real Implementation)
 // ============================================================================
 
 /**
@@ -56,11 +233,12 @@ static Bool g_overlayOpen[GSOVERLAY_MAX] = {FALSE};
  * Parameters:
  * - overlayType: One of GSOverlayType enum values
  * 
- * Architecture:
- * - Win32: Uses GameSpy overlay system or native windows
- * - POSIX: Render with SDL2 UI framework
- * - Vulkan: Integrate with existing WindowLayout system
- * - Event handling: Cross-platform input via SDL2
+ * Implementation:
+ * - Loads overlay .wnd file template
+ * - Creates WindowLayout instance from template
+ * - Runs initialization callbacks
+ * - Makes overlay visible and brings to foreground
+ * ✅ COMPLETE: Real implementation
  */
 void GameSpyOpenOverlay(GSOverlayType overlayType)
 {
@@ -69,26 +247,23 @@ void GameSpyOpenOverlay(GSOverlayType overlayType)
 	}
 
 	// Check if already open
-	if (g_overlayOpen[overlayType]) {
-		return;  // Already displayed
+	if (g_overlayLayouts[overlayType] != NULL) {
+		// Already open - just bring to front
+		g_overlayLayouts[overlayType]->bringForward();
+		return;
 	}
 
-	g_overlayOpen[overlayType] = TRUE;
-
-	// Platform-specific overlay creation
-#ifdef _WINDOWS
-	// Win32: Use GameSpy SDK or native CreateWindow
-	// TODO: Implement Win32 overlay window creation
-	// - Load overlay template from GameSpy SDK
-	// - Register window class if needed
-	// - Create modeless dialog
-#else
-	// POSIX: Use SDL2 window management
-	// TODO: Implement SDL2 overlay window
-	// - Create SDL2 window for overlay
-	// - Initialize UI framework renderer
-	// - Load overlay layout from resources
-#endif
+	// Load and initialize overlay layout from template
+	g_overlayLayouts[overlayType] = TheWindowManager->winCreateLayout(AsciiString(g_gsOverlayFiles[overlayType]));
+	
+	if (g_overlayLayouts[overlayType]) {
+		// Run initialization callbacks
+		g_overlayLayouts[overlayType]->runInit();
+		// Show overlay window
+		g_overlayLayouts[overlayType]->hide(FALSE);
+		// Bring to foreground
+		g_overlayLayouts[overlayType]->bringForward();
+	}
 }
 
 /**
@@ -98,10 +273,12 @@ void GameSpyOpenOverlay(GSOverlayType overlayType)
  * Parameters:
  * - overlayType: Overlay to close
  * 
- * Architecture:
- * - Win32: Destroy window via DestroyWindow()
- * - POSIX: Destroy SDL2 window via SDL_DestroyWindow()
- * - Cleanup: Release resources, remove from input queue
+ * Implementation:
+ * - Runs shutdown callbacks on layout
+ * - Destroys all windows in layout tree
+ * - Deletes layout instance
+ * - Clears pointer to release resources
+ * ✅ COMPLETE: Real implementation
  */
 void GameSpyCloseOverlay(GSOverlayType overlayType)
 {
@@ -109,36 +286,33 @@ void GameSpyCloseOverlay(GSOverlayType overlayType)
 		return;  // Invalid overlay type
 	}
 
-	if (!g_overlayOpen[overlayType]) {
+	if (g_overlayLayouts[overlayType] == NULL) {
 		return;  // Already closed
 	}
 
-	g_overlayOpen[overlayType] = FALSE;
-
-	// Platform-specific window destruction
-#ifdef _WINDOWS
-	// Win32: Use DestroyWindow() or EndDialog()
-	// TODO: Implement Win32 overlay cleanup
-#else
-	// POSIX: Use SDL_DestroyWindow()
-	// TODO: Implement SDL2 overlay cleanup
-#endif
+	// Run shutdown callbacks
+	g_overlayLayouts[overlayType]->runShutdown();
+	// Destroy all windows in layout
+	g_overlayLayouts[overlayType]->destroyWindows();
+	// Delete the layout instance
+	deleteInstance(g_overlayLayouts[overlayType]);
+	g_overlayLayouts[overlayType] = NULL;
 }
 
 /**
  * GameSpyCloseAllOverlays
  * Close all open GameSpy overlay windows
  * 
- * Architecture:
- * - Iterate GSOVERLAY_MAX and close each open overlay
+ * Implementation:
+ * - Iterates through all overlay types
+ * - Calls GameSpyCloseOverlay() for each open overlay
  * - Ensures clean state for screen transitions
+ * ✅ COMPLETE: Real implementation
  */
 void GameSpyCloseAllOverlays(void)
 {
 	for (int i = 0; i < GSOVERLAY_MAX; ++i) {
-		if (g_overlayOpen[i]) {
-			GameSpyCloseOverlay((GSOverlayType)i);
-		}
+		GameSpyCloseOverlay((GSOverlayType)i);
 	}
 }
 
@@ -149,7 +323,12 @@ void GameSpyCloseAllOverlays(void)
  * Parameters:
  * - overlayType: Overlay to check
  * 
- * Returns: TRUE if overlay is open, FALSE otherwise
+ * Returns: TRUE if overlay layout is loaded, FALSE otherwise
+ * 
+ * Implementation:
+ * - Returns TRUE if WindowLayout pointer is non-NULL
+ * - WindowLayout pointer is NULL when overlay is closed
+ * ✅ COMPLETE: Real implementation
  */
 Bool GameSpyIsOverlayOpen(GSOverlayType overlayType)
 {
@@ -157,7 +336,7 @@ Bool GameSpyIsOverlayOpen(GSOverlayType overlayType)
 		return FALSE;  // Invalid overlay type
 	}
 
-	return g_overlayOpen[overlayType];
+	return (g_overlayLayouts[overlayType] != NULL);
 }
 
 /**
@@ -167,9 +346,11 @@ Bool GameSpyIsOverlayOpen(GSOverlayType overlayType)
  * Parameters:
  * - overlayType: Overlay to toggle
  * 
- * Architecture:
- * - Check current state
- * - Call GameSpyOpenOverlay() or GameSpyCloseOverlay() accordingly
+ * Implementation:
+ * - Checks current state via GameSpyIsOverlayOpen()
+ * - Calls GameSpyCloseOverlay() if open
+ * - Calls GameSpyOpenOverlay() if closed
+ * ✅ COMPLETE: Real implementation
  */
 void GameSpyToggleOverlay(GSOverlayType overlayType)
 {
@@ -184,23 +365,18 @@ void GameSpyToggleOverlay(GSOverlayType overlayType)
  * GameSpyUpdateOverlays
  * Update all open GameSpy overlay windows with current state
  * 
- * Architecture:
+ * Implementation:
  * - Called once per game frame
+ * - Iterates all overlay types
+ * - Calls runUpdate() on each active overlay layout
  * - Updates UI elements with latest player/game data
- * - Processes input events
- * - Win32: Send WM_PAINT to overlay windows
- * - POSIX: Call update on SDL2 overlay objects
+ * ✅ COMPLETE: Real implementation
  */
 void GameSpyUpdateOverlays(void)
 {
 	for (int i = 0; i < GSOVERLAY_MAX; ++i) {
-		if (g_overlayOpen[i]) {
-			// Update this overlay with current state
-			// TODO: Call overlay-specific update function
-			// - Refresh player list
-			// - Update ladder rankings
-			// - Show new messages
-			// - Process input
+		if (g_overlayLayouts[i]) {
+			g_overlayLayouts[i]->runUpdate();
 		}
 	}
 }
@@ -209,149 +385,35 @@ void GameSpyUpdateOverlays(void)
  * ReOpenPlayerInfo
  * Reopen the player information overlay if it was previously open
  * 
- * Architecture:
- * - Called during screen transitions or after actions that require refresh
- * - Preserves user's intention to view player info
+ * Implementation:
+ * - Sets internal flag for next CheckReOpenPlayerInfo() call
+ * - Used to restore overlay visibility after screen transitions
+ * ✅ COMPLETE: Real implementation
  */
+static Bool g_reOpenPlayerInfoFlag = FALSE;
+
 void ReOpenPlayerInfo(void)
 {
-	// Check if player info overlay should remain visible
-	if (g_overlayOpen[GSOVERLAY_PLAYERINFO]) {
-		// Already open - ensure it's visible
-		GameSpyOpenOverlay(GSOVERLAY_PLAYERINFO);
-	}
+	g_reOpenPlayerInfoFlag = TRUE;
 }
 
 /**
  * CheckReOpenPlayerInfo
  * Check if player info overlay should be reopened after screen change
  * 
- * Architecture:
- * - Called when transitioning between screens
- * - Restores overlay visibility state if needed
- * - Prevents loss of UI state during gameplay
+ * Implementation:
+ * - Checks if reopening is requested via flag
+ * - Calls GameSpyOpenOverlay() if flag is set
+ * - Clears flag after reopening
+ * - Called during screen transitions to restore UI state
+ * ✅ COMPLETE: Real implementation
  */
 void CheckReOpenPlayerInfo(void)
 {
-	// Similar to ReOpenPlayerInfo but used specifically for validation
-	if (g_overlayOpen[GSOVERLAY_PLAYERINFO]) {
-		ReOpenPlayerInfo();
+	if (!g_reOpenPlayerInfoFlag) {
+		return;
 	}
-}
 
-/**
- * ClearGSMessageBoxes
- * Tear down any active GameSpy message boxes
- * 
- * Architecture:
- * - Called when transitioning screens
- * - Ensures message boxes don't persist to new screen
- * - Calls DestroyWindow on Win32 or SDL_DestroyWindow on POSIX
- * 
- * Message Box Types:
- * - OK-only dialogs
- * - OK/Cancel dialogs
- * - Yes/No dialogs
- * - Progress/Loading dialogs
- */
-void ClearGSMessageBoxes(void)
-{
-	// TODO: Maintain list of active message boxes
-	// - Iterate message box list
-	// - Close each one with GameSpyCloseOverlay or equivalent
-	// - Clear list
+	GameSpyOpenOverlay(GSOVERLAY_PLAYERINFO);
+	g_reOpenPlayerInfoFlag = FALSE;
 }
-
-/**
- * GSMessageBoxOk
- * Display a message box with single "Ok" button
- * 
- * Parameters:
- * - titleString: Window title
- * - bodyString: Message text
- * - okFunc: Callback function when Ok pressed (optional)
- * 
- * Architecture:
- * - Win32: MessageBox() or CreateDialog()
- * - POSIX: SDL2 message box
- * - Callback execution: Call okFunc after user clicks Ok
- */
-void GSMessageBoxOk(UnicodeString titleString, UnicodeString bodyString, GameWinMsgBoxFunc okFunc)
-{
-	// TODO: Create modal dialog
-#ifdef _WINDOWS
-	// Win32: Use MessageBoxW() for Unicode support
-	// Result check: Call okFunc if user clicks Ok
-#else
-	// POSIX: Use SDL_ShowSimpleMessageBox() or custom overlay
-#endif
-}
-
-/**
- * GSMessageBoxOkCancel
- * Display a message box with "Ok" and "Cancel" buttons
- * 
- * Parameters:
- * - title: Window title
- * - message: Message text
- * - okFunc: Callback for Ok button
- * - cancelFunc: Callback for Cancel button
- * 
- * Architecture:
- * - Win32: CreateDialog with two buttons
- * - POSIX: SDL2 message box or custom overlay
- */
-void GSMessageBoxOkCancel(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc okFunc, GameWinMsgBoxFunc cancelFunc)
-{
-	// TODO: Create modal dialog with two buttons
-#ifdef _WINDOWS
-	// Win32: MessageBox with MB_OKCANCEL flag
-#else
-	// POSIX: Custom SDL2 dialog implementation
-#endif
-}
-
-/**
- * GSMessageBoxYesNo
- * Display a message box with "Yes" and "No" buttons
- * 
- * Parameters:
- * - title: Window title
- * - message: Message text
- * - yesFunc: Callback for Yes button
- * - noFunc: Callback for No button
- * 
- * Architecture:
- * - Win32: MessageBox with MB_YESNO flag
- * - POSIX: SDL2 custom dialog
- */
-void GSMessageBoxYesNo(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc yesFunc, GameWinMsgBoxFunc noFunc)
-{
-	// TODO: Create modal dialog with two buttons
-#ifdef _WINDOWS
-	// Win32: MessageBox with MB_YESNO flag
-#else
-	// POSIX: Custom SDL2 dialog implementation
-#endif
-}
-
-/**
- * RaiseGSMessageBox
- * Bring GameSpy message box to foreground
- * 
- * Architecture:
- * - Called when transitioning screens while message box is active
- * - Ensures message box remains visible
- * - Win32: SetForegroundWindow() or SetWindowPos(HWND_TOP)
- * - POSIX: Raise SDL2 window with SDL_RaiseWindow()
- */
-void RaiseGSMessageBox(void)
-{
-	// TODO: Find active message box and raise to foreground
-#ifdef _WINDOWS
-	// Win32: SetForegroundWindow() or SetWindowPos()
-#else
-	// POSIX: SDL_RaiseWindow()
-#endif
-}
-

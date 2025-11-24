@@ -107,8 +107,11 @@ GameSpyInfoInterface *TheGameSpyInfo = NULL;
  * - Receives buddy login/logout notifications
  * - Cross-platform: Win32 (GameSpy SDK callbacks) -> POSIX (SDL2 event queue)
  * - Future: OpenSpy buddy system integration
+ * 
+ * ✅ COMPLETE: Defined as global interface pointer
+ * Initialized by GameEngine during network setup phase
  */
-extern GameSpyBuddyMessageQueueInterface *TheGameSpyBuddyMessageQueue;
+GameSpyBuddyMessageQueueInterface *TheGameSpyBuddyMessageQueue = NULL;
 
 /**
  * TheGameSpyPeerMessageQueue
@@ -118,8 +121,11 @@ extern GameSpyBuddyMessageQueueInterface *TheGameSpyBuddyMessageQueue;
  * - Receives P2P messages from connected peers
  * - Cross-platform: Win32 (Winsock2 callbacks) -> POSIX (BSD sockets)
  * - Future: Protocol upgrade from UDP to reliable transport
+ * 
+ * ✅ COMPLETE: Defined as global interface pointer
+ * Initialized by GameEngine during network setup phase
  */
-extern GameSpyPeerMessageQueueInterface *TheGameSpyPeerMessageQueue;
+GameSpyPeerMessageQueueInterface *TheGameSpyPeerMessageQueue = NULL;
 
 /**
  * TheGameSpyPSMessageQueue
@@ -129,8 +135,11 @@ extern GameSpyPeerMessageQueueInterface *TheGameSpyPeerMessageQueue;
  * - Receives responses from persistent storage server
  * - Cross-platform: Win32 (HTTP via Winsock) -> POSIX (SDL2 networking)
  * - Future: Local SQLite cache for offline play
+ * 
+ * ✅ COMPLETE: Defined as global interface pointer
+ * Initialized by GameEngine during network setup phase
  */
-extern GameSpyPSMessageQueueInterface *TheGameSpyPSMessageQueue;
+GameSpyPSMessageQueueInterface *TheGameSpyPSMessageQueue = NULL;
 
 // ============================================================================
 // Configuration Server References
@@ -158,3 +167,95 @@ extern GameSpyPSMessageQueueInterface *TheGameSpyPSMessageQueue;
 // Planned: AsciiString g_GameSpyConfigServer = "master.gamespy.com";
 // Planned: UnsignedShort g_GameSpyConfigPort = 29900;
 
+// ============================================================================
+// Stub Implementations (Thread Functions Not Yet Ported to Cross-Platform)
+// ============================================================================
+
+/**
+ * Stub message queue creation functions
+ * 
+ * These stubs are needed until the GameSpy Thread files (BuddyThread.cpp,
+ * PeerThread.cpp, PersistentStorageThread.cpp) are fully ported from
+ * Windows-specific code (using winsock.h) to cross-platform POSIX support.
+ * 
+ * Future Phase: Replace with actual implementations from ported Thread files
+ * 
+ * ✅ TEMPORARY: These stubs allow compilation to proceed on non-Windows platforms
+ * Future: These will be overridden by thread implementations when ported
+ */
+
+// Stub for Buddy message queue creation (normally in BuddyThread.cpp)
+GameSpyBuddyMessageQueueInterface *GameSpyBuddyMessageQueueInterface::createNewMessageQueue(void)
+{
+// TODO Phase 43.6: Implement cross-platform buddy message queue
+// Current status: Requires BuddyThread.cpp port from Windows
+return NULL;  // Stub - returns NULL until thread is ported
+}
+
+// Stub for Peer-to-peer message queue creation (normally in PeerThread.cpp)
+GameSpyPeerMessageQueueInterface *GameSpyPeerMessageQueueInterface::createNewMessageQueue(void)
+{
+// TODO Phase 43.6: Implement cross-platform P2P message queue
+// Current status: Requires PeerThread.cpp port from Windows
+// Blocker: Windows sockets (winsock.h) not available on POSIX
+return NULL;  // Stub - returns NULL until thread is ported
+}
+
+// Stub for Persistent Storage message queue creation (normally in PersistentStorageThread.cpp)
+GameSpyPSMessageQueueInterface *GameSpyPSMessageQueueInterface::createNewMessageQueue(void)
+{
+// TODO Phase 43.6: Implement cross-platform persistent storage queue
+// Current status: Requires PersistentStorageThread.cpp port from Windows
+return NULL;  // Stub - returns NULL until thread is ported
+}
+
+// ============================================================================
+// Additional Stub Implementations (GameSpy Config and INI Parsers)
+// ============================================================================
+
+/**
+ * GameSpy Configuration Interface Stub
+ * 
+ * Normally implemented in GSConfig.cpp
+ * Required by PeerDefs.cpp::SetUpGameSpy()
+ */
+GameSpyConfigInterface *GameSpyConfigInterface::create(AsciiString configData)
+{
+// TODO Phase 43.6: Implement GameSpy configuration parsing
+// Current: Placeholder implementation that returns NULL
+// Reason: Full GameSpy backend not yet ported to cross-platform
+return NULL;  // Stub - full implementation pending thread port
+}
+
+/**
+ * GameSpy Persistent Storage Message Queue Formatting Stub
+ * 
+ * Normally implemented in PersistentStorageThread.cpp
+ * Used to format player statistics for ladder posting
+ */
+std::string GameSpyPSMessageQueueInterface::formatPlayerKVPairs(PSPlayerStats stats)
+{
+	// TODO Phase 43.6: Implement persistent storage formatting
+	// Current: Placeholder that returns empty string
+	return std::string("");  // Stub - full implementation pending
+}
+
+/**
+ * INI Parser Stubs for GameSpy Configuration
+ * 
+ * Normally implemented in INI.cpp parsing functions
+ * Used to parse GameSpy-specific INI definitions
+ */
+void INI::parseWebpageURLDefinition(INI *ini)
+{
+// TODO Phase 43.6: Implement webpage URL INI parsing
+// Current: Placeholder for future GameSpy URL configuration
+// Example: [URLs] / ChatWebpage = "..."
+}
+
+void INI::parseOnlineChatColorDefinition(INI *ini)
+{
+// TODO Phase 43.6: Implement online chat color INI parsing
+// Current: Placeholder for future GameSpy chat UI colors
+// Example: [ChatColors] / PlayerName = "255 0 0"
+}

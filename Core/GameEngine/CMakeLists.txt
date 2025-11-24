@@ -1113,8 +1113,8 @@ set(GAMEENGINE_SRC
     #Source/GameNetwork/GameSpy/LadderDefs.cpp
     #Source/GameNetwork/GameSpy/LobbyUtils.cpp
     #Source/GameNetwork/GameSpy/MainMenuUtils.cpp
-    #Source/GameNetwork/GameSpy/PeerDefs.cpp
-    #Source/GameNetwork/GameSpy/StagingRoomGameInfo.cpp
+    Source/GameNetwork/GameSpy/PeerDefs.cpp
+    Source/GameNetwork/GameSpy/StagingRoomGameInfo.cpp
     #Source/GameNetwork/GameSpy/Thread/BuddyThread.cpp
     #Source/GameNetwork/GameSpy/Thread/GameResultsThread.cpp
     #Source/GameNetwork/GameSpy/Thread/PeerThread.cpp
