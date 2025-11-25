@@ -50,6 +50,7 @@
 #endif
 #include "W3DDevice/GameClient/W3DMouse.h"
 #include "W3DDevice/GameClient/W3DSnow.h"
+#include "Win32Device/GameClient/Win32Mouse.h"
 
 class ThingTemplate;
 
@@ -125,6 +126,8 @@ inline Keyboard *W3DGameClient::createKeyboard( void ) {
 }
 inline Mouse *W3DGameClient::createMouse( void )
 {
-	//return new DirectInputMouse;
-	return nullptr;  // TODO: Implement cross-platform mouse handler
+	// Win32Mouse provides cross-platform mouse input handling
+	// with support for cursor capture and relative mouse movement
+	// It works with the W3D rendering system for cursor display
+	return NEW Win32Mouse;
 }

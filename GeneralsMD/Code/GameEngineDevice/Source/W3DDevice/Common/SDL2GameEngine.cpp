@@ -31,6 +31,7 @@
 #include "W3DDevice/GameLogic/W3DGameLogic.h"
 #include "W3DDevice/GameClient/W3DGameClient.h"
 #include "W3DDevice/GameClient/W3DWebBrowser.h"
+#include "W3DDevice/GameClient/W3DParticleSys.h"
 #include "W3DDevice/Common/W3DFunctionLexicon.h"
 #include "W3DDevice/Common/W3DRadar.h"
 #include "W3DDevice/Common/W3DThingFactory.h"
@@ -39,7 +40,6 @@
 
 // Forward declarations
 class AudioManager;
-class ParticleSystemManager;
 
 //-------------------------------------------------------------------------------------------------
 // Constructor
@@ -168,9 +168,10 @@ WebBrowser *SDL2GameEngine::createWebBrowser( void )
 
 ParticleSystemManager* SDL2GameEngine::createParticleSystemManager( void )
 {
-	DEBUG_LOG(("SDL2GameEngine::createParticleSystemManager - Creating particle system manager\n"));
-	// Note: ParticleSystemManager implementation needed
-	return nullptr;	// TODO: Implement particle system manager
+	DEBUG_LOG(("SDL2GameEngine::createParticleSystemManager - Creating W3D particle system manager\n"));
+	// W3DParticleSystemManager provides platform-independent rendering for particle effects
+	// including smoke, explosions, weather effects, and other visual effects
+	return NEW W3DParticleSystemManager;
 }
 
 AudioManager *SDL2GameEngine::createAudioManager( void )
