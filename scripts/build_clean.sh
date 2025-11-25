@@ -2,13 +2,13 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-BUILD_DIR="$PROJECT_DIR/build/macos-arm64"
+BUILD_DIR="$PROJECT_DIR/build/macos"
 
 echo "Cleaning build directory: $BUILD_DIR"
 rm -rf "$BUILD_DIR"
 
-echo "Configuring fresh build with preset 'macos-arm64'"
-cmake --preset macos-arm64
+echo "Configuring fresh build with preset 'macos'"
+cmake --preset macos
 
 echo "Building GeneralsXZH from scratch..."
 cmake --build "$BUILD_DIR" --target GeneralsXZH -j 4

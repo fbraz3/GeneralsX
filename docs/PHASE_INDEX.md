@@ -243,7 +243,7 @@ PHASE02 (SDL2 Window & Events)
 cmake --preset macos-arm64-vulkan
 
 # macOS x86_64
-cmake --preset macos-x64-vulkan
+cmake --preset macos
 
 # Linux
 cmake --preset linux-vulkan

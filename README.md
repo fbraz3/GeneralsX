@@ -6,7 +6,11 @@ A comprehensive cross-platform port of Command & Conquer: Generals and Zero Hour
 
 ## Project Goals
 
-This repository now focuses on **experimental cross-platform development** and serves as the technical foundation for multi-platform support. For **official releases and stable builds** (Windows only), visit:
+This repository now focuses on **experimental cross-platform development** and serves as the technical foundation for multi-platform support.
+
+To keep updated about this project status, visit our [Dev Blog](docs/DEV_BLOG/)
+
+For **official releases and stable builds** (Windows only), visit:
 
 **👉 [TheSuperHackers/GeneralsGameCode Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases)**
 
@@ -102,43 +106,6 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 - **[docs/DEV_BLOG/](docs/DEV_BLOG/)** - Technical development diary organized by month
 - **[docs/PLANNING/](docs/PLANNING/)** - Phase planning, implementation notes, and strategic decisions
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
-
-## 📊 Current Project Status
-
-### Phase 41: Vulkan Graphics Driver Architecture - COMPLETE
-
-The graphics driver architecture has been successfully implemented as a pluggable backend system:
-
-**Key Achievements**:
-
-- Pure abstract `IGraphicsDriver` interface (642 lines) with ZERO backend-specific types
-- `GraphicsDriverFactory` enabling runtime backend selection (187+351 lines)
-- `VulkanGraphicsDriver` implementing full interface (224+ lines)
-- DX8Wrapper integration working with factory pattern
-- Verification: ZERO backend type leakage to game code
-- Compilation: 0 new errors, ready for Phase 42
-
-**Status**: 8/10 Must Have criteria complete, 2/10 deferred to Phase 42 (runtime testing)
-
-For detailed Phase 41 documentation:
-
-- **[Phase 41 README](docs/PLANNING/4/PHASE41/README.md)** - Complete phase documentation
-- **[Phase 41 Review](docs/PLANNING/4/PHASE41/REVIEW_COMPLETE.md)** - Comprehensive verification audit
-
-### ✅ Phase 42 Week 1: Pre-Existing Error Resolution - COMPLETE
-
-**Resolved 6 compilation errors** in legacy W3D buffer code:
-
-1. ✅ **W3DCustomEdging.cpp:130** - Added `(UnsignedShort*)` cast for void pointer compatibility
-2. ✅ **W3DCustomEdging.cpp:350,378** - Restored missing `TextureClass *edgeTex` declaration from Generals base
-3. ✅ **W3DCustomEdging.cpp:389** - Removed orphaned `#endif // _WIN32` preprocessor directive
-4. ✅ **W3DBridgeBuffer.cpp:699** - Added `(UnsignedShort*)` cast for index buffer pointer
-5. ✅ **W3DBridgeBuffer.cpp:769** - Fixed `DX8_FVF_XYZNDUV1` constant definition (removed space from macro name)
-6. ✅ **W3DBibBuffer.cpp** - Added seglinerenderer.h include and fixed type casting
-
-**Build Status**: All 6 target errors eliminated. Game builds with 27 warnings (pre-existing Phase 41 items)
-
-**Remaining Issues**: W3DDisplay.cpp errors are pre-existing Phase 41 Debug_Statistics stub issues (deferred)
 
 ### 🐛 Known Issues
 

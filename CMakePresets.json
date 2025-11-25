@@ -159,27 +159,10 @@
             "inherits": "default-vcpkg",
             "hidden": false,
             "displayName": "Unix 32bit VCPKG Release"
-        }
-        ,
-        {
-            "name": "windows-vulkan",
-            "displayName": "Windows Vulkan (future)",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "USE_VULKAN": "ON",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            },
-            "environment": {
-                "USE_VULKAN": "1",
-                "USE_METAL": "0",
-                "USE_OPENGL": "0"
-            }
         },
         {
-            "name": "macos-arm64-vulkan",
-            "displayName": "macOS ARM64 Vulkan",
+            "name": "macos",
+            "displayName": "macOS ARM64 (Universal Build)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
@@ -199,12 +182,11 @@
             }
         },
         {
-            "name": "macos-x64-vulkan",
-            "displayName": "macOS x64 Vulkan",
+            "name": "linux",
+            "displayName": "Linux (x86_64 Vulkan)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
-                "CMAKE_OSX_ARCHITECTURES": "x86_64",
                 "CMAKE_BUILD_TYPE": "Release",
                 "USE_VULKAN": "ON",
                 "CMAKE_C_COMPILER_LAUNCHER": "ccache",
@@ -220,19 +202,15 @@
             }
         },
         {
-            "name": "linux-vulkan",
-            "displayName": "Linux x86_64 Vulkan",
+            "name": "windows",
+            "displayName": "Windows (x86_64 Vulkan - Future)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "USE_VULKAN": "ON",
-                "CMAKE_C_COMPILER_LAUNCHER": "ccache",
-                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
-                "USE_CCACHE": "ON",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
-            ,
+            },
             "environment": {
                 "USE_VULKAN": "1",
                 "USE_METAL": "0",
@@ -322,31 +300,24 @@
         }
         ,
         {
-            "name": "windows-vulkan",
-            "configurePreset": "windows-vulkan",
-            "displayName": "Build Windows Vulkan",
-            "description": "Build Windows Vulkan Release",
-            "configuration": "Release"
-        },
-        {
-            "name": "macos-arm64-vulkan",
-            "configurePreset": "macos-arm64-vulkan",
-            "displayName": "Build macOS ARM64 Vulkan",
+            "name": "macos",
+            "configurePreset": "macos",
+            "displayName": "Build macOS ARM64",
             "description": "Build macOS ARM64 Vulkan Release",
             "configuration": "Release"
         },
         {
-            "name": "macos-x64-vulkan",
-            "configurePreset": "macos-x64-vulkan",
-            "displayName": "Build macOS x64 Vulkan",
-            "description": "Build macOS x64 Vulkan Release",
+            "name": "linux",
+            "configurePreset": "linux",
+            "displayName": "Build Linux x86_64",
+            "description": "Build Linux x86_64 Vulkan Release",
             "configuration": "Release"
         },
         {
-            "name": "linux-vulkan",
-            "configurePreset": "linux-vulkan",
-            "displayName": "Build Linux Vulkan",
-            "description": "Build Linux x86_64 Vulkan Release",
+            "name": "windows",
+            "configurePreset": "windows",
+            "displayName": "Build Windows x86_64",
+            "description": "Build Windows x86_64 Vulkan Release",
             "configuration": "Release"
         }
     ],
@@ -509,54 +480,41 @@
         }
         ,
         {
-            "name": "macos-arm64-vulkan",
+            "name": "macos",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "macos-arm64-vulkan"
+                    "name": "macos"
                 },
                 {
                     "type": "build",
-                    "name": "macos-arm64-vulkan"
+                    "name": "macos"
                 }
             ]
         },
         {
-            "name": "macos-x64-vulkan",
+            "name": "linux",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "macos-x64-vulkan"
+                    "name": "linux"
                 },
                 {
                     "type": "build",
-                    "name": "macos-x64-vulkan"
+                    "name": "linux"
                 }
             ]
         },
         {
-            "name": "linux-vulkan",
+            "name": "windows",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "linux-vulkan"
+                    "name": "windows"
                 },
                 {
                     "type": "build",
-                    "name": "linux-vulkan"
-                }
-            ]
-        },
-        {
-            "name": "windows-vulkan",
-            "steps": [
-                {
-                    "type": "configure",
-                    "name": "windows-vulkan"
-                },
-                {
-                    "type": "build",
-                    "name": "windows-vulkan"
+                    "name": "windows"
                 }
             ]
         }

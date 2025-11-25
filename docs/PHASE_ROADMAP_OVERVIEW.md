@@ -182,10 +182,9 @@ docs/DEV_BLOG/
 
 | Platform | Preset | Target | Status |
 |----------|--------|--------|--------|
-| macOS ARM64 | macos-arm64-vulkan | z_generals, g_generals | Primary ✅ |
-| macOS Intel | macos-x64 | z_generals, g_generals | Secondary |
+| macOS ARM64 | macos | GeneralsXZH, GeneralsX | Primary ✅ |
 | Windows | vc6 | GeneralsXZH.exe, GeneralsX.exe | Secondary |
-| Linux | linux | z_generals, g_generals | Secondary |
+| Linux | linux | GeneralsXZH, GeneralsX | Secondary |
 
 ### Graphics Backends
 
@@ -202,7 +201,7 @@ docs/DEV_BLOG/
 ### Phase 43.1-43.7 (Symbol Resolution)
 - ✅ 130 symbols reduced to 0
 - ✅ Zero linker errors
-- ✅ Executable created (z_generals, g_generals)
+- ✅ Executable created (GeneralsXZH, GeneralsX)
 - ✅ All platforms compile successfully
 
 ### Phase 44 (Runtime Validation)

@@ -244,6 +244,6 @@ The thorough review confirmed that Phase 43.5 GameSpy Integration is production-
 ---
 
 **Session Date**: Multiple iterations
-**Build Preset**: macos-arm64-vulkan
-**Target**: z_generals (Zero Hour, primary stable target)
+**Build Preset**: macos
+**Target**: GeneralsXZH (Zero Hour, primary stable target)
 **Review Status**: ✅ COMPLETE - À RISCA - TUDO CORRETO

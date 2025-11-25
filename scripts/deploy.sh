@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-BUILD_DIR="$PROJECT_DIR/build/macos-arm64"
+BUILD_DIR="$PROJECT_DIR/build/macos"
 DEPLOY_ZH="$HOME/GeneralsX/GeneralsMD"
 DEPLOY_BASE="$HOME/GeneralsX/Generals"
 

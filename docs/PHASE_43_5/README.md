@@ -137,7 +137,7 @@ Phase 43.5 implements GameSpy infrastructure globals, message queues, staging ro
 
 ```bash
 # Build Command
-cmake --build build/macos-arm64-vulkan --target z_generals -j 4
+cmake --build build/macos --target GeneralsXZH -j 4
 
 # Phase 43.5 Compilation Status:
 ✅ phase43_5_gamespy_globals.cpp - Successfully compiled (0 errors)
