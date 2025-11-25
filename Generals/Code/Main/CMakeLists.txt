@@ -1,11 +1,18 @@
-add_executable(g_generals)
+add_executable(GeneralsX)
 
-# Use a binary name that doesn't conflict with original game.
+# Use a binary name that matches the canonical target name
 # Phase 39.5: Unified output name for all platforms
-set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
+set_target_properties(GeneralsX PROPERTIES OUTPUT_NAME GeneralsX)
 
-target_link_libraries(g_generals PRIVATE
-    g_gameengine
+# Phase 43.8 FIX: Force linker to use our stubs by adding them AFTER libraries
+# Apply same linker strategy as GeneralsXZH to ensure Generals reaches feature parity
+if(APPLE)
+    target_link_options(GeneralsX PRIVATE
+        -Wl,-undefined,dynamic_lookup
+    )
+endif()
+
+target_link_libraries(GeneralsX PRIVATE
     g_gameenginedevice
     gi_always
 )
@@ -47,33 +54,33 @@ endif()
 
 # Phase 39.5: Platform-specific linker options removed - unified for all platforms
 
-target_include_directories(g_generals PRIVATE
+target_include_directories(GeneralsX PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/Code/Libraries
 )
 
-target_sources(g_generals PRIVATE
+target_sources(GeneralsX PRIVATE
     WinMain.h
 )
 
 # Unified entry point: WinMain.cpp for all platforms
 # Phase 39.5: Platform #ifdef blocks removed - all platforms use same SDL2 code path
-target_sources(g_generals PRIVATE
+target_sources(GeneralsX PRIVATE
     WinMain.cpp
+    phase43_registry_stubs.cpp
 )
 
 # VC6 Windows builds still need RC file
 if(IS_VS6_BUILD)
-    target_sources(g_generals PRIVATE
+    target_sources(GeneralsX PRIVATE
         RTS.RC
     )
 endif()
 
 # Create a convenience copy with canonical name `GeneralsX` in the runtime output directory
-add_custom_command(TARGET g_generals POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Generating convenience executable name: GeneralsX"
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:g_generals> $<TARGET_FILE_DIR:g_generals>/GeneralsX
-    COMMAND ${CMAKE_COMMAND} -E chmod $<TARGET_FILE_DIR:g_generals>/GeneralsX 0755
-    COMMENT "Create GeneralsX alias for g_generals"
+add_custom_command(TARGET GeneralsX POST_BUILD
+    COMMAND cp $<TARGET_FILE:GeneralsX> $<TARGET_FILE_DIR:GeneralsX>/GeneralsX
+    COMMAND chmod 0755 $<TARGET_FILE_DIR:GeneralsX>/GeneralsX
+    COMMENT "Create GeneralsX alias for GeneralsX"
 )

@@ -9,10 +9,10 @@ echo "=== Phase 39.2: Build Validation ==="
 echo "Starting clean build..."
 
 # Configure
-cmake --preset macos-arm64-vulkan
+cmake --preset macos
 
 # Build with tee to logs
-cmake --build build/macos-arm64-vulkan -j 4 2>&1 | tee logs/phase39_2_build_full.log
+cmake --build build/macos -j 4 2>&1 | tee logs/phase39_2_build_full.log
 
 # Extract errors
 echo ""

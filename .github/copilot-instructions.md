@@ -31,14 +31,14 @@ Zero Hour expansion code that extends base game with platform-specific fixes:
 
 ### Presets Are Everything
 ```bash
-# Configure (creates build/macos-arm64-vulkan/)
-cmake --preset macos-arm64-vulkan
+# Configure (creates build/macos/)
+cmake --preset macos
 
 # Build PRIMARY TARGET (Zero Hour expansion - most stable)
-cmake --build build/macos-arm64-vulkan --target z_generals -j 4 | tee logs/build.log
+cmake --build build/macos --target GeneralsXZH -j 4 | tee logs/build.log
 
 # Build SECONDARY TARGET (original game - less tested)
-cmake --build build/macos-arm64-vulkan --target g_generals -j 4 | tee logs/build.log
+cmake --build build/macos --target GeneralsX -j 4 | tee logs/build.log
 ```
 
 **Why `-j 4` not `-j 8`?** This codebase has MASSIVE translation units (5MB+ object files). Half CPU cores prevents OOM kills. See `build_zh.sh` for production workflow.
@@ -48,7 +48,7 @@ First build: ~20-30 minutes. With ccache: ~30-60 seconds for incremental changes
 ```bash
 brew install ccache  # macOS
 ccache -M 10G        # Set 10GB cache
-cmake --preset macos-arm64-vulkan -DUSE_CCACHE=ON
+cmake --preset macos -DUSE_CCACHE=ON
 ```
 
 ### The Asset Path Problem
@@ -59,7 +59,7 @@ $HOME/GeneralsX/GeneralsMD/Data/      # Contains INI.big, INIZH.big, Textures.bi
 $HOME/GeneralsX/GeneralsMD/Maps/      # Contains map files
 
 # Deploy executable here too
-cp build/macos-arm64-vulkan/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
+cp build/macos/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 ```
 
 **Why?** The engine uses relative paths: `Data\INI\Object\AirforceGeneral.ini` expects `Data/` directory adjacent to executable.
@@ -104,15 +104,17 @@ top -pid $(pgrep GeneralsXZH)  # CPU usage? High = loading, Low = stuck
 
 ### Graphics Backend Selection (Runtime)
 ```bash
-USE_METAL=1 ./GeneralsXZH   # macOS default (Phase 29.4+)
-USE_OPENGL=1 ./GeneralsXZH  # Cross-platform fallback
+USE_METAL=1 ./GeneralsXZH   # macOS default (Phase 29.4+) - DEPRECATED: Vulkan is now unified backend
+USE_VULKAN=1 ./GeneralsXZH  # All platforms: Vulkan (current unified backend)
+USE_OPENGL=1 ./GeneralsXZH  # Cross-platform fallback (legacy support)
 ```
 
-Controlled by `g_useMetalBackend` flag in `WinMain.cpp`:
+Controlled by `g_useVulkanBackend` and `g_useOpenGLBackend` flags in `WinMain.cpp`:
 ```cpp
 #ifdef __APPLE__
-    const char* use_opengl = getenv("USE_OPENGL");
-    g_useMetalBackend = (use_opengl == nullptr);  // Metal default on macOS
+    // Vulkan is the unified backend for all platforms
+    const char* use_vulkan = getenv("USE_VULKAN");
+    g_useVulkanBackend = (use_vulkan != nullptr || use_opengl == nullptr);
 #endif
 ```
 
@@ -165,7 +167,7 @@ bool isValidMemoryPointer(void* ptr, size_t minSize) {
 - @TODO: Fill in phase-specific docs as needed
 
 ### Critical Reference Files
-- `docs/DEV_BLOG/` - **UPDATE AFTER EVERY SESSION** - Technical development diary organized by year-month (project requirement)
+- `docs/DEV_BLOG/` - **UPDATE AFTER EVERY SESSION** - Technical development diary (ONLY diaries with pattern `YYYY-MM-DIARY.md`; session reports go to `docs/MISC/DEV_ARCHIVES/`)
 - `docs/PLANNING/` - Phase planning and implementation notes
 - `docs/MISC/BIG_FILES_REFERENCE.md` - Asset structure (INI.big, INIZH.big contents)
 - `docs/MISC/CRITICAL_FIXES.md` - Emergency fixes (fullscreen lock, NULL crashes)
@@ -230,8 +232,8 @@ grep "Subsystem.*operational" logs/subsystem_test.log
 
 4. **Build Errors After Git Pull**: Stale CMake cache. **Always reconfigure**:
    ```bash
-   rm -rf build/macos-arm64-vulkan
-   cmake --preset macos-arm64-vulkan
+   rm -rf build/macos
+   cmake --preset macos
    ```
 
 5. **"Game Hangs at Startup"**: NOT a hang - it's loading 15+ .big files. Wait 30-60 seconds or check CPU usage.
@@ -256,9 +258,13 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 ## When to Update Documentation
 
 **ALWAYS update** `docs/DEV_BLOG/YYYY-MM-DIARY.md` (development diary) at session end with:
-- Phase progress (e.g., "Phase 28.4 complete - 7 textures loaded")
-- Critical discoveries (e.g., "VFS integration failed, switched to DirectX interception")
-- Commit hashes for reference
+- **File naming** (CRITICAL): MUST follow pattern `YYYY-MM-DIARY.md` (e.g., `2025-11-DIARY.md`)
+- **Directory rule**: `docs/DEV_BLOG/` contains ONLY diaries - no session reports, summaries, or analysis files
+- **Archive location**: Session reports/summaries go to `docs/MISC/DEV_ARCHIVES/`
+- **Content**: Phase progress (e.g., "Phase 28.4 complete - 7 textures loaded")
+- **Discoveries**: Critical findings (e.g., "VFS integration failed, switched to DirectX interception")
+- **References**: Commit hashes and links for traceability
+- See `docs/DEV_BLOG/README.md` for complete documentation rules
 
 **Document critical discoveries** in `docs/MISC/LESSONS_LEARNED.md`:
 - Integration failures and their root causes

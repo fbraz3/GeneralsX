@@ -9,7 +9,7 @@ This guide provides step-by-step instructions for building GeneralsX on macOS wi
 - **Homebrew** for package management
 - **CMake** 3.20 or higher
 - **Ninja** build system (recommended)
-- **Apple Silicon (M1/M2/M3)** or Intel macOS support
+- **Apple Silicon (M1/M2/M3)** macOS
 
 ### Install Prerequisites
 
@@ -32,18 +32,10 @@ git clone https://github.com/fbraz3/GeneralsX.git
 cd GeneralsX
 ```
 
-### 2. Configure Build (ARM64 - Recommended)
+### 2. Configure Build (ARM64 Apple Silicon)
 ```bash
-# Configure using macos-arm64 preset for native ARM64 architecture
-cmake --preset macos-arm64
-```
-
-### Alternative Configurations
-
-#### Intel x64 macOS
-```bash
-# For Intel Macs using dedicated Intel preset
-cmake --preset macos-x64
+# Configure using macos preset for native ARM64 architecture
+cmake --preset macos
 ```
 
 #### Legacy VC6 preset
@@ -56,39 +48,30 @@ cmake --preset vc6
 
 ### Primary Target: Zero Hour (GeneralsXZH)
 ```bash
-# Build the main Zero Hour executable (ARM64 native recommended)
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4
+# Build the main Zero Hour executable
+cmake --build build/macos --target GeneralsXZH -j 4
 
-# Executable location: build/macos-arm64/GeneralsMD/GeneralsXZH
+# Executable location: build/macos/GeneralsMD/GeneralsXZH
 ```
 
 ### Secondary Target: Original Generals (GeneralsX)
 ```bash
 # Build the original Generals executable
-cmake --build build/macos-arm64 --target GeneralsX -j 4
+cmake --build build/macos --target GeneralsX -j 4
 
-# For Intel Macs:
-cmake --build build/macos-x64 --target GeneralsX -j 4
-
-# Executable locations:
-# - ARM64: build/macos-arm64/Generals/generals
-# - Intel: build/macos-x64/Generals/generals
+# Executable location: build/macos/Generals/GeneralsX
 ```
 
 ### Core Libraries (Optional Testing)
 ```bash
 # Build core libraries independently
-# ARM64:
-cmake --build build/macos-arm64 --target ww3d2 wwlib wwmath -j 4
-
-# Intel x64:
-cmake --build build/macos-x64 --target ww3d2 wwlib wwmath -j 4
+cmake --build build/macos --target ww3d2 wwlib wwmath -j 4
 ```
 
 ### Build with Dynamic Core Allocation
 ```bash
 # Use half of available CPU cores to avoid system overload
-cmake --build build/macos-arm64 --target GeneralsXZH -j $(sysctl -n hw.ncpu | awk '{print int($1/2)}')
+cmake --build build/macos --target GeneralsXZH -j $(sysctl -n hw.ncpu | awk '{print int($1/2)}')
 ```
 
 ## Compilation Cache (ccache)
@@ -114,11 +97,8 @@ ccache is **automatically enabled by default** when installed.
 
 ```bash
 # Standard build - ccache automatically used if installed
-cmake --preset macos-arm64
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4
-
-# To disable ccache (if needed)
-cmake --preset macos-arm64 -DUSE_CCACHE=OFF
+cmake --preset macos
+cmake --build build/macos --target GeneralsXZH -j 4
 ```
 
 ### Performance Comparison
@@ -156,74 +136,55 @@ source ~/.zshrc
 
 ## Debug Build Configurations
 
-### ARM64 Native Debug Build
+### Debug Build
 ```bash
-cmake --preset macos-arm64 -DRTS_BUILD_OPTION_DEBUG=ON
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4
+cmake --preset macos -DRTS_BUILD_OPTION_DEBUG=ON
+cmake --build build/macos --target GeneralsXZH -j 4
 ```
 
-### Intel x64 Debug Build
+### Release Build (Default)
 ```bash
-cmake --preset macos-x64 -DRTS_BUILD_OPTION_DEBUG=ON
-cmake --build build/macos-x64 --target GeneralsXZH -j 4
-```
-
-### ARM64 Native Release Build (Default)
-```bash
-cmake --preset macos-arm64 -DRTS_BUILD_OPTION_DEBUG=OFF
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4
-```
-
-### Intel x64 Release Build
-```bash
-cmake --preset macos-x64 -DRTS_BUILD_OPTION_DEBUG=OFF
-cmake --build build/macos-x64 --target GeneralsXZH -j 4
+cmake --preset macos -DRTS_BUILD_OPTION_DEBUG=OFF
+cmake --build build/macos --target GeneralsXZH -j 4
 ```
 
 ## Build Cleanup
 
 ```bash
-# Clean previous build if architecture changed or experiencing issues
-# ARM64:
-rm -rf build/macos-arm64
-cmake --preset macos-arm64
-
-# Intel x64:
-rm -rf build/macos-x64
-cmake --preset macos-x64
+# Clean previous build if experiencing issues
+rm -rf build/macos
+cmake --preset macos
 ```
 
 ## Troubleshooting
 
 ### CMake can't find dependencies
+
 ```bash
 # Update Homebrew and reinstall CMake
 brew update && brew upgrade cmake
 ```
 
 ### Architecture mismatch errors
-```bash
-# Clean and rebuild with explicit architecture
-# ARM64:
-rm -rf build/macos-arm64
-cmake --preset macos-arm64
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
-# Intel x64:
-rm -rf build/macos-x64
-cmake --preset macos-x64
-cmake --build build/macos-x64 --target GeneralsXZH -j 4
+```bash
+# Clean and rebuild
+rm -rf build/macos
+cmake --preset macos
+cmake --build build/macos --target GeneralsXZH -j 4
 ```
 
 ### Linking errors
+
 ```bash
 # Clean and rebuild
-rm -rf build/macos-arm64
-cmake --preset macos-arm64
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4
+rm -rf build/macos
+cmake --preset macos
+cmake --build build/macos --target GeneralsXZH -j 4
 ```
 
 ### ccache not working
+
 ```bash
 # Check if ccache is being used
 echo $CMAKE_C_COMPILER_LAUNCHER
@@ -235,18 +196,14 @@ which ccache
 ccache --version
 
 # Verbose output for debugging
-CCACHE_DEBUG=1 cmake --build build/macos-arm64 --target GeneralsXZH -j 4
+CCACHE_DEBUG=1 cmake --build build/macos --target GeneralsXZH -j 4
 ```
 
 ### Verify Architecture
-```bash
-# ARM64:
-file build/macos-arm64/GeneralsMD/GeneralsXZH
-# Should show: Mach-O 64-bit executable arm64
 
-# Intel x64:
-file build/macos-x64/GeneralsMD/GeneralsXZH
-# Should show: Mach-O 64-bit executable x86_64
+```bash
+file build/macos/GeneralsMD/GeneralsXZH
+# Should show: Mach-O 64-bit executable arm64
 ```
 
 ## Additional Resources
@@ -260,5 +217,5 @@ file build/macos-x64/GeneralsMD/GeneralsXZH
 For macOS build-specific issues, check [Issues](https://github.com/fbraz3/GeneralsX/issues) or open a new one with the `macos` label.
 
 ---
-**Last updated**: October 20, 2025
-**Target Architecture**: ARM64 Native (Apple Silicon) + Intel Compatibility
+**Last updated**: November 24, 2025
+**Target Architecture**: ARM64 Native (Apple Silicon)

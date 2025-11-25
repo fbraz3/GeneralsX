@@ -20,7 +20,7 @@ Quick reference for development helper scripts in this directory.
 ```bash
 # 1. Configure CMake
 cd /path/to/GeneralsX
-cmake --preset macos-arm64
+cmake --preset macos
 
 # 2. Setup game assets (one time only)
 ./scripts/setup_assets.sh ~/.steamapps/Command\ and\ Conquer\ Generals/
@@ -71,7 +71,7 @@ See `docs/PHASE00_5/README.md` for complete documentation on:
 
 Scripts automatically detect:
 - `PROJECT_DIR` - Repository root (auto-detected from script location)
-- `BUILD_DIR` - Build output directory (`$PROJECT_DIR/build/macos-arm64`)
+- `BUILD_DIR` - Build output directory (`$PROJECT_DIR/build/macos`)
 - `DEPLOY_DIR` - Game deployment location (`$HOME/GeneralsX/GeneralsMD` for ZH, `$HOME/GeneralsX/Generals` for base)
 - `LOGS_DIR` - Build logs location (`$PROJECT_DIR/logs`)
 
@@ -125,8 +125,8 @@ ccache -M 10G
 ## Output Locations
 
 **Executable targets:**
-- `build/macos-arm64/GeneralsMD/GeneralsXZH` → `$HOME/GeneralsX/GeneralsMD/GeneralsXZH`
-- `build/macos-arm64/Generals/GeneralsX` → `$HOME/GeneralsX/Generals/GeneralsX`
+- `build/macos/GeneralsMD/GeneralsXZH` → `$HOME/GeneralsX/GeneralsMD/GeneralsXZH`
+- `build/macos/Generals/GeneralsX` → `$HOME/GeneralsX/Generals/GeneralsX`
 
 **Build logs:**
 - `logs/phase00_5_build_YYYYMMDD_HHMMSS.log`
