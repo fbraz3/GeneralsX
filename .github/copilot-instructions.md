@@ -167,7 +167,7 @@ bool isValidMemoryPointer(void* ptr, size_t minSize) {
 - @TODO: Fill in phase-specific docs as needed
 
 ### Critical Reference Files
-- `docs/DEV_BLOG/` - **UPDATE AFTER EVERY SESSION** - Technical development diary organized by year-month (project requirement)
+- `docs/DEV_BLOG/` - **UPDATE AFTER EVERY SESSION** - Technical development diary (ONLY diaries with pattern `YYYY-MM-DIARY.md`; session reports go to `docs/MISC/DEV_ARCHIVES/`)
 - `docs/PLANNING/` - Phase planning and implementation notes
 - `docs/MISC/BIG_FILES_REFERENCE.md` - Asset structure (INI.big, INIZH.big contents)
 - `docs/MISC/CRITICAL_FIXES.md` - Emergency fixes (fullscreen lock, NULL crashes)
@@ -258,9 +258,13 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 ## When to Update Documentation
 
 **ALWAYS update** `docs/DEV_BLOG/YYYY-MM-DIARY.md` (development diary) at session end with:
-- Phase progress (e.g., "Phase 28.4 complete - 7 textures loaded")
-- Critical discoveries (e.g., "VFS integration failed, switched to DirectX interception")
-- Commit hashes for reference
+- **File naming** (CRITICAL): MUST follow pattern `YYYY-MM-DIARY.md` (e.g., `2025-11-DIARY.md`)
+- **Directory rule**: `docs/DEV_BLOG/` contains ONLY diaries - no session reports, summaries, or analysis files
+- **Archive location**: Session reports/summaries go to `docs/MISC/DEV_ARCHIVES/`
+- **Content**: Phase progress (e.g., "Phase 28.4 complete - 7 textures loaded")
+- **Discoveries**: Critical findings (e.g., "VFS integration failed, switched to DirectX interception")
+- **References**: Commit hashes and links for traceability
+- See `docs/DEV_BLOG/README.md` for complete documentation rules
 
 **Document critical discoveries** in `docs/MISC/LESSONS_LEARNED.md`:
 - Integration failures and their root causes
