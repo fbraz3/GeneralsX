@@ -34,6 +34,8 @@
 #include "W3DDevice/Common/W3DFunctionLexicon.h"
 #include "W3DDevice/Common/W3DRadar.h"
 #include "W3DDevice/Common/W3DThingFactory.h"
+#include "StdDevice/Common/StdLocalFileSystem.h"
+#include "StdDevice/Common/StdBIGFileSystem.h"
 
 // Forward declarations
 class AudioManager;
@@ -134,18 +136,14 @@ FunctionLexicon *SDL2GameEngine::createFunctionLexicon( void )
 
 LocalFileSystem *SDL2GameEngine::createLocalFileSystem( void )
 {
-	DEBUG_LOG(("SDL2GameEngine::createLocalFileSystem - Creating local file system\n"));
-	// Note: LocalFileSystem would need to be instantiated here with POSIX/SDL2 backend
-	// For now, this is a stub that will be implemented when LocalFileSystem is ported
-	return nullptr;	// TODO: Implement POSIX file system
+	DEBUG_LOG(("SDL2GameEngine::createLocalFileSystem - Creating standard POSIX-compatible file system\n"));
+	return NEW StdLocalFileSystem;
 }
 
 ArchiveFileSystem *SDL2GameEngine::createArchiveFileSystem( void )
 {
-	DEBUG_LOG(("SDL2GameEngine::createArchiveFileSystem - Creating archive file system\n"));
-	// Note: ArchiveFileSystem would need to be instantiated here
-	// For now, this is a stub that will be implemented when ArchiveFileSystem is ported
-	return nullptr;	// TODO: Implement archive file system for .big files
+	DEBUG_LOG(("SDL2GameEngine::createArchiveFileSystem - Creating standard BIG file system\n"));
+	return NEW StdBIGFileSystem;
 }
 
 NetworkInterface *SDL2GameEngine::createNetwork( void )
