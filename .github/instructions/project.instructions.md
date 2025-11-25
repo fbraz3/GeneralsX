@@ -21,7 +21,7 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 - Any support scripts must be placed in the `scripts/` directory.
 - Commit at the end of each working session with a detailed message about the changes made.
 - Create tags for major milestones or completed phases for easy reference and rollback.
-- The local default branch is `vulkan-port`, ensure to keep it updated with `upstream/main` daily after 7:00 PM user time.
+- The local default branch is `main`, ensure to keep it updated with `upstream/main` daily after 7:00 PM user time.
 - Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately.
 
 # Project directory Structure

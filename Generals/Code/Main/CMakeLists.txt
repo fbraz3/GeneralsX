@@ -4,8 +4,15 @@ add_executable(GeneralsX)
 # Phase 39.5: Unified output name for all platforms
 set_target_properties(GeneralsX PROPERTIES OUTPUT_NAME GeneralsX)
 
+# Phase 43.8 FIX: Force linker to use our stubs by adding them AFTER libraries
+# Apply same linker strategy as GeneralsXZH to ensure Generals reaches feature parity
+if(APPLE)
+    target_link_options(GeneralsX PRIVATE
+        -Wl,-undefined,dynamic_lookup
+    )
+endif()
+
 target_link_libraries(GeneralsX PRIVATE
-    g_gameengine
     g_gameenginedevice
     gi_always
 )
@@ -61,6 +68,7 @@ target_sources(GeneralsX PRIVATE
 # Phase 39.5: Platform #ifdef blocks removed - all platforms use same SDL2 code path
 target_sources(GeneralsX PRIVATE
     WinMain.cpp
+    phase43_registry_stubs.cpp
 )
 
 # VC6 Windows builds still need RC file
@@ -69,3 +77,10 @@ if(IS_VS6_BUILD)
         RTS.RC
     )
 endif()
+
+# Create a convenience copy with canonical name `GeneralsX` in the runtime output directory
+add_custom_command(TARGET GeneralsX POST_BUILD
+    COMMAND cp $<TARGET_FILE:GeneralsX> $<TARGET_FILE_DIR:GeneralsX>/GeneralsX
+    COMMAND chmod 0755 $<TARGET_FILE_DIR:GeneralsX>/GeneralsX
+    COMMENT "Create GeneralsX alias for GeneralsX"
+)

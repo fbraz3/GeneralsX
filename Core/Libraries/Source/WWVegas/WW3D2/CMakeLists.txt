@@ -176,11 +176,8 @@ set(WW3D2_SRC
     streakRender.h
     stripoptimizer.cpp
     stripoptimizer.h
-    # surfaceclass.cpp  # Phase: Temporarily commented - DirectX types and D3DXLoadSurfaceFromSurface API
+    surfaceclass.cpp
     surfaceclass.h
-    
-    # Phase 43.1: Surface & Texture Foundation (Real implementations)
-    phase43_surface_texture.cpp
     
     # Phase 43.2: Advanced Texture Systems (Real implementations)
     phase43_2_advanced_textures.cpp

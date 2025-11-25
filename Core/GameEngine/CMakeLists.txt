@@ -1108,9 +1108,9 @@ set(GAMEENGINE_SRC
     #Source/GameNetwork/GameSpyChat.cpp # unused
     #Source/GameNetwork/GameSpyGameInfo.cpp # unused
     #Source/GameNetwork/GameSpyGP.cpp # unused
-    #Source/GameNetwork/GameSpy/Chat.cpp
+    Source/GameNetwork/GameSpy/Chat.cpp
     #Source/GameNetwork/GameSpy/GSConfig.cpp
-    #Source/GameNetwork/GameSpy/LadderDefs.cpp
+    Source/GameNetwork/GameSpy/LadderDefs.cpp
     #Source/GameNetwork/GameSpy/LobbyUtils.cpp
     #Source/GameNetwork/GameSpy/MainMenuUtils.cpp
     Source/GameNetwork/GameSpy/PeerDefs.cpp
@@ -1118,7 +1118,7 @@ set(GAMEENGINE_SRC
     #Source/GameNetwork/GameSpy/Thread/BuddyThread.cpp
     #Source/GameNetwork/GameSpy/Thread/GameResultsThread.cpp
     #Source/GameNetwork/GameSpy/Thread/PeerThread.cpp
-    #Source/GameNetwork/GameSpy/Thread/PersistentStorageThread.cpp
+    Source/GameNetwork/GameSpy/Thread/PersistentStorageThread.cpp
     #Source/GameNetwork/GameSpy/Thread/PingThread.cpp
     #Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
     #Source/GameNetwork/GameSpyOverlay.cpp
@@ -1143,10 +1143,6 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/phase43_4_transport.cpp
     Source/GameNetwork/phase43_4_udp.cpp
     Source/GameNetwork/phase43_4_ip_enumeration.cpp
-    # Phase 43.5: GameSpy Integration (Globals, Staging, UI)
-    Source/GameNetwork/phase43_5_gamespy_globals.cpp
-    Source/GameNetwork/phase43_5_gamespy_staging.cpp
-    Source/GameNetwork/phase43_5_gamespy_ui.cpp
     Source/GameNetwork/User.cpp
     Source/GameNetwork/WOLBrowser/WebBrowser.cpp
 #    Source/Precompiled/PreRTS.cpp

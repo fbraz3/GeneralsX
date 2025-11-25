@@ -71,6 +71,7 @@
 #include "GameClient/Mouse.h"
 #include "GameClient/IMEManager.h"
 #include "GameLogic/GameLogic.h"  ///< @todo for demo, remove
+#include "GameNetwork/phase43_6_gamespy_config.h"
 #ifdef _WIN32
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "Win32Device/Common/Win32GameEngine.h"
@@ -1142,6 +1143,8 @@ Int main( Int argc, Char* argv[] )
 		// Create and run game engine
 		TheGameEngine = CreateGameEngine();
 		if (TheGameEngine) {
+			// Initialize GameSpy server configuration from INI or environment variables
+			InitializeGameSpyServerConfiguration();
 			// Main game loop would go here
 			// For now, this is a stub
 			DEBUG_LOG(("GeneralsX Game Engine initialized on POSIX/SDL2"));

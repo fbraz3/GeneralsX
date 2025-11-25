@@ -4,12 +4,19 @@ add_executable(GeneralsXZH)
 # Phase 39.5: Unified output name for all platforms
 set_target_properties(GeneralsXZH PROPERTIES OUTPUT_NAME GeneralsXZH)
 
+# Phase 43.7 FIX: Force linker to use our stubs by adding them AFTER libraries
+# Normally linker resolves symbols from libz_gameengine.a first, but those symbols
+# are undefined there. By using link options to specify undefined symbols,
+# we force the linker to search in our object files too.
+if(APPLE)
+    target_link_options(GeneralsXZH PRIVATE
+        -Wl,-undefined,dynamic_lookup
+    )
+endif()
+
 target_link_libraries(GeneralsXZH PRIVATE
-    z_gameengine
     z_gameenginedevice
     zi_always
-    core_debug
-    core_profile
 )
 
 # Phase 39.5: Windows-specific libraries removed
@@ -51,6 +58,7 @@ target_sources(GeneralsXZH PRIVATE
 # Phase 39.5: Platform #ifdef blocks removed - all platforms use same SDL2 code path
 target_sources(GeneralsXZH PRIVATE
     WinMain.cpp
+    phase43_registry_stubs.cpp
 )
 
 # VC6 Windows builds still need RC file
@@ -59,3 +67,10 @@ if(IS_VS6_BUILD)
         RTS.RC
     )
 endif()
+
+# Create a convenience copy with canonical name `GeneralsXZH` in the runtime output directory
+add_custom_command(TARGET GeneralsXZH POST_BUILD
+    COMMAND cp $<TARGET_FILE:GeneralsXZH> $<TARGET_FILE_DIR:GeneralsXZH>/GeneralsXZH
+    COMMAND chmod 0755 $<TARGET_FILE_DIR:GeneralsXZH>/GeneralsXZH
+    COMMENT "Create GeneralsXZH alias for GeneralsXZH"
+)

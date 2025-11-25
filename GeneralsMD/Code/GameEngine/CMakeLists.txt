@@ -1116,6 +1116,9 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/GameSpy/Thread/PingThread.cpp
 #    Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
 #    Source/GameNetwork/GameSpyOverlay.cpp
+    Source/GameNetwork/phase43_6_gamespy_config.cpp
+    Source/phase43_6_targa.cpp
+    Source/phase43_6_memory_allocator.cpp
     Source/GameNetwork/GUIUtil.cpp
 #    Source/GameNetwork/IPEnumeration.cpp
 #    Source/GameNetwork/LANAPI.cpp
@@ -1179,3 +1182,13 @@ target_link_libraries(z_gameengine PUBLIC
 )
 
 target_precompile_headers(z_gameengine PRIVATE Include/Precompiled/PreRTS.h)
+# Phase 43.7: Ensure weak symbols are compiled with visible code
+# Disable LTO and aggressive optimizations for this target to prevent weak function elimination
+set_target_properties(z_gameengine PROPERTIES INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+# Force compilation of weak symbols by setting compile options per file
+set_source_files_properties(
+    Source/phase43_7_weak_symbols.cpp
+    PROPERTIES
+    COMPILE_FLAGS "-fno-lto -fno-optimize-sibling-calls"
+)
