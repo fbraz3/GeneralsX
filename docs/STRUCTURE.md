@@ -57,7 +57,7 @@ docs/PLANNING/
 │   ├── PHASE40_QUICK_START.md
 │   ├── PHASES_40_41_42_INDEX.md
 │   └── VULKAN_PORT_EXECUTIVE_SUMMARY.md
-├── FURTHER_PHASES/ # Future phases (50+)
+├── PLANNED_PHASES/ # Future phases (50+)
 ├── LEGACY_DOCS/    # Historical documentation (Metal/OpenGL attempts)
 ├── SIDEQUESTS/     # Optional tasks and improvements
 └── PHASE_REORGANIZATION_NOTES.md
@@ -129,7 +129,7 @@ The old structure was:
 docs/
 ├── PHASE00/, PHASE01/, ..., PHASE43/
 ├── PHASE00_5/, PHASE02_5/
-├── FURTHER_PHASES/
+├── PLANNED_PHASES/
 ├── LEGACY_DOCS/
 ├── MACOS_PORT_DIARY.md (now split into docs/DEV_BLOG/YYYY-MM-DIARY.md)
 ├── DEVELOPMENT_DIARY.md (removed)
@@ -161,7 +161,7 @@ When referencing other documentation:
 
 ```markdown
 - [All Phase Documentation](docs/PLANNING/)
-- [Further Phases](docs/PLANNING/FURTHER_PHASES/)
+- [Planned Phases](docs/PLANNING/PLANNED_PHASES/)
 - [Legacy Documentation](docs/PLANNING/LEGACY_DOCS/)
 ```
 
