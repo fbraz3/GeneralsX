@@ -227,21 +227,6 @@ CDManager* CreateCDManager()
 }
 
 // ============================================================================
-// IME System stubs
-// ============================================================================
-
-class IMEManager {
-public:
-    virtual ~IMEManager() = default;
-};
-
-IMEManager* CreateIMEManagerInterface()
-{
-    // Stub: return nullptr (no IME support in cross-platform build)
-    return nullptr;
-}
-
-// ============================================================================
 // GameSpy stubs (Network multiplayer - low priority for single-player focus)
 // ============================================================================
 

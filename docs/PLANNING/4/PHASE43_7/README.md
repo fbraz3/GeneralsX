@@ -13,6 +13,7 @@
 Phase 43.7 successfully resolved all 40+ undefined linker symbols for the Command & Conquer Generals Zero Hour executable on macOS ARM64 Vulkan platform through a multi-phase debugging process.
 
 ### Key Achievement
+
 - ✅ **40 → 7 symbols**: Enabled real source file implementations (Chat.cpp, LadderDefs.cpp, etc.)
 - ✅ **Single library linkage**: Fixed duplicate library macOS linker issue
 - ✅ **50 duplicate symbols**: Consolidated all stubs to single exe-linked file
@@ -26,11 +27,13 @@ Phase 43.7 successfully resolved all 40+ undefined linker symbols for the Comman
 ### Root Causes Identified & Fixed
 
 #### 1. Commented-Out Source Files (Initial: 40 undefined symbols)
+
 - **Problem**: Real implementations in Chat.cpp, LadderDefs.cpp, PersistentStorageThread.cpp, surfaceclass.cpp were commented out
 - **Solution**: Re-enabled these files in CMakeLists.txt
 - **Result**: Reduced to 7 undefined symbols (82% reduction)
 
 #### 2. macOS Linker Duplicate Library Behavior (Core Issue)
+
 - **Problem**: `libz_gameengine.a` appeared twice in linker command
   - Once directly from z_generals target
   - Once transitively via z_gameenginedevice (PUBLIC linkage)
@@ -40,6 +43,7 @@ Phase 43.7 successfully resolved all 40+ undefined linker symbols for the Comman
 - **Result**: Linker began finding symbols but created new duplicate errors
 
 #### 3. Weak Symbol Optimization Away (Compiler Issue)
+
 - **Problem**: Weak symbol implementations compiled to 0 bytes despite `__attribute__((noinline))`
 - **Root Cause**: LLVM LTO optimization treats weak symbols as "unreferenced" and removes them
 - **Failed Attempts**:
@@ -51,12 +55,13 @@ Phase 43.7 successfully resolved all 40+ undefined linker symbols for the Comman
 - **Result**: 50 new duplicate symbol errors (progress - now finding symbols!)
 
 #### 4. Multiple Stub Files Creating Duplicates (Architectural Issue)
+
 - **Problem**: 50+ duplicate symbols from stub files across libraries:
   - Core/Libraries/Source/Graphics/: phase41_missing_implementations.cpp, phase41_global_stubs.cpp, phase41_cpp_stubs.cpp, etc.
   - Core/Libraries/Source/WWVegas/WW3D2/: phase43_surface_texture.cpp
   - GeneralsMD/Code/GameEngine/: phase43_6_globals.cpp, phase43_7_weak_symbols.cpp
 - **Root Cause**: Multiple sources of truth for same symbols
-- **Solution**: 
+- **Solution**:
   1. Removed ALL stub files from libraries
   2. Created single consolidated `phase43_registry_stubs.cpp`
   3. Linked only to executable (not library)
@@ -119,6 +124,7 @@ Phase 43.7 successfully resolved all 40+ undefined linker symbols for the Comman
 ```
 
 **Key Observations**:
+
 - ✅ libz_gameengine.a appears exactly ONCE
 - ✅ No "ignoring duplicate libraries" warning in final build
 - ✅ Exe object files linked BEFORE libraries (highest priority)
@@ -139,6 +145,7 @@ All previously undefined symbols now resolved:
 7. ✅ `_g_LastErrorDump` → weak symbol fallback (now findable)
 
 **Verification**:
+
 ```bash
 nm build/macos-arm64-vulkan/GeneralsMD/generalszh | grep "T __Z21GetStringFromRegistry"
 # Output: 0000000100001ffc T __Z21GetStringFromRegistryRKNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEES7_RS5_
@@ -191,6 +198,7 @@ cmake --build build/macos-arm64-vulkan --target z_generals -j 4 2>&1 | tee logs/
 ### 1. macOS Linker Duplicate Library Behavior (CRITICAL DISCOVERY)
 
 macOS/Clang linker treats duplicate libraries specially:
+
 - When same .a file appears twice: Emits "ignoring duplicate libraries" warning
 - **COMPLETELY IGNORES second instance** (different from GNU ld)
 - Weak symbols in duplicate only seen in first pass
@@ -201,6 +209,7 @@ macOS/Clang linker treats duplicate libraries specially:
 ### 2. Weak Symbol Optimization Behavior
 
 LLVM LTO can optimize weak symbols to 0 bytes when:
+
 - Implementation is trivial (empty or single return)
 - Symbol only referenced in weak form
 - Compiler deems it "unreferenced" in pass
@@ -210,12 +219,14 @@ LLVM LTO can optimize weak symbols to 0 bytes when:
 ### 3. Consolidated vs Distributed Stubs
 
 **Problem Architecture** (50+ duplicates):
+
 - Multiple stub files across libraries
 - Each library independently links stubs
 - Linker sees many duplicates when all linked together
 - No single source of truth
 
 **Solution Architecture** (0 duplicates):
+
 - Single consolidated stub file
 - Linked only to executable (not library)
 - Clear source of truth
@@ -224,6 +235,7 @@ LLVM LTO can optimize weak symbols to 0 bytes when:
 ### 4. CMake Post-Build Commands
 
 CMAKE generator expressions can expand incorrectly:
+
 - `${CMAKE_COMMAND} -E copy` doesn't handle `$<TARGET_FILE:...>` well
 - Better: Use bash commands directly (cp, chmod, mv)
 - Simpler and more reliable
@@ -231,6 +243,7 @@ CMAKE generator expressions can expand incorrectly:
 ### 5. Build System Inheritance
 
 Child libraries inherit parent include paths:
+
 - If Core/Graphics includes Core/WW3D2
 - And GeneralsMD/GameEngine links Core/Graphics
 - GeneralsMD gets access to Core/WW3D2 headers transitively
@@ -242,16 +255,19 @@ Child libraries inherit parent include paths:
 ## Phase Timeline
 
 ### Beginning of Phase 43.7
+
 - **State**: 40 undefined linker symbols from multiple stub implementations
 - **Files**: ~15 stub files across Core and GeneralsMD libraries
 - **Executable**: Failed to link
 
 ### Middle of Phase 43.7 (Symbol Reduction)
+
 - **Discovery**: Real implementations in Chat.cpp, LadderDefs.cpp were commented out
 - **Action**: Re-enabled source files
 - **Result**: 40 → 7 undefined symbols (82% reduction)
 
 ### Late Middle of Phase 43.7 (Duplicate Library Discovery)
+
 - **Problem**: Linker seeing libz_gameengine.a twice
 - **Investigation**: Detailed linker command analysis
 - **Discovery**: macOS linker "ignoring duplicate libraries" behavior
@@ -259,6 +275,7 @@ Child libraries inherit parent include paths:
 - **Result**: New error - duplicate symbols (progress!)
 
 ### Late Phase 43.7 (Weak Symbol Strategy)
+
 - **Problem**: Weak symbols not being used despite being defined
 - **Investigation**: Compiler optimization behavior
 - **Discovery**: LLVM LTO removing weak symbols as "unreferenced"
@@ -267,6 +284,7 @@ Child libraries inherit parent include paths:
 - **Result**: 50 new duplicate symbols (very good progress!)
 
 ### End of Phase 43.7 (Consolidation)
+
 - **Problem**: 50 duplicate symbols from multiple stub files
 - **Solution**: Remove all library stub files, create single consolidated exe-linked file
 - **Result**: 0 duplicate symbols, executable builds successfully
@@ -286,6 +304,7 @@ Child libraries inherit parent include paths:
 ### Applicable to Other Targets
 
 These learnings apply equally to:
+
 - Generals base game (g_generals) → Phase 43.8
 - Linux builds (future phases)
 - Windows 64-bit builds (future phases)
@@ -296,15 +315,18 @@ These learnings apply equally to:
 ## Next Phases
 
 ### Immediate
+
 - **Phase 43.8**: Apply same fixes to Generals base game (g_generals)
 - **Phase 43.9**: Resolve architectural conflicts (Generals WW3D2 duplication)
 
 ### Short Term  
+
 - **Phase 44**: Runtime symbol resolution
 - **Phase 45**: Graphics backend testing
 - **Phase 46**: Asset loading and initialization
 
 ### Long Term
+
 - **Phase 50+**: Advanced gameplay and optimization
 - **Cross-platform**: Linux, Windows 64-bit ports
 
@@ -347,17 +369,20 @@ ls -lh build/macos-arm64-vulkan/GeneralsMD/GeneralsXZH
 ## Files Reference
 
 **Documentation**:
+
 - This file: `/docs/PLANNING/4/PHASE43_7/README.md` (Current - Detailed post-mortem)
 - Copilot instructions: `.github/copilot-instructions.md`
 - Project instructions: `.github/instructions/project.instructions.md`
 - Build logs: `logs/phase43_7_*.log`
 
 **Source Code**:
+
 - Registry stubs: `GeneralsMD/Code/Main/phase43_registry_stubs.cpp`
 - Main CMakeLists: `GeneralsMD/Code/Main/CMakeLists.txt`
 - GameEngineDevice linkage: `GeneralsMD/Code/GameEngineDevice/CMakeLists.txt`
 
 **Previous Phases**:
+
 - Phase 43.1-43.6: Earlier symbol discovery and analysis
 - Cross-reference: `/docs/PLANNING/4/PHASE43/`
 
@@ -377,7 +402,7 @@ ls -lh build/macos-arm64-vulkan/GeneralsMD/GeneralsXZH
 
 ---
 
-**Phase 43.7 Status**: ✅ **COMPLETE** 
+**Phase 43.7 Status**: ✅ **COMPLETE**
 
 **Result**: Successfully resolved all linker symbols for z_generals (GeneralsXZH) executable on macOS ARM64 Vulkan. Executable created and fully linked.
 

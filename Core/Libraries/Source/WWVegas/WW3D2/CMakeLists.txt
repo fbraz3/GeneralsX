@@ -181,6 +181,8 @@ set(WW3D2_SRC
     
     # Phase 43.2: Advanced Texture Systems (Real implementations)
     phase43_2_advanced_textures.cpp
+    phase43_texture_apply.cpp
+    phase43_texture_memory.cpp
     
     # Phase 43.3: Rendering Infrastructure (Real implementations)
     phase43_3_sorting_renderer.cpp
@@ -190,6 +192,7 @@ set(WW3D2_SRC
     # textdraw.cpp  # Phase 42: Temporarily commented - Font Peek_Texture method signature mismatch
     textdraw.h
     # texture.cpp  # Phase 41 Day 2: Commented - Member accessibility and signature mismatches in TextureClass hierarchy
+    texture_base.cpp
     texture.h
     # texturefilter.cpp  # Phase 42: Temporarily commented - D3DCAPS8 conversion and DX8 filter capabilities
     texturefilter.h

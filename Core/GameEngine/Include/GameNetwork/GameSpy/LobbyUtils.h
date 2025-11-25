@@ -42,6 +42,7 @@ void ToggleGameListType( void );
 
 void playerTemplateComboBoxTooltip(GameWindow *wndComboBox, WinInstanceData *instData, UnsignedInt mouse);
 void playerTemplateListBoxTooltip(GameWindow *wndListBox, WinInstanceData *instData, UnsignedInt mouse);
+void gameAcceptTooltip(GameWindow *window, WinInstanceData *instData, UnsignedInt mouse);
 
 enum GameSortType CPP_11(: Int)
 {

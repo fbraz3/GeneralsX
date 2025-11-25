@@ -30,6 +30,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <exception>
+#include <cstdio>
+#include <cstdlib>
+
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 
@@ -789,27 +793,48 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	Int startWidth = DEFAULT_DISPLAY_WIDTH;
 	Int startHeight = DEFAULT_DISPLAY_HEIGHT;
 	
+	fprintf(stderr, "initializeAppWindows: Starting POSIX SDL2 initialization\n");
+	fflush(stderr);
+	
 	gInitializing = true;
 	
 	// Initialize SDL2
-	if (!SDL_Init(SDL_INIT_VIDEO)) {
-		DEBUG_LOG(("Phase 02: Failed to initialize SDL2: %s\n", SDL_GetError()));
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		fprintf(stderr, "initializeAppWindows: Failed to initialize SDL2: %s\n", SDL_GetError());
+		fflush(stderr);
 		return false;
 	}
+	
+	fprintf(stderr, "initializeAppWindows: SDL2 initialized successfully\n");
+	fflush(stderr);
 	
 	// Calculate window position (center on screen)
 	SDL_Rect displayBounds;
 	SDL_GetDisplayBounds(0, &displayBounds);
 	
+	fprintf(stderr, "initializeAppWindows: Display bounds: %dx%d at (%d, %d)\n", 
+			displayBounds.w, displayBounds.h, displayBounds.x, displayBounds.y);
+	fflush(stderr);
+	
 	Int windowX = (displayBounds.w - startWidth) / 2;
 	Int windowY = (displayBounds.h - startHeight) / 2;
 	
+	fprintf(stderr, "initializeAppWindows: Window position: (%d, %d), size: %dx%d\n",
+			windowX, windowY, startWidth, startHeight);
+	fflush(stderr);
+	
 	// Set up window flags
 	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;
-	if (!runWindowed) {
+	if (runWindowed) {
+		// In windowed mode, allow window resizing and normal window decorations (title bar, close button)
+		windowFlags |= SDL_WINDOW_RESIZABLE;
+	} else {
 		windowFlags |= SDL_WINDOW_FULLSCREEN;
 		gDoPaint = false;
 	}
+	
+	fprintf(stderr, "initializeAppWindows: About to SDL_CreateWindow with flags=0x%x\n", windowFlags);
+	fflush(stderr);
 	
 	// Create SDL2 window for Vulkan rendering (SDL2 API)
 	SDL_Window* sdlWindow = SDL_CreateWindow(
@@ -821,19 +846,31 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 		windowFlags
 	);
 	
+	fprintf(stderr, "initializeAppWindows: SDL_CreateWindow returned: %p\n", (void*)sdlWindow);
+	fflush(stderr);
+	
 	if (!sdlWindow) {
-		DEBUG_LOG(("Phase 02: Failed to create SDL2 window: %s\n", SDL_GetError()));
+		fprintf(stderr, "initializeAppWindows: Failed to create SDL2 window: %s\n", SDL_GetError());
+		fflush(stderr);
 		SDL_Quit();
 		return false;
 	}
+	
+	fprintf(stderr, "initializeAppWindows: SDL2 window created successfully\n");
+	fflush(stderr);
 	
 	// Store SDL window handle for later use
 	// ApplicationHWnd will store the SDL_Window* pointer cast to HWND
 	ApplicationHWnd = (HWND)sdlWindow;
 	
-	DEBUG_LOG(("Phase 02: SDL2 window created successfully (%dx%d)\n", startWidth, startHeight));
+	fprintf(stderr, "initializeAppWindows: ApplicationHWnd set to: %p\n", (void*)ApplicationHWnd);
+	fflush(stderr);
 	
 	gInitializing = false;
+	
+	fprintf(stderr, "initializeAppWindows: Returning true (success)\n");
+	fflush(stderr);
+	
 	return true;  // success
 
 #endif
@@ -841,6 +878,22 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 
 // Necessary to allow memory managers and such to have useful critical sections
 static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
+
+// Global terminate handler for uncaught exceptions
+void global_terminate_handler() {
+	fprintf(stderr, "FATAL: Uncaught exception or terminate() called\n");
+	fflush(stderr);
+	std::abort();  // Will generate core dump on POSIX
+}
+
+// Global initialize function to test early startup
+static void test_early_startup() {
+	fprintf(stderr, "Global init: test_early_startup called\n");
+	fflush(stderr);
+}
+
+// Call at module load time
+static void (*early_init_marker)(void) = test_early_startup;
 
 // UnHandledExceptionFilter ===================================================
 /** Handler for unhandled win32 exceptions. */
@@ -1020,6 +1073,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif  // _WIN32
 
 		CommandLine::parseCommandLineForStartup();
+		InitializeGameSpyServerConfiguration();
 
 		// register windows class and create application window
 		if(!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
@@ -1115,47 +1169,127 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 // Non-Windows (SDL2) entry point
 Int main( Int argc, Char* argv[] )
 {
-	// On non-Windows, simulate WinMain with dummy parameters
-	Int hInstance = 0;           // No HINSTANCE on POSIX
-	Int hPrevInstance = 0;       // Not used on modern systems
-	const Char* lpCmdLine = "";        // Could build from argc/argv if needed
-	Int nCmdShow = 1;            // SW_NORMAL equivalent
-	
-	// Just call the game main logic which doesn't depend on WinMain specifics
-	// For now, we'll call into the game initialization directly
-	// This will be expanded as the port progresses
-	
+	Int exitcode = 1;
+	Int nCmdShow = 1;  // SW_NORMAL equivalent
+
+	// Install global terminate handler to catch uncaught exceptions
+	std::set_terminate(global_terminate_handler);
+
+#ifdef RTS_PROFILE
+	Profile::StartRange("init");
+#endif
+
 	try {
-		// Initialize critical sections
-		static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
+		fprintf(stderr, "POSIX main: Starting up...\n");
+		fflush(stderr);
+		
 		TheAsciiStringCriticalSection = &critSec1;
 		TheUnicodeStringCriticalSection = &critSec2;
 		TheDmaCriticalSection = &critSec3;
 		TheMemoryPoolCriticalSection = &critSec4;
 		TheDebugLogCriticalSection = &critSec5;
-		
-		// Initialize memory manager
+
+		fprintf(stderr, "POSIX main: About to initMemoryManager()...\n");
+		fflush(stderr);
 		initMemoryManager();
-		
-		// Parse command line from argc/argv
+		fprintf(stderr, "POSIX main: initMemoryManager() done\n");
+		fflush(stderr);
+
+		if (Char *basePath = SDL_GetBasePath()) {
+			fprintf(stderr, "POSIX main: SDL_GetBasePath returned: %s\n", basePath);
+			chdir(basePath);
+			SDL_free(basePath);
+		}
+
+		fprintf(stderr, "POSIX main: About to parseCommandLineForStartup()...\n");
+		fflush(stderr);
 		CommandLine::parseCommandLineForStartup();
+		fprintf(stderr, "POSIX main: parseCommandLineForStartup() done\n");
+		fflush(stderr);
 		
-		// Create and run game engine
-		TheGameEngine = CreateGameEngine();
-		if (TheGameEngine) {
-			// Initialize GameSpy server configuration from INI or environment variables
-			InitializeGameSpyServerConfiguration();
-			// Main game loop would go here
-			// For now, this is a stub
-			DEBUG_LOG(("GeneralsX Game Engine initialized on POSIX/SDL2"));
+		fprintf(stderr, "POSIX main: About to InitializeGameSpyServerConfiguration()...\n");
+		fflush(stderr);
+		InitializeGameSpyServerConfiguration();
+		fprintf(stderr, "POSIX main: InitializeGameSpyServerConfiguration() done\n");
+		fflush(stderr);
+		
+		fprintf(stderr, "POSIX main: TheGlobalData = %p\n", (void*)TheGlobalData);
+		fflush(stderr);
+
+		fprintf(stderr, "POSIX main: TheGlobalData->m_headless = %d\n", TheGlobalData->m_headless);
+		fflush(stderr);
+		
+		if (!TheGlobalData->m_headless && initializeAppWindows(NULL, nCmdShow, TheGlobalData->m_windowed) == false) {
+			fprintf(stderr, "POSIX main: initializeAppWindows() returned false, shutting down\n");
+			fflush(stderr);
+			shutdownMemoryManager();
+			return exitcode;
 		}
 		
-		return 0;
+		fprintf(stderr, "POSIX main: initializeAppWindows() succeeded\n");
+		fflush(stderr);
+
+		TheVersion = NEW Version;
+		TheVersion->setVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_BUILDNUM, VERSION_LOCALBUILDNUM,
+			AsciiString(VERSION_BUILDUSER), AsciiString(VERSION_BUILDLOC),
+			AsciiString(__TIME__), AsciiString(__DATE__));
+
+		fprintf(stderr, "POSIX main: About to rts::ClientInstance::initialize()...\n");
+		fflush(stderr);
+
+		if (!rts::ClientInstance::initialize()) {
+			fprintf(stderr, "POSIX main: rts::ClientInstance::initialize() failed\n");
+			fflush(stderr);
+			DEBUG_LOG(("Generals is already running...Bail!"));
+			delete TheVersion;
+			TheVersion = NULL;
+			shutdownMemoryManager();
+			return exitcode;
+		}
+
+		fprintf(stderr, "POSIX main: rts::ClientInstance::initialize() succeeded\n");
+		fflush(stderr);
+
+		DEBUG_LOG(("Create Generals Mutex okay."));
+		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
+
+		fprintf(stderr, "POSIX main: About to call GameMain()...\n");
+		fflush(stderr);
+		exitcode = GameMain();
+		fprintf(stderr, "POSIX main: GameMain() returned %d\n", exitcode);
+		fflush(stderr);
+
+		delete TheVersion;
+		TheVersion = NULL;
+
+#ifdef MEMORYPOOL_DEBUG
+		TheMemoryPoolFactory->debugMemoryReport(REPORT_POOLINFO | REPORT_POOL_OVERFLOW | REPORT_SIMPLE_LEAKS, 0, 0);
+#endif
+#if defined(RTS_DEBUG)
+		TheMemoryPoolFactory->memoryPoolUsageReport("AAAMemStats");
+#endif
+
+		shutdownMemoryManager();
+		SDL_Quit();
+	}
+	catch (const std::exception& e)
+	{
+		DEBUG_LOG(("FATAL: Caught std::exception in POSIX main: %s\n", e.what()));
+		fprintf(stderr, "FATAL: Caught std::exception in POSIX main: %s\n", e.what());
+		exitcode = 2;
 	}
 	catch (...)
 	{
-		return 1;
+		DEBUG_LOG(("FATAL: Caught unknown exception in POSIX main\n"));
+		fprintf(stderr, "FATAL: Caught unknown exception in POSIX main\n");
+		exitcode = 3;
 	}
+
+	TheUnicodeStringCriticalSection = NULL;
+	TheDmaCriticalSection = NULL;
+	TheMemoryPoolCriticalSection = NULL;
+
+	return exitcode;
 }
 
 #endif  // _WIN32

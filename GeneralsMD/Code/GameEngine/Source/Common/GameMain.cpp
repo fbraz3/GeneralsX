@@ -39,27 +39,52 @@
 Int GameMain()
 {
 	int exitcode = 0;
+	fprintf(stderr, "GameMain(): Starting\n");
+	fflush(stderr);
+
 	// initialize the game engine using factory function
 	TheFramePacer = new FramePacer();
+	fprintf(stderr, "GameMain(): FramePacer created\n");
+	fflush(stderr);
+
 	TheFramePacer->enableFramesPerSecondLimit(TRUE);
 	TheGameEngine = CreateGameEngine();
+	fprintf(stderr, "GameMain(): GameEngine created: %p\n", (void*)TheGameEngine);
+	fflush(stderr);
+
+	fprintf(stderr, "GameMain(): Calling TheGameEngine->init()...\n");
+	fflush(stderr);
 	TheGameEngine->init();
+	fprintf(stderr, "GameMain(): TheGameEngine->init() completed\n");
+	fflush(stderr);
 
 	if (!TheGlobalData->m_simulateReplays.empty())
 	{
+		fprintf(stderr, "GameMain(): Simulating replays\n");
+		fflush(stderr);
 		exitcode = ReplaySimulation::simulateReplays(TheGlobalData->m_simulateReplays, TheGlobalData->m_simulateReplayJobs);
 	}
 	else
 	{
 		// run it
+		fprintf(stderr, "GameMain(): Calling TheGameEngine->execute()...\n");
+		fflush(stderr);
 		TheGameEngine->execute();
+		fprintf(stderr, "GameMain(): TheGameEngine->execute() completed\n");
+		fflush(stderr);
 	}
 
 	// since execute() returned, we are exiting the game
+	fprintf(stderr, "GameMain(): Cleaning up\n");
+	fflush(stderr);
+
 	delete TheFramePacer;
 	TheFramePacer = NULL;
 	delete TheGameEngine;
 	TheGameEngine = NULL;
+
+	fprintf(stderr, "GameMain(): Returning exitcode = %d\n", exitcode);
+	fflush(stderr);
 
 	return exitcode;
 }

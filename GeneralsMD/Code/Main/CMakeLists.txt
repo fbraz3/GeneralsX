@@ -70,7 +70,7 @@ endif()
 
 # Create a convenience copy with canonical name `GeneralsXZH` in the runtime output directory
 add_custom_command(TARGET GeneralsXZH POST_BUILD
-    COMMAND cp $<TARGET_FILE:GeneralsXZH> $<TARGET_FILE_DIR:GeneralsXZH>/GeneralsXZH
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:GeneralsXZH> $<TARGET_FILE_DIR:GeneralsXZH>/GeneralsXZH
     COMMAND chmod 0755 $<TARGET_FILE_DIR:GeneralsXZH>/GeneralsXZH
     COMMENT "Create GeneralsXZH alias for GeneralsXZH"
 )

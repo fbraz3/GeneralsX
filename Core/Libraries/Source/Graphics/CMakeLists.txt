@@ -10,6 +10,9 @@ add_library(graphics_drivers STATIC
     GraphicsDriverFactory.cpp
     DRIVER_ARCHITECTURE.md
     
+    # Phase 41: Global stubs
+    phase41_global_stubs.cpp
+    
     # DirectX 8 Compatibility Layer (Phase 41)
     dx8buffer_compat.h
     dx8buffer_compat.cpp

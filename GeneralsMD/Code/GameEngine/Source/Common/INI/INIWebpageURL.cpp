@@ -32,6 +32,7 @@
 
 #include "Common/INI.h"
 #include "Common/Registry.h"
+#include <cstddef>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +42,24 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+class WebBrowserURL
+{
+public:
+	WebBrowserURL() {}
+	const FieldParse *getFieldParse( void ) const { return m_URLFieldParseTable; }
+
+	AsciiString m_tag;
+	AsciiString m_url;
+
+	static const FieldParse m_URLFieldParseTable[];
+};
+
+const FieldParse WebBrowserURL::m_URLFieldParseTable[] =
+{
+	{ "URL", INI::parseAsciiString, NULL, offsetof( WebBrowserURL, m_url ) },
+	{ NULL, NULL, NULL, 0 }
+};
 
 AsciiString encodeURL(AsciiString source)
 {
@@ -74,5 +93,26 @@ AsciiString encodeURL(AsciiString source)
 //-------------------------------------------------------------------------------------------------
 /** Parse Music entry */
 //-------------------------------------------------------------------------------------------------
+
+void INI::parseWebpageURLDefinition( INI* ini )
+{
+	AsciiString tag;
+	const char* c = ini->getNextToken();
+	tag.set( c );
+
+	WebBrowserURL url;
+	url.m_tag.set( tag );
+
+	ini->initFromINI( &url, url.getFieldParse() );
+
+	if (url.m_url.startsWith("file://"))
+	{
+		char cwd[_MAX_PATH] = "\\";
+		getcwd(cwd, _MAX_PATH);
+
+		url.m_url.format("file://%s\\Data\\%s\\%s", encodeURL(cwd).str(), GetRegistryLanguage().str(), url.m_url.str()+7);
+		DEBUG_LOG(("INI::parseWebpageURLDefinition() - converted URL to [%s]", url.m_url.str()));
+	}
+}
 
 

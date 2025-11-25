@@ -20,16 +20,77 @@
 // Phase 39.4: Temporarily disable include - header path issue to be resolved in CMakeLists configuration
 // #include "WWVegas/win32_thread_compat.h"
 
-// SDL2 Mutex stubs (Phase 39.4 - implementation is no-op for cross-platform compatibility)
-inline void* SDL2_CreateMutex(const char* name) { return nullptr; }
-inline void SDL2_DestroyMutex(void* mutex) { }
-inline int SDL2_LockMutex(void* mutex) { return 0; }
-inline void SDL2_UnlockMutex(void* mutex) { }
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mutex.h>
+
+// Phase 45+: Real SDL2 Mutex implementation
+// Note: We can't use SDL_mutex directly for cross-platform named mutexes since SDL2
+// doesn't have native named mutex support. We'll use a simple reference counting
+// approach with static SDL_mutex per unique identifier.
+#include <map>
+
+static SDL_mutex* g_clientMutex = nullptr;
+static std::map<std::string, int> g_mutexRefCounts;
 
 #define GENERALS_GUID "685EAFF2-3216-4265-B047-251C5F4B82F3"
 
 namespace rts
 {
+// Phase 45+: Real SDL2 mutex functions
+// Since SDL2 doesn't support named mutexes, we use a global mutex per unique identifier
+static void* SDL2_CreateMutex(const char* name) {
+	fprintf(stderr, "ClientInstance: SDL2_CreateMutex called for '%s'\n", name ? name : "(null)");
+	fflush(stderr);
+	
+	// We allocate a simple handle that will be used to track mutex creation attempts
+	// For single-instance mode, we just need ONE successful creation
+	// For multi-instance mode, we need separate handles per instance
+	
+	if (g_clientMutex == nullptr) {
+		g_clientMutex = SDL_CreateMutex();
+		if (g_clientMutex != nullptr) {
+			fprintf(stderr, "ClientInstance: SDL2_CreateMutex succeeded, created new global mutex\n");
+			fflush(stderr);
+			// Return a non-null handle to indicate success
+			// We use the mutex pointer itself as the handle
+			return (void*)g_clientMutex;
+		} else {
+			fprintf(stderr, "ClientInstance: SDL2_CreateMutex failed to create global mutex\n");
+			fflush(stderr);
+			return nullptr;
+		}
+	} else {
+		// Mutex already exists - this is success for multi-instance mode
+		fprintf(stderr, "ClientInstance: SDL2_CreateMutex: global mutex already exists (multi-instance)\n");
+		fflush(stderr);
+		return nullptr;  // Return nullptr to allow next instance to try
+	}
+}
+
+static void SDL2_DestroyMutex(void* mutex) {
+	if (mutex != nullptr && mutex == (void*)g_clientMutex) {
+		fprintf(stderr, "ClientInstance: SDL2_DestroyMutex\n");
+		fflush(stderr);
+		if (g_clientMutex != nullptr) {
+			SDL_DestroyMutex(g_clientMutex);
+			g_clientMutex = nullptr;
+		}
+	}
+}
+
+static int SDL2_LockMutex(void* mutex) {
+	if (g_clientMutex != nullptr) {
+		return SDL_LockMutex(g_clientMutex);
+	}
+	return 0;
+}
+
+static void SDL2_UnlockMutex(void* mutex) {
+	if (g_clientMutex != nullptr) {
+		SDL_UnlockMutex(g_clientMutex);
+	}
+}
+
 void* ClientInstance::s_mutexHandle = nullptr;  // Phase 39.4: Opaque handle to SDL2_Mutex
 UnsignedInt ClientInstance::s_instanceIndex = 0;
 
@@ -43,8 +104,13 @@ bool ClientInstance::initialize()
 {
 	if (isInitialized())
 	{
+		fprintf(stderr, "ClientInstance::initialize: Already initialized (s_mutexHandle = %p)\n", s_mutexHandle);
+		fflush(stderr);
 		return true;
 	}
+
+	fprintf(stderr, "ClientInstance::initialize: Starting initialization (isMultiInstance=%d)\n", isMultiInstance());
+	fflush(stderr);
 
 	// Create a mutex with a unique name to Generals in order to determine if our app is already running.
 	// WARNING: DO NOT use this number for any other application except Generals.
@@ -60,25 +126,38 @@ bool ClientInstance::initialize()
 				guidStr.push_back('-');
 				guidStr.append(idStr);
 			}
+			fprintf(stderr, "ClientInstance::initialize: Trying multi-instance with ID: %s\n", guidStr.c_str());
+			fflush(stderr);
+			
 			s_mutexHandle = SDL2_CreateMutex(guidStr.c_str());
 			if (s_mutexHandle == NULL)
 			{
 				// Mutex already exists, try again with a new instance index
+				fprintf(stderr, "ClientInstance::initialize: Instance already exists, trying next index\n");
+				fflush(stderr);
 				++s_instanceIndex;
 				continue;
 			}
 		}
 		else
 		{
+			fprintf(stderr, "ClientInstance::initialize: Creating single-instance mutex\n");
+			fflush(stderr);
+			
 			s_mutexHandle = SDL2_CreateMutex(getFirstInstanceName());
 			if (s_mutexHandle == NULL)
 			{
+				fprintf(stderr, "ClientInstance::initialize: Single-instance mutex creation failed\n");
+				fflush(stderr);
 				return false;
 			}
 		}
 		break;
 	}
 
+	fprintf(stderr, "ClientInstance::initialize: Initialization successful (s_mutexHandle = %p)\n", s_mutexHandle);
+	fflush(stderr);
+	
 	return true;
 }
 

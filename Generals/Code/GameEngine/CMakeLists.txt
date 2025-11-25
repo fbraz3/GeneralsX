@@ -744,6 +744,8 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/HeaderTemplate.cpp
     # IMEManager.cpp - Windows-only IME (Input Method Editor) support
     $<$<BOOL:${WIN32}>:Source/GameClient/GUI/IMEManager.cpp>
+    # Null IME fallback for non-Windows builds so we still export TheIMEManager
+    $<$<NOT:$<BOOL:${WIN32}>>:Source/GameClient/GUI/IMEManagerNull.cpp>
     Source/GameClient/GUI/LoadScreen.cpp
     Source/GameClient/GUI/ProcessAnimateWindow.cpp
     Source/GameClient/GUI/Shell/Shell.cpp

@@ -937,3 +937,29 @@ void playerTemplateListBoxTooltip(GameWindow *wndListBox, WinInstanceData *instD
 	// use no tooltip delay here
 	TheMouse->setCursorTooltip(ustringTooltip, 0);
 }
+
+void gameAcceptTooltip(GameWindow *window, WinInstanceData *instData, UnsignedInt mouse)
+{
+	if (!window || !TheMouse || !TheGameText)
+	{
+		return;
+	}
+
+	Int x = LOLONGTOSHORT(mouse);
+	Int y = HILONGTOSHORT(mouse);
+
+	Int winPosX = 0;
+	Int winPosY = 0;
+	Int winWidth = 0;
+	Int winHeight = 0;
+
+	window->winGetScreenPosition(&winPosX, &winPosY);
+	window->winGetSize(&winWidth, &winHeight);
+
+	const Bool insideX = (x >= winPosX) && (x <= (winPosX + winWidth));
+	const Bool insideY = (y >= winPosY) && (y <= (winPosY + winHeight));
+	if (insideX && insideY)
+	{
+		TheMouse->setCursorTooltip(TheGameText->fetch("TOOLTIP:GameAcceptance"), -1, NULL);
+	}
+}

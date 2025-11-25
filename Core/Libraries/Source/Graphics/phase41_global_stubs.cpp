@@ -1,127 +1,47 @@
 /**
- * Phase 41: Global stub symbols
+ * Phase 43.6: Critical Runtime Symbols
  * 
- * These are global variables and weak implementations needed by the game
- * but not yet implemented in the graphics/network backends.
+ * These are ONLY the symbols that dyld cannot find in any linked library.
+ * All other stubs have been removed to avoid conflicts.
  */
 
 #include <cstdint>
-#include <cstring>
 
-// ============================================================================
-// Namespace declaration for C++ name mangling fix
-// ============================================================================
-// These functions are called from C++ code with C++ name mangling,
-// but defined with extern "C" for C linkage. We need to export them properly.
+// NOTE: These symbols MUST use C linkage (extern "C") to avoid name mangling.
+// We define BOTH underscored and non-underscored versions where they don't conflict.
 
-// ============================================================================
-// Global Variables (with correct C linkage)
-// ============================================================================
+#if defined(__clang__) || defined(__GNUC__)
+#define WEAK_GLOBAL __attribute__((weak))
+#else
+#define WEAK_GLOBAL
+#endif
 
 extern "C" {
-    // These must match the types expected by callers
-    int DX8Wrapper_PreserveFPU = 0;
-    bool DontShowMainMenu = false;
+    // FPU control
+    int DX8Wrapper_PreserveFPU WEAK_GLOBAL = 0;
+    int _DX8Wrapper_PreserveFPU WEAK_GLOBAL = 0;
+    
+    // Menu UI state
+    unsigned char DontShowMainMenu WEAK_GLOBAL = 0;
+    unsigned char _DontShowMainMenu WEAK_GLOBAL = 0;
+    
+    // GameSpy globals - only define non-conflicting versions
+    void* TheGameResultsQueue WEAK_GLOBAL = nullptr;
+    void* _TheGameResultsQueue WEAK_GLOBAL = nullptr;
+    void* TheGameSpyBuddyMessageQueue WEAK_GLOBAL = nullptr;
+    void* _TheGameSpyBuddyMessageQueue WEAK_GLOBAL = nullptr;
+    void* TheGameSpyConfig WEAK_GLOBAL = nullptr;
+    void* _TheGameSpyConfig WEAK_GLOBAL = nullptr;
+    void* TheGameSpyPeerMessageQueue WEAK_GLOBAL = nullptr;
+    void* _TheGameSpyPeerMessageQueue WEAK_GLOBAL = nullptr;
+    void* ThePinger WEAK_GLOBAL = nullptr;
+    void* _ThePinger WEAK_GLOBAL = nullptr;
+    void* IMEManager WEAK_GLOBAL = nullptr;
+    void* _IMEManager WEAK_GLOBAL = nullptr;
+    void* g_LastErrorDump WEAK_GLOBAL = nullptr;
+    void* _g_LastErrorDump WEAK_GLOBAL = nullptr;
+    void* TheFunctionLexicon WEAK_GLOBAL = nullptr;
+    void* _TheFunctionLexicon WEAK_GLOBAL = nullptr;
 }
 
-// Forward declarations of C++ classes
-class FunctionLexicon;
-class GameResultsInterface;
-class IMEManagerInterface;
-class PingerInterface;
-
-extern "C" {
-    // Pointers to C++ objects - use void* to avoid C++ name mangling issues
-    void* TheFunctionLexicon = nullptr;
-    void* TheGameResultsQueue = nullptr;
-    void* TheIMEManager = nullptr;
-    void* TheGameSpyBuddyMessageQueue = nullptr;
-    void* TheGameSpyConfig = nullptr;
-    void* TheGameSpyGame = nullptr;
-    void* TheGameSpyInfo = nullptr;
-    void* TheGameSpyPSMessageQueue = nullptr;
-    void* TheGameSpyPeerMessageQueue = nullptr;
-    void* ThePinger = nullptr;
-    void* TheLadderList = nullptr;
-    void* _g_LastErrorDump = nullptr;
-    void* GameSpyColor = nullptr;
-}
-
-// ============================================================================
-// Function Stubs with PROPER C++ linkage
-// ============================================================================
-// These functions are called from C++ code, so they need C++ name mangling.
-// However, we use extern "C" wrapper functions with C linkage for compatibility.
-
-// C++ implementation functions (these get proper C++ name mangling)
-void PopBackToLobby() { }
-void StartPatchCheck() { }
-void CancelPatchCheckCallback() { }
-void TearDownGameSpy() { }
-void updateBuddyInfo() { }
-void HTTPThinkWrapper() { }
-void InitBuddyControls(int param) { }
-void StopAsyncDNSCheck() { }
-void RefreshGameListBoxes() { }
-void deleteNotificationBox() { }
-void PopulateOldBuddyMessages() { }
-void LookupSmallRankImage(int rank, int side) { }
-int MultiByteToWideCharSingleLine(const char* str) { return str ? strlen(str) : 0; }
-
-int GetStringFromRegistry(const char* key1, const char* key2, char* result)
-{
-    if (result) *result = '\0';
-    return 0;
-}
-
-int SetStringInRegistry(const char* key1, const char* key2, const char* value)
-{
-    return 0;
-}
-
-int GetUnsignedIntFromRegistry(const char* key1, const char* key2, unsigned int* result)
-{
-    if (result) *result = 0;
-    return 0;
-}
-
-int SetUnsignedIntInRegistry(const char* key1, const char* key2, unsigned int value)
-{
-    return 0;
-}
-
-int OSDisplayWarningBox(const char* title, const char* message, unsigned int type, unsigned int flags)
-{
-    return 0;
-}
-
-void OSDisplaySetBusyState(bool busy, bool complete) { }
-
-void StackDumpFromAddresses(void** addresses, unsigned int count, void (*callback)(const char*)) { }
-
-// GameSpy overlay stubs
-void GameSpyCloseAllOverlays() { }
-void GameSpyCloseOverlay(int type) { }
-int GameSpyIsOverlayOpen(int type) { return 0; }
-void GameSpyOpenOverlay(int type) { }
-void GameSpyToggleOverlay(int type) { }
-void GameSpyUpdateOverlays() { }
-
-// Registry stubs
-int GetRegistryLanguage() { return 0; }
-
-// File system stubs
-void Load_Texture(void* chunk) { }
-
-// Allocator stubs
-void* FastAllocatorGeneral_Get_Allocator() { return nullptr; }
-
-// Stack trace stubs
-void FillStackAddresses(void** addresses, unsigned int count, unsigned int skip) { }
-
-// GameSpy interface stubs
-void* GameResultsInterface_createNewGameResultsInterface() { return nullptr; }
-void* GameSpyStagingRoom_generateGameSpyGameResultsPacket() { return nullptr; }
-void* GameSpyStagingRoom_generateLadderGameResultsPacket() { return nullptr; }
-int GameSpyStagingRoom_getGameSpySlot(int slot) { return -1; }
-
+#undef WEAK_GLOBAL

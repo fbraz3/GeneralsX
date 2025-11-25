@@ -593,6 +593,8 @@ public:
     // Static methods for texture management
     static void Shutdown() {}  // Phase 39.4: Shutdown texture manager (no-op stub)
     static void Free_Video_Memory(void*) {}  // Phase 39.4: Free video memory (no-op stub)
+    static void Add(void*) {}
+    static void Remove(void*) {}
 };
 
 // DirectX Mesh Renderer stub

@@ -77,6 +77,7 @@ public:
 	// handling system to load the texture immediatelly next time it enters the main thread. If this function
 	// is called from the main thread the texture is loaded immediatelly.
 	static void Request_Foreground_Loading(TextureBaseClass* tc);
+	static void Add_Load_Task(TextureBaseClass* tc);
 
 	static void	Flush_Pending_Load_Tasks(void);
 	static void Update(void(*network_callback)(void) = NULL);
@@ -95,6 +96,7 @@ private:
 
 	static void Begin_Load_And_Queue				(TextureLoadTaskClass *task);
 	static void Load_Thumbnail						(TextureBaseClass *tc);
+	static void Apply_Fallback_Texture(TextureBaseClass* tc);
 
 	static bool TextureLoadSuspended;
 

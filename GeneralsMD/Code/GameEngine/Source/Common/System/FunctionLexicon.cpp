@@ -16,23 +16,84 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-////////////////////////////////////////////////////////////////////////////////
-//																																						//
-//  (c) 2001-2003 Electronic Arts Inc.																				//
-//																																						//
-////////////////////////////////////////////////////////////////////////////////
-
 // FILE: FunctionLexicon.cpp //////////////////////////////////////////////////////////////////////
-// Created:    Colin Day, September 2001
-// Desc:       Collection of function pointers to help us in managing
-//						 and assign callbacks
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "PreRTS.h"
+#include "Common/FunctionLexicon.h"
+#include <cstring>
+#include <typeinfo>
 
-#ifdef NOT_IN_USE
-#endif
+FunctionLexicon *TheFunctionLexicon = NULL;
 
-// Stub implementation for non-Windows platforms
-// FunctionLexicon is a Windows UI callback registry that is not applicable on other platforms
+static const std::type_info *FunctionLexiconTypeInfo = &typeid(FunctionLexicon);
 
+FunctionLexicon::FunctionLexicon( void )
+{
+	memset( m_tables, 0, sizeof( m_tables ) );
+}
+
+FunctionLexicon::~FunctionLexicon( void )
+{
+	// nothing to clean up for stubbed tables
+}
+
+void FunctionLexicon::init( void )
+{
+	// stub platform does not register UI callbacks
+}
+
+void FunctionLexicon::reset( void )
+{
+	// nothing to reset in stub implementation
+}
+
+void FunctionLexicon::update( void )
+{
+	// no dynamic behavior needed
+}
+
+Bool FunctionLexicon::validate( void )
+{
+	return true;
+}
+
+void FunctionLexicon::loadTable( TableEntry *table, TableIndex tableIndex )
+{
+	m_tables[ tableIndex ] = table;
+}
+
+void *FunctionLexicon::keyToFunc( NameKeyType key, TableEntry *table )
+{
+	if ( key == NAMEKEY_INVALID )
+	{
+		return NULL;
+	}
+
+	for ( TableEntry *entry = table; entry && entry->name; ++entry )
+	{
+		if ( entry->key == key )
+		{
+			return entry->func;
+		}
+	}
+
+	return NULL;
+}
+
+void *FunctionLexicon::findFunction( NameKeyType key, TableIndex index )
+{
+	if ( index == TABLE_ANY )
+	{
+		for ( int table = 0; table < MAX_FUNCTION_TABLES; ++table )
+		{
+			void *result = keyToFunc( key, m_tables[ table ] );
+			if ( result )
+			{
+				return result;
+			}
+		}
+		return NULL;
+	}
+
+	return keyToFunc( key, m_tables[ index ] );
+}

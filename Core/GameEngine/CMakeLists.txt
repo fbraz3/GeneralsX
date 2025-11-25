@@ -1111,7 +1111,7 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/GameSpy/Chat.cpp
     #Source/GameNetwork/GameSpy/GSConfig.cpp
     Source/GameNetwork/GameSpy/LadderDefs.cpp
-    #Source/GameNetwork/GameSpy/LobbyUtils.cpp
+    Source/GameNetwork/GameSpy/LobbyUtils.cpp
     #Source/GameNetwork/GameSpy/MainMenuUtils.cpp
     Source/GameNetwork/GameSpy/PeerDefs.cpp
     Source/GameNetwork/GameSpy/StagingRoomGameInfo.cpp
