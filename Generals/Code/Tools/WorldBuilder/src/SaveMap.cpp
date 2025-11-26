@@ -156,15 +156,11 @@ void SaveMap::populateMapListbox( Bool systemMaps )
 						pList->AddString(findData.cFileName);
 					};
 				}
-			} catch(...) {}
-
-		} while (FindNextFile(hFindFile, &findData));
-
-		if (hFindFile) FindClose(hFindFile);
- 	}
-	CEdit *pEdit = (CEdit*)GetDlgItem(IDC_SAVE_MAP_EDIT);
-	if (pEdit != NULL) {
-		strlcpy(fileBuf, m_pInfo->filename, ARRAY_SIZE(fileBuf));
+		} catch (const std::exception& e) {
+			DEBUG_LOG(("SaveMap::populateMapListbox - CFile::GetStatus failed: %s", e.what()));
+		} catch (...) {
+			DEBUG_LOG(("SaveMap::populateMapListbox - CFile::GetStatus failed with unknown exception"));
+		}
 		Int len = strlen(fileBuf);
 		if (len>4 && stricmp(".map", fileBuf+(len-4)) == 0) {
 			// strip of the .map

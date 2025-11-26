@@ -228,38 +228,35 @@ void PopupSlider::New(CWnd *pParentWnd, long kind,
 
 	DEBUG_ASSERTCRASH(pSliderOwner, ("slider owner is NULL!"));
 
-	try {
-		CRect rect;
+	CRect rect;
 
-		pParentWnd->GetWindowRect(&rect);
+	pParentWnd->GetWindowRect(&rect);
 
-		rect.left = rect.right;
-		pPopupSlider = new PopupSlider();
+	rect.left = rect.right;
+	pPopupSlider = new PopupSlider();
 
-		pPopupSlider->mSliderOwner = pSliderOwner;
-		pPopupSlider->mSliderID = sliderID;
-		pPopupSlider->m_kind = kind;
-
-		pSliderOwner->GetPopSliderInfo(pPopupSlider->mSliderID,
-								&(pPopupSlider->m_lo),
-								&(pPopupSlider->m_hi),
-								&(pPopupSlider->m_lineSize),
-								&(pPopupSlider->m_curValue));
-
-		DEBUG_ASSERTCRASH(pPopupSlider->m_hi != pPopupSlider->m_lo, ("PopupSlider: endpoint values are the same!"));
-		DEBUG_ASSERTCRASH(pPopupSlider->m_lineSize != 0, ("PopupSlider: line size is zero!"));
-
-		pPopupSlider->Create(rect, pParentWnd);
-
-		/* if the slider is successfully created, it will
-		be deleted automatically by its PostNcDestroy
-		member function */
-	} catch (...) {
-		// don't rethrow
-		delete pPopupSlider;
-		pPopupSlider = NULL;
-
+	if (pPopupSlider == NULL) {
+		return;
 	}
+
+	pPopupSlider->mSliderOwner = pSliderOwner;
+	pPopupSlider->mSliderID = sliderID;
+	pPopupSlider->m_kind = kind;
+
+	pSliderOwner->GetPopSliderInfo(pPopupSlider->mSliderID,
+							&(pPopupSlider->m_lo),
+							&(pPopupSlider->m_hi),
+							&(pPopupSlider->m_lineSize),
+							&(pPopupSlider->m_curValue));
+
+	DEBUG_ASSERTCRASH(pPopupSlider->m_hi != pPopupSlider->m_lo, ("PopupSlider: endpoint values are the same!"));
+	DEBUG_ASSERTCRASH(pPopupSlider->m_lineSize != 0, ("PopupSlider: line size is zero!"));
+
+	pPopupSlider->Create(rect, pParentWnd);
+
+	/* if the slider is successfully created, it will
+	be deleted automatically by its PostNcDestroy
+	member function */
 
 	gPopupSlider = pPopupSlider;
 	// gPopupSlider will be deleted when its PostNcDestroy method is called

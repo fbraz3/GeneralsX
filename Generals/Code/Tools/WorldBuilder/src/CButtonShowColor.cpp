@@ -24,32 +24,27 @@
 // CButtonShowColor ///////////////////////////////////////////////////////////////////////////////
 void CButtonShowColor::OnPaint()
 {
-	try {
-		CPaintDC paintDC(this);
+	CPaintDC paintDC(this);
 
-		CPen pen(PS_SOLID, 1, 0xFFFFFF00);
-		CBrush brush(RGBtoBGR(m_color.getAsInt()));
-		// Select my stuff
-		CPen *oldPen = paintDC.SelectObject(&pen);
+	CPen pen(PS_SOLID, 1, 0xFFFFFF00);
+	CBrush brush(RGBtoBGR(m_color.getAsInt()));
+	// Select my stuff
+	CPen *oldPen = paintDC.SelectObject(&pen);
 
-		CRect rect;
-		GetWindowRect(&rect);
-		ScreenToClient(&rect);
+	CRect rect;
+	GetWindowRect(&rect);
+	ScreenToClient(&rect);
 
-		paintDC.FillRect(&rect, &brush);
-		paintDC.MoveTo(rect.left, rect.top);
-		paintDC.LineTo(rect.right, rect.top);
-		paintDC.LineTo(rect.right, rect.bottom);
-		paintDC.LineTo(rect.left, rect.bottom);
-		paintDC.LineTo(rect.left, rect.top);
+	paintDC.FillRect(&rect, &brush);
+	paintDC.MoveTo(rect.left, rect.top);
+	paintDC.LineTo(rect.right, rect.top);
+	paintDC.LineTo(rect.right, rect.bottom);
+	paintDC.LineTo(rect.left, rect.bottom);
+	paintDC.LineTo(rect.left, rect.top);
 
-		// Restore the states.
-		paintDC.SelectObject(oldPen);
-
-	} catch (...) {
-		// Unlikely, but possible.
-		return;
-	}
+	// Restore the states.
+	paintDC.SelectObject(oldPen);
+}
 }
 
 CButtonShowColor::~CButtonShowColor()

@@ -114,7 +114,11 @@ void __declspec(dllexport) CreateParticleSystemDialog(void)
 		}
 
 		theApp.SetDialogWindow(tmpWnd);
-	} catch (...) { }
+	} catch (const std::exception& e) {
+		DEBUG_LOG(("CreateParticleSystemDialog: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("CreateParticleSystemDialog: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) DestroyParticleSystemDialog(void)
@@ -128,7 +132,11 @@ void __declspec(dllexport) DestroyParticleSystemDialog(void)
 			delete tmpWnd;
 			theApp.SetDialogWindow(NULL);
 		}
-	} catch (...) { }
+	} catch (const std::exception& e) {
+		DEBUG_LOG(("DestroyParticleSystemDialog: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("DestroyParticleSystemDialog: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) RemoveAllParticleSystems(void)
@@ -140,7 +148,11 @@ void __declspec(dllexport) RemoveAllParticleSystems(void)
 		if (tmpWnd) {
 			tmpWnd->clearAllParticleSystems();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) AppendParticleSystem(const char* particleSystemName)
@@ -152,7 +164,11 @@ void __declspec(dllexport) AppendParticleSystem(const char* particleSystemName)
 		if (tmpWnd) {
 			tmpWnd->addParticleSystem(particleSystemName);
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) RemoveAllThingTemplates( void )
@@ -164,7 +180,11 @@ void __declspec(dllexport) RemoveAllThingTemplates( void )
 		if (tmpWnd) {
 			tmpWnd->clearAllThingTemplates();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 
@@ -177,7 +197,11 @@ void __declspec(dllexport) AppendThingTemplate( const char* thingTemplateName )
 		if (tmpWnd) {
 			tmpWnd->addThingTemplate(thingTemplateName);
 		}
-	} catch (...) {	}
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 
@@ -190,7 +214,11 @@ Bool __declspec(dllexport) HasUpdatedSelectedParticleSystem( void )
 		if (tmpWnd) {
 			return tmpWnd->hasSelectionChanged();
 		}
-	} catch (...) {	}
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 
 	return false;
 }
@@ -204,7 +232,11 @@ void __declspec(dllexport) GetSelectedParticleSystemName( char *bufferToCopyInto
 		if (tmpWnd) {
 			tmpWnd->getSelectedSystemName(bufferToCopyInto);
 		}
-	} catch (...) {	}
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) UpdateCurrentParticleCap( int currentParticleCap )
@@ -216,7 +248,11 @@ void __declspec(dllexport) UpdateCurrentParticleCap( int currentParticleCap )
 		if (tmpWnd) {
 			tmpWnd->updateCurrentParticleCap(currentParticleCap);
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) UpdateCurrentNumParticles( int currentParticleCount )
@@ -228,7 +264,11 @@ void __declspec(dllexport) UpdateCurrentNumParticles( int currentParticleCount )
 		if (tmpWnd) {
 			tmpWnd->updateCurrentNumParticles(currentParticleCount);
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 int __declspec(dllexport) GetNewParticleCap( void )
@@ -240,7 +280,11 @@ int __declspec(dllexport) GetNewParticleCap( void )
 		if (tmpWnd) {
 			return tmpWnd->getNewParticleCap();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 	return -1;
 }
 
@@ -257,7 +301,11 @@ void __declspec(dllexport) GetSelectedParticleAsciiStringParm( int parmNum, char
 				(*whichTemplate) = tmpWnd->getCurrentParticleSystem();
 			}
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) UpdateParticleAsciiStringParm( int parmNum, const char *bufferToCopyFrom, ParticleSystemTemplate **whichTemplate)
@@ -272,7 +320,11 @@ void __declspec(dllexport) UpdateParticleAsciiStringParm( int parmNum, const cha
 				(*whichTemplate) = tmpWnd->getCurrentParticleSystem();
 			}
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) UpdateCurrentParticleSystem( ParticleSystemTemplate *particleTemplate)
@@ -284,7 +336,11 @@ void __declspec(dllexport) UpdateCurrentParticleSystem( ParticleSystemTemplate *
 		if (tmpWnd) {
 			tmpWnd->updateCurrentParticleSystem(particleTemplate);
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 }
 
 void __declspec(dllexport) UpdateSystemUseParameters( ParticleSystemTemplate *particleTemplate)
@@ -308,7 +364,11 @@ Bool __declspec(dllexport) ShouldWriteINI( void )
 		if (tmpWnd) {
 			return tmpWnd->shouldWriteINI();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 
 	return false;
 }
@@ -322,7 +382,11 @@ Bool __declspec(dllexport) HasRequestedReload( void )
 		if (tmpWnd) {
 			return tmpWnd->hasRequestedReload();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 
 	return false;
 }
@@ -336,7 +400,11 @@ Bool __declspec(dllexport) ShouldBusyWait( void )
 		if (tmpWnd) {
 			return tmpWnd->shouldBusyWait();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 
 	return false;
 }
@@ -350,7 +418,11 @@ Bool __declspec(dllexport) ShouldUpdateParticleCap( void )
 		if (tmpWnd) {
 			return tmpWnd->shouldUpdateParticleCap();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 
 	return false;
 }
@@ -364,7 +436,11 @@ Bool __declspec(dllexport) ShouldReloadTextures( void )
 		if (tmpWnd) {
 			return tmpWnd->shouldReloadTextures();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 
 	return false;
 }
@@ -378,7 +454,11 @@ Bool __declspec(dllexport) HasRequestedKillAllSystems( void )
 		if (tmpWnd) {
 			return tmpWnd->shouldKillAllParticleSystems();
 		}
-	} catch (...) { }
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 
 	return false;
 }
@@ -415,7 +495,11 @@ int __declspec(dllexport) NextParticleEditorBehavior( void )
 		}
 
 		return PEB_Continue;
-	} catch (...) {	}
+	\} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor: exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor: unknown exception"));
+	}
 	return PEB_Error;
 }
 

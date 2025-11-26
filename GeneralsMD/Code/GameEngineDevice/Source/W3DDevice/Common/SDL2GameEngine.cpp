@@ -37,6 +37,7 @@
 #include "W3DDevice/Common/W3DThingFactory.h"
 #include "StdDevice/Common/StdLocalFileSystem.h"
 #include "StdDevice/Common/StdBIGFileSystem.h"
+#include "Audio/OpenALAudioManager.h"
 
 // Forward declarations
 class AudioManager;
@@ -180,7 +181,7 @@ ParticleSystemManager* SDL2GameEngine::createParticleSystemManager( void )
 
 AudioManager *SDL2GameEngine::createAudioManager( void )
 {
-	DEBUG_LOG(("SDL2GameEngine::createAudioManager - Creating audio manager\n"));
-	// Note: AudioManager implementation needed (OpenAL backend for Phase 33)
-	return nullptr;	// TODO: Implement audio manager with OpenAL backend
+	DEBUG_LOG(("SDL2GameEngine::createAudioManager - Creating OpenAL audio manager\n"));
+	// Return new OpenALAudioManager instance (Phase 33 OpenAL backend)
+	return NEW OpenALAudioManager;
 }

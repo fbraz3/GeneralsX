@@ -145,15 +145,11 @@ void OpenMap::populateMapListbox( Bool systemMaps )
 						found = true;
 					};
 				}
-			} catch(...) {}
-
-		} while (FindNextFile(hFindFile, &findData));
-
-		if (hFindFile) FindClose(hFindFile);
- 	}
-	if (found) {
-		pList->SetCurSel(0);
-	} else {
+		} catch (const std::exception& e) {
+			DEBUG_LOG(("OpenMap::populateMapListbox - CFile::GetStatus failed: %s", e.what()));
+		} catch (...) {
+			DEBUG_LOG(("OpenMap::populateMapListbox - CFile::GetStatus failed with unknown exception"));
+		}
 		CWnd *pOk = GetDlgItem(IDOK);
 		if (pOk) pOk->EnableWindow(false);
 	}

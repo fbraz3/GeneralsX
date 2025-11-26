@@ -163,7 +163,11 @@ public:
 		try {
 			m_file->Write(pData, numBytes);
 			numBytesWritten = numBytes;
-		} catch(...) {}
+		} catch (const std::exception& e) {
+			DEBUG_LOG(("MFCFileOutputStream::write failed: %s", e.what()));
+		} catch (...) {
+			DEBUG_LOG(("MFCFileOutputStream::write failed with unknown exception"));
+		}
 		return(numBytesWritten);
 	};
 };
@@ -201,7 +205,11 @@ public:
 			try {
 				DEBUG_LOG(("Flushing %d bytes", c.size));
 				m_file->Write(c.pData, c.size);
-			} catch(...) {}
+			} catch (const std::exception& e) {
+				DEBUG_LOG(("CachedMFCFileOutputStream::flush write failed: %s", e.what()));
+			} catch (...) {
+				DEBUG_LOG(("CachedMFCFileOutputStream::flush write failed with unknown exception"));
+			}
 			delete[] c.pData;
 			m_totalBytes -= c.size;
 		}
@@ -240,7 +248,11 @@ public:
 				//DEBUG_LOG(("Flushing %d bytes", c.size));
 				memcpy(insertPos, c.pData, c.size);
 				insertPos += c.size;
-			} catch(...) {}
+			} catch (const std::exception& e) {
+				DEBUG_LOG(("CompressedCachedMFCFileOutputStream::flush memcpy failed: %s", e.what()));
+			} catch (...) {
+				DEBUG_LOG(("CompressedCachedMFCFileOutputStream::flush memcpy failed with unknown exception"));
+			}
 			delete[] c.pData;
 		}
 		CompressionType compressionToUse = CompressionManager::getPreferredCompression();

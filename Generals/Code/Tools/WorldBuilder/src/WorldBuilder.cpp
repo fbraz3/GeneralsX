@@ -687,7 +687,11 @@ void CWorldBuilderApp::OnFileOpen()
 				::SetCurrentDirectory(m_currentDirectory.str());
 			}
 		}
-	} catch(...) {}
+	} catch (const std::exception& e) {
+		DEBUG_LOG(("CWorldBuilderApp::OnFileOpen - GetStatus failed: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("CWorldBuilderApp::OnFileOpen - GetStatus failed with unknown exception"));
+	}
 
 	CWinApp::OnFileOpen();
 }
