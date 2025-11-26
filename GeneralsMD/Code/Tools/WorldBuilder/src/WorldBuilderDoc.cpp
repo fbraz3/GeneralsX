@@ -165,7 +165,10 @@ public:
 		try {
 			m_file->Write(pData, numBytes);
 			numBytesWritten = numBytes;
-		} catch(...) {}
+		} catch (const std::exception& e) {
+		DEBUG_LOG(("write - Exception caught: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("write - Unknown exception caught"));
 		return(numBytesWritten);
 	};
 };
@@ -203,7 +206,10 @@ public:
 			try {
 				DEBUG_LOG(("Flushing %d bytes", c.size));
 				m_file->Write(c.pData, c.size);
-			} catch(...) {}
+			} catch (const std::exception& e) {
+		DEBUG_LOG(("flush - Exception caught: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("flush - Unknown exception caught"));
 			delete[] c.pData;
 			m_totalBytes -= c.size;
 		}
@@ -242,7 +248,10 @@ public:
 				//DEBUG_LOG(("Flushing %d bytes", c.size));
 				memcpy(insertPos, c.pData, c.size);
 				insertPos += c.size;
-			} catch(...) {}
+			} catch (const std::exception& e) {
+		DEBUG_LOG(("flush - Exception caught: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("flush - Unknown exception caught"));
 			delete[] c.pData;
 		}
 		CompressionType compressionToUse = CompressionManager::getPreferredCompression();
@@ -865,17 +874,26 @@ void CWorldBuilderDoc::autoSave(void)
 			if (CFile::GetStatus(autosave3.str(), status)) {
 				CFile::Remove(autosave3.str());
 			}
-		} catch(...) {}
+		} catch (const std::exception& e) {
+		DEBUG_LOG(("autoSave - Exception caught: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("autoSave - Unknown exception caught"));
 		try {
 			if (CFile::GetStatus(autosave2.str(), status)) {
 				CFile::Rename(autosave2.str(), autosave3.str());
 			}
-		} catch(...){}
+		} catch (const std::exception& e) {
+		DEBUG_LOG(("UnknownFunction - Exception caught: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("UnknownFunction - Unknown exception caught"));
 		try {
 			if (CFile::GetStatus(autosave1.str(), status)) {
 				CFile::Rename(autosave1.str(), autosave2.str());
 			}
-		} catch(...){}
+		} catch (const std::exception& e) {
+		DEBUG_LOG(("UnknownFunction - Exception caught: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("UnknownFunction - Unknown exception caught"));
 
 		CFile theFile(autosave1.str(), CFile::modeCreate|CFile::modeWrite|CFile::shareDenyWrite|CFile::typeBinary);
 		try {

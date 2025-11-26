@@ -709,7 +709,10 @@ void CWorldBuilderApp::OnFileOpen()
 				::SetCurrentDirectory(m_currentDirectory.str());
 			}
 		}
-	} catch(...) {}
+	} catch (const std::exception& e) {
+		DEBUG_LOG(("UnknownFunction - Exception caught: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("UnknownFunction - Unknown exception caught"));
 
 	CWinApp::OnFileOpen();
 }

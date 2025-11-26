@@ -352,7 +352,11 @@ void __declspec(dllexport) UpdateSystemUseParameters( ParticleSystemTemplate *pa
 		if (tmpWnd) {
 			tmpWnd->updateSystemUseParameters(particleTemplate);
 		}
-	} catch(...) { }
+	} catch (const std::exception& e) {
+		DEBUG_LOG(("ParticleEditor::UpdateSystemUseParameters - Exception: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("ParticleEditor::UpdateSystemUseParameters - Unknown exception"));
+	}
 }
 
 Bool __declspec(dllexport) ShouldWriteINI( void )

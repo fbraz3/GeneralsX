@@ -156,7 +156,10 @@ void SaveMap::populateMapListbox( Bool systemMaps )
 						pList->AddString(findData.cFileName);
 					};
 				}
-			} catch(...) {}
+			} catch (const std::exception& e) {
+		DEBUG_LOG(("UnknownFunction - Exception caught: %s", e.what()));
+	} catch (...) {
+		DEBUG_LOG(("UnknownFunction - Unknown exception caught"));
 
 		} while (FindNextFile(hFindFile, &findData));
 
