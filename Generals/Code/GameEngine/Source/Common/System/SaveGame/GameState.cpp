@@ -50,6 +50,7 @@
 #include "GameClient/MapUtil.h"
 #include "GameClient/MessageBox.h"
 #include "GameClient/InGameUI.h"
+#include "GameClient/ObjectiveTracker.h"
 #include "GameClient/ParticleSys.h"
 #include "GameClient/TerrainVisual.h"
 #include "GameLogic/GameLogic.h"
@@ -307,6 +308,7 @@ void GameState::init( void )
 	// add all the snapshot objects to our list of data blocks for save game files
 	addSnapshotBlock( GAME_STATE_BLOCK_STRING,				TheGameState,							SNAPSHOT_SAVELOAD );
 	addSnapshotBlock( CAMPAIGN_BLOCK_STRING,					TheCampaignManager,				SNAPSHOT_SAVELOAD );
+	addSnapshotBlock( "CHUNK_ObjectiveTracker",				TheObjectiveTracker,			SNAPSHOT_SAVELOAD );
 	addSnapshotBlock( "CHUNK_GameStateMap",						TheGameStateMap,					SNAPSHOT_SAVELOAD );
 	addSnapshotBlock( "CHUNK_TerrainLogic",						TheTerrainLogic,					SNAPSHOT_SAVELOAD );
 	addSnapshotBlock( "CHUNK_TeamFactory",						TheTeamFactory,						SNAPSHOT_SAVELOAD );
