@@ -88,6 +88,7 @@ These are correctly implemented as no-ops for cross-platform compatibility:
 ## Quick Links to Detailed Analysis
 
 👉 **[STUB_AUDIT.md](STUB_AUDIT.md)** - Full analysis with:
+
 - All stub locations and code samples
 - Impact assessment for each stub
 - Detailed implementation strategies
@@ -100,18 +101,21 @@ These are correctly implemented as no-ops for cross-platform compatibility:
 ## How to Use These Documents
 
 ### For Developers
+
 1. Read **README.md** for overview
 2. Check **QUICK_REFERENCE.md** for status dashboard
 3. Consult **STUB_AUDIT.md** for detailed implementation plan
 4. Follow the implementation order in QUICK_REFERENCE.md
 
 ### For Code Review
+
 1. Review fixes in Phase 43.7 (LocalFileSystem + ArchiveFileSystem)
 2. Check that new implementations return real instances, not nullptr
 3. Verify subsystem initialization order hasn't changed
 4. Validate crash logs after testing
 
 ### For Architecture Decisions
+
 1. Review Risk Assessment section in STUB_AUDIT.md
 2. Check Reference Repositories for proven patterns
 3. Verify Commit Strategy format for consistency
@@ -123,12 +127,14 @@ These are correctly implemented as no-ops for cross-platform compatibility:
 **REAL SOLUTIONS ONLY**
 
 Every factory method must:
+
 - ✅ Return a properly instantiated object
 - ✅ Include DEBUG_LOG for traceability
 - ✅ Handle initialization order correctly
 - ✅ Validate against reference implementations
 
 Never:
+
 - ❌ Return nullptr unless explicitly safe
 - ❌ Leave empty TODOs
 - ❌ Create try-catch blocks without logic

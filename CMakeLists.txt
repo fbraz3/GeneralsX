@@ -56,6 +56,7 @@ include(cmake/config.cmake)
 include(cmake/gamespy.cmake)
 include(cmake/lzhl.cmake)
 include(cmake/sdl2.cmake)
+include(cmake/openal.cmake)
 
 if (IS_VS6_BUILD)
     # The original max sdk does not compile against a modern compiler.

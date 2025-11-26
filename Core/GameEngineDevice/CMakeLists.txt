@@ -1,6 +1,7 @@
 set(GAMEENGINEDEVICE_SRC
 #    Include/MilesAudioDevice/MilesAudioManager.h  # Windows-only audio system
     Include/VideoDevice/Bink/BinkVideoPlayer.h  # Windows-only video codec
+    Include/Audio/OpenALAudioDevice.h
 #    Include/W3DDevice/Common/W3DConvert.h
 #    Include/W3DDevice/Common/W3DFunctionLexicon.h
 #    Include/W3DDevice/Common/W3DModuleFactory.h
@@ -187,6 +188,7 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/Win32Device/Common/Win32CDManager.cpp
 #    Source/Win32Device/Common/Win32GameEngine.cpp
     Source/Win32Device/Common/Win32LocalFile.cpp
+    Source/Audio/OpenALAudioDevice.cpp
     #Source/Win32Device/Common/Win32LocalFileSystem.cpp  # Windows-only filesystem (io.h)
 #    Source/Win32Device/Common/Win32OSDisplay.cpp
 #    Source/Win32Device/GameClient/Win32DIKeyboard.cpp
@@ -236,6 +238,9 @@ if(WIN32 OR MSVC OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
         milesstub
     )
 endif()
+
+# Link OpenAL for cross-platform audio support (Phase 47)
+target_link_libraries(corei_gameenginedevice_private INTERFACE ${OPENAL_LIBRARIES})
 
 if(RTS_BUILD_OPTION_FFMPEG)
     find_package(FFMPEG REQUIRED)

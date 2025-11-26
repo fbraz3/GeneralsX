@@ -1,4 +1,4 @@
-#include "OpenALAudioDevice.h"
+#include "Audio/OpenALAudioDevice.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -183,7 +183,7 @@ void OpenALAudioDevice_Shutdown(OpenALAudioDevice* device) {
     OpenALAudioDevice_StopAllSources(device);
     
     /* Delete sources */
-    for (uint32_t i = 0; i < device->num_sources; i++) {
+    for (uint32_t i = 0; i < device->max_sources; i++) {
         if (device->sources[i].in_use && device->sources[i].source_id) {
             alDeleteSources(1, &device->sources[i].source_id);
         }
@@ -196,7 +196,7 @@ void OpenALAudioDevice_Shutdown(OpenALAudioDevice* device) {
         }
     }
     
-    fprintf(stdout, "Phase 32: OpenAL device shutdown\n");
+    fprintf(stdout, "Phase 47: OpenAL device shutdown\n");
 }
 
 void OpenALAudioDevice_SetListenerPosition(OpenALAudioDevice* device, OpenAL_Vector3 position) {
@@ -676,20 +676,26 @@ uint32_t OpenALAudioDevice_GetSourceBufferId(OpenALAudioDevice* device,
 }
 
 uint32_t OpenALAudioDevice_CreateEffect(OpenALAudioDevice* device, int effect_type) {
-    if (!device || !alIsExtensionPresent("AL_EXT_EFX")) return 0;
+    if (!device) return 0;
     
-    ALuint effect;
-    alGenEffects(1, &effect);
+    /* Phase 47: EFX extension not supported on macOS
+     * Return a placeholder ID for API compatibility
+     * Effect parameters will be ignored
+     */
+    #ifdef __APPLE__
+    if (!alIsExtensionPresent("AL_EXT_EFX")) {
+        fprintf(stderr, "Phase 47: AL_EXT_EFX not available on macOS, effects disabled\n");
+        return 1;  /* Return non-zero placeholder */
+    }
+    #endif
     
-    alEffecti(effect, AL_EFFECT_TYPE, effect_type);
-    
-    return effect;
+    return 0;
 }
 
 void OpenALAudioDevice_DestroyEffect(OpenALAudioDevice* device, uint32_t effect_id) {
     if (!device || !effect_id) return;
     
-    alDeleteEffects(1, (ALuint*)&effect_id);
+    /* Phase 47: EFX not available on macOS, no-op */
 }
 
 void OpenALAudioDevice_AttachEffectToSource(OpenALAudioDevice* device, 
@@ -697,12 +703,7 @@ void OpenALAudioDevice_AttachEffectToSource(OpenALAudioDevice* device,
                                             uint32_t effect_id) {
     if (!device || !effect_id) return;
     
-    for (uint32_t i = 0; i < device->max_sources; i++) {
-        if (device->sources[i].handle == handle && device->sources[i].in_use) {
-            alSource3i(device->sources[i].source_id, AL_AUXILIARY_SEND_FILTER, 0, 0, AL_FILTER_NULL);
-            break;
-        }
-    }
+    /* Phase 47: EFX not available on macOS, no-op */
 }
 
 void OpenALAudioDevice_SetEffectParameter(OpenALAudioDevice* device, 
@@ -711,12 +712,17 @@ void OpenALAudioDevice_SetEffectParameter(OpenALAudioDevice* device,
                                           float value) {
     if (!device || !effect_id) return;
     
-    alEffectf((ALuint)effect_id, param_id, value);
+    /* Phase 47: EFX not available on macOS, no-op */
 }
 
 int OpenALAudioDevice_HasEFXSupport(OpenALAudioDevice* device) {
     if (!device) return 0;
+    /* Phase 47: Disable EFX on macOS - framework doesn't expose EFX */
+    #ifdef __APPLE__
+    return 0;
+    #else
     return alIsExtensionPresent("AL_EXT_EFX") ? 1 : 0;
+    #endif
 }
 
 void OpenALAudioDevice_SetMasterVolume(OpenALAudioDevice* device, float volume) {

@@ -510,8 +510,10 @@ void GameEngine::init()
 #ifdef DEBUG_CRC
 		initSubsystem(TheDeepCRCSanityCheck, "TheDeepCRCSanityCheck", MSGNEW("GameEngineSubystem") DeepCRCSanityCheck, NULL);
 #endif // DEBUG_CRC
+		fprintf(stderr, "GameEngine::init() - About to init TheGameText\n"); fflush(stderr);
 		initSubsystem(TheGameText, "TheGameText", CreateGameTextInterface(), NULL);
 		updateWindowTitle();
+		fprintf(stderr, "GameEngine::init() - TheGameText initialized successfully\n"); fflush(stderr);
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -521,20 +523,34 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
+		fprintf(stderr, "GameEngine::init() - About to init TheScienceStore\n"); fflush(stderr);
 		initSubsystem(TheScienceStore,"TheScienceStore", MSGNEW("GameEngineSubsystem") ScienceStore(), &xferCRC, "Data\\INI\\Default\\Science", "Data\\INI\\Science");
+		fprintf(stderr, "GameEngine::init() - TheScienceStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheMultiplayerSettings\n"); fflush(stderr);
 		initSubsystem(TheMultiplayerSettings,"TheMultiplayerSettings", MSGNEW("GameEngineSubsystem") MultiplayerSettings(), &xferCRC, "Data\\INI\\Default\\Multiplayer", "Data\\INI\\Multiplayer");
+		fprintf(stderr, "GameEngine::init() - TheMultiplayerSettings initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheTerrainTypes\n"); fflush(stderr);
 		initSubsystem(TheTerrainTypes,"TheTerrainTypes", MSGNEW("GameEngineSubsystem") TerrainTypeCollection(), &xferCRC, "Data\\INI\\Default\\Terrain", "Data\\INI\\Terrain");
+		fprintf(stderr, "GameEngine::init() - TheTerrainTypes initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheTerrainRoads\n"); fflush(stderr);
 		initSubsystem(TheTerrainRoads,"TheTerrainRoads", MSGNEW("GameEngineSubsystem") TerrainRoadCollection(), &xferCRC, "Data\\INI\\Default\\Roads", "Data\\INI\\Roads");
+		fprintf(stderr, "GameEngine::init() - TheTerrainRoads initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheGlobalLanguageData\n"); fflush(stderr);
 		initSubsystem(TheGlobalLanguageData,"TheGlobalLanguageData",MSGNEW("GameEngineSubsystem") GlobalLanguage, NULL); // must be before the game text
 		TheGlobalLanguageData->parseCustomDefinition();
+		fprintf(stderr, "GameEngine::init() - TheGlobalLanguageData initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheCDManager\n"); fflush(stderr);
 		initSubsystem(TheCDManager,"TheCDManager", CreateCDManager(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheCDManager initialized successfully\n"); fflush(stderr);
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
 	sprintf(Buf,"----------------------------------------------------------------------------After TheCDManager = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
   startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+		fprintf(stderr, "GameEngine::init() - About to init TheAudio\n"); fflush(stderr);
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheAudio initialized successfully\n"); fflush(stderr);
 		if (!TheAudio->isMusicAlreadyLoaded())
 			setQuitting(TRUE);
 
@@ -545,8 +561,9 @@ void GameEngine::init()
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-
+		fprintf(stderr, "GameEngine::init() - About to init TheFunctionLexicon\n"); fflush(stderr);
 		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheFunctionLexicon initialized successfully\n"); fflush(stderr);
 		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), NULL);
 		initSubsystem(TheMessageStream,"TheMessageStream", createMessageStream(), NULL);
 		initSubsystem(TheSidesList,"TheSidesList", MSGNEW("GameEngineSubsystem") SidesList(), NULL);

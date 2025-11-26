@@ -130,8 +130,12 @@ ThingFactory *SDL2GameEngine::createThingFactory( void )
 
 FunctionLexicon *SDL2GameEngine::createFunctionLexicon( void )
 {
-	DEBUG_LOG(("SDL2GameEngine::createFunctionLexicon - Creating W3D function lexicon\n"));
-	return NEW W3DFunctionLexicon;
+	fprintf(stderr, "SDL2GameEngine::createFunctionLexicon - About to create W3D function lexicon\n");
+	fflush(stderr);
+	FunctionLexicon *result = NEW W3DFunctionLexicon;
+	fprintf(stderr, "SDL2GameEngine::createFunctionLexicon - W3D function lexicon created: %p\n", result);
+	fflush(stderr);
+	return result;
 }
 
 LocalFileSystem *SDL2GameEngine::createLocalFileSystem( void )

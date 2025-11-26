@@ -40,6 +40,17 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Game Window draw methods -----------------------------------------------------------------------
+// Forward declarations to ensure symbols are available
+extern void GameWinDefaultDraw( GameWindow *window, WinInstanceData *instData );
+extern void W3DGameWinDefaultDraw( GameWindow *window, WinInstanceData *instData );
+
+// Validation helper function to check table entries at compile/runtime
+static void validateTableEntry(const char* tableName, const char* entryName, void* func) {
+	if (func == nullptr && entryName != nullptr) {
+		DEBUG_LOG(("WARNING: Table '%s' entry '%s' is nullptr!\n", tableName, entryName));
+	}
+}
+
 static FunctionLexicon::TableEntry gameWinDrawTable [] =
 {
 
@@ -117,14 +128,15 @@ static FunctionLexicon::TableEntry layoutInitTable [] =
 //-------------------------------------------------------------------------------------------------
 W3DFunctionLexicon::W3DFunctionLexicon( void )
 {
-
+	fprintf(stderr, "W3DFunctionLexicon::W3DFunctionLexicon() - Constructor called\n");
+	fflush(stderr);
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 W3DFunctionLexicon::~W3DFunctionLexicon( void )
 {
-
+	DEBUG_LOG(("W3DFunctionLexicon::~W3DFunctionLexicon() - Destructor called\n"));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -133,14 +145,42 @@ W3DFunctionLexicon::~W3DFunctionLexicon( void )
 //-------------------------------------------------------------------------------------------------
 void W3DFunctionLexicon::init( void )
 {
+	DEBUG_LOG(("W3DFunctionLexicon::init() - Starting initialization\n"));
 
 	// extend functionality
+	DEBUG_LOG(("W3DFunctionLexicon::init() - Calling FunctionLexicon::init()\n"));
 	FunctionLexicon::init();
+	DEBUG_LOG(("W3DFunctionLexicon::init() - FunctionLexicon::init() completed\n"));
+
+	// Validate entries before loading
+	DEBUG_LOG(("W3DFunctionLexicon::init() - Validating gameWinDrawTable entries\n"));
+	for (int i = 0; gameWinDrawTable[i].name != nullptr; ++i) {
+		if (gameWinDrawTable[i].func == nullptr) {
+			DEBUG_LOG(("ERROR: gameWinDrawTable[%d] '%s' has nullptr function pointer!\n", i, gameWinDrawTable[i].name));
+		} else {
+			DEBUG_LOG(("  Entry[%d]: '%s' = %p\n", i, gameWinDrawTable[i].name, gameWinDrawTable[i].func));
+		}
+	}
+
+	DEBUG_LOG(("W3DFunctionLexicon::init() - Validating layoutInitTable entries\n"));
+	for (int i = 0; layoutInitTable[i].name != nullptr; ++i) {
+		if (layoutInitTable[i].func == nullptr) {
+			DEBUG_LOG(("ERROR: layoutInitTable[%d] '%s' has nullptr function pointer!\n", i, layoutInitTable[i].name));
+		} else {
+			DEBUG_LOG(("  Entry[%d]: '%s' = %p\n", i, layoutInitTable[i].name, layoutInitTable[i].func));
+		}
+	}
 
 	// load our own tables
+	DEBUG_LOG(("W3DFunctionLexicon::init() - Loading gameWinDrawTable with entries\n"));
 	loadTable( gameWinDrawTable, TABLE_GAME_WIN_DEVICEDRAW );
-	loadTable( layoutInitTable, TABLE_WIN_LAYOUT_DEVICEINIT );
+	DEBUG_LOG(("W3DFunctionLexicon::init() - gameWinDrawTable loaded\n"));
 
+	DEBUG_LOG(("W3DFunctionLexicon::init() - Loading layoutInitTable with entries\n"));
+	loadTable( layoutInitTable, TABLE_WIN_LAYOUT_DEVICEINIT );
+	DEBUG_LOG(("W3DFunctionLexicon::init() - layoutInitTable loaded\n"));
+
+	DEBUG_LOG(("W3DFunctionLexicon::init() - Initialization complete\n"));
 }
 
 //-------------------------------------------------------------------------------------------------
