@@ -562,6 +562,7 @@ set(GAMEENGINE_SRC
     Source/Common/Audio/GameAudio.cpp
     Source/Common/Audio/GameMusic.cpp
     Source/Common/Audio/GameSounds.cpp
+    Source/Audio/AudioManager.cpp
     #Source/Common/Audio/simpleplayer.cpp # unused
     #Source/Common/Audio/urllaunch.cpp # unused
 #    Source/Common/Bezier/BezFwdIterator.cpp
