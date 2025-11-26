@@ -154,8 +154,21 @@ ArchiveFileSystem *SDL2GameEngine::createArchiveFileSystem( void )
 NetworkInterface *SDL2GameEngine::createNetwork( void )
 {
 	DEBUG_LOG(("SDL2GameEngine::createNetwork - Creating network interface\n"));
-	// Note: NetworkInterface implementation needed for cross-platform networking
-	return nullptr;	// TODO: Implement network interface
+	try {
+		NetworkInterface *network = NetworkInterface::createNetwork();
+		if (network) {
+			DEBUG_LOG(("SDL2GameEngine::createNetwork - Network interface created successfully\n"));
+			return network;
+		}
+		DEBUG_LOG(("SDL2GameEngine::createNetwork - Failed to create network interface\n"));
+		return nullptr;
+	} catch (const std::exception& e) {
+		DEBUG_LOG(("SDL2GameEngine::createNetwork - Exception: %s\n", e.what()));
+		return nullptr;
+	} catch (...) {
+		DEBUG_LOG(("SDL2GameEngine::createNetwork - Unknown exception\n"));
+		return nullptr;
+	}
 }
 
 Radar *SDL2GameEngine::createRadar( void )
@@ -167,7 +180,27 @@ Radar *SDL2GameEngine::createRadar( void )
 WebBrowser *SDL2GameEngine::createWebBrowser( void )
 {
 	DEBUG_LOG(("SDL2GameEngine::createWebBrowser - Creating web browser\n"));
-	// TODO: Implement W3DWebBrowser instantiation after it's fully compiled
+	
+	// Note: WebBrowser is Windows-specific COM interface (not available cross-platform)
+	// For now, web browser functionality is disabled on macOS/Linux
+	// This is acceptable as WebBrowser is an optional subsystem, not critical for gameplay
+	
+	#ifdef _WIN32
+		// Windows: Return real WebBrowser instance if available
+		try {
+			WebBrowser *browser = NEW W3DWebBrowser();
+			if (browser) {
+				DEBUG_LOG(("SDL2GameEngine::createWebBrowser - WebBrowser created successfully\n"));
+				return browser;
+			}
+		} catch (const std::exception& e) {
+			DEBUG_LOG(("SDL2GameEngine::createWebBrowser - Exception: %s\n", e.what()));
+		}
+	#else
+		// macOS/Linux: WebBrowser not available (Windows COM API)
+		DEBUG_LOG(("SDL2GameEngine::createWebBrowser - WebBrowser not available on this platform\n"));
+	#endif
+	
 	return nullptr;
 }
 
