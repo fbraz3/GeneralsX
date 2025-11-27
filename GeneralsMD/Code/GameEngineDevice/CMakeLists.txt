@@ -206,6 +206,11 @@ if(WIN32 OR IS_VS6_BUILD)
         Source/Win32Device/GameClient/Win32DIKeyboard.cpp
         Source/Win32Device/GameClient/Win32Mouse.cpp
     )
+else()
+    # Cross-platform CD Manager stub (no CD drives on modern platforms)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/CrossPlatform/CrossPlatformCDManager.cpp
+    )
 endif()
 
 add_library(z_gameenginedevice STATIC)
