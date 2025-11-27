@@ -51,6 +51,7 @@
 #include "W3DDevice/GameClient/W3DMouse.h"
 #include "W3DDevice/GameClient/W3DSnow.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
+#include "CrossPlatform/SDL2Keyboard.h"
 
 class ThingTemplate;
 
@@ -124,7 +125,9 @@ protected:
 };
 
 inline Keyboard *W3DGameClient::createKeyboard( void ) { 
-	return NULL;
+	// SDL2Keyboard provides cross-platform keyboard input handling
+	// supporting macOS, Linux, and Windows with SDL2 as the input backend
+	return NEW SDL2Keyboard;
 }
 inline Mouse *W3DGameClient::createMouse( void )
 {

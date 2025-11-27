@@ -264,9 +264,16 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 			if(iter->is_directory() &&
 				(strcmp(filenameStr.c_str(), ".") && strcmp(filenameStr.c_str(), ".."))) {
 				AsciiString tempsearchstr(filenameStr.c_str());
+				
+				// Build complete subdirectory path for recursion
+				AsciiString subdirPath = currentDirectory;
+				if (!subdirPath.isEmpty()) {
+					subdirPath.concat("/");
+				}
+				subdirPath.concat(tempsearchstr);
 
 				// recursively add files in subdirectories if required.
-				getFileListInDirectory(tempsearchstr, originalDirectory, searchName, filenameList, searchSubdirectories);
+				getFileListInDirectory(subdirPath, originalDirectory, searchName, filenameList, searchSubdirectories);
 			}
 
 			iter++;
