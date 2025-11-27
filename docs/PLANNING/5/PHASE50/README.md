@@ -1,734 +1,349 @@
-# Phase 50: Production Release & Distribution
+# Phase 50: Complete Initialization Chain - Subsystem Factory Mapping
 
 **Phase**: 50
-**Title**: Production Release Preparation, Distribution & Long-term Support
-**Duration**: 2-3 weeks
-**Status**: 🕐 Pending (after Phase 47)
-**Dependencies**: Phase 47 complete (all features implemented)
+**Title**: Complete Game Initialization Chain
+**Duration**: 5-7 days
+**Status**: 🔄 IN PROGRESS
+**Dependencies**: Phase 49 complete (basic factory methods)
 
 ---
 
 ## Overview
 
-Phase 50 is the **final production release phase** that prepares the cross-platform game for public distribution:
+Phase 50 maps ALL 44 subsystems in the GameEngine::init() sequence and identifies which require factory method fixes or implementations. Based on the crash analysis, `TheGameClient` internally calls `createKeyboard()` which still crashes despite SDL2Keyboard being implemented.
 
-1. **Final validation** (all platforms, all features)
-2. **Release packaging** (executable distribution)
-3. **Documentation** (user guides, installation instructions)
-4. **Version management** (semantic versioning, changelogs)
-5. **Distribution channels** (Steam, GitHub releases, source distribution)
-6. **Support infrastructure** (bug reporting, issue tracking)
-
-**Strategic Goal**: Ship a stable, feature-complete, cross-platform port of Command & Conquer: Generals ready for public use.
-
-**Release Target**: v1.0.0 (First production release)
+**Root Cause Identified**: The SDL2Keyboard implementation exists but the build may not have completed successfully, OR there's a dependency issue preventing the code from being linked.
 
 ---
 
-## Current State (End of Phase 47)
+## Complete Subsystem Initialization Sequence
 
-Expected state entering Phase 50:
+Based on `GameEngine.cpp` analysis, here are ALL 44 subsystems in exact initialization order:
 
-- ✅ Game compiles on all platforms (Windows, macOS, Linux)
-- ✅ All features implemented (campaign, multiplayer, graphics, audio)
-- ✅ Performance validated (60 FPS average, <512 MB memory)
-- ✅ Cross-platform behavior identical
-- ✅ Extended stress testing completed (24+ hours)
-- ✅ Audio system operational
-- ✅ Multiplayer systems working
-- ✅ Save/Load fully functional
-- ✅ Replay system complete
+### Group 1: Foundation Systems (Lines ~475-510)
 
-**NOT completed**:
+| # | Subsystem | Factory/Constructor | Status | Risk |
+|---|-----------|---------------------|--------|------|
+| 1 | TheLocalFileSystem | `createLocalFileSystem()` | ✅ Working | None |
+| 2 | TheArchiveFileSystem | `createArchiveFileSystem()` | ✅ Working | None |
+| 3 | TheWritableGlobalData | Direct assignment | ✅ Working | None |
+| 4 | TheDeepCRCSanityCheck | `MSGNEW DeepCRCSanityCheck` | ✅ Working | None |
 
-- ❌ Official release packaging
-- ❌ Distribution setup
-- ❌ Version numbering/tagging
-- ❌ User documentation
-- ❌ Support infrastructure
+### Group 2: Core Data Systems (Lines ~510-545)
+
+| # | Subsystem | Factory/Constructor | Status | Risk |
+|---|-----------|---------------------|--------|------|
+| 5 | TheGameText | `CreateGameTextInterface()` | ✅ Working | None |
+| 6 | TheScienceStore | `MSGNEW ScienceStore()` | ✅ Working | None |
+| 7 | TheMultiplayerSettings | `MSGNEW MultiplayerSettings()` | ✅ Working | None |
+| 8 | TheTerrainTypes | `MSGNEW TerrainTypeCollection()` | ✅ Working | None |
+| 9 | TheTerrainRoads | `MSGNEW TerrainRoadCollection()` | ✅ Working | None |
+| 10 | TheGlobalLanguageData | `MSGNEW GlobalLanguage` | ✅ Working | None |
+
+### Group 3: Device Systems (Lines ~545-575)
+
+| # | Subsystem | Factory/Constructor | Status | Risk |
+|---|-----------|---------------------|--------|------|
+| 11 | TheCDManager | `CreateCDManager()` | ✅ Fixed (Phase 49.1) | None |
+| 12 | TheAudio | `createAudioManager()` | ✅ Working (OpenAL) | None |
+| 13 | TheFunctionLexicon | `createFunctionLexicon()` | ✅ Working | None |
+| 14 | TheModuleFactory | `createModuleFactory()` | ✅ Working | None |
+| 15 | TheMessageStream | `createMessageStream()` | ✅ Working | None |
+| 16 | TheSidesList | `MSGNEW SidesList()` | ✅ Working | None |
+| 17 | TheCaveSystem | `MSGNEW CaveSystem()` | ✅ Working | None |
+
+### Group 4: INI Data Stores (Lines ~580-605)
+
+| # | Subsystem | Factory/Constructor | Status | Risk |
+|---|-----------|---------------------|--------|------|
+| 18 | TheRankInfoStore | `MSGNEW RankInfoStore()` | ⚠️ INI Required | Low |
+| 19 | ThePlayerTemplateStore | `MSGNEW PlayerTemplateStore()` | ⚠️ INI Required | Low |
+| 20 | TheParticleSystemManager | `createParticleSystemManager()` | ⚠️ FACTORY | Medium |
+| 21 | TheFXListStore | `MSGNEW FXListStore()` | ⚠️ INI Required | Low |
+| 22 | TheWeaponStore | `MSGNEW WeaponStore()` | ⚠️ INI Required | Low |
+| 23 | TheObjectCreationListStore | `MSGNEW ObjectCreationListStore()` | ⚠️ INI Required | Low |
+| 24 | TheLocomotorStore | `MSGNEW LocomotorStore()` | ⚠️ INI Required | Low |
+| 25 | TheSpecialPowerStore | `MSGNEW SpecialPowerStore()` | ⚠️ INI Required | Low |
+| 26 | TheDamageFXStore | `MSGNEW DamageFXStore()` | ⚠️ INI Required | Low |
+| 27 | TheArmorStore | `MSGNEW ArmorStore()` | ⚠️ INI Required | Low |
+| 28 | TheBuildAssistant | `MSGNEW BuildAssistant` | ✅ Simple | None |
+
+### Group 5: Object Systems (Lines ~610-625)
+
+| # | Subsystem | Factory/Constructor | Status | Risk |
+|---|-----------|---------------------|--------|------|
+| 29 | TheThingFactory | `createThingFactory()` | ⚠️ FACTORY | Medium |
+| 30 | TheUpgradeCenter | `MSGNEW UpgradeCenter` | ⚠️ INI Required | Low |
+
+### Group 6: CLIENT SYSTEMS - CRITICAL (Lines ~621)
+
+| # | Subsystem | Factory/Constructor | Status | Risk |
+|---|-----------|---------------------|--------|------|
+| **31** | **TheGameClient** | `createGameClient()` | 🔴 **CRASH POINT** | **CRITICAL** |
+
+**Analysis**: TheGameClient internally calls:
+
+- `createKeyboard()` → SDL2Keyboard (crashes here!)
+- `createMouse()` → Win32Mouse
+- `createGameDisplay()` → W3DDisplay
+- `createInGameUI()` → W3DInGameUI
+- `createWindowManager()` → W3DGameWindowManager
+
+### Group 7: Logic Systems (Lines ~635-650)
+
+| # | Subsystem | Factory/Constructor | Status | Risk |
+|---|-----------|---------------------|--------|------|
+| 32 | TheAI | `MSGNEW AI()` | ⏳ Not Reached | Low |
+| 33 | TheGameLogic | `createGameLogic()` | ⏳ FACTORY | Medium |
+| 34 | TheTeamFactory | `MSGNEW TeamFactory()` | ⏳ Not Reached | Low |
+| 35 | TheCrateSystem | `MSGNEW CrateSystem()` | ⏳ INI Required | Low |
+| 36 | ThePlayerList | `MSGNEW PlayerList()` | ⏳ Not Reached | Low |
+| 37 | TheRecorder | `createRecorder()` | ⏳ FACTORY | Medium |
+| 38 | TheRadar | `createRadar()` | ⏳ FACTORY | Medium |
+| 39 | TheVictoryConditions | `createVictoryConditions()` | ⏳ FACTORY | Low |
+
+### Group 8: UI & State Systems (Lines ~665-695)
+
+| # | Subsystem | Factory/Constructor | Status | Risk |
+|---|-----------|---------------------|--------|------|
+| 40 | TheMetaMap | `MSGNEW MetaMap()` | ⏳ Not Reached | Low |
+| 41 | TheActionManager | `MSGNEW ActionManager()` | ⏳ Not Reached | Low |
+| 42 | TheGameStateMap | `MSGNEW GameStateMap` | ⏳ Not Reached | Low |
+| 43 | TheGameState | `MSGNEW GameState` | ⏳ Not Reached | Low |
+| 44 | TheGameResultsQueue | `createNewGameResultsInterface()` | ⏳ FACTORY | Low |
 
 ---
 
-## Implementation Strategy
+## Current Crash Analysis
 
-### Week 1: Final Validation & Testing
+### Crash Location
 
-#### Day 1-2: Complete Feature Validation
-
-**Comprehensive checklist**:
-
-```bash
-cat > docs/PLANNING/4/PHASE50/FINAL_VALIDATION_CHECKLIST.md << 'EOF'
-# Phase 50 Final Validation Checklist
-
-## Core Functionality
-
-### Single-Player Campaign
-- [ ] All missions load and run
-- [ ] Objectives display correctly
-- [ ] Campaign progression saves/loads
-- [ ] Difficulty levels selectable
-- [ ] All unit types functional
-- [ ] Building construction works
-- [ ] Victory/defeat conditions trigger
-- [ ] Cinematic sequences play
-- [ ] Campaign completion achievable
-
-### Multiplayer (LAN)
-- [ ] Host can create game
-- [ ] Join functionality works
-- [ ] Unit synchronization correct
-- [ ] Commands process reliably
-- [ ] Disconnect handling graceful
-- [ ] Match results record correctly
-- [ ] Replay from multiplayer session works
-
-### Graphics
-- [ ] Rendering quality meets standards
-- [ ] All visual effects display
-- [ ] Graphics settings work correctly
-- [ ] Resolution adjustment functional
-- [ ] No visual glitches or artifacts
-- [ ] Performance stable across modes
-
-### Audio
-- [ ] Background music plays
-- [ ] Sound effects trigger correctly
-- [ ] Voice acting intelligible
-- [ ] Volume controls work
-- [ ] Audio quality acceptable
-- [ ] No audio glitches or stuttering
-
-### Input & Controls
-- [ ] Keyboard input responsive
-- [ ] Mouse controls accurate
-- [ ] Hotkeys all functional
-- [ ] Configuration saves/loads
-- [ ] Controller support (if applicable)
-- [ ] ESC properly exits
-
-### Save System
-- [ ] Game saves successfully
-- [ ] Saved games load correctly
-- [ ] Save file integrity verified
-- [ ] Multiple save slots work
-- [ ] Auto-save functional
-- [ ] Backup save creation works
-
-### Performance
-- [ ] 60 FPS average achieved
-- [ ] No stuttering or lag spikes
-- [ ] Memory usage stable (<512 MB)
-- [ ] Startup time <30 seconds
-- [ ] No memory leaks detected
-
-## Cross-Platform Validation
-
-### macOS
-- [ ] ARM64 build compiles
-- [ ] Application runs smoothly
-- [ ] All features functional
-- [ ] Graphics rendering correct
-- [ ] Performance meets targets
-- [ ] No platform-specific bugs
-- [ ] Code signing ready (if applicable)
-
-### Windows
-- [ ] Build with MSVC succeeds
-- [ ] Executable runs without errors
-- [ ] DirectX/Vulkan initialization works
-- [ ] All features operational
-- [ ] Performance validated
-- [ ] Installer creation ready
-
-### Linux
-- [ ] Build with GCC/Clang succeeds
-- [ ] Executable runs on standard distros
-- [ ] All features functional
-- [ ] Graphics rendering correct
-- [ ] Input handling responsive
-- [ ] AppImage/Snap packaging ready
-
-## Documentation Quality
-- [ ] README.md complete
-- [ ] BUILD.md accurate
-- [ ] INSTALL.md comprehensive
-- [ ] CHANGELOG.md populated
-- [ ] API documentation present
-- [ ] User guide complete
-
-## Code Quality
-- [ ] Zero high-severity warnings
-- [ ] No memory leaks detected
-- [ ] No undefined behavior
-- [ ] Code style consistent
-- [ ] Comments present and accurate
-- [ ] No dead code remaining
-
-## Overall Release Readiness
-- [ ] All tests passing
-- [ ] No blocking issues identified
-- [ ] All platforms supported
-- [ ] Documentation complete
-- [ ] Version number assigned
-- [ ] Git tag created
-
-**Release Status**: [READY / HOLD]
-**Sign-Off**: [Name] on [Date]
-EOF
+```text
+frame #1: W3DGameClient::createKeyboard() at W3DGameClient.h:130
+frame #2: GameClient::init() at GameClient.cpp:270
+frame #3: SubsystemInterfaceList::initSubsystem() at SubsystemInterface.cpp:157
+frame #4: GameEngine::init() at GameEngine.cpp:621
 ```
 
-#### Day 3-4: Platform-Specific Release Testing
+### Root Cause Hypothesis
 
-**macOS Release Verification**:
+1. **Build Issue**: SDL2Keyboard.cpp may not have been fully recompiled after changes
+2. **Linker Issue**: Symbol might be undefined due to compilation order
+3. **CMake Cache**: Stale CMake cache might have wrong paths
 
-```bash
-# Verify application bundle
-# - Code signing correct
-# - Entitlements set properly
-# - Metal framework included
-# - Assets bundled correctly
-# - Launch verification
+### Immediate Actions Required
+
+1. **Clean rebuild**: `rm -rf build/macos && cmake --preset macos && cmake --build build/macos --target GeneralsXZH -j 4`
+2. **Verify symbol**: `nm -C build/macos/GeneralsMD/GeneralsXZH | grep SDL2Keyboard`
+3. **Check object file**: `ls -la build/macos/GeneralsMD/Code/GameEngineDevice/CMakeFiles/z_gameenginedevice.dir/Source/CrossPlatform/SDL2Keyboard.cpp.o`
+
+---
+
+## Factory Methods Requiring Implementation
+
+Based on the initialization sequence, these factory methods use `create*()` pattern and may need verification:
+
+| Factory Method | Current Location | Implementation Status |
+|----------------|------------------|----------------------|
+| `createLocalFileSystem()` | StdDevice | ✅ Working |
+| `createArchiveFileSystem()` | StdDevice | ✅ Working |
+| `CreateGameTextInterface()` | StdDevice | ✅ Working |
+| `CreateCDManager()` | Phase 49.1 | ✅ Fixed |
+| `createAudioManager()` | Phase 32 OpenAL | ✅ Working |
+| `createFunctionLexicon()` | W3DDevice | ✅ Working |
+| `createModuleFactory()` | ModuleFactory.cpp | ✅ Working |
+| `createMessageStream()` | MessageStream.cpp | ✅ Working |
+| `createParticleSystemManager()` | W3DDevice | ⚠️ Verify |
+| `createThingFactory()` | ThingFactory.cpp | ⚠️ Verify |
+| `createGameClient()` | W3DDevice | 🔴 **BLOCKING** |
+| `createGameLogic()` | GameLogic.cpp | ⏳ Not Reached |
+| `createRecorder()` | Recorder.cpp | ⏳ Not Reached |
+| `createRadar()` | W3DDevice | ⏳ Not Reached |
+| `createVictoryConditions()` | VictoryConditions.cpp | ⏳ Not Reached |
+| `createNewGameResultsInterface()` | GameResults.cpp | ⏳ Not Reached |
+
+---
+
+## GameClient Internal Factory Methods
+
+When `TheGameClient->init()` is called, it internally calls these factories in `GameClient.cpp`:
+
+```cpp
+// GameClient.cpp:270 and onwards
+TheKeyboard = createKeyboard();    // 🔴 CRASH HERE
+TheKeyboard->init();
+
+TheMouse = createMouse();          // After keyboard
+TheMouse->init();
+
+TheDisplay = createGameDisplay();  // After mouse
+TheDisplay->init();
+
+TheInGameUI = createInGameUI();    // After display
+TheInGameUI->init();
+
+TheWindowManager = createWindowManager();
+TheWindowManager->init();
 ```
 
-**Windows Release Verification**:
+### W3DGameClient Factory Methods Status
+
+| Method | Current Implementation | Status |
+|--------|----------------------|--------|
+| `createKeyboard()` | `return NEW SDL2Keyboard;` | 🔴 Crashes (build issue?) |
+| `createMouse()` | `return NEW Win32Mouse;` | ⏳ Not Reached |
+| `createGameDisplay()` | `return NEW W3DDisplay;` | ⏳ Not Reached |
+| `createInGameUI()` | `return NEW W3DInGameUI;` | ⏳ Not Reached |
+| `createWindowManager()` | `return NEW W3DGameWindowManager;` | ⏳ Not Reached |
+| `createVideoPlayer()` | `return NEW FFmpegVideoPlayer;` (if RTS_HAS_FFMPEG) | ⚠️ Verify |
+| `createTerrainVisual()` | `return NEW W3DTerrainVisual;` | ⏳ Not Reached |
+| `createSnowManager()` | `return NEW W3DSnowManager;` | ⏳ Not Reached |
+
+---
+
+## Phase 50 Implementation Plan
+
+### Task 1: Fix SDL2Keyboard Build Issue (Day 1) - CRITICAL
+
+**Steps**:
+
+1. Clean CMake cache: `rm -rf build/macos/CMakeCache.txt build/macos/CMakeFiles`
+2. Reconfigure: `cmake --preset macos`
+3. Full rebuild: `cmake --build build/macos --target GeneralsXZH -j 4 | tee logs/phase50_clean_build.log`
+4. Verify symbol: `nm -C build/macos/GeneralsMD/GeneralsXZH | grep SDL2Keyboard`
+5. Test: Deploy and run
+
+**Success Criteria**:
+
+- SDL2Keyboard symbol present in executable
+- Game progresses past TheGameClient initialization
+
+### Task 2: Verify Remaining GameClient Factories (Day 2)
+
+After keyboard works, verify:
+
+- `createMouse()` returns valid Win32Mouse
+- `createGameDisplay()` returns valid W3DDisplay
+- `createInGameUI()` returns valid W3DInGameUI
+- `createWindowManager()` returns valid W3DGameWindowManager
+
+### Task 3: Progress Through INI Loading (Days 3-4)
+
+Once TheGameClient works, the next subsystems load INI files:
+
+- TheRankInfoStore → `Data\INI\Rank`
+- ThePlayerTemplateStore → `Data\INI\PlayerTemplate`
+- TheFXListStore → `Data\INI\FXList`
+- etc.
+
+**Potential Issues**:
+
+- Missing INI files (need game assets)
+- INI parsing errors (Phase 22-23 fixes should help)
+- Path separator issues (\ vs /)
+
+### Task 4: Reach Game Logic Systems (Day 5)
+
+Once INI stores load:
+
+- TheAI
+- TheGameLogic
+- TheTeamFactory
+- etc.
+
+### Task 5: Reach Final State Systems (Days 6-7)
+
+- TheMetaMap
+- TheActionManager
+- TheGameStateMap
+- TheGameState
+- TheGameResultsQueue
+
+**Final Target**: Game reaches main menu shell
+
+---
+
+## Sub-Phases for Phase 50
+
+### Phase 50.1: SDL2Keyboard Build Fix
+
+- Clean rebuild
+- Symbol verification
+- Runtime test
+
+### Phase 50.2: GameClient Complete Init
+
+- Mouse factory
+- Display factory
+- InGameUI factory
+- WindowManager factory
+
+### Phase 50.3: INI Store Loading
+
+- Verify all Data\INI paths
+- Fix path separators if needed
+- Handle missing files gracefully
+
+### Phase 50.4: Game Logic Systems
+
+- AI initialization
+- GameLogic factory
+- TeamFactory init
+
+### Phase 50.5: State & UI Systems
+
+- MetaMap init
+- GameState init
+- GameResultsQueue
+
+### Phase 50.6: Main Menu
+
+- Shell state machine
+- Menu rendering
+- User interaction
+
+---
+
+## Testing Commands
 
 ```bash
-# Verify executable
-# - Dependencies present
-# - Vulkan runtime available
-# - Visual C++ redistributable linked
-# - Installer creation functional
-```
+# Clean rebuild
+cd /Users/felipebraz/PhpstormProjects/pessoal/GeneralsGameCode
+rm -rf build/macos/CMakeCache.txt build/macos/CMakeFiles
+cmake --preset macos
+cmake --build build/macos --target GeneralsXZH -j 4 2>&1 | tee logs/phase50_clean.log
 
-**Linux Release Verification**:
+# Verify SDL2Keyboard symbol
+nm -C build/macos/GeneralsMD/GeneralsXZH | grep SDL2Keyboard
 
-```bash
-# Verify executable
-# - Dependencies listed correctly
-# - AppImage/Snap creation works
-# - Permissions set correctly
-# - Distribution compatibility verified
-```
-
-#### Day 5: Stress Test on Release Builds
-
-```bash
-# Test release-build game (not debug)
+# Deploy and test
+cp build/macos/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 cd $HOME/GeneralsX/GeneralsMD
-
-# 1-hour stability test
-timeout 3600s ./GeneralsXZH 2>&1 | tee logs/phase50_release_stress.log
-
-# Verify no crashes
-grep -i "crash\|error" logs/phase50_release_stress.log | head -10
-```
-
----
-
-### Week 2: Packaging & Distribution
-
-#### Day 1: Version Management
-
-**Semantic versioning**:
-
-```bash
-# Version scheme: MAJOR.MINOR.PATCH
-# Current: v1.0.0 (First production release)
-# Components:
-# - MAJOR: Incompatible changes (0 = beta, 1 = production)
-# - MINOR: New features, backwards-compatible
-# - PATCH: Bug fixes only
-
-# Create git tag
-git tag -a v1.0.0 -m "GeneralsX v1.0.0 - First production release"
-git tag -a v1.0.0-macos -m "macOS release bundle"
-git tag -a v1.0.0-windows -m "Windows release bundle"
-git tag -a v1.0.0-linux -m "Linux release bundle"
-
-# Push tags
-git push origin v1.0.0 v1.0.0-*
-```
-
-**Create CHANGELOG**:
-
-```bash
-cat > CHANGELOG.md << 'EOF'
-# Changelog - GeneralsX v1.0.0
-
-## [1.0.0] - 2025-11-XX (Production Release)
-
-### Added
-- Complete cross-platform port (Windows, macOS, Linux)
-- Vulkan graphics backend
-- Metal graphics backend (macOS)
-- SDL2 windowing and input
-- OpenAL audio system
-- LAN multiplayer support
-- Campaign mode
-- Save/Load system
-- Replay recording
-- Graphics quality settings
-- Customizable controls
-- Full original game feature set
-
-### Changed
-- Graphics engine (DirectX 8 → Vulkan/Metal)
-- Windowing system (Win32 → SDL2)
-- Audio engine (Miles Sound System → OpenAL)
-- Build system (Visual C++ 6 → CMake)
-- Target platforms (Windows only → Windows/macOS/Linux)
-
-### Fixed
-- Cross-platform compatibility issues
-- Memory leaks
-- Graphics rendering issues
-- Input handling problems
-- Network synchronization
-
-### Removed
-- DirectX 8 dependency
-- Win32 API dependency (except Windows platform)
-- Outdated audio system
-- Legacy compatibility layers
-
-## Installation
-
-### macOS
-```bash
-# Download GeneralsX-1.0.0-macOS.zip
-unzip GeneralsX-1.0.0-macOS.zip
-cd GeneralsX
-./GeneralsX.app/Contents/MacOS/GeneralsXZH
-```
-
-### Windows
-```cmd
-# Download GeneralsX-1.0.0-Windows.exe
-GeneralsX-1.0.0-Windows.exe
-```
-
-### Linux
-```bash
-# Option 1: AppImage
-wget GeneralsX-1.0.0-Linux-x86_64.AppImage
-chmod +x GeneralsX-1.0.0-Linux-x86_64.AppImage
-./GeneralsX-1.0.0-Linux-x86_64.AppImage
-
-# Option 2: Snap (future)
-snap install generalsx
-```
-
-## Known Issues
-- None (all issues resolved in this release)
-
-## Future Roadmap
-- v1.1.0: Performance optimization, additional graphics options
-- v1.2.0: Modding support, custom map editor
-- v2.0.0: New campaign scenarios, additional units/buildings
-EOF
-```
-
-#### Day 2-3: Create Release Packages
-
-**macOS Release**:
-
-```bash
-# Create DMG (Disk Image) for macOS distribution
-# - Include GeneralsXZH executable
-# - Include application bundle
-# - Include README + installation instructions
-# - Create installable package
-
-mkdir -p dist/GeneralsX-1.0.0-macOS
-cp -r build/macos-arm64-vulkan/GeneralsMD/GeneralsXZH dist/GeneralsX-1.0.0-macOS/
-cp README.md CHANGELOG.md LICENSE.md dist/GeneralsX-1.0.0-macOS/
-
-# Create ZIP archive
-cd dist
-zip -r GeneralsX-1.0.0-macOS.zip GeneralsX-1.0.0-macOS/
-```
-
-**Windows Release**:
-
-```bash
-# Create installer executable
-# - Include GeneralsXZH.exe
-# - Include Visual C++ redistributable
-# - Include Vulkan runtime installer
-# - Add Start Menu shortcuts
-# - Add uninstaller
-
-mkdir -p dist/GeneralsX-1.0.0-Windows
-cp build/vc6/GeneralsMD/GeneralsXZH.exe dist/GeneralsX-1.0.0-Windows/
-cp README.md CHANGELOG.md LICENSE.md dist/GeneralsX-1.0.0-Windows/
-
-# Create installer (NSIS or MSI)
-# ... build installer ...
-```
-
-**Linux Release**:
-
-```bash
-# Create AppImage for universal Linux distribution
-# - Single executable for all distros
-# - Automatic dependency bundling
-# - Desktop integration
-
-mkdir -p dist/GeneralsX-1.0.0-Linux
-cp build/linux/GeneralsMD/GeneralsXZH dist/GeneralsX-1.0.0-Linux/
-cp README.md CHANGELOG.md LICENSE.md dist/GeneralsX-1.0.0-Linux/
-
-# Create AppImage
-cd dist
-appimagetool GeneralsX-1.0.0-Linux/ GeneralsX-1.0.0-Linux-x86_64.AppImage
-```
-
-#### Day 4-5: GitHub Release Creation
-
-**Create GitHub Release**:
-
-```bash
-# Create release on GitHub
-# - Upload release binaries (macOS, Windows, Linux)
-# - Attach CHANGELOG.md
-# - Set as production release (not pre-release)
-# - Include download instructions
-
-# Command-line (using gh CLI):
-gh release create v1.0.0 \
-  --title "GeneralsX v1.0.0 - Production Release" \
-  --notes-file CHANGELOG.md \
-  dist/GeneralsX-1.0.0-macOS.zip \
-  dist/GeneralsX-1.0.0-Windows.exe \
-  dist/GeneralsX-1.0.0-Linux-x86_64.AppImage
-```
-
----
-
-### Week 3: Documentation & Support
-
-#### Day 1-2: Documentation Completion
-
-**User Documentation**:
-
-```bash
-# Create comprehensive user guide
-cat > docs/USER_GUIDE.md << 'EOF'
-# GeneralsX User Guide
-
-## Installation
-
-### macOS
-1. Download GeneralsX-1.0.0-macOS.zip
-2. Unzip file
-3. Run GeneralsX application
-
-### Windows
-1. Download GeneralsX-1.0.0-Windows.exe
-2. Run installer
-3. Follow on-screen instructions
-4. Desktop shortcut created automatically
-
-### Linux
-1. Download GeneralsX-1.0.0-Linux-x86_64.AppImage
-2. Make executable: chmod +x GeneralsX-1.0.0-Linux-x86_64.AppImage
-3. Run: ./GeneralsX-1.0.0-Linux-x86_64.AppImage
-
-## Game Assets
-
-GeneralsX requires original game asset files (.big files):
-- Download from Steam or GOG
-- Extract to GeneralsX/Data and GeneralsX/Maps folders
-- Game will auto-detect assets on first run
-
-## System Requirements
-
-### macOS
-- OS: macOS 10.15+
-- CPU: Apple Silicon (M1/M2+) or Intel Core i5+
-- RAM: 4 GB minimum
-- Storage: 10 GB available
-- GPU: Integrated Metal support
-
-### Windows
-- OS: Windows 10 or later
-- CPU: Intel Core i5+ or AMD equivalent
-- RAM: 4 GB minimum
-- Storage: 10 GB available
-- GPU: NVIDIA GTX 1050+ or AMD RX 460+ (Vulkan support)
-
-### Linux
-- OS: Ubuntu 20.04 LTS+ or equivalent
-- CPU: Intel Core i5+ or AMD equivalent
-- RAM: 4 GB minimum
-- Storage: 10 GB available
-- GPU: NVIDIA or AMD (Vulkan driver required)
-
-## Getting Started
-
-1. Launch GeneralsX
-2. Select game mode (Campaign, Multiplayer, Skirmish)
-3. Choose general (faction)
-4. Select difficulty (Easy, Medium, Hard)
-5. Play!
-
-## Multiplayer Guide
-
-1. Launch game and select Multiplayer
-2. Select "Host Game" or "Join Game"
-3. Configure game settings (map, players, etc.)
-4. Start game
-5. Command units to victory!
-
-## Graphics Settings
-
-- Quality: Low, Medium, High, Ultra
-- Resolution: 720p, 1080p, 1440p, 2160p
-- Effects: Enabled/Disabled
-- Audio: Master volume, music/effects balance
-
-## Troubleshooting
-
-### Game won't start
-- Check asset files present in Data/ folder
-- Verify system requirements met
-- Try resetting graphics settings
-
-### Poor performance
-- Lower graphics quality settings
-- Reduce resolution
-- Close other applications
-- Update graphics drivers
-
-### Multiplayer connection issues
-- Verify both players on same network
-- Check firewall settings
-- Restart connection
-
-## Support
-
-Report bugs or request features: https://github.com/TheSuperHackers/GeneralsGameCode/issues
-
-EOF
-```
-
-#### Day 3: Support Infrastructure
-
-**Create issue tracking template**:
-
-```bash
-# GitHub issue templates for bug reports and feature requests
-mkdir -p .github/ISSUE_TEMPLATE
-
-cat > .github/ISSUE_TEMPLATE/bug_report.md << 'EOF'
----
-name: Bug Report
-about: Report a bug in GeneralsX
----
-
-## Description
-[Describe the bug clearly]
-
-## Steps to Reproduce
-1. [First step]
-2. [Second step]
-3. [...]
-
-## Expected Behavior
-[What should happen]
-
-## Actual Behavior
-[What actually happens]
-
-## Platform
-- OS: [macOS / Windows / Linux]
-- Version: [e.g., v1.0.0]
-- GPU: [e.g., Apple M1 / NVIDIA GTX 1080]
-
-## Logs
-[Paste relevant error logs here]
-
-## Additional Context
-[Any other relevant information]
-EOF
-```
-
-#### Day 4-5: Release Announcement
-
-**Create release blog post/announcement**:
-
-```bash
-cat > docs/RELEASE_v1.0.0.md << 'EOF'
-# GeneralsX v1.0.0 Release Announcement
-
-## What is GeneralsX?
-
-GeneralsX is a **cross-platform port** of Command & Conquer: Generals (2003), one of the most beloved real-time strategy games of all time. Now available on **Windows, macOS, and Linux** with modern Vulkan graphics and renewed performance.
-
-## Key Features
-
-- ✅ **Full Campaign Mode** - Experience the complete single-player campaign
-- ✅ **Multiplayer Support** - Battle up to 8 players in LAN games
-- ✅ **Modern Graphics** - Vulkan rendering engine (Metal on macOS)
-- ✅ **Cross-Platform** - Windows, macOS (M1/M2/Intel), Linux
-- ✅ **High Performance** - 60+ FPS on modern hardware
-- ✅ **Audio System** - Full music and sound effects with OpenAL
-- ✅ **Save/Load** - Progress persistence between sessions
-- ✅ **Replay System** - Record and playback matches
-
-## System Requirements
-
-### Recommended
-- macOS 11+ (Apple Silicon/Intel) or Windows 10+ or Linux (Ubuntu 20.04+)
-- CPU: Modern multi-core processor
-- RAM: 4-8 GB
-- GPU: Modern graphics card with Vulkan support
-- Storage: 10+ GB available
-
-## Download
-
-Latest release available at:
-- [GitHub Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases/tag/v1.0.0)
-- Steam (if available)
-- GOG (if available)
-
-## Installation
-
-[See USER_GUIDE.md for detailed installation instructions]
-
-## What's New Since Phase 47
-
-- All symbols resolved (130 → 0)
-- Runtime validation complete
-- Performance profiling and optimization
-- Final feature implementation
-- Comprehensive testing across platforms
-- Release packaging and distribution
-
-## Known Issues
-
-None - all issues resolved in v1.0.0
-
-## Future Roadmap
-
-- v1.1.0: Additional graphics options, performance tuning
-- v1.2.0: Modding support, custom map editor
-- v2.0.0: New content, expanded campaign
-
-## Credits
-
-- Original game: Westwood Studios
-- Port: GeneralsX Team
-- Contributions: Community contributors
-
-## Support
-
-- Report bugs: GitHub Issues
-- Feature requests: GitHub Discussions
-- Documentation: docs/
-
----
-
-**Release Date**: November 2025
-**Version**: 1.0.0
-**Status**: Production Release
-
-EOF
+lldb -o run -o "bt 20" -o quit ./GeneralsXZH 2>&1 | tee logs/phase50_test.log
 ```
 
 ---
 
 ## Success Criteria
 
-### Must Have (Phase 50 Completion)
+### Phase 50 Complete When
 
-- ✅ All features validated on all platforms
-- ✅ Release packages created (macOS, Windows, Linux)
-- ✅ Version v1.0.0 tagged in git
-- ✅ GitHub release published
-- ✅ Documentation complete and comprehensive
-- ✅ User guide provided
-- ✅ Support infrastructure established
-- ✅ Changelog populated
-- ✅ Zero blocking issues identified
-- ✅ All tests passing
-
-### Should Have
-
-- ✅ Installer created (Windows MSI)
-- ✅ Code signed (macOS app)
-- ✅ Distribution channels setup (Steam, GOG)
-- ✅ Press release published
-- ✅ Community announcement made
-
-### Known Limitations
-
-- Mod support deferred to future versions
-- Online multiplayer (GameSpy) depends on service availability
-- Custom map editor deferred to v1.2.0
-- Advanced networking features deferred to future versions
-
----
-
-## Files to Create/Update
-
-### Create New
-
-```markdown
-docs/PLANNING/4/PHASE50/FINAL_VALIDATION_CHECKLIST.md
-docs/USER_GUIDE.md
-docs/RELEASE_v1.0.0.md
-CHANGELOG.md
-dist/GeneralsX-1.0.0-macOS.zip
-dist/GeneralsX-1.0.0-Windows.exe
-dist/GeneralsX-1.0.0-Linux-x86_64.AppImage
-.github/ISSUE_TEMPLATE/bug_report.md
-.github/ISSUE_TEMPLATE/feature_request.md
-```
+- ✅ SDL2Keyboard properly linked and working
+- ✅ TheGameClient fully initializes
+- ✅ All INI stores load (or gracefully skip missing files)
+- ✅ Game logic systems initialize
+- ✅ Game reaches main menu/shell state
 
 ---
 
 ## References
 
-- All previous phase documentation
-- Semantic versioning guide: https://semver.org/
-- GitHub release documentation
-- Platform distribution best practices
+- `GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp` - Init sequence (lines 475-700)
+- `GeneralsMD/Code/GameEngine/Source/GameClient/GameClient.cpp` - Client init (lines 260-350)
+- `GeneralsMD/Code/GameEngineDevice/Include/W3DDevice/GameClient/W3DGameClient.h` - Factories
 
 ---
 
-## Timeline to Production
-
-**Phase 43.1-43.7**: Symbol resolution (current work)
-↓
-**Phase 44**: Runtime validation (1-2 weeks)
-↓
-**Phase 45**: Extended testing (2 weeks)
-↓
-**Phase 46**: Performance optimization (2-3 weeks)
-↓
-**Phase 47**: Feature completion (2-3 weeks)
-↓
-**Phase 50**: Production release (2-3 weeks)
-↓
-**v1.0.0 Released** 🎉
-
----
-
-## Transition to Long-Term Support
-
-After v1.0.0 release:
-
-1. **v1.1.x Branch**: Bug fixes and minor updates
-2. **v2.0.x Branch**: New features and major improvements
-3. **Community Contribution**: Accept community pull requests
-4. **Issue Management**: Regular bug triage and fix releases
-5. **Periodic Releases**: Quarterly releases with accumulated fixes
-
----
-
-**Created**: November 22, 2025  
-**Last Updated**: November 22, 2025  
-**Status**: 🕐 Pending (awaiting Phase 47 completion)  
-**Target Release**: November 2025
+**Created**: November 2025
+**Last Updated**: November 26, 2025
+**Status**: 🔄 In Progress - Resolving build issue

@@ -5,11 +5,6 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-if [ ! -f "$1" ]; then
-    echo "Error: File '$1' not found!"
-    exit 1
-fi
-
 if ! command -v gawk &> /dev/null; then
     echo "Error: gawk is required but not installed. Please install gawk and try again."
     exit 1
@@ -17,6 +12,20 @@ fi
 
 if ! command -v grep &> /dev/null; then
     echo "Error: grep is required but not installed. Please install grep and try again."
+    exit 1
+fi
+
+if [ "$1" == "auto" ]; then
+    LOG_FILE=$(ps aux |grep tee |grep -v grep | awk '{print $NF}')
+    if [ -z "$LOG_FILE" ]; then
+        echo "Error: Could not find the build log file automatically. Please specify it manually."
+        exit 1
+    fi
+    set -- "$LOG_FILE"
+fi
+
+if [ ! -f "$1" ]; then
+    echo "Error: File '$1' not found!"
     exit 1
 fi
 
