@@ -564,10 +564,18 @@ void GameEngine::init()
 		fprintf(stderr, "GameEngine::init() - About to init TheFunctionLexicon\n"); fflush(stderr);
 		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheFunctionLexicon initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheModuleFactory\n"); fflush(stderr);
 		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheModuleFactory initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheMessageStream\n"); fflush(stderr);
 		initSubsystem(TheMessageStream,"TheMessageStream", createMessageStream(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheMessageStream initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheSidesList\n"); fflush(stderr);
 		initSubsystem(TheSidesList,"TheSidesList", MSGNEW("GameEngineSubsystem") SidesList(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheSidesList initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheCaveSystem\n"); fflush(stderr);
 		initSubsystem(TheCaveSystem,"TheCaveSystem", MSGNEW("GameEngineSubsystem") CaveSystem(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheCaveSystem initialized successfully\n"); fflush(stderr);
 		initSubsystem(TheRankInfoStore,"TheRankInfoStore", MSGNEW("GameEngineSubsystem") RankInfoStore(), &xferCRC, NULL, "Data\\INI\\Rank");
 		initSubsystem(ThePlayerTemplateStore,"ThePlayerTemplateStore", MSGNEW("GameEngineSubsystem") PlayerTemplateStore(), &xferCRC, "Data\\INI\\Default\\PlayerTemplate", "Data\\INI\\PlayerTemplate");
 		initSubsystem(TheParticleSystemManager,"TheParticleSystemManager", createParticleSystemManager(), NULL);
