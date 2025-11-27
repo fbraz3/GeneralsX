@@ -50,8 +50,8 @@
 #endif
 #include "W3DDevice/GameClient/W3DMouse.h"
 #include "W3DDevice/GameClient/W3DSnow.h"
-#include "Win32Device/GameClient/Win32Mouse.h"
 #include "CrossPlatform/SDL2Keyboard.h"
+#include "CrossPlatform/SDL2Mouse.h"
 
 class ThingTemplate;
 
@@ -131,8 +131,7 @@ inline Keyboard *W3DGameClient::createKeyboard( void ) {
 }
 inline Mouse *W3DGameClient::createMouse( void )
 {
-	// Win32Mouse provides cross-platform mouse input handling
-	// with support for cursor capture and relative mouse movement
-	// It works with the W3D rendering system for cursor display
-	return NEW Win32Mouse;
+	// SDL2Mouse provides cross-platform mouse input handling
+	// using SDL2 instead of Win32 message-based input
+	return NEW SDL2Mouse;
 }

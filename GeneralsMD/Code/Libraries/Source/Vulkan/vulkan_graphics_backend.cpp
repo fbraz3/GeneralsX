@@ -53,6 +53,14 @@ public:
 		// Phase 39.3 Stage 1: Implement VkInstance creation with validation layers
 		printf("[Vulkan] VulkanInstance::Create() - Starting instance creation (debug=%d)\n", debug_mode);
 		
+		// DEBUG: Platform detection
+		printf("[Vulkan] Platform detection:\n");
+#ifdef __APPLE__
+		printf("[Vulkan]   __APPLE__ is DEFINED\n");
+#else
+		printf("[Vulkan]   __APPLE__ is NOT defined\n");
+#endif
+		
 		// Set up application info
 		VkApplicationInfo app_info{};
 		app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -67,13 +75,22 @@ public:
 		required_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 		
 		// Platform-specific surface extension
-#ifdef VK_USE_PLATFORM_MACOS_MVK
-		required_extensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+#ifdef __APPLE__
+		// macOS with MoltenVK requires portability enumeration
+		required_extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+		required_extensions.push_back("VK_EXT_metal_surface");
+		printf("[Vulkan] macOS: Added VK_KHR_PORTABILITY_ENUMERATION and VK_EXT_metal_surface extensions\n");
 #elif defined(VK_USE_PLATFORM_WIN32_KHR)
 		required_extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
 		required_extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
+		
+		// DEBUG: Print all extensions requested
+		printf("[Vulkan] Requesting %zu extensions:\n", required_extensions.size());
+		for (size_t i = 0; i < required_extensions.size(); i++) {
+			printf("[Vulkan]   [%zu]: %s\n", i, required_extensions[i]);
+		}
 		
 		// Validation layer names
 		std::vector<const char*> validation_layers;
@@ -85,12 +102,20 @@ public:
 		VkInstanceCreateInfo create_info{};
 		create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		create_info.pApplicationInfo = &app_info;
-		create_info.enabledExtensionCount = required_extensions.size();
+		create_info.enabledExtensionCount = static_cast<uint32_t>(required_extensions.size());
 		create_info.ppEnabledExtensionNames = required_extensions.data();
-		create_info.enabledLayerCount = validation_layers.size();
+		create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
 		create_info.ppEnabledLayerNames = validation_layers.data();
+		create_info.flags = 0;
+		
+#ifdef __APPLE__
+		// macOS with MoltenVK requires portability enumeration flag
+		create_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+		printf("[Vulkan] macOS: Set VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR flag (flags=0x%x)\n", create_info.flags);
+#endif
 		
 		// Create the Vulkan instance
+		printf("[Vulkan] Calling vkCreateInstance with flags=0x%x...\n", create_info.flags);
 		VkResult result = vkCreateInstance(&create_info, nullptr, &handle);
 		if (result != VK_SUCCESS) {
 			printf("[Vulkan] ERROR: Failed to create Vulkan instance (result=%d)\n", result);
@@ -248,12 +273,27 @@ public:
 		VkPhysicalDeviceFeatures device_features{};
 		// device_features can be extended based on needs
 		
+		// Required device extensions for presentation
+		std::vector<const char*> device_extensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+#ifdef __APPLE__
+			"VK_KHR_portability_subset",  // Required on macOS via MoltenVK
+#endif
+		};
+		
+		printf("[Vulkan] Enabling %zu device extensions:\n", device_extensions.size());
+		for (size_t i = 0; i < device_extensions.size(); ++i) {
+			printf("[Vulkan]   [%zu]: %s\n", i, device_extensions[i]);
+		}
+		
 		// Create device info
 		VkDeviceCreateInfo device_create_info{};
 		device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		device_create_info.queueCreateInfoCount = 1;
 		device_create_info.pQueueCreateInfos = &queue_create_info;
 		device_create_info.pEnabledFeatures = &device_features;
+		device_create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
+		device_create_info.ppEnabledExtensionNames = device_extensions.data();
 		
 		// Create the logical device
 		VkResult result = vkCreateDevice(physical_device, &device_create_info, nullptr, &handle);

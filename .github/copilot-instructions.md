@@ -29,6 +29,19 @@ Zero Hour expansion code that extends base game with platform-specific fixes:
 
 ## Critical Build Workflow
 
+### VS Code Tasks (PREFERRED)
+**Always use VS Code Tasks instead of manual terminal commands** to avoid blocking the integrated terminal.
+
+Key tasks:
+- `Build GeneralsXZH (macOS)` / `Build GeneralsX (macOS)` - Compile with logging
+- `Deploy GeneralsXZH (macOS)` / `Deploy GeneralsX (macOS)` - Copy to runtime dir
+- `Sign GeneralsXZH (macOS)` / `Sign GeneralsX (macOS)` - Ad-hoc code signing
+- `Run GeneralsXZH Terminal (macOS)` / `Run GeneralsX Terminal (macOS)` - **Opens external Terminal.app**
+
+**CRITICAL**: The Run tasks open macOS Terminal.app externally. This prevents blocking VS Code's terminal. Logs are saved to `logs/runTerminal.log`.
+
+See `.github/instructions/project.instructions.md` for full task documentation.
+
 ### Presets Are Everything
 ```bash
 # Configure (creates build/macos/)

@@ -211,6 +211,7 @@ else()
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/CrossPlatform/CrossPlatformCDManager.cpp
         Source/CrossPlatform/SDL2Keyboard.cpp
+        Source/CrossPlatform/SDL2Mouse.cpp
     )
 endif()
 

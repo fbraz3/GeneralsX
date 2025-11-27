@@ -9,29 +9,30 @@
 #include <fstream>
 #include <sstream>
 
-namespace Graphics {
-
 // ============================================================================
-// FORWARD DECLARATIONS - Backend Factory Functions
+// FORWARD DECLARATIONS - Backend Factory Functions (C linkage)
 // ============================================================================
 // These are defined in respective backend .cpp files
+// NOTE: extern "C" MUST be outside namespace for proper linkage
 
 extern "C" {
-    IGraphicsDriver* CreateVulkanGraphicsDriver(void* windowHandle, uint32_t width,
-                                              uint32_t height, bool fullscreen);
+    Graphics::IGraphicsDriver* CreateVulkanGraphicsDriver(void* windowHandle, uint32_t width,
+                                                         uint32_t height, bool fullscreen);
     
-    IGraphicsDriver* CreateOpenGLGraphicsDriver(void* windowHandle, uint32_t width,
-                                              uint32_t height, bool fullscreen);
+    Graphics::IGraphicsDriver* CreateOpenGLGraphicsDriver(void* windowHandle, uint32_t width,
+                                                         uint32_t height, bool fullscreen);
     
-    IGraphicsDriver* CreateDirectX12GraphicsDriver(void* windowHandle, uint32_t width,
-                                                  uint32_t height, bool fullscreen);
+    Graphics::IGraphicsDriver* CreateDirectX12GraphicsDriver(void* windowHandle, uint32_t width,
+                                                            uint32_t height, bool fullscreen);
     
-    IGraphicsDriver* CreateMetalGraphicsDriver(void* windowHandle, uint32_t width,
-                                             uint32_t height, bool fullscreen);
+    Graphics::IGraphicsDriver* CreateMetalGraphicsDriver(void* windowHandle, uint32_t width,
+                                                        uint32_t height, bool fullscreen);
     
-    IGraphicsDriver* CreateSoftwareGraphicsDriver(void* windowHandle, uint32_t width,
-                                                uint32_t height, bool fullscreen);
+    Graphics::IGraphicsDriver* CreateSoftwareGraphicsDriver(void* windowHandle, uint32_t width,
+                                                           uint32_t height, bool fullscreen);
 }
+
+namespace Graphics {
 
 // ============================================================================
 // IMPLEMENTATION - Factory Methods

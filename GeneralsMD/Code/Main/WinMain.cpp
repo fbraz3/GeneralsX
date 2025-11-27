@@ -47,11 +47,21 @@
 #else
 // Phase 02: SDL2 Window & Event Loop - cross-platform headers
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 #include <cstdlib>
 #include <cstdint>
 #include <unistd.h>
 #include <climits>
+
+// DEBUG: Pre-main diagnostics - executes before main() to catch static initialization issues
+__attribute__((constructor(101))) static void debug_pre_main_startup() {
+    write(2, "PRE-MAIN: Starting static initialization...\n", 45);
+}
+
+__attribute__((constructor(65535))) static void debug_pre_main_complete() {
+    write(2, "PRE-MAIN: Static initialization complete, entering main()\n", 59);
+}
 #endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -808,6 +818,22 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	fprintf(stderr, "initializeAppWindows: SDL2 initialized successfully\n");
 	fflush(stderr);
 	
+	// Load Vulkan library for SDL2_WINDOW_VULKAN support
+	// On macOS, this loads MoltenVK
+	fprintf(stderr, "initializeAppWindows: Loading Vulkan library via SDL2...\n");
+	fflush(stderr);
+	
+	if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
+		fprintf(stderr, "initializeAppWindows: Failed to load Vulkan library: %s\n", SDL_GetError());
+		fprintf(stderr, "initializeAppWindows: Falling back to OpenGL backend\n");
+		fflush(stderr);
+		// Fall back to OpenGL if Vulkan is not available
+		// TODO: Implement OpenGL fallback
+	} else {
+		fprintf(stderr, "initializeAppWindows: Vulkan library loaded successfully\n");
+		fflush(stderr);
+	}
+	
 	// Calculate window position (center on screen)
 	SDL_Rect displayBounds;
 	SDL_GetDisplayBounds(0, &displayBounds);
@@ -823,8 +849,11 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 			windowX, windowY, startWidth, startHeight);
 	fflush(stderr);
 	
-	// Set up window flags
+	// Set up window flags with Vulkan support for SDL_Vulkan_CreateSurface
 	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;
+	fprintf(stderr, "initializeAppWindows: Using SDL_WINDOW_VULKAN flag for Vulkan surface creation\n");
+	fflush(stderr);
+	
 	if (runWindowed) {
 		// In windowed mode, allow window resizing and normal window decorations (title bar, close button)
 		windowFlags |= SDL_WINDOW_RESIZABLE;

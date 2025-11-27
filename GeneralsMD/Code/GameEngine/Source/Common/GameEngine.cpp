@@ -576,9 +576,15 @@ void GameEngine::init()
 		fprintf(stderr, "GameEngine::init() - About to init TheCaveSystem\n"); fflush(stderr);
 		initSubsystem(TheCaveSystem,"TheCaveSystem", MSGNEW("GameEngineSubsystem") CaveSystem(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheCaveSystem initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheRankInfoStore\n"); fflush(stderr);
 		initSubsystem(TheRankInfoStore,"TheRankInfoStore", MSGNEW("GameEngineSubsystem") RankInfoStore(), &xferCRC, NULL, "Data\\INI\\Rank");
+		fprintf(stderr, "GameEngine::init() - TheRankInfoStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init ThePlayerTemplateStore\n"); fflush(stderr);
 		initSubsystem(ThePlayerTemplateStore,"ThePlayerTemplateStore", MSGNEW("GameEngineSubsystem") PlayerTemplateStore(), &xferCRC, "Data\\INI\\Default\\PlayerTemplate", "Data\\INI\\PlayerTemplate");
+		fprintf(stderr, "GameEngine::init() - ThePlayerTemplateStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheParticleSystemManager\n"); fflush(stderr);
 		initSubsystem(TheParticleSystemManager,"TheParticleSystemManager", createParticleSystemManager(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheParticleSystemManager initialized successfully\n"); fflush(stderr);
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -587,15 +593,30 @@ void GameEngine::init()
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-
+		fprintf(stderr, "GameEngine::init() - About to init TheFXListStore\n"); fflush(stderr);
 		initSubsystem(TheFXListStore,"TheFXListStore", MSGNEW("GameEngineSubsystem") FXListStore(), &xferCRC, "Data\\INI\\Default\\FXList", "Data\\INI\\FXList");
+		fprintf(stderr, "GameEngine::init() - TheFXListStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheWeaponStore\n"); fflush(stderr);
 		initSubsystem(TheWeaponStore,"TheWeaponStore", MSGNEW("GameEngineSubsystem") WeaponStore(), &xferCRC, NULL, "Data\\INI\\Weapon");
+		fprintf(stderr, "GameEngine::init() - TheWeaponStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheObjectCreationListStore\n"); fflush(stderr);
 		initSubsystem(TheObjectCreationListStore,"TheObjectCreationListStore", MSGNEW("GameEngineSubsystem") ObjectCreationListStore(), &xferCRC, "Data\\INI\\Default\\ObjectCreationList", "Data\\INI\\ObjectCreationList");
+		fprintf(stderr, "GameEngine::init() - TheObjectCreationListStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheLocomotorStore\n"); fflush(stderr);
 		initSubsystem(TheLocomotorStore,"TheLocomotorStore", MSGNEW("GameEngineSubsystem") LocomotorStore(), &xferCRC, NULL, "Data\\INI\\Locomotor");
+		fprintf(stderr, "GameEngine::init() - TheLocomotorStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheSpecialPowerStore\n"); fflush(stderr);
 		initSubsystem(TheSpecialPowerStore,"TheSpecialPowerStore", MSGNEW("GameEngineSubsystem") SpecialPowerStore(), &xferCRC, "Data\\INI\\Default\\SpecialPower", "Data\\INI\\SpecialPower");
+		fprintf(stderr, "GameEngine::init() - TheSpecialPowerStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheDamageFXStore\n"); fflush(stderr);
 		initSubsystem(TheDamageFXStore,"TheDamageFXStore", MSGNEW("GameEngineSubsystem") DamageFXStore(), &xferCRC, NULL, "Data\\INI\\DamageFX");
+		fprintf(stderr, "GameEngine::init() - TheDamageFXStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheArmorStore\n"); fflush(stderr);
 		initSubsystem(TheArmorStore,"TheArmorStore", MSGNEW("GameEngineSubsystem") ArmorStore(), &xferCRC, NULL, "Data\\INI\\Armor");
+		fprintf(stderr, "GameEngine::init() - TheArmorStore initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheBuildAssistant\n"); fflush(stderr);
 		initSubsystem(TheBuildAssistant,"TheBuildAssistant", MSGNEW("GameEngineSubsystem") BuildAssistant, NULL);
+		fprintf(stderr, "GameEngine::init() - TheBuildAssistant initialized successfully\n"); fflush(stderr);
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -606,8 +627,9 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
+		fprintf(stderr, "GameEngine::init() - About to init TheThingFactory\n"); fflush(stderr);
 		initSubsystem(TheThingFactory,"TheThingFactory", createThingFactory(), &xferCRC, "Data\\INI\\Default\\Object", "Data\\INI\\Object");
+		fprintf(stderr, "GameEngine::init() - TheThingFactory initialized successfully\n"); fflush(stderr);
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -616,9 +638,12 @@ void GameEngine::init()
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-
+		fprintf(stderr, "GameEngine::init() - About to init TheUpgradeCenter\n"); fflush(stderr);
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
+		fprintf(stderr, "GameEngine::init() - TheUpgradeCenter initialized successfully\n"); fflush(stderr);
+		fprintf(stderr, "GameEngine::init() - About to init TheGameClient\n"); fflush(stderr);
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), NULL);
+		fprintf(stderr, "GameEngine::init() - TheGameClient initialized successfully\n"); fflush(stderr);
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////

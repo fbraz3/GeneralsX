@@ -28,12 +28,12 @@
  * - Graceful degradation when backends aren't available
  * - Structure for future backend implementation
  * - Proper error reporting to game code
+ * 
+ * NOTE: extern "C" functions MUST be outside namespace for proper linkage!
  */
 
 #include "../IGraphicsDriver.h"
 #include <cstdio>
-
-namespace Graphics {
 
 // ============================================================================
 // OpenGL Graphics Driver Factory Stub (Phase 50+)
@@ -49,14 +49,12 @@ namespace Graphics {
  * @return New IGraphicsDriver instance (OpenGL implementation), or nullptr
  * @note NOT YET IMPLEMENTED - returns nullptr
  */
-extern "C" {
-    IGraphicsDriver* CreateOpenGLGraphicsDriver(void* windowHandle, uint32_t width,
-                                              uint32_t height, bool fullscreen)
-    {
-        printf("[CreateOpenGLGraphicsDriver] OpenGL backend NOT YET IMPLEMENTED (Phase 50+)\n");
-        printf("[CreateOpenGLGraphicsDriver] Falling back to default backend\n");
-        return nullptr;  // Signals factory to use fallback
-    }
+extern "C" Graphics::IGraphicsDriver* CreateOpenGLGraphicsDriver(void* windowHandle, uint32_t width,
+                                                                uint32_t height, bool fullscreen)
+{
+    printf("[CreateOpenGLGraphicsDriver] OpenGL backend NOT YET IMPLEMENTED (Phase 50+)\n");
+    printf("[CreateOpenGLGraphicsDriver] Falling back to default backend\n");
+    return nullptr;  // Signals factory to use fallback
 }
 
 // ============================================================================
@@ -73,15 +71,13 @@ extern "C" {
  * @return New IGraphicsDriver instance (Metal implementation), or nullptr
  * @note NOT YET IMPLEMENTED - returns nullptr
  */
-extern "C" {
-    IGraphicsDriver* CreateMetalGraphicsDriver(void* windowHandle, uint32_t width,
-                                             uint32_t height, bool fullscreen)
-    {
-        printf("[CreateMetalGraphicsDriver] Metal backend NOT YET IMPLEMENTED (Phase 50+)\n");
-        printf("[CreateMetalGraphicsDriver] Metal is macOS/iOS only, requires platform-specific setup\n");
-        printf("[CreateMetalGraphicsDriver] Falling back to default backend\n");
-        return nullptr;  // Signals factory to use fallback
-    }
+extern "C" Graphics::IGraphicsDriver* CreateMetalGraphicsDriver(void* windowHandle, uint32_t width,
+                                                               uint32_t height, bool fullscreen)
+{
+    printf("[CreateMetalGraphicsDriver] Metal backend NOT YET IMPLEMENTED (Phase 50+)\n");
+    printf("[CreateMetalGraphicsDriver] Metal is macOS/iOS only, requires platform-specific setup\n");
+    printf("[CreateMetalGraphicsDriver] Falling back to default backend\n");
+    return nullptr;  // Signals factory to use fallback
 }
 
 // ============================================================================
@@ -98,15 +94,13 @@ extern "C" {
  * @return New IGraphicsDriver instance (DirectX 12 implementation), or nullptr
  * @note NOT YET IMPLEMENTED - returns nullptr
  */
-extern "C" {
-    IGraphicsDriver* CreateDirectX12GraphicsDriver(void* windowHandle, uint32_t width,
-                                                  uint32_t height, bool fullscreen)
-    {
-        printf("[CreateDirectX12GraphicsDriver] DirectX 12 backend NOT YET IMPLEMENTED (Phase 50+)\n");
-        printf("[CreateDirectX12GraphicsDriver] DirectX 12 is Windows only\n");
-        printf("[CreateDirectX12GraphicsDriver] Falling back to default backend\n");
-        return nullptr;  // Signals factory to use fallback
-    }
+extern "C" Graphics::IGraphicsDriver* CreateDirectX12GraphicsDriver(void* windowHandle, uint32_t width,
+                                                                   uint32_t height, bool fullscreen)
+{
+    printf("[CreateDirectX12GraphicsDriver] DirectX 12 backend NOT YET IMPLEMENTED (Phase 50+)\n");
+    printf("[CreateDirectX12GraphicsDriver] DirectX 12 is Windows only\n");
+    printf("[CreateDirectX12GraphicsDriver] Falling back to default backend\n");
+    return nullptr;  // Signals factory to use fallback
 }
 
 // ============================================================================
@@ -126,15 +120,11 @@ extern "C" {
  * @return New IGraphicsDriver instance (Software implementation), or nullptr
  * @note NOT YET IMPLEMENTED - returns nullptr
  */
-extern "C" {
-    IGraphicsDriver* CreateSoftwareGraphicsDriver(void* windowHandle, uint32_t width,
-                                                uint32_t height, bool fullscreen)
-    {
-        printf("[CreateSoftwareGraphicsDriver] Software backend NOT YET IMPLEMENTED\n");
-        printf("[CreateSoftwareGraphicsDriver] Software rendering is CPU-only, not recommended\n");
-        printf("[CreateSoftwareGraphicsDriver] Falling back to default backend\n");
-        return nullptr;  // Signals factory to use fallback
-    }
+extern "C" Graphics::IGraphicsDriver* CreateSoftwareGraphicsDriver(void* windowHandle, uint32_t width,
+                                                                  uint32_t height, bool fullscreen)
+{
+    printf("[CreateSoftwareGraphicsDriver] Software backend NOT YET IMPLEMENTED\n");
+    printf("[CreateSoftwareGraphicsDriver] Software rendering is CPU-only, not recommended\n");
+    printf("[CreateSoftwareGraphicsDriver] Falling back to default backend\n");
+    return nullptr;  // Signals factory to use fallback
 }
-
-}  // namespace Graphics

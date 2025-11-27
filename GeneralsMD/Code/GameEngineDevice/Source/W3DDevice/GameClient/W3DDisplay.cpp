@@ -695,12 +695,15 @@ void W3DDisplay::init( void )
 
 	if (!TheGlobalData->m_headless)
 	{
+		// Phase 50: Pass ApplicationHWnd to WW3D::Init for Vulkan surface creation
+		extern void* ApplicationHWnd;
+		fprintf(stderr, "[W3DDisplay::init] Passing ApplicationHWnd=%p to WW3D::Init\n", ApplicationHWnd);
 
 		if (TheGlobalData->m_incrementalAGPBuf)
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
-		if (WW3D::Init( NULL ) != WW3D_ERROR_OK)
+		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );

@@ -45,7 +45,6 @@ thumbs.db
 /CMakeUserPresets.json
 /.cache
 .clang-format
-/.vscode
 /Dependencies/MaxSDK/maxsdk
 
 ## IntelliJ, CLion, etc.

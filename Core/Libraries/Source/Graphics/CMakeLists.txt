@@ -78,6 +78,14 @@ target_link_libraries(graphics_drivers
 )
 
 # Compile definitions
+# Phase 50: Enable graphics backends based on availability
+# Vulkan is available on all platforms via MoltenVK (macOS), native (Linux/Windows)
+# Using PUBLIC visibility so all linked targets see the definition
+target_compile_definitions(graphics_drivers PUBLIC GRAPHICS_BACKEND_VULKAN)
+
+# OpenGL is available as fallback on all platforms
+target_compile_definitions(graphics_drivers PUBLIC GRAPHICS_BACKEND_OPENGL)
+
 if(MSVC)
     target_compile_options(graphics_drivers PRIVATE /W4)
 else()

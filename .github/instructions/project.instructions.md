@@ -57,6 +57,49 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 
 # Project Specific Instructions
 
+## VS Code Tasks (PREFERRED METHOD)
+
+**IMPORTANT**: Always prefer using VS Code Tasks over manual terminal commands for build, deploy, sign, and run operations. Tasks are pre-configured with correct paths and logging.
+
+### Available Tasks (macOS)
+
+| Task | Description | Log Output |
+|------|-------------|------------|
+| `Build GeneralsXZH (macOS)` | Compiles Zero Hour expansion | `logs/build.log` |
+| `Build GeneralsX (macOS)` | Compiles Generals base game | `logs/build_generals.log` |
+| `Deploy GeneralsXZH (macOS)` | Copies ZH binary to `$HOME/GeneralsX/GeneralsMD/` | - |
+| `Deploy GeneralsX (macOS)` | Copies Generals binary to `$HOME/GeneralsX/Generals/` | - |
+| `Sign GeneralsXZH (macOS)` | Ad-hoc code signs ZH binary | - |
+| `Sign GeneralsX (macOS)` | Ad-hoc code signs Generals binary | - |
+| `Run GeneralsXZH Terminal (macOS)` | **Runs ZH in external Terminal.app** | `logs/runTerminal.log` |
+| `Run GeneralsX Terminal (macOS)` | **Runs Generals in external Terminal.app** | `logs/runTerminal_generals.log` |
+
+### Critical: Running the Game
+
+**NEVER run the game directly in VS Code's integrated terminal** - it will block the terminal indefinitely and may require force-killing the process.
+
+**ALWAYS use the `Run GeneralsXZH Terminal (macOS)` or `Run GeneralsX Terminal (macOS)` tasks** which:
+1. Open macOS Terminal.app (external window)
+2. Execute the game with output captured via `tee`
+3. Auto-close the terminal when the game exits
+4. Keep logs in `logs/runTerminal*.log` for analysis
+
+### How to Run Tasks
+
+Use `run_task` tool with the task label:
+```
+run_task("shell: Build GeneralsXZH (macOS)", workspaceFolder)
+run_task("shell: Run GeneralsXZH Terminal (macOS)", workspaceFolder)
+```
+
+### Typical Workflow
+
+1. **Build**: `run_task("shell: Build GeneralsXZH (macOS)")`
+2. **Deploy**: `run_task("shell: Deploy GeneralsXZH (macOS)")`
+3. **Sign**: `run_task("shell: Sign GeneralsXZH (macOS)")`
+4. **Run**: `run_task("shell: Run GeneralsXZH Terminal (macOS)")`
+5. **Analyze**: Read `logs/runTerminal.log` after game closes
+
 ## Compilation Guidelines
 
 - When compiling, use the `-j` flag with half the number of available CPU cores to avoid overloading the system.

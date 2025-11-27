@@ -1,0 +1,125 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build GeneralsXZH (macOS)",
+			"type": "shell",
+			"command": "cmake",
+			"args": [
+				"--build",
+				"build/macos",
+				"--target",
+				"GeneralsXZH",
+				"-j",
+				"4",
+				"2>&1",
+				"|",
+				"tee",
+				"logs/build.log"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build GeneralsX (macOS)",
+			"type": "shell",
+			"command": "cmake",
+			"args": [
+				"--build",
+				"build/macos",
+				"--target",
+				"GeneralsX",
+				"-j",
+				"4",
+				"2>&1",
+				"|",
+				"tee",
+				"logs/build_generals.log"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Deploy GeneralsXZH (macOS)",
+			"type": "shell",
+			"command": "cp",
+			"args": [
+				"${workspaceFolder}/build/macos/GeneralsMD/GeneralsXZH",
+				"$HOME/GeneralsX/GeneralsMD/GeneralsXZH"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Deploy GeneralsX (macOS)",
+			"type": "shell",
+			"command": "cp",
+			"args": [
+				"${workspaceFolder}/build/macos/Generals/GeneralsX",
+				"$HOME/GeneralsX/Generals/GeneralsX"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Sign GeneralsXZH (macOS)",
+			"type": "shell",
+			"command": "codesign",
+			"args": [
+				"--force",
+				"--deep",
+				"--sign",
+				"-",
+				"$HOME/GeneralsX/GeneralsMD/GeneralsXZH"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Sign GeneralsX (macOS)",
+			"type": "shell",
+			"command": "codesign",
+			"args": [
+				"--force",
+				"--deep",
+				"--sign",
+				"-",
+				"$HOME/GeneralsX/Generals/GeneralsX"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Run GeneralsXZH Terminal (macOS)",
+			"type": "shell",
+			"command": "${workspaceFolder}/scripts/runTerminal.sh",
+			"args": [
+				"$HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee ${workspaceFolder}/logs/runTerminal.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Run GeneralsX Terminal (macOS)",
+			"type": "shell",
+			"command": "${workspaceFolder}/scripts/runTerminal.sh",
+			"args": [
+				"$HOME/GeneralsX/Generals/GeneralsX 2>&1 | tee ${workspaceFolder}/logs/runTerminal_generals.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "shared"
+			}
+		}
+	]
+}
