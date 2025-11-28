@@ -181,6 +181,7 @@ set(WW3D2_SRC
     
     # Phase 43.2: Advanced Texture Systems (Real implementations)
     phase43_2_advanced_textures.cpp
+    phase43_surface_texture.cpp
     phase43_texture_apply.cpp
     phase43_texture_memory.cpp
     

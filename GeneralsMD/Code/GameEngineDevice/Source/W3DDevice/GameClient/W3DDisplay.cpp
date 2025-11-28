@@ -698,14 +698,20 @@ void W3DDisplay::init( void )
 		// Phase 50: Pass ApplicationHWnd to WW3D::Init for Vulkan surface creation
 		extern void* ApplicationHWnd;
 		fprintf(stderr, "[W3DDisplay::init] Passing ApplicationHWnd=%p to WW3D::Init\n", ApplicationHWnd);
+		fflush(stderr);
 
 		if (TheGlobalData->m_incrementalAGPBuf)
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
+		fprintf(stderr, "[W3DDisplay::init] About to call WW3D::Init\n");
+		fflush(stderr);
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 
+		fprintf(stderr, "[W3DDisplay::init] WW3D::Init succeeded\n");
+		fflush(stderr);
+		
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
 		WW3D::Enable_Static_Sort_Lists(true);
@@ -713,16 +719,24 @@ void W3DDisplay::init( void )
 		WW3D::Set_Screen_UV_Bias( TRUE );  ///< this makes text look good :)
 		WW3D::Set_Texture_Bitdepth(32);
 
+		fprintf(stderr, "[W3DDisplay::init] About to call setWindowed\n");
+		fflush(stderr);
 		setWindowed( TheGlobalData->m_windowed );
 
 		// create a 2D renderer helper
+		fprintf(stderr, "[W3DDisplay::init] Creating Render2DClass\n");
+		fflush(stderr);
 		m_2DRender = NEW Render2DClass;
 		DEBUG_ASSERTCRASH( m_2DRender, ("Cannot create Render2DClass") );
+		fprintf(stderr, "[W3DDisplay::init] Render2DClass created\n");
+		fflush(stderr);
 
 		WW3DErrorType renderDeviceError;
 		Int attempt = 0;
 		do
 		{
+			fprintf(stderr, "[W3DDisplay::init] Set_Render_Device attempt %d\n", attempt);
+			fflush(stderr);
 			switch (attempt)
 			{
 			case 0:
@@ -731,6 +745,9 @@ void W3DDisplay::init( void )
 				setWidth( TheGlobalData->m_xResolution );
 				setHeight( TheGlobalData->m_yResolution );
 				setBitDepth( DEFAULT_DISPLAY_BIT_DEPTH );
+				fprintf(stderr, "[W3DDisplay::init] attempt 0: %dx%d, %d bit\n", 
+				        TheGlobalData->m_xResolution, TheGlobalData->m_yResolution, DEFAULT_DISPLAY_BIT_DEPTH);
+				fflush(stderr);
 				break;
 			}
 			case 1:
@@ -738,6 +755,8 @@ void W3DDisplay::init( void )
 				// Getting the device at the default bit depth (32) didn't work, so try
 				// getting a 16 bit display.  (Voodoo 1-3 only supported 16 bit.) jba.
 				setBitDepth( MIN_DISPLAY_BIT_DEPTH );
+				fprintf(stderr, "[W3DDisplay::init] attempt 1: using %d bit\n", MIN_DISPLAY_BIT_DEPTH);
+				fflush(stderr);
 				break;
 			}
 			case 2:
@@ -762,10 +781,15 @@ void W3DDisplay::init( void )
 				setWidth( xres );
 				setHeight( yres );
 				setBitDepth( bitDepth );
+				fprintf(stderr, "[W3DDisplay::init] attempt 2: %dx%d, %d bit\n", xres, yres, bitDepth);
+				fflush(stderr);
 				break;
 			}
 			}
 
+			fprintf(stderr, "[W3DDisplay::init] Calling WW3D::Set_Render_Device(%d, %d, %d, %d, %d, true)\n",
+			        0, getWidth(), getHeight(), getBitDepth(), getWindowed());
+			fflush(stderr);
 			renderDeviceError = WW3D::Set_Render_Device(
 				0,
 				getWidth(),
@@ -773,13 +797,20 @@ void W3DDisplay::init( void )
 				getBitDepth(),
 				getWindowed(),
 				true );
+			fprintf(stderr, "[W3DDisplay::init] WW3D::Set_Render_Device returned %d\n", renderDeviceError);
+			fflush(stderr);
 
 			++attempt;
 		}
 		while (attempt < 3 && renderDeviceError != WW3D_ERROR_OK);
 
+		fprintf(stderr, "[W3DDisplay::init] After Set_Render_Device loop, error=%d\n", renderDeviceError);
+		fflush(stderr);
+
 		if (renderDeviceError != WW3D_ERROR_OK)
 		{
+			fprintf(stderr, "[W3DDisplay::init] ERROR: renderDeviceError != WW3D_ERROR_OK, shutting down\n");
+			fflush(stderr);
 			WW3D::Shutdown();
 			WWMath::Shutdown();
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
@@ -787,31 +818,55 @@ void W3DDisplay::init( void )
 			return;
 		}
 
+		fprintf(stderr, "[W3DDisplay::init] About to check GameLODManager\n");
+		fflush(stderr);
 		//Check if level was never set and default to setting most suitable for system.
 		if (TheGameLODManager->getStaticLODLevel() == STATIC_GAME_LOD_UNKNOWN)
 		{
+			fprintf(stderr, "[W3DDisplay::init] Setting recommended static LOD level\n");
+			fflush(stderr);
 			TheGameLODManager->setStaticLODLevel(TheGameLODManager->getRecommendedStaticLODLevel());
 		}
 		else
 		{
 			//Static LOD level was applied during GameLOD manager init except for texture reduction
 			//which needs to be applied here.
+			fprintf(stderr, "[W3DDisplay::init] Setting texture LOD\n");
+			fflush(stderr);
 			TheGameClient->setTextureLOD(TheWritableGlobalData->m_textureReductionFactor);
 		}
 
+		fprintf(stderr, "[W3DDisplay::init] About to check displayGamma\n");
+		fflush(stderr);
 		if (TheGlobalData->m_displayGamma != 1.0f)
 			setGamma(TheGlobalData->m_displayGamma,0.0f,1.0f,FALSE);
+		fprintf(stderr, "[W3DDisplay::init] displayGamma check done\n");
+		fflush(stderr);
 	}
 
+	fprintf(stderr, "[W3DDisplay::init] About to call initAssets()\n");
+	fflush(stderr);
 	initAssets();
+	fprintf(stderr, "[W3DDisplay::init] initAssets() done\n");
+	fflush(stderr);
 
 	if (!TheGlobalData->m_headless)
 	{
+		fprintf(stderr, "[W3DDisplay::init] About to call init2DScene()\n");
+		fflush(stderr);
 		init2DScene();
+		fprintf(stderr, "[W3DDisplay::init] init2DScene() done, calling init3DScene()\n");
+		fflush(stderr);
 		init3DScene();
+		fprintf(stderr, "[W3DDisplay::init] init3DScene() done, calling W3DShaderManager::init()\n");
+		fflush(stderr);
 		W3DShaderManager::init();
+		fprintf(stderr, "[W3DDisplay::init] W3DShaderManager::init() done\n");
+		fflush(stderr);
 
 		// Create and initialize the debug display
+		fprintf(stderr, "[W3DDisplay::init] Creating W3DDebugDisplay\n");
+		fflush(stderr);
 		m_nativeDebugDisplay = NEW W3DDebugDisplay();
 		m_debugDisplay = m_nativeDebugDisplay;
 		if ( m_nativeDebugDisplay )
@@ -833,11 +888,15 @@ void W3DDisplay::init( void )
 			m_nativeDebugDisplay->setFontHeight( 13 );
 			m_nativeDebugDisplay->setFontWidth( 9 );
 		}
+		fprintf(stderr, "[W3DDisplay::init] W3DDebugDisplay created\n");
+		fflush(stderr);
 
 		// DX8WebBrowser::Initialize();  // Phase 42: Web browser feature not implemented
 	}
 
 	// we're now online
+	fprintf(stderr, "[W3DDisplay::init] Setting m_initialized = true\n");
+	fflush(stderr);
 	m_initialized = true;
 	if( TheGlobalData->m_displayDebug )
 	{

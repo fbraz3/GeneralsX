@@ -25,6 +25,8 @@
 #include "rddesc.h"  // Phase 39.4: For RenderDeviceDescClass
 #include "dx8fvf_vertex_formats.h"  // Phase 42: Vertex format definitions
 #include "ww3dformat.h"  // Phase 42: For WW3DFormat enum and constants
+#include "formconv.h"  // Phase 51: For WW3DFormat_To_D3DFormat conversion
+#include "../../Graphics/Vulkan/d3d8_memory_texture.h"  // Phase 51: Real texture/surface implementations
 
 // Phase 41 Week 3: Graphics driver factory integration
 // Forward declare to avoid header dependencies
@@ -240,7 +242,10 @@ public:
     static void Set_Render_Target(SurfaceClass* target) {}
     static void Set_Render_Target_With_Z(SurfaceClass* color_target, SurfaceClass* z_target) {}
     static SurfaceClass* Create_Render_Target(int width, int height) { return nullptr; }
-    static SurfaceClass* _Get_DX8_Back_Buffer() { return nullptr; }
+    
+    // Phase 51: Return a valid back buffer surface for smudge rendering
+    // The back buffer dimensions should match the render resolution
+    static SurfaceClass* _Get_DX8_Back_Buffer();  // Implementation in DX8Wrapper_Stubs.cpp
 
     // ========================================================================
     // Scene Rendering
@@ -286,12 +291,34 @@ public:
     static void Draw_Strip(int start_index, int primitive_count, int min_vertex_index, int vertex_count) {}
 
     // ========================================================================
-    // Texture Operations
+    // Texture Operations (Phase 51: Real implementations)
     // ========================================================================
     static void Set_Texture(int stage, TextureClass* texture) {}
     static void Set_DX8_Texture(int stage, void* d3d_texture) {}
-    static void* _Create_DX8_Texture(int width, int height, int format) { return nullptr; }
-    static void* _Create_DX8_Texture(int width, int height, int format, int mip_levels) { return nullptr; }
+    
+    // Phase 51: Create memory-backed texture with specified dimensions and format
+    static IDirect3DTexture8* _Create_DX8_Texture(int width, int height, int format) {
+        return CreateMemoryTexture(width, height, 1, 0, (D3DFORMAT)format, D3DPOOL_MANAGED);
+    }
+    static IDirect3DTexture8* _Create_DX8_Texture(int width, int height, int format, int mip_levels) {
+        return CreateMemoryTexture(width, height, mip_levels, 0, (D3DFORMAT)format, D3DPOOL_MANAGED);
+    }
+    // Phase 51: Full overload matching texture.cpp signature
+    static IDirect3DTexture8* _Create_DX8_Texture(unsigned int width, unsigned int height, WW3DFormat format, 
+                                                   int mip_levels, D3DPOOL pool, bool rendertarget) {
+        D3DFORMAT d3d_format = WW3DFormat_To_D3DFormat(format);
+        DWORD usage = rendertarget ? D3DUSAGE_RENDERTARGET : 0;
+        return CreateMemoryTexture(width, height, mip_levels, usage, d3d_format, pool);
+    }
+    // Phase 51: Surface overload for texture from surface
+    static IDirect3DTexture8* _Create_DX8_Texture(IDirect3DSurface8* surface, int mip_levels) {
+        if (!surface) return nullptr;
+        D3DSURFACE_DESC desc;
+        surface->GetDesc(&desc);
+        return CreateMemoryTexture(desc.Width, desc.Height, mip_levels, 0, desc.Format, D3DPOOL_MANAGED);
+    }
+    
+    // Phase 51: Create memory-backed surface
     static IDirect3DSurface8* _Create_DX8_Surface(int width, int height, int format);
     static IDirect3DSurface8* _Create_DX8_Surface(const char* filename);
     static void* _Create_DX8_ZTexture(int width, int height, int format) { return nullptr; }
@@ -300,7 +327,12 @@ public:
                                             { return nullptr; }
     static void _Copy_DX8_Rects(void* src_surface, void* src_rect, int src_pitch,
                                void* dst_surface, void* dst_rect) {}
-    static int CreateImageSurface(int width, int height, int format, void** surface) { return 0; }
+    static int CreateImageSurface(int width, int height, int format, void** surface) { 
+        if (surface) {
+            *surface = CreateMemorySurface(width, height, (D3DFORMAT)format);
+        }
+        return 0; 
+    }
     static int CopyRects(void* src_surface, void* src_rect, int count, void* dst_surface, void* dst_rect) { return 0; }
     static int D3DXLoadSurfaceFromSurface(void* dst_surface, void* dst_palette, void* dst_rect,
                                          void* src_surface, void* src_palette, void* src_rect,

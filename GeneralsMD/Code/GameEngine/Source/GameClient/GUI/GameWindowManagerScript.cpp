@@ -253,12 +253,23 @@ static void readUntilSemicolon( File *fp, char *buffer, int maxBufLen )
 {
 	int i = 0;
 	Bool start = TRUE;
+	static int callCount = 0;
+	callCount++;
+	int thisCall = callCount;
+	
+	fprintf(stderr, "[readUntilSemicolon #%d] Starting, maxBufLen=%d\n", thisCall, maxBufLen); fflush(stderr);
 
 	while( i < maxBufLen )
 	{
 
 		// get next character
-		fp->read(buffer + i, 1);
+		Int bytesRead = fp->read(buffer + i, 1);
+		if (bytesRead <= 0) {
+			// EOF or error - exit to prevent infinite loop
+			fprintf(stderr, "[readUntilSemicolon #%d] EOF/Error at i=%d, bytesRead=%d\n", thisCall, i, bytesRead); fflush(stderr);
+			buffer[i] = '\000';
+			return;
+		}
 
 		// make all whitespace characters spaces
 		if( isspace( buffer[ i ] ) )
@@ -278,6 +289,7 @@ static void readUntilSemicolon( File *fp, char *buffer, int maxBufLen )
 
 				// found end of data chunk
 				buffer[ i ] = '\000';
+				fprintf(stderr, "[readUntilSemicolon #%d] Done, result='%.50s...'\n", thisCall, buffer); fflush(stderr);
 				return;
 
 			}
@@ -288,6 +300,7 @@ static void readUntilSemicolon( File *fp, char *buffer, int maxBufLen )
 	}
 
 	DEBUG_LOG(( "ReadUntilSemicolon: ERROR - Read buffer overflow - input truncated." ));
+	fprintf(stderr, "[readUntilSemicolon #%d] ERROR - buffer overflow\n", thisCall); fflush(stderr);
 
 	buffer[ maxBufLen - 1 ] = '\000';
 
@@ -2577,27 +2590,49 @@ static LayoutScriptParse layoutScriptTable[] =
 //-------------------------------------------------------------------------------------------------
 Bool parseLayoutBlock( File *inFile, char *buffer, UnsignedInt version, WindowLayoutInfo *info )
 {
+	fprintf(stderr, "[parseLayoutBlock] Starting, version=%u\n", version); fflush(stderr);
 	LayoutScriptParse *parse;
 	char token[ 256 ];
 
 	AsciiString asciitoken;
 	if (inFile->scanString(asciitoken) == FALSE) {
+		fprintf(stderr, "[parseLayoutBlock] First scanString failed\n"); fflush(stderr);
 		return FALSE;
 	}
+	fprintf(stderr, "[parseLayoutBlock] First token: '%s'\n", asciitoken.str()); fflush(stderr);
 
 	// better be the layout block
 	if (asciitoken.compare("STARTLAYOUTBLOCK") != 0) {
+		fprintf(stderr, "[parseLayoutBlock] ERROR: Expected STARTLAYOUTBLOCK\n"); fflush(stderr);
 		return FALSE;
 	}
+	fprintf(stderr, "[parseLayoutBlock] Found STARTLAYOUTBLOCK, entering loop\n"); fflush(stderr);
 
+	int loopCount = 0;
 	while( TRUE )
 	{
+		loopCount++;
+		if (loopCount > 100) {
+			fprintf(stderr, "[parseLayoutBlock] WARNING: Loop count exceeded 100, possible infinite loop\n"); fflush(stderr);
+		}
+		if (loopCount > 10000) {
+			fprintf(stderr, "[parseLayoutBlock] ERROR: Loop count exceeded 10000, breaking to prevent hang\n"); fflush(stderr);
+			break;
+		}
 
 		// get next token
-		inFile->scanString(asciitoken);
+		if (inFile->scanString(asciitoken) == FALSE) {
+			fprintf(stderr, "[parseLayoutBlock] scanString failed at loop %d\n", loopCount); fflush(stderr);
+			break;
+		}
+		
+		if (loopCount <= 20 || loopCount % 100 == 0) {
+			fprintf(stderr, "[parseLayoutBlock] Loop %d, token: '%s'\n", loopCount, asciitoken.str()); fflush(stderr);
+		}
 
 		// check for end
 		if (asciitoken.compare("ENDLAYOUTBLOCK") == 0) {
+			fprintf(stderr, "[parseLayoutBlock] Found ENDLAYOUTBLOCK, exiting loop\n"); fflush(stderr);
 			break;
 		}
 
@@ -2609,17 +2644,25 @@ Bool parseLayoutBlock( File *inFile, char *buffer, UnsignedInt version, WindowLa
 			{
 				char *c;
 
+				fprintf(stderr, "[parseLayoutBlock] Token '%s' matched, calling readUntilSemicolon\n", parse->name); fflush(stderr);
 				// read from file
 				readUntilSemicolon( inFile, buffer, WIN_BUFFER_LENGTH );
 
+				fprintf(stderr, "[parseLayoutBlock] About to call strtok on buffer=%p\n", buffer); fflush(stderr);
 				// eat equals separator " = "
 				c = strtok( buffer, " =" );
+				fprintf(stderr, "[parseLayoutBlock] After strtok, c='%s'\n", c ? c : "NULL"); fflush(stderr);
 
 				strlcpy(token, asciitoken.str(), ARRAY_SIZE(token));
 
 				// parse it
+				fprintf(stderr, "[parseLayoutBlock] Calling parse->parse for '%s'\n", token); fflush(stderr);
 				if( parse->parse( token, c, version, info ) == FALSE )
+				{
+					fprintf(stderr, "[parseLayoutBlock] parse->parse returned FALSE\n"); fflush(stderr);
 					return FALSE;
+				}
+				fprintf(stderr, "[parseLayoutBlock] parse->parse completed successfully\n"); fflush(stderr);
 
 				break;  // exit for
 
@@ -2698,6 +2741,7 @@ WindowLayoutInfo::WindowLayoutInfo() :
 GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 																										WindowLayoutInfo *info )
 {
+	fprintf(stderr, "[winCreateFromScript] Starting for file: %s\n", filenameString.str()); fflush(stderr);
 	const char* filename = filenameString.str();
 	static char buffer[ WIN_BUFFER_LENGTH ]; 		// input buffer for reading
 	GameWindow *firstWindow = NULL;
@@ -2713,6 +2757,7 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
   // Reset the window stack
   resetWindowStack();
 	resetWindowDefaults();
+	fprintf(stderr, "[winCreateFromScript] resetWindowStack and resetWindowDefaults done\n"); fflush(stderr);
 
 	//
 	// get the filename from the parameter, if it doesn't contain a '\' it is
@@ -2726,35 +2771,45 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 	else
 		strlcpy(filepath, filename, ARRAY_SIZE(filepath));
 
+	fprintf(stderr, "[winCreateFromScript] Computed filepath: %s\n", filepath); fflush(stderr);
+
   // Open the input file
+	fprintf(stderr, "[winCreateFromScript] Calling TheFileSystem->openFile...\n"); fflush(stderr);
 	inFile = TheFileSystem->openFile(filepath, File::READ);
 	if (inFile == NULL)
 	{
+		fprintf(stderr, "[winCreateFromScript] ERROR: Cannot access file '%s'\n", filename); fflush(stderr);
 		DEBUG_LOG(( "WinCreateFromScript: Cannot access file '%s'.", filename ));
 		return NULL;
 	}
+	fprintf(stderr, "[winCreateFromScript] File opened successfully\n"); fflush(stderr);
 
   // read into memory
+	fprintf(stderr, "[winCreateFromScript] Converting to RAM file...\n"); fflush(stderr);
   inFile=inFile->convertToRAMFile();
+	fprintf(stderr, "[winCreateFromScript] Converted to RAM file\n"); fflush(stderr);
 
 	// read the file version
 	Int version;
+	fprintf(stderr, "[winCreateFromScript] Reading file version...\n"); fflush(stderr);
 	inFile->read(NULL, strlen("FILE_VERSION = "));
 	inFile->scanInt(version);
 	inFile->nextLine();
+	fprintf(stderr, "[winCreateFromScript] File version: %d\n", version); fflush(stderr);
 
 	// version 2+ have a special block called the layout block
 	if( version >= 2 )
 	{
-
+		fprintf(stderr, "[winCreateFromScript] Parsing layout block...\n"); fflush(stderr);
 		if( parseLayoutBlock( inFile, buffer, version, &scriptInfo ) == FALSE )
 		{
 
 			DEBUG_LOG(( "WinCreateFromScript: Error parsing layout block" ));
+			fprintf(stderr, "[winCreateFromScript] ERROR: Failed to parse layout block\n"); fflush(stderr);
 			return NULL;
 
 		}
-
+		fprintf(stderr, "[winCreateFromScript] Layout block parsed successfully\n"); fflush(stderr);
 	}
 	else
 	{
@@ -2765,11 +2820,15 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 		scriptInfo.shutdownNameString = "[None]";
 
 	}
+	
+	fprintf(stderr, "[winCreateFromScript] Starting window parsing loop...\n"); fflush(stderr);
+	int windowCount = 0;
 
 	while( TRUE )
 	{
 
 		if (inFile->scanString(asciibuf) == FALSE) {
+			fprintf(stderr, "[winCreateFromScript] scanString returned FALSE, exiting loop\n"); fflush(stderr);
 			break;
 		}
 
@@ -2856,9 +2915,12 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 		}
 		else if (asciibuf.compare("WINDOW") == 0)
 		{
+			windowCount++;
+			fprintf(stderr, "[winCreateFromScript] Parsing WINDOW #%d...\n", windowCount); fflush(stderr);
 
       // Parse window descriptions until the last END is read
       window = parseWindow( inFile, buffer );
+			fprintf(stderr, "[winCreateFromScript] Window #%d parsed, result=%p\n", windowCount, (void*)window); fflush(stderr);
 
 			// save first window created
 			if( firstWindow == NULL )
@@ -2870,9 +2932,12 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 
 	}
 
+	fprintf(stderr, "[winCreateFromScript] Parsing loop complete, total windows: %d\n", windowCount); fflush(stderr);
+
 	// close the file
 	inFile->close();
 	inFile = NULL;
+	fprintf(stderr, "[winCreateFromScript] File closed, returning firstWindow=%p\n", (void*)firstWindow); fflush(stderr);
 
 	// if info parameter is provided, copy info to the param
 	if( info )

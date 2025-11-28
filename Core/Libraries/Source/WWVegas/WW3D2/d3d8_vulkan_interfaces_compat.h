@@ -19,6 +19,10 @@
 #ifndef D3D8_INTERFACES_H_INCLUDED
 #define D3D8_INTERFACES_H_INCLUDED
 
+// Prevent Dependencies/Utility/Compat/d3d8.h from defining conflicting interfaces
+// This avoids ODR (One Definition Rule) violations
+#define _D3D8_H_STUB
+
 #include "d3d8_vulkan_types_compat.h"  // For IID and RGNDATA
 
 // Note: d3d8_enums.h is not included to avoid circular dependencies

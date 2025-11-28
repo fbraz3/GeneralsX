@@ -303,6 +303,7 @@ public:
 	TextureClass(IDirect3DBaseTexture8* d3d_texture);
 
 	// defualt constructors for derived classes (cube & vol)
+	// Phase 51: Modified to create D3D texture immediately when format is specified
 	TextureClass
 	(
 		unsigned width,
@@ -312,8 +313,7 @@ public:
 		bool rendertarget=false,
 		WW3DFormat format=WW3D_FORMAT_UNKNOWN,
 		bool allow_reduction=true
-	)
-	: TextureBaseClass(width,height,mip_level_count,pool,rendertarget,allow_reduction), TextureFormat(format), Filter(mip_level_count) { }
+	);  // Implementation moved to texture.cpp to support immediate texture creation
 
 	virtual TexAssetType Get_Asset_Type() const { return TEX_REGULAR; }
 

@@ -24,6 +24,13 @@
 #include <cwctype>
 #include <cstdio>
 #include <cstdarg>
+
+// Platform-specific malloc introspection headers
+#ifdef __APPLE__
+    #include <malloc/malloc.h>  // For malloc_size()
+#elif defined(__linux__)
+    #include <malloc.h>  // For malloc_usable_size()
+#endif
 #include <cerrno>
 #include <cstdlib>
 #include <sys/stat.h>
@@ -278,9 +285,18 @@ inline HGLOBAL GlobalReAlloc(HGLOBAL hMem, size_t size, unsigned int flags) {
 }
 
 inline size_t GlobalSize(HGLOBAL hMem) {
-    // POSIX doesn't have a direct equivalent to GlobalSize
-    // Return a conservative estimate or 0 (safer)
+#ifdef __APPLE__
+    // macOS: Use malloc_size() to get the actual allocation size
+    if (hMem) return malloc_size(hMem);
     return 0;
+#elif defined(__linux__)
+    // Linux: Use malloc_usable_size()
+    if (hMem) return malloc_usable_size(hMem);
+    return 0;
+#else
+    // POSIX fallback: No direct equivalent to GlobalSize
+    return 0;
+#endif
 }
 
 // Windows GUI types and stubs

@@ -242,12 +242,15 @@ GameClient::~GameClient()
 //-------------------------------------------------------------------------------------------------
 void GameClient::init( void )
 {
+	fprintf(stderr, "[GameClient::init] Starting\n"); fflush(stderr);
 
 	setFrameRate(MSEC_PER_LOGICFRAME_REAL);		// from GameCommon.h... tell W3D what our expected framerate is
 
+	fprintf(stderr, "[GameClient::init] Loading DrawGroupInfo INI\n"); fflush(stderr);
 	INI ini;
 	// Load the DrawGroupInfo here, before the Display Manager is loaded.
 	ini.loadFileDirectory("Data\\INI\\DrawGroupInfo", INI_LOAD_OVERWRITE, NULL);
+	fprintf(stderr, "[GameClient::init] DrawGroupInfo INI loaded\n"); fflush(stderr);
 
 	// Override the ini values with localized versions:
 	if (TheGlobalLanguageData && TheGlobalLanguageData->m_drawGroupInfoFont.name.isNotEmpty())
@@ -258,30 +261,39 @@ void GameClient::init( void )
 	}
 
 	// create the display string factory
+	fprintf(stderr, "[GameClient::init] Creating DisplayStringManager\n"); fflush(stderr);
 	TheDisplayStringManager = createDisplayStringManager();
 	if( TheDisplayStringManager )	{
 		TheDisplayStringManager->init();
 		TheDisplayStringManager->setName("TheDisplayStringManager");
 	}
+	fprintf(stderr, "[GameClient::init] DisplayStringManager created\n"); fflush(stderr);
 
 	if (!TheGlobalData->m_headless)
 	{
 		// create the keyboard
+		fprintf(stderr, "[GameClient::init] Creating Keyboard\n"); fflush(stderr);
 		TheKeyboard = createKeyboard();
 		TheKeyboard->init();
 		TheKeyboard->setName("TheKeyboard");
+		fprintf(stderr, "[GameClient::init] Keyboard created\n"); fflush(stderr);
 	}
 
 	// allocate and load image collection for the GUI and just load the 256x256 ones for now
+	fprintf(stderr, "[GameClient::init] Creating ImageCollection (512x512)\n"); fflush(stderr);
 	TheMappedImageCollection = MSGNEW("GameClientSubsystem") ImageCollection;
 	TheMappedImageCollection->load( 512 );
+	fprintf(stderr, "[GameClient::init] ImageCollection loaded\n"); fflush(stderr);
 
 	// now that we have all the images loaded ... load any animation definitions from those images
+	fprintf(stderr, "[GameClient::init] Creating Anim2DCollection\n"); fflush(stderr);
 	TheAnim2DCollection = MSGNEW("GameClientSubsystem") Anim2DCollection;
 	TheAnim2DCollection->init();
  	TheAnim2DCollection->setName("TheAnim2DCollection");
+	fprintf(stderr, "[GameClient::init] Anim2DCollection created\n"); fflush(stderr);
 
 	// register message translators
+	fprintf(stderr, "[GameClient::init] Registering message translators\n"); fflush(stderr);
 	if( TheMessageStream )
 	{
 
@@ -312,31 +324,41 @@ void GameClient::init( void )
 		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") GameClientMessageDispatcher, 999999999 );
 
 	}
+	fprintf(stderr, "[GameClient::init] Message translators registered\n"); fflush(stderr);
 
 	// create the font library
+	fprintf(stderr, "[GameClient::init] Creating FontLibrary\n"); fflush(stderr);
 	TheFontLibrary = createFontLibrary();
 	if( TheFontLibrary )
 		TheFontLibrary->init();
+	fprintf(stderr, "[GameClient::init] FontLibrary created\n"); fflush(stderr);
 
 	// create the mouse
+	fprintf(stderr, "[GameClient::init] Creating Mouse\n"); fflush(stderr);
 	TheMouse = TheGlobalData->m_headless ? NEW MouseDummy : createMouse();
 	TheMouse->parseIni();
 	TheMouse->initCursorResources();
  	TheMouse->setName("TheMouse");
+	fprintf(stderr, "[GameClient::init] Mouse created\n"); fflush(stderr);
 
 	// instantiate the display
+	fprintf(stderr, "[GameClient::init] Creating Display\n"); fflush(stderr);
 	TheDisplay = createGameDisplay();
 	if( TheDisplay ) {
 		TheDisplay->init();
  		TheDisplay->setName("TheDisplay");
 	}
+	fprintf(stderr, "[GameClient::init] Display created\n"); fflush(stderr);
 
+	fprintf(stderr, "[GameClient::init] Creating HeaderTemplateManager\n"); fflush(stderr);
 	TheHeaderTemplateManager = MSGNEW("GameClientSubsystem") HeaderTemplateManager;
 	if(TheHeaderTemplateManager){
 		TheHeaderTemplateManager->init();
 	}
+	fprintf(stderr, "[GameClient::init] HeaderTemplateManager created\n"); fflush(stderr);
 
 	// create the window manager
+	fprintf(stderr, "[GameClient::init] Creating WindowManager\n"); fflush(stderr);
 	TheWindowManager = TheGlobalData->m_headless ? NEW GameWindowManagerDummy : createWindowManager();
 	if( TheWindowManager )
 	{
@@ -346,54 +368,70 @@ void GameClient::init( void )
 //		TheWindowManager->initTestGUI();
 
 	}
+	fprintf(stderr, "[GameClient::init] WindowManager created\n"); fflush(stderr);
 
 	// create the IME manager
+	fprintf(stderr, "[GameClient::init] Creating IMEManager\n"); fflush(stderr);
 	TheIMEManager = CreateIMEManagerInterface();
 	if ( TheIMEManager )
 	{
 		TheIMEManager->init();
  		TheIMEManager->setName("TheIMEManager");
 	}
+	fprintf(stderr, "[GameClient::init] IMEManager created\n"); fflush(stderr);
 
 	// create the shell
+	fprintf(stderr, "[GameClient::init] Creating Shell\n"); fflush(stderr);
 	TheShell = MSGNEW("GameClientSubsystem") Shell;
 	if( TheShell ) {
 		TheShell->init();
  		TheShell->setName("TheShell");
 	}
+	fprintf(stderr, "[GameClient::init] Shell created\n"); fflush(stderr);
 
 	// instantiate the in-game user interface
+	fprintf(stderr, "[GameClient::init] Creating InGameUI\n"); fflush(stderr);
 	TheInGameUI = createInGameUI();
 	if( TheInGameUI ) {
 		TheInGameUI->init();
  		TheInGameUI->setName("TheInGameUI");
 	}
+	fprintf(stderr, "[GameClient::init] InGameUI created\n"); fflush(stderr);
 
+	fprintf(stderr, "[GameClient::init] Creating ChallengeGenerals\n"); fflush(stderr);
  	TheChallengeGenerals = createChallengeGenerals();
  	if( TheChallengeGenerals ) {
  		TheChallengeGenerals->init();
  	}
+	fprintf(stderr, "[GameClient::init] ChallengeGenerals created\n"); fflush(stderr);
 
+	fprintf(stderr, "[GameClient::init] Creating HotKeyManager\n"); fflush(stderr);
 	TheHotKeyManager = MSGNEW("GameClientSubsystem") HotKeyManager;
 	if( TheHotKeyManager ) {
 		TheHotKeyManager->init();
  		TheHotKeyManager->setName("TheHotKeyManager");
 	}
+	fprintf(stderr, "[GameClient::init] HotKeyManager created\n"); fflush(stderr);
 
 	// instantiate the terrain visual display
+	fprintf(stderr, "[GameClient::init] Creating TerrainVisual\n"); fflush(stderr);
 	TheTerrainVisual = createTerrainVisual();
 	if( TheTerrainVisual ) {
 		TheTerrainVisual->init();
  		TheTerrainVisual->setName("TheTerrainVisual");
 	}
+	fprintf(stderr, "[GameClient::init] TerrainVisual created\n"); fflush(stderr);
 
 	// allocate the ray effects manager
+	fprintf(stderr, "[GameClient::init] Creating RayEffects\n"); fflush(stderr);
 	TheRayEffects = MSGNEW("GameClientSubsystem") RayEffectSystem;
 	if( TheRayEffects )	{
 		TheRayEffects->init();
  		TheRayEffects->setName("TheRayEffects");
 	}
+	fprintf(stderr, "[GameClient::init] RayEffects created\n"); fflush(stderr);
 
+	fprintf(stderr, "[GameClient::init] Finishing Mouse init\n"); fflush(stderr);
 	TheMouse->init();	//finish initializing the mouse.
 
 	// set the limits of the mouse now that we've created the display and such
@@ -403,43 +441,57 @@ void GameClient::init( void )
 		TheMouse->setMouseLimits();
  		TheMouse->setName("TheMouse");
 	}
+	fprintf(stderr, "[GameClient::init] Mouse fully initialized\n"); fflush(stderr);
 
 	// create the video player
+	fprintf(stderr, "[GameClient::init] Creating VideoPlayer\n"); fflush(stderr);
 	TheVideoPlayer = createVideoPlayer();
 	if ( TheVideoPlayer )
 	{
 		TheVideoPlayer->init();
  		TheVideoPlayer->setName("TheVideoPlayer");
 	}
+	fprintf(stderr, "[GameClient::init] VideoPlayer created\n"); fflush(stderr);
 
 	// create the language filter.
+	fprintf(stderr, "[GameClient::init] Creating LanguageFilter\n"); fflush(stderr);
 	TheLanguageFilter = createLanguageFilter();
 	if (TheLanguageFilter)
 	{
 		TheLanguageFilter->init();
  		TheLanguageFilter->setName("TheLanguageFilter");
 	}
+	fprintf(stderr, "[GameClient::init] LanguageFilter created\n"); fflush(stderr);
 
+	fprintf(stderr, "[GameClient::init] Creating CampaignManager\n"); fflush(stderr);
 	TheCampaignManager = MSGNEW("GameClientSubsystem") CampaignManager;
 	TheCampaignManager->init();
+	fprintf(stderr, "[GameClient::init] CampaignManager created\n"); fflush(stderr);
 
+	fprintf(stderr, "[GameClient::init] Creating Eva\n"); fflush(stderr);
 	TheEva = MSGNEW("GameClientSubsystem") Eva;
 	TheEva->init();
  	TheEva->setName("TheEva");
+	fprintf(stderr, "[GameClient::init] Eva created\n"); fflush(stderr);
 
+	fprintf(stderr, "[GameClient::init] DisplayStringManager postProcessLoad\n"); fflush(stderr);
 	TheDisplayStringManager->postProcessLoad();
+	fprintf(stderr, "[GameClient::init] DisplayStringManager postProcessLoad done\n"); fflush(stderr);
 
+	fprintf(stderr, "[GameClient::init] Creating SnowManager\n"); fflush(stderr);
 	TheSnowManager = createSnowManager();
 	if (TheSnowManager)
 	{
 		TheSnowManager->init();
 		TheSnowManager->setName("TheSnowManager");
 	}
+	fprintf(stderr, "[GameClient::init] SnowManager created\n"); fflush(stderr);
 
 #ifdef PERF_TIMERS
 	TheGraphDraw = new GraphDraw;
 #endif
 
+	fprintf(stderr, "[GameClient::init] COMPLETE - returning\n"); fflush(stderr);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -467,7 +519,9 @@ void GameClient::reset( void )
 	TheDisplay->reset();
 	TheTerrainVisual->reset();
 	TheRayEffects->reset();
-	TheVideoPlayer->reset();
+	// Phase 51: Add NULL check for VideoPlayer - may not be initialized on all platforms
+	if (TheVideoPlayer)
+		TheVideoPlayer->reset();
 	TheEva->reset();
 	if (TheSnowManager)
 		TheSnowManager->reset();
@@ -634,6 +688,8 @@ void GameClient::update( void )
 	}
 
 	// update the video player
+	// Phase 51: Add NULL check for VideoPlayer
+	if (TheVideoPlayer)
 	{
 		TheVideoPlayer->UPDATE();
 	}

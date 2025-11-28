@@ -264,6 +264,8 @@ void WW3D::Set_NPatches_Level(unsigned level)
 WW3DErrorType WW3D::Init(void *hwnd, char *defaultpal, bool lite)
 {
 	assert(IsInitted == false);
+	fprintf(stderr, "[WW3D::Init] Starting, hwnd=%p, lite=%d\n", hwnd, lite);
+	fflush(stderr);
 	WWDEBUG_SAY(("WW3D::Init hwnd = %p",hwnd));
 	_Hwnd = (HWND)hwnd;
 	Lite = lite;
@@ -271,43 +273,74 @@ WW3DErrorType WW3D::Init(void *hwnd, char *defaultpal, bool lite)
 	/*
 	** Initialize d3d, this also enumerates the available devices and resolutions.
 	*/
+	fprintf(stderr, "[WW3D::Init] Calling Init_D3D_To_WW3_Conversion\n");
+	fflush(stderr);
 	Init_D3D_To_WW3_Conversion();
+	fprintf(stderr, "[WW3D::Init] Init_D3D_To_WW3_Conversion done, calling DX8Wrapper::Init\n");
+	fflush(stderr);
 	WWDEBUG_SAY(("Init DX8Wrapper"));
 	if (!DX8Wrapper::Init(_Hwnd, lite)) {
+		fprintf(stderr, "[WW3D::Init] ERROR: DX8Wrapper::Init failed\n");
+		fflush(stderr);
 		return(WW3D_ERROR_INITIALIZATION_FAILED);
 	}
+	fprintf(stderr, "[WW3D::Init] DX8Wrapper::Init succeeded\n");
+	fflush(stderr);
 	WWDEBUG_SAY(("Allocate Debug Resources"));
+	fprintf(stderr, "[WW3D::Init] Calling Allocate_Debug_Resources\n");
+	fflush(stderr);
 	Allocate_Debug_Resources();
+	VertexMaterialClass::Init();
+	fprintf(stderr, "[WW3D::Init] Allocate_Debug_Resources done\n");
+	fflush(stderr);
 
+ 	fprintf(stderr, "[WW3D::Init] Calling timeBeginPeriod\n");
+	fflush(stderr);
  	MMRESULT r=timeBeginPeriod(1);
 	WWASSERT(r==TIMERR_NOERROR);
+	fprintf(stderr, "[WW3D::Init] timeBeginPeriod done\n");
+	fflush(stderr);
 
 	/*
 	** Initialize the dazzle system
 	*/
 	if (!lite) {
 		WWDEBUG_SAY(("Init Dazzles"));
+		fprintf(stderr, "[WW3D::Init] Initializing dazzle system\n");
+		fflush(stderr);
 		FileClass * dazzle_ini_file = _TheFileFactory->Get_File(DAZZLE_INI_FILENAME);
 		if (dazzle_ini_file) {
 			INIClass dazzle_ini(*dazzle_ini_file);
 			DazzleRenderObjClass::Init_From_INI(&dazzle_ini);
 			_TheFileFactory->Return_File(dazzle_ini_file);
 		}
+		fprintf(stderr, "[WW3D::Init] Dazzle system initialized\n");
+		fflush(stderr);
 	}
 	/*
 	** Initialize the default static sort lists
 	** Note that DefaultStaticSortLists[0] is unused.
 	*/
+	fprintf(stderr, "[WW3D::Init] Creating DefaultStaticSortLists\n");
+	fflush(stderr);
 	DefaultStaticSortLists = W3DNEW DefaultStaticSortListClass();
 	Reset_Current_Static_Sort_Lists_To_Default();
+	fprintf(stderr, "[WW3D::Init] DefaultStaticSortLists created\n");
+	fflush(stderr);
 
 	/*
 	** Initialize the animation-triggered sound system
 	*/
 	if (!lite) {
+		fprintf(stderr, "[WW3D::Init] Initializing AnimatedSoundMgr\n");
+		fflush(stderr);
 		AnimatedSoundMgrClass::Initialize ();
 		IsInitted = true;
+		fprintf(stderr, "[WW3D::Init] AnimatedSoundMgr initialized\n");
+		fflush(stderr);
 	}
+	fprintf(stderr, "[WW3D::Init] Returning WW3D_ERROR_OK\n");
+	fflush(stderr);
 	WWDEBUG_SAY(("WW3D Init completed"));
 	return WW3D_ERROR_OK;
 }
@@ -355,6 +388,7 @@ WW3DErrorType WW3D::Shutdown(void)
 	** Release all of our assets
 	*/
 	Release_Debug_Resources();
+	VertexMaterialClass::Shutdown();
 	if (WW3DAssetManager::Get_Instance()) {
 		WW3DAssetManager::Get_Instance()->Free_Assets();
 	}

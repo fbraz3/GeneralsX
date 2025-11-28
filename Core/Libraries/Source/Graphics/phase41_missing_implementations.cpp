@@ -55,14 +55,8 @@ unsigned TextureClass::Get_Texture_Memory_Usage() const
     return 0;  // TODO: Implement proper memory tracking when texture backend is ready
 }
 
-/**
- * Default implementation: TextureClass D3D pointer
- * Returns nullptr (graphics not initialized in stub)
- */
-IDirect3DBaseTexture8* TextureClass::Peek_D3D_Base_Texture() const
-{
-    return nullptr;  // TODO: Return actual D3D texture when graphics backend is ready
-}
+// Phase 51: Peek_D3D_Base_Texture moved to phase43_surface_texture.cpp
+// to provide real implementations instead of nullptr stubs
 
 /**
  * Default implementation: TextureBaseClass memory usage
@@ -72,13 +66,7 @@ unsigned TextureBaseClass::Get_Texture_Memory_Usage() const
     return 0;  // TODO: Implement proper memory tracking when texture backend is ready
 }
 
-/**
- * Default implementation: TextureBaseClass D3D pointer
- */
-IDirect3DBaseTexture8* TextureBaseClass::Peek_D3D_Base_Texture() const
-{
-    return nullptr;  // TODO: Return actual D3D texture when graphics backend is ready
-}
+// Phase 51: TextureBaseClass::Peek_D3D_Base_Texture moved to phase43_surface_texture.cpp
 
 // ============================================================================
 // Convert_Pixel - Legacy graphics format conversion
@@ -185,15 +173,19 @@ void* FunctionLexicon::findFunction(NameKeyType name, TableIndex index)
     return nullptr;  // TODO: Implement function registry lookup
 }
 
+/*
 void* FunctionLexicon::gameWinDrawFunc(NameKeyType name, TableIndex index)
 {
     return nullptr;  // TODO: Implement game window draw function lookup
 }
+*/
 
+/*
 void* FunctionLexicon::winLayoutInitFunc(NameKeyType name, TableIndex index)
 {
     return nullptr;  // TODO: Implement window layout initialization function lookup
 }
+*/
 
 // ============================================================================
 // CubeTextureClass - ensure virtual method implementation

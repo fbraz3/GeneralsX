@@ -45,6 +45,11 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 // SYSTEM INCLUDES
+#ifdef __APPLE__
+    #include <malloc/malloc.h>  // Phase 51: For malloc_size() validation
+#elif defined(__linux__)
+    #include <malloc.h>  // For malloc_usable_size()
+#endif
 
 // USER INCLUDES
 #include "Common/GameMemory.h"
@@ -1354,7 +1359,7 @@ Bool MemoryPoolBlob::debugIsBlockInBlob(void *pBlockPtr)
 	MemoryPoolSingleBlock *block = MemoryPoolSingleBlock::recoverBlockFromUserData(pBlockPtr);
 	Int rawBlockSize = MemoryPoolSingleBlock::calcRawBlockSize(m_owningPool->getAllocationSize());
 	char *blockData = m_blockData;
-	for (Int i = m_totalBlocksInBlob-1; i >= 0; i--)
+	for (Int i = m_totalBlocksInBlob-1; i >= 0; i--, blockData += rawBlockSize)
 	{
 		if ((char *)block == blockData)
 			return true;
@@ -1518,6 +1523,7 @@ MemoryPool::MemoryPool() :
 */
 void MemoryPool::init(MemoryPoolFactory *factory, const char *poolName, Int allocationSize, Int initialAllocationCount, Int overflowAllocationCount)
 {
+	fprintf(stderr, "DEBUG: MemoryPool::init pool=%s size=%d\n", poolName, allocationSize);
 	m_factory = factory;
 	m_poolName = poolName;
 	m_allocationSize = ::roundUpMemBound(allocationSize);	// round up to four-byte boundary
@@ -1628,6 +1634,9 @@ Int MemoryPool::freeBlob(MemoryPoolBlob* blob)
 */
 void* MemoryPool::allocateBlockDoNotZeroImplementation(DECLARE_LITERALSTRING_ARG1)
 {
+	// if (strcmp(getPoolName(), "TextureClass") == 0) {
+		fprintf(stderr, "DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation pool=%s size=%d\n", getPoolName(), getAllocationSize());
+	// }
 	ScopedCriticalSection scopedCriticalSection(TheMemoryPoolCriticalSection);
 
 	if (m_firstBlobWithFreeBlocks != NULL && !m_firstBlobWithFreeBlocks->hasAnyFreeBlocks())
@@ -1688,6 +1697,9 @@ void* MemoryPool::allocateBlockDoNotZeroImplementation(DECLARE_LITERALSTRING_ARG
 	#endif
 #endif
 
+	if (strcmp(getPoolName(), "TextureClass") == 0) {
+		fprintf(stderr, "DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation returned %p\n", block->getUserData());
+	}
 	return block->getUserData();
 }
 
@@ -1888,7 +1900,7 @@ Int MemoryPool::debugPoolReportLeaks( const char* owner )
 	Int any = 0;
 	for (MemoryPoolBlob* blob = m_firstBlob; blob; blob = blob->getNextInList())
 	{
-		any += blob->debugBlobReportLeaks(owner);
+		any += blob->debugBlobReportLeaks( pool->getPoolName() );
 	}
 	return any;
 }
@@ -1986,7 +1998,7 @@ const char *MemoryPool::debugGetBlockTagString(void *pBlockPtr)
 void MemoryPool::debugResetCheckpoints()
 {
 	Checkpointable::debugResetCheckpoints();
-	for (MemoryPoolBlob* blob = m_firstBlob; blob; blob = blob->getNextInList())
+	for (MemoryPoolBlob* blob = m_firstBlob; blob; blob = blob->getNextBlobInList())
 	{
 		blob->debugResetCheckpoints();
 	}
@@ -2161,6 +2173,7 @@ void DynamicMemoryAllocator::debugIgnoreLeaksForThisBlock(void* pBlockPtr)
 */
 void *DynamicMemoryAllocator::allocateBytesDoNotZeroImplementation(Int numBytes DECLARE_LITERALSTRING_ARG2)
 {
+	fprintf(stderr, "DEBUG: allocateBytesDoNotZeroImplementation size=%d\n", numBytes);
 	ScopedCriticalSection scopedCriticalSection(TheDmaCriticalSection);
 
 	void *result = NULL;
@@ -2279,6 +2292,33 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 
 	ScopedCriticalSection scopedCriticalSection(TheDmaCriticalSection);
 
+	// Phase 51: Validate that this pointer was actually allocated by the DMA
+	// by checking if the recovered block pointer is a valid malloc allocation.
+	// This prevents crashes when STL containers try to free memory that wasn't
+	// allocated by our memory system (e.g., during static initialization).
+	char* potentialBlock = ((char*)pBlockPtr) - sizeof(MemoryPoolSingleBlock);
+	#ifdef MEMORYPOOL_BOUNDINGWALL
+	potentialBlock -= WALLSIZE;
+	#endif
+	
+#ifdef __APPLE__
+	// macOS: Use malloc_size to validate the pointer
+	size_t allocSize = malloc_size(potentialBlock);
+	if (allocSize == 0) {
+		// This pointer wasn't allocated by malloc - try freeing the original pointer directly
+		// This handles cases where STL allocated memory before our memory system was initialized
+		allocSize = malloc_size(pBlockPtr);
+		if (allocSize > 0) {
+			// The original pointer was allocated by malloc, free it directly
+			::free(pBlockPtr);
+			return;
+		}
+		// Neither pointer is valid - this is a serious error, but don't crash
+		fprintf(stderr, "[GameMemory] Warning: freeBytes called with invalid pointer %p\n", pBlockPtr);
+		return;
+	}
+#endif
+
 #ifdef MEMORYPOOL_CHECK_BLOCK_OWNERSHIP
 	DEBUG_ASSERTCRASH(debugIsBlockInDma(pBlockPtr), ("block is not in this dma"));
 #endif
@@ -2297,7 +2337,7 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 		if (thePeakDMA < theTotalDMA)
 			thePeakDMA = theTotalDMA;
 	#ifdef INTENSE_DMA_BOOKKEEPING
-		tagString = block->debugGetLiteralTagString();
+			tagString = block->debugGetLiteralTagString();
 	#endif
 	}
 #endif // MEMORYPOOL_DEBUG
@@ -2784,20 +2824,6 @@ void MemoryPoolFactory::reset()
 
 //-----------------------------------------------------------------------------
 #ifdef MEMORYPOOL_DEBUG
-static const char* s_specialPrefixes[MAX_SPECIAL_USED] =
-{
-	"Misc",			// the catchall for stuff that doesn't match others
-	"W3D_",
-	"W3A_",
-	"STL_",
-	"STR_",
-	NULL
-};
-
-#endif
-
-//-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_DEBUG
 /**
 	perform bookkeeping on memory usage statistics.
 */
@@ -3013,7 +3039,7 @@ void MemoryPoolFactory::memoryPoolUsageReport( const char* filename, FILE *appen
 				if (waste < 0) waste = 0;
 				fprintf(perfStatsFile, "%s,%d,%d",pool->getPoolName(),peak/1024,waste/1024);
 				totalNamedPoolPeak += peak;
-				pool = pool->getNextPoolInList();
+				pool = pool->getNextInList();
 			}
 			keepGoing = true;
 		}
@@ -3093,7 +3119,6 @@ void MemoryPoolFactory::debugMemoryReport(Int flags, Int startCheckpoint, Int en
 		DEBUG_LOG(("End Factory Info Report"));
 		DEBUG_LOG(("------------------------------------------"));
 		if( fp )
-		{
 			fprintf( fp, "------------------------------------------\n" );
 			fprintf( fp, "Begin Factory Info Report\n" );
 			fprintf( fp, "------------------------------------------\n" );
@@ -3104,7 +3129,6 @@ void MemoryPoolFactory::debugMemoryReport(Int flags, Int startCheckpoint, Int en
 			fprintf( fp, "------------------------------------------\n" );
 			fprintf( fp, "End Factory Info Report\n" );
 			fprintf( fp, "------------------------------------------\n" );
-		}
 	}
 
 	if (flags & REPORT_POOLINFO)
@@ -3119,7 +3143,7 @@ void MemoryPoolFactory::debugMemoryReport(Int flags, Int startCheckpoint, Int en
 			fprintf( fp, "------------------------------------------\n" );
 		}
 		MemoryPool::debugPoolInfoReport( NULL, fp );
-		for (MemoryPool *pool = m_firstPoolInFactory; pool; pool = pool->getNextPoolInList())
+		for (MemoryPool *pool = m_firstPoolInFactory; pool; pool = pool->getNextInList())
 		{
 			MemoryPool::debugPoolInfoReport( pool, fp );
 		}
@@ -3144,7 +3168,7 @@ void MemoryPoolFactory::debugMemoryReport(Int flags, Int startCheckpoint, Int en
 		DEBUG_LOG(("Begin Pool Overflow Report"));
 		DEBUG_LOG(("------------------------------------------"));
 		MemoryPool *pool = m_firstPoolInFactory;
-		for (; pool; pool = pool->getNextPoolInList())
+		for (; pool; pool = pool->getNextInList())
 		{
 			if (pool->getPeakBlockCount() > pool->getInitialBlockCount())
 			{
@@ -3157,7 +3181,7 @@ void MemoryPoolFactory::debugMemoryReport(Int flags, Int startCheckpoint, Int en
 		DEBUG_LOG(("------------------------------------------"));
 		DEBUG_LOG(("Begin Pool Underflow Report"));
 		DEBUG_LOG(("------------------------------------------"));
-		for (pool = m_firstPoolInFactory; pool; pool = pool->getNextPoolInList())
+		for (pool = m_firstPoolInFactory; pool; pool = pool->getNextInList())
 		{
 			Int peak = pool->getPeakBlockCount()*pool->getAllocationSize();
 			Int initial = pool->getInitialBlockCount()*pool->getAllocationSize();
@@ -3178,7 +3202,7 @@ void MemoryPoolFactory::debugMemoryReport(Int flags, Int startCheckpoint, Int en
 		DEBUG_LOG(("Begin Simple Leak Report"));
 		DEBUG_LOG(("------------------------------------------"));
 		Int any = 0;
-		for (MemoryPool *pool = m_firstPoolInFactory; pool; pool = pool->getNextPoolInList())
+		for (MemoryPool *pool = m_firstPoolInFactory; pool; pool = pool->getNextInList())
 		{
 			any += pool->debugPoolReportLeaks( pool->getPoolName() );
 		}
@@ -3548,27 +3572,35 @@ void shutdownMemoryManager()
 //-----------------------------------------------------------------------------
 void* createW3DMemPool(const char *poolName, int allocationSize)
 {
+	fprintf(stderr, "DEBUG: createW3DMemPool name=%s size=%d\n", poolName, allocationSize);
 	++theLinkTester;
 	preMainInitMemoryManager();
 	MemoryPool* pool = TheMemoryPoolFactory->createMemoryPool(poolName, allocationSize, 0, 0);
 	DEBUG_ASSERTCRASH(pool && pool->getAllocationSize() == allocationSize, ("bad w3d pool"));
+	fprintf(stderr, "DEBUG: createW3DMemPool returned %p\n", pool);
 	return pool;
 }
 
 //-----------------------------------------------------------------------------
 void* allocateFromW3DMemPool(void* pool, int allocationSize)
 {
+	fprintf(stderr, "DEBUG: allocateFromW3DMemPool pool=%p size=%d\n", pool, allocationSize);
 	DEBUG_ASSERTCRASH(pool, ("pool is null"));
 	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == allocationSize, ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
-	return ((MemoryPool*)pool)->allocateBlock("allocateFromW3DMemPool");
+	void* ptr = ((MemoryPool*)pool)->allocateBlock("allocateFromW3DMemPool");
+	fprintf(stderr, "DEBUG: allocateFromW3DMemPool returned %p\n", ptr);
+	return ptr;
 }
 
 //-----------------------------------------------------------------------------
 void* allocateFromW3DMemPool(void* pool, int allocationSize, const char* msg, int unused)
 {
+	fprintf(stderr, "DEBUG: allocateFromW3DMemPool(msg) pool=%p size=%d msg=%s\n", pool, allocationSize, msg);
 	DEBUG_ASSERTCRASH(pool, ("pool is null"));
 	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == allocationSize, ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
-	return ((MemoryPool*)pool)->allocateBlock(msg);
+	void* ptr = ((MemoryPool*)pool)->allocateBlock(msg);
+	fprintf(stderr, "DEBUG: allocateFromW3DMemPool(msg) returned %p\n", ptr);
+	return ptr;
 }
 
 //-----------------------------------------------------------------------------

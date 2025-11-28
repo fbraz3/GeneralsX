@@ -109,10 +109,9 @@ public:
     virtual void formatPlayerKVPairs(PSPlayerStats stats) { }
 };
 
-class GameResultsInterface {
-public:
-    static void* createNewGameResultsInterface() { return nullptr; }
-};
+// NOTE: GameResultsInterface is now implemented in phase51_game_results_stub.cpp
+// The original stub here was incorrect - it declared a different class instead of
+// implementing the factory method for the real GameResultsInterface class.
 
 class GameSpyStagingRoom {
 public:

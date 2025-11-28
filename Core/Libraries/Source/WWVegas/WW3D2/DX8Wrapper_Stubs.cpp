@@ -9,6 +9,8 @@
  */
 
 #include "DX8Wrapper_Stubs.h"
+#include "surfaceclass.h"  // Phase 51: For SurfaceClass back buffer
+#include "../../Graphics/Vulkan/d3d8_memory_texture.h"  // Phase 51: Real texture/surface implementations
 #include "../../Graphics/IGraphicsDriver.h"
 #include "../../Graphics/GraphicsDriverFactory.h"
 
@@ -52,10 +54,15 @@ bool DX8Wrapper::Init(void* hwnd, bool lite) {
     // Phase 41 Week 3: Create graphics driver via factory
     // Uses environment variable GRAPHICS_DRIVER if set, otherwise defaults to Vulkan
     
+    fprintf(stderr, "[DX8Wrapper::Init] Starting, hwnd=%p, lite=%d\n", hwnd, lite);
+    fflush(stderr);
     printf("[Phase 41 Week 3] DX8Wrapper::Init - Creating graphics driver via factory\n");
+    fflush(stdout);
     
     // Destroy existing driver if any
     if (g_graphics_driver != nullptr) {
+        fprintf(stderr, "[DX8Wrapper::Init] Destroying existing driver\n");
+        fflush(stderr);
         printf("[Phase 41 Week 3] DX8Wrapper::Init - Destroying existing driver\n");
         Graphics::GraphicsDriverFactory::DestroyDriver(g_graphics_driver);
         g_graphics_driver = nullptr;
@@ -63,6 +70,8 @@ bool DX8Wrapper::Init(void* hwnd, bool lite) {
     
     // Create new driver via factory (uses environment variable + config file priority)
     // Window dimensions are set to default 1024x768 for initialization
+    fprintf(stderr, "[DX8Wrapper::Init] Calling GraphicsDriverFactory::CreateDriver\n");
+    fflush(stderr);
     g_graphics_driver = Graphics::GraphicsDriverFactory::CreateDriver(
         Graphics::BackendType::Unknown,  // Use default selection priority
         hwnd,
@@ -72,10 +81,14 @@ bool DX8Wrapper::Init(void* hwnd, bool lite) {
     );
     
     if (g_graphics_driver == nullptr) {
+        fprintf(stderr, "[DX8Wrapper::Init] ERROR: CreateDriver returned nullptr\n");
+        fflush(stderr);
         printf("[Phase 41 Week 3 ERROR] DX8Wrapper::Init - Failed to create graphics driver\n");
         return false;
     }
     
+    fprintf(stderr, "[DX8Wrapper::Init] Success, backend=%s\n", g_graphics_driver->GetBackendName());
+    fflush(stderr);
     printf("[Phase 41 Week 3] DX8Wrapper::Init - Graphics driver created successfully: %s\n",
            g_graphics_driver->GetBackendName());
     
@@ -171,39 +184,75 @@ extern DX8Caps* Get_DX8_Caps_Ptr() {
 const int dynamic_fvf_type = 0;
 
 // ============================================================================
-// Phase 43.1: Surface Creation (for texture system foundation)
+// Phase 43.1 -> Phase 51: Surface Creation (real implementations)
 // ============================================================================
 
 /**
  * Create an off-screen plain surface for texture data
- * Phase 43.1: Provides cross-platform surface creation
+ * Phase 51: Provides real memory-backed surface creation
  * 
  * Parameter format is expected to be a WW3DFormat enum value cast to int
  */
 IDirect3DSurface8* DX8Wrapper::_Create_DX8_Surface(int width, int height, int format)
 {
-    // Phase 43.1: This method creates a surface using the graphics backend
-    // For now, we return nullptr as a placeholder
-    // The actual implementation will be in the graphics backend layer
-    printf("[Phase 43.1] DX8Wrapper::_Create_DX8_Surface(width=%d, height=%d, format=%d)\n", 
+    // Phase 51: Create real memory-backed surface
+    fprintf(stderr, "[Phase 51] DX8Wrapper::_Create_DX8_Surface(width=%d, height=%d, format=%d)\n", 
            width, height, format);
     
-    // TODO: Replace with actual graphics backend surface creation
-    // return g_graphics_driver->CreateSurface(width, height, (WW3DFormat)format);
-    return nullptr;
+    return CreateMemorySurface(width, height, (D3DFORMAT)format);
 }
 
 /**
  * Load a surface from a file
- * Phase 43.1: Provides cross-platform surface loading from disk
+ * Phase 51: Returns nullptr for now - file loading requires texture system
  */
 IDirect3DSurface8* DX8Wrapper::_Create_DX8_Surface(const char* filename)
 {
-    // Phase 43.1: This method loads a surface from a file
-    printf("[Phase 43.1] DX8Wrapper::_Create_DX8_Surface(filename='%s')\n", filename);
+    // Phase 51: File loading is complex - return nullptr for now
+    // This would need integration with the texture loading system
+    fprintf(stderr, "[Phase 51] DX8Wrapper::_Create_DX8_Surface(filename='%s') - NOT IMPLEMENTED\n", filename);
     
-    // TODO: Replace with actual file loading implementation
-    // return TextureLoader::Load_Surface_Immediate(filename, WW3D_FORMAT_UNKNOWN, true);
+    // TODO: Implement file loading when needed
     return nullptr;
+}
+
+// Static back buffer surface for smudge rendering
+static SurfaceClass* g_back_buffer_surface = nullptr;
+
+/**
+ * Get the back buffer surface
+ * Phase 51: Return a valid SurfaceClass for smudge rendering
+ * 
+ * The back buffer represents the current render target. For smudge rendering,
+ * we need to return surface dimensions so the smudge system knows the render area.
+ * 
+ * @return SurfaceClass* Pointer to back buffer surface (caller should REF_PTR_RELEASE)
+ */
+SurfaceClass* DX8Wrapper::_Get_DX8_Back_Buffer()
+{
+    // Get current resolution from the graphics driver or use defaults
+    int width = Peek_Device_Resolution_Width();
+    int height = Peek_Device_Resolution_Height();
+    
+    // Create a surface that represents the back buffer
+    // This is used primarily for querying dimensions, not actual pixel access
+    IDirect3DSurface8* d3d_surface = CreateMemorySurface(
+        (unsigned int)width, 
+        (unsigned int)height, 
+        (D3DFORMAT)D3DFMT_A8R8G8B8,
+        D3DPOOL_DEFAULT);
+    if (!d3d_surface) {
+        fprintf(stderr, "[Phase 51] _Get_DX8_Back_Buffer: Failed to create D3D surface\n");
+        return nullptr;
+    }
+    
+    // Create SurfaceClass wrapper
+    // Note: SurfaceClass takes ownership of the D3D surface
+    SurfaceClass* surface = new SurfaceClass(d3d_surface);
+    
+    fprintf(stderr, "[Phase 51] _Get_DX8_Back_Buffer: Created %dx%d surface=%p\n", 
+            width, height, (void*)surface);
+    
+    return surface;
 }
 

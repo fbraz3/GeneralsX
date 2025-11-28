@@ -1146,6 +1146,8 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/phase43_4_transport.cpp
     Source/GameNetwork/phase43_4_udp.cpp
     Source/GameNetwork/phase43_4_ip_enumeration.cpp
+    # Phase 51: GameResults stub (replaces GameResultsThread.cpp which requires winsock.h)
+    Source/GameNetwork/phase51_game_results_stub.cpp
     Source/GameNetwork/User.cpp
     Source/GameNetwork/WOLBrowser/WebBrowser.cpp
 #    Source/Precompiled/PreRTS.cpp

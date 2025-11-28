@@ -34,6 +34,7 @@ struct SurfaceDescription;
 
 #include "surfaceclass.h"
 #include "texture.h"
+#include "dx8wrapper.h"  // Phase 51: For DX8Wrapper::_Create_DX8_Texture
 #include "ww3dformat.h"
 #include "vector2i.h"
 #include "vector3.h"
@@ -51,12 +52,14 @@ struct SurfaceDescription;
  * Extract pixel format, width, and height information from surface.
  * Used for validating texture compatibility before upload to Vulkan.
  */
+/*
 void SurfaceClass::Get_Description(SurfaceDescription &surface_desc)
 {
 	surface_desc.Format = SurfaceFormat;
 	surface_desc.Width = 0;   // Stub - requires D3D surface query
 	surface_desc.Height = 0;  // Stub - requires D3D surface query
 }
+*/
 
 /**
  * SurfaceClass::Lock
@@ -65,6 +68,7 @@ void SurfaceClass::Get_Description(SurfaceDescription &surface_desc)
  * Returns pointer to pixel buffer, pitch provides bytes-per-scanline.
  * Required for palette remapping and font rendering operations.
  */
+/*
 void* SurfaceClass::Lock(int* pitch)
 {
 	if (!D3DSurface || !pitch) {
@@ -76,6 +80,7 @@ void* SurfaceClass::Lock(int* pitch)
 	*pitch = 0;
 	return nullptr;
 }
+*/
 
 /**
  * SurfaceClass::Unlock
@@ -83,11 +88,13 @@ void* SurfaceClass::Lock(int* pitch)
  * Unlock surface after CPU modifications.
  * Flushes any cached changes to GPU texture resource.
  */
+/*
 void SurfaceClass::Unlock(void)
 {
 	// Stub: DirectX would call UnlockRect()
 	// Real implementation would flush to Vulkan staging buffer
 }
+*/
 
 /**
  * SurfaceClass::Clear
@@ -95,11 +102,13 @@ void SurfaceClass::Unlock(void)
  * Zero-fill entire surface memory.
  * Used for radar texture initialization.
  */
+/*
 void SurfaceClass::Clear()
 {
 	// Stub: Would zero-fill pixel buffer
 	// Real implementation: memset to 0 after Lock()
 }
+*/
 
 /**
  * SurfaceClass::Copy
@@ -107,6 +116,7 @@ void SurfaceClass::Clear()
  * Blit rectangular region from another surface.
  * Used for texture compositing and radar rendering.
  */
+/*
 void SurfaceClass::Copy(
 	unsigned int dstx, unsigned int dsty,
 	unsigned int srcx, unsigned int srcy,
@@ -120,6 +130,7 @@ void SurfaceClass::Copy(
 	// Stub: Would perform region-based copy between surfaces
 	// Real implementation requires source/dest Lock() with bounds checking
 }
+*/
 
 /**
  * SurfaceClass::Copy (from byte array)
@@ -127,6 +138,7 @@ void SurfaceClass::Copy(
  * Initialize surface from raw pixel data buffer.
  * Used during texture loading from memory archives (.big files).
  */
+/*
 void SurfaceClass::Copy(const unsigned char *other)
 {
 	if (!other || !D3DSurface) {
@@ -136,12 +148,14 @@ void SurfaceClass::Copy(const unsigned char *other)
 	// Stub: Would copy entire pixel buffer
 	// Real implementation: memcpy to locked surface
 }
+*/
 
 /**
  * SurfaceClass::Copy (with bounds from array)
  * 
  * Copy pixel data within specified rectangular bounds.
  */
+/*
 void SurfaceClass::Copy(Vector2i &min, Vector2i &max, const unsigned char *other)
 {
 	if (!other || !D3DSurface) {
@@ -151,6 +165,7 @@ void SurfaceClass::Copy(Vector2i &min, Vector2i &max, const unsigned char *other
 	// Stub: Bounded copy operation
 	// Validates min/max bounds before memcpy
 }
+*/
 
 /**
  * SurfaceClass::Stretch_Copy
@@ -158,6 +173,7 @@ void SurfaceClass::Copy(Vector2i &min, Vector2i &max, const unsigned char *other
  * Blit with scaling from source to destination regions.
  * Used for radar texture resizing.
  */
+/*
 void SurfaceClass::Stretch_Copy(
 	unsigned int dstx, unsigned int dsty, unsigned int dstwidth, unsigned int dstheight,
 	unsigned int srcx, unsigned int srcy, unsigned int srcwidth, unsigned int srcheight,
@@ -170,6 +186,7 @@ void SurfaceClass::Stretch_Copy(
 	// Stub: Bilinear filtering during blit
 	// Real implementation: pixel interpolation loop
 }
+*/
 
 /**
  * SurfaceClass::FindBB
@@ -177,6 +194,7 @@ void SurfaceClass::Stretch_Copy(
  * Find bounding box of non-zero alpha pixels.
  * Used for font glyph trimming to remove empty space.
  */
+/*
 void SurfaceClass::FindBB(Vector2i *min, Vector2i *max)
 {
 	if (!min || !max || !D3DSurface) {
@@ -191,6 +209,7 @@ void SurfaceClass::FindBB(Vector2i *min, Vector2i *max)
 	max->I = 0;
 	max->J = 0;
 }
+*/
 
 /**
  * SurfaceClass::Is_Transparent_Column
@@ -198,6 +217,7 @@ void SurfaceClass::FindBB(Vector2i *min, Vector2i *max)
  * Test if column of pixels has all zero alpha.
  * Used for proportional font rendering.
  */
+/*
 bool SurfaceClass::Is_Transparent_Column(unsigned int column)
 {
 	if (!D3DSurface) {
@@ -208,6 +228,7 @@ bool SurfaceClass::Is_Transparent_Column(unsigned int column)
 	// Real implementation: Compare alpha values within bounds
 	return true;
 }
+*/
 
 /**
  * SurfaceClass::DrawHLine
@@ -215,6 +236,7 @@ bool SurfaceClass::Is_Transparent_Column(unsigned int column)
  * Draw horizontal line of pixels at specified y-coordinate.
  * Used for radar shroud and grid visualization.
  */
+/*
 void SurfaceClass::DrawHLine(const unsigned int y, const unsigned int x1, const unsigned int x2, unsigned int color)
 {
 	if (!D3DSurface || y >= 0x10000) {  // Sanity check
@@ -224,6 +246,7 @@ void SurfaceClass::DrawHLine(const unsigned int y, const unsigned int x1, const 
 	// Stub: Would draw line from (x1,y) to (x2,y) with color
 	// Real implementation: Lock(), fill pixels, Unlock()
 }
+*/
 
 /**
  * SurfaceClass::DrawPixel
@@ -231,6 +254,7 @@ void SurfaceClass::DrawHLine(const unsigned int y, const unsigned int x1, const 
  * Draw single pixel at specified coordinates.
  * Used for radar object positioning.
  */
+/*
 void SurfaceClass::DrawPixel(const unsigned int x, const unsigned int y, unsigned int color)
 {
 	if (!D3DSurface || x >= 0x10000 || y >= 0x10000) {  // Bounds check
@@ -239,6 +263,39 @@ void SurfaceClass::DrawPixel(const unsigned int x, const unsigned int y, unsigne
 	
 	// Stub: Direct pixel write
 	// Real implementation: Lock(), set pixel, Unlock()
+}
+*/
+
+// ============================================================================
+// TextureBaseClass Implementation - Core methods for Phase 51
+// ============================================================================
+
+/**
+ * TextureBaseClass::Peek_D3D_Base_Texture
+ * 
+ * Return pointer to the D3D texture object.
+ * Phase 51: Real implementation returning the actual D3DTexture member.
+ */
+IDirect3DBaseTexture8* TextureBaseClass::Peek_D3D_Base_Texture() const
+{
+	return D3DTexture;
+}
+
+/**
+ * TextureBaseClass::Set_D3D_Base_Texture
+ * 
+ * Set the D3D texture pointer with proper reference counting.
+ * Phase 51: Real implementation with ref count management.
+ */
+void TextureBaseClass::Set_D3D_Base_Texture(IDirect3DBaseTexture8* tex)
+{
+	if (D3DTexture != nullptr) {
+		D3DTexture->Release();
+	}
+	D3DTexture = tex;
+	if (D3DTexture != nullptr) {
+		D3DTexture->AddRef();
+	}
 }
 
 // ============================================================================
@@ -250,12 +307,27 @@ void SurfaceClass::DrawPixel(const unsigned int x, const unsigned int y, unsigne
  * 
  * Retrieve SurfaceClass pointer for specified mipmap level.
  * Used for radar rendering and texture detail access.
+ * Phase 51: Real implementation using D3DTexture member.
  */
 SurfaceClass* TextureClass::Get_Surface_Level(unsigned int level)
 {
-	// Stub: Would return mipmap level surface
-	// Real implementation: Array access with bounds checking
-	return nullptr;
+	// Phase 51: Real implementation - get surface from D3DTexture
+	IDirect3DTexture8* d3d_texture = Peek_D3D_Texture();
+	if (!d3d_texture) {
+		fprintf(stderr, "[TextureClass] Get_Surface_Level: D3DTexture is NULL!\n");
+		return nullptr;
+	}
+	
+	IDirect3DSurface8* d3d_surface = nullptr;
+	HRESULT hr = d3d_texture->GetSurfaceLevel(level, &d3d_surface);
+	if (FAILED(hr) || !d3d_surface) {
+		fprintf(stderr, "[TextureClass] Get_Surface_Level: GetSurfaceLevel failed, level=%u, hr=0x%lx\n", level, (unsigned long)hr);
+		return nullptr;
+	}
+	
+	SurfaceClass* surface = new SurfaceClass(d3d_surface);
+	d3d_surface->Release();  // SurfaceClass takes ownership
+	return surface;
 }
 
 /**
@@ -316,6 +388,7 @@ TextureClass::TextureClass(
  * 
  * Constructor: Create empty texture for dynamic use.
  * Used for radar, shadows, and render targets.
+ * Phase 51: Real implementation using DX8Wrapper.
  */
 TextureClass::TextureClass(
 	unsigned int width,
@@ -325,19 +398,65 @@ TextureClass::TextureClass(
 	TextureBaseClass::PoolType pool,
 	bool allow_compression,
 	bool allow_reduction)
-	: TextureBaseClass(width, height, mip_level, pool)
+	: TextureBaseClass(width, height, mip_level, pool, false, allow_reduction)
 {
-	// Stub: Dynamic texture creation
-	// Real implementation:
-	// 1. Allocate Vulkan image
-	// 2. Create image view for each mipmap
-	// 3. Register in texture cache
-	// 4. Set pool for memory management
+	// Phase 51: Real texture creation implementation
+	fprintf(stderr, "[TextureClass] Phase 51: Creating %ux%u texture, format=%d, mip=%d, pool=%d\n",
+			width, height, (int)format, (int)mip_level, (int)pool);
+	
+	TextureFormat = format;
+	IsCompressionAllowed = allow_compression;
+	
+	// Determine D3D pool
+	D3DPOOL d3dpool = D3DPOOL_MANAGED;
+	switch(pool) {
+		case POOL_DEFAULT:   d3dpool = D3DPOOL_DEFAULT; break;
+		case POOL_MANAGED:   d3dpool = D3DPOOL_MANAGED; break;
+		case POOL_SYSTEMMEM: d3dpool = D3DPOOL_SYSTEMMEM; break;
+		default: break;
+	}
+	
+	// Create the D3D texture using DX8Wrapper
+	fprintf(stderr, "[TextureClass] Phase 51: Calling _Create_DX8_Texture...\n");
+	IDirect3DBaseTexture8* d3d_texture = DX8Wrapper::_Create_DX8_Texture(width, height, format, mip_level, d3dpool, false);
+	fprintf(stderr, "[TextureClass] Phase 51: _Create_DX8_Texture returned %p\n", (void*)d3d_texture);
+	
+	if (d3d_texture) {
+		fprintf(stderr, "[TextureClass] Phase 51: Calling Poke_Texture...\n");
+		Poke_Texture(d3d_texture);  // Use protected method to set D3DTexture
+		fprintf(stderr, "[TextureClass] Phase 51: Poke_Texture done.\n");
+	} else {
+		fprintf(stderr, "[TextureClass] Phase 51: Skipping Poke_Texture - texture is NULL!\n");
+	}
+	
+	if (Peek_D3D_Base_Texture()) {
+		Initialized = true;
+		fprintf(stderr, "[TextureClass] Phase 51: SUCCESS - D3DTexture=%p\n", (void*)Peek_D3D_Base_Texture());
+	} else {
+		fprintf(stderr, "[TextureClass] Phase 51: FAILED - D3DTexture is NULL!\n");
+	}
 }
 
 // ============================================================================
 // TextureFilterClass Implementation (2 methods for Phase 43.1)
 // ============================================================================
+
+/**
+ * TextureFilterClass::TextureFilterClass
+ * 
+ * Constructor: Initialize texture filter state.
+ */
+TextureFilterClass::TextureFilterClass(MipCountType mip_level_count)
+    : TextureMinFilter(FILTER_TYPE_DEFAULT),
+      TextureMagFilter(FILTER_TYPE_DEFAULT),
+      MipMapFilter(FILTER_TYPE_DEFAULT),
+      UAddressMode(TEXTURE_ADDRESS_REPEAT),
+      VAddressMode(TEXTURE_ADDRESS_REPEAT)
+{
+    if (mip_level_count == MIP_LEVELS_1) {
+        MipMapFilter = FILTER_TYPE_NONE;
+    }
+}
 
 /**
  * TextureFilterClass::_Init_Filters
@@ -368,16 +487,40 @@ void TextureFilterClass::Set_Mip_Mapping(TextureFilterClass::FilterType filter)
 // ============================================================================
 
 /**
- * TextureBaseClass::Set_D3D_Base_Texture
+ * TextureBaseClass::TextureBaseClass
  * 
- * Attach DirectX texture resource to base class.
- * Used for terrain texture composition.
+ * Constructor: Initialize base texture properties.
  */
-void TextureBaseClass::Set_D3D_Base_Texture(IDirect3DBaseTexture8 *texture)
+TextureBaseClass::TextureBaseClass(
+    unsigned width,
+    unsigned height,
+    MipCountType mip_level_count,
+    PoolType pool,
+    bool rendertarget,
+    bool reducible
+) : 
+    Width(width),
+    Height(height),
+    MipLevelCount(mip_level_count),
+    Pool(pool),
+    IsReducible(reducible),
+    D3DTexture(nullptr),
+    Initialized(false),
+    TextureLoadTask(nullptr),
+    ThumbnailLoadTask(nullptr),
+    texture_id(0),
+    IsLightmap(false),
+    IsProcedural(false),
+    IsCompressionAllowed(false),
+    InactivationTime(0),
+    ExtendedInactivationTime(0),
+    LastInactivationSyncTime(0),
+    LastAccessed(0),
+    Dirty(false)
 {
-	// Stub: Store DirectX texture reference
-	// Real implementation: Validate and cache pointer
 }
+
+// Phase 51: Set_D3D_Base_Texture implementation moved to line ~290 above
 
 /**
  * TextureBaseClass::~TextureBaseClass
@@ -387,8 +530,11 @@ void TextureBaseClass::Set_D3D_Base_Texture(IDirect3DBaseTexture8 *texture)
  */
 TextureBaseClass::~TextureBaseClass()
 {
-	// Stub: Resource cleanup
-	// Real implementation: Release Vulkan texture and descriptors
+	// Phase 51: Release D3DTexture if set
+	if (D3DTexture != nullptr) {
+		D3DTexture->Release();
+		D3DTexture = nullptr;
+	}
 }
 
 // ============================================================================
@@ -401,6 +547,7 @@ TextureBaseClass::~TextureBaseClass()
  * Calculate bytes-per-pixel for surface format.
  * Used for texture memory calculations.
  */
+/*
 unsigned int PixelSize(const SurfaceClass::SurfaceDescription &desc)
 {
 	switch (desc.Format) {
@@ -414,6 +561,7 @@ unsigned int PixelSize(const SurfaceClass::SurfaceDescription &desc)
 		default:                    return 4;  // Default to 4 bytes
 	}
 }
+*/
 
 /**
  * Load_Texture

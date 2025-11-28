@@ -97,3 +97,13 @@ void *FunctionLexicon::findFunction( NameKeyType key, TableIndex index )
 
 	return keyToFunc( key, m_tables[ index ] );
 }
+
+WindowLayoutInitFunc FunctionLexicon::winLayoutInitFunc( NameKeyType key, TableIndex index )
+{
+	return (WindowLayoutInitFunc)findFunction( key, index );
+}
+
+GameWinDrawFunc FunctionLexicon::gameWinDrawFunc( NameKeyType key, TableIndex index )
+{
+	return (GameWinDrawFunc)findFunction( key, index );
+}

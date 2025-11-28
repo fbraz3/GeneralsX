@@ -117,7 +117,19 @@ TextureClass::TextureClass(unsigned width, unsigned height, WW3DFormat format, M
 	case POOL_SYSTEMMEM	: d3dpool=D3DPOOL_SYSTEMMEM; break;
 	default: WWASSERT(0);
 	}
+	
+	// Phase 51: Debug logging for texture creation
+	fprintf(stderr, "[TextureClass] Phase 51: Creating %ux%u texture, format=%d, mip=%d, pool=%d\n",
+			width, height, (int)format, (int)mip_level_count, (int)d3dpool);
+	
 	D3DTexture = DX8Wrapper::_Create_DX8_Texture(width, height, format, mip_level_count,d3dpool,rendertarget);
+	
+	if (D3DTexture) {
+		fprintf(stderr, "[TextureClass] Phase 51: SUCCESS - D3DTexture=%p\n", (void*)D3DTexture);
+	} else {
+		fprintf(stderr, "[TextureClass] Phase 51: FAILED - D3DTexture is NULL!\n");
+	}
+	
 	if (pool==POOL_DEFAULT)
 	{
 		Dirty=true;
@@ -133,6 +145,59 @@ TextureClass::TextureClass(unsigned width, unsigned height, WW3DFormat format, M
 		DX8TextureManagerClass::Add(track);
 	}
 	LastAccessed=WW3D::Get_Sync_Time();
+}
+
+// ----------------------------------------------------------------------------
+// Phase 51: Constructor for immediate texture creation (moved from inline header)
+// This constructor creates a D3D texture immediately when a format is specified,
+// fixing crashes in code that expects Get_Surface_Level() to work immediately
+// after construction (e.g., W3DWater.cpp line 581)
+TextureClass::TextureClass
+(
+	unsigned width,
+	unsigned height,
+	MipCountType mip_level_count,
+	PoolType pool,
+	bool rendertarget,
+	WW3DFormat format,
+	bool allow_reduction
+)
+	:
+	TextureBaseClass(width,height,mip_level_count,pool,rendertarget,allow_reduction),
+	TextureFormat(format),
+	Filter(mip_level_count)
+{
+	// Phase 51: Create D3D texture immediately if format is specified
+	if (format != WW3D_FORMAT_UNKNOWN) {
+		D3DPOOL d3dpool = D3DPOOL_MANAGED;
+		switch(pool) {
+			case POOL_DEFAULT:   d3dpool = D3DPOOL_DEFAULT; break;
+			case POOL_MANAGED:   d3dpool = D3DPOOL_MANAGED; break;
+			case POOL_SYSTEMMEM: d3dpool = D3DPOOL_SYSTEMMEM; break;
+			default: break;
+		}
+		
+		D3DTexture = DX8Wrapper::_Create_DX8_Texture(width, height, format, mip_level_count, d3dpool, rendertarget);
+		
+		if (D3DTexture) {
+			Initialized = true;
+			fprintf(stderr, "[TextureClass] Phase 51: Created %ux%u texture, format=%d, mip=%d\n",
+					width, height, (int)format, (int)mip_level_count);
+		} else {
+			fprintf(stderr, "[TextureClass] Phase 51: WARNING - Failed to create %ux%u texture, format=%d\n",
+					width, height, (int)format);
+		}
+		
+		if (pool == POOL_DEFAULT && D3DTexture) {
+			Dirty = true;
+			DX8TextureTrackerClass *track = W3DNEW DX8TextureTrackerClass(
+				width, height, format, mip_level_count, this, rendertarget
+			);
+			DX8TextureManagerClass::Add(track);
+		}
+		
+		LastAccessed = WW3D::Get_Sync_Time();
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -160,6 +225,7 @@ TextureClass::TextureClass
 	Width(0),
 	Height(0)
 {
+	fprintf(stderr, "[TextureClass::TextureClass] Constructor called for %s\n", name ? name : "NULL"); fflush(stderr);
 	switch (TextureFormat)
 	{
 	case WW3D_FORMAT_DXT1:

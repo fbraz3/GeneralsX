@@ -73,6 +73,8 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 | `Sign GeneralsX (macOS)` | Ad-hoc code signs Generals binary | - |
 | `Run GeneralsXZH Terminal (macOS)` | **Runs ZH in external Terminal.app** | `logs/runTerminal.log` |
 | `Run GeneralsX Terminal (macOS)` | **Runs Generals in external Terminal.app** | `logs/runTerminal_generals.log` |
+| `Debug GeneralsXZH Terminal (macOS)` | **Runs ZH under LLDB debugger** | `logs/debugTerminal.log` |
+| `Debug GeneralsX Terminal (macOS)` | **Runs Generals under LLDB debugger** | `logs/debugTerminal_generals.log` |
 
 ### Critical: Running the Game
 
@@ -83,6 +85,31 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 2. Execute the game with output captured via `tee`
 3. Auto-close the terminal when the game exits
 4. Keep logs in `logs/runTerminal*.log` for analysis
+
+### Debug Tasks (LLDB)
+
+For crash investigation, use **`Debug GeneralsXZH Terminal (macOS)`** or **`Debug GeneralsX Terminal (macOS)`** tasks which:
+1. Run the executable under LLDB debugger
+2. Automatically capture backtrace (20 frames) on crash
+3. Show exact crash location with source file and line number
+4. Exit cleanly after debugging session
+
+**Debug workflow:**
+```
+run_task("shell: Debug GeneralsXZH Terminal (macOS)", workspaceFolder)
+# After crash, analyze: logs/debugTerminal.log
+```
+
+**Example debug output (crash):**
+```
+* thread #1, stop reason = EXC_BAD_ACCESS (code=1, address=0x0)
+    frame #0: 0x0000000000000000
+    frame #1: GeneralsXZH`parseInit at GameWindowManagerScript.cpp:2534
+    frame #2: GeneralsXZH`parseLayoutBlock at GameWindowManagerScript.cpp:2656
+    ...
+```
+
+The debug tasks use `scripts/lldb_debug.sh` wrapper which handles both normal exits and crashes gracefully.
 
 ### How to Run Tasks
 
@@ -122,7 +149,10 @@ cmake --build build/windows --target GeneralsXZH -j 4 2>&1 | tee logs/build_zh.l
 ## Debugging Guidelines
 
 - For debugging purposes, do not use commands like `grep` or `tail` into a command run to avoid hanging the terminal if the command produces a lot of output - Instead, use `tee` to log the output to a file and then use `grep` on the log file.
-- Command example:
+- **PREFER using VS Code Tasks** for debugging instead of manual terminal commands:
+  - `Debug GeneralsXZH Terminal (macOS)` - Runs under LLDB with automatic backtrace
+  - `Debug GeneralsX Terminal (macOS)` - Same for Generals base game
+- Command example (manual):
 ```bash
 # Example for macOS ARM64 - GeneralsXZH
 cd $HOME/GeneralsX/GeneralsMD/ && ./GeneralsXZH 2>&1 | tee logs/run_zh.log
@@ -132,11 +162,15 @@ grep -i error logs/run_zh.log
 cd $HOME/GeneralsX/Generals/ && ./GeneralsX 2>&1 | tee logs/run_g.log
 grep -i error logs/run_g.log
 ```
-- use `lldb` for debugging Vulkan backend related crashes.
-- Command example:
+- Use `lldb` for debugging crashes (or use the Debug tasks which wrap lldb automatically).
+- The `scripts/lldb_debug.sh` wrapper handles:
+  - Automatic backtrace capture on crash
+  - Clean exit on normal termination
+  - Proper LLDB session cleanup
+- Command example (manual lldb):
 ```bash
 # Example for macOS ARM64 - GeneralsXZH
-cd $HOME/GeneralsX/GeneralsMD/ && lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 | tee logs/lldb_zh.log
+scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee logs/lldb_zh.log
 ```
 
 ### Debugging Best Practices (Lessons Learned)

@@ -62,15 +62,17 @@ public:
     VkInstance handle = VK_NULL_HANDLE;
     
     bool Create(bool debug_mode) {
-        printf("[Vulkan] VulkanInstance::Create() - Starting instance creation (debug=%d)\n", debug_mode);
+        fprintf(stderr, "[Vulkan] VulkanInstance::Create() - Starting instance creation (debug=%d)\n", debug_mode);
+        fflush(stderr);
         
         // DEBUG: Platform detection
-        printf("[Vulkan] Platform detection:\n");
+        fprintf(stderr, "[Vulkan] Platform detection:\n");
 #ifdef __APPLE__
-        printf("[Vulkan]   __APPLE__ is DEFINED\n");
+        fprintf(stderr, "[Vulkan]   __APPLE__ is DEFINED\n");
 #else
-        printf("[Vulkan]   __APPLE__ is NOT defined\n");
+        fprintf(stderr, "[Vulkan]   __APPLE__ is NOT defined\n");
 #endif
+        fflush(stderr);
         
         // Set up application info
         VkApplicationInfo app_info{};
@@ -89,7 +91,8 @@ public:
         // macOS with MoltenVK requires portability enumeration
         required_extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
         required_extensions.push_back("VK_EXT_metal_surface");
-        printf("[Vulkan] macOS: Added VK_KHR_PORTABILITY_ENUMERATION and VK_EXT_metal_surface extensions\n");
+        fprintf(stderr, "[Vulkan] macOS: Added VK_KHR_PORTABILITY_ENUMERATION and VK_EXT_metal_surface extensions\n");
+        fflush(stderr);
 #elif defined(VK_USE_PLATFORM_WIN32_KHR)
         required_extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
@@ -97,10 +100,11 @@ public:
 #endif
         
         // DEBUG: Print all extensions requested
-        printf("[Vulkan] Requesting %zu extensions:\n", required_extensions.size());
+        fprintf(stderr, "[Vulkan] Requesting %zu extensions:\n", required_extensions.size());
         for (size_t i = 0; i < required_extensions.size(); i++) {
-            printf("[Vulkan]   [%zu]: %s\n", i, required_extensions[i]);
+            fprintf(stderr, "[Vulkan]   [%zu]: %s\n", i, required_extensions[i]);
         }
+        fflush(stderr);
         
         // Validation layers
         std::vector<const char*> validation_layers;
@@ -121,18 +125,22 @@ public:
 #ifdef __APPLE__
         // macOS with MoltenVK requires portability enumeration flag
         create_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-        printf("[Vulkan] macOS: Set VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR flag (flags=0x%x)\n", create_info.flags);
+        fprintf(stderr, "[Vulkan] macOS: Set VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR flag (flags=0x%x)\n", create_info.flags);
+        fflush(stderr);
 #endif
         
         // Create the Vulkan instance
-        printf("[Vulkan] Calling vkCreateInstance with flags=0x%x...\n", create_info.flags);
+        fprintf(stderr, "[Vulkan] Calling vkCreateInstance with flags=0x%x...\n", create_info.flags);
+        fflush(stderr);
         VkResult result = vkCreateInstance(&create_info, nullptr, &handle);
         if (result != VK_SUCCESS) {
-            printf("[Vulkan] ERROR: Failed to create Vulkan instance (result=%d)\n", result);
+            fprintf(stderr, "[Vulkan] ERROR: Failed to create Vulkan instance (result=%d)\n", result);
+            fflush(stderr);
             return false;
         }
         
-        printf("[Vulkan] VulkanInstance::Create() - Success! Instance created.\n");
+        fprintf(stderr, "[Vulkan] VulkanInstance::Create() - Success! Instance created.\n");
+        fflush(stderr);
         return true;
     }
     
@@ -712,10 +720,12 @@ VulkanGraphicsDriver::~VulkanGraphicsDriver()
 
 bool VulkanGraphicsDriver::Initialize(void* windowHandle, uint32_t width, uint32_t height, bool fullscreen)
 {
-    printf("[VulkanGraphicsDriver::Initialize] width=%u height=%u fullscreen=%d\n", width, height, fullscreen);
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] width=%u height=%u fullscreen=%d\n", width, height, fullscreen);
+    fflush(stderr);
     
     if (m_initialized) {
-        printf("[VulkanGraphicsDriver::Initialize] Already initialized, returning\n");
+        fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Already initialized, returning\n");
+        fflush(stderr);
         return true;
     }
     
@@ -724,68 +734,84 @@ bool VulkanGraphicsDriver::Initialize(void* windowHandle, uint32_t width, uint32
     m_fullscreen = fullscreen;
     
     // Phase 41 Stage 1: Create Vulkan instance
-    printf("[VulkanGraphicsDriver::Initialize] Creating Vulkan instance...\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating Vulkan instance...\n");
+    fflush(stderr);
     m_instance = std::make_unique<VulkanInstance>();
     if (!m_instance->Create(false)) {
-        printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create Vulkan instance\n");
+        fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create Vulkan instance\n");
+        fflush(stderr);
         return false;
     }
     
     // Phase 41 Stage 1: Select physical device
-    printf("[VulkanGraphicsDriver::Initialize] Selecting physical device...\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Selecting physical device...\n");
+    fflush(stderr);
     m_physical_device = std::make_unique<VulkanPhysicalDevice>();
     if (!m_physical_device->Select(m_instance->handle)) {
-        printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to select physical device\n");
+        fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to select physical device\n");
+        fflush(stderr);
         return false;
     }
     
     // Phase 41 Stage 1: Create logical device
-    printf("[VulkanGraphicsDriver::Initialize] Creating logical device...\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating logical device...\n");
+    fflush(stderr);
     m_device = std::make_unique<VulkanDevice>();
     if (!m_device->Create(m_physical_device->handle)) {
-        printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create logical device\n");
+        fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create logical device\n");
+        fflush(stderr);
         return false;
     }
     
     // Phase 41 Stage 2: Create swapchain
-    printf("[VulkanGraphicsDriver::Initialize] Creating swapchain...\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating swapchain...\n");
+    fflush(stderr);
     m_swapchain = std::make_unique<VulkanSwapchain>();
     if (!m_swapchain->Create(m_device->handle, m_physical_device->handle, m_instance->handle, 
                              windowHandle, width, height)) {
-        printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create swapchain\n");
+        fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create swapchain\n");
+        fflush(stderr);
         return false;
     }
     
     // Phase 41 Stage 2: Create memory allocator
-    printf("[VulkanGraphicsDriver::Initialize] Creating memory allocator...\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating memory allocator...\n");
+    fflush(stderr);
     m_memory_allocator = std::make_unique<VulkanMemoryAllocator>();
     if (!m_memory_allocator->Create(m_instance->handle, m_physical_device->handle, m_device->handle)) {
-        printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create memory allocator\n");
+        fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create memory allocator\n");
+        fflush(stderr);
         return false;
     }
     
     // Phase 41 Stage 2: Create render pass
-    printf("[VulkanGraphicsDriver::Initialize] Creating render pass...\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating render pass...\n");
+    fflush(stderr);
     m_render_pass = std::make_unique<VulkanRenderPass>();
     if (!m_render_pass->Create(m_device->handle, VK_FORMAT_B8G8R8A8_UNORM)) {
-        printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create render pass\n");
+        fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create render pass\n");
+        fflush(stderr);
         return false;
     }
     
     // Phase 41 Stage 2.5: Create framebuffers for swapchain
-    printf("[VulkanGraphicsDriver::Initialize] Creating framebuffers...\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating framebuffers...\n");
+    fflush(stderr);
     if (!m_swapchain->CreateFramebuffers(m_device->handle, VK_FORMAT_B8G8R8A8_UNORM, m_render_pass->handle)) {
-        printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create framebuffers\n");
+        fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create framebuffers\n");
+        fflush(stderr);
         return false;
     }
     m_swapchain->UpdateCurrentFramebuffer();
     
     // Phase 41 Stage 2: Create command buffers
-    printf("[VulkanGraphicsDriver::Initialize] Creating command buffers...\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating command buffers...\n");
+    fflush(stderr);
     // Create command buffer locally - it's internal only
     // (We'll implement this as part of BeginFrame/EndFrame)
     
-    printf("[VulkanGraphicsDriver::Initialize] SUCCESS - Vulkan initialized with swapchain and rendering infrastructure\n");
+    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] SUCCESS - Vulkan initialized with swapchain and rendering infrastructure\n");
+    fflush(stderr);
     m_initialized = true;
     
     return true;
@@ -945,6 +971,13 @@ struct VulkanBufferAllocation {
     void* mapped_ptr = nullptr;
     uint32_t size = 0;
     bool is_dynamic = false;
+    // Staging buffer for static buffer updates (Phase 51)
+    VkBuffer staging_buffer = VK_NULL_HANDLE;
+    VkDeviceMemory staging_memory = VK_NULL_HANDLE;
+    void* staging_mapped_ptr = nullptr;
+    uint32_t staging_lock_offset = 0;
+    uint32_t staging_lock_size = 0;
+    bool using_staging = false;
 };
 
 struct VulkanTextureAllocation {
@@ -1632,6 +1665,77 @@ Viewport VulkanGraphicsDriver::GetViewport() const
 // ============================================================================
 
 /**
+ * Phase 51: Helper function to create a staging buffer for static buffer uploads
+ * Creates a HOST_VISIBLE buffer that can be used for CPU->GPU transfers
+ */
+static bool CreateStagingBuffer(VkDevice device, VkPhysicalDevice physicalDevice,
+                               uint32_t size, VkBuffer* outBuffer, VkDeviceMemory* outMemory)
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    VkResult result = vkCreateBuffer(device, &bufferInfo, nullptr, outBuffer);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: CreateStagingBuffer - vkCreateBuffer failed (result=%d)\n", result);
+        return false;
+    }
+    
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(device, *outBuffer, &memRequirements);
+    
+    // Get memory properties
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+    
+    // Find HOST_VISIBLE and HOST_COHERENT memory type
+    VkMemoryPropertyFlags required = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    uint32_t memTypeIndex = UINT32_MAX;
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((memRequirements.memoryTypeBits & (1 << i)) &&
+            (memProperties.memoryTypes[i].propertyFlags & required) == required) {
+            memTypeIndex = i;
+            break;
+        }
+    }
+    
+    if (memTypeIndex == UINT32_MAX) {
+        printf("[Vulkan] ERROR: CreateStagingBuffer - No suitable memory type found\n");
+        vkDestroyBuffer(device, *outBuffer, nullptr);
+        *outBuffer = VK_NULL_HANDLE;
+        return false;
+    }
+    
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = memTypeIndex;
+    
+    result = vkAllocateMemory(device, &allocInfo, nullptr, outMemory);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: CreateStagingBuffer - vkAllocateMemory failed (result=%d)\n", result);
+        vkDestroyBuffer(device, *outBuffer, nullptr);
+        *outBuffer = VK_NULL_HANDLE;
+        return false;
+    }
+    
+    result = vkBindBufferMemory(device, *outBuffer, *outMemory, 0);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: CreateStagingBuffer - vkBindBufferMemory failed (result=%d)\n", result);
+        vkFreeMemory(device, *outMemory, nullptr);
+        vkDestroyBuffer(device, *outBuffer, nullptr);
+        *outBuffer = VK_NULL_HANDLE;
+        *outMemory = VK_NULL_HANDLE;
+        return false;
+    }
+    
+    printf("[Vulkan] CreateStagingBuffer: size=%u SUCCESS\n", size);
+    return true;
+}
+
+/**
  * Find suitable memory type for buffer allocation
  */
 static uint32_t FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -1833,6 +1937,17 @@ void VulkanGraphicsDriver::DestroyVertexBuffer(VertexBufferHandle handle)
         vkUnmapMemory(m_device->handle, alloc.memory);
     }
     
+    // Phase 51: Clean up staging buffer if present
+    if (alloc.staging_mapped_ptr) {
+        vkUnmapMemory(m_device->handle, alloc.staging_memory);
+    }
+    if (alloc.staging_buffer != VK_NULL_HANDLE) {
+        vkDestroyBuffer(m_device->handle, alloc.staging_buffer, nullptr);
+    }
+    if (alloc.staging_memory != VK_NULL_HANDLE) {
+        vkFreeMemory(m_device->handle, alloc.staging_memory, nullptr);
+    }
+    
     if (alloc.buffer != VK_NULL_HANDLE) {
         vkDestroyBuffer(m_device->handle, alloc.buffer, nullptr);
     }
@@ -1854,9 +1969,9 @@ bool VulkanGraphicsDriver::LockVertexBuffer(VertexBufferHandle handle, uint32_t 
     
     VulkanBufferAllocation& alloc = g_vertex_buffers[handle];
     
-    if (!alloc.is_dynamic) {
-        printf("[Vulkan] ERROR: Cannot lock static vertex buffer\n");
-        return false;
+    // Adjust size if 0 (meaning lock entire buffer)
+    if (size == 0) {
+        size = alloc.size - offset;
     }
     
     if (offset + size > alloc.size) {
@@ -1864,6 +1979,37 @@ bool VulkanGraphicsDriver::LockVertexBuffer(VertexBufferHandle handle, uint32_t 
         return false;
     }
     
+    // Phase 51: For static buffers, use staging buffer approach
+    if (!alloc.is_dynamic) {
+        printf("[Vulkan] LockVertexBuffer: Static buffer - using staging buffer approach\n");
+        
+        // Create staging buffer if not already created
+        if (alloc.staging_buffer == VK_NULL_HANDLE) {
+            if (!CreateStagingBuffer(m_device->handle, m_physical_device->handle,
+                                    alloc.size, &alloc.staging_buffer, &alloc.staging_memory)) {
+                printf("[Vulkan] ERROR: Failed to create staging buffer for static vertex buffer\n");
+                return false;
+            }
+        }
+        
+        // Map the staging buffer
+        VkResult result = vkMapMemory(m_device->handle, alloc.staging_memory, 0, alloc.size, 0, &alloc.staging_mapped_ptr);
+        if (result != VK_SUCCESS) {
+            printf("[Vulkan] ERROR: vkMapMemory for staging buffer failed (result=%d)\n", result);
+            return false;
+        }
+        
+        alloc.staging_lock_offset = offset;
+        alloc.staging_lock_size = size;
+        alloc.using_staging = true;
+        
+        // Return pointer to the staging buffer at the correct offset
+        *lockedData = (char*)alloc.staging_mapped_ptr + offset;
+        printf("[Vulkan] LockVertexBuffer (static): handle=%llu offset=%u size=%u (staging)\n", handle, offset, size);
+        return true;
+    }
+    
+    // Dynamic buffer - direct map
     VkResult result = vkMapMemory(m_device->handle, alloc.memory, offset, size, 0, &alloc.mapped_ptr);
     if (result != VK_SUCCESS) {
         printf("[Vulkan] ERROR: vkMapMemory failed (result=%d)\n", result);
@@ -1884,6 +2030,79 @@ bool VulkanGraphicsDriver::UnlockVertexBuffer(VertexBufferHandle handle)
     
     VulkanBufferAllocation& alloc = g_vertex_buffers[handle];
     
+    // Phase 51: Handle staging buffer for static buffers
+    if (alloc.using_staging && alloc.staging_mapped_ptr) {
+        // Unmap staging buffer
+        vkUnmapMemory(m_device->handle, alloc.staging_memory);
+        alloc.staging_mapped_ptr = nullptr;
+        
+        // Copy from staging to device-local buffer via command buffer
+        VkCommandBuffer cmdBuffer = VK_NULL_HANDLE;
+        
+        // Create a temporary command pool and buffer for the transfer
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = m_device->graphics_queue_family;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+        
+        VkCommandPool cmdPool = VK_NULL_HANDLE;
+        VkResult result = vkCreateCommandPool(m_device->handle, &poolInfo, nullptr, &cmdPool);
+        if (result != VK_SUCCESS) {
+            printf("[Vulkan] ERROR: UnlockVertexBuffer - Failed to create command pool\n");
+            alloc.using_staging = false;
+            return false;
+        }
+        
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool = cmdPool;
+        allocInfo.commandBufferCount = 1;
+        
+        result = vkAllocateCommandBuffers(m_device->handle, &allocInfo, &cmdBuffer);
+        if (result != VK_SUCCESS) {
+            printf("[Vulkan] ERROR: UnlockVertexBuffer - Failed to allocate command buffer\n");
+            vkDestroyCommandPool(m_device->handle, cmdPool, nullptr);
+            alloc.using_staging = false;
+            return false;
+        }
+        
+        // Begin recording
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        
+        vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+        
+        // Copy buffer
+        VkBufferCopy copyRegion{};
+        copyRegion.srcOffset = alloc.staging_lock_offset;
+        copyRegion.dstOffset = alloc.staging_lock_offset;
+        copyRegion.size = alloc.staging_lock_size;
+        
+        vkCmdCopyBuffer(cmdBuffer, alloc.staging_buffer, alloc.buffer, 1, &copyRegion);
+        
+        vkEndCommandBuffer(cmdBuffer);
+        
+        // Submit and wait
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmdBuffer;
+        
+        vkQueueSubmit(m_device->graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_device->graphics_queue);
+        
+        // Cleanup
+        vkFreeCommandBuffers(m_device->handle, cmdPool, 1, &cmdBuffer);
+        vkDestroyCommandPool(m_device->handle, cmdPool, nullptr);
+        
+        alloc.using_staging = false;
+        printf("[Vulkan] UnlockVertexBuffer (static): handle=%llu - staging copy complete\n", handle);
+        return true;
+    }
+    
+    // Dynamic buffer - direct unmap
     if (alloc.mapped_ptr) {
         vkUnmapMemory(m_device->handle, alloc.memory);
         alloc.mapped_ptr = nullptr;
@@ -1997,6 +2216,17 @@ void VulkanGraphicsDriver::DestroyIndexBuffer(IndexBufferHandle handle)
         vkUnmapMemory(m_device->handle, alloc.memory);
     }
     
+    // Phase 51: Clean up staging buffer if present
+    if (alloc.staging_mapped_ptr) {
+        vkUnmapMemory(m_device->handle, alloc.staging_memory);
+    }
+    if (alloc.staging_buffer != VK_NULL_HANDLE) {
+        vkDestroyBuffer(m_device->handle, alloc.staging_buffer, nullptr);
+    }
+    if (alloc.staging_memory != VK_NULL_HANDLE) {
+        vkFreeMemory(m_device->handle, alloc.staging_memory, nullptr);
+    }
+    
     if (alloc.buffer != VK_NULL_HANDLE) {
         vkDestroyBuffer(m_device->handle, alloc.buffer, nullptr);
     }
@@ -2018,9 +2248,9 @@ bool VulkanGraphicsDriver::LockIndexBuffer(IndexBufferHandle handle, uint32_t of
     
     VulkanBufferAllocation& alloc = g_index_buffers[handle];
     
-    if (!alloc.is_dynamic) {
-        printf("[Vulkan] ERROR: Cannot lock static index buffer\n");
-        return false;
+    // Adjust size if 0 (meaning lock entire buffer)
+    if (size == 0) {
+        size = alloc.size - offset;
     }
     
     if (offset + size > alloc.size) {
@@ -2028,6 +2258,37 @@ bool VulkanGraphicsDriver::LockIndexBuffer(IndexBufferHandle handle, uint32_t of
         return false;
     }
     
+    // Phase 51: For static buffers, use staging buffer approach
+    if (!alloc.is_dynamic) {
+        printf("[Vulkan] LockIndexBuffer: Static buffer - using staging buffer approach\n");
+        
+        // Create staging buffer if not already created
+        if (alloc.staging_buffer == VK_NULL_HANDLE) {
+            if (!CreateStagingBuffer(m_device->handle, m_physical_device->handle,
+                                    alloc.size, &alloc.staging_buffer, &alloc.staging_memory)) {
+                printf("[Vulkan] ERROR: Failed to create staging buffer for static index buffer\n");
+                return false;
+            }
+        }
+        
+        // Map the staging buffer
+        VkResult result = vkMapMemory(m_device->handle, alloc.staging_memory, 0, alloc.size, 0, &alloc.staging_mapped_ptr);
+        if (result != VK_SUCCESS) {
+            printf("[Vulkan] ERROR: vkMapMemory for staging buffer failed (result=%d)\n", result);
+            return false;
+        }
+        
+        alloc.staging_lock_offset = offset;
+        alloc.staging_lock_size = size;
+        alloc.using_staging = true;
+        
+        // Return pointer to the staging buffer at the correct offset
+        *lockedData = (char*)alloc.staging_mapped_ptr + offset;
+        printf("[Vulkan] LockIndexBuffer (static): handle=%llu offset=%u size=%u (staging)\n", handle, offset, size);
+        return true;
+    }
+    
+    // Dynamic buffer - direct map
     VkResult result = vkMapMemory(m_device->handle, alloc.memory, offset, size, 0, &alloc.mapped_ptr);
     if (result != VK_SUCCESS) {
         printf("[Vulkan] ERROR: vkMapMemory failed (result=%d)\n", result);
@@ -2048,6 +2309,79 @@ bool VulkanGraphicsDriver::UnlockIndexBuffer(IndexBufferHandle handle)
     
     VulkanBufferAllocation& alloc = g_index_buffers[handle];
     
+    // Phase 51: Handle staging buffer for static buffers
+    if (alloc.using_staging && alloc.staging_mapped_ptr) {
+        // Unmap staging buffer
+        vkUnmapMemory(m_device->handle, alloc.staging_memory);
+        alloc.staging_mapped_ptr = nullptr;
+        
+        // Copy from staging to device-local buffer via command buffer
+        VkCommandBuffer cmdBuffer = VK_NULL_HANDLE;
+        
+        // Create a temporary command pool and buffer for the transfer
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = m_device->graphics_queue_family;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+        
+        VkCommandPool cmdPool = VK_NULL_HANDLE;
+        VkResult result = vkCreateCommandPool(m_device->handle, &poolInfo, nullptr, &cmdPool);
+        if (result != VK_SUCCESS) {
+            printf("[Vulkan] ERROR: UnlockIndexBuffer - Failed to create command pool\n");
+            alloc.using_staging = false;
+            return false;
+        }
+        
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool = cmdPool;
+        allocInfo.commandBufferCount = 1;
+        
+        result = vkAllocateCommandBuffers(m_device->handle, &allocInfo, &cmdBuffer);
+        if (result != VK_SUCCESS) {
+            printf("[Vulkan] ERROR: UnlockIndexBuffer - Failed to allocate command buffer\n");
+            vkDestroyCommandPool(m_device->handle, cmdPool, nullptr);
+            alloc.using_staging = false;
+            return false;
+        }
+        
+        // Begin recording
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        
+        vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+        
+        // Copy buffer
+        VkBufferCopy copyRegion{};
+        copyRegion.srcOffset = alloc.staging_lock_offset;
+        copyRegion.dstOffset = alloc.staging_lock_offset;
+        copyRegion.size = alloc.staging_lock_size;
+        
+        vkCmdCopyBuffer(cmdBuffer, alloc.staging_buffer, alloc.buffer, 1, &copyRegion);
+        
+        vkEndCommandBuffer(cmdBuffer);
+        
+        // Submit and wait
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmdBuffer;
+        
+        vkQueueSubmit(m_device->graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_device->graphics_queue);
+        
+        // Cleanup
+        vkFreeCommandBuffers(m_device->handle, cmdPool, 1, &cmdBuffer);
+        vkDestroyCommandPool(m_device->handle, cmdPool, nullptr);
+        
+        alloc.using_staging = false;
+        printf("[Vulkan] UnlockIndexBuffer (static): handle=%llu - staging copy complete\n", handle);
+        return true;
+    }
+    
+    // Dynamic buffer - direct unmap
     if (alloc.mapped_ptr) {
         vkUnmapMemory(m_device->handle, alloc.memory);
         alloc.mapped_ptr = nullptr;
@@ -2525,20 +2859,23 @@ void* VulkanGraphicsDriver::GetGraphicsQueue() const
 extern "C" Graphics::IGraphicsDriver* CreateVulkanGraphicsDriver(void* windowHandle, uint32_t width,
                                                                 uint32_t height, bool fullscreen)
 {
-    printf("[CreateVulkanGraphicsDriver] Creating new VulkanGraphicsDriver instance\n");
-    printf("[CreateVulkanGraphicsDriver] Window: %p, Size: %ux%u, Fullscreen: %d\n",
+    fprintf(stderr, "[CreateVulkanGraphicsDriver] Creating new VulkanGraphicsDriver instance\n");
+    fprintf(stderr, "[CreateVulkanGraphicsDriver] Window: %p, Size: %ux%u, Fullscreen: %d\n",
            windowHandle, width, height, fullscreen);
+    fflush(stderr);
     
     // Create driver instance
     Graphics::VulkanGraphicsDriver* driver = new Graphics::VulkanGraphicsDriver();
     
     // Initialize driver with provided parameters
     if (!driver->Initialize(windowHandle, width, height, fullscreen)) {
-        printf("[CreateVulkanGraphicsDriver] ERROR: Initialization failed!\n");
+        fprintf(stderr, "[CreateVulkanGraphicsDriver] ERROR: Initialization failed!\n");
+        fflush(stderr);
         delete driver;
         return nullptr;
     }
     
-    printf("[CreateVulkanGraphicsDriver] VulkanGraphicsDriver initialized successfully\n");
+    fprintf(stderr, "[CreateVulkanGraphicsDriver] VulkanGraphicsDriver initialized successfully\n");
+    fflush(stderr);
     return driver;
 }

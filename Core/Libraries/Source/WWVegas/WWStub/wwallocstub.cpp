@@ -19,12 +19,23 @@
 // TheSuperHackers @build feliwir 15/04/2025 Simple allocator implementation useful for tools
 #include "always.h"
 #include <stdlib.h>
+#include <stdio.h> // Added for printf
+
+#if defined(DISABLE_GAMEMEMORY)
+#pragma message("DISABLE_GAMEMEMORY is DEFINED")
+#else
+#pragma message("DISABLE_GAMEMEMORY is NOT DEFINED")
+#endif
 
 #ifdef _OPERATOR_NEW_DEFINED_
+#pragma message("_OPERATOR_NEW_DEFINED_ is DEFINED")
 
 void *operator new(size_t size)
 {
-	return malloc(size);
+	fprintf(stderr, "[wwallocstub] operator new called (size=%zu)\n", size); fflush(stderr);
+	void* p = malloc(size);
+	fprintf(stderr, "[wwallocstub] operator new returning %p\n", p); fflush(stderr);
+	return p;
 }
 
 void *operator new[](size_t size)
@@ -66,16 +77,19 @@ void operator delete[](void * p, const char *, int)
 
 void* createW3DMemPool(const char *poolName, int allocationSize)
 {
+	fprintf(stderr, "[wwallocstub] createW3DMemPool called for %s\n", poolName); fflush(stderr);
 	return NULL;
 }
 
 void* allocateFromW3DMemPool(void* pool, int allocationSize)
 {
+	fprintf(stderr, "[wwallocstub] allocateFromW3DMemPool called (size=%d)\n", allocationSize); fflush(stderr);
 	return malloc(allocationSize);
 }
 
 void* allocateFromW3DMemPool(void* pool, int allocationSize, const char* msg, int unused)
 {
+	fprintf(stderr, "[wwallocstub] allocateFromW3DMemPool (debug) called (size=%d, msg=%s)\n", allocationSize, msg); fflush(stderr);
 	return malloc(allocationSize);
 }
 

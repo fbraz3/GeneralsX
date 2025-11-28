@@ -33,7 +33,12 @@ Zero Hour expansion code that extends base game with platform-specific fixes:
 **Always use VS Code Tasks instead of manual terminal commands** to avoid blocking the integrated terminal.
 
 Key tasks:
-- `Build GeneralsXZH (macOS)` / `Build GeneralsX (macOS)` - Compile with logging
+- `Build GeneralsXZH (macOS)` / `Build GeneralsX (macOS)` - Compile with logging.
+    - NOTE: VS Code build tasks can sometimes run in the background, detach from the integrated terminal, or finish without explicit user consent. For predictable behavior and full log capture prefer running the build from an external shell (Terminal.app / iTerm2) using the recommended commands below.
+    - Recommended shell workflow:
+            cmake --preset macos
+            cmake --build build/macos --target GeneralsXZH -j 4 2>&1 | tee logs/build_zh.log
+    - If using VS Code Tasks, ensure the task is configured to keep the terminal open and to pipe output to logs (e.g., via tee).
 - `Deploy GeneralsXZH (macOS)` / `Deploy GeneralsX (macOS)` - Copy to runtime dir
 - `Sign GeneralsXZH (macOS)` / `Sign GeneralsX (macOS)` - Ad-hoc code signing
 - `Run GeneralsXZH Terminal (macOS)` / `Run GeneralsX Terminal (macOS)` - **Opens external Terminal.app**
@@ -79,6 +84,19 @@ cp build/macos/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
 ## Debugging Workflow (NOT Obvious from Code)
 
+### VS Code Debug Tasks (PREFERRED)
+**Always prefer using VS Code Debug Tasks** for crash investigation:
+```
+run_task("shell: Debug GeneralsXZH Terminal (macOS)", workspaceFolder)
+# After crash, analyze: logs/debugTerminal.log
+```
+
+The debug tasks use `scripts/lldb_debug.sh` which:
+- Runs executable under LLDB
+- Captures backtrace (20 frames) on crash
+- Shows exact crash location with source file and line number
+- Exits cleanly after debugging session
+
 ### The Log-First Philosophy
 **NEVER run game with piped grep** - it hides initialization progress and causes apparent hangs.
 
@@ -100,10 +118,14 @@ cat "$HOME/Documents/Command and Conquer Generals Zero Hour Data/ReleaseCrashInf
 cat "$HOME/Documents/Command and Conquer Generals Data/ReleaseCrashInfo.txt"
 ```
 
-### LLDB for Metal Crashes
-Metal driver crashes show `AGXMetal13_3` in backtrace - use LLDB:
+### LLDB for Crashes
+Use the debug tasks or manually:
 ```bash
-cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 | tee logs/lldb.log
+# Using the wrapper script (recommended)
+scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee logs/lldb.log
+
+# Manual LLDB
+cd $HOME/GeneralsX/GeneralsMD && lldb -o run -o "bt 20" -o quit ./GeneralsXZH 2>&1 | tee logs/lldb.log
 ```
 
 ### Process State Verification
