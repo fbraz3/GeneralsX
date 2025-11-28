@@ -1112,7 +1112,7 @@ void VulkanGraphicsDriver::DrawIndexedPrimitive(PrimitiveType primType, uint32_t
         return;
     }
     
-    if (ibHandle >= g_index_buffers.size()) {
+    if (ibHandle == INVALID_HANDLE || ibHandle > g_index_buffers.size()) {
         printf("[Vulkan] DrawIndexedPrimitive: Invalid index buffer handle %llu\n", ibHandle);
         return;
     }
@@ -1123,8 +1123,8 @@ void VulkanGraphicsDriver::DrawIndexedPrimitive(PrimitiveType primType, uint32_t
     // Convert primitive type to Vulkan topology
     VkPrimitiveTopology topology = PrimitiveTypeToVkTopology(primType);
     
-    // Get index buffer allocation
-    VulkanBufferAllocation& ibAlloc = g_index_buffers[ibHandle];
+    // Get index buffer allocation (handle is 1-based, array is 0-based)
+    VulkanBufferAllocation& ibAlloc = g_index_buffers[ibHandle - 1];
     
     // TODO Phase 41 Week 2 Day 3: Implement actual indexed draw command recording
     // - Validate index buffer is properly allocated
@@ -1916,9 +1916,9 @@ VertexBufferHandle VulkanGraphicsDriver::CreateVertexBuffer(uint32_t sizeInBytes
         // For static buffers, data would need staging buffer (simplified for now)
     }
     
-    // Store buffer and return handle as index
+    // Store buffer and return handle as 1-based index (0 is INVALID_HANDLE)
     g_vertex_buffers.push_back(allocation);
-    VertexBufferHandle handle = (VertexBufferHandle)(g_vertex_buffers.size() - 1);
+    VertexBufferHandle handle = (VertexBufferHandle)g_vertex_buffers.size();
     
     printf("[Vulkan] CreateVertexBuffer: SUCCESS handle=%llu\n", handle);
     return handle;
@@ -1926,12 +1926,12 @@ VertexBufferHandle VulkanGraphicsDriver::CreateVertexBuffer(uint32_t sizeInBytes
 
 void VulkanGraphicsDriver::DestroyVertexBuffer(VertexBufferHandle handle)
 {
-    if (!m_initialized || !m_device || handle >= (uint64_t)g_vertex_buffers.size()) {
+    if (!m_initialized || !m_device || handle == INVALID_HANDLE || handle > (uint64_t)g_vertex_buffers.size()) {
         printf("[Vulkan] DestroyVertexBuffer: Invalid handle %llu\n", handle);
         return;
     }
     
-    VulkanBufferAllocation& alloc = g_vertex_buffers[handle];
+    VulkanBufferAllocation& alloc = g_vertex_buffers[handle - 1];
     
     if (alloc.mapped_ptr) {
         vkUnmapMemory(m_device->handle, alloc.memory);
@@ -1962,12 +1962,12 @@ void VulkanGraphicsDriver::DestroyVertexBuffer(VertexBufferHandle handle)
 bool VulkanGraphicsDriver::LockVertexBuffer(VertexBufferHandle handle, uint32_t offset,
                                            uint32_t size, void** lockedData, bool readOnly)
 {
-    if (!m_initialized || !m_device || handle >= (uint64_t)g_vertex_buffers.size() || !lockedData) {
-        printf("[Vulkan] LockVertexBuffer: Invalid parameters\n");
+    if (!m_initialized || !m_device || handle == INVALID_HANDLE || handle > (uint64_t)g_vertex_buffers.size() || !lockedData) {
+        printf("[Vulkan] LockVertexBuffer: Invalid parameters (handle=%llu)\n", handle);
         return false;
     }
     
-    VulkanBufferAllocation& alloc = g_vertex_buffers[handle];
+    VulkanBufferAllocation& alloc = g_vertex_buffers[handle - 1];
     
     // Adjust size if 0 (meaning lock entire buffer)
     if (size == 0) {
@@ -2023,12 +2023,12 @@ bool VulkanGraphicsDriver::LockVertexBuffer(VertexBufferHandle handle, uint32_t 
 
 bool VulkanGraphicsDriver::UnlockVertexBuffer(VertexBufferHandle handle)
 {
-    if (!m_initialized || !m_device || handle >= (uint64_t)g_vertex_buffers.size()) {
-        printf("[Vulkan] UnlockVertexBuffer: Invalid handle\n");
+    if (!m_initialized || !m_device || handle == INVALID_HANDLE || handle > (uint64_t)g_vertex_buffers.size()) {
+        printf("[Vulkan] UnlockVertexBuffer: Invalid handle %llu\n", handle);
         return false;
     }
     
-    VulkanBufferAllocation& alloc = g_vertex_buffers[handle];
+    VulkanBufferAllocation& alloc = g_vertex_buffers[handle - 1];
     
     // Phase 51: Handle staging buffer for static buffers
     if (alloc.using_staging && alloc.staging_mapped_ptr) {
@@ -2115,11 +2115,11 @@ bool VulkanGraphicsDriver::UnlockVertexBuffer(VertexBufferHandle handle)
 
 uint32_t VulkanGraphicsDriver::GetVertexBufferSize(VertexBufferHandle handle) const
 {
-    if (handle >= (uint64_t)g_vertex_buffers.size()) {
+    if (handle == INVALID_HANDLE || handle > (uint64_t)g_vertex_buffers.size()) {
         return 0;
     }
     
-    return g_vertex_buffers[handle].size;
+    return g_vertex_buffers[handle - 1].size;
 }
 
 IndexBufferHandle VulkanGraphicsDriver::CreateIndexBuffer(uint32_t sizeInBytes, bool is32Bit,
@@ -2195,9 +2195,9 @@ IndexBufferHandle VulkanGraphicsDriver::CreateIndexBuffer(uint32_t sizeInBytes, 
         }
     }
     
-    // Store buffer and return handle as index
+    // Store buffer and return handle as 1-based index (0 is INVALID_HANDLE)
     g_index_buffers.push_back(allocation);
-    IndexBufferHandle handle = (IndexBufferHandle)(g_index_buffers.size() - 1);
+    IndexBufferHandle handle = (IndexBufferHandle)g_index_buffers.size();
     
     printf("[Vulkan] CreateIndexBuffer: SUCCESS handle=%llu\n", handle);
     return handle;
@@ -2205,12 +2205,12 @@ IndexBufferHandle VulkanGraphicsDriver::CreateIndexBuffer(uint32_t sizeInBytes, 
 
 void VulkanGraphicsDriver::DestroyIndexBuffer(IndexBufferHandle handle)
 {
-    if (!m_initialized || !m_device || handle >= (uint64_t)g_index_buffers.size()) {
+    if (!m_initialized || !m_device || handle == INVALID_HANDLE || handle > (uint64_t)g_index_buffers.size()) {
         printf("[Vulkan] DestroyIndexBuffer: Invalid handle %llu\n", handle);
         return;
     }
     
-    VulkanBufferAllocation& alloc = g_index_buffers[handle];
+    VulkanBufferAllocation& alloc = g_index_buffers[handle - 1];
     
     if (alloc.mapped_ptr) {
         vkUnmapMemory(m_device->handle, alloc.memory);
@@ -2241,12 +2241,12 @@ void VulkanGraphicsDriver::DestroyIndexBuffer(IndexBufferHandle handle)
 bool VulkanGraphicsDriver::LockIndexBuffer(IndexBufferHandle handle, uint32_t offset,
                                           uint32_t size, void** lockedData, bool readOnly)
 {
-    if (!m_initialized || !m_device || handle >= (uint64_t)g_index_buffers.size() || !lockedData) {
-        printf("[Vulkan] LockIndexBuffer: Invalid parameters\n");
+    if (!m_initialized || !m_device || handle == INVALID_HANDLE || handle > (uint64_t)g_index_buffers.size() || !lockedData) {
+        printf("[Vulkan] LockIndexBuffer: Invalid parameters (handle=%llu)\n", handle);
         return false;
     }
     
-    VulkanBufferAllocation& alloc = g_index_buffers[handle];
+    VulkanBufferAllocation& alloc = g_index_buffers[handle - 1];
     
     // Adjust size if 0 (meaning lock entire buffer)
     if (size == 0) {
@@ -2302,12 +2302,12 @@ bool VulkanGraphicsDriver::LockIndexBuffer(IndexBufferHandle handle, uint32_t of
 
 bool VulkanGraphicsDriver::UnlockIndexBuffer(IndexBufferHandle handle)
 {
-    if (!m_initialized || !m_device || handle >= (uint64_t)g_index_buffers.size()) {
-        printf("[Vulkan] UnlockIndexBuffer: Invalid handle\n");
+    if (!m_initialized || !m_device || handle == INVALID_HANDLE || handle > (uint64_t)g_index_buffers.size()) {
+        printf("[Vulkan] UnlockIndexBuffer: Invalid handle %llu\n", handle);
         return false;
     }
     
-    VulkanBufferAllocation& alloc = g_index_buffers[handle];
+    VulkanBufferAllocation& alloc = g_index_buffers[handle - 1];
     
     // Phase 51: Handle staging buffer for static buffers
     if (alloc.using_staging && alloc.staging_mapped_ptr) {
@@ -2394,11 +2394,11 @@ bool VulkanGraphicsDriver::UnlockIndexBuffer(IndexBufferHandle handle)
 
 uint32_t VulkanGraphicsDriver::GetIndexBufferSize(IndexBufferHandle handle) const
 {
-    if (handle >= (uint64_t)g_index_buffers.size()) {
+    if (handle == INVALID_HANDLE || handle > (uint64_t)g_index_buffers.size()) {
         return 0;
     }
     
-    return g_index_buffers[handle].size;
+    return g_index_buffers[handle - 1].size;
 }
 
 VertexFormatHandle VulkanGraphicsDriver::CreateVertexFormat(const VertexElement* elements,

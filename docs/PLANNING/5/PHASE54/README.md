@@ -3,7 +3,7 @@
 **Phase**: 54
 **Title**: Display Pipeline and Rendering Systems
 **Duration**: 5-7 days
-**Status**: IN PROGRESS - BLOCKED ON TEXTURE LOADING
+**Status**: IN PROGRESS
 **Dependencies**: Phase 53 complete (Objects/Templates working)
 
 ---
@@ -12,18 +12,24 @@
 
 Phase 54 handles display and rendering initialization. This is where Metal/Vulkan/OpenGL backends are fully tested with actual game content.
 
-### Current Status: PARTIALLY COMPLETE
+### Current Status: MAJOR PROGRESS
 
 **Working:**
 
 - Vulkan instance, device, swapchain, render pass, framebuffers
 - W3DDisplay basic initialization
 - WindowManager, InGameUI, Shell
+- **Texture loading** (TBBib.tga, TBRedBib.tga - both working)
+- **Vertex buffer creation** (handle 1-based fix resolved ERROR issues)
+- **Index buffer creation** (handle 1-based fix resolved ERROR issues)
+- GameClient::init() completes
+- GameEngine::execute() reached
 
-**Blocked:**
+**Pending:**
 
-- TextureLoader hangs during `W3DBibBuffer` initialization
-- Specifically: `NEW_REF(TextureClass, ("TBBib.tga"))` never returns
+- Shader compilation verification
+- First frame render verification
+- Fullscreen mode testing
 
 ---
 
@@ -156,51 +162,42 @@ grep -i "texture\|surface\|format" logs/phase54_render.log
 
 - [x] W3DDisplay initializes with Vulkan backend
 - [x] Window appears (SDL2 window created)
-- [ ] **BLOCKED**: Textures load from .big archives - hangs on first texture
+- [x] Textures load from .big archives (TBBib.tga, TBRedBib.tga confirmed)
+- [x] Vertex/Index buffers created successfully (handle 1-based fix)
+- [x] GameClient::init() completes
+- [x] GameEngine::execute() reached
 - [ ] Shaders compile successfully
 - [ ] First frame renders
 - [ ] Fullscreen mode works
-- [ ] Game progresses to game logic initialization
 
 ---
 
-## Current Blocker: Texture Loading Hang
+## Resolved Issues
 
-**Location**: `W3DBibBuffer::W3DBibBuffer()` constructor
+### Issue 54.1: Buffer Handle Collision with INVALID_HANDLE (Fixed)
 
-**Code Path**:
+**Problem**: First vertex/index buffer handle was 0, which equals `INVALID_HANDLE = 0` in IGraphicsDriver.h
 
-```cpp
-// W3DBibBuffer.cpp:236-237
-m_bibTexture = NEW_REF(TextureClass, ("TBBib.tga"));  // <-- HANGS HERE
-fprintf(stderr, "[W3DBibBuffer] m_bibTexture created: %p\n", m_bibTexture);  // Never reached
+**Symptoms**:
+```log
+[Vulkan] CreateVertexBuffer: SUCCESS handle=0
+DX8VertexBufferClass::DX8VertexBufferClass - ERROR: Failed to create vertex buffer (288096 bytes, 12004 vertices)
 ```
 
-**Root Cause Analysis**:
+**Root Cause**: `vulkan_graphics_driver.cpp` used `size() - 1` to generate handles, making first handle = 0.
 
-1. `TextureClass` constructor calls `TextureLoader::Request_High_Priority_Loading()`
-2. This calls `TextureLoadTaskClass::Begin_Texture_Load()`
-3. Likely hanging in:
-   - `DX8Wrapper::_Create_DX8_Texture()` - Vulkan texture creation
-   - OR file loading from .big archive
-   - OR threading issue in texture loader
+**Solution**: Changed to 1-based handles:
+- Create: `handle = size()` (after push_back)
+- Validate: `handle == INVALID_HANDLE || handle > size()`
+- Access: `buffers[handle - 1]`
 
-**Files to Investigate**:
-
-- `Core/Libraries/Source/WWVegas/WW3D2/textureloader.cpp` - Begin_Texture_Load()
-- `Core/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp` - _Create_DX8_Texture()
-- `Core/Libraries/Source/WWVegas/WW3D2/VulkanGraphicsDriver.cpp` - CreateTexture()
-
-**Log Evidence**:
-
+**Result**:
 ```log
-[GameClient::init] Creating TerrainVisual
-[W3DBibBuffer] Constructor called
-[W3DBibBuffer] About to create m_bibTexture
-# === HANGS HERE - no further output ===
+[Vulkan] CreateVertexBuffer: SUCCESS handle=1
+DX8VertexBufferClass::DX8VertexBufferClass - Created vertex buffer (handle=1, 288096 bytes, 12004 vertices, FVF=0x00000152)
 ```
 
 ---
 
 **Created**: November 2025
-**Last Updated**: November 28, 2025
+**Last Updated**: November 29, 2025
