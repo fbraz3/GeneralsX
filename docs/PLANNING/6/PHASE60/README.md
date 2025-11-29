@@ -50,10 +50,11 @@ Display the main menu with all buttons, text, and UI elements functional.
    - Creates temporary Vulkan buffers per-frame
    - Automatic cleanup in next frame's BeginFrame
 
-4. **Testing Results**
-   - Game runs 30+ seconds without crashes
-   - `DrawIndexedPrimitiveUP` called with stride=44 (VertexFormatXYZNDUV2)
-   - Multiple frames presented successfully
+4. **Testing Results (November 30, 2025)**
+   - Game runs multiple frames without crashes
+   - `DrawIndexedPrimitiveUP` called correctly with vertex/index data
+   - Frame presentation working via Vulkan swapchain
+   - Debug verified: Set_Vertex_Buffer and Set_Index_Buffer both called for DynamicVBAccessClass/DynamicIBAccessClass
 
 ### Key Discovery
 
