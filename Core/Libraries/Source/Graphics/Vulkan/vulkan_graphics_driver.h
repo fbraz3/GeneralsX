@@ -227,6 +227,7 @@ private:
     void DestroyCommandBuffers();
     bool CreateGraphicsPipeline();
     void DestroyGraphicsPipeline();
+    bool RecreatePipelineIfNeeded();  // Phase 59: Recreate pipeline when render state changes
     bool RecordClearCommand();
 };
 
