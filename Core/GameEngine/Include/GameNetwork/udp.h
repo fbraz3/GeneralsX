@@ -28,7 +28,7 @@
 #include <errno.h>
 #endif
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 #include <winsock.h>
 #include <io.h>
 //#define close _close

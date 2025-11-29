@@ -176,7 +176,7 @@ int main(int argc, char ** argv)
 
 	Setup_Signals();
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 	// ----- Initialize Winsock -----
 	WORD verReq = MAKEWORD(2, 2);
 	WSADATA wsadata;
@@ -313,7 +313,7 @@ void rotateOutput(void)
 	sprintf(filenamebuf, "%s/%02d%02d%04d_%02d%02d%02d_log", logpath.get(),
 	        xtime.getMonth(), xtime.getMDay(), xtime.getYear(), xtime.getHour(),
 	        xtime.getMinute(), xtime.getSecond());
-#ifdef _WINDOWS
+#ifdef _WIN32
 	mkdir(logpath.get());
 #else
 	mkdir(logpath.get(), 00666);
@@ -389,7 +389,7 @@ void rotateParanoid(void)
 	sprintf(filenamebuf, "%s/%02d%02d%04d_%02d%02d%02d_log", logpath.get(),
 	        xtime.getMonth(), xtime.getMDay(), xtime.getYear(), xtime.getHour(),
 	        xtime.getMinute(), xtime.getSecond());
-#ifdef _WINDOWS
+#ifdef _WIN32
 	mkdir(logpath.get());
 #else
 	mkdir(logpath.get(), 00666);

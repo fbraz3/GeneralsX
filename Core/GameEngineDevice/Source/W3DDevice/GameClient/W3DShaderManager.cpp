@@ -1038,6 +1038,13 @@ Int RoadShader2Stage::set(Int pass)
 
 void RoadShader2Stage::reset(void)
 {
+	ShaderClass::Invalidate();
+
+	DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+	DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU|0);
+
+	DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+	DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU|1);
 }
 
 
@@ -1207,7 +1214,6 @@ void W3DShaderManager::shutdown(void)
 			W3DFilters[i]->shutdown();
 		}
 	}
-
 }
 
 //=============================================================================

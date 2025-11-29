@@ -2285,7 +2285,7 @@ void INIClass::DuplicateCRCError(const char *message, const char *section, const
 	assert(0);
 
 #ifdef RTS_RELEASE
-#ifdef _WINDOWS
+#ifdef _WIN32
 	MessageBox(0, buffer, "Duplicate CRC in INI file.", MB_ICONSTOP | MB_OK);
 #endif
 #endif
