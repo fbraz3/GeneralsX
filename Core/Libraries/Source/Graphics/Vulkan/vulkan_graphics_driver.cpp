@@ -69,6 +69,43 @@ static VkShaderModule g_vertShaderModule = VK_NULL_HANDLE;
 static VkShaderModule g_fragShaderModule = VK_NULL_HANDLE;
 
 // ============================================================================
+// Phase 60: UI Pipeline for Pre-Transformed (RHW) Vertices
+// ============================================================================
+
+// UI shader modules (for RHW vertices)
+static VkShaderModule g_uiVertShaderModule = VK_NULL_HANDLE;
+static VkShaderModule g_uiFragShaderModule = VK_NULL_HANDLE;
+
+// UI pipeline and layout (separate from 3D pipeline)
+static VkPipeline g_uiPipeline = VK_NULL_HANDLE;
+static VkPipelineLayout g_uiPipelineLayout = VK_NULL_HANDLE;
+
+// Screen dimensions for UI coordinate conversion (set during BeginFrame)
+static float g_screenWidth = 800.0f;
+static float g_screenHeight = 600.0f;
+
+// Flag to track if we're currently using UI pipeline
+static bool g_usingUIPipeline = false;
+
+/**
+ * Push constants for UI shaders
+ * Layout matches ui.vert and ui.frag push_constant blocks
+ * Total size: 32 bytes (aligned to 4 bytes)
+ */
+struct UIPushConstants {
+    float screenWidth;      // 4 bytes - Screen width in pixels
+    float screenHeight;     // 4 bytes - Screen height in pixels
+    int32_t useTexture;     // 4 bytes - 0 = vertex color only, 1 = texture * color
+    int32_t alphaTest;      // 4 bytes - 0 = disabled, 1 = enabled
+    float alphaRef;         // 4 bytes - Alpha test reference (0.0 - 1.0)
+    float reserved1;        // 4 bytes - Padding
+    float reserved2;        // 4 bytes - Padding  
+    float reserved3;        // 4 bytes - Padding
+};
+
+static constexpr uint32_t UI_PUSH_CONSTANT_SIZE = sizeof(UIPushConstants);  // 32 bytes
+
+// ============================================================================
 // Phase 57: Texture Binding and Sampling Infrastructure
 // ============================================================================
 
@@ -129,6 +166,58 @@ struct FragmentPushConstants {
 static constexpr uint32_t VERTEX_PUSH_CONSTANT_SIZE = sizeof(VertexPushConstants);   // 64 bytes
 static constexpr uint32_t FRAGMENT_PUSH_CONSTANT_SIZE = sizeof(FragmentPushConstants); // 16 bytes
 static constexpr uint32_t TOTAL_PUSH_CONSTANT_SIZE = VERTEX_PUSH_CONSTANT_SIZE + FRAGMENT_PUSH_CONSTANT_SIZE; // 80 bytes
+
+// ============================================================================
+// Phase 60: Per-Frame Temporary Buffer Cleanup
+// ============================================================================
+
+/**
+ * Structure to track temporary buffers created during DrawPrimitiveUP/DrawIndexedPrimitiveUP
+ * These are destroyed at the start of the next frame (after GPU finishes using them)
+ */
+struct TempBufferEntry {
+    VkBuffer buffer;
+    VkDeviceMemory memory;
+};
+
+// Per-frame temporary buffers (indexed by frame index)
+// Using MAX_FRAMES_IN_FLIGHT from the swapchain
+static constexpr uint32_t MAX_TEMP_BUFFER_FRAMES = 3;  // Match MAX_FRAMES_IN_FLIGHT
+static std::vector<TempBufferEntry> g_tempBuffers[MAX_TEMP_BUFFER_FRAMES];
+
+/**
+ * Cleanup temporary buffers from a previous frame
+ * Called at the start of BeginFrame after waiting for fence
+ */
+static void CleanupFrameTempBuffers(VkDevice device, uint32_t frameIndex) {
+    if (frameIndex >= MAX_TEMP_BUFFER_FRAMES) return;
+    
+    auto& buffers = g_tempBuffers[frameIndex];
+    for (auto& entry : buffers) {
+        if (entry.buffer != VK_NULL_HANDLE) {
+            vkDestroyBuffer(device, entry.buffer, nullptr);
+        }
+        if (entry.memory != VK_NULL_HANDLE) {
+            vkFreeMemory(device, entry.memory, nullptr);
+        }
+    }
+    buffers.clear();
+}
+
+/**
+ * Add a temporary buffer to the current frame's cleanup list
+ */
+static void AddTempBuffer(uint32_t frameIndex, VkBuffer buffer, VkDeviceMemory memory) {
+    if (frameIndex >= MAX_TEMP_BUFFER_FRAMES) {
+        // Fallback: destroy immediately (not ideal but safe)
+        // This should not happen in normal operation
+        return;
+    }
+    g_tempBuffers[frameIndex].push_back({buffer, memory});
+}
+
+// Forward declaration for FindMemoryType (defined later in file)
+static uint32_t FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 /**
  * Matrix multiplication: result = a * b
@@ -220,6 +309,37 @@ static void BindTransformPushConstants(VkCommandBuffer cmdBuffer, VkPipelineLayo
         0,
         sizeof(VertexPushConstants),
         &vertexPC
+    );
+}
+
+/**
+ * Phase 60: Bind UI push constants to command buffer
+ * Called before UI draw calls to provide screen dimensions and rendering options
+ * 
+ * @param cmdBuffer Active command buffer
+ * @param useTexture 1 if texturing is enabled, 0 for vertex color only
+ * @param alphaTestEnabled True if alpha testing should be performed
+ * @param alphaRef Alpha reference value for discard test (0.0 - 1.0)
+ */
+static void BindUIPushConstants(VkCommandBuffer cmdBuffer, int32_t useTexture, bool alphaTestEnabled, float alphaRef)
+{
+    UIPushConstants uiPC;
+    uiPC.screenWidth = g_screenWidth;
+    uiPC.screenHeight = g_screenHeight;
+    uiPC.useTexture = useTexture;
+    uiPC.alphaTest = alphaTestEnabled ? 1 : 0;
+    uiPC.alphaRef = alphaRef;
+    uiPC.reserved1 = 0.0f;
+    uiPC.reserved2 = 0.0f;
+    uiPC.reserved3 = 0.0f;
+    
+    vkCmdPushConstants(
+        cmdBuffer,
+        g_uiPipelineLayout,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,
+        sizeof(UIPushConstants),
+        &uiPC
     );
 }
 
@@ -1269,6 +1389,13 @@ void VulkanGraphicsDriver::Shutdown()
         vkDeviceWaitIdle(m_device->handle);
     }
     
+    // Phase 60: Cleanup all temporary buffers from all frames
+    if (m_device && m_device->handle != VK_NULL_HANDLE) {
+        for (uint32_t i = 0; i < MAX_TEMP_BUFFER_FRAMES; i++) {
+            CleanupFrameTempBuffers(m_device->handle, i);
+        }
+    }
+    
     // Phase 54: Destroy graphics pipeline and shaders
     DestroyGraphicsPipeline();
     
@@ -1348,6 +1475,10 @@ bool VulkanGraphicsDriver::BeginFrame()
     // Wait for the previous frame using this slot to complete
     vkWaitForFences(m_device->handle, 1, &g_inFlightFences[m_current_frame], VK_TRUE, UINT64_MAX);
     
+    // Phase 60: Cleanup temporary buffers from the previous use of this frame slot
+    // This is safe because we just waited for the fence, meaning GPU is done with these resources
+    CleanupFrameTempBuffers(m_device->handle, m_current_frame);
+    
     // Acquire next image from swapchain
     VkResult result = vkAcquireNextImageKHR(
         m_device->handle,
@@ -1412,6 +1543,10 @@ bool VulkanGraphicsDriver::BeginFrame()
     scissor.offset = {0, 0};
     scissor.extent = m_swapchain->extent;
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+    
+    // Phase 60: Update screen dimensions for UI push constants
+    g_screenWidth = static_cast<float>(m_swapchain->extent.width);
+    g_screenHeight = static_cast<float>(m_swapchain->extent.height);
     
     m_in_frame = true;
     m_frame_started = true;
@@ -1829,26 +1964,35 @@ static FVFDescriptor& GetCachedFVFDescriptor(uint32_t fvf) {
 }
 
 /**
- * Phase 56: Get or create pipeline for FVF + topology combination
+ * Phase 56/60: Get or create pipeline for FVF + topology combination
  * 
- * NOTE: Currently returns the default pipeline since we don't have 
- * shaders that support vertex input yet. This will be expanded in 
- * a future phase when proper geometry shaders are implemented.
+ * Phase 60 Update: Now detects D3DFVF_XYZRHW (pre-transformed vertices)
+ * and returns the UI pipeline for proper 2D rendering.
  * 
  * @param fvf Flexible Vertex Format flags
  * @param topology Vulkan primitive topology
- * @return VkPipeline handle (default pipeline for now)
+ * @return VkPipeline handle (UI pipeline for RHW, default for 3D)
  */
-static VkPipeline GetOrCreatePipeline([[maybe_unused]] uint32_t fvf, 
+static VkPipeline GetOrCreatePipeline(uint32_t fvf, 
                                       [[maybe_unused]] VkPrimitiveTopology topology) {
-    // For Phase 56, we use the default fullscreen pipeline
-    // Future phases will create FVF-specific pipelines with vertex input
-    
     // Track current state for future optimization
     g_current_fvf = fvf;
     g_current_topology = topology;
     
-    // Return default pipeline (fullscreen shader)
+    // Phase 60: Check for pre-transformed vertices (D3DFVF_XYZRHW = 0x0004)
+    // These are UI elements that are already in screen coordinates
+    if (fvf & 0x0004) {  // D3DFVF_XYZRHW
+        if (g_uiPipeline != VK_NULL_HANDLE) {
+            g_usingUIPipeline = true;
+            return g_uiPipeline;
+        }
+        // Fall through to default if UI pipeline not created yet
+        fprintf(stderr, "[Vulkan] WARNING: RHW vertices requested but UI pipeline not ready\n");
+    }
+    
+    g_usingUIPipeline = false;
+    
+    // Return default pipeline (fullscreen shader for 3D geometry)
     return g_graphicsPipeline;
 }
 
@@ -2081,24 +2225,129 @@ void VulkanGraphicsDriver::DrawPrimitiveUP(PrimitiveType primType, uint32_t prim
         return;
     }
     
+    if (!m_in_frame) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - Not in frame\n");
+        return;
+    }
+    
     uint32_t vertexCount = CalculateVertexCount(primType, primCount);
-    printf("[Vulkan] DrawPrimitiveUP: primType=%d primCount=%u vertexCount=%u stride=%u\n",
-           (int)primType, primCount, vertexCount, vertexStride);
+    
+    // Only log every 100 draws to reduce spam
+    static uint32_t s_draw_up_count = 0;
+    if (s_draw_up_count % 100 == 0) {
+        printf("[Vulkan] DrawPrimitiveUP: primType=%d primCount=%u vertexCount=%u stride=%u\n",
+               (int)primType, primCount, vertexCount, vertexStride);
+    }
+    s_draw_up_count++;
     
     // Convert primitive type to Vulkan topology
     VkPrimitiveTopology topology = PrimitiveTypeToVkTopology(primType);
     
-    // TODO Phase 41 Week 2 Day 3: Implement user-provided vertex data drawing
-    // - Create temporary vertex buffer from provided data
-    // - Copy vertexData to GPU memory
-    // - Bind temporary vertex buffer
-    // - Record vkCmdDraw() command
-    // - Track temporary buffers for cleanup after frame
-    // - Handle stride for proper vertex layout
-    // - Support various vertex formats
+    // Get command buffer
+    VkCommandBuffer cmdBuffer = g_commandBuffers[m_current_frame];
     
-    // For now, log the operation
-    printf("[Vulkan] DrawPrimitiveUP: topology=%u vertexCount=%u (implementation TBD)\n", topology, vertexCount);
+    // Phase 60: Select pipeline based on FVF (will set g_usingUIPipeline)
+    VkPipeline pipeline = GetOrCreatePipeline(g_current_fvf, topology);
+    if (pipeline == VK_NULL_HANDLE) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - No valid pipeline\n");
+        return;
+    }
+    
+    // Calculate buffer size
+    uint32_t bufferSize = vertexCount * vertexStride;
+    if (bufferSize == 0) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - Zero buffer size\n");
+        return;
+    }
+    
+    // Create temporary vertex buffer (HOST_VISIBLE for immediate upload)
+    VkBuffer tempVertexBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory tempVertexMemory = VK_NULL_HANDLE;
+    
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = bufferSize;
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    VkResult result = vkCreateBuffer(m_device->handle, &bufferInfo, nullptr, &tempVertexBuffer);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - vkCreateBuffer failed (%d)\n", result);
+        return;
+    }
+    
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(m_device->handle, tempVertexBuffer, &memRequirements);
+    
+    uint32_t memTypeIndex = FindMemoryType(m_physical_device->handle, memRequirements.memoryTypeBits,
+                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    if (memTypeIndex == UINT32_MAX) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - No suitable memory type\n");
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = memTypeIndex;
+    
+    result = vkAllocateMemory(m_device->handle, &allocInfo, nullptr, &tempVertexMemory);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - vkAllocateMemory failed (%d)\n", result);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    result = vkBindBufferMemory(m_device->handle, tempVertexBuffer, tempVertexMemory, 0);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - vkBindBufferMemory failed (%d)\n", result);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    // Map and copy vertex data
+    void* mappedData = nullptr;
+    result = vkMapMemory(m_device->handle, tempVertexMemory, 0, bufferSize, 0, &mappedData);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawPrimitiveUP: ERROR - vkMapMemory failed (%d)\n", result);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    memcpy(mappedData, vertexData, bufferSize);
+    vkUnmapMemory(m_device->handle, tempVertexMemory);
+    
+    // Bind pipeline
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    
+    // Phase 60: Bind UI push constants if using UI pipeline
+    if (g_usingUIPipeline) {
+        // Determine if texturing is enabled (check texture stage 0)
+        int32_t useTexture = (g_boundTextures[0] != INVALID_HANDLE) ? 1 : 0;
+        
+        // Get alpha test state from render state cache
+        bool alphaTestEnabled = g_renderState.alphaTestEnable;
+        float alphaRef = g_renderState.alphaRef;
+        
+        BindUIPushConstants(cmdBuffer, useTexture, alphaTestEnabled, alphaRef);
+        
+        // Bind texture descriptor set if texturing
+        if (useTexture && g_uiPipelineLayout != VK_NULL_HANDLE) {
+            BindTextureDescriptorSets(cmdBuffer, g_uiPipelineLayout);
+        }
+    }
+    
+    // Bind vertex buffer
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &tempVertexBuffer, offsets);
+    
+    // Draw
+    vkCmdDraw(cmdBuffer, vertexCount, 1, 0, 0);
+    
+    // Track temporary resources for cleanup after this frame's GPU work completes
+    AddTempBuffer(m_current_frame, tempVertexBuffer, tempVertexMemory);
 }
 
 void VulkanGraphicsDriver::DrawIndexedPrimitiveUP(PrimitiveType primType, uint32_t minVertexIndex,
@@ -2117,26 +2366,227 @@ void VulkanGraphicsDriver::DrawIndexedPrimitiveUP(PrimitiveType primType, uint32
         return;
     }
     
-    printf("[Vulkan] DrawIndexedPrimitiveUP: primType=%d primCount=%u vertexCount=%u stride=%u\n",
-           (int)primType, primCount, vertexCount, vertexStride);
+    if (!m_in_frame) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - Not in frame\n");
+        return;
+    }
+    
+    // Only log every 100 draws to reduce spam
+    static uint32_t s_indexed_draw_up_count = 0;
+    if (s_indexed_draw_up_count % 100 == 0) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: primType=%d primCount=%u vertexCount=%u stride=%u\n",
+               (int)primType, primCount, vertexCount, vertexStride);
+    }
+    s_indexed_draw_up_count++;
     
     // Convert primitive type to Vulkan topology
     VkPrimitiveTopology topology = PrimitiveTypeToVkTopology(primType);
     
-    // TODO Phase 41 Week 2 Day 3: Implement user-provided vertex+index data drawing
-    // - Create temporary vertex buffer from vertexData
-    // - Create temporary index buffer from indexData
-    // - Copy both to GPU memory
-    // - Bind both buffers
-    // - Determine index type (16-bit vs 32-bit)
-    // - Record vkCmdDrawIndexed() command
-    // - Track temporary buffers for cleanup
-    // - Calculate correct index count from primCount
-    // - Apply minVertexIndex offset to vertex buffer binding
+    // Calculate index count based on primitive type
+    uint32_t indexCount = 0;
+    switch (primType) {
+        case PrimitiveType::TriangleList:
+            indexCount = primCount * 3;
+            break;
+        case PrimitiveType::TriangleStrip:
+        case PrimitiveType::TriangleFan:
+            indexCount = primCount + 2;
+            break;
+        case PrimitiveType::LineList:
+            indexCount = primCount * 2;
+            break;
+        case PrimitiveType::LineStrip:
+            indexCount = primCount + 1;
+            break;
+        case PrimitiveType::PointList:
+            indexCount = primCount;
+            break;
+        default:
+            indexCount = primCount * 3;  // Default to triangle list
+            break;
+    }
     
-    // For now, log the operation
-    printf("[Vulkan] DrawIndexedPrimitiveUP: topology=%u indexCount=%u (implementation TBD)\n",
-           topology, primCount * 3);  // Assuming triangle list
+    // Get command buffer
+    VkCommandBuffer cmdBuffer = g_commandBuffers[m_current_frame];
+    
+    // Phase 60: Select pipeline based on FVF (will set g_usingUIPipeline)
+    VkPipeline pipeline = GetOrCreatePipeline(g_current_fvf, topology);
+    if (pipeline == VK_NULL_HANDLE) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - No valid pipeline\n");
+        return;
+    }
+    
+    // Calculate buffer sizes
+    uint32_t vertexBufferSize = vertexCount * vertexStride;
+    uint32_t indexBufferSize = indexCount * sizeof(uint16_t);  // DirectX 8 uses 16-bit indices
+    
+    if (vertexBufferSize == 0 || indexBufferSize == 0) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - Zero buffer size (vertex=%u index=%u)\n",
+               vertexBufferSize, indexBufferSize);
+        return;
+    }
+    
+    // Create temporary vertex buffer
+    VkBuffer tempVertexBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory tempVertexMemory = VK_NULL_HANDLE;
+    
+    VkBufferCreateInfo vertexBufferInfo{};
+    vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    vertexBufferInfo.size = vertexBufferSize;
+    vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    vertexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    VkResult result = vkCreateBuffer(m_device->handle, &vertexBufferInfo, nullptr, &tempVertexBuffer);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - vkCreateBuffer(vertex) failed (%d)\n", result);
+        return;
+    }
+    
+    VkMemoryRequirements vertexMemRequirements;
+    vkGetBufferMemoryRequirements(m_device->handle, tempVertexBuffer, &vertexMemRequirements);
+    
+    uint32_t memTypeIndex = FindMemoryType(m_physical_device->handle, vertexMemRequirements.memoryTypeBits,
+                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    if (memTypeIndex == UINT32_MAX) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - No suitable memory type for vertex buffer\n");
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    VkMemoryAllocateInfo vertexAllocInfo{};
+    vertexAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    vertexAllocInfo.allocationSize = vertexMemRequirements.size;
+    vertexAllocInfo.memoryTypeIndex = memTypeIndex;
+    
+    result = vkAllocateMemory(m_device->handle, &vertexAllocInfo, nullptr, &tempVertexMemory);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - vkAllocateMemory(vertex) failed (%d)\n", result);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    result = vkBindBufferMemory(m_device->handle, tempVertexBuffer, tempVertexMemory, 0);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - vkBindBufferMemory(vertex) failed (%d)\n", result);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    // Map and copy vertex data
+    void* mappedVertexData = nullptr;
+    result = vkMapMemory(m_device->handle, tempVertexMemory, 0, vertexBufferSize, 0, &mappedVertexData);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - vkMapMemory(vertex) failed (%d)\n", result);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    memcpy(mappedVertexData, vertexData, vertexBufferSize);
+    vkUnmapMemory(m_device->handle, tempVertexMemory);
+    
+    // Create temporary index buffer
+    VkBuffer tempIndexBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory tempIndexMemory = VK_NULL_HANDLE;
+    
+    VkBufferCreateInfo indexBufferInfo{};
+    indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    indexBufferInfo.size = indexBufferSize;
+    indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    indexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    result = vkCreateBuffer(m_device->handle, &indexBufferInfo, nullptr, &tempIndexBuffer);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - vkCreateBuffer(index) failed (%d)\n", result);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    VkMemoryRequirements indexMemRequirements;
+    vkGetBufferMemoryRequirements(m_device->handle, tempIndexBuffer, &indexMemRequirements);
+    
+    memTypeIndex = FindMemoryType(m_physical_device->handle, indexMemRequirements.memoryTypeBits,
+                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    if (memTypeIndex == UINT32_MAX) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - No suitable memory type for index buffer\n");
+        vkDestroyBuffer(m_device->handle, tempIndexBuffer, nullptr);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    VkMemoryAllocateInfo indexAllocInfo{};
+    indexAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    indexAllocInfo.allocationSize = indexMemRequirements.size;
+    indexAllocInfo.memoryTypeIndex = memTypeIndex;
+    
+    result = vkAllocateMemory(m_device->handle, &indexAllocInfo, nullptr, &tempIndexMemory);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - vkAllocateMemory(index) failed (%d)\n", result);
+        vkDestroyBuffer(m_device->handle, tempIndexBuffer, nullptr);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    result = vkBindBufferMemory(m_device->handle, tempIndexBuffer, tempIndexMemory, 0);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - vkBindBufferMemory(index) failed (%d)\n", result);
+        vkFreeMemory(m_device->handle, tempIndexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempIndexBuffer, nullptr);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    
+    // Map and copy index data
+    void* mappedIndexData = nullptr;
+    result = vkMapMemory(m_device->handle, tempIndexMemory, 0, indexBufferSize, 0, &mappedIndexData);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] DrawIndexedPrimitiveUP: ERROR - vkMapMemory(index) failed (%d)\n", result);
+        vkFreeMemory(m_device->handle, tempIndexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempIndexBuffer, nullptr);
+        vkFreeMemory(m_device->handle, tempVertexMemory, nullptr);
+        vkDestroyBuffer(m_device->handle, tempVertexBuffer, nullptr);
+        return;
+    }
+    memcpy(mappedIndexData, indexData, indexBufferSize);
+    vkUnmapMemory(m_device->handle, tempIndexMemory);
+    
+    // Bind pipeline
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    
+    // Phase 60: Bind UI push constants if using UI pipeline
+    if (g_usingUIPipeline) {
+        // Determine if texturing is enabled (check texture stage 0)
+        int32_t useTexture = (g_boundTextures[0] != INVALID_HANDLE) ? 1 : 0;
+        
+        // Get alpha test state from render state cache
+        bool alphaTestEnabled = g_renderState.alphaTestEnable;
+        float alphaRef = g_renderState.alphaRef;
+        
+        BindUIPushConstants(cmdBuffer, useTexture, alphaTestEnabled, alphaRef);
+        
+        // Bind texture descriptor set if texturing
+        if (useTexture && g_uiPipelineLayout != VK_NULL_HANDLE) {
+            BindTextureDescriptorSets(cmdBuffer, g_uiPipelineLayout);
+        }
+    }
+    
+    // Bind vertex buffer
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &tempVertexBuffer, offsets);
+    
+    // Bind index buffer (16-bit indices)
+    vkCmdBindIndexBuffer(cmdBuffer, tempIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    
+    // Draw indexed
+    vkCmdDrawIndexed(cmdBuffer, indexCount, 1, 0, minVertexIndex, 0);
+    
+    // Track temporary resources for cleanup after this frame's GPU work completes
+    AddTempBuffer(m_current_frame, tempVertexBuffer, tempVertexMemory);
+    AddTempBuffer(m_current_frame, tempIndexBuffer, tempIndexMemory);
 }
 
 // Phase 59: Render state conversion functions are defined near line 327 (ConvertBlendModeToVkFactor, etc.)
@@ -4500,7 +4950,252 @@ bool VulkanGraphicsDriver::CreateGraphicsPipeline()
     
     fprintf(stderr, "[Vulkan] CreateGraphicsPipeline: SUCCESS - Pipeline created\n");
     g_renderState.dirty = false;  // Mark state as clean after pipeline creation
+    
+    // Phase 60: Create UI pipeline after main pipeline
+    if (!CreateUIPipeline()) {
+        fprintf(stderr, "[Vulkan] WARNING: Failed to create UI pipeline - UI rendering may not work\n");
+        // Continue without UI pipeline - 3D rendering still works
+    }
+    
     return true;
+}
+
+/**
+ * Phase 60: Create UI pipeline for pre-transformed (RHW) vertices
+ * 
+ * UI elements use D3DFVF_XYZRHW vertices that are already in screen coordinates.
+ * This pipeline uses the ui.vert shader to convert screen coords to NDC
+ * and ui.frag shader to handle texture modulation and alpha testing.
+ * 
+ * Vertex format: vec4 position (XYZRHW), vec4 color (DIFFUSE), vec2 texcoord
+ * Push constants: screenSize, useTexture, alphaTest, alphaRef
+ */
+bool VulkanGraphicsDriver::CreateUIPipeline()
+{
+    fprintf(stderr, "[Vulkan] Phase 60: Creating UI pipeline for RHW vertices\n");
+    
+    // Create UI shader modules from embedded SPIR-V
+    g_uiVertShaderModule = CreateShaderModule(m_device->handle,
+        EmbeddedShaders::ui_vert_spv,
+        EmbeddedShaders::ui_vert_spv_len);
+    
+    if (g_uiVertShaderModule == VK_NULL_HANDLE) {
+        fprintf(stderr, "[Vulkan] ERROR: Failed to create UI vertex shader module\n");
+        return false;
+    }
+    
+    g_uiFragShaderModule = CreateShaderModule(m_device->handle,
+        EmbeddedShaders::ui_frag_spv,
+        EmbeddedShaders::ui_frag_spv_len);
+    
+    if (g_uiFragShaderModule == VK_NULL_HANDLE) {
+        fprintf(stderr, "[Vulkan] ERROR: Failed to create UI fragment shader module\n");
+        return false;
+    }
+    
+    fprintf(stderr, "[Vulkan] Phase 60: UI shader modules created\n");
+    
+    // Shader stages
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertShaderStageInfo.module = g_uiVertShaderModule;
+    vertShaderStageInfo.pName = "main";
+    
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragShaderStageInfo.module = g_uiFragShaderModule;
+    fragShaderStageInfo.pName = "main";
+    
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+    
+    // Vertex input: D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1
+    // Layout: vec4 position (16 bytes), vec4 color (4 bytes BGRA), vec2 texcoord (8 bytes)
+    VkVertexInputBindingDescription bindingDesc{};
+    bindingDesc.binding = 0;
+    bindingDesc.stride = 28;  // 16 (pos) + 4 (color) + 8 (texcoord)
+    bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    
+    std::array<VkVertexInputAttributeDescription, 3> attributeDescs{};
+    
+    // Position (vec4 XYZRHW)
+    attributeDescs[0].binding = 0;
+    attributeDescs[0].location = 0;
+    attributeDescs[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescs[0].offset = 0;
+    
+    // Color (BGRA8 -> normalized vec4)
+    attributeDescs[1].binding = 0;
+    attributeDescs[1].location = 1;
+    attributeDescs[1].format = VK_FORMAT_B8G8R8A8_UNORM;
+    attributeDescs[1].offset = 16;
+    
+    // Texture coordinates (vec2)
+    attributeDescs[2].binding = 0;
+    attributeDescs[2].location = 2;
+    attributeDescs[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescs[2].offset = 20;
+    
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDesc;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescs.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescs.data();
+    
+    // Input assembly (triangle list for UI quads)
+    VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+    inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    inputAssembly.primitiveRestartEnable = VK_FALSE;
+    
+    // Viewport (dynamic)
+    VkPipelineViewportStateCreateInfo viewportState{};
+    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportState.viewportCount = 1;
+    viewportState.scissorCount = 1;
+    
+    // Rasterizer - UI doesn't need culling
+    VkPipelineRasterizationStateCreateInfo rasterizer{};
+    rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterizer.depthClampEnable = VK_FALSE;
+    rasterizer.rasterizerDiscardEnable = VK_FALSE;
+    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizer.lineWidth = 1.0f;
+    rasterizer.cullMode = VK_CULL_MODE_NONE;  // UI elements are often double-sided
+    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.depthBiasEnable = VK_FALSE;
+    
+    // Multisampling
+    VkPipelineMultisampleStateCreateInfo multisampling{};
+    multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisampling.sampleShadingEnable = VK_FALSE;
+    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    
+    // Depth/stencil - UI typically drawn on top
+    VkPipelineDepthStencilStateCreateInfo depthStencil{};
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_FALSE;  // UI doesn't use depth test
+    depthStencil.depthWriteEnable = VK_FALSE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+    depthStencil.depthBoundsTestEnable = VK_FALSE;
+    depthStencil.stencilTestEnable = VK_FALSE;
+    
+    // Color blending - enable alpha blending for UI transparency
+    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                          VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachment.blendEnable = VK_TRUE;
+    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    
+    VkPipelineColorBlendStateCreateInfo colorBlending{};
+    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlending.logicOpEnable = VK_FALSE;
+    colorBlending.attachmentCount = 1;
+    colorBlending.pAttachments = &colorBlendAttachment;
+    
+    // Dynamic states
+    std::array<VkDynamicState, 2> dynamicStates = {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR
+    };
+    
+    VkPipelineDynamicStateCreateInfo dynamicState{};
+    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+    dynamicState.pDynamicStates = dynamicStates.data();
+    
+    // Push constant range for UI shader (32 bytes, both stages)
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = UI_PUSH_CONSTANT_SIZE;
+    
+    fprintf(stderr, "[Vulkan] Phase 60: UI push constants size: %u bytes\n", UI_PUSH_CONSTANT_SIZE);
+    
+    // Pipeline layout for UI
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    
+    // Include texture descriptor set layout if available
+    if (g_textureDescriptorSetLayout != VK_NULL_HANDLE) {
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &g_textureDescriptorSetLayout;
+    } else {
+        pipelineLayoutInfo.setLayoutCount = 0;
+        pipelineLayoutInfo.pSetLayouts = nullptr;
+    }
+    
+    VkResult result = vkCreatePipelineLayout(m_device->handle, &pipelineLayoutInfo, nullptr, &g_uiPipelineLayout);
+    if (result != VK_SUCCESS) {
+        fprintf(stderr, "[Vulkan] ERROR: Failed to create UI pipeline layout (result=%d)\n", result);
+        return false;
+    }
+    
+    // Create the UI pipeline
+    VkGraphicsPipelineCreateInfo pipelineInfo{};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssembly;
+    pipelineInfo.pViewportState = &viewportState;
+    pipelineInfo.pRasterizationState = &rasterizer;
+    pipelineInfo.pMultisampleState = &multisampling;
+    pipelineInfo.pDepthStencilState = &depthStencil;
+    pipelineInfo.pColorBlendState = &colorBlending;
+    pipelineInfo.pDynamicState = &dynamicState;
+    pipelineInfo.layout = g_uiPipelineLayout;
+    pipelineInfo.renderPass = m_render_pass->handle;
+    pipelineInfo.subpass = 0;
+    
+    result = vkCreateGraphicsPipelines(m_device->handle, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &g_uiPipeline);
+    if (result != VK_SUCCESS) {
+        fprintf(stderr, "[Vulkan] ERROR: Failed to create UI pipeline (result=%d)\n", result);
+        return false;
+    }
+    
+    fprintf(stderr, "[Vulkan] Phase 60: UI pipeline created successfully\n");
+    return true;
+}
+
+/**
+ * Phase 60: Destroy UI pipeline resources
+ */
+void VulkanGraphicsDriver::DestroyUIPipeline()
+{
+    if (!m_device || m_device->handle == VK_NULL_HANDLE) return;
+    
+    if (g_uiPipeline != VK_NULL_HANDLE) {
+        vkDestroyPipeline(m_device->handle, g_uiPipeline, nullptr);
+        g_uiPipeline = VK_NULL_HANDLE;
+    }
+    
+    if (g_uiPipelineLayout != VK_NULL_HANDLE) {
+        vkDestroyPipelineLayout(m_device->handle, g_uiPipelineLayout, nullptr);
+        g_uiPipelineLayout = VK_NULL_HANDLE;
+    }
+    
+    if (g_uiVertShaderModule != VK_NULL_HANDLE) {
+        vkDestroyShaderModule(m_device->handle, g_uiVertShaderModule, nullptr);
+        g_uiVertShaderModule = VK_NULL_HANDLE;
+    }
+    
+    if (g_uiFragShaderModule != VK_NULL_HANDLE) {
+        vkDestroyShaderModule(m_device->handle, g_uiFragShaderModule, nullptr);
+        g_uiFragShaderModule = VK_NULL_HANDLE;
+    }
+    
+    g_usingUIPipeline = false;
+    fprintf(stderr, "[Vulkan] Phase 60: UI pipeline resources destroyed\n");
 }
 
 /**
@@ -4662,6 +5357,9 @@ void VulkanGraphicsDriver::DestroyGraphicsPipeline()
     
     // Wait for GPU to finish
     vkDeviceWaitIdle(m_device->handle);
+    
+    // Phase 60: Destroy UI pipeline first
+    DestroyUIPipeline();
     
     if (g_graphicsPipeline != VK_NULL_HANDLE) {
         vkDestroyPipeline(m_device->handle, g_graphicsPipeline, nullptr);

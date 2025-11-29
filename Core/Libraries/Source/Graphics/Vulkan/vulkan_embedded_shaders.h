@@ -386,6 +386,12 @@ unsigned char solid_color_frag_spv[] = {
 };
 unsigned int solid_color_frag_spv_len = 508;
 
+// UI vertex shader - consumes RHW vertices, forwards color/texcoord
+#include "shaders/ui_vert_spv.h"
+
+// UI fragment shader - supports textured quads with alpha testing
+#include "shaders/ui_frag_spv.h"
+
 
 }  // namespace EmbeddedShaders
 }  // namespace Graphics

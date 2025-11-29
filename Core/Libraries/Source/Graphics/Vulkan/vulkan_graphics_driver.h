@@ -226,7 +226,9 @@ private:
     bool CreateCommandBuffers();
     void DestroyCommandBuffers();
     bool CreateGraphicsPipeline();
+    bool CreateUIPipeline();  // Phase 60: UI pipeline for RHW vertices
     void DestroyGraphicsPipeline();
+    void DestroyUIPipeline();  // Phase 60: Cleanup UI pipeline
     bool RecreatePipelineIfNeeded();  // Phase 59: Recreate pipeline when render state changes
     bool RecordClearCommand();
 };

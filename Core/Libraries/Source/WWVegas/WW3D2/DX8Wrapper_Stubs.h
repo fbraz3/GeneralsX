@@ -46,6 +46,11 @@ extern void DX8Wrapper_SetIndexBufferInternal(Graphics::IndexBufferHandle handle
 extern void DX8Wrapper_DrawTrianglesInternal(int start_index, int polygon_count, int min_vertex_index, int vertex_count);
 extern void DX8Wrapper_DrawStripInternal(int start_index, int primitive_count, int min_vertex_index, int vertex_count);
 
+// Phase 60: Dynamic buffer data pointers (for DrawIndexedPrimitiveUP)
+extern void DX8Wrapper_SetDynamicVertexBuffer(const void* data, uint32_t vertexCount, uint32_t stride);
+extern void DX8Wrapper_SetDynamicIndexBuffer(const unsigned short* data, int indexCount);
+extern bool DX8Wrapper_HasDynamicBuffers();
+
 // Phase 42: Forward declaration for DX8_CleanupHook interface
 // Full definition appears at end of this file
 class DX8_CleanupHook;
@@ -282,10 +287,10 @@ public:
     // ========================================================================
     static void Set_Vertex_Buffer(void* vb_access) {}
     static void Set_Vertex_Buffer(int stream_number, void* vb_access) {}
-    static void Set_Vertex_Buffer(DynamicVBAccessClass* vb_access) {}  // Phase 39.4: Direct class overload
-    static void Set_Vertex_Buffer(int stream_number, DynamicVBAccessClass* vb_access) {}
-    static void Set_Vertex_Buffer(DynamicVBAccessClass& vb_access) {}  // Phase 39.4: Reference overload
-    static void Set_Vertex_Buffer(int stream_number, DynamicVBAccessClass& vb_access) {}  // Phase 39.4: Reference with stream
+    static void Set_Vertex_Buffer(DynamicVBAccessClass* vb_access);  // Phase 60: Implemented in .cpp
+    static void Set_Vertex_Buffer(int stream_number, DynamicVBAccessClass* vb_access);  // Phase 60: Implemented in .cpp
+    static void Set_Vertex_Buffer(DynamicVBAccessClass& vb_access);  // Phase 60: Implemented in .cpp
+    static void Set_Vertex_Buffer(int stream_number, DynamicVBAccessClass& vb_access);  // Phase 60: Implemented in .cpp
     
     // Phase 56: DX8VertexBufferClass overloads - actual binding to Vulkan driver
     static void Set_Vertex_Buffer(DX8VertexBufferClass* vb);  // Implemented in DX8Wrapper_Stubs.cpp
@@ -293,10 +298,10 @@ public:
     
     static void Set_Index_Buffer(void* ib_access, int start_index) {}
     static void Set_Index_Buffer(int stream_number, void* ib_access, int start_index) {}
-    static void Set_Index_Buffer(DynamicIBAccessClass* ib_access, int start_index) {}  // Phase 39.4: Direct class overload
-    static void Set_Index_Buffer(int stream_number, DynamicIBAccessClass* ib_access, int start_index) {}
-    static void Set_Index_Buffer(DynamicIBAccessClass& ib_access, int start_index) {}  // Phase 39.4: Reference overload
-    static void Set_Index_Buffer(int stream_number, DynamicIBAccessClass& ib_access, int start_index) {}  // Phase 39.4: Reference with stream
+    static void Set_Index_Buffer(DynamicIBAccessClass* ib_access, int start_index);  // Phase 60: Implemented in .cpp
+    static void Set_Index_Buffer(int stream_number, DynamicIBAccessClass* ib_access, int start_index);  // Phase 60: Implemented in .cpp
+    static void Set_Index_Buffer(DynamicIBAccessClass& ib_access, int start_index);  // Phase 60: Implemented in .cpp
+    static void Set_Index_Buffer(int stream_number, DynamicIBAccessClass& ib_access, int start_index);  // Phase 60: Implemented in .cpp
     
     // Phase 56: DX8IndexBufferClass overloads - actual binding to Vulkan driver
     static void Set_Index_Buffer(DX8IndexBufferClass* ib, int start_index);  // Implemented in DX8Wrapper_Stubs.cpp
@@ -739,16 +744,34 @@ public:
         DynamicVBAccessClass* m_vb;
     };
     
+    // Phase 60: Get vertex count for buffer binding
+    int Get_Vertex_Count() const { return m_vertex_count; }
+    
+    // Phase 60: Get raw vertex data pointer
+    const void* Get_Vertex_Data() const { return m_vertices; }
+    
+    // Phase 60: Get vertex stride (size of VertexFormatXYZNDUV2)
+    uint32_t Get_Vertex_Stride() const { return sizeof(VertexFormatXYZNDUV2); }
+    
 private:
     VertexFormatXYZNDUV2* m_vertices;
     int m_vertex_count;
 };
 
-// Dynamic Index Buffer Access Class Stubs
+// Dynamic Index Buffer Access Class - Phase 60: Now allocates real indices
 class DynamicIBAccessClass {
 public:
-    DynamicIBAccessClass(int buffer_type, int index_count) {}
-    virtual ~DynamicIBAccessClass() {}
+    DynamicIBAccessClass(int buffer_type, int index_count) 
+        : m_indices(nullptr), m_index_count(index_count) {
+        // Phase 60: Allocate real index buffer
+        if (index_count > 0) {
+            m_indices = new unsigned short[index_count];
+        }
+    }
+    virtual ~DynamicIBAccessClass() {
+        // Phase 60: Free index buffer
+        delete[] m_indices;
+    }
     
     // Phase 39.4: Reset buffer (no-op for stub)
     void _Reset() {}
@@ -756,12 +779,27 @@ public:
     // Phase 39.4: Static Reset for use without instance (ww3d.cpp line 825)
     static void _Reset(bool force_physical_reset) {}
     
+    // Phase 60: Get index count for buffer binding
+    int Get_Index_Count() const { return m_index_count; }
+    
+    // Phase 60: Get raw index data pointer
+    const unsigned short* Get_Index_Data() const { return m_indices; }
+    
     class WriteLockClass {
     public:
-        WriteLockClass(DynamicIBAccessClass* ib) {}
+        WriteLockClass(DynamicIBAccessClass* ib) : m_ib(ib) {}
         virtual ~WriteLockClass() {}
-        unsigned short* Get_Index_Array() { return nullptr; }
+        unsigned short* Get_Index_Array() { 
+            // Phase 60: Return actual index buffer
+            return m_ib ? m_ib->m_indices : nullptr; 
+        }
+    private:
+        DynamicIBAccessClass* m_ib;
     };
+    
+private:
+    unsigned short* m_indices;
+    int m_index_count;
 };
 
 // Phase 39.4: Base class for index buffers - used by pointgr.cpp

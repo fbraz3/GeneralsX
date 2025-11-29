@@ -3,7 +3,7 @@
 **Phase**: 60
 **Title**: User Interface Rendering and Main Menu Display
 **Duration**: 5-7 days
-**Status**: NOT STARTED
+**Status**: IN PROGRESS
 **Dependencies**: Phase 59 complete (Render states working)
 
 ---
@@ -16,13 +16,51 @@ Phase 60 focuses on getting the game's user interface to render correctly, culmi
 
 - ✅ 3D geometry renders with textures
 - ✅ Transforms and blend modes work
-- ❌ UI elements not visible or incorrect
-- ❌ Main menu not appearing
-- ❌ Text rendering not working
+- ✅ Dynamic vertex/index buffer support (DrawIndexedPrimitiveUP)
+- ✅ UI pipeline created for RHW vertices
+- ⏳ UI elements rendering in progress
+- ⏳ Main menu appearing (needs verification)
+- ⏳ Text rendering not verified
 
 ### Goal
 
 Display the main menu with all buttons, text, and UI elements functional.
+
+---
+
+## Implementation Progress (November 29, 2025)
+
+### Completed
+
+1. **UI Pipeline with RHW Vertex Support**
+   - Created `CreateUIPipeline()` with separate shaders
+   - UI vertex shader handles screen-space coordinates
+   - Push constants: screenWidth, screenHeight, useTexture, alphaThreshold
+   - Automatically selected when FVF has D3DFVF_XYZRHW flag
+
+2. **Dynamic Buffer Support**
+   - `DynamicVBAccessClass` now allocates real vertex memory
+   - `DynamicIBAccessClass` now allocates real index memory
+   - `Set_Vertex_Buffer(DynamicVBAccessClass&)` stores data pointer
+   - `Set_Index_Buffer(DynamicIBAccessClass&)` stores data pointer
+
+3. **DrawIndexedPrimitiveUP Integration**
+   - `Draw_Triangles` detects dynamic buffers
+   - Routes to `DrawIndexedPrimitiveUP` for immediate rendering
+   - Creates temporary Vulkan buffers per-frame
+   - Automatic cleanup in next frame's BeginFrame
+
+4. **Testing Results**
+   - Game runs 30+ seconds without crashes
+   - `DrawIndexedPrimitiveUP` called with stride=44 (VertexFormatXYZNDUV2)
+   - Multiple frames presented successfully
+
+### Key Discovery
+
+The game's `Render2DClass` uses **matrix-transformed XYZ vertices** (stride 44), not pre-transformed RHW vertices (stride 28). This means:
+- The standard 3D pipeline handles UI rendering
+- Orthographic projection matrix transforms screen coordinates
+- RHW pipeline would be used for different rendering paths
 
 ---
 

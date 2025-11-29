@@ -268,11 +268,55 @@ SurfaceClass* DX8Wrapper::_Get_DX8_Back_Buffer()
 // Phase 56: Buffer Binding Functions
 // ============================================================================
 
+// ============================================================================
+// Phase 60: Dynamic Buffer Support for DrawIndexedPrimitiveUP
+// ============================================================================
+
+// Storage for dynamic buffer data
+static const void* g_dynamicVertexData = nullptr;
+static uint32_t g_dynamicVertexCount = 0;
+static uint32_t g_dynamicVertexStride = 0;
+static const unsigned short* g_dynamicIndexData = nullptr;
+static int g_dynamicIndexCount = 0;
+
+/**
+ * Phase 60: Store dynamic vertex buffer data for later use in Draw_Triangles
+ */
+void DX8Wrapper_SetDynamicVertexBuffer(const void* data, uint32_t vertexCount, uint32_t stride) {
+    g_dynamicVertexData = data;
+    g_dynamicVertexCount = vertexCount;
+    g_dynamicVertexStride = stride;
+}
+
+/**
+ * Phase 60: Store dynamic index buffer data for later use in Draw_Triangles
+ */
+void DX8Wrapper_SetDynamicIndexBuffer(const unsigned short* data, int indexCount) {
+    g_dynamicIndexData = data;
+    g_dynamicIndexCount = indexCount;
+}
+
+/**
+ * Phase 60: Check if dynamic buffers are set (for DrawIndexedPrimitiveUP path)
+ */
+bool DX8Wrapper_HasDynamicBuffers() {
+    return g_dynamicVertexData != nullptr && g_dynamicIndexData != nullptr;
+}
+
+// ============================================================================
+// Phase 56: Internal Buffer Binding Functions
+// ============================================================================
+
 /**
  * Internal function to bind a vertex buffer to the graphics driver
  * Called by DX8Wrapper::Set_Vertex_Buffer static functions
  */
 void DX8Wrapper_SetVertexBufferInternal(Graphics::VertexBufferHandle handle, uint32_t stride) {
+    // Phase 60: Clear dynamic buffers when using static buffers
+    g_dynamicVertexData = nullptr;
+    g_dynamicVertexCount = 0;
+    g_dynamicVertexStride = 0;
+    
     if (g_graphics_driver != nullptr) {
         g_graphics_driver->SetVertexStreamSource(0, handle, 0, stride);
     }
@@ -283,30 +327,60 @@ void DX8Wrapper_SetVertexBufferInternal(Graphics::VertexBufferHandle handle, uin
  * Called by DX8Wrapper::Set_Index_Buffer static functions
  */
 void DX8Wrapper_SetIndexBufferInternal(Graphics::IndexBufferHandle handle, uint32_t startIndex) {
+    // Phase 60: Clear dynamic buffers when using static buffers
+    g_dynamicIndexData = nullptr;
+    g_dynamicIndexCount = 0;
+    
     if (g_graphics_driver != nullptr) {
         g_graphics_driver->SetIndexBuffer(handle, startIndex);
     }
 }
 
 /**
- * Phase 56: Draw triangles using current bound buffers
+ * Phase 56/60: Draw triangles using current bound buffers
  * This is the real implementation that replaces the empty stub
+ * 
+ * Phase 60: Now detects dynamic buffers and uses DrawIndexedPrimitiveUP
  */
 void DX8Wrapper_DrawTrianglesInternal(int start_index, int polygon_count, int min_vertex_index, int vertex_count) {
-    if (g_graphics_driver != nullptr) {
-        // For indexed drawing: polygon_count * 3 = index count for triangles
-        uint32_t index_count = (uint32_t)(polygon_count * 3);
+    if (g_graphics_driver == nullptr) return;
+    
+    // Phase 60: Check if we have dynamic buffers set (from DynamicVBAccessClass/DynamicIBAccessClass)
+    if (g_dynamicVertexData != nullptr && g_dynamicIndexData != nullptr) {
+        // Use DrawIndexedPrimitiveUP for dynamic buffers
+        // This uploads data directly without needing pre-allocated GPU buffers
         
-        // Note: We use DrawIndexedPrimitive here as Draw_Triangles typically uses index buffers
-        // The index buffer handle was set previously via Set_Index_Buffer
-        // We pass INVALID_HANDLE and let the driver use the currently bound buffer
-        g_graphics_driver->DrawIndexedPrimitive(
+        g_graphics_driver->DrawIndexedPrimitiveUP(
             Graphics::PrimitiveType::TriangleList,
-            index_count,
-            Graphics::INVALID_HANDLE,  // Use currently bound index buffer
-            (uint32_t)start_index
+            (uint32_t)min_vertex_index,     // minVertexIndex
+            (uint32_t)vertex_count,          // vertexCount
+            (uint32_t)polygon_count,         // primCount (triangles)
+            g_dynamicIndexData,              // indexData
+            g_dynamicVertexData,             // vertexData
+            g_dynamicVertexStride            // vertexStride
         );
+        
+        // Clear dynamic buffers after use to avoid stale data
+        g_dynamicVertexData = nullptr;
+        g_dynamicVertexCount = 0;
+        g_dynamicVertexStride = 0;
+        g_dynamicIndexData = nullptr;
+        g_dynamicIndexCount = 0;
+        return;
     }
+    
+    // For indexed drawing with static buffers: polygon_count * 3 = index count for triangles
+    uint32_t index_count = (uint32_t)(polygon_count * 3);
+    
+    // Note: We use DrawIndexedPrimitive here as Draw_Triangles typically uses index buffers
+    // The index buffer handle was set previously via Set_Index_Buffer
+    // We pass INVALID_HANDLE and let the driver use the currently bound buffer
+    g_graphics_driver->DrawIndexedPrimitive(
+        Graphics::PrimitiveType::TriangleList,
+        index_count,
+        Graphics::INVALID_HANDLE,  // Use currently bound index buffer
+        (uint32_t)start_index
+    );
 }
 
 /**
@@ -366,4 +440,63 @@ void DX8Wrapper::Set_Index_Buffer(DX8IndexBufferClass* ib, int start_index) {
 void DX8Wrapper::Set_Index_Buffer(int stream_number, DX8IndexBufferClass* ib, int start_index) {
     // Stream number is ignored for now
     Set_Index_Buffer(ib, start_index);
+}
+// ============================================================================
+// Phase 60: DynamicVBAccessClass and DynamicIBAccessClass Buffer Binding
+// ============================================================================
+
+/**
+ * Bind a DynamicVBAccessClass to store vertex data for DrawIndexedPrimitiveUP
+ */
+void DX8Wrapper::Set_Vertex_Buffer(DynamicVBAccessClass* vb_access) {
+    if (vb_access != nullptr) {
+        DX8Wrapper_SetDynamicVertexBuffer(
+            vb_access->Get_Vertex_Data(),
+            vb_access->Get_Vertex_Count(),
+            vb_access->Get_Vertex_Stride()
+        );
+    }
+}
+
+void DX8Wrapper::Set_Vertex_Buffer(int stream_number, DynamicVBAccessClass* vb_access) {
+    Set_Vertex_Buffer(vb_access);
+}
+
+void DX8Wrapper::Set_Vertex_Buffer(DynamicVBAccessClass& vb_access) {
+    DX8Wrapper_SetDynamicVertexBuffer(
+        vb_access.Get_Vertex_Data(),
+        vb_access.Get_Vertex_Count(),
+        vb_access.Get_Vertex_Stride()
+    );
+}
+
+void DX8Wrapper::Set_Vertex_Buffer(int stream_number, DynamicVBAccessClass& vb_access) {
+    Set_Vertex_Buffer(vb_access);
+}
+
+/**
+ * Bind a DynamicIBAccessClass to store index data for DrawIndexedPrimitiveUP
+ */
+void DX8Wrapper::Set_Index_Buffer(DynamicIBAccessClass* ib_access, int start_index) {
+    if (ib_access != nullptr) {
+        DX8Wrapper_SetDynamicIndexBuffer(
+            ib_access->Get_Index_Data(),
+            ib_access->Get_Index_Count()
+        );
+    }
+}
+
+void DX8Wrapper::Set_Index_Buffer(int stream_number, DynamicIBAccessClass* ib_access, int start_index) {
+    Set_Index_Buffer(ib_access, start_index);
+}
+
+void DX8Wrapper::Set_Index_Buffer(DynamicIBAccessClass& ib_access, int start_index) {
+    DX8Wrapper_SetDynamicIndexBuffer(
+        ib_access.Get_Index_Data(),
+        ib_access.Get_Index_Count()
+    );
+}
+
+void DX8Wrapper::Set_Index_Buffer(int stream_number, DynamicIBAccessClass& ib_access, int start_index) {
+    Set_Index_Buffer(ib_access, start_index);
 }
