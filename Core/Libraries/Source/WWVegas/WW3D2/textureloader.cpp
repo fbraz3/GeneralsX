@@ -753,28 +753,54 @@ void TextureLoader::Flush_Pending_Load_Tasks()
 	}
 }
 
-void TextureLoader::Update()
+void TextureLoader::Update(void(*network_callback)(void))
 {
+	static int update_count = 0;
+	if (update_count < 5) {
+		fprintf(stderr, "[Phase 54] TextureLoader::Update - START count=%d, callback=%p\n", update_count, (void*)network_callback);
+		fflush(stderr);
+	}
 	WWASSERT_PRINT(DX8Wrapper::_Get_Main_Thread_ID()==ThreadClass::_Get_Current_Thread_ID(),"TextureLoader::Update must be called from the main thread!");
 
+	if (update_count < 5) {
+		fprintf(stderr, "[Phase 54] TextureLoader::Update - Processing deferred tasks\n");
+		fflush(stderr);
+	}
 	while (TextureLoadTaskClass* task=Get_Deferred_Task()) {
 		task->Begin_Texture_Load();	// This will add the task to load list
 	}
 
+	if (update_count < 5) {
+		fprintf(stderr, "[Phase 54] TextureLoader::Update - Processing finished tasks\n");
+		fflush(stderr);
+	}
 	while (TextureLoadTaskClass* task=Get_Finished_Task()) {
 		task->End_Load();
 		task->Apply(true);
 		TextureLoadTaskClass::Release_Instance(task);
 	}
 
+	if (update_count < 5) {
+		fprintf(stderr, "[Phase 54] TextureLoader::Update - Processing thumbnail tasks\n");
+		fflush(stderr);
+	}
 	while (TextureLoadTaskClass* task=Get_Thumbnail_Task()) {
 		task->Begin_Thumbnail_Load();
 	}
 
+	if (update_count < 5) {
+		fprintf(stderr, "[Phase 54] TextureLoader::Update - Processing delete list\n");
+		fflush(stderr);
+	}
 	while (TextureLoadTaskClass* task=Get_Task_From_Delete_List()) {
 //		delete task;
 		TextureLoadTaskClass::Release_Instance(task);
 	}
+	if (update_count < 5) {
+		fprintf(stderr, "[Phase 54] TextureLoader::Update - DONE count=%d\n", update_count);
+		fflush(stderr);
+	}
+	update_count++;
 }
 
 // ----------------------------------------------------------------------------
@@ -1037,12 +1063,19 @@ void TextureLoadTaskClass::Deinit()
 
 void TextureLoadTaskClass::Begin_Texture_Load()
 {
+	fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] ENTER for texture: %s\n", 
+		Texture ? (Texture->Get_Full_Path() ? Texture->Get_Full_Path().str() : "NULL_PATH") : "NULL_TEXTURE");
+	fflush(stderr);
+	
 	// If we're in main thread, init for loading and add to the load list
 	if (ThreadClass::_Get_Current_Thread_ID()==DX8Wrapper::_Get_Main_Thread_ID()) {
+		fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] In main thread\n"); fflush(stderr);
 
 		bool loaded=false;
 		if (Texture->Is_Compression_Allowed()) {
+			fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] Compression allowed, trying DDS...\n"); fflush(stderr);
 			DDSFileClass dds_file(Texture->Get_Full_Path(),Get_Reduction());
+			fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] DDS file created, checking availability...\n"); fflush(stderr);
 			if (dds_file.Is_Available()) {
 				// Destination size will be the next power of two square from the larger width and height...
 				unsigned width=0, height=0, depth=1;
@@ -1089,7 +1122,9 @@ void TextureLoadTaskClass::Begin_Texture_Load()
 				}
 				if (mip_level_count>max_mip_level_count) mip_level_count=max_mip_level_count;
 
+				fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] Creating DX8 texture %ux%u, format=%d, mips=%u\n", Width, Height, Format, mip_level_count); fflush(stderr);
 				D3DTexture=DX8Wrapper::_Create_DX8_Texture(Width,Height,Format,(MipCountType)mip_level_count);
+				fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] DX8 texture created: %p\n", D3DTexture); fflush(stderr);
 				MipLevelCount=mip_level_count;
 				//Texture->MipLevelCount);
 				loaded=true;
@@ -1097,8 +1132,11 @@ void TextureLoadTaskClass::Begin_Texture_Load()
 		}
 
 		if (!loaded) {
+			fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] DDS not loaded, trying TGA...\n"); fflush(stderr);
 			Targa targa;
+			fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] Opening TGA: %s\n", Texture->Get_Full_Path() ? Texture->Get_Full_Path().str() : "NULL"); fflush(stderr);
 			if (TARGA_ERROR_HANDLER(targa.Open(Texture->Get_Full_Path(), TGA_READMODE),Texture->Get_Full_Path())) {
+				fprintf(stderr, "[TextureLoadTask::Begin_Texture_Load] TGA open FAILED, using missing texture\n"); fflush(stderr);
 				D3DTexture=MissingTexture::_Get_Missing_Texture();
 				HasFailed=true;
 				IsLoading=false;

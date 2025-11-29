@@ -551,8 +551,17 @@ void GameEngine::init()
 		fprintf(stderr, "GameEngine::init() - About to init TheAudio\n"); fflush(stderr);
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheAudio initialized successfully\n"); fflush(stderr);
+		// Phase 54: On non-Windows platforms (macOS/Linux), music files are inside .big archives
+		// and isMusicAlreadyLoaded() may return false. Don't quit the game in this case.
+#if defined(_WIN32)
 		if (!TheAudio->isMusicAlreadyLoaded())
 			setQuitting(TRUE);
+#else
+		if (!TheAudio->isMusicAlreadyLoaded()) {
+			fprintf(stderr, "GameEngine::init() - WARNING: Music not loaded from disk, but continuing on non-Windows platform\n");
+			fflush(stderr);
+		}
+#endif
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -991,18 +1000,40 @@ DECLARE_PERF_TIMER(GameEngine_update)
  */
 void GameEngine::update( void )
 {
+	// Phase 54: Debug log
+	static int updateCount = 0;
+	if (updateCount < 3) {
+		fprintf(stderr, "GameEngine::update() - Starting update #%d\n", updateCount);
+		fflush(stderr);
+	}
+
 	USE_PERF_TIMER(GameEngine_update)
 	{
 		{
 			// VERIFY CRC needs to be in this code block.  Please to not pull TheGameLogic->update() inside this block.
 			VERIFY_CRC
 
+			if (updateCount < 3) {
+				fprintf(stderr, "GameEngine::update() - About to call TheRadar->UPDATE()\n");
+				fflush(stderr);
+			}
 			TheRadar->UPDATE();
 
 			/// @todo Move audio init, update, etc, into GameClient update
-
+			if (updateCount < 3) {
+				fprintf(stderr, "GameEngine::update() - About to call TheAudio->UPDATE()\n");
+				fflush(stderr);
+			}
 			TheAudio->UPDATE();
+			if (updateCount < 3) {
+				fprintf(stderr, "GameEngine::update() - About to call TheGameClient->UPDATE()\n");
+				fflush(stderr);
+			}
 			TheGameClient->UPDATE();
+			if (updateCount < 3) {
+				fprintf(stderr, "GameEngine::update() - About to call TheMessageStream->propagateMessages()\n");
+				fflush(stderr);
+			}
 			TheMessageStream->propagateMessages();
 
 			if (TheNetwork != NULL)
@@ -1016,6 +1047,12 @@ void GameEngine::update( void )
 		const Bool canUpdate = canUpdateGameLogic();
 		const Bool canUpdateLogic = canUpdate && !TheFramePacer->isGameHalted() && !TheFramePacer->isTimeFrozen();
 		const Bool canUpdateScript = canUpdate && !TheFramePacer->isGameHalted();
+
+		if (updateCount < 3) {
+			fprintf(stderr, "GameEngine::update() - canUpdate=%d, canUpdateLogic=%d, canUpdateScript=%d\n", canUpdate, canUpdateLogic, canUpdateScript);
+			fflush(stderr);
+			updateCount++;
+		}
 
 		if (canUpdateLogic)
 		{
@@ -1039,6 +1076,11 @@ extern bool DX8Wrapper_IsWindowed;
  */
 void GameEngine::execute( void )
 {
+	// Phase 54: Debug log for execute loop
+	fprintf(stderr, "GameEngine::execute() - Entering main loop, m_quitting=%d\n", m_quitting ? 1 : 0);
+	fflush(stderr);
+	int frameCount = 0;
+
 #if defined(RTS_DEBUG)
 	DWORD startTime = timeGetTime() / 1000;
 #endif
@@ -1046,6 +1088,11 @@ void GameEngine::execute( void )
 	// pretty basic for now
 	while( !m_quitting )
 	{
+		// Phase 54: Log first few frames
+		if (frameCount < 5) {
+			fprintf(stderr, "GameEngine::execute() - Frame %d starting\n", frameCount);
+			fflush(stderr);
+		}
 
 		//if (TheGlobalData->m_vTune)
 		{
@@ -1106,6 +1153,13 @@ void GameEngine::execute( void )
 					RELEASE_CRASH(("Uncaught Exception in GameEngine::update"));
 				}
 			}
+
+			// Phase 54: Log after update
+			if (frameCount < 5) {
+				fprintf(stderr, "GameEngine::execute() - Frame %d update() completed, m_quitting=%d\n", frameCount, m_quitting ? 1 : 0);
+				fflush(stderr);
+			}
+			frameCount++;
 
 			TheFramePacer->update();
 		}

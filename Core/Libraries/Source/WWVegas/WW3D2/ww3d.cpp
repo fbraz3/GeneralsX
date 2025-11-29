@@ -820,6 +820,12 @@ void WW3D::Set_Texture_Filter(int texture_filter)
  *=============================================================================================*/
 WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, float dest_alpha, void(*network_callback)(void))
 {
+	static int frame_count = 0;
+	if (frame_count < 3) {
+		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - START frame=%d, IsInitted=%d\n", frame_count, IsInitted);
+		fflush(stderr);
+	}
+	
 	if (!IsInitted) {
 		return(WW3D_ERROR_OK);
 	}
@@ -832,6 +838,10 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 	SNAPSHOT_SAY(("========== WW3D::Begin_Render ============"));
 	SNAPSHOT_SAY(("==========================================\n"));
 
+	if (frame_count < 3) {
+		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Checking device cooperative level\n");
+		fflush(stderr);
+	}
 	if (DX8Wrapper::_Get_D3D_Device8() && (hr=DX8Wrapper::_Get_D3D_Device8()->TestCooperativeLevel()) != D3D_OK)
 	{
         // If the device was lost, do not render until we get it back
@@ -848,16 +858,32 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 		return WW3D_ERROR_GENERIC;
 	}
 
+	if (frame_count < 3) {
+		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Device check passed, updating memory stats\n");
+		fflush(stderr);
+	}
 	// Memory allocation statistics
 	LastFrameMemoryAllocations=WWMemoryLogClass::Get_Allocate_Count();
 	LastFrameMemoryFrees=WWMemoryLogClass::Get_Free_Count();
 	WWMemoryLogClass::Reset_Counters();
 
+	if (frame_count < 3) {
+		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Calling TextureLoader::Update\n");
+		fflush(stderr);
+	}
 	TextureLoader::Update(network_callback);
 //	TextureClass::_Reset_Time_Stamp();
+	if (frame_count < 3) {
+		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Resetting DynamicVB/IB\n");
+		fflush(stderr);
+	}
 	DynamicVBAccessClass::_Reset(true);
 	DynamicIBAccessClass::_Reset(true);
 
+	if (frame_count < 3) {
+		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Debug_Statistics::Begin_Statistics\n");
+		fflush(stderr);
+	}
 	Debug_Statistics::Begin_Statistics();
 
 	if (IsCapturing && (!PauseRecord || RecordNextFrame)) {
@@ -870,6 +896,10 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 
 	// If we want to clear the screen, we need to set the viewport to include the entire screen:
 	if (clear || clearz) {
+		if (frame_count < 3) {
+			fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Setting viewport and clearing\n");
+			fflush(stderr);
+		}
 		D3DVIEWPORT8 vp;
 		int width, height, bits;
 		bool windowed;
@@ -881,12 +911,25 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 		vp.MinZ = 0.0f;;
 		vp.MaxZ = 1.0f;
 		DX8Wrapper::Set_Viewport(&vp);
+		if (frame_count < 3) {
+			fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Calling DX8Wrapper::Clear\n");
+			fflush(stderr);
+		}
 		DX8Wrapper::Clear(clear, clearz, color, dest_alpha);
 	}
 
+	if (frame_count < 3) {
+		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Calling DX8Wrapper::Begin_Scene\n");
+		fflush(stderr);
+	}
 	// Notify D3D that we are beginning to render the frame
 	DX8Wrapper::Begin_Scene();
 
+	if (frame_count < 3) {
+		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - SUCCESS, frame=%d\n", frame_count);
+		fflush(stderr);
+	}
+	frame_count++;
 	return WW3D_ERROR_OK;
 }
 

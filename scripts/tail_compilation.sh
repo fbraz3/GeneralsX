@@ -27,7 +27,10 @@ else
 fi
 
 CURRENT_LOG="$LOG_FILE"
+LOG_BASENAME=$(basename "$CURRENT_LOG")
 LAST_INODE=$(stat -f '%i' "$CURRENT_LOG" 2>/dev/null || stat -c '%i' "$CURRENT_LOG" 2>/dev/null)
+LAST_SIZE=$(stat -f '%z' "$CURRENT_LOG" 2>/dev/null || stat -c '%s' "$CURRENT_LOG" 2>/dev/null)
+STALLED_CHECK_COUNT=0
 MONITOR_PID=""
 
 stop_monitor() {
@@ -37,26 +40,62 @@ stop_monitor() {
     fi
 }
 
+find_active_log() {
+    ps aux | grep tee | grep -v grep | awk '{print $NF}' | while read log; do
+        if [ -f "$log" ]; then
+            echo "$log"
+        fi
+    done | head -1
+}
+
 trap stop_monitor EXIT
 
 while true; do
     stop_monitor
     
     NEW_INODE=$(stat -f '%i' "$CURRENT_LOG" 2>/dev/null || stat -c '%i' "$CURRENT_LOG" 2>/dev/null)
+    NEW_SIZE=$(stat -f '%z' "$CURRENT_LOG" 2>/dev/null || stat -c '%s' "$CURRENT_LOG" 2>/dev/null)
     
     if [ "$NEW_INODE" != "$LAST_INODE" ]; then
         echo ""
         echo ">>> Log file changed (inode: $LAST_INODE → $NEW_INODE)."
         LAST_INODE="$NEW_INODE"
+        LAST_SIZE="$NEW_SIZE"
+        STALLED_CHECK_COUNT=0
+    fi
+    
+    # Detecta arquivo stalled (tamanho não mudou) e procura por um novo log ativo
+    if [ "$NEW_SIZE" = "$LAST_SIZE" ]; then
+        ((STALLED_CHECK_COUNT++))
+        
+        if [ "$STALLED_CHECK_COUNT" -ge 3 ]; then
+            ACTIVE_LOG=$(find_active_log)
+            
+            if [ -n "$ACTIVE_LOG" ] && [ "$ACTIVE_LOG" != "$CURRENT_LOG" ]; then
+                echo ""
+                echo ">>> Current log is stalled (size unchanged for 15s). Switching to active log: $ACTIVE_LOG"
+                CURRENT_LOG="$ACTIVE_LOG"
+                LOG_BASENAME=$(basename "$CURRENT_LOG")
+                LAST_INODE=$(stat -f '%i' "$CURRENT_LOG" 2>/dev/null || stat -c '%i' "$CURRENT_LOG" 2>/dev/null)
+                LAST_SIZE=$(stat -f '%z' "$CURRENT_LOG" 2>/dev/null || stat -c '%s' "$CURRENT_LOG" 2>/dev/null)
+                STALLED_CHECK_COUNT=0
+            fi
+        fi
+    else
+        LAST_SIZE="$NEW_SIZE"
+        STALLED_CHECK_COUNT=0
     fi
     
     if [ ! -f "$CURRENT_LOG" ]; then
         if [ "$AUTO_DETECT" = true ]; then
-            NEW_LOG=$(ps aux | grep tee | grep -v grep | awk '{print $NF}')
+            NEW_LOG=$(find_active_log)
             if [ -n "$NEW_LOG" ] && [ "$NEW_LOG" != "$CURRENT_LOG" ]; then
                 echo ">>> Found new log file: $NEW_LOG"
                 CURRENT_LOG="$NEW_LOG"
+                LOG_BASENAME=$(basename "$CURRENT_LOG")
                 LAST_INODE=$(stat -f '%i' "$CURRENT_LOG" 2>/dev/null || stat -c '%i' "$CURRENT_LOG" 2>/dev/null)
+                LAST_SIZE=$(stat -f '%z' "$CURRENT_LOG" 2>/dev/null || stat -c '%s' "$CURRENT_LOG" 2>/dev/null)
+                STALLED_CHECK_COUNT=0
             else
                 echo "Error: Could not find new log file."
                 exit 1
@@ -68,7 +107,7 @@ while true; do
     fi
     
     tail -f "$CURRENT_LOG" | grep --line-buffered "Building CXX object" | \
-    gawk '{
+    gawk -v log_name="$LOG_BASENAME" '{
         if (match($0, /\[([0-9]+)\/([0-9]+)\]/, m)) {
             current = m[1]; total = m[2];
             percent = int(current / total * 100);
@@ -77,7 +116,7 @@ while true; do
             bar = "";
             for (i = 0; i < filled; i++) bar = bar "#";
             for (i = filled; i < bar_len; i++) bar = bar "-";
-            printf "\r[%s] %3d%% (%d/%d)", bar, percent, current, total;
+            printf "\r%s [%s] %3d%% (%d/%d)", log_name, bar, percent, current, total;
             fflush(stdout);
         }
     }' &

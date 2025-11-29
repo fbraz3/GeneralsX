@@ -32,10 +32,19 @@
 // Forward declare to avoid header dependencies
 namespace Graphics {
     class IGraphicsDriver;
+    // Phase 56: Buffer handle types
+    using VertexBufferHandle = uint64_t;
+    using IndexBufferHandle = uint64_t;
 }
 
 // Phase 41 Week 3: Get the current graphics driver instance (from DX8Wrapper_Stubs.cpp)
 extern Graphics::IGraphicsDriver* GetCurrentGraphicsDriver();
+
+// Phase 56: Internal buffer binding functions (implemented in DX8Wrapper_Stubs.cpp)
+extern void DX8Wrapper_SetVertexBufferInternal(Graphics::VertexBufferHandle handle, uint32_t stride);
+extern void DX8Wrapper_SetIndexBufferInternal(Graphics::IndexBufferHandle handle, uint32_t startIndex);
+extern void DX8Wrapper_DrawTrianglesInternal(int start_index, int polygon_count, int min_vertex_index, int vertex_count);
+extern void DX8Wrapper_DrawStripInternal(int start_index, int primitive_count, int min_vertex_index, int vertex_count);
 
 // Phase 42: Forward declaration for DX8_CleanupHook interface
 // Full definition appears at end of this file
@@ -159,6 +168,11 @@ class LightClass;
 class DynamicVBAccessClass;
 class DynamicIBAccessClass;
 
+// Phase 56: Forward declarations for Vulkan buffer classes
+// Real implementations are in dx8buffer_compat.h
+class DX8VertexBufferClass;
+class DX8IndexBufferClass;
+
 // Stub IDirect3DDevice8 (Phase 39.4: TestCooperativeLevel stub for ww3d.cpp line 801)
 class IDirect3DDevice8Stub {
 public:
@@ -273,22 +287,39 @@ public:
     static void Set_Vertex_Buffer(DynamicVBAccessClass& vb_access) {}  // Phase 39.4: Reference overload
     static void Set_Vertex_Buffer(int stream_number, DynamicVBAccessClass& vb_access) {}  // Phase 39.4: Reference with stream
     
+    // Phase 56: DX8VertexBufferClass overloads - actual binding to Vulkan driver
+    static void Set_Vertex_Buffer(DX8VertexBufferClass* vb);  // Implemented in DX8Wrapper_Stubs.cpp
+    static void Set_Vertex_Buffer(int stream_number, DX8VertexBufferClass* vb);  // Implemented in DX8Wrapper_Stubs.cpp
+    
     static void Set_Index_Buffer(void* ib_access, int start_index) {}
     static void Set_Index_Buffer(int stream_number, void* ib_access, int start_index) {}
     static void Set_Index_Buffer(DynamicIBAccessClass* ib_access, int start_index) {}  // Phase 39.4: Direct class overload
     static void Set_Index_Buffer(int stream_number, DynamicIBAccessClass* ib_access, int start_index) {}
     static void Set_Index_Buffer(DynamicIBAccessClass& ib_access, int start_index) {}  // Phase 39.4: Reference overload
     static void Set_Index_Buffer(int stream_number, DynamicIBAccessClass& ib_access, int start_index) {}  // Phase 39.4: Reference with stream
+    
+    // Phase 56: DX8IndexBufferClass overloads - actual binding to Vulkan driver
+    static void Set_Index_Buffer(DX8IndexBufferClass* ib, int start_index);  // Implemented in DX8Wrapper_Stubs.cpp
+    static void Set_Index_Buffer(int stream_number, DX8IndexBufferClass* ib, int start_index);  // Implemented in DX8Wrapper_Stubs.cpp
 
     // ========================================================================
     // Rendering Calls
     // ========================================================================
     static void Draw_Triangles(int start_index, int polygon_count, int min_vertex_index, 
-                               int vertex_count) {}
+                               int vertex_count) {
+        // Phase 56: Call internal implementation
+        DX8Wrapper_DrawTrianglesInternal(start_index, polygon_count, min_vertex_index, vertex_count);
+    }
     static void Draw_Triangles(unsigned int buffer_type, int start_index, int polygon_count,
-                               int min_vertex_index, int vertex_count) {}
+                               int min_vertex_index, int vertex_count) {
+        // Phase 56: Call internal implementation (buffer_type ignored for now)
+        DX8Wrapper_DrawTrianglesInternal(start_index, polygon_count, min_vertex_index, vertex_count);
+    }
     // Draw a triangle strip primitive
-    static void Draw_Strip(int start_index, int primitive_count, int min_vertex_index, int vertex_count) {}
+    static void Draw_Strip(int start_index, int primitive_count, int min_vertex_index, int vertex_count) {
+        // Phase 56: Call internal implementation
+        DX8Wrapper_DrawStripInternal(start_index, primitive_count, min_vertex_index, vertex_count);
+    }
 
     // ========================================================================
     // Texture Operations (Phase 51: Real implementations)

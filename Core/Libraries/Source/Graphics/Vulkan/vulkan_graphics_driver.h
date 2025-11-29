@@ -97,6 +97,7 @@ public:
     virtual bool SetVertexFormat(VertexFormatHandle handle) override;
     virtual bool SetVertexStreamSource(uint32_t streamIndex, VertexBufferHandle vbHandle,
                                       uint32_t offset, uint32_t stride) override;
+    virtual bool SetIndexBuffer(IndexBufferHandle ibHandle, uint32_t startIndex) override;
 
     // ===== TEXTURE MANAGEMENT =====
     virtual TextureHandle CreateTexture(const TextureDescriptor& desc, const void* initialData) override;
@@ -207,11 +208,26 @@ private:
     std::unique_ptr<VulkanRenderPass> m_render_pass;
     // Command pool and descriptor pool defined in .cpp - not exposed in header
     
+    // Phase 54: Frame rendering infrastructure
+    static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+    uint32_t m_current_frame;
+    uint32_t m_current_image_index;
+    bool m_frame_started;
+    
     // State caching
+    Color m_clear_color;  // Moved before frame vars to match initializer order
     std::vector<uint64_t> m_render_state_cache;
     std::vector<TextureHandle> m_bound_textures;
-    Color m_clear_color;
     Viewport m_viewport;
+    
+    // Phase 54: Pipeline and rendering helpers (implemented in .cpp)
+    bool CreateSyncObjects();
+    void DestroySyncObjects();
+    bool CreateCommandBuffers();
+    void DestroyCommandBuffers();
+    bool CreateGraphicsPipeline();
+    void DestroyGraphicsPipeline();
+    bool RecordClearCommand();
 };
 
 /**

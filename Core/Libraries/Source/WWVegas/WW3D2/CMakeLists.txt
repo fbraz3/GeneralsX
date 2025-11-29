@@ -199,6 +199,7 @@ set(WW3D2_SRC
     texturefilter.h
     # textureloader.cpp  # Phase 42: Temporarily commented - TextureLoadTaskClass and ThumbnailClass API incompatibilities
     textureloader.h
+    textureloader_stub.cpp  # Phase 54: Minimal stub for TextureLoader::Update
     # texturethumbnail.cpp  # Phase 42: Temporarily commented - ThumbnailClass constructor/method incompatibilities
     texturethumbnail.h
     vertmaterial.cpp

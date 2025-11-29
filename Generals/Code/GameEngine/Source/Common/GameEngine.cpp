@@ -437,8 +437,17 @@ void GameEngine::init()
 		TheGlobalLanguageData->parseCustomDefinition();
 		initSubsystem(TheCDManager,"TheCDManager", CreateCDManager(), NULL);
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
+		// Phase 54: On non-Windows platforms (macOS/Linux), music files are inside .big archives
+		// and isMusicAlreadyLoaded() may return false. Don't quit the game in this case.
+#if defined(_WIN32)
 		if (!TheAudio->isMusicAlreadyLoaded())
 			setQuitting(TRUE);
+#else
+		if (!TheAudio->isMusicAlreadyLoaded()) {
+			fprintf(stderr, "GameEngine::init() - WARNING: Music not loaded from disk, but continuing on non-Windows platform\n");
+			fflush(stderr);
+		}
+#endif
 		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), NULL);
 		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), NULL);
 		initSubsystem(TheMessageStream,"TheMessageStream", createMessageStream(), NULL);

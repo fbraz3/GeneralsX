@@ -566,18 +566,41 @@ DECLARE_PERF_TIMER(GameClient_update)
 DECLARE_PERF_TIMER(GameClient_draw)
 void GameClient::update( void )
 {
+	// Phase 54: Debug log
+	static int gcUpdateCount = 0;
+	if (gcUpdateCount < 3) {
+		fprintf(stderr, "GameClient::update() - Starting update #%d\n", gcUpdateCount);
+		fflush(stderr);
+	}
+
 	USE_PERF_TIMER(GameClient_update)
 	// create the FRAME_TICK message
 	GameMessage *frameMsg = TheMessageStream->appendMessage( GameMessage::MSG_FRAME_TICK );
 	frameMsg->appendTimestampArgument( getFrame() );
 	static Bool playSizzle = FALSE;
+	
+	if (gcUpdateCount < 3) {
+		fprintf(stderr, "GameClient::update() - m_playIntro=%d, isMoviePlaying=%d\n", 
+			TheGlobalData->m_playIntro ? 1 : 0, TheDisplay->isMoviePlaying() ? 1 : 0);
+		fflush(stderr);
+	}
+
 	// We need to show the movie first.
 	if(TheGlobalData->m_playIntro && !TheDisplay->isMoviePlaying())
 	{
+		if (gcUpdateCount < 3) {
+			fprintf(stderr, "GameClient::update() - About to playLogoMovie, didMemPass=%d\n", 
+				(TheGameLODManager && TheGameLODManager->didMemPass()) ? 1 : 0);
+			fflush(stderr);
+		}
 		if(TheGameLODManager && TheGameLODManager->didMemPass())
 			TheDisplay->playLogoMovie("EALogoMovie", 5000, 3000);
 		else
 			TheDisplay->playLogoMovie("EALogoMovie640", 5000, 3000);
+		if (gcUpdateCount < 3) {
+			fprintf(stderr, "GameClient::update() - playLogoMovie returned, setting m_playIntro=FALSE\n");
+			fflush(stderr);
+		}
 		TheWritableGlobalData->m_playIntro = FALSE;
 		TheWritableGlobalData->m_afterIntro = TRUE;
 		playSizzle = TRUE;
@@ -586,6 +609,11 @@ void GameClient::update( void )
 	//Initial Game Codition.  We must show the movie first and then we can display the shell
 	if(TheGlobalData->m_afterIntro && !TheDisplay->isMoviePlaying())
 	{
+		if (gcUpdateCount < 3) {
+			fprintf(stderr, "GameClient::update() - afterIntro block, playSizzle=%d, m_playSizzle=%d\n", 
+				playSizzle ? 1 : 0, TheGlobalData->m_playSizzle ? 1 : 0);
+			fflush(stderr);
+		}
 		if( playSizzle && TheGlobalData->m_playSizzle )
 		{
 			TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
@@ -629,10 +657,25 @@ void GameClient::update( void )
 
 			}
 
+			if (gcUpdateCount < 3) {
+				fprintf(stderr, "GameClient::update() - About to call TheShell->showShellMap()\n");
+				fflush(stderr);
+			}
 			TheShell->showShellMap(TRUE);
+			if (gcUpdateCount < 3) {
+				fprintf(stderr, "GameClient::update() - About to call TheShell->showShell()\n");
+				fflush(stderr);
+			}
 			TheShell->showShell();
 			TheWritableGlobalData->m_afterIntro = FALSE;
 		}
+	}
+
+	if (gcUpdateCount < 3) {
+		fprintf(stderr, "GameClient::update() - After intro/movie handling, updating subsystems...\n");
+		fprintf(stderr, "GameClient::update() - m_playIntro=%d, m_afterIntro=%d\n", 
+			TheGlobalData->m_playIntro ? 1 : 0, TheGlobalData->m_afterIntro ? 1 : 0);
+		fflush(stderr);
 	}
 
 	//Update snow particles.
@@ -676,9 +719,21 @@ void GameClient::update( void )
 
 	if(TheGlobalData->m_playIntro || TheGlobalData->m_afterIntro)
 	{
+		if (gcUpdateCount < 3) {
+			fprintf(stderr, "GameClient::update() - In playIntro/afterIntro block, about to call DRAW()\n");
+			fflush(stderr);
+		}
 		// redraw all views, update the GUI
 		TheDisplay->DRAW();
+		if (gcUpdateCount < 3) {
+			fprintf(stderr, "GameClient::update() - DRAW() returned, calling UPDATE()\n");
+			fflush(stderr);
+		}
 		TheDisplay->UPDATE();
+		if (gcUpdateCount < 3) {
+			fprintf(stderr, "GameClient::update() - UPDATE() returned, returning early\n");
+			fflush(stderr);
+		}
 		return;
 	}
 
@@ -831,6 +886,13 @@ void GameClient::update( void )
 	{
 		// update the in game UI
 		TheInGameUI->UPDATE();
+	}
+
+	// Phase 54: Increment counter at end of update
+	if (gcUpdateCount < 3) {
+		fprintf(stderr, "GameClient::update() - Update #%d completed\n", gcUpdateCount);
+		fflush(stderr);
+		gcUpdateCount++;
 	}
 }
 

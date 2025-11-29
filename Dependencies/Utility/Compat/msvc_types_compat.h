@@ -24,6 +24,31 @@
 #include <cwctype>
 #include <cstdio>
 #include <cstdarg>
+#include <string>
+
+// Phase 54: Global storage for POSIX command line arguments
+// These must be set by main() before any code calls GetCommandLineA()
+extern int g_posix_argc;
+extern char** g_posix_argv;
+extern std::string g_posix_cmdline;
+
+// Phase 54: Initialize the POSIX command line from argc/argv
+// Call this at the very beginning of main()
+inline void InitPosixCommandLine(int argc, char** argv) {
+    g_posix_argc = argc;
+    g_posix_argv = argv;
+    
+    // Reconstruct command line string from argv
+    g_posix_cmdline.clear();
+    for (int i = 0; i < argc; ++i) {
+        if (i > 0) g_posix_cmdline += " ";
+        // Quote arguments that contain spaces
+        bool needsQuotes = (strchr(argv[i], ' ') != nullptr);
+        if (needsQuotes) g_posix_cmdline += "\"";
+        g_posix_cmdline += argv[i];
+        if (needsQuotes) g_posix_cmdline += "\"";
+    }
+}
 
 // Platform-specific malloc introspection headers
 #ifdef __APPLE__
@@ -105,10 +130,10 @@ struct SYSTEMTIME {
 #define _stat stat
 
 // GetCommandLineA - get command line string
-// On non-Windows systems, we can't reliably get the original command line
+// Phase 54: Now uses the stored POSIX command line from InitPosixCommandLine()
 inline const char* GetCommandLineA() {
-    static const char* default_cmdline = "";
-    return default_cmdline;
+    // Return the command line reconstructed from argc/argv
+    return g_posix_cmdline.c_str();
 }
 
 // wsprintf - Windows formatted string function (use snprintf instead)
@@ -227,14 +252,39 @@ inline short GetAsyncKeyState(int vKey) {
 #define CSIDL_APPDATA 26  // Application Data
 
 inline bool SHGetSpecialFolderPath(void* hwnd, char* pszPath, int csidl, bool fCreate) {
-    // Stub implementation - return a generic user directory
+    // Cross-platform implementation for special folder paths
     const char* home = getenv("HOME");
-    if (home) {
-        strncpy(pszPath, home, 260);
-        return true;
+    if (!home) {
+        strncpy(pszPath, "/tmp", 260);
+        return false;
     }
-    strncpy(pszPath, "/tmp", 260);
-    return false;
+    
+    switch (csidl) {
+        case CSIDL_PERSONAL:
+            // My Documents -> ~/Documents on macOS/Linux
+            snprintf(pszPath, 260, "%s/Documents", home);
+            break;
+        case CSIDL_APPDATA:
+            // Application Data -> ~/Library/Application Support on macOS, ~/.local/share on Linux
+            #ifdef __APPLE__
+            snprintf(pszPath, 260, "%s/Library/Application Support", home);
+            #else
+            snprintf(pszPath, 260, "%s/.local/share", home);
+            #endif
+            break;
+        default:
+            // Fallback to HOME for unknown CSIDLs
+            strncpy(pszPath, home, 260);
+            break;
+    }
+    
+    // Create directory if requested
+    if (fCreate) {
+        #include <sys/stat.h>
+        mkdir(pszPath, 0755);  // Ignore errors (might already exist)
+    }
+    
+    return true;
 }
 
 // CreateDirectory stub - create a directory

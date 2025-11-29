@@ -1051,8 +1051,15 @@ GlobalData::GlobalData()
   {
     AsciiString myDocumentsDirectory = temp;
 
-    if (myDocumentsDirectory.getCharAt(myDocumentsDirectory.getLength() -1) != '\\')
-      myDocumentsDirectory.concat( '\\' );
+    // Use platform-appropriate path separator
+#ifdef _WIN32
+    const char pathSep = '\\';
+#else
+    const char pathSep = '/';
+#endif
+
+    if (myDocumentsDirectory.getCharAt(myDocumentsDirectory.getLength() -1) != pathSep)
+      myDocumentsDirectory.concat( pathSep );
 
     AsciiString leafName;
 
@@ -1064,8 +1071,8 @@ GlobalData::GlobalData()
     }
 
     myDocumentsDirectory.concat( leafName );
-    if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != '\\')
-      myDocumentsDirectory.concat( '\\' );
+    if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != pathSep)
+      myDocumentsDirectory.concat( pathSep );
 
     try {
       std::filesystem::create_directories(std::filesystem::path(myDocumentsDirectory.str()));

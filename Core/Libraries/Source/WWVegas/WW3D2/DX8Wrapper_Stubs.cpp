@@ -3,6 +3,7 @@
  * 
  * Phase 39.4: Global stub definitions for DirectX 8 compatibility layer
  * Updated Phase 41 Week 3: Integrated Graphics::IGraphicsDriver factory
+ * Updated Phase 56: Real buffer binding for vertex/index buffers
  * 
  * Provides initialization for global objects referenced by game code.
  * Bridge between legacy DX8Wrapper calls and modern Graphics::IGraphicsDriver abstraction.
@@ -13,6 +14,7 @@
 #include "../../Graphics/Vulkan/d3d8_memory_texture.h"  // Phase 51: Real texture/surface implementations
 #include "../../Graphics/IGraphicsDriver.h"
 #include "../../Graphics/GraphicsDriverFactory.h"
+#include "../../Graphics/dx8buffer_compat.h"  // Phase 56: For DX8VertexBufferClass, DX8IndexBufferClass
 
 // Phase 41 Week 3: Global graphics driver instance (created via factory)
 static Graphics::IGraphicsDriver* g_graphics_driver = nullptr;
@@ -115,10 +117,16 @@ void DX8Wrapper::Shutdown() {
  * Maps legacy DirectX 8 Begin_Scene call to abstract graphics driver interface.
  */
 void DX8Wrapper::Begin_Scene() {
+    fprintf(stderr, "[Phase 54] DX8Wrapper::Begin_Scene - Called, g_graphics_driver=%p\n", (void*)g_graphics_driver);
+    fflush(stderr);
     if (g_graphics_driver != nullptr) {
+        fprintf(stderr, "[Phase 54] DX8Wrapper::Begin_Scene - Calling g_graphics_driver->BeginFrame()\n");
+        fflush(stderr);
         if (!g_graphics_driver->BeginFrame()) {
             printf("[Phase 41 Week 3 ERROR] DX8Wrapper::Begin_Scene - BeginFrame failed\n");
         }
+        fprintf(stderr, "[Phase 54] DX8Wrapper::Begin_Scene - BeginFrame returned\n");
+        fflush(stderr);
     } else {
         printf("[Phase 41 Week 3 WARNING] DX8Wrapper::Begin_Scene - No graphics driver initialized\n");
     }
@@ -256,3 +264,106 @@ SurfaceClass* DX8Wrapper::_Get_DX8_Back_Buffer()
     return surface;
 }
 
+// ============================================================================
+// Phase 56: Buffer Binding Functions
+// ============================================================================
+
+/**
+ * Internal function to bind a vertex buffer to the graphics driver
+ * Called by DX8Wrapper::Set_Vertex_Buffer static functions
+ */
+void DX8Wrapper_SetVertexBufferInternal(Graphics::VertexBufferHandle handle, uint32_t stride) {
+    if (g_graphics_driver != nullptr) {
+        g_graphics_driver->SetVertexStreamSource(0, handle, 0, stride);
+    }
+}
+
+/**
+ * Internal function to bind an index buffer to the graphics driver
+ * Called by DX8Wrapper::Set_Index_Buffer static functions
+ */
+void DX8Wrapper_SetIndexBufferInternal(Graphics::IndexBufferHandle handle, uint32_t startIndex) {
+    if (g_graphics_driver != nullptr) {
+        g_graphics_driver->SetIndexBuffer(handle, startIndex);
+    }
+}
+
+/**
+ * Phase 56: Draw triangles using current bound buffers
+ * This is the real implementation that replaces the empty stub
+ */
+void DX8Wrapper_DrawTrianglesInternal(int start_index, int polygon_count, int min_vertex_index, int vertex_count) {
+    if (g_graphics_driver != nullptr) {
+        // For indexed drawing: polygon_count * 3 = index count for triangles
+        uint32_t index_count = (uint32_t)(polygon_count * 3);
+        
+        // Note: We use DrawIndexedPrimitive here as Draw_Triangles typically uses index buffers
+        // The index buffer handle was set previously via Set_Index_Buffer
+        // We pass INVALID_HANDLE and let the driver use the currently bound buffer
+        g_graphics_driver->DrawIndexedPrimitive(
+            Graphics::PrimitiveType::TriangleList,
+            index_count,
+            Graphics::INVALID_HANDLE,  // Use currently bound index buffer
+            (uint32_t)start_index
+        );
+    }
+}
+
+/**
+ * Phase 56: Draw triangle strip using current bound buffers
+ */
+void DX8Wrapper_DrawStripInternal(int start_index, int primitive_count, int min_vertex_index, int vertex_count) {
+    if (g_graphics_driver != nullptr) {
+        // For triangle strip: primitive_count + 2 = vertex count
+        uint32_t vertex_cnt = (uint32_t)(primitive_count + 2);
+        
+        g_graphics_driver->DrawPrimitive(
+            Graphics::PrimitiveType::TriangleStrip,
+            vertex_cnt
+        );
+    }
+}
+
+// ============================================================================
+// Phase 56: DX8Wrapper Buffer Binding Methods
+// ============================================================================
+
+/**
+ * Bind a DX8VertexBufferClass to the graphics driver
+ * Extracts the driver handle and passes it to the Vulkan driver
+ */
+void DX8Wrapper::Set_Vertex_Buffer(DX8VertexBufferClass* vb) {
+    if (vb != nullptr) {
+        Graphics::VertexBufferHandle handle = vb->GetDriverHandle();
+        // Get stride from FVF - need to calculate vertex size
+        uint32_t stride = vb->GetSize() / vb->GetVertexCount();
+        DX8Wrapper_SetVertexBufferInternal(handle, stride);
+    } else {
+        // Unbind vertex buffer
+        DX8Wrapper_SetVertexBufferInternal(Graphics::INVALID_HANDLE, 0);
+    }
+}
+
+void DX8Wrapper::Set_Vertex_Buffer(int stream_number, DX8VertexBufferClass* vb) {
+    // Stream number is ignored for now - we only support stream 0
+    Set_Vertex_Buffer(vb);
+}
+
+/**
+ * Bind a DX8IndexBufferClass to the graphics driver
+ * Extracts the driver handle and passes it to the Vulkan driver
+ */
+void DX8Wrapper::Set_Index_Buffer(DX8IndexBufferClass* ib, int start_index) {
+    if (ib != nullptr) {
+        Graphics::IndexBufferHandle handle = ib->GetDriverHandle();
+        DX8Wrapper_SetIndexBufferInternal(handle, (uint32_t)start_index);
+    } else {
+        // Unbind index buffer
+        DX8Wrapper_SetIndexBufferInternal(Graphics::INVALID_HANDLE, 0);
+    }
+}
+
+void DX8Wrapper::Set_Index_Buffer(int stream_number, DX8IndexBufferClass* ib, int start_index) {
+    // Stream number is ignored for now
+    Set_Index_Buffer(ib, start_index);
+}

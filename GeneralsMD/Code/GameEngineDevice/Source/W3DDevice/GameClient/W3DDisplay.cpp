@@ -1688,12 +1688,25 @@ void W3DDisplay::step()
 void W3DDisplay::draw( void )
 {
 	//USE_PERF_TIMER(W3DDisplay_draw)
-
+	// Phase 54: Debug log
+	static int drawCount = 0;
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - Starting draw #%d\n", drawCount);
+		fflush(stderr);
+	}
 
 	if (TheGlobalData->m_headless)
 		return;
 
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - Calling updateAverageFPS()\n");
+		fflush(stderr);
+	}
 	updateAverageFPS();
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - updateAverageFPS() done, checking LOD\n");
+		fflush(stderr);
+	}
 	if (TheGlobalData->m_enableDynamicLOD && TheGameLogic->getShowDynamicLOD())
 	{
 		DynamicGameLODLevel lod=TheGameLODManager->findDynamicLODLevel(m_averageFPS);
@@ -1703,11 +1716,30 @@ void W3DDisplay::draw( void )
 	{	//if dynamic LOD is turned off, force highest LOD
 		TheGameLODManager->setDynamicLODLevel(DYNAMIC_GAME_LOD_VERY_HIGH);
 	}
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - LOD done\n");
+		fflush(stderr);
+	}
 
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - checking terrain LOD condition: m_terrainLOD=%d, TheTerrainRenderObject=%p\n", 
+			TheGlobalData->m_terrainLOD, (void*)TheTerrainRenderObject);
+		fflush(stderr);
+	}
 	if (TheGlobalData->m_terrainLOD == TERRAIN_LOD_AUTOMATIC && TheTerrainRenderObject)
 	{
+		if (drawCount < 3) {
+			fprintf(stderr, "W3DDisplay::draw() - calling calculateTerrainLOD()\n");
+			fflush(stderr);
+		}
 		calculateTerrainLOD();
 	}
+
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - terrain LOD done, checking freezeTime\n");
+		fflush(stderr);
+	}
+
 #ifdef EXTENDED_STATS
 AGAIN:
 #endif
@@ -1768,17 +1800,37 @@ AGAIN:
   	//
 	//PredictiveLODOptimizerClass::Optimize_LODs( 5000 );
 
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - Getting freezeTime: TheFramePacer=%p\n", (void*)TheFramePacer);
+		fflush(stderr);
+	}
 	Bool freezeTime = TheFramePacer->isTimeFrozen() || TheFramePacer->isGameHalted();
 
 	/// @todo: I'm assuming the first view is our main 3D view.
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - Getting primaryW3DView from getFirstView()\n");
+		fflush(stderr);
+	}
 	W3DView *primaryW3DView=(W3DView *)getFirstView();
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - primaryW3DView=%p, freezeTime=%d\n", (void*)primaryW3DView, freezeTime);
+		fflush(stderr);
+	}
 
 	if (!freezeTime && TheScriptEngine->isTimeFast())
 	{
+		if (drawCount < 3) {
+			fprintf(stderr, "W3DDisplay::draw() - isTimeFast() case, calling updateCameraMovements\n");
+			fflush(stderr);
+		}
 		primaryW3DView->updateCameraMovements();  // Update camera motion effects.
 		return;
 	}
 
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - Begin_Statistics()\n");
+		fflush(stderr);
+	}
 	Debug_Statistics::Begin_Statistics();	//reset all counters (polygons, vertices, etc) before drawing
 
 	//update state of all the terrain tracks (fade, remove, etc.)
@@ -1786,18 +1838,36 @@ AGAIN:
 
 	if(TheGlobalData->m_loadScreenRender != TRUE)
 	{
+		if (drawCount < 3) {
+			fprintf(stderr, "W3DDisplay::draw() - Not loadScreenRender, checking TerrainTracks\n");
+			fflush(stderr);
+		}
 
 		if (TheTerrainTracksRenderObjClassSystem)
+		{
+			if (drawCount < 3) {
+				fprintf(stderr, "W3DDisplay::draw() - Calling TheTerrainTracksRenderObjClassSystem->update()\n");
+				fflush(stderr);
+			}
 			TheTerrainTracksRenderObjClassSystem->update();
+		}
 
 		//Shroud data is needed to render all other views, so handle this first.
 		if (TheTerrainRenderObject)
 		{
+			if (drawCount < 3) {
+				fprintf(stderr, "W3DDisplay::draw() - Checking terrain map for shroud render\n");
+				fflush(stderr);
+			}
 			//update the shroud surface here since it may be needed by reflections
 			if (TheTerrainRenderObject->getMap())	//make sure a valid map is loaded into terrain.
 			{
 				if (TheTerrainRenderObject->getShroud())
 				{
+					if (drawCount < 3) {
+						fprintf(stderr, "W3DDisplay::draw() - Calling shroud->render()\n");
+						fflush(stderr);
+					}
 					TheTerrainRenderObject->getShroud()->render(primaryW3DView->get3DCamera());
 				}
 			}
@@ -1806,9 +1876,17 @@ AGAIN:
 
 	WW3D::Update_Logic_Frame_Time(TheFramePacer->getLogicTimeStepMilliseconds());
 
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - WW3D::Update_Logic_Frame_Time()\n");
+		fflush(stderr);
+	}
 	// TheSuperHackers @info This binds the WW3D update to the logic update.
 	WW3D::Sync(TheGameLogic->hasUpdated());
 
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - WW3D::Sync done, checking time multiplier\n");
+		fflush(stderr);
+	}
 	static Int now;
 	now=timeGetTime();
 
@@ -1822,23 +1900,47 @@ AGAIN:
 		// limit the framerate, because while fast time is on, the game logic is running as fast as it can.
 	}
 
+	if (drawCount < 3) {
+		fprintf(stderr, "W3DDisplay::draw() - Entering main render do-while loop\n");
+		fflush(stderr);
+	}
 	do {
 
+		if (drawCount < 3) {
+			fprintf(stderr, "W3DDisplay::draw() - Calling updateViews()\n");
+			fflush(stderr);
+		}
 		// update all views of the world - recomputes data which will affect drawing
 		// On non-Windows, assume device is ready
 		updateViews();
+		if (drawCount < 3) {
+			fprintf(stderr, "W3DDisplay::draw() - updateViews() done, ParticleSystemManager update\n");
+			fflush(stderr);
+		}
 		TheParticleSystemManager->update();
+		if (drawCount < 3) {
+			fprintf(stderr, "W3DDisplay::draw() - ParticleSystemManager done, checking water\n");
+			fflush(stderr);
+		}
 		if (TheWaterRenderObj && TheGlobalData->m_waterType == 2)
 			TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());
 		if (TheW3DProjectedShadowManager)
 			TheW3DProjectedShadowManager->updateRenderTargetTextures();
 
+		if (drawCount < 3) {
+			fprintf(stderr, "W3DDisplay::draw() - End_Statistics()\n");
+			fflush(stderr);
+		}
 		Debug_Statistics::End_Statistics();	//record number of polygons rendered in RenderTargetTextures.
 
 		//Store number of polygons rendered in renderTargetTextures.
 		Int numRenderTargetPolygons=Debug_Statistics::Get_DX8_Polygons();
 		Int numRenderTargetVertices=Debug_Statistics::Get_DX8_Vertices();
 
+		if (drawCount < 3) {
+			fprintf(stderr, "W3DDisplay::draw() - About to check Begin_Render conditions\n");
+			fflush(stderr);
+		}
 		// start render block
 		#if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
     if ( (TheGameLogic->getFrame() % 30 == 1) || ( ! ( !TheGameLogic->isGamePaused() && TheGlobalData->m_TiVOFastMode) ) )
@@ -1848,8 +1950,16 @@ AGAIN:
 		{
 			//USE_PERF_TIMER(BigAssRenderLoop)
 			static Bool couldRender = true;
+			if (drawCount < 3) {
+				fprintf(stderr, "W3DDisplay::draw() - Calling WW3D::Begin_Render()\n");
+				fflush(stderr);
+			}
 			if ((TheGlobalData->m_breakTheMovie == FALSE) && (TheGlobalData->m_disableRender == false) && WW3D::Begin_Render( true, true, Vector3( 0.0f, 0.0f, 0.0f ), TheWaterTransparency->m_minWaterOpacity ) == WW3D_ERROR_OK)
 			{
+				if (drawCount < 3) {
+					fprintf(stderr, "W3DDisplay::draw() - Begin_Render succeeded, loadScreenRender=%d\n", TheGlobalData->m_loadScreenRender);
+					fflush(stderr);
+				}
 
 				if(TheGlobalData->m_loadScreenRender == TRUE)
 				{
@@ -1864,13 +1974,25 @@ AGAIN:
 				if (numRenderTargetPolygons || numRenderTargetVertices)
 					Debug_Statistics::Record_DX8_Polys_And_Vertices(numRenderTargetPolygons,numRenderTargetVertices,ShaderClass::_PresetOpaqueShader);
 
+				if (drawCount < 3) {
+					fprintf(stderr, "W3DDisplay::draw() - Calling drawViews()\n");
+					fflush(stderr);
+				}
 				// draw all views of the world
 				drawViews();
+				if (drawCount < 3) {
+					fprintf(stderr, "W3DDisplay::draw() - drawViews() done, calling TheInGameUI->DRAW()\n");
+					fflush(stderr);
+				}
 
 				// draw the user interface
 				TheInGameUI->DRAW();
 
 				// end of video example code
+				if (drawCount < 3) {
+					fprintf(stderr, "W3DDisplay::draw() - TheInGameUI->DRAW() done, drawing mouse\n");
+					fflush(stderr);
+				}
 
 				// draw the mouse
 				if( TheMouse )

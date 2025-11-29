@@ -71,6 +71,13 @@ target_sources(GeneralsX PRIVATE
     phase43_registry_stubs.cpp
 )
 
+# Phase 54: POSIX command line compatibility for non-Windows platforms
+if(NOT WIN32)
+    target_sources(GeneralsX PRIVATE
+        ${CMAKE_SOURCE_DIR}/Dependencies/Utility/Compat/msvc_posix_compat.cpp
+    )
+endif()
+
 # VC6 Windows builds still need RC file
 if(IS_VS6_BUILD)
     target_sources(GeneralsX PRIVATE

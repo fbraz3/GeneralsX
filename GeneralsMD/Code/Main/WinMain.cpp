@@ -1198,6 +1198,13 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 // Non-Windows (SDL2) entry point
 Int main( Int argc, Char* argv[] )
 {
+	// Phase 54: Initialize POSIX command line FIRST before anything else
+	// This enables GetCommandLineA() to work correctly on non-Windows platforms
+	InitPosixCommandLine(argc, argv);
+	
+	fprintf(stderr, "POSIX main: Command line initialized: '%s'\n", GetCommandLineA());
+	fflush(stderr);
+	
 	Int exitcode = 1;
 	Int nCmdShow = 1;  // SW_NORMAL equivalent
 
@@ -1246,6 +1253,10 @@ Int main( Int argc, Char* argv[] )
 		fflush(stderr);
 
 		fprintf(stderr, "POSIX main: TheGlobalData->m_headless = %d\n", TheGlobalData->m_headless);
+		fflush(stderr);
+		
+		// Phase 54: Log windowed mode status for debugging
+		fprintf(stderr, "POSIX main: TheGlobalData->m_windowed = %d (from -win flag)\n", TheGlobalData->m_windowed);
 		fflush(stderr);
 		
 		if (!TheGlobalData->m_headless && initializeAppWindows(NULL, nCmdShow, TheGlobalData->m_windowed) == false) {

@@ -543,6 +543,14 @@ public:
     virtual bool SetVertexFormat(VertexFormatHandle handle) = 0;
     virtual bool SetVertexStreamSource(uint32_t streamIndex, VertexBufferHandle vbHandle,
                                       uint32_t offset, uint32_t stride) = 0;
+    
+    /**
+     * Phase 56: Set the current index buffer for indexed drawing
+     * @param ibHandle Index buffer handle (INVALID_HANDLE to unbind)
+     * @param startIndex Starting index within the buffer
+     * @return true if successful
+     */
+    virtual bool SetIndexBuffer(IndexBufferHandle ibHandle, uint32_t startIndex) = 0;
 
     // ========================================================================
     // TEXTURE MANAGEMENT

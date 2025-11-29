@@ -1175,13 +1175,25 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 
 	TheWritableGlobalData->m_userDataDir.clear();
 
+	// Use platform-appropriate path separator
+#ifdef _WIN32
+	const char pathSep = '\\';
+#else
+	const char pathSep = '/';
+#endif
+
 	char temp[_MAX_PATH];
 	if (::SHGetSpecialFolderPath(NULL, temp, CSIDL_PERSONAL, true))
 	{
-		if (temp[strlen(temp)-1] != '\\')
-			strcat(temp, "\\");
+		if (temp[strlen(temp)-1] != pathSep) {
+			size_t len = strlen(temp);
+			temp[len] = pathSep;
+			temp[len + 1] = '\0';
+		}
 		strcat(temp, TheWritableGlobalData->m_userDataLeafName.str());
-		strcat(temp, "\\");
+		size_t len = strlen(temp);
+		temp[len] = pathSep;
+		temp[len + 1] = '\0';
 		try {
 			std::filesystem::create_directories(std::filesystem::path(temp));
 		} catch (const std::filesystem::filesystem_error& e) {

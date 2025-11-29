@@ -4,14 +4,18 @@
 -- Usage: runTerminal.sh "command" [profile]
 -- The script waits for the command to finish before returning
 -- The terminal will be closed automatically after command execution
+-- 
+-- Phase 54: Added 60-second timeout with SIGKILL to prevent fullscreen lockups
+-- The game will be forcefully terminated if it doesn't exit within the timeout
 
 on run argv                                                                                     
   if length of argv is equal to 0                                                               
     set command to ""                                                                           
   else                                                                                          
     set command to item 1 of argv
-    -- Add exit to close the terminal after execution
-    set command to "date; echo; " & command & "; exit"
+    -- Phase 54: Wrap command with timeout (60 seconds, SIGKILL on timeout)
+    -- This prevents fullscreen lockups from blocking the system
+    set command to "date; echo '[runTerminal] Starting with 60s timeout...'; timeout -s 9 60 " & command & "; EXIT_CODE=$?; if [ $EXIT_CODE -eq 137 ]; then echo '[runTerminal] TIMEOUT: Process killed after 60 seconds'; fi; echo '[runTerminal] Exit code: '$EXIT_CODE; exit"
   end if                                                                                        
 
   if length of argv is greater than 1                                                           
