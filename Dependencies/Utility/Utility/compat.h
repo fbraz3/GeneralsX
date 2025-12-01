@@ -64,6 +64,12 @@
 #define _MAX_PATH 260
 #endif
 
+#ifdef _WIN32
+#define GET_PATH_SEPARATOR() "\\"
+#else
+#define GET_PATH_SEPARATOR() "/"
+#endif
+
 #include "mem_compat.h"
 #include "string_compat.h"
 #include "tchar_compat.h"

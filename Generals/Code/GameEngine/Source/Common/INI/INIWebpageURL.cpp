@@ -33,6 +33,7 @@
 #include "Common/INI.h"
 #include "Common/Registry.h"
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
+#include <Utility/compat.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +53,7 @@ AsciiString encodeURL(AsciiString source)
 
 	AsciiString target;
 	AsciiString allowedChars = "$-_.+!*'(),\\";
-	const char *ptr = source.str();
+	const char* ptr = source.str();
 	while (*ptr)
 	{
 		if (isalnum(*ptr) || allowedChars.find(*ptr))
@@ -75,14 +76,14 @@ AsciiString encodeURL(AsciiString source)
 //-------------------------------------------------------------------------------------------------
 /** Parse Music entry */
 //-------------------------------------------------------------------------------------------------
-void INI::parseWebpageURLDefinition( INI* ini )
+void INI::parseWebpageURLDefinition(INI* ini)
 {
 	AsciiString tag;
-	WebBrowserURL *url;
+	WebBrowserURL* url;
 
 	// read the name
 	const char* c = ini->getNextToken();
-	tag.set( c );
+	tag.set(c);
 
 	if (TheWebBrowser != NULL)
 	{
@@ -108,14 +109,14 @@ void INI::parseWebpageURLDefinition( INI* ini )
 //										 name.str()) );
 
 	// parse the ini definition
-	ini->initFromINI( url, url->getFieldParse() );
+	ini->initFromINI(url, url->getFieldParse());
 
 	if (url->m_url.startsWith("file://"))
 	{
-		char cwd[_MAX_PATH] = "\\";
+		char cwd[_MAX_PATH] = GET_PATH_SEPARATOR();
 		getcwd(cwd, _MAX_PATH);
 
-		url->m_url.format("file://%s\\Data\\%s\\%s", encodeURL(cwd).str(), GetRegistryLanguage().str(), url->m_url.str()+7);
+		url->m_url.format("file://%s\\Data\\%s\\%s", encodeURL(cwd).str(), GetRegistryLanguage().str(), url->m_url.str() + 7);
 		DEBUG_LOG(("INI::parseWebpageURLDefinition() - converted URL to [%s]", url->m_url.str()));
 	}
 }

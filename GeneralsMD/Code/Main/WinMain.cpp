@@ -56,11 +56,11 @@
 
 // DEBUG: Pre-main diagnostics - executes before main() to catch static initialization issues
 __attribute__((constructor(101))) static void debug_pre_main_startup() {
-    write(2, "PRE-MAIN: Starting static initialization...\n", 45);
+	write(2, "PRE-MAIN: Starting static initialization...\n", 45);
 }
 
 __attribute__((constructor(65535))) static void debug_pre_main_complete() {
-    write(2, "PRE-MAIN: Static initialization complete, entering main()\n", 59);
+	write(2, "PRE-MAIN: Static initialization complete, entering main()\n", 59);
 }
 #endif
 
@@ -98,6 +98,7 @@ __attribute__((constructor(65535))) static void debug_pre_main_complete() {
 #include "resource.h"
 
 #include <rts/profile.h>
+#include <Utility/compat.h>
 
 // Phase 02: SDL2 Window & Event Loop compatibility
 //#ifndef _WIN32
@@ -109,15 +110,15 @@ __attribute__((constructor(65535))) static void debug_pre_main_complete() {
 #ifdef _WIN32
 HINSTANCE ApplicationHInstance = NULL;  ///< our application instance
 HWND ApplicationHWnd = NULL;  ///< our application window handle
-Win32Mouse *TheWin32Mouse= NULL;  ///< for the WndProc() only
+Win32Mouse* TheWin32Mouse = NULL;  ///< for the WndProc() only
 DWORD TheMessageTime = 0;	///< For getting the time that a message was posted from Windows.
 #else
 void* ApplicationHWnd = NULL;  ///< SDL2 window handle (cast from SDL_Window*)
 #endif
 
-const Char *g_strFile = "data\\Generals.str";
-const Char *g_csfFile = "data\\%s\\Generals.csf";
-const char *gAppPrefix = ""; /// So WB can have a different debug log file name.
+const Char* g_strFile = "data\\Generals.str";
+const Char* g_csfFile = "data\\%s\\Generals.csf";
+const char* gAppPrefix = ""; /// So WB can have a different debug log file name.
 
 static Bool gInitializing = false;
 static Bool gDoPaint = true;
@@ -130,7 +131,7 @@ static HBITMAP gLoadScreenBitmap = NULL;
 //#define DEBUG_WINDOWS_MESSAGES
 
 #ifdef DEBUG_WINDOWS_MESSAGES
-static const char *messageToString(unsigned int message)
+static const char* messageToString(unsigned int message)
 {
 	static char name[32];
 
@@ -262,7 +263,7 @@ static const char *messageToString(unsigned int message)
 	case WM_MBUTTONDOWN: return  "WM_MBUTTONDOWN";
 	case WM_MBUTTONUP: return  "WM_MBUTTONUP";
 	case WM_MBUTTONDBLCLK: return  "WM_MBUTTONDBLCLK";
-//	case WM_MOUSEWHEEL: return  "WM_MOUSEWHEEL";
+		//	case WM_MOUSEWHEEL: return  "WM_MOUSEWHEEL";
 	case WM_PARENTNOTIFY: return  "WM_PARENTNOTIFY";
 	case WM_ENTERMENULOOP: return  "WM_ENTERMENULOOP";
 	case WM_EXITMENULOOP: return  "WM_EXITMENULOOP";
@@ -295,8 +296,8 @@ static const char *messageToString(unsigned int message)
 	case WM_IME_CHAR: return  "WM_IME_CHAR";
 	case WM_IME_KEYDOWN: return  "WM_IME_KEYDOWN";
 	case WM_IME_KEYUP: return  "WM_IME_KEYUP";
-//	case WM_MOUSEHOVER: return  "WM_MOUSEHOVER";
-//	case WM_MOUSELEAVE: return  "WM_MOUSELEAVE";
+		//	case WM_MOUSEHOVER: return  "WM_MOUSEHOVER";
+		//	case WM_MOUSELEAVE: return  "WM_MOUSELEAVE";
 	case WM_CUT: return  "WM_CUT";
 	case WM_COPY: return  "WM_COPY";
 	case WM_PASTE: return  "WM_PASTE";
@@ -333,16 +334,16 @@ static const char *messageToString(unsigned int message)
 /** Window Procedure */
 //=============================================================================
 #ifdef _WIN32
-LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
-													WPARAM wParam, LPARAM lParam )
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
+	WPARAM wParam, LPARAM lParam)
 {
 
 	try
 	{
 		// First let the IME manager do it's stuff.
-		if ( TheIMEManager )
+		if (TheIMEManager)
 		{
-			if ( TheIMEManager->serviceIMEMessage( hWnd, message, wParam, lParam ) )
+			if (TheIMEManager->serviceIMEMessage(hWnd, message, wParam, lParam))
 			{
 				// The manager intercepted an IME message so return the result
 				return TheIMEManager->result();
@@ -350,71 +351,71 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 		}
 
 #ifdef	DEBUG_WINDOWS_MESSAGES
-		static msgCount=0;
+		static msgCount = 0;
 		char testString[256];
-		sprintf(testString,"\n%d: %s (%X,%X)", msgCount++,messageToString(message), wParam, lParam);
+		sprintf(testString, "\n%d: %s (%X,%X)", msgCount++, messageToString(message), wParam, lParam);
 		OutputDebugString(testString);
 #endif
 
 		// handle all window messages
-		switch( message )
+		switch (message)
 		{
 			//-------------------------------------------------------------------------
-			case WM_NCHITTEST:
+		case WM_NCHITTEST:
 			// Prevent the user from selecting the menu in fullscreen mode
-            if( !TheGlobalData->m_windowed )
-                return HTCLIENT;
-            break;
+			if (!TheGlobalData->m_windowed)
+				return HTCLIENT;
+			break;
 
 			//-------------------------------------------------------------------------
-			case WM_POWERBROADCAST:
-            switch( wParam )
-            {
-                #ifndef PBT_APMQUERYSUSPEND
-                    #define PBT_APMQUERYSUSPEND 0x0000
-                #endif
-                case PBT_APMQUERYSUSPEND:
-                    // At this point, the app should save any data for open
-                    // network connections, files, etc., and prepare to go into
-                    // a suspended mode.
-                    return TRUE;
-
-                #ifndef PBT_APMRESUMESUSPEND
-                    #define PBT_APMRESUMESUSPEND 0x0007
-                #endif
-                case PBT_APMRESUMESUSPEND:
-                    // At this point, the app should recover any data, network
-                    // connections, files, etc., and resume running from when
-                    // the app was suspended.
-                    return TRUE;
-            }
-            break;
-			//-------------------------------------------------------------------------
-			case WM_SYSCOMMAND:
-            // Prevent moving/sizing and power loss in fullscreen mode
-            switch( wParam )
-            {
-                case SC_KEYMENU:
-                    // TheSuperHackers @bugfix Mauller 10/05/2025 Always handle this command to prevent halting the game when left Alt is pressed.
-                    return 1;
-                case SC_MOVE:
-                case SC_SIZE:
-                case SC_MAXIMIZE:
-                case SC_MONITORPOWER:
-                    if( !TheGlobalData->m_windowed )
-                        return 1;
-                    break;
-            }
-            break;
-
-			case WM_QUERYENDSESSION:
+		case WM_POWERBROADCAST:
+			switch (wParam)
 			{
-				TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
-				return 0;	//don't allow Windows to shutdown while game is running.
-			}
+#ifndef PBT_APMQUERYSUSPEND
+#define PBT_APMQUERYSUSPEND 0x0000
+#endif
+			case PBT_APMQUERYSUSPEND:
+				// At this point, the app should save any data for open
+				// network connections, files, etc., and prepare to go into
+				// a suspended mode.
+				return TRUE;
 
-			// ------------------------------------------------------------------------
-			case WM_CLOSE:
+#ifndef PBT_APMRESUMESUSPEND
+#define PBT_APMRESUMESUSPEND 0x0007
+#endif
+			case PBT_APMRESUMESUSPEND:
+				// At this point, the app should recover any data, network
+				// connections, files, etc., and resume running from when
+				// the app was suspended.
+				return TRUE;
+			}
+			break;
+			//-------------------------------------------------------------------------
+		case WM_SYSCOMMAND:
+			// Prevent moving/sizing and power loss in fullscreen mode
+			switch (wParam)
+			{
+			case SC_KEYMENU:
+				// TheSuperHackers @bugfix Mauller 10/05/2025 Always handle this command to prevent halting the game when left Alt is pressed.
+				return 1;
+			case SC_MOVE:
+			case SC_SIZE:
+			case SC_MAXIMIZE:
+			case SC_MONITORPOWER:
+				if (!TheGlobalData->m_windowed)
+					return 1;
+				break;
+			}
+			break;
+
+		case WM_QUERYENDSESSION:
+		{
+			TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
+			return 0;	//don't allow Windows to shutdown while game is running.
+		}
+
+		// ------------------------------------------------------------------------
+		case WM_CLOSE:
 			if (!TheGameEngine->getQuitting())
 			{
 				//user is exiting without using the menus
@@ -435,259 +436,259 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 			}
 
 			// ------------------------------------------------------------------------
-			case WM_SETFOCUS:
+		case WM_SETFOCUS:
+		{
+
+			//
+			// reset the state of our keyboard cause we haven't been paying
+			// attention to the keys while focus was away
+			//
+			if (TheKeyboard)
+				TheKeyboard->resetKeys();
+
+			if (TheMouse)
+				TheMouse->regainFocus();
+
+			break;
+
+		}
+
+		//-------------------------------------------------------------------------
+		case WM_MOVE:
+		{
+			if (TheMouse)
+				TheMouse->refreshCursorCapture();
+
+			break;
+		}
+
+		//-------------------------------------------------------------------------
+		case WM_SIZE:
+		{
+			// When W3D initializes, it resizes the window.  So stop repainting.
+			if (!gInitializing)
+				gDoPaint = false;
+
+			if (TheMouse)
+				TheMouse->refreshCursorCapture();
+
+			break;
+		}
+
+		//-------------------------------------------------------------------------
+		case WM_KILLFOCUS:
+		{
+			if (TheKeyboard)
+				TheKeyboard->resetKeys();
+
+			if (TheMouse)
+				TheMouse->loseFocus();
+
+			break;
+		}
+
+		//-------------------------------------------------------------------------
+		case WM_ACTIVATEAPP:
+		{
+			if ((bool)wParam != isWinMainActive)
 			{
+				// TheSuperHackers @bugfix xezon 11/05/2025 This event originally called DX8Wrapper::Reset_Device,
+				// intended to clear resources on a lost device in fullscreen, but effectively also in
+				// windowed mode, if the DXMaximizedWindowedMode shim was applied in newer versions of Windows,
+				// which lead to unfortunate application crashing. Resetting the device on WM_ACTIVATEAPP instead
+				// of TestCooperativeLevel() == D3DERR_DEVICENOTRESET is not a requirement. There are other code
+				// paths that take care of that.
 
-				//
-				// reset the state of our keyboard cause we haven't been paying
-				// attention to the keys while focus was away
-				//
-				if( TheKeyboard )
-					TheKeyboard->resetKeys();
+				isWinMainActive = (BOOL)wParam;
 
-				if (TheMouse)
-					TheMouse->regainFocus();
+				if (TheGameEngine)
+					TheGameEngine->setIsActive(isWinMainActive);
 
-				break;
-
+				if (isWinMainActive)
+				{	//restore mouse cursor to our custom version.
+					if (TheWin32Mouse)
+						TheWin32Mouse->setCursor(TheWin32Mouse->getMouseCursor());
+				}
 			}
+			return 0;
+		}
+		//-------------------------------------------------------------------------
+		case WM_ACTIVATE:
+		{
+			Int active = LOWORD(wParam);
 
-			//-------------------------------------------------------------------------
-			case WM_MOVE:
+			if (active == WA_INACTIVE)
 			{
+				if (TheAudio)
+					TheAudio->loseFocus();
+			}
+			else
+			{
+				if (TheAudio)
+					TheAudio->regainFocus();
+
+				// Cursor can only be captured after one of the activation events.
 				if (TheMouse)
 					TheMouse->refreshCursorCapture();
-
-				break;
 			}
+			break;
 
-			//-------------------------------------------------------------------------
-			case WM_SIZE:
+		}
+
+		//-------------------------------------------------------------------------
+		case WM_KEYDOWN:
+		{
+			Int key = (Int)wParam;
+
+			switch (key)
 			{
-				// When W3D initializes, it resizes the window.  So stop repainting.
-				if (!gInitializing)
-					gDoPaint = false;
 
-				if (TheMouse)
-					TheMouse->refreshCursorCapture();
-
-				break;
-			}
-
-			//-------------------------------------------------------------------------
-			case WM_KILLFOCUS:
+				//---------------------------------------------------------------------
+			case VK_ESCAPE:
 			{
-				if (TheKeyboard )
-					TheKeyboard->resetKeys();
 
-				if (TheMouse)
-					TheMouse->loseFocus();
-
-				break;
-			}
-
-			//-------------------------------------------------------------------------
-			case WM_ACTIVATEAPP:
-			{
-				if ((bool) wParam != isWinMainActive)
-				{
-					// TheSuperHackers @bugfix xezon 11/05/2025 This event originally called DX8Wrapper::Reset_Device,
-					// intended to clear resources on a lost device in fullscreen, but effectively also in
-					// windowed mode, if the DXMaximizedWindowedMode shim was applied in newer versions of Windows,
-					// which lead to unfortunate application crashing. Resetting the device on WM_ACTIVATEAPP instead
-					// of TestCooperativeLevel() == D3DERR_DEVICENOTRESET is not a requirement. There are other code
-					// paths that take care of that.
-
-					isWinMainActive = (BOOL) wParam;
-
-					if (TheGameEngine)
-						TheGameEngine->setIsActive(isWinMainActive);
-
-					if (isWinMainActive)
-					{	//restore mouse cursor to our custom version.
-						if (TheWin32Mouse)
-							TheWin32Mouse->setCursor(TheWin32Mouse->getMouseCursor());
-					}
-				}
-				return 0;
-			}
-			//-------------------------------------------------------------------------
-			case WM_ACTIVATE:
-			{
-				Int active = LOWORD( wParam );
-
-				if( active == WA_INACTIVE )
-				{
-					if (TheAudio)
-						TheAudio->loseFocus();
-				}
-				else
-				{
-					if (TheAudio)
-						TheAudio->regainFocus();
-
-					// Cursor can only be captured after one of the activation events.
-					if (TheMouse)
-						TheMouse->refreshCursorCapture();
-				}
+				PostQuitMessage(0);
 				break;
 
 			}
 
-			//-------------------------------------------------------------------------
-			case WM_KEYDOWN:
-			{
-				Int key = (Int)wParam;
 
-				switch( key )
-				{
+			}
 
-					//---------------------------------------------------------------------
-					case VK_ESCAPE:
-					{
+			return 0;
 
-						PostQuitMessage( 0 );
-						break;
+		}
 
-					}
+		//-------------------------------------------------------------------------
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONUP:
+		case WM_LBUTTONDBLCLK:
 
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
+		case WM_MBUTTONDBLCLK:
 
-				}
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
+		case WM_RBUTTONDBLCLK:
+		{
 
+			if (TheWin32Mouse)
+				TheWin32Mouse->addWin32Event(message, wParam, lParam, TheMessageTime);
+
+			return 0;
+
+		}
+
+		//-------------------------------------------------------------------------
+		case 0x020A: // WM_MOUSEWHEEL
+		{
+			long x = (long)LOWORD(lParam);
+			long y = (long)HIWORD(lParam);
+			RECT rect;
+
+			// ignore when outside of client area
+			GetWindowRect(ApplicationHWnd, &rect);
+			if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom)
 				return 0;
 
-			}
+			if (TheWin32Mouse)
+				TheWin32Mouse->addWin32Event(message, wParam, lParam, TheMessageTime);
 
-			//-------------------------------------------------------------------------
-			case WM_LBUTTONDOWN:
-			case WM_LBUTTONUP:
-			case WM_LBUTTONDBLCLK:
+			return 0;
 
-			case WM_MBUTTONDOWN:
-			case WM_MBUTTONUP:
-			case WM_MBUTTONDBLCLK:
+		}
 
-			case WM_RBUTTONDOWN:
-			case WM_RBUTTONUP:
-			case WM_RBUTTONDBLCLK:
-			{
 
-				if( TheWin32Mouse )
-					TheWin32Mouse->addWin32Event( message, wParam, lParam, TheMessageTime );
+		//-------------------------------------------------------------------------
+		case WM_MOUSEMOVE:
+		{
+			Int x = (Int)LOWORD(lParam);
+			Int y = (Int)HIWORD(lParam);
+			RECT rect;
+			//				Int keys = wParam;
 
+							// ignore when outside of client area
+			GetClientRect(ApplicationHWnd, &rect);
+			if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom)
 				return 0;
 
-			}
+			if (TheWin32Mouse)
+				TheWin32Mouse->addWin32Event(message, wParam, lParam, TheMessageTime);
 
-			//-------------------------------------------------------------------------
-			case 0x020A: // WM_MOUSEWHEEL
-			{
-				long x = (long) LOWORD(lParam);
-				long y = (long) HIWORD(lParam);
-				RECT rect;
+			return 0;
 
-				// ignore when outside of client area
-				GetWindowRect( ApplicationHWnd, &rect );
-				if( x < rect.left || x > rect.right || y < rect.top || y > rect.bottom )
-					return 0;
+		}
 
-				if( TheWin32Mouse )
-					TheWin32Mouse->addWin32Event( message, wParam, lParam, TheMessageTime );
+		//-------------------------------------------------------------------------
+		case WM_SETCURSOR:
+		{
+			if (TheWin32Mouse && (HWND)wParam == ApplicationHWnd)
+				TheWin32Mouse->setCursor(TheWin32Mouse->getMouseCursor());
+			return TRUE;	//tell Windows not to reset mouse cursor image to default.
+		}
 
-				return 0;
-
-			}
-
-
-			//-------------------------------------------------------------------------
-			case WM_MOUSEMOVE:
-			{
-				Int x = (Int)LOWORD( lParam );
-				Int y = (Int)HIWORD( lParam );
-				RECT rect;
-//				Int keys = wParam;
-
-				// ignore when outside of client area
-				GetClientRect( ApplicationHWnd, &rect );
-				if( x < rect.left || x > rect.right || y < rect.top || y > rect.bottom )
-					return 0;
-
-				if( TheWin32Mouse )
-					TheWin32Mouse->addWin32Event( message, wParam, lParam, TheMessageTime );
-
-				return 0;
-
-			}
-
-			//-------------------------------------------------------------------------
-			case WM_SETCURSOR:
-			{
-				if (TheWin32Mouse && (HWND)wParam == ApplicationHWnd)
-					TheWin32Mouse->setCursor(TheWin32Mouse->getMouseCursor());
-				return TRUE;	//tell Windows not to reset mouse cursor image to default.
-			}
-
-			case WM_PAINT:
-			{
-				if (gDoPaint) {
-					PAINTSTRUCT paint;
-					HDC dc = ::BeginPaint(hWnd, &paint);
+		case WM_PAINT:
+		{
+			if (gDoPaint) {
+				PAINTSTRUCT paint;
+				HDC dc = ::BeginPaint(hWnd, &paint);
 #if 0
-					::SetTextColor(dc, RGB(255,255,255));
-					::SetBkColor(dc, RGB(0,0,0));
-					::TextOut(dc, 30, 30, "Loading Command & Conquer Generals...", 37);
+				::SetTextColor(dc, RGB(255, 255, 255));
+				::SetBkColor(dc, RGB(0, 0, 0));
+				::TextOut(dc, 30, 30, "Loading Command & Conquer Generals...", 37);
 #endif
-					if (gLoadScreenBitmap!=NULL) {
-						Int savContext = ::SaveDC(dc);
-						HDC tmpDC = ::CreateCompatibleDC(dc);
-						HBITMAP savBitmap = (HBITMAP)::SelectObject(tmpDC, gLoadScreenBitmap);
-						::BitBlt(dc, 0, 0, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT, tmpDC, 0, 0, SRCCOPY);
-						::SelectObject(tmpDC, savBitmap);
-						::DeleteDC(tmpDC);
-						::RestoreDC(dc, savContext);
-					}
-					::EndPaint(hWnd, &paint);
-					return TRUE;
+				if (gLoadScreenBitmap != NULL) {
+					Int savContext = ::SaveDC(dc);
+					HDC tmpDC = ::CreateCompatibleDC(dc);
+					HBITMAP savBitmap = (HBITMAP)::SelectObject(tmpDC, gLoadScreenBitmap);
+					::BitBlt(dc, 0, 0, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT, tmpDC, 0, 0, SRCCOPY);
+					::SelectObject(tmpDC, savBitmap);
+					::DeleteDC(tmpDC);
+					::RestoreDC(dc, savContext);
 				}
-				break;
+				::EndPaint(hWnd, &paint);
+				return TRUE;
 			}
+			break;
+		}
 
-			case WM_ERASEBKGND:
-			{
-				if (!gDoPaint)
-					return TRUE;	//we don't need to erase the background because we always draw entire window.
-				break;
-			}
+		case WM_ERASEBKGND:
+		{
+			if (!gDoPaint)
+				return TRUE;	//we don't need to erase the background because we always draw entire window.
+			break;
+		}
 
-// Well, it was a nice idea, but we don't get a message for an ejection.
-// (Really unforunate, actually.) I'm leaving this in in-case some one wants
-// to trap a different device change (for instance, removal of a mouse) - jkmcd
+		// Well, it was a nice idea, but we don't get a message for an ejection.
+		// (Really unforunate, actually.) I'm leaving this in in-case some one wants
+		// to trap a different device change (for instance, removal of a mouse) - jkmcd
 #if 0
-			case WM_DEVICECHANGE:
+		case WM_DEVICECHANGE:
+		{
+			if (((UINT)wParam) == DBT_DEVICEREMOVEPENDING)
 			{
-				if (((UINT) wParam) == DBT_DEVICEREMOVEPENDING)
-				{
-					DEV_BROADCAST_HDR *hdr = (DEV_BROADCAST_HDR*) lParam;
-					if (!hdr) {
-						break;
-					}
-
-					if (hdr->dbch_devicetype != DBT_DEVTYP_VOLUME)  {
-						break;
-					}
-
-					// Lets discuss how Windows is a flaming pile of poo. I'm now casting the header
-					// directly into the structure, because its the one I want, and this is just how
-					// its done. I hate Windows. - jkmcd
-					DEV_BROADCAST_VOLUME *vol = (DEV_BROADCAST_VOLUME*) (hdr);
-
-					// @todo - Yikes. This could cause us all kinds of pain. I don't really want
-					// to even think about the stink this could cause us.
-					TheFileSystem->unloadMusicFilesFromCD(vol->dbcv_unitmask);
-					return TRUE;
+				DEV_BROADCAST_HDR* hdr = (DEV_BROADCAST_HDR*)lParam;
+				if (!hdr) {
+					break;
 				}
-				break;
+
+				if (hdr->dbch_devicetype != DBT_DEVTYP_VOLUME) {
+					break;
+				}
+
+				// Lets discuss how Windows is a flaming pile of poo. I'm now casting the header
+				// directly into the structure, because its the one I want, and this is just how
+				// its done. I hate Windows. - jkmcd
+				DEV_BROADCAST_VOLUME* vol = (DEV_BROADCAST_VOLUME*)(hdr);
+
+				// @todo - Yikes. This could cause us all kinds of pain. I don't really want
+				// to even think about the stink this could cause us.
+				TheFileSystem->unloadMusicFilesFromCD(vol->dbcv_unitmask);
+				return TRUE;
 			}
+			break;
+		}
 #endif
 		}
 
@@ -698,22 +699,22 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 		// no rethrow
 	}
 
-//In full-screen mode, only pass these messages onto the default windows handler.
-//Appears to fix issues with dual monitor systems but doesn't seem safe?
-///@todo: Look into proper support for dual monitor systems.
-/*	if (!TheGlobalData->m_windowed)
-	switch (message)
-	{
-		case WM_PAINT:
-		case WM_NCCREATE:
-		case WM_NCDESTROY:
-		case WM_NCCALCSIZE:
-		case WM_NCPAINT:
-				return DefWindowProc( hWnd, message, wParam, lParam );
-	}
-	return 0;*/
+	//In full-screen mode, only pass these messages onto the default windows handler.
+	//Appears to fix issues with dual monitor systems but doesn't seem safe?
+	///@todo: Look into proper support for dual monitor systems.
+	/*	if (!TheGlobalData->m_windowed)
+		switch (message)
+		{
+			case WM_PAINT:
+			case WM_NCCREATE:
+			case WM_NCDESTROY:
+			case WM_NCCALCSIZE:
+			case WM_NCPAINT:
+					return DefWindowProc( hWnd, message, wParam, lParam );
+		}
+		return 0;*/
 
-	return DefWindowProc( hWnd, message, wParam, lParam );
+	return DefWindowProc(hWnd, message, wParam, lParam);
 
 }
 #endif  // _WIN32
@@ -721,25 +722,25 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 // initializeAppWindows =======================================================
 /** Register windows class and create application windows. */
 //=============================================================================
-static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWindowed )
+static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWindowed)
 {
 #ifdef _WIN32
 	// Windows implementation
 	DWORD windowStyle;
 	Int startWidth = DEFAULT_DISPLAY_WIDTH,
-			startHeight = DEFAULT_DISPLAY_HEIGHT;
+		startHeight = DEFAULT_DISPLAY_HEIGHT;
 
 	// register the window class
 
-  WNDCLASS wndClass = { CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, WndProc, 0, 0, hInstance,
-                       LoadIcon (hInstance, MAKEINTRESOURCE(IDI_ApplicationIcon)),
-                       NULL/*LoadCursor(NULL, IDC_ARROW)*/,
-                       (HBRUSH)GetStockObject(BLACK_BRUSH), NULL,
-	                     TEXT("Game Window") };
-  RegisterClass( &wndClass );
+	WNDCLASS wndClass = { CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, WndProc, 0, 0, hInstance,
+						 LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ApplicationIcon)),
+						 NULL/*LoadCursor(NULL, IDC_ARROW)*/,
+						 (HBRUSH)GetStockObject(BLACK_BRUSH), NULL,
+						   TEXT("Game Window") };
+	RegisterClass(&wndClass);
 
-   // Create our main window
-	windowStyle =  WS_POPUP|WS_VISIBLE;
+	// Create our main window
+	windowStyle = WS_POPUP | WS_VISIBLE;
 	if (runWindowed)
 		windowStyle |= WS_DLGFRAME | WS_CAPTION | WS_SYSMENU;
 	else
@@ -750,44 +751,45 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	rect.top = 0;
 	rect.right = startWidth;
 	rect.bottom = startHeight;
-	AdjustWindowRect (&rect, windowStyle, FALSE);
+	AdjustWindowRect(&rect, windowStyle, FALSE);
 	if (runWindowed) {
 		// Makes the normal debug 800x600 window center in the screen.
 		startWidth = DEFAULT_DISPLAY_WIDTH;
-		startHeight= DEFAULT_DISPLAY_HEIGHT;
+		startHeight = DEFAULT_DISPLAY_HEIGHT;
 	}
 
 	gInitializing = true;
 
-  HWND hWnd = CreateWindow( TEXT("Game Window"),
-                            TEXT("Command and Conquer Generals"),
-                            windowStyle,
-														(GetSystemMetrics( SM_CXSCREEN ) / 2) - (startWidth / 2), // original position X
-														(GetSystemMetrics( SM_CYSCREEN ) / 2) - (startHeight / 2),// original position Y
-														// Lorenzen nudged the window higher
-														// so the constantdebug report would
-														// not get obliterated by assert windows, thank you.
-														//(GetSystemMetrics( SM_CXSCREEN ) / 2) - (startWidth / 2),   //this works with any screen res
-														//(GetSystemMetrics( SM_CYSCREEN ) / 25) - (startHeight / 25),//this works with any screen res
-														rect.right-rect.left,
-														rect.bottom-rect.top,
-														0L,
-														0L,
-														hInstance,
-														0L );
+	HWND hWnd = CreateWindow(TEXT("Game Window"),
+		TEXT("Command and Conquer Generals"),
+		windowStyle,
+		(GetSystemMetrics(SM_CXSCREEN) / 2) - (startWidth / 2), // original position X
+		(GetSystemMetrics(SM_CYSCREEN) / 2) - (startHeight / 2),// original position Y
+		// Lorenzen nudged the window higher
+		// so the constantdebug report would
+		// not get obliterated by assert windows, thank you.
+		//(GetSystemMetrics( SM_CXSCREEN ) / 2) - (startWidth / 2),   //this works with any screen res
+		//(GetSystemMetrics( SM_CYSCREEN ) / 25) - (startHeight / 25),//this works with any screen res
+		rect.right - rect.left,
+		rect.bottom - rect.top,
+		0L,
+		0L,
+		hInstance,
+		0L);
 
 
 	if (!runWindowed)
-	{	SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
+	{
+		SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 	}
 	else
-		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
+		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 
 	SetFocus(hWnd);
 
 	SetForegroundWindow(hWnd);
-	ShowWindow( hWnd, nCmdShow );
-	UpdateWindow( hWnd );
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
 
 	// save our application window handle for future use
 	ApplicationHWnd = hWnd;
@@ -802,69 +804,71 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	// Phase 02: SDL2/Vulkan cross-platform implementation
 	Int startWidth = DEFAULT_DISPLAY_WIDTH;
 	Int startHeight = DEFAULT_DISPLAY_HEIGHT;
-	
+
 	fprintf(stderr, "initializeAppWindows: Starting POSIX SDL2 initialization\n");
 	fflush(stderr);
-	
+
 	gInitializing = true;
-	
+
 	// Initialize SDL2
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "initializeAppWindows: Failed to initialize SDL2: %s\n", SDL_GetError());
 		fflush(stderr);
 		return false;
 	}
-	
+
 	fprintf(stderr, "initializeAppWindows: SDL2 initialized successfully\n");
 	fflush(stderr);
-	
+
 	// Load Vulkan library for SDL2_WINDOW_VULKAN support
 	// On macOS, this loads MoltenVK
 	fprintf(stderr, "initializeAppWindows: Loading Vulkan library via SDL2...\n");
 	fflush(stderr);
-	
+
 	if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
 		fprintf(stderr, "initializeAppWindows: Failed to load Vulkan library: %s\n", SDL_GetError());
 		fprintf(stderr, "initializeAppWindows: Falling back to OpenGL backend\n");
 		fflush(stderr);
 		// Fall back to OpenGL if Vulkan is not available
 		// TODO: Implement OpenGL fallback
-	} else {
+	}
+	else {
 		fprintf(stderr, "initializeAppWindows: Vulkan library loaded successfully\n");
 		fflush(stderr);
 	}
-	
+
 	// Calculate window position (center on screen)
 	SDL_Rect displayBounds;
 	SDL_GetDisplayBounds(0, &displayBounds);
-	
-	fprintf(stderr, "initializeAppWindows: Display bounds: %dx%d at (%d, %d)\n", 
-			displayBounds.w, displayBounds.h, displayBounds.x, displayBounds.y);
+
+	fprintf(stderr, "initializeAppWindows: Display bounds: %dx%d at (%d, %d)\n",
+		displayBounds.w, displayBounds.h, displayBounds.x, displayBounds.y);
 	fflush(stderr);
-	
+
 	Int windowX = (displayBounds.w - startWidth) / 2;
 	Int windowY = (displayBounds.h - startHeight) / 2;
-	
+
 	fprintf(stderr, "initializeAppWindows: Window position: (%d, %d), size: %dx%d\n",
-			windowX, windowY, startWidth, startHeight);
+		windowX, windowY, startWidth, startHeight);
 	fflush(stderr);
-	
+
 	// Set up window flags with Vulkan support for SDL_Vulkan_CreateSurface
 	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;
 	fprintf(stderr, "initializeAppWindows: Using SDL_WINDOW_VULKAN flag for Vulkan surface creation\n");
 	fflush(stderr);
-	
+
 	if (runWindowed) {
 		// In windowed mode, allow window resizing and normal window decorations (title bar, close button)
 		windowFlags |= SDL_WINDOW_RESIZABLE;
-	} else {
+	}
+	else {
 		windowFlags |= SDL_WINDOW_FULLSCREEN;
 		gDoPaint = false;
 	}
-	
+
 	fprintf(stderr, "initializeAppWindows: About to SDL_CreateWindow with flags=0x%x\n", windowFlags);
 	fflush(stderr);
-	
+
 	// Create SDL2 window for Vulkan rendering (SDL2 API)
 	SDL_Window* sdlWindow = SDL_CreateWindow(
 		"Command and Conquer Generals",
@@ -874,32 +878,32 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 		startHeight,
 		windowFlags
 	);
-	
+
 	fprintf(stderr, "initializeAppWindows: SDL_CreateWindow returned: %p\n", (void*)sdlWindow);
 	fflush(stderr);
-	
+
 	if (!sdlWindow) {
 		fprintf(stderr, "initializeAppWindows: Failed to create SDL2 window: %s\n", SDL_GetError());
 		fflush(stderr);
 		SDL_Quit();
 		return false;
 	}
-	
+
 	fprintf(stderr, "initializeAppWindows: SDL2 window created successfully\n");
 	fflush(stderr);
-	
+
 	// Store SDL window handle for later use
 	// ApplicationHWnd will store the SDL_Window* pointer cast to HWND
 	ApplicationHWnd = (HWND)sdlWindow;
-	
+
 	fprintf(stderr, "initializeAppWindows: ApplicationHWnd set to: %p\n", (void*)ApplicationHWnd);
 	fflush(stderr);
-	
+
 	gInitializing = false;
-	
+
 	fprintf(stderr, "initializeAppWindows: Returning true (success)\n");
 	fflush(stderr);
-	
+
 	return true;  // success
 
 #endif
@@ -928,89 +932,89 @@ static void (*early_init_marker)(void) = test_early_startup;
 /** Handler for unhandled win32 exceptions. */
 //=============================================================================
 #ifdef _WIN32
-static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info )
+static LONG WINAPI UnHandledExceptionFilter(struct _EXCEPTION_POINTERS* e_info)
 {
-	DumpExceptionInfo( e_info->ExceptionRecord->ExceptionCode, e_info );
+	DumpExceptionInfo(e_info->ExceptionRecord->ExceptionCode, e_info);
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
 
 // processSDL2Events ==========================================================
 /** Process SDL2 events and translate to Win32 message equivalents.
-    This function runs the event loop on non-Windows platforms.
-    Returns false when quit event is detected. */
-//=============================================================================
+	This function runs the event loop on non-Windows platforms.
+	Returns false when quit event is detected. */
+	//=============================================================================
 #ifndef _WIN32
 static Bool processSDL2Events()
 {
 	SDL_Event event;
-	
+
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
-			case SDL_QUIT:
-				// User clicked close button - translate to WM_CLOSE equivalent
-				if (!TheGameEngine->getQuitting()) {
-					TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
-				}
-				return false;  // Signal exit
-				
-			case SDL_WINDOWEVENT:
-				// Handle window events
-				if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-					// Window gained focus - WM_SETFOCUS equivalent
-					if (TheKeyboard)
-						TheKeyboard->resetKeys();
-					if (TheMouse)
-						TheMouse->regainFocus();
-					if (TheGameEngine)
-						TheGameEngine->setIsActive(true);
-					if (TheAudio)
-						TheAudio->regainFocus();
-				}
-				else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
-					// Window lost focus - WM_KILLFOCUS equivalent
-					if (TheKeyboard)
-						TheKeyboard->resetKeys();
-					if (TheMouse)
-						TheMouse->loseFocus();
-					if (TheGameEngine)
-						TheGameEngine->setIsActive(false);
-					if (TheAudio)
-						TheAudio->loseFocus();
-				}
-				else if (event.window.event == SDL_WINDOWEVENT_MOVED) {
-					// Window moved - refresh mouse capture if needed
-					if (TheMouse)
-						TheMouse->refreshCursorCapture();
-				}
-				else if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-					// Window resized - similar to WM_SIZE
-					gDoPaint = false;
-					if (TheMouse)
-						TheMouse->refreshCursorCapture();
-				}
-				break;
-				
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-				// Keyboard events - will be handled by SDL2 compat layer
-				// The key state is queried by TheKeyboard->getKey()
-				break;
-				
-			case SDL_MOUSEMOTION:
-			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEBUTTONUP:
-			case SDL_MOUSEWHEEL:
-				// Mouse events - will be handled by SDL2 compat layer
-				// The mouse state is queried by TheMouse->getPos(), etc.
-				break;
-				
-			default:
-				// Other SDL2 events (not relevant for game logic)
-				break;
+		case SDL_QUIT:
+			// User clicked close button - translate to WM_CLOSE equivalent
+			if (!TheGameEngine->getQuitting()) {
+				TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
+			}
+			return false;  // Signal exit
+
+		case SDL_WINDOWEVENT:
+			// Handle window events
+			if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+				// Window gained focus - WM_SETFOCUS equivalent
+				if (TheKeyboard)
+					TheKeyboard->resetKeys();
+				if (TheMouse)
+					TheMouse->regainFocus();
+				if (TheGameEngine)
+					TheGameEngine->setIsActive(true);
+				if (TheAudio)
+					TheAudio->regainFocus();
+			}
+			else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+				// Window lost focus - WM_KILLFOCUS equivalent
+				if (TheKeyboard)
+					TheKeyboard->resetKeys();
+				if (TheMouse)
+					TheMouse->loseFocus();
+				if (TheGameEngine)
+					TheGameEngine->setIsActive(false);
+				if (TheAudio)
+					TheAudio->loseFocus();
+			}
+			else if (event.window.event == SDL_WINDOWEVENT_MOVED) {
+				// Window moved - refresh mouse capture if needed
+				if (TheMouse)
+					TheMouse->refreshCursorCapture();
+			}
+			else if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+				// Window resized - similar to WM_SIZE
+				gDoPaint = false;
+				if (TheMouse)
+					TheMouse->refreshCursorCapture();
+			}
+			break;
+
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+			// Keyboard events - will be handled by SDL2 compat layer
+			// The key state is queried by TheKeyboard->getKey()
+			break;
+
+		case SDL_MOUSEMOTION:
+		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
+		case SDL_MOUSEWHEEL:
+			// Mouse events - will be handled by SDL2 compat layer
+			// The mouse state is queried by TheMouse->getPos(), etc.
+			break;
+
+		default:
+			// Other SDL2 events (not relevant for game logic)
+			break;
 		}
 	}
-	
+
 	return true;  // Continue running
 }
 #endif
@@ -1019,19 +1023,19 @@ static Bool processSDL2Events()
 /** Application entry point (Windows only) */
 //=============================================================================
 #ifdef _WIN32
-Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                      LPSTR lpCmdLine, Int nCmdShow )
+Int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+	LPSTR lpCmdLine, Int nCmdShow)
 {
 	Int exitcode = 1;
 
 #ifdef RTS_PROFILE
-  Profile::StartRange("init");
+	Profile::StartRange("init");
 #endif
 
 	try {
 
 #ifdef _WIN32
-		SetUnhandledExceptionFilter( UnHandledExceptionFilter );
+		SetUnhandledExceptionFilter(UnHandledExceptionFilter);
 #endif
 		//
 		// there is something about checkin in and out the .dsp and .dsw files
@@ -1052,22 +1056,22 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		/// @todo remove this force set of working directory later
 #ifdef _WIN32
-		Char buffer[ _MAX_PATH ];
-		GetModuleFileName( NULL, buffer, sizeof( buffer ) );
-		if (Char *pEnd = strrchr(buffer, '\\'))
+		Char buffer[_MAX_PATH];
+		GetModuleFileName(NULL, buffer, sizeof(buffer));
+		if (Char* pEnd = strrchr(buffer, GET_PATH_SEPARATOR()))
 		{
 			*pEnd = 0;
 		}
 		::SetCurrentDirectory(buffer);
 #endif
 
-		#ifdef RTS_DEBUG
-			// Turn on Memory heap tracking
-			int tmpFlag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
-			tmpFlag |= (_CRTDBG_LEAK_CHECK_DF|_CRTDBG_ALLOC_MEM_DF);
-			tmpFlag &= ~_CRTDBG_CHECK_CRT_DF;
-			_CrtSetDbgFlag( tmpFlag );
-		#endif
+#ifdef RTS_DEBUG
+		// Turn on Memory heap tracking
+		int tmpFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+		tmpFlag |= (_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF);
+		tmpFlag &= ~_CRTDBG_CHECK_CRT_DF;
+		_CrtSetDbgFlag(tmpFlag);
+#endif
 
 
 
@@ -1082,22 +1086,22 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 			// check both localized directory and root dir
 		char filePath[_MAX_PATH];
-		const char *fileName = "Install_Final.bmp";
-		static const char *localizedPathFormat = "Data/%s/";
-		sprintf(filePath,localizedPathFormat, GetRegistryLanguage().str());
+		const char* fileName = "Install_Final.bmp";
+		static const char* localizedPathFormat = "Data/%s/";
+		sprintf(filePath, localizedPathFormat, GetRegistryLanguage().str());
 		strlcat(filePath, fileName, ARRAY_SIZE(filePath));
-		FILE *fileImage = fopen(filePath, "r");
+		FILE* fileImage = fopen(filePath, "r");
 		if (fileImage) {
 			fclose(fileImage);
-			gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, filePath, IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
+			gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, filePath, IMAGE_BITMAP, 0, 0, LR_SHARED | LR_LOADFROMFILE);
 		}
 		else {
-			gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, fileName, IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
+			gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, fileName, IMAGE_BITMAP, 0, 0, LR_SHARED | LR_LOADFROMFILE);
 		}
 #else
 
 		// in release, the file only ever lives in the root dir
-		gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, "Install_Final.bmp", IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
+		gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, "Install_Final.bmp", IMAGE_BITMAP, 0, 0, LR_SHARED | LR_LOADFROMFILE);
 #endif
 #endif  // _WIN32
 
@@ -1105,14 +1109,14 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		InitializeGameSpyServerConfiguration();
 
 		// register windows class and create application window
-		if(!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
+		if (!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
 			return exitcode;
 
 #ifdef _WIN32
 		// save our application instance for future use
 		ApplicationHInstance = hInstance;
 
-		if (gLoadScreenBitmap!=NULL) {
+		if (gLoadScreenBitmap != NULL) {
 			::DeleteObject(gLoadScreenBitmap);
 			gLoadScreenBitmap = NULL;
 		}
@@ -1168,12 +1172,12 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		delete TheVersion;
 		TheVersion = NULL;
 
-	#ifdef MEMORYPOOL_DEBUG
+#ifdef MEMORYPOOL_DEBUG
 		TheMemoryPoolFactory->debugMemoryReport(REPORT_POOLINFO | REPORT_POOL_OVERFLOW | REPORT_SIMPLE_LEAKS, 0, 0);
-	#endif
-	#if defined(RTS_DEBUG)
+#endif
+#if defined(RTS_DEBUG)
 		TheMemoryPoolFactory->memoryPoolUsageReport("AAAMemStats");
-	#endif
+#endif
 
 		shutdownMemoryManager();
 
@@ -1196,15 +1200,15 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #else  // POSIX main() entry point
 
 // Non-Windows (SDL2) entry point
-Int main( Int argc, Char* argv[] )
+Int main(Int argc, Char* argv[])
 {
 	// Phase 54: Initialize POSIX command line FIRST before anything else
 	// This enables GetCommandLineA() to work correctly on non-Windows platforms
 	InitPosixCommandLine(argc, argv);
-	
+
 	fprintf(stderr, "POSIX main: Command line initialized: '%s'\n", GetCommandLineA());
 	fflush(stderr);
-	
+
 	Int exitcode = 1;
 	Int nCmdShow = 1;  // SW_NORMAL equivalent
 
@@ -1218,7 +1222,7 @@ Int main( Int argc, Char* argv[] )
 	try {
 		fprintf(stderr, "POSIX main: Starting up...\n");
 		fflush(stderr);
-		
+
 		TheAsciiStringCriticalSection = &critSec1;
 		TheUnicodeStringCriticalSection = &critSec2;
 		TheDmaCriticalSection = &critSec3;
@@ -1231,7 +1235,7 @@ Int main( Int argc, Char* argv[] )
 		fprintf(stderr, "POSIX main: initMemoryManager() done\n");
 		fflush(stderr);
 
-		if (Char *basePath = SDL_GetBasePath()) {
+		if (Char* basePath = SDL_GetBasePath()) {
 			fprintf(stderr, "POSIX main: SDL_GetBasePath returned: %s\n", basePath);
 			chdir(basePath);
 			SDL_free(basePath);
@@ -1242,30 +1246,30 @@ Int main( Int argc, Char* argv[] )
 		CommandLine::parseCommandLineForStartup();
 		fprintf(stderr, "POSIX main: parseCommandLineForStartup() done\n");
 		fflush(stderr);
-		
+
 		fprintf(stderr, "POSIX main: About to InitializeGameSpyServerConfiguration()...\n");
 		fflush(stderr);
 		InitializeGameSpyServerConfiguration();
 		fprintf(stderr, "POSIX main: InitializeGameSpyServerConfiguration() done\n");
 		fflush(stderr);
-		
+
 		fprintf(stderr, "POSIX main: TheGlobalData = %p\n", (void*)TheGlobalData);
 		fflush(stderr);
 
 		fprintf(stderr, "POSIX main: TheGlobalData->m_headless = %d\n", TheGlobalData->m_headless);
 		fflush(stderr);
-		
+
 		// Phase 54: Log windowed mode status for debugging
 		fprintf(stderr, "POSIX main: TheGlobalData->m_windowed = %d (from -win flag)\n", TheGlobalData->m_windowed);
 		fflush(stderr);
-		
+
 		if (!TheGlobalData->m_headless && initializeAppWindows(NULL, nCmdShow, TheGlobalData->m_windowed) == false) {
 			fprintf(stderr, "POSIX main: initializeAppWindows() returned false, shutting down\n");
 			fflush(stderr);
 			shutdownMemoryManager();
 			return exitcode;
 		}
-		
+
 		fprintf(stderr, "POSIX main: initializeAppWindows() succeeded\n");
 		fflush(stderr);
 
@@ -1337,10 +1341,10 @@ Int main( Int argc, Char* argv[] )
 // CreateGameEngine ===========================================================
 /** Create the game engine appropriate for the current platform */
 //=============================================================================
-GameEngine *CreateGameEngine( void )
+GameEngine* CreateGameEngine(void)
 {
 #ifdef _WIN32
-	Win32GameEngine *engine;
+	Win32GameEngine* engine;
 
 	engine = NEW Win32GameEngine;
 	//game engine may not have existed when app got focus so make sure it
@@ -1351,7 +1355,7 @@ GameEngine *CreateGameEngine( void )
 
 #else // POSIX/SDL2 platforms
 	// For cross-platform builds (macOS, Linux), use SDL2GameEngine
-	SDL2GameEngine *engine;
+	SDL2GameEngine* engine;
 	engine = NEW SDL2GameEngine;
 	// On POSIX, we assume the app is active by default (no focus model like Windows)
 	engine->setIsActive(true);

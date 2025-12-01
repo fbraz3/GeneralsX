@@ -41,9 +41,10 @@
 #include "Win32Device/Common/Win32BIGFile.h"
 #include "Win32Device/Common/Win32BIGFileSystem.h"
 #include "Utility/endian_compat.h"
+#include <Utility/compat.h>
 
 
-static const char *BIGFileIdentifier = "BIGF";
+static const char* BIGFileIdentifier = "BIGF";
 
 Win32BIGFileSystem::Win32BIGFileSystem() : ArchiveFileSystem() {
 }
@@ -60,13 +61,13 @@ void Win32BIGFileSystem::init() {
 	loadBigFilesFromDirectory("", "*.big");
 
 #if RTS_ZEROHOUR
-    // load original Generals assets
-    AsciiString installPath;
-    GetStringFromGeneralsRegistry("", "InstallPath", installPath );
-    //@todo this will need to be ramped up to a crash for release
-    DEBUG_ASSERTCRASH(installPath != "", ("Be 1337! Go install Generals!"));
-    if (installPath!="")
-      loadBigFilesFromDirectory(installPath, "*.big");
+	// load original Generals assets
+	AsciiString installPath;
+	GetStringFromGeneralsRegistry("", "InstallPath", installPath);
+	//@todo this will need to be ramped up to a crash for release
+	DEBUG_ASSERTCRASH(installPath != "", ("Be 1337! Go install Generals!"));
+	if (installPath != "")
+		loadBigFilesFromDirectory(installPath, "*.big");
 #endif
 }
 
@@ -79,8 +80,8 @@ void Win32BIGFileSystem::update() {
 void Win32BIGFileSystem::postProcessLoad() {
 }
 
-ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
-	File *fp = TheLocalFileSystem->openFile(filename, File::READ | File::BINARY);
+ArchiveFile* Win32BIGFileSystem::openArchiveFile(const Char* filename) {
+	File* fp = TheLocalFileSystem->openFile(filename, File::READ | File::BINARY);
 	AsciiString archiveFileName;
 	archiveFileName = filename;
 	archiveFileName.toLower();
@@ -110,26 +111,26 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 
 	DEBUG_LOG(("Win32BIGFileSystem::openArchiveFile - size of archive file is %d bytes", archiveFileSize));
 
-//	char t;
+	//	char t;
 
-	// read in the number of files contained in this BIG file.
-	// change the order of the bytes cause the file size is in reverse byte order for some reason.
+		// read in the number of files contained in this BIG file.
+		// change the order of the bytes cause the file size is in reverse byte order for some reason.
 	fp->read(&numLittleFiles, 4);
 	numLittleFiles = betoh(numLittleFiles);
 
 	DEBUG_LOG(("Win32BIGFileSystem::openArchiveFile - %d are contained in archive", numLittleFiles));
-//	for (Int i = 0; i < 2; ++i) {
-//		t = buffer[i];
-//		buffer[i] = buffer[(4-i)-1];
-//		buffer[(4-i)-1] = t;
-//	}
+	//	for (Int i = 0; i < 2; ++i) {
+	//		t = buffer[i];
+	//		buffer[i] = buffer[(4-i)-1];
+	//		buffer[(4-i)-1] = t;
+	//	}
 
-	// seek to the beginning of the directory listing.
+		// seek to the beginning of the directory listing.
 	fp->seek(0x10, File::START);
 	// read in each directory listing.
-	ArchivedFileInfo *fileInfo = NEW ArchivedFileInfo;
+	ArchivedFileInfo* fileInfo = NEW ArchivedFileInfo;
 	// TheSuperHackers @fix Mauller 23/04/2025 Create new file handle when necessary to prevent memory leak
-	ArchiveFile *archiveFile = NEW Win32BIGFile(filename, AsciiString::TheEmptyString);
+	ArchiveFile* archiveFile = NEW Win32BIGFile(filename, AsciiString::TheEmptyString);
 
 	for (Int i = 0; i < numLittleFiles; ++i) {
 		Int filesize = 0;
@@ -152,11 +153,11 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 		} while (buffer[pathIndex] != 0);
 
 		Int filenameIndex = pathIndex;
-		while ((filenameIndex >= 0) && (buffer[filenameIndex] != '\\') && (buffer[filenameIndex] != '/')) {
+		while ((filenameIndex >= 0) && (buffer[filenameIndex] != GET_PATH_SEPARATOR()[0])) {
 			--filenameIndex;
 		}
 
-		fileInfo->m_filename = (char *)(buffer + filenameIndex + 1);
+		fileInfo->m_filename = (char*)(buffer + filenameIndex + 1);
 		fileInfo->m_filename.toLower();
 		buffer[filenameIndex + 1] = 0;
 
@@ -166,7 +167,7 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 		AsciiString debugpath;
 		debugpath = path;
 		debugpath.concat(fileInfo->m_filename);
-//		DEBUG_LOG(("Win32BIGFileSystem::openArchiveFile - adding file %s to archive file %s, file number %d", debugpath.str(), fileInfo->m_archiveFilename.str(), i));
+		//		DEBUG_LOG(("Win32BIGFileSystem::openArchiveFile - adding file %s to archive file %s, file number %d", debugpath.str(), fileInfo->m_archiveFilename.str(), i));
 
 		archiveFile->addFile(path, fileInfo);
 	}
@@ -181,9 +182,9 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 	return archiveFile;
 }
 
-void Win32BIGFileSystem::closeArchiveFile(const Char *filename) {
+void Win32BIGFileSystem::closeArchiveFile(const Char* filename) {
 	// Need to close the specified big file
-	ArchiveFileMap::iterator it =  m_archiveFileMap.find(filename);
+	ArchiveFileMap::iterator it = m_archiveFileMap.find(filename);
 	if (it == m_archiveFileMap.end()) {
 		return;
 	}
@@ -216,7 +217,7 @@ Bool Win32BIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString 
 	Bool actuallyAdded = FALSE;
 	FilenameListIter it = filenameList.begin();
 	while (it != filenameList.end()) {
-		ArchiveFile *archiveFile = openArchiveFile((*it).str());
+		ArchiveFile* archiveFile = openArchiveFile((*it).str());
 
 		if (archiveFile != NULL) {
 			DEBUG_LOG(("Win32BIGFileSystem::loadBigFilesFromDirectory - loading %s into the directory tree.", (*it).str()));

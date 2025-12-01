@@ -1,185 +1,208 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "Build GeneralsXZH (macOS)",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--build",
-				"build/macos",
-				"--target",
-				"GeneralsXZH",
-				"-j",
-				"4",
-				"2>&1",
-				"|",
-				"tee",
-				"logs/build.log"
-			],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Build GeneralsX (macOS)",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--build",
-				"build/macos",
-				"--target",
-				"GeneralsX",
-				"-j",
-				"4",
-				"2>&1",
-				"|",
-				"tee",
-				"logs/build_generals.log"
-			],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Deploy GeneralsXZH (macOS)",
-			"type": "shell",
-			"command": "cp -v ${workspaceFolder}/build/macos/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Deploy completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true,
-			}
-		},
-		{
-			"label": "Deploy GeneralsX (macOS)",
-			"type": "shell",
-			"command": "cp -v ${workspaceFolder}/build/macos/Generals/GeneralsX $HOME/GeneralsX/Generals/GeneralsX && echo 'Deploy completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Sign GeneralsXZH (macOS)",
-			"type": "shell",
-			"command": "codesign --force --deep --sign - $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Sign completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Sign GeneralsX (macOS)",
-			"type": "shell",
-			"command": "codesign --force --deep --sign - $HOME/GeneralsX/Generals/GeneralsX && echo 'Sign completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Run GeneralsXZH Terminal (macOS)",
-			"type": "shell",
-			"command": "${workspaceFolder}/scripts/runTerminal.sh",
-			"args": [
-				"$HOME/GeneralsX/GeneralsMD/GeneralsXZH -win 2>&1 | tee ${workspaceFolder}/logs/runTerminal.log"
-			],
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Run GeneralsX Terminal (macOS)",
-			"type": "shell",
-			"command": "${workspaceFolder}/scripts/runTerminal.sh",
-			"args": [
-				"$HOME/GeneralsX/Generals/GeneralsX 2>&1 | tee ${workspaceFolder}/logs/runTerminal_generals.log"
-			],
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Debug GeneralsXZH Terminal (macOS)",
-			"type": "shell",
-			"command": "${workspaceFolder}/scripts/runTerminal.sh",
-			"args": [
-				"${workspaceFolder}/scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee ${workspaceFolder}/logs/debugTerminal.log"
-			],
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Debug GeneralsX Terminal (macOS)",
-			"type": "shell",
-			"command": "${workspaceFolder}/scripts/runTerminal.sh",
-			"args": [
-				"${workspaceFolder}/scripts/lldb_debug.sh $HOME/GeneralsX/Generals/GeneralsX 2>&1 | tee ${workspaceFolder}/logs/debugTerminal_generals.log"
-			],
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		}
-	]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build GeneralsXZH (macOS)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "build/macos",
+                "--target",
+                "GeneralsXZH",
+                "-j",
+                "4",
+                "2>&1",
+                "|",
+                "tee",
+                "logs/build.log"
+            ],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Build GeneralsX (macOS)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "build/macos",
+                "--target",
+                "GeneralsX",
+                "-j",
+                "4",
+                "2>&1",
+                "|",
+                "tee",
+                "logs/build_generals.log"
+            ],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Deploy GeneralsXZH (macOS)",
+            "type": "shell",
+            "command": "cp -v ${workspaceFolder}/build/macos/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Deploy completed successfully'",
+            "args": [],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Deploy GeneralsX (macOS)",
+            "type": "shell",
+            "command": "cp -v ${workspaceFolder}/build/macos/Generals/GeneralsX $HOME/GeneralsX/Generals/GeneralsX && echo 'Deploy completed successfully'",
+            "args": [],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Sign GeneralsXZH (macOS)",
+            "type": "shell",
+            "command": "codesign --force --deep --sign - $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Sign completed successfully'",
+            "args": [],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Sign GeneralsX (macOS)",
+            "type": "shell",
+            "command": "codesign --force --deep --sign - $HOME/GeneralsX/Generals/GeneralsX && echo 'Sign completed successfully'",
+            "args": [],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Run GeneralsXZH Terminal (macOS)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/runTerminal.sh",
+            "args": [
+                "$HOME/GeneralsX/GeneralsMD/GeneralsXZH -win 2>&1 | tee ${workspaceFolder}/logs/runTerminal.log"
+            ],
+            "isBackground": false,
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Run GeneralsX Terminal (macOS)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/runTerminal.sh",
+            "args": [
+                "$HOME/GeneralsX/Generals/GeneralsX 2>&1 | tee ${workspaceFolder}/logs/runTerminal_generals.log"
+            ],
+            "isBackground": false,
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Debug GeneralsXZH Terminal (macOS)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/runTerminal.sh",
+            "args": [
+                "${workspaceFolder}/scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee ${workspaceFolder}/logs/debugTerminal.log"
+            ],
+            "isBackground": false,
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Debug GeneralsX Terminal (macOS)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/runTerminal.sh",
+            "args": [
+                "${workspaceFolder}/scripts/lldb_debug.sh $HOME/GeneralsX/Generals/GeneralsX 2>&1 | tee ${workspaceFolder}/logs/debugTerminal_generals.log"
+            ],
+            "isBackground": false,
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++ build active file",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Task generated by Debugger."
+        }
+    ]
 }

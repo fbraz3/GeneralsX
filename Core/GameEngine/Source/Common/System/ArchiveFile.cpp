@@ -32,7 +32,7 @@
 #include "Common/ArchiveFileSystem.h"
 #include "Common/file.h"
 #include "Common/PerfTimer.h"
-
+#include "Utility/compat.h"
 
 // checks to see if str matches searchString.  Search string is done in the
 // using * and ? as wildcards. * is used to denote any number of characters,
@@ -49,14 +49,15 @@ static Bool SearchStringMatches(AsciiString str, AsciiString searchString)
 		return FALSE;
 	}
 
-	const char *c1 = str.str();
-	const char *c2 = searchString.str();
+	const char* c1 = str.str();
+	const char* c2 = searchString.str();
 
 	while ((*c1 == *c2) || (*c2 == '?') || (*c2 == '*')) {
 		if ((*c1 == *c2) || (*c2 == '?')) {
 			++c1;
 			++c2;
-		} else if (*c2 == '*') {
+		}
+		else if (*c2 == '*') {
 			++c2;
 			if (*c2 == 0) {
 				return TRUE;
@@ -94,14 +95,15 @@ ArchiveFile::ArchiveFile()
 {
 }
 
-void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo *fileInfo)
+void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileInfo)
 {
-	DetailedArchivedDirectoryInfo *dirInfo = &m_rootDirectory;
+	DetailedArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
 	AsciiString token;
 	AsciiString tokenizer = path;
 	tokenizer.toLower();
-	tokenizer.nextToken(&token, "\\/");
+	// Use backslash since .big files store Windows-style paths
+	tokenizer.nextToken(&token, "\\");
 
 	while (token.getLength() > 0)
 	{
@@ -116,49 +118,82 @@ void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo *fileI
 			dirInfo = &tempiter->second;
 		}
 
-		tokenizer.nextToken(&token, "\\/");
+		tokenizer.nextToken(&token, "\\");
 	}
 
 	dirInfo->m_files[fileInfo->m_filename] = *fileInfo;
 }
 
-void ArchiveFile::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const
+void ArchiveFile::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList& filenameList, Bool searchSubdirectories) const
 {
-	const DetailedArchivedDirectoryInfo *dirInfo = &m_rootDirectory;
+	const DetailedArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
 	AsciiString token;
 	AsciiString tokenizer = originalDirectory;
 	tokenizer.toLower();
-	tokenizer.nextToken(&token, "\\/");
+
+	// Normalize forward slashes to backslashes (archive uses Windows-style paths)
+	for (char* p = const_cast<char*>(tokenizer.str()); *p; ++p) {
+		if (*p == '/') *p = '\\';
+	}
+
+	fprintf(stderr, "[ArchiveFile::getFileListInDirectory] originalDir='%s', search='%s'\n",
+		originalDirectory.str(), searchName.str());
+	fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Tokenizer (normalized): '%s'\n",
+		tokenizer.str());
+	fflush(stderr);
+
+	// Use backslash since .big files store Windows-style paths
+	tokenizer.nextToken(&token, "\\");
 
 	while (token.getLength() > 0) {
+		fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Looking for dir token: '%s'\n", token.str());
+		fflush(stderr);
 
 		DetailedArchivedDirectoryInfoMap::const_iterator it = dirInfo->m_directories.find(token);
 		if (it != dirInfo->m_directories.end())
 		{
 			dirInfo = &it->second;
+			fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Found directory: '%s'\n", token.str());
+			fflush(stderr);
 		}
 		else
 		{
 			// if the directory doesn't exist, then there aren't any files to be had.
+			fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Directory NOT FOUND: '%s'\n", token.str());
+			fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Available directories at this level (%zu):\n",
+				dirInfo->m_directories.size());
+			fflush(stderr);
+			int count = 0;
+			for (DetailedArchivedDirectoryInfoMap::const_iterator dit = dirInfo->m_directories.begin();
+				dit != dirInfo->m_directories.end() && count < 30; ++dit, ++count)
+			{
+				fprintf(stderr, "  [%d] '%s'\n", count, dit->first.str());
+			}
+			if (dirInfo->m_directories.size() > 30) {
+				fprintf(stderr, "  ... and %zu more\n", dirInfo->m_directories.size() - 30);
+			}
+			fflush(stderr);
 			return;
 		}
 
-		tokenizer.nextToken(&token, "\\/");
+		tokenizer.nextToken(&token, "\\");
 	}
 
+	fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Directory found, searching for files matching '%s'\n", searchName.str());
+	fflush(stderr);
 	getFileListInDirectory(dirInfo, originalDirectory, searchName, filenameList, searchSubdirectories);
 }
 
-void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo *dirInfo, const AsciiString& currentDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const
+void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo* dirInfo, const AsciiString& currentDirectory, const AsciiString& searchName, FilenameList& filenameList, Bool searchSubdirectories) const
 {
 	DetailedArchivedDirectoryInfoMap::const_iterator diriter = dirInfo->m_directories.begin();
 	while (diriter != dirInfo->m_directories.end()) {
-		const DetailedArchivedDirectoryInfo *tempDirInfo = &(diriter->second);
+		const DetailedArchivedDirectoryInfo* tempDirInfo = &(diriter->second);
 		AsciiString tempdirname;
 		tempdirname = currentDirectory;
-		if ((tempdirname.getLength() > 0) && (!tempdirname.endsWith("\\"))) {
-			tempdirname.concat('\\');
+		if ((tempdirname.getLength() > 0) && (!tempdirname.endsWith((char*)GET_PATH_SEPARATOR()))) {
+			tempdirname.concat(GET_PATH_SEPARATOR());
 		}
 		tempdirname.concat(tempDirInfo->m_directoryName);
 		getFileListInDirectory(tempDirInfo, tempdirname, searchName, filenameList, searchSubdirectories);
@@ -170,8 +205,8 @@ void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo *di
 		if (SearchStringMatches(fileiter->second.m_filename, searchName)) {
 			AsciiString tempfilename;
 			tempfilename = currentDirectory;
-			if ((tempfilename.getLength() > 0) && (!tempfilename.endsWith("\\"))) {
-				tempfilename.concat('\\');
+			if ((tempfilename.getLength() > 0) && (!tempfilename.endsWith((char*)GET_PATH_SEPARATOR()))) {
+				tempfilename.concat(GET_PATH_SEPARATOR());
 			}
 			tempfilename.concat(fileiter->second.m_filename);
 			if (filenameList.find(tempfilename) == filenameList.end()) {
@@ -183,7 +218,7 @@ void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo *di
 	}
 }
 
-void ArchiveFile::attachFile(File *file)
+void ArchiveFile::attachFile(File* file)
 {
 	if (m_file != NULL) {
 		m_file->close();
@@ -192,14 +227,14 @@ void ArchiveFile::attachFile(File *file)
 	m_file = file;
 }
 
-const ArchivedFileInfo * ArchiveFile::getArchivedFileInfo(const AsciiString& filename) const
+const ArchivedFileInfo* ArchiveFile::getArchivedFileInfo(const AsciiString& filename) const
 {
-	const DetailedArchivedDirectoryInfo *dirInfo = &m_rootDirectory;
+	const DetailedArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
 	AsciiString token;
 	AsciiString tokenizer = filename;
 	tokenizer.toLower();
-	tokenizer.nextToken(&token, "\\/");
+	tokenizer.nextToken(&token, (char*)GET_PATH_SEPARATOR());
 
 	while (!token.find('.') || tokenizer.find('.'))
 	{
@@ -213,7 +248,7 @@ const ArchivedFileInfo * ArchiveFile::getArchivedFileInfo(const AsciiString& fil
 			return NULL;
 		}
 
-		tokenizer.nextToken(&token, "\\/");
+		tokenizer.nextToken(&token, (char*)GET_PATH_SEPARATOR());
 	}
 
 	ArchivedFileInfoMap::const_iterator it = dirInfo->m_files.find(token);

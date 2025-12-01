@@ -60,34 +60,35 @@
 #include "GameLogic/FPUControl.h"
 #include "GameNetwork/GameInfo.h"
 #include "GameNetwork/NetworkDefs.h"
+#include <Utility/compat.h>
 
 
 //-------------------------------------------------------------------------------
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
-static const char *mapExtension = ".map";
+static const char* mapExtension = ".map";
 
 static Int m_width = 0;						///< Height map width.
 static Int m_height = 0;					///< Height map height (y size of array).
 static Int m_borderSize = 0;			///< Non-playable border area.
 static std::vector<ICoord2D> m_boundaries;	///< All the boundaries we use for the map
 static Int m_dataSize = 0;				///< size of m_data.
-static UnsignedByte *m_data = 0;	///< array of z(height) values in the height map.
+static UnsignedByte* m_data = 0;	///< array of z(height) values in the height map.
 static Dict worldDict = 0;
 
-static WaypointMap *m_waypoints = 0;
+static WaypointMap* m_waypoints = 0;
 static Coord3DList	m_supplyPositions;
 static Coord3DList	m_techPositions;
 
 static Int m_mapDX = 0;
 static Int m_mapDY = 0;
 
-static UnsignedInt calcCRC( AsciiString fname )
+static UnsignedInt calcCRC(AsciiString fname)
 {
 	CRC theCRC;
 	theCRC.clear();
 
-	File *fp = TheFileSystem->openFile(fname.str(), File::READ);
-	if( !fp )
+	File* fp = TheFileSystem->openFile(fname.str(), File::READ);
+	if (!fp)
 	{
 		DEBUG_CRASH(("Couldn't open '%s'", fname.str()));
 		return 0;
@@ -95,7 +96,7 @@ static UnsignedInt calcCRC( AsciiString fname )
 
 	UnsignedByte buf[4096];
 	Int num;
-	while ( (num=fp->read(buf, 4096)) > 0 )
+	while ((num = fp->read(buf, 4096)) > 0)
 	{
 		theCRC.computeCRC(buf, num);
 	}
@@ -106,7 +107,7 @@ static UnsignedInt calcCRC( AsciiString fname )
 	return theCRC.get();
 }
 
-static Bool ParseObjectDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+static Bool ParseObjectDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
 	Bool readDict = info->version >= K_OBJECTS_VERSION_2;
 
@@ -127,13 +128,13 @@ static Bool ParseObjectDataChunk(DataChunkInput &file, DataChunkInfo *info, void
 	{
 		d = file.readDict();
 	}
-	MapObject *pThisOne;
+	MapObject* pThisOne;
 
 	// create the map object
-	pThisOne = newInstance( MapObject )( loc, name, angle, flags, &d,
-														TheThingFactory->findTemplate( name ) );
+	pThisOne = newInstance(MapObject)(loc, name, angle, flags, &d,
+		TheThingFactory->findTemplate(name));
 
-//DEBUG_LOG(("obj %s owner %s",name.str(),d.getAsciiString(TheKey_originalOwner).str()));
+	//DEBUG_LOG(("obj %s owner %s",name.str(),d.getAsciiString(TheKey_originalOwner).str()));
 
 	if (pThisOne->getProperties()->getType(TheKey_waypointID) == Dict::DICT_INT)
 	{
@@ -155,26 +156,27 @@ static Bool ParseObjectDataChunk(DataChunkInput &file, DataChunkInfo *info, void
 	return TRUE;
 }
 
-static Bool ParseObjectsDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+static Bool ParseObjectsDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
 	file.m_currentObject = NULL;
-	file.registerParser( AsciiString("Object"), info->label, ParseObjectDataChunk );
+	file.registerParser(AsciiString("Object"), info->label, ParseObjectDataChunk);
 	return (file.parse(userData));
 }
 
-static Bool ParseWorldDictDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+static Bool ParseWorldDictDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
 	worldDict = file.readDict();
 	return true;
 }
 
-static Bool ParseSizeOnly(DataChunkInput &file, DataChunkInfo *info, void *userData)
+static Bool ParseSizeOnly(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
 	m_width = file.readInt();
 	m_height = file.readInt();
 	if (info->version >= K_HEIGHT_MAP_VERSION_3) {
 		m_borderSize = file.readInt();
-	} else {
+	}
+	else {
 		m_borderSize = 0;
 	}
 
@@ -190,18 +192,18 @@ static Bool ParseSizeOnly(DataChunkInput &file, DataChunkInfo *info, void *userD
 
 	m_dataSize = file.readInt();
 	m_data = NEW UnsignedByte[m_dataSize];	// pool[]ify
-	if (m_dataSize <= 0 || (m_dataSize != (m_width*m_height))) {
-		throw ERROR_CORRUPT_FILE_FORMAT	;
+	if (m_dataSize <= 0 || (m_dataSize != (m_width * m_height))) {
+		throw ERROR_CORRUPT_FILE_FORMAT;
 	}
-	file.readArrayOfBytes((char *)m_data, m_dataSize);
+	file.readArrayOfBytes((char*)m_data, m_dataSize);
 	// Resize me.
 	if (info->version == K_HEIGHT_MAP_VERSION_1) {
-		Int newWidth = (m_width+1)/2;
-		Int newHeight = (m_height+1)/2;
+		Int newWidth = (m_width + 1) / 2;
+		Int newHeight = (m_height + 1) / 2;
 		Int i, j;
-		for (i=0; i<newHeight; i++) {
-			for (j=0; j<newWidth; j++) {
-				m_data[i*newWidth+j] = m_data[2*i*m_width+2*j];
+		for (i = 0; i < newHeight; i++) {
+			for (j = 0; j < newWidth; j++) {
+				m_data[i * newWidth + j] = m_data[2 * i * m_width + 2 * j];
 			}
 		}
 		m_width = newWidth;
@@ -210,40 +212,40 @@ static Bool ParseSizeOnly(DataChunkInput &file, DataChunkInfo *info, void *userD
 	return true;
 }
 
-static Bool ParseSizeOnlyInChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+static Bool ParseSizeOnlyInChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
 	return ParseSizeOnly(file, info, userData);
 }
 
-static Bool loadMap( AsciiString filename )
+static Bool loadMap(AsciiString filename)
 {
 	CachedFileInputStream fileStrm;
 
-	if( !fileStrm.open(filename) )
+	if (!fileStrm.open(filename))
 	{
 		return FALSE;
 	}
 
-	ChunkInputStream *pStrm = &fileStrm;
+	ChunkInputStream* pStrm = &fileStrm;
 
-	DataChunkInput file( pStrm );
+	DataChunkInput file(pStrm);
 
 	m_waypoints = NEW WaypointMap;
 
-	file.registerParser( AsciiString("HeightMapData"), AsciiString::TheEmptyString, ParseSizeOnlyInChunk );
-	file.registerParser( AsciiString("WorldInfo"), AsciiString::TheEmptyString, ParseWorldDictDataChunk );
-	file.registerParser( AsciiString("ObjectsList"), AsciiString::TheEmptyString, ParseObjectsDataChunk );
+	file.registerParser(AsciiString("HeightMapData"), AsciiString::TheEmptyString, ParseSizeOnlyInChunk);
+	file.registerParser(AsciiString("WorldInfo"), AsciiString::TheEmptyString, ParseWorldDictDataChunk);
+	file.registerParser(AsciiString("ObjectsList"), AsciiString::TheEmptyString, ParseObjectsDataChunk);
 	if (!file.parse(NULL)) {
 		throw(ERROR_CORRUPT_FILE_FORMAT);
 	}
 
-	m_mapDX = m_width  - 2*m_borderSize;
-	m_mapDY = m_height - 2*m_borderSize;
+	m_mapDX = m_width - 2 * m_borderSize;
+	m_mapDY = m_height - 2 * m_borderSize;
 
 	return TRUE;
 }
 
-static void resetMap( void )
+static void resetMap(void)
 {
 	delete[] m_data;
 	m_data = NULL;
@@ -255,7 +257,7 @@ static void resetMap( void )
 	m_supplyPositions.clear();
 }
 
-static void getExtent( Region3D *extent )
+static void getExtent(Region3D* extent)
 {
 	extent->lo.x = 0.0f;
 
@@ -263,8 +265,8 @@ static void getExtent( Region3D *extent )
 
 	// Note - m_mapDX & Y are the number of height map grids wide, so we have to
 	// multiply by the grid width.
-	extent->hi.x = m_mapDX*MAP_XY_FACTOR;
-	extent->hi.y = m_mapDY*MAP_XY_FACTOR;
+	extent->hi.x = m_mapDX * MAP_XY_FACTOR;
+	extent->hi.y = m_mapDY * MAP_XY_FACTOR;
 
 	extent->lo.z = 0;
 	extent->hi.z = 0;
@@ -272,7 +274,7 @@ static void getExtent( Region3D *extent )
 
 //-------------------------------------------------------------------------------
 
-void WaypointMap::update( void )
+void WaypointMap::update(void)
 {
 	if (!m_waypoints)
 	{
@@ -292,9 +294,9 @@ void WaypointMap::update( void )
 	}
 
 	m_numStartSpots = 0;
-	for (Int i=0; i<MAX_SLOTS; ++i)
+	for (Int i = 0; i < MAX_SLOTS; ++i)
 	{
-		startingCamName.format("Player_%d_Start", i+1); // start pos waypoints are 1-based
+		startingCamName.format("Player_%d_Start", i + 1); // start pos waypoints are 1-based
 		it = m_waypoints->find(startingCamName);
 		if (it != m_waypoints->end())
 		{
@@ -310,7 +312,7 @@ void WaypointMap::update( void )
 	m_numStartSpots = std::max(1, m_numStartSpots);
 }
 
-const char *const MapCache::m_mapCacheName = "MapCache.ini";
+const char* const MapCache::m_mapCacheName = "MapCache.ini";
 
 AsciiString MapCache::getMapDir() const
 {
@@ -329,15 +331,15 @@ AsciiString MapCache::getMapExtension() const
 	return AsciiString("map");
 }
 
-void MapCache::writeCacheINI( const AsciiString &mapDir )
+void MapCache::writeCacheINI(const AsciiString& mapDir)
 {
 	AsciiString filepath = mapDir;
-	filepath.concat('\\');
+	filepath.concat(GET_PATH_SEPARATOR());
 
 	TheFileSystem->createDirectory(mapDir);
 
 	filepath.concat(m_mapCacheName);
-	FILE *fp = fopen(filepath.str(), "w");
+	FILE* fp = fopen(filepath.str(), "w");
 	DEBUG_ASSERTCRASH(fp != NULL, ("Failed to create %s", filepath.str()));
 	if (fp == NULL) {
 		return;
@@ -352,21 +354,21 @@ void MapCache::writeCacheINI( const AsciiString &mapDir )
 	{
 		if (it->first.startsWithNoCase(mapDir.str()))
 		{
-			const MapMetaData &md = it->second;
+			const MapMetaData& md = it->second;
 			fprintf(fp, "\nMapCache %s\n", AsciiStringToQuotedPrintable(it->first.str()).str());
 			fprintf(fp, "  fileSize = %u\n", md.m_filesize);
 			fprintf(fp, "  fileCRC = %u\n", md.m_CRC);
 			fprintf(fp, "  timestampLo = %d\n", md.m_timestamp.m_lowTimeStamp);
 			fprintf(fp, "  timestampHi = %d\n", md.m_timestamp.m_highTimeStamp);
-			fprintf(fp, "  isOfficial = %s\n", (md.m_isOfficial)?"yes":"no");
+			fprintf(fp, "  isOfficial = %s\n", (md.m_isOfficial) ? "yes" : "no");
 
-			fprintf(fp, "  isMultiplayer = %s\n", (md.m_isMultiplayer)?"yes":"no");
+			fprintf(fp, "  isMultiplayer = %s\n", (md.m_isMultiplayer) ? "yes" : "no");
 			fprintf(fp, "  numPlayers = %d\n", md.m_numPlayers);
 
 			fprintf(fp, "  extentMin = X:%2.2f Y:%2.2f Z:%2.2f\n", md.m_extent.lo.x, md.m_extent.lo.y, md.m_extent.lo.z);
 			fprintf(fp, "  extentMax = X:%2.2f Y:%2.2f Z:%2.2f\n", md.m_extent.hi.x, md.m_extent.hi.y, md.m_extent.hi.z);
 
-// BAD AND NOW UNUSED:  the mapcache.ini should not contain localized data... using the lookup tag instead
+			// BAD AND NOW UNUSED:  the mapcache.ini should not contain localized data... using the lookup tag instead
 #if RTS_GENERALS
 			fprintf(fp, "  displayName = %s\n", UnicodeStringToQuotedPrintable(md.m_displayName).str());
 #else
@@ -404,7 +406,7 @@ void MapCache::writeCacheINI( const AsciiString &mapDir )
 	fclose(fp);
 }
 
-void MapCache::updateCache( void )
+void MapCache::updateCache(void)
 {
 	setFPMode();
 
@@ -457,12 +459,12 @@ void MapCache::updateCache( void )
 	}
 }
 
-void MapCache::prepareUnseenMaps( const AsciiString &mapDir )
+void MapCache::prepareUnseenMaps(const AsciiString& mapDir)
 {
 	MapCache::iterator it = begin();
 	for (; it != end(); ++it)
 	{
-		const AsciiString &mapName = it->first;
+		const AsciiString& mapName = it->first;
 
 		if (mapName.startsWithNoCase(mapDir.str()))
 		{
@@ -471,7 +473,7 @@ void MapCache::prepareUnseenMaps( const AsciiString &mapDir )
 	}
 }
 
-Bool MapCache::clearUnseenMaps( const AsciiString &mapDir )
+Bool MapCache::clearUnseenMaps(const AsciiString& mapDir)
 {
 	Bool erasedSomething = FALSE;
 
@@ -481,8 +483,8 @@ Bool MapCache::clearUnseenMaps( const AsciiString &mapDir )
 		MapCache::iterator next = it;
 		++next;
 
-		const AsciiString &mapName = it->first;
-		const MapMetaData &mapData = it->second;
+		const AsciiString& mapName = it->first;
+		const MapMetaData& mapData = it->second;
 
 		if (mapName.startsWithNoCase(mapDir.str()) && !mapData.m_doesExist)
 		{
@@ -496,7 +498,7 @@ Bool MapCache::clearUnseenMaps( const AsciiString &mapDir )
 	return erasedSomething;
 }
 
-void MapCache::loadMapsFromMapCacheINI( const AsciiString &mapDir )
+void MapCache::loadMapsFromMapCacheINI(const AsciiString& mapDir)
 {
 	INI ini;
 	AsciiString fname;
@@ -504,11 +506,11 @@ void MapCache::loadMapsFromMapCacheINI( const AsciiString &mapDir )
 
 	if (TheFileSystem->doesFileExist(fname.str()))
 	{
-		ini.load( fname, INI_LOAD_OVERWRITE, NULL );
+		ini.load(fname, INI_LOAD_OVERWRITE, NULL);
 	}
 }
 
-Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Bool filterByAllowedMaps )
+Bool MapCache::loadMapsFromDisk(const AsciiString& mapDir, Bool isOfficial, Bool filterByAllowedMaps)
 {
 	prepareUnseenMaps(mapDir);
 
@@ -530,7 +532,7 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 		AsciiString filepathLower = *filepathIt;
 		filepathLower.toLower();
 
-		const char *szFilenameLower = filepathLower.reverseFind('\\');
+		const char* szFilenameLower = filepathLower.reverseFindPathSeparator();
 		if (!szFilenameLower)
 		{
 			DEBUG_CRASH(("Couldn't find \\ in map name!"));
@@ -538,7 +540,7 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 		}
 
 		AsciiString endingStr;
-		AsciiString filenameLower = szFilenameLower+1;
+		AsciiString filenameLower = szFilenameLower + 1;
 		filenameLower.truncateBy(strlen(mapExtension));
 
 		if (filterByAllowedMaps && m_allowedMaps.find(filenameLower) == m_allowedMaps.end())
@@ -573,10 +575,10 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 }
 
 Bool MapCache::addMap(
-	const AsciiString &mapDir,
-	const AsciiString &fname,
-	const AsciiString &lowerFname,
-	FileInfo &fileInfo,
+	const AsciiString& mapDir,
+	const AsciiString& fname,
+	const AsciiString& lowerFname,
+	FileInfo& fileInfo,
 	Bool isOfficial)
 {
 	MapCache::iterator it = find(lowerFname);
@@ -592,7 +594,7 @@ Bool MapCache::addMap(
 			{
 				// unofficial maps or maps without names
 				AsciiString tempdisplayname;
-				tempdisplayname = fname.reverseFind('\\') + 1;
+				tempdisplayname = fname.reverseFindPathSeparator() + 1;
 				(*this)[lowerFname].m_displayName.translate(tempdisplayname);
 				if (md.m_numPlayers >= 2)
 				{
@@ -615,16 +617,16 @@ Bool MapCache::addMap(
 
 			it->second.m_doesExist = TRUE;
 
-//			DEBUG_LOG(("MapCache::addMap - found match for map %s", lowerFname.str()));
+			//			DEBUG_LOG(("MapCache::addMap - found match for map %s", lowerFname.str()));
 			return FALSE;	// OK, it checks out.
 		}
 		DEBUG_LOG(("%s didn't match file in MapCache", fname.str()));
 		DEBUG_LOG(("size: %d / %d", fileInfo.sizeLow, md.m_filesize));
 		DEBUG_LOG(("time1: %d / %d", fileInfo.timestampHigh, md.m_timestamp.m_highTimeStamp));
 		DEBUG_LOG(("time2: %d / %d", fileInfo.timestampLow, md.m_timestamp.m_lowTimeStamp));
-//		DEBUG_LOG(("size: %d / %d", filesize, md.m_filesize));
-//		DEBUG_LOG(("time1: %d / %d", timestamp.m_highTimeStamp, md.m_timestamp.m_highTimeStamp));
-//		DEBUG_LOG(("time2: %d / %d", timestamp.m_lowTimeStamp, md.m_timestamp.m_lowTimeStamp));
+		//		DEBUG_LOG(("size: %d / %d", filesize, md.m_filesize));
+		//		DEBUG_LOG(("time1: %d / %d", timestamp.m_highTimeStamp, md.m_timestamp.m_highTimeStamp));
+		//		DEBUG_LOG(("time2: %d / %d", timestamp.m_lowTimeStamp, md.m_timestamp.m_lowTimeStamp));
 	}
 
 	DEBUG_LOG(("MapCache::addMap(): caching '%s' because '%s' was not found", fname.str(), lowerFname.str()));
@@ -654,7 +656,7 @@ Bool MapCache::addMap(
 	{
 		DEBUG_LOG(("Missing TheKey_mapName!"));
 		AsciiString tempdisplayname;
-		tempdisplayname = fname.reverseFind('\\') + 1;
+		tempdisplayname = fname.reverseFindPathSeparator() + 1;
 		md.m_displayName.translate(tempdisplayname);
 		if (md.m_numPlayers >= 2)
 		{
@@ -690,9 +692,9 @@ Bool MapCache::addMap(
 	DEBUG_LOG(("  displayName = %ls", md.m_displayName.str()));
 	DEBUG_LOG(("  CRC = %X", md.m_CRC));
 	DEBUG_LOG(("  timestamp = %d", md.m_timestamp));
-	DEBUG_LOG(("  isOfficial = %s", (md.m_isOfficial)?"yes":"no"));
+	DEBUG_LOG(("  isOfficial = %s", (md.m_isOfficial) ? "yes" : "no"));
 
-	DEBUG_LOG(("  isMultiplayer = %s", (md.m_isMultiplayer)?"yes":"no"));
+	DEBUG_LOG(("  isMultiplayer = %s", (md.m_isMultiplayer) ? "yes" : "no"));
 	DEBUG_LOG(("  numPlayers = %d", md.m_numPlayers));
 
 	DEBUG_LOG(("  extent = (%2.2f,%2.2f) -> (%2.2f,%2.2f)",
@@ -712,11 +714,11 @@ Bool MapCache::addMap(
 	return TRUE;
 }
 
-MapCache *TheMapCache = NULL;
+MapCache* TheMapCache = NULL;
 
 // PUBLIC FUNCTIONS //////////////////////////////////////////////////////////////////////////////
 
-Bool WouldMapTransfer( const AsciiString& mapName )
+Bool WouldMapTransfer(const AsciiString& mapName)
 {
 	return mapName.startsWithNoCase(TheMapCache->getUserMapDir());
 }
@@ -725,13 +727,13 @@ Bool WouldMapTransfer( const AsciiString& mapName )
 typedef std::set<UnicodeString, rts::less_than_nocase<UnicodeString> > MapNameList;
 typedef std::map<UnicodeString, AsciiString> MapDisplayToFileNameList;
 
-static void buildMapListForNumPlayers(MapNameList &outMapNames, MapDisplayToFileNameList &outFileNames, Int numPlayers)
+static void buildMapListForNumPlayers(MapNameList& outMapNames, MapDisplayToFileNameList& outFileNames, Int numPlayers)
 {
 	MapCache::iterator it = TheMapCache->begin();
 
 	for (; it != TheMapCache->end(); ++it)
 	{
-		const MapMetaData &mapData = it->second;
+		const MapMetaData& mapData = it->second;
 		if (mapData.m_numPlayers == numPlayers)
 		{
 			outMapNames.insert(it->second.m_displayName);
@@ -761,17 +763,17 @@ struct MapListBoxData
 	{
 	}
 
-	GameWindow *listbox;
+	GameWindow* listbox;
 	Int numLength;
 	Int numColumns;
 	Int w;
 	Int h;
 	Color color;
-	const SkirmishBattleHonors *battleHonors;
-	const Image *easyImage;
-	const Image *mediumImage;
-	const Image *brutalImage;
-	const Image *maxBrutalImage;
+	const SkirmishBattleHonors* battleHonors;
+	const Image* easyImage;
+	const Image* mediumImage;
+	const Image* brutalImage;
+	const Image* maxBrutalImage;
 	AsciiString mapToSelect;
 	Int selectionIndex;
 	Bool isMultiplayer;
@@ -804,33 +806,33 @@ static Bool addMapToMapListbox(
 				const Int maxBrutalSlots = mapMetaData.m_numPlayers - 1;
 				if (lbData.maxBrutalImage != NULL && numBrutal == maxBrutalSlots)
 				{
-					index = GadgetListBoxAddEntryImage( lbData.listbox, lbData.maxBrutalImage, index, 0, lbData.w, lbData.h, TRUE);
+					index = GadgetListBoxAddEntryImage(lbData.listbox, lbData.maxBrutalImage, index, 0, lbData.w, lbData.h, TRUE);
 					imageItemData = 4;
 				}
 				else
 				{
-					index = GadgetListBoxAddEntryImage( lbData.listbox, lbData.brutalImage, index, 0, lbData.w, lbData.h, TRUE);
+					index = GadgetListBoxAddEntryImage(lbData.listbox, lbData.brutalImage, index, 0, lbData.w, lbData.h, TRUE);
 					imageItemData = 3;
 				}
 			}
 			else if (numMedium)
 			{
 				imageItemData = 2;
-				index = GadgetListBoxAddEntryImage( lbData.listbox, lbData.mediumImage, index, 0, lbData.w, lbData.h, TRUE);
+				index = GadgetListBoxAddEntryImage(lbData.listbox, lbData.mediumImage, index, 0, lbData.w, lbData.h, TRUE);
 			}
 			else if (numEasy)
 			{
 				imageItemData = 1;
-				index = GadgetListBoxAddEntryImage( lbData.listbox, lbData.easyImage, index, 0, lbData.w, lbData.h, TRUE);
+				index = GadgetListBoxAddEntryImage(lbData.listbox, lbData.easyImage, index, 0, lbData.w, lbData.h, TRUE);
 			}
 			else
 			{
 				imageItemData = 0;
-				index = GadgetListBoxAddEntryImage( lbData.listbox, NULL, index, 0, lbData.w, lbData.h, TRUE);
+				index = GadgetListBoxAddEntryImage(lbData.listbox, NULL, index, 0, lbData.w, lbData.h, TRUE);
 			}
 		}
 
-		index = GadgetListBoxAddEntryText( lbData.listbox, mapDisplayName, lbData.color, index, lbData.numColumns-1 );
+		index = GadgetListBoxAddEntryText(lbData.listbox, mapDisplayName, lbData.color, index, lbData.numColumns - 1);
 		DEBUG_ASSERTCRASH(index >= 0, ("Expects valid index"));
 
 		if (mapName == lbData.mapToSelect)
@@ -840,11 +842,11 @@ static Bool addMapToMapListbox(
 
 		// now set the char* as the item data.  this works because the map cache isn't being
 		// modified while a map listbox is up.
-		GadgetListBoxSetItemData( lbData.listbox, (void *)(mapName.str()), index );
+		GadgetListBoxSetItemData(lbData.listbox, (void*)(mapName.str()), index);
 
 		if (lbData.numColumns > 1)
 		{
-			GadgetListBoxSetItemData( lbData.listbox, (void *)imageItemData, index, 1 );
+			GadgetListBoxSetItemData(lbData.listbox, (void*)imageItemData, index, 1);
 		}
 
 		// TheSuperHackers @performance Now stops processing when the list is full.
@@ -875,8 +877,8 @@ static Bool addMapCollectionToMapListbox(
 
 #if RTS_ZEROHOUR
 		//Patch 1.03 -- Purposely filter out these broken maps that exist in Generals.
-		if( !asciiMapName.compare( "maps\\armored fury\\armored fury.map" ) ||
-			!asciiMapName.compare( "maps\\scorched earth\\scorched earth.map" ) )
+		if (!asciiMapName.compare("maps\\armored fury\\armored fury.map") ||
+			!asciiMapName.compare("maps\\scorched earth\\scorched earth.map"))
 		{
 			continue;
 		}
@@ -905,9 +907,9 @@ static Bool addMapCollectionToMapListbox(
 //-------------------------------------------------------------------------------------------------
 /** Load the listbox with all the map files available to play */
 //-------------------------------------------------------------------------------------------------
-Int populateMapListboxNoReset( GameWindow *listbox, Bool useSystemMaps, Bool isMultiplayer, AsciiString mapToSelect )
+Int populateMapListboxNoReset(GameWindow* listbox, Bool useSystemMaps, Bool isMultiplayer, AsciiString mapToSelect)
 {
-	if(!TheMapCache)
+	if (!TheMapCache)
 		return -1;
 
 	if (!listbox)
@@ -915,8 +917,8 @@ Int populateMapListboxNoReset( GameWindow *listbox, Bool useSystemMaps, Bool isM
 
 	MapListBoxData lbData;
 	lbData.listbox = listbox;
-	lbData.numLength = GadgetListBoxGetListLength( listbox );
-	lbData.numColumns = GadgetListBoxGetNumColumns( listbox );
+	lbData.numLength = GadgetListBoxGetListLength(listbox);
+	lbData.numColumns = GadgetListBoxGetNumColumns(listbox);
 	lbData.mapToSelect = mapToSelect;
 	lbData.isMultiplayer = isMultiplayer;
 
@@ -975,9 +977,9 @@ Int populateMapListboxNoReset( GameWindow *listbox, Bool useSystemMaps, Bool isM
 
 		if (lbData.selectionIndex >= bottomIndex)
 		{
-			Int newTop = std::max( 0, lbData.selectionIndex - std::max( 1, rowsOnScreen / 2 ) );
+			Int newTop = std::max(0, lbData.selectionIndex - std::max(1, rowsOnScreen / 2));
 			//The trouble is that rowsOnScreen/2 can be zero if bottom is 1 and top is zero
-			GadgetListBoxSetTopVisibleEntry( listbox, newTop );
+			GadgetListBoxSetTopVisibleEntry(listbox, newTop);
 		}
 	}
 
@@ -987,18 +989,18 @@ Int populateMapListboxNoReset( GameWindow *listbox, Bool useSystemMaps, Bool isM
 //-------------------------------------------------------------------------------------------------
 /** Load the listbox with all the map files available to play */
 //-------------------------------------------------------------------------------------------------
-Int populateMapListbox( GameWindow *listbox, Bool useSystemMaps, Bool isMultiplayer, AsciiString mapToSelect )
+Int populateMapListbox(GameWindow* listbox, Bool useSystemMaps, Bool isMultiplayer, AsciiString mapToSelect)
 {
-	if(!TheMapCache)
+	if (!TheMapCache)
 		return -1;
 
 	if (!listbox)
 		return -1;
 
 	// reset the listbox content
-	GadgetListBoxReset( listbox );
+	GadgetListBoxReset(listbox);
 
-	return populateMapListboxNoReset( listbox, useSystemMaps, isMultiplayer, mapToSelect );
+	return populateMapListboxNoReset(listbox, useSystemMaps, isMultiplayer, mapToSelect);
 }
 
 
@@ -1006,9 +1008,9 @@ Int populateMapListbox( GameWindow *listbox, Bool useSystemMaps, Bool isMultipla
 //-------------------------------------------------------------------------------------------------
 /** Validate a map */
 //-------------------------------------------------------------------------------------------------
-Bool isValidMap( AsciiString mapName, Bool isMultiplayer )
+Bool isValidMap(AsciiString mapName, Bool isMultiplayer)
 {
-	if(!TheMapCache || mapName.isEmpty())
+	if (!TheMapCache || mapName.isEmpty())
 		return FALSE;
 	TheMapCache->updateCache();
 
@@ -1028,9 +1030,9 @@ Bool isValidMap( AsciiString mapName, Bool isMultiplayer )
 //-------------------------------------------------------------------------------------------------
 /** Find a valid map */
 //-------------------------------------------------------------------------------------------------
-AsciiString getDefaultMap( Bool isMultiplayer )
+AsciiString getDefaultMap(Bool isMultiplayer)
 {
-	if(!TheMapCache)
+	if (!TheMapCache)
 		return AsciiString::TheEmptyString;
 	TheMapCache->updateCache();
 
@@ -1049,7 +1051,7 @@ AsciiString getDefaultMap( Bool isMultiplayer )
 
 AsciiString getDefaultOfficialMap()
 {
-	if(!TheMapCache)
+	if (!TheMapCache)
 		return AsciiString::TheEmptyString;
 	TheMapCache->updateCache();
 
@@ -1065,9 +1067,9 @@ AsciiString getDefaultOfficialMap()
 }
 
 
-Bool isOfficialMap( AsciiString mapName )
+Bool isOfficialMap(AsciiString mapName)
 {
-	if(!TheMapCache || mapName.isEmpty())
+	if (!TheMapCache || mapName.isEmpty())
 		return FALSE;
 	TheMapCache->updateCache();
 	mapName.toLower();
@@ -1078,7 +1080,7 @@ Bool isOfficialMap( AsciiString mapName )
 }
 
 
-const MapMetaData *MapCache::findMap(AsciiString mapName)
+const MapMetaData* MapCache::findMap(AsciiString mapName)
 {
 	mapName.toLower();
 	MapCache::iterator it = find(mapName);
@@ -1090,58 +1092,58 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 // ------------------------------------------------------------------------------------------------
 /** Embed the pristine map into the xfer stream */
 // ------------------------------------------------------------------------------------------------
-static void copyFromBigToDir( const AsciiString& infile, const AsciiString& outfile )
+static void copyFromBigToDir(const AsciiString& infile, const AsciiString& outfile)
 {
 	// open the map file
 
-	File *file = TheFileSystem->openFile( infile.str(), File::READ | File::BINARY );
-	if( file == NULL )
+	File* file = TheFileSystem->openFile(infile.str(), File::READ | File::BINARY);
+	if (file == NULL)
 	{
-		DEBUG_CRASH(( "copyFromBigToDir - Error opening source file '%s'", infile.str() ));
+		DEBUG_CRASH(("copyFromBigToDir - Error opening source file '%s'", infile.str()));
 		throw SC_INVALID_DATA;
 	}
 
 	// how big is the map file
-	Int fileSize = file->seek( 0, File::END );
+	Int fileSize = file->seek(0, File::END);
 
 
 	// rewind to beginning of file
-	file->seek( 0, File::START );
+	file->seek(0, File::START);
 
 	// allocate buffer big enough to hold the entire map file
-	char *buffer = NEW char[ fileSize ];
-	if( buffer == NULL )
+	char* buffer = NEW char[fileSize];
+	if (buffer == NULL)
 	{
-		DEBUG_CRASH(( "copyFromBigToDir - Unable to allocate buffer for file '%s'", infile.str() ));
+		DEBUG_CRASH(("copyFromBigToDir - Unable to allocate buffer for file '%s'", infile.str()));
 		throw SC_INVALID_DATA;
 	}
 
 	// copy the file to the buffer
-	if( file->read( buffer, fileSize ) < fileSize )
+	if (file->read(buffer, fileSize) < fileSize)
 	{
-		DEBUG_CRASH(( "copyFromBigToDir - Error reading from file '%s'", infile.str() ));
+		DEBUG_CRASH(("copyFromBigToDir - Error reading from file '%s'", infile.str()));
 		throw SC_INVALID_DATA;
 	}
 	// close the BIG file
 	file->close();
 
-	File *filenew = TheFileSystem->openFile( outfile.str(), File::WRITE | File::CREATE | File::BINARY );
+	File* filenew = TheFileSystem->openFile(outfile.str(), File::WRITE | File::CREATE | File::BINARY);
 
-	if( !filenew || filenew->write(buffer, fileSize) < fileSize)
+	if (!filenew || filenew->write(buffer, fileSize) < fileSize)
 	{
-		DEBUG_CRASH(( "copyFromBigToDir - Error writing to file '%s'", outfile.str() ));
+		DEBUG_CRASH(("copyFromBigToDir - Error writing to file '%s'", outfile.str()));
 		throw SC_INVALID_DATA;
 	}
 
 	filenew->close();
 
 	// delete the buffer
-	delete [] buffer;
+	delete[] buffer;
 }
 
-Image *getMapPreviewImage( AsciiString mapName )
+Image* getMapPreviewImage(AsciiString mapName)
 {
-	if(!TheGlobalData)
+	if (!TheGlobalData)
 		return NULL;
 	DEBUG_LOG(("%s Map Name", mapName.str()));
 	AsciiString tgaName = mapName;
@@ -1153,10 +1155,10 @@ Image *getMapPreviewImage( AsciiString mapName )
 
 	AsciiString portableName = TheGameState->realMapPathToPortableMapPath(name);
 	tempName.set(AsciiString::TheEmptyString);
-	for(Int i = 0; i < portableName.getLength(); ++i)
+	for (Int i = 0; i < portableName.getLength(); ++i)
 	{
 		char c = portableName.getCharAt(i);
-		if (c == '\\' || c == ':')
+		if (c == GET_PATH_SEPARATOR() || c == ':')
 			tempName.concat('_');
 		else
 			tempName.concat(c);
@@ -1169,11 +1171,11 @@ Image *getMapPreviewImage( AsciiString mapName )
 	// copy file over
 	// copy source tgaName, to name
 
-	Image *image = (Image *)TheMappedImageCollection->findImageByName(tempName);
-	if(!image)
+	Image* image = (Image*)TheMappedImageCollection->findImageByName(tempName);
+	if (!image)
 	{
 
-		if(!TheFileSystem->doesFileExist(tgaName.str()))
+		if (!TheFileSystem->doesFileExist(tgaName.str()))
 			return NULL;
 		AsciiString mapPreviewDir;
 		mapPreviewDir.format(MAP_PREVIEW_DIR_PATH, TheGlobalData->getPath_UserData().str());
@@ -1194,7 +1196,7 @@ Image *getMapPreviewImage( AsciiString mapName )
 
 		if (success)
 		{
-    	image = newInstance(Image);
+			image = newInstance(Image);
 			image->setName(tempName);
 			//image->setFullPath("mission.tga");
 			image->setFilename(name);
@@ -1202,7 +1204,7 @@ Image *getMapPreviewImage( AsciiString mapName )
 			Region2D uv;
 			uv.hi.x = 1.0f;
 			uv.hi.y = 1.0f;
-			uv.lo.x	= 0.0f;
+			uv.lo.x = 0.0f;
 			uv.lo.y = 0.0f;
 			image->setUV(&uv);
 			image->setTextureHeight(128);
@@ -1219,110 +1221,110 @@ Image *getMapPreviewImage( AsciiString mapName )
 
 
 
-/*
-	// sanity
-	if( mapName.isEmpty() )
-		return NULL;
-	Region2D uv;
-	mapPreviewImage = TheMappedImageCollection->findImageByName("MapPreview");
-	if(mapPreviewImage)
-		deleteInstance(mapPreviewImage);
+	/*
+		// sanity
+		if( mapName.isEmpty() )
+			return NULL;
+		Region2D uv;
+		mapPreviewImage = TheMappedImageCollection->findImageByName("MapPreview");
+		if(mapPreviewImage)
+			deleteInstance(mapPreviewImage);
 
-	mapPreviewImage = TheMappedImageCollection->newImage();
-	mapPreviewImage->setName("MapPreview");
-	mapPreviewImage->setStatus(IMAGE_STATUS_RAW_TEXTURE);
-// allocate our terrain texture
-	TextureClass * texture = new TextureClass( size.x, size.y,
-																			 WW3D_FORMAT_X8R8G8B8, MIP_LEVELS_1 );
-	uv.lo.x = 0.0f;
-	uv.lo.y = 1.0f;
-	uv.hi.x = 1.0f;
-	uv.hi.y = 0.0f;
-	mapPreviewImage->setStatus( IMAGE_STATUS_RAW_TEXTURE );
-	mapPreviewImage->setRawTextureData( texture );
-	mapPreviewImage->setUV( &uv );
-	mapPreviewImage->setTextureWidth( size.x );
-	mapPreviewImage->setTextureHeight( size.y );
-	mapPreviewImage->setImageSize( &size );
+		mapPreviewImage = TheMappedImageCollection->newImage();
+		mapPreviewImage->setName("MapPreview");
+		mapPreviewImage->setStatus(IMAGE_STATUS_RAW_TEXTURE);
+	// allocate our terrain texture
+		TextureClass * texture = new TextureClass( size.x, size.y,
+																				 WW3D_FORMAT_X8R8G8B8, MIP_LEVELS_1 );
+		uv.lo.x = 0.0f;
+		uv.lo.y = 1.0f;
+		uv.hi.x = 1.0f;
+		uv.hi.y = 0.0f;
+		mapPreviewImage->setStatus( IMAGE_STATUS_RAW_TEXTURE );
+		mapPreviewImage->setRawTextureData( texture );
+		mapPreviewImage->setUV( &uv );
+		mapPreviewImage->setTextureWidth( size.x );
+		mapPreviewImage->setTextureHeight( size.y );
+		mapPreviewImage->setImageSize( &size );
 
 
-	CachedFileInputStream theInputStream;
-	if (theInputStream.open(AsciiString(mapName.str())))
-	{
-		ChunkInputStream *pStrm = &theInputStream;
-		pStrm->absoluteSeek(0);
-		DataChunkInput file( pStrm );
-		if (file.isValidFileType()) {	// Backwards compatible files aren't valid data chunk files.
-			// Read the waypoints.
-			file.registerParser( AsciiString("MapPreview"), AsciiString::TheEmptyString, parseMapPreviewChunk );
-			if (!file.parse(NULL)) {
-				DEBUG_ASSERTCRASH(false,("Unable to read MapPreview info."));
-				deleteInstance(mapPreviewImage);
-				return NULL;
+		CachedFileInputStream theInputStream;
+		if (theInputStream.open(AsciiString(mapName.str())))
+		{
+			ChunkInputStream *pStrm = &theInputStream;
+			pStrm->absoluteSeek(0);
+			DataChunkInput file( pStrm );
+			if (file.isValidFileType()) {	// Backwards compatible files aren't valid data chunk files.
+				// Read the waypoints.
+				file.registerParser( AsciiString("MapPreview"), AsciiString::TheEmptyString, parseMapPreviewChunk );
+				if (!file.parse(NULL)) {
+					DEBUG_ASSERTCRASH(false,("Unable to read MapPreview info."));
+					deleteInstance(mapPreviewImage);
+					return NULL;
+				}
 			}
+			theInputStream.close();
 		}
-		theInputStream.close();
-	}
-	else
-	{
-		deleteInstance(mapPreviewImage);
-		return NULL;
-	}
+		else
+		{
+			deleteInstance(mapPreviewImage);
+			return NULL;
+		}
 
 
-	return mapPreviewImage;
+		return mapPreviewImage;
 
-*/
+	*/
 	return NULL;
 }
 
-Bool parseMapPreviewChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+Bool parseMapPreviewChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
-/*
-	ICoord2D size;
+	/*
+		ICoord2D size;
 
-	SurfaceClass *surface;
-	size.x = file.readInt();
-	size.y = file.readInt();
+		SurfaceClass *surface;
+		size.x = file.readInt();
+		size.y = file.readInt();
 
 
-	surface = (TextureClass *)mapPreviewImage->getRawTextureData()->Get_Surface_Level();
-	//texture->Get_Surface_Level();
+		surface = (TextureClass *)mapPreviewImage->getRawTextureData()->Get_Surface_Level();
+		//texture->Get_Surface_Level();
 
-	DEBUG_LOG(("BeginMapPreviewInfo"));
-	UnsignedInt *buffer = new UnsignedInt[size.x * size.y];
-	Int x,y;
-	for (y=0; y<size.y; y++) {
-		for(x = 0; x< size.x; x++)
-		{
-			surface->DrawPixel( x, y, file.readInt() );
-			buffer[y + x] = file.readInt();
-			DEBUG_LOG(("x:%d, y:%d, %X", x, y, buffer[y + x]));
+		DEBUG_LOG(("BeginMapPreviewInfo"));
+		UnsignedInt *buffer = new UnsignedInt[size.x * size.y];
+		Int x,y;
+		for (y=0; y<size.y; y++) {
+			for(x = 0; x< size.x; x++)
+			{
+				surface->DrawPixel( x, y, file.readInt() );
+				buffer[y + x] = file.readInt();
+				DEBUG_LOG(("x:%d, y:%d, %X", x, y, buffer[y + x]));
+			}
 		}
-	}
-	mapPreviewImage->setRawTextureData(buffer);
-	DEBUG_ASSERTCRASH(file.atEndOfChunk(), ("Unexpected data left over."));
-	DEBUG_LOG(("EndMapPreviewInfo"));
-	REF_PTR_RELEASE(surface);
-	return true;
-*/
+		mapPreviewImage->setRawTextureData(buffer);
+		DEBUG_ASSERTCRASH(file.atEndOfChunk(), ("Unexpected data left over."));
+		DEBUG_LOG(("EndMapPreviewInfo"));
+		REF_PTR_RELEASE(surface);
+		return true;
+	*/
 	return FALSE;
 }
 
-void findDrawPositions( Int startX, Int startY, Int width, Int height, Region3D extent,
-															 ICoord2D *ul, ICoord2D *lr )
+void findDrawPositions(Int startX, Int startY, Int width, Int height, Region3D extent,
+	ICoord2D* ul, ICoord2D* lr)
 {
 
 	Real ratioWidth;
 	Real ratioHeight;
 	Coord2D radar;
-	ratioWidth = extent.width()/(width * 1.0f);
-	ratioHeight = extent.height()/(height* 1.0f);
+	ratioWidth = extent.width() / (width * 1.0f);
+	ratioHeight = extent.height() / (height * 1.0f);
 
-	if( ratioWidth >= ratioHeight)
+	if (ratioWidth >= ratioHeight)
 	{
 		radar.x = extent.width() / ratioWidth;
-		radar.y = extent.height()/ ratioWidth;
+		radar.y = extent.height() / ratioWidth;
 		ul->x = 0;
 		ul->y = (height - radar.y) / 2.0f;
 		lr->x = radar.x;
@@ -1331,8 +1333,8 @@ void findDrawPositions( Int startX, Int startY, Int width, Int height, Region3D 
 	else
 	{
 		radar.x = extent.width() / ratioHeight;
-		radar.y = extent.height()/ ratioHeight;
-		ul->x = (width - radar.x ) / 2.0f;
+		radar.y = extent.height() / ratioHeight;
+		ul->x = (width - radar.x) / 2.0f;
 		ul->y = 0;
 		lr->x = width - ul->x;
 		lr->y = radar.y;

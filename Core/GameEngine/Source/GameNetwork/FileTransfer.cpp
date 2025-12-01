@@ -34,11 +34,12 @@
 #include "GameClient/Shell.h"
 #include "GameNetwork/FileTransfer.h"
 #include "GameNetwork/networkutil.h"
+#include <Utility/compat.h>
 
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 
-static Bool doFileTransfer( AsciiString filename, MapTransferLoadScreen *ls, Int mask )
+static Bool doFileTransfer(AsciiString filename, MapTransferLoadScreen* ls, Int mask)
 {
 	Bool fileTransferDone = FALSE;
 	Int fileTransferPercent = 0;
@@ -48,8 +49,8 @@ static Bool doFileTransfer( AsciiString filename, MapTransferLoadScreen *ls, Int
 	{
 		ls->setCurrentFilename(filename);
 		UnsignedInt startTime = timeGetTime();
-		const Int timeoutPeriod = 2*60*1000;
-		ls->processTimeout(timeoutPeriod/1000);
+		const Int timeoutPeriod = 2 * 60 * 1000;
+		ls->processTimeout(timeoutPeriod / 1000);
 
 		ls->update(0);
 		fileTransferDone = FALSE;
@@ -80,7 +81,7 @@ static Bool doFileTransfer( AsciiString filename, MapTransferLoadScreen *ls, Int
 			// get the progress for each player, and take the min for our overall progress
 			fileTransferDone = TRUE;
 			fileTransferPercent = 100;
-			for (i=1; i<MAX_SLOTS; ++i)
+			for (i = 1; i < MAX_SLOTS; ++i)
 			{
 				if (TheGameInfo->getConstSlot(i)->isHuman() && !TheGameInfo->getConstSlot(i)->hasMap())
 				{
@@ -117,7 +118,7 @@ static Bool doFileTransfer( AsciiString filename, MapTransferLoadScreen *ls, Int
 			}
 			else
 			{
-				ls->processTimeout((startTime + timeoutPeriod - now)/1000);
+				ls->processTimeout((startTime + timeoutPeriod - now) / 1000);
 			}
 
 			ls->update(fileTransferPercent);
@@ -135,15 +136,15 @@ static Bool doFileTransfer( AsciiString filename, MapTransferLoadScreen *ls, Int
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 
-AsciiString GetBasePathFromPath( AsciiString path )
+AsciiString GetBasePathFromPath(AsciiString path)
 {
-	const char *s = path.reverseFind('\\');
+	const char* s = path.reverseFindPathSeparator();
 	if (s)
 	{
 		Int len = s - path.str();
 
 		AsciiString base;
-		char *buf = base.getBufferForRead(len + 1);
+		char* buf = base.getBufferForRead(len + 1);
 		memcpy(buf, path.str(), len);
 		buf[len] = 0;
 		return buf;
@@ -151,31 +152,31 @@ AsciiString GetBasePathFromPath( AsciiString path )
 	return AsciiString::TheEmptyString;
 }
 
-AsciiString GetFileFromPath( AsciiString path )
+AsciiString GetFileFromPath(AsciiString path)
 {
-	const char *s = path.reverseFind('\\');
+	const char* s = path.reverseFindPathSeparator();
 	if (s)
-		return s+1;
+		return s + 1;
 	return path;
 }
 
-AsciiString GetExtensionFromFile( AsciiString fname )
+AsciiString GetExtensionFromFile(AsciiString fname)
 {
-	const char *s = fname.reverseFind('.');
+	const char* s = fname.reverseFind('.');
 	if (s)
-		return s+1;
+		return s + 1;
 	return fname;
 }
 
-AsciiString GetBaseFileFromFile( AsciiString fname )
+AsciiString GetBaseFileFromFile(AsciiString fname)
 {
-	const char *s = fname.reverseFind('.');
+	const char* s = fname.reverseFind('.');
 	if (s)
 	{
 		Int len = s - fname.str();
 
 		AsciiString base;
-		char *buf = base.getBufferForRead(len + 1);
+		char* buf = base.getBufferForRead(len + 1);
 		memcpy(buf, fname.str(), len);
 		buf[len] = 0;
 		return buf;
@@ -183,7 +184,7 @@ AsciiString GetBaseFileFromFile( AsciiString fname )
 	return AsciiString::TheEmptyString;
 }
 
-AsciiString GetPreviewFromMap( AsciiString path )
+AsciiString GetPreviewFromMap(AsciiString path)
 {
 	AsciiString fname = GetBaseFileFromFile(GetFileFromPath(path));
 	AsciiString base = GetBasePathFromPath(path);
@@ -193,7 +194,7 @@ AsciiString GetPreviewFromMap( AsciiString path )
 	return out;
 }
 
-AsciiString GetINIFromMap( AsciiString path )
+AsciiString GetINIFromMap(AsciiString path)
 {
 	AsciiString base = GetBasePathFromPath(path);
 
@@ -202,7 +203,7 @@ AsciiString GetINIFromMap( AsciiString path )
 	return out;
 }
 
-AsciiString GetStrFileFromMap( AsciiString path )
+AsciiString GetStrFileFromMap(AsciiString path)
 {
 	AsciiString base = GetBasePathFromPath(path);
 
@@ -211,7 +212,7 @@ AsciiString GetStrFileFromMap( AsciiString path )
 	return out;
 }
 
-AsciiString GetSoloINIFromMap( AsciiString path )
+AsciiString GetSoloINIFromMap(AsciiString path)
 {
 	AsciiString base = GetBasePathFromPath(path);
 
@@ -220,7 +221,7 @@ AsciiString GetSoloINIFromMap( AsciiString path )
 	return out;
 }
 
-AsciiString GetAssetUsageFromMap( AsciiString path )
+AsciiString GetAssetUsageFromMap(AsciiString path)
 {
 	AsciiString base = GetBasePathFromPath(path);
 
@@ -229,7 +230,7 @@ AsciiString GetAssetUsageFromMap( AsciiString path )
 	return out;
 }
 
-AsciiString GetReadmeFromMap( AsciiString path )
+AsciiString GetReadmeFromMap(AsciiString path)
 {
 	AsciiString base = GetBasePathFromPath(path);
 
@@ -241,24 +242,24 @@ AsciiString GetReadmeFromMap( AsciiString path )
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 
-Bool DoAnyMapTransfers(GameInfo *game)
+Bool DoAnyMapTransfers(GameInfo* game)
 {
 	TheGameInfo = game;
 	Int mask = 0;
-	Int i=0;
-	for (i=1; i<MAX_SLOTS; ++i)
+	Int i = 0;
+	for (i = 1; i < MAX_SLOTS; ++i)
 	{
 		if (TheGameInfo->getConstSlot(i)->isHuman() && !TheGameInfo->getConstSlot(i)->hasMap())
 		{
 			DEBUG_LOG(("Adding player %d to transfer mask", i));
-			mask |= (1<<i);
+			mask |= (1 << i);
 		}
 	}
 	if (!mask)
 		return TRUE;
 
 	TheShell->hideShell();
-	MapTransferLoadScreen *ls = NEW MapTransferLoadScreen;
+	MapTransferLoadScreen* ls = NEW MapTransferLoadScreen;
 	ls->init(TheGameInfo);
 	Bool ok = TRUE;
 	if (TheGameInfo->getMapContentsMask() & 2)

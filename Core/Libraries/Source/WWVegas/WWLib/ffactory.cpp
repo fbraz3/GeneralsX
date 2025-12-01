@@ -39,28 +39,29 @@
 #include "realcrc.h"
 #include <stdlib.h>
 #include	<assert.h>
+#include <Utility/compat.h>
 
-/*
-** Statics
-** NOTE: If _TheFileFactory is ever changed to point to an object of a different class which does
-** not derive from SimpleFileFactoryClass, _TheSimpleFileFactory should be set to NULL.
-*/
+ /*
+ ** Statics
+ ** NOTE: If _TheFileFactory is ever changed to point to an object of a different class which does
+ ** not derive from SimpleFileFactoryClass, _TheSimpleFileFactory should be set to NULL.
+ */
 SimpleFileFactoryClass		_DefaultFileFactory;
-FileFactoryClass *			_TheFileFactory = &_DefaultFileFactory;
-SimpleFileFactoryClass *			_TheSimpleFileFactory = &_DefaultFileFactory;
+FileFactoryClass* _TheFileFactory = &_DefaultFileFactory;
+SimpleFileFactoryClass* _TheSimpleFileFactory = &_DefaultFileFactory;
 
 RawFileFactoryClass		_DefaultWritingFileFactory;
-RawFileFactoryClass *			_TheWritingFileFactory = &_DefaultWritingFileFactory;
+RawFileFactoryClass* _TheWritingFileFactory = &_DefaultWritingFileFactory;
 
 /*
 **
 */
-file_auto_ptr::file_auto_ptr(FileFactoryClass *fac, const char *filename) :
+file_auto_ptr::file_auto_ptr(FileFactoryClass* fac, const char* filename) :
 	_Ptr(NULL), _Fac(fac)
 {
 	assert(_Fac);
-	_Ptr=_Fac->Get_File(filename);
-	if ( _Ptr == NULL ) {
+	_Ptr = _Fac->Get_File(filename);
+	if (_Ptr == NULL) {
 		_Ptr = W3DNEW BufferedFileClass();
 	}
 }
@@ -75,12 +76,12 @@ file_auto_ptr::~file_auto_ptr()
 /*
 ** RawFileFactoryClass implementation
 */
-RawFileClass * RawFileFactoryClass::Get_File( char const *filename )
+RawFileClass* RawFileFactoryClass::Get_File(char const* filename)
 {
-	return W3DNEW RawFileClass( filename );
+	return W3DNEW RawFileClass(filename);
 }
 
-void RawFileFactoryClass::Return_File( FileClass *file )
+void RawFileFactoryClass::Return_File(FileClass* file)
 {
 	delete file;
 }
@@ -91,14 +92,14 @@ void RawFileFactoryClass::Return_File( FileClass *file )
 ** SimpleFileFactoryClass implementation
 */
 
-SimpleFileFactoryClass::SimpleFileFactoryClass( void ) :
-	IsStripPath( false ),
-	Mutex( )
+SimpleFileFactoryClass::SimpleFileFactoryClass(void) :
+	IsStripPath(false),
+	Mutex()
 {
 }
 
 
-void SimpleFileFactoryClass::Get_Sub_Directory( StringClass& new_dir ) const
+void SimpleFileFactoryClass::Get_Sub_Directory(StringClass& new_dir) const
 {
 	// BEGIN SERIALIZATION
 
@@ -114,12 +115,12 @@ void SimpleFileFactoryClass::Get_Sub_Directory( StringClass& new_dir ) const
 	// destination StringClass object and modify that.
 
 	CriticalSectionClass::LockClass lock(Mutex);
-	new_dir=SubDirectory;
+	new_dir = SubDirectory;
 	// END SERIALIZATION
 }
 
 
-void SimpleFileFactoryClass::Set_Sub_Directory( const char * sub_directory )
+void SimpleFileFactoryClass::Set_Sub_Directory(const char* sub_directory)
 {
 	// BEGIN SERIALIZATION
 
@@ -133,22 +134,23 @@ void SimpleFileFactoryClass::Set_Sub_Directory( const char * sub_directory )
 }
 
 
-void SimpleFileFactoryClass::Prepend_Sub_Directory( const char * sub_directory )
+void SimpleFileFactoryClass::Prepend_Sub_Directory(const char* sub_directory)
 {
 	int sub_len = strlen(sub_directory);
 	// Overflow prevention
 	if (sub_len > 1021) {
 		WWASSERT(0);
 		return;
-	} else if (sub_len < 1) {
+	}
+	else if (sub_len < 1) {
 		return;
 	}
 
 	// Ensure sub_directory ends with a slash, and append a semicolon
 	char temp_sub_dir[1024];
 	strlcpy(temp_sub_dir, sub_directory, ARRAY_SIZE(temp_sub_dir));
-	if (temp_sub_dir[sub_len - 1] != '\\') {
-		temp_sub_dir[sub_len] = '\\';
+	if (temp_sub_dir[sub_len - 1] != GET_PATH_SEPARATOR()[0]) {
+		temp_sub_dir[sub_len] = GET_PATH_SEPARATOR()[0];
 		temp_sub_dir[sub_len + 1] = 0;
 		sub_len++;
 	}
@@ -168,22 +170,23 @@ void SimpleFileFactoryClass::Prepend_Sub_Directory( const char * sub_directory )
 }
 
 
-void SimpleFileFactoryClass::Append_Sub_Directory( const char * sub_directory )
+void SimpleFileFactoryClass::Append_Sub_Directory(const char* sub_directory)
 {
 	int sub_len = strlen(sub_directory);
 	// Overflow prevention
 	if (sub_len > 1022) {
 		WWASSERT(0);
 		return;
-	} else if (sub_len < 1) {
+	}
+	else if (sub_len < 1) {
 		return;
 	}
 
 	// Ensure sub_directory ends with a slash
 	char temp_sub_dir[1024];
 	strlcpy(temp_sub_dir, sub_directory, ARRAY_SIZE(temp_sub_dir));
-	if (temp_sub_dir[sub_len - 1] != '\\') {
-		temp_sub_dir[sub_len] = '\\';
+	if (temp_sub_dir[sub_len - 1] != GET_PATH_SEPARATOR()[0]) {
+		temp_sub_dir[sub_len] = GET_PATH_SEPARATOR()[0];
 		temp_sub_dir[sub_len + 1] = 0;
 		sub_len++;
 	}
@@ -211,7 +214,7 @@ void SimpleFileFactoryClass::Append_Sub_Directory( const char * sub_directory )
 **	Is_Full_Path
 */
 static bool
-Is_Full_Path (const char *path)
+Is_Full_Path(const char* path)
 {
 	bool retval = false;
 
@@ -221,7 +224,7 @@ Is_Full_Path (const char *path)
 		retval = bool(path[1] == ':');
 
 		// Check for network path
-		retval |= bool((path[0] == '\\') && (path[1] == '\\'));
+		retval |= bool((path[0] == GET_PATH_SEPARATOR()[0]) && (path[1] == GET_PATH_SEPARATOR()[0]));
 	}
 
 	return retval;
@@ -230,33 +233,35 @@ Is_Full_Path (const char *path)
 /*
 **
 */
-FileClass * SimpleFileFactoryClass::Get_File( char const *filename )
+FileClass* SimpleFileFactoryClass::Get_File(char const* filename)
 {
 	// strip off the path (if needed). Note that if path stripping is off, and the requested file
 	// has a path in its name, and the current subdirectory is not empty, the paths will just be
 	// concatenated which may not produce reasonable results.
 	StringClass stripped_name(true);
 	if (IsStripPath) {
-		const char * ptr = ::strrchr( filename, '\\' );
+		const char* ptr = ::strrchr(filename, GET_PATH_SEPARATOR()[0]);
 
 		if (ptr != 0) {
 			ptr++;
 			stripped_name = ptr;
-		} else {
+		}
+		else {
 			stripped_name = filename;
 		}
-	} else {
+	}
+	else {
 		stripped_name = filename;
 	}
 
-	RawFileClass *file = W3DNEW BufferedFileClass();// new RawWritingFileClass();
-	assert( file );
+	RawFileClass* file = W3DNEW BufferedFileClass();// new RawWritingFileClass();
+	assert(file);
 
 	//
 	//	Do we need to find the path for this file request?
 	//
-	StringClass new_name(stripped_name,true);
-	if (Is_Full_Path ( new_name ) == false) {
+	StringClass new_name(stripped_name, true);
+	if (Is_Full_Path(new_name) == false) {
 
 		// BEGIN SERIALIZATION
 
@@ -275,34 +280,35 @@ FileClass * SimpleFileFactoryClass::Get_File( char const *filename )
 			// the search path.  Therefore newly created files will always go in the
 			// last dir in the search path.
 			//
-			StringClass subdir(SubDirectory,true);
+			StringClass subdir(SubDirectory, true);
 
-			if (strchr(subdir,';'))
+			if (strchr(subdir, ';'))
 			{
-				char *tokstart=subdir.Peek_Buffer();
-				const char *tok;
-				while((tok=strtok(tokstart, ";")) != NULL) {
-					tokstart=NULL;
-					new_name.Format("%s%s",tok,stripped_name.str());
-					file->Set_Name( new_name );	// Call Set_Name to force an allocated name
+				char* tokstart = subdir.Peek_Buffer();
+				const char* tok;
+				while ((tok = strtok(tokstart, ";")) != NULL) {
+					tokstart = NULL;
+					new_name.Format("%s%s", tok, stripped_name.str());
+					file->Set_Name(new_name);	// Call Set_Name to force an allocated name
 					if (file->Open()) {
 						file->Close();
 						break;
 					}
 				}
-			} else {
-				new_name.Format("%s%s",SubDirectory.str(),stripped_name.str());
+			}
+			else {
+				new_name.Format("%s%s", SubDirectory.str(), stripped_name.str());
 			}
 		}
 
 		// END SERIALIZATION
 	}
 
-	file->Set_Name( new_name );	// Call Set_Name to force an allocated name
+	file->Set_Name(new_name);	// Call Set_Name to force an allocated name
 	return file;
 }
 
-void SimpleFileFactoryClass::Return_File( FileClass *file )
+void SimpleFileFactoryClass::Return_File(FileClass* file)
 {
 	delete file;
 }

@@ -111,6 +111,7 @@
 #include "GameNetwork/GameSpy/GameResultsThread.h"
 
 #include "Common/version.h"
+#include "Utility/compat.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -129,7 +130,7 @@ public:
 protected:
 };
 
-DeepCRCSanityCheck *TheDeepCRCSanityCheck = NULL;
+DeepCRCSanityCheck* TheDeepCRCSanityCheck = NULL;
 
 void DeepCRCSanityCheck::reset(void)
 {
@@ -138,12 +139,12 @@ void DeepCRCSanityCheck::reset(void)
 
 	AsciiString fname;
 	fname.format("%sCRCAfter%dMaps.dat", TheGlobalData->getPath_UserData().str(), timesThrough);
-	UnsignedInt thisCRC = TheGameLogic->getCRC( CRC_RECALC, fname );
+	UnsignedInt thisCRC = TheGameLogic->getCRC(CRC_RECALC, fname);
 
 	DEBUG_LOG(("DeepCRCSanityCheck: CRC is %X", thisCRC));
 	DEBUG_ASSERTCRASH(timesThrough == 0 || thisCRC == lastCRC,
 		("CRC after reset did not match beginning CRC!\nNetwork games won't work after this.\nOld: 0x%8.8X, New: 0x%8.8X",
-		lastCRC, thisCRC));
+			lastCRC, thisCRC));
 	lastCRC = thisCRC;
 
 	timesThrough++;
@@ -152,7 +153,7 @@ void DeepCRCSanityCheck::reset(void)
 
 //-------------------------------------------------------------------------------------------------
 /// The GameEngine singleton instance
-GameEngine *TheGameEngine = NULL;
+GameEngine* TheGameEngine = NULL;
 
 //-------------------------------------------------------------------------------------------------
 SubsystemInterfaceList* TheSubsystemList = NULL;
@@ -163,7 +164,7 @@ void initSubsystem(
 	SUBSYSTEM*& sysref,
 	AsciiString name,
 	SUBSYSTEM* sys,
-	Xfer *pXfer,
+	Xfer* pXfer,
 	const char* path1 = NULL,
 	const char* path2 = NULL)
 {
@@ -247,7 +248,7 @@ static void updateWindowTitle()
 }
 
 //-------------------------------------------------------------------------------------------------
-GameEngine::GameEngine( void )
+GameEngine::GameEngine(void)
 {
 	// initialize to non garbage values
 	m_logicTimeAccumulator = 0.0f;
@@ -266,8 +267,8 @@ GameEngine::~GameEngine()
 	delete TheMapCache;
 	TheMapCache = NULL;
 
-//	delete TheShell;
-//	TheShell = NULL;
+	//	delete TheShell;
+	//	TheShell = NULL;
 
 	TheGameResultsQueue->endThreads();
 
@@ -367,33 +368,35 @@ void GameEngine::init()
 		}
 #endif
 
-	#if defined(PERF_TIMERS) || defined(DUMP_PERF_STATS)
+#if defined(PERF_TIMERS) || defined(DUMP_PERF_STATS)
 		DEBUG_LOG(("Calculating CPU frequency for performance timers."));
 		InitPrecisionTimer();
-	#endif
-	#ifdef PERF_TIMERS
+#endif
+#ifdef PERF_TIMERS
 		PerfGather::initPerfDump("AAAPerfStats", PerfGather::PERF_NETTIME);
-	#endif
+#endif
 
 
 
 
-	#ifdef DUMP_PERF_STATS////////////////////////////////////////////////////////////
-	int64_t startTime64;//////////////////////////////////////////////////////////////
-	int64_t endTime64,freq64;///////////////////////////////////////////////////////////
-	GetPrecisionTimerTicksPerSec(&freq64);///////////////////////////////////////////////
-	GetPrecisionTimer(&startTime64);////////////////////////////////////////////////////
-  char Buf[256];//////////////////////////////////////////////////////////////////////
-	#endif//////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS////////////////////////////////////////////////////////////
+		int64_t startTime64;//////////////////////////////////////////////////////////////
+		int64_t endTime64, freq64;///////////////////////////////////////////////////////////
+		GetPrecisionTimerTicksPerSec(&freq64);///////////////////////////////////////////////
+		GetPrecisionTimer(&startTime64);////////////////////////////////////////////////////
+		char Buf[256];//////////////////////////////////////////////////////////////////////
+#endif//////////////////////////////////////////////////////////////////////////////
 
 
 		TheSubsystemList = MSGNEW("GameEngineSubsystem") SubsystemInterfaceList;
-
+		fprintf(stderr, "GameMain()::init() Calling TheSubsystemList->addSubsystem(this);...\n");
+		fflush(stderr);
 		TheSubsystemList->addSubsystem(this);
 
 		// initialize the random number system
 		InitRandom();
-
+		fprintf(stderr, "GameMain()::init() Calling TheFileSystem = createFileSystem();...\n");
+		fflush(stderr);
 		// Create the low-level file system interface
 		TheFileSystem = createFileSystem();
 
@@ -403,78 +406,102 @@ void GameEngine::init()
 		//We need to toast the latter in order for the game to patch properly.
 		try {
 			std::filesystem::remove(std::filesystem::path("Data/INI/INIZH.big"));
-		} catch (const std::filesystem::filesystem_error& e) {
+		}
+		catch (const std::filesystem::filesystem_error& e) {
 			DEBUG_LOG(("GameEngine - Failed to delete Data/INI/INIZH.big: %s", e.what()));
 		}
 
 		// not part of the subsystem list, because it should normally never be reset!
 		TheNameKeyGenerator = MSGNEW("GameEngineSubsystem") NameKeyGenerator;
+		fprintf(stderr, "GameMain()::init() Calling TheNameKeyGenerator->init();...\n");
+		fflush(stderr);
 		TheNameKeyGenerator->init();
 
 
-    	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheNameKeyGenerator  = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheNameKeyGenerator  = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
+		fprintf(stderr, "GameMain()::init() Calling TheCommandList->init();...\n");
+		fflush(stderr);
 		// not part of the subsystem list, because it should normally never be reset!
 		TheCommandList = MSGNEW("GameEngineSubsystem") CommandList;
 		TheCommandList->init();
 
-    	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheCommandList  = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheCommandList  = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		XferCRC xferCRC;
 		xferCRC.open("lightCRC");
 
-
+		// Helper lambda to build cross-platform paths
+		auto buildPath = [](const char* p1, const char* p2 = NULL, const char* p3 = NULL) -> AsciiString {
+			AsciiString path;
+			path.concat("Data");
+			path.concat(GET_PATH_SEPARATOR());
+			path.concat(p1);
+			if (p2) {
+				path.concat(GET_PATH_SEPARATOR());
+				path.concat(p2);
+			}
+			if (p3) {
+				path.concat(GET_PATH_SEPARATOR());
+				path.concat(p3);
+			}
+			return path;
+			};
+		fprintf(stderr, "GameMain()::init() Initializing TheLocalFileSystem...\n");
+		fflush(stderr);
 		initSubsystem(TheLocalFileSystem, "TheLocalFileSystem", createLocalFileSystem(), NULL);
 
 
-    	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheLocalFileSystem  = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheLocalFileSystem  = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-
+		fprintf(stderr, "GameMain()::init() Initializing TheArchiveFileSystem...\n");
+		fflush(stderr);
 		initSubsystem(TheArchiveFileSystem, "TheArchiveFileSystem", createArchiveFileSystem(), NULL); // this MUST come after TheLocalFileSystem creation
 
-    	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheArchiveFileSystem  = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheArchiveFileSystem  = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-
-		DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
-		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
+		fprintf(stderr, "GameMain()::init() Initializing TheWritableGlobalData...\n");
+		fflush(stderr);
+		DEBUG_ASSERTCRASH(TheWritableGlobalData, ("TheWritableGlobalData expected to be created"));
+		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, buildPath("INI", "Default", "GameData").str(), buildPath("INI", "GameData").str());
 		TheWritableGlobalData->parseCustomDefinition();
 
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After  TheWritableGlobalData = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After  TheWritableGlobalData = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
-	#if defined(RTS_DEBUG)
+#if defined(RTS_DEBUG)
 		// If we're in Debug, load the Debug settings as well.
-		ini.loadFileDirectory( AsciiString( "Data\\INI\\GameDataDebug" ), INI_LOAD_OVERWRITE, NULL );
-	#endif
+		ini.loadFileDirectory(buildPath("INI", "GameDataDebug"), INI_LOAD_OVERWRITE, NULL);
+#endif
 
 		// special-case: parse command-line parameters after loading global data
 		CommandLine::parseCommandLineForEngineInit();
@@ -492,19 +519,19 @@ void GameEngine::init()
 		}
 
 		// read the water settings from INI (must do prior to initing GameClient, apparently)
-		ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\Water" ), INI_LOAD_OVERWRITE, &xferCRC );
-		ini.loadFileDirectory( AsciiString( "Data\\INI\\Water" ), INI_LOAD_OVERWRITE, &xferCRC );
-		ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\Weather" ), INI_LOAD_OVERWRITE, &xferCRC );
-		ini.loadFileDirectory( AsciiString( "Data\\INI\\Weather" ), INI_LOAD_OVERWRITE, &xferCRC );
+		ini.loadFileDirectory(buildPath("INI", "Default", "Water"), INI_LOAD_OVERWRITE, &xferCRC);
+		ini.loadFileDirectory(buildPath("INI", "Water"), INI_LOAD_OVERWRITE, &xferCRC);
+		ini.loadFileDirectory(buildPath("INI", "Default", "Weather"), INI_LOAD_OVERWRITE, &xferCRC);
+		ini.loadFileDirectory(buildPath("INI", "Weather"), INI_LOAD_OVERWRITE, &xferCRC);
 
 
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After water INI's = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After water INI's = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 #ifdef DEBUG_CRC
@@ -515,41 +542,41 @@ void GameEngine::init()
 		updateWindowTitle();
 		fprintf(stderr, "GameEngine::init() - TheGameText initialized successfully\n"); fflush(stderr);
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheGameText = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheGameText = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		fprintf(stderr, "GameEngine::init() - About to init TheScienceStore\n"); fflush(stderr);
-		initSubsystem(TheScienceStore,"TheScienceStore", MSGNEW("GameEngineSubsystem") ScienceStore(), &xferCRC, "Data\\INI\\Default\\Science", "Data\\INI\\Science");
+		initSubsystem(TheScienceStore, "TheScienceStore", MSGNEW("GameEngineSubsystem") ScienceStore(), &xferCRC, buildPath("INI", "Default", "Science").str(), buildPath("INI", "Science").str());
 		fprintf(stderr, "GameEngine::init() - TheScienceStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheMultiplayerSettings\n"); fflush(stderr);
-		initSubsystem(TheMultiplayerSettings,"TheMultiplayerSettings", MSGNEW("GameEngineSubsystem") MultiplayerSettings(), &xferCRC, "Data\\INI\\Default\\Multiplayer", "Data\\INI\\Multiplayer");
+		initSubsystem(TheMultiplayerSettings, "TheMultiplayerSettings", MSGNEW("GameEngineSubsystem") MultiplayerSettings(), &xferCRC, buildPath("INI", "Default", "Multiplayer").str(), buildPath("INI", "Multiplayer").str());
 		fprintf(stderr, "GameEngine::init() - TheMultiplayerSettings initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheTerrainTypes\n"); fflush(stderr);
-		initSubsystem(TheTerrainTypes,"TheTerrainTypes", MSGNEW("GameEngineSubsystem") TerrainTypeCollection(), &xferCRC, "Data\\INI\\Default\\Terrain", "Data\\INI\\Terrain");
+		initSubsystem(TheTerrainTypes, "TheTerrainTypes", MSGNEW("GameEngineSubsystem") TerrainTypeCollection(), &xferCRC, buildPath("INI", "Default", "Terrain").str(), buildPath("INI", "Terrain").str());
 		fprintf(stderr, "GameEngine::init() - TheTerrainTypes initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheTerrainRoads\n"); fflush(stderr);
-		initSubsystem(TheTerrainRoads,"TheTerrainRoads", MSGNEW("GameEngineSubsystem") TerrainRoadCollection(), &xferCRC, "Data\\INI\\Default\\Roads", "Data\\INI\\Roads");
+		initSubsystem(TheTerrainRoads, "TheTerrainRoads", MSGNEW("GameEngineSubsystem") TerrainRoadCollection(), &xferCRC, buildPath("INI", "Default", "Roads").str(), buildPath("INI", "Roads").str());
 		fprintf(stderr, "GameEngine::init() - TheTerrainRoads initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheGlobalLanguageData\n"); fflush(stderr);
-		initSubsystem(TheGlobalLanguageData,"TheGlobalLanguageData",MSGNEW("GameEngineSubsystem") GlobalLanguage, NULL); // must be before the game text
+		initSubsystem(TheGlobalLanguageData, "TheGlobalLanguageData", MSGNEW("GameEngineSubsystem") GlobalLanguage, NULL); // must be before the game text
 		TheGlobalLanguageData->parseCustomDefinition();
 		fprintf(stderr, "GameEngine::init() - TheGlobalLanguageData initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheCDManager\n"); fflush(stderr);
-		initSubsystem(TheCDManager,"TheCDManager", CreateCDManager(), NULL);
+		initSubsystem(TheCDManager, "TheCDManager", CreateCDManager(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheCDManager initialized successfully\n"); fflush(stderr);
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheCDManager = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheCDManager = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 		fprintf(stderr, "GameEngine::init() - About to init TheAudio\n"); fflush(stderr);
-		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
+		initSubsystem(TheAudio, "TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheAudio initialized successfully\n"); fflush(stderr);
 		// Phase 54: On non-Windows platforms (macOS/Linux), music files are inside .big archives
 		// and isMusicAlreadyLoaded() may return false. Don't quit the game in this case.
@@ -563,144 +590,148 @@ void GameEngine::init()
 		}
 #endif
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheAudio = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheAudio = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 		fprintf(stderr, "GameEngine::init() - About to init TheFunctionLexicon\n"); fflush(stderr);
-		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), NULL);
+		initSubsystem(TheFunctionLexicon, "TheFunctionLexicon", createFunctionLexicon(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheFunctionLexicon initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheModuleFactory\n"); fflush(stderr);
-		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), NULL);
+		initSubsystem(TheModuleFactory, "TheModuleFactory", createModuleFactory(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheModuleFactory initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheMessageStream\n"); fflush(stderr);
-		initSubsystem(TheMessageStream,"TheMessageStream", createMessageStream(), NULL);
+		initSubsystem(TheMessageStream, "TheMessageStream", createMessageStream(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheMessageStream initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheSidesList\n"); fflush(stderr);
-		initSubsystem(TheSidesList,"TheSidesList", MSGNEW("GameEngineSubsystem") SidesList(), NULL);
+		initSubsystem(TheSidesList, "TheSidesList", MSGNEW("GameEngineSubsystem") SidesList(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheSidesList initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheCaveSystem\n"); fflush(stderr);
-		initSubsystem(TheCaveSystem,"TheCaveSystem", MSGNEW("GameEngineSubsystem") CaveSystem(), NULL);
+		initSubsystem(TheCaveSystem, "TheCaveSystem", MSGNEW("GameEngineSubsystem") CaveSystem(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheCaveSystem initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheRankInfoStore\n"); fflush(stderr);
-		initSubsystem(TheRankInfoStore,"TheRankInfoStore", MSGNEW("GameEngineSubsystem") RankInfoStore(), &xferCRC, NULL, "Data\\INI\\Rank");
+		initSubsystem(TheRankInfoStore, "TheRankInfoStore", MSGNEW("GameEngineSubsystem") RankInfoStore(), &xferCRC, NULL, buildPath("INI", "Rank").str());
 		fprintf(stderr, "GameEngine::init() - TheRankInfoStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init ThePlayerTemplateStore\n"); fflush(stderr);
-		initSubsystem(ThePlayerTemplateStore,"ThePlayerTemplateStore", MSGNEW("GameEngineSubsystem") PlayerTemplateStore(), &xferCRC, "Data\\INI\\Default\\PlayerTemplate", "Data\\INI\\PlayerTemplate");
+		initSubsystem(ThePlayerTemplateStore, "ThePlayerTemplateStore", MSGNEW("GameEngineSubsystem") PlayerTemplateStore(), &xferCRC, buildPath("INI", "Default", "PlayerTemplate").str(), buildPath("INI", "PlayerTemplate").str());
 		fprintf(stderr, "GameEngine::init() - ThePlayerTemplateStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheParticleSystemManager\n"); fflush(stderr);
-		initSubsystem(TheParticleSystemManager,"TheParticleSystemManager", createParticleSystemManager(), NULL);
+		initSubsystem(TheParticleSystemManager, "TheParticleSystemManager", createParticleSystemManager(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheParticleSystemManager initialized successfully\n"); fflush(stderr);
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheParticleSystemManager = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheParticleSystemManager = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 		fprintf(stderr, "GameEngine::init() - About to init TheFXListStore\n"); fflush(stderr);
-		initSubsystem(TheFXListStore,"TheFXListStore", MSGNEW("GameEngineSubsystem") FXListStore(), &xferCRC, "Data\\INI\\Default\\FXList", "Data\\INI\\FXList");
+		initSubsystem(TheFXListStore, "TheFXListStore", MSGNEW("GameEngineSubsystem") FXListStore(), &xferCRC, buildPath("INI", "Default", "FXList").str(), buildPath("INI", "FXList").str());
 		fprintf(stderr, "GameEngine::init() - TheFXListStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheWeaponStore\n"); fflush(stderr);
-		initSubsystem(TheWeaponStore,"TheWeaponStore", MSGNEW("GameEngineSubsystem") WeaponStore(), &xferCRC, NULL, "Data\\INI\\Weapon");
+		initSubsystem(TheWeaponStore, "TheWeaponStore", MSGNEW("GameEngineSubsystem") WeaponStore(), &xferCRC, NULL, buildPath("INI", "Weapon").str());
 		fprintf(stderr, "GameEngine::init() - TheWeaponStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheObjectCreationListStore\n"); fflush(stderr);
-		initSubsystem(TheObjectCreationListStore,"TheObjectCreationListStore", MSGNEW("GameEngineSubsystem") ObjectCreationListStore(), &xferCRC, "Data\\INI\\Default\\ObjectCreationList", "Data\\INI\\ObjectCreationList");
+		initSubsystem(TheObjectCreationListStore, "TheObjectCreationListStore", MSGNEW("GameEngineSubsystem") ObjectCreationListStore(), &xferCRC, buildPath("INI", "Default", "ObjectCreationList").str(), buildPath("INI", "ObjectCreationList").str());
 		fprintf(stderr, "GameEngine::init() - TheObjectCreationListStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheLocomotorStore\n"); fflush(stderr);
-		initSubsystem(TheLocomotorStore,"TheLocomotorStore", MSGNEW("GameEngineSubsystem") LocomotorStore(), &xferCRC, NULL, "Data\\INI\\Locomotor");
+		initSubsystem(TheLocomotorStore, "TheLocomotorStore", MSGNEW("GameEngineSubsystem") LocomotorStore(), &xferCRC, NULL, buildPath("INI", "Locomotor").str());
 		fprintf(stderr, "GameEngine::init() - TheLocomotorStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheSpecialPowerStore\n"); fflush(stderr);
-		initSubsystem(TheSpecialPowerStore,"TheSpecialPowerStore", MSGNEW("GameEngineSubsystem") SpecialPowerStore(), &xferCRC, "Data\\INI\\Default\\SpecialPower", "Data\\INI\\SpecialPower");
+		initSubsystem(TheSpecialPowerStore, "TheSpecialPowerStore", MSGNEW("GameEngineSubsystem") SpecialPowerStore(), &xferCRC, buildPath("INI", "Default", "SpecialPower").str(), buildPath("INI", "SpecialPower").str());
 		fprintf(stderr, "GameEngine::init() - TheSpecialPowerStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheDamageFXStore\n"); fflush(stderr);
-		initSubsystem(TheDamageFXStore,"TheDamageFXStore", MSGNEW("GameEngineSubsystem") DamageFXStore(), &xferCRC, NULL, "Data\\INI\\DamageFX");
+		initSubsystem(TheDamageFXStore, "TheDamageFXStore", MSGNEW("GameEngineSubsystem") DamageFXStore(), &xferCRC, NULL, buildPath("INI", "DamageFX").str());
 		fprintf(stderr, "GameEngine::init() - TheDamageFXStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheArmorStore\n"); fflush(stderr);
-		initSubsystem(TheArmorStore,"TheArmorStore", MSGNEW("GameEngineSubsystem") ArmorStore(), &xferCRC, NULL, "Data\\INI\\Armor");
+		initSubsystem(TheArmorStore, "TheArmorStore", MSGNEW("GameEngineSubsystem") ArmorStore(), &xferCRC, NULL, buildPath("INI", "Armor").str());
 		fprintf(stderr, "GameEngine::init() - TheArmorStore initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheBuildAssistant\n"); fflush(stderr);
-		initSubsystem(TheBuildAssistant,"TheBuildAssistant", MSGNEW("GameEngineSubsystem") BuildAssistant, NULL);
+		initSubsystem(TheBuildAssistant, "TheBuildAssistant", MSGNEW("GameEngineSubsystem") BuildAssistant, NULL);
 		fprintf(stderr, "GameEngine::init() - TheBuildAssistant initialized successfully\n"); fflush(stderr);
 
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheBuildAssistant = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheBuildAssistant = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		fprintf(stderr, "GameEngine::init() - About to init TheThingFactory\n"); fflush(stderr);
-		initSubsystem(TheThingFactory,"TheThingFactory", createThingFactory(), &xferCRC, "Data\\INI\\Default\\Object", "Data\\INI\\Object");
+		initSubsystem(TheThingFactory, "TheThingFactory", createThingFactory(), &xferCRC, buildPath("INI", "Default", "Object").str(), buildPath("INI", "Object").str());
 		fprintf(stderr, "GameEngine::init() - TheThingFactory initialized successfully\n"); fflush(stderr);
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheThingFactory = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheThingFactory = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 		fprintf(stderr, "GameEngine::init() - About to init TheUpgradeCenter\n"); fflush(stderr);
-		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
+		initSubsystem(TheUpgradeCenter, "TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, buildPath("INI", "Default", "Upgrade").str(), buildPath("INI", "Upgrade").str());
 		fprintf(stderr, "GameEngine::init() - TheUpgradeCenter initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheGameClient\n"); fflush(stderr);
-		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), NULL);
+		initSubsystem(TheGameClient, "TheGameClient", createGameClient(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheGameClient initialized successfully\n"); fflush(stderr);
 
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheGameClient = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheGameClient = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 		fprintf(stderr, "GameEngine::init() - About to init TheAI\n"); fflush(stderr);
-		initSubsystem(TheAI,"TheAI", MSGNEW("GameEngineSubsystem") AI(), &xferCRC,  "Data\\INI\\Default\\AIData", "Data\\INI\\AIData");
+		initSubsystem(TheAI, "TheAI", MSGNEW("GameEngineSubsystem") AI(), &xferCRC, buildPath("INI", "Default", "AIData").str(), buildPath("INI", "AIData").str());
 		fprintf(stderr, "GameEngine::init() - TheAI initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheGameLogic\n"); fflush(stderr);
-		initSubsystem(TheGameLogic,"TheGameLogic", createGameLogic(), NULL);
+		initSubsystem(TheGameLogic, "TheGameLogic", createGameLogic(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheGameLogic initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheTeamFactory\n"); fflush(stderr);
-		initSubsystem(TheTeamFactory,"TheTeamFactory", MSGNEW("GameEngineSubsystem") TeamFactory(), NULL);
+		initSubsystem(TheTeamFactory, "TheTeamFactory", MSGNEW("GameEngineSubsystem") TeamFactory(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheTeamFactory initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheCrateSystem\n"); fflush(stderr);
-		initSubsystem(TheCrateSystem,"TheCrateSystem", MSGNEW("GameEngineSubsystem") CrateSystem(), &xferCRC, "Data\\INI\\Default\\Crate", "Data\\INI\\Crate");
+		initSubsystem(TheCrateSystem, "TheCrateSystem", MSGNEW("GameEngineSubsystem") CrateSystem(), &xferCRC, buildPath("INI", "Default", "Crate").str(), buildPath("INI", "Crate").str());
 		fprintf(stderr, "GameEngine::init() - TheCrateSystem initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init ThePlayerList\n"); fflush(stderr);
-		initSubsystem(ThePlayerList,"ThePlayerList", MSGNEW("GameEngineSubsystem") PlayerList(), NULL);
+		initSubsystem(ThePlayerList, "ThePlayerList", MSGNEW("GameEngineSubsystem") PlayerList(), NULL);
 		fprintf(stderr, "GameEngine::init() - ThePlayerList initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheRecorder\n"); fflush(stderr);
-		initSubsystem(TheRecorder,"TheRecorder", createRecorder(), NULL);
+		initSubsystem(TheRecorder, "TheRecorder", createRecorder(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheRecorder initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheRadar\n"); fflush(stderr);
-		initSubsystem(TheRadar,"TheRadar", TheGlobalData->m_headless ? NEW RadarDummy : createRadar(), NULL);
+		initSubsystem(TheRadar, "TheRadar", TheGlobalData->m_headless ? NEW RadarDummy : createRadar(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheRadar initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheVictoryConditions\n"); fflush(stderr);
-		initSubsystem(TheVictoryConditions,"TheVictoryConditions", createVictoryConditions(), NULL);
+		initSubsystem(TheVictoryConditions, "TheVictoryConditions", createVictoryConditions(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheVictoryConditions initialized successfully\n"); fflush(stderr);
 
 
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheVictoryConditions = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheVictoryConditions = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		fprintf(stderr, "GameEngine::init() - About to init TheMetaMap\n"); fflush(stderr);
 		AsciiString fname;
-		fname.format("Data\\%s\\CommandMap", GetRegistryLanguage().str());
-		initSubsystem(TheMetaMap,"TheMetaMap", MSGNEW("GameEngineSubsystem") MetaMap(), NULL, fname.str(), "Data\\INI\\CommandMap");
+		fname.concat("Data");
+		fname.concat(GET_PATH_SEPARATOR());
+		fname.concat(GetRegistryLanguage());
+		fname.concat(GET_PATH_SEPARATOR());
+		fname.concat("CommandMap");
+		initSubsystem(TheMetaMap, "TheMetaMap", MSGNEW("GameEngineSubsystem") MetaMap(), NULL, fname.str(), buildPath("INI", "CommandMap").str());
 		fprintf(stderr, "GameEngine::init() - TheMetaMap initialized successfully\n"); fflush(stderr);
 
 		fprintf(stderr, "GameEngine::init() - Generating MetaMap\n"); fflush(stderr);
@@ -708,22 +739,22 @@ void GameEngine::init()
 		fprintf(stderr, "GameEngine::init() - MetaMap generated\n"); fflush(stderr);
 
 #if defined(RTS_DEBUG)
-		ini.loadFileDirectory("Data\\INI\\CommandMapDebug", INI_LOAD_MULTIFILE, NULL);
+		ini.loadFileDirectory(buildPath("INI", "CommandMapDebug").str(), INI_LOAD_MULTIFILE, NULL);
 #endif
 
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
-		ini.loadFileDirectory("Data\\INI\\CommandMapDemo", INI_LOAD_MULTIFILE, NULL);
+		ini.loadFileDirectory(buildPath("INI", "CommandMapDemo").str(), INI_LOAD_MULTIFILE, NULL);
 #endif
 
 		fprintf(stderr, "GameEngine::init() - About to init TheActionManager\n"); fflush(stderr);
-		initSubsystem(TheActionManager,"TheActionManager", MSGNEW("GameEngineSubsystem") ActionManager(), NULL);
+		initSubsystem(TheActionManager, "TheActionManager", MSGNEW("GameEngineSubsystem") ActionManager(), NULL);
 		fprintf(stderr, "GameEngine::init() - TheActionManager initialized successfully\n"); fflush(stderr);
 		//initSubsystem((CComObject<WebBrowser> *)TheWebBrowser,"(CComObject<WebBrowser> *)TheWebBrowser", (CComObject<WebBrowser> *)createWebBrowser(), NULL);
 		fprintf(stderr, "GameEngine::init() - About to init TheGameStateMap\n"); fflush(stderr);
-		initSubsystem(TheGameStateMap,"TheGameStateMap", MSGNEW("GameEngineSubsystem") GameStateMap, NULL );
+		initSubsystem(TheGameStateMap, "TheGameStateMap", MSGNEW("GameEngineSubsystem") GameStateMap, NULL);
 		fprintf(stderr, "GameEngine::init() - TheGameStateMap initialized successfully\n"); fflush(stderr);
 		fprintf(stderr, "GameEngine::init() - About to init TheGameState\n"); fflush(stderr);
-		initSubsystem(TheGameState,"TheGameState", MSGNEW("GameEngineSubsystem") GameState, NULL );
+		initSubsystem(TheGameState, "TheGameState", MSGNEW("GameEngineSubsystem") GameState, NULL);
 		fprintf(stderr, "GameEngine::init() - TheGameState initialized successfully\n"); fflush(stderr);
 
 		// Create the interface for sending game results
@@ -733,19 +764,20 @@ void GameEngine::init()
 		fprintf(stderr, "GameEngine::init() - createNewGameResultsInterface returned %p\n", (void*)resultsInterface); fflush(stderr);
 		if (resultsInterface) {
 			fprintf(stderr, "GameEngine::init() - Calling initSubsystem for TheGameResultsQueue...\n"); fflush(stderr);
-			initSubsystem(TheGameResultsQueue,"TheGameResultsQueue", resultsInterface, NULL);
+			initSubsystem(TheGameResultsQueue, "TheGameResultsQueue", resultsInterface, NULL);
 			fprintf(stderr, "GameEngine::init() - TheGameResultsQueue initialized successfully\n"); fflush(stderr);
-		} else {
+		}
+		else {
 			fprintf(stderr, "GameEngine::init() - WARNING: createNewGameResultsInterface returned NULL, skipping\n"); fflush(stderr);
 		}
 
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheGameResultsQueue = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheGameResultsQueue = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		fprintf(stderr, "GameEngine::init() - Closing xferCRC\n"); fflush(stderr);
@@ -788,12 +820,12 @@ void GameEngine::init()
 		fprintf(stderr, "GameEngine::init() - TheMapCache updated\n"); fflush(stderr);
 
 
-	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheMapCache->updateCache = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
-	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		sprintf(Buf, "----------------------------------------------------------------------------After TheMapCache->updateCache = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
+		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		if (TheGlobalData->m_buildMapCache)
@@ -822,7 +854,7 @@ void GameEngine::init()
 	//			TheShell->hideShell();
 
 				// send a message to the logic for a new game
-				GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
+				GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_NEW_GAME);
 				msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
 				msg->appendIntegerArgument(DIFFICULTY_NORMAL);
 				msg->appendIntegerArgument(0);
@@ -843,7 +875,7 @@ void GameEngine::init()
 			}
 		}
 
-		if(!TheGlobalData->m_playIntro)
+		if (!TheGlobalData->m_playIntro)
 			TheWritableGlobalData->m_afterIntro = TRUE;
 
 		//initDisabledMasks();
@@ -869,7 +901,7 @@ void GameEngine::init()
 		RELEASE_CRASH(("Uncaught Exception during initialization."));
 	}
 
-	if(!TheGlobalData->m_playIntro)
+	if (!TheGlobalData->m_playIntro)
 		TheWritableGlobalData->m_afterIntro = TRUE;
 
 	initKindOfMasks();
@@ -884,11 +916,11 @@ void GameEngine::init()
 /** -----------------------------------------------------------------------------------------------
 	* Reset all necessary parts of the game engine to be ready to accept new game data
 	*/
-void GameEngine::reset( void )
+void GameEngine::reset(void)
 {
 
-	WindowLayout *background = TheWindowManager->winCreateLayout("Menus/BlankWindow.wnd");
-	DEBUG_ASSERTCRASH(background,("We Couldn't Load Menus/BlankWindow.wnd"));
+	WindowLayout* background = TheWindowManager->winCreateLayout("Menus/BlankWindow.wnd");
+	DEBUG_ASSERTCRASH(background, ("We Couldn't Load Menus/BlankWindow.wnd"));
 	background->hide(FALSE);
 	background->bringForward();
 	background->getFirstWindow()->winClearStatus(WIN_STATUS_IMAGE);
@@ -904,7 +936,7 @@ void GameEngine::reset( void )
 		delete TheNetwork;
 		TheNetwork = NULL;
 	}
-	if(background)
+	if (background)
 	{
 		background->destroyWindows();
 		deleteInstance(background);
@@ -913,7 +945,7 @@ void GameEngine::reset( void )
 }
 
 /// -----------------------------------------------------------------------------------------------
-void GameEngine::resetSubsystems( void )
+void GameEngine::resetSubsystems(void)
 {
 	// TheSuperHackers @fix xezon 09/06/2025 Reset GameLogic first to purge all world objects early.
 	// This avoids potentially catastrophic issues when objects and subsystems have cross dependencies.
@@ -998,7 +1030,7 @@ DECLARE_PERF_TIMER(GameEngine_update)
 /** -----------------------------------------------------------------------------------------------
  * Update the game engine by updating the GameClient and GameLogic singletons.
  */
-void GameEngine::update( void )
+void GameEngine::update(void)
 {
 	// Phase 54: Debug log
 	static int updateCount = 0;
@@ -1013,10 +1045,10 @@ void GameEngine::update( void )
 			// VERIFY CRC needs to be in this code block.  Please to not pull TheGameLogic->update() inside this block.
 			VERIFY_CRC
 
-			if (updateCount < 3) {
-				fprintf(stderr, "GameEngine::update() - About to call TheRadar->UPDATE()\n");
-				fflush(stderr);
-			}
+				if (updateCount < 3) {
+					fprintf(stderr, "GameEngine::update() - About to call TheRadar->UPDATE()\n");
+					fflush(stderr);
+				}
 			TheRadar->UPDATE();
 
 			/// @todo Move audio init, update, etc, into GameClient update
@@ -1074,7 +1106,7 @@ extern bool DX8Wrapper_IsWindowed;
 /** -----------------------------------------------------------------------------------------------
  * The "main loop" of the game engine. It will not return until the game exits.
  */
-void GameEngine::execute( void )
+void GameEngine::execute(void)
 {
 	// Phase 54: Debug log for execute loop
 	fprintf(stderr, "GameEngine::execute() - Entering main loop, m_quitting=%d\n", m_quitting ? 1 : 0);
@@ -1086,7 +1118,7 @@ void GameEngine::execute( void )
 #endif
 
 	// pretty basic for now
-	while( !m_quitting )
+	while (!m_quitting)
 	{
 		// Phase 54: Log first few frames
 		if (frameCount < 5) {
@@ -1179,7 +1211,7 @@ void GameEngine::execute( void )
 /** -----------------------------------------------------------------------------------------------
 	* Factory for the message stream
 	*/
-MessageStream *GameEngine::createMessageStream( void )
+MessageStream* GameEngine::createMessageStream(void)
 {
 	// if you change this update the tools that use the engine systems
 	// like GUIEdit, it creates a message stream to run in "test" mode
@@ -1187,13 +1219,13 @@ MessageStream *GameEngine::createMessageStream( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-FileSystem *GameEngine::createFileSystem( void )
+FileSystem* GameEngine::createFileSystem(void)
 {
 	return MSGNEW("GameEngineSubsystem") FileSystem;
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool GameEngine::isMultiplayerSession( void )
+Bool GameEngine::isMultiplayerSession(void)
 {
 	return TheRecorder->isMultiplayer();
 }
@@ -1209,13 +1241,18 @@ void updateTGAtoDDS()
 	// and determine if there are any .tga files that are newer than associated .dds files. If there
 	// are, then we will re-run the compression tool on them.
 
-	File *fp = TheLocalFileSystem->openFile("buildDDS.txt", File::WRITE | File::CREATE | File::TRUNCATE | File::TEXT);
+	File* fp = TheLocalFileSystem->openFile("buildDDS.txt", File::WRITE | File::CREATE | File::TRUNCATE | File::TEXT);
 	if (!fp) {
 		return;
 	}
 
 	FilenameList files;
-	TheLocalFileSystem->getFileListInDirectory("Art\\Textures\\", "", "*.tga", files, TRUE);
+	AsciiString artPath;
+	artPath.concat("Art");
+	artPath.concat(GET_PATH_SEPARATOR());
+	artPath.concat("Textures");
+	artPath.concat(GET_PATH_SEPARATOR());
+	TheLocalFileSystem->getFileListInDirectory(artPath.str(), "", "*.tga", files, TRUE);
 	FilenameList::iterator it;
 	for (it = files.begin(); it != files.end(); ++it) {
 		AsciiString filenameTGA = *it;
@@ -1244,11 +1281,12 @@ void updateTGAtoDDS()
 		if (TheFileSystem->doesFileExist(filenameDDS.str())) {
 			TheFileSystem->getFileInfo(filenameDDS, &infoDDS);
 			if (infoTGA.timestampHigh > infoDDS.timestampHigh ||
-					(infoTGA.timestampHigh == infoDDS.timestampHigh &&
-					 infoTGA.timestampLow > infoDDS.timestampLow)) {
+				(infoTGA.timestampHigh == infoDDS.timestampHigh &&
+					infoTGA.timestampLow > infoDDS.timestampLow)) {
 				needsToBeUpdated = TRUE;
 			}
-		} else {
+		}
+		else {
 			needsToBeUpdated = TRUE;
 		}
 
@@ -1271,4 +1309,4 @@ void updateTGAtoDDS()
 // If we're using the Wide character version of MessageBox, then there's no additional
 // processing necessary. Please note that this is a sleazy way to get this information,
 // but pending a better one, this'll have to do.
-extern const Bool TheSystemIsUnicode = (((void*) (::MessageBox)) == ((void*) (::MessageBoxW)));
+extern const Bool TheSystemIsUnicode = (((void*)(::MessageBox)) == ((void*)(::MessageBoxW)));

@@ -27,6 +27,7 @@
 #include "wdview.h"
 
 #include "fcntl.h"
+#include <Utility/compat.h>
 
 #ifdef RTS_DEBUG
 #define new DEBUG_NEW
@@ -40,11 +41,11 @@ HINSTANCE ApplicationHInstance = NULL;  ///< our application instance
 /// just to satisfy the game libraries we link to
 HWND ApplicationHWnd = NULL;
 
-const char *gAppPrefix = "wd_";
+const char* gAppPrefix = "wd_";
 
 // Where are the default string files?
-const char *g_strFile = "data\\Generals.str";
-const char *g_csfFile = "data\\%s\\Generals.csf";
+const char* g_strFile = "data\\Generals.str";
+const char* g_csfFile = "data\\%s\\Generals.csf";
 
 /////////////////////////////////////////////////////////////////////////////
 // CWdumpApp
@@ -52,19 +53,19 @@ const char *g_csfFile = "data\\%s\\Generals.csf";
 BEGIN_MESSAGE_MAP(CWdumpApp, CWinApp)
 	//{{AFX_MSG_MAP(CWdumpApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG_MAP
-	// Standard file based document commands
-	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
+	// NOTE - the ClassWizard will add and remove mapping macros here.
+	//    DO NOT EDIT what you see in these blocks of generated code!
+//}}AFX_MSG_MAP
+// Standard file based document commands
+ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
+ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CWdumpApp construction
 
 CWdumpApp::CWdumpApp()
-: DumpTextures(false), NoWindow(false), TextureDumpFile(0)
+	: DumpTextures(false), NoWindow(false), TextureDumpFile(0)
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
@@ -78,16 +79,16 @@ CWdumpApp theApp;
 // private class declaration of a CCommandLineInfo class that knows about our special options
 class CWDumpCommandLineInfo : public CCommandLineInfo
 {
-	virtual void ParseParam(const TCHAR* pszParam,BOOL bFlag,BOOL bLast)
+	virtual void ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast)
 	{
 		if (bFlag)
 		{
-			if(pszParam[0] == 't') {
+			if (pszParam[0] == 't') {
 				theApp.DumpTextures = true;
 				ParseLast(bLast);
 				return;
 			}
-			if(pszParam[0] == 'q') {
+			if (pszParam[0] == 'q') {
 				theApp.NoWindow = true;
 				ParseLast(bLast);
 				return;
@@ -139,52 +140,52 @@ BOOL CWdumpApp::InitInstance()
 	ParseCommandLine(cmdInfo);
 
 	// note: if any other dump types are enabled, they should probably open different files.
-	if(DumpTextures) {
+	if (DumpTextures) {
 		TextureDumpFile = fopen("textures.txt", "a");
 	}
 
-	if(NoWindow) {
-		if(cmdInfo.m_nShellCommand == CWDumpCommandLineInfo::FileOpen) {
-			const char *c = strrchr(cmdInfo.m_strFileName, '\\');
-			if(c == 0)
-				c = (LPCTSTR) cmdInfo.m_strFileName;
-			if(*c == '\\')
+	if (NoWindow) {
+		if (cmdInfo.m_nShellCommand == CWDumpCommandLineInfo::FileOpen) {
+			const char* c = strrchr(cmdInfo.m_strFileName, GET_PATH_SEPARATOR());
+			if (c == 0)
+				c = (LPCTSTR)cmdInfo.m_strFileName;
+			if (*c == GET_PATH_SEPARATOR())
 				c++;
 
 			Filename = c;
 
 
 
-/*			STARTUPINFO info;
-			GetStartupInfo(&info);
+			/*			STARTUPINFO info;
+						GetStartupInfo(&info);
 
-			if(info.hStdOutput == NULL) {
-				AllocConsole();                  // Allocate console window
-				freopen("CONOUT$", "a", stdout);
-				freopen("CONIN$", "r", stdin);
-			} else {
-				int CrtInput;
-				int CrtOutput;
-				if ( (CrtInput  =_open_osfhandle((long) info.hStdInput, _O_RDONLY)) != -1) {
-					if ( (CrtOutput = _open_osfhandle((long) info.hStdOutput, _O_APPEND)) != -1) {
-						_dup2( CrtInput, 0);
-						_dup2( CrtOutput, 1);
-					}
-				}
+						if(info.hStdOutput == NULL) {
+							AllocConsole();                  // Allocate console window
+							freopen("CONOUT$", "a", stdout);
+							freopen("CONIN$", "r", stdin);
+						} else {
+							int CrtInput;
+							int CrtOutput;
+							if ( (CrtInput  =_open_osfhandle((long) info.hStdInput, _O_RDONLY)) != -1) {
+								if ( (CrtOutput = _open_osfhandle((long) info.hStdOutput, _O_APPEND)) != -1) {
+									_dup2( CrtInput, 0);
+									_dup2( CrtOutput, 1);
+								}
+							}
 
-//				stdin = (struct _iobuf * ) info.hStdInput;
-//				stdout = (struct _iobuf * ) info.hStdOutput;
-			}
-*/
+			//				stdin = (struct _iobuf * ) info.hStdInput;
+			//				stdout = (struct _iobuf * ) info.hStdOutput;
+						}
+			*/
 
-			CWdumpDoc *doc = (CWdumpDoc *) pDocTemplate->OpenDocumentFile(cmdInfo.m_strFileName, FALSE);
+			CWdumpDoc* doc = (CWdumpDoc*)pDocTemplate->OpenDocumentFile(cmdInfo.m_strFileName, FALSE);
 
-/*			if(info.hStdOutput == NULL) {
-				printf("Press return to close this window..");
-				getchar();
-				FreeConsole();
-			}
-*/
+			/*			if(info.hStdOutput == NULL) {
+							printf("Press return to close this window..");
+							getchar();
+							FreeConsole();
+						}
+			*/
 
 			CloseAllDocuments(TRUE);
 			PostQuitMessage(0);
@@ -201,7 +202,7 @@ BOOL CWdumpApp::InitInstance()
 	m_pMainWnd->UpdateWindow();
 
 	POSITION p = pDocTemplate->GetFirstDocPosition();
-	CWdumpDoc *doc = (CWdumpDoc *) pDocTemplate->GetNextDoc(p);
+	CWdumpDoc* doc = (CWdumpDoc*)pDocTemplate->GetNextDoc(p);
 	doc->UpdateAllViews(0);
 
 	return TRUE;
@@ -215,14 +216,14 @@ class CAboutDlg : public CDialog
 public:
 	CAboutDlg();
 
-// Dialog Data
-	//{{AFX_DATA(CAboutDlg)
+	// Dialog Data
+		//{{AFX_DATA(CAboutDlg)
 	enum { IDD = IDD_ABOUTBOX };
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAboutDlg)
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 

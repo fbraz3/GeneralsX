@@ -35,6 +35,7 @@
 #include "hlod.h"
 #include <VFW.h>
 #include "rcfile.h"
+#include <Utility/compat.h>
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -42,26 +43,26 @@
 //  GetCurrentDocument
 //
 ////////////////////////////////////////////////////////////////////////////
-CW3DViewDoc *
-GetCurrentDocument (void)
+CW3DViewDoc*
+GetCurrentDocument(void)
 {
-    // Assume failure
-    CW3DViewDoc *pCDoc = NULL;
+	// Assume failure
+	CW3DViewDoc* pCDoc = NULL;
 
-    // Get a pointer to the main window
-    CMainFrame *pCMainWnd = (CMainFrame *)::AfxGetMainWnd ();
+	// Get a pointer to the main window
+	CMainFrame* pCMainWnd = (CMainFrame*)::AfxGetMainWnd();
 
-    ASSERT (pCMainWnd);
-    if (pCMainWnd)
-    {
-        // Use the main window pointer to get a pointer
-        // to the current doc.
-        pCDoc = (CW3DViewDoc *)pCMainWnd->GetActiveDocument ();
-        ASSERT (pCDoc);
-    }
+	ASSERT(pCMainWnd);
+	if (pCMainWnd)
+	{
+		// Use the main window pointer to get a pointer
+		// to the current doc.
+		pCDoc = (CW3DViewDoc*)pCMainWnd->GetActiveDocument();
+		ASSERT(pCDoc);
+	}
 
-    // Return the doc pointer
-    return pCDoc;
+	// Return the doc pointer
+	return pCDoc;
 }
 
 /////////////////////////////////////////////////////////////
@@ -69,44 +70,44 @@ GetCurrentDocument (void)
 //  CenterDialogAroundTreeView
 //
 void
-CenterDialogAroundTreeView (HWND hDlg)
+CenterDialogAroundTreeView(HWND hDlg)
 {
-    // Params OK?
-    if (::IsWindow (hDlg))
-    {
-        // Get a pointer to the main window
-        CMainFrame *pCMainWnd = (CMainFrame *)::AfxGetMainWnd ();
+	// Params OK?
+	if (::IsWindow(hDlg))
+	{
+		// Get a pointer to the main window
+		CMainFrame* pCMainWnd = (CMainFrame*)::AfxGetMainWnd();
 
-        ASSERT (pCMainWnd);
-        if (pCMainWnd)
-        {
-            // Get the tree view pane so we can get its rectangle
-            CDataTreeView *pCDataTreeView = (CDataTreeView *)pCMainWnd->GetPane (0, 0);
+		ASSERT(pCMainWnd);
+		if (pCMainWnd)
+		{
+			// Get the tree view pane so we can get its rectangle
+			CDataTreeView* pCDataTreeView = (CDataTreeView*)pCMainWnd->GetPane(0, 0);
 
-            ASSERT (pCDataTreeView);
-            if (pCDataTreeView)
-            {
-                // Get the bounding rectangle of the data tree view
-                RECT rect;
-                pCDataTreeView->GetWindowRect (&rect);
+			ASSERT(pCDataTreeView);
+			if (pCDataTreeView)
+			{
+				// Get the bounding rectangle of the data tree view
+				RECT rect;
+				pCDataTreeView->GetWindowRect(&rect);
 
-                // Get the bounding rectangle of the dialog
-                RECT dialogRect;
-                ::GetWindowRect (hDlg, &dialogRect);
+				// Get the bounding rectangle of the dialog
+				RECT dialogRect;
+				::GetWindowRect(hDlg, &dialogRect);
 
-                // Move the dialog so its centered in the data tree view
-                ::SetWindowPos (hDlg,
-                                NULL,
-                                rect.left + ((rect.right-rect.left) >> 1) - ((dialogRect.right-dialogRect.left) >> 1),
-                                rect.top + ((rect.bottom-rect.top) >> 1) - ((dialogRect.bottom-dialogRect.top) >> 1),
-                                0,
-                                0,
-                                SWP_NOSIZE | SWP_NOZORDER);
-            }
-        }
-    }
+				// Move the dialog so its centered in the data tree view
+				::SetWindowPos(hDlg,
+					NULL,
+					rect.left + ((rect.right - rect.left) >> 1) - ((dialogRect.right - dialogRect.left) >> 1),
+					rect.top + ((rect.bottom - rect.top) >> 1) - ((dialogRect.bottom - dialogRect.top) >> 1),
+					0,
+					0,
+					SWP_NOSIZE | SWP_NOZORDER);
+			}
+		}
+	}
 
-    return ;
+	return;
 }
 
 /////////////////////////////////////////////////////////////
@@ -122,42 +123,42 @@ Paint_Gradient
 	BYTE baseBlue
 )
 {
-    // Get the bounding rectangle so we know how much to paint
-    RECT rect;
-    ::GetClientRect (hWnd, &rect);
+	// Get the bounding rectangle so we know how much to paint
+	RECT rect;
+	::GetClientRect(hWnd, &rect);
 
-    // Determine the width, height, and width per each shade
-    int iWidth = rect.right-rect.left;
-    int iHeight = rect.bottom-rect.top;
-    float widthPerShade = ((float)iWidth) / 256.00F;
+	// Determine the width, height, and width per each shade
+	int iWidth = rect.right - rect.left;
+	int iHeight = rect.bottom - rect.top;
+	float widthPerShade = ((float)iWidth) / 256.00F;
 
-    // Pull a hack to get the CDC for the window
-    HDC hDC = ::GetDC (hWnd);
-    CDC cDC;
-    cDC.Attach(hDC);
+	// Pull a hack to get the CDC for the window
+	HDC hDC = ::GetDC(hWnd);
+	CDC cDC;
+	cDC.Attach(hDC);
 
-    // Loop through each shade and paint its sliver
-    float posX = 0.00F;
-    for (int iShade = 0; iShade < 256; iShade ++)
-    {
-        // Paint this sliver
-        cDC.FillSolidRect ((int)posX,
-                           0,
-                           (widthPerShade >= 1.00F) ? ((int)widthPerShade)+1 : 1,
-                           iHeight,
-                           RGB (iShade*baseRed, iShade*baseGreen, iShade*baseBlue));
+	// Loop through each shade and paint its sliver
+	float posX = 0.00F;
+	for (int iShade = 0; iShade < 256; iShade++)
+	{
+		// Paint this sliver
+		cDC.FillSolidRect((int)posX,
+			0,
+			(widthPerShade >= 1.00F) ? ((int)widthPerShade) + 1 : 1,
+			iHeight,
+			RGB(iShade * baseRed, iShade * baseGreen, iShade * baseBlue));
 
-        // Increment the current position
-        posX += widthPerShade;
-    }
+		// Increment the current position
+		posX += widthPerShade;
+	}
 
-    // Release the DC
-    cDC.Detach ();
-    ::ReleaseDC (hWnd, hDC);
+	// Release the DC
+	cDC.Detach();
+	::ReleaseDC(hWnd, hDC);
 
-    // Validate the contents of the window so the control won't paint itself
-    ::ValidateRect (hWnd, NULL);
-    return ;
+	// Validate the contents of the window so the control won't paint itself
+	::ValidateRect(hWnd, NULL);
+	return;
 }
 
 
@@ -175,11 +176,11 @@ SetDlgItemFloat
 {
 	// Convert the float to a string
 	CString text;
-	text.Format ("%.2f", value);
+	text.Format("%.2f", value);
 
 	// Pass the string onto the dialog control
-	::SetDlgItemText (hdlg, child_id, text);
-	return ;
+	::SetDlgItemText(hdlg, child_id, text);
+	return;
 }
 
 
@@ -196,10 +197,10 @@ GetDlgItemFloat
 {
 	// Get the string from the window
 	TCHAR string_value[20];
-	::GetDlgItemText (hdlg, child_id, string_value, sizeof (string_value));
+	::GetDlgItemText(hdlg, child_id, string_value, sizeof(string_value));
 
 	// Convert the string to a float and return the value
-	return ::atof (string_value);
+	return ::atof(string_value);
 }
 
 
@@ -210,7 +211,7 @@ GetDlgItemFloat
 void
 Initialize_Spinner
 (
-	CSpinButtonCtrl &ctrl,
+	CSpinButtonCtrl& ctrl,
 	float pos,
 	float min,
 	float max
@@ -219,18 +220,18 @@ Initialize_Spinner
 	//
 	//	Convert the floats to ints and pass the settings onto the controls
 	//
-	ctrl.SetRange32 (int(min * 100), int(max * 100));
-	ctrl.SetPos (int(pos * 100));
+	ctrl.SetRange32(int(min * 100), int(max * 100));
+	ctrl.SetPos(int(pos * 100));
 
 	//
 	//	Set the buddy's text accordingly
 	//
-	CWnd *buddy = ctrl.GetBuddy ();
+	CWnd* buddy = ctrl.GetBuddy();
 	if (buddy != NULL) {
-		::SetWindowFloat (*buddy, pos);
+		::SetWindowFloat(*buddy, pos);
 	}
 
-	return ;
+	return;
 }
 
 
@@ -239,17 +240,17 @@ Initialize_Spinner
 //  Update_Spinner_Buddy
 //
 void
-Update_Spinner_Buddy (CSpinButtonCtrl &ctrl, int delta)
+Update_Spinner_Buddy(CSpinButtonCtrl& ctrl, int delta)
 {
 	//
 	//	Only perform this service if the spinner isn't an auto buddy
 	//
-	if ((::GetWindowLong (ctrl, GWL_STYLE) & UDS_SETBUDDYINT) == 0) {
-		CWnd *buddy = ctrl.GetBuddy ();
+	if ((::GetWindowLong(ctrl, GWL_STYLE) & UDS_SETBUDDYINT) == 0) {
+		CWnd* buddy = ctrl.GetBuddy();
 		if (buddy != NULL) {
 
 			// Get the current value, increment it, and put it back into the control
-			float value = ::GetWindowFloat (*buddy);
+			float value = ::GetWindowFloat(*buddy);
 			value += (((float)(delta)) / 100.0F);
 
 			//
@@ -257,18 +258,18 @@ Update_Spinner_Buddy (CSpinButtonCtrl &ctrl, int delta)
 			//
 			int int_min = 0;
 			int int_max = 0;
-			ctrl.GetRange32 (int_min, int_max);
+			ctrl.GetRange32(int_min, int_max);
 			float float_min = ((float)int_min) / 100;
 			float float_max = ((float)int_max) / 100;
-			value = max (float_min, value);
-			value = min (float_max, value);
+			value = max(float_min, value);
+			value = min(float_max, value);
 
 			// Pass the value onto the buddy window
-			::SetWindowFloat (*buddy, value);
+			::SetWindowFloat(*buddy, value);
 		}
 	}
 
-	return ;
+	return;
 }
 
 
@@ -277,17 +278,17 @@ Update_Spinner_Buddy (CSpinButtonCtrl &ctrl, int delta)
 //  Update_Spinner_Buddy
 //
 void
-Update_Spinner_Buddy (HWND hspinner, int delta)
+Update_Spinner_Buddy(HWND hspinner, int delta)
 {
 	//
 	//	Only perform this service if the spinner isn't an auto buddy
 	//
-	if ((::GetWindowLong (hspinner, GWL_STYLE) & UDS_SETBUDDYINT) == 0) {
-		HWND hbuddy_wnd = (HWND)SendMessage (hspinner, UDM_GETBUDDY, 0, 0L);
-		if (::IsWindow (hbuddy_wnd)) {
+	if ((::GetWindowLong(hspinner, GWL_STYLE) & UDS_SETBUDDYINT) == 0) {
+		HWND hbuddy_wnd = (HWND)SendMessage(hspinner, UDM_GETBUDDY, 0, 0L);
+		if (::IsWindow(hbuddy_wnd)) {
 
 			// Get the current value, increment it, and put it back into the control
-			float value = ::GetWindowFloat (hbuddy_wnd);
+			float value = ::GetWindowFloat(hbuddy_wnd);
 			value += (((float)(delta)) / 100.0F);
 
 			//
@@ -295,18 +296,18 @@ Update_Spinner_Buddy (HWND hspinner, int delta)
 			//
 			int int_min = 0;
 			int int_max = 0;
-			SendMessage (hspinner, UDM_GETRANGE32, (WPARAM)&int_min, (LPARAM)&int_max);
+			SendMessage(hspinner, UDM_GETRANGE32, (WPARAM)&int_min, (LPARAM)&int_max);
 			float float_min = ((float)int_min) / 100;
 			float float_max = ((float)int_max) / 100;
-			value = max (float_min, value);
-			value = min (float_max, value);
+			value = max(float_min, value);
+			value = min(float_max, value);
 
 			// Pass the value onto the buddy window
-			::SetWindowFloat (hbuddy_wnd, value);
+			::SetWindowFloat(hbuddy_wnd, value);
 		}
 	}
 
-	return ;
+	return;
 }
 
 
@@ -315,20 +316,20 @@ Update_Spinner_Buddy (HWND hspinner, int delta)
 //  Enable_Dialog_Controls
 //
 void
-Enable_Dialog_Controls (HWND dlg,bool onoff)
+Enable_Dialog_Controls(HWND dlg, bool onoff)
 {
 	//
 	// Loop over all sub-windows enable/disabling everything except for
 	// the static text controls
 	//
-	for (HWND child = ::GetWindow(dlg,GW_CHILD) ; child != NULL ; child = ::GetWindow(child,GW_HWNDNEXT)) {
+	for (HWND child = ::GetWindow(dlg, GW_CHILD); child != NULL; child = ::GetWindow(child, GW_HWNDNEXT)) {
 		char buf[64];
-		::GetClassName(child,buf,sizeof(buf));
-		if (stricmp(buf,"STATIC") != 0) {
-			::EnableWindow(child,onoff);
+		::GetClassName(child, buf, sizeof(buf));
+		if (stricmp(buf, "STATIC") != 0) {
+			::EnableWindow(child, onoff);
 		}
 	}
-	return ;
+	return;
 }
 
 
@@ -345,11 +346,11 @@ SetWindowFloat
 {
 	// Convert the float to a string
 	CString text;
-	text.Format ("%.3f", value);
+	text.Format("%.3f", value);
 
 	// Pass the string onto the window
-	::SetWindowText (hwnd, text);
-	return ;
+	::SetWindowText(hwnd, text);
+	return;
 }
 
 
@@ -358,14 +359,14 @@ SetWindowFloat
 //  GetWindowFloat
 //
 float
-GetWindowFloat (HWND hwnd)
+GetWindowFloat(HWND hwnd)
 {
 	// Get the string from the window
 	TCHAR string_value[20];
-	::GetWindowText (hwnd, string_value, sizeof (string_value));
+	::GetWindowText(hwnd, string_value, sizeof(string_value));
 
 	// Convert the string to a float and return the value
-	return ::atof (string_value);
+	return ::atof(string_value);
 }
 
 
@@ -374,17 +375,17 @@ GetWindowFloat (HWND hwnd)
 //  Asset_Name_From_Filename
 //
 CString
-Asset_Name_From_Filename (LPCTSTR filename)
+Asset_Name_From_Filename(LPCTSTR filename)
 {
 	// Get the filename from this path
-	CString asset_name = ::Get_Filename_From_Path (filename);
+	CString asset_name = ::Get_Filename_From_Path(filename);
 
 	// Find the index of the extension (if exists)
-	int extension = asset_name.ReverseFind ('.');
+	int extension = asset_name.ReverseFind('.');
 
 	// Strip off the extension
 	if (extension != -1) {
-		asset_name = asset_name.Left (extension);
+		asset_name = asset_name.Left(extension);
 	}
 
 	// Return the name of the asset
@@ -397,10 +398,10 @@ Asset_Name_From_Filename (LPCTSTR filename)
 //  Filename_From_Asset_Name
 //
 CString
-Filename_From_Asset_Name (LPCTSTR asset_name)
+Filename_From_Asset_Name(LPCTSTR asset_name)
 {
 	// The filename is simply the asset name plus the .w3d extension
-	CString filename = asset_name + CString (".w3d");
+	CString filename = asset_name + CString(".w3d");
 
 	// Return the filename
 	return filename;
@@ -412,19 +413,20 @@ Filename_From_Asset_Name (LPCTSTR asset_name)
 //  Get_Filename_From_Path
 //
 CString
-Get_Filename_From_Path (LPCTSTR path)
+Get_Filename_From_Path(LPCTSTR path)
 {
 	// Find the last occurance of the directory deliminator
-	LPCTSTR filename = ::strrchr (path, '\\');
+	LPCTSTR filename = ::strrchr(path, GET_PATH_SEPARATOR()[0]);
 	if (filename != NULL) {
 		// Increment past the directory deliminator
-		filename ++;
-	} else {
+		filename++;
+	}
+	else {
 		filename = path;
 	}
 
 	// Return the filename part of the path
-	return CString (filename);
+	return CString(filename);
 }
 
 
@@ -433,21 +435,21 @@ Get_Filename_From_Path (LPCTSTR path)
 //  Strip_Filename_From_Path
 //
 CString
-Strip_Filename_From_Path (LPCTSTR path)
+Strip_Filename_From_Path(LPCTSTR path)
 {
 	// Copy the path to a buffer we can modify
 	TCHAR temp_path[MAX_PATH];
-	::lstrcpy (temp_path, path);
+	::lstrcpy(temp_path, path);
 
 	// Find the last occurance of the directory deliminator
-	LPTSTR filename = ::strrchr (temp_path, '\\');
+	LPTSTR filename = ::strrchr(temp_path, GET_PATH_SEPARATOR()[0]);
 	if (filename != NULL) {
 		// Strip off the filename
 		filename[0] = 0;
 	}
 
 	// Return the path only
-	return CString (temp_path);
+	return CString(temp_path);
 }
 
 
@@ -458,14 +460,14 @@ Strip_Filename_From_Path (LPCTSTR path)
 HBITMAP
 Create_DIB_Section
 (
-	UCHAR **pbits,
+	UCHAR** pbits,
 	int width,
 	int height
 )
 {
 	// Set-up the fields of the BITMAPINFOHEADER
 	BITMAPINFOHEADER bitmap_info;
-	bitmap_info.biSize = sizeof (BITMAPINFOHEADER);
+	bitmap_info.biSize = sizeof(BITMAPINFOHEADER);
 	bitmap_info.biWidth = width;
 	bitmap_info.biHeight = -height; // Top-down DIB uses negative height
 	bitmap_info.biPlanes = 1;
@@ -478,18 +480,18 @@ Create_DIB_Section
 	bitmap_info.biClrImportant = 0;
 
 	// Get a temporary screen DC
-	HDC hscreen_dc = ::GetDC (NULL);
+	HDC hscreen_dc = ::GetDC(NULL);
 
 	// Create a bitmap that we can access the bits directly of
-	HBITMAP hbitmap = ::CreateDIBSection (hscreen_dc,
-													  (const BITMAPINFO *)&bitmap_info,
-													  DIB_RGB_COLORS,
-													  (void **)pbits,
-													  NULL,
-													  0L);
+	HBITMAP hbitmap = ::CreateDIBSection(hscreen_dc,
+		(const BITMAPINFO*)&bitmap_info,
+		DIB_RGB_COLORS,
+		(void**)pbits,
+		NULL,
+		0L);
 
 	// Release our temporary screen DC
-	::ReleaseDC (NULL, hscreen_dc);
+	::ReleaseDC(NULL, hscreen_dc);
 	return hbitmap;
 }
 
@@ -499,7 +501,7 @@ Create_DIB_Section
 //  Make_Bitmap_From_Texture
 //
 HBITMAP
-Make_Bitmap_From_Texture (TextureClass &texture, int width, int height)
+Make_Bitmap_From_Texture(TextureClass& texture, int width, int height)
 {
 	// TheSuperHackers @info Not implemented
 	HBITMAP hbitmap = NULL;
@@ -513,7 +515,7 @@ Make_Bitmap_From_Texture (TextureClass &texture, int width, int height)
 //  Get_Texture_Name
 //
 CString
-Get_Texture_Name (TextureClass &texture)
+Get_Texture_Name(TextureClass& texture)
 {
 	CString name;
 
@@ -531,39 +533,39 @@ Get_Texture_Name (TextureClass &texture)
 void
 Build_Emitter_List
 (
-	RenderObjClass &render_obj,
-	DynamicVectorClass<CString> &list
+	RenderObjClass& render_obj,
+	DynamicVectorClass<CString>& list
 )
 {
 	// Loop through all this render obj's sub-obj's
-	for (int index = 0; index < render_obj.Get_Num_Sub_Objects (); index ++) {
-		RenderObjClass *psub_obj = render_obj.Get_Sub_Object (index);
+	for (int index = 0; index < render_obj.Get_Num_Sub_Objects(); index++) {
+		RenderObjClass* psub_obj = render_obj.Get_Sub_Object(index);
 		if (psub_obj != NULL) {
 
 			// Is this sub-obj an emitter?
-			if (psub_obj->Class_ID () == RenderObjClass::CLASSID_PARTICLEEMITTER) {
+			if (psub_obj->Class_ID() == RenderObjClass::CLASSID_PARTICLEEMITTER) {
 
 				// Is this emitter already in the list?
 				bool found = false;
-				for (int list_index = 0; (list_index < list.Count ()) && !found; list_index++) {
-					if (::lstrcmpi (list[list_index], psub_obj->Get_Name ()) == 0) {
+				for (int list_index = 0; (list_index < list.Count()) && !found; list_index++) {
+					if (::lstrcmpi(list[list_index], psub_obj->Get_Name()) == 0) {
 						found = true;
 					}
 				}
 
 				// Add this emitter to the list if necessary
 				if (!found) {
-					list.Add (psub_obj->Get_Name ());
+					list.Add(psub_obj->Get_Name());
 				}
 			}
 
 			// Recursivly add emitters to the list
-			Build_Emitter_List (*psub_obj, list);
-			REF_PTR_RELEASE (psub_obj);
+			Build_Emitter_List(*psub_obj, list);
+			REF_PTR_RELEASE(psub_obj);
 		}
 	}
 
-	return ;
+	return;
 }
 
 
@@ -572,21 +574,21 @@ Build_Emitter_List
 //  Is_Aggregate
 //
 bool
-Is_Aggregate (const char *asset_name)
+Is_Aggregate(const char* asset_name)
 {
 	// Assume that the asset isn't an aggregate
 	bool retval = false;
 
 	// Check to see if this object is an aggregate
-	RenderObjClass *prender_obj = WW3DAssetManager::Get_Instance()->Create_Render_Obj (asset_name);
+	RenderObjClass* prender_obj = WW3DAssetManager::Get_Instance()->Create_Render_Obj(asset_name);
 	if ((prender_obj != NULL) &&
-		 (prender_obj->Get_Base_Model_Name () != NULL))
+		(prender_obj->Get_Base_Model_Name() != NULL))
 	{
 		retval = true;
 	}
 
 	// Free our hold on the temporary render object
-	REF_PTR_RELEASE (prender_obj);
+	REF_PTR_RELEASE(prender_obj);
 
 	// Return the true/false result code
 	return retval;
@@ -600,33 +602,33 @@ Is_Aggregate (const char *asset_name)
 void
 Rename_Aggregate_Prototype
 (
-	const char *old_name,
-	const char *new_name
+	const char* old_name,
+	const char* new_name
 )
 {
 	// Params valid?
 	if ((old_name != NULL) &&
-		 (new_name != NULL) &&
-		 (::lstrcmpi (old_name, new_name) != 0)) {
+		(new_name != NULL) &&
+		(::lstrcmpi(old_name, new_name) != 0)) {
 
 		// Get the prototype from the asset manager
-		AggregatePrototypeClass *proto = NULL;
-		proto = (AggregatePrototypeClass *)WW3DAssetManager::Get_Instance ()->Find_Prototype (old_name);
+		AggregatePrototypeClass* proto = NULL;
+		proto = (AggregatePrototypeClass*)WW3DAssetManager::Get_Instance()->Find_Prototype(old_name);
 		if (proto != NULL) {
 
 			// Copy the definition from the prototype and remove the prototype
-			AggregateDefClass *pdefinition = proto->Get_Definition ();
-			AggregateDefClass *pnew_definition = pdefinition->Clone ();
-			WW3DAssetManager::Get_Instance ()->Remove_Prototype (old_name);
+			AggregateDefClass* pdefinition = proto->Get_Definition();
+			AggregateDefClass* pnew_definition = pdefinition->Clone();
+			WW3DAssetManager::Get_Instance()->Remove_Prototype(old_name);
 
 			// Rename the definition, create a new prototype, and add it to the asset manager
-			pnew_definition->Set_Name (new_name);
-			proto = new AggregatePrototypeClass (pnew_definition);
-			WW3DAssetManager::Get_Instance ()->Add_Prototype (proto);
+			pnew_definition->Set_Name(new_name);
+			proto = new AggregatePrototypeClass(pnew_definition);
+			WW3DAssetManager::Get_Instance()->Add_Prototype(proto);
 		}
 	}
 
-	return ;
+	return;
 }
 
 
@@ -635,21 +637,21 @@ Rename_Aggregate_Prototype
 //  Is_Real_LOD
 //
 bool
-Is_Real_LOD (const char *asset_name)
+Is_Real_LOD(const char* asset_name)
 {
 	// Assume that the asset isn't a true LOD (HLOD w/ more than one
 	bool retval = false;
 
 	// Check to see if this object is an aggregate
-	RenderObjClass *prender_obj = WW3DAssetManager::Get_Instance()->Create_Render_Obj (asset_name);
+	RenderObjClass* prender_obj = WW3DAssetManager::Get_Instance()->Create_Render_Obj(asset_name);
 	if ((prender_obj != NULL) &&
-		 (prender_obj->Class_ID () == RenderObjClass::CLASSID_HLOD) &&
-		 (((HLodClass *)prender_obj)->Get_LOD_Count () > 1)) {
+		(prender_obj->Class_ID() == RenderObjClass::CLASSID_HLOD) &&
+		(((HLodClass*)prender_obj)->Get_LOD_Count() > 1)) {
 		retval = true;
 	}
 
 	// Free our hold on the temporary render object
-	REF_PTR_RELEASE (prender_obj);
+	REF_PTR_RELEASE(prender_obj);
 
 	// Return the true/false result code
 	return retval;
@@ -673,22 +675,22 @@ Get_File_Time
 	bool retval = false;
 
 	// Attempt to open the file
-	HANDLE hfile = ::CreateFile (path,
-										  0,
-										  0,
-										  NULL,
-										  OPEN_EXISTING,
-										  0L,
-										  NULL);
+	HANDLE hfile = ::CreateFile(path,
+		0,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		0L,
+		NULL);
 
-	ASSERT (hfile != INVALID_HANDLE_VALUE);
+	ASSERT(hfile != INVALID_HANDLE_VALUE);
 	if (hfile != INVALID_HANDLE_VALUE) {
 
 		// Get the mod times for this file
-		retval = (::GetFileTime (hfile, pcreation_time, paccess_time, pwrite_time) == TRUE);
+		retval = (::GetFileTime(hfile, pcreation_time, paccess_time, pwrite_time) == TRUE);
 
 		// Close the file
-		SAFE_CLOSE (hfile);
+		SAFE_CLOSE(hfile);
 	}
 
 	// Return the true/false result code
@@ -701,38 +703,38 @@ Get_File_Time
 //  Are_Glide_Drivers_Acceptable
 //
 bool
-Are_Glide_Drivers_Acceptable (void)
+Are_Glide_Drivers_Acceptable(void)
 {
 	// Assume success
 	bool retval = true;
 
 	// Is this windows NT?
-	OSVERSIONINFO version = { sizeof (OSVERSIONINFO), 0 };
-	if (::GetVersionEx (&version) && (version.dwPlatformId == VER_PLATFORM_WIN32_NT)) {
+	OSVERSIONINFO version = { sizeof(OSVERSIONINFO), 0 };
+	if (::GetVersionEx(&version) && (version.dwPlatformId == VER_PLATFORM_WIN32_NT)) {
 
 		// Now assume failure
 		retval = false;
 
 		// Get a path to the system directory
 		TCHAR path[MAX_PATH];
-		::GetSystemDirectory (path, sizeof (path));
-		::Delimit_Path (path);
+		::GetSystemDirectory(path, sizeof(path));
+		::Delimit_Path(path);
 
 		// Build the full path of the 2 main drivers
-		CString glide2x = CString (path) + "glide2x.dll";
-		CString glide3x = CString (path) + "glide3x.dll";
+		CString glide2x = CString(path) + "glide2x.dll";
+		CString glide3x = CString(path) + "glide3x.dll";
 
 		// Get the creation time of the glide2x driver
 		FILETIME file_time = { 0 };
-		if (::Get_File_Time (glide2x, NULL, NULL, &file_time)) {
-			CTime time_obj (file_time);
-			retval = ((time_obj.GetYear () == 1998) && (time_obj.GetMonth () == 12)) || (time_obj.GetYear () > 1998);
+		if (::Get_File_Time(glide2x, NULL, NULL, &file_time)) {
+			CTime time_obj(file_time);
+			retval = ((time_obj.GetYear() == 1998) && (time_obj.GetMonth() == 12)) || (time_obj.GetYear() > 1998);
 		}
 
 		// Get the creation time of the glide3x driver
-		if (::Get_File_Time (glide3x, NULL, NULL, &file_time)) {
-			CTime time_obj (file_time);
-			retval = ((time_obj.GetYear () == 1998) && (time_obj.GetMonth () == 12)) || (time_obj.GetYear () > 1998);
+		if (::Get_File_Time(glide3x, NULL, NULL, &file_time)) {
+			CTime time_obj(file_time);
+			retval = ((time_obj.GetYear() == 1998) && (time_obj.GetMonth() == 12)) || (time_obj.GetYear() > 1998);
 		}
 	}
 
@@ -745,17 +747,17 @@ Are_Glide_Drivers_Acceptable (void)
 //
 //  Load_RC_Texture
 //
-TextureClass *
-Load_RC_Texture (LPCTSTR resource_name)
+TextureClass*
+Load_RC_Texture(LPCTSTR resource_name)
 {
-	TextureClass *texture = NULL;
+	TextureClass* texture = NULL;
 
 	//
 	//	Load the cursor file image from this binaries resources
 	//
-	ResourceFileClass resource_file (::AfxGetResourceHandle (), resource_name);
-	unsigned char *res_data = resource_file.Peek_Data ();
-	unsigned int data_size = resource_file.Size ();
+	ResourceFileClass resource_file(::AfxGetResourceHandle(), resource_name);
+	unsigned char* res_data = resource_file.Peek_Data();
+	unsigned int data_size = resource_file.Size();
 
 	//
 	//	Create a texture from the raw image data
@@ -774,16 +776,16 @@ Load_RC_Texture (LPCTSTR resource_name)
 //
 ////////////////////////////////////////////////////////////////////////////
 void
-Resolve_Path (CString &filename)
+Resolve_Path(CString& filename)
 {
-	if (filename.Find ('\\') == -1) {
+	if (filename.findPathSeparator() == -1) {
 		char path[MAX_PATH];
-		::GetCurrentDirectory (MAX_PATH, path);
-		::Delimit_Path (path);
-		filename = CString (path) + filename;
+		::GetCurrentDirectory(MAX_PATH, path);
+		::Delimit_Path(path);
+		filename = CString(path) + filename;
 	}
 
-	return ;
+	return;
 }
 
 
@@ -795,7 +797,7 @@ Resolve_Path (CString &filename)
 void
 Find_Missing_Textures
 (
-	DynamicVectorClass<CString> &	list,
+	DynamicVectorClass<CString>& list,
 	LPCTSTR								name,
 	int									frame_count
 )
@@ -803,13 +805,13 @@ Find_Missing_Textures
 	//
 	//	If this file doesn't exist, then add it to our list
 	//
-	if (::GetFileAttributes (name) == 0xFFFFFFFF) {
+	if (::GetFileAttributes(name) == 0xFFFFFFFF) {
 		CString full_path = name;
-		Resolve_Path (full_path);
-		list.Add (full_path);
+		Resolve_Path(full_path);
+		list.Add(full_path);
 	}
 
-	return ;
+	return;
 }
 
 
@@ -826,7 +828,7 @@ Copy_File
 	bool		force_copy
 )
 {
-	SANITY_CHECK ((existing_filename != NULL && new_filename != NULL)) {
+	SANITY_CHECK((existing_filename != NULL && new_filename != NULL)) {
 		return false;
 	}
 
@@ -834,24 +836,25 @@ Copy_File
 	bool retval = false;
 
 	// Make sure we aren't copying over ourselves
-	bool allow_copy = (::lstrcmpi (existing_filename, new_filename) != 0);
+	bool allow_copy = (::lstrcmpi(existing_filename, new_filename) != 0);
 
 	// Strip the readonly bit off if necessary
-	DWORD attributes = ::GetFileAttributes (new_filename);
+	DWORD attributes = ::GetFileAttributes(new_filename);
 	if (allow_copy &&
-		 (attributes != 0xFFFFFFFF) &&
-		 ((attributes & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY))
+		(attributes != 0xFFFFFFFF) &&
+		((attributes & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY))
 	{
 		if (force_copy) {
-			::SetFileAttributes (new_filename, attributes & (~FILE_ATTRIBUTE_READONLY));
-		} else {
+			::SetFileAttributes(new_filename, attributes & (~FILE_ATTRIBUTE_READONLY));
+		}
+		else {
 			allow_copy = false;
 		}
 	}
 
 	// Perform the copy operation!
 	if (allow_copy) {
-		retval = (::CopyFile (existing_filename, new_filename, FALSE) == TRUE);
+		retval = (::CopyFile(existing_filename, new_filename, FALSE) == TRUE);
 	}
 
 	// Return the true/false result code
@@ -864,17 +867,17 @@ Copy_File
 //  Get_Graphic_View
 //
 ////////////////////////////////////////////////////////////////////////////
-CGraphicView *
-Get_Graphic_View (void)
+CGraphicView*
+Get_Graphic_View(void)
 {
-	CGraphicView *view = NULL;
+	CGraphicView* view = NULL;
 
 	//
 	//	Get the view from the current document
 	//
-	CW3DViewDoc *doc = GetCurrentDocument ();
+	CW3DViewDoc* doc = GetCurrentDocument();
 	if (doc != NULL) {
-		view = doc->GetGraphicView ();
+		view = doc->GetGraphicView();
 	}
 
 	return view;

@@ -54,6 +54,7 @@
 #include "Common/GameAudio.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/PerfTimer.h"
+#include <Utility/compat.h>
 
 
 DECLARE_PERF_TIMER(FileSystem)
@@ -90,7 +91,7 @@ DECLARE_PERF_TIMER(FileSystem)
 // TheFileSystem
 //===============================
 /**
-  *	This is the FileSystem's singleton class. All file access
+	*	This is the FileSystem's singleton class. All file access
 	* should be through TheFileSystem, unless code needs to use an explicit
 	* File or FileSystem derivative.
 	*
@@ -99,9 +100,9 @@ DECLARE_PERF_TIMER(FileSystem)
 	* file access as they see fit. This is particularly important for code that
 	* needs to be shared between applications, such as games and tools.
 	*/
-//===============================
+	//===============================
 
-FileSystem	*TheFileSystem = NULL;
+FileSystem* TheFileSystem = NULL;
 
 //----------------------------------------------------------------------------
 //         Private Prototypes
@@ -139,7 +140,7 @@ FileSystem::~FileSystem()
 // FileSystem::init
 //============================================================================
 
-void		FileSystem::init( void )
+void		FileSystem::init(void)
 {
 	TheLocalFileSystem->init();
 	TheArchiveFileSystem->init();
@@ -149,10 +150,10 @@ void		FileSystem::init( void )
 // FileSystem::update
 //============================================================================
 
-void		FileSystem::update( void )
+void		FileSystem::update(void)
 {
 	USE_PERF_TIMER(FileSystem)
-	TheLocalFileSystem->update();
+		TheLocalFileSystem->update();
 	TheArchiveFileSystem->update();
 }
 
@@ -160,10 +161,10 @@ void		FileSystem::update( void )
 // FileSystem::reset
 //============================================================================
 
-void		FileSystem::reset( void )
+void		FileSystem::reset(void)
 {
 	USE_PERF_TIMER(FileSystem)
-	TheLocalFileSystem->reset();
+		TheLocalFileSystem->reset();
 	TheArchiveFileSystem->reset();
 }
 
@@ -171,12 +172,12 @@ void		FileSystem::reset( void )
 // FileSystem::open
 //============================================================================
 
-File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize, FileInstance instance )
+File* FileSystem::openFile(const Char* filename, Int access, size_t bufferSize, FileInstance instance)
 {
 	USE_PERF_TIMER(FileSystem)
-	File *file = NULL;
+		File* file = NULL;
 
-	if ( TheLocalFileSystem != NULL )
+	if (TheLocalFileSystem != NULL)
 	{
 		if (instance != 0)
 		{
@@ -187,7 +188,7 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 		}
 		else
 		{
-			file = TheLocalFileSystem->openFile( filename, access, bufferSize );
+			file = TheLocalFileSystem->openFile(filename, access, bufferSize);
 
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
 			if (file != NULL && (file->getAccess() & File::CREATE))
@@ -209,10 +210,10 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 		}
 	}
 
-	if ( (TheArchiveFileSystem != NULL) && (file == NULL) )
+	if ((TheArchiveFileSystem != NULL) && (file == NULL))
 	{
 		// TheSuperHackers @todo Pass 'access' here?
-		file = TheArchiveFileSystem->openFile( filename, 0, instance );
+		file = TheArchiveFileSystem->openFile(filename, 0, instance);
 	}
 
 	return file;
@@ -222,7 +223,7 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 // FileSystem::doesFileExist
 //============================================================================
 
-Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) const
+Bool FileSystem::doesFileExist(const Char* filename, FileInstance instance) const
 {
 	USE_PERF_TIMER(FileSystem)
 
@@ -282,25 +283,25 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 //============================================================================
 // FileSystem::getFileListInDirectory
 //============================================================================
-void FileSystem::getFileListInDirectory(const AsciiString& directory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const
+void FileSystem::getFileListInDirectory(const AsciiString& directory, const AsciiString& searchName, FilenameList& filenameList, Bool searchSubdirectories) const
 {
 	USE_PERF_TIMER(FileSystem)
-	TheLocalFileSystem->getFileListInDirectory(AsciiString::TheEmptyString, directory, searchName, filenameList, searchSubdirectories);
+		TheLocalFileSystem->getFileListInDirectory(AsciiString::TheEmptyString, directory, searchName, filenameList, searchSubdirectories);
 	TheArchiveFileSystem->getFileListInDirectory(AsciiString::TheEmptyString, directory, searchName, filenameList, searchSubdirectories);
 }
 
 //============================================================================
 // FileSystem::getFileInfo
 //============================================================================
-Bool FileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo, FileInstance instance) const
+Bool FileSystem::getFileInfo(const AsciiString& filename, FileInfo* fileInfo, FileInstance instance) const
 {
 	USE_PERF_TIMER(FileSystem)
 
-	// TheSuperHackers @todo Add file info cache?
+		// TheSuperHackers @todo Add file info cache?
 
-	if (fileInfo == NULL) {
-		return FALSE;
-	}
+		if (fileInfo == NULL) {
+			return FALSE;
+		}
 	memset(fileInfo, 0, sizeof(*fileInfo));
 
 	if (TheLocalFileSystem->getFileInfo(filename, fileInfo)) {
@@ -324,9 +325,9 @@ Bool FileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo, Fi
 Bool FileSystem::createDirectory(AsciiString directory)
 {
 	USE_PERF_TIMER(FileSystem)
-	if (TheLocalFileSystem != NULL) {
-		return TheLocalFileSystem->createDirectory(directory);
-	}
+		if (TheLocalFileSystem != NULL) {
+			return TheLocalFileSystem->createDirectory(directory);
+		}
 	return FALSE;
 }
 
@@ -347,21 +348,21 @@ Bool FileSystem::areMusicFilesOnCD()
 	Int dc = TheCDManager->driveCount();
 	for (Int i = 0; i < dc; ++i) {
 		DEBUG_LOG(("FileSystem::areMusicFilesOnCD() - checking drive %d", i));
-		CDDriveInterface *cdi = TheCDManager->getDrive(i);
+		CDDriveInterface* cdi = TheCDManager->getDrive(i);
 		if (!cdi) {
 			continue;
 		}
 
 		cdRoot = cdi->getPath();
-		if (!cdRoot.endsWith("\\"))
-			cdRoot.concat("\\");
+		if (!cdRoot.endsWith(GET_PATH_SEPARATOR()))
+			cdRoot.concat(GET_PATH_SEPARATOR());
 #if RTS_GENERALS
 		cdRoot.concat("gensec.big");
 #elif RTS_ZEROHOUR
 		cdRoot.concat("genseczh.big");
 #endif
 		DEBUG_LOG(("FileSystem::areMusicFilesOnCD() - checking for %s", cdRoot.str()));
-		File *musicBig = TheLocalFileSystem->openFile(cdRoot.str());
+		File* musicBig = TheLocalFileSystem->openFile(cdRoot.str());
 		if (musicBig)
 		{
 			DEBUG_LOG(("FileSystem::areMusicFilesOnCD() - found it!"));
@@ -384,7 +385,7 @@ void FileSystem::loadMusicFilesFromCD()
 	AsciiString cdRoot;
 	Int dc = TheCDManager->driveCount();
 	for (Int i = 0; i < dc; ++i) {
-		CDDriveInterface *cdi = TheCDManager->getDrive(i);
+		CDDriveInterface* cdi = TheCDManager->getDrive(i);
 		if (!cdi) {
 			continue;
 		}
@@ -405,7 +406,7 @@ void FileSystem::unloadMusicFilesFromCD()
 		return;
 	}
 
-	TheArchiveFileSystem->closeArchiveFile( MUSIC_BIG );
+	TheArchiveFileSystem->closeArchiveFile(MUSIC_BIG);
 }
 
 //============================================================================
@@ -435,7 +436,7 @@ Bool FileSystem::isPathInDirectory(const AsciiString& testPath, const AsciiStrin
 		return false;
 	}
 
-	const char* pathSep = "/";
+	const char* pathSep = (char*)GET_PATH_SEPARATOR();
 
 	if (!basePathNormalized.endsWith(pathSep))
 	{
