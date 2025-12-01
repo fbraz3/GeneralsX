@@ -182,6 +182,21 @@
             }
         },
         {
+            "label": "Deploy GeneralsXZH (Linux)",
+            "type": "shell",
+            "command": "cp -v ${workspaceFolder}/build/linux/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Deploy completed successfully'",
+            "args": [],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
             "type": "cppbuild",
             "label": "C/C++: g++ build active file",
             "command": "/usr/bin/g++",
