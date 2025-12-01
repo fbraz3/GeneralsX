@@ -118,7 +118,7 @@ typedef unsigned char GCHANNEL;
 
 #if !defined(GPOS)
 #if defined(_MSC_VER)
-typedef __int64 GPOS;
+typedef int64_t GPOS;
 #elif defined(__R5900)
 typedef long GPOS;
 #else

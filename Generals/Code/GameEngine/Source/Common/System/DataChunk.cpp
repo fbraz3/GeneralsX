@@ -340,9 +340,9 @@ void DataChunkOutput::writeInt( Int i )
 	::fwrite( (const char *)&i, sizeof(Int) , 1, m_tmp_file );
 }
 
-void DataChunkOutput::writeByte( Byte b )
+void DataChunkOutput::writeByte( SignedByte b )
 {
-	::fwrite( (const char *)&b, sizeof(Byte) , 1, m_tmp_file );
+	::fwrite( (const char *)&b, sizeof(SignedByte) , 1, m_tmp_file );
 }
 
 void DataChunkOutput::writeArrayOfBytes(char *ptr, Int len)

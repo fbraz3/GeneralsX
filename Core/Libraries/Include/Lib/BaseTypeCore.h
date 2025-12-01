@@ -98,14 +98,15 @@
 //#define abs(x) (((x) < 0) ? -(x) : (x))
 //#endif
 
-#ifndef min
-#define std::min(x,y) (((x)<(y)) ? (x) : (y))
-#endif
-
-#ifndef max
-#define std::max(x,y) (((x)>(y)) ? (x) : (y))
-#endif
-
+// #ifdef _WIN32
+// // On Windows, use the built-in min/max macros
+// #ifndef min
+// #define std::min(x,y) (((x)<(y)) ? (x) : (y))
+// #endif
+// #ifndef max
+// #define std::max(x,y) (((x)>(y)) ? (x) : (y))
+// #endif
+// #endif
 #ifndef TRUE
 #define TRUE true
 #endif
@@ -122,8 +123,12 @@ typedef int32_t						Int;					// 4 bytes
 typedef uint32_t	                UnsignedInt;	  	    // 4 bytes
 typedef uint16_t	                UnsignedShort;		    // 2 bytes
 typedef int16_t						Short;					// 2 bytes
+#ifndef UnsignedByte
 typedef unsigned char	            UnsignedByte;			// 1 byte		USED TO BE "Byte"
-typedef char						Byte;					// 1 byte		USED TO BE "SignedByte"
+#endif
+// Note: Do NOT define 'Byte' here - zlib defines it as 'unsigned char' in zconf.h
+// Use 'SignedByte' for signed byte values to avoid conflicts
+typedef signed char					SignedByte;				// 1 byte (signed)
 typedef char						Char;					// 1 byte of text
 typedef bool						Bool;					//
 // note, the types below should use "long long", but MSVC doesn't support it yet

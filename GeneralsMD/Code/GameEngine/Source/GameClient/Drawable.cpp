@@ -5520,7 +5520,7 @@ void TintEnvelope::play(const RGBColor *peak, UnsignedInt attackFrames, Unsigned
 //-------------------------------------------------------------------------------------------------
 void TintEnvelope::setAttackFrames(UnsignedInt frames)
 {
-	Real recipFrames = 1.0f / (Real)std::max(1,frames);
+	Real recipFrames = 1.0f / (Real)std::max(1,static_cast<int>(frames));
 	m_attackRate.Set( m_currentColor );
 	Vector3::Subtract( m_peakColor, m_attackRate, &m_attackRate);
 	m_attackRate.Scale( Vector3(recipFrames, recipFrames, recipFrames) );
@@ -5529,7 +5529,7 @@ void TintEnvelope::setAttackFrames(UnsignedInt frames)
 //-------------------------------------------------------------------------------------------------
 void TintEnvelope::setDecayFrames( UnsignedInt frames )
 {
-	Real recipFrames = ( -1.0f ) / (Real)std::max(1,frames);
+	Real recipFrames = ( -1.0f ) / (Real)std::max(1,static_cast<int>(frames));
 	m_decayRate.Set( m_peakColor );
 	m_decayRate.Scale( Vector3(recipFrames, recipFrames, recipFrames) );
 }

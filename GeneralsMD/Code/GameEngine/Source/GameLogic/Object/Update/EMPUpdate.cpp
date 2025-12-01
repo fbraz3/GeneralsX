@@ -300,7 +300,7 @@ void EMPUpdate::doDisableAttack( void )
 					Real victimFootprintArea = curVictim->getGeometryInfo().getFootprintArea();
 					Real victimVolume = victimFootprintArea * std::min(victimHeight, 10.0f);
 
-					UnsignedInt emitterCount = std::max(15, REAL_TO_INT_CEIL(data->m_sparksPerCubicFoot * victimVolume));
+					UnsignedInt emitterCount = std::max(15, static_cast<int>(REAL_TO_INT_CEIL(data->m_sparksPerCubicFoot * victimVolume)));
 
 					for (UnsignedInt e = 0 ; e < emitterCount; ++e)
 					{
@@ -327,7 +327,7 @@ void EMPUpdate::doDisableAttack( void )
 
 							sys->attachToObject(curVictim);
 							sys->setPosition( &offs );
-							sys->setSystemLifetime(std::max(0, data->m_disabledDuration - 30));
+							sys->setSystemLifetime(std::max(static_cast<unsigned int>(0), data->m_disabledDuration - 30));
 							sys->setInitialDelay(GameLogicRandomValue(1,100));
 						}
 					}

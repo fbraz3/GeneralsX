@@ -1219,7 +1219,7 @@ Bool SpecialAbilityUpdate::continuePreparation()
         {
           Bool lastPhase = ( ((Int)m_captureFlashPhase) & 1 );// were we in a flashy phase last frame?
 
-          Real denominator = std::max(1, data->m_preparationFrames);
+          Real denominator = std::max(static_cast<unsigned int>(1), data->m_preparationFrames);
           Real increment = 1.0f - ((Real)m_prepFrames / denominator );
           m_captureFlashPhase += increment / 3.0f;
 

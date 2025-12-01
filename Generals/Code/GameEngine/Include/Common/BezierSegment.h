@@ -29,21 +29,14 @@
 
 #pragma once
 
-// #include <d3dx8math.h // Phase 39.4: Removed with DirectX 8 cleanup>
 #include "Common/STLTypedefs.h"
 
-// Phase 39.4: D3DXMATRIX is from DirectX 8 math library
-// Define a simple stub here for Bezier spline support
-struct D3DXMATRIX {
-    float m[4][4];
-    D3DXMATRIX() {
-        for(int i = 0; i < 4; i++) {
-            for(int j = 0; j < 4; j++) {
-                m[i][j] = (i == j) ? 1.0f : 0.0f;
-            }
-        }
-    }
-};
+// Phase 54: Use cross-platform D3DX8 math compatibility header
+#if defined(_WIN32)
+#include <d3dx8math.h>
+#else
+#include "d3dx8_vulkan_math_compat.h"
+#endif
 
 #define USUAL_TOLERANCE 1.0f
 

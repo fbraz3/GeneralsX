@@ -210,6 +210,7 @@ else()
     # Cross-platform CD Manager stub (no CD drives on modern platforms)
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/CrossPlatform/CrossPlatformCDManager.cpp
+        Source/CrossPlatform/CrossPlatformOSDisplay.cpp
         Source/CrossPlatform/SDL2Keyboard.cpp
         Source/CrossPlatform/SDL2Mouse.cpp
     )

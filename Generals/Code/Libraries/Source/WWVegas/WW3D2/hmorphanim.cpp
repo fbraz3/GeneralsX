@@ -726,7 +726,7 @@ void HMorphAnimClass::Insert_Morph_Key(const int channel, uint32 morph_frame, ui
 	MorphKeyData[channel].Add_Key(morph_frame,pose_frame);
 
 	// update the framecount to reflect the newly added key
-	FrameCount = WWMath::Max(morph_frame,FrameCount);
+	FrameCount = std::max(morph_frame,FrameCount);
 }
 
 void HMorphAnimClass::Release_Keys(void)

@@ -53,7 +53,7 @@ typedef void* VkSemaphore;
 typedef void* VkFence;
 typedef void* VkQueue;
 typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+// typedef unsigned long long uint64_t;
 
 /* ============================================================================
  * Command Buffer Configuration Types

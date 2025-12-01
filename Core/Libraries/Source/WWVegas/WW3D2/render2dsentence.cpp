@@ -519,10 +519,10 @@ Render2DSentenceClass::Draw_Sentence (uint32 color)
 				//	Clip the polygons to the specified area
 				//
 				RectClass clipped_rect;
-				clipped_rect.Left		= max (screen_rect.Left, ClipRect.Left);
-				clipped_rect.Right	= min (screen_rect.Right, ClipRect.Right);
-				clipped_rect.Top		= max (screen_rect.Top, ClipRect.Top);
-				clipped_rect.Bottom	= min (screen_rect.Bottom, ClipRect.Bottom);
+				clipped_rect.Left		= std::max (screen_rect.Left, ClipRect.Left);
+				clipped_rect.Right	= std::min (screen_rect.Right, ClipRect.Right);
+				clipped_rect.Top		= std::max (screen_rect.Top, ClipRect.Top);
+				clipped_rect.Bottom	= std::min (screen_rect.Bottom, ClipRect.Bottom);
 
 				//
 				//	Clip the texture to the specified area
@@ -670,7 +670,7 @@ Render2DSentenceClass::Allocate_New_Surface (const WCHAR *text, bool justCalcExt
 			// the remaining text?
 			//
 			int texture_count	= row_count / rows_per_texture;
-			texture_count		= max (texture_count, 1);
+			texture_count		= std::max (texture_count, 1);
 
 			//
 			//	Is this the best usage of texture memory we've found yet?
@@ -686,7 +686,7 @@ Render2DSentenceClass::Allocate_New_Surface (const WCHAR *text, bool justCalcExt
 	//
 	//	Use whichever is larger, the hint or the calculated size
 	//
-	CurrTextureSize = max (TextureSizeHint, CurrTextureSize);
+	CurrTextureSize = std::max (TextureSizeHint, CurrTextureSize);
 
 	if (!justCalcExtents)
 	{

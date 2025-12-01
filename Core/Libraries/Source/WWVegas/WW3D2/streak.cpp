@@ -374,7 +374,7 @@ void StreakLineClass::Set_Merge_Abort_Factor(float factor)
 
 void StreakLineClass::Set_Subdivision_Levels(unsigned int levels)
 {
-	MaxSubdivisionLevels = std::min(levels, MAX_SEGLINE_SUBDIV_LEVELS);
+	MaxSubdivisionLevels = std::min(static_cast<int>(levels), MAX_SEGLINE_SUBDIV_LEVELS);
 
 	Invalidate_Cached_Bounding_Volumes();
 }

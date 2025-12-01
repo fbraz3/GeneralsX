@@ -6,37 +6,37 @@
 
 namespace Graphics {
 
-// Forward declarations for Vulkan internals
-class VulkanInstance;
-class VulkanPhysicalDevice;
-class VulkanDevice;
-class VulkanSwapchain;
-class VulkanMemoryAllocator;
-class VulkanRenderPass;
-// VulkanCommandPool and VulkanDescriptorPool defined in .cpp only
+  // Forward declarations for Vulkan internals
+  class VulkanInstance;
+  class VulkanPhysicalDevice;
+  class VulkanDevice;
+  class VulkanSwapchain;
+  class VulkanMemoryAllocator;
+  class VulkanRenderPass;
+  // VulkanCommandPool and VulkanDescriptorPool defined in .cpp only
 
-/**
- * Vulkan implementation of IGraphicsDriver.
- * 
- * This class provides the Vulkan backend for the GeneralsX graphics driver system.
- * It translates abstract graphics operations into Vulkan API calls, managing
- * GPU resources, memory allocation, and rendering pipelines.
- * 
- * All Vulkan types are kept private - the public interface exposes only abstract
- * types and opaque handles defined in IGraphicsDriver.
- */
-class VulkanGraphicsDriver : public IGraphicsDriver {
-public:
+  /**
+   * Vulkan implementation of IGraphicsDriver.
+   *
+   * This class provides the Vulkan backend for the GeneralsX graphics driver system.
+   * It translates abstract graphics operations into Vulkan API calls, managing
+   * GPU resources, memory allocation, and rendering pipelines.
+   *
+   * All Vulkan types are kept private - the public interface exposes only abstract
+   * types and opaque handles defined in IGraphicsDriver.
+   */
+  class VulkanGraphicsDriver : public IGraphicsDriver {
+  public:
     /**
      * Constructor: Creates a new Vulkan graphics driver instance.
      */
     VulkanGraphicsDriver();
-    
+
     /**
      * Destructor: Cleans up Vulkan resources.
      */
     virtual ~VulkanGraphicsDriver() override;
-    
+
     // ===== INITIALIZATION & CLEANUP =====
     virtual bool Initialize(void* windowHandle, uint32_t width, uint32_t height, bool fullscreen) override;
     virtual void Shutdown() override;
@@ -55,13 +55,13 @@ public:
     // ===== DRAWING OPERATIONS =====
     virtual void DrawPrimitive(PrimitiveType primType, uint32_t vertexCount) override;
     virtual void DrawIndexedPrimitive(PrimitiveType primType, uint32_t indexCount,
-                                     IndexBufferHandle ibHandle, uint32_t startIndex) override;
+      IndexBufferHandle ibHandle, uint32_t startIndex) override;
     virtual void DrawPrimitiveUP(PrimitiveType primType, uint32_t primCount,
-                                const void* vertexData, uint32_t vertexStride) override;
+      const void* vertexData, uint32_t vertexStride) override;
     virtual void DrawIndexedPrimitiveUP(PrimitiveType primType, uint32_t minVertexIndex,
-                                       uint32_t vertexCount, uint32_t primCount,
-                                       const void* indexData, const void* vertexData,
-                                       uint32_t vertexStride) override;
+      uint32_t vertexCount, uint32_t primCount,
+      const void* indexData, const void* vertexData,
+      uint32_t vertexStride) override;
 
     // ===== RENDER STATE MANAGEMENT =====
     virtual bool SetRenderState(RenderState state, uint64_t value) override;
@@ -75,28 +75,28 @@ public:
 
     // ===== VERTEX & INDEX BUFFERS =====
     virtual VertexBufferHandle CreateVertexBuffer(uint32_t sizeInBytes, bool dynamic,
-                                                 const void* initialData) override;
+      const void* initialData) override;
     virtual void DestroyVertexBuffer(VertexBufferHandle handle) override;
     virtual bool LockVertexBuffer(VertexBufferHandle handle, uint32_t offset,
-                                 uint32_t size, void** lockedData, bool readOnly) override;
+      uint32_t size, void** lockedData, bool readOnly) override;
     virtual bool UnlockVertexBuffer(VertexBufferHandle handle) override;
     virtual uint32_t GetVertexBufferSize(VertexBufferHandle handle) const override;
 
     virtual IndexBufferHandle CreateIndexBuffer(uint32_t sizeInBytes, bool is32Bit,
-                                               bool dynamic, const void* initialData) override;
+      bool dynamic, const void* initialData) override;
     virtual void DestroyIndexBuffer(IndexBufferHandle handle) override;
     virtual bool LockIndexBuffer(IndexBufferHandle handle, uint32_t offset,
-                                uint32_t size, void** lockedData, bool readOnly) override;
+      uint32_t size, void** lockedData, bool readOnly) override;
     virtual bool UnlockIndexBuffer(IndexBufferHandle handle) override;
     virtual uint32_t GetIndexBufferSize(IndexBufferHandle handle) const override;
 
     // ===== VERTEX FORMAT / DECLARATION =====
     virtual VertexFormatHandle CreateVertexFormat(const VertexElement* elements,
-                                                 uint32_t elementCount) override;
+      uint32_t elementCount) override;
     virtual void DestroyVertexFormat(VertexFormatHandle handle) override;
     virtual bool SetVertexFormat(VertexFormatHandle handle) override;
     virtual bool SetVertexStreamSource(uint32_t streamIndex, VertexBufferHandle vbHandle,
-                                      uint32_t offset, uint32_t stride) override;
+      uint32_t offset, uint32_t stride) override;
     virtual bool SetIndexBuffer(IndexBufferHandle ibHandle, uint32_t startIndex) override;
 
     // ===== TEXTURE MANAGEMENT =====
@@ -105,23 +105,23 @@ public:
     virtual bool SetTexture(uint32_t samplerIndex, TextureHandle handle) override;
     virtual TextureHandle GetTexture(uint32_t samplerIndex) const override;
     virtual bool LockTexture(TextureHandle handle, uint32_t level, void** lockedData,
-                            uint32_t* pitch) override;
+      uint32_t* pitch) override;
     virtual bool UnlockTexture(TextureHandle handle, uint32_t level) override;
     virtual TextureDescriptor GetTextureDescriptor(TextureHandle handle) const override;
     virtual bool UpdateTextureSubregion(TextureHandle handle, const void* data,
-                                       uint32_t left, uint32_t top, uint32_t right,
-                                       uint32_t bottom) override;
+      uint32_t left, uint32_t top, uint32_t right,
+      uint32_t bottom) override;
 
     // ===== RENDER TARGET & DEPTH STENCIL =====
     virtual RenderTargetHandle CreateRenderTarget(uint32_t width, uint32_t height,
-                                                 TextureFormat format) override;
+      TextureFormat format) override;
     virtual void DestroyRenderTarget(RenderTargetHandle handle) override;
     virtual bool SetRenderTarget(uint32_t targetIndex, RenderTargetHandle handle) override;
     virtual RenderTargetHandle GetRenderTarget(uint32_t targetIndex) const override;
     virtual bool SetDefaultRenderTarget() override;
 
     virtual DepthStencilHandle CreateDepthStencil(uint32_t width, uint32_t height,
-                                                 TextureFormat format) override;
+      TextureFormat format) override;
     virtual void DestroyDepthStencil(DepthStencilHandle handle) override;
     virtual bool SetDepthStencil(DepthStencilHandle handle) override;
     virtual DepthStencilHandle GetDepthStencil() const override;
@@ -169,7 +169,7 @@ public:
     virtual void Flush() override;
     virtual void WaitForGPU() override;
     virtual const char* GetLastError() const override;
-    
+
     // ===== INTERNAL ACCESSORS (for d3d8_vulkan_*.cpp files) =====
     /**
      * Get the Vulkan instance (for internal use by Vulkan implementation files).
@@ -177,28 +177,46 @@ public:
      */
     VulkanInstance* GetVulkanInstance();
     const VulkanInstance* GetVulkanInstance() const;
-    
+
     /**
      * Get the Vulkan device (for internal use by Vulkan implementation files).
      * @return Pointer to internal VulkanDevice, or nullptr if not initialized.
      */
     VulkanDevice* GetVulkanDevice();
     const VulkanDevice* GetVulkanDevice() const;
-    
+
     /**
      * Get the graphics queue (for internal use by Vulkan implementation files).
      * @return Vulkan queue handle, or VK_NULL_HANDLE if not initialized.
      */
     void* GetGraphicsQueue() const;  // Returns VkQueue
 
-private:
+    /**
+     * Phase 49.12: Get raw Vulkan device handle for texture upload.
+     * @return VkDevice handle, or VK_NULL_HANDLE if not initialized.
+     */
+    void* GetVkDeviceHandle() const;  // Returns VkDevice
+
+    /**
+     * Phase 49.12: Get raw Vulkan physical device handle for memory allocation.
+     * @return VkPhysicalDevice handle, or VK_NULL_HANDLE if not initialized.
+     */
+    void* GetVkPhysicalDeviceHandle() const;  // Returns VkPhysicalDevice
+
+    /**
+     * Phase 49.12: Get current active command buffer for texture uploads.
+     * @return VkCommandBuffer handle, or VK_NULL_HANDLE if not in frame.
+     */
+    void* GetVkCommandBuffer() const;  // Returns VkCommandBuffer
+
+  private:
     // Initialization state
     bool m_initialized;
     bool m_in_frame;
     uint32_t m_display_width;
     uint32_t m_display_height;
     bool m_fullscreen;
-    
+
     // Vulkan components (opaque - implementation details hidden)
     std::unique_ptr<VulkanInstance> m_instance;
     std::unique_ptr<VulkanPhysicalDevice> m_physical_device;
@@ -207,36 +225,35 @@ private:
     std::unique_ptr<VulkanMemoryAllocator> m_memory_allocator;
     std::unique_ptr<VulkanRenderPass> m_render_pass;
     // Command pool and descriptor pool defined in .cpp - not exposed in header
-    
-    // Phase 54: Frame rendering infrastructure
-    static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-    uint32_t m_current_frame;
-    uint32_t m_current_image_index;
-    bool m_frame_started;
-    
+
     // State caching
     Color m_clear_color;  // Moved before frame vars to match initializer order
     std::vector<uint64_t> m_render_state_cache;
     std::vector<TextureHandle> m_bound_textures;
     Viewport m_viewport;
-    
-    // Phase 54: Pipeline and rendering helpers (implemented in .cpp)
+
+    // Frame synchronization (Phase 54)
+    uint32_t m_current_frame;       // Current frame in flight (0 or 1 for double buffering)
+    uint32_t m_current_image_index; // Current swapchain image index
+    bool m_frame_started;           // Whether BeginFrame was called
+
+    // Private helper methods
     bool CreateSyncObjects();
     void DestroySyncObjects();
     bool CreateCommandBuffers();
     void DestroyCommandBuffers();
     bool CreateGraphicsPipeline();
-    bool CreateUIPipeline();  // Phase 60: UI pipeline for RHW vertices
+    bool CreateUIPipeline();
+    void DestroyUIPipeline();
+    bool RecreatePipelineIfNeeded();
     void DestroyGraphicsPipeline();
-    void DestroyUIPipeline();  // Phase 60: Cleanup UI pipeline
-    bool RecreatePipelineIfNeeded();  // Phase 59: Recreate pipeline when render state changes
     bool RecordClearCommand();
-};
+  };
 
-/**
- * Factory function to create a Vulkan graphics driver instance.
- * @return Newly created IGraphicsDriver* instance (Vulkan implementation).
- */
-extern IGraphicsDriver* CreateVulkanGraphicsDriver();
+  /**
+   * Factory function to create a Vulkan graphics driver instance.
+   * @return Newly created IGraphicsDriver* instance (Vulkan implementation).
+   */
+  extern IGraphicsDriver* CreateVulkanGraphicsDriver();
 
 }  // namespace Graphics

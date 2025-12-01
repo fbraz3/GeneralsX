@@ -537,7 +537,7 @@ void INI::parseUnsignedByte( INI* ini, void * /*instance*/, void *store, const v
 		DEBUG_CRASH(("Bad value INI::parseUnsignedByte"));
 		throw ERROR_BUG;
 	}
-	*(Byte *)store = (Byte)value;
+	*(SignedByte *)store = (SignedByte)value;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -933,7 +933,7 @@ void INI::parseBitString8( INI* ini, void * /*instance*/, void *store, const voi
 		DEBUG_CRASH(("Bad bitstring list INI::parseBitString8"));
 		throw ERROR_BUG;
 	}
-	*(Byte*)store = (Byte)tmp;
+	*(SignedByte*)store = (SignedByte)tmp;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1456,7 +1456,7 @@ void INI::parseByteSizedIndexList( INI* ini, void * /*instance*/, void *store, c
 		DEBUG_CRASH(("Bad index list INI::parseByteSizedIndexList"));
 		throw ERROR_BUG;
 	}
-	*(Byte *)store = (Byte)value;
+	*(SignedByte *)store = (SignedByte)value;
 }
 
 //-------------------------------------------------------------------------------------------------

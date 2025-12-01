@@ -96,7 +96,7 @@ public:
 		HAS_WEAPON					= 4,
 		HAS_NON_LOD_EFFECTS = (HAS_OCL | HAS_WEAPON)
 	};
-	Byte							m_maskOfLoadedEffects;	///<used to keep track of whether m_fx,m_ocls,m_weapons actually contain anything.
+	SignedByte							m_maskOfLoadedEffects;	///<used to keep track of whether m_fx,m_ocls,m_weapons actually contain anything.
 
 	SlowDeathBehaviorModuleData();
 	static void buildFieldParse(MultiIniFieldParse& p);

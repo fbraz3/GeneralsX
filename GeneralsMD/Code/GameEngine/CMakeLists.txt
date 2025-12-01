@@ -559,8 +559,9 @@ set(GAMEENGINE_SRC
 #    Source/Common/Audio/GameSounds.cpp
     #Source/Common/Audio/simpleplayer.cpp # unused
     #Source/Common/Audio/urllaunch.cpp # unused
-    #Source/Common/Bezier/BezFwdIterator.cpp  # TODO: Fix d3dx8math.h dependency
-    #Source/Common/Bezier/BezierSegment.cpp   # TODO: Fix d3dx8math.h dependency
+    # Phase 54: Re-enabled with d3dx8_vulkan_math_compat.h support
+    Source/Common/Bezier/BezFwdIterator.cpp
+    Source/Common/Bezier/BezierSegment.cpp
     Source/Common/BitFlags.cpp
     Source/Common/CommandLine.cpp
 #    Source/Common/crc.cpp
@@ -1171,6 +1172,8 @@ target_include_directories(z_gameengine PUBLIC
 
 target_include_directories(z_gameengine PRIVATE
     Include/Precompiled
+    # Phase 54: Add WW3D2 include path for d3dx8_vulkan_math_compat.h
+    ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WW3D2
 )
 
 target_link_libraries(z_gameengine PRIVATE

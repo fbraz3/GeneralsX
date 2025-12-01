@@ -524,12 +524,12 @@ WWINLINE void GridCullSystemClass::init_volume
 WWINLINE void GridCullSystemClass::init_volume(const LineSegClass & line,VolumeStruct * set_volume)
 {
 	Vector3 min_pt,max_pt;
-	min_pt.X = WWMath::Min(line.Get_P0().X,line.Get_P1().X);
-	max_pt.X = WWMath::Max(line.Get_P0().X,line.Get_P1().X);
-	min_pt.Y = WWMath::Min(line.Get_P0().Y,line.Get_P1().Y);
-	max_pt.Y = WWMath::Max(line.Get_P0().Y,line.Get_P1().Y);
-	min_pt.Z = WWMath::Min(line.Get_P0().Z,line.Get_P1().Z);
-	max_pt.Z = WWMath::Max(line.Get_P0().Z,line.Get_P1().Z);
+	min_pt.X = std::min(line.Get_P0().X,line.Get_P1().X);
+	max_pt.X = std::max(line.Get_P0().X,line.Get_P1().X);
+	min_pt.Y = std::min(line.Get_P0().Y,line.Get_P1().Y);
+	max_pt.Y = std::max(line.Get_P0().Y,line.Get_P1().Y);
+	min_pt.Z = std::min(line.Get_P0().Z,line.Get_P1().Z);
+	max_pt.Z = std::max(line.Get_P0().Z,line.Get_P1().Z);
 	init_volume(min_pt,max_pt,set_volume);
 }
 

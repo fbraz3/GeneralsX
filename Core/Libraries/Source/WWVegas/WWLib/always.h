@@ -202,39 +202,39 @@ public:
 */
 #define NOMINMAX
 
-#ifndef MAX
-#define std::max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
+// #ifndef MAX
+// #define std::max(a,b)            (((a) > (b)) ? (a) : (b))
+// #endif
 
-#ifndef MIN
-#define std::min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
+// #ifndef MIN
+// #define std::min(a,b)            (((a) < (b)) ? (a) : (b))
+// #endif
 
-#ifdef min
-#undef min
-#endif
+// #ifdef min
+// #undef min
+// #endif
 
-#ifdef max
-#undef max
-#endif
+// #ifdef max
+// #undef max
+// #endif
 
-template <class T> T std::min(T a,T b)
-{
-	if (a<b) {
-		return a;
-	} else {
-		return b;
-	}
-}
+// template <class T> T std::min(T a,T b)
+// {
+// 	if (a<b) {
+// 		return a;
+// 	} else {
+// 		return b;
+// 	}
+// }
 
-template <class T> T std::max(T a,T b)
-{
-	if (a>b) {
-		return a;
-	} else {
-		return b;
-	}
-}
+// template <class T> T std::max(T a,T b)
+// {
+// 	if (a>b) {
+// 		return a;
+// 	} else {
+// 		return b;
+// 	}
+// }
 
 
 /*

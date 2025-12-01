@@ -1440,7 +1440,7 @@ static void saveOptions( void )
 		Real sound2DVolume = val / 100.0f;
 		Real sound3DVolume = val / 100.0f;
 		Real relative2DVolume = TheAudio->getAudioSettings()->m_relative2DVolume;
-		relative2DVolume = std::min( 1.0f, std::max( -1.0, relative2DVolume ) );
+		relative2DVolume = std::min( 1.0f, std::max( -1.0f, relative2DVolume ) );
 		if( relative2DVolume < 0.0f )
 		{
 			//Lower the 2D volume

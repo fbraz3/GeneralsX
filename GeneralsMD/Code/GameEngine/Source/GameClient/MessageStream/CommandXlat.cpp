@@ -5430,8 +5430,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_DEBUG_OBJECT_ID_PERFORMANCE:
 		{
-			static __int64 startTime64;
-			static __int64 endTime64,freq64;
+			static int64_t startTime64;
+			static int64_t endTime64,freq64;
 			QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 			QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 			Int numberLookups = 10000;
@@ -5484,8 +5484,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_DEBUG_DRAWABLE_ID_PERFORMANCE:
 		{
-			static __int64 startTime64;
-			static __int64 endTime64,freq64;
+			static int64_t startTime64;
+			static int64_t endTime64,freq64;
 			QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 			QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 			Int numberLookups = 10000;

@@ -475,8 +475,8 @@ void RailroadBehavior::playImpactSound(Object *victim, const Coord3D *impactPosi
 		impact.setPosition(victim->getPosition());
 	}
 
-	vel = std::min(NORMAL_VEL_Z, std::max(0, vel));
-	mass = std::min(NORMAL_MASS, std::max(0, mass));
+	vel = std::min(NORMAL_VEL_Z, std::max(0.0f, vel));
+	mass = std::min(NORMAL_MASS, std::max(0.0f, mass));
 
 	Real volAdjust = NormalizeToRange(MuLaw(vel, NORMAL_VEL_Z, 500), -1, 1, 0.25, 1.0);
 	volAdjust *= NormalizeToRange(MuLaw(mass, NORMAL_MASS, 500), -1, 1, 0.25, 1.0);
@@ -1404,7 +1404,7 @@ void RailroadBehavior::FindPosByPathDistance( Coord3D *pos, const Real dist, con
 			m_endOfLine = TRUE;
 		}
 
-		actualDistance = std::max(std::min(length,dist),0); // CLAMP TO NORMALIZE
+		actualDistance = std::max(std::min(length,dist),0.0f); // CLAMP TO NORMALIZE
 	}
 
 	pos->set( 0.0f, 0.0f, 0.0f );

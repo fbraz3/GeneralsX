@@ -157,8 +157,8 @@ if (USE_VULKAN)
         DbgHelpLoader.cpp DbgHelpLoader.h
         Except.cpp
         FastAllocator.cpp FastAllocator.h
-        TARGA.cpp TARGA.h
-        # Files that include <malloc.h> or imagehlp.h are excluded for non-Windows builds
+        # TARGA.cpp is cross-platform when TGA_USES_WWLIB_FILE_CLASSES is defined
+        # Files that include imagehlp.h are excluded for non-Windows builds
     )
 endif()
 

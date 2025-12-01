@@ -294,9 +294,9 @@ static void memset32(void* ptr, Int value, Int bytesToFill)
 	for (++wordsToFill; --wordsToFill; )
 		*p++ = value;
 
-	Byte *b = (Byte *)p;
+	SignedByte *b = (SignedByte *)p;
 	for (++bytesToFill; --bytesToFill; )
-		*b++ = (Byte)value;
+		*b++ = (SignedByte)value;
 }
 
 #ifdef MEMORYPOOL_STACKTRACE

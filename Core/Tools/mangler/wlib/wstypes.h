@@ -64,13 +64,13 @@ Standard type definitions for the sake of portability and readability.
 #define FALSE              0
 #endif
 
-#ifndef MIN
-#define std::min(x,y) (((x)<(y))?(x):(y))
-#endif
+// #ifndef MIN
+// #define std::min(x,y) (((x)<(y))?(x):(y))
+// #endif
 
-#ifndef MAX
-#define std::max(x,y) (((x)>(y))?(x):(y))
-#endif
+// #ifndef MAX
+// #define std::max(x,y) (((x)>(y))?(x):(y))
+// #endif
 
 #ifndef NULL
 #define NULL 0

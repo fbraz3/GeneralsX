@@ -427,7 +427,7 @@ ParticleBufferClass::ParticleBufferClass(const ParticleBufferClass & src) :
 
 	unsigned int i;
 
-	LodCount = std::min(MaxNum, 17);
+	LodCount = std::min(static_cast<int> (MaxNum), 17);
 	LodBias = src.LodBias;
 
 	/*

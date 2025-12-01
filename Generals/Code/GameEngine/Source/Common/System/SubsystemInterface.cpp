@@ -62,8 +62,8 @@ SubsystemInterface::~SubsystemInterface()
 #ifdef DUMP_PERF_STATS
 void SubsystemInterface::UPDATE(void)
 {
-	__int64 startTime64;
-	__int64 endTime64,freq64;
+	int64_t startTime64;
+	int64_t endTime64,freq64;
 	GetPrecisionTimerTicksPerSec(&freq64);
 	GetPrecisionTimer(&startTime64);
 	m_startTimeConsumed = s_msConsumed;
@@ -85,8 +85,8 @@ void SubsystemInterface::UPDATE(void)
 }
 void SubsystemInterface::DRAW(void)
 {
-	__int64 startTime64;
-	__int64 endTime64,freq64;
+	int64_t startTime64;
+	int64_t endTime64,freq64;
 	GetPrecisionTimerTicksPerSec(&freq64);
 	GetPrecisionTimer(&startTime64);
 	m_startDrawTimeConsumed = s_msConsumed;

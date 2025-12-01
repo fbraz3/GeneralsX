@@ -1648,7 +1648,7 @@ void AIGroup::groupMoveToPosition( const Coord3D *p_posIn, Bool addWaypoint, Com
 				isFormation = FALSE;//then keep spread formation after move
       }
 
-      extraMargin = std::max( extraMargin, STD_AIRCRAFT_EXTRA_MARGIN );
+      extraMargin = std::max( extraMargin, static_cast<float>(STD_AIRCRAFT_EXTRA_MARGIN) );
 		}
 	}
 

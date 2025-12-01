@@ -34,7 +34,7 @@
 #include "Common/XferDeepCRC.h"
 #include "Common/crc.h"
 #include "Common/Snapshot.h"
-#include "utility/endian_compat.h"
+#include "Utility/endian_compat.h"
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -316,7 +316,7 @@ void XferDeepCRC::xferAsciiString( AsciiString *asciiStringData )
 
 	// save string data
 	if( len > 0 )
-		xferUser( (void *)asciiStringData->str(), sizeof( Byte ) * len );
+		xferUser( (void *)asciiStringData->str(), sizeof( SignedByte ) * len );
 
 }
 
@@ -336,7 +336,7 @@ void XferDeepCRC::xferUnicodeString( UnicodeString *unicodeStringData )
 	}
 
 	// save length of string to follow
-	Byte len = unicodeStringData->getLength();
+	SignedByte len = unicodeStringData->getLength();
 	xferByte( &len );
 
 	// save string data

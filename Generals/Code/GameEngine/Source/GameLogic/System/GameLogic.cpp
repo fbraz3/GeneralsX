@@ -1015,8 +1015,8 @@ void GameLogic::startNewGame( Bool saveGame )
 {
 
 	#ifdef DUMP_PERF_STATS
-	__int64 startTime64;
-	__int64 endTime64,freq64;
+	int64_t startTime64;
+	int64_t endTime64,freq64;
 	GetPrecisionTimerTicksPerSec(&freq64);
 	GetPrecisionTimer(&startTime64);
 	#endif
@@ -2837,8 +2837,8 @@ static void unitTimings(void)
 
 	const Int FACTOR = 5; // run at TIME_FRAMES/FACTOR so we dont' die of boredom.  jba.
 
-	static __int64 startTime64;
-	static __int64 endTime64,freq64;
+	static int64_t startTime64;
+	static int64_t endTime64,freq64;
 	static int drawCallTotal;
 	static enum { LOGIC, NO_PARTICLES, NO_SPAWN, ALL} mode;
 	static double timeAll, timeAllNoAnim, timeNoPart, timeNoSpawn, timeLogic, timeLogicNoAnim;
@@ -3118,10 +3118,10 @@ DECLARE_PERF_TIMER(GameLogic_update_normal)
 DECLARE_PERF_TIMER(GameLogic_update_sleepy)
 
 #ifdef DUMP_PERF_STATS
-extern __int64 Total_Get_Texture_Time;
-extern __int64 Total_Get_HAnim_Time;
-extern __int64 Total_Create_Render_Obj_Time;
-extern __int64 Total_Load_3D_Assets;
+extern int64_t Total_Get_Texture_Time;
+extern int64_t Total_Get_HAnim_Time;
+extern int64_t Total_Create_Render_Obj_Time;
+extern int64_t Total_Load_3D_Assets;
 #endif
 
 // ------------------------------------------------------------------------------------------------
@@ -3153,7 +3153,7 @@ void GameLogic::update( void )
 
 	#ifdef DUMP_PERF_STATS
 		char Buf[1024];
-		__int64 freq64;
+		int64_t freq64;
 		GetPrecisionTimerTicksPerSec(&freq64);
 
 		sprintf(Buf,"Texture=%f, Anim=%f, CreateRobj=%f, Load3DAssets=%f",

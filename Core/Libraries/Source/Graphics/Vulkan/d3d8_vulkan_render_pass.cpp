@@ -38,6 +38,7 @@
 #include "d3d8_vulkan_render_pass.h"
 #include <stdio.h>
 #include <string.h>
+#include <cstdint>
 
 /* ============================================================================
  * Internal Constants

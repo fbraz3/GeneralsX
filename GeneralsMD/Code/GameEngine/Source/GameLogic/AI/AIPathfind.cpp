@@ -2354,11 +2354,11 @@ void PathfindZoneManager::calculateZones( PathfindCell **map, PathfindLayer laye
 
 #ifdef DEBUG_QPF
 #if defined(DEBUG_LOGGING)
-	__int64 startTime64;
+	int64_t startTime64;
 	static double timeToUpdate = 0.0f;
   static double averageTimeToUpdate = 0.0f;
   static Int updateSamples = 0;
-	__int64 endTime64,freq64;
+	int64_t endTime64,freq64;
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 	QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 #endif
@@ -2684,9 +2684,9 @@ void PathfindZoneManager::updateZonesForModify(PathfindCell **map, PathfindLayer
 
 #ifdef DEBUG_QPF
 #if defined(DEBUG_LOGGING)
-	__int64 startTime64;
+	int64_t startTime64;
 	double timeToUpdate=0.0f;
-	__int64 endTime64,freq64;
+	int64_t endTime64,freq64;
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 	QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 #endif
@@ -5582,9 +5582,9 @@ void Pathfinder::processPathfindQueue(void)
 #ifdef DEBUG_QPF
 #ifdef DEBUG_LOGGING
 	Int startTimeMS = SDL_GetTicks();
-	__int64 startTime64;
+	int64_t startTime64;
 	double timeToUpdate=0.0f;
-	__int64 endTime64,freq64;
+	int64_t endTime64,freq64;
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 	QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 #endif

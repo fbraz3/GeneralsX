@@ -177,13 +177,13 @@ inline double WWMath::Wrap(double val, double min /*= 0.0f*/, double max /*= 1.0
 	return val;
 }
 
-inline float WWMath::Min(float a, float b)
+inline float std::min(float a, float b)
 {
 	if (a<b) return a;
 	return b;
 }
 
-inline float WWMath::Max(float a, float b)
+inline float std::max(float a, float b)
 {
 	if (a>b) return a;
 	return b;

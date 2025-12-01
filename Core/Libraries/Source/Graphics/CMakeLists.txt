@@ -12,6 +12,7 @@ add_library(graphics_drivers STATIC
     
     # Phase 41: Global stubs
     phase41_global_stubs.cpp
+    phase41_cpp_stubs.cpp
     
     # DirectX 8 Compatibility Layer (Phase 41)
     dx8buffer_compat.h

@@ -202,9 +202,9 @@ protected:
 	Int m_lastExecutionFrame;																	///< The highest frame number that a command could have been executed on.
 	Int m_lastFrameCompleted;
 	Bool m_didSelfSlug;
-	__int64 m_perfCountFreq;														///< The frequency of the performance counter.
+	int64_t m_perfCountFreq;														///< The frequency of the performance counter.
 
-	__int64 m_nextFrameTime;														///< When did we execute the last frame?  For slugging the GameLogic...
+	int64_t m_nextFrameTime;														///< When did we execute the last frame?  For slugging the GameLogic...
 
 	Bool m_frameDataReady;																		///< Is the frame data for the next frame ready to be executed by TheGameLogic?
 	Bool m_isStalling;
@@ -728,7 +728,7 @@ void Network::update( void )
 		}
 	}
 	else {
-		__int64 curTime;
+		int64_t curTime;
 		QueryPerformanceCounter((void *)&curTime);
 		m_isStalling = curTime >= m_nextFrameTime;
 	}
@@ -769,9 +769,9 @@ void Network::endOfGameCheck() {
 }
 
 Bool Network::timeForNewFrame() {
-	__int64 curTime;
+	int64_t curTime;
 	QueryPerformanceCounter((void *)&curTime);
-	__int64 frameDelay = m_perfCountFreq / m_frameRate;
+	int64_t frameDelay = m_perfCountFreq / m_frameRate;
 
 	/*
 	 * If we're pushing up against the edge of our run ahead, we should slow the framerate down a bit
@@ -782,7 +782,7 @@ Bool Network::timeForNewFrame() {
 		Real cushion = m_conMgr->getMinimumCushion();
 		Real runAheadPercentage = m_runAhead * (TheGlobalData->m_networkRunAheadSlack / (Real)100.0); // If we are at least 50% into our slack, we need to slow down.
 		if (cushion < runAheadPercentage) {
-			__int64 oldFrameDelay = frameDelay;
+			int64_t oldFrameDelay = frameDelay;
 			frameDelay += oldFrameDelay / 10; // temporarily decrease the frame rate by 20%.
 //			DEBUG_LOG(("Average cushion = %f, run ahead percentage = %f.  Adjusting frameDelay from %I64d to %I64d", cushion, runAheadPercentage, oldFrameDelay, frameDelay));
 			m_didSelfSlug = TRUE;

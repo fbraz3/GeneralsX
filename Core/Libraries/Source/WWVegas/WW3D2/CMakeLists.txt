@@ -195,7 +195,7 @@ set(WW3D2_SRC
     # texture.cpp  # Phase 41 Day 2: Commented - Member accessibility and signature mismatches in TextureClass hierarchy
     texture_base.cpp
     texture.h
-    # texturefilter.cpp  # Phase 42: Temporarily commented - D3DCAPS8 conversion and DX8 filter capabilities
+    # texturefilter.cpp  # Phase 42: Temporarily commented - signature mismatch, GeneralsMD version used instead
     texturefilter.h
     # textureloader.cpp  # Phase 42: Temporarily commented - TextureLoadTaskClass and ThumbnailClass API incompatibilities
     textureloader.h
@@ -215,7 +215,7 @@ set(WW3D2_SRC
     w3derr.h
     w3dexclusionlist.cpp
     w3dexclusionlist.h
-    ww3d.cpp
+    # ww3d.cpp - Excluded: Vulkan wrapper provides WW3D:: functions on non-Windows
     ww3d.h
     ww3dformat.cpp
     ww3dformat.h

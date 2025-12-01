@@ -203,7 +203,7 @@ set(WW3D2_SRC
     #texproject.cpp  # Phase 39.5: Temporarily disabled - has pre-existing SurfaceClass compilation errors
 #    texproject.h
     #texture.cpp
-    #texturefilter.cpp
+    #texturefilter.cpp  # Linux build: DirectX-specific, needs stub implementation
     #texturefilter.h
     texturethumbnail.cpp
 #    texturethumbnail.h

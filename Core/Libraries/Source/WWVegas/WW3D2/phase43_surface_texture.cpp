@@ -478,8 +478,53 @@ void TextureFilterClass::_Init_Filters(TextureFilterClass::TextureFilterMode mod
  */
 void TextureFilterClass::Set_Mip_Mapping(TextureFilterClass::FilterType filter)
 {
-	// Stub: Configure mipmap sampling
-	// Real implementation: Update Vulkan sampler descriptor
+	MipMapFilter = filter;
+}
+
+/**
+ * TextureFilterClass::Apply
+ * 
+ * Apply texture filtering settings to a texture stage.
+ * Cross-platform version: Settings stored for Vulkan sampler configuration.
+ */
+void TextureFilterClass::Apply(unsigned int stage)
+{
+	// Cross-platform: Filter application is handled by the graphics backend
+	// The Vulkan driver queries filter settings when creating samplers
+	(void)stage;  // Suppress unused warning
+}
+
+/**
+ * TextureFilterClass::_Set_Default_Min_Filter
+ * 
+ * Set the default minification filter for all texture stages.
+ */
+void TextureFilterClass::_Set_Default_Min_Filter(FilterType filter)
+{
+	// Stub: Store default min filter preference
+	(void)filter;
+}
+
+/**
+ * TextureFilterClass::_Set_Default_Mag_Filter
+ * 
+ * Set the default magnification filter for all texture stages.
+ */
+void TextureFilterClass::_Set_Default_Mag_Filter(FilterType filter)
+{
+	// Stub: Store default mag filter preference
+	(void)filter;
+}
+
+/**
+ * TextureFilterClass::_Set_Default_Mip_Filter
+ * 
+ * Set the default mipmap filter for all texture stages.
+ */
+void TextureFilterClass::_Set_Default_Mip_Filter(FilterType filter)
+{
+	// Stub: Store default mip filter preference
+	(void)filter;
 }
 
 // ============================================================================
@@ -577,4 +622,53 @@ TextureClass* Load_Texture(ChunkLoadClass &cload)
 	// 2. Load via TextureClass constructor
 	// 3. Return pointer for mesh assignment
 	return nullptr;
+}
+
+// ============================================================================
+// TextureBaseClass Method Implementations
+// These are normally in texture.cpp but that file has DirectX dependencies
+// ============================================================================
+
+/**
+ * TextureBaseClass::Set_Texture_Name
+ * 
+ * Set the texture name for identification and caching purposes.
+ * Used when loading textures from files or .big archives.
+ */
+void TextureBaseClass::Set_Texture_Name(const char* name)
+{
+	if (name) {
+		Name = name;
+	}
+}
+
+/**
+ * TextureBaseClass::Invalidate
+ * 
+ * Mark texture as invalid, requiring reload on next use.
+ * Called when graphics device is lost or texture needs refresh.
+ */
+void TextureBaseClass::Invalidate()
+{
+	// Don't invalidate if load is in progress
+	if (TextureLoadTask) {
+		return;
+	}
+	if (ThumbnailLoadTask) {
+		return;
+	}
+
+	// Don't invalidate procedural textures
+	if (IsProcedural) {
+		return;
+	}
+
+	// Release D3D texture handle
+	if (D3DTexture) {
+		D3DTexture->Release();
+		D3DTexture = nullptr;
+	}
+
+	// Mark as uninitialized
+	Initialized = false;
 }

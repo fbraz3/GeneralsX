@@ -54,10 +54,10 @@ inline void RGB_To_HSV(Vector3 &hsv,const Vector3 &rgb)
 // converts rgb[0..1] to h [0,360), s and v in [0,1]
 // negative h values are to signify undefined
 {
-	float max=WWMath::Max(rgb.X,rgb.Y);
-	max=WWMath::Max(max,rgb.Z);
-	float min=WWMath::Min(rgb.X,rgb.Y);
-	min=WWMath::Min(min,rgb.Z);
+	float max=std::max(rgb.X,rgb.Y);
+	max=std::max(max,rgb.Z);
+	float min=std::min(rgb.X,rgb.Y);
+	min=std::min(min,rgb.Z);
 
 	// value
 	hsv.Z=max;

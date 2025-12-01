@@ -67,10 +67,10 @@ void Xfer::open( AsciiString identifier )
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-void Xfer::xferByte( Byte *byteData )
+void Xfer::xferByte( SignedByte *byteData )
 {
 
-	xferImplementation( byteData, sizeof( Byte ) );
+	xferImplementation( byteData, sizeof( SignedByte ) );
 
 }
 
@@ -186,7 +186,7 @@ void Xfer::xferMapName( AsciiString *mapNameData )
 void Xfer::xferAsciiString( AsciiString *asciiStringData )
 {
 
-	xferImplementation( (void *)asciiStringData->str(), sizeof( Byte ) * asciiStringData->getLength() );
+	xferImplementation( (void *)asciiStringData->str(), sizeof( SignedByte ) * asciiStringData->getLength() );
 
 }
 

@@ -433,7 +433,7 @@ public:
 	Real m_windMotionEndAngle;							///< (for ping pong) angle 2 of the ping pong
 	Real m_windMotionEndAngleMin;						///< (for ping pong) min angle for angle 2
 	Real m_windMotionEndAngleMax;						///< (for ping pong) max angel for angle 2
-	Byte m_windMotionMovingToEndAngle;			///< (for ping pong) TRUE if we're moving "towards" the end angle
+	SignedByte m_windMotionMovingToEndAngle;			///< (for ping pong) TRUE if we're moving "towards" the end angle
 
 };
 

@@ -722,7 +722,7 @@ void SimpleProfiler::stop()
 {
 	if (m_startThisSession != 0)
 	{
-		__int64 stop;
+		int64_t stop;
 		QueryPerformanceCounter((LARGE_INTEGER*)&stop);
 		m_totalThisSession = stop - m_startThisSession;
 		m_totalAllSessions += stop - m_startThisSession;

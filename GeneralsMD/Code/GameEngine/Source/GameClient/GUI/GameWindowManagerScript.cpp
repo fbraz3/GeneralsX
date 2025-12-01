@@ -419,7 +419,7 @@ static void pushWindow( GameWindow *window )
 static Bool parseColor( Color *color, char *buffer )
 {
   char *c;
-  Byte red, green, blue;
+  SignedByte red, green, blue;
 
 	c = strtok( buffer, " \t\n\r" );
   red = atoi(c);
