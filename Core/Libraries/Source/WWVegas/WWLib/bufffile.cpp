@@ -111,7 +111,7 @@ int BufferedFileClass::Read(void * buffer, int size)
 
 	// If there is anything in the buffer, copy it in.
 	if ( BufferAvailable > 0 ) {
-		int amount = min( size, BufferAvailable );
+		int amount = std::min( size, BufferAvailable );
 		::memcpy( buffer, &Buffer[BufferOffset], amount );
 		BufferAvailable -= amount;
 		BufferOffset += amount;
@@ -156,7 +156,7 @@ int BufferedFileClass::Read(void * buffer, int size)
 
 	// If there is anything in the buffer, copy it in.
 	if ( BufferAvailable > 0 ) {
-		int amount = min( size, BufferAvailable );
+		int amount = std::min( size, BufferAvailable );
 		::memcpy( buffer, &Buffer[BufferOffset], amount );
 		BufferAvailable -= amount;
 		BufferOffset += amount;
@@ -228,7 +228,7 @@ int BufferedFileClass::Seek(int pos, int dir)
 	}
 
 	// use up what we can of the buffer
-	int amount = min( pos, BufferAvailable );
+	int amount = std::min( pos, BufferAvailable );
 	pos -= amount;
 	BufferAvailable -= amount;
 	BufferOffset += amount;

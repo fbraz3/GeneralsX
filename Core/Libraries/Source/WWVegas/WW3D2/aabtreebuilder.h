@@ -86,7 +86,7 @@ private:
 	*/
 	struct CullNodeStruct
 	{
-		CullNodeStruct(void) : Index(0),Min(0,0,0),Max(0,0,0),Front(NULL),Back(NULL),PolyCount(0),PolyIndices(NULL) {}
+		CullNodeStruct(void) : Index(0),std::min(0,0,0),std::max(0,0,0),Front(NULL),Back(NULL),PolyCount(0),PolyIndices(NULL) {}
 		~CullNodeStruct(void)
 		{
 			delete Front;

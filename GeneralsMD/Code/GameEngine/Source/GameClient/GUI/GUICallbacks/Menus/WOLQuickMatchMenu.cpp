@@ -607,7 +607,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 			const Image *img = (isSelected)?selectedImage:unselectedImage;
 			if ( img )
 			{
-				width = min(GadgetListBoxGetColumnWidth(listboxMapSelect, 0), img->getImageWidth());
+				width = std::min(GadgetListBoxGetColumnWidth(listboxMapSelect, 0), img->getImageWidth());
 				height = width;
 			}
 			Int index = GadgetListBoxAddEntryImage(listboxMapSelect, img, -1, 0, height, width);
@@ -670,10 +670,10 @@ static void saveQuickMatchOptions( void )
 //	pref.setMaxDisconnects(atoi(a.str()));
 //	u = GadgetTextEntryGetText(textEntryMaxPoints);
 //	a.translate(u);
-//	pref.setMaxPoints(max(100, atoi(a.str())));
+//	pref.setMaxPoints(std::max(100, atoi(a.str())));
 //	u = GadgetTextEntryGetText(textEntryMinPoints);
 //	a.translate(u);
-//	pref.setMinPoints(min(100, atoi(a.str())));
+//	pref.setMinPoints(std::min(100, atoi(a.str())));
 	//u = GadgetTextEntryGetText(textEntryWaitTime);
 	//a.translate(u);
 	//pref.setWaitTime(atoi(a.str()));
@@ -686,9 +686,9 @@ static void saveQuickMatchOptions( void )
 	Int item;
 	GadgetComboBoxGetSelectedPos(comboBoxSide, &selected);
 	item = (Int)GadgetComboBoxGetItemData(comboBoxSide, selected);
-	pref.setSide(max(0, item));
+	pref.setSide(std::max(0, item));
 	GadgetComboBoxGetSelectedPos(comboBoxColor, &selected);
-	pref.setColor(max(0, selected));
+	pref.setColor(std::max(0, selected));
 
 	GadgetComboBoxGetSelectedPos(comboBoxMaxDisconnects, &selected);
 	pref.setMaxDisconnects(selected);
@@ -861,7 +861,7 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		s.format(TheGameText->fetch("GUI:PlayersVersusPlayers"), i, i);
 		GadgetComboBoxAddEntry( comboBoxNumPlayers, s, c );
 	}
-	GadgetComboBoxSetSelectedPos( comboBoxNumPlayers, max(0, pref.getNumPlayers()) );
+	GadgetComboBoxSetSelectedPos( comboBoxNumPlayers, std::max(0, pref.getNumPlayers()) );
 
 	GadgetComboBoxReset(comboBoxMaxDisconnects);
 	GadgetComboBoxAddEntry( comboBoxMaxDisconnects, TheGameText->fetch("GUI:Any"), c);
@@ -870,7 +870,7 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		s.format(L"%d", MAX_DISCONNECTS[i]);
 		GadgetComboBoxAddEntry( comboBoxMaxDisconnects, s, c );
 	}
-	Int maxDisconIndex = max(0, pref.getMaxDisconnects());
+	Int maxDisconIndex = std::max(0, pref.getMaxDisconnects());
 	GadgetComboBoxSetSelectedPos(comboBoxMaxDisconnects, maxDisconIndex);
 
 	GadgetComboBoxReset( comboBoxMaxPing );
@@ -1571,7 +1571,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 						if (ladderID == 0)
 						{
 							// no ladder selected - enable buttons
-							GadgetComboBoxSetSelectedPos(comboBoxNumPlayers, max(0, pref.getNumPlayers()/2-1));
+							GadgetComboBoxSetSelectedPos(comboBoxNumPlayers, std::max(0, pref.getNumPlayers()/2-1));
 							comboBoxNumPlayers->winEnable( TRUE );
 							populateQMSideComboBox(pref.getSide()); // this will set side to random and disable if necessary
 						}
@@ -1663,10 +1663,10 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 //					req.QM.maxDiscons = atoi(a.str());
 //					u = GadgetTextEntryGetText(textEntryMaxPoints);
 //					a.translate(u);
-					req.QM.maxPointPercentage = max(100, maxPoints);
+					req.QM.maxPointPercentage = std::max(100, maxPoints);
 //					u = GadgetTextEntryGetText(textEntryMinPoints);
 //					a.translate(u);
-					req.QM.minPointPercentage = min(100, minPoints);
+					req.QM.minPointPercentage = std::min(100, minPoints);
 					//u = GadgetTextEntryGetText(textEntryWaitTime);
 					//a.translate(u);
 					//req.QM.widenTime = atoi(a.str());
@@ -1874,7 +1874,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 						const Image *img = (!wasSelected)?selectedImage:unselectedImage;
 						if ( img )
 						{
-							width = min(GadgetListBoxGetColumnWidth(control, 0), img->getImageWidth());
+							width = std::min(GadgetListBoxGetColumnWidth(control, 0), img->getImageWidth());
 							height = width;
 						}
 						GadgetListBoxAddEntryImage(control, img, selected, 0, height, width);

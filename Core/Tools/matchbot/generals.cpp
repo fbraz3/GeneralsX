@@ -459,7 +459,7 @@ double GeneralsMatcher::computeMatchFitness(const std::string& i1, const General
 		return 0.0;
 
 	// check point percentage ranges
-	int p1 = max(1,u1->points), p2 = max(1,u2->points);
+	int p1 = std::max(1,u1->points), p2 = std::max(1,u2->points);
 	double p1percent = (double)p2/(double)p1;
 	double p2percent = (double)p1/(double)p2;
 	//DBGMSG("points: " << p1 << "," << p2 << " - " << p1percent << "," << p2percent);
@@ -470,8 +470,8 @@ double GeneralsMatcher::computeMatchFitness(const std::string& i1, const General
 		return 0.0;
 
 
-	int minP = min(p1, p2);
-	int maxP = max(p1, p2);
+	int minP = std::min(p1, p2);
+	int maxP = std::max(p1, p2);
 	double pointPercent = (double)minP/(double)maxP;
 	//DBGMSG("\tpointPercent = "<<pointPercent);
 
@@ -914,7 +914,7 @@ bool GeneralsMatcher::handleUserInfo(const char *nick, const std::string& msg)
 		}
 		else if (k == "Points")
 		{
-			userInfo->points = max(1, atoi(v.c_str()));
+			userInfo->points = std::max(1, atoi(v.c_str()));
 		}
 		else if (k == "Discons")
 		{

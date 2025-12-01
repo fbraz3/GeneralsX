@@ -315,13 +315,13 @@ OverallStats::OverallStats()
 static UnicodeString calcPercent(const OverallStats& stats, Int n, UnicodeString sideStr)
 {
 	// per side percentage of total wins
-	Real winPercentUSA   = s_statsUSA.wins[n]*100/INT_TO_REAL(max(1, s_statsUSA.wins[n]+s_statsUSA.losses[n])); // 0.0f - 100.0f
-	Real winPercentChina = s_statsChina.wins[n]*100/INT_TO_REAL(max(1, s_statsChina.wins[n]+s_statsChina.losses[n])); // 0.0f - 100.0f
-	Real winPercentGLA   = s_statsGLA.wins[n]*100/INT_TO_REAL(max(1, s_statsGLA.wins[n]+s_statsGLA.losses[n])); // 0.0f - 100.0f
-	Real thisWinPercent  = stats.wins[n]*100/INT_TO_REAL(max(1, stats.wins[n]+stats.losses[n])); // 0.0f - 100.0f
+	Real winPercentUSA   = s_statsUSA.wins[n]*100/INT_TO_REAL(std::max(1, s_statsUSA.wins[n]+s_statsUSA.losses[n])); // 0.0f - 100.0f
+	Real winPercentChina = s_statsChina.wins[n]*100/INT_TO_REAL(std::max(1, s_statsChina.wins[n]+s_statsChina.losses[n])); // 0.0f - 100.0f
+	Real winPercentGLA   = s_statsGLA.wins[n]*100/INT_TO_REAL(std::max(1, s_statsGLA.wins[n]+s_statsGLA.losses[n])); // 0.0f - 100.0f
+	Real thisWinPercent  = stats.wins[n]*100/INT_TO_REAL(std::max(1, stats.wins[n]+stats.losses[n])); // 0.0f - 100.0f
 	Real totalWinPercent = winPercentUSA + winPercentChina + winPercentGLA;
 
-	Real val = thisWinPercent*100/max(1.0f,totalWinPercent);
+	Real val = thisWinPercent*100/std::max(1.0f,totalWinPercent);
 
 	UnicodeString s;
 	s.format(TheGameText->fetch("GUI:PerSideWinPercentage"), REAL_TO_INT(val), sideStr.str());

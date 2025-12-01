@@ -209,8 +209,8 @@ static Bool calcTrajectory(
 	Real pitches[2];
 	Real cosPitches[2];
 	Real sinPitches[2];
-	Real theta_min = max(minPitch, -PI/2);
-	Real theta_max = min(maxPitch, PI/2);
+	Real theta_min = std::max(minPitch, -PI/2);
+	Real theta_max = std::min(maxPitch, PI/2);
 	const Real MIN_ANGLE_DIFF = (PI/(180.0f*16.0f));	// 1/16th of a degree. yes, we need that accuracy.
 //Int numLoops = 0;
 	while (theta_max > theta_min + MIN_ANGLE_DIFF)
@@ -232,8 +232,8 @@ static Bool calcTrajectory(
 		Real t0 = (horizDist / (velocity * cosPitches[0]));
 		Real t1 = (horizDist / (velocity * cosPitches[1]));
 
-		t0 = MAX(0,t0);
-		t1 = MAX(0,t1);
+		t0 = std::max(0,t0);
+		t1 = std::max(0,t1);
 
 
 		DEBUG_ASSERTCRASH(t0>=0&&t1>=0,("neg time"));
@@ -430,8 +430,8 @@ Bool DumbProjectileBehavior::calcFlightPath(Bool recalcNumSegments)
 	controlPoints[2].y = secondPointAlongLine.Y + controlPoints[0].y;
 
 	// Z's are determined using the highest intervening height so they won't hit hills, low end bounded by current Zs
-	highestInterveningTerrain = max( highestInterveningTerrain, controlPoints[0].z );
-	highestInterveningTerrain = max( highestInterveningTerrain, controlPoints[3].z );
+	highestInterveningTerrain = std::max( highestInterveningTerrain, controlPoints[0].z );
+	highestInterveningTerrain = std::max( highestInterveningTerrain, controlPoints[3].z );
 	controlPoints[1].z = highestInterveningTerrain + d->m_firstHeight;
 	controlPoints[2].z = highestInterveningTerrain + d->m_secondHeight;
 

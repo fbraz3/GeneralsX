@@ -261,7 +261,7 @@ public:
 	virtual void					Set_LOD_Level(int lod);
 	virtual int						Get_LOD_Level(void) const;
 	virtual int						Get_LOD_Count(void) const;
-	virtual void					Set_LOD_Bias(float bias)	{ LODBias = MAX(bias, 0.0f); }
+	virtual void					Set_LOD_Bias(float bias)	{ LODBias = std::max(bias, 0.0f); }
 	virtual int						Calculate_Cost_Value_Arrays(float screen_area, float *values, float *costs) const;
 
 	virtual void					Scale(float scale);

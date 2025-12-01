@@ -412,8 +412,8 @@ void BuildList::OnSelchangeBuildList()
 	if (energyProduction)
 	{
 		energyUsed = (Real)energyConsumption/(Real)energyProduction;
-		energyUsed = min(1.0f, energyUsed);
-		energyUsed = max(0.0f, energyUsed);
+		energyUsed = std::min(1.0f, energyUsed);
+		energyUsed = std::max(0.0f, energyUsed);
 	}
 	else if (energyConsumption)
 	{

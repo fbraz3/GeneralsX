@@ -179,7 +179,7 @@ Bool ConvertToHijackedVehicleCrateCollide::executeCrateBehavior( Object *other )
 	ExperienceTracker *jackerExp = obj->getExperienceTracker();
 	if ( targetExp && jackerExp )
 	{
-		VeterancyLevel highestLevel = MAX(targetExp->getVeterancyLevel(),jackerExp->getVeterancyLevel());
+		VeterancyLevel highestLevel = std::max(targetExp->getVeterancyLevel(),jackerExp->getVeterancyLevel());
 		jackerExp->setVeterancyLevel( highestLevel );
 		targetExp->setVeterancyLevel( highestLevel );
 	}

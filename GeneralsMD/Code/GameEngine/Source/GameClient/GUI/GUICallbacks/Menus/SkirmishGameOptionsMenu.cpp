@@ -1400,7 +1400,7 @@ void SkirmishGameOptionsMenuInit( WindowLayout *layout, void *userData )
 	// set up the game speed slider
 //	NameKeyType sliderGameSpeedID = TheNameKeyGenerator->nameToKey( AsciiString( "SkirmishGameOptionsMenu.wnd:SliderGameSpeed" ) );
 	GameWindow *sliderGameSpeed = TheWindowManager->winGetWindowFromId( parentSkirmishGameOptions, sliderGameSpeedID );
-	Int sliderPos = max(15,min(61,prefs.getInt("FPS", TheGlobalData->m_framesPerSecondLimit)));
+	Int sliderPos = std::max(15,std::min(61,prefs.getInt("FPS", TheGlobalData->m_framesPerSecondLimit)));
 	GadgetSliderSetPosition( sliderGameSpeed, sliderPos );
 	setFPSTextBox(sliderPos);
 	buttonStart->winSetText(TheGameText->fetch("GUI:Start"));

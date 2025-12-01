@@ -571,7 +571,7 @@ void DataChunkTableOfContents::read( ChunkInputStream &s)
 	m_headerOpened = count > 0 && !s.eof();
 
 	// adjust next ID so no ID's are reused
-	this->m_nextID = max( this->m_nextID, maxID+1 );
+	this->m_nextID = std::max( this->m_nextID, maxID+1 );
 }
 
 //----------------------------------------------------------------------

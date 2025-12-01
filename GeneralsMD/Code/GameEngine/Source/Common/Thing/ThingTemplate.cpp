@@ -1565,10 +1565,10 @@ Int ThingTemplate::calcTimeToBuild( const Player* player) const
 	Real EnergyShort = 1.0f - EnergyPercent;					//so I am 20% short
 	EnergyShort *= TheGlobalData->m_LowEnergyPenaltyModifier;	//which is a 40% penalty, or a 10% penalty
 	Real penaltyRate = 1.0f - EnergyShort;
-	penaltyRate = max(penaltyRate, TheGlobalData->m_MinLowEnergyProductionSpeed);	//bind so 0% does not dead stop you
+	penaltyRate = std::max(penaltyRate, TheGlobalData->m_MinLowEnergyProductionSpeed);	//bind so 0% does not dead stop you
 
 	if( EnergyPercent < 1.0f )	//and make 99% look like 80% (eg) since most of the time you are down only a little
-		penaltyRate = min(penaltyRate, TheGlobalData->m_MaxLowEnergyProductionSpeed);
+		penaltyRate = std::min(penaltyRate, TheGlobalData->m_MaxLowEnergyProductionSpeed);
 
 	if (penaltyRate <= 0.0f)
 		penaltyRate = 0.01f;	// Design won't make the minimum 0, they promise

@@ -352,7 +352,7 @@ ParticleBufferClass::ParticleBufferClass(const ParticleBufferClass & src) :
 
 	unsigned int i;
 
-	LodCount = MIN(MaxNum, 17);
+	LodCount = std::min(MaxNum, 17);
 	LodBias = src.LodBias;
 
 	/*
@@ -1017,7 +1017,7 @@ void ParticleBufferClass::Prepare_LOD(CameraClass &camera)
 
 	float bs_rad_sq = bounding_sphere_projected_radius * bounding_sphere_projected_radius;
 	float p_rad_sq = particle_projected_radius * particle_projected_radius * MaxNum;
-	float proj_area = WWMATH_PI * MIN(bs_rad_sq, p_rad_sq) * width_factor * height_factor;
+	float proj_area = WWMATH_PI * std::min(bs_rad_sq, p_rad_sq) * width_factor * height_factor;
 
 	// Filter the area over time so we don't get as many pops in the LOD algorithm
 	ProjectedArea = 0.9f * ProjectedArea + 0.1f * proj_area;
@@ -1241,7 +1241,7 @@ void ParticleBufferClass::Reset_Colors(ParticlePropertyStruct<Vector3> &new_prop
 
 			// Default size of randomizer tables (tables for non-zero randomizers will be this size)
 			unsigned int pot_num = Find_POT(MaxNum);
-			unsigned int default_randomizer_entries = MIN(pot_num, MAX_RANDOM_ENTRIES);
+			unsigned int default_randomizer_entries = std::min(pot_num, MAX_RANDOM_ENTRIES);
 
 			if (RandomColorEntries) {
 				// Reuse RandomColorEntries if the right size, otherwise release and reallocate.
@@ -1387,7 +1387,7 @@ void ParticleBufferClass::Reset_Opacity(ParticlePropertyStruct<float> &new_props
 
 			// Default size of randomizer tables (tables for non-zero randomizers will be this size)
 			unsigned int pot_num = Find_POT(MaxNum);
-			unsigned int default_randomizer_entries = MIN(pot_num, MAX_RANDOM_ENTRIES);
+			unsigned int default_randomizer_entries = std::min(pot_num, MAX_RANDOM_ENTRIES);
 
 			if (RandomAlphaEntries) {
 				// Reuse RandomAlphaEntries if the right size, otherwise release and reallocate.
@@ -1515,12 +1515,12 @@ void ParticleBufferClass::Reset_Size(ParticlePropertyStruct<float> &new_props)
 		// Find maximum size (for BBox updates)
 		MaxSize = SizeKeyFrameValues[0];
 		for (i = 1; i < NumSizeKeyFrames; i++) {
-			MaxSize = MAX(MaxSize, SizeKeyFrameValues[i]);
+			MaxSize = std::max(MaxSize, SizeKeyFrameValues[i]);
 		}
 		// If last delta is positive, there may be a larger size keyframe:
 		float last_size = SizeKeyFrameValues[NumSizeKeyFrames - 1] + SizeKeyFrameDeltas[NumSizeKeyFrames - 1] *
 			(float)(MaxAge - SizeKeyFrameTimes[NumSizeKeyFrames - 1]);
-		MaxSize = MAX(MaxSize, last_size);
+		MaxSize = std::max(MaxSize, last_size);
 		MaxSize += fabs(new_props.Rand);
 
 		// Set up size randomizer table
@@ -1543,7 +1543,7 @@ void ParticleBufferClass::Reset_Size(ParticlePropertyStruct<float> &new_props)
 
 			// Default size of randomizer tables (tables for non-zero randomizers will be this size)
 			unsigned int pot_num = Find_POT(MaxNum);
-			unsigned int default_randomizer_entries = MIN(pot_num, MAX_RANDOM_ENTRIES);
+			unsigned int default_randomizer_entries = std::min(pot_num, MAX_RANDOM_ENTRIES);
 
 			if (RandomSizeEntries) {
 				// Reuse RandomSizeEntries if the right size, otherwise release and reallocate.
@@ -1697,7 +1697,7 @@ void ParticleBufferClass::Reset_Rotations(ParticlePropertyStruct<float> &new_pro
 
 			// Default size of randomizer tables (tables for non-zero randomizers will be this size)
 			unsigned int pot_num = Find_POT(MaxNum);
-			unsigned int default_randomizer_entries = MIN(pot_num, MAX_RANDOM_ENTRIES);
+			unsigned int default_randomizer_entries = std::min(pot_num, MAX_RANDOM_ENTRIES);
 
 			if (RandomRotationEntries) {
 				// Reuse RandomRotationEntries if the right size, otherwise release and reallocate.
@@ -1736,7 +1736,7 @@ void ParticleBufferClass::Reset_Rotations(ParticlePropertyStruct<float> &new_pro
 
 			// Default size of randomizer tables (tables for non-zero randomizers will be this size)
 			unsigned int pot_num = Find_POT(MaxNum);
-			unsigned int default_randomizer_entries = MIN(pot_num, MAX_RANDOM_ENTRIES);
+			unsigned int default_randomizer_entries = std::min(pot_num, MAX_RANDOM_ENTRIES);
 
 			if (RandomOrientationEntries) {
 				// Reuse RandomOrientationEntries if the right size, otherwise release and reallocate.
@@ -1881,7 +1881,7 @@ void ParticleBufferClass::Reset_Frames(ParticlePropertyStruct<float> &new_props)
 
 			// Default size of randomizer tables (tables for non-zero randomizers will be this size)
 			unsigned int pot_num = Find_POT(MaxNum);
-			unsigned int default_randomizer_entries = MIN(pot_num, MAX_RANDOM_ENTRIES);
+			unsigned int default_randomizer_entries = std::min(pot_num, MAX_RANDOM_ENTRIES);
 
 			if (RandomFrameEntries) {
 				// Reuse RandomFrameEntries if the right size, otherwise release and reallocate.
@@ -2017,7 +2017,7 @@ void ParticleBufferClass::Reset_Blur_Times(ParticlePropertyStruct<float> &new_bl
 
 			// Default size of randomizer tables (tables for non-zero randomizers will be this size)
 			unsigned int pot_num = Find_POT(MaxNum);
-			unsigned int default_randomizer_entries = MIN(pot_num, MAX_RANDOM_ENTRIES);
+			unsigned int default_randomizer_entries = std::min(pot_num, MAX_RANDOM_ENTRIES);
 
 			if (RandomBlurTimeEntries) {
 				// Reuse RandomBlurTimeEntries if the right size, otherwise release and reallocate.

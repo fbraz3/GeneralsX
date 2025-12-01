@@ -43,9 +43,9 @@ Random3Class Vector3Randomizer::Randomizer;
 
 Vector3SolidBoxRandomizer::Vector3SolidBoxRandomizer(const Vector3 & extents)
 {
-	Extents.X = MAX(extents.X, 0.0f);
-	Extents.Y = MAX(extents.Y, 0.0f);
-	Extents.Z = MAX(extents.Z, 0.0f);
+	Extents.X = std::max(extents.X, 0.0f);
+	Extents.Y = std::max(extents.Y, 0.0f);
+	Extents.Z = std::max(extents.Z, 0.0f);
 }
 
 void Vector3SolidBoxRandomizer::Get_Vector(Vector3 &vector)
@@ -57,14 +57,14 @@ void Vector3SolidBoxRandomizer::Get_Vector(Vector3 &vector)
 
 float Vector3SolidBoxRandomizer::Get_Maximum_Extent(void)
 {
-	float max = MAX(Extents.X, Extents.Y);
-	max = MAX(max, Extents.Z);
+	float max = std::max(Extents.X, Extents.Y);
+	max = std::max(max, Extents.Z);
 	return max;
 }
 
 void Vector3SolidBoxRandomizer::Scale(float scale)
 {
-	scale = MAX(scale, 0.0f);
+	scale = std::max(scale, 0.0f);
 	Extents.X *= scale;
 	Extents.Y *= scale;
 	Extents.Z *= scale;
@@ -73,7 +73,7 @@ void Vector3SolidBoxRandomizer::Scale(float scale)
 
 Vector3SolidSphereRandomizer::Vector3SolidSphereRandomizer(float radius)
 {
-	Radius = MAX(radius, 0.0f);
+	Radius = std::max(radius, 0.0f);
 }
 
 void Vector3SolidSphereRandomizer::Get_Vector(Vector3 &vector)
@@ -95,14 +95,14 @@ float Vector3SolidSphereRandomizer::Get_Maximum_Extent(void)
 
 void Vector3SolidSphereRandomizer::Scale(float scale)
 {
-	scale = MAX(scale, 0.0f);
+	scale = std::max(scale, 0.0f);
 	Radius *= scale;
 }
 
 
 Vector3HollowSphereRandomizer::Vector3HollowSphereRandomizer(float radius)
 {
-	Radius = MAX(radius, 0.0f);
+	Radius = std::max(radius, 0.0f);
 }
 
 void Vector3HollowSphereRandomizer::Get_Vector(Vector3 &vector)
@@ -132,15 +132,15 @@ float Vector3HollowSphereRandomizer::Get_Maximum_Extent(void)
 
 void Vector3HollowSphereRandomizer::Scale(float scale)
 {
-	scale = MAX(scale, 0.0f);
+	scale = std::max(scale, 0.0f);
 	Radius *= scale;
 }
 
 
 Vector3SolidCylinderRandomizer::Vector3SolidCylinderRandomizer(float extent, float radius)
 {
-	Extent = MAX(extent, 0.0f);
-	Radius = MAX(radius, 0.0f);
+	Extent = std::max(extent, 0.0f);
+	Radius = std::max(radius, 0.0f);
 }
 
 void Vector3SolidCylinderRandomizer::Get_Vector(Vector3 &vector)
@@ -162,12 +162,12 @@ void Vector3SolidCylinderRandomizer::Get_Vector(Vector3 &vector)
 
 float Vector3SolidCylinderRandomizer::Get_Maximum_Extent(void)
 {
-	return MAX(Extent, Radius);
+	return std::max(Extent, Radius);
 }
 
 void Vector3SolidCylinderRandomizer::Scale(float scale)
 {
-	scale = MAX(scale, 0.0f);
+	scale = std::max(scale, 0.0f);
 	Extent *= scale;
 	Radius *= scale;
 }

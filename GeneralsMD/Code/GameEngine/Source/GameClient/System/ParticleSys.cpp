@@ -1808,7 +1808,7 @@ const ParticleInfo *ParticleSystem::generateParticleInfo( Int particleNum, Int p
 	info.m_size += m_accumulatedSizeBonus;
 	m_accumulatedSizeBonus += m_startSizeRate.getValue();
 	if( m_accumulatedSizeBonus )
-		m_accumulatedSizeBonus = min( m_accumulatedSizeBonus, (float)MAX_SIZE_BONUS );
+		m_accumulatedSizeBonus = std::min( m_accumulatedSizeBonus, (float)MAX_SIZE_BONUS );
 
 	for( int i=0; i<MAX_KEYFRAMES; i++ )
 	{

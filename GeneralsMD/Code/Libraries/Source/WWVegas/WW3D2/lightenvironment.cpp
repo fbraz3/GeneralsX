@@ -289,7 +289,7 @@ void LightEnvironmentClass::Add_Light(const LightClass & light)
 				InputLights[light_index] = new_light;
 
 				// Increment the light count if we have not reach the maximum lights limit yet
-				LightCount = min(LightCount + 1, (int)MAX_LIGHTS);
+				LightCount = std::min(LightCount + 1, (int)MAX_LIGHTS);
 
 				// Since we have inserted a new light, we are done for this function
 				return;
@@ -388,7 +388,7 @@ void LightEnvironmentClass::Calculate_Fill_Light(void)
 	InputLightStruct average_light = InputLights[0];
 
 	// Loop through the remaining lights on the list (up to 2) and add their contributions to the averaged light
-	int num_lights = min(LightCount, MAX_LIGHTS - 1);
+	int num_lights = std::min(LightCount, MAX_LIGHTS - 1);
 	for (int i = 1; i < num_lights; ++i) {
 
 		// The ratio is the percentage of the remaining light's contribution compared to the primary light source

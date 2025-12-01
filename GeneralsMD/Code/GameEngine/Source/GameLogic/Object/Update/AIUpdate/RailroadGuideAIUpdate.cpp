@@ -358,11 +358,11 @@ void RailroadBehavior::onCollide( Object *other, const Coord3D *loc, const Coord
 
 	if (other->isEffectivelyDead())
 	{// we just run over debris, instead of shoving it around
-		delta.scale( MIN(0.3f,m_pullInfo.speed * 0.66f) );
+		delta.scale( std::min(0.3f,m_pullInfo.speed * 0.66f) );
 	}
 	else
 	{
-		delta.scale( MIN(1.4f,m_pullInfo.speed  * 0.66f) );// the faster I go, the harder I slam!
+		delta.scale( std::min(1.4f,m_pullInfo.speed  * 0.66f) );// the faster I go, the harder I slam!
 
 		//Absolute death to be hit by a train, no survival
 		if ( m_pullInfo.speed >= modData->m_killSpeedMin ) // they can grab on safely
@@ -385,7 +385,7 @@ void RailroadBehavior::onCollide( Object *other, const Coord3D *loc, const Coord
 	}
 
 	Coord3D heft = *theirLoc;
-	heft.z = MAX(heft.z, TheTerrainLogic->getGroundHeight(heft.x, heft.y) + 2); // lift them off the ground
+	heft.z = std::max(heft.z, TheTerrainLogic->getGroundHeight(heft.x, heft.y) + 2); // lift them off the ground
 	other->setPosition(&heft);
 
 	delta.z = GameLogicRandomValueReal(0.05f, m_pullInfo.speed/10);	// for some fake heft
@@ -475,8 +475,8 @@ void RailroadBehavior::playImpactSound(Object *victim, const Coord3D *impactPosi
 		impact.setPosition(victim->getPosition());
 	}
 
-	vel = MIN(NORMAL_VEL_Z, MAX(0, vel));
-	mass = MIN(NORMAL_MASS, MAX(0, mass));
+	vel = std::min(NORMAL_VEL_Z, std::max(0, vel));
+	mass = std::min(NORMAL_MASS, std::max(0, mass));
 
 	Real volAdjust = NormalizeToRange(MuLaw(vel, NORMAL_VEL_Z, 500), -1, 1, 0.25, 1.0);
 	volAdjust *= NormalizeToRange(MuLaw(mass, NORMAL_MASS, 500), -1, 1, 0.25, 1.0);
@@ -1404,7 +1404,7 @@ void RailroadBehavior::FindPosByPathDistance( Coord3D *pos, const Real dist, con
 			m_endOfLine = TRUE;
 		}
 
-		actualDistance = MAX(MIN(length,dist),0); // CLAMP TO NORMALIZE
+		actualDistance = std::max(std::min(length,dist),0); // CLAMP TO NORMALIZE
 	}
 
 	pos->set( 0.0f, 0.0f, 0.0f );

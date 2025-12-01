@@ -463,8 +463,8 @@ void DoCompressTest( void )
 			CompData d = cd->second;
 
 			Real ratio = d.compressedSize[i]/(Real)d.origSize;
-			maxCompression = min(maxCompression, ratio);
-			minCompression = max(minCompression, ratio);
+			maxCompression = std::min(maxCompression, ratio);
+			minCompression = std::max(minCompression, ratio);
 
 			totalUncompressedBytes += d.origSize;
 			totalCompressedBytes += d.compressedSize[i];

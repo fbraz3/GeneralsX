@@ -1104,7 +1104,7 @@ Bool SpecialAbilityUpdate::continuePreparation()
 				{
 					Bool lastPhase = ( ((Int)m_captureFlashPhase) & 1 );// were we in a flashy phase last frame?
 
-					Real denominator = MAX(1, data->m_preparationFrames);
+					Real denominator = std::max(1, data->m_preparationFrames);
 					Real increment = 1.0f - ((Real)m_prepFrames / denominator );
 					m_captureFlashPhase += increment / 3.0f;
 
@@ -1347,7 +1347,7 @@ void SpecialAbilityUpdate::triggerAbilityEffect()
 				UnsignedInt desiredAmount = data->m_effectValue;
 #endif
 				//Check to see if they have the cash, otherwise, take the remainder!
-				cash = min( desiredAmount, cash );
+				cash = std::min( desiredAmount, cash );
 				if( cash > 0 )
 				{
 					//Steal the cash

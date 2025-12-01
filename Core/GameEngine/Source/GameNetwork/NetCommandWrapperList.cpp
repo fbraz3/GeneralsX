@@ -72,7 +72,7 @@ Int NetCommandWrapperListNode::getPercentComplete(void) {
 	if (isComplete())
 		return 100;
 	else
-		return min(99, REAL_TO_INT( ((Real)m_numChunksPresent)/((Real)m_numChunks)*100.0f ));
+		return std::min(99, REAL_TO_INT( ((Real)m_numChunksPresent)/((Real)m_numChunks)*100.0f ));
 }
 
 UnsignedShort NetCommandWrapperListNode::getCommandID() {

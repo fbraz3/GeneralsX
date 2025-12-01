@@ -303,7 +303,7 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     vec4 texColor = texture(texSampler, fragTexCoord);
-    float diffuse = max(dot(normalize(fragNormal), normalize(pc.lightDir)), 0.0);
+    float diffuse = std::max(dot(normalize(fragNormal), normalize(pc.lightDir)), 0.0);
     float lighting = pc.ambient + (1.0 - pc.ambient) * diffuse;
     outColor = vec4(texColor.rgb * lighting, texColor.a);
 }

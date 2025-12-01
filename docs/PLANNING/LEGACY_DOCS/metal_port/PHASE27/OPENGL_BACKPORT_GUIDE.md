@@ -1572,7 +1572,7 @@ void main()
         vec3 worldNormal = normalize(normalMatrix * aNormal);
         
         // Simple directional lighting
-        float diffuse = max(dot(worldNormal, -uLightDirection), 0.0);
+        float diffuse = std::max(dot(worldNormal, -uLightDirection), 0.0);
         vLighting = uAmbientColor + (uLightColor * diffuse);
     } else {
         vLighting = vec3(1.0, 1.0, 1.0);

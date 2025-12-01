@@ -151,7 +151,7 @@ void W3DProjectileStreamDraw::doDrawModule(const Matrix3D* )
 		// If I have a drawing cap, I need to increase the start point in the array.  The furthest (oldest)
 		// point from the tank is in spot zero.
 		currentMasterPoint = pointsUsed - data->m_maxSegments;
-		currentMasterPoint = max( 0, currentMasterPoint ); // (but if they say to draw more than exists, draw all)
+		currentMasterPoint = std::max( 0, currentMasterPoint ); // (but if they say to draw more than exists, draw all)
 	}
 
 	// Okay.  I have an array of ordered points that may have blanks in it.  I need to copy to the staging area

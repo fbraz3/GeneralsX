@@ -236,7 +236,7 @@ Int GlobalLanguage::adjustFontSize(Int theFontSize)
 		// dimension so they scale independent of aspect ratio.
 		const Real wScale = TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH;
 		const Real hScale = TheDisplay->getHeight() / (Real)DEFAULT_DISPLAY_HEIGHT;
-		adjustFactor = min(wScale, hScale);
+		adjustFactor = std::min(wScale, hScale);
 		adjustFactor = 1.0f + (adjustFactor - 1.0f) * getResolutionFontSizeAdjustment();
 		break;
 	}

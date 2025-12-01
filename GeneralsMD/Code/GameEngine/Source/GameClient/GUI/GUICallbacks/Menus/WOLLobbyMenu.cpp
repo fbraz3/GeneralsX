@@ -475,7 +475,7 @@ static Int insertPlayerInListbox(const PlayerInfo& info, Color color)
 	const Image *preorderImg = TheMappedImageCollection->findImageByName("OfficersClubsmall");
 	Int w = (preorderImg)?preorderImg->getImageWidth():10;
 	//Int h = (preorderImg)?preorderImg->getImageHeight():10;
-	w = min(GadgetListBoxGetColumnWidth(listboxLobbyPlayers, 0), w);
+	w = std::min(GadgetListBoxGetColumnWidth(listboxLobbyPlayers, 0), w);
 	Int h = w;
 	if (!isPreorder)
 		preorderImg = NULL;

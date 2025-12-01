@@ -534,7 +534,7 @@ static void Get_W3D_Name(const char* filename, char* w3d_name, size_t w3d_name_s
 	// into the w3d_name buffer. Then capitalize the string.
 	size_t num_chars = end - start;
 	WWASSERT(num_chars < w3d_name_size);
-	strlcpy(w3d_name, start, min(w3d_name_size, num_chars));
+	strlcpy(w3d_name, start, std::min(w3d_name_size, num_chars));
 	strupr(w3d_name);
 }
 

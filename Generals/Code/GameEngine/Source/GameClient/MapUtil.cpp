@@ -307,7 +307,7 @@ void WaypointMap::update( void )
 		}
 	}
 
-	m_numStartSpots = max(1, m_numStartSpots);
+	m_numStartSpots = std::max(1, m_numStartSpots);
 }
 
 const char *const MapCache::m_mapCacheName = "MapCache.ini";
@@ -929,7 +929,7 @@ Int populateMapListboxNoReset( GameWindow *listbox, Bool useSystemMaps, Bool isM
 		lbData.battleHonors = new SkirmishBattleHonors;
 
 		lbData.w = lbData.brutalImage ? lbData.brutalImage->getImageWidth() : 10;
-		lbData.w = min(GadgetListBoxGetColumnWidth(listbox, 0), lbData.w);
+		lbData.w = std::min(GadgetListBoxGetColumnWidth(listbox, 0), lbData.w);
 		lbData.h = lbData.w;
 	}
 
@@ -975,7 +975,7 @@ Int populateMapListboxNoReset( GameWindow *listbox, Bool useSystemMaps, Bool isM
 
 		if (lbData.selectionIndex >= bottomIndex)
 		{
-			Int newTop = max( 0, lbData.selectionIndex - max( 1, rowsOnScreen / 2 ) );
+			Int newTop = std::max( 0, lbData.selectionIndex - std::max( 1, rowsOnScreen / 2 ) );
 			//The trouble is that rowsOnScreen/2 can be zero if bottom is 1 and top is zero
 			GadgetListBoxSetTopVisibleEntry( listbox, newTop );
 		}

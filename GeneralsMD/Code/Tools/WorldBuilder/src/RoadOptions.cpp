@@ -475,28 +475,28 @@ void RoadOptions::SelectConnected(void)
 				Real dy1 = oLoc->y - pLoc->y;
 				dx1 = abs(dx1);
 				dy1 = abs(dy1);
-				Real qd1 = max(dx1, dy1);
+				Real qd1 = std::max(dx1, dy1);
 				//Real dist1 = sqrt(dx1*dx1+dy1*dy1);
 
 				Real dx2 = oLoc->x - pnLoc->x;
 				Real dy2 = oLoc->y - pnLoc->y;
 				dx2 = abs(dx2);
 				dy2 = abs(dy2);
-				Real qd2 = max(dx2, dy2);
+				Real qd2 = std::max(dx2, dy2);
 				//Real dist2 = sqrt(dx2*dx2+dy2*dy2);
 
 				Real dx3 = onLoc->x - pLoc->x;
 				Real dy3 = onLoc->y - pLoc->y;
 				dx3 = abs(dx3);
 				dy3 = abs(dy3);
-				Real qd3 = max(dx3, dy3);
+				Real qd3 = std::max(dx3, dy3);
 				//Real dist3 = sqrt(dx3*dx3+dy3*dy3);
 
 				Real dx4 = onLoc->x - pnLoc->x;
 				Real dy4 = onLoc->y - pnLoc->y;
 				dx4 = abs(dx4);
 				dy4 = abs(dy4);
-				Real qd4 = max(dx4, dy4);
+				Real qd4 = std::max(dx4, dy4);
 				//Real dist4 = sqrt(dx4*dx4+dy4*dy4);
 
 				if (qd1 < MAP_XY_FACTOR/100 || qd2 < MAP_XY_FACTOR/100 || qd3 < MAP_XY_FACTOR/100 || qd4 < MAP_XY_FACTOR/100) {

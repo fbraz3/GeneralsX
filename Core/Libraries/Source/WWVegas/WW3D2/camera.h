@@ -65,9 +65,9 @@ class RenderInfoClass;
 class ViewportClass
 {
 public:
-	ViewportClass(void) : Min(0,0), Max(1,1)													{ }
-	ViewportClass(const Vector2 & min,const Vector2 & max) : Min(min), Max(max)	{ }
-	ViewportClass(const ViewportClass & vp) : Min(vp.Min), Max(vp.Max)				{ }
+	ViewportClass(void) : std::min(0,0), std::max(1,1)													{ }
+	ViewportClass(const Vector2 & min,const Vector2 & max) : std::min(min), std::max(max)	{ }
+	ViewportClass(const ViewportClass & vp) : std::min(vp.Min), std::max(vp.Max)				{ }
 
 	float	Width(void)	const																			{ return Max.X - Min.X; }
 	float Height(void) const																		{ return Max.Y - Min.Y; }

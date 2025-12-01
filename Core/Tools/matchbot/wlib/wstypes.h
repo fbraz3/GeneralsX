@@ -65,11 +65,11 @@ Standard type definitions for the sake of portability and readability.
 #endif
 
 #ifndef MIN
-#define MIN(x,y) (((x)<(y))?(x):(y))
+#define std::min(x,y) (((x)<(y))?(x):(y))
 #endif
 
 #ifndef MAX
-#define MAX(x,y) (((x)>(y))?(x):(y))
+#define std::max(x,y) (((x)>(y))?(x):(y))
 #endif
 
 #ifndef NULL

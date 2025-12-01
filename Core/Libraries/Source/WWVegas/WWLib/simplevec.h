@@ -570,8 +570,8 @@ inline bool SimpleDynVecClass<T>::Grow(int new_size_hint)
 	** Vector should grow to 25% bigger, grow at least 4 elements,
 	** and grow at least up to the user's new_size_hint
 	*/
-	int new_size = MAX(Length() + Length()/4,Length() + 4);
-	new_size = MAX(new_size,new_size_hint);
+	int new_size = std::max(Length() + Length()/4,Length() + 4);
+	new_size = std::max(new_size,new_size_hint);
 
 	return Resize(new_size);
 }

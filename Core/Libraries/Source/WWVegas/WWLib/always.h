@@ -203,11 +203,11 @@ public:
 #define NOMINMAX
 
 #ifndef MAX
-#define MAX(a,b)            (((a) > (b)) ? (a) : (b))
+#define std::max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
 
 #ifndef MIN
-#define MIN(a,b)            (((a) < (b)) ? (a) : (b))
+#define std::min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
 #ifdef min
@@ -218,7 +218,7 @@ public:
 #undef max
 #endif
 
-template <class T> T min(T a,T b)
+template <class T> T std::min(T a,T b)
 {
 	if (a<b) {
 		return a;
@@ -227,7 +227,7 @@ template <class T> T min(T a,T b)
 	}
 }
 
-template <class T> T max(T a,T b)
+template <class T> T std::max(T a,T b)
 {
 	if (a>b) {
 		return a;

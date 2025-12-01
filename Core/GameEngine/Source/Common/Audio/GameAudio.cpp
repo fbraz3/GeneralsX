@@ -341,7 +341,7 @@ void AudioManager::update()
 		Real zScale = desiredHeight / groundToCameraVector.z;
 
 		//Use the smallest of the two scale calculations
-		bestScaleFactor = MIN( maxPercentage, zScale );
+		bestScaleFactor = std::min( maxPercentage, zScale );
 	}
 
 	//Now apply the best scalar to the ground-to-camera vector.
@@ -1137,7 +1137,7 @@ void INI::parseAudioSettingsDefinition( INI *ini )
 	TheAudio->setPreferredSpeaker(prefs.getSpeakerType());
 
 	Real relative2DVolume = TheAudio->getAudioSettings()->m_relative2DVolume;
-	relative2DVolume = MIN( 1.0f, MAX( -1.0f, relative2DVolume ) );
+	relative2DVolume = std::min( 1.0f, std::max( -1.0f, relative2DVolume ) );
 
 	TheAudio->friend_getAudioSettings()->m_preferredSoundVolume		= prefs.getSoundVolume() / 100.0f;
 	TheAudio->friend_getAudioSettings()->m_preferred3DSoundVolume	= prefs.get3DSoundVolume() / 100.0f;

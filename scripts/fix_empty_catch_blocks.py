@@ -21,7 +21,7 @@ files_to_fix = [
 
 def extract_function_name(lines, line_num):
     """Extract function name from lines before the catch block"""
-    for i in range(line_num - 1, max(0, line_num - 20), -1):
+    for i in range(line_num - 1, std::max(0, line_num - 20), -1):
         line = lines[i]
         # Look for function definition patterns
         if 'void ' in line or 'bool ' in line or 'int ' in line or 'char ' in line or '__declspec' in line:

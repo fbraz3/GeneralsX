@@ -1255,15 +1255,15 @@ static void updateSkirmishBattleHonors(SkirmishBattleHonors& stats)
 		Int oldBrutal = stats.getEnduranceMedal(TheGameInfo->getMap(), SLOT_BRUTAL_AI);
 		if (numEasy)
 		{
-			stats.setEnduranceMedal(TheGameInfo->getMap(), SLOT_EASY_AI, max(oldEasy, numEasy + numMedium + numBrutal));
+			stats.setEnduranceMedal(TheGameInfo->getMap(), SLOT_EASY_AI, std::max(oldEasy, numEasy + numMedium + numBrutal));
 		}
 		if (numMedium)
 		{
-			stats.setEnduranceMedal(TheGameInfo->getMap(), SLOT_MED_AI, max(oldMedium, numMedium + numBrutal));
+			stats.setEnduranceMedal(TheGameInfo->getMap(), SLOT_MED_AI, std::max(oldMedium, numMedium + numBrutal));
 		}
 		if (numBrutal)
 		{
-			stats.setEnduranceMedal(TheGameInfo->getMap(), SLOT_BRUTAL_AI, max(oldBrutal, numBrutal));
+			stats.setEnduranceMedal(TheGameInfo->getMap(), SLOT_BRUTAL_AI, std::max(oldBrutal, numBrutal));
 		}
 	}
 }
@@ -1615,7 +1615,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 		{
 			stats.setWins(stats.getWins()+1);
 			stats.setWinStreak(stats.getWinStreak()+1);
-			stats.setBestWinStreak(max(stats.getBestWinStreak(), stats.getWinStreak()));
+			stats.setBestWinStreak(std::max(stats.getBestWinStreak(), stats.getWinStreak()));
 			updateSkirmishBattleHonors(stats);
 			Int challengeMedals = stats.getChallengeMedals();
 			updateChallengeMedals(challengeMedals);
@@ -1685,13 +1685,13 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						}
 						if (slot->isOccupied())
 						{
-							lastFrameOfGame = max(lastFrameOfGame, slot->lastFrameInGame());
+							lastFrameOfGame = std::max(lastFrameOfGame, slot->lastFrameInGame());
 						}
 						if (slot->isHuman())
 						{
 							if (i != localSlotNum)
 							{
-								latestHumanInGame = max(latestHumanInGame, slot->lastFrameInGame());
+								latestHumanInGame = std::max(latestHumanInGame, slot->lastFrameInGame());
 							}
 						}
 					}
@@ -1726,7 +1726,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						{
 							// we pinged on the last frame someone was there - i.e. game ended in a disconnect.
 							// check if we were to blame.
-							if (TheNetwork->getPingsRecieved() < max(1, TheNetwork->getPingsSent()/2)) /// @todo: what's a good percent of pings to have gotten?
+							if (TheNetwork->getPingsRecieved() < std::max(1, TheNetwork->getPingsSent()/2)) /// @todo: what's a good percent of pings to have gotten?
 							{
 								DEBUG_LOG(("We were to blame.  Leaving gameEndedInDisconnect = true"));
 							}
@@ -1888,7 +1888,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						stats.desyncsInARow++;
 						stats.disconsInARow = 0;
 						stats.winsInARow = 0;
-						stats.maxDesyncsInARow = max(stats.desyncsInARow, stats.maxDesyncsInARow);
+						stats.maxDesyncsInARow = std::max(stats.desyncsInARow, stats.maxDesyncsInARow);
 					}
 					else if (gameEndedInDisconnect)
 					{
@@ -1896,7 +1896,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						stats.desyncsInARow = 0;
 						stats.disconsInARow++;
 						stats.winsInARow = 0;
-						stats.maxDisconsInARow = max(stats.disconsInARow, stats.maxDisconsInARow);
+						stats.maxDisconsInARow = std::max(stats.disconsInARow, stats.maxDisconsInARow);
 					}
 					else if (TheVictoryConditions->isLocalAlliedVictory())
 					{
@@ -1904,7 +1904,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						stats.desyncsInARow = 0;
 						stats.disconsInARow = 0;
 						stats.winsInARow++;
-						stats.maxWinsInARow = max(stats.winsInARow, stats.maxWinsInARow);
+						stats.maxWinsInARow = std::max(stats.winsInARow, stats.maxWinsInARow);
 					}
 					else
 					{
@@ -1912,7 +1912,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						stats.desyncsInARow = 0;
 						stats.disconsInARow = 0;
 						stats.winsInARow = 0;
-						stats.maxLossesInARow = max(stats.lossesInARow, stats.maxLossesInARow);
+						stats.maxLossesInARow = std::max(stats.lossesInARow, stats.maxLossesInARow);
 					}
 
 					stats.earnings[ptIdx] += s->getTotalMoneyEarned();

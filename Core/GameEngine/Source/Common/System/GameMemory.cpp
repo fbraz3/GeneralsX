@@ -783,7 +783,7 @@ Bool BlockCheckpointInfo::shouldBeInReport(Int flags, Int startCheckpoint, Int e
 	#ifdef MEMORYPOOL_STACKTRACE
 			if (flags & REPORT_CP_STACKTRACE)
 			{
-				::doStackDump(bi->m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth ));
+				::doStackDump(bi->m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth ));
 			}
 	#endif
 		}
@@ -875,7 +875,7 @@ void MemoryPoolSingleBlock::initBlock(Int logicalSize, MemoryPoolBlob *owningBlo
 	if (theStackTraceDepth > 0 && (!TheGlobalData || TheGlobalData->m_checkForLeaks))
 	{
 		memset(m_stacktrace, 0, MEMORYPOOL_STACKTRACE_SIZE_BYTES);
-		::FillStackAddresses(m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
+		::FillStackAddresses(m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
 	}
 	else
 	{
@@ -1025,7 +1025,7 @@ Int MemoryPoolSingleBlock::debugSingleBlockReportLeak(const char* owner)
 
 	#ifdef MEMORYPOOL_SINGLEBLOCK_GETS_STACKTRACE
 	if (!TheGlobalData || TheGlobalData->m_checkForLeaks)
-		::doStackDump(m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth));
+		::doStackDump(m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth));
 	#endif
 
 	return 1;
@@ -1443,7 +1443,7 @@ BlockCheckpointInfo *Checkpointable::debugAddCheckpointInfo(
 		if (theStackTraceDepth > 0 && !TheGlobalData || TheGlobalData->m_checkForLeaks)
 		{
 			memset(stacktrace, 0, MEMORYPOOL_STACKTRACE_SIZE_BYTES);
-			::FillStackAddresses(stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
+			::FillStackAddresses(stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
 		}
 		else
 		{

@@ -85,7 +85,7 @@ static Bool doFileTransfer( AsciiString filename, MapTransferLoadScreen *ls, Int
 				if (TheGameInfo->getConstSlot(i)->isHuman() && !TheGameInfo->getConstSlot(i)->hasMap())
 				{
 					Int slotTransferPercent = TheNetwork->getFileTransferProgress(i, filename);
-					fileTransferPercent = min(fileTransferPercent, slotTransferPercent);
+					fileTransferPercent = std::min(fileTransferPercent, slotTransferPercent);
 
 					if (slotTransferPercent == 0)
 						ls->processProgress(i, slotTransferPercent, "MapTransfer:Preparing");

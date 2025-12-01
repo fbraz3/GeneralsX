@@ -263,7 +263,7 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 		{
 			FastCriticalSectionClass::LockClass lock(m_fileExistMutex);
 			FileExistMap::mapped_type& value = m_fileExist[filename];
-			value.instanceExists = max(value.instanceExists, instance);
+			value.instanceExists = std::max(value.instanceExists, instance);
 		}
 #endif
 		return TRUE;
@@ -273,7 +273,7 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 	{
 		FastCriticalSectionClass::LockClass lock(m_fileExistMutex);
 		FileExistMap::mapped_type& value = m_fileExist[filename];
-		value.instanceDoesNotExist = min(value.instanceDoesNotExist, instance);
+		value.instanceDoesNotExist = std::min(value.instanceDoesNotExist, instance);
 	}
 #endif
 	return FALSE;

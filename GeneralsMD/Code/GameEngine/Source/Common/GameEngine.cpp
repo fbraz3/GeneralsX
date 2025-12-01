@@ -980,7 +980,7 @@ Bool GameEngine::canUpdateRegularGameLogic()
 		// TheSuperHackers @tweak xezon 06/08/2025
 		// The logic time step is now decoupled from the render update.
 		const Real targetFrameTime = 1.0f / logicTimeScaleFps;
-		m_logicTimeAccumulator += min(TheFramePacer->getUpdateTime(), targetFrameTime);
+		m_logicTimeAccumulator += std::min(TheFramePacer->getUpdateTime(), targetFrameTime);
 
 		if (m_logicTimeAccumulator >= targetFrameTime)
 		{

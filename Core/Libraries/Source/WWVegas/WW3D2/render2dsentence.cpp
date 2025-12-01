@@ -1050,7 +1050,7 @@ Vector2	Render2DSentenceClass::Build_Sentence_Not_Centered (const WCHAR *text, i
 			//	Adjust the positions
 			//
 			Cursor.X			+= (TextureOffset.I - TextureStartX);
-			maxX = max(maxX, Cursor.X);
+			maxX = std::max(maxX, Cursor.X);
 			TextureStartX	= TextureOffset.I;
 
 			//
@@ -1058,7 +1058,7 @@ Vector2	Render2DSentenceClass::Build_Sentence_Not_Centered (const WCHAR *text, i
 			//
 			if (ch == L' ') {
 				//Cursor.X += char_spacing;
-				//maxX = max(maxX, Cursor.X);
+				//maxX = std::max(maxX, Cursor.X);
 
 				//
 				// Check to see if we need to wrap on this word-break
@@ -1720,8 +1720,8 @@ FontCharsClass::Grow_Unicode_Array (WCHAR ch)
 		return ;
 	}
 
-	uint16 first_index	= min( FirstUnicodeChar, static_cast<uint16>(ch) );
-	uint16 last_index		= max( LastUnicodeChar, static_cast<uint16>(ch) );
+	uint16 first_index	= std::min( FirstUnicodeChar, static_cast<uint16>(ch) );
+	uint16 last_index		= std::max( LastUnicodeChar, static_cast<uint16>(ch) );
 	uint16 count			= (last_index - first_index) + 1;
 
 	//
