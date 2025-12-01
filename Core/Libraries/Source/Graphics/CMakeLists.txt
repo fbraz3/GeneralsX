@@ -90,7 +90,7 @@ target_compile_definitions(graphics_drivers PUBLIC GRAPHICS_BACKEND_OPENGL)
 if(MSVC)
     target_compile_options(graphics_drivers PRIVATE /W4)
 else()
-    target_compile_options(graphics_drivers PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(graphics_drivers PRIVATE -Wall -Wextra -Wpedantic -fPIC)
 endif()
 
 # C++ standard

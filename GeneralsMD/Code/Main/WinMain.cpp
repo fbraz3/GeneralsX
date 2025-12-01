@@ -113,8 +113,17 @@ HWND ApplicationHWnd = NULL;  ///< our application window handle
 Win32Mouse* TheWin32Mouse = NULL;  ///< for the WndProc() only
 DWORD TheMessageTime = 0;	///< For getting the time that a message was posted from Windows.
 #else
+HINSTANCE ApplicationHInstance = NULL;  ///< our application instance (stub for Linux/macOS)
 void* ApplicationHWnd = NULL;  ///< SDL2 window handle (cast from SDL_Window*)
 #endif
+
+// ATL Module stub for cross-platform compatibility
+class CComModuleStub {
+public:
+	void Init(void* pServiceProvider, HINSTANCE hInstance, void* pLibID) {}
+	void Term() {}
+};
+CComModule _Module;
 
 const Char* g_strFile = "data\\Generals.str";
 const Char* g_csfFile = "data\\%s\\Generals.csf";

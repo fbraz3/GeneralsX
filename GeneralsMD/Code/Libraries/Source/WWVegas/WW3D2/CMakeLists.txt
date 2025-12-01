@@ -275,6 +275,8 @@ target_compile_definitions(z_ww3d2 PRIVATE
     $<$<BOOL:${IS_VS6_BUILD}>:WINVER=0x0500>
 )
 
+target_compile_options(z_ww3d2 PRIVATE -fPIC)
+
 set(WW3D2_PCH
 #    dx8wrapper.h
     [["always.h"]]
@@ -289,4 +291,5 @@ target_precompile_headers(z_ww3d2 PRIVATE ${WW3D2_PCH})
 target_link_libraries(z_ww3d2 PRIVATE
     corei_ww3d2
     z_wwcommon
+    graphics_drivers
 )

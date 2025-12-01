@@ -203,11 +203,11 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile* archiveFile, Bool ove
 			{
 				DEBUG_LOG(("ArchiveFileSystem::loadIntoDirectoryTree - adding file %s, archived in %s", it->str(), archiveFile->getName().str()));
 			}
-	}
+		}
 #endif
 
 		it++;
-}
+	}
 }
 
 void ArchiveFileSystem::loadMods()

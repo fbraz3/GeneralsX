@@ -202,6 +202,28 @@
             }
         },
         {
+            "name": "linux-debug",
+            "displayName": "Linux (x86_64 Debug - No Optimizations)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS_DEBUG": "-g -O0 -DDEBUG",
+                "CMAKE_C_FLAGS_DEBUG": "-g -O0 -DDEBUG",
+                "USE_VULKAN": "ON",
+                "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+                "USE_CCACHE": "ON",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+            ,
+            "environment": {
+                "USE_VULKAN": "1",
+                "USE_METAL": "0",
+                "USE_OPENGL": "0"
+            }
+        },
+        {
             "name": "windows",
             "displayName": "Windows (x86_64 Vulkan - Future)",
             "generator": "Ninja",
@@ -312,6 +334,13 @@
             "displayName": "Build Linux x86_64",
             "description": "Build Linux x86_64 Vulkan Release",
             "configuration": "Release"
+        },
+        {
+            "name": "linux-debug",
+            "configurePreset": "linux-debug",
+            "displayName": "Build Linux x86_64 Debug",
+            "description": "Build Linux x86_64 Debug (No Optimizations)",
+            "configuration": "Debug"
         },
         {
             "name": "windows",
