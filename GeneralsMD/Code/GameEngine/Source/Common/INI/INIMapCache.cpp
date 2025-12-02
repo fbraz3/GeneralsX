@@ -150,7 +150,7 @@ void INI::parseMapCacheDefinition(INI* ini)
 	{
 		// maps without localized name tags
 		AsciiString tempdisplayname;
-		tempdisplayname = name.reverseFindPathSeparator() + 1;
+		tempdisplayname = name.reverseFindPathSeparator(true) + 1;
 		md.m_displayName.translate(tempdisplayname);
 		if (md.m_numPlayers >= 2)
 		{

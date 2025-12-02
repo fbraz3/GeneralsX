@@ -1071,7 +1071,7 @@ void WOLLobbyMenuUpdate(WindowLayout* layout, void* userData)
 				{
 					// Woohoo!  On to our next screen!
 					buttonPushed = true;
-					nextScreen = "Menus/GameSpyGameOptionsMenu.wnd";
+					nextScreen = "Menus\\GameSpyGameOptionsMenu.wnd";
 					TheShell->pop();
 					TheGameSpyInfo->markAsStagingRoomHost();
 					TheGameSpyInfo->setGameOptions();
@@ -1110,7 +1110,7 @@ void WOLLobbyMenuUpdate(WindowLayout* layout, void* userData)
 				{
 					// Woohoo!  On to our next screen!
 					buttonPushed = true;
-					nextScreen = "Menus/GameSpyGameOptionsMenu.wnd";
+					nextScreen = "Menus\\GameSpyGameOptionsMenu.wnd";
 					TheShell->pop();
 				}
 				else
@@ -1545,7 +1545,7 @@ WindowMsgHandledType WOLLobbyMenuSystem(GameWindow* window, UnsignedInt msg,
 
 			SetLobbyAttemptHostJoin(TRUE); // pretend, since we don't want to queue up another action
 			buttonPushed = true;
-			nextScreen = "Menus/WOLWelcomeMenu.wnd";
+			nextScreen = "Menus\\WOLWelcomeMenu.wnd";
 			TheShell->pop();
 
 		}
@@ -1760,20 +1760,20 @@ WindowMsgHandledType WOLLobbyMenuSystem(GameWindow* window, UnsignedInt msg,
 
 			Bool isBuddy = FALSE;
 			if (profileID <= 0)
-				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCNoProfileMenu.wnd"));
+				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCNoProfileMenu.wnd"));
 			else
 			{
 				if (profileID == TheGameSpyInfo->getLocalProfileID())
 				{
-					rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCLocalPlayerMenu.wnd"));
+					rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCLocalPlayerMenu.wnd"));
 				}
 				else if (TheGameSpyInfo->isBuddy(profileID))
 				{
-					rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCBuddiesMenu.wnd"));
+					rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCBuddiesMenu.wnd"));
 					isBuddy = TRUE;
 				}
 				else
-					rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCNonBuddiesMenu.wnd"));
+					rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCNonBuddiesMenu.wnd"));
 			}
 			if (!rcLayout)
 				break;
@@ -1826,7 +1826,7 @@ WindowMsgHandledType WOLLobbyMenuSystem(GameWindow* window, UnsignedInt msg,
 					const LadderInfo* linfo = TheLadderList->findLadder(theRoom->getLadderIP(), theRoom->getLadderPort());
 					if (linfo)
 					{
-						rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCGameDetailsMenu.wnd"));
+						rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCGameDetailsMenu.wnd"));
 						if (!rcLayout)
 							break;
 

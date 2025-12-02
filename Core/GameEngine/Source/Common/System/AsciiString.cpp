@@ -524,15 +524,22 @@ void AsciiString::normalizePath()
 }
 
 //-----------------------------------------------------------------------------
-const char* AsciiString::findPathSeparator() const
+const char* AsciiString::findPathSeparator(bool bigFile) const
 {
+	char seperator;
+	if (bigFile) {
+		seperator = GET_BIG_FILE_SEPARATOR()[0];
+	}
+	else {
+		seperator = GET_PATH_SEPARATOR()[0];
+	}
 	validate();
 	if (!m_data)
 		return NULL;
 	const char* p = peek();
 	while (*p)
 	{
-		if (*p == GET_PATH_SEPARATOR()[0])
+		if (*p == seperator)
 			return p;
 		++p;
 	}
@@ -540,8 +547,15 @@ const char* AsciiString::findPathSeparator() const
 }
 
 //-----------------------------------------------------------------------------
-const char* AsciiString::reverseFindPathSeparator() const
+const char* AsciiString::reverseFindPathSeparator(bool bigFile) const
 {
+	char seperator;
+	if (bigFile) {
+		seperator = GET_BIG_FILE_SEPARATOR()[0];
+	}
+	else {
+		seperator = GET_PATH_SEPARATOR()[0];
+	}
 	validate();
 	if (!m_data)
 		return NULL;
@@ -549,7 +563,7 @@ const char* AsciiString::reverseFindPathSeparator() const
 	const char* last = NULL;
 	while (*p)
 	{
-		if (*p == GET_PATH_SEPARATOR()[0])
+		if (*p == seperator)
 			last = p;
 		++p;
 	}

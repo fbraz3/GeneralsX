@@ -222,11 +222,11 @@ WindowMsgHandledType BuddyControlSystem(GameWindow* window, UnsignedInt msg,
 
 			GadgetListBoxSetSelected(control, rc->pos);
 			if (itemType == ITEM_BUDDY)
-				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCBuddiesMenu.wnd"));
+				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCBuddiesMenu.wnd"));
 			else if (itemType == ITEM_REQUEST)
-				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCBuddyRequestMenu.wnd"));
+				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCBuddyRequestMenu.wnd"));
 			else
-				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCNonBuddiesMenu.wnd"));
+				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCNonBuddiesMenu.wnd"));
 			rcMenu = rcLayout->getFirstWindow();
 			rcMenu->winGetLayout()->runInit();
 			rcMenu->winBringToTop();
@@ -647,7 +647,7 @@ void showNotificationBox(AsciiString nick, UnicodeString message)
 	//	if(!GameSpyIsOverlayOpen(GSOVERLAY_BUDDY))
 	//		return;
 	if (!noticeLayout)
-		noticeLayout = TheWindowManager->winCreateLayout("Menus/PopupBuddyListNotification.wnd");
+		noticeLayout = TheWindowManager->winCreateLayout("Menus\\PopupBuddyListNotification.wnd");
 	noticeLayout->hide(FALSE);
 	if (buttonNotificationID == NAMEKEY_INVALID)
 	{
@@ -910,11 +910,11 @@ WindowMsgHandledType WOLBuddyOverlaySystem(GameWindow* window, UnsignedInt msg,
 
 			GadgetListBoxSetSelected(control, rc->pos);
 			if (isBuddy)
-				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCBuddiesMenu.wnd"));
+				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCBuddiesMenu.wnd"));
 			else if (isRequest)
-				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCBuddyRequestMenu.wnd"));
+				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCBuddyRequestMenu.wnd"));
 			else
-				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/RCNonBuddiesMenu.wnd"));
+				rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\RCNonBuddiesMenu.wnd"));
 			rcMenu = rcLayout->getFirstWindow();
 			rcMenu->winGetLayout()->runInit();
 			rcMenu->winBringToTop();

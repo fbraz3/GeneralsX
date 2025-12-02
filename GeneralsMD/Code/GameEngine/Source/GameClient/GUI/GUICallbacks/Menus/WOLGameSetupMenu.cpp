@@ -265,7 +265,7 @@ void PopBackToLobby(void)
 	DEBUG_LOG(("PopBackToLobby() - parentWOLGameSetup is %X", parentWOLGameSetup));
 	if (parentWOLGameSetup)
 	{
-		nextScreen = "Menus/WOLCustomLobby.wnd";
+		nextScreen = "Menus\\WOLCustomLobby.wnd";
 		TheShell->pop();
 	}
 }
@@ -1362,7 +1362,7 @@ void WOLGameSetupMenuInit(WindowLayout* layout, void* userData)
 		if (TheGameSpyPeerMessageQueue && TheGameSpyPeerMessageQueue->isConnected())
 		{
 			DEBUG_LOG(("We're still connected, so pushing back on the lobby"));
-			TheShell->push("Menus/WOLCustomLobby.wnd", TRUE);
+			TheShell->push("Menus\\WOLCustomLobby.wnd", TRUE);
 		}
 		return;
 	}
@@ -1682,7 +1682,7 @@ void WOLGameSetupMenuUpdate(WindowLayout* layout, void* userData)
 				TheGameSpyInfo->leaveStagingRoom();
 				//TheGameSpyInfo->joinBestGroupRoom();
 				GSMessageBoxOk(TheGameText->fetch("GUI:HostLeftTitle"), TheGameText->fetch("GUI:HostLeft"));
-				nextScreen = "Menus/WOLCustomLobby.wnd";
+				nextScreen = "Menus\\WOLCustomLobby.wnd";
 				TheShell->pop();
 			}
 			return;
@@ -1712,7 +1712,7 @@ void WOLGameSetupMenuUpdate(WindowLayout* layout, void* userData)
 				TheGameSpyInfo->leaveStagingRoom();
 				//TheGameSpyInfo->joinBestGroupRoom();
 				GSMessageBoxOk(TheGameText->fetch("GUI:Error"), TheGameText->fetch("GUI:NATNegotiationFailed"));
-				nextScreen = "Menus/WOLCustomLobby.wnd";
+				nextScreen = "Menus\\WOLCustomLobby.wnd";
 				TheShell->pop();
 				return;
 			}
@@ -1932,7 +1932,7 @@ void WOLGameSetupMenuUpdate(WindowLayout* layout, void* userData)
 							TheGameSpyInfo->leaveStagingRoom();
 							//TheGameSpyInfo->joinBestGroupRoom();
 							GSMessageBoxOk(TheGameText->fetch("GUI:HostLeftTitle"), TheGameText->fetch("GUI:HostLeft"));
-							nextScreen = "Menus/WOLCustomLobby.wnd";
+							nextScreen = "Menus\\WOLCustomLobby.wnd";
 							TheShell->pop();
 						}
 					}
@@ -2137,7 +2137,7 @@ void WOLGameSetupMenuUpdate(WindowLayout* layout, void* userData)
 								TheGameSpyInfo->leaveStagingRoom();
 								//TheGameSpyInfo->joinBestGroupRoom();
 								GSMessageBoxOk(TheGameText->fetch("GUI:GSErrorTitle"), TheGameText->fetch("GUI:GSKicked"));
-								nextScreen = "Menus/WOLCustomLobby.wnd";
+								nextScreen = "Menus\\WOLCustomLobby.wnd";
 								TheShell->pop();
 							}
 						}
@@ -2229,7 +2229,7 @@ void WOLGameSetupMenuUpdate(WindowLayout* layout, void* userData)
 								message = TheGameText->fetch("GUI:GSKickedGameFull");
 							}
 							GSMessageBoxOk(TheGameText->fetch("GUI:GSErrorTitle"), message);
-							nextScreen = "Menus/WOLCustomLobby.wnd";
+							nextScreen = "Menus\\WOLCustomLobby.wnd";
 							TheShell->pop();
 						}
 					}
@@ -2717,7 +2717,7 @@ WindowMsgHandledType WOLGameSetupMenuSystem(GameWindow* window, UnsignedInt msg,
 			//peerLeaveRoom(TheGameSpyChat->getPeer(), StagingRoom, NULL);
 			TheGameSpyInfo->leaveStagingRoom();
 			buttonPushed = true;
-			nextScreen = "Menus/WOLCustomLobby.wnd";
+			nextScreen = "Menus\\WOLCustomLobby.wnd";
 			TheShell->pop();
 
 		}
@@ -2740,7 +2740,7 @@ WindowMsgHandledType WOLGameSetupMenuSystem(GameWindow* window, UnsignedInt msg,
 		}
 		else if (controlID == buttonSelectMapID)
 		{
-			WOLMapSelectLayout = TheWindowManager->winCreateLayout("Menus/WOLMapSelectMenu.wnd");
+			WOLMapSelectLayout = TheWindowManager->winCreateLayout("Menus\\WOLMapSelectMenu.wnd");
 			WOLMapSelectLayout->runInit();
 			WOLMapSelectLayout->hide(FALSE);
 			WOLMapSelectLayout->bringForward();

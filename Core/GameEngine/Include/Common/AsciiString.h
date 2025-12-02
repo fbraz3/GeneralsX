@@ -378,13 +378,13 @@ public:
 		Find the first path separator (either '/' or '\\') in the string.
 		Cross-platform helper for path manipulation.
 	*/
-	const char* findPathSeparator() const;
+	const char* findPathSeparator(bool bigFile = false) const;
 
 	/**
 		Find the last path separator (either '/' or '\\') in the string.
 		Cross-platform helper for extracting filename from path.
 	*/
-	const char* reverseFindPathSeparator() const;
+	const char* reverseFindPathSeparator(bool bigFile = false) const;
 
 	const char* getPathSeperator() const;
 

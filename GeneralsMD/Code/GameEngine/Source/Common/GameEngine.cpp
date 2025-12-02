@@ -405,10 +405,10 @@ void GameEngine::init()
 		//SKU's shipped with two INIZH.big files. One properly in the Run directory and the other in Run\INI\Data.
 		//We need to toast the latter in order for the game to patch properly.
 		try {
-			std::filesystem::remove(std::filesystem::path("Data/INI/INIZH.big"));
+			std::filesystem::remove(std::filesystem::path("Data\\INI\\INIZH.big"));
 		}
 		catch (const std::filesystem::filesystem_error& e) {
-			DEBUG_LOG(("GameEngine - Failed to delete Data/INI/INIZH.big: %s", e.what()));
+			DEBUG_LOG(("GameEngine - Failed to delete Data\\INI\\INIZH.big: %s", e.what()));
 		}
 
 		// not part of the subsystem list, because it should normally never be reset!
@@ -836,7 +836,7 @@ void GameEngine::init()
 		}
 
 		// load the initial shell screen
-		//TheShell->push( AsciiString("Menus/MainMenu.wnd") );
+		//TheShell->push( AsciiString("Menus\\MainMenu.wnd") );
 
 		// This allows us to run a map from the command line
 		if (TheGlobalData->m_initialFile.isEmpty() == FALSE)
@@ -919,8 +919,8 @@ void GameEngine::init()
 void GameEngine::reset(void)
 {
 
-	WindowLayout* background = TheWindowManager->winCreateLayout("Menus/BlankWindow.wnd");
-	DEBUG_ASSERTCRASH(background, ("We Couldn't Load Menus/BlankWindow.wnd"));
+	WindowLayout* background = TheWindowManager->winCreateLayout("Menus\\BlankWindow.wnd");
+	DEBUG_ASSERTCRASH(background, ("We Couldn't Load Menus\\BlankWindow.wnd"));
 	background->hide(FALSE);
 	background->bringForward();
 	background->getFirstWindow()->winClearStatus(WIN_STATUS_IMAGE);

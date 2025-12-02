@@ -784,7 +784,7 @@ static void checkLogin(void)
 		TheGameSpyInfo->clearGroupRoomList();
 
 		SignalUIInteraction(SHELL_SCRIPT_HOOK_GENERALS_ONLINE_LOGIN);
-		nextScreen = "Menus/WOLWelcomeMenu.wnd";
+		nextScreen = "Menus\\WOLWelcomeMenu.wnd";
 		TheShell->pop();
 
 		// read in some cached data
@@ -1221,16 +1221,16 @@ WindowMsgHandledType WOLLoginMenuSystem(GameWindow* window, UnsignedInt msg,
 		else if (controlID == buttonUseAccountID)
 		{
 			buttonPushed = true;
-			nextScreen = "Menus/GameSpyLoginProfile.wnd";
+			nextScreen = "Menus\\GameSpyLoginProfile.wnd";
 			TheShell->pop();
-			//TheShell->push( "Menus/GameSpyLoginProfile.wnd" );
+			//TheShell->push( "Menus\\GameSpyLoginProfile.wnd" );
 		}
 		else if (controlID == buttonDontUseAccountID)
 		{
 			buttonPushed = true;
-			nextScreen = "Menus/GameSpyLoginQuick.wnd";
+			nextScreen = "Menus\\GameSpyLoginQuick.wnd";
 			TheShell->pop();
-			//TheShell->push( "Menus/GameSpyLoginQuick.wnd" );
+			//TheShell->push( "Menus\\GameSpyLoginQuick.wnd" );
 		}
 #endif // ALLOW_NON_PROFILED_LOGIN
 		else if (controlID == buttonCreateAccountID)
@@ -1317,7 +1317,7 @@ WindowMsgHandledType WOLLoginMenuSystem(GameWindow* window, UnsignedInt msg,
 			{
 				// not the profile screen - switch to it
 				buttonPushed = TRUE;
-				nextScreen = "Menus/GameSpyLoginProfile.wnd";
+				nextScreen = "Menus\\GameSpyLoginProfile.wnd";
 				TheShell->pop();
 			}
 #endif // ALLOW_NON_PROFILED_LOGIN

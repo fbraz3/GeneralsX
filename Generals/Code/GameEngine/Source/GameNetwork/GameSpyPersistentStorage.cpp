@@ -114,9 +114,9 @@ void GameSpyPlayerInfo::threadReadFromServer(void)
 	}
 	else
 	{
-		//TheGameSpyThread->setNextShellScreen("Menus/WOLWelcomeMenu.wnd");
+		//TheGameSpyThread->setNextShellScreen("Menus\\WOLWelcomeMenu.wnd");
 		//TheShell->pop();
-		//TheShell->push("Menus/WOLWelcomeMenu.wnd");
+		//TheShell->push("Menus\\WOLWelcomeMenu.wnd");
 	}
 }
 
@@ -247,9 +247,9 @@ static void getPersistentDataCallback(int localid, int profileid, persisttype_t 
 
 	if (!TheGameSpyPlayerInfo)
 	{
-		//TheGameSpyThread->setNextShellScreen("Menus/WOLWelcomeMenu.wnd");
+		//TheGameSpyThread->setNextShellScreen("Menus\\WOLWelcomeMenu.wnd");
 		//TheShell->pop();
-		//TheShell->push("Menus/WOLWelcomeMenu.wnd");
+		//TheShell->push("Menus\\WOLWelcomeMenu.wnd");
 		return;
 	}
 

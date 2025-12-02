@@ -1160,7 +1160,7 @@ WindowMsgHandledType LanGameOptionsMenuSystem(GameWindow* window, UnsignedInt ms
 		{
 			//buttonBack->winEnable( false );
 
-			mapSelectLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/LanMapSelectMenu.wnd"));
+			mapSelectLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\LanMapSelectMenu.wnd"));
 			mapSelectLayout->runInit();
 			mapSelectLayout->hide(FALSE);
 			mapSelectLayout->bringForward();

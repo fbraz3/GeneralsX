@@ -887,7 +887,7 @@ void GameSpyStagingRoom::reset(void)
 #ifdef DEBUG_LOGGING
 	if (this == TheGameSpyGame)
 	{
-		WindowLayout* theLayout = TheShell->findScreenByFilename("Menus/GameSpyGameOptionsMenu.wnd");
+		WindowLayout* theLayout = TheShell->findScreenByFilename("Menus\\GameSpyGameOptionsMenu.wnd");
 		if (theLayout)
 		{
 			DEBUG_LOG(("Resetting TheGameSpyGame on the game options menu!"));

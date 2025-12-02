@@ -550,7 +550,7 @@ void GameInfo::setMap(AsciiString mapName)
 					mapName.nextToken(&token, (char*)GET_PATH_SEPARATOR());
 				}
 			}
-			newMapName.concat("/map.ini");
+			newMapName.concat("\\map.ini");
 			DEBUG_LOG(("GameInfo::setMap() - Looking for '%s'", newMapName.str()));
 			fp = TheFileSystem->openFile(newMapName.str());
 			if (fp)

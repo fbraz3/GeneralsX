@@ -509,8 +509,8 @@ void Shell::showShell(Bool runInit)
 	//	{
 	//		if( top() )
 	//			top()->hide(TRUE);
-	//		m_background = TheWindowManager->winCreateLayout("Menus/BlankWindow.wnd");
-	//		DEBUG_ASSERTCRASH(m_background,("We Couldn't Load Menus/BlankWindow.wnd"));
+	//		m_background = TheWindowManager->winCreateLayout("Menus\\BlankWindow.wnd");
+	//		DEBUG_ASSERTCRASH(m_background,("We Couldn't Load Menus\\BlankWindow.wnd"));
 	//		m_background->hide(FALSE);
 	//		m_background->bringForward();
 	//		if (TheGameLogic->isInGame())
@@ -523,9 +523,9 @@ void Shell::showShell(Bool runInit)
 	//	else
 	//	{
 	//
-	//		m_background = TheWindowManager->winCreateLayout("Menus/BlankWindow.wnd");
+	//		m_background = TheWindowManager->winCreateLayout("Menus\\BlankWindow.wnd");
 	//
-	//		DEBUG_ASSERTCRASH(m_background,("We Couldn't Load Menus/BlankWindow.wnd"));
+	//		DEBUG_ASSERTCRASH(m_background,("We Couldn't Load Menus\\BlankWindow.wnd"));
 	//		m_background->hide(FALSE);
 	//		if (top())
 	//			top()->bringForward();
@@ -539,7 +539,7 @@ void Shell::showShell(Bool runInit)
 		Profile::StopRange("init");
 #endif
 		//else
-		push(AsciiString("Menus/MainMenu.wnd"));
+		push(AsciiString("Menus\\MainMenu.wnd"));
 	}
 	m_isShellActive = TRUE;
 }
@@ -574,9 +574,9 @@ void Shell::showShellMap(Bool useShellMap)
 		if (!m_isShellActive)
 			return;
 		if (!m_background)
-			m_background = TheWindowManager->winCreateLayout("Menus/BlankWindow.wnd");
+			m_background = TheWindowManager->winCreateLayout("Menus\\BlankWindow.wnd");
 
-		DEBUG_ASSERTCRASH(m_background, ("We Couldn't Load Menus/BlankWindow.wnd"));
+		DEBUG_ASSERTCRASH(m_background, ("We Couldn't Load Menus\\BlankWindow.wnd"));
 		m_background->getFirstWindow()->winSetStatus(WIN_STATUS_IMAGE);
 		m_background->hide(FALSE);
 		if (top())
@@ -863,7 +863,7 @@ WindowLayout* Shell::getSaveLoadMenuLayout(void)
 
 	// if layout has not been created, create it now
 	if (m_saveLoadMenuLayout == NULL)
-		m_saveLoadMenuLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/PopupSaveLoad.wnd"));
+		m_saveLoadMenuLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\PopupSaveLoad.wnd"));
 
 	// sanity
 	DEBUG_ASSERTCRASH(m_saveLoadMenuLayout, ("Unable to create save/load menu layout"));
@@ -880,7 +880,7 @@ WindowLayout* Shell::getPopupReplayLayout(void)
 
 	// if layout has not been created, create it now
 	if (m_popupReplayLayout == NULL)
-		m_popupReplayLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/PopupReplay.wnd"));
+		m_popupReplayLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\PopupReplay.wnd"));
 
 	// sanity
 	DEBUG_ASSERTCRASH(m_popupReplayLayout, ("Unable to create replay save menu layout"));
@@ -897,7 +897,7 @@ WindowLayout* Shell::getOptionsLayout(Bool create)
 	// if layout has not been created, create it now
 	if ((m_optionsLayout == NULL) && (create == TRUE))
 	{
-		m_optionsLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/OptionsMenu.wnd"));
+		m_optionsLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\OptionsMenu.wnd"));
 
 		// sanity
 		DEBUG_ASSERTCRASH(m_optionsLayout, ("Unable to create options menu layout"));

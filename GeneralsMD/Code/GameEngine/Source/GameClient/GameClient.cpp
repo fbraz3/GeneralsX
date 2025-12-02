@@ -643,7 +643,7 @@ void GameClient::update(void)
 			{
 				TheWritableGlobalData->m_breakTheMovie = FALSE;
 
-				WindowLayout* legal = TheWindowManager->winCreateLayout("Menus/LegalPage.wnd");
+				WindowLayout* legal = TheWindowManager->winCreateLayout("Menus\\LegalPage.wnd");
 				if (legal)
 				{
 					legal->hide(FALSE);

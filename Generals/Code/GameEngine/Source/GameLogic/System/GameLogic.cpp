@@ -1982,7 +1982,7 @@ void GameLogic::startNewGame(Bool saveGame)
 		if (!TheGlobalData->m_headless)
 		{
 			if (TheShell->getScreenCount() == 0)
-				TheShell->push(AsciiString("Menus/MainMenu.wnd"));
+				TheShell->push(AsciiString("Menus\\MainMenu.wnd"));
 			else if (TheShell->top())
 			{
 				TheShell->top()->hide(FALSE);

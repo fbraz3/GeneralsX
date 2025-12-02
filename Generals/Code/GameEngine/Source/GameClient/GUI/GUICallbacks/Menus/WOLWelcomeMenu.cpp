@@ -647,9 +647,9 @@ void WOLWelcomeMenuUpdate(WindowLayout* layout, void* userData)
 					//GSMessageBoxOk( TheGameText->fetch("GUI:GSErrorTitle"), TheGameText->fetch("GUI:GSGroupRoomJoinOK") );
 
 					buttonPushed = TRUE;
-					nextScreen = "Menus/WOLCustomLobby.wnd";
+					nextScreen = "Menus\\WOLCustomLobby.wnd";
 					TheShell->pop();
-					//TheShell->push( "Menus/WOLCustomLobby.wnd" );
+					//TheShell->push( "Menus\\WOLCustomLobby.wnd" );
 				}
 				else
 				{
@@ -817,7 +817,7 @@ WindowMsgHandledType WOLWelcomeMenuSystem(GameWindow* window, UnsignedInt msg,
 			else
 			{
 				buttonPushed = TRUE;
-				nextScreen = "Menus/WOLQuickMatchMenu.wnd";
+				nextScreen = "Menus\\WOLQuickMatchMenu.wnd";
 				TheShell->pop();
 			}
 		}
@@ -853,7 +853,7 @@ WindowMsgHandledType WOLWelcomeMenuSystem(GameWindow* window, UnsignedInt msg,
 				GameSpyUsingGroupRooms = FALSE;
 				GameSpyCurrentGroupRoomID = 0;
 				TheShell->pop();
-				TheShell->push("Menus/WOLCustomLobby.wnd");
+				TheShell->push("Menus\\WOLCustomLobby.wnd");
 			}
 			else
 			{
@@ -864,7 +864,7 @@ WindowMsgHandledType WOLWelcomeMenuSystem(GameWindow* window, UnsignedInt msg,
 		}
 		else if (controlID == buttonLadderID)
 		{
-			TheShell->push(AsciiString("Menus/WOLLadderScreen.wnd"));
+			TheShell->push(AsciiString("Menus\\WOLLadderScreen.wnd"));
 		}
 		break;
 	}
