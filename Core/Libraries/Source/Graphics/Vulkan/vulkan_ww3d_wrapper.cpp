@@ -27,6 +27,11 @@
 #include <cstdio>
 #include <cstdlib>
 
+ // Graphics driver system - required to initialize Vulkan backend
+#include "../GraphicsDriverFactory.h"
+#include "../IGraphicsDriver.h"
+#include "../dx8buffer_compat.h"  // For SetGraphicsDriver
+
  // Forward declarations
 class RenderObjClass;
 class SceneClass;
@@ -97,6 +102,9 @@ namespace WW3D {
   static bool g_deviceWindowed = true;
   static int g_textureReduction = 0;
 
+  // Graphics driver instance (Phase 41)
+  static Graphics::IGraphicsDriver* g_graphicsDriver = nullptr;
+
   // ============================================================================
   // Core WW3D Functions
   // ============================================================================
@@ -105,6 +113,30 @@ namespace WW3D {
     printf("[Vulkan WW3D Wrapper] WW3D::Init(%p, %p, %d) - Vulkan backend initialized\n",
       hwnd, defaultpal, lite);
     g_windowHandle = hwnd;
+
+    // Phase 41: Initialize the graphics driver FIRST before any buffer creation
+    // CreateDriver() calls SetGraphicsDriver() internally and initializes the backend
+    fprintf(stderr, "[Vulkan WW3D Wrapper] Creating graphics driver via factory...\n");
+    fflush(stderr);
+
+    // Use platform default backend (Vulkan on Linux)
+    g_graphicsDriver = Graphics::GraphicsDriverFactory::CreateDriver(
+      Graphics::BackendType::Unknown,  // Auto-select best backend
+      hwnd,                            // Window handle
+      static_cast<uint32_t>(g_deviceWidth),   // Width
+      static_cast<uint32_t>(g_deviceHeight),  // Height
+      !g_deviceWindowed                // Fullscreen flag
+    );
+
+    if (g_graphicsDriver) {
+      fprintf(stderr, "[Vulkan WW3D Wrapper] Graphics driver created and initialized: %p\n",
+        static_cast<void*>(g_graphicsDriver));
+      fflush(stderr);
+    }
+    else {
+      fprintf(stderr, "[Vulkan WW3D Wrapper] ERROR: Failed to create graphics driver!\n");
+      fflush(stderr);
+    }
 
     // Initialize vertex material presets (Phase 6: Critical for terrain rendering)
     fprintf(stderr, "[Vulkan WW3D Wrapper] Calling VertexMaterialClass::Init()\n");
@@ -125,6 +157,16 @@ namespace WW3D {
     VertexMaterialClass::Shutdown();
     fprintf(stderr, "[Vulkan WW3D Wrapper] VertexMaterialClass::Shutdown() completed\n");
     fflush(stderr);
+
+    // Phase 41: Destroy the graphics driver
+    if (g_graphicsDriver) {
+      fprintf(stderr, "[Vulkan WW3D Wrapper] Destroying graphics driver...\n");
+      fflush(stderr);
+      Graphics::GraphicsDriverFactory::DestroyDriver(g_graphicsDriver);
+      g_graphicsDriver = nullptr;
+      fprintf(stderr, "[Vulkan WW3D Wrapper] Graphics driver destroyed\n");
+      fflush(stderr);
+    }
 
     g_windowHandle = nullptr;
   }
