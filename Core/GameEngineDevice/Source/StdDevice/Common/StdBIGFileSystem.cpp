@@ -151,8 +151,9 @@ ArchiveFile* StdBIGFileSystem::openArchiveFile(const Char* filename) {
 			fp->read(buffer + pathIndex, 1);
 		} while (buffer[pathIndex] != 0);
 
+		// BIG files from Windows always use backslash separators, even on Linux
 		Int filenameIndex = pathIndex;
-		while ((filenameIndex >= 0) && (buffer[filenameIndex] != GET_PATH_SEPARATOR()[0])) {
+		while ((filenameIndex >= 0) && (buffer[filenameIndex] != GET_BIG_FILE_SEPARATOR()[0])) {
 			--filenameIndex;
 		}
 
@@ -162,6 +163,10 @@ ArchiveFile* StdBIGFileSystem::openArchiveFile(const Char* filename) {
 
 		AsciiString path;
 		path = buffer;
+
+		fprintf(stderr, "[StdBIGFileSystem::openArchiveFile] Found file: path='%s', filename='%s'\n",
+			path.str(), fileInfo->m_filename.str());
+		fflush(stderr);
 
 		AsciiString debugpath;
 		debugpath = path;

@@ -70,6 +70,11 @@
 #define GET_PATH_SEPARATOR() "/"
 #endif
 
+// .big archive files are created on Windows and always use backslash separators internally,
+// regardless of the platform. This macro is used when parsing .big file headers and
+// accessing files within archives to ensure consistent backslash path handling.
+#define GET_BIG_FILE_SEPARATOR() "\\"
+
 #include "mem_compat.h"
 #include "string_compat.h"
 #include "tchar_compat.h"

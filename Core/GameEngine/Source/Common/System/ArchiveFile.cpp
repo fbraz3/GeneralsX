@@ -97,6 +97,10 @@ ArchiveFile::ArchiveFile()
 
 void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileInfo)
 {
+	fprintf(stderr, "[ArchiveFile::addFile] Adding file: '%s' (filename: '%s', offset: %u, size: %u)\n",
+		path.str(), fileInfo->m_filename.str(), fileInfo->m_offset, fileInfo->m_size);
+	fflush(stderr);
+
 	DetailedArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
 	AsciiString token;
@@ -107,6 +111,9 @@ void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileI
 
 	while (token.getLength() > 0)
 	{
+		fprintf(stderr, "[ArchiveFile::addFile] Creating/finding directory: '%s'\n", token.str());
+		fflush(stderr);
+
 		DetailedArchivedDirectoryInfoMap::iterator tempiter = dirInfo->m_directories.find(token);
 		if (tempiter == dirInfo->m_directories.end())
 		{
@@ -121,7 +128,13 @@ void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileI
 		tokenizer.nextToken(&token, "\\");
 	}
 
-	dirInfo->m_files[fileInfo->m_filename] = *fileInfo;
+	fprintf(stderr, "[ArchiveFile::addFile] Storing file '%s' in final directory\n", fileInfo->m_filename.str());
+	fflush(stderr);
+
+	// Store with lowercase filename for case-insensitive lookup
+	AsciiString lowercaseFilename = fileInfo->m_filename;
+	lowercaseFilename.toLower();
+	dirInfo->m_files[lowercaseFilename] = *fileInfo;
 }
 
 void ArchiveFile::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList& filenameList, Bool searchSubdirectories) const
@@ -192,8 +205,9 @@ void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo* di
 		const DetailedArchivedDirectoryInfo* tempDirInfo = &(diriter->second);
 		AsciiString tempdirname;
 		tempdirname = currentDirectory;
-		if ((tempdirname.getLength() > 0) && (!tempdirname.endsWith((char*)GET_PATH_SEPARATOR()))) {
-			tempdirname.concat(GET_PATH_SEPARATOR());
+		// Use GET_BIG_FILE_SEPARATOR for archive paths - they always use Windows backslash
+		if ((tempdirname.getLength() > 0) && (!tempdirname.endsWith((char*)GET_BIG_FILE_SEPARATOR()))) {
+			tempdirname.concat(GET_BIG_FILE_SEPARATOR());
 		}
 		tempdirname.concat(tempDirInfo->m_directoryName);
 		getFileListInDirectory(tempDirInfo, tempdirname, searchName, filenameList, searchSubdirectories);
@@ -205,8 +219,9 @@ void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo* di
 		if (SearchStringMatches(fileiter->second.m_filename, searchName)) {
 			AsciiString tempfilename;
 			tempfilename = currentDirectory;
-			if ((tempfilename.getLength() > 0) && (!tempfilename.endsWith((char*)GET_PATH_SEPARATOR()))) {
-				tempfilename.concat(GET_PATH_SEPARATOR());
+			// Use GET_BIG_FILE_SEPARATOR for archive paths - they always use Windows backslash
+			if ((tempfilename.getLength() > 0) && (!tempfilename.endsWith((char*)GET_BIG_FILE_SEPARATOR()))) {
+				tempfilename.concat(GET_BIG_FILE_SEPARATOR());
 			}
 			tempfilename.concat(fileiter->second.m_filename);
 			if (filenameList.find(tempfilename) == filenameList.end()) {
@@ -234,30 +249,78 @@ const ArchivedFileInfo* ArchiveFile::getArchivedFileInfo(const AsciiString& file
 	AsciiString token;
 	AsciiString tokenizer = filename;
 	tokenizer.toLower();
-	tokenizer.nextToken(&token, (char*)GET_PATH_SEPARATOR());
+
+	// Normalize forward slashes to backslashes since .big files use Windows-style paths
+	// Need to create a new string to properly modify it
+	char normalizedPath[512];
+	const char* src = tokenizer.str();
+	int i;
+	for (i = 0; i < 511 && src[i] != '\0'; i++) {
+		normalizedPath[i] = (src[i] == '/') ? GET_BIG_FILE_SEPARATOR()[0] : src[i];
+	}
+	normalizedPath[i] = '\0';  // Null-terminate!
+	tokenizer = AsciiString(normalizedPath);
+
+	fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Looking for: '%s', normalized: '%s'\n", filename.str(), tokenizer.str());
+	fflush(stderr);
+
+	// Use backslash separator since .big files store Windows-style paths
+	tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
 
 	while (!token.find('.') || tokenizer.find('.'))
 	{
+		fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Searching for directory token: '%s'\n", token.str());
+		fflush(stderr);
+
 		DetailedArchivedDirectoryInfoMap::const_iterator it = dirInfo->m_directories.find(token);
 		if (it != dirInfo->m_directories.end())
 		{
+			fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Found directory: '%s'\n", token.str());
+			fflush(stderr);
 			dirInfo = &it->second;
 		}
 		else
 		{
+			fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Directory NOT FOUND: '%s'\n", token.str());
+			fflush(stderr);
 			return NULL;
 		}
 
-		tokenizer.nextToken(&token, (char*)GET_PATH_SEPARATOR());
+		// Use backslash separator since .big files store Windows-style paths
+		tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
 	}
+
+	fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Final token (filename): '%s'\n", token.str());
+	fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Files in directory (%zu total):\n", dirInfo->m_files.size());
+	int debugCount = 0;
+	for (ArchivedFileInfoMap::const_iterator debugIt = dirInfo->m_files.begin();
+		debugIt != dirInfo->m_files.end() && debugCount < 10; ++debugIt, ++debugCount) {
+		fprintf(stderr, "  [%d] key='%s' (hex: ", debugCount, debugIt->first.str());
+		const char* s = debugIt->first.str();
+		for (int i = 0; s[i] && i < 20; i++) {
+			fprintf(stderr, "%02x ", (unsigned char)s[i]);
+		}
+		fprintf(stderr, ")\n");
+	}
+	fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Searching for token (hex): ");
+	const char* ts = token.str();
+	for (int i = 0; ts[i] && i < 20; i++) {
+		fprintf(stderr, "%02x ", (unsigned char)ts[i]);
+	}
+	fprintf(stderr, "\n");
+	fflush(stderr);
 
 	ArchivedFileInfoMap::const_iterator it = dirInfo->m_files.find(token);
 	if (it != dirInfo->m_files.end())
 	{
+		fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] SUCCESS - found file\n");
+		fflush(stderr);
 		return &it->second;
 	}
 	else
 	{
+		fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] File NOT FOUND in map\n");
+		fflush(stderr);
 		return NULL;
 	}
 
