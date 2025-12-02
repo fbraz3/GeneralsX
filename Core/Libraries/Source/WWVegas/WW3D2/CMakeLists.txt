@@ -215,7 +215,8 @@ set(WW3D2_SRC
     w3derr.h
     w3dexclusionlist.cpp
     w3dexclusionlist.h
-    # ww3d.cpp - Excluded: Vulkan wrapper provides WW3D:: functions on non-Windows
+    # Phase 54: Re-enable ww3d.cpp - DX8Wrapper_Stubs.cpp provides the DX8Wrapper implementation
+    ww3d.cpp
     ww3d.h
     ww3dformat.cpp
     ww3dformat.h

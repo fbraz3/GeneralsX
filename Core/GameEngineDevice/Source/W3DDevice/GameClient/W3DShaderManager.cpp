@@ -1411,11 +1411,9 @@ Bool W3DShaderManager::testMinimumRequirements(ChipsetType *videoChipType, CpuTy
 	}
 
 	if (cpuFreq)
-#ifdef _WIN32
+		// Phase 54: Get CPU frequency on all platforms
+		// CPUDetectClass::Get_Processor_Speed() is available cross-platform
 		*cpuFreq=CPUDetectClass::Get_Processor_Speed();
-#else // _WIN32
-		*cpuFreq=0;
-#endif // _WIN32
 
 	if (numRAM)
 		// Phase 54: Get total physical memory on all platforms

@@ -905,8 +905,14 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 	// ApplicationHWnd will store the SDL_Window* pointer cast to HWND
 	ApplicationHWnd = (HWND)sdlWindow;
 
-	// fprintf(stderr, "initializeAppWindows: ApplicationHWnd set to: %p\n", (void*)ApplicationHWnd);
-	// fflush(stderr);
+	// Phase 54: Explicitly show window immediately after creation
+	// This ensures the window is visible before any graphics initialization
+	fprintf(stderr, "initializeAppWindows: Explicitly showing SDL2 window\n");
+	fflush(stderr);
+	SDL_ShowWindow(sdlWindow);
+	SDL_RaiseWindow(sdlWindow);
+	fprintf(stderr, "initializeAppWindows: Window shown and raised\n");
+	fflush(stderr);
 
 	gInitializing = false;
 

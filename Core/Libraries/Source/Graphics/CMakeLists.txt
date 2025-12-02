@@ -22,7 +22,7 @@ add_library(graphics_drivers STATIC
     Vulkan/vulkan_graphics_driver.h
     Vulkan/vulkan_graphics_driver.cpp
     Vulkan/vulkan_globals.cpp
-    Vulkan/vulkan_ww3d_wrapper.cpp
+    # vulkan_ww3d_wrapper.cpp - REMOVED: ww3d.cpp provides WW3D class, DX8Wrapper_Stubs provides bridge
     
     # D3D8 to Vulkan Mappings (22 files)
     Vulkan/d3d8_vulkan_buffer.h

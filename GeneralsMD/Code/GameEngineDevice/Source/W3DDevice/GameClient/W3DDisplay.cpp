@@ -39,6 +39,7 @@ static void drawFramerateBar(void);
 #include <stdlib.h>
 #include <windows.h>
 #include <time.h>
+#include <SDL2/SDL.h>
 #include "../../../../../Dependencies/Utility/Compat/msvc_types_compat.h"
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -818,6 +819,34 @@ void W3DDisplay::init(void)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 			DEBUG_ASSERTCRASH(0, ("Unable to set render device"));
 			return;
+		}
+
+		// Phase 54: Show the SDL2 window after render device is initialized
+		// This ensures the window is visible to the user after graphics setup
+		extern void* ApplicationHWnd;
+		if (ApplicationHWnd)
+		{
+			SDL_Window* window = (SDL_Window*)ApplicationHWnd;
+			fprintf(stderr, "[W3DDisplay::init] Showing SDL2 window (ApplicationHWnd=%p)\n", ApplicationHWnd);
+			fflush(stderr);
+			SDL_ShowWindow(window);
+			SDL_RaiseWindow(window);
+			SDL_SetWindowInputFocus(window);
+			fprintf(stderr, "[W3DDisplay::init] SDL_ShowWindow/RaiseWindow/SetInputFocus called\n");
+			fflush(stderr);
+			
+			// Flush any pending SDL events to process window show
+			SDL_Event e;
+			while (SDL_PollEvent(&e)) {
+				// Just drain the event queue
+			}
+			fprintf(stderr, "[W3DDisplay::init] Event queue flushed\n");
+			fflush(stderr);
+		}
+		else
+		{
+			fprintf(stderr, "[W3DDisplay::init] WARNING: ApplicationHWnd is NULL, cannot show window\n");
+			fflush(stderr);
 		}
 
 		fprintf(stderr, "[W3DDisplay::init] About to check GameLODManager\n");
@@ -1966,11 +1995,18 @@ void W3DDisplay::draw(void)
 			// 	fprintf(stderr, "W3DDisplay::draw() - Calling WW3D::Begin_Render()\n");
 			// 	fflush(stderr);
 			// }
+			// Phase 54: Debug why rendering isn't happening
+			if (drawCount < 5) {
+				fprintf(stderr, "W3DDisplay::draw() - Before Begin_Render: breakTheMovie=%d, disableRender=%d\n",
+					TheGlobalData->m_breakTheMovie, TheGlobalData->m_disableRender);
+				fflush(stderr);
+			}
 			if ((TheGlobalData->m_breakTheMovie == FALSE) && (TheGlobalData->m_disableRender == false) && WW3D::Begin_Render(true, true, Vector3(0.0f, 0.0f, 0.0f), TheWaterTransparency->m_minWaterOpacity) == WW3D_ERROR_OK)
 			{
-				if (drawCount < 3) {
-					fprintf(stderr, "W3DDisplay::draw() - Begin_Render succeeded, loadScreenRender=%d\n", TheGlobalData->m_loadScreenRender);
+				if (drawCount < 5) {
+					fprintf(stderr, "W3DDisplay::draw() - Begin_Render succeeded, loadScreenRender=%d, incrementing drawCount\n", TheGlobalData->m_loadScreenRender);
 					fflush(stderr);
+					drawCount++;
 				}
 
 				if (TheGlobalData->m_loadScreenRender == TRUE)
@@ -2088,6 +2124,9 @@ void W3DDisplay::draw(void)
 				if (couldRender)
 				{
 					couldRender = false;
+					fprintf(stderr, "W3DDisplay::draw() - ERROR: Could not do WW3D::Begin_Render()! breakTheMovie=%d, disableRender=%d\n",
+						TheGlobalData->m_breakTheMovie, TheGlobalData->m_disableRender);
+					fflush(stderr);
 					DEBUG_LOG(("Could not do WW3D::Begin_Render()!  Are we ALT-Tabbed out?"));
 				}
 			}

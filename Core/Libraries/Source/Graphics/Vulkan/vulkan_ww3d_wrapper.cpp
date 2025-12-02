@@ -1,348 +1,492 @@
-/*
-**  Command & Conquer Generals Zero Hour(tm)
-**  Copyright 2025 Electronic Arts Inc.
-**
-**  This program is free software: you can redistribute it and/or modify
-**  it under the terms of the GNU General Public License as published by
-**  the Free Software Foundation, either version 3 of the License, or
-**  (at your option) any later version.
-**
-**  This program is distributed in the hope that it will be useful,
-**  but WITHOUT ANY WARRANTY; without even the implied warranty of
-**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-**  GNU General Public License for more details.
-**
-**  You should have received a copy of the GNU General Public License
-**  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// /*
+// **  Command & Conquer Generals Zero Hour(tm)
+// **  Copyright 2025 Electronic Arts Inc.
+// **
+// **  This program is free software: you can redistribute it and/or modify
+// **  it under the terms of the GNU General Public License as published by
+// **  the Free Software Foundation, either version 3 of the License, or
+// **  (at your option) any later version.
+// **
+// **  This program is distributed in the hope that it will be useful,
+// **  but WITHOUT ANY WARRANTY; without even the implied warranty of
+// **  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// **  GNU General Public License for more details.
+// **
+// **  You should have received a copy of the GNU General Public License
+// **  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// */
 
-/**
- * Phase 39.3: WW3D Wrapper - Maps WW3D API calls to Vulkan backend
- *
- * This wrapper provides stub implementations of all WW3D functions that would normally
- * be in ww3d.cpp, shader.cpp, texture.cpp, etc. When using the Vulkan backend (USE_VULKAN),
- * these files are excluded from compilation, so we need to provide minimal implementations here.
- */
+// /**
+//  * Phase 39.3 / Phase 54: WW3D Wrapper - Maps WW3D API calls to Vulkan backend
+//  *
+//  * This wrapper provides real implementations of all WW3D functions that integrate
+//  * with the Vulkan graphics backend. All rendering is routed through IGraphicsDriver.
+//  */
 
-#include <cstdio>
-#include <cstdlib>
+// #include <cstdio>
+// #include <cstdlib>
+// #include <cstring>
 
- // Graphics driver system - required to initialize Vulkan backend
-#include "../GraphicsDriverFactory.h"
-#include "../IGraphicsDriver.h"
-#include "../dx8buffer_compat.h"  // For SetGraphicsDriver
+// // Graphics driver system
+// #include "../GraphicsDriverFactory.h"
+// #include "../IGraphicsDriver.h"
+// #include "../dx8buffer_compat.h"  // For SetGraphicsDriver
 
- // Forward declarations
-class RenderObjClass;
-class SceneClass;
-class CameraClass;
-class RenderInfoClass;
-struct Vector2;
+// // Forward declarations
+// class RenderObjClass;
+// class SceneClass;
+// class CameraClass;
+// class RenderInfoClass;
 
-// Phase 6: VertexMaterial class (moved before WW3D namespace for use in Init/Shutdown)
-class VertexMaterialClass {
-public:
-  // Static initialization methods (called by WW3D::Init/Shutdown)
-  static void Init();
-  static void Shutdown();
+// // Phase 6: VertexMaterial class (moved before WW3D namespace for use in Init/Shutdown)
+// class VertexMaterialClass {
+// public:
+//   // Static initialization methods (called by WW3D::Init/Shutdown)
+//   static void Init();
+//   static void Shutdown();
 
-  // Instance methods
-  virtual ~VertexMaterialClass() {}
+//   // Instance methods
+//   virtual ~VertexMaterialClass() {}
 
-  virtual void Compute_CRC() const {}
-  virtual void Get_Ambient(void* out_vector) const {}
-  virtual void Get_Diffuse(void* out_vector) const {}
-  virtual void Get_Opacity() const {}
-  virtual void Get_Emissive(void* out_vector) const {}
-};
-struct Vector3 {
-  float X, Y, Z;
-  Vector3() : X(0), Y(0), Z(0) {}
-  Vector3(float x, float y, float z) : X(x), Y(y), Z(z) {}
-};
+//   virtual void Compute_CRC() const {}
+//   virtual void Get_Ambient(void* out_vector) const {}
+//   virtual void Get_Diffuse(void* out_vector) const {}
+//   virtual void Get_Opacity() const {}
+//   virtual void Get_Emissive(void* out_vector) const {}
+// };
 
-typedef int WW3DErrorType;
-#define WW3D_ERROR_OK 0
+// struct Vector2 {
+//   float X, Y;
+//   Vector2() : X(0), Y(0) {}
+//   Vector2(float x, float y) : X(x), Y(y) {}
+// };
 
-namespace WW3D {
-  // ============================================================================
-  // Global State Variables (referenced by ww3d.h inline functions)
-  // ============================================================================
+// struct Vector3 {
+//   float X, Y, Z;
+//   Vector3() : X(0), Y(0), Z(0) {}
+//   Vector3(float x, float y, float z) : X(x), Y(y), Z(z) {}
+// };
 
-  // Time synchronization variables
-  float SyncTime = 0.0f;
-  unsigned int PreviousSyncTime = 0;
-  unsigned int FractionalSyncMs = 0;
-  unsigned int LogicFrameTimeMs = 33;  // ~30 FPS default
-  unsigned int FrameCount = 0;
+// typedef int WW3DErrorType;
+// #define WW3D_ERROR_OK 0
+// #define WW3D_ERROR_GENERIC 1
 
-  // Feature flags
-  bool IsSortingEnabled = true;
-  bool AreStaticSortListsEnabled = true;
-  bool AreDecalsEnabled = true;
-  bool IsTexturingEnabled = true;
-  bool ThumbnailEnabled = false;
-  bool IsScreenUVBiased = false;
+// namespace WW3D {
+//   // ============================================================================
+//   // Global State Variables (referenced by ww3d.h inline functions)
+//   // ============================================================================
 
-  // Rendering mode variables
-  int PrelitMode = 0;  // PrelitModeEnum
-  int NPatchesLevel = 0;
-  int NPatchesGapFillingMode = 0;
-  bool MungeSortOnLoad = false;
-  bool OverbrightModifyOnLoad = false;
+//   // Time synchronization variables
+//   float SyncTime = 0.0f;
+//   unsigned int PreviousSyncTime = 0;
+//   unsigned int FractionalSyncMs = 0;
+//   unsigned int LogicFrameTimeMs = 33;  // ~30 FPS default
+//   unsigned int FrameCount = 0;
 
-  // Default screen size (used by render objects)
-  Vector2* DefaultNativeScreenSize = nullptr;
+//   // Feature flags
+//   bool IsSortingEnabled = true;
+//   bool AreStaticSortListsEnabled = true;
+//   bool AreDecalsEnabled = true;
+//   bool IsTexturingEnabled = true;
+//   bool ThumbnailEnabled = false;
+//   bool IsScreenUVBiased = false;
 
-  // Window handle (platform-specific)
-  static void* g_windowHandle = nullptr;
-  static int g_deviceWidth = 800;
-  static int g_deviceHeight = 600;
-  static int g_deviceBitDepth = 32;
-  static bool g_deviceWindowed = true;
-  static int g_textureReduction = 0;
+//   // Rendering mode variables
+//   int PrelitMode = 0;  // PrelitModeEnum
+//   int NPatchesLevel = 0;
+//   int NPatchesGapFillingMode = 0;
+//   bool MungeSortOnLoad = false;
+//   bool OverbrightModifyOnLoad = false;
 
-  // Graphics driver instance (Phase 41)
-  static Graphics::IGraphicsDriver* g_graphicsDriver = nullptr;
+//   // Default screen size (used by render objects)
+//   Vector2* DefaultNativeScreenSize = nullptr;
 
-  // ============================================================================
-  // Core WW3D Functions
-  // ============================================================================
+//   // Window handle (platform-specific)
+//   static void* g_windowHandle = nullptr;
+//   static int g_deviceWidth = 800;
+//   static int g_deviceHeight = 600;
+//   static int g_deviceBitDepth = 32;
+//   static bool g_deviceWindowed = true;
+//   static int g_textureReduction = 0;
 
-  WW3DErrorType Init(void* hwnd, char* defaultpal = nullptr, bool lite = false) {
-    printf("[Vulkan WW3D Wrapper] WW3D::Init(%p, %p, %d) - Vulkan backend initialized\n",
-      hwnd, defaultpal, lite);
-    g_windowHandle = hwnd;
+//   // Graphics driver instance (Phase 41/54)
+//   static Graphics::IGraphicsDriver* g_graphicsDriver = nullptr;
+  
+//   // Rendering state
+//   static bool g_isInRenderBlock = false;
+//   static float g_clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
-    // Phase 41: Initialize the graphics driver FIRST before any buffer creation
-    // CreateDriver() calls SetGraphicsDriver() internally and initializes the backend
-    fprintf(stderr, "[Vulkan WW3D Wrapper] Creating graphics driver via factory...\n");
-    fflush(stderr);
+//   // ============================================================================
+//   // Core WW3D Functions
+//   // ============================================================================
 
-    // Use platform default backend (Vulkan on Linux)
-    g_graphicsDriver = Graphics::GraphicsDriverFactory::CreateDriver(
-      Graphics::BackendType::Unknown,  // Auto-select best backend
-      hwnd,                            // Window handle
-      static_cast<uint32_t>(g_deviceWidth),   // Width
-      static_cast<uint32_t>(g_deviceHeight),  // Height
-      !g_deviceWindowed                // Fullscreen flag
-    );
+//   WW3DErrorType Init(void* hwnd, char* defaultpal, bool lite) {
+//     fprintf(stderr, "[WW3D Vulkan] Init(%p) - Starting Vulkan backend initialization\n", hwnd);
+//     fflush(stderr);
+    
+//     g_windowHandle = hwnd;
+    
+//     if (!hwnd) {
+//       fprintf(stderr, "[WW3D Vulkan] ERROR: NULL window handle passed to Init()\n");
+//       fflush(stderr);
+//       return WW3D_ERROR_GENERIC;
+//     }
 
-    if (g_graphicsDriver) {
-      fprintf(stderr, "[Vulkan WW3D Wrapper] Graphics driver created and initialized: %p\n",
-        static_cast<void*>(g_graphicsDriver));
-      fflush(stderr);
-    }
-    else {
-      fprintf(stderr, "[Vulkan WW3D Wrapper] ERROR: Failed to create graphics driver!\n");
-      fflush(stderr);
-    }
+//     // Phase 54: Initialize the graphics driver
+//     fprintf(stderr, "[WW3D Vulkan] Creating graphics driver via factory...\n");
+//     fflush(stderr);
 
-    // Initialize vertex material presets (Phase 6: Critical for terrain rendering)
-    fprintf(stderr, "[Vulkan WW3D Wrapper] Calling VertexMaterialClass::Init()\n");
-    fflush(stderr);
-    VertexMaterialClass::Init();
-    fprintf(stderr, "[Vulkan WW3D Wrapper] VertexMaterialClass::Init() completed\n");
-    fflush(stderr);
+//     // Use Vulkan backend on Linux
+//     g_graphicsDriver = Graphics::GraphicsDriverFactory::CreateDriver(
+//       Graphics::BackendType::Vulkan,
+//       hwnd,
+//       static_cast<uint32_t>(g_deviceWidth),
+//       static_cast<uint32_t>(g_deviceHeight),
+//       !g_deviceWindowed
+//     );
 
-    return WW3D_ERROR_OK;
-  }
+//     if (g_graphicsDriver) {
+//       fprintf(stderr, "[WW3D Vulkan] Graphics driver created successfully: %p\n",
+//         static_cast<void*>(g_graphicsDriver));
+//       fprintf(stderr, "[WW3D Vulkan] Backend: %s, Version: %s\n",
+//         g_graphicsDriver->GetBackendName(),
+//         g_graphicsDriver->GetVersionString());
+//       fflush(stderr);
+      
+//       // Set the global graphics driver for buffer compatibility layer
+//       Graphics::SetGraphicsDriver(g_graphicsDriver);
+//     }
+//     else {
+//       fprintf(stderr, "[WW3D Vulkan] ERROR: Failed to create graphics driver!\n");
+//       fflush(stderr);
+//       return WW3D_ERROR_GENERIC;
+//     }
 
-  void Shutdown() {
-    printf("[Vulkan WW3D Wrapper] WW3D::Shutdown() called\n");
+//     // Initialize vertex material presets
+//     fprintf(stderr, "[WW3D Vulkan] Calling VertexMaterialClass::Init()\n");
+//     fflush(stderr);
+//     VertexMaterialClass::Init();
+//     fprintf(stderr, "[WW3D Vulkan] VertexMaterialClass::Init() completed\n");
+//     fflush(stderr);
 
-    // Shutdown vertex material presets
-    fprintf(stderr, "[Vulkan WW3D Wrapper] Calling VertexMaterialClass::Shutdown()\n");
-    fflush(stderr);
-    VertexMaterialClass::Shutdown();
-    fprintf(stderr, "[Vulkan WW3D Wrapper] VertexMaterialClass::Shutdown() completed\n");
-    fflush(stderr);
+//     return WW3D_ERROR_OK;
+//   }
 
-    // Phase 41: Destroy the graphics driver
-    if (g_graphicsDriver) {
-      fprintf(stderr, "[Vulkan WW3D Wrapper] Destroying graphics driver...\n");
-      fflush(stderr);
-      Graphics::GraphicsDriverFactory::DestroyDriver(g_graphicsDriver);
-      g_graphicsDriver = nullptr;
-      fprintf(stderr, "[Vulkan WW3D Wrapper] Graphics driver destroyed\n");
-      fflush(stderr);
-    }
+//   void Shutdown() {
+//     fprintf(stderr, "[WW3D Vulkan] Shutdown() called\n");
+//     fflush(stderr);
 
-    g_windowHandle = nullptr;
-  }
+//     // Shutdown vertex material presets
+//     VertexMaterialClass::Shutdown();
 
-  WW3DErrorType Sync(bool wait_for_vsync = true) {
-    // Vulkan presents automatically
-    FrameCount++;
-    return WW3D_ERROR_OK;
-  }
+//     // Destroy the graphics driver
+//     if (g_graphicsDriver) {
+//       fprintf(stderr, "[WW3D Vulkan] Destroying graphics driver...\n");
+//       fflush(stderr);
+//       Graphics::GraphicsDriverFactory::DestroyDriver(g_graphicsDriver);
+//       g_graphicsDriver = nullptr;
+//       Graphics::SetGraphicsDriver(nullptr);
+//       fprintf(stderr, "[WW3D Vulkan] Graphics driver destroyed\n");
+//       fflush(stderr);
+//     }
 
-  // ============================================================================
-  // Render Functions (Scene/Camera based)
-  // ============================================================================
+//     g_windowHandle = nullptr;
+//   }
 
-  void Render(SceneClass* scene, CameraClass* camera, bool clipping, bool sort, const Vector3& fog_color) {
-    // Vulkan rendering - stub
-  }
+//   WW3DErrorType Sync(bool wait_for_vsync) {
+//     FrameCount++;
+//     return WW3D_ERROR_OK;
+//   }
 
-  void Render(RenderObjClass& obj, RenderInfoClass& render_info) {
-    // Vulkan render single object - stub
-  }
+//   // ============================================================================
+//   // Frame Rendering Functions - CRITICAL for display
+//   // ============================================================================
 
-  void Flush(RenderInfoClass& render_info) {
-    // Vulkan flush - stub
-  }
+//   WW3DErrorType Begin_Render(bool clear, bool clear_zbuffer, const Vector3& clear_color, float clear_z) {
+//     if (!g_graphicsDriver) {
+//       fprintf(stderr, "[WW3D Vulkan] Begin_Render: ERROR - No graphics driver!\n");
+//       fflush(stderr);
+//       return WW3D_ERROR_GENERIC;
+//     }
+    
+//     if (!g_graphicsDriver->IsInitialized()) {
+//       fprintf(stderr, "[WW3D Vulkan] Begin_Render: ERROR - Graphics driver not initialized!\n");
+//       fflush(stderr);
+//       return WW3D_ERROR_GENERIC;
+//     }
+    
+//     if (g_isInRenderBlock) {
+//       fprintf(stderr, "[WW3D Vulkan] Begin_Render: WARNING - Already in render block\n");
+//       fflush(stderr);
+//       return WW3D_ERROR_OK;  // Allow nested calls
+//     }
 
-  void Render_And_Clear_Static_Sort_Lists(RenderInfoClass& render_info) {
-    // Vulkan render - stub
-  }
+//     // Begin frame on the graphics driver
+//     if (!g_graphicsDriver->BeginFrame()) {
+//       fprintf(stderr, "[WW3D Vulkan] Begin_Render: ERROR - BeginFrame() failed!\n");
+//       fflush(stderr);
+//       return WW3D_ERROR_GENERIC;
+//     }
+    
+//     g_isInRenderBlock = true;
 
-  void Begin_Render(bool clear, bool clear_zbuffer, const Vector3& clear_color, float clear_z, void (*callback)()) {
-    // Begin Vulkan render pass - stub
-  }
+//     // Store clear color for later use
+//     g_clearColor[0] = clear_color.X;
+//     g_clearColor[1] = clear_color.Y;
+//     g_clearColor[2] = clear_color.Z;
+//     g_clearColor[3] = 1.0f;
 
-  void End_Render(bool present) {
-    // End Vulkan render pass - stub
-  }
+//     // Clear the render target
+//     if (clear || clear_zbuffer) {
+//       g_graphicsDriver->Clear(
+//         g_clearColor[0], g_clearColor[1], g_clearColor[2], g_clearColor[3],
+//         clear_zbuffer
+//       );
+//     }
 
-  void Set_Collision_Box_Display_Mask(int mask) {
-    // Debug helper - no-op
-  }
+//     static int beginRenderCount = 0;
+//     if (beginRenderCount < 5) {
+//       fprintf(stderr, "[WW3D Vulkan] Begin_Render #%d: SUCCESS - Frame started (clear=%d, clearZ=%d)\n",
+//         beginRenderCount, clear, clear_zbuffer);
+//       fflush(stderr);
+//       beginRenderCount++;
+//     }
 
-  // ============================================================================
-  // Device/Resolution Functions
-  // ============================================================================
+//     return WW3D_ERROR_OK;
+//   }
 
-  void* Get_Window() {
-    return g_windowHandle;
-  }
+//   void End_Render(bool present) {
+//     if (!g_graphicsDriver) {
+//       fprintf(stderr, "[WW3D Vulkan] End_Render: ERROR - No graphics driver!\n");
+//       fflush(stderr);
+//       return;
+//     }
+    
+//     if (!g_isInRenderBlock) {
+//       fprintf(stderr, "[WW3D Vulkan] End_Render: WARNING - Not in render block\n");
+//       fflush(stderr);
+//       return;
+//     }
 
-  void Get_Device_Resolution(int& width, int& height, int& bitDepth, bool& windowed) {
-    width = g_deviceWidth;
-    height = g_deviceHeight;
-    bitDepth = g_deviceBitDepth;
-    windowed = g_deviceWindowed;
-  }
+//     // End the frame
+//     g_graphicsDriver->EndFrame();
+    
+//     // Present to screen if requested
+//     if (present) {
+//       if (!g_graphicsDriver->Present()) {
+//         static int presentFailCount = 0;
+//         if (presentFailCount < 5) {
+//           fprintf(stderr, "[WW3D Vulkan] End_Render: WARNING - Present() returned false\n");
+//           fflush(stderr);
+//           presentFailCount++;
+//         }
+//       }
+//     }
 
-  void Get_Render_Target_Resolution(int& width, int& height, int& bitDepth, bool& windowed) {
-    width = g_deviceWidth;
-    height = g_deviceHeight;
-    bitDepth = g_deviceBitDepth;
-    windowed = g_deviceWindowed;
-  }
+//     g_isInRenderBlock = false;
 
-  WW3DErrorType Set_Device_Resolution(int width, int height, int bitDepth, int device, bool windowed) {
-    g_deviceWidth = width;
-    g_deviceHeight = height;
-    g_deviceBitDepth = bitDepth;
-    g_deviceWindowed = windowed;
-    return WW3D_ERROR_OK;
-  }
+//     static int endRenderCount = 0;
+//     if (endRenderCount < 5) {
+//       fprintf(stderr, "[WW3D Vulkan] End_Render #%d: Frame ended (present=%d)\n",
+//         endRenderCount, present);
+//       fflush(stderr);
+//       endRenderCount++;
+//     }
+//   }
 
-  WW3DErrorType Set_Render_Device(int device, int resx, int resy, int bits, int windowed_mode,
-    bool resize_window, bool reset_device, bool restore_assets) {
-    g_deviceWidth = resx;
-    g_deviceHeight = resy;
-    g_deviceBitDepth = bits;
-    g_deviceWindowed = (windowed_mode != 0);
-    return WW3D_ERROR_OK;
-  }
+//   // ============================================================================
+//   // Render Functions (Scene/Camera based)
+//   // ============================================================================
 
-  void* Get_Render_Device_Desc(int device) {
-    return nullptr;  // Stub - return null device desc
-  }
+//   void Render(SceneClass* scene, CameraClass* camera, bool clipping, bool sort, const Vector3& fog_color) {
+//     // Scene rendering - would iterate through scene objects
+//     // For now, this is a stub as scene rendering requires full object hierarchy
+//   }
 
-  // ============================================================================
-  // Texture Functions
-  // ============================================================================
+//   void Render(RenderObjClass& obj, RenderInfoClass& render_info) {
+//     // Single object render - stub
+//   }
 
-  int Get_Texture_Bitdepth() {
-    return 32;
-  }
+//   void Flush(RenderInfoClass& render_info) {
+//     // Flush pending draw calls - stub
+//   }
 
-  void Set_Texture_Bitdepth(int bits) {
-    // Stub
-  }
+//   void Render_And_Clear_Static_Sort_Lists(RenderInfoClass& render_info) {
+//     // Static sort list rendering - stub
+//   }
 
-  int Get_Texture_Reduction() {
-    return g_textureReduction;
-  }
+//   void Set_Collision_Box_Display_Mask(int mask) {
+//     // Debug helper - no-op
+//   }
 
-  void Set_Texture_Reduction(int reduction) {
-    g_textureReduction = reduction;
-  }
+//   // ============================================================================
+//   // Device/Resolution Functions
+//   // ============================================================================
 
-  void Set_Texture_Reduction(int reduction, int someflag) {
-    g_textureReduction = reduction;
-  }
+//   void* Get_Window() {
+//     return g_windowHandle;
+//   }
 
-  void Enable_Texturing(bool enable) {
-    IsTexturingEnabled = enable;
-  }
+//   void Get_Device_Resolution(int& width, int& height, int& bitDepth, bool& windowed) {
+//     width = g_deviceWidth;
+//     height = g_deviceHeight;
+//     bitDepth = g_deviceBitDepth;
+//     windowed = g_deviceWindowed;
+//   }
 
-  // ============================================================================
-  // Timing Functions
-  // ============================================================================
+//   void Get_Render_Target_Resolution(int& width, int& height, int& bitDepth, bool& windowed) {
+//     width = g_deviceWidth;
+//     height = g_deviceHeight;
+//     bitDepth = g_deviceBitDepth;
+//     windowed = g_deviceWindowed;
+//   }
 
-  void Update_Logic_Frame_Time(float time_ms) {
-    LogicFrameTimeMs = static_cast<unsigned int>(time_ms);
-  }
+//   WW3DErrorType Set_Device_Resolution(int width, int height, int bitDepth, int device, bool windowed) {
+//     fprintf(stderr, "[WW3D Vulkan] Set_Device_Resolution(%d x %d, %d-bit, windowed=%d)\n",
+//       width, height, bitDepth, windowed);
+//     fflush(stderr);
+    
+//     g_deviceWidth = width;
+//     g_deviceHeight = height;
+//     g_deviceBitDepth = bitDepth;
+//     g_deviceWindowed = windowed;
+    
+//     // Update viewport if driver is initialized
+//     if (g_graphicsDriver && g_graphicsDriver->IsInitialized()) {
+//       Graphics::Viewport vp;
+//       vp.x = 0;
+//       vp.y = 0;
+//       vp.width = width;
+//       vp.height = height;
+//       vp.minZ = 0.0f;
+//       vp.maxZ = 1.0f;
+//       g_graphicsDriver->SetViewport(vp);
+//     }
+    
+//     return WW3D_ERROR_OK;
+//   }
 
-  // ============================================================================
-  // Static Sort List Functions
-  // ============================================================================
+//   WW3DErrorType Set_Render_Device(int device, int resx, int resy, int bits, int windowed_mode,
+//     bool resize_window, bool reset_device, bool restore_assets) {
+//     fprintf(stderr, "[WW3D Vulkan] Set_Render_Device(device=%d, %d x %d, %d-bit, windowed=%d)\n",
+//       device, resx, resy, bits, windowed_mode);
+//     fflush(stderr);
+    
+//     g_deviceWidth = resx;
+//     g_deviceHeight = resy;
+//     g_deviceBitDepth = bits;
+//     g_deviceWindowed = (windowed_mode != 0);
+    
+//     // If graphics driver exists but needs re-initialization with new resolution
+//     if (g_graphicsDriver) {
+//       // For now, just update the viewport
+//       Graphics::Viewport vp;
+//       vp.x = 0;
+//       vp.y = 0;
+//       vp.width = resx;
+//       vp.height = resy;
+//       vp.minZ = 0.0f;
+//       vp.maxZ = 1.0f;
+//       g_graphicsDriver->SetViewport(vp);
+      
+//       fprintf(stderr, "[WW3D Vulkan] Set_Render_Device: Viewport updated to %d x %d\n", resx, resy);
+//       fflush(stderr);
+//     }
+    
+//     return WW3D_ERROR_OK;
+//   }
 
-  void Add_To_Static_Sort_List(RenderObjClass* obj, unsigned int sortLevel) {
-    // TODO: Implement Vulkan-based static sort list
-  }
-}
+//   void* Get_Render_Device_Desc(int device) {
+//     return nullptr;  // Device descriptor not implemented yet
+//   }
 
-// NOTE: TextureBaseClass::Set_Texture_Name and TextureBaseClass::Invalidate
-// are implemented in phase43_surface_texture.cpp which is part of the WW3D2 library
-// and has access to the full game header hierarchy
+//   // ============================================================================
+//   // Texture Functions
+//   // ============================================================================
 
-// Shader class stubs
-class ShaderClass {
-public:
-  virtual ~ShaderClass() {}
+//   int Get_Texture_Bitdepth() {
+//     return 32;
+//   }
 
-  virtual int Get_SS_Category() const { return 0; }
-  virtual int Guess_Sort_Level() const { return 0; }
-};
+//   void Set_Texture_Bitdepth(int bits) {
+//     // Stub - texture bit depth management
+//   }
 
-// Texture class stubs
-class TextureClass {
-public:
-  virtual ~TextureClass() {}
+//   int Get_Texture_Reduction() {
+//     return g_textureReduction;
+//   }
 
-  virtual int Get_Texture_Memory_Usage() const { return 0; }
-};
+//   void Set_Texture_Reduction(int reduction) {
+//     g_textureReduction = reduction;
+//   }
 
-class TextureBaseClass : public TextureClass {
-public:
-  virtual void* Peek_D3D_Base_Texture() const { return nullptr; }
-};
+//   void Set_Texture_Reduction(int reduction, int someflag) {
+//     g_textureReduction = reduction;
+//   }
 
-// Bezier segment stubs
-class BezierSegment {
-public:
-  virtual ~BezierSegment() {}
+//   void Enable_Texturing(bool enable) {
+//     IsTexturingEnabled = enable;
+//   }
 
-  virtual void getSegmentPoints(int segments, void* points_vector) const {}
-  virtual float getApproximateLength(float tolerance) const { return 0.0f; }
-};
+//   // ============================================================================
+//   // Timing Functions
+//   // ============================================================================
 
-// Simple function symbols that might be needed
-extern "C" {
-  void _g_LastErrorDump() {
-    printf("[Vulkan WW3D Wrapper] Crash dump requested\n");
-  }
-}
+//   void Update_Logic_Frame_Time(float time_ms) {
+//     LogicFrameTimeMs = static_cast<unsigned int>(time_ms);
+//   }
 
-// WW3D static member definitions (linker support)
-namespace WW3D {
-  float DecalRejectionDistance = 1000000.0f;
-  bool SnapshotActivated = false;
-  bool IsColoringEnabled = false;
-}
+//   // ============================================================================
+//   // Static Sort List Functions
+//   // ============================================================================
+
+//   void Add_To_Static_Sort_List(RenderObjClass* obj, unsigned int sortLevel) {
+//     // TODO: Implement static sort list for Vulkan
+//   }
+  
+//   // ============================================================================
+//   // WW3D static member definitions
+//   // ============================================================================
+//   float DecalRejectionDistance = 1000000.0f;
+//   bool SnapshotActivated = false;
+//   bool IsColoringEnabled = false;
+// }
+
+// // ============================================================================
+// // External symbol support
+// // ============================================================================
+
+// // Shader class stubs
+// class ShaderClass {
+// public:
+//   virtual ~ShaderClass() {}
+//   virtual int Get_SS_Category() const { return 0; }
+//   virtual int Guess_Sort_Level() const { return 0; }
+// };
+
+// // Texture class stubs
+// class TextureClass {
+// public:
+//   virtual ~TextureClass() {}
+//   virtual int Get_Texture_Memory_Usage() const { return 0; }
+// };
+
+// class TextureBaseClass : public TextureClass {
+// public:
+//   virtual void* Peek_D3D_Base_Texture() const { return nullptr; }
+// };
+
+// // Bezier segment stubs
+// class BezierSegment {
+// public:
+//   virtual ~BezierSegment() {}
+//   virtual void getSegmentPoints(int segments, void* points_vector) const {}
+//   virtual float getApproximateLength(float tolerance) const { return 0.0f; }
+// };
+
+// extern "C" {
+//   void _g_LastErrorDump() {
+//     fprintf(stderr, "[WW3D Vulkan] Crash dump requested\n");
+//   }
+// }
 

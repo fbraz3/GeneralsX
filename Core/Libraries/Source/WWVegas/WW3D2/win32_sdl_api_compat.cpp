@@ -82,6 +82,8 @@ SDL_Window* SDL2_CreateWindow(
     /* Create the SDL2 window */
     window = SDL_CreateWindow(
         title ? title : "GeneralsX",
+        x,
+        y,
         width,
         height,
         flags
@@ -90,11 +92,6 @@ SDL_Window* SDL2_CreateWindow(
     if (!window) {
         fprintf(stderr, "Phase 01: SDL_CreateWindow failed: %s\n", SDL_GetError());
         return NULL;
-    }
-
-    /* Set window position if specified */
-    if (x != SDL_WINDOWPOS_CENTERED && y != SDL_WINDOWPOS_CENTERED) {
-        SDL_SetWindowPosition(window, x, y);
     }
 
     printf("Phase 01: SDL2 window created successfully\n");

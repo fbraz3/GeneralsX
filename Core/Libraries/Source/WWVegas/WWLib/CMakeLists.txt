@@ -156,7 +156,7 @@ if (USE_VULKAN)
         DbgHelpGuard.cpp DbgHelpGuard.h
         DbgHelpLoader.cpp DbgHelpLoader.h
         Except.cpp
-        FastAllocator.cpp FastAllocator.h
+        # FastAllocator.cpp - KEPT: Cross-platform memory allocator (uses malloc/free)
         # TARGA.cpp is cross-platform when TGA_USES_WWLIB_FILE_CLASSES is defined
         # Files that include imagehlp.h are excluded for non-Windows builds
     )
