@@ -70,6 +70,7 @@
 #include "GameLogic/GameLogic.h"
 #include "Common/GlobalData.h"
 #include "Common/GameLOD.h"
+#include <cpudetect.h>
 // #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 
 
@@ -1417,11 +1418,9 @@ Bool W3DShaderManager::testMinimumRequirements(ChipsetType *videoChipType, CpuTy
 #endif // _WIN32
 
 	if (numRAM)
-#ifdef _WIN32
-		*numRAM=CPUDetectClass::Get_Total_Physical_Memory();
-#else // _WIN32
-		*numRAM=0;
-#endif // _WIN32
+		// Phase 54: Get total physical memory on all platforms
+		// CPUDetectClass::Init_Memory() now supports cross-platform detection via sysconf on Unix/Linux
+		*numRAM = CPUDetectClass::Get_Total_Physical_Memory();
 
 	if (intBenchIndex && floatBenchIndex && memBenchIndex)
 	{
