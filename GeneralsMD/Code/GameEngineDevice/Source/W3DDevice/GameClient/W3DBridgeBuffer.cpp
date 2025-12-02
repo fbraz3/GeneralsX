@@ -101,13 +101,13 @@ static ShaderClass detailShader(SC_ALPHA_MIRROR);
 /** Initializes pointers & values.  */
 //=============================================================================
 W3DBridge::W3DBridge() :
-m_bridgeTexture(NULL),
-m_leftMesh(NULL),
-m_sectionMesh(NULL),
-m_rightMesh(NULL),
-m_visible(false),
-m_curDamageState(BODY_PRISTINE),
-m_scale(1.0)
+	m_bridgeTexture(NULL),
+	m_leftMesh(NULL),
+	m_sectionMesh(NULL),
+	m_rightMesh(NULL),
+	m_visible(false),
+	m_curDamageState(BODY_PRISTINE),
+	m_scale(1.0)
 {
 }
 
@@ -130,9 +130,9 @@ are already set.  */
 void W3DBridge::renderBridge(Bool wireframe)
 {
 	if (m_visible && m_numPolygons && m_numVertex) {
-		if (!wireframe) DX8Wrapper::Set_Texture(0,m_bridgeTexture);
+		if (!wireframe) DX8Wrapper::Set_Texture(0, m_bridgeTexture);
 		// Draw all the bridges.
-		DX8Wrapper::Draw_Triangles(	m_firstIndex, m_numPolygons, m_firstVertex,	m_numVertex);
+		DX8Wrapper::Draw_Triangles(m_firstIndex, m_numPolygons, m_firstVertex, m_numVertex);
 	}
 }
 
@@ -155,7 +155,7 @@ void W3DBridge::clearBridge(void)
 //=============================================================================
 /** Culls bridge to camera.  */
 //=============================================================================
-Bool W3DBridge::cullBridge(CameraClass * camera)
+Bool W3DBridge::cullBridge(CameraClass* camera)
 {
 	///@todo - cull bridges.
 	Bool wasVisible = m_visible;
@@ -204,32 +204,32 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 	length = 170;
 
 	// try to find bridge in INI
-	TerrainRoadType *bridge = TheTerrainRoads->findBridge( m_templateName );
+	TerrainRoadType* bridge = TheTerrainRoads->findBridge(m_templateName);
 	if (!bridge) return false;
 
 	scale = bridge->getBridgeScale();
 	switch (curDamageState) {
-		default: return false;
+	default: return false;
 
-		case 	BODY_PRISTINE:
-			strlcpy(textureFile, bridge->getTexture().str(), ARRAY_SIZE(textureFile));
-			strlcpy(modelName, bridge->getBridgeModel().str(), ARRAY_SIZE(modelName));
-			break;
-		case BODY_DAMAGED:
-			strlcpy(textureFile, bridge->getTextureDamaged().str(), ARRAY_SIZE(textureFile));
-			strlcpy(modelName, bridge->getBridgeModelNameDamaged().str(), ARRAY_SIZE(modelName));
-			break;
-		case BODY_REALLYDAMAGED:
-			strlcpy(textureFile, bridge->getTextureReallyDamaged().str(), ARRAY_SIZE(textureFile));
-			strlcpy(modelName, bridge->getBridgeModelNameReallyDamaged().str(), ARRAY_SIZE(modelName));
-			break;
-		case BODY_RUBBLE:
-			strlcpy(textureFile, bridge->getTextureBroken().str(), ARRAY_SIZE(textureFile));
-			strlcpy(modelName, bridge->getBridgeModelNameBroken().str(), ARRAY_SIZE(modelName));
-			break;
+	case 	BODY_PRISTINE:
+		strlcpy(textureFile, bridge->getTexture().str(), ARRAY_SIZE(textureFile));
+		strlcpy(modelName, bridge->getBridgeModel().str(), ARRAY_SIZE(modelName));
+		break;
+	case BODY_DAMAGED:
+		strlcpy(textureFile, bridge->getTextureDamaged().str(), ARRAY_SIZE(textureFile));
+		strlcpy(modelName, bridge->getBridgeModelNameDamaged().str(), ARRAY_SIZE(modelName));
+		break;
+	case BODY_REALLYDAMAGED:
+		strlcpy(textureFile, bridge->getTextureReallyDamaged().str(), ARRAY_SIZE(textureFile));
+		strlcpy(modelName, bridge->getBridgeModelNameReallyDamaged().str(), ARRAY_SIZE(modelName));
+		break;
+	case BODY_RUBBLE:
+		strlcpy(textureFile, bridge->getTextureBroken().str(), ARRAY_SIZE(textureFile));
+		strlcpy(modelName, bridge->getBridgeModelNameBroken().str(), ARRAY_SIZE(modelName));
+		break;
 	}
 
-	WW3DAssetManager *pMgr = W3DAssetManager::Get_Instance();
+	WW3DAssetManager* pMgr = W3DAssetManager::Get_Instance();
 	char left[_MAX_PATH];
 	char section[_MAX_PATH];
 	char right[_MAX_PATH];
@@ -244,26 +244,26 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 	strcpy(right, modelName);
 	strlcat(right, ".BRIDGE_RIGHT", ARRAY_SIZE(right));
 
-	m_bridgeTexture = pMgr->Get_Texture(textureFile,  MIP_LEVELS_3);
+	m_bridgeTexture = pMgr->Get_Texture(textureFile, MIP_LEVELS_3);
 	m_leftMtx.Make_Identity();
 	m_rightMtx.Make_Identity();
 	m_sectionMtx.Make_Identity();
 
-	RenderObjClass *pObj = pMgr->Create_Render_Obj(modelName );
+	RenderObjClass* pObj = pMgr->Create_Render_Obj(modelName);
 	if (!pObj) return false;
 	Int i;
-	for (i=0; i<pObj->Get_Num_Sub_Objects(); i++) {
-		RenderObjClass *pSub = pObj->Get_Sub_Object(i);
+	for (i = 0; i < pObj->Get_Num_Sub_Objects(); i++) {
+		RenderObjClass* pSub = pObj->Get_Sub_Object(i);
 		Matrix3D mtx = pSub->Get_Transform();
-		if (0==strnicmp(left, pSub->Get_Name(), strlen(left))) {
+		if (0 == strnicmp(left, pSub->Get_Name(), strlen(left))) {
 			m_leftMtx = mtx;
 			strlcpy(left, pSub->Get_Name(), ARRAY_SIZE(left));
 		}
-		if (0==strnicmp(section, pSub->Get_Name(), strlen(section))) {
+		if (0 == strnicmp(section, pSub->Get_Name(), strlen(section))) {
 			m_sectionMtx = mtx;
 			strlcpy(section, pSub->Get_Name(), ARRAY_SIZE(section));
 		}
-		if (0==strnicmp(right, pSub->Get_Name(), strlen(right))) {
+		if (0 == strnicmp(right, pSub->Get_Name(), strlen(right))) {
 			m_rightMtx = mtx;
 			strlcpy(right, pSub->Get_Name(), ARRAY_SIZE(right));
 		}
@@ -273,7 +273,7 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 
 	REF_PTR_RELEASE(pObj);
 
-	m_leftMesh = (MeshClass*)pMgr->Create_Render_Obj(left );
+	m_leftMesh = (MeshClass*)pMgr->Create_Render_Obj(left);
 	m_sectionMesh = (MeshClass*)pMgr->Create_Render_Obj(section);
 	m_rightMesh = (MeshClass*)pMgr->Create_Render_Obj(right);
 	m_scale = scale;
@@ -290,12 +290,12 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 	}
 
 	Int numVertex = m_leftMesh->Peek_Model()->Get_Vertex_Count();
-	Vector3 *pVert = m_leftMesh->Peek_Model()->Get_Vertex_Array();
+	Vector3* pVert = m_leftMesh->Peek_Model()->Get_Vertex_Array();
 	m_leftMinX = FLT_MAX;
 	m_leftMaxX = -FLT_MAX;
 	m_minY = FLT_MAX;
 	m_maxY = -FLT_MAX;
-	for (i=0; i<numVertex; i++) {
+	for (i = 0; i < numVertex; i++) {
 		Vector3 vert;
 		Matrix3D::Transform_Vector(m_leftMtx, pVert[i], &vert);
 		if (m_leftMinX > vert.X) m_leftMinX = vert.X;
@@ -308,7 +308,7 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 		pVert = m_sectionMesh->Peek_Model()->Get_Vertex_Array();
 		m_sectionMinX = FLT_MAX;
 		m_sectionMaxX = -FLT_MAX;
-		for (i=0; i<numVertex; i++) {
+		for (i = 0; i < numVertex; i++) {
 			Vector3 vert;
 			Matrix3D::Transform_Vector(m_sectionMtx, pVert[i], &vert);
 			if (m_sectionMinX > vert.X) m_sectionMinX = vert.X;
@@ -319,13 +319,14 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 		pVert = m_rightMesh->Peek_Model()->Get_Vertex_Array();
 		m_rightMinX = FLT_MAX;
 		m_rightMaxX = -FLT_MAX;
-		for (i=0; i<numVertex; i++) {
+		for (i = 0; i < numVertex; i++) {
 			Vector3 vert;
 			Matrix3D::Transform_Vector(m_rightMtx, pVert[i], &vert);
 			if (m_rightMinX > vert.X) m_rightMinX = vert.X;
 			if (vert.X > m_rightMaxX) m_rightMaxX = vert.X;
 		}
-	} else {
+	}
+	else {
 		m_sectionMinX = m_leftMaxX;
 		m_sectionMaxX = m_leftMaxX;
 		m_rightMinX = m_leftMaxX;
@@ -335,14 +336,14 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 	if (length < 1) length = 1;
 	m_length = length;
 	if (m_bridgeType == SECTIONAL_BRIDGE) {
-		Real allowableError = 0.05f*length;
+		Real allowableError = 0.05f * length;
 		// make sure the sections align.
 
-		if (m_leftMaxX>m_sectionMinX+allowableError) {
+		if (m_leftMaxX > m_sectionMinX + allowableError) {
 			m_bridgeType = FIXED_BRIDGE;
 		}
 
-		if (m_rightMinX<m_sectionMaxX-allowableError) {
+		if (m_rightMinX < m_sectionMaxX - allowableError) {
 			m_bridgeType = FIXED_BRIDGE;
 		}
 
@@ -356,7 +357,7 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 //=============================================================================
 /** Gets the location info for the bridge.  */
 //=============================================================================
-void W3DBridge::getBridgeInfo(BridgeInfo *pInfo)
+void W3DBridge::getBridgeInfo(BridgeInfo* pInfo)
 {
 
 	pInfo->from.x = m_start.X;
@@ -365,9 +366,9 @@ void W3DBridge::getBridgeInfo(BridgeInfo *pInfo)
 	pInfo->to.x = m_end.X;
 	pInfo->to.y = m_end.Y;
 	pInfo->to.z = m_end.Z;
-	pInfo->bridgeWidth = (m_maxY - m_minY) *m_scale;
+	pInfo->bridgeWidth = (m_maxY - m_minY) * m_scale;
 
-	Vector3 vec = 	m_end-m_start;
+	Vector3 vec = m_end - m_start;
 	Vector3 vecNormal(-vec.Y, vec.X, 0);
 	vecNormal.Normalize();
 
@@ -400,44 +401,44 @@ void W3DBridge::getBridgeInfo(BridgeInfo *pInfo)
 //=============================================================================
 /** Gets the vertex values for a section of a bridge.  */
 //=============================================================================
-Int W3DBridge::getModelVertices(VertexFormatXYZNDUV1 *destination_vb, Int curVertex, Real xOffset,
-																Vector3 &vec, Vector3 &vecNormal, Vector3 &vecZ, Vector3 &offset,
-																const Matrix3D &mtx,
-																MeshClass *pMesh, RefRenderObjListIterator *pLightsIterator)
+Int W3DBridge::getModelVertices(VertexFormatXYZNDUV1* destination_vb, Int curVertex, Real xOffset,
+	Vector3& vec, Vector3& vecNormal, Vector3& vecZ, Vector3& offset,
+	const Matrix3D& mtx,
+	MeshClass* pMesh, RefRenderObjListIterator* pLightsIterator)
 {
 	if (pMesh == NULL)
 		return(0);
 
 	Int i;
 	Int numVertex = pMesh->Peek_Model()->Get_Vertex_Count();
-	Vector3 *pVert = pMesh->Peek_Model()->Get_Vertex_Array();
+	Vector3* pVert = pMesh->Peek_Model()->Get_Vertex_Array();
 
-	const Vector3 *pNormal = 	pMesh->Peek_Model()->Get_Vertex_Normal_Array();
+	const Vector3* pNormal = pMesh->Peek_Model()->Get_Vertex_Normal_Array();
 
 	// If we happen to have too many bridges, stop.
-	if (curVertex+numVertex+2>= W3DBridgeBuffer::MAX_BRIDGE_VERTEX) {
+	if (curVertex + numVertex + 2 >= W3DBridgeBuffer::MAX_BRIDGE_VERTEX) {
 		return(0);
 	}
 
 	Vector3 lightRay[MAX_GLOBAL_LIGHTS];
-	const Coord3D *lightPos;
+	const Coord3D* lightPos;
 
-	for (Int lightIndex=0; lightIndex < TheGlobalData->m_numGlobalLights; lightIndex++)
+	for (Int lightIndex = 0; lightIndex < TheGlobalData->m_numGlobalLights; lightIndex++)
 	{
-		lightPos=&TheGlobalData->m_terrainLightPos[lightIndex];
-		lightRay[lightIndex].Set(-lightPos->x,-lightPos->y,	-lightPos->z);
-//		__asm {int 3}; //see if it really needs normalization!!
+		lightPos = &TheGlobalData->m_terrainLightPos[lightIndex];
+		lightRay[lightIndex].Set(-lightPos->x, -lightPos->y, -lightPos->z);
+		//		__asm {int 3}; //see if it really needs normalization!!
 		lightRay[lightIndex].Normalize();
 	}
 
-	const Vector2*uvs=pMesh->Peek_Model()->Get_UV_Array_By_Index(0);
-	VertexFormatXYZNDUV1 *curVb = destination_vb+curVertex;
+	const Vector2* uvs = pMesh->Peek_Model()->Get_UV_Array_By_Index(0);
+	VertexFormatXYZNDUV1* curVb = destination_vb + curVertex;
 
-	for (i=0; i<numVertex; i++) {
+	for (i = 0; i < numVertex; i++) {
 		Vector3 vLoc;
 		Vector3 vertex;
 		Matrix3D::Transform_Vector(mtx, pVert[i], &vertex);
-		vLoc = (vertex.X+xOffset) * vec + vertex.Y*vecNormal + vertex.Z*vecZ;
+		vLoc = (vertex.X + xOffset) * vec + vertex.Y * vecNormal + vertex.Z * vecZ;
 
 		vLoc.X += m_start.X;
 		vLoc.Y += m_start.Y;
@@ -460,7 +461,7 @@ Int W3DBridge::getModelVertices(VertexFormatXYZNDUV1 *destination_vb, Int curVer
 		curVb->nz = normal.Z;
 		curVb->diffuse = 0xFF000000;
 #else
-		normal = (normal.X) * vec + normal.Y*vecNormal + normal.Z*vecZ;
+		normal = (normal.X) * vec + normal.Y * vecNormal + normal.Z * vecZ;
 		normal.Normalize();
 		TheTerrainRenderObject->doTheLight(&vb, lightRay, &normal, NULL, 1.0f);
 		curVb->nx = 0;	//will these to keep AGP write buffer happy.
@@ -480,8 +481,8 @@ Int W3DBridge::getModelVertices(VertexFormatXYZNDUV1 *destination_vb, Int curVer
 //=============================================================================
 /** Gets the vertex values for a section of a fixed bridge.  */
 //=============================================================================
-Int W3DBridge::getModelVerticesFixed(VertexFormatXYZNDUV1 *destination_vb, Int curVertex,
-																const Matrix3D &mtx, MeshClass *pMesh, RefRenderObjListIterator *pLightsIterator)
+Int W3DBridge::getModelVerticesFixed(VertexFormatXYZNDUV1* destination_vb, Int curVertex,
+	const Matrix3D& mtx, MeshClass* pMesh, RefRenderObjListIterator* pLightsIterator)
 {
 	if (pMesh == NULL)
 		return(0);
@@ -494,7 +495,7 @@ Int W3DBridge::getModelVerticesFixed(VertexFormatXYZNDUV1 *destination_vb, Int c
 	vecNormal.Normalize();
 	Real deltaZ = m_end.Z - m_start.Z;
 	deltaZ /= vec.Length();
-	Real deltaX = sqrt(1.0 - deltaZ*deltaZ);
+	Real deltaX = sqrt(1.0 - deltaZ * deltaZ);
 	Vector3 vecZ(-deltaZ, 0, deltaX);
 	vec /= m_length;
 	vecNormal *= m_scale;
@@ -508,8 +509,8 @@ Int W3DBridge::getModelVerticesFixed(VertexFormatXYZNDUV1 *destination_vb, Int c
 //=============================================================================
 /** Gets the index values and vertex values for a bridge.  */
 //=============================================================================
-void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatXYZNDUV1 *destination_vb,
-																		Int *curIndexP, Int *curVertexP, RefRenderObjListIterator *pLightsIterator)
+void W3DBridge::getIndicesNVertices(UnsignedShort* destination_ib, VertexFormatXYZNDUV1* destination_vb,
+	Int* curIndexP, Int* curVertexP, RefRenderObjListIterator* pLightsIterator)
 {
 	Int numI;
 	Int numV;
@@ -521,19 +522,19 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 		numV = getModelVerticesFixed(destination_vb, *curVertexP, m_leftMtx, m_leftMesh, pLightsIterator);
 		if (!numV)
 		{	//not enough room for vertices
-			DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
+			DEBUG_ASSERTCRASH(numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow."));
 			return;
 		}
-		numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_leftMesh);
+		numI = getModelIndices(destination_ib, *curIndexP, *curVertexP, m_leftMesh);
 		if (!numI)
 		{	//not enough room for indices
-			DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
+			DEBUG_ASSERTCRASH(numI, ("W3DBridge::GetIndicesNVertices(). Index overflow."));
 			return;
 		}
 		*curIndexP += numI;
 		*curVertexP += numV;
 		m_numVertex += numV;
-		m_numPolygons += numI/3;
+		m_numPolygons += numI / 3;
 		return;
 	}
 
@@ -550,19 +551,19 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 	Real deltaZ = m_end.Z - m_start.Z;
 	Real desiredLength = vec.Length();
 	deltaZ /= desiredLength;
-	Real deltaX = sqrt(1.0 - deltaZ*deltaZ);
+	Real deltaX = sqrt(1.0 - deltaZ * deltaZ);
 	Vector3 vecZ(-deltaZ, 0, deltaX);
 	vecZ *= m_scale;
 
 	Real spanLength = m_rightMinX - m_leftMaxX;
 	Int numSpans = 1;
 	if (m_bridgeType != FIXED_BRIDGE) {
-		Real spannable = desiredLength - (m_length-spanLength);
-		numSpans = REAL_TO_INT_FLOOR( (spannable + spanLength/2)/spanLength);
-		if (numSpans<0) numSpans = 0;
+		Real spannable = desiredLength - (m_length - spanLength);
+		numSpans = REAL_TO_INT_FLOOR((spannable + spanLength / 2) / spanLength);
+		if (numSpans < 0) numSpans = 0;
 	}
 
-	Real bridgeLength = m_length + (numSpans-1)*spanLength;
+	Real bridgeLength = m_length + (numSpans - 1) * spanLength;
 	Real xOffset = -m_leftMinX;
 
 	// Draw the left end.
@@ -571,60 +572,60 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 		m_leftMtx, m_leftMesh, pLightsIterator);
 	if (!numV)
 	{	//not enough room for vertices
-		DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
+		DEBUG_ASSERTCRASH(numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow."));
 		return;
 	}
-	numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_leftMesh);
+	numI = getModelIndices(destination_ib, *curIndexP, *curVertexP, m_leftMesh);
 	if (!numI)
 	{	//not enough room for indices
-		DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
+		DEBUG_ASSERTCRASH(numI, ("W3DBridge::GetIndicesNVertices(). Index overflow."));
 		return;
 	}
 	*curIndexP += numI;
 	*curVertexP += numV;
 	m_numVertex += numV;
-	m_numPolygons += numI/3;
+	m_numPolygons += numI / 3;
 
 	Int i;
 	// draw the spans.
-	for (i=0; i<numSpans; i++) {
-		numV = getModelVertices(destination_vb, *curVertexP, xOffset+i*spanLength, vec, vecNormal, vecZ, m_start,
+	for (i = 0; i < numSpans; i++) {
+		numV = getModelVertices(destination_vb, *curVertexP, xOffset + i * spanLength, vec, vecNormal, vecZ, m_start,
 			m_sectionMtx, m_sectionMesh, pLightsIterator);
 		if (!numV)
 		{	//not enough room for vertices
-			DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
+			DEBUG_ASSERTCRASH(numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow."));
 			return;
 		}
-		numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_sectionMesh);
+		numI = getModelIndices(destination_ib, *curIndexP, *curVertexP, m_sectionMesh);
 		if (!numI)
 		{	//not enough room for indices
-			DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
+			DEBUG_ASSERTCRASH(numI, ("W3DBridge::GetIndicesNVertices(). Index overflow."));
 			return;
 		}
 		*curIndexP += numI;
 		*curVertexP += numV;
 		m_numVertex += numV;
-		m_numPolygons += numI/3;
+		m_numPolygons += numI / 3;
 	}
 
 	// Draw the right end.
-	numV = getModelVertices(destination_vb, *curVertexP, xOffset+(numSpans-1)*spanLength, vec, vecNormal, vecZ, m_start,
+	numV = getModelVertices(destination_vb, *curVertexP, xOffset + (numSpans - 1) * spanLength, vec, vecNormal, vecZ, m_start,
 		m_rightMtx, m_rightMesh, pLightsIterator);
 	if (!numV)
 	{	//not enough room for vertices
-		DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
+		DEBUG_ASSERTCRASH(numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow."));
 		return;
 	}
-	numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_rightMesh);
+	numI = getModelIndices(destination_ib, *curIndexP, *curVertexP, m_rightMesh);
 	if (!numI)
 	{	//not enough room for indices
-		DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
+		DEBUG_ASSERTCRASH(numI, ("W3DBridge::GetIndicesNVertices(). Index overflow."));
 		return;
 	}
 	*curIndexP += numI;
 	*curVertexP += numV;
 	m_numVertex += numV;
-	m_numPolygons += numI/3;
+	m_numPolygons += numI / 3;
 	return;
 }
 
@@ -633,23 +634,23 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 //=============================================================================
 /** Gets the index values for a particular mesh section of the bridge.  */
 //=============================================================================
-Int W3DBridge::getModelIndices(UnsignedShort *destination_ib, Int curIndex, Int vertexOffset, MeshClass *pMesh)
+Int W3DBridge::getModelIndices(UnsignedShort* destination_ib, Int curIndex, Int vertexOffset, MeshClass* pMesh)
 {
 	if (pMesh == NULL)
 		return(0);
 	Int numPoly = pMesh->Peek_Model()->Get_Polygon_Count();
-	const TriIndex *pPoly =pMesh->Peek_Model()->Get_Polygon_Array();
-	if (curIndex+3*numPoly+6 >= W3DBridgeBuffer::MAX_BRIDGE_INDEX) {
+	const TriIndex* pPoly = pMesh->Peek_Model()->Get_Polygon_Array();
+	if (curIndex + 3 * numPoly + 6 >= W3DBridgeBuffer::MAX_BRIDGE_INDEX) {
 		return(0);
 	}
-	UnsignedShort *curIb = destination_ib+curIndex;
+	UnsignedShort* curIb = destination_ib + curIndex;
 	Int i;
-	for (i=0; i<numPoly; i++) {
+	for (i = 0; i < numPoly; i++) {
 		*curIb++ = vertexOffset + pPoly[i].I;
 		*curIb++ = vertexOffset + pPoly[i].J;
 		*curIb++ = vertexOffset + pPoly[i].K;
 	}
-	return(numPoly*3);
+	return(numPoly * 3);
 }
 
 //-----------------------------------------------------------------------------
@@ -664,13 +665,13 @@ Int W3DBridge::getModelIndices(UnsignedShort *destination_ib, Int curIndex, Int 
 /** Culls the bridges, marking the visible flag.  If a bridge changes visibility, it sets
 m_anythingChanged */
 //=============================================================================
-void W3DBridgeBuffer::cull(CameraClass * camera)
+void W3DBridgeBuffer::cull(CameraClass* camera)
 {
 	Int curBridge;
 
 	m_anythingChanged = m_updateVis;
 
-	for (curBridge=0; curBridge<m_numBridges; curBridge++) {
+	for (curBridge = 0; curBridge < m_numBridges; curBridge++) {
 		if (m_bridges[curBridge].cullBridge(camera)) {
 			m_anythingChanged = true;
 		}
@@ -683,28 +684,28 @@ void W3DBridgeBuffer::cull(CameraClass * camera)
 //=============================================================================
 /** Loads the bridges into the vertex buffer for drawing. */
 //=============================================================================
-void W3DBridgeBuffer::loadBridgesInVertexAndIndexBuffers(RefRenderObjListIterator *pLightsIterator)
+void W3DBridgeBuffer::loadBridgesInVertexAndIndexBuffers(RefRenderObjListIterator* pLightsIterator)
 {
 	if (!m_indexBridge || !m_vertexBridge || !m_initialized) {
 		return;
 	}
 	m_curNumBridgeVertices = 0;
 	m_curNumBridgeIndices = 0;
-	VertexFormatXYZNDUV1 *vb;
-	UnsignedShort *ib;
+	VertexFormatXYZNDUV1* vb;
+	UnsignedShort* ib;
 	// Lock the buffers.
 	DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexBridge, D3DLOCK_DISCARD);
 	DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_vertexBridge, D3DLOCK_DISCARD);
-	vb=(VertexFormatXYZNDUV1*)lockVtxBuffer.Get_Vertex_Array();
+	vb = (VertexFormatXYZNDUV1*)lockVtxBuffer.Get_Vertex_Array();
 	ib = (UnsignedShort*)lockIdxBuffer.Get_Index_Array();  // Phase 42: Explicit cast for void* compatibility
 
-//	UnsignedShort *curIb = ib;
+	//	UnsignedShort *curIb = ib;
 
-//	VertexFormatXYZNDUV1 *curVb = vb;
+	//	VertexFormatXYZNDUV1 *curVb = vb;
 
 	Int curBridge;
 
-	for (curBridge=0; curBridge<m_numBridges; curBridge++) {
+	for (curBridge = 0; curBridge < m_numBridges; curBridge++) {
 		m_bridges[curBridge].getIndicesNVertices(ib, vb, &m_curNumBridgeIndices,
 			&m_curNumBridgeVertices, pLightsIterator);
 	}
@@ -732,16 +733,21 @@ for the bridges. */
 //=============================================================================
 W3DBridgeBuffer::W3DBridgeBuffer(void)
 {
+	fprintf(stderr, "[W3DBridgeBuffer] Constructor START\n"); fflush(stderr);
 	m_initialized = false;
 	m_vertexMaterial = NULL;
 	m_vertexBridge = NULL;
 	m_indexBridge = NULL;
 	m_bridgeTexture = NULL;
-	m_curNumBridgeVertices=0;
-	m_curNumBridgeIndices=0;
+	m_curNumBridgeVertices = 0;
+	m_curNumBridgeIndices = 0;
+	fprintf(stderr, "[W3DBridgeBuffer] Calling clearAllBridges\n"); fflush(stderr);
 	clearAllBridges();
+	fprintf(stderr, "[W3DBridgeBuffer] Calling allocateBridgeBuffers\n"); fflush(stderr);
 	allocateBridgeBuffers();
+	fprintf(stderr, "[W3DBridgeBuffer] allocateBridgeBuffers done\n"); fflush(stderr);
 	m_initialized = true;
+	fprintf(stderr, "[W3DBridgeBuffer] Constructor END\n"); fflush(stderr);
 }
 
 
@@ -764,24 +770,33 @@ void W3DBridgeBuffer::freeBridgeBuffers(void)
 //=============================================================================
 void W3DBridgeBuffer::allocateBridgeBuffers(void)
 {
-	if (TheGlobalData->m_headless)
+	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] START, TheGlobalData=%p\n", TheGlobalData); fflush(stderr);
+	if (TheGlobalData->m_headless) {
+		fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] Headless mode, returning early\n"); fflush(stderr);
 		return;
-	m_vertexBridge=NEW_REF(DX8VertexBufferClass,(DX8_FVF_XYZNDUV1,MAX_BRIDGE_VERTEX+4,DX8VertexBufferClass::USAGE_DYNAMIC));
-	m_indexBridge=NEW_REF(DX8IndexBufferClass,(MAX_BRIDGE_INDEX+4, DX8IndexBufferClass::USAGE_DYNAMIC));
-	m_vertexMaterial=VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_DIFFUSE);
+	}
+	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] Creating m_vertexBridge\n"); fflush(stderr);
+	m_vertexBridge = NEW_REF(DX8VertexBufferClass, (DX8_FVF_XYZNDUV1, MAX_BRIDGE_VERTEX + 4, DX8VertexBufferClass::USAGE_DYNAMIC));
+	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] m_vertexBridge=%p\n", m_vertexBridge); fflush(stderr);
+	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] Creating m_indexBridge\n"); fflush(stderr);
+	m_indexBridge = NEW_REF(DX8IndexBufferClass, (MAX_BRIDGE_INDEX + 4, DX8IndexBufferClass::USAGE_DYNAMIC));
+	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] m_indexBridge=%p\n", m_indexBridge); fflush(stderr);
+	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] Getting vertex material preset\n"); fflush(stderr);
+	m_vertexMaterial = VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_DIFFUSE);
+	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] m_vertexMaterial=%p\n", m_vertexMaterial); fflush(stderr);
 #ifdef USE_BRIDGE_NORMALS
-	m_vertexMaterial= NEW VertexMaterialClass();
+	m_vertexMaterial = NEW VertexMaterialClass();
 	m_vertexMaterial->Set_Shininess(0.0);
-	m_vertexMaterial->Set_Ambient(1,1,1);
-	m_vertexMaterial->Set_Diffuse(1,1,1);
-	m_vertexMaterial->Set_Specular(0,0,0);
-	m_vertexMaterial->Set_Emissive(0,0,0);
+	m_vertexMaterial->Set_Ambient(1, 1, 1);
+	m_vertexMaterial->Set_Diffuse(1, 1, 1);
+	m_vertexMaterial->Set_Specular(0, 0, 0);
+	m_vertexMaterial->Set_Emissive(0, 0, 0);
 	m_vertexMaterial->Set_Opacity(1);
 	m_vertexMaterial->Set_Lighting(true);
 	m_vertexMaterial->Set_Diffuse_Color_Source(VertexMaterialClass::COLOR1);
 #endif
-	m_curNumBridgeVertices=0;
-	m_curNumBridgeIndices=0;
+	m_curNumBridgeVertices = 0;
+	m_curNumBridgeIndices = 0;
 }
 
 //=============================================================================
@@ -792,11 +807,11 @@ void W3DBridgeBuffer::allocateBridgeBuffers(void)
 void W3DBridgeBuffer::clearAllBridges(void)
 {
 	Int curBridge;
-	for (curBridge=0; curBridge<m_numBridges; curBridge++) {
+	for (curBridge = 0; curBridge < m_numBridges; curBridge++) {
 		m_bridges[curBridge].clearBridge();
 	}
 	m_curNumBridgeIndices = 0;
-	m_numBridges=0;
+	m_numBridges = 0;
 }
 
 //=============================================================================
@@ -804,20 +819,20 @@ void W3DBridgeBuffer::clearAllBridges(void)
 //=============================================================================
 /** loadBridges.  When loaded, tell the terrain logic where the bridge is. */
 //=============================================================================
-void W3DBridgeBuffer::loadBridges(W3DTerrainLogic *pTerrainLogic, Bool saveGame)
+void W3DBridgeBuffer::loadBridges(W3DTerrainLogic* pTerrainLogic, Bool saveGame)
 {
 	// TheSuperHackers @logic-client-separation helmutbuhler 26/4/2025
 	// W3DBridgeBuffer shouldn't add objects to W3DTerrainLogic
 	clearAllBridges();
-	MapObject *pMapObj;
-	MapObject *pMapObj2;
+	MapObject* pMapObj;
+	MapObject* pMapObj2;
 	for (pMapObj = MapObject::getFirstMapObject(); pMapObj; pMapObj = pMapObj->getNext()) {
 		if (pMapObj->getFlag(FLAG_BRIDGE_POINT1)) {
 			pMapObj2 = pMapObj->getNext();
-			if ( !pMapObj2 || !pMapObj2->getFlag(FLAG_BRIDGE_POINT2)) {
+			if (!pMapObj2 || !pMapObj2->getFlag(FLAG_BRIDGE_POINT2)) {
 				DEBUG_LOG(("Missing second bridge point.  Ignoring first."));
 			}
-			if (pMapObj2==NULL) break;
+			if (pMapObj2 == NULL) break;
 			if (!pMapObj2->getFlag(FLAG_BRIDGE_POINT2)) continue;
 			Vector3 from, to;
 			from.Set(pMapObj->getLocation()->x, pMapObj->getLocation()->y, 0);
@@ -835,83 +850,83 @@ void W3DBridgeBuffer::loadBridges(W3DTerrainLogic *pTerrainLogic, Bool saveGame)
 
 //=============================================================================
 //=============================================================================
-static RenderObjClass* createTower( SimpleSceneClass *scene,
-																		W3DAssetManager *assetManager,
-																		MapObject *mapObject,
-																	  BridgeTowerType type,
-																	  BridgeInfo *bridgeInfo )
+static RenderObjClass* createTower(SimpleSceneClass* scene,
+	W3DAssetManager* assetManager,
+	MapObject* mapObject,
+	BridgeTowerType type,
+	BridgeInfo* bridgeInfo)
 {
 	RenderObjClass* tower = NULL;
 
 	// sanity
-	if( scene == NULL ||
-			assetManager == NULL ||
-			mapObject == NULL ||
-			bridgeInfo == NULL ||
-			type < 0 || type >= BRIDGE_MAX_TOWERS )
+	if (scene == NULL ||
+		assetManager == NULL ||
+		mapObject == NULL ||
+		bridgeInfo == NULL ||
+		type < 0 || type >= BRIDGE_MAX_TOWERS)
 		return NULL;
 
 	// get template for this bridge
-	DEBUG_ASSERTCRASH( TheTerrainRoads, ("createTower: TheTerrainRoads is NULL") );
-	TerrainRoadType *bridgeTemplate = TheTerrainRoads->findBridge( mapObject->getName() );
-	if( bridgeTemplate == NULL )
+	DEBUG_ASSERTCRASH(TheTerrainRoads, ("createTower: TheTerrainRoads is NULL"));
+	TerrainRoadType* bridgeTemplate = TheTerrainRoads->findBridge(mapObject->getName());
+	if (bridgeTemplate == NULL)
 		return NULL;
 
 	// given the type of tower (corner position) find the appropriate spot to put the tower
 	Coord3D towerPos;
-	switch( type )
+	switch (type)
 	{
 
-		case BRIDGE_TOWER_FROM_LEFT:	towerPos = bridgeInfo->fromLeft;		break;
-		case BRIDGE_TOWER_FROM_RIGHT: towerPos = bridgeInfo->fromRight;		break;
-		case BRIDGE_TOWER_TO_LEFT:		towerPos = bridgeInfo->toLeft;			break;
-		case BRIDGE_TOWER_TO_RIGHT:		towerPos = bridgeInfo->toRight;			break;
-		default: return NULL;
+	case BRIDGE_TOWER_FROM_LEFT:	towerPos = bridgeInfo->fromLeft;		break;
+	case BRIDGE_TOWER_FROM_RIGHT: towerPos = bridgeInfo->fromRight;		break;
+	case BRIDGE_TOWER_TO_LEFT:		towerPos = bridgeInfo->toLeft;			break;
+	case BRIDGE_TOWER_TO_RIGHT:		towerPos = bridgeInfo->toRight;			break;
+	default: return NULL;
 
 	}
 
 	// set the Z position to that of the terrain
-	towerPos.z = TheTerrainRenderObject->getHeightMapHeight( towerPos.x, towerPos.y, NULL);
+	towerPos.z = TheTerrainRenderObject->getHeightMapHeight(towerPos.x, towerPos.y, NULL);
 
 	// find the thing template for the tower we want to construct
-	AsciiString towerTemplateName = bridgeTemplate->getTowerObjectName( type );
-	DEBUG_ASSERTCRASH( TheThingFactory, ("createTower: TheThingFactory is NULL") );
-	const ThingTemplate *towerTemplate = TheThingFactory->findTemplate( towerTemplateName );
-	if( towerTemplate == NULL )
+	AsciiString towerTemplateName = bridgeTemplate->getTowerObjectName(type);
+	DEBUG_ASSERTCRASH(TheThingFactory, ("createTower: TheThingFactory is NULL"));
+	const ThingTemplate* towerTemplate = TheThingFactory->findTemplate(towerTemplateName);
+	if (towerTemplate == NULL)
 		return NULL;
 
 	// find the name of the render object to show
-	const ModuleInfo& mi = towerTemplate->getDrawModuleInfo( );
-	if( mi.getCount() <= 0 )
+	const ModuleInfo& mi = towerTemplate->getDrawModuleInfo();
+	if (mi.getCount() <= 0)
 		return NULL;
 	const ModuleData* mdd = mi.getNthData(0);
 	const W3DModelDrawModuleData* md = mdd ? mdd->getAsW3DModelDrawModuleData() : NULL;
-	if( md == NULL )
+	if (md == NULL)
 		return NULL;
 	ModelConditionFlags state;
 	state.clear();
-	AsciiString modelName = md->getBestModelNameForWB( state );
+	AsciiString modelName = md->getBestModelNameForWB(state);
 
 	// create the render object
 	Int playerColor = 0xFFFFFF;
-	tower = assetManager->Create_Render_Obj( modelName.str(), 1.0f, playerColor );
+	tower = assetManager->Create_Render_Obj(modelName.str(), 1.0f, playerColor);
 
 	// tie the render object into the map object
-	mapObject->setBridgeRenderObject( type, tower );
+	mapObject->setBridgeRenderObject(type, tower);
 
 	// set the position of the tower render object to the position in the world
 	Matrix3D transform;
 	transform.Make_Identity();
-	transform.Set_X_Translation( towerPos.x );
-	transform.Set_Y_Translation( towerPos.y );
-	transform.Set_Z_Translation( towerPos.z );
-	tower->Set_Transform( transform );
+	transform.Set_X_Translation(towerPos.x);
+	transform.Set_Y_Translation(towerPos.y);
+	transform.Set_Z_Translation(towerPos.z);
+	tower->Set_Transform(transform);
 
 	// set the angle for the tower
 	/// @todo --> write me
 
 	// add tower render object to the scene
-	scene->Add_Render_Object( tower );
+	scene->Add_Render_Object(tower);
 
 	// return the render object of the tower created
 	return tower;
@@ -920,13 +935,13 @@ static RenderObjClass* createTower( SimpleSceneClass *scene,
 
 //=============================================================================
 //=============================================================================
-static void updateTowerPos( RenderObjClass* tower,
-														BridgeTowerType type,
-														BridgeInfo* bridgeInfo )
+static void updateTowerPos(RenderObjClass* tower,
+	BridgeTowerType type,
+	BridgeInfo* bridgeInfo)
 {
 
 	// sanity
-	if( tower == NULL || type < 0 || type >= BRIDGE_MAX_TOWERS || bridgeInfo == NULL )
+	if (tower == NULL || type < 0 || type >= BRIDGE_MAX_TOWERS || bridgeInfo == NULL)
 		return;
 
 	//
@@ -944,25 +959,25 @@ static void updateTowerPos( RenderObjClass* tower,
 	// opposite way the "bridge is pointing"
 	//
 	Coord3D towerPos;
-	switch( type )
+	switch (type)
 	{
 
-		case BRIDGE_TOWER_FROM_LEFT:	towerPos = bridgeInfo->fromLeft;		angle += PI; break;
-		case BRIDGE_TOWER_FROM_RIGHT: towerPos = bridgeInfo->fromRight;		angle += PI; break;
-		case BRIDGE_TOWER_TO_LEFT:		towerPos = bridgeInfo->toLeft;			break;
-		case BRIDGE_TOWER_TO_RIGHT:		towerPos = bridgeInfo->toRight;			break;
-		default: return;
+	case BRIDGE_TOWER_FROM_LEFT:	towerPos = bridgeInfo->fromLeft;		angle += PI; break;
+	case BRIDGE_TOWER_FROM_RIGHT: towerPos = bridgeInfo->fromRight;		angle += PI; break;
+	case BRIDGE_TOWER_TO_LEFT:		towerPos = bridgeInfo->toLeft;			break;
+	case BRIDGE_TOWER_TO_RIGHT:		towerPos = bridgeInfo->toRight;			break;
+	default: return;
 
 	}
 
 	// set the position of the tower render object to the position in the world
 	Matrix3D transform;
 	transform.Make_Identity();
-	transform.Set_X_Translation( towerPos.x );
-	transform.Set_Y_Translation( towerPos.y );
-	transform.Set_Z_Translation( towerPos.z );
-	transform.Rotate_Z( angle );
-	tower->Set_Transform( transform );
+	transform.Set_X_Translation(towerPos.x);
+	transform.Set_Y_Translation(towerPos.y);
+	transform.Set_Z_Translation(towerPos.z);
+	transform.Rotate_Z(angle);
+	tower->Set_Transform(transform);
 
 	// set the angle for the tower
 //	tower->setAngle( angle );
@@ -974,32 +989,32 @@ static void updateTowerPos( RenderObjClass* tower,
 //=============================================================================
 /** loadBridges.  When loaded, tell the terrain logic where the bridge is. */
 //=============================================================================
-void W3DBridgeBuffer::worldBuilderUpdateBridgeTowers( W3DAssetManager *assetManager,
-																											SimpleSceneClass *scene )
+void W3DBridgeBuffer::worldBuilderUpdateBridgeTowers(W3DAssetManager* assetManager,
+	SimpleSceneClass* scene)
 {
-	MapObject *pMapObj;
-	MapObject *pMapObj2;
+	MapObject* pMapObj;
+	MapObject* pMapObj2;
 
-	for( pMapObj = MapObject::getFirstMapObject(); pMapObj; pMapObj = pMapObj->getNext() )
+	for (pMapObj = MapObject::getFirstMapObject(); pMapObj; pMapObj = pMapObj->getNext())
 	{
 
-		if( pMapObj->getFlag( FLAG_BRIDGE_POINT1 ) )
+		if (pMapObj->getFlag(FLAG_BRIDGE_POINT1))
 		{
 
 			pMapObj2 = pMapObj->getNext();
-			if( !pMapObj2 || !pMapObj2->getFlag( FLAG_BRIDGE_POINT2 ) )
+			if (!pMapObj2 || !pMapObj2->getFlag(FLAG_BRIDGE_POINT2))
 				DEBUG_LOG(("Missing second bridge point.  Ignoring first."));
 
-			if( pMapObj2 == NULL )
+			if (pMapObj2 == NULL)
 				break;
-			if( !pMapObj2->getFlag( FLAG_BRIDGE_POINT2 ) )
+			if (!pMapObj2->getFlag(FLAG_BRIDGE_POINT2))
 				continue;
 
 			//
 			// now that we've got the two map objects that are bridge point 1 and 2, get the
 			// bridge info that has been stored
 			//
-			for( Int i = 0; i < m_numBridges; ++i )
+			for (Int i = 0; i < m_numBridges; ++i)
 			{
 
 				//
@@ -1008,44 +1023,44 @@ void W3DBridgeBuffer::worldBuilderUpdateBridgeTowers( W3DAssetManager *assetMana
 				// really all we have to match bridges.
 				/// @todo integrate the editor with the game ... will never happen tho ...
 				//
-				if( m_bridges[ i ].getTemplateName() == pMapObj->getName() &&
-						m_bridges[ i ].getStart()->X == pMapObj->getLocation()->x &&
-						m_bridges[ i ].getStart()->Y == pMapObj->getLocation()->y &&
-						m_bridges[ i ].getEnd()->X == pMapObj2->getLocation()->x &&
-						m_bridges[ i ].getEnd()->Y == pMapObj2->getLocation()->y )
+				if (m_bridges[i].getTemplateName() == pMapObj->getName() &&
+					m_bridges[i].getStart()->X == pMapObj->getLocation()->x &&
+					m_bridges[i].getStart()->Y == pMapObj->getLocation()->y &&
+					m_bridges[i].getEnd()->X == pMapObj2->getLocation()->x &&
+					m_bridges[i].getEnd()->Y == pMapObj2->getLocation()->y)
 				{
-					RenderObjClass *towerRenderObj;
+					RenderObjClass* towerRenderObj;
 
 					// get the bridge info
 					BridgeInfo bridgeInfo;
-					m_bridges[ i ].getBridgeInfo( &bridgeInfo );
+					m_bridges[i].getBridgeInfo(&bridgeInfo);
 
 					// go through all bridge tower render objects
 					Bool created;
-					for( Int j = 0; j < BRIDGE_MAX_TOWERS; ++j )
+					for (Int j = 0; j < BRIDGE_MAX_TOWERS; ++j)
 					{
 
 						// create render object if needed
 						created = FALSE;
-						towerRenderObj = pMapObj->getBridgeRenderObject( (BridgeTowerType)j );
-						if( towerRenderObj == NULL )
+						towerRenderObj = pMapObj->getBridgeRenderObject((BridgeTowerType)j);
+						if (towerRenderObj == NULL)
 						{
 
-							towerRenderObj = createTower( scene, assetManager, pMapObj, (BridgeTowerType)j, &bridgeInfo );
+							towerRenderObj = createTower(scene, assetManager, pMapObj, (BridgeTowerType)j, &bridgeInfo);
 							created = TRUE;
 
 						}
 
 						// sanity
-						DEBUG_ASSERTCRASH( towerRenderObj != NULL, ("worldBuilderUpdateBridgeTowers: unable to create tower for bridge '%s'",
-															 m_bridges[ i ].getTemplateName().str()) );
+						DEBUG_ASSERTCRASH(towerRenderObj != NULL, ("worldBuilderUpdateBridgeTowers: unable to create tower for bridge '%s'",
+							m_bridges[i].getTemplateName().str()));
 
 						// update the position of the towers
-						updateTowerPos( towerRenderObj, (BridgeTowerType)j, &bridgeInfo );
+						updateTowerPos(towerRenderObj, (BridgeTowerType)j, &bridgeInfo);
 
 						// release the initial ref count of 1 for a newly created tower
-						if( created )
-							REF_PTR_RELEASE( towerRenderObj );
+						if (created)
+							REF_PTR_RELEASE(towerRenderObj);
 
 					}
 
@@ -1067,7 +1082,7 @@ void W3DBridgeBuffer::worldBuilderUpdateBridgeTowers( W3DAssetManager *assetMana
 //=============================================================================
 /** Adds a bridge.  Name is the GDF object name. */
 //=============================================================================
-void W3DBridgeBuffer::addBridge(Vector3 fromLoc, Vector3 toLoc, AsciiString name, W3DTerrainLogic *pTerrainLogic, Dict *props)
+void W3DBridgeBuffer::addBridge(Vector3 fromLoc, Vector3 toLoc, AsciiString name, W3DTerrainLogic* pTerrainLogic, Dict* props)
 {
 	if (m_numBridges >= MAX_BRIDGES) {
 		return;
@@ -1078,7 +1093,7 @@ void W3DBridgeBuffer::addBridge(Vector3 fromLoc, Vector3 toLoc, AsciiString name
 	}
 	m_bridges[m_numBridges].init(fromLoc, toLoc, name);
 	if (m_bridges[m_numBridges].load(BODY_PRISTINE)) {
-		W3DBridge *pBridge = m_bridges+m_numBridges;
+		W3DBridge* pBridge = m_bridges + m_numBridges;
 		if (pTerrainLogic) {
 			BridgeInfo info;
 			pBridge->getBridgeInfo(&info);
@@ -1094,7 +1109,7 @@ void W3DBridgeBuffer::addBridge(Vector3 fromLoc, Vector3 toLoc, AsciiString name
 //=============================================================================
 /** Updates the drawing buffer, based on the camera position. */
 //=============================================================================
-void W3DBridgeBuffer::updateCenter(CameraClass *camera, RefRenderObjListIterator *pLightsIterator)
+void W3DBridgeBuffer::updateCenter(CameraClass* camera, RefRenderObjListIterator* pLightsIterator)
 {
 	cull(camera);
 	if (m_anythingChanged || m_curNumBridgeIndices == 0) {
@@ -1108,20 +1123,20 @@ void W3DBridgeBuffer::updateCenter(CameraClass *camera, RefRenderObjListIterator
 //=============================================================================
 /** Draws the bridges. */
 //=============================================================================
-void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureClass *cloudTexture)
+void W3DBridgeBuffer::drawBridges(CameraClass* camera, Bool wireframe, TextureClass* cloudTexture)
 {
 
 	Int curBridge;
 	if (TheTerrainLogic) {
-		for (curBridge=0; curBridge<m_numBridges; curBridge++) {
+		for (curBridge = 0; curBridge < m_numBridges; curBridge++) {
 			m_bridges[curBridge].setEnabled(false);
 		}
 		/* Check for any changed damage states. */
 		Bool changed = false;
-		for (Bridge *bridge = TheTerrainLogic->getFirstBridge(); bridge; bridge = bridge->getNext()) {
+		for (Bridge* bridge = TheTerrainLogic->getFirstBridge(); bridge; bridge = bridge->getNext()) {
 			BridgeInfo info;
 			bridge->getBridgeInfo(&info);
-			if (info.bridgeIndex<0 || info.bridgeIndex>=m_numBridges) {
+			if (info.bridgeIndex < 0 || info.bridgeIndex >= m_numBridges) {
 				continue;
 			}
 			m_bridges[info.bridgeIndex].setEnabled(true);
@@ -1139,9 +1154,10 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 		if (changed) {
 			loadBridgesInVertexAndIndexBuffers(NULL);
 		}
-	}	else {
+	}
+	else {
 		// In wb, all are enabled.
-		for (curBridge=0; curBridge<m_numBridges; curBridge++) {
+		for (curBridge = 0; curBridge < m_numBridges; curBridge++) {
 			m_bridges[curBridge].setEnabled(true);
 		}
 	}
@@ -1154,7 +1170,7 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 
 	DX8Wrapper::Set_Material(m_vertexMaterial);
 	// Setup the vertex buffer, shader & texture.
-	DX8Wrapper::Set_Index_Buffer(m_indexBridge,0);
+	DX8Wrapper::Set_Index_Buffer(m_indexBridge, 0);
 	DX8Wrapper::Set_Vertex_Buffer(m_vertexBridge);
 	DX8Wrapper::Set_Shader(detailAlphaShader);
 #ifdef RTS_DEBUG
@@ -1165,11 +1181,11 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 
 	if (!wireframe && cloudTexture)
 	{	//Force a cloud texture projection into stage 1
-		W3DShaderManager::setTexture(1,cloudTexture);
-		W3DShaderManager::setShader(W3DShaderManager::ST_CLOUD_TEXTURE,1);
+		W3DShaderManager::setTexture(1, cloudTexture);
+		W3DShaderManager::setShader(W3DShaderManager::ST_CLOUD_TEXTURE, 1);
 	}
 
-	for (curBridge=0; curBridge<m_numBridges; curBridge++) {
+	for (curBridge = 0; curBridge < m_numBridges; curBridge++) {
 		if (m_bridges[curBridge].isEnabled() && m_bridges[curBridge].isVisible()) {
 			m_bridges[curBridge].renderBridge(wireframe);
 		}
@@ -1186,13 +1202,13 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 		DX8Wrapper::Invalidate_Cached_Render_States();
 		DX8Wrapper::Set_Shader(ShaderClass::_PresetOpaqueShader);
 		DX8Wrapper::Set_Material(m_vertexMaterial);
-		DX8Wrapper::Set_Index_Buffer(m_indexBridge,0);
+		DX8Wrapper::Set_Index_Buffer(m_indexBridge, 0);
 		DX8Wrapper::Set_Vertex_Buffer(m_vertexBridge);
 		DX8Wrapper::Apply_Render_State_Changes();
 		//Apply custom shroud projection shader.
-		W3DShaderManager::setTexture(0,TheTerrainRenderObject->getShroud()->getShroudTexture());
+		W3DShaderManager::setTexture(0, TheTerrainRenderObject->getShroud()->getShroudTexture());
 		W3DShaderManager::setShader(W3DShaderManager::ST_SHROUD_TEXTURE, 0);
-		for (curBridge=0; curBridge<m_numBridges; curBridge++) {
+		for (curBridge = 0; curBridge < m_numBridges; curBridge++) {
 			if (m_bridges[curBridge].isEnabled() && m_bridges[curBridge].isVisible()) {
 				//Pretend we're in wireframe so function doesn't reset the shroud texture.
 				m_bridges[curBridge].renderBridge(TRUE);

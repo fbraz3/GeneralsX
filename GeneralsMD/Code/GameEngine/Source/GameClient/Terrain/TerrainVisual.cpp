@@ -36,7 +36,7 @@
 
 
 // GLOBALS ////////////////////////////////////////////////////////////////////////////////////////
-TerrainVisual *TheTerrainVisual = NULL;
+TerrainVisual* TheTerrainVisual = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DEFINITIONS
@@ -46,7 +46,8 @@ TerrainVisual *TheTerrainVisual = NULL;
 //-------------------------------------------------------------------------------------------------
 TerrainVisual::TerrainVisual()
 {
-
+  fprintf(stderr, "[TerrainVisual] Constructor START\n"); fflush(stderr);
+  fprintf(stderr, "[TerrainVisual] Constructor END\n"); fflush(stderr);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -59,7 +60,7 @@ TerrainVisual::~TerrainVisual()
 //-------------------------------------------------------------------------------------------------
 /** initialize the device independent functionality of the visual terrain */
 //-------------------------------------------------------------------------------------------------
-void TerrainVisual::init( void )
+void TerrainVisual::init(void)
 {
 
 }
@@ -67,64 +68,64 @@ void TerrainVisual::init( void )
 //-------------------------------------------------------------------------------------------------
 /** Reset */
 //-------------------------------------------------------------------------------------------------
-void TerrainVisual::reset( void )
+void TerrainVisual::reset(void)
 {
 
-	m_filenameString.clear();
+  m_filenameString.clear();
 
 }
 
 //-------------------------------------------------------------------------------------------------
 /** Update */
 //-------------------------------------------------------------------------------------------------
-void TerrainVisual::update( void )
+void TerrainVisual::update(void)
 {
-	// All the interesting stuff happens in load.  jba.
+  // All the interesting stuff happens in load.  jba.
 }
 
 //-------------------------------------------------------------------------------------------------
 /** device independent implementation for common terrain visual systems */
 //-------------------------------------------------------------------------------------------------
-Bool TerrainVisual::load( AsciiString filename )
+Bool TerrainVisual::load(AsciiString filename)
 {
 
-	// save the filename
-	if (filename.isEmpty())
-		return FALSE;
+  // save the filename
+  if (filename.isEmpty())
+    return FALSE;
 
-	m_filenameString = filename;
+  m_filenameString = filename;
 
-	return TRUE;  // success
+  return TRUE;  // success
 
 }
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
 // ------------------------------------------------------------------------------------------------
-void TerrainVisual::crc( Xfer *xfer )
+void TerrainVisual::crc(Xfer* xfer)
 {
 
 }
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer
-	* Version Info:
-	* 1: Initial version */
-// ------------------------------------------------------------------------------------------------
-void TerrainVisual::xfer( Xfer *xfer )
+  * Version Info:
+  * 1: Initial version */
+  // ------------------------------------------------------------------------------------------------
+void TerrainVisual::xfer(Xfer* xfer)
 {
 
-	// version
-	XferVersion currentVersion = 1;
-	XferVersion version = currentVersion;
-	xfer->xferVersion( &version, currentVersion );
+  // version
+  XferVersion currentVersion = 1;
+  XferVersion version = currentVersion;
+  xfer->xferVersion(&version, currentVersion);
 
 }
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void TerrainVisual::loadPostProcess( void )
+void TerrainVisual::loadPostProcess(void)
 {
 
 }
@@ -135,35 +136,35 @@ void TerrainVisual::loadPostProcess( void )
 
 
 
-SeismicSimulationFilterBase::SeismicSimStatusCode DomeStyleSeismicFilter::filterCallback( WorldHeightMapInterfaceClass *heightMap, const SeismicSimulationNode *node )
+SeismicSimulationFilterBase::SeismicSimStatusCode DomeStyleSeismicFilter::filterCallback(WorldHeightMapInterfaceClass* heightMap, const SeismicSimulationNode* node)
 {
 
   Int life = node->m_life;
 
-  if ( heightMap == NULL )
+  if (heightMap == NULL)
     return SEISMIC_STATUS_INVALID;
 
 
-  if ( life == 0 )
+  if (life == 0)
     return SEISMIC_STATUS_ACTIVE;
-  if ( life < 15 )
+  if (life < 15)
   {
     // ADD HEIGHT BECAUSE THE EXPLOSION IS PUSHING DIRT UP
 
     Real magnitude = node->m_magnitude;
 
-    Real offsScalar =  magnitude / (Real)life; // real-life, get it?
+    Real offsScalar = magnitude / (Real)life; // real-life, get it?
     Int radius = node->m_radius;
     Int border = heightMap->getBorderSize();
-    Int centerX = node->m_center.x + border ;
-    Int centerY = node->m_center.y + border ;
+    Int centerX = node->m_center.x + border;
+    Int centerY = node->m_center.y + border;
 
-    UnsignedInt workspaceWidth = radius*2;
-    Real *workspace = NEW Real[ sqr(workspaceWidth) ];
-    Real *workspaceEnd = workspace + sqr(workspaceWidth);
+    UnsignedInt workspaceWidth = radius * 2;
+    Real* workspace = NEW Real[sqr(workspaceWidth)];
+    Real* workspaceEnd = workspace + sqr(workspaceWidth);
 
 
-    for ( Real *t = workspace; t < workspaceEnd; ++t ) *t = 0.0f;// clear the workspace
+    for (Real* t = workspace; t < workspaceEnd; ++t) *t = 0.0f;// clear the workspace
 
     Int x, y;
     for (x = 0; x < radius; ++x)
@@ -171,23 +172,23 @@ SeismicSimulationFilterBase::SeismicSimStatusCode DomeStyleSeismicFilter::filter
       for (y = 0; y < radius; ++y)
       {
 
-        Real distance = sqrt( sqr(x) + sqr(y) );//Pythagoras
+        Real distance = sqrt(sqr(x) + sqr(y));//Pythagoras
 
-        if ( distance < radius )
+        if (distance < radius)
         {
-          Real distScalar = cos( ( distance / radius * (PI/2) ) );
+          Real distScalar = cos((distance / radius * (PI / 2)));
           Real height = (offsScalar * distScalar);
 
-          workspace[ (radius + x) +  workspaceWidth * (radius + y) ] = height + heightMap->getBilinearSampleSeismicZVelocity( centerX + x,  centerY + y ) ;//kaleidoscope
+          workspace[(radius + x) + workspaceWidth * (radius + y)] = height + heightMap->getBilinearSampleSeismicZVelocity(centerX + x, centerY + y);//kaleidoscope
 
-          if ( x != 0 ) // non-zero test prevents cross-shaped double stamp
+          if (x != 0) // non-zero test prevents cross-shaped double stamp
           {
-      			workspace[ (radius - x) + workspaceWidth * (radius + y) ] = height + heightMap->getBilinearSampleSeismicZVelocity( centerX - x,  centerY + y ) ;
-            if ( y != 0 )
-              workspace[ (radius - x) + workspaceWidth * (radius - y) ] =  height + heightMap->getBilinearSampleSeismicZVelocity( centerX - x,  centerY - y ) ;
+            workspace[(radius - x) + workspaceWidth * (radius + y)] = height + heightMap->getBilinearSampleSeismicZVelocity(centerX - x, centerY + y);
+            if (y != 0)
+              workspace[(radius - x) + workspaceWidth * (radius - y)] = height + heightMap->getBilinearSampleSeismicZVelocity(centerX - x, centerY - y);
           }
-          if ( y != 0 )
-      			workspace[ (radius + x) + workspaceWidth * (radius - y) ] = height + heightMap->getBilinearSampleSeismicZVelocity( centerX + x,  centerY - y ) ;
+          if (y != 0)
+            workspace[(radius + x) + workspaceWidth * (radius - y)] = height + heightMap->getBilinearSampleSeismicZVelocity(centerX + x, centerY - y);
         }
       }
     }
@@ -195,9 +196,9 @@ SeismicSimulationFilterBase::SeismicSimStatusCode DomeStyleSeismicFilter::filter
     // stuff the values from the workspace into the heightmap's velocities
     for (x = 0; x < workspaceWidth; ++x)
       for (y = 0; y < workspaceWidth; ++y)
-    		heightMap->setSeismicZVelocity( centerX - radius + x, centerY - radius + y,  std::min( 9.0f, workspace[  x + workspaceWidth * y ])  );
+        heightMap->setSeismicZVelocity(centerX - radius + x, centerY - radius + y, std::min(9.0f, workspace[x + workspaceWidth * y]));
 
-    delete [] workspace;
+    delete[] workspace;
 
     return SEISMIC_STATUS_ACTIVE;
   }
@@ -205,7 +206,7 @@ SeismicSimulationFilterBase::SeismicSimStatusCode DomeStyleSeismicFilter::filter
     return SEISMIC_STATUS_ZERO_ENERGY;
 }
 
-Real DomeStyleSeismicFilter::applyGravityCallback( Real velocityIn )
+Real DomeStyleSeismicFilter::applyGravityCallback(Real velocityIn)
 {
   Real velocityOut = velocityIn;
   velocityOut -= 1.5f;

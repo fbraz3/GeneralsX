@@ -48,9 +48,16 @@ SubsystemInterface::SubsystemInterface()
 	m_dumpDraw(false)
 #endif
 {
+	fprintf(stderr, "[SubsystemInterface] Constructor START, this=%p\n", this); fflush(stderr);
 	if (TheSubsystemList) {
+		fprintf(stderr, "[SubsystemInterface] TheSubsystemList=%p, calling addSubsystem\n", TheSubsystemList); fflush(stderr);
 		TheSubsystemList->addSubsystem(this);
+		fprintf(stderr, "[SubsystemInterface] addSubsystem done\n"); fflush(stderr);
 	}
+	else {
+		fprintf(stderr, "[SubsystemInterface] TheSubsystemList is NULL\n"); fflush(stderr);
+	}
+	fprintf(stderr, "[SubsystemInterface] Constructor END\n"); fflush(stderr);
 }
 
 

@@ -423,9 +423,13 @@ void GameClient::init(void)
 	// instantiate the terrain visual display
 	fprintf(stderr, "[GameClient::init] Creating TerrainVisual\n"); fflush(stderr);
 	TheTerrainVisual = createTerrainVisual();
+	fprintf(stderr, "[GameClient::init] createTerrainVisual returned: %p\n", TheTerrainVisual); fflush(stderr);
 	if (TheTerrainVisual) {
+		fprintf(stderr, "[GameClient::init] About to call TheTerrainVisual->init()\n"); fflush(stderr);
 		TheTerrainVisual->init();
+		fprintf(stderr, "[GameClient::init] TheTerrainVisual->init() done\n"); fflush(stderr);
 		TheTerrainVisual->setName("TheTerrainVisual");
+		fprintf(stderr, "[GameClient::init] TheTerrainVisual->setName() done\n"); fflush(stderr);
 	}
 	fprintf(stderr, "[GameClient::init] TerrainVisual created\n"); fflush(stderr);
 
@@ -1463,9 +1467,9 @@ void GameClient::xferDrawableTOC(Xfer* xfer)
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method for Game Client
-  * Version History:
-  * 1: Initial
-  * 2: Adding mission briefing history
+	* Version History:
+	* 1: Initial
+	* 2: Adding mission briefing history
 	* 3: Added block markers around drawable data, no version checking is done and therefore
 	*		 this version breaks compatibility with previous versions. (CBD)
  */
