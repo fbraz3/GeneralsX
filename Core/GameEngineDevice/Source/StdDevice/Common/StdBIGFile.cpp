@@ -67,19 +67,19 @@ File* StdBIGFile::openFile(const Char* filename, Int access)
 		if (buf[i] == '/') buf[i] = '\\';
 	}
 
-	fprintf(stderr, "[StdBIGFile::openFile] Original: '%s', Normalized: '%s'\n", filename, normalizedFilename.str());
-	fflush(stderr);
+	// fprintf(stderr, "[StdBIGFile::openFile] Original: '%s', Normalized: '%s'\n", filename, normalizedFilename.str());
+	// fflush(stderr);
 
 	const ArchivedFileInfo* fileInfo = getArchivedFileInfo(normalizedFilename);
 
 	if (fileInfo == NULL) {
-		fprintf(stderr, "[StdBIGFile::openFile] getArchivedFileInfo returned NULL for '%s'\n", normalizedFilename.str());
-		fflush(stderr);
+		// fprintf(stderr, "[StdBIGFile::openFile] getArchivedFileInfo returned NULL for '%s'\n", normalizedFilename.str());
+		// fflush(stderr);
 		return NULL;
 	}
 
-	fprintf(stderr, "[StdBIGFile::openFile] SUCCESS - found file info, offset=%u, size=%u\n", fileInfo->m_offset, fileInfo->m_size);
-	fflush(stderr);
+	// fprintf(stderr, "[StdBIGFile::openFile] SUCCESS - found file info, offset=%u, size=%u\n", fileInfo->m_offset, fileInfo->m_size);
+	// fflush(stderr);
 
 	RAMFile* ramFile = NULL;
 

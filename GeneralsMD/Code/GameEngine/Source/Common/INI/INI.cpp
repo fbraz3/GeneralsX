@@ -210,8 +210,8 @@ UnsignedInt INI::loadFileDirectory(AsciiString fileDirName, INILoadType loadType
 {
 	UnsignedInt filesRead = 0;
 
-	fprintf(stderr, "[INI::loadFileDirectory] ENTER - fileDirName='%s', loadType=%d, subdirs=%d\n", fileDirName.str(), loadType, subdirs);
-	fflush(stderr);
+	// fprintf(stderr, "[INI::loadFileDirectory] ENTER - fileDirName='%s', loadType=%d, subdirs=%d\n", fileDirName.str(), loadType, subdirs);
+	// fflush(stderr);
 
 	AsciiString iniDir = fileDirName;
 	AsciiString iniFile = fileDirName;
@@ -221,48 +221,48 @@ UnsignedInt INI::loadFileDirectory(AsciiString fileDirName, INILoadType loadType
 	if (iniDir.endsWithNoCase(ext))
 	{
 		iniDir.truncateBy(ARRAY_SIZE(ext) - 1);
-		fprintf(stderr, "[INI::loadFileDirectory] iniDir ends with .ini, truncated to='%s'\n", iniDir.str());
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadFileDirectory] iniDir ends with .ini, truncated to='%s'\n", iniDir.str());
+		// fflush(stderr);
 	}
 
 	if (!iniFile.endsWithNoCase(ext))
 	{
 		iniFile.concat(ext);
-		fprintf(stderr, "[INI::loadFileDirectory] iniFile doesn't end with .ini, added extension: '%s'\n", iniFile.str());
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadFileDirectory] iniFile doesn't end with .ini, added extension: '%s'\n", iniFile.str());
+		// fflush(stderr);
 	}
 
 	if (TheFileSystem->doesFileExist(iniFile.str()))
 	{
-		fprintf(stderr, "[INI::loadFileDirectory] Single INI file exists: '%s', loading...\n", iniFile.str());
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadFileDirectory] Single INI file exists: '%s', loading...\n", iniFile.str());
+		// fflush(stderr);
 		filesRead += load(iniFile, loadType, pXfer);
-		fprintf(stderr, "[INI::loadFileDirectory] Single INI file loaded, filesRead now=%u\n", filesRead);
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadFileDirectory] Single INI file loaded, filesRead now=%u\n", filesRead);
+		// fflush(stderr);
 	}
-	else
-	{
-		fprintf(stderr, "[INI::loadFileDirectory] Single INI file does NOT exist: '%s'\n", iniFile.str());
-		fflush(stderr);
-	}
+	// else
+	// {
+	// 	fprintf(stderr, "[INI::loadFileDirectory] Single INI file does NOT exist: '%s'\n", iniFile.str());
+	// 	fflush(stderr);
+	// }
 
 	// Load any additional ini files from a "filename" directory and its subdirectories.
-	fprintf(stderr, "[INI::loadFileDirectory] Calling loadDirectory with iniDir='%s'\n", iniDir.str());
-	fflush(stderr);
+	// fprintf(stderr, "[INI::loadFileDirectory] Calling loadDirectory with iniDir='%s'\n", iniDir.str());
+	// fflush(stderr);
 	filesRead += loadDirectory(iniDir, loadType, pXfer, subdirs);
-	fprintf(stderr, "[INI::loadFileDirectory] After loadDirectory, filesRead=%u\n", filesRead);
-	fflush(stderr);
+	// fprintf(stderr, "[INI::loadFileDirectory] After loadDirectory, filesRead=%u\n", filesRead);
+	// fflush(stderr);
 
 	// Expect to open and load at least one file.
 	if (filesRead == 0)
 	{
-		fprintf(stderr, "[INI::loadFileDirectory] ERROR: filesRead == 0, throwing INI_CANT_OPEN_FILE\n");
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadFileDirectory] ERROR: filesRead == 0, throwing INI_CANT_OPEN_FILE\n");
+		// fflush(stderr);
 		throw INI_CANT_OPEN_FILE;
 	}
 
-	fprintf(stderr, "[INI::loadFileDirectory] SUCCESS - filesRead=%u\n", filesRead);
-	fflush(stderr);
+	// fprintf(stderr, "[INI::loadFileDirectory] SUCCESS - filesRead=%u\n", filesRead);
+	// fflush(stderr);
 	return filesRead;
 }
 
@@ -275,39 +275,39 @@ UnsignedInt INI::loadDirectory(AsciiString dirName, INILoadType loadType, Xfer* 
 {
 	UnsignedInt filesRead = 0;
 
-	fprintf(stderr, "[INI::loadDirectory] ENTER - dirName='%s', subdirs=%d\n", dirName.str(), subdirs);
-	fflush(stderr);
+	// fprintf(stderr, "[INI::loadDirectory] ENTER - dirName='%s', subdirs=%d\n", dirName.str(), subdirs);
+	// fflush(stderr);
 
 	// sanity
 	if (dirName.isEmpty())
 	{
-		fprintf(stderr, "[INI::loadDirectory] ERROR: dirName is empty, throwing INI_INVALID_DIRECTORY\n");
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadDirectory] ERROR: dirName is empty, throwing INI_INVALID_DIRECTORY\n");
+		// fflush(stderr);
 		throw INI_INVALID_DIRECTORY;
 	}
 
 	try
 	{
 		FilenameList filenameList;
-		fprintf(stderr, "[INI::loadDirectory] Before adding separator: dirName='%s'\n", dirName.str());
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadDirectory] Before adding separator: dirName='%s'\n", dirName.str());
+		// fflush(stderr);
 		dirName.concat(GET_PATH_SEPARATOR());
-		fprintf(stderr, "[INI::loadDirectory] After adding separator: dirName='%s'\n", dirName.str());
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadDirectory] After adding separator: dirName='%s'\n", dirName.str());
+		// fflush(stderr);
 
-		fprintf(stderr, "[INI::loadDirectory] Calling getFileListInDirectory with pattern='*.ini'\n");
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadDirectory] Calling getFileListInDirectory with pattern='*.ini'\n");
+		// fflush(stderr);
 		TheFileSystem->getFileListInDirectory(dirName, "*.ini", filenameList, subdirs);
-		fprintf(stderr, "[INI::loadDirectory] getFileListInDirectory returned, found %zu files\n", filenameList.size());
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadDirectory] getFileListInDirectory returned, found %zu files\n", filenameList.size());
+		// fflush(stderr);
 
 		// Load the INI files in the dir now, in a sorted order.  This keeps things the same between machines
 		// in a network game.
 		FilenameList::const_iterator it = filenameList.begin();
 		while (it != filenameList.end())
 		{
-			fprintf(stderr, "[INI::loadDirectory] File found: '%s'\n", it->str());
-			fflush(stderr);
+			// fprintf(stderr, "[INI::loadDirectory] File found: '%s'\n", it->str());
+			// fflush(stderr);
 			++it;
 		}
 
@@ -317,21 +317,21 @@ UnsignedInt INI::loadDirectory(AsciiString dirName, INILoadType loadType, Xfer* 
 			AsciiString tempname;
 			tempname = (*it).str() + dirName.getLength();
 
-			fprintf(stderr, "[INI::loadDirectory] Processing file: '%s' (tempname='%s', offset=%zu)\n", it->str(), tempname.str(), dirName.getLength());
-			fflush(stderr);
+			// fprintf(stderr, "[INI::loadDirectory] Processing file: '%s' (tempname='%s', offset=%zu)\n", it->str(), tempname.str(), dirName.getLength());
+			// fflush(stderr);
 
 			if ((tempname.findPathSeparator() == NULL) && (tempname.reverseFindPathSeparator() == NULL)) {
 				// this file doesn't reside in a subdirectory, load it first.
-				fprintf(stderr, "[INI::loadDirectory] File in root directory, loading: '%s'\n", it->str());
-				fflush(stderr);
+				// fprintf(stderr, "[INI::loadDirectory] File in root directory, loading: '%s'\n", it->str());
+				// fflush(stderr);
 				filesRead += load(*it, loadType, pXfer);
-				fprintf(stderr, "[INI::loadDirectory] Loaded root file, filesRead now=%u\n", filesRead);
-				fflush(stderr);
+				// fprintf(stderr, "[INI::loadDirectory] Loaded root file, filesRead now=%u\n", filesRead);
+				// fflush(stderr);
 			}
-			else {
-				fprintf(stderr, "[INI::loadDirectory] File in subdirectory, deferring: '%s'\n", it->str());
-				fflush(stderr);
-			}
+			// else {
+			// 	// fprintf(stderr, "[INI::loadDirectory] File in subdirectory, deferring: '%s'\n", it->str());
+			// 	// fflush(stderr);
+			// }
 			++it;
 		}
 
@@ -342,28 +342,28 @@ UnsignedInt INI::loadDirectory(AsciiString dirName, INILoadType loadType, Xfer* 
 			tempname = (*it).str() + dirName.getLength();
 
 			if ((tempname.findPathSeparator() != NULL) || (tempname.reverseFindPathSeparator() != NULL)) {
-				fprintf(stderr, "[INI::loadDirectory] Loading subdirectory file: '%s'\n", it->str());
-				fflush(stderr);
+				// fprintf(stderr, "[INI::loadDirectory] Loading subdirectory file: '%s'\n", it->str());
+				// fflush(stderr);
 				filesRead += load(*it, loadType, pXfer);
-				fprintf(stderr, "[INI::loadDirectory] Loaded subdirectory file, filesRead now=%u\n", filesRead);
-				fflush(stderr);
+				// fprintf(stderr, "[INI::loadDirectory] Loaded subdirectory file, filesRead now=%u\n", filesRead);
+				// fflush(stderr);
 			}
 			++it;
 		}
 
-		fprintf(stderr, "[INI::loadDirectory] Loop complete, filesRead=%u\n", filesRead);
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadDirectory] Loop complete, filesRead=%u\n", filesRead);
+		// fflush(stderr);
 	}
 	catch (...)
 	{
-		fprintf(stderr, "[INI::loadDirectory] Exception caught, rethrowing\n");
-		fflush(stderr);
+		// fprintf(stderr, "[INI::loadDirectory] Exception caught, rethrowing\n");
+		// fflush(stderr);
 		// propagate the exception
 		throw;
 	}
 
-	fprintf(stderr, "[INI::loadDirectory] EXIT - filesRead=%u\n", filesRead);
-	fflush(stderr);
+	// fprintf(stderr, "[INI::loadDirectory] EXIT - filesRead=%u\n", filesRead);
+	// fflush(stderr);
 	return filesRead;
 }
 

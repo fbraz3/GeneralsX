@@ -136,8 +136,9 @@ void OpenALAudioDevice_Destroy(OpenALAudioDevice* device) {
 }
 
 void OpenALAudioDevice_Initialize(OpenALAudioDevice* device) {
-  if (!device || device->device) return;
-
+  if (!device || !(device->device)) {
+    return;
+  }
   /* Open default audio device */
   device->device = alcOpenDevice(NULL);
   if (!device->device) {

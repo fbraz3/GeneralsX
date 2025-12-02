@@ -97,9 +97,9 @@ ArchiveFile::ArchiveFile()
 
 void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileInfo)
 {
-	fprintf(stderr, "[ArchiveFile::addFile] Adding file: '%s' (filename: '%s', offset: %u, size: %u)\n",
-		path.str(), fileInfo->m_filename.str(), fileInfo->m_offset, fileInfo->m_size);
-	fflush(stderr);
+	// fprintf(stderr, "[ArchiveFile::addFile] Adding file: '%s' (filename: '%s', offset: %u, size: %u)\n",
+	// 	path.str(), fileInfo->m_filename.str(), fileInfo->m_offset, fileInfo->m_size);
+	// fflush(stderr);
 
 	DetailedArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
@@ -111,8 +111,8 @@ void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileI
 
 	while (token.getLength() > 0)
 	{
-		fprintf(stderr, "[ArchiveFile::addFile] Creating/finding directory: '%s'\n", token.str());
-		fflush(stderr);
+		// fprintf(stderr, "[ArchiveFile::addFile] Creating/finding directory: '%s'\n", token.str());
+		// fflush(stderr);
 
 		DetailedArchivedDirectoryInfoMap::iterator tempiter = dirInfo->m_directories.find(token);
 		if (tempiter == dirInfo->m_directories.end())
@@ -128,8 +128,8 @@ void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileI
 		tokenizer.nextToken(&token, "\\");
 	}
 
-	fprintf(stderr, "[ArchiveFile::addFile] Storing file '%s' in final directory\n", fileInfo->m_filename.str());
-	fflush(stderr);
+	// fprintf(stderr, "[ArchiveFile::addFile] Storing file '%s' in final directory\n", fileInfo->m_filename.str());
+	// fflush(stderr);
 
 	// Store with lowercase filename for case-insensitive lookup
 	AsciiString lowercaseFilename = fileInfo->m_filename;
@@ -150,51 +150,51 @@ void ArchiveFile::getFileListInDirectory(const AsciiString& currentDirectory, co
 		if (*p == '/') *p = '\\';
 	}
 
-	fprintf(stderr, "[ArchiveFile::getFileListInDirectory] originalDir='%s', search='%s'\n",
-		originalDirectory.str(), searchName.str());
-	fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Tokenizer (normalized): '%s'\n",
-		tokenizer.str());
-	fflush(stderr);
+	// fprintf(stderr, "[ArchiveFile::getFileListInDirectory] originalDir='%s', search='%s'\n",
+	// originalDirectory.str(), searchName.str());
+	// fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Tokenizer (normalized): '%s'\n",
+	// tokenizer.str());
+	// fflush(stderr);
 
 	// Use backslash since .big files store Windows-style paths
 	tokenizer.nextToken(&token, "\\");
 
 	while (token.getLength() > 0) {
-		fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Looking for dir token: '%s'\n", token.str());
-		fflush(stderr);
+		// fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Looking for dir token: '%s'\n", token.str());
+		// fflush(stderr);
 
 		DetailedArchivedDirectoryInfoMap::const_iterator it = dirInfo->m_directories.find(token);
 		if (it != dirInfo->m_directories.end())
 		{
 			dirInfo = &it->second;
-			fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Found directory: '%s'\n", token.str());
-			fflush(stderr);
+			// fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Found directory: '%s'\n", token.str());
+			// fflush(stderr);
 		}
 		else
 		{
 			// if the directory doesn't exist, then there aren't any files to be had.
-			fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Directory NOT FOUND: '%s'\n", token.str());
-			fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Available directories at this level (%zu):\n",
-				dirInfo->m_directories.size());
-			fflush(stderr);
+			// fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Directory NOT FOUND: '%s'\n", token.str());
+			// fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Available directories at this level (%zu):\n",
+			// dirInfo->m_directories.size());
+			// fflush(stderr);
 			int count = 0;
 			for (DetailedArchivedDirectoryInfoMap::const_iterator dit = dirInfo->m_directories.begin();
 				dit != dirInfo->m_directories.end() && count < 30; ++dit, ++count)
 			{
-				fprintf(stderr, "  [%d] '%s'\n", count, dit->first.str());
+				// fprintf(stderr, "  [%d] '%s'\n", count, dit->first.str());
 			}
 			if (dirInfo->m_directories.size() > 30) {
-				fprintf(stderr, "  ... and %zu more\n", dirInfo->m_directories.size() - 30);
+				// fprintf(stderr, "  ... and %zu more\n", dirInfo->m_directories.size() - 30);
 			}
-			fflush(stderr);
+			// fflush(stderr);
 			return;
 		}
 
 		tokenizer.nextToken(&token, "\\");
 	}
 
-	fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Directory found, searching for files matching '%s'\n", searchName.str());
-	fflush(stderr);
+	// fprintf(stderr, "[ArchiveFile::getFileListInDirectory] Directory found, searching for files matching '%s'\n", searchName.str());
+	// fflush(stderr);
 	getFileListInDirectory(dirInfo, originalDirectory, searchName, filenameList, searchSubdirectories);
 }
 
@@ -261,28 +261,28 @@ const ArchivedFileInfo* ArchiveFile::getArchivedFileInfo(const AsciiString& file
 	normalizedPath[i] = '\0';  // Null-terminate!
 	tokenizer = AsciiString(normalizedPath);
 
-	fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Looking for: '%s', normalized: '%s'\n", filename.str(), tokenizer.str());
-	fflush(stderr);
+	// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Looking for: '%s', normalized: '%s'\n", filename.str(), tokenizer.str());
+	// fflush(stderr);
 
 	// Use backslash separator since .big files store Windows-style paths
 	tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
 
 	while (!token.find('.') || tokenizer.find('.'))
 	{
-		fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Searching for directory token: '%s'\n", token.str());
-		fflush(stderr);
+		// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Searching for directory token: '%s'\n", token.str());
+		// fflush(stderr);
 
 		DetailedArchivedDirectoryInfoMap::const_iterator it = dirInfo->m_directories.find(token);
 		if (it != dirInfo->m_directories.end())
 		{
-			fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Found directory: '%s'\n", token.str());
-			fflush(stderr);
+			// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Found directory: '%s'\n", token.str());
+			// fflush(stderr);
 			dirInfo = &it->second;
 		}
 		else
 		{
-			fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Directory NOT FOUND: '%s'\n", token.str());
-			fflush(stderr);
+			// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Directory NOT FOUND: '%s'\n", token.str());
+			// fflush(stderr);
 			return NULL;
 		}
 
@@ -290,37 +290,37 @@ const ArchivedFileInfo* ArchiveFile::getArchivedFileInfo(const AsciiString& file
 		tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
 	}
 
-	fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Final token (filename): '%s'\n", token.str());
-	fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Files in directory (%zu total):\n", dirInfo->m_files.size());
-	int debugCount = 0;
-	for (ArchivedFileInfoMap::const_iterator debugIt = dirInfo->m_files.begin();
-		debugIt != dirInfo->m_files.end() && debugCount < 10; ++debugIt, ++debugCount) {
-		fprintf(stderr, "  [%d] key='%s' (hex: ", debugCount, debugIt->first.str());
-		const char* s = debugIt->first.str();
-		for (int i = 0; s[i] && i < 20; i++) {
-			fprintf(stderr, "%02x ", (unsigned char)s[i]);
-		}
-		fprintf(stderr, ")\n");
-	}
-	fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Searching for token (hex): ");
-	const char* ts = token.str();
-	for (int i = 0; ts[i] && i < 20; i++) {
-		fprintf(stderr, "%02x ", (unsigned char)ts[i]);
-	}
-	fprintf(stderr, "\n");
-	fflush(stderr);
+	// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Final token (filename): '%s'\n", token.str());
+	// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Files in directory (%zu total):\n", dirInfo->m_files.size());
+	// int debugCount = 0;
+	// for (ArchivedFileInfoMap::const_iterator debugIt = dirInfo->m_files.begin();
+	// 	debugIt != dirInfo->m_files.end() && debugCount < 10; ++debugIt, ++debugCount) {
+	// 	// fprintf(stderr, "  [%d] key='%s' (hex: ", debugCount, debugIt->first.str());
+	// 	const char* s = debugIt->first.str();
+	// 	for (int i = 0; s[i] && i < 20; i++) {
+	// 		// fprintf(stderr, "%02x ", (unsigned char)s[i]);
+	// 	}
+	// 	fprintf(stderr, ")\n");
+	// }
+	// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] Searching for token (hex): ");
+	// const char* ts = token.str();
+	// for (int i = 0; ts[i] && i < 20; i++) {
+	// 	fprintf(stderr, "%02x ", (unsigned char)ts[i]);
+	// }
+	// fprintf(stderr, "\n");
+	// fflush(stderr);
 
 	ArchivedFileInfoMap::const_iterator it = dirInfo->m_files.find(token);
 	if (it != dirInfo->m_files.end())
 	{
-		fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] SUCCESS - found file\n");
-		fflush(stderr);
+		// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] SUCCESS - found file\n");
+		// fflush(stderr);
 		return &it->second;
 	}
 	else
 	{
-		fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] File NOT FOUND in map\n");
-		fflush(stderr);
+		// fprintf(stderr, "[ArchiveFile::getArchivedFileInfo] File NOT FOUND in map\n");
+		// fflush(stderr);
 		return NULL;
 	}
 

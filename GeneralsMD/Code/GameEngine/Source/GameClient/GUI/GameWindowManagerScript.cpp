@@ -258,7 +258,7 @@ static void readUntilSemicolon(File* fp, char* buffer, int maxBufLen)
 	callCount++;
 	int thisCall = callCount;
 
-	fprintf(stderr, "[readUntilSemicolon #%d] Starting, maxBufLen=%d\n", thisCall, maxBufLen); fflush(stderr);
+	// fprintf(stderr, "[readUntilSemicolon #%d] Starting, maxBufLen=%d\n", thisCall, maxBufLen); fflush(stderr);
 
 	while (i < maxBufLen)
 	{
@@ -267,7 +267,7 @@ static void readUntilSemicolon(File* fp, char* buffer, int maxBufLen)
 		Int bytesRead = fp->read(buffer + i, 1);
 		if (bytesRead <= 0) {
 			// EOF or error - exit to prevent infinite loop
-			fprintf(stderr, "[readUntilSemicolon #%d] EOF/Error at i=%d, bytesRead=%d\n", thisCall, i, bytesRead); fflush(stderr);
+			// fprintf(stderr, "[readUntilSemicolon #%d] EOF/Error at i=%d, bytesRead=%d\n", thisCall, i, bytesRead); fflush(stderr);
 			buffer[i] = '\000';
 			return;
 		}
@@ -290,7 +290,7 @@ static void readUntilSemicolon(File* fp, char* buffer, int maxBufLen)
 
 				// found end of data chunk
 				buffer[i] = '\000';
-				fprintf(stderr, "[readUntilSemicolon #%d] Done, result='%.50s...'\n", thisCall, buffer); fflush(stderr);
+				// fprintf(stderr, "[readUntilSemicolon #%d] Done, result='%.50s...'\n", thisCall, buffer); fflush(stderr);
 				return;
 
 			}
@@ -301,7 +301,7 @@ static void readUntilSemicolon(File* fp, char* buffer, int maxBufLen)
 	}
 
 	DEBUG_LOG(("ReadUntilSemicolon: ERROR - Read buffer overflow - input truncated."));
-	fprintf(stderr, "[readUntilSemicolon #%d] ERROR - buffer overflow\n", thisCall); fflush(stderr);
+	// fprintf(stderr, "[readUntilSemicolon #%d] ERROR - buffer overflow\n", thisCall); fflush(stderr);
 
 	buffer[maxBufLen - 1] = '\000';
 
@@ -2591,49 +2591,49 @@ static LayoutScriptParse layoutScriptTable[] =
 //-------------------------------------------------------------------------------------------------
 Bool parseLayoutBlock(File* inFile, char* buffer, UnsignedInt version, WindowLayoutInfo* info)
 {
-	fprintf(stderr, "[parseLayoutBlock] Starting, version=%u\n", version); fflush(stderr);
+	// fprintf(stderr, "[parseLayoutBlock] Starting, version=%u\n", version); fflush(stderr);
 	LayoutScriptParse* parse;
 	char token[256];
 
 	AsciiString asciitoken;
 	if (inFile->scanString(asciitoken) == FALSE) {
-		fprintf(stderr, "[parseLayoutBlock] First scanString failed\n"); fflush(stderr);
+		// fprintf(stderr, "[parseLayoutBlock] First scanString failed\n"); fflush(stderr);
 		return FALSE;
 	}
-	fprintf(stderr, "[parseLayoutBlock] First token: '%s'\n", asciitoken.str()); fflush(stderr);
+	// fprintf(stderr, "[parseLayoutBlock] First token: '%s'\n", asciitoken.str()); fflush(stderr);
 
 	// better be the layout block
 	if (asciitoken.compare("STARTLAYOUTBLOCK") != 0) {
-		fprintf(stderr, "[parseLayoutBlock] ERROR: Expected STARTLAYOUTBLOCK\n"); fflush(stderr);
+		// fprintf(stderr, "[parseLayoutBlock] ERROR: Expected STARTLAYOUTBLOCK\n"); fflush(stderr);
 		return FALSE;
 	}
-	fprintf(stderr, "[parseLayoutBlock] Found STARTLAYOUTBLOCK, entering loop\n"); fflush(stderr);
+	// fprintf(stderr, "[parseLayoutBlock] Found STARTLAYOUTBLOCK, entering loop\n"); fflush(stderr);
 
 	int loopCount = 0;
 	while (TRUE)
 	{
 		loopCount++;
 		if (loopCount > 100) {
-			fprintf(stderr, "[parseLayoutBlock] WARNING: Loop count exceeded 100, possible infinite loop\n"); fflush(stderr);
+			// fprintf(stderr, "[parseLayoutBlock] WARNING: Loop count exceeded 100, possible infinite loop\n"); fflush(stderr);
 		}
 		if (loopCount > 10000) {
-			fprintf(stderr, "[parseLayoutBlock] ERROR: Loop count exceeded 10000, breaking to prevent hang\n"); fflush(stderr);
+			// fprintf(stderr, "[parseLayoutBlock] ERROR: Loop count exceeded 10000, breaking to prevent hang\n"); fflush(stderr);
 			break;
 		}
 
 		// get next token
 		if (inFile->scanString(asciitoken) == FALSE) {
-			fprintf(stderr, "[parseLayoutBlock] scanString failed at loop %d\n", loopCount); fflush(stderr);
+			// fprintf(stderr, "[parseLayoutBlock] scanString failed at loop %d\n", loopCount); fflush(stderr);
 			break;
 		}
 
 		if (loopCount <= 20 || loopCount % 100 == 0) {
-			fprintf(stderr, "[parseLayoutBlock] Loop %d, token: '%s'\n", loopCount, asciitoken.str()); fflush(stderr);
+			// fprintf(stderr, "[parseLayoutBlock] Loop %d, token: '%s'\n", loopCount, asciitoken.str()); fflush(stderr);
 		}
 
 		// check for end
 		if (asciitoken.compare("ENDLAYOUTBLOCK") == 0) {
-			fprintf(stderr, "[parseLayoutBlock] Found ENDLAYOUTBLOCK, exiting loop\n"); fflush(stderr);
+			// fprintf(stderr, "[parseLayoutBlock] Found ENDLAYOUTBLOCK, exiting loop\n"); fflush(stderr);
 			break;
 		}
 
@@ -2645,25 +2645,25 @@ Bool parseLayoutBlock(File* inFile, char* buffer, UnsignedInt version, WindowLay
 			{
 				char* c;
 
-				fprintf(stderr, "[parseLayoutBlock] Token '%s' matched, calling readUntilSemicolon\n", parse->name); fflush(stderr);
+				// fprintf(stderr, "[parseLayoutBlock] Token '%s' matched, calling readUntilSemicolon\n", parse->name); fflush(stderr);
 				// read from file
 				readUntilSemicolon(inFile, buffer, WIN_BUFFER_LENGTH);
 
-				fprintf(stderr, "[parseLayoutBlock] About to call strtok on buffer=%p\n", buffer); fflush(stderr);
+				// fprintf(stderr, "[parseLayoutBlock] About to call strtok on buffer=%p\n", buffer); fflush(stderr);
 				// eat equals separator " = "
-				c = strtok(buffer, " =");
-				fprintf(stderr, "[parseLayoutBlock] After strtok, c='%s'\n", c ? c : "NULL"); fflush(stderr);
+				// c = strtok(buffer, " =");
+				// fprintf(stderr, "[parseLayoutBlock] After strtok, c='%s'\n", c ? c : "NULL"); fflush(stderr);
 
 				strlcpy(token, asciitoken.str(), ARRAY_SIZE(token));
 
 				// parse it
-				fprintf(stderr, "[parseLayoutBlock] Calling parse->parse for '%s'\n", token); fflush(stderr);
+				// fprintf(stderr, "[parseLayoutBlock] Calling parse->parse for '%s'\n", token); fflush(stderr);
 				if (parse->parse(token, c, version, info) == FALSE)
 				{
-					fprintf(stderr, "[parseLayoutBlock] parse->parse returned FALSE\n"); fflush(stderr);
+					// fprintf(stderr, "[parseLayoutBlock] parse->parse returned FALSE\n"); fflush(stderr);
 					return FALSE;
 				}
-				fprintf(stderr, "[parseLayoutBlock] parse->parse completed successfully\n"); fflush(stderr);
+				// fprintf(stderr, "[parseLayoutBlock] parse->parse completed successfully\n"); fflush(stderr);
 
 				break;  // exit for
 

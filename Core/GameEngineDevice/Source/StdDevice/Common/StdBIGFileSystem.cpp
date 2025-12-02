@@ -164,9 +164,9 @@ ArchiveFile* StdBIGFileSystem::openArchiveFile(const Char* filename) {
 		AsciiString path;
 		path = buffer;
 
-		fprintf(stderr, "[StdBIGFileSystem::openArchiveFile] Found file: path='%s', filename='%s'\n",
-			path.str(), fileInfo->m_filename.str());
-		fflush(stderr);
+		// fprintf(stderr, "[StdBIGFileSystem::openArchiveFile] Found file: path='%s', filename='%s'\n",
+		// 	path.str(), fileInfo->m_filename.str());
+		// fflush(stderr);
 
 		AsciiString debugpath;
 		debugpath = path;
