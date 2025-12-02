@@ -775,7 +775,7 @@ AsciiString AudioEventRTS::generateFilenamePrefix(AudioType audioTypeToPlay, Boo
 {
 	AsciiString retStr;
 	retStr = TheAudio->getAudioSettings()->m_audioRoot;
-	retStr.concat(GET_PATH_SEPARATOR());
+	retStr.concat(GET_BIG_FILE_SEPARATOR());
 	if (audioTypeToPlay == AT_Music) {
 		retStr.concat(TheAudio->getAudioSettings()->m_musicFolder);
 	}
@@ -785,11 +785,11 @@ AsciiString AudioEventRTS::generateFilenamePrefix(AudioType audioTypeToPlay, Boo
 	else {
 		retStr.concat(TheAudio->getAudioSettings()->m_soundsFolder);
 	}
-	retStr.concat(GET_PATH_SEPARATOR());
+	retStr.concat(GET_BIG_FILE_SEPARATOR());
 
 	if (localized) {
 		retStr.concat(GetRegistryLanguage());
-		retStr.concat(GET_PATH_SEPARATOR());
+		retStr.concat(GET_BIG_FILE_SEPARATOR());
 	}
 
 	return retStr;
