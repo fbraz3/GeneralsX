@@ -54,14 +54,14 @@
 #include <unistd.h>
 #include <climits>
 
-// DEBUG: Pre-main diagnostics - executes before main() to catch static initialization issues
-__attribute__((constructor(101))) static void debug_pre_main_startup() {
-	write(2, "PRE-MAIN: Starting static initialization...\n", 45);
-}
+// // DEBUG: Pre-main diagnostics - executes before main() to catch static initialization issues
+// __attribute__((constructor(101))) static void debug_pre_main_startup() {
+// 	write(2, "PRE-MAIN: Starting static initialization...\n", 45);
+// }
 
-__attribute__((constructor(65535))) static void debug_pre_main_complete() {
-	write(2, "PRE-MAIN: Static initialization complete, entering main()\n", 59);
-}
+// __attribute__((constructor(65535))) static void debug_pre_main_complete() {
+// 	write(2, "PRE-MAIN: Static initialization complete, entering main()\n", 59);
+// }
 #endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -745,7 +745,7 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 						 LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ApplicationIcon)),
 						 NULL/*LoadCursor(NULL, IDC_ARROW)*/,
 						 (HBRUSH)GetStockObject(BLACK_BRUSH), NULL,
-						   TEXT("Game Window") };
+							 TEXT("Game Window") };
 	RegisterClass(&wndClass);
 
 	// Create our main window
@@ -814,25 +814,25 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 	Int startWidth = DEFAULT_DISPLAY_WIDTH;
 	Int startHeight = DEFAULT_DISPLAY_HEIGHT;
 
-	fprintf(stderr, "initializeAppWindows: Starting POSIX SDL2 initialization\n");
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: Starting POSIX SDL2 initialization\n");
+	// fflush(stderr);
 
 	gInitializing = true;
 
 	// Initialize SDL2
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "initializeAppWindows: Failed to initialize SDL2: %s\n", SDL_GetError());
-		fflush(stderr);
+		// fprintf(stderr, "initializeAppWindows: Failed to initialize SDL2: %s\n", SDL_GetError());
+		// fflush(stderr);
 		return false;
 	}
 
-	fprintf(stderr, "initializeAppWindows: SDL2 initialized successfully\n");
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: SDL2 initialized successfully\n");
+	// fflush(stderr);
 
 	// Load Vulkan library for SDL2_WINDOW_VULKAN support
 	// On macOS, this loads MoltenVK
-	fprintf(stderr, "initializeAppWindows: Loading Vulkan library via SDL2...\n");
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: Loading Vulkan library via SDL2...\n");
+	// fflush(stderr);
 
 	if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
 		fprintf(stderr, "initializeAppWindows: Failed to load Vulkan library: %s\n", SDL_GetError());
@@ -841,30 +841,30 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 		// Fall back to OpenGL if Vulkan is not available
 		// TODO: Implement OpenGL fallback
 	}
-	else {
-		fprintf(stderr, "initializeAppWindows: Vulkan library loaded successfully\n");
-		fflush(stderr);
-	}
+	// else {
+	// 	fprintf(stderr, "initializeAppWindows: Vulkan library loaded successfully\n");
+	// 	fflush(stderr);
+	// }
 
 	// Calculate window position (center on screen)
 	SDL_Rect displayBounds;
 	SDL_GetDisplayBounds(0, &displayBounds);
 
-	fprintf(stderr, "initializeAppWindows: Display bounds: %dx%d at (%d, %d)\n",
-		displayBounds.w, displayBounds.h, displayBounds.x, displayBounds.y);
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: Display bounds: %dx%d at (%d, %d)\n",
+	// 	displayBounds.w, displayBounds.h, displayBounds.x, displayBounds.y);
+	// fflush(stderr);
 
 	Int windowX = (displayBounds.w - startWidth) / 2;
 	Int windowY = (displayBounds.h - startHeight) / 2;
 
-	fprintf(stderr, "initializeAppWindows: Window position: (%d, %d), size: %dx%d\n",
-		windowX, windowY, startWidth, startHeight);
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: Window position: (%d, %d), size: %dx%d\n",
+	// 	windowX, windowY, startWidth, startHeight);
+	// fflush(stderr);
 
 	// Set up window flags with Vulkan support for SDL_Vulkan_CreateSurface
 	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;
-	fprintf(stderr, "initializeAppWindows: Using SDL_WINDOW_VULKAN flag for Vulkan surface creation\n");
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: Using SDL_WINDOW_VULKAN flag for Vulkan surface creation\n");
+	// fflush(stderr);
 
 	if (runWindowed) {
 		// In windowed mode, allow window resizing and normal window decorations (title bar, close button)
@@ -875,8 +875,8 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 		gDoPaint = false;
 	}
 
-	fprintf(stderr, "initializeAppWindows: About to SDL_CreateWindow with flags=0x%x\n", windowFlags);
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: About to SDL_CreateWindow with flags=0x%x\n", windowFlags);
+	// fflush(stderr);
 
 	// Create SDL2 window for Vulkan rendering (SDL2 API)
 	SDL_Window* sdlWindow = SDL_CreateWindow(
@@ -888,30 +888,30 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 		windowFlags
 	);
 
-	fprintf(stderr, "initializeAppWindows: SDL_CreateWindow returned: %p\n", (void*)sdlWindow);
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: SDL_CreateWindow returned: %p\n", (void*)sdlWindow);
+	// fflush(stderr);
 
 	if (!sdlWindow) {
-		fprintf(stderr, "initializeAppWindows: Failed to create SDL2 window: %s\n", SDL_GetError());
-		fflush(stderr);
+		// fprintf(stderr, "initializeAppWindows: Failed to create SDL2 window: %s\n", SDL_GetError());
+		// fflush(stderr);
 		SDL_Quit();
 		return false;
 	}
 
-	fprintf(stderr, "initializeAppWindows: SDL2 window created successfully\n");
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: SDL2 window created successfully\n");
+	// fflush(stderr);
 
 	// Store SDL window handle for later use
 	// ApplicationHWnd will store the SDL_Window* pointer cast to HWND
 	ApplicationHWnd = (HWND)sdlWindow;
 
-	fprintf(stderr, "initializeAppWindows: ApplicationHWnd set to: %p\n", (void*)ApplicationHWnd);
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: ApplicationHWnd set to: %p\n", (void*)ApplicationHWnd);
+	// fflush(stderr);
 
 	gInitializing = false;
 
-	fprintf(stderr, "initializeAppWindows: Returning true (success)\n");
-	fflush(stderr);
+	// fprintf(stderr, "initializeAppWindows: Returning true (success)\n");
+	// fflush(stderr);
 
 	return true;  // success
 
@@ -1215,8 +1215,8 @@ Int main(Int argc, Char* argv[])
 	// This enables GetCommandLineA() to work correctly on non-Windows platforms
 	InitPosixCommandLine(argc, argv);
 
-	fprintf(stderr, "POSIX main: Command line initialized: '%s'\n", GetCommandLineA());
-	fflush(stderr);
+	// fprintf(stderr, "POSIX main: Command line initialized: '%s'\n", GetCommandLineA());
+	// fflush(stderr);
 
 	Int exitcode = 1;
 	Int nCmdShow = 1;  // SW_NORMAL equivalent
@@ -1229,8 +1229,8 @@ Int main(Int argc, Char* argv[])
 #endif
 
 	try {
-		fprintf(stderr, "POSIX main: Starting up...\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: Starting up...\n");
+		// fflush(stderr);
 
 		TheAsciiStringCriticalSection = &critSec1;
 		TheUnicodeStringCriticalSection = &critSec2;
@@ -1238,61 +1238,61 @@ Int main(Int argc, Char* argv[])
 		TheMemoryPoolCriticalSection = &critSec4;
 		TheDebugLogCriticalSection = &critSec5;
 
-		fprintf(stderr, "POSIX main: About to initMemoryManager()...\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: About to initMemoryManager()...\n");
+		// fflush(stderr);
 		initMemoryManager();
-		fprintf(stderr, "POSIX main: initMemoryManager() done\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: initMemoryManager() done\n");
+		// fflush(stderr);
 
 		if (Char* basePath = SDL_GetBasePath()) {
-			fprintf(stderr, "POSIX main: SDL_GetBasePath returned: %s\n", basePath);
+			// fprintf(stderr, "POSIX main: SDL_GetBasePath returned: %s\n", basePath);
 			chdir(basePath);
 			SDL_free(basePath);
 		}
 
-		fprintf(stderr, "POSIX main: About to parseCommandLineForStartup()...\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: About to parseCommandLineForStartup()...\n");
+		// fflush(stderr);
 		CommandLine::parseCommandLineForStartup();
-		fprintf(stderr, "POSIX main: parseCommandLineForStartup() done\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: parseCommandLineForStartup() done\n");
+		// fflush(stderr);
 
-		fprintf(stderr, "POSIX main: About to InitializeGameSpyServerConfiguration()...\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: About to InitializeGameSpyServerConfiguration()...\n");
+		// fflush(stderr);
 		InitializeGameSpyServerConfiguration();
-		fprintf(stderr, "POSIX main: InitializeGameSpyServerConfiguration() done\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: InitializeGameSpyServerConfiguration() done\n");
+		// fflush(stderr);
 
-		fprintf(stderr, "POSIX main: TheGlobalData = %p\n", (void*)TheGlobalData);
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: TheGlobalData = %p\n", (void*)TheGlobalData);
+		// fflush(stderr);
 
-		fprintf(stderr, "POSIX main: TheGlobalData->m_headless = %d\n", TheGlobalData->m_headless);
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: TheGlobalData->m_headless = %d\n", TheGlobalData->m_headless);
+		// fflush(stderr);
 
 		// Phase 54: Log windowed mode status for debugging
-		fprintf(stderr, "POSIX main: TheGlobalData->m_windowed = %d (from -win flag)\n", TheGlobalData->m_windowed);
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: TheGlobalData->m_windowed = %d (from -win flag)\n", TheGlobalData->m_windowed);
+		// fflush(stderr);
 
 		if (!TheGlobalData->m_headless && initializeAppWindows(NULL, nCmdShow, TheGlobalData->m_windowed) == false) {
-			fprintf(stderr, "POSIX main: initializeAppWindows() returned false, shutting down\n");
-			fflush(stderr);
+			// fprintf(stderr, "POSIX main: initializeAppWindows() returned false, shutting down\n");
+			// fflush(stderr);
 			shutdownMemoryManager();
 			return exitcode;
 		}
 
-		fprintf(stderr, "POSIX main: initializeAppWindows() succeeded\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: initializeAppWindows() succeeded\n");
+		// fflush(stderr);
 
 		TheVersion = NEW Version;
 		TheVersion->setVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_BUILDNUM, VERSION_LOCALBUILDNUM,
 			AsciiString(VERSION_BUILDUSER), AsciiString(VERSION_BUILDLOC),
 			AsciiString(__TIME__), AsciiString(__DATE__));
 
-		fprintf(stderr, "POSIX main: About to rts::ClientInstance::initialize()...\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: About to rts::ClientInstance::initialize()...\n");
+		// fflush(stderr);
 
 		if (!rts::ClientInstance::initialize()) {
-			fprintf(stderr, "POSIX main: rts::ClientInstance::initialize() failed\n");
-			fflush(stderr);
+			// fprintf(stderr, "POSIX main: rts::ClientInstance::initialize() failed\n");
+			// fflush(stderr);
 			DEBUG_LOG(("Generals is already running...Bail!"));
 			delete TheVersion;
 			TheVersion = NULL;
@@ -1300,17 +1300,17 @@ Int main(Int argc, Char* argv[])
 			return exitcode;
 		}
 
-		fprintf(stderr, "POSIX main: rts::ClientInstance::initialize() succeeded\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: rts::ClientInstance::initialize() succeeded\n");
+		// fflush(stderr);
 
 		DEBUG_LOG(("Create Generals Mutex okay."));
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
 
-		fprintf(stderr, "POSIX main: About to call GameMain()...\n");
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: About to call GameMain()...\n");
+		// fflush(stderr);
 		exitcode = GameMain();
-		fprintf(stderr, "POSIX main: GameMain() returned %d\n", exitcode);
-		fflush(stderr);
+		// fprintf(stderr, "POSIX main: GameMain() returned %d\n", exitcode);
+		// fflush(stderr);
 
 		delete TheVersion;
 		TheVersion = NULL;

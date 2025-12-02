@@ -614,8 +614,8 @@ void W3DDisplay::init2DScene(void)
 
 // W3DDisplay::init ===========================================================
 /** Initialize or re-initialize the W3D display system.  Here we need to
-  * create our window, and get our 3D hardware setup and online */
-  //=============================================================================
+	* create our window, and get our 3D hardware setup and online */
+	//=============================================================================
 void W3DDisplay::init(void)
 {
 
@@ -908,8 +908,8 @@ void W3DDisplay::init(void)
 
 // W3DDisplay::reset ===========================================================
 /** Reset the W3D display system.  Here we need to
-  * remove the objects from the previous map. */
-  //=============================================================================
+	* remove the objects from the previous map. */
+	//=============================================================================
 void W3DDisplay::reset(void)
 {
 
@@ -1702,23 +1702,23 @@ void W3DDisplay::draw(void)
 	//USE_PERF_TIMER(W3DDisplay_draw)
 	// Phase 54: Debug log
 	static int drawCount = 0;
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - Starting draw #%d\n", drawCount);
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - Starting draw #%d\n", drawCount);
+	// 	fflush(stderr);
+	// }
 
 	if (TheGlobalData->m_headless)
 		return;
 
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - Calling updateAverageFPS()\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - Calling updateAverageFPS()\n");
+	// 	fflush(stderr);
+	// }
 	updateAverageFPS();
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - updateAverageFPS() done, checking LOD\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - updateAverageFPS() done, checking LOD\n");
+	// 	fflush(stderr);
+	// }
 	if (TheGlobalData->m_enableDynamicLOD && TheGameLogic->getShowDynamicLOD())
 	{
 		DynamicGameLODLevel lod = TheGameLODManager->findDynamicLODLevel(m_averageFPS);
@@ -1728,29 +1728,29 @@ void W3DDisplay::draw(void)
 	{	//if dynamic LOD is turned off, force highest LOD
 		TheGameLODManager->setDynamicLODLevel(DYNAMIC_GAME_LOD_VERY_HIGH);
 	}
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - LOD done\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - LOD done\n");
+	// 	fflush(stderr);
+	// }
 
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - checking terrain LOD condition: m_terrainLOD=%d, TheTerrainRenderObject=%p\n",
-			TheGlobalData->m_terrainLOD, (void*)TheTerrainRenderObject);
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - checking terrain LOD condition: m_terrainLOD=%d, TheTerrainRenderObject=%p\n",
+	// 		TheGlobalData->m_terrainLOD, (void*)TheTerrainRenderObject);
+	// 	fflush(stderr);
+	// }
 	if (TheGlobalData->m_terrainLOD == TERRAIN_LOD_AUTOMATIC && TheTerrainRenderObject)
 	{
-		if (drawCount < 3) {
-			fprintf(stderr, "W3DDisplay::draw() - calling calculateTerrainLOD()\n");
-			fflush(stderr);
-		}
+		// if (drawCount < 3) {
+		// 	fprintf(stderr, "W3DDisplay::draw() - calling calculateTerrainLOD()\n");
+		// 	fflush(stderr);
+		// }
 		calculateTerrainLOD();
 	}
 
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - terrain LOD done, checking freezeTime\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - terrain LOD done, checking freezeTime\n");
+	// 	fflush(stderr);
+	// }
 
 #ifdef EXTENDED_STATS
 	AGAIN :
@@ -1812,37 +1812,37 @@ void W3DDisplay::draw(void)
 	//
 	//PredictiveLODOptimizerClass::Optimize_LODs( 5000 );
 
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - Getting freezeTime: TheFramePacer=%p\n", (void*)TheFramePacer);
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - Getting freezeTime: TheFramePacer=%p\n", (void*)TheFramePacer);
+	// 	fflush(stderr);
+	// }
 	Bool freezeTime = TheFramePacer->isTimeFrozen() || TheFramePacer->isGameHalted();
 
 	/// @todo: I'm assuming the first view is our main 3D view.
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - Getting primaryW3DView from getFirstView()\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - Getting primaryW3DView from getFirstView()\n");
+	// 	fflush(stderr);
+	// }
 	W3DView* primaryW3DView = (W3DView*)getFirstView();
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - primaryW3DView=%p, freezeTime=%d\n", (void*)primaryW3DView, freezeTime);
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - primaryW3DView=%p, freezeTime=%d\n", (void*)primaryW3DView, freezeTime);
+	// 	fflush(stderr);
+	// }
 
 	if (!freezeTime && TheScriptEngine->isTimeFast())
 	{
-		if (drawCount < 3) {
-			fprintf(stderr, "W3DDisplay::draw() - isTimeFast() case, calling updateCameraMovements\n");
-			fflush(stderr);
-		}
+		// if (drawCount < 3) {
+		// 	fprintf(stderr, "W3DDisplay::draw() - isTimeFast() case, calling updateCameraMovements\n");
+		// 	fflush(stderr);
+		// }
 		primaryW3DView->updateCameraMovements();  // Update camera motion effects.
 		return;
 	}
 
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - Begin_Statistics()\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - Begin_Statistics()\n");
+	// 	fflush(stderr);
+	// }
 	Debug_Statistics::Begin_Statistics();	//reset all counters (polygons, vertices, etc) before drawing
 
 	//update state of all the terrain tracks (fade, remove, etc.)
@@ -1850,36 +1850,36 @@ void W3DDisplay::draw(void)
 
 	if (TheGlobalData->m_loadScreenRender != TRUE)
 	{
-		if (drawCount < 3) {
-			fprintf(stderr, "W3DDisplay::draw() - Not loadScreenRender, checking TerrainTracks\n");
-			fflush(stderr);
-		}
+		// if (drawCount < 3) {
+		// 	fprintf(stderr, "W3DDisplay::draw() - Not loadScreenRender, checking TerrainTracks\n");
+		// 	fflush(stderr);
+		// }
 
 		if (TheTerrainTracksRenderObjClassSystem)
 		{
-			if (drawCount < 3) {
-				fprintf(stderr, "W3DDisplay::draw() - Calling TheTerrainTracksRenderObjClassSystem->update()\n");
-				fflush(stderr);
-			}
+			// if (drawCount < 3) {
+			// 	fprintf(stderr, "W3DDisplay::draw() - Calling TheTerrainTracksRenderObjClassSystem->update()\n");
+			// 	fflush(stderr);
+			// }
 			TheTerrainTracksRenderObjClassSystem->update();
 		}
 
 		//Shroud data is needed to render all other views, so handle this first.
 		if (TheTerrainRenderObject)
 		{
-			if (drawCount < 3) {
-				fprintf(stderr, "W3DDisplay::draw() - Checking terrain map for shroud render\n");
-				fflush(stderr);
-			}
+			// if (drawCount < 3) {
+			// 	fprintf(stderr, "W3DDisplay::draw() - Checking terrain map for shroud render\n");
+			// 	fflush(stderr);
+			// }
 			//update the shroud surface here since it may be needed by reflections
 			if (TheTerrainRenderObject->getMap())	//make sure a valid map is loaded into terrain.
 			{
 				if (TheTerrainRenderObject->getShroud())
 				{
-					if (drawCount < 3) {
-						fprintf(stderr, "W3DDisplay::draw() - Calling shroud->render()\n");
-						fflush(stderr);
-					}
+					// if (drawCount < 3) {
+					// 	fprintf(stderr, "W3DDisplay::draw() - Calling shroud->render()\n");
+					// 	fflush(stderr);
+					// }
 					TheTerrainRenderObject->getShroud()->render(primaryW3DView->get3DCamera());
 				}
 			}
@@ -1888,17 +1888,17 @@ void W3DDisplay::draw(void)
 
 	WW3D::Update_Logic_Frame_Time(TheFramePacer->getLogicTimeStepMilliseconds());
 
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - WW3D::Update_Logic_Frame_Time()\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - WW3D::Update_Logic_Frame_Time()\n");
+	// 	fflush(stderr);
+	// }
 	// TheSuperHackers @info This binds the WW3D update to the logic update.
 	WW3D::Sync(TheGameLogic->hasUpdated());
 
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - WW3D::Sync done, checking time multiplier\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - WW3D::Sync done, checking time multiplier\n");
+	// 	fflush(stderr);
+	// }
 	static Int now;
 	now = timeGetTime();
 
@@ -1912,47 +1912,47 @@ void W3DDisplay::draw(void)
 		// limit the framerate, because while fast time is on, the game logic is running as fast as it can.
 	}
 
-	if (drawCount < 3) {
-		fprintf(stderr, "W3DDisplay::draw() - Entering main render do-while loop\n");
-		fflush(stderr);
-	}
+	// if (drawCount < 3) {
+	// 	fprintf(stderr, "W3DDisplay::draw() - Entering main render do-while loop\n");
+	// 	fflush(stderr);
+	// }
 	do {
 
-		if (drawCount < 3) {
-			fprintf(stderr, "W3DDisplay::draw() - Calling updateViews()\n");
-			fflush(stderr);
-		}
+		// if (drawCount < 3) {
+		// 	fprintf(stderr, "W3DDisplay::draw() - Calling updateViews()\n");
+		// 	fflush(stderr);
+		// }
 		// update all views of the world - recomputes data which will affect drawing
 		// On non-Windows, assume device is ready
 		updateViews();
-		if (drawCount < 3) {
-			fprintf(stderr, "W3DDisplay::draw() - updateViews() done, ParticleSystemManager update\n");
-			fflush(stderr);
-		}
+		// if (drawCount < 3) {
+		// 	fprintf(stderr, "W3DDisplay::draw() - updateViews() done, ParticleSystemManager update\n");
+		// 	fflush(stderr);
+		// }
 		TheParticleSystemManager->update();
-		if (drawCount < 3) {
-			fprintf(stderr, "W3DDisplay::draw() - ParticleSystemManager done, checking water\n");
-			fflush(stderr);
-		}
+		// if (drawCount < 3) {
+		// 	fprintf(stderr, "W3DDisplay::draw() - ParticleSystemManager done, checking water\n");
+		// 	fflush(stderr);
+		// }
 		if (TheWaterRenderObj && TheGlobalData->m_waterType == 2)
 			TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());
 		if (TheW3DProjectedShadowManager)
 			TheW3DProjectedShadowManager->updateRenderTargetTextures();
 
-		if (drawCount < 3) {
-			fprintf(stderr, "W3DDisplay::draw() - End_Statistics()\n");
-			fflush(stderr);
-		}
+		// if (drawCount < 3) {
+		// 	fprintf(stderr, "W3DDisplay::draw() - End_Statistics()\n");
+		// 	fflush(stderr);
+		// }
 		Debug_Statistics::End_Statistics();	//record number of polygons rendered in RenderTargetTextures.
 
 		//Store number of polygons rendered in renderTargetTextures.
 		Int numRenderTargetPolygons = Debug_Statistics::Get_DX8_Polygons();
 		Int numRenderTargetVertices = Debug_Statistics::Get_DX8_Vertices();
 
-		if (drawCount < 3) {
-			fprintf(stderr, "W3DDisplay::draw() - About to check Begin_Render conditions\n");
-			fflush(stderr);
-		}
+		// if (drawCount < 3) {
+		// 	fprintf(stderr, "W3DDisplay::draw() - About to check Begin_Render conditions\n");
+		// 	fflush(stderr);
+		// }
 		// start render block
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 		if ((TheGameLogic->getFrame() % 30 == 1) || (!(!TheGameLogic->isGamePaused() && TheGlobalData->m_TiVOFastMode)))
@@ -1962,10 +1962,10 @@ void W3DDisplay::draw(void)
 		{
 			//USE_PERF_TIMER(BigAssRenderLoop)
 			static Bool couldRender = true;
-			if (drawCount < 3) {
-				fprintf(stderr, "W3DDisplay::draw() - Calling WW3D::Begin_Render()\n");
-				fflush(stderr);
-			}
+			// if (drawCount < 3) {
+			// 	fprintf(stderr, "W3DDisplay::draw() - Calling WW3D::Begin_Render()\n");
+			// 	fflush(stderr);
+			// }
 			if ((TheGlobalData->m_breakTheMovie == FALSE) && (TheGlobalData->m_disableRender == false) && WW3D::Begin_Render(true, true, Vector3(0.0f, 0.0f, 0.0f), TheWaterTransparency->m_minWaterOpacity) == WW3D_ERROR_OK)
 			{
 				if (drawCount < 3) {
@@ -3009,8 +3009,8 @@ void W3DDisplay::drawVideoBuffer(VideoBuffer* buffer, Int startX, Int startY, In
 
 // W3DDisplay::setClipRegion ============================================
 /** Set the clipping region for images.
-  @todo: Make this work for all primitives, not just drawImage. */
-  //=============================================================================
+	@todo: Make this work for all primitives, not just drawImage. */
+	//=============================================================================
 void W3DDisplay::setClipRegion(IRegion2D* region)
 {
 	// assign new region

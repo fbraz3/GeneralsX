@@ -62,10 +62,10 @@ SDL2GameEngine::~SDL2GameEngine()
 //-------------------------------------------------------------------------------------------------
 // Initialize the game engine
 //-------------------------------------------------------------------------------------------------
-void SDL2GameEngine::init( void )
+void SDL2GameEngine::init(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::init - Initializing game engine subsystems\n"));
-	
+
 	// Call base class initialization
 	GameEngine::init();
 }
@@ -73,10 +73,10 @@ void SDL2GameEngine::init( void )
 //-------------------------------------------------------------------------------------------------
 // Reset the game engine
 //-------------------------------------------------------------------------------------------------
-void SDL2GameEngine::reset( void )
+void SDL2GameEngine::reset(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::reset - Resetting game engine\n"));
-	
+
 	// Call base class reset
 	GameEngine::reset();
 }
@@ -84,10 +84,10 @@ void SDL2GameEngine::reset( void )
 //-------------------------------------------------------------------------------------------------
 // Update the game engine (called once per frame)
 //-------------------------------------------------------------------------------------------------
-void SDL2GameEngine::update( void )
+void SDL2GameEngine::update(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::update - Updating game engine\n"));
-	
+
 	// Call base class update
 	GameEngine::update();
 }
@@ -95,7 +95,7 @@ void SDL2GameEngine::update( void )
 //-------------------------------------------------------------------------------------------------
 // Service OS maintenance (stub for cross-platform compatibility)
 //-------------------------------------------------------------------------------------------------
-void SDL2GameEngine::serviceWindowsOS( void )
+void SDL2GameEngine::serviceWindowsOS(void)
 {
 	// This is a no-op on non-Windows platforms, but required by base class interface
 	// On Windows, this would handle Windows-specific events
@@ -105,106 +105,109 @@ void SDL2GameEngine::serviceWindowsOS( void )
 // Factory methods for creating subsystems
 //-------------------------------------------------------------------------------------------------
 
-GameLogic *SDL2GameEngine::createGameLogic( void )
+GameLogic* SDL2GameEngine::createGameLogic(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createGameLogic - Creating W3D game logic\n"));
 	return NEW W3DGameLogic;
 }
 
-GameClient *SDL2GameEngine::createGameClient( void )
+GameClient* SDL2GameEngine::createGameClient(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createGameClient - Creating W3D game client\n"));
 	return NEW W3DGameClient;
 }
 
-ModuleFactory *SDL2GameEngine::createModuleFactory( void )
+ModuleFactory* SDL2GameEngine::createModuleFactory(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createModuleFactory - Creating W3D module factory\n"));
 	return NEW W3DModuleFactory;
 }
 
-ThingFactory *SDL2GameEngine::createThingFactory( void )
+ThingFactory* SDL2GameEngine::createThingFactory(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createThingFactory - Creating W3D thing factory\n"));
 	return NEW W3DThingFactory;
 }
 
-FunctionLexicon *SDL2GameEngine::createFunctionLexicon( void )
+FunctionLexicon* SDL2GameEngine::createFunctionLexicon(void)
 {
-	fprintf(stderr, "SDL2GameEngine::createFunctionLexicon - About to create W3D function lexicon\n");
-	fflush(stderr);
-	FunctionLexicon *result = NEW W3DFunctionLexicon;
-	fprintf(stderr, "SDL2GameEngine::createFunctionLexicon - W3D function lexicon created: %p\n", result);
-	fflush(stderr);
+	// fprintf(stderr, "SDL2GameEngine::createFunctionLexicon - About to create W3D function lexicon\n");
+	// fflush(stderr);
+	FunctionLexicon* result = NEW W3DFunctionLexicon;
+	// fprintf(stderr, "SDL2GameEngine::createFunctionLexicon - W3D function lexicon created: %p\n", result);
+	// fflush(stderr);
 	return result;
 }
 
-LocalFileSystem *SDL2GameEngine::createLocalFileSystem( void )
+LocalFileSystem* SDL2GameEngine::createLocalFileSystem(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createLocalFileSystem - Creating standard POSIX-compatible file system\n"));
 	return NEW StdLocalFileSystem;
 }
 
-ArchiveFileSystem *SDL2GameEngine::createArchiveFileSystem( void )
+ArchiveFileSystem* SDL2GameEngine::createArchiveFileSystem(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createArchiveFileSystem - Creating standard BIG file system\n"));
 	return NEW StdBIGFileSystem;
 }
 
-NetworkInterface *SDL2GameEngine::createNetwork( void )
+NetworkInterface* SDL2GameEngine::createNetwork(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createNetwork - Creating network interface\n"));
 	try {
-		NetworkInterface *network = NetworkInterface::createNetwork();
+		NetworkInterface* network = NetworkInterface::createNetwork();
 		if (network) {
 			DEBUG_LOG(("SDL2GameEngine::createNetwork - Network interface created successfully\n"));
 			return network;
 		}
 		DEBUG_LOG(("SDL2GameEngine::createNetwork - Failed to create network interface\n"));
 		return nullptr;
-	} catch (const std::exception& e) {
+	}
+	catch (const std::exception& e) {
 		DEBUG_LOG(("SDL2GameEngine::createNetwork - Exception: %s\n", e.what()));
 		return nullptr;
-	} catch (...) {
+	}
+	catch (...) {
 		DEBUG_LOG(("SDL2GameEngine::createNetwork - Unknown exception\n"));
 		return nullptr;
 	}
 }
 
-Radar *SDL2GameEngine::createRadar( void )
+Radar* SDL2GameEngine::createRadar(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createRadar - Creating radar\n"));
 	return NEW W3DRadar;
 }
 
-WebBrowser *SDL2GameEngine::createWebBrowser( void )
+WebBrowser* SDL2GameEngine::createWebBrowser(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createWebBrowser - Creating web browser\n"));
-	
+
 	// Note: WebBrowser is Windows-specific COM interface (not available cross-platform)
 	// For now, web browser functionality is disabled on macOS/Linux
 	// This is acceptable as WebBrowser is an optional subsystem, not critical for gameplay
-	
-	#ifdef _WIN32
-		// Windows: Return real WebBrowser instance if available
-		try {
-			WebBrowser *browser = NEW W3DWebBrowser();
-			if (browser) {
-				DEBUG_LOG(("SDL2GameEngine::createWebBrowser - WebBrowser created successfully\n"));
-				return browser;
-			}
-		} catch (const std::exception& e) {
-			DEBUG_LOG(("SDL2GameEngine::createWebBrowser - Exception: %s\n", e.what()));
+
+#ifdef _WIN32
+	// Windows: Return real WebBrowser instance if available
+	try {
+		WebBrowser* browser = NEW W3DWebBrowser();
+		if (browser) {
+			DEBUG_LOG(("SDL2GameEngine::createWebBrowser - WebBrowser created successfully\n"));
+			return browser;
 		}
-	#else
-		// macOS/Linux: WebBrowser not available (Windows COM API)
-		DEBUG_LOG(("SDL2GameEngine::createWebBrowser - WebBrowser not available on this platform\n"));
-	#endif
-	
+	}
+	catch (const std::exception& e) {
+		DEBUG_LOG(("SDL2GameEngine::createWebBrowser - Exception: %s\n", e.what()));
+	}
+#else
+	// macOS/Linux: WebBrowser not available (Windows COM API)
+	DEBUG_LOG(("SDL2GameEngine::createWebBrowser - WebBrowser not available on this platform\n"));
+#endif
+
 	return nullptr;
 }
 
-ParticleSystemManager* SDL2GameEngine::createParticleSystemManager( void )
+ParticleSystemManager* SDL2GameEngine::createParticleSystemManager(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createParticleSystemManager - Creating W3D particle system manager\n"));
 	// W3DParticleSystemManager provides platform-independent rendering for particle effects
@@ -212,7 +215,7 @@ ParticleSystemManager* SDL2GameEngine::createParticleSystemManager( void )
 	return NEW W3DParticleSystemManager;
 }
 
-AudioManager *SDL2GameEngine::createAudioManager( void )
+AudioManager* SDL2GameEngine::createAudioManager(void)
 {
 	DEBUG_LOG(("SDL2GameEngine::createAudioManager - Creating OpenAL audio manager\n"));
 	// Return new OpenALAudioManager instance (Phase 33 OpenAL backend)

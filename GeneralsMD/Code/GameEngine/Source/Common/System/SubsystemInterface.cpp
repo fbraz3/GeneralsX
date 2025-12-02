@@ -48,16 +48,16 @@ SubsystemInterface::SubsystemInterface()
 	m_dumpDraw(false)
 #endif
 {
-	fprintf(stderr, "[SubsystemInterface] Constructor START, this=%p\n", this); fflush(stderr);
+	// fprintf(stderr, "[SubsystemInterface] Constructor START, this=%p\n", this); fflush(stderr);
 	if (TheSubsystemList) {
-		fprintf(stderr, "[SubsystemInterface] TheSubsystemList=%p, calling addSubsystem\n", TheSubsystemList); fflush(stderr);
+		// fprintf(stderr, "[SubsystemInterface] TheSubsystemList=%p, calling addSubsystem\n", TheSubsystemList); fflush(stderr);
 		TheSubsystemList->addSubsystem(this);
-		fprintf(stderr, "[SubsystemInterface] addSubsystem done\n"); fflush(stderr);
+		// fprintf(stderr, "[SubsystemInterface] addSubsystem done\n"); fflush(stderr);
 	}
 	else {
-		fprintf(stderr, "[SubsystemInterface] TheSubsystemList is NULL\n"); fflush(stderr);
+		// fprintf(stderr, "[SubsystemInterface] TheSubsystemList is NULL\n"); fflush(stderr);
 	}
-	fprintf(stderr, "[SubsystemInterface] Constructor END\n"); fflush(stderr);
+	// fprintf(stderr, "[SubsystemInterface] Constructor END\n"); fflush(stderr);
 }
 
 
@@ -162,27 +162,27 @@ void SubsystemInterfaceList::removeSubsystem(SubsystemInterface* sys)
 //-----------------------------------------------------------------------------
 void SubsystemInterfaceList::initSubsystem(SubsystemInterface* sys, const char* path1, const char* path2, Xfer* pXfer, AsciiString name)
 {
-	fprintf(stderr, "SubsystemInterfaceList::initSubsystem running sys->setName(name);...\n");
-	fflush(stderr);
+	// fprintf(stderr, "SubsystemInterfaceList::initSubsystem running sys->setName(name);...\n");
+	// fflush(stderr);
 	sys->setName(name);
-	fprintf(stderr, "SubsystemInterfaceList::initSubsystem running sys->init();...\n");
-	fflush(stderr);
+	// fprintf(stderr, "SubsystemInterfaceList::initSubsystem running sys->init();...\n");
+	// fflush(stderr);
 	sys->init();
 
 	INI ini;
 	if (path1) {
-		fprintf(stderr, "SubsystemInterfaceList::initSubsystem running ini.loadFileDirectory(path1, INI_LOAD_OVERWRITE, pXfer);...\n");
-		fflush(stderr);
+		// fprintf(stderr, "SubsystemInterfaceList::initSubsystem running ini.loadFileDirectory(path1, INI_LOAD_OVERWRITE, pXfer);...\n");
+		// fflush(stderr);
 		ini.loadFileDirectory(path1, INI_LOAD_OVERWRITE, pXfer);
 	}
 	if (path2) {
-		fprintf(stderr, "SubsystemInterfaceList::initSubsystem running ini.loadFileDirectory(path2, INI_LOAD_OVERWRITE, pXfer);...\n");
-		fflush(stderr);
+		// fprintf(stderr, "SubsystemInterfaceList::initSubsystem running ini.loadFileDirectory(path2, INI_LOAD_OVERWRITE, pXfer);...\n");
+		// fflush(stderr);
 		ini.loadFileDirectory(path2, INI_LOAD_OVERWRITE, pXfer);
 	}
 
-	fprintf(stderr, "SubsystemInterfaceList::initSubsystem running m_subsystems.push_back(sys);...\n");
-	fflush(stderr);
+	// fprintf(stderr, "SubsystemInterfaceList::initSubsystem running m_subsystems.push_back(sys);...\n");
+	// fflush(stderr);
 	m_subsystems.push_back(sys);
 }
 
