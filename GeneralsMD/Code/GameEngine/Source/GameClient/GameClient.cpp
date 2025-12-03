@@ -243,11 +243,11 @@ GameClient::~GameClient()
 //-------------------------------------------------------------------------------------------------
 void GameClient::init(void)
 {
-	fprintf(stderr, "[GameClient::init] Starting\n"); fflush(stderr);
+	printf("[GameClient::init] Starting\n"); 
 
 	setFrameRate(MSEC_PER_LOGICFRAME_REAL);		// from GameCommon.h... tell W3D what our expected framerate is
 
-	fprintf(stderr, "[GameClient::init] Loading DrawGroupInfo INI\n"); fflush(stderr);
+	printf("[GameClient::init] Loading DrawGroupInfo INI\n"); 
 	INI ini;
 	// Load the DrawGroupInfo here, before the Display Manager is loaded.
 	AsciiString drawGroupPath;
@@ -257,7 +257,7 @@ void GameClient::init(void)
 	drawGroupPath.concat(GET_PATH_SEPARATOR());
 	drawGroupPath.concat("DrawGroupInfo");
 	ini.loadFileDirectory(drawGroupPath.str(), INI_LOAD_OVERWRITE, NULL);
-	fprintf(stderr, "[GameClient::init] DrawGroupInfo INI loaded\n"); fflush(stderr);
+	printf("[GameClient::init] DrawGroupInfo INI loaded\n"); 
 
 	// Override the ini values with localized versions:
 	if (TheGlobalLanguageData && TheGlobalLanguageData->m_drawGroupInfoFont.name.isNotEmpty())
@@ -268,39 +268,39 @@ void GameClient::init(void)
 	}
 
 	// create the display string factory
-	fprintf(stderr, "[GameClient::init] Creating DisplayStringManager\n"); fflush(stderr);
+	printf("[GameClient::init] Creating DisplayStringManager\n"); 
 	TheDisplayStringManager = createDisplayStringManager();
 	if (TheDisplayStringManager) {
 		TheDisplayStringManager->init();
 		TheDisplayStringManager->setName("TheDisplayStringManager");
 	}
-	fprintf(stderr, "[GameClient::init] DisplayStringManager created\n"); fflush(stderr);
+	printf("[GameClient::init] DisplayStringManager created\n"); 
 
 	if (!TheGlobalData->m_headless)
 	{
 		// create the keyboard
-		fprintf(stderr, "[GameClient::init] Creating Keyboard\n"); fflush(stderr);
+		printf("[GameClient::init] Creating Keyboard\n"); 
 		TheKeyboard = createKeyboard();
 		TheKeyboard->init();
 		TheKeyboard->setName("TheKeyboard");
-		fprintf(stderr, "[GameClient::init] Keyboard created\n"); fflush(stderr);
+		printf("[GameClient::init] Keyboard created\n"); 
 	}
 
 	// allocate and load image collection for the GUI and just load the 256x256 ones for now
-	fprintf(stderr, "[GameClient::init] Creating ImageCollection (512x512)\n"); fflush(stderr);
+	printf("[GameClient::init] Creating ImageCollection (512x512)\n"); 
 	TheMappedImageCollection = MSGNEW("GameClientSubsystem") ImageCollection;
 	TheMappedImageCollection->load(512);
-	fprintf(stderr, "[GameClient::init] ImageCollection loaded\n"); fflush(stderr);
+	printf("[GameClient::init] ImageCollection loaded\n"); 
 
 	// now that we have all the images loaded ... load any animation definitions from those images
-	fprintf(stderr, "[GameClient::init] Creating Anim2DCollection\n"); fflush(stderr);
+	printf("[GameClient::init] Creating Anim2DCollection\n"); 
 	TheAnim2DCollection = MSGNEW("GameClientSubsystem") Anim2DCollection;
 	TheAnim2DCollection->init();
 	TheAnim2DCollection->setName("TheAnim2DCollection");
-	fprintf(stderr, "[GameClient::init] Anim2DCollection created\n"); fflush(stderr);
+	printf("[GameClient::init] Anim2DCollection created\n"); 
 
 	// register message translators
-	fprintf(stderr, "[GameClient::init] Registering message translators\n"); fflush(stderr);
+	printf("[GameClient::init] Registering message translators\n"); 
 	if (TheMessageStream)
 	{
 
@@ -331,41 +331,41 @@ void GameClient::init(void)
 		m_translators[m_numTranslators++] = TheMessageStream->attachTranslator(MSGNEW("GameClientSubsystem") GameClientMessageDispatcher, 999999999);
 
 	}
-	fprintf(stderr, "[GameClient::init] Message translators registered\n"); fflush(stderr);
+	printf("[GameClient::init] Message translators registered\n"); 
 
 	// create the font library
-	fprintf(stderr, "[GameClient::init] Creating FontLibrary\n"); fflush(stderr);
+	printf("[GameClient::init] Creating FontLibrary\n"); 
 	TheFontLibrary = createFontLibrary();
 	if (TheFontLibrary)
 		TheFontLibrary->init();
-	fprintf(stderr, "[GameClient::init] FontLibrary created\n"); fflush(stderr);
+	printf("[GameClient::init] FontLibrary created\n"); 
 
 	// create the mouse
-	fprintf(stderr, "[GameClient::init] Creating Mouse\n"); fflush(stderr);
+	printf("[GameClient::init] Creating Mouse\n"); 
 	TheMouse = TheGlobalData->m_headless ? NEW MouseDummy : createMouse();
 	TheMouse->parseIni();
 	TheMouse->initCursorResources();
 	TheMouse->setName("TheMouse");
-	fprintf(stderr, "[GameClient::init] Mouse created\n"); fflush(stderr);
+	printf("[GameClient::init] Mouse created\n"); 
 
 	// instantiate the display
-	fprintf(stderr, "[GameClient::init] Creating Display\n"); fflush(stderr);
+	printf("[GameClient::init] Creating Display\n"); 
 	TheDisplay = createGameDisplay();
 	if (TheDisplay) {
 		TheDisplay->init();
 		TheDisplay->setName("TheDisplay");
 	}
-	fprintf(stderr, "[GameClient::init] Display created\n"); fflush(stderr);
+	printf("[GameClient::init] Display created\n"); 
 
-	fprintf(stderr, "[GameClient::init] Creating HeaderTemplateManager\n"); fflush(stderr);
+	printf("[GameClient::init] Creating HeaderTemplateManager\n"); 
 	TheHeaderTemplateManager = MSGNEW("GameClientSubsystem") HeaderTemplateManager;
 	if (TheHeaderTemplateManager) {
 		TheHeaderTemplateManager->init();
 	}
-	fprintf(stderr, "[GameClient::init] HeaderTemplateManager created\n"); fflush(stderr);
+	printf("[GameClient::init] HeaderTemplateManager created\n"); 
 
 	// create the window manager
-	fprintf(stderr, "[GameClient::init] Creating WindowManager\n"); fflush(stderr);
+	printf("[GameClient::init] Creating WindowManager\n"); 
 	TheWindowManager = TheGlobalData->m_headless ? NEW GameWindowManagerDummy : createWindowManager();
 	if (TheWindowManager)
 	{
@@ -375,74 +375,74 @@ void GameClient::init(void)
 		//		TheWindowManager->initTestGUI();
 
 	}
-	fprintf(stderr, "[GameClient::init] WindowManager created\n"); fflush(stderr);
+	printf("[GameClient::init] WindowManager created\n"); 
 
 	// create the IME manager
-	fprintf(stderr, "[GameClient::init] Creating IMEManager\n"); fflush(stderr);
+	printf("[GameClient::init] Creating IMEManager\n"); 
 	TheIMEManager = CreateIMEManagerInterface();
 	if (TheIMEManager)
 	{
 		TheIMEManager->init();
 		TheIMEManager->setName("TheIMEManager");
 	}
-	fprintf(stderr, "[GameClient::init] IMEManager created\n"); fflush(stderr);
+	printf("[GameClient::init] IMEManager created\n"); 
 
 	// create the shell
-	fprintf(stderr, "[GameClient::init] Creating Shell\n"); fflush(stderr);
+	printf("[GameClient::init] Creating Shell\n"); 
 	TheShell = MSGNEW("GameClientSubsystem") Shell;
 	if (TheShell) {
 		TheShell->init();
 		TheShell->setName("TheShell");
 	}
-	fprintf(stderr, "[GameClient::init] Shell created\n"); fflush(stderr);
+	printf("[GameClient::init] Shell created\n"); 
 
 	// instantiate the in-game user interface
-	fprintf(stderr, "[GameClient::init] Creating InGameUI\n"); fflush(stderr);
+	printf("[GameClient::init] Creating InGameUI\n"); 
 	TheInGameUI = createInGameUI();
 	if (TheInGameUI) {
 		TheInGameUI->init();
 		TheInGameUI->setName("TheInGameUI");
 	}
-	fprintf(stderr, "[GameClient::init] InGameUI created\n"); fflush(stderr);
+	printf("[GameClient::init] InGameUI created\n"); 
 
-	fprintf(stderr, "[GameClient::init] Creating ChallengeGenerals\n"); fflush(stderr);
+	printf("[GameClient::init] Creating ChallengeGenerals\n"); 
 	TheChallengeGenerals = createChallengeGenerals();
 	if (TheChallengeGenerals) {
 		TheChallengeGenerals->init();
 	}
-	fprintf(stderr, "[GameClient::init] ChallengeGenerals created\n"); fflush(stderr);
+	printf("[GameClient::init] ChallengeGenerals created\n"); 
 
-	fprintf(stderr, "[GameClient::init] Creating HotKeyManager\n"); fflush(stderr);
+	printf("[GameClient::init] Creating HotKeyManager\n"); 
 	TheHotKeyManager = MSGNEW("GameClientSubsystem") HotKeyManager;
 	if (TheHotKeyManager) {
 		TheHotKeyManager->init();
 		TheHotKeyManager->setName("TheHotKeyManager");
 	}
-	fprintf(stderr, "[GameClient::init] HotKeyManager created\n"); fflush(stderr);
+	printf("[GameClient::init] HotKeyManager created\n"); 
 
 	// instantiate the terrain visual display
-	fprintf(stderr, "[GameClient::init] Creating TerrainVisual\n"); fflush(stderr);
+	printf("[GameClient::init] Creating TerrainVisual\n"); 
 	TheTerrainVisual = createTerrainVisual();
-	fprintf(stderr, "[GameClient::init] createTerrainVisual returned: %p\n", TheTerrainVisual); fflush(stderr);
+	printf("[GameClient::init] createTerrainVisual returned: %p\n", TheTerrainVisual); 
 	if (TheTerrainVisual) {
-		fprintf(stderr, "[GameClient::init] About to call TheTerrainVisual->init()\n"); fflush(stderr);
+		printf("[GameClient::init] About to call TheTerrainVisual->init()\n"); 
 		TheTerrainVisual->init();
-		fprintf(stderr, "[GameClient::init] TheTerrainVisual->init() done\n"); fflush(stderr);
+		printf("[GameClient::init] TheTerrainVisual->init() done\n"); 
 		TheTerrainVisual->setName("TheTerrainVisual");
-		fprintf(stderr, "[GameClient::init] TheTerrainVisual->setName() done\n"); fflush(stderr);
+		printf("[GameClient::init] TheTerrainVisual->setName() done\n"); 
 	}
-	fprintf(stderr, "[GameClient::init] TerrainVisual created\n"); fflush(stderr);
+	printf("[GameClient::init] TerrainVisual created\n"); 
 
 	// allocate the ray effects manager
-	fprintf(stderr, "[GameClient::init] Creating RayEffects\n"); fflush(stderr);
+	printf("[GameClient::init] Creating RayEffects\n"); 
 	TheRayEffects = MSGNEW("GameClientSubsystem") RayEffectSystem;
 	if (TheRayEffects) {
 		TheRayEffects->init();
 		TheRayEffects->setName("TheRayEffects");
 	}
-	fprintf(stderr, "[GameClient::init] RayEffects created\n"); fflush(stderr);
+	printf("[GameClient::init] RayEffects created\n"); 
 
-	fprintf(stderr, "[GameClient::init] Finishing Mouse init\n"); fflush(stderr);
+	printf("[GameClient::init] Finishing Mouse init\n"); 
 	TheMouse->init();	//finish initializing the mouse.
 
 	// set the limits of the mouse now that we've created the display and such
@@ -452,57 +452,57 @@ void GameClient::init(void)
 		TheMouse->setMouseLimits();
 		TheMouse->setName("TheMouse");
 	}
-	fprintf(stderr, "[GameClient::init] Mouse fully initialized\n"); fflush(stderr);
+	printf("[GameClient::init] Mouse fully initialized\n"); 
 
 	// create the video player
-	fprintf(stderr, "[GameClient::init] Creating VideoPlayer\n"); fflush(stderr);
+	printf("[GameClient::init] Creating VideoPlayer\n"); 
 	TheVideoPlayer = createVideoPlayer();
 	if (TheVideoPlayer)
 	{
 		TheVideoPlayer->init();
 		TheVideoPlayer->setName("TheVideoPlayer");
 	}
-	fprintf(stderr, "[GameClient::init] VideoPlayer created\n"); fflush(stderr);
+	printf("[GameClient::init] VideoPlayer created\n"); 
 
 	// create the language filter.
-	fprintf(stderr, "[GameClient::init] Creating LanguageFilter\n"); fflush(stderr);
+	printf("[GameClient::init] Creating LanguageFilter\n"); 
 	TheLanguageFilter = createLanguageFilter();
 	if (TheLanguageFilter)
 	{
 		TheLanguageFilter->init();
 		TheLanguageFilter->setName("TheLanguageFilter");
 	}
-	fprintf(stderr, "[GameClient::init] LanguageFilter created\n"); fflush(stderr);
+	printf("[GameClient::init] LanguageFilter created\n"); 
 
-	fprintf(stderr, "[GameClient::init] Creating CampaignManager\n"); fflush(stderr);
+	printf("[GameClient::init] Creating CampaignManager\n"); 
 	TheCampaignManager = MSGNEW("GameClientSubsystem") CampaignManager;
 	TheCampaignManager->init();
-	fprintf(stderr, "[GameClient::init] CampaignManager created\n"); fflush(stderr);
+	printf("[GameClient::init] CampaignManager created\n"); 
 
-	fprintf(stderr, "[GameClient::init] Creating Eva\n"); fflush(stderr);
+	printf("[GameClient::init] Creating Eva\n"); 
 	TheEva = MSGNEW("GameClientSubsystem") Eva;
 	TheEva->init();
 	TheEva->setName("TheEva");
-	fprintf(stderr, "[GameClient::init] Eva created\n"); fflush(stderr);
+	printf("[GameClient::init] Eva created\n"); 
 
-	fprintf(stderr, "[GameClient::init] DisplayStringManager postProcessLoad\n"); fflush(stderr);
+	printf("[GameClient::init] DisplayStringManager postProcessLoad\n"); 
 	TheDisplayStringManager->postProcessLoad();
-	fprintf(stderr, "[GameClient::init] DisplayStringManager postProcessLoad done\n"); fflush(stderr);
+	printf("[GameClient::init] DisplayStringManager postProcessLoad done\n"); 
 
-	fprintf(stderr, "[GameClient::init] Creating SnowManager\n"); fflush(stderr);
+	printf("[GameClient::init] Creating SnowManager\n"); 
 	TheSnowManager = createSnowManager();
 	if (TheSnowManager)
 	{
 		TheSnowManager->init();
 		TheSnowManager->setName("TheSnowManager");
 	}
-	fprintf(stderr, "[GameClient::init] SnowManager created\n"); fflush(stderr);
+	printf("[GameClient::init] SnowManager created\n"); 
 
 #ifdef PERF_TIMERS
 	TheGraphDraw = new GraphDraw;
 #endif
 
-	fprintf(stderr, "[GameClient::init] COMPLETE - returning\n"); fflush(stderr);
+	printf("[GameClient::init] COMPLETE - returning\n"); 
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -580,8 +580,8 @@ void GameClient::update(void)
 	// Phase 54: Debug log
 	static int gcUpdateCount = 0;
 	if (gcUpdateCount < 3) {
-		fprintf(stderr, "GameClient::update() - Starting update #%d\n", gcUpdateCount);
-		fflush(stderr);
+		printf("GameClient::update() - Starting update #%d\n", gcUpdateCount);
+		
 	}
 
 	USE_PERF_TIMER(GameClient_update)
@@ -591,26 +591,26 @@ void GameClient::update(void)
 	static Bool playSizzle = FALSE;
 
 	if (gcUpdateCount < 3) {
-		fprintf(stderr, "GameClient::update() - m_playIntro=%d, isMoviePlaying=%d\n",
+		printf("GameClient::update() - m_playIntro=%d, isMoviePlaying=%d\n",
 			TheGlobalData->m_playIntro ? 1 : 0, TheDisplay->isMoviePlaying() ? 1 : 0);
-		fflush(stderr);
+		
 	}
 
 	// We need to show the movie first.
 	if (TheGlobalData->m_playIntro && !TheDisplay->isMoviePlaying())
 	{
 		if (gcUpdateCount < 3) {
-			fprintf(stderr, "GameClient::update() - About to playLogoMovie, didMemPass=%d\n",
+			printf("GameClient::update() - About to playLogoMovie, didMemPass=%d\n",
 				(TheGameLODManager && TheGameLODManager->didMemPass()) ? 1 : 0);
-			fflush(stderr);
+			
 		}
 		if (TheGameLODManager && TheGameLODManager->didMemPass())
 			TheDisplay->playLogoMovie("EALogoMovie", 5000, 3000);
 		else
 			TheDisplay->playLogoMovie("EALogoMovie640", 5000, 3000);
 		if (gcUpdateCount < 3) {
-			fprintf(stderr, "GameClient::update() - playLogoMovie returned, setting m_playIntro=FALSE\n");
-			fflush(stderr);
+			printf("GameClient::update() - playLogoMovie returned, setting m_playIntro=FALSE\n");
+			
 		}
 		TheWritableGlobalData->m_playIntro = FALSE;
 		TheWritableGlobalData->m_afterIntro = TRUE;
@@ -621,9 +621,9 @@ void GameClient::update(void)
 	if (TheGlobalData->m_afterIntro && !TheDisplay->isMoviePlaying())
 	{
 		if (gcUpdateCount < 3) {
-			fprintf(stderr, "GameClient::update() - afterIntro block, playSizzle=%d, m_playSizzle=%d\n",
+			printf("GameClient::update() - afterIntro block, playSizzle=%d, m_playSizzle=%d\n",
 				playSizzle ? 1 : 0, TheGlobalData->m_playSizzle ? 1 : 0);
-			fflush(stderr);
+			
 		}
 		if (playSizzle && TheGlobalData->m_playSizzle)
 		{
@@ -669,13 +669,13 @@ void GameClient::update(void)
 			}
 
 			if (gcUpdateCount < 3) {
-				fprintf(stderr, "GameClient::update() - About to call TheShell->showShellMap()\n");
-				fflush(stderr);
+				printf("GameClient::update() - About to call TheShell->showShellMap()\n");
+				
 			}
 			TheShell->showShellMap(TRUE);
 			if (gcUpdateCount < 3) {
-				fprintf(stderr, "GameClient::update() - About to call TheShell->showShell()\n");
-				fflush(stderr);
+				printf("GameClient::update() - About to call TheShell->showShell()\n");
+				
 			}
 			TheShell->showShell();
 			TheWritableGlobalData->m_afterIntro = FALSE;
@@ -683,10 +683,10 @@ void GameClient::update(void)
 	}
 
 	if (gcUpdateCount < 3) {
-		fprintf(stderr, "GameClient::update() - After intro/movie handling, updating subsystems...\n");
-		fprintf(stderr, "GameClient::update() - m_playIntro=%d, m_afterIntro=%d\n",
+		printf("GameClient::update() - After intro/movie handling, updating subsystems...\n");
+		printf("GameClient::update() - m_playIntro=%d, m_afterIntro=%d\n",
 			TheGlobalData->m_playIntro ? 1 : 0, TheGlobalData->m_afterIntro ? 1 : 0);
-		fflush(stderr);
+		
 	}
 
 	//Update snow particles.
@@ -731,19 +731,19 @@ void GameClient::update(void)
 	if (TheGlobalData->m_playIntro || TheGlobalData->m_afterIntro)
 	{
 		if (gcUpdateCount < 3) {
-			fprintf(stderr, "GameClient::update() - In playIntro/afterIntro block, about to call DRAW()\n");
-			fflush(stderr);
+			printf("GameClient::update() - In playIntro/afterIntro block, about to call DRAW()\n");
+			
 		}
 		// redraw all views, update the GUI
 		TheDisplay->DRAW();
 		if (gcUpdateCount < 3) {
-			fprintf(stderr, "GameClient::update() - DRAW() returned, calling UPDATE()\n");
-			fflush(stderr);
+			printf("GameClient::update() - DRAW() returned, calling UPDATE()\n");
+			
 		}
 		TheDisplay->UPDATE();
 		if (gcUpdateCount < 3) {
-			fprintf(stderr, "GameClient::update() - UPDATE() returned, returning early\n");
-			fflush(stderr);
+			printf("GameClient::update() - UPDATE() returned, returning early\n");
+			
 		}
 		return;
 	}
@@ -901,8 +901,8 @@ void GameClient::update(void)
 
 	// Phase 54: Increment counter at end of update
 	if (gcUpdateCount < 3) {
-		fprintf(stderr, "GameClient::update() - Update #%d completed\n", gcUpdateCount);
-		fflush(stderr);
+		printf("GameClient::update() - Update #%d completed\n", gcUpdateCount);
+		
 		gcUpdateCount++;
 	}
 }

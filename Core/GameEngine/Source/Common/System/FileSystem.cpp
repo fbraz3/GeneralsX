@@ -177,20 +177,20 @@ File* FileSystem::openFile(const Char* filename, Int access, size_t bufferSize, 
 	USE_PERF_TIMER(FileSystem)
 		File* file = NULL;
 
-	// fprintf(stderr, "[FileSystem::openFile] Attempting to open file: '%s' (access=%d, instance=%d)\n", filename, access, instance);
-	// fflush(stderr);
+	// printf("[FileSystem::openFile] Attempting to open file: '%s' (access=%d, instance=%d)\n", filename, access, instance);
+	// 
 	if (TheLocalFileSystem != NULL)
 	{
-		// fprintf(stderr, "[FileSystem::openFile] TheLocalFileSystem is initialized\n");
-		// fflush(stderr);
+		// printf("[FileSystem::openFile] TheLocalFileSystem is initialized\n");
+		// 
 		if (instance != 0)
 		{
-			// fprintf(stderr, "[FileSystem::openFile] Checking for instance %d in local filesystem\n", instance);
-			// fflush(stderr);
+			// printf("[FileSystem::openFile] Checking for instance %d in local filesystem\n", instance);
+			// 
 			if (TheLocalFileSystem->doesFileExist(filename))
 			{
-				// fprintf(stderr, "[FileSystem::openFile] File exists in local filesystem, decrementing instance\n");
-				// fflush(stderr);
+				// printf("[FileSystem::openFile] File exists in local filesystem, decrementing instance\n");
+				// 
 				--instance;
 			}
 		}
@@ -198,29 +198,29 @@ File* FileSystem::openFile(const Char* filename, Int access, size_t bufferSize, 
 		{
 			try
 			{
-				// fprintf(stderr, "[FileSystem::openFile] Opening file from local filesystem\n");
-				// fflush(stderr);
+				// printf("[FileSystem::openFile] Opening file from local filesystem\n");
+				// 
 				file = TheLocalFileSystem->openFile(filename, access, bufferSize);
 				// if (file != NULL)
 				// {
-				// 	// fprintf(stderr, "[FileSystem::openFile] Successfully opened file from local filesystem\n");
-				// 	// fflush(stderr);
+				// 	// printf("[FileSystem::openFile] Successfully opened file from local filesystem\n");
+				// 	// 
 				// }
 				// else
 				// {
-				// 	// fprintf(stderr, "[FileSystem::openFile] Local filesystem returned NULL for file\n");
-				// 	// fflush(stderr);
+				// 	// printf("[FileSystem::openFile] Local filesystem returned NULL for file\n");
+				// 	// 
 				// }
 			}
 			catch (const std::exception& e)
 			{
-				// fprintf(stderr, "[FileSystem::openFile] Exception caught from local filesystem: %s\n", e.what());
-				// fflush(stderr);
+				// printf("[FileSystem::openFile] Exception caught from local filesystem: %s\n", e.what());
+				// 
 			}
 			catch (...)
 			{
-				// fprintf(stderr, "[FileSystem::openFile] Unknown exception caught from local filesystem\n");
-				// fflush(stderr);
+				// printf("[FileSystem::openFile] Unknown exception caught from local filesystem\n");
+				// 
 			}
 
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
@@ -244,55 +244,55 @@ File* FileSystem::openFile(const Char* filename, Int access, size_t bufferSize, 
 	}
 	// else
 	// {
-	// 	fprintf(stderr, "[FileSystem::openFile] WARNING: TheLocalFileSystem is NULL\n");
-	// 	fflush(stderr);
+	// 	printf("[FileSystem::openFile] WARNING: TheLocalFileSystem is NULL\n");
+	// 	
 	// }
 
 	if ((TheArchiveFileSystem != NULL) && (file == NULL))
 	{
-		// fprintf(stderr, "[FileSystem::openFile] Attempting to open file from archive filesystem\n");
-		// fflush(stderr);
+		// printf("[FileSystem::openFile] Attempting to open file from archive filesystem\n");
+		// 
 		try
 		{
 			// TheSuperHackers @todo Pass 'access' here?
 			file = TheArchiveFileSystem->openFile(filename, 0, instance);
 			// if (file != NULL)
 			// {
-			// 	fprintf(stderr, "[FileSystem::openFile] Successfully opened file from archive filesystem\n");
-			// 	fflush(stderr);
+			// 	printf("[FileSystem::openFile] Successfully opened file from archive filesystem\n");
+			// 	
 			// }
 			// else
 			// {
-			// 	fprintf(stderr, "[FileSystem::openFile] Archive filesystem returned NULL for file\n");
-			// 	fflush(stderr);
+			// 	printf("[FileSystem::openFile] Archive filesystem returned NULL for file\n");
+			// 	
 			// }
 		}
 		catch (const std::exception& e)
 		{
-			// fprintf(stderr, "[FileSystem::openFile] Exception caught from archive filesystem: %s\n", e.what());
-			// fflush(stderr);
+			// printf("[FileSystem::openFile] Exception caught from archive filesystem: %s\n", e.what());
+			// 
 		}
 		catch (...)
 		{
-			// fprintf(stderr, "[FileSystem::openFile] Unknown exception caught from archive filesystem\n");
-			// fflush(stderr);
+			// printf("[FileSystem::openFile] Unknown exception caught from archive filesystem\n");
+			// 
 		}
 	}
 	// else if (file != NULL)
 	// {
-	// 	// fprintf(stderr, "[FileSystem::openFile] File already opened from local filesystem, skipping archive\n");
-	// 	// fflush(stderr);
+	// 	// printf("[FileSystem::openFile] File already opened from local filesystem, skipping archive\n");
+	// 	// 
 	// }
 	// else if (TheArchiveFileSystem == NULL)
 	// {
-	// 	// fprintf(stderr, "[FileSystem::openFile] WARNING: TheArchiveFileSystem is NULL\n");
-	// 	// fflush(stderr);
+	// 	// printf("[FileSystem::openFile] WARNING: TheArchiveFileSystem is NULL\n");
+	// 	// 
 	// }
 
 	// if (file == NULL)
 	// {
-	// 	fprintf(stderr, "[FileSystem::openFile] FAILURE: Unable to open file '%s' from any filesystem\n", filename);
-	// 	fflush(stderr);
+	// 	printf("[FileSystem::openFile] FAILURE: Unable to open file '%s' from any filesystem\n", filename);
+	// 	
 	// }
 
 	return file;

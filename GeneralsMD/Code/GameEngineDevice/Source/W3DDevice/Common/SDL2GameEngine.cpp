@@ -131,11 +131,11 @@ ThingFactory* SDL2GameEngine::createThingFactory(void)
 
 FunctionLexicon* SDL2GameEngine::createFunctionLexicon(void)
 {
-	// fprintf(stderr, "SDL2GameEngine::createFunctionLexicon - About to create W3D function lexicon\n");
-	// fflush(stderr);
+	// printf("SDL2GameEngine::createFunctionLexicon - About to create W3D function lexicon\n");
+	// 
 	FunctionLexicon* result = NEW W3DFunctionLexicon;
-	// fprintf(stderr, "SDL2GameEngine::createFunctionLexicon - W3D function lexicon created: %p\n", result);
-	// fflush(stderr);
+	// printf("SDL2GameEngine::createFunctionLexicon - W3D function lexicon created: %p\n", result);
+	// 
 	return result;
 }
 

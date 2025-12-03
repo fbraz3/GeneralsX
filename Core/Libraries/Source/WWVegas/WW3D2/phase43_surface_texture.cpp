@@ -314,14 +314,14 @@ SurfaceClass* TextureClass::Get_Surface_Level(unsigned int level)
 	// Phase 51: Real implementation - get surface from D3DTexture
 	IDirect3DTexture8* d3d_texture = Peek_D3D_Texture();
 	if (!d3d_texture) {
-		fprintf(stderr, "[TextureClass] Get_Surface_Level: D3DTexture is NULL!\n");
+		printf("[TextureClass] Get_Surface_Level: D3DTexture is NULL!\n");
 		return nullptr;
 	}
 	
 	IDirect3DSurface8* d3d_surface = nullptr;
 	HRESULT hr = d3d_texture->GetSurfaceLevel(level, &d3d_surface);
 	if (FAILED(hr) || !d3d_surface) {
-		fprintf(stderr, "[TextureClass] Get_Surface_Level: GetSurfaceLevel failed, level=%u, hr=0x%lx\n", level, (unsigned long)hr);
+		printf("[TextureClass] Get_Surface_Level: GetSurfaceLevel failed, level=%u, hr=0x%lx\n", level, (unsigned long)hr);
 		return nullptr;
 	}
 	
@@ -401,7 +401,7 @@ TextureClass::TextureClass(
 	: TextureBaseClass(width, height, mip_level, pool, false, allow_reduction)
 {
 	// Phase 51: Real texture creation implementation
-	fprintf(stderr, "[TextureClass] Phase 51: Creating %ux%u texture, format=%d, mip=%d, pool=%d\n",
+	printf("[TextureClass] Phase 51: Creating %ux%u texture, format=%d, mip=%d, pool=%d\n",
 			width, height, (int)format, (int)mip_level, (int)pool);
 	
 	TextureFormat = format;
@@ -417,23 +417,23 @@ TextureClass::TextureClass(
 	}
 	
 	// Create the D3D texture using DX8Wrapper
-	fprintf(stderr, "[TextureClass] Phase 51: Calling _Create_DX8_Texture...\n");
+	printf("[TextureClass] Phase 51: Calling _Create_DX8_Texture...\n");
 	IDirect3DBaseTexture8* d3d_texture = DX8Wrapper::_Create_DX8_Texture(width, height, format, mip_level, d3dpool, false);
-	fprintf(stderr, "[TextureClass] Phase 51: _Create_DX8_Texture returned %p\n", (void*)d3d_texture);
+	printf("[TextureClass] Phase 51: _Create_DX8_Texture returned %p\n", (void*)d3d_texture);
 	
 	if (d3d_texture) {
-		fprintf(stderr, "[TextureClass] Phase 51: Calling Poke_Texture...\n");
+		printf("[TextureClass] Phase 51: Calling Poke_Texture...\n");
 		Poke_Texture(d3d_texture);  // Use protected method to set D3DTexture
-		fprintf(stderr, "[TextureClass] Phase 51: Poke_Texture done.\n");
+		printf("[TextureClass] Phase 51: Poke_Texture done.\n");
 	} else {
-		fprintf(stderr, "[TextureClass] Phase 51: Skipping Poke_Texture - texture is NULL!\n");
+		printf("[TextureClass] Phase 51: Skipping Poke_Texture - texture is NULL!\n");
 	}
 	
 	if (Peek_D3D_Base_Texture()) {
 		Initialized = true;
-		fprintf(stderr, "[TextureClass] Phase 51: SUCCESS - D3DTexture=%p\n", (void*)Peek_D3D_Base_Texture());
+		printf("[TextureClass] Phase 51: SUCCESS - D3DTexture=%p\n", (void*)Peek_D3D_Base_Texture());
 	} else {
-		fprintf(stderr, "[TextureClass] Phase 51: FAILED - D3DTexture is NULL!\n");
+		printf("[TextureClass] Phase 51: FAILED - D3DTexture is NULL!\n");
 	}
 }
 

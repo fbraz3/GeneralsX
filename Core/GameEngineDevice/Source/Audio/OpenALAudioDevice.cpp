@@ -59,7 +59,7 @@ struct OpenALAudioDevice {
 static void openal_check_error(const char* function_name) {
   ALenum error = alGetError();
   if (error != AL_NO_ERROR) {
-    fprintf(stderr, "[OpenAL Error in %s] %d\n", function_name, error);
+    printf("[OpenAL Error in %s] %d\n", function_name, error);
   }
 }
 
@@ -173,8 +173,8 @@ void OpenALAudioDevice_Initialize(OpenALAudioDevice* device) {
 
   openal_check_error("OpenALAudioDevice_Initialize");
 
-  fprintf(stdout, "Phase 32: OpenAL device initialized\n");
-  fprintf(stdout, "Device: %s\n", alcGetString(device->device, ALC_DEVICE_SPECIFIER));
+  printf("Phase 32: OpenAL device initialized\n");
+  printf("Device: %s\n", alcGetString(device->device, ALC_DEVICE_SPECIFIER));
 }
 
 void OpenALAudioDevice_Shutdown(OpenALAudioDevice* device) {
@@ -197,7 +197,7 @@ void OpenALAudioDevice_Shutdown(OpenALAudioDevice* device) {
     }
   }
 
-  fprintf(stdout, "Phase 47: OpenAL device shutdown\n");
+  printf("Phase 47: OpenAL device shutdown\n");
 }
 
 void OpenALAudioDevice_SetListenerPosition(OpenALAudioDevice* device, OpenAL_Vector3 position) {
@@ -687,7 +687,7 @@ uint32_t OpenALAudioDevice_CreateEffect(OpenALAudioDevice* device, int effect_ty
    */
 #ifdef __APPLE__
   if (!alIsExtensionPresent("AL_EXT_EFX")) {
-    fprintf(stderr, "Phase 47: AL_EXT_EFX not available on macOS, effects disabled\n");
+    printf("Phase 47: AL_EXT_EFX not available on macOS, effects disabled\n");
     return 1;  /* Return non-zero placeholder */
   }
 #endif
@@ -823,15 +823,15 @@ int OpenALAudioDevice_ClearErrors(OpenALAudioDevice* device) {
 void OpenALAudioDevice_PrintDeviceInfo(OpenALAudioDevice* device) {
   if (!device || !device->device) return;
 
-  fprintf(stdout, "OpenAL Device Information\n");
-  fprintf(stdout, "Device: %s\n", alcGetString(device->device, ALC_DEVICE_SPECIFIER));
-  fprintf(stdout, "Vendor: %s\n", alGetString(AL_VENDOR));
-  fprintf(stdout, "Renderer: %s\n", alGetString(AL_RENDERER));
-  fprintf(stdout, "Version: %s\n", alGetString(AL_VERSION));
-  fprintf(stdout, "Extensions: %s\n", alGetString(AL_EXTENSIONS));
-  fprintf(stdout, "Buffers: %u\n", device->num_buffers);
-  fprintf(stdout, "Active Sources: %u\n", device->num_active_sources);
-  fprintf(stdout, "EFX Support: %s\n", OpenALAudioDevice_HasEFXSupport(device) ? "Yes" : "No");
+  printf("OpenAL Device Information\n");
+  printf("Device: %s\n", alcGetString(device->device, ALC_DEVICE_SPECIFIER));
+  printf("Vendor: %s\n", alGetString(AL_VENDOR));
+  printf("Renderer: %s\n", alGetString(AL_RENDERER));
+  printf("Version: %s\n", alGetString(AL_VERSION));
+  printf("Extensions: %s\n", alGetString(AL_EXTENSIONS));
+  printf("Buffers: %u\n", device->num_buffers);
+  printf("Active Sources: %u\n", device->num_active_sources);
+  printf("EFX Support: %s\n", OpenALAudioDevice_HasEFXSupport(device) ? "Yes" : "No");
 }
 
 void OpenALAudioDevice_PrintSourceInfo(OpenALAudioDevice* device, AudioSourceHandle handle) {
@@ -839,13 +839,13 @@ void OpenALAudioDevice_PrintSourceInfo(OpenALAudioDevice* device, AudioSourceHan
 
   for (uint32_t i = 0; i < device->max_sources; i++) {
     if (device->sources[i].handle == handle && device->sources[i].in_use) {
-      fprintf(stdout, "Source Handle: %u\n", handle);
-      fprintf(stdout, "Channel: %d\n", device->sources[i].channel);
-      fprintf(stdout, "State: %d\n", device->sources[i].state);
-      fprintf(stdout, "Volume: %.2f\n", device->sources[i].volume);
-      fprintf(stdout, "Pitch: %.2f\n", device->sources[i].pitch);
-      fprintf(stdout, "Looping: %d\n", device->sources[i].looping);
-      fprintf(stdout, "Buffer ID: %u\n", device->sources[i].current_buffer);
+      printf("Source Handle: %u\n", handle);
+      printf("Channel: %d\n", device->sources[i].channel);
+      printf("State: %d\n", device->sources[i].state);
+      printf("Volume: %.2f\n", device->sources[i].volume);
+      printf("Pitch: %.2f\n", device->sources[i].pitch);
+      printf("Looping: %d\n", device->sources[i].looping);
+      printf("Buffer ID: %u\n", device->sources[i].current_buffer);
       break;
     }
   }

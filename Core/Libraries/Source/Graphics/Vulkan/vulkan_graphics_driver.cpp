@@ -468,7 +468,7 @@ namespace Graphics {
     case BlendMode::SrcColor1:      return VK_BLEND_FACTOR_SRC1_COLOR;
     case BlendMode::InvSrcColor1:   return VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
     default:
-      fprintf(stderr, "[Vulkan] WARNING: Unknown BlendMode %d, defaulting to ONE\n", (int)mode);
+      printf("[Vulkan] WARNING: Unknown BlendMode %d, defaulting to ONE\n", (int)mode);
       return VK_BLEND_FACTOR_ONE;
     }
   }
@@ -488,7 +488,7 @@ namespace Graphics {
     case ComparisonFunc::GreaterEqual: return VK_COMPARE_OP_GREATER_OR_EQUAL;
     case ComparisonFunc::Always:       return VK_COMPARE_OP_ALWAYS;
     default:
-      fprintf(stderr, "[Vulkan] WARNING: Unknown ComparisonFunc %d, defaulting to LESS_OR_EQUAL\n", (int)func);
+      printf("[Vulkan] WARNING: Unknown ComparisonFunc %d, defaulting to LESS_OR_EQUAL\n", (int)func);
       return VK_COMPARE_OP_LESS_OR_EQUAL;
     }
   }
@@ -503,7 +503,7 @@ namespace Graphics {
     case CullMode::Clockwise:        return VK_CULL_MODE_FRONT_BIT;  // Cull clockwise-wound faces
     case CullMode::CounterClockwise: return VK_CULL_MODE_BACK_BIT;   // Cull counter-clockwise faces
     default:
-      fprintf(stderr, "[Vulkan] WARNING: Unknown CullMode %d, defaulting to BACK\n", (int)mode);
+      printf("[Vulkan] WARNING: Unknown CullMode %d, defaulting to BACK\n", (int)mode);
       return VK_CULL_MODE_BACK_BIT;
     }
   }
@@ -518,7 +518,7 @@ namespace Graphics {
     case FillMode::Wireframe: return VK_POLYGON_MODE_LINE;
     case FillMode::Solid:     return VK_POLYGON_MODE_FILL;
     default:
-      fprintf(stderr, "[Vulkan] WARNING: Unknown FillMode %d, defaulting to FILL\n", (int)mode);
+      printf("[Vulkan] WARNING: Unknown FillMode %d, defaulting to FILL\n", (int)mode);
       return VK_POLYGON_MODE_FILL;
     }
   }
@@ -538,7 +538,7 @@ namespace Graphics {
     case StencilOp::Incr:    return VK_STENCIL_OP_INCREMENT_AND_WRAP;
     case StencilOp::Decr:    return VK_STENCIL_OP_DECREMENT_AND_WRAP;
     default:
-      fprintf(stderr, "[Vulkan] WARNING: Unknown StencilOp %d, defaulting to KEEP\n", (int)op);
+      printf("[Vulkan] WARNING: Unknown StencilOp %d, defaulting to KEEP\n", (int)op);
       return VK_STENCIL_OP_KEEP;
     }
   }
@@ -575,17 +575,17 @@ namespace Graphics {
     VkInstance handle = VK_NULL_HANDLE;
 
     bool Create(bool debug_mode) {
-      fprintf(stderr, "[Vulkan] VulkanInstance::Create() - Starting instance creation (debug=%d)\n", debug_mode);
-      fflush(stderr);
+      printf("[Vulkan] VulkanInstance::Create() - Starting instance creation (debug=%d)\n", debug_mode);
+      
 
       // DEBUG: Platform detection
-      fprintf(stderr, "[Vulkan] Platform detection:\n");
+      printf("[Vulkan] Platform detection:\n");
 #ifdef __APPLE__
-      fprintf(stderr, "[Vulkan]   __APPLE__ is DEFINED\n");
+      printf("[Vulkan]   __APPLE__ is DEFINED\n");
 #else
-      fprintf(stderr, "[Vulkan]   __APPLE__ is NOT defined\n");
+      printf("[Vulkan]   __APPLE__ is NOT defined\n");
 #endif
-      fflush(stderr);
+      
 
       // Set up application info
       VkApplicationInfo app_info{};
@@ -604,15 +604,15 @@ namespace Graphics {
       // macOS with MoltenVK requires portability enumeration
       required_extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
       required_extensions.push_back("VK_EXT_metal_surface");
-      fprintf(stderr, "[Vulkan] macOS: Added VK_KHR_PORTABILITY_ENUMERATION and VK_EXT_metal_surface extensions\n");
-      fflush(stderr);
+      printf("[Vulkan] macOS: Added VK_KHR_PORTABILITY_ENUMERATION and VK_EXT_metal_surface extensions\n");
+      
 #elif defined(__linux__)
       // Linux: Query SDL for the required Vulkan extensions
       // SDL_Vulkan_GetInstanceExtensions handles X11/Wayland/etc. automatically
       {
         unsigned int sdl_ext_count = 0;
         if (!SDL_Vulkan_GetInstanceExtensions(NULL, &sdl_ext_count, NULL)) {
-          fprintf(stderr, "[Vulkan] Warning: SDL_Vulkan_GetInstanceExtensions query failed: %s\n", SDL_GetError());
+          printf("[Vulkan] Warning: SDL_Vulkan_GetInstanceExtensions query failed: %s\n", SDL_GetError());
           // Fallback: try common Linux extensions
           required_extensions.push_back("VK_KHR_xlib_surface");
         }
@@ -623,23 +623,23 @@ namespace Graphics {
               // Skip VK_KHR_surface since we already added it
               if (strcmp(sdl_extensions[i], VK_KHR_SURFACE_EXTENSION_NAME) != 0) {
                 required_extensions.push_back(sdl_extensions[i]);
-                fprintf(stderr, "[Vulkan] Linux: SDL requested extension: %s\n", sdl_extensions[i]);
+                printf("[Vulkan] Linux: SDL requested extension: %s\n", sdl_extensions[i]);
               }
             }
           }
         }
       }
-      fflush(stderr);
+      
 #elif defined(VK_USE_PLATFORM_WIN32_KHR)
       required_extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #endif
 
       // DEBUG: Print all extensions requested
-      fprintf(stderr, "[Vulkan] Requesting %zu extensions:\n", required_extensions.size());
+      printf("[Vulkan] Requesting %zu extensions:\n", required_extensions.size());
       for (size_t i = 0; i < required_extensions.size(); i++) {
-        fprintf(stderr, "[Vulkan]   [%zu]: %s\n", i, required_extensions[i]);
+        printf("[Vulkan]   [%zu]: %s\n", i, required_extensions[i]);
       }
-      fflush(stderr);
+      
 
       // Validation layers
       std::vector<const char*> validation_layers;
@@ -660,29 +660,29 @@ namespace Graphics {
 #ifdef __APPLE__
       // macOS with MoltenVK requires portability enumeration flag
       create_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-      fprintf(stderr, "[Vulkan] macOS: Set VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR flag (flags=0x%x)\n", create_info.flags);
-      fflush(stderr);
+      printf("[Vulkan] macOS: Set VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR flag (flags=0x%x)\n", create_info.flags);
+      
 #endif
 
       // Create the Vulkan instance
-      fprintf(stderr, "[Vulkan] Calling vkCreateInstance with flags=0x%x...\n", create_info.flags);
-      fflush(stderr);
+      printf("[Vulkan] Calling vkCreateInstance with flags=0x%x...\n", create_info.flags);
+      
       VkResult result = vkCreateInstance(&create_info, nullptr, &handle);
       if (result != VK_SUCCESS) {
-        fprintf(stderr, "[Vulkan] ERROR: Failed to create Vulkan instance (result=%d)\n", result);
-        fflush(stderr);
+        printf("[Vulkan] ERROR: Failed to create Vulkan instance (result=%d)\n", result);
+        
         return false;
       }
 
-      fprintf(stderr, "[Vulkan] VulkanInstance::Create() - Success! Instance created.\n");
-      fflush(stderr);
+      printf("[Vulkan] VulkanInstance::Create() - Success! Instance created.\n");
+      
       return true;
     }
 
     void Destroy() {
       if (handle != VK_NULL_HANDLE) {
         vkDestroyInstance(handle, nullptr);
-        fprintf(stderr, "[Vulkan] VulkanInstance::Destroy() - Instance destroyed\n");
+        printf("[Vulkan] VulkanInstance::Destroy() - Instance destroyed\n");
       }
       handle = VK_NULL_HANDLE;
     }
@@ -695,23 +695,23 @@ namespace Graphics {
     VkPhysicalDeviceFeatures features{};
 
     bool Select(VkInstance instance) {
-      fprintf(stderr, "[Vulkan] VulkanPhysicalDevice::Select() - Enumerating physical devices\n");
+      printf("[Vulkan] VulkanPhysicalDevice::Select() - Enumerating physical devices\n");
 
       // Get physical device count
       uint32_t device_count = 0;
       VkResult result = vkEnumeratePhysicalDevices(instance, &device_count, nullptr);
       if (result != VK_SUCCESS || device_count == 0) {
-        fprintf(stderr, "[Vulkan] ERROR: No physical devices found (result=%d, count=%u)\n", result, device_count);
+        printf("[Vulkan] ERROR: No physical devices found (result=%d, count=%u)\n", result, device_count);
         return false;
       }
 
-      fprintf(stderr, "[Vulkan] Found %u physical devices\n", device_count);
+      printf("[Vulkan] Found %u physical devices\n", device_count);
 
       // Get all physical devices
       std::vector<VkPhysicalDevice> devices(device_count);
       result = vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
       if (result != VK_SUCCESS) {
-        fprintf(stderr, "[Vulkan] ERROR: Failed to enumerate physical devices (result=%d)\n", result);
+        printf("[Vulkan] ERROR: Failed to enumerate physical devices (result=%d)\n", result);
         return false;
       }
 
@@ -756,7 +756,7 @@ namespace Graphics {
           continue;
         }
 
-        fprintf(stderr, "[Vulkan]   Device %u: %s (type=%d, score=%d)\n", i, props.deviceName, props.deviceType, score);
+        printf("[Vulkan]   Device %u: %s (type=%d, score=%d)\n", i, props.deviceName, props.deviceType, score);
 
         if (score > best_score) {
           best_score = score;
@@ -768,11 +768,11 @@ namespace Graphics {
       }
 
       if (selected_device == VK_NULL_HANDLE) {
-        fprintf(stderr, "[Vulkan] ERROR: No suitable device found\n");
+        printf("[Vulkan] ERROR: No suitable device found\n");
         return false;
       }
 
-      fprintf(stderr, "[Vulkan] Selected device: %s\n", properties.deviceName);
+      printf("[Vulkan] Selected device: %s\n", properties.deviceName);
       return true;
     }
   };
@@ -784,7 +784,7 @@ namespace Graphics {
     uint32_t graphics_queue_family = 0;
 
     bool Create(VkPhysicalDevice physical_device) {
-      fprintf(stderr, "[Vulkan] VulkanDevice::Create() - Creating logical device\n");
+      printf("[Vulkan] VulkanDevice::Create() - Creating logical device\n");
 
       // Find graphics queue family
       uint32_t queue_family_count = 0;
@@ -802,11 +802,11 @@ namespace Graphics {
       }
 
       if (graphics_queue_family == UINT32_MAX) {
-        fprintf(stderr, "[Vulkan] ERROR: No graphics queue family found\n");
+        printf("[Vulkan] ERROR: No graphics queue family found\n");
         return false;
       }
 
-      fprintf(stderr, "[Vulkan] Graphics queue family: %u\n", graphics_queue_family);
+      printf("[Vulkan] Graphics queue family: %u\n", graphics_queue_family);
 
       // Create device queue info
       float queue_priority = 1.0f;
@@ -826,13 +826,13 @@ namespace Graphics {
       // Query what features are actually supported
       VkPhysicalDeviceFeatures supported_features{};
       vkGetPhysicalDeviceFeatures(physical_device, &supported_features);
-      fprintf(stderr, "[Vulkan] Supported features: fillModeNonSolid=%d, geometryShader=%d\n",
+      printf("[Vulkan] Supported features: fillModeNonSolid=%d, geometryShader=%d\n",
         supported_features.fillModeNonSolid, supported_features.geometryShader);
 
       // Only enable features that are actually supported
       if (!supported_features.fillModeNonSolid) {
         device_features.fillModeNonSolid = VK_FALSE;
-        fprintf(stderr, "[Vulkan] Warning: fillModeNonSolid not supported, disabling\n");
+        printf("[Vulkan] Warning: fillModeNonSolid not supported, disabling\n");
       }
 
       // Enable required device extensions for swapchain
@@ -850,15 +850,15 @@ namespace Graphics {
       for (const auto& ext : available_extensions) {
         if (strcmp(ext.extensionName, "VK_KHR_portability_subset") == 0) {
           device_extensions.push_back("VK_KHR_portability_subset");
-          fprintf(stderr, "[Vulkan] Enabling VK_KHR_portability_subset extension\n");
+          printf("[Vulkan] Enabling VK_KHR_portability_subset extension\n");
           break;
         }
       }
 #endif
 
-      fprintf(stderr, "[Vulkan] Enabling %zu device extensions:\n", device_extensions.size());
+      printf("[Vulkan] Enabling %zu device extensions:\n", device_extensions.size());
       for (const auto& ext : device_extensions) {
-        fprintf(stderr, "[Vulkan]   - %s\n", ext);
+        printf("[Vulkan]   - %s\n", ext);
       }
 
       // Create device
@@ -872,21 +872,21 @@ namespace Graphics {
 
       VkResult result = vkCreateDevice(physical_device, &device_create_info, nullptr, &handle);
       if (result != VK_SUCCESS) {
-        fprintf(stderr, "[Vulkan] ERROR: Failed to create logical device (result=%d)\n", result);
+        printf("[Vulkan] ERROR: Failed to create logical device (result=%d)\n", result);
         return false;
       }
 
       // Get graphics queue
       vkGetDeviceQueue(handle, graphics_queue_family, 0, &graphics_queue);
 
-      fprintf(stderr, "[Vulkan] VulkanDevice::Create() - Success! Device created with queue family %u\n", graphics_queue_family);
+      printf("[Vulkan] VulkanDevice::Create() - Success! Device created with queue family %u\n", graphics_queue_family);
       return true;
     }
 
     void Destroy() {
       if (handle != VK_NULL_HANDLE) {
         vkDestroyDevice(handle, nullptr);
-        fprintf(stderr, "[Vulkan] VulkanDevice::Destroy() - Device destroyed\n");
+        printf("[Vulkan] VulkanDevice::Destroy() - Device destroyed\n");
       }
       handle = VK_NULL_HANDLE;
       graphics_queue = VK_NULL_HANDLE;
@@ -907,22 +907,22 @@ namespace Graphics {
 
     bool Create(VkDevice device, VkPhysicalDevice physical_device, VkInstance instance,
       void* window_handle, uint32_t width, uint32_t height) {
-      fprintf(stderr, "[Vulkan] VulkanSwapchain::Create() - Creating surface and swapchain\n");
+      printf("[Vulkan] VulkanSwapchain::Create() - Creating surface and swapchain\n");
 
       // Create surface from window handle using SDL2 (cross-platform)
       SDL_Window* window = static_cast<SDL_Window*>(window_handle);
       if (!window) {
-        fprintf(stderr, "[Vulkan] ERROR: Invalid window handle (NULL)\n");
+        printf("[Vulkan] ERROR: Invalid window handle (NULL)\n");
         return false;
       }
 
-      fprintf(stderr, "[Vulkan] Creating Vulkan surface from SDL window: %p\n", (void*)window);
+      printf("[Vulkan] Creating Vulkan surface from SDL window: %p\n", (void*)window);
       if (!SDL_Vulkan_CreateSurface(window, instance, &surface)) {
-        fprintf(stderr, "[Vulkan] ERROR: SDL_Vulkan_CreateSurface failed: %s\n", SDL_GetError());
+        printf("[Vulkan] ERROR: SDL_Vulkan_CreateSurface failed: %s\n", SDL_GetError());
         return false;
       }
 
-      fprintf(stderr, "[Vulkan] Surface created successfully: %p\n", (void*)surface);
+      printf("[Vulkan] Surface created successfully: %p\n", (void*)surface);
 
       // Get surface capabilities
       VkSurfaceCapabilitiesKHR surface_capabilities;
@@ -941,7 +941,7 @@ namespace Graphics {
       vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, surface_formats.data());
 
       if (surface_formats.empty()) {
-        fprintf(stderr, "[Vulkan] ERROR: No surface formats available\n");
+        printf("[Vulkan] ERROR: No surface formats available\n");
         return false;
       }
 
@@ -974,7 +974,7 @@ namespace Graphics {
         image_count = surface_capabilities.maxImageCount;
       }
 
-      fprintf(stderr, "[Vulkan] Swapchain: extent=(%u,%u), image_count=%u\n", extent.width, extent.height, image_count);
+      printf("[Vulkan] Swapchain: extent=(%u,%u), image_count=%u\n", extent.width, extent.height, image_count);
 
       // Create swapchain
       VkSwapchainCreateInfoKHR swapchain_info{};
@@ -994,7 +994,7 @@ namespace Graphics {
 
       VkResult result = vkCreateSwapchainKHR(device, &swapchain_info, nullptr, &handle);
       if (result != VK_SUCCESS) {
-        fprintf(stderr, "[Vulkan] ERROR: Failed to create swapchain (result=%d)\n", result);
+        printf("[Vulkan] ERROR: Failed to create swapchain (result=%d)\n", result);
         return false;
       }
 
@@ -1004,7 +1004,7 @@ namespace Graphics {
       images.resize(swapchain_image_count);
       vkGetSwapchainImagesKHR(device, handle, &swapchain_image_count, images.data());
 
-      fprintf(stderr, "[Vulkan] Swapchain created with %u images\n", swapchain_image_count);
+      printf("[Vulkan] Swapchain created with %u images\n", swapchain_image_count);
       return true;
     }
 
@@ -1024,7 +1024,7 @@ namespace Graphics {
 
         VkResult result = vkCreateImageView(device, &view_info, nullptr, &image_views[i]);
         if (result != VK_SUCCESS) {
-          fprintf(stderr, "[Vulkan] ERROR: Failed to create image view %zu\n", i);
+          printf("[Vulkan] ERROR: Failed to create image view %zu\n", i);
           return false;
         }
       }
@@ -1042,12 +1042,12 @@ namespace Graphics {
 
         VkResult result = vkCreateFramebuffer(device, &fb_info, nullptr, &framebuffers[i]);
         if (result != VK_SUCCESS) {
-          fprintf(stderr, "[Vulkan] ERROR: Failed to create framebuffer %zu\n", i);
+          printf("[Vulkan] ERROR: Failed to create framebuffer %zu\n", i);
           return false;
         }
       }
 
-      fprintf(stderr, "[Vulkan] Created %zu framebuffers\n", framebuffers.size());
+      printf("[Vulkan] Created %zu framebuffers\n", framebuffers.size());
       return true;
     }
 
@@ -1089,13 +1089,13 @@ namespace Graphics {
     VkDevice device = VK_NULL_HANDLE;
 
     bool Create(VkInstance instance, VkPhysicalDevice physical_dev, VkDevice logical_device) {
-      fprintf(stderr, "[Vulkan] VulkanMemoryAllocator::Create() - Initializing memory management\n");
+      printf("[Vulkan] VulkanMemoryAllocator::Create() - Initializing memory management\n");
       physical_device = physical_dev;
       device = logical_device;
 
       VkPhysicalDeviceMemoryProperties memory_properties;
       vkGetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
-      fprintf(stderr, "[Vulkan] Memory types: %u, Memory heaps: %u\n",
+      printf("[Vulkan] Memory types: %u, Memory heaps: %u\n",
         memory_properties.memoryTypeCount, memory_properties.memoryHeapCount);
       return true;
     }
@@ -1246,7 +1246,7 @@ namespace Graphics {
     VkShaderModule shaderModule;
     VkResult result = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
     if (result != VK_SUCCESS) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create shader module (result=%d)\n", result);
+      printf("[Vulkan] ERROR: Failed to create shader module (result=%d)\n", result);
       return VK_NULL_HANDLE;
     }
 
@@ -1281,12 +1281,12 @@ namespace Graphics {
 
   bool VulkanGraphicsDriver::Initialize(void* windowHandle, uint32_t width, uint32_t height, bool fullscreen)
   {
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] width=%u height=%u fullscreen=%d\n", width, height, fullscreen);
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] width=%u height=%u fullscreen=%d\n", width, height, fullscreen);
+    
 
     if (m_initialized) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Already initialized, returning\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] Already initialized, returning\n");
+      
       return true;
     }
 
@@ -1295,105 +1295,105 @@ namespace Graphics {
     m_fullscreen = fullscreen;
 
     // Phase 41 Stage 1: Create Vulkan instance
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating Vulkan instance...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating Vulkan instance...\n");
+    
     m_instance = std::make_unique<VulkanInstance>();
     if (!m_instance->Create(false)) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create Vulkan instance\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create Vulkan instance\n");
+      
       return false;
     }
 
     // Phase 41 Stage 1: Select physical device
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Selecting physical device...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Selecting physical device...\n");
+    
     m_physical_device = std::make_unique<VulkanPhysicalDevice>();
     if (!m_physical_device->Select(m_instance->handle)) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to select physical device\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to select physical device\n");
+      
       return false;
     }
 
     // Phase 41 Stage 1: Create logical device
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating logical device...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating logical device...\n");
+    
     m_device = std::make_unique<VulkanDevice>();
     if (!m_device->Create(m_physical_device->handle)) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create logical device\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create logical device\n");
+      
       return false;
     }
 
     // Phase 41 Stage 2: Create swapchain
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating swapchain...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating swapchain...\n");
+    
     m_swapchain = std::make_unique<VulkanSwapchain>();
     if (!m_swapchain->Create(m_device->handle, m_physical_device->handle, m_instance->handle,
       windowHandle, width, height)) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create swapchain\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create swapchain\n");
+      
       return false;
     }
 
     // Phase 41 Stage 2: Create memory allocator
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating memory allocator...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating memory allocator...\n");
+    
     m_memory_allocator = std::make_unique<VulkanMemoryAllocator>();
     if (!m_memory_allocator->Create(m_instance->handle, m_physical_device->handle, m_device->handle)) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create memory allocator\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create memory allocator\n");
+      
       return false;
     }
 
     // Phase 41 Stage 2: Create render pass
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating render pass...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating render pass...\n");
+    
     m_render_pass = std::make_unique<VulkanRenderPass>();
     if (!m_render_pass->Create(m_device->handle, VK_FORMAT_B8G8R8A8_UNORM)) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create render pass\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create render pass\n");
+      
       return false;
     }
 
     // Phase 41 Stage 2.5: Create framebuffers for swapchain
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating framebuffers...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating framebuffers...\n");
+    
     if (!m_swapchain->CreateFramebuffers(m_device->handle, VK_FORMAT_B8G8R8A8_UNORM, m_render_pass->handle)) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create framebuffers\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create framebuffers\n");
+      
       return false;
     }
     m_swapchain->UpdateCurrentFramebuffer();
 
     // Phase 54: Create synchronization objects
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating synchronization objects...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating synchronization objects...\n");
+    
     if (!CreateSyncObjects()) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create sync objects\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create sync objects\n");
+      
       return false;
     }
 
     // Phase 54: Create command buffers
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating command buffers for rendering...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating command buffers for rendering...\n");
+    
     if (!CreateCommandBuffers()) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create command buffers\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create command buffers\n");
+      
       return false;
     }
 
     // Phase 54: Create graphics pipeline with embedded shaders
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] Creating graphics pipeline...\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] Creating graphics pipeline...\n");
+    
     if (!CreateGraphicsPipeline()) {
-      fprintf(stderr, "[VulkanGraphicsDriver::Initialize] ERROR: Failed to create graphics pipeline\n");
-      fflush(stderr);
+      printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create graphics pipeline\n");
+      
       return false;
     }
 
-    fprintf(stderr, "[VulkanGraphicsDriver::Initialize] SUCCESS - Vulkan initialized with full rendering infrastructure\n");
-    fflush(stderr);
+    printf("[VulkanGraphicsDriver::Initialize] SUCCESS - Vulkan initialized with full rendering infrastructure\n");
+    
     m_initialized = true;
 
     return true;
@@ -2015,7 +2015,7 @@ namespace Graphics {
         return g_uiPipeline;
       }
       // Fall through to default if UI pipeline not created yet
-      fprintf(stderr, "[Vulkan] WARNING: RHW vertices requested but UI pipeline not ready\n");
+      printf("[Vulkan] WARNING: RHW vertices requested but UI pipeline not ready\n");
     }
 
     g_usingUIPipeline = false;
@@ -2922,7 +2922,7 @@ namespace Graphics {
   {
     // Validate scissor rect dimensions
     if (rect.left >= rect.right || rect.top >= rect.bottom) {
-      fprintf(stderr, "[Vulkan] ERROR: Invalid scissor rect (left >= right or top >= bottom)\n");
+      printf("[Vulkan] ERROR: Invalid scissor rect (left >= right or top >= bottom)\n");
       return false;
     }
 
@@ -4711,12 +4711,12 @@ namespace Graphics {
       VkResult result3 = vkCreateFence(m_device->handle, &fenceInfo, nullptr, &g_inFlightFences[i]);
 
       if (result1 != VK_SUCCESS || result2 != VK_SUCCESS || result3 != VK_SUCCESS) {
-        fprintf(stderr, "[Vulkan] ERROR: Failed to create sync objects for frame %u\n", i);
+        printf("[Vulkan] ERROR: Failed to create sync objects for frame %u\n", i);
         return false;
       }
     }
 
-    fprintf(stderr, "[Vulkan] CreateSyncObjects: Created %u sync object sets\n", MAX_FRAMES_IN_FLIGHT);
+    printf("[Vulkan] CreateSyncObjects: Created %u sync object sets\n", MAX_FRAMES_IN_FLIGHT);
     return true;
   }
 
@@ -4740,7 +4740,7 @@ namespace Graphics {
     g_renderFinishedSemaphores.clear();
     g_inFlightFences.clear();
 
-    fprintf(stderr, "[Vulkan] DestroySyncObjects: Sync objects destroyed\n");
+    printf("[Vulkan] DestroySyncObjects: Sync objects destroyed\n");
   }
 
   bool VulkanGraphicsDriver::CreateCommandBuffers()
@@ -4753,7 +4753,7 @@ namespace Graphics {
 
     VkResult result = vkCreateCommandPool(m_device->handle, &poolInfo, nullptr, &g_commandPool);
     if (result != VK_SUCCESS) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create command pool (result=%d)\n", result);
+      printf("[Vulkan] ERROR: Failed to create command pool (result=%d)\n", result);
       return false;
     }
 
@@ -4768,11 +4768,11 @@ namespace Graphics {
 
     result = vkAllocateCommandBuffers(m_device->handle, &allocInfo, g_commandBuffers.data());
     if (result != VK_SUCCESS) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to allocate command buffers (result=%d)\n", result);
+      printf("[Vulkan] ERROR: Failed to allocate command buffers (result=%d)\n", result);
       return false;
     }
 
-    fprintf(stderr, "[Vulkan] CreateCommandBuffers: Created pool and %u command buffers\n", MAX_FRAMES_IN_FLIGHT);
+    printf("[Vulkan] CreateCommandBuffers: Created pool and %u command buffers\n", MAX_FRAMES_IN_FLIGHT);
     return true;
   }
 
@@ -4787,7 +4787,7 @@ namespace Graphics {
 
     g_commandBuffers.clear();
 
-    fprintf(stderr, "[Vulkan] DestroyCommandBuffers: Command pool and buffers destroyed\n");
+    printf("[Vulkan] DestroyCommandBuffers: Command pool and buffers destroyed\n");
   }
 
   bool VulkanGraphicsDriver::CreateGraphicsPipeline()
@@ -4798,7 +4798,7 @@ namespace Graphics {
       EmbeddedShaders::fullscreen_vert_spv_len);
 
     if (g_vertShaderModule == VK_NULL_HANDLE) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create vertex shader module\n");
+      printf("[Vulkan] ERROR: Failed to create vertex shader module\n");
       return false;
     }
 
@@ -4807,11 +4807,11 @@ namespace Graphics {
       EmbeddedShaders::solid_color_frag_spv_len);
 
     if (g_fragShaderModule == VK_NULL_HANDLE) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create fragment shader module\n");
+      printf("[Vulkan] ERROR: Failed to create fragment shader module\n");
       return false;
     }
 
-    fprintf(stderr, "[Vulkan] CreateGraphicsPipeline: Shader modules created\n");
+    printf("[Vulkan] CreateGraphicsPipeline: Shader modules created\n");
 
     // Shader stage info
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -4927,14 +4927,14 @@ namespace Graphics {
     pushConstantRanges[1].offset = VERTEX_PUSH_CONSTANT_SIZE;  // After MVP
     pushConstantRanges[1].size = FRAGMENT_PUSH_CONSTANT_SIZE;  // 16 bytes (vec4)
 
-    fprintf(stderr, "[Vulkan] Phase 58: Push constants - Vertex MVP: %u bytes, Fragment color: %u bytes (total: %u)\n",
+    printf("[Vulkan] Phase 58: Push constants - Vertex MVP: %u bytes, Fragment color: %u bytes (total: %u)\n",
       VERTEX_PUSH_CONSTANT_SIZE, FRAGMENT_PUSH_CONSTANT_SIZE, TOTAL_PUSH_CONSTANT_SIZE);
 
     // Phase 57: Create texture descriptor set layout if not exists
     if (g_textureDescriptorSetLayout == VK_NULL_HANDLE) {
       g_textureDescriptorSetLayout = CreateTextureDescriptorSetLayout(m_device->handle);
       if (g_textureDescriptorSetLayout == VK_NULL_HANDLE) {
-        fprintf(stderr, "[Vulkan] WARNING: Failed to create texture descriptor set layout\n");
+        printf("[Vulkan] WARNING: Failed to create texture descriptor set layout\n");
         // Continue without texture support
       }
     }
@@ -4949,7 +4949,7 @@ namespace Graphics {
     if (g_textureDescriptorSetLayout != VK_NULL_HANDLE) {
       pipelineLayoutInfo.setLayoutCount = 1;
       pipelineLayoutInfo.pSetLayouts = &g_textureDescriptorSetLayout;
-      fprintf(stderr, "[Vulkan] Phase 57: Pipeline layout will include texture descriptor set\n");
+      printf("[Vulkan] Phase 57: Pipeline layout will include texture descriptor set\n");
     }
     else {
       pipelineLayoutInfo.setLayoutCount = 0;
@@ -4958,7 +4958,7 @@ namespace Graphics {
 
     VkResult result = vkCreatePipelineLayout(m_device->handle, &pipelineLayoutInfo, nullptr, &g_pipelineLayout);
     if (result != VK_SUCCESS) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create pipeline layout (result=%d)\n", result);
+      printf("[Vulkan] ERROR: Failed to create pipeline layout (result=%d)\n", result);
       return false;
     }
 
@@ -4981,16 +4981,16 @@ namespace Graphics {
 
     result = vkCreateGraphicsPipelines(m_device->handle, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &g_graphicsPipeline);
     if (result != VK_SUCCESS) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create graphics pipeline (result=%d)\n", result);
+      printf("[Vulkan] ERROR: Failed to create graphics pipeline (result=%d)\n", result);
       return false;
     }
 
-    fprintf(stderr, "[Vulkan] CreateGraphicsPipeline: SUCCESS - Pipeline created\n");
+    printf("[Vulkan] CreateGraphicsPipeline: SUCCESS - Pipeline created\n");
     g_renderState.dirty = false;  // Mark state as clean after pipeline creation
 
     // Phase 60: Create UI pipeline after main pipeline
     if (!CreateUIPipeline()) {
-      fprintf(stderr, "[Vulkan] WARNING: Failed to create UI pipeline - UI rendering may not work\n");
+      printf("[Vulkan] WARNING: Failed to create UI pipeline - UI rendering may not work\n");
       // Continue without UI pipeline - 3D rendering still works
     }
 
@@ -5009,7 +5009,7 @@ namespace Graphics {
   */
   bool VulkanGraphicsDriver::CreateUIPipeline()
   {
-    fprintf(stderr, "[Vulkan] Phase 60: Creating UI pipeline for RHW vertices\n");
+    printf("[Vulkan] Phase 60: Creating UI pipeline for RHW vertices\n");
 
     // Create UI shader modules from embedded SPIR-V
     g_uiVertShaderModule = CreateShaderModule(m_device->handle,
@@ -5017,7 +5017,7 @@ namespace Graphics {
       EmbeddedShaders::ui_vert_spv_len);
 
     if (g_uiVertShaderModule == VK_NULL_HANDLE) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create UI vertex shader module\n");
+      printf("[Vulkan] ERROR: Failed to create UI vertex shader module\n");
       return false;
     }
 
@@ -5026,11 +5026,11 @@ namespace Graphics {
       EmbeddedShaders::ui_frag_spv_len);
 
     if (g_uiFragShaderModule == VK_NULL_HANDLE) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create UI fragment shader module\n");
+      printf("[Vulkan] ERROR: Failed to create UI fragment shader module\n");
       return false;
     }
 
-    fprintf(stderr, "[Vulkan] Phase 60: UI shader modules created\n");
+    printf("[Vulkan] Phase 60: UI shader modules created\n");
 
     // Shader stages
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -5154,7 +5154,7 @@ namespace Graphics {
     pushConstantRange.offset = 0;
     pushConstantRange.size = UI_PUSH_CONSTANT_SIZE;
 
-    fprintf(stderr, "[Vulkan] Phase 60: UI push constants size: %u bytes\n", UI_PUSH_CONSTANT_SIZE);
+    printf("[Vulkan] Phase 60: UI push constants size: %u bytes\n", UI_PUSH_CONSTANT_SIZE);
 
     // Pipeline layout for UI
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -5174,7 +5174,7 @@ namespace Graphics {
 
     VkResult result = vkCreatePipelineLayout(m_device->handle, &pipelineLayoutInfo, nullptr, &g_uiPipelineLayout);
     if (result != VK_SUCCESS) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create UI pipeline layout (result=%d)\n", result);
+      printf("[Vulkan] ERROR: Failed to create UI pipeline layout (result=%d)\n", result);
       return false;
     }
 
@@ -5197,11 +5197,11 @@ namespace Graphics {
 
     result = vkCreateGraphicsPipelines(m_device->handle, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &g_uiPipeline);
     if (result != VK_SUCCESS) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to create UI pipeline (result=%d)\n", result);
+      printf("[Vulkan] ERROR: Failed to create UI pipeline (result=%d)\n", result);
       return false;
     }
 
-    fprintf(stderr, "[Vulkan] Phase 60: UI pipeline created successfully\n");
+    printf("[Vulkan] Phase 60: UI pipeline created successfully\n");
     return true;
   }
 
@@ -5233,7 +5233,7 @@ namespace Graphics {
     }
 
     g_usingUIPipeline = false;
-    fprintf(stderr, "[Vulkan] Phase 60: UI pipeline resources destroyed\n");
+    printf("[Vulkan] Phase 60: UI pipeline resources destroyed\n");
   }
 
   /**
@@ -5381,7 +5381,7 @@ namespace Graphics {
 
     VkResult result = vkCreateGraphicsPipelines(m_device->handle, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &g_graphicsPipeline);
     if (result != VK_SUCCESS) {
-      fprintf(stderr, "[Vulkan] ERROR: Failed to recreate pipeline (result=%d)\n", result);
+      printf("[Vulkan] ERROR: Failed to recreate pipeline (result=%d)\n", result);
       return false;
     }
 
@@ -5441,7 +5441,7 @@ namespace Graphics {
     }
     g_textureDirty = false;
 
-    fprintf(stderr, "[Vulkan] DestroyGraphicsPipeline: Pipeline, shaders and texture resources destroyed\n");
+    printf("[Vulkan] DestroyGraphicsPipeline: Pipeline, shaders and texture resources destroyed\n");
   }
 
   bool VulkanGraphicsDriver::RecordClearCommand()
@@ -5474,23 +5474,23 @@ namespace Graphics {
 extern "C" Graphics::IGraphicsDriver* CreateVulkanGraphicsDriver(void* windowHandle, uint32_t width,
   uint32_t height, bool fullscreen)
 {
-  fprintf(stderr, "[CreateVulkanGraphicsDriver] Creating new VulkanGraphicsDriver instance\n");
-  fprintf(stderr, "[CreateVulkanGraphicsDriver] Window: %p, Size: %ux%u, Fullscreen: %d\n",
+  printf("[CreateVulkanGraphicsDriver] Creating new VulkanGraphicsDriver instance\n");
+  printf("[CreateVulkanGraphicsDriver] Window: %p, Size: %ux%u, Fullscreen: %d\n",
     windowHandle, width, height, fullscreen);
-  fflush(stderr);
+  
 
   // Create driver instance
   Graphics::VulkanGraphicsDriver* driver = new Graphics::VulkanGraphicsDriver();
 
   // Initialize driver with provided parameters
   if (!driver->Initialize(windowHandle, width, height, fullscreen)) {
-    fprintf(stderr, "[CreateVulkanGraphicsDriver] ERROR: Initialization failed!\n");
-    fflush(stderr);
+    printf("[CreateVulkanGraphicsDriver] ERROR: Initialization failed!\n");
+    
     delete driver;
     return nullptr;
   }
 
-  fprintf(stderr, "[CreateVulkanGraphicsDriver] VulkanGraphicsDriver initialized successfully\n");
-  fflush(stderr);
+  printf("[CreateVulkanGraphicsDriver] VulkanGraphicsDriver initialized successfully\n");
+  
   return driver;
 }

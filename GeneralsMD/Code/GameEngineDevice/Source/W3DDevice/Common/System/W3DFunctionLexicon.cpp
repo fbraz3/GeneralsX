@@ -129,7 +129,7 @@ static FunctionLexicon::TableEntry layoutInitTable[] =
 W3DFunctionLexicon::W3DFunctionLexicon(void)
 {
 	DEBUG_LOG("W3DFunctionLexicon::W3DFunctionLexicon() - Constructor called\n");
-	// fflush(stderr);
+	// 
 }
 
 //-------------------------------------------------------------------------------------------------

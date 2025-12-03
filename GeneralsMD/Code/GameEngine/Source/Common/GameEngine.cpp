@@ -389,14 +389,14 @@ void GameEngine::init()
 
 
 		TheSubsystemList = MSGNEW("GameEngineSubsystem") SubsystemInterfaceList;
-		fprintf(stderr, "GameMain()::init() Calling TheSubsystemList->addSubsystem(this);...\n");
-		fflush(stderr);
+		printf("GameMain()::init() Calling TheSubsystemList->addSubsystem(this);...\n");
+		
 		TheSubsystemList->addSubsystem(this);
 
 		// initialize the random number system
 		InitRandom();
-		fprintf(stderr, "GameMain()::init() Calling TheFileSystem = createFileSystem();...\n");
-		fflush(stderr);
+		printf("GameMain()::init() Calling TheFileSystem = createFileSystem();...\n");
+		
 		// Create the low-level file system interface
 		TheFileSystem = createFileSystem();
 
@@ -413,8 +413,8 @@ void GameEngine::init()
 
 		// not part of the subsystem list, because it should normally never be reset!
 		TheNameKeyGenerator = MSGNEW("GameEngineSubsystem") NameKeyGenerator;
-		fprintf(stderr, "GameMain()::init() Calling TheNameKeyGenerator->init();...\n");
-		fflush(stderr);
+		printf("GameMain()::init() Calling TheNameKeyGenerator->init();...\n");
+		
 		TheNameKeyGenerator->init();
 
 
@@ -426,8 +426,8 @@ void GameEngine::init()
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		fprintf(stderr, "GameMain()::init() Calling TheCommandList->init();...\n");
-		fflush(stderr);
+		printf("GameMain()::init() Calling TheCommandList->init();...\n");
+		
 		// not part of the subsystem list, because it should normally never be reset!
 		TheCommandList = MSGNEW("GameEngineSubsystem") CommandList;
 		TheCommandList->init();
@@ -459,8 +459,8 @@ void GameEngine::init()
 			}
 			return path;
 			};
-		fprintf(stderr, "GameMain()::init() Initializing TheLocalFileSystem...\n");
-		fflush(stderr);
+		printf("GameMain()::init() Initializing TheLocalFileSystem...\n");
+		
 		initSubsystem(TheLocalFileSystem, "TheLocalFileSystem", createLocalFileSystem(), NULL);
 
 
@@ -471,8 +471,8 @@ void GameEngine::init()
 		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-		fprintf(stderr, "GameMain()::init() Initializing TheArchiveFileSystem...\n");
-		fflush(stderr);
+		printf("GameMain()::init() Initializing TheArchiveFileSystem...\n");
+		
 		initSubsystem(TheArchiveFileSystem, "TheArchiveFileSystem", createArchiveFileSystem(), NULL); // this MUST come after TheLocalFileSystem creation
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -482,8 +482,8 @@ void GameEngine::init()
 		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-		fprintf(stderr, "GameMain()::init() Initializing TheWritableGlobalData...\n");
-		fflush(stderr);
+		printf("GameMain()::init() Initializing TheWritableGlobalData...\n");
+		
 		DEBUG_ASSERTCRASH(TheWritableGlobalData, ("TheWritableGlobalData expected to be created"));
 		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, buildPath("INI", "Default", "GameData").str(), buildPath("INI", "GameData").str());
 		TheWritableGlobalData->parseCustomDefinition();
@@ -537,10 +537,10 @@ void GameEngine::init()
 #ifdef DEBUG_CRC
 		initSubsystem(TheDeepCRCSanityCheck, "TheDeepCRCSanityCheck", MSGNEW("GameEngineSubystem") DeepCRCSanityCheck, NULL);
 #endif // DEBUG_CRC
-		fprintf(stderr, "GameEngine::init() - About to init TheGameText\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheGameText\n"); 
 		initSubsystem(TheGameText, "TheGameText", CreateGameTextInterface(), NULL);
 		updateWindowTitle();
-		fprintf(stderr, "GameEngine::init() - TheGameText initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheGameText initialized successfully\n"); 
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -550,34 +550,34 @@ void GameEngine::init()
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		fprintf(stderr, "GameEngine::init() - About to init TheScienceStore\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheScienceStore\n"); 
 		initSubsystem(TheScienceStore, "TheScienceStore", MSGNEW("GameEngineSubsystem") ScienceStore(), &xferCRC, buildPath("INI", "Default", "Science").str(), buildPath("INI", "Science").str());
-		fprintf(stderr, "GameEngine::init() - TheScienceStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheMultiplayerSettings\n"); fflush(stderr);
+		printf("GameEngine::init() - TheScienceStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheMultiplayerSettings\n"); 
 		initSubsystem(TheMultiplayerSettings, "TheMultiplayerSettings", MSGNEW("GameEngineSubsystem") MultiplayerSettings(), &xferCRC, buildPath("INI", "Default", "Multiplayer").str(), buildPath("INI", "Multiplayer").str());
-		fprintf(stderr, "GameEngine::init() - TheMultiplayerSettings initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheTerrainTypes\n"); fflush(stderr);
+		printf("GameEngine::init() - TheMultiplayerSettings initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheTerrainTypes\n"); 
 		initSubsystem(TheTerrainTypes, "TheTerrainTypes", MSGNEW("GameEngineSubsystem") TerrainTypeCollection(), &xferCRC, buildPath("INI", "Default", "Terrain").str(), buildPath("INI", "Terrain").str());
-		fprintf(stderr, "GameEngine::init() - TheTerrainTypes initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheTerrainRoads\n"); fflush(stderr);
+		printf("GameEngine::init() - TheTerrainTypes initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheTerrainRoads\n"); 
 		initSubsystem(TheTerrainRoads, "TheTerrainRoads", MSGNEW("GameEngineSubsystem") TerrainRoadCollection(), &xferCRC, buildPath("INI", "Default", "Roads").str(), buildPath("INI", "Roads").str());
-		fprintf(stderr, "GameEngine::init() - TheTerrainRoads initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheGlobalLanguageData\n"); fflush(stderr);
+		printf("GameEngine::init() - TheTerrainRoads initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheGlobalLanguageData\n"); 
 		initSubsystem(TheGlobalLanguageData, "TheGlobalLanguageData", MSGNEW("GameEngineSubsystem") GlobalLanguage, NULL); // must be before the game text
 		TheGlobalLanguageData->parseCustomDefinition();
-		fprintf(stderr, "GameEngine::init() - TheGlobalLanguageData initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheCDManager\n"); fflush(stderr);
+		printf("GameEngine::init() - TheGlobalLanguageData initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheCDManager\n"); 
 		initSubsystem(TheCDManager, "TheCDManager", CreateCDManager(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheCDManager initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheCDManager initialized successfully\n"); 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
 		sprintf(Buf, "----------------------------------------------------------------------------After TheCDManager = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
 		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
 		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
-		fprintf(stderr, "GameEngine::init() - About to init TheAudio\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheAudio\n"); 
 		initSubsystem(TheAudio, "TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheAudio initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheAudio initialized successfully\n"); 
 		// Phase 54: On non-Windows platforms (macOS/Linux), music files are inside .big archives
 		// and isMusicAlreadyLoaded() may return false. Don't quit the game in this case.
 #if defined(_WIN32)
@@ -585,8 +585,8 @@ void GameEngine::init()
 			setQuitting(TRUE);
 #else
 		if (!TheAudio->isMusicAlreadyLoaded()) {
-			fprintf(stderr, "GameEngine::init() - WARNING: Music not loaded from disk, but continuing on non-Windows platform\n");
-			fflush(stderr);
+			printf("GameEngine::init() - WARNING: Music not loaded from disk, but continuing on non-Windows platform\n");
+			
 		}
 #endif
 
@@ -597,30 +597,30 @@ void GameEngine::init()
 		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-		fprintf(stderr, "GameEngine::init() - About to init TheFunctionLexicon\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheFunctionLexicon\n"); 
 		initSubsystem(TheFunctionLexicon, "TheFunctionLexicon", createFunctionLexicon(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheFunctionLexicon initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheModuleFactory\n"); fflush(stderr);
+		printf("GameEngine::init() - TheFunctionLexicon initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheModuleFactory\n"); 
 		initSubsystem(TheModuleFactory, "TheModuleFactory", createModuleFactory(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheModuleFactory initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheMessageStream\n"); fflush(stderr);
+		printf("GameEngine::init() - TheModuleFactory initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheMessageStream\n"); 
 		initSubsystem(TheMessageStream, "TheMessageStream", createMessageStream(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheMessageStream initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheSidesList\n"); fflush(stderr);
+		printf("GameEngine::init() - TheMessageStream initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheSidesList\n"); 
 		initSubsystem(TheSidesList, "TheSidesList", MSGNEW("GameEngineSubsystem") SidesList(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheSidesList initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheCaveSystem\n"); fflush(stderr);
+		printf("GameEngine::init() - TheSidesList initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheCaveSystem\n"); 
 		initSubsystem(TheCaveSystem, "TheCaveSystem", MSGNEW("GameEngineSubsystem") CaveSystem(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheCaveSystem initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheRankInfoStore\n"); fflush(stderr);
+		printf("GameEngine::init() - TheCaveSystem initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheRankInfoStore\n"); 
 		initSubsystem(TheRankInfoStore, "TheRankInfoStore", MSGNEW("GameEngineSubsystem") RankInfoStore(), &xferCRC, NULL, buildPath("INI", "Rank").str());
-		fprintf(stderr, "GameEngine::init() - TheRankInfoStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init ThePlayerTemplateStore\n"); fflush(stderr);
+		printf("GameEngine::init() - TheRankInfoStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init ThePlayerTemplateStore\n"); 
 		initSubsystem(ThePlayerTemplateStore, "ThePlayerTemplateStore", MSGNEW("GameEngineSubsystem") PlayerTemplateStore(), &xferCRC, buildPath("INI", "Default", "PlayerTemplate").str(), buildPath("INI", "PlayerTemplate").str());
-		fprintf(stderr, "GameEngine::init() - ThePlayerTemplateStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheParticleSystemManager\n"); fflush(stderr);
+		printf("GameEngine::init() - ThePlayerTemplateStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheParticleSystemManager\n"); 
 		initSubsystem(TheParticleSystemManager, "TheParticleSystemManager", createParticleSystemManager(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheParticleSystemManager initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheParticleSystemManager initialized successfully\n"); 
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -629,30 +629,30 @@ void GameEngine::init()
 		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-		fprintf(stderr, "GameEngine::init() - About to init TheFXListStore\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheFXListStore\n"); 
 		initSubsystem(TheFXListStore, "TheFXListStore", MSGNEW("GameEngineSubsystem") FXListStore(), &xferCRC, buildPath("INI", "Default", "FXList").str(), buildPath("INI", "FXList").str());
-		fprintf(stderr, "GameEngine::init() - TheFXListStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheWeaponStore\n"); fflush(stderr);
+		printf("GameEngine::init() - TheFXListStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheWeaponStore\n"); 
 		initSubsystem(TheWeaponStore, "TheWeaponStore", MSGNEW("GameEngineSubsystem") WeaponStore(), &xferCRC, NULL, buildPath("INI", "Weapon").str());
-		fprintf(stderr, "GameEngine::init() - TheWeaponStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheObjectCreationListStore\n"); fflush(stderr);
+		printf("GameEngine::init() - TheWeaponStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheObjectCreationListStore\n"); 
 		initSubsystem(TheObjectCreationListStore, "TheObjectCreationListStore", MSGNEW("GameEngineSubsystem") ObjectCreationListStore(), &xferCRC, buildPath("INI", "Default", "ObjectCreationList").str(), buildPath("INI", "ObjectCreationList").str());
-		fprintf(stderr, "GameEngine::init() - TheObjectCreationListStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheLocomotorStore\n"); fflush(stderr);
+		printf("GameEngine::init() - TheObjectCreationListStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheLocomotorStore\n"); 
 		initSubsystem(TheLocomotorStore, "TheLocomotorStore", MSGNEW("GameEngineSubsystem") LocomotorStore(), &xferCRC, NULL, buildPath("INI", "Locomotor").str());
-		fprintf(stderr, "GameEngine::init() - TheLocomotorStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheSpecialPowerStore\n"); fflush(stderr);
+		printf("GameEngine::init() - TheLocomotorStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheSpecialPowerStore\n"); 
 		initSubsystem(TheSpecialPowerStore, "TheSpecialPowerStore", MSGNEW("GameEngineSubsystem") SpecialPowerStore(), &xferCRC, buildPath("INI", "Default", "SpecialPower").str(), buildPath("INI", "SpecialPower").str());
-		fprintf(stderr, "GameEngine::init() - TheSpecialPowerStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheDamageFXStore\n"); fflush(stderr);
+		printf("GameEngine::init() - TheSpecialPowerStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheDamageFXStore\n"); 
 		initSubsystem(TheDamageFXStore, "TheDamageFXStore", MSGNEW("GameEngineSubsystem") DamageFXStore(), &xferCRC, NULL, buildPath("INI", "DamageFX").str());
-		fprintf(stderr, "GameEngine::init() - TheDamageFXStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheArmorStore\n"); fflush(stderr);
+		printf("GameEngine::init() - TheDamageFXStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheArmorStore\n"); 
 		initSubsystem(TheArmorStore, "TheArmorStore", MSGNEW("GameEngineSubsystem") ArmorStore(), &xferCRC, NULL, buildPath("INI", "Armor").str());
-		fprintf(stderr, "GameEngine::init() - TheArmorStore initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheBuildAssistant\n"); fflush(stderr);
+		printf("GameEngine::init() - TheArmorStore initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheBuildAssistant\n"); 
 		initSubsystem(TheBuildAssistant, "TheBuildAssistant", MSGNEW("GameEngineSubsystem") BuildAssistant, NULL);
-		fprintf(stderr, "GameEngine::init() - TheBuildAssistant initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheBuildAssistant initialized successfully\n"); 
 
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -663,9 +663,9 @@ void GameEngine::init()
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		fprintf(stderr, "GameEngine::init() - About to init TheThingFactory\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheThingFactory\n"); 
 		initSubsystem(TheThingFactory, "TheThingFactory", createThingFactory(), &xferCRC, buildPath("INI", "Default", "Object").str(), buildPath("INI", "Object").str());
-		fprintf(stderr, "GameEngine::init() - TheThingFactory initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheThingFactory initialized successfully\n"); 
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -674,12 +674,12 @@ void GameEngine::init()
 		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-		fprintf(stderr, "GameEngine::init() - About to init TheUpgradeCenter\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheUpgradeCenter\n"); 
 		initSubsystem(TheUpgradeCenter, "TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, buildPath("INI", "Default", "Upgrade").str(), buildPath("INI", "Upgrade").str());
-		fprintf(stderr, "GameEngine::init() - TheUpgradeCenter initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheGameClient\n"); fflush(stderr);
+		printf("GameEngine::init() - TheUpgradeCenter initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheGameClient\n"); 
 		initSubsystem(TheGameClient, "TheGameClient", createGameClient(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheGameClient initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheGameClient initialized successfully\n"); 
 
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -689,30 +689,30 @@ void GameEngine::init()
 		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-		fprintf(stderr, "GameEngine::init() - About to init TheAI\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheAI\n"); 
 		initSubsystem(TheAI, "TheAI", MSGNEW("GameEngineSubsystem") AI(), &xferCRC, buildPath("INI", "Default", "AIData").str(), buildPath("INI", "AIData").str());
-		fprintf(stderr, "GameEngine::init() - TheAI initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheGameLogic\n"); fflush(stderr);
+		printf("GameEngine::init() - TheAI initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheGameLogic\n"); 
 		initSubsystem(TheGameLogic, "TheGameLogic", createGameLogic(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheGameLogic initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheTeamFactory\n"); fflush(stderr);
+		printf("GameEngine::init() - TheGameLogic initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheTeamFactory\n"); 
 		initSubsystem(TheTeamFactory, "TheTeamFactory", MSGNEW("GameEngineSubsystem") TeamFactory(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheTeamFactory initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheCrateSystem\n"); fflush(stderr);
+		printf("GameEngine::init() - TheTeamFactory initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheCrateSystem\n"); 
 		initSubsystem(TheCrateSystem, "TheCrateSystem", MSGNEW("GameEngineSubsystem") CrateSystem(), &xferCRC, buildPath("INI", "Default", "Crate").str(), buildPath("INI", "Crate").str());
-		fprintf(stderr, "GameEngine::init() - TheCrateSystem initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init ThePlayerList\n"); fflush(stderr);
+		printf("GameEngine::init() - TheCrateSystem initialized successfully\n"); 
+		printf("GameEngine::init() - About to init ThePlayerList\n"); 
 		initSubsystem(ThePlayerList, "ThePlayerList", MSGNEW("GameEngineSubsystem") PlayerList(), NULL);
-		fprintf(stderr, "GameEngine::init() - ThePlayerList initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheRecorder\n"); fflush(stderr);
+		printf("GameEngine::init() - ThePlayerList initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheRecorder\n"); 
 		initSubsystem(TheRecorder, "TheRecorder", createRecorder(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheRecorder initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheRadar\n"); fflush(stderr);
+		printf("GameEngine::init() - TheRecorder initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheRadar\n"); 
 		initSubsystem(TheRadar, "TheRadar", TheGlobalData->m_headless ? NEW RadarDummy : createRadar(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheRadar initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheVictoryConditions\n"); fflush(stderr);
+		printf("GameEngine::init() - TheRadar initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheVictoryConditions\n"); 
 		initSubsystem(TheVictoryConditions, "TheVictoryConditions", createVictoryConditions(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheVictoryConditions initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheVictoryConditions initialized successfully\n"); 
 
 
 
@@ -724,7 +724,7 @@ void GameEngine::init()
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		fprintf(stderr, "GameEngine::init() - About to init TheMetaMap\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheMetaMap\n"); 
 		AsciiString fname;
 		fname.concat("Data");
 		fname.concat(GET_PATH_SEPARATOR());
@@ -732,11 +732,11 @@ void GameEngine::init()
 		fname.concat(GET_PATH_SEPARATOR());
 		fname.concat("CommandMap");
 		initSubsystem(TheMetaMap, "TheMetaMap", MSGNEW("GameEngineSubsystem") MetaMap(), NULL, fname.str(), buildPath("INI", "CommandMap").str());
-		fprintf(stderr, "GameEngine::init() - TheMetaMap initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheMetaMap initialized successfully\n"); 
 
-		fprintf(stderr, "GameEngine::init() - Generating MetaMap\n"); fflush(stderr);
+		printf("GameEngine::init() - Generating MetaMap\n"); 
 		TheMetaMap->generateMetaMap();
-		fprintf(stderr, "GameEngine::init() - MetaMap generated\n"); fflush(stderr);
+		printf("GameEngine::init() - MetaMap generated\n"); 
 
 #if defined(RTS_DEBUG)
 		ini.loadFileDirectory(buildPath("INI", "CommandMapDebug").str(), INI_LOAD_MULTIFILE, NULL);
@@ -746,29 +746,29 @@ void GameEngine::init()
 		ini.loadFileDirectory(buildPath("INI", "CommandMapDemo").str(), INI_LOAD_MULTIFILE, NULL);
 #endif
 
-		fprintf(stderr, "GameEngine::init() - About to init TheActionManager\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheActionManager\n"); 
 		initSubsystem(TheActionManager, "TheActionManager", MSGNEW("GameEngineSubsystem") ActionManager(), NULL);
-		fprintf(stderr, "GameEngine::init() - TheActionManager initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheActionManager initialized successfully\n"); 
 		//initSubsystem((CComObject<WebBrowser> *)TheWebBrowser,"(CComObject<WebBrowser> *)TheWebBrowser", (CComObject<WebBrowser> *)createWebBrowser(), NULL);
-		fprintf(stderr, "GameEngine::init() - About to init TheGameStateMap\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheGameStateMap\n"); 
 		initSubsystem(TheGameStateMap, "TheGameStateMap", MSGNEW("GameEngineSubsystem") GameStateMap, NULL);
-		fprintf(stderr, "GameEngine::init() - TheGameStateMap initialized successfully\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - About to init TheGameState\n"); fflush(stderr);
+		printf("GameEngine::init() - TheGameStateMap initialized successfully\n"); 
+		printf("GameEngine::init() - About to init TheGameState\n"); 
 		initSubsystem(TheGameState, "TheGameState", MSGNEW("GameEngineSubsystem") GameState, NULL);
-		fprintf(stderr, "GameEngine::init() - TheGameState initialized successfully\n"); fflush(stderr);
+		printf("GameEngine::init() - TheGameState initialized successfully\n"); 
 
 		// Create the interface for sending game results
-		fprintf(stderr, "GameEngine::init() - About to init TheGameResultsQueue\n"); fflush(stderr);
-		fprintf(stderr, "GameEngine::init() - Calling createNewGameResultsInterface...\n"); fflush(stderr);
+		printf("GameEngine::init() - About to init TheGameResultsQueue\n"); 
+		printf("GameEngine::init() - Calling createNewGameResultsInterface...\n"); 
 		GameResultsInterface* resultsInterface = GameResultsInterface::createNewGameResultsInterface();
-		fprintf(stderr, "GameEngine::init() - createNewGameResultsInterface returned %p\n", (void*)resultsInterface); fflush(stderr);
+		printf("GameEngine::init() - createNewGameResultsInterface returned %p\n", (void*)resultsInterface); 
 		if (resultsInterface) {
-			fprintf(stderr, "GameEngine::init() - Calling initSubsystem for TheGameResultsQueue...\n"); fflush(stderr);
+			printf("GameEngine::init() - Calling initSubsystem for TheGameResultsQueue...\n"); 
 			initSubsystem(TheGameResultsQueue, "TheGameResultsQueue", resultsInterface, NULL);
-			fprintf(stderr, "GameEngine::init() - TheGameResultsQueue initialized successfully\n"); fflush(stderr);
+			printf("GameEngine::init() - TheGameResultsQueue initialized successfully\n"); 
 		}
 		else {
-			fprintf(stderr, "GameEngine::init() - WARNING: createNewGameResultsInterface returned NULL, skipping\n"); fflush(stderr);
+			printf("GameEngine::init() - WARNING: createNewGameResultsInterface returned NULL, skipping\n"); 
 		}
 
 
@@ -780,25 +780,25 @@ void GameEngine::init()
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		fprintf(stderr, "GameEngine::init() - Closing xferCRC\n"); fflush(stderr);
+		printf("GameEngine::init() - Closing xferCRC\n"); 
 		xferCRC.close();
 		TheWritableGlobalData->m_iniCRC = xferCRC.getCRC();
 		DEBUG_LOG(("INI CRC is 0x%8.8X", TheGlobalData->m_iniCRC));
 
-		fprintf(stderr, "GameEngine::init() - Calling postProcessLoadAll\n"); fflush(stderr);
+		printf("GameEngine::init() - Calling postProcessLoadAll\n"); 
 		TheSubsystemList->postProcessLoadAll();
-		fprintf(stderr, "GameEngine::init() - postProcessLoadAll done\n"); fflush(stderr);
+		printf("GameEngine::init() - postProcessLoadAll done\n"); 
 
-		fprintf(stderr, "GameEngine::init() - Setting frame pacer limit\n"); fflush(stderr);
+		printf("GameEngine::init() - Setting frame pacer limit\n"); 
 		TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
-		fprintf(stderr, "GameEngine::init() - Frame pacer limit set\n"); fflush(stderr);
+		printf("GameEngine::init() - Frame pacer limit set\n"); 
 
-		fprintf(stderr, "GameEngine::init() - Setting audio options\n"); fflush(stderr);
+		printf("GameEngine::init() - Setting audio options\n"); 
 		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_musicOn, AudioAffect_Music);
 		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_soundsOn, AudioAffect_Sound);
 		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_sounds3DOn, AudioAffect_Sound3D);
 		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_speechOn, AudioAffect_Speech);
-		fprintf(stderr, "GameEngine::init() - Audio options set\n"); fflush(stderr);
+		printf("GameEngine::init() - Audio options set\n"); 
 
 		// We're not in a network game yet, so set the network singleton to NULL.
 		TheNetwork = NULL;
@@ -813,11 +813,11 @@ void GameEngine::init()
 		// m_quitting = FALSE;
 
 		// initialize the MapCache
-		fprintf(stderr, "GameEngine::init() - Creating TheMapCache\n"); fflush(stderr);
+		printf("GameEngine::init() - Creating TheMapCache\n"); 
 		TheMapCache = MSGNEW("GameEngineSubsystem") MapCache;
-		fprintf(stderr, "GameEngine::init() - Calling TheMapCache->updateCache()\n"); fflush(stderr);
+		printf("GameEngine::init() - Calling TheMapCache->updateCache()\n"); 
 		TheMapCache->updateCache();
-		fprintf(stderr, "GameEngine::init() - TheMapCache updated\n"); fflush(stderr);
+		printf("GameEngine::init() - TheMapCache updated\n"); 
 
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -1035,8 +1035,8 @@ void GameEngine::update(void)
 	// Phase 54: Debug log
 	static int updateCount = 0;
 	if (updateCount < 3) {
-		fprintf(stderr, "GameEngine::update() - Starting update #%d\n", updateCount);
-		fflush(stderr);
+		printf("GameEngine::update() - Starting update #%d\n", updateCount);
+		
 	}
 
 	USE_PERF_TIMER(GameEngine_update)
@@ -1046,25 +1046,25 @@ void GameEngine::update(void)
 			VERIFY_CRC
 
 				if (updateCount < 3) {
-					fprintf(stderr, "GameEngine::update() - About to call TheRadar->UPDATE()\n");
-					fflush(stderr);
+					printf("GameEngine::update() - About to call TheRadar->UPDATE()\n");
+					
 				}
 			TheRadar->UPDATE();
 
 			/// @todo Move audio init, update, etc, into GameClient update
 			if (updateCount < 3) {
-				fprintf(stderr, "GameEngine::update() - About to call TheAudio->UPDATE()\n");
-				fflush(stderr);
+				printf("GameEngine::update() - About to call TheAudio->UPDATE()\n");
+				
 			}
 			TheAudio->UPDATE();
 			if (updateCount < 3) {
-				fprintf(stderr, "GameEngine::update() - About to call TheGameClient->UPDATE()\n");
-				fflush(stderr);
+				printf("GameEngine::update() - About to call TheGameClient->UPDATE()\n");
+				
 			}
 			TheGameClient->UPDATE();
 			if (updateCount < 3) {
-				fprintf(stderr, "GameEngine::update() - About to call TheMessageStream->propagateMessages()\n");
-				fflush(stderr);
+				printf("GameEngine::update() - About to call TheMessageStream->propagateMessages()\n");
+				
 			}
 			TheMessageStream->propagateMessages();
 
@@ -1081,8 +1081,8 @@ void GameEngine::update(void)
 		const Bool canUpdateScript = canUpdate && !TheFramePacer->isGameHalted();
 
 		if (updateCount < 3) {
-			fprintf(stderr, "GameEngine::update() - canUpdate=%d, canUpdateLogic=%d, canUpdateScript=%d\n", canUpdate, canUpdateLogic, canUpdateScript);
-			fflush(stderr);
+			printf("GameEngine::update() - canUpdate=%d, canUpdateLogic=%d, canUpdateScript=%d\n", canUpdate, canUpdateLogic, canUpdateScript);
+			
 			updateCount++;
 		}
 
@@ -1109,8 +1109,8 @@ extern bool DX8Wrapper_IsWindowed;
 void GameEngine::execute(void)
 {
 	// Phase 54: Debug log for execute loop
-	fprintf(stderr, "GameEngine::execute() - Entering main loop, m_quitting=%d\n", m_quitting ? 1 : 0);
-	fflush(stderr);
+	printf("GameEngine::execute() - Entering main loop, m_quitting=%d\n", m_quitting ? 1 : 0);
+	
 	int frameCount = 0;
 
 #if defined(RTS_DEBUG)
@@ -1122,8 +1122,8 @@ void GameEngine::execute(void)
 	{
 		// Phase 54: Log first few frames
 		if (frameCount < 5) {
-			fprintf(stderr, "GameEngine::execute() - Frame %d starting\n", frameCount);
-			fflush(stderr);
+			printf("GameEngine::execute() - Frame %d starting\n", frameCount);
+			
 		}
 
 		//if (TheGlobalData->m_vTune)
@@ -1188,8 +1188,8 @@ void GameEngine::execute(void)
 
 			// Phase 54: Log after update
 			if (frameCount < 5) {
-				fprintf(stderr, "GameEngine::execute() - Frame %d update() completed, m_quitting=%d\n", frameCount, m_quitting ? 1 : 0);
-				fflush(stderr);
+				printf("GameEngine::execute() - Frame %d update() completed, m_quitting=%d\n", frameCount, m_quitting ? 1 : 0);
+				
 			}
 			frameCount++;
 

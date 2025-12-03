@@ -236,7 +236,7 @@ BaseHeightMapRenderObjClass::~BaseHeightMapRenderObjClass(void)
 //=============================================================================
 BaseHeightMapRenderObjClass::BaseHeightMapRenderObjClass(void)
 {
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] Constructor START\n"); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] Constructor START\n"); 
 	m_x = 0;
 	m_y = 0;
 	m_needFullUpdate = false;
@@ -269,7 +269,7 @@ BaseHeightMapRenderObjClass::BaseHeightMapRenderObjClass(void)
 	m_depthFade.Z = 0.0f;
 	m_useDepthFade = false;
 	m_disableTextures = false;
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] Setting TheTerrainRenderObject\n"); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] Setting TheTerrainRenderObject\n"); 
 	TheTerrainRenderObject = this;
 
 	m_treeBuffer = NULL;
@@ -287,26 +287,26 @@ BaseHeightMapRenderObjClass::BaseHeightMapRenderObjClass(void)
 	clearAllScorches();
 	m_shroud = NULL;
 #endif
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] Creating W3DBridgeBuffer\n"); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] Creating W3DBridgeBuffer\n"); 
 	m_bridgeBuffer = NEW W3DBridgeBuffer;
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] W3DBridgeBuffer created: %p\n", m_bridgeBuffer); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] W3DBridgeBuffer created: %p\n", m_bridgeBuffer); 
 
 	if (TheGlobalData->m_headless) {
-		fprintf(stderr, "[BaseHeightMapRenderObjClass] Headless mode, returning early\n"); fflush(stderr);
+		printf("[BaseHeightMapRenderObjClass] Headless mode, returning early\n"); 
 		return;
 	}
 
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] Creating W3DTreeBuffer\n"); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] Creating W3DTreeBuffer\n"); 
 	m_treeBuffer = NEW W3DTreeBuffer;
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] W3DTreeBuffer created: %p\n", m_treeBuffer); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] W3DTreeBuffer created: %p\n", m_treeBuffer); 
 
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] Creating W3DPropBuffer\n"); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] Creating W3DPropBuffer\n"); 
 	m_propBuffer = NEW W3DPropBuffer;
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] W3DPropBuffer created: %p\n", m_propBuffer); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] W3DPropBuffer created: %p\n", m_propBuffer); 
 
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] Creating W3DBibBuffer\n"); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] Creating W3DBibBuffer\n"); 
 	m_bibBuffer = NEW W3DBibBuffer;
-	fprintf(stderr, "[BaseHeightMapRenderObjClass] W3DBibBuffer created: %p\n", m_bibBuffer); fflush(stderr);
+	printf("[BaseHeightMapRenderObjClass] W3DBibBuffer created: %p\n", m_bibBuffer); 
 
 	m_curImpassableSlope = 45.0f;	// default to 45 degrees.
 	m_waypointBuffer = NEW W3DWaypointBuffer;

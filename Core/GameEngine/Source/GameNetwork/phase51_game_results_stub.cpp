@@ -34,23 +34,23 @@ class StubGameResultsQueue : public GameResultsInterface
 public:
     StubGameResultsQueue()
     {
-        fprintf(stderr, "[Phase51] StubGameResultsQueue created (GameSpy results posting disabled)\n");
+        printf("[Phase51] StubGameResultsQueue created (GameSpy results posting disabled)\n");
     }
     
     ~StubGameResultsQueue() override
     {
-        fprintf(stderr, "[Phase51] StubGameResultsQueue destroyed\n");
+        printf("[Phase51] StubGameResultsQueue destroyed\n");
     }
     
     // SubsystemInterface methods
     void init() override
     {
-        fprintf(stderr, "[Phase51] StubGameResultsQueue::init()\n");
+        printf("[Phase51] StubGameResultsQueue::init()\n");
     }
     
     void reset() override
     {
-        fprintf(stderr, "[Phase51] StubGameResultsQueue::reset()\n");
+        printf("[Phase51] StubGameResultsQueue::reset()\n");
     }
     
     void update() override
@@ -61,13 +61,13 @@ public:
     // GameResultsInterface methods
     void startThreads(void) override
     {
-        fprintf(stderr, "[Phase51] StubGameResultsQueue::startThreads() - no-op (cross-platform stub)\n");
+        printf("[Phase51] StubGameResultsQueue::startThreads() - no-op (cross-platform stub)\n");
         // No threads started - this is a stub
     }
     
     void endThreads(void) override
     {
-        fprintf(stderr, "[Phase51] StubGameResultsQueue::endThreads() - no-op\n");
+        printf("[Phase51] StubGameResultsQueue::endThreads() - no-op\n");
     }
     
     Bool areThreadsRunning(void) override
@@ -78,7 +78,7 @@ public:
     
     void addRequest(const GameResultsRequest& req) override
     {
-        fprintf(stderr, "[Phase51] StubGameResultsQueue::addRequest() - discarding (no network support)\n");
+        printf("[Phase51] StubGameResultsQueue::addRequest() - discarding (no network support)\n");
         // Discard the request - we can't send it anywhere
     }
     
@@ -114,6 +114,6 @@ public:
  */
 GameResultsInterface* GameResultsInterface::createNewGameResultsInterface(void)
 {
-    fprintf(stderr, "[Phase51] createNewGameResultsInterface() - creating StubGameResultsQueue\n");
+    printf("[Phase51] createNewGameResultsInterface() - creating StubGameResultsQueue\n");
     return NEW StubGameResultsQueue();
 }

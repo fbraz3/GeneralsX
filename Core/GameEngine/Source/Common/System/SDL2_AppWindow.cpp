@@ -57,13 +57,13 @@ bool SDL2_InitApplicationWindow(const char* title, int width, int height)
 {
     // Ensure SDL2 is initialized
     if ((SDL_WasInit(SDL_INIT_VIDEO)) == 0) {
-        fprintf(stderr, "SDL2_InitApplicationWindow: SDL video subsystem not initialized\n");
+        printf("SDL2_InitApplicationWindow: SDL video subsystem not initialized\n");
         return false;
     }
     
     // Check if window already exists
     if (g_applicationWindow != NULL) {
-        fprintf(stderr, "SDL2_InitApplicationWindow: Window already initialized\n");
+        printf("SDL2_InitApplicationWindow: Window already initialized\n");
         return false;
     }
     
@@ -78,7 +78,7 @@ bool SDL2_InitApplicationWindow(const char* title, int width, int height)
     );
     
     if (g_applicationWindow == NULL) {
-        fprintf(stderr, "SDL2_InitApplicationWindow: Failed to create window: %s\n", SDL_GetError());
+        printf("SDL2_InitApplicationWindow: Failed to create window: %s\n", SDL_GetError());
         return false;
     }
     
@@ -103,7 +103,7 @@ SDL_Window* SDL2_GetApplicationWindow(void)
 size_t SDL2_GetModuleFilePath(char* buffer, size_t size)
 {
     if (buffer == NULL || size == 0) {
-        fprintf(stderr, "SDL2_GetModuleFilePath: Invalid buffer or size\n");
+        printf("SDL2_GetModuleFilePath: Invalid buffer or size\n");
         return 0;
     }
     
@@ -114,7 +114,7 @@ size_t SDL2_GetModuleFilePath(char* buffer, size_t size)
         printf("SDL2_GetModuleFilePath (macOS): %s\n", buffer);
         return strlen(buffer);
     } else {
-        fprintf(stderr, "SDL2_GetModuleFilePath (macOS): Failed to get executable path\n");
+        printf("SDL2_GetModuleFilePath (macOS): Failed to get executable path\n");
         return 0;
     }
     
@@ -126,7 +126,7 @@ size_t SDL2_GetModuleFilePath(char* buffer, size_t size)
         printf("SDL2_GetModuleFilePath (Linux): %s\n", buffer);
         return (size_t)result;
     } else {
-        fprintf(stderr, "SDL2_GetModuleFilePath (Linux): Failed to read /proc/self/exe\n");
+        printf("SDL2_GetModuleFilePath (Linux): Failed to read /proc/self/exe\n");
         return 0;
     }
     
@@ -137,13 +137,13 @@ size_t SDL2_GetModuleFilePath(char* buffer, size_t size)
         printf("SDL2_GetModuleFilePath (Windows): %s\n", buffer);
         return (size_t)result;
     } else {
-        fprintf(stderr, "SDL2_GetModuleFilePath (Windows): Failed to get module filename\n");
+        printf("SDL2_GetModuleFilePath (Windows): Failed to get module filename\n");
         return 0;
     }
     
 #else
     // Fallback for unknown platforms
-    fprintf(stderr, "SDL2_GetModuleFilePath: Unsupported platform\n");
+    printf("SDL2_GetModuleFilePath: Unsupported platform\n");
     buffer[0] = '\0';
     return 0;
 #endif

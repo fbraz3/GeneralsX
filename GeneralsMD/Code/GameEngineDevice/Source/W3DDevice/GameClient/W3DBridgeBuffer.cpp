@@ -733,7 +733,7 @@ for the bridges. */
 //=============================================================================
 W3DBridgeBuffer::W3DBridgeBuffer(void)
 {
-	fprintf(stderr, "[W3DBridgeBuffer] Constructor START\n"); fflush(stderr);
+	printf("[W3DBridgeBuffer] Constructor START\n"); 
 	m_initialized = false;
 	m_vertexMaterial = NULL;
 	m_vertexBridge = NULL;
@@ -741,13 +741,13 @@ W3DBridgeBuffer::W3DBridgeBuffer(void)
 	m_bridgeTexture = NULL;
 	m_curNumBridgeVertices = 0;
 	m_curNumBridgeIndices = 0;
-	fprintf(stderr, "[W3DBridgeBuffer] Calling clearAllBridges\n"); fflush(stderr);
+	printf("[W3DBridgeBuffer] Calling clearAllBridges\n"); 
 	clearAllBridges();
-	fprintf(stderr, "[W3DBridgeBuffer] Calling allocateBridgeBuffers\n"); fflush(stderr);
+	printf("[W3DBridgeBuffer] Calling allocateBridgeBuffers\n"); 
 	allocateBridgeBuffers();
-	fprintf(stderr, "[W3DBridgeBuffer] allocateBridgeBuffers done\n"); fflush(stderr);
+	printf("[W3DBridgeBuffer] allocateBridgeBuffers done\n"); 
 	m_initialized = true;
-	fprintf(stderr, "[W3DBridgeBuffer] Constructor END\n"); fflush(stderr);
+	printf("[W3DBridgeBuffer] Constructor END\n"); 
 }
 
 
@@ -770,20 +770,20 @@ void W3DBridgeBuffer::freeBridgeBuffers(void)
 //=============================================================================
 void W3DBridgeBuffer::allocateBridgeBuffers(void)
 {
-	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] START, TheGlobalData=%p\n", TheGlobalData); fflush(stderr);
+	printf("[W3DBridgeBuffer::allocateBridgeBuffers] START, TheGlobalData=%p\n", TheGlobalData); 
 	if (TheGlobalData->m_headless) {
-		fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] Headless mode, returning early\n"); fflush(stderr);
+		printf("[W3DBridgeBuffer::allocateBridgeBuffers] Headless mode, returning early\n"); 
 		return;
 	}
-	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] Creating m_vertexBridge\n"); fflush(stderr);
+	printf("[W3DBridgeBuffer::allocateBridgeBuffers] Creating m_vertexBridge\n"); 
 	m_vertexBridge = NEW_REF(DX8VertexBufferClass, (DX8_FVF_XYZNDUV1, MAX_BRIDGE_VERTEX + 4, DX8VertexBufferClass::USAGE_DYNAMIC));
-	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] m_vertexBridge=%p\n", m_vertexBridge); fflush(stderr);
-	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] Creating m_indexBridge\n"); fflush(stderr);
+	printf("[W3DBridgeBuffer::allocateBridgeBuffers] m_vertexBridge=%p\n", m_vertexBridge); 
+	printf("[W3DBridgeBuffer::allocateBridgeBuffers] Creating m_indexBridge\n"); 
 	m_indexBridge = NEW_REF(DX8IndexBufferClass, (MAX_BRIDGE_INDEX + 4, DX8IndexBufferClass::USAGE_DYNAMIC));
-	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] m_indexBridge=%p\n", m_indexBridge); fflush(stderr);
-	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] Getting vertex material preset\n"); fflush(stderr);
+	printf("[W3DBridgeBuffer::allocateBridgeBuffers] m_indexBridge=%p\n", m_indexBridge); 
+	printf("[W3DBridgeBuffer::allocateBridgeBuffers] Getting vertex material preset\n"); 
 	m_vertexMaterial = VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_DIFFUSE);
-	fprintf(stderr, "[W3DBridgeBuffer::allocateBridgeBuffers] m_vertexMaterial=%p\n", m_vertexMaterial); fflush(stderr);
+	printf("[W3DBridgeBuffer::allocateBridgeBuffers] m_vertexMaterial=%p\n", m_vertexMaterial); 
 #ifdef USE_BRIDGE_NORMALS
 	m_vertexMaterial = NEW VertexMaterialClass();
 	m_vertexMaterial->Set_Shininess(0.0);

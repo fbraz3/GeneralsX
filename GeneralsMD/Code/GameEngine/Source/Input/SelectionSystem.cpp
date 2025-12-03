@@ -141,7 +141,7 @@ void SelectionSystem_Initialize(SelectionSystem* system) {
     system->is_box_selecting = 0;
     system->num_hotkeys = 0;
     
-    fprintf(stdout, "Phase 33: Selection system initialized\n");
+    printf("Phase 33: Selection system initialized\n");
 }
 
 void SelectionSystem_Shutdown(SelectionSystem* system) {
@@ -150,7 +150,7 @@ void SelectionSystem_Shutdown(SelectionSystem* system) {
     SelectionSystem_DeselectAll(system);
     SelectionSystem_ClearCommandQueue(system);
     
-    fprintf(stdout, "Phase 33: Selection system shutdown\n");
+    printf("Phase 33: Selection system shutdown\n");
 }
 
 SelectionHandle SelectionSystem_SelectUnit(SelectionSystem* system,
@@ -610,36 +610,36 @@ int SelectionSystem_ClearErrors(SelectionSystem* system) {
 void SelectionSystem_PrintSelectionInfo(SelectionSystem* system) {
     if (!system) return;
     
-    fprintf(stdout, "Selection System Info:\n");
-    fprintf(stdout, "Selected Units: %u\n", system->selected_count);
-    fprintf(stdout, "Primary Unit: %u\n", system->primary_unit);
-    fprintf(stdout, "Command Queue Size: %u\n", system->queue_size);
-    fprintf(stdout, "Control Groups: %u\n", system->num_groups);
+    printf("Selection System Info:\n");
+    printf("Selected Units: %u\n", system->selected_count);
+    printf("Primary Unit: %u\n", system->primary_unit);
+    printf("Command Queue Size: %u\n", system->queue_size);
+    printf("Control Groups: %u\n", system->num_groups);
     
     for (uint32_t i = 0; i < system->selected_count && i < 5; i++) {
-        fprintf(stdout, "  Unit %u: Handle %u\n", i, system->selected_units[i].unit_handle);
+        printf("  Unit %u: Handle %u\n", i, system->selected_units[i].unit_handle);
     }
     
     if (system->selected_count > 5) {
-        fprintf(stdout, "  ... and %u more\n", system->selected_count - 5);
+        printf("  ... and %u more\n", system->selected_count - 5);
     }
 }
 
 void SelectionSystem_PrintCommandQueue(SelectionSystem* system) {
     if (!system) return;
     
-    fprintf(stdout, "Command Queue (%u commands):\n", system->queue_size);
+    printf("Command Queue (%u commands):\n", system->queue_size);
     
     uint32_t idx = system->queue_head;
     for (uint32_t i = 0; i < system->queue_size && i < 10; i++) {
         Queued_Command* cmd = &system->command_queue[idx];
-        fprintf(stdout, "  [%u] Type: %d, Target: (%.1f, %.1f)\n", 
+        printf("  [%u] Type: %d, Target: (%.1f, %.1f)\n", 
                i, cmd->type, cmd->target_x, cmd->target_y);
         idx = (idx + 1) % system->queue_max;
     }
     
     if (system->queue_size > 10) {
-        fprintf(stdout, "  ... and %u more\n", system->queue_size - 10);
+        printf("  ... and %u more\n", system->queue_size - 10);
     }
 }
 

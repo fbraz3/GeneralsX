@@ -103,8 +103,8 @@ void CombatSystem_Initialize(CombatSystem* system) {
     system->num_units = 0;
     system->num_projectiles = 0;
     
-    fprintf(stdout, "Phase 35: Combat system initialized\n");
-    fprintf(stdout, "Max units: %u, Max projectiles: %u\n", system->max_units, system->max_projectiles);
+    printf("Phase 35: Combat system initialized\n");
+    printf("Max units: %u, Max projectiles: %u\n", system->max_units, system->max_projectiles);
 }
 
 void CombatSystem_Shutdown(CombatSystem* system) {
@@ -113,7 +113,7 @@ void CombatSystem_Shutdown(CombatSystem* system) {
     system->num_units = 0;
     system->num_projectiles = 0;
     
-    fprintf(stdout, "Phase 35: Combat system shutdown\n");
+    printf("Phase 35: Combat system shutdown\n");
 }
 
 CombatHandle CombatSystem_RegisterUnit(CombatSystem* system,
@@ -816,25 +816,25 @@ void CombatSystem_PrintUnitStats(CombatSystem* system, uint32_t unit_id) {
     
     Combat_Unit* unit = &system->units[idx];
     
-    fprintf(stdout, "Combat Stats for Unit %u:\n", unit_id);
-    fprintf(stdout, "Health: %.1f / %.1f (%.1f%%)\n", 
+    printf("Combat Stats for Unit %u:\n", unit_id);
+    printf("Health: %.1f / %.1f (%.1f%%)\n", 
            unit->health, unit->max_health,
            CombatSystem_GetUnitHealthPercent(system, unit_id));
-    fprintf(stdout, "State: %d\n", unit->state);
-    fprintf(stdout, "Weapons: %u\n", unit->weapon_count);
-    fprintf(stdout, "Kills: %u\n", unit->kills);
-    fprintf(stdout, "Deaths: %u\n", unit->deaths);
-    fprintf(stdout, "Experience: %u\n", unit->experience);
-    fprintf(stdout, "Veterancy: %d\n", unit->veterancy);
+    printf("State: %d\n", unit->state);
+    printf("Weapons: %u\n", unit->weapon_count);
+    printf("Kills: %u\n", unit->kills);
+    printf("Deaths: %u\n", unit->deaths);
+    printf("Experience: %u\n", unit->experience);
+    printf("Veterancy: %d\n", unit->veterancy);
 }
 
 void CombatSystem_PrintCombatStats(CombatSystem* system) {
     if (!system) return;
     
-    fprintf(stdout, "Combat System Stats:\n");
-    fprintf(stdout, "Active Units: %u\n", system->num_units);
-    fprintf(stdout, "Active Projectiles: %u\n", system->num_projectiles);
-    fprintf(stdout, "Total Damage Dealt: %u\n", system->total_damage_dealt);
+    printf("Combat System Stats:\n");
+    printf("Active Units: %u\n", system->num_units);
+    printf("Active Projectiles: %u\n", system->num_projectiles);
+    printf("Total Damage Dealt: %u\n", system->total_damage_dealt);
     
     uint32_t alive_count = 0;
     uint32_t dead_count = 0;
@@ -847,8 +847,8 @@ void CombatSystem_PrintCombatStats(CombatSystem* system) {
         }
     }
     
-    fprintf(stdout, "Alive Units: %u\n", alive_count);
-    fprintf(stdout, "Dead Units: %u\n", dead_count);
+    printf("Alive Units: %u\n", alive_count);
+    printf("Dead Units: %u\n", dead_count);
 }
 
 uint32_t CombatSystem_GetActiveUnitCount(CombatSystem* system) {

@@ -133,7 +133,7 @@ static int recursiveCull(FILE* batchFile,
     work = dir1; work += relDir; work += *i;
     _chmod(work.c_str(), _S_IREAD | _S_IWRITE);
     if (_unlink(work.c_str()))
-      fprintf(stderr, "Error: Can't delete %s\n", work.c_str());
+      printf("Error: Can't delete %s\n", work.c_str());
     else
       deleted++;
     fprintf(batchFile, "attrib -r \"%s\"\n", work.c_str());

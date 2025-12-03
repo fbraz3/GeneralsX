@@ -56,15 +56,15 @@ bool DX8Wrapper::Init(void* hwnd, bool lite) {
     // Phase 41 Week 3: Create graphics driver via factory
     // Uses environment variable GRAPHICS_DRIVER if set, otherwise defaults to Vulkan
     
-    fprintf(stderr, "[DX8Wrapper::Init] Starting, hwnd=%p, lite=%d\n", hwnd, lite);
-    fflush(stderr);
+    printf("[DX8Wrapper::Init] Starting, hwnd=%p, lite=%d\n", hwnd, lite);
+    
     printf("[Phase 41 Week 3] DX8Wrapper::Init - Creating graphics driver via factory\n");
-    fflush(stdout);
+    
     
     // Destroy existing driver if any
     if (g_graphics_driver != nullptr) {
-        fprintf(stderr, "[DX8Wrapper::Init] Destroying existing driver\n");
-        fflush(stderr);
+        printf("[DX8Wrapper::Init] Destroying existing driver\n");
+        
         printf("[Phase 41 Week 3] DX8Wrapper::Init - Destroying existing driver\n");
         Graphics::GraphicsDriverFactory::DestroyDriver(g_graphics_driver);
         g_graphics_driver = nullptr;
@@ -72,8 +72,8 @@ bool DX8Wrapper::Init(void* hwnd, bool lite) {
     
     // Create new driver via factory (uses environment variable + config file priority)
     // Window dimensions are set to default 1024x768 for initialization
-    fprintf(stderr, "[DX8Wrapper::Init] Calling GraphicsDriverFactory::CreateDriver\n");
-    fflush(stderr);
+    printf("[DX8Wrapper::Init] Calling GraphicsDriverFactory::CreateDriver\n");
+    
     g_graphics_driver = Graphics::GraphicsDriverFactory::CreateDriver(
         Graphics::BackendType::Unknown,  // Use default selection priority
         hwnd,
@@ -83,14 +83,14 @@ bool DX8Wrapper::Init(void* hwnd, bool lite) {
     );
     
     if (g_graphics_driver == nullptr) {
-        fprintf(stderr, "[DX8Wrapper::Init] ERROR: CreateDriver returned nullptr\n");
-        fflush(stderr);
+        printf("[DX8Wrapper::Init] ERROR: CreateDriver returned nullptr\n");
+        
         printf("[Phase 41 Week 3 ERROR] DX8Wrapper::Init - Failed to create graphics driver\n");
         return false;
     }
     
-    fprintf(stderr, "[DX8Wrapper::Init] Success, backend=%s\n", g_graphics_driver->GetBackendName());
-    fflush(stderr);
+    printf("[DX8Wrapper::Init] Success, backend=%s\n", g_graphics_driver->GetBackendName());
+    
     printf("[Phase 41 Week 3] DX8Wrapper::Init - Graphics driver created successfully: %s\n",
            g_graphics_driver->GetBackendName());
     
@@ -117,16 +117,16 @@ void DX8Wrapper::Shutdown() {
  * Maps legacy DirectX 8 Begin_Scene call to abstract graphics driver interface.
  */
 void DX8Wrapper::Begin_Scene() {
-    fprintf(stderr, "[Phase 54] DX8Wrapper::Begin_Scene - Called, g_graphics_driver=%p\n", (void*)g_graphics_driver);
-    fflush(stderr);
+    printf("[Phase 54] DX8Wrapper::Begin_Scene - Called, g_graphics_driver=%p\n", (void*)g_graphics_driver);
+    
     if (g_graphics_driver != nullptr) {
-        fprintf(stderr, "[Phase 54] DX8Wrapper::Begin_Scene - Calling g_graphics_driver->BeginFrame()\n");
-        fflush(stderr);
+        printf("[Phase 54] DX8Wrapper::Begin_Scene - Calling g_graphics_driver->BeginFrame()\n");
+        
         if (!g_graphics_driver->BeginFrame()) {
             printf("[Phase 41 Week 3 ERROR] DX8Wrapper::Begin_Scene - BeginFrame failed\n");
         }
-        fprintf(stderr, "[Phase 54] DX8Wrapper::Begin_Scene - BeginFrame returned\n");
-        fflush(stderr);
+        printf("[Phase 54] DX8Wrapper::Begin_Scene - BeginFrame returned\n");
+        
     } else {
         printf("[Phase 41 Week 3 WARNING] DX8Wrapper::Begin_Scene - No graphics driver initialized\n");
     }
@@ -204,7 +204,7 @@ const int dynamic_fvf_type = 0;
 IDirect3DSurface8* DX8Wrapper::_Create_DX8_Surface(int width, int height, int format)
 {
     // Phase 51: Create real memory-backed surface
-    fprintf(stderr, "[Phase 51] DX8Wrapper::_Create_DX8_Surface(width=%d, height=%d, format=%d)\n", 
+    printf("[Phase 51] DX8Wrapper::_Create_DX8_Surface(width=%d, height=%d, format=%d)\n", 
            width, height, format);
     
     return CreateMemorySurface(width, height, (D3DFORMAT)format);
@@ -218,7 +218,7 @@ IDirect3DSurface8* DX8Wrapper::_Create_DX8_Surface(const char* filename)
 {
     // Phase 51: File loading is complex - return nullptr for now
     // This would need integration with the texture loading system
-    fprintf(stderr, "[Phase 51] DX8Wrapper::_Create_DX8_Surface(filename='%s') - NOT IMPLEMENTED\n", filename);
+    printf("[Phase 51] DX8Wrapper::_Create_DX8_Surface(filename='%s') - NOT IMPLEMENTED\n", filename);
     
     // TODO: Implement file loading when needed
     return nullptr;
@@ -250,7 +250,7 @@ SurfaceClass* DX8Wrapper::_Get_DX8_Back_Buffer()
         (D3DFORMAT)D3DFMT_A8R8G8B8,
         D3DPOOL_DEFAULT);
     if (!d3d_surface) {
-        fprintf(stderr, "[Phase 51] _Get_DX8_Back_Buffer: Failed to create D3D surface\n");
+        printf("[Phase 51] _Get_DX8_Back_Buffer: Failed to create D3D surface\n");
         return nullptr;
     }
     
@@ -258,7 +258,7 @@ SurfaceClass* DX8Wrapper::_Get_DX8_Back_Buffer()
     // Note: SurfaceClass takes ownership of the D3D surface
     SurfaceClass* surface = new SurfaceClass(d3d_surface);
     
-    fprintf(stderr, "[Phase 51] _Get_DX8_Back_Buffer: Created %dx%d surface=%p\n", 
+    printf("[Phase 51] _Get_DX8_Back_Buffer: Created %dx%d surface=%p\n", 
             width, height, (void*)surface);
     
     return surface;

@@ -146,8 +146,8 @@ void Pathfinder_Initialize(Pathfinder* pathfinder) {
     pathfinder->current_formation = FORMATION_NONE;
     pathfinder->formation_spacing = 3.0f;
     
-    fprintf(stdout, "Phase 34: Pathfinder system initialized\n");
-    fprintf(stdout, "Grid: %ux%u, Cell size: %.1f\n", pathfinder->grid_width, 
+    printf("Phase 34: Pathfinder system initialized\n");
+    printf("Grid: %ux%u, Cell size: %.1f\n", pathfinder->grid_width, 
             pathfinder->grid_height, pathfinder->cell_size);
 }
 
@@ -157,7 +157,7 @@ void Pathfinder_Shutdown(Pathfinder* pathfinder) {
     pathfinder->num_paths = 0;
     pathfinder->num_units = 0;
     
-    fprintf(stdout, "Phase 34: Pathfinder system shutdown\n");
+    printf("Phase 34: Pathfinder system shutdown\n");
 }
 
 void Pathfinder_SetGridDimensions(Pathfinder* pathfinder, uint32_t width, uint32_t height, float cell_size) {
@@ -816,15 +816,15 @@ int Pathfinder_ClearErrors(Pathfinder* pathfinder) {
 void Pathfinder_PrintGridInfo(Pathfinder* pathfinder) {
     if (!pathfinder) return;
     
-    fprintf(stdout, "Pathfinding Grid Info:\n");
-    fprintf(stdout, "Dimensions: %ux%u\n", pathfinder->grid_width, pathfinder->grid_height);
-    fprintf(stdout, "Cell Size: %.1f\n", pathfinder->cell_size);
+    printf("Pathfinding Grid Info:\n");
+    printf("Dimensions: %ux%u\n", pathfinder->grid_width, pathfinder->grid_height);
+    printf("Cell Size: %.1f\n", pathfinder->cell_size);
     
     uint32_t walkable_count = 0;
     for (uint32_t i = 0; i < pathfinder->grid_width * pathfinder->grid_height; i++) {
         if (pathfinder->grid[i].walkable) walkable_count++;
     }
-    fprintf(stdout, "Walkable Cells: %u / %u\n", walkable_count, 
+    printf("Walkable Cells: %u / %u\n", walkable_count, 
             pathfinder->grid_width * pathfinder->grid_height);
 }
 
@@ -834,11 +834,11 @@ void Pathfinder_PrintPathInfo(Pathfinder* pathfinder, PathHandle handle) {
     for (uint32_t i = 0; i < pathfinder->num_paths; i++) {
         if (pathfinder->paths[i].handle == handle) {
             Path* path = &pathfinder->paths[i];
-            fprintf(stdout, "Path Info:\n");
-            fprintf(stdout, "Handle: %u\n", handle);
-            fprintf(stdout, "Status: %d\n", path->status);
-            fprintf(stdout, "Waypoints: %u\n", path->waypoint_count);
-            fprintf(stdout, "Length: %.1f\n", path->length);
+            printf("Path Info:\n");
+            printf("Handle: %u\n", handle);
+            printf("Status: %d\n", path->status);
+            printf("Waypoints: %u\n", path->waypoint_count);
+            printf("Length: %.1f\n", path->length);
             return;
         }
     }
@@ -850,12 +850,12 @@ void Pathfinder_PrintUnitInfo(Pathfinder* pathfinder, uint32_t unit_id) {
     for (uint32_t i = 0; i < pathfinder->num_units; i++) {
         if (pathfinder->units[i].unit_id == unit_id) {
             Unit* unit = &pathfinder->units[i];
-            fprintf(stdout, "Unit Info:\n");
-            fprintf(stdout, "ID: %u\n", unit_id);
-            fprintf(stdout, "Position: (%.1f, %.1f)\n", unit->x, unit->y);
-            fprintf(stdout, "Velocity: (%.1f, %.1f)\n", unit->vx, unit->vy);
-            fprintf(stdout, "Speed: %.1f / %.1f\n", Pathfinder_GetUnitSpeed(pathfinder, unit_id), unit->max_speed);
-            fprintf(stdout, "State: %d\n", unit->state);
+            printf("Unit Info:\n");
+            printf("ID: %u\n", unit_id);
+            printf("Position: (%.1f, %.1f)\n", unit->x, unit->y);
+            printf("Velocity: (%.1f, %.1f)\n", unit->vx, unit->vy);
+            printf("Speed: %.1f / %.1f\n", Pathfinder_GetUnitSpeed(pathfinder, unit_id), unit->max_speed);
+            printf("State: %d\n", unit->state);
             return;
         }
     }

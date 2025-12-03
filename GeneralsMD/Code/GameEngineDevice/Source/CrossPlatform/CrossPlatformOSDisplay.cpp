@@ -37,7 +37,7 @@
 OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedInt buttonFlags, UnsignedInt otherFlags)
 {
 	// Log the warning to console instead of showing a dialog
-	fprintf(stderr, "[OSDisplayWarningBox] %s: %s\n", p.str(), m.str());
+	printf("[OSDisplayWarningBox] %s: %s\n", p.str(), m.str());
 	
 	// Return CANCEL to break any retry loops (e.g., CD loading loop)
 	// This matches the macOS behavior from Phase 051.1

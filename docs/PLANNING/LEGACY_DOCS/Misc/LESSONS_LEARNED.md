@@ -165,7 +165,7 @@ try {
 } catch (...) {
     DEBUG_CRASH(("[LINE: %d] Error reading field '%s'\n", INI::getLineNum(), field));
     printf("INI ERROR: UNIVERSAL PROTECTION - Unknown exception for '%s' - CONTINUING\n", field);
-    fflush(stdout);
+    
     continue;  // ⚠️ EXECUTION CONTINUES - field left with default value
 }
 ```

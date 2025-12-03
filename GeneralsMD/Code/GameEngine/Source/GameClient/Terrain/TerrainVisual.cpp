@@ -46,8 +46,8 @@ TerrainVisual* TheTerrainVisual = NULL;
 //-------------------------------------------------------------------------------------------------
 TerrainVisual::TerrainVisual()
 {
-  fprintf(stderr, "[TerrainVisual] Constructor START\n"); fflush(stderr);
-  fprintf(stderr, "[TerrainVisual] Constructor END\n"); fflush(stderr);
+  printf("[TerrainVisual] Constructor START\n"); 
+  printf("[TerrainVisual] Constructor END\n"); 
 }
 
 //-------------------------------------------------------------------------------------------------

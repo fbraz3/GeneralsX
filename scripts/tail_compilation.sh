@@ -117,7 +117,7 @@ while true; do
             for (i = 0; i < filled; i++) bar = bar "#";
             for (i = filled; i < bar_len; i++) bar = bar "-";
             printf "\r%s [%s] %3d%% (%d/%d)", log_name, bar, percent, current, total;
-            fflush(stdout);
+            
         }
     }' &
     

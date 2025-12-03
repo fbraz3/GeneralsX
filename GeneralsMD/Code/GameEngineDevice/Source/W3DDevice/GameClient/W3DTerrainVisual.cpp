@@ -158,7 +158,7 @@ static TestSeismicFilter testSeismicFilter;
 //-------------------------------------------------------------------------------------------------
 W3DTerrainVisual::W3DTerrainVisual()
 {
-	fprintf(stderr, "[W3DTerrainVisual] Constructor START\n"); fflush(stderr);
+	printf("[W3DTerrainVisual] Constructor START\n"); 
 
 	m_terrainRenderObject = NULL;
 	m_waterRenderObject = NULL;
@@ -170,7 +170,7 @@ W3DTerrainVisual::W3DTerrainVisual()
 	m_clientHeightMap = NULL;
 #endif
 
-	fprintf(stderr, "[W3DTerrainVisual] Constructor END\n"); fflush(stderr);
+	printf("[W3DTerrainVisual] Constructor END\n"); 
 
 
 
@@ -217,20 +217,20 @@ W3DTerrainVisual::~W3DTerrainVisual()
 //-------------------------------------------------------------------------------------------------
 void W3DTerrainVisual::init(void)
 {
-	fprintf(stderr, "[W3DTerrainVisual::init] START\n"); fflush(stderr);
+	printf("[W3DTerrainVisual::init] START\n"); 
 
 	// extend
-	fprintf(stderr, "[W3DTerrainVisual::init] Calling TerrainVisual::init()\n"); fflush(stderr);
+	printf("[W3DTerrainVisual::init] Calling TerrainVisual::init()\n"); 
 	TerrainVisual::init();
-	fprintf(stderr, "[W3DTerrainVisual::init] TerrainVisual::init() done\n"); fflush(stderr);
+	printf("[W3DTerrainVisual::init] TerrainVisual::init() done\n"); 
 
 	// create a new render object for W3D
-	fprintf(stderr, "[W3DTerrainVisual::init] Creating HeightMapRenderObjClass\n"); fflush(stderr);
+	printf("[W3DTerrainVisual::init] Creating HeightMapRenderObjClass\n"); 
 	m_terrainRenderObject = NEW_REF(HeightMapRenderObjClass, ());
-	fprintf(stderr, "[W3DTerrainVisual::init] HeightMapRenderObjClass created: %p\n", m_terrainRenderObject); fflush(stderr);
+	printf("[W3DTerrainVisual::init] HeightMapRenderObjClass created: %p\n", m_terrainRenderObject); 
 	m_terrainRenderObject->Set_Collision_Type(PICK_TYPE_TERRAIN);
 	TheTerrainRenderObject = m_terrainRenderObject;
-	fprintf(stderr, "[W3DTerrainVisual::init] HeightMapRenderObjClass setup done\n"); fflush(stderr);
+	printf("[W3DTerrainVisual::init] HeightMapRenderObjClass setup done\n"); 
 
 	if (!TheGlobalData->m_headless)
 	{

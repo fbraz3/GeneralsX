@@ -17,9 +17,9 @@ void TextureLoader::Update(void(*network_callback)(void))
 {
     static int call_count = 0;
     if (call_count < 3) {
-        fprintf(stderr, "[Phase 54 STUB] TextureLoader::Update called (count=%d, callback=%p)\n", 
+        printf("[Phase 54 STUB] TextureLoader::Update called (count=%d, callback=%p)\n", 
                 call_count, (void*)network_callback);
-        fflush(stderr);
+        
         call_count++;
     }
     

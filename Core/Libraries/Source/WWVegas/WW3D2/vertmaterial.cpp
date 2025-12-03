@@ -1014,21 +1014,21 @@ void VertexMaterialClass::Apply_Null(void)
  *=============================================================================================*/
 void VertexMaterialClass::Init()
 {
-	fprintf(stderr, "[VertexMaterialClass::Init] START - initializing %d presets\n", PRESET_COUNT);
-	fflush(stderr);
+	printf("[VertexMaterialClass::Init] START - initializing %d presets\n", PRESET_COUNT);
+	
 	int i;
 	for (i = 0; i < PRESET_COUNT;i++) {
 		Presets[i] = NEW_REF(VertexMaterialClass, ());
-		fprintf(stderr, "[VertexMaterialClass::Init] Created Presets[%d] = %p\n", i, Presets[i]);
-		fflush(stderr);
+		printf("[VertexMaterialClass::Init] Created Presets[%d] = %p\n", i, Presets[i]);
+		
 	}
 
 	// Set up presets
 	Presets[PRELIT_DIFFUSE]->Set_Diffuse_Color_Source(VertexMaterialClass::COLOR1);
 	Presets[PRELIT_DIFFUSE]->Set_Lighting(false);
 	Presets[PRELIT_NODIFFUSE]->Set_Lighting(false);
-	fprintf(stderr, "[VertexMaterialClass::Init] DONE - all presets initialized\n");
-	fflush(stderr);
+	printf("[VertexMaterialClass::Init] DONE - all presets initialized\n");
+	
 }
 
 
@@ -1072,14 +1072,14 @@ void VertexMaterialClass::Shutdown()
  *=============================================================================================*/
 VertexMaterialClass* VertexMaterialClass::Get_Preset(PresetType type)
 {
-	fprintf(stderr, "[VertexMaterialClass::Get_Preset] type=%d, PRESET_COUNT=%d\n", type, PRESET_COUNT);
-	fflush(stderr);
+	printf("[VertexMaterialClass::Get_Preset] type=%d, PRESET_COUNT=%d\n", type, PRESET_COUNT);
+	
 	WWASSERT(type < PRESET_COUNT);
-	fprintf(stderr, "[VertexMaterialClass::Get_Preset] Presets[%d]=%p\n", type, Presets[type]);
-	fflush(stderr);
+	printf("[VertexMaterialClass::Get_Preset] Presets[%d]=%p\n", type, Presets[type]);
+	
 	if (Presets[type] == NULL) {
-		fprintf(stderr, "[VertexMaterialClass::Get_Preset] ERROR: Presets[%d] is NULL! VertexMaterialClass::Init() was not called!\n", type);
-		fflush(stderr);
+		printf("[VertexMaterialClass::Get_Preset] ERROR: Presets[%d] is NULL! VertexMaterialClass::Init() was not called!\n", type);
+		
 		return NULL;
 	}
 	Presets[type]->Add_Ref();

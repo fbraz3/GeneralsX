@@ -121,20 +121,20 @@
 //   // ============================================================================
 
 //   WW3DErrorType Init(void* hwnd, char* defaultpal, bool lite) {
-//     fprintf(stderr, "[WW3D Vulkan] Init(%p) - Starting Vulkan backend initialization\n", hwnd);
-//     fflush(stderr);
+//     printf("[WW3D Vulkan] Init(%p) - Starting Vulkan backend initialization\n", hwnd);
+//     
     
 //     g_windowHandle = hwnd;
     
 //     if (!hwnd) {
-//       fprintf(stderr, "[WW3D Vulkan] ERROR: NULL window handle passed to Init()\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] ERROR: NULL window handle passed to Init()\n");
+//       
 //       return WW3D_ERROR_GENERIC;
 //     }
 
 //     // Phase 54: Initialize the graphics driver
-//     fprintf(stderr, "[WW3D Vulkan] Creating graphics driver via factory...\n");
-//     fflush(stderr);
+//     printf("[WW3D Vulkan] Creating graphics driver via factory...\n");
+//     
 
 //     // Use Vulkan backend on Linux
 //     g_graphicsDriver = Graphics::GraphicsDriverFactory::CreateDriver(
@@ -146,48 +146,48 @@
 //     );
 
 //     if (g_graphicsDriver) {
-//       fprintf(stderr, "[WW3D Vulkan] Graphics driver created successfully: %p\n",
+//       printf("[WW3D Vulkan] Graphics driver created successfully: %p\n",
 //         static_cast<void*>(g_graphicsDriver));
-//       fprintf(stderr, "[WW3D Vulkan] Backend: %s, Version: %s\n",
+//       printf("[WW3D Vulkan] Backend: %s, Version: %s\n",
 //         g_graphicsDriver->GetBackendName(),
 //         g_graphicsDriver->GetVersionString());
-//       fflush(stderr);
+//       
       
 //       // Set the global graphics driver for buffer compatibility layer
 //       Graphics::SetGraphicsDriver(g_graphicsDriver);
 //     }
 //     else {
-//       fprintf(stderr, "[WW3D Vulkan] ERROR: Failed to create graphics driver!\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] ERROR: Failed to create graphics driver!\n");
+//       
 //       return WW3D_ERROR_GENERIC;
 //     }
 
 //     // Initialize vertex material presets
-//     fprintf(stderr, "[WW3D Vulkan] Calling VertexMaterialClass::Init()\n");
-//     fflush(stderr);
+//     printf("[WW3D Vulkan] Calling VertexMaterialClass::Init()\n");
+//     
 //     VertexMaterialClass::Init();
-//     fprintf(stderr, "[WW3D Vulkan] VertexMaterialClass::Init() completed\n");
-//     fflush(stderr);
+//     printf("[WW3D Vulkan] VertexMaterialClass::Init() completed\n");
+//     
 
 //     return WW3D_ERROR_OK;
 //   }
 
 //   void Shutdown() {
-//     fprintf(stderr, "[WW3D Vulkan] Shutdown() called\n");
-//     fflush(stderr);
+//     printf("[WW3D Vulkan] Shutdown() called\n");
+//     
 
 //     // Shutdown vertex material presets
 //     VertexMaterialClass::Shutdown();
 
 //     // Destroy the graphics driver
 //     if (g_graphicsDriver) {
-//       fprintf(stderr, "[WW3D Vulkan] Destroying graphics driver...\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] Destroying graphics driver...\n");
+//       
 //       Graphics::GraphicsDriverFactory::DestroyDriver(g_graphicsDriver);
 //       g_graphicsDriver = nullptr;
 //       Graphics::SetGraphicsDriver(nullptr);
-//       fprintf(stderr, "[WW3D Vulkan] Graphics driver destroyed\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] Graphics driver destroyed\n");
+//       
 //     }
 
 //     g_windowHandle = nullptr;
@@ -204,27 +204,27 @@
 
 //   WW3DErrorType Begin_Render(bool clear, bool clear_zbuffer, const Vector3& clear_color, float clear_z) {
 //     if (!g_graphicsDriver) {
-//       fprintf(stderr, "[WW3D Vulkan] Begin_Render: ERROR - No graphics driver!\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] Begin_Render: ERROR - No graphics driver!\n");
+//       
 //       return WW3D_ERROR_GENERIC;
 //     }
     
 //     if (!g_graphicsDriver->IsInitialized()) {
-//       fprintf(stderr, "[WW3D Vulkan] Begin_Render: ERROR - Graphics driver not initialized!\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] Begin_Render: ERROR - Graphics driver not initialized!\n");
+//       
 //       return WW3D_ERROR_GENERIC;
 //     }
     
 //     if (g_isInRenderBlock) {
-//       fprintf(stderr, "[WW3D Vulkan] Begin_Render: WARNING - Already in render block\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] Begin_Render: WARNING - Already in render block\n");
+//       
 //       return WW3D_ERROR_OK;  // Allow nested calls
 //     }
 
 //     // Begin frame on the graphics driver
 //     if (!g_graphicsDriver->BeginFrame()) {
-//       fprintf(stderr, "[WW3D Vulkan] Begin_Render: ERROR - BeginFrame() failed!\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] Begin_Render: ERROR - BeginFrame() failed!\n");
+//       
 //       return WW3D_ERROR_GENERIC;
 //     }
     
@@ -246,9 +246,9 @@
 
 //     static int beginRenderCount = 0;
 //     if (beginRenderCount < 5) {
-//       fprintf(stderr, "[WW3D Vulkan] Begin_Render #%d: SUCCESS - Frame started (clear=%d, clearZ=%d)\n",
+//       printf("[WW3D Vulkan] Begin_Render #%d: SUCCESS - Frame started (clear=%d, clearZ=%d)\n",
 //         beginRenderCount, clear, clear_zbuffer);
-//       fflush(stderr);
+//       
 //       beginRenderCount++;
 //     }
 
@@ -257,14 +257,14 @@
 
 //   void End_Render(bool present) {
 //     if (!g_graphicsDriver) {
-//       fprintf(stderr, "[WW3D Vulkan] End_Render: ERROR - No graphics driver!\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] End_Render: ERROR - No graphics driver!\n");
+//       
 //       return;
 //     }
     
 //     if (!g_isInRenderBlock) {
-//       fprintf(stderr, "[WW3D Vulkan] End_Render: WARNING - Not in render block\n");
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] End_Render: WARNING - Not in render block\n");
+//       
 //       return;
 //     }
 
@@ -276,8 +276,8 @@
 //       if (!g_graphicsDriver->Present()) {
 //         static int presentFailCount = 0;
 //         if (presentFailCount < 5) {
-//           fprintf(stderr, "[WW3D Vulkan] End_Render: WARNING - Present() returned false\n");
-//           fflush(stderr);
+//           printf("[WW3D Vulkan] End_Render: WARNING - Present() returned false\n");
+//           
 //           presentFailCount++;
 //         }
 //       }
@@ -287,9 +287,9 @@
 
 //     static int endRenderCount = 0;
 //     if (endRenderCount < 5) {
-//       fprintf(stderr, "[WW3D Vulkan] End_Render #%d: Frame ended (present=%d)\n",
+//       printf("[WW3D Vulkan] End_Render #%d: Frame ended (present=%d)\n",
 //         endRenderCount, present);
-//       fflush(stderr);
+//       
 //       endRenderCount++;
 //     }
 //   }
@@ -342,9 +342,9 @@
 //   }
 
 //   WW3DErrorType Set_Device_Resolution(int width, int height, int bitDepth, int device, bool windowed) {
-//     fprintf(stderr, "[WW3D Vulkan] Set_Device_Resolution(%d x %d, %d-bit, windowed=%d)\n",
+//     printf("[WW3D Vulkan] Set_Device_Resolution(%d x %d, %d-bit, windowed=%d)\n",
 //       width, height, bitDepth, windowed);
-//     fflush(stderr);
+//     
     
 //     g_deviceWidth = width;
 //     g_deviceHeight = height;
@@ -368,9 +368,9 @@
 
 //   WW3DErrorType Set_Render_Device(int device, int resx, int resy, int bits, int windowed_mode,
 //     bool resize_window, bool reset_device, bool restore_assets) {
-//     fprintf(stderr, "[WW3D Vulkan] Set_Render_Device(device=%d, %d x %d, %d-bit, windowed=%d)\n",
+//     printf("[WW3D Vulkan] Set_Render_Device(device=%d, %d x %d, %d-bit, windowed=%d)\n",
 //       device, resx, resy, bits, windowed_mode);
-//     fflush(stderr);
+//     
     
 //     g_deviceWidth = resx;
 //     g_deviceHeight = resy;
@@ -389,8 +389,8 @@
 //       vp.maxZ = 1.0f;
 //       g_graphicsDriver->SetViewport(vp);
       
-//       fprintf(stderr, "[WW3D Vulkan] Set_Render_Device: Viewport updated to %d x %d\n", resx, resy);
-//       fflush(stderr);
+//       printf("[WW3D Vulkan] Set_Render_Device: Viewport updated to %d x %d\n", resx, resy);
+//       
 //     }
     
 //     return WW3D_ERROR_OK;
@@ -486,7 +486,7 @@
 
 // extern "C" {
 //   void _g_LastErrorDump() {
-//     fprintf(stderr, "[WW3D Vulkan] Crash dump requested\n");
+//     printf("[WW3D Vulkan] Crash dump requested\n");
 //   }
 // }
 

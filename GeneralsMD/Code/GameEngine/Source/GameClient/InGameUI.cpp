@@ -1212,9 +1212,9 @@ InGameUI::~InGameUI()
 //-------------------------------------------------------------------------------------------------
 void InGameUI::init(void)
 {
-	fprintf(stderr, "[InGameUI::init] Starting\n"); fflush(stderr);
+	printf("[InGameUI::init] Starting\n"); 
 	INI ini;
-	fprintf(stderr, "[InGameUI::init] About to loadFileDirectory Data\\INI\\InGameUI\n"); fflush(stderr);
+	printf("[InGameUI::init] About to loadFileDirectory Data\\INI\\InGameUI\n"); 
 	AsciiString inGameUIPath;
 	inGameUIPath.concat("Data");
 	inGameUIPath.concat(GET_PATH_SEPARATOR());
@@ -1222,7 +1222,7 @@ void InGameUI::init(void)
 	inGameUIPath.concat(GET_PATH_SEPARATOR());
 	inGameUIPath.concat("InGameUI");
 	ini.loadFileDirectory(AsciiString(inGameUIPath.str()), INI_LOAD_OVERWRITE, NULL);
-	fprintf(stderr, "[InGameUI::init] loadFileDirectory done\n"); fflush(stderr);
+	printf("[InGameUI::init] loadFileDirectory done\n"); 
 
 	//override INI values with language localized values:
 	if (TheGlobalLanguageData)
@@ -1288,41 +1288,41 @@ void InGameUI::init(void)
 	to order the translators when the code is not centralized so it has
 	been moved to where all the other translators are attached in game client */
 
-	fprintf(stderr, "[InGameUI::init] Language override done, creating tactical view\n"); fflush(stderr);
+	printf("[InGameUI::init] Language override done, creating tactical view\n"); 
 	// create the tactical view
 	if (TheDisplay)
 	{
-		fprintf(stderr, "[InGameUI::init] TheDisplay exists, calling createView\n"); fflush(stderr);
+		printf("[InGameUI::init] TheDisplay exists, calling createView\n"); 
 		TheTacticalView = createView();
-		fprintf(stderr, "[InGameUI::init] createView returned %p, calling init\n", (void*)TheTacticalView); fflush(stderr);
+		printf("[InGameUI::init] createView returned %p, calling init\n", (void*)TheTacticalView); 
 		TheTacticalView->init();
-		fprintf(stderr, "[InGameUI::init] TacticalView init done, attaching to display\n"); fflush(stderr);
+		printf("[InGameUI::init] TacticalView init done, attaching to display\n"); 
 		TheDisplay->attachView(TheTacticalView);
 
 		// make the tactical display the full screen width and height
 		TheTacticalView->setWidth(TheDisplay->getWidth());
 		TheTacticalView->setHeight(TheDisplay->getHeight());
 	}
-	fprintf(stderr, "[InGameUI::init] Setting default view\n"); fflush(stderr);
+	printf("[InGameUI::init] Setting default view\n"); 
 	TheTacticalView->setDefaultView(0.0f, 0.0f, 1.0f);
 
-	fprintf(stderr, "[InGameUI::init] About to createControlBar\n"); fflush(stderr);
+	printf("[InGameUI::init] About to createControlBar\n"); 
 	/** @todo this may be the wrong place to create the sidebar, but for now
 	this is where it lives */
 	createControlBar();
-	fprintf(stderr, "[InGameUI::init] createControlBar done\n"); fflush(stderr);
+	printf("[InGameUI::init] createControlBar done\n"); 
 
-	fprintf(stderr, "[InGameUI::init] About to createReplayControl\n"); fflush(stderr);
+	printf("[InGameUI::init] About to createReplayControl\n"); 
 	/** @todo This may be the wrong place to create the replay menu, but for now
 	this is where it lives */
 	createReplayControl();
-	fprintf(stderr, "[InGameUI::init] createReplayControl done\n"); fflush(stderr);
+	printf("[InGameUI::init] createReplayControl done\n"); 
 
 	// create the command bar
-	fprintf(stderr, "[InGameUI::init] Creating ControlBar\n"); fflush(stderr);
+	printf("[InGameUI::init] Creating ControlBar\n"); 
 	TheControlBar = NEW ControlBar;
 	TheControlBar->init();
-	fprintf(stderr, "[InGameUI::init] ControlBar init done\n"); fflush(stderr);
+	printf("[InGameUI::init] ControlBar init done\n"); 
 
 	m_windowLayouts.clear();
 
@@ -1331,7 +1331,7 @@ void InGameUI::init(void)
 	setDrawRMBScrollAnchor(TheGlobalData->m_drawScrollAnchor);
 	setMoveRMBScrollAnchor(TheGlobalData->m_moveScrollAnchor);
 
-	fprintf(stderr, "[InGameUI::init] COMPLETE\n"); fflush(stderr);
+	printf("[InGameUI::init] COMPLETE\n"); 
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -4132,11 +4132,11 @@ void InGameUI::expireHint(HintType type, UnsignedInt hintIndex)
 //-------------------------------------------------------------------------------------------------
 void InGameUI::createControlBar(void)
 {
-	fprintf(stderr, "[InGameUI::createControlBar] Starting, calling winCreateFromScript(ControlBar.wnd)\n"); fflush(stderr);
+	printf("[InGameUI::createControlBar] Starting, calling winCreateFromScript(ControlBar.wnd)\n"); 
 	TheWindowManager->winCreateFromScript(AsciiString("ControlBar.wnd"));
-	fprintf(stderr, "[InGameUI::createControlBar] winCreateFromScript done, calling HideControlBar\n"); fflush(stderr);
+	printf("[InGameUI::createControlBar] winCreateFromScript done, calling HideControlBar\n"); 
 	HideControlBar();
-	fprintf(stderr, "[InGameUI::createControlBar] HideControlBar done, returning\n"); fflush(stderr);
+	printf("[InGameUI::createControlBar] HideControlBar done, returning\n"); 
 	/*
 		// hide all windows created from this layout
 		GameWindow *window = TheWindowManager->winGetWindowList();

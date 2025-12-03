@@ -171,7 +171,7 @@ int MessageBoxWrapper(const char* lpText, const char* lpCaption, unsigned int uT
 {
 	// If window not initialized, just log and return a safe default
 	if (g_applicationWindow == NULL) {
-		fprintf(stderr, "MessageBoxWrapper: %s - %s\n", lpCaption ? lpCaption : "Message", lpText ? lpText : "");
+		printf("MessageBoxWrapper: %s - %s\n", lpCaption ? lpCaption : "Message", lpText ? lpText : "");
 		// Return safe defaults based on button type
 		if (uType & MB_YESNO) return IDYES;
 		if (uType & MB_ABORTRETRYIGNORE) return IDIGNORE;

@@ -81,7 +81,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 	{
 		AsciiString filename = filenames[i];
 		printf("Simulating Replay \"%s\"\n", filename.str());
-		fflush(stdout);
+		
 		DWORD startTimeMillis = SDL_GetTicks();
 		if (TheRecorder->simulateReplay(filename))
 		{
@@ -98,7 +98,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 					UnsignedInt realTimeSec = (SDL_GetTicks() - startTimeMillis) / 1000;
 					printf("Elapsed Time: %02d:%02d Game Time: %02d:%02d/%02d:%02d\n",
 						realTimeSec / 60, realTimeSec % 60, gameTimeSec / 60, gameTimeSec % 60, totalTimeSec / 60, totalTimeSec % 60);
-					fflush(stdout);
+					
 				}
 				TheGameLogic->UPDATE();
 				if (TheRecorder->sawCRCMismatch())
@@ -111,7 +111,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 			UnsignedInt realTimeSec = (SDL_GetTicks() - startTimeMillis) / 1000;
 			printf("Elapsed Time: %02d:%02d Game Time: %02d:%02d/%02d:%02d\n",
 				realTimeSec / 60, realTimeSec % 60, gameTimeSec / 60, gameTimeSec % 60, totalTimeSec / 60, totalTimeSec % 60);
-			fflush(stdout);
+			
 		}
 		else
 		{
@@ -125,7 +125,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 
 		UnsignedInt realTime = (SDL_GetTicks() - totalStartTimeMillis) / 1000;
 		printf("Total Time: %d:%02d:%02d\n", realTime / 60 / 60, realTime / 60 % 60, realTime % 60);
-		fflush(stdout);
+		
 	}
 
 	return numErrors != 0 ? 1 : 0;
@@ -164,7 +164,7 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 			DWORD exitcode = processes[0].getExitCode();
 			if (exitcode != 0)
 				printf("Error!\n");
-			fflush(stdout);
+			
 			numErrors += exitcode == 0 ? 0 : 1;
 			processes.erase(processes.begin());
 			filenamePositionDone++;
@@ -205,7 +205,7 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 
 	UnsignedInt realTime = (SDL_GetTicks() - totalStartTimeMillis) / 1000;
 	printf("Total Wall Time: %d:%02d:%02d\n", realTime / 60 / 60, realTime / 60 % 60, realTime % 60);
-	fflush(stdout);
+	
 
 	return numErrors != 0 ? 1 : 0;
 }

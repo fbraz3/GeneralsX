@@ -701,20 +701,20 @@ void W3DDisplay::init(void)
 	{
 		// Phase 50: Pass ApplicationHWnd to WW3D::Init for Vulkan surface creation
 		extern void* ApplicationHWnd;
-		fprintf(stderr, "[W3DDisplay::init] Passing ApplicationHWnd=%p to WW3D::Init\n", ApplicationHWnd);
-		fflush(stderr);
+		printf("[W3DDisplay::init] Passing ApplicationHWnd=%p to WW3D::Init\n", ApplicationHWnd);
+		
 
 		if (TheGlobalData->m_incrementalAGPBuf)
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
-		fprintf(stderr, "[W3DDisplay::init] About to call WW3D::Init\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] About to call WW3D::Init\n");
+		
 		if (WW3D::Init(ApplicationHWnd) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 
-		fprintf(stderr, "[W3DDisplay::init] WW3D::Init succeeded\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] WW3D::Init succeeded\n");
+		
 
 		WW3D::Set_Prelit_Mode(WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS);
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
@@ -723,24 +723,24 @@ void W3DDisplay::init(void)
 		WW3D::Set_Screen_UV_Bias(TRUE);  ///< this makes text look good :)
 		WW3D::Set_Texture_Bitdepth(32);
 
-		fprintf(stderr, "[W3DDisplay::init] About to call setWindowed\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] About to call setWindowed\n");
+		
 		setWindowed(TheGlobalData->m_windowed);
 
 		// create a 2D renderer helper
-		fprintf(stderr, "[W3DDisplay::init] Creating Render2DClass\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] Creating Render2DClass\n");
+		
 		m_2DRender = NEW Render2DClass;
 		DEBUG_ASSERTCRASH(m_2DRender, ("Cannot create Render2DClass"));
-		fprintf(stderr, "[W3DDisplay::init] Render2DClass created\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] Render2DClass created\n");
+		
 
 		WW3DErrorType renderDeviceError;
 		Int attempt = 0;
 		do
 		{
-			fprintf(stderr, "[W3DDisplay::init] Set_Render_Device attempt %d\n", attempt);
-			fflush(stderr);
+			printf("[W3DDisplay::init] Set_Render_Device attempt %d\n", attempt);
+			
 			switch (attempt)
 			{
 			case 0:
@@ -749,9 +749,9 @@ void W3DDisplay::init(void)
 				setWidth(TheGlobalData->m_xResolution);
 				setHeight(TheGlobalData->m_yResolution);
 				setBitDepth(DEFAULT_DISPLAY_BIT_DEPTH);
-				fprintf(stderr, "[W3DDisplay::init] attempt 0: %dx%d, %d bit\n",
+				printf("[W3DDisplay::init] attempt 0: %dx%d, %d bit\n",
 					TheGlobalData->m_xResolution, TheGlobalData->m_yResolution, DEFAULT_DISPLAY_BIT_DEPTH);
-				fflush(stderr);
+				
 				break;
 			}
 			case 1:
@@ -759,8 +759,8 @@ void W3DDisplay::init(void)
 				// Getting the device at the default bit depth (32) didn't work, so try
 				// getting a 16 bit display.  (Voodoo 1-3 only supported 16 bit.) jba.
 				setBitDepth(MIN_DISPLAY_BIT_DEPTH);
-				fprintf(stderr, "[W3DDisplay::init] attempt 1: using %d bit\n", MIN_DISPLAY_BIT_DEPTH);
-				fflush(stderr);
+				printf("[W3DDisplay::init] attempt 1: using %d bit\n", MIN_DISPLAY_BIT_DEPTH);
+				
 				break;
 			}
 			case 2:
@@ -785,15 +785,15 @@ void W3DDisplay::init(void)
 				setWidth(xres);
 				setHeight(yres);
 				setBitDepth(bitDepth);
-				fprintf(stderr, "[W3DDisplay::init] attempt 2: %dx%d, %d bit\n", xres, yres, bitDepth);
-				fflush(stderr);
+				printf("[W3DDisplay::init] attempt 2: %dx%d, %d bit\n", xres, yres, bitDepth);
+				
 				break;
 			}
 			}
 
-			fprintf(stderr, "[W3DDisplay::init] Calling WW3D::Set_Render_Device(%d, %d, %d, %d, %d, true)\n",
+			printf("[W3DDisplay::init] Calling WW3D::Set_Render_Device(%d, %d, %d, %d, %d, true)\n",
 				0, getWidth(), getHeight(), getBitDepth(), getWindowed());
-			fflush(stderr);
+			
 			renderDeviceError = WW3D::Set_Render_Device(
 				0,
 				getWidth(),
@@ -801,19 +801,19 @@ void W3DDisplay::init(void)
 				getBitDepth(),
 				getWindowed(),
 				true);
-			fprintf(stderr, "[W3DDisplay::init] WW3D::Set_Render_Device returned %d\n", renderDeviceError);
-			fflush(stderr);
+			printf("[W3DDisplay::init] WW3D::Set_Render_Device returned %d\n", renderDeviceError);
+			
 
 			++attempt;
 		} while (attempt < 3 && renderDeviceError != WW3D_ERROR_OK);
 
-		fprintf(stderr, "[W3DDisplay::init] After Set_Render_Device loop, error=%d\n", renderDeviceError);
-		fflush(stderr);
+		printf("[W3DDisplay::init] After Set_Render_Device loop, error=%d\n", renderDeviceError);
+		
 
 		if (renderDeviceError != WW3D_ERROR_OK)
 		{
-			fprintf(stderr, "[W3DDisplay::init] ERROR: renderDeviceError != WW3D_ERROR_OK, shutting down\n");
-			fflush(stderr);
+			printf("[W3DDisplay::init] ERROR: renderDeviceError != WW3D_ERROR_OK, shutting down\n");
+			
 			WW3D::Shutdown();
 			WWMath::Shutdown();
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
@@ -827,77 +827,77 @@ void W3DDisplay::init(void)
 		if (ApplicationHWnd)
 		{
 			SDL_Window* window = (SDL_Window*)ApplicationHWnd;
-			fprintf(stderr, "[W3DDisplay::init] Showing SDL2 window (ApplicationHWnd=%p)\n", ApplicationHWnd);
-			fflush(stderr);
+			printf("[W3DDisplay::init] Showing SDL2 window (ApplicationHWnd=%p)\n", ApplicationHWnd);
+			
 			SDL_ShowWindow(window);
 			SDL_RaiseWindow(window);
 			SDL_SetWindowInputFocus(window);
-			fprintf(stderr, "[W3DDisplay::init] SDL_ShowWindow/RaiseWindow/SetInputFocus called\n");
-			fflush(stderr);
+			printf("[W3DDisplay::init] SDL_ShowWindow/RaiseWindow/SetInputFocus called\n");
+			
 			
 			// Flush any pending SDL events to process window show
 			SDL_Event e;
 			while (SDL_PollEvent(&e)) {
 				// Just drain the event queue
 			}
-			fprintf(stderr, "[W3DDisplay::init] Event queue flushed\n");
-			fflush(stderr);
+			printf("[W3DDisplay::init] Event queue flushed\n");
+			
 		}
 		else
 		{
-			fprintf(stderr, "[W3DDisplay::init] WARNING: ApplicationHWnd is NULL, cannot show window\n");
-			fflush(stderr);
+			printf("[W3DDisplay::init] WARNING: ApplicationHWnd is NULL, cannot show window\n");
+			
 		}
 
-		fprintf(stderr, "[W3DDisplay::init] About to check GameLODManager\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] About to check GameLODManager\n");
+		
 		//Check if level was never set and default to setting most suitable for system.
 		if (TheGameLODManager->getStaticLODLevel() == STATIC_GAME_LOD_UNKNOWN)
 		{
-			fprintf(stderr, "[W3DDisplay::init] Setting recommended static LOD level\n");
-			fflush(stderr);
+			printf("[W3DDisplay::init] Setting recommended static LOD level\n");
+			
 			TheGameLODManager->setStaticLODLevel(TheGameLODManager->getRecommendedStaticLODLevel());
 		}
 		else
 		{
 			//Static LOD level was applied during GameLOD manager init except for texture reduction
 			//which needs to be applied here.
-			fprintf(stderr, "[W3DDisplay::init] Setting texture LOD\n");
-			fflush(stderr);
+			printf("[W3DDisplay::init] Setting texture LOD\n");
+			
 			TheGameClient->setTextureLOD(TheWritableGlobalData->m_textureReductionFactor);
 		}
 
-		fprintf(stderr, "[W3DDisplay::init] About to check displayGamma\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] About to check displayGamma\n");
+		
 		if (TheGlobalData->m_displayGamma != 1.0f)
 			setGamma(TheGlobalData->m_displayGamma, 0.0f, 1.0f, FALSE);
-		fprintf(stderr, "[W3DDisplay::init] displayGamma check done\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] displayGamma check done\n");
+		
 	}
 
-	fprintf(stderr, "[W3DDisplay::init] About to call initAssets()\n");
-	fflush(stderr);
+	printf("[W3DDisplay::init] About to call initAssets()\n");
+	
 	initAssets();
-	fprintf(stderr, "[W3DDisplay::init] initAssets() done\n");
-	fflush(stderr);
+	printf("[W3DDisplay::init] initAssets() done\n");
+	
 
 	if (!TheGlobalData->m_headless)
 	{
-		fprintf(stderr, "[W3DDisplay::init] About to call init2DScene()\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] About to call init2DScene()\n");
+		
 		init2DScene();
-		fprintf(stderr, "[W3DDisplay::init] init2DScene() done, calling init3DScene()\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] init2DScene() done, calling init3DScene()\n");
+		
 		init3DScene();
-		fprintf(stderr, "[W3DDisplay::init] init3DScene() done, calling W3DShaderManager::init()\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] init3DScene() done, calling W3DShaderManager::init()\n");
+		
 		W3DShaderManager::init();
-		fprintf(stderr, "[W3DDisplay::init] W3DShaderManager::init() done\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] W3DShaderManager::init() done\n");
+		
 
 		// Create and initialize the debug display
-		fprintf(stderr, "[W3DDisplay::init] Creating W3DDebugDisplay\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] Creating W3DDebugDisplay\n");
+		
 		m_nativeDebugDisplay = NEW W3DDebugDisplay();
 		m_debugDisplay = m_nativeDebugDisplay;
 		if (m_nativeDebugDisplay)
@@ -919,15 +919,15 @@ void W3DDisplay::init(void)
 			m_nativeDebugDisplay->setFontHeight(13);
 			m_nativeDebugDisplay->setFontWidth(9);
 		}
-		fprintf(stderr, "[W3DDisplay::init] W3DDebugDisplay created\n");
-		fflush(stderr);
+		printf("[W3DDisplay::init] W3DDebugDisplay created\n");
+		
 
 		// DX8WebBrowser::Initialize();  // Phase 42: Web browser feature not implemented
 	}
 
 	// we're now online
-	fprintf(stderr, "[W3DDisplay::init] Setting m_initialized = true\n");
-	fflush(stderr);
+	printf("[W3DDisplay::init] Setting m_initialized = true\n");
+	
 	m_initialized = true;
 	if (TheGlobalData->m_displayDebug)
 	{
@@ -1732,21 +1732,21 @@ void W3DDisplay::draw(void)
 	// Phase 54: Debug log
 	static int drawCount = 0;
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - Starting draw #%d\n", drawCount);
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - Starting draw #%d\n", drawCount);
+	// 	
 	// }
 
 	if (TheGlobalData->m_headless)
 		return;
 
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - Calling updateAverageFPS()\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - Calling updateAverageFPS()\n");
+	// 	
 	// }
 	updateAverageFPS();
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - updateAverageFPS() done, checking LOD\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - updateAverageFPS() done, checking LOD\n");
+	// 	
 	// }
 	if (TheGlobalData->m_enableDynamicLOD && TheGameLogic->getShowDynamicLOD())
 	{
@@ -1758,27 +1758,27 @@ void W3DDisplay::draw(void)
 		TheGameLODManager->setDynamicLODLevel(DYNAMIC_GAME_LOD_VERY_HIGH);
 	}
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - LOD done\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - LOD done\n");
+	// 	
 	// }
 
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - checking terrain LOD condition: m_terrainLOD=%d, TheTerrainRenderObject=%p\n",
+	// 	printf("W3DDisplay::draw() - checking terrain LOD condition: m_terrainLOD=%d, TheTerrainRenderObject=%p\n",
 	// 		TheGlobalData->m_terrainLOD, (void*)TheTerrainRenderObject);
-	// 	fflush(stderr);
+	// 	
 	// }
 	if (TheGlobalData->m_terrainLOD == TERRAIN_LOD_AUTOMATIC && TheTerrainRenderObject)
 	{
 		// if (drawCount < 3) {
-		// 	fprintf(stderr, "W3DDisplay::draw() - calling calculateTerrainLOD()\n");
-		// 	fflush(stderr);
+		// 	printf("W3DDisplay::draw() - calling calculateTerrainLOD()\n");
+		// 	
 		// }
 		calculateTerrainLOD();
 	}
 
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - terrain LOD done, checking freezeTime\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - terrain LOD done, checking freezeTime\n");
+	// 	
 	// }
 
 #ifdef EXTENDED_STATS
@@ -1842,35 +1842,35 @@ void W3DDisplay::draw(void)
 	//PredictiveLODOptimizerClass::Optimize_LODs( 5000 );
 
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - Getting freezeTime: TheFramePacer=%p\n", (void*)TheFramePacer);
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - Getting freezeTime: TheFramePacer=%p\n", (void*)TheFramePacer);
+	// 	
 	// }
 	Bool freezeTime = TheFramePacer->isTimeFrozen() || TheFramePacer->isGameHalted();
 
 	/// @todo: I'm assuming the first view is our main 3D view.
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - Getting primaryW3DView from getFirstView()\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - Getting primaryW3DView from getFirstView()\n");
+	// 	
 	// }
 	W3DView* primaryW3DView = (W3DView*)getFirstView();
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - primaryW3DView=%p, freezeTime=%d\n", (void*)primaryW3DView, freezeTime);
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - primaryW3DView=%p, freezeTime=%d\n", (void*)primaryW3DView, freezeTime);
+	// 	
 	// }
 
 	if (!freezeTime && TheScriptEngine->isTimeFast())
 	{
 		// if (drawCount < 3) {
-		// 	fprintf(stderr, "W3DDisplay::draw() - isTimeFast() case, calling updateCameraMovements\n");
-		// 	fflush(stderr);
+		// 	printf("W3DDisplay::draw() - isTimeFast() case, calling updateCameraMovements\n");
+		// 	
 		// }
 		primaryW3DView->updateCameraMovements();  // Update camera motion effects.
 		return;
 	}
 
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - Begin_Statistics()\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - Begin_Statistics()\n");
+	// 	
 	// }
 	Debug_Statistics::Begin_Statistics();	//reset all counters (polygons, vertices, etc) before drawing
 
@@ -1880,15 +1880,15 @@ void W3DDisplay::draw(void)
 	if (TheGlobalData->m_loadScreenRender != TRUE)
 	{
 		// if (drawCount < 3) {
-		// 	fprintf(stderr, "W3DDisplay::draw() - Not loadScreenRender, checking TerrainTracks\n");
-		// 	fflush(stderr);
+		// 	printf("W3DDisplay::draw() - Not loadScreenRender, checking TerrainTracks\n");
+		// 	
 		// }
 
 		if (TheTerrainTracksRenderObjClassSystem)
 		{
 			// if (drawCount < 3) {
-			// 	fprintf(stderr, "W3DDisplay::draw() - Calling TheTerrainTracksRenderObjClassSystem->update()\n");
-			// 	fflush(stderr);
+			// 	printf("W3DDisplay::draw() - Calling TheTerrainTracksRenderObjClassSystem->update()\n");
+			// 	
 			// }
 			TheTerrainTracksRenderObjClassSystem->update();
 		}
@@ -1897,8 +1897,8 @@ void W3DDisplay::draw(void)
 		if (TheTerrainRenderObject)
 		{
 			// if (drawCount < 3) {
-			// 	fprintf(stderr, "W3DDisplay::draw() - Checking terrain map for shroud render\n");
-			// 	fflush(stderr);
+			// 	printf("W3DDisplay::draw() - Checking terrain map for shroud render\n");
+			// 	
 			// }
 			//update the shroud surface here since it may be needed by reflections
 			if (TheTerrainRenderObject->getMap())	//make sure a valid map is loaded into terrain.
@@ -1906,8 +1906,8 @@ void W3DDisplay::draw(void)
 				if (TheTerrainRenderObject->getShroud())
 				{
 					// if (drawCount < 3) {
-					// 	fprintf(stderr, "W3DDisplay::draw() - Calling shroud->render()\n");
-					// 	fflush(stderr);
+					// 	printf("W3DDisplay::draw() - Calling shroud->render()\n");
+					// 	
 					// }
 					TheTerrainRenderObject->getShroud()->render(primaryW3DView->get3DCamera());
 				}
@@ -1918,15 +1918,15 @@ void W3DDisplay::draw(void)
 	WW3D::Update_Logic_Frame_Time(TheFramePacer->getLogicTimeStepMilliseconds());
 
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - WW3D::Update_Logic_Frame_Time()\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - WW3D::Update_Logic_Frame_Time()\n");
+	// 	
 	// }
 	// TheSuperHackers @info This binds the WW3D update to the logic update.
 	WW3D::Sync(TheGameLogic->hasUpdated());
 
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - WW3D::Sync done, checking time multiplier\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - WW3D::Sync done, checking time multiplier\n");
+	// 	
 	// }
 	static Int now;
 	now = timeGetTime();
@@ -1942,26 +1942,26 @@ void W3DDisplay::draw(void)
 	}
 
 	// if (drawCount < 3) {
-	// 	fprintf(stderr, "W3DDisplay::draw() - Entering main render do-while loop\n");
-	// 	fflush(stderr);
+	// 	printf("W3DDisplay::draw() - Entering main render do-while loop\n");
+	// 	
 	// }
 	do {
 
 		// if (drawCount < 3) {
-		// 	fprintf(stderr, "W3DDisplay::draw() - Calling updateViews()\n");
-		// 	fflush(stderr);
+		// 	printf("W3DDisplay::draw() - Calling updateViews()\n");
+		// 	
 		// }
 		// update all views of the world - recomputes data which will affect drawing
 		// On non-Windows, assume device is ready
 		updateViews();
 		// if (drawCount < 3) {
-		// 	fprintf(stderr, "W3DDisplay::draw() - updateViews() done, ParticleSystemManager update\n");
-		// 	fflush(stderr);
+		// 	printf("W3DDisplay::draw() - updateViews() done, ParticleSystemManager update\n");
+		// 	
 		// }
 		TheParticleSystemManager->update();
 		// if (drawCount < 3) {
-		// 	fprintf(stderr, "W3DDisplay::draw() - ParticleSystemManager done, checking water\n");
-		// 	fflush(stderr);
+		// 	printf("W3DDisplay::draw() - ParticleSystemManager done, checking water\n");
+		// 	
 		// }
 		if (TheWaterRenderObj && TheGlobalData->m_waterType == 2)
 			TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());
@@ -1969,8 +1969,8 @@ void W3DDisplay::draw(void)
 			TheW3DProjectedShadowManager->updateRenderTargetTextures();
 
 		// if (drawCount < 3) {
-		// 	fprintf(stderr, "W3DDisplay::draw() - End_Statistics()\n");
-		// 	fflush(stderr);
+		// 	printf("W3DDisplay::draw() - End_Statistics()\n");
+		// 	
 		// }
 		Debug_Statistics::End_Statistics();	//record number of polygons rendered in RenderTargetTextures.
 
@@ -1979,8 +1979,8 @@ void W3DDisplay::draw(void)
 		Int numRenderTargetVertices = Debug_Statistics::Get_DX8_Vertices();
 
 		// if (drawCount < 3) {
-		// 	fprintf(stderr, "W3DDisplay::draw() - About to check Begin_Render conditions\n");
-		// 	fflush(stderr);
+		// 	printf("W3DDisplay::draw() - About to check Begin_Render conditions\n");
+		// 	
 		// }
 		// start render block
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
@@ -1992,20 +1992,20 @@ void W3DDisplay::draw(void)
 			//USE_PERF_TIMER(BigAssRenderLoop)
 			static Bool couldRender = true;
 			// if (drawCount < 3) {
-			// 	fprintf(stderr, "W3DDisplay::draw() - Calling WW3D::Begin_Render()\n");
-			// 	fflush(stderr);
+			// 	printf("W3DDisplay::draw() - Calling WW3D::Begin_Render()\n");
+			// 	
 			// }
 			// Phase 54: Debug why rendering isn't happening
 			if (drawCount < 5) {
-				fprintf(stderr, "W3DDisplay::draw() - Before Begin_Render: breakTheMovie=%d, disableRender=%d\n",
+				printf("W3DDisplay::draw() - Before Begin_Render: breakTheMovie=%d, disableRender=%d\n",
 					TheGlobalData->m_breakTheMovie, TheGlobalData->m_disableRender);
-				fflush(stderr);
+				
 			}
 			if ((TheGlobalData->m_breakTheMovie == FALSE) && (TheGlobalData->m_disableRender == false) && WW3D::Begin_Render(true, true, Vector3(0.0f, 0.0f, 0.0f), TheWaterTransparency->m_minWaterOpacity) == WW3D_ERROR_OK)
 			{
 				if (drawCount < 5) {
-					fprintf(stderr, "W3DDisplay::draw() - Begin_Render succeeded, loadScreenRender=%d, incrementing drawCount\n", TheGlobalData->m_loadScreenRender);
-					fflush(stderr);
+					printf("W3DDisplay::draw() - Begin_Render succeeded, loadScreenRender=%d, incrementing drawCount\n", TheGlobalData->m_loadScreenRender);
+					
 					drawCount++;
 				}
 
@@ -2023,14 +2023,14 @@ void W3DDisplay::draw(void)
 					Debug_Statistics::Record_DX8_Polys_And_Vertices(numRenderTargetPolygons, numRenderTargetVertices, ShaderClass::_PresetOpaqueShader);
 
 				if (drawCount < 3) {
-					fprintf(stderr, "W3DDisplay::draw() - Calling drawViews()\n");
-					fflush(stderr);
+					printf("W3DDisplay::draw() - Calling drawViews()\n");
+					
 				}
 				// draw all views of the world
 				drawViews();
 				if (drawCount < 3) {
-					fprintf(stderr, "W3DDisplay::draw() - drawViews() done, calling TheInGameUI->DRAW()\n");
-					fflush(stderr);
+					printf("W3DDisplay::draw() - drawViews() done, calling TheInGameUI->DRAW()\n");
+					
 				}
 
 				// draw the user interface
@@ -2038,8 +2038,8 @@ void W3DDisplay::draw(void)
 
 				// end of video example code
 				if (drawCount < 3) {
-					fprintf(stderr, "W3DDisplay::draw() - TheInGameUI->DRAW() done, drawing mouse\n");
-					fflush(stderr);
+					printf("W3DDisplay::draw() - TheInGameUI->DRAW() done, drawing mouse\n");
+					
 				}
 
 				// draw the mouse
@@ -2124,9 +2124,9 @@ void W3DDisplay::draw(void)
 				if (couldRender)
 				{
 					couldRender = false;
-					fprintf(stderr, "W3DDisplay::draw() - ERROR: Could not do WW3D::Begin_Render()! breakTheMovie=%d, disableRender=%d\n",
+					printf("W3DDisplay::draw() - ERROR: Could not do WW3D::Begin_Render()! breakTheMovie=%d, disableRender=%d\n",
 						TheGlobalData->m_breakTheMovie, TheGlobalData->m_disableRender);
-					fflush(stderr);
+					
 					DEBUG_LOG(("Could not do WW3D::Begin_Render()!  Are we ALT-Tabbed out?"));
 				}
 			}

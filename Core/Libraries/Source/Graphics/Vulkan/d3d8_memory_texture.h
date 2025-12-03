@@ -119,12 +119,12 @@ public:
         m_size = CalculateSurfaceSize(width, height, format);
         m_data.resize(m_size, 0);
         
-        fprintf(stderr, "[MemoryDirect3DSurface8] Created %ux%u surface, format=%d, size=%u bytes\n",
+        printf("[MemoryDirect3DSurface8] Created %ux%u surface, format=%d, size=%u bytes\n",
                 width, height, (int)format, m_size);
     }
     
     virtual ~MemoryDirect3DSurface8() {
-        fprintf(stderr, "[MemoryDirect3DSurface8] Destroyed %ux%u surface\n", m_width, m_height);
+        printf("[MemoryDirect3DSurface8] Destroyed %ux%u surface\n", m_width, m_height);
     }
     
     // COM methods
@@ -252,7 +252,7 @@ public:
             h = (h > 1) ? h / 2 : 1;
         }
         
-        fprintf(stderr, "[MemoryDirect3DTexture8] Created %ux%u texture, format=%d, %u mip levels\n",
+        printf("[MemoryDirect3DTexture8] Created %ux%u texture, format=%d, %u mip levels\n",
                 width, height, (int)format, m_levelCount);
     }
     
@@ -261,7 +261,7 @@ public:
             surface->Release();
         }
         m_surfaces.clear();
-        fprintf(stderr, "[MemoryDirect3DTexture8] Destroyed %ux%u texture\n", m_width, m_height);
+        printf("[MemoryDirect3DTexture8] Destroyed %ux%u texture\n", m_width, m_height);
     }
     
     // COM methods
