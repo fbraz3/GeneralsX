@@ -42,8 +42,8 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Detect BC1/BC2/BC3 via FourCC (`DXT1`/`DXT3`/`DXT5`)
 
 - [ ] **28.1.3** Calculate compressed data sizes
-  - [ ] BC1: `max(1, ((width+3)/4)) * max(1, ((height+3)/4)) * 8` bytes per mip
-  - [ ] BC2/BC3: `max(1, ((width+3)/4)) * max(1, ((height+3)/4)) * 16` bytes per mip
+  - [ ] BC1: `std::max(1, ((width+3)/4)) * std::max(1, ((height+3)/4)) * 8` bytes per mip
+  - [ ] BC2/BC3: `std::max(1, ((width+3)/4)) * std::max(1, ((height+3)/4)) * 16` bytes per mip
   - [ ] Validate total file size matches expected data
 
 - [ ] **28.1.4** Extract pixel data for each mipmap level

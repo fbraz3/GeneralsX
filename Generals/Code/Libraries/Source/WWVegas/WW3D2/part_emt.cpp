@@ -114,9 +114,9 @@ ParticleEmitterClass::ParticleEmitterClass(float emit_rate, unsigned int burst_s
 	// However, it is capped both by the particle cap and by the maximum buffer size, if these are
 	// active.
 	int max_num = BurstSize * emit_rate * (max_age + 1);
-	if (max_particles > 0) max_num = MIN(max_num, max_particles);
-	if (max_buffer_size > 0) max_num = MIN(max_num, max_buffer_size);
-	max_num = MAX(max_num, 2);	// max_num of 1 causes problems
+	if (max_particles > 0) max_num = std::min(max_num, max_particles);
+	if (max_buffer_size > 0) max_num = std::min(max_num, max_buffer_size);
+	max_num = std::max(max_num, 2);	// max_num of 1 causes problems
 
 	Buffer = W3DNEW ParticleBufferClass(this, max_num, color, opacity, size, rotation, orient_rnd,
 		frames, blur_times, accel/1000000.0f,max_age, future_start, tex, shader, pingpong, render_mode, frame_mode,

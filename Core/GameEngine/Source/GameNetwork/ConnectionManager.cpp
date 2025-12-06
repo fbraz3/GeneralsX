@@ -796,7 +796,7 @@ void ConnectionManager::processFileProgress(NetFileProgressCommandMsg *msg)
 		msg->getFileID(), msg->getProgress()));
 	Int oldProgress = s_fileProgressMap[msg->getPlayerID()][msg->getFileID()];
 
-	s_fileProgressMap[msg->getPlayerID()][msg->getFileID()] = max(oldProgress, msg->getProgress());
+	s_fileProgressMap[msg->getPlayerID()][msg->getFileID()] = std::max(oldProgress, msg->getProgress());
 }
 
 void ConnectionManager::processProgress( NetProgressCommandMsg *msg )

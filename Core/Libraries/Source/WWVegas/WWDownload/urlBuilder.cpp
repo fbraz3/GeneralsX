@@ -19,9 +19,10 @@
 #include <string>
 #include <Utility/stdio_adapter.h>
 #include "Registry.h"
+#include <Utility/compat.h>
 
-void FormatURLFromRegistry( std::string& gamePatchURL, std::string& mapPatchURL,
-													 std::string& configURL, std::string& motdURL )
+void FormatURLFromRegistry(std::string& gamePatchURL, std::string& mapPatchURL,
+	std::string& configURL, std::string& motdURL)
 {
 #if RTS_GENERALS
 	std::string sku = "generals";
@@ -33,7 +34,7 @@ void FormatURLFromRegistry( std::string& gamePatchURL, std::string& mapPatchURL,
 	unsigned int mapVersion = 0; // invalid version - can't get on with a corrupt reg.
 	std::string baseURL = "http://servserv.generals.ea.com/servserv/";
 	baseURL.append(sku);
-	baseURL.append("/");
+	baseURL.append(GET_PATH_SEPARATOR());
 
 	GetStringFromRegistry("", "BaseURL", baseURL);
 	GetStringFromRegistry("", "Language", language);

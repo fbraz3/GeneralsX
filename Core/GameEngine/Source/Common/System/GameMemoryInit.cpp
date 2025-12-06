@@ -49,7 +49,7 @@
 #include "Lib/BaseType.h"
 #include "Common/GameMemory.h"
 #include "Common/System/SDL2_AppWindow.h"  // Phase 40: SDL2 path replacement
-
+#include "Utility/compat.h"
 struct PoolSizeRec
 {
 	const char* name;
@@ -66,14 +66,14 @@ struct PoolSizeRec
 #endif
 
 //-----------------------------------------------------------------------------
-void userMemoryManagerGetDmaParms(Int *numSubPools, const PoolInitRec **pParms)
+void userMemoryManagerGetDmaParms(Int* numSubPools, const PoolInitRec** pParms)
 {
 	*numSubPools = ARRAY_SIZE(DefaultDMA);
 	*pParms = DefaultDMA;
 }
 
 //-----------------------------------------------------------------------------
-void userMemoryAdjustPoolSize(const char *poolName, Int& initialAllocationCount, Int& overflowAllocationCount)
+void userMemoryAdjustPoolSize(const char* poolName, Int& initialAllocationCount, Int& overflowAllocationCount)
 {
 	if (initialAllocationCount > 0)
 		return;
@@ -88,7 +88,7 @@ void userMemoryAdjustPoolSize(const char *poolName, Int& initialAllocationCount,
 		}
 	}
 
-	DEBUG_CRASH(("Initial size for pool %s not found -- you should add it to MemoryInit.cpp",poolName));
+	DEBUG_CRASH(("Initial size for pool %s not found -- you should add it to MemoryInit.cpp", poolName));
 }
 
 //-----------------------------------------------------------------------------
@@ -99,7 +99,7 @@ static Int roundUpMemBound(Int i)
 	if (i < MEM_BOUND_ALIGNMENT)
 		return MEM_BOUND_ALIGNMENT;
 	else
-		return (i + (MEM_BOUND_ALIGNMENT-1)) & ~(MEM_BOUND_ALIGNMENT-1);
+		return (i + (MEM_BOUND_ALIGNMENT - 1)) & ~(MEM_BOUND_ALIGNMENT - 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -115,20 +115,20 @@ void userMemoryManagerInitPools()
 	// Phase 40: Use SDL2 cross-platform path retrieval
 	char buf[_MAX_PATH];
 	SDL2_GetModuleFilePath(buf, sizeof(buf));
-	
-	// Convert path separators from backslash to forward slash for cross-platform compatibility
-	char* p = buf;
-	while (*p) {
-		if (*p == '\\') *p = '/';
-		p++;
-	}
-	
+
+	// // Convert path separators from backslash to forward slash for cross-platform compatibility
+	// char* p = buf;
+	// while (*p) {
+	// 	if (*p == GET_PATH_SEPARATOR()) *p = GET_PATH_SEPARATOR();
+	// 	p++;
+	// }
+
 	// Remove filename to get directory
-	if (char* pEnd = strrchr(buf, '/'))
+	if (char* pEnd = strrchr(buf, GET_PATH_SEPARATOR()[0]))
 	{
 		*pEnd = 0;
 	}
-	
+
 	// Append data path (using forward slashes)
 	strlcat(buf, "/Data/INI/MemoryPools.ini", ARRAY_SIZE(buf));
 
@@ -141,7 +141,7 @@ void userMemoryManagerInitPools()
 		{
 			if (buf[0] == ';')
 				continue;
-			if (sscanf(buf, "%s %d %d", poolName, &initial, &overflow ) == 3)
+			if (sscanf(buf, "%s %d %d", poolName, &initial, &overflow) == 3)
 			{
 				for (PoolSizeRec* p = PoolSizes; p->name != NULL; ++p)
 				{

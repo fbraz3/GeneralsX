@@ -538,9 +538,9 @@ struct W3dRGBStruct
 
 	void Set (float r, float g, float b)
 	{
-		R = (unsigned char) MIN ((float) UCHAR_MAX, MAX (0.0f, r) * ((float) (UCHAR_MAX + 1)));
-		G = (unsigned char) MIN ((float) UCHAR_MAX, MAX (0.0f, g) * ((float) (UCHAR_MAX + 1)));
-		B = (unsigned char) MIN ((float) UCHAR_MAX, MAX (0.0f, b) * ((float) (UCHAR_MAX + 1)));
+		R = (unsigned char)std::min((float) UCHAR_MAX,std::max(0.0f, r) * ((float) (UCHAR_MAX + 1)));
+		G = (unsigned char)std::min((float) UCHAR_MAX,std::max(0.0f, g) * ((float) (UCHAR_MAX + 1)));
+		B = (unsigned char)std::min((float) UCHAR_MAX,std::max(0.0f, b) * ((float) (UCHAR_MAX + 1)));
 	}
 
 	bool operator == (W3dRGBStruct c)
@@ -555,9 +555,9 @@ struct W3dRGBStruct
 
 	W3dRGBStruct operator += (W3dRGBStruct c)
 	{
-		R = MIN (((unsigned) R) + ((unsigned) c.R), (unsigned) UCHAR_MAX);
-		G = MIN (((unsigned) G) + ((unsigned) c.G), (unsigned) UCHAR_MAX);
-		B = MIN (((unsigned) B) + ((unsigned) c.B), (unsigned) UCHAR_MAX);
+		R =std::min(((unsigned) R) + ((unsigned) c.R), (unsigned) UCHAR_MAX);
+		G =std::min(((unsigned) G) + ((unsigned) c.G), (unsigned) UCHAR_MAX);
+		B =std::min(((unsigned) B) + ((unsigned) c.B), (unsigned) UCHAR_MAX);
 		return (*this);
 	}
 

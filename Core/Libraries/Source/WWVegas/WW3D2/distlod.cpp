@@ -599,7 +599,7 @@ int DistLODClass::Add_Sub_Object_To_Bone(RenderObjClass * subobj,int bone_index)
 		// Add each lod of the sub object to a cooresponding model of mine
 		DistLODClass * sub_lod_obj = (DistLODClass *)subobj;
 		for (int i=0; i< LodCount; i++) {
-			Lods[i].Model->Add_Sub_Object_To_Bone( sub_lod_obj->Lods[ MIN( i, sub_lod_obj->LodCount-1 ) ].Model, bone_index);
+			Lods[i].Model->Add_Sub_Object_To_Bone( sub_lod_obj->Lods[ std::min( i, sub_lod_obj->LodCount-1 ) ].Model, bone_index);
 		}
 	} else {
 		Lods[0].Model->Add_Sub_Object_To_Bone( subobj, bone_index);

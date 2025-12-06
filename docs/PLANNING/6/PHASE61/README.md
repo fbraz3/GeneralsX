@@ -205,7 +205,7 @@ void main() {
     
     // Simple diffuse lighting
     vec3 worldNormal = mat3(pc.world) * inNormal;
-    fragLighting = max(dot(normalize(worldNormal), normalize(pc.lightDir)), 0.3);
+    fragLighting = std::max(dot(normalize(worldNormal), normalize(pc.lightDir)), 0.3);
 }
 ```
 

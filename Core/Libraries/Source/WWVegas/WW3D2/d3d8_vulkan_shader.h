@@ -49,7 +49,7 @@ extern "C" {
 typedef void* VkDevice;
 typedef void* VkShaderModule;
 typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+// typedef unsigned long long uint64_t;
 typedef unsigned char uint8_t;
 
 /* ============================================================================

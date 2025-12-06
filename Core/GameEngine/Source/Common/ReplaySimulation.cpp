@@ -28,7 +28,7 @@
 #include "Common/System/SDL2_AppWindow.h"  // Phase 40: SDL2 path replacement
 #include "GameLogic/GameLogic.h"
 #include "GameClient/GameClient.h"
-
+#include "Utility/compat.h"
 
 Bool ReplaySimulation::s_isRunning = false;
 UnsignedInt ReplaySimulation::s_replayIndex = 0;
@@ -36,20 +36,20 @@ UnsignedInt ReplaySimulation::s_replayCount = 0;
 
 namespace
 {
-int countProcessesRunning(const std::vector<WorkerProcess>& processes)
-{
-	int numProcessesRunning = 0;
-	size_t i = 0;
-	for (; i < processes.size(); ++i)
+	int countProcessesRunning(const std::vector<WorkerProcess>& processes)
 	{
-		if (processes[i].isRunning())
-			++numProcessesRunning;
+		int numProcessesRunning = 0;
+		size_t i = 0;
+		for (; i < processes.size(); ++i)
+		{
+			if (processes[i].isRunning())
+				++numProcessesRunning;
+		}
+		return numProcessesRunning;
 	}
-	return numProcessesRunning;
-}
 } // namespace
 
-int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString> &filenames)
+int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString>& filenames)
 {
 	int numErrors = 0;
 
@@ -81,7 +81,7 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 	{
 		AsciiString filename = filenames[i];
 		printf("Simulating Replay \"%s\"\n", filename.str());
-		fflush(stdout);
+		
 		DWORD startTimeMillis = SDL_GetTicks();
 		if (TheRecorder->simulateReplay(filename))
 		{
@@ -90,15 +90,15 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 			{
 				TheGameClient->updateHeadless();
 
-				const int progressFrameInterval = 10*60*LOGICFRAMES_PER_SECOND;
+				const int progressFrameInterval = 10 * 60 * LOGICFRAMES_PER_SECOND;
 				if (TheGameLogic->getFrame() != 0 && TheGameLogic->getFrame() % progressFrameInterval == 0)
 				{
 					// Print progress report
 					UnsignedInt gameTimeSec = TheGameLogic->getFrame() / LOGICFRAMES_PER_SECOND;
-					UnsignedInt realTimeSec = (SDL_GetTicks()-startTimeMillis) / 1000;
+					UnsignedInt realTimeSec = (SDL_GetTicks() - startTimeMillis) / 1000;
 					printf("Elapsed Time: %02d:%02d Game Time: %02d:%02d/%02d:%02d\n",
-							realTimeSec/60, realTimeSec%60, gameTimeSec/60, gameTimeSec%60, totalTimeSec/60, totalTimeSec%60);
-					fflush(stdout);
+						realTimeSec / 60, realTimeSec % 60, gameTimeSec / 60, gameTimeSec % 60, totalTimeSec / 60, totalTimeSec % 60);
+					
 				}
 				TheGameLogic->UPDATE();
 				if (TheRecorder->sawCRCMismatch())
@@ -108,10 +108,10 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 				}
 			}
 			UnsignedInt gameTimeSec = TheGameLogic->getFrame() / LOGICFRAMES_PER_SECOND;
-			UnsignedInt realTimeSec = (SDL_GetTicks()-startTimeMillis) / 1000;
+			UnsignedInt realTimeSec = (SDL_GetTicks() - startTimeMillis) / 1000;
 			printf("Elapsed Time: %02d:%02d Game Time: %02d:%02d/%02d:%02d\n",
-					realTimeSec/60, realTimeSec%60, gameTimeSec/60, gameTimeSec%60, totalTimeSec/60, totalTimeSec%60);
-			fflush(stdout);
+				realTimeSec / 60, realTimeSec % 60, gameTimeSec / 60, gameTimeSec % 60, totalTimeSec / 60, totalTimeSec % 60);
+			
 		}
 		else
 		{
@@ -123,22 +123,22 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 	{
 		printf("Simulation of all replays completed. Errors occurred: %d\n", numErrors);
 
-		UnsignedInt realTime = (SDL_GetTicks()-totalStartTimeMillis) / 1000;
-		printf("Total Time: %d:%02d:%02d\n", realTime/60/60, realTime/60%60, realTime%60);
-		fflush(stdout);
+		UnsignedInt realTime = (SDL_GetTicks() - totalStartTimeMillis) / 1000;
+		printf("Total Time: %d:%02d:%02d\n", realTime / 60 / 60, realTime / 60 % 60, realTime % 60);
+		
 	}
 
 	return numErrors != 0 ? 1 : 0;
 }
 
-int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiString> &filenames, int maxProcesses)
+int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiString>& filenames, int maxProcesses)
 {
 	DWORD totalStartTimeMillis = SDL_GetTicks();
 
 	char exePathA[1024];
 	// Phase 40: Use SDL2 cross-platform path retrieval
 	SDL2_GetModuleFilePath(exePathA, ARRAY_SIZE(exePathA));
-	
+
 	// Convert ASCII path to wide string for command building
 	UnicodeString exePath;
 	exePath.translate(exePathA);
@@ -160,11 +160,11 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 			if (!processes[0].isDone())
 				break;
 			AsciiString stdOutput = processes[0].getStdOutput();
-			printf("%d/%d %s", filenamePositionDone+1, (int)filenames.size(), stdOutput.str());
+			printf("%d/%d %s", filenamePositionDone + 1, (int)filenames.size(), stdOutput.str());
 			DWORD exitcode = processes[0].getExitCode();
 			if (exitcode != 0)
 				printf("Error!\n");
-			fflush(stdout);
+			
 			numErrors += exitcode == 0 ? 0 : 1;
 			processes.erase(processes.begin());
 			filenamePositionDone++;
@@ -203,14 +203,14 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 
 	printf("Simulation of all replays completed. Errors occurred: %d\n", numErrors);
 
-	UnsignedInt realTime = (SDL_GetTicks()-totalStartTimeMillis) / 1000;
-	printf("Total Wall Time: %d:%02d:%02d\n", realTime/60/60, realTime/60%60, realTime%60);
-	fflush(stdout);
+	UnsignedInt realTime = (SDL_GetTicks() - totalStartTimeMillis) / 1000;
+	printf("Total Wall Time: %d:%02d:%02d\n", realTime / 60 / 60, realTime / 60 % 60, realTime % 60);
+	
 
 	return numErrors != 0 ? 1 : 0;
 }
 
-std::vector<AsciiString> ReplaySimulation::resolveFilenameWildcards(const std::vector<AsciiString> &filenames)
+std::vector<AsciiString> ReplaySimulation::resolveFilenameWildcards(const std::vector<AsciiString>& filenames)
 {
 	// If some filename contains wildcards, search for actual filenames.
 	// Note that we cannot do this in parseReplay because we require TheLocalFileSystem initialized.
@@ -226,10 +226,10 @@ std::vector<AsciiString> ReplaySimulation::resolveFilenameWildcards(const std::v
 				int len = dir2.getLength();
 				while (len)
 				{
-					char c = dir2.getCharAt(len-1);
-					if (c == '/' || c == '\\')
+					char c = dir2.getCharAt(len - 1);
+					if (c == GET_PATH_SEPARATOR()[0])
 					{
-						wildcard.set(wildcard.str()+dir2.getLength());
+						wildcard.set(wildcard.str() + dir2.getLength());
 						break;
 					}
 					dir2.removeLastChar();
@@ -252,7 +252,7 @@ std::vector<AsciiString> ReplaySimulation::resolveFilenameWildcards(const std::v
 	return filenamesResolved;
 }
 
-int ReplaySimulation::simulateReplays(const std::vector<AsciiString> &filenames, int maxProcesses)
+int ReplaySimulation::simulateReplays(const std::vector<AsciiString>& filenames, int maxProcesses)
 {
 	std::vector<AsciiString> filenamesResolved = resolveFilenameWildcards(filenames);
 	if (maxProcesses == SIMULATE_REPLAYS_SEQUENTIAL)

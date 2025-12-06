@@ -70,6 +70,7 @@
 #include "GameLogic/GameLogic.h"
 #include "Common/GlobalData.h"
 #include "Common/GameLOD.h"
+#include <cpudetect.h>
 // #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 
 
@@ -105,7 +106,7 @@ FilterTypes W3DShaderManager::m_currentFilter=FT_NULL_FILTER; ///< Last filter t
 Int W3DShaderManager::m_currentShaderPass;
 ChipsetType W3DShaderManager::m_currentChipset;
 GraphicsVenderID W3DShaderManager::m_currentVendor;
-__int64 W3DShaderManager::m_driverVersion;
+int64_t W3DShaderManager::m_driverVersion;
 
 Bool W3DShaderManager::m_renderingToTexture = false;
 IDirect3DSurface8 *W3DShaderManager::m_oldRenderSurface=NULL;	///<previous render target
@@ -1410,18 +1411,14 @@ Bool W3DShaderManager::testMinimumRequirements(ChipsetType *videoChipType, CpuTy
 	}
 
 	if (cpuFreq)
-#ifdef _WIN32
+		// Phase 54: Get CPU frequency on all platforms
+		// CPUDetectClass::Get_Processor_Speed() is available cross-platform
 		*cpuFreq=CPUDetectClass::Get_Processor_Speed();
-#else // _WIN32
-		*cpuFreq=0;
-#endif // _WIN32
 
 	if (numRAM)
-#ifdef _WIN32
-		*numRAM=CPUDetectClass::Get_Total_Physical_Memory();
-#else // _WIN32
-		*numRAM=0;
-#endif // _WIN32
+		// Phase 54: Get total physical memory on all platforms
+		// CPUDetectClass::Init_Memory() now supports cross-platform detection via sysconf on Unix/Linux
+		*numRAM = CPUDetectClass::Get_Total_Physical_Memory();
 
 	if (intBenchIndex && floatBenchIndex && memBenchIndex)
 	{

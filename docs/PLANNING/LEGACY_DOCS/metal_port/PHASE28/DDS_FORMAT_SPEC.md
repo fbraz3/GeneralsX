@@ -115,8 +115,8 @@
 
 ```cpp
 block_size = 8; // bytes
-blocks_wide = max(1, (width + 3) / 4);
-blocks_high = max(1, (height + 3) / 4);
+blocks_wide = std::max(1, (width + 3) / 4);
+blocks_high = std::max(1, (height + 3) / 4);
 data_size = blocks_wide * blocks_high * block_size;
 ```
 
@@ -144,8 +144,8 @@ data_size = blocks_wide * blocks_high * block_size;
 
 ```cpp
 block_size = 16; // bytes
-blocks_wide = max(1, (width + 3) / 4);
-blocks_high = max(1, (height + 3) / 4);
+blocks_wide = std::max(1, (width + 3) / 4);
+blocks_high = std::max(1, (height + 3) / 4);
 data_size = blocks_wide * blocks_high * block_size;
 ```
 
@@ -175,8 +175,8 @@ data_size = blocks_wide * blocks_high * block_size;
 
 ```cpp
 block_size = 16; // bytes
-blocks_wide = max(1, (width + 3) / 4);
-blocks_high = max(1, (height + 3) / 4);
+blocks_wide = std::max(1, (width + 3) / 4);
+blocks_high = std::max(1, (height + 3) / 4);
 data_size = blocks_wide * blocks_high * block_size;
 ```
 
@@ -203,8 +203,8 @@ Mipmaps are stored sequentially in memory, largest first:
 **Mip Dimensions**:
 
 ```cpp
-mip_width = max(1, width >> mip_level);
-mip_height = max(1, height >> mip_level);
+mip_width = std::max(1, width >> mip_level);
+mip_height = std::max(1, height >> mip_level);
 ```
 
 **Example (1024x1024 DXT5)**:

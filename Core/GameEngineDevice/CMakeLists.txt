@@ -245,7 +245,9 @@ endif()
 target_link_libraries(corei_gameenginedevice_private INTERFACE ${OPENAL_LIBRARIES})
 
 if(RTS_BUILD_OPTION_FFMPEG)
-    find_package(FFMPEG REQUIRED)
+    # Find FFmpeg using pkg-config (Linux/macOS)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale)
 
     if(FFMPEG_FOUND)
         target_sources(corei_gameenginedevice_private INTERFACE

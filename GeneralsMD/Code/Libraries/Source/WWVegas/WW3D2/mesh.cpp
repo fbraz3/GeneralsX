@@ -934,13 +934,13 @@ void MeshClass::Render_Material_Pass(MaterialPassClass * pass,IndexBufferClass *
 					indices[i*3 + 1] = (unsigned short)v1;
 					indices[i*3 + 2] = (unsigned short)v2;
 
-					min_v = WWMath::Min(v0,min_v);
-					min_v = WWMath::Min(v1,min_v);
-					min_v = WWMath::Min(v2,min_v);
+					min_v = std::min(static_cast<int>(v0),min_v);
+					min_v = std::min(static_cast<int>(v1),min_v);
+					min_v = std::min(static_cast<int>(v2),min_v);
 
-					max_v = WWMath::Max(v0,max_v);
-					max_v = WWMath::Max(v1,max_v);
-					max_v = WWMath::Max(v2,max_v);
+					max_v = std::max(static_cast<int>(v0),max_v);
+					max_v = std::max(static_cast<int>(v1),max_v);
+					max_v = std::max(static_cast<int>(v2),max_v);
 				}
 			}
 

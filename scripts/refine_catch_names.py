@@ -37,7 +37,7 @@ def fix_particle_editor(filepath):
         # Look for DEBUG_LOG with __declspec function name
         if '__declspec' in line and 'DEBUG_LOG' in line:
             # Find the proper function name by looking backwards
-            for j in range(i - 1, max(0, i - 30), -1):
+            for j in range(i - 1, std::max(0, i - 30), -1):
                 prev_line = lines[j]
                 for func_name, replacement in function_map.items():
                     if func_name in prev_line and '__declspec(dllexport)' in prev_line:

@@ -46,11 +46,12 @@
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameNetwork/RankPointValue.h"
 #include "GameLogic/GameLogic.h"
+#include <Utility/compat.h>
 
 
-GameSpyInfoInterface *TheGameSpyInfo = NULL;
-GameSpyStagingRoom *TheGameSpyGame = NULL;
-void deleteNotificationBox( void );
+GameSpyInfoInterface* TheGameSpyInfo = NULL;
+GameSpyStagingRoom* TheGameSpyGame = NULL;
+void deleteNotificationBox(void);
 
 bool AsciiComparator::operator()(AsciiString s1, AsciiString s2) const
 {
@@ -70,7 +71,7 @@ GameSpyInfo::~GameSpyInfo()
 	reset();
 }
 
-void GameSpyInfo::reset( void )
+void GameSpyInfo::reset(void)
 {
 	m_sawFullGameList = FALSE;
 	m_isDisconAfterGameStart = FALSE;
@@ -113,13 +114,13 @@ void GameSpyInfo::reset( void )
 	m_additionalDisconnects = -1;
 }
 
-Bool GameSpyInfo::didPlayerPreorder( Int profileID ) const
+Bool GameSpyInfo::didPlayerPreorder(Int profileID) const
 {
 	std::set<Int>::const_iterator it = m_preorderPlayers.find(profileID);
 	return (it != m_preorderPlayers.end());
 }
 
-void GameSpyInfo::markPlayerAsPreorder( Int profileID )
+void GameSpyInfo::markPlayerAsPreorder(Int profileID)
 {
 	m_preorderPlayers.insert(profileID);
 }
@@ -130,34 +131,34 @@ void GameSpyInfo::setLocalIPs(UnsignedInt internalIP, UnsignedInt externalIP)
 	m_externalIP = externalIP;
 }
 
-void GameSpyInfo::readAdditionalDisconnects( void )
+void GameSpyInfo::readAdditionalDisconnects(void)
 {
 	m_additionalDisconnects = GetAdditionalDisconnectsFromUserFile(m_localProfileID);
 	DEBUG_LOG(("GameSpyInfo::readAdditionalDisconnects() found %d disconnects.", m_additionalDisconnects));
 }
 
-Int GameSpyInfo::getAdditionalDisconnects( void )
+Int GameSpyInfo::getAdditionalDisconnects(void)
 {
 	DEBUG_LOG(("GameSpyInfo::getAdditionalDisconnects() would have returned %d.  Returning 0 instead.", m_additionalDisconnects));
 	return 0;
 }
 
-void GameSpyInfo::clearAdditionalDisconnects( void )
+void GameSpyInfo::clearAdditionalDisconnects(void)
 {
 	m_additionalDisconnects = 0;
 }
 
-GameSpyInfoInterface* GameSpyInfoInterface::createNewGameSpyInfoInterface( void )
+GameSpyInfoInterface* GameSpyInfoInterface::createNewGameSpyInfoInterface(void)
 {
 	return NEW GameSpyInfo;
 }
 
-Bool GameSpyInfo::amIHost( void )
+Bool GameSpyInfo::amIHost(void)
 {
 	return m_isHosting;
 }
 
-GameSpyStagingRoom* GameSpyInfo::getCurrentStagingRoom( void )
+GameSpyStagingRoom* GameSpyInfo::getCurrentStagingRoom(void)
 {
 	if (m_isHosting || m_joinedStagingRoom)
 		return &m_localStagingRoom;
@@ -169,7 +170,7 @@ GameSpyStagingRoom* GameSpyInfo::getCurrentStagingRoom( void )
 	return NULL;
 }
 
-void GameSpyInfo::setGameOptions( void )
+void GameSpyInfo::setGameOptions(void)
 {
 	if (!m_isHosting)
 		return;
@@ -182,13 +183,13 @@ void GameSpyInfo::setGameOptions( void )
 	Int i;
 	AsciiString mapName = TheGameState->realMapPathToPortableMapPath(m_localStagingRoom.getMap());
 	AsciiString newMapName;
-	for (i=0; i<mapName.getLength(); ++i)
+	for (i = 0; i < mapName.getLength(); ++i)
 	{
 		char c = mapName.getCharAt(i);
-		if (c != '\\')
+		if (c != GET_PATH_SEPARATOR()[0])
 			newMapName.concat(c);
 		else
-			newMapName.concat('/');
+			newMapName.concat(GET_PATH_SEPARATOR());
 	}
 	req.gameOptsMapName = newMapName.str();
 
@@ -196,10 +197,10 @@ void GameSpyInfo::setGameOptions( void )
 	req.gameOptions.numObservers = 0;
 	Int numOpenSlots = 0;
 	AsciiString playerInfo = "";
-	for (i=0; i<MAX_SLOTS; ++i)
+	for (i = 0; i < MAX_SLOTS; ++i)
 	{
 		Int wins = 0, losses = 0, profileID = 0;
-		GameSpyGameSlot *slot = TheGameSpyGame->getGameSpySlot(i);
+		GameSpyGameSlot* slot = TheGameSpyGame->getGameSpySlot(i);
 		req.gameOptsPlayerNames[i] = "";
 		if (!slot->isOccupied())
 		{
@@ -220,11 +221,11 @@ void GameSpyInfo::setGameOptions( void )
 					losses = it->second.m_losses;
 					profileID = it->second.m_profileID;
 				}
-				req.gameOptions.wins[req.gameOptions.numObservers+req.gameOptions.numPlayers] = wins;
-				req.gameOptions.losses[req.gameOptions.numObservers+req.gameOptions.numPlayers] = losses;
-				req.gameOptions.profileID[req.gameOptions.numObservers+req.gameOptions.numPlayers] = profileID;
-				req.gameOptions.faction[req.gameOptions.numObservers+req.gameOptions.numPlayers] = slot->getPlayerTemplate();
-				req.gameOptions.color[req.gameOptions.numObservers+req.gameOptions.numPlayers] = slot->getColor();
+				req.gameOptions.wins[req.gameOptions.numObservers + req.gameOptions.numPlayers] = wins;
+				req.gameOptions.losses[req.gameOptions.numObservers + req.gameOptions.numPlayers] = losses;
+				req.gameOptions.profileID[req.gameOptions.numObservers + req.gameOptions.numPlayers] = profileID;
+				req.gameOptions.faction[req.gameOptions.numObservers + req.gameOptions.numPlayers] = slot->getPlayerTemplate();
+				req.gameOptions.color[req.gameOptions.numObservers + req.gameOptions.numPlayers] = slot->getColor();
 				if (slot->getPlayerTemplate() == PLAYERTEMPLATE_OBSERVER)
 				{
 					++req.gameOptions.numObservers;
@@ -250,11 +251,11 @@ void GameSpyInfo::setGameOptions( void )
 					break;
 				}
 				req.gameOptsPlayerNames[i] = playerName.str(); // name is unused - we go off of the profileID
-				req.gameOptions.wins[req.gameOptions.numObservers+req.gameOptions.numPlayers] = 0;
-				req.gameOptions.losses[req.gameOptions.numObservers+req.gameOptions.numPlayers] = 0;
-				req.gameOptions.profileID[req.gameOptions.numObservers+req.gameOptions.numPlayers] = slot->getState();
-				req.gameOptions.faction[req.gameOptions.numObservers+req.gameOptions.numPlayers] = slot->getPlayerTemplate();
-				req.gameOptions.color[req.gameOptions.numObservers+req.gameOptions.numPlayers] = slot->getColor();
+				req.gameOptions.wins[req.gameOptions.numObservers + req.gameOptions.numPlayers] = 0;
+				req.gameOptions.losses[req.gameOptions.numObservers + req.gameOptions.numPlayers] = 0;
+				req.gameOptions.profileID[req.gameOptions.numObservers + req.gameOptions.numPlayers] = slot->getState();
+				req.gameOptions.faction[req.gameOptions.numObservers + req.gameOptions.numPlayers] = slot->getPlayerTemplate();
+				req.gameOptions.color[req.gameOptions.numObservers + req.gameOptions.numPlayers] = slot->getColor();
 				++req.gameOptions.numPlayers;
 			}
 		}
@@ -266,12 +267,12 @@ void GameSpyInfo::setGameOptions( void )
 	req.UTM.isStagingRoom = TRUE;
 	req.id = "Pings/";
 	AsciiString pings;
-	for (i=0; i<MAX_SLOTS; ++i)
+	for (i = 0; i < MAX_SLOTS; ++i)
 	{
-		if (i!=0)
+		if (i != 0)
 			pings.concat(",");
 
-		GameSpyGameSlot *slot = TheGameSpyGame->getGameSpySlot(i);
+		GameSpyGameSlot* slot = TheGameSpyGame->getGameSpySlot(i);
 		if (slot && slot->isHuman())
 		{
 			pings.concat(slot->getPingString());
@@ -285,12 +286,12 @@ void GameSpyInfo::setGameOptions( void )
 	TheGameSpyPeerMessageQueue->addRequest(req);
 }
 
-Bool GameSpyInfo::isBuddy( Int id )
+Bool GameSpyInfo::isBuddy(Int id)
 {
 	return m_buddyMap.find(id) != m_buddyMap.end();
 }
 
-void GameSpyInfo::addGroupRoom( GameSpyGroupRoom room )
+void GameSpyInfo::addGroupRoom(GameSpyGroupRoom room)
 {
 	if (room.m_groupID == 0)
 	{
@@ -331,7 +332,7 @@ void GameSpyInfo::addGroupRoom( GameSpyGroupRoom room )
 				if (room.m_groupID != TheGameSpyConfig->getQMChannel())
 				{
 					room.m_translatedName.format(L"%ls %d", names[nameIndex].str(), timesThrough);
-					nameIndex = (nameIndex+1)%names.size();
+					nameIndex = (nameIndex + 1) % names.size();
 					m_groupRooms[room.m_groupID] = room;
 					if (!nameIndex)
 					{
@@ -349,7 +350,7 @@ void GameSpyInfo::addGroupRoom( GameSpyGroupRoom room )
 		groupLabel.format("GUI:%s", room.m_name.str());
 		room.m_translatedName = TheGameText->fetch(groupLabel);
 		m_groupRooms[room.m_groupID] = room;
-		if ( !stricmp("quickmatch", room.m_name.str()) )
+		if (!stricmp("quickmatch", room.m_name.str()))
 		{
 			DEBUG_LOG(("Group room %d (%s) is the QuickMatch room", room.m_groupID, room.m_name.str()));
 			TheGameSpyConfig->setQMChannel(room.m_groupID);
@@ -357,7 +358,7 @@ void GameSpyInfo::addGroupRoom( GameSpyGroupRoom room )
 	}
 }
 
-void GameSpyInfo::joinGroupRoom( Int groupID )
+void GameSpyInfo::joinGroupRoom(Int groupID)
 {
 	if (groupID > 0)
 	{
@@ -369,7 +370,7 @@ void GameSpyInfo::joinGroupRoom( Int groupID )
 	}
 }
 
-void GameSpyInfo::leaveGroupRoom( void )
+void GameSpyInfo::leaveGroupRoom(void)
 {
 	PeerRequest req;
 	req.peerRequestType = PeerRequest::PEERREQUEST_LEAVEGROUPROOM;
@@ -378,7 +379,7 @@ void GameSpyInfo::leaveGroupRoom( void )
 	m_playerInfoMap.clear();
 }
 
-void GameSpyInfo::joinBestGroupRoom( void )
+void GameSpyInfo::joinBestGroupRoom(void)
 {
 	if (m_currentGroupRoomID)
 	{
@@ -426,7 +427,7 @@ void GameSpyInfo::joinBestGroupRoom( void )
 	}
 }
 
-void GameSpyInfo::updatePlayerInfo( PlayerInfo pi, AsciiString oldNick )
+void GameSpyInfo::updatePlayerInfo(PlayerInfo pi, AsciiString oldNick)
 {
 	if (!oldNick.isEmpty())
 		playerLeftGroupRoom(oldNick);
@@ -437,7 +438,7 @@ void GameSpyInfo::updatePlayerInfo( PlayerInfo pi, AsciiString oldNick )
 		markPlayerAsPreorder(pi.m_profileID);
 }
 
-void GameSpyInfo::playerLeftGroupRoom( AsciiString nick )
+void GameSpyInfo::playerLeftGroupRoom(AsciiString nick)
 {
 	PlayerInfoMap::iterator it = m_playerInfoMap.find(nick);
 	if (it != m_playerInfoMap.end())
@@ -446,7 +447,7 @@ void GameSpyInfo::playerLeftGroupRoom( AsciiString nick )
 	}
 }
 
-void GameSpyInfo::clearStagingRoomList( void )
+void GameSpyInfo::clearStagingRoomList(void)
 {
 	Int numRoomsRemoved = 0;
 	m_sawFullGameList = FALSE;
@@ -467,22 +468,22 @@ void GameSpyInfo::clearStagingRoomList( void )
 	}
 }
 
-void GameSpyInfo::addStagingRoom( GameSpyStagingRoom room )
+void GameSpyInfo::addStagingRoom(GameSpyStagingRoom room)
 {
 	removeStagingRoom(room);
-	GameSpyStagingRoom *newRoom = NEW GameSpyStagingRoom;
+	GameSpyStagingRoom* newRoom = NEW GameSpyStagingRoom;
 	*newRoom = room;
 	newRoom->cleanUpSlotPointers();
 	m_stagingRooms[room.getID()] = newRoom;
 	m_stagingRoomsDirty = m_sawFullGameList;
 }
 
-void GameSpyInfo::updateStagingRoom( GameSpyStagingRoom room )
+void GameSpyInfo::updateStagingRoom(GameSpyStagingRoom room)
 {
 	addStagingRoom(room);
 }
 
-void GameSpyInfo::removeStagingRoom( GameSpyStagingRoom room )
+void GameSpyInfo::removeStagingRoom(GameSpyStagingRoom room)
 {
 	StagingRoomMap::iterator it = m_stagingRooms.find(room.getID());
 	if (it != m_stagingRooms.end())
@@ -494,14 +495,14 @@ void GameSpyInfo::removeStagingRoom( GameSpyStagingRoom room )
 	}
 }
 
-Bool GameSpyInfo::hasStagingRoomListChanged( void )
+Bool GameSpyInfo::hasStagingRoomListChanged(void)
 {
 	Bool val = m_stagingRoomsDirty;
 	m_stagingRoomsDirty = false;
 	return val;
 }
 
-GameSpyStagingRoom* GameSpyInfo::findStagingRoomByID( Int id )
+GameSpyStagingRoom* GameSpyInfo::findStagingRoomByID(Int id)
 {
 	StagingRoomMap::iterator it = m_stagingRooms.find(id);
 	if (it != m_stagingRooms.end())
@@ -510,7 +511,7 @@ GameSpyStagingRoom* GameSpyInfo::findStagingRoomByID( Int id )
 	return NULL;
 }
 
-void GameSpyInfo::leaveStagingRoom( void )
+void GameSpyInfo::leaveStagingRoom(void)
 {
 	m_localStagingRoomID = 0;
 	PeerRequest req;
@@ -521,24 +522,24 @@ void GameSpyInfo::leaveStagingRoom( void )
 	m_isHosting = FALSE;
 }
 
-void GameSpyInfo::markAsStagingRoomHost( void )
+void GameSpyInfo::markAsStagingRoomHost(void)
 {
 	m_localStagingRoomID = 0;
 	m_joinedStagingRoom = FALSE; m_isHosting = TRUE;
 
-  // There are a few options we don't want to reset when we are hosting (they carry over
-  // from the the create game dialog).
-  // Interesting fact: oldFactionsOnly will be carried over correctly if I remove these
-  // lines. UseStats won't be. I have no idea why.
-  Int useStats = m_localStagingRoom.getUseStats();
-  Bool oldFactionsOnly = m_localStagingRoom.oldFactionsOnly();
+	// There are a few options we don't want to reset when we are hosting (they carry over
+	// from the the create game dialog).
+	// Interesting fact: oldFactionsOnly will be carried over correctly if I remove these
+	// lines. UseStats won't be. I have no idea why.
+	Int useStats = m_localStagingRoom.getUseStats();
+	Bool oldFactionsOnly = m_localStagingRoom.oldFactionsOnly();
 
-  m_localStagingRoom.reset();
+	m_localStagingRoom.reset();
 	m_localStagingRoom.enterGame();
 	m_localStagingRoom.setSeed(SDL_GetTicks());
 
-  m_localStagingRoom.setUseStats( useStats );
-  m_localStagingRoom.setOldFactionsOnly( oldFactionsOnly );
+	m_localStagingRoom.setUseStats(useStats);
+	m_localStagingRoom.setOldFactionsOnly(oldFactionsOnly);
 
 	GameSlot newSlot;
 	UnicodeString uName;
@@ -548,7 +549,7 @@ void GameSpyInfo::markAsStagingRoomHost( void )
 	m_localStagingRoom.setLocalIP(m_externalIP);
 	newSlot.setIP(m_externalIP);
 
-	m_localStagingRoom.setSlot(0,newSlot);
+	m_localStagingRoom.setSlot(0, newSlot);
 	m_localStagingRoom.setLocalName(m_localName);
 
 	TheMapCache->updateCache();
@@ -556,7 +557,7 @@ void GameSpyInfo::markAsStagingRoomHost( void )
 	m_localStagingRoom.adjustSlotsForMap(); // close slots that the map can't hold. BGC
 }
 
-void GameSpyInfo::markAsStagingRoomJoiner( Int game )
+void GameSpyInfo::markAsStagingRoomJoiner(Int game)
 {
 	m_localStagingRoomID = game;
 	m_joinedStagingRoom = TRUE; m_isHosting = FALSE;
@@ -565,13 +566,13 @@ void GameSpyInfo::markAsStagingRoomJoiner( Int game )
 	StagingRoomMap::iterator it = m_stagingRooms.find(game);
 	if (it != m_stagingRooms.end())
 	{
-		GameSpyStagingRoom *info = it->second;
+		GameSpyStagingRoom* info = it->second;
 		info->cleanUpSlotPointers();
 		AsciiString options = GameInfoToAsciiString(info);
 #ifdef DEBUG_CRASHING
 		Bool res =
 #endif
-		ParseAsciiStringToGameInfo(&m_localStagingRoom, options);
+			ParseAsciiStringToGameInfo(&m_localStagingRoom, options);
 		DEBUG_ASSERTCRASH(res, ("Could not parse game info \"%s\"", options.str()));
 		m_localStagingRoom.setInGame();
 		m_localStagingRoom.setLocalName(m_localName);
@@ -584,28 +585,28 @@ void GameSpyInfo::markAsStagingRoomJoiner( Int game )
 	}
 }
 
-void GameSpyInfo::setMOTD( const AsciiString& motd )
+void GameSpyInfo::setMOTD(const AsciiString& motd)
 {
 	m_rawMotd = motd;
 }
 
-const AsciiString& GameSpyInfo::getMOTD( void )
+const AsciiString& GameSpyInfo::getMOTD(void)
 {
 	return m_rawMotd;
 }
 
-void GameSpyInfo::setConfig( const AsciiString& config )
+void GameSpyInfo::setConfig(const AsciiString& config)
 {
 	m_rawConfig = config;
 }
 
-const AsciiString& GameSpyInfo::getConfig( void )
+const AsciiString& GameSpyInfo::getConfig(void)
 {
 	return m_rawConfig;
 }
 
 // --------------------------------------------------------------
-void SetUpGameSpy( const char *motdBuffer, const char *configBuffer )
+void SetUpGameSpy(const char* motdBuffer, const char* configBuffer)
 {
 	if (!motdBuffer)
 		motdBuffer = "";
@@ -639,7 +640,7 @@ void SetUpGameSpy( const char *motdBuffer, const char *configBuffer )
 
 	CustomMatchPreferences pref;
 	TheGameSpyInfo->setDisallowAsianText(pref.getDisallowAsianText());
-	TheGameSpyInfo->setDisallowNonAsianText( pref.getDisallowNonAsianText());
+	TheGameSpyInfo->setDisallowNonAsianText(pref.getDisallowNonAsianText());
 
 
 	TheGameSpyConfig = GameSpyConfigInterface::create(configBuffer);
@@ -652,13 +653,13 @@ void SetUpGameSpy( const char *motdBuffer, const char *configBuffer )
 	TheRankPointValues = NEW RankPoints;
 }
 
-void TearDownGameSpy( void )
+void TearDownGameSpy(void)
 {
 	// save off cached stats
 	if (TheGameSpyInfo && TheGameSpyInfo->getLocalProfileID())
 	{
-//		/* This was done on the score screen, so there is no need to do it now.
-//		 *
+		//		/* This was done on the score screen, so there is no need to do it now.
+		//		 *
 		PSPlayerStats localPSStats = TheGameSpyPSMessageQueue->findPlayerStatsByID(TheGameSpyInfo->getLocalProfileID());
 		if (localPSStats.id != 0)
 		{
@@ -666,7 +667,7 @@ void TearDownGameSpy( void )
 			mPref.setCachedStats(GameSpyPSMessageQueueInterface::formatPlayerKVPairs(localPSStats).c_str());
 			mPref.write();
 		}
-//		*/
+		//		*/
 	}
 
 	// End our threads before we kill off the singletons they reference.  No crashy-crash for you!
@@ -716,27 +717,27 @@ void TearDownGameSpy( void )
 }
 
 
-void GameSpyInfo::addToIgnoreList( AsciiString nick )
+void GameSpyInfo::addToIgnoreList(AsciiString nick)
 {
 	m_ignoreList.insert(nick);
 }
 
-void GameSpyInfo::removeFromIgnoreList( AsciiString nick )
+void GameSpyInfo::removeFromIgnoreList(AsciiString nick)
 {
 	m_ignoreList.erase(nick);
 }
 
-Bool GameSpyInfo::isIgnored( AsciiString nick )
+Bool GameSpyInfo::isIgnored(AsciiString nick)
 {
 	return m_ignoreList.find(nick) != m_ignoreList.end();
 }
 
-IgnoreList GameSpyInfo::returnIgnoreList( void )
+IgnoreList GameSpyInfo::returnIgnoreList(void)
 {
- return m_ignoreList;
+	return m_ignoreList;
 }
 
-void GameSpyInfo::addToSavedIgnoreList( Int profileID, AsciiString nick)
+void GameSpyInfo::addToSavedIgnoreList(Int profileID, AsciiString nick)
 {
 	m_savedIgnoreMap[profileID] = nick;
 	IgnorePreferences pref;
@@ -744,7 +745,7 @@ void GameSpyInfo::addToSavedIgnoreList( Int profileID, AsciiString nick)
 	pref.write();
 }
 
-void GameSpyInfo::removeFromSavedIgnoreList( Int profileID )
+void GameSpyInfo::removeFromSavedIgnoreList(Int profileID)
 {
 	m_savedIgnoreMap.erase(profileID);
 	IgnorePreferences pref;
@@ -752,17 +753,17 @@ void GameSpyInfo::removeFromSavedIgnoreList( Int profileID )
 	pref.write();
 }
 
-Bool GameSpyInfo::isSavedIgnored( Int profileID )
+Bool GameSpyInfo::isSavedIgnored(Int profileID)
 {
 	return m_savedIgnoreMap.find(profileID) != m_savedIgnoreMap.end();
 }
 
-SavedIgnoreMap	GameSpyInfo::returnSavedIgnoreList( void )
+SavedIgnoreMap	GameSpyInfo::returnSavedIgnoreList(void)
 {
 	return m_savedIgnoreMap;
 }
 
-static Int grabHexInt(const char *s)
+static Int grabHexInt(const char* s)
 {
 	char tmp[5] = "0xff";
 	tmp[2] = s[0];
@@ -771,7 +772,7 @@ static Int grabHexInt(const char *s)
 	return b;
 }
 
-Int GameSpyInfo::getPingValue( const AsciiString& otherPing )
+Int GameSpyInfo::getPingValue(const AsciiString& otherPing)
 {
 	if (m_pingString.getLength() != otherPing.getLength())
 	{
@@ -783,9 +784,9 @@ Int GameSpyInfo::getPingValue( const AsciiString& otherPing )
 		return TheGameSpyConfig->getPingTimeoutInMs();
 	}
 
-	Int best = 255+255;
-	const char *myStr = m_pingString.str();
-	const char *otherStr = otherPing.str();
+	Int best = 255 + 255;
+	const char* myStr = m_pingString.str();
+	const char* otherStr = otherPing.str();
 
 	while (*myStr)
 	{
@@ -797,46 +798,46 @@ Int GameSpyInfo::getPingValue( const AsciiString& otherPing )
 		otherStr += 2;
 	}
 
-	return best * TheGameSpyConfig->getPingTimeoutInMs() / (255+255);
+	return best * TheGameSpyConfig->getPingTimeoutInMs() / (255 + 255);
 }
 
-Bool PlayerInfo::isIgnored( void )
+Bool PlayerInfo::isIgnored(void)
 {
-	return (m_profileID)?TheGameSpyInfo->isSavedIgnored(m_profileID):TheGameSpyInfo->isIgnored(m_name);
+	return (m_profileID) ? TheGameSpyInfo->isSavedIgnored(m_profileID) : TheGameSpyInfo->isIgnored(m_name);
 }
 
-void GameSpyInfo::loadSavedIgnoreList( void )
+void GameSpyInfo::loadSavedIgnoreList(void)
 {
 	m_savedIgnoreMap.clear();
 	IgnorePreferences prefs;
 	m_savedIgnoreMap = prefs.getIgnores();
 }
 
-void GameSpyInfo::setDisallowAsianText( Bool val )
+void GameSpyInfo::setDisallowAsianText(Bool val)
 {
 	m_disallowAsainText = val;
 }
 
-void GameSpyInfo::setDisallowNonAsianText( Bool val )
+void GameSpyInfo::setDisallowNonAsianText(Bool val)
 {
 	m_disallowNonAsianText = val;
 }
 
-Bool GameSpyInfo::getDisallowAsianText( void )
+Bool GameSpyInfo::getDisallowAsianText(void)
 {
 	return m_disallowAsainText;
 }
-Bool GameSpyInfo::getDisallowNonAsianText(void )
+Bool GameSpyInfo::getDisallowNonAsianText(void)
 {
 	return m_disallowNonAsianText;
 }
 
-void GameSpyInfo::setMaxMessagesPerUpdate( Int num )
+void GameSpyInfo::setMaxMessagesPerUpdate(Int num)
 {
 	m_maxMessagesPerUpdate = num;
 }
 
-Int GameSpyInfo::getMaxMessagesPerUpdate( void )
+Int GameSpyInfo::getMaxMessagesPerUpdate(void)
 {
 	return m_maxMessagesPerUpdate;
 }
@@ -854,25 +855,25 @@ void GameSpyInfo::updateAdditionalGameSpyDisconnections(Int count)
 		Int localID = TheGameSpyInfo->getLocalProfileID();
 		PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(localID);
 
-		Player *player=ThePlayerList->getLocalPlayer();
+		Player* player = ThePlayerList->getLocalPlayer();
 
 		Int ptIdx;
-		const PlayerTemplate *myTemplate = player->getPlayerTemplate();
+		const PlayerTemplate* myTemplate = player->getPlayerTemplate();
 		DEBUG_LOG(("myTemplate = %X(%s)", myTemplate, myTemplate->getName().str()));
 		for (ptIdx = 0; ptIdx < ThePlayerTemplateStore->getPlayerTemplateCount(); ++ptIdx)
 		{
-			const PlayerTemplate *nthTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(ptIdx);
+			const PlayerTemplate* nthTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(ptIdx);
 			DEBUG_LOG(("nthTemplate = %X(%s)", nthTemplate, nthTemplate->getName().str()));
 			if (nthTemplate == myTemplate)
 			{
-					break;
+				break;
 			}
 		}
 
 		Bool anyAI = FALSE;
-		for (Int i=0; i<MAX_SLOTS; ++i)
+		for (Int i = 0; i < MAX_SLOTS; ++i)
 		{
-			const GameSlot *slot = TheGameInfo->getConstSlot(i);
+			const GameSlot* slot = TheGameInfo->getConstSlot(i);
 
 			if (slot->isAI())
 			{
@@ -884,10 +885,11 @@ void GameSpyInfo::updateAdditionalGameSpyDisconnections(Int count)
 		if (anyAI || stats.id == 0 || myTemplate->isObserver() || player->getPlayerType() != PLAYER_HUMAN || player->isPlayerObserver())
 			return;
 
-		Int disCons=stats.discons[ptIdx];
+		Int disCons = stats.discons[ptIdx];
 		disCons += count;
 		if (disCons < 0)
-		{	DEBUG_LOG(("updateAdditionalGameSpyDisconnections() - disconnection count below zero"));
+		{
+			DEBUG_LOG(("updateAdditionalGameSpyDisconnections() - disconnection count below zero"));
 			return;	//something is wrong here
 		}
 		stats.discons[ptIdx] = disCons;	//add an additional disconnection to their stats.
@@ -914,8 +916,8 @@ void GameSpyInfo::updateAdditionalGameSpyDisconnections(Int count)
 		TheGameSpyPSMessageQueue->addResponse(newResp);
 
 		// cache our stuff for easy reading next time
-   		GameSpyMiscPreferences mPref;
-   		mPref.setCachedStats(GameSpyPSMessageQueueInterface::formatPlayerKVPairs(stats).c_str());
-   		mPref.write();
+		GameSpyMiscPreferences mPref;
+		mPref.setCachedStats(GameSpyPSMessageQueueInterface::formatPlayerKVPairs(stats).c_str());
+		mPref.write();
 	}
 }

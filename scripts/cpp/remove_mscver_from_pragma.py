@@ -91,7 +91,7 @@ def unguard_msc_pragma_once(text: str) -> tuple[str, bool]:
         changed = True
 
         # Resume scanning near the pragma location in the new list
-        i = max(0, if_idx - 1)
+        i = std::max(0, if_idx - 1)
 
     return "".join(lines), changed
 

@@ -26,6 +26,24 @@
 #include <cstdarg>
 #include <string>
 
+// MSVC calling convention macros - no-op on non-Windows platforms
+#ifndef _WIN32
+#define __fastcall
+#define __stdcall
+#define __cdecl
+#endif
+
+// Linux-specific includes
+#ifdef __linux__
+#include <malloc.h>
+extern "C" size_t malloc_usable_size(void* ptr) noexcept;
+#endif
+
+// macOS-specific includes
+#ifdef __APPLE__
+#include <malloc/malloc.h>
+#endif
+
 // Phase 54: Global storage for POSIX command line arguments
 // These must be set by main() before any code calls GetCommandLineA()
 extern int g_posix_argc;
@@ -74,11 +92,12 @@ inline void InitPosixCommandLine(int argc, char** argv) {
 
 // MSVC integer type keywords - must be usable with 'unsigned' prefix
 // Solution: Create actual type aliases that work like MSVC's built-in keywords
-typedef int64_t __int64;
+#ifdef _WIN32
+typedef int64_t int64_t;
 typedef int32_t __int32;
 typedef int16_t __int16;
 typedef int8_t __int8;
-
+#endif
 // Unsigned versions need special handling - create type aliases
 typedef uint64_t uint__int64;
 typedef uint32_t uint__int32;

@@ -1324,7 +1324,7 @@ void AABTreeNodeClass::Select_Splitting_Plane
 	*/
 	int objcount = boxes.Count();
 	int trys = 0;
-	for (trys = 0; trys < MIN(NUM_TRYS,objcount); trys++) {
+	for (trys = 0; trys < std::min(NUM_TRYS,objcount); trys++) {
 
 		int obj_index;
 		SplitChoiceStruct test;
@@ -1361,7 +1361,7 @@ void AABTreeNodeClass::Select_Splitting_Plane
 	/*
 	** Still haven't found a valid splitting plane, uh-oh.
 	*/
-	if ((trys >= MIN(NUM_TRYS,objcount)) && (sc->Cost == FLT_MAX)) {
+	if ((trys >= std::min(NUM_TRYS,objcount)) && (sc->Cost == FLT_MAX)) {
 		Select_Splitting_Plane_Brute_Force(sc,boxes);
 		return;
 	}

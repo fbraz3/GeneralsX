@@ -161,7 +161,7 @@ protected:
 	void renderLetterBox(UnsignedInt time);							///< draw letter box border
 	void updateAverageFPS(void);	///< calculate the average fps over the last 30 frames.
 
-	Byte m_initialized;												///< TRUE when system is initialized
+	SignedByte m_initialized;												///< TRUE when system is initialized
 	LightClass *m_myLight[LightEnvironmentClass::MAX_LIGHTS];										///< light hack for now
 	Render2DClass *m_2DRender;								///< interface for common 2D functions
 	IRegion2D m_clipRegion;									///< the clipping region for images

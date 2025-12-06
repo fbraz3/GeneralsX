@@ -158,6 +158,12 @@ static GameFileType getFileType( char const *filename )
 //-------------------------------------------------------------------------------------------------
 char const * GameFileClass::Set_Name( char const *filename )
 {
+	// Debug: Log what filename we're trying to find
+	static int debugSetNameCount = 0;
+	if (debugSetNameCount < 30) {
+		printf("[GameFileClass::Set_Name] DEBUG: Looking for file '%s'\n", filename ? filename : "<null>");
+		debugSetNameCount++;
+	}
 
 	if( Is_Open() )
 		Close();
@@ -187,6 +193,12 @@ char const * GameFileClass::Set_Name( char const *filename )
 	// see if the file exists
 	m_fileExists = TheFileSystem->doesFileExist( m_filePath );
 
+	// Debug: Log the path checked and result
+	static int debugPathCount = 0;
+	if (debugPathCount < 50 && !m_fileExists) {
+		printf("[GameFileClass::Set_Name] DEBUG: Checked path '%s' - NOT FOUND\n", m_filePath);
+		debugPathCount++;
+	}
 
 
 	// Now try the main lookup of hitting local files and big files
@@ -214,6 +226,14 @@ char const * GameFileClass::Set_Name( char const *filename )
 
 		// see if the file exists
 		m_fileExists = TheFileSystem->doesFileExist( m_filePath );
+		
+		// Debug: Log the main path check result
+		static int debugMainPathCount = 0;
+		if (debugMainPathCount < 50) {
+			printf("[GameFileClass::Set_Name] DEBUG: Main path check '%s' - %s\n", 
+				m_filePath, m_fileExists ? "FOUND" : "NOT FOUND");
+			debugMainPathCount++;
+		}
 	}
 
 
@@ -322,6 +342,13 @@ char const * GameFileClass::Set_Name( char const *filename )
 //-------------------------------------------------------------------------------------------------
 bool GameFileClass::Is_Available( int forced )
 {
+	// Debug: Log Is_Available result
+	static int debugAvailCount = 0;
+	if (debugAvailCount < 30) {
+		printf("[GameFileClass::Is_Available] DEBUG: file='%s' path='%s' exists=%s\n", 
+			m_filename, m_filePath, m_fileExists ? "TRUE" : "FALSE");
+		debugAvailCount++;
+	}
 
 	// not maintaining any GDF compatibility, all files should be where the m_filePath says
 	return m_fileExists;

@@ -47,7 +47,7 @@ class RefCountClass;
 
 struct ActiveRefStruct
 {
-	const char *	File;
+	const char* File;
 	int						Line;
 };
 
@@ -82,8 +82,8 @@ struct ActiveRefStruct
 **
 */
 
-typedef DataNode<RefCountClass *>	RefCountNodeClass;
-typedef List<RefCountNodeClass *>	RefCountListClass;
+typedef DataNode<RefCountClass*>	RefCountNodeClass;
+typedef List<RefCountNodeClass*>	RefCountListClass;
 
 /*
 ** Note that Add_Ref and Release_Ref are always const, because copying, destroying and reference
@@ -108,7 +108,7 @@ public:
 	/*
 	** The reference counter value cannot be copied.
 	*/
-	RefCountClass(const RefCountClass & )
+	RefCountClass(const RefCountClass&)
 		: NumRefs(1)
 #ifdef RTS_DEBUG
 		, ActiveRefNode(this)
@@ -129,7 +129,7 @@ public:
 #ifdef RTS_DEBUG
 	void Add_Ref(void) const;
 #else
-	void Add_Ref(void) const							{ NumRefs++; }
+	void Add_Ref(void) const { NumRefs++; }
 #endif
 
 	/*
@@ -151,21 +151,21 @@ public:
 	/*
 	** Check the number of references to this object.
 	*/
-	int					Num_Refs(void) const						{ return NumRefs; }
+	int					Num_Refs(void) const { return NumRefs; }
 
 	/*
 	** Delete_This - this function will be called when the object is being
 	** destroyed as a result of its last reference being released.  Its
 	** job is to actually destroy the object.
 	*/
-	virtual void		Delete_This(void)							{ delete this; }
+	virtual void		Delete_This(void) { delete this; }
 
 	/*
 	** Total_Refs - This static function can be used to get the total number
 	** of references that have been made.  Once you've released all of your
 	** objects, it should go to zero.
 	*/
-	static int			Total_Refs(void)							{ return TotalRefs; }
+	static int			Total_Refs(void) { return TotalRefs; }
 
 protected:
 
@@ -196,12 +196,12 @@ private:
 	/*
 	** increments the total reference count
 	*/
-	static void			Inc_Total_Refs(const RefCountClass *);
+	static void			Inc_Total_Refs(const RefCountClass*);
 
 	/*
 	** decrements the total reference count
 	*/
-	static void			Dec_Total_Refs(const RefCountClass *);
+	static void			Dec_Total_Refs(const RefCountClass*);
 
 public:
 
@@ -225,22 +225,22 @@ public:
 	/*
 	** Adds the ref obj pointer to the active ref list
 	*/
-   static RefCountClass *			Add_Active_Ref(RefCountClass *obj);
+	static RefCountClass* Add_Active_Ref(RefCountClass* obj);
 
 	/*
 	** Updates the owner file/line for the given ref obj in the active ref list
 	*/
-	static RefCountClass *			Set_Ref_Owner(RefCountClass *obj,const char * file,int line);
+	static RefCountClass* Set_Ref_Owner(RefCountClass* obj, const char* file, int line);
 
 	/*
 	** Remove the ref obj from the active ref list
 	*/
-	static void							Remove_Active_Ref(RefCountClass * obj);
+	static void							Remove_Active_Ref(RefCountClass* obj);
 
 	/*
 	**	Confirm the active ref object using the pointer of the refbaseclass as a search key
 	*/
-	static bool							Validate_Active_Ref(RefCountClass * obj);
+	static bool							Validate_Active_Ref(RefCountClass* obj);
 
 #endif // RTS_DEBUG
 

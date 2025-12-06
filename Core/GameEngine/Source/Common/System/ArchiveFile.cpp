@@ -32,7 +32,7 @@
 #include "Common/ArchiveFileSystem.h"
 #include "Common/file.h"
 #include "Common/PerfTimer.h"
-
+#include "Utility/compat.h"
 
 // checks to see if str matches searchString.  Search string is done in the
 // using * and ? as wildcards. * is used to denote any number of characters,
@@ -49,14 +49,15 @@ static Bool SearchStringMatches(AsciiString str, AsciiString searchString)
 		return FALSE;
 	}
 
-	const char *c1 = str.str();
-	const char *c2 = searchString.str();
+	const char* c1 = str.str();
+	const char* c2 = searchString.str();
 
 	while ((*c1 == *c2) || (*c2 == '?') || (*c2 == '*')) {
 		if ((*c1 == *c2) || (*c2 == '?')) {
 			++c1;
 			++c2;
-		} else if (*c2 == '*') {
+		}
+		else if (*c2 == '*') {
 			++c2;
 			if (*c2 == 0) {
 				return TRUE;
@@ -94,17 +95,25 @@ ArchiveFile::ArchiveFile()
 {
 }
 
-void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo *fileInfo)
+void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileInfo)
 {
-	DetailedArchivedDirectoryInfo *dirInfo = &m_rootDirectory;
+	// printf("[ArchiveFile::addFile] Adding file: '%s' (filename: '%s', offset: %u, size: %u)\n",
+	// 	path.str(), fileInfo->m_filename.str(), fileInfo->m_offset, fileInfo->m_size);
+	// 
+
+	DetailedArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
 	AsciiString token;
 	AsciiString tokenizer = path;
 	tokenizer.toLower();
-	tokenizer.nextToken(&token, "\\/");
+	// Use backslash since .big files store Windows-style paths
+	tokenizer.nextToken(&token, "\\");
 
 	while (token.getLength() > 0)
 	{
+		// printf("[ArchiveFile::addFile] Creating/finding directory: '%s'\n", token.str());
+		// 
+
 		DetailedArchivedDirectoryInfoMap::iterator tempiter = dirInfo->m_directories.find(token);
 		if (tempiter == dirInfo->m_directories.end())
 		{
@@ -116,49 +125,89 @@ void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo *fileI
 			dirInfo = &tempiter->second;
 		}
 
-		tokenizer.nextToken(&token, "\\/");
+		tokenizer.nextToken(&token, "\\");
 	}
 
-	dirInfo->m_files[fileInfo->m_filename] = *fileInfo;
+	// printf("[ArchiveFile::addFile] Storing file '%s' in final directory\n", fileInfo->m_filename.str());
+	// 
+
+	// Store with lowercase filename for case-insensitive lookup
+	AsciiString lowercaseFilename = fileInfo->m_filename;
+	lowercaseFilename.toLower();
+	dirInfo->m_files[lowercaseFilename] = *fileInfo;
 }
 
-void ArchiveFile::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const
+void ArchiveFile::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList& filenameList, Bool searchSubdirectories) const
 {
-	const DetailedArchivedDirectoryInfo *dirInfo = &m_rootDirectory;
+	const DetailedArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
 	AsciiString token;
 	AsciiString tokenizer = originalDirectory;
 	tokenizer.toLower();
-	tokenizer.nextToken(&token, "\\/");
+
+	// Normalize forward slashes to backslashes (archive uses Windows-style paths)
+	for (char* p = const_cast<char*>(tokenizer.str()); *p; ++p) {
+		if (*p == '/') *p = '\\';
+	}
+
+	// printf("[ArchiveFile::getFileListInDirectory] originalDir='%s', search='%s'\n",
+	// originalDirectory.str(), searchName.str());
+	// printf("[ArchiveFile::getFileListInDirectory] Tokenizer (normalized): '%s'\n",
+	// tokenizer.str());
+	// 
+
+	// Use backslash since .big files store Windows-style paths
+	tokenizer.nextToken(&token, "\\");
 
 	while (token.getLength() > 0) {
+		// printf("[ArchiveFile::getFileListInDirectory] Looking for dir token: '%s'\n", token.str());
+		// 
 
 		DetailedArchivedDirectoryInfoMap::const_iterator it = dirInfo->m_directories.find(token);
 		if (it != dirInfo->m_directories.end())
 		{
 			dirInfo = &it->second;
+			// printf("[ArchiveFile::getFileListInDirectory] Found directory: '%s'\n", token.str());
+			// 
 		}
 		else
 		{
 			// if the directory doesn't exist, then there aren't any files to be had.
+			// printf("[ArchiveFile::getFileListInDirectory] Directory NOT FOUND: '%s'\n", token.str());
+			// printf("[ArchiveFile::getFileListInDirectory] Available directories at this level (%zu):\n",
+			// dirInfo->m_directories.size());
+			// 
+			int count = 0;
+			for (DetailedArchivedDirectoryInfoMap::const_iterator dit = dirInfo->m_directories.begin();
+				dit != dirInfo->m_directories.end() && count < 30; ++dit, ++count)
+			{
+				// printf("  [%d] '%s'\n", count, dit->first.str());
+			}
+			if (dirInfo->m_directories.size() > 30) {
+				// printf("  ... and %zu more\n", dirInfo->m_directories.size() - 30);
+			}
+			// 
 			return;
 		}
 
-		tokenizer.nextToken(&token, "\\/");
+		tokenizer.nextToken(&token, "\\");
 	}
 
+	// printf("[ArchiveFile::getFileListInDirectory] Directory found, searching for files matching '%s'\n", searchName.str());
+	// 
 	getFileListInDirectory(dirInfo, originalDirectory, searchName, filenameList, searchSubdirectories);
 }
 
-void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo *dirInfo, const AsciiString& currentDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const
+void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo* dirInfo, const AsciiString& currentDirectory, const AsciiString& searchName, FilenameList& filenameList, Bool searchSubdirectories) const
 {
 	DetailedArchivedDirectoryInfoMap::const_iterator diriter = dirInfo->m_directories.begin();
 	while (diriter != dirInfo->m_directories.end()) {
-		const DetailedArchivedDirectoryInfo *tempDirInfo = &(diriter->second);
+		const DetailedArchivedDirectoryInfo* tempDirInfo = &(diriter->second);
 		AsciiString tempdirname;
 		tempdirname = currentDirectory;
-		if ((tempdirname.getLength() > 0) && (!tempdirname.endsWith("\\"))) {
-			tempdirname.concat('\\');
+		// Use GET_BIG_FILE_SEPARATOR for archive paths - they always use Windows backslash
+		if ((tempdirname.getLength() > 0) && (!tempdirname.endsWith((char*)GET_BIG_FILE_SEPARATOR()))) {
+			tempdirname.concat(GET_BIG_FILE_SEPARATOR());
 		}
 		tempdirname.concat(tempDirInfo->m_directoryName);
 		getFileListInDirectory(tempDirInfo, tempdirname, searchName, filenameList, searchSubdirectories);
@@ -170,8 +219,9 @@ void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo *di
 		if (SearchStringMatches(fileiter->second.m_filename, searchName)) {
 			AsciiString tempfilename;
 			tempfilename = currentDirectory;
-			if ((tempfilename.getLength() > 0) && (!tempfilename.endsWith("\\"))) {
-				tempfilename.concat('\\');
+			// Use GET_BIG_FILE_SEPARATOR for archive paths - they always use Windows backslash
+			if ((tempfilename.getLength() > 0) && (!tempfilename.endsWith((char*)GET_BIG_FILE_SEPARATOR()))) {
+				tempfilename.concat(GET_BIG_FILE_SEPARATOR());
 			}
 			tempfilename.concat(fileiter->second.m_filename);
 			if (filenameList.find(tempfilename) == filenameList.end()) {
@@ -183,7 +233,7 @@ void ArchiveFile::getFileListInDirectory(const DetailedArchivedDirectoryInfo *di
 	}
 }
 
-void ArchiveFile::attachFile(File *file)
+void ArchiveFile::attachFile(File* file)
 {
 	if (m_file != NULL) {
 		m_file->close();
@@ -192,37 +242,85 @@ void ArchiveFile::attachFile(File *file)
 	m_file = file;
 }
 
-const ArchivedFileInfo * ArchiveFile::getArchivedFileInfo(const AsciiString& filename) const
+const ArchivedFileInfo* ArchiveFile::getArchivedFileInfo(const AsciiString& filename) const
 {
-	const DetailedArchivedDirectoryInfo *dirInfo = &m_rootDirectory;
+	const DetailedArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
 	AsciiString token;
 	AsciiString tokenizer = filename;
 	tokenizer.toLower();
-	tokenizer.nextToken(&token, "\\/");
+
+	// Normalize forward slashes to backslashes since .big files use Windows-style paths
+	// Need to create a new string to properly modify it
+	char normalizedPath[512];
+	const char* src = tokenizer.str();
+	int i;
+	for (i = 0; i < 511 && src[i] != '\0'; i++) {
+		normalizedPath[i] = (src[i] == '/') ? GET_BIG_FILE_SEPARATOR()[0] : src[i];
+	}
+	normalizedPath[i] = '\0';  // Null-terminate!
+	tokenizer = AsciiString(normalizedPath);
+
+	// printf("[ArchiveFile::getArchivedFileInfo] Looking for: '%s', normalized: '%s'\n", filename.str(), tokenizer.str());
+	// 
+
+	// Use backslash separator since .big files store Windows-style paths
+	tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
 
 	while (!token.find('.') || tokenizer.find('.'))
 	{
+		// printf("[ArchiveFile::getArchivedFileInfo] Searching for directory token: '%s'\n", token.str());
+		// 
+
 		DetailedArchivedDirectoryInfoMap::const_iterator it = dirInfo->m_directories.find(token);
 		if (it != dirInfo->m_directories.end())
 		{
+			// printf("[ArchiveFile::getArchivedFileInfo] Found directory: '%s'\n", token.str());
+			// 
 			dirInfo = &it->second;
 		}
 		else
 		{
+			// printf("[ArchiveFile::getArchivedFileInfo] Directory NOT FOUND: '%s'\n", token.str());
+			// 
 			return NULL;
 		}
 
-		tokenizer.nextToken(&token, "\\/");
+		// Use backslash separator since .big files store Windows-style paths
+		tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
 	}
+
+	// printf("[ArchiveFile::getArchivedFileInfo] Final token (filename): '%s'\n", token.str());
+	// printf("[ArchiveFile::getArchivedFileInfo] Files in directory (%zu total):\n", dirInfo->m_files.size());
+	// int debugCount = 0;
+	// for (ArchivedFileInfoMap::const_iterator debugIt = dirInfo->m_files.begin();
+	// 	debugIt != dirInfo->m_files.end() && debugCount < 10; ++debugIt, ++debugCount) {
+	// 	// printf("  [%d] key='%s' (hex: ", debugCount, debugIt->first.str());
+	// 	const char* s = debugIt->first.str();
+	// 	for (int i = 0; s[i] && i < 20; i++) {
+	// 		// printf("%02x ", (unsigned char)s[i]);
+	// 	}
+	// 	printf(")\n");
+	// }
+	// printf("[ArchiveFile::getArchivedFileInfo] Searching for token (hex): ");
+	// const char* ts = token.str();
+	// for (int i = 0; ts[i] && i < 20; i++) {
+	// 	printf("%02x ", (unsigned char)ts[i]);
+	// }
+	// printf("\n");
+	// 
 
 	ArchivedFileInfoMap::const_iterator it = dirInfo->m_files.find(token);
 	if (it != dirInfo->m_files.end())
 	{
+		// printf("[ArchiveFile::getArchivedFileInfo] SUCCESS - found file\n");
+		// 
 		return &it->second;
 	}
 	else
 	{
+		// printf("[ArchiveFile::getArchivedFileInfo] File NOT FOUND in map\n");
+		// 
 		return NULL;
 	}
 

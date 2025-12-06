@@ -449,7 +449,7 @@ void TTFontClass::String_Pixel_Bounds( HDC hdc, const char* string, Rect& bounds
 
 			string++;
 			height += Get_Height();
-			bounds.Width = max( bounds.Width, width );
+			bounds.Width = std::max( bounds.Width, width );
 			width = 0;
 
 		} else if( IsFontDBCS()){
@@ -480,7 +480,7 @@ void TTFontClass::String_Pixel_Bounds( HDC hdc, const char* string, Rect& bounds
 		}
 	}
 
-	bounds.Width	= max( bounds.Width, width );
+	bounds.Width	= std::max( bounds.Width, width );
 	bounds.Height	= height;
 }
 

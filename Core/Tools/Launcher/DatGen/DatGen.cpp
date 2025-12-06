@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include "BFISH.h"
 #include <Debug/DebugPrint.h>
+#include <Utility/compat.h>
 
 void __cdecl doIt(void);
 
@@ -70,13 +71,13 @@ static void doIt(void)
 	// Retrieve Hard drive S/N
 	char drive[8];
 	_splitpath((const char*)installPath, drive, NULL, NULL, NULL);
-	strcat(drive, "\\");
+	strcat(drive, GET_PATH_SEPARATOR());
 
 	DWORD volumeSerialNumber = 0;
 	DWORD maxComponentLength;
 	DWORD fileSystemFlags;
 	BOOL volInfoSuccess = GetVolumeInformation((const char*)drive, NULL, 0,
-		                    &volumeSerialNumber, &maxComponentLength, &fileSystemFlags, NULL, 0);
+		&volumeSerialNumber, &maxComponentLength, &fileSystemFlags, NULL, 0);
 
 	if (volInfoSuccess == FALSE)
 	{
@@ -153,7 +154,7 @@ static void doIt(void)
 
 	DebugPrint("Retrieved PassKey: %s\n", passKey);
 
-	const char *plainText = "Play the \"Command & Conquer: Generals\" Multiplayer Test.";
+	const char* plainText = "Play the \"Command & Conquer: Generals\" Multiplayer Test.";
 	int textLen = strlen(plainText);
 	char cypherText[128];
 
@@ -172,15 +173,15 @@ static void doIt(void)
 
 	DebugPrint("Install dir = '%s'\n", installPath);
 
-	char *lastBackslash = strrchr((char *)installPath, '\\');
+	char* lastBackslash = strrchr((char*)installPath, GET_PATH_SEPARATOR());
 	if (lastBackslash)
 		*lastBackslash = 0; // strip of \\game.exe from install path
 
-	strcat((char *)installPath, "\\Generals.dat");
+	strcat((char*)installPath, "\\Generals.dat");
 
 	DebugPrint("DAT file = '%s'\n", installPath);
 
-	FILE *fp = fopen((char *)installPath, "wb");
+	FILE* fp = fopen((char*)installPath, "wb");
 	if (fp)
 	{
 		fwrite(cypherText, textLen, 1, fp);
@@ -189,9 +190,9 @@ static void doIt(void)
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPSTR     lpCmdLine,
-                     int       nCmdShow)
+	HINSTANCE hPrevInstance,
+	LPSTR     lpCmdLine,
+	int       nCmdShow)
 {
 	doIt();
 

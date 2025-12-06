@@ -319,7 +319,7 @@ UpdateSleepTime TensileFormationUpdate::update( void )
 
 			newPos.x = newPos.x*0.93f + desiredPos.x*0.07f;
 			newPos.y = newPos.y*0.93f + desiredPos.y*0.07f;
-			newPos.z = MIN( m_lowestSlideElevation, TheTerrainLogic->getGroundHeight(newPos.x, newPos.y) );//rest on surface here
+			newPos.z = std::min( m_lowestSlideElevation, TheTerrainLogic->getGroundHeight(newPos.x, newPos.y) );//rest on surface here
 
 			tensor.normalize();
 			tensorSum.add( &tensor );

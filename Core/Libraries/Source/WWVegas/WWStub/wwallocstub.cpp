@@ -32,9 +32,9 @@
 
 void *operator new(size_t size)
 {
-	fprintf(stderr, "[wwallocstub] operator new called (size=%zu)\n", size); fflush(stderr);
+	printf("[wwallocstub] operator new called (size=%zu)\n", size); 
 	void* p = malloc(size);
-	fprintf(stderr, "[wwallocstub] operator new returning %p\n", p); fflush(stderr);
+	printf("[wwallocstub] operator new returning %p\n", p); 
 	return p;
 }
 
@@ -77,19 +77,19 @@ void operator delete[](void * p, const char *, int)
 
 void* createW3DMemPool(const char *poolName, int allocationSize)
 {
-	fprintf(stderr, "[wwallocstub] createW3DMemPool called for %s\n", poolName); fflush(stderr);
+	printf("[wwallocstub] createW3DMemPool called for %s\n", poolName); 
 	return NULL;
 }
 
 void* allocateFromW3DMemPool(void* pool, int allocationSize)
 {
-	fprintf(stderr, "[wwallocstub] allocateFromW3DMemPool called (size=%d)\n", allocationSize); fflush(stderr);
+	printf("[wwallocstub] allocateFromW3DMemPool called (size=%d)\n", allocationSize); 
 	return malloc(allocationSize);
 }
 
 void* allocateFromW3DMemPool(void* pool, int allocationSize, const char* msg, int unused)
 {
-	fprintf(stderr, "[wwallocstub] allocateFromW3DMemPool (debug) called (size=%d, msg=%s)\n", allocationSize, msg); fflush(stderr);
+	printf("[wwallocstub] allocateFromW3DMemPool (debug) called (size=%d, msg=%s)\n", allocationSize, msg); 
 	return malloc(allocationSize);
 }
 

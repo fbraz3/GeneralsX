@@ -1,7 +1,7 @@
 set(CRCDIFF_SRC
     "CRCDiff.cpp"
     "debug.cpp"
-    "debug.h"
+    "debug_renamed.h"
     "expander.cpp"
     "expander.h"
     "KVPair.cpp"

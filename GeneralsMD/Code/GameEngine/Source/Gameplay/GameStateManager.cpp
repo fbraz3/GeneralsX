@@ -99,8 +99,8 @@ void GameStateManager_Initialize(GameStateManager* manager) {
     manager->total_saves = 0;
     manager->total_loads = 0;
     
-    fprintf(stdout, "Phase 36: Game State Manager initialized\n");
-    fprintf(stdout, "Max states: %u, Max undo: %u\n", manager->max_states, manager->max_undo);
+    printf("Phase 36: Game State Manager initialized\n");
+    printf("Max states: %u, Max undo: %u\n", manager->max_states, manager->max_undo);
 }
 
 void GameStateManager_Shutdown(GameStateManager* manager) {
@@ -109,7 +109,7 @@ void GameStateManager_Shutdown(GameStateManager* manager) {
     manager->num_states = 0;
     manager->undo_count = 0;
     
-    fprintf(stdout, "Phase 36: Game State Manager shutdown\n");
+    printf("Phase 36: Game State Manager shutdown\n");
 }
 
 int GameStateManager_SaveGame(GameStateManager* manager, const char* filename, 
@@ -146,7 +146,7 @@ int GameStateManager_SaveGame(GameStateManager* manager, const char* filename,
     fclose(file);
     manager->total_saves++;
     
-    fprintf(stdout, "Phase 36: Game saved to %s\n", filename);
+    printf("Phase 36: Game saved to %s\n", filename);
     return 1;
 }
 
@@ -195,7 +195,7 @@ int GameStateManager_LoadGame(GameStateManager* manager, const char* filename) {
     fclose(file);
     manager->total_loads++;
     
-    fprintf(stdout, "Phase 36: Game loaded from %s\n", filename);
+    printf("Phase 36: Game loaded from %s\n", filename);
     return 1;
 }
 
@@ -225,7 +225,7 @@ int GameStateManager_DeleteSave(GameStateManager* manager, const char* filename)
     snprintf(full_path, sizeof(full_path), "%s/%s", manager->save_path, filename);
     
     if (remove(full_path) == 0) {
-        fprintf(stdout, "Phase 36: Save file deleted: %s\n", filename);
+        printf("Phase 36: Save file deleted: %s\n", filename);
         return 1;
     }
     
@@ -268,7 +268,7 @@ int GameStateManager_RestoreGameState(GameStateManager* manager, uint32_t state_
     if (!manager || state_id >= manager->num_states) return 0;
     
     /* Restore from snapshot */
-    fprintf(stdout, "Phase 36: Restoring game state %u\n", state_id);
+    printf("Phase 36: Restoring game state %u\n", state_id);
     
     return 1;
 }
@@ -339,7 +339,7 @@ int GameStateManager_DeserializeUnit(GameStateManager* manager, const Serialized
     if (!manager || !unit) return 0;
     
     /* Restore unit to game world */
-    fprintf(stdout, "Phase 36: Deserializing unit %u\n", unit->unit_id);
+    printf("Phase 36: Deserializing unit %u\n", unit->unit_id);
     
     return 1;
 }
@@ -375,7 +375,7 @@ int GameStateManager_SerializeBuilding(GameStateManager* manager, uint32_t build
 int GameStateManager_DeserializeBuilding(GameStateManager* manager, const SerializedBuilding* building) {
     if (!manager || !building) return 0;
     
-    fprintf(stdout, "Phase 36: Deserializing building %u\n", building->building_id);
+    printf("Phase 36: Deserializing building %u\n", building->building_id);
     
     return 1;
 }
@@ -411,7 +411,7 @@ int GameStateManager_SerializeProjectile(GameStateManager* manager, uint32_t pro
 int GameStateManager_DeserializeProjectile(GameStateManager* manager, const SerializedProjectile* projectile) {
     if (!manager || !projectile) return 0;
     
-    fprintf(stdout, "Phase 36: Deserializing projectile %u\n", projectile->projectile_id);
+    printf("Phase 36: Deserializing projectile %u\n", projectile->projectile_id);
     
     return 1;
 }
@@ -464,7 +464,7 @@ int GameStateManager_IsVersionCompatible(GameStateManager* manager, uint32_t fil
 int GameStateManager_MigrateGameState(GameStateManager* manager, uint32_t from_version, uint32_t to_version) {
     if (!manager) return 0;
     
-    fprintf(stdout, "Phase 36: Migrating game state from v%u to v%u\n", from_version, to_version);
+    printf("Phase 36: Migrating game state from v%u to v%u\n", from_version, to_version);
     
     return 1;
 }
@@ -476,7 +476,7 @@ int GameStateManager_Undo(GameStateManager* manager) {
         manager->undo_count--;
         manager->redo_count++;
         
-        fprintf(stdout, "Phase 36: Undo - %s\n", manager->undo_history[manager->undo_count].action_name);
+        printf("Phase 36: Undo - %s\n", manager->undo_history[manager->undo_count].action_name);
         return 1;
     }
     
@@ -490,7 +490,7 @@ int GameStateManager_Redo(GameStateManager* manager) {
         manager->redo_count--;
         manager->undo_count++;
         
-        fprintf(stdout, "Phase 36: Redo - %s\n", manager->undo_history[manager->undo_count].action_name);
+        printf("Phase 36: Redo - %s\n", manager->undo_history[manager->undo_count].action_name);
         return 1;
     }
     
@@ -580,7 +580,7 @@ int GameStateManager_ValidateSaveFile(GameStateManager* manager, const char* fil
 int GameStateManager_RepairSaveFile(GameStateManager* manager, const char* filename) {
     if (!manager || !filename) return 0;
     
-    fprintf(stdout, "Phase 36: Attempting to repair save file: %s\n", filename);
+    printf("Phase 36: Attempting to repair save file: %s\n", filename);
     
     /* Repair logic would go here */
     return 0;
@@ -628,7 +628,7 @@ uint32_t GameStateManager_GetSaveFileSize(GameStateManager* manager, const char*
 int GameStateManager_ExportToJSON(GameStateManager* manager, const char* filename) {
     if (!manager || !filename) return 0;
     
-    fprintf(stdout, "Phase 36: Exporting game state to JSON: %s\n", filename);
+    printf("Phase 36: Exporting game state to JSON: %s\n", filename);
     
     return 1;
 }
@@ -636,7 +636,7 @@ int GameStateManager_ExportToJSON(GameStateManager* manager, const char* filenam
 int GameStateManager_ImportFromJSON(GameStateManager* manager, const char* filename) {
     if (!manager || !filename) return 0;
     
-    fprintf(stdout, "Phase 36: Importing game state from JSON: %s\n", filename);
+    printf("Phase 36: Importing game state from JSON: %s\n", filename);
     
     return 1;
 }
@@ -644,7 +644,7 @@ int GameStateManager_ImportFromJSON(GameStateManager* manager, const char* filen
 int GameStateManager_ExportToXML(GameStateManager* manager, const char* filename) {
     if (!manager || !filename) return 0;
     
-    fprintf(stdout, "Phase 36: Exporting game state to XML: %s\n", filename);
+    printf("Phase 36: Exporting game state to XML: %s\n", filename);
     
     return 1;
 }
@@ -652,7 +652,7 @@ int GameStateManager_ExportToXML(GameStateManager* manager, const char* filename
 int GameStateManager_ImportFromXML(GameStateManager* manager, const char* filename) {
     if (!manager || !filename) return 0;
     
-    fprintf(stdout, "Phase 36: Importing game state from XML: %s\n", filename);
+    printf("Phase 36: Importing game state from XML: %s\n", filename);
     
     return 1;
 }
@@ -699,12 +699,12 @@ int GameStateManager_ClearErrors(GameStateManager* manager) {
 void GameStateManager_PrintStateInfo(GameStateManager* manager) {
     if (!manager) return;
     
-    fprintf(stdout, "Game State Manager Info:\n");
-    fprintf(stdout, "Active states: %u\n", manager->num_states);
-    fprintf(stdout, "Total saves: %u\n", manager->total_saves);
-    fprintf(stdout, "Total loads: %u\n", manager->total_loads);
-    fprintf(stdout, "Undo history: %u entries\n", manager->undo_count);
-    fprintf(stdout, "Redo history: %u entries\n", manager->redo_count);
+    printf("Game State Manager Info:\n");
+    printf("Active states: %u\n", manager->num_states);
+    printf("Total saves: %u\n", manager->total_saves);
+    printf("Total loads: %u\n", manager->total_loads);
+    printf("Undo history: %u entries\n", manager->undo_count);
+    printf("Redo history: %u entries\n", manager->redo_count);
 }
 
 void GameStateManager_PrintSaveInfo(GameStateManager* manager, const char* filename) {
@@ -712,17 +712,17 @@ void GameStateManager_PrintSaveInfo(GameStateManager* manager, const char* filen
     
     GameStateMeta meta;
     if (GameStateManager_GetSaveMetadata(manager, filename, &meta)) {
-        fprintf(stdout, "Save File: %s\n", filename);
-        fprintf(stdout, "Level: %s\n", meta.level_name);
-        fprintf(stdout, "Player: %s\n", meta.player_name);
-        fprintf(stdout, "Playtime: %.1f seconds\n", meta.playtime_seconds);
+        printf("Save File: %s\n", filename);
+        printf("Level: %s\n", meta.level_name);
+        printf("Player: %s\n", meta.player_name);
+        printf("Playtime: %.1f seconds\n", meta.playtime_seconds);
     }
 }
 
 void GameStateManager_DumpStateToConsole(GameStateManager* manager) {
     if (!manager) return;
     
-    fprintf(stdout, "Game State Dump:\n");
-    fprintf(stdout, "Active states: %u\n", manager->num_states);
-    fprintf(stdout, "Total state size: %u bytes\n", GameStateManager_GetTotalSaveSize(manager));
+    printf("Game State Dump:\n");
+    printf("Active states: %u\n", manager->num_states);
+    printf("Total state size: %u bytes\n", GameStateManager_GetTotalSaveSize(manager));
 }

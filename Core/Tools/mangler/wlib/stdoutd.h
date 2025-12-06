@@ -30,7 +30,7 @@ class StdoutD : public OutputDevice
      memcpy(string,str,len);
      string[len]=0;
      fprintf(stdout,"%s",string);
-     fflush(stdout);
+     
      delete[](string);
      return(len);
    }

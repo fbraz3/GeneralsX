@@ -23,12 +23,13 @@
 #include "WorldBuilder.h"
 #include "OpenMap.h"
 #include "Common/GlobalData.h"
+#include <Utility/compat.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // OpenMap dialog
 
 
-OpenMap::OpenMap(TOpenMapInfo *pInfo, CWnd* pParent /*=NULL*/)
+OpenMap::OpenMap(TOpenMapInfo* pInfo, CWnd* pParent /*=NULL*/)
 	: CDialog(OpenMap::IDD, pParent),
 	m_pInfo(pInfo)
 {
@@ -64,12 +65,12 @@ END_MESSAGE_MAP()
 
 void OpenMap::OnSystemMaps()
 {
-	populateMapListbox( TRUE );
+	populateMapListbox(TRUE);
 }
 
 void OpenMap::OnUserMaps()
 {
-	populateMapListbox( FALSE );
+	populateMapListbox(FALSE);
 }
 
 void OpenMap::OnBrowse()
@@ -80,7 +81,7 @@ void OpenMap::OnBrowse()
 
 void OpenMap::OnOK()
 {
-	CListBox *pList = (CListBox *)this->GetDlgItem(IDC_OPEN_LIST);
+	CListBox* pList = (CListBox*)this->GetDlgItem(IDC_OPEN_LIST);
 	if (pList == NULL) {
 		OnCancel();
 		return;
@@ -89,21 +90,22 @@ void OpenMap::OnOK()
 	Int sel = pList->GetCurSel();
 	if (sel == LB_ERR) {
 		m_pInfo->browse = true;
-	} else {
+	}
+	else {
 		CString newName;
-		pList->GetText(sel, newName );
+		pList->GetText(sel, newName);
 		if (m_usingSystemDir)
-			m_pInfo->filename = ".\\Maps\\" + newName + "\\" + newName + ".map";
+			m_pInfo->filename = ".\\Maps\\" + newName + GET_PATH_SEPARATOR() + newName + ".map";
 		else
 		{
 			m_pInfo->filename = TheGlobalData->getPath_UserData().str();
-			m_pInfo->filename = m_pInfo->filename + "Maps\\" + newName + "\\" + newName + ".map";
+			m_pInfo->filename = m_pInfo->filename + "Maps\\" + newName + GET_PATH_SEPARATOR() + newName + ".map";
 		}
 	}
 	CDialog::OnOK();
 }
 
-void OpenMap::populateMapListbox( Bool systemMaps )
+void OpenMap::populateMapListbox(Bool systemMaps)
 {
 	m_usingSystemDir = systemMaps;
 	::AfxGetApp()->WriteProfileInt(MAP_OPENSAVE_PANEL_SECTION, "UseSystemDir", m_usingSystemDir);
@@ -120,7 +122,7 @@ void OpenMap::populateMapListbox( Bool systemMaps )
 	{
 		snprintf(dirBuf, ARRAY_SIZE(dirBuf), "%sMaps\\", TheGlobalData->getPath_UserData().str());
 	}
-	CListBox *pList = (CListBox *)this->GetDlgItem(IDC_OPEN_LIST);
+	CListBox* pList = (CListBox*)this->GetDlgItem(IDC_OPEN_LIST);
 	if (pList == NULL) return;
 	pList->ResetContent();
 	snprintf(findBuf, ARRAY_SIZE(findBuf), "%s*.*", dirBuf);
@@ -145,46 +147,49 @@ void OpenMap::populateMapListbox( Bool systemMaps )
 						found = true;
 					};
 				}
-			} catch (const std::exception& e) {
-		DEBUG_LOG(("UnknownFunction - Exception caught: %s", e.what()));
-	} catch (...) {
-		DEBUG_LOG(("UnknownFunction - Unknown exception caught"));
+			}
+			catch (const std::exception& e) {
+				DEBUG_LOG(("UnknownFunction - Exception caught: %s", e.what()));
+			}
+			catch (...) {
+				DEBUG_LOG(("UnknownFunction - Unknown exception caught"));
 
-		} while (FindNextFile(hFindFile, &findData));
+			} while (FindNextFile(hFindFile, &findData));
 
-		if (hFindFile) FindClose(hFindFile);
- 	}
-	if (found) {
-		pList->SetCurSel(0);
-	} else {
-		CWnd *pOk = GetDlgItem(IDOK);
-		if (pOk) pOk->EnableWindow(false);
+			if (hFindFile) FindClose(hFindFile);
+		}
+		if (found) {
+			pList->SetCurSel(0);
+		}
+		else {
+			CWnd* pOk = GetDlgItem(IDOK);
+			if (pOk) pOk->EnableWindow(false);
+		}
 	}
-}
 
-BOOL OpenMap::OnInitDialog()
-{
-	CDialog::OnInitDialog();
+	BOOL OpenMap::OnInitDialog()
+	{
+		CDialog::OnInitDialog();
 
-	CButton *pSystemMaps = (CButton *)this->GetDlgItem(IDC_SYSTEMMAPS);
-	if (pSystemMaps != NULL)
-		pSystemMaps->SetCheck( m_usingSystemDir );
+		CButton* pSystemMaps = (CButton*)this->GetDlgItem(IDC_SYSTEMMAPS);
+		if (pSystemMaps != NULL)
+			pSystemMaps->SetCheck(m_usingSystemDir);
 
-	CButton *pUserMaps = (CButton *)this->GetDlgItem(IDC_USERMAPS);
-	if (pUserMaps != NULL)
-		pUserMaps->SetCheck( !m_usingSystemDir );
+		CButton* pUserMaps = (CButton*)this->GetDlgItem(IDC_USERMAPS);
+		if (pUserMaps != NULL)
+			pUserMaps->SetCheck(!m_usingSystemDir);
 
-	// TheSuperHackers @tweak Originally World Builder has hidden the System Maps tab button in Release builds,
-	// perhaps with the intention to only show User Maps to community users. However, World Builder did release
-	// as a Debug build and always had the System Maps tab, therefore this now shows it always for simplicity.
+		// TheSuperHackers @tweak Originally World Builder has hidden the System Maps tab button in Release builds,
+		// perhaps with the intention to only show User Maps to community users. However, World Builder did release
+		// as a Debug build and always had the System Maps tab, therefore this now shows it always for simplicity.
 
-	populateMapListbox( m_usingSystemDir );
+		populateMapListbox(m_usingSystemDir);
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
-}
+		return TRUE;  // return TRUE unless you set the focus to a control
+		// EXCEPTION: OCX Property Pages should return FALSE
+	}
 
-void OpenMap::OnDblclkOpenList()
-{
-	OnOK();
-}
+	void OpenMap::OnDblclkOpenList()
+	{
+		OnOK();
+	}

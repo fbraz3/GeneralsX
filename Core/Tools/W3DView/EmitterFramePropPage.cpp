@@ -110,8 +110,8 @@ EmitterFramePropPageClass::Initialize (void)
 		//
 		//	Determine what the min and max rotations are
 		//
-		m_MaxFrame = WWMath::Max(m_Frames.Start,1.0f);
-		m_MinFrame = WWMath::Min(m_Frames.Start,0.0f);
+		m_MaxFrame = std::max(m_Frames.Start,1.0f);
+		m_MinFrame = std::min(m_Frames.Start,0.0f);
 
 		for (UINT index = 0; index < m_Frames.NumKeyFrames; index ++) {
 			if (m_Frames.Values[index] > m_MaxFrame) {
@@ -243,8 +243,8 @@ BOOL EmitterFramePropPageClass::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* 
 					//
 					//	Determine if the user changed the 'max' or 'min' frame
 					//
-					float new_max = WWMath::Max(frame,1.0f);
-					float new_min = WWMath::Min(frame,0.0f);
+					float new_max = std::max(frame,1.0f);
+					float new_min = std::min(frame,0.0f);
 
 					int count = m_FrameBar->Get_Point_Count ();
 					for (int index = 0; index < count; index ++) {

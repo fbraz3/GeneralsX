@@ -124,8 +124,8 @@ struct RealRange
 	// both ranges
 	void combine( RealRange &other )
 	{
-		lo = min( lo, other.lo );
-		hi = max( hi, other.hi );
+		lo = std::min( lo, other.lo );
+		hi = std::max( hi, other.hi );
 	}
 };
 

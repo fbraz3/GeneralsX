@@ -39,10 +39,10 @@
 //#define ENABLE_TIME_AND_MEMORY_LOG
 #include "wwstring.h"
 
-#ifdef _UNIX
-typedef signed long long __int64;
-typedef signed long long _int64;
-#endif
+// #ifdef _UNIX
+// typedef signed long long __int64;
+// typedef signed long long _int64;
+// #endif
 
 // enable profiling by default in debug mode.
 #ifdef WWDEBUG
@@ -90,11 +90,11 @@ public:
 protected:
 
 	const char *					Name;
-	int								TotalCalls;
-	float								TotalTime;
-	__int64							StartTime;
-	int								RecursionCounter;
-	unsigned						ProfileStringID;
+	int							TotalCalls;
+	float							TotalTime;
+	int64_t						StartTime;
+	int						RecursionCounter;
+	unsigned					ProfileStringID;
 
 	WWProfileHierachyNodeClass *	Parent;
 	WWProfileHierachyNodeClass *	Child;
@@ -225,7 +225,7 @@ private:
 	static	WWProfileHierachyNodeClass *	CurrentNode;
 	static	WWProfileHierachyNodeClass *	CurrentRootNode;
 	static	int									FrameCounter;
-	static	__int64								ResetTime;
+	static	int64_t								ResetTime;
 	static	bool									IsProfileEnabled;
 
 	friend	class		WWProfileInOrderIterator;
@@ -275,7 +275,7 @@ public:
 	~WWTimeItClass( void );
 private:
 	const char * Name;
-	__int64	Time;
+	int64_t	Time;
 };
 
 #ifdef ENABLE_WWPROFILE
@@ -296,7 +296,7 @@ public:
 	~WWMeasureItClass( void );
 
 private:
-	__int64	Time;
+	int64_t	Time;
 	float *  PResult;
 };
 

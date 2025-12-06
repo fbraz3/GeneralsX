@@ -71,7 +71,7 @@ SDL2_ThreadHandle SDL2_CreateThread(
     size_t stack_size)
 {
     if (!func) {
-        fprintf(stderr, "Phase 04: SDL2_CreateThread - NULL function pointer\n");
+        printf("Phase 04: SDL2_CreateThread - NULL function pointer\n");
         return (SDL2_ThreadHandle)-1;
     }
 
@@ -87,7 +87,7 @@ SDL2_ThreadHandle SDL2_CreateThread(
 
     ThreadWrapper* wrapper = new ThreadWrapper{func, arg, name};
     if (!wrapper) {
-        fprintf(stderr, "Phase 04: Failed to allocate thread wrapper\n");
+        printf("Phase 04: Failed to allocate thread wrapper\n");
         pthread_attr_destroy(&attr);
         return (SDL2_ThreadHandle)-1;
     }
@@ -98,7 +98,7 @@ SDL2_ThreadHandle SDL2_CreateThread(
     pthread_attr_destroy(&attr);
 
     if (result != 0) {
-        fprintf(stderr, "Phase 04: pthread_create failed (result: %d)\n", result);
+        printf("Phase 04: pthread_create failed (result: %d)\n", result);
         delete wrapper;
         return (SDL2_ThreadHandle)-1;
     }
@@ -122,7 +122,7 @@ int SDL2_WaitThread(SDL2_ThreadHandle thread)
         return 0;
     }
 
-    fprintf(stderr, "Phase 04: pthread_join failed (result: %d)\n", result);
+    printf("Phase 04: pthread_join failed (result: %d)\n", result);
     return -1;
 }
 
@@ -141,7 +141,7 @@ int SDL2_DetachThread(SDL2_ThreadHandle thread)
         return 0;
     }
 
-    fprintf(stderr, "Phase 04: pthread_detach failed (result: %d)\n", result);
+    printf("Phase 04: pthread_detach failed (result: %d)\n", result);
     return -1;
 }
 
@@ -177,14 +177,14 @@ SDL2_Mutex SDL2_CreateMutex(const char* name)
 
     pthread_mutex_t* mutex = new pthread_mutex_t;
     if (!mutex) {
-        fprintf(stderr, "Phase 04: Failed to allocate mutex\n");
+        printf("Phase 04: Failed to allocate mutex\n");
         return NULL;
     }
 
     int result = pthread_mutex_init(mutex, NULL);
 
     if (result != 0) {
-        fprintf(stderr, "Phase 04: pthread_mutex_init failed (result: %d)\n", result);
+        printf("Phase 04: pthread_mutex_init failed (result: %d)\n", result);
         delete mutex;
         return NULL;
     }
@@ -235,7 +235,7 @@ int SDL2_LockMutex(SDL2_Mutex mutex, int timeout_ms)
         return 0;  /* Acquired immediately */
     }
     if (result != EBUSY) {
-        fprintf(stderr, "Phase 04: pthread_mutex_trylock failed (result: %d)\n", result);
+        printf("Phase 04: pthread_mutex_trylock failed (result: %d)\n", result);
         return -1;
     }
     
@@ -249,7 +249,7 @@ int SDL2_LockMutex(SDL2_Mutex mutex, int timeout_ms)
             return 0;  /* Acquired */
         }
         if (result != EBUSY) {
-            fprintf(stderr, "Phase 04: pthread_mutex_trylock failed (result: %d)\n", result);
+            printf("Phase 04: pthread_mutex_trylock failed (result: %d)\n", result);
             return -1;
         }
         clock_gettime(CLOCK_REALTIME, &now);
@@ -264,7 +264,7 @@ int SDL2_LockMutex(SDL2_Mutex mutex, int timeout_ms)
     if (result == ETIMEDOUT) {
         return -1;  /* Timeout */
     }
-    fprintf(stderr, "Phase 04: pthread_mutex_timedlock failed (result: %d)\n", result);
+    printf("Phase 04: pthread_mutex_timedlock failed (result: %d)\n", result);
     return -1;
     #endif
 }
@@ -414,7 +414,7 @@ int SDL2_ConditionWait(
         return -1;  /* Timeout */
     }
 
-    fprintf(stderr, "Phase 04: pthread_cond_timedwait failed (result: %d)\n", result);
+    printf("Phase 04: pthread_cond_timedwait failed (result: %d)\n", result);
     return -1;
 }
 
@@ -450,7 +450,7 @@ SDL2_Semaphore SDL2_CreateSemaphore(int initial_count, int max_count)
 
     SDL2_Semaphore_Internal* sem = new SDL2_Semaphore_Internal;
     if (!sem) {
-        fprintf(stderr, "Phase 04: Failed to allocate semaphore\n");
+        printf("Phase 04: Failed to allocate semaphore\n");
         return NULL;
     }
 

@@ -258,7 +258,7 @@ float RenderObjClass::Calculate_Texture_Reduction_Factor(float norm_screensize)
 	// is represented as a float is for the texture reduction algorithms to incorporate hysteresis
 	// properly.
 	float reduction = sqrt(Get_Native_Screen_Size() / norm_screensize);
-	reduction = MAX(1.0f, reduction);
+	reduction = std::max(1.0f, reduction);
 
 	// We want to calculate the log base 2. Since the standard libraries have no log-base-2
 	// function, we use the following: log-base-2(x) = log(x)/log(2) where log is the natural

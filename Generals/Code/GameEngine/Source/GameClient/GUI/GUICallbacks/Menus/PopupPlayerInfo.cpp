@@ -489,7 +489,7 @@ void InsertBattleHonor(GameWindow *list, const Image *image, Bool enabled, Int i
 	{
 		column = 0;
 		row = row + 1 + rowsToSkip;
-		rowsToSkip = max(rowsToSkip-1, 0);
+		rowsToSkip = std::max(rowsToSkip-1, 0);
 	}
 }
 
@@ -720,7 +720,7 @@ Int CalculateRank( const PSPlayerStats& stats )
 		rankPoints += 1 * TheRankPointValues->m_completedSoloCampaigns;
 	}
 
-	rankPoints = max(0, rankPoints); // clip off negative values, since discons can push us below 0.
+	rankPoints = std::max(0, rankPoints); // clip off negative values, since discons can push us below 0.
 
 	return rankPoints;
 
@@ -849,7 +849,7 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 	win = findWindow(NULL, parentWindowName, "StaticTextStreakValue");
 	if(win)
 	{
-		Int streak = max(stats.lossesInARow, stats.winsInARow);
+		Int streak = std::max(stats.lossesInARow, stats.winsInARow);
 		uStr.format(L"%d", streak);
 		GadgetStaticTextSetText(win, uStr);
 	}

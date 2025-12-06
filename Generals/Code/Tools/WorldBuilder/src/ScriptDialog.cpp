@@ -41,29 +41,33 @@
 #include "Common/ThingFactory.h"
 #include "WaypointOptions.h"
 #include "Common/UnicodeString.h"
+#include <Utility/compat.h>
 
 static const Int K_LOCAL_TEAMS_VERSION_1 = 1;
 
 #define SCRIPT_DIALOG_SECTION "ScriptDialog"
 
 static const char* NEUTRAL_NAME_STR = "(neutral)";
-ScriptDialog *ScriptDialog::m_staticThis = NULL;
+ScriptDialog* ScriptDialog::m_staticThis = NULL;
 
-static AsciiString formatScriptLabel(Script *pScr) {
+static AsciiString formatScriptLabel(Script* pScr) {
 	AsciiString fmt;
 	if (pScr->isSubroutine()) {
 		fmt.concat("[S ");
-	} else {
+	}
+	else {
 		fmt.concat("[ns ");
 	}
 	if (pScr->isActive()) {
 		fmt.concat("A ");
-	} else {
+	}
+	else {
 		fmt.concat("na ");
 	}
 	if (pScr->isOneShot()) {
 		fmt.concat("D] [");
-	} else {
+	}
+	else {
 		fmt.concat("nd] [");
 	}
 	if (pScr->isEasy()) {
@@ -74,14 +78,15 @@ static AsciiString formatScriptLabel(Script *pScr) {
 	}
 	if (pScr->isHard()) {
 		fmt.concat("H]");
-	} else {
+	}
+	else {
 		fmt.concat("]");
 	}
 	fmt.concat(pScr->getName().str());
 	return fmt;
 }
 
-static AsciiString formatScriptLabel(ScriptGroup *pScrGrp) {
+static AsciiString formatScriptLabel(ScriptGroup* pScrGrp) {
 	AsciiString fmt;
 	if (pScrGrp->isSubroutine())
 	{
@@ -125,7 +130,7 @@ void CSDTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 	/// Display a check mark to signify status of active-ness
 	if (item)
 	{
-		ScriptDialog *sd = (ScriptDialog*) GetParent();
+		ScriptDialog* sd = (ScriptDialog*)GetParent();
 		if (sd->friend_getCurScript() != NULL)
 		{
 			Bool active = sd->friend_getCurScript()->isActive();
@@ -137,7 +142,7 @@ void CSDTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 			pPopup->CheckMenuItem(ID_SCRIPTACTIVATE, MF_BYCOMMAND | (active ? MF_CHECKED : MF_UNCHECKED));
 		}
 
-	pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x, point.y, GetParent());
+		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x, point.y, GetParent());
 	}
 }
 
@@ -161,7 +166,7 @@ ScriptDialog::ScriptDialog(CWnd* pParent /*=NULL*/)
 ScriptDialog::~ScriptDialog()
 {
 	EditParameter::setCurSidesList(NULL);
-	m_staticThis=NULL;
+	m_staticThis = NULL;
 }
 
 
@@ -199,26 +204,27 @@ END_MESSAGE_MAP()
 void ScriptDialog::OnSelchangedScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
-	if (pNMTreeView->itemNew.hItem==NULL) {
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	if (pNMTreeView->itemNew.hItem == NULL) {
 		m_curSelection.IntToList(0);
 		m_curSelection.m_objType = ListType::PLAYER_TYPE;
-	} else {
+	}
+	else {
 		m_curSelection.IntToList(pNMTreeView->itemNew.lParam);
-		DEBUG_ASSERTCRASH(m_curSelection.m_playerIndex <m_sides.getNumSides(),(""));
+		DEBUG_ASSERTCRASH(m_curSelection.m_playerIndex < m_sides.getNumSides(), (""));
 		DEBUG_ASSERTCRASH(m_curSelection.m_objType != ListType::BOGUS_TYPE, (""));
 	}
 	if (!this->m_draggingTreeView) {
 		pTree->SelectDropTarget(pNMTreeView->itemNew.hItem);
 	}
-	Script *pScript = getCurScript();
-	ScriptGroup *pGroup = getCurGroup();
+	Script* pScript = getCurScript();
+	ScriptGroup* pGroup = getCurGroup();
 
-	CWnd *pWnd = GetDlgItem(IDC_EDIT_SCRIPT);
-	pWnd->EnableWindow(pScript!=NULL || pGroup!=NULL);
+	CWnd* pWnd = GetDlgItem(IDC_EDIT_SCRIPT);
+	pWnd->EnableWindow(pScript != NULL || pGroup != NULL);
 
 	pWnd = GetDlgItem(IDC_COPY_SCRIPT);
-	pWnd->EnableWindow(pScript!=NULL);
+	pWnd->EnableWindow(pScript != NULL);
 
 	pWnd = GetDlgItem(IDC_DELETE);
 	pWnd->EnableWindow(m_curSelection.m_objType != ListType::PLAYER_TYPE);
@@ -242,28 +248,29 @@ void ScriptDialog::OnSelchangedScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 /* The purpose of these two functions is to allow
 the inner class CSDTreeCtrl the ability to check
 what Script and ScriptGroup belong to the cursor location */
-Script *ScriptDialog::friend_getCurScript(void)
+Script* ScriptDialog::friend_getCurScript(void)
 {
 	return getCurScript();
 }
 
-ScriptGroup *ScriptDialog::friend_getCurGroup(void)
+ScriptGroup* ScriptDialog::friend_getCurGroup(void)
 {
 	return getCurGroup();
 }
 
-Script *ScriptDialog::getCurScript(void)
+Script* ScriptDialog::getCurScript(void)
 {
 	if (m_curSelection.m_objType == ListType::SCRIPT_IN_PLAYER_TYPE || m_curSelection.m_objType == ListType::SCRIPT_IN_GROUP_TYPE) {
-		ScriptList *pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
+		ScriptList* pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
 		if (pSL) {
-			Script *pScr=NULL;
+			Script* pScr = NULL;
 			if (m_curSelection.m_objType == ListType::SCRIPT_IN_PLAYER_TYPE) {
 				pScr = pSL->getScript();
-			}	else {
+			}
+			else {
 				Int groupNdx;
-				ScriptGroup *pGroup = pSL->getScriptGroup();
-				for (groupNdx = 0; pGroup; groupNdx++,pGroup=pGroup->getNext()) {
+				ScriptGroup* pGroup = pSL->getScriptGroup();
+				for (groupNdx = 0; pGroup; groupNdx++, pGroup = pGroup->getNext()) {
 					if (groupNdx == m_curSelection.m_groupIndex) {
 						pScr = pGroup->getScript();
 						break;
@@ -271,7 +278,7 @@ Script *ScriptDialog::getCurScript(void)
 				}
 			}
 			Int scriptNdx;
-			for (scriptNdx = 0; pScr; scriptNdx++,pScr=pScr->getNext()) {
+			for (scriptNdx = 0; pScr; scriptNdx++, pScr = pScr->getNext()) {
 				if (scriptNdx == m_curSelection.m_scriptIndex) {
 					return pScr;
 				}
@@ -281,9 +288,9 @@ Script *ScriptDialog::getCurScript(void)
 	return NULL;
 }
 
-ScriptGroup *ScriptDialog::getCurGroup(void)
+ScriptGroup* ScriptDialog::getCurGroup(void)
 {
-	ScriptList *pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
+	ScriptList* pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
 	if (m_curSelection.m_objType == ListType::PLAYER_TYPE) {
 		return NULL;
 	}
@@ -292,8 +299,8 @@ ScriptGroup *ScriptDialog::getCurGroup(void)
 	}
 	if (pSL) {
 		Int groupNdx;
-		ScriptGroup *pGroup = pSL->getScriptGroup();
-		for (groupNdx = 0; pGroup; groupNdx++,pGroup=pGroup->getNext()) {
+		ScriptGroup* pGroup = pSL->getScriptGroup();
+		for (groupNdx = 0; pGroup; groupNdx++, pGroup = pGroup->getNext()) {
 			if (groupNdx == m_curSelection.m_groupIndex) {
 				return pGroup;
 			}
@@ -303,16 +310,16 @@ ScriptGroup *ScriptDialog::getCurGroup(void)
 }
 
 /** Updates the warning flags in a script, & script conditions & actions. */
-void ScriptDialog::updateScriptWarning(Script *pScript)
+void ScriptDialog::updateScriptWarning(Script* pScript)
 {
 	pScript->setWarnings(false);
-	OrCondition *pOr;
-	for (pOr= pScript->getOrCondition(); pOr; pOr = pOr->getNextOrCondition()) {
-		Condition *pCondition;
+	OrCondition* pOr;
+	for (pOr = pScript->getOrCondition(); pOr; pOr = pOr->getNextOrCondition()) {
+		Condition* pCondition;
 		for (pCondition = pOr->getFirstAndCondition(); pCondition; pCondition = pCondition->getNext()) {
 			pCondition->setWarnings(false);
 			Int i;
-			for (i=0; i<pCondition->getNumParameters(); i++) {
+			for (i = 0; i < pCondition->getNumParameters(); i++) {
 				AsciiString warning;
 				warning = EditParameter::getWarningText(pCondition->getParameter(i));
 				if (!warning.isEmpty()) {
@@ -322,11 +329,11 @@ void ScriptDialog::updateScriptWarning(Script *pScript)
 			}
 		}
 	}
-	ScriptAction *pAction;
+	ScriptAction* pAction;
 	for (pAction = pScript->getAction(); pAction; pAction = pAction->getNext()) {
 		pAction->setWarnings(false);
 		Int i;
-		for (i=0; i<pAction->getNumParameters(); i++) {
+		for (i = 0; i < pAction->getNumParameters(); i++) {
 			AsciiString warning;
 			warning = EditParameter::getWarningText(pAction->getParameter(i));
 			if (!warning.isEmpty()) {
@@ -340,19 +347,19 @@ void ScriptDialog::updateScriptWarning(Script *pScript)
 /** Updates the warning flags in the scripts, script groups & script conditions & actions. */
 void ScriptDialog::updateWarnings()
 {
-	SidesList *sidesListP = TheSidesList;
+	SidesList* sidesListP = TheSidesList;
 	Int i;
 	if (m_staticThis) sidesListP = &m_staticThis->m_sides;
-	for (i=0; i<sidesListP->getNumSides(); i++) {
-		ScriptList *pSL = sidesListP->getSideInfo(i)->getScriptList();
-		Script *pScr;
-		for (pScr = pSL->getScript(); pScr; pScr=pScr->getNext()) {
+	for (i = 0; i < sidesListP->getNumSides(); i++) {
+		ScriptList* pSL = sidesListP->getSideInfo(i)->getScriptList();
+		Script* pScr;
+		for (pScr = pSL->getScript(); pScr; pScr = pScr->getNext()) {
 			updateScriptWarning(pScr);
 		}
-		ScriptGroup *pGroup;
-		for (pGroup = pSL->getScriptGroup(); pGroup; pGroup=pGroup->getNext()) {
+		ScriptGroup* pGroup;
+		for (pGroup = pSL->getScriptGroup(); pGroup; pGroup = pGroup->getNext()) {
 			pGroup->setWarnings(false);
-			for (pScr = pGroup->getScript(); pScr; pScr=pScr->getNext()) {
+			for (pScr = pGroup->getScript(); pScr; pScr = pScr->getNext()) {
 				updateScriptWarning(pScr);
 				if (pScr->hasWarnings()) {
 					pGroup->setWarnings(true);
@@ -367,7 +374,7 @@ BOOL ScriptDialog::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	m_staticThis = this;
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 
 	// replace current Tree Dialog with CSDTreeCtrl
 
@@ -380,7 +387,7 @@ BOOL ScriptDialog::OnInitDialog()
 	mTree->Create(style, rect, this, IDC_SCRIPT_TREE);
 	pTree->DestroyWindow();
 
-	pTree = (CTreeCtrl*) GetDlgItem(IDC_SCRIPT_TREE);
+	pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	// pTree should == mTree now.
 
 	Bool didSelect = false;
@@ -392,7 +399,7 @@ BOOL ScriptDialog::OnInitDialog()
 	if (pTree) {
 		m_imageList.Create(IDB_FOLDERSCRIPT, 16, 2, ILC_COLOR4);
 		pTree->SetImageList(&m_imageList, TVSIL_STATE);
-		for (i=0; i<m_sides.getNumSides(); i++) {
+		for (i = 0; i < m_sides.getNumSides(); i++) {
 			HTREEITEM hItem = addPlayer(i);
 			if (!didSelect && hItem != NULL) {
 				pTree->SelectItem(hItem);
@@ -405,40 +412,40 @@ BOOL ScriptDialog::OnInitDialog()
 	CRect top;
 	GetWindowRect(&top);
 	top.top = ::AfxGetApp()->GetProfileInt(SCRIPT_DIALOG_SECTION, "Top", top.top);
-	top.left =::AfxGetApp()->GetProfileInt(SCRIPT_DIALOG_SECTION, "Left", top.left);
-	SetWindowPos(NULL, top.left, top.top, 0, 0, SWP_NOZORDER|SWP_NOSIZE);
+	top.left = ::AfxGetApp()->GetProfileInt(SCRIPT_DIALOG_SECTION, "Left", top.left);
+	SetWindowPos(NULL, top.left, top.top, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 
 	return FALSE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
 HTREEITEM ScriptDialog::addPlayer(Int playerIndx)
 {
 
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	TVINSERTSTRUCT ins;
-	Dict *d = m_sides.getSideInfo(playerIndx)->getDict();
+	Dict* d = m_sides.getSideInfo(playerIndx)->getDict();
 	AsciiString name = d->getAsciiString(TheKey_playerName);
 	UnicodeString uni = d->getUnicodeString(TheKey_playerDisplayName);
 	AsciiString fmt;
 	if (name.isEmpty())
 		fmt.format("%s", NEUTRAL_NAME_STR);
 	else
-		fmt.format("%s",name.str());
+		fmt.format("%s", name.str());
 	::memset(&ins, 0, sizeof(ins));
 	ListType lt;
-	lt.m_objType=ListType::PLAYER_TYPE;
+	lt.m_objType = ListType::PLAYER_TYPE;
 	lt.m_playerIndex = playerIndx;
 	ins.hParent = TVI_ROOT;
 	ins.hInsertAfter = TVI_LAST;
-	ins.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_STATE;
+	ins.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
 	ins.item.state = INDEXTOSTATEIMAGEMASK(1);
-	ins.item.stateMask = TVIS_STATEIMAGEMASK ;
+	ins.item.stateMask = TVIS_STATEIMAGEMASK;
 	ins.item.lParam = lt.ListToInt();
-	ins.item.pszText = (char *)fmt.str();
+	ins.item.pszText = (char*)fmt.str();
 	ins.item.cchTextMax = 0;
 	HTREEITEM hItem = pTree->InsertItem(&ins);
-	ScriptList *pSL = m_sides.getSideInfo(playerIndx)->getScriptList();
+	ScriptList* pSL = m_sides.getSideInfo(playerIndx)->getScriptList();
 	if (pSL) {
 		addScriptList(hItem, playerIndx, pSL);
 	}
@@ -448,7 +455,7 @@ HTREEITEM ScriptDialog::addPlayer(Int playerIndx)
 
 void ScriptDialog::setIconGroup(HTREEITEM item)
 {
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 
 	if (getCurGroup()->isActive())
 		pTree->SetItemState(item, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
@@ -464,7 +471,7 @@ void ScriptDialog::setIconGroup(HTREEITEM item)
 
 void ScriptDialog::setIconScript(HTREEITEM item)
 {
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 
 	if (getCurScript()->isActive())
 		pTree->SetItemState(item, INDEXTOSTATEIMAGEMASK(2), TVIS_STATEIMAGEMASK);
@@ -482,7 +489,7 @@ Bool ScriptDialog::updateIcons(HTREEITEM hItem)
 {
 	const ListType saveList = m_curSelection;
 	Bool warnings = false;
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	HTREEITEM child = pTree->GetChildItem(hItem);
 
 	while (child != NULL) {
@@ -494,8 +501,9 @@ Bool ScriptDialog::updateIcons(HTREEITEM hItem)
 		{
 			if (updateIcons(child)) {
 				pTree->SetItemState(child, INDEXTOSTATEIMAGEMASK(3), TVIS_STATEIMAGEMASK);
-			} else {
-					pTree->SetItemState(child, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
+			}
+			else {
+				pTree->SetItemState(child, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
 			}
 		}
 
@@ -506,8 +514,9 @@ Bool ScriptDialog::updateIcons(HTREEITEM hItem)
 			if (updateIcons(child)) {
 				pTree->SetItemState(child, INDEXTOSTATEIMAGEMASK(3), TVIS_STATEIMAGEMASK);
 				warnings = true;
-			} else {
-					setIconGroup(child);
+			}
+			else {
+				setIconGroup(child);
 			}
 		}
 
@@ -515,14 +524,15 @@ Bool ScriptDialog::updateIcons(HTREEITEM hItem)
 		else
 		{
 			m_curSelection = lt;
-			Script *pScr = getCurScript();
+			Script* pScr = getCurScript();
 			DEBUG_ASSERTCRASH(pScr, ("Unexpected."));
 			if (pScr) {
 				if (pScr->hasWarnings()) {
 					pTree->SetItemState(child, INDEXTOSTATEIMAGEMASK(4), TVIS_STATEIMAGEMASK);
 					warnings = true;
-				} else {
-						setIconScript(child);
+				}
+				else {
+					setIconScript(child);
 				}
 			}
 		}
@@ -533,14 +543,14 @@ Bool ScriptDialog::updateIcons(HTREEITEM hItem)
 	return warnings;
 }
 
-void ScriptDialog::addScriptList(HTREEITEM hPlayer, Int playerIndex, ScriptList *pSL)
+void ScriptDialog::addScriptList(HTREEITEM hPlayer, Int playerIndex, ScriptList* pSL)
 {
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	TVINSERTSTRUCT ins;
 	Int groupNdx;
-	ScriptGroup *pGroup = pSL->getScriptGroup();
+	ScriptGroup* pGroup = pSL->getScriptGroup();
 	Bool warnings = false;
-	for (groupNdx = 0; pGroup; groupNdx++,pGroup=pGroup->getNext()) {
+	for (groupNdx = 0; pGroup; groupNdx++, pGroup = pGroup->getNext()) {
 		AsciiString fmt;
 		if (pGroup->getName().isEmpty())
 			continue;
@@ -548,104 +558,105 @@ void ScriptDialog::addScriptList(HTREEITEM hPlayer, Int playerIndex, ScriptList 
 			fmt = formatScriptLabel(pGroup);
 		::memset(&ins, 0, sizeof(ins));
 		ListType lt;
-		lt.m_objType=ListType::GROUP_TYPE;
+		lt.m_objType = ListType::GROUP_TYPE;
 		lt.m_playerIndex = playerIndex;
 		lt.m_groupIndex = groupNdx;
 		ins.hParent = hPlayer;
 		ins.hInsertAfter = TVI_LAST;
-		ins.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_STATE;
+		ins.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
 		ins.item.lParam = lt.ListToInt();
-		ins.item.pszText = (char *)fmt.str();
+		ins.item.pszText = (char*)fmt.str();
 		ins.item.cchTextMax = 0;
 		ins.item.state = INDEXTOSTATEIMAGEMASK(1);
 		if (pGroup->hasWarnings()) {
 			ins.item.state = INDEXTOSTATEIMAGEMASK(3);
 			warnings = true;
 		}
-		ins.item.stateMask = TVIS_STATEIMAGEMASK ;
+		ins.item.stateMask = TVIS_STATEIMAGEMASK;
 		HTREEITEM hItem = pTree->InsertItem(&ins);
-		Script *pScr = pGroup->getScript();
+		Script* pScr = pGroup->getScript();
 		if (pScr) {
 			Int scriptNdx;
-			for (scriptNdx = 0; pScr; scriptNdx++,pScr=pScr->getNext()) {
+			for (scriptNdx = 0; pScr; scriptNdx++, pScr = pScr->getNext()) {
 				AsciiString fmt;
 				if (pScr->getName().isEmpty())
 					continue;
 				fmt = formatScriptLabel(pScr);
 				::memset(&ins, 0, sizeof(ins));
 				ListType lt;
-				lt.m_objType=ListType::SCRIPT_IN_GROUP_TYPE;
+				lt.m_objType = ListType::SCRIPT_IN_GROUP_TYPE;
 				lt.m_playerIndex = playerIndex;
 				lt.m_groupIndex = groupNdx;
 				lt.m_scriptIndex = scriptNdx;
 				ins.hParent = hItem;
 				ins.hInsertAfter = TVI_LAST;
-				ins.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_STATE;
+				ins.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
 				ins.item.state = INDEXTOSTATEIMAGEMASK(2);
 				if (pScr->hasWarnings()) {
 					ins.item.state = INDEXTOSTATEIMAGEMASK(4);
 					warnings = true;
 				}
-				ins.item.stateMask = TVIS_STATEIMAGEMASK ;
+				ins.item.stateMask = TVIS_STATEIMAGEMASK;
 				ins.item.lParam = lt.ListToInt();
-				ins.item.pszText = (char *)fmt.str();
+				ins.item.pszText = (char*)fmt.str();
 				ins.item.cchTextMax = 0;
 				/*HTREEITEM hItem =*/ pTree->InsertItem(&ins);
 			}
 		}
 	}
-	Script *pScr = pSL->getScript();
+	Script* pScr = pSL->getScript();
 	if (pScr) {
 		Int scriptNdx;
-		for (scriptNdx = 0; pScr; scriptNdx++,pScr=pScr->getNext()) {
+		for (scriptNdx = 0; pScr; scriptNdx++, pScr = pScr->getNext()) {
 			AsciiString fmt;
 			if (pScr->getName().isEmpty())
 				continue;
 			fmt = formatScriptLabel(pScr);
 			::memset(&ins, 0, sizeof(ins));
 			ListType lt;
-			lt.m_objType=ListType::SCRIPT_IN_PLAYER_TYPE;
+			lt.m_objType = ListType::SCRIPT_IN_PLAYER_TYPE;
 			lt.m_playerIndex = playerIndex;
 			lt.m_groupIndex = 0;
 			lt.m_scriptIndex = scriptNdx;
 			ins.hParent = hPlayer;
 			ins.hInsertAfter = TVI_LAST;
-			ins.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_STATE;
+			ins.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
 			ins.item.state = INDEXTOSTATEIMAGEMASK(2);
 			if (pScr->hasWarnings()) {
 				ins.item.state = INDEXTOSTATEIMAGEMASK(4);
 				warnings = true;
 			}
-			ins.item.stateMask = TVIS_STATEIMAGEMASK ;
+			ins.item.stateMask = TVIS_STATEIMAGEMASK;
 			ins.item.lParam = lt.ListToInt();
-			ins.item.pszText = (char *)fmt.str();
+			ins.item.pszText = (char*)fmt.str();
 			ins.item.cchTextMax = 0;
 			/*HTREEITEM hItem =*/ pTree->InsertItem(&ins);
 		}
 	}
 	if (warnings) {
 		pTree->SetItemState(hPlayer, INDEXTOSTATEIMAGEMASK(3), TVIS_STATEIMAGEMASK);
-	} else {
+	}
+	else {
 		pTree->SetItemState(hPlayer, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
 	}
 }
 
-void ScriptDialog::reloadPlayer(Int playerIndex, ScriptList *pSL)
+void ScriptDialog::reloadPlayer(Int playerIndex, ScriptList* pSL)
 {
-//	Dict *d = m_sides.getSideInfo(playerIndex)->getDict();
+	//	Dict *d = m_sides.getSideInfo(playerIndex)->getDict();
 	updateWarnings();
 
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	HTREEITEM player = pTree->GetChildItem(TVI_ROOT);
 	while (player != NULL) {
 		TVITEM item;
 		::memset(&item, 0, sizeof(item));
-		item.mask = TVIF_HANDLE|TVIF_PARAM;
+		item.mask = TVIF_HANDLE | TVIF_PARAM;
 		item.hItem = player;
 		pTree->GetItem(&item);
 		ListType lt;
 		lt.IntToList(item.lParam);
-		if (lt.m_playerIndex==playerIndex) {
+		if (lt.m_playerIndex == playerIndex) {
 			break;
 		}
 		player = pTree->GetNextSiblingItem(player);
@@ -671,7 +682,7 @@ void ScriptDialog::reloadPlayer(Int playerIndex, ScriptList *pSL)
 
 void ScriptDialog::updateSelection(ListType sel)
 {
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	HTREEITEM item = findItem(sel, TRUE);
 	if (item) {
 		pTree->SelectItem(item);
@@ -680,17 +691,17 @@ void ScriptDialog::updateSelection(ListType sel)
 
 HTREEITEM ScriptDialog::findItem(ListType sel, Bool failSafe)
 {
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	HTREEITEM player = pTree->GetChildItem(TVI_ROOT);
 	TVITEM item;
 	while (player != NULL) {
 		::memset(&item, 0, sizeof(item));
-		item.mask = TVIF_HANDLE|TVIF_PARAM;
+		item.mask = TVIF_HANDLE | TVIF_PARAM;
 		item.hItem = player;
 		pTree->GetItem(&item);
 		ListType lt;
 		lt.IntToList(item.lParam);
-		if (lt.m_playerIndex==sel.m_playerIndex) {
+		if (lt.m_playerIndex == sel.m_playerIndex) {
 			break;
 		}
 		player = pTree->GetNextSiblingItem(player);
@@ -704,16 +715,17 @@ HTREEITEM ScriptDialog::findItem(ListType sel, Bool failSafe)
 	HTREEITEM group;
 	if (sel.m_objType == ListType::SCRIPT_IN_PLAYER_TYPE) {
 		group = player; // top level scripts are grouped under player.
-	} else {
+	}
+	else {
 		group = pTree->GetChildItem(player);
 		while (group != NULL) {
 			::memset(&item, 0, sizeof(item));
-			item.mask = TVIF_HANDLE|TVIF_PARAM;
+			item.mask = TVIF_HANDLE | TVIF_PARAM;
 			item.hItem = group;
 			pTree->GetItem(&item);
 			ListType lt;
 			lt.IntToList(item.lParam);
-			if (lt.m_groupIndex==sel.m_groupIndex) {
+			if (lt.m_groupIndex == sel.m_groupIndex) {
 				break;
 			}
 			DEBUG_ASSERTCRASH(lt.m_objType == ListType::GROUP_TYPE, ("Not group"));
@@ -729,7 +741,7 @@ HTREEITEM ScriptDialog::findItem(ListType sel, Bool failSafe)
 	HTREEITEM script;
 	for (script = pTree->GetChildItem(group); script != NULL; script = pTree->GetNextSiblingItem(script)) {
 		::memset(&item, 0, sizeof(item));
-		item.mask = TVIF_HANDLE|TVIF_PARAM;
+		item.mask = TVIF_HANDLE | TVIF_PARAM;
 		item.hItem = script;
 		pTree->GetItem(&item);
 		ListType lt;
@@ -738,7 +750,7 @@ HTREEITEM ScriptDialog::findItem(ListType sel, Bool failSafe)
 			continue;
 		}
 		DEBUG_ASSERTCRASH(lt.m_objType == ListType::SCRIPT_IN_PLAYER_TYPE || lt.m_objType == ListType::SCRIPT_IN_GROUP_TYPE, ("Not script"));
-		if (lt.m_scriptIndex==sel.m_scriptIndex) {
+		if (lt.m_scriptIndex == sel.m_scriptIndex) {
 			break;
 		}
 	}
@@ -757,21 +769,23 @@ void ScriptDialog::OnNewFolder()
 	Int ndx;
 	if (m_curSelection.m_objType == ListType::PLAYER_TYPE) {
 		ndx = 0;
-	} else {
-		ndx = m_curSelection.m_groupIndex+1;
 	}
-	ScriptList *pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
+	else {
+		ndx = m_curSelection.m_groupIndex + 1;
+	}
+	ScriptList* pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
 	if (pSL) {
 		ListType savSel = m_curSelection;
-		ScriptGroup *pNewGroup = newInstance( ScriptGroup);
+		ScriptGroup* pNewGroup = newInstance(ScriptGroup);
 		EditGroup editDlg(pNewGroup);
-		if (IDOK==editDlg.DoModal()) {
+		if (IDOK == editDlg.DoModal()) {
 			pSL->addGroup(pNewGroup, ndx);
 			reloadPlayer(savSel.m_playerIndex, pSL);
 			savSel.m_groupIndex = ndx;
 			savSel.m_objType = ListType::GROUP_TYPE;
 			updateSelection(savSel);
-		} else {
+		}
+		else {
 			deleteInstance(pNewGroup);
 		}
 	}
@@ -780,19 +794,19 @@ void ScriptDialog::OnNewFolder()
 
 void ScriptDialog::OnNewScript()
 {
-	Script *pNewScript = newInstance( Script);
+	Script* pNewScript = newInstance(Script);
 
 	Int id = ScriptList::getNextID();
 	AsciiString name;
 	name.format("Script %d", id);
 	pNewScript->setName(name);
 
-	Condition *pFalse1 = newInstance( Condition)(Condition::CONDITION_TRUE);
-	OrCondition *pOr = newInstance( OrCondition);
+	Condition* pFalse1 = newInstance(Condition)(Condition::CONDITION_TRUE);
+	OrCondition* pOr = newInstance(OrCondition);
 	pOr->setFirstAndCondition(pFalse1);
 	pNewScript->setOrCondition(pOr);
 
-	ScriptAction *action = newInstance( ScriptAction)(ScriptAction::NO_OP);
+	ScriptAction* action = newInstance(ScriptAction)(ScriptAction::NO_OP);
 	pNewScript->setAction(action);
 
 	CPropertySheet editDialog;
@@ -812,29 +826,31 @@ void ScriptDialog::OnNewScript()
 
 	if (IDOK == editDialog.DoModal()) {
 		insertScript(pNewScript);
-	}	else {
+	}
+	else {
 		deleteInstance(pNewScript);
 	}
 	updateIcons(TVI_ROOT);
 }
 
-void ScriptDialog::insertScript(Script *pNewScript)
+void ScriptDialog::insertScript(Script* pNewScript)
 {
 	Int ndx;
-	ScriptList *pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
+	ScriptList* pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
 	if (pSL) {
 		ListType savSel = m_curSelection;
-		Bool inGroup = savSel.m_objType == ListType::GROUP_TYPE	||
+		Bool inGroup = savSel.m_objType == ListType::GROUP_TYPE ||
 			savSel.m_objType == ListType::SCRIPT_IN_GROUP_TYPE;
 		if (inGroup) {
-			if (savSel.m_objType == ListType::GROUP_TYPE ) {
+			if (savSel.m_objType == ListType::GROUP_TYPE) {
 				ndx = 0;
-			} else {
-				ndx = savSel.m_scriptIndex+1;
+			}
+			else {
+				ndx = savSel.m_scriptIndex + 1;
 			}
 			Int groupNdx;
-			ScriptGroup *pGroup = pSL->getScriptGroup();
-			for (groupNdx = 0; pGroup; groupNdx++,pGroup=pGroup->getNext()) {
+			ScriptGroup* pGroup = pSL->getScriptGroup();
+			for (groupNdx = 0; pGroup; groupNdx++, pGroup = pGroup->getNext()) {
 				if (groupNdx == savSel.m_groupIndex) {
 					pGroup->addScript(pNewScript, ndx);
 					savSel.m_objType = ListType::SCRIPT_IN_GROUP_TYPE;
@@ -842,11 +858,13 @@ void ScriptDialog::insertScript(Script *pNewScript)
 					break;
 				}
 			}
-		} else {
-			if (m_curSelection.m_objType == ListType::PLAYER_TYPE ) {
+		}
+		else {
+			if (m_curSelection.m_objType == ListType::PLAYER_TYPE) {
 				ndx = 0;
-			} else {
-				ndx = m_curSelection.m_scriptIndex+1;
+			}
+			else {
+				ndx = m_curSelection.m_scriptIndex + 1;
 			}
 			pSL->addScript(pNewScript, ndx);
 			savSel.m_objType = ListType::SCRIPT_IN_PLAYER_TYPE;
@@ -861,15 +879,15 @@ void ScriptDialog::insertScript(Script *pNewScript)
 
 void ScriptDialog::OnEditScript()
 {
-	Script *pScript = getCurScript();
-	ScriptGroup *pGroup = getCurGroup();
+	Script* pScript = getCurScript();
+	ScriptGroup* pGroup = getCurGroup();
 	DEBUG_ASSERTCRASH(pScript || pGroup, ("Null script."));
 	if (pScript == NULL) {
-		CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+		CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 		HTREEITEM item = findItem(m_curSelection);
 		if (pGroup) {
 			EditGroup editDlg(pGroup);
-			if (IDOK==editDlg.DoModal()) {
+			if (IDOK == editDlg.DoModal()) {
 				if (item) {
 					pTree->SetItemText(item, pGroup->getName().str());
 					pTree->SelectItem(NULL);
@@ -883,7 +901,7 @@ void ScriptDialog::OnEditScript()
 		return;
 	}
 
-	Script *pDup = pScript->duplicate();
+	Script* pDup = pScript->duplicate();
 
 	CPropertySheet editDialog;
 	editDialog.Construct(pScript->getName().str());
@@ -902,7 +920,7 @@ void ScriptDialog::OnEditScript()
 
 	if (IDOK == editDialog.DoModal()) {
 		pScript->updateFrom(pDup);
-		CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+		CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 		HTREEITEM item = findItem(m_curSelection);
 		if (item) {
 			pTree->SetItemText(item, formatScriptLabel(pScript).str());
@@ -917,10 +935,10 @@ void ScriptDialog::OnEditScript()
 
 void ScriptDialog::OnCopyScript()
 {
-	Script *pScript = getCurScript();
+	Script* pScript = getCurScript();
 	DEBUG_ASSERTCRASH(pScript, ("Null script."));
 	if (pScript == NULL) return;
-	Script *pDup = pScript->duplicate();
+	Script* pDup = pScript->duplicate();
 	AsciiString newName = pDup->getName();
 	newName.concat(" C");
 	pDup->setName(newName);
@@ -930,34 +948,36 @@ void ScriptDialog::OnCopyScript()
 
 void ScriptDialog::OnDelete()
 {
-	Script *pScript = getCurScript();
-	ScriptList *pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
+	Script* pScript = getCurScript();
+	ScriptList* pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
 	if (pSL) {
 		Bool inGroup = m_curSelection.m_objType != ListType::SCRIPT_IN_PLAYER_TYPE;
 		if (inGroup) {
 			Int groupNdx;
-			ScriptGroup *pGroup = pSL->getScriptGroup();
-			for (groupNdx = 0; pGroup; groupNdx++,pGroup=pGroup->getNext()) {
+			ScriptGroup* pGroup = pSL->getScriptGroup();
+			for (groupNdx = 0; pGroup; groupNdx++, pGroup = pGroup->getNext()) {
 				if (groupNdx == m_curSelection.m_groupIndex) {
 					if (m_curSelection.m_objType == ListType::GROUP_TYPE) {
 						pSL->deleteGroup(pGroup);
 						m_curSelection.m_objType = ListType::PLAYER_TYPE;
-					} else {
+					}
+					else {
 						pGroup->deleteScript(pScript);
-						if (pGroup->getScript()==NULL) {
+						if (pGroup->getScript() == NULL) {
 							m_curSelection.m_objType = ListType::GROUP_TYPE;
 						}
 					}
 					break;
 				}
 			}
-		} else {
+		}
+		else {
 			pSL->deleteScript(pScript);
-			if (pSL->getScript()==NULL) {
+			if (pSL->getScript() == NULL) {
 				m_curSelection.m_objType = ListType::PLAYER_TYPE;
 			}
 		}
- 		reloadPlayer(m_curSelection.m_playerIndex, pSL);
+		reloadPlayer(m_curSelection.m_playerIndex, pSL);
 		updateSelection(m_curSelection);
 	}
 	updateIcons(TVI_ROOT);
@@ -966,22 +986,23 @@ void ScriptDialog::OnDelete()
 class LocalMFCFileOutputStream : public OutputStream
 {
 protected:
-	CFile *m_file;
+	CFile* m_file;
 public:
-	LocalMFCFileOutputStream(CFile *pFile):m_file(pFile) {};
-	virtual Int write(const void *pData, Int numBytes) {
+	LocalMFCFileOutputStream(CFile* pFile) :m_file(pFile) {};
+	virtual Int write(const void* pData, Int numBytes) {
 		Int numBytesWritten = 0;
 		try {
 			m_file->Write(pData, numBytes);
 			numBytesWritten = numBytes;
-		} catch(...) {
+		}
+		catch (...) {
 			DEBUG_CRASH(("threw exception in LocalMFCFileOutputStream"));
 		}
 		return(numBytesWritten);
 	};
 };
 
-void ScriptDialog::markWaypoint(MapObject *pObj)
+void ScriptDialog::markWaypoint(MapObject* pObj)
 {
 	Bool exists;
 	if (!pObj) return;
@@ -990,8 +1011,8 @@ void ScriptDialog::markWaypoint(MapObject *pObj)
 		CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
 		Int curID = pObj->getWaypointID();
 		Int i;
-		for (i = 0; i<pDoc->getNumWaypointLinks(); i++) {
-//			Bool gotLocation=false;
+		for (i = 0; i < pDoc->getNumWaypointLinks(); i++) {
+			//			Bool gotLocation=false;
 			Int waypointID1, waypointID2;
 			pDoc->getWaypointLink(i, &waypointID1, &waypointID2);
 			if (curID == waypointID1) {
@@ -1005,22 +1026,22 @@ void ScriptDialog::markWaypoint(MapObject *pObj)
 }
 
 /** Looks for referenced waypoints & teams. */
-void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, Bool doWaypoints, Bool doTriggers)
+void ScriptDialog::scanParmForWaypointsAndTeams(Parameter* pParm, Bool doUnits, Bool doWaypoints, Bool doTriggers)
 {
 	if (pParm->getParameterType() == Parameter::WAYPOINT && doWaypoints) {
-		AsciiString waypointName  = pParm->getString();
-		MapObject *pObj;
+		AsciiString waypointName = pParm->getString();
+		MapObject* pObj;
 		for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
-			if (pObj->isWaypoint() && pObj->getWaypointName()==waypointName) {
+			if (pObj->isWaypoint() && pObj->getWaypointName() == waypointName) {
 				markWaypoint(pObj);
 			}
 		}
 	}
 	if (pParm->getParameterType() == Parameter::WAYPOINT_PATH && doWaypoints) {
 		AsciiString waypointPathLabel = pParm->getString();
-		MapObject *pObj;
+		MapObject* pObj;
 		for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
-			if (pObj->isWaypoint() ) {
+			if (pObj->isWaypoint()) {
 				Bool exists;
 				if (waypointPathLabel == pObj->getProperties()->getAsciiString(TheKey_waypointPathLabel1, &exists)) {
 					markWaypoint(pObj);
@@ -1035,33 +1056,33 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 		}
 	}
 	if (pParm->getParameterType() == Parameter::TEAM) {
-		AsciiString teamName  = pParm->getString();
-		TeamsInfo * pInfo = m_sides.findTeamInfo(teamName);
+		AsciiString teamName = pParm->getString();
+		TeamsInfo* pInfo = m_sides.findTeamInfo(teamName);
 		if (pInfo) {
 			pInfo->getDict()->setBool(TheKey_exportWithScript, true);
 		}
 		if (doUnits) {
-			MapObject *pObj;
+			MapObject* pObj;
 			for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
 				Bool exists;
 				AsciiString objsTeamName = pObj->getProperties()->getAsciiString(TheKey_originalOwner, &exists);
-				if (objsTeamName==teamName) {
+				if (objsTeamName == teamName) {
 					pObj->getProperties()->setBool(TheKey_exportWithScript, true);
 				}
 			}
 		}
 	}
 	if (pParm->getParameterType() == Parameter::UNIT) {
-		AsciiString unitName  = pParm->getString();
+		AsciiString unitName = pParm->getString();
 		if (doUnits) {
-			MapObject *pObj;
+			MapObject* pObj;
 			for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
 				Bool exists;
 				AsciiString objsTeamName = pObj->getProperties()->getAsciiString(TheKey_originalOwner, &exists);
 				AsciiString objsUnitName = pObj->getProperties()->getAsciiString(TheKey_objectName, &exists);
-				if (objsUnitName==unitName) {
+				if (objsUnitName == unitName) {
 					pObj->getProperties()->setBool(TheKey_exportWithScript, true);
-					TeamsInfo * pInfo = m_sides.findTeamInfo(objsTeamName);
+					TeamsInfo* pInfo = m_sides.findTeamInfo(objsTeamName);
 					if (pInfo) {
 						pInfo->getDict()->setBool(TheKey_exportWithScript, true);
 					}
@@ -1070,8 +1091,8 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 		}
 	}
 	if (pParm->getParameterType() == Parameter::TRIGGER_AREA && doTriggers) {
-		PolygonTrigger *pTrig;
-		for (pTrig=PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext()) {
+		PolygonTrigger* pTrig;
+		for (pTrig = PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext()) {
 			if (pTrig->getTriggerName() == pParm->getString()) {
 				pTrig->setDoExportWithScripts(true);
 			}
@@ -1080,24 +1101,24 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 }
 
 /** Looks for referenced waypoints & teams. */
-void ScriptDialog::scanForWaypointsAndTeams(Script *pScript, Bool doUnits, Bool doWaypoints, Bool doTriggers)
+void ScriptDialog::scanForWaypointsAndTeams(Script* pScript, Bool doUnits, Bool doWaypoints, Bool doTriggers)
 {
 	pScript->setWarnings(false);
-	OrCondition *pOr;
-	for (pOr= pScript->getOrCondition(); pOr; pOr = pOr->getNextOrCondition()) {
-		Condition *pCondition;
+	OrCondition* pOr;
+	for (pOr = pScript->getOrCondition(); pOr; pOr = pOr->getNextOrCondition()) {
+		Condition* pCondition;
 		for (pCondition = pOr->getFirstAndCondition(); pCondition; pCondition = pCondition->getNext()) {
 			Int i;
-			for (i=0; i<pCondition->getNumParameters(); i++) {
+			for (i = 0; i < pCondition->getNumParameters(); i++) {
 				scanParmForWaypointsAndTeams(pCondition->getParameter(i), doUnits, doWaypoints, doTriggers);
 			}
 		}
 	}
-	ScriptAction *pAction;
+	ScriptAction* pAction;
 	for (pAction = pScript->getAction(); pAction; pAction = pAction->getNext()) {
 		pAction->setWarnings(false);
 		Int i;
-		for (i=0; i<pAction->getNumParameters(); i++) {
+		for (i = 0; i < pAction->getNumParameters(); i++) {
 			scanParmForWaypointsAndTeams(pAction->getParameter(i), doUnits, doWaypoints, doTriggers);
 		}
 	}
@@ -1123,11 +1144,11 @@ void ScriptDialog::OnSave()
 	doTriggerAreas = optionsDlg.getDoTriggers();
 	doAllScripts = optionsDlg.getDoAllScripts();
 
-	Script *pScript = getCurScript();
-	ScriptGroup *pGroup = getCurGroup();
+	Script* pScript = getCurScript();
+	ScriptGroup* pGroup = getCurGroup();
 
-	ScriptList *scripts[MAX_PLAYER_COUNT];
-	for (i=0; i<MAX_PLAYER_COUNT; i++) {
+	ScriptList* scripts[MAX_PLAYER_COUNT];
+	for (i = 0; i < MAX_PLAYER_COUNT; i++) {
 		scripts[i] = NULL;
 	}
 
@@ -1140,24 +1161,24 @@ void ScriptDialog::OnSave()
 	// change it back.
 	char buf[_MAX_PATH];
 	::GetModuleFileName(NULL, buf, sizeof(buf));
-	if (char *pEnd = strrchr(buf, '\\')) {
+	if (char* pEnd = strrchr(buf, GET_PATH_SEPARATOR())) {
 		*pEnd = 0;
 	}
 	::SetCurrentDirectory(buf);
-	if (IDCANCEL==result) {
+	if (IDCANCEL == result) {
 		return;
 	}
 
-	MapObject *pObj;
+	MapObject* pObj;
 	for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
 		pObj->getProperties()->setBool(TheKey_exportWithScript, false);
-		if (pObj->isWaypoint() && (doWaypoints&&doAllScripts)) {
+		if (pObj->isWaypoint() && (doWaypoints && doAllScripts)) {
 			pObj->getProperties()->setBool(TheKey_exportWithScript, true);
 		}
 	}
 
-	PolygonTrigger *pTrig;
-	for (pTrig=PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext()) {
+	PolygonTrigger* pTrig;
+	for (pTrig = PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext()) {
 		pTrig->setDoExportWithScripts(doAllScripts && doTriggerAreas);
 		if (pTrig->isWaterArea()) {
 			pTrig->setDoExportWithScripts(false); // don't export water.
@@ -1170,21 +1191,24 @@ void ScriptDialog::OnSave()
 	Int numScriptLists = 0;
 	if (doAllScripts) {
 		numScriptLists = m_sides.getNumSides();
-		for (i=0; i<numScriptLists; i++) {
+		for (i = 0; i < numScriptLists; i++) {
 			scripts[i] = m_sides.getSideInfo(i)->getScriptList();
 		}
-	} else {
+	}
+	else {
 		numScriptLists = 1;
 		if (m_curSelection.m_objType == ListType::PLAYER_TYPE) {
 			scripts[0] = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
 			scripts[0] = scripts[0]->duplicate();
-		}	else if (pGroup) {
+		}
+		else if (pGroup) {
 			pGroup = pGroup->duplicate();
-			scripts[0] = newInstance( ScriptList);
+			scripts[0] = newInstance(ScriptList);
 			scripts[0]->addGroup(pGroup, 0);
-		} else if (pScript) {
+		}
+		else if (pScript) {
 			pScript = pScript->duplicate();
-			scripts[0] = newInstance( ScriptList);
+			scripts[0] = newInstance(ScriptList);
 			scripts[0]->addScript(pScript, 0);
 		}
 		if (scripts[0] == NULL) {
@@ -1192,14 +1216,14 @@ void ScriptDialog::OnSave()
 			return;
 		}
 	}
-	for (i=0; i<numScriptLists; i++) {
-		ScriptList *pSL = scripts[i];
-		Script *pScr;
-		for (pScr = pSL->getScript(); pScr; pScr=pScr->getNext()) {
+	for (i = 0; i < numScriptLists; i++) {
+		ScriptList* pSL = scripts[i];
+		Script* pScr;
+		for (pScr = pSL->getScript(); pScr; pScr = pScr->getNext()) {
 			scanForWaypointsAndTeams(pScr, doUnits, doWaypoints, doTriggerAreas);
 		}
-		for (pGroup = pSL->getScriptGroup(); pGroup; pGroup=pGroup->getNext()) {
-			for (pScr = pGroup->getScript(); pScr; pScr=pScr->getNext()) {
+		for (pGroup = pSL->getScriptGroup(); pGroup; pGroup = pGroup->getNext()) {
+			for (pScr = pGroup->getScript(); pScr; pScr = pScr->getNext()) {
 				scanForWaypointsAndTeams(pScr, doUnits, doWaypoints, doTriggerAreas);
 			}
 		}
@@ -1208,132 +1232,134 @@ void ScriptDialog::OnSave()
 
 	CString path = fileDlg.GetPathName();
 
-	CFile theFile(path, CFile::modeCreate|CFile::modeWrite|CFile::shareDenyWrite|CFile::typeBinary);
+	CFile theFile(path, CFile::modeCreate | CFile::modeWrite | CFile::shareDenyWrite | CFile::typeBinary);
 	try {
 		LocalMFCFileOutputStream theStream(&theFile);
 		DataChunkOutput chunkWriter(&theStream);
 		ScriptList::WriteScriptsDataChunk(chunkWriter, scripts, numScriptLists);
 
 		/***************Players DATA ***************/
-		chunkWriter.openDataChunk("ScriptsPlayers", 	K_PLAYERS_NAMES_FOR_SCRIPTS_VERSION_1);
+		chunkWriter.openDataChunk("ScriptsPlayers", K_PLAYERS_NAMES_FOR_SCRIPTS_VERSION_1);
 		if (doAllScripts) {
 			chunkWriter.writeInt(m_sides.getNumSides());
-			for (i=0; i<m_sides.getNumSides(); i++) {
+			for (i = 0; i < m_sides.getNumSides(); i++) {
 				AsciiString name = m_sides.getSideInfo(i)->getDict()->getAsciiString(TheKey_playerName);
 				chunkWriter.writeAsciiString(name);
 			}
-		} else  {
+		}
+		else {
 			chunkWriter.writeInt(1);
 			chunkWriter.writeAsciiString("**SELECTION**");
 		}
 		chunkWriter.closeDataChunk();
 
 		/***************OBJECTS DATA ***************/
-		chunkWriter.openDataChunk("ObjectsList", 	K_OBJECTS_VERSION_3);
+		chunkWriter.openDataChunk("ObjectsList", K_OBJECTS_VERSION_3);
 
 		for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext())
 		{
 			if (!pObj->getProperties()->getBool(TheKey_exportWithScript)) {
 				continue;
 			};
-			chunkWriter.openDataChunk("Object", 	K_OBJECTS_VERSION_3);
-				Coord3D loc = *pObj->getLocation();
-				chunkWriter.writeReal( loc.x);
-				chunkWriter.writeReal( loc.y);
-				chunkWriter.writeReal( loc.z);
-				chunkWriter.writeReal( pObj->getAngle());
-				chunkWriter.writeInt(pObj->getFlags());
-				chunkWriter.writeAsciiString(pObj->getName());
+			chunkWriter.openDataChunk("Object", K_OBJECTS_VERSION_3);
+			Coord3D loc = *pObj->getLocation();
+			chunkWriter.writeReal(loc.x);
+			chunkWriter.writeReal(loc.y);
+			chunkWriter.writeReal(loc.z);
+			chunkWriter.writeReal(pObj->getAngle());
+			chunkWriter.writeInt(pObj->getFlags());
+			chunkWriter.writeAsciiString(pObj->getName());
 
-				chunkWriter.writeDict(*pObj->getProperties());
+			chunkWriter.writeDict(*pObj->getProperties());
 
 			chunkWriter.closeDataChunk();
 		}
 		chunkWriter.closeDataChunk();
 
 		/***************POLYGON TRIGGERS DATA ***************/
-		chunkWriter.openDataChunk("PolygonTriggers", 	K_TRIGGERS_VERSION_3);
+		chunkWriter.openDataChunk("PolygonTriggers", K_TRIGGERS_VERSION_3);
 
-			PolygonTrigger *pTrig;
-			Int count = 0;
-			for (pTrig=PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext()) {
-				if (pTrig->doExportWithScripts()) {
-					count++;
-				}
+		PolygonTrigger* pTrig;
+		Int count = 0;
+		for (pTrig = PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext()) {
+			if (pTrig->doExportWithScripts()) {
+				count++;
 			}
-			chunkWriter.writeInt(count);
-			for (pTrig=PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext()) {
-				if (!pTrig->doExportWithScripts()) continue;
-				chunkWriter.writeAsciiString(pTrig->getTriggerName());
-				chunkWriter.writeInt(pTrig->getID());
-				chunkWriter.writeByte(pTrig->isWaterArea());
-				chunkWriter.writeByte(pTrig->isRiver());
-				chunkWriter.writeInt(pTrig->getRiverStart());
-				chunkWriter.writeInt(pTrig->getNumPoints());
-				Int i;
-				for (i=0; i<pTrig->getNumPoints(); i++) {
-					ICoord3D loc = *pTrig->getPoint(i);
-					chunkWriter.writeInt( loc.x);
-					chunkWriter.writeInt( loc.y);
-					chunkWriter.writeInt( loc.z);
-				}
-			}
-		chunkWriter.closeDataChunk();
- 		/***************TEAMS DATA ***************/
-		chunkWriter.openDataChunk("ScriptTeams", 	K_LOCAL_TEAMS_VERSION_1);
-			for (i = 0; i < m_sides.getNumTeams(); i++)
-			{
-				if (m_sides.getTeamInfo(i)->getDict()->getBool(TheKey_exportWithScript)) {
-					chunkWriter.writeDict(*m_sides.getTeamInfo(i)->getDict());
-				}
-			}
-
-
-		chunkWriter.closeDataChunk();
- 		/***************WAYPOINTS DATA ***************/
-			CWorldBuilderDoc *pDoc = CWorldBuilderDoc::GetActiveDoc();
+		}
+		chunkWriter.writeInt(count);
+		for (pTrig = PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext()) {
+			if (!pTrig->doExportWithScripts()) continue;
+			chunkWriter.writeAsciiString(pTrig->getTriggerName());
+			chunkWriter.writeInt(pTrig->getID());
+			chunkWriter.writeByte(pTrig->isWaterArea());
+			chunkWriter.writeByte(pTrig->isRiver());
+			chunkWriter.writeInt(pTrig->getRiverStart());
+			chunkWriter.writeInt(pTrig->getNumPoints());
 			Int i;
-			count = 0;
-			for (i = 0; i<pDoc->getNumWaypointLinks(); i++) {
-					Int waypointID1, waypointID2;
-				MapObject *pWay1, *pWay2;
-				pDoc->getWaypointLink(i, &waypointID1, &waypointID2);
-				pWay1 = pDoc->getWaypointByID(waypointID1);
-				pWay2 = pDoc->getWaypointByID(waypointID2);
-				if (pWay1 && pWay2) {
-					if (!pWay1->getProperties()->getBool(TheKey_exportWithScript)) {
-						continue;
-					};
-					if (!pWay1->getProperties()->getBool(TheKey_exportWithScript)) {
-						continue;
-					};
-					count++;
-				}
+			for (i = 0; i < pTrig->getNumPoints(); i++) {
+				ICoord3D loc = *pTrig->getPoint(i);
+				chunkWriter.writeInt(loc.x);
+				chunkWriter.writeInt(loc.y);
+				chunkWriter.writeInt(loc.z);
 			}
+		}
+		chunkWriter.closeDataChunk();
+		/***************TEAMS DATA ***************/
+		chunkWriter.openDataChunk("ScriptTeams", K_LOCAL_TEAMS_VERSION_1);
+		for (i = 0; i < m_sides.getNumTeams(); i++)
+		{
+			if (m_sides.getTeamInfo(i)->getDict()->getBool(TheKey_exportWithScript)) {
+				chunkWriter.writeDict(*m_sides.getTeamInfo(i)->getDict());
+			}
+		}
 
-		chunkWriter.openDataChunk("WaypointsList", 	K_WAYPOINTS_VERSION_1);
-			chunkWriter.writeInt(count);
-			for (i = 0; i<pDoc->getNumWaypointLinks(); i++) {
-					Int waypointID1, waypointID2;
-				MapObject *pWay1, *pWay2;
-				pDoc->getWaypointLink(i, &waypointID1, &waypointID2);
-				pWay1 = pDoc->getWaypointByID(waypointID1);
-				pWay2 = pDoc->getWaypointByID(waypointID2);
-				if (pWay1 && pWay2) {
-					if (!pWay1->getProperties()->getBool(TheKey_exportWithScript)) {
-						continue;
-					};
-					if (!pWay1->getProperties()->getBool(TheKey_exportWithScript)) {
-						continue;
-					};
-					chunkWriter.writeInt(waypointID1);
-					chunkWriter.writeInt(waypointID2);
-				}
+
+		chunkWriter.closeDataChunk();
+		/***************WAYPOINTS DATA ***************/
+		CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
+		Int i;
+		count = 0;
+		for (i = 0; i < pDoc->getNumWaypointLinks(); i++) {
+			Int waypointID1, waypointID2;
+			MapObject* pWay1, * pWay2;
+			pDoc->getWaypointLink(i, &waypointID1, &waypointID2);
+			pWay1 = pDoc->getWaypointByID(waypointID1);
+			pWay2 = pDoc->getWaypointByID(waypointID2);
+			if (pWay1 && pWay2) {
+				if (!pWay1->getProperties()->getBool(TheKey_exportWithScript)) {
+					continue;
+				};
+				if (!pWay1->getProperties()->getBool(TheKey_exportWithScript)) {
+					continue;
+				};
+				count++;
 			}
+		}
+
+		chunkWriter.openDataChunk("WaypointsList", K_WAYPOINTS_VERSION_1);
+		chunkWriter.writeInt(count);
+		for (i = 0; i < pDoc->getNumWaypointLinks(); i++) {
+			Int waypointID1, waypointID2;
+			MapObject* pWay1, * pWay2;
+			pDoc->getWaypointLink(i, &waypointID1, &waypointID2);
+			pWay1 = pDoc->getWaypointByID(waypointID1);
+			pWay2 = pDoc->getWaypointByID(waypointID2);
+			if (pWay1 && pWay2) {
+				if (!pWay1->getProperties()->getBool(TheKey_exportWithScript)) {
+					continue;
+				};
+				if (!pWay1->getProperties()->getBool(TheKey_exportWithScript)) {
+					continue;
+				};
+				chunkWriter.writeInt(waypointID1);
+				chunkWriter.writeInt(waypointID2);
+			}
+		}
 		chunkWriter.closeDataChunk();
 
-	} catch(...) {
-			DEBUG_CRASH(("threw exception in ScriptDialog::OnSave"));
+	}
+	catch (...) {
+		DEBUG_CRASH(("threw exception in ScriptDialog::OnSave"));
 	}
 	if (!doAllScripts) {
 		deleteInstance(scripts[0]);
@@ -1352,12 +1378,12 @@ void ScriptDialog::OnLoad()
 	// change it back.
 	char buf[_MAX_PATH];
 	::GetModuleFileName(NULL, buf, sizeof(buf));
-	if (char *pEnd = strrchr(buf, '\\')) {
+	if (char* pEnd = strrchr(buf, GET_PATH_SEPARATOR())) {
 		*pEnd = 0;
 	}
 	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
 	::SetCurrentDirectory(buf);
-	if (IDCANCEL==result) {
+	if (IDCANCEL == result) {
 		return;
 	}
 
@@ -1365,102 +1391,104 @@ void ScriptDialog::OnLoad()
 
 	CachedFileInputStream theInputStream;
 	if (theInputStream.open(AsciiString(path)))
-	try {
-		ChunkInputStream *pStrm = &theInputStream;
-		DataChunkInput file( pStrm );
-		m_firstReadObject = NULL;
-		m_firstTrigger = NULL;
-		m_waypointBase = pDoc->getNextWaypointID();
-		m_maxWaypoint = m_waypointBase;
-		file.registerParser( AsciiString("PlayerScriptsList"), AsciiString::TheEmptyString, ScriptList::ParseScriptsDataChunk );
-		file.registerParser( AsciiString("ObjectsList"), AsciiString::TheEmptyString, ParseObjectsDataChunk );
-		file.registerParser( AsciiString("PolygonTriggers"), AsciiString::TheEmptyString, ParsePolygonTriggersDataChunk );
-		file.registerParser( AsciiString("WaypointsList"), AsciiString::TheEmptyString, ParseWaypointDataChunk );
-		file.registerParser( AsciiString("ScriptTeams"), AsciiString::TheEmptyString, ParseTeamsDataChunk );
-		file.registerParser( AsciiString("ScriptsPlayers"), AsciiString::TheEmptyString, ParsePlayersDataChunk );
-		if (!file.parse(this)) {
-			throw(ERROR_CORRUPT_FILE_FORMAT);
-		}
-		pDoc->setNextWaypointID(m_maxWaypoint);
+		try {
+			ChunkInputStream* pStrm = &theInputStream;
+			DataChunkInput file(pStrm);
+			m_firstReadObject = NULL;
+			m_firstTrigger = NULL;
+			m_waypointBase = pDoc->getNextWaypointID();
+			m_maxWaypoint = m_waypointBase;
+			file.registerParser(AsciiString("PlayerScriptsList"), AsciiString::TheEmptyString, ScriptList::ParseScriptsDataChunk);
+			file.registerParser(AsciiString("ObjectsList"), AsciiString::TheEmptyString, ParseObjectsDataChunk);
+			file.registerParser(AsciiString("PolygonTriggers"), AsciiString::TheEmptyString, ParsePolygonTriggersDataChunk);
+			file.registerParser(AsciiString("WaypointsList"), AsciiString::TheEmptyString, ParseWaypointDataChunk);
+			file.registerParser(AsciiString("ScriptTeams"), AsciiString::TheEmptyString, ParseTeamsDataChunk);
+			file.registerParser(AsciiString("ScriptsPlayers"), AsciiString::TheEmptyString, ParsePlayersDataChunk);
+			if (!file.parse(this)) {
+				throw(ERROR_CORRUPT_FILE_FORMAT);
+			}
+			pDoc->setNextWaypointID(m_maxWaypoint);
 
-		CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
-		SidesListUndoable *pUndo = new SidesListUndoable(m_sides, pDoc);
-		pDoc->AddAndDoUndoable(pUndo);
-		REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
-		m_sides = *TheSidesList;
-
-		if (m_firstReadObject) {
-			AddObjectUndoable *pUndo = new AddObjectUndoable(pDoc, m_firstReadObject);
+			CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
+			SidesListUndoable* pUndo = new SidesListUndoable(m_sides, pDoc);
 			pDoc->AddAndDoUndoable(pUndo);
 			REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
-			m_firstReadObject = NULL; // undoable owns it now.
-		}
-		PolygonTrigger *pTrig;
-		PolygonTrigger *pNextTrig;
-		for (pTrig=m_firstTrigger; pTrig; pTrig = pNextTrig) {
-			pNextTrig = pTrig->getNext();
-			pTrig->setNextPoly(NULL);
-			PolygonTrigger::addPolygonTrigger(pTrig);
-		}
+			m_sides = *TheSidesList;
 
-		ScriptList *scripts[MAX_PLAYER_COUNT];
-		Int count = ScriptList::getReadScripts(scripts);
-		Int i;
-		for (i=0; i<count; i++) {
-			if (scripts[i]->getScript() == NULL && scripts[i]->getScriptGroup()==NULL) continue;
-			Int curSide = -1;
-			if (count==1) {
-				curSide = m_curSelection.m_playerIndex;
-			} else {
-				Int j;
-				for (j=0; j<m_sides.getNumSides(); j++) {
- 					AsciiString name = m_sides.getSideInfo(i)->getDict()->getAsciiString(TheKey_playerName);
-					if (name == m_readPlayerNames[j]) {
-						curSide = j;
-						break;
+			if (m_firstReadObject) {
+				AddObjectUndoable* pUndo = new AddObjectUndoable(pDoc, m_firstReadObject);
+				pDoc->AddAndDoUndoable(pUndo);
+				REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
+				m_firstReadObject = NULL; // undoable owns it now.
+			}
+			PolygonTrigger* pTrig;
+			PolygonTrigger* pNextTrig;
+			for (pTrig = m_firstTrigger; pTrig; pTrig = pNextTrig) {
+				pNextTrig = pTrig->getNext();
+				pTrig->setNextPoly(NULL);
+				PolygonTrigger::addPolygonTrigger(pTrig);
+			}
+
+			ScriptList* scripts[MAX_PLAYER_COUNT];
+			Int count = ScriptList::getReadScripts(scripts);
+			Int i;
+			for (i = 0; i < count; i++) {
+				if (scripts[i]->getScript() == NULL && scripts[i]->getScriptGroup() == NULL) continue;
+				Int curSide = -1;
+				if (count == 1) {
+					curSide = m_curSelection.m_playerIndex;
+				}
+				else {
+					Int j;
+					for (j = 0; j < m_sides.getNumSides(); j++) {
+						AsciiString name = m_sides.getSideInfo(i)->getDict()->getAsciiString(TheKey_playerName);
+						if (name == m_readPlayerNames[j]) {
+							curSide = j;
+							break;
+						}
+					}
+					if (curSide == -1) {
+						CString msg = "Could not find player";
+						msg += m_readPlayerNames[i].str();
+						msg += ", discarding scripts for this player.";
+						::AfxMessageBox(msg);
+						continue;
 					}
 				}
-				if (curSide == -1) {
-					CString msg = "Could not find player";
-					msg += m_readPlayerNames[i].str();
-					msg += ", discarding scripts for this player.";
-					::AfxMessageBox(msg);
-					continue;
+				if (curSide >= m_sides.getNumSides()) {
+					curSide = 0;
+					::AfxMessageBox("Imported scripts came from more players than exist in this map.  Additional scripts moved to Neutral player.");
+				}
+				ScriptList* pSL = m_sides.getSideInfo(curSide)->getScriptList();
+
+				Script* pScr;
+				Script* pNextScr;
+				Int j = 0;
+				for (pScr = scripts[i]->getScript(); pScr; pScr = pNextScr) {
+					pNextScr = pScr->getNext();
+					pScr->setNextScript(NULL);
+					pSL->addScript(pScr, j); //unlink it and add.
+					j++;
+				}
+				j = 0;
+				ScriptGroup* pGroup;
+				ScriptGroup* pNextGroup;
+				for (pGroup = scripts[i]->getScriptGroup(); pGroup; pGroup = pNextGroup) {
+					pNextGroup = pGroup->getNext();
+					pGroup->setNextGroup(NULL);
+					pSL->addGroup(pGroup, j);
+					j++;
+				}
+				scripts[i]->discard(); /* Frees the script list, but none of it's children, as they have been
+															copied into the current scripts. */
+				scripts[i] = NULL;
+				if (pSL) {
+					reloadPlayer(curSide, pSL);
 				}
 			}
-			if (curSide>= m_sides.getNumSides()) {
-				curSide = 0;
-				::AfxMessageBox("Imported scripts came from more players than exist in this map.  Additional scripts moved to Neutral player.");
-			}
-			ScriptList *pSL = m_sides.getSideInfo(curSide)->getScriptList();
 
-			Script *pScr;
-			Script *pNextScr;
-			Int j=0;
-			for (pScr = scripts[i]->getScript(); pScr; pScr=pNextScr) {
-				pNextScr=pScr->getNext();
-				pScr->setNextScript(NULL);
-				pSL->addScript(pScr, j); //unlink it and add.
-				j++;
-			}
-			j=0;
-			ScriptGroup *pGroup;
-			ScriptGroup *pNextGroup;
-			for (pGroup = scripts[i]->getScriptGroup(); pGroup; pGroup=pNextGroup) {
-				pNextGroup=pGroup->getNext();
-				pGroup->setNextGroup(NULL);
-				pSL->addGroup(pGroup, j);
-				j++;
-			}
-			scripts[i]->discard(); /* Frees the script list, but none of it's children, as they have been
-														copied into the current scripts. */
-			scripts[i] = NULL;
-			if (pSL) {
-				reloadPlayer(curSide, pSL);
-			}
 		}
-
-	} catch(...) {
+	catch (...) {
 		DEBUG_CRASH(("threw exception in ScriptDialog::OnLoad"));
 	}
 }
@@ -1471,10 +1499,10 @@ void ScriptDialog::OnLoad()
 *	Input: DataChunkInput
 *
 */
-Bool ScriptDialog::ParseObjectsDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+Bool ScriptDialog::ParseObjectsDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
 	file.m_currentObject = NULL;
-	file.registerParser( AsciiString("Object"), info->label, ParseObjectDataChunk );
+	file.registerParser(AsciiString("Object"), info->label, ParseObjectDataChunk);
 	return (file.parse(userData));
 }
 
@@ -1485,10 +1513,10 @@ Bool ScriptDialog::ParseObjectsDataChunk(DataChunkInput &file, DataChunkInfo *in
 *	Input: DataChunkInput
 *
 */
-Bool ScriptDialog::ParseObjectDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+Bool ScriptDialog::ParseObjectDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
-	ScriptDialog *pThis = (ScriptDialog *)userData;
-	MapObject *pPrevious = (MapObject *)file.m_currentObject;
+	ScriptDialog* pThis = (ScriptDialog*)userData;
+	MapObject* pPrevious = (MapObject*)file.m_currentObject;
 
 	Coord3D loc;
 	loc.x = file.readReal();
@@ -1499,39 +1527,39 @@ Bool ScriptDialog::ParseObjectDataChunk(DataChunkInput &file, DataChunkInfo *inf
 	AsciiString name = file.readAsciiString();
 	Dict d;
 	d = file.readDict();
-	MapObject *pThisOne;
+	MapObject* pThisOne;
 
 	// create the map object
-	pThisOne = newInstance( MapObject)( loc, name, angle, flags, &d,
-														TheThingFactory->findTemplate( name ) );
+	pThisOne = newInstance(MapObject)(loc, name, angle, flags, &d,
+		TheThingFactory->findTemplate(name));
 
 	if (pThisOne->getProperties()->getType(TheKey_waypointID) == Dict::DICT_INT) {
 		pThisOne->setIsWaypoint();
-		pThisOne->setWaypointID(pThisOne->getWaypointID()+pThis->m_waypointBase);
+		pThisOne->setWaypointID(pThisOne->getWaypointID() + pThis->m_waypointBase);
 		if (pThis->m_maxWaypoint < pThisOne->getWaypointID()) pThis->m_maxWaypoint = pThisOne->getWaypointID();
 	}
 
 	DEBUG_LOG(("Adding object %s (%s)", name.str(), pThisOne->getProperties()->getAsciiString(TheKey_originalOwner).str()));
 	// Check for duplicates.
 
-	MapObject *pObj;
+	MapObject* pObj;
 	Bool duplicate = false;
 	for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
 		Coord3D curLoc;
 		curLoc = *pObj->getLocation();
-		Bool locsMatch = (loc.x==curLoc.x&&loc.y==curLoc.y);
+		Bool locsMatch = (loc.x == curLoc.x && loc.y == curLoc.y);
 		// If the locations match, and they are both waypoints or both not waypoints, and the names match,
 		// They're duplicate.
 		if (locsMatch && (pObj->isWaypoint() == pThisOne->isWaypoint()) && (pObj->getName() == pThisOne->getName())) {
 			duplicate = true;
 		}
-		if (pThisOne->isWaypoint() && pObj->isWaypoint() ) {
+		if (pThisOne->isWaypoint() && pObj->isWaypoint()) {
 			// If both waypoints, and the names match, are dupes.
-			if (!duplicate && (pThisOne->getWaypointName()==pObj->getWaypointName())) {
+			if (!duplicate && (pThisOne->getWaypointName() == pObj->getWaypointName())) {
 				AsciiString warning;
 				warning.format("Duplicate named waypoints '%s', renaming imported waypoint.", pThisOne->getWaypointName().str());
 				::AfxMessageBox(warning.str(), MB_OK);
- 				AsciiString name = WaypointOptions::GenerateUniqueName(pThisOne->getWaypointID());
+				AsciiString name = WaypointOptions::GenerateUniqueName(pThisOne->getWaypointID());
 				name.concat("-imp");
 			}
 		}
@@ -1545,7 +1573,8 @@ Bool ScriptDialog::ParseObjectDataChunk(DataChunkInput &file, DataChunkInfo *inf
 	if (pPrevious) {
 		DEBUG_ASSERTCRASH(pThis->m_firstReadObject != NULL && pPrevious->getNext() == NULL, ("Bad linkage."));
 		pPrevious->setNextMap(pThisOne);
-	}	else {
+	}
+	else {
 		DEBUG_ASSERTCRASH(pThis->m_firstReadObject == NULL, ("Bad linkage."));
 		pThis->m_firstReadObject = pThisOne;
 	}
@@ -1559,18 +1588,18 @@ Bool ScriptDialog::ParseObjectDataChunk(DataChunkInput &file, DataChunkInfo *inf
 *	Input: DataChunkInput
 *
 */
-Bool ScriptDialog::ParseWaypointDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+Bool ScriptDialog::ParseWaypointDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
 	Int count = file.readInt();
-	CWorldBuilderDoc *pDoc = CWorldBuilderDoc::GetActiveDoc();
-	ScriptDialog *pThis = (ScriptDialog *)userData;
+	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
+	ScriptDialog* pThis = (ScriptDialog*)userData;
 	Int i;
-	for (i=0; i<count; i++) {
+	for (i = 0; i < count; i++) {
 		Int waypoint1 = file.readInt();
 		Int waypoint2 = file.readInt();
-		pDoc->addWaypointLink(waypoint1+pThis->m_waypointBase, waypoint2+pThis->m_waypointBase);
-		if (pThis->m_maxWaypoint < waypoint1+pThis->m_waypointBase) pThis->m_maxWaypoint = waypoint1+pThis->m_waypointBase;
-		if (pThis->m_maxWaypoint < waypoint2+pThis->m_waypointBase) pThis->m_maxWaypoint = waypoint1+pThis->m_waypointBase;
+		pDoc->addWaypointLink(waypoint1 + pThis->m_waypointBase, waypoint2 + pThis->m_waypointBase);
+		if (pThis->m_maxWaypoint < waypoint1 + pThis->m_waypointBase) pThis->m_maxWaypoint = waypoint1 + pThis->m_waypointBase;
+		if (pThis->m_maxWaypoint < waypoint2 + pThis->m_waypointBase) pThis->m_maxWaypoint = waypoint1 + pThis->m_waypointBase;
 	}
 	DEBUG_ASSERTCRASH(file.atEndOfChunk(), ("Unexpected data left over."));
 	return true;
@@ -1582,9 +1611,9 @@ Bool ScriptDialog::ParseWaypointDataChunk(DataChunkInput &file, DataChunkInfo *i
 *	Input: DataChunkInput
 *
 */
-Bool ScriptDialog::ParseTeamsDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+Bool ScriptDialog::ParseTeamsDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
-	ScriptDialog *pThis = (ScriptDialog *)userData;
+	ScriptDialog* pThis = (ScriptDialog*)userData;
 	while (!file.atEndOfChunk()) {
 		Dict teamDict = file.readDict();
 		AsciiString teamName = teamDict.getAsciiString(TheKey_teamName);
@@ -1596,7 +1625,8 @@ Bool ScriptDialog::ParseTeamsDataChunk(DataChunkInput &file, DataChunkInfo *info
 		if (pThis->m_sides.findSideInfo(player)) {
 			// player exists, so just add it.
 			pThis->m_sides.addTeam(&teamDict);
-		} else {
+		}
+		else {
 			AsciiString warning;
 			warning.format("Importing team %s of player %s.  Player %s doesn't exist, Select player..",
 				teamName.str(), player.str(), player.str());
@@ -1627,13 +1657,13 @@ Bool ScriptDialog::ParseTeamsDataChunk(DataChunkInput &file, DataChunkInfo *info
 *	Input: DataChunkInput
 *
 */
-Bool ScriptDialog::ParsePlayersDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+Bool ScriptDialog::ParsePlayersDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
-	ScriptDialog *pThis = (ScriptDialog *)userData;
+	ScriptDialog* pThis = (ScriptDialog*)userData;
 	Int numNames = file.readInt();
 	Int i;
-	for (i=0; i<numNames; i++) {
-		if (i>=MAX_PLAYER_COUNT) break;
+	for (i = 0; i < numNames; i++) {
+		if (i >= MAX_PLAYER_COUNT) break;
 		pThis->m_readPlayerNames[i] = file.readAsciiString();
 	}
 	DEBUG_ASSERTCRASH(file.atEndOfChunk(), ("Unexpected data left over."));
@@ -1647,21 +1677,21 @@ Bool ScriptDialog::ParsePlayersDataChunk(DataChunkInput &file, DataChunkInfo *in
 *	Input: DataChunkInput
 *
 */
-Bool ScriptDialog::ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
+Bool ScriptDialog::ParsePolygonTriggersDataChunk(DataChunkInput& file, DataChunkInfo* info, void* userData)
 {
 	Int count;
 	Int numPoints;
 	Int triggerID;
-//	Int maxTriggerId = 0;
+	//	Int maxTriggerId = 0;
 	AsciiString triggerName;
 	// Remove any existing polygon triggers, if any.
-	ScriptDialog *pThis = (ScriptDialog *)userData;
+	ScriptDialog* pThis = (ScriptDialog*)userData;
 	pThis->m_firstTrigger = NULL;
-	PolygonTrigger *pPrevTrig = NULL;
+	PolygonTrigger* pPrevTrig = NULL;
 	count = file.readInt();
 	Bool isRiver;
 	Int riverStart;
-	while (count>0) {
+	while (count > 0) {
 		count--;
 		Bool isWater = false;
 		triggerName = file.readAsciiString();
@@ -1676,13 +1706,13 @@ Bool ScriptDialog::ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChunk
 			riverStart = file.readInt();
 		}
 		numPoints = file.readInt();
-		PolygonTrigger *pTrig = newInstance(PolygonTrigger)(numPoints+1);
+		PolygonTrigger* pTrig = newInstance(PolygonTrigger)(numPoints + 1);
 		pTrig->setTriggerName(triggerName);
 		pTrig->setWaterArea(isWater);
 		pTrig->setRiver(isRiver);
 		pTrig->setRiverStart(riverStart);
 		Int i;
-		for (i=0; i<numPoints; i++) {
+		for (i = 0; i < numPoints; i++) {
 			ICoord3D loc;
 			loc.x = file.readInt();
 			loc.y = file.readInt();
@@ -1691,8 +1721,8 @@ Bool ScriptDialog::ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChunk
 		}
 		// Check for duplicates.
 		Bool duplicate = false;
-		PolygonTrigger *pCurrentTrigger;
-		for (pCurrentTrigger=PolygonTrigger::getFirstPolygonTrigger(); pCurrentTrigger; pCurrentTrigger = pCurrentTrigger->getNext()) {
+		PolygonTrigger* pCurrentTrigger;
+		for (pCurrentTrigger = PolygonTrigger::getFirstPolygonTrigger(); pCurrentTrigger; pCurrentTrigger = pCurrentTrigger->getNext()) {
 			if (triggerName == pCurrentTrigger->getTriggerName()) {
 				duplicate = true;
 				AsciiString warning;
@@ -1701,12 +1731,14 @@ Bool ScriptDialog::ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChunk
 				break;
 			}
 		}
-		if (duplicate ) {
+		if (duplicate) {
 			deleteInstance(pTrig);
-		} else {
+		}
+		else {
 			if (pPrevTrig) {
 				pPrevTrig->setNextPoly(pTrig);
-			} else {
+			}
+			else {
 				pThis->m_firstTrigger = pTrig;
 			}
 			pPrevTrig = pTrig;
@@ -1719,8 +1751,8 @@ Bool ScriptDialog::ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChunk
 
 void ScriptDialog::OnDblclkScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	Script *pScript = getCurScript();
-	ScriptGroup *pGroup = getCurGroup();
+	Script* pScript = getCurScript();
+	ScriptGroup* pGroup = getCurGroup();
 	if (pScript == NULL && pGroup == NULL) return;
 	OnEditScript();
 	*pResult = 0;
@@ -1729,7 +1761,7 @@ void ScriptDialog::OnDblclkScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 void ScriptDialog::OnOK()
 {
 	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
-	SidesListUndoable *pUndo = new SidesListUndoable(m_sides, pDoc);
+	SidesListUndoable* pUndo = new SidesListUndoable(m_sides, pDoc);
 	pDoc->AddAndDoUndoable(pUndo);
 	REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
 	CDialog::OnOK();
@@ -1744,14 +1776,14 @@ void ScriptDialog::OnCancel()
 void ScriptDialog::OnBegindragScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 
 	m_curSelection.IntToList(pNMTreeView->itemNew.lParam);
 	if (m_curSelection.m_objType != ListType::PLAYER_TYPE) {
 		m_dragItem = pNMTreeView->itemNew.hItem;
-    pTree->SelectItem(m_dragItem);
+		pTree->SelectItem(m_dragItem);
 		m_draggingTreeView = true;
- 		SetCapture();
+		SetCapture();
 	}
 	*pResult = 0;
 }
@@ -1759,18 +1791,18 @@ void ScriptDialog::OnBegindragScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 void ScriptDialog::OnMouseMove(UINT nFlags, CPoint point)
 {
 	if (m_draggingTreeView) {
-		CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+		CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 
-    HTREEITEM htiTarget;  // handle to target item
-    TVHITTESTINFO tvht;  // hit test information
+		HTREEITEM htiTarget;  // handle to target item
+		TVHITTESTINFO tvht;  // hit test information
 
 		const Int CENTER_OFFSET = 12;
 		point.y -= CENTER_OFFSET;
-    tvht.pt = point;
-    if ((htiTarget = pTree->HitTest( &tvht)) != NULL) {
+		tvht.pt = point;
+		if ((htiTarget = pTree->HitTest(&tvht)) != NULL) {
 			pTree->SelectDropTarget(htiTarget);
-    }
-  }
+		}
+	}
 
 	CDialog::OnMouseMove(nFlags, point);
 }
@@ -1778,21 +1810,21 @@ void ScriptDialog::OnMouseMove(UINT nFlags, CPoint point)
 void ScriptDialog::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	if (m_draggingTreeView) {
-		CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+		CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 		m_draggingTreeView = false;
 
 		ReleaseCapture();
-    HTREEITEM htiTarget;  // handle to target item
-    TVHITTESTINFO tvht;  // hit test information
+		HTREEITEM htiTarget;  // handle to target item
+		TVHITTESTINFO tvht;  // hit test information
 
 		const Int CENTER_OFFSET = 12;
 		point.y -= CENTER_OFFSET;
-    tvht.pt = point;
-    if ((htiTarget = pTree->HitTest( &tvht)) != NULL) {
-      pTree->SelectItem(htiTarget);
+		tvht.pt = point;
+		if ((htiTarget = pTree->HitTest(&tvht)) != NULL) {
+			pTree->SelectItem(htiTarget);
 			pTree->SelectDropTarget(htiTarget);
 			doDropOn(m_dragItem, htiTarget);
-    }
+		}
 	}
 	CDialog::OnLButtonUp(nFlags, point);
 }
@@ -1800,39 +1832,41 @@ void ScriptDialog::OnLButtonUp(UINT nFlags, CPoint point)
 void ScriptDialog::doDropOn(HTREEITEM hDrag, HTREEITEM hTarget)
 {
 	if (hDrag == hTarget) return;
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	ListType drag;
 	drag.IntToList(pTree->GetItemData(hDrag));
 	ListType target;
 	target.IntToList(pTree->GetItemData(hTarget));
 
-	Script *dragScript = NULL;
-	ScriptGroup *dragGroup = NULL;
+	Script* dragScript = NULL;
+	ScriptGroup* dragGroup = NULL;
 	m_curSelection = drag;
-	Script *pScript = getCurScript();
-	ScriptList *pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
-	ScriptGroup *pGroup = getCurGroup();
+	Script* pScript = getCurScript();
+	ScriptList* pSL = m_sides.getSideInfo(m_curSelection.m_playerIndex)->getScriptList();
+	ScriptGroup* pGroup = getCurGroup();
 	if (pSL == NULL) return;
 	if (pScript) {
 		dragScript = pScript->duplicate();
 		if (pGroup) {
 			pGroup->deleteScript(pScript);
-		} else {
+		}
+		else {
 			pSL->deleteScript(pScript);
 		}
 		if (drag.m_objType == target.m_objType &&
-				drag.m_playerIndex == target.m_playerIndex &&
-				drag.m_groupIndex == target.m_groupIndex &&
-				drag.m_scriptIndex < target.m_scriptIndex) {
-				target.m_scriptIndex--;
+			drag.m_playerIndex == target.m_playerIndex &&
+			drag.m_groupIndex == target.m_groupIndex &&
+			drag.m_scriptIndex < target.m_scriptIndex) {
+			target.m_scriptIndex--;
 		}
-	}	else if (drag.m_objType == ListType::GROUP_TYPE) {
+	}
+	else if (drag.m_objType == ListType::GROUP_TYPE) {
 		dragGroup = pGroup->duplicate();
 		pSL->deleteGroup(pGroup);
 		if (drag.m_objType != ListType::SCRIPT_IN_PLAYER_TYPE &&
-				drag.m_playerIndex == target.m_playerIndex &&
-				drag.m_groupIndex < target.m_groupIndex) {
-				target.m_groupIndex--;
+			drag.m_playerIndex == target.m_playerIndex &&
+			drag.m_groupIndex < target.m_groupIndex) {
+			target.m_groupIndex--;
 		}
 	}
 	pTree->DeleteItem(hDrag);
@@ -1856,16 +1890,18 @@ void ScriptDialog::doDropOn(HTREEITEM hDrag, HTREEITEM hTarget)
 
 	if (dragScript) {
 		if (pGroup) {
-				pGroup->addScript(dragScript, target.m_scriptIndex);
-		}	else {
+			pGroup->addScript(dragScript, target.m_scriptIndex);
+		}
+		else {
 			pSL->addScript(dragScript, target.m_scriptIndex);
 		}
-	} else if (dragGroup) {
+	}
+	else if (dragGroup) {
 		pSL->addGroup(dragGroup, target.m_groupIndex);
 		Int count = 0;
-		ScriptGroup *pGroup = pSL->getScriptGroup();
+		ScriptGroup* pGroup = pSL->getScriptGroup();
 		while (pGroup->getNext()) {
-			if (pGroup==dragGroup) break;
+			if (pGroup == dragGroup) break;
 			count++;
 			pGroup = pGroup->getNext();
 		}
@@ -1893,12 +1929,12 @@ void ScriptDialog::OnMove(int x, int y)
 }
 
 /** This function reacts to the selection of "active" from
-    the right click drop down menu */
+	the right click drop down menu */
 void ScriptDialog::OnScriptActivate()
 {
 	AsciiString newName;
 	Bool active;
-	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 	HTREEITEM item = findItem(m_curSelection);
 
 	if (getCurScript() != NULL)
@@ -1908,7 +1944,7 @@ void ScriptDialog::OnScriptActivate()
 		getCurScript()->setActive(!active);
 
 		/// Updates screen to reflect change
-		Script *pScript = getCurScript();
+		Script* pScript = getCurScript();
 		pTree->SetItemText(item, formatScriptLabel(pScript).str());
 
 		if (getCurScript()->hasWarnings())
@@ -1930,7 +1966,7 @@ void ScriptDialog::OnScriptActivate()
 		getCurGroup()->setActive(!active);
 
 		/// Updates screen to reflect change
-		ScriptGroup *pScriptGroup = getCurGroup();
+		ScriptGroup* pScriptGroup = getCurGroup();
 		pTree->SetItemText(item, formatScriptLabel(pScriptGroup).str());
 
 		if (getCurGroup()->hasWarnings())

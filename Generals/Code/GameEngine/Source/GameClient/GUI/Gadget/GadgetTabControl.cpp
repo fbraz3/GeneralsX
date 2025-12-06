@@ -290,7 +290,7 @@ void GadgetTabControlShowSubPane( GameWindow *tabControl, Int whichPane)
 	else
 		tabData->activeTab = 0;
 
-	tabData->activeTab = min( tabData->activeTab, tabData->tabCount - 1 );
+	tabData->activeTab = std::min( tabData->activeTab, tabData->tabCount - 1 );
 
 	tabData->subPanes[tabData->activeTab]->winHide( false );
 }

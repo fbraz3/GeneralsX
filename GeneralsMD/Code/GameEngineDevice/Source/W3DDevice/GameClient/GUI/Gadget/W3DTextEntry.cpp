@@ -75,7 +75,7 @@ static void drawTextEntryText( GameWindow *window, WinInstanceData *instData,
 															 Color compositeColor, Color compositeDropColor,
 															 Int x, Int y, Int width, Int fontHeight )
 {
-	static Byte drawCnt = 0;
+	static SignedByte drawCnt = 0;
 	EntryData *e = (EntryData *)window->winGetUserData();
 //	Int charPos = e->charPos;
 	Int cursorPos;

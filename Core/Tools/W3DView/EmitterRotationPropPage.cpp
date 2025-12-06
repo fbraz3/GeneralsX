@@ -118,8 +118,8 @@ void EmitterRotationPropPageClass::Initialize (void)
 		//
 		//	Determine what the min and max rotations are
 		//
-		m_MaxRotation = WWMath::Max(m_Rotations.Start,1.0f);
-		m_MinRotation = WWMath::Min(m_Rotations.Start,0.0f);
+		m_MaxRotation = std::max(m_Rotations.Start,1.0f);
+		m_MinRotation = std::min(m_Rotations.Start,0.0f);
 
 		for (UINT index = 0; index < m_Rotations.NumKeyFrames; index ++) {
 			if (m_Rotations.Values[index] > m_MaxRotation) {
@@ -220,8 +220,8 @@ BOOL EmitterRotationPropPageClass::OnNotify(WPARAM wParam, LPARAM lParam, LRESUL
 					//
 					//	Determine if the user changed the 'max' or 'min' rotation
 					//
-					float new_max = WWMath::Max(rotation,1.0f);
-					float new_min = WWMath::Min(rotation,0.0f);
+					float new_max = std::max(rotation,1.0f);
+					float new_min = std::min(rotation,0.0f);
 
 					int count = m_RotationBar->Get_Point_Count ();
 					for (int index = 0; index < count; index ++) {

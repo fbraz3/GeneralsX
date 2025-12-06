@@ -38,6 +38,7 @@ struct SurfaceDescription;
 #include "ww3dformat.h"
 #include "vector2i.h"
 #include "vector3.h"
+#include "ww3d.h"
 #include <cstring>
 #include <algorithm>
 #include <cmath>
@@ -314,14 +315,14 @@ SurfaceClass* TextureClass::Get_Surface_Level(unsigned int level)
 	// Phase 51: Real implementation - get surface from D3DTexture
 	IDirect3DTexture8* d3d_texture = Peek_D3D_Texture();
 	if (!d3d_texture) {
-		fprintf(stderr, "[TextureClass] Get_Surface_Level: D3DTexture is NULL!\n");
+		printf("[TextureClass] Get_Surface_Level: D3DTexture is NULL!\n");
 		return nullptr;
 	}
 	
 	IDirect3DSurface8* d3d_surface = nullptr;
 	HRESULT hr = d3d_texture->GetSurfaceLevel(level, &d3d_surface);
 	if (FAILED(hr) || !d3d_surface) {
-		fprintf(stderr, "[TextureClass] Get_Surface_Level: GetSurfaceLevel failed, level=%u, hr=0x%lx\n", level, (unsigned long)hr);
+		printf("[TextureClass] Get_Surface_Level: GetSurfaceLevel failed, level=%u, hr=0x%lx\n", level, (unsigned long)hr);
 		return nullptr;
 	}
 	
@@ -367,20 +368,69 @@ TextureClass::TextureClass(SurfaceClass *surface, MipCountType mip_level)
  */
 TextureClass::TextureClass(
 	const char *name, 
-	const char *full_name,
+	const char *full_path,
 	MipCountType mip_level,
 	WW3DFormat format,
 	bool allow_compression,
 	bool allow_reduction)
 	: TextureBaseClass(0, 0, mip_level)
 {
-	// Stub: File-based texture loading
-	// Real implementation:
-	// 1. Load file via TheFileSystem VFS
-	// 2. Parse format (TGA/DDS)
-	// 3. Convert if needed
-	// 4. Create Vulkan texture resource
-	// 5. Upload to GPU memory
+	// Phase 62: Implement file-based texture loading
+	TextureFormat = format;
+	IsCompressionAllowed = allow_compression;
+	IsReducible = allow_reduction;
+	InactivationTime = 30000;  // Default 30 seconds
+	
+	// Handle compression formats
+	switch (TextureFormat)
+	{
+	case WW3D_FORMAT_DXT1:
+	case WW3D_FORMAT_DXT2:
+	case WW3D_FORMAT_DXT3:
+	case WW3D_FORMAT_DXT4:
+	case WW3D_FORMAT_DXT5:
+		IsCompressionAllowed = true;
+		break;
+	default:
+		break;
+	}
+	
+	// Check for lightmap (name contains '+')
+	if (name) {
+		int len = strlen(name);
+		for (int i = 0; i < len; ++i) {
+			if (name[i] == '+') {
+				IsLightmap = true;
+				break;
+			}
+		}
+		Set_Texture_Name(name);
+	}
+	
+	if (full_path) {
+		Set_Full_Path(full_path);
+	}
+	
+	// Debug output
+	static int texLoadCount = 0;
+	if (texLoadCount < 20) {
+		printf("[TextureClass] Phase 62: Loading texture from file '%s' (format=%d, mip=%d)\n",
+				name ? name : "(null)", (int)format, (int)mip_level);
+		texLoadCount++;
+	}
+	
+	// If texturing is disabled, just mark as initialized with no texture
+	if (!WW3D::Is_Texturing_Enabled()) {
+		Initialized = true;
+		Poke_Texture(nullptr);
+		return;
+	}
+	
+	// Initialize the texture - this will trigger the texture loader
+	LastAccessed = WW3D::Get_Sync_Time();
+	
+	// Always init immediately since we don't have async texture loading working yet
+	Init();
 }
 
 /**
@@ -401,7 +451,7 @@ TextureClass::TextureClass(
 	: TextureBaseClass(width, height, mip_level, pool, false, allow_reduction)
 {
 	// Phase 51: Real texture creation implementation
-	fprintf(stderr, "[TextureClass] Phase 51: Creating %ux%u texture, format=%d, mip=%d, pool=%d\n",
+	printf("[TextureClass] Phase 51: Creating %ux%u texture, format=%d, mip=%d, pool=%d\n",
 			width, height, (int)format, (int)mip_level, (int)pool);
 	
 	TextureFormat = format;
@@ -417,23 +467,23 @@ TextureClass::TextureClass(
 	}
 	
 	// Create the D3D texture using DX8Wrapper
-	fprintf(stderr, "[TextureClass] Phase 51: Calling _Create_DX8_Texture...\n");
+	printf("[TextureClass] Phase 51: Calling _Create_DX8_Texture...\n");
 	IDirect3DBaseTexture8* d3d_texture = DX8Wrapper::_Create_DX8_Texture(width, height, format, mip_level, d3dpool, false);
-	fprintf(stderr, "[TextureClass] Phase 51: _Create_DX8_Texture returned %p\n", (void*)d3d_texture);
+	printf("[TextureClass] Phase 51: _Create_DX8_Texture returned %p\n", (void*)d3d_texture);
 	
 	if (d3d_texture) {
-		fprintf(stderr, "[TextureClass] Phase 51: Calling Poke_Texture...\n");
+		printf("[TextureClass] Phase 51: Calling Poke_Texture...\n");
 		Poke_Texture(d3d_texture);  // Use protected method to set D3DTexture
-		fprintf(stderr, "[TextureClass] Phase 51: Poke_Texture done.\n");
+		printf("[TextureClass] Phase 51: Poke_Texture done.\n");
 	} else {
-		fprintf(stderr, "[TextureClass] Phase 51: Skipping Poke_Texture - texture is NULL!\n");
+		printf("[TextureClass] Phase 51: Skipping Poke_Texture - texture is NULL!\n");
 	}
 	
 	if (Peek_D3D_Base_Texture()) {
 		Initialized = true;
-		fprintf(stderr, "[TextureClass] Phase 51: SUCCESS - D3DTexture=%p\n", (void*)Peek_D3D_Base_Texture());
+		printf("[TextureClass] Phase 51: SUCCESS - D3DTexture=%p\n", (void*)Peek_D3D_Base_Texture());
 	} else {
-		fprintf(stderr, "[TextureClass] Phase 51: FAILED - D3DTexture is NULL!\n");
+		printf("[TextureClass] Phase 51: FAILED - D3DTexture is NULL!\n");
 	}
 }
 
@@ -478,8 +528,53 @@ void TextureFilterClass::_Init_Filters(TextureFilterClass::TextureFilterMode mod
  */
 void TextureFilterClass::Set_Mip_Mapping(TextureFilterClass::FilterType filter)
 {
-	// Stub: Configure mipmap sampling
-	// Real implementation: Update Vulkan sampler descriptor
+	MipMapFilter = filter;
+}
+
+/**
+ * TextureFilterClass::Apply
+ * 
+ * Apply texture filtering settings to a texture stage.
+ * Cross-platform version: Settings stored for Vulkan sampler configuration.
+ */
+void TextureFilterClass::Apply(unsigned int stage)
+{
+	// Cross-platform: Filter application is handled by the graphics backend
+	// The Vulkan driver queries filter settings when creating samplers
+	(void)stage;  // Suppress unused warning
+}
+
+/**
+ * TextureFilterClass::_Set_Default_Min_Filter
+ * 
+ * Set the default minification filter for all texture stages.
+ */
+void TextureFilterClass::_Set_Default_Min_Filter(FilterType filter)
+{
+	// Stub: Store default min filter preference
+	(void)filter;
+}
+
+/**
+ * TextureFilterClass::_Set_Default_Mag_Filter
+ * 
+ * Set the default magnification filter for all texture stages.
+ */
+void TextureFilterClass::_Set_Default_Mag_Filter(FilterType filter)
+{
+	// Stub: Store default mag filter preference
+	(void)filter;
+}
+
+/**
+ * TextureFilterClass::_Set_Default_Mip_Filter
+ * 
+ * Set the default mipmap filter for all texture stages.
+ */
+void TextureFilterClass::_Set_Default_Mip_Filter(FilterType filter)
+{
+	// Stub: Store default mip filter preference
+	(void)filter;
 }
 
 // ============================================================================
@@ -577,4 +672,53 @@ TextureClass* Load_Texture(ChunkLoadClass &cload)
 	// 2. Load via TextureClass constructor
 	// 3. Return pointer for mesh assignment
 	return nullptr;
+}
+
+// ============================================================================
+// TextureBaseClass Method Implementations
+// These are normally in texture.cpp but that file has DirectX dependencies
+// ============================================================================
+
+/**
+ * TextureBaseClass::Set_Texture_Name
+ * 
+ * Set the texture name for identification and caching purposes.
+ * Used when loading textures from files or .big archives.
+ */
+void TextureBaseClass::Set_Texture_Name(const char* name)
+{
+	if (name) {
+		Name = name;
+	}
+}
+
+/**
+ * TextureBaseClass::Invalidate
+ * 
+ * Mark texture as invalid, requiring reload on next use.
+ * Called when graphics device is lost or texture needs refresh.
+ */
+void TextureBaseClass::Invalidate()
+{
+	// Don't invalidate if load is in progress
+	if (TextureLoadTask) {
+		return;
+	}
+	if (ThumbnailLoadTask) {
+		return;
+	}
+
+	// Don't invalidate procedural textures
+	if (IsProcedural) {
+		return;
+	}
+
+	// Release D3D texture handle
+	if (D3DTexture) {
+		D3DTexture->Release();
+		D3DTexture = nullptr;
+	}
+
+	// Mark as uninitialized
+	Initialized = false;
 }

@@ -43,15 +43,16 @@
 #include "Common/PlayerTemplate.h"
 #include "GameNetwork/GameInfo.h"
 #include "GameNetwork/LANAPI.h"
+#include <Utility/compat.h>
 
 
-static GameWindow *parent = NULL;
-static GameWindow *staticTextGameName = NULL;
-static GameWindow *staticTextMapName = NULL;
-static GameWindow *listBoxPlayers = NULL;
-static GameWindow *winCrates = NULL;
-static GameWindow *winSuperWeapons = NULL;
-static GameWindow *winFreeForAll = NULL;
+static GameWindow* parent = NULL;
+static GameWindow* staticTextGameName = NULL;
+static GameWindow* staticTextMapName = NULL;
+static GameWindow* listBoxPlayers = NULL;
+static GameWindow* winCrates = NULL;
+static GameWindow* winSuperWeapons = NULL;
+static GameWindow* winFreeForAll = NULL;
 
 static NameKeyType parentID = NAMEKEY_INVALID;
 static NameKeyType staticTextGameNameID = NAMEKEY_INVALID;
@@ -61,25 +62,25 @@ static NameKeyType winCratesID = NAMEKEY_INVALID;
 static NameKeyType winSuperWeaponsID = NAMEKEY_INVALID;
 static NameKeyType winFreeForAllID = NAMEKEY_INVALID;
 
-static WindowLayout *gameInfoWindowLayout = NULL;
+static WindowLayout* gameInfoWindowLayout = NULL;
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////////////////////////
 
-void CreateLANGameInfoWindow( GameWindow *sizeAndPosWin )
+void CreateLANGameInfoWindow(GameWindow* sizeAndPosWin)
 {
-	if( !gameInfoWindowLayout )
-		gameInfoWindowLayout = TheWindowManager->winCreateLayout( AsciiString( "Menus/GameInfoWindow.wnd" ) );
+	if (!gameInfoWindowLayout)
+		gameInfoWindowLayout = TheWindowManager->winCreateLayout(AsciiString("Menus\\GameInfoWindow.wnd"));
 
 	gameInfoWindowLayout->runInit();
 	gameInfoWindowLayout->bringForward();
-	gameInfoWindowLayout->hide( TRUE );
+	gameInfoWindowLayout->hide(TRUE);
 
-	if( !parent || !sizeAndPosWin )
+	if (!parent || !sizeAndPosWin)
 		return;
 	Int x, y, width, height;
-	sizeAndPosWin->winGetScreenPosition(&x,&y);
-	parent->winSetPosition(x,y);
+	sizeAndPosWin->winGetScreenPosition(&x, &y);
+	parent->winSetPosition(x, y);
 
-	sizeAndPosWin->winGetSize( &width, &height );
+	sizeAndPosWin->winGetSize(&width, &height);
 	parent->winSetSize(width, height);
 
 }
@@ -94,18 +95,18 @@ void DestroyGameInfoWindow(void)
 	}
 }
 
-void RefreshGameInfoWindow(GameInfo *gameInfo, UnicodeString gameName)
+void RefreshGameInfoWindow(GameInfo* gameInfo, UnicodeString gameName)
 {
-	static const Image *randomIcon = TheMappedImageCollection->findImageByName("GameinfoRANDOM");
-	static const Image *observerIcon = TheMappedImageCollection->findImageByName("GameinfoOBSRVR");
-	if(!gameInfoWindowLayout || !gameInfo )
+	static const Image* randomIcon = TheMappedImageCollection->findImageByName("GameinfoRANDOM");
+	static const Image* observerIcon = TheMappedImageCollection->findImageByName("GameinfoOBSRVR");
+	if (!gameInfoWindowLayout || !gameInfo)
 		return;
 
-	parent->winHide( FALSE );
+	parent->winHide(FALSE);
 	parent->winBringToTop();
 
 	// Set the game name
-	GadgetStaticTextSetText(staticTextGameName, ((LANGameInfo *)gameInfo)->getPlayerName(0));
+	GadgetStaticTextSetText(staticTextGameName, ((LANGameInfo*)gameInfo)->getPlayerName(0));
 	// set the map name
 	UnicodeString map;
 	AsciiString asciiMap = gameInfo->getMap();
@@ -118,7 +119,7 @@ void RefreshGameInfoWindow(GameInfo *gameInfo, UnicodeString gameName)
 	else
 	{
 		// can happen if the map will have to be transferred... so use the leaf name (srj)
-		const char *noPath = gameInfo->getMap().reverseFind('\\');
+		const char* noPath = gameInfo->getMap().reverseFindPathSeparator();
 		if (noPath)
 		{
 			++noPath;
@@ -129,71 +130,71 @@ void RefreshGameInfoWindow(GameInfo *gameInfo, UnicodeString gameName)
 		}
 		map.translate(noPath);
 	}
-	GadgetStaticTextSetText(staticTextMapName,map);
+	GadgetStaticTextSetText(staticTextMapName, map);
 
 	// fill in the player list
 
 	GadgetListBoxReset(listBoxPlayers);
 
 	Int numColors = TheMultiplayerSettings->getNumColors();
-	Color white = GameMakeColor(255,255,255,255);
-//	Color grey =  GameMakeColor(188,188,188,255);
-	for (Int i = 0; i < MAX_SLOTS; i ++)
+	Color white = GameMakeColor(255, 255, 255, 255);
+	//	Color grey =  GameMakeColor(188,188,188,255);
+	for (Int i = 0; i < MAX_SLOTS; i++)
 	{
 		Color playerColor = white;
 		Int color = -1;
 		Int addedRow;
-		GameSlot *slot = gameInfo->getSlot(i);
-		if(!slot || (slot->isOccupied() == FALSE))
+		GameSlot* slot = gameInfo->getSlot(i);
+		if (!slot || (slot->isOccupied() == FALSE))
 			continue;
 		color = slot->getColor();
-		if(color > -1 && color < numColors)
+		if (color > -1 && color < numColors)
 		{
-			MultiplayerColorDefinition *def = TheMultiplayerSettings->getColor(color);
+			MultiplayerColorDefinition* def = TheMultiplayerSettings->getColor(color);
 			playerColor = def->getColor();
 		}
-		if(slot->isAI())
+		if (slot->isAI())
 		{
-			switch(slot->getState())
+			switch (slot->getState())
 			{
-				case SLOT_EASY_AI:
-				{
-					addedRow = GadgetListBoxAddEntryText(listBoxPlayers,TheGameText->fetch("GUI:EasyAI"),playerColor,-1, 1);
-					break;
-				}
-				case SLOT_MED_AI:
-				{
-					addedRow = GadgetListBoxAddEntryText(listBoxPlayers,TheGameText->fetch("GUI:MediumAI"),playerColor,-1, 1);
-					break;
-				}
-				case SLOT_BRUTAL_AI:
-				{
-					addedRow = GadgetListBoxAddEntryText(listBoxPlayers,TheGameText->fetch("GUI:HardAI"),playerColor,-1, 1);
-					break;
-				}
-				default:
-					break;
+			case SLOT_EASY_AI:
+			{
+				addedRow = GadgetListBoxAddEntryText(listBoxPlayers, TheGameText->fetch("GUI:EasyAI"), playerColor, -1, 1);
+				break;
+			}
+			case SLOT_MED_AI:
+			{
+				addedRow = GadgetListBoxAddEntryText(listBoxPlayers, TheGameText->fetch("GUI:MediumAI"), playerColor, -1, 1);
+				break;
+			}
+			case SLOT_BRUTAL_AI:
+			{
+				addedRow = GadgetListBoxAddEntryText(listBoxPlayers, TheGameText->fetch("GUI:HardAI"), playerColor, -1, 1);
+				break;
+			}
+			default:
+				break;
 			}
 		}
-		else if(slot->isHuman())
+		else if (slot->isHuman())
 		{
-			addedRow = GadgetListBoxAddEntryText(listBoxPlayers, slot->getName(),playerColor,-1,1);
+			addedRow = GadgetListBoxAddEntryText(listBoxPlayers, slot->getName(), playerColor, -1, 1);
 		}
 		Int playerTemplate = slot->getPlayerTemplate();
-		if(playerTemplate == PLAYERTEMPLATE_OBSERVER)
+		if (playerTemplate == PLAYERTEMPLATE_OBSERVER)
 		{
-			GadgetListBoxAddEntryImage(listBoxPlayers, observerIcon,addedRow, 0, 22,25);
+			GadgetListBoxAddEntryImage(listBoxPlayers, observerIcon, addedRow, 0, 22, 25);
 		}
-		else if(playerTemplate < 0 || playerTemplate >= ThePlayerTemplateStore->getPlayerTemplateCount())
+		else if (playerTemplate < 0 || playerTemplate >= ThePlayerTemplateStore->getPlayerTemplateCount())
 		{
 			///< @todo: When we get art that shows player's side, then we'll actually draw the art instead of putting in text
-			GadgetListBoxAddEntryImage(listBoxPlayers, randomIcon,addedRow, 0, 22,25);
+			GadgetListBoxAddEntryImage(listBoxPlayers, randomIcon, addedRow, 0, 22, 25);
 			//GadgetListBoxAddEntryText(listBoxPlayers,TheGameText->fetch("GUI:???"),playerColor,addedRow, 0);
 		}
 		else
 		{
-			const PlayerTemplate *fact = ThePlayerTemplateStore->getNthPlayerTemplate(playerTemplate);
-			GadgetListBoxAddEntryImage(listBoxPlayers, fact->getSideIconImage(),addedRow, 0, 22,25);
+			const PlayerTemplate* fact = ThePlayerTemplateStore->getNthPlayerTemplate(playerTemplate);
+			GadgetListBoxAddEntryImage(listBoxPlayers, fact->getSideIconImage(), addedRow, 0, 22, 25);
 			//GadgetListBoxAddEntryText(listBoxPlayers,fact->getDisplayName(),playerColor,addedRow, 0);
 		}
 
@@ -202,7 +203,7 @@ void RefreshGameInfoWindow(GameInfo *gameInfo, UnicodeString gameName)
 
 void HideGameInfoWindow(Bool hide)
 {
-	if(!parent)
+	if (!parent)
 		return;
 	parent->winHide(hide);
 
@@ -211,27 +212,27 @@ void HideGameInfoWindow(Bool hide)
 //-------------------------------------------------------------------------------------------------
 /** Initialize the GameInfoWindow */
 //-------------------------------------------------------------------------------------------------
-void GameInfoWindowInit( WindowLayout *layout, void *userData )
+void GameInfoWindowInit(WindowLayout* layout, void* userData)
 {
 
-	parentID = TheNameKeyGenerator->nameToKey( "GameInfoWindow.wnd:ParentGameInfo" );
-	staticTextGameNameID = TheNameKeyGenerator->nameToKey( "GameInfoWindow.wnd:StaticTextGameName" );
-	staticTextMapNameID = TheNameKeyGenerator->nameToKey( "GameInfoWindow.wnd:StaticTextMapName" );
-	listBoxPlayersID = TheNameKeyGenerator->nameToKey( "GameInfoWindow.wnd:ListBoxPlayers" );
-	winCratesID = TheNameKeyGenerator->nameToKey( "GameInfoWindow.wnd:WinCrates" );
-	winSuperWeaponsID = TheNameKeyGenerator->nameToKey( "GameInfoWindow.wnd:WinSuperWeapons" );
-	winFreeForAllID = TheNameKeyGenerator->nameToKey( "GameInfoWindow.wnd:WinFreeForAll" );
+	parentID = TheNameKeyGenerator->nameToKey("GameInfoWindow.wnd:ParentGameInfo");
+	staticTextGameNameID = TheNameKeyGenerator->nameToKey("GameInfoWindow.wnd:StaticTextGameName");
+	staticTextMapNameID = TheNameKeyGenerator->nameToKey("GameInfoWindow.wnd:StaticTextMapName");
+	listBoxPlayersID = TheNameKeyGenerator->nameToKey("GameInfoWindow.wnd:ListBoxPlayers");
+	winCratesID = TheNameKeyGenerator->nameToKey("GameInfoWindow.wnd:WinCrates");
+	winSuperWeaponsID = TheNameKeyGenerator->nameToKey("GameInfoWindow.wnd:WinSuperWeapons");
+	winFreeForAllID = TheNameKeyGenerator->nameToKey("GameInfoWindow.wnd:WinFreeForAll");
 
-	parent = TheWindowManager->winGetWindowFromId( NULL, parentID );
-	staticTextGameName = TheWindowManager->winGetWindowFromId( parent, staticTextGameNameID );
-	staticTextMapName = TheWindowManager->winGetWindowFromId( parent, staticTextMapNameID );
-	listBoxPlayers = TheWindowManager->winGetWindowFromId( parent, listBoxPlayersID );
-	winCrates = TheWindowManager->winGetWindowFromId( parent, winCratesID );
-	winSuperWeapons = TheWindowManager->winGetWindowFromId( parent, winSuperWeaponsID );
-	winFreeForAll = TheWindowManager->winGetWindowFromId( parent, winFreeForAllID );
+	parent = TheWindowManager->winGetWindowFromId(NULL, parentID);
+	staticTextGameName = TheWindowManager->winGetWindowFromId(parent, staticTextGameNameID);
+	staticTextMapName = TheWindowManager->winGetWindowFromId(parent, staticTextMapNameID);
+	listBoxPlayers = TheWindowManager->winGetWindowFromId(parent, listBoxPlayersID);
+	winCrates = TheWindowManager->winGetWindowFromId(parent, winCratesID);
+	winSuperWeapons = TheWindowManager->winGetWindowFromId(parent, winSuperWeaponsID);
+	winFreeForAll = TheWindowManager->winGetWindowFromId(parent, winFreeForAllID);
 
-	GadgetStaticTextSetText(staticTextGameName,UnicodeString::TheEmptyString);
-	GadgetStaticTextSetText(staticTextMapName,UnicodeString::TheEmptyString);
+	GadgetStaticTextSetText(staticTextGameName, UnicodeString::TheEmptyString);
+	GadgetStaticTextSetText(staticTextMapName, UnicodeString::TheEmptyString);
 	GadgetListBoxReset(listBoxPlayers);
 
 }
@@ -240,47 +241,47 @@ void GameInfoWindowInit( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 /** GameInfo window system callback */
 //-------------------------------------------------------------------------------------------------
-WindowMsgHandledType GameInfoWindowSystem( GameWindow *window, UnsignedInt msg,
-																				  WindowMsgData mData1, WindowMsgData mData2 )
+WindowMsgHandledType GameInfoWindowSystem(GameWindow* window, UnsignedInt msg,
+	WindowMsgData mData1, WindowMsgData mData2)
 {
-	switch( msg )
+	switch (msg)
 	{
-// might use these later
-//			GameWindow *control = (GameWindow *)mData1;
-//			Int controlID = control->winGetWindowId();
+		// might use these later
+		//			GameWindow *control = (GameWindow *)mData1;
+		//			Int controlID = control->winGetWindowId();
 
 
-		// --------------------------------------------------------------------------------------------
-		case GWM_CREATE:
-		{
+				// --------------------------------------------------------------------------------------------
+	case GWM_CREATE:
+	{
 
-			break;
+		break;
 
-		}
+	}
 
-		//---------------------------------------------------------------------------------------------
-		case GWM_DESTROY:
-		{
+	//---------------------------------------------------------------------------------------------
+	case GWM_DESTROY:
+	{
 
-			break;
+		break;
 
-		}
+	}
 
-		// --------------------------------------------------------------------------------------------
-		case GWM_INPUT_FOCUS:
-		{
+	// --------------------------------------------------------------------------------------------
+	case GWM_INPUT_FOCUS:
+	{
 
-			// if we're givin the opportunity to take the keyboard focus we must say we want it
-			if( mData1 == TRUE )
-				*(Bool *)mData2 = TRUE;
+		// if we're givin the opportunity to take the keyboard focus we must say we want it
+		if (mData1 == TRUE)
+			*(Bool*)mData2 = TRUE;
 
-			return MSG_HANDLED;
+		return MSG_HANDLED;
 
-		}
+	}
 
-		//---------------------------------------------------------------------------------------------
-		default:
-			return MSG_IGNORED;
+	//---------------------------------------------------------------------------------------------
+	default:
+		return MSG_IGNORED;
 
 	}
 

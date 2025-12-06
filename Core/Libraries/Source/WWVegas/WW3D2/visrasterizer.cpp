@@ -654,7 +654,7 @@ int IDBufferClass::Render_Occluder_Scanline(GradientsStruct & grads,EdgeStruct *
 		return 0;
 	}
 
-	int xstart = WWMath::Float_To_Long(WWMath::Max(WWMath::Ceil(left->X),1.0f));
+	int xstart = WWMath::Float_To_Long(std::max(WWMath::Ceil(left->X),1.0f));
 	int width = WWMath::Float_To_Long(WWMath::Ceil(right->X)) - xstart;
 	if (xstart + width > ResWidth) {
 		width = ResWidth - xstart;
@@ -704,7 +704,7 @@ int IDBufferClass::Render_Non_Occluder_Scanline(GradientsStruct & grads,EdgeStru
 		return 0;
 	}
 
-	int xstart = WWMath::Float_To_Long(WWMath::Max(WWMath::Ceil(left->X),1));
+	int xstart = WWMath::Float_To_Long(std::max(WWMath::Ceil(left->X),static_cast<float>(1)));
 	int width = WWMath::Float_To_Long(WWMath::Ceil(right->X)) - xstart;
 	if (xstart + width > ResWidth) {
 		width = ResWidth - xstart;

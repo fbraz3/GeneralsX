@@ -211,10 +211,10 @@ VideoStreamInterface* FFmpegVideoPlayer::createStream( File* file )
 		// never let volume go to 0, as Bink will interpret that as "play at full volume".
 		Int mod = (Int) ((TheAudio->getVolume(AudioAffect_Speech) * 0.8f) * 100) + 1;
 		[[maybe_unused]]  Int volume = (32768 * mod) / 100;
-		DEBUG_LOG(("FFmpegVideoPlayer::createStream() - About to set volume (%g -> %d -> %d",
-			TheAudio->getVolume(AudioAffect_Speech), mod, volume));
+		printf("FFmpegVideoPlayer::createStream() - About to set volume (%g -> %d -> %d",
+			TheAudio->getVolume(AudioAffect_Speech), mod, volume);
 		//BinkSetVolume( stream->m_handle,0, volume);
-		DEBUG_LOG(("FFmpegVideoPlayer::createStream() - set volume"));
+		printf(("FFmpegVideoPlayer::createStream() - set volume"));
 	}
 
 	return stream;
@@ -230,7 +230,7 @@ VideoStreamInterface*	FFmpegVideoPlayer::open( AsciiString movieTitle )
 
 	const Video* pVideo = getVideo(movieTitle);
 	if (pVideo) {
-		DEBUG_LOG(("FFmpegVideoPlayer::createStream() - About to open bink file"));
+		printf(("FFmpegVideoPlayer::createStream() - About to open bink file"));
 
 		if (TheGlobalData->m_modDir.isNotEmpty())
 		{
@@ -256,7 +256,7 @@ VideoStreamInterface*	FFmpegVideoPlayer::open( AsciiString movieTitle )
 			DEBUG_ASSERTLOG(!file, ("opened bink file %s", filePath));
 		}
 
-		DEBUG_LOG(("FFmpegVideoPlayer::createStream() - About to create stream"));
+		printf(("FFmpegVideoPlayer::createStream() - About to create stream"));
 		stream = createStream( file );
 	}
 
@@ -363,7 +363,7 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 			videoStream->m_audioBuffer = static_cast<uint8_t*>(av_realloc(videoStream->m_audioBuffer, frameSize));
 			if (videoStream->m_audioBuffer == nullptr)
 			{
-				DEBUG_LOG(("Failed to allocate audio buffer"));
+				printf(("Failed to allocate audio buffer"));
 				return;
 			}
 
@@ -444,22 +444,8 @@ void FFmpegVideoStream::frameRender( VideoBuffer *buffer )
 
 	AVPixelFormat dst_pix_fmt;
 
-	switch (buffer->format()) {
-		case VideoBuffer::TYPE_R8G8B8:
-			dst_pix_fmt = AV_PIX_FMT_RGB24;
-			break;
-		case VideoBuffer::TYPE_X8R8G8B8:
-			dst_pix_fmt = AV_PIX_FMT_BGR0;
-			break;
-		case VideoBuffer::TYPE_R5G6B5:
-			dst_pix_fmt = AV_PIX_FMT_RGB565;
-			break;
-		case VideoBuffer::TYPE_X1R5G5B5:
-			dst_pix_fmt = AV_PIX_FMT_RGB555;
-			break;
-		default:
-			return;
-	}
+	// Force RGBA output for Vulkan backend
+	dst_pix_fmt = AV_PIX_FMT_RGBA;
 
 	m_swsContext = sws_getCachedContext(m_swsContext,
 		width(),
@@ -475,7 +461,7 @@ void FFmpegVideoStream::frameRender( VideoBuffer *buffer )
 
 	uint8_t *buffer_data = static_cast<uint8_t *>(buffer->lock());
 	if (buffer_data == nullptr) {
-		DEBUG_LOG(("Failed to lock videobuffer"));
+		printf(("Failed to lock videobuffer"));
 		return;
 	}
 
@@ -484,6 +470,8 @@ void FFmpegVideoStream::frameRender( VideoBuffer *buffer )
 	[[maybe_unused]] int result =
 		sws_scale(m_swsContext, m_frame->data, m_frame->linesize, 0, height(), dst_data, dst_strides);
 	DEBUG_ASSERTLOG(result >= 0, ("Failed to scale frame"));
+	// Ensure buffer dimensions match texture size to avoid black borders
+	// Buffer dimensions are managed by allocation/scaling logic; do not assign protected members directly.
 	buffer->unlock();
 }
 

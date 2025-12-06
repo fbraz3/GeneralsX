@@ -1276,7 +1276,7 @@ void PartitionCell::addLooker(Int playerIndex)
 {
 	CellShroudStatus oldShroud = getShroudStatusForPlayer( playerIndex );
 	// The decreasing Algorithm: A 1 will go straight to -1, otherwise it just gets decremented
-	m_shroudLevel[playerIndex].m_currentShroud = min( m_shroudLevel[playerIndex].m_currentShroud - 1, -1 );
+	m_shroudLevel[playerIndex].m_currentShroud = std::min( m_shroudLevel[playerIndex].m_currentShroud - 1, -1 );
 
 	CellShroudStatus newShroud = getShroudStatusForPlayer( playerIndex );
 
@@ -1306,9 +1306,9 @@ void PartitionCell::addLooker(Int playerIndex)
 void PartitionCell::removeLooker(Int playerIndex)
 {
 	CellShroudStatus oldShroud = getShroudStatusForPlayer( playerIndex );
-	// the increasing Algorithm: a -1 goes up to min(1,activeLevel), otherwise it just gets incremented
+	// the increasing Algorithm: a -1 goes up to std::min(1,activeLevel), otherwise it just gets incremented
 	if( m_shroudLevel[playerIndex].m_currentShroud == -1 )
-		m_shroudLevel[playerIndex].m_currentShroud = min( m_shroudLevel[playerIndex].m_activeShroudLevel, (Short)1 );
+		m_shroudLevel[playerIndex].m_currentShroud = std::min( m_shroudLevel[playerIndex].m_activeShroudLevel, (Short)1 );
 	else
 	{
 		DEBUG_ASSERTCRASH( m_shroudLevel[playerIndex].m_currentShroud < 0, ("Someone is RemoveLooker-ing on a cell that is not looked at.  This will make a permanent shroud blob.") );

@@ -173,9 +173,9 @@ CollisionMath::OverlapType CollisionMath::Overlap_Test(const AABoxClass & box,co
 		// p0_proj = fabs(dot_product(dp0,axis))
 		// dp_proj = fabs(dot_product(dp,axis))
 		// if (p0_proj > 0) {
-		// 	if (p0_proj > box_proj - WWMath::Min(dp_proj,0.0f)) return OUTSIDE;
+		// 	if (p0_proj > box_proj - std::min(dp_proj,0.0f)) return OUTSIDE;
 		// } else {
-		// 	if (-p0_proj > box_proj + WWMath::Max(dp_proj,0.0f)) return OUTSIDE;
+		// 	if (-p0_proj > box_proj + std::max(dp_proj,0.0f)) return OUTSIDE;
 		// }
 		//
 		// In practice, there are optimizations you can make on each of the axes that
@@ -194,9 +194,9 @@ CollisionMath::OverlapType CollisionMath::Overlap_Test(const AABoxClass & box,co
 		p0_proj = dp0.X;
 		dp_proj = line.Get_DP().X;
 		if (p0_proj > 0) {
-			if (p0_proj > box_proj - WWMath::Min(dp_proj,0.0f)) return OUTSIDE;
+			if (p0_proj > box_proj - std::min(dp_proj,0.0f)) return OUTSIDE;
 		} else {
-			if (-p0_proj > box_proj + WWMath::Max(dp_proj,0.0f)) return OUTSIDE;
+			if (-p0_proj > box_proj + std::max(dp_proj,0.0f)) return OUTSIDE;
 		}
 
 		// Project box and line onto the y-axis
@@ -204,9 +204,9 @@ CollisionMath::OverlapType CollisionMath::Overlap_Test(const AABoxClass & box,co
 		p0_proj = dp0.Y;
 		dp_proj = line.Get_DP().Y;
 		if (p0_proj > 0) {
-			if (p0_proj > box_proj - WWMath::Min(dp_proj,0.0f)) return OUTSIDE;
+			if (p0_proj > box_proj - std::min(dp_proj,0.0f)) return OUTSIDE;
 		} else {
-			if (-p0_proj > box_proj + WWMath::Max(dp_proj,0.0f)) return OUTSIDE;
+			if (-p0_proj > box_proj + std::max(dp_proj,0.0f)) return OUTSIDE;
 		}
 
 		// Project box and line onto the z-axis
@@ -214,9 +214,9 @@ CollisionMath::OverlapType CollisionMath::Overlap_Test(const AABoxClass & box,co
 		p0_proj = dp0.Z;
 		dp_proj = line.Get_DP().Z;
 		if (p0_proj > 0) {
-			if (p0_proj > box_proj - WWMath::Min(dp_proj,0.0f)) return OUTSIDE;
+			if (p0_proj > box_proj - std::min(dp_proj,0.0f)) return OUTSIDE;
 		} else {
-			if (-p0_proj > box_proj + WWMath::Max(dp_proj,0.0f)) return OUTSIDE;
+			if (-p0_proj > box_proj + std::max(dp_proj,0.0f)) return OUTSIDE;
 		}
 
 		// Project box and line onto (x cross line)

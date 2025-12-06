@@ -42,6 +42,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/Science.h"
 #include "Common/Upgrade.h"
+// #include <BaseTypeCore.h>
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Snapshot;
@@ -140,7 +141,7 @@ public:
 	// of these types of data
 	//
 	virtual void xferVersion( XferVersion *versionData, XferVersion currentVersion );
-	virtual void xferByte( Byte *byteData );
+	virtual void xferByte( SignedByte *byteData );
 	virtual void xferUnsignedByte( UnsignedByte *unsignedByteData );
 	virtual void xferBool( Bool *boolData );
 	virtual void xferInt( Int *intData );

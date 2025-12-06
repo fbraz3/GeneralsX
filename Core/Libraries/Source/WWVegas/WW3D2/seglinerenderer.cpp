@@ -194,7 +194,7 @@ void SegLineRendererClass::Set_Texture_Tile_Factor(float factor)
 		WWDEBUG_SAY(("Texture (%s) Tile Factor (%.2f) too large in SegLineRendererClass!", Get_Texture()->Get_Texture_Name().str(), TextureTileFactor));
 		factor = MAX_LINE_TILING_FACTOR;
 	} else {
-		factor = MAX(factor, 0.0f);
+		factor = std::max(factor, 0.0f);
 	}
 	TextureTileFactor = factor;
 }
@@ -262,7 +262,7 @@ void SegLineRendererClass::Render
 	// iteration so we don't need another one).
 	for (unsigned int chidx = 0; chidx < num_points - 1; chidx += (chunk_size - 1)) {
 		unsigned int point_cnt = num_points - chidx;
-		point_cnt = MIN(point_cnt, chunk_size);
+		point_cnt = std::min(point_cnt, chunk_size);
 
 		// We use these different loop indices (which loop INSIDE a chunk) to improve readability:
 		unsigned int pidx;	// Point index
@@ -965,7 +965,7 @@ void SegLineRendererClass::Render
 		unsigned int residual_bottom_points = intersection[1][BOTTOM_EDGE].PointCount;
 
 		// Reduce both pointcounts by the same amount so the smaller one is 1 (skip points)
-		unsigned int delta = MIN(residual_top_points, residual_bottom_points) - 1;
+		unsigned int delta = std::min(residual_top_points, residual_bottom_points) - 1;
 		residual_top_points -= delta;
 		residual_bottom_points -= delta;
 		pidx += delta;
@@ -1076,7 +1076,7 @@ void SegLineRendererClass::Render
 			}
 
 			// Reduce both pointcounts by the same amount so the smaller one is 1 (skip points)
-			delta = MIN(residual_top_points, residual_bottom_points) - 1;
+			delta = std::min(residual_top_points, residual_bottom_points) - 1;
 			residual_top_points -= delta;
 			residual_bottom_points -= delta;
 			pidx += delta;

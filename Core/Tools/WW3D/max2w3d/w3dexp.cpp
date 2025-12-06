@@ -784,7 +784,7 @@ bool W3dExportClass::Export_Geometry(char * name,ChunkSaveClass & csave,Progress
 	*/
 	int geometry_count = geometry_list->Num_Nodes();
 	if ((htree == NULL) && (geometry_list->Num_Nodes() > 1)) {
-		geometry_count = MIN(geometry_count,1);
+		geometry_count = std::min(geometry_count,1);
 		ExportLog::printf("\nDiscarding extra meshes since we are not exporting a hierarchical model.\n");
 	}
 

@@ -32,6 +32,7 @@
 #include "GlobalLightOptions.h"
 #include "playerlistdlg.h"
 #include "teamsdialog.h"
+#include <Utility/compat.h>
 
 Bool WbView::m_snapToGrid = false;
 
@@ -42,24 +43,24 @@ IMPLEMENT_DYNCREATE(WbView, CView)
 
 WbView::WbView() :
 	m_trackingMode(TRACK_NONE),
-	m_centerPt(15,40,0),
+	m_centerPt(15, 40, 0),
 	m_hysteresis(0),
 	m_lockAngle(false),
 	m_doLightFeedback(FALSE),
 	m_pickConstraint(ES_NONE)
 {
 	Int showWay = ::AfxGetApp()->GetProfileInt(MAIN_FRAME_SECTION, "ShowWaypoints", 1);
-	m_showWaypoints = (showWay!=0);
+	m_showWaypoints = (showWay != 0);
 	Int showPoly = ::AfxGetApp()->GetProfileInt(MAIN_FRAME_SECTION, "ShowPolygonTriggers", 1);
-	m_showPolygonTriggers = (showPoly!=0);
+	m_showPolygonTriggers = (showPoly != 0);
 	Int showObj = ::AfxGetApp()->GetProfileInt(MAIN_FRAME_SECTION, "ShowObjectIcons", 1);
-	m_showObjects = (showObj!=0);
+	m_showObjects = (showObj != 0);
 	Int showNames = ::AfxGetApp()->GetProfileInt(MAIN_FRAME_SECTION, "ShowNames", 1);
-	m_showNames = (showNames!=0);
+	m_showNames = (showNames != 0);
 	Int snapToGrid = ::AfxGetApp()->GetProfileInt(MAIN_FRAME_SECTION, "SnapToGrid", 0);
-	m_snapToGrid = (snapToGrid!=0);
+	m_snapToGrid = (snapToGrid != 0);
 	Int showTerrain = ::AfxGetApp()->GetProfileInt(MAIN_FRAME_SECTION, "ShowTerrain", 1);
-	m_showTerrain = (showTerrain!=0);
+	m_showTerrain = (showTerrain != 0);
 }
 
 WbView::~WbView()
@@ -143,7 +144,7 @@ END_MESSAGE_MAP()
 
 void WbView::OnDraw(CDC* pDC)
 {
-	DEBUG_ASSERTCRASH((0),("oops"));
+	DEBUG_ASSERTCRASH((0), ("oops"));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -190,13 +191,14 @@ void WbView::mouseMove(TTrackingMode m, CPoint viewPt)
 	while (::PeekMessage(&msg, m_hWnd, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) {
 		viewPt.x = (short)LOWORD(msg.lParam);  // horizontal position of cursor
 		viewPt.y = (short)HIWORD(msg.lParam);  // vertical position of cursor
-		DEBUG_LOG(("Peek mouse %d, %d", viewPt.x,  viewPt.y));
+		DEBUG_LOG(("Peek mouse %d, %d", viewPt.x, viewPt.y));
 	}
 
 	if (m_trackingMode == TRACK_NONE) {
 		// Don't lock while the mouse is up.
 		m_doLockAngle = false;
-	} else {
+	}
+	else {
 		m_doLockAngle = m_lockAngle;
 	}
 	if (m_trackingMode == m) {
@@ -212,12 +214,12 @@ void WbView::mouseMove(TTrackingMode m, CPoint viewPt)
 	Coord3D cpt;
 	viewToDocCoords(viewPt, &cpt);
 
-	WorldHeightMapEdit *pMap = WbDoc()->GetHeightMap();
-	MapObject *pObj = MapObject::getFirstMapObject();
+	WorldHeightMapEdit* pMap = WbDoc()->GetHeightMap();
+	MapObject* pObj = MapObject::getFirstMapObject();
 	Int totalObjects = 0;
 	Int totalWaypoints = 0;
 	Int numSelected = 0;
-	while(pObj) {
+	while (pObj) {
 		if (pObj->isSelected()) {
 			numSelected++;
 		}
@@ -239,7 +241,7 @@ void WbView::mouseMove(TTrackingMode m, CPoint viewPt)
 		}
 		pObj = pObj->getNext();
 	}
-	if (pObj==NULL) {
+	if (pObj == NULL) {
 		pObj = picked3dObjectInView(viewPt);
 	}
 	Real height = TheTerrainRenderObject->getHeightMapHeight(cpt.x, cpt.y, NULL);
@@ -256,13 +258,13 @@ void WbView::mouseMove(TTrackingMode m, CPoint viewPt)
 	}
 	if (pObj) {
 		// If we have an object, add the object's name and index to the status.
-		const char *pName;
-		const char *pFullName = pObj->getName().str();
+		const char* pName;
+		const char* pFullName = pObj->getName().str();
 		Coord3D loc = *pObj->getLocation();
 		pName = pFullName;
 		while (*pFullName) {
-			if (*pFullName == '/') {
-				pName = pFullName+1;
+			if (*pFullName == GET_PATH_SEPARATOR()[0]) {
+				pName = pFullName + 1;
 			}
 			pFullName++;
 		}
@@ -272,7 +274,8 @@ void WbView::mouseMove(TTrackingMode m, CPoint viewPt)
 		CString obj;
 		if (exists) {
 			obj.Format(" - object %s(%.2f,%.2f)", objectID.str(), loc.x, loc.y);
-		} else {
+		}
+		else {
 			obj.Format(" - object %s(%.2f,%.2f)", pName, loc.x, loc.y);
 		}
 		str += obj;
@@ -280,7 +283,7 @@ void WbView::mouseMove(TTrackingMode m, CPoint viewPt)
 	RGBColor color;
 	pMap->getTerrainColorAt(cpt.x, cpt.y, &color);
 	CString colorStr;
-	colorStr.Format("{r%f,g%f,b%f}", color.red,color.green,color.blue);
+	colorStr.Format("{r%f,g%f,b%f}", color.red, color.green, color.blue);
 	str += colorStr;
 	CMainFrame::GetMainFrame()->SetMessageText(str);
 }
@@ -301,7 +304,7 @@ void WbView::mouseUp(TTrackingMode m, CPoint viewPt)
 	if (WbApp()->getCurTool()) {
 		WbApp()->getCurTool()->mouseUp(m, viewPt, this, WbDoc());
 		// Give warning messages at this point.
-		WorldHeightMapEdit *pMap = WbDoc()->GetHeightMap();
+		WorldHeightMapEdit* pMap = WbDoc()->GetHeightMap();
 		if (pMap->tooManyTextures()) {
 			AfxMessageBox(IDS_TOO_MANY_TILES);
 		}
@@ -358,7 +361,7 @@ void WbView::OnMButtonDown(UINT nFlags, CPoint point)
 //=============================================================================
 /** Returns true if the pixel location picks the object. */
 //=============================================================================
-TPickedStatus WbView::picked(MapObject *pObj, Coord3D docPt)
+TPickedStatus WbView::picked(MapObject* pObj, Coord3D docPt)
 {
 	Coord3D cloc = *pObj->getLocation();
 	if (!m_showObjects && !pObj->isWaypoint()) {
@@ -374,23 +377,23 @@ TPickedStatus WbView::picked(MapObject *pObj, Coord3D docPt)
 	cpt.x -= cloc.x;
 	cpt.y -= cloc.y;
 	cpt.z = 0;
-	if (cpt.length() < 0.5f*MAP_XY_FACTOR+m_hysteresis) {
+	if (cpt.length() < 0.5f * MAP_XY_FACTOR + m_hysteresis) {
 		return PICK_CENTER;
 	}
-	if (pObj->getFlag(FLAG_ROAD_FLAGS) ||  pObj->getFlag(FLAG_BRIDGE_FLAGS) || pObj->isWaypoint()) {
+	if (pObj->getFlag(FLAG_ROAD_FLAGS) || pObj->getFlag(FLAG_BRIDGE_FLAGS) || pObj->isWaypoint()) {
 		doArrow = false;
 	}
 	// Check and see if we are within 1 cell size of the center.
-	if (doArrow && cpt.length() < 1.5f*MAP_XY_FACTOR+m_hysteresis) {
+	if (doArrow && cpt.length() < 1.5f * MAP_XY_FACTOR + m_hysteresis) {
 		return PICK_ARROW;
 	}
 	return PICK_NONE;
 }
 
 //=============================================================================
-WorldHeightMapEdit *WbView::getTrackingHeightMap()
+WorldHeightMapEdit* WbView::getTrackingHeightMap()
 {
-	WorldHeightMapEdit *pMap = WbDoc()->GetHeightMap();
+	WorldHeightMapEdit* pMap = WbDoc()->GetHeightMap();
 	// If we are editing with a tool, draw the map being edited, if one exists.
 	if (m_trackingMode != TRACK_NONE && WbApp()->getCurTool()) {
 		pMap = WbApp()->getCurTool()->getHeightMap();
@@ -405,13 +408,13 @@ WorldHeightMapEdit *WbView::getTrackingHeightMap()
 //=============================================================================
 void WbView::constrainCenterPt()
 {
-	WorldHeightMapEdit *pMap = WbDoc()->GetHeightMap();
-	if (pMap==NULL) return;
+	WorldHeightMapEdit* pMap = WbDoc()->GetHeightMap();
+	if (pMap == NULL) return;
 #if 0
-	if (m_centerPt.X >= pMap->getXExtent()) m_centerPt.X = pMap->getXExtent()-1;
-	if (m_centerPt.X<0) m_centerPt.X = 0;
+	if (m_centerPt.X >= pMap->getXExtent()) m_centerPt.X = pMap->getXExtent() - 1;
+	if (m_centerPt.X < 0) m_centerPt.X = 0;
 	if (m_centerPt.Y >= pMap->getYExtent()) m_centerPt.Y = pMap->getYExtent() - 1;
-	if (m_centerPt.Y<0) m_centerPt.Y=0;
+	if (m_centerPt.Y < 0) m_centerPt.Y = 0;
 #endif
 }
 
@@ -428,7 +431,8 @@ BOOL WbView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		if (WbApp()->getCurTool()) {
 			// Let the current tool set it's cursor.
 			WbApp()->getCurTool()->setCursor();
-		} else {
+		}
+		else {
 			// Else just use the system arrow cursor.  This shouldn't normally happen.
 			::SetCursor(::LoadCursor(NULL, IDC_ARROW));
 		}
@@ -449,7 +453,7 @@ void WbView::OnEditDelete()
 	}
 	CWorldBuilderDoc* pDoc = WbDoc();
 	// create a delete undoable.
-	DeleteObjectUndoable *pUndo = new DeleteObjectUndoable(pDoc);
+	DeleteObjectUndoable* pUndo = new DeleteObjectUndoable(pDoc);
 	// Execute it.
 	pDoc->AddAndDoUndoable(pUndo);
 	REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
@@ -463,7 +467,7 @@ void WbView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		OnEditDelete();
 	}
 	WbApp()->updateCurTool(false);
-	OnSetCursor(this,HTCLIENT,0);
+	OnSetCursor(this, HTCLIENT, 0);
 }
 
 /** Handles the key up event.  Currently, handles delete keys, and checks
@@ -471,23 +475,23 @@ for updates to the current tool. */
 void WbView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	WbApp()->updateCurTool(false);
-	OnSetCursor(this,HTCLIENT,0);
+	OnSetCursor(this, HTCLIENT, 0);
 }
 
 void WbView::OnEditCopy()
 {
-	MapObject *pTheCopy = NULL;
-	MapObject *pTmp = NULL;
+	MapObject* pTheCopy = NULL;
+	MapObject* pTmp = NULL;
 
-	MapObject *pObj = MapObject::getFirstMapObject();
+	MapObject* pObj = MapObject::getFirstMapObject();
 	// Note - map segments come in pairs.  So copy both.
-	MapObject *pMapObj;
-	MapObject *pMapObj2;
+	MapObject* pMapObj;
+	MapObject* pMapObj2;
 	for (pMapObj = MapObject::getFirstMapObject(); pMapObj; pMapObj = pMapObj->getNext()) {
 		if (pMapObj->getFlag(FLAG_ROAD_POINT1)) {
 			pMapObj2 = pMapObj->getNext();
 			DEBUG_ASSERTCRASH(pMapObj2 && pMapObj2->getFlag(FLAG_ROAD_POINT2), ("oops"));
-			if (pMapObj2==NULL) break;
+			if (pMapObj2 == NULL) break;
 			if (!pMapObj2->getFlag(FLAG_ROAD_POINT2)) continue;
 			// If one end of a road segment is selected, both are.
 			if (pMapObj->isSelected() || pMapObj2->isSelected()) {
@@ -532,13 +536,13 @@ void WbView::OnUpdateEditCut(CCmdUI* pCmdUI)
 void WbView::OnEditPaste()
 {
 	CWorldBuilderDoc* pDoc = WbDoc();
-	MapObject *pTheCopy = NULL;
-	MapObject *pTmp = NULL;
+	MapObject* pTheCopy = NULL;
+	MapObject* pTmp = NULL;
 
 	/* First, clear the selection. */
 	PointerTool::clearSelection();
 
-	MapObject *pObj = WbApp()->getMapObjPasteList();
+	MapObject* pObj = WbApp()->getMapObjPasteList();
 	while (pObj) {
 		pTmp = pObj->duplicate();
 		pTmp->setNextMap(pTheCopy);
@@ -548,7 +552,7 @@ void WbView::OnEditPaste()
 		pTmp->setSelected(true);
 		pObj = pObj->getNext();
 	}
-	AddObjectUndoable *pUndo = new AddObjectUndoable(pDoc, pTheCopy);
+	AddObjectUndoable* pUndo = new AddObjectUndoable(pDoc, pTheCopy);
 	pDoc->AddAndDoUndoable(pUndo);
 	REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
 	pTheCopy = NULL; // undoable owns it now.
@@ -560,59 +564,59 @@ void WbView::OnViewShowObjects()
 {
 	m_showObjects = !m_showObjects;
 	Invalidate(false);
-	WbView  *pView = (WbView *)WbDoc()->GetActive2DView();
+	WbView* pView = (WbView*)WbDoc()->GetActive2DView();
 	if (pView != NULL && pView != this) {
 		pView->Invalidate(!m_showObjects);
 	}
-	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "ShowObjectIcons", m_showObjects?1:0);
+	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "ShowObjectIcons", m_showObjects ? 1 : 0);
 }
 
 /** Sets the check in the menu to match the show objects flag. */
 void WbView::OnUpdateViewShowObjects(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck(m_showObjects?1:0);
+	pCmdUI->SetCheck(m_showObjects ? 1 : 0);
 }
 
 void WbView::OnUpdateEditPaste(CCmdUI* pCmdUI)
 {
-	MapObject *pTheCopy = WbApp()->getMapObjPasteList();
+	MapObject* pTheCopy = WbApp()->getMapObjPasteList();
 	pCmdUI->Enable(pTheCopy != NULL);
 }
 
 void WbView::OnViewSnaptogrid()
 {
 	m_snapToGrid = !m_snapToGrid;
-	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "SnapToGrid", m_snapToGrid?1:0);
+	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "SnapToGrid", m_snapToGrid ? 1 : 0);
 }
 
 void WbView::OnUpdateViewSnaptogrid(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck(m_snapToGrid?1:0);
+	pCmdUI->SetCheck(m_snapToGrid ? 1 : 0);
 }
 
 void WbView::OnEditSelectdup()
 {
-	WorldHeightMapEdit *pMap = WbDoc()->GetHeightMap();
-	if (pMap==NULL) return;
+	WorldHeightMapEdit* pMap = WbDoc()->GetHeightMap();
+	if (pMap == NULL) return;
 	pMap->selectDuplicates();
 }
 void WbView::OnEditSelectsimilar()
 {
-	WorldHeightMapEdit *pMap = WbDoc()->GetHeightMap();
-	if (pMap==NULL) return;
+	WorldHeightMapEdit* pMap = WbDoc()->GetHeightMap();
+	if (pMap == NULL) return;
 	pMap->selectSimilar();
 }
 void WbView::OnEditSelectinvalidteam()
 {
-	WorldHeightMapEdit *pMap = WbDoc()->GetHeightMap();
-	if (pMap==NULL) return;
+	WorldHeightMapEdit* pMap = WbDoc()->GetHeightMap();
+	if (pMap == NULL) return;
 	pMap->selectInvalidTeam();
 }
 
 void WbView::OnEditReplace()
 {
-	WorldHeightMapEdit *pMap = WbDoc()->GetHeightMap();
-	if (pMap==NULL) return;
+	WorldHeightMapEdit* pMap = WbDoc()->GetHeightMap();
+	if (pMap == NULL) return;
 
 	EditorSortingType sort = ES_NONE;
 	for (MapObject* pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
@@ -627,10 +631,11 @@ void WbView::OnEditReplace()
 
 	PickUnitDialog dlg;
 	if (sort == ES_NONE) {
-		for (int i = ES_FIRST; i<ES_NUM_SORTING_TYPES; i++)	{
+		for (int i = ES_FIRST; i < ES_NUM_SORTING_TYPES; i++) {
 			dlg.SetAllowableType((EditorSortingType)i);
 		}
-	} else {
+	}
+	else {
 		dlg.SetAllowableType(sort);
 	}
 	dlg.SetFactionOnly(false);
@@ -638,7 +643,7 @@ void WbView::OnEditReplace()
 		const ThingTemplate* thing = dlg.getPickedThing();
 		if (thing) {
 			CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
-			ModifyObjectUndoable *pUndo = new ModifyObjectUndoable(pDoc);
+			ModifyObjectUndoable* pUndo = new ModifyObjectUndoable(pDoc);
 			pDoc->AddAndDoUndoable(pUndo);
 			pUndo->SetThingTemplate(thing);
 			REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
@@ -654,7 +659,7 @@ void WbView::OnUpdateObjectpropertiesReflectsinmirror(CCmdUI* pCmdUI)
 	Bool multiple = false;
 	Bool first = true;
 
-	MapObject *pMapObj;
+	MapObject* pMapObj;
 	for (pMapObj = MapObject::getFirstMapObject(); pMapObj; pMapObj = pMapObj->getNext()) {
 		if (!pMapObj->isSelected()) {
 			continue;
@@ -664,14 +669,15 @@ void WbView::OnUpdateObjectpropertiesReflectsinmirror(CCmdUI* pCmdUI)
 				multiple = true;
 			}
 			reflects = true;
-		} else {
+		}
+		else {
 			if (!first && reflects) {
 				multiple = true;
 			}
 		}
 		first = false;
 	}
-	Int val=0;
+	Int val = 0;
 	if (reflects) val = 1;
 	if (multiple) val = 2;
 	pCmdUI->SetCheck(val);
@@ -681,7 +687,7 @@ void WbView::OnObjectpropertiesReflectsinmirror()
 {
 	Bool reflects = false;
 
-	MapObject *pMapObj;
+	MapObject* pMapObj;
 	for (pMapObj = MapObject::getFirstMapObject(); pMapObj; pMapObj = pMapObj->getNext()) {
 		if (!pMapObj->isSelected()) {
 			continue;
@@ -692,7 +698,7 @@ void WbView::OnObjectpropertiesReflectsinmirror()
 	}
 
 	CWorldBuilderDoc* pDoc = WbDoc();
-	ModifyFlagsUndoable *pUndo = new ModifyFlagsUndoable(pDoc, FLAG_DRAWS_IN_MIRROR, !reflects);
+	ModifyFlagsUndoable* pUndo = new ModifyFlagsUndoable(pDoc, FLAG_DRAWS_IN_MIRROR, !reflects);
 	pDoc->AddAndDoUndoable(pUndo);
 	REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
 }
@@ -706,56 +712,56 @@ void WbView::OnLockHorizontal()
 // This is actually lock angle - used to be horizontal & vertical, now just 1.
 void WbView::OnUpdateLockHorizontal(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck(m_lockAngle?1:0);
+	pCmdUI->SetCheck(m_lockAngle ? 1 : 0);
 }
 
 // Obsolete. Delete Jan15,2002 if nobody complains about it being missing.  jba.
 void WbView::OnLockVertical()
 {
-//	m_lockVertical = !m_lockVertical;
-//	if (m_lockVertical) {
-//		m_lockHorizontal = false;
-//	}
+	//	m_lockVertical = !m_lockVertical;
+	//	if (m_lockVertical) {
+	//		m_lockHorizontal = false;
+	//	}
 }
 
 // Obsolete. Delete Jan15,2002 if nobody complains about it being missing.  jba.
 void WbView::OnUpdateLockVertical(CCmdUI* pCmdUI)
 {
-//	pCmdUI->SetCheck(m_lockVertical?1:0);
+	//	pCmdUI->SetCheck(m_lockVertical?1:0);
 }
 
 void WbView::OnEditGloballightoptions()
 {
 	CMainFrame::GetMainFrame()->OnEditGloballightoptions();
 
-//	GlobalLightOptions globalLightDialog(this);
-//	globalLightDialog.DoModal();
-//	Coord3D lightRay;
-//	lightRay.x=0.0f;lightRay.y=0.0f;lightRay.z=-1.0f;	//default light above terrain.
-//	doLightFeedback(false,lightRay,0);	//turn off the light direction indicator
+	//	GlobalLightOptions globalLightDialog(this);
+	//	globalLightDialog.DoModal();
+	//	Coord3D lightRay;
+	//	lightRay.x=0.0f;lightRay.y=0.0f;lightRay.z=-1.0f;	//default light above terrain.
+	//	doLightFeedback(false,lightRay,0);	//turn off the light direction indicator
 }
 
 void WbView::OnViewShowwaypoints()
 {
 	m_showWaypoints = !m_showWaypoints;
-	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "ShowWaypoints", m_showWaypoints?1:0);
+	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "ShowWaypoints", m_showWaypoints ? 1 : 0);
 	PointerTool::clearSelection();
 }
 
 void WbView::OnUpdateViewShowwaypoints(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck(m_showWaypoints?1:0);
+	pCmdUI->SetCheck(m_showWaypoints ? 1 : 0);
 }
 
 void WbView::OnViewShowpolygontriggers()
 {
 	m_showPolygonTriggers = !m_showPolygonTriggers;
-	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "ShowPolygonTriggers", m_showPolygonTriggers?1:0);
+	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "ShowPolygonTriggers", m_showPolygonTriggers ? 1 : 0);
 }
 
 void WbView::OnUpdateViewShowpolygontriggers(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck(m_showPolygonTriggers?1:0);
+	pCmdUI->SetCheck(m_showPolygonTriggers ? 1 : 0);
 }
 
 void WbView::OnEditPlayerlist()
@@ -768,13 +774,13 @@ void WbView::OnEditWorldinfo()
 {
 	// TODO jkmcd: are we going to ever use this? If so, implement it.
 #if 0
-	Dict *d = MapObject::getWorldDict();
+	Dict* d = MapObject::getWorldDict();
 	Dict dcopy = *d;
 	MapObjectProps editor(&dcopy, "Edit World Info", NULL);
 	if (editor.DoModal() == IDOK)
 	{
 		CWorldBuilderDoc* pDoc = WbDoc();
-		DictItemUndoable *pUndo = new DictItemUndoable(d, dcopy, NAMEKEY_INVALID);
+		DictItemUndoable* pUndo = new DictItemUndoable(d, dcopy, NAMEKEY_INVALID);
 		pDoc->AddAndDoUndoable(pUndo);
 		REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
 	}
@@ -788,7 +794,7 @@ void WbView::OnPickStructures()
 
 void WbView::OnUpdatePickStructures(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_STRUCTURE)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_STRUCTURE) ? 1 : 0);
 }
 
 void WbView::OnPickInfantry()
@@ -798,7 +804,7 @@ void WbView::OnPickInfantry()
 
 void WbView::OnUpdatePickInfantry(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_INFANTRY)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_INFANTRY) ? 1 : 0);
 }
 
 void WbView::OnPickVehicles()
@@ -808,7 +814,7 @@ void WbView::OnPickVehicles()
 
 void WbView::OnUpdatePickVehicles(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_VEHICLE)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_VEHICLE) ? 1 : 0);
 }
 
 void WbView::OnPickShrubbery()
@@ -818,7 +824,7 @@ void WbView::OnPickShrubbery()
 
 void WbView::OnUpdatePickShrubbery(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_SHRUBBERY)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_SHRUBBERY) ? 1 : 0);
 }
 
 void WbView::OnPickManMade()
@@ -828,7 +834,7 @@ void WbView::OnPickManMade()
 
 void WbView::OnUpdatePickManMade(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_MISC_MAN_MADE)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_MISC_MAN_MADE) ? 1 : 0);
 }
 
 void WbView::OnPickNatural()
@@ -838,7 +844,7 @@ void WbView::OnPickNatural()
 
 void WbView::OnUpdatePickNatural(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_MISC_NATURAL)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_MISC_NATURAL) ? 1 : 0);
 }
 
 void WbView::OnPickDebris()
@@ -848,7 +854,7 @@ void WbView::OnPickDebris()
 
 void WbView::OnUpdatePickDebris(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_DEBRIS)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_DEBRIS) ? 1 : 0);
 }
 
 void WbView::OnPickAnything()
@@ -858,7 +864,7 @@ void WbView::OnPickAnything()
 
 void WbView::OnUpdatePickAnything(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_NONE)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_NONE) ? 1 : 0);
 }
 
 void WbView::OnPickWaypoints()
@@ -868,7 +874,7 @@ void WbView::OnPickWaypoints()
 
 void WbView::OnUpdatePickWaypoints(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_WAYPOINT)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_WAYPOINT) ? 1 : 0);
 }
 
 void WbView::OnPickRoads()
@@ -878,7 +884,7 @@ void WbView::OnPickRoads()
 
 void WbView::OnUpdatePickRoads(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck((m_pickConstraint == ES_ROAD)?1:0);
+	pCmdUI->SetCheck((m_pickConstraint == ES_ROAD) ? 1 : 0);
 }
 
 void WbView::OnPickSounds()
@@ -895,12 +901,12 @@ void WbView::OnShowNames()
 {
 	m_showNames = m_showNames ? false : true;
 	Invalidate(false);
-	WbView  *pView = (WbView *)WbDoc()->GetActive2DView();
+	WbView* pView = (WbView*)WbDoc()->GetActive2DView();
 	if (pView != NULL && pView != this) {
 		pView->Invalidate(false);
 	}
 
-	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "ShowNames", m_showNames?1:0);
+	::AfxGetApp()->WriteProfileInt(MAIN_FRAME_SECTION, "ShowNames", m_showNames ? 1 : 0);
 }
 
 void WbView::OnUpdateShowNames(CCmdUI* pCmdUI)
@@ -910,7 +916,7 @@ void WbView::OnUpdateShowNames(CCmdUI* pCmdUI)
 
 void WbView::OnValidationFixTeams()
 {
-	std::vector<Dict *> allTeamDicts;
+	std::vector<Dict*> allTeamDicts;
 	Int numTeams = TheSidesList->getNumTeams();
 	// Get all team dicts in the map
 	for (Int i = 0; i < numTeams; ++i)
@@ -923,7 +929,7 @@ void WbView::OnValidationFixTeams()
 
 	// Now, do the Undoable
 	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
-	DictItemUndoable *pUndo = new DictItemUndoable(&allTeamDicts.front(), newDict, newDict.getNthKey(0), allTeamDicts.size(), pDoc, true);
+	DictItemUndoable* pUndo = new DictItemUndoable(&allTeamDicts.front(), newDict, newDict.getNthKey(0), allTeamDicts.size(), pDoc, true);
 	pDoc->AddAndDoUndoable(pUndo);
 	REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
 
@@ -935,7 +941,7 @@ void WbView::OnShowTerrain()
 {
 	m_showTerrain = !m_showTerrain;
 	Invalidate(false);
-	WbView  *pView = (WbView *)WbDoc()->GetActive2DView();
+	WbView* pView = (WbView*)WbDoc()->GetActive2DView();
 	if (pView != NULL && pView != this) {
 		pView->Invalidate(false);
 	}

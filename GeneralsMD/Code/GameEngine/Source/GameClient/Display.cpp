@@ -211,32 +211,32 @@ void Display::setHeight( UnsignedInt height )
 void Display::playLogoMovie( AsciiString movieName, Int minMovieLength, Int minCopyrightLength )
 {
 	// Phase 54: Debug log
-	fprintf(stderr, "Display::playLogoMovie() - Entering, movieName='%s'\n", movieName.str());
-	fflush(stderr);
+	printf("Display::playLogoMovie() - Entering, movieName='%s'\n", movieName.str());
+	
 
 	// Phase 54: Safety check - on non-Windows platforms, TheVideoPlayer may be NULL
 	// if FFmpeg is not available
 	if (TheVideoPlayer == NULL)
 	{
-		fprintf(stderr, "Display::playLogoMovie() - TheVideoPlayer is NULL, skipping movie playback\n");
-		fflush(stderr);
+		printf("Display::playLogoMovie() - TheVideoPlayer is NULL, skipping movie playback\n");
+		
 		return;
 	}
 
 	stopMovie();
 
-	fprintf(stderr, "Display::playLogoMovie() - stopMovie() done, TheVideoPlayer=%p\n", (void*)TheVideoPlayer);
-	fflush(stderr);
+	printf("Display::playLogoMovie() - stopMovie() done, TheVideoPlayer=%p\n", (void*)TheVideoPlayer);
+	
 
 	m_videoStream = TheVideoPlayer->open( movieName );
 
-	fprintf(stderr, "Display::playLogoMovie() - VideoPlayer->open() done, m_videoStream=%p\n", (void*)m_videoStream);
-	fflush(stderr);
+	printf("Display::playLogoMovie() - VideoPlayer->open() done, m_videoStream=%p\n", (void*)m_videoStream);
+	
 
 	if ( m_videoStream == NULL )
 	{
-		fprintf(stderr, "Display::playLogoMovie() - m_videoStream is NULL, returning early\n");
-		fflush(stderr);
+		printf("Display::playLogoMovie() - m_videoStream is NULL, returning early\n");
+		
 		return;
 	}
 
@@ -267,8 +267,8 @@ void Display::playMovie( AsciiString movieName)
 	// if FFmpeg is not available
 	if (TheVideoPlayer == NULL)
 	{
-		fprintf(stderr, "Display::playMovie() - TheVideoPlayer is NULL, skipping movie playback\n");
-		fflush(stderr);
+		printf("Display::playMovie() - TheVideoPlayer is NULL, skipping movie playback\n");
+		
 		return;
 	}
 

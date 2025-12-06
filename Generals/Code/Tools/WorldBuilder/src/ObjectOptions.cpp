@@ -40,11 +40,12 @@
 #include "GameClient/Color.h"
 
 #include <list>
+#include <Utility/compat.h>
 
-ObjectOptions *ObjectOptions::m_staticThis = NULL;
+ObjectOptions* ObjectOptions::m_staticThis = NULL;
 Bool ObjectOptions::m_updating = false;
 char ObjectOptions::m_currentObjectName[NAME_MAX_LEN];
-Int ObjectOptions::m_currentObjectIndex=-1;
+Int ObjectOptions::m_currentObjectIndex = -1;
 AsciiString ObjectOptions::m_curOwnerName;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -115,17 +116,17 @@ static Int findSideListEntryWithPlayerOfSide(AsciiString side)
 
 void ObjectOptions::updateLabel()
 {
-	CWnd *pLabel = GetDlgItem(IDC_OBJECT_NAME);
+	CWnd* pLabel = GetDlgItem(IDC_OBJECT_NAME);
 	if (pLabel) {
 		pLabel->SetWindowText(m_currentObjectName);
 	}
 
-	CComboBox *list = (CComboBox*)GetDlgItem(IDC_OWNINGTEAM);
+	CComboBox* list = (CComboBox*)GetDlgItem(IDC_OWNINGTEAM);
 	list->ResetContent();
 
 	Bool found = false;
 	AsciiString defTeamName;
-	MapObject *pCur = getCurMapObject();
+	MapObject* pCur = getCurMapObject();
 	if (!pCur) {
 		// No valid selection. Just return.
 		return;
@@ -167,9 +168,9 @@ void ObjectOptions::updateLabel()
 	Int sel = -1;
 	for (int i = 0; i < TheSidesList->getNumTeams(); i++)
 	{
-		Dict *d = TheSidesList->getTeamInfo(i)->getDict();
+		Dict* d = TheSidesList->getTeamInfo(i)->getDict();
 		AsciiString name = d->getAsciiString(TheKey_teamName);
-		DEBUG_ASSERTCRASH(!name.isEmpty(),("bad"));
+		DEBUG_ASSERTCRASH(!name.isEmpty(), ("bad"));
 
 		if (name == defTeamName)
 			sel = i;
@@ -189,12 +190,12 @@ void ObjectOptions::updateLabel()
 	}
 	if (sel == -1)
 	{
-		DEBUG_ASSERTCRASH(!pCur || TheSidesList->getNumTeams()==0,("hmm, should not happen"));
+		DEBUG_ASSERTCRASH(!pCur || TheSidesList->getNumTeams() == 0, ("hmm, should not happen"));
 		m_curOwnerName.clear();
 	}
 	else
 	{
-		DEBUG_ASSERTCRASH(pCur,("hmm, should not happen"));
+		DEBUG_ASSERTCRASH(pCur, ("hmm, should not happen"));
 		m_curOwnerName = TheSidesList->getTeamInfo(sel)->getDict()->getAsciiString(TheKey_teamName);
 	}
 	list->SetCurSel(sel);
@@ -216,7 +217,7 @@ static const PlayerTemplate* findFirstPlayerTemplateOnSide(AsciiString side)
 		}
 	}
 
-	DEBUG_CRASH(("no player found for %s!",side.str()));
+	DEBUG_CRASH(("no player found for %s!", side.str()));
 	return NULL;
 }
 #endif
@@ -231,21 +232,21 @@ BOOL ObjectOptions::OnInitDialog()
 
 	m_updating = true;
 
-//	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
+	//	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
 
 
-	// add entries from the thing factory as the available objects to use
-	const ThingTemplate *tTemplate;
-	for( tTemplate = TheThingFactory->firstTemplate();
-			 tTemplate;
-			 tTemplate = tTemplate->friend_getNextTemplate() )
+		// add entries from the thing factory as the available objects to use
+	const ThingTemplate* tTemplate;
+	for (tTemplate = TheThingFactory->firstTemplate();
+		tTemplate;
+		tTemplate = tTemplate->friend_getNextTemplate())
 	{
 		Coord3D loc = { 0, 0, 0 };
-		MapObject *pMap;
+		MapObject* pMap;
 
 		// create new map object
-		pMap = newInstance( MapObject)( loc, tTemplate->getName(), 0.0f, 0, NULL, tTemplate );
-		pMap->setNextMap( m_objectsList );
+		pMap = newInstance(MapObject)(loc, tTemplate->getName(), 0.0f, 0, NULL, tTemplate);
+		pMap->setNextMap(m_objectsList);
 		m_objectsList = pMap;
 
 		// get display color for the editor
@@ -256,12 +257,12 @@ BOOL ObjectOptions::OnInitDialog()
 
 #if 0		// Lights are not working right now.
 	{
-		Coord3D pt = {0,0,0};
+		Coord3D pt = { 0,0,0 };
 		char base[1024] = "*Lights/Light";
-		MapObject *pMap = newInstance(MapObject)(pt, AsciiString(base), 0.0f, 0, NULL, NULL );
+		MapObject* pMap = newInstance(MapObject)(pt, AsciiString(base), 0.0f, 0, NULL, NULL);
 		pMap->setIsLight();
 
-		Dict *props = pMap->getProperties();
+		Dict* props = pMap->getProperties();
 		RGBColor tmp;
 		tmp.red = tmp.green = tmp.blue = 1.0f;
 		Int tmpi = tmp.getAsInt();
@@ -288,40 +289,40 @@ BOOL ObjectOptions::OnInitDialog()
 			do {
 				AsciiString filename = *it;
 				int len = filename.getLength();
-				if (len<5) continue;
+				if (len < 5) continue;
 				// only do .w3d files
 
 				// strip out the path, and just keep the filename itself.
 				AsciiString token;
 				while (filename.getLength() > 0) {
-					filename.nextToken(&token, "\\/");
+					filename.nextToken(&token, GET_PATH_SEPARATOR());
 				}
 
 				strcpy(fileBuf, TEST_STRING);
-				strlcat(fileBuf, "/", ARRAY_SIZE(fileBuf));
+				strlcat(fileBuf, GET_PATH_SEPARATOR(), ARRAY_SIZE(fileBuf));
 				strlcat(fileBuf, token.str(), ARRAY_SIZE(fileBuf));
-				for (i=strlen(fileBuf)-1; i>0; i--) {
+				for (i = strlen(fileBuf) - 1; i > 0; i--) {
 					if (fileBuf[i] == '.') {
 						// strip off .w3d file extension.
 						fileBuf[i] = 0;
 						break; // we stripped it already, we don't need to go any further.
 					}
 				}
-				Coord3D pt = {0,0,0};
-				MapObject *pMap = newInstance(MapObject)(pt, AsciiString(fileBuf), 0.0f, 0, NULL, NULL );
+				Coord3D pt = { 0,0,0 };
+				MapObject* pMap = newInstance(MapObject)(pt, AsciiString(fileBuf), 0.0f, 0, NULL, NULL);
 				pMap->setNextMap(m_objectsList);
 				m_objectsList = pMap;
 
 				++it;
 			} while (it != filenameList.end());
- 		}
+		}
 	}
 #endif
 
-	CWnd *pWnd = GetDlgItem(IDC_OBJECT_HEIGHT_EDIT);
+	CWnd* pWnd = GetDlgItem(IDC_OBJECT_HEIGHT_EDIT);
 	if (pWnd) {
 		CString s;
-		s.Format("%d",MAGIC_GROUND_Z);
+		s.Format("%d", MAGIC_GROUND_Z);
 		pWnd->SetWindowText(s);
 	}
 
@@ -330,22 +331,22 @@ BOOL ObjectOptions::OnInitDialog()
 	pWnd->GetWindowRect(&rect);
 
 	ScreenToClient(&rect);
-	rect.DeflateRect(2,2,2,2);
-	m_objectTreeView.Create(TVS_HASLINES|TVS_LINESATROOT|TVS_HASBUTTONS|
-		TVS_SHOWSELALWAYS|TVS_DISABLEDRAGDROP, rect, this, IDC_TERRAIN_TREEVIEW);
+	rect.DeflateRect(2, 2, 2, 2);
+	m_objectTreeView.Create(TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS |
+		TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP, rect, this, IDC_TERRAIN_TREEVIEW);
 	m_objectTreeView.ShowWindow(SW_SHOW);
 
 	pWnd = GetDlgItem(IDC_TERRAIN_SWATCHES);
 	pWnd->GetWindowRect(&rect);
 	ScreenToClient(&rect);
-	rect.DeflateRect(2,2,2,2);
+	rect.DeflateRect(2, 2, 2, 2);
 	m_objectPreview.Create(NULL, "", WS_CHILD, rect, this, IDC_TERRAIN_SWATCHES);
 	m_objectPreview.ShowWindow(SW_SHOW);
 
-	MapObject *pMap =  m_objectsList;
+	MapObject* pMap = m_objectsList;
 	Int index = 0;
 	while (pMap) {
-		addObject( pMap, pMap->getName().str(), index, TVI_ROOT);
+		addObject(pMap, pMap->getName().str(), index, TVI_ROOT);
 		index++;
 		pMap = pMap->getNext();
 	}
@@ -357,22 +358,22 @@ BOOL ObjectOptions::OnInitDialog()
 	updateLabel();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
 /** Locate the child item in tree item parent with name pLabel.  If not
 found, add it.  Either way, return child. */
-HTREEITEM ObjectOptions::findOrAdd(HTREEITEM parent, const char *pLabel)
+HTREEITEM ObjectOptions::findOrAdd(HTREEITEM parent, const char* pLabel)
 {
 	TVINSERTSTRUCT ins;
 	char buffer[_MAX_PATH];
 	::memset(&ins, 0, sizeof(ins));
 	HTREEITEM child = m_objectTreeView.GetChildItem(parent);
 	while (child != NULL) {
-		ins.item.mask = TVIF_HANDLE|TVIF_TEXT;
+		ins.item.mask = TVIF_HANDLE | TVIF_TEXT;
 		ins.item.hItem = child;
 		ins.item.pszText = buffer;
-		ins.item.cchTextMax = sizeof(buffer)-2;
+		ins.item.cchTextMax = sizeof(buffer) - 2;
 		m_objectTreeView.GetItem(&ins.item);
 		if (strcmp(buffer, pLabel) == 0) {
 			return(child);
@@ -384,7 +385,7 @@ HTREEITEM ObjectOptions::findOrAdd(HTREEITEM parent, const char *pLabel)
 	::memset(&ins, 0, sizeof(ins));
 	ins.hParent = parent;
 	ins.hInsertAfter = TVI_SORT;
-	ins.item.mask = TVIF_PARAM|TVIF_TEXT;
+	ins.item.mask = TVIF_PARAM | TVIF_TEXT;
 	ins.item.lParam = -1;
 	ins.item.pszText = (char*)pLabel;
 	ins.item.cchTextMax = strlen(pLabel);
@@ -392,7 +393,7 @@ HTREEITEM ObjectOptions::findOrAdd(HTREEITEM parent, const char *pLabel)
 	return(child);
 }
 
-HTREEITEM ObjectOptions::findOrDont(const char *pLabel)
+HTREEITEM ObjectOptions::findOrDont(const char* pLabel)
 {
 	return _FindOrDont(pLabel, m_objectTreeView.GetRootItem());
 }
@@ -411,19 +412,20 @@ HTREEITEM ObjectOptions::_FindOrDont(const char* pLabel, HTREEITEM startPoint)
 			TVITEM item;
 			memset(&item, 0, sizeof(item));
 
-			item.mask = TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT;
+			item.mask = TVIF_HANDLE | TVIF_PARAM | TVIF_TEXT;
 			item.hItem = hItem;
 			item.pszText = buffer;
-			item.cchTextMax = sizeof(buffer)-2;
+			item.cchTextMax = sizeof(buffer) - 2;
 			m_objectTreeView.GetItem(&item);
 
-			const char* strToTest = strrchr(pLabel, '/');
-//		if (strstr((strToTest ? strToTest : pLabel), buffer))
+			const char* strToTest = strrchr(pLabel, GET_PATH_SEPARATOR());
+			//		if (strstr((strToTest ? strToTest : pLabel), buffer))
 			if (strcmp((strToTest ? strToTest : pLabel), buffer) == 0)
 			{
 				return hItem;
 			}
-		} else {
+		}
+		else {
 			// add the first child, the others will be caught by the adding of the siblings
 			itemsToEx.push_back(m_objectTreeView.GetChildItem(hItem));
 		}
@@ -439,14 +441,14 @@ HTREEITEM ObjectOptions::_FindOrDont(const char* pLabel, HTREEITEM startPoint)
 //-------------------------------------------------------------------------------------------------
 /** Add the object hierarchy paths to the tree view. */
 //-------------------------------------------------------------------------------------------------
-void ObjectOptions::addObject( MapObject *mapObject, const char *pPath,
-															 Int terrainNdx, HTREEITEM parent )
+void ObjectOptions::addObject(MapObject* mapObject, const char* pPath,
+	Int terrainNdx, HTREEITEM parent)
 {
-	char buffer[ _MAX_PATH ];
-	const char *leafName = NULL;
+	char buffer[_MAX_PATH];
+	const char* leafName = NULL;
 
 	// sanity
-	if( mapObject == NULL )
+	if (mapObject == NULL)
 		return;
 
 	//
@@ -457,38 +459,38 @@ void ObjectOptions::addObject( MapObject *mapObject, const char *pPath,
 	// Feel free to reorganize how this tree is constructed from the template
 	// data at will, whatever makes it easier for design
 	//
-	const ThingTemplate *thingTemplate = mapObject->getThingTemplate();
-	if( thingTemplate )
+	const ThingTemplate* thingTemplate = mapObject->getThingTemplate();
+	if (thingTemplate)
 	{
 
 		// first check for test sorted objects
-		if( thingTemplate->getEditorSorting() == ES_TEST )
-			parent = findOrAdd( parent, "TEST" );
+		if (thingTemplate->getEditorSorting() == ES_TEST)
+			parent = findOrAdd(parent, "TEST");
 
 		// first sort by side, either create or find the tree item with matching side name
 		AsciiString side = thingTemplate->getDefaultOwningSide();
-		DEBUG_ASSERTCRASH( !side.isEmpty(), ("NULL default side in template") );
-		parent = findOrAdd( parent, side.str());
+		DEBUG_ASSERTCRASH(!side.isEmpty(), ("NULL default side in template"));
+		parent = findOrAdd(parent, side.str());
 
 		// next tier uses the editor sorting that design can specify in the INI
 		EditorSortingType i = ES_FIRST;
-		for( ;
-				 i < ES_NUM_SORTING_TYPES;
-				 i = (EditorSortingType)(i + 1) )
+		for (;
+			i < ES_NUM_SORTING_TYPES;
+			i = (EditorSortingType)(i + 1))
 		{
 
-			if( thingTemplate->getEditorSorting() == i )
+			if (thingTemplate->getEditorSorting() == i)
 			{
 
-				parent = findOrAdd( parent, EditorSortingNames[ i ] );
+				parent = findOrAdd(parent, EditorSortingNames[i]);
 				break;  // exit for
 
 			}
 
 		}
 
-		if( i == ES_NUM_SORTING_TYPES )
-			parent = findOrAdd( parent, "UNSORTED" );
+		if (i == ES_NUM_SORTING_TYPES)
+			parent = findOrAdd(parent, "UNSORTED");
 
 		// the leaf name is the name of the template
 		leafName = thingTemplate->getName().str();
@@ -498,25 +500,25 @@ void ObjectOptions::addObject( MapObject *mapObject, const char *pPath,
 	{
 
 		// all these old entries we will put in a tree for legacy GDF items
-		parent = findOrAdd( parent, "**TEST MODELS" );
+		parent = findOrAdd(parent, "**TEST MODELS");
 
-		Int i=0;
+		Int i = 0;
 		leafName = pPath;
-		while (pPath[i] && i<sizeof(buffer)) {
+		while (pPath[i] && i < sizeof(buffer)) {
 			if (pPath[i] == 0) {
 				return;
 			}
-			if (pPath[i] == '/') {
-				pPath+= i+1;
+			if (pPath[i] == GET_PATH_SEPARATOR()[0]) {
+				pPath += i + 1;
 				i = 0;
 			}
 			buffer[i] = pPath[i];
 			i++;
 		}
 
-		if( i > 0 )
+		if (i > 0)
 		{
-			buffer[ i ] = 0;
+			buffer[i] = 0;
 			leafName = buffer;
 
 		}
@@ -524,17 +526,17 @@ void ObjectOptions::addObject( MapObject *mapObject, const char *pPath,
 	}
 
 	// add to the tree view
-	if( leafName )
+	if (leafName)
 	{
 		TVINSERTSTRUCT ins;
 
 		::memset(&ins, 0, sizeof(ins));
 		ins.hParent = parent;
 		ins.hInsertAfter = TVI_SORT;
-		ins.item.mask = TVIF_PARAM|TVIF_TEXT;
+		ins.item.mask = TVIF_PARAM | TVIF_TEXT;
 		ins.item.lParam = terrainNdx;
 		ins.item.pszText = (char*)leafName;
-		ins.item.cchTextMax = strlen(leafName)+2;
+		ins.item.cchTextMax = strlen(leafName) + 2;
 		m_objectTreeView.InsertItem(&ins);
 
 	}
@@ -549,10 +551,10 @@ Bool ObjectOptions::setObjectTreeViewSelection(HTREEITEM parent, Int selection)
 	::memset(&item, 0, sizeof(item));
 	HTREEITEM child = m_objectTreeView.GetChildItem(parent);
 	while (child != NULL) {
-		item.mask = TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT;
+		item.mask = TVIF_HANDLE | TVIF_PARAM | TVIF_TEXT;
 		item.hItem = child;
 		item.pszText = buffer;
-		item.cchTextMax = sizeof(buffer)-2;
+		item.cchTextMax = sizeof(buffer) - 2;
 		m_objectTreeView.GetItem(&item);
 		if (item.lParam == selection) {
 			m_objectTreeView.SelectItem(child);
@@ -572,7 +574,7 @@ Bool ObjectOptions::setObjectTreeViewSelection(HTREEITEM parent, Int selection)
 
 BOOL ObjectOptions::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
-	NMTREEVIEW *pHdr = (NMTREEVIEW *)lParam;
+	NMTREEVIEW* pHdr = (NMTREEVIEW*)lParam;
 	if (pHdr->hdr.hwndFrom == m_objectTreeView.m_hWnd) {
 
 		if (pHdr->hdr.code == TVN_ITEMEXPANDED) {
@@ -592,15 +594,16 @@ BOOL ObjectOptions::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 			HTREEITEM hItem = m_objectTreeView.GetSelectedItem();
 			TVITEM item;
 			::memset(&item, 0, sizeof(item));
-			item.mask = TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_STATE;
+			item.mask = TVIF_HANDLE | TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
 			item.hItem = hItem;
 			item.pszText = buffer;
-			item.cchTextMax = sizeof(buffer)-2;
+			item.cchTextMax = sizeof(buffer) - 2;
 			m_objectTreeView.GetItem(&item);
 			if (item.lParam >= 0) {
 				m_currentObjectIndex = item.lParam;
 				strcpy(m_currentObjectName, buffer);
-			}	else if (m_objectTreeView.ItemHasChildren(item.hItem)) {
+			}
+			else if (m_objectTreeView.ItemHasChildren(item.hItem)) {
 				strcpy(m_currentObjectName, "No Selection");
 				m_currentObjectIndex = -1;
 			}
@@ -612,10 +615,10 @@ BOOL ObjectOptions::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 }
 
 
-MapObject *ObjectOptions::getCurMapObject(void)
+MapObject* ObjectOptions::getCurMapObject(void)
 {
 	if (m_staticThis && m_currentObjectIndex >= 0) {
-		MapObject *pObj = m_staticThis->m_objectsList;
+		MapObject* pObj = m_staticThis->m_objectsList;
 		int count = 0;
 		while (pObj) {
 			if (count == m_currentObjectIndex) {
@@ -630,16 +633,16 @@ MapObject *ObjectOptions::getCurMapObject(void)
 
 AsciiString ObjectOptions::getCurGdfName(void)
 {
-	MapObject *pCur = getCurMapObject();
+	MapObject* pCur = getCurMapObject();
 	if (pCur) {
 		return pCur->getName();
 	}
 	return AsciiString::TheEmptyString;
 }
 
-MapObject *ObjectOptions::duplicateCurMapObjectForPlace(const Coord3D* loc, Real angle, Bool checkPlayers)
+MapObject* ObjectOptions::duplicateCurMapObjectForPlace(const Coord3D* loc, Real angle, Bool checkPlayers)
 {
-	MapObject *pCur = getCurMapObject();
+	MapObject* pCur = getCurMapObject();
 	if (pCur)
 	{
 
@@ -651,7 +654,7 @@ MapObject *ObjectOptions::duplicateCurMapObjectForPlace(const Coord3D* loc, Real
 
 			AsciiString objectTeamName = m_curOwnerName;
 			if (objectTeamName != defaultTeam) {
-				TeamsInfo *teamInfo = TheSidesList->findTeamInfo(objectTeamName);
+				TeamsInfo* teamInfo = TheSidesList->findTeamInfo(objectTeamName);
 				if (teamInfo) {
 					AsciiString teamOwner = teamInfo->getDict()->getAsciiString(TheKey_teamOwner);
 					SidesInfo* pSide = TheSidesList->findSideInfo(teamOwner);
@@ -693,14 +696,15 @@ MapObject *ObjectOptions::duplicateCurMapObjectForPlace(const Coord3D* loc, Real
 					found = true;
 				}
 			}
-		} else {
+		}
+		else {
 			found = true;
 		}
 		if (found)
 		{
-			MapObject *pNew = newInstance(MapObject)( *loc, pCur->getName(), angle,
-																			 pCur->getFlags(), pCur->getProperties(),
-																			 pCur->getThingTemplate() );
+			MapObject* pNew = newInstance(MapObject)(*loc, pCur->getName(), angle,
+				pCur->getFlags(), pCur->getProperties(),
+				pCur->getThingTemplate());
 			pNew->getProperties()->setAsciiString(TheKey_originalOwner, m_curOwnerName);
 			pNew->setColor(pCur->getColor());
 			return pNew;
@@ -713,12 +717,12 @@ MapObject *ObjectOptions::duplicateCurMapObjectForPlace(const Coord3D* loc, Real
 Real ObjectOptions::getCurObjectHeight(void)
 {
 	if (m_staticThis) {
-		CWnd *pWnd = m_staticThis->GetDlgItem(IDC_OBJECT_HEIGHT_EDIT);
+		CWnd* pWnd = m_staticThis->GetDlgItem(IDC_OBJECT_HEIGHT_EDIT);
 		if (pWnd) {
 			CString val;
 			pWnd->GetWindowText(val);
 			Real height = atoi(val);
-			if (height>0) {
+			if (height > 0) {
 				height *= MAP_HEIGHT_SCALE;
 			}
 			return(height);
@@ -727,24 +731,24 @@ Real ObjectOptions::getCurObjectHeight(void)
 	return(MAGIC_GROUND_Z);
 }
 
-MapObject *ObjectOptions::getObjectNamed(AsciiString name)
+MapObject* ObjectOptions::getObjectNamed(AsciiString name)
 {
 	if (m_staticThis) {
-		MapObject *pObj = m_staticThis->m_objectsList;
-//		int count = 0;
+		MapObject* pObj = m_staticThis->m_objectsList;
+		//		int count = 0;
 		while (pObj) {
 			if (name == pObj->getName()) {
 				return(pObj);
 			}
-			const char *curName = pObj->getName().str();
-			const char *leaf = curName;
+			const char* curName = pObj->getName().str();
+			const char* leaf = curName;
 			while (*curName) {
-				if (*curName == '/') {
-					leaf = curName+1;
+				if (*curName == GET_PATH_SEPARATOR()) {
+					leaf = curName + 1;
 				}
 				curName++;
 			}
-			if (0==strcmp(leaf, name.str())) {
+			if (0 == strcmp(leaf, name.str())) {
 				return(pObj);
 			}
 			pObj = pObj->getNext();
@@ -756,21 +760,21 @@ MapObject *ObjectOptions::getObjectNamed(AsciiString name)
 Int ObjectOptions::getObjectNamedIndex(const AsciiString& name)
 {
 	if (m_staticThis) {
-		MapObject *pObj = m_staticThis->m_objectsList;
+		MapObject* pObj = m_staticThis->m_objectsList;
 		int count = 0;
 		while (pObj) {
 			if (name == pObj->getName()) {
 				return(count);
 			}
-			const char *curName = pObj->getName().str();
-			const char *leaf = curName;
+			const char* curName = pObj->getName().str();
+			const char* leaf = curName;
 			while (*curName) {
-				if (*curName == '/') {
-					leaf = curName+1;
+				if (*curName == GET_PATH_SEPARATOR()) {
+					leaf = curName + 1;
 				}
 				curName++;
 			}
-			if (0==strcmp(leaf, name.str())) {
+			if (0 == strcmp(leaf, name.str())) {
 				return(count);
 			}
 			pObj = pObj->getNext();
@@ -782,14 +786,14 @@ Int ObjectOptions::getObjectNamedIndex(const AsciiString& name)
 
 void ObjectOptions::OnEditchangeOwningteam()
 {
-	CComboBox *list = (CComboBox*)GetDlgItem(IDC_OWNINGTEAM);
+	CComboBox* list = (CComboBox*)GetDlgItem(IDC_OWNINGTEAM);
 	Int sel = list->GetCurSel();
 
 	m_curOwnerName.clear();
 	if (sel >= 0)
 	{
 		// note, get playername from the dicts, NOT from the popup.
-		Dict *d = TheSidesList->getTeamInfo(sel)->getDict();
+		Dict* d = TheSidesList->getTeamInfo(sel)->getDict();
 		m_curOwnerName = d->getAsciiString(TheKey_teamName);
 	}
 	// no, do NOT call this; it'll reset back to default
@@ -808,10 +812,10 @@ void ObjectOptions::selectObject(const MapObject* pObj)
 
 		TVITEM item;
 		::memset(&item, 0, sizeof(item));
-		item.mask = TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_STATE;
+		item.mask = TVIF_HANDLE | TVIF_PARAM | TVIF_TEXT | TVIF_STATE;
 		item.hItem = objToSel;
 		item.pszText = buffer;
-		item.cchTextMax = sizeof(buffer)-2;
+		item.cchTextMax = sizeof(buffer) - 2;
 		m_staticThis->m_objectTreeView.GetItem(&item);
 
 		if (m_staticThis->m_objectTreeView.SelectItem(objToSel)) {

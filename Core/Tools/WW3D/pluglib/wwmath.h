@@ -96,8 +96,8 @@ static float		Clamp(float val, float min = 0.0f, float max = 1.0f);
 static double		Clamp(double val, double min = 0.0f, double max = 1.0f);
 static float		Wrap(float val, float min = 0.0f, float max = 1.0f);
 static double		Wrap(double val, double min = 0.0f, double max = 1.0f);
-static float		Min(float a, float b);
-static float		Max(float a, float b);
+static float		std::min(float a, float b);
+static float		std::max(float a, float b);
 
 static float		Lerp(float a, float b, float lerp );
 static double		Lerp(double a, double b, float lerp );
@@ -177,13 +177,13 @@ inline double WWMath::Wrap(double val, double min /*= 0.0f*/, double max /*= 1.0
 	return val;
 }
 
-inline float WWMath::Min(float a, float b)
+inline float std::min(float a, float b)
 {
 	if (a<b) return a;
 	return b;
 }
 
-inline float WWMath::Max(float a, float b)
+inline float std::max(float a, float b)
 {
 	if (a>b) return a;
 	return b;

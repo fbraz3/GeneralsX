@@ -119,15 +119,15 @@ TextureClass::TextureClass(unsigned width, unsigned height, WW3DFormat format, M
 	}
 	
 	// Phase 51: Debug logging for texture creation
-	fprintf(stderr, "[TextureClass] Phase 51: Creating %ux%u texture, format=%d, mip=%d, pool=%d\n",
+	printf("[TextureClass] Phase 51: Creating %ux%u texture, format=%d, mip=%d, pool=%d\n",
 			width, height, (int)format, (int)mip_level_count, (int)d3dpool);
 	
 	D3DTexture = DX8Wrapper::_Create_DX8_Texture(width, height, format, mip_level_count,d3dpool,rendertarget);
 	
 	if (D3DTexture) {
-		fprintf(stderr, "[TextureClass] Phase 51: SUCCESS - D3DTexture=%p\n", (void*)D3DTexture);
+		printf("[TextureClass] Phase 51: SUCCESS - D3DTexture=%p\n", (void*)D3DTexture);
 	} else {
-		fprintf(stderr, "[TextureClass] Phase 51: FAILED - D3DTexture is NULL!\n");
+		printf("[TextureClass] Phase 51: FAILED - D3DTexture is NULL!\n");
 	}
 	
 	if (pool==POOL_DEFAULT)
@@ -181,10 +181,10 @@ TextureClass::TextureClass
 		
 		if (D3DTexture) {
 			Initialized = true;
-			fprintf(stderr, "[TextureClass] Phase 51: Created %ux%u texture, format=%d, mip=%d\n",
+			printf("[TextureClass] Phase 51: Created %ux%u texture, format=%d, mip=%d\n",
 					width, height, (int)format, (int)mip_level_count);
 		} else {
-			fprintf(stderr, "[TextureClass] Phase 51: WARNING - Failed to create %ux%u texture, format=%d\n",
+			printf("[TextureClass] Phase 51: WARNING - Failed to create %ux%u texture, format=%d\n",
 					width, height, (int)format);
 		}
 		
@@ -225,7 +225,7 @@ TextureClass::TextureClass
 	Width(0),
 	Height(0)
 {
-	fprintf(stderr, "[TextureClass::TextureClass] Constructor called for %s\n", name ? name : "NULL"); fflush(stderr);
+	printf("[TextureClass::TextureClass] Constructor called for %s\n", name ? name : "NULL"); 
 	switch (TextureFormat)
 	{
 	case WW3D_FORMAT_DXT1:

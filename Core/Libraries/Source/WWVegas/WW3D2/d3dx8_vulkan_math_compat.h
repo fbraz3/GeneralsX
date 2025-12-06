@@ -39,10 +39,19 @@ typedef struct D3DXVECTOR2 {
 
 typedef struct D3DXVECTOR3 {
     float x, y, z;
+    
+#ifdef __cplusplus
+    D3DXVECTOR3() : x(0), y(0), z(0) {}
+    D3DXVECTOR3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+#endif
 } D3DXVECTOR3;
 
 typedef struct D3DXVECTOR4 {
     float x, y, z, w;
+    
+#ifdef __cplusplus
+    D3DXVECTOR4() : x(0), y(0), z(0), w(0) {}
+    D3DXVECTOR4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
     
     /* Subscript operator for array-like access */
     inline float& operator[](int idx) {
@@ -64,9 +73,43 @@ typedef struct D3DXVECTOR4 {
             default: return x;
         }
     }
+#endif
 } D3DXVECTOR4;
 
 /* Matrix type - 4x4 transformation matrix */
+#ifdef __cplusplus
+struct D3DXMATRIX {
+    union {
+        struct {
+            float _11, _12, _13, _14;
+            float _21, _22, _23, _24;
+            float _31, _32, _33, _34;
+            float _41, _42, _43, _44;
+        };
+        float m[4][4];
+        float f[16];
+    };
+    
+    /* Default constructor - identity matrix */
+    D3DXMATRIX() {
+        _11 = 1; _12 = 0; _13 = 0; _14 = 0;
+        _21 = 0; _22 = 1; _23 = 0; _24 = 0;
+        _31 = 0; _32 = 0; _33 = 1; _34 = 0;
+        _41 = 0; _42 = 0; _43 = 0; _44 = 1;
+    }
+    
+    /* 16-float constructor (row-major order) */
+    D3DXMATRIX(float m11, float m12, float m13, float m14,
+               float m21, float m22, float m23, float m24,
+               float m31, float m32, float m33, float m34,
+               float m41, float m42, float m43, float m44) {
+        _11 = m11; _12 = m12; _13 = m13; _14 = m14;
+        _21 = m21; _22 = m22; _23 = m23; _24 = m24;
+        _31 = m31; _32 = m32; _33 = m33; _34 = m34;
+        _41 = m41; _42 = m42; _43 = m43; _44 = m44;
+    }
+};
+#else
 typedef struct D3DXMATRIX {
     union {
         struct {
@@ -79,6 +122,7 @@ typedef struct D3DXMATRIX {
         float f[16];
     };
 } D3DXMATRIX;
+#endif
 
 /* Quaternion for rotation representation */
 typedef struct D3DXQUATERNION {
@@ -176,6 +220,28 @@ static inline D3DXVECTOR4* D3DXVec3Transform(D3DXVECTOR4* pOut, const D3DXVECTOR
     pOut->y = x * pM->_12 + y * pM->_22 + z * pM->_32 + pM->_42;
     pOut->z = x * pM->_13 + y * pM->_23 + z * pM->_33 + pM->_43;
     pOut->w = x * pM->_14 + y * pM->_24 + z * pM->_34 + pM->_44;
+    return pOut;
+}
+
+/* ========== D3DXVECTOR4 Operations ========== */
+
+/* Vector4 dot product */
+static inline float D3DXVec4Dot(const D3DXVECTOR4* pV1, const D3DXVECTOR4* pV2) {
+    if (!pV1 || !pV2) return 0.0f;
+    return pV1->x * pV2->x + pV1->y * pV2->y + pV1->z * pV2->z + pV1->w * pV2->w;
+}
+
+/* Vector4/Matrix transformation */
+static inline D3DXVECTOR4* D3DXVec4Transform(D3DXVECTOR4* pOut, const D3DXVECTOR4* pV, const D3DXMATRIX* pM) {
+    if (!pOut || !pV || !pM) return nullptr;
+    float x = pV->x;
+    float y = pV->y;
+    float z = pV->z;
+    float w = pV->w;
+    pOut->x = x * pM->_11 + y * pM->_21 + z * pM->_31 + w * pM->_41;
+    pOut->y = x * pM->_12 + y * pM->_22 + z * pM->_32 + w * pM->_42;
+    pOut->z = x * pM->_13 + y * pM->_23 + z * pM->_33 + w * pM->_43;
+    pOut->w = x * pM->_14 + y * pM->_24 + z * pM->_34 + w * pM->_44;
     return pOut;
 }
 

@@ -294,9 +294,9 @@ static void memset32(void* ptr, Int value, Int bytesToFill)
 	for (++wordsToFill; --wordsToFill; )
 		*p++ = value;
 
-	Byte *b = (Byte *)p;
+	SignedByte *b = (SignedByte *)p;
 	for (++bytesToFill; --bytesToFill; )
-		*b++ = (Byte)value;
+		*b++ = (SignedByte)value;
 }
 
 #ifdef MEMORYPOOL_STACKTRACE
@@ -783,7 +783,7 @@ Bool BlockCheckpointInfo::shouldBeInReport(Int flags, Int startCheckpoint, Int e
 	#ifdef MEMORYPOOL_STACKTRACE
 			if (flags & REPORT_CP_STACKTRACE)
 			{
-				::doStackDump(bi->m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth ));
+				::doStackDump(bi->m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth ));
 			}
 	#endif
 		}
@@ -875,7 +875,7 @@ void MemoryPoolSingleBlock::initBlock(Int logicalSize, MemoryPoolBlob *owningBlo
 	if (theStackTraceDepth > 0 && (!TheGlobalData || TheGlobalData->m_checkForLeaks))
 	{
 		memset(m_stacktrace, 0, MEMORYPOOL_STACKTRACE_SIZE_BYTES);
-		::FillStackAddresses(m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
+		::FillStackAddresses(m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
 	}
 	else
 	{
@@ -1025,7 +1025,7 @@ Int MemoryPoolSingleBlock::debugSingleBlockReportLeak(const char* owner)
 
 	#ifdef MEMORYPOOL_SINGLEBLOCK_GETS_STACKTRACE
 	if (!TheGlobalData || TheGlobalData->m_checkForLeaks)
-		::doStackDump(m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth));
+		::doStackDump(m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth));
 	#endif
 
 	return 1;
@@ -1443,7 +1443,7 @@ BlockCheckpointInfo *Checkpointable::debugAddCheckpointInfo(
 		if (theStackTraceDepth > 0 && !TheGlobalData || TheGlobalData->m_checkForLeaks)
 		{
 			memset(stacktrace, 0, MEMORYPOOL_STACKTRACE_SIZE_BYTES);
-			::FillStackAddresses(stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
+			::FillStackAddresses(stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
 		}
 		else
 		{
@@ -1527,7 +1527,7 @@ MemoryPool::MemoryPool() :
 void MemoryPool::init(MemoryPoolFactory *factory, const char *poolName, Int allocationSize, Int initialAllocationCount, Int overflowAllocationCount)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: MemoryPool::init pool=%s size=%d\n", poolName, allocationSize);
+	printf("DEBUG: MemoryPool::init pool=%s size=%d\n", poolName, allocationSize);
 #endif
 	m_factory = factory;
 	m_poolName = poolName;
@@ -1640,7 +1640,7 @@ Int MemoryPool::freeBlob(MemoryPoolBlob* blob)
 void* MemoryPool::allocateBlockDoNotZeroImplementation(DECLARE_LITERALSTRING_ARG1)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation pool=%s size=%d\n", getPoolName(), getAllocationSize());
+	printf("DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation pool=%s size=%d\n", getPoolName(), getAllocationSize());
 #endif
 	ScopedCriticalSection scopedCriticalSection(TheMemoryPoolCriticalSection);
 
@@ -1704,7 +1704,7 @@ void* MemoryPool::allocateBlockDoNotZeroImplementation(DECLARE_LITERALSTRING_ARG
 
 #if GAMEMEMORY_VERBOSE_DEBUG
 	if (strcmp(getPoolName(), "TextureClass") == 0) {
-		fprintf(stderr, "DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation returned %p\n", block->getUserData());
+		printf("DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation returned %p\n", block->getUserData());
 	}
 #endif
 	return block->getUserData();
@@ -2181,7 +2181,7 @@ void DynamicMemoryAllocator::debugIgnoreLeaksForThisBlock(void* pBlockPtr)
 void *DynamicMemoryAllocator::allocateBytesDoNotZeroImplementation(Int numBytes DECLARE_LITERALSTRING_ARG2)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateBytesDoNotZeroImplementation size=%d\n", numBytes);
+	printf("DEBUG: allocateBytesDoNotZeroImplementation size=%d\n", numBytes);
 #endif
 	ScopedCriticalSection scopedCriticalSection(TheDmaCriticalSection);
 
@@ -2323,7 +2323,7 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 			return;
 		}
 		// Neither pointer is valid - this is a serious error, but don't crash
-		fprintf(stderr, "[GameMemory] Warning: freeBytes called with invalid pointer %p\n", pBlockPtr);
+		printf("[GameMemory] Warning: freeBytes called with invalid pointer %p\n", pBlockPtr);
 		return;
 	}
 #endif
@@ -3582,14 +3582,14 @@ void shutdownMemoryManager()
 void* createW3DMemPool(const char *poolName, int allocationSize)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: createW3DMemPool name=%s size=%d\n", poolName, allocationSize);
+	printf("DEBUG: createW3DMemPool name=%s size=%d\n", poolName, allocationSize);
 #endif
 	++theLinkTester;
 	preMainInitMemoryManager();
 	MemoryPool* pool = TheMemoryPoolFactory->createMemoryPool(poolName, allocationSize, 0, 0);
 	DEBUG_ASSERTCRASH(pool && pool->getAllocationSize() == allocationSize, ("bad w3d pool"));
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: createW3DMemPool returned %p\n", pool);
+	printf("DEBUG: createW3DMemPool returned %p\n", pool);
 #endif
 	return pool;
 }
@@ -3598,13 +3598,13 @@ void* createW3DMemPool(const char *poolName, int allocationSize)
 void* allocateFromW3DMemPool(void* pool, int allocationSize)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateFromW3DMemPool pool=%p size=%d\n", pool, allocationSize);
+	printf("DEBUG: allocateFromW3DMemPool pool=%p size=%d\n", pool, allocationSize);
 #endif
 	DEBUG_ASSERTCRASH(pool, ("pool is null"));
 	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == allocationSize, ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
 	void* ptr = ((MemoryPool*)pool)->allocateBlock("allocateFromW3DMemPool");
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateFromW3DMemPool returned %p\n", ptr);
+	printf("DEBUG: allocateFromW3DMemPool returned %p\n", ptr);
 #endif
 	return ptr;
 }
@@ -3613,13 +3613,13 @@ void* allocateFromW3DMemPool(void* pool, int allocationSize)
 void* allocateFromW3DMemPool(void* pool, int allocationSize, const char* msg, int unused)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateFromW3DMemPool(msg) pool=%p size=%d msg=%s\n", pool, allocationSize, msg);
+	printf("DEBUG: allocateFromW3DMemPool(msg) pool=%p size=%d msg=%s\n", pool, allocationSize, msg);
 #endif
 	DEBUG_ASSERTCRASH(pool, ("pool is null"));
 	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == allocationSize, ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
 	void* ptr = ((MemoryPool*)pool)->allocateBlock(msg);
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateFromW3DMemPool(msg) returned %p\n", ptr);
+	printf("DEBUG: allocateFromW3DMemPool(msg) returned %p\n", ptr);
 #endif
 	return ptr;
 }

@@ -105,7 +105,7 @@ OpenALAudioManager* AudioManager_Create(void) {
     manager->music_config.cross_fade_ms = 0;
     manager->music_config.master_volume = manager->music_volume;
     
-    fprintf(stdout, "Phase 47: AudioManager created\n");
+    printf("Phase 47: AudioManager created\n");
     
     return manager;
 }
@@ -122,7 +122,7 @@ void AudioManager_Destroy(OpenALAudioManager* manager) {
     free(manager->sources);
     free(manager);
     
-    fprintf(stdout, "Phase 47: AudioManager destroyed\n");
+    printf("Phase 47: AudioManager destroyed\n");
 }
 
 void AudioManager_Initialize(OpenALAudioManager* manager) {
@@ -138,7 +138,7 @@ void AudioManager_Initialize(OpenALAudioManager* manager) {
     OpenAL_Vector3 up = {0.0f, 1.0f, 0.0f};
     OpenALAudioDevice_SetListenerOrientation(manager->device, fwd, up);
     
-    fprintf(stdout, "Phase 47: AudioManager initialized\n");
+    printf("Phase 47: AudioManager initialized\n");
 }
 
 void AudioManager_Shutdown(OpenALAudioManager* manager) {
@@ -147,7 +147,7 @@ void AudioManager_Shutdown(OpenALAudioManager* manager) {
     AudioManager_StopAll(manager);
     OpenALAudioDevice_Shutdown(manager->device);
     
-    fprintf(stdout, "Phase 47: AudioManager shutdown complete\n");
+    printf("Phase 47: AudioManager shutdown complete\n");
 }
 
 AudioHandle AudioManager_PlayMusic(OpenALAudioManager* manager, const char* filename) {
@@ -191,7 +191,7 @@ AudioHandle AudioManager_PlayMusic(OpenALAudioManager* manager, const char* file
     manager->current_music_handle = handle;
     strncpy(manager->current_music, filename, sizeof(manager->current_music) - 1);
     
-    fprintf(stdout, "Phase 47: Playing music: %s (handle=%u)\n", filename, handle);
+    printf("Phase 47: Playing music: %s (handle=%u)\n", filename, handle);
     
     return handle;
 }
@@ -205,7 +205,7 @@ void AudioManager_StopMusic(OpenALAudioManager* manager) {
         manager->current_music_handle = 0;
         manager->current_music[0] = '\0';
         
-        fprintf(stdout, "Phase 47: Music stopped\n");
+        printf("Phase 47: Music stopped\n");
     }
 }
 
@@ -214,7 +214,7 @@ void AudioManager_PauseMusic(OpenALAudioManager* manager) {
     
     if (manager->current_music_handle) {
         OpenALAudioDevice_Pause(manager->device, manager->current_music_handle);
-        fprintf(stdout, "Phase 47: Music paused\n");
+        printf("Phase 47: Music paused\n");
     }
 }
 
@@ -223,7 +223,7 @@ void AudioManager_ResumeMusic(OpenALAudioManager* manager) {
     
     if (manager->current_music_handle) {
         OpenALAudioDevice_Play(manager->device, manager->current_music_handle);
-        fprintf(stdout, "Phase 47: Music resumed\n");
+        printf("Phase 47: Music resumed\n");
     }
 }
 
@@ -322,7 +322,7 @@ AudioHandle AudioManager_PlaySFX(OpenALAudioManager* manager, const char* filena
     /* Start playback */
     OpenALAudioDevice_Play(manager->device, handle);
     
-    fprintf(stdout, "Phase 47: Playing SFX: %s (handle=%u)\n", filename, handle);
+    printf("Phase 47: Playing SFX: %s (handle=%u)\n", filename, handle);
     
     return handle;
 }
@@ -380,7 +380,7 @@ AudioHandle AudioManager_PlayVoice(OpenALAudioManager* manager, const char* file
     /* Start playback */
     OpenALAudioDevice_Play(manager->device, handle);
     
-    fprintf(stdout, "Phase 47: Playing voice: %s (handle=%u)\n", filename, handle);
+    printf("Phase 47: Playing voice: %s (handle=%u)\n", filename, handle);
     
     return handle;
 }
@@ -438,7 +438,7 @@ AudioHandle AudioManager_PlayAmbient(OpenALAudioManager* manager, const char* fi
     /* Start playback */
     OpenALAudioDevice_Play(manager->device, handle);
     
-    fprintf(stdout, "Phase 47: Playing ambient: %s (handle=%u)\n", filename, handle);
+    printf("Phase 47: Playing ambient: %s (handle=%u)\n", filename, handle);
     
     return handle;
 }
@@ -468,7 +468,7 @@ void AudioManager_SetMasterVolume(OpenALAudioManager* manager, float volume) {
     manager->master_volume = volume;
     OpenALAudioDevice_SetMasterVolume(manager->device, volume);
     
-    fprintf(stdout, "Phase 47: Master volume set to %.2f\n", volume);
+    printf("Phase 47: Master volume set to %.2f\n", volume);
 }
 
 float AudioManager_GetMasterVolume(OpenALAudioManager* manager) {
@@ -638,18 +638,18 @@ int AudioManager_ClearErrors(OpenALAudioManager* manager) {
 void AudioManager_PrintStats(OpenALAudioManager* manager) {
     if (!manager || !manager->device) return;
     
-    fprintf(stdout, "\n=== Audio Manager Statistics ===\n");
-    fprintf(stdout, "Master Volume: %.2f\n", manager->master_volume);
-    fprintf(stdout, "Music Volume: %.2f\n", manager->music_volume);
-    fprintf(stdout, "SFX Volume: %.2f\n", manager->sfx_volume);
-    fprintf(stdout, "Voice Volume: %.2f\n", manager->voice_volume);
-    fprintf(stdout, "Ambient Volume: %.2f\n", manager->ambient_volume);
-    fprintf(stdout, "Current Music: %s\n", 
+    printf("\n=== Audio Manager Statistics ===\n");
+    printf("Master Volume: %.2f\n", manager->master_volume);
+    printf("Music Volume: %.2f\n", manager->music_volume);
+    printf("SFX Volume: %.2f\n", manager->sfx_volume);
+    printf("Voice Volume: %.2f\n", manager->voice_volume);
+    printf("Ambient Volume: %.2f\n", manager->ambient_volume);
+    printf("Current Music: %s\n", 
             manager->current_music[0] ? manager->current_music : "None");
-    fprintf(stdout, "Active Sources: %u / %u\n", 
+    printf("Active Sources: %u / %u\n", 
             manager->num_active_sources, manager->max_sources);
-    fprintf(stdout, "Error Count: %d\n", manager->error_count);
-    fprintf(stdout, "================================\n\n");
+    printf("Error Count: %d\n", manager->error_count);
+    printf("================================\n\n");
     
     OpenALAudioDevice_PrintDeviceInfo(manager->device);
 }
@@ -657,6 +657,6 @@ void AudioManager_PrintStats(OpenALAudioManager* manager) {
 void AudioManager_PrintSourceInfo(OpenALAudioManager* manager, AudioHandle handle) {
     if (!manager || !manager->device || !handle) return;
     
-    fprintf(stdout, "Source %u info:\n", handle);
+    printf("Source %u info:\n", handle);
     OpenALAudioDevice_PrintSourceInfo(manager->device, handle);
 }

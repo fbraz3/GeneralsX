@@ -34,6 +34,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <Utility/compat.h>
 
 // Global configuration file path (cached after first use)
 static AsciiString g_configFilePath;
@@ -51,29 +52,29 @@ namespace DefaultValues
 	static const char* INSTALL_PATH = "";
 	static const char* PROXY = "";
 	static const char* ERGC = "GP205480888522112040";
-	
+
 	// Graphics section
 	static const UnsignedInt WIDTH = 1024;
 	static const UnsignedInt HEIGHT = 768;
 	static const UnsignedInt WINDOWED = 0;
 	static const UnsignedInt COLOR_DEPTH = 32;
 	static const UnsignedInt USE_METAL_BACKEND = 1;
-	
+
 	// Audio section
 	static const UnsignedInt AUDIO_ENABLED = 1;
 	static const UnsignedInt MUSIC_VOLUME = 100;
 	static const UnsignedInt SOUND_VOLUME = 100;
-	
+
 	// Network section
 	static const char* CONNECTION_TYPE = "LAN";
 	static const UnsignedInt BANDWIDTH = 100000;
-	
+
 	// Player section
 	static const char* PLAYER_NAME = "Player";
 	static const char* PLAYER_SIDE = "USA";
 	static const char* PLAYER_DIFFICULTY = "Hard";
 	static const UnsignedInt GENERAL_INDEX = 0;
-	
+
 	// Advanced section
 	static const UnsignedInt ENABLE_DEBUG = 0;
 	static const UnsignedInt LOG_LEVEL = 0;
@@ -121,7 +122,7 @@ static void InitializeDefaultConfigurationFile(const AsciiString& ini_file)
 		output << "MapPackVersion = " << DefaultValues::MAP_PACK_VERSION << std::endl;
 		output << "InstallPath = " << DefaultValues::INSTALL_PATH << std::endl;
 		output << "Proxy = " << DefaultValues::PROXY << std::endl;
-		
+
 		if (is_zh)
 		{
 			output << "ERGC = " << DefaultValues::ERGC << std::endl;
@@ -133,7 +134,7 @@ static void InitializeDefaultConfigurationFile(const AsciiString& ini_file)
 		output << "Height = " << DefaultValues::HEIGHT << std::endl;
 		output << "Windowed = " << DefaultValues::WINDOWED << std::endl;
 		output << "ColorDepth = " << DefaultValues::COLOR_DEPTH << std::endl;
-		
+
 		if (is_zh)
 		{
 			output << "UseMetalBackend = " << DefaultValues::USE_METAL_BACKEND << std::endl;
@@ -155,7 +156,7 @@ static void InitializeDefaultConfigurationFile(const AsciiString& ini_file)
 		output << "Name = " << DefaultValues::PLAYER_NAME << std::endl;
 		output << "Side = " << DefaultValues::PLAYER_SIDE << std::endl;
 		output << "Difficulty = " << DefaultValues::PLAYER_DIFFICULTY << std::endl;
-		
+
 		if (is_zh)
 		{
 			output << "GeneralIndex = " << DefaultValues::GENERAL_INDEX << std::endl;
@@ -165,7 +166,7 @@ static void InitializeDefaultConfigurationFile(const AsciiString& ini_file)
 		output << std::endl << "[Advanced]" << std::endl;
 		output << "EnableDebug = " << DefaultValues::ENABLE_DEBUG << std::endl;
 		output << "LogLevel = " << DefaultValues::LOG_LEVEL << std::endl;
-		
+
 		if (is_zh)
 		{
 			output << "AssetPath = " << DefaultValues::ASSET_PATH << std::endl;
@@ -220,17 +221,17 @@ static AsciiString GetINIFilePath()
 {
 	AsciiString config_dir = GetConfigFilePath();
 	AsciiString ini_file = config_dir;
-	
+
 	// Add filename - use GeneralsXZH.ini for Zero Hour expansion
-	#ifdef GENERALS_ZERO_HOUR
-		ini_file.concat("GeneralsXZH.ini");
-	#else
-		ini_file.concat("GeneralsX.ini");
-	#endif
-	
+#ifdef GENERALS_ZERO_HOUR
+	ini_file.concat("GeneralsXZH.ini");
+#else
+	ini_file.concat("GeneralsX.ini");
+#endif
+
 	// Initialize default configuration if file doesn't exist
 	InitializeDefaultConfigurationFile(ini_file);
-	
+
 	return ini_file;
 }
 
@@ -238,7 +239,7 @@ static AsciiString GetINIFilePath()
 static Bool ReadINIValue(const AsciiString& section, const AsciiString& key, AsciiString& val)
 {
 	AsciiString ini_file = GetINIFilePath();
-	
+
 	try
 	{
 		std::ifstream file(ini_file.str());
@@ -256,7 +257,7 @@ static Bool ReadINIValue(const AsciiString& section, const AsciiString& key, Asc
 			// Trim whitespace
 			size_t start = line.find_first_not_of(" \t\r\n");
 			size_t end = line.find_last_not_of(" \t\r\n");
-			
+
 			if (start == std::string::npos)
 				continue;
 
@@ -309,7 +310,7 @@ static Bool ReadINIValue(const AsciiString& section, const AsciiString& key, Asc
 static Bool WriteINIValue(const AsciiString& section, const AsciiString& key, const AsciiString& val)
 {
 	AsciiString ini_file = GetINIFilePath();
-	
+
 	try
 	{
 		// Read existing file
@@ -463,7 +464,7 @@ Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiStrin
 	AsciiString section = "Generals Settings";
 	if (!path.isEmpty())
 	{
-		section.concat("\\");
+		section.concat(GET_PATH_SEPARATOR());
 		section.concat(path);
 	}
 
@@ -477,7 +478,7 @@ Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 	AsciiString section = "GeneralsXZH Settings";
 	if (!path.isEmpty())
 	{
-		section.concat("\\");
+		section.concat(GET_PATH_SEPARATOR());
 		section.concat(path);
 	}
 
@@ -491,7 +492,7 @@ Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& 
 	AsciiString section = "GeneralsXZH Settings";
 	if (!path.isEmpty())
 	{
-		section.concat("\\");
+		section.concat(GET_PATH_SEPARATOR());
 		section.concat(path);
 	}
 
@@ -505,7 +506,8 @@ AsciiString GetRegistryLanguage(void)
 	static AsciiString val = "english";
 	if (cached) {
 		return val;
-	} else {
+	}
+	else {
 		cached = TRUE;
 	}
 

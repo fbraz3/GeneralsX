@@ -4,7 +4,7 @@ set(PATCHGET_SRC
     "COMINIT.cpp"
     "COMINIT.h"
     "debug.cpp"
-    "debug.h"
+    "debug_renamed.h"
     "DownloadManager.cpp"
     "DownloadManager.h"
     "PROCESS.cpp"

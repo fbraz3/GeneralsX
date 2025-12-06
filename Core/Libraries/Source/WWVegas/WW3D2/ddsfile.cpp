@@ -56,15 +56,19 @@ DDSFileClass::DDSFileClass(const char* name,unsigned reduction_factor)
 	file_auto_ptr file(_TheFileFactory,Name);
 	if (!file->Is_Available())
 	{
+		printf("[DDSFileClass] DEBUG: File not available: '%s'\n", Name);
 		return;
 	}
 
 	int result=file->Open();
 	if (!result)
 	{
+		printf("[DDSFileClass] DEBUG: File would not open: '%s'\n", Name);
 		WWASSERT("File would not open");
 		return;
 	}
+
+	printf("[DDSFileClass] DEBUG: File opened successfully: '%s'\n", Name);
 
 	DateTime=file->Get_Date_Time();
 	char header[4];
@@ -72,9 +76,19 @@ DDSFileClass::DDSFileClass(const char* name,unsigned reduction_factor)
 	unsigned read_bytes=file->Read(header,4);
 	if (!read_bytes)
 	{
+		printf("[DDSFileClass] DEBUG: Failed to read header magic: '%s'\n", Name);
 		WWASSERT("File loading failed trying to read header");
 		return;
 	}
+	
+	// Verify DDS magic
+	if (header[0] != 'D' || header[1] != 'D' || header[2] != 'S' || header[3] != ' ')
+	{
+		printf("[DDSFileClass] DEBUG: Invalid DDS magic: '%c%c%c%c' for '%s'\n", 
+			header[0], header[1], header[2], header[3], Name);
+		return;
+	}
+
 	// Now, we read DDSURFACEDESC2 defining the compressed data
 	read_bytes=file->Read(&SurfaceDesc,sizeof(LegacyDDSURFACEDESC2));
 	// Verify the structure size matches the read size
@@ -87,12 +101,20 @@ DDSFileClass::DDSFileClass(const char* name,unsigned reduction_factor)
 	}
 
 	Format=D3DFormat_To_WW3DFormat((D3DFORMAT)SurfaceDesc.PixelFormat.FourCC);
-	WWASSERT(
-		Format==WW3D_FORMAT_DXT1 ||
-		Format==WW3D_FORMAT_DXT2 ||
-		Format==WW3D_FORMAT_DXT3 ||
-		Format==WW3D_FORMAT_DXT4 ||
-		Format==WW3D_FORMAT_DXT5);
+	
+	printf("[DDSFileClass] DEBUG: File '%s' - FourCC=0x%08X, Format=%d, Size=%ux%u, MipMaps=%u\n",
+		Name, SurfaceDesc.PixelFormat.FourCC, (int)Format, 
+		SurfaceDesc.Width, SurfaceDesc.Height, SurfaceDesc.MipMapCount);
+	
+	if (Format != WW3D_FORMAT_DXT1 &&
+		Format != WW3D_FORMAT_DXT2 &&
+		Format != WW3D_FORMAT_DXT3 &&
+		Format != WW3D_FORMAT_DXT4 &&
+		Format != WW3D_FORMAT_DXT5)
+	{
+		printf("[DDSFileClass] DEBUG: Unsupported format %d for '%s', only DXT1-5 supported\n", (int)Format, Name);
+		return;
+	}
 
 	MipLevels=SurfaceDesc.MipMapCount;
 	if (MipLevels==0) MipLevels=1;

@@ -48,6 +48,24 @@ extern void DX8Wrapper_DrawStripInternal(int start_index, int primitive_count, i
 
 // Phase 60: Dynamic buffer data pointers (for DrawIndexedPrimitiveUP)
 extern void DX8Wrapper_SetDynamicVertexBuffer(const void* data, uint32_t vertexCount, uint32_t stride);
+
+// Phase 62: Texture format support check (implemented in DX8Wrapper_Stubs.cpp)
+// Delegates to Graphics::IGraphicsDriver::SupportsTextureFormat()
+extern bool DX8Wrapper_SupportsTextureFormat(int format);
+
+// Phase 62: Texture binding (implemented in DX8Wrapper_Stubs.cpp)
+// Uploads CPU texture data to GPU if needed and binds to sampler stage
+extern void DX8Wrapper_SetTextureInternal(int stage, void* d3d_texture);
+
+// Phase 62: Transform operations (implemented in DX8Wrapper_Stubs.cpp)
+// Delegates to Graphics::IGraphicsDriver transform methods
+extern void DX8Wrapper_SetTransformInternal(unsigned int type, const float* matrix);
+extern void DX8Wrapper_GetTransformInternal(unsigned int type, float* matrix);
+
+// Phase 62: Viewport and clear operations (implemented in DX8Wrapper_Stubs.cpp)
+extern void DX8Wrapper_SetViewportInternal(int x, int y, int width, int height, float minZ, float maxZ);
+extern void DX8Wrapper_ClearInternal(bool clearColor, bool clearZ, float r, float g, float b, float a);
+
 extern void DX8Wrapper_SetDynamicIndexBuffer(const unsigned short* data, int indexCount);
 extern bool DX8Wrapper_HasDynamicBuffers();
 
@@ -144,15 +162,45 @@ class DX8_CleanupHook;
 // Phase 39.4: FVF (Flexible Vertex Format) stub
 extern const int dynamic_fvf_type;  // Forward declare global constant
 
-// FVFInfoClass - stub implementation for vertex format info
+/**
+ * FVFInfoClass - Flexible Vertex Format information class
+ * Phase 62: Real implementation with proper offsets for VertexFormatXYZNDUV2
+ * 
+ * This class provides byte offsets within a vertex structure for various
+ * vertex components (position, normal, diffuse color, texture coordinates).
+ * 
+ * Used by render2d.cpp, dynamesh.cpp, pointgr.cpp for building vertex data.
+ * 
+ * Layout of VertexFormatXYZNDUV2 (44 bytes total):
+ *   Offset  0: Position (x,y,z) - 3 floats = 12 bytes
+ *   Offset 12: Normal (nx,ny,nz) - 3 floats = 12 bytes  
+ *   Offset 24: Diffuse color - 1 unsigned int = 4 bytes
+ *   Offset 28: UV1 (u1,v1) - 2 floats = 8 bytes
+ *   Offset 36: UV2 (u2,v2) - 2 floats = 8 bytes
+ */
 class FVFInfoClass {
 public:
+    // Position offset (x,y,z at start of vertex)
     int Get_Location_Offset() const { return 0; }
-    int Get_Normal_Offset() const { return 0; }
-    int Get_Diffuse_Offset() const { return 0; }
-    int Get_Tex_Offset(int) const { return 0; }
-    int Get_FVF_Width() const { return 0; }
-    int Get_FVF_Size() const { return 0; }
+    
+    // Normal offset (after position: 3 floats * 4 bytes = 12)
+    int Get_Normal_Offset() const { return 12; }
+    
+    // Diffuse color offset (after position + normal: 6 floats * 4 bytes = 24)
+    int Get_Diffuse_Offset() const { return 24; }
+    
+    // Texture coordinate offset (after position + normal + diffuse)
+    // stage 0: offset 28 (after diffuse)
+    // stage 1: offset 36 (after first UV pair)
+    int Get_Tex_Offset(int stage) const { 
+        return 28 + (stage * 8);  // Each UV pair is 8 bytes (2 floats)
+    }
+    
+    // FVF width (same as size for this format)
+    int Get_FVF_Width() const { return 44; }
+    
+    // Total vertex size in bytes
+    int Get_FVF_Size() const { return 44; }
 };
 
 // Forward declarations to avoid include chain
@@ -178,40 +226,143 @@ class DynamicIBAccessClass;
 class DX8VertexBufferClass;
 class DX8IndexBufferClass;
 
-// Stub IDirect3DDevice8 (Phase 39.4: TestCooperativeLevel stub for ww3d.cpp line 801)
+/**
+ * IDirect3DDevice8Stub - Compatibility wrapper for legacy DirectX 8 device calls
+ * 
+ * Phase 62: Real implementations that delegate to DX8Wrapper/Graphics::IGraphicsDriver
+ * 
+ * This class provides a DirectX 8-like interface for legacy code paths that
+ * directly call device methods instead of using the DX8Wrapper abstraction.
+ * All methods delegate to the appropriate DX8Wrapper or graphics driver methods.
+ */
 class IDirect3DDevice8Stub {
 public:
     virtual ~IDirect3DDevice8Stub() {}
-    virtual int TestCooperativeLevel() { return 0; }  // D3D_OK
     
-    // Phase 42: Add missing methods for W3DShaderManager compatibility
-    virtual int SetTexture(int stage, void* texture) { return 0; }
-    virtual int SetPixelShader(int shader) { return 0; }
-    virtual int DeletePixelShader(int shader) { return 0; }
-    virtual int DeleteVertexShader(int shader) { return 0; }
+    /**
+     * TestCooperativeLevel - Check if device is in a valid state
+     * @return D3D_OK (0) if device is ready, D3DERR_DEVICELOST if lost
+     */
+    virtual int TestCooperativeLevel();  // Implemented in DX8Wrapper_Stubs.cpp
     
-    // Add more common methods for other callers
-    virtual int SetStreamSource(int stream_number, void* stream_data, int stride) { return 0; }
-    virtual int SetVertexShader(int shader) { return 0; }
-    virtual int SetIndices(void* index_data, int base_vertex_index) { return 0; }
-    virtual int DrawIndexedPrimitive(int type, int min_index, int num_vertices, int start_index, int prim_count) { return 0; }
-    virtual int ProcessVertices(int src_start_index, int dest_index, int vertex_count, void* dest_buffer, int flags) { return 0; }
+    /**
+     * SetTexture - Bind a texture to a sampler stage
+     * @param stage Sampler stage index (0-7)
+     * @param texture DirectX 8 texture pointer (IDirect3DBaseTexture8*)
+     * @return D3D_OK (0) on success
+     */
+    virtual int SetTexture(int stage, void* texture);  // Implemented in DX8Wrapper_Stubs.cpp
     
-    // Phase 42: Additional methods for W3DShaderManager render target access
-    virtual int GetRenderTarget(void** renderTarget) { 
-        if (renderTarget) *renderTarget = nullptr;
-        return 0; 
-    }
-    virtual int CreateTexture(int width, int height, int levels, int usage, int format, int pool, void** texture) { 
-        if (texture) *texture = nullptr;
-        return 0; 
-    }
-    virtual int GetDepthStencilSurface(void** depthSurface) { 
-        if (depthSurface) *depthSurface = nullptr;
-        return 0; 
-    }
-    virtual int SetRenderState(int state, int value) { return 0; }
-    virtual int SetTextureStageState(int stage, int type, int value) { return 0; }
+    /**
+     * SetPixelShader - Set the current pixel shader
+     * @param shader Pixel shader handle
+     * @return D3D_OK (0) on success
+     */
+    virtual int SetPixelShader(int shader);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * DeletePixelShader - Delete a pixel shader
+     * @param shader Pixel shader handle to delete
+     * @return D3D_OK (0) on success
+     */
+    virtual int DeletePixelShader(int shader);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * DeleteVertexShader - Delete a vertex shader
+     * @param shader Vertex shader handle to delete
+     * @return D3D_OK (0) on success
+     */
+    virtual int DeleteVertexShader(int shader);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * SetStreamSource - Bind a vertex buffer to a stream
+     * @param stream_number Stream index
+     * @param stream_data Vertex buffer pointer
+     * @param stride Vertex stride in bytes
+     * @return D3D_OK (0) on success
+     */
+    virtual int SetStreamSource(int stream_number, void* stream_data, int stride);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * SetVertexShader - Set the current vertex shader
+     * @param shader Vertex shader handle or FVF code
+     * @return D3D_OK (0) on success
+     */
+    virtual int SetVertexShader(int shader);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * SetIndices - Set the current index buffer
+     * @param index_data Index buffer pointer
+     * @param base_vertex_index Base vertex index offset
+     * @return D3D_OK (0) on success
+     */
+    virtual int SetIndices(void* index_data, int base_vertex_index);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * DrawIndexedPrimitive - Draw indexed geometry
+     * @param type Primitive type (D3DPT_TRIANGLELIST, etc.)
+     * @param min_index Minimum vertex index
+     * @param num_vertices Number of vertices
+     * @param start_index Starting index in index buffer
+     * @param prim_count Number of primitives to draw
+     * @return D3D_OK (0) on success
+     */
+    virtual int DrawIndexedPrimitive(int type, int min_index, int num_vertices, int start_index, int prim_count);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * ProcessVertices - Process vertices through vertex shader
+     * @param src_start_index Source starting index
+     * @param dest_index Destination index
+     * @param vertex_count Number of vertices to process
+     * @param dest_buffer Destination vertex buffer
+     * @param flags Processing flags
+     * @return D3D_OK (0) on success
+     */
+    virtual int ProcessVertices(int src_start_index, int dest_index, int vertex_count, void* dest_buffer, int flags);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * GetRenderTarget - Get the current render target surface
+     * @param renderTarget Output pointer to receive render target
+     * @return D3D_OK (0) on success
+     */
+    virtual int GetRenderTarget(void** renderTarget);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * CreateTexture - Create a new texture
+     * @param width Texture width
+     * @param height Texture height
+     * @param levels Number of mip levels (0 = full chain)
+     * @param usage Usage flags (D3DUSAGE_*)
+     * @param format Texture format (D3DFMT_*)
+     * @param pool Memory pool (D3DPOOL_*)
+     * @param texture Output pointer to receive texture
+     * @return D3D_OK (0) on success
+     */
+    virtual int CreateTexture(int width, int height, int levels, int usage, int format, int pool, void** texture);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * GetDepthStencilSurface - Get the current depth/stencil surface
+     * @param depthSurface Output pointer to receive depth surface
+     * @return D3D_OK (0) on success
+     */
+    virtual int GetDepthStencilSurface(void** depthSurface);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * SetRenderState - Set a render state value
+     * @param state Render state type (D3DRS_*)
+     * @param value State value
+     * @return D3D_OK (0) on success
+     */
+    virtual int SetRenderState(int state, int value);  // Implemented in DX8Wrapper_Stubs.cpp
+    
+    /**
+     * SetTextureStageState - Set a texture stage state value
+     * @param stage Texture stage index
+     * @param type Stage state type (D3DTSS_*)
+     * @param value State value
+     * @return D3D_OK (0) on success
+     */
+    virtual int SetTextureStageState(int stage, int type, int value);  // Implemented in DX8Wrapper_Stubs.cpp
 };
 
 // Global instance for _Get_D3D_Device8() (Phase 39.4)
@@ -236,31 +387,29 @@ class VertexFormatXYZ;
 class DX8Wrapper {
 public:
     // ========================================================================
-    // Initialization & Device Management
+    // Initialization & Device Management (Phase 62: Real implementations)
     // ========================================================================
-    // Phase 41 Week 3: Initialize graphics driver via factory
     static bool Init(void* hwnd, bool lite);  // Implementation in DX8Wrapper_Stubs.cpp
     static void Shutdown();  // Implementation in DX8Wrapper_Stubs.cpp
     static bool Set_Render_Device(int dev, int width, int height, int bits, int windowed, 
-                                   bool resize_window, bool reset_device, bool restore_assets) { return true; }
-    // Phase 39.4: Overload for 6-parameter version (ww3d.cpp line 396)
+                                   bool resize_window, bool reset_device, bool restore_assets);  // Phase 62: Implemented
     static bool Set_Render_Device(const char* dev_name, int width, int height, int bits, int windowed,
-                                   bool resize_window) { return true; }
-    static bool Set_Any_Render_Device() { return true; }
-    static bool Set_Next_Render_Device() { return true; }
-    static bool Is_Initted() { return true; }
-    static bool Reset_Device() { return true; }
+                                   bool resize_window);  // Phase 62: Implemented
+    static bool Set_Any_Render_Device() { return true; }  // No-op OK
+    static bool Set_Next_Render_Device() { return true; }  // No-op OK
+    static bool Is_Initted();  // Phase 62: Implemented
+    static bool Reset_Device();  // Phase 62: Implemented
     static bool Set_Device_Resolution(int width, int height, int bits, bool windowed, 
-                                       bool resize_window) { return true; }
-    static bool Toggle_Windowed() { return false; }
-    static bool Is_Windowed() { return false; }
+                                       bool resize_window);  // Phase 62: Implemented
+    static bool Toggle_Windowed();  // Phase 62: Implemented
+    static bool Is_Windowed();  // Phase 62: Implemented
 
     // ========================================================================
-    // Render Target Management
+    // Render Target Management (Phase 62: Real implementations)
     // ========================================================================
-    static void Set_Render_Target(SurfaceClass* target) {}
-    static void Set_Render_Target_With_Z(SurfaceClass* color_target, SurfaceClass* z_target) {}
-    static SurfaceClass* Create_Render_Target(int width, int height) { return nullptr; }
+    static void Set_Render_Target(SurfaceClass* target);  // Phase 62: Implemented
+    static void Set_Render_Target_With_Z(SurfaceClass* color_target, SurfaceClass* z_target);  // Phase 62: Implemented
+    static SurfaceClass* Create_Render_Target(int width, int height);  // Phase 62: Implemented
     
     // Phase 51: Return a valid back buffer surface for smudge rendering
     // The back buffer dimensions should match the render resolution
@@ -273,20 +422,20 @@ public:
     static void Begin_Scene();  // Implementation in DX8Wrapper_Stubs.cpp
     static void End_Scene(bool flip_frame);  // Implementation in DX8Wrapper_Stubs.cpp
     static void Clear(bool clear_color, bool clear_z, const Vector3 &color, 
-                      float dest_alpha = 1.0f) {}
-    static void Flip_To_Primary() {}
-    static int Peek_Device_Resolution_Width() { return 1024; }
-    static int Peek_Device_Resolution_Height() { return 768; }
-    static int Get_Device_Resolution_Width() { return 1024; }
-    static int Get_Device_Resolution_Height() { return 768; }
-    static void Get_Device_Resolution(int& w, int& h, int& bits, bool& windowed) {}
-    static void Get_Render_Target_Resolution(int& w, int& h, int& bits, bool& windowed) {}
+                      float dest_alpha = 1.0f);  // Phase 62: Implementation in DX8Wrapper_Stubs.cpp
+    static void Flip_To_Primary();  // Phase 62: Implemented
+    static int Peek_Device_Resolution_Width();  // Phase 62: Implementation in DX8Wrapper_Stubs.cpp
+    static int Peek_Device_Resolution_Height();  // Phase 62: Implementation in DX8Wrapper_Stubs.cpp
+    static int Get_Device_Resolution_Width();  // Phase 62: Implementation in DX8Wrapper_Stubs.cpp
+    static int Get_Device_Resolution_Height();  // Phase 62: Implementation in DX8Wrapper_Stubs.cpp
+    static void Get_Device_Resolution(int& w, int& h, int& bits, bool& windowed);  // Phase 62: Implementation in DX8Wrapper_Stubs.cpp
+    static void Get_Render_Target_Resolution(int& w, int& h, int& bits, bool& windowed);  // Phase 62: Implementation in DX8Wrapper_Stubs.cpp
 
     // ========================================================================
     // Vertex & Index Buffer Management
     // ========================================================================
-    static void Set_Vertex_Buffer(void* vb_access) {}
-    static void Set_Vertex_Buffer(int stream_number, void* vb_access) {}
+    static void Set_Vertex_Buffer(void* vb_access);  // Phase 62: Implemented in .cpp
+    static void Set_Vertex_Buffer(int stream_number, void* vb_access);  // Phase 62: Implemented in .cpp
     static void Set_Vertex_Buffer(DynamicVBAccessClass* vb_access);  // Phase 60: Implemented in .cpp
     static void Set_Vertex_Buffer(int stream_number, DynamicVBAccessClass* vb_access);  // Phase 60: Implemented in .cpp
     static void Set_Vertex_Buffer(DynamicVBAccessClass& vb_access);  // Phase 60: Implemented in .cpp
@@ -296,8 +445,8 @@ public:
     static void Set_Vertex_Buffer(DX8VertexBufferClass* vb);  // Implemented in DX8Wrapper_Stubs.cpp
     static void Set_Vertex_Buffer(int stream_number, DX8VertexBufferClass* vb);  // Implemented in DX8Wrapper_Stubs.cpp
     
-    static void Set_Index_Buffer(void* ib_access, int start_index) {}
-    static void Set_Index_Buffer(int stream_number, void* ib_access, int start_index) {}
+    static void Set_Index_Buffer(void* ib_access, int start_index);  // Phase 62: Implemented in .cpp
+    static void Set_Index_Buffer(int stream_number, void* ib_access, int start_index);  // Phase 62: Implemented in .cpp
     static void Set_Index_Buffer(DynamicIBAccessClass* ib_access, int start_index);  // Phase 60: Implemented in .cpp
     static void Set_Index_Buffer(int stream_number, DynamicIBAccessClass* ib_access, int start_index);  // Phase 60: Implemented in .cpp
     static void Set_Index_Buffer(DynamicIBAccessClass& ib_access, int start_index);  // Phase 60: Implemented in .cpp
@@ -327,10 +476,13 @@ public:
     }
 
     // ========================================================================
-    // Texture Operations (Phase 51: Real implementations)
+    // Texture Operations (Phase 51: Real implementations, Phase 62: GPU binding)
     // ========================================================================
-    static void Set_Texture(int stage, TextureClass* texture) {}
-    static void Set_DX8_Texture(int stage, void* d3d_texture) {}
+    static void Set_Texture(int stage, TextureClass* texture);  // Phase 62: Implemented in DX8Wrapper_Stubs.cpp
+    static void Set_DX8_Texture(int stage, void* d3d_texture) {
+        // Phase 62: Bind DirectX 8 texture to sampler stage
+        DX8Wrapper_SetTextureInternal(stage, d3d_texture);
+    }
     
     // Phase 51: Create memory-backed texture with specified dimensions and format
     static IDirect3DTexture8* _Create_DX8_Texture(int width, int height, int format) {
@@ -357,89 +509,102 @@ public:
     // Phase 51: Create memory-backed surface
     static IDirect3DSurface8* _Create_DX8_Surface(int width, int height, int format);
     static IDirect3DSurface8* _Create_DX8_Surface(const char* filename);
-    static void* _Create_DX8_ZTexture(int width, int height, int format) { return nullptr; }
-    static void* _Create_DX8_Cube_Texture(int width, int height, int format) { return nullptr; }
-    static void* _Create_DX8_Volume_Texture(int width, int height, int depth, int format) 
-                                            { return nullptr; }
+    static void* _Create_DX8_ZTexture(int width, int height, int format);  // Phase 62: Implemented
+    static void* _Create_DX8_Cube_Texture(int width, int height, int format);  // Phase 62: Implemented
+    static void* _Create_DX8_Volume_Texture(int width, int height, int depth, int format);  // Phase 62: Implemented
     static void _Copy_DX8_Rects(void* src_surface, void* src_rect, int src_pitch,
-                               void* dst_surface, void* dst_rect) {}
+                               void* dst_surface, void* dst_rect);  // Phase 62: Implemented
     static int CreateImageSurface(int width, int height, int format, void** surface) { 
         if (surface) {
             *surface = CreateMemorySurface(width, height, (D3DFORMAT)format);
         }
         return 0; 
     }
-    static int CopyRects(void* src_surface, void* src_rect, int count, void* dst_surface, void* dst_rect) { return 0; }
+    static int CopyRects(void* src_surface, void* src_rect, int count, void* dst_surface, void* dst_rect);  // Phase 62: Implemented
     static int D3DXLoadSurfaceFromSurface(void* dst_surface, void* dst_palette, void* dst_rect,
                                          void* src_surface, void* src_palette, void* src_rect,
-                                         int filter, int color_key) { return 0; }
+                                         int filter, int color_key);  // Phase 62: Implemented
 
     // ========================================================================
-    // Material & Shader Operations
+    // Material & Shader Operations (Phase 62: Real implementations)
     // ========================================================================
-    static void Set_Material(VertexMaterialClass* material) {}
-    static void Set_Shader(ShaderClass* shader) {}
-    static void Set_Shader(const ShaderClass& shader) {}  // Phase 39.4: ShaderClass reference overload
-    static void Set_DX8_Material(void* d3d_material) {}
+    static void Set_Material(VertexMaterialClass* material);  // Phase 62: Implemented in .cpp
+    static void Set_Shader(ShaderClass* shader);  // Phase 62: Implemented in .cpp
+    static void Set_Shader(const ShaderClass& shader);  // Phase 62: Implemented in .cpp
+    static void Set_DX8_Material(void* d3d_material);  // Phase 62: Implemented in .cpp
 
     // ========================================================================
-    // Render State Management
+    // Render State Management (Phase 62: Real implementations)
     // ========================================================================
-    static void Apply_Render_State_Changes() {}
-    static void Invalidate_Cached_Render_States() {}
-    static void Set_DX8_Render_State(unsigned int state, unsigned int value) {}
-    static void Set_DX8_Texture_Stage_State(int stage, unsigned int state, unsigned int value) {}
-    static void Get_Render_State(void* state) {}
-    static void Release_Render_State() {}
+    static void Apply_Render_State_Changes();  // Phase 62: Implemented in .cpp
+    static void Invalidate_Cached_Render_States();  // Phase 62: Implemented in .cpp
+    static void Set_DX8_Render_State(unsigned int state, unsigned int value);  // Phase 62: Implemented in .cpp
+    static void Set_DX8_Texture_Stage_State(int stage, unsigned int state, unsigned int value);  // Phase 62: Implemented in .cpp
+    static void Get_Render_State(void* state);  // Phase 62: Implemented in .cpp
+    static void Release_Render_State();  // Phase 62: Implemented in .cpp
 
     // ========================================================================
-    // Transform Operations
+    // Transform Operations (Phase 62: Real implementations)
     // ========================================================================
-    static void Set_Transform(unsigned int type, const void* transform) {}
-    static void _Set_DX8_Transform(unsigned int type, const void* transform) {}
-    static void Get_Transform(unsigned int type, void* transform) {}
-    static void _Get_DX8_Transform(unsigned int type, void* transform) {}
-    static void Set_World_Identity() {}
-    static void Set_View_Identity() {}
+    static void Set_Transform(unsigned int type, const void* transform) {
+        // Cast void* to float array and pass to internal function
+        DX8Wrapper_SetTransformInternal(type, static_cast<const float*>(transform));
+    }
+    static void _Set_DX8_Transform(unsigned int type, const void* transform) {
+        DX8Wrapper_SetTransformInternal(type, static_cast<const float*>(transform));
+    }
+    static void Get_Transform(unsigned int type, void* transform) {
+        DX8Wrapper_GetTransformInternal(type, static_cast<float*>(transform));
+    }
+    static void _Get_DX8_Transform(unsigned int type, void* transform) {
+        DX8Wrapper_GetTransformInternal(type, static_cast<float*>(transform));
+    }
+    static void Set_World_Identity();  // Phase 62: Implemented in cpp
+    static void Set_View_Identity();   // Phase 62: Implemented in cpp
     static void Set_Projection_Transform_With_Z_Bias(const void* projection, 
-                                                      float z_near, float z_far) {}
+                                                      float z_near, float z_far);  // Phase 62: Implemented
 
     // ========================================================================
     // Additional Transform Overloads for Vector4/Matrix3D/Matrix4x4 Support
+    // Phase 62: All overloads delegate to internal function
     // ========================================================================
-    static void Set_Transform(unsigned int type, const Vector4& transform) {}
-    static void Set_Transform(unsigned int type, const Vector4* transform) {}
-    static void Set_Transform(unsigned int type, const Matrix3D& transform) {}
-    static void Set_Transform(unsigned int type, const Matrix3D* transform) {}
-    static void Set_Transform(unsigned int type, const Matrix4x4& transform) {}
-    static void Set_Transform(unsigned int type, const Matrix4x4* transform) {}
+    static void Set_Transform(unsigned int type, const Vector4& transform) {
+        // Vector4 is not a valid transform - ignore
+    }
+    static void Set_Transform(unsigned int type, const Vector4* transform) {
+        // Vector4 is not a valid transform - ignore
+    }
+    static void Set_Transform(unsigned int type, const Matrix3D& transform);  // Phase 62: Implemented in cpp
+    static void Set_Transform(unsigned int type, const Matrix3D* transform);  // Phase 62: Implemented in cpp
+    static void Set_Transform(unsigned int type, const Matrix4x4& transform);  // Phase 62: Implemented in cpp
+    static void Set_Transform(unsigned int type, const Matrix4x4* transform);  // Phase 62: Implemented in cpp
     static void Get_Transform(unsigned int type, Vector4& transform) {}
     static void Get_Transform(unsigned int type, Vector4* transform) {}
-    static void Get_Transform(unsigned int type, Matrix3D& transform) {}
-    static void Get_Transform(unsigned int type, Matrix3D* transform) {}
-    static void Get_Transform(unsigned int type, Matrix4x4& transform) {}
-    static void Get_Transform(unsigned int type, Matrix4x4* transform) {}
+    static void Get_Transform(unsigned int type, Matrix3D& transform);   // Phase 62: Implemented in cpp
+    static void Get_Transform(unsigned int type, Matrix3D* transform);   // Phase 62: Implemented in cpp
+    static void Get_Transform(unsigned int type, Matrix4x4& transform);  // Phase 62: Implemented in cpp
+    static void Get_Transform(unsigned int type, Matrix4x4* transform);  // Phase 62: Implemented in cpp
     
     // Projection transform overloads for Matrix3D/Matrix4x4
     static void Set_Projection_Transform_With_Z_Bias(const Matrix3D& projection,
-                                                      float z_near, float z_far) {}
+                                                      float z_near, float z_far);  // Phase 62: Implemented
     static void Set_Projection_Transform_With_Z_Bias(const Matrix4x4& projection,
-                                                      float z_near, float z_far) {}
+                                                      float z_near, float z_far);  // Phase 62: Implemented
 
     // ========================================================================
-    // Viewport & Clipping
+    // Viewport & Clipping (Phase 62: Real implementations)
     // ========================================================================
-    static void Set_Viewport(void* viewport) {}
-    static void Set_Viewport(const void* viewport) {}
+    static void Set_Viewport(void* viewport);  // Phase 62: Implemented in cpp
+    static void Set_Viewport(const void* viewport);  // Phase 62: Implemented in cpp
 
     // ========================================================================
-    // Lighting
+    // Lighting (Phase 62: Real implementations)
     // ========================================================================
-    static void Set_Light(int index, void* light) {}
-    static void Set_DX8_Light(int index, void* d3d_light) {}
-    static void Set_Ambient(const void* color) {}
-    static void Set_Ambient(const Vector3& color) {}  // Phase 39.4: Overload for Vector3 (ww3d.cpp line 969)
-    static void Set_Light_Environment(void* light_env) {}
+    static void Set_Light(int index, void* light);  // Phase 62: Implemented in .cpp
+    static void Set_DX8_Light(int index, void* d3d_light);  // Phase 62: Implemented in .cpp
+    static void Set_Ambient(const void* color);  // Phase 62: Implemented in .cpp
+    static void Set_Ambient(const Vector3& color);  // Phase 62: Implemented in .cpp
+    static void Set_Light_Environment(void* light_env);  // Phase 62: Implemented in .cpp
 
     // ========================================================================
     // Statistics / Debugging (Phase 39.4: No-op stubs)
@@ -448,11 +613,11 @@ public:
     static void End_Statistics() {}    // Called by Debug_Statistics::End_Statistics()
 
     // ========================================================================
-    // Fog Operations
+    // Fog Operations (Phase 62: Real implementations)
     // ========================================================================
-    static void Set_Fog(bool enable, const Vector3 &color, float start, float end) {}
-    static bool Get_Fog_Enable() { return false; }
-    static unsigned int Get_Fog_Color() { return 0; }
+    static void Set_Fog(bool enable, const Vector3 &color, float start, float end);  // Phase 62: Implemented in .cpp
+    static bool Get_Fog_Enable();  // Phase 62: Implemented in .cpp
+    static unsigned int Get_Fog_Color();  // Phase 62: Implemented in .cpp
 
     // ========================================================================
     // Capabilities & Device Info
@@ -514,13 +679,13 @@ public:
     static void* Convert_Color_Clamp(const void* color) { return nullptr; }
 
     // ========================================================================
-    // Swap Chain & Display
+    // Swap Chain & Display (Phase 62: Real implementations)
     // ========================================================================
-    static int Get_Swap_Interval() { return 0; }
-    static void Set_Swap_Interval(int swap) {}
-    static void Set_Texture_Bitdepth(int bitdepth) {}
-    static int Get_Texture_Bitdepth() { return 32; }
-    static void Set_Gamma(float gamma, float bright, float contrast, bool calibrate) {}
+    static int Get_Swap_Interval();  // Phase 62: Implemented
+    static void Set_Swap_Interval(int swap);  // Phase 62: Implemented
+    static void Set_Texture_Bitdepth(int bitdepth);  // Phase 62: Implemented
+    static int Get_Texture_Bitdepth();  // Phase 62: Implemented
+    static void Set_Gamma(float gamma, float bright, float contrast, bool calibrate);  // Phase 62: Implemented
 
     // ========================================================================
     // Registry Operations
@@ -535,16 +700,16 @@ public:
                                            bool& windowed, int& texture_depth) { return true; }
 
     // ========================================================================
-    // Screen Capture & Buffer Operations
+    // Screen Capture & Buffer Operations (Phase 62: Real implementations)
     // ========================================================================
-    static SurfaceClass* Get_Front_Buffer() { return nullptr; }
-    static SurfaceClass* Get_Back_Buffer() { return nullptr; }
+    static SurfaceClass* Get_Front_Buffer();  // Phase 62: Implemented
+    static SurfaceClass* Get_Back_Buffer();  // Phase 62: Implemented
 
     // ========================================================================
-    // Shader Operations (Advanced)
+    // Shader Operations (Advanced) - Phase 62: Real implementations
     // ========================================================================
-    static void Set_Pixel_Shader(unsigned int shader) {}
-    static void Set_Vertex_Shader(unsigned int shader) {}
+    static void Set_Pixel_Shader(unsigned int shader);  // Phase 62: Implemented
+    static void Set_Vertex_Shader(unsigned int shader);  // Phase 62: Implemented
 
     // ========================================================================
     // Frame Control & State
@@ -641,8 +806,8 @@ public:
     virtual bool Support_NPatches() const { return false; }  // N-Patches support (tessellation)
     virtual bool Support_Dot3() const { return false; }  // Phase 39.4: Dot3 (DOT product) support for render2d.cpp
     virtual bool Support_ModAlphaAddClr() const { return false; }  // MODULATEALPHA_ADDCOLOR support for shader.cpp
-    virtual bool Support_DXTC() const { return false; }  // Phase 39.4: DXTC compression support
-    virtual bool Support_Texture_Format(int format) const { return false; }  // Phase 39.4: Check specific texture format support
+    virtual bool Support_DXTC() const { return true; }  // Phase 62: Enable DXTC compression support (Vulkan supports BC formats)
+    virtual bool Support_Texture_Format(int format) const { return DX8Wrapper_SupportsTextureFormat(format); }  // Phase 62: Delegate to graphics driver
     
     // Hardware identification (shader.cpp line 552-553)
     virtual unsigned int Get_Vendor() const { return VENDOR_UNKNOWN; }
@@ -700,7 +865,8 @@ inline HRESULT SetTexture(DWORD stage, void* texture) { return 0; }
 // Dynamic Vertex Buffer Access Class Stubs
 class DynamicVBAccessClass {
 public:
-    DynamicVBAccessClass(int buffer_type, int fvf_type, int vertex_count) : m_vertex_count(vertex_count) {
+    DynamicVBAccessClass(int buffer_type, int fvf_type, int vertex_count) 
+        : m_fvf_type(fvf_type), m_vertex_count(vertex_count) {
         // Phase 39.4: Allocate stub vertex buffer
         if (vertex_count > 0) {
             m_vertices = new VertexFormatXYZNDUV2[vertex_count];
@@ -753,8 +919,12 @@ public:
     // Phase 60: Get vertex stride (size of VertexFormatXYZNDUV2)
     uint32_t Get_Vertex_Stride() const { return sizeof(VertexFormatXYZNDUV2); }
     
+    // Phase 62: Get FVF type for pipeline selection
+    int Get_FVF_Type() const { return m_fvf_type; }
+    
 private:
     VertexFormatXYZNDUV2* m_vertices;
+    int m_fvf_type;
     int m_vertex_count;
 };
 
