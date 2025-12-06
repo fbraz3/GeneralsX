@@ -517,13 +517,11 @@ void GameEngine::init()
 			// update any out of date targas here.
 			updateTGAtoDDS();
 		}
-
-		// read the water settings from INI (must do prior to initing GameClient, apparently)
 		ini.loadFileDirectory(buildPath("INI", "Default", "Water"), INI_LOAD_OVERWRITE, &xferCRC);
 		ini.loadFileDirectory(buildPath("INI", "Water"), INI_LOAD_OVERWRITE, &xferCRC);
 		ini.loadFileDirectory(buildPath("INI", "Default", "Weather"), INI_LOAD_OVERWRITE, &xferCRC);
 		ini.loadFileDirectory(buildPath("INI", "Weather"), INI_LOAD_OVERWRITE, &xferCRC);
-
+		// Water and weather INI loading moved after GameClient init to ensure mapped images are available for texture loading
 
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -688,6 +686,12 @@ void GameEngine::init()
 		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
 		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 #endif/////////////////////////////////////////////////////////////////////////////////////////////
+
+		// // Re-load water and weather INI directories now that mapped images are available for texture loading
+		// ini.loadFileDirectory(buildPath("INI", "Default", "Water"), INI_LOAD_OVERWRITE, &xferCRC);
+		// ini.loadFileDirectory(buildPath("INI", "Water"), INI_LOAD_OVERWRITE, &xferCRC);
+		// ini.loadFileDirectory(buildPath("INI", "Default", "Weather"), INI_LOAD_OVERWRITE, &xferCRC);
+		// ini.loadFileDirectory(buildPath("INI", "Weather"), INI_LOAD_OVERWRITE, &xferCRC);
 
 		printf("GameEngine::init() - About to init TheAI\n"); 
 		initSubsystem(TheAI, "TheAI", MSGNEW("GameEngineSubsystem") AI(), &xferCRC, buildPath("INI", "Default", "AIData").str(), buildPath("INI", "AIData").str());

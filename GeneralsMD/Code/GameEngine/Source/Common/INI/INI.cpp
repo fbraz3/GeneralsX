@@ -275,13 +275,13 @@ UnsignedInt INI::loadDirectory(AsciiString dirName, INILoadType loadType, Xfer* 
 {
 	UnsignedInt filesRead = 0;
 
-	// printf("[INI::loadDirectory] ENTER - dirName='%s', subdirs=%d\n", dirName.str(), subdirs);
+	printf("[INI::loadDirectory] ENTER - dirName='%s', subdirs=%d\n", dirName.str(), subdirs);
 	// 
 
 	// sanity
 	if (dirName.isEmpty())
 	{
-		// printf("[INI::loadDirectory] ERROR: dirName is empty, throwing INI_INVALID_DIRECTORY\n");
+		printf("[INI::loadDirectory] ERROR: dirName is empty, throwing INI_INVALID_DIRECTORY\n");
 		// 
 		throw INI_INVALID_DIRECTORY;
 	}
@@ -289,16 +289,16 @@ UnsignedInt INI::loadDirectory(AsciiString dirName, INILoadType loadType, Xfer* 
 	try
 	{
 		FilenameList filenameList;
-		// printf("[INI::loadDirectory] Before adding separator: dirName='%s'\n", dirName.str());
+		printf("[INI::loadDirectory] Before adding separator: dirName='%s'\n", dirName.str());
 		// 
 		dirName.concat(GET_PATH_SEPARATOR());
-		// printf("[INI::loadDirectory] After adding separator: dirName='%s'\n", dirName.str());
+		printf("[INI::loadDirectory] After adding separator: dirName='%s'\n", dirName.str());
 		// 
 
-		// printf("[INI::loadDirectory] Calling getFileListInDirectory with pattern='*.ini'\n");
+		printf("[INI::loadDirectory] Calling getFileListInDirectory with pattern='*.ini'\n");
 		// 
 		TheFileSystem->getFileListInDirectory(dirName, "*.ini", filenameList, subdirs);
-		// printf("[INI::loadDirectory] getFileListInDirectory returned, found %zu files\n", filenameList.size());
+		printf("[INI::loadDirectory] getFileListInDirectory returned, found %zu files\n", filenameList.size());
 		// 
 
 		// Load the INI files in the dir now, in a sorted order.  This keeps things the same between machines
@@ -306,7 +306,7 @@ UnsignedInt INI::loadDirectory(AsciiString dirName, INILoadType loadType, Xfer* 
 		FilenameList::const_iterator it = filenameList.begin();
 		while (it != filenameList.end())
 		{
-			// printf("[INI::loadDirectory] File found: '%s'\n", it->str());
+			printf("[INI::loadDirectory] File found: '%s'\n", it->str());
 			// 
 			++it;
 		}
@@ -317,21 +317,21 @@ UnsignedInt INI::loadDirectory(AsciiString dirName, INILoadType loadType, Xfer* 
 			AsciiString tempname;
 			tempname = (*it).str() + dirName.getLength();
 
-			// printf("[INI::loadDirectory] Processing file: '%s' (tempname='%s', offset=%zu)\n", it->str(), tempname.str(), dirName.getLength());
+			printf("[INI::loadDirectory] Processing file: '%s' (tempname='%s', offset=%zu)\n", it->str(), tempname.str(), dirName.getLength());
 			// 
 
 			if ((tempname.findPathSeparator() == NULL) && (tempname.reverseFindPathSeparator() == NULL)) {
 				// this file doesn't reside in a subdirectory, load it first.
-				// printf("[INI::loadDirectory] File in root directory, loading: '%s'\n", it->str());
+				printf("[INI::loadDirectory] File in root directory, loading: '%s'\n", it->str());
 				// 
 				filesRead += load(*it, loadType, pXfer);
-				// printf("[INI::loadDirectory] Loaded root file, filesRead now=%u\n", filesRead);
+				printf("[INI::loadDirectory] Loaded root file, filesRead now=%u\n", filesRead);
 				// 
 			}
-			// else {
-			// 	// printf("[INI::loadDirectory] File in subdirectory, deferring: '%s'\n", it->str());
-			// 	// 
-			// }
+			else {
+				printf("[INI::loadDirectory] File in subdirectory, deferring: '%s'\n", it->str());
+				// 
+			}
 			++it;
 		}
 
@@ -342,27 +342,27 @@ UnsignedInt INI::loadDirectory(AsciiString dirName, INILoadType loadType, Xfer* 
 			tempname = (*it).str() + dirName.getLength();
 
 			if ((tempname.findPathSeparator() != NULL) || (tempname.reverseFindPathSeparator() != NULL)) {
-				// printf("[INI::loadDirectory] Loading subdirectory file: '%s'\n", it->str());
+				printf("[INI::loadDirectory] Loading subdirectory file: '%s'\n", it->str());
 				// 
 				filesRead += load(*it, loadType, pXfer);
-				// printf("[INI::loadDirectory] Loaded subdirectory file, filesRead now=%u\n", filesRead);
+				printf("[INI::loadDirectory] Loaded subdirectory file, filesRead now=%u\n", filesRead);
 				// 
 			}
 			++it;
 		}
 
-		// printf("[INI::loadDirectory] Loop complete, filesRead=%u\n", filesRead);
+		printf("[INI::loadDirectory] Loop complete, filesRead=%u\n", filesRead);
 		// 
 	}
 	catch (...)
 	{
-		// printf("[INI::loadDirectory] Exception caught, rethrowing\n");
+		printf("[INI::loadDirectory] Exception caught, rethrowing\n");
 		// 
 		// propagate the exception
 		throw;
 	}
 
-	// printf("[INI::loadDirectory] EXIT - filesRead=%u\n", filesRead);
+	printf("[INI::loadDirectory] EXIT - filesRead=%u\n", filesRead);
 	// 
 	return filesRead;
 }
@@ -767,6 +767,14 @@ void INI::parseAsciiString(INI* ini, void* /*instance*/, void* store, const void
 {
 	AsciiString* asciiString = (AsciiString*)store;
 	*asciiString = ini->getNextAsciiString();
+	
+	// Debug logging for texture/filename strings
+	if (asciiString->str() && (strstr(asciiString->str(), ".dds") || strstr(asciiString->str(), ".tga") || 
+	    strstr(asciiString->str(), ".DDS") || strstr(asciiString->str(), ".TGA")))
+	{
+		printf("[INI::parseAsciiString] Parsed texture/image filename: '%s' (file: %s, line: %d)\n", 
+			asciiString->str(), ini->getFilename().str(), ini->getLineNum());
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1591,31 +1599,45 @@ void INI::initFromINIMulti(void* what, const MultiIniFieldParse& parseTableList)
 {
 	Bool done = FALSE;
 
+	// printf("[INI::initFromINIMulti] ENTER - what=%p, parseTableCount=%d, file='%s', line=%d\n", 
+	// 	what, parseTableList.getCount(), getFilename().str(), getLineNum());
+
 	if (what == NULL)
 	{
+		printf("[INI::initFromINIMulti] ERROR: what is NULL!\n");
 		DEBUG_ASSERTCRASH(0, ("INI::initFromINI - Invalid parameters supplied!"));
 		throw INI_INVALID_PARAMS;
 	}
 
 	// read each of the data fields
+	int iterationCount = 0;
 	while (!done)
 	{
+		iterationCount++;
 
 		// read next line
 		readLine();
+
+		// printf("[INI::initFromINIMulti] Iteration %d - Read line: '%s' (line %d)\n", 
+		// 	iterationCount, m_buffer, getLineNum());
 
 		// check for end token
 		const char* field = strtok(m_buffer, INI::getSeps());
 		if (field)
 		{
+			// printf("[INI::initFromINIMulti] Field token: '%s', blockEndToken='%s'\n", field, m_blockEndToken);
 
 			if (stricmp(field, m_blockEndToken) == 0)
 			{
+				// printf("[INI::initFromINIMulti] Found END token, finishing block\n");
 				done = TRUE;
 			}
 			else
 			{
 				Bool found = false;
+				// printf("[INI::initFromINIMulti] Searching for field '%s' in %d parse tables\n", 
+					// field, parseTableList.getCount());
+				
 				for (int ptIdx = 0; ptIdx < parseTableList.getCount(); ++ptIdx)
 				{
 					int offset = 0;
@@ -1623,13 +1645,19 @@ void INI::initFromINIMulti(void* what, const MultiIniFieldParse& parseTableList)
 					INIFieldParseProc parse = findFieldParse(parseTableList.getNthFieldParse(ptIdx), field, offset, userData);
 					if (parse)
 					{
+						// printf("[INI::initFromINIMulti] Found parser for '%s' in table %d, offset=%d\n", 
+							// field, ptIdx, offset);
+						
 						// parse this block and check for parse errors
 						try {
 
 							(*parse)(this, what, (char*)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData);
+							// printf("[INI::initFromINIMulti] Successfully parsed field '%s'\n", field);
 
 						}
 						catch (...) {
+							// printf("[INI::initFromINIMulti] EXCEPTION parsing field '%s'\n", 
+								// field);
 							DEBUG_CRASH(("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
 								INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart));
 
@@ -1647,6 +1675,8 @@ void INI::initFromINIMulti(void* what, const MultiIniFieldParse& parseTableList)
 
 				if (!found)
 				{
+					// printf("[INI::initFromINIMulti] WARNING: Unknown field '%s'\n", 
+						// field);
 					DEBUG_ASSERTCRASH(0, ("[LINE: %d - FILE: '%s'] Unknown field '%s' in block '%s'",
 						INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart));
 				}
@@ -1658,7 +1688,7 @@ void INI::initFromINIMulti(void* what, const MultiIniFieldParse& parseTableList)
 		// sanity check for reaching end of file with no closing end token
 		if (done == FALSE && INI::isEOF() == TRUE)
 		{
-
+			// printf("[INI::initFromINIMulti] ERROR: Reached EOF without END token! Block='%s'\n", m_curBlockStart);
 			done = TRUE;
 			DEBUG_ASSERTCRASH(0, ("Error parsing block '%s', in INI file '%s'.  Missing '%s' token",
 				m_curBlockStart, getFilename().str(), m_blockEndToken));
@@ -1668,6 +1698,7 @@ void INI::initFromINIMulti(void* what, const MultiIniFieldParse& parseTableList)
 
 	}
 
+	// printf("[INI::initFromINIMulti] EXIT - completed after %d iterations\n", iterationCount);
 }
 
 //-------------------------------------------------------------------------------------------------

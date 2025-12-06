@@ -63,6 +63,9 @@ namespace Graphics {
       const void* indexData, const void* vertexData,
       uint32_t vertexStride) override;
 
+    // ===== VERTEX FORMAT (FVF) - Phase 62 =====
+    virtual void SetFVF(uint32_t fvf) override;
+
     // ===== RENDER STATE MANAGEMENT =====
     virtual bool SetRenderState(RenderState state, uint64_t value) override;
     virtual uint64_t GetRenderState(RenderState state) const override;

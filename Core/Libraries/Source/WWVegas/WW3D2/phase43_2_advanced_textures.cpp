@@ -22,7 +22,7 @@
  * Real implementations for:
  * - TexProjectClass: Shadow mapping and texture projection
  * - PointGroupClass: Particle and point rendering
- * - TextureLoader: Asynchronous texture loading
+ * - TextureLoader: Texture loading from VFS (.big archives)
  * - VolumeTextureClass: 3D texture support
  */
 
@@ -32,11 +32,112 @@
 #include "texture.h"
 #include "shader.h"
 #include "ww3d.h"
+#include "dx8wrapper.h"
+#include "texturefilter.h"
+#include "ffactory.h"
+#include "ddsfile.h"
+#include "formconv.h"
 #include <algorithm>
+#include <cstring>
 
 // ============================================================================
 // TextureLoader Implementation (expanded runtime coverage)
 // ============================================================================
+
+// Function pointer for custom texture fallback (set by GeneralsMD)
+typedef IDirect3DTexture8* (*TextureFallbackFunc)(const char* filename);
+static TextureFallbackFunc s_fallbackFunc = nullptr;
+
+/**
+ * TextureLoader::SetFallbackFunc
+ * 
+ * Set custom fallback function for texture loading.
+ * Used by GeneralsMD to provide MappedImage fallback.
+ */
+void TextureLoader::SetFallbackFunc(TextureFallbackFunc func)
+{
+	s_fallbackFunc = func;
+}
+
+/**
+ * TextureLoader::LoadFromVFS
+ * 
+ * Public interface to load texture from VFS.
+ * Used by fallback functions in GeneralsMD.
+ */
+IDirect3DTexture8* TextureLoader::LoadFromVFS(const StringClass& filename, unsigned reduction_factor)
+{
+	if (filename.Is_Empty()) {
+		return nullptr;
+	}
+	
+	// Debug: Log what filename we're trying to load
+	static int debugCount = 0;
+	if (debugCount < 30) {
+		printf("[TextureLoader] DEBUG: LoadFromVFS called for '%s'\n", filename.str());
+		debugCount++;
+	}
+	
+	// Create DDSFileClass - it will try to load .dds first, then .tga
+	DDSFileClass dds_file(filename.str(), reduction_factor);
+	
+	// Check if file is available
+	if (!dds_file.Is_Available()) {
+		static int failCount = 0;
+		if (failCount < 30) {
+			printf("[TextureLoader] DEBUG: DDSFileClass reports file NOT available for '%s'\n", filename.str());
+			failCount++;
+		}
+		// Try loading the data
+		if (!dds_file.Load()) {
+			return nullptr;
+		}
+	}
+	
+	// Load the actual pixel data
+	if (!dds_file.Load()) {
+		return nullptr;
+	}
+	
+	unsigned width = dds_file.Get_Width(0);
+	unsigned height = dds_file.Get_Height(0);
+	unsigned mipLevels = dds_file.Get_Mip_Level_Count();
+	WW3DFormat format = dds_file.Get_Format();
+	
+	if (width == 0 || height == 0) {
+		return nullptr;
+	}
+	
+	// Get valid texture format for this hardware
+	WW3DFormat destFormat = Get_Valid_Texture_Format(format, true);
+	
+	// Create D3D texture
+	IDirect3DTexture8* d3d_texture = DX8Wrapper::_Create_DX8_Texture(
+		width, height, destFormat, (MipCountType)mipLevels, D3DPOOL_MANAGED, false);
+	
+	if (!d3d_texture) {
+		return nullptr;
+	}
+	
+	// Copy all mip levels to the texture
+	for (unsigned level = 0; level < mipLevels; ++level) {
+		IDirect3DSurface8* surface = nullptr;
+		if (d3d_texture->GetSurfaceLevel(level, &surface) == D3D_OK && surface) {
+			// Use DDSFileClass's built-in copy function
+			dds_file.Copy_Level_To_Surface(level, surface);
+			surface->Release();
+		}
+	}
+	
+	static int loadCount = 0;
+	if (loadCount < 20) {
+		printf("[TextureLoader] Phase 63: LoadFromVFS loaded texture '%s' (%ux%u, format=%d, mips=%u)\n",
+				filename.str(), width, height, (int)format, mipLevels);
+		loadCount++;
+	}
+	
+	return d3d_texture;
+}
 
 /**
  * TextureLoader::Validate_Texture_Size
@@ -63,27 +164,117 @@ void TextureLoader::Validate_Texture_Size(unsigned int &width, unsigned int &hei
 void TextureLoader::Flush_Pending_Load_Tasks()
 {
 	// Stub: No async tasks yet; nothing to flush.
+	// Real implementation would wait for any pending background loads
+}
+
+// ============================================================================
+// Phase 63: VFS-Aware Texture Loading from .big Archives
+// Uses DDSFileClass which already handles VFS access via _TheFileFactory
+// ============================================================================
+
+/**
+ * Create a fallback placeholder texture
+ */
+static IDirect3DTexture8* Create_Placeholder_Texture(uint32_t color = 0xFFFF00FF)
+{
+	const unsigned int PLACEHOLDER_SIZE = 2;
+	IDirect3DBaseTexture8* d3d_texture = DX8Wrapper::_Create_DX8_Texture(
+		PLACEHOLDER_SIZE, 
+		PLACEHOLDER_SIZE, 
+		WW3D_FORMAT_A8R8G8B8,
+		MIP_LEVELS_1,
+		D3DPOOL_MANAGED,
+		false
+	);
+	
+	if (d3d_texture) {
+		IDirect3DTexture8* tex2d = static_cast<IDirect3DTexture8*>(d3d_texture);
+		D3DLOCKED_RECT lockedRect;
+		if (tex2d->LockRect(0, &lockedRect, nullptr, 0) == D3D_OK) {
+			uint32_t* pixels = static_cast<uint32_t*>(lockedRect.pBits);
+			for (unsigned int i = 0; i < PLACEHOLDER_SIZE * PLACEHOLDER_SIZE; i++) {
+				pixels[i] = color;
+			}
+			tex2d->UnlockRect(0);
+		}
+		return tex2d;
+	}
+	return nullptr;
 }
 
 /**
  * TextureLoader::Request_Foreground_Loading
  * 
  * Force synchronous loading of texture into memory immediately.
- * Used for critical textures that must be ready before rendering.
+ * Uses DDSFileClass to load from VFS (DDS or TGA), falls back to placeholder.
  */
 void TextureLoader::Request_Foreground_Loading(TextureBaseClass *texture)
 {
-	Apply_Fallback_Texture(texture);
+	if (!texture) return;
+	
+	// Already initialized?
+	if (texture->Is_Initialized() || texture->Peek_D3D_Base_Texture()) {
+		texture->Initialized = true;
+		texture->LastAccessed = WW3D::Get_Sync_Time();
+		return;
+	}
+	
+	const StringClass& filename = texture->Get_Full_Path();
+	IDirect3DTexture8* d3d_texture = nullptr;
+	
+	// Try to load from VFS using DDSFileClass
+	// Note: Using 0 reduction factor - texture.cpp Get_Reduction() is not compiled in
+	if (!filename.Is_Empty()) {
+		d3d_texture = TextureLoader::LoadFromVFS(filename, 0);
+	}
+	
+	// // Try custom fallback (e.g., MappedImage from GeneralsMD)
+	// if (!d3d_texture && s_fallbackFunc) {
+	// 	d3d_texture = s_fallbackFunc(filename.str());
+	// }
+	
+	// Fall back to placeholder if loading failed
+	if (!d3d_texture) {
+		static int fallbackCount = 0;
+		if (fallbackCount < 50) {
+			const char* name = filename.Is_Empty() ? "<unnamed>" : filename.str();
+			printf("[TextureLoader] Phase 63: Using placeholder for '%s'\n", name);
+			fallbackCount++;
+		}
+		d3d_texture = Create_Placeholder_Texture(0xFFFF00FF);  // Magenta placeholder
+	}
+	
+	if (d3d_texture) {
+		texture->Apply_New_Surface(d3d_texture, true, false);
+		texture->Initialized = true;
+		texture->LastAccessed = WW3D::Get_Sync_Time();
+	}
+	
+	// texture->Initialized = true;
+	// texture->LastAccessed = WW3D::Get_Sync_Time();
 }
 
 void TextureLoader::Request_Background_Loading(TextureBaseClass *texture)
 {
-	Apply_Fallback_Texture(texture);
+	// For now, just do foreground loading
+	// TODO: Implement async loading with task queue
+	Request_Foreground_Loading(texture);
 }
 
 void TextureLoader::Request_Thumbnail(TextureBaseClass *texture)
 {
-	Apply_Fallback_Texture(texture);
+	// For thumbnails, use a smaller placeholder or low-res version
+	if (!texture) return;
+	
+	if (texture->Peek_D3D_Base_Texture()) {
+		return;
+	}
+	
+	// Just use a simple placeholder for thumbnails
+	IDirect3DTexture8* d3d_texture = Create_Placeholder_Texture(0xFF808080);  // Gray
+	if (d3d_texture) {
+		texture->Apply_New_Surface(d3d_texture, false, false);  // Not fully initialized
+	}
 }
 
 void TextureLoader::Add_Load_Task(TextureBaseClass *texture)
@@ -93,12 +284,9 @@ void TextureLoader::Add_Load_Task(TextureBaseClass *texture)
 
 void TextureLoader::Apply_Fallback_Texture(TextureBaseClass *texture)
 {
-	if (!texture) {
-		return;
-	}
-
-	texture->Initialized = true;
-	texture->LastAccessed = WW3D::Get_Sync_Time();
+	// This is now just a wrapper for Request_Foreground_Loading
+	// which handles both VFS loading and fallback creation
+	Request_Foreground_Loading(texture);
 }
 
 // ============================================================================

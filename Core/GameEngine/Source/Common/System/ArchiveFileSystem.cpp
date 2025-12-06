@@ -248,12 +248,41 @@ void ArchiveFileSystem::loadMods()
 
 Bool ArchiveFileSystem::doesFileExist(const Char* filename, FileInstance instance) const
 {
+	// Skip absolute paths - they are local filesystem paths, not archive paths
+	// On Unix, absolute paths start with '/'
+	// On Windows, they start with a drive letter like 'C:\'
+	if (filename == NULL || filename[0] == '\0') {
+		return false;
+	}
+	if (filename[0] == '/' || filename[0] == '\\') {
+		// Absolute Unix path - not in archives
+		return false;
+	}
+	if (filename[0] != '\0' && filename[1] == ':') {
+		// Windows drive letter path like "C:\" - not in archives
+		return false;
+	}
+	
 	ArchivedDirectoryInfoResult result = const_cast<ArchiveFileSystem*>(this)->getArchivedDirectoryInfo(filename);
 
-	if (!result.valid())
+	if (!result.valid()) {
+		static int debugCount = 0;
+		if (debugCount < 30) {
+			printf("[ArchiveFileSystem::doesFileExist] NOT FOUND in archives: '%s'\n", filename);
+			debugCount++;
+		}
 		return false;
+	}
 
 	stl::const_range<ArchivedFileLocationMap> range = stl::get_range(result.dirInfo->m_files, result.lastToken, instance);
+
+	if (range.valid()) {
+		static int foundCount = 0;
+		if (foundCount < 10) {
+			printf("[ArchiveFileSystem::doesFileExist] FOUND in archives: '%s'\n", filename);
+			foundCount++;
+		}
+	}
 
 	return range.valid();
 }
@@ -281,8 +310,11 @@ ArchiveFileSystem::ArchivedDirectoryInfoResult ArchiveFileSystem::getArchivedDir
 		}
 	}
 
-	// printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Looking up: '%s' (normalized: '%s')\n", directory, tokenizer.str());
-	// 
+	static int debugLookupCount = 0;
+	if (debugLookupCount < 30) {
+		printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Looking up: '%s' (normalized: '%s')\n", directory, tokenizer.str());
+		debugLookupCount++;
+	}
 
 	// .big files from Windows always use backslash separators internally
 	Bool infoInPath = tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
@@ -303,30 +335,22 @@ ArchiveFileSystem::ArchivedDirectoryInfoResult ArchiveFileSystem::getArchivedDir
 		else
 		{
 			// the directory doesn't exist - dump available directories at this level
-			// printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Directory NOT FOUND: '%s'\n", token.str());
-			// printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Available directories at this level (%zu total):\n", dirInfo->m_directories.size());
-			// 
-			// int count = 0;
-			// for (ArchivedDirectoryInfoMap::iterator it = dirInfo->m_directories.begin();
-			// 	it != dirInfo->m_directories.end() && count < 50; ++it, ++count)
-			// {
-			// 	printf("  [%d] '%s'\n", count, it->first.str());
+			static int dirNotFoundCount = 0;
+			// if (dirNotFoundCount < 10) {
+				printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Directory NOT FOUND: '%s'\n", token.str());
+				printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Available directories at this level (%zu total):\n", dirInfo->m_directories.size());
+				
+				int count = 0;
+				for (ArchivedDirectoryInfoMap::iterator it = dirInfo->m_directories.begin();
+					it != dirInfo->m_directories.end() && count < 20; ++it, ++count)
+				{
+					printf("  [%d] '%s'\n", count, it->first.str());
+				}
+				if (dirInfo->m_directories.size() > 20) {
+					printf("  ... and %zu more\n", dirInfo->m_directories.size() - 20);
+				}
+				dirNotFoundCount++;
 			// }
-			// if (dirInfo->m_directories.size() > 50) {
-			// 	printf("  ... and %zu more\n", dirInfo->m_directories.size() - 50);
-			// }
-			// printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Available files at this level (%zu total):\n", dirInfo->m_files.size());
-			// 
-			// count = 0;
-			// for (ArchivedFileLocationMap::iterator it = dirInfo->m_files.begin();
-			// 	it != dirInfo->m_files.end() && count < 20; ++it, ++count)
-			// {
-			// 	printf("  [%d] '%s'\n", count, it->first.str());
-			// }
-			// if (dirInfo->m_files.size() > 20) {
-			// 	printf("  ... and %zu more files\n", dirInfo->m_files.size() - 20);
-			// }
-			// 
 
 			result.dirInfo = NULL;
 			result.lastToken = AsciiString::TheEmptyString;

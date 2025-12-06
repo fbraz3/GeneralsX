@@ -38,6 +38,7 @@ struct SurfaceDescription;
 #include "ww3dformat.h"
 #include "vector2i.h"
 #include "vector3.h"
+#include "ww3d.h"
 #include <cstring>
 #include <algorithm>
 #include <cmath>
@@ -367,20 +368,69 @@ TextureClass::TextureClass(SurfaceClass *surface, MipCountType mip_level)
  */
 TextureClass::TextureClass(
 	const char *name, 
-	const char *full_name,
+	const char *full_path,
 	MipCountType mip_level,
 	WW3DFormat format,
 	bool allow_compression,
 	bool allow_reduction)
 	: TextureBaseClass(0, 0, mip_level)
 {
-	// Stub: File-based texture loading
-	// Real implementation:
-	// 1. Load file via TheFileSystem VFS
-	// 2. Parse format (TGA/DDS)
-	// 3. Convert if needed
-	// 4. Create Vulkan texture resource
-	// 5. Upload to GPU memory
+	// Phase 62: Implement file-based texture loading
+	TextureFormat = format;
+	IsCompressionAllowed = allow_compression;
+	IsReducible = allow_reduction;
+	InactivationTime = 30000;  // Default 30 seconds
+	
+	// Handle compression formats
+	switch (TextureFormat)
+	{
+	case WW3D_FORMAT_DXT1:
+	case WW3D_FORMAT_DXT2:
+	case WW3D_FORMAT_DXT3:
+	case WW3D_FORMAT_DXT4:
+	case WW3D_FORMAT_DXT5:
+		IsCompressionAllowed = true;
+		break;
+	default:
+		break;
+	}
+	
+	// Check for lightmap (name contains '+')
+	if (name) {
+		int len = strlen(name);
+		for (int i = 0; i < len; ++i) {
+			if (name[i] == '+') {
+				IsLightmap = true;
+				break;
+			}
+		}
+		Set_Texture_Name(name);
+	}
+	
+	if (full_path) {
+		Set_Full_Path(full_path);
+	}
+	
+	// Debug output
+	static int texLoadCount = 0;
+	if (texLoadCount < 20) {
+		printf("[TextureClass] Phase 62: Loading texture from file '%s' (format=%d, mip=%d)\n",
+				name ? name : "(null)", (int)format, (int)mip_level);
+		texLoadCount++;
+	}
+	
+	// If texturing is disabled, just mark as initialized with no texture
+	if (!WW3D::Is_Texturing_Enabled()) {
+		Initialized = true;
+		Poke_Texture(nullptr);
+		return;
+	}
+	
+	// Initialize the texture - this will trigger the texture loader
+	LastAccessed = WW3D::Get_Sync_Time();
+	
+	// Always init immediately since we don't have async texture loading working yet
+	Init();
 }
 
 /**

@@ -1569,9 +1569,8 @@ namespace Graphics {
     scissor.extent = m_swapchain->extent;
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
-    // Phase 60: Update screen dimensions for UI push constants
-    g_screenWidth = static_cast<float>(m_swapchain->extent.width);
-    g_screenHeight = static_cast<float>(m_swapchain->extent.height);
+    // Phase 62: Screen dimensions are set by SetViewport, not swapchain extent
+    // The viewport size determines the UI coordinate system, not the swapchain size
 
     m_in_frame = true;
     m_frame_started = true;
@@ -2049,11 +2048,13 @@ namespace Graphics {
     }
 
     TextureHandle texHandle = g_boundTextures[0];
-    if (texHandle >= g_textures.size()) {
+    // Texture handles start at 1, so valid range is 1 to g_textures.size()
+    if (texHandle == 0 || texHandle > g_textures.size()) {
       return false;
     }
 
-    const VulkanTextureAllocation& tex = g_textures[texHandle];
+    // Phase 62: Fix off-by-one - handles start at 1, array indices start at 0
+    const VulkanTextureAllocation& tex = g_textures[texHandle - 1];
     if (tex.descriptorSet == VK_NULL_HANDLE) {
       return false;
     }
@@ -2401,13 +2402,11 @@ namespace Graphics {
       return;
     }
 
-    // Only log every 100 draws to reduce spam
+    // Phase 62: Log every draw to debug black screen issue
     static uint32_t s_indexed_draw_up_count = 0;
-    if (s_indexed_draw_up_count % 100 == 0) {
-      printf("[Vulkan] DrawIndexedPrimitiveUP: primType=%d primCount=%u vertexCount=%u stride=%u\n",
-        (int)primType, primCount, vertexCount, vertexStride);
-    }
     s_indexed_draw_up_count++;
+    printf("[Vulkan] DrawIndexedPrimitiveUP #%u: primType=%d primCount=%u vertexCount=%u stride=%u, inFrame=%d\n",
+        s_indexed_draw_up_count, (int)primType, primCount, vertexCount, vertexStride, m_in_frame ? 1 : 0);
 
     // Convert primitive type to Vulkan topology
     VkPrimitiveTopology topology = PrimitiveTypeToVkTopology(primType);
@@ -2587,6 +2586,13 @@ namespace Graphics {
     // Bind pipeline
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
+    // Phase 62 debug: Log pipeline and texture state for first 10 draws
+    if (s_indexed_draw_up_count <= 10) {
+      printf("[Vulkan] DrawIndexedPrimitiveUP #%u: usingUI=%d, boundTex[0]=%d, fvf=0x%08X (RHW=%d)\n",
+          s_indexed_draw_up_count, g_usingUIPipeline ? 1 : 0, (int)g_boundTextures[0],
+          g_current_fvf, (g_current_fvf & 0x0004) ? 1 : 0);
+    }
+
     // Phase 60: Bind UI push constants if using UI pipeline
     if (g_usingUIPipeline) {
       // Determine if texturing is enabled (check texture stage 0)
@@ -2595,6 +2601,35 @@ namespace Graphics {
       // Get alpha test state from render state cache
       bool alphaTestEnabled = g_renderState.alphaTestEnable;
       float alphaRef = g_renderState.alphaRef;
+
+      // Phase 62: Debug untextured draws
+      static int untexturedDrawCount = 0;
+      if (useTexture == 0 && untexturedDrawCount < 5) {
+        // Dump vertex data to see colors
+        const uint8_t* vdata = (const uint8_t*)vertexData;
+        printf("[Vulkan] UNTEXTURED draw #%d: stride=%u, vertexCount=%u\n", untexturedDrawCount, vertexStride, vertexCount);
+        // Vertex layout: position(16) + normal(12) + diffuse(4) + uv(8) = 40 bytes typical
+        // But our stride is 44, so maybe padding?
+        if (vertexCount > 0 && vertexStride >= 28) {
+          // Color should be at offset 24 for D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 (4+4+4+4 + 4 + 8)
+          // Actually for RHW format: XYZRHW (16) + DIFFUSE (4) + TEX1 (8) = 28 bytes minimum
+          // But stride is 44 so there's more...
+          printf("[Vulkan]   First vertex raw bytes: ");
+          for (uint32_t i = 0; i < std::min(vertexStride, 44u); i++) {
+            printf("%02X ", vdata[i]);
+          }
+          printf("\n");
+          // Try to find the color (BGRA at some offset)
+          // Position: bytes 0-15 (4 floats)
+          // At offset 16: could be normal or diffuse
+          // Diffuse color could be at 24 or 16
+          const float* pos = (const float*)vdata;
+          printf("[Vulkan]   Position: (%.1f, %.1f, %.1f, %.1f)\n", pos[0], pos[1], pos[2], pos[3]);
+          const uint8_t* color24 = vdata + 24;
+          printf("[Vulkan]   Color at offset 24 (BGRA): %d %d %d %d\n", color24[0], color24[1], color24[2], color24[3]);
+        }
+        untexturedDrawCount++;
+      }
 
       BindUIPushConstants(cmdBuffer, useTexture, alphaTestEnabled, alphaRef);
 
@@ -2617,6 +2652,21 @@ namespace Graphics {
     // Track temporary resources for cleanup after this frame's GPU work completes
     AddTempBuffer(m_current_frame, tempVertexBuffer, tempVertexMemory);
     AddTempBuffer(m_current_frame, tempIndexBuffer, tempIndexMemory);
+  }
+
+  // ============================================================================
+  // Phase 62: FVF (Flexible Vertex Format) Management
+  // ============================================================================
+
+  void VulkanGraphicsDriver::SetFVF(uint32_t fvf) {
+    g_current_fvf = fvf;
+    // Debug: Log FVF changes for first few calls
+    static int fvfSetCount = 0;
+    fvfSetCount++;
+    if (fvfSetCount <= 10) {
+      printf("[Vulkan] SetFVF #%d: fvf=0x%08X (RHW=%d)\n", 
+             fvfSetCount, fvf, (fvf & 0x0004) ? 1 : 0);
+    }
   }
 
   // Phase 59: Render state conversion functions are defined near line 327 (ConvertBlendModeToVkFactor, etc.)
@@ -2938,6 +2988,11 @@ namespace Graphics {
   void VulkanGraphicsDriver::SetViewport(const Viewport& vp)
   {
     m_viewport = vp;
+    
+    // Phase 62: Update screen dimensions for UI push constants
+    // The viewport size is used by the UI shader to convert screen coords to NDC
+    g_screenWidth = static_cast<float>(vp.width);
+    g_screenHeight = static_cast<float>(vp.height);
   }
 
   Viewport VulkanGraphicsDriver::GetViewport() const
@@ -3048,7 +3103,8 @@ namespace Graphics {
       return VK_FORMAT_R8G8B8_UNORM;
     case TextureFormat::A8R8G8B8:
     case TextureFormat::X8R8G8B8:
-      return VK_FORMAT_R8G8B8A8_UNORM;
+      // Phase 62: DirectX A8R8G8B8/X8R8G8B8 is BGRA byte order, not RGBA!
+      return VK_FORMAT_B8G8R8A8_UNORM;
     case TextureFormat::R5G6B5:
       return VK_FORMAT_R5G6B5_UNORM_PACK16;
     case TextureFormat::A1R5G5B5:
@@ -4268,7 +4324,8 @@ namespace Graphics {
 
     // Add to texture storage
     g_textures.push_back(allocation);
-    TextureHandle handle = g_textures.size() - 1;
+    // Return handle = index + 1 to avoid collision with INVALID_HANDLE = 0
+    TextureHandle handle = g_textures.size();  // Size after push, so first texture = 1
 
     printf("[Vulkan] Phase 57 CreateTexture: SUCCESS (handle=%llu, VkImage=%p, VkImageView=%p)\n",
       handle, (void*)allocation.image, (void*)allocation.imageView);
@@ -4277,12 +4334,13 @@ namespace Graphics {
 
   void VulkanGraphicsDriver::DestroyTexture(TextureHandle handle)
   {
-    if (handle >= g_textures.size()) {
+    // Handles start at 1 (to avoid INVALID_HANDLE = 0 collision)
+    if (handle == 0 || handle > g_textures.size()) {
       printf("[Vulkan] DestroyTexture: Invalid handle %llu\n", handle);
       return;
     }
 
-    VulkanTextureAllocation& alloc = g_textures[handle];
+    VulkanTextureAllocation& alloc = g_textures[handle - 1];
     printf("[Vulkan] Phase 57 DestroyTexture: Destroying texture (width=%u height=%u)\n",
       alloc.width, alloc.height);
 
@@ -4341,7 +4399,8 @@ namespace Graphics {
     }
 
     // Validate handle (INVALID_HANDLE is valid - unbinds texture)
-    if (handle != INVALID_HANDLE && handle >= g_textures.size()) {
+    // Handles start at 1 (to avoid INVALID_HANDLE = 0 collision)
+    if (handle != INVALID_HANDLE && (handle == 0 || handle > g_textures.size())) {
       printf("[Vulkan] Phase 57 SetTexture: Invalid handle %llu for sampler %u\n",
         handle, samplerIndex);
       return false;
@@ -4353,7 +4412,7 @@ namespace Graphics {
       g_textureDirty = true;
 
       if (handle != INVALID_HANDLE) {
-        const VulkanTextureAllocation& alloc = g_textures[handle];
+        const VulkanTextureAllocation& alloc = g_textures[handle - 1];
         printf("[Vulkan] Phase 57 SetTexture: Bound texture (handle=%llu, %ux%u) to sampler %u\n",
           handle, alloc.width, alloc.height, samplerIndex);
       }
@@ -4377,12 +4436,13 @@ namespace Graphics {
   bool VulkanGraphicsDriver::LockTexture(TextureHandle handle, uint32_t level, void** lockedData,
     uint32_t* pitch)
   {
-    if (handle >= g_textures.size()) {
+    // Handles start at 1 (to avoid INVALID_HANDLE = 0 collision)
+    if (handle == 0 || handle > g_textures.size()) {
       printf("[Vulkan] LockTexture: Invalid handle %llu\n", handle);
       return false;
     }
 
-    VulkanTextureAllocation& alloc = g_textures[handle];
+    VulkanTextureAllocation& alloc = g_textures[handle - 1];
     printf("[Vulkan] LockTexture: Locking texture level %u (width=%u height=%u)\n", level, alloc.width, alloc.height);
 
     if (!alloc.dynamic) {
@@ -4406,12 +4466,13 @@ namespace Graphics {
 
   bool VulkanGraphicsDriver::UnlockTexture(TextureHandle handle, uint32_t level)
   {
-    if (handle >= g_textures.size()) {
+    // Handles start at 1 (to avoid INVALID_HANDLE = 0 collision)
+    if (handle == 0 || handle > g_textures.size()) {
       printf("[Vulkan] UnlockTexture: Invalid handle %llu\n", handle);
       return false;
     }
 
-    VulkanTextureAllocation& alloc = g_textures[handle];
+    VulkanTextureAllocation& alloc = g_textures[handle - 1];
     printf("[Vulkan] UnlockTexture: Unlocking texture level %u\n", level);
 
     // TODO Phase 41 Week 2: Implement staging buffer unmapping and copy
@@ -5047,32 +5108,38 @@ namespace Graphics {
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-    // Vertex input: D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1
-    // Layout: vec4 position (16 bytes), vec4 color (4 bytes BGRA), vec2 texcoord (8 bytes)
+    // Phase 62: Vertex input matching VertexFormatXYZNDUV2 layout (44 bytes)
+    // Layout: vec3 position (12 bytes), vec3 normal (12 bytes), uint32 diffuse (4 bytes), 
+    //         vec2 uv1 (8 bytes), vec2 uv2 (8 bytes) = 44 bytes total
+    // 
+    // Shader expects XYZRHW format: vec4 position (screen coords), vec4 color, vec2 texcoord
+    // We provide vec4 position by reading 16 bytes from offset 0 (X,Y,Z from position + NormalX as W)
+    // The shader only uses X,Y,Z for screen-to-NDC conversion, W is ignored
     VkVertexInputBindingDescription bindingDesc{};
     bindingDesc.binding = 0;
-    bindingDesc.stride = 28;  // 16 (pos) + 4 (color) + 8 (texcoord)
+    bindingDesc.stride = 44;  // sizeof(VertexFormatXYZNDUV2)
     bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     std::array<VkVertexInputAttributeDescription, 3> attributeDescs{};
 
-    // Position (vec4 XYZRHW)
+    // Position (vec4 at offset 0 - reads XYZ + NormalX as W, but shader ignores W)
+    // Position now contains screen coordinates, shader converts to NDC
     attributeDescs[0].binding = 0;
     attributeDescs[0].location = 0;
-    attributeDescs[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescs[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;  // vec4 (X,Y,Z,NormalX)
     attributeDescs[0].offset = 0;
 
-    // Color (BGRA8 -> normalized vec4)
+    // Color (BGRA8 at offset 24, after position + normal)
     attributeDescs[1].binding = 0;
     attributeDescs[1].location = 1;
     attributeDescs[1].format = VK_FORMAT_B8G8R8A8_UNORM;
-    attributeDescs[1].offset = 16;
+    attributeDescs[1].offset = 24;
 
-    // Texture coordinates (vec2)
+    // Texture coordinates (vec2 at offset 28)
     attributeDescs[2].binding = 0;
     attributeDescs[2].location = 2;
     attributeDescs[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescs[2].offset = 20;
+    attributeDescs[2].offset = 28;
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

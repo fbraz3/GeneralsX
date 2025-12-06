@@ -904,6 +904,20 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 		int width, height, bits;
 		bool windowed;
 		WW3D::Get_Render_Target_Resolution(width, height, bits, windowed);
+		
+		// DEBUG: Print the actual values we got
+		if (frame_count < 3) {
+			printf("[Phase 54 DEBUG] Get_Render_Target_Resolution returned: %dx%d %dbit windowed=%d\n",
+			       width, height, bits, windowed ? 1 : 0);
+		}
+		
+		// WORKAROUND: If resolution is 0, use fallback values
+		if (width <= 0 || height <= 0) {
+			width = 800;
+			height = 600;
+			printf("[Phase 54 FALLBACK] Using fallback resolution: %dx%d\n", width, height);
+		}
+		
 		vp.X = 0;
 		vp.Y = 0;
 		vp.Width = width;
@@ -1153,6 +1167,13 @@ void WW3D::Flush(RenderInfoClass & rinfo)
  *=============================================================================================*/
 WW3DErrorType WW3D::End_Render(bool flip_frame)
 {
+	static int end_render_count = 0;
+	if (end_render_count < 5) {
+		printf("[Phase 62 DEBUG] WW3D::End_Render called, flip_frame=%d, IsInitted=%d, IsRendering=%d\n",
+		       flip_frame ? 1 : 0, IsInitted ? 1 : 0, IsRendering ? 1 : 0);
+		end_render_count++;
+	}
+	
 	if (!IsInitted) {
 		return(WW3D_ERROR_OK);
 	}

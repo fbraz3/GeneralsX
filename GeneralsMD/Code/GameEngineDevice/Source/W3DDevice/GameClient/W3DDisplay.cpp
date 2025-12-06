@@ -567,9 +567,15 @@ void W3DDisplay::setWidth(UnsignedInt width)
 	// extending functionality
 	Display::setWidth(width);
 
-	// our 2D renderer will use mapping coords to make (0,0) the upper left
-	// of the screen with (width,height) at the lower right
-	m_2DRender->Set_Coordinate_Range(RectClass(0, 0, getWidth(), getHeight()));
+	// Phase 62: Only update coordinate range if both dimensions are valid
+	// to prevent division by zero in Set_Coordinate_Range and Update_Bias
+	if (getWidth() > 0 && getHeight() > 0) {
+		// Set screen resolution for Update_Bias() division calculations
+		Render2DClass::Set_Screen_Resolution(RectClass(0, 0, getWidth(), getHeight()));
+		// our 2D renderer will use mapping coords to make (0,0) the upper left
+		// of the screen with (width,height) at the lower right
+		m_2DRender->Set_Coordinate_Range(RectClass(0, 0, getWidth(), getHeight()));
+	}
 
 }
 
@@ -582,9 +588,15 @@ void W3DDisplay::setHeight(UnsignedInt height)
 	// extending functionality
 	Display::setHeight(height);
 
-	// our 2D renderer will use mapping coords to make (0,0) the upper left
-	// of the screen with (width,height) at the lower right
-	m_2DRender->Set_Coordinate_Range(RectClass(0, 0, getWidth(), getHeight()));
+	// Phase 62: Only update coordinate range if both dimensions are valid
+	// to prevent division by zero in Set_Coordinate_Range and Update_Bias
+	if (getWidth() > 0 && getHeight() > 0) {
+		// Set screen resolution for Update_Bias() division calculations
+		Render2DClass::Set_Screen_Resolution(RectClass(0, 0, getWidth(), getHeight()));
+		// our 2D renderer will use mapping coords to make (0,0) the upper left
+		// of the screen with (width,height) at the lower right
+		m_2DRender->Set_Coordinate_Range(RectClass(0, 0, getWidth(), getHeight()));
+	}
 
 }
 
@@ -2046,6 +2058,14 @@ void W3DDisplay::draw(void)
 				if (TheMouse)
 					TheMouse->DRAW();
 
+				// Phase 62: Debug video rendering
+				static int videoCheckCount = 0;
+				if (videoCheckCount < 10) {
+					printf("[Phase 62 VIDEO] draw() check: m_videoStream=%p, m_videoBuffer=%p\n",
+						(void*)m_videoStream, (void*)m_videoBuffer);
+					videoCheckCount++;
+				}
+
 				if (m_videoStream && m_videoBuffer)
 				{
 					// TheSuperHackers @bugfix Mauller 20/07/2025 scale videos based on screen size so they are shown in their original aspect
@@ -3035,7 +3055,19 @@ void W3DDisplay::drawScaledVideoBuffer(VideoBuffer* buffer, VideoStreamInterface
 
 void W3DDisplay::drawVideoBuffer(VideoBuffer* buffer, Int startX, Int startY, Int endX, Int endY)
 {
+	static int videoDrawCount = 0;
+	if (videoDrawCount < 5) {
+		printf("[Phase 62 VIDEO] drawVideoBuffer called: buffer=%p, rect=(%d,%d)-(%d,%d)\n",
+			(void*)buffer, startX, startY, endX, endY);
+		videoDrawCount++;
+	}
+	
 	W3DVideoBuffer* vbuffer = (W3DVideoBuffer*)buffer;
+
+	if (videoDrawCount <= 5) {
+		printf("[Phase 62 VIDEO] vbuffer=%p, texture=%p, m_2DRender=%p\n",
+			(void*)vbuffer, (void*)(vbuffer ? vbuffer->texture() : nullptr), (void*)m_2DRender);
+	}
 
 	m_2DRender->Reset();
 	m_2DRender->Enable_Texturing(TRUE);

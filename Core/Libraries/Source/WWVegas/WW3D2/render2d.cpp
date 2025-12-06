@@ -53,6 +53,16 @@
 
 RectClass							Render2DClass::ScreenResolution( 0,0,0,0 );
 
+/**
+ * Set_Screen_Resolution - Set the screen resolution for 2D rendering
+ * Phase 62: Added missing implementation (was causing division by zero in Set_Coordinate_Range)
+ */
+void Render2DClass::Set_Screen_Resolution( const RectClass & screen )
+{
+	printf("[Phase 62] Render2DClass::Set_Screen_Resolution(%.0f, %.0f, %.0f, %.0f) - width=%.0f, height=%.0f\n",
+	       screen.Left, screen.Top, screen.Right, screen.Bottom, screen.Width(), screen.Height());
+	ScreenResolution = screen;
+}
 
 /*
 ** Render2DClass
@@ -161,9 +171,22 @@ void Render2DClass::Enable_Texturing(bool b)
 
 void	Render2DClass::Set_Coordinate_Range( const RectClass & range )
 {
+	// Phase 62: Debug - track coordinate range to detect division by zero
+	printf("[Phase 62] Set_Coordinate_Range: range=(%.0f,%.0f)-(%.0f,%.0f), width=%.0f, height=%.0f\n",
+	       range.Left, range.Top, range.Right, range.Bottom, range.Width(), range.Height());
+	
+	// Protect against division by zero
+	float width = range.Width();
+	float height = range.Height();
+	if (width == 0.0f || height == 0.0f) {
+		printf("[Phase 62] WARNING: Zero width/height in Set_Coordinate_Range! Using defaults.\n");
+		width = (width == 0.0f) ? 800.0f : width;
+		height = (height == 0.0f) ? 600.0f : height;
+	}
+	
 	// default range is (-1,1)-(1,-1)
-	CoordinateScale.X = 2 / range.Width();
-	CoordinateScale.Y = -2 / range.Height();
+	CoordinateScale.X = 2 / width;
+	CoordinateScale.Y = -2 / height;
 	CoordinateOffset.X = -(CoordinateScale.X * range.Left) - 1;
 	CoordinateOffset.Y = -(CoordinateScale.Y * range.Top) + 1;
 

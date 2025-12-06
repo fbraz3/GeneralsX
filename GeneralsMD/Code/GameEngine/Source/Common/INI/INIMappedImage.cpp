@@ -47,6 +47,9 @@ void INI::parseMappedImageDefinition( INI* ini )
 	// read the name
 	const char* c = ini->getNextToken();
 	name.set( c );
+	
+	printf("[INIMappedImage::parseMappedImageDefinition] Parsing mapped image definition:\n");
+	printf("  Image name/key: '%s'\n", name.str());
 
 	//
 	// find existing item if present, note that we do not support overrides
@@ -55,26 +58,33 @@ void INI::parseMappedImageDefinition( INI* ini )
 	//
 	if( !TheMappedImageCollection )
 	{
+		printf("[INIMappedImage::parseMappedImageDefinition] WARNING: TheMappedImageCollection is NULL, skipping\n");
 		//We don't need it if we're in the builder... which doesn't have this.
 		return;
 	}
-	Image *image = const_cast<Image*>(TheMappedImageCollection->findImageByName( name ));
-	if(image)
-		DEBUG_ASSERTCRASH(!image->getRawTextureData(), ("We are trying to parse over an existing image that contains a non-null rawTextureData, you should fix that"));
 
-	if( image == NULL )
-	{
-
-		// image not found, create a new one
-  	image = newInstance(Image);
-		image->setName( name );
-		TheMappedImageCollection->addImage(image);
-		DEBUG_ASSERTCRASH( image, ("parseMappedImage: unable to allocate image for '%s'",
-															name.str()) );
-
+	// Create a temporary image to parse the INI properties
+	Image *image = newInstance(Image);
+	image->setName( name );
+	
+	// Parse the INI properties FIRST to get the filename
+	printf("[INIMappedImage::parseMappedImageDefinition] Parsing INI properties for '%s'\n", name.str());
+	ini->initFromINI( image, image->getFieldParse());
+	
+	// Now check if an image with this filename already exists
+	const Image* existingImage = TheMappedImageCollection->findImageByFileName( image->getFilename() );
+	if(existingImage) {
+		printf("[INIMappedImage::parseMappedImageDefinition] WARNING: Image with filename '%s' already exists\n", image->getFilename().str());
+		printf("[INIMappedImage::parseMappedImageDefinition] Existing image name: '%s', skipping\n", existingImage->getName().str());
+		deleteInstance(image);
+		return;
 	}
 
-	// parse the ini definition
-	ini->initFromINI( image, image->getFieldParse());
-
+	// Add the image to the collection (now that we have the filename)
+	TheMappedImageCollection->addImage(image);
+	
+	// Log the final result
+	printf("[INIMappedImage::parseMappedImageDefinition] Successfully added image:\n");
+	printf("  Name: '%s'\n", image->getName().str());
+	printf("  Filename: '%s'\n", image->getFilename().str());
 }

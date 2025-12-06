@@ -189,16 +189,16 @@ set(WW3D2_SRC
     phase43_3_sorting_renderer.cpp
     
     # texproject.cpp  # Phase: Temporarily commented - DX8Wrapper render target API incompatibilities
-    texproject.h
+    # texproject.h
     # textdraw.cpp  # Phase 42: Temporarily commented - Font Peek_Texture method signature mismatch
-    textdraw.h
+    # textdraw.h
     # texture.cpp  # Phase 41 Day 2: Commented - Member accessibility and signature mismatches in TextureClass hierarchy
-    texture_base.cpp
-    texture.h
+    # texture_base.cpp
+    # texture.h
     # texturefilter.cpp  # Phase 42: Temporarily commented - signature mismatch, GeneralsMD version used instead
-    texturefilter.h
+    # texturefilter.h
     # textureloader.cpp  # Phase 42: Temporarily commented - TextureLoadTaskClass and ThumbnailClass API incompatibilities
-    textureloader.h
+    # textureloader.h
     textureloader_stub.cpp  # Phase 54: Minimal stub for TextureLoader::Update
     # texturethumbnail.cpp  # Phase 42: Temporarily commented - ThumbnailClass constructor/method incompatibilities
     texturethumbnail.h

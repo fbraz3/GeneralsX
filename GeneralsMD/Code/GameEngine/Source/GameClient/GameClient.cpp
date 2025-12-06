@@ -85,8 +85,35 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/ScriptEngine.h"		// For TheScriptEngine - jkmcd
 #include "Utility/compat.h"
+#include "WW3D2/textureloader.h"
 
 #define DRAWABLE_HASH_SIZE	8192
+
+// Static function for texture fallback to MappedImage collection
+static IDirect3DTexture8* MappedImageFallback(const char* textureName)
+
+{
+	// Remove extension if present
+	AsciiString name(textureName);
+	// const char* dotPtr = name.reverseFind('.');
+	// if (dotPtr != NULL) {
+	// 	int dotPos = dotPtr - name.str();
+	// 	name = AsciiString(name.str(), dotPos);
+	// }
+
+	if (!TheMappedImageCollection) {
+		return NULL;
+	}
+	
+	const Image* image = TheMappedImageCollection->findImageByFileName(name);
+	if (image) {
+		// Load the texture from the image's filename
+		StringClass filename(image->getFilename().str());
+		return TextureLoader::LoadFromVFS(filename);
+	}
+	
+	return NULL;
+}
 
 /// The GameClient singleton instance
 GameClient* TheGameClient = NULL;
@@ -259,6 +286,12 @@ void GameClient::init(void)
 	ini.loadFileDirectory(drawGroupPath.str(), INI_LOAD_OVERWRITE, NULL);
 	printf("[GameClient::init] DrawGroupInfo INI loaded\n"); 
 
+	// Load mapped images EARLY to ensure they're available for texture loading during INI parsing
+	printf("[GameClient::init] Loading Mapped Images early (512x512)\n"); 
+	TheMappedImageCollection = MSGNEW("GameClientSubsystem") ImageCollection;
+	TheMappedImageCollection->load(512);
+	printf("[GameClient::init] Mapped Images loaded early\n"); 
+
 	// Override the ini values with localized versions:
 	if (TheGlobalLanguageData && TheGlobalLanguageData->m_drawGroupInfoFont.name.isNotEmpty())
 	{
@@ -287,10 +320,12 @@ void GameClient::init(void)
 	}
 
 	// allocate and load image collection for the GUI and just load the 256x256 ones for now
-	printf("[GameClient::init] Creating ImageCollection (512x512)\n"); 
-	TheMappedImageCollection = MSGNEW("GameClientSubsystem") ImageCollection;
-	TheMappedImageCollection->load(512);
-	printf("[GameClient::init] ImageCollection loaded\n"); 
+	printf("[GameClient::init] ImageCollection already loaded early\n"); 
+	// TheMappedImageCollection->load(512); // Already loaded above
+	// printf("[GameClient::init] ImageCollection loaded\n"); 
+
+	// Set up texture fallback to MappedImage collection for UI textures
+	TextureLoader::SetFallbackFunc(MappedImageFallback);
 
 	// now that we have all the images loaded ... load any animation definitions from those images
 	printf("[GameClient::init] Creating Anim2DCollection\n"); 
@@ -679,6 +714,9 @@ void GameClient::update(void)
 			}
 			TheShell->showShell();
 			TheWritableGlobalData->m_afterIntro = FALSE;
+			
+			// Phase 62: Reset breakTheMovie after shell is shown so rendering can continue
+			TheWritableGlobalData->m_breakTheMovie = FALSE;
 		}
 	}
 

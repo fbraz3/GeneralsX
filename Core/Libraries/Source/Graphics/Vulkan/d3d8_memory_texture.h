@@ -99,6 +99,9 @@ inline unsigned int CalculateSurfaceSize(unsigned int width, unsigned int height
     return width * height * bpp;
 }
 
+// Forward declaration for parent texture reference
+class MemoryDirect3DTexture8;
+
 /**
  * @class MemoryDirect3DSurface8
  * @brief Memory-backed implementation of IDirect3DSurface8
@@ -114,6 +117,7 @@ public:
         , m_pool(pool)
         , m_refCount(1)
         , m_locked(false)
+        , m_parentTexture(nullptr)
     {
         m_pitch = CalculatePitch(width, format);
         m_size = CalculateSurfaceSize(width, height, format);
@@ -184,11 +188,7 @@ public:
         return S_OK;
     }
     
-    HRESULT UnlockRect() override {
-        if (!m_locked) return E_FAIL;
-        m_locked = false;
-        return S_OK;
-    }
+    HRESULT UnlockRect() override;  // Defined after MemoryDirect3DTexture8
     
     HRESULT GetDC(HDC *phdc) override { return E_NOTIMPL; }
     HRESULT ReleaseDC(HDC hdc) override { return E_NOTIMPL; }
@@ -201,6 +201,10 @@ public:
     void* GetData() { return m_data.data(); }
     const void* GetData() const { return m_data.data(); }
     
+    // Parent texture management for dirty flag propagation
+    void SetParentTexture(MemoryDirect3DTexture8* parent) { m_parentTexture = parent; }
+    MemoryDirect3DTexture8* GetParentTexture() const { return m_parentTexture; }
+    
 private:
     unsigned int m_width;
     unsigned int m_height;
@@ -211,6 +215,7 @@ private:
     std::vector<uint8_t> m_data;
     ULONG m_refCount;
     bool m_locked;
+    MemoryDirect3DTexture8* m_parentTexture;
 };
 
 /**
@@ -247,7 +252,9 @@ public:
         // Create surfaces for each mip level
         unsigned int w = width, h = height;
         for (unsigned int i = 0; i < m_levelCount; i++) {
-            m_surfaces.push_back(new MemoryDirect3DSurface8(w, h, format, pool));
+            MemoryDirect3DSurface8* surface = new MemoryDirect3DSurface8(w, h, format, pool);
+            surface->SetParentTexture(this);  // Link surface to parent texture for dirty flag
+            m_surfaces.push_back(surface);
             w = (w > 1) ? w / 2 : 1;
             h = (h > 1) ? h / 2 : 1;
         }
@@ -311,7 +318,12 @@ public:
     HRESULT UnlockRect(UINT Level) override {
         if (Level >= m_levelCount) return E_INVALIDARG;
         
-        return m_surfaces[Level]->UnlockRect();
+        HRESULT hr = m_surfaces[Level]->UnlockRect();
+        if (SUCCEEDED(hr)) {
+            // Mark texture dirty so GPU texture is re-uploaded on next use
+            MarkDirty();
+        }
+        return hr;
     }
     
     HRESULT AddDirtyRect(const RECT *pDirtyRect) override { return S_OK; }
@@ -325,6 +337,15 @@ public:
     unsigned int GetHeight() const { return m_height; }
     D3DFORMAT GetFormat() const { return m_format; }
     
+    // Phase 62: Vulkan texture handle association
+    // Allows tracking whether this texture has been uploaded to Vulkan GPU
+    void SetVulkanHandle(uint64_t handle) { m_vulkanHandle = handle; }
+    uint64_t GetVulkanHandle() const { return m_vulkanHandle; }
+    bool HasVulkanHandle() const { return m_vulkanHandle != 0; }
+    void MarkDirty() { m_gpuDirty = true; }
+    bool IsGpuDirty() const { return m_gpuDirty; }
+    void ClearDirty() { m_gpuDirty = false; }
+    
 private:
     unsigned int m_width;
     unsigned int m_height;
@@ -335,6 +356,8 @@ private:
     std::vector<MemoryDirect3DSurface8*> m_surfaces;
     ULONG m_refCount;
     DWORD m_priority = 0;
+    uint64_t m_vulkanHandle = 0;  // Phase 62: Associated Vulkan texture handle (0 = not uploaded)
+    bool m_gpuDirty = true;       // Phase 62: True if CPU data has changed since last GPU upload
 };
 
 /**
@@ -361,6 +384,22 @@ inline IDirect3DSurface8* CreateMemorySurface(
     D3DPOOL pool = D3DPOOL_MANAGED)
 {
     return new MemoryDirect3DSurface8(width, height, format, pool);
+}
+
+/**
+ * MemoryDirect3DSurface8::UnlockRect implementation
+ * Defined after MemoryDirect3DTexture8 so we can call MarkDirty() on parent
+ */
+inline HRESULT MemoryDirect3DSurface8::UnlockRect() {
+    if (!m_locked) return E_FAIL;
+    m_locked = false;
+    
+    // Mark parent texture dirty so GPU texture gets re-uploaded
+    if (m_parentTexture) {
+        m_parentTexture->MarkDirty();
+    }
+    
+    return S_OK;
 }
 
 #endif // D3D8_MEMORY_TEXTURE_H_INCLUDED

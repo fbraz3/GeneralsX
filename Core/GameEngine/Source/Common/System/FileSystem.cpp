@@ -256,27 +256,27 @@ File* FileSystem::openFile(const Char* filename, Int access, size_t bufferSize, 
 		{
 			// TheSuperHackers @todo Pass 'access' here?
 			file = TheArchiveFileSystem->openFile(filename, 0, instance);
-			// if (file != NULL)
-			// {
-			// 	printf("[FileSystem::openFile] Successfully opened file from archive filesystem\n");
-			// 	
-			// }
-			// else
-			// {
-			// 	printf("[FileSystem::openFile] Archive filesystem returned NULL for file\n");
-			// 	
-			// }
-		}
-		catch (const std::exception& e)
-		{
-			// printf("[FileSystem::openFile] Exception caught from archive filesystem: %s\n", e.what());
-			// 
-		}
-		catch (...)
-		{
-			// printf("[FileSystem::openFile] Unknown exception caught from archive filesystem\n");
-			// 
-		}
+				// if (file != NULL)
+				// {
+				// 	printf("[FileSystem::openFile] Successfully opened file from archive filesystem\n");
+				// 	
+				// }
+				// else
+				// {
+				// 	printf("[FileSystem::openFile] Archive filesystem returned NULL for file\n");
+				// 	
+				// }
+			}
+			catch (const std::exception& e)
+			{
+				// printf("[FileSystem::openFile] Exception caught from archive filesystem: %s\n", e.what());
+				// 
+			}
+			catch (...)
+			{
+				// printf("[FileSystem::openFile] Unknown exception caught from archive filesystem\n");
+				// 
+			}
 	}
 	// else if (file != NULL)
 	// {
@@ -302,6 +302,22 @@ File* FileSystem::openFile(const Char* filename, Int access, size_t bufferSize, 
 // FileSystem::doesFileExist
 //============================================================================
 
+// // Debug helper to check for specific UI textures we're tracking
+// static bool isTrackedUITexture(const Char* filename)
+// {
+// 	if (filename == nullptr) return false;
+// 	// Case-insensitive search for our tracked textures
+// 	if (strstr(filename, "titlescreenuserinterface") != nullptr ||
+// 	    strstr(filename, "TitleScreenUserInterface") != nullptr ||
+// 	    strstr(filename, "scsmshelluserinterface") != nullptr ||
+// 	    strstr(filename, "SCShellUserInterface") != nullptr ||
+// 	    strstr(filename, "SCSmShellUserInterface") != nullptr)
+// 	{
+// 		return true;
+// 	}
+// 	return false;
+// }
+
 Bool FileSystem::doesFileExist(const Char* filename, FileInstance instance) const
 {
 	USE_PERF_TIMER(FileSystem)
@@ -314,9 +330,21 @@ Bool FileSystem::doesFileExist(const Char* filename, FileInstance instance) cons
 		{
 			// Must test instanceDoesNotExist first!
 			if (instance >= it->second.instanceDoesNotExist)
+			{
+				if (isTrackedUITexture(filename))
+				{
+					printf("[FileSystem::doesFileExist] TRACKED UI TEXTURE (cached NOT EXIST): '%s'\n", filename);
+				}
 				return FALSE;
+			}
 			if (instance <= it->second.instanceExists)
+			{
+				if (isTrackedUITexture(filename))
+				{
+					printf("[FileSystem::doesFileExist] TRACKED UI TEXTURE (cached EXISTS): '%s'\n", filename);
+				}
 				return TRUE;
+			}
 		}
 	}
 #endif
@@ -331,6 +359,10 @@ Bool FileSystem::doesFileExist(const Char* filename, FileInstance instance) cons
 				m_fileExist[filename];
 			}
 #endif
+			// if (isTrackedUITexture(filename))
+			// {
+			// 	printf("[FileSystem::doesFileExist] TRACKED UI TEXTURE FOUND (local): '%s'\n", filename);
+			// }
 			return TRUE;
 		}
 
@@ -346,6 +378,10 @@ Bool FileSystem::doesFileExist(const Char* filename, FileInstance instance) cons
 			value.instanceExists = std::max(value.instanceExists, instance);
 		}
 #endif
+		// if (isTrackedUITexture(filename))
+		// {
+		// 	printf("[FileSystem::doesFileExist] TRACKED UI TEXTURE FOUND (archive): '%s'\n", filename);
+		// }
 		return TRUE;
 	}
 
@@ -356,6 +392,10 @@ Bool FileSystem::doesFileExist(const Char* filename, FileInstance instance) cons
 		value.instanceDoesNotExist = std::min(value.instanceDoesNotExist, instance);
 	}
 #endif
+	// if (isTrackedUITexture(filename))
+	// {
+	// 	printf("[FileSystem::doesFileExist] TRACKED UI TEXTURE NOT FOUND: '%s'\n", filename);
+	// }
 	return FALSE;
 }
 
