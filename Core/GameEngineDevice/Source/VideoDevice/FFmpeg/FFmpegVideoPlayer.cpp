@@ -444,22 +444,8 @@ void FFmpegVideoStream::frameRender( VideoBuffer *buffer )
 
 	AVPixelFormat dst_pix_fmt;
 
-	switch (buffer->format()) {
-		case VideoBuffer::TYPE_R8G8B8:
-			dst_pix_fmt = AV_PIX_FMT_RGB24;
-			break;
-		case VideoBuffer::TYPE_X8R8G8B8:
-			dst_pix_fmt = AV_PIX_FMT_BGR0;
-			break;
-		case VideoBuffer::TYPE_R5G6B5:
-			dst_pix_fmt = AV_PIX_FMT_RGB565;
-			break;
-		case VideoBuffer::TYPE_X1R5G5B5:
-			dst_pix_fmt = AV_PIX_FMT_RGB555;
-			break;
-		default:
-			return;
-	}
+	// Force RGBA output for Vulkan backend
+	dst_pix_fmt = AV_PIX_FMT_RGBA;
 
 	m_swsContext = sws_getCachedContext(m_swsContext,
 		width(),
@@ -484,6 +470,8 @@ void FFmpegVideoStream::frameRender( VideoBuffer *buffer )
 	[[maybe_unused]] int result =
 		sws_scale(m_swsContext, m_frame->data, m_frame->linesize, 0, height(), dst_data, dst_strides);
 	DEBUG_ASSERTLOG(result >= 0, ("Failed to scale frame"));
+	// Ensure buffer dimensions match texture size to avoid black borders
+	// Buffer dimensions are managed by allocation/scaling logic; do not assign protected members directly.
 	buffer->unlock();
 }
 

@@ -3003,7 +3003,7 @@ VideoBuffer* W3DDisplay::createVideoBuffer(void)
 		}
 	}
 	// on low mem machines, render every video in 16bit except for the EA Logo movie
-	if (!TheGlobalData->m_playIntro)//&& TheGameLODManager && (!TheGameLODManager->didMemPass() || W3DShaderManager::getChipset() == DC_GEFORCE2))
+	if (!TheGlobalData->m_playIntro && !TheGameLODManager->didMemPass())//&& TheGameLODManager && (!TheGameLODManager->didMemPass() || W3DShaderManager::getChipset() == DC_GEFORCE2))
 		format = VideoBuffer::TYPE_R5G6B5;
 
 	W3DVideoBuffer* buffer = NEW W3DVideoBuffer(format);
@@ -3017,36 +3017,8 @@ VideoBuffer* W3DDisplay::createVideoBuffer(void)
 
 void W3DDisplay::drawScaledVideoBuffer(VideoBuffer* buffer, VideoStreamInterface* stream)
 {
-	// TheSuperHackers @bugfix Mauller 20/07/2025 scale videos based on screen size so they are shown in their original aspect
-	Real videoAspect = (Real)stream->width() / (Real)stream->height();
-	Real displayAspect = (Real)getWidth() / (Real)getHeight();
-	Bool wideAspect = displayAspect >= videoAspect;
-
-	Int startX = 0;
-	Int endX = 0;
-	Int startY = 0;
-	Int endY = 0;
-
-	if (wideAspect)
-	{
-		// TheSuperHackers @info if we are in a wide aspect, we scale the videos width and fill the height
-		Real heightScale = (Real)getHeight() / (Real)stream->height();
-		startX = (getWidth() / 2.0f) - (stream->width() * heightScale / 2.0f);
-		endX = (getWidth() / 2.0f) + (stream->width() * heightScale / 2.0f);
-
-		endY = getHeight();
-	}
-	else
-	{
-		// TheSuperHackers @info if we are in a narrow aspect, we scale the videos height and fill the width
-		Real widthScale = (Real)getWidth() / (Real)stream->width();
-		startY = (getHeight() / 2.0f) - (stream->height() * widthScale / 2.0f);
-		endY = (getHeight() / 2.0f) + (stream->height() * widthScale / 2.0f);
-
-		endX = getWidth();
-	}
-
-	drawVideoBuffer(buffer, startX, startY, endX, endY);
+	// Patch: Always stretch video to fill the window, ignoring aspect ratio
+	drawVideoBuffer(buffer, 0, 0, getWidth(), getHeight());
 }
 
 //============================================================================
