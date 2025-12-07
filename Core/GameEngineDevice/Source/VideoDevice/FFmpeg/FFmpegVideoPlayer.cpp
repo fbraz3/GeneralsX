@@ -444,8 +444,22 @@ void FFmpegVideoStream::frameRender( VideoBuffer *buffer )
 
 	AVPixelFormat dst_pix_fmt;
 
-	// Force RGBA output for Vulkan backend
-	dst_pix_fmt = AV_PIX_FMT_RGBA;
+		switch (buffer->format()) {
+		case VideoBuffer::TYPE_R8G8B8:
+			dst_pix_fmt = AV_PIX_FMT_RGB24;
+			break;
+		case VideoBuffer::TYPE_X8R8G8B8:
+			dst_pix_fmt = AV_PIX_FMT_BGR0;
+			break;
+		case VideoBuffer::TYPE_R5G6B5:
+			dst_pix_fmt = AV_PIX_FMT_RGB565;
+			break;
+		case VideoBuffer::TYPE_X1R5G5B5:
+			dst_pix_fmt = AV_PIX_FMT_RGB555;
+			break;
+		default:
+			return;
+	}
 
 	m_swsContext = sws_getCachedContext(m_swsContext,
 		width(),
