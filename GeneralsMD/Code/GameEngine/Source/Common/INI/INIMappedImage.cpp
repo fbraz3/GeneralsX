@@ -70,15 +70,6 @@ void INI::parseMappedImageDefinition( INI* ini )
 	// Parse the INI properties FIRST to get the filename
 	printf("[INIMappedImage::parseMappedImageDefinition] Parsing INI properties for '%s'\n", name.str());
 	ini->initFromINI( image, image->getFieldParse());
-	
-	// Now check if an image with this filename already exists
-	const Image* existingImage = TheMappedImageCollection->findImageByFileName( image->getFilename() );
-	if(existingImage) {
-		printf("[INIMappedImage::parseMappedImageDefinition] WARNING: Image with filename '%s' already exists\n", image->getFilename().str());
-		printf("[INIMappedImage::parseMappedImageDefinition] Existing image name: '%s', skipping\n", existingImage->getName().str());
-		deleteInstance(image);
-		return;
-	}
 
 	// Add the image to the collection (now that we have the filename)
 	TheMappedImageCollection->addImage(image);

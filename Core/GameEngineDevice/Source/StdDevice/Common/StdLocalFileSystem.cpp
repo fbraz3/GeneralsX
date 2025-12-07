@@ -47,8 +47,12 @@ static std::filesystem::path fixFilenameFromWindowsPath(const Char* filename, In
 {
 	std::string fixedFilename(filename);
 
-	// Replace backslashes with forward slashes on unix
-	std::replace(fixedFilename.begin(), fixedFilename.end(), GET_PATH_SEPARATOR()[0], GET_PATH_SEPARATOR()[0]);
+	// Normalize separators: replace the "other" separator with the host separator
+	{
+		char hostSep = GET_PATH_SEPARATOR()[0];
+		char otherSep = (hostSep == '/') ? '\\' : '/';
+		std::replace(fixedFilename.begin(), fixedFilename.end(), otherSep, hostSep);
+	}
 
 	// Convert the filename to a std::filesystem::path and pass that
 	std::filesystem::path path(std::move(fixedFilename));
@@ -219,8 +223,12 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 
 	std::string fixedDirectory(asciisearch.str());
 
-	// Replace backslashes with forward slashes on unix
-	std::replace(fixedDirectory.begin(), fixedDirectory.end(), GET_PATH_SEPARATOR()[0], GET_PATH_SEPARATOR()[0]);
+	// Normalize separators: replace the "other" separator with the host separator
+	{
+		char hostSep = GET_PATH_SEPARATOR()[0];
+		char otherSep = (hostSep == '/') ? '\\' : '/';
+		std::replace(fixedDirectory.begin(), fixedDirectory.end(), otherSep, hostSep);
+	}
 
 	Bool done = FALSE;
 	std::error_code ec;
@@ -240,7 +248,10 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 			(strcmp(filenameStr.c_str(), ".") && strcmp(filenameStr.c_str(), ".."))) {
 			// if we haven't already, add this filename to the list.
 			// a stl set should only allow one copy of each filename
-			AsciiString newFilename = iter->path().string().c_str();
+			std::string filenameStd = iter->path().string();
+			// Convert native filesystem separators to backslashes to match codebase expectations
+			std::replace(filenameStd.begin(), filenameStd.end(), '/', '\\');
+			AsciiString newFilename = filenameStd.c_str();
 			if (filenameList.find(newFilename) == filenameList.end()) {
 				filenameList.insert(newFilename);
 			}
@@ -321,8 +332,12 @@ Bool StdLocalFileSystem::createDirectory(AsciiString directory)
 
 	std::string fixedDirectory(directory.str());
 
-	// Replace backslashes with forward slashes on unix
-	std::replace(fixedDirectory.begin(), fixedDirectory.end(), GET_PATH_SEPARATOR()[0], GET_PATH_SEPARATOR()[0]);
+	// Normalize separators: replace the "other" separator with the host separator
+	{
+		char hostSep = GET_PATH_SEPARATOR()[0];
+		char otherSep = (hostSep == '/') ? '\\' : '/';
+		std::replace(fixedDirectory.begin(), fixedDirectory.end(), otherSep, hostSep);
+	}
 
 	if ((fixedDirectory.length() > 0) && (fixedDirectory.length() < _MAX_DIR)) {
 		// Convert to host path
@@ -340,8 +355,12 @@ Bool StdLocalFileSystem::createDirectory(AsciiString directory)
 AsciiString StdLocalFileSystem::normalizePath(const AsciiString& filePath) const
 {
 	std::string nonNormalized(filePath.str());
-	// Replace backslashes with forward slashes on non-Windows platforms
-	std::replace(nonNormalized.begin(), nonNormalized.end(), GET_PATH_SEPARATOR()[0], GET_PATH_SEPARATOR()[0]);
+	// Normalize separators: replace the "other" separator with the host separator
+	{
+		char hostSep = GET_PATH_SEPARATOR()[0];
+		char otherSep = (hostSep == '/') ? '\\' : '/';
+		std::replace(nonNormalized.begin(), nonNormalized.end(), otherSep, hostSep);
+	}
 	std::filesystem::path pathNonNormalized(nonNormalized);
 	return AsciiString(pathNonNormalized.lexically_normal().string().c_str());
 }

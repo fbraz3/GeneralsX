@@ -89,31 +89,31 @@
 
 #define DRAWABLE_HASH_SIZE	8192
 
-// Static function for texture fallback to MappedImage collection
-static IDirect3DTexture8* MappedImageFallback(const char* textureName)
+// // Static function for texture fallback to MappedImage collection
+// static IDirect3DTexture8* MappedImageFallback(const char* textureName)
 
-{
-	// Remove extension if present
-	AsciiString name(textureName);
-	// const char* dotPtr = name.reverseFind('.');
-	// if (dotPtr != NULL) {
-	// 	int dotPos = dotPtr - name.str();
-	// 	name = AsciiString(name.str(), dotPos);
-	// }
+// {
+// 	// Remove extension if present
+// 	AsciiString name(textureName);
+// 	// const char* dotPtr = name.reverseFind('.');
+// 	// if (dotPtr != NULL) {
+// 	// 	int dotPos = dotPtr - name.str();
+// 	// 	name = AsciiString(name.str(), dotPos);
+// 	// }
 
-	if (!TheMappedImageCollection) {
-		return NULL;
-	}
+// 	if (!TheMappedImageCollection) {
+// 		return NULL;
+// 	}
 	
-	const Image* image = TheMappedImageCollection->findImageByFileName(name);
-	if (image) {
-		// Load the texture from the image's filename
-		StringClass filename(image->getFilename().str());
-		return TextureLoader::LoadFromVFS(filename);
-	}
+// 	const Image* image = TheMappedImageCollection->findImageByFileName(name);
+// 	if (image) {
+// 		// Load the texture from the image's filename
+// 		StringClass filename(image->getFilename().str());
+// 		return TextureLoader::LoadFromVFS(filename);
+// 	}
 	
-	return NULL;
-}
+// 	return NULL;
+// }
 
 /// The GameClient singleton instance
 GameClient* TheGameClient = NULL;
@@ -324,8 +324,8 @@ void GameClient::init(void)
 	// TheMappedImageCollection->load(512); // Already loaded above
 	// printf("[GameClient::init] ImageCollection loaded\n"); 
 
-	// Set up texture fallback to MappedImage collection for UI textures
-	TextureLoader::SetFallbackFunc(MappedImageFallback);
+	// // Set up texture fallback to MappedImage collection for UI textures
+	// TextureLoader::SetFallbackFunc(MappedImageFallback);
 
 	// now that we have all the images loaded ... load any animation definitions from those images
 	printf("[GameClient::init] Creating Anim2DCollection\n"); 

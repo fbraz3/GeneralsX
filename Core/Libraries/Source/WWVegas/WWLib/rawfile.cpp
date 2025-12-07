@@ -335,13 +335,16 @@ char const* RawFileClass::Set_Name(char const* filename)
 
 	/*
 	** If this is a UNIX build, fix the filename from the DOS-like name passed in
+	** Do NOT lowercase the filename — preserve case on case-sensitive filesystems.
+	** Only normalize path separator characters to the host separator.
 	*/
 #ifdef _UNIX
 	for (int i = 0; i < Filename.Get_Length(); i++)
 	{
-		if (Filename[i] == GET_PATH_SEPARATOR()[0])
+		// Normalize any DOS/Windows separator characters to the host separator
+		if (Filename[i] == '/' || Filename[i] == '\\') {
 			Filename[i] = GET_PATH_SEPARATOR()[0];
-		Filename[i] = tolower(Filename[i]);  // don't preserve case
+		}
 	}
 #endif
 

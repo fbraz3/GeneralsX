@@ -222,21 +222,35 @@ void ImageCollection::addImage(Image* image)
 		return;
 	}
 	
-	// Convert filename to lowercase for consistent keying
-	AsciiString lowerFilename = filename;
-	lowerFilename.toLower();
-	
+	// // Convert filename and name to lowercase for consistent keying
+	// AsciiString lowerFilename = filename;
+	// lowerFilename.toLower();
+	// AsciiString lowerName = name;
+	// lowerName.toLower();
+
 	// Log the addition aggressively
 	printf("[ImageCollection::addImage] Adding image:\n");
 	printf("  Name: '%s'\n", name.str());
 	printf("  Filename: '%s'\n", filename.str());
-	printf("  Lowercase key: '%s'\n", lowerFilename.str());
-	
-	// Use lowercase filename as the key for consistent lookup
-	unsigned int keyHash = TheNameKeyGenerator->nameToLowercaseKey(lowerFilename);
-	m_imageMap[keyHash] = image;
-	
-	printf("[ImageCollection::addImage] Successfully added image with key hash: %u\n", keyHash);
+	// printf("  Lowercase name key: '%s'\n", lowerName.str());
+	// printf("  Lowercase filename key: '%s'\n", lowerFilename.str());
+
+	// Register image under both the lowercase name and the lowercase filename
+	unsigned int nameKeyHash = TheNameKeyGenerator->nameToLowercaseKey(name);
+	unsigned int fileKeyHash = TheNameKeyGenerator->nameToLowercaseKey(filename);
+
+	// If either key already exists, warn but overwrite to keep latest definition
+	if (m_imageMap.find(nameKeyHash) != m_imageMap.end()) {
+		printf("[ImageCollection::addImage] WARNING: Overwriting existing image for name key: %s\n", name.str());
+	}
+	if (m_imageMap.find(fileKeyHash) != m_imageMap.end() && fileKeyHash != nameKeyHash) {
+		printf("[ImageCollection::addImage] WARNING: Overwriting existing image for filename key: %s\n", filename.str());
+	}
+
+	m_imageMap[nameKeyHash] = image;
+	m_imageMap[fileKeyHash] = image;
+
+	printf("[ImageCollection::addImage] Successfully added image with name key hash: %u and file key hash: %u\n", nameKeyHash, fileKeyHash);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -244,15 +258,15 @@ void ImageCollection::addImage(Image* image)
 //-------------------------------------------------------------------------------------------------
 const Image* ImageCollection::findImageByName(const AsciiString& name)
 {
-	// Convert to lowercase for lookup
-	AsciiString lowerName = name;
-	lowerName.toLower();
+	// // Convert to lowercase for lookup
+	// AsciiString lowerName = name;
+	// lowerName.toLower();
 	
 	printf("[ImageCollection::findImageByName] Looking up by name:\n");
 	printf("  Original name: '%s'\n", name.str());
-	printf("  Lowercase lookup: '%s'\n", lowerName.str());
+	// printf("  Lowercase lookup: '%s'\n", lowerName.str());
 	
-	std::map<unsigned, Image*>::iterator i = m_imageMap.find(TheNameKeyGenerator->nameToLowercaseKey(lowerName));
+	std::map<unsigned, Image*>::iterator i = m_imageMap.find(TheNameKeyGenerator->nameToLowercaseKey(name));
 	
 	if (i == m_imageMap.end()) {
 		printf("[ImageCollection::findImageByName] NOT FOUND - no image with this name\n");
@@ -265,41 +279,6 @@ const Image* ImageCollection::findImageByName(const AsciiString& name)
 		return foundImage;
 	}
 }
-
-//-------------------------------------------------------------------------------------------------
-/** Find an image given the image file name */
-//-------------------------------------------------------------------------------------------------
-const Image* ImageCollection::findImageByFileName(const AsciiString& fileName)
-{
-	// Convert to lowercase for lookup
-	AsciiString lowerFileName = fileName;
-	lowerFileName.toLower();
-	
-	printf("[ImageCollection::findImageByFileName] Looking up by filename:\n");
-	printf("  Original filename: '%s'\n", fileName.str());
-	printf("  Lowercase lookup: '%s'\n", lowerFileName.str());
-	
-	std::map<unsigned, Image*>::iterator i = m_imageMap.find(TheNameKeyGenerator->nameToLowercaseKey(lowerFileName));
-	
-	if (i == m_imageMap.end()) {
-		printf("[ImageCollection::findImageByFileName] NOT FOUND - no image with this filename\n");
-		// Debug: list all available images
-		printf("[ImageCollection::findImageByFileName] Available images in collection:\n");
-		for (std::map<unsigned, Image*>::iterator it = m_imageMap.begin(); it != m_imageMap.end(); ++it) {
-			const Image* img = it->second;
-			printf("  Available: name='%s', filename='%s'\n", 
-				   img->getName().str(), img->getFilename().str());
-		}
-		return NULL;
-	} else {
-		const Image* foundImage = i->second;
-		printf("[ImageCollection::findImageByFileName] FOUND - image details:\n");
-		printf("  Found name: '%s'\n", foundImage->getName().str());
-		printf("  Found filename: '%s'\n", foundImage->getFilename().str());
-		return foundImage;
-	}
-}
-
 
 //-------------------------------------------------------------------------------------------------
 /** Load this image collection with all the images specified in the INI files

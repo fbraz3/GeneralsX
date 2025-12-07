@@ -106,32 +106,51 @@ DDSFileClass::DDSFileClass(const char* name,unsigned reduction_factor)
 		return;
 	}
 
-	Format=D3DFormat_To_WW3DFormat((D3DFORMAT)SurfaceDesc.PixelFormat.FourCC);
-	
+	// Determine format: prefer FOURCC DXTn values, fall back to uncompressed RGB formats
+	unsigned fourcc = SurfaceDesc.PixelFormat.FourCC;
+	Format = WW3D_FORMAT_UNKNOWN;
+
+	const unsigned FOURCC_DXT1 = 0x31545844; // 'DXT1'
+	const unsigned FOURCC_DXT2 = 0x32545844; // 'DXT2'
+	const unsigned FOURCC_DXT3 = 0x33545844; // 'DXT3'
+	const unsigned FOURCC_DXT4 = 0x34545844; // 'DXT4'
+	const unsigned FOURCC_DXT5 = 0x35545844; // 'DXT5'
+
+	if (fourcc == FOURCC_DXT1) Format = WW3D_FORMAT_DXT1;
+	else if (fourcc == FOURCC_DXT2) Format = WW3D_FORMAT_DXT2;
+	else if (fourcc == FOURCC_DXT3) Format = WW3D_FORMAT_DXT3;
+	else if (fourcc == FOURCC_DXT4) Format = WW3D_FORMAT_DXT4;
+	else if (fourcc == FOURCC_DXT5) Format = WW3D_FORMAT_DXT5;
+	else {
+		// Not compressed FOURCC - check uncompressed RGB formats (DDPF_RGB)
+		const unsigned DDPF_RGB = 0x40;
+		if (SurfaceDesc.PixelFormat.Flags & DDPF_RGB) {
+			unsigned rgbBits = SurfaceDesc.PixelFormat.RGBBitCount;
+			if (rgbBits == 32) {
+				Format = WW3D_FORMAT_A8R8G8B8;
+			} else if (rgbBits == 24) {
+				Format = WW3D_FORMAT_R8G8B8;
+			} else if (rgbBits == 16) {
+				unsigned rmask = SurfaceDesc.PixelFormat.RBitMask;
+				unsigned gmask = SurfaceDesc.PixelFormat.GBitMask;
+				unsigned bmask = SurfaceDesc.PixelFormat.BBitMask;
+				if (rmask == 0xF800 && gmask == 0x07E0 && bmask == 0x001F) {
+					Format = WW3D_FORMAT_R5G6B5;
+				} else if (rmask == 0x7C00 && gmask == 0x03E0 && bmask == 0x001F) {
+					Format = WW3D_FORMAT_X1R5G5B5;
+				} else {
+					Format = WW3D_FORMAT_R5G6B5;
+				}
+			}
+		}
+	}
+
 	printf("[DDSFileClass] DEBUG: '%s' - FourCC=0x%08X, Format=%d, Size=%ux%u, MipMaps=%u, Flags=0x%X, RGBBitCount=%u\n",
-		Name, SurfaceDesc.PixelFormat.FourCC, (int)Format, 
+		Name, SurfaceDesc.PixelFormat.FourCC, (int)Format,
 		SurfaceDesc.Width, SurfaceDesc.Height, SurfaceDesc.MipMapCount,
 		SurfaceDesc.PixelFormat.Flags, SurfaceDesc.PixelFormat.RGBBitCount);
-	
-	// Check if this is an uncompressed format (FourCC = 0)
-	if (SurfaceDesc.PixelFormat.FourCC == 0)
-	{
-		// Uncompressed format - determine from bit masks
-		printf("[DDSFileClass] DEBUG: '%s' uncompressed: RMask=0x%X, GMask=0x%X, BMask=0x%X, AMask=0x%X\n",
-			Name, SurfaceDesc.PixelFormat.RBitMask, SurfaceDesc.PixelFormat.GBitMask,
-			SurfaceDesc.PixelFormat.BBitMask, SurfaceDesc.PixelFormat.RGBAlphaBitMask);
-		
-		// TODO: Handle uncompressed formats - for now, skip them
-		printf("[DDSFileClass] DEBUG: Uncompressed DDS not yet supported for '%s'\n", Name);
-		return;
-	}
-	
-	if (Format != WW3D_FORMAT_DXT1 &&
-		Format != WW3D_FORMAT_DXT2 &&
-		Format != WW3D_FORMAT_DXT3 &&
-		Format != WW3D_FORMAT_DXT4 &&
-		Format != WW3D_FORMAT_DXT5)
-	{
+
+	if (Format == WW3D_FORMAT_UNKNOWN) {
 		printf("[DDSFileClass] DEBUG: Unsupported format %d for '%s'\n", (int)Format, Name);
 		return;
 	}
