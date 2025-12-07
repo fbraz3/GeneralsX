@@ -810,7 +810,7 @@ AsciiString AudioEventRTS::generateFilenameExtension(AudioType audioTypeToPlay)
 //-------------------------------------------------------------------------------------------------
 void AudioEventRTS::adjustForLocalization(AsciiString& strToAdjust)
 {
-	const char* filename = strToAdjust.reverseFindPathSeparator();
+	const char* filename = strToAdjust.reverseFindPathSeparator(true);
 	if (filename) {
 		filename += 1;
 	}
