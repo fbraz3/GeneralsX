@@ -267,10 +267,10 @@ Bool ArchiveFileSystem::doesFileExist(const Char* filename, FileInstance instanc
 
 	if (!result.valid()) {
 		static int debugCount = 0;
-		if (debugCount < 30) {
+		// if (debugCount < 30) {
 			printf("[ArchiveFileSystem::doesFileExist] NOT FOUND in archives: '%s'\n", filename);
 			debugCount++;
-		}
+		// }
 		return false;
 	}
 
@@ -278,10 +278,10 @@ Bool ArchiveFileSystem::doesFileExist(const Char* filename, FileInstance instanc
 
 	if (range.valid()) {
 		static int foundCount = 0;
-		if (foundCount < 10) {
-			printf("[ArchiveFileSystem::doesFileExist] FOUND in archives: '%s'\n", filename);
-			foundCount++;
-		}
+
+		printf("[ArchiveFileSystem::doesFileExist] FOUND in archives: '%s'\n", filename);
+		foundCount++;
+
 	}
 
 	return range.valid();
@@ -311,10 +311,10 @@ ArchiveFileSystem::ArchivedDirectoryInfoResult ArchiveFileSystem::getArchivedDir
 	}
 
 	static int debugLookupCount = 0;
-	if (debugLookupCount < 30) {
+	// if (debugLookupCount < 30) {
 		printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Looking up: '%s' (normalized: '%s')\n", directory, tokenizer.str());
 		debugLookupCount++;
-	}
+	// }
 
 	// .big files from Windows always use backslash separators internally
 	Bool infoInPath = tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
@@ -358,32 +358,8 @@ ArchiveFileSystem::ArchivedDirectoryInfoResult ArchiveFileSystem::getArchivedDir
 		}
 	}
 
-	// // Check if the final token is a filename (contains a dot)
-	// if (token.find('.'))
-	// {
-	// 	printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Final token is a filename: '%s'\n", token.str());
-	// 	
-	// }
-
 	result.dirInfo = dirInfo;
 	result.lastToken = token;
-	// printf("[ArchiveFileSystem::getArchivedDirectoryInfo] SUCCESS - found dirInfo, lastToken='%s'\n", token.str());
-
-	// // List all files in the final directory
-	// printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Files in final directory (%zu total):\n", dirInfo->m_files.size());
-	// 
-	// int count = 0;
-	// for (ArchivedFileLocationMap::iterator it = dirInfo->m_files.begin();
-	// 	it != dirInfo->m_files.end(); ++it, ++count)
-	// {
-	// 	printf("  [%d] '%s'\n", count, it->first.str());
-	// 	if (count >= 100) {
-	// 		printf("  ... and %zu more files (truncated)\n", dirInfo->m_files.size() - 100);
-	// 		break;
-	// 	}
-	// }
-	// 
-
 	return result;
 }
 
