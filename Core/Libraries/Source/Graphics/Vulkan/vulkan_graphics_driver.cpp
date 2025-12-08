@@ -43,6 +43,18 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 
+static const char* VkFormatName(VkFormat f) {
+  switch (f) {
+    case VK_FORMAT_UNDEFINED: return "UNDEFINED";
+    case VK_FORMAT_B8G8R8A8_UNORM: return "B8G8R8A8_UNORM";
+    case VK_FORMAT_B8G8R8A8_SRGB: return "B8G8R8A8_SRGB";
+    case VK_FORMAT_R8G8B8A8_UNORM: return "R8G8B8A8_UNORM";
+    case VK_FORMAT_R8G8B8A8_SRGB: return "R8G8B8A8_SRGB";
+    case VK_FORMAT_D32_SFLOAT: return "D32_SFLOAT";
+    default: return "(other)";
+  }
+}
+
 namespace Graphics {
 
   // ============================================================================
@@ -55,6 +67,10 @@ namespace Graphics {
   static std::vector<VkSemaphore> g_imageAvailableSemaphores;
   static std::vector<VkSemaphore> g_renderFinishedSemaphores;
   static std::vector<VkFence> g_inFlightFences;
+  // Per-swapchain-image render-finished semaphores to avoid semaphore reuse by presentation
+  static std::vector<VkSemaphore> g_renderFinishedSemaphoresByImage;
+  // Tracks which fence is currently using a given swapchain image (imageIndex -> fence)
+  static std::vector<VkFence> g_imagesInFlight;
 
   // Command buffers for frame rendering
   static VkCommandPool g_commandPool = VK_NULL_HANDLE;
@@ -899,6 +915,7 @@ namespace Graphics {
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     uint32_t image_count = 0;
     VkExtent2D extent{};
+    VkFormat format = VK_FORMAT_UNDEFINED;
     std::vector<VkImage> images;
     std::vector<VkImageView> image_views;
     uint32_t current_image_index = 0;
@@ -953,6 +970,10 @@ namespace Graphics {
           break;
         }
       }
+
+      // store chosen format for callers
+      format = surface_format.format;
+      printf("[Vulkan] Swapchain chosen format: %s (%d)\n", VkFormatName(format), format);
 
       // Select present mode (prefer mailbox)
       VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
@@ -1009,6 +1030,7 @@ namespace Graphics {
     }
 
     bool CreateFramebuffers(VkDevice device, VkFormat swapchain_format, VkRenderPass render_pass) {
+      printf("[Vulkan] VulkanSwapchain::CreateFramebuffers - swapchain_format=%s (%d)\n", VkFormatName(swapchain_format), swapchain_format);
       image_views.resize(images.size());
       for (size_t i = 0; i < images.size(); ++i) {
         VkImageViewCreateInfo view_info{};
@@ -1016,6 +1038,7 @@ namespace Graphics {
         view_info.image = images[i];
         view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
         view_info.format = swapchain_format;
+        printf("[Vulkan] Creating image view %zu with format %s (%d) for VkImage %p\n", i, VkFormatName(view_info.format), view_info.format, (void*)images[i]);
         view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         view_info.subresourceRange.baseMipLevel = 0;
         view_info.subresourceRange.levelCount = 1;
@@ -1126,6 +1149,7 @@ namespace Graphics {
 
     bool Create(VkDevice device, VkFormat color_format) {
       printf("[Vulkan] VulkanRenderPass::Create() - Creating render pass\n");
+      printf("[Vulkan] VulkanRenderPass::Create() - requested color_format=%s (%d)\n", VkFormatName(color_format), color_format);
 
       VkAttachmentDescription color_attachment{};
       color_attachment.format = color_format;
@@ -1349,7 +1373,7 @@ namespace Graphics {
     printf("[VulkanGraphicsDriver::Initialize] Creating render pass...\n");
     
     m_render_pass = std::make_unique<VulkanRenderPass>();
-    if (!m_render_pass->Create(m_device->handle, VK_FORMAT_B8G8R8A8_UNORM)) {
+    if (!m_render_pass->Create(m_device->handle, m_swapchain->format)) {
       printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create render pass\n");
       
       return false;
@@ -1358,7 +1382,7 @@ namespace Graphics {
     // Phase 41 Stage 2.5: Create framebuffers for swapchain
     printf("[VulkanGraphicsDriver::Initialize] Creating framebuffers...\n");
     
-    if (!m_swapchain->CreateFramebuffers(m_device->handle, VK_FORMAT_B8G8R8A8_UNORM, m_render_pass->handle)) {
+    if (!m_swapchain->CreateFramebuffers(m_device->handle, m_swapchain->format, m_render_pass->handle)) {
       printf("[VulkanGraphicsDriver::Initialize] ERROR: Failed to create framebuffers\n");
       
       return false;
@@ -1522,6 +1546,17 @@ namespace Graphics {
       return false;
     }
 
+    // If the acquired image is already in flight, wait on its fence to ensure it's not still used by GPU
+    if (m_swapchain && m_swapchain->images.size() > 0 && !g_imagesInFlight.empty()) {
+      VkFence inFlight = g_imagesInFlight[m_current_image_index];
+      if (inFlight != VK_NULL_HANDLE) {
+        // Wait until the previous frame using this image has finished
+        vkWaitForFences(m_device->handle, 1, &inFlight, VK_TRUE, UINT64_MAX);
+      }
+      // Mark this image as now being in use by the current frame's fence
+      g_imagesInFlight[m_current_image_index] = g_inFlightFences[m_current_frame];
+    }
+
     // Reset the fence only after we know we're submitting work
     vkResetFences(m_device->handle, 1, &g_inFlightFences[m_current_frame]);
 
@@ -1618,14 +1653,25 @@ namespace Graphics {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cmdBuffer;
 
-    VkSemaphore signalSemaphores[] = { g_renderFinishedSemaphores[m_current_frame] };
+    VkSemaphore signalSemaphoresLocal[1];
+    VkSemaphore* pSignalSemaphores = signalSemaphoresLocal;
+    if (!g_renderFinishedSemaphoresByImage.empty() && m_current_image_index < g_renderFinishedSemaphoresByImage.size()) {
+      signalSemaphoresLocal[0] = g_renderFinishedSemaphoresByImage[m_current_image_index];
+    }
+    else {
+      // Fallback to per-frame semaphore if per-image semaphores are not initialized
+      signalSemaphoresLocal[0] = g_renderFinishedSemaphores[m_current_frame];
+    }
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    submitInfo.pSignalSemaphores = pSignalSemaphores;
 
     result = vkQueueSubmit(m_device->graphics_queue, 1, &submitInfo, g_inFlightFences[m_current_frame]);
     if (result != VK_SUCCESS) {
       printf("[Vulkan] EndFrame: Failed to submit command buffer (result=%d)\n", result);
     }
+
+    // Signal the per-image render-finished semaphore for this image index
+    // (we used g_renderFinishedSemaphoresByImage[m_current_image_index] as the signal semaphore)
 
     m_in_frame = false;
   }
@@ -1648,9 +1694,15 @@ namespace Graphics {
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    VkSemaphore waitSemaphores[] = { g_renderFinishedSemaphores[m_current_frame] };
+    VkSemaphore presentWaitSemaphoresLocal[1];
+    if (!g_renderFinishedSemaphoresByImage.empty() && m_current_image_index < g_renderFinishedSemaphoresByImage.size()) {
+      presentWaitSemaphoresLocal[0] = g_renderFinishedSemaphoresByImage[m_current_image_index];
+    }
+    else {
+      presentWaitSemaphoresLocal[0] = g_renderFinishedSemaphores[m_current_frame];
+    }
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = waitSemaphores;
+    presentInfo.pWaitSemaphores = presentWaitSemaphoresLocal;
 
     VkSwapchainKHR swapChains[] = { m_swapchain->handle };
     presentInfo.swapchainCount = 1;
@@ -3103,8 +3155,9 @@ namespace Graphics {
       return VK_FORMAT_R8G8B8_UNORM;
     case TextureFormat::A8R8G8B8:
     case TextureFormat::X8R8G8B8:
-      // Phase 62: DirectX A8R8G8B8/X8R8G8B8 is BGRA byte order, not RGBA!
-      return VK_FORMAT_B8G8R8A8_UNORM;
+      // DirectX A8R8G8B8/X8R8G8B8 is BGRA byte order. Treat as sRGB for color textures
+      // to get correct gamma when sampling color/albedo textures.
+      return VK_FORMAT_B8G8R8A8_SRGB;
     case TextureFormat::R5G6B5:
       return VK_FORMAT_R5G6B5_UNORM_PACK16;
     case TextureFormat::A1R5G5B5:
@@ -3128,13 +3181,13 @@ namespace Graphics {
     case TextureFormat::V16U16:
       return VK_FORMAT_R16G16_SNORM;
     case TextureFormat::DXT1:
-      return VK_FORMAT_BC1_RGB_UNORM_BLOCK;
+      return VK_FORMAT_BC1_RGB_SRGB_BLOCK;
     case TextureFormat::DXT2:
     case TextureFormat::DXT3:
-      return VK_FORMAT_BC2_UNORM_BLOCK;
+      return VK_FORMAT_BC2_SRGB_BLOCK;
     case TextureFormat::DXT4:
     case TextureFormat::DXT5:
-      return VK_FORMAT_BC3_UNORM_BLOCK;
+      return VK_FORMAT_BC3_SRGB_BLOCK;
     default:
       printf("[Vulkan] WARNING: Unknown texture format %d, using R8G8B8A8\n", (int)format);
       return VK_FORMAT_R8G8B8A8_UNORM;
@@ -4303,6 +4356,14 @@ namespace Graphics {
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = desc.cubeMap ? 6 : 1;
 
+    // Debug: log image vs view formats to catch mismatches at creation time
+    printf("[Vulkan] Phase 57: Creating VkImageView - image_format=%s (%d), view_format=%s (%d)\n",
+      VkFormatName(vkFormat), vkFormat, VkFormatName(viewInfo.format), viewInfo.format);
+    if (vkFormat != viewInfo.format) {
+      printf("[Vulkan] Phase 57: WARNING - VkImage format (%s) differs from VkImageView format (%s)\n",
+        VkFormatName(vkFormat), VkFormatName(viewInfo.format));
+    }
+
     result = vkCreateImageView(m_device->handle, &viewInfo, nullptr, &allocation.imageView);
     if (result != VK_SUCCESS) {
       printf("[Vulkan] Phase 57: ERROR - Failed to create VkImageView (result=%d)\n", result);
@@ -4777,6 +4838,22 @@ namespace Graphics {
       }
     }
 
+    // Initialize images-in-flight tracking if swapchain is available
+    if (m_swapchain && m_swapchain->images.size() > 0) {
+      g_imagesInFlight.resize(m_swapchain->images.size());
+      for (size_t i = 0; i < g_imagesInFlight.size(); ++i) g_imagesInFlight[i] = VK_NULL_HANDLE;
+      printf("[Vulkan] CreateSyncObjects: imagesInFlight initialized for %zu images\n", g_imagesInFlight.size());
+      // Create per-image render finished semaphores
+      g_renderFinishedSemaphoresByImage.resize(m_swapchain->images.size());
+      for (size_t i = 0; i < g_renderFinishedSemaphoresByImage.size(); ++i) {
+        VkResult r = vkCreateSemaphore(m_device->handle, &semaphoreInfo, nullptr, &g_renderFinishedSemaphoresByImage[i]);
+        if (r != VK_SUCCESS) {
+          printf("[Vulkan] ERROR: Failed to create per-image render-finished semaphore %zu (result=%d)\n", i, r);
+          return false;
+        }
+      }
+    }
+
     printf("[Vulkan] CreateSyncObjects: Created %u sync object sets\n", MAX_FRAMES_IN_FLIGHT);
     return true;
   }
@@ -4800,6 +4877,11 @@ namespace Graphics {
     g_imageAvailableSemaphores.clear();
     g_renderFinishedSemaphores.clear();
     g_inFlightFences.clear();
+    g_imagesInFlight.clear();
+    for (size_t i = 0; i < g_renderFinishedSemaphoresByImage.size(); ++i) {
+      if (g_renderFinishedSemaphoresByImage[i] != VK_NULL_HANDLE) vkDestroySemaphore(m_device->handle, g_renderFinishedSemaphoresByImage[i], nullptr);
+    }
+    g_renderFinishedSemaphoresByImage.clear();
 
     printf("[Vulkan] DestroySyncObjects: Sync objects destroyed\n");
   }
@@ -4974,19 +5056,13 @@ namespace Graphics {
     dynamicState.pDynamicStates = dynamicStates.data();
 
     // Phase 58: Push constant ranges for vertex (MVP) and fragment (color) shaders
-    // Vertex shader: MVP matrix at offset 0 (64 bytes)
-    // Fragment shader: color at offset 64 (16 bytes)
-    std::array<VkPushConstantRange, 2> pushConstantRanges{};
-
-    // Vertex stage: MVP matrix
-    pushConstantRanges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    pushConstantRanges[0].offset = 0;
-    pushConstantRanges[0].size = VERTEX_PUSH_CONSTANT_SIZE;  // 64 bytes (mat4)
-
-    // Fragment stage: color
-    pushConstantRanges[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRanges[1].offset = VERTEX_PUSH_CONSTANT_SIZE;  // After MVP
-    pushConstantRanges[1].size = FRAGMENT_PUSH_CONSTANT_SIZE;  // 16 bytes (vec4)
+    // Use a single combined range covering both vertex and fragment push-constants
+    // so that shader-declared offsets (some SPIR-V emitters place fragment block at 0)
+    // are always contained within the pipeline layout.
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = TOTAL_PUSH_CONSTANT_SIZE; // covers vertex + fragment
 
     printf("[Vulkan] Phase 58: Push constants - Vertex MVP: %u bytes, Fragment color: %u bytes (total: %u)\n",
       VERTEX_PUSH_CONSTANT_SIZE, FRAGMENT_PUSH_CONSTANT_SIZE, TOTAL_PUSH_CONSTANT_SIZE);
@@ -5003,8 +5079,8 @@ namespace Graphics {
     // Pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
-    pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data();
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
     // Phase 57: Include texture descriptor set layout if available
     if (g_textureDescriptorSetLayout != VK_NULL_HANDLE) {
