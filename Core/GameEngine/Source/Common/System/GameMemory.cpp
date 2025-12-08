@@ -67,6 +67,8 @@
 	#include "Common/StackDump.h"
 #endif
 
+#include <new> // Required for std::bad_alloc replacement
+
 #ifdef MEMORYPOOL_DEBUG
 DECLARE_PERF_TIMER(MemoryPoolDebugging)
 DECLARE_PERF_TIMER(MemoryPoolInitFilling)
@@ -3275,126 +3277,99 @@ static int theLinkTester = 0;
 void* STLSpecialAlloc::allocate(size_t __n)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-	return TheDynamicMemoryAllocator->allocateBytes(__n, "STL_");
+	// Use calloc here too, just to be safe with STL containers
+	return calloc(1, __n);
 }
-
 //-----------------------------------------------------------------------------
 void STLSpecialAlloc::deallocate(void* __p, size_t)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-	TheDynamicMemoryAllocator->freeBytes(__p);
+	// Direct free for safety
+	free(__p);
 }
 
 //-----------------------------------------------------------------------------
+// LINUX PORT FIX:
+// Redirect global new/delete to standard malloc/free.
+// 
+// UDPATE: Used calloc() instead of malloc().
+// Why: The original game code assumes that new objects are zero-initialized 
+// (pointers are NULL, integers are 0). Linux malloc returns garbage memory.
+// Using calloc forces zero-initialization globally, fixing crashes in 
+// constructors that assume member variables start as NULL (like W3DBridgeBuffer).
+//-----------------------------------------------------------------------------
+
 /**
-	overload for global operator new; send requests to TheDynamicMemoryAllocator.
+	overload for global operator new; use calloc for zero-init.
 */
 void *operator new(size_t size)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-	return TheDynamicMemoryAllocator->allocateBytes(size, "global operator new");
+	// calloc(1, size) allocates 'size' bytes and initializes them to 0.
+	void *p = calloc(1, size);
+	if (!p) throw std::bad_alloc();
+	return p;
 }
 
-//-----------------------------------------------------------------------------
 /**
-	overload for global operator new[]; send requests to TheDynamicMemoryAllocator.
+	overload for global operator new[]; use calloc for zero-init.
 */
 void *operator new[](size_t size)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-	return TheDynamicMemoryAllocator->allocateBytes(size, "global operator new[]");
+	void *p = calloc(1, size);
+	if (!p) throw std::bad_alloc();
+	return p;
 }
 
-//-----------------------------------------------------------------------------
 /**
-	overload for global operator delete; send requests to TheDynamicMemoryAllocator.
+	overload for global operator delete; use standard free.
 */
-void operator delete(void *p)
+void operator delete(void *p) noexcept
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	TheDynamicMemoryAllocator->freeBytes(p);
+	free(p);
 }
 
-//-----------------------------------------------------------------------------
 /**
-	overload for global operator delete[]; send requests to TheDynamicMemoryAllocator.
+	overload for global operator delete[]; use standard free.
 */
-void operator delete[](void *p)
+void operator delete[](void *p) noexcept
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	TheDynamicMemoryAllocator->freeBytes(p);
+	free(p);
 }
 
 //-----------------------------------------------------------------------------
-/**
-	overload for global operator new (MFC debug version); send requests to TheDynamicMemoryAllocator.
-*/
+// MFC Debug variants - mapped to calloc as well
+//-----------------------------------------------------------------------------
+
 void* operator new(size_t size, const char * fname, int)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-#ifdef MEMORYPOOL_DEBUG
-	return TheDynamicMemoryAllocator->allocateBytesImplementation(size, fname);
-#else
-	return TheDynamicMemoryAllocator->allocateBytesImplementation(size);
-#endif
+	return calloc(1, size);
 }
 
-//-----------------------------------------------------------------------------
-/**
-	overload for global operator delete (MFC debug version); send requests to TheDynamicMemoryAllocator.
-*/
 void operator delete(void * p, const char *, int)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	TheDynamicMemoryAllocator->freeBytes(p);
+	free(p);
 }
 
-//-----------------------------------------------------------------------------
-/**
-	overload for global operator new (MFC debug version); send requests to TheDynamicMemoryAllocator.
-*/
 void* operator new[](size_t size, const char * fname, int)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-#ifdef MEMORYPOOL_DEBUG
-	return TheDynamicMemoryAllocator->allocateBytesImplementation(size, fname);
-#else
-	return TheDynamicMemoryAllocator->allocateBytesImplementation(size);
-#endif
+	return calloc(1, size);
 }
 
-//-----------------------------------------------------------------------------
-/**
-	overload for global operator delete (MFC debug version); send requests to TheDynamicMemoryAllocator.
-*/
 void operator delete[](void * p, const char *, int)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	TheDynamicMemoryAllocator->freeBytes(p);
+	free(p);
 }
-
 //-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+// LINUX PORT FIX: Force disable malloc overrides
+#if 0 
 void *calloc(size_t a, size_t b)
 {
 	++theLinkTester;
@@ -3405,7 +3380,7 @@ void *calloc(size_t a, size_t b)
 #endif
 
 //-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+#if 0
 void  free(void * p)
 {
 	++theLinkTester;
@@ -3416,7 +3391,7 @@ void  free(void * p)
 #endif
 
 //-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+#if 0
 void *malloc(size_t a)
 {
 	++theLinkTester;
@@ -3427,7 +3402,7 @@ void *malloc(size_t a)
 #endif
 
 //-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+#if 0
 void *realloc(void *p, size_t s)
 {
 	DEBUG_CRASH(("realloc is evil. do not call it."));
@@ -3488,6 +3463,10 @@ void initMemoryManager()
 	free(linktest);
 #endif
 
+	// LINUX PORT FIX:
+	// We intentionally disabled the link tester because we are using standard malloc/free
+	// to avoid conflicts with shared system libraries (Vulkan/OpenAL).
+	/*
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
 	if (theLinkTester != 10)
 #else
@@ -3496,6 +3475,7 @@ void initMemoryManager()
 	{
 		DEBUG_CRASH(("Wrong operator new/delete linked in! Fix this..."));
 	}
+	*/
 
 	theMainInitFlag = true;
 
