@@ -47,8 +47,9 @@ extern "C" {
 }
 
 #ifdef RTS_HAS_OPENAL
-#include "OpenALAudioDevice/OpenALAudioManager.h"
+#include "Audio/OpenALAudioManager.h"
 #include "OpenALAudioDevice/OpenALAudioStream.h"
+#include <AL/al.h>
 #endif
 
 #include <chrono>
@@ -211,10 +212,10 @@ VideoStreamInterface* FFmpegVideoPlayer::createStream( File* file )
 		// never let volume go to 0, as Bink will interpret that as "play at full volume".
 		Int mod = (Int) ((TheAudio->getVolume(AudioAffect_Speech) * 0.8f) * 100) + 1;
 		[[maybe_unused]]  Int volume = (32768 * mod) / 100;
-		printf("FFmpegVideoPlayer::createStream() - About to set volume (%g -> %d -> %d",
+		printf("FFmpegVideoPlayer::createStream() - About to set volume (%g -> %d -> %d\n",
 			TheAudio->getVolume(AudioAffect_Speech), mod, volume);
 		//BinkSetVolume( stream->m_handle,0, volume);
-		printf(("FFmpegVideoPlayer::createStream() - set volume"));
+		printf("FFmpegVideoPlayer::createStream() - set volume\n");
 	}
 
 	return stream;
@@ -311,7 +312,7 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 	m_ffmpegFile->setFrameCallback(onFrame);
 	m_ffmpegFile->setUserData(this);
 
-#ifdef RTS_USE_OPENAL
+#ifdef RTS_HAS_OPENAL
 	// Release the audio handle if it's already in use
 	OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
 	audioStream->reset();
@@ -321,7 +322,8 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 	while (m_good && m_gotFrame == false)
 		m_good = m_ffmpegFile->decodePacket();
 
- #ifdef RTS_USE_OPENAL
+
+#ifdef RTS_HAS_OPENAL
 	// Start audio playback
 	audioStream->play();
 #endif
@@ -335,6 +337,10 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 
 FFmpegVideoStream::~FFmpegVideoStream()
 {
+	// Ensure any remaining audio handle is released when the stream is destroyed
+	if (TheAudio) {
+		TheAudio->releaseHandleForBink();
+	}
 	av_freep(&m_audioBuffer);
 	av_frame_free(&m_frame);
 	sws_freeContext(m_swsContext);
@@ -349,7 +355,7 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 		videoStream->m_frame = av_frame_clone(frame);
 		videoStream->m_gotFrame = true;
 	}
-#ifdef RTS_USE_OPENAL
+#ifdef RTS_HAS_OPENAL
 	else if (stream_type == AVMEDIA_TYPE_AUDIO) {
 		OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
 		audioStream->update();
@@ -381,8 +387,83 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 			frameData = videoStream->m_audioBuffer;
 		}
 
-		ALenum format = OpenALAudioManager::getALFormat(frame->ch_layout.nb_channels, bytesPerSample * 8);
-		audioStream->bufferData(frameData, frameSize, format, frame->sample_rate);
+
+		// Convert 32-bit samples (float/int32) to 16-bit PCM if necessary (OpenALAudioDevice supports 8/16-bit)
+		uint8_t* outData = frameData;
+		int outFrameSize = frameSize;
+		int outBytesPerSample = bytesPerSample;
+		if (bytesPerSample == 4) {
+			int samples = frame->nb_samples * frame->ch_layout.nb_channels;
+			int outSize = samples * 2; // 16-bit
+			// Preserve source pointer before allocating new buffer (avoid invalidating when planar data was in m_audioBuffer)
+			uint8_t* srcPtr = frameData;
+			bool srcOwned = (srcPtr == videoStream->m_audioBuffer);
+
+			// Allocate conversion buffer
+			uint8_t* convBuf = static_cast<uint8_t*>(av_malloc((size_t)outSize));
+			if (convBuf == nullptr) {
+				printf(("Failed to allocate audio buffer for conversion"));
+				return;
+			}
+
+			// Convert float -> int16
+			if (sampleFmt == AV_SAMPLE_FMT_FLT || sampleFmt == AV_SAMPLE_FMT_FLTP) {
+				float* src = reinterpret_cast<float*>(srcPtr);
+				int16_t* dst = reinterpret_cast<int16_t*>(convBuf);
+				for (int i = 0; i < samples; ++i) {
+					float v = src[i];
+					if (v > 1.0f) v = 1.0f;
+					if (v < -1.0f) v = -1.0f;
+					dst[i] = (int16_t)lrintf(v * 32767.0f);
+				}
+			}
+			// Convert s32 -> int16
+			else if (sampleFmt == AV_SAMPLE_FMT_S32 || sampleFmt == AV_SAMPLE_FMT_S32P) {
+				int32_t* src = reinterpret_cast<int32_t*>(srcPtr);
+				int16_t* dst = reinterpret_cast<int16_t*>(convBuf);
+				for (int i = 0; i < samples; ++i) {
+					int32_t v = src[i] >> 16; // simple downscale
+					if (v > 32767) v = 32767;
+					if (v < -32768) v = -32768;
+					dst[i] = (int16_t)v;
+				}
+			}
+			else {
+				// Unknown 32-bit layout: copy lower 16 bits
+				uint8_t* src = srcPtr;
+				int16_t* dst = reinterpret_cast<int16_t*>(convBuf);
+				for (int i = 0; i < samples; ++i) {
+					dst[i] = (int16_t)(src[i * 4] | (src[i * 4 + 1] << 8));
+				}
+			}
+
+			// Replace m_audioBuffer with converted buffer (free previous if we owned it)
+			if (srcOwned && videoStream->m_audioBuffer) {
+				av_free(videoStream->m_audioBuffer);
+			}
+			videoStream->m_audioBuffer = convBuf;
+			outData = convBuf;
+			outBytesPerSample = 2;
+			outFrameSize = outSize;
+		}
+
+		// Map channel count and bits-per-sample to an OpenAL format
+		ALenum format = 0;
+		int channels = frame->ch_layout.nb_channels;
+		int bits = outBytesPerSample * 8;
+		if (channels == 1 && bits == 8) format = AL_FORMAT_MONO8;
+		else if (channels == 1 && bits == 16) format = AL_FORMAT_MONO16;
+		else if (channels == 2 && bits == 8) format = AL_FORMAT_STEREO8;
+		else if (channels == 2 && bits == 16) format = AL_FORMAT_STEREO16;
+		else {
+			format = AL_FORMAT_STEREO16;
+			printf("FFmpegVideoStream::onFrame - unsupported format channels=%d bits=%d, falling back to STEREO16\n", channels, bits);
+		}
+
+		// Debug: log audio frame info before forwarding to OpenAL
+		printf("FFmpegVideoStream::onFrame - audio frame: channels=%d, bytesPerSample=%d, frameSize=%d, alFormat=0x%X, sample_rate=%d\n",
+			frame->ch_layout.nb_channels, outBytesPerSample, outFrameSize, (unsigned int)format, frame->sample_rate);
+		audioStream->bufferData(outData, outFrameSize, format, frame->sample_rate);
 	}
 #endif
 }
@@ -394,10 +475,10 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 
 void FFmpegVideoStream::update( void )
 {
-#ifdef RTS_USE_OPENAL
-	// Start audio playback
-	OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
-	audioStream->play();
+#ifdef RTS_HAS_OPENAL
+ 	// Start audio playback
+ 	OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
+ 	audioStream->play();
 #endif
 	//BinkWait( m_handle );
 }
@@ -526,6 +607,21 @@ Int	FFmpegVideoStream::frameCount( void )
 void FFmpegVideoStream::frameGoto( Int index )
 {
 	m_ffmpegFile->seekFrame(index);
+}
+
+//============================================================================
+// FFmpegVideoStream::close
+//============================================================================
+
+void FFmpegVideoStream::close( void )
+{
+	// Ensure any backend-specific audio streaming is stopped and released
+	if (TheAudio) {
+		TheAudio->releaseHandleForBink();
+	}
+
+	// Delete the stream object (VideoStream::close would have done this by default)
+	delete this;
 }
 
 //============================================================================

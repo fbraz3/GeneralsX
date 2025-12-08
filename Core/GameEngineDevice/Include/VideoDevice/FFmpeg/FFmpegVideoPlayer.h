@@ -68,6 +68,8 @@ class FFmpegVideoStream : public VideoStream
 		virtual ~FFmpegVideoStream();
 
 		static void onFrame(AVFrame *frame, int stream_idx, int stream_type, void *user_data);
+
+		virtual void	close( void );
 	public:
 
 		virtual void update( void );											///< Update bink stream

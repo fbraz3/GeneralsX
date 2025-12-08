@@ -186,6 +186,7 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
     Source/Audio/OpenALAudioDevice.cpp
     Source/Audio/OpenALAudioManager.cpp
+    Source/Audio/OpenALAudioStream.cpp
     Source/Win32Device/Common/Win32BIGFile.cpp
     Source/Win32Device/Common/Win32BIGFileSystem.cpp
 #    Source/Win32Device/Common/Win32CDManager.cpp
@@ -243,6 +244,10 @@ endif()
 
 # Link OpenAL for cross-platform audio support (Phase 47)
 target_link_libraries(corei_gameenginedevice_private INTERFACE ${OPENAL_LIBRARIES})
+
+# If OpenAL is linked, expose a compile definition so source files
+# can enable OpenAL-specific implementations (RTS_HAS_OPENAL).
+target_compile_definitions(corei_gameenginedevice_private INTERFACE RTS_HAS_OPENAL)
 
 if(RTS_BUILD_OPTION_FFMPEG)
     # Find FFmpeg using pkg-config (Linux/macOS)

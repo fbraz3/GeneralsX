@@ -136,7 +136,7 @@ void OpenALAudioDevice_Destroy(OpenALAudioDevice* device) {
 }
 
 void OpenALAudioDevice_Initialize(OpenALAudioDevice* device) {
-  if (!device || !(device->device)) {
+  if (!device) {
     return;
   }
   /* Open default audio device */
@@ -432,9 +432,31 @@ void OpenALAudioDevice_BindBufferToSource(OpenALAudioDevice* device,
   uint32_t buffer_id) {
   if (!device) return;
 
+  // Validate buffer exists
+  bool buffer_found = false;
+  for (uint32_t bi = 0; bi < device->num_buffers; ++bi) {
+    if (device->buffers[bi].buffer_id == buffer_id) {
+      buffer_found = true;
+      break;
+    }
+  }
+  if (!buffer_found) {
+    printf("OpenALAudioDevice_BindBufferToSource - buffer id %u not found\n", buffer_id);
+    return;
+  }
+
   for (uint32_t i = 0; i < device->max_sources; i++) {
     if (device->sources[i].handle == handle && device->sources[i].in_use) {
-      alSourcei(device->sources[i].source_id, AL_BUFFER, buffer_id);
+      if (device->sources[i].source_id == 0) {
+        printf("OpenALAudioDevice_BindBufferToSource - source_id is 0 for handle %u\n", handle);
+        return;
+      }
+      // Safe to bind
+      alSourcei(device->sources[i].source_id, AL_BUFFER, (ALint)buffer_id);
+      int err = alGetError();
+      if (err != AL_NO_ERROR) {
+        printf("OpenALAudioDevice_BindBufferToSource - alSourcei error %d\n", err);
+      }
       device->sources[i].current_buffer = buffer_id;
       break;
     }
