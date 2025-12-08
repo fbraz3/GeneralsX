@@ -79,7 +79,7 @@ Bool ReplayRecorder_StartRecording(Int difficulty, Int originalGameMode, Int ran
 	if (difficulty < 0 || difficulty > 3)
 	{
 		DEBUG_LOG(("WARNING: ReplayRecorder_StartRecording - Invalid difficulty %d, clamping to 0-3\n", difficulty));
-		difficulty = MAX(0, MIN(3, difficulty));
+		difficulty = std::max(0, std::min(3, difficulty));
 	}
 
 	// Record start time for duration calculation

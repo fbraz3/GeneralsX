@@ -34,6 +34,7 @@
 **    Phase 14: Shader System Implementation
 **
 ******************************************************************************/
+#include <cstdint>
 
 #ifndef D3D8_VULKAN_SHADER_H_
 #define D3D8_VULKAN_SHADER_H_
@@ -49,7 +50,7 @@ extern "C" {
 typedef void* VkDevice;
 typedef void* VkShaderModule;
 typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+// typedef unsigned long long uint64_t;
 typedef unsigned char uint8_t;
 
 /* ============================================================================

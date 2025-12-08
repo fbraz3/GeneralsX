@@ -40,6 +40,9 @@
 
 #pragma pack(push, 1)
 
+#include <cstdint>
+#include <sys/types.h>
+
 // If you wish to display loading error messages call targa functions inside of
 // the following macro - for example TARGA_ERROR_HANDLER(targa.Open(filename, TGA_READMODE));
 // The error code is returned back from the handler so it can be used in an expression.
@@ -67,18 +70,18 @@ long Targa_Error_Handler(long error_code,const char* filename);
  */
 typedef struct _TGAHeader
 	{
-	char  IDLength;
-	char  ColorMapType;
-	char  ImageType;
-	short CMapStart;
-	short CMapLength;
-	char  CMapDepth;
-	short XOffset;
-	short YOffset;
-	short Width;
-	short Height;
-	char  PixelDepth;
-	char  ImageDescriptor;
+	uint8_t  IDLength;
+	uint8_t  ColorMapType;
+	uint8_t  ImageType;
+	int16_t  CMapStart;
+	int16_t  CMapLength;
+	uint8_t  CMapDepth;
+	int16_t  XOffset;
+	int16_t  YOffset;
+	int16_t  Width;
+	int16_t  Height;
+	uint8_t  PixelDepth;
+	uint8_t  ImageDescriptor;
 	} TGAHeader;
 
 /* ImageType definiton */
@@ -133,8 +136,8 @@ typedef struct _TGAHeader
  */
 typedef struct _TGA2Footer
 	{
-	long Extension;
-	long Developer;
+	int32_t Extension;   // 32-bit on-disk values (DWORD)
+	int32_t Developer;   // 32-bit on-disk values (DWORD)
 	char Signature[16];
 	char RsvdChar;
 	char BZST;
@@ -150,9 +153,9 @@ typedef struct _TGA2Footer
  */
 typedef struct _TGA2DateStamp
 	{
-	short Month;
-	short Day;
-	short Year;
+	int16_t Month;
+	int16_t Day;
+	int16_t Year;
 	} TGA2DateStamp;
 
 /* TGA2TimeStamp - A series of 3 WORD values which define the integer value
@@ -164,9 +167,9 @@ typedef struct _TGA2DateStamp
  */
 typedef struct _TGA2TimeStamp
 	{
-	short Hour;
-	short Minute;
-	short Second;
+	int16_t Hour;
+	int16_t Minute;
+	int16_t Second;
 	} TGA2TimeStamp;
 
 /* TGA2SoftVer - Define the version of the software used to generate file.
@@ -176,8 +179,8 @@ typedef struct _TGA2TimeStamp
  */
 typedef struct _TGA2SoftVer
 	{
-	short Number;
-	char  Letter;
+	int16_t Number;
+	char    Letter;
 	} TGA2SoftVer;
 
 /* TGA2Ratio - Numerator and denominator which when taken together specify
@@ -188,8 +191,8 @@ typedef struct _TGA2SoftVer
  */
 typedef struct _TGA2Ratio
 	{
-	short Numer;
-	short Denom;
+	int16_t Numer;
+	int16_t Denom;
 	} TGA2Ratio;
 
 /* TGA2Extension - Extension area, provided for additional file information.
@@ -215,22 +218,22 @@ typedef struct _TGA2Ratio
  */
 typedef struct _TGA2Extension
 	{
-	short         ExtSize;
-	char          AuthName[41];
-	char          AuthComment[324];
-	TGA2DateStamp Date;
-	TGA2TimeStamp Time;
-	char          JobName[41];
-	TGA2TimeStamp JobTime;
-	char          SoftID[41];
-	TGA2SoftVer   SoftVer;
-	long          KeyColor;
-	TGA2Ratio     Aspect;
-	TGA2Ratio     Gamma;
-	long          ColorCor;
-	long          PostStamp;
-	long          ScanLine;
-	char          Attributes;
+	int16_t        ExtSize;
+	char           AuthName[41];
+	char           AuthComment[324];
+	TGA2DateStamp  Date;
+	TGA2TimeStamp  Time;
+	char           JobName[41];
+	TGA2TimeStamp  JobTime;
+	char           SoftID[41];
+	TGA2SoftVer    SoftVer;
+	int32_t        KeyColor;
+	TGA2Ratio      Aspect;
+	TGA2Ratio      Gamma;
+	int32_t        ColorCor;
+	int32_t        PostStamp;
+	int32_t        ScanLine;
+	char           Attributes;
 	} TGA2Extension;
 
 /* Alpha channel attributes (Extension Area) */
@@ -311,7 +314,7 @@ class Targa
 		bool File_Open_Read(const char* name);
 		bool File_Open_Write(const char* name);
 		bool File_Open_ReadWrite(const char* name);
-		int File_Seek(int pos, int dir);
-		int File_Read(void *buffer, int size);
-		int File_Write(void *buffer, int size);
+		int64_t File_Seek(int64_t pos, int dir);
+		ssize_t File_Read(void *buffer, size_t size);
+		ssize_t File_Write(void *buffer, size_t size);
 	};

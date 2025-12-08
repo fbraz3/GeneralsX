@@ -65,7 +65,7 @@ class RenderInfoClass;
 class ViewportClass
 {
 public:
-	ViewportClass(void) : Min(0,0), Max(1,1)													{ }
+	ViewportClass(void) : Min(0,0), Max(1,1)												{ }
 	ViewportClass(const Vector2 & min,const Vector2 & max) : Min(min), Max(max)	{ }
 	ViewportClass(const ViewportClass & vp) : Min(vp.Min), Max(vp.Max)				{ }
 

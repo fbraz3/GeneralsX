@@ -206,7 +206,7 @@ void XferLoad::xferAsciiString( AsciiString *asciiStringData )
 	static Char buffer[ MAX_XFER_LOAD_STRING_BUFFER ];
 
 	if( len > 0 )
-		xferUser( buffer, sizeof( Byte ) * len );
+		xferUser( buffer, sizeof( SignedByte ) * len );
 	buffer[ len ] = 0;  // terminate
 
 	// save into ascii string

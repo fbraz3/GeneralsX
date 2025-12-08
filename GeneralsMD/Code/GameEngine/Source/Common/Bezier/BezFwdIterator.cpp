@@ -25,6 +25,8 @@
 #include "PreRTS.h"
 #include "Common/BezFwdIterator.h"
 
+// Phase 54: D3DX8 math compat now included through BezFwdIterator.h -> BezierSegment.h
+
 //-------------------------------------------------------------------------------------------------
 BezFwdIterator::BezFwdIterator(): mStep(0), mStepsDesired(0)
 {

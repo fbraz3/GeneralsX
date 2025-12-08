@@ -232,8 +232,8 @@ const Int MAX_POLYGON_NEIGHBORS = 3;  // we use nothing but triangles for
 																			// most 3 neighbors
 const Int NO_NEIGHBOR = -1;  // entry value for neighbor when there isn't one
 
-const Byte POLY_VISIBLE	  = 0x01;  // polygon is visible from light
-const Byte POLY_PROCESSED = 0x02;  // this poly has been processed
+const SignedByte POLY_VISIBLE	  = 0x01;  // polygon is visible from light
+const SignedByte POLY_PROCESSED = 0x02;  // this poly has been processed
 
 // STRUCT /////////////////////////////////////////////////////////////////////
 
@@ -253,7 +253,7 @@ struct  PolyNeighbor
 {
 
 	Short myIndex;  // our polygon index so we know who we are
-	Byte status;  // status flags used when processing neighbors
+	SignedByte status;  // status flags used when processing neighbors
 	NeighborEdge neighbor[ MAX_POLYGON_NEIGHBORS ];
 
 };

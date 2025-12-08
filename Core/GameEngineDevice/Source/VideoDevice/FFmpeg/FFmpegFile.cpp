@@ -27,7 +27,7 @@
 /////////////////////////////////////////////////
 
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
-#include "Common/File.h"
+#include "Common/file.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -37,7 +37,7 @@ extern "C" {
 
 FFmpegFile::FFmpegFile() {}
 
-FFmpegFile::FFmpegFile(File *file)
+FFmpegFile::FFmpegFile(File* file)
 {
 	open(file);
 }
@@ -47,7 +47,7 @@ FFmpegFile::~FFmpegFile()
 	close();
 }
 
-Bool FFmpegFile::open(File *file)
+Bool FFmpegFile::open(File* file)
 {
 	DEBUG_ASSERTCRASH(m_file == nullptr, ("already open"));
 	DEBUG_ASSERTCRASH(file != nullptr, ("null file pointer"));
@@ -55,7 +55,7 @@ Bool FFmpegFile::open(File *file)
 	av_log_set_level(AV_LOG_INFO);
 #endif
 
-// This is required for FFmpeg older than 4.0 -> deprecated afterwards though
+	// This is required for FFmpeg older than 4.0 -> deprecated afterwards though
 #if LIBAVFORMAT_VERSION_MAJOR < 58
 	av_register_all();
 #endif
@@ -71,7 +71,7 @@ Bool FFmpegFile::open(File *file)
 	}
 
 	constexpr size_t avio_ctx_buffer_size = 0x10000;
-	uint8_t *buffer = static_cast<uint8_t *>(av_malloc(avio_ctx_buffer_size));
+	uint8_t* buffer = static_cast<uint8_t*>(av_malloc(avio_ctx_buffer_size));
 	if (buffer == nullptr) {
 		DEBUG_LOG(("Failed to alloc AVIOContextBuffer"));
 		close();
@@ -108,15 +108,15 @@ Bool FFmpegFile::open(File *file)
 
 	m_streams.resize(m_fmtCtx->nb_streams);
 	for (unsigned int stream_idx = 0; stream_idx < m_fmtCtx->nb_streams; stream_idx++) {
-		AVStream *av_stream = m_fmtCtx->streams[stream_idx];
-		const AVCodec *input_codec = avcodec_find_decoder(av_stream->codecpar->codec_id);
+		AVStream* av_stream = m_fmtCtx->streams[stream_idx];
+		const AVCodec* input_codec = avcodec_find_decoder(av_stream->codecpar->codec_id);
 		if (input_codec == nullptr) {
 			DEBUG_LOG(("Codec not supported: '%s'", avcodec_get_name(av_stream->codecpar->codec_id)));
 			close();
 			return false;
 		}
 
-		AVCodecContext *codec_ctx = avcodec_alloc_context3(input_codec);
+		AVCodecContext* codec_ctx = avcodec_alloc_context3(input_codec);
 		if (codec_ctx == nullptr) {
 			DEBUG_LOG(("Could not allocate codec context"));
 			close();
@@ -141,7 +141,7 @@ Bool FFmpegFile::open(File *file)
 			return false;
 		}
 
-		FFmpegStream &output_stream = m_streams[stream_idx];
+		FFmpegStream& output_stream = m_streams[stream_idx];
 		output_stream.codec_ctx = codec_ctx;
 		output_stream.codec = input_codec;
 		output_stream.stream_type = input_codec->type;
@@ -157,9 +157,9 @@ Bool FFmpegFile::open(File *file)
 /**
  * Read an FFmpeg packet from file
  */
-int FFmpegFile::readPacket(void *opaque, uint8_t *buf, int buf_size)
+int FFmpegFile::readPacket(void* opaque, uint8_t* buf, int buf_size)
 {
-	File *file = static_cast<File *>(opaque);
+	File* file = static_cast<File*>(opaque);
 	const int read = file->read(buf, buf_size);
 
 	// Streaming protocol requires us to return real errors - when we read less equal 0 we're at EOF
@@ -178,7 +178,7 @@ void FFmpegFile::close()
 		avformat_close_input(&m_fmtCtx);
 	}
 
-	for (auto &stream : m_streams) {
+	for (auto& stream : m_streams) {
 		if (stream.codec_ctx != nullptr) {
 			avcodec_free_context(&stream.codec_ctx);
 			av_frame_free(&stream.frame);
@@ -213,8 +213,8 @@ Bool FFmpegFile::decodePacket()
 	const int stream_idx = m_packet->stream_index;
 	DEBUG_ASSERTCRASH(m_streams.size() > stream_idx, ("stream index out of bounds"));
 
-	auto &stream = m_streams[stream_idx];
-	AVCodecContext *codec_ctx = stream.codec_ctx;
+	auto& stream = m_streams[stream_idx];
+	AVCodecContext* codec_ctx = stream.codec_ctx;
 	result = avcodec_send_packet(codec_ctx, m_packet);
 	// Check if we need more data
 	if (result == AVERROR(EAGAIN))
@@ -256,7 +256,7 @@ Bool FFmpegFile::decodePacket()
 void FFmpegFile::seekFrame(int frame_idx)
 {
 	// Note: not tested, since not used ingame
-	for (const auto &stream : m_streams) {
+	for (const auto& stream : m_streams) {
 		Int64 timestamp = av_q2d(m_fmtCtx->streams[stream.stream_idx]->time_base) * frame_idx
 			* av_q2d(m_fmtCtx->streams[stream.stream_idx]->avg_frame_rate);
 		int result = av_seek_frame(m_fmtCtx, stream.stream_idx, timestamp, AVSEEK_FLAG_ANY);
@@ -270,13 +270,13 @@ void FFmpegFile::seekFrame(int frame_idx)
 
 Bool FFmpegFile::hasAudio() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_AUDIO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_AUDIO);
 	return stream != nullptr;
 }
 
-const FFmpegFile::FFmpegStream *FFmpegFile::findMatch(Int type) const
+const FFmpegFile::FFmpegStream* FFmpegFile::findMatch(Int type) const
 {
-	for (auto &stream : m_streams) {
+	for (auto& stream : m_streams) {
 		if (stream.stream_type == type)
 			return &stream;
 	}
@@ -286,7 +286,7 @@ const FFmpegFile::FFmpegStream *FFmpegFile::findMatch(Int type) const
 
 Int FFmpegFile::getNumChannels() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_AUDIO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_AUDIO);
 	if (stream == nullptr)
 		return 0;
 
@@ -295,7 +295,7 @@ Int FFmpegFile::getNumChannels() const
 
 Int FFmpegFile::getSampleRate() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_AUDIO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_AUDIO);
 	if (stream == nullptr)
 		return 0;
 
@@ -304,7 +304,7 @@ Int FFmpegFile::getSampleRate() const
 
 Int FFmpegFile::getBytesPerSample() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_AUDIO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_AUDIO);
 	if (stream == nullptr)
 		return 0;
 
@@ -313,7 +313,7 @@ Int FFmpegFile::getBytesPerSample() const
 
 Int FFmpegFile::getSizeForSamples(Int numSamples) const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_AUDIO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_AUDIO);
 	if (stream == nullptr)
 		return 0;
 
@@ -322,7 +322,7 @@ Int FFmpegFile::getSizeForSamples(Int numSamples) const
 
 Int FFmpegFile::getHeight() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_VIDEO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_VIDEO);
 	if (stream == nullptr)
 		return 0;
 
@@ -331,7 +331,7 @@ Int FFmpegFile::getHeight() const
 
 Int FFmpegFile::getWidth() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_VIDEO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_VIDEO);
 	if (stream == nullptr)
 		return 0;
 
@@ -340,7 +340,7 @@ Int FFmpegFile::getWidth() const
 
 Int FFmpegFile::getNumFrames() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_VIDEO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_VIDEO);
 	if (m_fmtCtx == nullptr || stream == nullptr || m_fmtCtx->streams[stream->stream_idx] == nullptr)
 		return 0;
 
@@ -349,7 +349,7 @@ Int FFmpegFile::getNumFrames() const
 
 Int FFmpegFile::getCurrentFrame() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_VIDEO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_VIDEO);
 	if (stream == nullptr)
 		return 0;
 	return stream->codec_ctx->frame_num;
@@ -357,7 +357,7 @@ Int FFmpegFile::getCurrentFrame() const
 
 Int FFmpegFile::getPixelFormat() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_VIDEO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_VIDEO);
 	if (stream == nullptr)
 		return AV_PIX_FMT_NONE;
 
@@ -366,7 +366,7 @@ Int FFmpegFile::getPixelFormat() const
 
 UnsignedInt FFmpegFile::getFrameTime() const
 {
-	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_VIDEO);
+	const FFmpegStream* stream = findMatch(AVMEDIA_TYPE_VIDEO);
 	if (stream == nullptr)
 		return 0u;
 	return 1000u / av_q2d(m_fmtCtx->streams[stream->stream_idx]->avg_frame_rate);

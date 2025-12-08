@@ -264,8 +264,8 @@ void WW3D::Set_NPatches_Level(unsigned level)
 WW3DErrorType WW3D::Init(void *hwnd, char *defaultpal, bool lite)
 {
 	assert(IsInitted == false);
-	fprintf(stderr, "[WW3D::Init] Starting, hwnd=%p, lite=%d\n", hwnd, lite);
-	fflush(stderr);
+	printf("[WW3D::Init] Starting, hwnd=%p, lite=%d\n", hwnd, lite);
+	
 	WWDEBUG_SAY(("WW3D::Init hwnd = %p",hwnd));
 	_Hwnd = (HWND)hwnd;
 	Lite = lite;
@@ -273,74 +273,74 @@ WW3DErrorType WW3D::Init(void *hwnd, char *defaultpal, bool lite)
 	/*
 	** Initialize d3d, this also enumerates the available devices and resolutions.
 	*/
-	fprintf(stderr, "[WW3D::Init] Calling Init_D3D_To_WW3_Conversion\n");
-	fflush(stderr);
+	printf("[WW3D::Init] Calling Init_D3D_To_WW3_Conversion\n");
+	
 	Init_D3D_To_WW3_Conversion();
-	fprintf(stderr, "[WW3D::Init] Init_D3D_To_WW3_Conversion done, calling DX8Wrapper::Init\n");
-	fflush(stderr);
+	printf("[WW3D::Init] Init_D3D_To_WW3_Conversion done, calling DX8Wrapper::Init\n");
+	
 	WWDEBUG_SAY(("Init DX8Wrapper"));
 	if (!DX8Wrapper::Init(_Hwnd, lite)) {
-		fprintf(stderr, "[WW3D::Init] ERROR: DX8Wrapper::Init failed\n");
-		fflush(stderr);
+		printf("[WW3D::Init] ERROR: DX8Wrapper::Init failed\n");
+		
 		return(WW3D_ERROR_INITIALIZATION_FAILED);
 	}
-	fprintf(stderr, "[WW3D::Init] DX8Wrapper::Init succeeded\n");
-	fflush(stderr);
+	printf("[WW3D::Init] DX8Wrapper::Init succeeded\n");
+	
 	WWDEBUG_SAY(("Allocate Debug Resources"));
-	fprintf(stderr, "[WW3D::Init] Calling Allocate_Debug_Resources\n");
-	fflush(stderr);
+	printf("[WW3D::Init] Calling Allocate_Debug_Resources\n");
+	
 	Allocate_Debug_Resources();
 	VertexMaterialClass::Init();
-	fprintf(stderr, "[WW3D::Init] Allocate_Debug_Resources done\n");
-	fflush(stderr);
+	printf("[WW3D::Init] Allocate_Debug_Resources done\n");
+	
 
- 	fprintf(stderr, "[WW3D::Init] Calling timeBeginPeriod\n");
-	fflush(stderr);
+ 	printf("[WW3D::Init] Calling timeBeginPeriod\n");
+	
  	MMRESULT r=timeBeginPeriod(1);
 	WWASSERT(r==TIMERR_NOERROR);
-	fprintf(stderr, "[WW3D::Init] timeBeginPeriod done\n");
-	fflush(stderr);
+	printf("[WW3D::Init] timeBeginPeriod done\n");
+	
 
 	/*
 	** Initialize the dazzle system
 	*/
 	if (!lite) {
 		WWDEBUG_SAY(("Init Dazzles"));
-		fprintf(stderr, "[WW3D::Init] Initializing dazzle system\n");
-		fflush(stderr);
+		printf("[WW3D::Init] Initializing dazzle system\n");
+		
 		FileClass * dazzle_ini_file = _TheFileFactory->Get_File(DAZZLE_INI_FILENAME);
 		if (dazzle_ini_file) {
 			INIClass dazzle_ini(*dazzle_ini_file);
 			DazzleRenderObjClass::Init_From_INI(&dazzle_ini);
 			_TheFileFactory->Return_File(dazzle_ini_file);
 		}
-		fprintf(stderr, "[WW3D::Init] Dazzle system initialized\n");
-		fflush(stderr);
+		printf("[WW3D::Init] Dazzle system initialized\n");
+		
 	}
 	/*
 	** Initialize the default static sort lists
 	** Note that DefaultStaticSortLists[0] is unused.
 	*/
-	fprintf(stderr, "[WW3D::Init] Creating DefaultStaticSortLists\n");
-	fflush(stderr);
+	printf("[WW3D::Init] Creating DefaultStaticSortLists\n");
+	
 	DefaultStaticSortLists = W3DNEW DefaultStaticSortListClass();
 	Reset_Current_Static_Sort_Lists_To_Default();
-	fprintf(stderr, "[WW3D::Init] DefaultStaticSortLists created\n");
-	fflush(stderr);
+	printf("[WW3D::Init] DefaultStaticSortLists created\n");
+	
 
 	/*
 	** Initialize the animation-triggered sound system
 	*/
 	if (!lite) {
-		fprintf(stderr, "[WW3D::Init] Initializing AnimatedSoundMgr\n");
-		fflush(stderr);
+		printf("[WW3D::Init] Initializing AnimatedSoundMgr\n");
+		
 		AnimatedSoundMgrClass::Initialize ();
 		IsInitted = true;
-		fprintf(stderr, "[WW3D::Init] AnimatedSoundMgr initialized\n");
-		fflush(stderr);
+		printf("[WW3D::Init] AnimatedSoundMgr initialized\n");
+		
 	}
-	fprintf(stderr, "[WW3D::Init] Returning WW3D_ERROR_OK\n");
-	fflush(stderr);
+	printf("[WW3D::Init] Returning WW3D_ERROR_OK\n");
+	
 	WWDEBUG_SAY(("WW3D Init completed"));
 	return WW3D_ERROR_OK;
 }
@@ -822,8 +822,8 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 {
 	static int frame_count = 0;
 	if (frame_count < 3) {
-		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - START frame=%d, IsInitted=%d\n", frame_count, IsInitted);
-		fflush(stderr);
+		printf("[Phase 54] WW3D::Begin_Render - START frame=%d, IsInitted=%d\n", frame_count, IsInitted);
+		
 	}
 	
 	if (!IsInitted) {
@@ -839,8 +839,8 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 	SNAPSHOT_SAY(("==========================================\n"));
 
 	if (frame_count < 3) {
-		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Checking device cooperative level\n");
-		fflush(stderr);
+		printf("[Phase 54] WW3D::Begin_Render - Checking device cooperative level\n");
+		
 	}
 	if (DX8Wrapper::_Get_D3D_Device8() && (hr=DX8Wrapper::_Get_D3D_Device8()->TestCooperativeLevel()) != D3D_OK)
 	{
@@ -859,8 +859,8 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 	}
 
 	if (frame_count < 3) {
-		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Device check passed, updating memory stats\n");
-		fflush(stderr);
+		printf("[Phase 54] WW3D::Begin_Render - Device check passed, updating memory stats\n");
+		
 	}
 	// Memory allocation statistics
 	LastFrameMemoryAllocations=WWMemoryLogClass::Get_Allocate_Count();
@@ -868,21 +868,21 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 	WWMemoryLogClass::Reset_Counters();
 
 	if (frame_count < 3) {
-		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Calling TextureLoader::Update\n");
-		fflush(stderr);
+		printf("[Phase 54] WW3D::Begin_Render - Calling TextureLoader::Update\n");
+		
 	}
 	TextureLoader::Update(network_callback);
 //	TextureClass::_Reset_Time_Stamp();
 	if (frame_count < 3) {
-		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Resetting DynamicVB/IB\n");
-		fflush(stderr);
+		printf("[Phase 54] WW3D::Begin_Render - Resetting DynamicVB/IB\n");
+		
 	}
 	DynamicVBAccessClass::_Reset(true);
 	DynamicIBAccessClass::_Reset(true);
 
 	if (frame_count < 3) {
-		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Debug_Statistics::Begin_Statistics\n");
-		fflush(stderr);
+		printf("[Phase 54] WW3D::Begin_Render - Debug_Statistics::Begin_Statistics\n");
+		
 	}
 	Debug_Statistics::Begin_Statistics();
 
@@ -897,13 +897,27 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 	// If we want to clear the screen, we need to set the viewport to include the entire screen:
 	if (clear || clearz) {
 		if (frame_count < 3) {
-			fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Setting viewport and clearing\n");
-			fflush(stderr);
+			printf("[Phase 54] WW3D::Begin_Render - Setting viewport and clearing\n");
+			
 		}
 		D3DVIEWPORT8 vp;
 		int width, height, bits;
 		bool windowed;
 		WW3D::Get_Render_Target_Resolution(width, height, bits, windowed);
+		
+		// DEBUG: Print the actual values we got
+		if (frame_count < 3) {
+			printf("[Phase 54 DEBUG] Get_Render_Target_Resolution returned: %dx%d %dbit windowed=%d\n",
+			       width, height, bits, windowed ? 1 : 0);
+		}
+		
+		// WORKAROUND: If resolution is 0, use fallback values
+		if (width <= 0 || height <= 0) {
+			width = 800;
+			height = 600;
+			printf("[Phase 54 FALLBACK] Using fallback resolution: %dx%d\n", width, height);
+		}
+		
 		vp.X = 0;
 		vp.Y = 0;
 		vp.Width = width;
@@ -912,22 +926,22 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 		vp.MaxZ = 1.0f;
 		DX8Wrapper::Set_Viewport(&vp);
 		if (frame_count < 3) {
-			fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Calling DX8Wrapper::Clear\n");
-			fflush(stderr);
+			printf("[Phase 54] WW3D::Begin_Render - Calling DX8Wrapper::Clear\n");
+			
 		}
 		DX8Wrapper::Clear(clear, clearz, color, dest_alpha);
 	}
 
 	if (frame_count < 3) {
-		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - Calling DX8Wrapper::Begin_Scene\n");
-		fflush(stderr);
+		printf("[Phase 54] WW3D::Begin_Render - Calling DX8Wrapper::Begin_Scene\n");
+		
 	}
 	// Notify D3D that we are beginning to render the frame
 	DX8Wrapper::Begin_Scene();
 
 	if (frame_count < 3) {
-		fprintf(stderr, "[Phase 54] WW3D::Begin_Render - SUCCESS, frame=%d\n", frame_count);
-		fflush(stderr);
+		printf("[Phase 54] WW3D::Begin_Render - SUCCESS, frame=%d\n", frame_count);
+		
 	}
 	frame_count++;
 	return WW3D_ERROR_OK;
@@ -1153,6 +1167,13 @@ void WW3D::Flush(RenderInfoClass & rinfo)
  *=============================================================================================*/
 WW3DErrorType WW3D::End_Render(bool flip_frame)
 {
+	static int end_render_count = 0;
+	if (end_render_count < 5) {
+		printf("[Phase 62 DEBUG] WW3D::End_Render called, flip_frame=%d, IsInitted=%d, IsRendering=%d\n",
+		       flip_frame ? 1 : 0, IsInitted ? 1 : 0, IsRendering ? 1 : 0);
+		end_render_count++;
+	}
+	
 	if (!IsInitted) {
 		return(WW3D_ERROR_OK);
 	}

@@ -152,7 +152,7 @@ W3DAssetManager::~W3DAssetManager(void)
 }
 
 #ifdef DUMP_PERF_STATS
-__int64 Total_Get_Texture_Time=0;
+int64_t Total_Get_Texture_Time=0;
 #endif
 //---------------------------------------------------------------------
 TextureClass *W3DAssetManager::Get_Texture(
@@ -163,7 +163,7 @@ TextureClass *W3DAssetManager::Get_Texture(
 )
 {
 	#ifdef DUMP_PERF_STATS
-	__int64 startTime64,endTime64;
+	int64_t startTime64,endTime64;
 	GetPrecisionTimer(&startTime64);
 	#endif
 
@@ -669,7 +669,7 @@ TextureClass * W3DAssetManager::Recolor_Texture_One_Time(TextureClass *texture, 
 }
 
 #ifdef DUMP_PERF_STATS
-__int64 Total_Create_Render_Obj_Time=0;
+int64_t Total_Create_Render_Obj_Time=0;
 #endif
 //---------------------------------------------------------------------
 /** Generals specific code to generate customized render objects for each team color
@@ -684,7 +684,7 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 )
 {
 	#ifdef DUMP_PERF_STATS
-	__int64 startTime64,endTime64;
+	int64_t startTime64,endTime64;
 	GetPrecisionTimer(&startTime64);
 	#endif
 
@@ -928,7 +928,7 @@ void W3DAssetManager::Recolor_Vertex_Material(VertexMaterialClass *vmat, const i
 }
 
 #ifdef DUMP_PERF_STATS
-__int64 Total_Load_3D_Assets=0;
+int64_t Total_Load_3D_Assets=0;
 static Int Load_3D_Asset_Recursions=0;
 #endif
 //---------------------------------------------------------------------
@@ -937,7 +937,7 @@ bool W3DAssetManager::Load_3D_Assets( const char * filename )
 #ifdef DUMP_PERF_STATS
 		Load_3D_Asset_Recursions++;
 
-		__int64 startTime64,endTime64;
+		int64_t startTime64,endTime64;
 		GetPrecisionTimer(&startTime64);
 #endif
 
@@ -988,7 +988,7 @@ bool W3DAssetManager::Load_3D_Assets( const char * filename )
 }
 
 #ifdef DUMP_PERF_STATS
-__int64 Total_Get_HAnim_Time=0;
+int64_t Total_Get_HAnim_Time=0;
 static Int HAnim_Recursions=0;
 #endif
 //---------------------------------------------------------------------
@@ -997,7 +997,7 @@ HAnimClass *	W3DAssetManager::Get_HAnim(const char * name)
 #ifdef DUMP_PERF_STATS
 	HAnim_Recursions++;
 
-	__int64 startTime64,endTime64;
+	int64_t startTime64,endTime64;
 	GetPrecisionTimer(&startTime64);
 #endif
 	WWPROFILE( "WW3DAssetManager::Get_HAnim" );

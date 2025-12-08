@@ -670,7 +670,7 @@ void DazzleRenderObjClass::Init_Type(const DazzleInitClass& i)
 		unsigned new_count=i.type+1;
 		DazzleTypeClass** new_types=W3DNEWARRAY DazzleTypeClass*[new_count];
 		unsigned a=0;
-		unsigned copy_count = min(type_count, new_count);
+		unsigned copy_count = std::min(type_count, new_count);
 		for (;a<copy_count;++a) {
 			new_types[a]=types[a];
 		}
@@ -695,7 +695,7 @@ void DazzleRenderObjClass::Init_Lensflare(const LensflareInitClass& i)
 		unsigned new_count=i.type+1;
 		LensflareTypeClass** new_lensflares=W3DNEWARRAY LensflareTypeClass*[new_count];
 		unsigned a=0;
-		unsigned copy_count = min(lensflare_count, new_count);
+		unsigned copy_count = std::min(lensflare_count, new_count);
 		for (;a<copy_count;++a) {
 			new_lensflares[a]=lensflares[a];
 		}

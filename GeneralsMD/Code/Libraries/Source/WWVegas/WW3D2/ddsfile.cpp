@@ -56,15 +56,19 @@ DDSFileClass::DDSFileClass(const char* name,unsigned reduction_factor)
 	file_auto_ptr file(_TheFileFactory,Name);
 	if (!file->Is_Available())
 	{
+		printf("[DDSFileClass] DEBUG: File not available: '%s'\n", Name);
 		return;
 	}
 
 	int result=file->Open();
 	if (!result)
 	{
+		printf("[DDSFileClass] DEBUG: File would not open: '%s'\n", Name);
 		WWASSERT("File would not open");
 		return;
 	}
+
+	printf("[DDSFileClass] DEBUG: File opened successfully: '%s'\n", Name);
 
 	DateTime=file->Get_Date_Time();
 	char header[4];
@@ -72,27 +76,84 @@ DDSFileClass::DDSFileClass(const char* name,unsigned reduction_factor)
 	unsigned read_bytes=file->Read(header,4);
 	if (!read_bytes)
 	{
+		printf("[DDSFileClass] DEBUG: Failed to read header magic: '%s'\n", Name);
 		WWASSERT("File loading failed trying to read header");
 		return;
 	}
+	
+	// Verify DDS magic
+	if (header[0] != 'D' || header[1] != 'D' || header[2] != 'S' || header[3] != ' ')
+	{
+		printf("[DDSFileClass] DEBUG: Invalid DDS magic: '%c%c%c%c' (0x%02X 0x%02X 0x%02X 0x%02X) for '%s'\n", 
+			header[0], header[1], header[2], header[3],
+			(unsigned char)header[0], (unsigned char)header[1], 
+			(unsigned char)header[2], (unsigned char)header[3], Name);
+		return;
+	}
+
 	// Now, we read DDSURFACEDESC2 defining the compressed data
 	read_bytes=file->Read(&SurfaceDesc,sizeof(LegacyDDSURFACEDESC2));
-	// Verify the structure size matches the read size
-	if (read_bytes==0 || read_bytes!=SurfaceDesc.Size)
+	// Verify we read the header - standard DDS header is 124 bytes, our struct may be larger due to padding
+	// The SurfaceDesc.Size field contains the actual size of the DDS header in the file (should be 124)
+	// We need to read at least that many bytes, but our struct may be padded larger
+	if (read_bytes==0 || read_bytes < SurfaceDesc.Size)
 	{
+		printf("[DDSFileClass] DEBUG: Header read failed for '%s': read=%d, SurfDesc.Size=%u\n",
+			Name, read_bytes, SurfaceDesc.Size);
 		StringClass tmp(0,true);
 		tmp.Format("File %s loading failed.\nTried to read %d bytes, got %d. (SurfDesc.size=%d)",name,sizeof(LegacyDDSURFACEDESC2),read_bytes,SurfaceDesc.Size);
 		WWASSERT_PRINT(0,tmp.str());
 		return;
 	}
 
-	Format=D3DFormat_To_WW3DFormat((D3DFORMAT)SurfaceDesc.PixelFormat.FourCC);
-	WWASSERT(
-		Format==WW3D_FORMAT_DXT1 ||
-		Format==WW3D_FORMAT_DXT2 ||
-		Format==WW3D_FORMAT_DXT3 ||
-		Format==WW3D_FORMAT_DXT4 ||
-		Format==WW3D_FORMAT_DXT5);
+	// Determine format: prefer FOURCC DXTn values, fall back to uncompressed RGB formats
+	unsigned fourcc = SurfaceDesc.PixelFormat.FourCC;
+	Format = WW3D_FORMAT_UNKNOWN;
+
+	const unsigned FOURCC_DXT1 = 0x31545844; // 'DXT1'
+	const unsigned FOURCC_DXT2 = 0x32545844; // 'DXT2'
+	const unsigned FOURCC_DXT3 = 0x33545844; // 'DXT3'
+	const unsigned FOURCC_DXT4 = 0x34545844; // 'DXT4'
+	const unsigned FOURCC_DXT5 = 0x35545844; // 'DXT5'
+
+	if (fourcc == FOURCC_DXT1) Format = WW3D_FORMAT_DXT1;
+	else if (fourcc == FOURCC_DXT2) Format = WW3D_FORMAT_DXT2;
+	else if (fourcc == FOURCC_DXT3) Format = WW3D_FORMAT_DXT3;
+	else if (fourcc == FOURCC_DXT4) Format = WW3D_FORMAT_DXT4;
+	else if (fourcc == FOURCC_DXT5) Format = WW3D_FORMAT_DXT5;
+	else {
+		// Not compressed FOURCC - check uncompressed RGB formats (DDPF_RGB)
+		const unsigned DDPF_RGB = 0x40;
+		if (SurfaceDesc.PixelFormat.Flags & DDPF_RGB) {
+			unsigned rgbBits = SurfaceDesc.PixelFormat.RGBBitCount;
+			if (rgbBits == 32) {
+				Format = WW3D_FORMAT_A8R8G8B8;
+			} else if (rgbBits == 24) {
+				Format = WW3D_FORMAT_R8G8B8;
+			} else if (rgbBits == 16) {
+				unsigned rmask = SurfaceDesc.PixelFormat.RBitMask;
+				unsigned gmask = SurfaceDesc.PixelFormat.GBitMask;
+				unsigned bmask = SurfaceDesc.PixelFormat.BBitMask;
+				if (rmask == 0xF800 && gmask == 0x07E0 && bmask == 0x001F) {
+					Format = WW3D_FORMAT_R5G6B5;
+				} else if (rmask == 0x7C00 && gmask == 0x03E0 && bmask == 0x001F) {
+					Format = WW3D_FORMAT_X1R5G5B5;
+				} else {
+					Format = WW3D_FORMAT_R5G6B5;
+				}
+			}
+		}
+	}
+
+	printf("[DDSFileClass] DEBUG: '%s' - FourCC=0x%08X, Format=%d, Size=%ux%u, MipMaps=%u, Flags=0x%X, RGBBitCount=%u\n",
+		Name, SurfaceDesc.PixelFormat.FourCC, (int)Format,
+		SurfaceDesc.Width, SurfaceDesc.Height, SurfaceDesc.MipMapCount,
+		SurfaceDesc.PixelFormat.Flags, SurfaceDesc.PixelFormat.RGBBitCount);
+
+	if (Format == WW3D_FORMAT_UNKNOWN) {
+		printf("[DDSFileClass] DEBUG: Unsupported format %d for '%s'\n", (int)Format, Name);
+		return;
+	}
 
 	MipLevels=SurfaceDesc.MipMapCount;
 	if (MipLevels==0) MipLevels=1;

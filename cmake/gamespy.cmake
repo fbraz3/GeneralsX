@@ -21,6 +21,36 @@ extern char* _strupr(char* string);
 #endif
 ")
 
+# Patch for Linux/Unix: Wrap min/max macros in gsplatformutil.h to avoid conflicts with std::min/std::max in C++
+if(UNIX)
+    file(READ "${gamespy_SOURCE_DIR}/include/gamespy/gsplatformutil.h" GS_PLATFORMUTIL_CONTENT)
+    string(REPLACE "#ifndef max
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif" "/* GeneralsX: Only define min/max for C code, not C++ where std::min/std::max are used */
+#ifndef __cplusplus
+#ifndef max
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+#endif" GS_PLATFORMUTIL_CONTENT "${GS_PLATFORMUTIL_CONTENT}")
+    file(WRITE "${gamespy_SOURCE_DIR}/include/gamespy/gsplatformutil.h" "${GS_PLATFORMUTIL_CONTENT}")
+    message(STATUS "Applied GameSpy min/max macro patch for Linux")
+    
+    # Patch for Linux: Wrap _strlwr/_strupr declarations to avoid conflicts with string_compat.h in C++ mode
+    file(READ "${gamespy_SOURCE_DIR}/include/gamespy/gsplatform.h" GS_PLATFORM_CONTENT)
+    string(REPLACE "#if !defined(_WIN32)
+char* _strlwr(char* string);
+char* _strupr(char* string);
+#endif" "/* GeneralsX: Keep _strlwr/_strupr for C code, but skip in C++ where string_compat.h provides them */
+#if !defined(_WIN32) && !defined(__cplusplus)
+char* _strlwr(char* string);
+char* _strupr(char* string);
+#endif" GS_PLATFORM_CONTENT "${GS_PLATFORM_CONTENT}")
+    file(WRITE "${gamespy_SOURCE_DIR}/include/gamespy/gsplatform.h" "${GS_PLATFORM_CONTENT}")
+    message(STATUS "Applied GameSpy _strlwr/_strupr patch for Linux")
+endif()
+
 # Always apply patches - use file(STRINGS) to read and modify
 if(APPLE)
     # Patch 1: Remove _strlwr/_strupr forward declarations from gsplatform.h

@@ -34,7 +34,7 @@
 **    Phase 10: Command Buffers & Synchronization Implementation
 **
 ******************************************************************************/
-
+#include "cstdint"
 #ifndef D3D8_VULKAN_COMMAND_BUFFER_H_
 #define D3D8_VULKAN_COMMAND_BUFFER_H_
 
@@ -53,8 +53,9 @@ typedef void* VkSemaphore;
 typedef void* VkFence;
 typedef void* VkQueue;
 typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
-
+// #ifndef uint64_t
+// typedef unsigned long long uint64_t;
+// #endif
 /* ============================================================================
  * Command Buffer Configuration Types
  * ============================================================================ */

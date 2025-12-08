@@ -501,6 +501,17 @@ public:
                                        uint32_t vertexStride) = 0;
 
     // ========================================================================
+    // VERTEX FORMAT (FVF) MANAGEMENT - Phase 62
+    // ========================================================================
+    
+    /**
+     * Set the Flexible Vertex Format for subsequent draw calls
+     * Used to select appropriate pipeline (UI vs 3D)
+     * @param fvf DirectX8-style FVF flags (D3DFVF_XYZRHW = 0x0004 for 2D UI)
+     */
+    virtual void SetFVF(uint32_t fvf) = 0;
+
+    // ========================================================================
     // RENDER STATE MANAGEMENT
     // ========================================================================
     

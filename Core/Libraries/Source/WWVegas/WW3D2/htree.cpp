@@ -718,7 +718,7 @@ void HTreeClass::Blend_Update
 	Pivot[0].Transform = root;
 	Pivot[0].IsVisible = true;
 
-	int num_anim_pivots = MIN( motion0->Get_Num_Pivots (), motion1->Get_Num_Pivots () );
+	int num_anim_pivots = std::min( motion0->Get_Num_Pivots (), motion1->Get_Num_Pivots () );
 
 	for (int piv_idx=1; piv_idx < NumPivots; piv_idx++) {
 
@@ -788,7 +788,7 @@ void HTreeClass::Combo_Update
 
 	int num_anim_pivots = 100000;
 	for ( int anim_num = 0; anim_num < anim->Get_Num_Anims(); anim_num++ ) {
-		num_anim_pivots = MIN( num_anim_pivots, anim->Peek_Motion( anim_num )->Get_Num_Pivots() );
+		num_anim_pivots = std::min( num_anim_pivots, anim->Peek_Motion( anim_num )->Get_Num_Pivots() );
 	}
 	if ( num_anim_pivots == 100000 ) {
 		num_anim_pivots = 0;

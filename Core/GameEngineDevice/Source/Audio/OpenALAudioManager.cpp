@@ -604,9 +604,16 @@ Bool OpenALAudioManager::has3DSensitiveStreamsPlaying(void) const
 void *OpenALAudioManager::getHandleForBink(void)
 {
     DEBUG_LOG(("OpenALAudioManager::getHandleForBink - Bink video support requested\n"));
-    // Bink support is Windows-only and deprecated
-    // Return nullptr to indicate not supported
-    return nullptr;
+    // Provide a lightweight OpenAL stream object for video audio playback.
+    if (m_binkStream == nullptr) {
+        m_binkStream = new OpenALAudioStream();
+        DEBUG_LOG(("OpenALAudioManager::getHandleForBink - created OpenALAudioStream %p\n", m_binkStream));
+        // Direct printf to ensure visible in run logs
+        printf("OpenALAudioManager::getHandleForBink - created OpenALAudioStream %p\n", m_binkStream);
+    }
+    // Also print when returning the handle
+    printf("OpenALAudioManager::getHandleForBink - returning handle %p\n", m_binkStream);
+    return (void*)m_binkStream;
 }
 
 /**
@@ -615,7 +622,12 @@ void *OpenALAudioManager::getHandleForBink(void)
 void OpenALAudioManager::releaseHandleForBink(void)
 {
     DEBUG_LOG(("OpenALAudioManager::releaseHandleForBink - Releasing Bink handle\n"));
-    // No-op: Bink is not supported on this platform
+    if (m_binkStream) {
+        printf("OpenALAudioManager::releaseHandleForBink - releasing handle %p\n", m_binkStream);
+        m_binkStream->reset();
+        delete m_binkStream;
+        m_binkStream = nullptr;
+    }
 }
 
 /**

@@ -46,6 +46,7 @@
 #include "skin.h"
 #include "skindata.h"
 #include "modstack.h"
+#include <Utility/compat.h>
 
 
 #define MAX_NODE_NAME_LEN 256		// max name size we can handle
@@ -55,7 +56,7 @@ static char _string[256];
 
 
 
-static int get_geometry_type(INode * node)
+static int get_geometry_type(INode* node)
 {
 	assert(node != NULL);
 	return W3DAppData2Struct::Get_App_Data(node)->Get_Geometry_Type();
@@ -76,11 +77,11 @@ static int get_geometry_type(INode * node)
  * HISTORY:                                                                                    *
  *   10/26/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-Matrix3	Cleanup_Orthogonal_Matrix(Matrix3 & mat)
+Matrix3	Cleanup_Orthogonal_Matrix(Matrix3& mat)
 {
 	Matrix3 newmat = mat;
 
-	for (int j=0; j<3; j++) {
+	for (int j = 0; j < 3; j++) {
 		Point3 row = newmat.GetRow(j);
 
 		if (fabs(row.x) < EPSILON) row.x = 0.0f;
@@ -89,7 +90,7 @@ Matrix3	Cleanup_Orthogonal_Matrix(Matrix3 & mat)
 
 		row = Normalize(row);
 
-		newmat.SetRow(j,row);
+		newmat.SetRow(j, row);
 	}
 
 	return newmat;
@@ -109,19 +110,19 @@ Matrix3	Cleanup_Orthogonal_Matrix(Matrix3 & mat)
  *   9/13/1999  AJA : Strip off the trailing ".digits" since this is a convention we've set in *
  *                    MAX to help artists manage LODs.                                         *
  *=============================================================================================*/
-void Set_W3D_Name(char * set_name,const char * src)
+void Set_W3D_Name(char* set_name, const char* src)
 {
-	memset(set_name,0,W3D_NAME_LEN);
-	strncpy(set_name,src,W3D_NAME_LEN-1);
-	char *dot = strrchr(set_name, '.');
+	memset(set_name, 0, W3D_NAME_LEN);
+	strncpy(set_name, src, W3D_NAME_LEN - 1);
+	char* dot = strrchr(set_name, '.');
 	if (dot)
 	{
 		// If a number comes after the dot, strip it off
 		int value;
-		if (sscanf(dot+1, "%d", &value) == 1)
+		if (sscanf(dot + 1, "%d", &value) == 1)
 			*dot = 0;
 		// If nothing comes after the dot, strip it off
-		else if (*(dot+1) == 0)
+		else if (*(dot + 1) == 0)
 			*dot = 0;
 	}
 	strupr(set_name);
@@ -139,14 +140,14 @@ void Set_W3D_Name(char * set_name,const char * src)
  * HISTORY:                                                                                    *
  *   10/26/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-void Split_Node_Name(const char * name,char * set_base,char * set_exten,int * set_exten_index)
+void Split_Node_Name(const char* name, char* set_base, char* set_exten, int* set_exten_index)
 {
 	// Nodes are assumed to be named in the following way:
 	// <name>.<exten character><exten digits>
 	// for example: mesh.d1
 
 	char buf[MAX_NODE_NAME_LEN];
-	char * ptr;
+	char* ptr;
 
 	assert(strlen(name) < MAX_NODE_NAME_LEN);
 
@@ -156,7 +157,7 @@ void Split_Node_Name(const char * name,char * set_base,char * set_exten,int * se
 	if (set_exten_index != NULL) *set_exten_index = 0;
 
 	// Get the base name
-	strncpy(buf,name,MAX_NODE_NAME_LEN);
+	strncpy(buf, name, MAX_NODE_NAME_LEN);
 	ptr = buf;
 	while ((*ptr != 0) && (*ptr != '.')) {
 		ptr++;
@@ -166,26 +167,27 @@ void Split_Node_Name(const char * name,char * set_base,char * set_exten,int * se
 
 		// copy what we have so far into set_base
 		*ptr = 0;
-		if (set_base != NULL) strncpy(set_base,buf,MAX_NODE_NAME_LEN);
+		if (set_base != NULL) strncpy(set_base, buf, MAX_NODE_NAME_LEN);
 
 		// copy the rest back into the extension
 		ptr++;
-		if (set_exten != NULL) strncpy(set_exten,ptr,MAX_NODE_NAME_LEN);
+		if (set_exten != NULL) strncpy(set_exten, ptr, MAX_NODE_NAME_LEN);
 
 		// now get the extension index
 		ptr++;
 		if (set_exten_index != NULL) *set_exten_index = atoi(ptr);
 
-	} else {
+	}
+	else {
 
 		// no extension, just copy the base name
-		if (set_base != NULL) strncpy(set_base,buf,MAX_NODE_NAME_LEN);
+		if (set_base != NULL) strncpy(set_base, buf, MAX_NODE_NAME_LEN);
 		return;
 	}
 }
 
 
-bool Append_Lod_Character (char *meshname, int lod_level, INodeListClass *origin_list)
+bool Append_Lod_Character(char* meshname, int lod_level, INodeListClass* origin_list)
 {
 	if (meshname == NULL || lod_level < 0)
 		return false;
@@ -200,7 +202,7 @@ bool Append_Lod_Character (char *meshname, int lod_level, INodeListClass *origin
 	** If there is, we will append the current LOD level digit to the name.
 	** If there is not, the name will not be modified.
 	*/
-	INode *conflict = NULL, *cur_origin = NULL;
+	INode* conflict = NULL, * cur_origin = NULL;
 	int i, lod;
 	for (i = 0; i < num_lods; i++)
 	{
@@ -216,15 +218,15 @@ bool Append_Lod_Character (char *meshname, int lod_level, INodeListClass *origin
 			// Name length is a worry here, because the name plus the number
 			// must be less than W3D_NAME_LEN (which is fairly small!).
 			int length = strlen(meshname);
-			if ( (lod_level < 10)  && (length < W3D_NAME_LEN - 1) )
+			if ((lod_level < 10) && (length < W3D_NAME_LEN - 1))
 			{
 				// Append a number corresponding to the LOD level to the mesh name.
 				// Highest-detail LOD is '0' (convention).
-				char *insert = meshname + length;
+				char* insert = meshname + length;
 				*insert++ = '0' + lod_level;
 				*insert = '\0';
 			}
-			else if ( (lod_level < 100) && (length < W3D_NAME_LEN - 2) )
+			else if ((lod_level < 100) && (length < W3D_NAME_LEN - 2))
 			{
 				// Append a number corresponding to the LOD level to the mesh name.
 				// Highest-detail LOD is '0' (convention).
@@ -235,7 +237,7 @@ bool Append_Lod_Character (char *meshname, int lod_level, INodeListClass *origin
 			else
 			{
 				// Replace the last character of the mesh name with the lod character (as above).
-				meshname[W3D_NAME_LEN-2] = '0' + lod_level;
+				meshname[W3D_NAME_LEN - 2] = '0' + lod_level;
 			}
 
 			// Name mangling finished (conflict with other LODs is solved on their pass).
@@ -248,26 +250,26 @@ bool Append_Lod_Character (char *meshname, int lod_level, INodeListClass *origin
 
 
 
-void Create_Full_Path(char *full_path, const char *curr, const char *rel_path)
+void Create_Full_Path(char* full_path, const char* curr, const char* rel_path)
 {
 	// Copy current dir to full path. If it doesn't end with a slash, add one.
 	strcpy(full_path, curr);
 	int curr_len = strlen(curr);
-	char *full_p = full_path + curr_len;	// Point at the terminating NULL
-	if (curr_len == 0 ||(*(full_p - 1) != '/' && *(full_p - 1) != '\\')) {
-		*full_p = '\\';
+	char* full_p = full_path + curr_len;	// Point at the terminating NULL
+	if (curr_len == 0 || (*(full_p - 1) != GET_PATH_SEPARATOR() && *(full_p - 1) != GET_PATH_SEPARATOR())) {
+		*full_p = GET_PATH_SEPARATOR();
 		*(++full_p) = '\000';	// Point at the terminating NULL
 	}
 
 	// Scan "..\"s at the beginning of the rel path, scan backwards on the
 	// full path (current dir):
-	const char *rel_p;
-	for (	rel_p = rel_path;
-			*rel_p == '.' && *(rel_p+1) == '.' && ( *(rel_p+2) == '/' || *(rel_p+2) == '\\' );
-			rel_p += 3)
+	const char* rel_p;
+	for (rel_p = rel_path;
+		*rel_p == '.' && *(rel_p + 1) == '.' && (*(rel_p + 2) == GET_PATH_SEPARATOR() || *(rel_p + 2) == GET_PATH_SEPARATOR());
+		rel_p += 3)
 	{
 		full_p--;
-		for (; full_p > full_path && *(full_p-1) != '/' && *(full_p-1) != '\\'; full_p--);
+		for (; full_p > full_path && *(full_p - 1) != GET_PATH_SEPARATOR() && *(full_p - 1) != GET_PATH_SEPARATOR(); full_p--);
 		*full_p = '\000';
 	}
 
@@ -282,28 +284,28 @@ enum PathCharType {
 	PLAIN_CHAR
 };
 
-void Create_Relative_Path(char *rel_path,	const char *curr, const char *full_path)
+void Create_Relative_Path(char* rel_path, const char* curr, const char* full_path)
 {
 	// Copy both constant strings and convert them to uppercase:
 	int curr_len = strlen(curr);
-	char *up_curr = (char *)malloc(curr_len + 1);
+	char* up_curr = (char*)malloc(curr_len + 1);
 	strcpy(up_curr, curr);
 	_strupr(up_curr);
 
 	int full_len = strlen(full_path);
-	char *up_full = (char *)malloc(full_len + 1);
+	char* up_full = (char*)malloc(full_len + 1);
 	strcpy(up_full, full_path);
 	_strupr(up_full);
 
-	char *rel_p = rel_path;
+	char* rel_p = rel_path;
 
 	// Find shared prefix of curr and full path
-	const char *full_p = up_full;
-	const char *curr_p = up_curr;
-	for (	;
-			*full_p && *full_p == *curr_p || (*full_p == '/' && *curr_p == '\\') || (*full_p == '\\' && *curr_p == '/');
-			full_p++, curr_p++
-	);
+	const char* full_p = up_full;
+	const char* curr_p = up_curr;
+	for (;
+		*full_p && *full_p == *curr_p || (*full_p == GET_PATH_SEPARATOR() && *curr_p == GET_PATH_SEPARATOR()) || (*full_p == GET_PATH_SEPARATOR() && *curr_p == GET_PATH_SEPARATOR());
+		full_p++, curr_p++
+		);
 
 	// If no shared prefix at this point set the relative path to 0
 	// This will force the code to use the absolute path.
@@ -317,19 +319,23 @@ void Create_Relative_Path(char *rel_path,	const char *curr, const char *full_pat
 	PathCharType full_type, curr_type;
 	if (*full_p == '\000') {
 		full_type = NULL_CHAR;
-	} else {
-		if (*full_p == '/' || *full_p == '\\') {
+	}
+	else {
+		if (*full_p == GET_PATH_SEPARATOR() || *full_p == GET_PATH_SEPARATOR()) {
 			full_type = SLASH_CHAR;
-		} else {
+		}
+		else {
 			full_type = PLAIN_CHAR;
 		}
 	}
 	if (*curr_p == '\000') {
 		curr_type = NULL_CHAR;
-	} else {
-		if (*curr_p == '/' || *curr_p == '\\') {
+	}
+	else {
+		if (*curr_p == GET_PATH_SEPARATOR() || *curr_p == GET_PATH_SEPARATOR()) {
 			curr_type = SLASH_CHAR;
-		} else {
+		}
+		else {
 			curr_type = PLAIN_CHAR;
 		}
 	}
@@ -357,17 +363,17 @@ void Create_Relative_Path(char *rel_path,	const char *curr, const char *full_pat
 	//    slash
 	// Then we must backtrack both pointers until the characters before them
 	// are slashes. If there are no previous slashes, we have an error.
-	if (	(full_type == SLASH_CHAR && curr_type == PLAIN_CHAR) ||
-			(curr_type == SLASH_CHAR && full_type == PLAIN_CHAR) ||
-			(curr_type == NULL_CHAR && full_type == PLAIN_CHAR) ||
-			(curr_type == PLAIN_CHAR && full_type == PLAIN_CHAR &&
-				*(full_p-1) != '/' && *(full_p-1) != '\\')  )
+	if ((full_type == SLASH_CHAR && curr_type == PLAIN_CHAR) ||
+		(curr_type == SLASH_CHAR && full_type == PLAIN_CHAR) ||
+		(curr_type == NULL_CHAR && full_type == PLAIN_CHAR) ||
+		(curr_type == PLAIN_CHAR && full_type == PLAIN_CHAR &&
+			*(full_p - 1) != GET_PATH_SEPARATOR() && *(full_p - 1) != GET_PATH_SEPARATOR()))
 	{
 		for (;
 			full_p > up_full &&
-				(	(*(full_p - 1) != '/' && *(full_p - 1) != '\\') ||
-					(*(curr_p - 1) != '/' && *(curr_p - 1) != '\\') );
-			full_p--, curr_p--);
+			((*(full_p - 1) != GET_PATH_SEPARATOR() && *(full_p - 1) != GET_PATH_SEPARATOR()) ||
+				(*(curr_p - 1) != GET_PATH_SEPARATOR() && *(curr_p - 1) != GET_PATH_SEPARATOR()));
+				full_p--, curr_p--);
 	}
 
 	// If no shared prefix at this point (not even a drive letter) return the
@@ -382,20 +388,20 @@ void Create_Relative_Path(char *rel_path,	const char *curr, const char *full_pat
 	// we know we have to add at least one.
 	*rel_p++ = '.';
 	*rel_p++ = '.';
-	*rel_p++ = '\\';
+	*rel_p++ = GET_PATH_SEPARATOR();
 	// Go over remaining current path, for each slash we find add one "../" to
 	// the relative path
 	for (; *curr_p; curr_p++) {
-		if (*curr_p == '/' || *curr_p == '\\') {
+		if (*curr_p == GET_PATH_SEPARATOR() || *curr_p == GET_PATH_SEPARATOR()) {
 			*rel_p++ = '.';
 			*rel_p++ = '.';
-			*rel_p++ = '\\';
+			*rel_p++ = GET_PATH_SEPARATOR();
 		}
 	}
 
 	// If the last char of the current path is a slash remove a "../" from the
 	// relative path.
-	if (*(curr_p - 1) == '/' || *(curr_p - 1) == '\\') {
+	if (*(curr_p - 1) == GET_PATH_SEPARATOR() || *(curr_p - 1) == GET_PATH_SEPARATOR()) {
 		rel_p -= 3;
 	}
 
@@ -407,18 +413,18 @@ end:
 	free(up_full);
 }
 
-bool Is_Full_Path(char * path)
+bool Is_Full_Path(char* path)
 {
 	// first scan for a drive letter (scan for a colon)
-	if (strchr(path,':') != NULL) {
+	if (strchr(path, ':') != NULL) {
 		return true;
 	}
 
 	// now scan for a "network" path (starts with "//")
-	if ((path[0] == '/') && (path[1] == '/')) {
+	if ((path[0] == GET_PATH_SEPARATOR()) && (path[1] == GET_PATH_SEPARATOR())) {
 		return true;
 	}
-	if ((path[0] == '\\') && (path[1] == '\\')) {
+	if ((path[0] == GET_PATH_SEPARATOR()) && (path[1] == GET_PATH_SEPARATOR())) {
 		return true;
 	}
 
@@ -438,9 +444,9 @@ bool Is_Full_Path(char * path)
  * HISTORY:                                                                                    *
  *   2/2/98     GTH : Created.                                                                 *
  *=============================================================================================*/
-bool Is_Max_Tri_Mesh(INode * node)
+bool Is_Max_Tri_Mesh(INode* node)
 {
-	Object *obj = node->EvalWorldState(0).obj;
+	Object* obj = node->EvalWorldState(0).obj;
 
 	if (obj && obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) {
 		return true;
@@ -450,27 +456,27 @@ bool Is_Max_Tri_Mesh(INode * node)
 
 
 
-bool Is_Damage_Root(INode *node)
+bool Is_Damage_Root(INode* node)
 {
 	if (node == NULL)
 		return false;
 
 	// Is the node's parent the scene root?
-	INode *parent = node->GetParentNode();
+	INode* parent = node->GetParentNode();
 	if (!parent || !parent->IsRootNode())
 		return false;
 
 	// Is the node's name in the form "damage.*"?
-	char *name = node->GetName();
+	char* name = node->GetName();
 	if (strnicmp(name, "damage.", strlen("damage.")) != 0)
 		return false;
 
-/* This won't pick up references to a dummy object for some reason.
-	// Does the node point to a dummy object?
-	Object *obj = node->GetObjectRef();
-	if (!obj || !obj->CanConvertToType(Class_ID(DUMMY_CLASS_ID, 0)))
-		return false;
-*/
+	/* This won't pick up references to a dummy object for some reason.
+		// Does the node point to a dummy object?
+		Object *obj = node->GetObjectRef();
+		if (!obj || !obj->CanConvertToType(Class_ID(DUMMY_CLASS_ID, 0)))
+			return false;
+	*/
 
 	return true;
 }
@@ -492,28 +498,28 @@ bool Is_Damage_Root(INode *node)
  * HISTORY:                                                                                    *
  *   9/13/99    AJA : Created.
  *=============================================================================================*/
-bool Is_Origin(INode * node)
+bool Is_Origin(INode* node)
 {
 	if (!node) return false;
 	if (node->IsRootNode()) return true;
 	if (node->IsHidden()) return false;
 
 	// Is the node's parent the scene root?
-	INode *parent = node->GetParentNode();
+	INode* parent = node->GetParentNode();
 	if (!parent || !parent->IsRootNode())
 		return false;
 
 	// Is the node's name in the form "origin.*"?
-	char *name = node->GetName();
+	char* name = node->GetName();
 	if (strnicmp(name, "origin.", strlen("origin.")) != 0)
 		return false;
 
-/* This won't pick up references to a dummy object for some reason.
-	// Does the node point to a dummy object?
-	Object *obj = node->GetObjectRef();
-	if (!obj || !obj->CanConvertToType(Class_ID(DUMMY_CLASS_ID, 0)))
-		return false;
-*/
+	/* This won't pick up references to a dummy object for some reason.
+		// Does the node point to a dummy object?
+		Object *obj = node->GetObjectRef();
+		if (!obj || !obj->CanConvertToType(Class_ID(DUMMY_CLASS_ID, 0)))
+			return false;
+	*/
 
 	// This is an origin.
 	return true;
@@ -532,7 +538,7 @@ bool Is_Origin(INode * node)
  * HISTORY:                                                                                    *
  *   9/13/1999  AJA : Created.                                                                 *
  *=============================================================================================*/
-bool Is_Base_Origin(INode * node)
+bool Is_Base_Origin(INode* node)
 {
 	if (!node) return false;
 
@@ -544,7 +550,7 @@ bool Is_Base_Origin(INode * node)
 	// "origin.0" (a numeric value evaluating to zero as scanned by sscanf
 	// which would include "origin.00" "origin.000", etc.).
 	bool is_base_origin = false;
-	char *name = node->GetName();
+	char* name = node->GetName();
 	if (stricmp(name, "origin.") == 0)
 		is_base_origin = true;
 	else if (strlen(name) > strlen("origin."))
@@ -552,7 +558,7 @@ bool Is_Base_Origin(INode * node)
 		// We know the first 7 characters are "origin." because that
 		// was tested in Is_Origin(). Is it "origin.0"?
 		int idx;
-		if ((sscanf(name+strlen("origin."), "%d", &idx) == 1) && (idx == 0))
+		if ((sscanf(name + strlen("origin."), "%d", &idx) == 1) && (idx == 0))
 			is_base_origin = true;
 	}
 
@@ -560,35 +566,35 @@ bool Is_Base_Origin(INode * node)
 }
 
 
-int Get_Lod_Level(INode *node)
+int Get_Lod_Level(INode* node)
 {
 	if (node->IsRootNode()) return 0;
 	if (!Is_Origin(node)) return -1;
 
-	char *name = node->GetName();
-	char *dot = strrchr(name, '.');
+	char* name = node->GetName();
+	char* dot = strrchr(name, '.');
 	assert(dot);
-	return atoi(dot+1);
+	return atoi(dot + 1);
 }
 
-int Get_Damage_State(INode *node)
+int Get_Damage_State(INode* node)
 {
 	if (!Is_Damage_Root(node)) return -1;
 
-	char *name = node->GetName();
-	char *dot = strrchr(name, '.');
+	char* name = node->GetName();
+	char* dot = strrchr(name, '.');
 	assert(dot);
-	return atoi(dot+1);
+	return atoi(dot + 1);
 }
 
-INode *Find_Named_Node(char *nodename, INode *root)
+INode* Find_Named_Node(char* nodename, INode* root)
 {
 	if (!root || !nodename)
 		return NULL;
 
 	// Perform a breadth-first search of the tree for a node
 	// of the given name.
-	INode	*child = NULL;
+	INode* child = NULL;
 	int	i;
 	char	cur_name[W3D_NAME_LEN];
 
@@ -611,7 +617,7 @@ INode *Find_Named_Node(char *nodename, INode *root)
 	for (i = 0; i < root->NumChildren(); i++)
 	{
 		child = root->GetChildNode(i);
-		INode *found = Find_Named_Node(nodename, child);
+		INode* found = Find_Named_Node(nodename, child);
 		if (found)
 			return found;
 	}

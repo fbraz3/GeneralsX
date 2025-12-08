@@ -220,7 +220,7 @@ for the bibs. */
 //=============================================================================
 W3DBibBuffer::W3DBibBuffer(void)
 {
-	fprintf(stderr, "[W3DBibBuffer] Constructor called\n"); fflush(stderr);
+	printf("[W3DBibBuffer] Constructor called\n"); 
 	m_initialized = false;
 	m_vertexBib = NULL;
 	m_indexBib = NULL;
@@ -232,11 +232,11 @@ W3DBibBuffer::W3DBibBuffer(void)
 	m_vertexBibSize = INITIAL_BIB_VERTEX;
 	allocateBibBuffers();
 
-	fprintf(stderr, "[W3DBibBuffer] About to create m_bibTexture\n"); fflush(stderr);
+	printf("[W3DBibBuffer] About to create m_bibTexture\n"); 
 	m_bibTexture = NEW_REF(TextureClass, ("TBBib.tga"));
-	fprintf(stderr, "[W3DBibBuffer] m_bibTexture created: %p\n", m_bibTexture); fflush(stderr);
+	printf("[W3DBibBuffer] m_bibTexture created: %p\n", m_bibTexture); 
 	m_highlightBibTexture = NEW_REF(TextureClass, ("TBRedBib.tga"));
-	fprintf(stderr, "[W3DBibBuffer] m_highlightBibTexture created: %p\n", m_highlightBibTexture); fflush(stderr);
+	printf("[W3DBibBuffer] m_highlightBibTexture created: %p\n", m_highlightBibTexture); 
 	m_bibTexture->Get_Filter().Set_U_Addr_Mode(TextureFilterClass::TEXTURE_ADDRESS_CLAMP);
 	m_bibTexture->Get_Filter().Set_V_Addr_Mode(TextureFilterClass::TEXTURE_ADDRESS_CLAMP);
 	m_highlightBibTexture->Get_Filter().Set_U_Addr_Mode(TextureFilterClass::TEXTURE_ADDRESS_CLAMP);

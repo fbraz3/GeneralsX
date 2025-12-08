@@ -37,7 +37,7 @@
 
 #ifndef D3D8_VULKAN_BUFFER_H_
 #define D3D8_VULKAN_BUFFER_H_
-
+#include <cstdint>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -52,7 +52,7 @@ typedef void* VkDeviceMemory;
 typedef void* VkCommandBuffer;
 typedef void* VkQueue;
 typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+// typedef unsigned long long uint64_t;
 typedef unsigned char uint8_t;
 
 /* ============================================================================

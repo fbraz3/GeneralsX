@@ -89,13 +89,13 @@ public:
   struct Profile
   {
     /// call count
-    __int64 callCount;
+    int64_t callCount;
 
     /// pure time
-    __int64 tickPure;
+    int64_t tickPure;
 
     /// total time
-    __int64 tickTotal;
+    int64_t tickTotal;
 
     /// caller list
     UnsignedMap caller;
@@ -267,10 +267,10 @@ private:
     unsigned retVal;
 
     /// enter tick count
-    __int64 tickEnter;
+    int64_t tickEnter;
 
     /// time spend in called functions
-    __int64 tickSubTime;
+    int64_t tickSubTime;
   };
 
   /// map of functions

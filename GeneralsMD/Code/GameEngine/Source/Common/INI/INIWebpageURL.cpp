@@ -33,6 +33,7 @@
 #include "Common/INI.h"
 #include "Common/Registry.h"
 #include <cstddef>
+#include <Utility/compat.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +48,7 @@ class WebBrowserURL
 {
 public:
 	WebBrowserURL() {}
-	const FieldParse *getFieldParse( void ) const { return m_URLFieldParseTable; }
+	const FieldParse* getFieldParse(void) const { return m_URLFieldParseTable; }
 
 	AsciiString m_tag;
 	AsciiString m_url;
@@ -57,7 +58,7 @@ public:
 
 const FieldParse WebBrowserURL::m_URLFieldParseTable[] =
 {
-	{ "URL", INI::parseAsciiString, NULL, offsetof( WebBrowserURL, m_url ) },
+	{ "URL", INI::parseAsciiString, NULL, offsetof(WebBrowserURL, m_url) },
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -70,7 +71,7 @@ AsciiString encodeURL(AsciiString source)
 
 	AsciiString target;
 	AsciiString allowedChars = "$-_.+!*'(),\\";
-	const char *ptr = source.str();
+	const char* ptr = source.str();
 	while (*ptr)
 	{
 		if (isalnum(*ptr) || allowedChars.find(*ptr))
@@ -94,23 +95,23 @@ AsciiString encodeURL(AsciiString source)
 /** Parse Music entry */
 //-------------------------------------------------------------------------------------------------
 
-void INI::parseWebpageURLDefinition( INI* ini )
+void INI::parseWebpageURLDefinition(INI* ini)
 {
 	AsciiString tag;
 	const char* c = ini->getNextToken();
-	tag.set( c );
+	tag.set(c);
 
 	WebBrowserURL url;
-	url.m_tag.set( tag );
+	url.m_tag.set(tag);
 
-	ini->initFromINI( &url, url.getFieldParse() );
+	ini->initFromINI(&url, url.getFieldParse());
 
 	if (url.m_url.startsWith("file://"))
 	{
-		char cwd[_MAX_PATH] = "\\";
+		char cwd[_MAX_PATH];
 		getcwd(cwd, _MAX_PATH);
 
-		url.m_url.format("file://%s\\Data\\%s\\%s", encodeURL(cwd).str(), GetRegistryLanguage().str(), url.m_url.str()+7);
+		url.m_url.format("file://%s%sData%s%s%s%s", encodeURL(cwd).str(), GET_PATH_SEPARATOR(), GET_PATH_SEPARATOR(), GetRegistryLanguage().str(), GET_PATH_SEPARATOR(), url.m_url.str() + 7);
 		DEBUG_LOG(("INI::parseWebpageURLDefinition() - converted URL to [%s]", url.m_url.str()));
 	}
 }

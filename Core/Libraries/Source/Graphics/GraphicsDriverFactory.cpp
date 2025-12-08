@@ -44,38 +44,38 @@ IGraphicsDriver* GraphicsDriverFactory::CreateDriver(BackendType backendType, vo
     // Determine which backend to use
     BackendType selectedBackend = backendType;
     
-    fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Starting, backendType=%d, windowHandle=%p, %ux%u, fullscreen=%d\n",
+    printf("[GraphicsDriverFactory::CreateDriver] Starting, backendType=%d, windowHandle=%p, %ux%u, fullscreen=%d\n",
             (int)backendType, windowHandle, width, height, fullscreen);
-    fflush(stderr);
+    
     
     if (selectedBackend == BackendType::Unknown) {
         // Priority 1: GRAPHICS_DRIVER environment variable
         selectedBackend = GetBackendFromEnvironment();
-        fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] From env: %d\n", (int)selectedBackend);
-        fflush(stderr);
+        printf("[GraphicsDriverFactory::CreateDriver] From env: %d\n", (int)selectedBackend);
+        
         
         // Priority 2: ~/.generalsX/graphics.ini configuration
         if (selectedBackend == BackendType::Unknown) {
             selectedBackend = GetBackendFromConfig();
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] From config: %d\n", (int)selectedBackend);
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] From config: %d\n", (int)selectedBackend);
+            
         }
         
         // Priority 3: Platform default (Vulkan for Phase 41)
         if (selectedBackend == BackendType::Unknown) {
             selectedBackend = GetPlatformDefault();
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Platform default: %d\n", (int)selectedBackend);
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] Platform default: %d\n", (int)selectedBackend);
+            
         }
     }
     
-    fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Selected backend: %d\n", (int)selectedBackend);
-    fflush(stderr);
+    printf("[GraphicsDriverFactory::CreateDriver] Selected backend: %d\n", (int)selectedBackend);
+    
     
     // Validate that requested backend is supported
     if (!IsSupportedBackend(selectedBackend)) {
-        fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Backend %d not supported, falling back\n", (int)selectedBackend);
-        fflush(stderr);
+        printf("[GraphicsDriverFactory::CreateDriver] Backend %d not supported, falling back\n", (int)selectedBackend);
+        
         // Fallback to platform default
         selectedBackend = GetPlatformDefault();
         
@@ -85,8 +85,8 @@ IGraphicsDriver* GraphicsDriverFactory::CreateDriver(BackendType backendType, vo
             if (!supported.empty()) {
                 selectedBackend = supported[0];
             } else {
-                fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] ERROR: No backends available!\n");
-                fflush(stderr);
+                printf("[GraphicsDriverFactory::CreateDriver] ERROR: No backends available!\n");
+                
                 return nullptr;  // No backends available
             }
         }
@@ -95,65 +95,65 @@ IGraphicsDriver* GraphicsDriverFactory::CreateDriver(BackendType backendType, vo
     // Create backend-specific driver instance
     IGraphicsDriver* driver = nullptr;
     
-    fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Creating driver for backend %d\n", (int)selectedBackend);
-    fflush(stderr);
+    printf("[GraphicsDriverFactory::CreateDriver] Creating driver for backend %d\n", (int)selectedBackend);
+    
     
     switch (selectedBackend) {
         case BackendType::Vulkan:
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Calling CreateVulkanGraphicsDriver\n");
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] Calling CreateVulkanGraphicsDriver\n");
+            
             driver = CreateVulkanGraphicsDriver(windowHandle, width, height, fullscreen);
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] CreateVulkanGraphicsDriver returned %p\n", driver);
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] CreateVulkanGraphicsDriver returned %p\n", driver);
+            
             break;
             
         case BackendType::OpenGL:
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Calling CreateOpenGLGraphicsDriver\n");
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] Calling CreateOpenGLGraphicsDriver\n");
+            
             driver = CreateOpenGLGraphicsDriver(windowHandle, width, height, fullscreen);
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] CreateOpenGLGraphicsDriver returned %p\n", driver);
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] CreateOpenGLGraphicsDriver returned %p\n", driver);
+            
             break;
             
         case BackendType::DirectX12:
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Calling CreateDirectX12GraphicsDriver\n");
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] Calling CreateDirectX12GraphicsDriver\n");
+            
             driver = CreateDirectX12GraphicsDriver(windowHandle, width, height, fullscreen);
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] CreateDirectX12GraphicsDriver returned %p\n", driver);
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] CreateDirectX12GraphicsDriver returned %p\n", driver);
+            
             break;
             
         case BackendType::Metal:
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Calling CreateMetalGraphicsDriver\n");
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] Calling CreateMetalGraphicsDriver\n");
+            
             driver = CreateMetalGraphicsDriver(windowHandle, width, height, fullscreen);
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] CreateMetalGraphicsDriver returned %p\n", driver);
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] CreateMetalGraphicsDriver returned %p\n", driver);
+            
             break;
             
         case BackendType::Software:
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Calling CreateSoftwareGraphicsDriver\n");
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] Calling CreateSoftwareGraphicsDriver\n");
+            
             driver = CreateSoftwareGraphicsDriver(windowHandle, width, height, fullscreen);
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] CreateSoftwareGraphicsDriver returned %p\n", driver);
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] CreateSoftwareGraphicsDriver returned %p\n", driver);
+            
             break;
             
         default:
-            fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] ERROR: Unknown backend type %d\n", (int)selectedBackend);
-            fflush(stderr);
+            printf("[GraphicsDriverFactory::CreateDriver] ERROR: Unknown backend type %d\n", (int)selectedBackend);
+            
             return nullptr;
     }
     
     // Register driver globally for legacy DX8 compatibility layer access
     if (driver) {
-        fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Registering driver with SetGraphicsDriver\n");
-        fflush(stderr);
+        printf("[GraphicsDriverFactory::CreateDriver] Registering driver with SetGraphicsDriver\n");
+        
         SetGraphicsDriver(driver);
     }
     
-    fprintf(stderr, "[GraphicsDriverFactory::CreateDriver] Done, returning %p\n", driver);
-    fflush(stderr);
+    printf("[GraphicsDriverFactory::CreateDriver] Done, returning %p\n", driver);
+    
     return driver;
 }
 

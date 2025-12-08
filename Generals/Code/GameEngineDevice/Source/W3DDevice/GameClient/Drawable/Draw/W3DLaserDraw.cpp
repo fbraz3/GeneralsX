@@ -354,9 +354,9 @@ void W3DLaserDraw::doDrawModule(const Matrix3D* transformMtx)
 
 				//This makes the laser skim the ground rather than penetrate it!
 				laserPoints[ 0 ].Set( segmentStart.x, segmentStart.y,
-					MAX( segmentStart.z, 2.0f + TheTerrainLogic->getGroundHeight(segmentStart.x, segmentStart.y) ) );
+					std::max( segmentStart.z, 2.0f + TheTerrainLogic->getGroundHeight(segmentStart.x, segmentStart.y) ) );
 				laserPoints[ 1 ].Set( segmentEnd.x, segmentEnd.y,
-					MAX( segmentEnd.z, 2.0f + TheTerrainLogic->getGroundHeight(segmentEnd.x, segmentEnd.y) ) );
+					std::max( segmentEnd.z, 2.0f + TheTerrainLogic->getGroundHeight(segmentEnd.x, segmentEnd.y) ) );
 
 			}
 			else

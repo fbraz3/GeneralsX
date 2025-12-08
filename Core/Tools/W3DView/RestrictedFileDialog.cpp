@@ -23,6 +23,7 @@
 #include "W3DView.h"
 #include "RestrictedFileDialog.h"
 #include "Utils.h"
+#include <Utility/compat.h>
 
 
 #ifdef RTS_DEBUG
@@ -37,11 +38,11 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(RestrictedFileDialogClass, CFileDialog)
 
 RestrictedFileDialogClass::RestrictedFileDialogClass(BOOL bOpenFileDialog, LPCTSTR lpszDefExt, LPCTSTR lpszFileName,
-		DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd) :
-		CFileDialog(bOpenFileDialog, lpszDefExt, lpszFileName, dwFlags, lpszFilter, pParentWnd)
+	DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd) :
+	CFileDialog(bOpenFileDialog, lpszDefExt, lpszFileName, dwFlags, lpszFilter, pParentWnd)
 {
 	m_ExpectedFilename = lpszFileName;
-	return ;
+	return;
 }
 
 
@@ -57,11 +58,11 @@ END_MESSAGE_MAP()
 //	OnFileNameChange
 //
 void
-RestrictedFileDialogClass::OnFileNameChange (void)
+RestrictedFileDialogClass::OnFileNameChange(void)
 {
 	// Force the original filename into the filename control
-	CommDlg_OpenSave_SetControlText (::GetParent (m_hWnd), 0x480, (LPCTSTR)m_ExpectedFilename);
-	return ;
+	CommDlg_OpenSave_SetControlText(::GetParent(m_hWnd), 0x480, (LPCTSTR)m_ExpectedFilename);
+	return;
 }
 
 
@@ -70,18 +71,18 @@ RestrictedFileDialogClass::OnFileNameChange (void)
 //	OnFileNameOK
 //
 BOOL
-RestrictedFileDialogClass::OnFileNameOK (void)
+RestrictedFileDialogClass::OnFileNameOK(void)
 {
 	// Force the original filename into the filename control
-	CommDlg_OpenSave_SetControlText (::GetParent (m_hWnd), 0x480, (LPCTSTR)m_ExpectedFilename);
+	CommDlg_OpenSave_SetControlText(::GetParent(m_hWnd), 0x480, (LPCTSTR)m_ExpectedFilename);
 
 	// Fill the filename fields of the OPENFILESTRUCT structure with the
 	// original filename and the new path
-	CString path = ::Strip_Filename_From_Path (m_ofn.lpstrFile);
-	path += "\\";
+	CString path = ::Strip_Filename_From_Path(m_ofn.lpstrFile);
+	path += GET_PATH_SEPARATOR();
 	path += m_ExpectedFilename;
-	::lstrcpy (m_ofn.lpstrFile, path);
-	::lstrcpy (m_ofn.lpstrFileTitle, m_ExpectedFilename);
+	::lstrcpy(m_ofn.lpstrFile, path);
+	::lstrcpy(m_ofn.lpstrFileTitle, m_ExpectedFilename);
 	return FALSE;
 }
 
@@ -91,10 +92,10 @@ RestrictedFileDialogClass::OnFileNameOK (void)
 //	OnInitDone
 //
 void
-RestrictedFileDialogClass::OnInitDone (void)
+RestrictedFileDialogClass::OnInitDone(void)
 {
 	// Disable the controls we don't want the user to change
-	::EnableWindow (::GetDlgItem (::GetParent (m_hWnd), 0x480), FALSE);
-	::EnableWindow (::GetDlgItem (::GetParent (m_hWnd), 0x470), FALSE);
-	return ;
+	::EnableWindow(::GetDlgItem(::GetParent(m_hWnd), 0x480), FALSE);
+	::EnableWindow(::GetDlgItem(::GetParent(m_hWnd), 0x470), FALSE);
+	return;
 }

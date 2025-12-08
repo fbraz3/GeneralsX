@@ -53,6 +53,7 @@
 
 #include "WWDownload/Registry.h"
 #include "WWDownload/urlBuilder.h"
+#include <Utility/compat.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -62,12 +63,12 @@
 #ifdef ALLOW_NON_PROFILED_LOGIN
 #endif // ALLOW_NON_PROFILED_LOGIN
 
-	return GHTTPTrue;
+return GHTTPTrue;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-static GHTTPBool numPlayersOnlineCallback( GHTTPRequest request, GHTTPResult result, char * buffer, GHTTPByteCount bufferLen, void * param )
+static GHTTPBool numPlayersOnlineCallback(GHTTPRequest request, GHTTPResult result, char* buffer, GHTTPByteCount bufferLen, void* param)
 {
 	DEBUG_LOG(("numPlayersOnlineCallback() - Result=%d, buffer=[%s], len=%d", result, buffer, bufferLen));
 	if (result != GHTTPSuccess)
@@ -77,13 +78,13 @@ static GHTTPBool numPlayersOnlineCallback( GHTTPRequest request, GHTTPResult res
 
 	AsciiString message = buffer;
 	message.trim();
-	const char *s = message.reverseFind('\\');
+	const char* s = message.reverseFindPathSeparator();
 	if (!s)
 	{
 		return GHTTPTrue;
 	}
 
-	if (*s == '\\')
+	if (*s == GET_PATH_SEPARATOR())
 		++s;
 
 	DEBUG_LOG(("Message was '%s', trimmed to '%s'=%d", buffer, s, atoi(s)));
@@ -94,33 +95,33 @@ static GHTTPBool numPlayersOnlineCallback( GHTTPRequest request, GHTTPResult res
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void CheckOverallStats( void )
+void CheckOverallStats(void)
 {
 #if RTS_GENERALS
-	const char *const url = "http://gamestats.gamespy.com/ccgenerals/display.html";
+	const char* const url = "http://gamestats.gamespy.com/ccgenerals/display.html";
 #elif RTS_ZEROHOUR
-	const char *const url = "http://gamestats.gamespy.com/ccgenzh/display.html";
+	const char* const url = "http://gamestats.gamespy.com/ccgenzh/display.html";
 #endif
 	ghttpGet(url, GHTTPFalse, overallStatsCallback, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void CheckNumPlayersOnline( void )
+void CheckNumPlayersOnline(void)
 {
 #if RTS_GENERALS
-	const char *const url = "http://launch.gamespyarcade.com/software/launch/arcadecount2.dll?svcname=ccgenerals";
+	const char* const url = "http://launch.gamespyarcade.com/software/launch/arcadecount2.dll?svcname=ccgenerals";
 #elif RTS_ZEROHOUR
-	const char *const url = "http://launch.gamespyarcade.com/software/launch/arcadecount2.dll?svcname=ccgenzh";
+	const char* const url = "http://launch.gamespyarcade.com/software/launch/arcadecount2.dll?svcname=ccgenzh";
 #endif
 	ghttpGet(url, GHTTPFalse, numPlayersOnlineCallback, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-DWORD WINAPI asyncGethostbynameThreadFunc( void * szName )
+DWORD WINAPI asyncGethostbynameThreadFunc(void* szName)
 {
-	HOSTENT *he = gethostbyname( (const char *)szName );
+	HOSTENT* he = gethostbyname((const char*)szName);
 
 	if (he)
 	{
@@ -137,36 +138,36 @@ DWORD WINAPI asyncGethostbynameThreadFunc( void * szName )
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-int asyncGethostbyname(char * szName)
+int asyncGethostbyname(char* szName)
 {
 	static int            stat = 0;
 	static unsigned long  threadid;
 
-	if( stat == 0 )
+	if (stat == 0)
 	{
 		/* Kick off gethostname thread */
 		s_asyncDNSThreadDone = FALSE;
-		s_asyncDNSThreadHandle = CreateThread( NULL, 0, asyncGethostbynameThreadFunc, szName, 0, &threadid );
+		s_asyncDNSThreadHandle = CreateThread(NULL, 0, asyncGethostbynameThreadFunc, szName, 0, &threadid);
 
-		if( s_asyncDNSThreadHandle == NULL )
+		if (s_asyncDNSThreadHandle == NULL)
 		{
-			return( LOOKUP_FAILED );
+			return(LOOKUP_FAILED);
 		}
 		stat = 1;
 	}
-	if( stat == 1 )
+	if (stat == 1)
 	{
-		if( s_asyncDNSThreadDone )
+		if (s_asyncDNSThreadDone)
 		{
 			/* Thread finished */
 			stat = 0;
 			s_asyncDNSLookupInProgress = FALSE;
 			s_asyncDNSThreadHandle = NULL;
-			return( (s_asyncDNSThreadSucceeded)?LOOKUP_SUCCEEDED:LOOKUP_FAILED );
+			return((s_asyncDNSThreadSucceeded) ? LOOKUP_SUCCEEDED : LOOKUP_FAILED);
 		}
 	}
 
-	return( LOOKUP_INPROGRESS );
+	return(LOOKUP_INPROGRESS);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -176,13 +177,13 @@ int asyncGethostbyname(char * szName)
 // time out) but at least we'll live.
 static Bool isHttpOk = TRUE;
 
-void HTTPThinkWrapper( void )
+void HTTPThinkWrapper(void)
 {
 	if (s_asyncDNSLookupInProgress)
 	{
 		Char hostname[] = "servserv.generals.ea.com";
 		Int ret = asyncGethostbyname(hostname);
-		switch(ret)
+		switch (ret)
 		{
 		case LOOKUP_FAILED:
 			cantConnectBeforeOnline = TRUE;
@@ -203,22 +204,22 @@ void HTTPThinkWrapper( void )
 		catch (...)
 		{
 			isHttpOk = FALSE; // we can't abort the login, since we might be done with the
-												// required checks and are fetching extras.  If it is a required
-												// check, we'll time out normally.
+			// required checks and are fetching extras.  If it is a required
+			// check, we'll time out normally.
 		}
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void StopAsyncDNSCheck( void )
+void StopAsyncDNSCheck(void)
 {
 	if (s_asyncDNSThreadHandle)
 	{
 #ifdef DEBUG_CRASHING
 		Int res =
 #endif
-			TerminateThread(s_asyncDNSThreadHandle,0);
+			TerminateThread(s_asyncDNSThreadHandle, 0);
 		DEBUG_ASSERTCRASH(res, ("Could not terminate the Async DNS Lookup thread!"));	// Thread still not killed!
 	}
 	s_asyncDNSThreadHandle = NULL;
@@ -227,7 +228,7 @@ void StopAsyncDNSCheck( void )
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void StartPatchCheck( void )
+void StartPatchCheck(void)
 {
 	checkingForPatchBeforeGameSpy = TRUE;
 	cantConnectBeforeOnline = FALSE;
@@ -240,7 +241,7 @@ void StartPatchCheck( void )
 	s_asyncDNSLookupInProgress = TRUE;
 	Char hostname[] = "servserv.generals.ea.com";
 	Int ret = asyncGethostbyname(hostname);
-	switch(ret)
+	switch (ret)
 	{
 	case LOOKUP_FAILED:
 		cantConnectBeforeOnline = TRUE;
@@ -254,7 +255,7 @@ void StartPatchCheck( void )
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-static void reallyStartPatchCheck( void )
+static void reallyStartPatchCheck(void)
 {
 	checksLeftBeforeOnline = 4;
 
@@ -277,10 +278,10 @@ static void reallyStartPatchCheck( void )
 	DEBUG_LOG(("Map patch check: [%s]", mapURL.c_str()));
 	DEBUG_LOG(("Config: [%s]", configURL.c_str()));
 	DEBUG_LOG(("MOTD: [%s]", motdURL.c_str()));
-	ghttpGet(gameURL.c_str(), GHTTPFalse, gamePatchCheckCallback, (void *)timeThroughOnline);
-	ghttpGet(mapURL.c_str(), GHTTPFalse, gamePatchCheckCallback, (void *)timeThroughOnline);
-	ghttpHead(configURL.c_str(), GHTTPFalse, configHeadCallback, (void *)timeThroughOnline);
-	ghttpGet(motdURL.c_str(), GHTTPFalse, motdCallback, (void *)timeThroughOnline);
+	ghttpGet(gameURL.c_str(), GHTTPFalse, gamePatchCheckCallback, (void*)timeThroughOnline);
+	ghttpGet(mapURL.c_str(), GHTTPFalse, gamePatchCheckCallback, (void*)timeThroughOnline);
+	ghttpHead(configURL.c_str(), GHTTPFalse, configHeadCallback, (void*)timeThroughOnline);
+	ghttpGet(motdURL.c_str(), GHTTPFalse, motdCallback, (void*)timeThroughOnline);
 
 	// check total game stats
 	CheckOverallStats();

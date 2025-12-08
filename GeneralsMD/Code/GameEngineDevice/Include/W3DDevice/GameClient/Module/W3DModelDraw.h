@@ -226,7 +226,7 @@ struct ModelConditionInfo
 	mutable TurretInfo								m_turrets[MAX_TURRETS];
 	mutable WeaponBarrelInfoVec				m_weaponBarrelInfoVec[WEAPONSLOT_COUNT];
 	mutable Bool											m_hasRecoilBonesOrMuzzleFlashes[WEAPONSLOT_COUNT];
-	mutable Byte											m_validStuff;
+	mutable SignedByte											m_validStuff;
 
 	enum
 	{
@@ -304,7 +304,7 @@ public:
 #ifdef CACHE_ATTACH_BONE
 	mutable Bool											m_attachToDrawableBoneOffsetValid;
 #endif
-	mutable Byte											m_validated;
+	mutable SignedByte											m_validated;
 
   Bool                              m_particlesAttachedToAnimatedBones;
 

@@ -35,7 +35,7 @@
 #include "GameClient/Display.h"
 #include "GameClient/GraphDraw.h"
 
-__forceinline void ProfileGetTime(__int64 &t)
+__forceinline void ProfileGetTime(int64_t &t)
 {
 	t = _rdtsc();
 }

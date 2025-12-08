@@ -33,6 +33,24 @@ endif()
 # Top level project, doesn't really affect anything.
 project(genzh LANGUAGES C CXX)
 
+# Phase 54.2: Linux static library circular dependency fix
+# On Linux with static libraries, the linker processes libraries in order and only
+# resolves symbols needed at that moment. This causes issues when library A needs
+# symbols from library B but A is processed before B. The solution is to wrap all
+# static libraries in --start-group / --end-group to allow multiple resolution passes.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # Define a custom link library type that wraps libraries in a group
+    set(CMAKE_C_LINK_LIBRARY_USING_RESCAN_SUPPORTED TRUE)
+    set(CMAKE_CXX_LINK_LIBRARY_USING_RESCAN_SUPPORTED TRUE)
+    set(CMAKE_C_LINK_LIBRARY_USING_RESCAN "-Wl,--start-group" "<LINK_ITEM>" "-Wl,--end-group")
+    set(CMAKE_CXX_LINK_LIBRARY_USING_RESCAN "-Wl,--start-group" "<LINK_ITEM>" "-Wl,--end-group")
+    
+    # Override the default executable link command to wrap all libraries in a group
+    # This ensures proper resolution of circular dependencies between static libraries
+    set(CMAKE_CXX_LINK_EXECUTABLE
+        "<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> -Wl,--start-group <LINK_LIBRARIES> -Wl,--end-group")
+endif()
+
 # This file handles extra settings wanted/needed for different compilers.
 include(cmake/compilers.cmake)
 

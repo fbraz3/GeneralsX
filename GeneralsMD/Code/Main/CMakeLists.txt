@@ -19,6 +19,22 @@ target_link_libraries(GeneralsXZH PRIVATE
     zi_always
 )
 
+# Phase 54.1: Repeat core libraries at end of link for Linux circular dependencies
+# Static library link order matters - symbols must be resolved when first needed
+# By adding core libraries again at the end, we ensure symbols that ww3d2 needs
+# are available since libww3d2.a comes after libwwlib.a/libwwmath.a
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(GeneralsXZH PRIVATE
+        core_wwlib
+        core_wwmath
+        core_wwsaveload
+        graphics_drivers
+        # Second pass - repeat because ww3d2 needs symbols from these
+        core_wwlib
+        core_wwmath
+    )
+endif()
+
 # Phase 39.5: Windows-specific libraries removed
 # Graphics now unified to Vulkan, input unified to SDL2, audio to OpenAL
 # No Windows API libraries needed - complete cross-platform unification

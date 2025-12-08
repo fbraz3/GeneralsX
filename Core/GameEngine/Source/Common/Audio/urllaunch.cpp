@@ -160,7 +160,7 @@ HRESULT LaunchURL( LPCWSTR pszURL )
     int urlLen = WideCharToMultiByte(CP_UTF8, 0, pszURL, -1, NULL, 0, NULL, NULL);
     if( urlLen <= 0 )
     {
-        fprintf(stderr, "LaunchURL: Failed to determine URL buffer size\n");
+        printf("LaunchURL: Failed to determine URL buffer size\n");
         return E_FAIL;
     }
     
@@ -188,7 +188,7 @@ HRESULT LaunchURL( LPCWSTR pszURL )
     }
     else
     {
-        fprintf(stderr, "LaunchURL: SDL_OpenURL failed with error code %d\n", result);
+        printf("LaunchURL: SDL_OpenURL failed with error code %d\n", result);
         return E_FAIL;
     }
 }

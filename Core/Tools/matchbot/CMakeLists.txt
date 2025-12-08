@@ -1,6 +1,6 @@
 set(MATCHBOT_SRC
     "debug.cpp"
-    "debug.h"
+    "debug_renamed.h"
     "encrypt.cpp"
     "encrypt.h"
     "generals.cpp"

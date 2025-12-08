@@ -12,6 +12,7 @@ add_library(graphics_drivers STATIC
     
     # Phase 41: Global stubs
     phase41_global_stubs.cpp
+    phase41_cpp_stubs.cpp
     
     # DirectX 8 Compatibility Layer (Phase 41)
     dx8buffer_compat.h
@@ -21,7 +22,7 @@ add_library(graphics_drivers STATIC
     Vulkan/vulkan_graphics_driver.h
     Vulkan/vulkan_graphics_driver.cpp
     Vulkan/vulkan_globals.cpp
-    Vulkan/vulkan_ww3d_wrapper.cpp
+    # vulkan_ww3d_wrapper.cpp - REMOVED: ww3d.cpp provides WW3D class, DX8Wrapper_Stubs provides bridge
     
     # D3D8 to Vulkan Mappings (22 files)
     Vulkan/d3d8_vulkan_buffer.h
@@ -89,7 +90,7 @@ target_compile_definitions(graphics_drivers PUBLIC GRAPHICS_BACKEND_OPENGL)
 if(MSVC)
     target_compile_options(graphics_drivers PRIVATE /W4)
 else()
-    target_compile_options(graphics_drivers PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(graphics_drivers PRIVATE -Wall -Wextra -Wpedantic -fPIC)
 endif()
 
 # C++ standard

@@ -498,8 +498,8 @@ auto start_audio = chrono::now();
 AssetManager_WaitForCategory(mgr, "audio");
 auto audio_time = chrono::now() - start_audio;  // Expected: 6 sec → 2-3 sec
 
-// Total = ~max(ini_time, texture_time, model_time, audio_time)
-//       = max(10, 5, 4, 3) = 10 seconds
+// Total = ~std::max(ini_time, texture_time, model_time, audio_time)
+//       = std::max(10, 5, 4, 3) = 10 seconds
 ```
 
 **Regression Tests**:

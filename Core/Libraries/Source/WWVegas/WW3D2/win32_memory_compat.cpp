@@ -67,7 +67,7 @@ void* SDL2_Malloc(size_t size)
     void* ptr = malloc(size);
 
     if (!ptr) {
-        fprintf(stderr, "Phase 04: malloc failed (size: %zu)\n", size);
+        printf("Phase 04: malloc failed (size: %zu)\n", size);
         return NULL;
     }
 
@@ -100,7 +100,7 @@ void* SDL2_Realloc(void* ptr, size_t new_size)
     void* new_ptr = realloc(ptr, new_size);
 
     if (!new_ptr) {
-        fprintf(stderr, "Phase 04: realloc failed (new_size: %zu)\n", new_size);
+        printf("Phase 04: realloc failed (new_size: %zu)\n", new_size);
         return NULL;
     }
 
@@ -162,7 +162,7 @@ void* SDL2_MallocAligned(size_t alignment, size_t size)
     }
 
     if (!ptr) {
-        fprintf(stderr, "Phase 04: aligned malloc failed (alignment: %zu, size: %zu)\n", alignment, size);
+        printf("Phase 04: aligned malloc failed (alignment: %zu, size: %zu)\n", alignment, size);
         return NULL;
     }
 

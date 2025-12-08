@@ -419,7 +419,7 @@ UpdateSleepTime SpectreGunshipUpdate::update()
 
         // declination intersects line [p][a], given an attack slope of n1/n2
         Coord3D declination;
-        Real n1 = min( ORBIT_INSERTION_SLOPE_MAX, max(ORBIT_INSERTION_SLOPE_MIN, data->m_orbitInsertionSlope) );
+        Real n1 = std::min( ORBIT_INSERTION_SLOPE_MAX, std::max(ORBIT_INSERTION_SLOPE_MIN, data->m_orbitInsertionSlope) );
         Real n2 = ONE - n1;
         declination.z = zero;
         declination.x = ( perigee.x * n1 ) + ( apogee.x * n2 );

@@ -35,7 +35,7 @@
 **    Phase 12: Texture System Implementation
 **
 ******************************************************************************/
-
+#include <cstdint>
 #ifndef D3D8_VULKAN_TEXTURE_H_
 #define D3D8_VULKAN_TEXTURE_H_
 
@@ -56,7 +56,7 @@ typedef void* VkQueue;
 typedef void* VkSampler;
 typedef void* VkBuffer;
 typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+// typedef unsigned long long uint64_t;
 typedef unsigned char uint8_t;
 typedef int int32_t;
 

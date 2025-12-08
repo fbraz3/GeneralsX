@@ -9,7 +9,7 @@
 /* Create and initialize profiler */
 Profiler* profiler = Profiler_Create();
 if (Profiler_Initialize(profiler) < 0) {
-    fprintf(stderr, "Failed to initialize profiler\n");
+    printf("Failed to initialize profiler\n");
     return 1;
 }
 
@@ -429,7 +429,7 @@ Top 10 Unbatched Materials:
 int result = Profiler_BeginCPUMarker(profiler, "BadMarker");
 if (result < 0) {
     const char* error = Profiler_GetLastError(profiler);
-    fprintf(stderr, "Error: %s\n", error);
+    printf("Error: %s\n", error);
     /* Error possibilities:
        - Marker stack overflow (max 1024 nested markers)
        - NULL pointer passed

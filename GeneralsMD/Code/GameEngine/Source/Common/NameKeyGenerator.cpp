@@ -92,7 +92,7 @@ void NameKeyGenerator::freeSockets()
 inline UnsignedInt calcHashForString(const char* p)
 {
 	UnsignedInt result = 0;
-	Byte *pp = (Byte*)p;
+	SignedByte *pp = (SignedByte*)p;
 	while (*pp)
 		result = (result << 5) + result + *pp++;
 	return result;
@@ -102,7 +102,7 @@ inline UnsignedInt calcHashForString(const char* p)
 inline UnsignedInt calcHashForLowercaseString(const char* p)
 {
 	UnsignedInt result = 0;
-	Byte *pp = (Byte*)p;
+	SignedByte *pp = (SignedByte*)p;
 	while (*pp)
 		result = (result << 5) + result + tolower(*pp++);
 	return result;

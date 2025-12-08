@@ -33,6 +33,7 @@
 #include "Win32Device/Common/Win32LocalFileSystem.h"
 #include "Win32Device/Common/Win32LocalFile.h"
 #include <io.h>
+#include <Utility/compat.h>
 
 Win32LocalFileSystem::Win32LocalFileSystem() : LocalFileSystem()
 {
@@ -42,7 +43,7 @@ Win32LocalFileSystem::~Win32LocalFileSystem() {
 }
 
 //DECLARE_PERF_TIMER(Win32LocalFileSystem_openFile)
-File * Win32LocalFileSystem::openFile(const Char *filename, Int access, size_t bufferSize)
+File* Win32LocalFileSystem::openFile(const Char* filename, Int access, size_t bufferSize)
 {
 	//USE_PERF_TIMER(Win32LocalFileSystem_openFile)
 
@@ -58,44 +59,45 @@ File * Win32LocalFileSystem::openFile(const Char *filename, Int access, size_t b
 		string = filename;
 		AsciiString token;
 		AsciiString dirName;
-		string.nextToken(&token, "\\/");
+		string.nextToken(&token, GET_PATH_SEPARATOR());
 		dirName = token;
 		while ((token.find('.') == NULL) || (string.find('.') != NULL)) {
 			createDirectory(dirName);
-			string.nextToken(&token, "\\/");
-			dirName.concat('\\');
+			string.nextToken(&token, GET_PATH_SEPARATOR());
+			dirName.concat(GET_PATH_SEPARATOR());
 			dirName.concat(token);
 		}
 	}
 
 	// TheSuperHackers @fix Mauller 21/04/2025 Create new file handle when necessary to prevent memory leak
-	Win32LocalFile *file = newInstance( Win32LocalFile );
+	Win32LocalFile* file = newInstance(Win32LocalFile);
 
 	if (file->open(filename, access, bufferSize) == FALSE) {
 		deleteInstance(file);
 		file = NULL;
-	} else {
+	}
+	else {
 		file->deleteOnClose();
 	}
 
-// this will also need to play nice with the STREAMING type that I added, if we ever enable this
+	// this will also need to play nice with the STREAMING type that I added, if we ever enable this
 
-// srj sez: this speeds up INI loading, but makes BIG files unusable.
-// don't enable it without further tweaking.
-//
-// unless you like running really slowly.
-//	if (!(access&File::WRITE)) {
-//		// Return a ramfile.
-//		RAMFile *ramFile = newInstance( RAMFile );
-//		if (ramFile->open(file)) {
-//			file->close(); // is deleteonclose, so should delete.
-//			ramFile->deleteOnClose();
-//			return ramFile;
-//		}	else {
-//			ramFile->close();
-//			deleteInstance(ramFile);
-//		}
-//	}
+	// srj sez: this speeds up INI loading, but makes BIG files unusable.
+	// don't enable it without further tweaking.
+	//
+	// unless you like running really slowly.
+	//	if (!(access&File::WRITE)) {
+	//		// Return a ramfile.
+	//		RAMFile *ramFile = newInstance( RAMFile );
+	//		if (ramFile->open(file)) {
+	//			file->close(); // is deleteonclose, so should delete.
+	//			ramFile->deleteOnClose();
+	//			return ramFile;
+	//		}	else {
+	//			ramFile->close();
+	//			deleteInstance(ramFile);
+	//		}
+	//	}
 
 	return file;
 }
@@ -113,7 +115,7 @@ void Win32LocalFileSystem::reset()
 }
 
 //DECLARE_PERF_TIMER(Win32LocalFileSystem_doesFileExist)
-Bool Win32LocalFileSystem::doesFileExist(const Char *filename) const
+Bool Win32LocalFileSystem::doesFileExist(const Char* filename) const
 {
 	//USE_PERF_TIMER(Win32LocalFileSystem_doesFileExist)
 	if (_access(filename, 0) == 0) {
@@ -122,7 +124,7 @@ Bool Win32LocalFileSystem::doesFileExist(const Char *filename) const
 	return FALSE;
 }
 
-void Win32LocalFileSystem::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList & filenameList, Bool searchSubdirectories) const
+void Win32LocalFileSystem::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList& filenameList, Bool searchSubdirectories) const
 {
 	HANDLE fileHandle = NULL;
 	WIN32_FIND_DATA findData;
@@ -137,18 +139,18 @@ void Win32LocalFileSystem::getFileListInDirectory(const AsciiString& currentDire
 	fileHandle = FindFirstFile(asciisearch.str(), &findData);
 	done = (fileHandle == INVALID_HANDLE_VALUE);
 
-	while (!done)	{
+	while (!done) {
 		if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-				(strcmp(findData.cFileName, ".") && strcmp(findData.cFileName, ".."))) {
+			(strcmp(findData.cFileName, ".") && strcmp(findData.cFileName, ".."))) {
 			// if we haven't already, add this filename to the list.
 				// a stl set should only allow one copy of each filename
-				AsciiString newFilename;
-				newFilename = originalDirectory;
-				newFilename.concat(currentDirectory);
-				newFilename.concat(findData.cFileName);
-				if (filenameList.find(newFilename) == filenameList.end()) {
-					filenameList.insert(newFilename);
-				}
+			AsciiString newFilename;
+			newFilename = originalDirectory;
+			newFilename.concat(currentDirectory);
+			newFilename.concat(findData.cFileName);
+			if (filenameList.find(newFilename) == filenameList.end()) {
+				filenameList.insert(newFilename);
+			}
 		}
 
 		done = (FindNextFile(fileHandle, &findData) == 0);
@@ -165,15 +167,15 @@ void Win32LocalFileSystem::getFileListInDirectory(const AsciiString& currentDire
 
 		while (!done) {
 			if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-					(strcmp(findData.cFileName, ".") && strcmp(findData.cFileName, ".."))) {
+				(strcmp(findData.cFileName, ".") && strcmp(findData.cFileName, ".."))) {
 
-					AsciiString tempsearchstr;
-					tempsearchstr.concat(currentDirectory);
-					tempsearchstr.concat(findData.cFileName);
-					tempsearchstr.concat('\\');
+				AsciiString tempsearchstr;
+				tempsearchstr.concat(currentDirectory);
+				tempsearchstr.concat(findData.cFileName);
+				tempsearchstr.concat(GET_PATH_SEPARATOR());
 
-					// recursively add files in subdirectories if required.
-					getFileListInDirectory(tempsearchstr, originalDirectory, searchName, filenameList, searchSubdirectories);
+				// recursively add files in subdirectories if required.
+				getFileListInDirectory(tempsearchstr, originalDirectory, searchName, filenameList, searchSubdirectories);
 			}
 
 			done = (FindNextFile(fileHandle, &findData) == 0);
@@ -184,7 +186,7 @@ void Win32LocalFileSystem::getFileListInDirectory(const AsciiString& currentDire
 
 }
 
-Bool Win32LocalFileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo) const
+Bool Win32LocalFileSystem::getFileInfo(const AsciiString& filename, FileInfo* fileInfo) const
 {
 	WIN32_FIND_DATA findData;
 	HANDLE findHandle = NULL;

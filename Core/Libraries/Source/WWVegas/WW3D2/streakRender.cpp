@@ -176,7 +176,7 @@ TextureClass * StreakRendererClass::Get_Texture(void) const
 //		factor = 8.0f;
 //		WWDEBUG_SAY(("Texture Tile Factor too large in StreakRendererClass!"));
 //	} else {
-//		factor = MAX(factor, 0.0f);
+//		factor = std::max(factor, 0.0f);
 //	}
 //	TextureTileFactor = factor;
 //}
@@ -357,7 +357,7 @@ void StreakRendererClass::RenderStreak
 	for (unsigned int chunkIndex = 0; chunkIndex < num_points - 1; chunkIndex += (chunk_size - 1))
 	{
 		unsigned int point_cnt = num_points - chunkIndex;
-		point_cnt = MIN(point_cnt, chunk_size);
+		point_cnt = std::min(point_cnt, chunk_size);
 
 		// We use these different loop indices (which loop INSIDE a chunk) to improve readability:
 		unsigned int pointIndex;	// Point index
@@ -1138,7 +1138,7 @@ void StreakRendererClass::RenderStreak
 		unsigned int residual_bottom_points = intersection[1][BOTTOM_EDGE].PointCount;
 
 		// Reduce both pointcounts by the same amount so the smaller one is 1 (skip points)
-		unsigned int delta = MIN(residual_top_points, residual_bottom_points) - 1;
+		unsigned int delta = std::min(residual_top_points, residual_bottom_points) - 1;
 		residual_top_points -= delta;
 		residual_bottom_points -= delta;
 		pointIndex += delta;
@@ -1252,7 +1252,7 @@ void StreakRendererClass::RenderStreak
 			}
 
 			// Reduce both pointcounts by the same amount so the smaller one is 1 (skip points)
-			delta = MIN(residual_top_points, residual_bottom_points) - 1;
+			delta = std::min(residual_top_points, residual_bottom_points) - 1;
 			residual_top_points -= delta;
 			residual_bottom_points -= delta;
 			pointIndex += delta;
@@ -1286,7 +1286,7 @@ void StreakRendererClass::RenderStreak
 //		{
 //			//vertexArray[vertexIndex].diffuse = rgba;/// OLD WAY COLORS THEM ALL TO THE COLOR,OPACITY MEMBERS /////////////////
 //			unsigned int perPointARGB;
-//			colorIndex = MIN(vertexIndex / 2, point_cnt);
+//			colorIndex = std::min(vertexIndex / 2, point_cnt);
 //			perPointARGB = DX8Wrapper::Convert_Color( colors[colorIndex] );// twice as many verts as points? or so?
 //			vertexArray[vertexIndex].diffuse = perPointARGB;
 //			vertexArray[vertexIndex].u1 = (float)((vertexIndex&2) == 2);
@@ -1350,7 +1350,7 @@ void StreakRendererClass::RenderStreak
 				vertex->X = vertexArray[i].x;
 				vertex->Y = vertexArray[i].y;
 				vertex->Z = vertexArray[i].z;
-				*reinterpret_cast<unsigned int *>(vb + diffuseOffset) = DX8Wrapper::Convert_Color_Clamp(colors[MIN((i/2), point_cnt)]); // TODO: Does not work correctly when subdivision are not 0
+				*reinterpret_cast<unsigned int *>(vb + diffuseOffset) = DX8Wrapper::Convert_Color_Clamp(colors[std::min((i/2), point_cnt)]); // TODO: Does not work correctly when subdivision are not 0
 				Vector2 *texture = reinterpret_cast<Vector2 *>(vb + textureOffset);
 				texture->U = vertexArray[i].u1;
 				texture->V = vertexArray[i].v1;

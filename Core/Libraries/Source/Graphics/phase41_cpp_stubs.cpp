@@ -6,48 +6,17 @@
  * a working executable.
  * 
  * Strategy: Define minimal vtables and methods for all unimplemented classes.
+ * 
+ * NOTE: Many stubs have moved to dedicated files:
+ * - Transport: phase43_4_transport.cpp
+ * - FillStackAddresses, Registry: phase43_registry_stubs.cpp
+ * - GameSpy Overlays: phase43_5_gamespy_ui.cpp
+ * - PSRequest: PersistentStorageThread.cpp
+ * - Targa: TARGA.cpp (original implementation)
  */
 
 #include <cstdint>
 #include <cstring>
-
-// ============================================================================
-// Transport/Network Classes (GameSpy LAN Protocol)
-// ============================================================================
-
-class Transport {
-public:
-    Transport();
-    ~Transport();
-    void init(uint32_t port, uint16_t flags) { }
-    void reset() { }
-    void update() { }
-    void doRecv() { }
-    void doSend() { }
-    void queueSend(uint32_t addr, uint16_t port, const unsigned char* data, int len) { }
-    uint32_t getIncomingBytesPerSecond() { return 0; }
-    uint32_t getOutgoingBytesPerSecond() { return 0; }
-    uint32_t getUnknownBytesPerSecond() { return 0; }
-    uint32_t getIncomingPacketsPerSecond() { return 0; }
-    uint32_t getOutgoingPacketsPerSecond() { return 0; }
-    uint32_t getUnknownPacketsPerSecond() { return 0; }
-};
-
-Transport::Transport() { }
-Transport::~Transport() { }
-
-// ============================================================================
-// Image/Texture Format Classes
-// ============================================================================
-
-class Targa {
-public:
-    Targa(unsigned char* data, uint32_t width, uint32_t height, uint32_t pitch, uint32_t format, bool alpha);
-    ~Targa();
-};
-
-Targa::Targa(unsigned char* data, uint32_t width, uint32_t height, uint32_t pitch, uint32_t format, bool alpha) { }
-Targa::~Targa() { }
 
 // ============================================================================
 // Texture Loading
@@ -124,17 +93,7 @@ public:
 // Window/UI Classes
 // ============================================================================
 
-class GameWindow { };
-
-class BuddyControlSystemClass {
-public:
-    BuddyControlSystemClass(GameWindow* window, uint32_t a, uint32_t b, uint32_t c) { }
-    virtual ~BuddyControlSystemClass() = default;
-};
-
-void BuddyControlSystem(GameWindow* window, uint32_t a, uint32_t b, uint32_t c) {
-    new BuddyControlSystemClass(window, a, b, c);
-}
+// NOTE: BuddyControlSystem is now in phase43_registry_stubs.cpp
 
 // ============================================================================
 // Allocator classes
@@ -144,18 +103,6 @@ class FastAllocatorGeneral {
 public:
     static void* Get_Allocator() { return nullptr; }
 };
-
-// ============================================================================
-// Debug/Utility
-// ============================================================================
-
-void FillStackAddresses(void** addresses, uint32_t count, uint32_t skip) {
-    if (addresses) {
-        for (uint32_t i = 0; i < count; i++) {
-            addresses[i] = nullptr;
-        }
-    }
-}
 
 // ============================================================================
 // GameSpy Message Box (C-style)
@@ -170,21 +117,6 @@ void GSMessageBoxOk(const UnicodeStringStub& title, const UnicodeStringStub& mes
     // Stub: do nothing - no UI in headless game
 }
 
-// ============================================================================
-// PSRequest class for player stats
-// ============================================================================
-
-class PSRequest {
-public:
-    PSRequest();
-    virtual ~PSRequest();
-    virtual void clearFields() { }
-    virtual void setPlayerStats(int a, int b, int c, int d, int e) { }
-};
-
-PSRequest::PSRequest() { }
-PSRequest::~PSRequest() { }
-
-// Explicit instantiation to generate vtable
-PSRequest dummy_psr;
+// NOTE: PSRequest is now in PersistentStorageThread.cpp
+// NOTE: FillStackAddresses is now in phase43_registry_stubs.cpp
 

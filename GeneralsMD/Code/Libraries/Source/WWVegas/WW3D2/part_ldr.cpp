@@ -41,6 +41,7 @@
 #include "win32_sdl_types_compat.h"  // For lstrcpy, _strdup, lstrcpyn, lstrlen macros
 #include "assetmgr.h"
 #include "texture.h"
+#include <Utility/compat.h>
 
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(pointer) { delete pointer; pointer = NULL; }
@@ -51,14 +52,14 @@
 #endif
 
 
-///////////////////////////////////////////////////////////////////////////////////
-//
-//	Global variable initialization
-//
+ ///////////////////////////////////////////////////////////////////////////////////
+ //
+ //	Global variable initialization
+ //
 ParticleEmitterLoaderClass	_ParticleEmitterLoader;
 
 //	This array is declared in "W3D_File.h"
-const char *EMITTER_TYPE_NAMES[EMITTER_TYPEID_COUNT] =
+const char* EMITTER_TYPE_NAMES[EMITTER_TYPEID_COUNT] =
 {
 	"Default"
 };
@@ -68,27 +69,27 @@ const char *EMITTER_TYPE_NAMES[EMITTER_TYPEID_COUNT] =
 //
 //	ParticleEmitterDefClass
 //
-ParticleEmitterDefClass::ParticleEmitterDefClass (void)
-	:	m_pName (NULL),
-		m_Version (0L),
-		m_pUserString (NULL),
-		m_iUserType (EMITTER_TYPEID_DEFAULT),
-		m_InitialOrientationRandom (0),
-		m_pCreationVolume (NULL),
-		m_pVelocityRandomizer (NULL)
+ParticleEmitterDefClass::ParticleEmitterDefClass(void)
+	: m_pName(NULL),
+	m_Version(0L),
+	m_pUserString(NULL),
+	m_iUserType(EMITTER_TYPEID_DEFAULT),
+	m_InitialOrientationRandom(0),
+	m_pCreationVolume(NULL),
+	m_pVelocityRandomizer(NULL)
 {
-	::memset (&m_Info, 0, sizeof (m_Info));
-	::memset (&m_InfoV2, 0, sizeof (m_InfoV2));
-	::memset (&m_ExtraInfo, 0, sizeof (m_ExtraInfo));
+	::memset(&m_Info, 0, sizeof(m_Info));
+	::memset(&m_InfoV2, 0, sizeof(m_InfoV2));
+	::memset(&m_ExtraInfo, 0, sizeof(m_ExtraInfo));
 
-	::memset (&m_ColorKeyframes, 0, sizeof (m_ColorKeyframes));
-	::memset (&m_OpacityKeyframes, 0, sizeof (m_OpacityKeyframes));
-	::memset (&m_SizeKeyframes, 0, sizeof (m_SizeKeyframes));
-	::memset (&m_RotationKeyframes, 0, sizeof (m_RotationKeyframes));
-	::memset (&m_FrameKeyframes, 0, sizeof (m_FrameKeyframes));
-	::memset (&m_BlurTimeKeyframes, 0, sizeof (m_BlurTimeKeyframes));
-	::memset (&m_LineProperties, 0, sizeof (m_LineProperties));
-	return ;
+	::memset(&m_ColorKeyframes, 0, sizeof(m_ColorKeyframes));
+	::memset(&m_OpacityKeyframes, 0, sizeof(m_OpacityKeyframes));
+	::memset(&m_SizeKeyframes, 0, sizeof(m_SizeKeyframes));
+	::memset(&m_RotationKeyframes, 0, sizeof(m_RotationKeyframes));
+	::memset(&m_FrameKeyframes, 0, sizeof(m_FrameKeyframes));
+	::memset(&m_BlurTimeKeyframes, 0, sizeof(m_BlurTimeKeyframes));
+	::memset(&m_LineProperties, 0, sizeof(m_LineProperties));
+	return;
 }
 
 
@@ -96,29 +97,29 @@ ParticleEmitterDefClass::ParticleEmitterDefClass (void)
 //
 //	ParticleEmitterDefClass
 //
-ParticleEmitterDefClass::ParticleEmitterDefClass (const ParticleEmitterDefClass &src)
-	:	m_pName (NULL),
-		m_Version (0L),
-		m_pUserString (NULL),
-		m_iUserType (EMITTER_TYPEID_DEFAULT),
-		m_InitialOrientationRandom (src.m_InitialOrientationRandom),
-		m_pCreationVolume (NULL),
-		m_pVelocityRandomizer (NULL)
+ParticleEmitterDefClass::ParticleEmitterDefClass(const ParticleEmitterDefClass& src)
+	: m_pName(NULL),
+	m_Version(0L),
+	m_pUserString(NULL),
+	m_iUserType(EMITTER_TYPEID_DEFAULT),
+	m_InitialOrientationRandom(src.m_InitialOrientationRandom),
+	m_pCreationVolume(NULL),
+	m_pVelocityRandomizer(NULL)
 {
-	::memset (&m_Info, 0, sizeof (m_Info));
-	::memset (&m_InfoV2, 0, sizeof (m_InfoV2));
-	::memset (&m_ExtraInfo, 0, sizeof (m_ExtraInfo));
+	::memset(&m_Info, 0, sizeof(m_Info));
+	::memset(&m_InfoV2, 0, sizeof(m_InfoV2));
+	::memset(&m_ExtraInfo, 0, sizeof(m_ExtraInfo));
 
-	::memset (&m_ColorKeyframes, 0, sizeof (m_ColorKeyframes));
-	::memset (&m_OpacityKeyframes, 0, sizeof (m_OpacityKeyframes));
-	::memset (&m_SizeKeyframes, 0, sizeof (m_SizeKeyframes));
-	::memset (&m_RotationKeyframes, 0, sizeof (m_RotationKeyframes));
-	::memset (&m_FrameKeyframes, 0, sizeof (m_FrameKeyframes));
-	::memset (&m_BlurTimeKeyframes, 0, sizeof (m_BlurTimeKeyframes));
-	::memset (&m_LineProperties, 0, sizeof (m_LineProperties));
+	::memset(&m_ColorKeyframes, 0, sizeof(m_ColorKeyframes));
+	::memset(&m_OpacityKeyframes, 0, sizeof(m_OpacityKeyframes));
+	::memset(&m_SizeKeyframes, 0, sizeof(m_SizeKeyframes));
+	::memset(&m_RotationKeyframes, 0, sizeof(m_RotationKeyframes));
+	::memset(&m_FrameKeyframes, 0, sizeof(m_FrameKeyframes));
+	::memset(&m_BlurTimeKeyframes, 0, sizeof(m_BlurTimeKeyframes));
+	::memset(&m_LineProperties, 0, sizeof(m_LineProperties));
 
 	(*this) = src;
-	return ;
+	return;
 }
 
 
@@ -126,13 +127,13 @@ ParticleEmitterDefClass::ParticleEmitterDefClass (const ParticleEmitterDefClass 
 //
 //	~ParticleEmitterDefClass
 //
-ParticleEmitterDefClass::~ParticleEmitterDefClass (void)
+ParticleEmitterDefClass::~ParticleEmitterDefClass(void)
 {
 	// Free the name buffer if necessary
 	if (m_pName != NULL) {
 
 		// free() is used because the buffer was allocated with ::_strdup().
-		::free (m_pName);
+		::free(m_pName);
 		m_pName = NULL;
 	}
 
@@ -140,15 +141,15 @@ ParticleEmitterDefClass::~ParticleEmitterDefClass (void)
 	if (m_pUserString != NULL) {
 
 		// free() is used because the buffer was allocated with ::malloc() or ::_strdup().
-		::free (m_pUserString);
+		::free(m_pUserString);
 		m_pUserString = NULL;
 	}
 
-	Free_Props ();
+	Free_Props();
 
-	SAFE_DELETE (m_pCreationVolume);
-	SAFE_DELETE (m_pVelocityRandomizer);
-	return ;
+	SAFE_DELETE(m_pCreationVolume);
+	SAFE_DELETE(m_pVelocityRandomizer);
+	return;
 }
 
 
@@ -156,44 +157,44 @@ ParticleEmitterDefClass::~ParticleEmitterDefClass (void)
 //
 //	ParticleEmitterDefClass
 //
-const ParticleEmitterDefClass &
-ParticleEmitterDefClass::operator= (const ParticleEmitterDefClass &src)
+const ParticleEmitterDefClass&
+ParticleEmitterDefClass::operator= (const ParticleEmitterDefClass& src)
 {
 	//
 	//	Copy the user structures
 	//
-	Set_Name (src.Get_Name ());
-	Set_User_String (src.Get_User_String ());
-	Set_User_Type (src.Get_User_Type ());
+	Set_Name(src.Get_Name());
+	Set_User_String(src.Get_User_String());
+	Set_User_Type(src.Get_User_Type());
 	m_Version = src.m_Version;
 
 	//
 	//	Copy the information structures
 	//
-	::memcpy (&m_Info, &src.m_Info, sizeof (m_Info));
-	::memcpy (&m_InfoV2, &src.m_InfoV2, sizeof (m_InfoV2));
-	::memcpy (&m_ExtraInfo, &src.m_ExtraInfo, sizeof (m_ExtraInfo));
-	::memcpy (&m_LineProperties, &src.m_LineProperties, sizeof(m_LineProperties));
+	::memcpy(&m_Info, &src.m_Info, sizeof(m_Info));
+	::memcpy(&m_InfoV2, &src.m_InfoV2, sizeof(m_InfoV2));
+	::memcpy(&m_ExtraInfo, &src.m_ExtraInfo, sizeof(m_ExtraInfo));
+	::memcpy(&m_LineProperties, &src.m_LineProperties, sizeof(m_LineProperties));
 
 	//
 	//	Copy the keyframes
 	//
-	Free_Props ();
-	::Copy_Emitter_Property_Struct (m_ColorKeyframes, src.m_ColorKeyframes);
-	::Copy_Emitter_Property_Struct (m_OpacityKeyframes, src.m_OpacityKeyframes);
-	::Copy_Emitter_Property_Struct (m_SizeKeyframes, src.m_SizeKeyframes);
-	::Copy_Emitter_Property_Struct (m_RotationKeyframes, src.m_RotationKeyframes);
-	::Copy_Emitter_Property_Struct (m_FrameKeyframes, src.m_FrameKeyframes);
-	::Copy_Emitter_Property_Struct (m_BlurTimeKeyframes, src.m_BlurTimeKeyframes);
+	Free_Props();
+	::Copy_Emitter_Property_Struct(m_ColorKeyframes, src.m_ColorKeyframes);
+	::Copy_Emitter_Property_Struct(m_OpacityKeyframes, src.m_OpacityKeyframes);
+	::Copy_Emitter_Property_Struct(m_SizeKeyframes, src.m_SizeKeyframes);
+	::Copy_Emitter_Property_Struct(m_RotationKeyframes, src.m_RotationKeyframes);
+	::Copy_Emitter_Property_Struct(m_FrameKeyframes, src.m_FrameKeyframes);
+	::Copy_Emitter_Property_Struct(m_BlurTimeKeyframes, src.m_BlurTimeKeyframes);
 	m_InitialOrientationRandom = src.m_InitialOrientationRandom;
 
 	//
 	//	Create the randomizers
 	//
-	SAFE_DELETE (m_pCreationVolume);
-	SAFE_DELETE (m_pVelocityRandomizer);
-	m_pCreationVolume			= Create_Randomizer (m_InfoV2.CreationVolume);
-	m_pVelocityRandomizer	= Create_Randomizer (m_InfoV2.VelRandom);
+	SAFE_DELETE(m_pCreationVolume);
+	SAFE_DELETE(m_pVelocityRandomizer);
+	m_pCreationVolume = Create_Randomizer(m_InfoV2.CreationVolume);
+	m_pVelocityRandomizer = Create_Randomizer(m_InfoV2.VelRandom);
 	return (*this);
 }
 
@@ -202,7 +203,7 @@ ParticleEmitterDefClass::operator= (const ParticleEmitterDefClass &src)
 //	Free_Props
 //
 void
-ParticleEmitterDefClass::Free_Props (void)
+ParticleEmitterDefClass::Free_Props(void)
 {
 	m_ColorKeyframes.NumKeyFrames = 0;
 	m_OpacityKeyframes.NumKeyFrames = 0;
@@ -211,20 +212,20 @@ ParticleEmitterDefClass::Free_Props (void)
 	m_FrameKeyframes.NumKeyFrames = 0;
 	m_BlurTimeKeyframes.NumKeyFrames = 0;
 
-	SAFE_DELETE_ARRAY (m_ColorKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_ColorKeyframes.Values);
-	SAFE_DELETE_ARRAY (m_OpacityKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_OpacityKeyframes.Values);
-	SAFE_DELETE_ARRAY (m_SizeKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_SizeKeyframes.Values);
-	SAFE_DELETE_ARRAY (m_RotationKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_RotationKeyframes.Values);
-	SAFE_DELETE_ARRAY (m_FrameKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_FrameKeyframes.Values);
-	SAFE_DELETE_ARRAY (m_BlurTimeKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_BlurTimeKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_ColorKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_ColorKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_OpacityKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_OpacityKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_SizeKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_SizeKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_RotationKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_RotationKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_FrameKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_FrameKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_BlurTimeKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_BlurTimeKeyframes.Values);
 
-	return ;
+	return;
 }
 
 
@@ -233,19 +234,19 @@ ParticleEmitterDefClass::Free_Props (void)
 //	Set_Velocity_Random
 //
 void
-ParticleEmitterDefClass::Set_Velocity_Random (Vector3Randomizer *randomizer)
+ParticleEmitterDefClass::Set_Velocity_Random(Vector3Randomizer* randomizer)
 {
-	SAFE_DELETE (m_pVelocityRandomizer);
+	SAFE_DELETE(m_pVelocityRandomizer);
 	m_pVelocityRandomizer = randomizer;
 
 	//
 	//	Ensure our persistent structure is up-to-date so it will save correctly
 	//
 	if (m_pVelocityRandomizer != NULL) {
-		Initialize_Randomizer_Struct (*m_pVelocityRandomizer, m_InfoV2.VelRandom);
+		Initialize_Randomizer_Struct(*m_pVelocityRandomizer, m_InfoV2.VelRandom);
 	}
 
-	return ;
+	return;
 }
 
 
@@ -254,19 +255,19 @@ ParticleEmitterDefClass::Set_Velocity_Random (Vector3Randomizer *randomizer)
 //	Set_Creation_Volume
 //
 void
-ParticleEmitterDefClass::Set_Creation_Volume (Vector3Randomizer *randomizer)
+ParticleEmitterDefClass::Set_Creation_Volume(Vector3Randomizer* randomizer)
 {
-	SAFE_DELETE (m_pCreationVolume);
+	SAFE_DELETE(m_pCreationVolume);
 	m_pCreationVolume = randomizer;
 
 	//
 	//	Ensure our persistent structure is up-to-date so it will save correctly
 	//
 	if (m_pCreationVolume != NULL) {
-		Initialize_Randomizer_Struct (*m_pCreationVolume, m_InfoV2.CreationVolume);
+		Initialize_Randomizer_Struct(*m_pCreationVolume, m_InfoV2.CreationVolume);
 	}
 
-	return ;
+	return;
 }
 
 
@@ -275,11 +276,11 @@ ParticleEmitterDefClass::Set_Creation_Volume (Vector3Randomizer *randomizer)
 //	Set_User_String
 //
 void
-ParticleEmitterDefClass::Set_User_String (const char *pstring)
+ParticleEmitterDefClass::Set_User_String(const char* pstring)
 {
-	SAFE_FREE (m_pUserString);
-	m_pUserString = _strdup (pstring);
-	return ;
+	SAFE_FREE(m_pUserString);
+	m_pUserString = _strdup(pstring);
+	return;
 }
 
 
@@ -288,11 +289,11 @@ ParticleEmitterDefClass::Set_User_String (const char *pstring)
 //	Set_Name
 //
 void
-ParticleEmitterDefClass::Set_Name (const char *pname)
+ParticleEmitterDefClass::Set_Name(const char* pname)
 {
-	SAFE_FREE (m_pName);
-	m_pName = _strdup (pname);
-	return ;
+	SAFE_FREE(m_pName);
+	m_pName = _strdup(pname);
+	return;
 }
 
 
@@ -301,11 +302,11 @@ ParticleEmitterDefClass::Set_Name (const char *pname)
 //	Set_Texture_Filename
 //
 void
-ParticleEmitterDefClass::Set_Texture_Filename (const char *pname)
+ParticleEmitterDefClass::Set_Texture_Filename(const char* pname)
 {
-	lstrcpy (m_Info.TextureFilename, pname);
-	Normalize_Filename ();
-	return ;
+	lstrcpy(m_Info.TextureFilename, pname);
+	Normalize_Filename();
+	return;
 }
 
 
@@ -314,23 +315,23 @@ ParticleEmitterDefClass::Set_Texture_Filename (const char *pname)
 //	Normalize_Filename
 //
 void
-ParticleEmitterDefClass::Normalize_Filename (void)
+ParticleEmitterDefClass::Normalize_Filename(void)
 {
 	TCHAR path[MAX_PATH];
-	lstrcpy (path, m_Info.TextureFilename);
+	lstrcpy(path, m_Info.TextureFilename);
 
 	// Find the last occurance of the directory deliminator
-	LPCTSTR filename = ::strrchr (path, '\\');
+	LPCTSTR filename = ::strrchr(path, GET_PATH_SEPARATOR()[0]);
 	if (filename != NULL) {
 
 		// Increment past the directory deliminator
-		filename ++;
+		filename++;
 
 		// Now copy the filename protion of the path to the structure
-		::lstrcpy (m_Info.TextureFilename, filename);
+		::lstrcpy(m_Info.TextureFilename, filename);
 	}
 
-	return ;
+	return;
 }
 
 
@@ -339,32 +340,33 @@ ParticleEmitterDefClass::Normalize_Filename (void)
 //	Load
 //
 WW3DErrorType
-ParticleEmitterDefClass::Load_W3D (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Load_W3D(ChunkLoadClass& chunk_load)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
-	Initialize_To_Ver2 ();
+	Initialize_To_Ver2();
 
 	// Attempt to read the different sections of the emitter definition
-	if ((Read_Header (chunk_load) == WW3D_ERROR_OK) &&
-		 (Read_User_Data (chunk_load) == WW3D_ERROR_OK) &&
-		 (Read_Info (chunk_load) == WW3D_ERROR_OK)) {
+	if ((Read_Header(chunk_load) == WW3D_ERROR_OK) &&
+		(Read_User_Data(chunk_load) == WW3D_ERROR_OK) &&
+		(Read_Info(chunk_load) == WW3D_ERROR_OK)) {
 
 		if (m_Version > 0x00010000) {
 
 			//
 			// Read the version 2.0 structures from the chunk
 			//
-			if ((Read_InfoV2 (chunk_load) == WW3D_ERROR_OK) &&
-				 (Read_Props (chunk_load) == WW3D_ERROR_OK)) {
+			if ((Read_InfoV2(chunk_load) == WW3D_ERROR_OK) &&
+				(Read_Props(chunk_load) == WW3D_ERROR_OK)) {
 
 				// Success!
 				ret_val = WW3D_ERROR_OK;
 			}
-		} else {
+		}
+		else {
 
 			// Make sure the data fits version 2
-			Convert_To_Ver2 ();
+			Convert_To_Ver2();
 			ret_val = WW3D_ERROR_OK;
 		}
 	}
@@ -375,29 +377,29 @@ ParticleEmitterDefClass::Load_W3D (ChunkLoadClass &chunk_load)
 
 		switch (chunk_load.Cur_Chunk_ID())
 		{
-			case W3D_CHUNK_EMITTER_LINE_PROPERTIES:
-				ret_val = Read_Line_Properties(chunk_load);
-				break;
+		case W3D_CHUNK_EMITTER_LINE_PROPERTIES:
+			ret_val = Read_Line_Properties(chunk_load);
+			break;
 
-			case W3D_CHUNK_EMITTER_ROTATION_KEYFRAMES:
-				ret_val = Read_Rotation_Keyframes(chunk_load);
-				break;
+		case W3D_CHUNK_EMITTER_ROTATION_KEYFRAMES:
+			ret_val = Read_Rotation_Keyframes(chunk_load);
+			break;
 
-			case W3D_CHUNK_EMITTER_FRAME_KEYFRAMES:
-				ret_val = Read_Frame_Keyframes(chunk_load);
-				break;
+		case W3D_CHUNK_EMITTER_FRAME_KEYFRAMES:
+			ret_val = Read_Frame_Keyframes(chunk_load);
+			break;
 
-			case W3D_CHUNK_EMITTER_BLUR_TIME_KEYFRAMES:
-				ret_val = Read_Blur_Time_Keyframes(chunk_load);
-				break;
+		case W3D_CHUNK_EMITTER_BLUR_TIME_KEYFRAMES:
+			ret_val = Read_Blur_Time_Keyframes(chunk_load);
+			break;
 
-			case W3D_CHUNK_EMITTER_EXTRA_INFO:
-				ret_val = Read_Extra_Info(chunk_load);
-				break;
+		case W3D_CHUNK_EMITTER_EXTRA_INFO:
+			ret_val = Read_Extra_Info(chunk_load);
+			break;
 
-			default:
-				WWDEBUG_SAY(("Unhandled Chunk! File: %s Line: %d",__FILE__,__LINE__));
-				break;
+		default:
+			WWDEBUG_SAY(("Unhandled Chunk! File: %s Line: %d", __FILE__, __LINE__));
+			break;
 		}
 
 		chunk_load.Close_Chunk();
@@ -413,11 +415,11 @@ ParticleEmitterDefClass::Load_W3D (ChunkLoadClass &chunk_load)
 //	Initialize_To_Ver2
 //
 void
-ParticleEmitterDefClass::Initialize_To_Ver2 (void)
+ParticleEmitterDefClass::Initialize_To_Ver2(void)
 {
-	::memset (&m_Info, 0, sizeof (m_Info));
-	::memset (&m_InfoV2, 0, sizeof (m_InfoV2));
-	::memset (&m_ExtraInfo, 0, sizeof (m_ExtraInfo));
+	::memset(&m_Info, 0, sizeof(m_Info));
+	::memset(&m_InfoV2, 0, sizeof(m_InfoV2));
+	::memset(&m_ExtraInfo, 0, sizeof(m_ExtraInfo));
 
 	//
 	//	Set the version 2 values using defaults from version 1
@@ -425,7 +427,7 @@ ParticleEmitterDefClass::Initialize_To_Ver2 (void)
 	m_InfoV2.BurstSize = 1;
 	m_InfoV2.OutwardVel = 0;
 	m_InfoV2.VelInherit = 0;
-	W3dUtilityClass::Convert_Shader (ShaderClass::_PresetAdditiveSpriteShader, &m_InfoV2.Shader);
+	W3dUtilityClass::Convert_Shader(ShaderClass::_PresetAdditiveSpriteShader, &m_InfoV2.Shader);
 
 	m_InfoV2.CreationVolume.ClassID = Vector3Randomizer::CLASSID_SOLIDBOX;
 	m_InfoV2.CreationVolume.Value1 = 0;
@@ -437,8 +439,8 @@ ParticleEmitterDefClass::Initialize_To_Ver2 (void)
 	m_InfoV2.VelRandom.Value2 = 0;
 	m_InfoV2.VelRandom.Value3 = 0;
 
-	Free_Props ();
-	return ;
+	Free_Props();
+	return;
 }
 
 
@@ -447,7 +449,7 @@ ParticleEmitterDefClass::Initialize_To_Ver2 (void)
 //	Convert_To_Ver2
 //
 void
-ParticleEmitterDefClass::Convert_To_Ver2 (void)
+ParticleEmitterDefClass::Convert_To_Ver2(void)
 {
 	if (m_Version < 0x00020000) {
 		m_InfoV2.BurstSize = 1;
@@ -458,7 +460,7 @@ ParticleEmitterDefClass::Convert_To_Ver2 (void)
 		//	Determine which shader to use...
 		//
 		ShaderClass shader = ShaderClass::_PresetAdditiveSpriteShader;
-		TextureClass *ptexture = WW3DAssetManager::Get_Instance ()->Get_Texture (m_Info.TextureFilename);
+		TextureClass* ptexture = WW3DAssetManager::Get_Instance()->Get_Texture(m_Info.TextureFilename);
 		if (ptexture != NULL) {
 			// If texture has an alpha channel do alpha blending instead of additive
 			// (which is the default for point groups):
@@ -471,7 +473,7 @@ ParticleEmitterDefClass::Convert_To_Ver2 (void)
 			}
 			ptexture->Release_Ref();
 		}
-		W3dUtilityClass::Convert_Shader (shader, &m_InfoV2.Shader);
+		W3dUtilityClass::Convert_Shader(shader, &m_InfoV2.Shader);
 
 
 		//
@@ -490,20 +492,20 @@ ParticleEmitterDefClass::Convert_To_Ver2 (void)
 		//
 		//	Recreate the randomizers
 		//
-		SAFE_DELETE (m_pCreationVolume);
-		SAFE_DELETE (m_pVelocityRandomizer);
-		m_pCreationVolume = Create_Randomizer (m_InfoV2.CreationVolume);
-		m_pVelocityRandomizer = Create_Randomizer (m_InfoV2.VelRandom);
+		SAFE_DELETE(m_pCreationVolume);
+		SAFE_DELETE(m_pVelocityRandomizer);
+		m_pCreationVolume = Create_Randomizer(m_InfoV2.CreationVolume);
+		m_pVelocityRandomizer = Create_Randomizer(m_InfoV2.VelRandom);
 
 		//
 		//	Convert the colors, opacities, and sizes
 		//
-		Free_Props ();
-		m_ColorKeyframes.Start = RGBA_TO_VECTOR3 (m_Info.StartColor);
-		m_ColorKeyframes.Rand = Vector3 (0, 0, 0);
+		Free_Props();
+		m_ColorKeyframes.Start = RGBA_TO_VECTOR3(m_Info.StartColor);
+		m_ColorKeyframes.Rand = Vector3(0, 0, 0);
 		m_ColorKeyframes.NumKeyFrames = 1;
 		m_ColorKeyframes.KeyTimes = W3DNEW float(m_Info.FadeTime);
-		m_ColorKeyframes.Values = W3DNEW Vector3(RGBA_TO_VECTOR3 (m_Info.EndColor));
+		m_ColorKeyframes.Values = W3DNEW Vector3(RGBA_TO_VECTOR3(m_Info.EndColor));
 
 		m_OpacityKeyframes.Start = ((float)(m_Info.StartColor.A)) / 255;
 		m_OpacityKeyframes.Rand = 0;
@@ -516,7 +518,7 @@ ParticleEmitterDefClass::Convert_To_Ver2 (void)
 		m_SizeKeyframes.NumKeyFrames = 0;
 	}
 
-	return ;
+	return;
 }
 
 
@@ -525,20 +527,20 @@ ParticleEmitterDefClass::Convert_To_Ver2 (void)
 //	Read_Header
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_Header (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_Header(ChunkLoadClass& chunk_load)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
 
 	// Is this the header chunk?
-	if (chunk_load.Open_Chunk () &&
-	    (chunk_load.Cur_Chunk_ID () == W3D_CHUNK_EMITTER_HEADER)) {
+	if (chunk_load.Open_Chunk() &&
+		(chunk_load.Cur_Chunk_ID() == W3D_CHUNK_EMITTER_HEADER)) {
 
 		W3dEmitterHeaderStruct header = { 0 };
-		if (chunk_load.Read (&header, sizeof (header)) == sizeof (header)) {
+		if (chunk_load.Read(&header, sizeof(header)) == sizeof(header)) {
 
 			// Copy the name from the header structure
-			m_pName = ::_strdup (header.Name);
+			m_pName = ::_strdup(header.Name);
 			m_Version = header.Version;
 
 			// Success!
@@ -546,7 +548,7 @@ ParticleEmitterDefClass::Read_Header (ChunkLoadClass &chunk_load)
 		}
 
 		// Close the chunk, so the next read will be successful.
-		chunk_load.Close_Chunk ();
+		chunk_load.Close_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -559,17 +561,17 @@ ParticleEmitterDefClass::Read_Header (ChunkLoadClass &chunk_load)
 //	Read_User_Data
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_User_Data (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_User_Data(ChunkLoadClass& chunk_load)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
 
 	// Is this the user chunk?
-	if (chunk_load.Open_Chunk () &&
-	    (chunk_load.Cur_Chunk_ID () == W3D_CHUNK_EMITTER_USER_DATA)) {
+	if (chunk_load.Open_Chunk() &&
+		(chunk_load.Cur_Chunk_ID() == W3D_CHUNK_EMITTER_USER_DATA)) {
 
 		W3dEmitterUserInfoStruct user_info = { 0 };
-		if (chunk_load.Read (&user_info, sizeof (user_info)) == sizeof (user_info)) {
+		if (chunk_load.Read(&user_info, sizeof(user_info)) == sizeof(user_info)) {
 
 			// Assume success from here on out
 			ret_val = WW3D_ERROR_OK;
@@ -579,18 +581,18 @@ ParticleEmitterDefClass::Read_User_Data (ChunkLoadClass &chunk_load)
 
 			// Should we read the user string from the file?
 			if (user_info.SizeofStringParam > 0) {
-				m_pUserString = (char *)::malloc (sizeof (char) * (user_info.SizeofStringParam+1));
+				m_pUserString = (char*)::malloc(sizeof(char) * (user_info.SizeofStringParam + 1));
 				m_pUserString[0] = 0;
 
 				// Attempt to read the user-string from the chunk
-				if (chunk_load.Read (m_pUserString, user_info.SizeofStringParam) != user_info.SizeofStringParam) {
+				if (chunk_load.Read(m_pUserString, user_info.SizeofStringParam) != user_info.SizeofStringParam) {
 					ret_val = WW3D_ERROR_LOAD_FAILED;
 				}
 			}
 		}
 
 		// Close the chunk, so the next read will be successful.
-		chunk_load.Close_Chunk ();
+		chunk_load.Close_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -603,25 +605,25 @@ ParticleEmitterDefClass::Read_User_Data (ChunkLoadClass &chunk_load)
 //	Read_Info
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_Info (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_Info(ChunkLoadClass& chunk_load)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
 
 	// Is this the user chunk?
-	if (chunk_load.Open_Chunk () &&
-	    (chunk_load.Cur_Chunk_ID () == W3D_CHUNK_EMITTER_INFO)) {
+	if (chunk_load.Open_Chunk() &&
+		(chunk_load.Cur_Chunk_ID() == W3D_CHUNK_EMITTER_INFO)) {
 
 		// Read the chunk straight into our member structure
-		::memset (&m_Info, 0, sizeof (m_Info));
-		if (chunk_load.Read (&m_Info, sizeof (m_Info)) == sizeof (m_Info)) {
+		::memset(&m_Info, 0, sizeof(m_Info));
+		if (chunk_load.Read(&m_Info, sizeof(m_Info)) == sizeof(m_Info)) {
 
 			// Success!
 			ret_val = WW3D_ERROR_OK;
 		}
 
 		// Close the chunk, so the next read will be successful.
-		chunk_load.Close_Chunk ();
+		chunk_load.Close_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -633,27 +635,27 @@ ParticleEmitterDefClass::Read_Info (ChunkLoadClass &chunk_load)
 //
 //	Create_Randomizer
 //
-Vector3Randomizer *
-ParticleEmitterDefClass::Create_Randomizer (W3dVolumeRandomizerStruct &info)
+Vector3Randomizer*
+ParticleEmitterDefClass::Create_Randomizer(W3dVolumeRandomizerStruct& info)
 {
-	Vector3Randomizer *randomizer = NULL;
+	Vector3Randomizer* randomizer = NULL;
 	switch (info.ClassID)
 	{
-		case Vector3Randomizer::CLASSID_SOLIDBOX:
-			randomizer = W3DNEW Vector3SolidBoxRandomizer (Vector3 (info.Value1, info.Value2, info.Value3));
-			break;
+	case Vector3Randomizer::CLASSID_SOLIDBOX:
+		randomizer = W3DNEW Vector3SolidBoxRandomizer(Vector3(info.Value1, info.Value2, info.Value3));
+		break;
 
-		case Vector3Randomizer::CLASSID_SOLIDSPHERE:
-			randomizer = W3DNEW Vector3SolidSphereRandomizer (info.Value1);
-			break;
+	case Vector3Randomizer::CLASSID_SOLIDSPHERE:
+		randomizer = W3DNEW Vector3SolidSphereRandomizer(info.Value1);
+		break;
 
-		case Vector3Randomizer::CLASSID_HOLLOWSPHERE:
-			randomizer = W3DNEW Vector3HollowSphereRandomizer (info.Value1);
-			break;
+	case Vector3Randomizer::CLASSID_HOLLOWSPHERE:
+		randomizer = W3DNEW Vector3HollowSphereRandomizer(info.Value1);
+		break;
 
-		case Vector3Randomizer::CLASSID_SOLIDCYLINDER:
-			randomizer = W3DNEW Vector3SolidCylinderRandomizer (info.Value1, info.Value2);
-			break;
+	case Vector3Randomizer::CLASSID_SOLIDCYLINDER:
+		randomizer = W3DNEW Vector3SolidCylinderRandomizer(info.Value1, info.Value2);
+		break;
 	}
 
 	return randomizer;
@@ -667,37 +669,37 @@ ParticleEmitterDefClass::Create_Randomizer (W3dVolumeRandomizerStruct &info)
 void
 ParticleEmitterDefClass::Initialize_Randomizer_Struct
 (
-	const Vector3Randomizer &		randomizer,
-	W3dVolumeRandomizerStruct &	info
+	const Vector3Randomizer& randomizer,
+	W3dVolumeRandomizerStruct& info
 )
 {
-	info.ClassID = randomizer.Class_ID ();
-	switch (randomizer.Class_ID ())
+	info.ClassID = randomizer.Class_ID();
+	switch (randomizer.Class_ID())
 	{
-		case Vector3Randomizer::CLASSID_SOLIDBOX:
-		{
-			Vector3 extents = ((Vector3SolidBoxRandomizer &)randomizer).Get_Extents ();
-			info.Value1 = extents.X;
-			info.Value2 = extents.Y;
-			info.Value3 = extents.Z;
-		}
+	case Vector3Randomizer::CLASSID_SOLIDBOX:
+	{
+		Vector3 extents = ((Vector3SolidBoxRandomizer&)randomizer).Get_Extents();
+		info.Value1 = extents.X;
+		info.Value2 = extents.Y;
+		info.Value3 = extents.Z;
+	}
+	break;
+
+	case Vector3Randomizer::CLASSID_SOLIDSPHERE:
+		info.Value1 = ((Vector3SolidSphereRandomizer&)randomizer).Get_Radius();
 		break;
 
-		case Vector3Randomizer::CLASSID_SOLIDSPHERE:
-			info.Value1 = ((Vector3SolidSphereRandomizer &)randomizer).Get_Radius ();
-			break;
+	case Vector3Randomizer::CLASSID_HOLLOWSPHERE:
+		info.Value1 = ((Vector3HollowSphereRandomizer&)randomizer).Get_Radius();
+		break;
 
-		case Vector3Randomizer::CLASSID_HOLLOWSPHERE:
-			info.Value1 = ((Vector3HollowSphereRandomizer &)randomizer).Get_Radius ();
-			break;
-
-		case Vector3Randomizer::CLASSID_SOLIDCYLINDER:
-			info.Value1 = ((Vector3SolidCylinderRandomizer &)randomizer).Get_Height ();
-			info.Value2 = ((Vector3SolidCylinderRandomizer &)randomizer).Get_Radius ();
-			break;
+	case Vector3Randomizer::CLASSID_SOLIDCYLINDER:
+		info.Value1 = ((Vector3SolidCylinderRandomizer&)randomizer).Get_Height();
+		info.Value2 = ((Vector3SolidCylinderRandomizer&)randomizer).Get_Radius();
+		break;
 	}
 
-	return ;
+	return;
 }
 
 
@@ -706,33 +708,33 @@ ParticleEmitterDefClass::Initialize_Randomizer_Struct
 //	Read_InfoV2
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_InfoV2 (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_InfoV2(ChunkLoadClass& chunk_load)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
 
 	// Is this the user chunk?
-	if (chunk_load.Open_Chunk () &&
-	    (chunk_load.Cur_Chunk_ID () == W3D_CHUNK_EMITTER_INFOV2)) {
+	if (chunk_load.Open_Chunk() &&
+		(chunk_load.Cur_Chunk_ID() == W3D_CHUNK_EMITTER_INFOV2)) {
 
 		// Read the chunk straight into our member structure
-		::memset (&m_InfoV2, 0, sizeof (m_InfoV2));
-		if (chunk_load.Read (&m_InfoV2, sizeof (m_InfoV2)) == sizeof (m_InfoV2)) {
+		::memset(&m_InfoV2, 0, sizeof(m_InfoV2));
+		if (chunk_load.Read(&m_InfoV2, sizeof(m_InfoV2)) == sizeof(m_InfoV2)) {
 
 			//
 			//	Recreate the randomizers
 			//
-			SAFE_DELETE (m_pCreationVolume);
-			SAFE_DELETE (m_pVelocityRandomizer);
-			m_pCreationVolume = Create_Randomizer (m_InfoV2.CreationVolume);
-			m_pVelocityRandomizer = Create_Randomizer (m_InfoV2.VelRandom);
+			SAFE_DELETE(m_pCreationVolume);
+			SAFE_DELETE(m_pVelocityRandomizer);
+			m_pCreationVolume = Create_Randomizer(m_InfoV2.CreationVolume);
+			m_pVelocityRandomizer = Create_Randomizer(m_InfoV2.VelRandom);
 
 			// Success!
 			ret_val = WW3D_ERROR_OK;
 		}
 
 		// Close the chunk, so the next read will be successful.
-		chunk_load.Close_Chunk ();
+		chunk_load.Close_Chunk();
 	}
 
 	// Return the WW3DErrorClass::ErrorType return code
@@ -745,28 +747,28 @@ ParticleEmitterDefClass::Read_InfoV2 (ChunkLoadClass &chunk_load)
 //	Read_Props
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_Props (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_Props(ChunkLoadClass& chunk_load)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
-	Free_Props ();
+	Free_Props();
 
 	// Is this the user chunk?
-	if (chunk_load.Open_Chunk () &&
-	    (chunk_load.Cur_Chunk_ID () == W3D_CHUNK_EMITTER_PROPS)) {
+	if (chunk_load.Open_Chunk() &&
+		(chunk_load.Cur_Chunk_ID() == W3D_CHUNK_EMITTER_PROPS)) {
 
 		W3dEmitterPropertyStruct info = { 0 };
-		if (chunk_load.Read (&info, sizeof (info)) == sizeof (info)) {
+		if (chunk_load.Read(&info, sizeof(info)) == sizeof(info)) {
 
-			unsigned int index=0;
+			unsigned int index = 0;
 
 			//ParticlePropertyStruct<Vector3>
-			m_ColorKeyframes.NumKeyFrames		= info.ColorKeyframes - 1;
-			m_OpacityKeyframes.NumKeyFrames	= info.OpacityKeyframes - 1;
-			m_SizeKeyframes.NumKeyFrames		= info.SizeKeyframes - 1;
-			m_ColorKeyframes.Rand	= RGBA_TO_VECTOR3 (info.ColorRandom);
-			m_OpacityKeyframes.Rand	= info.OpacityRandom;
-			m_SizeKeyframes.Rand		= info.SizeRandom;
+			m_ColorKeyframes.NumKeyFrames = info.ColorKeyframes - 1;
+			m_OpacityKeyframes.NumKeyFrames = info.OpacityKeyframes - 1;
+			m_SizeKeyframes.NumKeyFrames = info.SizeKeyframes - 1;
+			m_ColorKeyframes.Rand = RGBA_TO_VECTOR3(info.ColorRandom);
+			m_OpacityKeyframes.Rand = info.OpacityRandom;
+			m_SizeKeyframes.Rand = info.SizeRandom;
 
 			//
 			//	Allocate the array of color keyframes
@@ -795,11 +797,11 @@ ParticleEmitterDefClass::Read_Props (ChunkLoadClass &chunk_load)
 			//
 			//	Read the color keyframes from the chunk
 			//
-			Read_Color_Keyframe (chunk_load, NULL, &m_ColorKeyframes.Start);
-			for (index = 0; index < m_ColorKeyframes.NumKeyFrames; index ++) {
-				Read_Color_Keyframe (chunk_load,
-											&m_ColorKeyframes.KeyTimes[index],
-											&m_ColorKeyframes.Values[index]);
+			Read_Color_Keyframe(chunk_load, NULL, &m_ColorKeyframes.Start);
+			for (index = 0; index < m_ColorKeyframes.NumKeyFrames; index++) {
+				Read_Color_Keyframe(chunk_load,
+					&m_ColorKeyframes.KeyTimes[index],
+					&m_ColorKeyframes.Values[index]);
 			}
 
 			//
@@ -808,11 +810,11 @@ ParticleEmitterDefClass::Read_Props (ChunkLoadClass &chunk_load)
 			// will end up as black
 			//
 			int last_keyframe = (m_ColorKeyframes.NumKeyFrames - 1);
-			if (	last_keyframe > 0 &&
-					m_ColorKeyframes.Values[last_keyframe].X == 0 &&
-					m_ColorKeyframes.Values[last_keyframe].Y == 0 &&
-					m_ColorKeyframes.Values[last_keyframe].Z == 0 &&
-					(m_ColorKeyframes.Rand.X > 0 || m_ColorKeyframes.Rand.Y > 0 || m_ColorKeyframes.Rand.Z > 0))
+			if (last_keyframe > 0 &&
+				m_ColorKeyframes.Values[last_keyframe].X == 0 &&
+				m_ColorKeyframes.Values[last_keyframe].Y == 0 &&
+				m_ColorKeyframes.Values[last_keyframe].Z == 0 &&
+				(m_ColorKeyframes.Rand.X > 0 || m_ColorKeyframes.Rand.Y > 0 || m_ColorKeyframes.Rand.Z > 0))
 			{
 				m_ColorKeyframes.Values[last_keyframe].X = -m_ColorKeyframes.Rand.X;
 				m_ColorKeyframes.Values[last_keyframe].Y = -m_ColorKeyframes.Rand.Y;
@@ -822,21 +824,21 @@ ParticleEmitterDefClass::Read_Props (ChunkLoadClass &chunk_load)
 			//
 			//	Read the opacity keyframes from the chunk
 			//
-			Read_Opacity_Keyframe (chunk_load, NULL, &m_OpacityKeyframes.Start);
-			for (index = 0; index < m_OpacityKeyframes.NumKeyFrames; index ++) {
-				Read_Opacity_Keyframe (chunk_load,
-												&m_OpacityKeyframes.KeyTimes[index],
-												&m_OpacityKeyframes.Values[index]);
+			Read_Opacity_Keyframe(chunk_load, NULL, &m_OpacityKeyframes.Start);
+			for (index = 0; index < m_OpacityKeyframes.NumKeyFrames; index++) {
+				Read_Opacity_Keyframe(chunk_load,
+					&m_OpacityKeyframes.KeyTimes[index],
+					&m_OpacityKeyframes.Values[index]);
 			}
 
 			//
 			//	Read the size keyframes from the chunk
 			//
-			Read_Size_Keyframe (chunk_load, NULL, &m_SizeKeyframes.Start);
-			for (index = 0; index < m_SizeKeyframes.NumKeyFrames; index ++) {
-				Read_Size_Keyframe (chunk_load,
-											&m_SizeKeyframes.KeyTimes[index],
-											&m_SizeKeyframes.Values[index]);
+			Read_Size_Keyframe(chunk_load, NULL, &m_SizeKeyframes.Start);
+			for (index = 0; index < m_SizeKeyframes.NumKeyFrames; index++) {
+				Read_Size_Keyframe(chunk_load,
+					&m_SizeKeyframes.KeyTimes[index],
+					&m_SizeKeyframes.Values[index]);
 			}
 
 			// Success!
@@ -844,7 +846,7 @@ ParticleEmitterDefClass::Read_Props (ChunkLoadClass &chunk_load)
 		}
 
 		// Close the chunk, so the next read will be successful.
-		chunk_load.Close_Chunk ();
+		chunk_load.Close_Chunk();
 	}
 
 	// Return the WW3DErrorClass::ErrorType return code
@@ -859,9 +861,9 @@ ParticleEmitterDefClass::Read_Props (ChunkLoadClass &chunk_load)
 bool
 ParticleEmitterDefClass::Read_Color_Keyframe
 (
-	ChunkLoadClass &	chunk_load,
-	float *				key_time,
-	Vector3 *			value
+	ChunkLoadClass& chunk_load,
+	float* key_time,
+	Vector3* value
 )
 {
 	bool retval = false;
@@ -870,7 +872,7 @@ ParticleEmitterDefClass::Read_Color_Keyframe
 	//	Read the color key frame from the chunk
 	//
 	W3dEmitterColorKeyframeStruct key_frame = { 0 };
-	if (chunk_load.Read (&key_frame, sizeof (key_frame)) == sizeof (key_frame)) {
+	if (chunk_load.Read(&key_frame, sizeof(key_frame)) == sizeof(key_frame)) {
 
 		// Pass the key time to the caller
 		if (key_time != NULL) {
@@ -879,7 +881,7 @@ ParticleEmitterDefClass::Read_Color_Keyframe
 
 		// Pass the oclor back to the caller
 		if (value != NULL) {
-			(*value) = RGBA_TO_VECTOR3 (key_frame.Color);
+			(*value) = RGBA_TO_VECTOR3(key_frame.Color);
 		}
 
 		// Success!
@@ -897,9 +899,9 @@ ParticleEmitterDefClass::Read_Color_Keyframe
 bool
 ParticleEmitterDefClass::Read_Opacity_Keyframe
 (
-	ChunkLoadClass &	chunk_load,
-	float *				key_time,
-	float *				value
+	ChunkLoadClass& chunk_load,
+	float* key_time,
+	float* value
 )
 {
 	bool retval = false;
@@ -908,7 +910,7 @@ ParticleEmitterDefClass::Read_Opacity_Keyframe
 	//	Read the key frame from the chunk
 	//
 	W3dEmitterOpacityKeyframeStruct key_frame = { 0 };
-	if (chunk_load.Read (&key_frame, sizeof (key_frame)) == sizeof (key_frame)) {
+	if (chunk_load.Read(&key_frame, sizeof(key_frame)) == sizeof(key_frame)) {
 
 		// Pass the key time to the caller
 		if (key_time != NULL) {
@@ -935,9 +937,9 @@ ParticleEmitterDefClass::Read_Opacity_Keyframe
 bool
 ParticleEmitterDefClass::Read_Size_Keyframe
 (
-	ChunkLoadClass &	chunk_load,
-	float *				key_time,
-	float *				value
+	ChunkLoadClass& chunk_load,
+	float* key_time,
+	float* value
 )
 {
 	bool retval = false;
@@ -946,7 +948,7 @@ ParticleEmitterDefClass::Read_Size_Keyframe
 	//	Read the key frame from the chunk
 	//
 	W3dEmitterSizeKeyframeStruct key_frame = { 0 };
-	if (chunk_load.Read (&key_frame, sizeof (key_frame)) == sizeof (key_frame)) {
+	if (chunk_load.Read(&key_frame, sizeof(key_frame)) == sizeof(key_frame)) {
 
 		// Pass the key time to the caller
 		if (key_time != NULL) {
@@ -971,16 +973,16 @@ ParticleEmitterDefClass::Read_Size_Keyframe
 //	Read_Line_Properties
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_Line_Properties(ChunkLoadClass & chunk_load)
+ParticleEmitterDefClass::Read_Line_Properties(ChunkLoadClass& chunk_load)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
 
 	// Is this the user chunk?
-	if (chunk_load.Cur_Chunk_ID () == W3D_CHUNK_EMITTER_LINE_PROPERTIES) {
+	if (chunk_load.Cur_Chunk_ID() == W3D_CHUNK_EMITTER_LINE_PROPERTIES) {
 
 		// Read the chunk straight into our member structure
-		if (chunk_load.Read (&m_LineProperties, sizeof (m_LineProperties)) == sizeof (m_LineProperties)) {
+		if (chunk_load.Read(&m_LineProperties, sizeof(m_LineProperties)) == sizeof(m_LineProperties)) {
 
 			// Success!
 			ret_val = WW3D_ERROR_OK;
@@ -997,23 +999,23 @@ ParticleEmitterDefClass::Read_Line_Properties(ChunkLoadClass & chunk_load)
 //	Read_Rotation_Keyframes
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_Rotation_Keyframes (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_Rotation_Keyframes(ChunkLoadClass& chunk_load)
 {
 	// Assume success
 	WW3DErrorType ret_val = WW3D_ERROR_OK;
 
 	// Read the header
 	W3dEmitterRotationHeaderStruct header;
-	if (chunk_load.Read(&header,sizeof(header)) != sizeof(header)) {
+	if (chunk_load.Read(&header, sizeof(header)) != sizeof(header)) {
 		ret_val = WW3D_ERROR_LOAD_FAILED;
 	}
-	m_RotationKeyframes.NumKeyFrames		= header.KeyframeCount;
-	m_RotationKeyframes.Rand				= header.Random;
-	m_InitialOrientationRandom				= header.OrientationRandom;
+	m_RotationKeyframes.NumKeyFrames = header.KeyframeCount;
+	m_RotationKeyframes.Rand = header.Random;
+	m_InitialOrientationRandom = header.OrientationRandom;
 
 	// Read in the first key
 	W3dEmitterRotationKeyframeStruct key;
-	if (chunk_load.Read(&key,sizeof(key)) == sizeof(key)) {
+	if (chunk_load.Read(&key, sizeof(key)) == sizeof(key)) {
 		m_RotationKeyframes.Start = key.Rotation;
 	}
 
@@ -1024,12 +1026,13 @@ ParticleEmitterDefClass::Read_Rotation_Keyframes (ChunkLoadClass &chunk_load)
 	}
 
 	// Read in the keys
-	for (unsigned int i=0; (i<header.KeyframeCount) && (ret_val == WW3D_ERROR_OK); i++) {
+	for (unsigned int i = 0; (i < header.KeyframeCount) && (ret_val == WW3D_ERROR_OK); i++) {
 		W3dEmitterRotationKeyframeStruct key;
-		if (chunk_load.Read(&key,sizeof(key)) == sizeof(key)) {
+		if (chunk_load.Read(&key, sizeof(key)) == sizeof(key)) {
 			m_RotationKeyframes.KeyTimes[i] = key.Time;
 			m_RotationKeyframes.Values[i] = key.Rotation;
-		} else {
+		}
+		else {
 			m_RotationKeyframes.KeyTimes[i] = 0.0f;
 			m_RotationKeyframes.Values[i] = 0.0f;
 			ret_val = WW3D_ERROR_LOAD_FAILED;
@@ -1044,26 +1047,26 @@ ParticleEmitterDefClass::Read_Rotation_Keyframes (ChunkLoadClass &chunk_load)
 //	Read_Frame_Keyframes
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_Frame_Keyframes (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_Frame_Keyframes(ChunkLoadClass& chunk_load)
 {
 	// Assume success
 	WW3DErrorType ret_val = WW3D_ERROR_OK;
 
 	// Read the header
 	W3dEmitterFrameHeaderStruct header;
-	if (chunk_load.Read(&header,sizeof(header)) != sizeof(header)) {
+	if (chunk_load.Read(&header, sizeof(header)) != sizeof(header)) {
 		ret_val = WW3D_ERROR_LOAD_FAILED;
 	}
 
 	// Read in the first key
 	W3dEmitterFrameKeyframeStruct key;
-	if (chunk_load.Read(&key,sizeof(key)) == sizeof(key)) {
+	if (chunk_load.Read(&key, sizeof(key)) == sizeof(key)) {
 		m_FrameKeyframes.Start = key.Frame;
 	}
 
 	// Allocate the keys
-	m_FrameKeyframes.NumKeyFrames		= header.KeyframeCount;
-	m_FrameKeyframes.Rand				= header.Random;
+	m_FrameKeyframes.NumKeyFrames = header.KeyframeCount;
+	m_FrameKeyframes.Rand = header.Random;
 
 	if (m_FrameKeyframes.NumKeyFrames > 0) {
 		m_FrameKeyframes.KeyTimes = W3DNEWARRAY float[m_FrameKeyframes.NumKeyFrames];
@@ -1071,9 +1074,9 @@ ParticleEmitterDefClass::Read_Frame_Keyframes (ChunkLoadClass &chunk_load)
 	}
 
 	// Read in the keys
-	for (unsigned int i=0; (i<header.KeyframeCount) && (ret_val == WW3D_ERROR_OK); i++) {
+	for (unsigned int i = 0; (i < header.KeyframeCount) && (ret_val == WW3D_ERROR_OK); i++) {
 		W3dEmitterFrameKeyframeStruct key;
-		if (chunk_load.Read(&key,sizeof(key)) != sizeof(key)) {
+		if (chunk_load.Read(&key, sizeof(key)) != sizeof(key)) {
 			ret_val = WW3D_ERROR_LOAD_FAILED;
 		}
 		m_FrameKeyframes.KeyTimes[i] = key.Time;
@@ -1087,26 +1090,26 @@ ParticleEmitterDefClass::Read_Frame_Keyframes (ChunkLoadClass &chunk_load)
 //	Read_Blur_Time_Keyframes
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_Blur_Time_Keyframes (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_Blur_Time_Keyframes(ChunkLoadClass& chunk_load)
 {
 	// Assume success
 	WW3DErrorType ret_val = WW3D_ERROR_OK;
 
 	// Read the header
 	W3dEmitterBlurTimeHeaderStruct header;
-	if (chunk_load.Read(&header,sizeof(header)) != sizeof(header)) {
+	if (chunk_load.Read(&header, sizeof(header)) != sizeof(header)) {
 		ret_val = WW3D_ERROR_LOAD_FAILED;
 	}
 
 	// Read in the first key
 	W3dEmitterBlurTimeKeyframeStruct key;
-	if (chunk_load.Read(&key,sizeof(key)) == sizeof(key)) {
+	if (chunk_load.Read(&key, sizeof(key)) == sizeof(key)) {
 		m_BlurTimeKeyframes.Start = key.BlurTime;
 	}
 
 	// Allocate the keys
-	m_BlurTimeKeyframes.NumKeyFrames		= header.KeyframeCount;
-	m_BlurTimeKeyframes.Rand					= header.Random;
+	m_BlurTimeKeyframes.NumKeyFrames = header.KeyframeCount;
+	m_BlurTimeKeyframes.Rand = header.Random;
 
 	if (m_BlurTimeKeyframes.NumKeyFrames > 0) {
 		m_BlurTimeKeyframes.KeyTimes = new float[m_BlurTimeKeyframes.NumKeyFrames];
@@ -1114,9 +1117,9 @@ ParticleEmitterDefClass::Read_Blur_Time_Keyframes (ChunkLoadClass &chunk_load)
 	}
 
 	// Read in the keys
-	for (unsigned int i=0; (i<header.KeyframeCount) && (ret_val == WW3D_ERROR_OK); i++) {
+	for (unsigned int i = 0; (i < header.KeyframeCount) && (ret_val == WW3D_ERROR_OK); i++) {
 		W3dEmitterBlurTimeKeyframeStruct key;
-		if (chunk_load.Read(&key,sizeof(key)) != sizeof(key)) {
+		if (chunk_load.Read(&key, sizeof(key)) != sizeof(key)) {
 			ret_val = WW3D_ERROR_LOAD_FAILED;
 		}
 		m_BlurTimeKeyframes.KeyTimes[i] = key.Time;
@@ -1130,14 +1133,14 @@ ParticleEmitterDefClass::Read_Blur_Time_Keyframes (ChunkLoadClass &chunk_load)
 //	Read_Extra_Info
 //
 WW3DErrorType
-ParticleEmitterDefClass::Read_Extra_Info (ChunkLoadClass &chunk_load)
+ParticleEmitterDefClass::Read_Extra_Info(ChunkLoadClass& chunk_load)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
 
 	// Read the chunk straight into our member structure
-	::memset (&m_ExtraInfo, 0, sizeof (m_ExtraInfo));
-	if (chunk_load.Read (&m_ExtraInfo, sizeof (m_ExtraInfo)) == sizeof (m_ExtraInfo)) {
+	::memset(&m_ExtraInfo, 0, sizeof(m_ExtraInfo));
+	if (chunk_load.Read(&m_ExtraInfo, sizeof(m_ExtraInfo)) == sizeof(m_ExtraInfo)) {
 		// Success!
 		ret_val = WW3D_ERROR_OK;
 	}
@@ -1151,25 +1154,25 @@ ParticleEmitterDefClass::Read_Extra_Info (ChunkLoadClass &chunk_load)
 //	Save
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_W3D (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_W3D(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies an emitter
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER) == TRUE) {
 
 		// Attempt to save the different sections of the emitter definition
-		if ((Save_Header (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_User_Data (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_Info (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_InfoV2 (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_Props (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_Line_Properties (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_Rotation_Keyframes (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_Frame_Keyframes (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_Blur_Time_Keyframes (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_Extra_Info (chunk_save) == WW3D_ERROR_OK)
+		if ((Save_Header(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_User_Data(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_Info(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_InfoV2(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_Props(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_Line_Properties(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_Rotation_Keyframes(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_Frame_Keyframes(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_Blur_Time_Keyframes(chunk_save) == WW3D_ERROR_OK) &&
+			(Save_Extra_Info(chunk_save) == WW3D_ERROR_OK)
 			)
 		{
 			// Success!
@@ -1177,7 +1180,7 @@ ParticleEmitterDefClass::Save_W3D (ChunkSaveClass &chunk_save)
 		}
 
 		// Close the emitter chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1190,29 +1193,29 @@ ParticleEmitterDefClass::Save_W3D (ChunkSaveClass &chunk_save)
 //	Save_Header
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Header (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_Header(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the emitter
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_HEADER) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_HEADER) == TRUE) {
 
 		// Fill the header structure
 		W3dEmitterHeaderStruct header = { 0 };
 		header.Version = W3D_CURRENT_EMITTER_VERSION;
-		::lstrcpyn (header.Name, m_pName, sizeof (header.Name));
-		header.Name[sizeof (header.Name) - 1] = 0;
+		::lstrcpyn(header.Name, m_pName, sizeof(header.Name));
+		header.Name[sizeof(header.Name) - 1] = 0;
 
 		// Write the header out to the chunk
-		if (chunk_save.Write (&header, sizeof (header)) == sizeof (header))
+		if (chunk_save.Write(&header, sizeof(header)) == sizeof(header))
 		{
 			// Success!
 			ret_val = WW3D_ERROR_OK;
 		}
 
 		// End the header chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1225,21 +1228,21 @@ ParticleEmitterDefClass::Save_Header (ChunkSaveClass &chunk_save)
 //	Save_User_Data
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_User_Data (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_User_Data(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that contains user information
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_USER_DATA) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_USER_DATA) == TRUE) {
 
-			DWORD string_len = m_pUserString ? (lstrlen (m_pUserString) + 1) : 0;		// Fill the header structure
+		DWORD string_len = m_pUserString ? (lstrlen(m_pUserString) + 1) : 0;		// Fill the header structure
 		W3dEmitterUserInfoStruct user_info = { 0 };
 		user_info.Type = m_iUserType;
 		user_info.SizeofStringParam = string_len;
 
 		// Write the user information structure out to the chunk
-		if (chunk_save.Write (&user_info, sizeof (user_info)) == sizeof (user_info))
+		if (chunk_save.Write(&user_info, sizeof(user_info)) == sizeof(user_info))
 		{
 			// Assume success
 			ret_val = WW3D_ERROR_OK;
@@ -1248,7 +1251,7 @@ ParticleEmitterDefClass::Save_User_Data (ChunkSaveClass &chunk_save)
 			if (m_pUserString != NULL) {
 
 				// Now write the user string param to the file
-				if (chunk_save.Write (m_pUserString, string_len) != string_len) {
+				if (chunk_save.Write(m_pUserString, string_len) != string_len) {
 
 					// Something went wrong
 					ret_val = WW3D_ERROR_SAVE_FAILED;
@@ -1257,7 +1260,7 @@ ParticleEmitterDefClass::Save_User_Data (ChunkSaveClass &chunk_save)
 		}
 
 		// End the user information chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1270,23 +1273,23 @@ ParticleEmitterDefClass::Save_User_Data (ChunkSaveClass &chunk_save)
 //	Save_Info
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Info (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_Info(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the generic emitter settings
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_INFO) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_INFO) == TRUE) {
 
 		// Write the settings structure out to the chunk
-		if (chunk_save.Write (&m_Info, sizeof (m_Info)) == sizeof (m_Info))
+		if (chunk_save.Write(&m_Info, sizeof(m_Info)) == sizeof(m_Info))
 		{
 			// Success!
 			ret_val = WW3D_ERROR_OK;
 		}
 
 		// End the settings chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1299,23 +1302,23 @@ ParticleEmitterDefClass::Save_Info (ChunkSaveClass &chunk_save)
 //	Save_InfoV2
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_InfoV2 (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_InfoV2(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the generic emitter settings
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_INFOV2) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_INFOV2) == TRUE) {
 
 		// Write the settings structure out to the chunk
-		if (chunk_save.Write (&m_InfoV2, sizeof (m_InfoV2)) == sizeof (m_InfoV2))
+		if (chunk_save.Write(&m_InfoV2, sizeof(m_InfoV2)) == sizeof(m_InfoV2))
 		{
 			// Success!
 			ret_val = WW3D_ERROR_OK;
 		}
 
 		// End the settings chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1328,36 +1331,36 @@ ParticleEmitterDefClass::Save_InfoV2 (ChunkSaveClass &chunk_save)
 //	Save_Props
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Props (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_Props(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the generic emitter settings
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_PROPS) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_PROPS) == TRUE) {
 
 		//
 		//	Fill in the property struct
 		//
 		W3dEmitterPropertyStruct info = { 0 };
-		info.ColorKeyframes		= m_ColorKeyframes.NumKeyFrames + 1;
-		info.OpacityKeyframes	= m_OpacityKeyframes.NumKeyFrames + 1;
-		info.SizeKeyframes		= m_SizeKeyframes.NumKeyFrames + 1;
-		info.OpacityRandom		= m_OpacityKeyframes.Rand;
-		info.SizeRandom			= m_SizeKeyframes.Rand;
-		VECTOR3_TO_RGBA (m_ColorKeyframes.Rand, info.ColorRandom);
+		info.ColorKeyframes = m_ColorKeyframes.NumKeyFrames + 1;
+		info.OpacityKeyframes = m_OpacityKeyframes.NumKeyFrames + 1;
+		info.SizeKeyframes = m_SizeKeyframes.NumKeyFrames + 1;
+		info.OpacityRandom = m_OpacityKeyframes.Rand;
+		info.SizeRandom = m_SizeKeyframes.Rand;
+		VECTOR3_TO_RGBA(m_ColorKeyframes.Rand, info.ColorRandom);
 
 		//
 		// Write the property structure out to the chunk
 		//
-		if (chunk_save.Write (&info, sizeof (info)) == sizeof (info)) {
+		if (chunk_save.Write(&info, sizeof(info)) == sizeof(info)) {
 
 			//
 			//	Save the keyframes
 			//
-			if ((Save_Color_Keyframes (chunk_save) == WW3D_ERROR_OK) &&
-				 (Save_Opacity_Keyframes (chunk_save) == WW3D_ERROR_OK) &&
-				 (Save_Size_Keyframes (chunk_save) == WW3D_ERROR_OK)) {
+			if ((Save_Color_Keyframes(chunk_save) == WW3D_ERROR_OK) &&
+				(Save_Opacity_Keyframes(chunk_save) == WW3D_ERROR_OK) &&
+				(Save_Size_Keyframes(chunk_save) == WW3D_ERROR_OK)) {
 
 				// Success!
 				ret_val = WW3D_ERROR_OK;
@@ -1365,7 +1368,7 @@ ParticleEmitterDefClass::Save_Props (ChunkSaveClass &chunk_save)
 		}
 
 		// End the settings chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1378,29 +1381,29 @@ ParticleEmitterDefClass::Save_Props (ChunkSaveClass &chunk_save)
 //	Save_Color_Keyframes
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Color_Keyframes (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_Color_Keyframes(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	W3dEmitterColorKeyframeStruct info = { 0 };
 	info.Time = 0;
-	VECTOR3_TO_RGBA (m_ColorKeyframes.Start, info.Color);
+	VECTOR3_TO_RGBA(m_ColorKeyframes.Start, info.Color);
 
 	//
 	// Write the starting color keyframe to the chunk
 	//
-	if (chunk_save.Write (&info, sizeof (info)) == sizeof (info)) {
+	if (chunk_save.Write(&info, sizeof(info)) == sizeof(info)) {
 
 		//
 		// Write each of the remaining color keyframes to the chunk
 		//
 		int count = m_ColorKeyframes.NumKeyFrames;
 		bool success = true;
-		for (int index = 0; (index < count) && success; index ++) {
+		for (int index = 0; (index < count) && success; index++) {
 			info.Time = m_ColorKeyframes.KeyTimes[index];
-			VECTOR3_TO_RGBA (m_ColorKeyframes.Values[index], info.Color);
-			success = (chunk_save.Write (&info, sizeof (info)) == sizeof (info));
+			VECTOR3_TO_RGBA(m_ColorKeyframes.Values[index], info.Color);
+			success = (chunk_save.Write(&info, sizeof(info)) == sizeof(info));
 		}
 
 		ret_val = success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
@@ -1416,7 +1419,7 @@ ParticleEmitterDefClass::Save_Color_Keyframes (ChunkSaveClass &chunk_save)
 //	Save_Opacity_Keyframes
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Opacity_Keyframes (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_Opacity_Keyframes(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
@@ -1428,17 +1431,17 @@ ParticleEmitterDefClass::Save_Opacity_Keyframes (ChunkSaveClass &chunk_save)
 	//
 	// Write the starting keyframe to the chunk
 	//
-	if (chunk_save.Write (&info, sizeof (info)) == sizeof (info)) {
+	if (chunk_save.Write(&info, sizeof(info)) == sizeof(info)) {
 
 		//
 		// Write each of the remaining keyframes to the chunk
 		//
 		int count = m_OpacityKeyframes.NumKeyFrames;
 		bool success = true;
-		for (int index = 0; (index < count) && success; index ++) {
+		for (int index = 0; (index < count) && success; index++) {
 			info.Time = m_OpacityKeyframes.KeyTimes[index];
 			info.Opacity = m_OpacityKeyframes.Values[index];
-			success = (chunk_save.Write (&info, sizeof (info)) == sizeof (info));
+			success = (chunk_save.Write(&info, sizeof(info)) == sizeof(info));
 		}
 
 		ret_val = success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
@@ -1454,7 +1457,7 @@ ParticleEmitterDefClass::Save_Opacity_Keyframes (ChunkSaveClass &chunk_save)
 //	Save_Size_Keyframes
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Size_Keyframes (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_Size_Keyframes(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
@@ -1466,17 +1469,17 @@ ParticleEmitterDefClass::Save_Size_Keyframes (ChunkSaveClass &chunk_save)
 	//
 	// Write the starting keyframe to the chunk
 	//
-	if (chunk_save.Write (&info, sizeof (info)) == sizeof (info)) {
+	if (chunk_save.Write(&info, sizeof(info)) == sizeof(info)) {
 
 		//
 		// Write each of the remaining keyframes to the chunk
 		//
 		int count = m_SizeKeyframes.NumKeyFrames;
 		bool success = true;
-		for (int index = 0; (index < count) && success; index ++) {
+		for (int index = 0; (index < count) && success; index++) {
 			info.Time = m_SizeKeyframes.KeyTimes[index];
 			info.Size = m_SizeKeyframes.Values[index];
-			success = (chunk_save.Write (&info, sizeof (info)) == sizeof (info));
+			success = (chunk_save.Write(&info, sizeof(info)) == sizeof(info));
 		}
 
 		ret_val = success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
@@ -1487,23 +1490,23 @@ ParticleEmitterDefClass::Save_Size_Keyframes (ChunkSaveClass &chunk_save)
 }
 
 WW3DErrorType
-ParticleEmitterDefClass::Save_Line_Properties (ChunkSaveClass &chunk_save)
+ParticleEmitterDefClass::Save_Line_Properties(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the line properties
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_LINE_PROPERTIES) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_LINE_PROPERTIES) == TRUE) {
 
 		// Write the line properties structure out to the chunk
-		if (chunk_save.Write (&m_LineProperties, sizeof (m_LineProperties)) == sizeof (m_LineProperties))
+		if (chunk_save.Write(&m_LineProperties, sizeof(m_LineProperties)) == sizeof(m_LineProperties))
 		{
 			// Success!
 			ret_val = WW3D_ERROR_OK;
 		}
 
 		// End the chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1517,20 +1520,20 @@ ParticleEmitterDefClass::Save_Line_Properties (ChunkSaveClass &chunk_save)
 // opacity which are embedded inside the PROPS chunk.
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Rotation_Keyframes (ChunkSaveClass & chunk_save)
+ParticleEmitterDefClass::Save_Rotation_Keyframes(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the rotation keyframes
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_ROTATION_KEYFRAMES) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_ROTATION_KEYFRAMES) == TRUE) {
 
 		// Write the header
 		W3dEmitterRotationHeaderStruct header;
 		header.KeyframeCount = m_RotationKeyframes.NumKeyFrames;
 		header.Random = m_RotationKeyframes.Rand;
 		header.OrientationRandom = m_InitialOrientationRandom;
-		chunk_save.Write (&header, sizeof (W3dEmitterRotationHeaderStruct));
+		chunk_save.Write(&header, sizeof(W3dEmitterRotationHeaderStruct));
 
 		// Write the keyframes
 		bool success = true;
@@ -1539,19 +1542,19 @@ ParticleEmitterDefClass::Save_Rotation_Keyframes (ChunkSaveClass & chunk_save)
 		// Write the start keyframe
 		key.Time = 0;
 		key.Rotation = m_RotationKeyframes.Start;
-		chunk_save.Write (&key, sizeof (key));
+		chunk_save.Write(&key, sizeof(key));
 
 		// Write the remaining keyframes
-		for (unsigned int index = 0; (index < header.KeyframeCount) && success; index ++) {
+		for (unsigned int index = 0; (index < header.KeyframeCount) && success; index++) {
 			key.Time = m_RotationKeyframes.KeyTimes[index];
 			key.Rotation = m_RotationKeyframes.Values[index];
-			success = (chunk_save.Write (&key, sizeof (key)) == sizeof (key));
+			success = (chunk_save.Write(&key, sizeof(key)) == sizeof(key));
 		}
 
 		ret_val = success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
 
 		// End the chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1566,19 +1569,19 @@ ParticleEmitterDefClass::Save_Rotation_Keyframes (ChunkSaveClass & chunk_save)
 // opacity which are embedded inside the PROPS chunk.
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Frame_Keyframes (ChunkSaveClass & chunk_save)
+ParticleEmitterDefClass::Save_Frame_Keyframes(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the rotation keyframes
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_FRAME_KEYFRAMES) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_FRAME_KEYFRAMES) == TRUE) {
 
 		// Write the header
 		W3dEmitterFrameHeaderStruct header;
 		header.KeyframeCount = m_FrameKeyframes.NumKeyFrames;
 		header.Random = m_FrameKeyframes.Rand;
-		chunk_save.Write (&header, sizeof (W3dEmitterFrameHeaderStruct));
+		chunk_save.Write(&header, sizeof(W3dEmitterFrameHeaderStruct));
 
 		// Write the keyframes
 		bool success = true;
@@ -1587,19 +1590,19 @@ ParticleEmitterDefClass::Save_Frame_Keyframes (ChunkSaveClass & chunk_save)
 		// Write the start keyframe
 		key.Time = 0;
 		key.Frame = m_FrameKeyframes.Start;
-		chunk_save.Write (&key, sizeof (key));
+		chunk_save.Write(&key, sizeof(key));
 
 		// Write the remaining keyframes
-		for (unsigned int index = 0; (index < header.KeyframeCount) && success; index ++) {
+		for (unsigned int index = 0; (index < header.KeyframeCount) && success; index++) {
 			key.Time = m_FrameKeyframes.KeyTimes[index];
 			key.Frame = m_FrameKeyframes.Values[index];
-			success = (chunk_save.Write (&key, sizeof (key)) == sizeof (key));
+			success = (chunk_save.Write(&key, sizeof(key)) == sizeof(key));
 		}
 
 		ret_val = success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
 
 		// End the chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1613,19 +1616,19 @@ ParticleEmitterDefClass::Save_Frame_Keyframes (ChunkSaveClass & chunk_save)
 // opacity which are embedded inside the PROPS chunk.
 //
 WW3DErrorType
-ParticleEmitterDefClass::Save_Blur_Time_Keyframes (ChunkSaveClass & chunk_save)
+ParticleEmitterDefClass::Save_Blur_Time_Keyframes(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the rotation keyframes
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_BLUR_TIME_KEYFRAMES) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_BLUR_TIME_KEYFRAMES) == TRUE) {
 
 		// Write the header
 		W3dEmitterBlurTimeHeaderStruct header;
 		header.KeyframeCount = m_BlurTimeKeyframes.NumKeyFrames;
 		header.Random = m_BlurTimeKeyframes.Rand;
-		chunk_save.Write (&header, sizeof (W3dEmitterBlurTimeHeaderStruct));
+		chunk_save.Write(&header, sizeof(W3dEmitterBlurTimeHeaderStruct));
 
 		// Write the keyframes
 		bool success = true;
@@ -1634,19 +1637,19 @@ ParticleEmitterDefClass::Save_Blur_Time_Keyframes (ChunkSaveClass & chunk_save)
 		// Write the start keyframe
 		key.Time = 0;
 		key.BlurTime = m_BlurTimeKeyframes.Start;
-		chunk_save.Write (&key, sizeof (key));
+		chunk_save.Write(&key, sizeof(key));
 
 		// Write the remaining keyframes
-		for (unsigned int index = 0; (index < header.KeyframeCount) && success; index ++) {
+		for (unsigned int index = 0; (index < header.KeyframeCount) && success; index++) {
 			key.Time = m_BlurTimeKeyframes.KeyTimes[index];
 			key.BlurTime = m_BlurTimeKeyframes.Values[index];
-			success = (chunk_save.Write (&key, sizeof (key)) == sizeof (key));
+			success = (chunk_save.Write(&key, sizeof(key)) == sizeof(key));
 		}
 
 		ret_val = success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
 
 		// End the chunk
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	// Return the WW3DErrorType return code
@@ -1654,22 +1657,22 @@ ParticleEmitterDefClass::Save_Blur_Time_Keyframes (ChunkSaveClass & chunk_save)
 }
 
 WW3DErrorType
-ParticleEmitterDefClass::Save_Extra_Info (ChunkSaveClass & chunk_save)
+ParticleEmitterDefClass::Save_Extra_Info(ChunkSaveClass& chunk_save)
 {
 	// Assume error
 	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
 
 	// Begin a chunk that identifies the extra info
-	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_EXTRA_INFO) == TRUE) {
+	if (chunk_save.Begin_Chunk(W3D_CHUNK_EMITTER_EXTRA_INFO) == TRUE) {
 
 		W3dEmitterExtraInfoStruct data;
 
 		memset(&data, 0, sizeof(data));
 		data.FutureStartTime = Get_Future_Start_Time();
-		bool success = (chunk_save.Write (&data, sizeof (data)) == sizeof (data));
+		bool success = (chunk_save.Write(&data, sizeof(data)) == sizeof(data));
 		ret_val = success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
 
-		chunk_save.End_Chunk ();
+		chunk_save.End_Chunk();
 	}
 
 	return ret_val;
@@ -1680,13 +1683,13 @@ ParticleEmitterDefClass::Save_Extra_Info (ChunkSaveClass & chunk_save)
 //	Set_Color_Keyframes
 //
 void
-ParticleEmitterDefClass::Set_Color_Keyframes (ParticlePropertyStruct<Vector3> &keyframes)
+ParticleEmitterDefClass::Set_Color_Keyframes(ParticlePropertyStruct<Vector3>& keyframes)
 {
-	SAFE_DELETE_ARRAY (m_ColorKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_ColorKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_ColorKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_ColorKeyframes.Values);
 
-	::Copy_Emitter_Property_Struct (m_ColorKeyframes, keyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(m_ColorKeyframes, keyframes);
+	return;
 }
 
 
@@ -1695,13 +1698,13 @@ ParticleEmitterDefClass::Set_Color_Keyframes (ParticlePropertyStruct<Vector3> &k
 //	Set_Opacity_Keyframes
 //
 void
-ParticleEmitterDefClass::Set_Opacity_Keyframes (ParticlePropertyStruct<float> &keyframes)
+ParticleEmitterDefClass::Set_Opacity_Keyframes(ParticlePropertyStruct<float>& keyframes)
 {
-	SAFE_DELETE_ARRAY (m_OpacityKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_OpacityKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_OpacityKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_OpacityKeyframes.Values);
 
-	::Copy_Emitter_Property_Struct (m_OpacityKeyframes, keyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(m_OpacityKeyframes, keyframes);
+	return;
 }
 
 
@@ -1710,13 +1713,13 @@ ParticleEmitterDefClass::Set_Opacity_Keyframes (ParticlePropertyStruct<float> &k
 //	Set_Size_Keyframes
 //
 void
-ParticleEmitterDefClass::Set_Size_Keyframes (ParticlePropertyStruct<float> &keyframes)
+ParticleEmitterDefClass::Set_Size_Keyframes(ParticlePropertyStruct<float>& keyframes)
 {
-	SAFE_DELETE_ARRAY (m_SizeKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_SizeKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_SizeKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_SizeKeyframes.Values);
 
-	::Copy_Emitter_Property_Struct (m_SizeKeyframes, keyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(m_SizeKeyframes, keyframes);
+	return;
 }
 
 
@@ -1725,14 +1728,14 @@ ParticleEmitterDefClass::Set_Size_Keyframes (ParticlePropertyStruct<float> &keyf
 //	Set_Rotation_Keyframes
 //
 void
-ParticleEmitterDefClass::Set_Rotation_Keyframes (ParticlePropertyStruct<float> &keyframes, float orient_rnd)
+ParticleEmitterDefClass::Set_Rotation_Keyframes(ParticlePropertyStruct<float>& keyframes, float orient_rnd)
 {
-	SAFE_DELETE_ARRAY (m_RotationKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_RotationKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_RotationKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_RotationKeyframes.Values);
 
-	::Copy_Emitter_Property_Struct (m_RotationKeyframes, keyframes);
+	::Copy_Emitter_Property_Struct(m_RotationKeyframes, keyframes);
 	m_InitialOrientationRandom = orient_rnd;
-	return ;
+	return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1740,13 +1743,13 @@ ParticleEmitterDefClass::Set_Rotation_Keyframes (ParticlePropertyStruct<float> &
 //	Set_Frame_Keyframes
 //
 void
-ParticleEmitterDefClass::Set_Frame_Keyframes (ParticlePropertyStruct<float> &keyframes)
+ParticleEmitterDefClass::Set_Frame_Keyframes(ParticlePropertyStruct<float>& keyframes)
 {
-	SAFE_DELETE_ARRAY (m_FrameKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_FrameKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_FrameKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_FrameKeyframes.Values);
 
-	::Copy_Emitter_Property_Struct (m_FrameKeyframes, keyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(m_FrameKeyframes, keyframes);
+	return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1754,13 +1757,13 @@ ParticleEmitterDefClass::Set_Frame_Keyframes (ParticlePropertyStruct<float> &key
 //	Set_Blur_Time_Keyframes
 //
 void
-ParticleEmitterDefClass::Set_Blur_Time_Keyframes (ParticlePropertyStruct<float> &keyframes)
+ParticleEmitterDefClass::Set_Blur_Time_Keyframes(ParticlePropertyStruct<float>& keyframes)
 {
-	SAFE_DELETE_ARRAY (m_BlurTimeKeyframes.KeyTimes);
-	SAFE_DELETE_ARRAY (m_BlurTimeKeyframes.Values);
+	SAFE_DELETE_ARRAY(m_BlurTimeKeyframes.KeyTimes);
+	SAFE_DELETE_ARRAY(m_BlurTimeKeyframes.Values);
 
-	::Copy_Emitter_Property_Struct (m_BlurTimeKeyframes, keyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(m_BlurTimeKeyframes, keyframes);
+	return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1768,10 +1771,10 @@ ParticleEmitterDefClass::Set_Blur_Time_Keyframes (ParticlePropertyStruct<float> 
 //	Get_Color_Keyframes
 //
 void
-ParticleEmitterDefClass::Get_Color_Keyframes (ParticlePropertyStruct<Vector3> &keyframes) const
+ParticleEmitterDefClass::Get_Color_Keyframes(ParticlePropertyStruct<Vector3>& keyframes) const
 {
-	::Copy_Emitter_Property_Struct (keyframes, m_ColorKeyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(keyframes, m_ColorKeyframes);
+	return;
 }
 
 
@@ -1780,10 +1783,10 @@ ParticleEmitterDefClass::Get_Color_Keyframes (ParticlePropertyStruct<Vector3> &k
 //	Get_Opacity_Keyframes
 //
 void
-ParticleEmitterDefClass::Get_Opacity_Keyframes (ParticlePropertyStruct<float> &keyframes) const
+ParticleEmitterDefClass::Get_Opacity_Keyframes(ParticlePropertyStruct<float>& keyframes) const
 {
-	::Copy_Emitter_Property_Struct (keyframes, m_OpacityKeyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(keyframes, m_OpacityKeyframes);
+	return;
 }
 
 
@@ -1792,10 +1795,10 @@ ParticleEmitterDefClass::Get_Opacity_Keyframes (ParticlePropertyStruct<float> &k
 //	Get_Size_Keyframes
 //
 void
-ParticleEmitterDefClass::Get_Size_Keyframes (ParticlePropertyStruct<float> &keyframes) const
+ParticleEmitterDefClass::Get_Size_Keyframes(ParticlePropertyStruct<float>& keyframes) const
 {
-	::Copy_Emitter_Property_Struct (keyframes, m_SizeKeyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(keyframes, m_SizeKeyframes);
+	return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1803,10 +1806,10 @@ ParticleEmitterDefClass::Get_Size_Keyframes (ParticlePropertyStruct<float> &keyf
 //	Get_Rotation_Keyframes
 //
 void
-ParticleEmitterDefClass::Get_Rotation_Keyframes (ParticlePropertyStruct<float> &keyframes) const
+ParticleEmitterDefClass::Get_Rotation_Keyframes(ParticlePropertyStruct<float>& keyframes) const
 {
-	::Copy_Emitter_Property_Struct (keyframes, m_RotationKeyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(keyframes, m_RotationKeyframes);
+	return;
 }
 
 
@@ -1815,10 +1818,10 @@ ParticleEmitterDefClass::Get_Rotation_Keyframes (ParticlePropertyStruct<float> &
 //	Get_Frame_Keyframes
 //
 void
-ParticleEmitterDefClass::Get_Frame_Keyframes (ParticlePropertyStruct<float> &keyframes) const
+ParticleEmitterDefClass::Get_Frame_Keyframes(ParticlePropertyStruct<float>& keyframes) const
 {
-	::Copy_Emitter_Property_Struct (keyframes, m_FrameKeyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(keyframes, m_FrameKeyframes);
+	return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1826,10 +1829,10 @@ ParticleEmitterDefClass::Get_Frame_Keyframes (ParticlePropertyStruct<float> &key
 //	Get_Blur_Time_Keyframes
 //
 void
-ParticleEmitterDefClass::Get_Blur_Time_Keyframes (ParticlePropertyStruct<float> &blurtimeframes) const
+ParticleEmitterDefClass::Get_Blur_Time_Keyframes(ParticlePropertyStruct<float>& blurtimeframes) const
 {
-	::Copy_Emitter_Property_Struct (blurtimeframes, m_BlurTimeKeyframes);
-	return ;
+	::Copy_Emitter_Property_Struct(blurtimeframes, m_BlurTimeKeyframes);
+	return;
 }
 
 
@@ -1837,10 +1840,10 @@ ParticleEmitterDefClass::Get_Blur_Time_Keyframes (ParticlePropertyStruct<float> 
 //
 //	Create
 //
-RenderObjClass *
-ParticleEmitterPrototypeClass::Create (void)
+RenderObjClass*
+ParticleEmitterPrototypeClass::Create(void)
 {
-	return ParticleEmitterClass::Create_From_Definition (*m_pDefinition);
+	return ParticleEmitterClass::Create_From_Definition(*m_pDefinition);
 }
 
 
@@ -1848,28 +1851,29 @@ ParticleEmitterPrototypeClass::Create (void)
 //
 //	Load
 //
-PrototypeClass *
-ParticleEmitterLoaderClass::Load_W3D (ChunkLoadClass &chunk_load)
+PrototypeClass*
+ParticleEmitterLoaderClass::Load_W3D(ChunkLoadClass& chunk_load)
 {
 	// Assume failure
-	ParticleEmitterPrototypeClass *pprototype = NULL;
+	ParticleEmitterPrototypeClass* pprototype = NULL;
 
 	// Create a definition object
-	ParticleEmitterDefClass *pdefinition = W3DNEW ParticleEmitterDefClass;
+	ParticleEmitterDefClass* pdefinition = W3DNEW ParticleEmitterDefClass;
 	if (pdefinition != NULL) {
 
 		// Ask the definition object to load the emitter data
-		if (pdefinition->Load_W3D (chunk_load) != WW3D_ERROR_OK) {
+		if (pdefinition->Load_W3D(chunk_load) != WW3D_ERROR_OK) {
 
 			// Error!  Free the definition
 			delete pdefinition;
-		} else {
+		}
+		else {
 
 			// Success!  Create a prototype from the definition
-			pprototype = W3DNEW ParticleEmitterPrototypeClass (pdefinition);
+			pprototype = W3DNEW ParticleEmitterPrototypeClass(pdefinition);
 		}
 	}
 
-    // Return a pointer to the prototype
-	 return pprototype;
+	// Return a pointer to the prototype
+	return pprototype;
 }

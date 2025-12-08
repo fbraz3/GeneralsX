@@ -39,52 +39,52 @@
 Int GameMain()
 {
 	int exitcode = 0;
-	fprintf(stderr, "GameMain(): Starting\n");
-	fflush(stderr);
+	printf("GameMain(): Starting\n");
+	
 
 	// initialize the game engine using factory function
 	TheFramePacer = new FramePacer();
-	fprintf(stderr, "GameMain(): FramePacer created\n");
-	fflush(stderr);
+	printf("GameMain(): FramePacer created\n");
+	
 
 	TheFramePacer->enableFramesPerSecondLimit(TRUE);
 	TheGameEngine = CreateGameEngine();
-	fprintf(stderr, "GameMain(): GameEngine created: %p\n", (void*)TheGameEngine);
-	fflush(stderr);
+	printf("GameMain(): GameEngine created: %p\n", (void*)TheGameEngine);
+	
 
-	fprintf(stderr, "GameMain(): Calling TheGameEngine->init()...\n");
-	fflush(stderr);
+	printf("GameMain(): Calling TheGameEngine->init()...\n");
+	
 	TheGameEngine->init();
-	fprintf(stderr, "GameMain(): TheGameEngine->init() completed\n");
-	fflush(stderr);
+	printf("GameMain(): TheGameEngine->init() completed\n");
+	
 
 	if (!TheGlobalData->m_simulateReplays.empty())
 	{
-		fprintf(stderr, "GameMain(): Simulating replays\n");
-		fflush(stderr);
+		printf("GameMain(): Simulating replays\n");
+		
 		exitcode = ReplaySimulation::simulateReplays(TheGlobalData->m_simulateReplays, TheGlobalData->m_simulateReplayJobs);
 	}
 	else
 	{
 		// run it
-		fprintf(stderr, "GameMain(): Calling TheGameEngine->execute()...\n");
-		fflush(stderr);
+		printf("GameMain(): Calling TheGameEngine->execute()...\n");
+		
 		TheGameEngine->execute();
-		fprintf(stderr, "GameMain(): TheGameEngine->execute() completed\n");
-		fflush(stderr);
+		printf("GameMain(): TheGameEngine->execute() completed\n");
+		
 	}
 
 	// since execute() returned, we are exiting the game
-	fprintf(stderr, "GameMain(): Cleaning up\n");
-	fflush(stderr);
+	printf("GameMain(): Cleaning up\n");
+	
 
 	delete TheFramePacer;
 	TheFramePacer = NULL;
 	delete TheGameEngine;
 	TheGameEngine = NULL;
 
-	fprintf(stderr, "GameMain(): Returning exitcode = %d\n", exitcode);
-	fflush(stderr);
+	printf("GameMain(): Returning exitcode = %d\n", exitcode);
+	
 
 	return exitcode;
 }

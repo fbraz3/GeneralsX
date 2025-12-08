@@ -363,7 +363,7 @@ const wchar_t* Locale_GetString( int StringID, wchar_t *String )
 
 		if (localeStr == NULL)
 		{
-			return localeStringsMissing[ min( MISSING_STRING_HINTS_MAX - 1, StringID ) ];
+			return localeStringsMissing[ std::min( MISSING_STRING_HINTS_MAX - 1, StringID ) ];
 		}
 		else
 		{

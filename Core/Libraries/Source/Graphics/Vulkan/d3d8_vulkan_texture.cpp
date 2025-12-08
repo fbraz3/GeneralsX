@@ -39,7 +39,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
+#include <cstdint>
+// #include <stdint.h>
 
 /* ============================================================================
  * Internal State Management

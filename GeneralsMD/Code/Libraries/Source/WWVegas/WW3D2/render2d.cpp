@@ -88,6 +88,8 @@ Render2DClass::~Render2DClass()
 
 void	Render2DClass::Set_Screen_Resolution( const RectClass & screen )
 {
+	printf("[Phase 62] Render2DClass::Set_Screen_Resolution(%.0f, %.0f, %.0f, %.0f) - width=%.0f, height=%.0f\n",
+	       screen.Left, screen.Top, screen.Right, screen.Bottom, screen.Width(), screen.Height());
 	ScreenResolution = screen;
 #if 0
 	// Fool into pixel doubling  - Byon..
@@ -184,11 +186,27 @@ void Render2DClass::Enable_Texturing(bool b)
 
 void	Render2DClass::Set_Coordinate_Range( const RectClass & range )
 {
+	// Phase 62: Debug - track coordinate range to detect division by zero
+	printf("[Phase 62] Set_Coordinate_Range: range=(%.0f,%.0f)-(%.0f,%.0f), width=%.0f, height=%.0f\n",
+	       range.Left, range.Top, range.Right, range.Bottom, range.Width(), range.Height());
+	
+	// Protect against division by zero
+	float width = range.Width();
+	float height = range.Height();
+	if (width == 0.0f || height == 0.0f) {
+		printf("[Phase 62] WARNING: Zero width/height in Set_Coordinate_Range! Using defaults.\n");
+		width = (width == 0.0f) ? 800.0f : width;
+		height = (height == 0.0f) ? 600.0f : height;
+	}
+	
 	// default range is (-1,1)-(1,-1)
-	CoordinateScale.X = 2 / range.Width();
-	CoordinateScale.Y = -2 / range.Height();
+	CoordinateScale.X = 2 / width;
+	CoordinateScale.Y = -2 / height;
 	CoordinateOffset.X = -(CoordinateScale.X * range.Left) - 1;
 	CoordinateOffset.Y = -(CoordinateScale.Y * range.Top) + 1;
+	
+	printf("[Phase 62] After Set_Coordinate_Range: scale=(%.6f,%.6f), offset=(%.6f,%.6f)\n",
+	       CoordinateScale.X, CoordinateScale.Y, CoordinateOffset.X, CoordinateOffset.Y);
 
 	Update_Bias();
 }
@@ -242,22 +260,41 @@ Vector2 Render2DClass::Convert_Vert( const Vector2 & v )
 #else
 /*
 ** Convert Vert must convert from the convention defined by Set_Coordinate_Range
-** into the convention (-1,1)-(1,-1), which is needed by the renderer.
-// NOPE ** In addition, it rounds all coordinates off to the nearest pixel
+** into screen pixel coordinates for the shader.
+** Phase 62: Shader now handles screen-to-NDC conversion, so we output screen coords.
 ** Also, it offsets the coordinates as need for Screen_UV_Bias
 */
 void Render2DClass::Convert_Vert( Vector2 & vert_out, const Vector2 & vert_in )
 {
-	// Convert to (-1,1)-(1,-1)
-	vert_out.X = vert_in.X * CoordinateScale.X + BiasedCoordinateOffset.X;
-	vert_out.Y = vert_in.Y * CoordinateScale.Y + BiasedCoordinateOffset.Y;
+	// Phase 62: Output screen coordinates - shader does screen-to-NDC conversion
+	// The coordinate range maps logical coords to screen pixels
+	// We scale from logical range to [0, screenWidth/Height]
+	float screenWidth = Get_Screen_Resolution().Width();
+	float screenHeight = Get_Screen_Resolution().Height();
+	
+	// Map from coordinate range to screen pixels
+	// CoordinateRange typically goes from (0,0) to (width, height) in screen pixels
+	vert_out.X = vert_in.X;  // Already in screen pixels for video rendering
+	vert_out.Y = vert_in.Y;
 }
 
 void Render2DClass::Convert_Vert( Vector2 & vert_out, float x_in, float y_in )
 {
-	// Convert to (-1,1)-(1,-1)
-	vert_out.X = x_in * CoordinateScale.X + BiasedCoordinateOffset.X;
-	vert_out.Y = y_in * CoordinateScale.Y + BiasedCoordinateOffset.Y;
+	// Phase 62: Debug vertex conversion
+	static int convertCount = 0;
+	convertCount++;
+	if (convertCount <= 8) {
+		printf("[Phase 62] Convert_Vert #%d: in=(%.1f,%.1f) - passing through as screen coords\n",
+		       convertCount, x_in, y_in);
+	}
+	
+	// Phase 62: Pass through screen coordinates - shader does conversion
+	vert_out.X = x_in;
+	vert_out.Y = y_in;
+	
+	if (convertCount <= 8) {
+		printf("[Phase 62] Convert_Vert #%d: out=(%.1f,%.1f)\n", convertCount, vert_out.X, vert_out.Y);
+	}
 }
 
 #endif

@@ -31,7 +31,7 @@ try {
     (*parse)( this );
 } catch (const std::exception& e) {
     printf("INI ERROR: Exception parsing block '%s': %s\n", token, e.what());
-    fflush(stdout);
+    
     // Universal protection: attempt to resync by skipping to the next 'End' and continue
     bool foundEnd = false;
     while (!m_endOfFile) {

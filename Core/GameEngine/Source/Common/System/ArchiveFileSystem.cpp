@@ -50,8 +50,7 @@
 #include "Common/ArchiveFileSystem.h"
 #include "Common/AsciiString.h"
 #include "Common/PerfTimer.h"
-
-
+#include "Utility/compat.h"
 //----------------------------------------------------------------------------
 //         Externals
 //----------------------------------------------------------------------------
@@ -79,7 +78,7 @@
 //         Public Data
 //----------------------------------------------------------------------------
 
-ArchiveFileSystem *TheArchiveFileSystem = NULL;
+ArchiveFileSystem* TheArchiveFileSystem = NULL;
 
 
 //----------------------------------------------------------------------------
@@ -109,13 +108,13 @@ ArchiveFileSystem::~ArchiveFileSystem()
 {
 	ArchiveFileMap::iterator iter = m_archiveFileMap.begin();
 	while (iter != m_archiveFileMap.end()) {
-		ArchiveFile *file = iter->second;
+		ArchiveFile* file = iter->second;
 		delete file;
 		iter++;
 	}
 }
 
-void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool overwrite)
+void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile* archiveFile, Bool overwrite)
 {
 
 	FilenameList filenameList;
@@ -124,20 +123,29 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 
 	FilenameListIter it = filenameList.begin();
 
+	// // Debug: print first 5 filenames
+	// int debugCount = 0;
+	// for (FilenameListIter debugIt = filenameList.begin(); debugIt != filenameList.end() && debugCount < 5; ++debugIt, ++debugCount) {
+	// 	printf("[loadIntoDirectoryTree] filename[%d]: '%s'\n", debugCount, debugIt->str());
+	// }
+	// printf("[loadIntoDirectoryTree] Total files: %zu\n", filenameList.size());
+	// 
+
 	while (it != filenameList.end())
 	{
-		ArchivedDirectoryInfo *dirInfo = &m_rootDirectory;
+		ArchivedDirectoryInfo* dirInfo = &m_rootDirectory;
 
 		AsciiString path;
 		AsciiString token;
 		AsciiString tokenizer = *it;
 		tokenizer.toLower();
-		Bool infoInPath = tokenizer.nextToken(&token, "\\/");
+		// .big files from Windows always use backslash separators internally
+		Bool infoInPath = tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
 
 		while (infoInPath && (!token.find('.') || tokenizer.find('.')))
 		{
 			path.concat(token);
-			path.concat('\\');
+			path.concat(GET_BIG_FILE_SEPARATOR());  // .big files use backslash separators
 
 			ArchivedDirectoryInfoMap::iterator tempiter = dirInfo->m_directories.find(token);
 			if (tempiter == dirInfo->m_directories.end())
@@ -151,7 +159,7 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 				dirInfo = &tempiter->second;
 			}
 
-			infoInPath = tokenizer.nextToken(&token, "\\/");
+			infoInPath = tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());  // .big files use backslash
 		}
 
 		ArchivedFileLocationMap::iterator fileIt;
@@ -185,7 +193,7 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 						it->str(),
 						rangeIt0->second->getName().str(),
 						rangeIt1->second->getName().str()
-					));
+						));
 				}
 				else
 				{
@@ -196,7 +204,7 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 						it->str(),
 						rangeIt1->second->getName().str(),
 						rangeIt0->second->getName().str()
-					));
+						));
 				}
 			}
 			else
@@ -214,7 +222,7 @@ void ArchiveFileSystem::loadMods()
 {
 	if (TheGlobalData->m_modBIG.isNotEmpty())
 	{
-		ArchiveFile *archiveFile = openArchiveFile(TheGlobalData->m_modBIG.str());
+		ArchiveFile* archiveFile = openArchiveFile(TheGlobalData->m_modBIG.str());
 
 		if (archiveFile != NULL) {
 			DEBUG_LOG(("ArchiveFileSystem::loadMods - loading %s into the directory tree.", TheGlobalData->m_modBIG.str()));
@@ -233,19 +241,48 @@ void ArchiveFileSystem::loadMods()
 #ifdef DEBUG_LOGGING
 		Bool ret =
 #endif
-		loadBigFilesFromDirectory(TheGlobalData->m_modDir, "*.big", TRUE);
+			loadBigFilesFromDirectory(TheGlobalData->m_modDir, "*.big", TRUE);
 		DEBUG_ASSERTLOG(ret, ("loadBigFilesFromDirectory(%s) returned FALSE!", TheGlobalData->m_modDir.str()));
 	}
 }
 
-Bool ArchiveFileSystem::doesFileExist(const Char *filename, FileInstance instance) const
+Bool ArchiveFileSystem::doesFileExist(const Char* filename, FileInstance instance) const
 {
+	// Skip absolute paths - they are local filesystem paths, not archive paths
+	// On Unix, absolute paths start with '/'
+	// On Windows, they start with a drive letter like 'C:\'
+	if (filename == NULL || filename[0] == '\0') {
+		return false;
+	}
+	if (filename[0] == '/' || filename[0] == '\\') {
+		// Absolute Unix path - not in archives
+		return false;
+	}
+	if (filename[0] != '\0' && filename[1] == ':') {
+		// Windows drive letter path like "C:\" - not in archives
+		return false;
+	}
+	
 	ArchivedDirectoryInfoResult result = const_cast<ArchiveFileSystem*>(this)->getArchivedDirectoryInfo(filename);
 
-	if (!result.valid())
+	if (!result.valid()) {
+		static int debugCount = 0;
+		// if (debugCount < 30) {
+			printf("[ArchiveFileSystem::doesFileExist] NOT FOUND in archives: '%s'\n", filename);
+			debugCount++;
+		// }
 		return false;
+	}
 
 	stl::const_range<ArchivedFileLocationMap> range = stl::get_range(result.dirInfo->m_files, result.lastToken, instance);
+
+	if (range.valid()) {
+		static int foundCount = 0;
+
+		printf("[ArchiveFileSystem::doesFileExist] FOUND in archives: '%s'\n", filename);
+		foundCount++;
+
+	}
 
 	return range.valid();
 }
@@ -265,19 +302,56 @@ ArchiveFileSystem::ArchivedDirectoryInfoResult ArchiveFileSystem::getArchivedDir
 	AsciiString token;
 	AsciiString tokenizer = directory;
 	tokenizer.toLower();
-	Bool infoInPath = tokenizer.nextToken(&token, "\\/");
+	// Normalize forward slashes to backslashes since .big files use Windows-style paths
+	{
+		char* buf = tokenizer.getBufferForRead(tokenizer.getLength());
+		for (int i = 0; buf[i] != '\0'; i++) {
+			if (buf[i] == '/') buf[i] = '\\';
+		}
+	}
+
+	static int debugLookupCount = 0;
+	// if (debugLookupCount < 30) {
+		printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Looking up: '%s' (normalized: '%s')\n", directory, tokenizer.str());
+		debugLookupCount++;
+	// }
+
+	// .big files from Windows always use backslash separators internally
+	Bool infoInPath = tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());
 
 	while (infoInPath && (!token.find('.') || tokenizer.find('.')))
 	{
+		// printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Looking for token: '%s'\n", token.str());
+		// 
+
 		ArchivedDirectoryInfoMap::iterator tempiter = dirInfo->m_directories.find(token);
 		if (tempiter != dirInfo->m_directories.end())
 		{
 			dirInfo = &tempiter->second;
-			infoInPath = tokenizer.nextToken(&token, "\\/");
+			// printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Found directory: '%s'\n", token.str());
+			// 
+			infoInPath = tokenizer.nextToken(&token, GET_BIG_FILE_SEPARATOR());  // .big files use backslash
 		}
 		else
 		{
-			// the directory doesn't exist
+			// the directory doesn't exist - dump available directories at this level
+			static int dirNotFoundCount = 0;
+			// if (dirNotFoundCount < 10) {
+				printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Directory NOT FOUND: '%s'\n", token.str());
+				printf("[ArchiveFileSystem::getArchivedDirectoryInfo] Available directories at this level (%zu total):\n", dirInfo->m_directories.size());
+				
+				int count = 0;
+				for (ArchivedDirectoryInfoMap::iterator it = dirInfo->m_directories.begin();
+					it != dirInfo->m_directories.end() && count < 20; ++it, ++count)
+				{
+					printf("  [%d] '%s'\n", count, it->first.str());
+				}
+				if (dirInfo->m_directories.size() > 20) {
+					printf("  ... and %zu more\n", dirInfo->m_directories.size() - 20);
+				}
+				dirNotFoundCount++;
+			// }
+
 			result.dirInfo = NULL;
 			result.lastToken = AsciiString::TheEmptyString;
 			return result;
@@ -289,17 +363,40 @@ ArchiveFileSystem::ArchivedDirectoryInfoResult ArchiveFileSystem::getArchivedDir
 	return result;
 }
 
-File * ArchiveFileSystem::openFile(const Char *filename, Int access, FileInstance instance)
+File* ArchiveFileSystem::openFile(const Char* filename, Int access, FileInstance instance)
 {
+	// printf("[ArchiveFileSystem::openFile] Attempting to open: '%s' (access=%d, instance=%d)\n", filename, access, instance);
+	// 
+
 	ArchiveFile* archive = getArchiveFile(filename, instance);
 
 	if (archive == NULL)
+	{
+		// printf("[ArchiveFileSystem::openFile] getArchiveFile returned NULL\n");
+		// 
 		return NULL;
+	}
 
-	return archive->openFile(filename, access);
+	// printf("[ArchiveFileSystem::openFile] Found archive: %s, calling archive->openFile\n", archive->getName().str());
+	// 
+
+	File* result = archive->openFile(filename, access);
+
+	// if (result == NULL)
+	// {
+	// 	printf("[ArchiveFileSystem::openFile] archive->openFile returned NULL\n");
+	// 	
+	// }
+	// else
+	// {
+	// 	printf("[ArchiveFileSystem::openFile] archive->openFile SUCCESS\n");
+	// 	
+	// }
+
+	return result;
 }
 
-Bool ArchiveFileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo, FileInstance instance) const
+Bool ArchiveFileSystem::getFileInfo(const AsciiString& filename, FileInfo* fileInfo, FileInstance instance) const
 {
 	if (fileInfo == NULL) {
 		return FALSE;
@@ -319,20 +416,38 @@ Bool ArchiveFileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileI
 
 ArchiveFile* ArchiveFileSystem::getArchiveFile(const AsciiString& filename, FileInstance instance) const
 {
+	// printf("[ArchiveFileSystem::getArchiveFile] Looking for: '%s' (instance=%d)\n", filename.str(), instance);
+	// 
+
 	ArchivedDirectoryInfoResult result = const_cast<ArchiveFileSystem*>(this)->getArchivedDirectoryInfo(filename.str());
 
 	if (!result.valid())
+	{
+		// printf("[ArchiveFileSystem::getArchiveFile] getArchivedDirectoryInfo returned invalid result\n");
+		// 
 		return NULL;
+	}
+
+	// printf("[ArchiveFileSystem::getArchiveFile] Directory found, searching for file: '%s'\n", result.lastToken.str());
+	// 
 
 	stl::const_range<ArchivedFileLocationMap> range = stl::get_range(result.dirInfo->m_files, result.lastToken, instance);
 
 	if (!range.valid())
+	{
+		// printf("[ArchiveFileSystem::getArchiveFile] File not found in directory (range not valid)\n");
+		// 
 		return NULL;
-	
-	return range.get()->second;
+	}
+
+	ArchiveFile* archive = range.get()->second;
+	// printf("[ArchiveFileSystem::getArchiveFile] SUCCESS - found file in archive: %s\n", archive->getName().str());
+	// 
+
+	return archive;
 }
 
-void ArchiveFileSystem::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const
+void ArchiveFileSystem::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList& filenameList, Bool searchSubdirectories) const
 {
 	ArchiveFileMap::const_iterator it = m_archiveFileMap.begin();
 	while (it != m_archiveFileMap.end()) {
