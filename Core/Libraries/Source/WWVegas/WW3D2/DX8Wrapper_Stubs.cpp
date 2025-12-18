@@ -4,6 +4,7 @@
  * Phase 39.4: Global stub definitions for DirectX 8 compatibility layer
  * Updated Phase 41 Week 3: Integrated Graphics::IGraphicsDriver factory
  * Updated Phase 56: Real buffer binding for vertex/index buffers
+ * Updated Phase 60: Get actual window size from SDL2 instead of hardcoded values
  * 
  * Provides initialization for global objects referenced by game code.
  * Bridge between legacy DX8Wrapper calls and modern Graphics::IGraphicsDriver abstraction.
@@ -15,6 +16,7 @@
 #include "../../Graphics/IGraphicsDriver.h"
 #include "../../Graphics/GraphicsDriverFactory.h"
 #include "../../Graphics/dx8buffer_compat.h"  // Phase 56: For DX8VertexBufferClass, DX8IndexBufferClass
+#include <SDL2/SDL.h>  // Phase 60: For SDL_GetWindowSize
 
 // Phase 41 Week 3: Global graphics driver instance (created via factory)
 static Graphics::IGraphicsDriver* g_graphics_driver = nullptr;
@@ -71,14 +73,28 @@ bool DX8Wrapper::Init(void* hwnd, bool lite) {
     }
     
     // Create new driver via factory (uses environment variable + config file priority)
-    // Window dimensions are set to default 1024x768 for initialization
+    // Phase 60: Get actual window size from SDL2 instead of hardcoded 1024x768
+    int windowWidth = 800;
+    int windowHeight = 600;
+    
+    // Try to get actual window size from SDL2
+    if (hwnd != nullptr) {
+        SDL_Window* sdlWindow = reinterpret_cast<SDL_Window*>(hwnd);
+        SDL_GetWindowSize(sdlWindow, &windowWidth, &windowHeight);
+        fprintf(stderr, "[DX8Wrapper::Init] Got SDL window size: %dx%d\n", windowWidth, windowHeight);
+        fflush(stderr);
+    } else {
+        fprintf(stderr, "[DX8Wrapper::Init] WARNING: hwnd is null, using default 800x600\n");
+        fflush(stderr);
+    }
+    
     fprintf(stderr, "[DX8Wrapper::Init] Calling GraphicsDriverFactory::CreateDriver\n");
     fflush(stderr);
     g_graphics_driver = Graphics::GraphicsDriverFactory::CreateDriver(
         Graphics::BackendType::Unknown,  // Use default selection priority
         hwnd,
-        1024,  // width
-        768,   // height
+        windowWidth,
+        windowHeight,
         false  // fullscreen
     );
     
@@ -141,15 +157,25 @@ void DX8Wrapper::Begin_Scene() {
  * @param flip_frame Whether to present the frame to display
  */
 void DX8Wrapper::End_Scene(bool flip_frame) {
+    fprintf(stderr, "[Phase 60] DX8Wrapper::End_Scene - Called, flip_frame=%d, g_graphics_driver=%p\n", flip_frame, (void*)g_graphics_driver);
+    fflush(stderr);
     if (g_graphics_driver != nullptr) {
         // EndFrame returns void, just call it
+        fprintf(stderr, "[Phase 60] DX8Wrapper::End_Scene - Calling EndFrame()\n");
+        fflush(stderr);
         g_graphics_driver->EndFrame();
+        fprintf(stderr, "[Phase 60] DX8Wrapper::End_Scene - EndFrame returned\n");
+        fflush(stderr);
         
         // Present frame if requested
         if (flip_frame) {
+            fprintf(stderr, "[Phase 60] DX8Wrapper::End_Scene - Calling Present()\n");
+            fflush(stderr);
             if (!g_graphics_driver->Present()) {
                 printf("[Phase 41 Week 3 ERROR] DX8Wrapper::End_Scene - Present failed\n");
             }
+            fprintf(stderr, "[Phase 60] DX8Wrapper::End_Scene - Present returned\n");
+            fflush(stderr);
         }
     } else {
         printf("[Phase 41 Week 3 WARNING] DX8Wrapper::End_Scene - No graphics driver initialized\n");

@@ -1462,6 +1462,11 @@ bool VulkanGraphicsDriver::BeginFrame()
 {
     static uint32_t s_frame_count = 0;
     
+    // Phase 60.1: Debug logging for every call
+    printf("[Vulkan] BeginFrame: called (count=%u, m_frame_started=%d, m_in_frame=%d)\n", 
+           s_frame_count, m_frame_started ? 1 : 0, m_in_frame ? 1 : 0);
+    fflush(stdout);
+    
     if (!m_initialized || !m_device || !m_swapchain || !m_render_pass) {
         printf("[Vulkan] BeginFrame: Not properly initialized\n");
         return false;
@@ -1469,11 +1474,27 @@ bool VulkanGraphicsDriver::BeginFrame()
     
     if (m_frame_started) {
         // Already started - just continue
+        printf("[Vulkan] BeginFrame: Frame already started, returning true\n");
+        fflush(stdout);
         return true;
     }
     
     // Wait for the previous frame using this slot to complete
-    vkWaitForFences(m_device->handle, 1, &g_inFlightFences[m_current_frame], VK_TRUE, UINT64_MAX);
+    printf("[Vulkan] BeginFrame: Waiting for fence %u...\n", m_current_frame);
+    fflush(stdout);
+    VkResult waitResult = vkWaitForFences(m_device->handle, 1, &g_inFlightFences[m_current_frame], VK_TRUE, 1000000000ULL); // 1 second timeout
+    if (waitResult == VK_TIMEOUT) {
+        printf("[Vulkan] BeginFrame: Fence wait TIMEOUT (1 second) - fence may not be signaled\n");
+        fflush(stdout);
+        // Try to continue anyway - skip this frame
+        return false;
+    } else if (waitResult != VK_SUCCESS) {
+        printf("[Vulkan] BeginFrame: Fence wait FAILED (result=%d)\n", waitResult);
+        fflush(stdout);
+        return false;
+    }
+    printf("[Vulkan] BeginFrame: Fence signaled, proceeding...\n");
+    fflush(stdout);
     
     // Phase 60: Cleanup temporary buffers from the previous use of this frame slot
     // This is safe because we just waited for the fence, meaning GPU is done with these resources
@@ -1563,7 +1584,13 @@ bool VulkanGraphicsDriver::BeginFrame()
 
 void VulkanGraphicsDriver::EndFrame()
 {
+    printf("[Vulkan] EndFrame: called (m_frame_started=%d, m_in_frame=%d)\n", 
+           m_frame_started ? 1 : 0, m_in_frame ? 1 : 0);
+    fflush(stdout);
+    
     if (!m_frame_started || !m_in_frame) {
+        printf("[Vulkan] EndFrame: Skipping - frame not started or not in frame\n");
+        fflush(stdout);
         return;
     }
     

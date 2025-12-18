@@ -83,45 +83,13 @@ void SDL2Keyboard::getKey(KeyboardIO* key)
         return;
     }
 
-    // Poll SDL2 events to get keyboard input
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        switch (event.type) {
-            case SDL_KEYDOWN:
-            {
-                SDL_Keycode sdlKey = event.key.keysym.sym;
-                unsigned char gameKey = sdlKeyToGameKey(sdlKey);
-                
-                if (gameKey != KEY_NONE) {
-                    key->key = gameKey;
-                    key->state = KEY_STATE_DOWN;
-                    key->status = KeyboardIO::STATUS_UNUSED;
-                    
-                    // Update modifiers
-                    updateModifiers();
-                    return;
-                }
-            }
-            break;
-
-            case SDL_KEYUP:
-            {
-                SDL_Keycode sdlKey = event.key.keysym.sym;
-                unsigned char gameKey = sdlKeyToGameKey(sdlKey);
-                
-                if (gameKey != KEY_NONE) {
-                    key->key = gameKey;
-                    key->state = KEY_STATE_UP;
-                    key->status = KeyboardIO::STATUS_UNUSED;
-                    
-                    // Update modifiers
-                    updateModifiers();
-                    return;
-                }
-            }
-            break;
-        }
-    }
+    // Phase 60: Don't poll events here - the main loop handles SDL events.
+    // Just use SDL_GetKeyboardState() which is updated by SDL_PumpEvents/SDL_PollEvent
+    // in the main game loop. This avoids consuming window events that need to be
+    // processed by the main loop for proper window management.
+    //
+    // Note: This method now only returns KEY_NONE since we rely on the main loop
+    // to handle keyboard events. The keyboard state is still tracked via SDL_GetKeyboardState.
     
     key->key = KEY_NONE;
 }

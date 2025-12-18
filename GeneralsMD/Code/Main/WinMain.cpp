@@ -1104,6 +1104,16 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		CommandLine::parseCommandLineForStartup();
 		InitializeGameSpyServerConfiguration();
 
+		// Phase 60: Force windowed mode on non-Windows platforms for debugging
+		// Fullscreen causes hangs on macOS that prevent debugging
+		// TODO: Re-enable fullscreen support once Vulkan swapchain is stable
+#ifndef _WIN32
+		if (!TheGlobalData->m_windowed) {
+			printf("POSIX main: Forcing windowed mode for debugging (fullscreen disabled)\n");
+			TheWritableGlobalData->m_windowed = TRUE;
+		}
+#endif
+
 		// register windows class and create application window
 		if(!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
 			return exitcode;
