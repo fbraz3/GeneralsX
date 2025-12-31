@@ -125,6 +125,8 @@ OpenContain::OpenContain( Thing *thing, const ModuleData* moduleData ) : UpdateM
 	m_lastLoadSoundFrame = 0;
 	m_containListSize = 0;
 	m_stealthUnitsContained = 0;
+	m_heroUnitsContained = 0;
+	m_xferVersion = 1;
 	m_doorCloseCountdown = 0;
 
 	m_rallyPoint.zero();
@@ -352,6 +354,10 @@ void OpenContain::addToContainList( Object *rider )
 	{
 		m_stealthUnitsContained++;
 	}
+	if( rider->isKindOf( KINDOF_HERO ) )
+	{
+		m_heroUnitsContained++;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -532,6 +538,7 @@ void OpenContain::removeFromContainViaIterator( ContainedItemsList::iterator it,
 	m_containListSize--;
 	if( rider->isKindOf( KINDOF_STEALTH_GARRISON ) )
 	{
+		DEBUG_ASSERTCRASH( m_stealthUnitsContained > 0, ("OpenContain::removeFromContainViaIterator - Removing stealth unit but stealth count is %d", m_stealthUnitsContained) );
 		m_stealthUnitsContained--;
 		if( exposeStealthUnits )
 		{
@@ -541,6 +548,11 @@ void OpenContain::removeFromContainViaIterator( ContainedItemsList::iterator it,
 				stealth->markAsDetected();
 			}
 		}
+	}
+	if( rider->isKindOf( KINDOF_HERO ) )
+	{
+		DEBUG_ASSERTCRASH( m_heroUnitsContained > 0, ("OpenContain::removeFromContainViaIterator - Removing hero but hero count is %d", m_heroUnitsContained) );
+		m_heroUnitsContained--;
 	}
 
 
@@ -620,7 +632,7 @@ void OpenContain::scatterToNearbyPosition(Object* rider)
 }
 
 //-------------------------------------------------------------------------------------------------
-void OpenContain::onContaining( Object * /*rider*/ )
+void OpenContain::onContaining( Object *rider )
 {
 	// Play audio
 	if( m_loadSoundsEnabled )
@@ -1442,15 +1454,22 @@ void OpenContain::crc( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
 	* Version Info:
-	* 1: Initial version */
+	* 1: Initial version
+	* 2: TheSuperHackers @tweak Serialize hero units contained count
+	*/
 // ------------------------------------------------------------------------------------------------
 void OpenContain::xfer( Xfer *xfer )
 {
 
 	// version
-	const XferVersion currentVersion = 1;
+#if RETAIL_COMPATIBLE_XFER_SAVE
+	XferVersion currentVersion = 1;
+#else
+	XferVersion currentVersion = 2;
+#endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
+	m_xferVersion = version;
 
 	// extend base class
 	UpdateModule::xfer( xfer );
@@ -1525,6 +1544,12 @@ void OpenContain::xfer( Xfer *xfer )
 
 	// stealth units contained
 	xfer->xferUnsignedInt( &m_stealthUnitsContained );
+
+	// hero units contained
+	if (version >= 2)
+	{
+		xfer->xferUnsignedInt( &m_heroUnitsContained );
+	}
 
 	// door close countdown
 	xfer->xferUnsignedInt( &m_doorCloseCountdown );
@@ -1656,6 +1681,19 @@ void OpenContain::loadPostProcess( void )
 		// record in the object who we are contained by
 		obj->friend_setContainedBy( us );
 
+	}
+
+	if (m_xferVersion < 2)
+	{
+		// Restore hero count by iterating hero objects for old save versions
+		m_heroUnitsContained = 0;
+		for( ContainedItemsList::const_iterator it = m_containList.begin(); it != m_containList.end(); ++it )
+		{
+			if( (*it)->isKindOf( KINDOF_HERO ) )
+			{
+				m_heroUnitsContained++;
+			}
+		}
 	}
 
 	// sanity
