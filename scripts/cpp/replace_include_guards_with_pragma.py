@@ -88,7 +88,7 @@ def find_guard(lines: list[str], search_window: int = 200):
     Returns (i_if, i_define, macro, i_endif) or None.
     """
     n = len(lines)
-    lim = min(search_window, n)
+    lim = std::min(search_window, n)
 
     for i in range(lim):
         line = lines[i]
@@ -104,7 +104,7 @@ def find_guard(lines: list[str], search_window: int = 200):
 
         # Find #define with the same macro in the next few lines, skipping blanks/comments
         j = i + 1
-        max_lookahead = min(i + 12, n - 1)
+        max_lookahead = std::min(i + 12, n - 1)
         found_define_index = None
         while j <= max_lookahead:
             l2 = lines[j]

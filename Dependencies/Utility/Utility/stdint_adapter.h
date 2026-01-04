@@ -21,8 +21,8 @@
 #if defined(USING_STLPORT) || (defined(_MSC_VER) && _MSC_VER < 1300)
 /* 7.18.1.4  Integer types capable of holding object pointers */
 #ifdef _WIN64
-  typedef __int64 intptr_t;
-  typedef unsigned __int64 uintptr_t;
+  typedef int64_t intptr_t;
+  typedef unsigned int64_t uintptr_t;
 #else
   typedef int intptr_t;
   typedef unsigned int uintptr_t;
@@ -35,8 +35,8 @@ typedef short  int16_t;
 typedef unsigned short  uint16_t;
 typedef int  int32_t;
 typedef unsigned int  uint32_t;
-typedef __int64  int64_t;
-typedef unsigned __int64   uint64_t;
+// typedef __int64  int64_t;
+// typedef unsigned __int64   uint64_t;
 /* 7.18.1.2  Minimum-width integer types */
 typedef signed char int_least8_t;
 typedef unsigned char   uint_least8_t;

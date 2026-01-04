@@ -111,7 +111,7 @@ inline char* itoa(int value, char* buffer, int radix) {
 #define _finite(x) std::isfinite(x)
 ```
 
-#### min() and max() - Integer comparison
+#### std::min() and std::max() - Integer comparison
 
 ```cpp
 #define __min(a, b) std::min((a), (b))

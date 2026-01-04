@@ -40,11 +40,11 @@
 //#include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
 
-void deleteNotificationBox( void );
-static void raiseOverlays( void );
+void deleteNotificationBox(void);
+static void raiseOverlays(void);
 
 // Message boxes -------------------------------------
-static GameWindow *messageBoxWindow = NULL;
+static GameWindow* messageBoxWindow = NULL;
 static GameWinMsgBoxFunc okFunc = NULL;
 static GameWinMsgBoxFunc cancelFunc = NULL;
 static Bool reOpenPlayerInfoFlag = FALSE;
@@ -52,7 +52,7 @@ static Bool reOpenPlayerInfoFlag = FALSE;
 	* messageBoxOK is called when a message box is destroyed
 	* by way of an OK button, so we can clear our pointers to it.
 	*/
-static void messageBoxOK( void )
+static void messageBoxOK(void)
 {
 	DEBUG_ASSERTCRASH(messageBoxWindow, ("Message box window went away without being there in the first place!"));
 	messageBoxWindow = NULL;
@@ -67,7 +67,7 @@ static void messageBoxOK( void )
 	* messageBoxCancel is called when a message box is destroyed
 	* by way of a Cancel button, so we can clear our pointers to it.
 	*/
-static void messageBoxCancel( void )
+static void messageBoxCancel(void)
 {
 	DEBUG_ASSERTCRASH(messageBoxWindow, ("Message box window went away without being there in the first place!"));
 	messageBoxWindow = NULL;
@@ -83,7 +83,7 @@ static void messageBoxCancel( void )
 	* one is present.  This is usually done when putting up a
 	* second messageBox.
 	*/
-void ClearGSMessageBoxes( void )
+void ClearGSMessageBoxes(void)
 {
 	if (messageBoxWindow)
 	{
@@ -141,7 +141,7 @@ void GSMessageBoxYesNo(UnicodeString title, UnicodeString message, GameWinMsgBox
 	* If the screen transitions underneath the dialog box, we
 	* need to raise it to keep it visible.
 	*/
-void RaiseGSMessageBox( void )
+void RaiseGSMessageBox(void)
 {
 	raiseOverlays();
 
@@ -157,20 +157,20 @@ void RaiseGSMessageBox( void )
 	* gsOverlays holds a list of the .wnd files used in GS overlays.
 	* The entries *MUST* be in the same order as the GSOverlayType enum.
 	*/
-static const char * gsOverlays[GSOVERLAY_MAX] =
+static const char* gsOverlays[GSOVERLAY_MAX] =
 {
-	"Menus/PopupPlayerInfo.wnd",	// Player info (right-click)
-	"Menus/WOLMapSelectMenu.wnd",	// Map select
-	"Menus/WOLBuddyOverlay.wnd",	// Buddy list
-	"Menus/WOLPageOverlay.wnd",		// Find/page
-	"Menus/PopupHostGame.wnd",		// Hosting options (game name, password, etc)
-	"Menus/PopupJoinGame.wnd",		// Joining options (password, etc)
-	"Menus/PopupLadderSelect.wnd",// LadderSelect
-	"Menus/PopupLocaleSelect.wnd",// Prompt for user's locale
-	"Menus/OptionsMenu.wnd",			// popup options
+	"Menus\\PopupPlayerInfo.wnd",	// Player info (right-click)
+	"Menus\\WOLMapSelectMenu.wnd",	// Map select
+	"Menus\\WOLBuddyOverlay.wnd",	// Buddy list
+	"Menus\\WOLPageOverlay.wnd",		// Find/page
+	"Menus\\PopupHostGame.wnd",		// Hosting options (game name, password, etc)
+	"Menus\\PopupJoinGame.wnd",		// Joining options (password, etc)
+	"Menus\\PopupLadderSelect.wnd",// LadderSelect
+	"Menus\\PopupLocaleSelect.wnd",// Prompt for user's locale
+	"Menus\\OptionsMenu.wnd",			// popup options
 };
 
-static WindowLayout *overlayLayouts[GSOVERLAY_MAX] =
+static WindowLayout* overlayLayouts[GSOVERLAY_MAX] =
 {
 	NULL,
 	NULL,
@@ -183,14 +183,14 @@ static WindowLayout *overlayLayouts[GSOVERLAY_MAX] =
 	NULL,
 };
 
-static void buddyTryReconnect( void )
+static void buddyTryReconnect(void)
 {
 	BuddyRequest req;
 	req.buddyRequestType = BuddyRequest::BUDDYREQUEST_RELOGIN;
-	TheGameSpyBuddyMessageQueue->addRequest( req );
+	TheGameSpyBuddyMessageQueue->addRequest(req);
 }
 
-void GameSpyOpenOverlay( GSOverlayType overlay )
+void GameSpyOpenOverlay(GSOverlayType overlay)
 {
 	if (overlay == GSOVERLAY_BUDDY)
 	{
@@ -211,59 +211,59 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 		}
 		AudioEventRTS buttonClick("GUICommunicatorOpen");
 
-		if( TheAudio )
+		if (TheAudio)
 		{
-			TheAudio->addAudioEvent( &buttonClick );
+			TheAudio->addAudioEvent(&buttonClick);
 		}
 	}
 	if (overlayLayouts[overlay])
 	{
-		overlayLayouts[overlay]->hide( FALSE );
+		overlayLayouts[overlay]->hide(FALSE);
 		overlayLayouts[overlay]->bringForward();
 	}
 	else
 	{
-		overlayLayouts[overlay] = TheWindowManager->winCreateLayout( AsciiString( gsOverlays[overlay] ) );
+		overlayLayouts[overlay] = TheWindowManager->winCreateLayout(AsciiString(gsOverlays[overlay]));
 		overlayLayouts[overlay]->runInit();
-		overlayLayouts[overlay]->hide( FALSE );
+		overlayLayouts[overlay]->hide(FALSE);
 		overlayLayouts[overlay]->bringForward();
 	}
 }
 
-void GameSpyCloseOverlay( GSOverlayType overlay )
+void GameSpyCloseOverlay(GSOverlayType overlay)
 {
-	switch(overlay)
+	switch (overlay)
 	{
-		case GSOVERLAY_PLAYERINFO:
-			DEBUG_LOG(("Closing overlay GSOVERLAY_PLAYERINFO"));
-			break;
-		case GSOVERLAY_MAPSELECT:
-			DEBUG_LOG(("Closing overlay GSOVERLAY_MAPSELECT"));
-			break;
-		case GSOVERLAY_BUDDY:
-			DEBUG_LOG(("Closing overlay GSOVERLAY_BUDDY"));
-			break;
-		case GSOVERLAY_PAGE:
-			DEBUG_LOG(("Closing overlay GSOVERLAY_PAGE"));
-			break;
-		case GSOVERLAY_GAMEOPTIONS:
-			DEBUG_LOG(("Closing overlay GSOVERLAY_GAMEOPTIONS"));
-			break;
-		case GSOVERLAY_GAMEPASSWORD:
-			DEBUG_LOG(("Closing overlay GSOVERLAY_GAMEPASSWORD"));
-			break;
-		case GSOVERLAY_LADDERSELECT:
-			DEBUG_LOG(("Closing overlay GSOVERLAY_LADDERSELECT"));
-			break;
-		case GSOVERLAY_OPTIONS:
-			DEBUG_LOG(("Closing overlay GSOVERLAY_OPTIONS"));
-			if( overlayLayouts[overlay] )
-			{
-				SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_CLOSED);
-			}
-			break;
+	case GSOVERLAY_PLAYERINFO:
+		DEBUG_LOG(("Closing overlay GSOVERLAY_PLAYERINFO"));
+		break;
+	case GSOVERLAY_MAPSELECT:
+		DEBUG_LOG(("Closing overlay GSOVERLAY_MAPSELECT"));
+		break;
+	case GSOVERLAY_BUDDY:
+		DEBUG_LOG(("Closing overlay GSOVERLAY_BUDDY"));
+		break;
+	case GSOVERLAY_PAGE:
+		DEBUG_LOG(("Closing overlay GSOVERLAY_PAGE"));
+		break;
+	case GSOVERLAY_GAMEOPTIONS:
+		DEBUG_LOG(("Closing overlay GSOVERLAY_GAMEOPTIONS"));
+		break;
+	case GSOVERLAY_GAMEPASSWORD:
+		DEBUG_LOG(("Closing overlay GSOVERLAY_GAMEPASSWORD"));
+		break;
+	case GSOVERLAY_LADDERSELECT:
+		DEBUG_LOG(("Closing overlay GSOVERLAY_LADDERSELECT"));
+		break;
+	case GSOVERLAY_OPTIONS:
+		DEBUG_LOG(("Closing overlay GSOVERLAY_OPTIONS"));
+		if (overlayLayouts[overlay])
+		{
+			SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_CLOSED);
+		}
+		break;
 	}
-	if( overlayLayouts[overlay] )
+	if (overlayLayouts[overlay])
 	{
 		overlayLayouts[overlay]->runShutdown();
 		overlayLayouts[overlay]->destroyWindows();
@@ -272,12 +272,12 @@ void GameSpyCloseOverlay( GSOverlayType overlay )
 	}
 }
 
-Bool GameSpyIsOverlayOpen( GSOverlayType overlay )
+Bool GameSpyIsOverlayOpen(GSOverlayType overlay)
 {
 	return (overlayLayouts[overlay] != NULL);
 }
 
-void GameSpyToggleOverlay( GSOverlayType overlay )
+void GameSpyToggleOverlay(GSOverlayType overlay)
 {
 	if (GameSpyIsOverlayOpen(overlay))
 		GameSpyCloseOverlay(overlay);
@@ -285,9 +285,9 @@ void GameSpyToggleOverlay( GSOverlayType overlay )
 		GameSpyOpenOverlay(overlay);
 }
 
-void raiseOverlays( void )
+void raiseOverlays(void)
 {
-	for (int i=0; i<GSOVERLAY_MAX; ++i)
+	for (int i = 0; i < GSOVERLAY_MAX; ++i)
 	{
 		if (overlayLayouts[(GSOverlayType)i])
 		{
@@ -296,9 +296,9 @@ void raiseOverlays( void )
 	}
 }
 
-void GameSpyCloseAllOverlays( void )
+void GameSpyCloseAllOverlays(void)
 {
-	for (int i=0; i<GSOVERLAY_MAX; ++i)
+	for (int i = 0; i < GSOVERLAY_MAX; ++i)
 	{
 		GameSpyCloseOverlay((GSOverlayType)i);
 	}
@@ -307,9 +307,9 @@ void GameSpyCloseAllOverlays( void )
 	deleteNotificationBox();
 }
 
-void GameSpyUpdateOverlays( void )
+void GameSpyUpdateOverlays(void)
 {
-	for (int i=0; i<GSOVERLAY_MAX; ++i)
+	for (int i = 0; i < GSOVERLAY_MAX; ++i)
 	{
 		if (overlayLayouts[(GSOverlayType)i])
 		{
@@ -318,13 +318,13 @@ void GameSpyUpdateOverlays( void )
 	}
 }
 
-void ReOpenPlayerInfo( void )
+void ReOpenPlayerInfo(void)
 {
 	reOpenPlayerInfoFlag = TRUE;
 }
-void CheckReOpenPlayerInfo(void )
+void CheckReOpenPlayerInfo(void)
 {
-	if(!reOpenPlayerInfoFlag)
+	if (!reOpenPlayerInfoFlag)
 		return;
 
 	GameSpyOpenOverlay(GSOVERLAY_PLAYERINFO);

@@ -241,7 +241,7 @@ void SegmentedLineClass::Set_Width(float width)
 {
 	// Widths need to be clamped because they are not automatically clamped later (like colors and
 	// alphas are).
-	LineRenderer.Set_Width(MAX(width, 0.0f));
+	LineRenderer.Set_Width(std::max(width, 0.0f));
 
 	Invalidate_Cached_Bounding_Volumes();
 }
@@ -270,7 +270,7 @@ void SegmentedLineClass::Set_Merge_Abort_Factor(float factor)
 
 void SegmentedLineClass::Set_Subdivision_Levels(unsigned int levels)
 {
-	MaxSubdivisionLevels = MIN(levels, MAX_SEGLINE_SUBDIV_LEVELS);
+	MaxSubdivisionLevels = std::min(static_cast<int>(levels), MAX_SEGLINE_SUBDIV_LEVELS);
 
 	Invalidate_Cached_Bounding_Volumes();
 }
@@ -434,7 +434,7 @@ void SegmentedLineClass::Prepare_LOD(CameraClass &camera)
 
 	// Ensure subdivision level is legal
 	unsigned int lvl = LineRenderer.Get_Current_Subdivision_Level();
-	lvl = MIN(lvl, MaxSubdivisionLevels);
+	lvl = std::min(lvl, MaxSubdivisionLevels);
 	LineRenderer.Set_Current_Subdivision_Level(lvl);
 
 	// Prepare LOD processing if the line has subdivision enabled:
@@ -451,7 +451,7 @@ void SegmentedLineClass::Increment_LOD(void)
 {
 	unsigned int lvl = LineRenderer.Get_Current_Subdivision_Level();
 
-	lvl = MIN(lvl+1,MaxSubdivisionLevels);
+	lvl = std::min(lvl+1,MaxSubdivisionLevels);
 
 	LineRenderer.Set_Current_Subdivision_Level(lvl);
 }
@@ -496,8 +496,8 @@ float SegmentedLineClass::Get_Post_Increment_Value(void) const
 
 void SegmentedLineClass::Set_LOD_Level(int lod)
 {
-	lod = MAX(0, lod);
-	lod = MIN(lod, (int)MaxSubdivisionLevels);
+	lod = std::max(0, lod);
+	lod = std::min(lod, (int)MaxSubdivisionLevels);
 
 	LineRenderer.Set_Current_Subdivision_Level((unsigned int)lod);
 }

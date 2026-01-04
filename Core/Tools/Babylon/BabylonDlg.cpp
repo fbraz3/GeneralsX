@@ -39,6 +39,7 @@
 #include "expimp.h"
 #include "ProceedDlg.h"
 #include "transcs.h"
+#include <Utility/compat.h>
 
 #ifdef RTS_DEBUG
 #define new DEBUG_NEW
@@ -46,50 +47,50 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static char buffer[100*1024];
-static char buffer2[100*1024];
-static char buffer3[100*1024];
+static char buffer[100 * 1024];
+static char buffer2[100 * 1024];
+static char buffer3[100 * 1024];
 static const int INCREMENTS = 100;
-static const int MAX_INFO_LEN = 2*1024;
+static const int MAX_INFO_LEN = 2 * 1024;
 static int found_error;
 static int cb_count;
-static CBabylonDlg	*mainDlg;
+static CBabylonDlg* mainDlg;
 
-static void print_to_log ( const char *text )
+static void print_to_log(const char* text)
 {
-	if ( !found_error )
+	if (!found_error)
 	{
-		mainDlg->Log ("FAILED", SAME_LINE );
+		mainDlg->Log("FAILED", SAME_LINE);
 		found_error = TRUE;
 	}
 
-	sprintf ( buffer, "String %s", text);
-	mainDlg->Log ( buffer );
+	sprintf(buffer, "String %s", text);
+	mainDlg->Log(buffer);
 
 
 }
 
-static void print_to_log_and_update_progress ( const char *text )
+static void print_to_log_and_update_progress(const char* text)
 {
-	print_to_log ( text );
+	print_to_log(text);
 	cb_count++;
-	mainDlg->SetProgress ( cb_count );
+	mainDlg->SetProgress(cb_count);
 }
 
-static void cb_progress ( void )
+static void cb_progress(void)
 {
 	cb_count++;
-	mainDlg->SetProgress ( cb_count );
+	mainDlg->SetProgress(cb_count);
 
 }
 
 typedef struct
 {
-	char comment[MAX_INFO_LEN+1];
-	char context[MAX_INFO_LEN+1];
-	char speaker[MAX_INFO_LEN+1];
-	char listener[MAX_INFO_LEN+1];
-	char wave[MAX_INFO_LEN+1];
+	char comment[MAX_INFO_LEN + 1];
+	char context[MAX_INFO_LEN + 1];
+	char speaker[MAX_INFO_LEN + 1];
+	char listener[MAX_INFO_LEN + 1];
+	char wave[MAX_INFO_LEN + 1];
 	int maxlen;
 
 } INFO;
@@ -97,7 +98,7 @@ typedef struct
 static INFO global_info;
 static INFO local_info;
 
-static void init_info ( INFO *info )
+static void init_info(INFO* info)
 {
 	info->comment[0] = 0;
 	info->context[0] = 0;
@@ -109,33 +110,33 @@ static void init_info ( INFO *info )
 
 static int progress_count;
 
-static void progress_cb ( void )
+static void progress_cb(void)
 {
 	progress_count++;
-	if ( MainDLG )
+	if (MainDLG)
 	{
-		MainDLG->SetProgress ( progress_count );
+		MainDLG->SetProgress(progress_count);
 	}
 }
 
 
-static void removeLeadingAndTrailing ( char *buffer )
+static void removeLeadingAndTrailing(char* buffer)
 {
-	char *first, *ptr;
+	char* first, * ptr;
 	char ch;
 
 	ptr = first = buffer;
 
-	while ( (ch = *first) && iswspace ( ch ))
+	while ((ch = *first) && iswspace(ch))
 	{
-			first++;
+		first++;
 	}
 
-	while ( *ptr++ = *first++ );
+	while (*ptr++ = *first++);
 
 	ptr -= 2;
 
-	while ( (ptr > buffer) && (ch = *ptr) && iswspace ( ch ) )
+	while ((ptr > buffer) && (ch = *ptr) && iswspace(ch))
 	{
 		ptr--;
 	}
@@ -152,14 +153,14 @@ class CAboutDlg : public CDialog
 public:
 	CAboutDlg();
 
-// Dialog Data
-	//{{AFX_DATA(CAboutDlg)
+	// Dialog Data
+		//{{AFX_DATA(CAboutDlg)
 	enum { IDD = IDD_ABOUTBOX };
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAboutDlg)
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
@@ -283,56 +284,56 @@ BOOL CBabylonDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-		progress = (CProgressCtrl *) GetDlgItem ( IDC_PROGRESS1 );
-		percent = (CStatic *) GetDlgItem ( IDC_PERCENT );
-		SetWindowText ( AppTitle );
-		Log ( AppTitle );
+	progress = (CProgressCtrl*)GetDlgItem(IDC_PROGRESS1);
+	percent = (CStatic*)GetDlgItem(IDC_PERCENT);
+	SetWindowText(AppTitle);
+	Log(AppTitle);
 	{
 		char buffer[100];
 		char date[50];
 		char time[50];
-		_strtime ( time );
-		_strdate ( date );
-		sprintf ( buffer, "Session Date: %s %s\n", date, time);
-		Log ( buffer );
+		_strtime(time);
+		_strdate(date);
+		sprintf(buffer, "Session Date: %s %s\n", date, time);
+		Log(buffer);
 	}
 
-	Status ("Initializing dialog");
+	Status("Initializing dialog");
 	operate_always = FALSE;
-	combo = ( CComboBox *)GetDlgItem ( IDC_COMBOLANG );
+	combo = (CComboBox*)GetDlgItem(IDC_COMBOLANG);
 
 	int index = 0;
 	int lang_index = 0;
-	LANGINFO *info;
-	while ( (info = GetLangInfo ( lang_index )) )
+	LANGINFO* info;
+	while ((info = GetLangInfo(lang_index)))
 	{
-		combo->InsertString ( index, info->name );
-		combo->SetItemDataPtr ( index, info );
+		combo->InsertString(index, info->name);
+		combo->SetItemDataPtr(index, info);
 		index++;
 		lang_index++;
 	}
 	max_index = index;
-	combo->SetCurSel ( 0 );
+	combo->SetCurSel(0);
 
 	// do any initialization
 #if 0
 	// initialize audio
-	if ( !AIL_quick_startup ( TRUE, FALSE, 22050, 16, 2 ) )
+	if (!AIL_quick_startup(TRUE, FALSE, 22050, 16, 2))
 	{
-		sprintf ( buffer, "Falied to init audio.\n\nReason:%s\n", AIL_last_error ());
-		AfxMessageBox ( buffer );
+		sprintf(buffer, "Falied to init audio.\n\nReason:%s\n", AIL_last_error());
+		AfxMessageBox(buffer);
 
 	}
 	else
 	{
-		onexit ( (_onexit_t ) AIL_quick_shutdown );
+		onexit((_onexit_t)AIL_quick_shutdown);
 	}
 #endif
 
 
 	Ready();
 
-	PostMessage ( WM_COMMAND, MAKEWPARAM ( IDC_RELOAD, BN_CLICKED ));
+	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_RELOAD, BN_CLICKED));
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -360,7 +361,7 @@ void CBabylonDlg::OnPaint()
 	{
 		CPaintDC dc(this); // device context for painting
 
-		SendMessage(WM_ICONERASEBKGND, (WPARAM) dc.GetSafeHdc(), 0);
+		SendMessage(WM_ICONERASEBKGND, (WPARAM)dc.GetSafeHdc(), 0);
 
 		// Center icon in client rectangle
 		int cxIcon = GetSystemMetrics(SM_CXICON);
@@ -383,7 +384,7 @@ void CBabylonDlg::OnPaint()
 //  the minimized window.
 HCURSOR CBabylonDlg::OnQueryDragIcon()
 {
-	return (HCURSOR) m_hIcon;
+	return (HCURSOR)m_hIcon;
 }
 
 // Automation servers should not exit when a user closes the UI
@@ -396,15 +397,15 @@ void CBabylonDlg::OnClose()
 {
 	if (CanExit())
 	{
-		if ( !CanProceed ())
+		if (!CanProceed())
 		{
-			return ;
+			return;
 		}
 
 		CDialog::OnOK();
-		if ( !SaveLog () )
+		if (!SaveLog())
 		{
-			AfxMessageBox ("Failed to save log!\n\nMake sure babylon.log is writable");
+			AfxMessageBox("Failed to save log!\n\nMake sure babylon.log is writable");
 		}
 	}
 
@@ -470,13 +471,13 @@ BOOL CBabylonDlg::CanExit()
 
 void CBabylonDlg::OnExport()
 {
-	if ( CanOperate ())
+	if (CanOperate())
 	{
 		CExportDlg dlg;
 
-		if ( dlg.DoModal () == IDOK )
+		if (dlg.DoModal() == IDOK)
 		{
-			ExportTranslations ( MainDB, dlg.Filename (), dlg.Language(), dlg.Options(), this );
+			ExportTranslations(MainDB, dlg.Filename(), dlg.Language(), dlg.Options(), this);
 		}
 	}
 }
@@ -489,12 +490,12 @@ BOOL CAboutDlg::OnInitDialog()
 
 	char string[200];
 
-	sprintf ( string, "Built: %s, %s", __DATE__, __TIME__ );
-	SetDlgItemText ( IDC_BUILD, string );
+	sprintf(string, "Built: %s, %s", __DATE__, __TIME__);
+	SetDlgItemText(IDC_BUILD, string);
 
 
 	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CBabylonDlg::OnDropFiles(HDROP hDropInfo)
@@ -587,16 +588,16 @@ static int done_copy;
 static int start_copy;
 static LogFormat cpy_format;
 
-static DWORD CALLBACK streamin_cb (  DWORD dwCookie, LPBYTE pbBuff, LONG bytes,  LONG *transfered )
+static DWORD CALLBACK streamin_cb(DWORD dwCookie, LPBYTE pbBuff, LONG bytes, LONG* transfered)
 {
-	char *src = (char *) dwCookie;
+	char* src = (char*)dwCookie;
 	int count = 0;
 
 	src += bytes_copied;
 
-	if ( bytes && start_copy )
+	if (bytes && start_copy)
 	{
-		if ( cpy_format == NEW_LINE )
+		if (cpy_format == NEW_LINE)
 		{
 			*pbBuff++ = '\n';
 			count++;
@@ -606,9 +607,9 @@ static DWORD CALLBACK streamin_cb (  DWORD dwCookie, LPBYTE pbBuff, LONG bytes, 
 	}
 
 
-	while ( bytes-- )
+	while (bytes--)
 	{
-		if ( !*src )
+		if (!*src)
 		{
 			done_copy = TRUE;
 			break;
@@ -621,32 +622,32 @@ static DWORD CALLBACK streamin_cb (  DWORD dwCookie, LPBYTE pbBuff, LONG bytes, 
 	return 0;
 }
 
-static DWORD CALLBACK streamout_cb (  DWORD dwCookie, LPBYTE pbBuff, LONG bytes,  LONG *transfered )
+static DWORD CALLBACK streamout_cb(DWORD dwCookie, LPBYTE pbBuff, LONG bytes, LONG* transfered)
 {
-	FILE *log = (FILE *) dwCookie;
+	FILE* log = (FILE*)dwCookie;
 	int count = 0;
 
-	*transfered = fwrite ( pbBuff, 1, bytes, log );
+	*transfered = fwrite(pbBuff, 1, bytes, log);
 	return *transfered == -1;
 }
 
-void CBabylonDlg::Log( const char *string, LogFormat format)
+void CBabylonDlg::Log(const char* string, LogFormat format)
 {
-	CRichEditCtrl *rec;
+	CRichEditCtrl* rec;
 	EDITSTREAM es;
 	int lines;
 	int end_pos;
 
-	rec = (CRichEditCtrl*)GetDlgItem ( IDC_LOG );
+	rec = (CRichEditCtrl*)GetDlgItem(IDC_LOG);
 
-	lines = rec->GetLineCount ( );
-	end_pos = rec->LineIndex ( lines );
+	lines = rec->GetLineCount();
+	end_pos = rec->LineIndex(lines);
 
-	rec->SetSel ( end_pos, end_pos );
+	rec->SetSel(end_pos, end_pos);
 
 
 	//rec->SetReadOnly ( FALSE );
-	es.dwCookie = (DWORD) string;
+	es.dwCookie = (DWORD)string;
 	es.dwError = 0;
 	es.pfnCallback = streamin_cb;
 	bytes_copied = 0;
@@ -654,76 +655,76 @@ void CBabylonDlg::Log( const char *string, LogFormat format)
 	start_copy = TRUE;
 	cpy_format = format;
 
-	rec->StreamIn ( SF_TEXT | SFF_SELECTION, es );
+	rec->StreamIn(SF_TEXT | SFF_SELECTION, es);
 	//rec->SetReadOnly ( TRUE );
-	lines = rec->GetLineCount ( );
-	rec->LineScroll ( -lines, 0 );
-	rec->LineScroll ( lines - 10, 0 );
+	lines = rec->GetLineCount();
+	rec->LineScroll(-lines, 0);
+	rec->LineScroll(lines - 10, 0);
 }
 
 
-void CBabylonDlg::Status( const char *string, int log )
+void CBabylonDlg::Status(const char* string, int log)
 {
 	char buffer[200];
 	int max_len;
 
-	if ( log )
+	if (log)
 	{
-		Log ( string );
+		Log(string);
 	}
 
-	max_len = sizeof ( buffer ) -1;
+	max_len = sizeof(buffer) - 1;
 
-	strcpy ( buffer, "Status: ");
-	max_len -= strlen ( buffer );
-	strncat ( buffer, string, max_len );
+	strcpy(buffer, "Status: ");
+	max_len -= strlen(buffer);
+	strncat(buffer, string, max_len);
 
-	SetDlgItemText ( IDC_STATUS, buffer );
+	SetDlgItemText(IDC_STATUS, buffer);
 
 }
 
 int CBabylonDlg::SaveLog()
 {
-	FILE *log = NULL;
+	FILE* log = NULL;
 	EDITSTREAM es;
- 	CRichEditCtrl *rec = (CRichEditCtrl *) GetDlgItem ( IDC_LOG );
+	CRichEditCtrl* rec = (CRichEditCtrl*)GetDlgItem(IDC_LOG);
 	int ok = FALSE;
 
 
-	if ( ! (log = fopen ("babylon.log", "a+t" )))
+	if (!(log = fopen("babylon.log", "a+t")))
 	{
 		goto error;
 	}
 
 	{
-		const char *buffer = "\nLOG START ******************\n\n";
-		fwrite ( buffer, 1, strlen ( buffer ), log );
+		const char* buffer = "\nLOG START ******************\n\n";
+		fwrite(buffer, 1, strlen(buffer), log);
 	}
 
-	es.dwCookie = (DWORD) log;
+	es.dwCookie = (DWORD)log;
 	es.dwError = 0;
 	es.pfnCallback = streamout_cb;
 	bytes_copied = 0;
 	done_copy = FALSE;
 
-	rec->StreamOut ( SF_TEXT, es );
-	if ( es.dwError )
+	rec->StreamOut(SF_TEXT, es);
+	if (es.dwError)
 	{
 		goto error;
 	}
 
 	{
-		const char *buffer = "\nQuiting Babylon\n\nLOG END ******************\n\n";
-		fwrite ( buffer, 1, strlen ( buffer ), log );
+		const char* buffer = "\nQuiting Babylon\n\nLOG END ******************\n\n";
+		fwrite(buffer, 1, strlen(buffer), log);
 	}
 
 	ok = TRUE;
 
 error:
 
-	if ( log )
+	if (log)
 	{
-		fclose ( log );
+		fclose(log);
 	}
 
 
@@ -737,12 +738,12 @@ void CBabylonDlg::OnViewdbs()
 
 	ViewChanges = FALSE;
 
-	dlg.DoModal ();
+	dlg.DoModal();
 
 
 }
 
-static int readToEndOfQuote( FILE *file, char *in, char *out, char *wavefile, int maxBufLen, int in_comment  )
+static int readToEndOfQuote(FILE* file, char* in, char* out, char* wavefile, int maxBufLen, int in_comment)
 {
 	int slash = FALSE;
 	int state = 0;
@@ -751,33 +752,33 @@ static int readToEndOfQuote( FILE *file, char *in, char *out, char *wavefile, in
 	int new_lines = 0;
 	int ccount = 0;
 
-	while ( maxBufLen )
+	while (maxBufLen)
 	{
 		// get next char
 
-		if ( in )
+		if (in)
 		{
-			if ( !(ch = *in++))
+			if (!(ch = *in++))
 			{
 				in = NULL; // have exhausted the input buffer
-				ch = getc ( file );
+				ch = getc(file);
 			}
 		}
 		else
 		{
-			ch = getc ( file );
+			ch = getc(file);
 		}
 
-		if ( ch == EOF )
+		if (ch == EOF)
 		{
-			AfxMessageBox ( "Missing terminating quote");
+			AfxMessageBox("Missing terminating quote");
 			return new_lines;
 		}
 
-		if ( ch == '\n' )
+		if (ch == '\n')
 		{
 			line_start = TRUE;
-			if ( !in )
+			if (!in)
 			{
 				new_lines++;
 			}
@@ -785,19 +786,19 @@ static int readToEndOfQuote( FILE *file, char *in, char *out, char *wavefile, in
 			ccount = 0;
 			ch = ' ';
 		}
-		else if ( line_start && ( ch == '/' || iswspace ( ch )) )
+		else if (line_start && (ch == GET_PATH_SEPARATOR() || iswspace(ch)))
 		{
 			continue;
 		}
-		else if ( ch == '\\' && !slash)
+		else if (ch == GET_PATH_SEPARATOR() && !slash)
 		{
 			slash = TRUE;
 		}
-		else if ( ch == '\\' && slash)
+		else if (ch == GET_PATH_SEPARATOR() && slash)
 		{
 			slash = FALSE;
 		}
-		else if ( ch == '"' && !slash )
+		else if (ch == '"' && !slash)
 		{
 			break; // done
 		}
@@ -806,7 +807,7 @@ static int readToEndOfQuote( FILE *file, char *in, char *out, char *wavefile, in
 			slash = FALSE;
 		}
 
-		if ( iswspace ( ch ))
+		if (iswspace(ch))
 		{
 			ch = ' ';
 		}
@@ -821,68 +822,68 @@ static int readToEndOfQuote( FILE *file, char *in, char *out, char *wavefile, in
 
 	*out = 0;
 
-	if ( !wavefile )
+	if (!wavefile)
 	{
 		return new_lines;
 	}
 
 	int len = 0;
-	while ( TRUE )
+	while (TRUE)
 	{
 		// get next char
 
-		if ( in )
+		if (in)
 		{
-			if ( !(ch = *in++))
+			if (!(ch = *in++))
 			{
 				in = NULL; // have exhausted the input buffer
-				ch = getc ( file );
+				ch = getc(file);
 			}
 		}
 		else
 		{
-			ch = getc ( file );
+			ch = getc(file);
 		}
 
-		if ( ch == '\n' || ch == EOF )
+		if (ch == '\n' || ch == EOF)
 		{
-			if ( !in )
+			if (!in)
 			{
 				new_lines++;
 			}
 			break;
 		}
 
-		switch ( state )
+		switch (state)
 		{
 
-			case 0:
-				if ( iswspace ( ch ) || ch == '=' )
-				{
-					break;
-				}
-
-				state = 1;
-			case 1:
-				if ( (( ch >= 'a' && ch <= 'z') || ( ch >= 'A' && ch <='Z') || (ch >= '0' && ch <= '9') || ch == '_') )
-				{
-					*wavefile++ = ch;
-					len++;
-					break;
-				}
-				state = 2;
-			case 2:
+		case 0:
+			if (iswspace(ch) || ch == '=')
+			{
 				break;
+			}
+
+			state = 1;
+		case 1:
+			if (((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_'))
+			{
+				*wavefile++ = ch;
+				len++;
+				break;
+			}
+			state = 2;
+		case 2:
+			break;
 		}
 	}
 
 	*wavefile = 0;
-	if ( len )
+	if (len)
 	{
-		if ( ( ch = *(wavefile-1)) < '0' || ch > '9' )
+		if ((ch = *(wavefile - 1)) < '0' || ch > '9')
 		{
 			// remove last character
-			*(wavefile-1) = 0;
+			*(wavefile - 1) = 0;
 		}
 
 	}
@@ -898,16 +899,16 @@ enum
 	ARG
 };
 
-static int getString ( FILE *file, char *in, char *out )
+static int getString(FILE* file, char* in, char* out)
 {
 	int bytes = MAX_INFO_LEN;
 	int new_lines = 0;
 	char ch;
-	char *ptr = out;
+	char* ptr = out;
 
 	{
 
-		while ( (ch = *in++) && ch != '\n' && bytes )
+		while ((ch = *in++) && ch != '\n' && bytes)
 		{
 			*ptr++ = ch;
 			bytes--;
@@ -916,49 +917,49 @@ static int getString ( FILE *file, char *in, char *out )
 
 	*ptr = 0;
 
-	ConvertMetaChars ( out );
-	StripSpaces ( out );
+	ConvertMetaChars(out);
+	StripSpaces(out);
 	return new_lines;
 }
 
-static char *getToken ( char *buffer, char *token, int bytes )
+static char* getToken(char* buffer, char* token, int bytes)
 {
 	char ch;
 	int state = START;
 	*token = 0;
 
-	while ( (ch = *buffer) && ch != '\n' && bytes )
+	while ((ch = *buffer) && ch != '\n' && bytes)
 	{
-		switch ( state )
+		switch (state)
 		{
-			case START:
-				if ( ch == '/' || iswspace ( ch ))
-				{
-					break;
-				}
-				state = TOKEN;
-			case TOKEN:
-				if ( !iswspace ( ch ) && ch !=':' )
-				{
-					*token++ = ch;
-					bytes--;
-					break;
-				}
-				*token = 0;
-				state = COLON;
-			case COLON:
-				if ( ch != ':' )
-				{
-					break;
-				}
-				state = ARG;
+		case START:
+			if (ch == GET_PATH_SEPARATOR() || iswspace(ch))
+			{
 				break;
-			case ARG:
-				if ( iswspace ( ch  ) )
-				{
-					break;
-				}
-				return buffer;
+			}
+			state = TOKEN;
+		case TOKEN:
+			if (!iswspace(ch) && ch != ':')
+			{
+				*token++ = ch;
+				bytes--;
+				break;
+			}
+			*token = 0;
+			state = COLON;
+		case COLON:
+			if (ch != ':')
+			{
+				break;
+			}
+			state = ARG;
+			break;
+		case ARG:
+			if (iswspace(ch))
+			{
+				break;
+			}
+			return buffer;
 		}
 		buffer++;
 	}
@@ -968,165 +969,165 @@ static char *getToken ( char *buffer, char *token, int bytes )
 
 }
 
-static int parseComment ( FILE *file, char *buffer, INFO *info )
+static int parseComment(FILE* file, char* buffer, INFO* info)
 {
 	char token[256];
 	int new_lines = 0;
 
-	buffer = getToken ( buffer, token, sizeof (token) -1 );
+	buffer = getToken(buffer, token, sizeof(token) - 1);
 
-	if ( !token )
+	if (!token)
 	{
 		return new_lines;
 	}
 
-	if ( !stricmp ( token, "COMMENT" ) )
+	if (!stricmp(token, "COMMENT"))
 	{
-		new_lines += getString ( file, buffer, info->comment );
+		new_lines += getString(file, buffer, info->comment);
 	}
-	else if ( !stricmp ( token, "CONTEXT" ) )
+	else if (!stricmp(token, "CONTEXT"))
 	{
-		new_lines += getString ( file, buffer, info->context );
+		new_lines += getString(file, buffer, info->context);
 	}
-	else if ( !stricmp ( token, "SPEAKER" ) )
+	else if (!stricmp(token, "SPEAKER"))
 	{
-		new_lines += getString ( file, buffer, info->speaker );
+		new_lines += getString(file, buffer, info->speaker);
 	}
-	else if ( !stricmp ( token, "LISTENER" ) )
+	else if (!stricmp(token, "LISTENER"))
 	{
-		new_lines += getString ( file, buffer, info->listener );
+		new_lines += getString(file, buffer, info->listener);
 	}
-	else if ( !stricmp ( token, "MAXLEN" ) )
+	else if (!stricmp(token, "MAXLEN"))
 	{
-		info->maxlen = atoi ( buffer );
+		info->maxlen = atoi(buffer);
 	}
-	else if ( !stricmp ( token, "WAVE" ) )
+	else if (!stricmp(token, "WAVE"))
 	{
-		new_lines += getString ( file, buffer, info->wave );
+		new_lines += getString(file, buffer, info->wave);
 	}
 
 
 	return new_lines;
 }
 
-static int getLabelCount( char *filename )
+static int getLabelCount(char* filename)
 {
 	int count = 0;
-	FILE *fp;
+	FILE* fp;
 
-	if ( ! ( fp = fopen ( filename, "rt" )))
+	if (!(fp = fopen(filename, "rt")))
 	{
 		return 0;
 	}
 
-	while(TRUE)
+	while (TRUE)
 	{
-		if( fscanf( fp, "%s", buffer ) == EOF )
+		if (fscanf(fp, "%s", buffer) == EOF)
 			break;
 
-		if ( !stricmp( buffer, "END" ) )
+		if (!stricmp(buffer, "END"))
 		{
 			count++;
 		}
 	}
 
-	fclose ( fp );
+	fclose(fp);
 
 	return count;
 }
 
-int CBabylonDlg::LoadStrFile ( TransDB *db, const char *filename, void (*cb) ( void ) )
+int CBabylonDlg::LoadStrFile(TransDB* db, const char* filename, void (*cb) (void))
 {
-	FILE *file = NULL;
-	BabylonLabel *label = NULL;
+	FILE* file = NULL;
+	BabylonLabel* label = NULL;
 	int status = FALSE;
 	int line_number = 0;
 	int label_count = 0;
 	int	text_dup_count = 0;
 	int label_dup_count = 0;
 
-	init_info ( &global_info );
+	init_info(&global_info);
 
-	if ( !(file = fopen ( filename, "rt" ) ))
+	if (!(file = fopen(filename, "rt")))
 	{
 		goto exit;
 	}
 
-	while ( fgets ( buffer, sizeof(buffer)-1, file ) )
+	while (fgets(buffer, sizeof(buffer) - 1, file))
 	{
 
 		line_number++;
-		removeLeadingAndTrailing ( buffer );
+		removeLeadingAndTrailing(buffer);
 
-		if ( !buffer[0] || (buffer[0] == '/' && buffer[1] == '/') )
+		if (!buffer[0] || (buffer[0] == GET_PATH_SEPARATOR() && buffer[1] == GET_PATH_SEPARATOR()))
 		{
-			line_number += parseComment ( file, buffer, &global_info );
+			line_number += parseComment(file, buffer, &global_info);
 			continue;
 		}
 
-		label = new BabylonLabel ( );
-		label->SetName ( buffer );
-		label->LockName ();
-		label->SetLineNumber ( line_number );
-		db->AddLabel ( label );
+		label = new BabylonLabel();
+		label->SetName(buffer);
+		label->LockName();
+		label->SetLineNumber(line_number);
+		db->AddLabel(label);
 
 		local_info = global_info;
 		local_info.wave[0] = 0; // wave file name is only locally set
-		while( TRUE )
+		while (TRUE)
 		{
-			if ( !fgets ( buffer, sizeof(buffer)-1, file ))
+			if (!fgets(buffer, sizeof(buffer) - 1, file))
 			{
-				AfxMessageBox ( "Unexpected end of file" );
+				AfxMessageBox("Unexpected end of file");
 				goto exit;
 			}
 
 			line_number++;
-			removeLeadingAndTrailing ( buffer );
+			removeLeadingAndTrailing(buffer);
 
-			if ( !stricmp ( buffer, "END" )	)
+			if (!stricmp(buffer, "END"))
 			{
 				break;
 			}
 
-			if ( !buffer[0] || (buffer[0] == '/' && buffer[1] == '/') )
+			if (!buffer[0] || (buffer[0] == GET_PATH_SEPARATOR() && buffer[1] == GET_PATH_SEPARATOR()))
 			{
-				line_number += parseComment ( file, buffer, &local_info );
+				line_number += parseComment(file, buffer, &local_info);
 				continue;
 			}
 
-			if ( buffer[0] == '"' )
+			if (buffer[0] == '"')
 			{
 				int line = line_number;
-				strcat ( buffer, "\n" );
-				line_number += readToEndOfQuote( file, &buffer[1], buffer2, buffer3, sizeof(buffer2)-1, FALSE );
-				BabylonText *text = new BabylonText ( );
-				text->Set ( buffer2 );
-				text->FormatMetaString ();
-				text->LockText ();
-				if ( buffer3[0] )
+				strcat(buffer, "\n");
+				line_number += readToEndOfQuote(file, &buffer[1], buffer2, buffer3, sizeof(buffer2) - 1, FALSE);
+				BabylonText* text = new BabylonText();
+				text->Set(buffer2);
+				text->FormatMetaString();
+				text->LockText();
+				if (buffer3[0])
 				{
-					text->SetWave ( buffer3 );
+					text->SetWave(buffer3);
 				}
 				else
 				{
-					text->SetWave ( local_info.wave );
+					text->SetWave(local_info.wave);
 				}
-				text->SetLineNumber ( line );
-				label->AddText ( text );
+				text->SetLineNumber(line);
+				label->AddText(text);
 
 
 			}
 		}
 
-		label->SetComment ( local_info.comment );
-		label->SetContext ( local_info.context );
-		label->SetSpeaker ( local_info.speaker );
-		label->SetListener ( local_info.listener );
-		label->SetMaxLen ( local_info.maxlen );
+		label->SetComment(local_info.comment);
+		label->SetContext(local_info.context);
+		label->SetSpeaker(local_info.speaker);
+		label->SetListener(local_info.listener);
+		label->SetMaxLen(local_info.maxlen);
 
-		if ( cb )
+		if (cb)
 		{
-			cb ();
+			cb();
 		}
 		label = NULL;
 
@@ -1136,44 +1137,44 @@ int CBabylonDlg::LoadStrFile ( TransDB *db, const char *filename, void (*cb) ( v
 
 exit:
 
-	db->ClearChanges ();
+	db->ClearChanges();
 
 	delete label;
 
-	if ( file )
+	if (file)
 	{
-		fclose ( file );
+		fclose(file);
 	}
 
 	return status;
 
 }
 
-int		CBabylonDlg::CanProceed ( void )
+int		CBabylonDlg::CanProceed(void)
 {
 
-	if ( MainDB->IsChanged ())
+	if (MainDB->IsChanged())
 	{
 
-retry:
-		int result = AfxMessageBox ( "Main database has changed!\n\n Do you wish to save it before proceeding?", MB_YESNOCANCEL );
+	retry:
+		int result = AfxMessageBox("Main database has changed!\n\n Do you wish to save it before proceeding?", MB_YESNOCANCEL);
 
-		if ( result == IDCANCEL )
+		if (result == IDCANCEL)
 		{
 			return FALSE;
 		}
-		else if ( result == IDYES )
+		else if (result == IDYES)
 		{
-			if ( !SaveMainDB () )
+			if (!SaveMainDB())
 			{
-				AfxMessageBox ("Save failed!\n\nCanceling operation");
+				AfxMessageBox("Save failed!\n\nCanceling operation");
 				return FALSE;
 			}
 		}
 		else
 		{
-			int result = AfxMessageBox ( "Are you sure you don't want to save?\n\nAll current changes will be lost", MB_YESNO );
-			if ( result == IDNO )
+			int result = AfxMessageBox("Are you sure you don't want to save?\n\nAll current changes will be lost", MB_YESNO);
+			if (result == IDNO)
 			{
 				goto retry;
 			}
@@ -1184,32 +1185,32 @@ retry:
 }
 
 
-int		CBabylonDlg::CanOperate ( void )
+int		CBabylonDlg::CanOperate(void)
 {
-	if ( operate_always )
+	if (operate_always)
 	{
 		return TRUE;
 	}
 
-	if ( BabylonstrDB->IsChanged() || BabylonstrDB->HasErrors () )
+	if (BabylonstrDB->IsChanged() || BabylonstrDB->HasErrors())
 	{
-		const char *string = "Unknown problem!\n\n\nProceed anyway?";
+		const char* string = "Unknown problem!\n\n\nProceed anyway?";
 
-		if ( BabylonstrDB->HasErrors ())
+		if (BabylonstrDB->HasErrors())
 		{
-				string = "Generals.str has errors! As a result the translation database is not up to date!\n\nRecommend you fix problems in Generals.str before proceeding.\n\n\n\nDo you wish to continue anyway?";
+			string = "Generals.str has errors! As a result the translation database is not up to date!\n\nRecommend you fix problems in Generals.str before proceeding.\n\n\n\nDo you wish to continue anyway?";
 		}
 
-		if ( BabylonstrDB->IsChanged ())
+		if (BabylonstrDB->IsChanged())
 		{
-				string = "The translation database is not up to date! Generals.str has changed since the last time the database was updated.\n\nRecommend you update the database before proceeding.\n\n\n\nDo you wish to continue anyway?";
+			string = "The translation database is not up to date! Generals.str has changed since the last time the database was updated.\n\nRecommend you update the database before proceeding.\n\n\n\nDo you wish to continue anyway?";
 		}
 
-		ProceedDlg dlg ( string );
+		ProceedDlg dlg(string);
 
-		int result = dlg.DoModal ();
+		int result = dlg.DoModal();
 
-		if ( result == IDALWAYS )
+		if (result == IDALWAYS)
 		{
 			operate_always = TRUE;
 		}
@@ -1231,251 +1232,251 @@ void CBabylonDlg::OnReload()
 	int db_error = FALSE;
 	int do_update = FALSE;
 	int errors;
-	CWnd *win;
+	CWnd* win;
 
 	// TODO: Add your control notification handler code here
 
-	if ( !CanProceed ())
+	if (!CanProceed())
 	{
 		return;
 	}
-	BabylonstrDB->Clear ();
-	BabylonstrDB->ClearChanges ();
-	MainDB->Clear ();
-	MainDB->ClearChanges ();
+	BabylonstrDB->Clear();
+	BabylonstrDB->ClearChanges();
+	MainDB->Clear();
+	MainDB->ClearChanges();
 
-	count += getLabelCount ( BabylonstrFilename );
-	count += GetLabelCountDB ( MainXLSFilename );
+	count += getLabelCount(BabylonstrFilename);
+	count += GetLabelCountDB(MainXLSFilename);
 	progress_count = 0;
 
-	win = GetDlgItem ( IDC_ERRORS );
-	win->EnableWindow ( FALSE );
-	win = GetDlgItem ( IDC_WARNINGS );
-	win->EnableWindow ( FALSE );
-	win = GetDlgItem ( IDC_UPDATE );
-	win->EnableWindow ( TRUE);
-	win = GetDlgItem ( IDC_SAVE );
-	win->EnableWindow ( TRUE);
-	win = GetDlgItem ( IDC_IMPORT );
-	win->EnableWindow ( TRUE);
-	win = GetDlgItem ( IDC_EXPORT );
-	win->EnableWindow ( TRUE);
+	win = GetDlgItem(IDC_ERRORS);
+	win->EnableWindow(FALSE);
+	win = GetDlgItem(IDC_WARNINGS);
+	win->EnableWindow(FALSE);
+	win = GetDlgItem(IDC_UPDATE);
+	win->EnableWindow(TRUE);
+	win = GetDlgItem(IDC_SAVE);
+	win->EnableWindow(TRUE);
+	win = GetDlgItem(IDC_IMPORT);
+	win->EnableWindow(TRUE);
+	win = GetDlgItem(IDC_EXPORT);
+	win->EnableWindow(TRUE);
 
-	InitProgress ( count );
-	Log ("" );
+	InitProgress(count);
+	Log("");
 
-	if ( FileExists ( BabylonstrFilename ))
+	if (FileExists(BabylonstrFilename))
 	{
-		if ( (errors = ValidateStrFile ( BabylonstrFilename )) )
+		if ((errors = ValidateStrFile(BabylonstrFilename)))
 		{
-			if ( errors == -1 )
+			if (errors == -1)
 			{
-				if ( AfxMessageBox ( "Unable to verify string file!\n\nMake sure \"strcheck.exe\" is in your path and \"strcheck.rst\" is writeable.\n\nDo you wish to continue loading? \n\nWarning: Any errors in the string file could cause inappropiate updates to the database.", MB_YESNO  ) == IDYES )
+				if (AfxMessageBox("Unable to verify string file!\n\nMake sure \"strcheck.exe\" is in your path and \"strcheck.rst\" is writeable.\n\nDo you wish to continue loading? \n\nWarning: Any errors in the string file could cause inappropiate updates to the database.", MB_YESNO) == IDYES)
 				{
 					errors = 0;
 				}
 			}
 			else
 			{
-				sprintf ( buffer, "\"%s\" has %d formating error%s!\n\nFile will not be loaded.", BabylonstrFilename, errors, errors == 1 ? "" : "s" );
-				AfxMessageBox ( buffer );
+				sprintf(buffer, "\"%s\" has %d formating error%s!\n\nFile will not be loaded.", BabylonstrFilename, errors, errors == 1 ? "" : "s");
+				AfxMessageBox(buffer);
 			}
 		}
-		if ( !errors )
+		if (!errors)
 		{
-			sprintf ( buffer, "Loading \"%s\"...", BabylonstrFilename );
-			Status ( buffer );
+			sprintf(buffer, "Loading \"%s\"...", BabylonstrFilename);
+			Status(buffer);
 
-			if ( !(str_loaded = LoadStrFile ( BabylonstrDB, BabylonstrFilename, progress_cb )) )
+			if (!(str_loaded = LoadStrFile(BabylonstrDB, BabylonstrFilename, progress_cb)))
 			{
-				Log ( "FAILED", SAME_LINE );
-				BabylonstrDB->Clear ();
-				BabylonstrDB->ClearChanges ();
+				Log("FAILED", SAME_LINE);
+				BabylonstrDB->Clear();
+				BabylonstrDB->ClearChanges();
 			}
 		}
 		else
 		{
-			sprintf ( buffer, "Loading \"%s\"...NOT LOADED", BabylonstrFilename );
-			Log ( buffer );
+			sprintf(buffer, "Loading \"%s\"...NOT LOADED", BabylonstrFilename);
+			Log(buffer);
 		}
 	}
 	else
 	{
-		sprintf ( buffer, "Loading \"%s\"...", BabylonstrFilename );
-		Status ( buffer );
-		Log ( "FILE NOT FOUND", SAME_LINE );
+		sprintf(buffer, "Loading \"%s\"...", BabylonstrFilename);
+		Status(buffer);
+		Log("FILE NOT FOUND", SAME_LINE);
 	}
 
-	if ( str_loaded )
+	if (str_loaded)
 	{
-		sprintf ( buffer, "Validating \"%s\"...", BabylonstrFilename );
-		Status ( buffer, FALSE );
+		sprintf(buffer, "Validating \"%s\"...", BabylonstrFilename);
+		Status(buffer, FALSE);
 
-		if ( (num_errors = BabylonstrDB->Errors ( )))
+		if ((num_errors = BabylonstrDB->Errors()))
 		{
-			sprintf ( buffer, "Generals.str has %d error(s):\n\nClick \"Errors\" for a detailed list.\n\nAll errors must be fixed before \"Update\" will be enabled.", num_errors );
-			AfxMessageBox ( buffer );
-			win = GetDlgItem ( IDC_UPDATE );
-			win->EnableWindow ( FALSE);
-			win = GetDlgItem ( IDC_ERRORS );
-			win->EnableWindow ( TRUE );
+			sprintf(buffer, "Generals.str has %d error(s):\n\nClick \"Errors\" for a detailed list.\n\nAll errors must be fixed before \"Update\" will be enabled.", num_errors);
+			AfxMessageBox(buffer);
+			win = GetDlgItem(IDC_UPDATE);
+			win->EnableWindow(FALSE);
+			win = GetDlgItem(IDC_ERRORS);
+			win->EnableWindow(TRUE);
 		}
 
-		if ( (num_warnings = BabylonstrDB->Warnings()))
+		if ((num_warnings = BabylonstrDB->Warnings()))
 		{
-			win = GetDlgItem ( IDC_WARNINGS );
-			win->EnableWindow ( TRUE );
+			win = GetDlgItem(IDC_WARNINGS);
+			win->EnableWindow(TRUE);
 		}
 
-		if ( !num_errors && !num_warnings )
+		if (!num_errors && !num_warnings)
 		{
-			Log ( "OK", SAME_LINE );
+			Log("OK", SAME_LINE);
 		}
 		else
 		{
-			sprintf ( buffer, "%d errors, %d warnings OK", num_errors, num_warnings );
-			Log ( buffer, SAME_LINE );
+			sprintf(buffer, "%d errors, %d warnings OK", num_errors, num_warnings);
+			Log(buffer, SAME_LINE);
 		}
 	}
 
-	sprintf ( buffer, "Loading \"%s\"...", MainXLSFilename );
-	Status ( buffer );
+	sprintf(buffer, "Loading \"%s\"...", MainXLSFilename);
+	Status(buffer);
 
-	if ( FileExists ( MainXLSFilename ))
+	if (FileExists(MainXLSFilename))
 	{
-		if ( !(db_loaded = LoadMainDB ( MainDB, MainXLSFilename, progress_cb )) )
+		if (!(db_loaded = LoadMainDB(MainDB, MainXLSFilename, progress_cb)))
 		{
-			Log ( "FAILED", SAME_LINE );
-			MainDB->Clear ();
-			MainDB->ClearChanges ();
+			Log("FAILED", SAME_LINE);
+			MainDB->Clear();
+			MainDB->ClearChanges();
 			db_error = TRUE;
-			win = GetDlgItem ( IDC_UPDATE );
-			win->EnableWindow ( FALSE);
-			win = GetDlgItem ( IDC_SAVE );
-			win->EnableWindow ( FALSE);
-			win = GetDlgItem ( IDC_EXPORT );
-			win->EnableWindow ( FALSE);
-			win = GetDlgItem ( IDC_IMPORT );
-			win->EnableWindow ( FALSE);
+			win = GetDlgItem(IDC_UPDATE);
+			win->EnableWindow(FALSE);
+			win = GetDlgItem(IDC_SAVE);
+			win->EnableWindow(FALSE);
+			win = GetDlgItem(IDC_EXPORT);
+			win->EnableWindow(FALSE);
+			win = GetDlgItem(IDC_IMPORT);
+			win->EnableWindow(FALSE);
 		}
 		else
 		{
-			if ( FileAttribs ( MainXLSFilename ) & FA_READONLY )
+			if (FileAttribs(MainXLSFilename) & FA_READONLY)
 			{
-				AfxMessageBox ( "Database file is readonly!\n\nNo updates will be allowed.\n\nCheckout the database file and reload.");
+				AfxMessageBox("Database file is readonly!\n\nNo updates will be allowed.\n\nCheckout the database file and reload.");
 				db_readonly = TRUE;
-				win = GetDlgItem ( IDC_UPDATE );
-				win->EnableWindow ( FALSE);
-				win = GetDlgItem ( IDC_SAVE );
-				win->EnableWindow ( FALSE);
-				win = GetDlgItem ( IDC_IMPORT );
-				win->EnableWindow ( FALSE);
-				Log ( "READONLY", SAME_LINE );
+				win = GetDlgItem(IDC_UPDATE);
+				win->EnableWindow(FALSE);
+				win = GetDlgItem(IDC_SAVE);
+				win->EnableWindow(FALSE);
+				win = GetDlgItem(IDC_IMPORT);
+				win->EnableWindow(FALSE);
+				Log("READONLY", SAME_LINE);
 			}
 			else
 			{
-				Log ( "OK", SAME_LINE );
+				Log("OK", SAME_LINE);
 			}
 		}
 	}
 	else
 	{
-		Log ( "FILE NOT FOUND", SAME_LINE );
+		Log("FILE NOT FOUND", SAME_LINE);
 	}
 
-	if ( str_loaded && !db_error && !num_errors )
+	if (str_loaded && !db_error && !num_errors)
 	{
-		if ( UpdateDB ( BabylonstrDB, MainDB, FALSE ) )
+		if (UpdateDB(BabylonstrDB, MainDB, FALSE))
 		{
-			BabylonstrDB->Changed ();
-			if ( db_loaded )
+			BabylonstrDB->Changed();
+			if (db_loaded)
 			{
-				if ( db_readonly )
+				if (db_readonly)
 				{
-					sprintf ( buffer, "\"%s\" has changed!\n\nHowever, as the database is READ ONLY you cannot update the changes.", BabylonstrFilename);
+					sprintf(buffer, "\"%s\" has changed!\n\nHowever, as the database is READ ONLY you cannot update the changes.", BabylonstrFilename);
 				}
 				else
 				{
-					sprintf ( buffer, "\"%s\" has changed!\n\nRecomended that you update the database with these new changes.\n\nDo you wish to update now?", BabylonstrFilename);
+					sprintf(buffer, "\"%s\" has changed!\n\nRecomended that you update the database with these new changes.\n\nDo you wish to update now?", BabylonstrFilename);
 				}
 			}
 			else
 			{
-				sprintf ( buffer, "New Database!\n\nRecomended that you update the new database.\n\nDo you wish to update now?", BabylonstrFilename);
+				sprintf(buffer, "New Database!\n\nRecomended that you update the new database.\n\nDo you wish to update now?", BabylonstrFilename);
 			}
 
-			if ( db_readonly )
+			if (db_readonly)
 			{
 				do_update = FALSE;
-				AfxMessageBox ( buffer );
+				AfxMessageBox(buffer);
 
 			}
 			else
 			{
-				do_update = (AfxMessageBox ( buffer, MB_YESNO ) == IDYES);
+				do_update = (AfxMessageBox(buffer, MB_YESNO) == IDYES);
 			}
 		}
 	}
-	ProgressComplete ();
-	Ready ();
+	ProgressComplete();
+	Ready();
 
-	if ( do_update )
+	if (do_update)
 	{
-		OnUpdate ();
+		OnUpdate();
 	}
 }
 
 void CBabylonDlg::InitProgress(int range)
 {
 
-	if ( (progress_range = range) <= 0 )
+	if ((progress_range = range) <= 0)
 	{
 		progress_range = 1;
 	}
 
-	progress->SetRange ( 0, INCREMENTS );
+	progress->SetRange(0, INCREMENTS);
 	progress_pos = -1;
-	progress->SetPos ( 0 );
+	progress->SetPos(0);
 }
 
 void CBabylonDlg::SetProgress(int pos)
 {
 	char string[20];
 
-	int new_pos = (pos * 100 ) / progress_range;
+	int new_pos = (pos * 100) / progress_range;
 
-	if ( new_pos > 100 )
+	if (new_pos > 100)
 	{
 		new_pos = 100;
 	}
-	else if ( new_pos < 0 )
+	else if (new_pos < 0)
 	{
 		new_pos = 0;
 	}
 
-	if ( new_pos == progress_pos )
+	if (new_pos == progress_pos)
 	{
 		return;
 	}
 
-	progress->SetPos ( new_pos );
+	progress->SetPos(new_pos);
 	progress_pos = new_pos;
-	sprintf ( string, "%d%% ", progress_pos );
-	percent->SetWindowText ( string );
+	sprintf(string, "%d%% ", progress_pos);
+	percent->SetWindowText(string);
 
 }
 
 void CBabylonDlg::ProgressComplete()
 {
-	progress->SetPos ( 100 );
-	percent->SetWindowText ( "100% ");
+	progress->SetPos(100);
+	percent->SetWindowText("100% ");
 }
 
 void CBabylonDlg::OnUpdate()
 {
 	// TODO: Add your control notification handler code here
 
-	UpdateDB ( BabylonstrDB, MainDB );
+	UpdateDB(BabylonstrDB, MainDB);
 
 }
 
@@ -1492,49 +1493,49 @@ void CBabylonDlg::OnUpdate()
 														 }
 
 
-int CBabylonDlg::UpdateLabel( BabylonLabel *source, BabylonLabel *destination, UPDATEINFO &info, int update, int skip )
+int CBabylonDlg::UpdateLabel(BabylonLabel* source, BabylonLabel* destination, UPDATEINFO& info, int update, int skip)
 {
-	BabylonText *stext, *dtext;
+	BabylonText* stext, * dtext;
 	ListSearch sh;
-	TransDB *destDB, *srcDB;
+	TransDB* destDB, * srcDB;
 	int label_modified = FALSE;
 
-	destination->ClearMatched ();
-	source->ClearMatched ();
+	destination->ClearMatched();
+	source->ClearMatched();
 	destDB = destination->DB();
-	srcDB = source->DB ();
+	srcDB = source->DB();
 
 	// first go through and match up as many strings as possible
 
-	stext = source->FirstText ( sh );
+	stext = source->FirstText(sh);
 
-	while ( stext )
+	while (stext)
 	{
 
-		dtext = destDB->FindText ( stext->Get ());
+		dtext = destDB->FindText(stext->Get());
 
 		// remember FindText() spans labels so keep looking till we find
 		// one that belongs to the label we are checking
-		while ( dtext && (dtext->Label () != destination) )
+		while (dtext && (dtext->Label() != destination))
 		{
-			dtext = destDB->FindNextText ();
+			dtext = destDB->FindNextText();
 		}
 
-		if ( dtext && dtext->Matched ())
+		if (dtext && dtext->Matched())
 		{
-			AfxMessageBox ( "Fatal error: substring already matched" );
+			AfxMessageBox("Fatal error: substring already matched");
 			return FALSE;
 		}
 
-		if ( dtext )
+		if (dtext)
 		{
 			// we have a matching string so mark it
-			dtext->Match ( stext );
-			stext->Match ( dtext );
+			dtext->Match(stext);
+			stext->Match(dtext);
 
 		}
 
-		stext = source->NextText ( sh );
+		stext = source->NextText(sh);
 	}
 
 
@@ -1542,36 +1543,36 @@ int CBabylonDlg::UpdateLabel( BabylonLabel *source, BabylonLabel *destination, U
 
 	{
 
-		stext = source->FirstText ( sh );
+		stext = source->FirstText(sh);
 
-		while ( stext )
+		while (stext)
 		{
-			if ( destination->AllMatched ())
+			if (destination->AllMatched())
 			{
 				// no point trying to match anymore
 				break;
 			}
 
-			if ( !stext->Matched () )
+			if (!stext->Matched())
 			{
 				int result;
-				BabylonText *match = NULL;
+				BabylonText* match = NULL;
 
-				if ( update && !skip )
+				if (update && !skip)
 				{
-					if ( destination->DB()->MultiTextAllowed())
+					if (destination->DB()->MultiTextAllowed())
 					{
-						result = MatchText ( stext, destination, &match );
+						result = MatchText(stext, destination, &match);
 					}
 					else
 					{
 						ListSearch tsh;
-						BabylonText *oldtext = destination->FirstText ( tsh );
-						if ( !oldtext )
+						BabylonText* oldtext = destination->FirstText(tsh);
+						if (!oldtext)
 						{
 							break;
 						}
-						result = RetranslateText ( stext, oldtext );
+						result = RetranslateText(stext, oldtext);
 						match = oldtext;
 					}
 				}
@@ -1580,65 +1581,65 @@ int CBabylonDlg::UpdateLabel( BabylonLabel *source, BabylonLabel *destination, U
 					result = IDSKIP;
 				}
 
-				if ( result == IDCANCEL || result == IDSKIP)
+				if (result == IDCANCEL || result == IDSKIP)
 				{
 					return result;
 				}
 
-				if ( match )
+				if (match)
 				{
-					stext->Match ( match );
-					match->Match ( stext );
+					stext->Match(match);
+					match->Match(stext);
 				}
-				stext->Processed ();
+				stext->Processed();
 			}
-			stext = source->NextText ( sh );
+			stext = source->NextText(sh);
 		}
 	}
 
 
 	// go through all matched strings and update them accordingly
 
-	dtext = destination->FirstText ( sh );
+	dtext = destination->FirstText(sh);
 
-	while ( dtext )
+	while (dtext)
 	{
 
-		if ( (stext = (BabylonText *) dtext->Matched ()) )
+		if ((stext = (BabylonText*)dtext->Matched()))
 		{
 			// stext is the newer version;
-			if ( wcscmp ( dtext->Get (), stext->Get ()))
+			if (wcscmp(dtext->Get(), stext->Get()))
 			{
-				if ( update )
+				if (update)
 				{
-					dtext->Set ( stext->Get ());
+					dtext->Set(stext->Get());
 				}
 				info.modified_strings++;
 				label_modified = TRUE;
-				info.changes ++;
+				info.changes++;
 			}
-			if ( wcsicmp ( dtext->Wave (), stext->Wave ()))
+			if (wcsicmp(dtext->Wave(), stext->Wave()))
 			{
-				if ( update )
+				if (update)
 				{
-					dtext->SetWave ( stext->Wave ());
+					dtext->SetWave(stext->Wave());
 				}
 				info.updated_waves++;
 				label_modified = TRUE;
-				info.changes ++;
+				info.changes++;
 			}
-			if ( dtext->Retranslate ())
+			if (dtext->Retranslate())
 			{
-				if ( update )
+				if (update)
 				{
-					dtext->IncRevision ();
+					dtext->IncRevision();
 				}
 				label_modified = TRUE;
 			}
-			dtext->SetRetranslate ( FALSE );
+			dtext->SetRetranslate(FALSE);
 		}
 
-		dtext = destination->NextText ( sh );
+		dtext = destination->NextText(sh);
 	}
 
 
@@ -1647,22 +1648,22 @@ int CBabylonDlg::UpdateLabel( BabylonLabel *source, BabylonLabel *destination, U
 
 	// delete old strings	from destination
 
-	dtext = destination->FirstText ( sh );
+	dtext = destination->FirstText(sh);
 
-	while ( dtext )
+	while (dtext)
 	{
-		BabylonText *next = destination->NextText ( sh );
+		BabylonText* next = destination->NextText(sh);
 
-		if ( !dtext->Matched ())
+		if (!dtext->Matched())
 		{
-			if ( update )
+			if (update)
 			{
-				dtext->Remove ();
-				destDB->AddObsolete ( dtext );
+				dtext->Remove();
+				destDB->AddObsolete(dtext);
 			}
 			info.deleted_strings++;
 			label_modified = TRUE;
-			info.changes ++;
+			info.changes++;
 		}
 
 		dtext = next;
@@ -1670,24 +1671,24 @@ int CBabylonDlg::UpdateLabel( BabylonLabel *source, BabylonLabel *destination, U
 
 	// add new strings from source
 
-	stext = source->FirstText ( sh );
+	stext = source->FirstText(sh);
 
-	while ( stext )
+	while (stext)
 	{
 
-		if ( !stext->Matched ())
+		if (!stext->Matched())
 		{
-			if ( update )
+			if (update)
 			{
-				dtext = stext->Clone ();
-				destination->AddText ( dtext );
+				dtext = stext->Clone();
+				destination->AddText(dtext);
 			}
 			info.new_strings++;
 			label_modified = TRUE;
-			info.changes ++;
+			info.changes++;
 		}
 
-		stext = source->NextText ( sh );
+		stext = source->NextText(sh);
 	}
 
 	// finally update label info
@@ -1696,40 +1697,40 @@ int CBabylonDlg::UpdateLabel( BabylonLabel *source, BabylonLabel *destination, U
 	MACRO_UPDATE(Speaker, info.updated_speakers);
 	MACRO_UPDATE(Listener, info.updated_listeners);
 
-	if ( destination->MaxLen () != source->MaxLen ())
+	if (destination->MaxLen() != source->MaxLen())
 	{
-		if ( update )
+		if (update)
 		{
-			destination->SetMaxLen ( source->MaxLen ());
+			destination->SetMaxLen(source->MaxLen());
 		}
 		label_modified = TRUE;
 		info.updated_maxlen++;
-		info.changes ++;
+		info.changes++;
 	}
 
 
-	if ( label_modified )
+	if (label_modified)
 	{
-		if ( update )
+		if (update)
 		{
-			source->ClearChanges ();
+			source->ClearChanges();
 		}
 		else
 		{
-			source->Changed ();
+			source->Changed();
 		}
 
-		info.modified_labels ++;
+		info.modified_labels++;
 	}
 
 	return IDOK;
 
 }
 
-int CBabylonDlg::UpdateDB(TransDB *source, TransDB *destination, int update )
+int CBabylonDlg::UpdateDB(TransDB* source, TransDB* destination, int update)
 {
-	BabylonLabel	*slabel;
-	BabylonLabel	*dlabel;
+	BabylonLabel* slabel;
+	BabylonLabel* dlabel;
 	ListSearch sh;
 	int	count = 0;
 	int result = IDOK;
@@ -1738,52 +1739,52 @@ int CBabylonDlg::UpdateDB(TransDB *source, TransDB *destination, int update )
 	int diffs = 0;
 	int skip_all = FALSE;
 
-	memset ( &info, 0, sizeof ( info ));
-	if ( update )
+	memset(&info, 0, sizeof(info));
+	if (update)
 	{
-		sprintf ( buffer, "Updating \"%s\" from \"%s\"...", destination->Name(), source->Name());
+		sprintf(buffer, "Updating \"%s\" from \"%s\"...", destination->Name(), source->Name());
 		Log("");
-		Status ( buffer );
+		Status(buffer);
 	}
 	else
 	{
-		Status ("Checking for changes...", FALSE );
+		Status("Checking for changes...", FALSE);
 	}
 
-	source->ClearProcessed ();
-	destination->ClearProcessed ();
+	source->ClearProcessed();
+	destination->ClearProcessed();
 
-	if ( update )
+	if (update)
 	{
-		InitProgress ( source->NumLabels() );
+		InitProgress(source->NumLabels());
 	}
-	slabel = source->FirstLabel ( sh );
+	slabel = source->FirstLabel(sh);
 
-	while ( slabel )
+	while (slabel)
 	{
-		if ( (dlabel = destination->FindLabel ( slabel->Name ())))
+		if ((dlabel = destination->FindLabel(slabel->Name())))
 		{
-			dlabel->Processed ();
+			dlabel->Processed();
 
-			result = UpdateLabel ( slabel, dlabel, info, update, skip_all );
+			result = UpdateLabel(slabel, dlabel, info, update, skip_all);
 
-			if ( result == IDCANCEL )
+			if (result == IDCANCEL)
 			{
 				skip_all = TRUE;
 			}
 
-			if ( result == IDOK )
+			if (result == IDOK)
 			{
-				if ( update )
+				if (update)
 				{
-					slabel->ClearChanges ();
+					slabel->ClearChanges();
 				}
 			}
 			else
 			{
-				info.skipped_labels ++;
-				info.changes ++;
-				if ( !update )
+				info.skipped_labels++;
+				info.changes++;
+				if (!update)
 				{
 					slabel->Changed();
 				}
@@ -1791,67 +1792,67 @@ int CBabylonDlg::UpdateDB(TransDB *source, TransDB *destination, int update )
 		}
 		else
 		{
-			BabylonLabel *clone;
+			BabylonLabel* clone;
 
-			if ( update )
+			if (update)
 			{
-				clone = slabel->Clone ();
-				destination->AddLabel ( clone );
-				clone->Processed ();
-				slabel->ClearChanges ();
+				clone = slabel->Clone();
+				destination->AddLabel(clone);
+				clone->Processed();
+				slabel->ClearChanges();
 			}
 			else
 			{
-				slabel->Changed ();
+				slabel->Changed();
 			}
-			info.new_strings += slabel->NumStrings ();
-			info.changes += slabel->NumStrings ();
+			info.new_strings += slabel->NumStrings();
+			info.changes += slabel->NumStrings();
 			info.new_labels++;
 			info.changes++;
 		}
 
 		count++;
-		if ( update )
+		if (update)
 		{
-			SetProgress ( count );
+			SetProgress(count);
 		}
 
-		slabel->Processed ();
-		slabel = source->NextLabel ( sh );
+		slabel->Processed();
+		slabel = source->NextLabel(sh);
 	}
 
 	// go through all unprocessed labels in the destination database and remove them.
-	dlabel = destination->FirstLabel ( sh );
+	dlabel = destination->FirstLabel(sh);
 
-	while ( dlabel )
+	while (dlabel)
 	{
-		BabylonLabel *next_label = destination->NextLabel ( sh );
+		BabylonLabel* next_label = destination->NextLabel(sh);
 
-		if ( !dlabel->IsProcessed ())
+		if (!dlabel->IsProcessed())
 		{
 			// this label was not matched so is obsolete
 			ListSearch sh_text;
-			BabylonText *dtext = dlabel->FirstText ( sh_text);
+			BabylonText* dtext = dlabel->FirstText(sh_text);
 
-			while ( dtext )
+			while (dtext)
 			{
-				BabylonText *next = dlabel->NextText ( sh_text );
+				BabylonText* next = dlabel->NextText(sh_text);
 
-				if ( update )
+				if (update)
 				{
-					dtext->Remove ();
-					destination->AddObsolete ( dtext );
+					dtext->Remove();
+					destination->AddObsolete(dtext);
 				}
 
 				info.deleted_strings++;
-				info.changes ++;
+				info.changes++;
 
 				dtext = next;
 			}
 
-			if ( update )
+			if (update)
 			{
-				dlabel->Remove ();
+				dlabel->Remove();
 				delete dlabel;
 			}
 
@@ -1862,127 +1863,127 @@ int CBabylonDlg::UpdateDB(TransDB *source, TransDB *destination, int update )
 	}
 
 
-	if ( update )
+	if (update)
 	{
-		if ( info.new_labels )
+		if (info.new_labels)
 		{
-			sprintf ( buffer, "Added %d new label%c", info.new_labels, info.new_labels==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Added %d new label%c", info.new_labels, info.new_labels == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.deleted_labels )
+		if (info.deleted_labels)
 		{
-			sprintf ( buffer, "Deleted %d label%c", info.deleted_labels, info.deleted_labels==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Deleted %d label%c", info.deleted_labels, info.deleted_labels == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.modified_labels )
+		if (info.modified_labels)
 		{
-			sprintf ( buffer, "Modified %d label%c", info.modified_labels, info.modified_labels==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Modified %d label%c", info.modified_labels, info.modified_labels == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.new_strings )
+		if (info.new_strings)
 		{
-			sprintf ( buffer, "Added %d new string%c", info.new_strings, info.new_strings==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Added %d new string%c", info.new_strings, info.new_strings == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.deleted_strings )
+		if (info.deleted_strings)
 		{
-			sprintf ( buffer, "Deleted %d string%c", info.deleted_strings, info.deleted_strings==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Deleted %d string%c", info.deleted_strings, info.deleted_strings == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.modified_strings )
+		if (info.modified_strings)
 		{
-			sprintf ( buffer, "Modified %d string%c", info.modified_strings, info.modified_strings==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Modified %d string%c", info.modified_strings, info.modified_strings == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.skipped_labels )
+		if (info.skipped_labels)
 		{
-			sprintf ( buffer, "Skipped %d label%c", info.skipped_labels, info.skipped_labels==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Skipped %d label%c", info.skipped_labels, info.skipped_labels == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.updated_comments )
+		if (info.updated_comments)
 		{
-			sprintf ( buffer, "Updated %d comment%c", info.updated_comments, info.updated_comments==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Updated %d comment%c", info.updated_comments, info.updated_comments == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.updated_contexts )
+		if (info.updated_contexts)
 		{
-			sprintf ( buffer, "Updated %d context%c", info.updated_contexts, info.updated_contexts==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Updated %d context%c", info.updated_contexts, info.updated_contexts == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.updated_speakers )
+		if (info.updated_speakers)
 		{
-			sprintf ( buffer, "Updated %d speaker%c", info.updated_speakers, info.updated_speakers==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Updated %d speaker%c", info.updated_speakers, info.updated_speakers == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.updated_listeners )
+		if (info.updated_listeners)
 		{
-			sprintf ( buffer, "Updated %d listener%c", info.updated_listeners, info.updated_listeners==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Updated %d listener%c", info.updated_listeners, info.updated_listeners == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.updated_maxlen )
+		if (info.updated_maxlen)
 		{
-			sprintf ( buffer, "Updated %d max length%c", info.updated_maxlen, info.updated_maxlen==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Updated %d max length%c", info.updated_maxlen, info.updated_maxlen == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( info.updated_waves )
+		if (info.updated_waves)
 		{
-			sprintf ( buffer, "Updated %d speech file%c", info.updated_waves, info.updated_waves==1?' ':'s' );
-			Log ( buffer );
+			sprintf(buffer, "Updated %d speech file%c", info.updated_waves, info.updated_waves == 1 ? ' ' : 's');
+			Log(buffer);
 			changes = TRUE;
 		}
 
-		if ( !changes  )
+		if (!changes)
 		{
-			if ( !slabel && !info.skipped_labels)
+			if (!slabel && !info.skipped_labels)
 			{
-				Log ( "No differences found" );
+				Log("No differences found");
 			}
 			else
 			{
-				Log ( "No changes made" );
+				Log("No changes made");
 			}
 		}
 
-		if ( result == IDCANCEL )
+		if (result == IDCANCEL)
 		{
-			Log ("Update aborted by user!" );
-			InitProgress ( 100 );
+			Log("Update aborted by user!");
+			InitProgress(100);
 		}
 		else
 		{
-			if ( !info.skipped_labels )
+			if (!info.skipped_labels)
 			{
-				source->ClearChanges ();
+				source->ClearChanges();
 			}
 		}
 	}
 
 
-	Ready ();
+	Ready();
 
 	return info.changes;
 }
@@ -1990,59 +1991,59 @@ int CBabylonDlg::UpdateDB(TransDB *source, TransDB *destination, int update )
 void CBabylonDlg::OnSave()
 {
 
-	if ( CanOperate ())
+	if (CanOperate())
 	{
-		SaveMainDB ( );
+		SaveMainDB();
 	}
 }
 
-int CBabylonDlg::SaveMainDB( )
+int CBabylonDlg::SaveMainDB()
 {
-	TransDB *db = MainDB;
-	const char *filename = MainXLSFilename;
+	TransDB* db = MainDB;
+	const char* filename = MainXLSFilename;
 	int attribs;
 
-	if ( !db )
+	if (!db)
 	{
 		return TRUE;
 	}
 
-	if ( !db->IsChanged ())
+	if (!db->IsChanged())
 	{
 		return TRUE;
 	}
 
-	attribs = FileAttribs ( filename );
+	attribs = FileAttribs(filename);
 
-	if ( attribs & FA_READONLY )
+	if (attribs & FA_READONLY)
 	{
 		char buffer[100];
-		sprintf ( buffer, "Cannot save changes!\n\nFile \"%s\" is read only", filename );
-		AfxMessageBox ( buffer );
-		sprintf ( buffer, "Cannot save to \"%s\". File is read only", filename );
-		Log ( buffer );
-		Status ("Save failed", FALSE );
+		sprintf(buffer, "Cannot save changes!\n\nFile \"%s\" is read only", filename);
+		AfxMessageBox(buffer);
+		sprintf(buffer, "Cannot save to \"%s\". File is read only", filename);
+		Log(buffer);
+		Status("Save failed", FALSE);
 		return FALSE;
 	}
 
 	Log("");
-	Status ( "Saving main database..." );
+	Status("Saving main database...");
 
-	if ( attribs != FA_NOFILE )
+	if (attribs != FA_NOFILE)
 	{
-		MakeBackupFile ( filename );
+		MakeBackupFile(filename);
 	}
 
-	if ( !WriteMainDB ( db, filename, this ) )
+	if (!WriteMainDB(db, filename, this))
 	{
-		RestoreBackupFile ( filename );
-		Log ("FAILED", SAME_LINE );
-		Status ("Save failed", FALSE );
+		RestoreBackupFile(filename);
+		Log("FAILED", SAME_LINE);
+		Status("Save failed", FALSE);
 		return FALSE;
 	}
 	else
 	{
-		Log ("OK", SAME_LINE );
+		Log("OK", SAME_LINE);
 	}
 
 	Ready();
@@ -2053,9 +2054,9 @@ int CBabylonDlg::SaveMainDB( )
 void CBabylonDlg::OnWarnings()
 {
 	// TODO: Add your control notification handler code here
-	if ( BabylonstrDB )
+	if (BabylonstrDB)
 	{
-		BabylonstrDB->Warnings ( this );
+		BabylonstrDB->Warnings(this);
 	}
 
 }
@@ -2064,29 +2065,29 @@ void CBabylonDlg::OnWarnings()
 void CBabylonDlg::OnErrors()
 {
 	// TODO: Add your control notification handler code here
-	if ( BabylonstrDB )
+	if (BabylonstrDB)
 	{
-		BabylonstrDB->Errors ( this );
+		BabylonstrDB->Errors(this);
 	}
 }
 
 
-int CBabylonDlg::MatchText ( BabylonText *text, BabylonLabel *label, BabylonText **match )
+int CBabylonDlg::MatchText(BabylonText* text, BabylonLabel* label, BabylonText** match)
 {
 	CMatchDlg dlg;
 	int result;
 
 	*match = NULL;
-	sprintf ( buffer, "Text: %s\n\nLabel:%s\n", text->GetSB (), label->NameSB () );
+	sprintf(buffer, "Text: %s\n\nLabel:%s\n", text->GetSB(), label->NameSB());
 
 	// TODO: Add your control notification handler code here
 
 	MatchOriginalText = text;
 	MatchLabel = label;
 
-	result = dlg.DoModal ();
+	result = dlg.DoModal();
 
-	if ( result != IDCANCEL )
+	if (result != IDCANCEL)
 	{
 		*match = MatchingBabylonText;
 	}
@@ -2095,7 +2096,7 @@ int CBabylonDlg::MatchText ( BabylonText *text, BabylonLabel *label, BabylonText
 
 }
 
-int CBabylonDlg::RetranslateText ( BabylonText *newtext, BabylonText *oldtext )
+int CBabylonDlg::RetranslateText(BabylonText* newtext, BabylonText* oldtext)
 {
 	RetranslateDlg dlg;
 	int result;
@@ -2105,7 +2106,7 @@ int CBabylonDlg::RetranslateText ( BabylonText *newtext, BabylonText *oldtext )
 	dlg.newtext = newtext;
 	dlg.oldtext = oldtext;
 
-	result = dlg.DoModal ( );
+	result = dlg.DoModal();
 
 	return result;
 
@@ -2118,7 +2119,7 @@ void CBabylonDlg::OnChanges()
 
 	ViewChanges = TRUE;
 
-	dlg.DoModal ();
+	dlg.DoModal();
 
 
 
@@ -2126,15 +2127,15 @@ void CBabylonDlg::OnChanges()
 
 void CBabylonDlg::OnImport()
 {
-	if ( CanOperate ())
+	if (CanOperate())
 	{
-		CFileDialog fd ( TRUE , NULL, "*.xls",  OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR );
+		CFileDialog fd(TRUE, NULL, "*.xls", OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR);
 
-		if ( fd.DoModal () == IDOK )
+		if (fd.DoModal() == IDOK)
 		{
-			if (ImportTranslations ( MainDB, (LPCSTR ) fd.GetPathName (), this ) == -1 )
+			if (ImportTranslations(MainDB, (LPCSTR)fd.GetPathName(), this) == -1)
 			{
-//				ProcessWaves ( BabylonstrDB, fd.GetPathName (), this );
+				//				ProcessWaves ( BabylonstrDB, fd.GetPathName (), this );
 			}
 		}
 	}
@@ -2142,50 +2143,50 @@ void CBabylonDlg::OnImport()
 
 void CBabylonDlg::OnGenerate()
 {
-	if ( CanOperate ())
+	if (CanOperate())
 	{
 		CGenerateDlg dlg;
 
-		if ( dlg.DoModal () == IDOK )
+		if (dlg.DoModal() == IDOK)
 		{
-			GenerateGameFiles ( MainDB, dlg.FilePrefix(), dlg.Options(), dlg.Langauges(), this );
+			GenerateGameFiles(MainDB, dlg.FilePrefix(), dlg.Options(), dlg.Langauges(), this);
 		}
 	}
 }
 
-int CBabylonDlg::ValidateStrFile( const char *filename)
+int CBabylonDlg::ValidateStrFile(const char* filename)
 {
 	STARTUPINFO StartupInfo = { 0 };
 	PROCESS_INFORMATION ProcessInfo;
-	const char *results = "strcheck.rst";
+	const char* results = "strcheck.rst";
 	int errors = 0;
-	FILE *file = NULL;
+	FILE* file = NULL;
 
 	StartupInfo.cb = sizeof(STARTUPINFO);
 	StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
 	StartupInfo.wShowWindow = SW_SHOWMINNOACTIVE;
 
-	Log ("");
-	sprintf ( buffer, "Verifying \"%s\"...", filename );
-	Status ( buffer );
-	if ( FileExists ( results ))
+	Log("");
+	sprintf(buffer, "Verifying \"%s\"...", filename);
+	Status(buffer);
+	if (FileExists(results))
 	{
-		DeleteFile ( results );
+		DeleteFile(results);
 	}
 
-	sprintf ( buffer, "strcheck %s %s", filename, results );
+	sprintf(buffer, "strcheck %s %s", filename, results);
 
 	if (!CreateProcess(
-			NULL,
-			buffer,
-			NULL,
-			NULL,
-			FALSE,
-			0,
-			NULL,
-			NULL,
-			&StartupInfo,
-			&ProcessInfo))
+		NULL,
+		buffer,
+		NULL,
+		NULL,
+		FALSE,
+		0,
+		NULL,
+		NULL,
+		&StartupInfo,
+		&ProcessInfo))
 	{
 		goto error;
 	}
@@ -2196,38 +2197,38 @@ int CBabylonDlg::ValidateStrFile( const char *filename)
 	//this->SetForegroundWindow ();
 	//this->RedrawWindow ();
 
-	if ( !(file = fopen ( results, "rt" )))
+	if (!(file = fopen(results, "rt")))
 	{
 		goto error;
 	}
 
-	while ( fgets ( buffer, sizeof(buffer), file ) )
+	while (fgets(buffer, sizeof(buffer), file))
 	{
-		strlwr ( buffer );
-		if ( strstr ( buffer, "error") || strstr ( buffer, "warning" ))
+		strlwr(buffer);
+		if (strstr(buffer, "error") || strstr(buffer, "warning"))
 		{
 			errors++;
 		}
 	}
 
-	if ( errors )
+	if (errors)
 	{
-		sprintf ( buffer, "%d ERROR%s", errors, errors == 1 ? "" : "S" );
-		Log (buffer, SAME_LINE );
-		fseek ( file, 0, SEEK_SET );
-		while ( fgets ( buffer, sizeof(buffer), file ) )
+		sprintf(buffer, "%d ERROR%s", errors, errors == 1 ? "" : "S");
+		Log(buffer, SAME_LINE);
+		fseek(file, 0, SEEK_SET);
+		while (fgets(buffer, sizeof(buffer), file))
 		{
-			sprintf ( buffer2, "   strcheck> %s", buffer );
-			strlwr ( buffer );
-			if ( strstr ( buffer2, "error") || strstr ( buffer, "warning" ) )
+			sprintf(buffer2, "   strcheck> %s", buffer);
+			strlwr(buffer);
+			if (strstr(buffer2, "error") || strstr(buffer, "warning"))
 			{
-				int len = strlen ( buffer2 );
+				int len = strlen(buffer2);
 
-				if ( buffer2[len-1] == '\n' )
+				if (buffer2[len - 1] == '\n')
 				{
-					buffer2[len-1] = 0;
+					buffer2[len - 1] = 0;
 				}
-				Log ( buffer2 );
+				Log(buffer2);
 			}
 		}
 
@@ -2235,250 +2236,250 @@ int CBabylonDlg::ValidateStrFile( const char *filename)
 	}
 	else
 	{
-		Log ("OK", SAME_LINE );
+		Log("OK", SAME_LINE);
 	}
 
 
 done:
 
-	if ( FileExists ( results ))
+	if (FileExists(results))
 	{
-		DeleteFile ( results );
+		DeleteFile(results);
 	}
 
-	if (file )
+	if (file)
 	{
-		fclose (file );
+		fclose(file);
 	}
 
 	return errors;
 
 error:
-		Log ( "UNABLE TO VERIFY", SAME_LINE );
-		errors = -1;
+	Log("UNABLE TO VERIFY", SAME_LINE);
+	errors = -1;
 	goto done;
 }
 
 void CBabylonDlg::OnVerifyDialog()
 {
-	if ( MainDB && CanOperate () )
+	if (MainDB && CanOperate())
 	{
-		VerifyDialog ( MainDB, CurrentLanguage );
+		VerifyDialog(MainDB, CurrentLanguage);
 	}
 
 }
 
-void CBabylonDlg::VerifyDialog( TransDB *db, LangID langid )
+void CBabylonDlg::VerifyDialog(TransDB* db, LangID langid)
 {
-	BabylonLabel *label;
+	BabylonLabel* label;
 	ListSearch sh_label;
 	int count = 0;
 	DLGREPORT _info;
-	DLGREPORT *info = &_info;
+	DLGREPORT* info = &_info;
 
-	Log ("");
+	Log("");
 
-	sprintf ( buffer, "Verifying %s dialog...", GetLangName ( langid ) );
-	Status ( buffer );
+	sprintf(buffer, "Verifying %s dialog...", GetLangName(langid));
+	Status(buffer);
 
-	InitProgress ( db->NumLabels () );
+	InitProgress(db->NumLabels());
 	cb_count = 0;
 	mainDlg = this;
-	db->VerifyDialog ( langid, cb_progress );
-	db->ReportDialog ( info, langid);
+	db->VerifyDialog(langid, cb_progress);
+	db->ReportDialog(info, langid);
 
-	if ( info->unresolved )
+	if (info->unresolved)
 	{
-		Status ( "Verification", FALSE);
+		Status("Verification", FALSE);
 
-		InitProgress ( info->unresolved );
+		InitProgress(info->unresolved);
 
-		label = db->FirstLabel ( sh_label );
+		label = db->FirstLabel(sh_label);
 
-		while ( label )
+		while (label)
 		{
-			BabylonText *text;
+			BabylonText* text;
 			ListSearch sh_text;
 
-			text = label->FirstText ( sh_text );
+			text = label->FirstText(sh_text);
 
-			while ( text )
+			while (text)
 			{
-				if ( text->IsDialog ())
+				if (text->IsDialog())
 				{
-					if ( text->DialogIsPresent ( DialogPath, langid ))
+					if (text->DialogIsPresent(DialogPath, langid))
 					{
-						if ( !text->DialogIsValid ( DialogPath, langid, FALSE ) )
+						if (!text->DialogIsValid(DialogPath, langid, FALSE))
 						{
-						 	VerifyDlg dlg(text, langid, DialogPath);
-						 	int result;
+							VerifyDlg dlg(text, langid, DialogPath);
+							int result;
 
-						 	result = dlg.DoModal ();
+							result = dlg.DoModal();
 
-							if ( result == IDCANCEL )
+							if (result == IDCANCEL)
 							{
 								goto done;
 							}
-							if ( result == IDOK )
+							if (result == IDOK)
 							{
-								text->ValidateDialog ( DialogPath, langid );
+								text->ValidateDialog(DialogPath, langid);
 							}
 
 							count++;
-							SetProgress ( count );
+							SetProgress(count);
 						}
 					}
 				}
 
-				text = label->NextText ( sh_text );
+				text = label->NextText(sh_text);
 			}
 
-			label = db->NextLabel ( sh_label );
+			label = db->NextLabel(sh_label);
 		}
 	}
 
 done:
-	Ready ();
+	Ready();
 
-	Status ( "Collecting stats...", FALSE );
+	Status("Collecting stats...", FALSE);
 
-	count = db->ReportDialog ( info, langid );
+	count = db->ReportDialog(info, langid);
 
-	if ( count < 100 )
+	if (count < 100)
 	{
-		InitProgress ( count );
+		InitProgress(count);
 
 		cb_count = 0;
 		found_error = FALSE;
 		mainDlg = this;
-		db->ReportDialog ( info, langid, print_to_log_and_update_progress );
+		db->ReportDialog(info, langid, print_to_log_and_update_progress);
 	}
 
-	if ( info->numdialog )
+	if (info->numdialog)
 	{
-		if ( info->errors || info->missing || info->unresolved )
+		if (info->errors || info->missing || info->unresolved)
 		{
-			if ( !found_error )
+			if (!found_error)
 			{
-				Log ( "FAILED", SAME_LINE );
+				Log("FAILED", SAME_LINE);
 			}
 
-			if ( info->errors )
+			if (info->errors)
 			{
-				sprintf ( buffer, "Errors           : %d", info->errors );
-				Log ( buffer );
+				sprintf(buffer, "Errors           : %d", info->errors);
+				Log(buffer);
 			}
 
-			if ( info->missing )
+			if (info->missing)
 			{
-				sprintf ( buffer, "Missing dialog   : %d", info->missing );
-				Log ( buffer );
+				sprintf(buffer, "Missing dialog   : %d", info->missing);
+				Log(buffer);
 			}
 
-			if ( info->unresolved )
+			if (info->unresolved)
 			{
-				sprintf ( buffer, "Unverified dialog: %d", info->unresolved );
-				Log ( buffer );
+				sprintf(buffer, "Unverified dialog: %d", info->unresolved);
+				Log(buffer);
 			}
 
-			if ( info->resolved )
+			if (info->resolved)
 			{
-				sprintf ( buffer, "Verified dialog  : %d", info->resolved );
-				Log ( buffer );
+				sprintf(buffer, "Verified dialog  : %d", info->resolved);
+				Log(buffer);
 			}
 
 		}
 		else
 		{
-			Log ( "OK", SAME_LINE );
+			Log("OK", SAME_LINE);
 
-			if ( info->resolved )
+			if (info->resolved)
 			{
-				sprintf ( buffer, "Verified dialog  : %d", info->resolved );
-				Log ( buffer );
+				sprintf(buffer, "Verified dialog  : %d", info->resolved);
+				Log(buffer);
 			}
 		}
-		sprintf ( buffer, "Total dialog      : %d", info->numdialog );
-		Log ( buffer );
+		sprintf(buffer, "Total dialog      : %d", info->numdialog);
+		Log(buffer);
 	}
 	else
 	{
-		Log ( "NO DIALOG FOUND", SAME_LINE );
+		Log("NO DIALOG FOUND", SAME_LINE);
 	}
 
 	Ready();
 
 }
 
-void CBabylonDlg::VerifyTranslations( TransDB *db, LangID langid )
+void CBabylonDlg::VerifyTranslations(TransDB* db, LangID langid)
 {
 	int count = 0;
 	TRNREPORT _info;
-	TRNREPORT *info = &_info;
+	TRNREPORT* info = &_info;
 
-	Log ("");
-	sprintf ( buffer, "Verifying %s text...", GetLangName ( langid ) );
-	Status ( buffer );
+	Log("");
+	sprintf(buffer, "Verifying %s text...", GetLangName(langid));
+	Status(buffer);
 
-	count = db->ReportTranslations ( info, langid );
+	count = db->ReportTranslations(info, langid);
 
-	if ( count < 100 )
+	if (count < 100)
 	{
-		InitProgress ( count);
+		InitProgress(count);
 		cb_count = 0;
 		found_error = FALSE;
 		mainDlg = this;
-		db->ReportTranslations ( info, langid, print_to_log_and_update_progress );
+		db->ReportTranslations(info, langid, print_to_log_and_update_progress);
 	}
 
-	if ( info->numstrings )
+	if (info->numstrings)
 	{
-		if ( info->too_big || info->missing || info->retranslate || info->bad_format )
+		if (info->too_big || info->missing || info->retranslate || info->bad_format)
 		{
 
-			if ( info->missing )
+			if (info->missing)
 			{
-				sprintf ( buffer, "Missing translations: %d", info->missing );
-				Log ( buffer );
+				sprintf(buffer, "Missing translations: %d", info->missing);
+				Log(buffer);
 			}
 
-			if ( info->too_big )
+			if (info->too_big)
 			{
-				sprintf ( buffer, "Oversized strings   : %d", info->too_big );
-				Log ( buffer );
+				sprintf(buffer, "Oversized strings   : %d", info->too_big);
+				Log(buffer);
 			}
 
-			if ( info->retranslate )
+			if (info->retranslate)
 			{
-				sprintf ( buffer, "Retranslations       : %d", info->retranslate);
-				Log ( buffer );
+				sprintf(buffer, "Retranslations       : %d", info->retranslate);
+				Log(buffer);
 			}
 
-			if ( info->bad_format )
+			if (info->bad_format)
 			{
-				sprintf ( buffer, "Badly formated translations: %d", info->bad_format);
-				Log ( buffer );
+				sprintf(buffer, "Badly formated translations: %d", info->bad_format);
+				Log(buffer);
 			}
 
-			if ( langid == LANGID_US )
+			if (langid == LANGID_US)
 			{
-				sprintf  ( buffer, "Recommemd editing \"%s\" to fix problems and reload", BabylonstrFilename );
+				sprintf(buffer, "Recommemd editing \"%s\" to fix problems and reload", BabylonstrFilename);
 			}
 			else
 			{
-				sprintf  ( buffer, "Recommemd exporting translations for update and re-import" );
+				sprintf(buffer, "Recommemd exporting translations for update and re-import");
 			}
-			Log ( buffer );
+			Log(buffer);
 		}
 		else
 		{
-			Log ( "OK", SAME_LINE );
+			Log("OK", SAME_LINE);
 
 		}
 	}
 	else
 	{
-		Log ( "NO TEXT", SAME_LINE );
+		Log("NO TEXT", SAME_LINE);
 	}
 
 	Ready();
@@ -2486,10 +2487,10 @@ void CBabylonDlg::VerifyTranslations( TransDB *db, LangID langid )
 
 void CBabylonDlg::OnTranslations()
 {
-	if ( MainDB && CanOperate () )
+	if (MainDB && CanOperate())
 	{
 
-		VerifyTranslations ( MainDB, CurrentLanguage );
+		VerifyTranslations(MainDB, CurrentLanguage);
 	}
 
 
@@ -2497,17 +2498,17 @@ void CBabylonDlg::OnTranslations()
 
 void CBabylonDlg::OnSelchangeCombolang()
 {
-	LANGINFO *info = NULL;
+	LANGINFO* info = NULL;
 	int index;
 
-	index = combo->GetCurSel ();
+	index = combo->GetCurSel();
 
-	if ( index >= 0  && index < max_index )
+	if (index >= 0 && index < max_index)
 	{
-		info = (LANGINFO *) combo->GetItemDataPtr ( index );
+		info = (LANGINFO*)combo->GetItemDataPtr(index);
 	}
 
-	if ( info )
+	if (info)
 	{
 		CurrentLanguage = info->langid;
 	}
@@ -2521,13 +2522,13 @@ void CBabylonDlg::OnSelchangeCombolang()
 void CBabylonDlg::OnReports()
 {
 	// TODO: Add your control notification handler code here
-	if ( CanOperate ())
+	if (CanOperate())
 	{
 		CReport dlg;
 
-		if ( dlg.DoModal () == IDOK )
+		if (dlg.DoModal() == IDOK)
 		{
-			GenerateReport ( MainDB, dlg.Filename(), dlg.Options(), dlg.Langauges(), this );
+			GenerateReport(MainDB, dlg.Filename(), dlg.Options(), dlg.Langauges(), this);
 		}
 	}
 
@@ -2542,12 +2543,12 @@ void CBabylonDlg::OnReset()
 {
 	// TODO: Add your control notification handler code here
 
-	if ( CurrentLanguage != LANGID_UNKNOWN )
+	if (CurrentLanguage != LANGID_UNKNOWN)
 	{
-		sprintf ( buffer, "Are you sure you want to invalidate all %s dialog?", GetLangName ( CurrentLanguage ));
-		if ( AfxMessageBox ( buffer, MB_YESNO) == IDYES )
+		sprintf(buffer, "Are you sure you want to invalidate all %s dialog?", GetLangName(CurrentLanguage));
+		if (AfxMessageBox(buffer, MB_YESNO) == IDYES)
 		{
-			MainDB->InvalidateDialog ( CurrentLanguage );
+			MainDB->InvalidateDialog(CurrentLanguage);
 		}
 	}
 }
@@ -2555,13 +2556,13 @@ void CBabylonDlg::OnReset()
 void CBabylonDlg::OnSent()
 {
 	// TODO: Add your control notification handler code here
-	if ( CanOperate ())
+	if (CanOperate())
 	{
-		CFileDialog fd ( TRUE , NULL, "*.xls",  OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR );
+		CFileDialog fd(TRUE, NULL, "*.xls", OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR);
 
-		if ( fd.DoModal () == IDOK )
+		if (fd.DoModal() == IDOK)
 		{
-			UpdateSentTranslations ( MainDB, (LPCSTR ) fd.GetPathName (), this );
+			UpdateSentTranslations(MainDB, (LPCSTR)fd.GetPathName(), this);
 		}
 	}
 }
@@ -2570,6 +2571,6 @@ void CAboutDlg::OnButton1()
 {
 	// TODO: Add your control notification handler code here
 
-	CreateTranslationTable ( );
+	CreateTranslationTable();
 }
 

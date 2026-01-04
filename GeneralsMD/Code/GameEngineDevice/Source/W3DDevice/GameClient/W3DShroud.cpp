@@ -266,7 +266,7 @@ W3DShroudLevel W3DShroud::getShroudLevel(Int x, Int y)
 
 	if (x < m_numCellsX && y < m_numCellsY)
 	{
-		UnsignedShort pixel=*(UnsignedShort *)((Byte *)m_srcTextureData + x*2 + y*m_srcTexturePitch);
+		UnsignedShort pixel=*(UnsignedShort *)((SignedByte *)m_srcTextureData + x*2 + y*m_srcTexturePitch);
 
 #if defined(RTS_DEBUG)
 		if (TheGlobalData && TheGlobalData->m_fogOfWarOn)
@@ -328,7 +328,7 @@ void W3DShroud::setShroudLevel(Int x, Int y, W3DShroudLevel level, Bool textureO
 				bluepixel = 255;
 			}
 
-			UnsignedShort *texel = (UnsignedShort *)((Byte *)m_srcTextureData + x*2 + y*m_srcTexturePitch);
+			UnsignedShort *texel = (UnsignedShort *)((SignedByte *)m_srcTextureData + x*2 + y*m_srcTexturePitch);
 
 //      For those interested, MLorenzen has this bock commented out until he gets back on Mon, Sept. 30 2002
 			// If this code is still here by mid october, nuke it!

@@ -41,7 +41,7 @@
 
 #include "refcount.h"
 
-// TheSuperHackers @build feliwir 17/04/2025 include __debugbreak macros
+ // TheSuperHackers @build feliwir 17/04/2025 include __debugbreak macros
 #include <Utility/intrin_compat.h>
 
 #ifdef RTS_DEBUG
@@ -68,7 +68,7 @@ RefCountListClass			RefCountClass::ActiveRefList;
  * HISTORY:                                                                                    *
  *   3/16/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-RefCountClass *	RefCountClass::Add_Active_Ref(RefCountClass *obj)
+RefCountClass* RefCountClass::Add_Active_Ref(RefCountClass* obj)
 {
 	ActiveRefList.Add_Head(&(obj->ActiveRefNode));
 	obj->ActiveRefInfo.File = NULL;	// default to no debug information added.
@@ -88,10 +88,10 @@ RefCountClass *	RefCountClass::Add_Active_Ref(RefCountClass *obj)
  * HISTORY:                                                                                    *
  *   3/16/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-RefCountClass *	RefCountClass::Set_Ref_Owner(RefCountClass *obj,const char * file,int line)
+RefCountClass* RefCountClass::Set_Ref_Owner(RefCountClass* obj, const char* file, int line)
 {
-//	static RefCountClass *hunt = (RefCountClass *)0x06558890;
-	static RefCountClass *hunt = (RefCountClass *)0x0;
+	//	static RefCountClass *hunt = (RefCountClass *)0x06558890;
+	static RefCountClass* hunt = (RefCountClass*)0x0;
 	if (obj == hunt) {
 		assert(0);
 	}
@@ -113,7 +113,7 @@ RefCountClass *	RefCountClass::Set_Ref_Owner(RefCountClass *obj,const char * fil
  * HISTORY:                                                                                    *
  *   3/16/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void RefCountClass::Remove_Active_Ref(RefCountClass * obj)
+void RefCountClass::Remove_Active_Ref(RefCountClass* obj)
 {
 #ifdef PARANOID_REFCOUNTS
 	assert(Validate_Active_Ref(obj));
@@ -133,9 +133,9 @@ void RefCountClass::Remove_Active_Ref(RefCountClass * obj)
  * HISTORY:                                                                                    *
  *   2/06/99    EHC: Created.                                                                 *
  *=============================================================================================*/
-bool RefCountClass::Validate_Active_Ref(RefCountClass * obj)
+bool RefCountClass::Validate_Active_Ref(RefCountClass* obj)
 {
-	RefCountNodeClass *node = ActiveRefList.First();
+	RefCountNodeClass* node = ActiveRefList.First();
 	while (node) {
 		if (node->Get() == obj) return true;
 		node = node->Next();
@@ -155,7 +155,7 @@ bool RefCountClass::Validate_Active_Ref(RefCountClass * obj)
  * HISTORY:                                                                                    *
  *   2/06/99    EHC: Created.                                                                 *
  *=============================================================================================*/
-void	RefCountClass::Inc_Total_Refs(const RefCountClass * obj)
+void	RefCountClass::Inc_Total_Refs(const RefCountClass* obj)
 {
 #ifdef PARANOID_REFCOUNTS
 	assert(Validate_Active_Ref(obj));
@@ -190,7 +190,7 @@ void RefCountClass::Add_Ref(void) const
  * HISTORY:                                                                                    *
  *   2/06/99    EHC: Created.                                                                 *
  *=============================================================================================*/
-void	RefCountClass::Dec_Total_Refs(const RefCountClass * obj)
+void	RefCountClass::Dec_Total_Refs(const RefCountClass* obj)
 {
 #ifdef PARANOID_REFCOUNTS
 	assert(Validate_Active_Ref(obj));

@@ -373,7 +373,7 @@ void MetalMapManagerClass::initialize_normal_table(void)
 			// Set vector to point to surface of unit sphere
 			normal.Set((step * (float)x) - 1.0f, (step * (float)y) - 1.0f, 0.0f);
 			float z2 = 1 - ((normal.X * normal.X) + (normal.Y * normal.Y));
-			z2 = MAX(z2, 0.0f);	// If outside the sphere, treat as if on its edge
+			z2 = std::max(z2, 0.0f);	// If outside the sphere, treat as if on its edge
 			normal.Z = sqrt(z2);
 			normal.Normalize();	// Needed for "outside sphere" case and for safety's sake
 

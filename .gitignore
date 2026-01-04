@@ -70,3 +70,4 @@ build.ninja
 /docs/Vulkan/
 
 references/
+cmake/*

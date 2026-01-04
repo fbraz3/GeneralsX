@@ -38,6 +38,7 @@
 
 #include <tcp.h>
 #include "mydebug.h"
+#include <Utility/compat.h>
 
 #ifdef _UNIX
 using namespace std;
@@ -45,12 +46,12 @@ using namespace std;
 #define sleep(x) Sleep(1000 * (x))
 #endif
 
-static const char *Program_Usage = "A config filename can be given on the command line (default=matchbot.cfg)\n";
-void logMonitor(void *);
-void paranoidLogMonitor(void *);
+static const char* Program_Usage = "A config filename can be given on the command line (default=matchbot.cfg)\n";
+void logMonitor(void*);
+void paranoidLogMonitor(void*);
 
-OutputDevice * output_device = NULL;
-OutputDevice * paranoid_output_device = NULL;
+OutputDevice* output_device = NULL;
+OutputDevice* paranoid_output_device = NULL;
 
 
 void Signal_Quit(int)
@@ -104,10 +105,10 @@ int VerifyFileDescriptors(int requested)
 
 
 
-GeneralsMatcher *s_generalsMatcher = NULL;
-GeneralsClientMatcher *s_generalsClientMatcher = NULL;
+GeneralsMatcher* s_generalsMatcher = NULL;
+GeneralsClientMatcher* s_generalsClientMatcher = NULL;
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
 	Wstring config_fname = "matchbot.cfg";
 
@@ -116,12 +117,12 @@ int main(int argc, char ** argv)
 		config_fname = argv[1];
 
 	// Read the config file
-	FILE *fp;
+	FILE* fp;
 	if ((fp = fopen(config_fname.get(), "r")) == NULL)
 	{
 		cerr << "\nCan't open the config file '" << config_fname.get() << "'\n\n";
 		cerr << Program_Usage << endl;
-		exit( -1);
+		exit(-1);
 	}
 	fclose(fp);
 
@@ -142,7 +143,7 @@ int main(int argc, char ** argv)
 		if (!output_device)
 		{
 			cerr << "Could not open " << output_file.get() << " for writing!" << endl;
-			exit( -1);
+			exit(-1);
 		}
 	}
 	else
@@ -163,7 +164,7 @@ int main(int argc, char ** argv)
 		if (!paranoid_output_device)
 		{
 			cerr << "Could not open " << paranoid_output_file.get() << " for writing!" << endl;
-			exit( -1);
+			exit(-1);
 		}
 	}
 	else
@@ -188,7 +189,7 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 
-	if ((LOBYTE(wsadata.wVersion) != 2) || (HIBYTE(wsadata.wVersion) !=2))
+	if ((LOBYTE(wsadata.wVersion) != 2) || (HIBYTE(wsadata.wVersion) != 2))
 	{
 		ERRMSG("Winsock DLL is not 2.2");
 		WSACleanup();
@@ -206,10 +207,10 @@ int main(int argc, char ** argv)
 	// This is for test suites, so they can use
 	// the same config file as the corresponding
 	// matchbot.
-	const char *s = argv[0] + strlen(argv[0]);
-	while (s > argv[0] && *s != '/')
+	const char* s = argv[0] + strlen(argv[0]);
+	while (s > argv[0] && *s != GET_PATH_SEPARATOR())
 		--s;
-	if (*s == '/')
+	if (*s == GET_PATH_SEPARATOR())
 		++s;
 	Wstring exe = s;
 	exe.toLower();
@@ -230,7 +231,7 @@ int main(int argc, char ** argv)
 	else
 	{
 		cerr << "\nNo valid GAME entry found!" << endl;
-		exit( -1);
+		exit(-1);
 	}
 
 	delete s_generalsMatcher;
@@ -248,7 +249,7 @@ int main(int argc, char ** argv)
 | midnight and create a new log file.  The old one gets put into the    |
 | logfiles directory.                                                   |
 `----------------------------------------------------------------------*/
-void logMonitor(void *)
+void logMonitor(void*)
 {
 #ifdef _UNIX
 	Xtime xtime;
@@ -259,7 +260,7 @@ void logMonitor(void *)
 	Global.config.getInt("ROTATEDELAY", delay);
 	DBGMSG("ROTATEDELAY: " << delay);
 	if (delay == -1)
-		return ;
+		return;
 	while (1)
 	{
 		curtime = time(NULL);
@@ -281,10 +282,10 @@ void logMonitor(void *)
 			Global.config.getString("LOGPATH", logpath);
 			xtime.update();
 			sprintf(filenamebuf, "%s/%02d%02d%04d_%02d%02d%02d_log", logpath.get(), xtime.getMonth(),
-			        xtime.getMDay(), xtime.getYear(), xtime.getHour(), xtime.getMinute(), xtime.getSecond());
+				xtime.getMDay(), xtime.getYear(), xtime.getHour(), xtime.getMinute(), xtime.getSecond());
 			rename(newfilename.get(), filenamebuf);
 			DBGMSG("Normal: Just been switched.  " << logfilename.get() << ", " << newfilename.get());
-			sleep(60*60*23); // sleep the next 23 hours
+			sleep(60 * 60 * 23); // sleep the next 23 hours
 		}
 		sleep(300);
 	}
@@ -307,12 +308,12 @@ void rotateOutput(void)
 
 	// This grabs the semaphore, renames the file, and switches the output device
 	MsgManager::ReplaceAllStreams((FileD*)output_device, logfilename.get(),
-	                              newfilename.get());
+		newfilename.get());
 
 	// clean up the tmp filename and move it to the log dir.
 	sprintf(filenamebuf, "%s/%02d%02d%04d_%02d%02d%02d_log", logpath.get(),
-	        xtime.getMonth(), xtime.getMDay(), xtime.getYear(), xtime.getHour(),
-	        xtime.getMinute(), xtime.getSecond());
+		xtime.getMonth(), xtime.getMDay(), xtime.getYear(), xtime.getHour(),
+		xtime.getMinute(), xtime.getSecond());
 #ifdef _WIN32
 	mkdir(logpath.get());
 #else
@@ -321,10 +322,10 @@ void rotateOutput(void)
 	rename(newfilename.get(), filenamebuf);
 
 	DBGMSG("Normal: Just been switched.  " << logfilename.get() << ", " <<
-	       newfilename.get());
+		newfilename.get());
 }
 
-void paranoidLogMonitor(void *)
+void paranoidLogMonitor(void*)
 {
 #ifdef _UNIX
 	Xtime xtime;
@@ -335,7 +336,7 @@ void paranoidLogMonitor(void *)
 	Global.config.getInt("ROTATEDELAY", delay);
 	PARANOIDMSG("ROTATEDELAY: " << delay);
 	if (delay == -1)
-		return ;
+		return;
 	while (1)
 	{
 		curtime = time(NULL);
@@ -357,10 +358,10 @@ void paranoidLogMonitor(void *)
 			Global.config.getString("PARANOIDLOGPATH", logpath);
 			xtime.update();
 			sprintf(filenamebuf, "%s/%02d%02d%04d_%02d%02d%02d_log", logpath.get(), xtime.getMonth(),
-			        xtime.getMDay(), xtime.getYear(), xtime.getHour(), xtime.getMinute(), xtime.getSecond());
+				xtime.getMDay(), xtime.getYear(), xtime.getHour(), xtime.getMinute(), xtime.getSecond());
 			rename(newfilename.get(), filenamebuf);
 			PARANOIDMSG("Paranoid: Just been switched.  " << logfilename.get() << ", " << newfilename.get());
-			sleep(60*60*23); // sleep the next 23 hours
+			sleep(60 * 60 * 23); // sleep the next 23 hours
 		}
 		sleep(300);
 	}
@@ -383,12 +384,12 @@ void rotateParanoid(void)
 
 	// This grabs the semaphore, renames the file, and switches the output device
 	MyMsgManager::ReplaceAllStreams((FileD*)output_device, logfilename.get(),
-	                                newfilename.get());
+		newfilename.get());
 
 	// clean up the tmp filename and move it to the log dir.
 	sprintf(filenamebuf, "%s/%02d%02d%04d_%02d%02d%02d_log", logpath.get(),
-	        xtime.getMonth(), xtime.getMDay(), xtime.getYear(), xtime.getHour(),
-	        xtime.getMinute(), xtime.getSecond());
+		xtime.getMonth(), xtime.getMDay(), xtime.getYear(), xtime.getHour(),
+		xtime.getMinute(), xtime.getSecond());
 #ifdef _WIN32
 	mkdir(logpath.get());
 #else
@@ -397,7 +398,7 @@ void rotateParanoid(void)
 	rename(newfilename.get(), filenamebuf);
 
 	PARANOIDMSG("Paranoid: Just been switched.  " << logfilename.get() << ", " <<
-	            newfilename.get());
+		newfilename.get());
 }
 
 

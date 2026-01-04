@@ -51,7 +51,7 @@ void GetPrecisionTimer(INT64* t)
 //-------------------------------------------------------------------------------------------------
 void InitPrecisionTimer()
 {
-	__int64 totalTime = 0;
+	int64_t totalTime = 0;
 	INT64	TotalTicks = 0;
 	static int TESTS = 10;
 

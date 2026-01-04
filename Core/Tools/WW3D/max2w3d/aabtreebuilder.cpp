@@ -317,7 +317,7 @@ AABTreeBuilderClass::Select_Splitting_Plane(int polycount,int * polyindices)
 	/*
 	** Try putting axis-aligned planes through some random vertices
 	*/
-	for (int trys = 0; trys < MIN(NUM_TRYS,polycount); trys++) {
+	for (int trys = 0; trys < std::min(NUM_TRYS,polycount); trys++) {
 
 		AAPlaneClass plane;
 

@@ -116,7 +116,7 @@ protected:
 	char							AnimName[W3D_NAME_LEN];
 	char							HierarchyName[W3D_NAME_LEN];
 
-	int							FrameCount;								// number of frames in the animation
+	uint32							FrameCount;								// number of frames in the animation
 	float							FrameRate;								// framerate for playback
 	int							ChannelCount;							// number of independent morphing channels
 	int							NumNodes;

@@ -804,13 +804,13 @@ void	MeshGeometryExportTaskClass::Update_Cached_Data(void)
 		boxmin = MeshData.verts[1];
 		boxmax = MeshData.verts[0];
 		for (int i=0; i<MeshData.numVerts; i++) {
-			boxmin.x = MIN(MeshData.verts[i].x,boxmin.x);
-			boxmin.y = MIN(MeshData.verts[i].y,boxmin.y);
-			boxmin.z = MIN(MeshData.verts[i].z,boxmin.z);
+			boxmin.x = std::min(MeshData.verts[i].x,boxmin.x);
+			boxmin.y = std::min(MeshData.verts[i].y,boxmin.y);
+			boxmin.z = std::min(MeshData.verts[i].z,boxmin.z);
 
-			boxmax.x = MAX(MeshData.verts[i].x,boxmax.x);
-			boxmax.y = MAX(MeshData.verts[i].y,boxmax.y);
-			boxmax.z = MAX(MeshData.verts[i].z,boxmax.z);
+			boxmax.x = std::max(MeshData.verts[i].x,boxmax.x);
+			boxmax.y = std::max(MeshData.verts[i].y,boxmax.y);
+			boxmax.z = std::max(MeshData.verts[i].z,boxmax.z);
 		}
 	}
 

@@ -79,6 +79,13 @@ public:
 	static void Request_Foreground_Loading(TextureBaseClass* tc);
 	static void Add_Load_Task(TextureBaseClass* tc);
 
+	// Set custom fallback function for texture loading (used by GeneralsMD)
+	typedef IDirect3DTexture8* (*TextureFallbackFunc)(const char* filename);
+	static void SetFallbackFunc(TextureFallbackFunc func);
+
+	// Public interface to load texture from VFS (used by fallback functions)
+	static IDirect3DTexture8* LoadFromVFS(const StringClass& filename, unsigned reduction_factor = 0);
+
 	static void	Flush_Pending_Load_Tasks(void);
 	static void Update(void(*network_callback)(void) = NULL);
 

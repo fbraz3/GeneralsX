@@ -49,10 +49,10 @@ typedef unsigned short WORD;
 typedef unsigned char BYTE;
 #endif
 
-/** @brief Signed 64-bit integer */
-#ifndef __int64
-typedef long long __int64;
-#endif
+// /** @brief Signed 64-bit integer */
+// #ifndef __int64
+// typedef long long __int64;
+// #endif
 
 /** @brief Unsigned integer (32-bit) */
 #ifndef UINT

@@ -49,6 +49,7 @@
 #include "genlodextensiondialog.h"
 #include "floaterdialog.h"
 #include <stdmat.h>
+#include <Utility/compat.h>
 
 
 #define DAZZLE_SETTINGS_FILENAME		"dazzle.ini"
@@ -69,17 +70,17 @@ static VisibleSelectedINodeFilter _INodeFilter;
 **********************************************************************************************/
 class MaterialReferenceMaker : public ReferenceMaker
 {
-	public:
+public:
 
-		~MaterialReferenceMaker() {DeleteAllRefs();}
+	~MaterialReferenceMaker() { DeleteAllRefs(); }
 
-		virtual int					NumRefs();
-		virtual RefTargetHandle GetReference (int i);
-		virtual void				SetReference (int i, RefTargetHandle rtarg);
-		RefResult					NotifyRefChanged (Interval changeInt,RefTargetHandle hTarget,PartID& partID, RefMessage message);
+	virtual int					NumRefs();
+	virtual RefTargetHandle GetReference(int i);
+	virtual void				SetReference(int i, RefTargetHandle rtarg);
+	RefResult					NotifyRefChanged(Interval changeInt, RefTargetHandle hTarget, PartID& partID, RefMessage message);
 
-		Mtl		  *MaterialPtr;
-		static int  ReferenceCount;
+	Mtl* MaterialPtr;
+	static int  ReferenceCount;
 };
 
 int MaterialReferenceMaker::NumRefs()
@@ -87,19 +88,19 @@ int MaterialReferenceMaker::NumRefs()
 	return (ReferenceCount);
 }
 
-RefTargetHandle MaterialReferenceMaker::GetReference (int i)
+RefTargetHandle MaterialReferenceMaker::GetReference(int i)
 {
-	assert (i < ReferenceCount);
+	assert(i < ReferenceCount);
 	return (MaterialPtr);
 }
 
-void MaterialReferenceMaker::SetReference (int i, RefTargetHandle rtarg)
+void MaterialReferenceMaker::SetReference(int i, RefTargetHandle rtarg)
 {
-	assert (i < ReferenceCount);
-	MaterialPtr = (Mtl*) rtarg;
+	assert(i < ReferenceCount);
+	MaterialPtr = (Mtl*)rtarg;
 }
 
-RefResult MaterialReferenceMaker::NotifyRefChanged(Interval changeInt,RefTargetHandle hTarget,PartID& partID, RefMessage message)
+RefResult MaterialReferenceMaker::NotifyRefChanged(Interval changeInt, RefTargetHandle hTarget, PartID& partID, RefMessage message)
 {
 	return (REF_SUCCEED);
 }
@@ -120,7 +121,7 @@ public:
 	SettingsFormClass(HWND hwnd);
 	~SettingsFormClass(void);
 
-	bool		Dialog_Proc(HWND hWnd,UINT message,WPARAM wParam,LPARAM);
+	bool		Dialog_Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM);
 	void		Selection_Changed(void);
 
 	static void	Update_All_Instances(void);
@@ -130,13 +131,13 @@ private:
 	void		Init(void);
 	void		Destroy(void);
 	void		Disable_Controls(void);
-	void		Update_Controls(INodeListClass * nodelist = NULL);
+	void		Update_Controls(INodeListClass* nodelist = NULL);
 
 	HWND						Hwnd;
-	ISpinnerControl *		RegionSpin;
-	SettingsFormClass *	Next;
+	ISpinnerControl* RegionSpin;
+	SettingsFormClass* Next;
 
-	static SettingsFormClass *	ActiveList;
+	static SettingsFormClass* ActiveList;
 
 };
 
@@ -154,9 +155,9 @@ public:
 	W3DUtilityClass();
 	~W3DUtilityClass();
 
-	void BeginEditParams(Interface *ip,IUtil *iu);
-	void EndEditParams(Interface *ip,IUtil *iu);
-	void SelectionSetChanged(Interface *ip,IUtil *iu);
+	void BeginEditParams(Interface* ip, IUtil* iu);
+	void EndEditParams(Interface* ip, IUtil* iu);
+	void SelectionSetChanged(Interface* ip, IUtil* iu);
 	void DeleteThis() {}
 
 	void Select_Hierarchy(void);
@@ -168,7 +169,7 @@ public:
 
 public:
 
-	Interface *							InterfacePtr;
+	Interface* InterfacePtr;
 	FloaterDialogClass				SettingsFloater;
 	HWND									SettingsPanelHWND;
 	HWND									ToolsPanelHWND;
@@ -233,69 +234,69 @@ public:
 	/*
 	** Evaluate the status of nodes in the given list
 	*/
-	static int		eval_tri_state(int totalcount,int oncount);
-	static void		eval_node_states(INodeListClass * node_list,NodeStatesStruct * ns);
+	static int		eval_tri_state(int totalcount, int oncount);
+	static void		eval_node_states(INodeListClass* node_list, NodeStatesStruct* ns);
 
 	/*
 	** Update the controls in any active settings panels
 	*/
-	static void		update_settings_controls(INodeListClass * node_list = NULL);
+	static void		update_settings_controls(INodeListClass* node_list = NULL);
 
 	/*
 	** Modify the state of all selected nodes
 	*/
-	static void		set_hierarchy_in_all_selected(INodeListClass * list,bool onoff);
-	static void		set_geometry_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_hidden_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_two_sided_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_znormals_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_vertex_alpha_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_shadow_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_shatterable_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_npatches_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_physical_collision_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_projectile_collision_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_vis_collision_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_camera_collision_in_all_selected(INodeListClass * list,bool onoff);
-	static void		enable_vehicle_collision_in_all_selected(INodeListClass * list,bool onoff);
+	static void		set_hierarchy_in_all_selected(INodeListClass* list, bool onoff);
+	static void		set_geometry_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_hidden_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_two_sided_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_znormals_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_vertex_alpha_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_shadow_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_shatterable_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_npatches_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_physical_collision_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_projectile_collision_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_vis_collision_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_camera_collision_in_all_selected(INodeListClass* list, bool onoff);
+	static void		enable_vehicle_collision_in_all_selected(INodeListClass* list, bool onoff);
 
-	static void		set_geometry_type_in_all_selected(INodeListClass * list,int geotype);
-	static void		set_dazzle_type_in_all_selected(INodeListClass * list,char * dazzletype);
+	static void		set_geometry_type_in_all_selected(INodeListClass* list, int geotype);
+	static void		set_dazzle_type_in_all_selected(INodeListClass* list, char* dazzletype);
 
-	static void		set_region_in_all_selected(INodeListClass * list,char region);
+	static void		set_region_in_all_selected(INodeListClass* list, char region);
 
 	/*
 	** Functions used by the tools rollup in the command panel
 	*/
-	void		descend_tree(INode * node,int action);
-	void		hide_node(INode * node);
-	void		select_geometry_node(INode * node);
-	void		select_hierarchy_node(INode * node);
-	void		select_alpha_node(INode * node);
-	void		select_physical_node(INode * node);
-	void		select_projectile_node(INode * node);
-	void		select_vis_node(INode * node);
-	bool		is_alpha_material(Mtl * nodemtl);
-	bool		is_alpha_mesh(INode * node,Mtl * nodemtl);
+	void		descend_tree(INode* node, int action);
+	void		hide_node(INode* node);
+	void		select_geometry_node(INode* node);
+	void		select_hierarchy_node(INode* node);
+	void		select_alpha_node(INode* node);
+	void		select_physical_node(INode* node);
+	void		select_projectile_node(INode* node);
+	void		select_vis_node(INode* node);
+	bool		is_alpha_material(Mtl* nodemtl);
+	bool		is_alpha_mesh(INode* node, Mtl* nodemtl);
 
 	void		generate_names(void);
-	void		generate_node_name(INode * node);
+	void		generate_node_name(INode* node);
 	void		generate_material_names(void);
-	void		generate_material_names_for_node(INode * node);
-	void		generate_material_names(Mtl * mtl);
+	void		generate_material_names_for_node(INode* node);
+	void		generate_material_names(Mtl* mtl);
 	void		generate_lod_extensions(void);
-	void		generate_lod_ext(INode * node);
+	void		generate_lod_ext(INode* node);
 
 	void		create_floater(void);
 
 	void		export_with_standard_materials();
-	int		convert_materials (MaterialConversionEnum conversion, MaterialReferenceMaker *gamenodematerials);
-	StdMat *	new_standard_material (GameMtl *gamemtl);
+	int		convert_materials(MaterialConversionEnum conversion, MaterialReferenceMaker* gamenodematerials);
+	StdMat* new_standard_material(GameMtl* gamemtl);
 
-	static W3DAppData0Struct *			get_app_data_0(INode * node);
-	static W3DAppData1Struct *			get_app_data_1(INode * node);
-	static W3DAppData2Struct *			get_app_data_2(INode * node);
-	static W3DDazzleAppDataStruct *	get_dazzle_app_data(INode * node);
+	static W3DAppData0Struct* get_app_data_0(INode* node);
+	static W3DAppData1Struct* get_app_data_1(INode* node);
+	static W3DAppData2Struct* get_app_data_2(INode* node);
+	static W3DDazzleAppDataStruct* get_dazzle_app_data(INode* node);
 };
 
 static W3DUtilityClass TheW3DUtility;
@@ -306,21 +307,21 @@ static W3DUtilityClass TheW3DUtility;
 ** W3DUtilityClassDesc - Class Descriptor for the W3D Utility
 **
 **********************************************************************************************/
-class W3DUtilityClassDesc:public ClassDesc
+class W3DUtilityClassDesc :public ClassDesc
 {
 public:
 
-	int 				IsPublic()								{ return 1; }
-	void *			Create(BOOL loading = FALSE)		{ return &TheW3DUtility; }
-	const TCHAR *	ClassName()								{ return Get_String(IDS_W3D_UTILITY_CLASS_NAME); }
-	SClass_ID		SuperClassID()							{ return UTILITY_CLASS_ID; }
-	Class_ID			ClassID()								{ return W3DUtilityClassID; }
-	const TCHAR* 	Category()								{ return Get_String(IDS_W3DMENU_CATEGORY); }
+	int 				IsPublic() { return 1; }
+	void* Create(BOOL loading = FALSE) { return &TheW3DUtility; }
+	const TCHAR* ClassName() { return Get_String(IDS_W3D_UTILITY_CLASS_NAME); }
+	SClass_ID		SuperClassID() { return UTILITY_CLASS_ID; }
+	Class_ID			ClassID() { return W3DUtilityClassID; }
+	const TCHAR* Category() { return Get_String(IDS_W3DMENU_CATEGORY); }
 };
 
 static W3DUtilityClassDesc W3DUtilityDesc;
 
-ClassDesc * Get_W3D_Utility_Desc(void)
+ClassDesc* Get_W3D_Utility_Desc(void)
 {
 	return &W3DUtilityDesc;
 }
@@ -342,7 +343,7 @@ W3DUtilityClass::~W3DUtilityClass(void)
 {
 }
 
-void W3DUtilityClass::BeginEditParams(Interface *ip,IUtil *iu)
+void W3DUtilityClass::BeginEditParams(Interface* ip, IUtil* iu)
 {
 	InterfacePtr = ip;
 
@@ -361,16 +362,16 @@ void W3DUtilityClass::BeginEditParams(Interface *ip,IUtil *iu)
 		0);
 
 
-//	TheRCMenu.Bind(TheW3DUtility.InterfacePtr,&TheW3DUtility);
-//	RightClickMenuManager *rcm = ip->GetRightClickMenuManager();
-//	if (TheRCMenu.Installed!=TRUE) {
-//		rcm->Register(&TheRCMenu);
-//	}
+	//	TheRCMenu.Bind(TheW3DUtility.InterfacePtr,&TheW3DUtility);
+	//	RightClickMenuManager *rcm = ip->GetRightClickMenuManager();
+	//	if (TheRCMenu.Installed!=TRUE) {
+	//		rcm->Register(&TheRCMenu);
+	//	}
 
 	SettingsFormClass::Update_All_Instances();
 }
 
-void W3DUtilityClass::EndEditParams(Interface *ip,IUtil *iu)
+void W3DUtilityClass::EndEditParams(Interface* ip, IUtil* iu)
 {
 	InterfacePtr = NULL;
 
@@ -381,14 +382,14 @@ void W3DUtilityClass::EndEditParams(Interface *ip,IUtil *iu)
 	ToolsPanelHWND = NULL;
 }
 
-void W3DUtilityClass::SelectionSetChanged(Interface *ip,IUtil *iu)
+void W3DUtilityClass::SelectionSetChanged(Interface* ip, IUtil* iu)
 {
 	// (gth) the settings panels which need to respond to the selection set changing
 	// are now registered directly with MAX and don't need to be updated here
 	//	update_dialog();
 }
 
-int W3DUtilityClass::eval_tri_state(int totalcount,int oncount)
+int W3DUtilityClass::eval_tri_state(int totalcount, int oncount)
 {
 	if (oncount == 0) {
 		return 0;
@@ -399,7 +400,7 @@ int W3DUtilityClass::eval_tri_state(int totalcount,int oncount)
 	return 2;
 }
 
-void W3DUtilityClass::eval_node_states(INodeListClass * list,NodeStatesStruct * ns)
+void W3DUtilityClass::eval_node_states(INodeListClass* list, NodeStatesStruct* ns)
 {
 	// initialize the counters and booleans
 	ns->ExportHierarchy = 0;
@@ -435,7 +436,7 @@ void W3DUtilityClass::eval_node_states(INodeListClass * list,NodeStatesStruct * 
 	if (list->Num_Nodes() > 0)
 	{
 		// Use the first damage region for comparing to the others.
-		W3DAppData1Struct *wdata = get_app_data_1((*list)[0]);
+		W3DAppData1Struct* wdata = get_app_data_1((*list)[0]);
 		ns->DamageRegion = wdata->DamageRegion;
 	}
 	else
@@ -448,34 +449,35 @@ void W3DUtilityClass::eval_node_states(INodeListClass * list,NodeStatesStruct * 
 	*/
 	ns->DazzleCount = 0;
 	if (list->Num_Nodes() > 0) {
-		W3DDazzleAppDataStruct * dazzledata = get_dazzle_app_data((*list)[0]);
-		strncpy(ns->DazzleType,dazzledata->DazzleType,sizeof(ns->DazzleType));
-	} else {
-		strcpy(ns->DazzleType,"DEFAULT");
+		W3DDazzleAppDataStruct* dazzledata = get_dazzle_app_data((*list)[0]);
+		strncpy(ns->DazzleType, dazzledata->DazzleType, sizeof(ns->DazzleType));
+	}
+	else {
+		strcpy(ns->DazzleType, "DEFAULT");
 	}
 
 	/*
 	** evaluate each node
 	*/
-	for (unsigned int ni=0; ni<list->Num_Nodes(); ni++) {
+	for (unsigned int ni = 0; ni < list->Num_Nodes(); ni++) {
 
-		W3DAppData2Struct * wdata = get_app_data_2((*list)[ni]);
+		W3DAppData2Struct* wdata = get_app_data_2((*list)[ni]);
 		assert(wdata);
 
-		ns->ExportHierarchy +=		(wdata->Is_Bone() ? 1 : 0);
-		ns->ExportGeometry +=		(wdata->Is_Geometry()  ? 1 : 0);
-		ns->GeometryHidden +=		(wdata->Is_Hidden_Enabled() ? 1 : 0);
-		ns->GeometryTwoSided +=		(wdata->Is_Two_Sided_Enabled() ? 1 : 0);
-		ns->GeometryZNormals +=		(wdata->Is_ZNormals_Enabled() ? 1 : 0);
-		ns->GeometryVertexAlpha +=	(wdata->Is_Vertex_Alpha_Enabled() ? 1 : 0);
-		ns->GeometryCastShadow +=	(wdata->Is_Shadow_Enabled() ? 1 : 0);
+		ns->ExportHierarchy += (wdata->Is_Bone() ? 1 : 0);
+		ns->ExportGeometry += (wdata->Is_Geometry() ? 1 : 0);
+		ns->GeometryHidden += (wdata->Is_Hidden_Enabled() ? 1 : 0);
+		ns->GeometryTwoSided += (wdata->Is_Two_Sided_Enabled() ? 1 : 0);
+		ns->GeometryZNormals += (wdata->Is_ZNormals_Enabled() ? 1 : 0);
+		ns->GeometryVertexAlpha += (wdata->Is_Vertex_Alpha_Enabled() ? 1 : 0);
+		ns->GeometryCastShadow += (wdata->Is_Shadow_Enabled() ? 1 : 0);
 		ns->GeometryShatterable += (wdata->Is_Shatterable_Enabled() ? 1 : 0);
-		ns->GeometryNPatch +=		(wdata->Is_NPatchable_Enabled() ? 1 : 0);
-		ns->CollisionPhysical +=	(wdata->Is_Physical_Collision_Enabled() ? 1 : 0);
-		ns->CollisionProjectile +=	(wdata->Is_Projectile_Collision_Enabled() ? 1 : 0);
-		ns->CollisionVis +=			(wdata->Is_Vis_Collision_Enabled() ? 1 : 0);
-		ns->CollisionCamera +=		(wdata->Is_Camera_Collision_Enabled() ? 1 : 0);
-		ns->CollisionVehicle +=		(wdata->Is_Vehicle_Collision_Enabled() ? 1 : 0);
+		ns->GeometryNPatch += (wdata->Is_NPatchable_Enabled() ? 1 : 0);
+		ns->CollisionPhysical += (wdata->Is_Physical_Collision_Enabled() ? 1 : 0);
+		ns->CollisionProjectile += (wdata->Is_Projectile_Collision_Enabled() ? 1 : 0);
+		ns->CollisionVis += (wdata->Is_Vis_Collision_Enabled() ? 1 : 0);
+		ns->CollisionCamera += (wdata->Is_Camera_Collision_Enabled() ? 1 : 0);
+		ns->CollisionVehicle += (wdata->Is_Vehicle_Collision_Enabled() ? 1 : 0);
 
 		switch (wdata->Get_Geometry_Type()) {
 		case W3DAppData2Struct::GEO_TYPE_CAMERA_ALIGNED:	ns->GeometryCameraAligned = true;	break;
@@ -492,7 +494,7 @@ void W3DUtilityClass::eval_node_states(INodeListClass * list,NodeStatesStruct * 
 		// use MAX_DAMAGE_REGION (an invalid value) as a sentinel value.
 		if (ns->DamageRegion != MAX_DAMAGE_REGIONS)
 		{
-			W3DAppData1Struct *wdata1 = get_app_data_1((*list)[ni]);
+			W3DAppData1Struct* wdata1 = get_app_data_1((*list)[ni]);
 			assert(wdata1);
 			if (wdata1->DamageRegion != ns->DamageRegion)
 				ns->DamageRegion = MAX_DAMAGE_REGIONS;
@@ -500,9 +502,9 @@ void W3DUtilityClass::eval_node_states(INodeListClass * list,NodeStatesStruct * 
 
 		// compare this objects dazzle type to our existing one.  If its not
 		// the same, use 'DEFAULT'.
-		W3DDazzleAppDataStruct * dazzledata = get_dazzle_app_data((*list)[ni]);
-		if (strcmp(ns->DazzleType,dazzledata->DazzleType) != 0) {
-			strcpy(ns->DazzleType,"DEFAULT");
+		W3DDazzleAppDataStruct* dazzledata = get_dazzle_app_data((*list)[ni]);
+		if (strcmp(ns->DazzleType, dazzledata->DazzleType) != 0) {
+			strcpy(ns->DazzleType, "DEFAULT");
 		}
 	}
 
@@ -528,163 +530,163 @@ void W3DUtilityClass::eval_node_states(INodeListClass * list,NodeStatesStruct * 
 
 }
 
-void W3DUtilityClass::update_settings_controls(INodeListClass * node_list)
+void W3DUtilityClass::update_settings_controls(INodeListClass* node_list)
 {
 	SettingsFormClass::Update_All_Instances();
 }
 
-void	W3DUtilityClass::set_hierarchy_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::set_hierarchy_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Export_Transform(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::set_geometry_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::set_geometry_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Export_Geometry(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_hidden_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_hidden_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Hidden(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_two_sided_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_two_sided_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Two_Sided(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_znormals_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_znormals_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_ZNormals(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_vertex_alpha_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_vertex_alpha_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Vertex_Alpha(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_shadow_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_shadow_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Shadow(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_shatterable_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_shatterable_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Shatterable(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_npatches_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_npatches_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_NPatchable(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_physical_collision_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_physical_collision_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Physical_Collision(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_projectile_collision_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_projectile_collision_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Projectile_Collision(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_vis_collision_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_vis_collision_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Vis_Collision(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_camera_collision_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_camera_collision_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Camera_Collision(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::enable_vehicle_collision_in_all_selected(INodeListClass * node_list,bool onoff)
+void	W3DUtilityClass::enable_vehicle_collision_in_all_selected(INodeListClass* node_list, bool onoff)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Enable_Vehicle_Collision(onoff);
 	}
 	update_settings_controls(node_list);
 }
 
-void	W3DUtilityClass::set_geometry_type_in_all_selected(INodeListClass * node_list,int geotype)
+void	W3DUtilityClass::set_geometry_type_in_all_selected(INodeListClass* node_list, int geotype)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DAppData2Struct * wdata = get_app_data_2((*node_list)[ni]);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DAppData2Struct* wdata = get_app_data_2((*node_list)[ni]);
 		wdata->Set_Geometry_Type((W3DAppData2Struct::GeometryTypeEnum)geotype);
 	}
 	update_settings_controls(node_list);
 }
 
-void W3DUtilityClass::set_dazzle_type_in_all_selected(INodeListClass * node_list,char * dazzle_type)
+void W3DUtilityClass::set_dazzle_type_in_all_selected(INodeListClass* node_list, char* dazzle_type)
 {
-	for (unsigned int ni=0; ni<node_list->Num_Nodes(); ni++) {
-		W3DDazzleAppDataStruct * dazzledata = get_dazzle_app_data((*node_list)[ni]);
-		strncpy(dazzledata->DazzleType,dazzle_type,sizeof(dazzledata->DazzleType) - 1);
+	for (unsigned int ni = 0; ni < node_list->Num_Nodes(); ni++) {
+		W3DDazzleAppDataStruct* dazzledata = get_dazzle_app_data((*node_list)[ni]);
+		strncpy(dazzledata->DazzleType, dazzle_type, sizeof(dazzledata->DazzleType) - 1);
 	}
 	update_settings_controls(node_list);
 }
 
-void W3DUtilityClass::set_region_in_all_selected(INodeListClass * list,char region)
+void W3DUtilityClass::set_region_in_all_selected(INodeListClass* list, char region)
 {
 	if (list->Num_Nodes() == 0) return;
 
 	// Damage regions are stored in each node's AppData1.
 	for (int i = 0; i < list->Num_Nodes(); i++)
 	{
-		W3DAppData1Struct *wdata = get_app_data_1((*list)[i]);
+		W3DAppData1Struct* wdata = get_app_data_1((*list)[i]);
 		wdata->DamageRegion = region;
 	}
 	update_settings_controls(list);
@@ -697,7 +699,7 @@ void W3DUtilityClass::generate_names(void)
 	WorkingNameIndex = NameOptions.NameIndex;
 
 	if (retval) {
-		descend_tree(InterfacePtr->GetRootNode(),GENERATE_NAME);
+		descend_tree(InterfacePtr->GetRootNode(), GENERATE_NAME);
 	}
 }
 
@@ -708,7 +710,7 @@ void W3DUtilityClass::generate_material_names(void)
 	WorkingNameIndex = MtlNameOptions.NameIndex;
 
 	if (retval) {
-		descend_tree(InterfacePtr->GetRootNode(),GENERATE_MATERIAL_NAME);
+		descend_tree(InterfacePtr->GetRootNode(), GENERATE_MATERIAL_NAME);
 	}
 }
 
@@ -718,11 +720,11 @@ void W3DUtilityClass::generate_lod_extensions(void)
 	bool retval = dialog.Get_Options(&LodExtensionOptions);
 
 	if (retval) {
-		descend_tree(InterfacePtr->GetRootNode(),GENERATE_LOD_EXTENSION);
+		descend_tree(InterfacePtr->GetRootNode(), GENERATE_LOD_EXTENSION);
 	}
 }
 
-void W3DUtilityClass::generate_lod_ext(INode * node)
+void W3DUtilityClass::generate_lod_ext(INode* node)
 {
 	/*
 	** Only works on selected nodes.
@@ -738,10 +740,10 @@ void W3DUtilityClass::generate_lod_ext(INode * node)
 	*/
 	char	msg[256];
 	char	newname[W3D_NAME_LEN];
-	char	*oldname = node->GetName();
-	char	*ext = strrchr(oldname, '.');
+	char* oldname = node->GetName();
+	char* ext = strrchr(oldname, '.');
 	int	old_lod;
-	if ( (ext != NULL) && (sscanf(ext, ".%d", &old_lod) == 1) )
+	if ((ext != NULL) && (sscanf(ext, ".%d", &old_lod) == 1))
 	{
 		/*
 		** An existing LOD index. If it's different than the new
@@ -796,52 +798,52 @@ void W3DUtilityClass::generate_lod_ext(INode * node)
 
 void W3DUtilityClass::create_floater(void)
 {
-	SettingsFloater.Create(InterfacePtr,IDD_W3DUTILITY_SETTINGS_DIALOG,_settings_form_dlg_proc);
+	SettingsFloater.Create(InterfacePtr, IDD_W3DUTILITY_SETTINGS_DIALOG, _settings_form_dlg_proc);
 	SettingsFormClass::Update_All_Instances();
 }
 
 void W3DUtilityClass::export_with_standard_materials()
 {
-	char *convertingmessage = "Converting materials...";
+	char* convertingmessage = "Converting materials...";
 
 	// Count the no. of references to game materials.
-	MaterialReferenceMaker::ReferenceCount = convert_materials (GAME_REFERENCE_COUNT, NULL);
+	MaterialReferenceMaker::ReferenceCount = convert_materials(GAME_REFERENCE_COUNT, NULL);
 
-	MaterialReferenceMaker *gamenodematerials = NULL;
+	MaterialReferenceMaker* gamenodematerials = NULL;
 
 	if (MaterialReferenceMaker::ReferenceCount > 0) {
-		gamenodematerials = new MaterialReferenceMaker [MaterialReferenceMaker::ReferenceCount];
-		assert (gamenodematerials != NULL);
+		gamenodematerials = new MaterialReferenceMaker[MaterialReferenceMaker::ReferenceCount];
+		assert(gamenodematerials != NULL);
 	}
 
-	InterfacePtr->PushPrompt (convertingmessage);
-	SetCursor (LoadCursor (NULL, IDC_WAIT));
-	convert_materials (GAME_TO_STANDARD, gamenodematerials);
+	InterfacePtr->PushPrompt(convertingmessage);
+	SetCursor(LoadCursor(NULL, IDC_WAIT));
+	convert_materials(GAME_TO_STANDARD, gamenodematerials);
 	InterfacePtr->PopPrompt();
 	InterfacePtr->FileExport();
-	UpdateWindow (InterfacePtr->GetMAXHWnd());
-	InterfacePtr->PushPrompt (convertingmessage);
-	SetCursor (LoadCursor (NULL, IDC_WAIT));
-	convert_materials (STANDARD_TO_GAME, gamenodematerials);
+	UpdateWindow(InterfacePtr->GetMAXHWnd());
+	InterfacePtr->PushPrompt(convertingmessage);
+	SetCursor(LoadCursor(NULL, IDC_WAIT));
+	convert_materials(STANDARD_TO_GAME, gamenodematerials);
 	InterfacePtr->PopPrompt();
 
 	// Clean-up.
-	if (gamenodematerials != NULL) delete [] gamenodematerials;
+	if (gamenodematerials != NULL) delete[] gamenodematerials;
 }
 
-int W3DUtilityClass::convert_materials (MaterialConversionEnum conversion, MaterialReferenceMaker *gamenodematerials)
+int W3DUtilityClass::convert_materials(MaterialConversionEnum conversion, MaterialReferenceMaker* gamenodematerials)
 {
 	int gamenodematerialindex = 0;
 
-	INode *rootnode = InterfacePtr->GetRootNode();
+	INode* rootnode = InterfacePtr->GetRootNode();
 	if (rootnode != NULL) {
 
-		INodeListClass *meshlist = new INodeListClass (rootnode, 0);
+		INodeListClass* meshlist = new INodeListClass(rootnode, 0);
 		if (meshlist != NULL) {
 
 			for (unsigned nodeindex = 0; nodeindex < meshlist->Num_Nodes(); nodeindex++) {
 
-				Mtl *nodemtl = ((*meshlist) [nodeindex])->GetMtl();
+				Mtl* nodemtl = ((*meshlist)[nodeindex])->GetMtl();
 
 				// Is this a non-null material?
 				if (nodemtl != NULL) {
@@ -851,87 +853,90 @@ int W3DUtilityClass::convert_materials (MaterialConversionEnum conversion, Mater
 
 						switch (conversion) {
 
-							case GAME_REFERENCE_COUNT:
-								if (nodemtl->ClassID() == GameMaterialClassID) {
-									assert (((GameMtl*) nodemtl)->Substitute_Material() == NULL);
+						case GAME_REFERENCE_COUNT:
+							if (nodemtl->ClassID() == GameMaterialClassID) {
+								assert(((GameMtl*)nodemtl)->Substitute_Material() == NULL);
+							}
+							break;
+
+						case GAME_TO_STANDARD:
+
+							if (nodemtl->ClassID() == GameMaterialClassID) {
+
+								// Make a reference to the game material to ensure that it is not deleted by the system.
+								gamenodematerials[gamenodematerialindex].MakeRefByID(FOREVER, gamenodematerialindex, nodemtl);
+
+								// Does this material already have an equivalent standard material?
+								if (((GameMtl*)nodemtl)->Substitute_Material() == NULL) {
+									((GameMtl*)nodemtl)->Set_Substitute_Material(new_standard_material((GameMtl*)nodemtl));
 								}
-								break;
+								((*meshlist)[nodeindex])->SetMtl(((GameMtl*)nodemtl)->Substitute_Material());
 
-							case GAME_TO_STANDARD:
+							}
+							else {
+								gamenodematerials[gamenodematerialindex].MaterialPtr = NULL;
+							}
+							break;
 
-								if (nodemtl->ClassID() == GameMaterialClassID) {
+						case STANDARD_TO_GAME:
 
-									// Make a reference to the game material to ensure that it is not deleted by the system.
-									gamenodematerials [gamenodematerialindex].MakeRefByID (FOREVER, gamenodematerialindex, nodemtl);
-
-									// Does this material already have an equivalent standard material?
-									if (((GameMtl*) nodemtl)->Substitute_Material() == NULL) {
-										((GameMtl*) nodemtl)->Set_Substitute_Material (new_standard_material ((GameMtl*) nodemtl));
-									}
-									((*meshlist) [nodeindex])->SetMtl (((GameMtl*) nodemtl)->Substitute_Material());
-
-								} else {
-									gamenodematerials [gamenodematerialindex].MaterialPtr = NULL;
-								}
-								break;
-
-							case STANDARD_TO_GAME:
-
-								// Change materials to game materials if they were previously game materials before being
-								// converted to standard materials.
-								if (gamenodematerials [gamenodematerialindex].MaterialPtr != NULL) {
-									((*meshlist) [nodeindex])->SetMtl (gamenodematerials [gamenodematerialindex].MaterialPtr);
-									((GameMtl*) gamenodematerials [gamenodematerialindex].MaterialPtr)->Set_Substitute_Material (NULL);
-								}
-								break;
+							// Change materials to game materials if they were previously game materials before being
+							// converted to standard materials.
+							if (gamenodematerials[gamenodematerialindex].MaterialPtr != NULL) {
+								((*meshlist)[nodeindex])->SetMtl(gamenodematerials[gamenodematerialindex].MaterialPtr);
+								((GameMtl*)gamenodematerials[gamenodematerialindex].MaterialPtr)->Set_Substitute_Material(NULL);
+							}
+							break;
 						}
 						gamenodematerialindex++;
 
-					} else {
+					}
+					else {
 
 						// For each sub-material...
 						for (int materialindex = 0; materialindex < nodemtl->NumSubMtls(); materialindex++) {
 
-							Mtl *submaterial = nodemtl->GetSubMtl (materialindex);
+							Mtl* submaterial = nodemtl->GetSubMtl(materialindex);
 
 							// Is this a non-null submaterial?
 							if (submaterial != NULL) {
 
 								switch (conversion) {
 
-									case GAME_REFERENCE_COUNT:
-										if (submaterial->ClassID() == GameMaterialClassID) {
-											assert (((GameMtl*) submaterial)->Substitute_Material() == NULL);
+								case GAME_REFERENCE_COUNT:
+									if (submaterial->ClassID() == GameMaterialClassID) {
+										assert(((GameMtl*)submaterial)->Substitute_Material() == NULL);
+									}
+									break;
+
+								case GAME_TO_STANDARD:
+
+									if (submaterial->ClassID() == GameMaterialClassID) {
+
+										// Make a reference to the game material to ensure that it is not deleted by the system.
+										gamenodematerials[gamenodematerialindex].MakeRefByID(FOREVER, gamenodematerialindex, submaterial);
+
+										// Does this material already have an equivalent standard material?
+										if (((GameMtl*)submaterial)->Substitute_Material() == NULL) {
+											((GameMtl*)submaterial)->Set_Substitute_Material(new_standard_material((GameMtl*)submaterial));
 										}
-										break;
+										nodemtl->SetSubMtl(materialindex, ((GameMtl*)submaterial)->Substitute_Material());
 
-									case GAME_TO_STANDARD:
+									}
+									else {
+										gamenodematerials[gamenodematerialindex].MaterialPtr = NULL;
+									}
+									break;
 
-										if (submaterial->ClassID() == GameMaterialClassID) {
+								case STANDARD_TO_GAME:
 
-											// Make a reference to the game material to ensure that it is not deleted by the system.
-											gamenodematerials [gamenodematerialindex].MakeRefByID (FOREVER, gamenodematerialindex, submaterial);
-
-											// Does this material already have an equivalent standard material?
-											if (((GameMtl*) submaterial)->Substitute_Material() == NULL) {
- 												((GameMtl*) submaterial)->Set_Substitute_Material (new_standard_material ((GameMtl*) submaterial));
-											}
-											nodemtl->SetSubMtl (materialindex, ((GameMtl*) submaterial)->Substitute_Material());
-
-										} else {
-											gamenodematerials [gamenodematerialindex].MaterialPtr = NULL;
-										}
-										break;
-
-									case STANDARD_TO_GAME:
-
-										// Change materials to game materials if they were previously game materials before being
-										// converted to standard materials.
-										if (gamenodematerials [gamenodematerialindex].MaterialPtr != NULL) {
-											nodemtl->SetSubMtl (materialindex, gamenodematerials [gamenodematerialindex].MaterialPtr);
-											((GameMtl*) gamenodematerials [gamenodematerialindex].MaterialPtr)->Set_Substitute_Material (NULL);
-										}
-										break;
+									// Change materials to game materials if they were previously game materials before being
+									// converted to standard materials.
+									if (gamenodematerials[gamenodematerialindex].MaterialPtr != NULL) {
+										nodemtl->SetSubMtl(materialindex, gamenodematerials[gamenodematerialindex].MaterialPtr);
+										((GameMtl*)gamenodematerials[gamenodematerialindex].MaterialPtr)->Set_Substitute_Material(NULL);
+									}
+									break;
 								}
 								gamenodematerialindex++;
 							}
@@ -948,27 +953,27 @@ int W3DUtilityClass::convert_materials (MaterialConversionEnum conversion, Mater
 	return (gamenodematerialindex);
 }
 
-StdMat *W3DUtilityClass::new_standard_material (GameMtl *gamemtl)
+StdMat* W3DUtilityClass::new_standard_material(GameMtl* gamemtl)
 {
 	Color emissive;
 
 	// Create a new standard material.
-	StdMat *stdmtl = NewDefaultStdMat();
+	StdMat* stdmtl = NewDefaultStdMat();
 
 	// Set its properties by translating the supplied game material.
 	// NOTE 0: Only consider pass 0 in the game material - ignore all other passes.
 	// NOTE 1: Use defaults for all standard material attributes that cannot be
 	//			  converted from the game material in a meaningful way.
-	stdmtl->SetName (gamemtl->GetName());
-	stdmtl->SetAmbient (gamemtl->GetAmbient(), 0);
-	stdmtl->SetDiffuse (gamemtl->GetDiffuse(), 0);
-	stdmtl->SetSpecular (gamemtl->GetSpecular(), 0);
-	stdmtl->SetOpacity (gamemtl->Get_Opacity (0, 0), 0);
-	stdmtl->SetShininess (gamemtl->Get_Shininess (0, 0), 0);
-	stdmtl->SetShinStr (gamemtl->GetShinStr(), 0);
-	stdmtl->SetSubTexmap (ID_DI, gamemtl->Get_Texture (0, 0));
-	emissive = gamemtl->Get_Emissive (0, 0);
-	stdmtl->SetSelfIllum ((emissive.r + emissive.g + emissive.b) / 3.0f, 0);
+	stdmtl->SetName(gamemtl->GetName());
+	stdmtl->SetAmbient(gamemtl->GetAmbient(), 0);
+	stdmtl->SetDiffuse(gamemtl->GetDiffuse(), 0);
+	stdmtl->SetSpecular(gamemtl->GetSpecular(), 0);
+	stdmtl->SetOpacity(gamemtl->Get_Opacity(0, 0), 0);
+	stdmtl->SetShininess(gamemtl->Get_Shininess(0, 0), 0);
+	stdmtl->SetShinStr(gamemtl->GetShinStr(), 0);
+	stdmtl->SetSubTexmap(ID_DI, gamemtl->Get_Texture(0, 0));
+	emissive = gamemtl->Get_Emissive(0, 0);
+	stdmtl->SetSelfIllum((emissive.r + emissive.g + emissive.b) / 3.0f, 0);
 
 	return (stdmtl);
 }
@@ -976,52 +981,52 @@ StdMat *W3DUtilityClass::new_standard_material (GameMtl *gamemtl)
 void W3DUtilityClass::Select_Hierarchy(void)
 {
 	InterfacePtr->SelectNode(NULL);
-	INode * root = InterfacePtr->GetRootNode();
-	descend_tree(root,SELECT_HIER);
+	INode* root = InterfacePtr->GetRootNode();
+	descend_tree(root, SELECT_HIER);
 	InterfacePtr->ForceCompleteRedraw();
 }
 
 void W3DUtilityClass::Select_Geometry(void)
 {
 	InterfacePtr->SelectNode(NULL);
-	INode * root = InterfacePtr->GetRootNode();
-	descend_tree(root,SELECT_GEOM);
+	INode* root = InterfacePtr->GetRootNode();
+	descend_tree(root, SELECT_GEOM);
 	InterfacePtr->ForceCompleteRedraw();
 }
 
 void W3DUtilityClass::Select_Alpha(void)
 {
 	InterfacePtr->SelectNode(NULL);
-	INode * root = InterfacePtr->GetRootNode();
-	descend_tree(root,SELECT_ALPHA);
+	INode* root = InterfacePtr->GetRootNode();
+	descend_tree(root, SELECT_ALPHA);
 	InterfacePtr->ForceCompleteRedraw();
 }
 
 void W3DUtilityClass::Select_Physical(void)
 {
 	InterfacePtr->SelectNode(NULL);
-	INode * root = InterfacePtr->GetRootNode();
-	descend_tree(root,SELECT_PHYSICAL);
+	INode* root = InterfacePtr->GetRootNode();
+	descend_tree(root, SELECT_PHYSICAL);
 	InterfacePtr->ForceCompleteRedraw();
 }
 
 void W3DUtilityClass::Select_Projectile(void)
 {
 	InterfacePtr->SelectNode(NULL);
-	INode * root = InterfacePtr->GetRootNode();
-	descend_tree(root,SELECT_PROJECTILE);
+	INode* root = InterfacePtr->GetRootNode();
+	descend_tree(root, SELECT_PROJECTILE);
 	InterfacePtr->ForceCompleteRedraw();
 }
 
 void W3DUtilityClass::Select_Vis(void)
 {
 	InterfacePtr->SelectNode(NULL);
-	INode * root = InterfacePtr->GetRootNode();
-	descend_tree(root,SELECT_VIS);
+	INode* root = InterfacePtr->GetRootNode();
+	descend_tree(root, SELECT_VIS);
 	InterfacePtr->ForceCompleteRedraw();
 }
 
-void W3DUtilityClass::descend_tree(INode * node,int func)
+void W3DUtilityClass::descend_tree(INode* node, int func)
 {
 	if (!node) return;
 
@@ -1071,68 +1076,68 @@ void W3DUtilityClass::descend_tree(INode * node,int func)
 		break;
 	};
 
-	for (int i=0; i<node->NumberOfChildren(); i++) {
-		INode * child = node->GetChildNode(i);
-		descend_tree(child,func);
+	for (int i = 0; i < node->NumberOfChildren(); i++) {
+		INode* child = node->GetChildNode(i);
+		descend_tree(child, func);
 	}
 }
 
-void W3DUtilityClass::hide_node(INode * node)
+void W3DUtilityClass::hide_node(INode* node)
 {
 	if (!node->IsHidden()) node->Hide(TRUE);
 	InterfacePtr->NodeInvalidateRect(node);
 }
 
-void W3DUtilityClass::select_geometry_node(INode * node)
+void W3DUtilityClass::select_geometry_node(INode* node)
 {
 	if (Is_Geometry(node) && !node->IsHidden()) {
-		InterfacePtr->SelectNode(node,0);
+		InterfacePtr->SelectNode(node, 0);
 	}
 }
 
-void W3DUtilityClass::select_hierarchy_node(INode * node)
+void W3DUtilityClass::select_hierarchy_node(INode* node)
 {
 	if (Is_Bone(node) && !node->IsHidden()) {
-		InterfacePtr->SelectNode(node,0);
+		InterfacePtr->SelectNode(node, 0);
 	}
 }
 
-void W3DUtilityClass::select_alpha_node(INode * node)
+void W3DUtilityClass::select_alpha_node(INode* node)
 {
 	if (node->IsHidden() || !Is_Geometry(node)) {
 		return;
 	}
 
-	Mtl * nodemtl = node->GetMtl();
+	Mtl* nodemtl = node->GetMtl();
 	if (is_alpha_material(nodemtl)) {
-		if (is_alpha_mesh(node,nodemtl)) {
-			InterfacePtr->SelectNode(node,0);
+		if (is_alpha_mesh(node, nodemtl)) {
+			InterfacePtr->SelectNode(node, 0);
 		}
 	}
 }
 
-void W3DUtilityClass::select_physical_node(INode * node)
+void W3DUtilityClass::select_physical_node(INode* node)
 {
 	if (!node->IsHidden() && Is_Geometry(node) && Is_Physical_Collision(node)) {
-		InterfacePtr->SelectNode(node,0);
+		InterfacePtr->SelectNode(node, 0);
 	}
 }
 
-void W3DUtilityClass::select_projectile_node(INode * node)
+void W3DUtilityClass::select_projectile_node(INode* node)
 {
 	if (!node->IsHidden() && Is_Geometry(node) && Is_Projectile_Collision(node)) {
-		InterfacePtr->SelectNode(node,0);
+		InterfacePtr->SelectNode(node, 0);
 	}
 }
 
-void W3DUtilityClass::select_vis_node(INode * node)
+void W3DUtilityClass::select_vis_node(INode* node)
 {
 	if (!node->IsHidden() && Is_Geometry(node) && Is_Vis_Collision(node)) {
-		InterfacePtr->SelectNode(node,0);
+		InterfacePtr->SelectNode(node, 0);
 	}
 }
 
-bool W3DUtilityClass::is_alpha_material(Mtl * nodemtl)
+bool W3DUtilityClass::is_alpha_material(Mtl* nodemtl)
 {
 	if (nodemtl == NULL) {
 		return false;
@@ -1140,18 +1145,19 @@ bool W3DUtilityClass::is_alpha_material(Mtl * nodemtl)
 
 	bool is_alpha = false;
 	if (nodemtl->IsMultiMtl()) {
-		for (int mi=0; mi<nodemtl->NumSubMtls(); mi++) {
+		for (int mi = 0; mi < nodemtl->NumSubMtls(); mi++) {
 			is_alpha |= is_alpha_material(nodemtl->GetSubMtl(mi));
 		}
-	} else {
+	}
+	else {
 		if (nodemtl->ClassID() == GameMaterialClassID) {
-			GameMtl * gamemtl = (GameMtl *)nodemtl;
+			GameMtl* gamemtl = (GameMtl*)nodemtl;
 
-			if (	(gamemtl->Get_Dest_Blend(0) == W3DSHADER_DESTBLENDFUNC_SRC_ALPHA) ||
-					(gamemtl->Get_Dest_Blend(0) == W3DSHADER_DESTBLENDFUNC_ONE_MINUS_SRC_ALPHA) ||
-					(gamemtl->Get_Src_Blend(0) == W3DSHADER_SRCBLENDFUNC_SRC_ALPHA) ||
-					(gamemtl->Get_Src_Blend(0) == W3DSHADER_SRCBLENDFUNC_ONE_MINUS_SRC_ALPHA) ||
-					(gamemtl->Get_Alpha_Test(0) == W3DSHADER_ALPHATEST_ENABLE)  )
+			if ((gamemtl->Get_Dest_Blend(0) == W3DSHADER_DESTBLENDFUNC_SRC_ALPHA) ||
+				(gamemtl->Get_Dest_Blend(0) == W3DSHADER_DESTBLENDFUNC_ONE_MINUS_SRC_ALPHA) ||
+				(gamemtl->Get_Src_Blend(0) == W3DSHADER_SRCBLENDFUNC_SRC_ALPHA) ||
+				(gamemtl->Get_Src_Blend(0) == W3DSHADER_SRCBLENDFUNC_ONE_MINUS_SRC_ALPHA) ||
+				(gamemtl->Get_Alpha_Test(0) == W3DSHADER_ALPHATEST_ENABLE))
 			{
 				is_alpha = true;
 			}
@@ -1160,13 +1166,13 @@ bool W3DUtilityClass::is_alpha_material(Mtl * nodemtl)
 	return is_alpha;
 }
 
-bool W3DUtilityClass::is_alpha_mesh(INode * node,Mtl * nodemtl)
+bool W3DUtilityClass::is_alpha_mesh(INode* node, Mtl* nodemtl)
 {
-	Object *       obj = node->EvalWorldState(0).obj;
-	TriObject *    tri = (TriObject *)obj->ConvertToType(0, triObjectClassID);
+	Object* obj = node->EvalWorldState(0).obj;
+	TriObject* tri = (TriObject*)obj->ConvertToType(0, triObjectClassID);
 
 	if (tri != NULL) {
-		Mesh & mesh = tri->mesh;
+		Mesh& mesh = tri->mesh;
 
 		int face_index;
 		int mat_index;
@@ -1175,29 +1181,31 @@ bool W3DUtilityClass::is_alpha_mesh(INode * node,Mtl * nodemtl)
 
 			return false;
 
-		} else if (nodemtl->NumSubMtls() <= 1) {
+		}
+		else if (nodemtl->NumSubMtls() <= 1) {
 
 			return is_alpha_material(nodemtl);
 
-		} else {
+		}
+		else {
 
 			int sub_mtl_count = nodemtl->NumSubMtls();
-			bool * sub_mtl_flags = new bool[sub_mtl_count];
+			bool* sub_mtl_flags = new bool[sub_mtl_count];
 
 			// Initialize each sub-material flag to false (indicates that the material is un-used)
-			for (mat_index=0; mat_index<sub_mtl_count; mat_index++) {
+			for (mat_index = 0; mat_index < sub_mtl_count; mat_index++) {
 				sub_mtl_flags[mat_index] = false;
 			}
 
 			// Set a true for each material actually referenced by the mesh
-			for (face_index=0; face_index<mesh.getNumFaces(); face_index++) {
+			for (face_index = 0; face_index < mesh.getNumFaces(); face_index++) {
 				int max_mat_index = mesh.faces[face_index].getMatID();
 				int mat_index = (max_mat_index % sub_mtl_count);
 				sub_mtl_flags[mat_index] = true;
 			}
 
 			// Loop over the used materials and return true if any are alpha materials
-			for (mat_index=0; mat_index<sub_mtl_count; mat_index++) {
+			for (mat_index = 0; mat_index < sub_mtl_count; mat_index++) {
 				if (sub_mtl_flags[mat_index]) {
 					if (is_alpha_material(nodemtl->GetSubMtl(mat_index))) {
 						return true;
@@ -1209,7 +1217,7 @@ bool W3DUtilityClass::is_alpha_mesh(INode * node,Mtl * nodemtl)
 	return false;
 }
 
-void W3DUtilityClass::generate_node_name(INode * node)
+void W3DUtilityClass::generate_node_name(INode* node)
 {
 	TCHAR temp_string[256];
 
@@ -1222,24 +1230,24 @@ void W3DUtilityClass::generate_node_name(INode * node)
 	}
 
 	if (NameOptions.AssignNames) {
-		_stprintf(temp_string,"%s%03d",NameOptions.RootName,WorkingNameIndex);
+		_stprintf(temp_string, "%s%03d", NameOptions.RootName, WorkingNameIndex);
 		node->SetName(temp_string);
 		WorkingNameIndex++;
 	}
 
 	if (NameOptions.AssignPrefix) {
-		_stprintf(temp_string,"%s%s",NameOptions.PrefixName,node->GetName());
+		_stprintf(temp_string, "%s%s", NameOptions.PrefixName, node->GetName());
 		node->SetName(temp_string);
 	}
 
 	if (NameOptions.AssignSuffix) {
-		_stprintf(temp_string,"%s%s",node->GetName(),NameOptions.SuffixName);
+		_stprintf(temp_string, "%s%s", node->GetName(), NameOptions.SuffixName);
 		node->SetName(temp_string);
 	}
 
 	if (NameOptions.AssignCollisionBits) {
 
-		W3DAppData2Struct * wdata = W3DAppData2Struct::Get_App_Data(node);
+		W3DAppData2Struct* wdata = W3DAppData2Struct::Get_App_Data(node);
 		assert(wdata);
 
 		wdata->Enable_Physical_Collision(NameOptions.PhysicalCollision);
@@ -1250,7 +1258,7 @@ void W3DUtilityClass::generate_node_name(INode * node)
 	}
 }
 
-void W3DUtilityClass::generate_material_names_for_node(INode * node)
+void W3DUtilityClass::generate_material_names_for_node(INode* node)
 {
 	if (MtlNameOptions.OnlyAffectSelected && !node->Selected()) {
 		return;
@@ -1258,7 +1266,7 @@ void W3DUtilityClass::generate_material_names_for_node(INode * node)
 	generate_material_names(node->GetMtl());
 }
 
-void W3DUtilityClass::generate_material_names(Mtl * mtl)
+void W3DUtilityClass::generate_material_names(Mtl* mtl)
 {
 	if (mtl == NULL) {
 		return;
@@ -1266,53 +1274,54 @@ void W3DUtilityClass::generate_material_names(Mtl * mtl)
 
 	// set the name of this material and increment the index
 	TCHAR newname[GenMtlNamesDialogClass::MAX_MATERIAL_NAME_LEN];
-	_stprintf(newname,"%s%03d",MtlNameOptions.RootName,WorkingNameIndex);
+	_stprintf(newname, "%s%03d", MtlNameOptions.RootName, WorkingNameIndex);
 	mtl->SetName(newname);
 	WorkingNameIndex++;
 
 	// recurse into children
 	if (mtl->IsMultiMtl()) {
-		for (int mi=0; mi<mtl->NumSubMtls(); mi++) {
+		for (int mi = 0; mi < mtl->NumSubMtls(); mi++) {
 			generate_material_names(mtl->GetSubMtl(mi));
 		}
 	}
 }
 
 
-W3DAppData0Struct * W3DUtilityClass::get_app_data_0(INode * node)
+W3DAppData0Struct* W3DUtilityClass::get_app_data_0(INode* node)
 {
 	/*
 	** Try to get our AppData which has the export flags
 	*/
-	W3DAppData0Struct * wdata = NULL;
-	AppDataChunk * appdata = node->GetAppDataChunk(W3DUtilityClassID,UTILITY_CLASS_ID,0);
+	W3DAppData0Struct* wdata = NULL;
+	AppDataChunk* appdata = node->GetAppDataChunk(W3DUtilityClassID, UTILITY_CLASS_ID, 0);
 
 	/*
 	** If there wasn't one, return NULL since this app data chunk is obsolete now.
 	** If there was one, get the data from it
 	*/
 	if (appdata) {
-		wdata = (W3DAppData0Struct *)(appdata->data);
+		wdata = (W3DAppData0Struct*)(appdata->data);
 	}
 
 	return wdata;
 }
 
 
-W3DAppData1Struct * W3DUtilityClass::get_app_data_1(INode * node)
+W3DAppData1Struct* W3DUtilityClass::get_app_data_1(INode* node)
 {
 	// Try to get our AppData which has the damage region
-	W3DAppData1Struct * wdata = NULL;
-	AppDataChunk * appdata = node->GetAppDataChunk(W3DUtilityClassID,UTILITY_CLASS_ID,1);
+	W3DAppData1Struct* wdata = NULL;
+	AppDataChunk* appdata = node->GetAppDataChunk(W3DUtilityClassID, UTILITY_CLASS_ID, 1);
 
 	// If there wasn't one, add one.  If there was one, get the data from it
 	if (appdata) {
-		wdata = (W3DAppData1Struct *)(appdata->data);
-	} else {
+		wdata = (W3DAppData1Struct*)(appdata->data);
+	}
+	else {
 		wdata = new W3DAppData1Struct;
-		node->AddAppDataChunk(W3DUtilityClassID,UTILITY_CLASS_ID,1,sizeof(W3DAppData1Struct),wdata);
+		node->AddAppDataChunk(W3DUtilityClassID, UTILITY_CLASS_ID, 1, sizeof(W3DAppData1Struct), wdata);
 
-		appdata = node->GetAppDataChunk(W3DUtilityClassID,UTILITY_CLASS_ID,1);
+		appdata = node->GetAppDataChunk(W3DUtilityClassID, UTILITY_CLASS_ID, 1);
 		assert(appdata);
 	}
 
@@ -1320,13 +1329,13 @@ W3DAppData1Struct * W3DUtilityClass::get_app_data_1(INode * node)
 }
 
 
-W3DAppData2Struct * W3DUtilityClass::get_app_data_2(INode * node)
+W3DAppData2Struct* W3DUtilityClass::get_app_data_2(INode* node)
 {
 	return W3DAppData2Struct::Get_App_Data(node);
 }
 
 
-W3DDazzleAppDataStruct * W3DUtilityClass::get_dazzle_app_data(INode * node)
+W3DDazzleAppDataStruct* W3DUtilityClass::get_dazzle_app_data(INode* node)
 {
 	return W3DDazzleAppDataStruct::Get_App_Data(node);
 }
@@ -1341,71 +1350,71 @@ static BOOL CALLBACK _w3d_utility_tools_dlg_proc(HWND hWnd, UINT msg, WPARAM wPa
 {
 	switch (msg) {
 
-		case WM_LBUTTONDOWN:
-		case WM_LBUTTONUP:
-		case WM_MOUSEMOVE:
-			TheW3DUtility.InterfacePtr->RollupMouseMessage(hWnd,msg,wParam,lParam);
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_MOUSEMOVE:
+		TheW3DUtility.InterfacePtr->RollupMouseMessage(hWnd, msg, wParam, lParam);
+		break;
+
+	case WM_COMMAND:
+	{
+		switch (LOWORD(wParam))
+		{
+			/*
+			** Buttons
+			*/
+		case IDC_SELECT_GEOMETRY:
+			TheW3DUtility.Select_Geometry();
 			break;
 
-		case WM_COMMAND:
-		{
-			switch (LOWORD(wParam))
-			{
-				/*
-				** Buttons
-				*/
-				case IDC_SELECT_GEOMETRY:
-					TheW3DUtility.Select_Geometry();
-					break;
+		case IDC_SELECT_HIERARCHY:
+			TheW3DUtility.Select_Hierarchy();
+			break;
 
-				case IDC_SELECT_HIERARCHY:
-					TheW3DUtility.Select_Hierarchy();
-					break;
+		case IDC_SELECT_ALPHA_MESHES:
+			TheW3DUtility.Select_Alpha();
+			break;
 
-				case IDC_SELECT_ALPHA_MESHES:
-					TheW3DUtility.Select_Alpha();
-					break;
+		case IDC_SELECT_PHYSICAL:
+			TheW3DUtility.Select_Physical();
+			break;
 
-				case IDC_SELECT_PHYSICAL:
-					TheW3DUtility.Select_Physical();
-					break;
+		case IDC_SELECT_PROJECTILE:
+			TheW3DUtility.Select_Projectile();
+			break;
 
-				case IDC_SELECT_PROJECTILE:
-					TheW3DUtility.Select_Projectile();
-					break;
+		case IDC_SELECT_VIS:
+			TheW3DUtility.Select_Vis();
+			break;
 
-				case IDC_SELECT_VIS:
-					TheW3DUtility.Select_Vis();
-					break;
+		case IDC_COLLECTION_NAMES_GENERATE:
+			TheW3DUtility.generate_names();
+			TheW3DUtility.update_settings_controls();
+			break;
 
-				case IDC_COLLECTION_NAMES_GENERATE:
-					TheW3DUtility.generate_names();
-					TheW3DUtility.update_settings_controls();
-					break;
+		case IDC_MATERIAL_NAMES_GENERATE:
+			TheW3DUtility.generate_material_names();
+			TheW3DUtility.update_settings_controls();
+			break;
 
-				case IDC_MATERIAL_NAMES_GENERATE:
-					TheW3DUtility.generate_material_names();
-					TheW3DUtility.update_settings_controls();
-					break;
+		case IDC_LOD_EXTENSION_GENERATE:
+			TheW3DUtility.generate_lod_extensions();
+			TheW3DUtility.update_settings_controls();
+			break;
 
-				case IDC_LOD_EXTENSION_GENERATE:
-					TheW3DUtility.generate_lod_extensions();
-					TheW3DUtility.update_settings_controls();
-					break;
+		case IDC_EXPORT_STANDARD_MATERIALS:
+			TheW3DUtility.export_with_standard_materials();
+			break;
 
-				case IDC_EXPORT_STANDARD_MATERIALS:
-					TheW3DUtility.export_with_standard_materials();
-					break;
-
-				case IDC_CREATE_SETTINGS_FLOATER:
-					TheW3DUtility.create_floater();
-					break;
-			}
-			return TRUE;
+		case IDC_CREATE_SETTINGS_FLOATER:
+			TheW3DUtility.create_floater();
+			break;
 		}
+		return TRUE;
+	}
 
-		default:
-			return FALSE;
+	default:
+		return FALSE;
 	}
 	return TRUE;
 }
@@ -1421,24 +1430,25 @@ static BOOL CALLBACK _w3d_utility_tools_dlg_proc(HWND hWnd, UINT msg, WPARAM wPa
 ** the window is destroyed.
 **
 **********************************************************************************************/
-SettingsFormClass *	SettingsFormClass::ActiveList = NULL;
+SettingsFormClass* SettingsFormClass::ActiveList = NULL;
 
 BOOL CALLBACK _settings_form_dlg_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (msg == WM_INITDIALOG) {
-		SettingsFormClass * form = new SettingsFormClass(hWnd);
-		::SetProp(hWnd,"SettingsFormClass",(HANDLE)form);
+		SettingsFormClass* form = new SettingsFormClass(hWnd);
+		::SetProp(hWnd, "SettingsFormClass", (HANDLE)form);
 	}
 
-	SettingsFormClass * form = (SettingsFormClass *)::GetProp(hWnd,"SettingsFormClass");
+	SettingsFormClass* form = (SettingsFormClass*)::GetProp(hWnd, "SettingsFormClass");
 	if (form) {
-		return form->Dialog_Proc(hWnd,msg,wParam,lParam);
-	} else {
+		return form->Dialog_Proc(hWnd, msg, wParam, lParam);
+	}
+	else {
 		return FALSE;
 	}
 }
 
-static void _settings_form_selection_changed_callback(void * param,NotifyInfo * info)
+static void _settings_form_selection_changed_callback(void* param, NotifyInfo* info)
 {
 	((SettingsFormClass*)param)->Selection_Changed();
 }
@@ -1471,10 +1481,11 @@ SettingsFormClass::~SettingsFormClass(void)
 	*/
 	if (ActiveList == this) {
 		ActiveList = Next;
-	} else {
+	}
+	else {
 
-		SettingsFormClass * prev = ActiveList;
-		SettingsFormClass * cur = ActiveList->Next;
+		SettingsFormClass* prev = ActiveList;
+		SettingsFormClass* cur = ActiveList->Next;
 
 		while ((cur != this) && (cur != NULL)) {
 			cur = cur->Next;
@@ -1500,14 +1511,14 @@ void SettingsFormClass::Update_All_Instances(void)
 	/*
 	** Build a list of the selected nodes
 	*/
-	INodeListClass node_list(	::GetCOREInterface()->GetRootNode(),
-										::GetCOREInterface()->GetTime(),
-										&_INodeFilter	);
+	INodeListClass node_list(::GetCOREInterface()->GetRootNode(),
+		::GetCOREInterface()->GetTime(),
+		&_INodeFilter);
 
 	/*
 	** Update all settings forms
 	*/
-	SettingsFormClass * form = ActiveList;
+	SettingsFormClass* form = ActiveList;
 	while (form != NULL) {
 		form->Update_Controls(&node_list);
 		form = form->Next;
@@ -1519,41 +1530,42 @@ void SettingsFormClass::Init(void)
 {
 	// Initialize the contents of the dazzle combo
 	// Reset the dazzle combo
-	HWND dazzle_combo = GetDlgItem(Hwnd,IDC_DAZZLE_COMBO);
+	HWND dazzle_combo = GetDlgItem(Hwnd, IDC_DAZZLE_COMBO);
 	assert(dazzle_combo != NULL);
-	SendMessage(dazzle_combo,CB_RESETCONTENT,0,0);
+	SendMessage(dazzle_combo, CB_RESETCONTENT, 0, 0);
 
 	// Load the section of Dazzle.INI that defines all of the types.  The windows function
 	// that I'm using here, reads in a NULL-terminated string for each entry in the section.  Each
 	// string is of the form 'key=value'.  Based on my testing, it appears that windows removes any white
 	// space before or after the equal sign as well.
 	char dllpath[_MAX_PATH];
-	::GetModuleFileName(AppInstance,dllpath,sizeof(dllpath));
-	char * last_slash = strrchr(dllpath,'\\');
+	::GetModuleFileName(AppInstance, dllpath, sizeof(dllpath));
+	char* last_slash = strrchr(dllpath, GET_PATH_SEPARATOR());
 	last_slash++;
-	strcpy(last_slash,DAZZLE_SETTINGS_FILENAME);
+	strcpy(last_slash, DAZZLE_SETTINGS_FILENAME);
 
-	char * dazzle_types_buffer = new char[DAZZLE_SECTION_BUFFERSIZE];	// max size of a section for Win95
+	char* dazzle_types_buffer = new char[DAZZLE_SECTION_BUFFERSIZE];	// max size of a section for Win95
 
-	::GetPrivateProfileSection( DAZZLE_TYPES_SECTION, dazzle_types_buffer, DAZZLE_SECTION_BUFFERSIZE, dllpath);
+	::GetPrivateProfileSection(DAZZLE_TYPES_SECTION, dazzle_types_buffer, DAZZLE_SECTION_BUFFERSIZE, dllpath);
 
 	// Now we need to handle each string in the section buffer; skipping the 'key=' and adding
 	// the dazzle type name into the combo box.
-	char * entry = dazzle_types_buffer;
+	char* entry = dazzle_types_buffer;
 	if (entry != NULL) {
 		while (*entry != NULL) {
-			entry = strchr(entry,'=');
+			entry = strchr(entry, '=');
 			if (entry != NULL) {
 				entry++;
-				::SendMessage(dazzle_combo,CB_ADDSTRING,0,(LPARAM)entry);
+				::SendMessage(dazzle_combo, CB_ADDSTRING, 0, (LPARAM)entry);
 				entry += strlen(entry) + 1;
 			}
 		}
-	} else {
-		::SendMessage(dazzle_combo,CB_ADDSTRING,0,(LPARAM)"Default");
+	}
+	else {
+		::SendMessage(dazzle_combo, CB_ADDSTRING, 0, (LPARAM)"Default");
 	}
 
-	::SendMessage(dazzle_combo,CB_SETCURSEL,(WPARAM)0,0);
+	::SendMessage(dazzle_combo, CB_SETCURSEL, (WPARAM)0, 0);
 
 	delete dazzle_types_buffer;
 
@@ -1565,7 +1577,7 @@ void SettingsFormClass::Init(void)
 		Hwnd,
 		IDC_DAMREG_INDEX_SPIN,
 		IDC_DAMREG_INDEX_EDIT,
-		NO_DAMAGE_REGION, MAX_DAMAGE_REGIONS-1, NO_DAMAGE_REGION
+		NO_DAMAGE_REGION, MAX_DAMAGE_REGIONS - 1, NO_DAMAGE_REGION
 	);
 
 }
@@ -1576,239 +1588,241 @@ void SettingsFormClass::Destroy(void)
 	RegionSpin = NULL;
 }
 
-bool SettingsFormClass::Dialog_Proc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam)
+bool SettingsFormClass::Dialog_Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int check;
 
 	switch (message) {
-		case WM_INITDIALOG:
-			Init();
-			break;
+	case WM_INITDIALOG:
+		Init();
+		break;
 
-		case WM_DESTROY:
-			Destroy();
-			delete this;
-			break;
+	case WM_DESTROY:
+		Destroy();
+		delete this;
+		break;
 
-		case WM_COMMAND:
+	case WM_COMMAND:
+	{
+		/*
+		** handle the tri-state checkboxes.
+		** MAKE SURE YOU PUT ANY NEW CHECKBOX ID's IN HERE!!!
+		*/
+		int control_id = LOWORD(wParam);
+		if ((control_id == IDC_HIERARCHY_CHECK) ||
+			(control_id == IDC_GEOMETRY_CHECK) ||
+			(control_id == IDC_GEOMETRY_HIDE) ||
+			(control_id == IDC_GEOMETRY_TWO_SIDED) ||
+			(control_id == IDC_GEOMETRY_ZNORMALS) ||
+			(control_id == IDC_GEOMETRY_VERTEX_ALPHA) ||
+			(control_id == IDC_GEOMETRY_CAST_SHADOW) ||
+			(control_id == IDC_GEOMETRY_SHATTERABLE) ||
+			(control_id == IDC_GEOMETRY_NPATCH) ||
+			(control_id == IDC_COLLISION_PHYSICAL) ||
+			(control_id == IDC_COLLISION_PROJECTILE) ||
+			(control_id == IDC_COLLISION_VIS) ||
+			(control_id == IDC_COLLISION_CAMERA) ||
+			(control_id == IDC_COLLISION_VEHICLE))
 		{
-			/*
-			** handle the tri-state checkboxes.
-			** MAKE SURE YOU PUT ANY NEW CHECKBOX ID's IN HERE!!!
-			*/
-			int control_id = LOWORD(wParam);
-			if (	(control_id == IDC_HIERARCHY_CHECK) ||
-					(control_id == IDC_GEOMETRY_CHECK) ||
-					(control_id == IDC_GEOMETRY_HIDE) ||
-					(control_id == IDC_GEOMETRY_TWO_SIDED) ||
-					(control_id == IDC_GEOMETRY_ZNORMALS) ||
-					(control_id == IDC_GEOMETRY_VERTEX_ALPHA) ||
-					(control_id == IDC_GEOMETRY_CAST_SHADOW) ||
-					(control_id == IDC_GEOMETRY_SHATTERABLE) ||
-					(control_id == IDC_GEOMETRY_NPATCH) ||
-					(control_id == IDC_COLLISION_PHYSICAL) ||
-					(control_id == IDC_COLLISION_PROJECTILE) ||
-					(control_id == IDC_COLLISION_VIS) ||
-					(control_id == IDC_COLLISION_CAMERA) ||
-					(control_id == IDC_COLLISION_VEHICLE))
- 			{
-				check = !SendDlgItemMessage(hWnd,LOWORD(wParam),BM_GETCHECK,0,0L);
-				SendDlgItemMessage(hWnd,LOWORD(wParam),BM_SETCHECK,check,0L);
-			}
-
-			INodeListClass node_list(	::GetCOREInterface()->GetRootNode(),
-												::GetCOREInterface()->GetTime(),
-												&_INodeFilter	);
-
-
-			switch (LOWORD(wParam))
-			{
-				/*
-				** Tri-State Checkboxes, make sure that the ID of all checkboxes is present
-				** in the 'if' statement above!
-				*/
-				case IDC_HIERARCHY_CHECK:
-					W3DUtilityClass::set_hierarchy_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_GEOMETRY_CHECK:
-					W3DUtilityClass::set_geometry_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_GEOMETRY_HIDE:
-					W3DUtilityClass::enable_hidden_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_GEOMETRY_TWO_SIDED:
-					W3DUtilityClass::enable_two_sided_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_GEOMETRY_ZNORMALS:
-					W3DUtilityClass::enable_znormals_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_GEOMETRY_VERTEX_ALPHA:
-					W3DUtilityClass::enable_vertex_alpha_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_GEOMETRY_CAST_SHADOW:
-					W3DUtilityClass::enable_shadow_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_GEOMETRY_SHATTERABLE:
-					W3DUtilityClass::enable_shatterable_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_GEOMETRY_NPATCH:
-					W3DUtilityClass::enable_npatches_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_COLLISION_PHYSICAL:
-					W3DUtilityClass::enable_physical_collision_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_COLLISION_PROJECTILE:
-					W3DUtilityClass::enable_projectile_collision_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_COLLISION_VIS:
-					W3DUtilityClass::enable_vis_collision_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_COLLISION_CAMERA:
-					W3DUtilityClass::enable_camera_collision_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				case IDC_COLLISION_VEHICLE:
-					W3DUtilityClass::enable_vehicle_collision_in_all_selected(&node_list,check == BST_CHECKED);
-					break;
-
-				/*
-				** Radio buttons for the Geometry type
-				*/
-				case IDC_GEOMETRY_NORMAL:
-					W3DUtilityClass::set_geometry_type_in_all_selected(&node_list,W3DAppData2Struct::GEO_TYPE_NORMAL_MESH);
-					break;
-
-				case IDC_GEOMETRY_CAMERA_ALIGNED:
-					W3DUtilityClass::set_geometry_type_in_all_selected(&node_list,W3DAppData2Struct::GEO_TYPE_CAMERA_ALIGNED);
-					break;
-
-				case IDC_GEOMETRY_CAMERA_ORIENTED:
-					W3DUtilityClass::set_geometry_type_in_all_selected(&node_list,W3DAppData2Struct::GEO_TYPE_CAMERA_ORIENTED);
-					break;
-
-				case IDC_GEOMETRY_NULL:
-					W3DUtilityClass::set_geometry_type_in_all_selected(&node_list,W3DAppData2Struct::GEO_TYPE_NULL);
-					break;
-
-				case IDC_GEOMETRY_AABOX:
-					W3DUtilityClass::set_geometry_type_in_all_selected(&node_list,W3DAppData2Struct::GEO_TYPE_AABOX);
-					break;
-
-				case IDC_GEOMETRY_OBBOX:
-					W3DUtilityClass::set_geometry_type_in_all_selected(&node_list,W3DAppData2Struct::GEO_TYPE_OBBOX);
-					break;
-
-				case IDC_GEOMETRY_AGGREGATE:
-					W3DUtilityClass::set_geometry_type_in_all_selected(&node_list,W3DAppData2Struct::GEO_TYPE_AGGREGATE);
-					break;
-
-				case IDC_GEOMETRY_DAZZLE:
-					W3DUtilityClass::set_geometry_type_in_all_selected(&node_list,W3DAppData2Struct::GEO_TYPE_DAZZLE);
-					break;
-
-				/*
-				** Dazzle type setting.  Whenever the user changes the selected dazzle type, apply
-				** the new setting to all selected nodes.
-				*/
-				case IDC_DAZZLE_COMBO:
-					if (HIWORD(wParam) == CBN_SELCHANGE) {
-
-						HWND dazzle_combo = GetDlgItem(hWnd,IDC_DAZZLE_COMBO);
-						if (dazzle_combo != NULL) {
-
-							char dazzle_type[128];
-							int cursel = ::SendMessage(dazzle_combo,CB_GETCURSEL,0,0);
-							int len = ::SendMessage(dazzle_combo,CB_GETLBTEXTLEN,cursel,0);
-							if (len < 128) {
-								::SendMessage(dazzle_combo,CB_GETLBTEXT,(WPARAM)cursel,(LPARAM)dazzle_type);
-								W3DUtilityClass::set_dazzle_type_in_all_selected(&node_list,dazzle_type);
-							}
-						}
-					}
-					break;
-
-			}
-			return TRUE;
+			check = !SendDlgItemMessage(hWnd, LOWORD(wParam), BM_GETCHECK, 0, 0L);
+			SendDlgItemMessage(hWnd, LOWORD(wParam), BM_SETCHECK, check, 0L);
 		}
 
-		/*
-		** Spinners
-		*/
-		case CC_SPINNER_CHANGE:
-			{
-				INodeListClass node_list(	::GetCOREInterface()->GetRootNode(),
-													::GetCOREInterface()->GetTime(),
-													&_INodeFilter	);
+		INodeListClass node_list(::GetCOREInterface()->GetRootNode(),
+			::GetCOREInterface()->GetTime(),
+			&_INodeFilter);
 
-				W3DUtilityClass::set_region_in_all_selected(&node_list,RegionSpin->GetIVal());
-				break;
-			}
 
-		/*
-		** Max Custom Edit boxes
-		*/
-		case WM_CUSTEDIT_ENTER:
-			{
-				INodeListClass node_list(	::GetCOREInterface()->GetRootNode(),
-													::GetCOREInterface()->GetTime(),
-													&_INodeFilter	);
+		switch (LOWORD(wParam))
+		{
+			/*
+			** Tri-State Checkboxes, make sure that the ID of all checkboxes is present
+			** in the 'if' statement above!
+			*/
+		case IDC_HIERARCHY_CHECK:
+			W3DUtilityClass::set_hierarchy_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
 
-				ICustEdit * edit_ctrl = GetICustEdit(GetDlgItem(hWnd,wParam));
-				if (wParam == IDC_OBJ_NAME) {
-					if (edit_ctrl && node_list.Num_Nodes() == 1) {
-						char buffer[64];
-						edit_ctrl->GetText(buffer,sizeof(buffer));
-						node_list[0]->SetName(buffer);
-						Update_All_Instances();
+		case IDC_GEOMETRY_CHECK:
+			W3DUtilityClass::set_geometry_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_GEOMETRY_HIDE:
+			W3DUtilityClass::enable_hidden_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_GEOMETRY_TWO_SIDED:
+			W3DUtilityClass::enable_two_sided_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_GEOMETRY_ZNORMALS:
+			W3DUtilityClass::enable_znormals_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_GEOMETRY_VERTEX_ALPHA:
+			W3DUtilityClass::enable_vertex_alpha_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_GEOMETRY_CAST_SHADOW:
+			W3DUtilityClass::enable_shadow_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_GEOMETRY_SHATTERABLE:
+			W3DUtilityClass::enable_shatterable_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_GEOMETRY_NPATCH:
+			W3DUtilityClass::enable_npatches_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_COLLISION_PHYSICAL:
+			W3DUtilityClass::enable_physical_collision_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_COLLISION_PROJECTILE:
+			W3DUtilityClass::enable_projectile_collision_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_COLLISION_VIS:
+			W3DUtilityClass::enable_vis_collision_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_COLLISION_CAMERA:
+			W3DUtilityClass::enable_camera_collision_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+		case IDC_COLLISION_VEHICLE:
+			W3DUtilityClass::enable_vehicle_collision_in_all_selected(&node_list, check == BST_CHECKED);
+			break;
+
+			/*
+			** Radio buttons for the Geometry type
+			*/
+		case IDC_GEOMETRY_NORMAL:
+			W3DUtilityClass::set_geometry_type_in_all_selected(&node_list, W3DAppData2Struct::GEO_TYPE_NORMAL_MESH);
+			break;
+
+		case IDC_GEOMETRY_CAMERA_ALIGNED:
+			W3DUtilityClass::set_geometry_type_in_all_selected(&node_list, W3DAppData2Struct::GEO_TYPE_CAMERA_ALIGNED);
+			break;
+
+		case IDC_GEOMETRY_CAMERA_ORIENTED:
+			W3DUtilityClass::set_geometry_type_in_all_selected(&node_list, W3DAppData2Struct::GEO_TYPE_CAMERA_ORIENTED);
+			break;
+
+		case IDC_GEOMETRY_NULL:
+			W3DUtilityClass::set_geometry_type_in_all_selected(&node_list, W3DAppData2Struct::GEO_TYPE_NULL);
+			break;
+
+		case IDC_GEOMETRY_AABOX:
+			W3DUtilityClass::set_geometry_type_in_all_selected(&node_list, W3DAppData2Struct::GEO_TYPE_AABOX);
+			break;
+
+		case IDC_GEOMETRY_OBBOX:
+			W3DUtilityClass::set_geometry_type_in_all_selected(&node_list, W3DAppData2Struct::GEO_TYPE_OBBOX);
+			break;
+
+		case IDC_GEOMETRY_AGGREGATE:
+			W3DUtilityClass::set_geometry_type_in_all_selected(&node_list, W3DAppData2Struct::GEO_TYPE_AGGREGATE);
+			break;
+
+		case IDC_GEOMETRY_DAZZLE:
+			W3DUtilityClass::set_geometry_type_in_all_selected(&node_list, W3DAppData2Struct::GEO_TYPE_DAZZLE);
+			break;
+
+			/*
+			** Dazzle type setting.  Whenever the user changes the selected dazzle type, apply
+			** the new setting to all selected nodes.
+			*/
+		case IDC_DAZZLE_COMBO:
+			if (HIWORD(wParam) == CBN_SELCHANGE) {
+
+				HWND dazzle_combo = GetDlgItem(hWnd, IDC_DAZZLE_COMBO);
+				if (dazzle_combo != NULL) {
+
+					char dazzle_type[128];
+					int cursel = ::SendMessage(dazzle_combo, CB_GETCURSEL, 0, 0);
+					int len = ::SendMessage(dazzle_combo, CB_GETLBTEXTLEN, cursel, 0);
+					if (len < 128) {
+						::SendMessage(dazzle_combo, CB_GETLBTEXT, (WPARAM)cursel, (LPARAM)dazzle_type);
+						W3DUtilityClass::set_dazzle_type_in_all_selected(&node_list, dazzle_type);
 					}
 				}
-				ReleaseICustEdit(edit_ctrl);
-				break;
 			}
+			break;
+
+		}
+		return TRUE;
+	}
+
+	/*
+	** Spinners
+	*/
+	case CC_SPINNER_CHANGE:
+	{
+		INodeListClass node_list(::GetCOREInterface()->GetRootNode(),
+			::GetCOREInterface()->GetTime(),
+			&_INodeFilter);
+
+		W3DUtilityClass::set_region_in_all_selected(&node_list, RegionSpin->GetIVal());
+		break;
+	}
+
+	/*
+	** Max Custom Edit boxes
+	*/
+	case WM_CUSTEDIT_ENTER:
+	{
+		INodeListClass node_list(::GetCOREInterface()->GetRootNode(),
+			::GetCOREInterface()->GetTime(),
+			&_INodeFilter);
+
+		ICustEdit* edit_ctrl = GetICustEdit(GetDlgItem(hWnd, wParam));
+		if (wParam == IDC_OBJ_NAME) {
+			if (edit_ctrl && node_list.Num_Nodes() == 1) {
+				char buffer[64];
+				edit_ctrl->GetText(buffer, sizeof(buffer));
+				node_list[0]->SetName(buffer);
+				Update_All_Instances();
+			}
+		}
+		ReleaseICustEdit(edit_ctrl);
+		break;
+	}
 
 
-		default:
-			return FALSE;
+	default:
+		return FALSE;
 	}
 	return TRUE;
 }
 
 void SettingsFormClass::Selection_Changed(void)
 {
-	INodeListClass node_list(		::GetCOREInterface()->GetRootNode(),
-											::GetCOREInterface()->GetTime(),
-											&_INodeFilter	);
+	INodeListClass node_list(::GetCOREInterface()->GetRootNode(),
+		::GetCOREInterface()->GetTime(),
+		&_INodeFilter);
 
 	Update_Controls(&node_list);
 }
 
-void SettingsFormClass::Update_Controls(INodeListClass * node_list)
+void SettingsFormClass::Update_Controls(INodeListClass* node_list)
 {
 	/*
 	** Update name of currently selected object
 	** "Multiple" if more than one, "None" if no selected objs...
 	*/
-	ICustEdit * edit_ctrl = GetICustEdit(GetDlgItem(Hwnd,IDC_OBJ_NAME));
+	ICustEdit* edit_ctrl = GetICustEdit(GetDlgItem(Hwnd, IDC_OBJ_NAME));
 	if (edit_ctrl != NULL) {
 		if (node_list->Num_Nodes() == 0) {
 			edit_ctrl->Enable(FALSE);
 			edit_ctrl->SetText(Get_String(IDS_NO_OBJECT));
-		} else if (node_list->Num_Nodes() == 1) {
+		}
+		else if (node_list->Num_Nodes() == 1) {
 			edit_ctrl->Enable(TRUE);
 			edit_ctrl->SetText((*node_list)[0]->GetName());
-		} else {
+		}
+		else {
 			edit_ctrl->Enable(FALSE);
 			edit_ctrl->SetText(Get_String(IDS_MULTIPLE_OBJECTS));
 		}
@@ -1822,64 +1836,65 @@ void SettingsFormClass::Update_Controls(INodeListClass * node_list)
 	}
 
 	W3DUtilityClass::NodeStatesStruct ns;
-	W3DUtilityClass::eval_node_states(node_list,&ns);
+	W3DUtilityClass::eval_node_states(node_list, &ns);
 
 	/*
 	** Enable hierarchy and geometry checks since they are always available
 	*/
-	EnableWindow(GetDlgItem(Hwnd,IDC_HIERARCHY_CHECK),TRUE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CHECK),TRUE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_HIERARCHY_CHECK), TRUE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CHECK), TRUE);
 
 	/*
 	** Enable/Disable the geometry controls
 	*/
 	if (ns.ExportGeometry == 1) {
 
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAMERA_ALIGNED),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAMERA_ORIENTED),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NORMAL),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NULL),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_AABOX),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_OBBOX),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_AGGREGATE),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_DAZZLE),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_HIDE),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_TWO_SIDED),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_ZNORMALS),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_VERTEX_ALPHA),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAST_SHADOW),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_SHATTERABLE),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NPATCH),TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAMERA_ALIGNED), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAMERA_ORIENTED), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NORMAL), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NULL), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_AABOX), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_OBBOX), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_AGGREGATE), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_DAZZLE), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_HIDE), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_TWO_SIDED), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_ZNORMALS), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_VERTEX_ALPHA), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAST_SHADOW), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_SHATTERABLE), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NPATCH), TRUE);
 
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_PHYSICAL),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_PROJECTILE),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_VIS),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_CAMERA),TRUE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_VEHICLE),TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_PHYSICAL), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_PROJECTILE), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_VIS), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_CAMERA), TRUE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_VEHICLE), TRUE);
 
-	} else {
+	}
+	else {
 
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAMERA_ALIGNED),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAMERA_ORIENTED),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NORMAL),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NULL),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_AABOX),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_OBBOX),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_AGGREGATE),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_DAZZLE),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_HIDE),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_TWO_SIDED),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_ZNORMALS),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_VERTEX_ALPHA),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAST_SHADOW),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_SHATTERABLE),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NPATCH),FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAMERA_ALIGNED), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAMERA_ORIENTED), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NORMAL), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NULL), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_AABOX), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_OBBOX), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_AGGREGATE), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_DAZZLE), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_HIDE), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_TWO_SIDED), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_ZNORMALS), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_VERTEX_ALPHA), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAST_SHADOW), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_SHATTERABLE), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NPATCH), FALSE);
 
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_PHYSICAL),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_PROJECTILE),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_VIS),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_CAMERA),FALSE);
-		EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_VEHICLE),FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_PHYSICAL), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_PROJECTILE), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_VIS), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_CAMERA), FALSE);
+		EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_VEHICLE), FALSE);
 	}
 
 	/*
@@ -1888,20 +1903,20 @@ void SettingsFormClass::Update_Controls(INodeListClass * node_list)
 	** check - all of the selected nodes had this setting
 	** grey check - some of the selected nodes had this setting
 	*/
-	SendDlgItemMessage(Hwnd,IDC_HIERARCHY_CHECK,BM_SETCHECK,ns.ExportHierarchy,0L);
-	SendDlgItemMessage(Hwnd,IDC_GEOMETRY_CHECK,BM_SETCHECK,ns.ExportGeometry,0L);
-	SendDlgItemMessage(Hwnd,IDC_GEOMETRY_HIDE,BM_SETCHECK,ns.GeometryHidden,0L);
-	SendDlgItemMessage(Hwnd,IDC_GEOMETRY_TWO_SIDED,BM_SETCHECK,ns.GeometryTwoSided,0L);
-	SendDlgItemMessage(Hwnd,IDC_GEOMETRY_ZNORMALS,BM_SETCHECK,ns.GeometryZNormals,0L);
-	SendDlgItemMessage(Hwnd,IDC_GEOMETRY_VERTEX_ALPHA,BM_SETCHECK,ns.GeometryVertexAlpha,0L);
-	SendDlgItemMessage(Hwnd,IDC_GEOMETRY_CAST_SHADOW,BM_SETCHECK,ns.GeometryCastShadow,0L);
-	SendDlgItemMessage(Hwnd,IDC_GEOMETRY_SHATTERABLE,BM_SETCHECK,ns.GeometryShatterable,0L);
-	SendDlgItemMessage(Hwnd,IDC_GEOMETRY_NPATCH,BM_SETCHECK,ns.GeometryNPatch,0L);
-	SendDlgItemMessage(Hwnd,IDC_COLLISION_PHYSICAL,BM_SETCHECK,ns.CollisionPhysical,0L);
-	SendDlgItemMessage(Hwnd,IDC_COLLISION_PROJECTILE,BM_SETCHECK,ns.CollisionProjectile,0L);
-	SendDlgItemMessage(Hwnd,IDC_COLLISION_VIS,BM_SETCHECK,ns.CollisionVis,0L);
-	SendDlgItemMessage(Hwnd,IDC_COLLISION_CAMERA,BM_SETCHECK,ns.CollisionCamera,0L);
-	SendDlgItemMessage(Hwnd,IDC_COLLISION_VEHICLE,BM_SETCHECK,ns.CollisionVehicle,0L);
+	SendDlgItemMessage(Hwnd, IDC_HIERARCHY_CHECK, BM_SETCHECK, ns.ExportHierarchy, 0L);
+	SendDlgItemMessage(Hwnd, IDC_GEOMETRY_CHECK, BM_SETCHECK, ns.ExportGeometry, 0L);
+	SendDlgItemMessage(Hwnd, IDC_GEOMETRY_HIDE, BM_SETCHECK, ns.GeometryHidden, 0L);
+	SendDlgItemMessage(Hwnd, IDC_GEOMETRY_TWO_SIDED, BM_SETCHECK, ns.GeometryTwoSided, 0L);
+	SendDlgItemMessage(Hwnd, IDC_GEOMETRY_ZNORMALS, BM_SETCHECK, ns.GeometryZNormals, 0L);
+	SendDlgItemMessage(Hwnd, IDC_GEOMETRY_VERTEX_ALPHA, BM_SETCHECK, ns.GeometryVertexAlpha, 0L);
+	SendDlgItemMessage(Hwnd, IDC_GEOMETRY_CAST_SHADOW, BM_SETCHECK, ns.GeometryCastShadow, 0L);
+	SendDlgItemMessage(Hwnd, IDC_GEOMETRY_SHATTERABLE, BM_SETCHECK, ns.GeometryShatterable, 0L);
+	SendDlgItemMessage(Hwnd, IDC_GEOMETRY_NPATCH, BM_SETCHECK, ns.GeometryNPatch, 0L);
+	SendDlgItemMessage(Hwnd, IDC_COLLISION_PHYSICAL, BM_SETCHECK, ns.CollisionPhysical, 0L);
+	SendDlgItemMessage(Hwnd, IDC_COLLISION_PROJECTILE, BM_SETCHECK, ns.CollisionProjectile, 0L);
+	SendDlgItemMessage(Hwnd, IDC_COLLISION_VIS, BM_SETCHECK, ns.CollisionVis, 0L);
+	SendDlgItemMessage(Hwnd, IDC_COLLISION_CAMERA, BM_SETCHECK, ns.CollisionCamera, 0L);
+	SendDlgItemMessage(Hwnd, IDC_COLLISION_VEHICLE, BM_SETCHECK, ns.CollisionVehicle, 0L);
 
 	/*
 	** The damage region spinner should only be enabled if
@@ -1924,8 +1939,8 @@ void SettingsFormClass::Update_Controls(INodeListClass * node_list)
 
 		spinner_enable = true;
 	}
-	EnableWindow(GetDlgItem(Hwnd,IDC_DAMREG_INDEX_EDIT),spinner_enable);
-	EnableWindow(GetDlgItem(Hwnd,IDC_DAMREG_INDEX_SPIN),spinner_enable);
+	EnableWindow(GetDlgItem(Hwnd, IDC_DAMREG_INDEX_EDIT), spinner_enable);
+	EnableWindow(GetDlgItem(Hwnd, IDC_DAMREG_INDEX_SPIN), spinner_enable);
 
 	/*
 	** The dazzle combo box should only be enabled if
@@ -1938,110 +1953,111 @@ void SettingsFormClass::Update_Controls(INodeListClass * node_list)
 			dazzle_combo_enable = true;
 		}
 	}
-	HWND dazzle_combo = GetDlgItem(Hwnd,IDC_DAZZLE_COMBO);
-	EnableWindow(dazzle_combo,dazzle_combo_enable);
-	int selindex = ::SendMessage(dazzle_combo,CB_FINDSTRING,(WPARAM)0,(LPARAM)ns.DazzleType);
+	HWND dazzle_combo = GetDlgItem(Hwnd, IDC_DAZZLE_COMBO);
+	EnableWindow(dazzle_combo, dazzle_combo_enable);
+	int selindex = ::SendMessage(dazzle_combo, CB_FINDSTRING, (WPARAM)0, (LPARAM)ns.DazzleType);
 	if (selindex != CB_ERR) {
-		::SendMessage(dazzle_combo,CB_SETCURSEL,(WPARAM)selindex,(LPARAM)0);
-	} else {
-		::SendMessage(dazzle_combo,CB_SETCURSEL,(WPARAM)0,(LPARAM)0);
+		::SendMessage(dazzle_combo, CB_SETCURSEL, (WPARAM)selindex, (LPARAM)0);
+	}
+	else {
+		::SendMessage(dazzle_combo, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
 	}
 
 	/*
 	** Set any radio buttons present
 	*/
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_CAMERA_ALIGNED,(ns.GeometryCameraAligned ? BST_CHECKED : BST_UNCHECKED));
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_CAMERA_ORIENTED,(ns.GeometryCameraOriented ? BST_CHECKED : BST_UNCHECKED));
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_NORMAL,(ns.GeometryNormal ? BST_CHECKED : BST_UNCHECKED));
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_NULL,(ns.GeometryNull ? BST_CHECKED : BST_UNCHECKED));
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_AABOX,(ns.GeometryAABox ? BST_CHECKED : BST_UNCHECKED));
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_OBBOX,(ns.GeometryOBBox ? BST_CHECKED : BST_UNCHECKED));
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_AGGREGATE,(ns.GeometryAggregate ? BST_CHECKED : BST_UNCHECKED));
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_DAZZLE,(ns.GeometryDazzle ? BST_CHECKED : BST_UNCHECKED));
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_CAMERA_ALIGNED, (ns.GeometryCameraAligned ? BST_CHECKED : BST_UNCHECKED));
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_CAMERA_ORIENTED, (ns.GeometryCameraOriented ? BST_CHECKED : BST_UNCHECKED));
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_NORMAL, (ns.GeometryNormal ? BST_CHECKED : BST_UNCHECKED));
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_NULL, (ns.GeometryNull ? BST_CHECKED : BST_UNCHECKED));
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_AABOX, (ns.GeometryAABox ? BST_CHECKED : BST_UNCHECKED));
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_OBBOX, (ns.GeometryOBBox ? BST_CHECKED : BST_UNCHECKED));
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_AGGREGATE, (ns.GeometryAggregate ? BST_CHECKED : BST_UNCHECKED));
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_DAZZLE, (ns.GeometryDazzle ? BST_CHECKED : BST_UNCHECKED));
 }
 
 
 void SettingsFormClass::Disable_Controls(void)
 {
-	EnableWindow(GetDlgItem(Hwnd,IDC_OBJ_NAME),FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_OBJ_NAME), FALSE);
 
-	EnableWindow(GetDlgItem(Hwnd,IDC_HIERARCHY_CHECK),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CHECK),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_DAMREG_INDEX_EDIT),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_DAMREG_INDEX_SPIN),FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_HIERARCHY_CHECK), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CHECK), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_DAMREG_INDEX_EDIT), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_DAMREG_INDEX_SPIN), FALSE);
 
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NORMAL),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAMERA_ALIGNED),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAMERA_ORIENTED),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_AABOX),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_OBBOX),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NULL),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_AGGREGATE),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_DAZZLE),FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NORMAL), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAMERA_ALIGNED), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAMERA_ORIENTED), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_AABOX), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_OBBOX), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NULL), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_AGGREGATE), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_DAZZLE), FALSE);
 
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_HIDE),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_TWO_SIDED),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_ZNORMALS),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_VERTEX_ALPHA),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_CAST_SHADOW),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_SHATTERABLE),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_GEOMETRY_NPATCH),FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_HIDE), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_TWO_SIDED), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_ZNORMALS), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_VERTEX_ALPHA), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_CAST_SHADOW), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_SHATTERABLE), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_GEOMETRY_NPATCH), FALSE);
 
-	EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_PHYSICAL),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_PROJECTILE),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_VIS),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_CAMERA),FALSE);
-	EnableWindow(GetDlgItem(Hwnd,IDC_COLLISION_VEHICLE),FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_PHYSICAL), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_PROJECTILE), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_VIS), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_CAMERA), FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_COLLISION_VEHICLE), FALSE);
 
-	EnableWindow(GetDlgItem(Hwnd,IDC_DAZZLE_COMBO),FALSE);
+	EnableWindow(GetDlgItem(Hwnd, IDC_DAZZLE_COMBO), FALSE);
 
-	CheckDlgButton(Hwnd,IDC_HIERARCHY_CHECK,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_CHECK,BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_HIERARCHY_CHECK, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_CHECK, BST_UNCHECKED);
 
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_CAMERA_ALIGNED,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_CAMERA_ORIENTED,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_NORMAL,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_AABOX,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_OBBOX,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_NULL,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_AGGREGATE,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_DAZZLE,BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_CAMERA_ALIGNED, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_CAMERA_ORIENTED, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_NORMAL, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_AABOX, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_OBBOX, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_NULL, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_AGGREGATE, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_DAZZLE, BST_UNCHECKED);
 
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_HIDE,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_TWO_SIDED,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_ZNORMALS,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_VERTEX_ALPHA,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_CAST_SHADOW,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_SHATTERABLE,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_GEOMETRY_NPATCH,BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_HIDE, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_TWO_SIDED, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_ZNORMALS, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_VERTEX_ALPHA, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_CAST_SHADOW, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_SHATTERABLE, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_GEOMETRY_NPATCH, BST_UNCHECKED);
 
-	CheckDlgButton(Hwnd,IDC_COLLISION_PHYSICAL,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_COLLISION_PROJECTILE,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_COLLISION_VIS,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_COLLISION_CAMERA,BST_UNCHECKED);
-	CheckDlgButton(Hwnd,IDC_COLLISION_VEHICLE,BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_COLLISION_PHYSICAL, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_COLLISION_PROJECTILE, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_COLLISION_VIS, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_COLLISION_CAMERA, BST_UNCHECKED);
+	CheckDlgButton(Hwnd, IDC_COLLISION_VEHICLE, BST_UNCHECKED);
 }
 
 
 /*
 ** Functions to access the W3D AppData of any INode.
 */
-W3DAppData0Struct * GetW3DAppData0 (INode *node)
+W3DAppData0Struct* GetW3DAppData0(INode* node)
 {
 	return TheW3DUtility.get_app_data_0(node);
 }
 
-W3DAppData1Struct * GetW3DAppData1 (INode *node)
+W3DAppData1Struct* GetW3DAppData1(INode* node)
 {
 	return TheW3DUtility.get_app_data_1(node);
 }
 
-W3DAppData2Struct * GetW3DAppData2 (INode *node)
+W3DAppData2Struct* GetW3DAppData2(INode* node)
 {
 	return TheW3DUtility.get_app_data_2(node);
 }
 
-W3DDazzleAppDataStruct * GetW3DDazzleAppData(INode *node)
+W3DDazzleAppDataStruct* GetW3DDazzleAppData(INode* node)
 {
 	return TheW3DUtility.get_dazzle_app_data(node);
 }

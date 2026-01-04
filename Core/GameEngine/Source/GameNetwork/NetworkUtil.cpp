@@ -52,7 +52,7 @@ void dumpBufferToLog(const void *vBuf, Int len, const char *fname, Int line)
 		Int offset = dumpindex*8;
 		DEBUG_LOG_RAW(("\t%5.5d\t", offset));
 		Int dumpindex2;
-		Int numBytesThisLine = min(8, len - offset);
+		Int numBytesThisLine = std::min(8, len - offset);
 		for (dumpindex2 = 0; dumpindex2 < numBytesThisLine; ++dumpindex2)
 		{
 			Int c = (buf[offset + dumpindex2] & 0xff);

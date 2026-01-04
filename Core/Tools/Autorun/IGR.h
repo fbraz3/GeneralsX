@@ -27,9 +27,9 @@
 //
 #define WOLAPI_REG_KEY_TOP				"HKEY_LOCAL_MACHINE"
 #define WOLAPI_REG_KEY_WOLAPI			"SOFTWARE\\Westwood\\WOLAPI"
-#define WOLAPI_REG_KEY_BOTTOM			WOLAPI_REG_KEY_WOLAPI "\\"
+#define WOLAPI_REG_KEY_BOTTOM			WOLAPI_REG_KEY_WOLAPI GET_PATH_SEPARATOR()
 #define WOLAPI_REG_KEY_OPTIONS		"Options"
-#define WOLAPI_REG_KEY					WOLAPI_REG_KEY_TOP "\\" WOLAPI_REG_KEY_BOTTOM
+#define WOLAPI_REG_KEY					WOLAPI_REG_KEY_TOP GET_PATH_SEPARATOR() WOLAPI_REG_KEY_BOTTOM
 #define WOLAPI_KEY						"WOLAPI"
 
 //
@@ -45,31 +45,31 @@ typedef unsigned int IGROptionsType;
 
 class IGROptionsClass
 {
-	public:
-		// Constructor
-		IGROptionsClass( void ) : valid( false ), options( 0 ) {};
+public:
+	// Constructor
+	IGROptionsClass(void) : valid(false), options(0) {};
 
-		// Destructor
-		~IGROptionsClass( void ) {};
+	// Destructor
+	~IGROptionsClass(void) {};
 
-		// Initialize. Read value(s) from registry
-		bool Init( void );
+	// Initialize. Read value(s) from registry
+	bool Init(void);
 
-		// Check various options
-		bool Is_Auto_Login_Allowed( void );
-		bool Is_Storing_Nicks_Allowed( void );
-		bool Is_Running_Reg_App_Allowed( void );
+	// Check various options
+	bool Is_Auto_Login_Allowed(void);
+	bool Is_Storing_Nicks_Allowed(void);
+	bool Is_Running_Reg_App_Allowed(void);
 
-		// Set various options
-		bool Set_Options( IGROptionsType options );
+	// Set various options
+	bool Set_Options(IGROptionsType options);
 
-	private:
+private:
 
-		// Private options
-		IGROptionsType  options;
+	// Private options
+	IGROptionsType  options;
 
-		// Is the data valid?
-		bool	valid;
+	// Is the data valid?
+	bool	valid;
 };
 
-extern IGROptionsClass *OnlineOptions;
+extern IGROptionsClass* OnlineOptions;

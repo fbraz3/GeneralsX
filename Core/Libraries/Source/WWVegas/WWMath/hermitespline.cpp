@@ -134,8 +134,8 @@ void HermiteSpline3DClass::Evaluate_Derivative(float time,Vector3 * set_val)
 	// if we're outside the range, return the value for the start or end...
 	float min_time = Keys[0].Time;
 	float max_time = Keys[Keys.Count() - 1].Time;
-	time = MAX(time, min_time);
-	time = MIN(time, max_time);
+	time = std::max(time, min_time);
+	time = std::min(time, max_time);
 
 	// if the tangents are marked dirty, give derived classes a chance to recompute them
 	if (TangentsDirty) {

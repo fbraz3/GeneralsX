@@ -27,7 +27,7 @@
 #endif
 
 #ifndef _rdtsc
-static inline __int64 _rdtsc()
+static inline int64_t _rdtsc()
 {
 	int h;
 	int l;
@@ -39,7 +39,7 @@ static inline __int64 _rdtsc()
 		mov	[l],eax
 	}
 
-    __int64 result ((__int64)h << 32 | l);
+    int64_t result ((int64_t)h << 32 | l);
     return result;
 }
 #endif //_rdtsc

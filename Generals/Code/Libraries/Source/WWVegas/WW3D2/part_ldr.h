@@ -68,7 +68,7 @@ class Vector3Randomizer;
 	(((float)byte) / 255.0F)	\
 
 #define FLOAT_TO_BYTE(fval)			\
-	((unsigned char)(max(fval,0.0F) * 255.0F))	\
+	((unsigned char)(std::max(fval,0.0F) * 255.0F))	\
 
 #define RGBA_TO_VECTOR3(rgba)																			\
 	Vector3 (BYTE_TO_FLOAT(rgba.R), BYTE_TO_FLOAT (rgba.G), BYTE_TO_FLOAT (rgba.B))	\

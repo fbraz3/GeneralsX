@@ -340,9 +340,9 @@ void DataChunkOutput::writeInt( Int i )
 	::fwrite( (const char *)&i, sizeof(Int) , 1, m_tmp_file );
 }
 
-void DataChunkOutput::writeByte( Byte b )
+void DataChunkOutput::writeByte( SignedByte b )
 {
-	::fwrite( (const char *)&b, sizeof(Byte) , 1, m_tmp_file );
+	::fwrite( (const char *)&b, sizeof(SignedByte) , 1, m_tmp_file );
 }
 
 void DataChunkOutput::writeArrayOfBytes(char *ptr, Int len)
@@ -505,7 +505,7 @@ void DataChunkTableOfContents::write( OutputStream &s )
 	Mapping *m;
 	unsigned char len;
 
-	Byte tag[4]={'C','k', 'M', 'p'};	// Chunky height map. jba.
+	SignedByte tag[4]={'C','k', 'M', 'p'};	// Chunky height map. jba.
 	s.write(tag,sizeof(tag));
 
 	// output number of elements in the table
@@ -531,7 +531,7 @@ void DataChunkTableOfContents::read( ChunkInputStream &s)
 	unsigned char len;
 	Mapping *m;
 
-	Byte tag[4]={'x','x', 'x', 'x'};	// Chunky height map. jba.
+	SignedByte tag[4]={'x','x', 'x', 'x'};	// Chunky height map. jba.
 	s.read(tag,sizeof(tag));
 	if (tag[0] != 'C' || tag[1] != 'k' || tag[2] != 'M' || tag[3] != 'p') {
 		return;	 // Don't throw, may happen with legacy files.
@@ -571,7 +571,7 @@ void DataChunkTableOfContents::read( ChunkInputStream &s)
 	m_headerOpened = count > 0 && !s.eof();
 
 	// adjust next ID so no ID's are reused
-	this->m_nextID = max( this->m_nextID, maxID+1 );
+	this->m_nextID = std::max( this->m_nextID, maxID+1 );
 }
 
 //----------------------------------------------------------------------
@@ -870,12 +870,12 @@ Int DataChunkInput::readInt(void)
 	return i;
 }
 
-Byte DataChunkInput::readByte(void)
+SignedByte DataChunkInput::readByte(void)
 {
-	Byte b;
+	SignedByte b;
 	DEBUG_ASSERTCRASH(m_chunkStack->dataLeft>=sizeof(Byte), ("Read past end of chunk."));
-	m_file->read( (char *)&b, sizeof(Byte) );
-	decrementDataLeft( sizeof(Byte) );
+	m_file->read( (char *)&b, sizeof(SignedByte) );
+	decrementDataLeft( sizeof(SignedByte) );
 	return b;
 }
 

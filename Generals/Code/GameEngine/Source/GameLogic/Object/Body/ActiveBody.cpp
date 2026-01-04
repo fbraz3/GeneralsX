@@ -239,7 +239,7 @@ void ActiveBody::setDamageState( BodyDamageType newState )
 		ratio = 0.0f;
 	}
 	Real desiredHealth = m_maxHealth * ratio - 1;// -1 because < not <= in calcState
-	desiredHealth = max( desiredHealth, 0.0f );
+	desiredHealth = std::max( desiredHealth, 0.0f );
 	internalChangeHealth( desiredHealth - m_currentHealth );
 	setCorrectDamageState();
 }

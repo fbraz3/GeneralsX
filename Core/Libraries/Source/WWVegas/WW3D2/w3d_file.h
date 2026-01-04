@@ -585,9 +585,9 @@ struct W3dRGBStruct
 
 	void Set (float r, float g, float b)
 	{
-		R = (unsigned char) MIN ((float) UCHAR_MAX, MAX (0.0f, r) * ((float) (UCHAR_MAX + 1)));
-		G = (unsigned char) MIN ((float) UCHAR_MAX, MAX (0.0f, g) * ((float) (UCHAR_MAX + 1)));
-		B = (unsigned char) MIN ((float) UCHAR_MAX, MAX (0.0f, b) * ((float) (UCHAR_MAX + 1)));
+		R = (unsigned char)std::min((float) UCHAR_MAX,std::max(0.0f, r) * ((float) (UCHAR_MAX + 1)));
+		G = (unsigned char)std::min((float) UCHAR_MAX,std::max(0.0f, g) * ((float) (UCHAR_MAX + 1)));
+		B = (unsigned char)std::min((float) UCHAR_MAX,std::max(0.0f, b) * ((float) (UCHAR_MAX + 1)));
 	}
 
 	bool operator == (W3dRGBStruct c)
@@ -602,9 +602,9 @@ struct W3dRGBStruct
 
 	W3dRGBStruct operator += (W3dRGBStruct c)
 	{
-		R = MIN (((unsigned) R) + ((unsigned) c.R), (unsigned) UCHAR_MAX);
-		G = MIN (((unsigned) G) + ((unsigned) c.G), (unsigned) UCHAR_MAX);
-		B = MIN (((unsigned) B) + ((unsigned) c.B), (unsigned) UCHAR_MAX);
+		R =std::min(((unsigned) R) + ((unsigned) c.R), (unsigned) UCHAR_MAX);
+		G =std::min(((unsigned) G) + ((unsigned) c.G), (unsigned) UCHAR_MAX);
+		B =std::min(((unsigned) B) + ((unsigned) c.B), (unsigned) UCHAR_MAX);
 		return (*this);
 	}
 
@@ -1354,10 +1354,10 @@ struct W3dMeshAABTreeNode
 	The pivots chunk will contain a W3dPivotStructs for each node in the
 	tree.
 
-	The W3dPivotFixupStruct contains a transform for each MAX coordinate
+	The W3dPivotFixupStruct contains a transform for eachstd::maxcoordinate
 	system and our version of that same coordinate system (bone).  It is
 	needed when the user exports the base pose using "Translation Only".
-	These are the matrices which go from the MAX rotated coordinate systems
+	These are the matrices which go from thestd::maxrotated coordinate systems
 	to a system which is unrotated in the base pose.  These transformations
 	are needed when exporting a hierarchy animation with the given hierarchy
 	tree file.
@@ -1399,7 +1399,7 @@ struct W3dPivotStruct
 
 struct W3dPivotFixupStruct
 {
-	float32					TM[4][3];				// this is a direct dump of a MAX 3x4 matrix
+	float32					TM[4][3];				// this is a direct dump of astd::max3x4 matrix
 };
 
 
@@ -1692,7 +1692,7 @@ struct W3dCollectionHeaderStruct
 struct W3dPlaceholderStruct
 {
 	uint32		version;
-	float32		transform[4][3];				// this is a direct dump of a MAX 3x4 matrix
+	float32		transform[4][3];				// this is a direct dump of astd::max3x4 matrix
 	uint32		name_len;
 };
 
@@ -1711,7 +1711,7 @@ struct W3dPlaceholderStruct
 struct W3dTransformNodeStruct
 {
 	uint32		version;
-	float32		transform[4][3];				// this is a direct dump of a MAX 3x4 matrix
+	float32		transform[4][3];				// this is a direct dump of astd::max3x4 matrix
 	uint32		name_len;
 };
 

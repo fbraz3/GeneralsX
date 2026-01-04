@@ -15,8 +15,8 @@ def analyze_try_catch_block(file_path, line_num, context_lines=15):
         return None
     
     # Get context
-    start = max(0, line_num - 1)
-    end = min(len(lines), line_num + context_lines)
+    start = std::max(0, line_num - 1)
+    end = std::min(len(lines), line_num + context_lines)
     context = ''.join(lines[start:end])
     
     # Check for throwing operations

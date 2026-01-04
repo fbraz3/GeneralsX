@@ -51,7 +51,7 @@
  *   RawFileClass::Write -- Writes the specified data to the buffer specified.                 *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-// TheSuperHackers @build feliwir 11/04/2025 We removed Win32 API here and use plain C
+ // TheSuperHackers @build feliwir 11/04/2025 We removed Win32 API here and use plain C
 #include	"always.h"
 #include "RAWFILE.h"
 #include	<stddef.h>
@@ -60,6 +60,7 @@
 #include	<errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <Utility/compat.h>
 
 
 #if 0		//#ifdef NEVER    (gth) the MAX sdk must #define NEVER! yikes :-)
@@ -69,56 +70,56 @@
 	**	use numbers starting with 100. Note that these errors here are listed in numerical order.
 	**	These errors are defined in the standard header file "ERRNO.h".
 	*/
-	EZERO,				// Non-error.
-	EINVFNC,				// Invalid function number.
-	ENOFILE,				// File not found.
-	ENOENT=ENOFILE,	// No such file or directory.
-	ENOPATH,				// Path not found.
-	EMFILE,				// Too many open files.
-	EACCES,				// Permission denied.
-	EBADF,				// Bad file number.
-	ECONTR,				// Memory blocks destroyed.
-	ENOMEM,				// Not enough core memory.
-	EINVMEM,				// Invalid memory block address.
-	EINVENV,				// Invalid environment.
-	EINVFMT,				// Invalid format.
-	EINVACC,				// Invalid access code.
-	EINVDAT,				// Invalid data.
-	EFAULT,				// Unknown error.
-	EINVDRV,				// Invalid drive specified.
-	ENODEV=EINVDRV,	// No such device.
-	ECURDIR,				// Attempt to remove CurDir.
-	ENOTSAM,				// Not same device.
-	ENMFILE,				// No more files.
-	EINVAL,				// Invalid argument.
-	E2BIG,				// Argument list too long.
-	ENOEXEC,				// exec format error.
-	EXDEV,				// Cross-device link.
-	ENFILE,				// Too many open files.
-	ECHILD,				// No child process.
-	ENOTTY,				// not used
-	ETXTBSY,				// not used
-	EFBIG,				// not used
-	ENOSPC,				// No space left on device.
-	ESPIPE,				// Illegal seek.
-	EROFS,				// Read-only file system.
-	EMLINK,				// not used
-	EPIPE,				// Broken pipe.
-	EDOM,					// Math argument.
-	ERANGE,				// Result too large.
-	EEXIST,				// File already exists.
-	EDEADLOCK,			// Locking violation.
-	EPERM,				// Operation not permitted.
-	ESRCH,				// not used
-	EINTR,				// Interrupted function call.
-	EIO,					// Input/output error.
-	ENXIO,				// No such device or address.
-	EAGAIN,				// Resource temporarily unavailable.
-	ENOTBLK,				// not used
-	EBUSY,				// Resource busy.
-	ENOTDIR,				// not used
-	EISDIR,				// not used
-	EUCLEAN,				// not used
+EZERO,				// Non-error.
+EINVFNC,				// Invalid function number.
+ENOFILE,				// File not found.
+ENOENT = ENOFILE,	// No such file or directory.
+ENOPATH,				// Path not found.
+EMFILE,				// Too many open files.
+EACCES,				// Permission denied.
+EBADF,				// Bad file number.
+ECONTR,				// Memory blocks destroyed.
+ENOMEM,				// Not enough core memory.
+EINVMEM,				// Invalid memory block address.
+EINVENV,				// Invalid environment.
+EINVFMT,				// Invalid format.
+EINVACC,				// Invalid access code.
+EINVDAT,				// Invalid data.
+EFAULT,				// Unknown error.
+EINVDRV,				// Invalid drive specified.
+ENODEV = EINVDRV,	// No such device.
+ECURDIR,				// Attempt to remove CurDir.
+ENOTSAM,				// Not same device.
+ENMFILE,				// No more files.
+EINVAL,				// Invalid argument.
+E2BIG,				// Argument list too long.
+ENOEXEC,				// exec format error.
+EXDEV,				// Cross-device link.
+ENFILE,				// Too many open files.
+ECHILD,				// No child process.
+ENOTTY,				// not used
+ETXTBSY,				// not used
+EFBIG,				// not used
+ENOSPC,				// No space left on device.
+ESPIPE,				// Illegal seek.
+EROFS,				// Read-only file system.
+EMLINK,				// not used
+EPIPE,				// Broken pipe.
+EDOM,					// Math argument.
+ERANGE,				// Result too large.
+EEXIST,				// File already exists.
+EDEADLOCK,			// Locking violation.
+EPERM,				// Operation not permitted.
+ESRCH,				// not used
+EINTR,				// Interrupted function call.
+EIO,					// Input/output error.
+ENXIO,				// No such device or address.
+EAGAIN,				// Resource temporarily unavailable.
+ENOTBLK,				// not used
+EBUSY,				// Resource busy.
+ENOTDIR,				// not used
+EISDIR,				// not used
+EUCLEAN,				// not used
 #endif
 
 
@@ -138,7 +139,7 @@
  * HISTORY:                                                                                    *
  *   10/18/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-RawFileClass::RawFileClass(void) :
+	RawFileClass::RawFileClass(void) :
 	Rights(READ),
 	BiasStart(0),
 	BiasLength(-1),
@@ -194,7 +195,7 @@ bool RawFileClass::Is_Open(void) const
  * HISTORY:                                                                                    *
  *   10/17/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void RawFileClass::Error(int, int, char const * )
+void RawFileClass::Error(int, int, char const*)
 {
 }
 
@@ -216,7 +217,7 @@ void RawFileClass::Error(int, int, char const * )
  *=============================================================================================*/
 int RawFileClass::Transfer_Block_Size(void)
 {
-	return (int)((unsigned)UINT_MAX)-16L;
+	return (int)((unsigned)UINT_MAX) - 16L;
 }
 
 /***********************************************************************************************
@@ -236,7 +237,7 @@ int RawFileClass::Transfer_Block_Size(void)
  * HISTORY:                                                                                    *
  *   10/17/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-RawFileClass::RawFileClass(char const * filename) :
+RawFileClass::RawFileClass(char const* filename) :
 	Rights(0),
 	BiasStart(0),
 	BiasLength(-1),
@@ -265,7 +266,7 @@ RawFileClass::RawFileClass(char const * filename) :
  *=============================================================================================*/
 RawFileClass::~RawFileClass(void)
 {
-	Reset ();
+	Reset();
 }
 
 /***********************************************************************************************
@@ -304,7 +305,7 @@ void RawFileClass::Reset(void)
  *   11/25/2001 Jani: Note that this is virtual function and thus can't be inlined. Is there a *
  *					 reason for it to be virtual?																	  *
  *=============================================================================================*/
-char const * RawFileClass::File_Name(void) const
+char const* RawFileClass::File_Name(void) const
 {
 	return(Filename);
 }
@@ -326,23 +327,26 @@ char const * RawFileClass::File_Name(void) const
  *	  11/25/2001 Jani : Changed the name storage from strdup to StringClass to benefit from our *
  *							  Fast memory allocation system.
  *=============================================================================================*/
-char const * RawFileClass::Set_Name(char const * filename)
+char const* RawFileClass::Set_Name(char const* filename)
 {
 	Bias(0);
 
-	Filename=filename;
+	Filename = filename;
 
 	/*
 	** If this is a UNIX build, fix the filename from the DOS-like name passed in
+	** Do NOT lowercase the filename — preserve case on case-sensitive filesystems.
+	** Only normalize path separator characters to the host separator.
 	*/
-	#ifdef _UNIX
-		for (int i=0; i<Filename.Get_Length(); i++)
-		{
-			if (Filename[i]=='\\')
-				Filename[i]='/';
-			Filename[i]=tolower(Filename[i]);  // don't preserve case
+#ifdef _UNIX
+	for (int i = 0; i < Filename.Get_Length(); i++)
+	{
+		// Normalize any DOS/Windows separator characters to the host separator
+		if (Filename[i] == '/' || Filename[i] == '\\') {
+			Filename[i] = GET_PATH_SEPARATOR()[0];
 		}
-	#endif
+	}
+#endif
 
 	return(Filename);
 }
@@ -369,7 +373,7 @@ char const * RawFileClass::Set_Name(char const * filename)
  * HISTORY:                                                                                    *
  *   10/17/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-int RawFileClass::Open(char const * filename, int rights)
+int RawFileClass::Open(char const* filename, int rights)
 {
 	Set_Name(filename);
 	return(Open(rights));
@@ -402,7 +406,7 @@ int RawFileClass::Open(int rights)
 	**	Verify that there is a filename associated with this file object. If not, then this is a
 	**	big error condition.
 	*/
-	if (Filename.Get_Length()==0) {
+	if (Filename.Get_Length() == 0) {
 		Error(ENOENT, false);
 	}
 
@@ -426,26 +430,26 @@ int RawFileClass::Open(int rights)
 			**	If the access rights are not recognized, then report this as
 			**	an invalid access code.
 			*/
-			default:
-				errno = EINVAL;
-				break;
+		default:
+			errno = EINVAL;
+			break;
 
-			case READ:
-				Handle = fopen(Filename, "rb");
-				break;
+		case READ:
+			Handle = fopen(Filename, "rb");
+			break;
 
-			case WRITE:
-				Handle = fopen(Filename, "wb");
-				break;
+		case WRITE:
+			Handle = fopen(Filename, "wb");
+			break;
 
-			case READ|WRITE:
-				// First try to open an existing file in read/write mode.
-				Handle = fopen(Filename, "rb+");
-				// If that fails, try to create a new file in read/write mode.
-				if(Handle == NULL_HANDLE) {
-					Handle = fopen(Filename, "wb+");
-				}
-				break;
+		case READ | WRITE:
+			// First try to open an existing file in read/write mode.
+			Handle = fopen(Filename, "rb+");
+			// If that fails, try to create a new file in read/write mode.
+			if (Handle == NULL_HANDLE) {
+				Handle = fopen(Filename, "wb+");
+			}
+			break;
 		}
 
 		/*
@@ -463,8 +467,8 @@ int RawFileClass::Open(int rights)
 		if (Handle == NULL_HANDLE) {
 			return(false);
 
-//			Error(errno, false, Filename);
-//			continue;
+			//			Error(errno, false, Filename);
+			//			continue;
 		}
 		break;
 	}
@@ -492,7 +496,7 @@ int RawFileClass::Open(int rights)
  *=============================================================================================*/
 bool RawFileClass::Is_Available(int forced)
 {
-	if (Filename.Get_Length()==0) return(false);
+	if (Filename.Get_Length() == 0) return(false);
 
 	/*
 	**	If the file is already open, then is must have already passed the availability check.
@@ -517,7 +521,7 @@ bool RawFileClass::Is_Available(int forced)
 	*/
 	for (;;) {
 
-		Handle=fopen(Filename,"r");
+		Handle = fopen(Filename, "r");
 
 		if (Handle == NULL_HANDLE) {
 			return(false);
@@ -529,8 +533,8 @@ bool RawFileClass::Is_Available(int forced)
 	**	Since the file could be opened, then close it and return that the file exists.
 	*/
 	int closeok;
-	closeok=((fclose(Handle)==0)?true:false);
-	if (! closeok) {
+	closeok = ((fclose(Handle) == 0) ? true : false);
+	if (!closeok) {
 		Error(errno, false, Filename);
 	}
 	Handle = NULL_HANDLE;
@@ -565,7 +569,7 @@ void RawFileClass::Close(void)
 		**	Try to close the file. If there was an error (who knows what that could be), then
 		**	call the error routine.
 		*/
-		int closeok=(fclose(Handle)==0)?true:false;
+		int closeok = (fclose(Handle) == 0) ? true : false;
 
 		if (!closeok) {
 			Error(errno, false, Filename);
@@ -601,7 +605,7 @@ void RawFileClass::Close(void)
  * HISTORY:                                                                                    *
  *   10/18/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-int RawFileClass::Read(void * buffer, int size)
+int RawFileClass::Read(void* buffer, int size)
 {
 	long	bytesread = 0;			// Running count of the number of bytes read into the buffer.
 	int	opened = false;		// Was the file opened by this routine?
@@ -634,12 +638,12 @@ int RawFileClass::Read(void * buffer, int size)
 	while (size > 0) {
 		bytesread = 0;
 
-		int readok=true;
-		bytesread=fread(buffer,1,size,Handle);
-		if ((bytesread == 0)&&( ! feof(Handle)))
-			readok=ferror(Handle);
+		int readok = true;
+		bytesread = fread(buffer, 1, size, Handle);
+		if ((bytesread == 0) && (!feof(Handle)))
+			readok = ferror(Handle);
 
-		if (! readok) {
+		if (!readok) {
 			size -= bytesread;
 			total += bytesread;
 			Error(errno, true, Filename);
@@ -678,7 +682,7 @@ int RawFileClass::Read(void * buffer, int size)
  * HISTORY:                                                                                    *
  *   10/18/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-int RawFileClass::Write(void const * buffer, int size)
+int RawFileClass::Write(void const* buffer, int size)
 {
 	long	byteswritten = 0;
 	int	opened = false;		// Was the file manually opened?
@@ -695,12 +699,12 @@ int RawFileClass::Write(void const * buffer, int size)
 		opened = true;
 	}
 
-	int writeok=true;
+	int writeok = true;
 	byteswritten = fwrite(buffer, 1, size, Handle);
 	if (byteswritten != size)
 		writeok = false;
 
-	if (! writeok) {
+	if (!writeok) {
 		Error(errno, false, Filename);
 	}
 
@@ -708,7 +712,7 @@ int RawFileClass::Write(void const * buffer, int size)
 	**	Fixup the bias length if necessary.
 	*/
 	if (BiasLength != -1) {
-		if (Raw_Seek(0) > BiasStart+BiasLength) {
+		if (Raw_Seek(0) > BiasStart + BiasLength) {
 			BiasLength = Raw_Seek(0) - BiasStart;
 		}
 	}
@@ -759,22 +763,22 @@ int RawFileClass::Seek(int pos, int dir)
 	*/
 	if (BiasLength != -1) {
 		switch (dir) {
-			case SEEK_SET:
-				if (pos > BiasLength) {
-					pos = BiasLength;
-				}
-				pos += BiasStart;
-				break;
+		case SEEK_SET:
+			if (pos > BiasLength) {
+				pos = BiasLength;
+			}
+			pos += BiasStart;
+			break;
 
-			case SEEK_CUR:
-				break;
+		case SEEK_CUR:
+			break;
 
-			case SEEK_END:
-				dir = SEEK_SET;
-				pos += BiasStart + BiasLength;
-//				pos = (pos <= BiasStart+BiasLength) ? pos : BiasStart+BiasLength;
-//				pos = (pos >= BiasStart) ? pos : BiasStart;
-				break;
+		case SEEK_END:
+			dir = SEEK_SET;
+			pos += BiasStart + BiasLength;
+			//				pos = (pos <= BiasStart+BiasLength) ? pos : BiasStart+BiasLength;
+			//				pos = (pos >= BiasStart) ? pos : BiasStart;
+			break;
 		}
 
 		/*
@@ -789,7 +793,7 @@ int RawFileClass::Seek(int pos, int dir)
 			newpos = Raw_Seek(BiasStart, SEEK_SET) - BiasStart;
 		}
 		if (newpos > BiasLength) {
-			newpos = Raw_Seek(BiasStart+BiasLength, SEEK_SET) - BiasStart;
+			newpos = Raw_Seek(BiasStart + BiasLength, SEEK_SET) - BiasStart;
 		}
 		return(newpos);
 	}
@@ -837,10 +841,10 @@ int RawFileClass::Size(void)
 		size_t curpos;
 		curpos = ftell(Handle);
 
-		fseek(Handle,0,SEEK_END);
+		fseek(Handle, 0, SEEK_END);
 		size = ftell(Handle);
 
-		fseek(Handle,curpos,SEEK_SET);
+		fseek(Handle, curpos, SEEK_SET);
 
 		/*
 		**	If there was in internal error, then call the error function.
@@ -849,7 +853,8 @@ int RawFileClass::Size(void)
 			Error(errno, false, Filename);
 		}
 
-	} else {
+	}
+	else {
 
 		/*
 		**	If the file wasn't open, then open the file and call this routine again. Count on
@@ -866,7 +871,7 @@ int RawFileClass::Size(void)
 		}
 	}
 
-	BiasLength = size-BiasStart;
+	BiasLength = size - BiasStart;
 	return(BiasLength);
 }
 
@@ -956,9 +961,9 @@ int RawFileClass::Delete(void)
 			return(false);
 		}
 
-		int deleteok=(unlink(Filename)==0)?true:false;
+		int deleteok = (unlink(Filename) == 0) ? true : false;
 
-		if (! deleteok) {
+		if (!deleteok) {
 			Error(errno, false, Filename);
 			return(false);
 		}
@@ -998,7 +1003,8 @@ unsigned long RawFileClass::Get_Date_Time(void)
 		struct stat statbuf;
 		stat(Filename, &statbuf);
 		retval = statbuf.st_mtime;
-	} else {
+	}
+	else {
 		// If file not open open it, if open succeeded proceed normally and then close to put
 		// everything back the way we found it.
 		if (Open()) {
@@ -1109,7 +1115,7 @@ int RawFileClass::Raw_Seek(int pos, int dir)
 		Error(EBADF, false, Filename);
 	}
 
-	pos=fseek(Handle, pos, dir);
+	pos = fseek(Handle, pos, dir);
 
 	/*
 	**	If there was an error in the seek, then bail with an error condition.
@@ -1137,9 +1143,9 @@ int RawFileClass::Raw_Seek(int pos, int dir)
  * HISTORY:                                                                                    *
  *   06/10/1999 PDS : Created.                                                                 *
  *=============================================================================================*/
-void RawFileClass::Attach (void *handle, int rights)
+void RawFileClass::Attach(void* handle, int rights)
 {
-	Reset ();
+	Reset();
 
 	Rights = rights;
 	BiasStart = 0;
@@ -1147,7 +1153,7 @@ void RawFileClass::Attach (void *handle, int rights)
 	Date = 0;
 	Time = 0;
 
-	Handle = (FILE *)handle;
+	Handle = (FILE*)handle;
 }
 
 /***********************************************************************************************
@@ -1162,7 +1168,7 @@ void RawFileClass::Attach (void *handle, int rights)
  * HISTORY:                                                                                    *
  *   06/10/1999 PDS : Created.                                                                 *
  *=============================================================================================*/
-void RawFileClass::Detach (void)
+void RawFileClass::Detach(void)
 {
 	Rights = 0;
 	BiasStart = 0;

@@ -298,7 +298,7 @@ Bool ParticleUplinkCannonUpdate::initiateIntentToDoSpecialPower(const SpecialPow
 		Coord3D pos;
 		pos.set( way->getLocation() );
 
-		m_startAttackFrame = max( now, (UnsignedInt)1 );
+		m_startAttackFrame = std::max( now, (UnsignedInt)1 );
 #if !RETAIL_COMPATIBLE_CRC
 		m_manualTargetMode = FALSE;
 #endif
@@ -343,7 +343,7 @@ Bool ParticleUplinkCannonUpdate::initiateIntentToDoSpecialPower(const SpecialPow
 		m_scriptedWaypointMode = FALSE;
 #endif
 		m_initialTargetPosition.set( &pos );
-		m_startAttackFrame = max( now, (UnsignedInt)1 );
+		m_startAttackFrame = std::max( now, (UnsignedInt)1 );
 		m_laserStatus = LASERSTATUS_NONE;
 		setLogicalStatus( STATUS_READY_TO_FIRE );
 		m_specialPowerModule->setReadyFrame( now );

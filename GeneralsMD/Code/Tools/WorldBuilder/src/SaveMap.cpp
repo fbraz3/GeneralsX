@@ -23,12 +23,13 @@
 #include "WorldBuilder.h"
 #include "SaveMap.h"
 #include "Common/GlobalData.h"
+#include <Utility/compat.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // SaveMap dialog
 
 
-SaveMap::SaveMap(TSaveMapInfo *pInfo, CWnd* pParent /*=NULL*/)
+SaveMap::SaveMap(TSaveMapInfo* pInfo, CWnd* pParent /*=NULL*/)
 	: CDialog(SaveMap::IDD, pParent),
 	m_pInfo(pInfo)
 {
@@ -63,17 +64,17 @@ END_MESSAGE_MAP()
 
 void SaveMap::OnSystemMaps()
 {
-	populateMapListbox( TRUE );
+	populateMapListbox(TRUE);
 }
 
 void SaveMap::OnUserMaps()
 {
-	populateMapListbox( FALSE );
+	populateMapListbox(FALSE);
 }
 
 void SaveMap::OnOK()
 {
-	CWnd *pEdit = GetDlgItem(IDC_SAVE_MAP_EDIT);
+	CWnd* pEdit = GetDlgItem(IDC_SAVE_MAP_EDIT);
 	if (pEdit == NULL) {
 		DEBUG_CRASH(("Bad resources."));
 		OnCancel();
@@ -90,7 +91,7 @@ void SaveMap::OnOK()
 		testName = TheGlobalData->getPath_UserData().str();
 		testName = testName + "Maps\\";
 	}
-	testName += m_pInfo->filename + "\\" + m_pInfo->filename + ".map"	;
+	testName += m_pInfo->filename + GET_PATH_SEPARATOR() + m_pInfo->filename + ".map";
 	CFileStatus status;
 	if (CFile::GetStatus(testName, status)) {
 		CString warn;
@@ -114,7 +115,7 @@ void SaveMap::OnBrowse()
 	CDialog::OnOK();
 }
 
-void SaveMap::populateMapListbox( Bool systemMaps )
+void SaveMap::populateMapListbox(Bool systemMaps)
 {
 	m_pInfo->usingSystemDir = m_usingSystemDir = systemMaps;
 	::AfxGetApp()->WriteProfileInt(MAP_OPENSAVE_PANEL_SECTION, "UseSystemDir", m_usingSystemDir);
@@ -131,11 +132,11 @@ void SaveMap::populateMapListbox( Bool systemMaps )
 		snprintf(dirBuf, ARRAY_SIZE(dirBuf), "%sMaps\\", TheGlobalData->getPath_UserData().str());
 	int len = strlen(dirBuf);
 
-	if (len > 0 && dirBuf[len - 1] != '\\') {
-		dirBuf[len++] = '\\';
+	if (len > 0 && dirBuf[len - 1] != GET_PATH_SEPARATOR()) {
+		dirBuf[len++] = GET_PATH_SEPARATOR();
 		dirBuf[len] = 0;
 	}
-	CListBox *pList = (CListBox *)this->GetDlgItem(IDC_SAVE_LIST);
+	CListBox* pList = (CListBox*)this->GetDlgItem(IDC_SAVE_LIST);
 	if (pList == NULL) return;
 	pList->ResetContent();
 	snprintf(findBuf, ARRAY_SIZE(findBuf), "%s*.*", dirBuf);
@@ -156,73 +157,75 @@ void SaveMap::populateMapListbox( Bool systemMaps )
 						pList->AddString(findData.cFileName);
 					};
 				}
-			} catch (const std::exception& e) {
-		DEBUG_LOG(("UnknownFunction - Exception caught: %s", e.what()));
-	} catch (...) {
-		DEBUG_LOG(("UnknownFunction - Unknown exception caught"));
-
-		} while (FindNextFile(hFindFile, &findData));
-
-		if (hFindFile) FindClose(hFindFile);
- 	}
-	CEdit *pEdit = (CEdit*)GetDlgItem(IDC_SAVE_MAP_EDIT);
-	if (pEdit != NULL) {
-		strlcpy(fileBuf, m_pInfo->filename, ARRAY_SIZE(fileBuf));
-		Int len = strlen(fileBuf);
-		if (len>4 && stricmp(".map", fileBuf+(len-4)) == 0) {
-			// strip of the .map
-			fileBuf[len-4] = 0;
-		}
-		while (len>0) {
-			if (fileBuf[len] == '\\') {
-				len++;
-				break;
 			}
-			len--;
+			catch (const std::exception& e) {
+				DEBUG_LOG(("UnknownFunction - Exception caught: %s", e.what()));
+			}
+			catch (...) {
+				DEBUG_LOG(("UnknownFunction - Unknown exception caught"));
+
+			} while (FindNextFile(hFindFile, &findData));
+
+			if (hFindFile) FindClose(hFindFile);
 		}
-		pEdit->SetWindowText(&fileBuf[len]);
-		pEdit->SetSel(0, 1000, true);
-		pEdit->SetFocus();
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SAVE_MAP_EDIT);
+		if (pEdit != NULL) {
+			strlcpy(fileBuf, m_pInfo->filename, ARRAY_SIZE(fileBuf));
+			Int len = strlen(fileBuf);
+			if (len > 4 && stricmp(".map", fileBuf + (len - 4)) == 0) {
+				// strip of the .map
+				fileBuf[len - 4] = 0;
+			}
+			while (len > 0) {
+				if (fileBuf[len] == GET_PATH_SEPARATOR()) {
+					len++;
+					break;
+				}
+				len--;
+			}
+			pEdit->SetWindowText(&fileBuf[len]);
+			pEdit->SetSel(0, 1000, true);
+			pEdit->SetFocus();
+		}
 	}
-}
 
-void SaveMap::OnSelchangeSaveList()
-{
-	CListBox *pList = (CListBox *)this->GetDlgItem(IDC_SAVE_LIST);
-	if (pList == NULL) {
-		return;
+	void SaveMap::OnSelchangeSaveList()
+	{
+		CListBox* pList = (CListBox*)this->GetDlgItem(IDC_SAVE_LIST);
+		if (pList == NULL) {
+			return;
+		}
+
+		Int sel = pList->GetCurSel();
+		CString filename;
+		if (sel != LB_ERR) {
+			pList->GetText(sel, filename);
+		}
+		CWnd* pEdit = GetDlgItem(IDC_SAVE_MAP_EDIT);
+		if (pEdit == NULL) {
+			return;
+		}
+		pEdit->SetWindowText(filename);
 	}
 
-	Int sel = pList->GetCurSel();
-	CString filename;
-	if (sel != LB_ERR) {
-		pList->GetText(sel, filename);
+	BOOL SaveMap::OnInitDialog()
+	{
+		CDialog::OnInitDialog();
+
+		CButton* pSystemMaps = (CButton*)this->GetDlgItem(IDC_SYSTEMMAPS);
+		if (pSystemMaps != NULL)
+			pSystemMaps->SetCheck(m_usingSystemDir);
+
+		CButton* pUserMaps = (CButton*)this->GetDlgItem(IDC_USERMAPS);
+		if (pUserMaps != NULL)
+			pUserMaps->SetCheck(!m_usingSystemDir);
+
+		// TheSuperHackers @tweak Originally World Builder has hidden the System Maps tab button in Release builds,
+		// perhaps with the intention to only show User Maps to community users. However, World Builder did release
+		// as a Debug build and always had the System Maps tab, therefore this now shows it always for simplicity.
+
+		populateMapListbox(m_usingSystemDir);
+
+		return FALSE;  // return TRUE unless you set the focus to a control
+
 	}
-	CWnd *pEdit = GetDlgItem(IDC_SAVE_MAP_EDIT);
-	if (pEdit == NULL) {
-		return;
-	}
-	pEdit->SetWindowText(filename);
-}
-
-BOOL SaveMap::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	CButton *pSystemMaps = (CButton *)this->GetDlgItem(IDC_SYSTEMMAPS);
-	if (pSystemMaps != NULL)
-		pSystemMaps->SetCheck( m_usingSystemDir );
-
-	CButton *pUserMaps = (CButton *)this->GetDlgItem(IDC_USERMAPS);
-	if (pUserMaps != NULL)
-		pUserMaps->SetCheck( !m_usingSystemDir );
-
-	// TheSuperHackers @tweak Originally World Builder has hidden the System Maps tab button in Release builds,
-	// perhaps with the intention to only show User Maps to community users. However, World Builder did release
-	// as a Debug build and always had the System Maps tab, therefore this now shows it always for simplicity.
-
-	populateMapListbox( m_usingSystemDir );
-
-	return FALSE;  // return TRUE unless you set the focus to a control
-
-}

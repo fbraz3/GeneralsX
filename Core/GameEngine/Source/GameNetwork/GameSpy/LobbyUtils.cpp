@@ -61,6 +61,7 @@
 #include "GameNetwork/GameSpy/GSConfig.h"
 
 #include "Common/STLTypedefs.h"
+#include <Utility/compat.h>
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +74,7 @@ enum {
 	COLUMN_PASSWORD,
 	COLUMN_OBSERVER,
 #if !RTS_GENERALS
-  COLUMN_USE_STATS,
+	COLUMN_USE_STATS,
 #endif
 	COLUMN_PING,
 };
@@ -85,12 +86,12 @@ static NameKeyType windowSortAlphaID = NAMEKEY_INVALID;
 static NameKeyType windowSortPingID = NAMEKEY_INVALID;
 static NameKeyType windowSortBuddiesID = NAMEKEY_INVALID;
 
-static GameWindow *buttonSortAlpha = NULL;
-static GameWindow *buttonSortPing = NULL;
-static GameWindow *buttonSortBuddies = NULL;
-static GameWindow *windowSortAlpha = NULL;
-static GameWindow *windowSortPing = NULL;
-static GameWindow *windowSortBuddies = NULL;
+static GameWindow* buttonSortAlpha = NULL;
+static GameWindow* buttonSortPing = NULL;
+static GameWindow* buttonSortBuddies = NULL;
+static GameWindow* windowSortAlpha = NULL;
+static GameWindow* windowSortPing = NULL;
+static GameWindow* windowSortBuddies = NULL;
 
 static GameSortType theGameSortType = GAMESORT_ALPHA_ASCENDING;
 static Bool sortBuddies = TRUE;
@@ -98,28 +99,28 @@ static void showSortIcons(void)
 {
 	if (windowSortAlpha && windowSortPing)
 	{
-		switch(theGameSortType)
+		switch (theGameSortType)
 		{
-			case GAMESORT_ALPHA_ASCENDING:
-				windowSortAlpha->winHide(FALSE);
-				windowSortAlpha->winEnable(TRUE);
-				windowSortPing->winHide(TRUE);
-				break;
-			case GAMESORT_ALPHA_DESCENDING:
-				windowSortAlpha->winHide(FALSE);
-				windowSortAlpha->winEnable(FALSE);
-				windowSortPing->winHide(TRUE);
-				break;
-			case GAMESORT_PING_ASCENDING:
-				windowSortPing->winHide(FALSE);
-				windowSortPing->winEnable(TRUE);
-				windowSortAlpha->winHide(TRUE);
-				break;
-			case GAMESORT_PING_DESCENDING:
-				windowSortPing->winHide(FALSE);
-				windowSortPing->winEnable(FALSE);
-				windowSortAlpha->winHide(TRUE);
-				break;
+		case GAMESORT_ALPHA_ASCENDING:
+			windowSortAlpha->winHide(FALSE);
+			windowSortAlpha->winEnable(TRUE);
+			windowSortPing->winHide(TRUE);
+			break;
+		case GAMESORT_ALPHA_DESCENDING:
+			windowSortAlpha->winHide(FALSE);
+			windowSortAlpha->winEnable(FALSE);
+			windowSortPing->winHide(TRUE);
+			break;
+		case GAMESORT_PING_ASCENDING:
+			windowSortPing->winHide(FALSE);
+			windowSortPing->winEnable(TRUE);
+			windowSortAlpha->winHide(TRUE);
+			break;
+		case GAMESORT_PING_DESCENDING:
+			windowSortPing->winHide(FALSE);
+			windowSortPing->winEnable(FALSE);
+			windowSortAlpha->winHide(TRUE);
+			break;
 		}
 	}
 
@@ -138,14 +139,14 @@ static void showSortIcons(void)
 		}
 	}
 }
-void setSortMode( GameSortType sortType ) { theGameSortType = sortType; showSortIcons(); RefreshGameListBoxes(); }
-void sortByBuddies( Bool doSort ) { sortBuddies = doSort; showSortIcons(); RefreshGameListBoxes(); }
+void setSortMode(GameSortType sortType) { theGameSortType = sortType; showSortIcons(); RefreshGameListBoxes(); }
+void sortByBuddies(Bool doSort) { sortBuddies = doSort; showSortIcons(); RefreshGameListBoxes(); }
 
-Bool HandleSortButton( NameKeyType sortButton )
+Bool HandleSortButton(NameKeyType sortButton)
 {
 	if (sortButton == buttonSortBuddiesID)
 	{
-		sortByBuddies( !sortBuddies );
+		sortByBuddies(!sortBuddies);
 		return TRUE;
 	}
 	else if (sortButton == buttonSortAlphaID)
@@ -184,18 +185,18 @@ static NameKeyType listboxLobbyGamesLargeID = NAMEKEY_INVALID;
 //static NameKeyType listboxLobbyGameInfoID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
-static GameWindow *parent = NULL;
+static GameWindow* parent = NULL;
 //static GameWindow *parentGameListSmall = NULL;
-static GameWindow *parentGameListLarge = NULL;
-       //GameWindow *listboxLobbyGamesSmall = NULL;
-       GameWindow *listboxLobbyGamesLarge = NULL;
-       //GameWindow *listboxLobbyGameInfo = NULL;
+static GameWindow* parentGameListLarge = NULL;
+//GameWindow *listboxLobbyGamesSmall = NULL;
+GameWindow* listboxLobbyGamesLarge = NULL;
+//GameWindow *listboxLobbyGameInfo = NULL;
 
-static const Image *pingImages[3] = { NULL, NULL, NULL };
+static const Image* pingImages[3] = { NULL, NULL, NULL };
 
-static void gameTooltip(GameWindow *window,
-													WinInstanceData *instData,
-													UnsignedInt mouse)
+static void gameTooltip(GameWindow* window,
+	WinInstanceData* instData,
+	UnsignedInt mouse)
 {
 	Int x, y, row, col;
 	x = LOLONGTOSHORT(mouse);
@@ -205,15 +206,15 @@ static void gameTooltip(GameWindow *window,
 
 	if (row == -1 || col == -1)
 	{
-		TheMouse->setCursorTooltip( UnicodeString::TheEmptyString);//TheGameText->fetch("TOOLTIP:GamesBeingFormed") );
+		TheMouse->setCursorTooltip(UnicodeString::TheEmptyString);//TheGameText->fetch("TOOLTIP:GamesBeingFormed") );
 		return;
 	}
 
 	Int gameID = (Int)(intptr_t)GadgetListBoxGetItemData(window, row, 0);
-	GameSpyStagingRoom *room = TheGameSpyInfo->findStagingRoomByID(gameID);
+	GameSpyStagingRoom* room = TheGameSpyInfo->findStagingRoomByID(gameID);
 	if (!room)
 	{
-		TheMouse->setCursorTooltip( TheGameText->fetch("TOOLTIP:UnknownGame") );
+		TheMouse->setCursorTooltip(TheGameText->fetch("TOOLTIP:UnknownGame"));
 		return;
 	}
 
@@ -225,56 +226,56 @@ static void gameTooltip(GameWindow *window,
 			room->getPingAsInt(), TheGameSpyConfig->getPingCutoffGood(), TheGameSpyConfig->getPingCutoffBad(),
 			TheGameSpyInfo->getPingString().str(), room->getPingString().str()
 		);
-		TheMouse->setCursorTooltip( s, 10, NULL, 2.0f ); // the text and width are the only params used.  the others are the default values.
+		TheMouse->setCursorTooltip(s, 10, NULL, 2.0f); // the text and width are the only params used.  the others are the default values.
 #else
-		TheMouse->setCursorTooltip( TheGameText->fetch("TOOLTIP:PingInfo"), 10, NULL, 2.0f ); // the text and width are the only params used.  the others are the default values.
+		TheMouse->setCursorTooltip(TheGameText->fetch("TOOLTIP:PingInfo"), 10, NULL, 2.0f); // the text and width are the only params used.  the others are the default values.
 #endif
 		return;
 	}
 	if (col == COLUMN_NUMPLAYERS)
 	{
-		TheMouse->setCursorTooltip( TheGameText->fetch("TOOLTIP:NumberOfPlayers"), 10, NULL, 2.0f ); // the text and width are the only params used.  the others are the default values.
+		TheMouse->setCursorTooltip(TheGameText->fetch("TOOLTIP:NumberOfPlayers"), 10, NULL, 2.0f); // the text and width are the only params used.  the others are the default values.
 		return;
 	}
 	if (col == COLUMN_PASSWORD)
 	{
 		if (room->getHasPassword())
 		{
-			UnicodeString checkTooltip =TheGameText->fetch("TOOTIP:Password");
-			if(!checkTooltip.compare(L"Password required to joing game"))
+			UnicodeString checkTooltip = TheGameText->fetch("TOOTIP:Password");
+			if (!checkTooltip.compare(L"Password required to joing game"))
 				checkTooltip.set(L"Password required to join game");
-			TheMouse->setCursorTooltip( checkTooltip, 10, NULL, 2.0f ); // the text and width are the only params used.  the others are the default values.
+			TheMouse->setCursorTooltip(checkTooltip, 10, NULL, 2.0f); // the text and width are the only params used.  the others are the default values.
 		}
 		else
-			TheMouse->setCursorTooltip( UnicodeString::TheEmptyString );
+			TheMouse->setCursorTooltip(UnicodeString::TheEmptyString);
 		return;
 	}
 #if !RTS_GENERALS
-  if (col == COLUMN_USE_STATS)
-  {
-    if ( room->getUseStats() )
-    {
-      TheMouse->setCursorTooltip( TheGameText->fetch("TOOLTIP:UseStatsOn") );
-    }
-    else
-    {
-      TheMouse->setCursorTooltip( TheGameText->fetch("TOOLTIP:UseStatsOff") );
-    }
-    return;
-  }
+	if (col == COLUMN_USE_STATS)
+	{
+		if (room->getUseStats())
+		{
+			TheMouse->setCursorTooltip(TheGameText->fetch("TOOLTIP:UseStatsOn"));
+		}
+		else
+		{
+			TheMouse->setCursorTooltip(TheGameText->fetch("TOOLTIP:UseStatsOff"));
+		}
+		return;
+	}
 #endif
 
 	UnicodeString tooltip;
 
 	UnicodeString mapName;
-	const MapMetaData *md = TheMapCache->findMap(room->getMap());
+	const MapMetaData* md = TheMapCache->findMap(room->getMap());
 	if (md)
 	{
 		mapName = md->m_displayName;
 	}
 	else
 	{
-		const char *start = room->getMap().reverseFind('\\');
+		const char* start = room->getMap().reverseFindPathSeparator();
 		if (start)
 		{
 			++start;
@@ -283,13 +284,13 @@ static void gameTooltip(GameWindow *window,
 		{
 			start = room->getMap().str();
 		}
-		mapName.translate( start );
+		mapName.translate(start);
 	}
 	UnicodeString tmp;
 	tooltip.format(TheGameText->fetch("TOOLTIP:GameInfoGameName"), room->getGameName().str());
 	if (room->getLadderPort() != 0)
 	{
-		const LadderInfo *linfo = TheLadderList->findLadder(room->getLadderIP(), room->getLadderPort());
+		const LadderInfo* linfo = TheLadderList->findLadder(room->getLadderIP(), room->getLadderPort());
 		if (linfo)
 		{
 			tmp.format(TheGameText->fetch("TOOLTIP:GameInfoLadderName"), linfo->name.str());
@@ -307,9 +308,9 @@ static void gameTooltip(GameWindow *window,
 	AsciiString aPlayer;
 	UnicodeString player;
 	Int numPlayers = 0;
-	for (Int i=0; i<MAX_SLOTS; ++i)
+	for (Int i = 0; i < MAX_SLOTS; ++i)
 	{
-		GameSpyGameSlot *slot = room->getGameSpySlot(i);
+		GameSpyGameSlot* slot = room->getGameSpySlot(i);
 		if (i == 0 && (!slot || !slot->isHuman()))
 		{
 			DEBUG_CRASH(("About to tooltip a non-hosted game!"));
@@ -323,7 +324,7 @@ static void gameTooltip(GameWindow *window,
 		else if (slot && slot->isAI())
 		{
 			++numPlayers;
-			switch(slot->getState())
+			switch (slot->getState())
 			{
 			case SLOT_EASY_AI:
 				tooltip.concat(L'\n');
@@ -342,35 +343,35 @@ static void gameTooltip(GameWindow *window,
 	}
 	DEBUG_ASSERTCRASH(numPlayers, ("Tooltipping a 0-player game!"));
 
-	TheMouse->setCursorTooltip( tooltip, 10, NULL, 2.0f ); // the text and width are the only params used.  the others are the default values.
+	TheMouse->setCursorTooltip(tooltip, 10, NULL, 2.0f); // the text and width are the only params used.  the others are the default values.
 }
 
 static Bool isSmall = TRUE;
 
-GameWindow *GetGameListBox( void )
+GameWindow* GetGameListBox(void)
 {
 	return listboxLobbyGamesLarge;
 }
 
-GameWindow *GetGameInfoListBox( void )
+GameWindow* GetGameInfoListBox(void)
 {
 	return NULL;
 }
 
-NameKeyType GetGameListBoxID( void )
+NameKeyType GetGameListBoxID(void)
 {
 	return listboxLobbyGamesLargeID;
 }
 
-NameKeyType GetGameInfoListBoxID( void )
+NameKeyType GetGameInfoListBoxID(void)
 {
 	return NAMEKEY_INVALID;
 }
 
-void GrabWindowInfo( void )
+void GrabWindowInfo(void)
 {
 	isSmall = TRUE;
-	parentID = NAMEKEY( "WOLCustomLobby.wnd:WOLLobbyMenuParent" );
+	parentID = NAMEKEY("WOLCustomLobby.wnd:WOLLobbyMenuParent");
 	parent = TheWindowManager->winGetWindowFromId(NULL, parentID);
 
 	pingImages[0] = TheMappedImageCollection->findImageByName("Ping03");
@@ -380,22 +381,22 @@ void GrabWindowInfo( void )
 	DEBUG_ASSERTCRASH(pingImages[1], ("Can't find ping image!"));
 	DEBUG_ASSERTCRASH(pingImages[2], ("Can't find ping image!"));
 
-//	parentGameListSmallID = NAMEKEY( "WOLCustomLobby.wnd:ParentGameListSmall" );
-//	parentGameListSmall = TheWindowManager->winGetWindowFromId(NULL, parentGameListSmallID);
+	//	parentGameListSmallID = NAMEKEY( "WOLCustomLobby.wnd:ParentGameListSmall" );
+	//	parentGameListSmall = TheWindowManager->winGetWindowFromId(NULL, parentGameListSmallID);
 
-	parentGameListLargeID = NAMEKEY( "WOLCustomLobby.wnd:ParentGameListLarge" );
+	parentGameListLargeID = NAMEKEY("WOLCustomLobby.wnd:ParentGameListLarge");
 	parentGameListLarge = TheWindowManager->winGetWindowFromId(NULL, parentGameListLargeID);
 
-	listboxLobbyGamesSmallID = NAMEKEY( "WOLCustomLobby.wnd:ListboxGames" );
-//	listboxLobbyGamesSmall = TheWindowManager->winGetWindowFromId(NULL, listboxLobbyGamesSmallID);
-//	listboxLobbyGamesSmall->winSetTooltipFunc(gameTooltip);
+	listboxLobbyGamesSmallID = NAMEKEY("WOLCustomLobby.wnd:ListboxGames");
+	//	listboxLobbyGamesSmall = TheWindowManager->winGetWindowFromId(NULL, listboxLobbyGamesSmallID);
+	//	listboxLobbyGamesSmall->winSetTooltipFunc(gameTooltip);
 
-	listboxLobbyGamesLargeID = NAMEKEY( "WOLCustomLobby.wnd:ListboxGamesLarge" );
+	listboxLobbyGamesLargeID = NAMEKEY("WOLCustomLobby.wnd:ListboxGamesLarge");
 	listboxLobbyGamesLarge = TheWindowManager->winGetWindowFromId(NULL, listboxLobbyGamesLargeID);
 	listboxLobbyGamesLarge->winSetTooltipFunc(gameTooltip);
-//
-//	listboxLobbyGameInfoID = NAMEKEY( "WOLCustomLobby.wnd:ListboxGameInfo" );
-//	listboxLobbyGameInfo = TheWindowManager->winGetWindowFromId(NULL, listboxLobbyGameInfoID);
+	//
+	//	listboxLobbyGameInfoID = NAMEKEY( "WOLCustomLobby.wnd:ListboxGameInfo" );
+	//	listboxLobbyGameInfo = TheWindowManager->winGetWindowFromId(NULL, listboxLobbyGameInfoID);
 
 	buttonSortAlphaID = NAMEKEY("WOLCustomLobby.wnd:ButtonSortAlpha");
 	buttonSortPingID = NAMEKEY("WOLCustomLobby.wnd:ButtonSortPing");
@@ -414,15 +415,15 @@ void GrabWindowInfo( void )
 	showSortIcons();
 }
 
-void ReleaseWindowInfo( void )
+void ReleaseWindowInfo(void)
 {
 	isSmall = TRUE;
 	parent = NULL;
-//	parentGameListSmall = NULL;
+	//	parentGameListSmall = NULL;
 	parentGameListLarge = NULL;
-//	listboxLobbyGamesSmall = NULL;
+	//	listboxLobbyGamesSmall = NULL;
 	listboxLobbyGamesLarge = NULL;
-//	listboxLobbyGameInfo = NULL;
+	//	listboxLobbyGameInfo = NULL;
 
 	buttonSortAlpha = NULL;
 	buttonSortPing = NULL;
@@ -432,11 +433,11 @@ void ReleaseWindowInfo( void )
 	windowSortBuddies = NULL;
 }
 
-typedef std::set<GameSpyStagingRoom *> BuddyGameSet;
-static BuddyGameSet *theBuddyGames = NULL;
+typedef std::set<GameSpyStagingRoom*> BuddyGameSet;
+static BuddyGameSet* theBuddyGames = NULL;
 static void populateBuddyGames(void)
 {
-	BuddyInfoMap *m = TheGameSpyInfo->getBuddyMap();
+	BuddyInfoMap* m = TheGameSpyInfo->getBuddyMap();
 	theBuddyGames = NEW BuddyGameSet;
 	if (!m)
 	{
@@ -447,12 +448,12 @@ static void populateBuddyGames(void)
 		BuddyInfo info = bit->second;
 		if (info.m_status == GP_STAGING)
 		{
-			StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();
+			StagingRoomMap* srm = TheGameSpyInfo->getStagingRoomList();
 			for (StagingRoomMap::iterator srmIt = srm->begin(); srmIt != srm->end(); ++srmIt)
 			{
-				GameSpyStagingRoom *game = srmIt->second;
+				GameSpyStagingRoom* game = srmIt->second;
 				game->cleanUpSlotPointers();
-				const GameSpyGameSlot *slot = game->getGameSpySlot(0);
+				const GameSpyGameSlot* slot = game->getGameSpySlot(0);
 				if (slot && slot->getName() == info.m_locationString)
 				{
 					theBuddyGames->insert(game);
@@ -471,12 +472,12 @@ static void clearBuddyGames(void)
 
 struct GameSortStruct
 {
-	bool operator()(GameSpyStagingRoom *g1, GameSpyStagingRoom *g2) const
+	bool operator()(GameSpyStagingRoom* g1, GameSpyStagingRoom* g2) const
 	{
 		// sort CRC mismatches to the bottom
 		Bool g1Good = (g1->getExeCRC() != TheGlobalData->m_exeCRC || g1->getIniCRC() != TheGlobalData->m_iniCRC);
 		Bool g2Good = (g1->getExeCRC() != TheGlobalData->m_exeCRC || g1->getIniCRC() != TheGlobalData->m_iniCRC);
-		if ( g1Good ^ g2Good )
+		if (g1Good ^ g2Good)
 		{
 			return g1Good;
 		}
@@ -484,7 +485,7 @@ struct GameSortStruct
 		// sort games with private ladders to the bottom
 		Bool g1UnknownLadder = (g1->getLadderPort() && TheLadderList->findLadder(g1->getLadderIP(), g1->getLadderPort()) == NULL);
 		Bool g2UnknownLadder = (g2->getLadderPort() && TheLadderList->findLadder(g2->getLadderIP(), g2->getLadderPort()) == NULL);
-		if ( g1UnknownLadder ^ g2UnknownLadder )
+		if (g1UnknownLadder ^ g2UnknownLadder)
 		{
 			return g2UnknownLadder;
 		}
@@ -492,7 +493,7 @@ struct GameSortStruct
 		// sort full games to the bottom
 		Bool g1Full = (g1->getNumNonObserverPlayers() == g1->getMaxPlayers() || g1->getNumPlayers() == MAX_SLOTS);
 		Bool g2Full = (g2->getNumNonObserverPlayers() == g2->getMaxPlayers() || g2->getNumPlayers() == MAX_SLOTS);
-		if ( g1Full ^ g2Full )
+		if (g1Full ^ g2Full)
 		{
 			return g2Full;
 		}
@@ -501,19 +502,19 @@ struct GameSortStruct
 		{
 			Bool g1HasBuddies = (theBuddyGames->find(g1) != theBuddyGames->end());
 			Bool g2HasBuddies = (theBuddyGames->find(g2) != theBuddyGames->end());
-			if ( g1HasBuddies ^ g2HasBuddies )
+			if (g1HasBuddies ^ g2HasBuddies)
 			{
 				return g1HasBuddies;
 			}
 		}
 
-		switch(theGameSortType)
+		switch (theGameSortType)
 		{
 		case GAMESORT_ALPHA_ASCENDING:
 			return wcsicmp(g1->getGameName().str(), g2->getGameName().str()) < 0;
 			break;
 		case GAMESORT_ALPHA_DESCENDING:
-			return wcsicmp(g1->getGameName().str(),g2->getGameName().str()) > 0;
+			return wcsicmp(g1->getGameName().str(), g2->getGameName().str()) > 0;
 			break;
 		case GAMESORT_PING_ASCENDING:
 			return g1->getPingAsInt() < g2->getPingAsInt();
@@ -526,7 +527,7 @@ struct GameSortStruct
 	}
 };
 
-static Int insertGame( GameWindow *win, GameSpyStagingRoom *game, Bool showMap )
+static Int insertGame(GameWindow* win, GameSpyStagingRoom* game, Bool showMap)
 {
 	game->cleanUpSlotPointers();
 	Color gameColor = GameSpyColor[GSCOLOR_GAME];
@@ -540,51 +541,51 @@ static Int insertGame( GameWindow *win, GameSpyStagingRoom *game, Bool showMap )
 	}
 	UnicodeString gameName = game->getGameName();
 
-	if(TheGameSpyInfo->getDisallowAsianText())
+	if (TheGameSpyInfo->getDisallowAsianText())
 	{
-		const WideChar *buff = gameName.str();
-		Int length =  gameName.getLength();
-		for(Int i = 0; i < length; ++i)
+		const WideChar* buff = gameName.str();
+		Int length = gameName.getLength();
+		for (Int i = 0; i < length; ++i)
 		{
-			if(buff[i] >= 256)
+			if (buff[i] >= 256)
 				return -1;
 		}
 	}
-	else if(TheGameSpyInfo->getDisallowNonAsianText())
+	else if (TheGameSpyInfo->getDisallowNonAsianText())
 	{
-		const WideChar *buff = gameName.str();
-		Int length =  gameName.getLength();
+		const WideChar* buff = gameName.str();
+		Int length = gameName.getLength();
 		Bool hasUnicode = FALSE;
-		for(Int i = 0; i < length; ++i)
+		for (Int i = 0; i < length; ++i)
 		{
-			if(buff[i] >= 256)
+			if (buff[i] >= 256)
 			{
 				hasUnicode = TRUE;
 				break;
 			}
 		}
-		if(!hasUnicode)
+		if (!hasUnicode)
 			return -1;
 	}
 
 
 
 	Int index = GadgetListBoxAddEntryText(win, game->getGameName(), gameColor, -1, COLUMN_NAME);
-	GadgetListBoxSetItemData(win, (void *)game->getID(), index);
+	GadgetListBoxSetItemData(win, (void*)game->getID(), index);
 
 	UnicodeString s;
 
 	if (showMap)
 	{
 		UnicodeString mapName;
-		const MapMetaData *md = TheMapCache->findMap(game->getMap());
+		const MapMetaData* md = TheMapCache->findMap(game->getMap());
 		if (md)
 		{
 			mapName = md->m_displayName;
 		}
 		else
 		{
-			const char *start = game->getMap().reverseFind('\\');
+			const char* start = game->getMap().reverseFindPathSeparator();
 			if (start)
 			{
 				++start;
@@ -593,11 +594,11 @@ static Int insertGame( GameWindow *win, GameSpyStagingRoom *game, Bool showMap )
 			{
 				start = game->getMap().str();
 			}
-			mapName.translate( start );
+			mapName.translate(start);
 		}
 		GadgetListBoxAddEntryText(win, mapName, gameColor, index, COLUMN_MAP);
 
-		const LadderInfo * li = TheLadderList->findLadder(game->getLadderIP(), game->getLadderPort());
+		const LadderInfo* li = TheLadderList->findLadder(game->getLadderIP(), game->getLadderPort());
 		if (li)
 		{
 			GadgetListBoxAddEntryText(win, li->name, gameColor, index, COLUMN_LADDER);
@@ -622,7 +623,7 @@ static Int insertGame( GameWindow *win, GameSpyStagingRoom *game, Bool showMap )
 
 	if (game->getHasPassword())
 	{
-		const Image *img = TheMappedImageCollection->findImageByName("Password");
+		const Image* img = TheMappedImageCollection->findImageByName("Password");
 		Int width = 10, height = 10;
 		if (img)
 		{
@@ -638,7 +639,7 @@ static Int insertGame( GameWindow *win, GameSpyStagingRoom *game, Bool showMap )
 
 	if (game->getAllowObservers())
 	{
-		const Image *img = TheMappedImageCollection->findImageByName("Observer");
+		const Image* img = TheMappedImageCollection->findImageByName("Observer");
 		GadgetListBoxAddEntryImage(win, img, index, COLUMN_OBSERVER);
 	}
 	else
@@ -647,15 +648,15 @@ static Int insertGame( GameWindow *win, GameSpyStagingRoom *game, Bool showMap )
 	}
 
 #if !RTS_GENERALS
-  {
-    if (game->getUseStats())
-    {
-      if (const Image *img = TheMappedImageCollection->findImageByName("GoodStatsIcon"))
-      {
-        GadgetListBoxAddEntryImage(win, img, index, COLUMN_USE_STATS, img->getImageHeight(), img->getImageWidth());
-      }
-    }
-  }
+	{
+		if (game->getUseStats())
+		{
+			if (const Image* img = TheMappedImageCollection->findImageByName("GoodStatsIcon"))
+			{
+				GadgetListBoxAddEntryImage(win, img, index, COLUMN_USE_STATS, img->getImageHeight(), img->getImageWidth());
+			}
+		}
+	}
 #endif
 
 	s.format(L"%d", game->getPingAsInt());
@@ -684,7 +685,7 @@ static Int insertGame( GameWindow *win, GameSpyStagingRoom *game, Bool showMap )
 	return index;
 }
 
-void RefreshGameListBox( GameWindow *win, Bool showMap )
+void RefreshGameListBox(GameWindow* win, Bool showMap)
 {
 	if (!win)
 		return;
@@ -694,19 +695,19 @@ void RefreshGameListBox( GameWindow *win, Bool showMap )
 	Int indexToSelect = -1;
 	Int selectedID = 0;
 	GadgetListBoxGetSelected(win, &selectedIndex);
-	if (selectedIndex != -1 )
+	if (selectedIndex != -1)
 	{
 		selectedID = (Int)(intptr_t)GadgetListBoxGetItemData(win, selectedIndex);
 	}
-	int prevPos = GadgetListBoxGetTopVisibleEntry( win );
+	int prevPos = GadgetListBoxGetTopVisibleEntry(win);
 
 	// empty listbox
 	GadgetListBoxReset(win);
 
 	// sort our games
-	typedef std::multiset<GameSpyStagingRoom *, GameSortStruct> SortedGameList;
+	typedef std::multiset<GameSpyStagingRoom*, GameSortStruct> SortedGameList;
 	SortedGameList sgl;
-	StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();
+	StagingRoomMap* srm = TheGameSpyInfo->getStagingRoomList();
 	populateBuddyGames();
 	for (StagingRoomMap::iterator srmIt = srm->begin(); srmIt != srm->end(); ++srmIt)
 	{
@@ -716,7 +717,7 @@ void RefreshGameListBox( GameWindow *win, Bool showMap )
 	// populate listbox
 	for (SortedGameList::iterator sglIt = sgl.begin(); sglIt != sgl.end(); ++sglIt)
 	{
-		GameSpyStagingRoom *game = *sglIt;
+		GameSpyStagingRoom* game = *sglIt;
 		if (game)
 		{
 			Int index = insertGame(win, game, showMap);
@@ -731,8 +732,8 @@ void RefreshGameListBox( GameWindow *win, Bool showMap )
 
 	// restore selection
 	GadgetListBoxSetSelected(win, indexToSelect); // even for -1, so we can disable the 'Join Game' button
-//	if(prevPos > 10)
-		GadgetListBoxSetTopVisibleEntry( win, prevPos  );//+ 1
+	//	if(prevPos > 10)
+	GadgetListBoxSetTopVisibleEntry(win, prevPos);//+ 1
 
 	if (indexToSelect < 0 && selectedID)
 	{
@@ -740,142 +741,142 @@ void RefreshGameListBox( GameWindow *win, Bool showMap )
 	}
 }
 
-void RefreshGameInfoListBox( GameWindow *mainWin, GameWindow *win )
+void RefreshGameInfoListBox(GameWindow* mainWin, GameWindow* win)
 {
-//	if (!mainWin || !win)
-//		return;
-//
-//	GadgetListBoxReset(win);
-//
-//	Int selected = -1;
-//	GadgetListBoxGetSelected(mainWin, &selected);
-//	if (selected < 0)
-//	{
-//		return;
-//	}
-//
-//	Int selectedID = (Int)GadgetListBoxGetItemData(mainWin, selected);
-//	if (selectedID < 0)
-//	{
-//		return;
-//	}
-//
-//	StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();
-//	StagingRoomMap::iterator srmIt = srm->find(selectedID);
-//	if (srmIt != srm->end())
-//	{
-//		GameSpyStagingRoom *theRoom = srmIt->second;
-//		theRoom->cleanUpSlotPointers();
-//
-//		// game name
-////		GadgetListBoxAddEntryText(listboxLobbyGameInfo, theRoom->getGameName(), GameSpyColor[GSCOLOR_DEFAULT], -1);
-//
-//		const LadderInfo * li = TheLadderList->findLadder(theRoom->getLadderIP(), theRoom->getLadderPort());
-//		if (li)
-//		{
-//			UnicodeString tmp;
-//			tmp.format(TheGameText->fetch("TOOLTIP:LadderName"), li->name.str());
-//			GadgetListBoxAddEntryText(listboxLobbyGameInfo, tmp, GameSpyColor[GSCOLOR_DEFAULT], -1);
-//		}
-//		else if (theRoom->getLadderPort())
-//		{
-//			GadgetListBoxAddEntryText(listboxLobbyGameInfo, TheGameText->fetch("TOOLTIP:UnknownLadder"), GameSpyColor[GSCOLOR_DEFAULT], -1);
-//		}
-//		else
-//		{
-//			GadgetListBoxAddEntryText(listboxLobbyGameInfo, TheGameText->fetch("TOOLTIP:NoLadder"), GameSpyColor[GSCOLOR_DEFAULT], -1);
-//		}
-//
-//		if (theRoom->getExeCRC() != TheGlobalData->m_exeCRC || theRoom->getIniCRC() != TheGlobalData->m_iniCRC)
-//		{
-//			GadgetListBoxAddEntryText(listboxLobbyGameInfo, TheGameText->fetch("TOOLTIP:InvalidGameVersionSingleLine"), GameSpyColor[GSCOLOR_DEFAULT], -1);
-//		}
-//
-//		// map name
-//		UnicodeString mapName;
-//		const MapMetaData *md = TheMapCache->findMap(theRoom->getMap());
-//		if (md)
-//		{
-//			mapName = md->m_displayName;
-//		}
-//		else
-//		{
-//			const char *start = theRoom->getMap().reverseFind('\\');
-//			if (start)
-//			{
-//				++start;
-//			}
-//			else
-//			{
-//				start = theRoom->getMap().str();
-//			}
-//			mapName.translate( start );
-//		}
-//
-//		GadgetListBoxAddEntryText(listboxLobbyGameInfo, mapName, GameSpyColor[GSCOLOR_DEFAULT], -1);
-//
-//		// player list (rank, win/loss, side)
-//		for (Int i=0; i<MAX_SLOTS; ++i)
-//		{
-//			const GameSpyGameSlot *slot = theRoom->getGameSpySlot(i);
-//			if (slot && slot->isHuman())
-//			{
-//				UnicodeString theName, theRating, thePlayerTemplate;
-//				Int colorIdx = slot->getColor();
-//				theName = slot->getName();
-//				theRating.format(L" (%d-%d)", slot->getWins(), slot->getLosses());
-//				const PlayerTemplate * pt = ThePlayerTemplateStore->getNthPlayerTemplate(slot->getPlayerTemplate());
-//				if (pt)
-//				{
-//					thePlayerTemplate = pt->getDisplayName();
-//				}
-//				else
-//				{
-//					thePlayerTemplate = TheGameText->fetch("GUI:Random");
-//				}
-//
-//				UnicodeString theText;
-//				theText.format(L"%ls - %ls - %ls", theName.str(), thePlayerTemplate.str(), theRating.str());
-//
-//				Int theColor = GameSpyColor[GSCOLOR_DEFAULT];
-//				const MultiplayerColorDefinition *mcd = TheMultiplayerSettings->getColor(colorIdx);
-//				if (mcd)
-//				{
-//					theColor = mcd->getColor();
-//				}
-//
-//				GadgetListBoxAddEntryText(listboxLobbyGameInfo, theText, theColor, -1);
-//			}
-//		}
-//	}
+	//	if (!mainWin || !win)
+	//		return;
+	//
+	//	GadgetListBoxReset(win);
+	//
+	//	Int selected = -1;
+	//	GadgetListBoxGetSelected(mainWin, &selected);
+	//	if (selected < 0)
+	//	{
+	//		return;
+	//	}
+	//
+	//	Int selectedID = (Int)GadgetListBoxGetItemData(mainWin, selected);
+	//	if (selectedID < 0)
+	//	{
+	//		return;
+	//	}
+	//
+	//	StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();
+	//	StagingRoomMap::iterator srmIt = srm->find(selectedID);
+	//	if (srmIt != srm->end())
+	//	{
+	//		GameSpyStagingRoom *theRoom = srmIt->second;
+	//		theRoom->cleanUpSlotPointers();
+	//
+	//		// game name
+	////		GadgetListBoxAddEntryText(listboxLobbyGameInfo, theRoom->getGameName(), GameSpyColor[GSCOLOR_DEFAULT], -1);
+	//
+	//		const LadderInfo * li = TheLadderList->findLadder(theRoom->getLadderIP(), theRoom->getLadderPort());
+	//		if (li)
+	//		{
+	//			UnicodeString tmp;
+	//			tmp.format(TheGameText->fetch("TOOLTIP:LadderName"), li->name.str());
+	//			GadgetListBoxAddEntryText(listboxLobbyGameInfo, tmp, GameSpyColor[GSCOLOR_DEFAULT], -1);
+	//		}
+	//		else if (theRoom->getLadderPort())
+	//		{
+	//			GadgetListBoxAddEntryText(listboxLobbyGameInfo, TheGameText->fetch("TOOLTIP:UnknownLadder"), GameSpyColor[GSCOLOR_DEFAULT], -1);
+	//		}
+	//		else
+	//		{
+	//			GadgetListBoxAddEntryText(listboxLobbyGameInfo, TheGameText->fetch("TOOLTIP:NoLadder"), GameSpyColor[GSCOLOR_DEFAULT], -1);
+	//		}
+	//
+	//		if (theRoom->getExeCRC() != TheGlobalData->m_exeCRC || theRoom->getIniCRC() != TheGlobalData->m_iniCRC)
+	//		{
+	//			GadgetListBoxAddEntryText(listboxLobbyGameInfo, TheGameText->fetch("TOOLTIP:InvalidGameVersionSingleLine"), GameSpyColor[GSCOLOR_DEFAULT], -1);
+	//		}
+	//
+	//		// map name
+	//		UnicodeString mapName;
+	//		const MapMetaData *md = TheMapCache->findMap(theRoom->getMap());
+	//		if (md)
+	//		{
+	//			mapName = md->m_displayName;
+	//		}
+	//		else
+	//		{
+	//			const char *start = theRoom->getMap().reverseFindPathSeparator();
+	//			if (start)
+	//			{
+	//				++start;
+	//			}
+	//			else
+	//			{
+	//				start = theRoom->getMap().str();
+	//			}
+	//			mapName.translate( start );
+	//		}
+	//
+	//		GadgetListBoxAddEntryText(listboxLobbyGameInfo, mapName, GameSpyColor[GSCOLOR_DEFAULT], -1);
+	//
+	//		// player list (rank, win/loss, side)
+	//		for (Int i=0; i<MAX_SLOTS; ++i)
+	//		{
+	//			const GameSpyGameSlot *slot = theRoom->getGameSpySlot(i);
+	//			if (slot && slot->isHuman())
+	//			{
+	//				UnicodeString theName, theRating, thePlayerTemplate;
+	//				Int colorIdx = slot->getColor();
+	//				theName = slot->getName();
+	//				theRating.format(L" (%d-%d)", slot->getWins(), slot->getLosses());
+	//				const PlayerTemplate * pt = ThePlayerTemplateStore->getNthPlayerTemplate(slot->getPlayerTemplate());
+	//				if (pt)
+	//				{
+	//					thePlayerTemplate = pt->getDisplayName();
+	//				}
+	//				else
+	//				{
+	//					thePlayerTemplate = TheGameText->fetch("GUI:Random");
+	//				}
+	//
+	//				UnicodeString theText;
+	//				theText.format(L"%ls - %ls - %ls", theName.str(), thePlayerTemplate.str(), theRating.str());
+	//
+	//				Int theColor = GameSpyColor[GSCOLOR_DEFAULT];
+	//				const MultiplayerColorDefinition *mcd = TheMultiplayerSettings->getColor(colorIdx);
+	//				if (mcd)
+	//				{
+	//					theColor = mcd->getColor();
+	//				}
+	//
+	//				GadgetListBoxAddEntryText(listboxLobbyGameInfo, theText, theColor, -1);
+	//			}
+	//		}
+	//	}
 
 }
 
-void RefreshGameListBoxes( void )
+void RefreshGameListBoxes(void)
 {
-	GameWindow *main = GetGameListBox();
-	GameWindow *info = GetGameInfoListBox();
+	GameWindow* main = GetGameListBox();
+	GameWindow* info = GetGameInfoListBox();
 
-	RefreshGameListBox( main, (info == NULL) );
+	RefreshGameListBox(main, (info == NULL));
 
 	if (info)
 	{
-		RefreshGameInfoListBox( main, info );
+		RefreshGameInfoListBox(main, info);
 	}
 }
 
-void ToggleGameListType( void )
+void ToggleGameListType(void)
 {
 	isSmall = !isSmall;
-	if(isSmall)
+	if (isSmall)
 	{
 		parentGameListLarge->winHide(TRUE);
-//		parentGameListSmall->winHide(FALSE);
+		//		parentGameListSmall->winHide(FALSE);
 	}
 	else
 	{
 		parentGameListLarge->winHide(FALSE);
-//		parentGameListSmall->winHide(TRUE);
+		//		parentGameListSmall->winHide(TRUE);
 	}
 
 	RefreshGameListBoxes();
@@ -883,7 +884,7 @@ void ToggleGameListType( void )
 
 // for use by GameWindow::winSetTooltipFunc
 // displays the Army Tooltip for the player templates
-void playerTemplateComboBoxTooltip(GameWindow *wndComboBox, WinInstanceData *instData, UnsignedInt mouse)
+void playerTemplateComboBoxTooltip(GameWindow* wndComboBox, WinInstanceData* instData, UnsignedInt mouse)
 {
 	Int index = 0;
 	GadgetComboBoxGetSelectedPos(wndComboBox, &index);
@@ -891,12 +892,12 @@ void playerTemplateComboBoxTooltip(GameWindow *wndComboBox, WinInstanceData *ins
 	UnicodeString ustringTooltip;
 	if (templateNum == -1)
 	{
-			// the "Random" template is always first
-			ustringTooltip = TheGameText->fetch("TOOLTIP:BioStrategyLong_Random");
+		// the "Random" template is always first
+		ustringTooltip = TheGameText->fetch("TOOLTIP:BioStrategyLong_Random");
 	}
 	else
 	{
-		const PlayerTemplate *playerTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(templateNum);
+		const PlayerTemplate* playerTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(templateNum);
 		if (playerTemplate)
 		{
 			ustringTooltip = TheGameText->fetch(playerTemplate->getTooltip());
@@ -909,7 +910,7 @@ void playerTemplateComboBoxTooltip(GameWindow *wndComboBox, WinInstanceData *ins
 
 // for use by GameWindow::winSetTooltipFunc
 // displays the Army Tooltip for the player templates
-void playerTemplateListBoxTooltip(GameWindow *wndListBox, WinInstanceData *instData, UnsignedInt mouse)
+void playerTemplateListBoxTooltip(GameWindow* wndListBox, WinInstanceData* instData, UnsignedInt mouse)
 {
 	Int x, y, row, col;
 	x = LOLONGTOSHORT(mouse);
@@ -922,12 +923,12 @@ void playerTemplateListBoxTooltip(GameWindow *wndListBox, WinInstanceData *instD
 	UnicodeString ustringTooltip;
 	if (templateNum == -1)
 	{
-			// the "Random" template is always first
-			ustringTooltip = TheGameText->fetch("TOOLTIP:BioStrategyLong_Random");
+		// the "Random" template is always first
+		ustringTooltip = TheGameText->fetch("TOOLTIP:BioStrategyLong_Random");
 	}
 	else
 	{
-		const PlayerTemplate *playerTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(templateNum);
+		const PlayerTemplate* playerTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(templateNum);
 		if (playerTemplate)
 		{
 			ustringTooltip = TheGameText->fetch(playerTemplate->getTooltip());
@@ -938,7 +939,7 @@ void playerTemplateListBoxTooltip(GameWindow *wndListBox, WinInstanceData *instD
 	TheMouse->setCursorTooltip(ustringTooltip, 0);
 }
 
-void gameAcceptTooltip(GameWindow *window, WinInstanceData *instData, UnsignedInt mouse)
+void gameAcceptTooltip(GameWindow* window, WinInstanceData* instData, UnsignedInt mouse)
 {
 	if (!window || !TheMouse || !TheGameText)
 	{

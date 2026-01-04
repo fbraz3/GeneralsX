@@ -504,7 +504,7 @@ bit8 PacketClass::Get_Field(char *id, void *data, int &length)
 {
    FieldClass *field = Find_Field(id);
    if (field) {
-     memcpy (data, field->Data, MIN(field->Size, length));
+     memcpy (data, field->Data, std::min(field->Size, length));
      length = (int) field->Size;
    }
    return((field) ? true : false);

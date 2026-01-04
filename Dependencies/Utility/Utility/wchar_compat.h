@@ -20,6 +20,7 @@
 #pragma once
 
 #include <cwchar>
+#include <cwctype>
 #include <cstring>
 
 // WCHAR

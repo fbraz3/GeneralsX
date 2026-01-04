@@ -52,7 +52,7 @@ static void SDL2_EnsureInitialized(void)
 {
     if (!g_sdlInitialized) {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-            fprintf(stderr, "Phase 01: SDL_Init failed: %s\n", SDL_GetError());
+            printf("Phase 01: SDL_Init failed: %s\n", SDL_GetError());
         } else {
             printf("Phase 01: SDL2 initialized successfully\n");
             g_sdlInitialized = 1;
@@ -82,19 +82,16 @@ SDL_Window* SDL2_CreateWindow(
     /* Create the SDL2 window */
     window = SDL_CreateWindow(
         title ? title : "GeneralsX",
+        x,
+        y,
         width,
         height,
         flags
     );
 
     if (!window) {
-        fprintf(stderr, "Phase 01: SDL_CreateWindow failed: %s\n", SDL_GetError());
+        printf("Phase 01: SDL_CreateWindow failed: %s\n", SDL_GetError());
         return NULL;
-    }
-
-    /* Set window position if specified */
-    if (x != SDL_WINDOWPOS_CENTERED && y != SDL_WINDOWPOS_CENTERED) {
-        SDL_SetWindowPosition(window, x, y);
     }
 
     printf("Phase 01: SDL2 window created successfully\n");
@@ -110,7 +107,7 @@ SDL_Window* SDL2_CreateWindow(
 void SDL2_DestroyWindow(SDL_Window* window)
 {
     if (!window) {
-        fprintf(stderr, "Phase 01: SDL2_DestroyWindow called with NULL window\n");
+        printf("Phase 01: SDL2_DestroyWindow called with NULL window\n");
         return;
     }
 
@@ -424,7 +421,7 @@ uint32_t SDL2_GetMousePosition(int* x, int* y)
 void SDL2_SetMousePosition(SDL_Window* window, int x, int y)
 {
     if (!window) {
-        fprintf(stderr, "Phase 01: SDL2_SetMousePosition called with NULL window\n");
+        printf("Phase 01: SDL2_SetMousePosition called with NULL window\n");
         return;
     }
 

@@ -1654,7 +1654,7 @@ int HLodClass::Get_Lod_Count(void) const
 void HLodClass::Set_LOD_Bias(float bias)
 {
 	assert(bias > 0.0f);
-	bias = MAX(bias, 0.0f);
+	bias = std::max(bias, 0.0f);
 	LODBias = bias;
 
 	int additional_count = AdditionalModels.Count();
@@ -3081,8 +3081,8 @@ float HLodClass::Get_Post_Increment_Value(void) const
  *=============================================================================================*/
 void HLodClass::Set_LOD_Level(int lod)
 {
-	lod = MAX(0, lod);
-	lod = MIN(lod, (LodCount - 1));
+	lod = std::max(0, lod);
+	lod = std::min(lod, (LodCount - 1));
 
 	if (lod == CurLod) return;
 

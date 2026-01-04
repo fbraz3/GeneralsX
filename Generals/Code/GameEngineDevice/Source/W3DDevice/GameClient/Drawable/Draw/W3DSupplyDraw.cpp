@@ -82,13 +82,13 @@ void W3DSupplyDraw::updateDrawModuleSupplyStatus( Int maxSupply, Int currentSupp
 	// Figure the % of our bones we should show, and if it is a different % than last time
 	// start showing and hiding them.
 	Int bonesToShow = ceil(m_totalBones * ( currentSupply / (float)maxSupply ));
-	bonesToShow = min( bonesToShow, m_totalBones );
+	bonesToShow = std::min( bonesToShow, m_totalBones );
 
 	if( bonesToShow != m_lastNumberShown )
 	{
 		// Show/hide the bones that are now different, the indices between last and now (low, high].
-		Int lowIndex = min( m_lastNumberShown, bonesToShow );
-		Int highIndex = max( m_lastNumberShown, bonesToShow );
+		Int lowIndex = std::min( m_lastNumberShown, bonesToShow );
+		Int highIndex = std::max( m_lastNumberShown, bonesToShow );
 		Bool hide = bonesToShow < m_lastNumberShown;
 		Int currentIndex = lowIndex + 1;
 

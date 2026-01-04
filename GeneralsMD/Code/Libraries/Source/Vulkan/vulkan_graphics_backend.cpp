@@ -329,6 +329,7 @@ public:
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	uint32_t image_count = 0;
 	VkExtent2D extent{};
+	VkFormat format = VK_FORMAT_UNDEFINED;
 	std::vector<VkImage> images;
 	std::vector<VkImageView> image_views;
 	uint32_t current_image_index = 0;
@@ -379,6 +380,9 @@ public:
 				break;
 			}
 		}
+
+		// Store chosen format in swapchain object for callers
+		format = surface_format.format;
 		
 		// Select present mode (prefer mailbox, fallback to FIFO)
 		VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
@@ -873,13 +877,13 @@ bool VulkanGraphicsBackend::Init(void* window_handle, bool debug_mode)
 	
 	// Phase 39.3 Stage 2: Create render pass
 	s_render_pass = std::make_unique<VulkanRenderPass>();
-	if (!s_render_pass->Create(s_device->handle, VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_D32_SFLOAT)) {
+	if (!s_render_pass->Create(s_device->handle, s_swapchain->format, VK_FORMAT_D32_SFLOAT)) {
 		printf("[Vulkan] ERROR: Failed to create render pass\n");
 		return false;
 	}
 	
 	// Phase 39.3 Stage 2.5: Create framebuffers for swapchain images
-	if (!s_swapchain->CreateFramebuffers(s_device->handle, VK_FORMAT_B8G8R8A8_UNORM, s_render_pass->handle, VK_NULL_HANDLE)) {
+	if (!s_swapchain->CreateFramebuffers(s_device->handle, s_swapchain->format, s_render_pass->handle, VK_NULL_HANDLE)) {
 		printf("[Vulkan] ERROR: Failed to create framebuffers\n");
 		return false;
 	}

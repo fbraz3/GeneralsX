@@ -1088,13 +1088,13 @@ TextureClass * WW3DAssetManager::Get_Texture
 		return NULL;
 	}
 
-	StringClass lower_case_name(filename,true);
-	_strlwr(lower_case_name.Peek_Buffer());
+	// StringClass lower_case_name(filename,true);
+	// _strlwr(lower_case_name.Peek_Buffer());
 
 	/*
 	** See if the texture has already been loaded.
 	*/
-	TextureClass* tex = TextureHash.Get(lower_case_name);
+	TextureClass* tex = TextureHash.Get(filename);
 	if (tex && (tex->Is_Initialized() == true) && (texture_format!=WW3D_FORMAT_UNKNOWN))
 	{
 		WWASSERT_PRINT(tex->Get_Texture_Format()==texture_format,("Texture %s has already been loaded with different format",filename));
@@ -1107,15 +1107,15 @@ TextureClass * WW3DAssetManager::Get_Texture
 	{
 		if (type==TextureBaseClass::TEX_REGULAR)
 		{
-			tex = NEW_REF (TextureClass, (lower_case_name, NULL, mip_level_count, texture_format, allow_compression, allow_reduction));
+			tex = NEW_REF (TextureClass, (filename, NULL, mip_level_count, texture_format, allow_compression, allow_reduction));
 		}
 		else if (type==TextureBaseClass::TEX_CUBEMAP)
 		{
-			tex = NEW_REF (CubeTextureClass, (lower_case_name, NULL, mip_level_count, texture_format, allow_compression, allow_reduction));
+			tex = NEW_REF (CubeTextureClass, (filename, NULL, mip_level_count, texture_format, allow_compression, allow_reduction));
 		}
 		else if (type==TextureBaseClass::TEX_VOLUME)
 		{
-			tex = NEW_REF (VolumeTextureClass, (lower_case_name, NULL, mip_level_count, texture_format, allow_compression, allow_reduction));
+			tex = NEW_REF (VolumeTextureClass, (filename, NULL, mip_level_count, texture_format, allow_compression, allow_reduction));
 		}
 		else
 		{

@@ -15,7 +15,7 @@ set(DEBUG_SRC
     "debug_macro.h"
     "debug_stack.cpp"
     "debug_stack.h"
-    "debug.h"
+    "debug_renamed.h"
     "internal_except.h"
     "internal_io.h"
     "internal.h"
@@ -30,7 +30,7 @@ target_include_directories(core_debug INTERFACE
 )
 
 target_precompile_headers(core_debug PRIVATE
-    "debug.h"
+    "debug_renamed.h"
     "internal.h"
     "internal_except.h"
     "internal_io.h"

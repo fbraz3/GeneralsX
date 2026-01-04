@@ -55,7 +55,7 @@ typedef void* VkSampler;
 typedef void* VkImageView;
 typedef void* VkBuffer;
 typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+// typedef unsigned long long uint64_t;
 typedef int int32_t;
 
 /* ============================================================================

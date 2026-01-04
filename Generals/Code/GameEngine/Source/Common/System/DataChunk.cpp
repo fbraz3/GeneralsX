@@ -340,9 +340,9 @@ void DataChunkOutput::writeInt( Int i )
 	::fwrite( (const char *)&i, sizeof(Int) , 1, m_tmp_file );
 }
 
-void DataChunkOutput::writeByte( Byte b )
+void DataChunkOutput::writeByte( SignedByte b )
 {
-	::fwrite( (const char *)&b, sizeof(Byte) , 1, m_tmp_file );
+	::fwrite( (const char *)&b, sizeof(SignedByte) , 1, m_tmp_file );
 }
 
 void DataChunkOutput::writeArrayOfBytes(char *ptr, Int len)
@@ -571,7 +571,7 @@ void DataChunkTableOfContents::read( ChunkInputStream &s)
 	m_headerOpened = count > 0 && !s.eof();
 
 	// adjust next ID so no ID's are reused
-	this->m_nextID = max( this->m_nextID, maxID+1 );
+	this->m_nextID = std::max( this->m_nextID, maxID+1 );
 }
 
 //----------------------------------------------------------------------

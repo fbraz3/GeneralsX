@@ -134,7 +134,7 @@ void *ProfileAllocMemory(unsigned numBytes);
 void *ProfileReAllocMemory(void *oldPtr, unsigned newSize);
 void ProfileFreeMemory(void *ptr);
 
-__forceinline void ProfileGetTime(__int64 &t)
+__forceinline void ProfileGetTime(int64_t &t)
 {
 #if defined(_MSC_VER) && _MSC_VER < 1300
   _asm
@@ -149,6 +149,6 @@ __forceinline void ProfileGetTime(__int64 &t)
     pop eax
   };
 #else
-  t = static_cast<__int64>(_rdtsc());
+  t = static_cast<int64_t>(_rdtsc());
 #endif
 }

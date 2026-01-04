@@ -3270,7 +3270,7 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 	tempName.concat(":ButtonCommand%d");
 	parentName = layoutName;
 	parentName.concat(":ButtonParent%d");
-	m_currentlyUsedSpecialPowersButtons = MIN(pt->getSpecialPowerShortcutButtonCount(), MAX_SPECIAL_POWER_SHORTCUTS);
+	m_currentlyUsedSpecialPowersButtons = std::min(pt->getSpecialPowerShortcutButtonCount(), static_cast<int>(MAX_SPECIAL_POWER_SHORTCUTS));
 	for( i = 0; i < MAX_SPECIAL_POWER_SHORTCUTS; i++ )
 	{
 		windowName.format( tempName, i+1 );

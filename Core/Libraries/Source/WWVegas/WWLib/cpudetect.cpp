@@ -27,6 +27,7 @@
 
 #ifdef _UNIX
 # include <time.h>  // for time(), localtime() and timezone variable.
+# include <unistd.h>  // for sysconf() and memory detection
 #endif
 
 struct OSInfoStruct {
@@ -916,7 +917,32 @@ void CPUDetectClass::Init_Memory()
 #endif // defined(_MSC_VER) && _MSC_VER < 1300
 
 #else
-#warning FIX Init_Memory()
+	// Phase 54: Cross-platform memory detection for Linux/macOS using sysconf
+
+	long pages = sysconf(_SC_PHYS_PAGES);
+	long page_size = sysconf(_SC_PAGE_SIZE);
+
+	if (pages > 0 && page_size > 0) {
+		TotalPhysicalMemory = (unsigned long long)pages * (unsigned long long)page_size;
+	}
+	else {
+		TotalPhysicalMemory = 0;
+	}
+
+	// For available physical memory, try _SC_AVPHYS_PAGES if available
+	long avail_pages = sysconf(_SC_AVPHYS_PAGES);
+	if (avail_pages > 0 && page_size > 0) {
+		AvailablePhysicalMemory = (unsigned long long)avail_pages * (unsigned long long)page_size;
+	}
+	else {
+		AvailablePhysicalMemory = 0;
+	}
+
+	// Page file and virtual memory are not as easily queryable on Unix, so set to 0
+	TotalPageMemory = 0;
+	AvailablePageMemory = 0;
+	TotalVirtualMemory = 0;
+	AvailableVirtualMemory = 0;
 #endif // WIN32
 }
 

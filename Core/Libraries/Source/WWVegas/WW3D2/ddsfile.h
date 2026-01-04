@@ -24,6 +24,7 @@
 #include "ww3dformat.h"
 #include "wwstring.h"
 #include "vector3.h"
+#include <cstdint>  // For uint32_t (64-bit compatibility for DDS struct)
 
 struct IDirect3DSurface8;
 struct IDirect3DVolume8;
@@ -112,7 +113,12 @@ struct LegacyDDPIXELFORMAT
 // ----------------------------------------------------------------------------
 //
 // This structure represents the old DX7 surface description structure.
-// It is needed when loading DDS files. DO NOT MODIFY!
+// It is needed when loading DDS files.
+//
+// NOTE: Modified for 64-bit compatibility. The original struct had "void* Surface"
+// which was 4 bytes on 32-bit Windows but 8 bytes on 64-bit systems. The DDS file
+// format stores this as a fixed 4-byte field (DWORD lpSurface in DDSURFACEDESC2),
+// so we use uint32_t to ensure correct alignment regardless of pointer size.
 //
 // ----------------------------------------------------------------------------
 
@@ -138,7 +144,7 @@ struct LegacyDDSURFACEDESC2 {
 	};
 	unsigned AlphaBitDepth;
 	unsigned Reserved;
-	void* Surface;
+	uint32_t Surface;  // Changed from void* for 64-bit compatibility (DDS file stores 4-byte DWORD)
 	union
 	{
 		LegacyDDCOLORKEY CKDestOverlay;

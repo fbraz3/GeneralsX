@@ -1058,7 +1058,7 @@ Bool ProcessAnimateWindowSpiral::updateAnimateWindow( wnd::AnimateWindow *animWi
 
 	ICoord2D size;
 	win->winGetSize(&size.x, &size.y);
-	Int m_max = min(size.x/2, size.y/2);
+	Int m_max = std::min(size.x/2, size.y/2);
 
 	if(vel.y < m_max)
 	{
@@ -1110,7 +1110,7 @@ Bool ProcessAnimateWindowSpiral::reverseAnimateWindow( wnd::AnimateWindow *animW
 
 	ICoord2D size;
 	win->winGetSize(&size.x, &size.y);
-//	Int m_max = min(size.x/2, size.y/2);
+//	Int m_max = std::min(size.x/2, size.y/2);
 
 	if(vel.y > m_maxR)
 	{

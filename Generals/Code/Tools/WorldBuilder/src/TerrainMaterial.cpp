@@ -32,8 +32,9 @@
 #include "Common/TerrainTypes.h"
 #include "W3DDevice/GameClient/TerrainTex.h"
 #include "W3DDevice/GameClient/HeightMap.h"
+#include <Utility/compat.h>
 
-TerrainMaterial *TerrainMaterial::m_staticThis = NULL;
+TerrainMaterial* TerrainMaterial::m_staticThis = NULL;
 
 static Int defaultMaterialIndex = 0;
 
@@ -82,7 +83,7 @@ END_MESSAGE_MAP()
 void TerrainMaterial::setFgTexClass(Int texClass)
 {
 	if (m_staticThis) {
-		m_staticThis->m_currentFgTexture=texClass;
+		m_staticThis->m_currentFgTexture = texClass;
 		m_staticThis->m_terrainSwatches.Invalidate();
 		updateTextureSelection();
 	}
@@ -93,7 +94,7 @@ void TerrainMaterial::setFgTexClass(Int texClass)
 void TerrainMaterial::setBgTexClass(Int texClass)
 {
 	if (m_staticThis) {
-		m_staticThis->m_currentBgTexture=texClass;
+		m_staticThis->m_currentBgTexture = texClass;
 		m_staticThis->m_terrainSwatches.Invalidate();
 	}
 }
@@ -106,7 +107,7 @@ void TerrainMaterial::setWidth(Int width)
 	buf.Format("%d", width);
 	if (m_staticThis && !m_staticThis->m_updating) {
 		m_staticThis->m_currentWidth = width;
-		CWnd *pEdit = m_staticThis->GetDlgItem(IDC_SIZE_EDIT);
+		CWnd* pEdit = m_staticThis->GetDlgItem(IDC_SIZE_EDIT);
 		if (pEdit) pEdit->SetWindowText(buf);
 	}
 }
@@ -117,9 +118,9 @@ void TerrainMaterial::setWidth(Int width)
 void TerrainMaterial::setToolOptions(Bool singleCell)
 {
 	CString buf;
-	if (m_staticThis ) {
+	if (m_staticThis) {
 		m_staticThis->m_updating = true;
-		CWnd *pEdit = m_staticThis->GetDlgItem(IDC_SIZE_EDIT);
+		CWnd* pEdit = m_staticThis->GetDlgItem(IDC_SIZE_EDIT);
 		if (pEdit) {
 			pEdit->EnableWindow(!singleCell);
 			if (singleCell) {
@@ -136,25 +137,25 @@ void TerrainMaterial::setToolOptions(Bool singleCell)
 
 void TerrainMaterial::updateLabel(void)
 {
-	CWorldBuilderDoc *pDoc = CWorldBuilderDoc::GetActiveDoc();
+	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
 	if (!pDoc) return;
 
 	AsciiString name = pDoc->GetHeightMap()->getTexClassUiName(m_currentFgTexture);
-	const char *tName = name.str();
+	const char* tName = name.str();
 	if (tName == NULL || tName[0] == 0) {
 		tName = pDoc->GetHeightMap()->getTexClassUiName(m_currentFgTexture).str();
 	}
 	if (tName == NULL) {
 		return;
 	}
-	const char *leaf = tName;
+	const char* leaf = tName;
 	while (*tName) {
-		if ((tName[0] == '\\' || tName[0] == '/')&& tName[1]) {
-			leaf = tName+1;
+		if ((tName[0] == GET_PATH_SEPARATOR()[0] || tName[0] == GET_PATH_SEPARATOR()[0]) && tName[1]) {
+			leaf = tName + 1;
 		}
 		tName++;
 	}
-	CWnd *pLabel = GetDlgItem(IDC_TERRAIN_NAME);
+	CWnd* pLabel = GetDlgItem(IDC_TERRAIN_NAME);
 	if (pLabel) {
 		pLabel->SetWindowText(leaf);
 	}
@@ -176,10 +177,10 @@ Bool TerrainMaterial::setTerrainTreeViewSelection(HTREEITEM parent, Int selectio
 	::memset(&item, 0, sizeof(item));
 	HTREEITEM child = m_terrainTreeView.GetChildItem(parent);
 	while (child != NULL) {
-		item.mask = TVIF_HANDLE|TVIF_PARAM;
+		item.mask = TVIF_HANDLE | TVIF_PARAM;
 		item.hItem = child;
 		item.pszText = buffer;
-		item.cchTextMax = sizeof(buffer)-2;
+		item.cchTextMax = sizeof(buffer) - 2;
 		m_terrainTreeView.GetItem(&item);
 		if (item.lParam == selection) {
 			m_terrainTreeView.SelectItem(child);
@@ -203,31 +204,31 @@ BOOL TerrainMaterial::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	m_updating = true;
-	CWnd *pWnd = GetDlgItem(IDC_TERRAIN_TREEVIEW);
+	CWnd* pWnd = GetDlgItem(IDC_TERRAIN_TREEVIEW);
 	CRect rect;
 	pWnd->GetWindowRect(&rect);
 
 	ScreenToClient(&rect);
-	rect.DeflateRect(2,2,2,2);
-	m_terrainTreeView.Create(TVS_HASLINES|TVS_LINESATROOT|TVS_HASBUTTONS|
-		TVS_SHOWSELALWAYS|TVS_DISABLEDRAGDROP, rect, this, IDC_TERRAIN_TREEVIEW);
+	rect.DeflateRect(2, 2, 2, 2);
+	m_terrainTreeView.Create(TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS |
+		TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP, rect, this, IDC_TERRAIN_TREEVIEW);
 	m_terrainTreeView.ShowWindow(SW_SHOW);
 
 	pWnd = GetDlgItem(IDC_TERRAIN_SWATCHES);
 	pWnd->GetWindowRect(&rect);
 	ScreenToClient(&rect);
-	rect.DeflateRect(2,2,2,2);
+	rect.DeflateRect(2, 2, 2, 2);
 	m_terrainSwatches.Create(NULL, "", WS_CHILD, rect, this, IDC_TERRAIN_SWATCHES);
 	m_terrainSwatches.ShowWindow(SW_SHOW);
 
 	m_paintingPathingInfo = false;
 	m_paintingPassable = false;
-	CButton *button = (CButton *)GetDlgItem(IDC_PASSABLE_CHECK);
+	CButton* button = (CButton*)GetDlgItem(IDC_PASSABLE_CHECK);
 	button->SetCheck(false);
-	button = (CButton *)GetDlgItem(IDC_PASSABLE);
+	button = (CButton*)GetDlgItem(IDC_PASSABLE);
 	button->SetCheck(false);
 	button->EnableWindow(false);
-	button = (CButton *)GetDlgItem(IDC_IMPASSABLE);
+	button = (CButton*)GetDlgItem(IDC_IMPASSABLE);
 	button->SetCheck(true);
 	button->EnableWindow(false);
 
@@ -236,22 +237,22 @@ BOOL TerrainMaterial::OnInitDialog()
 	m_updating = false;
 	setWidth(m_currentWidth);
 	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
 /** Locate the child item in tree item parent with name pLabel.  If not
 found, add it.  Either way, return child. */
-HTREEITEM TerrainMaterial::findOrAdd(HTREEITEM parent, const char *pLabel)
+HTREEITEM TerrainMaterial::findOrAdd(HTREEITEM parent, const char* pLabel)
 {
 	TVINSERTSTRUCT ins;
 	char buffer[_MAX_PATH];
 	::memset(&ins, 0, sizeof(ins));
 	HTREEITEM child = m_terrainTreeView.GetChildItem(parent);
 	while (child != NULL) {
-		ins.item.mask = TVIF_HANDLE|TVIF_TEXT;
+		ins.item.mask = TVIF_HANDLE | TVIF_TEXT;
 		ins.item.hItem = child;
 		ins.item.pszText = buffer;
-		ins.item.cchTextMax = sizeof(buffer)-2;
+		ins.item.cchTextMax = sizeof(buffer) - 2;
 		m_terrainTreeView.GetItem(&ins.item);
 		if (strcmp(buffer, pLabel) == 0) {
 			return(child);
@@ -263,7 +264,7 @@ HTREEITEM TerrainMaterial::findOrAdd(HTREEITEM parent, const char *pLabel)
 	::memset(&ins, 0, sizeof(ins));
 	ins.hParent = parent;
 	ins.hInsertAfter = TVI_LAST;
-	ins.item.mask = TVIF_PARAM|TVIF_TEXT;
+	ins.item.mask = TVIF_PARAM | TVIF_TEXT;
 	ins.item.lParam = -1;
 	ins.item.pszText = const_cast<LPSTR>(pLabel);
 	ins.item.cchTextMax = strlen(pLabel);
@@ -272,9 +273,9 @@ HTREEITEM TerrainMaterial::findOrAdd(HTREEITEM parent, const char *pLabel)
 }
 
 /** Add the terrain path to the tree view. */
-void TerrainMaterial::addTerrain(char *pPath, Int terrainNdx, HTREEITEM parent)
+void TerrainMaterial::addTerrain(char* pPath, Int terrainNdx, HTREEITEM parent)
 {
-	TerrainType *terrain = TheTerrainTypes->findTerrain( WorldHeightMapEdit::getTexClassName( terrainNdx ) );
+	TerrainType* terrain = TheTerrainTypes->findTerrain(WorldHeightMapEdit::getTexClassName(terrainNdx));
 	Bool doAdd = FALSE;
 	char buffer[_MAX_PATH];
 	//
@@ -283,18 +284,18 @@ void TerrainMaterial::addTerrain(char *pPath, Int terrainNdx, HTREEITEM parent)
 	// the eval texture entries in a tree leaf all their own while the others are
 	// sorted according to a field specified in INI
 	//
-	if( terrain )
+	if (terrain)
 	{
 		if (terrain->isBlendEdge()) {
 			return;	 // Don't add blend edges to the materials list.
 		}
-		for( TerrainClass i = TERRAIN_NONE; i < TERRAIN_NUM_CLASSES; i = (TerrainClass)(i + 1) )
+		for (TerrainClass i = TERRAIN_NONE; i < TERRAIN_NUM_CLASSES; i = (TerrainClass)(i + 1))
 		{
 
-			if( terrain->getClass() == i )
+			if (terrain->getClass() == i)
 			{
 
-				parent = findOrAdd( parent, terrainTypeNames[ i ] );
+				parent = findOrAdd(parent, terrainTypeNames[i]);
 				break;  // exit for
 
 			}
@@ -306,42 +307,42 @@ void TerrainMaterial::addTerrain(char *pPath, Int terrainNdx, HTREEITEM parent)
 
 		doAdd = TRUE;
 	}
- 	else if (!WorldHeightMapEdit::getTexClassIsBlendEdge(terrainNdx))
+	else if (!WorldHeightMapEdit::getTexClassIsBlendEdge(terrainNdx))
 	{
 
 		// all these old entries we will put in a tree for eval textures
-		parent = findOrAdd( parent, "**Eval" );
-		Int i=0;
-		while (pPath[i] && i<sizeof(buffer)) {
+		parent = findOrAdd(parent, "**Eval");
+		Int i = 0;
+		while (pPath[i] && i < sizeof(buffer)) {
 			if (pPath[i] == 0) {
 				return;
 			}
-			if (pPath[i] == '\\' || pPath[i] == '/') {
-				if (i>0 && (i>1 || buffer[0]!='.') ) { // skip the "." directory.
+			if (pPath[i] == GET_PATH_SEPARATOR()[0] || pPath[i] == GET_PATH_SEPARATOR()[0]) {
+				if (i > 0 && (i > 1 || buffer[0] != '.')) { // skip the "." directory.
 					buffer[i] = 0;
 					parent = findOrAdd(parent, buffer);
 				}
-				pPath+= i+1;
+				pPath += i + 1;
 				i = 0;
 			}
 			buffer[i] = pPath[i];
-			buffer[i+1] = 0;  // terminate at next character
+			buffer[i + 1] = 0;  // terminate at next character
 			doAdd = TRUE;
 			i++;
 		}
 	}
 
-	Int tilesPerRow = TEXTURE_WIDTH/(2*TILE_PIXEL_EXTENT+TILE_OFFSET);
+	Int tilesPerRow = TEXTURE_WIDTH / (2 * TILE_PIXEL_EXTENT + TILE_OFFSET);
 	Int availableTiles = 4 * tilesPerRow * tilesPerRow;
-	Int percent = (WorldHeightMapEdit::getTexClassNumTiles(terrainNdx)*100 + availableTiles/2) / availableTiles;
+	Int percent = (WorldHeightMapEdit::getTexClassNumTiles(terrainNdx) * 100 + availableTiles / 2) / availableTiles;
 
 	char label[_MAX_PATH];
 	snprintf(label, ARRAY_SIZE(label), "%d%% %s", percent, buffer);
 
 
-	if( doAdd )
+	if (doAdd)
 	{
-		if (percent<3 && defaultMaterialIndex==0) {
+		if (percent < 3 && defaultMaterialIndex == 0) {
 			defaultMaterialIndex = terrainNdx;
 		}
 		TVINSERTSTRUCT ins;
@@ -349,24 +350,24 @@ void TerrainMaterial::addTerrain(char *pPath, Int terrainNdx, HTREEITEM parent)
 		::memset(&ins, 0, sizeof(ins));
 		ins.hParent = parent;
 		ins.hInsertAfter = TVI_LAST;
-		ins.item.mask = TVIF_PARAM|TVIF_TEXT;
+		ins.item.mask = TVIF_PARAM | TVIF_TEXT;
 		ins.item.lParam = terrainNdx;
 		ins.item.pszText = label;
-		ins.item.cchTextMax = strlen(label)+2;
+		ins.item.cchTextMax = strlen(label) + 2;
 		m_terrainTreeView.InsertItem(&ins);
 	}
 
 }
 
 //* Create the tree view of textures from the textures in pMap. */
-void TerrainMaterial::updateTextures(WorldHeightMapEdit *pMap)
+void TerrainMaterial::updateTextures(WorldHeightMapEdit* pMap)
 {
 #if 1
 	if (m_staticThis) {
 		m_staticThis->m_updating = true;
 		m_staticThis->m_terrainTreeView.DeleteAllItems();
 		Int i;
-		for (i=0; i<pMap->getNumTexClasses(); i++) {
+		for (i = 0; i < pMap->getNumTexClasses(); i++) {
 			char path[_MAX_PATH];
 			AsciiString uiName = pMap->getTexClassUiName(i);
 			strlcpy(path, uiName.str(), _MAX_PATH);
@@ -395,36 +396,36 @@ void TerrainMaterial::OnSwapTextures()
 		the slider and brush tool. */
 void TerrainMaterial::OnChangeSizeEdit()
 {
-		if (m_updating) return;
-		CWnd *pEdit = m_staticThis->GetDlgItem(IDC_SIZE_EDIT);
-		char buffer[_MAX_PATH];
-		if (pEdit) {
-			pEdit->GetWindowText(buffer, sizeof(buffer));
-			Int width;
-			m_updating = true;
-			if (1==sscanf(buffer, "%d", &width)) {
-				m_currentWidth = width;
-				BigTileTool::setWidth(m_currentWidth);
-				snprintf(buffer, ARRAY_SIZE(buffer), "%.1f FEET.", m_currentWidth*MAP_XY_FACTOR);
-				pEdit = m_staticThis->GetDlgItem(IDC_WIDTH_LABEL);
-				if (pEdit) pEdit->SetWindowText(buffer);
-			}
-			m_updating = false;
+	if (m_updating) return;
+	CWnd* pEdit = m_staticThis->GetDlgItem(IDC_SIZE_EDIT);
+	char buffer[_MAX_PATH];
+	if (pEdit) {
+		pEdit->GetWindowText(buffer, sizeof(buffer));
+		Int width;
+		m_updating = true;
+		if (1 == sscanf(buffer, "%d", &width)) {
+			m_currentWidth = width;
+			BigTileTool::setWidth(m_currentWidth);
+			snprintf(buffer, ARRAY_SIZE(buffer), "%.1f FEET.", m_currentWidth * MAP_XY_FACTOR);
+			pEdit = m_staticThis->GetDlgItem(IDC_WIDTH_LABEL);
+			if (pEdit) pEdit->SetWindowText(buffer);
 		}
+		m_updating = false;
+	}
 }
 
-void TerrainMaterial::GetPopSliderInfo(const long sliderID, long *pMin, long *pMax, long *pLineSize, long *pInitial)
+void TerrainMaterial::GetPopSliderInfo(const long sliderID, long* pMin, long* pMax, long* pLineSize, long* pInitial)
 {
 	switch (sliderID) {
 
-		case IDC_SIZE_POPUP:
-			*pMin = MIN_TILE_SIZE;
-			*pMax = MAX_TILE_SIZE;
-			*pInitial = m_currentWidth;
-			*pLineSize = 1;
-			break;
-		default:
-			break;
+	case IDC_SIZE_POPUP:
+		*pMin = MIN_TILE_SIZE;
+		*pMax = MAX_TILE_SIZE;
+		*pInitial = m_currentWidth;
+		*pLineSize = 1;
+		break;
+	default:
+		break;
 	}
 }
 
@@ -432,30 +433,30 @@ void TerrainMaterial::GetPopSliderInfo(const long sliderID, long *pMin, long *pM
 void TerrainMaterial::PopSliderChanged(const long sliderID, long theVal)
 {
 	CString str;
-	CWnd *pEdit;
+	CWnd* pEdit;
 	switch (sliderID) {
 
-		case IDC_SIZE_POPUP:
-			m_currentWidth = theVal;
-			str.Format("%d",m_currentWidth);
-			pEdit = m_staticThis->GetDlgItem(IDC_SIZE_EDIT);
-			if (pEdit) pEdit->SetWindowText(str);
-			BigTileTool::setWidth(m_currentWidth);
-			break;
+	case IDC_SIZE_POPUP:
+		m_currentWidth = theVal;
+		str.Format("%d", m_currentWidth);
+		pEdit = m_staticThis->GetDlgItem(IDC_SIZE_EDIT);
+		if (pEdit) pEdit->SetWindowText(str);
+		BigTileTool::setWidth(m_currentWidth);
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 }
 
 void TerrainMaterial::PopSliderFinished(const long sliderID, long theVal)
 {
 	switch (sliderID) {
-		case IDC_SIZE_POPUP:
-			break;
+	case IDC_SIZE_POPUP:
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 
 }
@@ -463,28 +464,29 @@ void TerrainMaterial::PopSliderFinished(const long sliderID, long theVal)
 
 BOOL TerrainMaterial::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
-	NMTREEVIEW *pHdr = (NMTREEVIEW *)lParam;
+	NMTREEVIEW* pHdr = (NMTREEVIEW*)lParam;
 	if (pHdr->hdr.hwndFrom == m_terrainTreeView.m_hWnd) {
 		if (pHdr->hdr.code == TVN_SELCHANGED) {
 			HTREEITEM hItem = m_terrainTreeView.GetSelectedItem();
 			TVITEM item;
 			::memset(&item, 0, sizeof(item));
-			item.mask = TVIF_HANDLE|TVIF_PARAM;
+			item.mask = TVIF_HANDLE | TVIF_PARAM;
 			item.hItem = hItem;
 			m_terrainTreeView.GetItem(&item);
 			if (item.lParam >= 0) {
 				Int texClass = item.lParam;
-				CWorldBuilderDoc *pDoc = CWorldBuilderDoc::GetActiveDoc();
+				CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
 				if (!pDoc) return 0;
 
-				WorldHeightMapEdit *pMap = pDoc->GetHeightMap();
+				WorldHeightMapEdit* pMap = pDoc->GetHeightMap();
 				if (!pMap) return 0;
 				if (m_updating) return 0;
 				if (pMap->canFitTexture(texClass)) {
 					m_currentFgTexture = texClass;
 					updateLabel();
 					m_terrainSwatches.Invalidate();
-				} else {
+				}
+				else {
 					if (m_currentFgTexture != texClass) {
 						// Tried to switch to a too large texture.
 						::AfxMessageBox(IDS_TEXTURE_TOO_LARGE);
@@ -494,7 +496,8 @@ BOOL TerrainMaterial::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 					updateLabel();
 					m_terrainSwatches.Invalidate();
 				}
-			}	else if (!(item.state & TVIS_EXPANDEDONCE) ) {
+			}
+			else if (!(item.state & TVIS_EXPANDEDONCE)) {
 				HTREEITEM child = m_terrainTreeView.GetChildItem(hItem);
 				while (child != NULL) {
 					hItem = child;
@@ -513,17 +516,17 @@ BOOL TerrainMaterial::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 void TerrainMaterial::OnImpassable()
 {
 	m_paintingPassable = false;
-	CButton *button = (CButton *)GetDlgItem(IDC_PASSABLE);
+	CButton* button = (CButton*)GetDlgItem(IDC_PASSABLE);
 	button->SetCheck(0);
 }
 
 void TerrainMaterial::OnPassableCheck()
 {
-	CButton *owner = (CButton*) GetDlgItem(IDC_PASSABLE_CHECK);
+	CButton* owner = (CButton*)GetDlgItem(IDC_PASSABLE_CHECK);
 	Bool isChecked = (owner->GetCheck() != 0);
-	CButton *button = (CButton *)GetDlgItem(IDC_PASSABLE);
+	CButton* button = (CButton*)GetDlgItem(IDC_PASSABLE);
 	button->EnableWindow(isChecked);
-	button = (CButton *)GetDlgItem(IDC_IMPASSABLE);
+	button = (CButton*)GetDlgItem(IDC_IMPASSABLE);
 	button->EnableWindow(isChecked);
 	Bool showImpassable = false;
 	if (TheTerrainRenderObject) {
@@ -535,10 +538,10 @@ void TerrainMaterial::OnPassableCheck()
 	if (showImpassable != isChecked) {
 		TheTerrainRenderObject->setShowImpassableAreas(isChecked);
 		// Force the entire terrain mesh to be rerendered.
-		IRegion2D range = {0,0,0,0};
-		CWorldBuilderDoc *pDoc = CWorldBuilderDoc::GetActiveDoc();
+		IRegion2D range = { 0,0,0,0 };
+		CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
 		if (pDoc) {
-			WbView3d *p3View = pDoc->GetActive3DView();
+			WbView3d* p3View = pDoc->GetActive3DView();
 			if (p3View) {
 				p3View->updateHeightMapInView(pDoc->GetHeightMap(), false, range);
 			}
@@ -549,6 +552,6 @@ void TerrainMaterial::OnPassableCheck()
 void TerrainMaterial::OnPassable()
 {
 	m_paintingPassable = true;
-	CButton *button = (CButton *)GetDlgItem(IDC_IMPASSABLE);
+	CButton* button = (CButton*)GetDlgItem(IDC_IMPASSABLE);
 	button->SetCheck(0);
 }

@@ -62,7 +62,7 @@ PSRequest::PSRequest()
 	} \
 }
 
-static void debugDumpPlayerStats( const PSPlayerStats& stats )
+static void debugDumpPlayerStats(const PSPlayerStats& stats)
 {
 	DEBUG_LOG(("-----------------------------------------"));
 	DEBUG_LOG(("Tracking player stats for player %d:", stats.id));
@@ -203,7 +203,7 @@ static void debugDumpPlayerStats( const PSPlayerStats& stats )
 	} \
 }
 
-void PSPlayerStats::incorporate( const PSPlayerStats& other )
+void PSPlayerStats::incorporate(const PSPlayerStats& other)
 {
 	PerGeneralMap::const_iterator it;
 	INCORPORATE_MAP(wins);
@@ -331,7 +331,7 @@ void PSPlayerStats::incorporate( const PSPlayerStats& other )
 	}
 }
 
-PSPlayerStats::PSPlayerStats( const PSPlayerStats& other )
+PSPlayerStats::PSPlayerStats(const PSPlayerStats& other)
 {
 	incorporate(other);
 	id = other.id;
@@ -370,20 +370,20 @@ class GameSpyPSMessageQueue : public GameSpyPSMessageQueueInterface
 public:
 	virtual ~GameSpyPSMessageQueue();
 	GameSpyPSMessageQueue();
-	virtual void startThread( void );
-	virtual void endThread( void );
-	virtual Bool isThreadRunning( void );
+	virtual void startThread(void);
+	virtual void endThread(void);
+	virtual Bool isThreadRunning(void);
 
-	virtual void addRequest( const PSRequest& req );
-	virtual Bool getRequest( PSRequest& req );
+	virtual void addRequest(const PSRequest& req);
+	virtual Bool getRequest(PSRequest& req);
 
-	virtual void addResponse( const PSResponse& resp );
-	virtual Bool getResponse( PSResponse& resp );
+	virtual void addResponse(const PSResponse& resp);
+	virtual Bool getResponse(PSResponse& resp);
 
-	virtual void trackPlayerStats( PSPlayerStats stats );
-	virtual PSPlayerStats findPlayerStatsByID( Int id );
+	virtual void trackPlayerStats(PSPlayerStats stats);
+	virtual PSPlayerStats findPlayerStatsByID(Int id);
 
-	PSThreadClass* getThread( void );
+	PSThreadClass* getThread(void);
 
 	Int getLocalPlayerID(void) { return m_localPlayerID; }
 	void setLocalPlayerID(Int localPlayerID) { m_localPlayerID = localPlayerID; }
@@ -401,7 +401,7 @@ private:
 	MutexClass m_responseMutex;
 	RequestQueue m_requests;
 	ResponseQueue m_responses;
-	PSThreadClass *m_thread;
+	PSThreadClass* m_thread;
 	Int m_localPlayerID;
 
 	std::string m_email;
@@ -411,12 +411,12 @@ private:
 	std::map<Int, PSPlayerStats> m_playerStats;
 };
 
-GameSpyPSMessageQueueInterface* GameSpyPSMessageQueueInterface::createNewMessageQueue( void )
+GameSpyPSMessageQueueInterface* GameSpyPSMessageQueueInterface::createNewMessageQueue(void)
 {
 	return NEW GameSpyPSMessageQueue;
 }
 
-GameSpyPSMessageQueueInterface *TheGameSpyPSMessageQueue = NULL;
+GameSpyPSMessageQueueInterface* TheGameSpyPSMessageQueue = NULL;
 #define MESSAGE_QUEUE ((GameSpyPSMessageQueue *)TheGameSpyPSMessageQueue)
 
 //-------------------------------------------------------------------------
@@ -433,16 +433,16 @@ public:
 
 	void Thread_Function();
 
-	void persAuthCallback( Bool val ) { m_loginOK = val; m_doneTryingToLogin = true; }
-	void decrOpCount( void ) { --m_opCount; }
-	void incrOpCount( void ) { ++m_opCount; }
-	Int getOpCount( void ) { return m_opCount; }
-	Bool sawLocalPlayerData( void ) { return m_sawLocalData; }
-	void gotLocalPlayerData( void ) { m_sawLocalData = TRUE; }
+	void persAuthCallback(Bool val) { m_loginOK = val; m_doneTryingToLogin = true; }
+	void decrOpCount(void) { --m_opCount; }
+	void incrOpCount(void) { ++m_opCount; }
+	Int getOpCount(void) { return m_opCount; }
+	Bool sawLocalPlayerData(void) { return m_sawLocalData; }
+	void gotLocalPlayerData(void) { m_sawLocalData = TRUE; }
 
 private:
-	Bool tryConnect( void );
-	Bool tryLogin( Int id, std::string nick, std::string password, std::string email );
+	Bool tryConnect(void);
+	Bool tryLogin(Int id, std::string nick, std::string password, std::string email);
 	Bool m_loginOK;
 	Bool m_doneTryingToLogin;
 	Int m_opCount;
@@ -463,7 +463,7 @@ GameSpyPSMessageQueue::~GameSpyPSMessageQueue()
 	endThread();
 }
 
-void GameSpyPSMessageQueue::startThread( void )
+void GameSpyPSMessageQueue::startThread(void)
 {
 	if (!m_thread)
 	{
@@ -479,18 +479,18 @@ void GameSpyPSMessageQueue::startThread( void )
 	}
 }
 
-void GameSpyPSMessageQueue::endThread( void )
+void GameSpyPSMessageQueue::endThread(void)
 {
 	delete m_thread;
 	m_thread = NULL;
 }
 
-Bool GameSpyPSMessageQueue::isThreadRunning( void )
+Bool GameSpyPSMessageQueue::isThreadRunning(void)
 {
 	return (m_thread) ? m_thread->Is_Running() : false;
 }
 
-void GameSpyPSMessageQueue::addRequest( const PSRequest& req )
+void GameSpyPSMessageQueue::addRequest(const PSRequest& req)
 {
 	MutexClass::LockClass m(m_requestMutex);
 	if (m.Failed())
@@ -499,7 +499,7 @@ void GameSpyPSMessageQueue::addRequest( const PSRequest& req )
 	m_requests.push(req);
 }
 
-Bool GameSpyPSMessageQueue::getRequest( PSRequest& req )
+Bool GameSpyPSMessageQueue::getRequest(PSRequest& req)
 {
 	MutexClass::LockClass m(m_requestMutex, 0);
 	if (m.Failed())
@@ -512,7 +512,7 @@ Bool GameSpyPSMessageQueue::getRequest( PSRequest& req )
 	return true;
 }
 
-void GameSpyPSMessageQueue::addResponse( const PSResponse& resp )
+void GameSpyPSMessageQueue::addResponse(const PSResponse& resp)
 {
 	MutexClass::LockClass m(m_responseMutex);
 	if (m.Failed())
@@ -521,7 +521,7 @@ void GameSpyPSMessageQueue::addResponse( const PSResponse& resp )
 	m_responses.push(resp);
 }
 
-Bool GameSpyPSMessageQueue::getResponse( PSResponse& resp )
+Bool GameSpyPSMessageQueue::getResponse(PSResponse& resp)
 {
 	MutexClass::LockClass m(m_responseMutex, 0);
 	if (m.Failed())
@@ -534,15 +534,15 @@ Bool GameSpyPSMessageQueue::getResponse( PSResponse& resp )
 	return true;
 }
 
-PSThreadClass* GameSpyPSMessageQueue::getThread( void )
+PSThreadClass* GameSpyPSMessageQueue::getThread(void)
 {
 	return m_thread;
 }
 
-void GameSpyPSMessageQueue::trackPlayerStats( PSPlayerStats stats )
+void GameSpyPSMessageQueue::trackPlayerStats(PSPlayerStats stats)
 {
 #ifdef DEBUG_LOGGING
-	debugDumpPlayerStats( stats );
+	debugDumpPlayerStats(stats);
 	DEBUG_ASSERTCRASH(stats.id != 0, ("Tracking stats with ID of 0"));
 #endif
 	PSPlayerStats newStats;
@@ -559,7 +559,7 @@ void GameSpyPSMessageQueue::trackPlayerStats( PSPlayerStats stats )
 	}
 }
 
-PSPlayerStats GameSpyPSMessageQueue::findPlayerStatsByID( Int id )
+PSPlayerStats GameSpyPSMessageQueue::findPlayerStatsByID(Int id)
 {
 	std::map<Int, PSPlayerStats>::iterator it = m_playerStats.find(id);
 	if (it != m_playerStats.end())
@@ -574,7 +574,7 @@ PSPlayerStats GameSpyPSMessageQueue::findPlayerStatsByID( Int id )
 
 //-------------------------------------------------------------------------
 
-Bool PSThreadClass::tryConnect( void )
+Bool PSThreadClass::tryConnect(void)
 {
 	Int result;
 
@@ -598,15 +598,15 @@ Bool PSThreadClass::tryConnect( void )
 	return true;
 }
 
-static void persAuthCallback(int localid, int profileid, int authenticated, char *errmsg, void *instance)
+static void persAuthCallback(int localid, int profileid, int authenticated, char* errmsg, void* instance)
 {
-	PSThreadClass *t = (PSThreadClass *)instance;
-	DEBUG_LOG(("Auth callback: localid: %d profileid: %d auth: %d err: %s",localid, profileid, authenticated, errmsg));
+	PSThreadClass* t = (PSThreadClass*)instance;
+	DEBUG_LOG(("Auth callback: localid: %d profileid: %d auth: %d err: %s", localid, profileid, authenticated, errmsg));
 	if (t)
 		t->persAuthCallback(authenticated != 0);
 }
 
-Bool PSThreadClass::tryLogin( Int id, std::string nick, std::string password, std::string email )
+Bool PSThreadClass::tryLogin(Int id, std::string nick, std::string password, std::string email)
 {
 	char validate[33];
 	DEBUG_LOG(("PSThreadClass::tryLogin id = %d, nick = %s, password = %s, email = %s", id, nick.c_str(), password.c_str(), email.c_str()));
@@ -620,9 +620,9 @@ Bool PSThreadClass::tryLogin( Int id, std::string nick, std::string password, st
 	client will create the validation token using GenerateAuth, and send it
 	back to the server for use in PreAuthenticatePlayerPM
 	***********/
-	char *munkeeHack = strdup(password.c_str()); // GenerateAuth takes a char*, not a const char* :P
+	char* munkeeHack = strdup(password.c_str()); // GenerateAuth takes a char*, not a const char* :P
 	GenerateAuth(GetChallenge(NULL), munkeeHack, validate);
-	free (munkeeHack);
+	free(munkeeHack);
 
 	/************
 	After we get the validation token, we pass it and the profileid of the user
@@ -639,10 +639,10 @@ Bool PSThreadClass::tryLogin( Int id, std::string nick, std::string password, st
 	return m_loginOK;
 }
 
-static void getPersistentDataCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, char *data, int len, void *instance)
+static void getPersistentDataCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, char* data, int len, void* instance)
 {
-	DEBUG_LOG(("Data get callback: localid: %d profileid: %d success: %d len: %d data: %s",localid, profileid, success, len, data));
-	PSThreadClass *t = (PSThreadClass *)instance;
+	DEBUG_LOG(("Data get callback: localid: %d profileid: %d success: %d len: %d data: %s", localid, profileid, success, len, data));
+	PSThreadClass* t = (PSThreadClass*)instance;
 	if (!t)
 		return;
 
@@ -715,7 +715,7 @@ static void getPersistentDataCallback(int localid, int profileid, persisttype_t 
 			req.email = MESSAGE_QUEUE->getEmail();
 			req.nick = MESSAGE_QUEUE->getNick();
 			req.password = MESSAGE_QUEUE->getPassword();
-			req.player = GameSpyPSMessageQueueInterface::parsePlayerKVPairs((len)?data:"");
+			req.player = GameSpyPSMessageQueueInterface::parsePlayerKVPairs((len) ? data : "");
 			req.player.id = profileid;
 			req.addDesync = FALSE;
 			req.addDiscon = FALSE;
@@ -725,28 +725,28 @@ static void getPersistentDataCallback(int localid, int profileid, persisttype_t 
 	}
 
 	resp.responseType = PSResponse::PSRESPONSE_PLAYERSTATS;
-	resp.player = GameSpyPSMessageQueueInterface::parsePlayerKVPairs((len)?data:"");
+	resp.player = GameSpyPSMessageQueueInterface::parsePlayerKVPairs((len) ? data : "");
 	resp.player.id = profileid;
 
 	TheGameSpyPSMessageQueue->addResponse(resp);
 }
 
-static void setPersistentDataLocaleCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, void *instance)
+static void setPersistentDataLocaleCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, void* instance)
 {
 	DEBUG_LOG(("Data save callback: localid: %d profileid: %d success: %d", localid, profileid, success));
 
-	PSThreadClass *t = (PSThreadClass *)instance;
+	PSThreadClass* t = (PSThreadClass*)instance;
 	if (!t)
 		return;
 
 	t->decrOpCount();
 }
 
-static void setPersistentDataCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, void *instance)
+static void setPersistentDataCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, void* instance)
 {
 	DEBUG_LOG(("Data save callback: localid: %d profileid: %d success: %d", localid, profileid, success));
 
-	PSThreadClass *t = (PSThreadClass *)instance;
+	PSThreadClass* t = (PSThreadClass*)instance;
 	if (!t)
 		return;
 
@@ -770,19 +770,19 @@ struct CDAuthInfo
 	Int id;
 };
 
-void preAuthCDCallback(int localid, int profileid, int authenticated, char *errmsg, void *instance)
+void preAuthCDCallback(int localid, int profileid, int authenticated, char* errmsg, void* instance)
 {
 	DEBUG_LOG(("preAuthCDCallback(): profileid: %d auth: %d err: %s", profileid, authenticated, errmsg));
 
-	CDAuthInfo *authInfo = (CDAuthInfo *)instance;
+	CDAuthInfo* authInfo = (CDAuthInfo*)instance;
 	authInfo->success = authenticated;
 	authInfo->done = TRUE;
 	authInfo->id = profileid;
 }
 
-static void getPreorderCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, char *data, int len, void *instance)
+static void getPreorderCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, char* data, int len, void* instance)
 {
-	PSThreadClass *t = (PSThreadClass *)instance;
+	PSThreadClass* t = (PSThreadClass*)instance;
 	if (!t)
 		return;
 
@@ -806,56 +806,56 @@ static void getPreorderCallback(int localid, int profileid, persisttype_t type, 
 void PSThreadClass::Thread_Function()
 {
 	try {
-	/*********
-	First step, set our game authentication info
-	We could do:
-	Generals:
-		strcpy(gcd_gamename,"ccgenerals");
-		strcpy(gcd_secret_key,"h5T2f6");
-	ZeroHour:
-		strcpy(gcd_gamename,"ccgenzh");
-		strcpy(gcd_secret_key,"D6s9k3");
-	or
-	Generals:
-		strcpy(gcd_gamename,"ccgeneralsb");
-		strcpy(gcd_secret_key,"g3T9s2");
-	ZeroHour:
-		strcpy(gcd_gamename,"ccgeneralsb");
-		strcpy(gcd_secret_key,"whatever the key is");
-	...but this is more secure:
-	**********/
-	/**
-	gcd_gamename[0]='c';gcd_gamename[1]='c';gcd_gamename[2]='g';gcd_gamename[3]='e';
-	gcd_gamename[4]='n';gcd_gamename[5]='e';gcd_gamename[6]='r';gcd_gamename[7]='a';
-	gcd_gamename[8]='l';gcd_gamename[9]='s';gcd_gamename[10]='b';gcd_gamename[11]='\0';
-	gcd_secret_key[0]='g';gcd_secret_key[1]='3';gcd_secret_key[2]='T';gcd_secret_key[3]='9';
-	gcd_secret_key[4]='s';gcd_secret_key[5]='2';gcd_secret_key[6]='\0';
-	/**/
+		/*********
+		First step, set our game authentication info
+		We could do:
+		Generals:
+			strcpy(gcd_gamename,"ccgenerals");
+			strcpy(gcd_secret_key,"h5T2f6");
+		ZeroHour:
+			strcpy(gcd_gamename,"ccgenzh");
+			strcpy(gcd_secret_key,"D6s9k3");
+		or
+		Generals:
+			strcpy(gcd_gamename,"ccgeneralsb");
+			strcpy(gcd_secret_key,"g3T9s2");
+		ZeroHour:
+			strcpy(gcd_gamename,"ccgeneralsb");
+			strcpy(gcd_secret_key,"whatever the key is");
+		...but this is more secure:
+		**********/
+		/**
+		gcd_gamename[0]='c';gcd_gamename[1]='c';gcd_gamename[2]='g';gcd_gamename[3]='e';
+		gcd_gamename[4]='n';gcd_gamename[5]='e';gcd_gamename[6]='r';gcd_gamename[7]='a';
+		gcd_gamename[8]='l';gcd_gamename[9]='s';gcd_gamename[10]='b';gcd_gamename[11]='\0';
+		gcd_secret_key[0]='g';gcd_secret_key[1]='3';gcd_secret_key[2]='T';gcd_secret_key[3]='9';
+		gcd_secret_key[4]='s';gcd_secret_key[5]='2';gcd_secret_key[6]='\0';
+		/**/
 #if RTS_GENERALS
-	gcd_gamename[0]='c';gcd_gamename[1]='c';gcd_gamename[2]='g';gcd_gamename[3]='e';
-	gcd_gamename[4]='n';gcd_gamename[5]='e';gcd_gamename[6]='r';gcd_gamename[7]='a';
-	gcd_gamename[8]='l';gcd_gamename[9]='s';gcd_gamename[10]='\0';
-	gcd_secret_key[0]='h';gcd_secret_key[1]='5';gcd_secret_key[2]='T';gcd_secret_key[3]='2';
-	gcd_secret_key[4]='f';gcd_secret_key[5]='6';gcd_secret_key[6]='\0';
+		gcd_gamename[0] = 'c';gcd_gamename[1] = 'c';gcd_gamename[2] = 'g';gcd_gamename[3] = 'e';
+		gcd_gamename[4] = 'n';gcd_gamename[5] = 'e';gcd_gamename[6] = 'r';gcd_gamename[7] = 'a';
+		gcd_gamename[8] = 'l';gcd_gamename[9] = 's';gcd_gamename[10] = '\0';
+		gcd_secret_key[0] = 'h';gcd_secret_key[1] = '5';gcd_secret_key[2] = 'T';gcd_secret_key[3] = '2';
+		gcd_secret_key[4] = 'f';gcd_secret_key[5] = '6';gcd_secret_key[6] = '\0';
 #elif RTS_ZEROHOUR
-	gcd_gamename[0]='c';gcd_gamename[1]='c';gcd_gamename[2]='g';gcd_gamename[3]='e';
-	gcd_gamename[4]='n';gcd_gamename[5]='z';gcd_gamename[6]='h';gcd_gamename[7]='\0';
-	gcd_secret_key[0]='D';gcd_secret_key[1]='6';gcd_secret_key[2]='s';gcd_secret_key[3]='9';
-	gcd_secret_key[4]='k';gcd_secret_key[5]='3';gcd_secret_key[6]='\0';
+		gcd_gamename[0] = 'c';gcd_gamename[1] = 'c';gcd_gamename[2] = 'g';gcd_gamename[3] = 'e';
+		gcd_gamename[4] = 'n';gcd_gamename[5] = 'z';gcd_gamename[6] = 'h';gcd_gamename[7] = '\0';
+		gcd_secret_key[0] = 'D';gcd_secret_key[1] = '6';gcd_secret_key[2] = 's';gcd_secret_key[3] = '9';
+		gcd_secret_key[4] = 'k';gcd_secret_key[5] = '3';gcd_secret_key[6] = '\0';
 #endif
-	/**/
+		/**/
 
-	//strcpy(StatsServerHostname, "sdkdev.gamespy.com");
+		//strcpy(StatsServerHostname, "sdkdev.gamespy.com");
 
-	PSRequest req;
-	while ( running )
-	{
-		// deal with requests
-		if (TheGameSpyPSMessageQueue->getRequest(req))
+		PSRequest req;
+		while (running)
 		{
-			switch (req.requestType)
+			// deal with requests
+			if (TheGameSpyPSMessageQueue->getRequest(req))
 			{
-			case PSRequest::PSREQUEST_SENDGAMERESTOGAMESPY:
+				switch (req.requestType)
+				{
+				case PSRequest::PSREQUEST_SENDGAMERESTOGAMESPY:
 				{
 					if (tryConnect())
 					{
@@ -869,7 +869,7 @@ void PSThreadClass::Thread_Function()
 					}
 				}
 				break;
-			case PSRequest::PSREQUEST_READPLAYERSTATS:
+				case PSRequest::PSREQUEST_READPLAYERSTATS:
 				{
 					if (!MESSAGE_QUEUE->getLocalPlayerID())
 					{
@@ -888,7 +888,7 @@ void PSThreadClass::Thread_Function()
 					}
 				}
 				break;
-			case PSRequest::PSREQUEST_UPDATEPLAYERLOCALE:
+				case PSRequest::PSREQUEST_UPDATEPLAYERLOCALE:
 				{
 					DEBUG_LOG(("Processing PSRequest::PSREQUEST_UPDATEPLAYERLOCALE"));
 					if (tryConnect() && tryLogin(req.player.id, req.nick, req.password, req.email))
@@ -900,7 +900,7 @@ void PSThreadClass::Thread_Function()
 					}
 				}
 				break;
-			case PSRequest::PSREQUEST_UPDATEPLAYERSTATS:
+				case PSRequest::PSREQUEST_UPDATEPLAYERSTATS:
 				{
 					/*
 					** NOTE THAT THIS IS HIGHLY DEPENDENT ON INI ORDERING FOR THE PLAYERTEMPLATES!!!
@@ -1002,7 +1002,7 @@ void PSThreadClass::Thread_Function()
 						if (TheGameSpyPSMessageQueue)
 							TheGameSpyPSMessageQueue->trackPlayerStats(req.player);
 
-						char *munkeeHack = strdup(GameSpyPSMessageQueueInterface::formatPlayerKVPairs(req.player).c_str()); // GS takes a char* for some reason
+						char* munkeeHack = strdup(GameSpyPSMessageQueueInterface::formatPlayerKVPairs(req.player).c_str()); // GS takes a char* for some reason
 						incrOpCount();
 						DEBUG_LOG(("Setting values %s", munkeeHack));
 						SetPersistDataValues(0, req.player.id, pd_public_rw, 0, munkeeHack, setPersistentDataCallback, this);
@@ -1016,7 +1016,7 @@ void PSThreadClass::Thread_Function()
 					}
 				}
 				break;
-			case PSRequest::PSREQUEST_READCDKEYSTATS:
+				case PSRequest::PSREQUEST_READCDKEYSTATS:
 				{
 					DEBUG_LOG(("Processing PSRequest::PSREQUEST_READCDKEYSTATS"));
 					if (tryConnect())
@@ -1028,14 +1028,14 @@ void PSThreadClass::Thread_Function()
 						cdAuthInfo.id = 0;
 						char cdkeyHash[33] = "";
 						char validationToken[33] = "";
-						char *munkeeHack = strdup(req.cdkey.c_str()); // GenerateAuth takes a char*, not a const char* :P
+						char* munkeeHack = strdup(req.cdkey.c_str()); // GenerateAuth takes a char*, not a const char* :P
 
 						GenerateAuth(GetChallenge(NULL), munkeeHack, validationToken); // validation token
 						GenerateAuth("", munkeeHack, cdkeyHash); // cdkey hash
 
-						free (munkeeHack);
+						free(munkeeHack);
 
-						PreAuthenticatePlayerCD( 0, "preorder", cdkeyHash, validationToken, preAuthCDCallback , &cdAuthInfo);
+						PreAuthenticatePlayerCD(0, "preorder", cdkeyHash, validationToken, preAuthCDCallback, &cdAuthInfo);
 
 						while (running && IsStatsConnected() && !cdAuthInfo.done)
 							PersistThink();
@@ -1052,40 +1052,41 @@ void PSThreadClass::Thread_Function()
 					}
 				}
 				break;
+				}
 			}
-		}
 
-		// update the network
-		if (IsStatsConnected())
-		{
-			PersistThink();
-			if (m_opCount <= 0)
+			// update the network
+			if (IsStatsConnected())
 			{
-				DEBUG_ASSERTCRASH(m_opCount == 0, ("Negative operations pending!!!"));
-				DEBUG_LOG(("m_opCount = %d - closing connection", m_opCount));
-				CloseStatsConnection();
-				m_opCount = 0;
+				PersistThink();
+				if (m_opCount <= 0)
+				{
+					DEBUG_ASSERTCRASH(m_opCount == 0, ("Negative operations pending!!!"));
+					DEBUG_LOG(("m_opCount = %d - closing connection", m_opCount));
+					CloseStatsConnection();
+					m_opCount = 0;
+				}
 			}
+
+			// end our timeslice
+			Switch_Thread();
 		}
 
-		// end our timeslice
-		Switch_Thread();
+		if (IsStatsConnected())
+			CloseStatsConnection();
 	}
-
-	if (IsStatsConnected())
-		CloseStatsConnection();
-	} catch ( ... ) {
+	catch (...) {
 		DEBUG_CRASH(("Exception in storage thread!"));
 	}
 }
 
 //-------------------------------------------------------------------------
-PSPlayerStats::PSPlayerStats( void )
+PSPlayerStats::PSPlayerStats(void)
 {
 	reset();
 }
 
-void PSPlayerStats::reset( void )
+void PSPlayerStats::reset(void)
 {
 	id = 0;
 	locale = 0;
@@ -1117,21 +1118,21 @@ void PSPlayerStats::reset( void )
 //-------------------------------------------------------------------------
 #define CHECK(x) if (k == #x && generalMarker >= 0) { s.x[generalMarker] = atoi(v.c_str()); continue; }
 
-PSPlayerStats GameSpyPSMessageQueueInterface::parsePlayerKVPairs( std::string kvPairs )
+PSPlayerStats GameSpyPSMessageQueueInterface::parsePlayerKVPairs(std::string kvPairs)
 {
 	PSPlayerStats s;
-	kvPairs.append("\\");
+	kvPairs.append((char*)GET_PATH_SEPARATOR());
 
 	Int offset = 0;
 	while (1)
 	{
-		Int firstMarker = kvPairs.find_first_of('\\', offset);
+		Int firstMarker = kvPairs.find_first_of(GET_PATH_SEPARATOR(), offset);
 		if (firstMarker < 0)
 			break;
-		Int secondMarker = kvPairs.find_first_of('\\', firstMarker + 1);
+		Int secondMarker = kvPairs.find_first_of(GET_PATH_SEPARATOR(), firstMarker + 1);
 		if (secondMarker < 0)
 			break;
-		Int thirdMarker = kvPairs.find_first_of('\\', secondMarker + 1);
+		Int thirdMarker = kvPairs.find_first_of(GET_PATH_SEPARATOR(), secondMarker + 1);
 		if (thirdMarker < 0)
 			break;
 		Int generalMarker = kvPairs.find_last_not_of("0123456789", secondMarker - 1);
@@ -1308,14 +1309,17 @@ PSPlayerStats GameSpyPSMessageQueueInterface::parsePlayerKVPairs( std::string kv
 { \
 	if (it->second > 0) \
 	{ \
-		sprintf(kvbuf, "\\" #x "%d\\%d", it->first, it->second); \
+		AsciiString fmt; \
+		fmt.format("%s%s%%d\\%%d", GET_PATH_SEPARATOR(), #x); \
+		sprintf(kvbuf, fmt.str(), it->first, it->second); \
 		s.append(kvbuf); \
 	} \
 }
 
 #include "Common/PlayerTemplate.h"
+#include <Utility/compat.h>
 
-std::string GameSpyPSMessageQueueInterface::formatPlayerKVPairs( PSPlayerStats stats )
+std::string GameSpyPSMessageQueueInterface::formatPlayerKVPairs(PSPlayerStats stats)
 {
 	char kvbuf[256];
 	std::string s = "";
@@ -1339,11 +1343,11 @@ std::string GameSpyPSMessageQueueInterface::formatPlayerKVPairs( PSPlayerStats s
 //	ITERATE_OVER(discons);
 	for (Int ptIdx = 0; ptIdx < ThePlayerTemplateStore->getPlayerTemplateCount(); ++ptIdx)
 	{
-//		const PlayerTemplate* pTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(ptIdx);
-//		const GeneralPersona* pGeneral = TheChallengeGenerals->getGeneralByTemplateName(pTemplate->getName());
-//		BOOL isReported = pGeneral ? pGeneral->isStartingEnabled() : FALSE;
-//		if( !isReported )
-//			continue;  //don't report unplayable templates (observer, boss, etc.)
+		//		const PlayerTemplate* pTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(ptIdx);
+		//		const GeneralPersona* pGeneral = TheChallengeGenerals->getGeneralByTemplateName(pTemplate->getName());
+		//		BOOL isReported = pGeneral ? pGeneral->isStartingEnabled() : FALSE;
+		//		if( !isReported )
+		//			continue;  //don't report unplayable templates (observer, boss, etc.)
 
 		sprintf(kvbuf, "\\discons%d\\%d", ptIdx, stats.discons[ptIdx]);
 		s.append(kvbuf);

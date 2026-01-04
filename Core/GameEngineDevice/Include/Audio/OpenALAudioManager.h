@@ -20,6 +20,8 @@
 
 #include "Common/GameAudio.h"
 #include "Common/AsciiString.h"
+// Bink handle stream
+#include "OpenALAudioDevice/OpenALAudioStream.h"
 
 /* Forward declarations */
 struct OpenALAudioDevice;
@@ -129,6 +131,7 @@ public:
 
 private:
     OpenALAudioDevice *m_audioDevice;
+    OpenALAudioStream *m_binkStream = nullptr;
     
     // Channel tracking
     UnsignedInt m_num2DSamples;

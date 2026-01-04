@@ -253,7 +253,7 @@ Int CompressionManager::compressData( CompressionType compType, void *srcVoid, I
 		*(Int *)(dest+4) = 0;
 
 		unsigned long outLen = destLen;
-		Int err = compress2( (Bytef*)dest+8, &outLen, (const Bytef*)src, srcLen, level );
+		Int err = compress2(reinterpret_cast<unsigned char*>(dest+8), &outLen, reinterpret_cast<const unsigned char*>(src), srcLen, level);
 
 		if (err == Z_OK || err == Z_STREAM_END)
 		{
@@ -320,7 +320,7 @@ Int CompressionManager::decompressData( void *srcVoid, Int srcLen, void *destVoi
 	if (compType >= COMPRESSION_ZLIB1 && compType <= COMPRESSION_ZLIB9)
 	{
 		unsigned long outLen = destLen;
-		Int err = uncompress((Bytef*)dest, &outLen, (const Bytef*)src+8, srcLen-8);
+		Int err = uncompress(reinterpret_cast<unsigned char*>(dest), &outLen, reinterpret_cast<const unsigned char*>(src+8), srcLen-8);
 		if (err == Z_OK || err == Z_STREAM_END)
 		{
 			return outLen;
@@ -463,8 +463,8 @@ void DoCompressTest( void )
 			CompData d = cd->second;
 
 			Real ratio = d.compressedSize[i]/(Real)d.origSize;
-			maxCompression = min(maxCompression, ratio);
-			minCompression = max(minCompression, ratio);
+			maxCompression = std::min(maxCompression, ratio);
+			minCompression = std::max(minCompression, ratio);
 
 			totalUncompressedBytes += d.origSize;
 			totalCompressedBytes += d.compressedSize[i];

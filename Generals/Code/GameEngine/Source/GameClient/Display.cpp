@@ -227,8 +227,8 @@ void Display::playLogoMovie( AsciiString movieName, Int minMovieLength, Int minC
 
 	m_videoBuffer = createVideoBuffer();
 	if (	m_videoBuffer == NULL ||
-				!m_videoBuffer->allocate(	m_videoStream->width(),
-													m_videoStream->height())
+				!m_videoBuffer->allocate(	getWidth(),
+													getHeight())
 		)
 	{
 		stopMovie();

@@ -52,7 +52,7 @@ typedef void* VkPipeline;
 typedef void* VkPipelineLayout;
 typedef void* VkDescriptorSet;
 typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+// typedef unsigned long long uint64_t;
 typedef unsigned char uint8_t;
 typedef int int32_t;
 typedef float float32_t;

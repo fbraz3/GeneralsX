@@ -282,7 +282,7 @@ void main() {
     fragTexCoord = inTexCoord;
     
     vec3 worldNormal = normalize(mat3(pc.world) * inNormal);
-    fragLighting = max(dot(worldNormal, normalize(pc.lightDir)), 0.2);
+    fragLighting = std::max(dot(worldNormal, normalize(pc.lightDir)), 0.2);
 }
 ```
 
@@ -324,7 +324,7 @@ void main() {
     fragTexCoord = inTexCoord;
     
     vec3 worldNormal = normalize(mat3(pc.world) * skinnedNormal);
-    fragLighting = max(dot(worldNormal, normalize(pc.lightDir)), 0.2);
+    fragLighting = std::max(dot(worldNormal, normalize(pc.lightDir)), 0.2);
 }
 ```
 

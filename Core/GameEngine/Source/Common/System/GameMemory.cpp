@@ -67,6 +67,8 @@
 	#include "Common/StackDump.h"
 #endif
 
+#include <new> // Required for std::bad_alloc replacement
+
 #ifdef MEMORYPOOL_DEBUG
 DECLARE_PERF_TIMER(MemoryPoolDebugging)
 DECLARE_PERF_TIMER(MemoryPoolInitFilling)
@@ -294,9 +296,9 @@ static void memset32(void* ptr, Int value, Int bytesToFill)
 	for (++wordsToFill; --wordsToFill; )
 		*p++ = value;
 
-	Byte *b = (Byte *)p;
+	SignedByte *b = (SignedByte *)p;
 	for (++bytesToFill; --bytesToFill; )
-		*b++ = (Byte)value;
+		*b++ = (SignedByte)value;
 }
 
 #ifdef MEMORYPOOL_STACKTRACE
@@ -783,7 +785,7 @@ Bool BlockCheckpointInfo::shouldBeInReport(Int flags, Int startCheckpoint, Int e
 	#ifdef MEMORYPOOL_STACKTRACE
 			if (flags & REPORT_CP_STACKTRACE)
 			{
-				::doStackDump(bi->m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth ));
+				::doStackDump(bi->m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth ));
 			}
 	#endif
 		}
@@ -875,7 +877,7 @@ void MemoryPoolSingleBlock::initBlock(Int logicalSize, MemoryPoolBlob *owningBlo
 	if (theStackTraceDepth > 0 && (!TheGlobalData || TheGlobalData->m_checkForLeaks))
 	{
 		memset(m_stacktrace, 0, MEMORYPOOL_STACKTRACE_SIZE_BYTES);
-		::FillStackAddresses(m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
+		::FillStackAddresses(m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
 	}
 	else
 	{
@@ -1025,7 +1027,7 @@ Int MemoryPoolSingleBlock::debugSingleBlockReportLeak(const char* owner)
 
 	#ifdef MEMORYPOOL_SINGLEBLOCK_GETS_STACKTRACE
 	if (!TheGlobalData || TheGlobalData->m_checkForLeaks)
-		::doStackDump(m_stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth));
+		::doStackDump(m_stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth));
 	#endif
 
 	return 1;
@@ -1443,7 +1445,7 @@ BlockCheckpointInfo *Checkpointable::debugAddCheckpointInfo(
 		if (theStackTraceDepth > 0 && !TheGlobalData || TheGlobalData->m_checkForLeaks)
 		{
 			memset(stacktrace, 0, MEMORYPOOL_STACKTRACE_SIZE_BYTES);
-			::FillStackAddresses(stacktrace, min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
+			::FillStackAddresses(stacktrace, std::min(MEMORYPOOL_STACKTRACE_SIZE, theStackTraceDepth), MEMORYPOOL_STACKTRACE_SKIP_SIZE);
 		}
 		else
 		{
@@ -1527,7 +1529,7 @@ MemoryPool::MemoryPool() :
 void MemoryPool::init(MemoryPoolFactory *factory, const char *poolName, Int allocationSize, Int initialAllocationCount, Int overflowAllocationCount)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: MemoryPool::init pool=%s size=%d\n", poolName, allocationSize);
+	printf("DEBUG: MemoryPool::init pool=%s size=%d\n", poolName, allocationSize);
 #endif
 	m_factory = factory;
 	m_poolName = poolName;
@@ -1640,7 +1642,7 @@ Int MemoryPool::freeBlob(MemoryPoolBlob* blob)
 void* MemoryPool::allocateBlockDoNotZeroImplementation(DECLARE_LITERALSTRING_ARG1)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation pool=%s size=%d\n", getPoolName(), getAllocationSize());
+	printf("DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation pool=%s size=%d\n", getPoolName(), getAllocationSize());
 #endif
 	ScopedCriticalSection scopedCriticalSection(TheMemoryPoolCriticalSection);
 
@@ -1704,7 +1706,7 @@ void* MemoryPool::allocateBlockDoNotZeroImplementation(DECLARE_LITERALSTRING_ARG
 
 #if GAMEMEMORY_VERBOSE_DEBUG
 	if (strcmp(getPoolName(), "TextureClass") == 0) {
-		fprintf(stderr, "DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation returned %p\n", block->getUserData());
+		printf("DEBUG: MemoryPool::allocateBlockDoNotZeroImplementation returned %p\n", block->getUserData());
 	}
 #endif
 	return block->getUserData();
@@ -2181,7 +2183,7 @@ void DynamicMemoryAllocator::debugIgnoreLeaksForThisBlock(void* pBlockPtr)
 void *DynamicMemoryAllocator::allocateBytesDoNotZeroImplementation(Int numBytes DECLARE_LITERALSTRING_ARG2)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateBytesDoNotZeroImplementation size=%d\n", numBytes);
+	printf("DEBUG: allocateBytesDoNotZeroImplementation size=%d\n", numBytes);
 #endif
 	ScopedCriticalSection scopedCriticalSection(TheDmaCriticalSection);
 
@@ -2323,7 +2325,7 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 			return;
 		}
 		// Neither pointer is valid - this is a serious error, but don't crash
-		fprintf(stderr, "[GameMemory] Warning: freeBytes called with invalid pointer %p\n", pBlockPtr);
+		printf("[GameMemory] Warning: freeBytes called with invalid pointer %p\n", pBlockPtr);
 		return;
 	}
 #endif
@@ -3275,126 +3277,99 @@ static int theLinkTester = 0;
 void* STLSpecialAlloc::allocate(size_t __n)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-	return TheDynamicMemoryAllocator->allocateBytes(__n, "STL_");
+	// Use calloc here too, just to be safe with STL containers
+	return calloc(1, __n);
 }
-
 //-----------------------------------------------------------------------------
 void STLSpecialAlloc::deallocate(void* __p, size_t)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-	TheDynamicMemoryAllocator->freeBytes(__p);
+	// Direct free for safety
+	free(__p);
 }
 
 //-----------------------------------------------------------------------------
+// LINUX PORT FIX:
+// Redirect global new/delete to standard malloc/free.
+// 
+// UDPATE: Used calloc() instead of malloc().
+// Why: The original game code assumes that new objects are zero-initialized 
+// (pointers are NULL, integers are 0). Linux malloc returns garbage memory.
+// Using calloc forces zero-initialization globally, fixing crashes in 
+// constructors that assume member variables start as NULL (like W3DBridgeBuffer).
+//-----------------------------------------------------------------------------
+
 /**
-	overload for global operator new; send requests to TheDynamicMemoryAllocator.
+	overload for global operator new; use calloc for zero-init.
 */
 void *operator new(size_t size)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-	return TheDynamicMemoryAllocator->allocateBytes(size, "global operator new");
+	// calloc(1, size) allocates 'size' bytes and initializes them to 0.
+	void *p = calloc(1, size);
+	if (!p) throw std::bad_alloc();
+	return p;
 }
 
-//-----------------------------------------------------------------------------
 /**
-	overload for global operator new[]; send requests to TheDynamicMemoryAllocator.
+	overload for global operator new[]; use calloc for zero-init.
 */
 void *operator new[](size_t size)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-	return TheDynamicMemoryAllocator->allocateBytes(size, "global operator new[]");
+	void *p = calloc(1, size);
+	if (!p) throw std::bad_alloc();
+	return p;
 }
 
-//-----------------------------------------------------------------------------
 /**
-	overload for global operator delete; send requests to TheDynamicMemoryAllocator.
+	overload for global operator delete; use standard free.
 */
-void operator delete(void *p)
+void operator delete(void *p) noexcept
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	TheDynamicMemoryAllocator->freeBytes(p);
+	free(p);
 }
 
-//-----------------------------------------------------------------------------
 /**
-	overload for global operator delete[]; send requests to TheDynamicMemoryAllocator.
+	overload for global operator delete[]; use standard free.
 */
-void operator delete[](void *p)
+void operator delete[](void *p) noexcept
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	TheDynamicMemoryAllocator->freeBytes(p);
+	free(p);
 }
 
 //-----------------------------------------------------------------------------
-/**
-	overload for global operator new (MFC debug version); send requests to TheDynamicMemoryAllocator.
-*/
+// MFC Debug variants - mapped to calloc as well
+//-----------------------------------------------------------------------------
+
 void* operator new(size_t size, const char * fname, int)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-#ifdef MEMORYPOOL_DEBUG
-	return TheDynamicMemoryAllocator->allocateBytesImplementation(size, fname);
-#else
-	return TheDynamicMemoryAllocator->allocateBytesImplementation(size);
-#endif
+	return calloc(1, size);
 }
 
-//-----------------------------------------------------------------------------
-/**
-	overload for global operator delete (MFC debug version); send requests to TheDynamicMemoryAllocator.
-*/
 void operator delete(void * p, const char *, int)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	TheDynamicMemoryAllocator->freeBytes(p);
+	free(p);
 }
 
-//-----------------------------------------------------------------------------
-/**
-	overload for global operator new (MFC debug version); send requests to TheDynamicMemoryAllocator.
-*/
 void* operator new[](size_t size, const char * fname, int)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
-#ifdef MEMORYPOOL_DEBUG
-	return TheDynamicMemoryAllocator->allocateBytesImplementation(size, fname);
-#else
-	return TheDynamicMemoryAllocator->allocateBytesImplementation(size);
-#endif
+	return calloc(1, size);
 }
 
-//-----------------------------------------------------------------------------
-/**
-	overload for global operator delete (MFC debug version); send requests to TheDynamicMemoryAllocator.
-*/
 void operator delete[](void * p, const char *, int)
 {
 	++theLinkTester;
-	preMainInitMemoryManager();
-	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	TheDynamicMemoryAllocator->freeBytes(p);
+	free(p);
 }
-
 //-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+// LINUX PORT FIX: Force disable malloc overrides
+#if 0 
 void *calloc(size_t a, size_t b)
 {
 	++theLinkTester;
@@ -3405,7 +3380,7 @@ void *calloc(size_t a, size_t b)
 #endif
 
 //-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+#if 0
 void  free(void * p)
 {
 	++theLinkTester;
@@ -3416,7 +3391,7 @@ void  free(void * p)
 #endif
 
 //-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+#if 0
 void *malloc(size_t a)
 {
 	++theLinkTester;
@@ -3427,7 +3402,7 @@ void *malloc(size_t a)
 #endif
 
 //-----------------------------------------------------------------------------
-#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+#if 0
 void *realloc(void *p, size_t s)
 {
 	DEBUG_CRASH(("realloc is evil. do not call it."));
@@ -3488,6 +3463,10 @@ void initMemoryManager()
 	free(linktest);
 #endif
 
+	// LINUX PORT FIX:
+	// We intentionally disabled the link tester because we are using standard malloc/free
+	// to avoid conflicts with shared system libraries (Vulkan/OpenAL).
+	/*
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
 	if (theLinkTester != 10)
 #else
@@ -3496,6 +3475,7 @@ void initMemoryManager()
 	{
 		DEBUG_CRASH(("Wrong operator new/delete linked in! Fix this..."));
 	}
+	*/
 
 	theMainInitFlag = true;
 
@@ -3582,14 +3562,14 @@ void shutdownMemoryManager()
 void* createW3DMemPool(const char *poolName, int allocationSize)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: createW3DMemPool name=%s size=%d\n", poolName, allocationSize);
+	printf("DEBUG: createW3DMemPool name=%s size=%d\n", poolName, allocationSize);
 #endif
 	++theLinkTester;
 	preMainInitMemoryManager();
 	MemoryPool* pool = TheMemoryPoolFactory->createMemoryPool(poolName, allocationSize, 0, 0);
 	DEBUG_ASSERTCRASH(pool && pool->getAllocationSize() == allocationSize, ("bad w3d pool"));
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: createW3DMemPool returned %p\n", pool);
+	printf("DEBUG: createW3DMemPool returned %p\n", pool);
 #endif
 	return pool;
 }
@@ -3598,13 +3578,13 @@ void* createW3DMemPool(const char *poolName, int allocationSize)
 void* allocateFromW3DMemPool(void* pool, int allocationSize)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateFromW3DMemPool pool=%p size=%d\n", pool, allocationSize);
+	printf("DEBUG: allocateFromW3DMemPool pool=%p size=%d\n", pool, allocationSize);
 #endif
 	DEBUG_ASSERTCRASH(pool, ("pool is null"));
 	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == allocationSize, ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
 	void* ptr = ((MemoryPool*)pool)->allocateBlock("allocateFromW3DMemPool");
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateFromW3DMemPool returned %p\n", ptr);
+	printf("DEBUG: allocateFromW3DMemPool returned %p\n", ptr);
 #endif
 	return ptr;
 }
@@ -3613,13 +3593,13 @@ void* allocateFromW3DMemPool(void* pool, int allocationSize)
 void* allocateFromW3DMemPool(void* pool, int allocationSize, const char* msg, int unused)
 {
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateFromW3DMemPool(msg) pool=%p size=%d msg=%s\n", pool, allocationSize, msg);
+	printf("DEBUG: allocateFromW3DMemPool(msg) pool=%p size=%d msg=%s\n", pool, allocationSize, msg);
 #endif
 	DEBUG_ASSERTCRASH(pool, ("pool is null"));
 	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == allocationSize, ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
 	void* ptr = ((MemoryPool*)pool)->allocateBlock(msg);
 #if GAMEMEMORY_VERBOSE_DEBUG
-	fprintf(stderr, "DEBUG: allocateFromW3DMemPool(msg) returned %p\n", ptr);
+	printf("DEBUG: allocateFromW3DMemPool(msg) returned %p\n", ptr);
 #endif
 	return ptr;
 }

@@ -394,10 +394,10 @@ void MultiFixedPoolDecalSystemClass::Clear_All_Decals(void)
 MultiFixedPoolDecalSystemClass::LogicalDecalClass & MultiFixedPoolDecalSystemClass::find_logical_decal(uint32 pool_id, uint32 slot_id)
 {
 	assert(pool_id < PoolCount);
-	pool_id = MIN(pool_id, PoolCount);
+	pool_id = std::min(pool_id, PoolCount);
 	LogicalDecalPoolClass & pool = Pools[pool_id];
 	assert(slot_id < pool.Size);
-	slot_id = MIN(slot_id, pool.Size);
+	slot_id = std::min(slot_id, pool.Size);
 	return pool.Array[slot_id];
 }
 

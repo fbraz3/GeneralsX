@@ -307,7 +307,7 @@ void XferSave::xferAsciiString( AsciiString *asciiStringData )
 
 	// save string data
 	if( len > 0 )
-		xferUser( (void *)asciiStringData->str(), sizeof( Byte ) * len );
+		xferUser( (void *)asciiStringData->str(), sizeof( SignedByte ) * len );
 
 }
 

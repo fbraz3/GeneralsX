@@ -23,6 +23,7 @@
 #include "Babylon.h"
 #include "GenerateDlg.h"
 #include "direct.h"
+#include <Utility/compat.h>
 
 #ifdef RTS_DEBUG
 #define new DEBUG_NEW
@@ -74,35 +75,35 @@ END_MESSAGE_MAP()
 BOOL CGenerateDlg::OnInitDialog()
 {
 	int index;
-	LANGINFO	*info;
+	LANGINFO* info;
 
-	edit = (CEdit *) GetDlgItem ( IDC_PREFIX );
-	unicode = (CButton *) GetDlgItem ( IDC_UNICODE );
-	strfile = (CButton *) GetDlgItem ( IDC_BABYLONSTR );
-	useids = (CButton *) GetDlgItem ( IDC_IDS );
-	usetext = (CButton *) GetDlgItem ( IDC_ORIGINAL );
-	list = (CListBox *) GetDlgItem ( IDC_LANGUAGE );
-	filetext = ( CStatic *) GetDlgItem ( IDC_FILENAME );
+	edit = (CEdit*)GetDlgItem(IDC_PREFIX);
+	unicode = (CButton*)GetDlgItem(IDC_UNICODE);
+	strfile = (CButton*)GetDlgItem(IDC_BABYLONSTR);
+	useids = (CButton*)GetDlgItem(IDC_IDS);
+	usetext = (CButton*)GetDlgItem(IDC_ORIGINAL);
+	list = (CListBox*)GetDlgItem(IDC_LANGUAGE);
+	filetext = (CStatic*)GetDlgItem(IDC_FILENAME);
 
 	CDialog::OnInitDialog();
 
 	// TODO: Add extra initialization here
 
-	unicode->SetCheck ( 1 );
-	useids->SetCheck ( 1 );
-	edit->SetWindowText ( "Generals" );
-	edit->SetLimitText ( 5 );
+	unicode->SetCheck(1);
+	useids->SetCheck(1);
+	edit->SetWindowText("Generals");
+	edit->SetLimitText(5);
 
-	OnChangePrefix ();
+	OnChangePrefix();
 
 
 	index = 0;
-	while ( (info = GetLangInfo ( index )) )
+	while ((info = GetLangInfo(index)))
 	{
-		list->InsertString ( index,  info->name );
-		if ( info->langid == CurrentLanguage )
+		list->InsertString(index, info->name);
+		if (info->langid == CurrentLanguage)
 		{
-			list->SetSel ( index );
+			list->SetSel(index);
 		}
 
 		index++;
@@ -111,13 +112,13 @@ BOOL CGenerateDlg::OnInitDialog()
 
 
 	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CGenerateDlg::OnSelectall()
 {
 	// TODO: Add your control notification handler code here
-	 list->SelItemRange ( TRUE, 0, num_langs-1 );
+	list->SelItemRange(TRUE, 0, num_langs - 1);
 }
 
 void CGenerateDlg::OnInvert()
@@ -126,9 +127,9 @@ void CGenerateDlg::OnInvert()
 	int index = 0;
 
 
-	while ( index < num_langs )
+	while (index < num_langs)
 	{
-		list->SetSel ( index,  !list->GetSel ( index ));
+		list->SetSel(index, !list->GetSel(index));
 		index++;
 	}
 
@@ -139,18 +140,18 @@ void CGenerateDlg::OnChangePrefix()
 {
 	char buffer[30];
 
-	edit->GetWindowText ( buffer, 6 );
+	edit->GetWindowText(buffer, 6);
 
-	if ( options.format == GN_BABYLONSTR )
+	if (options.format == GN_BABYLONSTR)
 	{
-		strcat ( buffer, "_{xx}.str" );
+		strcat(buffer, "_{xx}.str");
 	}
 	else
 	{
-		strcat ( buffer, "_{xx}.csf" );
+		strcat(buffer, "_{xx}.csf");
 	}
 
-	filetext->SetWindowText ( buffer );
+	filetext->SetWindowText(buffer);
 
 }
 
@@ -158,8 +159,8 @@ void CGenerateDlg::OnBabylonstr()
 {
 	// TODO: Add your control notification handler code here
 	options.format = GN_BABYLONSTR;
-	OnChangePrefix ();
-	unicode->SetCheck ( 0 );
+	OnChangePrefix();
+	unicode->SetCheck(0);
 
 
 }
@@ -168,8 +169,8 @@ void CGenerateDlg::OnUnicode()
 {
 	// TODO: Add your control notification handler code here
 	options.format = GN_UNICODE;
-	OnChangePrefix ();
-	strfile->SetCheck ( 0 );
+	OnChangePrefix();
+	strfile->SetCheck(0);
 
 }
 
@@ -187,25 +188,25 @@ void CGenerateDlg::OnOK()
 	int i;
 	// TODO: Add extra validation here
 
-	edit->GetWindowText ( buffer, sizeof ( filename) -1 );
-	_getcwd ( filename, sizeof (filename ) -1 );
-	strcat ( filename, "\\" );
-	strcat ( filename, buffer );
+	edit->GetWindowText(buffer, sizeof(filename) - 1);
+	_getcwd(filename, sizeof(filename) - 1);
+	strcat(filename, GET_PATH_SEPARATOR());
+	strcat(filename, buffer);
 
-	count = list->GetSelItems ( num_langs, langindices );
+	count = list->GetSelItems(num_langs, langindices);
 
-	if ( !count )
+	if (!count)
 	{
-		AfxMessageBox ( "No languages selected" );
+		AfxMessageBox("No languages selected");
 		return;
 	}
 
 	num_langs = 0;
-	for ( i = 0; i <count; i++ )
+	for (i = 0; i < count; i++)
 	{
-		LANGINFO *info;
+		LANGINFO* info;
 
-		if ( info = GetLangInfo ( langindices[i] ))
+		if (info = GetLangInfo(langindices[i]))
 		{
 			langids[num_langs++] = info->langid;
 		}
@@ -220,12 +221,12 @@ void CGenerateDlg::OnOK()
 void CGenerateDlg::OnIds()
 {
 	options.untranslated = GN_USEIDS;
-	usetext->SetCheck ( 0 );
+	usetext->SetCheck(0);
 
 }
 
 void CGenerateDlg::OnOriginal()
 {
 	options.untranslated = GN_USEORIGINAL;
-	useids->SetCheck ( 0 );
+	useids->SetCheck(0);
 }
