@@ -31,12 +31,8 @@
 
 #include "Common/STLTypedefs.h"
 
-// Phase 54: Use cross-platform D3DX8 math compatibility header
-#if defined(_WIN32)
-#include <d3dx8math.h>
-#else
-#include "d3dx8_vulkan_math_compat.h"
-#endif
+// Note: D3DXMATRIX is defined in PreRTS.h (which includes d3dx8_vulkan_math_compat.h on non-Windows)
+// or in <d3dx8math.h> on Windows
 
 #define USUAL_TOLERANCE 1.0f
 

@@ -55,7 +55,6 @@
 #include "GameClient/DisplayString.h"
 #include "GameClient/WinInstanceData.h"
 #include "GameClient/Color.h"
-#include <cstdint>
 
 ///////////////////////////////////////////////////////////////////////////////
 // FORWARD REFERENCES /////////////////////////////////////////////////////////
@@ -74,7 +73,7 @@ enum { WIN_COLOR_UNDEFINED = GAME_COLOR_UNDEFINED };
 
 // WindowMsgData --------------------------------------------------------------
 //-----------------------------------------------------------------------------
-typedef uintptr_t WindowMsgData;
+typedef UnsignedInt WindowMsgData;
 
 //-----------------------------------------------------------------------------
 enum WindowMsgHandledType CPP_11(: Int) { MSG_IGNORED, MSG_HANDLED };

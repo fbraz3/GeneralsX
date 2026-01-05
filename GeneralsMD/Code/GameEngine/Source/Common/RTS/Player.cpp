@@ -2461,11 +2461,11 @@ Bool Player::addSkillPoints(Int delta)
 	if( delta == 0 )
 		return false;
 
-	Int levelCap = std::min( TheGameLogic->getRankLevelLimit(), TheRankInfoStore->getRankLevelCount() );
+	Int levelCap = min( TheGameLogic->getRankLevelLimit(), TheRankInfoStore->getRankLevelCount() );
 	Int pointCap = TheRankInfoStore->getRankInfo(levelCap)->m_skillPointsNeeded; // Cap at lowest point of cap level, not highest.
 
 	Bool levelGained = FALSE;
-	m_skillPoints = std::min( pointCap, (m_skillPoints + delta) );
+	m_skillPoints = min( pointCap, (m_skillPoints + delta) );
 	while( m_skillPoints >= m_levelUp )
 	{
 		// LevelUp gets increased as a side effect of setRankLevel, and this won't infinitely loop,
@@ -3462,8 +3462,8 @@ void Player::changeBattlePlan( BattlePlanStatus plan, Int delta, BattlePlanBonus
 	else if( removeBonus )
 	{
 		//First, inverse the bonuses
-		bonus->m_armorScalar				= 1.0f / std::max( bonus->m_armorScalar, 0.01f );
-		bonus->m_sightRangeScalar		= 1.0f / std::max( bonus->m_sightRangeScalar, 0.01f );
+		bonus->m_armorScalar				= 1.0f / __max( bonus->m_armorScalar, 0.01f );
+		bonus->m_sightRangeScalar		= 1.0f / __max( bonus->m_sightRangeScalar, 0.01f );
 		if( bonus->m_bombardment > 0 )
 		{
 			bonus->m_bombardment			= -1;
@@ -3595,8 +3595,8 @@ void Player::removeBattlePlanBonusesForObject( Object *obj ) const
 	//Copy bonuses, and invert them.
 	BattlePlanBonuses* bonus = newInstance(BattlePlanBonuses);
 	*bonus = *m_battlePlanBonuses;
-	bonus->m_armorScalar					= 1.0f / std::max( bonus->m_armorScalar, 0.01f );
-	bonus->m_sightRangeScalar			= 1.0f / std::max( bonus->m_sightRangeScalar, 0.01f );
+	bonus->m_armorScalar					= 1.0f / __max( bonus->m_armorScalar, 0.01f );
+	bonus->m_sightRangeScalar			= 1.0f / __max( bonus->m_sightRangeScalar, 0.01f );
 	bonus->m_bombardment					= -ALL_PLANS; //Safe to remove as it clears the weapon bonus flag
 	bonus->m_searchAndDestroy			= -ALL_PLANS; //Safe to remove as it clears the weapon bonus flag
 	bonus->m_holdTheLine					= -ALL_PLANS; //Safe to remove as it clears the weapon bonus flag
@@ -3631,11 +3631,11 @@ void Player::applyBattlePlanBonusesForPlayerObjects( const BattlePlanBonuses *bo
 		m_battlePlanBonuses->m_armorScalar					*= bonus->m_armorScalar;
 		m_battlePlanBonuses->m_sightRangeScalar			*= bonus->m_sightRangeScalar;
 		m_battlePlanBonuses->m_bombardment					+= bonus->m_bombardment;
-		m_battlePlanBonuses->m_bombardment					=	 std::max( 0, m_battlePlanBonuses->m_bombardment );
+		m_battlePlanBonuses->m_bombardment					=	 MAX( 0, m_battlePlanBonuses->m_bombardment );
 		m_battlePlanBonuses->m_holdTheLine					+= bonus->m_holdTheLine;
-		m_battlePlanBonuses->m_holdTheLine					=	 std::max( 0, m_battlePlanBonuses->m_holdTheLine );
+		m_battlePlanBonuses->m_holdTheLine					=	 MAX( 0, m_battlePlanBonuses->m_holdTheLine );
 		m_battlePlanBonuses->m_searchAndDestroy			+= bonus->m_searchAndDestroy;
-		m_battlePlanBonuses->m_searchAndDestroy			=	 std::max( 0, m_battlePlanBonuses->m_searchAndDestroy );
+		m_battlePlanBonuses->m_searchAndDestroy			=	 MAX( 0, m_battlePlanBonuses->m_searchAndDestroy );
 	}
 
 	DUMPBATTLEPLANBONUSES(m_battlePlanBonuses, this, NULL);

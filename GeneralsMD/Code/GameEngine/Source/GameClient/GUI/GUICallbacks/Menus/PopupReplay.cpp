@@ -47,8 +47,6 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#include <filesystem>
-
 #include "Common/LocalFileSystem.h"
 #include "Common/MessageStream.h"
 #include "Common/Recorder.h"
@@ -216,7 +214,7 @@ WindowMsgHandledType PopupReplayInput( GameWindow *window, UnsignedInt msg, Wind
 					{
 						GameWindow *button = TheWindowManager->winGetWindowFromId( parent, buttonBackKey );
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)(uintptr_t)button, buttonBackKey );
+																								(WindowMsgData)button, buttonBackKey );
 
 					}
 
@@ -282,20 +280,19 @@ void reallySaveReplay(void)
 
 	if (TheLocalFileSystem->doesFileExist(filename.str()))
 	{
-		try {
-			std::filesystem::remove(std::filesystem::path(filename.str()));
-		} catch (const std::filesystem::filesystem_error& e) {
+		if(DeleteFile(filename.str()) == 0)
+		{
+			wchar_t buffer[1024];
+			FormatMessageW ( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, ARRAY_SIZE(buffer), NULL);
 			UnicodeString errorStr;
-			AsciiString errMsg;
-			errMsg.format("Failed to delete file: %s", e.what());
-			errorStr.translate(errMsg);
+			errorStr.set(buffer);
 			errorStr.trim();
 			if(messageBoxWin)
 			{
 				TheWindowManager->winUnsetModal(messageBoxWin);
 				messageBoxWin = NULL;
 			}
-			MessageBoxOk(TheGameText->fetch("GUI:Error"), errorStr, NULL);
+			MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 
 			// get the listbox that will have the save games in it
 			GameWindow *listboxGames = TheWindowManager->winGetWindowFromId( parent, listboxGamesKey );
@@ -308,18 +305,19 @@ void reallySaveReplay(void)
 	}
 
 	// copy the replay to the right place
-	// Phase 40: Cross-platform file copy using std::filesystem
-	try {
-		std::filesystem::copy_file(oldFilename.str(), filename.str(), std::filesystem::copy_options::overwrite_existing);
-	} catch (const std::filesystem::filesystem_error& e) {
+	if(CopyFile(oldFilename.str(),filename.str(), FALSE) == 0)
+	{
+		wchar_t buffer[1024];
+		FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, ARRAY_SIZE(buffer), NULL);
 		UnicodeString errorStr;
-		errorStr.format(L"File copy failed: %s", e.what());
+		errorStr.set(buffer);
+		errorStr.trim();
 		if(messageBoxWin)
 		{
 			TheWindowManager->winUnsetModal(messageBoxWin);
 			messageBoxWin = NULL;
 		}
-		MessageBoxOk(TheGameText->fetch("GUI:Error"), errorStr, NULL);
+		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 		return;
 	}
 

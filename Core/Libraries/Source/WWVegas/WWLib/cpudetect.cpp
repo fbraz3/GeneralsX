@@ -929,13 +929,22 @@ void CPUDetectClass::Init_Memory()
 		TotalPhysicalMemory = 0;
 	}
 
-	// For available physical memory, try _SC_AVPHYS_PAGES if available
+	// For available physical memory, try _SC_AVPHYS_PAGES if available (Linux)
+	AvailablePhysicalMemory = 0;
+#ifdef _SC_AVPHYS_PAGES
 	long avail_pages = sysconf(_SC_AVPHYS_PAGES);
 	if (avail_pages > 0 && page_size > 0) {
 		AvailablePhysicalMemory = (unsigned long long)avail_pages * (unsigned long long)page_size;
 	}
-	else {
-		AvailablePhysicalMemory = 0;
+#endif
+	if (AvailablePhysicalMemory == 0) {
+		// Fallback: use _SC_PHYS_PAGES as approximation on macOS
+#ifdef _SC_PHYS_PAGES
+		long phys_pages = sysconf(_SC_PHYS_PAGES);
+		if (phys_pages > 0 && page_size > 0) {
+			AvailablePhysicalMemory = (unsigned long long)phys_pages * (unsigned long long)page_size;
+		}
+#endif
 	}
 
 	// Page file and virtual memory are not as easily queryable on Unix, so set to 0

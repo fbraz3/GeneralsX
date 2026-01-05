@@ -78,7 +78,7 @@ static GameWindow *staticTextMessage = NULL;
 static GameWindow *buttonOk = NULL;
 
 
-static Bool s_popupPaused = FALSE;
+static Bool pause = FALSE;
 //-----------------------------------------------------------------------------
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -124,7 +124,7 @@ void InGamePopupMessageInit( WindowLayout *layout, void *userData )
 	staticTextMessage->winSetSize( pMData->width - 4, height + 7);
 	buttonOk->winSetPosition(pMData->width - widthOk - 2, height + 7 + 2 + 2);
 	staticTextMessage->winSetEnabledTextColors(pMData->textColor, 0);
-	s_popupPaused = pMData->pause;
+	pause = pMData->pause;
 	if(pMData->pause)
 		TheWindowManager->winSetModal( parent );
 
@@ -166,7 +166,7 @@ WindowMsgHandledType InGamePopupMessageInput( GameWindow *window, UnsignedInt ms
 						if( BitIsSet( state, KEY_STATE_UP ) )
 						{
 							TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)(uintptr_t)buttonOk, buttonOkID );
+																								(WindowMsgData)buttonOk, buttonOkID );
 
 						}
 
@@ -228,7 +228,7 @@ WindowMsgHandledType InGamePopupMessageSystem( GameWindow *window, UnsignedInt m
 
       if( controlID == buttonOkID )
 			{
-				if(!s_popupPaused)
+				if(!pause)
 					TheMessageStream->appendMessage( GameMessage::MSG_CLEAR_INGAME_POPUP_MESSAGE );
 				else
 					TheInGameUI->clearPopupMessageData();

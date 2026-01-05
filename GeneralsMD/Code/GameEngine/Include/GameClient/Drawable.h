@@ -205,7 +205,7 @@ private:
 	Vector3							m_peakColor;			///< um, the peak color, what color we are headed toward during attack
 	Vector3							m_currentColor;		///< um, the current color, how we are colored, now
 	Real								m_sustainCounter;
-	SignedByte								m_envState;				///< a randomly switchable SUSTAIN state, release is compliment
+	Byte								m_envState;				///< a randomly switchable SUSTAIN state, release is compliment
 	Bool								m_affect;         ///< set TRUE if this has any effect (has a non 0,0,0 color).
 };
 EMPTY_DTOR(TintEnvelope)
@@ -725,7 +725,7 @@ private:
 
 	Real m_secondMaterialPassOpacity;			///< drawable gets rendered again in hardware with an extra material layer
 	// --------- BYTE-SIZED THINGS GO HERE
-	SignedByte m_selected;						///< drawable is selected or not
+	Byte m_selected;						///< drawable is selected or not
 	Bool m_hidden;							///< drawable is "hidden" or not (overrides stealth effects)
 	Bool m_hiddenByStealth;			///< drawable is hidden due to stealth
 	Bool m_instanceIsIdentity;	///< If true, instance matrix can be skipped

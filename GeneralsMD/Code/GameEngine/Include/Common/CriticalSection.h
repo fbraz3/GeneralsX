@@ -30,29 +30,13 @@
 
 #include "Common/PerfTimer.h"
 
-// Phase 39.5 Week 2: SDL2 Threading Unification
-// Unified critical section implementation using SDL2 cross-platform layer
-// Phase 39.4: Temporarily disable include - header path issue to be resolved in CMakeLists configuration
-// #include "WWVegas/WW3D2/win32_thread_compat.h"
-
-// Forward declarations for SDL2_CriticalSection (Phase 39.4 stub)
-typedef void* SDL2_CriticalSection;
-void SDL2_CreateCriticalSection_Stub(SDL2_CriticalSection* pCS);
-void SDL2_DestroyCriticalSection_Stub(SDL2_CriticalSection* pCS);
-void SDL2_EnterCriticalSection_Stub(SDL2_CriticalSection* pCS);
-void SDL2_LeaveCriticalSection_Stub(SDL2_CriticalSection* pCS);
-#define SDL2_CreateCriticalSection() nullptr
-#define SDL2_DestroyCriticalSection(x) do { } while(0)
-#define SDL2_EnterCriticalSection(x) do { } while(0)
-#define SDL2_LeaveCriticalSection(x) do { } while(0)
-
 #ifdef PERF_TIMERS
 extern PerfGather TheCritSecPerfGather;
 #endif
 
 class CriticalSection
 {
-	SDL2_CriticalSection m_criticalSection;
+	CRITICAL_SECTION m_windowsCriticalSection;
 
 	public:
 		CriticalSection()
@@ -60,8 +44,7 @@ class CriticalSection
 			#ifdef PERF_TIMERS
 			AutoPerfGather a(TheCritSecPerfGather);
 			#endif
-			// Phase 39.5: Use unified SDL2 critical section
-			m_criticalSection = SDL2_CreateCriticalSection();
+			InitializeCriticalSection( &m_windowsCriticalSection );
 		}
 
 		virtual ~CriticalSection()
@@ -69,8 +52,7 @@ class CriticalSection
 			#ifdef PERF_TIMERS
 			AutoPerfGather a(TheCritSecPerfGather);
 			#endif
-			// Phase 39.5: Destroy unified SDL2 critical section
-			SDL2_DestroyCriticalSection(&m_criticalSection);
+			DeleteCriticalSection( &m_windowsCriticalSection );
 		}
 
 	public:	// Use these when entering/exiting a critical section.
@@ -79,8 +61,7 @@ class CriticalSection
 			#ifdef PERF_TIMERS
 			AutoPerfGather a(TheCritSecPerfGather);
 			#endif
-			// Phase 39.5: Use unified SDL2 critical section lock
-			SDL2_EnterCriticalSection(&m_criticalSection);
+			EnterCriticalSection( &m_windowsCriticalSection );
 		}
 
 		void exit( void )
@@ -88,8 +69,7 @@ class CriticalSection
 			#ifdef PERF_TIMERS
 			AutoPerfGather a(TheCritSecPerfGather);
 			#endif
-			// Phase 39.5: Use unified SDL2 critical section unlock
-			SDL2_LeaveCriticalSection(&m_criticalSection);
+			LeaveCriticalSection( &m_windowsCriticalSection );
 		}
 };
 
@@ -101,24 +81,15 @@ class ScopedCriticalSection
 	public:
 		ScopedCriticalSection( CriticalSection *cs ) : m_cs(cs)
 		{
-			if (m_cs) {
-				// Phase 39.5: Use unified SDL2 critical section via enter()
+			if (m_cs)
 				m_cs->enter();
-			}
 		}
 
 		virtual ~ScopedCriticalSection( )
 		{
-			if (m_cs) {
-				// Phase 39.5: Automatic unlock via exit()
+			if (m_cs)
 				m_cs->exit();
-			}
 		}
-
-	private:
-		// Phase 39.5: Make ScopedCriticalSection non-copyable
-		ScopedCriticalSection(const ScopedCriticalSection&) = delete;
-		ScopedCriticalSection& operator=(const ScopedCriticalSection&) = delete;
 };
 
 #include "mutex.h"

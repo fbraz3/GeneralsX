@@ -332,7 +332,7 @@ void Drawable::saturateRGB(RGBColor& color, Real factor)
 
 //--- A MACRO TO APPLY TO TheTacticalView->getZoom() ------ To Clamp the return to a visually pleasing size
 //--- so that icons, emoticons, health bars, pips, etc, look reasonably solid and don't shimmer or tweed
-//#define CLAMP_ICON_ZOOM_FACTOR(n) (std::max(0.80f, std::min(1.00f, n)))
+//#define CLAMP_ICON_ZOOM_FACTOR(n) (MAX(0.80f, MIN(1.00f, n)))
 #define CLAMP_ICON_ZOOM_FACTOR(n) (n)//nothing
 
 
@@ -1110,10 +1110,10 @@ void Drawable::setEffectiveOpacity( Real pulseFactor, Real explicitOpacity /* = 
 {
 	if( explicitOpacity != -1.0f )
 	{
-		m_stealthOpacity = std::min( 1.0f, std::max( 0.0f, explicitOpacity ) );
+		m_stealthOpacity = MIN( 1.0f, MAX( 0.0f, explicitOpacity ) );
 	}
 
-	Real pf = std::min(1.0f, std::max(0.0f, pulseFactor));
+	Real pf = MIN(1.0f, MAX(0.0f, pulseFactor));
 
 	Real pulseMargin = (1.0f - m_stealthOpacity);
 	Real pulseAmount = pulseMargin * pf;
@@ -2700,7 +2700,7 @@ static Bool computeHealthRegion( const Drawable *draw, IRegion2D& region )
 	healthBoxHeight *= heightScale;
 
 	// do this so health bar doesn't get too skinny or fat after scaling
-	//healthBoxHeight = std::max(3.0f, healthBoxHeight);
+	//healthBoxHeight = max(3.0f, healthBoxHeight);
 	healthBoxHeight = 3.0f;
 
 	// figure out the final region for the health box
@@ -3936,7 +3936,7 @@ void Drawable::drawHealthBar(const IRegion2D* healthBarRegion)
 ///		Real scale = 1.3f / TheTacticalView->getZoom();
 		Real healthBoxWidth = healthBarRegion->hi.x - healthBarRegion->lo.x;
 
-		Real healthBoxHeight = std::max(3, healthBarRegion->hi.y - healthBarRegion->lo.y);
+		Real healthBoxHeight = max(3, healthBarRegion->hi.y - healthBarRegion->lo.y);
 		Real healthBoxOutlineSize = 1.0f;
 
 		// draw the health box outline
@@ -5536,7 +5536,7 @@ void TintEnvelope::play(const RGBColor *peak, UnsignedInt attackFrames, Unsigned
 //-------------------------------------------------------------------------------------------------
 void TintEnvelope::setAttackFrames(UnsignedInt frames)
 {
-	Real recipFrames = 1.0f / (Real)std::max(1,static_cast<int>(frames));
+	Real recipFrames = 1.0f / (Real)MAX(1,frames);
 	m_attackRate.Set( m_currentColor );
 	Vector3::Subtract( m_peakColor, m_attackRate, &m_attackRate);
 	m_attackRate.Scale( Vector3(recipFrames, recipFrames, recipFrames) );
@@ -5545,7 +5545,7 @@ void TintEnvelope::setAttackFrames(UnsignedInt frames)
 //-------------------------------------------------------------------------------------------------
 void TintEnvelope::setDecayFrames( UnsignedInt frames )
 {
-	Real recipFrames = ( -1.0f ) / (Real)std::max(1,static_cast<int>(frames));
+	Real recipFrames = ( -1.0f ) / (Real)MAX(1,frames);
 	m_decayRate.Set( m_peakColor );
 	m_decayRate.Scale( Vector3(recipFrames, recipFrames, recipFrames) );
 }

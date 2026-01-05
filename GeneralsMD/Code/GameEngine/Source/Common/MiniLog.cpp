@@ -29,21 +29,19 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/MiniLog.h"
-#include "Common/System/SDL2_AppWindow.h"
-#include <Utility/compat.h>
 
 #ifdef DEBUG_LOGGING
 
-LogClass::LogClass(const char* fname)
+LogClass::LogClass(const char *fname)
 {
-	char buffer[_MAX_PATH];
-	SDL2_GetModuleFilePath(buffer, sizeof(buffer));
-	if (char* pEnd = strrchr(buffer, GET_PATH_SEPARATOR()))
+	char buffer[ _MAX_PATH ];
+	GetModuleFileName( NULL, buffer, sizeof( buffer ) );
+	if (char *pEnd = strrchr(buffer, '\\'))
 	{
 		*pEnd = 0;
 	}
 	// TheSuperHackers @fix Caball009 03/06/2025 Don't use AsciiString here anymore because its memory allocator may not have been initialized yet.
-	const std::string fullPath = std::string(buffer) + GET_PATH_SEPARATOR() + fname;
+	const std::string fullPath = std::string(buffer) + "\\" + fname;
 	m_fp = fopen(fullPath.c_str(), "wt");
 }
 
@@ -55,7 +53,7 @@ LogClass::~LogClass()
 	}
 }
 
-void LogClass::log(const char* fmt, ...)
+void LogClass::log(const char *fmt, ...)
 {
 	if (!m_fp)
 		return;
@@ -69,11 +67,11 @@ void LogClass::log(const char* fmt, ...)
 	}
 
 	va_list va;
-	va_start(va, fmt);
-	vsnprintf(buf, 1024, fmt, va);
-	va_end(va);
+	va_start( va, fmt );
+	vsnprintf(buf, 1024, fmt, va );
+	va_end( va );
 
-	char* tmp = buf;
+	char *tmp = buf;
 	while (tmp && *tmp)
 	{
 		if (*tmp == '\r' || *tmp == '\n')

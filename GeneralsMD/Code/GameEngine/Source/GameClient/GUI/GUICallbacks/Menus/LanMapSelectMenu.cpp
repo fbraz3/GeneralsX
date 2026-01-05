@@ -230,7 +230,7 @@ WindowMsgHandledType LanMapSelectMenuInput( GameWindow *window, UnsignedInt msg,
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)(uintptr_t)button, buttonID );
+																								(WindowMsgData)button, buttonID );
 
 					}
 
@@ -308,7 +308,7 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonOK );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)(uintptr_t)button, buttonOK );
+																								(WindowMsgData)button, buttonOK );
 					}
 				}
 				break;

@@ -2551,7 +2551,7 @@ void Locomotor::maintainCurrentPositionHover(Object* obj, PhysicsBehavior *physi
 		//
 		// Stop
 		//
-		Real minSpeed = std::max( 1.0E-10f, m_template->m_minSpeed );
+		Real minSpeed = max( 1.0E-10f, m_template->m_minSpeed );
 		Real speedDelta = minSpeed - actualSpeed;
 		if (fabs(speedDelta) > minSpeed)
 		{

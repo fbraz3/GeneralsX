@@ -151,9 +151,7 @@ void LanguageFilter::unHaxor(UnicodeString &word) {
 }
 
 // returning true means that there are more words in the file.
-// Phase 51: Added bounds checking to prevent stack buffer overflow
 Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
-	const Int MAX_WORD_LENGTH = 127;  // Maximum word length (buffer is 128 chars)
 	Int index = 0;
 	Bool retval = TRUE;
 	Int val = 0;
@@ -169,20 +167,6 @@ Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
 
 	while (buf[index] != L' ') {
 		++index;
-		
-		// Phase 51: Bounds check to prevent buffer overflow
-		if (index >= MAX_WORD_LENGTH) {
-			buf[index] = 0;  // Null-terminate at limit
-			// Skip remaining characters until space or EOF
-			do {
-				val = file1->read(&c, sizeof(WideChar));
-				if ((val == -1) || (val == 0) || (c == WEOF)) {
-					return FALSE;
-				}
-			} while (c != L' ');
-			return TRUE;  // Word truncated but file continues
-		}
-		
 		val = file1->read(&c, sizeof(WideChar));
 		if ((val == -1) || (val == 0)) {
 			c = WEOF;

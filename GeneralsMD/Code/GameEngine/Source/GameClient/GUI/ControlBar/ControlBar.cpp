@@ -811,7 +811,7 @@ void CommandSet::parseCommandButton( INI* ini, void *instance, void *store, cons
 
 	// get the index to store the command at, and the command array itself
 	const CommandButton **buttonArray = (const CommandButton **)store;
-	Int buttonIndex = (Int)(uintptr_t)userData;
+	Int buttonIndex = (Int)userData;
 
 	// sanity
 	DEBUG_ASSERTCRASH( buttonIndex < MAX_COMMANDS_PER_SET, ("parseCommandButton: button index '%d' out of range",
@@ -3260,7 +3260,7 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 	tempName.concat(":ButtonCommand%d");
 	parentName = layoutName;
 	parentName.concat(":ButtonParent%d");
-	m_currentlyUsedSpecialPowersButtons = std::min(pt->getSpecialPowerShortcutButtonCount(), static_cast<int>(MAX_SPECIAL_POWER_SHORTCUTS));
+	m_currentlyUsedSpecialPowersButtons = MIN(pt->getSpecialPowerShortcutButtonCount(), MAX_SPECIAL_POWER_SHORTCUTS);
 	for( i = 0; i < MAX_SPECIAL_POWER_SHORTCUTS; i++ )
 	{
 		windowName.format( tempName, i+1 );

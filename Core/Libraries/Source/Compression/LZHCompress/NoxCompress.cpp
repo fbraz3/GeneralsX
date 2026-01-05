@@ -21,6 +21,7 @@
 // Author: Jeff Brown, January 1999
 
 #include <stdlib.h>
+#include <algorithm>  // For std::min
 #include "Lib/BaseTypeCore.h"
 #include "NoxCompress.h"
 #include "CompLibHeader/lzhl.h"

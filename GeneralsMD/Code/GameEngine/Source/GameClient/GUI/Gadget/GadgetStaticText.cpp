@@ -181,7 +181,7 @@ void GadgetStaticTextSetText( GameWindow *window, UnicodeString text )
 {
 	if(!window)
 		return;
-	TheWindowManager->winSendSystemMsg( window, GGM_SET_LABEL, (WindowMsgData)(uintptr_t)&text, 0 );
+	TheWindowManager->winSendSystemMsg( window, GGM_SET_LABEL, (WindowMsgData)&text, 0 );
 
 }
 

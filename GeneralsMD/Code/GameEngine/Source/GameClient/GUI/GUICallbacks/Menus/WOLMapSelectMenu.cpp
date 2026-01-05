@@ -19,20 +19,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
-
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 // FILE: WOLMapSelectMenu.cpp ////////////////////////////////////////////////////////////////////////
-
 // Author: Matt Campbell, December 2001
-
 // Description: MapSelect menu window callbacks
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/CustomMatchPreferences.h"
@@ -51,7 +46,6 @@
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
-
 static NameKeyType buttonBack = NAMEKEY_INVALID;
 static NameKeyType buttonOK = NAMEKEY_INVALID;
 static NameKeyType listboxMap = NAMEKEY_INVALID;
@@ -125,7 +119,6 @@ static void showGameSpyGameOptionsUnderlyingGUIElements( Bool show )
 }
 
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////////////////////////
-
 
 //-------------------------------------------------------------------------------------------------
 /** Initialize the MapSelect menu */
@@ -263,7 +256,7 @@ WindowMsgHandledType WOLMapSelectMenuInput( GameWindow *window, UnsignedInt msg,
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)(uintptr_t)button, buttonID );
+																								(WindowMsgData)button, buttonID );
 
 					}
 
@@ -335,7 +328,7 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonOK );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)(uintptr_t)button, buttonOK );
+																								(WindowMsgData)button, buttonOK );
 					}
 				}
 				break;
@@ -491,4 +484,3 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 	return MSG_HANDLED;
 
 }
-

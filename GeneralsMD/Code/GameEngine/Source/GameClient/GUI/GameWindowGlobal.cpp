@@ -208,7 +208,7 @@ Int GameWindowManager::winIsDigit( Int c )
 Int GameWindowManager::winIsAscii( Int c )
 {
 
-	return isascii( c );
+	return iswascii( c );
 
 }
 

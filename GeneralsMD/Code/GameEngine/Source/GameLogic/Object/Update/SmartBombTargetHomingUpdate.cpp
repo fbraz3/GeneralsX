@@ -96,7 +96,7 @@ UpdateSleepTime SmartBombTargetHomingUpdate::update( void )
   Coord3D pos;
   pos.zero();
 
-  Real statusCoeff = std::max( 0.0f, std::min( 1.0f, d->m_courseCorrectionScalar));
+  Real statusCoeff = MAX( 0.0f, MIN( 1.0f, d->m_courseCorrectionScalar));
   Real targetCoeff = 1.0f - statusCoeff;
 
 

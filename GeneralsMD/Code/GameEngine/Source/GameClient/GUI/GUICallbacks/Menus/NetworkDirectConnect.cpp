@@ -429,7 +429,7 @@ WindowMsgHandledType NetworkDirectConnectInput( GameWindow *window, UnsignedInt 
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
+																							(WindowMsgData)buttonBack, buttonBackID );
 
 					}
 

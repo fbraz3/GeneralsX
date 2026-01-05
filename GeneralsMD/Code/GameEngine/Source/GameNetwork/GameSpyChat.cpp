@@ -34,7 +34,6 @@
 #include "GameNetwork/GameSpy.h"
 #include "GameNetwork/GameSpyChat.h"
 #include "Common/QuotedPrintable.h"
-#include <Utility/compat.h>
 
 typedef set<AsciiString>::const_iterator AsciiSetIter;
 
@@ -52,10 +51,10 @@ typedef set<AsciiString>::const_iterator AsciiSetIter;
 	*   /oper:											become an IRC op (only in debug & internal)
 	*   /quit:											send the IRC quit command to exit WOL
 	*/
-static Bool handleSlashCommands(UnicodeString message, Bool isAction, GameWindow* playerListbox)
+static Bool handleSlashCommands( UnicodeString message, Bool isAction, GameWindow *playerListbox )
 {
 	/*
-	if (message.getCharAt(0) == LGET_PATH_SEPARATOR())
+	if (message.getCharAt(0) == L'/')
 	{
 		UnicodeString remainder = UnicodeString(message.str() + 1);
 		UnicodeString token;
@@ -270,9 +269,9 @@ static Bool handleSlashCommands(UnicodeString message, Bool isAction, GameWindow
 	return false;
 }
 
-static handleUnicodeMessage(const char* nick, UnicodeString msg, Bool isPublic, Bool isAction);
+static handleUnicodeMessage( const char *nick, UnicodeString msg, Bool isPublic, Bool isAction );
 
-Bool GameSpySendChat(UnicodeString message, Bool isAction, GameWindow* playerListbox)
+Bool GameSpySendChat( UnicodeString message, Bool isAction, GameWindow *playerListbox )
 {
 	RoomType roomType = StagingRoom;
 	if (TheGameSpyChat->getCurrentGroupRoomID())
@@ -308,8 +307,8 @@ Bool GameSpySendChat(UnicodeString message, Bool isAction, GameWindow* playerLis
 
 		// Get the selections (is this a private message?)
 		Int maxSel = GadgetListBoxGetListLength(playerListbox);
-		Int* selections;
-		GadgetListBoxGetSelected(playerListbox, (Int*)&selections);
+		Int *selections;
+		GadgetListBoxGetSelected(playerListbox, (Int *)&selections);
 
 		if (selections[0] == -1)
 		{
@@ -337,7 +336,7 @@ Bool GameSpySendChat(UnicodeString message, Bool isAction, GameWindow* playerLis
 			AsciiString tmp = AsciiString::TheEmptyString;
 			AsciiString aStr; // AsciiString buf for translating Unicode entries
 			names.format("%s", TheGameSpyChat->getLoginName().str());
-			for (int i = 0; i < maxSel; i++)
+			for (int i=0; i<maxSel; i++)
 			{
 				if (selections[i] != -1)
 				{
@@ -373,22 +372,22 @@ Bool GameSpySendChat(UnicodeString message, Bool isAction, GameWindow* playerLis
 }
 
 void RoomMessageCallback(PEER peer, RoomType roomType,
-	const char* nick, const char* message,
-	MessageType messageType, void* param)
+												 const char * nick, const char * message,
+												 MessageType messageType, void * param)
 {
 	DEBUG_LOG(("RoomMessageCallback"));
 	handleUnicodeMessage(nick, QuotedPrintableToUnicodeString(message), true, (messageType == ActionMessage));
 }
 
 void PlayerMessageCallback(PEER peer,
-	const char* nick, const char* message,
-	MessageType messageType, void* param)
+												 const char * nick, const char * message,
+												 MessageType messageType, void * param)
 {
 	DEBUG_LOG(("PlayerMessageCallback"));
 	handleUnicodeMessage(nick, QuotedPrintableToUnicodeString(message), false, (messageType == ActionMessage));
 }
 
-static handleUnicodeMessage(const char* nick, UnicodeString msg, Bool isPublic, Bool isAction)
+static handleUnicodeMessage( const char *nick, UnicodeString msg, Bool isPublic, Bool isAction )
 {
 	GameSpyColors style;
 
@@ -402,19 +401,19 @@ static handleUnicodeMessage(const char* nick, UnicodeString msg, Bool isPublic, 
 
 	if (isPublic && isAction)
 	{
-		style = (isOwner) ? GSCOLOR_CHAT_OWNER_EMOTE : GSCOLOR_CHAT_EMOTE;
+		style = (isOwner)?GSCOLOR_CHAT_OWNER_EMOTE:GSCOLOR_CHAT_EMOTE;
 	}
 	else if (isPublic)
 	{
-		style = (isOwner) ? GSCOLOR_CHAT_OWNER : GSCOLOR_CHAT_NORMAL;
+		style = (isOwner)?GSCOLOR_CHAT_OWNER:GSCOLOR_CHAT_NORMAL;
 	}
 	else if (isAction)
 	{
-		style = (isOwner) ? GSCOLOR_CHAT_PRIVATE_OWNER_EMOTE : GSCOLOR_CHAT_PRIVATE_EMOTE;
+		style = (isOwner)?GSCOLOR_CHAT_PRIVATE_OWNER_EMOTE:GSCOLOR_CHAT_PRIVATE_EMOTE;
 	}
 	else
 	{
-		style = (isOwner) ? GSCOLOR_CHAT_PRIVATE_OWNER : GSCOLOR_CHAT_PRIVATE;
+		style = (isOwner)?GSCOLOR_CHAT_PRIVATE_OWNER:GSCOLOR_CHAT_PRIVATE;
 	}
 
 	UnicodeString name;
@@ -423,24 +422,24 @@ static handleUnicodeMessage(const char* nick, UnicodeString msg, Bool isPublic, 
 	// filters language
 //  if( TheGlobalData->m_languageFilterPref )
 //  {
-	TheLanguageFilter->filterLine(msg);
-	//	}
+    TheLanguageFilter->filterLine(msg);
+//	}
 
 	UnicodeString fullMsg;
 	if (isAction)
 	{
-		fullMsg.format(L"%ls %ls", name.str(), msg.str());
+		fullMsg.format( L"%ls %ls", name.str(), msg.str() );
 	}
 	else
 	{
-		fullMsg.format(L"[%ls] %ls", name.str(), msg.str());
+		fullMsg.format( L"[%ls] %ls", name.str(), msg.str() );
 	}
 	GameSpyAddText(fullMsg, style);
 }
 
-void GameSpyAddText(UnicodeString message, GameSpyColors color)
+void GameSpyAddText( UnicodeString message, GameSpyColors color )
 {
-	GameWindow* textWindow = NULL;
+	GameWindow *textWindow = NULL;
 
 	if (!textWindow)
 		textWindow = listboxLobbyChat;

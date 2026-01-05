@@ -39,16 +39,62 @@ class STLSpecialAlloc;
 // different .cpp files, so I bit the bullet and included it here.
 // PLEASE DO NOT ABUSE WINDOWS OR IT WILL BE REMOVED ENTIRELY. :-)
 //--------------------------------------------------------------------------------- System Includes
+
+// Windows-only headers (conditional for cross-platform support)
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
+#include <atlbase.h>
+#include <windows.h>
+#include <direct.h>
+#include <excpt.h>
+#include <imagehlp.h>
+#include <io.h>
+#include <lmcons.h>
+#if defined(_MSC_VER) && _MSC_VER < 1300
+#include <mapicode.h>
+#endif
+#include <mmsystem.h>
+#include <objbase.h>
+#include <ocidl.h>
+#include <process.h>
+#include <shellapi.h>
+#include <shlobj.h>
+#include <shlguid.h>
+#include <snmp.h>
+#include <tchar.h>
+#include <vfw.h>
+#include <winerror.h>
+#include <wininet.h>
+#include <winreg.h>
+#else
+// POSIX/Unix equivalents
+#include <unistd.h>
+#include <pthread.h>
+#endif
 
-// Cross-platform MSVC type definitions
-#include <Compat/msvc_types_compat.h>
-
+// Cross-platform standard library headers
 #include <assert.h>
 #include <ctype.h>
 #include <float.h>
 #include <Utility/fstream_adapter.h>
 #include <limits.h>
+#include <math.h>
+#include <memory.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/timeb.h>
+#include <sys/types.h>
+#include <time.h>
+
+// DirectInput is Windows-only
+#ifdef _WIN32
+#ifndef DIRECTINPUT_VERSION
+#	define DIRECTINPUT_VERSION	0x800
+#endif
+#include <dinput.h>
+#endif
 
 //------------------------------------------------------------------------------------ STL Includes
 // srj sez: no, include STLTypesdefs below, instead, thanks
@@ -89,3 +135,8 @@ class STLSpecialAlloc;
 
 #include "Common/Thing.h"
 #include "Common/UnicodeString.h"
+
+// CrossPlatform: Include D3DX math compatibility for non-Windows builds
+#ifndef _WIN32
+#include "Common/d3dx8_vulkan_math_compat.h"
+#endif

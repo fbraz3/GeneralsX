@@ -39,7 +39,6 @@ class Bridge;
 class Object;
 class Weapon;
 class PathfindZoneManager;
-class PathfindCell;  // Forward declaration
 
 // How close is close enough when moving.
 

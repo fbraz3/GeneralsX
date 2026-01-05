@@ -89,7 +89,7 @@ WindowMsgHandledType GadgetCheckBoxInput( GameWindow *window, UnsignedInt msg,
 				BitSet( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_MOUSE_ENTERING,
-																						(WindowMsgData)(uintptr_t)window,
+																						(WindowMsgData)window,
 																						mData1 );
 				//TheWindowManager->winSetFocus( window );
 
@@ -108,7 +108,7 @@ WindowMsgHandledType GadgetCheckBoxInput( GameWindow *window, UnsignedInt msg,
 				BitClear( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_MOUSE_LEAVING,
-																						(WindowMsgData)(uintptr_t)window,
+																						(WindowMsgData)window,
 																						mData1 );
 			}
 			break;
@@ -120,7 +120,7 @@ WindowMsgHandledType GadgetCheckBoxInput( GameWindow *window, UnsignedInt msg,
 		{
 
 			TheWindowManager->winSendSystemMsg( window->winGetOwner(), GGM_LEFT_DRAG,
-																					(WindowMsgData)(uintptr_t)window, mData1 );
+																					(WindowMsgData)window, mData1 );
 			break;
 
 		}
@@ -147,7 +147,7 @@ WindowMsgHandledType GadgetCheckBoxInput( GameWindow *window, UnsignedInt msg,
 			instData->m_state ^= WIN_STATE_SELECTED;
 
 			TheWindowManager->winSendSystemMsg( window->winGetOwner(), GBM_SELECTED,
-																					(WindowMsgData)(uintptr_t)window, mData1 );
+																					(WindowMsgData)window, mData1 );
 
 
 			break;
@@ -168,7 +168,7 @@ WindowMsgHandledType GadgetCheckBoxInput( GameWindow *window, UnsignedInt msg,
 			if( BitIsSet( instData->getState(), WIN_STATE_SELECTED ) )
 			{
 				TheWindowManager->winSendSystemMsg( instData->getOwner(), GBM_SELECTED_RIGHT,
-																						(WindowMsgData)(uintptr_t)window, mData1 );
+																						(WindowMsgData)window, mData1 );
 
 				BitClear( instData->m_state, WIN_STATE_SELECTED );
 			}
@@ -199,7 +199,7 @@ WindowMsgHandledType GadgetCheckBoxInput( GameWindow *window, UnsignedInt msg,
 
 						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																								GBM_SELECTED,
-																								(WindowMsgData)(uintptr_t)window,
+																								(WindowMsgData)window,
 																								0 );
 					}
 					break;
@@ -319,7 +319,7 @@ void GadgetCheckBoxSetText( GameWindow *g, UnicodeString text )
 	if( g == NULL )
 		return;
 
-	TheWindowManager->winSendSystemMsg( g, GGM_SET_LABEL, (WindowMsgData)(uintptr_t)&text, 0 );
+	TheWindowManager->winSendSystemMsg( g, GGM_SET_LABEL, (WindowMsgData)&text, 0 );
 
 }
 
@@ -340,7 +340,7 @@ void GadgetCheckBoxSetChecked( GameWindow *g, Bool isChecked)
 	}
 
 	TheWindowManager->winSendSystemMsg( g->winGetOwner(), GBM_SELECTED,
-																					(WindowMsgData)(uintptr_t)g, 0 );
+																					(WindowMsgData)g, 0 );
 
 }
 
@@ -362,7 +362,7 @@ void GadgetCheckBoxToggle( GameWindow *g)
 	}
 
 	TheWindowManager->winSendSystemMsg( g->winGetOwner(), GBM_SELECTED,
-																					(WindowMsgData)(uintptr_t)g, 0 );
+																					(WindowMsgData)g, 0 );
 
 }
 

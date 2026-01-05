@@ -128,7 +128,7 @@ public:
 
 	void writeReal(Real r);
 	void writeInt(Int i);
-	void writeByte(SignedByte b);
+	void writeByte(Byte b);
 	void writeAsciiString(const AsciiString& string);
 	void writeUnicodeString(UnicodeString string);
 	void writeArrayOfBytes(char *ptr, Int len);
@@ -220,7 +220,7 @@ public:
 
 	Real readReal(void);
 	Int readInt(void);
-	SignedByte readByte(void);
+	Byte readByte(void);
 
 	AsciiString readAsciiString(void);
 	UnicodeString readUnicodeString(void);

@@ -65,105 +65,100 @@
 //-----------------------------------------------------------------------------
 const FieldParse HeaderTemplateManager::m_headerFieldParseTable[] =
 {
-	{ "Font",								INI::parseQuotedAsciiString,						NULL, offsetof(HeaderTemplate, m_fontName) },
-	{ "Point",							INI::parseInt,										NULL, offsetof(HeaderTemplate, m_point) },
-	{ "Bold",								INI::parseBool,										NULL, offsetof(HeaderTemplate, m_bold) },
+	{ "Font",								INI::parseQuotedAsciiString,						NULL, offsetof( HeaderTemplate, m_fontName ) },
+	{ "Point",							INI::parseInt,										NULL, offsetof( HeaderTemplate, m_point) },
+	{ "Bold",								INI::parseBool,										NULL, offsetof( HeaderTemplate, m_bold ) },
 	{ NULL, NULL, NULL, 0 },
 };
 
-HeaderTemplateManager* TheHeaderTemplateManager = NULL;
+HeaderTemplateManager *TheHeaderTemplateManager = NULL;
 //-----------------------------------------------------------------------------
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-void INI::parseHeaderTemplateDefinition(INI* ini)
+void INI::parseHeaderTemplateDefinition( INI *ini )
 {
 	AsciiString name;
-	HeaderTemplate* hTemplate;
+	HeaderTemplate *hTemplate;
 
 	// read the name
 	const char* c = ini->getNextToken();
-	name.set(c);
+	name.set( c );
 
 	// find existing item if present
-	hTemplate = TheHeaderTemplateManager->findHeaderTemplate(name);
-	if (hTemplate == NULL)
+	hTemplate = TheHeaderTemplateManager->findHeaderTemplate( name );
+	if( hTemplate == NULL )
 	{
 
 		// allocate a new item
-		hTemplate = TheHeaderTemplateManager->newHeaderTemplate(name);
+		hTemplate = TheHeaderTemplateManager->newHeaderTemplate( name );
 
 	}
 	else
 	{
-		DEBUG_CRASH(("[LINE: %d in '%s'] Duplicate header Template %s found!", ini->getLineNum(), ini->getFilename().str(), name.str()));
+		DEBUG_CRASH(( "[LINE: %d in '%s'] Duplicate header Template %s found!", ini->getLineNum(), ini->getFilename().str(), name.str() ));
 	}
 	// parse the ini definition
-	ini->initFromINI(hTemplate, TheHeaderTemplateManager->getFieldParse());
+	ini->initFromINI( hTemplate, TheHeaderTemplateManager->getFieldParse() );
 
 }
 
-HeaderTemplate::HeaderTemplate(void) :
-	m_font(NULL),
-	m_point(0),
-	m_bold(FALSE)
+HeaderTemplate::HeaderTemplate( void ) :
+m_font(NULL),
+m_point(0),
+m_bold(FALSE)
 {
 	m_fontName.clear();
 	m_name.clear();
 }
 
-HeaderTemplate::~HeaderTemplate(void) {}
+HeaderTemplate::~HeaderTemplate( void ){}
 
-HeaderTemplateManager::HeaderTemplateManager(void)
-{
-}
+HeaderTemplateManager::HeaderTemplateManager( void )
+{}
 
-HeaderTemplateManager::~HeaderTemplateManager(void)
+HeaderTemplateManager::~HeaderTemplateManager( void )
 {
 	HeaderTemplateListIt it = m_headerTemplateList.begin();
-	while (it != m_headerTemplateList.end())
+	while(it != m_headerTemplateList.end())
 	{
-		HeaderTemplate* hTemplate = *it;
+		HeaderTemplate *hTemplate = *it;
 		delete hTemplate;
 		it = m_headerTemplateList.erase(it);
 
 	}
 }
 
-void HeaderTemplateManager::init(void)
+void HeaderTemplateManager::init( void )
 {
 	{
 		AsciiString fname;
-		fname.concat("Data");
-		fname.concat(GET_PATH_SEPARATOR());
-		fname.concat(GetRegistryLanguage());
-		fname.concat(GET_PATH_SEPARATOR());
-		fname.concat("HeaderTemplate");
+		fname.format("Data\\%s\\HeaderTemplate", GetRegistryLanguage().str());
 
 		INI ini;
-		ini.loadFileDirectory(fname, INI_LOAD_OVERWRITE, NULL);
+		ini.loadFileDirectory( fname, INI_LOAD_OVERWRITE, NULL );
 	}
 
 	populateGameFonts();
 }
 
-HeaderTemplate* HeaderTemplateManager::findHeaderTemplate(AsciiString name)
+HeaderTemplate *HeaderTemplateManager::findHeaderTemplate( AsciiString name )
 {
 	HeaderTemplateListIt it = m_headerTemplateList.begin();
-	while (it != m_headerTemplateList.end())
+	while(it != m_headerTemplateList.end())
 	{
-		HeaderTemplate* hTemplate = *it;
-		if (hTemplate->m_name.compare(name) == 0)
+		HeaderTemplate *hTemplate = *it;
+		if(hTemplate->m_name.compare(name) == 0)
 			return hTemplate;
 		++it;
 	}
 	return NULL;
 }
 
-HeaderTemplate* HeaderTemplateManager::newHeaderTemplate(AsciiString name)
+HeaderTemplate *HeaderTemplateManager::newHeaderTemplate( AsciiString name )
 {
-	HeaderTemplate* newHTemplate = NEW HeaderTemplate;
+	HeaderTemplate *newHTemplate = NEW HeaderTemplate;
 	DEBUG_ASSERTCRASH(newHTemplate, ("Unable to create a new Header Template in HeaderTemplateManager::newHeaderTemplate"));
-	if (!newHTemplate)
+	if(!newHTemplate)
 		return NULL;
 
 	newHTemplate->m_name = name;
@@ -172,10 +167,10 @@ HeaderTemplate* HeaderTemplateManager::newHeaderTemplate(AsciiString name)
 
 }
 
-GameFont* HeaderTemplateManager::getFontFromTemplate(AsciiString name)
+GameFont *HeaderTemplateManager::getFontFromTemplate( AsciiString name )
 {
-	HeaderTemplate* ht = findHeaderTemplate(name);
-	if (!ht)
+	HeaderTemplate *ht = findHeaderTemplate( name );
+	if(!ht)
 	{
 		//DEBUG_LOG(("HeaderTemplateManager::getFontFromTemplate - Could not find header %s", name.str()));
 		return NULL;
@@ -184,24 +179,24 @@ GameFont* HeaderTemplateManager::getFontFromTemplate(AsciiString name)
 	return ht->m_font;
 }
 
-HeaderTemplate* HeaderTemplateManager::getFirstHeader(void)
+HeaderTemplate *HeaderTemplateManager::getFirstHeader( void )
 {
 	HeaderTemplateListIt it = m_headerTemplateList.begin();
-	if (it == m_headerTemplateList.end())
+	if( it == m_headerTemplateList.end())
 		return NULL;
 
 	return *it;
 }
 
-HeaderTemplate* HeaderTemplateManager::getNextHeader(HeaderTemplate* ht)
+HeaderTemplate *HeaderTemplateManager::getNextHeader( HeaderTemplate *ht )
 {
 	HeaderTemplateListIt it = m_headerTemplateList.begin();
-	while (it != m_headerTemplateList.end())
+	while(it != m_headerTemplateList.end())
 	{
-		if (*it == ht)
+		if(*it == ht)
 		{
 			++it;
-			if (it == m_headerTemplateList.end())
+			if( it == m_headerTemplateList.end())
 				return NULL;
 			return *it;
 		}
@@ -211,7 +206,7 @@ HeaderTemplate* HeaderTemplateManager::getNextHeader(HeaderTemplate* ht)
 
 }
 
-void HeaderTemplateManager::headerNotifyResolutionChange(void)
+void HeaderTemplateManager::onResolutionChanged( void )
 {
 	populateGameFonts();
 }
@@ -219,15 +214,15 @@ void HeaderTemplateManager::headerNotifyResolutionChange(void)
 // PRIVATE FUNCTIONS //////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 
-void HeaderTemplateManager::populateGameFonts(void)
+void HeaderTemplateManager::populateGameFonts( void )
 {
 	HeaderTemplateListIt it = m_headerTemplateList.begin();
-	while (it != m_headerTemplateList.end())
+	while(it != m_headerTemplateList.end())
 	{
-		HeaderTemplate* hTemplate = *it;
+		HeaderTemplate *hTemplate = *it;
 		Real pointSize = TheGlobalLanguageData->adjustFontSize(hTemplate->m_point);
-		GameFont* font = TheFontLibrary->getFont(hTemplate->m_fontName, pointSize, hTemplate->m_bold);
-		DEBUG_ASSERTCRASH(font, ("HeaderTemplateManager::populateGameFonts - Could not find font %s %d", hTemplate->m_fontName.str(), hTemplate->m_point));
+		GameFont *font = TheFontLibrary->getFont(hTemplate->m_fontName, pointSize,hTemplate->m_bold);
+		DEBUG_ASSERTCRASH(font,("HeaderTemplateManager::populateGameFonts - Could not find font %s %d",hTemplate->m_fontName.str(), hTemplate->m_point));
 
 		hTemplate->m_font = font;
 

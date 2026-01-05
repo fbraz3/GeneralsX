@@ -91,7 +91,7 @@ DynamicShroudClearingRangeUpdate::DynamicShroudClearingRangeUpdate( Thing *thing
 
 
 	m_stateCountDown = md->m_shrinkDelay + md->m_shrinkTime;// total time
-	m_totalFrames = std::max(1,m_stateCountDown);
+	m_totalFrames = max(1,m_stateCountDown);
 	m_shrinkStartDeadline = m_stateCountDown - md->m_shrinkDelay;
 	m_growStartDeadline =   m_stateCountDown - md->m_growDelay;
 	m_sustainDeadline  = m_growStartDeadline - md->m_growTime;
@@ -238,7 +238,7 @@ UpdateSleepTime DynamicShroudClearingRangeUpdate::update( void )
 		{
 			animateGridDecals();
 
-			m_currentClearingRange += m_nativeClearingRange / std::max(1.0f, (Real)md->m_growTime);
+			m_currentClearingRange += m_nativeClearingRange / max(1.0f, (Real)md->m_growTime);
 			if (m_currentClearingRange >= m_nativeClearingRange)
 				m_state = DSCRU_SUSTAINING;
 			break;
@@ -251,7 +251,7 @@ UpdateSleepTime DynamicShroudClearingRangeUpdate::update( void )
 		}
 		case DSCRU_SHRINKING :
 		{
-			m_currentClearingRange -= (m_nativeClearingRange-md->m_finalVision) / std::max(1.0f, (Real)md->m_shrinkTime);
+			m_currentClearingRange -= (m_nativeClearingRange-md->m_finalVision) / max(1.0f, (Real)md->m_shrinkTime);
 			break;
 		}
 		case DSCRU_DONE_FOREVER :

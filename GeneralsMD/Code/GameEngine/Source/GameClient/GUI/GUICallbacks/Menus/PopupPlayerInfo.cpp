@@ -308,8 +308,8 @@ void BattleHonorTooltip(GameWindow *window,
 		return;
 	}
 
-	Int battleHonor = (Int)(uintptr_t)GadgetListBoxGetItemData( window, row, col );
-	Int extraValue = (Int)(uintptr_t)GadgetListBoxGetItemData( window, row - 1, col );
+	Int battleHonor = (Int)GadgetListBoxGetItemData( window, row, col );
+	Int extraValue = (Int)GadgetListBoxGetItemData( window, row - 1, col );
 	if (battleHonor == 0)
 	{
 		//DEBUG_CRASH(("No Battle Honor in listbox row %d, col %d!", row, col));
@@ -501,7 +501,7 @@ void InsertBattleHonor(GameWindow *list, const Image *image, Bool enabled, Int i
 	{
 		column = 0;
 		row = row + 1 + rowsToSkip;
-		rowsToSkip = std::max(rowsToSkip-1, 0);
+		rowsToSkip = max(rowsToSkip-1, 0);
 	}
 }
 
@@ -789,7 +789,7 @@ Int CalculateRank( const PSPlayerStats& stats )
 		rankPoints += 1 * TheRankPointValues->m_completedSoloCampaigns;
 	}
 
-	rankPoints = std::max(0, rankPoints); // clip off negative values, since discons can push us below 0.
+	rankPoints = max(0, rankPoints); // clip off negative values, since discons can push us below 0.
 
 	return rankPoints;
 
@@ -918,7 +918,7 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 	win = findWindow(NULL, parentWindowName, "StaticTextStreakValue");
 	if(win)
 	{
-		Int streak = std::max(stats.lossesInARow, stats.winsInARow);
+		Int streak = max(stats.lossesInARow, stats.winsInARow);
 		uStr.format(L"%d", streak);
 		GadgetStaticTextSetText(win, uStr);
 	}
@@ -1321,6 +1321,18 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 	GadgetCheckBoxSetChecked(checkBoxAsianFont,!pref.getDisallowAsianText());
 	GadgetCheckBoxSetChecked(checkBoxNonAsianFont,!pref.getDisallowNonAsianText());
 
+	OSVERSIONINFO	osvi;
+	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
+	if (GetVersionEx(&osvi))
+	{	//check if we're running Win9x variant since they may need different fonts
+		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
+		{
+			if (checkBoxAsianFont)
+				checkBoxAsianFont->winEnable(FALSE);
+			if (checkBoxNonAsianFont)
+				checkBoxNonAsianFont->winEnable(FALSE);
+		}
+	}
 
 	//TheWindowManager->winSetModal(parent);
 }
@@ -1379,7 +1391,7 @@ WindowMsgHandledType GameSpyPlayerInfoOverlayInput( GameWindow *window, Unsigned
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)(uintptr_t)buttonClose, buttonCloseID );
+																							(WindowMsgData)buttonClose, buttonCloseID );
 
 					}
 
@@ -1513,7 +1525,7 @@ WindowMsgHandledType GameSpyPlayerInfoOverlaySystem( GameWindow *window, Unsigne
 	return MSG_HANDLED;
 }
 
-void messageBoxYes( void )
+static void messageBoxYes( void )
 {
 	BuddyRequest breq;
 	breq.buddyRequestType = BuddyRequest::BUDDYREQUEST_DELETEACCT;

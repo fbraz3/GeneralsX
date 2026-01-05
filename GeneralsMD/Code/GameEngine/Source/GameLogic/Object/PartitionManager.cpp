@@ -332,14 +332,14 @@ inline Real maxReal(Real a, Real b)
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
-void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
-void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
-void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
-void hLineAddThreat(Int x1, Int x2, Int y, void *threatValueParms);
-void hLineRemoveThreat(Int x1, Int x2, Int y, void *threatValueParms);
-void hLineAddValue(Int x1, Int x2, Int y, void *threatValueParms);
-void hLineRemoveValue(Int x1, Int x2, Int y, void *threatValueParms);
+static void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
+static void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
+static void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
+static void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
+static void hLineAddThreat(Int x1, Int x2, Int y, void *threatValueParms);
+static void hLineRemoveThreat(Int x1, Int x2, Int y, void *threatValueParms);
+static void hLineAddValue(Int x1, Int x2, Int y, void *threatValueParms);
+static void hLineRemoveValue(Int x1, Int x2, Int y, void *threatValueParms);
 
 static void projectCoord3D(Coord3D *coord, const Coord3D *unitDir, Real dist);
 static void flipCoord3D(Coord3D *coord);
@@ -1273,7 +1273,7 @@ void PartitionCell::addLooker(Int playerIndex)
 {
 	CellShroudStatus oldShroud = getShroudStatusForPlayer( playerIndex );
 	// The decreasing Algorithm: A 1 will go straight to -1, otherwise it just gets decremented
-	m_shroudLevel[playerIndex].m_currentShroud = std::min( m_shroudLevel[playerIndex].m_currentShroud - 1, -1 );
+	m_shroudLevel[playerIndex].m_currentShroud = min( m_shroudLevel[playerIndex].m_currentShroud - 1, -1 );
 
 	CellShroudStatus newShroud = getShroudStatusForPlayer( playerIndex );
 
@@ -1303,9 +1303,9 @@ void PartitionCell::addLooker(Int playerIndex)
 void PartitionCell::removeLooker(Int playerIndex)
 {
 	CellShroudStatus oldShroud = getShroudStatusForPlayer( playerIndex );
-	// the increasing Algorithm: a -1 goes up to std::min(1,activeLevel), otherwise it just gets incremented
+	// the increasing Algorithm: a -1 goes up to min(1,activeLevel), otherwise it just gets incremented
 	if( m_shroudLevel[playerIndex].m_currentShroud == -1 )
-		m_shroudLevel[playerIndex].m_currentShroud = std::min( m_shroudLevel[playerIndex].m_activeShroudLevel, (Short)1 );
+		m_shroudLevel[playerIndex].m_currentShroud = min( m_shroudLevel[playerIndex].m_activeShroudLevel, (Short)1 );
 	else
 	{
 		DEBUG_ASSERTCRASH( m_shroudLevel[playerIndex].m_currentShroud < 0, ("Someone is RemoveLooker-ing on a cell that is not looked at.  This will make a permanent shroud blob.") );
@@ -5622,12 +5622,12 @@ static int cellValueProc(PartitionCell* cell, void* userData)
 }
 
 // -----------------------------------------------------------------------------
-void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
+static void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(uintptr_t)(playerIndexVoid);
+	Int playerIndex = (Int)(playerIndexVoid);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)
@@ -5639,12 +5639,12 @@ void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 }
 
 // -----------------------------------------------------------------------------
-void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
+static void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(uintptr_t)(playerIndexVoid);
+	Int playerIndex = (Int)(playerIndexVoid);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)
@@ -5656,12 +5656,12 @@ void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 }
 
 // -----------------------------------------------------------------------------
-void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
+static void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(uintptr_t)(playerIndexVoid);
+	Int playerIndex = (Int)(playerIndexVoid);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)
@@ -5673,12 +5673,12 @@ void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
 }
 
 // -----------------------------------------------------------------------------
-void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
+static void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(uintptr_t)(playerIndexVoid);
+	Int playerIndex = (Int)(playerIndexVoid);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)
@@ -5690,7 +5690,7 @@ void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
 }
 
 // -----------------------------------------------------------------------------
-void hLineAddThreat(Int x1, Int x2, Int y, void *threatValueParms)
+static void hLineAddThreat(Int x1, Int x2, Int y, void *threatValueParms)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
@@ -5718,7 +5718,7 @@ void hLineAddThreat(Int x1, Int x2, Int y, void *threatValueParms)
 }
 
 // -----------------------------------------------------------------------------
-void hLineRemoveThreat(Int x1, Int x2, Int y, void *threatValueParms)
+static void hLineRemoveThreat(Int x1, Int x2, Int y, void *threatValueParms)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
@@ -5746,7 +5746,7 @@ void hLineRemoveThreat(Int x1, Int x2, Int y, void *threatValueParms)
 }
 
 // -----------------------------------------------------------------------------
-void hLineAddValue(Int x1, Int x2, Int y, void *threatValueParms)
+static void hLineAddValue(Int x1, Int x2, Int y, void *threatValueParms)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
@@ -5774,7 +5774,7 @@ void hLineAddValue(Int x1, Int x2, Int y, void *threatValueParms)
 }
 
 // -----------------------------------------------------------------------------
-void hLineRemoveValue(Int x1, Int x2, Int y, void *threatValueParms)
+static void hLineRemoveValue(Int x1, Int x2, Int y, void *threatValueParms)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;

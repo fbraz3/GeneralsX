@@ -24,7 +24,7 @@
 #include "Compression.h"
 #include "LZHCompress/NoxCompress.h"
 
-#define __MACTYPES__
+// __MACTYPES__ define removed - unnecessary on modern macOS and conflicts with zlib headers
 #include <zlib.h>
 
 #include "EAC/codex.h"
@@ -253,7 +253,15 @@ Int CompressionManager::compressData( CompressionType compType, void *srcVoid, I
 		*(Int *)(dest+4) = 0;
 
 		unsigned long outLen = destLen;
-		Int err = compress2(reinterpret_cast<unsigned char*>(dest+8), &outLen, reinterpret_cast<const unsigned char*>(src), srcLen, level);
+		// zlib on macOS/Unix uses Bytef* which may be different from unsigned char*
+		// Use reinterpret_cast to the proper zlib type to avoid type mismatch
+		Int err = compress2(
+			reinterpret_cast<Bytef*>(dest+8),
+			&outLen,
+			reinterpret_cast<const Bytef*>(src),
+			srcLen,
+			level
+		);
 
 		if (err == Z_OK || err == Z_STREAM_END)
 		{
@@ -320,7 +328,14 @@ Int CompressionManager::decompressData( void *srcVoid, Int srcLen, void *destVoi
 	if (compType >= COMPRESSION_ZLIB1 && compType <= COMPRESSION_ZLIB9)
 	{
 		unsigned long outLen = destLen;
-		Int err = uncompress(reinterpret_cast<unsigned char*>(dest), &outLen, reinterpret_cast<const unsigned char*>(src+8), srcLen-8);
+		// zlib on macOS/Unix uses Bytef* which may be different from unsigned char*
+		// Use reinterpret_cast to the proper zlib type to avoid type mismatch
+		Int err = uncompress(
+			reinterpret_cast<Bytef*>(dest),
+			&outLen,
+			reinterpret_cast<const Bytef*>(src+8),
+			srcLen-8
+		);
 		if (err == Z_OK || err == Z_STREAM_END)
 		{
 			return outLen;

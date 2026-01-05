@@ -234,7 +234,7 @@ bool changeLogicTimeScale(FpsValueChange change)
 	// Ceil the value at the max render fps value plus a bit so that the next fps
 	// value decrease would undercut the max render fps at the correct step value.
 	// Example: render fps 72 -> logic value ceiled to 75 -> decreased to 70.
-	logicTimeScaleFps = std::min(logicTimeScaleFps, maxRenderFps + maxRenderRemainder);
+	logicTimeScaleFps = min(logicTimeScaleFps, maxRenderFps + maxRenderRemainder);
 	logicTimeScaleFps = LogicTimeScaleFpsPreset::changeFpsValue(logicTimeScaleFps, change);
 
 	// Set value before potentially disabling it.
@@ -5429,8 +5429,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_DEBUG_OBJECT_ID_PERFORMANCE:
 		{
-			static int64_t startTime64;
-			static int64_t endTime64,freq64;
+			static __int64 startTime64;
+			static __int64 endTime64,freq64;
 			QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 			QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 			Int numberLookups = 10000;
@@ -5483,8 +5483,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_DEBUG_DRAWABLE_ID_PERFORMANCE:
 		{
-			static int64_t startTime64;
-			static int64_t endTime64,freq64;
+			static __int64 startTime64;
+			static __int64 endTime64,freq64;
 			QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 			QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 			Int numberLookups = 10000;

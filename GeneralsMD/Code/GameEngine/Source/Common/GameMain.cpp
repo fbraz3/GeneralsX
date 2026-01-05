@@ -39,52 +39,27 @@
 Int GameMain()
 {
 	int exitcode = 0;
-	printf("GameMain(): Starting\n");
-	
-
 	// initialize the game engine using factory function
 	TheFramePacer = new FramePacer();
-	printf("GameMain(): FramePacer created\n");
-	
-
 	TheFramePacer->enableFramesPerSecondLimit(TRUE);
 	TheGameEngine = CreateGameEngine();
-	printf("GameMain(): GameEngine created: %p\n", (void*)TheGameEngine);
-	
-
-	printf("GameMain(): Calling TheGameEngine->init()...\n");
-	
 	TheGameEngine->init();
-	printf("GameMain(): TheGameEngine->init() completed\n");
-	
 
 	if (!TheGlobalData->m_simulateReplays.empty())
 	{
-		printf("GameMain(): Simulating replays\n");
-		
 		exitcode = ReplaySimulation::simulateReplays(TheGlobalData->m_simulateReplays, TheGlobalData->m_simulateReplayJobs);
 	}
 	else
 	{
 		// run it
-		printf("GameMain(): Calling TheGameEngine->execute()...\n");
-		
 		TheGameEngine->execute();
-		printf("GameMain(): TheGameEngine->execute() completed\n");
-		
 	}
 
 	// since execute() returned, we are exiting the game
-	printf("GameMain(): Cleaning up\n");
-	
-
 	delete TheFramePacer;
 	TheFramePacer = NULL;
 	delete TheGameEngine;
 	TheGameEngine = NULL;
-
-	printf("GameMain(): Returning exitcode = %d\n", exitcode);
-	
 
 	return exitcode;
 }

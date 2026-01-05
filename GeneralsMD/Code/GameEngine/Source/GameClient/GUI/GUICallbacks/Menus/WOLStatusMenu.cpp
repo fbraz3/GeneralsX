@@ -19,21 +19,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
-
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLLoginMenu.cpp
-
 // Author: Chris Huybregts, November 2001
-
 // Description: Lan Lobby Menu
-
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameEngine.h"
@@ -50,14 +45,11 @@
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
-
 // window ids ------------------------------------------------------------------------------
-
 static NameKeyType parentWOLStatusID = NAMEKEY_INVALID;
 static NameKeyType buttonDisconnectID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
-
 static GameWindow *parentWOLStatus = NULL;
 static GameWindow *buttonDisconnect = NULL;
 GameWindow *progressTextWindow = NULL;
@@ -142,7 +134,7 @@ WindowMsgHandledType WOLStatusMenuInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)(uintptr_t)buttonDisconnect, buttonDisconnectID );
+																							(WindowMsgData)buttonDisconnect, buttonDisconnectID );
 
 					}
 
@@ -222,4 +214,3 @@ WindowMsgHandledType WOLStatusMenuSystem( GameWindow *window, UnsignedInt msg,
 
 	return MSG_HANDLED;
 }
-

@@ -68,7 +68,7 @@
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-enum { MAX_BUTTONS = 8 };
+enum { MAX_BUTTONS = 8};
 static NameKeyType buttonPlayerID[MAX_BUTTONS] = { NAMEKEY_INVALID,NAMEKEY_INVALID,
 																										NAMEKEY_INVALID,NAMEKEY_INVALID,
 																										NAMEKEY_INVALID,NAMEKEY_INVALID,
@@ -77,26 +77,26 @@ static NameKeyType staticTextPlayerID[MAX_BUTTONS] = { NAMEKEY_INVALID,NAMEKEY_I
 																										NAMEKEY_INVALID,NAMEKEY_INVALID,
 																										NAMEKEY_INVALID,NAMEKEY_INVALID,
 																										NAMEKEY_INVALID,NAMEKEY_INVALID };
-static GameWindow* ObserverPlayerInfoWindow = NULL;
-static GameWindow* ObserverPlayerListWindow = NULL;
+static GameWindow *ObserverPlayerInfoWindow = NULL;
+static GameWindow *ObserverPlayerListWindow = NULL;
 
-static GameWindow* buttonPlayer[MAX_BUTTONS] = { NULL,NULL,NULL,NULL,
+static GameWindow *buttonPlayer[MAX_BUTTONS] = {NULL,NULL,NULL,NULL,
 																							NULL,NULL,NULL,NULL };
-static GameWindow* staticTextPlayer[MAX_BUTTONS] = { NULL,NULL,NULL,NULL,
+static GameWindow *staticTextPlayer[MAX_BUTTONS] = {NULL,NULL,NULL,NULL,
 																							NULL,NULL,NULL,NULL };
 
 
 static NameKeyType buttonCancelID = NAMEKEY_INVALID;
 
-static GameWindow* winFlag = NULL;
-static GameWindow* winGeneralPortrait = NULL;
+static GameWindow *winFlag = NULL;
+static GameWindow *winGeneralPortrait = NULL;
 // TheSuperHackers @tweak Allow idle worker selection for observers.
-static GameWindow* buttonIdleWorker = NULL;
-static GameWindow* staticTextNumberOfUnits = NULL;
-static GameWindow* staticTextNumberOfBuildings = NULL;
-static GameWindow* staticTextNumberOfUnitsKilled = NULL;
-static GameWindow* staticTextNumberOfUnitsLost = NULL;
-static GameWindow* staticTextPlayerName = NULL;
+static GameWindow *buttonIdleWorker = NULL;
+static GameWindow *staticTextNumberOfUnits = NULL;
+static GameWindow *staticTextNumberOfBuildings = NULL;
+static GameWindow *staticTextNumberOfUnitsKilled = NULL;
+static GameWindow *staticTextNumberOfUnitsLost = NULL;
+static GameWindow *staticTextPlayerName = NULL;
 
 static NameKeyType s_replayObserverNameKey = NAMEKEY_INVALID;
 
@@ -105,7 +105,7 @@ static NameKeyType s_replayObserverNameKey = NAMEKEY_INVALID;
 //-----------------------------------------------------------------------------
 
 
-void ControlBar::initObserverControls(void)
+void ControlBar::initObserverControls( void )
 {
 	ObserverPlayerInfoWindow = TheWindowManager->winGetWindowFromId(NULL, TheNameKeyGenerator->nameToKey("ControlBar.wnd:ObserverPlayerInfoWindow"));
 	ObserverPlayerListWindow = TheWindowManager->winGetWindowFromId(NULL, TheNameKeyGenerator->nameToKey("ControlBar.wnd:ObserverPlayerListWindow"));
@@ -114,11 +114,11 @@ void ControlBar::initObserverControls(void)
 	{
 		AsciiString tmpString;
 		tmpString.format("ControlBar.wnd:ButtonPlayer%d", i);
-		buttonPlayerID[i] = TheNameKeyGenerator->nameToKey(tmpString);
-		buttonPlayer[i] = TheWindowManager->winGetWindowFromId(ObserverPlayerListWindow, buttonPlayerID[i]);
+		buttonPlayerID[i] = TheNameKeyGenerator->nameToKey( tmpString );
+		buttonPlayer[i] = TheWindowManager->winGetWindowFromId( ObserverPlayerListWindow, buttonPlayerID[i] );
 		tmpString.format("ControlBar.wnd:StaticTextPlayer%d", i);
-		staticTextPlayerID[i] = TheNameKeyGenerator->nameToKey(tmpString);
-		staticTextPlayer[i] = TheWindowManager->winGetWindowFromId(ObserverPlayerListWindow, staticTextPlayerID[i]);
+		staticTextPlayerID[i] = TheNameKeyGenerator->nameToKey( tmpString );
+		staticTextPlayer[i] = TheWindowManager->winGetWindowFromId( ObserverPlayerListWindow, staticTextPlayerID[i] );
 	}
 
 	staticTextNumberOfUnits = TheWindowManager->winGetWindowFromId(NULL, TheNameKeyGenerator->nameToKey("ControlBar.wnd:StaticTextNumberOfUnits"));
@@ -136,7 +136,7 @@ void ControlBar::initObserverControls(void)
 }
 
 //-------------------------------------------------------------------------------------------------
-void ControlBar::setObserverLookAtPlayer(Player* player)
+void ControlBar::setObserverLookAtPlayer(Player *player)
 {
 	if (player != NULL && player == ThePlayerList->findPlayerWithNameKey(s_replayObserverNameKey))
 	{
@@ -150,7 +150,7 @@ void ControlBar::setObserverLookAtPlayer(Player* player)
 }
 
 //-------------------------------------------------------------------------------------------------
-void ControlBar::setObservedPlayer(Player* player)
+void ControlBar::setObservedPlayer(Player *player)
 {
 	if (player != NULL && player == ThePlayerList->findPlayerWithNameKey(s_replayObserverNameKey))
 	{
@@ -166,78 +166,78 @@ void ControlBar::setObservedPlayer(Player* player)
 //-------------------------------------------------------------------------------------------------
 /** System callback for the ControlBarObserverSystem */
 //-------------------------------------------------------------------------------------------------
-WindowMsgHandledType ControlBarObserverSystem(GameWindow* window, UnsignedInt msg,
-	WindowMsgData mData1, WindowMsgData mData2)
+WindowMsgHandledType ControlBarObserverSystem( GameWindow *window, UnsignedInt msg,
+																			 WindowMsgData mData1, WindowMsgData mData2 )
 {
 	static NameKeyType buttonCommunicator = NAMEKEY_INVALID;
 
-	switch (msg)
+	switch( msg )
 	{
 		// --------------------------------------------------------------------------------------------
-	case GWM_CREATE:
-	{
-		break;
-
-	}
-
-	//---------------------------------------------------------------------------------------------
-	case GBM_MOUSE_ENTERING:
-	case GBM_MOUSE_LEAVING:
-	{
-		break;
-	}
-
-	//---------------------------------------------------------------------------------------------
-	case GBM_SELECTED:
-	case GBM_SELECTED_RIGHT:
-	{
-		GameWindow* control = (GameWindow*)mData1;
-
-		Int controlID = control->winGetWindowId();
-		if (controlID == buttonCancelID)
+		case GWM_CREATE:
 		{
-			rts::changeObservedPlayer(NULL);
+				break;
 
-			ObserverPlayerInfoWindow->winHide(TRUE);
-			ObserverPlayerListWindow->winHide(FALSE);
-			buttonIdleWorker->winHide(TRUE);
-			TheControlBar->populateObserverList();
 		}
 
-		for (Int i = 0; i < MAX_BUTTONS; ++i)
+		//---------------------------------------------------------------------------------------------
+		case GBM_MOUSE_ENTERING:
+		case GBM_MOUSE_LEAVING:
 		{
-			if (controlID == buttonPlayerID[i])
+			break;
+		}
+
+		//---------------------------------------------------------------------------------------------
+		case GBM_SELECTED:
+		case GBM_SELECTED_RIGHT:
+		{
+			GameWindow *control = (GameWindow *)mData1;
+
+			Int controlID = control->winGetWindowId();
+			if( controlID == buttonCancelID)
 			{
-				Player* player = static_cast<Player*>(GadgetButtonGetData(buttonPlayer[i]));
-				rts::changeObservedPlayer(player);
+				rts::changeObservedPlayer(NULL);
 
-				ObserverPlayerInfoWindow->winHide(FALSE);
-				ObserverPlayerListWindow->winHide(TRUE);
-
-				if (TheControlBar->getObserverLookAtPlayer())
-					TheControlBar->populateObserverInfoWindow();
-
-				return MSG_HANDLED;
+				ObserverPlayerInfoWindow->winHide(TRUE);
+				ObserverPlayerListWindow->winHide(FALSE);
+				buttonIdleWorker->winHide(TRUE);
+				TheControlBar->populateObserverList();
 			}
-		}
+
+			for(Int i = 0; i <MAX_BUTTONS; ++i)
+			{
+				if( controlID == buttonPlayerID[i])
+				{
+					Player* player = static_cast<Player*>(GadgetButtonGetData(buttonPlayer[i]));
+					rts::changeObservedPlayer(player);
+
+					ObserverPlayerInfoWindow->winHide(FALSE);
+					ObserverPlayerListWindow->winHide(TRUE);
+
+					if(TheControlBar->getObserverLookAtPlayer())
+						TheControlBar->populateObserverInfoWindow();
+
+					return MSG_HANDLED;
+				}
+			}
 
 		//	if( controlID == buttonCommunicator && TheGameLogic->getGameMode() == GAME_INTERNET )
 	/*
 		{
-				popupCommunicatorLayout = TheWindowManager->winCreateLayout( AsciiString( "Menus\\PopupCommunicator.wnd" ) );
+				popupCommunicatorLayout = TheWindowManager->winCreateLayout( "Menus/PopupCommunicator.wnd" );
 				popupCommunicatorLayout->runInit();
 				popupCommunicatorLayout->hide( FALSE );
 				popupCommunicatorLayout->bringForward();
 			}
 */
 
-		break;
+			break;
 
-	}
+		}
 
-	//---------------------------------------------------------------------------------------------
-	default:
-		return MSG_IGNORED;
+		//---------------------------------------------------------------------------------------------
+		default:
+			return MSG_IGNORED;
 
 	}
 
@@ -249,35 +249,35 @@ WindowMsgHandledType ControlBarObserverSystem(GameWindow* window, UnsignedInt ms
 // PRIVATE FUNCTIONS //////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 
-void ControlBar::populateObserverList(void)
+void ControlBar::populateObserverList( void )
 {
 	Int currentButton = 0, i;
-	if (TheRecorder->isMultiplayer())
+	if(TheRecorder->isMultiplayer())
 	{
 
 		for (i = 0; i < MAX_SLOTS; ++i)
 		{
 			AsciiString name;
 			name.format("player%d", i);
-			Player* p = ThePlayerList->findPlayerWithNameKey(TheNameKeyGenerator->nameToKey(name));
-			if (p)
+			Player *p = ThePlayerList->findPlayerWithNameKey(TheNameKeyGenerator->nameToKey(name));
+			if(p)
 			{
-				if (p->isPlayerObserver())
+				if(p->isPlayerObserver())
 					continue;
 				DEBUG_ASSERTCRASH(currentButton < MAX_BUTTONS, ("ControlBar::populateObserverList trying to populate more buttons then we have"));
-				GadgetButtonSetData(buttonPlayer[currentButton], (void*)p);
-				GadgetButtonSetEnabledImage(buttonPlayer[currentButton], p->getPlayerTemplate()->getEnabledImage());
+				GadgetButtonSetData(buttonPlayer[currentButton], (void *)p);
+				GadgetButtonSetEnabledImage( buttonPlayer[currentButton], p->getPlayerTemplate()->getEnabledImage() );
 				//GadgetButtonSetHiliteImage( buttonPlayer[currentButton], p->getPlayerTemplate()->getHiliteImage() );
 				//GadgetButtonSetHiliteSelectedImage( buttonPlayer[currentButton], p->getPlayerTemplate()->getPushedImage() );
 				//GadgetButtonSetDisabledImage( buttonPlayer[currentButton], p->getPlayerTemplate()->getDisabledImage() );
 				buttonPlayer[currentButton]->winSetTooltip(p->getPlayerDisplayName());
 				buttonPlayer[currentButton]->winHide(FALSE);
-				buttonPlayer[currentButton]->winSetStatus(WIN_STATUS_USE_OVERLAY_STATES);
+				buttonPlayer[currentButton]->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
 
-				const GameSlot* slot = TheGameInfo->getConstSlot(i);
+				const GameSlot *slot = TheGameInfo->getConstSlot(i);
 				Color playerColor = p->getPlayerColor();
 				Color backColor = GameMakeColor(0, 0, 0, 255);
-				staticTextPlayer[currentButton]->winSetEnabledTextColors(playerColor, backColor);
+				staticTextPlayer[currentButton]->winSetEnabledTextColors( playerColor, backColor );
 				staticTextPlayer[currentButton]->winHide(FALSE);
 				AsciiString teamStr;
 				teamStr.format("Team:%d", slot->getTeamNumber() + 1);
@@ -288,12 +288,12 @@ void ControlBar::populateObserverList(void)
 				text.format(TheGameText->fetch("CONTROLBAR:ObsPlayerLabel"), p->getPlayerDisplayName().str(),
 					TheGameText->fetch(teamStr).str());
 
-				GadgetStaticTextSetText(staticTextPlayer[currentButton], text);
+				GadgetStaticTextSetText(staticTextPlayer[currentButton], text );
 
 				++currentButton;
 			}
 		}
-		for (currentButton; currentButton < MAX_BUTTONS; ++currentButton)
+		for(currentButton; currentButton<MAX_BUTTONS; ++currentButton)
 		{
 			buttonPlayer[currentButton]->winHide(TRUE);
 			staticTextPlayer[currentButton]->winHide(TRUE);
@@ -301,24 +301,24 @@ void ControlBar::populateObserverList(void)
 	}
 	else
 	{
-		for (i = 0; i < MAX_PLAYER_COUNT; ++i)
+		for(i =0; i < MAX_PLAYER_COUNT; ++i)
 		{
-			Player* p = ThePlayerList->getNthPlayer(i);
-			if (p && !p->isPlayerObserver() && p->getPlayerType() == PLAYER_HUMAN)
+			Player *p = ThePlayerList->getNthPlayer(i);
+			if(p && !p->isPlayerObserver() && p->getPlayerType() == PLAYER_HUMAN)
 			{
 				DEBUG_ASSERTCRASH(currentButton < MAX_BUTTONS, ("ControlBar::populateObserverList trying to populate more buttons then we have"));
-				GadgetButtonSetData(buttonPlayer[currentButton], (void*)p);
-				GadgetButtonSetEnabledImage(buttonPlayer[currentButton], p->getPlayerTemplate()->getEnabledImage());
+				GadgetButtonSetData(buttonPlayer[currentButton], (void *)p);
+				GadgetButtonSetEnabledImage( buttonPlayer[currentButton], p->getPlayerTemplate()->getEnabledImage() );
 				//GadgetButtonSetHiliteImage( buttonPlayer[currentButton], p->getPlayerTemplate()->getHiliteImage() );
 				//GadgetButtonSetHiliteSelectedImage( buttonPlayer[currentButton], p->getPlayerTemplate()->getPushedImage() );
 				//GadgetButtonSetDisabledImage( buttonPlayer[currentButton], p->getPlayerTemplate()->getDisabledImage() );
 				buttonPlayer[currentButton]->winSetTooltip(p->getPlayerDisplayName());
 				buttonPlayer[currentButton]->winHide(FALSE);
-				buttonPlayer[currentButton]->winSetStatus(WIN_STATUS_USE_OVERLAY_STATES);
+				buttonPlayer[currentButton]->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
 
 				Color playerColor = p->getPlayerColor();
 				Color backColor = GameMakeColor(0, 0, 0, 255);
-				staticTextPlayer[currentButton]->winSetEnabledTextColors(playerColor, backColor);
+				staticTextPlayer[currentButton]->winSetEnabledTextColors( playerColor, backColor );
 				staticTextPlayer[currentButton]->winHide(FALSE);
 				GadgetStaticTextSetText(staticTextPlayer[currentButton], p->getPlayerDisplayName());
 
@@ -326,7 +326,7 @@ void ControlBar::populateObserverList(void)
 				break;
 			}
 		}
-		for (currentButton; currentButton < MAX_BUTTONS; ++currentButton)
+		for(currentButton; currentButton<MAX_BUTTONS; ++currentButton)
 		{
 			buttonPlayer[currentButton]->winHide(TRUE);
 			staticTextPlayer[currentButton]->winHide(TRUE);
@@ -334,12 +334,12 @@ void ControlBar::populateObserverList(void)
 	}
 }
 
-void ControlBar::populateObserverInfoWindow(void)
+void ControlBar::populateObserverInfoWindow ( void )
 {
-	if (ObserverPlayerInfoWindow->winIsHidden())
+	if(ObserverPlayerInfoWindow->winIsHidden())
 		return;
 
-	if (!m_observerLookAtPlayer)
+	if( !m_observerLookAtPlayer )
 	{
 		ObserverPlayerInfoWindow->winHide(TRUE);
 		ObserverPlayerListWindow->winHide(FALSE);
@@ -349,11 +349,11 @@ void ControlBar::populateObserverInfoWindow(void)
 	}
 
 	UnicodeString uString;
-	KindOfMaskType mask, clearmask;
+	KindOfMaskType mask,clearmask;
 	mask.set(KINDOF_SCORE);
 	clearmask.set(KINDOF_STRUCTURE);
 
-	uString.format(L"%d", m_observerLookAtPlayer->countObjects(mask, clearmask));
+	uString.format(L"%d",m_observerLookAtPlayer->countObjects(mask,clearmask));
 	GadgetStaticTextSetText(staticTextNumberOfUnits, uString);
 
 	Int numBuildings = 0;
@@ -361,24 +361,24 @@ void ControlBar::populateObserverInfoWindow(void)
 	mask.set(KINDOF_SCORE);
 	mask.set(KINDOF_STRUCTURE);
 	clearmask.clear();
-	numBuildings = m_observerLookAtPlayer->countObjects(mask, clearmask);
+	numBuildings = m_observerLookAtPlayer->countObjects(mask,clearmask);
 	mask.clear();
 	mask.set(KINDOF_SCORE_CREATE);
 	mask.set(KINDOF_STRUCTURE);
-	numBuildings += m_observerLookAtPlayer->countObjects(mask, clearmask);
+	numBuildings += m_observerLookAtPlayer->countObjects(mask,clearmask);
 	mask.clear();
 	mask.set(KINDOF_SCORE_DESTROY);
 	mask.set(KINDOF_STRUCTURE);
-	numBuildings += m_observerLookAtPlayer->countObjects(mask, clearmask);
-	uString.format(L"%d", numBuildings);
+	numBuildings += m_observerLookAtPlayer->countObjects(mask,clearmask);
+	uString.format(L"%d",numBuildings);
 	GadgetStaticTextSetText(staticTextNumberOfBuildings, uString);
-	uString.format(L"%d", m_observerLookAtPlayer->getScoreKeeper()->getTotalUnitsDestroyed());
+	uString.format(L"%d",m_observerLookAtPlayer->getScoreKeeper()->getTotalUnitsDestroyed());
 	GadgetStaticTextSetText(staticTextNumberOfUnitsKilled, uString);
-	uString.format(L"%d", m_observerLookAtPlayer->getScoreKeeper()->getTotalUnitsLost());
+	uString.format(L"%d",m_observerLookAtPlayer->getScoreKeeper()->getTotalUnitsLost());
 	GadgetStaticTextSetText(staticTextNumberOfUnitsLost, uString);
 	GadgetStaticTextSetText(staticTextPlayerName, m_observerLookAtPlayer->getPlayerDisplayName());
 	Color color = m_observerLookAtPlayer->getPlayerColor();
-	staticTextPlayerName->winSetEnabledTextColors(color, GameMakeColor(0, 0, 0, 255));
+	staticTextPlayerName->winSetEnabledTextColors(color, GameMakeColor(0,0,0,255));
 	winFlag->winSetEnabledImage(0, m_observerLookAtPlayer->getPlayerTemplate()->getFlagWaterMarkImage());
 	winGeneralPortrait->winHide(FALSE);
 	buttonIdleWorker->winHide(FALSE);

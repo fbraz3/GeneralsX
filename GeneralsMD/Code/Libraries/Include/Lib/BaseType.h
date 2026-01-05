@@ -32,6 +32,10 @@
 #include "Lib/BaseTypeCore.h"
 #include "Lib/trig.h"
 
+// CrossPlatform: Provide 'Byte' typedef as alias for 'UnsignedByte' 
+// (BaseTypeCore.h uses UnsignedByte to avoid conflicts with zlib's Byte definition)
+typedef UnsignedByte Byte;
+
 //-----------------------------------------------------------------------------
 typedef wchar_t WideChar;  ///< multi-byte character representations
 

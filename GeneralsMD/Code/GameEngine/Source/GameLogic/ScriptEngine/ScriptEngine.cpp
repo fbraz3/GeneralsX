@@ -66,7 +66,7 @@ static Bool st_AppIsFast = false;
 static void _appendMessage(const AsciiString& str, Bool isTrueMessage = true, Bool shouldPause = false);
 static void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause = false);
 static void _updateFrameNumber( void );
-static void* st_DebugDLL = NULL;  // Stub for non-Windows platforms
+static HMODULE st_DebugDLL;
 // That's it for debugger window
 
 // These are for particle editor
@@ -92,7 +92,7 @@ static void _writeOutINI( void );
 extern void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *particleTemplate );
 static void _reloadTextures( void );
 
-static void* st_ParticleDLL = NULL;  // Stub for non-Windows platforms
+static HMODULE st_ParticleDLL;
 ParticleSystem *st_particleSystem;
 Bool st_particleSystemNeedsStopping = FALSE; ///< Set along with st_particleSystem if the particle system has infinite life
 #define ARBITRARY_BUFF_SIZE	128
@@ -471,6 +471,25 @@ m_ChooseVictimAlwaysUsesNormal(false)
 //-------------------------------------------------------------------------------------------------
 ScriptEngine::~ScriptEngine()
 {
+	if (st_DebugDLL) {
+		FARPROC proc = GetProcAddress(st_DebugDLL, "DestroyDebugDialog");
+		if (proc) {
+			proc();
+		}
+
+		FreeLibrary(st_DebugDLL);
+		st_DebugDLL = NULL;
+	}
+
+	if (st_ParticleDLL) {
+		FARPROC proc = GetProcAddress(st_ParticleDLL, "DestroyParticleSystemDialog");
+		if (proc) {
+			proc();
+		}
+
+		FreeLibrary(st_ParticleDLL);
+		st_ParticleDLL = NULL;
+	}
 
 #ifdef DO_VTUNE_STUFF
 	_cleanUpVTune();
@@ -498,9 +517,32 @@ ScriptEngine::~ScriptEngine()
 //-------------------------------------------------------------------------------------------------
 void ScriptEngine::init( void )
 {
-	// On non-Windows: DLL loading not available, just initialize to NULL
-	st_DebugDLL = NULL;
-	st_ParticleDLL = NULL;
+	if (TheGlobalData->m_windowed)
+		if (TheGlobalData->m_scriptDebug) {
+			st_DebugDLL = LoadLibrary("DebugWindow.dll");
+		} else {
+			st_DebugDLL = NULL;
+		}
+
+		if (TheGlobalData->m_particleEdit) {
+			st_ParticleDLL = LoadLibrary("ParticleEditor.dll");
+		} else {
+			st_ParticleDLL = NULL;
+		}
+
+		if (st_DebugDLL) {
+			FARPROC proc = GetProcAddress(st_DebugDLL, "CreateDebugDialog");
+			if (proc) {
+				proc();
+			}
+		}
+
+	if (st_ParticleDLL) {
+		FARPROC proc = GetProcAddress(st_ParticleDLL, "CreateParticleSystemDialog");
+		if (proc) {
+			proc();
+		}
+	}
 
 #ifdef DO_VTUNE_STUFF
 	_initVTune();
@@ -5458,9 +5500,9 @@ void ScriptEngine::update( void )
 	USE_PERF_TIMER(ScriptEngine)
 #ifdef SPECIAL_SCRIPT_PROFILING
 #ifdef DEBUG_LOGGING
-	int64_t startTime64;
+	__int64 startTime64;
 	double timeToUpdate=0.0f;
-	int64_t endTime64,freq64;
+	__int64 endTime64,freq64;
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);//LORENZEN'S NOTE_TO_SELF: USE THIS
 	QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);//LORENZEN'S NOTE_TO_SELF: USE THIS
 /* dump out the named objects table.  For extremely intense debug only.  jba. :P
@@ -6928,9 +6970,9 @@ void ScriptEngine::executeScript( Script *pScript )
 	}
 #ifdef DEBUG_LOGGING
 #ifdef SPECIAL_SCRIPT_PROFILING
-	int64_t startTime64;
+	__int64 startTime64;
 	Real timeToEvaluate=0.0f;
-	int64_t endTime64,freq64;
+	__int64 endTime64,freq64;
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 	QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 #endif
@@ -7544,9 +7586,9 @@ Bool ScriptEngine::evaluateConditions( Script *pScript, Team *thisTeam, Player *
 #define COLLECT_CONDITION_EVAL_TIMES
 #endif
 #ifdef COLLECT_CONDITION_EVAL_TIMES
-	int64_t startTime64;
+	__int64 startTime64;
 	Real timeToEvaluate=0.0f;
-	int64_t endTime64,freq64;
+	__int64 endTime64,freq64;
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 	QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
 #endif
@@ -9373,21 +9415,112 @@ void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause)
 
 void _updateFrameNumber( void )
 {
+	if (TheScriptEngine->isTimeFast()) return;
+	typedef void (*funcptr)(int);
+	if (!st_DebugDLL) {
+		return;
+	}
+
+	FARPROC proc;
+	proc = GetProcAddress(st_DebugDLL, "SetFrameNumber");
+	if (!proc) {
+		return;
+	}
+
+	UnsignedInt frameNum = TheGameLogic->getFrame();
+
+	((funcptr)proc)(frameNum);
 }
 
 void _appendAllParticleSystems( void )
 {
+	typedef void (*funcptr)(const char*);
+	if (!st_ParticleDLL) {
+		return;
+	}
+	FARPROC proc;
+
+	proc = GetProcAddress(st_ParticleDLL, "RemoveAllParticleSystems");
+	if (proc) {
+		proc();
+	} else {
+		return;
+	}
+
+	proc = GetProcAddress(st_ParticleDLL, "AppendParticleSystem");
+	if (!proc) {
+		return;
+	}
+
+	// Copy just the names for the list of particle system templates
+	ParticleSystemManager::TemplateMap::iterator begin(TheParticleSystemManager->beginParticleSystemTemplate());
+	ParticleSystemManager::TemplateMap::iterator end(TheParticleSystemManager->endParticleSystemTemplate());
+	for (; begin != end; ++begin) {
+		((funcptr)proc)((*begin).first.str());
+	}
 }
 
 // all ThingTemplates can be thrown with a particle system, so...
 void _appendAllThingTemplates( void )
 {
+	typedef void (*funcptr)(const char*);
+	if (!st_ParticleDLL) {
+		return;
+	}
+	FARPROC proc;
+
+	proc = GetProcAddress(st_ParticleDLL, "RemoveAllThingTemplates");
+	if (proc) {
+		proc();
+	} else {
+		return;
+	}
+
+	proc = GetProcAddress(st_ParticleDLL, "AppendThingTemplate");
+	if (!proc) {
+		return;
+	}
+
+	const ThingTemplate *pTemplate = TheThingFactory->firstTemplate();
+	while (pTemplate) {
+		((funcptr)proc)(pTemplate->getName().str());
+		pTemplate = pTemplate->friend_getNextTemplate();
+	}
 
 }
 
 
 void _addUpdatedParticleSystem( AsciiString particleSystemName )
 {
+	typedef void (*funcptr)(const char*);
+	typedef void (*funcptr2)(ParticleSystemTemplate*);
+	if (!st_ParticleDLL) {
+		return;
+	}
+
+	if (TheParticleSystemManager->findTemplate(particleSystemName)) {
+		return;
+	}
+
+	FARPROC proc, proc2;
+	proc = GetProcAddress(st_ParticleDLL, "AppendParticleSystem");
+	if (!proc) {
+		return;
+	}
+
+	proc2 = GetProcAddress(st_ParticleDLL, "UpdateSystemUseParameters");
+	if (!proc2) {
+		return;
+	}
+
+
+	ParticleSystemTemplate *pTemplate = TheParticleSystemManager->newTemplate(particleSystemName);
+	if (!pTemplate) {
+		return;
+	}
+
+	((funcptr)proc)(pTemplate->getName().str());
+	((funcptr2)proc2)(pTemplate);
 }
 
 AsciiString _getParticleSystemName( void )

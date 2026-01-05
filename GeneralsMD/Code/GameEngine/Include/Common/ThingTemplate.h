@@ -763,14 +763,14 @@ private:
 	Bool					m_weaponsCopiedFromDefault;
 
 	// ---- Byte-sized things
-	SignedByte					m_radarPriority;						///< does object appear on radar, and if so at what priority
-	SignedByte					m_transportSlotCount;				///< how many "slots" we take in a transport (0 == not transportable)
-	SignedByte					m_buildable;								///< is this thing buildable at all?
-	SignedByte					m_buildCompletion;					///< how the units come into the world when build is complete
-	SignedByte					m_editorSorting;						///< editor sorting type, see EditorSortingType enum
-	SignedByte					m_structureRubbleHeight;
-	SignedByte					m_shadowType;								///< settings which determine the type of shadow rendered
-	SignedByte					m_moduleParsingMode;
+	Byte					m_radarPriority;						///< does object appear on radar, and if so at what priority
+	Byte					m_transportSlotCount;				///< how many "slots" we take in a transport (0 == not transportable)
+	Byte					m_buildable;								///< is this thing buildable at all?
+	Byte					m_buildCompletion;					///< how the units come into the world when build is complete
+	Byte					m_editorSorting;						///< editor sorting type, see EditorSortingType enum
+	Byte					m_structureRubbleHeight;
+	Byte					m_shadowType;								///< settings which determine the type of shadow rendered
+	Byte					m_moduleParsingMode;
 	UnsignedByte	m_crusherLevel;							///< crusher > crushable level to actually crush
 	UnsignedByte	m_crushableLevel;						///< Specifies the level of crushability (must be hit by a crusher greater than this to crush me).
 

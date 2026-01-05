@@ -20,6 +20,8 @@
 namespace rts
 {
 
+// TheSuperHackers @feature Adds support for launching multiple game clients and keeping track of their instance id.
+
 class ClientInstance
 {
 public:
@@ -47,7 +49,7 @@ public:
 	static const char* getFirstInstanceName();
 
 private:
-	static void* s_mutexHandle;  // Phase 39.4: Opaque handle to SDL2_Mutex
+	static HANDLE s_mutexHandle;
 	static UnsignedInt s_instanceIndex;
 	static Bool s_isMultiInstance;
 };

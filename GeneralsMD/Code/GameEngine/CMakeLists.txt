@@ -559,7 +559,6 @@ set(GAMEENGINE_SRC
 #    Source/Common/Audio/GameSounds.cpp
     #Source/Common/Audio/simpleplayer.cpp # unused
     #Source/Common/Audio/urllaunch.cpp # unused
-    # Phase 54: Re-enabled with d3dx8_vulkan_math_compat.h support
     Source/Common/Bezier/BezFwdIterator.cpp
     Source/Common/Bezier/BezierSegment.cpp
     Source/Common/BitFlags.cpp
@@ -769,28 +768,23 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/GUICallbacks/Menus/SinglePlayerMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/SkirmishGameOptionsMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/SkirmishMapSelectMenu.cpp
-    # WOL (Westwood Online) files - Windows-only networking layer (defunct)
-    # Excluded on non-Windows platforms - uses Windows-only APIs (WebBrowser, _wtoi, etc.)
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLBuddyOverlay.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLCustomScoreScreen.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLGameSetupMenu.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLLadderScreen.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLLobbyMenu.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLLocaleSelectPopup.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLLoginMenu.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLMapSelectMenu.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLMessageWindow.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLQMScoreScreen.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLQuickMatchMenu.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLStatusMenu.cpp>
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLWelcomeMenu.cpp>
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLBuddyOverlay.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLCustomScoreScreen.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLGameSetupMenu.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLLadderScreen.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLLobbyMenu.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLLocaleSelectPopup.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLLoginMenu.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLMapSelectMenu.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLMessageWindow.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLQMScoreScreen.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLQuickMatchMenu.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLStatusMenu.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/WOLWelcomeMenu.cpp
     Source/GameClient/GUI/GUICallbacks/MessageBox.cpp
     Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
     Source/GameClient/GUI/HeaderTemplate.cpp
-    # IMEManager.cpp - Windows-only IME (Input Method Editor) support
-    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/IMEManager.cpp>
-    # Null IME fallback for non-Windows builds so we still export TheIMEManager
-    $<$<NOT:$<BOOL:${WIN32}>>:Source/GameClient/GUI/IMEManagerNull.cpp>
+    Source/GameClient/GUI/IMEManager.cpp
     Source/GameClient/GUI/LoadScreen.cpp
     Source/GameClient/GUI/ProcessAnimateWindow.cpp
     Source/GameClient/GUI/Shell/Shell.cpp
@@ -820,7 +814,6 @@ set(GAMEENGINE_SRC
     Source/GameClient/Statistics.cpp
     Source/GameClient/System/Anim2D.cpp
     Source/GameClient/System/CampaignManager.cpp
-    Source/GameClient/System/CampaignObjectiveIntegration.cpp
 #    "Source/GameClient/System/Debug Displayers/AudioDebugDisplay.cpp"
     Source/GameClient/System/DebugDisplay.cpp
     Source/GameClient/System/Image.cpp
@@ -1120,9 +1113,6 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/GameSpy/Thread/PingThread.cpp
 #    Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
 #    Source/GameNetwork/GameSpyOverlay.cpp
-    Source/GameNetwork/phase43_6_gamespy_config.cpp
-    Source/phase43_6_targa.cpp
-    Source/phase43_6_memory_allocator.cpp
     Source/GameNetwork/GUIUtil.cpp
 #    Source/GameNetwork/IPEnumeration.cpp
 #    Source/GameNetwork/LANAPI.cpp
@@ -1172,14 +1162,11 @@ target_include_directories(z_gameengine PUBLIC
 
 target_include_directories(z_gameengine PRIVATE
     Include/Precompiled
-    # Phase 54: Add WW3D2 include path for d3dx8_vulkan_math_compat.h
-    ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WW3D2
 )
 
 target_link_libraries(z_gameengine PRIVATE
     corei_gameengine_private
     zi_always
-    graphics_drivers
 )
 
 target_link_libraries(z_gameengine PUBLIC
@@ -1188,13 +1175,3 @@ target_link_libraries(z_gameengine PUBLIC
 )
 
 target_precompile_headers(z_gameengine PRIVATE Include/Precompiled/PreRTS.h)
-# Phase 43.7: Ensure weak symbols are compiled with visible code
-# Disable LTO and aggressive optimizations for this target to prevent weak function elimination
-set_target_properties(z_gameengine PROPERTIES INTERPROCEDURAL_OPTIMIZATION FALSE)
-
-# Force compilation of weak symbols by setting compile options per file
-set_source_files_properties(
-    Source/phase43_7_weak_symbols.cpp
-    PROPERTIES
-    COMPILE_FLAGS "-fno-lto -fno-optimize-sibling-calls"
-)

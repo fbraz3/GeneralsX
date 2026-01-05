@@ -359,7 +359,7 @@ void AIUpdateInterface::setGoalPositionClipped(const Coord3D* in, CommandSourceT
 			if (getObject()->isKindOf(KINDOF_AIRCRAFT) && getObject()->isSignificantlyAboveTerrain() && m_curLocomotor != NULL)
 			{
 				// aircraft must stay further away from the map edges, to prevent getting "lost"
-				fudge = std::max(fudge, m_curLocomotor->getPreferredHeight());
+				fudge = max(fudge, m_curLocomotor->getPreferredHeight());
 			}
 			Region3D mapRegion;
 			TheTerrainLogic->getExtent( &mapRegion );

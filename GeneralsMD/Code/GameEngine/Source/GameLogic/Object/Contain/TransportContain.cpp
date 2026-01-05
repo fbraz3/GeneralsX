@@ -571,7 +571,7 @@ Bool TransportContain::isSpecificRiderFreeToExit(Object* specificObject)
 		return FALSE;
 
 	const Locomotor *hisLocomotor = specificObject->getAIUpdateInterface()->getCurLocomotor();
-	if( hisLocomotor == NULL )
+	if( hisLocomotor == FALSE )
    	return FALSE;
 
   // He can't get to this spot naturally, so I can't force him there.  (amphib transport)

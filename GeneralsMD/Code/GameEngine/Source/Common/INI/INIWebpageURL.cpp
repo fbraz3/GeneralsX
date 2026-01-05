@@ -32,8 +32,7 @@
 
 #include "Common/INI.h"
 #include "Common/Registry.h"
-#include <cstddef>
-#include <Utility/compat.h>
+#include "GameNetwork/WOLBrowser/WebBrowser.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,24 +43,6 @@
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-class WebBrowserURL
-{
-public:
-	WebBrowserURL() {}
-	const FieldParse* getFieldParse(void) const { return m_URLFieldParseTable; }
-
-	AsciiString m_tag;
-	AsciiString m_url;
-
-	static const FieldParse m_URLFieldParseTable[];
-};
-
-const FieldParse WebBrowserURL::m_URLFieldParseTable[] =
-{
-	{ "URL", INI::parseAsciiString, NULL, offsetof(WebBrowserURL, m_url) },
-	{ NULL, NULL, NULL, 0 }
-};
-
 AsciiString encodeURL(AsciiString source)
 {
 	if (source.isEmpty())
@@ -71,7 +52,7 @@ AsciiString encodeURL(AsciiString source)
 
 	AsciiString target;
 	AsciiString allowedChars = "$-_.+!*'(),\\";
-	const char* ptr = source.str();
+	const char *ptr = source.str();
 	while (*ptr)
 	{
 		if (isalnum(*ptr) || allowedChars.find(*ptr))
@@ -94,25 +75,48 @@ AsciiString encodeURL(AsciiString source)
 //-------------------------------------------------------------------------------------------------
 /** Parse Music entry */
 //-------------------------------------------------------------------------------------------------
-
-void INI::parseWebpageURLDefinition(INI* ini)
+void INI::parseWebpageURLDefinition( INI* ini )
 {
 	AsciiString tag;
+	WebBrowserURL *url;
+
+	// read the name
 	const char* c = ini->getNextToken();
-	tag.set(c);
+	tag.set( c );
 
-	WebBrowserURL url;
-	url.m_tag.set(tag);
-
-	ini->initFromINI(&url, url.getFieldParse());
-
-	if (url.m_url.startsWith("file://"))
+	if (TheWebBrowser != NULL)
 	{
-		char cwd[_MAX_PATH];
+		url = TheWebBrowser->findURL(tag);
+
+		if (url == NULL)
+		{
+			url = TheWebBrowser->makeNewURL(tag);
+		}
+	}
+
+	// find existing item if present
+//	track = TheAudio->Music->getTrack( name );
+//	if( track == NULL )
+//	{
+
+		// allocate a new track
+//		track = TheAudio->Music->newMusicTrack( name );
+
+//	}  // end if
+
+//	DEBUG_ASSERTCRASH( track, ("parseMusicTrackDefinition: Unable to allocate track '%s'",
+//										 name.str()) );
+
+	// parse the ini definition
+	ini->initFromINI( url, url->getFieldParse() );
+
+	if (url->m_url.startsWith("file://"))
+	{
+		char cwd[_MAX_PATH] = "\\";
 		getcwd(cwd, _MAX_PATH);
 
-		url.m_url.format("file://%s%sData%s%s%s%s", encodeURL(cwd).str(), GET_PATH_SEPARATOR(), GET_PATH_SEPARATOR(), GetRegistryLanguage().str(), GET_PATH_SEPARATOR(), url.m_url.str() + 7);
-		DEBUG_LOG(("INI::parseWebpageURLDefinition() - converted URL to [%s]", url.m_url.str()));
+		url->m_url.format("file://%s\\Data\\%s\\%s", encodeURL(cwd).str(), GetRegistryLanguage().str(), url->m_url.str()+7);
+		DEBUG_LOG(("INI::parseWebpageURLDefinition() - converted URL to [%s]", url->m_url.str()));
 	}
 }
 

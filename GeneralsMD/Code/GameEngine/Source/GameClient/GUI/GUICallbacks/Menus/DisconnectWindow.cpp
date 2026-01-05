@@ -41,16 +41,16 @@
 #include "Common/NameKeyGenerator.h"
 
 // Private Data -----------------------------
-static WindowLayout* disconnectMenuLayout;
+static WindowLayout *disconnectMenuLayout;
 
 static NameKeyType textEntryID = NAMEKEY_INVALID;
 static NameKeyType textDisplayID = NAMEKEY_INVALID;
 
-static GameWindow* textEntryWindow = NULL;
-static GameWindow* textDisplayWindow = NULL;
+static GameWindow *textEntryWindow = NULL;
+static GameWindow *textDisplayWindow = NULL;
 
 static NameKeyType buttonQuitID = NAMEKEY_INVALID;
-static GameWindow* buttonQuitWindow = NULL;
+static GameWindow *buttonQuitWindow = NULL;
 
 static NameKeyType buttonVotePlayer1ID = NAMEKEY_INVALID;
 static NameKeyType buttonVotePlayer2ID = NAMEKEY_INVALID;
@@ -60,17 +60,17 @@ static NameKeyType buttonVotePlayer5ID = NAMEKEY_INVALID;
 static NameKeyType buttonVotePlayer6ID = NAMEKEY_INVALID;
 static NameKeyType buttonVotePlayer7ID = NAMEKEY_INVALID;
 
-static GameWindow* buttonVotePlayer1Window = NULL;
-static GameWindow* buttonVotePlayer2Window = NULL;
-static GameWindow* buttonVotePlayer3Window = NULL;
-static GameWindow* buttonVotePlayer4Window = NULL;
-static GameWindow* buttonVotePlayer5Window = NULL;
-static GameWindow* buttonVotePlayer6Window = NULL;
-static GameWindow* buttonVotePlayer7Window = NULL;
+static GameWindow *buttonVotePlayer1Window = NULL;
+static GameWindow *buttonVotePlayer2Window = NULL;
+static GameWindow *buttonVotePlayer3Window = NULL;
+static GameWindow *buttonVotePlayer4Window = NULL;
+static GameWindow *buttonVotePlayer5Window = NULL;
+static GameWindow *buttonVotePlayer6Window = NULL;
+static GameWindow *buttonVotePlayer7Window = NULL;
 
-static void InitDisconnectWindow(void) {
-	textEntryID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:TextEntry"));
-	textDisplayID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ListboxTextDisplay"));
+static void InitDisconnectWindow( void ) {
+	textEntryID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:TextEntry");
+	textDisplayID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ListboxTextDisplay");
 
 	textEntryWindow = TheWindowManager->winGetWindowFromId(NULL, textEntryID);
 	textDisplayWindow = TheWindowManager->winGetWindowFromId(NULL, textDisplayID);
@@ -80,16 +80,16 @@ static void InitDisconnectWindow(void) {
 		TheWindowManager->winSetFocus(textEntryWindow);
 	}
 
-	buttonQuitID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ButtonQuitGame"));
+	buttonQuitID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ButtonQuitGame");
 	buttonQuitWindow = TheWindowManager->winGetWindowFromId(NULL, buttonQuitID);
 
-	buttonVotePlayer1ID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ButtonKickPlayer1"));
-	buttonVotePlayer2ID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ButtonKickPlayer2"));
-	buttonVotePlayer3ID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ButtonKickPlayer3"));
-	buttonVotePlayer4ID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ButtonKickPlayer4"));
-	buttonVotePlayer5ID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ButtonKickPlayer5"));
-	buttonVotePlayer6ID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ButtonKickPlayer6"));
-	buttonVotePlayer7ID = TheNameKeyGenerator->nameToKey(AsciiString("DisconnectScreen.wnd:ButtonKickPlayer7"));
+	buttonVotePlayer1ID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ButtonKickPlayer1");
+	buttonVotePlayer2ID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ButtonKickPlayer2");
+	buttonVotePlayer3ID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ButtonKickPlayer3");
+	buttonVotePlayer4ID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ButtonKickPlayer4");
+	buttonVotePlayer5ID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ButtonKickPlayer5");
+	buttonVotePlayer6ID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ButtonKickPlayer6");
+	buttonVotePlayer7ID = TheNameKeyGenerator->nameToKey( "DisconnectScreen.wnd:ButtonKickPlayer7");
 
 	buttonVotePlayer1Window = TheWindowManager->winGetWindowFromId(NULL, buttonVotePlayer1ID);
 	buttonVotePlayer2Window = TheWindowManager->winGetWindowFromId(NULL, buttonVotePlayer2ID);
@@ -103,27 +103,27 @@ static void InitDisconnectWindow(void) {
 //------------------------------------------------------
 /** Show the Disconnect Screen */
 //------------------------------------------------------
-void ShowDisconnectWindow(void)
+void ShowDisconnectWindow( void )
 {
 
 	// load the quit menu from the layout file if needed
-	if (disconnectMenuLayout == NULL)
+	if( disconnectMenuLayout == NULL )
 	{
 
 		// load layout from disk
-		disconnectMenuLayout = TheWindowManager->winCreateLayout("Menus\\DisconnectScreen.wnd");
+		disconnectMenuLayout = TheWindowManager->winCreateLayout( "Menus/DisconnectScreen.wnd" );
 
 		// init it
 		InitDisconnectWindow();
 
 		// show it
-		disconnectMenuLayout->hide(FALSE);
+		disconnectMenuLayout->hide( FALSE );
 
 	}
 	else
 	{
 
-		disconnectMenuLayout->hide(FALSE);
+		disconnectMenuLayout->hide( FALSE );
 
 	}
 
@@ -139,34 +139,34 @@ void ShowDisconnectWindow(void)
 
 	GadgetListBoxReset(textDisplayWindow);
 	GadgetListBoxAddEntryText(textDisplayWindow, TheGameText->fetch("GUI:InternetDisconnectionMenuBody1"),
-		GameMakeColor(255, 255, 255, 255), -1);
+		GameMakeColor(255,255,255,255), -1);
 
 }
 
 //------------------------------------------------------
 /** Hide the Disconnect Screen */
 //------------------------------------------------------
-void HideDisconnectWindow(void)
+void HideDisconnectWindow( void )
 {
 
 	// load the quit menu from the layout file if needed
-	if (disconnectMenuLayout == NULL)
+	if( disconnectMenuLayout == NULL )
 	{
 
 		// load layout from disk
-		disconnectMenuLayout = TheWindowManager->winCreateLayout("Menus\\DisconnectScreen.wnd");
+		disconnectMenuLayout = TheWindowManager->winCreateLayout( "Menus/DisconnectScreen.wnd" );
 
 		// init it
 		InitDisconnectWindow();
 
 		// show it
-		disconnectMenuLayout->hide(TRUE);
+		disconnectMenuLayout->hide( TRUE );
 
 	}
 	else
 	{
 
-		disconnectMenuLayout->hide(TRUE);
+		disconnectMenuLayout->hide( TRUE );
 
 	}
 
@@ -175,8 +175,8 @@ void HideDisconnectWindow(void)
 //-------------------------------------------------------------------------------------------------
 /** Input callback for the control bar parent */
 //-------------------------------------------------------------------------------------------------
-WindowMsgHandledType DisconnectControlInput(GameWindow* window, UnsignedInt msg,
-	WindowMsgData mData1, WindowMsgData mData2)
+WindowMsgHandledType DisconnectControlInput( GameWindow *window, UnsignedInt msg,
+																						WindowMsgData mData1, WindowMsgData mData2 )
 {
 
 	return MSG_IGNORED;
@@ -186,89 +186,82 @@ WindowMsgHandledType DisconnectControlInput(GameWindow* window, UnsignedInt msg,
 //-------------------------------------------------------------------------------------------------
 /** System callback for the control bar parent */
 //-------------------------------------------------------------------------------------------------
-WindowMsgHandledType DisconnectControlSystem(GameWindow* window, UnsignedInt msg,
-	WindowMsgData mData1, WindowMsgData mData2)
+WindowMsgHandledType DisconnectControlSystem( GameWindow *window, UnsignedInt msg,
+																			 WindowMsgData mData1, WindowMsgData mData2 )
 {
-	switch (msg)
+	switch( msg )
 	{
 
 		//---------------------------------------------------------------------------------------------
-	case GBM_SELECTED:
-	{
-
-		GameWindow* control = (GameWindow*)mData1;
-		Int controlID = control->winGetWindowId();
-
-		if (controlID == buttonQuitID) {
-			TheDisconnectMenu->quitGame();
-			buttonQuitWindow->winEnable(FALSE);
-		}
-		else if (controlID == buttonVotePlayer1ID) {
-			TheDisconnectMenu->voteForPlayer(0);
-			buttonVotePlayer1Window->winEnable(FALSE);
-		}
-		else if (controlID == buttonVotePlayer2ID) {
-			TheDisconnectMenu->voteForPlayer(1);
-			buttonVotePlayer2Window->winEnable(FALSE);
-		}
-		else if (controlID == buttonVotePlayer3ID) {
-			TheDisconnectMenu->voteForPlayer(2);
-			buttonVotePlayer3Window->winEnable(FALSE);
-		}
-		else if (controlID == buttonVotePlayer4ID) {
-			TheDisconnectMenu->voteForPlayer(3);
-			buttonVotePlayer4Window->winEnable(FALSE);
-		}
-		else if (controlID == buttonVotePlayer5ID) {
-			TheDisconnectMenu->voteForPlayer(4);
-			buttonVotePlayer5Window->winEnable(FALSE);
-		}
-		else if (controlID == buttonVotePlayer6ID) {
-			TheDisconnectMenu->voteForPlayer(5);
-			buttonVotePlayer6Window->winEnable(FALSE);
-		}
-		else if (controlID == buttonVotePlayer7ID) {
-			TheDisconnectMenu->voteForPlayer(6);
-			buttonVotePlayer7Window->winEnable(FALSE);
-		}
-
-		break;
-
-	}
-
-	case GEM_EDIT_DONE:
-	{
-		//			DEBUG_LOG(("DisconnectControlSystem - got GEM_EDIT_DONE."));
-		GameWindow* control = (GameWindow*)mData1;
-		Int controlID = control->winGetWindowId();
-
-		// Take the user's input and echo it into the chat window as well as
-		// send it to the other clients on the lan
-		if (controlID == textEntryID)
+		case GBM_SELECTED:
 		{
-			UnicodeString txtInput;
 
-			//				DEBUG_LOG(("DisconnectControlSystem - GEM_EDIT_DONE was from the text entry control."));
+			GameWindow *control = (GameWindow *) mData1;
+			Int controlID = control->winGetWindowId();
 
-							// read the user's input
-			txtInput.set(GadgetTextEntryGetText(textEntryWindow));
-			// Clear the text entry line
-			GadgetTextEntrySetText(textEntryWindow, UnicodeString::TheEmptyString);
-			// Clean up the text (remove leading/trailing chars, etc)
-			txtInput.trim();
-			// Echo the user's input to the chat window
-			if (!txtInput.isEmpty()) {
-				//					DEBUG_LOG(("DisconnectControlSystem - sending string %ls", txtInput.str()));
-				TheDisconnectMenu->sendChat(txtInput);
+			if (controlID == buttonQuitID) {
+				TheDisconnectMenu->quitGame();
+				buttonQuitWindow->winEnable(FALSE);
+			} else if (controlID == buttonVotePlayer1ID) {
+				TheDisconnectMenu->voteForPlayer(0);
+				buttonVotePlayer1Window->winEnable(FALSE);
+			} else if (controlID == buttonVotePlayer2ID) {
+				TheDisconnectMenu->voteForPlayer(1);
+				buttonVotePlayer2Window->winEnable(FALSE);
+			} else if (controlID == buttonVotePlayer3ID) {
+				TheDisconnectMenu->voteForPlayer(2);
+				buttonVotePlayer3Window->winEnable(FALSE);
+			} else if (controlID == buttonVotePlayer4ID) {
+				TheDisconnectMenu->voteForPlayer(3);
+				buttonVotePlayer4Window->winEnable(FALSE);
+			} else if (controlID == buttonVotePlayer5ID) {
+				TheDisconnectMenu->voteForPlayer(4);
+				buttonVotePlayer5Window->winEnable(FALSE);
+			} else if (controlID == buttonVotePlayer6ID) {
+				TheDisconnectMenu->voteForPlayer(5);
+				buttonVotePlayer6Window->winEnable(FALSE);
+			} else if (controlID == buttonVotePlayer7ID) {
+				TheDisconnectMenu->voteForPlayer(6);
+				buttonVotePlayer7Window->winEnable(FALSE);
 			}
 
-		}
-		break;
-	}
+			break;
 
-	//---------------------------------------------------------------------------------------------
-	default:
-		return MSG_IGNORED;
+		}
+
+		case GEM_EDIT_DONE:
+		{
+//			DEBUG_LOG(("DisconnectControlSystem - got GEM_EDIT_DONE."));
+			GameWindow *control = (GameWindow *)mData1;
+			Int controlID = control->winGetWindowId();
+
+			// Take the user's input and echo it into the chat window as well as
+			// send it to the other clients on the lan
+			if ( controlID == textEntryID )
+			{
+				UnicodeString txtInput;
+
+//				DEBUG_LOG(("DisconnectControlSystem - GEM_EDIT_DONE was from the text entry control."));
+
+				// read the user's input
+				txtInput.set(GadgetTextEntryGetText( textEntryWindow ));
+				// Clear the text entry line
+				GadgetTextEntrySetText(textEntryWindow, UnicodeString::TheEmptyString);
+				// Clean up the text (remove leading/trailing chars, etc)
+				txtInput.trim();
+				// Echo the user's input to the chat window
+				if (!txtInput.isEmpty()) {
+//					DEBUG_LOG(("DisconnectControlSystem - sending string %ls", txtInput.str()));
+					TheDisconnectMenu->sendChat(txtInput);
+				}
+
+			}
+			break;
+		}
+
+		//---------------------------------------------------------------------------------------------
+		default:
+			return MSG_IGNORED;
 
 	}
 

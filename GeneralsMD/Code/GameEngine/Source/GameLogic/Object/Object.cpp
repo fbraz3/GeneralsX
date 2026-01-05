@@ -1876,7 +1876,7 @@ void Object::attemptDamage( DamageInfo *damageInfo )
 		{
 			// Calculate the shockwave taperoff amount due to distance from ground zero
 			Real shockWaveScalar = damageInfo->in.m_shockWaveVector.length();
-			Real distanceFromCenter = std::min(1.0f, shockWaveScalar / damageInfo->in.m_shockWaveRadius);
+			Real distanceFromCenter = min(1.0f, shockWaveScalar / damageInfo->in.m_shockWaveRadius);
 			Real distanceTaper = (distanceFromCenter) * (1.0f - damageInfo->in.m_shockWaveTaperOff);
 			Real shockTaperMult = 1.0f - distanceTaper;
 
@@ -3432,17 +3432,17 @@ Bool Object::getHealthBoxDimensions(Real &healthBoxHeight, Real &healthBoxWidth)
 	if( isKindOf( KINDOF_STRUCTURE ) )
 	{
 		//enforce healthBoxHeightMinimum/Maximum
-		healthBoxHeight = std::min(3.0f, std::max(5.0f, maxHP/50));
+		healthBoxHeight = min(3.0f, max(5.0f, maxHP/50));
 		//enforce healthBoxWidthMinimum/Maximum
-		healthBoxWidth = std::min(150.0f, std::max(100.0f, maxHP/10));
+		healthBoxWidth = min(150.0f, max(100.0f, maxHP/10));
 		return true;
 	}
 	else if ( isKindOf(KINDOF_MOB_NEXUS) )
 	{
 		//enforce healthBoxHeightMinimum/Maximum
-		healthBoxHeight = std::min(3.0f, std::max(5.0f, maxHP/50));
+		healthBoxHeight = min(3.0f, max(5.0f, maxHP/50));
 		//enforce healthBoxWidthMinimum/Maximum
-		healthBoxWidth = std::min(100.0f, std::max(66.0f, maxHP/10));
+		healthBoxWidth = min(100.0f, max(66.0f, maxHP/10));
 		return true;
 	}
 	else if ( isKindOf( KINDOF_IGNORED_IN_GUI ) )
@@ -3454,9 +3454,9 @@ Bool Object::getHealthBoxDimensions(Real &healthBoxHeight, Real &healthBoxWidth)
 	else
 	{
 		//enforce healthBoxHeightMinimum/Maximum
-		healthBoxHeight = std::min(3.0f, std::max(5.0f, maxHP/50));
+		healthBoxHeight = min(3.0f, max(5.0f, maxHP/50));
 		//enforce healthBoxWidthMinimum/Maximum
-		healthBoxWidth = std::min(150.0f, std::max(35.0f, maxHP/10));
+		healthBoxWidth = min(150.0f, max(35.0f, maxHP/10));
 		return true;
 	}
 #else
@@ -3469,9 +3469,9 @@ Bool Object::getHealthBoxDimensions(Real &healthBoxHeight, Real &healthBoxWidth)
 	}
 
 	//just add the major and minor axes
-	Real size = std::max(20.0f, std::min(150.0f, (getGeometryInfo().getMajorRadius() + getGeometryInfo().getMinorRadius())) );
+	Real size = MAX(20.0f, MIN(150.0f, (getGeometryInfo().getMajorRadius() + getGeometryInfo().getMinorRadius())) );
 	healthBoxHeight = 3.0f;
-	healthBoxWidth = std::max(20.0f, size * 2.0f);
+	healthBoxWidth = MAX(20.0f, size * 2.0f);
 	return TRUE;
 
 #endif

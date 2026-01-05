@@ -131,10 +131,10 @@ enum CanAttackResult CPP_11(: Int);
 struct TTriggerInfo
 {
 	const PolygonTrigger*	pTrigger; ///< The trigger area that the object is inside.
-	SignedByte									entered;	///< True if the object entered this trigger area this frame.
-	SignedByte									exited;		///< True if the object entered this trigger area this frame.
-	SignedByte									isInside;	///< True if the object is inside this trigger area this frame.
-	SignedByte									padding;	///< unused.
+	Byte									entered;	///< True if the object entered this trigger area this frame.
+	Byte									exited;		///< True if the object entered this trigger area this frame.
+	Byte									isInside;	///< True if the object is inside this trigger area this frame.
+	Byte									padding;	///< unused.
 
 	TTriggerInfo() : entered(false), exited(false), isInside(false), padding(false), pTrigger(NULL) { }
 
@@ -776,7 +776,7 @@ private:
 	WeaponSet											m_weaponSet;
 	WeaponSetFlags								m_curWeaponSetFlags;
 	WeaponBonusConditionFlags			m_weaponBonusCondition;
-	SignedByte													m_lastWeaponCondition[WEAPONSLOT_COUNT];
+	Byte													m_lastWeaponCondition[WEAPONSLOT_COUNT];
 
 	SpecialPowerMaskType					m_specialPowerBits; ///< bits determining what kind of special abilities this object has access to.
 
@@ -810,7 +810,7 @@ private:
 #endif
 	UnsignedByte									m_scriptStatus;					///< status as set by scripting, corresponds to ORed ObjectScriptStatusBits
 	UnsignedByte									m_privateStatus;					///< status bits that are never directly accessible to outside world
-	SignedByte													m_numTriggerAreasActive;
+	Byte													m_numTriggerAreasActive;
 	Bool													m_singleUseCommandUsed;
 	Bool													m_isReceivingDifficultyBonus;
 

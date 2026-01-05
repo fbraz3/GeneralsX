@@ -245,7 +245,7 @@ void StickyBombUpdate::detonate()
 			primaryDamageRange += boundingCircle;
 			secondaryDamageRange += boundingCircle;
 			Real primaryDamageRangeSqr = sqr(primaryDamageRange);
-			Real radius = std::max(primaryDamageRange, secondaryDamageRange);
+			Real radius = max(primaryDamageRange, secondaryDamageRange);
 
 			SimpleObjectIterator *iter;
 			iter = ThePartitionManager->iterateObjectsInRange(boobyTrappedObject->getPosition(), radius, FROM_BOUNDINGSPHERE_3D);

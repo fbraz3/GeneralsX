@@ -35,7 +35,7 @@
 
 
 //-------------------------------------------------------------------------------------------------
-const char* const TheEvaMessageNames[] =
+static const char *const TheEvaMessageNames[] =
 {
 	"LOWPOWER",
 	"INSUFFICIENTFUNDS",
@@ -91,9 +91,9 @@ const char* const TheEvaMessageNames[] =
   "SUPERWEAPONLAUNCHED_ALLY_SNEAK_ATTACK",
   "SUPERWEAPONLAUNCHED_ENEMY_SNEAK_ATTACK",
 
-  //****************************************************************************
-  //Kris: Don't forget to add another handler below -- it's ghey-ly implemented.
-  //****************************************************************************
+	//****************************************************************************
+	//Kris: Don't forget to add another handler below -- it's ghey-ly implemented.
+	//****************************************************************************
 };
 static_assert(ARRAY_SIZE(TheEvaMessageNames) == EVA_COUNT, "Incorrect array size");
 
@@ -157,31 +157,31 @@ const ShouldPlayFunc Eva::s_shouldPlayFuncs[] =
 
 
 //------------------------------------------------------------------------------ INI::parseEvaEvent
-void INI::parseEvaEvent(INI* ini)
+void INI::parseEvaEvent( INI* ini )
 {
 	AsciiString name;
 
 	// read the name
 	const char* c = ini->getNextToken();
-	name.set(c);
+	name.set( c );
 
-	EvaCheckInfo* check = TheEva->newEvaCheckInfo(name);
+	EvaCheckInfo *check = TheEva->newEvaCheckInfo( name );
 	if (!check) {
 		// could be null because it already exists.
 		return;
 	}
 
 	// parse the ini definition
-	ini->initFromINI(check, check->getFieldParse());
+	ini->initFromINI( check, check->getFieldParse() );
 }
 
 //----------------------------------------------------------------------------------- EvaSideSounds
-static void parseSideSoundsList(INI* ini, void* instance, void* store, const void* userData)
+static void parseSideSoundsList( INI *ini, void *instance, void *store, const void* userData )
 {
-	std::vector<EvaSideSounds>* sounds = (std::vector<EvaSideSounds>*) store;
+	std::vector<EvaSideSounds> *sounds = (std::vector<EvaSideSounds>*) store;
 	EvaSideSounds newSounds;
 
-	ini->initFromINI(&newSounds, newSounds.getFieldParse());
+	ini->initFromINI( &newSounds, newSounds.getFieldParse() );
 
 	// This could be made more efficient, but to be honest, it shouldn't be that slow.
 	sounds->push_back(newSounds);
@@ -190,8 +190,8 @@ static void parseSideSoundsList(INI* ini, void* instance, void* store, const voi
 //----------------------------------------------------------------------------------- EvaSideSounds
 const FieldParse EvaSideSounds::s_evaSideSounds[] =
 {
-	{ "Side",									INI::parseAsciiString,					NULL,			offsetof(EvaSideSounds, m_side) },
-	{ "Sounds",								INI::parseSoundsList,						NULL,			offsetof(EvaSideSounds, m_soundNames) },
+	{ "Side",									INI::parseAsciiString,					NULL,			offsetof( EvaSideSounds, m_side) },
+	{ "Sounds",								INI::parseSoundsList,						NULL,			offsetof( EvaSideSounds, m_soundNames) },
 	{ 0, 0, 0, 0 },
 };
 
@@ -209,10 +209,10 @@ EvaCheckInfo::EvaCheckInfo() :
 //-------------------------------------------------------------------------------------------------
 const FieldParse EvaCheckInfo::s_evaEventInfo[] =
 {
-	{ "Priority",							INI::parseUnsignedInt,					NULL,			offsetof(EvaCheckInfo, m_priority) },
-	{ "TimeBetweenChecksMS",	INI::parseDurationUnsignedInt,	NULL,			offsetof(EvaCheckInfo, m_framesBetweenChecks) },
-	{ "ExpirationTimeMS",			INI::parseDurationUnsignedInt,	NULL,			offsetof(EvaCheckInfo, m_framesToExpire) },
-	{ "SideSounds",						parseSideSoundsList,						NULL,			offsetof(EvaCheckInfo, m_evaSideSounds) },
+	{ "Priority",							INI::parseUnsignedInt,					NULL,			offsetof( EvaCheckInfo, m_priority ) },
+	{ "TimeBetweenChecksMS",	INI::parseDurationUnsignedInt,	NULL,			offsetof( EvaCheckInfo, m_framesBetweenChecks ) },
+	{ "ExpirationTimeMS",			INI::parseDurationUnsignedInt,	NULL,			offsetof( EvaCheckInfo, m_framesToExpire) },
+	{ "SideSounds",						parseSideSoundsList,						NULL,			offsetof( EvaCheckInfo, m_evaSideSounds ) },
 	{ 0, 0, 0, 0 },
 
 };
@@ -254,13 +254,7 @@ void Eva::init()
 {
 	// parse the INI here, etc.
 	INI ini;
-	AsciiString evaPath;
-	evaPath.concat("Data");
-	evaPath.concat(GET_PATH_SEPARATOR());
-	evaPath.concat("INI");
-	evaPath.concat(GET_PATH_SEPARATOR());
-	evaPath.concat("Eva");
-	ini.loadFileDirectory(AsciiString(evaPath.str()), INI_LOAD_OVERWRITE, NULL);
+	ini.loadFileDirectory( "Data\\INI\\Eva", INI_LOAD_OVERWRITE, NULL);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -323,7 +317,7 @@ EvaMessage Eva::nameToMessage(const AsciiString& name)
 {
 	for (Int i = EVA_FIRST; i < EVA_COUNT; ++i) {
 		if (name.compareNoCase(TheEvaMessageNames[i]) == 0) {
-			return (EvaMessage)i;
+			return (EvaMessage) i;
 		}
 	}
 
@@ -334,7 +328,7 @@ EvaMessage Eva::nameToMessage(const AsciiString& name)
 //-------------------------------------------------------------------------------------------------
 AsciiString Eva::messageToName(EvaMessage message)
 {
-	if (message >= EVA_FIRST && message < EVA_COUNT)
+  if (message >= EVA_FIRST && message < EVA_COUNT)
 		return TheEvaMessageNames[message];
 
 	DEBUG_CRASH(("Invalid requested Eva message translation. jkmcd"));
@@ -342,7 +336,7 @@ AsciiString Eva::messageToName(EvaMessage message)
 }
 
 //-------------------------------------------------------------------------------------------------
-EvaCheckInfo* Eva::newEvaCheckInfo(AsciiString name)
+EvaCheckInfo *Eva::newEvaCheckInfo(AsciiString name)
 {
 	EvaMessage mesg = nameToMessage(name);
 
@@ -353,14 +347,14 @@ EvaCheckInfo* Eva::newEvaCheckInfo(AsciiString name)
 			return NULL;
 	}
 
-	EvaCheckInfo* checkInfo = newInstance(EvaCheckInfo);
+	EvaCheckInfo *checkInfo = newInstance(EvaCheckInfo);
 	m_allCheckInfos.push_back(checkInfo);
 	checkInfo->m_message = mesg;
 	return checkInfo;
 }
 
 //-------------------------------------------------------------------------------------------------
-const EvaCheckInfo* Eva::getEvaCheckInfo(AsciiString name)
+const EvaCheckInfo *Eva::getEvaCheckInfo(AsciiString name)
 {
 	EvaMessage mesg = nameToMessage(name);
 
@@ -379,7 +373,7 @@ void Eva::setShouldPlay(EvaMessage messageToPlay)
 {
 	m_shouldPlay[messageToPlay] = TRUE;
 
-	// DEBUG_LOG( ( "Eva message %s play requested", messageToName( messageToPlay).str() ) );
+  // DEBUG_LOG( ( "Eva message %s play requested", messageToName( messageToPlay).str() ) );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -419,7 +413,7 @@ Bool Eva::messageShouldPlay(EvaMessage messageToTest, UnsignedInt currentFrame) 
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool Eva::shouldPlayLowPower(Player* localPlayer)
+Bool Eva::shouldPlayLowPower( Player *localPlayer )
 {
 
 	// @todo make eva sensitive to whether player can do anything about it...
@@ -437,7 +431,7 @@ Bool Eva::shouldPlayLowPower(Player* localPlayer)
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool Eva::shouldPlayGenericHandler(Player*)
+Bool Eva::shouldPlayGenericHandler( Player * )
 {
 	if (TheEva->m_shouldPlay[TheEva->m_messageBeingTested]) {
 		TheEva->m_shouldPlay[TheEva->m_messageBeingTested] = FALSE;
@@ -513,8 +507,8 @@ void Eva::processPlayingMessages(UnsignedInt currentFrame)
 	AsciiString side = rts::getObservedOrLocalPlayer()->getSide();
 	Int numSides = storedIt->m_evaInfo->m_evaSideSounds.size();
 
-	// clear it. If we can't find the side we want, don't play anything
-	m_evaSpeech.setEventName(AsciiString::TheEmptyString);
+  // clear it. If we can't find the side we want, don't play anything
+  m_evaSpeech.setEventName(AsciiString::TheEmptyString);
 
 	for (Int i = 0; i < numSides; ++i) {
 		if (side.compareNoCase(storedIt->m_evaInfo->m_evaSideSounds[i].m_side) == 0) {
@@ -523,7 +517,7 @@ void Eva::processPlayingMessages(UnsignedInt currentFrame)
 				Int soundToPlay = GameClientRandomValue(0, storedIt->m_evaInfo->m_evaSideSounds[i].m_soundNames.size() - 1);
 				m_evaSpeech.setEventName(storedIt->m_evaInfo->m_evaSideSounds[i].m_soundNames[soundToPlay]);
 			}
-			break;
+      break;
 		}
 	}
 
@@ -541,20 +535,20 @@ void Eva::processPlayingMessages(UnsignedInt currentFrame)
 //-------------------------------------------------------------------------------------------------
 /** Parses the name of an Eva message from an INI file */
 //-------------------------------------------------------------------------------------------------
-/*static*/void Eva::parseEvaMessageFromIni(INI* ini, void* instance, void* store, const void* userData)
+/*static*/void Eva::parseEvaMessageFromIni( INI * ini, void *instance, void *store, const void* userData )
 {
-	const char* token = ini->getNextToken();
+  const char *token = ini->getNextToken();
 
-	EvaMessage message = nameToMessage(token);
-	if (message == EVA_Invalid)
-	{
-		// debug message already displayed
-		throw ERROR_BAD_INI;
-	}
+  EvaMessage message = nameToMessage( token );
+  if ( message == EVA_Invalid )
+  {
+    // debug message already displayed
+    throw ERROR_BAD_INI;
+  }
 
-	*((EvaMessage*)store) = message;
+  *((EvaMessage *)store) = message;
 }
 
 //-------------------------------------------------------------------------------------------------
-Eva* TheEva = NULL;
+Eva *TheEva = NULL;
 

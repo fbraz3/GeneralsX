@@ -150,7 +150,7 @@ void CashHackSpecialPower::doSpecialPowerAtObject( Object *victim, UnsignedInt c
 		UnsignedInt cash = targetMoney->countMoney();
 		UnsignedInt desiredAmount = findAmountToSteal();
 		//Check to see if they have 1000 cash, otherwise, take the remainder!
-		cash = std::min( desiredAmount, cash );
+		cash = min( desiredAmount, cash );
 		if( cash > 0 )
 		{
 			//Steal the cash
