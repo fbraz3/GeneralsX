@@ -208,7 +208,7 @@ Bool Win32LocalFileSystem::getFileInfo(const AsciiString& filename, FileInfo* fi
 
 Bool Win32LocalFileSystem::createDirectory(AsciiString directory)
 {
-	if ((directory.getLength() > 0) && (directory.getLength() < _MAX_DIR)) {
+	if ((!directory.isEmpty()) && (directory.getLength() < _MAX_DIR)) {
 		return (CreateDirectory(directory.str(), NULL) != 0);
 	}
 	return FALSE;

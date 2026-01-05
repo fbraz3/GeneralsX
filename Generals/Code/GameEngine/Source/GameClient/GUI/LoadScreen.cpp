@@ -66,6 +66,7 @@
 #include "Common/AudioAffect.h"
 
 #include "GameClient/LoadScreen.h"
+#include "GameClient/Keyboard.h"
 #include "GameClient/Shell.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetProgressBar.h"
@@ -154,13 +155,10 @@ void LoadScreen::update(Int percent)
 //-----------------------------------------------------------------------------
 SinglePlayerLoadScreen::SinglePlayerLoadScreen(void)
 {
-	//Added By Sadullah Nader
-	//Initialization(s) inserted
 	m_currentObjectiveLine = 0;
 	m_currentObjectiveLineCharacter = 0;
 	m_finishedObjectiveText = NULL;
 	m_currentObjectiveWidthOffset = 0;
-	//
 	m_progressBar = NULL;
 	m_percent = NULL;
 	m_videoStream = NULL;
@@ -486,22 +484,30 @@ void SinglePlayerLoadScreen::init(GameInfo* game)
 
 	if (TheGameLODManager && TheGameLODManager->didMemPass())
 	{
+		// TheSuperHackers @bugfix Originally this movie render loop stopped rendering when the game window was inactive.
+		// This either skipped the movie or caused decompression artifacts. Now the video just keeps playing until it done.
+
 		Int progressUpdateCount = m_videoStream->frameCount() / FRAME_FUDGE_ADD;
 		Int shiftedPercent = -FRAME_FUDGE_ADD + 1;
 		while (m_videoStream->frameIndex() < m_videoStream->frameCount() - 1)
 		{
+			// TheSuperHackers @feature User can now skip video by pressing ESC
+			if (TheKeyboard)
+			{
+				TheKeyboard->UPDATE();
+				KeyboardIO *io = TheKeyboard->findKey(KEY_ESC, KeyboardIO::STATUS_UNUSED);
+				if (io && BitIsSet(io->state, KEY_STATE_DOWN))
+				{
+					io->setUsed();
+					break;
+				}
+			}
+
 			TheGameEngine->serviceWindowsOS();
 
 			if (!m_videoStream->isFrameReady())
 			{
 				Sleep(1);
-				continue;
-			}
-
-			if (!TheGameEngine->isActive())
-			{	//we are alt-tabbed out, so just increment the frame
-				m_videoStream->frameNext();
-				m_videoStream->frameDecompress();
 				continue;
 			}
 
@@ -669,17 +675,12 @@ void ShellGameLoadScreen::update(Int percent)
 //-----------------------------------------------------------------------------
 MultiPlayerLoadScreen::MultiPlayerLoadScreen(void)
 {
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_mapPreview = NULL;
 
 	//
 	for (Int i = 0; i < MAX_SLOTS; ++i)
 	{
-		//Added By Sadullah Nader
-		//Initializations missing and needed
 		m_buttonMapStartPosition[i] = NULL;
-		//
 		m_progressBars[i] = NULL;
 		m_playerNames[i] = NULL;
 		m_playerSide[i] = NULL;
@@ -892,19 +893,13 @@ void MultiPlayerLoadScreen::processProgress(Int playerId, Int percentage)
 GameSpyLoadScreen::GameSpyLoadScreen(void)
 {
 
-	// Added By Sadullah Nader
-	// Initializations missing and needed
 	m_mapPreview = NULL;
-	//
 
 	for (Int i = 0; i < MAX_SLOTS; ++i)
 	{
 
-		// Added By Sadullah Nader
-		// Initializations missing and needed
 		m_buttonMapStartPosition[i] = NULL;
 		m_playerRank[i] = NULL;
-		//
 
 		m_playerOfficerMedal[i] = NULL;
 		m_progressBars[i] = NULL;
@@ -1219,8 +1214,6 @@ void GameSpyLoadScreen::processProgress(Int playerId, Int percentage)
 //-----------------------------------------------------------------------------
 MapTransferLoadScreen::MapTransferLoadScreen(void)
 {
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_oldTimeout = 0;
 	//
 	for (Int i = 0; i < MAX_SLOTS; ++i)

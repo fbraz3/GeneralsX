@@ -72,7 +72,6 @@
 void parseUpgradePair( INI *ini, void *instance, void *store, const void *userData )
 {
 	upgradePair info;
-	info.type = "";
 	info.amount = 0;
 
 	const char *token = ini->getNextToken( ini->getSepsColon() );
@@ -173,8 +172,7 @@ UpdateSleepTime AutoDepositUpdate::update( void )
 			getObject()->getControllingPlayer()->getScoreKeeper()->addMoneyEarned( modData->m_depositAmount);
 		}
 
-		Drawable* outerDrawable = getObject()->getOuterObject()->getDrawable();
-		if (moneyAmount > 0 && outerDrawable && outerDrawable->isVisible())
+		if (moneyAmount > 0 && getObject()->isLogicallyVisible())
 		{
 
       const Object *owner = getObject();

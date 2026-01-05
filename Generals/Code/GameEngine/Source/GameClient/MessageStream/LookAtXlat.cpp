@@ -137,17 +137,14 @@ LookAtTranslator::LookAtTranslator() :
 	m_isRotating(false),
 	m_isPitching(false),
 	m_isChangingFOV(false),
-	m_timestamp(0),
+	m_middleButtonDownTimeMsec(0),
 	m_lastPlaneID(INVALID_DRAWABLE_ID),
-	m_lastMouseMoveFrame(0),
+	m_lastMouseMoveTimeMsec(0),
 	m_scrollType(SCROLL_NONE)
 {
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_anchor.x = m_anchor.y = 0;
 	m_currentPos.x = m_currentPos.y = 0;
 	m_originalAnchor.x = m_originalAnchor.y = 0;
-	//
 
 	OptionPreferences prefs;
 	m_screenEdgeScrollMode = prefs.getScreenEdgeScrollMode();
@@ -174,13 +171,12 @@ const ICoord2D* LookAtTranslator::getRMBScrollAnchor(void)
 
 Bool LookAtTranslator::hasMouseMovedRecently( void )
 {
-	if (m_lastMouseMoveFrame > TheGameLogic->getFrame())
-		m_lastMouseMoveFrame = 0; // reset for new game
+	const UnsignedInt now = timeGetTime();
+	const UnsignedInt lastMove = m_lastMouseMoveTimeMsec;
 
-	if (m_lastMouseMoveFrame + LOGICFRAMES_PER_SECOND < TheGameLogic->getFrame())
-		return false;
+	const UnsignedInt elapsedMsec = now - lastMove;
 
-	return true;
+	return elapsedMsec <= MSEC_PER_SECOND;
 }
 
 void LookAtTranslator::setCurrentPos( const ICoord2D& pos )
@@ -259,7 +255,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 		//-----------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_DOWN:
 		{
-			m_lastMouseMoveFrame = TheGameLogic->getFrame();
+			m_lastMouseMoveTimeMsec = timeGetTime();
 
 			m_anchor = msg->getArgument( 0 )->pixel;
 			m_currentPos = msg->getArgument( 0 )->pixel;
@@ -275,7 +271,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 		//-----------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_UP:
 		{
-			m_lastMouseMoveFrame = TheGameLogic->getFrame();
+			m_lastMouseMoveTimeMsec = timeGetTime();
 
 			if (m_scrollType == SCROLL_RMB)
 			{
@@ -287,23 +283,25 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 		//-----------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_MOUSE_MIDDLE_BUTTON_DOWN:
 		{
-			m_lastMouseMoveFrame = TheGameLogic->getFrame();
+			const UnsignedInt now = timeGetTime();
+			m_lastMouseMoveTimeMsec = now;
+			m_middleButtonDownTimeMsec = now;
 
 			m_isRotating = true;
 			m_anchor = msg->getArgument( 0 )->pixel;
 			m_anchorAngle = TheTacticalView->getAngle();
 			m_originalAnchor = msg->getArgument( 0 )->pixel;
 			m_currentPos = msg->getArgument( 0 )->pixel;
-			m_timestamp = TheGameClient->getFrame();
 			break;
 		}
 
 		//-----------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_MOUSE_MIDDLE_BUTTON_UP:
 		{
-			m_lastMouseMoveFrame = TheGameLogic->getFrame();
+			const UnsignedInt now = timeGetTime();
+			m_lastMouseMoveTimeMsec = now;
 
-			const UnsignedInt CLICK_DURATION = 5;
+			const UnsignedInt CLICK_DURATION_MSEC = 167;
 			const UnsignedInt PIXEL_OFFSET = 5;
 
 			m_isRotating = false;
@@ -311,8 +309,11 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			if (dx<0) dx = -dx;
 			Int dy = m_currentPos.y-m_originalAnchor.y;
 			Bool didMove = dx>PIXEL_OFFSET || dy>PIXEL_OFFSET;
+
+			const UnsignedInt elapsedMsec = now - m_middleButtonDownTimeMsec;
+
 			// if middle button is "clicked", reset to "home" orientation
-			if (!didMove && TheGameClient->getFrame() - m_timestamp < CLICK_DURATION)
+			if (!didMove && elapsedMsec < CLICK_DURATION_MSEC)
 			{
 				TheTacticalView->setAngleAndPitchToDefault();
 				TheTacticalView->setZoomToDefault();
@@ -325,7 +326,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 		case GameMessage::MSG_RAW_MOUSE_POSITION:
 		{
 			if (m_currentPos.x != msg->getArgument( 0 )->pixel.x || m_currentPos.y != msg->getArgument( 0 )->pixel.y)
-				m_lastMouseMoveFrame = TheGameLogic->getFrame();
+				m_lastMouseMoveTimeMsec = timeGetTime();
 
 			m_currentPos = msg->getArgument( 0 )->pixel;
 
@@ -405,7 +406,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 		//-----------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_MOUSE_WHEEL:
 		{
-			m_lastMouseMoveFrame = TheGameLogic->getFrame();
+			m_lastMouseMoveTimeMsec = timeGetTime();
 
 			Int spin = msg->getArgument( 1 )->integer;
 

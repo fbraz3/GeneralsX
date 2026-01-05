@@ -87,12 +87,7 @@ WorkerAIUpdate::WorkerAIUpdate( Thing *thing, const ModuleData* moduleData ) :
 	//
 	// initialize the dozer machine to NULL, we want to do this and create it during the update
 	// implementation because at this point we don't have the object all setup
-	//
-
-	//Added By Sadullah Nader
-	//Initialization(s) inserted
 	m_isRebuild = FALSE;
-	//
 	m_dozerMachine = NULL;
 	for( Int i = 0; i < DOZER_NUM_TASKS; i++ )
 	{
@@ -280,9 +275,14 @@ UpdateSleepTime WorkerAIUpdate::update( void )
 			Bool invalidTask = FALSE;
 
 			// validate the task and the target
+			// TheSuperHackers @bugfix Stubbjax 16/11/2025 Invalidate the task when the build scaffold is destroyed.
 			if( currentTask == DOZER_TASK_REPAIR &&
 					TheActionManager->canRepairObject( getObject(), targetObject, getLastCommandSource() ) == FALSE )
 				invalidTask = TRUE;
+#if !RETAIL_COMPATIBLE_CRC
+			else if (currentTask == DOZER_TASK_BUILD && targetObject == NULL)
+				invalidTask = TRUE;
+#endif
 
 			// cancel the task if it's now invalid
 			if( invalidTask == TRUE )

@@ -208,8 +208,6 @@ void setFPMode(void)
 // ------------------------------------------------------------------------------------------------
 GameLogic::GameLogic(void)
 {
-	//Added By Sadullah Nader
-	//Initializations missing and necessary
 	m_background = NULL;
 	m_CRC = 0;
 	m_isInUpdate = FALSE;
@@ -225,7 +223,6 @@ GameLogic::GameLogic(void)
 	m_shouldValidateCRCs = FALSE;
 
 	m_startNewGame = FALSE;
-	//
 
 	m_frame = 0;
 	m_hasUpdated = FALSE;
@@ -428,8 +425,6 @@ void GameLogic::init(void)
 	m_scriptHulkMaxLifetimeOverride = -1;
 
 	m_isInUpdate = FALSE;
-
-	m_rankPointsToAddAtGameStart = 0;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1084,11 +1079,6 @@ void GameLogic::startNewGame(Bool saveGame)
 	TheWritableGlobalData->m_loadScreenRender = TRUE;	///< mark it so only a few select things are rendered during load
 	TheWritableGlobalData->m_TiVOFastMode = FALSE;	//always disable the TIVO fast-forward mode at the start of a new game.
 
-	m_showBehindBuildingMarkers = TRUE;
-	m_drawIconUI = TRUE;
-	m_showDynamicLOD = TRUE;
-	m_scriptHulkMaxLifetimeOverride = -1;
-
 	// Fill in the game color and Factions before we do the Load Screen
 	GameInfo* game = NULL;
 	TheGameInfo = NULL;
@@ -1098,19 +1088,19 @@ void GameLogic::startNewGame(Bool saveGame)
 		if (TheLAN)
 		{
 			DEBUG_LOG(("Starting network game"));
-			TheGameInfo = game = TheLAN->GetMyGame();
+			TheGameInfo = TheLAN->GetMyGame();
 		}
 		else
 		{
 			DEBUG_LOG(("Starting gamespy game"));
-			TheGameInfo = game = TheGameSpyGame;	/// @todo: MDC add back in after demo
+			TheGameInfo = TheGameSpyGame;	/// @todo: MDC add back in after demo
 		}
 	}
 	else
 	{
 		if (TheRecorder && TheRecorder->isPlaybackMode())
 		{
-			TheGameInfo = game = TheRecorder->getGameInfo();
+			TheGameInfo = TheRecorder->getGameInfo();
 		}
 		else if (m_gameMode == GAME_SKIRMISH)
 		{
@@ -1121,7 +1111,7 @@ void GameLogic::startNewGame(Bool saveGame)
 	checkForDuplicateColors(game);
 
 	Bool isSkirmishOrSkirmishReplay = FALSE;
-	if (game)
+	if (TheGameInfo)
 	{
 		for (Int i = 0; i < MAX_SLOTS; ++i)
 		{
@@ -1132,7 +1122,6 @@ void GameLogic::startNewGame(Bool saveGame)
 			if (slot->isAI())
 			{
 				isSkirmishOrSkirmishReplay = TRUE;
-				continue;
 			}
 		}
 	}
@@ -1157,7 +1146,7 @@ void GameLogic::startNewGame(Bool saveGame)
 		if (m_loadScreen && !TheGlobalData->m_headless)
 		{
 			TheMouse->setVisibility(FALSE);
-			m_loadScreen->init(game);
+			m_loadScreen->init(TheGameInfo);
 
 			//
 			updateLoadProgress(LOAD_PROGRESS_START);
@@ -1200,7 +1189,7 @@ void GameLogic::startNewGame(Bool saveGame)
 #endif
 
 	Int progressCount = LOAD_PROGRESS_SIDE_POPULATION;
-	if (game)
+	if (TheGameInfo)
 	{
 
 		if (TheGameEngine->isMultiplayerSession() || isSkirmishOrSkirmishReplay)
@@ -1209,7 +1198,7 @@ void GameLogic::startNewGame(Bool saveGame)
 			TheSidesList->prepareForMP_or_Skirmish();
 		}
 
-		//DEBUG_LOG(("Starting LAN game with %d players", game->getNumPlayers()));
+		//DEBUG_LOG(("Starting LAN game with %d players", TheGameInfo->getNumPlayers()));
 		Dict d;
 		for (int i = 0; i < MAX_SLOTS; ++i)
 		{
@@ -1241,7 +1230,7 @@ void GameLogic::startNewGame(Bool saveGame)
 				d.setAsciiString(TheKey_playerFaction, KEYNAME(pt->getNameKey()));
 			}
 
-			if (game->isPlayerPreorder(i))
+			if (TheGameInfo->isPlayerPreorder(i))
 			{
 				d.setBool(TheKey_playerIsPreorder, TRUE);
 			}
@@ -1328,7 +1317,7 @@ void GameLogic::startNewGame(Bool saveGame)
 
 			AsciiString slotNameAscii;
 			slotNameAscii.translate(slot->getName());
-			if (slot->isHuman() && game->getSlotNum(slotNameAscii) == game->getLocalSlotNum()) {
+			if (slot->isHuman() && TheGameInfo->getSlotNum(slotNameAscii) == TheGameInfo->getLocalSlotNum()) {
 				localSlot = i;
 			}
 			TheSidesList->addSide(&d);
@@ -1398,7 +1387,7 @@ void GameLogic::startNewGame(Bool saveGame)
 		// if there are no other teams (happens for debugging) don't end the game immediately
 		Int numTeams = 0; // this can be higher than expected, but is accurate for determining 0, 1, 2+
 		Int lastTeam = -1;
-		if (game)
+		if (TheGameInfo)
 		{
 			for (int i = 0; i < MAX_SLOTS; ++i)
 			{
@@ -1631,7 +1620,7 @@ void GameLogic::startNewGame(Bool saveGame)
 	ThePartitionManager->revealMapForPlayerPermanently(observerPlayer->getPlayerIndex());
 	DEBUG_LOG(("Reveal shroud for %ls whose index is %d", observerPlayer->getPlayerDisplayName().str(), observerPlayer->getPlayerIndex()));
 
-	if (game)
+	if (TheGameInfo)
 	{
 		for (int i = 0; i < MAX_SLOTS; ++i)
 		{
@@ -1769,7 +1758,7 @@ void GameLogic::startNewGame(Bool saveGame)
 
 	progressCount = LOAD_PROGRESS_LOOP_INITIAL_NETWORK_BUILDINGS;
 	// place initial network buildings/units
-	if (game && !saveGame)
+	if (TheGameInfo && !saveGame)
 	{
 		for (int i = 0; i < MAX_SLOTS; ++i)
 		{
@@ -1848,7 +1837,7 @@ void GameLogic::startNewGame(Bool saveGame)
 	// Note - We construct the multiplayer start spot name manually here, so change this if you
 	//        change TheKey_Player_1_Start etc.  mdc
 	AsciiString startingCamName = TheNameKeyGenerator->keyToName(TheKey_InitialCameraPosition);
-	if (game)
+	if (TheGameInfo)
 	{
 		GameSlot* slot = game->getSlot(localSlot);
 		DEBUG_ASSERTCRASH(slot, ("Starting a LAN game without ourselves!"));
@@ -2096,8 +2085,6 @@ void GameLogic::startNewGame(Bool saveGame)
 		TheGameSpyBuddyMessageQueue->addRequest(req);
 	}
 
-	//Added By Sadullah Nader
-	//Added to fix the quit menu
 	//ReAllows quit menu to work during loading scene
 	setGameLoading(FALSE);
 
@@ -2743,7 +2730,7 @@ void GameLogic::popSleepyUpdate()
 void GameLogic::friend_awakenUpdateModule(Object* obj, UpdateModulePtr u, UnsignedInt whenToWakeUp)
 {
 	//USE_PERF_TIMER(friend_awakenUpdateModule)
-	UnsignedInt now = TheGameLogic->getFrame();
+	UnsignedInt now = getFrame();
 	DEBUG_ASSERTCRASH(whenToWakeUp >= now, ("setWakeFrame frame is in the past... are you sure this is what you want?"));
 
 	if (u == m_curUpdateModule)
@@ -3177,7 +3164,7 @@ void GameLogic::update(void)
 	}
 
 	// send the current time to the GameClient
-	UnsignedInt now = TheGameLogic->getFrame();
+	UnsignedInt now = getFrame();
 	TheGameClient->setFrame(now);
 
 	// update (execute) scripts
@@ -3369,7 +3356,7 @@ void GameLogic::preUpdate()
 		Bool pause = TRUE;
 		Bool pauseMusic = FALSE;
 		Bool pauseInput = FALSE;
-		TheGameLogic->setGamePaused(pause, pauseMusic, pauseInput);
+		setGamePaused(pause, pauseMusic, pauseInput);
 	}
 }
 
@@ -3434,7 +3421,7 @@ void GameLogic::registerObject(Object* obj)
 	// add object to lookup table
 	addObjectToLookupTable(obj);
 
-	UnsignedInt now = TheGameLogic->getFrame();
+	UnsignedInt now = getFrame();
 	if (now == 0)
 		now = 1;
 	for (BehaviorModule** b = obj->getBehaviorModules(); *b; ++b)
@@ -4653,7 +4640,7 @@ void GameLogic::loadPostProcess(void)
 #ifdef ALLOW_NONSLEEPY_UPDATES
 	m_normalUpdates.clear();
 #else
-	UnsignedInt now = TheGameLogic->getFrame();
+	UnsignedInt now = getFrame();
 	if (now == 0)
 		now = 1;
 #endif

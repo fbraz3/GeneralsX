@@ -2282,7 +2282,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 			Locale_GetString("Autorun:Install"),
 #else
-			AsciiString("Autorun:Install"),
+			"Autorun:Install",
 #endif
 			TTButtonFontPtr);
 
@@ -2302,7 +2302,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 			Locale_GetString("Autorun:Play"),
 #else
-			AsciiString("Autorun:Play"),
+			"Autorun:Play",
 #endif
 			TTButtonFontPtr);
 		/*
@@ -2340,7 +2340,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 			Locale_GetString("Autorun:CheckForUpdates"),
 #else
-			AsciiString("Autorun:CheckForUpdates"),
+			"Autorun:CheckForUpdates",
 #endif
 			TTButtonFontPtr);
 	}
@@ -2358,7 +2358,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 		Locale_GetString("Autorun:ExploreCD"),
 #else
-		AsciiString("Autorun:ExploreCD"),
+		"Autorun:ExploreCD",
 #endif
 		TTButtonFontPtr);
 	//	strcpy( next_button_name, ButtonImages[button_index] );
@@ -2379,7 +2379,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 			Locale_GetString("Autorun:Website"),
 #else
-			AsciiString("Autorun:Website"),
+			"Autorun:Website",
 #endif
 			TTButtonFontPtr);
 
@@ -2402,7 +2402,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 			Locale_GetString("Autorun:Uninstall"),
 #else
-			AsciiString("Autorun:Uninstall"),
+			"Autorun:Uninstall",
 #endif
 			TTButtonFontPtr);
 
@@ -2424,7 +2424,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 		Locale_GetString("Autorun:Previews"),
 #else
-		AsciiString("Autorun:Previews"),
+		"Autorun:Previews",
 #endif
 		TTButtonFontPtr);
 
@@ -2441,7 +2441,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 		Locale_GetString("Autorun:Help"),
 #else
-		AsciiString("Autorun:Help"),
+		"Autorun:Help",
 #endif
 		TTButtonFontPtr);
 
@@ -2458,7 +2458,7 @@ void MainWindow::Create_Buttons(HWND hWnd, RECT* dlg_rect)
 #ifdef LEAN_AND_MEAN
 		Locale_GetString("Autorun:Cancel"),
 #else
-		AsciiString("Autorun:Cancel"),
+		"Autorun:Cancel",
 #endif
 		TTButtonFontPtr);
 

@@ -284,7 +284,7 @@ BOOL ObjectOptions::OnInitDialog()
 		FilenameList filenameList;
 		TheFileSystem->getFileListInDirectory(TEST_W3D_DIR_PATH, "*.w3d", filenameList, FALSE);
 
-		if (filenameList.size() > 0) {
+		if (!filenameList.empty()) {
 			FilenameList::iterator it = filenameList.begin();
 			do {
 				AsciiString filename = *it;

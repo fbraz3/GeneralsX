@@ -233,7 +233,7 @@ UnicodeString LANPreferences::getRemoteIPEntry(Int i)
 	asciientry.set(asciientry.str() + 1); // skip the ':'
 
 	ret.translate(ipstr);
-	if (asciientry.getLength() > 0)
+	if (!asciientry.isEmpty())
 	{
 		ret.concat(L"(");
 		ret.concat(QuotedPrintableToUnicodeString(asciientry));

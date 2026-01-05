@@ -72,8 +72,6 @@
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/ScriptEngine.h"
 #include "WWDownload/Registry.h"
-//added by saad
-//used to access a messagebox that does "ok" and "cancel"
 #include "GameClient/MessageBox.h"
 
 #include "ww3d.h"
@@ -201,13 +199,10 @@ static GameWindow *   radioLow   = NULL;
 
 */
 
-//Added By Saad for the resolution confirmation dialog box
 DisplaySettings oldDispSettings, newDispSettings;
 Bool dispChanged = FALSE;
 extern Int timer;
 extern void DoResolutionDialog();
-//
-
 static Bool ignoreSelected = FALSE;
 WindowLayout* OptionsLayout = NULL;
 
@@ -1188,14 +1183,14 @@ static void saveOptions(void)
 
 		TheWritableGlobalData->m_useDrawModuleLOD = !GadgetCheckBoxIsChecked(checkExtraAnimations);
 		TheWritableGlobalData->m_useTreeSway = !TheWritableGlobalData->m_useDrawModuleLOD;	//borrow same setting.
-		(*pref)["ExtraAnimations"] = TheGlobalData->m_useDrawModuleLOD ? AsciiString("no") : AsciiString("yes");
+		(*pref)["ExtraAnimations"] = TheGlobalData->m_useDrawModuleLOD ? "no" : "yes";
 
 		TheWritableGlobalData->m_enableDynamicLOD = !GadgetCheckBoxIsChecked(checkNoDynamicLod);
 		(*pref)["DynamicLOD"] = TheGlobalData->m_enableDynamicLOD ? AsciiString("yes") : AsciiString("no");
 
 		// Never write this out
 		//TheWritableGlobalData->m_useFpsLimit = !GadgetCheckBoxIsChecked( checkUnlockFps );
-		//(*pref)["FPSLimit"] = TheGlobalData->m_useFpsLimit ? AsciiString("yes") : AsciiString("no");
+		//(*pref)["FPSLimit"] = TheGlobalData->m_useFpsLimit ? "yes" : "no";
 
 		TheWritableGlobalData->m_enableBehindBuildingMarkers = GadgetCheckBoxIsChecked(checkBuildingOcclusion);
 		(*pref)["BuildingOcclusion"] = TheWritableGlobalData->m_enableBehindBuildingMarkers ? AsciiString("yes") : AsciiString("no");
@@ -1299,7 +1294,7 @@ static void saveOptions(void)
 	//-------------------------------------------------------------------------------------------------
 	// mouse mode
 	TheWritableGlobalData->m_useAlternateMouse = GadgetCheckBoxIsChecked(checkAlternateMouse);
-	(*pref)["UseAlternateMouse"] = TheWritableGlobalData->m_useAlternateMouse ? AsciiString("yes") : AsciiString("no");
+	(*pref)["UseAlternateMouse"] = TheWritableGlobalData->m_useAlternateMouse ? "yes" : "no";
 
 	// TheSuperHackers @todo Add combo box ?
 	{
@@ -1550,8 +1545,8 @@ static void saveOptions(void)
 				TheWritableGlobalData->m_xResolution = xres;
 				TheWritableGlobalData->m_yResolution = yres;
 
-				TheHeaderTemplateManager->headerNotifyResolutionChange();
-				TheMouse->mouseNotifyResolutionChange();
+				TheHeaderTemplateManager->onResolutionChanged();
+				TheMouse->onResolutionChanged();
 
 				//Save new settings for a dialog box confirmation after options are accepted
 				newDispSettings.xRes = xres;

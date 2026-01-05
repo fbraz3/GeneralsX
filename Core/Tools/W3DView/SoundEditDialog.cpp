@@ -278,7 +278,7 @@ SoundEditDialogClass::OnOK (void)
 		//
 		// Update the asset manager with the new prototype
 		//
-		if (OldName.Get_Length () > 0) {
+		if (!OldName.Is_Empty()) {
 			WW3DAssetManager::Get_Instance()->Remove_Prototype (OldName);
 		}
 		WW3DAssetManager::Get_Instance()->Add_Prototype (prototype);

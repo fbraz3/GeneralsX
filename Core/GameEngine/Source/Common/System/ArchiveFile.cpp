@@ -39,13 +39,13 @@
 // and ? is used to denote a single wildcard character.
 static Bool SearchStringMatches(AsciiString str, AsciiString searchString)
 {
-	if (str.getLength() == 0) {
-		if (searchString.getLength() == 0) {
+	if (str.isEmpty()) {
+		if (searchString.isEmpty()) {
 			return TRUE;
 		}
 		return FALSE;
 	}
-	if (searchString.getLength() == 0) {
+	if (searchString.isEmpty()) {
 		return FALSE;
 	}
 
@@ -109,7 +109,7 @@ void ArchiveFile::addFile(const AsciiString& path, const ArchivedFileInfo* fileI
 	// Use backslash since .big files store Windows-style paths
 	tokenizer.nextToken(&token, "\\");
 
-	while (token.getLength() > 0)
+	while (!token.isEmpty())
 	{
 		// printf("[ArchiveFile::addFile] Creating/finding directory: '%s'\n", token.str());
 		// 

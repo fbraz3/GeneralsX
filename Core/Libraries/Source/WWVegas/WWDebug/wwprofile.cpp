@@ -221,7 +221,7 @@ void WWProfileHierachyNodeClass::Add_To_String_Compact(StringClass& string,int r
 	if (Child) {
 		StringClass work;
 		Child->Add_To_String_Compact(work,recursion+1);
-		if (work.Get_Length()!=0) {
+		if (!work.Is_Empty()) {
 			string+="{";
 			string+=work;
 			string+="}";

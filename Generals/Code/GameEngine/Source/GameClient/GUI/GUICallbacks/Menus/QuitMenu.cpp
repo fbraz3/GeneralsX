@@ -285,8 +285,6 @@ void ToggleQuitMenu()
 	if (TheGameLogic->isIntroMoviePlaying() || TheGameLogic->isLoadingGame() || TheScriptEngine->isGameEnding())
 		return;
 
-	//End Add
-
 	// BGC- If we are currently in the disconnect screen, don't let the quit menu come up.
 	if (TheDisconnectMenu != NULL) {
 		if (TheDisconnectMenu->isScreenVisible() == TRUE) {
@@ -323,12 +321,9 @@ void ToggleQuitMenu()
 
 		isVisible = FALSE;
 
-		//Added By Sadullah Nader
-		//Bug: When Toggling the quit menu off, the quit confirmation should also go away
 		if (quitConfirmationWindow)
 			TheWindowManager->winDestroy(quitConfirmationWindow);
 		quitConfirmationWindow = NULL;
-		//
 
 		if (!TheGameLogic->isInMultiplayerGame())
 			TheGameLogic->setGamePaused(FALSE);
@@ -352,8 +347,6 @@ void ToggleQuitMenu()
 	}
 	else
 	{
-		//Added By Sadullah Nader
-		//Added to compensate for the quit confirmation window pop-up
 
 		TheMouse->setCursor(Mouse::ARROW);
 

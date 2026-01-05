@@ -303,7 +303,7 @@ void GameInfo::reset(void)
 	m_inGame = false;
 	m_inProgress = false;
 	m_gameID = 0;
-	m_mapName = AsciiString("NOMAP");
+	m_mapName = "NOMAP";
 	m_mapMask = 0;
 	m_seed = SDL_GetTicks(); //GameClientRandomValue(0, INT_MAX - 1);
 	m_useStats = TRUE;
@@ -531,7 +531,7 @@ void GameInfo::setMap(AsciiString mapName)
 			}
 
 			AsciiString newMapName;
-			if (mapName.getLength() > 0)
+			if (!mapName.isEmpty())
 			{
 				AsciiString token;
 				mapName.nextToken(&token, (char*)GET_PATH_SEPARATOR());
@@ -542,7 +542,7 @@ void GameInfo::setMap(AsciiString mapName)
 				// added onto it.
 				while (mapName.findPathSeparator() != NULL)
 				{
-					if (newMapName.getLength() > 0)
+					if (!newMapName.isEmpty())
 					{
 						newMapName.concat(GET_PATH_SEPARATOR());
 					}
@@ -902,7 +902,7 @@ AsciiString GameInfoToAsciiString(const GameInfo* game)
 	AsciiString mapName = game->getMap();
 	mapName = TheGameState->realMapPathToPortableMapPath(mapName);
 	AsciiString newMapName;
-	if (mapName.getLength() > 0)
+	if (!mapName.isEmpty())
 	{
 		AsciiString token;
 		mapName.nextToken(&token, (char*)GET_PATH_SEPARATOR());
@@ -913,7 +913,7 @@ AsciiString GameInfoToAsciiString(const GameInfo* game)
 		// added onto it.
 		while (mapName.findPathSeparator() != NULL)
 		{
-			if (newMapName.getLength() > 0)
+			if (!newMapName.isEmpty())
 			{
 				newMapName.concat(GET_PATH_SEPARATOR());
 			}

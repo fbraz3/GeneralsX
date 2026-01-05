@@ -376,7 +376,7 @@ void MapObjectProps::_DictToTeam(void)
 
 void MapObjectProps::_DictToName(void)
 {
-	AsciiString name = "";
+	AsciiString name;
 	Bool exists;
 	if (m_dictToEdit) {
 		name = m_dictToEdit->getAsciiString(TheKey_objectName, &exists);
@@ -749,7 +749,7 @@ void MapObjectProps::_DictToPrebuiltUpgrades(void)
 				if (!gmbmd) {
 					continue;
 				}
-				if (gmbmd->m_upgradeMuxData.m_activationUpgradeNames.size() > 0) {
+				if (!gmbmd->m_upgradeMuxData.m_activationUpgradeNames.empty()) {
 					cstr = gmbmd->m_upgradeMuxData.m_activationUpgradeNames[0].str();
 					if (pBox->FindString(-1, cstr) == LB_ERR) {
 						pBox->AddString(cstr);

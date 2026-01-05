@@ -213,11 +213,8 @@ Object::Object( const ThingTemplate *tt, const ObjectStatusMaskType &objectStatu
 	Int i, modIdx;
 	AsciiString modName;
 
-	//Added By Sadullah Nader
-	//Initializations inserted
 	m_formationOffset.x = m_formationOffset.y = 0.0f;
 	m_iPos.zero();
-	//
 	for( i = 0; i < DISABLED_COUNT; i++ )
 	{
 		m_disabledTillFrame[ i ] = NEVER;
@@ -596,25 +593,13 @@ Object::~Object()
 }
 
 //-------------------------------------------------------------------------------------------------
-void localIsHero( Object *obj, void* userData )
-{
-	Bool *hero = (Bool*)userData;
-
-	if( obj && obj->isKindOf( KINDOF_HERO ) )
-	{
-		*hero = TRUE;
-	}
-}
-
-//-------------------------------------------------------------------------------------------------
+// TheSuperHackers @performance bobtista 13/11/2025 Use cached hero count for O(1) lookup instead of O(n) iteration.
 Bool Object::isHero() const
 {
 	ContainModuleInterface *contain = getContain();
 	if( contain )
 	{
-		Bool heroInside = FALSE;
-		contain->iterateContained( localIsHero, (void*)(&heroInside), FALSE );
-		if( heroInside )
+		if( contain->getHeroUnitsContained() > 0 )
 		{
 			return TRUE;
 		}
@@ -1542,6 +1527,31 @@ Color Object::getNightIndicatorColor() const
 	{
 		return m_indicatorColor;
 	}
+}
+
+//=============================================================================
+// Object::isLogicallyVisible
+//=============================================================================
+Bool Object::isLogicallyVisible() const
+{
+	const Object* obj = getOuterObject();
+
+	// Disguisers are always visible to all players, irrespective of any stealth
+	// status. We thus need to check the type rather than the status as the
+	// disguise status is absent during the disguise transition phase.
+	if (obj->isKindOf(KINDOF_DISGUISER))
+		return true;
+
+	if (obj->testStatus(OBJECT_STATUS_STEALTHED) && !obj->testStatus(OBJECT_STATUS_DETECTED))
+	{
+		const Player* player = rts::getObservedOrLocalPlayer();
+		const Relationship relationship = player->getRelationship(getTeam());
+
+		if (player->isPlayerActive() && relationship != ALLIES)
+			return false;
+	}
+
+	return true;
 }
 
 //=============================================================================
@@ -2792,6 +2802,12 @@ Bool Object::hasSpecialPower( SpecialPowerType type ) const
 //-------------------------------------------------------------------------------------------------
 void Object::onVeterancyLevelChanged( VeterancyLevel oldLevel, VeterancyLevel newLevel, Bool provideFeedback )
 {
+#if !RETAIL_COMPATIBLE_CRC
+	// TheSuperHackers @bugfix Stubbjax 10/12/2025 Do not apply veterancy bonuses and animations for dead units.
+	if (isEffectivelyDead())
+		return;
+#endif
+
 	updateUpgradeModules();
 
 	const UpgradeTemplate* up = TheUpgradeCenter->findVeterancyUpgrade(newLevel);
@@ -2838,15 +2854,23 @@ void Object::onVeterancyLevelChanged( VeterancyLevel oldLevel, VeterancyLevel ne
 			break;
 	}
 
-	Drawable* outerDrawable = getOuterObject()->getDrawable();
-
 	Bool doAnimation = provideFeedback
 		&& newLevel > oldLevel
 		&& !isKindOf(KINDOF_IGNORED_IN_GUI)
-		&& outerDrawable
-		&& outerDrawable->isVisible();
+		&& isLogicallyVisible();
 
-	if( doAnimation && TheGameLogic->getDrawIconUI() )
+	if (doAnimation)
+		createVeterancyLevelFX(oldLevel, newLevel);
+}
+
+void Object::createVeterancyLevelFX(VeterancyLevel oldLevel, VeterancyLevel newLevel)
+{
+#if RETAIL_COMPATIBLE_CRC
+	if (isEffectivelyDead())
+		return;
+#endif
+
+	if (TheGameLogic->getDrawIconUI())
 	{
 		if( TheAnim2DCollection && TheGlobalData->m_levelGainAnimationName.isEmpty() == FALSE )
 		{
@@ -2866,7 +2890,6 @@ void Object::onVeterancyLevelChanged( VeterancyLevel oldLevel, VeterancyLevel ne
 		soundToPlay.setObjectID( getID() );
 		TheAudio->addAudioEvent( &soundToPlay );
 	}
-
 }
 
 //-------------------------------------------------------------------------------------------------

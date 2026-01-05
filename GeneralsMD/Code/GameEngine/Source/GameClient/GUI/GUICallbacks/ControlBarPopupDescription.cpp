@@ -567,7 +567,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			name = TheGameText->fetch("CONTROLBAR:Power");
 			descrip = TheGameText->fetch("CONTROLBAR:PowerDescription");
 
-			Player* playerToDisplay = TheControlBar->getCurrentlyViewedPlayer();
+			Player* playerToDisplay = getCurrentlyViewedPlayer();
 
 			if( playerToDisplay && playerToDisplay->getEnergy() )
 			{
@@ -615,7 +615,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	if(win)
 	{
 
-		static NameKeyType winNamekey	= TheNameKeyGenerator->nameToKey( AsciiString( "ControlBar.wnd:BackgroundMarker" ) );
+		static NameKeyType winNamekey	= TheNameKeyGenerator->nameToKey( "ControlBar.wnd:BackgroundMarker" );
 		static ICoord2D lastOffset = { 0, 0 };
 
 		ICoord2D size, newSize, pos;
@@ -656,7 +656,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		{
 			return;
 		}
-		TheControlBar->getBackgroundMarkerPos(&basePos.x, &basePos.y);
+		getBackgroundMarkerPos(&basePos.x, &basePos.y);
 		ICoord2D curPos, offset;
 		marker->winGetScreenPosition(&curPos.x,&curPos.y);
 

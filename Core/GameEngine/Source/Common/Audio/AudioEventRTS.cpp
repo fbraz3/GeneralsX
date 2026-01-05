@@ -732,8 +732,9 @@ void AudioEventRTS::setVolume(Real vol)
 //-------------------------------------------------------------------------------------------------
 const Coord3D* AudioEventRTS::getCurrentPosition(void)
 {
-	if (m_ownerType == OT_Positional)
+	switch (m_ownerType)
 	{
+	case OT_Positional:
 		return &m_positionOfAudio;
 	}
 	else if (m_ownerType == OT_Object)

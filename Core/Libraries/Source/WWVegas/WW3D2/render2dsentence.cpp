@@ -787,7 +787,6 @@ void	Render2DSentenceClass::Build_Sentence_Centered (const WCHAR *text, int *hkX
 				if( ParseHotKey && (*word == L'&') && (*word+1 != 0) && (*word+1 > L' ') && (*word+1 != L'\n'))
 				{
 					int offset = 0;
-					//Added By Saad
 					if (word_width != 0 )
 					{
 						const WCHAR *word_back = word;
@@ -798,7 +797,6 @@ void	Render2DSentenceClass::Build_Sentence_Centered (const WCHAR *text, int *hkX
 							offset =-1;
 						}
 					}
-					//
 					*word++;
 					calcHotKeyX = true;
 				}
@@ -855,7 +853,6 @@ void	Render2DSentenceClass::Build_Sentence_Centered (const WCHAR *text, int *hkX
 			//
 			word_width = Font->Get_Char_Spacing (*word++);
 			wordCount = 0;
-			//Added By Saad
 			line_width += word_width;
 		}
 		//

@@ -647,7 +647,7 @@ Bool InGameUI::removeSuperweapon(Int playerIndex, const AsciiString& powerName, 
 				SuperweaponInfo* info = *listIt;
 				swList.erase(listIt);
 				deleteInstance(info);
-				if (swList.size() == 0)
+				if (swList.empty())
 				{
 					m_superweapons[playerIndex].erase(mapIt);
 				}
@@ -977,8 +977,6 @@ InGameUI::InGameUI()
 	m_mouseModeCursor = Mouse::ARROW;
 	m_mousedOverDrawableID = INVALID_DRAWABLE_ID;
 
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_currentlyPlayingMovie.clear();
 	m_militarySubtitle = NULL;
 	m_popupMessageData = NULL;
@@ -2714,7 +2712,7 @@ void InGameUI::createMouseoverHint(const GameMessage* msg)
 		TheMouse->resetTooltipDelay();
 	}
 
-	if (m_mouseMode == MOUSEMODE_DEFAULT && !m_isScrolling && !m_isSelecting && !TheInGameUI->getSelectCount() && (TheRecorder->getMode() != RECORDERMODETYPE_PLAYBACK || TheLookAtTranslator->hasMouseMovedRecently()))
+	if (m_mouseMode == MOUSEMODE_DEFAULT && !m_isScrolling && !m_isSelecting && !getSelectCount() && (TheRecorder->getMode() != RECORDERMODETYPE_PLAYBACK || TheLookAtTranslator->hasMouseMovedRecently()))
 	{
 		if (m_mousedOverDrawableID != INVALID_DRAWABLE_ID)
 		{
@@ -4353,7 +4351,7 @@ void InGameUI::militarySubtitle(const AsciiString& label, Int duration)
 	const int messageTimeout = currLogicFrame + (Int)(((Real)LOGICFRAMES_PER_SECOND * duration) / 1000.0f);
 
 	// disable tooltips until this frame, cause we don't want to collide with the military subtitles.
-	TheInGameUI->disableTooltipsUntil(messageTimeout);
+	disableTooltipsUntil(messageTimeout);
 
 	// calculate where this screen position should be since the position being passed in is based off 8x6
 	Coord2D multiplier;
@@ -4391,7 +4389,7 @@ void InGameUI::removeMilitarySubtitle(void)
 	if (!m_militarySubtitle)
 		return;
 
-	TheInGameUI->clearTooltipsDisabled();
+	clearTooltipsDisabled();
 
 	// loop through and free up the display strings
 	for (UnsignedInt i = 0; i <= m_militarySubtitle->currentDisplayString; i++)
@@ -4729,7 +4727,7 @@ Bool InGameUI::canSelectedObjectsDoSpecialPower(const CommandButton* command, co
 	if (ignoreSelDraw)
 		tmpList.push_back(ignoreSelDraw);
 
-	const DrawableList* selected = (tmpList.size() > 0) ? &tmpList : TheInGameUI->getAllSelectedDrawables();
+	const DrawableList* selected = (!tmpList.empty()) ? &tmpList : getAllSelectedDrawables();
 
 	// set up counters for rule checking
 	Int count = 0;
@@ -4992,7 +4990,7 @@ Int InGameUI::selectMatchingAcrossRegion(IRegion2D* region)
 		}
 	}
 
-	if (drawableList.size() == 0)
+	if (drawableList.empty())
 		return -1; // nothing useful selected to begin with - don't bother iterating
 
 	std::set<const ThingTemplate*>::iterator iter;
@@ -5471,7 +5469,7 @@ void InGameUI::popupMessage(const AsciiString& identifier, Int x, Int y, Int wid
 	if (pause)
 		TheGameLogic->setGamePaused(TRUE, pauseMusic);
 
-	m_popupMessageData->layout = TheWindowManager->winCreateLayout(AsciiString("InGamePopupMessage.wnd"));
+	m_popupMessageData->layout = TheWindowManager->winCreateLayout("InGamePopupMessage.wnd");
 	m_popupMessageData->layout->runInit();
 }
 
@@ -5505,14 +5503,11 @@ void InGameUI::clearPopupMessageData(void)
 //-------------------------------------------------------------------------------------------------
 FloatingTextData::FloatingTextData(void)
 {
-	// Added By Sadullah Nader
-	// Initializations missing and needed
 	m_color = 0;
 	m_frameCount = 0;
 	m_frameTimeOut = 0;
 	m_pos3D.zero();
 	m_text.clear();
-	//
 	m_dString = TheDisplayStringManager->newDisplayString();
 }
 

@@ -40,7 +40,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
   // just for convenience...
   bool normalMode=cmdmode==CommandMode::Normal;
 
-  if (!strcmp(cmd,"help"))
+  if (strcmp(cmd,"help") == 0)
   {
     if (!normalMode)
       return true;
@@ -51,7 +51,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
              "  list, io, alwaysflush, timestamp, exit, clear, add, view\n";
       return true;
     }
-    else if (!strcmp(argv[0],"list"))
+    else if (strcmp(argv[0],"list") == 0)
     {
       dbg << "list (g|l|d|a|c) [ <pattern> ]\n"
              "\n"
@@ -73,7 +73,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
              "e.g. debug.cpp(13).\n";
       return true;
     }
-    else if (!strcmp(argv[0],"io"))
+    else if (strcmp(argv[0],"io") == 0)
     {
       dbg << "io <I/O Class> <cmd> { <param> }]\n"
              "\n"
@@ -92,33 +92,33 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
              "a list of possible I/O classes.\n";
       return true;
     }
-    else if (!strcmp(argv[0],"alwaysflush"))
+    else if (strcmp(argv[0],"alwaysflush") == 0)
     {
       dbg << "alwaysflush [ (+|-) ]\n\n"
              "Enables/disables flushing after each new entry in\n"
              "the log file (default: off).\n";
       return true;
     }
-    else if (!strcmp(argv[0],"timestamp"))
+    else if (strcmp(argv[0],"timestamp") == 0)
     {
       dbg << "timestamp [ (+|-) ]\n\n"
              "Enables/disables timestamping each log entry\n"
              "(default: off).\n";
       return true;
     }
-    else if (!strcmp(argv[0],"exit"))
+    else if (strcmp(argv[0],"exit") == 0)
     {
       dbg << "exit\n\nExits program immediately.\n";
       return true;
     }
-    else if (!strcmp(argv[0],"clear"))
+    else if (strcmp(argv[0],"clear") == 0)
     {
       dbg << "clear (l|a|c)\n\n"
              "Clears the given inclusion/exclusion list\n"
              "(l=logs, a=asserts/crashes, c=checks).\n";
       return true;
     }
-    else if (!strcmp(argv[0],"add"))
+    else if (strcmp(argv[0],"add") == 0)
     {
       dbg << "add (l|a|c) (+|-) <pattern>\n"
              "\n"
@@ -133,7 +133,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
              "the last match.";
       return true;
     }
-    else if (!strcmp(argv[0],"view"))
+    else if (strcmp(argv[0],"view") == 0)
     {
       dbg << "view [ (l|a|c) ]\n\n"
              "Shows the active pattern for the given list\n"
@@ -142,7 +142,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
     }
     return false;
   }
-  if (!strcmp(cmd,"list"))
+  if (strcmp(cmd,"list") == 0)
   {
     const char *pattern=argn>=2?argv[1]:"*";
 
@@ -205,10 +205,10 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
 
     return true;
   }
-  if (!strcmp(cmd,"io"))
+  if (strcmp(cmd,"io") == 0)
   {
     // cmd: io
-    if (!argn||!strcmp(argv[0],"?"))
+    if (!argn||strcmp(argv[0],"?") == 0)
     {
       // show active/all I/O classes
       if (normalMode)
@@ -233,7 +233,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
       // find I/O class
       Debug::IOFactoryListEntry *cur=dbg.firstIOFactory;
       for (;cur;cur=cur->next)
-        if (!strcmp(argv[0],cur->ioID))
+        if (strcmp(argv[0],cur->ioID) == 0)
           break;
       if (!cur)
       {
@@ -244,7 +244,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
       if (argn>1)
       {
         // 'add' command?
-        if (!strcmp(argv[1],"add"))
+        if (strcmp(argv[1],"add") == 0)
         {
           if (cur->io)
           {
@@ -259,7 +259,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
           }
         }
         // 'remove' command?
-        if (!strcmp(argv[1],"remove"))
+        if (strcmp(argv[1],"remove") == 0)
         {
           if (cur->io)
           {
@@ -281,7 +281,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
     }
     return true;
   }
-  if (!strcmp(cmd,"alwaysflush"))
+  if (strcmp(cmd,"alwaysflush") == 0)
   {
     if (argn)
     {
@@ -297,7 +297,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
 
     return true;
   }
-  if (!strcmp(cmd,"timestamp"))
+  if (strcmp(cmd,"timestamp") == 0)
   {
     if (argn)
     {
@@ -313,14 +313,14 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
 
     return true;
   }
-  if (!strcmp(cmd,"exit"))
+  if (strcmp(cmd,"exit") == 0)
   {
     exit(1);
     return true;
   }
-  if (!strcmp(cmd,"clear")||
-      !strcmp(cmd,"add")||
-      !strcmp(cmd,"view"))
+  if (strcmp(cmd,"clear") == 0||
+      strcmp(cmd,"add") == 0||
+      strcmp(cmd,"view") == 0)
   {
     unsigned mask=0;
     if (argn)
@@ -339,7 +339,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
       mask=0xffffffff;
 
     bool modified=false;
-    if (!strcmp(cmd,"clear"))
+    if (strcmp(cmd,"clear") == 0)
     {
       // remove some (or all) pattern
       const char *pattern=argn<2?"*":argv[1];
@@ -369,7 +369,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
       else
         dbg.lastPatternEntry=NULL;
     }
-    if (!strcmp(cmd,"add"))
+    if (strcmp(cmd,"add") == 0)
     {
       // add a pattern
       if (argn<3)
@@ -380,7 +380,7 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
         modified=true;
       }
     }
-    if (!strcmp(cmd,"view"))
+    if (strcmp(cmd,"view") == 0)
     {
       // show list of defined patterns
       for (Debug::PatternListEntry *cur=dbg.firstPatternEntry;cur;cur=cur->next)

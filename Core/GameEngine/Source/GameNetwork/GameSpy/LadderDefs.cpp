@@ -164,7 +164,7 @@ static LadderInfo* parseLadder(AsciiString raw)
 			// end of a ladder
 			if (lad->playersPerTeam >= 1 && lad->playersPerTeam <= MAX_SLOTS / 2)
 			{
-				if (lad->validFactions.size() == 0)
+				if (lad->validFactions.empty())
 				{
 					DEBUG_LOG(("No factions specified.  Using all."));
 					lad->validFactions.clear();
@@ -191,7 +191,7 @@ static LadderInfo* parseLadder(AsciiString raw)
 					}
 				}
 
-				if (lad->validMaps.size() == 0)
+				if (lad->validMaps.empty())
 				{
 					DEBUG_LOG(("No maps specified.  Using all."));
 					std::list<AsciiString> qmMaps = TheGameSpyConfig->getQMMaps();
@@ -445,7 +445,7 @@ void LadderList::loadLocalLadders(void)
 	AsciiString dirname;
 	dirname.format("%sGeneralsOnline\\Ladders\\", TheGlobalData->getPath_UserData().str());
 	FilenameList filenameList;
-	TheFileSystem->getFileListInDirectory(dirname, AsciiString("*.ini"), filenameList, TRUE);
+	TheFileSystem->getFileListInDirectory(dirname, "*.ini", filenameList, TRUE);
 
 	Int index = -1;
 
@@ -504,9 +504,9 @@ void LadderList::checkLadder(AsciiString fname, Int index)
 		return;
 	}
 
-	if (li->validMaps.size() == 0)
+	if (li->validMaps.empty())
 	{
-		DEBUG_LOG(("Bailing because of li->validMaps.size() == 0"));
+		DEBUG_LOG(("Bailing because of li->validMaps.empty()"));
 		delete li;
 		return;
 	}

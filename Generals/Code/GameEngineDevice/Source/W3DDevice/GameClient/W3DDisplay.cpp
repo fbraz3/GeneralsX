@@ -404,7 +404,6 @@ W3DDisplay::~W3DDisplay()
 
 	// shutdown
 	Debug_Statistics::Shutdown_Statistics();
-	TextureLoadTaskClass::shutdown();
 	if (!TheGlobalData->m_headless)
 		W3DShaderManager::shutdown();
 	m_assetManager->Free_Assets();
@@ -1952,6 +1951,12 @@ Bool W3DDisplay::isLetterBoxFading(void)
 	if (!m_letterBoxEnabled && m_letterBoxFadeLevel != 0.0f)
 		return TRUE;
 	return FALSE;
+}
+
+//WST 10/2/2002 added query function.  JSC Integrated 5/20/03
+Bool W3DDisplay::isLetterBoxed(void)
+{
+	return (m_letterBoxEnabled);
 }
 
 // W3DDisplay::createLightPulse ===============================================

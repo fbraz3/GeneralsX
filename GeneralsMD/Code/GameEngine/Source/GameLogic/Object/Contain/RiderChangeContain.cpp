@@ -246,6 +246,11 @@ void RiderChangeContain::onContaining( Object *rider, Bool wasSelected )
 			//Transfer experience from the rider to the bike.
 			ExperienceTracker *riderTracker = rider->getExperienceTracker();
 			ExperienceTracker *bikeTracker = obj->getExperienceTracker();
+#if !RETAIL_COMPATIBLE_CRC
+			// TheSuperHackers @bugfix Stubbjax 15/12/2025 Copy trainable flag from the rider to prevent
+			// Workers and other untrainable riders from ranking up via the bike's experience tracker.
+			bikeTracker->setTrainable(riderTracker->isTrainable());
+#endif
 			bikeTracker->setVeterancyLevel( riderTracker->getVeterancyLevel(), FALSE );
 			riderTracker->setExperienceAndLevel( 0, FALSE );
 
@@ -301,6 +306,7 @@ void RiderChangeContain::onRemoving( Object *rider )
 				//Transfer experience from the bike to the rider.
 				ExperienceTracker *riderTracker = rider->getExperienceTracker();
 				ExperienceTracker *bikeTracker = bike->getExperienceTracker();
+				bikeTracker->resetTrainable();
 				riderTracker->setVeterancyLevel( bikeTracker->getVeterancyLevel(), FALSE );
 				bikeTracker->setExperienceAndLevel( 0, FALSE );
 			}

@@ -90,6 +90,7 @@ void Keyboard::createStreamMessages(void)
 		}
 
 		// next key please
+		key->setUsed();
 		key++;
 
 	}
@@ -193,7 +194,7 @@ void Keyboard::updateKeys(void)
 }
 
 //-------------------------------------------------------------------------------------------------
-/** check key repeat sequences, TRUE is returned if repeat is occurring */
+/** check key repeat timing, TRUE is returned if repeat is occurring */
 //-------------------------------------------------------------------------------------------------
 Bool Keyboard::checkKeyRepeat(void)
 {
@@ -712,9 +713,6 @@ void Keyboard::init(void)
 	// initialize the key names
 	initKeyNames();
 
-	// first input frame
-	m_inputFrame = 0;
-
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -730,9 +728,6 @@ void Keyboard::reset(void)
 //-------------------------------------------------------------------------------------------------
 void Keyboard::update(void)
 {
-
-	// increment input frame
-	m_inputFrame++;
 
 	// update the key data
 	updateKeys();
@@ -757,11 +752,44 @@ void Keyboard::resetKeys(void)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Refresh the state of the alt keys, necessary after alt tab
+//-------------------------------------------------------------------------------------------------
+void Keyboard::refreshAltKeys() const
+{
+	if (BitIsSet(m_keyStatus[KEY_LALT].state, KEY_STATE_DOWN))
+	{
+		GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_RAW_KEY_UP);
+		msg->appendIntegerArgument(KEY_LALT);
+		msg->appendIntegerArgument(KEY_STATE_UP);
+	}
+	if (BitIsSet(m_keyStatus[KEY_RALT].state, KEY_STATE_DOWN))
+	{
+		GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_RAW_KEY_UP);
+		msg->appendIntegerArgument(KEY_RALT);
+		msg->appendIntegerArgument(KEY_STATE_UP);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 /** get the first key in our current state of the keyboard */
 //-------------------------------------------------------------------------------------------------
 KeyboardIO* Keyboard::getFirstKey(void)
 {
 	return &m_keys[0];
+}
+
+//-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+KeyboardIO *Keyboard::findKey( KeyDefType key, KeyboardIO::StatusType status )
+{
+	for (KeyboardIO *io = getFirstKey(); io->key != KEY_NONE; ++io)
+	{
+		if (io->key == key && io->status == status)
+		{
+			return io;
+		}
+	}
+	return NULL;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -982,6 +1010,4 @@ WideChar Keyboard::getPrintableKey(UnsignedByte key, Int state)
 		return m_keyNames[key].shifted;
 	else
 		return m_keyNames[key].shifted2;
-
-
 }

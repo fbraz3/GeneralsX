@@ -179,8 +179,6 @@ class PeerThreadClass : public ThreadClass
 public:
 	PeerThreadClass() : ThreadClass()
 	{
-		//Added By Sadullah Nader
-		//Initializations inserted
 		m_roomJoined = m_allowObservers = m_hasPassword = FALSE;
 		m_useStats = TRUE;
 		m_exeCRC = m_iniCRC = 0;
@@ -193,24 +191,17 @@ public:
 		m_qmGroupRoom = 0;
 		m_sawEndOfEnumPlayers = m_sawMatchbot = FALSE;
 		m_sawCompleteGameList = FALSE;
-		//
 		m_isConnecting = m_isConnected = false;
 		m_groupRoomID = m_profileID = 0;
 		m_nextStagingServer = 1; m_stagingServers.clear();
 		m_pingStr = ""; m_mapName = ""; m_ladderIP = ""; m_isHosting = false;
 		for (Int i = 0; i < MAX_SLOTS; ++i)
 		{
-			m_playerNames[i] = "";
-
-			//Added by Sadullah Nader
-			//Initializations
 			m_playerColors[i] = 0;
 			m_playerFactions[i] = 0;
 			m_playerLosses[i] = 0;
 			m_playerProfileID[i] = 0;
 			m_playerWins[i] = 0;
-
-			//
 		}
 	}
 
@@ -479,7 +470,7 @@ Int PeerThreadClass::findServer(SBServer server)
 			UnsignedInt oldPrivateIP = SBServerGetPrivateInetAddress(it->second);
 			UnsignedShort oldPrivatePort = SBServerGetPrivateQueryPort(it->second);
 			UnsignedInt oldPublicIP = SBServerGetPublicInetAddress(it->second);
-			if (!strcmp(oldName, newName) &&
+			if (strcmp(oldName, newName) == 0 &&
 				oldPrivateIP == newPrivateIP &&
 				oldPublicIP == newPublicIP &&
 				oldPrivatePort == newPrivatePort)
@@ -766,7 +757,7 @@ static void QRServerKeyCallback
 		t->stopHostingAlready(peer);
 
 #ifdef DEBUG_LOGGING
-	AsciiString val = "";
+	AsciiString val;
 #define ADD(x) { qr2_buffer_add(buffer, x); val = x; }
 #define ADDINT(x) { qr2_buffer_add_int(buffer, x); val.format("%d",x); }
 #else
@@ -860,7 +851,7 @@ static void QRPlayerKeyCallback
 #undef ADD
 #undef ADDINT
 #ifdef DEBUG_LOGGING
-	AsciiString val = "";
+	AsciiString val;
 #define ADD(x) { qr2_buffer_add(buffer, x); val = x; }
 #define ADDINT(x) { qr2_buffer_add_int(buffer, x); val.format("%d",x); }
 #else
@@ -1103,7 +1094,7 @@ static SerialAuthResult doCDKeyAuthentication(PEER peer)
 	if (!peer)
 		return retval;
 
-	AsciiString s = "";
+	AsciiString s;
 	if (GetStringFromRegistry("\\ergc", "", s) && s.isNotEmpty())
 	{
 #ifdef SERVER_DEBUGGING
@@ -1671,7 +1662,7 @@ void PeerThreadClass::Thread_Function()
 							m_playerFactions[i] = 0;
 							m_playerColors[i] = 0;
 						}
-						if (incomingRequest.password.length() > 0)
+						if (!incomingRequest.password.empty())
 							m_hasPassword = true;
 						else
 							m_hasPassword = false;
@@ -1722,7 +1713,7 @@ void PeerThreadClass::Thread_Function()
 
 				case PeerRequest::PEERREQUEST_UTMPLAYER:
 				{
-					if (incomingRequest.nick.length() > 0)
+					if (!incomingRequest.nick.empty())
 					{
 						peerUTMPlayer(peer, incomingRequest.nick.c_str(), incomingRequest.id.c_str(), incomingRequest.options.c_str(), PEERFalse);
 					}
@@ -1851,7 +1842,7 @@ void PeerThreadClass::handleQMMatch(PEER peer, Int mapIndex, Int seed,
 		Int i = 0;
 		for (; i < MAX_SLOTS; ++i)
 		{
-			if (playerName[i] && stricmp(playerName[i], m_loginName.c_str()))
+			if (playerName[i] && stricmp(playerName[i], m_loginName.c_str()) != 0)
 			{
 				peerMessagePlayer(peer, playerName[i], "We're matched!", NormalMessage);
 			}
@@ -2599,7 +2590,7 @@ static void roomKeyChangedCallback(PEER peer, RoomType roomType, const char* nic
 	}
 
 #ifdef DEBUG_LOGGING
-	if (strcmp(key, "username") && strcmp(key, "b_flags"))
+	if (strcmp(key, "username") != 0 && strcmp(key, "b_flags") != 0)
 	{
 		DEBUG_LOG(("roomKeyChangedCallback() - %s set %s=%s", nick, key, val));
 	}
@@ -2714,7 +2705,7 @@ void playerLeftCallback(PEER peer, RoomType roomType, const char* nick, const ch
 
 	if (t->getQMStatus() != QM_IDLE && t->getQMStatus() != QM_STOPPED)
 	{
-		if (!stricmp(t->getQMBotName().c_str(), nick))
+		if (stricmp(t->getQMBotName().c_str(), nick) == 0)
 		{
 			// matchbot left - bail
 			PeerResponse resp;
@@ -2854,9 +2845,9 @@ static void listingGamesCallback(PEER peer, PEERBool success, const char* name, 
 		DEBUG_LOG(("Game name is '%s'", name));
 		const char* newname = SBServerGetStringValue(server, "gamename", (char*)name);
 #if RTS_GENERALS
-		if (strcmp(newname, "ccgenerals"))
+		if (strcmp(newname, "ccgenerals") != 0)
 #elif RTS_ZEROHOUR
-		if (strcmp(newname, "ccgenzh"))
+		if (strcmp(newname, "ccgenzh") != 0)
 #endif
 			name = newname;
 		DEBUG_LOG(("Game name is now '%s'", name));

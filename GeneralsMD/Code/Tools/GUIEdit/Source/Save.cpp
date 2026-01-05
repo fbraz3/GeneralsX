@@ -1124,7 +1124,7 @@ void GUIEdit::validateNames( GameWindow *root, char *filename, Bool *valid )
 	}
 
 	// check for a duplicate filename
-	if( TheEditor->isNameDuplicate( TheWindowManager->winGetWindowList(),
+	if( isNameDuplicate( TheWindowManager->winGetWindowList(),
 																	root, instData->m_decoratedNameString ) )
 	{
 
@@ -1228,14 +1228,14 @@ Bool GUIEdit::saveData( char *filePathAndFilename, char *filename )
 	if( valid == FALSE )
 	{
 
-		MessageBox( TheEditor->getWindowHandle(), offendingNames, "Window Name Error", MB_OK );
+		MessageBox( getWindowHandle(), offendingNames, "Window Name Error", MB_OK );
 		return FALSE;
 
 	}
 
 	// update all radio button screen identifiers with the filename
 	updateRadioScreenIdentifiers( TheWindowManager->winGetWindowList(),
-																TheNameKeyGenerator->nameToKey( AsciiString(m_saveFilename) ) );
+																TheNameKeyGenerator->nameToKey( m_saveFilename ) );
 
 	// open the file
 	fp = fopen( filePathAndFilename, "w" );

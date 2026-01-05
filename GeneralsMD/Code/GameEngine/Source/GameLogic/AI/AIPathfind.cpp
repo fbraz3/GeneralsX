@@ -107,7 +107,13 @@ inline Int IABS(Int x) {	if (x>=0) return x; return -x;};
 static Int frameToShowObstacles;
 
 
-static UnsignedInt ZONE_UPDATE_FREQUENCY = 300;
+constexpr const UnsignedInt ZONE_UPDATE_FREQUENCY = 300;
+constexpr const UnsignedInt MAX_CELL_COUNT = 500;
+constexpr const UnsignedInt MAX_ADJUSTMENT_CELL_COUNT = 400;
+constexpr const UnsignedInt MAX_SAFE_PATH_CELL_COUNT = 2000;
+
+constexpr const UnsignedInt PATHFIND_CELLS_PER_FRAME = 5000; // Number of cells we will search pathfinding per frame.
+constexpr const UnsignedInt CELL_INFOS_TO_ALLOCATE = 30000;
 
 //-----------------------------------------------------------------------------------
 PathNode::PathNode() :
@@ -1094,8 +1100,6 @@ Real Path::computeFlightDistToGoal( const Coord3D *pos, Coord3D& goalPos )
 }
 //-----------------------------------------------------------------------------------
 
-enum { PATHFIND_CELLS_PER_FRAME=5000}; // Number of cells we will search pathfinding per frame.
-enum {CELL_INFOS_TO_ALLOCATE = 30000};
 PathfindCellInfo *PathfindCellInfo::s_infoArray = NULL;
 PathfindCellInfo *PathfindCellInfo::s_firstFree = NULL;
 
@@ -1566,8 +1570,18 @@ PathfindCell *PathfindCell::putOnSortedOpenList( PathfindCell *list )
 	{
 		// insertion sort
 		PathfindCell *c, *lastCell = NULL;
-		for( c = list; c; c = c->getNextOpen() )
+#if RETAIL_COMPATIBLE_PATHFINDING
+		// TheSuperHackers @bugfix In the retail compatible pathfinding, on rare ocassions, we get stuck in an infinite loop
+		// External code should pickup on the bad behaviour and cleanup properly, but we need to explicitly break out here
+		// The fixed pathfinding does not have this issue due to the proper cleanup of pathfindCells and their pathfindCellInfos
+		UnsignedInt cellCount = 0;
+		for (c = list; c && cellCount < PATHFIND_CELLS_PER_FRAME; c = c->getNextOpen())
 		{
+			cellCount++;
+#else
+		for (c = list; c; c = c->getNextOpen())
+		{
+#endif
 			if (c->m_info->m_totalCost > m_info->m_totalCost)
 				break;
 
@@ -3030,15 +3044,12 @@ zoneStorageType PathfindZoneManager::getEffectiveZone( LocomotorSurfaceTypeMask 
 }
 //-------------------- PathfindLayer ----------------------------------------
 PathfindLayer::PathfindLayer() : m_blockOfMapCells(NULL), m_layerCells(NULL), m_bridge(NULL),
-// Added By Sadullah Nader
-// Initializations inserted
 m_destroyed(FALSE),
 m_height(0),
 m_width(0),
 m_xOrigin(0),
 m_yOrigin(0),
 m_zone(0)
-//
 {
 	m_startCell.x = -1;
 	m_startCell.y = -1;
@@ -5002,8 +5013,7 @@ Bool Pathfinder::adjustToLandingDestination(Object *obj, Coord3D *dest)
 	}
 	worldToCell( &adjustDest, &cell );
 
-	enum {MAX_CELLS_TO_TRY=400};
-	Int limit = MAX_CELLS_TO_TRY;
+	Int limit = MAX_ADJUSTMENT_CELL_COUNT;
 	Int i, j;
 	i = cell.x;
 	j = cell.y;
@@ -5080,8 +5090,7 @@ Bool Pathfinder::adjustDestination(Object *obj, const LocomotorSet& locomotorSet
 		layer = TheTerrainLogic->getLayerForDestination(groupDest);
 	}
 
-	enum {MAX_CELLS_TO_TRY=400};
-	Int limit = MAX_CELLS_TO_TRY;
+	Int limit = MAX_ADJUSTMENT_CELL_COUNT;
 	Int i, j;
 	i = cell.x;
 	j = cell.y;
@@ -5164,8 +5173,8 @@ Bool Pathfinder::adjustTargetDestination(const Object *obj, const Object *target
 	if (worldToCell( &adjustDest, &cell )) {
 		return false; // outside of bounds.
 	}
-	enum {MAX_CELLS_TO_TRY=400};
-	Int limit = MAX_CELLS_TO_TRY;
+
+	Int limit = MAX_ADJUSTMENT_CELL_COUNT;
 	Int i, j;
 	i = cell.x;
 	j = cell.y;
@@ -5268,7 +5277,6 @@ Bool Pathfinder::adjustToPossibleDestination(Object *obj, const LocomotorSet& lo
 		return false;
 	}
 
-	//
 	Int zone1, zone2;
 	Bool isCrusher = obj ? obj->getCrusherLevel() > 0 : false;
 	zone1 = m_zoneManager.getEffectiveZone(locomotorSet.getValidSurfaces(), isCrusher, parentCell->getZone());
@@ -5289,8 +5297,7 @@ Bool Pathfinder::adjustToPossibleDestination(Object *obj, const LocomotorSet& lo
 		}
 	}
 
-	enum {MAX_CELLS_TO_TRY=400};
-	Int limit = MAX_CELLS_TO_TRY;
+	Int limit = MAX_ADJUSTMENT_CELL_COUNT;
 	Int i, j;
 	i = goalCellNdx.x;
 	j = goalCellNdx.y;
@@ -7915,7 +7922,6 @@ Bool Pathfinder::pathDestination( 	Object *obj, const LocomotorSet& locomotorSet
 	if (!obj) return false;
 
 	Int cellCount = 0;
-#define MAX_CELL_COUNT 500
 
 	Coord3D adjustTo = *groupDest;
 	Coord3D *to = &adjustTo;
@@ -8210,7 +8216,6 @@ Int Pathfinder::checkPathCost(Object *obj, const LocomotorSet& locomotorSet, con
 	if (!obj) return MAX_COST;
 
 	Int cellCount = 0;
-#define MAX_CELL_COUNT 500
 
 	Coord3D adjustTo = *rawTo;
 	Coord3D *to = &adjustTo;
@@ -10810,7 +10815,7 @@ Path *Pathfinder::findSafePath( const Object *obj, const LocomotorSet& locomotor
 //	Int startTimeMS = SDL_GetTicks();
 #endif
 
-	const Int MAX_CELLS = 2000; // this is a rather expensive operation, so limit the search.
+	const Int MAX_CELLS = MAX_SAFE_PATH_CELL_COUNT; // this is a rather expensive operation, so limit the search.
 
 	Bool centerInCell;
 	Int radius;

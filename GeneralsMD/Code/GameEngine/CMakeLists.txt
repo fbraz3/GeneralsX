@@ -65,7 +65,7 @@ set(GAMEENGINE_SRC
     Include/Common/List.h
 #    Include/Common/LocalFile.h
 #    Include/Common/LocalFileSystem.h
-    Include/Common/MapObject.h
+#    Include/Common/MapObject.h
     Include/Common/MapReaderWriterInfo.h
     Include/Common/MessageStream.h
     Include/Common/MiniLog.h
@@ -199,14 +199,14 @@ set(GAMEENGINE_SRC
     Include/GameClient/Line2D.h
     Include/GameClient/LoadScreen.h
     Include/GameClient/LookAtXlat.h
-    Include/GameClient/MapUtil.h
+#    Include/GameClient/MapUtil.h
     Include/GameClient/MessageBox.h
     Include/GameClient/MetaEvent.h
     Include/GameClient/Module/AnimatedParticleSysBoneClientUpdate.h
     Include/GameClient/Module/BeaconClientUpdate.h
     Include/GameClient/Module/SwayClientUpdate.h
     Include/GameClient/Mouse.h
-    Include/GameClient/ParabolicEase.h
+#    Include/GameClient/ParabolicEase.h
     Include/GameClient/ParticleSys.h
     Include/GameClient/PlaceEventTranslator.h
     Include/GameClient/ProcessAnimateWindow.h
@@ -219,13 +219,13 @@ set(GAMEENGINE_SRC
     Include/GameClient/ShellHooks.h
     Include/GameClient/ShellMenuScheme.h
 #    Include/GameClient/Smudge.h
-    Include/GameClient/Snow.h
+#    Include/GameClient/Snow.h
     Include/GameClient/Statistics.h
-    Include/GameClient/TerrainRoads.h
-    Include/GameClient/TerrainVisual.h
+#    Include/GameClient/TerrainRoads.h
+#    Include/GameClient/TerrainVisual.h
 #    Include/GameClient/VideoPlayer.h
-    Include/GameClient/View.h
-    Include/GameClient/Water.h
+#    Include/GameClient/View.h
+#    Include/GameClient/Water.h
     Include/GameClient/WindowLayout.h
 #    Include/GameClient/WindowVideoManager.h
     Include/GameClient/WindowXlat.h
@@ -803,7 +803,7 @@ set(GAMEENGINE_SRC
     Source/GameClient/Input/Mouse.cpp
     Source/GameClient/LanguageFilter.cpp
     Source/GameClient/Line2D.cpp
-    Source/GameClient/MapUtil.cpp
+#    Source/GameClient/MapUtil.cpp
     Source/GameClient/MessageStream/CommandXlat.cpp
     Source/GameClient/MessageStream/GUICommandTranslator.cpp
     Source/GameClient/MessageStream/HintSpy.cpp
@@ -813,10 +813,10 @@ set(GAMEENGINE_SRC
     Source/GameClient/MessageStream/PlaceEventTranslator.cpp
     Source/GameClient/MessageStream/SelectionXlat.cpp
     Source/GameClient/MessageStream/WindowXlat.cpp
-    Source/GameClient/ParabolicEase.cpp
+#    Source/GameClient/ParabolicEase.cpp
     Source/GameClient/RadiusDecal.cpp
     Source/GameClient/SelectionInfo.cpp
-    Source/GameClient/Snow.cpp
+#    Source/GameClient/Snow.cpp
     Source/GameClient/Statistics.cpp
     Source/GameClient/System/Anim2D.cpp
     Source/GameClient/System/CampaignManager.cpp
@@ -827,12 +827,12 @@ set(GAMEENGINE_SRC
     Source/GameClient/System/ParticleSys.cpp
     Source/GameClient/System/RayEffect.cpp
 #    Source/GameClient/System/Smudge.cpp
-    Source/GameClient/Terrain/TerrainRoads.cpp
-    Source/GameClient/Terrain/TerrainVisual.cpp
+#    Source/GameClient/Terrain/TerrainRoads.cpp
+#    Source/GameClient/Terrain/TerrainVisual.cpp
 #    Source/GameClient/VideoPlayer.cpp
 #    Source/GameClient/VideoStream.cpp
-    Source/GameClient/View.cpp
-    Source/GameClient/Water.cpp
+#    Source/GameClient/View.cpp
+#    Source/GameClient/Water.cpp
     Source/GameLogic/AI/AI.cpp
     Source/GameLogic/AI/AIDock.cpp
     Source/GameLogic/AI/AIGroup.cpp

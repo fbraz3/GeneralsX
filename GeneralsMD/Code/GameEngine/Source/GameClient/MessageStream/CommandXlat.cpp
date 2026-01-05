@@ -3368,7 +3368,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 				Bool hide = false;
 				if (TheWindowManager)
 				{
-					Int id = (Int)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
+					Int id = (Int)TheNameKeyGenerator->nameToKey("ControlBar.wnd:ControlBarParent");
 					GameWindow *window = TheWindowManager->winGetWindowFromId(NULL, id);
 
 					if (window)
@@ -4210,7 +4210,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 /*
 			if (TheWindowManager && TheNameKeyGenerator)
 			{
-				GameWindow *motd = TheWindowManager->winGetWindowFromId(NULL, (Int)TheNameKeyGenerator->nameToKey(AsciiString("MOTD.wnd:MOTD")));
+				GameWindow *motd = TheWindowManager->winGetWindowFromId(NULL, (Int)TheNameKeyGenerator->nameToKey("MOTD.wnd:MOTD"));
 				if (motd)
 					motd->winHide(!motd->winIsHidden());
 			}*/
@@ -4259,7 +4259,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 				Bool hide = false;
 				if (TheWindowManager)
 				{
-					Int id = (Int)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
+					Int id = (Int)TheNameKeyGenerator->nameToKey("ControlBar.wnd:ControlBarParent");
 					GameWindow *window = TheWindowManager->winGetWindowFromId(NULL, id);
 
 					if (window)
@@ -4499,47 +4499,46 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		case GameMessage::MSG_META_DEBUG_GIVE_VETERANCY:
 		case GameMessage::MSG_META_DEBUG_TAKE_VETERANCY:
 		{
-			if ( !TheGameLogic->isInMultiplayerGame() )
-			{
+			if (TheGameLogic->isInMultiplayerGame())
+				break;
 
-				const DrawableList *list = TheInGameUI->getAllSelectedDrawables();
-				for (DrawableListCIt it = list->begin(); it != list->end(); ++it)
+			const DrawableList *list = TheInGameUI->getAllSelectedDrawables();
+			for (DrawableListCIt it = list->begin(); it != list->end(); ++it)
+			{
+				Drawable *pDraw = *it;
+				if (!pDraw)
+					continue;
+
+				Object *pObject = pDraw->getObject();
+				if (!pObject)
+					continue;
+
+				ExperienceTracker *et = pObject->getExperienceTracker();
+				if (!et || !et->isTrainable())
+					continue;
+
+				VeterancyLevel oldVet = et->getVeterancyLevel();
+				VeterancyLevel newVet = oldVet;
+
+				if (t == GameMessage::MSG_META_DEBUG_GIVE_VETERANCY)
 				{
-					Drawable *pDraw = *it;
-					if (pDraw)
+					if (oldVet < LEVEL_LAST)
 					{
-						Object *pObject = pDraw->getObject();
-						if (pObject)
-						{
-							ExperienceTracker *et = pObject->getExperienceTracker();
-							if (et)
-							{
-								if (et->isTrainable())
-								{
-									VeterancyLevel oldVet = et->getVeterancyLevel();
-									VeterancyLevel newVet = oldVet;
-									if (t == GameMessage::MSG_META_DEBUG_GIVE_VETERANCY)
-									{
-										if (oldVet < LEVEL_LAST)
-										{
-											newVet = (VeterancyLevel)((Int)oldVet + 1);
-										}
-									}
-									else
-									{
-										if (oldVet > LEVEL_FIRST)
-										{
-											newVet = (VeterancyLevel)((Int)oldVet - 1);
-										}
-									}
-									et->setVeterancyLevel(newVet);
-								}
-							}
-						}
+						newVet = (VeterancyLevel)((Int)oldVet + 1);
 					}
 				}
-				disp = DESTROY_MESSAGE;
+				else
+				{
+					if (oldVet > LEVEL_FIRST)
+					{
+						newVet = (VeterancyLevel)((Int)oldVet - 1);
+					}
+				}
+
+				et->setVeterancyLevel(newVet);
 			}
+
+			disp = DESTROY_MESSAGE;
 			break;
 		}
 

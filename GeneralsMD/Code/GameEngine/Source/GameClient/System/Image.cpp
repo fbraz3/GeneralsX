@@ -254,6 +254,13 @@ void ImageCollection::addImage(Image* image)
 }
 
 //-------------------------------------------------------------------------------------------------
+const Image *ImageCollection::findImage( NameKeyType namekey ) const
+{
+	ImageMap::const_iterator i = m_imageMap.find(namekey);
+	return i == m_imageMap.end() ? NULL : i->second;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Find an image given the image name */
 //-------------------------------------------------------------------------------------------------
 const Image* ImageCollection::findImageByName(const AsciiString& name)

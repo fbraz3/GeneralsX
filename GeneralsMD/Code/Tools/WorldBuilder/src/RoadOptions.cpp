@@ -258,7 +258,7 @@ BOOL RoadOptions::OnInitDialog()
 		FilenameList filenameList;
 		TheFileSystem->getFileListInDirectory(ROAD_DIRECTORY, "*.tga", filenameList, FALSE);
 
-		if (filenameList.size() > 0) {
+		if (!filenameList.empty()) {
 			FilenameList::iterator it = filenameList.begin();
 			do {
 				AsciiString	filename = *it;

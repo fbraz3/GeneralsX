@@ -152,7 +152,6 @@ AudioManager::AudioManager() :
 	m_hardwareAccel(FALSE),
 	m_musicPlayingFromCD(FALSE)
 {
-	// Added by Sadullah Nader
 	m_adjustedVolumes.clear();
 	m_audioRequests.clear();
 	m_listenerPosition.zero();
@@ -166,8 +165,6 @@ AudioManager::AudioManager() :
 	m_systemSoundVolume   = 0.0f;
 	m_systemSpeechVolume  = 0.0f;
 	m_volumeHasChanged			= FALSE;
-	//
-
 	m_listenerOrientation.set(0.0, 1.0, 0.0);
 	theAudioHandlePool = AHSV_FirstHandle;
 	m_audioSettings = NEW AudioSettings;
@@ -210,22 +207,22 @@ AudioManager::~AudioManager()
 void AudioManager::init()
 {
 	INI ini;
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\AudioSettings" ), INI_LOAD_OVERWRITE, NULL);
+	ini.loadFileDirectory( "Data\\INI\\AudioSettings", INI_LOAD_OVERWRITE, NULL);
 
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\Music" ), INI_LOAD_OVERWRITE, NULL );
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\Music" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Default\\Music", INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Music", INI_LOAD_OVERWRITE, NULL );
 
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\SoundEffects" ), INI_LOAD_OVERWRITE, NULL );
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\SoundEffects" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Default\\SoundEffects", INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\SoundEffects", INI_LOAD_OVERWRITE, NULL );
 
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\Speech" ), INI_LOAD_OVERWRITE, NULL );
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\Speech" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Default\\Speech", INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Speech", INI_LOAD_OVERWRITE, NULL );
 
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\Voice" ), INI_LOAD_OVERWRITE, NULL );
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\Voice" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Default\\Voice", INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Voice", INI_LOAD_OVERWRITE, NULL );
 
 	// do the miscellaneous sound files last so that we find the AudioEventRTS associated with the events.
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\MiscAudio" ), INI_LOAD_OVERWRITE, NULL);
+	ini.loadFileDirectory( "Data\\INI\\MiscAudio", INI_LOAD_OVERWRITE, NULL);
 
 	// determine if one of the music tracks exists. Since their now BIGd, one implies all.
 	// If they don't exist, then attempt to load them from the CD.
@@ -407,7 +404,7 @@ void AudioManager::getInfoForAudioEvent( const AudioEventRTS *eventToFindAndFill
 //-------------------------------------------------------------------------------------------------
 AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 {
-	if (eventToAdd->getEventName().isEmpty() || eventToAdd->getEventName() == AsciiString("NoSound")) {
+	if (eventToAdd->getEventName().isEmpty() || eventToAdd->getEventName() == "NoSound") {
 		return AHSV_NoSound;
 	}
 
@@ -422,7 +419,12 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		}
 	}
 
-	switch (eventToAdd->getAudioEventInfo()->m_soundType)
+	const AudioType soundType = eventToAdd->getAudioEventInfo()->m_soundType;
+
+	// Check if audio type is on
+	// TheSuperHackers @info Zero audio volume is not a fail condition, because music, speech and sounds
+	// still need to be in flight in case the user raises the volume on runtime after the audio was already triggered.
+	switch (soundType)
 	{
 		case AT_Music:
 			if (!isOn(AudioAffect_Music))
@@ -433,16 +435,19 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 				return AHSV_NoSound;
 			break;
 		case AT_Streaming:
+			// if we're currently playing uninterruptable speech, then disallow the addition of this sample
+			if (getDisallowSpeech())
+				return AHSV_NoSound;
 			if (!isOn(AudioAffect_Speech))
 				return AHSV_NoSound;
 			break;
 	}
 
-	// if we're currently playing uninterruptable speech, then disallow the addition of this sample
-	if (getDisallowSpeech() && eventToAdd->getAudioEventInfo()->m_soundType == AT_Streaming) {
-		return AHSV_NoSound;
+	if (!eventToAdd->getUninterruptable()) {
+		if (!shouldPlayLocally(eventToAdd)) {
+			return AHSV_NotForLocal;
+		}
 	}
-
 
 	AudioEventRTS *audioEvent = MSGNEW("AudioEventRTS") AudioEventRTS(*eventToAdd);		// poolify
 	audioEvent->setPlayingHandle( allocateNewHandle() );
@@ -458,13 +463,6 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		}
 	}
 
-	if (!audioEvent->getUninterruptable()) {
-		if (!shouldPlayLocally(audioEvent)) {
-			releaseAudioEventRTS(audioEvent);
-			return AHSV_NotForLocal;
-		}
-	}
-
 	// cull muted audio
 	if (audioEvent->getVolume() < m_audioSettings->m_minVolume) {
 #ifdef INTENSIVE_AUDIO_DEBUG
@@ -474,8 +472,7 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		return AHSV_Muted;
 	}
 
-	AudioType type = eventToAdd->getAudioEventInfo()->m_soundType;
-	if (type == AT_Music)
+	if (soundType == AT_Music)
 	{
 		m_music->addAudioEvent(audioEvent);
 	}

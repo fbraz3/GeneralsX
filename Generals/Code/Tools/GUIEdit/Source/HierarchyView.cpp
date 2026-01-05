@@ -1211,7 +1211,7 @@ HTREEITEM HierarchyView::treePointToItem( Int x, Int y )
 	hitTest.pt.y = y;
 	hitTest.hItem = NULL;
 	hitTest.flags = TVHT_ONITEM;
-	return TreeView_HitTest( TheHierarchyView->getTreeHandle(), &hitTest );
+	return TreeView_HitTest( getTreeHandle(), &hitTest );
 
 }
 

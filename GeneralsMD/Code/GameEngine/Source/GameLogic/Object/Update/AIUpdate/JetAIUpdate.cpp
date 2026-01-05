@@ -1857,10 +1857,7 @@ JetAIUpdate::JetAIUpdate( Thing *thing, const ModuleData* moduleData ) : AIUpdat
 	m_lockonDrawable = NULL;
 	m_landingPosForHelipadStuff.zero();
 
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_producerLocation.zero();
-	//
 	m_enginesOn = TRUE;
 }
 
@@ -2402,7 +2399,7 @@ Bool JetAIUpdate::getTreatAsAircraftForLocoDistToGoal() const
 /**
  * Follow the path defined by the given array of points
  */
-void JetAIUpdate::privateFollowPath( const std::vector<Coord3D>* path, Object *ignoreObject, CommandSourceType cmdSource, Bool exitProduction )
+void JetAIUpdate::privateFollowPath( std::vector<Coord3D>* path, Object *ignoreObject, CommandSourceType cmdSource, Bool exitProduction )
 {
 	if (exitProduction)
 	{

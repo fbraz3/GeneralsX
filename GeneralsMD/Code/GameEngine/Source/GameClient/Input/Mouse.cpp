@@ -64,6 +64,7 @@ const char* const Mouse::CursorCaptureBlockReasonNames[] = {
 	"CursorCaptureBlockReason_NoInit",
 	"CursorCaptureBlockReason_Paused",
 	"CursorCaptureBlockReason_Unfocused",
+	"CursorCaptureBlockReason_CursorIsOutside",
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -228,21 +229,18 @@ void Mouse::processMouseEvent(Int index)
 				// Mouse Down
 				m_currMouse.leftEvent = GWM_LEFT_DOWN;
 				m_currMouse.leftState = MBS_Down;
-				m_currMouse.leftFrame = m_inputFrame;
 			}
 			else if (m_mouseEvents[index].leftState == MBS_DoubleClick)
 			{
 				// Mouse Double Click
 				m_currMouse.leftEvent = GWM_LEFT_DOUBLE_CLICK;
 				m_currMouse.leftState = MBS_DoubleClick;
-				m_currMouse.leftFrame = m_inputFrame;
 			}
 			else
 			{
 				// Mouse Up
 				m_currMouse.leftEvent = GWM_LEFT_UP;
 				m_currMouse.leftState = MBS_Up;
-				m_currMouse.leftFrame = m_inputFrame;
 			}
 		}
 	}
@@ -264,21 +262,18 @@ void Mouse::processMouseEvent(Int index)
 				// Mouse Down
 				m_currMouse.rightEvent = GWM_RIGHT_DOWN;
 				m_currMouse.rightState = MBS_Down;
-				m_currMouse.rightFrame = m_inputFrame;
 			}
 			else if (m_mouseEvents[index].rightState == MBS_DoubleClick)
 			{
 				// Mouse Double Click
 				m_currMouse.rightEvent = GWM_RIGHT_DOUBLE_CLICK;
 				m_currMouse.rightState = MBS_DoubleClick;
-				m_currMouse.rightFrame = m_inputFrame;
 			}
 			else
 			{
 				// Mouse Up
 				m_currMouse.rightEvent = GWM_RIGHT_UP;
 				m_currMouse.rightState = MBS_Up;
-				m_currMouse.rightFrame = m_inputFrame;
 			}
 		}
 	}
@@ -299,20 +294,17 @@ void Mouse::processMouseEvent(Int index)
 			{
 				m_currMouse.middleEvent = GWM_MIDDLE_DOWN;
 				m_currMouse.middleState = MBS_Down;
-				m_currMouse.middleFrame = m_inputFrame;
 			}
 			else if (m_mouseEvents[index].middleState == MBS_DoubleClick)
 			{
 				m_currMouse.middleEvent = GWM_MIDDLE_DOUBLE_CLICK;
 				m_currMouse.middleState = MBS_DoubleClick;
-				m_currMouse.middleFrame = m_inputFrame;
 			}
 			else
 			{
 				// Mouse Up
 				m_currMouse.middleEvent = GWM_MIDDLE_UP;
 				m_currMouse.middleState = MBS_Up;
-				m_currMouse.middleFrame = m_inputFrame;
 			}
 		}
 	}
@@ -421,15 +413,12 @@ Bool Mouse::isClick(const ICoord2D* anchor, const ICoord2D* dest, UnsignedInt pr
 //-------------------------------------------------------------------------------------------------
 CursorInfo::CursorInfo(void)
 {
-	// Added Sadullah Nader
-	// Initializations missing and needed
 
 	cursorName.clear();
 	cursorText.clear();
 	cursorTextColor.red = cursorTextColor.green = cursorTextColor.blue = 0;
 	cursorTextDropColor.red = cursorTextDropColor.blue = cursorTextDropColor.green = 0;
 
-	//
 	textureName.clear();
 	imageName.clear();
 	W3DModelName.clear();
@@ -456,13 +445,9 @@ Mouse::Mouse(void)
 	m_numAxes = 0;
 	m_forceFeedback = FALSE;
 
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_dragTolerance = 0;
 	m_dragTolerance3D = 0;
 	m_dragToleranceMS = 0;
-	//
-
 	//m_tooltipString.clear();	// redundant
 	m_displayTooltip = FALSE;
 	m_tooltipDisplayString = NULL;
@@ -586,7 +571,7 @@ void Mouse::init(void)
 	m_numButtons = 2;  // by default just have 2 buttons
 	m_numAxes = 2;  // by default a normal mouse moves in a 2d plane
 	m_forceFeedback = FALSE;
-	mouseNotifyResolutionChange();
+	onResolutionChanged();
 	m_tooltipString.clear();	// redundant
 	m_displayTooltip = FALSE;
 
@@ -685,9 +670,6 @@ void Mouse::reset(void)
 //-------------------------------------------------------------------------------------------------
 void Mouse::update(void)
 {
-
-	// increment input frame
-	m_inputFrame++;
 
 	// update the mouse data
 	updateMouseData();
@@ -1043,6 +1025,24 @@ void Mouse::regainFocus()
 {
 	// Recapture the cursor when returning from desktop.
 	unblockCapture(CursorCaptureBlockReason_Unfocused);
+}
+
+// ------------------------------------------------------------------------------------------------
+void Mouse::onCursorMovedOutside()
+{
+	blockCapture(CursorCaptureBlockReadon_CursorIsOutside);
+}
+
+// ------------------------------------------------------------------------------------------------
+void Mouse::onCursorMovedInside()
+{
+	unblockCapture(CursorCaptureBlockReadon_CursorIsOutside);
+}
+
+// ------------------------------------------------------------------------------------------------
+Bool Mouse::isCursorInside() const
+{
+	return (m_captureBlockReasonBits & (1 << CursorCaptureBlockReadon_CursorIsOutside)) == 0;
 }
 
 // ------------------------------------------------------------------------------------------------

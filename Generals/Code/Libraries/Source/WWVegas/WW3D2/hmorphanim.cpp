@@ -300,7 +300,7 @@ static int Build_List_From_String
 				//
 				// Add this entry to our list
 				//
-				if ((entry_string.Get_Length () > 0) || (count == 0)) {
+				if ((!entry_string.Is_Empty()) || (count == 0)) {
 					(*string_list)[count++] = entry_string;
 				}
 			}

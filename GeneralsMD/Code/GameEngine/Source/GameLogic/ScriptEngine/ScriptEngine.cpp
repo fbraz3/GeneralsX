@@ -445,8 +445,6 @@ m_skirmishHumanPlayer(NULL),
 m_fade(FADE_NONE),
 m_freezeByScript(FALSE),
 m_frameObjectCountChanged(0),
-//Added By Sadullah Nader
-//Initializations inserted
 m_closeWindowTimer(0),
 m_curFadeFrame(0),
 m_curFadeValue(0.0f),
@@ -461,7 +459,6 @@ m_numAttackInfo(0),
 m_shownMPLocalDefeatWindow(FALSE),
 m_objectsShouldReceiveDifficultyBonus(TRUE),
 m_ChooseVictimAlwaysUsesNormal(false)
-//
 {
 	st_CanAppCont = true;
 	st_LastCurrentFrame = st_CurrentFrame = 0;
@@ -6512,7 +6509,7 @@ void ScriptEngine::setPriorityThing( ScriptAction *pAction )
 	AsciiString typeArgument = pAction->getParameter(1)->getString();
 
 	// Our argument could be an individual type, or a list name.
-	const ObjectTypes *types = TheScriptEngine->getObjectTypes(typeArgument);
+	const ObjectTypes *types = getObjectTypes(typeArgument);
 	if( !types )
 	{
 		// Lookup failed, so it is just a single type
@@ -7061,7 +7058,7 @@ void ScriptEngine::addObjectToCache(Object* pNewObject)
 			if (it->second == NULL) {
 				AsciiString newNameForDead;
 				newNameForDead.format("Reassigning dead object's name '%s' to object (%d) of type '%s'", objName.str(), pNewObject->getID(), pNewObject->getTemplate()->getName().str());
-				TheScriptEngine->AppendDebugMessage(newNameForDead, FALSE);
+				AppendDebugMessage(newNameForDead, FALSE);
 				DEBUG_LOG((newNameForDead.str()));
 				it->second = pNewObject;
 				return;
@@ -8831,7 +8828,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 	{
 
 		// this list should be empty on loading
-		if( m_sequentialScripts.size() != 0 )
+		if( !m_sequentialScripts.empty() )
 		{
 
 			DEBUG_CRASH(( "ScriptEngine::xfer - m_sequentialScripts should be empty but is not" ));
@@ -9673,7 +9670,7 @@ void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *templ )
 	// these were all originally << (feed-operator for streams)
 	// I might come back and re-write this later, if there are enough complaints. ;-) jkmcd
 	// in the meantime, move along...
-	std::string thisEntry = "";
+	std::string thisEntry;
 	thisEntry.append(HEADER).append(SEP_SPACE).append(templ->getName().str()).append(SEP_EOL);
 	thisEntry.append(SEP_HEAD).append(F_PRIORITY).append(EQ_WITH_SPACES).append(ParticlePriorityNames[templ->m_priority]).append(SEP_EOL);
 	thisEntry.append(SEP_HEAD).append(F_ISONESHOT).append(EQ_WITH_SPACES).append((templ->m_isOneShot ? STR_TRUE : STR_FALSE)).append(SEP_EOL);

@@ -144,8 +144,6 @@ NAT *TheNAT = NULL;
 
 NAT::NAT()
 {
-	//Added By Sadullah Nader
-	//Initializations inserted
 	m_beenProbed = FALSE;
 	m_connectionPairIndex = 0;
 	m_connectionRound = 0;
@@ -161,11 +159,9 @@ NAT::NAT()
 	m_spareSocketPort = 0;
 	m_startingPortNumber = 0;
 	m_targetNodeNumber = 0;
-	//
 	m_transport = NULL;
 	m_slotList = NULL;
 	m_roundTimeout = 0;
-
 	m_maxNumRetriesAllowed = 10;
 	m_packetID = 0x7f00;
 }
@@ -1173,7 +1169,7 @@ void NAT::processGlobalMessage(Int slotNum, const char *options) {
 		++ptr;
 	}
 	DEBUG_LOG(("NAT::processGlobalMessage - got message from slot %d, message is \"%s\"", slotNum, ptr));
-	if (!strncmp(ptr, "PROBED", strlen("PROBED"))) {
+	if (strncmp(ptr, "PROBED", strlen("PROBED")) == 0) {
 		// format: PROBED<node number>
 		// a probe has been sent at us, if we are waiting because of a netgear or something, we
 		// should start sending our own probes.
@@ -1184,7 +1180,7 @@ void NAT::processGlobalMessage(Int slotNum, const char *options) {
 		} else {
 			DEBUG_LOG(("NAT::processGlobalMessage - probed by node %d, not our target", node));
 		}
-	} else if (!strncmp(ptr, "CONNDONE", strlen("CONNDONE"))) {
+	} else if (strncmp(ptr, "CONNDONE", strlen("CONNDONE")) == 0) {
 		// format: CONNDONE<node number>
 		// we should get the node number of the player who's connection is done from the options
 		// and mark that down as part of the connectionStates.
@@ -1209,7 +1205,7 @@ void NAT::processGlobalMessage(Int slotNum, const char *options) {
 		} else {
 			DEBUG_LOG(("NAT::processGlobalMessage - got a connection done message that isn't from this round. node: %d sending node: %d", node, sendingNode));
 		}
-	} else if (!strncmp(ptr, "CONNFAILED", strlen("CONNFAILED"))) {
+	} else if (strncmp(ptr, "CONNFAILED", strlen("CONNFAILED")) == 0) {
 		// format: CONNFAILED<node number>
 		// we should get the node number of the player who's connection failed from the options
 		// and mark that down as part of the connectionStates.
@@ -1218,7 +1214,7 @@ void NAT::processGlobalMessage(Int slotNum, const char *options) {
 			DEBUG_LOG(("NAT::processGlobalMessage - node %d's connection failed, setting connection state to failed", node));
 			setConnectionState(node, NATCONNECTIONSTATE_FAILED);
 		}
-	} else if (!strncmp(ptr, "PORT", strlen("PORT"))) {
+	} else if (strncmp(ptr, "PORT", strlen("PORT")) == 0) {
 		// format: PORT<node number> <port number> <internal IP>
 		// we should get the node number and the mangled port number of the client we
 		// are supposed to be communicating with and start probing them. No, that was not

@@ -3447,7 +3447,7 @@ Bool GUIEdit::menuExit(void)
 			Bool success;
 
 			// save all our data
-			success = TheEditor->menuSave();
+			success = menuSave();
 
 			//
 			// if we were unable to save file ask them if it's still OK to
@@ -4001,7 +4001,7 @@ void GUIEdit::notifyNewWindow(GameWindow* window)
 //=============================================================================
 void GUIEdit::deleteSelected(void)
 {
-	Int count = TheEditor->selectionCount();
+	Int count = selectionCount();
 	Int i;
 	GameWindow** deleteList;
 	WindowSelectionEntry* select;
@@ -4043,7 +4043,7 @@ void GUIEdit::deleteSelected(void)
 	//=============================================================================
 void GUIEdit::bringSelectedToTop(void)
 {
-	Int count = TheEditor->selectionCount();
+	Int count = selectionCount();
 
 	// no-op
 	if (count == 0)

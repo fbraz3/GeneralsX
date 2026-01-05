@@ -201,7 +201,7 @@ public:
 		return(numBytes);
 	};
 	virtual void flush(void) {
-		while (m_cachedChunks.size() != 0)//!m_cachedChunks.empty())
+		while (!m_cachedChunks.empty())//!m_cachedChunks.empty())
 		{
 			CachedChunk c = m_cachedChunks.front();
 			m_cachedChunks.pop_front();

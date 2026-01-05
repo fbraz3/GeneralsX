@@ -131,7 +131,7 @@ Int ProductionPrerequisite::getAllPossibleBuildFacilityTemplates(const ThingTemp
 const ThingTemplate *ProductionPrerequisite::getExistingBuildFacilityTemplate( const Player *player ) const
 {
 	DEBUG_ASSERTCRASH(player, ("player may not be null"));
-	if (m_prereqUnits.size())
+	if (!m_prereqUnits.empty())
 	{
 		Int ownCount[MAX_PREREQ];
 		Int cnt = calcNumPrereqUnitsOwned(player, ownCount);
@@ -237,14 +237,10 @@ UnicodeString ProductionPrerequisite::getRequiresList(const Player *player) cons
 	Int i;
 
 	Bool orRequirements[MAX_PREREQ];
-	//Added for fix below in getRequiresList
-	//By Sadullah Nader
-	//Initializes the OR_WITH_PREV structures
 	for (i = 0; i < MAX_PREREQ; i++)
 	{
 		orRequirements[i] = FALSE;
 	}
-	//
 	// account for the "or" unit cases, start for loop at 1
 	for (i = 1; i < cnt; i++)
 	{

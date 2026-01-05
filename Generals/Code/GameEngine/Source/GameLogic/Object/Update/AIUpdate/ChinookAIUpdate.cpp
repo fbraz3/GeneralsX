@@ -587,6 +587,7 @@ public:
 				Object* rappeller = getPotentialRappeller(obj);
 				if (rappeller != NULL)
 				{
+#if RETAIL_COMPATIBLE_CRC
 					ExitInterface *exitInterface = obj->getObjectExitInterface();
 					ExitDoorType exitDoor = exitInterface ? exitInterface->reserveDoorForExit(rappeller->getTemplate(), rappeller) : DOOR_NONE_AVAILABLE;
 					if(exitDoor != DOOR_NONE_AVAILABLE)
@@ -597,6 +598,15 @@ public:
 					{
 						DEBUG_CRASH(("rappeller is not free to exit... what?"));
 					}
+#else
+					// TheSuperHackers @bugfix 03/01/2026 Bypass door reservation as rappellers are always
+					// expected to be free to exit. This avoids prior rappel conditions in getAiFreeToExit
+					// from allowing rappellers to be freely 'dropped' from the Chinook during this state.
+					if (ExitInterface* exitInterface = obj->getObjectExitInterface())
+					{
+						exitInterface->exitObjectViaDoor(rappeller, DOOR_1);
+					}
+#endif
 
 					rappeller->setTransformMatrix(&it->dropStartMtx);
 
@@ -983,8 +993,12 @@ ObjectID ChinookAIUpdate::getBuildingToNotPathAround() const
 //-------------------------------------------------------------------------------------------------
 AIFreeToExitType ChinookAIUpdate::getAiFreeToExit(const Object* exiter) const
 {
+#if RETAIL_COMPATIBLE_CRC
 	 if (m_flightStatus == CHINOOK_LANDED
 				|| (m_flightStatus == CHINOOK_DOING_COMBAT_DROP && exiter->isKindOf(KINDOF_CAN_RAPPEL)))
+#else
+	if (m_flightStatus == CHINOOK_LANDED)
+#endif
 		return FREE_TO_EXIT;
 
 	return WAIT_TO_EXIT;
@@ -1002,9 +1016,16 @@ Bool ChinookAIUpdate::chooseLocomotorSet(LocomotorSetType wst)
 UpdateSleepTime ChinookAIUpdate::update()
 {
 	ParkingPlaceBehaviorInterface* pp = getPP(m_airfieldForHealing);
+	const ContainModuleInterface* contain = getObject()->getContain();
+	const Bool waitingToEnterOrExit = contain && contain->hasObjectsWantingToEnterOrExit();
+
 	if (pp != NULL)
 	{
 		if (m_flightStatus == CHINOOK_LANDED &&
+#if !RETAIL_COMPATIBLE_CRC
+				// TheSuperHackers @bugfix Stubbjax 03/11/2025 Prevent Chinooks from taking off while there are still units wanting to enter or exit.
+				!waitingToEnterOrExit &&
+#endif
 				!m_hasPendingCommand &&
 				getObject()->getBodyModule()->getHealth() == getObject()->getBodyModule()->getMaxHealth())
 		{
@@ -1026,10 +1047,8 @@ UpdateSleepTime ChinookAIUpdate::update()
 	// when we have a pending command...
 	if (SupplyTruckAIUpdate::isIdle())
 	{
-		ContainModuleInterface* contain = getObject()->getContain();
 		if( contain )
 		{
-			Bool waitingToEnterOrExit = contain->hasObjectsWantingToEnterOrExit();
 			if (m_hasPendingCommand)
 			{
 				AICommandParms parms(AICMD_MOVE_TO_POSITION, CMD_FROM_AI);	// values don't matter, will be wiped by next line
@@ -1123,8 +1142,14 @@ void ChinookAIUpdate::privateCombatDrop( Object* target, const Coord3D& pos, Com
 //-------------------------------------------------------------------------------------------------
 void ChinookAIUpdate::aiDoCommand(const AICommandParms* parms)
 {
+#if RETAIL_COMPATIBLE_CRC
 	// this gets reset every time a command is issued.
 	setAirfieldForHealing(INVALID_ID);
+#else
+	// TheSuperHackers @bugfix Stubbjax 31/10/2025 Don't leave healing state for evacuation commands.
+	if (parms->m_cmd != AICMD_EVACUATE && parms->m_cmd != AICMD_EXIT)
+		setAirfieldForHealing(INVALID_ID);
+#endif
 
 	if (!isAllowedToRespondToAiCommands(parms))
 		return;

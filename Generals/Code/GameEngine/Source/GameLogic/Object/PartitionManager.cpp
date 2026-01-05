@@ -1221,10 +1221,7 @@ void CellAndObjectIntersection::removeAllCoverage()
 //-----------------------------------------------------------------------------
 PartitionCell::PartitionCell()
 {
-	//Added By Sadullah Nader
-	//Initializations inserted
 	m_cellX = m_cellY = 0;
-	//
 	m_firstCoiInCell = NULL;
 	m_coiCount = 0;
 #ifdef PM_CACHE_TERRAIN_HEIGHT
@@ -2702,7 +2699,7 @@ void PartitionManager::reset()
 void PartitionManager::shutdown()
 {
 	m_updatedSinceLastReset = false;
-	ThePartitionManager->removeAllDirtyModules();
+	removeAllDirtyModules();
 
 #ifdef RTS_DEBUG
 	// the above *should* remove all the touched cells (via unRegisterObject), but let's check:
@@ -3077,11 +3074,37 @@ CellShroudStatus PartitionManager::getShroudStatusForPlayer(Int playerIndex, con
 {
 	Int x, y;
 
-	ThePartitionManager->worldToCell( loc->x, loc->y, &x, &y );
+	worldToCell( loc->x, loc->y, &x, &y );
 
 	return getShroudStatusForPlayer( playerIndex, x, y );
 }
 
+
+//-----------------------------------------------------------------------------
+ObjectShroudStatus PartitionManager::getPropShroudStatusForPlayer(Int playerIndex, const Coord3D *loc ) const
+{
+	Int x, y;
+
+	worldToCell( loc->x - m_cellSize*0.5f, loc->y - m_cellSize*0.5f, &x, &y );
+
+	CellShroudStatus cellStat = getShroudStatusForPlayer( playerIndex, x, y );
+	if (cellStat != getShroudStatusForPlayer( playerIndex, x+1, y )) {
+		return OBJECTSHROUD_PARTIAL_CLEAR;
+	}
+	if (cellStat != getShroudStatusForPlayer( playerIndex, x+1, y+1 )) {
+		return OBJECTSHROUD_PARTIAL_CLEAR;
+	}
+	if (cellStat != getShroudStatusForPlayer( playerIndex, x, y+1 )) {
+		return OBJECTSHROUD_PARTIAL_CLEAR;
+	}
+	if (cellStat == CELLSHROUD_SHROUDED) {
+		return OBJECTSHROUD_SHROUDED;
+	}
+	if (cellStat == CELLSHROUD_CLEAR) {
+		return OBJECTSHROUD_CLEAR;
+	}
+	return OBJECTSHROUD_FOGGED;
+}
 
 
 
@@ -3782,7 +3805,7 @@ Bool PartitionManager::tryPosition( const Coord3D *center,
 		// very small sphere geometry around the point
 		//
 		GeometryInfo geometry( GEOMETRY_SPHERE, TRUE, 5.0f, 5.0f, 5.0f );
-		ObjectIterator *iter = ThePartitionManager->iteratePotentialCollisions( &pos, geometry, angle, true );
+		ObjectIterator *iter = iteratePotentialCollisions( &pos, geometry, angle, true );
 		MemoryPoolObjectHolder hold( iter );
 //	Bool overlap = FALSE;
 
@@ -3962,9 +3985,9 @@ Bool PartitionManager::findPositionAround( const Coord3D *center,
 void PartitionManager::doShroudReveal(Real centerX, Real centerY, Real radius, PlayerMaskType playerMask)
 {
 	Int cellCenterX, cellCenterY;
-	ThePartitionManager->worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
+	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
 
-	Int cellRadius = ThePartitionManager->worldToCellDist(radius);
+	Int cellRadius = worldToCellDist(radius);
 	if (cellRadius < 1)
 		cellRadius = 1;
 
@@ -4029,9 +4052,9 @@ void PartitionManager::resetPendingUndoShroudRevealQueue()
 void PartitionManager::undoShroudReveal(Real centerX, Real centerY, Real radius, PlayerMaskType playerMask)
 {
 	Int cellCenterX, cellCenterY;
-	ThePartitionManager->worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
+	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
 
-	Int cellRadius = ThePartitionManager->worldToCellDist(radius);
+	Int cellRadius = worldToCellDist(radius);
 	if (cellRadius < 1)
 		cellRadius = 1;
 
@@ -4066,9 +4089,9 @@ void PartitionManager::queueUndoShroudReveal(Real centerX, Real centerY, Real ra
 void PartitionManager::doShroudCover(Real centerX, Real centerY, Real radius, PlayerMaskType playerMask)
 {
 	Int cellCenterX, cellCenterY;
-	ThePartitionManager->worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
+	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
 
-	Int cellRadius = ThePartitionManager->worldToCellDist(radius);
+	Int cellRadius = worldToCellDist(radius);
 	if (cellRadius < 1)
 		cellRadius = 1;
 
@@ -4090,9 +4113,9 @@ void PartitionManager::doShroudCover(Real centerX, Real centerY, Real radius, Pl
 void PartitionManager::undoShroudCover(Real centerX, Real centerY, Real radius, PlayerMaskType playerMask)
 {
 	Int cellCenterX, cellCenterY;
-	ThePartitionManager->worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
+	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
 
-	Int cellRadius = ThePartitionManager->worldToCellDist(radius);
+	Int cellRadius = worldToCellDist(radius);
 	if (cellRadius < 1)
 		cellRadius = 1;
 
@@ -4112,11 +4135,11 @@ void PartitionManager::undoShroudCover(Real centerX, Real centerY, Real radius, 
 void PartitionManager::doThreatAffect( Real centerX, Real centerY, Real radius, UnsignedInt threatVal, PlayerMaskType playerMask)
 {
 	Int cellCenterX, cellCenterY;
-	ThePartitionManager->worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
+	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
 	Real fCellCenterX = INT_TO_REAL(cellCenterX);
 	Real fCellCenterY = INT_TO_REAL(cellCenterY);
 
-	Int cellRadius = ThePartitionManager->worldToCellDist(radius);
+	Int cellRadius = worldToCellDist(radius);
 	if (cellRadius < 1)
 		cellRadius = 1;
 
@@ -4145,11 +4168,11 @@ void PartitionManager::doThreatAffect( Real centerX, Real centerY, Real radius, 
 void PartitionManager::undoThreatAffect( Real centerX, Real centerY, Real radius, UnsignedInt threatVal, PlayerMaskType playerMask)
 {
 	Int cellCenterX, cellCenterY;
-	ThePartitionManager->worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
+	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
 	Real fCellCenterX = INT_TO_REAL(cellCenterX);
 	Real fCellCenterY = INT_TO_REAL(cellCenterY);
 
-	Int cellRadius = ThePartitionManager->worldToCellDist(radius);
+	Int cellRadius = worldToCellDist(radius);
 	if (cellRadius < 1)
 		cellRadius = 1;
 
@@ -4178,11 +4201,11 @@ void PartitionManager::undoThreatAffect( Real centerX, Real centerY, Real radius
 void PartitionManager::doValueAffect( Real centerX, Real centerY, Real radius, UnsignedInt valueVal, PlayerMaskType playerMask)
 {
 	Int cellCenterX, cellCenterY;
-	ThePartitionManager->worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
+	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
 	Real fCellCenterX = INT_TO_REAL(cellCenterX);
 	Real fCellCenterY = INT_TO_REAL(cellCenterY);
 
-	Int cellRadius = ThePartitionManager->worldToCellDist(radius);
+	Int cellRadius = worldToCellDist(radius);
 	if (cellRadius < 1)
 		cellRadius = 1;
 
@@ -4211,11 +4234,11 @@ void PartitionManager::doValueAffect( Real centerX, Real centerY, Real radius, U
 void PartitionManager::undoValueAffect( Real centerX, Real centerY, Real radius, UnsignedInt valueVal, PlayerMaskType playerMask)
 {
 	Int cellCenterX, cellCenterY;
-	ThePartitionManager->worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
+	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
 	Real fCellCenterX = INT_TO_REAL(cellCenterX);
 	Real fCellCenterY = INT_TO_REAL(cellCenterY);
 
-	Int cellRadius = ThePartitionManager->worldToCellDist(radius);
+	Int cellRadius = worldToCellDist(radius);
 	if (cellRadius < 1)
 		cellRadius = 1;
 
@@ -4379,7 +4402,7 @@ Int PartitionManager::iterateCellsAlongLine(const Coord3D& pos, const Coord3D& p
 
 	for (Int curpixel = 0; curpixel <= numpixels; curpixel++)
 	{
-		PartitionCell* cell = ThePartitionManager->getCellAt(x, y);	// might be null if off the edge
+		PartitionCell* cell = getCellAt(x, y);	// might be null if off the edge
 		DEBUG_ASSERTCRASH(cell != NULL, ("off the map"));
 		if (cell)
 		{
@@ -4412,7 +4435,7 @@ Int PartitionManager::iterateCellsBreadthFirst(const Coord3D *pos, CellBreadthFi
 	// -1 means error, but we should add a define later for this.
 
 	Int cellX, cellY;
-	ThePartitionManager->worldToCell(pos->x, pos->y, &cellX, &cellY);
+	worldToCell(pos->x, pos->y, &cellX, &cellY);
 
 	// Note, bool. not Bool, cause bool will cause this to be a bitfield.
 	std::vector<bool> bitField;
@@ -4656,7 +4679,7 @@ void PartitionManager::xfer( Xfer *xfer )
 			// have to remove this assert, because during load there is a setTeam call for each guy on a sub-team, and that results
 			// in a queued unlook, so we actually have stuff in here at the start.  I am fairly certain that setTeam should wait
 			// until loadPostProcess, but I ain't gonna change it now.
-//			DEBUG_ASSERTCRASH(m_pendingUndoShroudReveals.size() == 0, ("At load, we appear to not be in a reset state.") );
+//			DEBUG_ASSERTCRASH(m_pendingUndoShroudReveals.empty(), ("At load, we appear to not be in a reset state.") );
 
 			// I have to split this up though, since on Load I need to make new instances.
 			for( Int infoIndex = 0; infoIndex < queueSize; infoIndex++ )

@@ -429,18 +429,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 			{
 				//user is exiting without using the menus
 
-				//This method didn't work in cinematics because we don't process messages.
-				//But it's the cleanest way to exit that's similar to using menus.
-				TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
+					//This method didn't work in cinematics because we don't process messages.
+					//But it's the cleanest way to exit that's similar to using menus.
+					TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
 
-				//This method used to disable quitting.  We just put up the options screen instead.
-				//TheMessageStream->appendMessage(GameMessage::MSG_META_OPTIONS);
+					//This method used to disable quitting.  We just put up the options screen instead.
+					//TheMessageStream->appendMessage(GameMessage::MSG_META_OPTIONS);
 
-				//This method works everywhere but isn't as clean at shutting down.
-				//TheGameEngine->checkAbnormalQuitting();	//old way to log disconnections for ALT-F4
-				//TheGameEngine->reset();
-				//TheGameEngine->setQuitting(TRUE);
-				//_exit(EXIT_SUCCESS);
+					//This method works everywhere but isn't as clean at shutting down.
+					//TheGameEngine->checkAbnormalQuitting();	//old way to log disconnections for ALT-F4
+					//TheGameEngine->reset();
+					//TheGameEngine->setQuitting(TRUE);
+					//_exit(EXIT_SUCCESS);
+				}
 				return 0;
 			}
 
@@ -558,7 +559,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 
 				PostQuitMessage(0);
 				break;
-
 			}
 
 
@@ -1214,6 +1214,9 @@ Int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	}
 
+#ifdef RTS_ENABLE_CRASHDUMP
+	MiniDumper::shutdownMiniDumper();
+#endif
 	TheUnicodeStringCriticalSection = NULL;
 	TheDmaCriticalSection = NULL;
 	TheMemoryPoolCriticalSection = NULL;

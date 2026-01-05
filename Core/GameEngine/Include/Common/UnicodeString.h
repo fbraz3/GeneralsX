@@ -91,13 +91,13 @@ private:
 		unsigned short	m_numCharsAllocated;  // length of data allocated
 		// WideChar m_stringdata[];
 
-		inline WideChar* peek() { return (WideChar*)(this+1); }
+		WideChar* peek() { return (WideChar*)(this+1); }
 	};
 
 	#ifdef RTS_DEBUG
 	void validate() const;
 	#else
-	inline void validate() const { }
+	void validate() const { }
 	#endif
 
 protected:
@@ -125,7 +125,7 @@ public:
 		string, so we don't need to construct temporaries
 		for such a common thing.
 	*/
-	static UnicodeString TheEmptyString;
+	static const UnicodeString TheEmptyString;
 
 	/**
 		Default constructor -- construct a new, empty UnicodeString.
@@ -310,13 +310,13 @@ public:
 		return true iff self starts with the given string.
 	*/
 	Bool startsWith(const WideChar* p) const;
-	inline Bool startsWith(const UnicodeString& stringSrc) const { return startsWith(stringSrc.str()); }
+	Bool startsWith(const UnicodeString& stringSrc) const { return startsWith(stringSrc.str()); }
 
 	/**
 		return true iff self starts with the given string. (case insensitive)
 	*/
 	Bool startsWithNoCase(const WideChar* p) const;
-	inline Bool startsWithNoCase(const UnicodeString& stringSrc) const { return startsWithNoCase(stringSrc.str()); }
+	Bool startsWithNoCase(const UnicodeString& stringSrc) const { return startsWithNoCase(stringSrc.str()); }
 
 	/**
 		return true iff self ends with the given string.

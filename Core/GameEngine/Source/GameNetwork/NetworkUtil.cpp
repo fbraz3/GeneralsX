@@ -84,7 +84,7 @@ UnsignedInt ResolveIP(AsciiString host)
   struct hostent *hostStruct;
   struct in_addr *hostNode;
 
-  if (host.getLength() == 0)
+  if (host.isEmpty())
   {
 	  DEBUG_LOG(("ResolveIP(): Can't resolve NULL"));
 	  return 0;

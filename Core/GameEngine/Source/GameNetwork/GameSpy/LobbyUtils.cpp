@@ -614,8 +614,8 @@ static Int insertGame(GameWindow* win, GameSpyStagingRoom* game, Bool showMap)
 	}
 	else
 	{
-		GadgetListBoxAddEntryText(win, UnicodeString(L" "), gameColor, index, COLUMN_MAP);
-		GadgetListBoxAddEntryText(win, UnicodeString(L" "), gameColor, index, COLUMN_LADDER);
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, COLUMN_MAP);
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, COLUMN_LADDER);
 	}
 
 	s.format(L"%d/%d", game->getReportedNumPlayers(), game->getReportedMaxPlayers());
@@ -634,7 +634,7 @@ static Int insertGame(GameWindow* win, GameSpyStagingRoom* game, Bool showMap)
 	}
 	else
 	{
-		GadgetListBoxAddEntryText(win, UnicodeString(L" "), gameColor, index, COLUMN_PASSWORD);
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, COLUMN_PASSWORD);
 	}
 
 	if (game->getAllowObservers())
@@ -644,7 +644,7 @@ static Int insertGame(GameWindow* win, GameSpyStagingRoom* game, Bool showMap)
 	}
 	else
 	{
-		GadgetListBoxAddEntryText(win, UnicodeString(L" "), gameColor, index, COLUMN_OBSERVER);
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, COLUMN_OBSERVER);
 	}
 
 #if !RTS_GENERALS

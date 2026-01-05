@@ -107,8 +107,6 @@ HeaderTemplate::HeaderTemplate(void) :
 	m_point(0),
 	m_bold(FALSE)
 {
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_fontName.clear();
 	m_name.clear();
 }

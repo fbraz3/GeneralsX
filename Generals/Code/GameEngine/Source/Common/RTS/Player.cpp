@@ -321,8 +321,6 @@ Player::Player( Int playerIndex )
 	m_visionSpiedMask = PLAYERMASK_NONE;
 	m_battlePlanBonuses = NULL;
 	m_skillPointsModifier = 1.0f;
-	//Added By Sadullah
-	//Initializations inserted
 	m_canBuildUnits = TRUE;
 	m_canBuildBase  = TRUE;
 	m_cashBountyPercent = 0.0f;
@@ -338,7 +336,6 @@ Player::Player( Int playerIndex )
 	{
 		m_squads[i] = NULL;
 	}
-	//
 	for (i = 0; i < MAX_PLAYER_COUNT; ++i)
 	{
 		m_attackedBy[i] = false;
@@ -355,7 +352,7 @@ Player::Player( Int playerIndex )
 void Player::init(const PlayerTemplate* pt)
 {
 
-	DEBUG_ASSERTCRASH(m_playerTeamPrototypes.size() == 0, ("Player::m_playerTeamPrototypes is not empty at game start!"));
+	DEBUG_ASSERTCRASH(m_playerTeamPrototypes.empty(), ("Player::m_playerTeamPrototypes is not empty at game start!"));
 	m_skillPointsModifier = 1.0f;
 	m_attackedFrame = 0;
 
@@ -3916,7 +3913,7 @@ void Player::xfer( Xfer *xfer )
 	{
 
 		// sanity, list must be empty right now
-		if( m_kindOfPercentProductionChangeList.size() != 0 )
+		if( !m_kindOfPercentProductionChangeList.empty() )
 		{
 
 			DEBUG_CRASH(( "Player::xfer - m_kindOfPercentProductionChangeList should be empty but is not" ));
@@ -3969,7 +3966,7 @@ void Player::xfer( Xfer *xfer )
 		}
 		else
 		{
-			if( m_specialPowerReadyTimerList.size() != 0 ) // sanity, list must be empty right now
+			if( !m_specialPowerReadyTimerList.empty() ) // sanity, list must be empty right now
 			{
 				DEBUG_CRASH(( "Player::xfer - m_specialPowerReadyTimerList should be empty but is not" ));
 				throw SC_INVALID_DATA;

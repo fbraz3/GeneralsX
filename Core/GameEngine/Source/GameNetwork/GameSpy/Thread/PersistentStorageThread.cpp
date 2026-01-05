@@ -102,12 +102,12 @@ static void debugDumpPlayerStats(const PSPlayerStats& stats)
 		DEBUG_LOG(("gamesAsRandom: %d", stats.gamesAsRandom));
 	}
 
-	if (stats.options.length())
+	if (!stats.options.empty())
 	{
 		DEBUG_LOG(("Options: %s", stats.options.c_str()));
 	}
 
-	if (stats.systemSpec.length())
+	if (!stats.systemSpec.empty())
 	{
 		DEBUG_LOG(("systemSpec: %s", stats.systemSpec.c_str()));
 	}
@@ -184,7 +184,7 @@ static void debugDumpPlayerStats(const PSPlayerStats& stats)
 		DEBUG_LOG(("lastLadderPort: %d", stats.lastLadderPort));
 	}
 
-	if (stats.lastLadderHost.length())
+	if (!stats.lastLadderHost.empty())
 	{
 		DEBUG_LOG(("lastLadderHost: %s", stats.lastLadderHost.c_str()));
 	}
@@ -246,12 +246,12 @@ void PSPlayerStats::incorporate(const PSPlayerStats& other)
 		gamesAsRandom = other.gamesAsRandom;
 	}
 
-	if (other.options.length())
+	if (!other.options.empty())
 	{
 		options = other.options;
 	}
 
-	if (other.systemSpec.length())
+	if (!other.systemSpec.empty())
 	{
 		systemSpec = other.systemSpec;
 	}
@@ -325,7 +325,7 @@ void PSPlayerStats::incorporate(const PSPlayerStats& other)
 	{
 		lastLadderPort = other.lastLadderPort;
 	}
-	if (other.lastLadderHost.length())
+	if (!other.lastLadderHost.empty())
 	{
 		lastLadderHost = other.lastLadderHost;
 	}
@@ -971,7 +971,7 @@ void PSThreadClass::Thread_Function()
 								addedInDesyncs4 + req.addDesync, addedInDiscons4 + req.addDiscon));
 						}
 						pref.write();
-						if (req.password.size() == 0)
+						if (req.password.empty())
 							return;
 					}
 					if (!req.player.id)
@@ -1108,11 +1108,8 @@ void PSPlayerStats::reset(void)
 	desyncsInARow = 0;
 	maxDesyncsInARow = 0;
 	lastLadderPort = 0;
-
-	//Added By Sadullah Nader
 	maxQMwinsInARow = 0;
 	QMwinsInARow = 0;
-	//
 }
 
 //-------------------------------------------------------------------------
@@ -1322,7 +1319,7 @@ PSPlayerStats GameSpyPSMessageQueueInterface::parsePlayerKVPairs(std::string kvP
 std::string GameSpyPSMessageQueueInterface::formatPlayerKVPairs(PSPlayerStats stats)
 {
 	char kvbuf[256];
-	std::string s = "";
+	std::string s;
 	PerGeneralMap::iterator it;
 
 	ITERATE_OVER(wins);
@@ -1377,13 +1374,13 @@ std::string GameSpyPSMessageQueueInterface::formatPlayerKVPairs(PSPlayerStats st
 		s.append(kvbuf);
 	}
 
-	if (stats.options.length())
+	if (!stats.options.empty())
 	{
 		snprintf(kvbuf, 256, "\\options\\%s", stats.options.c_str());
 		s.append(kvbuf);
 	}
 
-	if (stats.systemSpec.length())
+	if (!stats.systemSpec.empty())
 	{
 		snprintf(kvbuf, 256, "\\systemSpec\\%s", stats.systemSpec.c_str());
 		s.append(kvbuf);
@@ -1479,7 +1476,7 @@ std::string GameSpyPSMessageQueueInterface::formatPlayerKVPairs(PSPlayerStats st
 		sprintf(kvbuf, "\\ladderPort\\%d", stats.lastLadderPort);
 		s.append(kvbuf);
 	}
-	if (stats.lastLadderHost.length())
+	if (!stats.lastLadderHost.empty())
 	{
 		snprintf(kvbuf, 256, "\\ladderHost\\%s", stats.lastLadderHost.c_str());
 		s.append(kvbuf);

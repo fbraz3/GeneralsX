@@ -83,16 +83,12 @@ FirewallHelperClass * createFirewallHelper()
 
 FirewallHelperClass::FirewallHelperClass(void)
 {
-	//Added Sadullah Nader
-	//Initializations missing and needed
 	m_currentTry = 0;
 	m_numManglers = 0;
 	m_numResponses = 0;
 	m_packetID = 0;
 	m_timeoutLength = 0;
 	m_timeoutStart = 0;
-	//
-
 	m_behavior = FIREWALL_TYPE_UNKNOWN;
 	m_lastBehavior = FIREWALL_TYPE_UNKNOWN;
 	m_sourcePortAllocationDelta = 0;
@@ -512,7 +508,7 @@ void FirewallHelperClass::writeFirewallBehavior(void)
 	numstr = num;
 	(pref)["FirewallBehavior"] = numstr;
 
-	TheWritableGlobalData->m_firewallPortAllocationDelta = TheFirewallHelper->getSourcePortAllocationDelta();
+	TheWritableGlobalData->m_firewallPortAllocationDelta = getSourcePortAllocationDelta();
 	num[0] = 0;
 	itoa(TheGlobalData->m_firewallPortAllocationDelta, num, 10);
 	numstr = num;
@@ -541,7 +537,7 @@ void FirewallHelperClass::flagNeedToRefresh(Bool flag)
 {
 	OptionPreferences pref;
 
-	(pref)["FirewallNeedToRefresh"] = flag ? AsciiString("TRUE") : AsciiString("FALSE");
+	(pref)["FirewallNeedToRefresh"] = flag ? "TRUE" : "FALSE";
 
 	pref.write();
 }

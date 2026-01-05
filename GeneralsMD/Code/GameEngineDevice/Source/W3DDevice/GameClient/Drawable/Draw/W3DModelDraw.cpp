@@ -648,7 +648,7 @@ void ModelConditionInfo::validateCachedBones(RenderObjClass* robj, Real scale) c
 	// if we have any animations in this state, always choose the first, since the animations
 	// vary on a per-client basis.
 	HAnimClass* animToUse;
-	if (m_animations.size() > 0)
+	if (!m_animations.empty())
 	{
 		animToUse = m_animations.front().getAnimHandle();	// return an AddRef'ed handle
 	}

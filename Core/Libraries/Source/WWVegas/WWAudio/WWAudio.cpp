@@ -2267,7 +2267,7 @@ WWAudioClass::UnRegister_Text_Callback (LPFNTEXTCALLBACK callback)
 void
 WWAudioClass::Fire_Text_Callback (AudibleSoundClass *sound_obj, const StringClass &text)
 {
-	if (text.Get_Length () > 0) {
+	if (!text.Is_Empty()) {
 
 		//
 		//	Loop over all the text-callbacks that have been registered

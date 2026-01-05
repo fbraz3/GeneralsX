@@ -42,8 +42,6 @@
 //-------------------------------------------------------------------------------------------------
 void INI::parseMappedImageDefinition( INI* ini )
 {
-	AsciiString name;
-
 	// read the name
 	const char* c = ini->getNextToken();
 	name.set( c );

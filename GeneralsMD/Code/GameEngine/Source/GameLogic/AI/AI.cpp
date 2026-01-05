@@ -327,7 +327,7 @@ void AI::reset( void )
 	}
 
 #if RETAIL_COMPATIBLE_AIGROUP
-	while (m_groupList.size())
+	while (!m_groupList.empty())
 	{
 		AIGroup *groupToRemove = m_groupList.front();
 		if (groupToRemove)
@@ -710,7 +710,7 @@ Object *AI::findClosestEnemy( const Object *me, Real range, UnsignedInt qualifie
 
 		Real distSqr = ThePartitionManager->getDistanceSquared(me, theEnemy, FROM_BOUNDINGSPHERE_2D);
 		Real dist = sqrt(distSqr);
-		Int modifier = dist/TheAI->getAiData()->m_attackPriorityDistanceModifier;
+		Int modifier = dist/getAiData()->m_attackPriorityDistanceModifier;
 		Int modPriority = curPriority-modifier;
 		if (modPriority < 1)
 			modPriority = 1;
@@ -941,8 +941,6 @@ m_infantryPathfindDiameter(6),
 m_vehiclePathfindDiameter(6),
 m_supplyCenterSafeRadius(250),
 m_rebuildDelaySeconds(10),
-//Added By Sadullah Nader
-//Initialization(s) inserted
 m_distanceRequiresGroup(0.0f),
 m_sideBuildLists(NULL),
 m_structuresPoorMod(0.0f),
@@ -951,7 +949,6 @@ m_aiDozerBoredRadiusModifier(2.0),
 m_aiCrushesInfantry(true),
 m_maxRetaliateDistance(210.0f),
 m_retaliateFriendsRadius(120.0f)
-//
 {
 }
 

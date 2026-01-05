@@ -623,7 +623,7 @@ Bool InGameUI::removeSuperweapon(Int playerIndex, const AsciiString& powerName, 
 				SuperweaponInfo *info = *listIt;
 				swList.erase(listIt);
 				deleteInstance(info);
-				if (swList.size() == 0)
+				if (swList.empty())
 				{
 					m_superweapons[playerIndex].erase(mapIt);
 				}
@@ -946,8 +946,6 @@ InGameUI::InGameUI()
 	m_mouseModeCursor = Mouse::ARROW;
 	m_mousedOverDrawableID = INVALID_DRAWABLE_ID;
 
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_currentlyPlayingMovie.clear();
 	m_militarySubtitle = NULL;
 	m_popupMessageData = NULL;
@@ -1183,7 +1181,7 @@ InGameUI::~InGameUI()
 void InGameUI::init( void )
 {
 	INI ini;
-	ini.loadFileDirectory( AsciiString( "Data\\INI\\InGameUI" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\InGameUI", INI_LOAD_OVERWRITE, NULL );
 
 	//override INI values with language localized values:
 	if (TheGlobalLanguageData)
@@ -1590,7 +1588,7 @@ void InGameUI::handleBuildPlacements( void )
 			Int maxObjects = TheGlobalData->m_maxLineBuildObjects;
 
 			// get the builder object that will be constructing things
-			Object *builderObject = TheGameLogic->findObjectByID( TheInGameUI->getPendingPlaceSourceObjectID() );
+			Object *builderObject = TheGameLogic->findObjectByID( getPendingPlaceSourceObjectID() );
 
 			//
 			// given the start/end points in the world and the the angle of the wall, fill
@@ -2623,7 +2621,7 @@ void InGameUI::createMouseoverHint( const GameMessage *msg )
 		TheMouse->resetTooltipDelay();
 	}
 
-	if (m_mouseMode == MOUSEMODE_DEFAULT && !m_isScrolling && !m_isSelecting && !TheInGameUI->getSelectCount() && (TheRecorder->getMode() != RECORDERMODETYPE_PLAYBACK || TheLookAtTranslator->hasMouseMovedRecently()))
+	if (m_mouseMode == MOUSEMODE_DEFAULT && !m_isScrolling && !m_isSelecting && !getSelectCount() && (TheRecorder->getMode() != RECORDERMODETYPE_PLAYBACK || TheLookAtTranslator->hasMouseMovedRecently()))
 	{
 		if( m_mousedOverDrawableID != INVALID_DRAWABLE_ID )
 		{
@@ -3361,7 +3359,7 @@ void InGameUI::deselectDrawable( Drawable *draw )
 //-------------------------------------------------------------------------------------------------
 void InGameUI::deselectAllDrawables( Bool postMsg )
 {
-	const DrawableList *selected = TheInGameUI->getAllSelectedDrawables();
+	const DrawableList *selected = getAllSelectedDrawables();
 
 	// loop through all the selected drawables
 	for ( DrawableListCIt it = selected->begin(); it != selected->end(); )
@@ -3371,7 +3369,7 @@ void InGameUI::deselectAllDrawables( Bool postMsg )
 		Drawable* draw = *it++;
 
 		// do the deselection
-		TheInGameUI->deselectDrawable( draw );
+		deselectDrawable( draw );
 
 	}
 
@@ -3949,7 +3947,7 @@ void InGameUI::expireHint( HintType type, UnsignedInt hintIndex )
 void InGameUI::createControlBar( void )
 {
 
-	TheWindowManager->winCreateFromScript( AsciiString("ControlBar.wnd") );
+	TheWindowManager->winCreateFromScript( "ControlBar.wnd" );
 	HideControlBar();
 /*
 	// hide all windows created from this layout
@@ -3966,7 +3964,7 @@ void InGameUI::createControlBar( void )
 void InGameUI::createReplayControl( void )
 {
 
-	m_replayWindow = TheWindowManager->winCreateFromScript( AsciiString("ReplayControl.wnd") );
+	m_replayWindow = TheWindowManager->winCreateFromScript( "ReplayControl.wnd" );
 
 /*
 	// hide all windows created from this layout
@@ -4057,7 +4055,7 @@ void InGameUI::playCameoMovie( const AsciiString& movieName )
 		stopCameoMovie();
 		return;
 	}
-	GameWindow *window = TheWindowManager->winGetWindowFromId(NULL,TheNameKeyGenerator->nameToKey( AsciiString("ControlBar.wnd:RightHUD") ));
+	GameWindow *window = TheWindowManager->winGetWindowFromId(NULL,TheNameKeyGenerator->nameToKey( "ControlBar.wnd:RightHUD" ));
 	WinInstanceData *winData = window->winGetInstanceData();
 	winData->setVideoBuffer(m_cameoVideoBuffer);
 //	window->winHide(FALSE);
@@ -4068,8 +4066,8 @@ void InGameUI::playCameoMovie( const AsciiString& movieName )
 void InGameUI::stopCameoMovie( void )
 {
 //RightHUD
-	//GameWindow *window = TheWindowManager->winGetWindowFromId(NULL,TheNameKeyGenerator->nameToKey( AsciiString("ControlBar.wnd:CameoMovieWindow") ));
-	GameWindow *window = TheWindowManager->winGetWindowFromId(NULL,TheNameKeyGenerator->nameToKey( AsciiString("ControlBar.wnd:RightHUD") ));
+	//GameWindow *window = TheWindowManager->winGetWindowFromId(NULL,TheNameKeyGenerator->nameToKey( "ControlBar.wnd:CameoMovieWindow" ));
+	GameWindow *window = TheWindowManager->winGetWindowFromId(NULL,TheNameKeyGenerator->nameToKey( "ControlBar.wnd:RightHUD" ));
 //	window->winHide(FALSE);
 	WinInstanceData *winData = window->winGetInstanceData();
 	winData->setVideoBuffer(NULL);
@@ -4103,38 +4101,38 @@ void InGameUI::displayCantBuildMessage( LegalBuildCode lbc )
 
 		//---------------------------------------------------------------------------------------------
 		case LBC_RESTRICTED_TERRAIN:
-			TheInGameUI->message( "GUI:CantBuildRestrictedTerrain" );
+			message( "GUI:CantBuildRestrictedTerrain" );
 			break;
 
 		//---------------------------------------------------------------------------------------------
 		case LBC_NOT_FLAT_ENOUGH:
-			TheInGameUI->message( "GUI:CantBuildNotFlatEnough" );
+			message( "GUI:CantBuildNotFlatEnough" );
 			break;
 
 		//---------------------------------------------------------------------------------------------
 		case LBC_OBJECTS_IN_THE_WAY:
-			TheInGameUI->message( "GUI:CantBuildObjectsInTheWay" );
+			message( "GUI:CantBuildObjectsInTheWay" );
 			break;
 
 		//---------------------------------------------------------------------------------------------
 		case LBC_TOO_CLOSE_TO_SUPPLIES:
-			TheInGameUI->message( "GUI:CantBuildTooCloseToSupplies" );
+			message( "GUI:CantBuildTooCloseToSupplies" );
 			break;
 
 		//---------------------------------------------------------------------------------------------
 		case LBC_NO_CLEAR_PATH:
-		  TheInGameUI->message( "GUI:CantBuildNoClearPath" );
+		  message( "GUI:CantBuildNoClearPath" );
 			break;
 
 		//---------------------------------------------------------------------------------------------
 		case LBC_SHROUD:
-			TheInGameUI->message( "GUI:CantBuildShroud" );
+			message( "GUI:CantBuildShroud" );
 			break;
 
 		//---------------------------------------------------------------------------------------------
 		default:
 
-			TheInGameUI->message( "GUI:CantBuildThere" );
+			message( "GUI:CantBuildThere" );
 			break;
 
 	}
@@ -4166,7 +4164,7 @@ void InGameUI::militarySubtitle( const AsciiString& label, Int duration )
 	const int messageTimeout = currLogicFrame + (Int)(((Real)LOGICFRAMES_PER_SECOND * duration)/1000.0f);
 
 	// disable tooltips until this frame, cause we don't want to collide with the military subtitles.
-	TheInGameUI->disableTooltipsUntil(messageTimeout);
+	disableTooltipsUntil(messageTimeout);
 
 	// calculate where this screen position should be since the position being passed in is based off 8x6
 	Coord2D multiplyer;
@@ -4204,7 +4202,7 @@ void InGameUI::removeMilitarySubtitle( void )
 	if(!m_militarySubtitle)
 		return;
 
-	TheInGameUI->clearTooltipsDisabled();
+	clearTooltipsDisabled();
 
 	// loop through and free up the display strings
 	for(UnsignedInt i = 0; i <= m_militarySubtitle->currentDisplayString; i ++)
@@ -4223,7 +4221,7 @@ void InGameUI::removeMilitarySubtitle( void )
 // ------------------------------------------------------------------------------------------------
 Bool InGameUI::areSelectedObjectsControllable() const
 {
-	const DrawableList *selected = TheInGameUI->getAllSelectedDrawables();
+	const DrawableList *selected = getAllSelectedDrawables();
 
 	// loop through all the selected drawables
 	const Drawable *draw;
@@ -4280,7 +4278,7 @@ CanAttackResult InGameUI::getCanSelectedObjectsAttack( ActionType action, const 
 	}
 
 	// get selected list of drawables
-	const DrawableList *selected = TheInGameUI->getAllSelectedDrawables();
+	const DrawableList *selected = getAllSelectedDrawables();
 
 	// set up counters for rule checking
 	Int count = 0;
@@ -4369,7 +4367,7 @@ Bool InGameUI::canSelectedObjectsDoAction( ActionType action, const Object *obje
 	}
 
 	// get selected list of drawables
-	const DrawableList *selected = TheInGameUI->getAllSelectedDrawables();
+	const DrawableList *selected = getAllSelectedDrawables();
 
 	// set up counters for rule checking
 	Int count = 0;
@@ -4524,7 +4522,7 @@ Bool InGameUI::canSelectedObjectsDoSpecialPower( const CommandButton *command, c
 	if (ignoreSelDraw)
 		tmpList.push_back(ignoreSelDraw);
 
-	const DrawableList* selected = (tmpList.size() > 0) ? &tmpList : TheInGameUI->getAllSelectedDrawables();
+	const DrawableList* selected = (!tmpList.empty()) ? &tmpList : getAllSelectedDrawables();
 
 	// set up counters for rule checking
 	Int count = 0;
@@ -4590,7 +4588,7 @@ Bool InGameUI::canSelectedObjectsOverrideSpecialPowerDestination( const Coord3D 
 	Int qualify = 0;
 
 	// get selected list of drawables
-	const DrawableList *selected = TheInGameUI->getAllSelectedDrawables();
+	const DrawableList *selected = getAllSelectedDrawables();
 
 	// loop through all the selected drawables
 	Drawable *other;
@@ -4642,7 +4640,7 @@ Bool InGameUI::canSelectedObjectsEffectivelyUseWeapon( const CommandButton *comm
 	}
 
 	// get selected list of drawables
-	const DrawableList *selected = TheInGameUI->getAllSelectedDrawables();
+	const DrawableList *selected = getAllSelectedDrawables();
 
 	// set up counters for rule checking
 	Int count = 0;
@@ -4787,7 +4785,7 @@ Int InGameUI::selectMatchingAcrossRegion( IRegion2D *region )
 		}
 	}
 
-	if (drawableList.size() == 0)
+	if (drawableList.empty())
 		return -1; // nothing useful selected to begin with - don't bother iterating
 
 	std::set<const ThingTemplate*>::iterator iter;
@@ -4859,16 +4857,16 @@ Int InGameUI::selectAllUnitsByTypeAcrossScreen(KindOfMaskType mustBeSet, KindOfM
 	Int numSelected = selectAllUnitsByTypeAcrossRegion(&region, mustBeSet, mustBeClear);
 	if (numSelected == -1)
 	{
-		UnicodeString message = TheGameText->fetch( "GUI:NothingSelected" );
-		TheInGameUI->message( message );
+		UnicodeString msgStr = TheGameText->fetch( "GUI:NothingSelected" );
+		message( msgStr );
 	}
 	else if (numSelected == 0)
 	{
 	}
 	else
 	{
-		UnicodeString message = TheGameText->fetch( "GUI:SelectedAcrossScreen" );
-		TheInGameUI->message( message );
+		UnicodeString msgStr = TheGameText->fetch( "GUI:SelectedAcrossScreen" );
+		message( msgStr );
 	}
 	return numSelected;
 }
@@ -4893,16 +4891,16 @@ Int InGameUI::selectMatchingAcrossScreen( void )
 	Int numSelected = selectMatchingAcrossRegion(&region);
 	if (numSelected == -1)
 	{
-		UnicodeString message = TheGameText->fetch( "GUI:NothingSelected" );
-		TheInGameUI->message( message );
+		UnicodeString msgStr = TheGameText->fetch( "GUI:NothingSelected" );
+		message( msgStr );
 	}
 	else if (numSelected == 0)
 	{
 	}
 	else
 	{
-		UnicodeString message = TheGameText->fetch( "GUI:SelectedAcrossScreen" );
-		TheInGameUI->message( message );
+		UnicodeString msgStr = TheGameText->fetch( "GUI:SelectedAcrossScreen" );
+		message( msgStr );
 	}
 	return numSelected;
 }
@@ -4914,22 +4912,22 @@ Int InGameUI::selectAllUnitsByTypeAcrossMap(KindOfMaskType mustBeSet, KindOfMask
 	Int numSelected = selectAllUnitsByTypeAcrossRegion(NULL, mustBeSet, mustBeClear);
 	if (numSelected == -1)
 	{
-		UnicodeString message = TheGameText->fetch( "GUI:NothingSelected" );
-		TheInGameUI->message( message );
+		UnicodeString msgStr = TheGameText->fetch( "GUI:NothingSelected" );
+		message( msgStr );
 	}
 	else if (numSelected == 0)
 	{
-		Drawable *draw = TheInGameUI->getFirstSelectedDrawable();
+		Drawable *draw = getFirstSelectedDrawable();
 		if( !draw || !draw->getObject() || !draw->getObject()->isKindOf( KINDOF_STRUCTURE ) )
 		{
-			UnicodeString message = TheGameText->fetch( "GUI:SelectedAcrossMap" );
-			TheInGameUI->message( message );
+			UnicodeString msgStr = TheGameText->fetch( "GUI:SelectedAcrossMap" );
+			message( msgStr );
 		}
 	}
 	else
 	{
-		UnicodeString message = TheGameText->fetch( "GUI:SelectedAcrossMap" );
-		TheInGameUI->message( message );
+		UnicodeString msgStr = TheGameText->fetch( "GUI:SelectedAcrossMap" );
+		message( msgStr );
 	}
 	return numSelected;
 }
@@ -4943,22 +4941,22 @@ Int InGameUI::selectMatchingAcrossMap()
 	Int numSelected = selectMatchingAcrossRegion(NULL);
 	if (numSelected == -1)
 	{
-		UnicodeString message = TheGameText->fetch( "GUI:NothingSelected" );
-		TheInGameUI->message( message );
+		UnicodeString msgStr = TheGameText->fetch( "GUI:NothingSelected" );
+		message( msgStr );
 	}
 	else if (numSelected == 0)
 	{
-		Drawable *draw = TheInGameUI->getFirstSelectedDrawable();
+		Drawable *draw = getFirstSelectedDrawable();
 		if( !draw || !draw->getObject() || !draw->getObject()->isKindOf( KINDOF_STRUCTURE ) )
 		{
-			UnicodeString message = TheGameText->fetch( "GUI:SelectedAcrossMap" );
-			TheInGameUI->message( message );
+			UnicodeString msgStr = TheGameText->fetch( "GUI:SelectedAcrossMap" );
+			message( msgStr );
 		}
 	}
 	else
 	{
-		UnicodeString message = TheGameText->fetch( "GUI:SelectedAcrossMap" );
-		TheInGameUI->message( message );
+		UnicodeString msgStr = TheGameText->fetch( "GUI:SelectedAcrossMap" );
+		message( msgStr );
 	}
 	return numSelected;
 }
@@ -5101,7 +5099,7 @@ try_again:
 	translate.translate(text);
 	newFTD->m_text = translate;
 	newFTD->m_dString->setText(translate);
-	newFTD->m_dString->setFont(TheWindowManager->winFindFont( AsciiString("Arial"), POINTSIZE, FALSE ));
+	newFTD->m_dString->setFont(TheWindowManager->winFindFont( "Arial", POINTSIZE, FALSE ));
 
 	if(m_floatingTextTimeOut <= 0)
 		newFTD->m_frameTimeOut = TheGameLogic->getFrame() +  DEFAULT_FLOATING_TEXT_TIMEOUT;
@@ -5266,7 +5264,7 @@ void InGameUI::popupMessage( const AsciiString& identifier, Int x, Int y, Int wi
 	if( pause )
 		TheGameLogic->setGamePaused(TRUE, pauseMusic);
 
-	m_popupMessageData->layout = TheWindowManager->winCreateLayout(AsciiString("InGamePopupMessage.wnd"));
+	m_popupMessageData->layout = TheWindowManager->winCreateLayout("InGamePopupMessage.wnd");
 	m_popupMessageData->layout->runInit();
 }
 
@@ -5300,14 +5298,11 @@ void InGameUI::clearPopupMessageData( void )
 //-------------------------------------------------------------------------------------------------
 FloatingTextData::FloatingTextData(void)
 {
-	// Added By Sadullah Nader
-	// Initializations missing and needed
 	m_color = 0;
 	m_frameCount = 0;
 	m_frameTimeOut = 0;
 	m_pos3D.zero();
 	m_text.clear();
-	//
 	m_dString = TheDisplayStringManager->newDisplayString();
 }
 
@@ -5583,7 +5578,7 @@ void InGameUI::selectNextIdleWorker( void )
 	}
 	else
 	{
-		Drawable *selectedDrawable = TheInGameUI->getFirstSelectedDrawable();
+		Drawable *selectedDrawable = getFirstSelectedDrawable();
 		// TheSuperHackers @tweak Stubbjax 22/07/2025 Idle worker iteration now correctly identifies and
 		// iterates contained idle workers. Previous iteration logic would not go past contained workers,
 		// and was not guaranteed to select top-level containers.
@@ -5719,7 +5714,7 @@ void InGameUI::resetIdleWorker( void )
 
 void InGameUI::recreateControlBar( void )
 {
-	GameWindow *win = TheWindowManager->winGetWindowFromId(NULL, TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd")));
+	GameWindow *win = TheWindowManager->winGetWindowFromId(NULL, TheNameKeyGenerator->nameToKey("ControlBar.wnd"));
 	deleteInstance(win);
 
 	m_idleWorkerWin = NULL;

@@ -221,7 +221,7 @@ void MapObjectProps::_DictToTeam(void)
 /// Move data from object to dialog controls
 void MapObjectProps::_DictToName(void)
 {
-  AsciiString name = "";
+  AsciiString name;
   Bool exists;
   if (m_dictToEdit)
   {
@@ -802,7 +802,7 @@ void MapObjectProps::_DictToPrebuiltUpgrades(void)
         if (!gmbmd) {
           continue;
         }
-        if (gmbmd->m_upgradeMuxData.m_activationUpgradeNames.size() > 0) {
+        if (!gmbmd->m_upgradeMuxData.m_activationUpgradeNames.empty()) {
           cstr = gmbmd->m_upgradeMuxData.m_activationUpgradeNames[0].str();
           if (pBox->FindString(-1, cstr) == LB_ERR) {
             pBox->AddString(cstr);

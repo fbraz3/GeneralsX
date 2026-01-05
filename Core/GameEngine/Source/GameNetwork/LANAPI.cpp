@@ -309,7 +309,7 @@ void LANAPI::checkMOTD( void )
 
 				UnicodeString uniLine;
 				uniLine.translate(line);
-				OnChat( UnicodeString(L"MOTD"), 0, uniLine, LANCHAT_SYSTEM );
+				OnChat( L"MOTD", 0, uniLine, LANCHAT_SYSTEM );
 			}
 		}
 	}
@@ -639,7 +639,7 @@ void LANAPI::RequestGameJoin( LANGameInfo *game, UnsignedInt ip /* = 0 */ )
 	msg.GameToJoin.exeCRC = TheGlobalData->m_exeCRC;
 	msg.GameToJoin.iniCRC = TheGlobalData->m_iniCRC;
 
-	AsciiString s = "";
+	AsciiString s;
 	GetStringFromRegistry("\\ergc", "", s);
 	strlcpy(msg.GameToJoin.serial, s.str(), ARRAY_SIZE(msg.GameToJoin.serial));
 
@@ -774,7 +774,7 @@ void LANAPI::RequestHasMap( void )
 			text.format(TheGameText->fetch("GUI:LocalPlayerNoMapWillTransfer"), mapDisplayName.str());
 		else
 			text.format(TheGameText->fetch("GUI:LocalPlayerNoMap"), mapDisplayName.str());
-		OnChat(UnicodeString(L"SYSTEM"), m_localIP, text, LANCHAT_SYSTEM);
+		OnChat(L"SYSTEM", m_localIP, text, LANCHAT_SYSTEM);
 	}
 }
 
@@ -922,7 +922,7 @@ void LANAPI::RequestGameCreate( UnicodeString gameName, Bool isDirectConnect )
 /// @todo: Need to initialize the players elsewere.
 /*	for (int player = 1; player < MAX_SLOTS; ++player)
 	{
-		myGame->setPlayerName(player, UnicodeString(L""));
+		myGame->setPlayerName(player, L"");
 		myGame->setIP(player, 0);
 		myGame->setAccepted(player, false);
 	}*/

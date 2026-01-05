@@ -651,7 +651,7 @@ void ConnectionManager::processChat(NetChatCommandMsg *msg)
 	const Player *player = ThePlayerList->findPlayerWithNameKey( TheNameKeyGenerator->nameToKey( playerName ) );
 	if (!player)
 	{
-		TheInGameUI->message(UnicodeString(L"%ls"), unitext.str());
+		TheInGameUI->message(L"%ls", unitext.str());
 		return;
 	}
 
@@ -663,7 +663,7 @@ void ConnectionManager::processChat(NetChatCommandMsg *msg)
 	{
 		RGBColor rgb;
 		rgb.setFromInt(player->getPlayerColor());
-		TheInGameUI->messageColor(&rgb, UnicodeString(L"%ls"), unitext.str());
+		TheInGameUI->messageColor(&rgb, L"%ls", unitext.str());
 
 		// feedback for received chat messages in-game
 		AudioEventRTS audioEvent("GUICommunicatorIncoming");
@@ -1714,7 +1714,7 @@ PlayerLeaveCode ConnectionManager::disconnectPlayer(Int slot) {
 
 	UnicodeString unicodeName;
 	unicodeName = getPlayerName(slot);
-	if (unicodeName.getLength() > 0 && m_connections[slot]) {
+	if (!unicodeName.isEmpty() && m_connections[slot]) {
 		TheInGameUI->message("Network:PlayerLeftGame", unicodeName.str());
 
 		// People are boneheads. Also play a sound
@@ -1771,6 +1771,7 @@ void ConnectionManager::quitGame() {
 	// Need to do the NetDisconnectPlayerCommandMsg creation and sending here.
 	NetDisconnectPlayerCommandMsg *disconnectMsg = newInstance(NetDisconnectPlayerCommandMsg);
 	disconnectMsg->setDisconnectSlot(m_localSlot);
+	disconnectMsg->setDisconnectFrame(TheGameLogic->getFrame());
 	disconnectMsg->setPlayerID(m_localSlot);
 	if (DoesCommandRequireACommandID(disconnectMsg->getNetCommandType())) {
 		disconnectMsg->setID(GenerateNextCommandID());
@@ -2120,7 +2121,7 @@ UnsignedShort ConnectionManager::sendFileAnnounce(AsciiString path, UnsignedByte
 		log.format(L"Not sending file '%hs' to %X", path.str(), playerMask);
 		DEBUG_LOG_LEVEL(DEBUG_LEVEL_NET, ("%ls", log.str()));
 		if (TheLAN)
-			TheLAN->OnChat(UnicodeString(L"sendFile"), 0, log, LANAPI::LANCHAT_SYSTEM);
+			TheLAN->OnChat(L"sendFile", 0, log, LANAPI::LANCHAT_SYSTEM);
 		return 0;
 	}
 
@@ -2158,7 +2159,7 @@ void ConnectionManager::sendFile(AsciiString path, UnsignedByte playerMask, Unsi
 		log.format(L"Not sending file '%hs' to %X", path.str(), playerMask);
 		DEBUG_LOG_LEVEL(DEBUG_LEVEL_NET, ("%ls", log.str()));
 		if (TheLAN)
-			TheLAN->OnChat(UnicodeString(L"sendFile"), 0, log, LANAPI::LANCHAT_SYSTEM);
+			TheLAN->OnChat(L"sendFile", 0, log, LANAPI::LANCHAT_SYSTEM);
 		return;
 	}
 
@@ -2269,12 +2270,11 @@ void ConnectionManager::updateLoadProgress( Int progress )
 
 void ConnectionManager::loadProgressComplete()
 {
-	NetCommandMsg *msg = newInstance(NetCommandMsg);
+	NetLoadCompleteCommandMsg *msg = newInstance(NetLoadCompleteCommandMsg);
 	msg->setPlayerID( m_localSlot );
 	if (DoesCommandRequireACommandID(msg->getNetCommandType()) == TRUE) {
 		msg->setID(GenerateNextCommandID());
 	}
-	msg->setNetCommandType(NETCOMMANDTYPE_LOADCOMPLETE);
 	processLoadComplete(msg);
 	sendLocalCommand(msg, 0xff ^ (1 << m_localSlot));
 
@@ -2283,9 +2283,8 @@ void ConnectionManager::loadProgressComplete()
 
 void ConnectionManager::sendTimeOutGameStart()
 {
-	NetCommandMsg *msg = newInstance(NetCommandMsg);
+	NetTimeOutGameStartCommandMsg *msg = newInstance(NetTimeOutGameStartCommandMsg);
 	msg->setPlayerID( m_localSlot );
-	msg->setNetCommandType(NETCOMMANDTYPE_TIMEOUTSTART);
 	if (DoesCommandRequireACommandID(msg->getNetCommandType()) == TRUE) {
 		msg->setID(GenerateNextCommandID());
 	}

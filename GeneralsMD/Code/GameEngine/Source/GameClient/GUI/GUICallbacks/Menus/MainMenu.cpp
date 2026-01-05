@@ -73,10 +73,7 @@
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
 
 #include "GameClient/CDCheck.h"
-//Added By Saad
-//for accessing the InGameUI
 #include "GameClient/InGameUI.h"
-
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -207,7 +204,6 @@ static Bool launchChallengeMenu = FALSE;
 
 static Bool dontAllowTransitions = FALSE;
 
-//Added by Saad
 const Int /*TIME_OUT = 15,*/ CORNER = 10;
 void AcceptResolution();
 void DeclineResolution();
@@ -215,7 +211,6 @@ GameWindow* resAcceptMenu = NULL;
 extern DisplaySettings oldDispSettings, newDispSettings;
 extern Bool dispChanged;
 //static time_t timeStarted = 0, currentTime = 0;
-//
 
 void diffReverseSide(void);
 void HandleCanceledDownload(Bool resetDropDown)
@@ -717,8 +712,6 @@ void MainMenuShutdown(WindowLayout* layout, void* userData)
 extern Bool DontShowMainMenu;
 
 ////////////////////////////////////////////////////////////////////////////
-//Added By Sadullah Nader
-//Added as a fix to the resolution change
 //Allows the user to confirm the change, goes back to the previous mode
 //if the time to change expires.
 ////////////////////////////////////////////////////////////////////////////
@@ -751,8 +744,8 @@ void DeclineResolution()
 		TheWritableGlobalData->m_xResolution = newDispSettings.xRes;
 		TheWritableGlobalData->m_yResolution = newDispSettings.yRes;
 
-		TheHeaderTemplateManager->headerNotifyResolutionChange();
-		TheMouse->mouseNotifyResolutionChange();
+		TheHeaderTemplateManager->onResolutionChanged();
+		TheMouse->onResolutionChanged();
 
 		AsciiString prefString;
 		prefString.format("%d %d", newDispSettings.xRes, newDispSettings.yRes);
@@ -832,8 +825,6 @@ void MainMenuUpdate(WindowLayout* layout, void* userData)
 		justEntered = FALSE;
 
 
-	// Added by Saad to the confirmation or decline of the resoluotion change
-	// dialog box.
 	/* This is also commented for the same reason as the top
 	if (dispChanged)
 	{

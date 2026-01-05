@@ -775,9 +775,9 @@ void WOLQuickMatchMenuInit(WindowLayout* layout, void* userData)
 	comboBoxSide = TheWindowManager->winGetWindowFromId(parentWOLQuickMatch, comboBoxSideID);
 	comboBoxColor = TheWindowManager->winGetWindowFromId(parentWOLQuickMatch, comboBoxColorID);
 
-	if (TheLadderList->getStandardLadders()->size() == 0
-		&& TheLadderList->getSpecialLadders()->size() == 0
-		&& TheLadderList->getLocalLadders()->size() == 0)
+	if (TheLadderList->getStandardLadders()->empty()
+		&& TheLadderList->getSpecialLadders()->empty()
+		&& TheLadderList->getLocalLadders()->empty())
 	{
 		// no ladders, so just disable them
 		comboBoxDisabledLadder = comboBoxLadder;
@@ -1197,11 +1197,11 @@ void WOLQuickMatchMenuUpdate(WindowLayout* layout, void* userData)
 				/*
 				if (resp.joinGroupRoom.ok)
 				{
-					TheGameSpyInfo->addText(UnicodeString(L"Joined group room"), GameSpyColor[GSCOLOR_DEFAULT], quickmatchTextWindow);
+					TheGameSpyInfo->addText(L"Joined group room", GameSpyColor[GSCOLOR_DEFAULT], quickmatchTextWindow);
 				}
 				else
 				{
-					TheGameSpyInfo->addText(UnicodeString(L"Didn't join group room"), GameSpyColor[GSCOLOR_DEFAULT], quickmatchTextWindow);
+					TheGameSpyInfo->addText(L"Didn't join group room", GameSpyColor[GSCOLOR_DEFAULT], quickmatchTextWindow);
 				}
 				*/
 				break;

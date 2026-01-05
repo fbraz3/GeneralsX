@@ -658,7 +658,7 @@ void EditWindow::mouseEvent( UnsignedInt windowsMessage,
 				// if we have ONE window selected and are close to an anchor corner
 				// to resize it change the cursor to resize cursor
 				//
-				TheEditWindow->handleResizeAvailable( x, y );
+				handleResizeAvailable( x, y );
 
 			}
 
@@ -894,7 +894,7 @@ void EditWindow::mouseEvent( UnsignedInt windowsMessage,
 			}
 
 			// open right click menu
-			TheEditWindow->openPopupMenu( clickPos.x, clickPos.y );
+			openPopupMenu( clickPos.x, clickPos.y );
 
 			break;
 

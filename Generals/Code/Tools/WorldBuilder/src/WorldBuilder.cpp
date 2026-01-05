@@ -414,6 +414,8 @@ BOOL CWorldBuilderApp::InitInstance()
 	TheWritableGlobalData->m_shroudOn = FALSE;
 #endif
 
+	TheWritableGlobalData->m_isWorldBuilder = TRUE;
+
 	// Change the registry key under which our settings are stored.
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization.
@@ -641,7 +643,6 @@ int CWorldBuilderApp::ExitInstance()
 
 	delete TheFileSystem;
 	TheFileSystem = NULL;
-	TextureLoadTaskClass::shutdown();
 
 	delete TheW3DFileSystem;
 	TheW3DFileSystem = NULL;
@@ -686,7 +687,7 @@ void CWorldBuilderApp::OnFileOpen()
 #endif
 
 	CFileStatus status;
-	if (m_currentDirectory != AsciiString("")) try {
+	if (!m_currentDirectory.isEmpty()) try {
 		if (CFile::GetStatus(m_currentDirectory.str(), status)) {
 			if (status.m_attribute & CFile::directory) {
 				::SetCurrentDirectory(m_currentDirectory.str());

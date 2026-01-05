@@ -22,20 +22,28 @@ add_subdirectory(Code)
 
 # If we are building on windows for windows, try and get the game install path from the registry.
 if("${CMAKE_HOST_SYSTEM}" MATCHES "Windows" AND "${CMAKE_SYSTEM}" MATCHES "Windows")
-    # Check the CD registry path
-    if(NOT RTS_INSTALL_PREFIX_GENERALS)
-        get_filename_component(RTS_INSTALL_PREFIX_GENERALS  "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Electronic Arts\\EA Games\\Generals;InstallPath]" ABSOLUTE CACHE)
-    endif()
+    include(${CMAKE_SOURCE_DIR}/cmake/registry.cmake)
+
+    # Check the EA App/CD registry path
+    fetch_registry_value(
+        "HKEY_LOCAL_MACHINE/SOFTWARE/Electronic Arts/EA Games/Generals"
+        "InstallPath"
+        RTS_INSTALL_PREFIX_GENERALS
+        "Generals install path from registry")
 
     # Check the "First Decade" registry path
-    if(NOT RTS_INSTALL_PREFIX_GENERALS OR "${RTS_INSTALL_PREFIX_GENERALS}" STREQUAL "/registry")
-        get_filename_component(RTS_INSTALL_PREFIX_GENERALS  "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer The First Decade;gr_folder]" ABSOLUTE CACHE)
-    endif()
+    fetch_registry_value(
+        "HKEY_LOCAL_MACHINE/SOFTWARE/Electronic Arts/EA Games/Command and Conquer The First Decade"
+        "gr_folder"
+        RTS_INSTALL_PREFIX_GENERALS
+        "Generals install path from registry")
 
     # Check the Steam registry path
-    if(NOT RTS_INSTALL_PREFIX_GENERALS OR "${RTS_INSTALL_PREFIX_GENERALS}" STREQUAL "/registry")
-        get_filename_component(RTS_INSTALL_PREFIX_GENERALS  "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Electronic Arts\\EA Games\\Generals;installPath]" ABSOLUTE CACHE)
-    endif()
+    fetch_registry_value(
+        "HKEY_LOCAL_MACHINE/SOFTWARE/Electronic Arts/EA Games/Generals"
+        "installPath"
+        RTS_INSTALL_PREFIX_GENERALS
+        "Generals install path from registry")
 endif()
 
 if(RTS_INSTALL_PREFIX_GENERALS AND NOT "${RTS_INSTALL_PREFIX_GENERALS}" STREQUAL "/registry")

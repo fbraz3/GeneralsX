@@ -131,10 +131,7 @@ const FieldParse UpgradeTemplate::m_upgradeFieldParseTable[] =
 //-------------------------------------------------------------------------------------------------
 UpgradeTemplate::UpgradeTemplate( void )
 {
-	//Added By Sadullah Nader
-	//Initialization(s) inserted
 	m_cost = 0;
-	//
 	m_type = UPGRADE_TYPE_PLAYER;
 	m_nameKey = NAMEKEY_INVALID;
 	m_buildTime = 0.0f;
@@ -296,7 +293,7 @@ void UpgradeCenter::reset( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Find upgrade matching name key */
+/** Find upgrade by veterancy level */
 //-------------------------------------------------------------------------------------------------
 const UpgradeTemplate *UpgradeCenter::findVeterancyUpgrade( VeterancyLevel level ) const
 {
@@ -305,7 +302,7 @@ const UpgradeTemplate *UpgradeCenter::findVeterancyUpgrade( VeterancyLevel level
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Find upgrade matching name key */
+/** Find upgrade by name key */
 //-------------------------------------------------------------------------------------------------
 UpgradeTemplate *UpgradeCenter::findNonConstUpgradeByKey( NameKeyType key )
 {
@@ -332,7 +329,7 @@ UpgradeTemplate *UpgradeCenter::firstUpgradeTemplate( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Find upgrade matching name key */
+/** Find upgrade by name key */
 //-------------------------------------------------------------------------------------------------
 const UpgradeTemplate *UpgradeCenter::findUpgradeByKey( NameKeyType key ) const
 {
@@ -348,13 +345,19 @@ const UpgradeTemplate *UpgradeCenter::findUpgradeByKey( NameKeyType key ) const
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Find upgrade matching name */
+/** Find upgrade by name */
 //-------------------------------------------------------------------------------------------------
 const UpgradeTemplate *UpgradeCenter::findUpgrade( const AsciiString& name ) const
 {
-
 	return findUpgradeByKey( TheNameKeyGenerator->nameToKey( name ) );
+}
 
+//-------------------------------------------------------------------------------------------------
+/** Find upgrade by name */
+//-------------------------------------------------------------------------------------------------
+const UpgradeTemplate *UpgradeCenter::findUpgrade( const char* name ) const
+{
+	return findUpgradeByKey( TheNameKeyGenerator->nameToKey( name ) );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -476,8 +479,7 @@ std::vector<AsciiString> UpgradeCenter::getUpgradeNames( void ) const
 void UpgradeCenter::parseUpgradeDefinition( INI *ini )
 {
 	// read the name
-	const char* c = ini->getNextToken();
-	AsciiString name = c;
+	const char* name = ini->getNextToken();
 
 	// find existing item if present
 	UpgradeTemplate* upgrade = TheUpgradeCenter->findNonConstUpgradeByKey( NAMEKEY(name) );
@@ -490,7 +492,7 @@ void UpgradeCenter::parseUpgradeDefinition( INI *ini )
 	}
 
 	// sanity
-	DEBUG_ASSERTCRASH( upgrade, ("parseUpgradeDefinition: Unable to allocate upgrade '%s'", name.str()) );
+	DEBUG_ASSERTCRASH( upgrade, ("parseUpgradeDefinition: Unable to allocate upgrade '%s'", name) );
 
 	// parse the ini definition
 	ini->initFromINI( upgrade, upgrade->getFieldParse() );

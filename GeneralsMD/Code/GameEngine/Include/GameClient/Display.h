@@ -29,11 +29,9 @@
 #pragma once
 
 #include "Common/SubsystemInterface.h"
-#include "View.h"
 #include "GameClient/Color.h"
 #include "GameClient/GameFont.h"
-
-class View;
+#include "GameClient/View.h"
 
 struct ShroudLevel
 {
@@ -220,10 +218,8 @@ extern Display *TheDisplay;
 
 extern void StatDebugDisplay( DebugDisplayInterface *dd, void *, FILE *fp = NULL );
 
-//Added By Saad
 //Necessary for display resolution confirmation dialog box
 //Holds the previous and current display settings
-
 typedef struct _DisplaySettings
 {
 	Int xRes;  //Resolution width

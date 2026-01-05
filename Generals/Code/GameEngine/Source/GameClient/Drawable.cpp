@@ -316,11 +316,8 @@ Drawable::Drawable( const ThingTemplate *thingTemplate, DrawableStatusBits statu
 	// assign status bits before anything else can be done
 	m_status = statusBits;
 
-	// Added By Sadullah Nader
-	// Initialization missing and needed
 	m_nextDrawable = NULL;
 	m_prevDrawable = NULL;
-	//
 
 	// register drawable with the GameClient ... do this first before we start doing anything
 	// complex that uses any of the drawable data so that we have and ID!!  It's ok to initialize
@@ -330,17 +327,12 @@ Drawable::Drawable( const ThingTemplate *thingTemplate, DrawableStatusBits statu
 
 	Int i;
 
-	// Added By Sadullah Nader
-	// Initialization missing and needed
 	m_flashColor = 0;
 	m_selected = '\0';
-	//
 
 	m_expirationDate = 0;  // 0 == never expires
 
 	m_lastConstructDisplayed = -1.0f;
-
-	//Added By Sadullah Nader
 	//Fix for the building percent
 	m_constructDisplayString = TheDisplayStringManager->newDisplayString();
 	m_constructDisplayString->setFont(TheFontLibrary->getFont(TheInGameUI->getDrawableCaptionFontName(),
@@ -2171,15 +2163,25 @@ void Drawable::setStealthLook(StealthLookType look)
 //-------------------------------------------------------------------------------------------------
 void Drawable::draw()
 {
-
 	if ( getObject() && getObject()->isEffectivelyDead() )
-		m_heatVisionOpacity = 0.0f;//dead folks don't stealth anyway
-	else if ( m_heatVisionOpacity > VERY_TRANSPARENT_HEATVISION )// keep fading any heatvision unless something has set it to zero
-		m_heatVisionOpacity *= HEATVISION_FADE_SCALAR;
-	else
+	{
+		//dead folks don't stealth anyway
 		m_heatVisionOpacity = 0.0f;
+	}
+	else if ( m_heatVisionOpacity > VERY_TRANSPARENT_HEATVISION )
+	{
+		// keep fading any added material unless something has set it to zero
+		// TheSuperHackers @tweak The stealth opacity fade time step is now decoupled from the render update.
+		static_assert(HEATVISION_FADE_SCALAR > 0.0f && HEATVISION_FADE_SCALAR < 1.0f, "HEATVISION_FADE_SCALAR must be between 0 and 1");
 
-
+		const Real timeScale = TheFramePacer->getActualLogicTimeScaleOverFpsRatio();
+		const Real fadeScalar = 1.0f - (1.0f - HEATVISION_FADE_SCALAR) * timeScale;
+		m_heatVisionOpacity *= fadeScalar;
+	}
+	else
+	{
+		m_heatVisionOpacity = 0.0f;
+	}
 
 	if (m_hidden || m_hiddenByStealth || getFullyObscuredByShroud())
 		return;	// my, that was easy
@@ -4256,13 +4258,18 @@ void Drawable::xferDrawableModules( Xfer *xfer )
 	*    during the module xfer (CBD)
 	* 4: Added m_ambientSoundEnabled flag
 	* 5: save full mtx, not pos+orient.
+	* 6: TheSuperHackers @bugfix Removed m_prevTintStatus because loading its value is unnecessary and undesirable
 	*/
 // ------------------------------------------------------------------------------------------------
 void Drawable::xfer( Xfer *xfer )
 {
 
 	// version
+#if RETAIL_COMPATIBLE_XFER_SAVE
 	const XferVersion currentVersion = 5;
+#else
+	const XferVersion currentVersion = 6;
+#endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -4422,8 +4429,15 @@ void Drawable::xfer( Xfer *xfer )
 	// tint status
 	xfer->xferUnsignedInt( &m_tintStatus );
 
-	// prev tint status
-	xfer->xferUnsignedInt( &m_prevTintStatus );
+	if (version <= 5)
+	{
+		// prev tint status
+		xfer->xferUnsignedInt( &m_prevTintStatus );
+
+		// TheSuperHackers @bugfix Caball009 21/12/2025 Trigger tinting after loading a save game.
+		if (xfer->getXferMode() == XFER_LOAD)
+			m_prevTintStatus = 0;
+	}
 
 	// fading mode
 	xfer->xferUser( &m_fadeMode, sizeof( FadingMode ) );

@@ -65,6 +65,7 @@ void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 				strlcpy(reply.GameInfo.options, gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
 				wcslcpy(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName));
 				reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
+				reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
 
 				sendMessage(&reply);
 			}
@@ -708,7 +709,7 @@ void LANAPI::handleInActive(LANMessage *msg, UnsignedInt senderIP) {
 	}
 
 	// don't want to unaccept the host, that's silly.  They can't hit start alt-tabbed anyways.
-	if (senderIP == TheLAN->GetLocalIP()) {
+	if (senderIP == GetLocalIP()) {
 		return;
 	}
 

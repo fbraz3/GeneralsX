@@ -1451,7 +1451,7 @@ void BridgeBehavior::xfer( Xfer *xfer )
 	{
 
 		// read all object IDs
-		DEBUG_ASSERTCRASH( m_scaffoldObjectIDList.size() == 0,
+		DEBUG_ASSERTCRASH( m_scaffoldObjectIDList.empty(),
 											 ("BridgeBehavior::xfer - scaffold object list should be empty") );
 		for( Int i = 0; i < scaffoldObjectCount; ++i )
 		{

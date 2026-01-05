@@ -67,8 +67,8 @@ static GameWindow *buttonCancel = NULL;
 //-------------------------------------------------------------------------------------------------
 void WOLMessageWindowInit( WindowLayout *layout, void *userData )
 {
-	parentWOLMessageWindowID = TheNameKeyGenerator->nameToKey( AsciiString( "WOLMessageWindow.wnd:WOLMessageWindowParent" ) );
-	buttonCancelID = TheNameKeyGenerator->nameToKey( AsciiString( "WOLMessageWindow.wnd:ButtonCancel" ) );
+	parentWOLMessageWindowID = TheNameKeyGenerator->nameToKey( "WOLMessageWindow.wnd:WOLMessageWindowParent" );
+	buttonCancelID = TheNameKeyGenerator->nameToKey( "WOLMessageWindow.wnd:ButtonCancel" );
 	parentWOLMessageWindow = TheWindowManager->winGetWindowFromId( NULL, parentWOLMessageWindowID );
 	buttonCancel = TheWindowManager->winGetWindowFromId( NULL,  buttonCancelID);
 

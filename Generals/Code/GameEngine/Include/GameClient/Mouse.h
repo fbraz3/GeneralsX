@@ -62,6 +62,7 @@ enum GameMode CPP_11(: Int);
 
 enum MouseButtonState CPP_11(: Int)
 {
+	MBS_None = -1,
 	MBS_Up = 0,
 	MBS_Down,
 	MBS_DoubleClick,
@@ -105,17 +106,14 @@ struct MouseIO
 								 user while - is down/toward user */
 	ICoord2D deltaPos;  ///< overall change in mouse pointer this frame
 
-	MouseButtonState leftState;					// button state: Up, Down, DoubleClick (Which is also down)
+	MouseButtonState leftState;					// button state: None (no event), Up, Down, DoubleClick
 	Int leftEvent;											// Most important event this frame
-	Int leftFrame;											// last frame button state changed
 
 	MouseButtonState rightState;
 	Int rightEvent;
-	Int rightFrame;
 
 	MouseButtonState middleState;
 	Int middleEvent;
-	Int middleFrame;
 };
 
 class CursorInfo
@@ -170,6 +168,7 @@ class Mouse : public SubsystemInterface
 		CursorCaptureBlockReason_NoInit,
 		CursorCaptureBlockReason_Paused,
 		CursorCaptureBlockReason_Unfocused,
+		CursorCaptureBlockReadon_CursorIsOutside,
 
 		CursorCaptureBlockReason_Count
 	};
@@ -303,17 +302,21 @@ public:
 	virtual void setRedrawMode(RedrawMode mode)	{m_currentRedrawMode=mode;} ///<set cursor drawing method.
 	virtual RedrawMode getRedrawMode(void) { return m_currentRedrawMode; } //get cursor drawing method
 	virtual void setVisibility(Bool visible) { m_visible = visible; } // set visibility for load screens, etc
-	inline Bool getVisibility(void) { return m_visible; } // get visibility state
+	Bool getVisibility(void) { return m_visible; } // get visibility state
 
 	void drawTooltip( void );					///< draw the tooltip text
 	void drawCursorText( void );			///< draw the mouse cursor text
 	Int getCursorIndex( const AsciiString& name );
 	void resetTooltipDelay( void );
 
-	virtual void loseFocus();
-	virtual void regainFocus();
+	virtual void loseFocus(); ///< called when window has lost focus
+	virtual void regainFocus(); ///< called when window has regained focus
 
-	void mouseNotifyResolutionChange(void);
+	void onCursorMovedOutside(); ///< called when cursor has left game window
+	void onCursorMovedInside(); ///< called when cursor has entered game window
+	Bool isCursorInside() const; ///< true if the mouse is located inside the game window
+
+	void onResolutionChanged(void);
 	void onGameModeChanged(GameMode prev, GameMode next);
 	void onGamePaused(Bool paused);
 
@@ -387,9 +390,6 @@ protected:
 	Int m_maxX;							///< mouse is locked to this region
 	Int m_minY;							///< mouse is locked to this region
 	Int m_maxY;							///< mouse is locked to this region
-
-	UnsignedInt m_inputFrame;				///< frame input was gathered on
-	UnsignedInt m_deadInputFrame;		///< Frame which last input occured
 
 	Bool m_inputMovesAbsolute;			/**< if TRUE, when processing mouse position
 																	chanages the movement will be done treating

@@ -1186,10 +1186,7 @@ void InitWOLGameGadgets(void)
 		TheWindowManager->winGetWindowFromId(parentWOLGameSetup, labelID)->winEnable(FALSE);
 	}
 
-	//Added By Sadullah Nader
-	//Tooltip Function set
 	windowMap->winSetTooltipFunc(MapSelectorTooltip);
-	//
 
 	GameWindow* staticTextTitle = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, staticTextTitleID);
 	if (staticTextTitle)
@@ -2535,7 +2532,7 @@ Bool handleGameSetupSlashCommands(UnicodeString uText)
 	else if (token == "slots")
 	{
 		g_debugSlots = !g_debugSlots;
-		TheGameSpyInfo->addText(UnicodeString(L"Toggled SlotList debug"), GameSpyColor[GSCOLOR_DEFAULT], NULL);
+		TheGameSpyInfo->addText(L"Toggled SlotList debug", GameSpyColor[GSCOLOR_DEFAULT], NULL);
 		return TRUE; // was a slash command
 	}
 	else if (token == "discon")

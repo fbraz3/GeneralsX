@@ -112,8 +112,8 @@ public:
 	Bool deinit(void);																			///< Shutdown connections, release memory
 
 	void setLocalAddress(UnsignedInt ip, UnsignedInt port);
-	inline UnsignedInt getRunAhead(void) { return m_runAhead; }
-	inline UnsignedInt getFrameRate(void) { return m_frameRate; }
+	UnsignedInt getRunAhead(void) { return m_runAhead; }
+	UnsignedInt getFrameRate(void) { return m_frameRate; }
 	UnsignedInt getPacketArrivalCushion(void);								///< Returns the smallest packet arrival cushion since this was last called.
 	Bool isFrameDataReady(void);
 	virtual Bool isStalling();
@@ -265,15 +265,11 @@ NetworkInterface* NetworkInterface::createNetwork()
  */
 Network::Network()
 {
-	//Added By Sadullah Nader
-	//Initializations inserted
 	m_checkCRCsThisFrame = FALSE;
 	m_didSelfSlug = FALSE;
 	m_frameDataReady = FALSE;
 	m_isStalling = FALSE;
 	m_sawCRCMismatch = FALSE;
-	//
-
 	m_conMgr = NULL;
 	m_messageWindow = NULL;
 

@@ -259,7 +259,7 @@ GameTextManager::GameTextManager()
 #endif
 	m_mapStringInfo(NULL),
 	m_mapStringLUT(NULL),
-	m_failed(L"***FATAL*** String Manager failed to initilaize properly")
+	m_failed(L"***FATAL*** String Manager failed to initialize properly")
 {
 	// Added By Sadullah Nader
 	// Initializations missing and needed
