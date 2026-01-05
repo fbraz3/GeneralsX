@@ -62,6 +62,9 @@
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 #include <dinput.h>
+#else
+// CrossPlatform: Use compatibility header for DIK_* scan codes
+#include "GameClient/dinput_compat.h"
 #endif
 
 #include <Lib/BaseType.h>
