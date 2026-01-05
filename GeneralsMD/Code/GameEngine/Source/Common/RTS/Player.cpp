@@ -2461,11 +2461,11 @@ Bool Player::addSkillPoints(Int delta)
 	if( delta == 0 )
 		return false;
 
-	Int levelCap = min( TheGameLogic->getRankLevelLimit(), TheRankInfoStore->getRankLevelCount() );
+	Int levelCap = std::min( TheGameLogic->getRankLevelLimit(), TheRankInfoStore->getRankLevelCount() );
 	Int pointCap = TheRankInfoStore->getRankInfo(levelCap)->m_skillPointsNeeded; // Cap at lowest point of cap level, not highest.
 
 	Bool levelGained = FALSE;
-	m_skillPoints = min( pointCap, (m_skillPoints + delta) );
+	m_skillPoints = std::min( pointCap, (m_skillPoints + delta) );
 	while( m_skillPoints >= m_levelUp )
 	{
 		// LevelUp gets increased as a side effect of setRankLevel, and this won't infinitely loop,
@@ -3631,11 +3631,11 @@ void Player::applyBattlePlanBonusesForPlayerObjects( const BattlePlanBonuses *bo
 		m_battlePlanBonuses->m_armorScalar					*= bonus->m_armorScalar;
 		m_battlePlanBonuses->m_sightRangeScalar			*= bonus->m_sightRangeScalar;
 		m_battlePlanBonuses->m_bombardment					+= bonus->m_bombardment;
-		m_battlePlanBonuses->m_bombardment					=	 MAX( 0, m_battlePlanBonuses->m_bombardment );
+		m_battlePlanBonuses->m_bombardment					=	 std::max( 0, m_battlePlanBonuses->m_bombardment );
 		m_battlePlanBonuses->m_holdTheLine					+= bonus->m_holdTheLine;
-		m_battlePlanBonuses->m_holdTheLine					=	 MAX( 0, m_battlePlanBonuses->m_holdTheLine );
+		m_battlePlanBonuses->m_holdTheLine					=	 std::max( 0, m_battlePlanBonuses->m_holdTheLine );
 		m_battlePlanBonuses->m_searchAndDestroy			+= bonus->m_searchAndDestroy;
-		m_battlePlanBonuses->m_searchAndDestroy			=	 MAX( 0, m_battlePlanBonuses->m_searchAndDestroy );
+		m_battlePlanBonuses->m_searchAndDestroy			=	 std::max( 0, m_battlePlanBonuses->m_searchAndDestroy );
 	}
 
 	DUMPBATTLEPLANBONUSES(m_battlePlanBonuses, this, NULL);

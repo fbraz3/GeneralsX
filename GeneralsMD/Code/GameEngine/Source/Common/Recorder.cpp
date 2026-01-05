@@ -48,6 +48,9 @@
 #include "Common/UserPreferences.h"
 #include "Common/version.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 constexpr const char s_genrep[] = "GENREP";
 constexpr const UnsignedInt replayBufferBytes = 8192;
 
@@ -761,8 +764,28 @@ void RecorderClass::archiveReplay(AsciiString fileName)
 	destPath.concat(archiveFileName);
 	destPath.concat(extension);
 
-	if (!CopyFile(sourcePath.str(), destPath.str(), FALSE))
+	// Cross-platform file copy: use standard C FILE operations
+	FILE *src = std::fopen(sourcePath.str(), "rb");
+	if (src != nullptr) {
+		FILE *dst = std::fopen(destPath.str(), "wb");
+		if (dst != nullptr) {
+			const size_t BUFFER_SIZE = 8192;
+			char *buffer = new char[BUFFER_SIZE];
+			size_t bytesRead;
+			
+			while ((bytesRead = std::fread(buffer, 1, BUFFER_SIZE, src)) > 0) {
+				std::fwrite(buffer, 1, bytesRead, dst);
+			}
+			
+			delete[] buffer;
+			std::fclose(dst);
+		} else {
+			DEBUG_LOG(("RecorderClass::archiveReplay: Failed to open destination file %s", destPath.str()));
+		}
+		std::fclose(src);
+	} else {
 		DEBUG_LOG(("RecorderClass::archiveReplay: Failed to copy %s to %s", sourcePath.str(), destPath.str()));
+	}
 }
 
 /**

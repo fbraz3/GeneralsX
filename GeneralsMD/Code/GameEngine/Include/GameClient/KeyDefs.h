@@ -105,6 +105,15 @@
 #define DIK_KANJI           0x94    /* (Japanese keyboard)            */
 #endif
 
+// Missing DIK aliases - map to PRIOR/NEXT or PAGEUP/PAGEDOWN
+#ifndef DIK_PGUP
+#define DIK_PGUP            DIK_PRIOR   /* Page Up */
+#endif
+
+#ifndef DIK_PGDN
+#define DIK_PGDN            DIK_NEXT    /* Page Down */
+#endif
+
 //=============================================================================
 /** The key tables */
 //=============================================================================
