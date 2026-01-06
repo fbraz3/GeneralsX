@@ -46,6 +46,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
+
 #include "Common/GameEngine.h"
 #include "Common/NameKeyGenerator.h"
 #include "GameClient/GUICallbacks.h"
@@ -208,7 +210,7 @@ HRESULT DownloadManagerMunkee::OnProgressUpdate( Int bytesread, Int totalsize, I
 		if (timeleft)
 		{
 			DEBUG_ASSERTCRASH(timeleft > 0, ("Time left is negative!"));
-			timeleft = max(1, timeleft);
+			timeleft = std::max<Int>(1, timeleft);
 			Int takenHour, takenMin, takenSec;
 			takenHour = timeleft / 60 / 60;
 			takenMin = timeleft / 60;
@@ -304,7 +306,7 @@ void DownloadMenuUpdate( WindowLayout *layout, void *userData )
 		if (timeLeft)
 		{
 			DEBUG_ASSERTCRASH(timeLeft > 0, ("Time left is negative!"));
-			timeLeft = max(1, timeLeft);
+			timeLeft = std::max<Int>(1, timeLeft);
 			Int takenHour, takenMin, takenSec;
 			takenHour = timeLeft / 60 / 60;
 			takenMin = timeLeft / 60;

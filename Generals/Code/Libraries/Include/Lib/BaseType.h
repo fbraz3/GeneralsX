@@ -32,6 +32,8 @@
 #include "Lib/BaseTypeCore.h"
 #include "Lib/trig.h"
 
+#include <algorithm>
+
 //-----------------------------------------------------------------------------
 typedef wchar_t WideChar;  ///< multi-byte character representations
 

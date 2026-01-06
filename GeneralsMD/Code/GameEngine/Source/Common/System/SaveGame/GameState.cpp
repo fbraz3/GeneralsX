@@ -59,6 +59,14 @@
 #include "GameLogic/SidesList.h"
 #include "GameLogic/TerrainLogic.h"
 
+#include <cctype>
+#include <ctime>
+
+#if !defined(_WIN32)
+#include <filesystem>
+#include <unistd.h>
+#endif
+
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
 GameState *TheGameState = NULL;
@@ -207,67 +215,100 @@ GameState::SnapshotBlock *GameState::findBlockInfoByToken( AsciiString token, Sn
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal)
 {
+	UnicodeString displayDateBuffer;
+
+#if defined(_WIN32)
 	// setup date buffer for local region date format
 	#define DATE_BUFFER_SIZE 256
 	OSVERSIONINFO	osvi;
 	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
-	UnicodeString displayDateBuffer;
 	if (GetVersionEx(&osvi))
 	{	//check if we're running Win9x variant since they may need different characters
 		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
 		{
 			char dateBuffer[ DATE_BUFFER_SIZE ];
 			GetDateFormat( LOCALE_SYSTEM_DEFAULT,
-										 DATE_SHORTDATE,
-										 &timeVal,
-										 NULL,
-										 dateBuffer, sizeof(dateBuffer) );
+									 DATE_SHORTDATE,
+									 &timeVal,
+									 NULL,
+									 dateBuffer, sizeof(dateBuffer) );
 			displayDateBuffer.translate(dateBuffer);
 			return displayDateBuffer;
 		}
 	}
 	wchar_t dateBuffer[ DATE_BUFFER_SIZE ];
 	GetDateFormatW( LOCALE_SYSTEM_DEFAULT,
-								 DATE_SHORTDATE,
-								 &timeVal,
-								 NULL,
-								 dateBuffer, ARRAY_SIZE(dateBuffer) );
+							 DATE_SHORTDATE,
+							 &timeVal,
+							 NULL,
+							 dateBuffer, ARRAY_SIZE(dateBuffer) );
 	displayDateBuffer.set(dateBuffer);
 	return displayDateBuffer;
-	//displayDateBuffer.format( L"%ls", dateBuffer );
+#else
+	std::tm tmVal{};
+	tmVal.tm_year = (int)timeVal.wYear - 1900;
+	tmVal.tm_mon = (int)timeVal.wMonth - 1;
+	tmVal.tm_mday = (int)timeVal.wDay;
+
+	char dateBuffer[256] = {0};
+	if (std::strftime(dateBuffer, sizeof(dateBuffer), "%x", &tmVal) > 0) {
+		displayDateBuffer.translate(dateBuffer);
+	} else {
+		displayDateBuffer.translate("01/01/1970");
+	}
+	return displayDateBuffer;
+#endif
 }
 
 UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
 {
-	// setup time buffer for local region time format
 	UnicodeString displayTimeBuffer;
+
+#if defined(_WIN32)
+	// setup time buffer for local region time format
 	OSVERSIONINFO	osvi;
 	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
 	if (GetVersionEx(&osvi))
 	{	//check if we're running Win9x variant since they may need different characters
 		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
 		{
-			char timeBuffer[ DATE_BUFFER_SIZE ];
+			char timeBuffer[ 256 ];
 			GetTimeFormat( LOCALE_SYSTEM_DEFAULT,
-										 TIME_NOSECONDS|TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,
-										 &timeVal,
-										 NULL,
-										 timeBuffer, sizeof(timeBuffer) );
+								 TIME_NOSECONDS|TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,
+								 &timeVal,
+								 NULL,
+								 timeBuffer, sizeof(timeBuffer) );
 			displayTimeBuffer.translate(timeBuffer);
 			return displayTimeBuffer;
 		}
 	}
-	// setup time buffer for local region time format
 	#define TIME_BUFFER_SIZE 256
 	wchar_t timeBuffer[ TIME_BUFFER_SIZE ];
 	GetTimeFormatW( LOCALE_SYSTEM_DEFAULT,
-								 TIME_NOSECONDS,
-								 &timeVal,
-								 NULL,
-								 timeBuffer,
-								 ARRAY_SIZE(timeBuffer) );
+							 TIME_NOSECONDS,
+							 &timeVal,
+							 NULL,
+							 timeBuffer,
+							 ARRAY_SIZE(timeBuffer) );
 	displayTimeBuffer.set(timeBuffer);
 	return displayTimeBuffer;
+#else
+	std::tm tmVal{};
+	tmVal.tm_year = (int)timeVal.wYear - 1900;
+	tmVal.tm_mon = (int)timeVal.wMonth - 1;
+	tmVal.tm_mday = (int)timeVal.wDay;
+	tmVal.tm_hour = (int)timeVal.wHour;
+	tmVal.tm_min = (int)timeVal.wMinute;
+	tmVal.tm_sec = (int)timeVal.wSecond;
+
+	char timeBuffer[256] = {0};
+	if (std::strftime(timeBuffer, sizeof(timeBuffer), "%H:%M", &tmVal) > 0) {
+		displayTimeBuffer.translate(timeBuffer);
+	} else {
+		displayTimeBuffer.translate("00:00");
+	}
+	return displayTimeBuffer;
+#endif
 }
 
 
@@ -502,7 +543,11 @@ AsciiString GameState::findNextSaveFilename( UnicodeString desc )
 			fullPath = getFilePathInSaveDirectory(filename);
 
 			// if file does not exist we're all good
+			#if defined(_WIN32)
 			if( _access( fullPath.str(), 0 ) == -1 )
+			#else
+			if( access( fullPath.str(), F_OK ) == -1 )
+			#endif
 				return filename;
 
 			// test the text filename
@@ -1257,6 +1302,7 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 	if( callback == NULL )
 		return;
 
+	#if defined(_WIN32)
 	// save the current directory
 	char currentDirectory[ _MAX_PATH ];
 	GetCurrentDirectory( _MAX_PATH, currentDirectory );
@@ -1271,45 +1317,32 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 	Bool first = TRUE;
 	while( done == FALSE )
 	{
-
 		// if our first time through we need to start the search
 		if( first )
 		{
-
 			// start search
 			hFile = FindFirstFile( "*", &item );
 			if( hFile == INVALID_HANDLE_VALUE )
 				return;
-
-			// we are no longer on our first item
 			first = FALSE;
-
 		}
 
 		// see if this is a file, and therefore a possible save file
 		if( !(item.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
 		{
-
 			// see if there is a ".sav" at end of this filename
 			Char *c = strrchr( item.cFileName, '.' );
 			if( c && stricmp( c, ".sav" ) == 0 )
 			{
-
-				// construction asciistring filename
 				AsciiString filename;
 				filename.set( item.cFileName );
-
-				// call the callback
 				callback( filename, userData );
-
 			}
-
 		}
 
 		// on to the next file
 		if( FindNextFile( hFile, &item ) == 0 )
 			done = TRUE;
-
 	}
 
 	// close search resources
@@ -1317,6 +1350,28 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 
 	// restore the current directory
 	SetCurrentDirectory( currentDirectory );
+	#else
+	const std::filesystem::path dir(getSaveDirectory().str());
+	std::error_code ec;
+	for (const auto &entry : std::filesystem::directory_iterator(dir, ec)) {
+		if (ec) {
+			break;
+		}
+		if (!entry.is_regular_file(ec)) {
+			continue;
+		}
+		const std::filesystem::path p = entry.path();
+		std::string ext = p.extension().string();
+		for (char &ch : ext) {
+			ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+		}
+		if (ext == ".sav") {
+			AsciiString filename;
+			filename.set(p.filename().string().c_str());
+			callback(filename, userData);
+		}
+	}
+	#endif
 
 }
 

@@ -52,6 +52,14 @@
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"
 
+#include <algorithm>
+#include <string>
+
+#if defined(__APPLE__)
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreText/CoreText.h>
+#endif
+
 #include "Common/AddonCompat.h"
 #include "Common/INI.h"
 #include "Common/Registry.h"
@@ -60,6 +68,74 @@
 
 #include "GameClient/Display.h"
 #include "GameClient/GlobalLanguage.h"
+
+static std::string toNativePath(const char* path)
+{
+	if (!path) {
+		return std::string();
+	}
+	std::string out(path);
+	for (size_t i = 0; i < out.size(); ++i) {
+		if (out[i] == '\\') {
+			out[i] = '/';
+		}
+	}
+	return out;
+}
+
+static bool AddFontResourceCompat(const char* fontPath)
+{
+	if (!fontPath || *fontPath == '\0') {
+		return false;
+	}
+
+#if defined(_WIN32)
+	return AddFontResource(fontPath) != 0;
+#elif defined(__APPLE__)
+	const std::string nativePath = toNativePath(fontPath);
+	CFURLRef url = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault,
+		(const UInt8*)nativePath.c_str(), (CFIndex)nativePath.size(), false);
+	if (!url) {
+		return false;
+	}
+
+	CFErrorRef error = nullptr;
+	const bool ok = CTFontManagerRegisterFontsForURL(url, kCTFontManagerScopeProcess, &error);
+	if (error) {
+		CFRelease(error);
+	}
+	CFRelease(url);
+	return ok;
+#else
+	// Other platforms: no font registration backend wired yet.
+	return false;
+#endif
+}
+
+static void RemoveFontResourceCompat(const char* fontPath)
+{
+	if (!fontPath || *fontPath == '\0') {
+		return;
+	}
+
+#if defined(_WIN32)
+	RemoveFontResource(fontPath);
+#elif defined(__APPLE__)
+	const std::string nativePath = toNativePath(fontPath);
+	CFURLRef url = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault,
+		(const UInt8*)nativePath.c_str(), (CFIndex)nativePath.size(), false);
+	if (!url) {
+		return;
+	}
+
+	CFErrorRef error = nullptr;
+	CTFontManagerUnregisterFontsForURL(url, kCTFontManagerScopeProcess, &error);
+	if (error) {
+		CFRelease(error);
+	}
+	CFRelease(url);
+#endif
+}
 
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -140,7 +216,7 @@ GlobalLanguage::~GlobalLanguage()
 	while( it != m_localFonts.end())
 	{
 		AsciiString font = *it;
-		RemoveFontResource(font.str());
+		RemoveFontResourceCompat(font.str());
 		//SendMessage( HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
 		++it;
 	}
@@ -160,7 +236,7 @@ void GlobalLanguage::init( void )
 	while( it != m_localFonts.end())
 	{
 		AsciiString font = *it;
-		if(AddFontResource(font.str()) == 0)
+		if(!AddFontResourceCompat(font.str()))
 		{
 			DEBUG_ASSERTCRASH(FALSE,("GlobalLanguage::init Failed to add font %s", font.str()));
 		}
@@ -235,7 +311,7 @@ Int GlobalLanguage::adjustFontSize(Int theFontSize)
 		// dimension so they scale independent of aspect ratio.
 		const Real wScale = TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH;
 		const Real hScale = TheDisplay->getHeight() / (Real)DEFAULT_DISPLAY_HEIGHT;
-		adjustFactor = min(wScale, hScale);
+		adjustFactor = std::min(wScale, hScale);
 		adjustFactor = 1.0f + (adjustFactor - 1.0f) * getResolutionFontSizeAdjustment();
 		break;
 	}

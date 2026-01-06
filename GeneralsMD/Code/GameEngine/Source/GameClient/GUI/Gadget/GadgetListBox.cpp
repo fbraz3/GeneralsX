@@ -1790,11 +1790,27 @@ WindowMsgHandledType GadgetListBoxSystem( GameWindow *window, UnsignedInt msg,
 		// ------------------------------------------------------------------------
 		case GLM_GET_SELECTION:
 		{
+			Int* outSelections = (Int*)mData2;
+			if (!outSelections) {
+				break;
+			}
 
 			if( list->multiSelect )
-				*(Int*)mData2 = (Int)list->selections;
+			{
+				// For multi-select listboxes, copy the selection indices into the caller buffer
+				// and terminate with -1 (as documented in GadgetListBoxGetSelected).
+				Int i = 0;
+				while (list->selections[i] >= 0)
+				{
+					outSelections[i] = list->selections[i];
+					++i;
+				}
+				outSelections[i] = -1;
+			}
 			else
-				*(Int*)mData2 = list->selectPos;
+			{
+				*outSelections = list->selectPos;
+			}
 
 			break;
 

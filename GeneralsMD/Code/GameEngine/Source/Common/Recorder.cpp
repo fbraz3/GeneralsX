@@ -772,11 +772,11 @@ void RecorderClass::archiveReplay(AsciiString fileName)
 			const size_t BUFFER_SIZE = 8192;
 			char *buffer = new char[BUFFER_SIZE];
 			size_t bytesRead;
-			
+
 			while ((bytesRead = std::fread(buffer, 1, BUFFER_SIZE, src)) > 0) {
 				std::fwrite(buffer, 1, bytesRead, dst);
 			}
-			
+
 			delete[] buffer;
 			std::fclose(dst);
 		} else {

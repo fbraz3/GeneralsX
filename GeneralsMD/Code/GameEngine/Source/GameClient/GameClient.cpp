@@ -31,6 +31,17 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "GameClient/GameClient.h"
 
+#if !defined(_WIN32)
+#include <stdint.h>
+
+#if defined(__APPLE__)
+#include <mach/mach.h>
+#include <sys/sysctl.h>
+#elif defined(__linux__)
+#include <sys/sysinfo.h>
+#endif
+#endif
+
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/ActionManager.h"
 #include "Common/GameEngine.h"
@@ -39,6 +50,59 @@
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
 #include "Common/Player.h"
+
+#if !defined(_WIN32)
+namespace
+{
+struct MemoryStatusCompat
+{
+	uint64_t dwAvailPageFile;
+	uint64_t dwAvailPhys;
+	uint64_t dwAvailVirtual;
+};
+
+static void GetMemoryStatusCompat(MemoryStatusCompat* out)
+{
+	if (!out) {
+		return;
+	}
+	out->dwAvailPageFile = 0;
+	out->dwAvailPhys = 0;
+	out->dwAvailVirtual = 0;
+
+#if defined(__APPLE__)
+	mach_port_t host = mach_host_self();
+	vm_size_t pageSize = 0;
+	host_page_size(host, &pageSize);
+
+	vm_statistics64_data_t vmStat;
+	mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
+	if (host_statistics64(host, HOST_VM_INFO64, (host_info64_t)&vmStat, &count) == KERN_SUCCESS)
+	{
+		const uint64_t freeBytes = (uint64_t)(vmStat.free_count + vmStat.inactive_count) * (uint64_t)pageSize;
+		out->dwAvailPhys = freeBytes;
+		out->dwAvailVirtual = freeBytes;
+	}
+
+	xsw_usage swapUsage;
+	size_t swapSize = sizeof(swapUsage);
+	if (sysctlbyname("vm.swapusage", &swapUsage, &swapSize, NULL, 0) == 0)
+	{
+		out->dwAvailPageFile = (uint64_t)swapUsage.xsu_avail;
+	}
+
+#elif defined(__linux__)
+	struct sysinfo info;
+	if (sysinfo(&info) == 0)
+	{
+		out->dwAvailPhys = (uint64_t)info.freeram * (uint64_t)info.mem_unit;
+		out->dwAvailPageFile = (uint64_t)info.freeswap * (uint64_t)info.mem_unit;
+		out->dwAvailVirtual = out->dwAvailPhys;
+	}
+#endif
+}
+}
+#endif
 #include "Common/PlayerList.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
@@ -1078,8 +1142,13 @@ void GameClient::allocateShadows(void)
 void GameClient::preloadAssets( TimeOfDay timeOfDay )
 {
 
+#if defined(_WIN32)
 	MEMORYSTATUS before, after;
 	GlobalMemoryStatus(&before);
+#else
+	MemoryStatusCompat before, after;
+	GetMemoryStatusCompat(&before);
+#endif
 
 	// first, for every drawable in the map load the assets for all states we care about
 	Drawable *draw;
@@ -1115,14 +1184,27 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		}
 
 	}
+	#if defined(_WIN32)
 	GlobalMemoryStatus(&after);
+	#else
+	GetMemoryStatusCompat(&after);
+	#endif
 
-	DEBUG_LOG(("Preloading memory dwAvailPageFile %d --> %d : %d",
-		before.dwAvailPageFile, after.dwAvailPageFile, before.dwAvailPageFile - after.dwAvailPageFile));
-	DEBUG_LOG(("Preloading memory dwAvailPhys     %d --> %d : %d",
-		before.dwAvailPhys, after.dwAvailPhys, before.dwAvailPhys - after.dwAvailPhys));
-	DEBUG_LOG(("Preloading memory dwAvailVirtual  %d --> %d : %d",
-		before.dwAvailVirtual, after.dwAvailVirtual, before.dwAvailVirtual - after.dwAvailVirtual));
+	{
+		const uint64_t bPage = (uint64_t)before.dwAvailPageFile;
+		const uint64_t aPage = (uint64_t)after.dwAvailPageFile;
+		const uint64_t bPhys = (uint64_t)before.dwAvailPhys;
+		const uint64_t aPhys = (uint64_t)after.dwAvailPhys;
+		const uint64_t bVirt = (uint64_t)before.dwAvailVirtual;
+		const uint64_t aVirt = (uint64_t)after.dwAvailVirtual;
+
+		DEBUG_LOG(("Preloading memory dwAvailPageFile %llu --> %llu : %lld",
+			(unsigned long long)bPage, (unsigned long long)aPage, (long long)(bPage - aPage)));
+		DEBUG_LOG(("Preloading memory dwAvailPhys     %llu --> %llu : %lld",
+			(unsigned long long)bPhys, (unsigned long long)aPhys, (long long)(bPhys - aPhys)));
+		DEBUG_LOG(("Preloading memory dwAvailVirtual  %llu --> %llu : %lld",
+			(unsigned long long)bVirt, (unsigned long long)aVirt, (long long)(bVirt - aVirt)));
+	}
 	/*
 	DEBUG_LOG(("Preloading memory dwLength        %d --> %d : %d",
 		before.dwLength, after.dwLength, before.dwLength - after.dwLength));
@@ -1136,35 +1218,69 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		before.dwTotalVirtual , after.dwTotalVirtual, before.dwTotalVirtual - after.dwTotalVirtual));
 	*/
 
+	#if defined(_WIN32)
 	GlobalMemoryStatus(&before);
+	#else
+	GetMemoryStatusCompat(&before);
+	#endif
 	extern std::vector<AsciiString>	debrisModelNamesGlobalHack;
 	size_t i=0;
 	for (; i<debrisModelNamesGlobalHack.size(); ++i)
 	{
 		TheDisplay->preloadModelAssets(debrisModelNamesGlobalHack[i]);
 	}
+	#if defined(_WIN32)
 	GlobalMemoryStatus(&after);
+	#else
+	GetMemoryStatusCompat(&after);
+	#endif
 	debrisModelNamesGlobalHack.clear();
 
-	DEBUG_LOG(("Preloading memory dwAvailPageFile %d --> %d : %d",
-		before.dwAvailPageFile, after.dwAvailPageFile, before.dwAvailPageFile - after.dwAvailPageFile));
-	DEBUG_LOG(("Preloading memory dwAvailPhys     %d --> %d : %d",
-		before.dwAvailPhys, after.dwAvailPhys, before.dwAvailPhys - after.dwAvailPhys));
-	DEBUG_LOG(("Preloading memory dwAvailVirtual  %d --> %d : %d",
-		before.dwAvailVirtual, after.dwAvailVirtual, before.dwAvailVirtual - after.dwAvailVirtual));
+	{
+		const uint64_t bPage = (uint64_t)before.dwAvailPageFile;
+		const uint64_t aPage = (uint64_t)after.dwAvailPageFile;
+		const uint64_t bPhys = (uint64_t)before.dwAvailPhys;
+		const uint64_t aPhys = (uint64_t)after.dwAvailPhys;
+		const uint64_t bVirt = (uint64_t)before.dwAvailVirtual;
+		const uint64_t aVirt = (uint64_t)after.dwAvailVirtual;
+
+		DEBUG_LOG(("Preloading memory dwAvailPageFile %llu --> %llu : %lld",
+			(unsigned long long)bPage, (unsigned long long)aPage, (long long)(bPage - aPage)));
+		DEBUG_LOG(("Preloading memory dwAvailPhys     %llu --> %llu : %lld",
+			(unsigned long long)bPhys, (unsigned long long)aPhys, (long long)(bPhys - aPhys)));
+		DEBUG_LOG(("Preloading memory dwAvailVirtual  %llu --> %llu : %lld",
+			(unsigned long long)bVirt, (unsigned long long)aVirt, (long long)(bVirt - aVirt)));
+	}
 
 	TheControlBar->preloadAssets( timeOfDay );
 
+	#if defined(_WIN32)
 	GlobalMemoryStatus(&before);
+	#else
+	GetMemoryStatusCompat(&before);
+	#endif
 	TheParticleSystemManager->preloadAssets( timeOfDay );
+	#if defined(_WIN32)
 	GlobalMemoryStatus(&after);
+	#else
+	GetMemoryStatusCompat(&after);
+	#endif
 
-	DEBUG_LOG(("Preloading memory dwAvailPageFile %d --> %d : %d",
-		before.dwAvailPageFile, after.dwAvailPageFile, before.dwAvailPageFile - after.dwAvailPageFile));
-	DEBUG_LOG(("Preloading memory dwAvailPhys     %d --> %d : %d",
-		before.dwAvailPhys, after.dwAvailPhys, before.dwAvailPhys - after.dwAvailPhys));
-	DEBUG_LOG(("Preloading memory dwAvailVirtual  %d --> %d : %d",
-		before.dwAvailVirtual, after.dwAvailVirtual, before.dwAvailVirtual - after.dwAvailVirtual));
+	{
+		const uint64_t bPage = (uint64_t)before.dwAvailPageFile;
+		const uint64_t aPage = (uint64_t)after.dwAvailPageFile;
+		const uint64_t bPhys = (uint64_t)before.dwAvailPhys;
+		const uint64_t aPhys = (uint64_t)after.dwAvailPhys;
+		const uint64_t bVirt = (uint64_t)before.dwAvailVirtual;
+		const uint64_t aVirt = (uint64_t)after.dwAvailVirtual;
+
+		DEBUG_LOG(("Preloading memory dwAvailPageFile %llu --> %llu : %lld",
+			(unsigned long long)bPage, (unsigned long long)aPage, (long long)(bPage - aPage)));
+		DEBUG_LOG(("Preloading memory dwAvailPhys     %llu --> %llu : %lld",
+			(unsigned long long)bPhys, (unsigned long long)aPhys, (long long)(bPhys - aPhys)));
+		DEBUG_LOG(("Preloading memory dwAvailVirtual  %llu --> %llu : %lld",
+			(unsigned long long)bVirt, (unsigned long long)aVirt, (long long)(bVirt - aVirt)));
+	}
 
 	const char *const textureNames[] = {
 		"ptspruce01.tga",
@@ -1208,17 +1324,34 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		""
 	};
 
+	#if defined(_WIN32)
 	GlobalMemoryStatus(&before);
+	#else
+	GetMemoryStatusCompat(&before);
+	#endif
 	for (i=0; *textureNames[i]; ++i)
 		TheDisplay->preloadTextureAssets(textureNames[i]);
+	#if defined(_WIN32)
 	GlobalMemoryStatus(&after);
+	#else
+	GetMemoryStatusCompat(&after);
+	#endif
 
-	DEBUG_LOG(("Preloading memory dwAvailPageFile %d --> %d : %d",
-		before.dwAvailPageFile, after.dwAvailPageFile, before.dwAvailPageFile - after.dwAvailPageFile));
-	DEBUG_LOG(("Preloading memory dwAvailPhys     %d --> %d : %d",
-		before.dwAvailPhys, after.dwAvailPhys, before.dwAvailPhys - after.dwAvailPhys));
-	DEBUG_LOG(("Preloading memory dwAvailVirtual  %d --> %d : %d",
-		before.dwAvailVirtual, after.dwAvailVirtual, before.dwAvailVirtual - after.dwAvailVirtual));
+	{
+		const uint64_t bPage = (uint64_t)before.dwAvailPageFile;
+		const uint64_t aPage = (uint64_t)after.dwAvailPageFile;
+		const uint64_t bPhys = (uint64_t)before.dwAvailPhys;
+		const uint64_t aPhys = (uint64_t)after.dwAvailPhys;
+		const uint64_t bVirt = (uint64_t)before.dwAvailVirtual;
+		const uint64_t aVirt = (uint64_t)after.dwAvailVirtual;
+
+		DEBUG_LOG(("Preloading memory dwAvailPageFile %llu --> %llu : %lld",
+			(unsigned long long)bPage, (unsigned long long)aPage, (long long)(bPage - aPage)));
+		DEBUG_LOG(("Preloading memory dwAvailPhys     %llu --> %llu : %lld",
+			(unsigned long long)bPhys, (unsigned long long)aPhys, (long long)(bPhys - aPhys)));
+		DEBUG_LOG(("Preloading memory dwAvailVirtual  %llu --> %llu : %lld",
+			(unsigned long long)bVirt, (unsigned long long)aVirt, (long long)(bVirt - aVirt)));
+	}
 
 //	preloadTextureNamesGlobalHack2 = preloadTextureNamesGlobalHack;
 //	preloadTextureNamesGlobalHack.clear();

@@ -42,6 +42,11 @@
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/GameInfo.h"
 
+#if !defined(_WIN32)
+#include <cctype>
+#include <filesystem>
+#endif
+
 // GLOBALS ////////////////////////////////////////////////////////////////////////////////////////
 GameStateMap *TheGameStateMap = NULL;
 
@@ -451,7 +456,7 @@ void GameStateMap::xfer( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 void GameStateMap::clearScratchPadMaps( void )
 {
-
+	#if defined(_WIN32)
 	// remember the current directory
 	char currentDirectory[ _MAX_PATH ];
 	GetCurrentDirectory( _MAX_PATH, currentDirectory );
@@ -467,53 +472,51 @@ void GameStateMap::clearScratchPadMaps( void )
 	Bool first = TRUE;
 	while( done == FALSE )
 	{
-
-		// first, clear flag for deleting file
 		fileToDelete.clear();
-
-		// if our first time through we need to start the search
 		if( first )
 		{
-
-			// start search
 			hFile = FindFirstFile( "*", &item );
 			if( hFile == INVALID_HANDLE_VALUE )
 				return;
-
-			// we are no longer on our first item
 			first = FALSE;
-
 		}
 
-		// see if this is a file, and therefore a possible .map file
 		if( !(item.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
 		{
-
-			// see if there is a ".map" at end of this filename
 			Char *c = strrchr( item.cFileName, '.' );
 			if( c && stricmp( c, ".map" ) == 0 )
-				fileToDelete.set( item.cFileName );  // we want to delete this one
-
+				fileToDelete.set( item.cFileName );
 		}
 
-		//
-		// find the next file before we delete this one, this is probably not necessary
-		// to strcuture things this way so that the find next occurs before the file
-		// delete, but it seems more correct to do so
-		//
 		if( FindNextFile( hFile, &item ) == 0 )
 			done = TRUE;
 
-		// delete file if set
 		if( fileToDelete.isEmpty() == FALSE )
 			DeleteFile( fileToDelete.str() );
-
 	}
 
-	// close search resources
 	FindClose( hFile );
-
-	// restore our directory to the current directory
 	SetCurrentDirectory( currentDirectory );
+	#else
+	const std::filesystem::path dir(TheGameState->getSaveDirectory().str());
+	std::error_code ec;
+	for (const auto &entry : std::filesystem::directory_iterator(dir, ec)) {
+		if (ec) {
+			break;
+		}
+		if (!entry.is_regular_file(ec)) {
+			continue;
+		}
+		std::filesystem::path p = entry.path();
+		std::string ext = p.extension().string();
+		for (char &ch : ext) {
+			ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+		}
+		if (ext == ".map") {
+			std::filesystem::remove(p, ec);
+			(void)ec;
+		}
+	}
+	#endif
 
 }

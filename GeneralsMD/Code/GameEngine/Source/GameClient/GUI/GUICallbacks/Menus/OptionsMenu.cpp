@@ -30,6 +30,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
+
 #include "gamespy/ghttp/ghttp.h"
 
 #include "Common/AudioAffect.h"
@@ -1066,7 +1068,7 @@ static void setDefaults( void )
 	//-------------------------------------------------------------------------------------------------
 	// slider SFX volume
 	GadgetSliderGetMinMax(sliderSFXVolume,&valMin, &valMax);
-	Real maxVolume = MAX( TheAudio->getAudioSettings()->m_defaultSoundVolume, TheAudio->getAudioSettings()->m_default3DSoundVolume );
+	Real maxVolume = std::max( TheAudio->getAudioSettings()->m_defaultSoundVolume, TheAudio->getAudioSettings()->m_default3DSoundVolume );
 	GadgetSliderSetPosition( sliderSFXVolume, REAL_TO_INT( maxVolume * 100.0f ) );
 
 	//-------------------------------------------------------------------------------------------------
@@ -1282,7 +1284,7 @@ static void saveOptions( void )
 		GadgetComboBoxGetSelectedPos(comboBoxLANIP, &index);
 		if (index>=0 && TheGlobalData)
 		{
-			ip = (UnsignedInt)GadgetComboBoxGetItemData(comboBoxLANIP, index);
+			ip = (UnsignedInt)(uintptr_t)GadgetComboBoxGetItemData(comboBoxLANIP, index);
 			TheWritableGlobalData->m_defaultIP = ip;
 			pref->setLANIPAddress(ip);
 		}
@@ -1294,7 +1296,7 @@ static void saveOptions( void )
 		GadgetComboBoxGetSelectedPos(comboBoxOnlineIP, &index);
 		if (index>=0)
 		{
-			ip = (UnsignedInt)GadgetComboBoxGetItemData(comboBoxOnlineIP, index);
+			ip = (UnsignedInt)(uintptr_t)GadgetComboBoxGetItemData(comboBoxOnlineIP, index);
 			pref->setOnlineIPAddress(ip);
 		}
 	}
@@ -1435,7 +1437,7 @@ static void saveOptions( void )
 		Real sound2DVolume = val / 100.0f;
 		Real sound3DVolume = val / 100.0f;
 		Real relative2DVolume = TheAudio->getAudioSettings()->m_relative2DVolume;
-		relative2DVolume = MIN( 1.0f, MAX( -1.0, relative2DVolume ) );
+		relative2DVolume = std::min( 1.0f, std::max( -1.0f, relative2DVolume ) );
 		if( relative2DVolume < 0.0f )
 		{
 			//Lower the 2D volume
@@ -2104,7 +2106,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	GadgetSliderSetPosition( sliderMusicVolume, REAL_TO_INT(pref->getMusicVolume()) );
 
 	//set SFX volume slider
-	Real maxVolume = MAX( pref->getSoundVolume(), pref->get3DSoundVolume() );
+	Real maxVolume = std::max( pref->getSoundVolume(), pref->get3DSoundVolume() );
 	GadgetSliderSetPosition( sliderSFXVolume, REAL_TO_INT( maxVolume ) );
 
 	//set voice volume slider

@@ -25,6 +25,9 @@
 #include <cstdio>
 #include <cstdarg>
 #include <string>
+#include <filesystem>
+#include <system_error>
+#include <cwchar>
 
 // MSVC calling convention macros - no-op on non-Windows platforms
 #ifndef _WIN32
@@ -55,7 +58,7 @@ extern std::string g_posix_cmdline;
 inline void InitPosixCommandLine(int argc, char** argv) {
     g_posix_argc = argc;
     g_posix_argv = argv;
-    
+
     // Reconstruct command line string from argv
     g_posix_cmdline.clear();
     for (int i = 0; i < argc; ++i) {
@@ -186,10 +189,10 @@ inline unsigned int GetDoubleClickTime() {
 // GetLocalTime stub - populate SYSTEMTIME with current local time
 inline void GetLocalTime(SYSTEMTIME* lpSystemTime) {
     if (!lpSystemTime) return;
-    
+
     time_t now = time(NULL);
     struct tm* localtime_result = localtime(&now);
-    
+
     if (localtime_result) {
         lpSystemTime->wYear = localtime_result->tm_year + 1900;
         lpSystemTime->wMonth = localtime_result->tm_mon + 1;
@@ -221,10 +224,10 @@ inline short GetAsyncKeyState(int vKey) {
     // Get SDL2 keyboard state
     const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
     if (!keyboard_state) return 0;
-    
+
     // Map virtual key to SDL scancode (based on win32_sdl_api_compat.h VK_* definitions)
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
-    
+
     switch (vKey) {
         case 0x08: scancode = SDL_SCANCODE_BACKSPACE; break;  // VK_BACK
         case 0x09: scancode = SDL_SCANCODE_TAB; break;        // VK_TAB
@@ -257,7 +260,7 @@ inline short GetAsyncKeyState(int vKey) {
         case 0x7B: scancode = SDL_SCANCODE_F12; break;        // VK_F12
         default: return 0;  // Unmapped key
     }
-    
+
     // Return high bit set (0x8000) if key is currently pressed
     // Low bit (0x0001) is not implemented (toggle state requires event tracking)
     if (keyboard_state[scancode]) {
@@ -277,7 +280,7 @@ inline bool SHGetSpecialFolderPath(void* hwnd, char* pszPath, int csidl, bool fC
         strncpy(pszPath, "/tmp", 260);
         return false;
     }
-    
+
     switch (csidl) {
         case CSIDL_PERSONAL:
             // My Documents -> ~/Documents on macOS/Linux
@@ -296,13 +299,13 @@ inline bool SHGetSpecialFolderPath(void* hwnd, char* pszPath, int csidl, bool fC
             strncpy(pszPath, home, 260);
             break;
     }
-    
+
     // Create directory if requested
     if (fCreate) {
         #include <sys/stat.h>
         mkdir(pszPath, 0755);  // Ignore errors (might already exist)
     }
-    
+
     return true;
 }
 
@@ -319,7 +322,7 @@ inline bool CreateDirectory(const char* lpPathName, void* lpSecurityAttributes) 
 inline unsigned int GetModuleFileName(void* hModule, char* lpFilename, unsigned int nSize) {
     // This stub is deprecated - use SDL2_GetModuleFilePath() instead
     // See Core/GameEngine/Source/Common/System/SDL2_AppWindow.cpp
-    
+
     #ifdef __APPLE__
     // macOS: Use system call directly (declaration is in <mach-o/dyld.h> included at top of file)
     uint32_t size = nSize;
@@ -387,8 +390,8 @@ struct CComModule {
         // No-op on macOS/Linux - COM doesn't exist
         #endif
     }
-    
-    // Terminate COM subsystem  
+
+    // Terminate COM subsystem
     void Term() {
         // On non-Windows: No-op, COM doesn't exist
         // On Windows (in actual windows.h): This cleans up ATL COM infrastructure
@@ -416,6 +419,58 @@ inline bool SetWindowTextW(HWND hWnd, const wchar_t* lpString) {
 inline bool DeleteFile(const char* lpFileName) {
     // Use POSIX unlink
     return unlink(lpFileName) == 0;
+}
+
+// Win32 error retrieval (maps to errno on non-Windows)
+inline DWORD GetLastError() {
+    return static_cast<DWORD>(errno);
+}
+
+// Win32 FormatMessage flags (minimal subset used by the codebase)
+#ifndef FORMAT_MESSAGE_FROM_SYSTEM
+#define FORMAT_MESSAGE_FROM_SYSTEM 0x00001000
+#endif
+
+// Win32 FormatMessageW (minimal implementation for "from system" errors)
+inline DWORD FormatMessageW(DWORD dwFlags,
+                            const void* /*lpSource*/,
+                            DWORD dwMessageId,
+                            DWORD /*dwLanguageId*/,
+                            wchar_t* lpBuffer,
+                            DWORD nSize,
+                            void* /*Arguments*/) {
+    if (!lpBuffer || nSize == 0)
+        return 0;
+
+    if ((dwFlags & FORMAT_MESSAGE_FROM_SYSTEM) == 0) {
+        lpBuffer[0] = L'\0';
+        return 0;
+    }
+
+    const char* message = strerror(static_cast<int>(dwMessageId));
+    if (!message)
+        message = "Unknown error";
+
+    size_t converted = std::mbstowcs(lpBuffer, message, static_cast<size_t>(nSize - 1));
+    if (converted == static_cast<size_t>(-1)) {
+        lpBuffer[0] = L'\0';
+        return 0;
+    }
+    lpBuffer[converted] = L'\0';
+    return static_cast<DWORD>(converted);
+}
+
+// Win32 CopyFile (implemented via std::filesystem)
+inline BOOL CopyFile(const char* lpExistingFileName, const char* lpNewFileName, BOOL bFailIfExists) {
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    fs::copy_options options = bFailIfExists ? fs::copy_options::none : fs::copy_options::overwrite_existing;
+    bool ok = fs::copy_file(lpExistingFileName, lpNewFileName, options, ec);
+    if (!ok || ec) {
+        errno = ec ? ec.value() : errno;
+        return FALSE;
+    }
+    return TRUE;
 }
 
 // DLL loading stubs for non-Windows platforms
@@ -453,13 +508,13 @@ inline int MessageBoxW(HWND hWnd, const wchar_t* lpText, const wchar_t* lpCaptio
 // itoa - convert integer to ASCII string (Windows CRT function)
 inline char* itoa(int value, char* buffer, int radix) {
     if (!buffer) return NULL;
-    
+
     // Only support base 10 for simplicity (most common use case)
     if (radix != 10) {
         buffer[0] = '\0';
         return buffer;
     }
-    
+
     snprintf(buffer, 65, "%d", value);  // 65 bytes is safe for 32-bit int
     return buffer;
 }

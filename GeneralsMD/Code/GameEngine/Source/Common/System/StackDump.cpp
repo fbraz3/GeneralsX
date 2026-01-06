@@ -31,6 +31,8 @@
 #include "Common/StackDump.h"
 #include "Common/Debug.h"
 
+#if defined(_WIN32)
+
 #include "DbgHelpLoader.h"
 
 //*****************************************************************************
@@ -603,7 +605,184 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 }
 
 
+#else
+
+#include <algorithm>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <vector>
+
+#include <dlfcn.h>
+#include <execinfo.h>
+
+#if defined(__GNUC__) || defined(__clang__)
+#include <cxxabi.h>
+#endif
+
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
+
+static void StackDumpDefaultHandler(const char* line)
+{
+	DEBUG_LOG((line));
+}
+
+AsciiString g_LastErrorDump;
+
+static void writeLine(const char* line, void (*callback)(const char*))
+{
+	if (callback == nullptr) {
+		callback = StackDumpDefaultHandler;
+	}
+	if (g_LastErrorDump.isNotEmpty()) {
+		g_LastErrorDump.concat(line);
+		g_LastErrorDump.concat("\n");
+	}
+	callback(line);
+}
+
+void FillStackAddresses(void** addresses, unsigned int count, unsigned int skip)
+{
+	if (!addresses || count == 0) {
+		return;
+	}
+
+	const unsigned int captureCount = count + skip;
+	std::vector<void*> tmp(captureCount, nullptr);
+	int captured = backtrace(tmp.data(), (int)captureCount);
+	if (captured <= 0) {
+		for (unsigned int i = 0; i < count; ++i) {
+			addresses[i] = nullptr;
+		}
+		return;
+	}
+
+	const unsigned int capturedU = (unsigned int)captured;
+	const unsigned int start = std::min(skip, capturedU);
+	const unsigned int outCount = std::min(count, capturedU - start);
+
+	for (unsigned int i = 0; i < outCount; ++i) {
+		addresses[i] = tmp[start + i];
+	}
+	for (unsigned int i = outCount; i < count; ++i) {
+		addresses[i] = nullptr;
+	}
+}
+
+void GetFunctionDetails(void *pointer, char* name, char* filename, unsigned int* linenumber, unsigned int* address)
+{
+	if (name) {
+		std::strcpy(name, "<Unknown>");
+	}
+	if (filename) {
+		std::strcpy(filename, "<Unknown>");
+	}
+	if (linenumber) {
+		*linenumber = 0;
+	}
+	if (address) {
+		*address = 0;
+	}
+
+	Dl_info info;
+	std::memset(&info, 0, sizeof(info));
+	if (!dladdr(pointer, &info)) {
+		return;
+	}
+
+	if (filename && info.dli_fname) {
+		std::strncpy(filename, info.dli_fname, MAX_PATH - 1);
+		filename[MAX_PATH - 1] = '\0';
+	}
+
+	const char* sym = info.dli_sname;
+	if (!sym) {
+		return;
+	}
+
+	std::string pretty(sym);
+#if defined(__GNUC__) || defined(__clang__)
+	int status = 0;
+	char* demangled = abi::__cxa_demangle(sym, nullptr, nullptr, &status);
+	if (status == 0 && demangled) {
+		pretty = demangled;
+	}
+	std::free(demangled);
+#endif
+
+	if (name) {
+		std::strncpy(name, pretty.c_str(), 511);
+		name[511] = '\0';
+	}
+}
+
+void StackDumpFromAddresses(void** addresses, unsigned int count, void (*callback)(const char*))
+{
+	writeLine("Call Stack\n**********\n", callback);
+	if (!addresses || count == 0) {
+		return;
+	}
+
+	char** symbols = backtrace_symbols(addresses, (int)count);
+	for (unsigned int i = 0; i < count; ++i) {
+		if (symbols && symbols[i]) {
+			writeLine(symbols[i], callback);
+		} else {
+			char fallback[128];
+			std::snprintf(fallback, sizeof(fallback), "  [frame %u] %p", i, addresses[i]);
+			writeLine(fallback, callback);
+		}
+	}
+	std::free(symbols);
+}
+
+void StackDump(void (*callback)(const char*))
+{
+	void* addresses[64];
+	int captured = backtrace(addresses, (int)ARRAY_SIZE(addresses));
+	if (captured <= 0) {
+		return;
+	}
+
+	// Skip StackDump itself and its immediate caller.
+	const int skip = 2;
+	const int start = std::min(skip, captured);
+	StackDumpFromAddresses(addresses + start, (unsigned int)(captured - start), callback);
+}
+
+void StackDumpFromContext(DWORD /*eip*/, DWORD /*esp*/, DWORD /*ebp*/, void (*callback)(const char*))
+{
+	StackDump(callback);
+}
+
+void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* /*e_info*/ )
+{
+	DEBUG_LOG_RAW(("\n"));
+	DEBUG_LOG(("********** EXCEPTION DUMP ****************"));
+	g_LastErrorDump.clear();
+
+	AsciiString msg;
+	msg.format("Exception code: %u", u);
+	g_LastErrorDump.concat(msg);
+	g_LastErrorDump.concat("\n");
+	DEBUG_LOG((msg.str()));
+
+	DEBUG_LOG(("Stack Dump:"));
+	g_LastErrorDump.concat("Stack Dump:\n");
+	StackDump(nullptr);
+
+	DEBUG_LOG(("********** END EXCEPTION DUMP ****************"));
+	DEBUG_LOG_RAW(("\n"));
+}
+
+
+#endif  // defined(_WIN32)
+
 #pragma pack(pop)
 
-#endif
+#endif  // defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)
 

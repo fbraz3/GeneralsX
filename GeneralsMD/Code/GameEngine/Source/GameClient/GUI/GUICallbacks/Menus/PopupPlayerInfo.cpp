@@ -31,6 +31,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
+
 #include "Common/PlayerTemplate.h"
 #include "Common/BattleHonors.h"
 #include "Common/CustomMatchPreferences.h"
@@ -308,8 +310,8 @@ void BattleHonorTooltip(GameWindow *window,
 		return;
 	}
 
-	Int battleHonor = (Int)GadgetListBoxGetItemData( window, row, col );
-	Int extraValue = (Int)GadgetListBoxGetItemData( window, row - 1, col );
+	Int battleHonor = (Int)(intptr_t)GadgetListBoxGetItemData( window, row, col );
+	Int extraValue = (Int)(intptr_t)GadgetListBoxGetItemData( window, row - 1, col );
 	if (battleHonor == 0)
 	{
 		//DEBUG_CRASH(("No Battle Honor in listbox row %d, col %d!", row, col));
@@ -501,7 +503,7 @@ void InsertBattleHonor(GameWindow *list, const Image *image, Bool enabled, Int i
 	{
 		column = 0;
 		row = row + 1 + rowsToSkip;
-		rowsToSkip = max(rowsToSkip-1, 0);
+		rowsToSkip = std::max(rowsToSkip-1, 0);
 	}
 }
 
@@ -789,7 +791,7 @@ Int CalculateRank( const PSPlayerStats& stats )
 		rankPoints += 1 * TheRankPointValues->m_completedSoloCampaigns;
 	}
 
-	rankPoints = max(0, rankPoints); // clip off negative values, since discons can push us below 0.
+	rankPoints = std::max(0, rankPoints); // clip off negative values, since discons can push us below 0.
 
 	return rankPoints;
 
@@ -918,7 +920,7 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 	win = findWindow(NULL, parentWindowName, "StaticTextStreakValue");
 	if(win)
 	{
-		Int streak = max(stats.lossesInARow, stats.winsInARow);
+		Int streak = std::max(stats.lossesInARow, stats.winsInARow);
 		uStr.format(L"%d", streak);
 		GadgetStaticTextSetText(win, uStr);
 	}
@@ -1321,6 +1323,7 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 	GadgetCheckBoxSetChecked(checkBoxAsianFont,!pref.getDisallowAsianText());
 	GadgetCheckBoxSetChecked(checkBoxNonAsianFont,!pref.getDisallowNonAsianText());
 
+	#if defined(_WIN32)
 	OSVERSIONINFO	osvi;
 	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
 	if (GetVersionEx(&osvi))
@@ -1333,6 +1336,7 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 				checkBoxNonAsianFont->winEnable(FALSE);
 		}
 	}
+	#endif
 
 	//TheWindowManager->winSetModal(parent);
 }
@@ -1408,7 +1412,8 @@ WindowMsgHandledType GameSpyPlayerInfoOverlayInput( GameWindow *window, Unsigned
 
 	return MSG_IGNORED;
 }
-void messageBoxYes( void );
+
+static void messageBoxYes( void );
 //-------------------------------------------------------------------------------------------------
 /** Overlay window system callback */
 //-------------------------------------------------------------------------------------------------

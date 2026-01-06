@@ -20,10 +20,49 @@
 
 #define GENERALS_GUID "685EAFF2-3216-4265-B047-251C5F4B82F3"
 
+#if !defined(_WIN32)
+#include <cerrno>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <unistd.h>
+#endif
+
 namespace rts
 {
 HANDLE ClientInstance::s_mutexHandle = NULL;
 UnsignedInt ClientInstance::s_instanceIndex = 0;
+
+#if !defined(_WIN32)
+static int g_clientInstanceLockFd = -1;
+
+static bool tryAcquireInstanceLock(const std::string& name)
+{
+	if (g_clientInstanceLockFd != -1) {
+		return true;
+	}
+
+	std::string lockPath = "/tmp/GeneralsX_";
+	lockPath += name;
+	lockPath += ".lock";
+
+	int fd = open(lockPath.c_str(), O_CREAT | O_RDWR, 0600);
+	if (fd == -1) {
+		return false;
+	}
+
+	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
+		const int err = errno;
+		close(fd);
+		if (err == EWOULDBLOCK) {
+			return false;
+		}
+		return false;
+	}
+
+	g_clientInstanceLockFd = fd;
+	return true;
+}
+#endif
 
 #if defined(RTS_MULTI_INSTANCE)
 Bool ClientInstance::s_isMultiInstance = true;
@@ -42,13 +81,14 @@ bool ClientInstance::initialize()
 	// WARNING: DO NOT use this number for any other application except Generals.
 	while (true)
 	{
+	#if defined(_WIN32)
 		if (isMultiInstance())
 		{
 			std::string guidStr = getFirstInstanceName();
 			if (s_instanceIndex > 0u)
 			{
 				char idStr[33];
-				itoa(s_instanceIndex, idStr, 10);
+				snprintf(idStr, sizeof(idStr), "%u", s_instanceIndex);
 				guidStr.push_back('-');
 				guidStr.append(idStr);
 			}
@@ -78,6 +118,26 @@ bool ClientInstance::initialize()
 				return false;
 			}
 		}
+	#else
+		std::string guidStr = getFirstInstanceName();
+		if (s_instanceIndex > 0u) {
+			char idStr[33];
+			snprintf(idStr, sizeof(idStr), "%u", s_instanceIndex);
+			guidStr.push_back('-');
+			guidStr.append(idStr);
+		}
+
+		if (!tryAcquireInstanceLock(guidStr)) {
+			if (isMultiInstance()) {
+				++s_instanceIndex;
+				continue;
+			}
+			return false;
+		}
+
+		// Non-Windows: use a lock file; s_mutexHandle is just an initialization flag.
+		s_mutexHandle = (HANDLE)1;
+	#endif
 		break;
 	}
 

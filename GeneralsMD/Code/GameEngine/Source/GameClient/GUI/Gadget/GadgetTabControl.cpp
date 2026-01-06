@@ -46,6 +46,8 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
+
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/Language.h"
 #include "GameClient/GameWindowManager.h"
@@ -290,7 +292,7 @@ void GadgetTabControlShowSubPane( GameWindow *tabControl, Int whichPane)
 	else
 		tabData->activeTab = 0;
 
-	tabData->activeTab = min( tabData->activeTab, tabData->tabCount - 1 );
+	tabData->activeTab = std::min( tabData->activeTab, tabData->tabCount - 1 );
 
 	tabData->subPanes[tabData->activeTab]->winHide( false );
 }

@@ -48,6 +48,8 @@
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
+
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -65,7 +67,7 @@
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-void drawTypeText( GameWindow *window, DisplayString *str);
+static void drawTypeText( GameWindow *window, DisplayString *str);
 //-----------------------------------------------------------------------------
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -1374,7 +1376,7 @@ void TextTypeTransition::init( GameWindow *win )
 	m_dStr = TheDisplayStringManager->newDisplayString();
 	m_fullText = GadgetStaticTextGetText(m_win);
 	Int length = m_fullText.getLength();
-	m_frameLength = MIN(length, TEXTTYPETRANSITION_END);
+	m_frameLength = std::min<Int>(length, TEXTTYPETRANSITION_END);
 }
 
 void TextTypeTransition::update( Int frame )
@@ -1497,17 +1499,17 @@ void CountUpTransition::init( GameWindow *win )
 	if(m_intValue < COUNTUPTRANSITION_END)
 	{
 		m_countState = COUNT_ONES;
-		m_frameLength = MIN(m_intValue, COUNTUPTRANSITION_END);
+		m_frameLength = std::min<Int>(m_intValue, COUNTUPTRANSITION_END);
 	}
 	else if(m_intValue/100 < COUNTUPTRANSITION_END)
 	{
 		m_countState = COUNT_100S;
-		m_frameLength = MIN(m_intValue/100, COUNTUPTRANSITION_END);
+		m_frameLength = std::min<Int>(m_intValue/100, COUNTUPTRANSITION_END);
 	}
 	else
 	{
 		m_countState = COUNT_1000S;
-		m_frameLength = MIN(m_intValue/1000, COUNTUPTRANSITION_END);
+		m_frameLength = std::min<Int>(m_intValue/1000, COUNTUPTRANSITION_END);
 	}
 
 	m_currentValue = 0;

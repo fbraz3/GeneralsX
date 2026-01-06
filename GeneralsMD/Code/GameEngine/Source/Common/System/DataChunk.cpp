@@ -34,6 +34,8 @@
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 
+#include <algorithm>
+
 // If verbose, lots of debug logging.
 #define not_VERBOSE
 
@@ -567,7 +569,7 @@ void DataChunkTableOfContents::read( ChunkInputStream &s)
 	m_headerOpened = count > 0 && !s.eof();
 
 	// adjust next ID so no ID's are reused
-	this->m_nextID = max( this->m_nextID, maxID+1 );
+	this->m_nextID = std::max( this->m_nextID, maxID+1 );
 }
 
 //----------------------------------------------------------------------
@@ -788,7 +790,7 @@ DataChunkVersionType DataChunkInput::getChunkVersion( void )
 	{
 		// TODO: Throw exception
 		DEBUG_CRASH(("Bad."));
-		return NULL;
+		return 0;
 	}
 
 	return m_chunkStack->version;
@@ -801,7 +803,7 @@ UnsignedInt DataChunkInput::getChunkDataSize( void )
 	{
 		// TODO: Throw exception
 		DEBUG_CRASH(("Bad."));
-		return NULL;
+		return 0;
 	}
 
 	return m_chunkStack->dataSize;
@@ -815,7 +817,7 @@ UnsignedInt DataChunkInput::getChunkDataSizeLeft( void )
 	{
 		// TODO: Throw exception
 		DEBUG_CRASH(("Bad."));
-		return NULL;
+		return 0;
 	}
 
 	return m_chunkStack->dataLeft;

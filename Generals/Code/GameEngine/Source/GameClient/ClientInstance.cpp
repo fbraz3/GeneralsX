@@ -17,21 +17,54 @@
 */
 #include "PreRTS.h"
 #include "GameClient/ClientInstance.h"
-// Phase 39.4: Temporarily disable include - header path issue to be resolved in CMakeLists configuration
-// #include "WWVegas/win32_thread_compat.h"
 
-// SDL2 Mutex stubs (Phase 39.4 - implementation is no-op for cross-platform compatibility)
-inline void* SDL2_CreateMutex(const char* name) { return nullptr; }
-inline void SDL2_DestroyMutex(void* mutex) { }
-inline int SDL2_LockMutex(void* mutex) { return 0; }
-inline void SDL2_UnlockMutex(void* mutex) { }
+#if !defined(_WIN32)
+#include <cerrno>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <unistd.h>
+#else
+#include <windows.h>
+#endif
 
 #define GENERALS_GUID "685EAFF2-3216-4265-B047-251C5F4B82F3"
 
 namespace rts
 {
-void* ClientInstance::s_mutexHandle = nullptr;  // Phase 39.4: Opaque handle to SDL2_Mutex
+void* ClientInstance::s_mutexHandle = nullptr;
 UnsignedInt ClientInstance::s_instanceIndex = 0;
+
+#if !defined(_WIN32)
+static int g_clientInstanceLockFd = -1;
+
+static bool tryAcquireInstanceLock(const std::string& name)
+{
+	if (g_clientInstanceLockFd != -1) {
+		return true;
+	}
+
+	std::string lockPath = "/tmp/GeneralsX_";
+	lockPath += name;
+	lockPath += ".lock";
+
+	int fd = open(lockPath.c_str(), O_CREAT | O_RDWR, 0600);
+	if (fd == -1) {
+		return false;
+	}
+
+	if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
+		const int err = errno;
+		close(fd);
+		if (err == EWOULDBLOCK) {
+			return false;
+		}
+		return false;
+	}
+
+	g_clientInstanceLockFd = fd;
+	return true;
+}
+#endif
 
 #if defined(RTS_MULTI_INSTANCE)
 Bool ClientInstance::s_isMultiInstance = true;
@@ -50,32 +83,43 @@ bool ClientInstance::initialize()
 	// WARNING: DO NOT use this number for any other application except Generals.
 	while (true)
 	{
-		if (isMultiInstance())
+		std::string guidStr = getFirstInstanceName();
+		if (s_instanceIndex > 0u)
 		{
-			std::string guidStr = getFirstInstanceName();
-			if (s_instanceIndex > 0u)
+			char idStr[33];
+			snprintf(idStr, sizeof(idStr), "%u", s_instanceIndex);
+			guidStr.push_back('-');
+			guidStr.append(idStr);
+		}
+
+	#if defined(_WIN32)
+		HANDLE mutexHandle = CreateMutex(NULL, FALSE, guidStr.c_str());
+		if (GetLastError() == ERROR_ALREADY_EXISTS)
+		{
+			if (mutexHandle != NULL)
 			{
-				char idStr[33];
-				snprintf(idStr, sizeof(idStr), "%u", s_instanceIndex);
-				guidStr.push_back('-');
-				guidStr.append(idStr);
+				CloseHandle(mutexHandle);
 			}
-			s_mutexHandle = SDL2_CreateMutex(guidStr.c_str());
-			if (s_mutexHandle == NULL)
+			if (isMultiInstance())
 			{
-				// Mutex already exists, try again with a new instance index
 				++s_instanceIndex;
 				continue;
 			}
+			return false;
 		}
-		else
+		s_mutexHandle = (void*)mutexHandle;
+	#else
+		if (!tryAcquireInstanceLock(guidStr))
 		{
-			s_mutexHandle = SDL2_CreateMutex(getFirstInstanceName());
-			if (s_mutexHandle == NULL)
+			if (isMultiInstance())
 			{
-				return false;
+				++s_instanceIndex;
+				continue;
 			}
+			return false;
 		}
+		s_mutexHandle = (void*)1;
+	#endif
 		break;
 	}
 

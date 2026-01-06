@@ -30,6 +30,12 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#if !defined(_WIN32)
+#include <spawn.h>
+#include <sys/types.h>
+extern char **environ;
+#endif
+
 #include "gamespy/ghttp/ghttp.h"
 
 #include "Lib/BaseType.h"
@@ -277,7 +283,7 @@ static MessageBoxReturnType checkCDCallback(void* userData)
 	}
 	else
 	{
-		prepareCampaignGame((GameDifficulty)(Int)(Int*)userData);
+		prepareCampaignGame((GameDifficulty)(Int)(intptr_t)userData);
 		return MB_RETURN_CLOSE;
 	}
 }
@@ -305,12 +311,26 @@ static void checkCDBeforeCampaign(GameDifficulty diff)
 	{
 		// popup a dialog asking for a CD
 		ExMessageBoxOkCancel(TheGameText->fetch("GUI:InsertCDPrompt"), TheGameText->fetch("GUI:InsertCDMessage"),
-			(void*)diff, checkCDCallback, cancelStartBecauseOfNoCD);
+			(void *)(intptr_t)diff, checkCDCallback, cancelStartBecauseOfNoCD);
 	}
 	else
 	{
 		prepareCampaignGame(diff);
 	}
+}
+
+static int SpawnDetachedProcess(const char *executableName)
+{
+#if defined(_WIN32)
+	return _spawnl(_P_NOWAIT, executableName, executableName, NULL);
+#else
+	pid_t pid = 0;
+	char *const argv[] = { const_cast<char *>(executableName), NULL };
+	int rc = posix_spawn(&pid, executableName, NULL, NULL, argv, environ);
+	if (rc != 0)
+		return -1;
+	return (int)pid;
+#endif
 }
 
 static void shutdownComplete(WindowLayout* layout)
@@ -1411,10 +1431,10 @@ WindowMsgHandledType MainMenuSystem(GameWindow* window, UnsignedInt msg,
 			else if (controlID == worldBuilderID)
 			{
 #if defined RTS_DEBUG
-				if (_spawnl(_P_NOWAIT, "WorldBuilderD.exe", "WorldBuilderD.exe", NULL) < 0)
+				if (SpawnDetachedProcess("WorldBuilderD.exe") < 0)
 					MessageBoxOk(TheGameText->fetch("GUI:WorldBuilder"), TheGameText->fetch("GUI:WorldBuilderLoadFailed"), NULL);
 #else
-				if (_spawnl(_P_NOWAIT, "WorldBuilder.exe", "WorldBuilder.exe", NULL) < 0)
+				if (SpawnDetachedProcess("WorldBuilder.exe") < 0)
 					MessageBoxOk(TheGameText->fetch("GUI:WorldBuilder"), TheGameText->fetch("GUI:WorldBuilderLoadFailed"), NULL);
 #endif
 			}

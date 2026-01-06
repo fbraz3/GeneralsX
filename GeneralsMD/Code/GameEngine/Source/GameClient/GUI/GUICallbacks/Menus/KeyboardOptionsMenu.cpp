@@ -722,7 +722,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 			WideChar ch = (WideChar) mData1;
 
 			// --------------------------------------------------------------------
-			if ( ch == VK_RETURN )
+			if ( ch == L'\r' || ch == L'\n' )
 			{
 				// Done with this edit
 			 		TheWindowManager->winSendSystemMsg( window->winGetOwner(),
