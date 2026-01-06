@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 
 
 #include "Common/DataChunk.h"
@@ -2890,7 +2891,7 @@ void TerrainLogic::createCraterInTerrain(Object *obj)
 
         Real displacementAmount = radius * (1.0f - distance / radius );
 
-        Int targetHeight = MAX( 1, TheTerrainVisual->getRawMapHeight( &gridPos ) - displacementAmount );
+        Int targetHeight = std::max( 1, (Int)(TheTerrainVisual->getRawMapHeight( &gridPos ) - displacementAmount) );
 
 				TheTerrainVisual->setRawMapHeight( &gridPos, targetHeight );
 			}

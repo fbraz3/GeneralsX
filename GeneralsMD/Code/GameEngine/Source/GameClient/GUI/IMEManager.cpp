@@ -47,7 +47,9 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#if defined(_WIN32)
 #include "mbstring.h"
+#endif
 
 #include "Common/Debug.h"
 #include "Common/Language.h"
@@ -60,6 +62,9 @@
 #include "GameClient/Mouse.h"
 #include "GameClient/Color.h"
 #include "Common/NameKeyGenerator.h"
+
+#if defined(_WIN32)
+// Windows-specific IME implementation - not needed on macOS/Linux with Vulkan+SDL2 backend
 
 
 //----------------------------------------------------------------------------
@@ -1597,4 +1602,6 @@ void IMEManager::updateStatusWindow( void )
 {
 
 }
+
+#endif // defined(_WIN32)
 

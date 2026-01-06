@@ -36,6 +36,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/Radar.h"
@@ -190,7 +191,7 @@ Bool ConvertToHijackedVehicleCrateCollide::executeCrateBehavior( Object *other )
 	ExperienceTracker *jackerExp = obj->getExperienceTracker();
 	if ( targetExp && jackerExp )
 	{
-		VeterancyLevel highestLevel = MAX(targetExp->getVeterancyLevel(),jackerExp->getVeterancyLevel());
+		VeterancyLevel highestLevel = std::max(targetExp->getVeterancyLevel(),jackerExp->getVeterancyLevel());
 		jackerExp->setVeterancyLevel( highestLevel, FALSE );
 		targetExp->setVeterancyLevel( highestLevel, FALSE );
 	}

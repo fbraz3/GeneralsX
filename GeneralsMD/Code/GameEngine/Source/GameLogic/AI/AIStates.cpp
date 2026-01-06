@@ -27,7 +27,7 @@
 // Author: Michael S. Booth, January 2002
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-
+#include <algorithm>
 #include "Common/ActionManager.h"
 #include "Common/AudioHandleSpecialValues.h"
 #include "Common/CRCDebug.h"
@@ -528,7 +528,7 @@ StateReturnType AIRappelState::onEnter()
 
 	AIUpdateInterface *ai = obj->getAI();
 	Real MAX_RAPPEL_RATE = fabs(TheGlobalData->m_gravity) * LOGICFRAMES_PER_SECOND * 2.5f;
-	m_rappelRate = -min(ai->getDesiredSpeed(), MAX_RAPPEL_RATE);
+	m_rappelRate = -std::min(ai->getDesiredSpeed(), MAX_RAPPEL_RATE);
 
 	return STATE_CONTINUE;
 }
@@ -603,7 +603,7 @@ StateReturnType AIRappelState::update()
 					// Garrison doesn't have reserveDoor or exitDelay, so if we do nothing, everyone will appear on top
 					// of each other and get stuck inside each others' extent (except for the first guy).  So we'll
 					// scatter the start point around a little to make it better.
-					Real offset = min(obj->getGeometryInfo().getBoundingCircleRadius(),
+					Real offset = std::min(obj->getGeometryInfo().getBoundingCircleRadius(),
 														bldg->getGeometryInfo().getBoundingCircleRadius());
 					Real angle = GameLogicRandomValueReal( PI, 2*PI );//Downish.
 					Coord3D startPosition = *bldg->getPosition();
@@ -1234,7 +1234,7 @@ Bool outOfWeaponRangePosition( State *thisState, void* userData )
  */
 static Bool cannotPossiblyAttackObject( State *thisState, void* userData )
 {
-	AbleToAttackType attackType = (AbleToAttackType)(UnsignedInt)userData;
+	AbleToAttackType attackType = (AbleToAttackType)(UnsignedInt)(uintptr_t)userData;
 	Object *obj = thisState->getMachineOwner();
 	Object *victim = thisState->getMachineGoalObject();
 

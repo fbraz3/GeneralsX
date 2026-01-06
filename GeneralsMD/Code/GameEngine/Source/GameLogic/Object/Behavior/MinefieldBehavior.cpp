@@ -30,6 +30,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 #define DEFINE_RELATIONSHIP_NAMES
 #include "Common/GameState.h"
 #include "Common/RandomValue.h"
@@ -157,7 +158,7 @@ UpdateSleepTime MinefieldBehavior::calcSleepTime()
 	// about it (that is, when our creator dies)
 	//
 	if (m_regenerates && d->m_stopsRegenAfterCreatorDies)
-		sleepTime = min( sleepTime, m_nextDeathCheckFrame - now );
+		sleepTime = std::min( sleepTime, m_nextDeathCheckFrame - now );
 
 	// if we don't want to sleep forever, prevent 0 frame sleeps
 	if( sleepTime == 0 )

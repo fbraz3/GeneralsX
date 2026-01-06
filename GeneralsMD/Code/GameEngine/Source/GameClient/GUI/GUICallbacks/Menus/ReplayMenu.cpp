@@ -749,11 +749,11 @@ void deleteReplay( void )
 	filename.concat(translate);
 	if(DeleteFile(filename.str()) == 0)
 	{
-		char buffer[1024];
-		FormatMessage ( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, sizeof(buffer), NULL);
+		wchar_t buffer[1024];
+		FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, ARRAY_SIZE(buffer), NULL);
 		UnicodeString errorStr;
-		translate.set(buffer);
-		errorStr.translate(translate);
+		errorStr.set(buffer);
+		errorStr.trim();
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 	}
 	//Load the listbox shiznit
@@ -778,12 +778,22 @@ void copyReplay( void )
 	filename.concat(translate);
 
 	char path[1024];
+#if defined(_WIN32)
 	LPITEMIDLIST pidl;
 	SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOPDIRECTORY, &pidl);
 	SHGetPathFromIDList(pidl,path);
+	const char *sep = "\\";
+#else
+	const char *home = getenv("HOME");
+	if(home)
+		snprintf(path, sizeof(path), "%s/Desktop", home);
+	else
+		strncpy(path, ".", sizeof(path));
+	const char *sep = "/";
+#endif
 	AsciiString newFilename;
 	newFilename.set(path);
-	newFilename.concat("\\");
+	newFilename.concat(sep);
 	newFilename.concat(translate);
 	if(CopyFile(filename.str(),newFilename.str(), FALSE) == 0)
 	{

@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 #include "Common/BitFlagsIO.h"
 #include "Common/CRCDebug.h"
 #include "Common/DamageFX.h"
@@ -252,7 +253,7 @@ void ActiveBody::setDamageState( BodyDamageType newState )
 		ratio = 0.0f;
 	}
 	Real desiredHealth = m_maxHealth * ratio - 1;// -1 because < not <= in calcState
-	desiredHealth = max( desiredHealth, 0.0f );
+	desiredHealth = std::max( desiredHealth, 0.0f );
 	internalChangeHealth( desiredHealth - m_currentHealth );
 	setCorrectDamageState();
 }
@@ -1263,7 +1264,7 @@ void ActiveBody::internalAddSubdualDamage( Real delta )
 	const ActiveBodyModuleData *data = getActiveBodyModuleData();
 
 	m_currentSubdualDamage += delta;
-	m_currentSubdualDamage = min(m_currentSubdualDamage, data->m_subdualDamageCap);
+	m_currentSubdualDamage = std::min(m_currentSubdualDamage, data->m_subdualDamageCap);
 }
 
 //-------------------------------------------------------------------------------------------------

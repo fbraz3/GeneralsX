@@ -28,6 +28,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 
+#include <algorithm>
 #include "Common/ActionManager.h"
 #include "Common/BuildAssistant.h"
 #include "Common/CRCDebug.h"
@@ -1638,7 +1639,7 @@ void AIGroup::groupMoveToPosition( const Coord3D *p_posIn, Bool addWaypoint, Com
     if ( groupMember->isKindOf( KINDOF_PRODUCED_AT_HELIPAD ) )//helicopter
     {
       isFormation = FALSE;
-      extraMargin = MAX( extraMargin, groupMember->getGeometryInfo().getMajorRadius() );
+      extraMargin = std::max( extraMargin, groupMember->getGeometryInfo().getMajorRadius() );
     }
     else if ( groupMember->isKindOf( KINDOF_AIRCRAFT ) )// fixed wing aircraft only
     {
@@ -1648,7 +1649,7 @@ void AIGroup::groupMoveToPosition( const Coord3D *p_posIn, Bool addWaypoint, Com
 				isFormation = FALSE;//then keep spread formation after move
       }
 
-      extraMargin = MAX( extraMargin, STD_AIRCRAFT_EXTRA_MARGIN );
+      extraMargin = std::max( extraMargin, (Real)STD_AIRCRAFT_EXTRA_MARGIN );
 		}
 	}
 

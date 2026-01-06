@@ -52,6 +52,7 @@
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "GameClient/ProcessAnimateWindow.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/GameWindow.h"
@@ -1058,7 +1059,7 @@ Bool ProcessAnimateWindowSpiral::updateAnimateWindow( wnd::AnimateWindow *animWi
 
 	ICoord2D size;
 	win->winGetSize(&size.x, &size.y);
-	Int m_max = min(size.x/2, size.y/2);
+	Int m_max = std::min(size.x/2, size.y/2);
 
 	if(vel.y < m_max)
 	{

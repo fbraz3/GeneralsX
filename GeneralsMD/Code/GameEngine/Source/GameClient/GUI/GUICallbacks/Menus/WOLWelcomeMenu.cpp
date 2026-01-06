@@ -31,6 +31,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "gamespy/peer/peer.h"
 
 #include "Common/GameEngine.h"
@@ -358,7 +359,7 @@ void HandleOverallStats( const char* szHTTPStats, unsigned len )
 		//      we want win% = team's wins / total # games played by all teams
 		const char* pTotal = FindNextNumber(pSide);
 		const char* pWins = FindNextNumber(pTotal);
-		float percent = atof(pWins) / max(1,atof(pTotal));  //max prevents divide by zero
+		float percent = atof(pWins) / std::max(1.0, atof(pTotal));  //max prevents divide by zero
 		s_totalWinPercent += percent;
 
 		s_winStats.insert(std::make_pair( side, percent ));

@@ -34,6 +34,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 
 #include "Common/GameAudio.h"
 #include "Common/MiscAudio.h"
@@ -141,7 +142,7 @@ Bool SabotageSupplyCenterCrateCollide::executeCrateBehavior( Object *other )
 		UnsignedInt cash = targetMoney->countMoney();
 		UnsignedInt desiredAmount = getSabotageSupplyCenterCrateCollideModuleData()->m_stealCashAmount;
 		//Check to see if they have the cash, otherwise, take the remainder!
-		cash = min( desiredAmount, cash );
+		cash = std::min( desiredAmount, cash );
 		if( cash > 0 )
 		{
 			//Steal the cash

@@ -30,6 +30,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 #include "Common/Xfer.h"
 #include "GameClient/Drawable.h"
 #include "GameLogic/Module/PoisonedBehavior.h"
@@ -168,7 +169,7 @@ void PoisonedBehavior::startPoisonedEffects( const DamageInfo *damageInfo )
 
 	// If we are getting re-poisoned, don't reset the damage counter if running, but do set it if unset
 	if( m_poisonDamageFrame != 0 )
-		m_poisonDamageFrame = min( m_poisonDamageFrame, now + d->m_poisonDamageIntervalData );
+		m_poisonDamageFrame = std::min( m_poisonDamageFrame, now + d->m_poisonDamageIntervalData );
 	else
 		m_poisonDamageFrame = now + d->m_poisonDamageIntervalData;
 

@@ -29,6 +29,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "Common/Debug.h"
 #include "Common/MessageStream.h"
 #include "Common/GameEngine.h"
@@ -1165,7 +1166,7 @@ void Mouse::drawTooltip( void )
 			yPos -= /*40 +*/ height;
 		}
 
-		Int boxWidth = (m_tooltipAnimateBackground)?(min(width, m_highlightPos)):width;
+		Int boxWidth = (m_tooltipAnimateBackground)?(std::min(width, m_highlightPos)):width;
 
 #define GMC(x) GameMakeColor(x.red, x.green, x.blue, x.alpha)
 #define COLOR(x) GMC(m_tooltipColor##x)

@@ -114,14 +114,14 @@ extern GameTextInterface* CreateGameTextInterface( void );
 
 #define FETCH_OR_SUBSTITUTE(labelA, substituteTextW) fetchOrSubstitute(labelA, substituteTextW)
 #if __cplusplus >= 201103L // TheSuperHackers @todo Remove condition when abandoning VC6
-#define FETCH_OR_SUBSTITUTE_FORMAT(labelA, substituteFormatW, ...) fetchOrSubstituteFormat(labelA, substituteFormatW, __VA_ARGS__)
+#define FETCH_OR_SUBSTITUTE_FORMAT(labelA, substituteFormatW, ...) fetchOrSubstituteFormat(labelA, substituteFormatW, ##__VA_ARGS__)
 #endif
 
 #else
 
 #define FETCH_OR_SUBSTITUTE(labelA, substituteTextW) fetch(labelA)
 #if __cplusplus >= 201103L // TheSuperHackers @todo Remove condition when abandoning VC6
-#define FETCH_OR_SUBSTITUTE_FORMAT(labelA, substituteTextW, ...) fetchFormat(labelA, __VA_ARGS__)
+#define FETCH_OR_SUBSTITUTE_FORMAT(labelA, substituteTextW, ...) fetchFormat(labelA, ##__VA_ARGS__)
 #endif
 
 #endif // ENABLE_GAMETEXT_SUBSTITUTES

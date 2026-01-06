@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 #define DEFINE_WEAPONCONDITIONMAP
 #include "Common/BitFlagsIO.h"
 #include "Common/BuildAssistant.h"
@@ -1876,7 +1877,7 @@ void Object::attemptDamage( DamageInfo *damageInfo )
 		{
 			// Calculate the shockwave taperoff amount due to distance from ground zero
 			Real shockWaveScalar = damageInfo->in.m_shockWaveVector.length();
-			Real distanceFromCenter = min(1.0f, shockWaveScalar / damageInfo->in.m_shockWaveRadius);
+			Real distanceFromCenter = std::min(1.0f, shockWaveScalar / damageInfo->in.m_shockWaveRadius);
 			Real distanceTaper = (distanceFromCenter) * (1.0f - damageInfo->in.m_shockWaveTaperOff);
 			Real shockTaperMult = 1.0f - distanceTaper;
 
@@ -3469,9 +3470,9 @@ Bool Object::getHealthBoxDimensions(Real &healthBoxHeight, Real &healthBoxWidth)
 	}
 
 	//just add the major and minor axes
-	Real size = MAX(20.0f, MIN(150.0f, (getGeometryInfo().getMajorRadius() + getGeometryInfo().getMinorRadius())) );
+	Real size = std::max(20.0f, std::min(150.0f, (getGeometryInfo().getMajorRadius() + getGeometryInfo().getMinorRadius())) );
 	healthBoxHeight = 3.0f;
-	healthBoxWidth = MAX(20.0f, size * 2.0f);
+	healthBoxWidth = std::max(20.0f, size * 2.0f);
 	return TRUE;
 
 #endif
@@ -4261,7 +4262,7 @@ void Object::xfer( Xfer *xfer )
 
 	// Entered & exited housekeeping.
 	Int i;
-	xfer->xferByte(&m_numTriggerAreasActive);
+	xfer->xferByte((SignedByte*)&m_numTriggerAreasActive);
 	xfer->xferUnsignedInt(&m_enteredOrExitedFrame);
 	xfer->xferICoord3D(&m_iPos);
 	if (m_numTriggerAreasActive<0 || m_numTriggerAreasActive>MAX_TRIGGER_AREA_INFOS) {
@@ -4284,9 +4285,9 @@ void Object::xfer( Xfer *xfer )
 			//if (triggerName.isNotEmpty())
 			  m_triggerInfo[i].pTrigger = TheTerrainLogic->getTriggerAreaByName(triggerName);
 		}
-		xfer->xferByte(&m_triggerInfo[i].entered);
-		xfer->xferByte(&m_triggerInfo[i].exited);
-		xfer->xferByte(&m_triggerInfo[i].isInside);
+		xfer->xferByte((SignedByte*)&m_triggerInfo[i].entered);
+		xfer->xferByte((SignedByte*)&m_triggerInfo[i].exited);
+		xfer->xferByte((SignedByte*)&m_triggerInfo[i].isInside);
 	}
 	// Layer object is pathing on.
 	xfer->xferUser(&m_layer, sizeof(m_layer));

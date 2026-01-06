@@ -4,7 +4,11 @@ applyTo: '**'
 
 # Objectives
 
-GeneralsX project intends to be a multi-platform implementation of Command & Conquer Generals and its expansion Zero Hour, using the SuperHackers project as base.
+GeneralsX is a cross-platform port of Command & Conquer: Generals (2002) and its expansion Zero Hour (2003) from Windows-only DirectX 8 to macOS/Linux/Windows using Vulkan and SDL2 backends.
+
+This is a **massive C++ game engine** (~500k+ LOC) being ported from Visual C++ 6 (C++98) to modern C++20 with platform abstraction layers.
+
+**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code that assumes Windows everywhere. Respect the existing architecture while adding cross-platform support.
 
 ## Multi-Platform Support
 
@@ -14,7 +18,7 @@ Registry keys must be replaced by configuration files, details about file format
 
 ## Updtate Daily Blog before committing any changes
 
-Befor commiting changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, you can find the development diary guidelines in `.github\instructions\docs.instructions.md`.
+Before committing changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, you can find the development diary guidelines in `.github\instructions\docs.instructions.md`.
 
 # Guidelines
 

@@ -70,10 +70,12 @@ void WOLLadderScreenInit( WindowLayout *layout, void *userData )
 //	PopulateReplayFileListbox(listboxReplayFiles);
 
 	//TheWebBrowser->createBrowserWindow("Westwood", windowLadder);
+#if defined(_WIN32)
 	if (TheWebBrowser != NULL)
 	{
 		TheWebBrowser->createBrowserWindow("MessageBoard", windowLadder);
 	}
+#endif
 
 	// show menu
 	layout->hide( FALSE );
@@ -89,10 +91,12 @@ void WOLLadderScreenInit( WindowLayout *layout, void *userData )
 void WOLLadderScreenShutdown( WindowLayout *layout, void *userData )
 {
 
+#if defined(_WIN32)
 	if (TheWebBrowser != NULL)
 	{
 		TheWebBrowser->closeBrowserWindow(windowLadder);
 	}
+#endif
 
 	// hide menu
 	layout->hide( TRUE );

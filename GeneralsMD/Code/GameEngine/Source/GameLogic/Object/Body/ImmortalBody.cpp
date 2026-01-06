@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 #include "Common/Xfer.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/Damage.h"
@@ -55,7 +56,7 @@ ImmortalBody::~ImmortalBody( void )
 void ImmortalBody::internalChangeHealth( Real delta )
 {
 	// Don't let anything changes us to below one hit point
-	delta = max( delta, -getHealth() + 1 );
+	delta = std::max( delta, -getHealth() + 1 );
 
 	// extend functionality, but I go first because I can't let you die and then fix it, I must prevent
 	ActiveBody::internalChangeHealth( delta );

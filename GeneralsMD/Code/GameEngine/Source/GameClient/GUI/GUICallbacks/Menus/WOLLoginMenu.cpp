@@ -31,6 +31,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "Common/STLTypedefs.h"
 
 #include "Common/file.h"
@@ -739,10 +740,12 @@ void WOLLoginMenuShutdown( WindowLayout *layout, void *userData )
 	TheWindowManager->clearTabList();
 	if (webBrowserActive)
 	{
+#if defined(_WIN32)
 		if (TheWebBrowser != NULL)
 		{
 			TheWebBrowser->closeBrowserWindow(listboxTOS);
 		}
+#endif
 		webBrowserActive = FALSE;
 	}
 
@@ -985,10 +988,16 @@ static Bool isAgeOkay(AsciiString &month, AsciiString &day, AsciiString year)
 	// test the year first
 	#define DATE_BUFFER_SIZE 256
 	char dateBuffer[ DATE_BUFFER_SIZE ];
+#if defined(_WIN32)
 	GetDateFormat( LOCALE_SYSTEM_DEFAULT,
 								 0, NULL,
 								 "yyyy",
 								 dateBuffer, DATE_BUFFER_SIZE );
+#else
+	// Non-Windows: fallback to system locale
+	time_t now = time(NULL);
+	strftime(dateBuffer, DATE_BUFFER_SIZE, "%Y", localtime(&now));
+#endif
 	Int sysVal = atoi(dateBuffer);
 	Int userVal = atoi(year.str());
 	if(sysVal - userVal >= 14)
@@ -996,10 +1005,17 @@ static Bool isAgeOkay(AsciiString &month, AsciiString &day, AsciiString year)
 	else if( sysVal - userVal <= 12)
 		return FALSE;
 
+#if defined(_WIN32)
 	GetDateFormat( LOCALE_SYSTEM_DEFAULT,
 								 0, NULL,
 								 "MM",
 								 dateBuffer, DATE_BUFFER_SIZE );
+#else
+	{
+		time_t now = time(NULL);
+		strftime(dateBuffer, DATE_BUFFER_SIZE, "%m", localtime(&now));
+	}
+#endif
 	sysVal = atoi(dateBuffer);
 	userVal = atoi(month.str());
 	if(sysVal - userVal >0 )
@@ -1007,10 +1023,17 @@ static Bool isAgeOkay(AsciiString &month, AsciiString &day, AsciiString year)
 	else if( sysVal -userVal < 0 )
 		return FALSE;
 //	month.format("%02.2d",userVal);
+#if defined(_WIN32)
 	GetDateFormat( LOCALE_SYSTEM_DEFAULT,
 								 0, NULL,
 								 "dd",
 								 dateBuffer, DATE_BUFFER_SIZE );
+#else
+	{
+		time_t now = time(NULL);
+		strftime(dateBuffer, DATE_BUFFER_SIZE, "%d", localtime(&now));
+	}
+#endif
 	sysVal = atoi(dateBuffer);
 	userVal = atoi(day.str());
 	if(sysVal - userVal< 0)
@@ -1433,12 +1456,14 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 				{
 					parentTOS->winHide(FALSE);
 					useWebBrowserForTOS = FALSE;//loginPref->getBool("UseTOSBrowser", TRUE);
+#if defined(_WIN32)
 					if (useWebBrowserForTOS && (TheWebBrowser != NULL))
 					{
 						TheWebBrowser->createBrowserWindow("TermsOfService", listboxTOS);
 						webBrowserActive = TRUE;
 					}
 					else
+#endif
 					{
 						// Okay, no web browser.  This means we're looking at a UTF-8 text file.
 						GadgetListBoxReset(listboxTOS);
@@ -1485,14 +1510,15 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 					EnableLoginControls( TRUE );
 
 					parentTOS->winHide(TRUE);
-					if (useWebBrowserForTOS && (TheWebBrowser != NULL))
+#if defined(_WIN32)
+				if (useWebBrowserForTOS && (TheWebBrowser != NULL))
+				{
+					if (listboxTOS != NULL)
 					{
-						if (listboxTOS != NULL)
-						{
-							TheWebBrowser->closeBrowserWindow(listboxTOS);
-						}
+						TheWebBrowser->closeBrowserWindow(listboxTOS);
 					}
-
+				}
+#endif
 					OptionPreferences optionPref;
 					optionPref["SawTOS"] = "yes";
 					optionPref.write();

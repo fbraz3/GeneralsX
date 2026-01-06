@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <algorithm>
 #include "Common/Xfer.h"
 #include "GameLogic/Module/UndeadBody.h"
 
@@ -90,14 +91,10 @@ void UndeadBody::attemptDamage( DamageInfo *damageInfo )
 			&& IsHealthDamagingDamage(damageInfo->in.m_damageType)
 			)
 	{
-		damageInfo->in.m_amount = min( damageInfo->in.m_amount, getHealth() - 1 );
+		damageInfo->in.m_amount = std::min( damageInfo->in.m_amount, getHealth() - 1 );
 		shouldStartSecondLife = TRUE;
 	}
 
-	ActiveBody::attemptDamage(damageInfo);
-
-	// After we take it (which allows for damaging special effects), we will do our modifications to the body module
-	if( shouldStartSecondLife )
 		startSecondLife(damageInfo);
 }
 

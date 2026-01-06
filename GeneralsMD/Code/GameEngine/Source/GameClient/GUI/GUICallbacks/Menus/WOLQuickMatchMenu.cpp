@@ -31,6 +31,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "Common/GameEngine.h"
 #include "Common/QuickmatchPreferences.h"
 #include "Common/LadderPreferences.h"
@@ -232,7 +233,7 @@ void UpdateStartButton(void)
 	Int index;
 	Int selected;
 	GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-	index = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+	index = (Int)(intptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 	const LadderInfo *li = TheLadderList->findLadderByIndex( index );
 	if (li)
 	{
@@ -481,7 +482,7 @@ static const LadderInfo * getLadderInfo( void )
 	Int index;
 	Int selected;
 	GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-	index = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+	index = (Int)(intptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 	const LadderInfo *li = TheLadderList->findLadderByIndex( index );
 	return li;
 }
@@ -560,7 +561,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 	Int index;
 	Int selected;
 	GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-	index = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+	index = (Int)(intptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 	const LadderInfo *li = TheLadderList->findLadderByIndex( index );
 	//listboxMapSelect->winEnable( li == NULL || li->randomMaps == FALSE );
 
@@ -597,7 +598,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 			const Image *img = (isSelected)?selectedImage:unselectedImage;
 			if ( img )
 			{
-				width = min(GadgetListBoxGetColumnWidth(listboxMapSelect, 0), img->getImageWidth());
+				width = std::min(GadgetListBoxGetColumnWidth(listboxMapSelect, 0), img->getImageWidth());
 				height = width;
 			}
 			Int index = GadgetListBoxAddEntryImage(listboxMapSelect, img, -1, 0, height, width);
@@ -619,7 +620,7 @@ static void saveQuickMatchOptions( void )
 	Int index;
 	Int selected;
 	GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-	index = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+	index = (Int)(intptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 	const LadderInfo *li = TheLadderList->findLadderByIndex( index );
 	Int numPlayers = 0;
 
@@ -675,10 +676,10 @@ static void saveQuickMatchOptions( void )
 
 	Int item;
 	GadgetComboBoxGetSelectedPos(comboBoxSide, &selected);
-	item = (Int)GadgetComboBoxGetItemData(comboBoxSide, selected);
-	pref.setSide(max(0, item));
+	item = (Int)(intptr_t)GadgetComboBoxGetItemData(comboBoxSide, selected);
+	pref.setSide(std::max(0, item));
 	GadgetComboBoxGetSelectedPos(comboBoxColor, &selected);
-	pref.setColor(max(0, selected));
+	pref.setColor(std::max(0, selected));
 
 	GadgetComboBoxGetSelectedPos(comboBoxMaxDisconnects, &selected);
 	pref.setMaxDisconnects(selected);
@@ -851,7 +852,7 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		s.format(TheGameText->fetch("GUI:PlayersVersusPlayers"), i, i);
 		GadgetComboBoxAddEntry( comboBoxNumPlayers, s, c );
 	}
-	GadgetComboBoxSetSelectedPos( comboBoxNumPlayers, max(0, pref.getNumPlayers()) );
+	GadgetComboBoxSetSelectedPos( comboBoxNumPlayers, std::max(0, pref.getNumPlayers()) );
 
 	GadgetComboBoxReset(comboBoxMaxDisconnects);
 	GadgetComboBoxAddEntry( comboBoxMaxDisconnects, TheGameText->fetch("GUI:Any"), c);
@@ -860,7 +861,7 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		s.format(L"%d", MAX_DISCONNECTS[i]);
 		GadgetComboBoxAddEntry( comboBoxMaxDisconnects, s, c );
 	}
-	Int maxDisconIndex = max(0, pref.getMaxDisconnects());
+	Int maxDisconIndex = std::max(0, pref.getMaxDisconnects());
 	GadgetComboBoxSetSelectedPos(comboBoxMaxDisconnects, maxDisconIndex);
 
 	GadgetComboBoxReset( comboBoxMaxPing );
@@ -1556,11 +1557,11 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					if (pos >= 0)
 					{
 						QuickMatchPreferences pref;
-						Int ladderID = (Int)GadgetComboBoxGetItemData(control, pos);
+						Int ladderID = (Int)(intptr_t)GadgetComboBoxGetItemData(control, pos);
 						if (ladderID == 0)
 						{
 							// no ladder selected - enable buttons
-							GadgetComboBoxSetSelectedPos(comboBoxNumPlayers, max(0, pref.getNumPlayers()/2-1));
+							GadgetComboBoxSetSelectedPos(comboBoxNumPlayers, std::max(0, pref.getNumPlayers()/2-1));
 							comboBoxNumPlayers->winEnable( TRUE );
 							populateQMSideComboBox(pref.getSide()); // this will set side to random and disable if necessary
 						}
@@ -1652,10 +1653,10 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 //					req.QM.maxDiscons = atoi(a.str());
 //					u = GadgetTextEntryGetText(textEntryMaxPoints);
 //					a.translate(u);
-					req.QM.maxPointPercentage = max(100, maxPoints);
+					req.QM.maxPointPercentage = std::max(100, maxPoints);
 //					u = GadgetTextEntryGetText(textEntryMinPoints);
 //					a.translate(u);
-					req.QM.minPointPercentage = min(100, minPoints);
+					req.QM.minPointPercentage = std::min(100, minPoints);
 					//u = GadgetTextEntryGetText(textEntryWaitTime);
 					//a.translate(u);
 					//req.QM.widenTime = atoi(a.str());
@@ -1682,7 +1683,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 
 					Int ladderIndex, index, selected;
 					GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-					ladderIndex = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+					ladderIndex = (Int)(intptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 					const LadderInfo *ladderInfo = NULL;
 					if (ladderIndex < 0)
 					{
@@ -1703,7 +1704,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					index = -1;
 					GadgetComboBoxGetSelectedPos( comboBoxSide, &selected );
 					if (selected >= 0)
-						index = (Int)GadgetComboBoxGetItemData( comboBoxSide, selected );
+						index = (Int)(intptr_t)GadgetComboBoxGetItemData( comboBoxSide, selected );
 					req.QM.side = index;
 					if (ladderInfo && ladderInfo->randomFactions)
 					{
@@ -1742,7 +1743,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 						{
 							Int numberComboBoxEntries = GadgetComboBoxGetLength(comboBoxSide);
 							Int randomPick = GameClientRandomValue(0, numberComboBoxEntries - 1);
-							index = (Int)GadgetComboBoxGetItemData( comboBoxSide, randomPick );
+							index = (Int)(intptr_t)GadgetComboBoxGetItemData( comboBoxSide, randomPick );
 							req.QM.side = index;
 
 							randomTries++;
@@ -1752,7 +1753,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					index = -1;
 					GadgetComboBoxGetSelectedPos( comboBoxColor, &selected );
 					if (selected >= 0)
-						index = (Int)GadgetComboBoxGetItemData( comboBoxColor, selected );
+						index = (Int)(intptr_t)GadgetComboBoxGetItemData( comboBoxColor, selected );
 					req.QM.color = index;
 
 					OptionPreferences natPref;
@@ -1863,7 +1864,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 						const Image *img = (!wasSelected)?selectedImage:unselectedImage;
 						if ( img )
 						{
-							width = min(GadgetListBoxGetColumnWidth(control, 0), img->getImageWidth());
+							width = std::min(GadgetListBoxGetColumnWidth(control, 0), img->getImageWidth());
 							height = width;
 						}
 						GadgetListBoxAddEntryImage(control, img, selected, 0, height, width);

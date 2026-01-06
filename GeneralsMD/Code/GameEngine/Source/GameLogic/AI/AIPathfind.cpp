@@ -27,6 +27,7 @@
 // Author: Michael S. Booth, October 2001
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "GameLogic/AIPathfind.h"
 
 #include "Common/PerfTimer.h"
@@ -2346,7 +2347,7 @@ void PathfindZoneManager::markZonesDirty( Bool insert )  ///< Called when the zo
 		m_nextFrameToCalculateZones = 2;
 		return;
 	}
-    m_nextFrameToCalculateZones = MIN( m_nextFrameToCalculateZones, TheGameLogic->getFrame() + ZONE_UPDATE_FREQUENCY );
+    m_nextFrameToCalculateZones = std::min( m_nextFrameToCalculateZones, TheGameLogic->getFrame() + ZONE_UPDATE_FREQUENCY );
 }
 
 /**

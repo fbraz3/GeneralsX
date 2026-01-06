@@ -28,6 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "stdlib.h"				// VC++ wants this here, or gives compile error...
 
 #include "Common/AudioAffect.h"
@@ -234,7 +235,7 @@ bool changeLogicTimeScale(FpsValueChange change)
 	// Ceil the value at the max render fps value plus a bit so that the next fps
 	// value decrease would undercut the max render fps at the correct step value.
 	// Example: render fps 72 -> logic value ceiled to 75 -> decreased to 70.
-	logicTimeScaleFps = min(logicTimeScaleFps, maxRenderFps + maxRenderRemainder);
+	logicTimeScaleFps = std::min(logicTimeScaleFps, maxRenderFps + maxRenderRemainder);
 	logicTimeScaleFps = LogicTimeScaleFpsPreset::changeFpsValue(logicTimeScaleFps, change);
 
 	// Set value before potentially disabling it.
