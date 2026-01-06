@@ -158,7 +158,7 @@ The text body continues with a description of the change in appropriate detail. 
 
 * **[Development Diary](./docs/DEV_BLOG/)** - Technical development diary organized by month
 * **[Phase Documentation](./docs/WORKDIR/)** - Phase-by-phase port progress with implementation details
-* **[TESTING.md](./docs/TESTING.md)** - macOS testing procedures and validation steps
+* **[TESTING.md](./TESTING.md)** - macOS testing procedures and validation steps
 * **[Misc/OPENGL_TESTING.md](./docs/WORKDIR/support/OPENGL_TESTING.md)** - OpenGL-specific testing for cross-platform graphics
 
 ### Linux and Other Platforms

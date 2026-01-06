@@ -24,8 +24,8 @@ This document provides comprehensive testing procedures for the Command & Conque
 - ✅ **Debug System**: Complete debug framework working
 - 🔄 **Final Integration**: DirectX layer coordination in progress
 
-**For OpenGL-specific testing:** See [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)
-**For macOS porting details:** See [MACOS_PORT_DIARY.md](./MACOS_PORT_DIARY.md)
+**For OpenGL-specific testing:** See [OPENGL_TESTING.md](../../support/OPENGL_TESTING.md)
+**For macOS porting details:** See [DEV_BLOG](../../../DEV_BLOG/README.md)
 
 ### OpenGL Testing Integration
 
@@ -35,7 +35,7 @@ This document covers general project testing. For comprehensive OpenGL testing p
 - Detailed OpenGL progress reports and benchmarks
 - OpenGL development workflow and best practices
 
-**→ See the dedicated [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md) documentation.**
+**→ See the dedicated [OPENGL_TESTING.md](../../support/OPENGL_TESTING.md) documentation.**
 
 The OpenGL testing is tightly integrated with the general testing workflow but requires specialized procedures documented separately due to its complexity and platform-specific requirements.
 
@@ -286,9 +286,9 @@ cd tests/opengl
 |---------------|---------|-------|-------|--------|---------------|
 | Replay Compatibility | ✅ PASS | 🔄 WIP | 🔄 WIP | Primary | This document |
 | Basic Compilation | ✅ PASS | ✅ PASS | ✅ PASS | Complete | This document |
-| OpenGL Rendering | ✅ PASS | ✅ PASS | ✅ PASS | Complete | [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md) |
+| OpenGL Rendering | ✅ PASS | ✅ PASS | ✅ PASS | Complete | [OPENGL_TESTING.md](../../support/OPENGL_TESTING.md) |
 | DirectX Compatibility | ✅ PASS | ✅ PASS | ➖ N/A | Complete | This document |
-| W3D Integration | ✅ PASS | 🔄 WIP | 🔄 WIP | Progress | [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md) |
+| W3D Integration | ✅ PASS | 🔄 WIP | 🔄 WIP | Progress | [OPENGL_TESTING.md](../../support/OPENGL_TESTING.md) |
 | Core Libraries | ✅ PASS | ✅ PASS | ✅ PASS | Complete | This document |
 | Tools Building | ✅ PASS | 🔄 WIP | 🔄 WIP | Progress | This document |
 
@@ -375,7 +375,7 @@ leaks ./test_executable
 - [ ] OpenGL context creation works on all platforms
 - [ ] W3D integration tests pass
 
-**→ For detailed OpenGL testing procedures, see [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)**
+**→ For detailed OpenGL testing procedures, see [OPENGL_TESTING.md](../../support/OPENGL_TESTING.md)**
 
 #### Platform-Specific Testing
 
@@ -451,10 +451,10 @@ build-matrix:
 
 ## 📚 Related Documentation
 
-- **[OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)** - OpenGL-specific testing procedures and results
-- **[OPENGL_SUMMARY.md](Misc/OPENGL_SUMMARY.md)** - Complete OpenGL implementation documentation
-- **[MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md)** - macOS porting progress and platform-specific details
-- **[tests/README.md](../tests/README.md)** - Test suite directory index
+- **[OPENGL_TESTING.md](../../support/OPENGL_TESTING.md)** - OpenGL-specific testing procedures and results
+- **[OPENGL_SUMMARY.md](../../support/OPENGL_SUMMARY.md)** - Complete OpenGL implementation documentation
+- **[DEV_BLOG](../../../DEV_BLOG/README.md)** - macOS porting notes and session diary
+- **[tests/](../../../../tests/)** - Test suite directory
 
 ---
 

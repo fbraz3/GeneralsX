@@ -124,16 +124,16 @@ When referencing other documentation:
 ### To Reference a Phase
 
 ```markdown
-- [Phase 40 Documentation](docs/WORKDIR/phases/4/PHASE40/README.md)
-- [Phase 41 Review](docs/WORKDIR/phases/4/PHASE41/REVIEW_COMPLETE.md)
-- [Phases 0-9](docs/WORKDIR/phases/0/)
+- [Phase 40 Documentation](../WORKDIR/phases/4/PHASE40/README.md)
+- [Phase 41 Review](../WORKDIR/phases/4/PHASE41/REVIEW_COMPLETE.md)
+- [Phases 0-9](../WORKDIR/phases/0/)
 ```
 
 ### To Reference Development Blog
 
 ```markdown
-- [Development Diary - November 2025](docs/DEV_BLOG/2025-11-DIARY.md)
-- [Session 44 Summary](docs/DEV_BLOG/2025-11-SESSION_44_SUMMARY.md)
+- [Development Diary - November 2025](../DEV_BLOG/2025-11-DIARY.md)
+- [Session 44 Summary](../WORKDIR/reports/DEV_ARCHIVES/2025-11-SESSION_44_SUMMARY.md)
 ```
 
 ### To Reference Planning Index

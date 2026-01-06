@@ -201,9 +201,8 @@ After Phase 40:
 
 ## Reference Documentation
 
-- [Phase 39: Performance Profiling](../PHASE39/README.md)
+- [Phase 39: Performance Profiling](../../3/PHASE39/README.md)
 - [Vulkan Performance Best Practices](https://vulkan.org/resources/bestpractices)
-- [GPU Performance Analysis](../MISC/GPU_PERFORMANCE_ANALYSIS.md)
 
 ## Related Phases
 

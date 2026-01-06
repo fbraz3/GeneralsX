@@ -191,8 +191,9 @@ The Linux port is currently in **planning phase**. The build system is ready, bu
 
 ## Additional Resources
 
-- **Runtime Setup**: Check [MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md) for execution instructions (will be adapted for Linux)
-- **macOS Build**: See [MACOS_BUILD_INSTRUCTIONS.md](MACOS_BUILD_INSTRUCTIONS.md) for reference implementation
+- **Project Status**: See [../WORKDIR/support/PROJECT_STATUS.md](../WORKDIR/support/PROJECT_STATUS.md)
+- **Development Diary**: See [../DEV_BLOG/README.md](../DEV_BLOG/README.md)
+- **macOS Build**: See [./MACOS_BUILD_INSTRUCTIONS.md](./MACOS_BUILD_INSTRUCTIONS.md) for reference implementation
 - **Compatibility Layer**: `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`
 
 ## Support

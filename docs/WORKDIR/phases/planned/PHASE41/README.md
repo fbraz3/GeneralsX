@@ -239,8 +239,7 @@ After Phase 41 (optimizations applied):
 ## Reference Documentation
 
 - [Phase 40: Data-Driven Optimization](../PHASE40/README.md)
-- [Phase 39: Performance Profiling](../PHASE39/README.md)
-- [Vulkan Optimization Techniques](../MISC/VULKAN_OPTIMIZATION.md)
+- [Phase 39: Performance Profiling](../../3/PHASE39/README.md)
 
 ## Related Phases
 

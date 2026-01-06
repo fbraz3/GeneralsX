@@ -208,9 +208,9 @@ file build/macos/GeneralsMD/GeneralsXZH
 
 ## Additional Resources
 
-- **Runtime Setup & Testing**: See [MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md) for deployment and execution instructions
-- **Project Status**: Check [MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md) for current port status and progress
-- **Known Issues**: Refer to [KNOWN_ISSUES/](KNOWN_ISSUES/) directory for platform-specific issues
+- **Project Status**: See [../WORKDIR/support/PROJECT_STATUS.md](../WORKDIR/support/PROJECT_STATUS.md)
+- **Development Diary**: See [../DEV_BLOG/README.md](../DEV_BLOG/README.md)
+- **Known Issues**: See [../WORKDIR/phases/legacy/Known_Issues/README.md](../WORKDIR/phases/legacy/Known_Issues/README.md)
 
 ## Support
 

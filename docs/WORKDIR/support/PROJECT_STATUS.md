@@ -1,7 +1,7 @@
 # GeneralsX Project Status Overview
 
-**Date**: November 11, 2025  
-**Strategy**: Vulkan-Only Backend for macOS/Linux/Windows  
+**Date**: November 11, 2025
+**Strategy**: Vulkan-Only Backend for macOS/Linux/Windows
 **Current Branch**: vulkan-port (ahead of origin)
 
 ---
@@ -157,8 +157,8 @@ All DirectX 8 compatibility layer issues resolved:
 
 ### Key Discovery: Multiple d3d8.h Locations
 
-The build system uses `Dependencies/Utility/Compat/d3d8.h` (the minimal stub version) 
-rather than `Core/Libraries/.../d3d8.h` (comprehensive version). This discovery 
+The build system uses `Dependencies/Utility/Compat/d3d8.h` (the minimal stub version)
+rather than `Core/Libraries/.../d3d8.h` (comprehensive version). This discovery
 required modifications to both locations for method visibility.
 
 ### Commits
@@ -177,7 +177,7 @@ required modifications to both locations for method visibility.
 **Phase 02: SDL2 Window & Event Loop**
 
 ### Objective
-Replace Windows-specific window creation (`CreateWindow`, `GetMessage`, etc.) 
+Replace Windows-specific window creation (`CreateWindow`, `GetMessage`, etc.)
 with SDL2 cross-platform equivalents.
 
 ### Key Files to Modify
@@ -209,10 +209,10 @@ with SDL2 cross-platform equivalents.
 
 ## References
 
-- [PHASE00: Project Planning](./PHASE00/README.md)
-- [PHASE00.5: Build System](./PHASE00_5/README.md)
-- [PHASE01: DirectX 8 Compat](./PHASE01/README.md)
-- [PHASE02: SDL2 Window](./PHASE02/README.md)
-- [PHASE_INDEX: Complete 40-phase roadmap](./PHASE_INDEX.md)
-- [MACOS_PORT_DIARY: Session notes](./MACOS_PORT_DIARY.md)
+- [PHASE00: Project Planning](../phases/0/PHASE00/README.md)
+- [PHASE00.5: Build System](../phases/0/PHASE00_5/README.md)
+- [PHASE01: DirectX 8 Compat](../phases/0/PHASE01/README.md)
+- [PHASE02: SDL2 Window](../phases/0/PHASE02/README.md)
+- [PHASE_INDEX: Phase documentation index](../../ETC/PHASE_INDEX.md)
+- [Development Diary (DEV_BLOG)](../../DEV_BLOG/README.md)
 

@@ -400,8 +400,8 @@ This Phase unblocks:
 
 - [Win32 Compatibility Reference](../PHASE00/COMPATIBILITY_LAYERS.md)
 - [Project Architecture Overview](../PHASE00/README.md)
-- [Build Instructions](../../MACOS_BUILD_INSTRUCTIONS.md)
-- [Development Diary](../../MACOS_PORT_DIARY.md)
+- [Build Instructions](../../../../ETC/MACOS_BUILD_INSTRUCTIONS.md)
+- [Development Diary](../../../../DEV_BLOG/README.md)
 
 ---
 

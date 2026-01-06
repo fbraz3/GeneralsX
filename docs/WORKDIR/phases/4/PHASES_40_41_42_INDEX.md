@@ -12,19 +12,19 @@
 - **Main Documentation**: `docs/WORKDIR/phases/4/PHASE40/README.md` (507 lines)
 - **Duration**: 3-4 weeks
 - **Overview**: Remove all Win32 APIs, complete SDL2 migration
-- [→ Open Phase 40 Documentation](README.md)
+- [→ Open Phase 40 Documentation](PHASE40/README.md)
 
 ### Phase 41: Vulkan Graphics Driver Architecture
 - **Main Documentation**: `docs/WORKDIR/phases/4/PHASE41/README.md` (510 lines)
 - **Duration**: 3-4 weeks
 - **Overview**: Pluggable graphics driver with Vulkan as primary
-- [→ Open Phase 41 Documentation](../PHASE41/README.md)
+- [→ Open Phase 41 Documentation](PHASE41/README.md)
 
 ### Phase 42: Final Cleanup & Polish
 - **Main Documentation**: `docs/WORKDIR/phases/4/PHASE42/README.md` (545 lines)
 - **Duration**: 2-3 weeks
 - **Overview**: Production readiness, validation, documentation
-- [→ Open Phase 42 Documentation](../PHASE42/README.md)
+- [→ Open Phase 42 Documentation](PHASE42/README.md)
 
 ### Session Overview
 - **Main Summary**: `docs/WORKDIR/phases/4/PHASE40/INDEX.md` (235 lines)

@@ -1,15 +1,15 @@
 # OpenGL Testing Documentation
 ## Command & Conquer: Generals - Test Suite and Progress Reports
 
-**Current Status:** ✅ ALL TESTS PASSING  
+**Current Status:** ✅ ALL TESTS PASSING
 **Last Updated:** January 2025
 
 ## 🔗 Integration with General Testing
 
-This document focuses specifically on OpenGL testing procedures and results. It integrates with the general project testing workflow documented in [TESTING_COMPLETE.md](./TESTING_COMPLETE.md).
+This document focuses specifically on OpenGL testing procedures and results. It integrates with the general project testing workflow documented in [TESTING.md](../../../TESTING.md).
 
 **Testing Workflow Integration:**
-1. **General Build Tests** → [TESTING_COMPLETE.md](./TESTING_COMPLETE.md)
+1. **General Build Tests** → [TESTING.md](../../../TESTING.md)
 2. **OpenGL-Specific Tests** → This document
 3. **Platform Integration** → Both documents
 4. **Release Testing** → Combined procedures
@@ -69,7 +69,7 @@ All test files are located in `tests/opengl/` directory:
 - **Scope:** Minimal functionality verification
 - **Dependencies:** OpenGL, platform-specific context libraries
 
-#### `test_opengl_context.cpp` 
+#### `test_opengl_context.cpp`
 - **Purpose:** Advanced context management testing
 - **Scope:** Context creation, destruction, and state management
 - **Dependencies:** OpenGL, window management libraries
@@ -311,5 +311,5 @@ perf record ./test_executable
 
 ---
 
-**For complete implementation details, see:** `OPENGL_COMPLETE.md`  
-**For macOS-specific testing, see:** `MACOS_PORT_DIARY.md`
+**For complete implementation details, see:** [OPENGL_SUMMARY.md](./OPENGL_SUMMARY.md)
+**For macOS-specific testing notes, see:** [DEV_BLOG](../../DEV_BLOG/README.md)

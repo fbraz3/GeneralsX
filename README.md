@@ -70,7 +70,7 @@ For **stable releases and official builds**, visit:
 ### macOS - Work In Progress
 
 Comprehensive build instructions for macOS development:
-**[📖 macOS Build Guide](docs/MACOS_BUILD_INSTRUCTIONS.md)**
+**[📖 macOS Build Guide](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md)**
 
 Key requirements:
 
@@ -89,7 +89,7 @@ cmake --build build/vc6 --target GeneralsXZH -j 4
 ### Linux
 
 Linux port is under development:
-**[📖 Linux Build Guide](docs/LINUX_BUILD_INSTRUCTIONS.md)**
+**[📖 Linux Build Guide](docs/ETC/LINUX_BUILD_INSTRUCTIONS.md)**
 
 Timeline: Q1 2026 based on macOS foundation
 
@@ -101,8 +101,8 @@ Windows builds are maintained through the official TheSuperHackers repository wi
 
 Complete documentation is available in the **[docs/](docs/)** directory:
 
-- **[docs/MACOS_BUILD_INSTRUCTIONS.md](docs/MACOS_BUILD_INSTRUCTIONS.md)** - Complete macOS build instructions and troubleshooting
-- **[docs/LINUX_BUILD_INSTRUCTIONS.md](docs/LINUX_BUILD_INSTRUCTIONS.md)** - Linux port status and contribution guidelines
+- **[docs/ETC/MACOS_BUILD_INSTRUCTIONS.md](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md)** - Complete macOS build instructions and troubleshooting
+- **[docs/ETC/LINUX_BUILD_INSTRUCTIONS.md](docs/ETC/LINUX_BUILD_INSTRUCTIONS.md)** - Linux port status and contribution guidelines
 - **[docs/DEV_BLOG/](docs/DEV_BLOG/)** - Technical development diary organized by month
 - **[docs/WORKDIR/](docs/WORKDIR/)** - Phase planning, implementation notes, and strategic decisions
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
@@ -110,7 +110,7 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 ### 🐛 Known Issues
 
 For documented limitations and known bugs, see:
-**[📋 Known Issues Index](docs/KNOWN_ISSUES/README.md)**
+**[📋 Known Issues Index](docs/WORKDIR/phases/legacy/Known_Issues/README.md)**
 
 ## 🚀 Future Enhancements
 
@@ -141,7 +141,7 @@ Contributions are welcome! We're particularly interested in:
 **How to Contribute**:
 
 1. Check current issues and GitHub discussions
-2. Read platform-specific build guides ([macOS](docs/MACOS_BUILD_INSTRUCTIONS.md), [Linux](docs/LINUX_BUILD_INSTRUCTIONS.md))
+2. Read platform-specific build guides ([macOS](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md), [Linux](docs/ETC/LINUX_BUILD_INSTRUCTIONS.md))
 3. Follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
 4. Submit issues or pull requests with detailed information
 
