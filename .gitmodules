@@ -7,3 +7,6 @@
 [submodule "references/fighter19-dxvk-port"]
 	path = references/fighter19-dxvk-port
 	url = https://github.com/Fighter19/CnC_Generals_Zero_Hour.git
+[submodule "references/jmarshall-win64-modern"]
+	path = references/jmarshall-win64-modern
+	url = https://github.com/jmarshall2323/CnC_Generals_Zero_Hour.git
