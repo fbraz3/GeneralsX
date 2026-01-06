@@ -104,7 +104,7 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 - **[docs/MACOS_BUILD_INSTRUCTIONS.md](docs/MACOS_BUILD_INSTRUCTIONS.md)** - Complete macOS build instructions and troubleshooting
 - **[docs/LINUX_BUILD_INSTRUCTIONS.md](docs/LINUX_BUILD_INSTRUCTIONS.md)** - Linux port status and contribution guidelines
 - **[docs/DEV_BLOG/](docs/DEV_BLOG/)** - Technical development diary organized by month
-- **[docs/PLANNING/](docs/PLANNING/)** - Phase planning, implementation notes, and strategic decisions
+- **[docs/WORKDIR/](docs/WORKDIR/)** - Phase planning, implementation notes, and strategic decisions
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
 
 ### 🐛 Known Issues
@@ -122,7 +122,7 @@ This is a future initiative to leverage multi-core CPUs while preserving determi
 - Evolve to moderate threading (AI batches, object updates with partitioning)
 - Consider advanced loop decoupling (producer–consumer) once stable
 
-Read the full analysis and phased plan in docs/Misc/MULTITHREADING_ANALYSIS.md.
+Read the full analysis and phased plan in docs/WORKDIR/support/MULTITHREADING_ANALYSIS.md.
 
 ---
 

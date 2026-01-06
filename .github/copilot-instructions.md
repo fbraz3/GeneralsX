@@ -165,7 +165,7 @@ d3d_surface->LockRect(&lock, NULL, D3DLOCK_READONLY);  // Get pixel data
 TextureCache::Load_From_Memory(lock.pBits, width, height, format);  // Upload to Metal
 ```
 
-See `docs/MISC/CRITICAL_VFS_DISCOVERY.md` for why VFS integration failed.
+See `docs/WORKDIR/support/CRITICAL_VFS_DISCOVERY.md` for why VFS integration failed.
 
 ### INI Parser Hardening Pattern (Phase 22-23)
 Game crashes on malformed INI files. Protection pattern:
@@ -202,10 +202,10 @@ bool isValidMemoryPointer(void* ptr, size_t minSize) {
 - @TODO: Fill in phase-specific docs as needed
 
 ### Critical Reference Files
-- `docs/DEV_BLOG/` - **UPDATE AFTER EVERY SESSION** - Technical development diary (ONLY diaries with pattern `YYYY-MM-DIARY.md`; session reports go to `docs/MISC/DEV_ARCHIVES/`)
-- `docs/PLANNING/` - Phase planning and implementation notes
-- `docs/MISC/BIG_FILES_REFERENCE.md` - Asset structure (INI.big, INIZH.big contents)
-- `docs/MISC/CRITICAL_FIXES.md` - Emergency fixes (fullscreen lock, NULL crashes)
+- `docs/DEV_BLOG/` - **UPDATE AFTER EVERY SESSION** - Technical development diary (ONLY diaries with pattern `YYYY-MM-DIARY.md`; session reports go to `docs/WORKDIR/reports/DEV_ARCHIVES/`)
+- `docs/WORKDIR/` - Phase planning and implementation notes
+- `docs/WORKDIR/support/BIG_FILES_REFERENCE.md` - Asset structure (INI.big, INIZH.big contents)
+- `docs/WORKDIR/support/CRITICAL_FIXES.md` - Emergency fixes (fullscreen lock, NULL crashes)
 - `.github/instructions/project.instructions.md` - Compilation/debugging commands
 
 ## Reference Repositories (Git Submodules)
@@ -295,13 +295,13 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 **ALWAYS update** `docs/DEV_BLOG/YYYY-MM-DIARY.md` (development diary) at session end with:
 - **File naming** (CRITICAL): MUST follow pattern `YYYY-MM-DIARY.md` (e.g., `2025-11-DIARY.md`)
 - **Directory rule**: `docs/DEV_BLOG/` contains ONLY diaries - no session reports, summaries, or analysis files
-- **Archive location**: Session reports/summaries go to `docs/MISC/DEV_ARCHIVES/`
+- **Archive location**: Session reports/summaries go to `docs/WORKDIR/reports/DEV_ARCHIVES/`
 - **Content**: Phase progress (e.g., "Phase 28.4 complete - 7 textures loaded")
 - **Discoveries**: Critical findings (e.g., "VFS integration failed, switched to DirectX interception")
 - **References**: Commit hashes and links for traceability
 - See `docs/DEV_BLOG/README.md` for complete documentation rules
 
-**Document critical discoveries** in `docs/MISC/LESSONS_LEARNED.md`:
+**Document critical discoveries** in `docs/WORKDIR/lessons/LESSONS_LEARNED.md`:
 - Integration failures and their root causes
 - Architectural mismatches discovered during development
 - Debugging patterns that led to breakthroughs
@@ -311,7 +311,7 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 
 **I'm stuck on a crash** → Check `$HOME/Documents/.../ReleaseCrashInfo.txt` first, then LLDB if Metal-related
 
-**I need to understand .big file structure** → Read `docs/MISC/BIG_FILES_REFERENCE.md`
+**I need to understand .big file structure** → Read `docs/WORKDIR/support/BIG_FILES_REFERENCE.md`
 
 **I need compilation commands** → Check `.github/instructions/project.instructions.md`
 
@@ -321,4 +321,4 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 
 **Game initialization seems stuck** → It's loading assets - wait 60 seconds, check CPU usage, grep logs AFTER completion
 
-**Integration not working as expected** → Read `docs/MISC/LESSONS_LEARNED.md` for common architectural mismatches (VFS, pipeline execution)
+**Integration not working as expected** → Read `docs/WORKDIR/lessons/LESSONS_LEARNED.md` for common architectural mismatches (VFS, pipeline execution)

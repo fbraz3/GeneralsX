@@ -157,9 +157,9 @@ The text body continues with a description of the change in appropriate detail. 
 **Resources for macOS Contributors:**
 
 * **[Development Diary](./docs/DEV_BLOG/)** - Technical development diary organized by month
-* **[Phase Documentation](./docs/PLANNING/)** - Phase-by-phase port progress with implementation details
+* **[Phase Documentation](./docs/WORKDIR/)** - Phase-by-phase port progress with implementation details
 * **[TESTING.md](./docs/TESTING.md)** - macOS testing procedures and validation steps
-* **[Misc/OPENGL_TESTING.md](./docs/MISC/OPENGL_TESTING.md)** - OpenGL-specific testing for cross-platform graphics
+* **[Misc/OPENGL_TESTING.md](./docs/WORKDIR/support/OPENGL_TESTING.md)** - OpenGL-specific testing for cross-platform graphics
 
 ### Linux and Other Platforms
 

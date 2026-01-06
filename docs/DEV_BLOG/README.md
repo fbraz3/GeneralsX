@@ -32,10 +32,10 @@ YYYY-MM-DIARY.md
 - `YYYY-MM-DIARY.md` - Monthly development diaries (only)
 
 ### ❌ NOT ALLOWED in this directory
-- `YYYY-MM-SESSION_XX_SUMMARY.md` - Move to `docs/MISC/DEV_ARCHIVES/`
-- `YYYY-MM-ANALYSIS_COMPLETE.md` - Move to `docs/MISC/DEV_ARCHIVES/`
-- `YYYY-MM-DIARY_SESSION_XX.md` - Move to `docs/MISC/DEV_ARCHIVES/`
-- Any other variations - Move to `docs/MISC/DEV_ARCHIVES/`
+- `YYYY-MM-SESSION_XX_SUMMARY.md` - Move to `docs/WORKDIR/reports/DEV_ARCHIVES/`
+- `YYYY-MM-ANALYSIS_COMPLETE.md` - Move to `docs/WORKDIR/reports/DEV_ARCHIVES/`
+- `YYYY-MM-DIARY_SESSION_XX.md` - Move to `docs/WORKDIR/reports/DEV_ARCHIVES/`
+- Any other variations - Move to `docs/WORKDIR/reports/DEV_ARCHIVES/`
 
 ## Purpose
 
@@ -73,7 +73,7 @@ Each diary should include:
 
 Non-diary files are organized in:
 ```
-docs/MISC/DEV_ARCHIVES/
+docs/WORKDIR/reports/DEV_ARCHIVES/
 ```
 
 This includes:
@@ -85,9 +85,9 @@ This includes:
 ## Monthly Rotation
 
 - **Create new diary** on first working day of month: `YYYY-MM-DIARY.md`
-- **Archive old entries** (session reports) to `docs/MISC/DEV_ARCHIVES/` as needed
+- **Archive old entries** (session reports) to `docs/WORKDIR/reports/DEV_ARCHIVES/` as needed
 - **Keep only diaries** in this directory for clean, organized workspace
 
 ---
 
-**Critical Rule**: This directory contains ONLY chronological diaries. All supplementary documentation must be archived in appropriate `docs/MISC/` subdirectories.
+**Critical Rule**: This directory contains ONLY chronological diaries. All supplementary documentation must live under `docs/WORKDIR/` (e.g., `docs/WORKDIR/reports/`, `docs/WORKDIR/support/`, `docs/WORKDIR/planning/`).

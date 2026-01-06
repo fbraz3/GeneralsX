@@ -19,13 +19,13 @@ applyTo: '**'
 
 2. **DEV_BLOG Reorganization** (Commit: `de91a0f9`)
    - Enforced strict naming: `YYYY-MM-DIARY.md` only in `docs/DEV_BLOG/`
-   - Moved 6 non-diary files to `docs/MISC/DEV_ARCHIVES/`
+   - Moved 6 non-diary files to `docs/WORKDIR/reports/DEV_ARCHIVES/`
    - Created README.md documenting strict naming rules
    - Updated project.instructions.md and copilot-instructions.md
    - Status: ✅ COMPLETE and PUSHED
 
 3. **Documentation Structure Cleanup** (Commits: `22e09bf5`, `229a27fa`, `9644034d`, `4c6bfa36`)
-   - Moved `PHASE_43_5/` from docs root → `docs/PLANNING/4/PHASE43_5_FINAL/`
+   - Moved `PHASE_43_5/` from docs root → `docs/WORKDIR/phases/4/PHASE43_5_FINAL/`
    - Moved analysis files to correct decade-based locations
    - Removed phantom `COMPLETED_PHASES` directory
    - Updated cross-references
@@ -41,7 +41,7 @@ applyTo: '**'
 ### Current Documentation Structure (Validated)
 
 ```text
-docs/PLANNING/
+docs/WORKDIR/
 ├── 0/ through 5/        # Decade-based phase organization
 ├── PLANNED_PHASES/      # Future phases (50+)
 │   ├── PHASE40/ through PHASE47/
@@ -53,7 +53,7 @@ docs/PLANNING/
 **Critical Rules**:
 
 - `docs/DEV_BLOG/` → MUST use strict naming: `YYYY-MM-DIARY.md` (e.g., `2025-11-DIARY.md`)
-- No other files in DEV_BLOG (session reports go to `docs/MISC/DEV_ARCHIVES/`)
+- No other files in DEV_BLOG (session reports go to `docs/WORKDIR/reports/DEV_ARCHIVES/`)
 - Phase documentation follows decade organization (0-5)
 - All future phases (50+) go in `PLANNED_PHASES/`
 
@@ -85,7 +85,7 @@ docs/PLANNING/
    - Context: Last successful executable Sept 2025
 
 2. **Vulkan Port in Progress**: Phase 39+ architecture being implemented
-   - Current status: Analysis phase (see `docs/MISC/VULKAN_ANALYSIS.md`)
+   - Current status: Analysis phase (see `docs/WORKDIR/support/VULKAN_ANALYSIS.md`)
 
 ### Recent Commits Made This Session
 

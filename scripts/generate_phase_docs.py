@@ -920,8 +920,8 @@ Implementation details and code examples will be added as phase is developed.
 ## Reference Documentation
 
 - Comprehensive Vulkan Plan: `/docs/COMPREHENSIVE_VULKAN_PLAN.md`
-- Lessons Learned: `/docs/MISC/LESSONS_LEARNED.md`
-- Critical VFS Discovery: `/docs/MISC/CRITICAL_VFS_DISCOVERY.md`
+- Lessons Learned: `/docs/WORKDIR/lessons/LESSONS_LEARNED.md`
+- Critical VFS Discovery: `/docs/WORKDIR/support/CRITICAL_VFS_DISCOVERY.md`
 - Phase Index: `/docs/PHASE_INDEX.md`
 
 ---

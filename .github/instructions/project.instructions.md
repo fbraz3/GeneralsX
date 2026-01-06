@@ -211,19 +211,19 @@ scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee logs/lld
 3. All tests must be moved into a dedicated `tests/` directory to improve project organization and maintainability.
 4. **Documentation Organization**: All new markdown documentation files must be created in the `docs/` directory unless explicitly instructed otherwise. Only essential GitHub files (README.md, LICENSE.md, CONTRIBUTING.md, SECURITY.md) should remain in the repository root.
 4.1 The phases documentation files must have its own directory inside `docs/` named `docs/PHASEXX` where `XX` is the phase number (e.g., `docs/PHASE01`, `docs/PHASE02`, etc.)
-4.2 The phase documentation files must be named `PHASEXX/DESCRIPTION.md` where `XX` is the phase number and `DESCRIPTION` is a short description of the phase (e.g., `docs/PLANNING/0/PHASE01/INITIAL_REFACTOR.md`, `docs/PLANNING/0/PHASE02/OPENGL_IMPLEMENTATION.md`, etc.)
+4.2 The phase documentation files must be named `PHASEXX/DESCRIPTION.md` where `XX` is the phase number and `DESCRIPTION` is a short description of the phase (e.g., `docs/WORKDIR/phases/0/PHASE01/INITIAL_REFACTOR.md`, `docs/WORKDIR/phases/0/PHASE02/OPENGL_IMPLEMENTATION.md`, etc.)
 4.3 **Build Instructions**: Platform-specific build instructions are in `docs/MACOS_BUILD_INSTRUCTIONS.md` and `docs/LINUX_BUILD_INSTRUCTIONS.md` (NOT `MACOS_BUILD.md` or `LINUX_BUILD.md`)
 5. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
 6. **Development Diary (CRITICAL)**: At end of every session, update the technical development diary:
    - **File location**: `docs/DEV_BLOG/YYYY-MM-DIARY.md`
    - **Naming pattern** (STRICT): `YYYY-MM-DIARY.md` where YYYY=year, MM=2-digit month (e.g., `2025-11-DIARY.md`)
-   - **Only diaries allowed**: This directory MUST contain ONLY monthly diaries - session reports/summaries go to `docs/MISC/DEV_ARCHIVES/`
+   - **Only diaries allowed**: This directory MUST contain ONLY monthly diaries - session reports/summaries go to `docs/WORKDIR/reports/DEV_ARCHIVES/`
    - **Content**: Phase progress, commits, decisions, discoveries, issues resolved
    - See `docs/DEV_BLOG/README.md` for complete naming requirements
 7. For game base (generals), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 8. For game expansion (zero hour), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 9. When compiling the project, try to use half of the available CPU cores to avoid overloading the system.
-10. For understanding the game asset structure and debugging INI-related issues, refer to `docs/Misc/BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
+10. For understanding the game asset structure and debugging INI-related issues, refer to `docs/WORKDIR/support/BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
 11. **Game Assets Location**: Use standardized directories for runtime testing:
     - **Generals (base game)**: `$HOME/GeneralsX/Generals/` - Copy original game assets (Data/, Maps/) here
     - **Zero Hour (expansion)**: `$HOME/GeneralsX/GeneralsMD/` - Copy Zero Hour assets (Data/, Maps/) here
@@ -336,7 +336,7 @@ unzip "VulkanSDK-Mac-Docs-${VULKAN_VERSION}.zip"
 
 ### Phase 39 Reference
 
-**Architecture Analysis**: See `docs/MISC/VULKAN_ANALYSIS.md`
+**Architecture Analysis**: See `docs/WORKDIR/support/VULKAN_ANALYSIS.md`
 - Complete DirectX 8 → Vulkan method mapping
 - All 47 IGraphicsBackend methods documented
 - DXVK integration strategy explained
