@@ -67,7 +67,7 @@ build.ninja
 /logs/**/*.patch
 
 # Documentation build output
-/docs/Vulkan/
+/docs/Support/
 
 references/
 cmake/*
