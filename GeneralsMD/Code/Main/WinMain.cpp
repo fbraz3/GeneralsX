@@ -790,7 +790,7 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 	}
 
 	// printf("initializeAppWindows: SDL2 window created successfully\n");
-	// 
+	//
 
 	// Store SDL window handle for later use
 	// ApplicationHWnd will store the SDL_Window* pointer cast to HWND
@@ -799,11 +799,11 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 	// Phase 54: Explicitly show window immediately after creation
 	// This ensures the window is visible before any graphics initialization
 	printf("initializeAppWindows: Explicitly showing SDL2 window\n");
-	
+
 	SDL_ShowWindow(sdlWindow);
 	SDL_RaiseWindow(sdlWindow);
 	printf("initializeAppWindows: Window shown and raised\n");
-	
+
 
 	gInitializing = false;
 
@@ -816,14 +816,14 @@ static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
 // Global terminate handler for uncaught exceptions
 void global_terminate_handler() {
 	printf("FATAL: Uncaught exception or terminate() called\n");
-	
+
 	std::abort();  // Will generate core dump on POSIX
 }
 
 // Global initialize function to test early startup
 static void test_early_startup() {
 	printf("Global init: test_early_startup called\n");
-	
+
 }
 
 // Call at module load time
@@ -1121,7 +1121,7 @@ Int main(Int argc, Char* argv[])
 	InitPosixCommandLine(argc, argv);
 
 	// printf("POSIX main: Command line initialized: '%s'\n", GetCommandLineA());
-	// 
+	//
 
 	Int exitcode = 1;
 	Int nCmdShow = 1;  // SW_NORMAL equivalent
@@ -1135,7 +1135,7 @@ Int main(Int argc, Char* argv[])
 
 	try {
 		// printf("POSIX main: Starting up...\n");
-		// 
+		//
 
 		TheAsciiStringCriticalSection = &critSec1;
 		TheUnicodeStringCriticalSection = &critSec2;
@@ -1144,10 +1144,10 @@ Int main(Int argc, Char* argv[])
 		TheDebugLogCriticalSection = &critSec5;
 
 		// printf("POSIX main: About to initMemoryManager()...\n");
-		// 
+		//
 		initMemoryManager();
 		// printf("POSIX main: initMemoryManager() done\n");
-		// 
+		//
 
 		if (Char* basePath = SDL_GetBasePath()) {
 			// printf("POSIX main: SDL_GetBasePath returned: %s\n", basePath);
@@ -1156,36 +1156,36 @@ Int main(Int argc, Char* argv[])
 		}
 
 		// printf("POSIX main: About to parseCommandLineForStartup()...\n");
-		// 
+		//
 		CommandLine::parseCommandLineForStartup();
 		// printf("POSIX main: parseCommandLineForStartup() done\n");
-		// 
+		//
 
 		// printf("POSIX main: About to InitializeGameSpyServerConfiguration()...\n");
-		// 
+		//
 		InitializeGameSpyServerConfiguration();
 		// printf("POSIX main: InitializeGameSpyServerConfiguration() done\n");
-		// 
+		//
 
 		// printf("POSIX main: TheGlobalData = %p\n", (void*)TheGlobalData);
-		// 
+		//
 
 		// printf("POSIX main: TheGlobalData->m_headless = %d\n", TheGlobalData->m_headless);
-		// 
+		//
 
 		// Phase 54: Log windowed mode status for debugging
 		// printf("POSIX main: TheGlobalData->m_windowed = %d (from -win flag)\n", TheGlobalData->m_windowed);
-		// 
+		//
 
 		if (!TheGlobalData->m_headless && initializeAppWindows(NULL, nCmdShow, TheGlobalData->m_windowed) == false) {
 			// printf("POSIX main: initializeAppWindows() returned false, shutting down\n");
-			// 
+			//
 			shutdownMemoryManager();
 			return exitcode;
 		}
 
 		// printf("POSIX main: initializeAppWindows() succeeded\n");
-		// 
+		//
 
 		TheVersion = NEW Version;
 		TheVersion->setVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_BUILDNUM, VERSION_LOCALBUILDNUM,
@@ -1193,11 +1193,11 @@ Int main(Int argc, Char* argv[])
 			AsciiString(__TIME__), AsciiString(__DATE__));
 
 		// printf("POSIX main: About to rts::ClientInstance::initialize()...\n");
-		// 
+		//
 
 		if (!rts::ClientInstance::initialize()) {
 			// printf("POSIX main: rts::ClientInstance::initialize() failed\n");
-			// 
+			//
 			DEBUG_LOG(("Generals is already running...Bail!"));
 			delete TheVersion;
 			TheVersion = NULL;
@@ -1206,16 +1206,16 @@ Int main(Int argc, Char* argv[])
 		}
 
 		// printf("POSIX main: rts::ClientInstance::initialize() succeeded\n");
-		// 
+		//
 
 		DEBUG_LOG(("Create Generals Mutex okay."));
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
 
 		// printf("POSIX main: About to call GameMain()...\n");
-		// 
+		//
 		exitcode = GameMain();
 		// printf("POSIX main: GameMain() returned %d\n", exitcode);
-		// 
+		//
 
 		delete TheVersion;
 		TheVersion = NULL;

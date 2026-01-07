@@ -1,6 +1,6 @@
 # Vulkan-Only & SDL2-Only Compliance Status
-**Date:** January 7, 2025  
-**Target:** GeneralsX Zero Hour (GeneralsMD)  
+**Date:** January 7, 2025
+**Target:** GeneralsX Zero Hour (GeneralsMD)
 **Status:** ✅ **PRIORITY 1 & 2 COMPLETE**
 
 ---
@@ -257,8 +257,8 @@ Code Signing: ✅ AD-HOC SIGNED
 
 ## Sign-Off
 
-**Compliance Date:** January 7, 2025  
-**Reviewed by:** Code Audit System  
+**Compliance Date:** January 7, 2025
+**Reviewed by:** Code Audit System
 **Status:** ✅ **PRIORITY 1-2 COMPLETE, PRIORITY 3 COMPLIANT BY DESIGN**
 
 ### Key Achievement

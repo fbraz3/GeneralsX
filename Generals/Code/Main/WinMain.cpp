@@ -735,21 +735,21 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 	// Cross-platform: Use SDL2 for window management
 	SDL_DisplayMode displayMode;
 	SDL_GetCurrentDisplayMode(0, &displayMode);
-	
+
 	int centerX = (displayMode.w / 2) - (startWidth / 2);
 	int centerY = (displayMode.h / 2) - (startHeight / 2);
-	
+
 	SDL_Window* sdlWindow = SDL_CreateWindow(
 		"Command and Conquer Generals",
 		centerX, centerY,
 		startWidth, startHeight,
 		SDL_WINDOW_VULKAN | (runWindowed ? 0 : SDL_WINDOW_FULLSCREEN)
 	);
-	
+
 	if (!sdlWindow) {
 		return false;
 	}
-	
+
 	// Cast SDL_Window to void* for ApplicationHWnd compatibility
 	ApplicationHWnd = (void*)sdlWindow;
 	SDL_ShowWindow(sdlWindow);

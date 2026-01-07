@@ -56,9 +56,16 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
 
-
+// Windows-only includes
+#ifdef _WIN32
+#ifndef DIRECTINPUT_VERSION
+#	define DIRECTINPUT_VERSION	0x800
+#endif
 #include <dinput.h>
-#endif // _WIN32
+#else
+// CrossPlatform: Use compatibility header for DIK_* scan codes
+#include "GameClient/dinput_compat.h"
+#endif
 
 #include <Lib/BaseType.h>
 

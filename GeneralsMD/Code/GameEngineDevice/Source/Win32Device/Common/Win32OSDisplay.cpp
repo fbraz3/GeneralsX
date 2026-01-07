@@ -138,7 +138,7 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 
 	// Determine message box type based on flags
 	SDL_MessageBoxFlags flags = SDL_MESSAGEBOX_INFORMATION;
-	
+
 	if (BitIsSet(otherFlags, OSDOF_ERRORICON) || BitIsSet(otherFlags, OSDOF_STOPICON)) {
 		flags = SDL_MESSAGEBOX_ERROR;
 	} else if (BitIsSet(otherFlags, OSDOF_EXCLAMATIONICON)) {

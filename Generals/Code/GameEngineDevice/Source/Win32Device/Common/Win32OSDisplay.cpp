@@ -128,7 +128,7 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 	AsciiString promptA, mesgA;
 	promptA.translate(promptStr);
 	mesgA.translate(mesgStr);
-	
+
 	SDL_MessageBoxData msgbox;
 	msgbox.window = NULL;
 	msgbox.title = promptA.str();
@@ -136,7 +136,7 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 	msgbox.numbuttons = 0;
 	msgbox.buttons = NULL;
 	msgbox.colorScheme = NULL;
-	
+
 	if (BitIsSet(otherFlags, OSDOF_ERRORICON)) {
 		msgbox.flags = SDL_MESSAGEBOX_ERROR;
 	} else if (BitIsSet(otherFlags, OSDOF_EXCLAMATIONICON)) {
@@ -144,7 +144,7 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 	} else {
 		msgbox.flags = SDL_MESSAGEBOX_INFORMATION;
 	}
-	
+
 	int buttonid = 0;
 	SDL_ShowMessageBox(&msgbox, &buttonid);
 	returnResult = (buttonid == 0) ? IDOK : IDCANCEL;
