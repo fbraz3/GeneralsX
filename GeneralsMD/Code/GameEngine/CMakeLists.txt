@@ -1096,10 +1096,7 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/FrameMetrics.cpp
 #    Source/GameNetwork/GameInfo.cpp
 #    Source/GameNetwork/GameMessageParser.cpp
-#    #Source/GameNetwork/GameSpyChat.cpp
-#    #Source/GameNetwork/GameSpyGameInfo.cpp
-#    #Source/GameNetwork/GameSpyGP.cpp
-#    Source/GameNetwork/GameSpy/Chat.cpp
+#    Source/GameNetwork/GameSpy/Chat.cpp  # GameSpy is in Core/GameEngine, not GeneralsMD
 #    Source/GameNetwork/GameSpy/GSConfig.cpp
 #    Source/GameNetwork/GameSpy/LadderDefs.cpp
 #    Source/GameNetwork/GameSpy/LobbyUtils.cpp
