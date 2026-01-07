@@ -28,6 +28,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <SDL2/SDL.h>  // Phase 43.2: SDL2 for cross-platform message boxes
 #include "Common/OSDisplay.h"
 
 #include "Common/SubsystemInterface.h"
@@ -86,6 +87,7 @@ static void RTSFlagsToOSFlags(UnsignedInt buttonFlags, UnsignedInt otherFlags, U
 }
 
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedInt buttonFlags, UnsignedInt otherFlags)
 {
 	if (!TheGameText) {
@@ -123,8 +125,35 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 
 	return OSDBT_CANCEL;
 }
+#else
+// Phase 43.2: SDL2 cross-platform implementation
+OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedInt buttonFlags, UnsignedInt otherFlags)
+{
+	if (!TheGameText) {
+		return OSDBT_ERROR;
+	}
+
+	AsciiString promptStr = TheGameText->fetch(p).str();
+	AsciiString mesgStr = TheGameText->fetch(m).str();
+
+	// Determine message box type based on flags
+	SDL_MessageBoxFlags flags = SDL_MESSAGEBOX_INFORMATION;
+	
+	if (BitIsSet(otherFlags, OSDOF_ERRORICON) || BitIsSet(otherFlags, OSDOF_STOPICON)) {
+		flags = SDL_MESSAGEBOX_ERROR;
+	} else if (BitIsSet(otherFlags, OSDOF_EXCLAMATIONICON)) {
+		flags = SDL_MESSAGEBOX_WARNING;
+	}
+
+	// Use SDL2 message box
+	SDL_ShowSimpleMessageBox(flags, promptStr.str(), mesgStr.str(), NULL);
+
+	return OSDBT_OK;
+}
+#endif
 
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 void OSDisplaySetBusyState(Bool busyDisplay, Bool busySystem)
 {
 	EXECUTION_STATE state = ES_CONTINUOUS;
@@ -133,3 +162,11 @@ void OSDisplaySetBusyState(Bool busyDisplay, Bool busySystem)
 
 	::SetThreadExecutionState(state);
 }
+#else
+// Phase 43.2: No-op on non-Windows platforms
+void OSDisplaySetBusyState(Bool busyDisplay, Bool busySystem)
+{
+	// SDL2 doesn't have direct equivalent for SetThreadExecutionState
+	// Screen will sleep normally on non-Windows platforms
+}
+#endif

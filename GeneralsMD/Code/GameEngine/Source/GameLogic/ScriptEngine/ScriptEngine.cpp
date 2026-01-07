@@ -8497,6 +8497,7 @@ Bool ScriptEngine::isTimeFast(void)
 	return false;
 }
 
+#ifdef _WIN32
 void ScriptEngine::forceUnfreezeTime(void)
 {
 	typedef void (*funcptr)(void);
@@ -8508,6 +8509,12 @@ void ScriptEngine::forceUnfreezeTime(void)
 		}
 	}
 }
+#else
+void ScriptEngine::forceUnfreezeTime(void)
+{
+	// No-op on non-Windows platforms
+}
+#endif
 #else
 Bool ScriptEngine::isTimeFrozenDebug(void)
 {

@@ -94,6 +94,7 @@ typedef struct tConnInfoStruct {
  * HISTORY:                                                                                    *
  *   10/27/00 3:24PM ST : Created                                                              *
  *=============================================================================================*/
+#ifdef _WIN32
 Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverPort, UnsignedInt& localIP)
 {
 	//return false;
@@ -428,6 +429,7 @@ Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverP
 	FreeLibrary(mib_ii_dll);
 	return(found);
 }
+#endif  // _WIN32
 
 
 // GameSpyGameInfo ----------------------------------------
@@ -440,6 +442,7 @@ GameSpyGameInfo::GameSpyGameInfo()
 		setSlotPointer(i, &m_GameSpySlot[i]);
 
 	UnsignedInt localIP;
+#ifdef _WIN32
 	if (GetLocalChatConnectionAddress("peerchat.gamespy.com", 6667, localIP))
 	{
 		localIP = ntohl(localIP); // The IP returned from GetLocalChatConnectionAddress is in network byte order.
@@ -449,6 +452,11 @@ GameSpyGameInfo::GameSpyGameInfo()
 	{
 		setLocalIP(0);
 	}
+#else
+	// Phase 43.2: GameSpy not available on non-Windows platforms
+	// TODO: Implement cross-platform networking without GameSpy dependency
+	setLocalIP(0);
+#endif
 	m_server = NULL;
 	m_transport = NULL;
 }

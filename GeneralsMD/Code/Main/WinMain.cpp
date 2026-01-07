@@ -729,142 +729,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 #endif  // _WIN32
 
 // initializeAppWindows =======================================================
-/** Register windows class and create application windows. */
+/** Register windows class and create application windows.
+	Phase 43.2: All platforms use SDL2 (removed Windows-only code).
+	*/
 //=============================================================================
 static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWindowed)
 {
-#ifdef _WIN32
-	// Windows implementation
-	DWORD windowStyle;
-	Int startWidth = DEFAULT_DISPLAY_WIDTH,
-		startHeight = DEFAULT_DISPLAY_HEIGHT;
-
-	// register the window class
-
-	WNDCLASS wndClass = { CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS, WndProc, 0, 0, hInstance,
-						 LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ApplicationIcon)),
-						 NULL/*LoadCursor(NULL, IDC_ARROW)*/,
-						 (HBRUSH)GetStockObject(BLACK_BRUSH), NULL,
-							 TEXT("Game Window") };
-	RegisterClass(&wndClass);
-
-	// Create our main window
-	windowStyle = WS_POPUP | WS_VISIBLE;
-	if (runWindowed)
-		windowStyle |= WS_DLGFRAME | WS_CAPTION | WS_SYSMENU;
-	else
-		windowStyle |= WS_EX_TOPMOST | WS_SYSMENU;
-
-	RECT rect;
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = startWidth;
-	rect.bottom = startHeight;
-	AdjustWindowRect(&rect, windowStyle, FALSE);
-	if (runWindowed) {
-		// Makes the normal debug 800x600 window center in the screen.
-		startWidth = DEFAULT_DISPLAY_WIDTH;
-		startHeight = DEFAULT_DISPLAY_HEIGHT;
-	}
-
-	gInitializing = true;
-
-	HWND hWnd = CreateWindow(TEXT("Game Window"),
-		TEXT("Command and Conquer Generals"),
-		windowStyle,
-		(GetSystemMetrics(SM_CXSCREEN) / 2) - (startWidth / 2), // original position X
-		(GetSystemMetrics(SM_CYSCREEN) / 2) - (startHeight / 2),// original position Y
-		// Lorenzen nudged the window higher
-		// so the constantdebug report would
-		// not get obliterated by assert windows, thank you.
-		//(GetSystemMetrics( SM_CXSCREEN ) / 2) - (startWidth / 2),   //this works with any screen res
-		//(GetSystemMetrics( SM_CYSCREEN ) / 25) - (startHeight / 25),//this works with any screen res
-		rect.right - rect.left,
-		rect.bottom - rect.top,
-		0L,
-		0L,
-		hInstance,
-		0L);
-
-
-	if (!runWindowed)
-	{
-		SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-	}
-	else
-		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-
-	SetFocus(hWnd);
-
-	SetForegroundWindow(hWnd);
-	ShowWindow(hWnd, nCmdShow);
-	UpdateWindow(hWnd);
-
-	// save our application window handle for future use
-	ApplicationHWnd = hWnd;
-	gInitializing = false;
-	if (!runWindowed) {
-		gDoPaint = false;
-	}
-
-	return true;  // success
-
-#else
 	// Phase 02: SDL2/Vulkan cross-platform implementation
 	Int startWidth = DEFAULT_DISPLAY_WIDTH;
 	Int startHeight = DEFAULT_DISPLAY_HEIGHT;
-
-	// printf("initializeAppWindows: Starting POSIX SDL2 initialization\n");
-	// 
 
 	gInitializing = true;
 
 	// Initialize SDL2
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		// printf("initializeAppWindows: Failed to initialize SDL2: %s\n", SDL_GetError());
-		// 
+		printf("initializeAppWindows: Failed to initialize SDL2: %s\n", SDL_GetError());
 		return false;
 	}
 
-	// printf("initializeAppWindows: SDL2 initialized successfully\n");
-	// 
-
 	// Load Vulkan library for SDL2_WINDOW_VULKAN support
 	// On macOS, this loads MoltenVK
-	// printf("initializeAppWindows: Loading Vulkan library via SDL2...\n");
-	// 
-
 	if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
 		printf("initializeAppWindows: Failed to load Vulkan library: %s\n", SDL_GetError());
 		printf("initializeAppWindows: Falling back to OpenGL backend\n");
-		
-		// Fall back to OpenGL if Vulkan is not available
-		// TODO: Implement OpenGL fallback
 	}
-	// else {
-	// 	printf("initializeAppWindows: Vulkan library loaded successfully\n");
-	// 	
-	// }
 
 	// Calculate window position (center on screen)
 	SDL_Rect displayBounds;
 	SDL_GetDisplayBounds(0, &displayBounds);
 
-	// printf("initializeAppWindows: Display bounds: %dx%d at (%d, %d)\n",
-	// 	displayBounds.w, displayBounds.h, displayBounds.x, displayBounds.y);
-	// 
-
 	Int windowX = (displayBounds.w - startWidth) / 2;
 	Int windowY = (displayBounds.h - startHeight) / 2;
 
-	// printf("initializeAppWindows: Window position: (%d, %d), size: %dx%d\n",
-	// 	windowX, windowY, startWidth, startHeight);
-	// 
-
 	// Set up window flags with Vulkan support for SDL_Vulkan_CreateSurface
 	Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;
-	// printf("initializeAppWindows: Using SDL_WINDOW_VULKAN flag for Vulkan surface creation\n");
-	// 
 
 	if (runWindowed) {
 		// In windowed mode, allow window resizing and normal window decorations (title bar, close button)
@@ -874,9 +772,6 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 		windowFlags |= SDL_WINDOW_FULLSCREEN;
 		gDoPaint = false;
 	}
-
-	// printf("initializeAppWindows: About to SDL_CreateWindow with flags=0x%x\n", windowFlags);
-	// 
 
 	// Create SDL2 window for Vulkan rendering (SDL2 API)
 	SDL_Window* sdlWindow = SDL_CreateWindow(
@@ -888,12 +783,8 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 		windowFlags
 	);
 
-	// printf("initializeAppWindows: SDL_CreateWindow returned: %p\n", (void*)sdlWindow);
-	// 
-
 	if (!sdlWindow) {
-		// printf("initializeAppWindows: Failed to create SDL2 window: %s\n", SDL_GetError());
-		// 
+		printf("initializeAppWindows: Failed to create SDL2 window: %s\n", SDL_GetError());
 		SDL_Quit();
 		return false;
 	}
@@ -916,12 +807,7 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 
 	gInitializing = false;
 
-	// printf("initializeAppWindows: Returning true (success)\n");
-	// 
-
 	return true;  // success
-
-#endif
 }
 
 // Necessary to allow memory managers and such to have useful critical sections
