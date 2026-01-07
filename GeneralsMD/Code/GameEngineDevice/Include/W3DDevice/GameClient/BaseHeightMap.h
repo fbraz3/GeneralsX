@@ -27,8 +27,8 @@
 #include "always.h"
 #include "rendobj.h"
 #include "w3d_file.h"
-#include "dx8vertexbuffer.h"
-#include "dx8indexbuffer.h"
+// Phase 39.4: Removed dx8vertexbuffer.h - Vulkan rendering replaces DirectX 8 vertex buffers
+// Phase 39.4: Removed dx8indexbuffer.h - Vulkan rendering replaces DirectX 8 index buffers
 #include "dx8wrapper.h"
 #include "shader.h"
 #include "vertmaterial.h"

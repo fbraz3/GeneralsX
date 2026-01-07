@@ -42,15 +42,14 @@
 extern "C" {
 #endif
 
+#include <cstdint>  // For uint32_t, uint64_t, uint8_t
+
 /* ============================================================================
  * Forward Declarations
  * ============================================================================ */
 
 typedef void* VkDevice;
 typedef void* VkShaderModule;
-typedef unsigned int uint32_t;
-// typedef unsigned long long uint64_t;
-typedef unsigned char uint8_t;
 
 /* ============================================================================
  * Shader Enumerations

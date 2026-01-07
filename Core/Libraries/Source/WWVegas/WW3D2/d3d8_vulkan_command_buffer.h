@@ -42,6 +42,8 @@
 extern "C" {
 #endif
 
+#include <cstdint>  // For uint32_t, uint64_t
+
 /* ============================================================================
  * Forward Declarations (to avoid including Vulkan headers directly)
  * ============================================================================ */
@@ -52,8 +54,6 @@ typedef void* VkCommandBuffer;
 typedef void* VkSemaphore;
 typedef void* VkFence;
 typedef void* VkQueue;
-typedef unsigned int uint32_t;
-// typedef unsigned long long uint64_t;
 
 /* ============================================================================
  * Command Buffer Configuration Types

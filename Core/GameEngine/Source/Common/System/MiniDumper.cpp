@@ -18,7 +18,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#ifdef RTS_ENABLE_CRASHDUMP
+#if defined(_WIN32)
 #include "Common/MiniDumper.h"
 #include <wctype.h>
 #include "gitinfo.h"

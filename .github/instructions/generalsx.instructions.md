@@ -18,7 +18,7 @@ Registry keys must be replaced by configuration files, details about file format
 
 ## Updtate Daily Blog before committing any changes
 
-Before committing changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, you can find the development diary guidelines in `.github\instructions\docs.instructions.md`.
+Before committing changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, you must follow the development diary guidelines in `.github\instructions\docs.instructions.md`.
 
 # Guidelines
 
@@ -46,7 +46,7 @@ Before committing changes, make sure to update the development diary located at 
 - Create tags for major milestones or completed phases for easy reference and rollback.
 - Any support scripts must be placed in the `scripts/` directory.
 
-## Merge from thesupehackers upstream
+# Merge from thesupehackers upstream
 
 - Ensure the project have a read-only git remote called `thesupehackers` poiting to `git@github.com:TheSuperHackers/GeneralsGameCode.git`
 - Once a day, before start working, merge the latest changes from `thesupehackers` main branch into local current branch.
@@ -258,3 +258,13 @@ https://vulkan.lunarg.com/doc/download/VulkanSDK-Windows-Docs-1.4.335.0.zip
 https://vulkan.lunarg.com/doc/download/VulkanSDK-Linux-Docs-1.4.335.0.zip
 wget https://vulkan.lunarg.com/doc/download/VulkanSDK-Mac-Docs-1.4.335.1.zip
 ```
+# Command Line parameters
+
+these are the most common command line parameters for GeneralsX and GeneralsXZH executables:
+
+- `-win` : Forces windowed mode (`m_windowed = true`)
+- `-fullscreen` : Forces fullscreen mode (`m_windowed = false`)
+- `-noshellmap` : Disables the shell map (`m_shellMapOn = false`)
+- `-mod <path>` : Loads a mod from a directory or `.big` file (absolute path or relative to user data path).
+
+for a full list of command line parameters, please refer to `docs/ETC/COMMAND_LINE_PARAMETERS.md` file.

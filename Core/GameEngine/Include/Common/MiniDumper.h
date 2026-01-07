@@ -18,7 +18,7 @@
 
 #pragma once
 
-#ifdef RTS_ENABLE_CRASHDUMP
+#if defined(_WIN32)
 #include "DbgHelpLoader.h"
 
 enum DumpType CPP_11(: Char)
@@ -94,4 +94,5 @@ private:
 };
 
 extern MiniDumper* TheMiniDumper;
+#endif
 #endif

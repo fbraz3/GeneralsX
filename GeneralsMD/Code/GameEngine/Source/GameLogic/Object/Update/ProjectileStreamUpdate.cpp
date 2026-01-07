@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "Common/Xfer.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Object.h"
@@ -180,7 +181,7 @@ void ProjectileStreamUpdate::getAllPoints( Vector3 *points, Int *count )
 				delta.y = pos->y - points[pointCount].Y;
 				delta.z = 0.0f;
 				if( delta.length() <= obj->getGeometryInfo().getMajorRadius() * 1.5f )
-					points[pointCount].Z = MAX( points[pointCount].Z, myTop );
+				points[pointCount].Z = std::max( points[pointCount].Z, myTop );
 			}
 
 

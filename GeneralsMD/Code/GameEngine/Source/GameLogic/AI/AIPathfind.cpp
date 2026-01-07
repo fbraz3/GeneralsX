@@ -10099,7 +10099,7 @@ Path *Pathfinder::getMoveAwayFromPath(Object* obj, Object *otherObj,
 		return NULL;
 
 	if (!obj->getAIUpdateInterface()) // shouldn't happen, but can't move it without an ai.
-		return NULL; 
+		return NULL;
 
 	const LocomotorSet& locomotorSet = obj->getAIUpdateInterface()->getLocomotorSet();
 
@@ -10446,7 +10446,7 @@ Path *Pathfinder::patchPath( const Object *obj, const LocomotorSet& locomotorSet
 	if (!s_useFixedPathfinding) {
 		if (!candidateGoal->getOpen() && !candidateGoal->getClosed())
 		{
-			// Not on one of the lists 
+			// Not on one of the lists
 			candidateGoal->releaseInfo();
 		}
 		cleanOpenAndClosedLists();

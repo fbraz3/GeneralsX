@@ -736,8 +736,8 @@ const Coord3D* AudioEventRTS::getCurrentPosition(void)
 	{
 	case OT_Positional:
 		return &m_positionOfAudio;
-	}
-	else if (m_ownerType == OT_Object)
+
+	case OT_Object:
 	{
 		Object* obj = TheGameLogic->findObjectByID(m_objectID);
 		if (obj)
@@ -750,7 +750,8 @@ const Coord3D* AudioEventRTS::getCurrentPosition(void)
 		}
 		return &m_positionOfAudio;
 	}
-	else if (m_ownerType == OT_Drawable)
+
+	case OT_Drawable:
 	{
 		Drawable* draw = TheGameClient->findDrawableByID(m_drawableID);
 		if (draw)
@@ -763,12 +764,13 @@ const Coord3D* AudioEventRTS::getCurrentPosition(void)
 		}
 		return &m_positionOfAudio;
 	}
-	else if (m_ownerType == OT_Dead)
-	{
-		return &m_positionOfAudio;
-	}
 
-	return NULL;
+	case OT_Dead:
+		return &m_positionOfAudio;
+
+	default:
+		return NULL;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

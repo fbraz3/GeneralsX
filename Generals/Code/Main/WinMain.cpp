@@ -802,7 +802,7 @@ Int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		CommandLine::parseCommandLineForStartup();
 
-#ifdef RTS_ENABLE_CRASHDUMP
+#ifdef _WIN32
 		// Initialize minidump facilities - requires TheGlobalData so performed after parseCommandLineForStartup
 		MiniDumper::initMiniDumper(TheGlobalData->getPath_UserData());
 #endif
@@ -873,7 +873,7 @@ Int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	}
 
-#ifdef RTS_ENABLE_CRASHDUMP
+#ifdef _WIN32
 	MiniDumper::shutdownMiniDumper();
 #endif
 	TheAsciiStringCriticalSection = NULL;

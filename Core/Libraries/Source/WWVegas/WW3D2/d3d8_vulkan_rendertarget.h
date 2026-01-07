@@ -42,6 +42,8 @@
 extern "C" {
 #endif
 
+#include <cstdint>  // For uint32_t, uint64_t, uint8_t, int32_t
+
 /* ============================================================================
  * Forward Declarations
  * ============================================================================ */
@@ -52,10 +54,6 @@ typedef void* VkImageView;
 typedef void* VkDeviceMemory;
 typedef void* VkFramebuffer;
 typedef void* VkRenderPass;
-typedef unsigned int uint32_t;
-// typedef unsigned long long uint64_t;
-typedef unsigned char uint8_t;
-typedef int int32_t;
 
 /* ============================================================================
  * Render Target Format Enumerations

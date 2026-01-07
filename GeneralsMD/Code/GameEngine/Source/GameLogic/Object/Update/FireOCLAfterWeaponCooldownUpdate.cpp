@@ -31,6 +31,7 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #define DEFINE_WEAPONSLOTTYPE_NAMES  //TheWeaponSlotTypeNamesLookupList
 
 #include "Common/Player.h"
@@ -195,7 +196,7 @@ void FireOCLAfterWeaponCooldownUpdate::fireOCL()
 	Real seconds = (now - m_startFrame) * SECONDS_PER_LOGICFRAME_REAL;
 	seconds *= data->m_oclLifetimePerSecond * 0.001f;
 	UnsignedInt oclFrames = (UnsignedInt)(seconds * LOGICFRAMES_PER_SECOND);
-	oclFrames = MIN( oclFrames, data->m_oclMaxFrames );
+	oclFrames = std::min( oclFrames, data->m_oclMaxFrames );
 
 	ObjectCreationList::create( data->m_ocl, obj, obj, oclFrames );
 

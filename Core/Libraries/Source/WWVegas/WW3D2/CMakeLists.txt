@@ -136,7 +136,7 @@ set(WW3D2_SRC
     render2d.h
     render2dsentence.cpp
     render2dsentence.h
-    render2dsentence_stub.cpp
+    # render2dsentence_stub.cpp  # Phase 43.8: Commented - conflicts with render2dsentence.cpp (duplicate symbols)
     renderobjectrecycler.cpp
     renderobjectrecycler.h
     rendobj.cpp
@@ -178,16 +178,16 @@ set(WW3D2_SRC
     stripoptimizer.h
     surfaceclass.cpp
     surfaceclass.h
-    
+
     # Phase 43.2: Advanced Texture Systems (Real implementations)
     phase43_2_advanced_textures.cpp
     phase43_surface_texture.cpp
     phase43_texture_apply.cpp
     phase43_texture_memory.cpp
-    
+
     # Phase 43.3: Rendering Infrastructure (Real implementations)
     phase43_3_sorting_renderer.cpp
-    
+
     # texproject.cpp  # Phase: Temporarily commented - DX8Wrapper render target API incompatibilities
     # texproject.h
     # textdraw.cpp  # Phase 42: Temporarily commented - Font Peek_Texture method signature mismatch

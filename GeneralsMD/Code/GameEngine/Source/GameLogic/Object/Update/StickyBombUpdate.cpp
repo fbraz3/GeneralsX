@@ -30,6 +30,7 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "GameLogic/Module/StickyBombUpdate.h"
 
 #include "Common/ThingTemplate.h"
@@ -245,7 +246,7 @@ void StickyBombUpdate::detonate()
 			primaryDamageRange += boundingCircle;
 			secondaryDamageRange += boundingCircle;
 			Real primaryDamageRangeSqr = sqr(primaryDamageRange);
-			Real radius = max(primaryDamageRange, secondaryDamageRange);
+			Real radius = std::max(primaryDamageRange, secondaryDamageRange);
 
 			SimpleObjectIterator *iter;
 			iter = ThePartitionManager->iterateObjectsInRange(boobyTrappedObject->getPosition(), radius, FROM_BOUNDINGSPHERE_3D);

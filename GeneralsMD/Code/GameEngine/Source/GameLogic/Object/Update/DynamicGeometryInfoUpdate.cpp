@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "Common/Xfer.h"
 #include "GameLogic/Module/DynamicGeometryInfoUpdate.h"
 #include "GameLogic/Object.h"
@@ -86,7 +87,7 @@ DynamicGeometryInfoUpdate::DynamicGeometryInfoUpdate( Thing *thing, const Module
 {
 	DynamicGeometryInfoUpdateModuleData *modData = (DynamicGeometryInfoUpdateModuleData *)moduleData;
 	m_startingDelayCountdown = modData->m_initialDelay;
-	m_startingDelayCountdown = max( m_startingDelayCountdown, 1u );
+	m_startingDelayCountdown = std::max( m_startingDelayCountdown, 1u );
 	m_timeActive = 0;
 
 	m_started = FALSE;

@@ -31,6 +31,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "GameClient/InGameUI.h"// selection logic
 #include "GameClient/Drawable.h"
 #include "Common/RandomValue.h"
@@ -96,7 +97,7 @@ void MobMemberSlavedUpdate::onObjectCreated()
 {
 
 	const MobMemberSlavedUpdateModuleData* data = getMobMemberSlavedUpdateModuleData();
-	m_squirrellinessRatio = MIN(MAX_SQUIRRELLINESS, MAX(0, data->m_squirrellinessRatio));
+	m_squirrellinessRatio = (Int)std::min((Int)MAX_SQUIRRELLINESS, std::max(0, (Int)data->m_squirrellinessRatio));
 
 }
 

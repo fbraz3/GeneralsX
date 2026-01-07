@@ -66,7 +66,9 @@ static Bool st_AppIsFast = false;
 static void _appendMessage(const AsciiString& str, Bool isTrueMessage = true, Bool shouldPause = false);
 static void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause = false);
 static void _updateFrameNumber( void );
+#if defined(_WIN32)
 static HMODULE st_DebugDLL;
+#endif
 // That's it for debugger window
 
 // These are for particle editor
@@ -92,7 +94,9 @@ static void _writeOutINI( void );
 extern void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *particleTemplate );
 static void _reloadTextures( void );
 
+#if defined(_WIN32)
 static HMODULE st_ParticleDLL;
+#endif
 ParticleSystem *st_particleSystem;
 Bool st_particleSystemNeedsStopping = FALSE; ///< Set along with st_particleSystem if the particle system has infinite life
 #define ARBITRARY_BUFF_SIZE	128
@@ -100,7 +104,7 @@ Bool st_particleSystemNeedsStopping = FALSE; ///< Set along with st_particleSyst
 #define FORMAT_STRING_LEADING_STRING		"%s%.2f"
 // That's it for particle editor
 
-#if defined(RTS_DEBUG)
+#if defined(RTS_DEBUG) && defined(_WIN32)
 	#define DO_VTUNE_STUFF
 #endif
 
@@ -471,6 +475,7 @@ m_ChooseVictimAlwaysUsesNormal(false)
 //-------------------------------------------------------------------------------------------------
 ScriptEngine::~ScriptEngine()
 {
+#if defined(_WIN32)
 	if (st_DebugDLL) {
 		FARPROC proc = GetProcAddress(st_DebugDLL, "DestroyDebugDialog");
 		if (proc) {
@@ -490,6 +495,7 @@ ScriptEngine::~ScriptEngine()
 		FreeLibrary(st_ParticleDLL);
 		st_ParticleDLL = NULL;
 	}
+#endif
 
 #ifdef DO_VTUNE_STUFF
 	_cleanUpVTune();
@@ -517,6 +523,7 @@ ScriptEngine::~ScriptEngine()
 //-------------------------------------------------------------------------------------------------
 void ScriptEngine::init( void )
 {
+#if defined(_WIN32)
 	if (TheGlobalData->m_windowed)
 		if (TheGlobalData->m_scriptDebug) {
 			st_DebugDLL = LoadLibrary("DebugWindow.dll");
@@ -543,6 +550,7 @@ void ScriptEngine::init( void )
 			proc();
 		}
 	}
+#endif
 
 #ifdef DO_VTUNE_STUFF
 	_initVTune();
@@ -5600,6 +5608,7 @@ void ScriptEngine::update( void )
 
 	// Script debugger stuff
 	st_CurrentFrame++;
+#if defined(_WIN32)
 	if (st_DebugDLL) {
 		for (int j = 1; j < m_numCounters; ++j) {
 			_adjustVariable(m_counters[j].name.str(), m_counters[j].value);
@@ -5609,6 +5618,7 @@ void ScriptEngine::update( void )
 			_adjustVariable(m_flags[k].name.str(), m_flags[k].value);
 		}
 	}
+#endif
 #ifdef RTS_DEBUG
 	if (TheGameLogic->getFrame()==0) {
 		for (i=0; i<m_numAttackInfo; i++) {
@@ -8280,6 +8290,7 @@ void SequentialScriptStatus::loadPostProcess( void )
 //-------------------------------------------------------------------------------------------------
 /** Updates the particle editor if its present */
 //-------------------------------------------------------------------------------------------------
+#if defined(_WIN32)
 void ScriptEngine::particleEditorUpdate( void )
 {
 	if (!st_ParticleDLL) {
@@ -8401,6 +8412,12 @@ void ScriptEngine::particleEditorUpdate( void )
 		}
 	} while (busyWait);
 }
+#else
+void ScriptEngine::particleEditorUpdate( void )
+{
+	// No-op on non-Windows platforms
+}
+#endif
 
 //-------------------------------------------------------------------------------------------------
 /** Is time frozen by a script? */
@@ -8429,6 +8446,7 @@ void ScriptEngine::doUnfreezeTime( void )
 //-------------------------------------------------------------------------------------------------
 /** For Debug and Internal builds, returns whether to continue (!pause), for release, returns false */
 //-------------------------------------------------------------------------------------------------
+#if defined(_WIN32)
 Bool ScriptEngine::isTimeFrozenDebug(void)
 {
 	typedef Bool (*funcptr)(void);
@@ -8490,7 +8508,24 @@ void ScriptEngine::forceUnfreezeTime(void)
 		}
 	}
 }
+#else
+Bool ScriptEngine::isTimeFrozenDebug(void)
+{
+	return false;
+}
 
+Bool ScriptEngine::isTimeFast(void)
+{
+	return false;
+}
+
+void ScriptEngine::forceUnfreezeTime(void)
+{
+	// No-op on non-Windows platforms
+}
+#endif
+
+#if defined(_WIN32)
 void ScriptEngine::AppendDebugMessage(const AsciiString& strToAdd, Bool forcePause)
 {
 #ifdef INTENSE_DEBUG
@@ -8516,6 +8551,12 @@ void ScriptEngine::AppendDebugMessage(const AsciiString& strToAdd, Bool forcePau
 	msg.concat(strToAdd);
 	((funcptr)proc)(msg.str());
 }
+#else
+void ScriptEngine::AppendDebugMessage(const AsciiString& strToAdd, Bool forcePause)
+{
+	// No-op on non-Windows platforms
+}
+#endif
 
 void ScriptEngine::AdjustDebugVariableData(const AsciiString& variableName, Int value, Bool forcePause)
 {
@@ -9356,6 +9397,7 @@ void ScriptEngine::markMPLocalDefeatWindowShown(void)
 /** Misc helper functions (ParticleEdit, etc) */
 // ------------------------------------------------------------------------------------------------
 
+#if defined(_WIN32)
 void _appendMessage(const AsciiString& str, Bool isTrueMessage, Bool shouldPause)
 {
 	typedef void (*funcptr)(const char*);
@@ -9431,7 +9473,24 @@ void _updateFrameNumber( void )
 
 	((funcptr)proc)(frameNum);
 }
+#else
+void _appendMessage(const AsciiString& str, Bool isTrueMessage, Bool shouldPause)
+{
+	// No-op on non-Windows platforms
+}
 
+void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause)
+{
+	// No-op on non-Windows platforms
+}
+
+void _updateFrameNumber( void )
+{
+	// No-op on non-Windows platforms
+}
+#endif
+
+#if defined(_WIN32)
 void _appendAllParticleSystems( void )
 {
 	typedef void (*funcptr)(const char*);
@@ -10286,6 +10345,64 @@ static void _reloadTextures( void )
 	// Need no interaction with the particle editor now.
 	ReloadAllTextures();
 }
+#else
+void _appendAllParticleSystems( void )
+{
+	// No-op on non-Windows platforms
+}
+
+void _appendAllThingTemplates( void )
+{
+	// No-op on non-Windows platforms
+}
+
+void _addUpdatedParticleSystem( AsciiString particleSystemName )
+{
+	// No-op on non-Windows platforms
+}
+
+void _updatePanelParameters( ParticleSystemTemplate *particleTemplate )
+{
+	// No-op on non-Windows platforms
+}
+
+void _updateAsciiStringParmsToSystem( ParticleSystemTemplate *particleTemplate )
+{
+	// No-op on non-Windows platforms
+}
+
+static void _writeOutINI( void )
+{
+	// No-op on non-Windows platforms
+}
+
+static int _getEditorBehavior( void )
+{
+	// No-op on non-Windows platforms
+	return 0;
+}
+
+static int _getNewCurrentParticleCap( void )
+{
+	// No-op on non-Windows platforms
+	return 0;
+}
+
+static void _reloadParticleSystemFromINI( AsciiString particleSystemName )
+{
+	// No-op on non-Windows platforms
+}
+
+static void _updateCurrentParticleCap( void )
+{
+	// No-op on non-Windows platforms
+}
+
+static void _updateCurrentParticleCount( void )
+{
+	// No-op on non-Windows platforms
+}
+#endif
 
 #ifdef DO_VTUNE_STUFF
 static void _initVTune()

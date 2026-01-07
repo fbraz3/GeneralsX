@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "Common/Thing.h"
 #include "Common/ThingTemplate.h"
 #include "Common/INI.h"
@@ -298,11 +299,9 @@ void EMPUpdate::doDisableAttack( void )
 				{
 					Real victimHeight = curVictim->getGeometryInfo().getMaxHeightAbovePosition();
 					Real victimFootprintArea = curVictim->getGeometryInfo().getFootprintArea();
-					Real victimVolume = victimFootprintArea * MIN(victimHeight, 10.0f);
+				Real victimVolume = victimFootprintArea * std::min(victimHeight, 10.0f);
 
-					UnsignedInt emitterCount = MAX(15, REAL_TO_INT_CEIL(data->m_sparksPerCubicFoot * victimVolume));
-
-					for (UnsignedInt e = 0 ; e < emitterCount; ++e)
+				UnsignedInt emitterCount = std::max(15u, (UnsignedInt)REAL_TO_INT_CEIL(data->m_sparksPerCubicFoot * victimVolume));
 					{
 
 						ParticleSystem *sys = TheParticleSystemManager->createParticleSystem(tmp);
@@ -327,7 +326,7 @@ void EMPUpdate::doDisableAttack( void )
 
 							sys->attachToObject(curVictim);
 							sys->setPosition( &offs );
-							sys->setSystemLifetime(MAX(0, data->m_disabledDuration - 30));
+							sys->setSystemLifetime(std::max(0u, (unsigned int)(data->m_disabledDuration - 30)));
 							sys->setInitialDelay(GameLogicRandomValue(1,100));
 						}
 					}

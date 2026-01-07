@@ -42,6 +42,8 @@
 extern "C" {
 #endif
 
+#include <cstdint>  // For uint32_t, uint64_t, uint8_t
+
 /* ============================================================================
  * Forward Declarations (to avoid including Vulkan headers directly)
  * ============================================================================ */

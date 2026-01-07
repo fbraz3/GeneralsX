@@ -34,6 +34,7 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "Common/Player.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
@@ -96,7 +97,7 @@ UpdateSleepTime HijackerUpdate::update( void )
 			ExperienceTracker *jackerExp = obj->getExperienceTracker();
 			if ( targetExp && jackerExp )
 			{
-				VeterancyLevel highestLevel = MAX(targetExp->getVeterancyLevel(),jackerExp->getVeterancyLevel());
+				VeterancyLevel highestLevel = std::max(targetExp->getVeterancyLevel(),jackerExp->getVeterancyLevel());
 				jackerExp->setVeterancyLevel( highestLevel );
 				targetExp->setVeterancyLevel( highestLevel );
 			}

@@ -43,6 +43,8 @@
 extern "C" {
 #endif
 
+#include <cstdint>  // For uint32_t, uint64_t, uint8_t, int32_t
+
 /* ============================================================================
  * Forward Declarations (to avoid including Vulkan headers directly)
  * ============================================================================ */
@@ -55,10 +57,6 @@ typedef void* VkCommandBuffer;
 typedef void* VkQueue;
 typedef void* VkSampler;
 typedef void* VkBuffer;
-typedef unsigned int uint32_t;
-// typedef unsigned long long uint64_t;
-typedef unsigned char uint8_t;
-typedef int int32_t;
 
 /* ============================================================================
  * Texture Format Enumerations

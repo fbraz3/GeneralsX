@@ -28,6 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 // please talk to MDC (x36804) before taking this out
 #define NO_DEBUG_CRC
 
@@ -361,7 +362,7 @@ void PhysicsBehavior::applyForce( const Coord3D *force )
 void PhysicsBehavior::applyShock( const Coord3D *force )
 {
 	Coord3D resistedForce = *force;
-	resistedForce.scale( 1.0f - min( 1.0f, max( 0.0f, getPhysicsBehaviorModuleData()->m_shockResistance ) ) );
+	resistedForce.scale( 1.0f - std::min( 1.0f, std::max( 0.0f, getPhysicsBehaviorModuleData()->m_shockResistance ) ) );
 
 	// Apply the processed shock force to the object
 	applyForce(&resistedForce);

@@ -138,26 +138,32 @@ public:
 
 PingerInterface* PingerInterface::createNewPingerInterface() { return nullptr; }
 
-void deleteNotificationBox() { /* stub */ }
-void PopBackToLobby() { /* stub */ }
-void StartPatchCheck() { /* stub */ }
-void StopAsyncDNSCheck() { /* stub */ }
-void CancelPatchCheckCallback() { /* stub */ }
-void HTTPThinkWrapper() { /* stub */ }
-void UpdateLocalPlayerStats() { /* stub */ }
-void* LookupSmallRankImage(int /*rank*/, int /*mode*/) { return nullptr; }
+// ============================================================================
+// WOL (Westwood Online) function stubs - COMMENTED OUT: Real implementations exist
+// ============================================================================
+
+/*
+void deleteNotificationBox() { // stub // }
+void PopBackToLobby() { // stub // }
+void StartPatchCheck() { // stub // }
+void StopAsyncDNSCheck() { // stub // }
+void CancelPatchCheckCallback() { // stub // }
+void HTTPThinkWrapper() { // stub // }
+void UpdateLocalPlayerStats() { // stub // }
+void* LookupSmallRankImage(int //rank//, int //mode//) { return nullptr; }
 
 // ============================================================================
 // Buddy System Stubs (Friend list functionality)
 // ============================================================================
 
-void InitBuddyControls(int /*mode*/) { /* stub */ }
-void PopulateOldBuddyMessages() { /* stub */ }
-void updateBuddyInfo() { /* stub */ }
-long BuddyControlSystem(GameWindow* /*window*/, unsigned int /*msg*/,
-  unsigned long /*wparam*/, unsigned long /*lparam*/) {
+void InitBuddyControls(int //mode//) { // stub // }
+void PopulateOldBuddyMessages() { // stub // }
+void updateBuddyInfo() { // stub // }
+long BuddyControlSystem(GameWindow* //window//, unsigned int //msg//,
+  unsigned long //wparam//, unsigned long //lparam//) {
   return 0;
 }
+*/
 
 // ============================================================================
 // RegistryClass Stubs (WW3D uses this for video settings)

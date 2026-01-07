@@ -42,6 +42,8 @@
 extern "C" {
 #endif
 
+#include <cstdint>  // For uint32_t, uint64_t, uint8_t, int32_t
+
 /* ============================================================================
  * Forward Declarations (to avoid including Vulkan/texture/descriptor headers)
  * ============================================================================ */
@@ -51,11 +53,6 @@ typedef void* VkCommandBuffer;
 typedef void* VkPipeline;
 typedef void* VkPipelineLayout;
 typedef void* VkDescriptorSet;
-typedef unsigned int uint32_t;
-// typedef unsigned long long uint64_t;
-typedef unsigned char uint8_t;
-typedef int int32_t;
-typedef float float32_t;
 
 /* Opaque handles from Phase 12 (Textures) and Phase 13 (Descriptors) */
 typedef struct _D3D8_VULKAN_TEXTURE_HANDLE* D3D8_VULKAN_TEXTURE_HANDLE;
@@ -142,8 +139,8 @@ typedef struct {
 typedef struct {
     D3D8_VULKAN_MATERIAL_PROPERTY_TYPE type;
     union {
-        struct { float32_t r, g, b, a; } color;       /* RGBA color properties */
-        float32_t scalar;                              /* Scalar properties */
+        struct { float r, g, b, a; } color;       /* RGBA color properties */
+        float scalar;                              /* Scalar properties */
     } value;
 } D3D8_VULKAN_MATERIAL_PROPERTY;
 

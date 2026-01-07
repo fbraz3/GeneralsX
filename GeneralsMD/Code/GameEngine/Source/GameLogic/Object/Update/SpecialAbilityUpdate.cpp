@@ -29,6 +29,7 @@
 
 #include "PreRTS.h" // This must go first in EVERY cpp file in the GameEngine
 
+#include <algorithm>
 #include "Common/GameAudio.h"
 #include "Common/GlobalData.h"
 #include "Common/Player.h"
@@ -1216,7 +1217,7 @@ Bool SpecialAbilityUpdate::continuePreparation()
         {
           Bool lastPhase = ( ((Int)m_captureFlashPhase) & 1 );// were we in a flashy phase last frame?
 
-          Real denominator = MAX(1, data->m_preparationFrames);
+          Real denominator = std::max(1u, (UnsignedInt)data->m_preparationFrames);
           Real increment = 1.0f - ((Real)m_prepFrames / denominator );
           m_captureFlashPhase += increment / 3.0f;
 
@@ -1490,7 +1491,7 @@ void SpecialAbilityUpdate::triggerAbilityEffect()
         UnsignedInt desiredAmount = data->m_effectValue;
 #endif
         //Check to see if they have the cash, otherwise, take the remainder!
-        cash = min( desiredAmount, cash );
+        cash = std::min( desiredAmount, cash );
         if( cash > 0 )
         {
           //Steal the cash

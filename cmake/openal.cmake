@@ -1,11 +1,28 @@
 # Phase 47: OpenAL Audio Library Configuration
-# 
+#
 # OpenAL is a cross-platform 3D audio library used for:
 # - Music playback (background tracks)
 # - Sound effects (unit actions, weapons, explosions)
 # - Voice acting (unit responses, campaign dialogue)
 # - 3D positional audio (spatial sound)
 # - Audio effects and mixing
+
+# On macOS, use system OpenAL.framework which supports ARM64
+# Homebrew openal-soft only ships x86_64, so we use the native framework instead
+if(APPLE)
+    # Use macOS system OpenAL.framework for ARM64 support
+    find_library(OPENAL_LIBRARY OpenAL)
+    set(OPENAL_INCLUDE_DIR "/usr/include" CACHE PATH "OpenAL include directory")
+    if(NOT OPENAL_LIBRARY)
+        message(FATAL_ERROR "OpenAL.framework not found on macOS")
+    endif()
+else()
+    # For Linux/Windows, try standard OpenAL-soft
+    list(INSERT CMAKE_PREFIX_PATH 0 "/usr/local/opt/openal-soft")
+    list(INSERT CMAKE_FIND_ROOT_PATH 0 "/usr/local/opt/openal-soft")
+    set(OPENAL_INCLUDE_DIR "/usr/local/opt/openal-soft/include" CACHE PATH "OpenAL include directory")
+    set(OPENAL_LIBRARY "/usr/local/opt/openal-soft/lib/libopenal.dylib" CACHE FILEPATH "OpenAL library")
+endif()
 
 # Find OpenAL package
 find_package(OpenAL REQUIRED)

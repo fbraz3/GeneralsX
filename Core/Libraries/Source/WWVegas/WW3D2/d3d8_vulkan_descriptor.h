@@ -43,6 +43,8 @@
 extern "C" {
 #endif
 
+#include <cstdint>  // For uint32_t, uint64_t, int32_t
+
 /* ============================================================================
  * Forward Declarations
  * ============================================================================ */
@@ -54,9 +56,6 @@ typedef void* VkDescriptorSet;
 typedef void* VkSampler;
 typedef void* VkImageView;
 typedef void* VkBuffer;
-typedef unsigned int uint32_t;
-// typedef unsigned long long uint64_t;
-typedef int int32_t;
 
 /* ============================================================================
  * Descriptor Binding Enumerations

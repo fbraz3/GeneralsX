@@ -50,14 +50,9 @@
 
  //-----------------------------------------------------------------------------
  // srj sez: hack festival :-(
-class STLSpecialAlloc
-{
-public:
-	// this one is needed for proper simple_alloc wrapping
-	static void* allocate(size_t __n) { return ::operator new(__n); }
-	static void deallocate(void* __p, size_t) { ::operator delete(__p); }
-};
-
+ // STLSpecialAlloc is defined in GameMemory.h and included via dependency chain
+ // Removing duplicate definition to avoid ODR (One Definition Rule) violation
+ // when building for macOS/Linux cross-platform target
 
 #include "w3d_dep.h"
 #include "w3d_file.h"
