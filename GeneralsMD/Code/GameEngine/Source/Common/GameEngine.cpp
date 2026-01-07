@@ -176,6 +176,8 @@ extern CComModule _Module;
 static void updateTGAtoDDS();
 
 //-------------------------------------------------------------------------------------------------
+// Phase 43.2: Update window title - Windows-only operation
+#ifdef _WIN32
 static void updateWindowTitle()
 {
 	// TheSuperHackers @tweak Now prints product and version information in the Window title.
@@ -243,6 +245,13 @@ static void updateWindowTitle()
 		}
 	}
 }
+#else
+// Cross-platform: No-op on non-Windows platforms (window title managed by OS)
+static void updateWindowTitle()
+{
+	// Window title is managed by SDL2 window creation parameters on non-Windows platforms
+}
+#endif
 
 //-------------------------------------------------------------------------------------------------
 GameEngine::GameEngine( void )

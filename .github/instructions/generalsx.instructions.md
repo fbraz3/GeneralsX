@@ -51,6 +51,7 @@ Before committing changes, make sure to update the development diary located at 
 - The problem cannot be solved by patching over the symptoms; we must address the **root cause** of the problem.
 - Use the available reference repositories to identify and implement proper solutions.
 - You can also search on GitHub and other online resources for similar problems and solutions.
+- **IMPORTANT** All code, including documentation files and comments, **must be** in English.
 - You may use the `deepwiki` tool that will help you understand the codebase and its architecture.
 - Vulkan-only and SDL2-only focus; do not include DirectX or native Windows API-specific code/instructions.
 - Even if errors come from earlier phases, we must fix the gaps that were left behind.

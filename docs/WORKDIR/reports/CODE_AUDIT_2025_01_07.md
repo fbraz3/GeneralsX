@@ -1,20 +1,20 @@
-# Code Audit Report - Discrepâncias com Diretrizes do Projeto
-**Data:** 2025-01-07
-**Objetivo:** Identificar código que não segue as diretrizes Vulkan-only e SDL2-only
-**Status:** 🔴 CRITICAL - Múltiplas violações identificadas
+# Code Audit Report - Discrepancies with Project Guidelines
+**Date:** 2025-01-07
+**Objective:** Identify code that does not follow the Vulkan-only and SDL2-only guidelines
+**Status:** 🔴 CRITICAL - Multiple violations identified
 
 ---
 
-## 📋 Resumo Executivo
+## 📋 Executive Summary
 
-A auditoria identificou **violações críticas** das diretrizes do projeto em 3 categorias principais:
+The audit identified **critical violations** of the project's guidelines in 3 main categories:
 
-| Categoria | Severidade | Ocorrências | Status |
-|-----------|------------|-------------|--------|
-| **Windows Registry APIs** | 🔴 HIGH | ~20+ arquivos | ⚠️ PARCIALMENTE RESOLVIDO |
-| **Win32 API Calls** | 🔴 CRITICAL | ~150+ ocorrências | ❌ NÃO RESOLVIDO |
-| **DirectX References** | 🟡 MEDIUM | ~10+ arquivos | ⚠️ STUBS EXISTEM |
-| **Windows.h Includes** | 🟢 LOW | ~90+ arquivos | ⚠️ EM PROGRESSO |
+| Category | Severity | Occurrences | Status |
+|----------|----------:|------------:|--------|
+| **Windows Registry APIs** | 🔴 HIGH | ~20+ files | ⚠️ PARTIALLY RESOLVED |
+| **Win32 API Calls** | 🔴 CRITICAL | ~150+ occurrences | ❌ UNRESOLVED |
+| **DirectX References** | 🟡 MEDIUM | ~10+ files | ⚠️ STUBS EXIST |
+| **windows.h Includes** | 🟢 LOW | ~90+ files | ⚠️ IN PROGRESS |
 
 ---
 
@@ -22,28 +22,28 @@ A auditoria identificou **violações críticas** das diretrizes do projeto em 3
 
 ### 1. WinMain.cpp - Win32 Window Management
 
-**Arquivo:** `GeneralsMD/Code/Main/WinMain.cpp` (linhas 772-801)
+**File:** GeneralsMD/Code/Main/WinMain.cpp (lines 772-801)
 
-**Problema:**
+**Problem:**
 ```cpp
-// ❌ VIOLAÇÃO: Uso direto de Win32 APIs ao invés de SDL2
+// ❌ VIOLATION: Direct use of Win32 APIs instead of SDL2
 HWND hWnd = CreateWindow(TEXT("Game Window"), ...);
-GetSystemMetrics(SM_CXSCREEN);    // Deveria ser SDL_GetDisplayBounds
+GetSystemMetrics(SM_CXSCREEN);    // Should use SDL_GetDisplayBounds
 GetSystemMetrics(SM_CYSCREEN);
-SetWindowPos(hWnd, HWND_TOPMOST, ...);  // Deveria ser SDL_SetWindowPosition
+SetWindowPos(hWnd, HWND_TOPMOST, ...);  // Should use SDL_SetWindowPosition
 SetForegroundWindow(hWnd);
 ShowWindow(hWnd, nCmdShow);
 UpdateWindow(hWnd);
 ```
 
-**Impacto:**
-- Código Win32 puro ao invés de SDL2
-- Não funciona em plataformas não-Windows
-- Contradiz diretriz "SDL2 only"
+**Impact:**
+- Win32-only code instead of SDL2
+- Won't work on non-Windows platforms
+- Contradicts the "SDL2 only" guideline
 
-**Recomendação:**
+**Recommendation:**
 ```cpp
-// ✅ CORRETO: Usar SDL2
+// ✅ CORRECT: Use SDL2
 SDL_DisplayMode displayMode;
 SDL_GetCurrentDisplayMode(0, &displayMode);
 int centerX = (displayMode.w / 2) - (startWidth / 2);
@@ -57,17 +57,17 @@ SDL_Window* window = SDL_CreateWindow(
 );
 ```
 
-**Nota:** O arquivo já possui código SDL2 correto nas linhas 837-912, mas mantém código Win32 legado simultaneamente.
+**Note:** The file already contains correct SDL2 code in lines 837-912, but still keeps Win32 legacy code concurrently.
 
 ---
 
 ### 2. GameSpyGameInfo.cpp - Win32 DLL Loading
 
-**Arquivo:** `GeneralsMD/Code/GameEngine/Source/GameNetwork/GameSpyGameInfo.cpp` (linhas 189-427)
+**File:** GeneralsMD/Code/GameEngine/Source/GameNetwork/GameSpyGameInfo.cpp (lines 189-427)
 
-**Problema:**
+**Problem:**
 ```cpp
-// ❌ VIOLAÇÃO: LoadLibrary/GetProcAddress são Windows-only
+// ❌ VIOLATION: LoadLibrary/GetProcAddress are Windows-only
 HINSTANCE mib_ii_dll = LoadLibrary("inetmib1.dll");
 HINSTANCE snmpapi_dll = LoadLibrary("snmpapi.dll");
 SnmpExtensionInitPtr = (int (__stdcall *)(unsigned long,void ** ,AsnObjectIdentifier *))
@@ -75,21 +75,21 @@ SnmpExtensionInitPtr = (int (__stdcall *)(unsigned long,void ** ,AsnObjectIdenti
 FreeLibrary(mib_ii_dll);
 ```
 
-**Impacto:**
-- Sistema de rede GameSpy depende de DLLs Windows
-- SNMP APIs são Windows-específicas
-- Não compilará em macOS/Linux
+**Impact:**
+- GameSpy networking depends on Windows DLLs
+- SNMP APIs are Windows-specific
+- Will not compile on macOS/Linux
 
-**Recomendação:**
-1. **Curto prazo:** Guard com `#ifdef _WIN32` e implementar fallback multiplataforma
-2. **Longo prazo:** Remover dependência de GameSpy e implementar sistema de rede moderno usando sockets POSIX/SDL_net
+**Recommendation:**
+1. **Short term:** Guard with `#ifdef _WIN32` and implement a cross-platform fallback
+2. **Long term:** Remove the GameSpy dependency and implement a modern networking system using POSIX sockets / SDL_net
 
 ```cpp
 #ifdef _WIN32
-    // Código Windows existente
+    // Existing Windows code
 #else
-    // TODO: Implementar detecção de rede multiplataforma
-    // Opções: getifaddrs() (POSIX), SDL_net, ou cross-platform networking library
+    // TODO: Implement cross-platform network detection
+    // Options: getifaddrs() (POSIX), SDL_net, or a cross-platform networking library
 #endif
 ```
 
@@ -97,61 +97,61 @@ FreeLibrary(mib_ii_dll);
 
 ### 3. ScriptEngine.cpp - Editor DLL Loading
 
-**Arquivo:** `GeneralsMD/Code/GameEngine/Source/GameLogic/ScriptEngine/ScriptEngine.cpp`
+**File:** GeneralsMD/Code/GameEngine/Source/GameLogic/ScriptEngine/ScriptEngine.cpp
 
-**Problema:**
+**Problem:**
 ```cpp
-// ❌ VIOLAÇÃO: Carregamento de DLLs Windows para editores
-st_DebugDLL = LoadLibrary("DebugWindow.dll");         // linha 529
-st_ParticleDLL = LoadLibrary("ParticleEditor.dll");   // linha 535
-FARPROC proc = GetProcAddress(st_DebugDLL, "CreateDebugDialog");  // linha 541
-GetProcAddress(st_ParticleDLL, "CreateParticleSystemDialog");     // linha 548
-// ... mais 20+ GetProcAddress calls
+// ❌ VIOLATION: Loading Windows DLLs for editors
+st_DebugDLL = LoadLibrary("DebugWindow.dll");         // line 529
+st_ParticleDLL = LoadLibrary("ParticleEditor.dll");   // line 535
+FARPROC proc = GetProcAddress(st_DebugDLL, "CreateDebugDialog");  // line 541
+GetProcAddress(st_ParticleDLL, "CreateParticleSystemDialog");     // line 548
+// ... 20+ more GetProcAddress calls
 ```
 
-**Impacto:**
-- Editores in-game dependem de DLLs Windows
-- ~25+ chamadas GetProcAddress ao longo do arquivo
-- Funcionalidade debug/particle editor não funciona em outras plataformas
+**Impact:**
+- In-game editors depend on Windows DLLs
+- ~25+ `GetProcAddress` calls scattered through the file
+- Debug/particle editor features do not work on other platforms
 
-**Recomendação:**
+**Recommendation:**
 ```cpp
-// ✅ Guard apropriado já existe (linha 526), mas precisa ser consistente
+// ✅ Appropriate guard already exists (line 526), but must be consistent
 #if defined(_WIN32)
     if (TheGlobalData->m_windowed)
         if (TheGlobalData->m_scriptDebug) {
             st_DebugDLL = LoadLibrary("DebugWindow.dll");
         }
 #else
-    // Editores desabilitados em outras plataformas por enquanto
+    // Editors disabled on other platforms for now
     st_DebugDLL = NULL;
     st_ParticleDLL = NULL;
     LogInfo("Script debugging and particle editing not available on this platform");
 #endif
 ```
 
-**Nota:** O guard `#if defined(_WIN32)` existe, mas não cobre todas as chamadas GetProcAddress subsequentes (linhas 8458-10466).
+**Note:** The `#if defined(_WIN32)` guard exists, but does not cover all subsequent `GetProcAddress` calls (lines 8458-10466).
 
 ---
 
-### 4. Win32OSDisplay.cpp - MessageBox Native
+### 4. Win32OSDisplay.cpp - Native MessageBox
 
-**Arquivo:** `GeneralsMD/Code/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp` (linhas 106-117)
+**File:** GeneralsMD/Code/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp (lines 106-117)
 
-**Problema:**
+**Problem:**
 ```cpp
-// ❌ VIOLAÇÃO: MessageBox Win32 ao invés de SDL2
+// ❌ VIOLATION: Win32 MessageBox instead of SDL2
 returnResult = ::MessageBoxW(NULL, mesgStr.str(), promptStr.str(), windowsOptionsFlags);
 returnResult = ::MessageBoxA(NULL, mesgA.str(), promptA.str(), windowsOptionsFlags);
 ```
 
-**Impacto:**
-- Diálogos usam MessageBox nativo do Windows
-- Não funciona em macOS/Linux
+**Impact:**
+- Dialogs use Windows MessageBox
+- Not functional on macOS/Linux
 
-**Recomendação:**
+**Recommendation:**
 ```cpp
-// ✅ CORRETO: Usar SDL_ShowMessageBox
+// ✅ CORRECT: Use SDL_ShowMessageBox
 SDL_MessageBoxData messageboxdata = {
     SDL_MESSAGEBOX_ERROR,
     NULL,
@@ -163,28 +163,28 @@ int buttonid;
 SDL_ShowMessageBox(&messageboxdata, &buttonid);
 ```
 
-**Nota:** Existe implementação parcial em `Dependencies/Utility/Compat/msvc_types_compat.h` (linha 498), mas é apenas um stub.
+**Note:** There is a partial stub implementation in `Dependencies/Utility/Compat/msvc_types_compat.h` (line 498), but it is only a stub.
 
 ---
 
 ## 🟡 MEDIUM ISSUES
 
-### 5. Windows Registry - Implementação INI Incompleta
+### 5. Windows Registry - Incomplete INI Implementation
 
-**Status:** ⚠️ PARCIALMENTE RESOLVIDO (Phase 39.5)
+**Status:** ⚠️ PARTIALLY RESOLVED (Phase 39.5)
 
-**Arquivos Afetados:**
-- `Core/Libraries/Source/WWVegas/WWLib/registry.cpp` - ✅ MIGRADO para INI
-- Múltiplos arquivos game code ainda chamam funções registry
+**Affected files:**
+- `Core/Libraries/Source/WWVegas/WWLib/registry.cpp` - ✅ MIGRATED to INI
+- Multiple game code files still call registry functions
 
-**Problema:**
-- Sistema INI implementado mas não testado completamente
-- Alguns componentes podem ainda depender de registro Windows
-- `assets/ini/README.md` documenta formato mas falta validação
+**Problem:**
+- INI system implemented but not fully tested
+- Some components may still depend on Windows registry
+- `assets/ini/README.md` documents the format but lacks validation
 
-**Recomendação:**
+**Recommendation:**
 ```bash
-# Verificar chamadas remanescentes
+# Check remaining calls
 grep -r "RegOpenKeyEx\|RegQueryValueEx\|RegSetValueEx\|HKEY_" \
     GeneralsMD/Code/ Generals/Code/ --include="*.cpp" | \
     grep -v "registry.cpp" | tee logs/registry_remaining.log
@@ -194,13 +194,13 @@ grep -r "RegOpenKeyEx\|RegQueryValueEx\|RegSetValueEx\|HKEY_" \
 
 ### 6. DirectX8 Interface Stubs
 
-**Status:** ⚠️ STUBS IMPLEMENTADOS mas não integrados completamente
+**Status:** ⚠️ STUBS IMPLEMENTED but not fully integrated
 
-**Arquivo:** `Core/Libraries/Source/WWVegas/WW3D2/DX8Wrapper_Stubs.cpp`
+**File:** Core/Libraries/Source/WWVegas/WW3D2/DX8Wrapper_Stubs.cpp
 
-**Análise:**
+**Analysis:**
 ```cpp
-// ✅ BOM: Stubs existem para compatibilidade
+// ✅ GOOD: Stubs exist for compatibility
 class IDirect3DDevice8Stub {
     int TestCooperativeLevel();
     int SetTexture(int stage, void* texture);
@@ -209,39 +209,39 @@ class IDirect3DDevice8Stub {
 };
 ```
 
-**Problema:**
-- Stubs retornam valores mock mas não executam Vulkan real
-- `DX8Wrapper_Stubs.cpp` tem 2300+ linhas de stubs vazios
-- Chamadas DirectX ainda presentes no código game
+**Problem:**
+- Stubs return mock values but do not execute real Vulkan operations
+- `DX8Wrapper_Stubs.cpp` contains 2300+ lines of empty stubs
+- DirectX calls remain in game code
 
-**Recomendação:**
-- **NÃO remover os stubs** - eles permitem compilação
-- **Gradualmente substituir** calls DirectX por Vulkan via DX8Wrapper
-- Priorizar hot path: rendering, textures, buffers
+**Recommendation:**
+- **DO NOT remove the stubs** - they allow compilation
+- **Gradually replace** DirectX calls with Vulkan via `DX8Wrapper`
+- Prioritize hot paths: rendering, textures, buffers
 
 ---
 
 ## 🟢 LOW PRIORITY ISSUES
 
-### 7. Includes Desnecessários de windows.h
+### 7. Unnecessary windows.h Includes
 
-**Arquivos Afetados:** ~90 arquivos
+**Affected files:** ~90 files
 
-**Categorias:**
-1. **Tools/GUIEdit/** - ~15 arquivos (ferramentas Windows-only OK por enquanto)
-2. **Core/Libraries/Source/debug/** - ~10 arquivos (sistema debug)
-3. **GameEngine/** - ~20 arquivos (prioridade de limpeza)
-4. **Win32Device/** - ~10 arquivos (esperado, mas pode migrar para SDL2)
+**Categories:**
+1. **Tools/GUIEdit/** - ~15 files (Windows-only tools acceptable for now)
+2. **Core/Libraries/Source/debug/** - ~10 files (debug system)
+3. **GameEngine/** - ~20 files (cleanup priority)
+4. **Win32Device/** - ~10 files (expected, but can migrate to SDL2)
 
-**Exemplo (PreRTS.h):**
+**Example (PreRTS.h):**
 ```cpp
 // GeneralsMD/Code/GameEngine/Include/Precompiled/PreRTS.h:47
-#include <windows.h>  // ❌ Em precompiled header - afeta TODO projeto
+#include <windows.h>  // ❌ In precompiled header - affects the whole project
 ```
 
-**Recomendação:**
+**Recommendation:**
 ```cpp
-// ✅ Condicional ou remoção completa
+// ✅ Conditional or remove entirely
 #if defined(_WIN32) && defined(NEED_WINDOWS_H)
     #include <windows.h>
 #endif
@@ -249,12 +249,12 @@ class IDirect3DDevice8Stub {
 
 ---
 
-## 📊 Estatísticas Detalhadas
+## 📊 Detailed Statistics
 
-### Win32 API Calls por Categoria
+### Win32 API Calls by Category
 
 | API Category | Occurrences | Status |
-|--------------|-------------|--------|
+|--------------|-----------:|--------|
 | Window Management | 50+ | ❌ CreateWindow, SetWindowPos, ShowWindow |
 | System Metrics | 20+ | ❌ GetSystemMetrics |
 | DLL Loading | 80+ | ❌ LoadLibrary, GetProcAddress, FreeLibrary |
@@ -262,124 +262,124 @@ class IDirect3DDevice8Stub {
 | Registry | 100+ | ⚠️ INI migration done but untested |
 | File System | 30+ | ⚠️ Partially migrated |
 
-### Compliance Score por Módulo
+### Compliance Score by Module
 
-| Módulo | Compliance | Issues |
-|--------|------------|--------|
-| **WinMain.cpp** | 🔴 30% | Win32 + SDL2 misturados |
+| Module | Compliance | Issues |
+|--------|-----------:|--------|
+| **WinMain.cpp** | 🔴 30% | Win32 + SDL2 mixed |
 | **GameSpyGameInfo.cpp** | 🔴 0% | 100% Win32 DLL loading |
-| **ScriptEngine.cpp** | 🟡 50% | Guards exist mas incompletos |
-| **DX8Wrapper** | 🟢 80% | Stubs OK, falta integração Vulkan |
+| **ScriptEngine.cpp** | 🟡 50% | Guards exist but incomplete |
+| **DX8Wrapper** | 🟢 80% | Stubs OK, Vulkan integration missing |
 | **Registry System** | 🟢 90% | INI migration complete |
 
 ---
 
-## 🎯 Plano de Ação Recomendado
+## 🎯 Recommended Action Plan
 
-### Priority 1 - CRITICAL (Semana 1)
+### Priority 1 - CRITICAL (Week 1)
 
 1. **WinMain.cpp Window Management**
-   ```bash
-   # Remover código Win32 duplicado
-   # Manter apenas SDL2_CreateWindow path
-   # Testar em macOS/Linux
-   ```
+```bash
+# Remove duplicated Win32 code
+# Keep only the SDL2_CreateWindow path
+# Test on macOS/Linux
+```
 
 2. **GameSpyGameInfo.cpp Networking**
-   ```bash
-   # Guard com #ifdef _WIN32
-   # Implementar fallback multiplataforma
-   # Documentar limitações
-   ```
+```bash
+# Guard with #ifdef _WIN32
+# Implement cross-platform fallback
+# Document limitations
+```
 
 3. **ScriptEngine.cpp Editors**
-   ```bash
-   # Estender guards para cobrir todos GetProcAddress
-   # Adicionar logs quando editores não disponíveis
-   # Testar compile em macOS/Linux
-   ```
+```bash
+# Extend guards to cover all GetProcAddress calls
+# Add logs when editors are not available
+# Verify compilation on macOS/Linux
+```
 
-### Priority 2 - HIGH (Semana 2)
+### Priority 2 - HIGH (Week 2)
 
 4. **MessageBox Migration**
-   ```bash
-   # Substituir todas chamadas Win32 MessageBox por SDL_ShowMessageBox
-   # Criar wrapper em Dependencies/Utility/Compat/
-   # Testar diálogos de erro cross-platform
-   ```
+```bash
+# Replace all Win32 MessageBox calls with SDL_ShowMessageBox
+# Create a wrapper in Dependencies/Utility/Compat/
+# Test cross-platform dialogs
+```
 
 5. **GetSystemMetrics → SDL2**
-   ```bash
-   # Substituir SM_CXSCREEN/SM_CYSCREEN por SDL_GetDisplayBounds
-   # Criar helpers em SDL2_AppWindow
-   ```
+```bash
+# Replace SM_CXSCREEN/SM_CYSCREEN with SDL_GetDisplayBounds
+# Add helpers in SDL2_AppWindow
+```
 
-### Priority 3 - MEDIUM (Semana 3-4)
+### Priority 3 - MEDIUM (Weeks 3-4)
 
-6. **Windows.h Cleanup**
-   ```bash
-   # Remover includes desnecessários
-   # Adicionar guards condicionais onde necessário
-   # Testar compilação incremental
-   ```
+6. **windows.h Cleanup**
+```bash
+# Remove unnecessary includes
+# Add conditional guards where required
+# Test incremental compilation
+```
 
 7. **Registry Testing**
-   ```bash
-   # Criar testes para sistema INI
-   # Validar leitura/escrita de configurações
-   # Documentar migração de .reg → .ini
-   ```
+```bash
+# Create tests for the INI system
+# Validate read/write of settings
+# Document .reg → .ini migration
+```
 
 ---
 
-## ✅ Checklist de Verificação
+## ✅ Verification Checklist
 
 **SDL2 Only:**
 - [ ] Zero CreateWindow Win32 calls
 - [ ] Zero GetSystemMetrics calls
 - [ ] Zero SetWindowPos Win32 calls
-- [ ] Zero MessageBox Win32 calls (exceto stubs)
-- [ ] Todos windows gerenciados via SDL2
+- [ ] Zero MessageBox Win32 calls (except stubs)
+- [ ] All windows managed via SDL2
 
 **Vulkan Only:**
-- [x] DirectX stubs implementados (Phase 62)
-- [ ] Zero chamadas DirectX diretas no game code
-- [ ] DX8Wrapper routing para Vulkan completamente
-- [ ] Shaders migrados de HLSL para SPIR-V
+- [x] DirectX stubs implemented (Phase 62)
+- [ ] Zero direct DirectX calls in game code
+- [ ] DX8Wrapper routing to Vulkan fully implemented
+- [ ] Shaders migrated from HLSL to SPIR-V
 
 **Cross-Platform:**
-- [ ] Zero LoadLibrary/GetProcAddress sem guards
-- [ ] Zero includes de windows.h sem necessidade
-- [ ] Registry completamente em INI files
-- [ ] File paths usando std::filesystem
+- [ ] Zero LoadLibrary/GetProcAddress without guards
+- [ ] Zero unnecessary windows.h includes
+- [ ] Registry fully using INI files
+- [ ] File paths using std::filesystem
 
 ---
 
-## 📚 Referências
+## 📚 References
 
-- **Diretrizes Projeto:** `.github/instructions/generalsx.instructions.md`
-- **Phase 39.5 Registry:** `docs/WORKDIR/phases/3/PHASE39/39.5_INDEX.md`
-- **Phase 40 SDL2:** `docs/WORKDIR/phases/4/PHASE40/`
-- **Phase 62 DX8 Stubs:** `Core/Libraries/Source/WWVegas/WW3D2/DX8Wrapper_Stubs.cpp`
-
----
-
-## 🚨 Notas Importantes
-
-1. **NÃO REMOVER STUBS:** Os stubs DirectX são necessários para compilação. A migração deve ser gradual via DX8Wrapper.
-
-2. **FAIL FAST:** Cada correção deve ser testada com compilação completa antes de prosseguir.
-
-3. **COMMIT TIME RESTRICTIONS:** GeneralsX project - evitar commits Segunda-Sexta 09:00-18:00 horário local.
-
-4. **BUILD COM TEE:** Sempre usar `tee` para logging:
-   ```bash
-   cmake --build build/macos --target GeneralsXZH -j 4 2>&1 | tee logs/phase_XX_build.log
-   ```
-
-5. **UPDATE DEV BLOG:** Atualizar `docs/DEV_BLOG/2025-01-DIARY.md` antes de commitar mudanças.
+- **Project Guidelines:** .github/instructions/generalsx.instructions.md
+- **Phase 39.5 Registry:** docs/WORKDIR/phases/3/PHASE39/39.5_INDEX.md
+- **Phase 40 SDL2:** docs/WORKDIR/phases/4/PHASE40/
+- **Phase 62 DX8 Stubs:** Core/Libraries/Source/WWVegas/WW3D2/DX8Wrapper_Stubs.cpp
 
 ---
 
-**Auditado por:** GitHub Copilot (Claude Sonnet 4.5)
-**Próxima Revisão:** Após correção Priority 1 issues
+## 🚨 Important Notes
+
+1. **DO NOT REMOVE STUBS:** DirectX stubs are required for compilation. Migration should address root causes, not remove stubs.
+
+2. **FAIL FAST:** Each fix must be validated with a full build before moving on.
+
+3. **COMMIT TIME RESTRICTIONS:** GeneralsX project - avoid commits Monday–Friday 09:00–18:00 local time.
+
+4. **BUILD WITH TEE:** Always use `tee` to log builds:
+```bash
+cmake --build build/macos --target GeneralsXZH -j 4 2>&1 | tee logs/phase_XX_build.log
+```
+
+5. **UPDATE DEV BLOG:** Update `docs/DEV_BLOG/2025-01-DIARY.md` before committing changes.
+
+---
+
+**Audited by:** GitHub Copilot (Claude Sonnet 4.5)
+**Next Review:** After Priority 1 issues are fixed
