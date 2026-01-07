@@ -1,12 +1,12 @@
 /**
  * Phase 41: C++ Class Stub Implementations
- * 
+ *
  * Provides complete stub implementations for classes that were declared
  * but never implemented. These allow the linker to succeed and create
  * a working executable.
- * 
+ *
  * Strategy: Define minimal vtables and methods for all unimplemented classes.
- * 
+ *
  * NOTE: Many stubs have moved to dedicated files:
  * - Transport: phase43_4_transport.cpp
  * - FillStackAddresses, Registry: phase43_registry_stubs.cpp

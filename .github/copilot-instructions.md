@@ -18,6 +18,11 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals / Zero Hour: l
   - Debug: `scripts/runTerminal.sh "scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee logs/debugTerminal.log"`
   - Note: `scripts/runTerminal.sh` enforces a 60s `timeout -s 9` to avoid fullscreen lockups.
 
+## Scripts (practical)
+- One-time asset wiring: `scripts/setup_assets.sh` (see `scripts/README.md`).
+- Clean rebuild when CMake state is stale: `scripts/build_clean.sh`.
+- Manual deploy without rebuilding: `scripts/deploy.sh`.
+
 ## Assets + configuration
 - The runtime expects original `.big` assets adjacent to the deployed executable (e.g., `$HOME/GeneralsX/GeneralsMD/Data/`), so deployment location matters.
 - User config is INI-based (registry replaced): examples in `assets/ini/` and stored under `~/.config/` on macOS/Linux (see `assets/ini/README.md`).
@@ -26,3 +31,6 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals / Zero Hour: l
 - Prefer `GeneralsXZH` (Zero Hour) as the main stable target; only backport to `GeneralsX` when the change is verified.
 - Don’t hardcode absolute user paths; use `$HOME`.
 - When adding docs, follow the repo’s doc layout rules in `.github/instructions/docs.instructions.md`.
+
+## Tests
+- There is no CTest/ctest wiring in this repo; `tests/` currently holds ad-hoc compile checks and a small test runner (`tests/core/test_runner.*`).
