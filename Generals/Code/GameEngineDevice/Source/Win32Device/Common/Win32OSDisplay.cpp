@@ -37,6 +37,11 @@
 #include "Common/UnicodeString.h"
 #include "GameClient/GameText.h"
 
+// Phase 44: Cross-platform message box support
+#ifndef _WIN32
+#include <SDL2/SDL.h>
+#endif
+
 
 
 extern HWND ApplicationHWnd;
@@ -101,6 +106,8 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 	// @todo Make this return more than just ok/cancel - jkmcd
 	// (we need a function to translate back the other way.)
 	Int returnResult = 0;
+	// Phase 44: Guard Windows-specific message box calls
+#ifdef _WIN32
 	if (TheSystemIsUnicode)
 	{
 		returnResult = ::MessageBoxW(NULL, mesgStr.str(), promptStr.str(), windowsOptionsFlags);
@@ -116,6 +123,32 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 		::SetWindowPos(ApplicationHWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 		returnResult = ::MessageBoxA(NULL, mesgA.str(), promptA.str(), windowsOptionsFlags);
 	}
+#else
+	// Cross-platform: Use SDL message box
+	AsciiString promptA, mesgA;
+	promptA.translate(promptStr);
+	mesgA.translate(mesgStr);
+	
+	SDL_MessageBoxData msgbox;
+	msgbox.window = NULL;
+	msgbox.title = promptA.str();
+	msgbox.message = mesgA.str();
+	msgbox.numbuttons = 0;
+	msgbox.buttons = NULL;
+	msgbox.colorScheme = NULL;
+	
+	if (BitIsSet(otherFlags, OSDOF_ERRORICON)) {
+		msgbox.flags = SDL_MESSAGEBOX_ERROR;
+	} else if (BitIsSet(otherFlags, OSDOF_EXCLAMATIONICON)) {
+		msgbox.flags = SDL_MESSAGEBOX_WARNING;
+	} else {
+		msgbox.flags = SDL_MESSAGEBOX_INFORMATION;
+	}
+	
+	int buttonid = 0;
+	SDL_ShowMessageBox(&msgbox, &buttonid);
+	returnResult = (buttonid == 0) ? IDOK : IDCANCEL;
+#endif
 
 	if (returnResult == IDOK) {
 		return OSDBT_OK;
@@ -127,9 +160,17 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 //-------------------------------------------------------------------------------------------------
 void OSDisplaySetBusyState(Bool busyDisplay, Bool busySystem)
 {
+	// Phase 44: Guard Windows-specific power state management
+#ifdef _WIN32
 	EXECUTION_STATE state = ES_CONTINUOUS;
 	state |= busyDisplay ? ES_DISPLAY_REQUIRED : 0;
 	state |= busySystem ? ES_SYSTEM_REQUIRED : 0;
 
 	::SetThreadExecutionState(state);
+#else
+	// Cross-platform: No native equivalent for power state management
+	// The OS will handle display/system state based on user activity
+	(void)busyDisplay;  // Suppress unused parameter warning
+	(void)busySystem;
+#endif
 }

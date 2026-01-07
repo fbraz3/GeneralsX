@@ -4,7 +4,7 @@ applyTo: '**'
 
 # Objectives
 
-GeneralsX is a cross-platform port of Command & Conquer: Generals (2002) and its expansion Zero Hour (2003) from Windows-only DirectX 8 to macOS/Linux/Windows using Vulkan and SDL2 backends.
+GeneralsX is a cross-platform port of Command & Conquer: Generals (2002) and its expansion Zero Hour aka GeneralsMD (2003) from Windows-only DirectX 8 to macOS/Linux/Windows using Vulkan and SDL2 backends.
 
 This is a **massive C++ game engine** (~500k+ LOC) being ported from Visual C++ 6 (C++98) to modern C++20 with platform abstraction layers.
 

@@ -181,6 +181,8 @@ Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverP
 
 	DEBUG_LOG(("Host address is %d.%d.%d.%d", serverAddress[3], serverAddress[2], serverAddress[1], serverAddress[0]));
 
+	// Phase 44: Guard Windows-specific SNMP code
+#ifdef _WIN32
 	/*
 	** Load the MIB-II SNMP DLL.
 	*/
@@ -427,6 +429,11 @@ Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverP
 	FreeLibrary(snmpapi_dll);
 	FreeLibrary(mib_ii_dll);
 	return(found);
+#else
+	// Non-Windows: GameSpy networking (SNMP-based) not supported on cross-platform builds
+	DEBUG_LOG(("GetLocalChatConnectionAddress: SNMP networking not available on non-Windows platforms"));
+	return FALSE;
+#endif
 }
 
 

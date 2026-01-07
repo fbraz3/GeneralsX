@@ -388,6 +388,8 @@ m_ChooseVictimAlwaysUsesNormal(false)
 //-------------------------------------------------------------------------------------------------
 ScriptEngine::~ScriptEngine()
 {
+	// Phase 44: Guard Windows-specific editor DLL cleanup
+#ifdef _WIN32
 	if (st_DebugDLL) {
 		FARPROC proc = GetProcAddress(st_DebugDLL, "DestroyDebugDialog");
 		if (proc) {
@@ -407,6 +409,7 @@ ScriptEngine::~ScriptEngine()
 		FreeLibrary(st_ParticleDLL);
 		st_ParticleDLL = NULL;
 	}
+#endif
 
 #ifdef DO_VTUNE_STUFF
 	_cleanUpVTune();
@@ -420,6 +423,8 @@ ScriptEngine::~ScriptEngine()
 //-------------------------------------------------------------------------------------------------
 void ScriptEngine::init( void )
 {
+	// Phase 44: Guard Windows-specific editor DLL loading
+#ifdef _WIN32
 	if (TheGlobalData->m_windowed)
 		if (TheGlobalData->m_scriptDebug) {
 			st_DebugDLL = LoadLibrary("DebugWindow.dll");
@@ -446,6 +451,11 @@ void ScriptEngine::init( void )
 			proc();
 		}
 	}
+#else
+	// Cross-platform: Editor DLLs are Windows-only
+	st_DebugDLL = NULL;
+	st_ParticleDLL = NULL;
+#endif
 
 #ifdef DO_VTUNE_STUFF
 	_initVTune();

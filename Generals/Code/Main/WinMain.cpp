@@ -32,12 +32,17 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
+#ifdef _WIN32
 #include <windows.h>
+#include <ole2.h>
+#include <dbt.h>
+#else
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_vulkan.h>
+#endif
 #include <stdlib.h>
 #include <crtdbg.h>
 #include <eh.h>
-#include <ole2.h>
-#include <dbt.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"
@@ -691,6 +696,8 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 
 	gInitializing = true;
 
+	// Phase 44: Use SDL2 for cross-platform window management instead of Win32 APIs
+#ifdef _WIN32
 	HWND hWnd = CreateWindow(TEXT("Game Window"),
 		TEXT("Command and Conquer Generals"),
 		windowStyle,
@@ -724,6 +731,30 @@ static Bool initializeAppWindows(HINSTANCE hInstance, Int nCmdShow, Bool runWind
 
 	// save our application window handle for future use
 	ApplicationHWnd = hWnd;
+#else
+	// Cross-platform: Use SDL2 for window management
+	SDL_DisplayMode displayMode;
+	SDL_GetCurrentDisplayMode(0, &displayMode);
+	
+	int centerX = (displayMode.w / 2) - (startWidth / 2);
+	int centerY = (displayMode.h / 2) - (startHeight / 2);
+	
+	SDL_Window* sdlWindow = SDL_CreateWindow(
+		"Command and Conquer Generals",
+		centerX, centerY,
+		startWidth, startHeight,
+		SDL_WINDOW_VULKAN | (runWindowed ? 0 : SDL_WINDOW_FULLSCREEN)
+	);
+	
+	if (!sdlWindow) {
+		return false;
+	}
+	
+	// Cast SDL_Window to void* for ApplicationHWnd compatibility
+	ApplicationHWnd = (void*)sdlWindow;
+	SDL_ShowWindow(sdlWindow);
+	SDL_RaiseWindow(sdlWindow);
+#endif
 	gInitializing = false;
 	if (!runWindowed) {
 		gDoPaint = false;
