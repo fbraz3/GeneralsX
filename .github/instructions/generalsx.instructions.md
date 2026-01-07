@@ -10,13 +10,39 @@ This is a **massive C++ game engine** (~500k+ LOC) being ported from Visual C++ 
 
 **Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code that assumes Windows everywhere. Respect the existing architecture while adding cross-platform support.
 
-## Multi-Platform Support
+## Primary Goals
+
+- Load initial screen and main menu on macOS (Apple Silicon) natively with Vulkan.
+- Be able to navigate menus
+- Start a skirmish game (single-player vs AI) successfully
+
+## Secondary Goals
+
+- Achieve similar functionality on Linux (x86_64) natively with Vulkan.
+- Backport changes to Windows (x86_64) Vulkan target.
+
+## Future Goals
+
+- Campaign missions support.
+- Generals Challenge support.
+- Multiplayer support (beyond LAN).
+
+## wishlist (far future)
+
+- Modding support.
+- Review online multiplayer (via GameSpy or other services).
+- Enhance computer AI.
+- Performance optimizations.
+- Additional platforms (e.g., ARM Linux, Steam Deck).
+- rewrite online algori
+
+# Multi-Platform Support
 
 The project must run natively on Windows, macOS and Linux, using Vulkan as graphics API and SDL2 as main backend library for windowing, input and audio.
 
 Registry keys must be replaced by configuration files, details about file formats and locations can be found into `assets/ini/README.md` file.
 
-## Updtate Daily Blog before committing any changes
+# Update Daily Blog before committing any changes
 
 Before committing changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, you must follow the development diary guidelines in `.github\instructions\docs.instructions.md`.
 

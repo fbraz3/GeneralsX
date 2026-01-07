@@ -1111,6 +1111,13 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
 #    Source/GameNetwork/GameSpyOverlay.cpp
     Source/GameNetwork/GUIUtil.cpp
+    # Phase 44.2: Include Core GameNetwork sources for cross-platform builds
+    ../../../Core/GameEngine/Source/GameNetwork/GameSpy/Chat.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/GameSpy/PeerDefs.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/GameSpy/LadderDefs.cpp
+    # ../../../Core/GameEngine/Source/GameNetwork/GameSpy/LobbyUtils.cpp  # Already in GeneralsMD/WOLGameSetupMenu
+    ../../../Core/GameEngine/Source/GameNetwork/GameSpy/StagingRoomGameInfo.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/GameSpy/Thread/PersistentStorageThread.cpp
 #    Source/GameNetwork/IPEnumeration.cpp
 #    Source/GameNetwork/LANAPI.cpp
 #    Source/GameNetwork/LANAPICallbacks.cpp
