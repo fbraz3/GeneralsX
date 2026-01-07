@@ -36,23 +36,9 @@ TextureLoadTaskClass::TextureLoadTaskClass(const char* name, const ChunkLoadClas
 TextureLoadTaskClass::~TextureLoadTaskClass() { }
 
 // ============================================================================
-// CubeTexture Constructor (most problematic)
+// CubeTexture - REMOVED: Real implementation exists in WW3D2
+// DO NOT STUB THIS CLASS - it has actual methods in phase43_texture_apply.cpp
 // ============================================================================
-
-// Minimal MipCountType and WW3DFormat stubs
-enum MipCountType { MIP_LEVELS_ALL = 0 };
-enum WW3DFormat { WW3D_FORMAT_UNKNOWN = 0 };
-
-class CubeTextureClass {
-public:
-    CubeTextureClass(const char* name1, const char* name2, MipCountType mip_count, WW3DFormat format, bool render_target, bool allow_reduction);
-    virtual ~CubeTextureClass();
-    virtual unsigned Get_Texture_Memory_Usage() const { return 0; }
-    virtual void* Peek_D3D_Base_Texture() const { return nullptr; }
-};
-
-CubeTextureClass::CubeTextureClass(const char* name1, const char* name2, MipCountType mip_count, WW3DFormat format, bool render_target, bool allow_reduction) { }
-CubeTextureClass::~CubeTextureClass() { }
 
 // ============================================================================
 // UnicodeString helpers

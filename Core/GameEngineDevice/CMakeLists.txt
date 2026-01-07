@@ -219,8 +219,6 @@ endif()
 add_library(corei_gameenginedevice_private INTERFACE)
 add_library(corei_gameenginedevice_public INTERFACE)
 
-target_sources(corei_gameenginedevice_private INTERFACE ${GAMEENGINEDEVICE_SRC})
-
 target_include_directories(corei_gameenginedevice_public INTERFACE
     Include
 )

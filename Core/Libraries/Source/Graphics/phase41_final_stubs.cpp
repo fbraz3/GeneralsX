@@ -120,18 +120,9 @@ public:
 };
 
 // ============================================================================
-// CubeTextureClass stubs
+// CubeTextureClass - REMOVED: Real implementation exists in WW3D2
+// DO NOT STUB THIS CLASS - it has actual methods in phase43_texture_apply.cpp
 // ============================================================================
-
-class CubeTextureClass : public TextureClassImpl {
-public:
-    CubeTextureClass(unsigned width, int format, int mip_levels, int pool, bool render)
-        : TextureClassImpl(width, width, format, mip_levels, pool, render, true) { }
-    ~CubeTextureClass() { }
-
-    TextureClass* As_TextureClass() { return (TextureClass*)this; }
-    CubeTextureClass* As_CubeTextureClass() { return this; }
-};
 
 // ============================================================================
 // VolumeTextureClass
