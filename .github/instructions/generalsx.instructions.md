@@ -44,7 +44,7 @@ Registry keys must be replaced by configuration files, details about file format
 
 # Update Daily Blog before committing any changes
 
-Before committing changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, where YYYY-MM is the current year and month. You must follow the development diary guidelines in `.github\instructions\docs.instructions.md`.
+Before committing changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, where YYYY-MM is the current year and month. You also must follow the development diary guidelines in `.github/instructions/docs.instructions.md`.
 
 # Guidelines
 
