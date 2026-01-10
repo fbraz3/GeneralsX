@@ -44,14 +44,14 @@ Registry keys must be replaced by configuration files, details about file format
 
 # Update Daily Blog before committing any changes
 
-Before committing changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, where YYYY-MM is the current year and month. You also must follow the development diary guidelines in `.github/instructions/docs.instructions.md`.
+Before committing changes, make sure to update the development diary located at `docs/DEV_BLOG/YYYY-MM-DIARY.md`, where YYYY-MM is the current year and month. You also must follow the development diary guidelines from `.github/instructions/docs.instructions.md` file.
 
 # Guidelines
 
 - The problem cannot be solved by patching over the symptoms; we must address the **root cause** of the problem.
 - Use the available reference repositories to identify and implement proper solutions.
 - You can also search on GitHub and other online resources for similar problems and solutions.
-- **IMPORTANT** All code, including documentation files and comments, **must be** in English.
+- **IMPORTANT** All code, including documentation files and comments, **must be in English** regardless of the user's language.
 - You may use the `deepwiki` tool that will help you understand the codebase and its architecture.
 - Vulkan-only and SDL2-only focus; do not include DirectX or native Windows API-specific code/instructions.
 - Even if errors come from earlier phases, we must fix the gaps that were left behind.
@@ -278,7 +278,7 @@ unzip VulkanSDK-Mac-Docs-1.4.335.1.zip
 rm -rf VulkanSDK-Mac-Docs-1.4.335.1.zip
 ```
 
-This is the example for macOS, you can adjust the URL and commands accordingly for Windows or Linux versions of the Vulkan SDK documentation.
+The example above is for macOS, you can adjust the URL and commands accordingly for Windows or Linux versions of the Vulkan SDK documentation.
 
 ```
 https://vulkan.lunarg.com/doc/download/VulkanSDK-Windows-Docs-1.4.335.0.zip

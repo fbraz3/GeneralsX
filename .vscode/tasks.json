@@ -118,7 +118,7 @@
             "type": "shell",
             "command": "${workspaceFolder}/scripts/runTerminal.sh",
             "args": [
-                "$HOME/GeneralsX/GeneralsMD/GeneralsXZH -win 2>&1 | tee ${workspaceFolder}/logs/runTerminal.log"
+                "$HOME/GeneralsX/GeneralsMD/GeneralsXZH -win -noshellmap 2>&1 | tee ${workspaceFolder}/logs/runTerminal.log"
             ],
             "isBackground": false,
             "group": "test",

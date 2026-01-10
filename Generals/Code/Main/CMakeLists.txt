@@ -7,8 +7,10 @@ set_target_properties(GeneralsX PROPERTIES OUTPUT_NAME GeneralsX)
 # Phase 43.8 FIX: Force linker to use our stubs by adding them AFTER libraries
 # Apply same linker strategy as GeneralsXZH to ensure Generals reaches feature parity
 if(APPLE)
+    # Fail fast on missing symbols on macOS.
+    # Avoid deferring undefined symbol failures to runtime dyld errors.
     target_link_options(GeneralsX PRIVATE
-        -Wl,-undefined,dynamic_lookup
+        -Wl,-undefined,error
     )
 endif()
 

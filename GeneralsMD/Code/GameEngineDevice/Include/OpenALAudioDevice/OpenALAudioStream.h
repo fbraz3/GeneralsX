@@ -5,8 +5,13 @@
 #include <vector>
 
 #ifdef RTS_HAS_OPENAL
+#ifdef __APPLE__
+#include <al.h>
+#include <alc.h>
+#else
 #include <AL/al.h>
 #include <AL/alc.h>
+#endif
 #endif
 
 class OpenALAudioStream {

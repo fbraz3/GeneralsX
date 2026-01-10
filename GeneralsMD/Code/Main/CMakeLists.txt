@@ -4,13 +4,22 @@ add_executable(GeneralsXZH)
 # Phase 39.5: Unified output name for all platforms
 set_target_properties(GeneralsXZH PROPERTIES OUTPUT_NAME GeneralsXZH)
 
-# Phase 43.7 FIX: Force linker to use our stubs by adding them AFTER libraries
-# Normally linker resolves symbols from libz_gameengine.a first, but those symbols
-# are undefined there. By using link options to specify undefined symbols,
-# we force the linker to search in our object files too.
+# Phase 43.7 FIX (revised): Fail fast on missing symbols on macOS.
+#
+# Historically we used `-Wl,-undefined,dynamic_lookup`, which defers undefined
+# symbol failures to runtime (dyld flat-namespace errors). That makes iteration
+# slow and hides the full set of missing objects.
+#
+# Use `-Wl,-undefined,error` so the link step reports all missing symbols.
 if(APPLE)
     target_link_options(GeneralsXZH PRIVATE
-        -Wl,-undefined,dynamic_lookup
+        -Wl,-undefined,error
+    )
+    # Phase 43.8: Link macOS system frameworks needed by game code
+    # GlobalLanguage.cpp uses CoreFoundation and CoreText for font management
+    target_link_libraries(GeneralsXZH PRIVATE
+        "-framework CoreFoundation"
+        "-framework CoreText"
     )
 endif()
 

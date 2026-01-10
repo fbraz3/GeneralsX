@@ -1178,7 +1178,6 @@ else()
     )
 endif()
 
-
 add_library(corei_gameengine_private INTERFACE)
 add_library(corei_gameengine_public INTERFACE)
 

@@ -97,10 +97,13 @@ applyTo: '**/*.md'
 ### `docs/DEV_BLOG/` - Development Diary ONLY
 **Purpose**: Chronological development diary entries
 - YYYY-MM-DIARY.md - Monthly diary (ONE file per month)
+  - YYYY is the current year
+  - MM is the current month
+  - DIARY is a fixed literal
   - Entries newest to oldest (most recent at top, after Overview)
   - Informal, daily/session notes
   - Short summaries of work done
-- README.md - Index of available diaries
+- `docs/DEV_BLOG/README.md` - Index of available diaries and overview of diary purpose with details on structure and usage
 
 **Only this goes here**: Diary entries and README
 

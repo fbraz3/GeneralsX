@@ -49,7 +49,11 @@ extern "C" {
 #ifdef RTS_HAS_OPENAL
 #include "Audio/OpenALAudioManager.h"
 #include "OpenALAudioDevice/OpenALAudioStream.h"
+#ifdef __APPLE__
+#include <al.h>
+#else
 #include <AL/al.h>
+#endif
 #endif
 
 #include <chrono>

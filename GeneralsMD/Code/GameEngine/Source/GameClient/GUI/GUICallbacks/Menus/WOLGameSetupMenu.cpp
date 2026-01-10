@@ -487,6 +487,8 @@ static void playerTooltip(GameWindow *window,
 	TheMouse->setCursorTooltip( tooltip, -1, NULL, 1.5f ); // the text and width are the only params used.  the others are the default values.
 }
 
+// gameAcceptTooltip moved to Core/GameEngine/Source/GameNetwork/GameSpy/LobbyUtils.cpp
+/*
 void gameAcceptTooltip(GameWindow *window, WinInstanceData *instData, UnsignedInt mouse)
 {
 	Int x, y;
@@ -504,6 +506,7 @@ void gameAcceptTooltip(GameWindow *window, WinInstanceData *instData, UnsignedIn
 		TheMouse->setCursorTooltip(TheGameText->fetch("TOOLTIP:GameAcceptance"), -1, NULL);
 	}
 }
+*/
 
 void pingTooltip(GameWindow *window, WinInstanceData *instData, UnsignedInt mouse)
 {

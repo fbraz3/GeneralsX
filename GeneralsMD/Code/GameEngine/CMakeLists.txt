@@ -551,10 +551,10 @@ set(GAMEENGINE_SRC
 #    Include/GameNetwork/WOLBrowser/FEBDispatch.h
 #    Include/GameNetwork/WOLBrowser/WebBrowser.h
     Include/Precompiled/PreRTS.h
-#    Source/Common/Audio/AudioEventRTS.cpp
+    ../../../Core/GameEngine/Source/Common/Audio/AudioEventRTS.cpp
 #    Source/Common/Audio/AudioRequest.cpp
-#    Source/Common/Audio/DynamicAudioEventInfo.cpp
-#    Source/Common/Audio/GameAudio.cpp
+    ../../../Core/GameEngine/Source/Common/Audio/DynamicAudioEventInfo.cpp
+    ../../../Core/GameEngine/Source/Common/Audio/GameAudio.cpp
 #    Source/Common/Audio/GameMusic.cpp
 #    Source/Common/Audio/GameSounds.cpp
     #Source/Common/Audio/simpleplayer.cpp # unused
@@ -571,6 +571,7 @@ set(GAMEENGINE_SRC
     Source/Common/GameEngine.cpp
     Source/Common/GameLOD.cpp
     Source/Common/GameMain.cpp
+    ../../../Core/GameEngine/Source/Common/FramePacer.cpp
     Source/Common/GlobalData.cpp
     Source/Common/INI/INI.cpp
     Source/Common/INI/INIAiData.cpp
@@ -607,7 +608,7 @@ set(GAMEENGINE_SRC
     Source/Common/NameKeyGenerator.cpp
     Source/Common/PartitionSolver.cpp
     Source/Common/PerfTimer.cpp
-#    Source/Common/RandomValue.cpp
+    ../../../Core/GameEngine/Source/Common/RandomValue.cpp
     Source/Common/Recorder.cpp
 #    Source/Common/ReplaySimulation.cpp
     Source/Common/RTS/AcademyStats.cpp
@@ -629,32 +630,32 @@ set(GAMEENGINE_SRC
     Source/Common/SkirmishBattleHonors.cpp
     Source/Common/StateMachine.cpp
     Source/Common/StatsCollector.cpp
-#    Source/Common/System/ArchiveFile.cpp
-#    Source/Common/System/ArchiveFileSystem.cpp
-#    Source/Common/System/AsciiString.cpp
+    ../../../Core/GameEngine/Source/Common/System/ArchiveFile.cpp
+    ../../../Core/GameEngine/Source/Common/System/ArchiveFileSystem.cpp
+    ../../../Core/GameEngine/Source/Common/System/AsciiString.cpp
     Source/Common/System/BuildAssistant.cpp
     Source/Common/System/CDManager.cpp
     Source/Common/System/CriticalSection.cpp
     Source/Common/System/DataChunk.cpp
-#    Source/Common/System/Debug.cpp
+    ../../../Core/GameEngine/Source/Common/System/Debug.cpp
     Source/Common/System/Directory.cpp
     Source/Common/System/DisabledTypes.cpp
     Source/Common/System/encrypt.cpp
 #    Source/Common/System/File.cpp
-#    Source/Common/System/FileSystem.cpp
+    ../../../Core/GameEngine/Source/Common/System/FileSystem.cpp
     Source/Common/System/FunctionLexicon.cpp
     Source/Common/System/GameCommon.cpp
-    #Source/Common/System/GameMemory.cpp
+    ../../../Core/GameEngine/Source/Common/System/GameMemory.cpp
     Source/Common/System/GameType.cpp
     Source/Common/System/Geometry.cpp
     Source/Common/System/KindOf.cpp
     Source/Common/System/List.cpp
-#    Source/Common/System/LocalFile.cpp
-#    Source/Common/System/LocalFileSystem.cpp
+    ../../../Core/GameEngine/Source/Common/System/LocalFile.cpp
+    ../../../Core/GameEngine/Source/Common/System/LocalFileSystem.cpp
     #Source/Common/System/MemoryInit.cpp
-#    Source/Common/System/ObjectStatusTypes.cpp
+    Source/Common/System/ObjectStatusTypes.cpp
     Source/Common/System/QuotedPrintable.cpp
-#    Source/Common/System/Radar.cpp
+    ../../../Core/GameEngine/Source/Common/System/Radar.cpp
 #    Source/Common/System/RAMFile.cpp
     Source/Common/System/registry.cpp
     Source/Common/System/SaveGame/GameState.cpp
@@ -666,10 +667,10 @@ set(GAMEENGINE_SRC
     Source/Common/System/Trig.cpp
 #    Source/Common/System/UnicodeString.cpp
     Source/Common/System/Upgrade.cpp
-#    Source/Common/System/Xfer.cpp
-#    Source/Common/System/XferCRC.cpp
-#    Source/Common/System/XferLoad.cpp
-#    Source/Common/System/XferSave.cpp
+    ../../../Core/GameEngine/Source/Common/System/Xfer.cpp
+    ../../../Core/GameEngine/Source/Common/System/XferCRC.cpp
+    ../../../Core/GameEngine/Source/Common/System/XferLoad.cpp
+    ../../../Core/GameEngine/Source/Common/System/XferSave.cpp
     Source/Common/TerrainTypes.cpp
     Source/Common/Thing/DrawModule.cpp
     Source/Common/Thing/Module.cpp
@@ -785,6 +786,7 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
     Source/GameClient/GUI/HeaderTemplate.cpp
     Source/GameClient/GUI/IMEManager.cpp
+    Source/GameClient/GUI/IMEManagerNull.cpp
     Source/GameClient/GUI/LoadScreen.cpp
     Source/GameClient/GUI/ProcessAnimateWindow.cpp
     Source/GameClient/GUI/Shell/Shell.cpp
@@ -797,7 +799,7 @@ set(GAMEENGINE_SRC
     Source/GameClient/Input/Mouse.cpp
     Source/GameClient/LanguageFilter.cpp
     Source/GameClient/Line2D.cpp
-#    Source/GameClient/MapUtil.cpp
+    ../../../Core/GameEngine/Source/GameClient/MapUtil.cpp
     Source/GameClient/MessageStream/CommandXlat.cpp
     Source/GameClient/MessageStream/GUICommandTranslator.cpp
     Source/GameClient/MessageStream/HintSpy.cpp
@@ -807,10 +809,10 @@ set(GAMEENGINE_SRC
     Source/GameClient/MessageStream/PlaceEventTranslator.cpp
     Source/GameClient/MessageStream/SelectionXlat.cpp
     Source/GameClient/MessageStream/WindowXlat.cpp
-#    Source/GameClient/ParabolicEase.cpp
+    ../../../Core/GameEngine/Source/GameClient/ParabolicEase.cpp
     Source/GameClient/RadiusDecal.cpp
     Source/GameClient/SelectionInfo.cpp
-#    Source/GameClient/Snow.cpp
+    ../../../Core/GameEngine/Source/GameClient/Snow.cpp
     Source/GameClient/Statistics.cpp
     Source/GameClient/System/Anim2D.cpp
     Source/GameClient/System/CampaignManager.cpp
@@ -820,12 +822,12 @@ set(GAMEENGINE_SRC
     Source/GameClient/System/ParticleSys.cpp
     Source/GameClient/System/RayEffect.cpp
 #    Source/GameClient/System/Smudge.cpp
-#    Source/GameClient/Terrain/TerrainRoads.cpp
-#    Source/GameClient/Terrain/TerrainVisual.cpp
-#    Source/GameClient/VideoPlayer.cpp
+    ../../../Core/GameEngine/Source/GameClient/Terrain/TerrainRoads.cpp
+    ../../../Core/GameEngine/Source/GameClient/Terrain/TerrainVisual.cpp
+    ../../../Core/GameEngine/Source/GameClient/VideoPlayer.cpp
 #    Source/GameClient/VideoStream.cpp
-#    Source/GameClient/View.cpp
-#    Source/GameClient/Water.cpp
+    ../../../Core/GameEngine/Source/GameClient/View.cpp
+    ../../../Core/GameEngine/Source/GameClient/Water.cpp
     Source/GameLogic/AI/AI.cpp
     Source/GameLogic/AI/AIDock.cpp
     Source/GameLogic/AI/AIGroup.cpp
@@ -1085,18 +1087,18 @@ set(GAMEENGINE_SRC
     Source/GameLogic/System/GameLogic.cpp
     Source/GameLogic/System/GameLogicDispatch.cpp
     Source/GameLogic/System/RankInfo.cpp
-#    Source/GameNetwork/Connection.cpp
-#    Source/GameNetwork/ConnectionManager.cpp
-#    Source/GameNetwork/DisconnectManager.cpp
-#    Source/GameNetwork/DownloadManager.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/Connection.cpp
+#    ../../../Core/GameEngine/Source/GameNetwork/ConnectionManager.cpp
+#    ../../../Core/GameEngine/Source/GameNetwork/DisconnectManager.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/DownloadManager.cpp
 #    Source/GameNetwork/FileTransfer.cpp
-#    Source/GameNetwork/FirewallHelper.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/FirewallHelper.cpp
 #    Source/GameNetwork/FrameData.cpp
 #    Source/GameNetwork/FrameDataManager.cpp
 #    Source/GameNetwork/FrameMetrics.cpp
-#    Source/GameNetwork/GameInfo.cpp
-#    Source/GameNetwork/GameMessageParser.cpp
-#    Source/GameNetwork/GameSpy/Chat.cpp  # GameSpy is in Core/GameEngine, not GeneralsMD
+    ../../../Core/GameEngine/Source/GameNetwork/GameInfo.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/GameMessageParser.cpp
+    #    Source/GameNetwork/GameSpy/Chat.cpp  # GameSpy is in Core/GameEngine, not GeneralsMD
 #    Source/GameNetwork/GameSpy/GSConfig.cpp
 #    Source/GameNetwork/GameSpy/LadderDefs.cpp
 #    Source/GameNetwork/GameSpy/LobbyUtils.cpp
@@ -1115,24 +1117,24 @@ set(GAMEENGINE_SRC
     ../../../Core/GameEngine/Source/GameNetwork/GameSpy/Chat.cpp
     ../../../Core/GameEngine/Source/GameNetwork/GameSpy/PeerDefs.cpp
     ../../../Core/GameEngine/Source/GameNetwork/GameSpy/LadderDefs.cpp
-    # ../../../Core/GameEngine/Source/GameNetwork/GameSpy/LobbyUtils.cpp  # Already in GeneralsMD/WOLGameSetupMenu
+    ../../../Core/GameEngine/Source/GameNetwork/GameSpy/LobbyUtils.cpp
     ../../../Core/GameEngine/Source/GameNetwork/GameSpy/StagingRoomGameInfo.cpp
     ../../../Core/GameEngine/Source/GameNetwork/GameSpy/Thread/PersistentStorageThread.cpp
-#    Source/GameNetwork/IPEnumeration.cpp
-#    Source/GameNetwork/LANAPI.cpp
-#    Source/GameNetwork/LANAPICallbacks.cpp
-#    Source/GameNetwork/LANAPIhandlers.cpp
-#    Source/GameNetwork/LANGameInfo.cpp
-#    Source/GameNetwork/NAT.cpp
-#    Source/GameNetwork/NetCommandList.cpp
-#    Source/GameNetwork/NetCommandMsg.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/IPEnumeration.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/LANAPI.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/LANAPICallbacks.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/LANAPIhandlers.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/LANGameInfo.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/NAT.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/NetCommandList.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/NetCommandMsg.cpp
 #    Source/GameNetwork/NetCommandRef.cpp
 #    Source/GameNetwork/NetCommandWrapperList.cpp
 #    Source/GameNetwork/NetMessageStream.cpp
-#    Source/GameNetwork/NetPacket.cpp
-#    Source/GameNetwork/Network.cpp
-#    Source/GameNetwork/NetworkUtil.cpp
-#    Source/GameNetwork/Transport.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/NetPacket.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/Network.cpp
+    ../../../Core/GameEngine/Source/GameNetwork/NetworkUtil.cpp
+#    ../../../Core/GameEngine/Source/GameNetwork/Transport.cpp
 #    Source/GameNetwork/udp.cpp
 #    Source/GameNetwork/User.cpp
 #    Source/GameNetwork/WOLBrowser/WebBrowser.cpp
