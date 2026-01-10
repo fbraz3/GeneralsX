@@ -1,0 +1,4 @@
+{
+    "chat.agent.maxRequests": 100,
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+}
