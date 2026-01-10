@@ -1,133 +1,36 @@
-# AI Coding Agent Instructions
+# GeneralsX — Copilot Instructions
 
-## Project Overview
+## What this repo is
+GeneralsX is a cross-platform port of Command & Conquer: Generals / Zero Hour: legacy Win32 + DirectX 8-era code modernized to C++20 with SDL2 and a Vulkan-first renderer (see `CMakePresets.json`).
 
-This is the **GeneralsGameCode** project - a community-driven effort to fix and improve the classic RTS games *Command & Conquer: Generals* and *Zero Hour*. The codebase has been modernized from Visual Studio 6/C++98 to Visual Studio 2022/C++20 while maintaining retail compatibility.
+## Where to make changes (important)
+- Prefer adding shims instead of rewriting game logic to “remove Windows”: start in `Dependencies/Utility/Compat/` (e.g., `d3d8.h`) and `Core/Libraries/Source/WWVegas/WW3D2/win32_*_compat.h`.
+- Most rendering state flows through `Core/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h` / `DX8Wrapper::*` (e.g., render-state/texture-stage calls); keep changes centralized there.
+- Prefer engine-wide safety fixes in `Core/GameEngine/Source/Common/System/GameMemory.cpp` over scattered call-site checks.
+- Prefer `TheFileSystem` abstractions (not raw `fopen`) for cross-platform file access.
 
-## Architecture
+## Build + run (macOS primary)
+- Configure: `cmake --preset macos` (Vulkan is enabled and exported via preset env vars).
+- Build (primary target): `cmake --build build/macos --target GeneralsXZH -j 4 2>&1 | tee logs/build.log`
+- Deploy helper: `scripts/build_zh.sh` (builds + copies to `$HOME/GeneralsX/GeneralsMD`).
+- Run/debug via external Terminal.app wrappers:
+  - Run: `scripts/runTerminal.sh "$HOME/GeneralsX/GeneralsMD/GeneralsXZH -win 2>&1 | tee logs/runTerminal.log"`
+  - Debug: `scripts/runTerminal.sh "scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee logs/debugTerminal.log"`
+  - Note: `scripts/runTerminal.sh` enforces a 60s `timeout -s 9` to avoid fullscreen lockups.
 
-### Dual Game Structure
-- **Generals/**: Original C&C Generals (v1.08) codebase
-- **GeneralsMD/**: Zero Hour expansion (v1.04) codebase - **primary focus**
-- **Core/**: Shared game engine and libraries used by both games
+## Scripts (practical)
+- One-time asset wiring: `scripts/setup_assets.sh` (see `scripts/README.md`).
+- Clean rebuild when CMake state is stale: `scripts/build_clean.sh`.
+- Manual deploy without rebuilding: `scripts/deploy.sh`.
 
-### Key Components
-- **Core/GameEngine/**: Base game engine with GameClient/GameLogic separation
-- **Core/Libraries/**: Internal libraries including WWVegas graphics framework
-- **Core/GameEngineDevice/**: Platform-specific rendering (DirectX 8)
-- **Core/Tools/**: Development tools (W3DView, texture compression, etc.)
-- **Dependencies/**: External dependencies (MaxSDK for VC6, utilities)
+## Assets + configuration
+- The runtime expects original `.big` assets adjacent to the deployed executable (e.g., `$HOME/GeneralsX/GeneralsMD/Data/`), so deployment location matters.
+- User config is INI-based (registry replaced): examples in `assets/ini/` and stored under `~/.config/` on macOS/Linux (see `assets/ini/README.md`).
 
-## Build System
+## Conventions
+- Prefer `GeneralsXZH` (Zero Hour) as the main stable target; only backport to `GeneralsX` when the change is verified.
+- Don’t hardcode absolute user paths; use `$HOME`.
+- When adding docs, follow the repo’s doc layout rules in `.github/instructions/docs.instructions.md`.
 
-### CMake Presets (Critical)
-- **vc6**: Visual Studio 6 compatible build (retail compatibility required)
-- **win32**: Modern Visual Studio 2022 build
-- **vc6-debug/vc6-profile**: Debug/profiling variants
-- Use `cmake --preset <preset-name>` followed by `cmake --build build/<preset>`
-
-### Build Commands
-```bash
-# Configure with specific preset
-cmake --preset vc6
-
-# Build (from project root)
-cmake --build build/vc6
-
-# Build with tools and extras
-cmake --build build/vc6 --target <game>_tools <game>_extras
-```
-
-### Retail Compatibility
-- VC6 builds are required for replay compatibility testing
-- Debug builds break retail compatibility
-- Use RTS_BUILD_OPTION_DEBUG=OFF for compatibility testing
-
-## Development Workflow
-
-### Code Change Documentation
-**Every user-facing change requires TheSuperHackers comment format:**
-```cpp
-// TheSuperHackers @keyword author DD/MM/YYYY Description
-```
-
-Common keywords: `@bugfix`, `@feature`, `@performance`, `@refactor`, `@tweak`, `@build`
-
-### Pull Request Guidelines
-- Title format: `type: Description starting with action verb`
-- Types: `bugfix:`, `feat:`, `fix:`, `refactor:`, `perf:`, `build:`
-- Zero Hour changes take precedence over Generals
-- Changes must be identical between both games when applicable
-
-### Code Style
-- Maintain consistency with surrounding legacy code
-- Prefer C++98 style unless modern features add significant value
-- No big refactors mixed with logical changes
-- Use present tense in documentation ("Fixes" not "Fixed")
-
-## Testing
-
-### Replay Compatibility Testing
-Located in `GeneralsReplays/` - critical for ensuring retail compatibility:
-```bash
-generalszh.exe -jobs 4 -headless -replay subfolder/*.rep
-```
-- Requires VC6 optimized build with RTS_BUILD_OPTION_DEBUG=OFF
-- Copies replays to `%USERPROFILE%/Documents/Command and Conquer Generals Zero Hour Data/Replays`
-- CI automatically tests GeneralsMD builds against known replays
-
-### Build Validation
-- CI tests multiple presets: vc6, vc6-profile, vc6-debug, win32 variants
-- Path-based change detection triggers relevant builds
-- Tools and extras are built with `+t+e` flags
-
-## Common Patterns
-
-### Memory Management
-- Manual memory management (delete/delete[]) - this is legacy C++98 code
-- STLPort for VC6 compatibility (see `cmake/stlport.cmake`)
-
-### Game Engine Separation
-- **GameLogic**: Game state, rules, simulation
-- **GameClient**: Rendering, UI, platform-specific code
-- Clean separation maintained for potential future networking
-
-### Module Structure
-```
-Core/
-├── GameEngine/Include/Common/     # Shared interfaces
-├── GameEngine/Include/GameLogic/  # Game simulation
-├── GameEngine/Include/GameClient/ # Rendering/UI
-├── Libraries/Include/rts/         # RTS-specific utilities
-└── Libraries/Source/WWVegas/      # Graphics framework
-```
-
-## External Dependencies
-
-### Required for Building
-- **VC6 builds**: Requires MSVC 6.0 toolchain (automated in CI via itsmattkc/MSVC600)
-- **Modern builds**: Visual Studio 2022, Ninja generator
-- **vcpkg** (optional): zlib, ffmpeg for enhanced builds
-
-### Platform-Specific
-- **Windows**: DirectX 8, Miles Sound System, Bink Video
-- **Registry detection**: Automatic game install path detection from EA registry keys
-
-## Tools and Utilities
-
-### Development Scripts (`scripts/cpp/`)
-- `fixInludesCase.sh`: Fix include case sensitivity
-- `refactor_*.py`: Code refactoring utilities
-- `remove_trailing_whitespace.py`: Code cleanup
-
-### Build Tools
-- W3DView: 3D model viewer
-- TextureCompress: Asset optimization
-- MapCacheBuilder: Map preprocessing
-
-## Key Files to Understand
-- `CMakePresets.json`: All build configurations
-- `cmake/config-build.cmake`: Build options and feature flags
-- `Core/GameEngine/Include/`: Core engine interfaces
-- `**/Code/Main/WinMain.cpp`: Application entry points
-- `GeneralsReplays/`: Compatibility test data
+## Tests
+- There is no CTest/ctest wiring in this repo; `tests/` currently holds ad-hoc compile checks and a small test runner (`tests/core/test_runner.*`).
