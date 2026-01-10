@@ -18,28 +18,50 @@ Registry keys must be replaced by configuration files, details about file format
 
 ## Primary Goals
 
-- Load initial screen and main menu on macOS (Apple Silicon) natively with Vulkan.
+For this primary goal we will not mess with graphics backend, only port native win32 calls into universal SDL2 calls.
+
+After completing this primary goal, the game must be able to:
+
+- Load game assets (.big files, models, textures, sounds, etc)
+- Load initial screen and main menu
 - Be able to navigate menus
-- Start a skirmish game (single-player vs AI) successfully
+- Start and play a skirmish game (single-player vs AI) successfully
+- Play Campaign missions successfully
+- Play Generals Challenge successfully
 
 ## Secondary Goals
 
+For this secondary goal we will focus on graphics backend, porting DirectX 8 calls into Vulkan calls using existing abstraction layers.
+
+- Investigate which is the best approach for DirectX 8 to Vulkan translation (dxvk maybe?)
+- Implement the chosen approach
+- Optimize graphics performance for Vulkan backend
+- Ensure all features from primary goals work flawlessly with Vulkan backend
+
+## Tertiary Goals
+
+- Multiplayer support (LAN only initially, online will be a future goal)
+- Modding support (loading mods from .big files and directories)
+
+## Quaternary Goals
+
+- Windows 64-bit support with modern toolchain (Visual Studio 2022, MinGW-w64)
+- Windows Arm64 support (Surface Pro X, etc)
+
+## Quinary Goals
+
 - Achieve similar functionality on Linux (x86_64) natively with Vulkan.
-- Backport changes to Windows (x86_64) Vulkan target.
-
-## Future Goals
-
-- Campaign missions support.
-- Generals Challenge support.
-- Multiplayer support (beyond LAN).
+ - need to keey an eye on Virtual File System and file path handling (case sensitivity, slashes, etc).
+ - Big files handling and memory mapping on Linux.
+- Achieve similar functionality on macOS (Apple Silicon ARM64) natively with Vulkan.
+ - need to keep an eye on macOS specific file system quirks (resource forks, extended attributes, etc).
+ - Metal backend via MoltenVK for Vulkan support on macOS.
 
 ## Wishlist (for a far future)
 
-- Modding support.
-- Review online multiplayer (via GameSpy or other services).
-- Enhance computer AI.
 - Performance optimizations.
-- Additional platforms (e.g., ARM Linux, Steam Deck).
+
+- Enhance computer AI (Ideas: rewrite AI code, training models with machine learning, etc).
 - rewrite online algorithms to use modern approach (dedicated servers, peer-to-peer, etc).        1
 
 # Update Daily Blog before committing any changes
