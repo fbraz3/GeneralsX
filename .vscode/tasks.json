@@ -212,6 +212,150 @@
             }
         },
         {
+            "label": "Build GeneralsXZH (Windows VC6)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "$env:LIB='C:\\VC6\\VC6SP6\\VC98\\LIB'; $env:INCLUDE='C:\\VC6\\VC6SP6\\VC98\\INCLUDE'; $env:PATH='C:\\VC6\\VC6SP6\\VC98\\BIN;C:\\VC6\\VC6SP6\\Common\\MSDev98\\Bin;C:\\tools\\cmake\\bin;C:\\tools\\ninja;' + $env:PATH; C:\\tools\\cmake\\bin\\cmake.exe --build build/vc6 --target generalszh.exe -j 1 2>&1 | Tee-Object -FilePath logs/build_generalszh.log"
+            ],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Build GeneralsX (Windows VC6)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "$env:LIB='C:\\VC6\\VC6SP6\\VC98\\LIB'; $env:INCLUDE='C:\\VC6\\VC6SP6\\VC98\\INCLUDE'; $env:PATH='C:\\VC6\\VC6SP6\\VC98\\BIN;C:\\VC6\\VC6SP6\\Common\\MSDev98\\Bin;C:\\tools\\cmake\\bin;C:\\tools\\ninja;' + $env:PATH; C:\\tools\\cmake\\bin\\cmake.exe --build build/vc6 --target generalsv.exe -j 1 2>&1 | Tee-Object -FilePath logs/build_generalsv.log"
+            ],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Deploy GeneralsXZH (Windows)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "New-Item -ItemType Directory -Path $env:USERPROFILE\\GeneralsX\\GeneralsMD -Force | Out-Null; Copy-Item -Path '${workspaceFolder}\\build\\vc6\\GeneralsMD\\generalszh.exe' -Destination $env:USERPROFILE\\GeneralsX\\GeneralsMD\\generalszh.exe -Force -Verbose; Write-Host 'Deploy completed successfully' -ForegroundColor Green"
+            ],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Deploy GeneralsX (Windows)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "New-Item -ItemType Directory -Path $env:USERPROFILE\\GeneralsX\\Generals -Force | Out-Null; Copy-Item -Path '${workspaceFolder}\\build\\vc6\\Generals\\generalsv.exe' -Destination $env:USERPROFILE\\GeneralsX\\Generals\\generalsv.exe -Force -Verbose; Write-Host 'Deploy completed successfully' -ForegroundColor Green"
+            ],
+            "isBackground": false,
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Run GeneralsXZH (Windows)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; .\\generalszh.exe -win -noshellmap 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_vc6.log"
+            ],
+            "isBackground": false,
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Run GeneralsX (Windows)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "cd $env:USERPROFILE\\GeneralsX\\Generals; .\\generalsv.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_generalsv.log"
+            ],
+            "isBackground": false,
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Debug GeneralsXZH (Windows)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; Write-Host 'Starting debugger...' -ForegroundColor Cyan; windbg.exe .\\generalszh.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_vc6.log"
+            ],
+            "isBackground": false,
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
+            "label": "Debug GeneralsX (Windows)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-Command",
+                "cd $env:USERPROFILE\\GeneralsX\\Generals; Write-Host 'Starting debugger...' -ForegroundColor Cyan; windbg.exe .\\generalsv.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_generalsv.log"
+            ],
+            "isBackground": false,
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": true
+            }
+        },
+        {
             "type": "cppbuild",
             "label": "C/C++: g++ build active file",
             "command": "/usr/bin/g++",
