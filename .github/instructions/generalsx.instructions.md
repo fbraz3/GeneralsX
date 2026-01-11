@@ -60,9 +60,9 @@ For this secondary goal we will focus on graphics backend, porting DirectX 8 cal
 ## Wishlist (for a far future)
 
 - Performance optimizations.
-
-- Enhance computer AI (Ideas: rewrite AI code, training models with machine learning, etc).
-- rewrite online algorithms to use modern approach (dedicated servers, peer-to-peer, etc).        1
+- Parallelize loading and processing where possible.
+- Enhance computer AI (Ideas: rewrite AI code, training AI models with machine learning, etc).
+- rewrite online algorithms to use modern approach (dedicated servers, peer-to-peer, etc).
 
 # Update Daily Blog before committing any changes
 
@@ -111,20 +111,9 @@ Before committing changes, make sure to update the development diary located at 
   - **Coverage**: Full Windows 64-bit port with modern toolchain compatibility
 
 - **`references/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration
-  - **Primary use**: Graphics layer solutions (DirectX→Vulkan via DXVK), Linux compatibility
+  - **Primary use**: Graphics layer solutions (DirectX→Vulkan via DXVK), Linux compatibility, could be useful for Windows and MACOS Vulkan backend
   - **Focus areas**: OpenGL/Vulkan rendering, graphics pipeline modernization
   - **Coverage**: Complete Linux port with advanced graphics compatibility
-
-- **`references/dsalzner-linux-attempt/`** - Linux port attempt with POSIX compatibility
-  - **Primary use**: Win32→POSIX API translations, Linux-specific fixes
-  - **Focus areas**: System calls, file handling, threading compatibility
-  - **Coverage**: Partial Linux port focusing on core system compatibility
-
-- **`references/dxgldotorg-dxgl/`** - DirectDraw/Direct3D7 to OpenGL compatibility layer
-  - **Primary use**: DirectX→OpenGL wrapper techniques, mock interface patterns, graphics compatibility
-  - **Focus areas**: DirectX API stubbing, OpenGL rendering pipeline, device capability emulation
-  - **Coverage**: Complete DirectDraw/D3D7 wrapper with mature OpenGL backend
-  - **Note**: While focused on D3D7, provides excellent patterns for DirectX8 compatibility layer development
 
 - **`docs/Vulkan/`** - Local Vulkan SDK documentation for reference
   - **Primary use**: Vulkan API reference, best practices, platform-specific notes
