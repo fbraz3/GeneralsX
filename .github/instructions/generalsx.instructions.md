@@ -16,11 +16,16 @@ The project must run natively on Windows, macOS and Linux, using Vulkan as graph
 
 Registry keys must be replaced by configuration files, details about file formats and locations can be found into `assets/ini/README.md` file.
 
+When converting to SDL2, try to be more plataform-agnostic as possible, avoid Windows-specific assumptions.
+
 ## Primary Goals
+
+**Architecture**: Build with cross-platform abstraction from the root using SDL2, making the codebase platform-agnostic.
+**Testing Focus**: Windows only (VC6 build preset) - validate all functionality works on Windows first.
 
 For this primary goal we will not mess with graphics backend, only port native win32 calls into universal SDL2 calls.
 
-After completing this primary goal, the game must be able to:
+After completing this primary goal, the game must be able to (on Windows):
 
 - Load game assets (.big files, models, textures, sounds, etc)
 - Load initial screen and main menu
@@ -31,6 +36,9 @@ After completing this primary goal, the game must be able to:
 
 ## Secondary Goals
 
+**Architecture**: Continue cross-platform abstraction strategy for graphics layer.
+**Testing Focus**: Windows only (VC6 build preset) - ensure Vulkan rendering works on Windows.
+
 For this secondary goal we will focus on graphics backend, porting DirectX 8 calls into Vulkan calls using existing abstraction layers.
 
 - Investigate which is the best approach for DirectX 8 to Vulkan translation (dxvk maybe?)
@@ -40,22 +48,34 @@ For this secondary goal we will focus on graphics backend, porting DirectX 8 cal
 
 ## Tertiary Goals
 
+**Architecture**: Maintain cross-platform abstractions.
+**Testing Focus**: Windows only.
+
 - Multiplayer support (LAN only initially, online will be a future goal)
 - Modding support (loading mods from .big files and directories)
 
 ## Quaternary Goals
 
+**Architecture**: Optimize for Windows platform variants while maintaining cross-platform code.
+**Testing Focus**: Windows 32-bit (VC6), Windows 64-bit (MSVC/MinGW), Windows ARM64.
+
 - Windows 64-bit support with modern toolchain (Visual Studio 2022, MinGW-w64)
-- Windows Arm64 support (Surface Pro X, etc)
+- Windows ARM64 support (Surface Pro X, etc)
+- Performance optimizations for Windows variants
 
 ## Quinary Goals
 
+**Architecture**: Activate platform-specific code paths and optimizations for non-Windows targets.
+**Testing Focus**: Full compilation and runtime testing on Linux and macOS.
+
 - Achieve similar functionality on Linux (x86_64) natively with Vulkan.
- - need to keey an eye on Virtual File System and file path handling (case sensitivity, slashes, etc).
- - Big files handling and memory mapping on Linux.
+  - Activate platform-agnostic code paths for Linux
+  - Test Virtual File System and file path handling (case sensitivity, slashes, etc)
+  - Validate Big files handling and memory mapping on Linux
 - Achieve similar functionality on macOS (Apple Silicon ARM64) natively with Vulkan.
- - need to keep an eye on macOS specific file system quirks (resource forks, extended attributes, etc).
- - Metal backend via MoltenVK for Vulkan support on macOS.
+  - Activate platform-agnostic code paths for macOS
+  - Handle macOS specific file system quirks (resource forks, extended attributes, etc)
+  - Implement Metal backend via MoltenVK for Vulkan support on macOS
 
 ## Wishlist (for a far future)
 
@@ -76,6 +96,7 @@ Before committing changes, make sure to update the development diary located at 
 - **IMPORTANT** All code, including documentation files and comments, **must be in English** regardless of the user's language.
 - You may use the `deepwiki` tool that will help you understand the codebase and its architecture.
 - Vulkan-only and SDL2-only focus; do not include DirectX or native Windows API-specific code/instructions.
+- **IMPORTANT: Write code to be platform-agnostic and cross-platform ready**, even during Windows-only testing phases. Use platform abstraction layers from the root. Avoid Windows-specific assumptions in implementation.
 - Even if errors come from earlier phases, we must fix the gaps that were left behind.
 - Prefer to use vscode tasks for building and running the project instead of external scripts.
 - Do not use workarounds such as empty stubs, try/catch blocks, or disabling/commenting out components; identify and fix the **root cause** of the problem.
