@@ -25,6 +25,11 @@ target_link_libraries(z_generals PRIVATE
     zi_always
 )
 
+# Add SDL2 for non-Windows builds
+if(NOT (WIN32 AND MSVC))
+    target_link_libraries(z_generals PRIVATE SDL2::SDL2)
+endif()
+
 # TODO Originally referred to build host and user, replace with git info perhaps?
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
 "#pragma once
@@ -52,9 +57,19 @@ target_include_directories(z_generals PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# Platform-specific entry point
+# Windows 32-bit with VC6: WinMain.cpp
+# macOS, Linux, other: SDL2Main.cpp
+if(WIN32 AND MSVC)
+    set(ENTRY_POINT_SRC WinMain.cpp WinMain.h)
+    message(STATUS "Main: Using WinMain.cpp (Windows VC6)")
+else()
+    set(ENTRY_POINT_SRC SDL2Main.cpp SDL2Main.h)
+    message(STATUS "Main: Using SDL2Main.cpp (SDL2-based entry)")
+endif()
+
 target_sources(z_generals PRIVATE
-    WinMain.cpp
-    WinMain.h
+    ${ENTRY_POINT_SRC}
 )
 
 if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")

@@ -1,3 +1,21 @@
+# Platform device layer selection
+# Win32Device: Windows 32-bit (VC6 legacy builds)
+# SDL2Device: macOS, Linux, and future Windows (modern builds)
+
+if(WIN32 AND MSVC)
+    # Windows 32-bit with Visual C++ 6 or compatible compiler
+    set(PLATFORM_DEVICE_TYPE "Win32Device")
+    set(USE_WIN32_DEVICE ON)
+    set(USE_SDL2_DEVICE OFF)
+else()
+    # macOS, Linux, and other platforms use SDL2
+    set(PLATFORM_DEVICE_TYPE "SDL2Device")
+    set(USE_WIN32_DEVICE OFF)
+    set(USE_SDL2_DEVICE ON)
+endif()
+
+message(STATUS "GameEngineDevice: Using ${PLATFORM_DEVICE_TYPE}")
+
 set(GAMEENGINEDEVICE_SRC
 #    Include/MilesAudioDevice/MilesAudioManager.h
 #    Include/VideoDevice/Bink/BinkVideoPlayer.h
@@ -194,6 +212,20 @@ set(GAMEENGINEDEVICE_SRC
     Source/Win32Device/GameClient/Win32Mouse.cpp
 )
 
+# Platform-specific device layer sources
+if(USE_SDL2_DEVICE)
+    message(STATUS "  Adding SDL2Device sources")
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Include/SDL2Device/Common/SDL2GameEngine.h
+        Include/SDL2Device/GameClient/SDL2Mouse.h
+        Source/SDL2Device/Common/SDL2GameEngine.cpp
+        Source/SDL2Device/GameClient/SDL2Mouse.cpp
+    )
+endif()
+
+# Win32Device sources (already in GAMEENGINEDEVICE_SRC for legacy builds)
+# SDL2Device is appended above conditionally
+
 add_library(z_gameenginedevice STATIC)
 
 target_sources(z_gameenginedevice PRIVATE ${GAMEENGINEDEVICE_SRC})
@@ -215,6 +247,11 @@ target_link_libraries(z_gameenginedevice PRIVATE
     zi_always
     zi_main
 )
+
+# Add SDL2 dependency for non-Windows builds
+if(USE_SDL2_DEVICE)
+    target_link_libraries(z_gameenginedevice PRIVATE SDL2::SDL2)
+endif()
 
 target_link_libraries(z_gameenginedevice PUBLIC
     corei_gameenginedevice_public
