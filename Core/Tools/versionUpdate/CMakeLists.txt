@@ -10,5 +10,4 @@ target_sources(core_versionupdate PRIVATE ${VERSIONUPDATE_SRC})
 target_link_libraries(core_versionupdate PRIVATE
     core_config
     core_wwlib
-    corei_always
 )

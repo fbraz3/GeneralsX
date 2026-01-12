@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <map>
 #include <utility>
+#include <Utility/CppMacros.h>
 
 namespace stl
 {

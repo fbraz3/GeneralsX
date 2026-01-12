@@ -33,6 +33,7 @@
 #include <string.h>
 // TheSuperHackers @build feliwir 07/04/2025 Adds utility macros for cross-platform compatibility
 #include <Utility/compat.h>
+#include <Utility/CppMacros.h>
 #include <Utility/stdint_adapter.h>
 
 /*

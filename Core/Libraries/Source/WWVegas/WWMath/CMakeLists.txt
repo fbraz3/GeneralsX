@@ -87,7 +87,6 @@ target_sources(core_wwmath PRIVATE ${WWMATH_SRC})
 
 target_link_libraries(core_wwmath PRIVATE
     core_wwcommon
-    corei_always
 )
 
 # @todo Test its impact and see what to do with the legacy functions.

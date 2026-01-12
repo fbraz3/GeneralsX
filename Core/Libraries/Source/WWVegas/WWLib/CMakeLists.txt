@@ -176,7 +176,6 @@ target_include_directories(core_wwlib PUBLIC
 )
 
 target_precompile_headers(core_wwlib PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
     always.h
     STLUtils.h
     win.h

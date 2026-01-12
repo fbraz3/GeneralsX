@@ -11,7 +11,7 @@ target_sources(core_timingtest PRIVATE ${TIMINGTEST_SRC})
 
 target_link_libraries(core_timingtest PRIVATE
     core_config
-    corei_always
+    core_utility
     winmm
 )
 

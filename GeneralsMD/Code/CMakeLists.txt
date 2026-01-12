@@ -4,7 +4,6 @@ add_library(zi_libraries_include INTERFACE)
 add_library(zi_libraries_source_wwvegas INTERFACE)
 add_library(zi_main INTERFACE)
 add_library(zi_always INTERFACE)
-add_library(zi_always_no_pch INTERFACE) # Use this for Shared Libs with MFC AFX
 
 target_include_directories(zi_gameengine_include INTERFACE "GameEngine/Include")
 target_link_libraries(zi_gameengine_include INTERFACE corei_gameengine_include)
@@ -15,16 +14,11 @@ target_include_directories(zi_main INTERFACE "Main")
 target_compile_definitions(zi_always INTERFACE
     RTS_ZEROHOUR=1
 )
-target_compile_definitions(zi_always_no_pch INTERFACE
-    RTS_ZEROHOUR=1
-)
 target_link_libraries(zi_always INTERFACE
+    core_utility
     zi_libraries_include
-    corei_always # Must stay below so headers from game are included first
-)
-target_link_libraries(zi_always_no_pch INTERFACE
-    zi_libraries_include
-    corei_always_no_pch # Must stay below so headers from game are included first
+    # Must stay below so headers from game are included first
+    corei_libraries_include
 )
 
 # Contains internal libraries

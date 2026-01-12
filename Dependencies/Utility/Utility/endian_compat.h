@@ -22,6 +22,7 @@
 #ifndef ENDIAN_COMPAT_H
 #define ENDIAN_COMPAT_H
 
+#include <Utility/CppMacros.h>
 #include <Utility/stdint_adapter.h>
 
 
