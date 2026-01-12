@@ -33,6 +33,7 @@
 #include "SDL2Device/Common/SDL2GameEngine.h"
 #include "SDL2Device/GameClient/SDL2Mouse.h"
 #include "SDL2Device/GameClient/SDL2Keyboard.h"
+#include "SDL2Device/GameClient/SDL2IMEManager.h"
 #include "Common/PerfTimer.h"
 #include "Common/GlobalData.h"
 #include "Common/GameMemory.h"
@@ -210,9 +211,20 @@ void SDL2GameEngine::serviceSDL2OS(void)
 			}
 
 			case SDL_TEXTEDITING:
+			{
+				if (TheSDL2IMEManager)
+				{
+					TheSDL2IMEManager->onTextEditing(event.edit);
+				}
+				break;
+			}
+
 			case SDL_TEXTINPUT:
 			{
-				// TODO: Phase 03 - IME and text input handling
+				if (TheSDL2IMEManager)
+				{
+					TheSDL2IMEManager->onTextInput(event.text);
+				}
 				break;
 			}
 
