@@ -31,6 +31,7 @@
 
 #include <SDL2/SDL.h>
 #include "SDL2Device/Common/SDL2GameEngine.h"
+#include "SDL2Device/GameClient/SDL2Mouse.h"
 #include "Common/PerfTimer.h"
 #include "Common/GlobalData.h"
 #include "Common/GameMemory.h"
@@ -167,12 +168,38 @@ void SDL2GameEngine::serviceSDL2OS(void)
 			}
 
 			case SDL_MOUSEBUTTONDOWN:
+			{
+				if (TheSDL2Mouse)
+				{
+					TheSDL2Mouse->onMouseButtonDown(event.button);
+				}
+				break;
+			}
+
 			case SDL_MOUSEBUTTONUP:
+			{
+				if (TheSDL2Mouse)
+				{
+					TheSDL2Mouse->onMouseButtonUp(event.button);
+				}
+				break;
+			}
+
 			case SDL_MOUSEMOTION:
+			{
+				if (TheSDL2Mouse)
+				{
+					TheSDL2Mouse->onMouseMotion(event.motion);
+				}
+				break;
+			}
+
 			case SDL_MOUSEWHEEL:
 			{
-				// TODO: Phase 03 - Mouse input handling
-				// Will be injected via SDL2Mouse class
+				if (TheSDL2Mouse)
+				{
+					TheSDL2Mouse->onMouseWheel(event.wheel);
+				}
 				break;
 			}
 

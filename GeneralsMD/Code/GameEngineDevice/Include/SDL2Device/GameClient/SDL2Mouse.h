@@ -30,26 +30,83 @@
 //  Author: Phase 02 (SDL2 Port)
 ////////////////////////////////////////////////////////////////////////////////
 
-// Forward declaration
+// SYSTEM INCLUDES ////////////////////////////////////////////////////////////
+#include <SDL2/SDL.h>
+
+// USER INCLUDES //////////////////////////////////////////////////////////////
+#include "Lib/BaseType.h"
+#include "GameClient/Mouse.h"
+
+// FORWARD REFERENCES /////////////////////////////////////////////////////////
 class Mouse;
 
 /**
  * SDL2Mouse - SDL2-based mouse input handler
  *
- * PHASE 02: Stub class for compilation
- * PHASE 03: Full implementation with SDL_MOUSEBUTTONDOWN/UP injection
+ * Handles translation of SDL2 mouse events to engine-level MouseIO structure
+ * Used by SDL2GameEngine to inject mouse input into TheMouse system
  */
 class SDL2Mouse
 {
 public:
 	SDL2Mouse();
-	~SDL2Mouse();
+	virtual ~SDL2Mouse();
 
-	// Stub methods for Phase 02 compatibility
-	// Full implementation in Phase 03
+	// Event handlers called from SDL2GameEngine::serviceSDL2OS()
+	void onMouseButtonDown(const SDL_MouseButtonEvent &event);
+	void onMouseButtonUp(const SDL_MouseButtonEvent &event);
+	void onMouseMotion(const SDL_MouseMotionEvent &event);
+	void onMouseWheel(const SDL_MouseWheelEvent &event);
+
+	// Mouse state query methods
+	Int getMouseX() const { return m_currentX; }
+	Int getMouseY() const { return m_currentY; }
+	Bool isLeftButtonDown() const { return m_leftButtonDown; }
+	Bool isRightButtonDown() const { return m_rightButtonDown; }
+	Bool isMiddleButtonDown() const { return m_middleButtonDown; }
+
+	// Get the accumulated mouse data for engine consumption
+	void getMouseData(MouseIO *outMouse);
+
+private:
+	// Current mouse position
+	Int m_currentX;
+	Int m_currentY;
+	Int m_previousX;
+	Int m_previousY;
+
+	// Button state tracking (Up, Down, or DoubleClick)
+	MouseButtonState m_leftState;
+	MouseButtonState m_rightState;
+	MouseButtonState m_middleState;
+
+	// Raw button tracking for double-click detection
+	Bool m_leftButtonDown;
+	Bool m_rightButtonDown;
+	Bool m_middleButtonDown;
+
+	// Double-click detection variables
+	UnsignedInt m_leftClickTime;
+	UnsignedInt m_rightClickTime;
+	UnsignedInt m_middleClickTime;
+
+	Int m_leftClickX;
+	Int m_leftClickY;
+	Int m_rightClickX;
+	Int m_rightClickY;
+	Int m_middleClickX;
+	Int m_middleClickY;
+
+	// Wheel state (accumulated delta)
+	Int m_wheelDelta;
+
+	// Helper methods
+	MouseButtonState checkForDoubleClick(UnsignedInt currentTime, UnsignedInt &lastClickTime, 
+	                                      Int x, Int y, Int &lastX, Int &lastY);
+	void clearMouseState();
 };
 
-// Global instance (will be created in Phase 03)
+// EXTERNALS //////////////////////////////////////////////////////////////////
 extern SDL2Mouse *TheSDL2Mouse;
 
 #endif // SDL2MOUSE_H
