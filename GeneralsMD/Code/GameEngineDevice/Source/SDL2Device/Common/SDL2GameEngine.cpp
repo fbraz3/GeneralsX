@@ -32,6 +32,7 @@
 #include <SDL2/SDL.h>
 #include "SDL2Device/Common/SDL2GameEngine.h"
 #include "SDL2Device/GameClient/SDL2Mouse.h"
+#include "SDL2Device/GameClient/SDL2Keyboard.h"
 #include "Common/PerfTimer.h"
 #include "Common/GlobalData.h"
 #include "Common/GameMemory.h"
@@ -158,16 +159,21 @@ void SDL2GameEngine::serviceSDL2OS(void)
 
 			case SDL_KEYDOWN:
 			{
-				// TODO: Phase 03 - Input handling
-				// For now, just handle ESC key for quit
-				if (event.key.keysym.sym == SDLK_ESCAPE)
+				if (TheSDL2Keyboard)
 				{
-					handleQuitEvent();
+					TheSDL2Keyboard->onKeyDown(event.key);
 				}
 				break;
 			}
 
-			case SDL_MOUSEBUTTONDOWN:
+			case SDL_KEYUP:
+			{
+				if (TheSDL2Keyboard)
+				{
+					TheSDL2Keyboard->onKeyUp(event.key);
+				}
+				break;
+			}
 			{
 				if (TheSDL2Mouse)
 				{
