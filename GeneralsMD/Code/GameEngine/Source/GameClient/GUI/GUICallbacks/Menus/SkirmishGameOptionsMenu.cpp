@@ -473,11 +473,9 @@ static MessageBoxReturnType cancelStartBecauseOfNoCD( void *userData )
 
 Bool IsFirstCDPresent(void)
 {
-#if !defined(RTS_DEBUG)
-	return TheFileSystem->areMusicFilesOnCD();
-#else
+	// DEVELOPMENT MODE: Always assume CD is present
+	// All game assets are now in local directories, no CD protection needed
 	return TRUE;
-#endif
 }
 
 static MessageBoxReturnType checkCDCallback( void *userData )

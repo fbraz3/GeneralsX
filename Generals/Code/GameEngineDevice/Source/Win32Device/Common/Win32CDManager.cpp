@@ -176,6 +176,12 @@ void Win32CDManager::init( void )
 
 	destroyAllDrives();
 
+	// DEVELOPMENT MODE: Disable CD detection
+	// All game assets are now in local directories, no CD protection needed
+	// Original code that detected physical CD drives is commented out below
+	// This allows the game to run without requiring a CD to be inserted
+	
+	/*
 	// detect CD Drives
 	for ( Char driveLetter = 'a'; driveLetter <= 'z'; driveLetter++ )
 	{
@@ -187,6 +193,7 @@ void Win32CDManager::init( void )
 			newDrive( drivePath.str() );
 		}
 	}
+	*/
 
 	refreshDrives();
 }

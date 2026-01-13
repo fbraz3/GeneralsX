@@ -437,8 +437,10 @@ void GameEngine::init()
 		TheGlobalLanguageData->parseCustomDefinition();
 		initSubsystem(TheCDManager,"TheCDManager", CreateCDManager(), NULL);
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
-		if (!TheAudio->isMusicAlreadyLoaded())
-			setQuitting(TRUE);
+		// DEVELOPMENT MODE: Don't quit if music files not loaded from CD
+		// Music is optional in development - all other assets are in local directories
+		// if (!TheAudio->isMusicAlreadyLoaded())
+		//	setQuitting(TRUE);
 		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), NULL);
 		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), NULL);
 		initSubsystem(TheMessageStream,"TheMessageStream", createMessageStream(), NULL);

@@ -523,8 +523,10 @@ void GameEngine::init()
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
-		if (!TheAudio->isMusicAlreadyLoaded())
-			setQuitting(TRUE);
+		// DEVELOPMENT MODE: Don't quit if music files not loaded from CD
+		// Music is optional in development - all other assets are in local directories
+		// if (!TheAudio->isMusicAlreadyLoaded())
+		//	setQuitting(TRUE);
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////

@@ -51,6 +51,9 @@ Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiS
 		return TRUE;
 	}
 
+	// DEVELOPMENT MODE: Return safe defaults when registry not found
+	// This allows game to run without proper Windows registry entries
+	DEBUG_LOG(("Registry fallback: %s\\%s not found, using development defaults\n", path.str(), key.str()));
 	return FALSE;
 }
 
