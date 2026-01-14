@@ -556,10 +556,10 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[0] = "Announce win.";
 
 	curTemplate = &m_actionTemplates[ScriptAction::DEFEAT];
-	curTemplate->m_name = "[User] Announce lose";
+	curTemplate->m_name = "[User] Announce loss";
 	curTemplate->m_numParameters = 0;
 	curTemplate->m_numUiStrings = 1;
-	curTemplate->m_uiStrings[0] = "Announce lose.";
+	curTemplate->m_uiStrings[0] = "Announce loss.";
 
 	curTemplate = &m_actionTemplates[ScriptAction::NO_OP];
 	curTemplate->m_name = "[Scripting] Null operation.";
@@ -693,7 +693,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_numUiStrings = 2;
 	curTemplate->m_uiStrings[0] = "Have ";
-	curTemplate->m_uiStrings[1] = " wander around it's current location.";
+	curTemplate->m_uiStrings[1] = " wander around its current location.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_INCREASE_PRIORITY];
 	curTemplate->m_name = "[Team] AI - Increase priority by Success Priority Increase amount.";
@@ -701,7 +701,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_numUiStrings = 2;
 	curTemplate->m_uiStrings[0] = "Increase the AI priority for";
-	curTemplate->m_uiStrings[1] = "  by its Success Priority Increase amount.";
+	curTemplate->m_uiStrings[1] = " by its Success Priority Increase amount.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_DECREASE_PRIORITY];
 	curTemplate->m_name = "[Team] AI - Reduce priority by Failure Priority Decrease amount.";
@@ -709,7 +709,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_numUiStrings = 2;
 	curTemplate->m_uiStrings[0] = "Reduce the AI priority for";
-	curTemplate->m_uiStrings[1] = "  by its Failure Priority Decrease amount.";
+	curTemplate->m_uiStrings[1] = " by its Failure Priority Decrease amount.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_WANDER];
 	curTemplate->m_name = "[Team] Set to follow a waypoint path -- wander.";
@@ -786,7 +786,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 4;
 	curTemplate->m_uiStrings[0] = "Have AI ";
 	curTemplate->m_uiStrings[1] = " build a ";
-	curTemplate->m_uiStrings[2] = " near a supply src with at least ";
+	curTemplate->m_uiStrings[2] = " near a supply source with at least ";
 	curTemplate->m_uiStrings[3] = " available resources.";
 
   curTemplate = &m_actionTemplates[ScriptAction::TEAM_GUARD_SUPPLY_CENTER];
@@ -796,7 +796,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[1] = Parameter::INT;
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "Have Team ";
-	curTemplate->m_uiStrings[1] = " guard attacked or closest supply src with at least ";
+	curTemplate->m_uiStrings[1] = " guard attacked or closest supply source with at least ";
 	curTemplate->m_uiStrings[2] = " available resources";
 
   curTemplate = &m_actionTemplates[ScriptAction::AI_PLAYER_BUILD_UPGRADE];
@@ -902,7 +902,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " to ";
 	curTemplate->m_uiStrings[2] = " adding toward white. Take ";
 	curTemplate->m_uiStrings[3] = " frames to increase, hold for ";
-	curTemplate->m_uiStrings[4] = " fames, and decrease ";
+	curTemplate->m_uiStrings[4] = " frames, and decrease ";
 	curTemplate->m_uiStrings[5] = " frames.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::CAMERA_FADE_SUBTRACT];
@@ -918,7 +918,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " to ";
 	curTemplate->m_uiStrings[2] = " subtracting toward black. Take ";
 	curTemplate->m_uiStrings[3] = " frames to increase, hold for ";
-	curTemplate->m_uiStrings[4] = " fames, and decrease ";
+	curTemplate->m_uiStrings[4] = " frames, and decrease ";
 	curTemplate->m_uiStrings[5] = " frames.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::CAMERA_FADE_MULTIPLY];
@@ -934,7 +934,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " to ";
 	curTemplate->m_uiStrings[2] = " multiplying toward black. Take ";
 	curTemplate->m_uiStrings[3] = " frames to increase, hold for ";
-	curTemplate->m_uiStrings[4] = " fames, and decrease ";
+	curTemplate->m_uiStrings[4] = " frames, and decrease ";
 	curTemplate->m_uiStrings[5] = " frames.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::CAMERA_FADE_SATURATE];
@@ -950,7 +950,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " to ";
 	curTemplate->m_uiStrings[2] = " increasing saturation. Take ";
 	curTemplate->m_uiStrings[3] = " frames to increase, hold for ";
-	curTemplate->m_uiStrings[4] = " fames, and decrease ";
+	curTemplate->m_uiStrings[4] = " frames, and decrease ";
 	curTemplate->m_uiStrings[5] = " frames.";
 
 	curTemplate = &m_actionTemplates[ScriptAction::PITCH_CAMERA];
@@ -1440,7 +1440,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " load into transports.";
 
 	curTemplate = &m_actionTemplates[ScriptAction::NAMED_ENTER_NAMED];
-	curTemplate->m_name = "[Unit] Transport -- load unit into specific.";
+	curTemplate->m_name = "[Unit] Transport -- load unit into specific transport.";
 	curTemplate->m_numParameters = 2;
 	curTemplate->m_parameters[0] = Parameter::UNIT;
 	curTemplate->m_parameters[1] = Parameter::UNIT;
@@ -1449,7 +1449,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " loads into ";
 
 	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ENTER_NAMED];
-	curTemplate->m_name = "[Team] Transport -- load team into specific.";
+	curTemplate->m_name = "[Team] Transport -- load team into specific transport.";
 	curTemplate->m_numParameters = 2;
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_parameters[1] = Parameter::UNIT;
@@ -1458,7 +1458,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " attempt to load into ";
 
 	curTemplate = &m_actionTemplates[ScriptAction::NAMED_EXIT_ALL];
-	curTemplate->m_name = "[Unit] Transport -- unload units from specific.";
+	curTemplate->m_name = "[Unit] Transport -- unload units from specific transport.";
 	curTemplate->m_numParameters = 1;
 	curTemplate->m_parameters[0] = Parameter::UNIT;
 	curTemplate->m_numUiStrings = 2;
@@ -2531,7 +2531,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " considers ";
 	curTemplate->m_uiStrings[2] = " to be ";
-	curTemplate->m_uiStrings[3] = " (rather than using the the player relationship).";
+	curTemplate->m_uiStrings[3] = " (rather than using the player relationship).";
 
 	curTemplate = &m_actionTemplates[ScriptAction::TEAM_REMOVE_OVERRIDE_RELATION_TO_TEAM];
 	curTemplate->m_name = "[Team] Remove an override to a team's relationship to another team.";
@@ -2631,7 +2631,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " considers ";
 	curTemplate->m_uiStrings[2] = " to be ";
-	curTemplate->m_uiStrings[3] = " (rather than using the the player relationship).";
+	curTemplate->m_uiStrings[3] = " (rather than using the player relationship).";
 
 	curTemplate = &m_actionTemplates[ScriptAction::TEAM_REMOVE_OVERRIDE_RELATION_TO_PLAYER];
 	curTemplate->m_name = "[Team] Remove an override to a team's relationship to another player.";
@@ -2652,7 +2652,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " considers ";
 	curTemplate->m_uiStrings[2] = " to be ";
-	curTemplate->m_uiStrings[3] = " (rather than using the the player relationship).";
+	curTemplate->m_uiStrings[3] = " (rather than using the player relationship).";
 
 	curTemplate = &m_actionTemplates[ScriptAction::PLAYER_REMOVE_OVERRIDE_RELATION_TO_TEAM];
 	curTemplate->m_name = "[Player] Remove an override to a player's relationship to another team.";
@@ -3081,7 +3081,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on ";
+	curTemplate->m_uiStrings[2] = " on ";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_UNIT];
 	curTemplate->m_name = "[Team] Use command ability -- all -- nearest enemy unit";
@@ -3091,7 +3091,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy unit.";
+	curTemplate->m_uiStrings[2] = " on nearest enemy unit.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_GARRISONED_BUILDING];
 	curTemplate->m_name = "[Team] Use command ability -- all -- nearest enemy garrisoned building.";
@@ -3101,7 +3101,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy garrisoned building.";
+	curTemplate->m_uiStrings[2] = " on nearest enemy garrisoned building.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_KINDOF];
 	curTemplate->m_name = "[Team] Use command ability -- all -- nearest enemy object with kind of.";
@@ -3112,7 +3112,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 4;
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy with ";
+	curTemplate->m_uiStrings[2] = " on nearest enemy with ";
 	curTemplate->m_uiStrings[4] = ".";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_BUILDING];
@@ -3123,7 +3123,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy building.";
+	curTemplate->m_uiStrings[2] = " on nearest enemy building.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_BUILDING_CLASS];
 	curTemplate->m_name = "[Team] Use command ability -- all -- nearest enemy building kindof.";
@@ -3134,7 +3134,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy building with ";
+	curTemplate->m_uiStrings[2] = " on nearest enemy building with ";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_OBJECTTYPE];
 	curTemplate->m_name = "[Team] Use command ability -- all -- nearest object type.";
@@ -3576,7 +3576,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numParameters = 1;
 	curTemplate->m_parameters[0] = Parameter::SIDE;
 	curTemplate->m_numUiStrings = 2;
-	curTemplate->m_uiStrings[0] = "Everything belonging to  ";
+	curTemplate->m_uiStrings[0] = "Everything belonging to ";
 	curTemplate->m_uiStrings[1] = " has been destroyed.";
 
 	curTemplate = &m_conditionTemplates[Condition::PLAYER_ALL_BUILDFACILITIES_DESTROYED];
@@ -3584,7 +3584,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numParameters = 1;
 	curTemplate->m_parameters[0] = Parameter::SIDE;
 	curTemplate->m_numUiStrings = 2;
-	curTemplate->m_uiStrings[0] = "All factories belonging to  ";
+	curTemplate->m_uiStrings[0] = "All factories belonging to ";
 	curTemplate->m_uiStrings[1] = " have been destroyed.";
 
 
@@ -4454,7 +4454,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[1] = Parameter::TRIGGER_AREA;
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "";
-	curTemplate->m_uiStrings[1] = " has doesn't have units in ";
+	curTemplate->m_uiStrings[1] = " doesn't have units in ";
 	curTemplate->m_uiStrings[2] = ".";
 
 	curTemplate = &m_conditionTemplates[Condition::SKIRMISH_PLAYER_HAS_DISCOVERED_PLAYER];
@@ -4485,7 +4485,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[1] = Parameter::INT;
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "";
-	curTemplate->m_uiStrings[1] = " closest supply src with at least ";
+	curTemplate->m_uiStrings[1] = " closest supply source with at least ";
 	curTemplate->m_uiStrings[2] = " available resources is SAFE from enemy influence.";
 
 	curTemplate = &m_conditionTemplates[Condition::SUPPLY_SOURCE_ATTACKED];
@@ -4581,8 +4581,8 @@ void ScriptEngine::reset( void )
 	if (m_numFrames > 1) {
 		DEBUG_LOG_RAW(("\n"));
 		DEBUG_LOG(("***SCRIPT ENGINE STATS %.0f frames:", m_numFrames));
-		DEBUG_LOG(("Avg time to update %.3f milisec", 1000*m_totalUpdateTime/m_numFrames));
-		DEBUG_LOG(("  Max time to update %.3f miliseconds.", m_maxUpdateTime*1000));
+		DEBUG_LOG(("Avg time to update %.3f milliseconds", 1000*m_totalUpdateTime/m_numFrames));
+		DEBUG_LOG(("  Max time to update %.3f milliseconds.", m_maxUpdateTime*1000));
 	}
 	m_numFrames=0;
 	m_totalUpdateTime=0;
@@ -6192,14 +6192,14 @@ void ScriptEngine::checkConditionsForTeamNames(Script *pScript)
 						singletonTeamName = teamName;		// Singleton team - use if it is the only one, but can have multiple of these.
 					} else {
 						if (multiTeamName.isEmpty()) {
-							multiTeamName = teamName;		// Use one multiply defined team.  Good.
+							multiTeamName = teamName;		// Use one team defined multiple times.  Good.
 						} else if (multiTeamName!=teamName) {
-							// More than one multiply defined team - bad.
-							AppendDebugMessage("***WARNING: Script contains multiple non-singleton team conditions::***", false);
+							// More than one team defined multiple times - bad.
+							AppendDebugMessage("***WARNING: Script contains multiple conditions for teams defined multiple times::***", false);
 							AppendDebugMessage(scriptName, false);
 							AppendDebugMessage(multiTeamName, false);
 							AppendDebugMessage(teamName, false);
-							DEBUG_LOG(("WARNING: Script '%s' contains multiple non-singleton team conditions: %s & %s.", scriptName.str(),
+							DEBUG_LOG(("WARNING: Script '%s' contains multiple conditions for teams defined multiple times: %s & %s.", scriptName.str(),
 								multiTeamName.str(), teamName.str()));
 						}
 					}
@@ -6285,7 +6285,7 @@ void ScriptEngine::executeScript( Script *pScript )
 				// Script Debug window
 				_appendMessage(pScript->getName(), false);
 
-				// Only do this is there are actually false actions.
+				// Only do this if there are actually false actions.
 				executeActions(pScript->getFalseAction());
 			}
 		}
@@ -6308,7 +6308,7 @@ void ScriptEngine::executeScript( Script *pScript )
 			// Script Debug window
 			_appendMessage(pScript->getName(), false);
 
-			// Only do this is there are actually false actions.
+			// Only do this if there are actually false actions.
 			executeActions(pScript->getFalseAction());
 			if (pScript->isOneShot()) {
 				pScript->setActive(false);
@@ -6441,7 +6441,7 @@ void ScriptEngine::transferObjectName( const AsciiString& unitName, Object *pNew
 		removeObjectFromCache(pNewObject);
 	}
 
-	pNewObject->setName(unitName); // make sure it's named the name.
+	pNewObject->setName(unitName); // make sure it has the correct name.
 
 	//Loop through the cached list and find the string entry. If found, change the object
 	//so it's pointing to the new one.
@@ -7497,7 +7497,7 @@ void SequentialScript::xfer( Xfer *xfer )
 	// frames to wait
 	xfer->xferInt( &m_framesToWait );
 
-	// dont advance instruction
+	// don't advance instruction
 	xfer->xferBool( &m_dontAdvanceInstruction );
 
 }
@@ -8469,7 +8469,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		else
 		{
 
-			// the vector should be emtpy now
+			// the vector should be empty now
 			if( m_namedReveals.empty() == FALSE )
 			{
 
