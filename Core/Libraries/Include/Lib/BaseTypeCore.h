@@ -87,11 +87,6 @@
 #define TWO_PI 6.28318530718f
 #endif
 
-#ifndef NULL
-//#define NULL ((void *)0)
-#define NULL 0						// C++ doesn't like casting void *'s into other pointers
-#endif
-
 // MSVC math.h defines overloaded functions with this name...
 //#ifndef abs
 //#define abs(x) (((x) < 0) ? -(x) : (x))
