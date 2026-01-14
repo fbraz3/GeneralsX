@@ -257,15 +257,12 @@ is confusing, but it makes sliding the map 10x faster.  */
 //=============================================================================
 Int HeightMapRenderObjClass::getXWithOrigin(Int x)
 {
+	const Int xMax = m_x-1;
 	x -= m_originX;
-	if (x<0) x+= m_x-1;
-	if (x>= m_x-1) x-=m_x-1;
-#ifdef RTS_DEBUG
-	DEBUG_ASSERTCRASH (x>=0, ("X out of range."));
-	DEBUG_ASSERTCRASH (x<m_x-1, ("X out of range."));
-#endif
-	if (x<0) x = 0;
-	if (x>= m_x-1) x=m_x-1;
+	if (x < 0) x += xMax;
+	if (x >= xMax) x -= xMax;
+	if (x < 0) { DEBUG_CRASH(("X out of range.")); x = 0; }
+	if (x >= xMax) { DEBUG_CRASH(("X out of range.")); x = xMax; }
 	return x;
 }
 
@@ -278,15 +275,12 @@ is confusing, but it makes sliding the map 10x faster.  */
 //=============================================================================
 Int HeightMapRenderObjClass::getYWithOrigin(Int y)
 {
+	const Int yMax = m_y-1;
 	y -= m_originY;
-	if (y<0) y+= m_y-1;
-	if (y>= m_y-1) y-=m_y-1;
-#ifdef RTS_DEBUG
-	DEBUG_ASSERTCRASH (y>=0, ("Y out of range."));
-	DEBUG_ASSERTCRASH (y<m_y-1, ("Y out of range."));
-#endif
-	if (y<0) y = 0;
-	if (y>= m_y-1) y=m_y-1;
+	if (y < 0) y += yMax;
+	if (y >= yMax) y -= yMax;
+	if (y < 0) { DEBUG_CRASH(("Y out of range.")); y = 0; }
+	if (y >= yMax) { DEBUG_CRASH(("Y out of range.")); y = yMax; }
 	return y;
 }
 
