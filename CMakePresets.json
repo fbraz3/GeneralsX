@@ -63,6 +63,22 @@
             }
         },
         {
+            "name": "vc6-vcpkg",
+            "displayName": "Windows 32bit VC6 with vcpkg",
+            "hidden": false,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/vc6-toolchain.cmake",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL",
+                "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "",
+                "CMAKE_BUILD_TYPE": "Release",
+                "RTS_FLAGS": "/W3"
+            }
+        },
+        {
             "name": "default",
             "displayName": "Default Config (don't use directly!)",
             "generator": "Ninja Multi-Config",

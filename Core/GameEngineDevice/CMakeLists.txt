@@ -1,4 +1,7 @@
 set(GAMEENGINEDEVICE_SRC
+    Include/AudioDevice/AudioDevice.h
+    Include/AudioDevice/AudioDeviceFactory.h
+    Include/AudioDevice/OpenALDevice.h
     Include/MilesAudioDevice/MilesAudioManager.h
     Include/VideoDevice/Bink/BinkVideoPlayer.h
 #    Include/W3DDevice/Common/W3DConvert.h
@@ -91,6 +94,8 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/Win32Device/GameClient/Win32DIMouse.h
 #    Include/Win32Device/GameClient/Win32Mouse.h
     Source/MilesAudioDevice/MilesAudioManager.cpp
+    Source/AudioDevice/AudioDeviceFactory.cpp
+    Source/AudioDevice/OpenALDevice.cpp
     Source/VideoDevice/Bink/BinkVideoPlayer.cpp
 #    Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
     Source/W3DDevice/Common/System/W3DRadar.cpp
@@ -228,6 +233,13 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
     d3d8lib
     milesstub
 )
+
+# Phase 07: OpenAL Audio Integration
+if(OPENAL_FOUND)
+    target_link_libraries(corei_gameenginedevice_private INTERFACE ${OPENAL_LIBRARIES})
+    target_include_directories(corei_gameenginedevice_private INTERFACE ${OPENAL_INCLUDE_DIR})
+    target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_OPENAL)
+endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
     find_package(FFMPEG REQUIRED)
