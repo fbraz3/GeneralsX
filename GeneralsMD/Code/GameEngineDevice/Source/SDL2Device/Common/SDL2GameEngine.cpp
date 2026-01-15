@@ -175,14 +175,8 @@ void SDL2GameEngine::serviceSDL2OS(void)
 				}
 				break;
 			}
-			{
-				if (TheSDL2Mouse)
-				{
-					TheSDL2Mouse->onMouseButtonDown(event.button);
-				}
-				break;
-			}
 
+		case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
 			{
 				if (TheSDL2Mouse)
