@@ -31,6 +31,10 @@
 #include <windows.h>
 #include <assert.h>
 
+/* Force linker to include dxguid.lib which contains IID_IDirectInput8A */
+#pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "dinput8.lib")
+
 #include "Common/Debug.h"
 #include "Common/Language.h"
 #include "GameClient/KeyDefs.h"
@@ -42,6 +46,9 @@
 enum { KEYBOARD_BUFFER_SIZE = 256 };
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+// DirectInput8 GUID definition (required for VC6 linker)
+const GUID IID_IDirectInput8A = {0xBF798030,0x483A,0x4DA2,{0xAA,0x99,0x5D,0x64,0xED,0x36,0x97,0x00}};
+
 struct ErrorLookup
 {
 	HRESULT error;

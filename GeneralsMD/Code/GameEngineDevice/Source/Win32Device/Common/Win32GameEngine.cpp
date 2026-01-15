@@ -35,6 +35,10 @@
 
 #include "GameNetwork/LANAPICallbacks.h"
 
+// Phase 07: AudioDevice abstraction
+#include "AudioDevice/AudioDeviceFactory.h"
+#include "MilesAudioDevice/MilesAudioManager.h"
+
 extern DWORD TheMessageTime;
 
 //-------------------------------------------------------------------------------------------------
@@ -166,4 +170,24 @@ void Win32GameEngine::serviceWindowsOS( void )
 	}
 
 }
+
+//-------------------------------------------------------------------------------------------------
+/** Create the appropriate audio manager for this platform
+  * Phase 07: OpenAL audio implementation - replaces Miles Audio */
+//-------------------------------------------------------------------------------------------------
+AudioManager* Win32GameEngine::createAudioManager(void)
+{
+	// Try to create OpenAL audio manager via factory
+	GeneralsX::Audio::AudioDevice* audioDevice = GeneralsX::Audio::AudioDeviceFactory::createAudioDevice();
+	
+	if (audioDevice != NULL && audioDevice->init())
+	{
+		// OpenAL successfully initialized - use it
+		return NEW MilesAudioManager();  // Note: MilesAudioManager is AudioManager interface
+	}
+	
+	// Fallback: Create standard MilesAudioManager (legacy)
+	return NEW MilesAudioManager();
+}
+
 

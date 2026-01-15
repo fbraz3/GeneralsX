@@ -1,8 +1,8 @@
 /*
  * Phase 07: OpenALDevice Implementation - VC6 Compatible Version
  * 
- * Minimal OpenAL implementation for VC6 compatibility
- * Future: Enhance with full audio functionality
+ * Complete OpenAL audio system for cross-platform audio support
+ * Replaces legacy Miles Sound System with modern OpenAL-soft library
  */
 
 #include "../Include/AudioDevice/OpenALDevice.h"
@@ -13,6 +13,12 @@
 // OpenAL headers
 #include <AL/al.h>
 #include <AL/alc.h>
+
+/* Force linker to include OpenAL32.lib and OpenAL32.dll */
+#ifdef _WIN32
+#pragma comment(lib, "OpenAL32.lib")
+#pragma comment(linker, "/include:_alGenSources")
+#endif
 
 namespace GeneralsX {
 namespace Audio {
@@ -335,33 +341,113 @@ void OpenALDevice::setSoundPitch(int soundId, float pitch)
 int OpenALDevice::play3DSound(const char* filename, float worldX, float worldY, float worldZ, float volume, float pitch)
 {
     if (!m_initialized) return -1;
-    // TODO: Implement 3D sound
-    return -1;
+    
+    ALuint alBuffer = loadAudioBuffer(filename);
+    if (alBuffer == 0) {
+        m_lastError = "Failed to load audio file for 3D sound: ";
+        m_lastError += filename;
+        return -1;
+    }
+    
+    ALuint alSource;
+    alGenSources(1, &alSource);
+    alSourcei(alSource, AL_BUFFER, alBuffer);
+    alSourcef(alSource, AL_GAIN, volume * m_masterVolume);
+    alSourcef(alSource, AL_PITCH, pitch);
+    
+    /* Set 3D position and velocity */
+    alSource3f(alSource, AL_POSITION, worldX, worldY, worldZ);
+    alSource3f(alSource, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+    
+    /* Enable 3D processing with distance attenuation */
+    alSourcei(alSource, AL_SOURCE_RELATIVE, AL_FALSE);
+    alSourcef(alSource, AL_REFERENCE_DISTANCE, 1.0f);
+    alSourcef(alSource, AL_MAX_DISTANCE, 200.0f);
+    alSourcef(alSource, AL_ROLLOFF_FACTOR, 1.0f);
+    
+    alSourcePlay(alSource);
+    
+    int handle = allocateSoundHandle();
+    SoundSource src;
+    src.alSource = alSource;
+    src.alBuffer = alBuffer;
+    src.filename = filename;
+    src.posX = worldX;
+    src.posY = worldY;
+    src.posZ = worldZ;
+    src.velX = 0.0f;
+    src.velY = 0.0f;
+    src.velZ = 0.0f;
+    src.volume = volume;
+    src.pitch = pitch;
+    src.is3D = true;
+    src.isPaused = false;
+    m_soundSources[handle] = src;
+    
+    return handle;
 }
 
 void OpenALDevice::set3DSoundPosition(int soundId, float worldX, float worldY, float worldZ)
 {
-    // TODO: Set 3D position
+    if (!m_initialized || soundId < 0) return;
+    
+    std::map<int, SoundSource>::iterator it = m_soundSources.find(soundId);
+    if (it == m_soundSources.end()) return;
+    
+    it->second.posX = worldX;
+    it->second.posY = worldY;
+    it->second.posZ = worldZ;
+    
+    alSource3f(it->second.alSource, AL_POSITION, worldX, worldY, worldZ);
 }
 
 void OpenALDevice::set3DSoundVelocity(int soundId, float velX, float velY, float velZ)
 {
-    // TODO: Set 3D velocity
+    if (!m_initialized || soundId < 0) return;
+    
+    std::map<int, SoundSource>::iterator it = m_soundSources.find(soundId);
+    if (it == m_soundSources.end()) return;
+    
+    it->second.velX = velX;
+    it->second.velY = velY;
+    it->second.velZ = velZ;
+    
+    alSource3f(it->second.alSource, AL_VELOCITY, velX, velY, velZ);
 }
 
 void OpenALDevice::stop3DSound(int soundId)
 {
-    // TODO: Stop 3D sound
+    stopSound(soundId);
 }
 
 void OpenALDevice::get3DSoundPosition(int soundId, float& outX, float& outY, float& outZ) const
 {
     outX = outY = outZ = 0.0f;
+    
+    if (soundId < 0) return;
+    
+    std::map<int, SoundSource>::const_iterator it = m_soundSources.find(soundId);
+    if (it != m_soundSources.end()) {
+        outX = it->second.posX;
+        outY = it->second.posY;
+        outZ = it->second.posZ;
+    }
 }
 
 float OpenALDevice::get3DSoundDistance(int soundId) const
 {
-    return 0.0f;
+    if (soundId < 0) return 0.0f;
+    
+    std::map<int, SoundSource>::const_iterator it = m_soundSources.find(soundId);
+    if (it == m_soundSources.end()) return 0.0f;
+    
+    /* Calculate distance from listener to sound */
+    float dx = it->second.posX - m_listenerX;
+    float dy = it->second.posY - m_listenerY;
+    float dz = it->second.posZ - m_listenerZ;
+    
+    float distance = sqrt(dx * dx + dy * dy + dz * dz);
+    return distance;
 }
 
 // ============================================================
@@ -429,33 +515,109 @@ void OpenALDevice::getListenerOrientation(float& outForwardX, float& outForwardY
 int OpenALDevice::playVoice(const char* filename, float volume)
 {
     if (!m_initialized) return -1;
-    // TODO: Implement voice playback
-    return -1;
+    
+    /* Stop current voice if playing */
+    if (m_currentVoiceId >= 0) {
+        stopVoice(m_currentVoiceId);
+    }
+    
+    ALuint alBuffer = loadAudioBuffer(filename);
+    if (alBuffer == 0) {
+        m_lastError = "Failed to load voice file: ";
+        m_lastError += filename;
+        return -1;
+    }
+    
+    ALuint alSource;
+    alGenSources(1, &alSource);
+    alSourcei(alSource, AL_BUFFER, alBuffer);
+    alSourcef(alSource, AL_GAIN, volume * m_masterVolume);
+    alSourcef(alSource, AL_PITCH, 1.0f);
+    alSourcei(alSource, AL_SOURCE_RELATIVE, AL_FALSE);
+    alSourcePlay(alSource);
+    
+    int handle = allocateSoundHandle();
+    SoundSource src;
+    src.alSource = alSource;
+    src.alBuffer = alBuffer;
+    src.filename = filename;
+    src.posX = 0.0f;
+    src.posY = 0.0f;
+    src.posZ = 0.0f;
+    src.velX = 0.0f;
+    src.velY = 0.0f;
+    src.velZ = 0.0f;
+    src.volume = volume;
+    src.pitch = 1.0f;
+    src.is3D = false;
+    src.isPaused = false;
+    m_soundSources[handle] = src;
+    m_currentVoiceId = handle;
+    
+    return handle;
 }
 
 void OpenALDevice::stopVoice(int voiceId)
 {
-    // TODO: Stop voice
+    if (!m_initialized || voiceId < 0) return;
+    
+    std::map<int, SoundSource>::iterator it = m_soundSources.find(voiceId);
+    if (it != m_soundSources.end()) {
+        alSourceStop(it->second.alSource);
+        alDeleteSources(1, &it->second.alSource);
+        m_soundSources.erase(it);
+        
+        if (m_currentVoiceId == voiceId) {
+            m_currentVoiceId = -1;
+        }
+    }
 }
 
 bool OpenALDevice::isVoicePlaying(int voiceId) const
 {
-    return false;
+    if (!m_initialized || voiceId < 0) return false;
+    
+    std::map<int, SoundSource>::const_iterator it = m_soundSources.find(voiceId);
+    if (it == m_soundSources.end()) return false;
+    
+    ALint state;
+    alGetSourcei(it->second.alSource, AL_SOURCE_STATE, &state);
+    return state == AL_PLAYING;
 }
 
 void OpenALDevice::setVoiceVolume(int voiceId, float volume)
 {
-    // TODO: Set voice volume
+    if (!m_initialized || voiceId < 0) return;
+    
+    std::map<int, SoundSource>::iterator it = m_soundSources.find(voiceId);
+    if (it != m_soundSources.end()) {
+        it->second.volume = volume;
+        alSourcef(it->second.alSource, AL_GAIN, volume * m_masterVolume);
+    }
 }
 
 void OpenALDevice::pauseVoice(int voiceId)
 {
-    // TODO: Pause voice
+    if (!m_initialized || voiceId < 0) return;
+    
+    std::map<int, SoundSource>::iterator it = m_soundSources.find(voiceId);
+    if (it != m_soundSources.end()) {
+        alSourcePause(it->second.alSource);
+        it->second.isPaused = true;
+    }
 }
 
 void OpenALDevice::resumeVoice(int voiceId)
 {
-    // TODO: Resume voice
+    if (!m_initialized || voiceId < 0) return;
+    
+    std::map<int, SoundSource>::iterator it = m_soundSources.find(voiceId);
+    if (it != m_soundSources.end()) {
+        if (it->second.isPaused) {
+            alSourcePlay(it->second.alSource);
+            it->second.isPaused = false;
+        }
+    }
 }
 
 // ============================================================
@@ -477,18 +639,32 @@ float OpenALDevice::getMasterVolume() const
 
 void OpenALDevice::pauseAll()
 {
+    if (!m_initialized) return;
+    
     m_allPaused = true;
-    // TODO: Pause all sources
+    
+    for (std::map<int, SoundSource>::iterator it = m_soundSources.begin();
+         it != m_soundSources.end(); ++it) {
+        alSourcePause(it->second.alSource);
+    }
 }
 
 void OpenALDevice::resumeAll()
 {
+    if (!m_initialized) return;
+    
     m_allPaused = false;
-    // TODO: Resume all sources
+    
+    for (std::map<int, SoundSource>::iterator it = m_soundSources.begin();
+         it != m_soundSources.end(); ++it) {
+        alSourcePlay(it->second.alSource);
+    }
 }
 
 void OpenALDevice::stopAll()
 {
+    if (!m_initialized) return;
+    
     for (std::map<int, SoundSource>::iterator it = m_soundSources.begin();
          it != m_soundSources.end(); ++it) {
         alSourceStop(it->second.alSource);

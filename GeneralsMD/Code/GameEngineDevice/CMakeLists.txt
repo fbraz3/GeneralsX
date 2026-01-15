@@ -253,6 +253,12 @@ if(USE_SDL2_DEVICE)
     target_link_libraries(z_gameenginedevice PRIVATE SDL2::SDL2)
 endif()
 
+# Phase 07: Add OpenAL support for audio playback
+if(OPENAL_FOUND)
+    target_link_libraries(z_gameenginedevice PRIVATE ${OPENAL_LIBRARY})
+    target_include_directories(z_gameenginedevice PRIVATE ${OPENAL_INCLUDE_DIR})
+endif()
+
 target_link_libraries(z_gameenginedevice PUBLIC
     corei_gameenginedevice_public
     z_gameengine

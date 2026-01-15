@@ -77,7 +77,7 @@ protected:
 	virtual NetworkInterface *createNetwork( void );				///< Factory for the network
 	virtual Radar *createRadar( void );											///< Factory for radar
 	virtual WebBrowser *createWebBrowser( void );						///< Factory for embedded browser
-	virtual AudioManager *createAudioManager( void );				///< Factory for audio device
+	virtual AudioManager *createAudioManager( void );				///< Factory for audio device - Phase 07: OpenAL integration
 	virtual ParticleSystemManager* createParticleSystemManager( void );
 
 
@@ -98,4 +98,4 @@ inline ParticleSystemManager* Win32GameEngine::createParticleSystemManager( void
 inline NetworkInterface *Win32GameEngine::createNetwork( void ) { return NetworkInterface::createNetwork(); }
 inline Radar *Win32GameEngine::createRadar( void ) { return NEW W3DRadar; }
 inline WebBrowser *Win32GameEngine::createWebBrowser( void ) { return NEW CComObject<W3DWebBrowser>; }
-inline AudioManager *Win32GameEngine::createAudioManager( void ) { return NEW MilesAudioManager; }
+// AudioManager createAudioManager() is now implemented in Win32GameEngine.cpp with Phase 07 OpenAL integration

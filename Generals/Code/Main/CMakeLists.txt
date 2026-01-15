@@ -12,8 +12,8 @@ target_link_libraries(g_generals PRIVATE
     comctl32
     d3d8
     d3dx8
-    dinput8
     dxguid
+    dinput8
     g_gameengine
     g_gameenginedevice
     gi_always
