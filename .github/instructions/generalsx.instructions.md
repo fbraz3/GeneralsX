@@ -4,78 +4,82 @@ applyTo: '**'
 
 # Objectives
 
-GeneralsX is a cross-platform port of Command & Conquer: Generals (2002) and its expansion Zero Hour aka GeneralsMD (2003) from Windows-only DirectX 8 to macOS/Linux/Windows using Vulkan and SDL2 backends.
+GeneralsX is a port of Command & Conquer: Generals (2002) and its expansion Zero Hour aka GeneralsMD (2003) modernizing the legacy DirectX 8 Windows codebase with SDL2 for input/windowing and Vulkan for graphics rendering.
 
-This is a **massive C++ game engine** (~500k+ LOC) being ported from Visual C++ 6 (C++98) to modern C++20 with platform abstraction layers.
+This is a **massive C++ game engine** (~500k+ LOC) being ported from Visual C++ 6 (C++98) to modern C++20 with improved code structure and platform abstraction layers.
 
-**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code that assumes Windows everywhere. Respect the existing architecture while adding cross-platform support.
+**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code that assumes Windows everywhere. Respect the existing architecture while modernizing the codebase.
 
-## Multi-Platform Support
+**Platform Strategy**:
+- **Phase 1 (Current)**: Windows 32-bit via VC6 with SDL2 for windowing/input and OpenAL for audio
+- **Phase 2**: Windows 32-bit via VC6 with Vulkan graphics backend (DirectX 8 → Vulkan translation)
+- **Phase 3**: Cross-platform support via Wine emulation layer on macOS and Linux
 
-The project must run natively on Windows, macOS and Linux, using Vulkan as graphics API and SDL2 as main backend library for windowing, input and audio.
+## Windows-First Development Strategy
+
+All development focuses on **Windows 32-bit (VC6 toolchain)** as the primary and only native compilation target. This ensures maximum compatibility with the legacy codebase.
 
 Registry keys must be replaced by configuration files, details about file formats and locations can be found into `assets/ini/README.md` file.
 
-When converting to SDL2, try to be more plataform-agnostic as possible, avoid Windows-specific assumptions.
+When implementing SDL2 and Vulkan abstractions, use platform abstraction layers that will eventually support Wine on macOS/Linux without code duplication.
 
-## Primary Goals
+## Primary Goals (Phase 1: SDL2 + OpenAL)
 
-**Architecture**: Build with cross-platform abstraction from the root using SDL2, making the codebase platform-agnostic.
-**Testing Focus**: Windows only (VC6 build preset) - validate all functionality works on Windows first.
+**Architecture**: Replace Win32 windowing and input code with SDL2 abstractions; replace DirectSound with OpenAL for audio.
+**Testing Focus**: Windows 32-bit VC6 only.
+**Acceptance Criteria**: All core gameplay works identically on Windows with SDL2/OpenAL instead of Win32/DirectSound.
 
-For this primary goal we will not mess with graphics backend, only port native win32 calls into universal SDL2 calls.
-
-After completing this primary goal, the game must be able to (on Windows):
+After completing Phase 1, the game must be able to (on Windows VC6):
 
 - Load game assets (.big files, models, textures, sounds, etc)
 - Load initial screen and main menu
-- Be able to navigate menus
+- Navigate menus and launch games
 - Start and play a skirmish game (single-player vs AI) successfully
 - Play Campaign missions successfully
 - Play Generals Challenge successfully
+- All audio output handled via OpenAL (no DirectSound dependencies)
 
-## Secondary Goals
+## Secondary Goals (Phase 2: Vulkan Graphics Backend)
 
-**Architecture**: Continue cross-platform abstraction strategy for graphics layer.
-**Testing Focus**: Windows only (VC6 build preset) - ensure Vulkan rendering works on Windows.
+**Architecture**: Replace DirectX 8 graphics pipeline with Vulkan abstraction layer.
+**Testing Focus**: Windows 32-bit VC6 only.
+**Acceptance Criteria**: All rendering works identically on Vulkan as on DirectX 8.
 
-For this secondary goal we will focus on graphics backend, porting DirectX 8 calls into Vulkan calls using existing abstraction layers.
+For Phase 2 we focus on graphics backend:
 
-- Investigate which is the best approach for DirectX 8 to Vulkan translation (dxvk maybe?)
-- Implement the chosen approach
+- Implement DirectX 8 to Vulkan translation layer (abstraction at the graphics API boundary)
+- Port all render state, texture stage operations, and draw calls to Vulkan
 - Optimize graphics performance for Vulkan backend
-- Ensure all features from primary goals work flawlessly with Vulkan backend
+- Ensure all features from Phase 1 work flawlessly with Vulkan backend
+- Maintain equivalent visual fidelity and performance to DirectX 8 baseline
 
-## Tertiary Goals
+## Tertiary Goals (Phase 3: Wine Cross-Platform Support)
 
-**Architecture**: Maintain cross-platform abstractions.
-**Testing Focus**: Windows only.
+**Architecture**: Build Wine abstraction layer for macOS and Linux support.
+**Testing Focus**: Windows 32-bit VC6 first, then Wine on macOS/Linux.
+**Refs**: `docs\WORKDIR\analysis\WINE_ANALYSIS_AND_STRATEGY.md`
+
+- Establish Wine build configuration and toolchain
+- Test SDL2 and Vulkan functionality through Wine on macOS and Linux
+- Verify file system paths and asset loading in Wine environments
+- Optimize Wine compatibility
+
+## Quaternary Goals (Post-Launch)
+
+**Architecture**: Enhanced gameplay features.
+**Testing Focus**: Windows VC6 as baseline, Wine cross-platform validation.
 
 - Multiplayer support (LAN only initially, online will be a future goal)
 - Modding support (loading mods from .big files and directories)
 
-## Quaternary Goals
+## Quinary Goals (Future: Windows Modernization)
 
-**Architecture**: Optimize for Windows platform variants while maintaining cross-platform code.
-**Testing Focus**: Windows 32-bit (VC6), Windows 64-bit (MSVC/MinGW), Windows ARM64.
+**Architecture**: Extended Windows support with modern toolchains.
+**Testing Focus**: Windows 32-bit VC6 as primary, optional Windows 64-bit via MSVC.
 
-- Windows 64-bit support with modern toolchain (Visual Studio 2022, MinGW-w64)
-- Windows ARM64 support (Surface Pro X, etc)
+- Optional Windows 64-bit support via MSVC 2022 toolchain (for future Windows modernization)
 - Performance optimizations for Windows variants
-
-## Quinary Goals
-
-**Architecture**: Activate platform-specific code paths and optimizations for non-Windows targets.
-**Testing Focus**: Full compilation and runtime testing on Linux and macOS.
-
-- Achieve similar functionality on Linux (x86_64) natively with Vulkan.
-  - Activate platform-agnostic code paths for Linux
-  - Test Virtual File System and file path handling (case sensitivity, slashes, etc)
-  - Validate Big files handling and memory mapping on Linux
-- Achieve similar functionality on macOS (Apple Silicon ARM64) natively with Vulkan.
-  - Activate platform-agnostic code paths for macOS
-  - Handle macOS specific file system quirks (resource forks, extended attributes, etc)
-  - Implement Metal backend via MoltenVK for Vulkan support on macOS
+- Extended audio/video codec support via modern libraries
 
 ## Wishlist (for a far future)
 
@@ -95,8 +99,10 @@ Before committing changes, make sure to update the development diary located at 
 - You can also search on GitHub and other online resources for similar problems and solutions.
 - **IMPORTANT** All code, including documentation files and comments, **must be in English** regardless of the user's language.
 - You may use the `deepwiki` tool that will help you understand the codebase and its architecture.
-- Vulkan-only and SDL2-only focus; do not include DirectX or native Windows API-specific code/instructions.
-- **IMPORTANT: Write code to be platform-agnostic and cross-platform ready**, even during Windows-only testing phases. Use platform abstraction layers from the root. Avoid Windows-specific assumptions in implementation.
+- **SDL2-only focus for windowing/input**; do not include native Windows API (Win32) windowing or input code.
+- **Vulkan-only focus for graphics**; do not include DirectX 8 or platform-specific graphics code (DirectX, Metal, OpenGL).
+- **OpenAL-only focus for audio**; do not include DirectSound or platform-specific audio code.
+- **IMPORTANT: Use abstraction layers consistently**, so code can eventually run through Wine on non-Windows platforms without code duplication. Avoid Windows-specific API calls at the business logic level.
 - Even if errors come from earlier phases, we must fix the gaps that were left behind.
 - Prefer to use vscode tasks for building and running the project instead of external scripts.
 - Do not use workarounds such as empty stubs, try/catch blocks, or disabling/commenting out components; identify and fix the **root cause** of the problem.
@@ -147,10 +153,9 @@ Before committing changes, make sure to update the development diary located at 
 - `/Dependencies` - External libraries and frameworks.
 
 # Build Presets (Platform-Specific)
-- `vc6` - Windows 32-bit (Visual C++ 6 compatibility) - LEGACY
-- `macos` - **macOS Apple Silicon (ARM64) - PRIMARY TARGET**
-- `linux` - Linux 64-bit (x86_64) - IN DEVELOPMENT
-- `windows` - Windows 64-bit Vulkan - FUTURE
+- `vc6` - **Windows 32-bit (Visual C++ 6 compatibility) - PRIMARY TARGET**
+- `vc6-wine` - Wine/Windows compatibility layer (planned for future cross-platform support)
+- `windows` - Windows 64-bit via MSVC (planned for future modernization)
 
 # Build Targets
 - `GeneralsXZH` - Zero Hour expansion executable (PRIMARY TARGET - recommended)
@@ -171,152 +176,106 @@ Before committing changes, make sure to update the development diary located at 
 
 # VS Code Tasks
 
-**IMPORTANT**: Always prefer using VS Code Tasks over manual terminal commands for build, deploy, sign, and run operations. Tasks are pre-configured with correct paths and logging.
+**IMPORTANT**: Always prefer using VS Code Tasks over manual terminal commands for build, deploy, and run operations. Tasks are pre-configured with correct paths and logging.
 
-### Available Tasks (macOS)
+### Available Tasks (Windows VC6)
 
 | Task | Description | Log Output |
 |------|-------------|------------|
-| `Build GeneralsXZH (macOS)` | Compiles Zero Hour expansion | `logs/build.log` |
-| `Build GeneralsX (macOS)` | Compiles Generals base game | `logs/build_generals.log` |
-| `Deploy GeneralsXZH (macOS)` | Copies ZH binary to `$HOME/GeneralsX/GeneralsMD/` | - |
-| `Deploy GeneralsX (macOS)` | Copies Generals binary to `$HOME/GeneralsX/Generals/` | - |
-| `Sign GeneralsXZH (macOS)` | Ad-hoc code signs ZH binary | - |
-| `Sign GeneralsX (macOS)` | Ad-hoc code signs Generals binary | - |
-| `Run GeneralsXZH Terminal (macOS)` | **Runs ZH in external Terminal.app** | `logs/runTerminal.log` |
-| `Run GeneralsX Terminal (macOS)` | **Runs Generals in external Terminal.app** | `logs/runTerminal_generals.log` |
-| `Debug GeneralsXZH Terminal (macOS)` | **Runs ZH under LLDB debugger** | `logs/debugTerminal.log` |
-| `Debug GeneralsX Terminal (macOS)` | **Runs Generals under LLDB debugger** | `logs/debugTerminal_generals.log` |
+| `Build GeneralsXZH (Windows VC6)` | Compiles Zero Hour expansion | `logs/build_generalszh.log` |
+| `Build GeneralsX (Windows VC6)` | Compiles Generals base game | `logs/build_generalsv.log` |
+| `Deploy GeneralsXZH (Windows)` | Copies ZH binary to `%USERPROFILE%\GeneralsX\GeneralsMD\` | - |
+| `Deploy GeneralsX (Windows)` | Copies Generals binary to `%USERPROFILE%\GeneralsX\Generals\` | - |
+| `Run GeneralsXZH (Windows)` | **Runs ZH with SDL2 windowing** | `logs/runTerminal_vc6.log` |
+| `Run GeneralsX (Windows)` | **Runs Generals with SDL2 windowing** | `logs/runTerminal_generalsv.log` |
+| `Debug GeneralsXZH (Windows)` | **Runs ZH under WinDbg debugger** | `logs/debugTerminal_vc6.log` |
+| `Debug GeneralsX (Windows)` | **Runs Generals under WinDbg debugger** | `logs/debugTerminal_generalsv.log` |
 
 ### Critical: Running the Game
 
-**NEVER run the game directly in VS Code's integrated terminal** - it will block the terminal indefinitely and may require force-killing the process.
+Use the Windows-native VS Code tasks for building, deploying, and running:
 
-**ALWAYS use the `Run GeneralsXZH Terminal (macOS)` or `Run GeneralsX Terminal (macOS)` tasks** which:
-1. Open macOS Terminal.app (external window)
-2. Execute the game with output captured via `tee`
-3. Auto-close the terminal when the game exits
-4. Keep logs in `logs/runTerminal*.log` for analysis
+- `Run GeneralsXZH (Windows)` - Executes the game with output logged to `logs/runTerminal_vc6.log`
+- `Run GeneralsX (Windows)` - Executes Generals with output logged to `logs/runTerminal_generalsv.log`
 
-### Debug Tasks (LLDB)
+### Debug Tasks (WinDbg)
 
-For crash investigation, use **`Debug GeneralsXZH Terminal (macOS)`** or **`Debug GeneralsX Terminal (macOS)`** tasks which:
-1. Run the executable under LLDB debugger
-2. Automatically capture backtrace (20 frames) on crash
-3. Show exact crash location with source file and line number
-4. Exit cleanly after debugging session
+For crash investigation, use WinDbg-based debug tasks:
 
-**Debug workflow:**
-```
-run_task("shell: Debug GeneralsXZH Terminal (macOS)", workspaceFolder)
-# After crash, analyze: logs/debugTerminal.log
-```
+- `Debug GeneralsXZH (Windows)` - Runs ZH under WinDbg debugger
+- `Debug GeneralsX (Windows)` - Runs Generals under WinDbg debugger
 
-**Example debug output (crash):**
-```
-* thread #1, stop reason = EXC_BAD_ACCESS (code=1, address=0x0)
-    frame #0: 0x0000000000000000
-    frame #1: GeneralsXZH`parseInit at GameWindowManagerScript.cpp:2534
-    frame #2: GeneralsXZH`parseLayoutBlock at GameWindowManagerScript.cpp:2656
-    ...
-```
-
-The debug tasks use `scripts/lldb_debug.sh` wrapper which handles both normal exits and crashes gracefully.
+Output is captured in `logs/debugTerminal*.log` for analysis.
 
 ### How to Run Tasks
 
 Use `run_task` tool with the task label:
 ```
-run_task("shell: Build GeneralsXZH (macOS)", workspaceFolder)
-run_task("shell: Run GeneralsXZH Terminal (macOS)", workspaceFolder)
+run_task("shell: Build GeneralsXZH (Windows VC6)", workspaceFolder)
+run_task("shell: Run GeneralsXZH (Windows)", workspaceFolder)
 ```
 
 ### Typical Workflow
 
-1. **Build**: `run_task("shell: Build GeneralsXZH (macOS)")`
-2. **Deploy**: `run_task("shell: Deploy GeneralsXZH (macOS)")`
-3. **Sign**: `run_task("shell: Sign GeneralsXZH (macOS)")`
-4. **Run**: `run_task("shell: Run GeneralsXZH Terminal (macOS)")`
-5. **Analyze**: Read `logs/runTerminal.log` after game closes
+1. **Build**: `run_task("shell: Build GeneralsXZH (Windows VC6)")`
+2. **Deploy**: `run_task("shell: Deploy GeneralsXZH (Windows)")`
+3. **Run**: `run_task("shell: Run GeneralsXZH (Windows)")`
+4. **Analyze**: Read `logs/runTerminal_vc6.log` after game closes
 
 ## Debugging Guidelines
 
-- For debugging purposes, do not use commands like `grep` or `tail` into a command run to avoid hanging the terminal if the command produces a lot of output - Instead, use `tee` to log the output to a file and then use `grep` on the log file.
-- **PREFER using VS Code Tasks** for debugging instead of manual terminal commands:
-  - `Debug GeneralsXZH Terminal (macOS)` - Runs under LLDB with automatic backtrace
-  - `Debug GeneralsX Terminal (macOS)` - Same for Generals base game
-- Command example (manual):
-```bash
-# Example for macOS ARM64 - GeneralsXZH
-cd $HOME/GeneralsX/GeneralsMD/ && ./GeneralsXZH 2>&1 | tee logs/run_zh.log
-grep -i error logs/run_zh.log
-
-# Example for macOS ARM64 - GeneralsX
-cd $HOME/GeneralsX/Generals/ && ./GeneralsX 2>&1 | tee logs/run_g.log
-grep -i error logs/run_g.log
-```
-- Use `lldb` for debugging crashes (or use the Debug tasks which wrap lldb automatically).
-- The `scripts/lldb_debug.sh` wrapper handles:
-  - Automatic backtrace capture on crash
-  - Clean exit on normal termination
-  - Proper LLDB session cleanup
-- Command example (manual lldb):
-```bash
-# Example for macOS ARM64 - GeneralsXZH
-scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee logs/lldb_zh.log
+- Use VS Code Tasks for debugging instead of manual terminal commands
+- **PREFER using VS Code Tasks**:
+  - `Debug GeneralsXZH (Windows)` - Runs under WinDbg debugger
+  - `Debug GeneralsX (Windows)` - Same for Generals base game
+- WinDbg provides comprehensive debugging support for crash analysis
+- Always use `tee` to log output to files (e.g., `logs/debugTerminal_vc6.log`) for later analysis
+- Command example (manual WinDbg):
+```cmd
+windbg.exe %USERPROFILE%\GeneralsX\GeneralsMD\GeneralsXZH.exe -win
 ```
 
-### Debugging Best Practices (Lessons Learned)
+### Debugging Best Practices
 
 1. **Complete Log Capture is Essential**
-   - **DO NOT** use short timeouts (5-15 seconds) during initial testing - game initialization can take significant time
-   - **USE** `tee` to save logs to `logs/` directory for later analysis instead of `/tmp` (which may be cleared)
+   - **USE** `tee` to save logs to `logs/` directory for later analysis
    - **WAIT** for game to stabilize before assuming a crash occurred
    - Example: Game may take 30+ seconds to load .big files, parse INI files, and initialize graphics
 
-2. **Grep Filtering Can Hide Progress**
+2. **Grep Filtering for Analysis**
    - Repetitive logs (like BeginFrame/EndFrame cycles) may appear as infinite loops when filtered
-   - **VERIFY** process state with `ps aux` before assuming crash
    - **CHECK** full unfiltered logs first, then apply targeted grep patterns
-   - Example: `grep -A 5 -B 5 "error\|fatal"` provides context around errors
+   - Example: `findstr /i "error" logs/runTerminal_vc6.log` provides error context
 
 3. **Distinguish Real Crashes from Slow Initialization**
-   - **CHECK** if process is still running: `ps aux | grep GeneralsXZH`
+   - **CHECK** process state in Task Manager before assuming crash
    - **VERIFY** CPU usage: High CPU = still processing, Low CPU = might be stuck
-   - **LOOK** for crash logs: `$HOME/Documents/Command and Conquer Generals Zero Hour Data/ReleaseCrashInfo.txt`
+   - **LOOK** for crash logs in game data directory
    - **WAIT** for complete initialization before investigating "apparent" hangs
 
-4. **Memory Protection Systems Work**
-   - Phase 30.6 memory protections (`GameMemory.cpp::isValidMemoryPointer()`) successfully prevent driver bugs
-   - AGXMetal13_3 crash was resolved by validation checks, not workarounds
-   - Trust protection layers but verify with extensive testing
+4. **Memory Protection Systems**
+   - Trust validation checks in `GameMemory.cpp::isValidMemoryPointer()` to catch memory issues
+   - Extensive logging helps identify memory-related problems early
 
 5. **Persistent Log Directory**
    - **USE** `logs/` directory in project root (gitignored) for all debug output
-   - **AVOID** `/tmp` logs that disappear between sessions
-   - **DOCUMENT** log purpose in filename: `metal_texture_test_20251017.log`
+   - **DOCUMENT** log purpose in filename: `crash_analysis_20260115.log`
    - **KEEP** logs for resolved bugs as reference for similar issues
 
 
-# Vulkan Docs
+# Vulkan Documentation
 
-We should have the Vulkan documentation available locally for reference. To download and extract the Vulkan SDK documentation for macOS, you can use the following commands:
+During Phase 2 (Vulkan graphics backend), download and extract the Vulkan SDK documentation locally for reference:
 
 ```
 mkdir -p docs/Support/Vulkan
 cd docs/Support/Vulkan
-wget https://vulkan.lunarg.com/doc/download/VulkanSDK-Mac-Docs-1.4.335.1.zip
-unzip VulkanSDK-Mac-Docs-1.4.335.1.zip
-rm -rf VulkanSDK-Mac-Docs-1.4.335.1.zip
+wget https://vulkan.lunarg.com/doc/download/VulkanSDK-Windows-Docs-1.4.335.0.zip
+unzip VulkanSDK-Windows-Docs-1.4.335.0.zip
+rm -rf VulkanSDK-Windows-Docs-1.4.335.0.zip
 ```
 
-The example above is for macOS, you can adjust the URL and commands accordingly for Windows or Linux versions of the Vulkan SDK documentation.
-
-```
-https://vulkan.lunarg.com/doc/download/VulkanSDK-Windows-Docs-1.4.335.0.zip
-https://vulkan.lunarg.com/doc/download/VulkanSDK-Linux-Docs-1.4.335.0.zip
-wget https://vulkan.lunarg.com/doc/download/VulkanSDK-Mac-Docs-1.4.335.1.zip
-```
+Refer to [Vulkan Specification](https://www.khronos.org/registry/vulkan/specs/1.3/html/) for API reference during graphics backend implementation.
 # Command Line parameters
 
 these are the most common command line parameters for GeneralsX and GeneralsXZH executables:
