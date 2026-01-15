@@ -1,32 +1,41 @@
-# 🚀 Phase 06: Complete Implementation Plan
+# Phases 06-08 Quick Reference
 
 **Date Created**: 2026-01-15  
 **Status**: READY FOR EXECUTION  
-**Duration**: ~26 days (~4 weeks)  
+**Total Duration**: ~54-61 days  
 **Baseline**: Phase 05 Complete (VC6 32-bit, SDL2, CD protection removed)
 
 ---
 
 ## 📋 Executive Summary
 
-Phase 06 has **TWO MAJOR GOALS**:
+The original Phase 06 has been split into **THREE FOCUSED PHASES**:
 
-### 🔍 Goal 1: SDL2 Implementation Audit (Week 1-2)
+### Phase 06: SDL2 Implementation Audit (~10 days)
 **Ensure 100% of window/input management runs via SDL2**
 - Find all Win32 API calls that bypass SDL2
 - Create SDL2 wrappers for any gaps
 - Validate game runs identically on pure SDL2 abstraction
-- **Duration**: ~10 days
 - **Risk**: LOW (mostly detective work)
+- **Enables**: Phase 07 with confidence
 
-### 🎵 Goal 2: OpenAL Audio Foundation (Week 3-4)
+### Phase 07: OpenAL Audio Implementation (~16 days)
 **Replace Miles Audio with OpenAL abstraction layer**
 - Design clean `AudioDevice` interface
 - Implement full OpenAL backend with 3D audio support
 - Hook all game audio through new abstraction
 - Complete Miles → OpenAL migration
-- **Duration**: ~16 days
-- **Risk**: MEDIUM (implementation complexity)
+- **Risk**: MEDIUM (implementation complexity, but pattern proven)
+- **Enables**: 64-bit builds + Phase 08 with confidence
+
+### Phase 08: Vulkan Graphics Implementation (~28-35 days)
+**Replace DirectX 8 with Vulkan abstraction layer**
+- Design clean `GraphicsDevice` interface
+- Implement full Vulkan backend with all rendering systems
+- Hook all graphics through new abstraction
+- Complete DirectX 8 → Vulkan migration
+- **Risk**: MEDIUM-HIGH (complex graphics API, pattern proven)
+- **Enables**: Cross-platform support (Linux, macOS, Wine)
 
 ---
 

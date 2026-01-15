@@ -1,154 +1,27 @@
-# PHASE 06: Detailed Roadmap - SDL2 Audit + OpenAL Implementation
+# PHASE 07: OpenAL Audio Implementation
 
 **Status**: Planning  
-**Start Date**: 2026-01-15  
-**Baseline**: Phase 05 Complete (VC6 32-bit, SDL2 + DirectX8 + Miles Audio)
+**Start Date**: After Phase 06 Complete  
+**Baseline**: Phase 06 Complete (VC6 32-bit, 100% SDL2 validated)
 
 ---
 
-## 🎯 Phase 06 Goals
+## 🎯 Phase 07 Goal
 
-1. **SDL2 Implementation Audit**: Ensure ALL windowing/input runs via SDL2, ZERO Win32 native calls
-2. **OpenAL Audio Foundation**: Replace Miles Audio with OpenAL abstraction layer
-3. **Deliverable**: VC6 game fully functional on SDL2 + OpenAL, ready for Vulkan phase
+Replace Miles Audio with OpenAL abstraction layer. Create clean `AudioDevice` interface that game code uses, enabling 64-bit support and cross-platform audio.
 
----
-
-## 📋 Phase 06.1: SDL2 Implementation Audit (Week 1-2)
-
-### Goal
-Verify that game runs 100% on SDL2 abstraction layer. Any Win32 API calls in input/window management must be identified and rerouted through SDL2.
-
-### 06.1.1: Map Current SDL2 Integration
-**Effort**: 2 days  
-**Owner**: Lead Architect
-
-**Tasks**:
-- [ ] Search codebase for SDL2 usage patterns
-  ```bash
-  grep -r "SDL_" GeneralsMD/Code/GameEngineDevice/ | wc -l
-  grep -r "CreateWindow\|GetMessage\|DispatchMessage" GeneralsMD/Code --include="*.cpp" | grep -v "//"
-  ```
-- [ ] Document all SDL2 wrappers currently implemented:
-  - [ ] SDL2 window creation
-  - [ ] SDL2 event handling (keyboard, mouse)
-  - [ ] SDL2 input callbacks
-  - [ ] SDL2 timer functions
-  
-- [ ] Create matrix: "Win32 API vs SDL2 Alternative"
-  - Current state: Which are already abstracted
-  - Gaps: Which Win32 APIs bypass SDL2
-
-**Deliverable**: `docs/SDL2_AUDIT_REPORT.md` (detailed findings)
+**Success Criteria**:
+- [x] AudioDevice abstraction fully designed and implemented
+- [x] OpenAL backend functional (all major audio systems working)
+- [x] Miles Audio completely replaced
+- [x] All game audio tested and validated
+- [x] Documentation complete
 
 ---
 
-### 06.1.2: Identify Win32 Leakage
-**Effort**: 3 days  
-**Owner**: Code Reviewer
+## 📋 Detailed Roadmap
 
-**Search for direct Win32 API calls in these modules**:
-
-1. **Input System** (`GameEngineDevice/Source/Win32Device/GameClient/`)
-   - [ ] Win32DIKeyboard.cpp - Check for DirectInput calls that bypass SDL2
-   - [ ] Win32DIMouse.cpp - Check for DirectInput calls that bypass SDL2
-   - [ ] Win32Mouse.cpp - Check for Windows cursor APIs
-   
-2. **Window Management** (`Core/GameEngineDevice/` + `Main/`)
-   - [ ] Win32GameEngine.cpp - Check for CreateWindow, etc
-   - [ ] Win32OSDisplay.cpp - Check for raw Win32 display calls
-   
-3. **Message Loop** (`Main/WinMain.cpp`)
-   - [ ] GetMessage, DispatchMessage - Should be SDL2 event loop
-   - [ ] PeekMessage - Should be SDL_PollEvent
-   
-4. **File System** (Already abstracted, but verify)
-   - [ ] Win32LocalFileSystem.cpp - Should only do file I/O, not window stuff
-   
-5. **Audio System** (To be replaced)
-   - [ ] Current Miles Audio calls - Document for removal in 06.2
-
-**Deliverable**: `docs/SDL2_LEAKAGE_INVENTORY.md`
-- List of all Win32 calls found
-- Severity (critical vs informational)
-- Suggested SDL2 replacement
-
----
-
-### 06.1.3: Create SDL2 Wrapper Functions (if gaps exist)
-**Effort**: 2-3 days (if needed)  
-**Owner**: SDL2 Specialist
-
-**For each Win32 leakage found, create SDL2 wrapper**:
-
-Example: If raw `GetCursorPos()` found:
-```cpp
-// GameEngineDevice/Include/SDL2Device/Common/SDL2Input.h
-void SDL2_GetCursorPosition(int* outX, int* outY);
-
-// GameEngineDevice/Source/SDL2Device/Common/SDL2Input.cpp
-void SDL2_GetCursorPosition(int* outX, int* outY) {
-    SDL_GetMouseState(outX, outY);
-}
-```
-
-**Create wrapper headers for**:
-- [ ] SDL2Input.h - Keyboard/Mouse input
-- [ ] SDL2Window.h - Window management  
-- [ ] SDL2Display.h - Display/cursor control
-- [ ] SDL2Time.h - Timing (if not already done)
-
-**Deliverable**: Complete SDL2 wrapper layer for all identified gaps
-
----
-
-### 06.1.4: Build & Validate
-**Effort**: 1 day  
-**Owner**: Build Engineer
-
-**Tasks**:
-- [ ] Clean build: `cmake --preset vc6 && cmake --build build/vc6`
-- [ ] Verify compilation clean (0 errors)
-- [ ] Run game: `GeneralsXZH.exe -win -noshellmap`
-- [ ] Test scenarios:
-  - [ ] Navigate main menu (keyboard + mouse)
-  - [ ] Start skirmish game
-  - [ ] Click units (mouse input works)
-  - [ ] Press ESC to quit (keyboard works)
-
-**Deliverable**: `logs/phase06_1_validation.log` - All tests pass ✅
-
----
-
-### 06.1.5: Documentation & Validation Report
-**Effort**: 1 day  
-**Owner**: Documentation Lead
-
-**Create**:
-- [ ] `docs/SDL2_IMPLEMENTATION_COMPLETE.md`
-  - Summary of audit findings
-  - All Win32 leakage fixed
-  - Validation results
-  - Architecture diagram (Win32Device → SDL2 abstraction)
-
-**Acceptance Criteria**:
-- [x] Zero direct Win32 API calls in input/window code
-- [x] All events routed through SDL2
-- [x] Game runs identically to before audit
-- [x] No regression in functionality
-
-**Deliverable**: Documentation + passing validation tests
-
----
-
-## 🎵 Phase 06.2: OpenAL Audio Foundation (Week 3-4)
-
-### Goal
-Replace Miles Audio with OpenAL abstraction layer. Create clean `AudioDevice` interface that game code uses.
-
----
-
-### 06.2.1: Design AudioDevice Abstraction
+### 07.1: Design AudioDevice Abstraction
 **Effort**: 2 days  
 **Owner**: Audio Architect
 
@@ -202,7 +75,7 @@ public:
 
 ---
 
-### 06.2.2: Research OpenAL Integration
+### 07.2: Research OpenAL Integration
 **Effort**: 2 days  
 **Owner**: OpenAL Expert
 
@@ -224,7 +97,7 @@ public:
   - [ ] Runtime compatibility (Windows DLLs)
 
 - [ ] Create technical specification:
-  - [ ] `docs/OPENAL_INTEGRATION_SPEC.md`
+  - [ ] `docs/WORKDIR/support/OPENAL_INTEGRATION_SPEC.md`
   - ALContext initialization strategy
   - Thread safety model
   - Error handling approach
@@ -233,7 +106,7 @@ public:
 
 ---
 
-### 06.2.3: Implement OpenALDevice
+### 07.3: Implement OpenALDevice
 **Effort**: 4-5 days  
 **Owner**: Audio Implementation Lead
 
@@ -291,7 +164,7 @@ Core/GameEngineDevice/Source/AudioDevice/
 
 ---
 
-### 06.2.4: Hook Game Audio Calls
+### 07.4: Hook Game Audio Calls
 **Effort**: 2-3 days  
 **Owner**: Game Integration Lead
 
@@ -330,7 +203,7 @@ void SoundManager::playSoundEffect(const char* filename, float volume) {
 
 ---
 
-### 06.2.5: Audio File Asset Audit
+### 07.5: Audio File Asset Audit
 **Effort**: 2 days  
 **Owner**: Asset Manager
 
@@ -359,7 +232,7 @@ void SoundManager::playSoundEffect(const char* filename, float volume) {
 
 ---
 
-### 06.2.6: Build, Test, Validate
+### 07.6: Build, Test, Validate
 **Effort**: 2 days  
 **Owner**: QA Lead
 
@@ -406,7 +279,7 @@ void SoundManager::playSoundEffect(const char* filename, float volume) {
 **Test Execution**:
 ```bash
 # Launch with logging
-GeneralsXZH.exe -win -noshellmap 2>&1 | tee logs/audio_test.log
+GeneralsXZH.exe -win -noshellmap 2>&1 | tee logs/phase07_audio_test.log
 
 # Listen for:
 # - OpenAL initialization success
@@ -419,23 +292,23 @@ GeneralsXZH.exe -win -noshellmap 2>&1 | tee logs/audio_test.log
 
 ---
 
-### 06.2.7: Documentation & Migration Guide
+### 07.7: Documentation & Migration Guide
 **Effort**: 1 day  
 **Owner**: Documentation Lead
 
 **Create**:
-- [ ] `docs/OPENAL_IMPLEMENTATION_COMPLETE.md`
+- [ ] `docs/WORKDIR/support/OPENAL_IMPLEMENTATION_COMPLETE.md`
   - Architecture overview
   - AudioDevice interface documentation
   - Usage examples
   - Known limitations/future improvements
 
-- [ ] `docs/MIGRATION_FROM_MILES_TO_OPENAL.md`
+- [ ] `docs/WORKDIR/support/MIGRATION_FROM_MILES_TO_OPENAL.md`
   - Miles API → OpenAL mapping
   - Code change examples
   - Troubleshooting guide
 
-- [ ] `docs/AUDIO_FILE_FORMAT_SPEC.md`
+- [ ] `docs/WORKDIR/support/AUDIO_FILE_FORMAT_SPEC.md`
   - Which formats supported
   - File location conventions
   - Performance characteristics
@@ -444,73 +317,31 @@ GeneralsXZH.exe -win -noshellmap 2>&1 | tee logs/audio_test.log
 
 ---
 
-## 📅 Phase 06 Timeline Summary
+## 📅 Timeline Summary
 
-| Phase | Duration | Deliverable |
-|-------|----------|-------------|
-| **06.1.1** | 2 days | SDL2 integration map |
-| **06.1.2** | 3 days | Win32 leakage inventory |
-| **06.1.3** | 2-3 days | SDL2 wrapper functions |
-| **06.1.4** | 1 day | Validation tests pass |
-| **06.1.5** | 1 day | Documentation + Report |
-| **Subtotal 06.1** | **~10 days** | **SDL2 100% validated** ✅ |
-| | | |
-| **06.2.1** | 2 days | AudioDevice interface |
-| **06.2.2** | 2 days | OpenAL spec + research |
-| **06.2.3** | 4-5 days | OpenALDevice implementation |
-| **06.2.4** | 2-3 days | Hook game audio calls |
-| **06.2.5** | 2 days | Audio asset audit + convert |
-| **06.2.6** | 2 days | Testing & QA |
-| **06.2.7** | 1 day | Documentation |
-| **Subtotal 06.2** | **~16 days** | **OpenAL fully integrated** ✅ |
-| | | |
-| **PHASE 06 TOTAL** | **~26 days** | **SDL2 + OpenAL complete** ✅ |
+| Task | Duration | Deliverable |
+|------|----------|-------------|
+| **07.1** | 2 days | AudioDevice interface |
+| **07.2** | 2 days | OpenAL spec + research |
+| **07.3** | 4-5 days | OpenALDevice implementation |
+| **07.4** | 2-3 days | Hook game audio calls |
+| **07.5** | 2 days | Audio asset audit + convert |
+| **07.6** | 2 days | Testing & QA |
+| **07.7** | 1 day | Documentation |
+| **TOTAL** | **~16 days** | **OpenAL fully integrated** ✅ |
 
 ---
 
-## ✅ Phase 06 Success Criteria
+## 🚀 Next Phase (Phase 08): Vulkan Graphics Implementation
 
-### SDL2 Audit (06.1)
-- [x] Zero Win32 API calls in input/window management
-- [x] All windowing/input events routed through SDL2
-- [x] Game runs identically with no regression
-- [x] Code audit documented and reviewed
-
-### OpenAL Implementation (06.2)
-- [x] AudioDevice abstraction fully designed and implemented
-- [x] OpenAL backend functional (all major audio systems working)
-- [x] Miles Audio completely replaced
-- [x] All game audio tested and validated
-- [x] Documentation complete
-
-### Overall Phase 06
-- [x] Game fully functional on SDL2 + OpenAL
-- [x] Ready for Vulkan graphics phase (06.3)
-- [x] Ready for Wine testing and validation
-- [x] Zero technical debt related to audio/window management
-
----
-
-## 🚀 Next Phase (06.3): Vulkan Graphics
-
-Once 06.1 + 06.2 complete:
-- AudioDevice pattern proven → GraphicsDevice will follow same architecture
-- SDL2 abstraction validated → Confident in window/input layer
-- Game runs perfectly → Can focus 100% on graphics abstraction
-
-**Estimated start**: Early February 2026
-
----
-
-## 📚 Reference Materials
-
-- **OpenAL Documentation**: `docs/Support/OpenAL/` (if available)
-- **SDL2 Docs**: [libsdl.org](https://wiki.libsdl.org/)
-- **ioquake3 Audio**: Reference for 3D audio patterns
-- **Previous Phases**: Phase 05 documentation (SDL2 integration baseline)
+Once Phase 07 complete:
+- AudioDevice pattern proven and tested
+- Game runs fully on SDL2 + OpenAL
+- Ready for graphics abstraction layer (GraphicsDevice)
+- Foundation solid for cross-platform support
 
 ---
 
 **Prepared by**: GeneralsX Development Team  
 **Date**: 2026-01-15  
-**Status**: Ready for Phase 06 Kickoff
+**Status**: Ready for Phase 07 Kickoff (after Phase 06 complete)
