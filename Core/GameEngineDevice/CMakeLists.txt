@@ -253,18 +253,16 @@ if(OPENAL_FOUND)
 endif()
 
 # Phase 09: Vulkan Graphics Backend
+# NOTE: VC6 does not support 64-bit integer literal suffixes used by modern Vulkan SDK headers
+# Vulkan source files are excluded from VC6 builds and stored in GraphicsDevice/vc6_excluded/
+# They will be enabled in future phases with modern toolchain support
 if(VULKAN_FOUND)
-    target_sources(corei_gameenginedevice_private INTERFACE
-        Source/GraphicsDevice/VulkanDevice.cpp
-        Source/GraphicsDevice/VulkanBuffer.cpp
-        Source/GraphicsDevice/VulkanTexture.cpp
-        Source/GraphicsDevice/VulkanPipeline.cpp
-        Source/GraphicsDevice/VulkanSwapchain.cpp
-        Source/GraphicsDevice/VulkanRenderPass.cpp
-        Source/GraphicsDevice/VulkanMemoryAllocator.cpp
-    )
-    target_link_libraries(corei_gameenginedevice_private INTERFACE Vulkan::Vulkan)
+    # Headers are always available for IDE support
     target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_VULKAN)
+    message(STATUS "Vulkan SDK detected - headers available for IDE support")
+    message(STATUS "  Include: ${VULKAN_INCLUDE_DIR}")
+    message(STATUS "  Library: ${VULKAN_LIBRARIES}")
+    message(STATUS "  NOTE: VC6 source files excluded due to 64-bit literal incompatibility")
 else()
     message(STATUS "Vulkan SDK not available - Vulkan graphics backend will not be compiled")
     message(STATUS "  To enable: Install Vulkan SDK from https://vulkan.lunarg.com/sdk/home")

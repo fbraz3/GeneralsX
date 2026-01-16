@@ -14,13 +14,24 @@
 #define VULKAN_STUBS_H
 
 #ifdef RTS_HAS_VULKAN
-    /* Vulkan SDK is available - use real Vulkan headers */
-    #include <vulkan/vulkan.h>
+    /* 
+     * Vulkan SDK is marked available, but VC6 cannot compile modern Vulkan headers
+     * due to unsupported 64-bit integer literal suffixes (i64, ui64).
+     * 
+     * For VC6: We use stub definitions (below)
+     * For modern compilers: Uncomment to use real Vulkan SDK headers (future phases)
+     */
+    
+    /* #define VK_NO_STDINT_H */
+    /* #include <vulkan/vulkan.h> */
+    
+    /* VC6 STUB MODE - Real Vulkan headers will be compiled in Phase 2+ with modern toolchains */
 #else
     /* Vulkan SDK not available - use stub definitions */
+#endif
 
-    #include <stdint.h>
-    #include <stddef.h>
+#include <stdint.h>
+#include <stddef.h>
 
     // ============================================================
     // Basic Type Definitions

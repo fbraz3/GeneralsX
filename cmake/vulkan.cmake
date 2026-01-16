@@ -80,7 +80,8 @@ target_compile_definitions(vulkan_interface INTERFACE RTS_HAS_VULKAN)
 
 # Find and link Vulkan library
 if(WIN32)
-    find_library(VULKAN_LIBRARY NAMES vulkan PATHS "${VULKAN_LIB_DIR}")
+    # Try vulkan-1.lib first (modern SDK), then vulkan.lib (legacy)
+    find_library(VULKAN_LIBRARY NAMES vulkan-1 vulkan PATHS "${VULKAN_LIB_DIR}")
 elseif(APPLE)
     find_library(VULKAN_LIBRARY NAMES vulkan PATHS "${VULKAN_LIB_DIR}")
 else()
