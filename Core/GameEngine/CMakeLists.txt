@@ -28,6 +28,8 @@ set(GAMEENGINE_SRC
 #    Include/Common/CustomMatchPreferences.h
 #    Include/Common/DamageFX.h
 #    Include/Common/DataChunk.h
+    Include/Common/ConfigurationManager.h
+    Include/Common/SearchPathManager.h
     Include/Common/Debug.h
 #    Include/Common/Dict.h
 #    Include/Common/Directory.h
@@ -681,6 +683,8 @@ set(GAMEENGINE_SRC
     Source/Common/System/XferCRC.cpp
     Source/Common/System/XferLoad.cpp
     Source/Common/System/XferSave.cpp
+    Source/Common/System/ConfigurationManager.cpp
+    Source/Common/System/SearchPathManager.cpp
 #    Source/Common/TerrainTypes.cpp
 #    Source/Common/Thing/DrawModule.cpp
 #    Source/Common/Thing/Module.cpp
