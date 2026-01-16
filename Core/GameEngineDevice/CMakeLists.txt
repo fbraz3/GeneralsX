@@ -2,6 +2,16 @@ set(GAMEENGINEDEVICE_SRC
     Include/AudioDevice/AudioDevice.h
     Include/AudioDevice/AudioDeviceFactory.h
     Include/AudioDevice/OpenALDevice.h
+    Include/GraphicsDevice/GraphicsDevice.h
+    Include/GraphicsDevice/GraphicsDeviceFactory.h
+    Include/GraphicsDevice/RenderState.h
+    Include/GraphicsDevice/VulkanDevice.h
+    Include/GraphicsDevice/VulkanBuffer.h
+    Include/GraphicsDevice/VulkanTexture.h
+    Include/GraphicsDevice/VulkanPipeline.h
+    Include/GraphicsDevice/VulkanSwapchain.h
+    Include/GraphicsDevice/VulkanRenderPass.h
+    Include/GraphicsDevice/VulkanMemoryAllocator.h
     Include/MilesAudioDevice/MilesAudioManager.h
     Include/VideoDevice/Bink/BinkVideoPlayer.h
 #    Include/W3DDevice/Common/W3DConvert.h
@@ -96,6 +106,7 @@ set(GAMEENGINEDEVICE_SRC
     Source/MilesAudioDevice/MilesAudioManager.cpp
     Source/AudioDevice/AudioDeviceFactory.cpp
     Source/AudioDevice/OpenALDevice.cpp
+    Source/GraphicsDevice/GraphicsDeviceFactory.cpp
     Source/VideoDevice/Bink/BinkVideoPlayer.cpp
 #    Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
     Source/W3DDevice/Common/System/W3DRadar.cpp
@@ -239,6 +250,25 @@ if(OPENAL_FOUND)
     target_link_libraries(corei_gameenginedevice_private INTERFACE ${OPENAL_LIBRARIES})
     target_include_directories(corei_gameenginedevice_private INTERFACE ${OPENAL_INCLUDE_DIR})
     target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_OPENAL)
+endif()
+
+# Phase 09: Vulkan Graphics Backend
+if(VULKAN_FOUND)
+    target_sources(corei_gameenginedevice_private INTERFACE
+        Source/GraphicsDevice/VulkanDevice.cpp
+        Source/GraphicsDevice/VulkanBuffer.cpp
+        Source/GraphicsDevice/VulkanTexture.cpp
+        Source/GraphicsDevice/VulkanPipeline.cpp
+        Source/GraphicsDevice/VulkanSwapchain.cpp
+        Source/GraphicsDevice/VulkanRenderPass.cpp
+        Source/GraphicsDevice/VulkanMemoryAllocator.cpp
+    )
+    target_link_libraries(corei_gameenginedevice_private INTERFACE Vulkan::Vulkan)
+    target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_VULKAN)
+else()
+    message(STATUS "Vulkan SDK not available - Vulkan graphics backend will not be compiled")
+    message(STATUS "  To enable: Install Vulkan SDK from https://vulkan.lunarg.com/sdk/home")
+    message(STATUS "  Or run: ${CMAKE_SOURCE_DIR}/scripts/setup_vulkan_sdk.bat")
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
