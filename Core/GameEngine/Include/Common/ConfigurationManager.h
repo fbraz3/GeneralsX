@@ -31,9 +31,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#ifndef __CONFIGURATIONMANAGER_H__
+#define __CONFIGURATIONMANAGER_H__
 
-#include <Common/AsciiString.h>
+#include "Common/AsciiString.h"
 
 /**
  * Configuration Manager - handles INI-based game configuration

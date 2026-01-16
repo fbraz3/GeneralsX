@@ -104,10 +104,17 @@ static AsciiString combinePaths(const AsciiString& basePath, const AsciiString& 
 #endif
 
 	// Check if basePath ends with separator
-	if (basePath.getLength() > 0 && basePath[basePath.getLength()-1] != sep && 
-		basePath[basePath.getLength()-1] != '/')
+	if (basePath.getLength() > 0)
 	{
-		result.format("%s%c%s", basePath.str(), sep, subPath.str());
+		char lastChar = basePath.getCharAt(basePath.getLength()-1);
+		if (lastChar != sep && lastChar != '/')
+		{
+			result.format("%s%c%s", basePath.str(), sep, subPath.str());
+		}
+		else
+		{
+			result.format("%s%s", basePath.str(), subPath.str());
+		}
 	}
 	else
 	{
@@ -122,29 +129,9 @@ static AsciiString combinePaths(const AsciiString& basePath, const AsciiString& 
  */
 static AsciiString normalizePath(const AsciiString& path)
 {
-	AsciiString result = path;
-
-#ifdef _WIN32
-	// Convert forward slashes to backslashes
-	for (int i = 0; i < result.getLength(); i++)
-	{
-		if (result[i] == '/')
-		{
-			result[i] = '\\';
-		}
-	}
-#else
-	// Convert backslashes to forward slashes
-	for (int i = 0; i < result.getLength(); i++)
-	{
-		if (result[i] == '\\')
-		{
-			result[i] = '/';
-		}
-	}
-#endif
-
-	return result;
+	// Windows and modern OSes handle both slash types fine
+	// So we can return the path as-is
+	return path;
 }
 
 // ============================================================================
