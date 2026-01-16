@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -39,6 +40,9 @@
 // ============================================================================
 // INI Data Structure - Simple map for storing key-value pairs by section
 // ============================================================================
+
+// Forward declaration of debug log function
+static void debugLog(const char* format, ...);
 
 struct INISection
 {
@@ -109,11 +113,15 @@ static INISection* findOrCreateSection(const AsciiString& sectionName)
 	// Create new section if space available
 	if (g_sectionCount < 32)
 	{
+		debugLog("  findOrCreateSection: Creating section '%s' at index %d\n", sectionName.str(), g_sectionCount);
 		g_sections[g_sectionCount].name = sectionName;
 		g_sections[g_sectionCount].keyCount = 0;
-		return &g_sections[g_sectionCount++];
+		INISection* result = &g_sections[g_sectionCount++];
+		debugLog("  findOrCreateSection: After creation, g_sectionCount = %d, result = %p\n", g_sectionCount, result);
+		return result;
 	}
 	
+	debugLog("  findOrCreateSection: FAILED - no space! g_sectionCount = %d\n", g_sectionCount);
 	return NULL;
 }
 
@@ -173,13 +181,160 @@ static AsciiString extractSubstring(const AsciiString& str, int startPos, int en
 	return result;
 }
 
+// Helper to create default INI configuration
+static void createDefaultINI_internal()
+{
+	// Note: Caller is responsible for clearing g_sections/g_sectionCount
+	// This function assumes a clean slate (g_sectionCount == 0)
+	
+	printf("ConfigurationManager: createDefaultINI() called, g_sectionCount = %d\n", g_sectionCount);
+	debugLog("ConfigurationManager: createDefaultINI() called, g_sectionCount = %d\n", g_sectionCount);
+	
+	// Add default sections and values
+	INISection* section;
+	
+	// [General] section
+	debugLog("About to call findOrCreateSection('General')\n");
+	section = findOrCreateSection("General");
+	debugLog("After findOrCreateSection('General'): section = %p, g_sectionCount = %d\n", section, g_sectionCount);
+	if (section)
+	{
+		section->setKeyValue("Language", "english");
+		if (g_currentVariant == ConfigurationManager::VARIANT_ZERO_HOUR)
+		{
+			section->setKeyValue("SKU", "GeneralsZH");
+		}
+		else
+		{
+			section->setKeyValue("SKU", "Generals");
+		}
+		section->setKeyValue("Version", "65540");
+		section->setKeyValue("MapPackVersion", "65536");
+		section->setKeyValue("InstallPath", "");
+		section->setKeyValue("Proxy", "");
+		section->setKeyValue("ERGC", "GP215480578522512031");
+		printf("ConfigurationManager: General section keys added, keyCount = %d\n", section->keyCount);
+		debugLog("ConfigurationManager: General section keys added, keyCount = %d\n", section->keyCount);
+	}
+	debugLog("After General section: g_sectionCount = %d\n", g_sectionCount);
+	
+	// [Graphics] section
+	section = findOrCreateSection("Graphics");
+	debugLog("After findOrCreateSection('Graphics'): g_sectionCount = %d\n", g_sectionCount);
+	if (section)
+	{
+		section->setKeyValue("Width", "1024");
+		section->setKeyValue("Height", "768");
+		section->setKeyValue("Windowed", "1");
+		section->setKeyValue("ColorDepth", "32");
+		section->setKeyValue("UseMetalBackend", "0");
+		section->setKeyValue("Texture_Filter", "2");
+		section->setKeyValue("Max_FPS", "120");
+	}
+	
+	// [Audio] section
+	section = findOrCreateSection("Audio");
+	if (section)
+	{
+		section->setKeyValue("Enabled", "1");
+		section->setKeyValue("MusicVolume", "100");
+		section->setKeyValue("SoundVolume", "100");
+		section->setKeyValue("VoiceVolume", "100");
+		section->setKeyValue("SoundEffectsVolume", "100");
+		section->setKeyValue("Surround", "0");
+	}
+	
+	// [Network] section
+	section = findOrCreateSection("Network");
+	if (section)
+	{
+		section->setKeyValue("ConnectionType", "LAN");
+		section->setKeyValue("Bandwidth", "100000");
+		section->setKeyValue("Port", "6500");
+	}
+	
+	// [Player] section
+	section = findOrCreateSection("Player");
+	if (section)
+	{
+		section->setKeyValue("PlayerName", "GeneralsX Player");
+		section->setKeyValue("Difficulty", "Hard");
+		section->setKeyValue("Team", "GLA");
+	}
+	
+	// [Advanced] section
+	section = findOrCreateSection("Advanced");
+	if (section)
+	{
+		section->setKeyValue("DebugMode", "0");
+		section->setKeyValue("LogLevel", "2");
+		section->setKeyValue("AssetPath", "");
+	}
+	
+	printf("ConfigurationManager: Default INI configuration created with %d sections\n", g_sectionCount);
+	debugLog("ConfigurationManager: Default INI configuration created with %d sections\n", g_sectionCount);
+}
+
 // ============================================================================
 // ConfigurationManager Implementation
 // ============================================================================
 
+// Global debug log file handle
+static FILE* g_debugLog = NULL;
+
+static void debugLog(const char* format, ...)
+{
+	if (!g_debugLog)
+	{
+#ifdef _WIN32
+		char debugPath[512] = { 0 };
+		if (GetEnvironmentVariableA("USERPROFILE", debugPath, sizeof(debugPath)))
+		{
+			strcat(debugPath, "\\ConfigurationManager.debug.log");
+		}
+		else
+		{
+			strcpy(debugPath, "ConfigurationManager.debug.log");
+		}
+#else
+		const char* home = getenv("HOME");
+		char debugPath[512];
+		if (home)
+		{
+			snprintf(debugPath, sizeof(debugPath), "%s/ConfigurationManager.debug.log", home);
+		}
+		else
+		{
+			strcpy(debugPath, "ConfigurationManager.debug.log");
+		}
+#endif
+		g_debugLog = fopen(debugPath, "a");
+	}
+	
+	if (g_debugLog)
+	{
+		va_list args;
+		va_start(args, format);
+		vfprintf(g_debugLog, format, args);
+		va_end(args);
+		fflush(g_debugLog);
+	}
+}
+
 Bool ConfigurationManager::init(GameVariant variant)
 {
 	g_currentVariant = variant;
+	
+	debugLog("========== ConfigurationManager::init() START ==========\n");
+	
+	// Initialize sections array (VC6 compatibility - ensure all fields are zeroed)
+	g_sectionCount = 0;
+	for (int i = 0; i < 32; i++)
+	{
+		g_sections[i].keyCount = 0;
+		g_sections[i].name = "";
+	}
+	debugLog("After manual initialization: g_sectionCount = %d\n", g_sectionCount);
 	
 	// Get user profile directory (files go directly in profile, no subdirs)
 #ifdef _WIN32
@@ -226,6 +381,10 @@ Bool ConfigurationManager::init(GameVariant variant)
 	// Load INI file
 	loadINI();
 
+	// Log asset search path for debugging
+	AsciiString assetPath = getAssetSearchPath();
+	debugLog("Asset search path resolved to: %s\n", assetPath.str());
+
 	g_initialized = TRUE;
 	return TRUE;
 }
@@ -249,8 +408,18 @@ Bool ConfigurationManager::loadINI()
 	FILE* fp = fopen(g_configFilePath.str(), "r");
 	if (!fp)
 	{
-		DEBUG_LOG(("ConfigurationManager: INI file not found: %s\n", g_configFilePath.str()));
-		return FALSE;
+		debugLog("ConfigurationManager: INI file not found: %s\n", g_configFilePath.str());
+		debugLog("ConfigurationManager: Creating INI file with default values\n");
+		
+		// Create default configuration
+		createDefaultINI_internal();
+		debugLog("ConfigurationManager: After createDefaultINI, g_sectionCount = %d\n", g_sectionCount);
+		
+		flush();
+		debugLog("ConfigurationManager: After flush()\n");
+		
+		// INI is now loaded with defaults (populated by createDefaultINI)
+		return TRUE;
 	}
 	
 	char line[512];
@@ -297,7 +466,7 @@ Bool ConfigurationManager::loadINI()
 	}
 	
 	fclose(fp);
-	DEBUG_LOG(("ConfigurationManager: Loaded INI file: %s\n", g_configFilePath.str()));
+	printf("ConfigurationManager: Loaded INI file: %s\n", g_configFilePath.str());
 	return TRUE;
 }
 
@@ -416,18 +585,23 @@ Bool ConfigurationManager::configFileExists()
 
 Bool ConfigurationManager::flush()
 {
+	printf("ConfigurationManager: flush() called, g_sectionCount = %d\n", g_sectionCount);
+	
 	// Write all sections and keys to INI file
 	FILE* fp = fopen(g_configFilePath.str(), "w");
 	if (!fp)
 	{
-		DEBUG_LOG(("ConfigurationManager: Failed to open INI file for writing: %s\n", g_configFilePath.str()));
+		printf("ConfigurationManager: Failed to open INI file for writing: %s\n", g_configFilePath.str());
 		return FALSE;
 	}
+	
+	printf("ConfigurationManager: File opened for writing, will write %d sections\n", g_sectionCount);
 	
 	// Write each section
 	for (int i = 0; i < g_sectionCount; i++)
 	{
 		INISection& section = g_sections[i];
+		printf("ConfigurationManager: Writing section [%s] with %d keys\n", section.name.str(), section.keyCount);
 		
 		// Write section header
 		fprintf(fp, "[%s]\n", section.name.str());
@@ -443,7 +617,7 @@ Bool ConfigurationManager::flush()
 	}
 	
 	fclose(fp);
-	DEBUG_LOG(("ConfigurationManager: Flushed INI file: %s\n", g_configFilePath.str()));
+	printf("ConfigurationManager: Flushed INI file: %s\n", g_configFilePath.str());
 	return TRUE;
 }
 
@@ -454,12 +628,53 @@ Bool ConfigurationManager::reload()
 
 AsciiString ConfigurationManager::getAssetSearchPath()
 {
+	// First try to get custom asset path from INI [Advanced] section
 	AsciiString assetPath;
 	if (getString("Advanced", "AssetPath", assetPath) && !assetPath.isEmpty())
 	{
+		debugLog("getAssetSearchPath: Using custom path from INI: %s\n", assetPath.str());
 		return assetPath;
 	}
-	return "";
+	
+	// Otherwise use default path based on game variant
+	AsciiString defaultPath;
+	
+#ifdef _WIN32
+	// On Windows: %USERPROFILE%\GeneralsX\Generals or GeneralsMD
+	char userProfile[512] = { 0 };
+	if (!GetEnvironmentVariableA("USERPROFILE", userProfile, sizeof(userProfile)))
+	{
+		strcpy(userProfile, ".");
+	}
+	
+	if (g_currentVariant == VARIANT_ZERO_HOUR)
+	{
+		defaultPath.format("%s\\GeneralsX\\GeneralsMD\\Data", userProfile);
+	}
+	else
+	{
+		defaultPath.format("%s\\GeneralsX\\Generals\\Data", userProfile);
+	}
+#else
+	// On Unix/macOS: ~/.GeneralsX/Generals or GeneralsMD
+	const char* home = getenv("HOME");
+	if (!home)
+	{
+		home = ".";
+	}
+	
+	if (g_currentVariant == VARIANT_ZERO_HOUR)
+	{
+		defaultPath.format("%s/.GeneralsX/GeneralsMD/Data", home);
+	}
+	else
+	{
+		defaultPath.format("%s/.GeneralsX/Generals/Data", home);
+	}
+#endif
+	
+	debugLog("getAssetSearchPath: Using default path: %s\n", defaultPath.str());
+	return defaultPath;
 }
 
 AsciiString ConfigurationManager::getConfigDirectory()
@@ -469,7 +684,8 @@ AsciiString ConfigurationManager::getConfigDirectory()
 
 Bool ConfigurationManager::createDefaultINI()
 {
-	// For future use - would create default INI with standard values
+	// Call the static helper that actually creates defaults
+	createDefaultINI_internal();
 	return TRUE;
 }
 
@@ -484,4 +700,5 @@ AsciiString ConfigurationManager::getINIFilename()
 		return "GeneralsX.ini";
 	}
 }
+
 
