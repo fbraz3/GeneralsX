@@ -30,6 +30,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/DataChunk.h
     Include/Common/ConfigurationManager.h
     Include/Common/SearchPathManager.h
+    Include/Common/Registry.h
     Include/Common/Debug.h
 #    Include/Common/Dict.h
 #    Include/Common/Directory.h
@@ -685,6 +686,7 @@ set(GAMEENGINE_SRC
     Source/Common/System/XferSave.cpp
     Source/Common/System/ConfigurationManager.cpp
     Source/Common/System/SearchPathManager.cpp
+    Source/Common/System/Registry.cpp
 #    Source/Common/TerrainTypes.cpp
 #    Source/Common/Thing/DrawModule.cpp
 #    Source/Common/Thing/Module.cpp

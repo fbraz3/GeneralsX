@@ -31,6 +31,7 @@
 #include "Common/FramePacer.h"
 #include "Common/GameEngine.h"
 #include "Common/ReplaySimulation.h"
+#include "Common/ConfigurationManager.h"
 
 
 /**
@@ -42,6 +43,11 @@ Int GameMain()
 	// initialize the game engine using factory function
 	TheFramePacer = new FramePacer();
 	TheFramePacer->enableFramesPerSecondLimit(TRUE);
+	
+	// Initialize configuration manager (replaces Windows Registry)
+	ConfigurationManager::GameVariant variant = ConfigurationManager::VARIANT_GENERALS;
+	ConfigurationManager::init(variant);
+	
 	TheGameEngine = CreateGameEngine();
 	TheGameEngine->init();
 
