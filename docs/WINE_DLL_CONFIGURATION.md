@@ -1,15 +1,38 @@
 # Wine/Proton Configuration Guide
 
-## Problem
-When running GeneralsX via Wine with the executable in a different location than the game assets, Wine cannot find required DLLs:
+## DLL Resolution Challenge
+
+When running GeneralsX from a directory different from where the DLLs are located (e.g., build directory, Wine prefix, different assets directory), Windows/Wine cannot load required DLLs:
+
 ```
 0024:err:module:import_dll Library binkw32.dll not found
 0024:err:module:import_dll Library mss32.dll not found
 ```
 
-## Solution
+**Why SetDllDirectory alone doesn't work:**
+- DLLs must be resolved BEFORE `main()` is called
+- SetDllDirectory() is called INSIDE main(), too late
+- Windows/Wine fails to load the executable if DLLs aren't found during process initialization
 
-### Option 1: WINEDLLPATH Environment Variable (Recommended for Wine)
+## Solutions
+
+### ✅ Solution 1: DLLs in Executable Directory (RECOMMENDED - Local Windows)
+
+The simplest and most reliable solution - keep DLLs in the same directory as the executable.
+
+**Setup:**
+```bash
+# Copy all DLLs to executable directory
+cp "$ASSET_PATH"/*.dll "$EXE_DIR/"
+```
+
+**Result:**
+- ✅ Windows finds DLLs immediately on startup
+- ✅ SetDllDirectory still adds asset directory as backup search path
+- ✅ No environment variables needed
+- ✅ Works from any working directory
+
+### Problem 2: WINEDLLPATH Environment Variable (Recommended for Wine)
 
 Set the `WINEDLLPATH` environment variable to include the asset directory:
 

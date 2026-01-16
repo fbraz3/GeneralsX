@@ -387,6 +387,39 @@ Bool ConfigurationManager::init(GameVariant variant)
 	AsciiString assetPath = getAssetSearchPath();
 	debugLog("Asset search path resolved to: %s\n", assetPath.str());
 
+	// On Windows, add asset path to DLL search directory so DLLs are found
+	// regardless of where the executable is run from (e.g., build directory)
+#ifdef _WIN32
+	if (!assetPath.isEmpty())
+	{
+		// SetDllDirectory() adds the specified directory to the DLL search path
+		// This ensures binkw32.dll, mss32.dll, OpenAL32.dll are found even if
+		// the executable is in a different directory than the assets
+		typedef BOOL (WINAPI *SETDLLDIRECTORY)(LPCSTR lpPathName);
+		HMODULE hKernel32 = GetModuleHandleA("kernel32.dll");
+		if (hKernel32)
+		{
+			SETDLLDIRECTORY pSetDllDirectory = (SETDLLDIRECTORY)GetProcAddress(hKernel32, "SetDllDirectoryA");
+			if (pSetDllDirectory)
+			{
+				BOOL result = pSetDllDirectory(assetPath.str());
+				if (result)
+				{
+					debugLog("SetDllDirectory successful: %s\n", assetPath.str());
+				}
+				else
+				{
+					debugLog("SetDllDirectory failed for: %s (error: %d)\n", assetPath.str(), GetLastError());
+				}
+			}
+			else
+			{
+				debugLog("SetDllDirectory not available (requires Windows XP SP1+)\n");
+			}
+		}
+	}
+#endif
+
 	g_initialized = TRUE;
 	return TRUE;
 }
