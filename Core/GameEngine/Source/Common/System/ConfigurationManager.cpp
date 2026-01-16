@@ -269,6 +269,8 @@ static void createDefaultINI_internal()
 		section->setKeyValue("DebugMode", "0");
 		section->setKeyValue("LogLevel", "2");
 		section->setKeyValue("AssetPath", "");
+		section->setKeyValue("DLLSearchPath", "");
+		section->setKeyValue("WinePrefix", "");
 	}
 	
 	printf("ConfigurationManager: Default INI configuration created with %d sections\n", g_sectionCount);
@@ -675,6 +677,54 @@ AsciiString ConfigurationManager::getAssetSearchPath()
 	
 	debugLog("getAssetSearchPath: Using default path: %s\n", defaultPath.str());
 	return defaultPath;
+}
+
+AsciiString ConfigurationManager::getDLLSearchPath()
+{
+	// Get custom DLL search path from INI [Advanced] section
+	AsciiString dllPath;
+	if (getString("Advanced", "DLLSearchPath", dllPath) && !dllPath.isEmpty())
+	{
+		debugLog("getDLLSearchPath: Using custom path from INI: %s\n", dllPath.str());
+		return dllPath;
+	}
+	
+	// On Wine/Proton, can fallback to asset path for DLLs
+#ifndef _WIN32
+	AsciiString assetPath = getAssetSearchPath();
+	if (!assetPath.isEmpty())
+	{
+		debugLog("getDLLSearchPath: Using asset path on non-Windows: %s\n", assetPath.str());
+		return assetPath;
+	}
+#endif
+	
+	debugLog("getDLLSearchPath: No custom DLL path configured\n");
+	return "";
+}
+
+AsciiString ConfigurationManager::getWinePrefix()
+{
+	// Get Wine prefix path from INI [Advanced] section
+	AsciiString winePrefix;
+	if (getString("Advanced", "WinePrefix", winePrefix) && !winePrefix.isEmpty())
+	{
+		debugLog("getWinePrefix: Wine prefix from INI: %s\n", winePrefix.str());
+		return winePrefix;
+	}
+	
+	// Check WINEPREFIX environment variable
+#ifndef _WIN32
+	const char* envPrefix = getenv("WINEPREFIX");
+	if (envPrefix && envPrefix[0] != '\0')
+	{
+		debugLog("getWinePrefix: Wine prefix from environment: %s\n", envPrefix);
+		return AsciiString(envPrefix);
+	}
+#endif
+	
+	debugLog("getWinePrefix: No Wine prefix configured\n");
+	return "";
 }
 
 AsciiString ConfigurationManager::getConfigDirectory()

@@ -114,6 +114,20 @@ public:
 	static AsciiString getAssetSearchPath();
 
 	/**
+	 * Get DLL search path for Wine/Proton compatibility
+	 * Can be set via INI [Advanced] DLLSearchPath
+	 * @return Path to search for DLLs, or empty if using default
+	 */
+	static AsciiString getDLLSearchPath();
+
+	/**
+	 * Get Wine prefix path for Wine compatibility mode
+	 * Can be set via INI [Advanced] WinePrefix
+	 * @return Path to Wine prefix, or empty if not using Wine
+	 */
+	static AsciiString getWinePrefix();
+
+	/**
 	 * Get the configuration directory path
 	 * (e.g., %USERPROFILE%\.GeneralsX or ~/.config/GeneralsX on Linux)
 	 * @return Path to configuration directory
