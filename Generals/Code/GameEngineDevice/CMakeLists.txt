@@ -1,18 +1,11 @@
 # Platform device layer selection
-# Win32Device: Windows 32-bit (VC6 legacy builds)
-# SDL2Device: macOS, Linux, and future Windows (modern builds)
+# SDL2Device: Primary cross-platform layer (Windows, macOS, Linux)
+# Win32Device: Legacy fallback for rapid rollback if needed (Windows only)
 
-if(WIN32 AND MSVC)
-    # Windows 32-bit with Visual C++ 6 or compatible compiler
-    set(PLATFORM_DEVICE_TYPE "Win32Device")
-    set(USE_WIN32_DEVICE ON)
-    set(USE_SDL2_DEVICE OFF)
-else()
-    # macOS, Linux, and other platforms use SDL2
-    set(PLATFORM_DEVICE_TYPE "SDL2Device")
-    set(USE_WIN32_DEVICE OFF)
-    set(USE_SDL2_DEVICE ON)
-endif()
+# Use SDL2Device for all platforms (including Windows VC6)
+set(PLATFORM_DEVICE_TYPE "SDL2Device")
+set(USE_WIN32_DEVICE OFF)   # Legacy: comment this line and set USE_WIN32_DEVICE ON for Win32Device fallback
+set(USE_SDL2_DEVICE ON)
 
 message(STATUS "GameEngineDevice: Using ${PLATFORM_DEVICE_TYPE}")
 
@@ -203,9 +196,11 @@ if(USE_SDL2_DEVICE)
     message(STATUS "  Adding SDL2Device sources")
     list(APPEND GAMEENGINEDEVICE_SRC
         Include/SDL2Device/Common/SDL2GameEngine.h
-        Include/SDL2Device/GameClient/SDL2Mouse.h
-        Source/SDL2Device/Common/SDL2GameEngine.cpp
-        Source/SDL2Device/GameClient/SDL2Mouse.cpp
+        #Include/SDL2Device/GameClient/SDL2Keyboard.h
+        #Include/SDL2Device/GameClient/SDL2Mouse.h
+        #Source/SDL2Device/Common/SDL2GameEngine.cpp
+        #Source/SDL2Device/GameClient/SDL2Keyboard.cpp
+        #Source/SDL2Device/GameClient/SDL2Mouse.cpp
     )
 endif()
 

@@ -55,6 +55,7 @@ endif()
 include(cmake/config.cmake)
 include(cmake/gamespy.cmake)
 include(cmake/lzhl.cmake)
+include(cmake/sdl2.cmake)
 include(cmake/openal.cmake)
 
 if (IS_VS6_BUILD)
