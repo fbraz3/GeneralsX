@@ -993,7 +993,7 @@ HAnimClass *	WW3DAssetManager::Get_HAnim(const char * name)
 				Load_3D_Assets( new_filename );
 			}
 
-			anim = HAnimManager.Get_Anim(name);		// Try agai
+			anim = HAnimManager.Get_Anim(name);		// Try again
 			if (anim == nullptr) {
 				HAnimManager.Register_Missing( name );		// This is now a KNOWN missing anim
 				AssetStatusClass::Peek_Instance()->Report_Missing_HAnim(name);

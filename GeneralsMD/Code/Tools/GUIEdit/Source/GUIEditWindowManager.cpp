@@ -50,7 +50,7 @@ GUIEditWindowManager *TheGUIEditWindowManager = nullptr;  ///< editor use only
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------------
-/** Is the given widnow in the clipboard at the top level.  NOTE that
+/** Is the given window in the clipboard at the top level.  NOTE that
 	* children are NOT included in this search */
 //-------------------------------------------------------------------------------------------------
 Bool GUIEditWindowManager::isWindowInClipboard( GameWindow *window,
@@ -739,7 +739,7 @@ void GUIEditWindowManager::pasteClipboard( void )
 	// the first window that we added ... since we know they were added
 	// at the head of the window list we can traverse from the first
 	// window added to the head of the window list to access each new
-	// window we just pasted.  As a convenience we will unselct anything
+	// window we just pasted.  As a convenience we will unselect anything
 	// selected and select all the windows we added
 	//
 	TheEditor->clearSelections();
@@ -762,7 +762,7 @@ void GUIEditWindowManager::pasteClipboard( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Convinience funtion to copy the Draw state info for a given instance */
+/** Convenience function to copy the Draw state info for a given instance */
 //-------------------------------------------------------------------------------------------------
 void InstDrawCopy (  WinInstanceData *instData, WinInstanceData *sourceInstData)
 {
@@ -779,7 +779,7 @@ void InstDrawCopy (  WinInstanceData *instData, WinInstanceData *sourceInstData)
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Duplciate a window and all its children */
+/** Duplicate a window and all its children */
 //-------------------------------------------------------------------------------------------------
 GameWindow *GUIEditWindowManager::duplicateWindow( GameWindow *source,
 																									 GameWindow *parent )

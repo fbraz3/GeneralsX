@@ -35,7 +35,7 @@
 //
 // Module:    Debug
 //
-// File name: W3DGameDevice/GameClisnt/W3DDebugDisplay.cpp
+// File name: W3DGameDevice/GameClient/W3DDebugDisplay.cpp
 //
 // Created:   11/13/01 TR
 //

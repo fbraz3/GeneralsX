@@ -433,7 +433,7 @@ static LRESULT CALLBACK layoutSchemeCallback( HWND hWndDialog,
 }
 
 // LayoutScheme::applyPropertyTablesToWindow ==================================
-/** apply the image and color info stored in the state identifer tables
+/** apply the image and color info stored in the state identifier tables
 used for "property editing" to all appropriate windows currently
 loaded in the editor */
 //=============================================================================
@@ -2173,7 +2173,7 @@ void LayoutScheme::openDialog( void )
 ImageAndColorInfo *LayoutScheme::findEntry( StateIdentifier id )
 {
 
-	// santiy
+	// sanity
 	if( id < 0 || id >= NUM_STATE_IDENTIFIERS )
 	{
 

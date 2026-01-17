@@ -558,7 +558,7 @@ void CWorldBuilderApp::setActiveTool(Tool *pNewTool)
 // CWorldBuilderApp::updateCurTool
 //=============================================================================
 /** Checks to see if any key modifiers (ctrl or alt) are pressed.  If so,
-selectes the appropriate tool, else uses the normal tool. */
+selects the appropriate tool, else uses the normal tool. */
 //=============================================================================
 void CWorldBuilderApp::updateCurTool(Bool forceHand)
 {

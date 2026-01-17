@@ -77,7 +77,7 @@
 ** verts - plug into DecalPolyClass, clip, pull back out
 ** vnorms - plug into DecalPolyClass, clip, copy back out
 ** texcoords - compute after poly is clipped
-** material - contstant for entire poly, get from generator
+** material - constant for entire poly, get from generator
 ** shader - constant for entire poly, get from generator
 ** texture - constant for entire poly, get from generator
 */

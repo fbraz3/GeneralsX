@@ -38,7 +38,7 @@
  *   AABTreeBuilderClass::~AABTreeBuilderClass -- Destructor                                   *
  *   AABTreeBuilderClass::Reset -- reset the builder, delete all arrays                        *
  *   AABTreeBuilderClass::Build_AABTree -- Build an AABTree for the given mesh.                *
- *   AABTreeBuilderClass::Build_Tree -- recursivly builds the culling tree                     *
+ *   AABTreeBuilderClass::Build_Tree -- recursively builds the culling tree                    *
  *   AABTreeBuilderClass::Select_Splitting_Plane -- select a partition for the given polys     *
  *   AABTreeBuilderClass::Compute_Plane_Score -- evaluate the suitability of a partition plane *
  *   AABTreeBuilderClass::Which_Side -- which side of a plane is the given poly                *
@@ -264,7 +264,7 @@ void AABTreeBuilderClass::Build_AABTree(int polycount,Vector3i * polys,int vertc
 }
 
 /***********************************************************************************************
- * AABTreeBuilderClass::Build_Tree -- recursivly builds the culling tree                       *
+ * AABTreeBuilderClass::Build_Tree -- recursively builds the culling tree                      *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

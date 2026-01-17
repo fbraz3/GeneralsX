@@ -39,7 +39,7 @@
 // Created:    Colin Day, Sepember 2001
 //
 // Desc:			 A handy dandy little dialog to just edit the callbacks for
-//						 user windows ... a super convient luxury at a bargain price!
+//						 user windows ... a super convenient luxury at a bargain price!
 //
 //-----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////

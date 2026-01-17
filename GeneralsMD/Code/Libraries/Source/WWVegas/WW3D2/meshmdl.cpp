@@ -136,7 +136,7 @@ MeshModelClass & MeshModelClass::operator = (const MeshModelClass & that)
 
 		clone_materials(that);
 
-		// DMS - using approriate deallocation method
+		// DMS - using appropriate deallocation method
 		delete GapFiller;
 		GapFiller=nullptr;
 
@@ -590,7 +590,7 @@ WWASSERT(loc1==loc2 || loc1==loc3 || loc2==loc3);
 
 // ----------------------------------------------------------------------------
 //
-// Resize buffers to match the polygon count exatly. After this call no more
+// Resize buffers to match the polygon count exactly. After this call no more
 // polygons can be added to the buffers.
 //
 // ----------------------------------------------------------------------------

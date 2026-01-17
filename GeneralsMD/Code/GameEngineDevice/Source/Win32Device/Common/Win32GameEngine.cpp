@@ -127,7 +127,7 @@ void Win32GameEngine::update( void )
 
 //-------------------------------------------------------------------------------------------------
 /** This function may be called from within this application to let
-  * Microsoft Windows do its message processing and dispatching.  Presumeably
+  * Microsoft Windows do its message processing and dispatching.  Presumably
 	* we would call this at least once each time around the game loop to keep
 	* Windows services from backing up */
 //-------------------------------------------------------------------------------------------------

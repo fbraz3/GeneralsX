@@ -133,7 +133,7 @@ CameraClass::CameraClass(const CameraClass & src) :
 	ZBufferMin(src.ZBufferMin),
 	ZBufferMax(src.ZBufferMax)
 {
-	// just being paraniod in case any parent class doesn't completely copy the entire state...
+	// just being paranoid in case any parent class doesn't completely copy the entire state...
 	FrustumValid = false;
 }
 
@@ -166,7 +166,7 @@ CameraClass & CameraClass::operator = (const CameraClass & that)
 		ProjectionTransform = that.ProjectionTransform;
 		CameraInvTransform = that.CameraInvTransform;
 
-		// just being paraniod in case any parent class doesn't completely copy the entire state...
+		// just being paranoid in case any parent class doesn't completely copy the entire state...
 		FrustumValid = false;
 	}
 
@@ -271,7 +271,7 @@ void CameraClass::Set_Transform(const Matrix3D &m)
 /***********************************************************************************************
  * CameraClass::Set_Position -- Set the position of the camera                                 *
  *                                                                                             *
- *    This is overriden to invalidate the cached frustum parameters                            *
+ *    This is overridden to invalidate the cached frustum parameters                           *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

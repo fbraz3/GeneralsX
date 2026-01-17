@@ -53,7 +53,7 @@
  *   SimpleSceneClass::Render -- internal scene rendering function                             *
  *   SimpleSceneClass::Render -- Render this scene                                             *
  *   SimpleSceneClass::Create_Iterator -- create an iterator for this scene                    *
- *   SimpleSceneClass::Destroy_Iterator -- destroy an iterater of this scene                   *
+ *   SimpleSceneClass::Destroy_Iterator -- destroy an iterator of this scene                   *
  *   SceneClass::Save -- saves scene settings into a chunk                                     *
  *   SceneClass::Load -- loads scene settings from a chunk                                     *
  *   SimpleSceneClass::Compute_Point_Visibility -- returns visibility of a point               *
@@ -657,7 +657,7 @@ SceneIterator * SimpleSceneClass::Create_Iterator(bool onlyvisible)
 
 
 /***********************************************************************************************
- * SimpleSceneClass::Destroy_Iterator -- destroy an iterater of this scene                     *
+ * SimpleSceneClass::Destroy_Iterator -- destroy an iterator of this scene                     *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

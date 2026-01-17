@@ -121,7 +121,7 @@
  *   HLodClass::Set_HTree -- replace the hierarchy tree                                        *
  *   HLodClass::Get_Proxy_Count -- Returns the number of proxy objects                         *
  *   HLodClass::Get_Proxy -- returns the information for the i'th proxy                        *
- * HLodClass::Set_Hidden -- Propogates the hidden bit to particle emitters.                    *
+ * HLodClass::Set_Hidden -- Propagates the hidden bit to particle emitters.                    *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
@@ -369,7 +369,7 @@ void HLodDefClass::Initialize(HLodClass &src_lod)
 	// Start with a fresh set of data
 	Free ();
 
-	// Copy the name and hierarcy name from the source object
+	// Copy the name and hierarchy name from the source object
 	Name = ::strdup (src_lod.Get_Name ());
 	const HTreeClass *phtree = src_lod.Get_HTree ();
 	if (phtree != nullptr) {
@@ -3405,7 +3405,7 @@ void HLodClass::Update_Obj_Space_Bounding_Volumes(void)
 	}
 
 	//
-	//	Attempt to find an OBBox mesh inside the heirarchy
+	//	Attempt to find an OBBox mesh inside the hierarchy
 	//
 	int index = high_lod.Count ();
 	while (index -- && BoundingBoxIndex == -1) {
@@ -3607,7 +3607,7 @@ void HLodClass::Set_HTree(HTreeClass * htree)
 
 
 /***********************************************************************************************
- * HLodClass::Set_Hidden -- Propogates the hidden bit to particle emitters.                    *
+ * HLodClass::Set_Hidden -- Propagates the hidden bit to particle emitters.                    *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

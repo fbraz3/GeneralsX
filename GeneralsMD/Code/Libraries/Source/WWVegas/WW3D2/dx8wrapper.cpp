@@ -406,7 +406,7 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	Compute_Caps(D3DFormat_To_WW3DFormat(DisplayFormat));
 
    /*
-	** Initalize any other subsystems inside of WW3D
+	** Initialize any other subsystems inside of WW3D
 	*/
 	MissingTexture::_Init();
 	TextureFilterClass::_Init_Filters((TextureFilterClass::TextureFilterMode)WW3D::Get_Texture_Filter());
@@ -2137,7 +2137,7 @@ void DX8Wrapper::Draw(
 			break;
 		}
 	}
-#endif	// MESH_RENDER_SHAPSHOT_ENABLED
+#endif	// MESH_RENDER_SNAPSHOT_ENABLED
 
 
 	SNAPSHOT_SAY(("DX8 - draw %d polygons (%d vertices)",polygon_count,vertex_count));
@@ -3395,7 +3395,7 @@ DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
 	swap_chain->GetBackBuffer (0, D3DBACKBUFFER_TYPE_MONO, &render_target);
 
 	//
-	//	Set this back buffer as the render targer
+	//	Set this back buffer as the render target
 	//
 	Set_Render_Target (render_target, true);
 

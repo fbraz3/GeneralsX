@@ -156,7 +156,7 @@ public:
 	/// Set the tool that will be active.
 	void setActiveTool(Tool *newTool);
 
-	/// Sets the current directry for file opens.
+	/// Sets the current directory for file opens.
 	void setCurrentDirectory(AsciiString dir) {m_currentDirectory = dir;};
 
 	Tool *getCurTool() { return m_curTool; }

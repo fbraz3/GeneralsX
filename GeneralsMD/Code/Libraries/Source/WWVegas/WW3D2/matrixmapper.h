@@ -48,7 +48,7 @@
 // Hector Yee 1/29/01
 
 /**
-** MatrixMapperClass.  Does the chore of computing the u-v coorinates for
+** MatrixMapperClass.  Does the chore of computing the u-v coordinates for
 ** a projected texture.  Note that this VP must be "baby-sat" by something
 ** external to ensure that its ViewToTexture transform is up-to-date.  I
 ** use it in the TexProjectClass to implement projected textures.

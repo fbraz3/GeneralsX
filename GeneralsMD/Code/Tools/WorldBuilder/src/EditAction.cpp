@@ -333,7 +333,7 @@ BOOL EditAction::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 		return TRUE;
 	}
 
-	// Handle events from the rich edit control containg the action pieces.
+	// Handle events from the rich edit control containing the action pieces.
 	if (LOWORD(wParam) == IDC_RICH_EDIT_HERE+1) {
 		NMHDR *pHdr = (NMHDR *)lParam;
 		if (pHdr->hwndFrom == m_myEditCtrl.m_hWnd) {

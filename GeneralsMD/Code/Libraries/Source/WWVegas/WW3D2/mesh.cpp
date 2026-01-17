@@ -1274,7 +1274,7 @@ bool MeshClass::Cast_AABox(AABoxCollisionTestClass & boxtest)
 
 	WWASSERT(Model);
 
-	// This function analyses the tranform to call optimized functions in certain cases
+	// This function analyses the transform to call optimized functions in certain cases
 	bool hit = Model->Cast_World_Space_AABox(boxtest, Get_Transform());
 
 	if (hit) {
@@ -1519,7 +1519,7 @@ void MeshClass::Update_Cached_Bounding_Volumes(void) const
 #endif
 
 	// If we are camera-aligned or -oriented, we don't know which way we are facing at this point,
-	// so the box we return needs to contain the sphere. Otherewise do the normal computation.
+	// so the box we return needs to contain the sphere. Otherwise do the normal computation.
 	if (Model->Get_Flag(MeshModelClass::ALIGNED) || Model->Get_Flag(MeshModelClass::ORIENTED)) {
 		CachedBoundingBox.Center = CachedBoundingSphere.Center;
 		CachedBoundingBox.Extent.Set(CachedBoundingSphere.Radius, CachedBoundingSphere.Radius, CachedBoundingSphere.Radius);

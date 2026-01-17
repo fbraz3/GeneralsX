@@ -25,7 +25,7 @@
 // FILE: W3DDisplay.cpp ///////////////////////////////////////////////////////
 //
 // W3D Implementation for the Game Display which is responsible for creating
-// and maintaning the entire visual display
+// and maintaining the entire visual display
 //
 // Author: Colin Day, April 2001
 //
@@ -1892,7 +1892,7 @@ AGAIN:
 				{
 					DisplayString *displayString = TheDisplayStringManager->newDisplayString();
 
-					// set word wrap if neccessary
+					// set word wrap if necessary
 
 					Int wordWrapWidth = TheDisplay->getWidth() - 20;
 					displayString->setWordWrap( wordWrapWidth );
@@ -2259,7 +2259,7 @@ void W3DDisplay::drawRectClock(Int startX, Int startY, Int width, Int height, In
 	m_2DRender->Reset();
 	m_2DRender->Enable_Texturing( FALSE );
 
-// The rectanges are numberd as follows
+// The rectangles are numberd as follows
 //(x,y)	|---------|
 //			| 4  | 1  |
 //			|----+----|
@@ -2342,7 +2342,7 @@ void W3DDisplay::drawRectClock(Int startX, Int startY, Int width, Int height, In
 	}
 	else if(percent > 25)
 	{
-		// rectangel #1
+		// rectangle #1
 		m_2DRender->Add_Rect(RectClass( startX + width/2, startY,
 																		startX + width, startY + height/2), 0,0, color);
 		// draw the part of rectangle 2
@@ -2423,7 +2423,7 @@ void W3DDisplay::drawRemainingRectClock(Int startX, Int startY, Int width, Int h
 	m_2DRender->Reset();
 	m_2DRender->Enable_Texturing( FALSE );
 
-// The rectanges are numbered as follows
+// The rectangles are numbered as follows
 //(x,y)	|---------|
 //			| 4  | 1  |
 //			|----+----|

@@ -51,7 +51,7 @@
  *   WW3D::Render -- Render a 3D Scene using the given camera                                  *
  *   WW3D::Render -- Render a single render object                                             *
  *   WW3D::End_Render -- Mark the completion of a frame                                        *
- *   WW3D::Sync -- Time sychronization                                                         *
+ *   WW3D::Sync -- Time synchronization                                                        *
  *   WW3D::Set_Ext_Swap_Interval -- Sets the swap interval the device should aim sync for.     *
  *   WW3D::Get_Ext_Swap_Interval -- Queries the swap interval the device is aiming sync for.   *
  *   WW3D::Get_Polygon_Mode -- returns the current rendering mode                              *
@@ -488,7 +488,7 @@ void *WW3D::Get_Window( void )
 }
 
 /***********************************************************************************************
- * WW3D::Is_Windowed -- returns wether we are currently in a windowed mode                     *
+ * WW3D::Is_Windowed -- returns whether we are currently in a windowed mode                    *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -965,7 +965,7 @@ WW3DErrorType WW3D::Render(SceneClass * scene,CameraClass * cam,bool clear,bool 
 	}
 
 	// Set the global ambient light value here.  If the scene is using the LightEnvironment system
-	// this setting will get overriden.
+	// this setting will get overridden.
 	DX8Wrapper::Set_Ambient(scene->Get_Ambient_Light());
 
 	// render the scene
@@ -1167,7 +1167,7 @@ void WW3D::Update_Logic_Frame_Time(float milliseconds)
 
 
 /***********************************************************************************************
- * WW3D::Sync -- Time sychronization                                                           *
+ * WW3D::Sync -- Time synchronization                                                          *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -1244,7 +1244,7 @@ void WW3D::Set_Collision_Box_Display_Mask(int mask)
 }
 
 /***********************************************************************************************
- * WW3D::Get_Collision_Box_Display_Mask -- returns the current display mask for collision boxe *
+ * WW3D::Get_Collision_Box_Display_Mask -- returns the current display mask for collision box  *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

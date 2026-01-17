@@ -1008,7 +1008,7 @@ WW3DErrorType MeshModelClass::read_textures(ChunkLoadClass & cload,MeshLoadConte
 		  newtex != nullptr;
 		  newtex = ::Load_Texture (cload)) {
 
-		// Add this texture to our contex and release our local hold on it
+		// Add this texture to our context and release our local hold on it
 		context->Add_Texture(newtex);
 		newtex->Release_Ref();
 	}
@@ -1499,7 +1499,7 @@ WW3DErrorType MeshModelClass::read_stage_texcoords(ChunkLoadClass & cload,MeshLo
 	}
 
 	/*
-	** Read in the texture coordiantes
+	** Read in the texture coordinates
 	*/
 	elementcount = cload.Cur_Chunk_Length() / sizeof (W3dTexCoordStruct);
 	uvs = context->Get_Temporary_UV_Array(elementcount);
@@ -1544,7 +1544,7 @@ WW3DErrorType MeshModelClass::read_per_face_texcoord_ids (ChunkLoadClass &cload,
 //	}
 
 	/*
-	** Read in the texture coordiante indices
+	** Read in the texture coordinate indices
 	** There must be polygon count vectors in this chunk.
 	*/
 	size = sizeof (Vector3i) * Get_Polygon_Count();

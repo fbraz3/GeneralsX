@@ -629,7 +629,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 			}
 
 // Well, it was a nice idea, but we don't get a message for an ejection.
-// (Really unforunate, actually.) I'm leaving this in in-case some one wants
+// (Really unfortunate, actually.) I'm leaving this in in-case some one wants
 // to trap a different device change (for instance, removal of a mouse) - jkmcd
 #if 0
 			case WM_DEVICECHANGE:

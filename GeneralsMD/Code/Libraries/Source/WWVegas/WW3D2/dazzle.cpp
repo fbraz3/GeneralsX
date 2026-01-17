@@ -873,7 +873,7 @@ void DazzleRenderObjClass::Get_Obj_Space_Bounding_Box(AABoxClass & box) const
 
 void DazzleRenderObjClass::Set_Layer(DazzleLayerClass *layer)
 {
-	// Never insert a dazzle into a list if it already is on one - this caould create infinite
+	// Never insert a dazzle into a list if it already is on one - this could create infinite
 	// loops in the dazzle list.
 	if (on_list) return;
 
@@ -909,7 +909,7 @@ RenderObjClass* DazzleRenderObjClass::Clone(void) const
 // ----------------------------------------------------------------------------
 //
 // DazzleRenderObjClass's Render() function doesn't actually render the dazzle
-// immediatelly but just sets the dazzle visible. This is due to the way the
+// immediately but just sets the dazzle visible. This is due to the way the
 // dazzle system works (the dazzles need to be rendered after everything else).
 // Having the Render() function flag the visibility offers us the visibility
 // functionality of the scene graph.
@@ -1420,7 +1420,7 @@ void DazzleRenderObjClass::Special_Render(SpecialRenderInfoClass & rinfo)
 /****************************************************************************************
 
 
-	DazzleRenderObjClass - Persistant object support.
+	DazzleRenderObjClass - Persistent object support.
 
 	Dazzles are going to save their type and their transform and simply
 	re-create another dazzle of the same type when loaded.

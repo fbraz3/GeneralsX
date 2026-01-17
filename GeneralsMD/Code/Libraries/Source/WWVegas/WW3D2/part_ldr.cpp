@@ -318,14 +318,14 @@ ParticleEmitterDefClass::Normalize_Filename (void)
 	TCHAR path[MAX_PATH];
 	::lstrcpy (path, m_Info.TextureFilename);
 
-	// Find the last occurance of the directory deliminator
+	// Find the last occurrence of the directory deliminator
 	LPCTSTR filename = ::strrchr (path, '\\');
 	if (filename != nullptr) {
 
 		// Increment past the directory deliminator
 		filename ++;
 
-		// Now copy the filename protion of the path to the structure
+		// Now copy the filename portion of the path to the structure
 		::lstrcpy (m_Info.TextureFilename, filename);
 	}
 

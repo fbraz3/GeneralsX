@@ -1039,7 +1039,7 @@ void AdaptiveDeltaMotionChannelClass::decompress(uint32 frame_idx, float *outdat
 
 void AdaptiveDeltaMotionChannelClass::decompress(uint32 src_idx, float *srcdata, uint32 frame_idx, float *outdata)
 {
-	// Contine decompressing from src_idx, up to frame_idx
+	// Continue decompressing from src_idx, up to frame_idx
 
    assert(src_idx < frame_idx);
    src_idx++;

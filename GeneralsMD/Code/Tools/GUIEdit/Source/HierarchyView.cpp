@@ -38,7 +38,7 @@
 //
 // Created:    Colin Day, July 2001
 //
-// Desc:			 Manipulation the widows heirarchy through the tree
+// Desc:			 Manipulation the widows hierarchy through the tree
 //
 //-----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
@@ -174,7 +174,7 @@ LRESULT CALLBACK HierarchyView::dialogProc( HWND hWndDialog, UINT message,
 
 					//
 					// set this window as the drag target, we use it to draw visual
-					// feeback in the edit window
+					// feedback in the edit window
 					//
 					TheHierarchyView->setDragTarget( target );
 
@@ -536,7 +536,7 @@ LRESULT CALLBACK HierarchyView::dialogProc( HWND hWndDialog, UINT message,
 					TheEditor->selectWindow( target );
 					TheEditor->setMode( MODE_DRAG_MOVE );
 
-					// set the locatoin of the move to the window position for now
+					// set the location of the move to the window position for now
 					ICoord2D pos;
 					target->winGetScreenPosition( &pos.x, &pos.y );
 					TheEditWindow->setDragMoveDest( &pos );
@@ -717,7 +717,7 @@ void HierarchyView::addWindowToTree( GameWindow *window,
 	}
 
 	//
-	// add children if requested, but not on gadgets no matter what becuase
+	// add children if requested, but not on gadgets no matter what because
 	// they are "atomic units", except for tab controls.
 	//
 	if( addChildren && TheEditor->windowIsGadget( window ) == FALSE  ||  (window->winGetStyle() & GWS_TAB_CONTROL) )
@@ -1189,7 +1189,7 @@ void HierarchyView::moveWindowChildOf( GameWindow *window, GameWindow *parent )
 	if( window == nullptr )
 		return;
 
-	// remvoe the window from the hierarchy
+	// remove the window from the hierarchy
 	removeWindow( window );
 
 	// if parent is nullptr we'll put at top of list

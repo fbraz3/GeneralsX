@@ -2039,9 +2039,9 @@ Bool W3DRoadBuffer::insertY(Vector2 loc, Int index1, Real scale)
 	const Real cos30 = 0.866f;
 	const Real cos45 = 0.707f;
 
-	if (dot12 < (-cos30)) return false; // Too close to a straigh line, do a straight side tee.
-	if (dot13 < (-cos30)) return false; // Too close to a straigh line, do a straight side tee.
-	if (dot32 < (-cos30)) return false; // Too close to a straigh line, to a straight side tee.
+	if (dot12 < (-cos30)) return false; // Too close to a straight line, do a straight side tee.
+	if (dot13 < (-cos30)) return false; // Too close to a straight line, do a straight side tee.
+	if (dot32 < (-cos30)) return false; // Too close to a straight line, to a straight side tee.
 
 
 
@@ -2863,7 +2863,7 @@ void W3DRoadBuffer::miter(Int ndx1, Int ndx2)
 //=============================================================================
 // W3DRoadBuffer::insertCurveSegmentAt
 //=============================================================================
-/** Insertes curves at the corner of 2 segments. */
+/** Inserts curves at the corner of 2 segments. */
 //=============================================================================
 void W3DRoadBuffer::insertCurveSegmentAt(Int ndx1, Int ndx2)
 {
@@ -3239,7 +3239,7 @@ void W3DRoadBuffer::updateLighting(void)
 		Reactor.)
 
 	Result:
-	As soon as the fence is set up, the player who Alt-tab'd would get Zero Hour crashing to desktop with Serious Error occured.
+	As soon as the fence is set up, the player who Alt-tab'd would get Zero Hour crashing to desktop with Serious Error occurred.
 	*/
 	if( !m_roads )
 	{

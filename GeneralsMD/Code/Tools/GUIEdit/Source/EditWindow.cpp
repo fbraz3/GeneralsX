@@ -562,7 +562,7 @@ void EditWindow::mouseEvent( UnsignedInt windowsMessage,
 	mouse.x = x;
 	mouse.y = y;
 
-	// for mouse move messges always update the status bar
+	// for mouse move messages always update the status bar
 	if( windowsMessage == WM_MOUSEMOVE )
 	{
 		char buffer[ 64 ];

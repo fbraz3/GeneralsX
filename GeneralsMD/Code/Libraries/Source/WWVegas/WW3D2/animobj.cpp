@@ -1033,7 +1033,7 @@ float Animatable3DObjClass::Compute_Current_Frame(float *newDirection) const
 }
 
 /***********************************************************************************************
- * Animatable3DObjClass::Single_Anim_Progress -- progess anims for loop and once               *
+ * Animatable3DObjClass::Single_Anim_Progress -- progress anims for loop and once               *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

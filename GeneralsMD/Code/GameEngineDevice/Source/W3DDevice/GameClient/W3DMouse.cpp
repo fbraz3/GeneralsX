@@ -483,7 +483,7 @@ void W3DMouse::draw(void)
 
 	if (m_currentRedrawMode == RM_DX8 && m_currentD3DCursor != NONE)
 	{
-		//called from upate thread or rendering loop.  Tells D3D where
+		//called from update thread or rendering loop.  Tells D3D where
 		//to draw the mouse cursor.
 		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
 		if (m_pDev)

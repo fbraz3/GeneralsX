@@ -548,7 +548,7 @@ int RawFileMClass::Seek(int pos, int dir)
 	/*
 	**	A file that is biased will have a seek operation modified so that the file appears to
 	**	exist only within the bias range. All bytes outside of this range appear to be
-	**	non-existant.
+	**	non-existent.
 	*/
 	if (BiasLength != -1) {
 		switch (dir) {
@@ -865,10 +865,10 @@ void RawFileMClass::Bias(int start, int length)
 
 
 /***********************************************************************************************
- * RawFileMClass::Raw_Seek -- Performs a seek on the unbiased file                              *
+ * RawFileMClass::Raw_Seek -- Performs a seek on the unbiased file                             *
  *                                                                                             *
  *    This will perform a seek on the file as if it were unbiased. This is in spite of any     *
- *    bias setting the file may have. The ability to perform a raw seek in this fasion is      *
+ *    bias setting the file may have. The ability to perform a raw seek in this fashion is     *
  *    necessary to maintain the bias ability.                                                  *
  *                                                                                             *
  * INPUT:   pos   -- The position to seek the file relative to the "dir" parameter.            *

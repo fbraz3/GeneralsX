@@ -36,7 +36,7 @@
 
 WaypointOptions *WaypointOptions::m_staticThis = nullptr;
 /////////////////////////////////////////////////////////////////////////////
-/// WaypointOptions dialog trivial construstor - Create does the real work.
+/// WaypointOptions dialog trivial constructor - Create does the real work.
 
 
 WaypointOptions::WaypointOptions(CWnd* pParent /*=nullptr*/):

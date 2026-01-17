@@ -2634,7 +2634,7 @@ void W3DModelDraw::recalcBonesForClientParticleSystems()
 						// and the direction, so that the system is oriented like the bone is
 						sys->rotateLocalTransformZ(rotation);
 
-						// Attatch it to the object...
+						// Attach it to the object...
 						sys->attachToDrawable(drawable);
 
 						// important: mark it as do-not-save, since we'll just re-create it when we reload.
@@ -3801,7 +3801,7 @@ void W3DModelDraw::setAnimationLoopDuration(UnsignedInt numFrames)
 /**
 	similar to the above, but assumes that the current state is a "ONCE",
 	and is smart about transition states... if there is a transition state
-	"inbetween", it is included in the completion time.
+	"in between", it is included in the completion time.
 */
 void W3DModelDraw::setAnimationCompletionTime(UnsignedInt numFrames)
 {
@@ -4244,7 +4244,7 @@ void W3DModelDraw::xfer( Xfer *xfer )
 						int curMode, dummy3;
 						hlod->Peek_Animation_And_Info(dummy1, dummy3, curMode, dummy2);
 
-						// srj sez: do not change the animation mode. it's too risky, since if you change (say) a nonlooping
+						// srj sez: do not change the animation mode. it's too risky, since if you change (say) a non-looping
 						// to a looping, something might break since it could rely on that anim terminating.
 
 						// set animation data

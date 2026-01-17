@@ -1406,7 +1406,7 @@ void MultipleUndoable::Do(void)
 
 
 //
-// Recursive function to help tranverse a singly-linked list in reverse order
+// Recursive function to help traverse a singly-linked list in reverse order
 //
 static void undoHelper(Undoable * undoable)
 {

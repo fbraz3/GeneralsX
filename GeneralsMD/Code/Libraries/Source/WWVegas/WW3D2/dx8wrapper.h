@@ -502,7 +502,7 @@ public:
 	static ZTextureClass* Get_Shadow_Map(int idx) { return Shadow_Map[idx]; }
 	// for depth map support KJM ^
 
-	// shader system udpates KJM v
+	// shader system updates KJM v
 	static void Apply_Default_State();
 
 	static void Set_Vertex_Shader(DWORD vertex_shader);
@@ -713,7 +713,7 @@ protected:
 // shader system updates KJM v
 WWINLINE void DX8Wrapper::Set_Vertex_Shader(DWORD vertex_shader)
 {
-#if 0 //(gth) some code is bypassing this acessor function so we can't count on this variable...
+#if 0 //(gth) some code is bypassing this accessor function so we can't count on this variable...
 	// may be incorrect if shaders are created and destroyed dynamically
 	if (Vertex_Shader==vertex_shader) return;
 #endif
@@ -1004,7 +1004,7 @@ WWINLINE unsigned int DX8Wrapper::Convert_Color(const Vector3& color,float alpha
 	unsigned int col;
 
 	// Multiply r, g, b and a components (0.0,...,1.0) by 255 and convert to integer. Or the integer values togerher
-	// such that 32 bit ingeger has AAAAAAAARRRRRRRRGGGGGGGGBBBBBBBB.
+	// such that 32 bit integer has AAAAAAAARRRRRRRRGGGGGGGGBBBBBBBB.
 	__asm
 	{
 		sub	esp,20					// space for a, r, g and b float plus fpu rounding mode

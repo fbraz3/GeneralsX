@@ -230,7 +230,7 @@ void W3DShroud::ReleaseResources(void)
 Bool W3DShroud::ReAcquireResources(void)
 {
 		if (!m_dstTextureWidth)
-			return TRUE;	//nothing to reaquire since shroud was never initialized with valid data
+			return TRUE;	//nothing to reacquire since shroud was never initialized with valid data
 
 		DEBUG_ASSERTCRASH( m_pDstTexture == nullptr, ("ReAcquire of existing shroud texture"));
 

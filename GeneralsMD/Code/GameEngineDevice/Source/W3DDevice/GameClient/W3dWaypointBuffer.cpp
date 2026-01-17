@@ -162,7 +162,7 @@ void W3DWaypointBuffer::drawWaypoints(RenderInfoClass &rinfo)
 	if( TheInGameUI->isInWaypointMode() )
 	{
 		//Create a default light environment with no lights and only full ambient.
-		//@todo: Fix later by copying default scene light environement from W3DScene.cpp.
+		//@todo: Fix later by copying default scene light environment from W3DScene.cpp.
 		LightEnvironmentClass lightEnv;
 		lightEnv.Reset(Vector3(0,0,0), Vector3(1.0f,1.0f,1.0f));
 		lightEnv.Pre_Render_Update(rinfo.Camera.Get_Transform());
@@ -214,7 +214,7 @@ void W3DWaypointBuffer::drawWaypoints(RenderInfoClass &rinfo)
 	else // maybe we want to draw rally points, then?
 	{
 		//Create a default light environment with no lights and only full ambient.
-		//@todo: Fix later by copying default scene light environement from W3DScene.cpp.
+		//@todo: Fix later by copying default scene light environment from W3DScene.cpp.
 		LightEnvironmentClass lightEnv;
 		lightEnv.Reset(Vector3(0,0,0), Vector3(1.0f,1.0f,1.0f));
 		lightEnv.Pre_Render_Update(rinfo.Camera.Get_Transform());
@@ -475,7 +475,7 @@ void W3DWaypointBuffer::drawWaypoints(RenderInfoClass &rinfo)
 										numPoints++;
 
 
-										//and for that matter did we find a far side coner?
+										//and for that matter did we find a far side corner?
 										if (pFarElbow)//did we find a nearest corner?
 										{
 											// but let's test the dot of the first elbow against the rally point to find out
