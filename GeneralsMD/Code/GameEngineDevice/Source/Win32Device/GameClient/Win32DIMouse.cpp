@@ -54,7 +54,7 @@ void DirectInputMouse::openMouse( void )
 	if( FAILED( hr ) )
 	{
 
-		DEBUG_LOG(( "ERROR - openMouse: Unabled to create direct input interface" ));
+		DEBUG_LOG(( "ERROR - openMouse: Unable to create direct input interface" ));
 		assert( 0 );
 		closeMouse();
 		return;
@@ -78,7 +78,7 @@ void DirectInputMouse::openMouse( void )
 	if( FAILED( hr ) )
 	{
 
-		DEBUG_LOG(( "ERROR - openMouse: Unabled to set mouse data format" ));
+		DEBUG_LOG(( "ERROR - openMouse: Unable to set mouse data format" ));
 		assert( 0 );
 		closeMouse();
 		return;
@@ -92,7 +92,7 @@ void DirectInputMouse::openMouse( void )
 	if( FAILED( hr ) )
 	{
 
-		DEBUG_LOG(( "ERROR - openMouse: Unabled to set coop level" ));
+		DEBUG_LOG(( "ERROR - openMouse: Unable to set coop level" ));
 		assert( 0 );
 		closeMouse();
 		return;
@@ -110,7 +110,7 @@ void DirectInputMouse::openMouse( void )
 	if( FAILED( hr ) )
 	{
 
-		DEBUG_LOG(( "ERROR - openMouse: Unabled to set buffer property" ));
+		DEBUG_LOG(( "ERROR - openMouse: Unable to set buffer property" ));
 		assert( 0 );
 		closeMouse();
 		return;
@@ -122,7 +122,7 @@ void DirectInputMouse::openMouse( void )
 	if( FAILED( hr ) )
 	{
 
-		DEBUG_LOG(( "ERROR - openMouse: Unabled to acquire mouse" ));
+		DEBUG_LOG(( "ERROR - openMouse: Unable to acquire mouse" ));
 		assert( 0 );
 		closeMouse();
 		return;

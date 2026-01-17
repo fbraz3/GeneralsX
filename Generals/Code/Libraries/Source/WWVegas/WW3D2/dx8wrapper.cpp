@@ -2445,7 +2445,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_ZTexture
 
 		if (SUCCEEDED(ret))
 		{
-			WWDEBUG_SAY(("...Render target creation succesful."));
+			WWDEBUG_SAY(("...Render target creation successful."));
 		}
 		else
 		{
@@ -2536,7 +2536,7 @@ IDirect3DCubeTexture8* DX8Wrapper::_Create_DX8_Cube_Texture
 
 			if (SUCCEEDED(ret))
 			{
-				WWDEBUG_SAY(("...Render target creation succesful."));
+				WWDEBUG_SAY(("...Render target creation successful."));
 			}
 			else
 			{
@@ -2591,7 +2591,7 @@ IDirect3DCubeTexture8* DX8Wrapper::_Create_DX8_Cube_Texture
 		);
 		if (SUCCEEDED(ret))
 		{
-			WWDEBUG_SAY(("...Texture creation succesful."));
+			WWDEBUG_SAY(("...Texture creation successful."));
 		}
 		else
 		{
@@ -2670,7 +2670,7 @@ IDirect3DVolumeTexture8* DX8Wrapper::_Create_DX8_Volume_Texture
 		);
 		if (SUCCEEDED(ret))
 		{
-			WWDEBUG_SAY(("...Texture creation succesful."));
+			WWDEBUG_SAY(("...Texture creation successful."));
 		}
 		else
 		{

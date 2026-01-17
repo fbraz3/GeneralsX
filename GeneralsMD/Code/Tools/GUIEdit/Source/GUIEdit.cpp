@@ -4058,7 +4058,7 @@ void GUIEdit::bringSelectedToTop( void )
 	if( snapshot == nullptr )
 	{
 
-		DEBUG_LOG(( "bringSelectedToTop: Unabled to allocate selectList" ));
+		DEBUG_LOG(( "bringSelectedToTop: Unable to allocate selectList" ));
 		assert( 0 );
 		return;
 

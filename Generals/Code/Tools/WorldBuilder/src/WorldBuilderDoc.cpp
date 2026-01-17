@@ -2093,7 +2093,7 @@ void CWorldBuilderDoc::OnDumpDocToText(void)
 {
 	MapObject *pMapObj = nullptr;
 	const char* vetStrings[] = {"Green", "Regular", "Veteran", "Elite"};
-	const char* aggroStrings[] = {"Passive", "Normal", "Guard", "Hunt", "Agressive", "Sleep"};
+	const char* aggroStrings[] = {"Passive", "Normal", "Guard", "Hunt", "Aggressive", "Sleep"};
 	AsciiString noOwner = "No Owner";
 	static FILE *theLogFile = nullptr;
 	Bool open = false;

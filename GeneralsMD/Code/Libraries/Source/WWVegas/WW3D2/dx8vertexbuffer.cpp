@@ -478,7 +478,7 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 		&VertexBuffer);
 
 	if (SUCCEEDED(ret)) {
-		WWDEBUG_SAY(("...Vertex buffer creation succesful"));
+		WWDEBUG_SAY(("...Vertex buffer creation successful"));
 	}
 
 	// If it still fails it is fatal

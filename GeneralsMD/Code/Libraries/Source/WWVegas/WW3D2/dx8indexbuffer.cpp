@@ -327,7 +327,7 @@ DX8IndexBufferClass::DX8IndexBufferClass(unsigned short index_count_,UsageType u
 		&index_buffer);
 
 	if (SUCCEEDED(ret)) {
-		WWDEBUG_SAY(("...Index buffer creation succesful"));
+		WWDEBUG_SAY(("...Index buffer creation successful"));
 	}
 
 	// If it still fails it is fatal

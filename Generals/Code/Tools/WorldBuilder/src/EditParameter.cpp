@@ -1850,7 +1850,7 @@ BOOL EditParameter::OnInitDialog()
 			pList->InsertString(-1, "Passive");
 			pList->InsertString(-1, "Normal");
 			pList->InsertString(-1, "Alert");
-			pList->InsertString(-1, "Agressive");
+			pList->InsertString(-1, "Aggressive");
 			pList->SetCurSel(m_parameter->getInt() - ATTITUDE_SLEEP);
 			showList = true;
 			break;

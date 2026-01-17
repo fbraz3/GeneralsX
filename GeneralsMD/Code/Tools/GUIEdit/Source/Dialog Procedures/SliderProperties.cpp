@@ -295,7 +295,7 @@ static LRESULT CALLBACK sliderPropertiesCallback( HWND hWndDialog,
 							sliderData->minVal = sliderData->maxVal;
 							sliderData->maxVal = temp;
 
-							MessageBox( nullptr, "Slider min greated than max, the values were swapped",
+							MessageBox( nullptr, "Slider min greater than max, the values were swapped",
 													"Warning", MB_OK | MB_ICONINFORMATION );
 
 						}
