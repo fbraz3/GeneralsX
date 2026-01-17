@@ -1657,7 +1657,7 @@ StateReturnType AIInternalMoveToState::onEnter()
 	}
 
 	// Target to stop at the end of this path.
-	// This value will be overriden by the FollowWaypoint ai state.
+	// This value will be overridden by the FollowWaypoint ai state.
 	ai->setPathExtraDistance(0);
 	ai->setDesiredSpeed( FAST_AS_POSSIBLE );
 
@@ -2364,7 +2364,7 @@ Bool AIAttackApproachTargetState::computePath()
 	}
 
 	// force minimum time between recomputation
-	/// @todo Unify recomputation conditions & account for obj ID so everyone doesnt compute on the same frame (MSB)
+	/// @todo Unify recomputation conditions & account for obj ID so everyone doesn't compute on the same frame (MSB)
 	if (!forceRepath && TheGameLogic->getFrame() - m_approachTimestamp < MIN_RECOMPUTE_TIME)
 	{
 		//CRCDEBUG_LOG(("AIAttackApproachTargetState::computePath - bailing because of min time for object %d", getMachineOwner()->getID()));
@@ -2774,7 +2774,7 @@ Bool AIAttackPursueTargetState::computePath()
 	}
 
 	// force minimum time between recomputation
-	/// @todo Unify recomputation conditions & account for obj ID so everyone doesnt compute on the same frame (MSB)
+	/// @todo Unify recomputation conditions & account for obj ID so everyone doesn't compute on the same frame (MSB)
 	if (!forceRepath && TheGameLogic->getFrame() - m_approachTimestamp < MIN_RECOMPUTE_TIME)
 	{
 		return true;
@@ -6269,7 +6269,7 @@ StateReturnType AIExitState::update()
 
 		goalExitInterface->exitObjectViaDoor(obj, exitDoor);
 		if( getMachine()->getCurrentStateID() != getID() )
-			return STATE_CONTINUE;// Not sucess, because exitViaDoor has changed us to FollowPath, and if we say Success, our machine will think FollowPath succeeded
+			return STATE_CONTINUE;// Not success, because exitViaDoor has changed us to FollowPath, and if we say Success, our machine will think FollowPath succeeded
 		else
 			return STATE_SUCCESS;
 	}

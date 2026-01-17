@@ -504,7 +504,7 @@ void WaveGuideUpdate::doShoreEffects( void )
 			//
 			if( underWater == TRUE && i != 0 )
 			{
-				Coord3D *prevPoint = &effectPoints[ i - 1 ];  // the prev point is actuall on the water so we'll use it
+				Coord3D *prevPoint = &effectPoints[ i - 1 ];  // the prev point is actually on the water so we'll use it
 
 				particleSystem = TheParticleSystemManager->createParticleSystem( right );
 				if( particleSystem )
@@ -715,7 +715,7 @@ void WaveGuideUpdate::doDamage( void )
 								z.z = 1.0f;
 
 								//
-								// angle is rotated, becuase we computed from 'from' and 'to' points of
+								// angle is rotated, because we computed from 'from' and 'to' points of
 								// the bridge going *across* the valley, not pointing *down* it
 								//
 								u.x = Cos( angle + modData->m_bridgeParticleAngleFudge );

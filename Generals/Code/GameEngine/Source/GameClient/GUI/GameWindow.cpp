@@ -531,7 +531,7 @@ Int GameWindow::winSetPosition( Int x, Int y )
 }
 
 // WinGetPosition =============================================================
-/** Get the window's postion */
+/** Get the window's position */
 //=============================================================================
 Int GameWindow::winGetPosition( Int *x, Int *y )
 {
@@ -548,7 +548,7 @@ Int GameWindow::winGetPosition( Int *x, Int *y )
 }
 
 // WinSetCursorPosition =============================================================
-/** Set the window's cursor postion */
+/** Set the window's cursor position */
 //=============================================================================
 Int GameWindow::winSetCursorPosition( Int x, Int y )
 {
@@ -560,7 +560,7 @@ Int GameWindow::winSetCursorPosition( Int x, Int y )
 }
 
 // WinGetCursorPosition =============================================================
-/** Get the window's cursor postion */
+/** Get the window's cursor position */
 //=============================================================================
 Int GameWindow::winGetCursorPosition( Int *x, Int *y )
 {
@@ -579,7 +579,7 @@ Int GameWindow::winGetCursorPosition( Int *x, Int *y )
 }
 
 // GameWindow::winGetScreenPosition ===========================================
-/** Get the window's postion in screen coordinates */
+/** Get the window's position in screen coordinates */
 //=============================================================================
 Int GameWindow::winGetScreenPosition( Int *x, Int *y )
 {
@@ -1193,7 +1193,7 @@ GameWindow *GameWindow::winGetParent( void )
 }
 
 // GameWindow::winIsChild =====================================================
-/** Determins if a window is a child/grand-child of a parent */
+/** Determines if a window is a child/grand-child of a parent */
 //=============================================================================
 Bool GameWindow::winIsChild( GameWindow *child )
 {

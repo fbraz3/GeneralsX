@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Registry.cpp
-// Simple interface for storing/retreiving registry values
+// Simple interface for storing/retrieving registry values
 // Author: Matthew D. Campbell, December 2001
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine

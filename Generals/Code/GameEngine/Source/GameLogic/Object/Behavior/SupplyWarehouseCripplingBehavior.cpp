@@ -98,7 +98,7 @@ void SupplyWarehouseCripplingBehavior::onBodyDamageStateChange(const DamageInfo*
 // ------------------------------------------------------------------------------------------------
 UpdateSleepTime SupplyWarehouseCripplingBehavior::update()
 {
-	// Supression is handled by sleeping the module, so if I am here, I know it is time to heal.
+	// Suppression is handled by sleeping the module, so if I am here, I know it is time to heal.
 	const SupplyWarehouseCripplingBehaviorModuleData* md = getSupplyWarehouseCripplingBehaviorModuleData();
 	UnsignedInt now = TheGameLogic->getFrame();
 	m_nextHealingFrame = now + md->m_selfHealDelay;
@@ -164,7 +164,7 @@ void SupplyWarehouseCripplingBehavior::xfer( Xfer *xfer )
 	// extend base class
 	UpdateModule::xfer( xfer );
 
-	// healing supressed until frame
+	// healing suppressed until frame
 	xfer->xferUnsignedInt( &m_healingSupressedUntilFrame );
 
 	// next healing frame

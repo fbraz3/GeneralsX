@@ -2871,7 +2871,7 @@ void TerrainLogic::xfer( Xfer *xfer )
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
-	// active boundrary
+	// active boundary
 	Int activeBoundary = m_activeBoundary;
 	xfer->xferInt( &activeBoundary );
 	if( xfer->getXferMode() == XFER_LOAD )

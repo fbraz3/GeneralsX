@@ -980,7 +980,7 @@ protected:
 protected:
 
 	UnsignedInt m_idleTooLongTimestamp;		///< when this is more than our idle too long time we try to do something about it
-	Int m_idlePlayerNumber;				///< Remeber what list we were added to.
+	Int m_idlePlayerNumber;				///< Remember what list we were added to.
 	Bool m_isMarkedAsIdle;
 };
 EMPTY_DTOR(DozerPrimaryIdleState)

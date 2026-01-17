@@ -275,7 +275,7 @@ void GameClient::init( void )
 	{
 
 		//
-		// NOTE: Make sure m_translators[] is large enough to accomodate all the translators you
+		// NOTE: Make sure m_translators[] is large enough to accommodate all the translators you
 		// are loading here.  See MAX_CLIENT_TRANSLATORS
 		//
 

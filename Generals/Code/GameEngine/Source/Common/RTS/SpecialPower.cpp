@@ -307,7 +307,7 @@ Bool SpecialPowerStore::canUseSpecialPower( Object *obj, const SpecialPowerTempl
 	// they cannot have all of them.
 	//
 
-	// check for requried science
+	// check for required science
 	ScienceType requiredScience = specialPowerTemplate->getRequiredScience();
 	if( requiredScience != SCIENCE_INVALID )
 	{

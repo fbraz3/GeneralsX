@@ -312,7 +312,7 @@ void ToggleQuitMenu()
 		return;
 	}
 
-	// if we're visable hide our quit menu
+	// if we're visible hide our quit menu
 	if(isVisible && quitMenuLayout)
 	{
 

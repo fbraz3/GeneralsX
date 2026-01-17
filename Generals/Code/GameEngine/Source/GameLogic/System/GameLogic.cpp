@@ -863,7 +863,7 @@ static void populateRandomStartPosition( GameInfo *game )
 			else
 			{
 				// We're the first real spot.  Pick randomly.
-				// This while loop shouldn't be neccessary, since we're first.  Why not, though?
+				// This while loop shouldn't be necessary, since we're first.  Why not, though?
 				while (posIdx == -1)
 				{
 					posIdx = GameLogicRandomValue(0, numPlayers-1);

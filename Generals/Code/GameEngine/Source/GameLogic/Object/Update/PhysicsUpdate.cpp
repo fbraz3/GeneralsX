@@ -1316,7 +1316,7 @@ static Bool perpsLogicallyEqual( Real perpOne, Real perpTwo )
 //-------------------------------------------------------------------------------------------------
 Bool PhysicsBehavior::checkForOverlapCollision(Object *other)
 {
-	//This is the most Supreme Truth... that unless I am moving right now, I may not crush anyhing!
+	//This is the most Supreme Truth... that unless I am moving right now, I may not crush anything!
 	if ( isVerySmall3D( *getVelocity() ) )
 		return false;
 

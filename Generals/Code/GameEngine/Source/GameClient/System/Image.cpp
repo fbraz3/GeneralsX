@@ -27,7 +27,7 @@
 // Desc:      High level representation of images, this is currently being
 //						written so we have a way to refer to images in the windows
 //						GUI, this system should be replaced with something that can
-//						handle real image management or written to accomodate
+//						handle real image management or written to accommodate
 //						all parts of the engine that need images.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

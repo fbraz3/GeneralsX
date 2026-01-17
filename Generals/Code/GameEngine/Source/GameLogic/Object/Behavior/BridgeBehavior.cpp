@@ -435,7 +435,7 @@ void BridgeBehavior::onDamage( DamageInfo *damageInfo )
 
 	//
 	// get our body info so we now how much damage percent is being done to us ... we need this
-	// so that we can propagate the same damage percentage amont the towers and the bridge
+	// so that we can propagate the same damage percentage amount the towers and the bridge
 	//
 	BodyModuleInterface *body = getObject()->getBodyModule();
 	Real damagePercentage = damageInfo->in.m_amount / body->getMaxHealth();
@@ -479,7 +479,7 @@ void BridgeBehavior::onHealing( DamageInfo *damageInfo )
 
 	//
 	// get our body info so we now how much healing percent is being done to us ... we need this
-	// so that we can propagate the same healing percentage amont the towers and the bridge
+	// so that we can propagate the same healing percentage amount the towers and the bridge
 	//
 	BodyModuleInterface *body = getObject()->getBodyModule();
 	Real healingPercentage = damageInfo->in.m_amount / body->getMaxHealth();

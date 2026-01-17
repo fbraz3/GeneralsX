@@ -3899,7 +3899,7 @@ Bool PartitionManager::tryPosition( const Coord3D *center,
 static Real ringSpacing = 5.0f;
 
 //-------------------------------------------------------------------------------------------------
-/** This method will attempt to find a legal postion from the center position specified,
+/** This method will attempt to find a legal position from the center position specified,
 	* at least minRadis away from it, but no more than maxRadius away.
 	*
 	* Return TRUE if position is found and that position is returned in 'result'
@@ -4945,7 +4945,7 @@ PartitionFilterRejectBuildings::PartitionFilterRejectBuildings(const Object *o) 
 	m_self(o),
 	m_acquireEnemies(false)
 {
-	// if I am a computer-controlled opponent, auto-aquire enemy buildings
+	// if I am a computer-controlled opponent, auto-acquire enemy buildings
 	if (m_self->getControllingPlayer()->getPlayerType() == PLAYER_COMPUTER)
 	{
 		m_acquireEnemies = true;
@@ -4979,7 +4979,7 @@ Bool PartitionFilterRejectBuildings::allow( Object *other )
 	if (relationship != ENEMIES)
 		return false;
 
-	// if I am a computer-controlled opponent, auto-aquire enemy buildings (if we can see them!)
+	// if I am a computer-controlled opponent, auto-acquire enemy buildings (if we can see them!)
 	if (m_acquireEnemies)
 		return true;
 

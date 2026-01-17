@@ -2876,7 +2876,7 @@ void PathfindLayer::reset(void)
 }
 
 /**
- * Returns true if the layer is avaialble for use.
+ * Returns true if the layer is available for use.
  */
 Bool PathfindLayer::isUnused(void)
 {

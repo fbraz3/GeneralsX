@@ -444,7 +444,7 @@ void MinefieldBehavior::onDamage( DamageInfo *damageInfo )
 
 	const MinefieldBehaviorModuleData* d = getMinefieldBehaviorModuleData();
 
-	// detonate as many times as neccessary for our virtual mine count to match our health
+	// detonate as many times as necessary for our virtual mine count to match our health
 	BodyModuleInterface* body = getObject()->getBodyModule();
 
 	for (;;)

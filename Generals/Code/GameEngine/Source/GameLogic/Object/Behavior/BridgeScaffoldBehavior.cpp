@@ -283,7 +283,7 @@ UpdateSleepTime BridgeScaffoldBehavior::update( void )
 BridgeScaffoldBehaviorInterface *BridgeScaffoldBehavior::getBridgeScaffoldBehaviorInterfaceFromObject( Object *obj )
 {
 
-	// santiy
+	// sanity
 	if( obj == nullptr )
 		return nullptr;
 

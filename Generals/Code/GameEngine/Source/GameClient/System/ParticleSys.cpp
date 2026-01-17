@@ -2284,7 +2284,7 @@ void ParticleSystem::updateWindMotion( void )
 		case ParticleSystemInfo::WIND_MOTION_CIRCULAR:
 		{
 
-			// give us a wind angle change if one hasn't been specifed (this plays nice with the particle editor)
+			// give us a wind angle change if one hasn't been specified (this plays nice with the particle editor)
 			if( m_windAngleChange == 0.0f )
 				m_windAngleChange = GameClientRandomValueReal( m_windAngleChangeMin, m_windAngleChangeMax );
 
@@ -2359,7 +2359,7 @@ void ParticleSystem::removeParticle( Particle *particleToRemove )
 	if (particleToRemove->m_systemPrev)
 		particleToRemove->m_systemPrev->m_systemNext = particleToRemove->m_systemNext;
 
-	// update head & tail if neccessary
+	// update head & tail if necessary
 	if (particleToRemove == m_systemParticlesHead)
 		m_systemParticlesHead = particleToRemove->m_systemNext;
 	if (particleToRemove == m_systemParticlesTail)
@@ -3227,7 +3227,7 @@ void ParticleSystemManager::removeParticle( Particle *particleToRemove)
 	if (particleToRemove->m_overallPrev)
 		particleToRemove->m_overallPrev->m_overallNext = particleToRemove->m_overallNext;
 
-	// update head & tail if neccessary
+	// update head & tail if necessary
 	if (particleToRemove == m_allParticlesHead[ priority ])
 		m_allParticlesHead[ priority ] = particleToRemove->m_overallNext;
 	if (particleToRemove == m_allParticlesTail[ priority ])

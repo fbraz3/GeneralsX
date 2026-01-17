@@ -1036,7 +1036,7 @@ void ControlBar::init( void )
 	// post process step after loading the command buttons and command sets
 	postProcessCommands();
 
-	// Init the scheme manager, this will call it's won INI init funciton.
+	// Init the scheme manager, this will call its own INI init function.
 	m_controlBarSchemeManager = NEW ControlBarSchemeManager;
 	m_controlBarSchemeManager->init();
 

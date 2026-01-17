@@ -1296,7 +1296,7 @@ public:
 		{
 			// The other Jet (if any) is ready. Prepare runway transfer and takeoff.
 			// Transfer the runway after one or two frames earliest to give the other
-			// Jet a chance to update as well before the runway is transfered.
+			// Jet a chance to update as well before the runway is transferred.
 			if (m_waitedForTaxiID == INVALID_ID)
 			{
 				// Do not wait for any other Jet from now on.

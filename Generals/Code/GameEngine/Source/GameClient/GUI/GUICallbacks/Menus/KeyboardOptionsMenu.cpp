@@ -281,7 +281,7 @@ void doKeyDown(EntryData *e, UnicodeString mod )
 				e->text->setText( mod );
 				e->sText->setText( mod );
 				e->charPos = e->text->getTextLength();
-				// try reseting all mods first
+				// try resetting all mods first
 				setKeyDown( shift, false );
 				setKeyDown( alt, false );
 				setKeyDown( ctrl, false );

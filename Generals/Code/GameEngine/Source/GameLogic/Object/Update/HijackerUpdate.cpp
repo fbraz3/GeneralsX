@@ -254,7 +254,7 @@ void HijackerUpdate::loadPostProcess( void )
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-	// set the target object, this will also tie up teh m_ejectPilotDMI pointer
+	// set the target object, this will also tie up the m_ejectPilotDMI pointer
 	Object *obj = TheGameLogic->findObjectByID( m_targetID );
 	setTargetObject( obj );
 

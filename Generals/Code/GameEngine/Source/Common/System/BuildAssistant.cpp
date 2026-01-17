@@ -1074,7 +1074,7 @@ BuildAssistant::TileBuildInfo *BuildAssistant::buildTiledLocations( const ThingT
 
 	//
 	// we will fill out our own internal array of positions, it better be big enough to
-	// accomodate max tiles, if it's not lets make it bigger!
+	// accommodate max tiles, if it's not lets make it bigger!
 	//
 	if( maxTiles > m_buildPositionSize )
 	{
@@ -1102,7 +1102,7 @@ BuildAssistant::TileBuildInfo *BuildAssistant::buildTiledLocations( const ThingT
 	placementVector.z = 0.0f;  //end->z - start->z;
 
 	//
-	// get the lengh of the placement vector in the world, we'll use this to see how
+	// get the length of the placement vector in the world, we'll use this to see how
 	// many objects we'll need to fill the entire line
 	//
 	Real placementLength = placementVector.length();

@@ -1052,7 +1052,7 @@ void GadgetComboBoxGetSelectedPos( GameWindow *comboBox, Int *selectedIndex )
 	if( comboBox == nullptr )
 		return;
 
-	// get selected indeces via system message
+	// get selected indices via system message
 	TheWindowManager->winSendSystemMsg( comboBox, GCM_GET_SELECTION, 0, (WindowMsgData)selectedIndex );
 }
 
@@ -1067,7 +1067,7 @@ void GadgetComboBoxSetSelectedPos( GameWindow *comboBox, Int selectedIndex, Bool
 	if( comboBox == nullptr )
 		return;
 
-	// get selected indeces via system message
+	// get selected indices via system message
 	TheWindowManager->winSendSystemMsg( comboBox, GCM_SET_SELECTION, selectedIndex, dontHide );
 }
 // GadgetComboBoxSetItemData ==================================================

@@ -1573,7 +1573,7 @@ GameMessage::Type CommandTranslator::evaluateContextCommand( Drawable *draw,
 		{
 			if( obj && obj->isKindOf( KINDOF_SHRUBBERY ) && !BitIsSet( command->getOptions(), ALLOW_SHRUBBERY_TARGET ) )
 			{
-				//If our object is a shrubbery, and we don't allow targetting it... then null it out.
+				//If our object is a shrubbery, and we don't allow targeting it... then null it out.
 				//Nulling out the draw and obj pointer will force the remainder of this code to evaluate
 				//a position interaction.
 				draw = nullptr;
@@ -1582,7 +1582,7 @@ GameMessage::Type CommandTranslator::evaluateContextCommand( Drawable *draw,
 
 			if( obj && obj->isKindOf( KINDOF_MINE ) && !BitIsSet( command->getOptions(), ALLOW_MINE_TARGET ) )
 			{
-				//If our object is a mine, and we don't allow targetting it... then null it out.
+				//If our object is a mine, and we don't allow targeting it... then null it out.
 				//Nulling out the draw and obj pointer will force the remainder of this code to evaluate
 				//a position interaction.
 				draw = nullptr;

@@ -229,7 +229,7 @@ void POWTruckAIUpdate::setTask( POWTruckTask task, Object *taskObject )
 
 	}
 
-	// when leaving the collecting target state, we need to do some bookeeping
+	// when leaving the collecting target state, we need to do some bookkeeping
 	if( oldTask == POW_TRUCK_TASK_COLLECTING_TARGET )
 	{
 
@@ -479,7 +479,7 @@ void POWTruckAIUpdate::updateCollectingTarget( void )
 	if( targetAI->isIdle() )
 	{
 
-		// are we close enought to tell them to start moving to us
+		// are we close enough to tell them to start moving to us
 		Real distSq = pow( us->getGeometryInfo().getBoundingSphereRadius() * 2.0f, 2 );
 		if( ThePartitionManager->getDistanceSquared( us, target, FROM_CENTER_2D ) <= distSq )
 		{

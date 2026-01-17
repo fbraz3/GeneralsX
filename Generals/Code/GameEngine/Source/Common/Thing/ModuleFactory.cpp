@@ -25,7 +25,7 @@
 // FILE: ModuleFactory.cpp ////////////////////////////////////////////////////////////////////////
 // Author: Colin Day, September 2001
 // Desc:	 TheModuleFactory is where we actually instance modules for objects
-//				 and drawbles.  Those modules are things such as an UpdateModule
+//				 and drawables.  Those modules are things such as an UpdateModule
 //			   or DamageModule or DrawModule etc.
 //
 //				 TheModuleFactory will contain a list of ModuleTemplates, when we

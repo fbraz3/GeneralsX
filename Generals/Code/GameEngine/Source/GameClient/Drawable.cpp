@@ -2097,7 +2097,7 @@ void Drawable::setStealthLook(StealthLookType look)
 				Object *obj = getObject();
 				if( obj )
 				{
-					//Try to get the stealthupdate module and see if the opacity value is overriden.
+					//Try to get the stealthupdate module and see if the opacity value is overridden.
 					StealthUpdate* stealth = obj->getStealth();
 					if( stealth )
 					{
@@ -3338,7 +3338,7 @@ void Drawable::drawHealthBar(const IRegion2D* healthBarRegion)
 		return;
 
 	//
-	// only draw health for selected drawbles and drawables that have been moused over
+	// only draw health for selected drawables and drawables that have been moused over
 	// by the cursor
 	//
 	if( TheGlobalData->m_showObjectHealth &&

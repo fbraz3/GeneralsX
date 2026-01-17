@@ -344,7 +344,7 @@ Bool ScriptConditions::evaluateNamedUnitTotallyDead(Parameter *pUnitParm)
 	}
 
 	if (TheScriptEngine->didUnitExist(pUnitParm->getString())) {
-		// Did exist, now it doesnt.  So it is really, really dead.
+		// Did exist, now it doesn't.  So it is really, really dead.
 		return true; // totally killed
 	}
 	return false; // Non existent unit is not dead.

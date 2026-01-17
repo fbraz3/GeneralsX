@@ -301,7 +301,7 @@ Bool ProductionUpdate::queueUpgrade( const UpgradeTemplate *upgrade )
 	// allocate a new production entry
 	ProductionEntry *production = newInstance(ProductionEntry);
 
-	// assing production entry data
+	// assign production entry data
 	production->m_type = PRODUCTION_UPGRADE;
 	production->m_upgradeToResearch = upgrade;
 	production->m_productionID = PRODUCTIONID_INVALID;  // not needed for upgrades, you can only have one of
@@ -441,7 +441,7 @@ Bool ProductionUpdate::queueCreateUnit( const ThingTemplate *unitType, Productio
 		}
 	}
 
-	// assing production entry data
+	// assign production entry data
 	production->m_type = PRODUCTION_UNIT;
 	production->m_objectToProduce = unitType;
 	production->m_productionID = productionID;

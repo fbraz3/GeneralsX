@@ -220,7 +220,7 @@ void Display::playLogoMovie( AsciiString movieName, Int minMovieLength, Int minC
 	m_currentlyPlayingMovie = movieName;
 	m_movieHoldTime = minMovieLength;
 	m_copyrightHoldTime = minCopyrightLength;
-	m_elapsedMovieTime = timeGetTime();  // we're using time get time becuase legal want's actual "Seconds"
+	m_elapsedMovieTime = timeGetTime();  // we're using time get time because legal wants actual "Seconds"
 
 	m_videoBuffer = createVideoBuffer();
 	if (	m_videoBuffer == nullptr ||
