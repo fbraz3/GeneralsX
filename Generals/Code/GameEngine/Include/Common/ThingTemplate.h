@@ -119,7 +119,7 @@ enum ThingTemplateAudioType CPP_11(: Int)
 	TTAUDIO_soundStealthOff,          ///< Sound when unit destealths
 	TTAUDIO_soundCreated,							///< Sound when unit is created
 	TTAUDIO_soundOnDamaged,           ///< Sound when unit enters damaged state
-	TTAUDIO_soundOnReallyDamaged,     ///< Sound when unit enters reallyd damaged state
+	TTAUDIO_soundOnReallyDamaged,     ///< Sound when unit enters really damaged state
 	TTAUDIO_soundDieFire,							///< Sound when unit dies by fire. NOTE: Replaces soundDie if present and unit dies by fire.
 	TTAUDIO_soundDieToxin,						///< Sound when unit dies by Toxin. NOTE: Replaces soundDie if present and unit dies by fire.
 	TTAUDIO_soundEnter,								///< Sound when another unit enters me.

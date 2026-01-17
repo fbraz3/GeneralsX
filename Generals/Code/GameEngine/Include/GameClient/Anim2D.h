@@ -160,7 +160,7 @@ public:
 	UnsignedInt getCurrentFrameHeight( void ) const;		///< return natural height of image in the current frame
 	const Anim2DTemplate *getAnimTemplate( void ) const { return m_template; }	///< return our template
 
-	void draw( Int x, Int y );													///< draw iamge at location using natural width/height
+	void draw( Int x, Int y );													///< draw image at location using natural width/height
 	void draw( Int x, Int y, Int width, Int height );		///< draw image at location using forced width/height
 
 protected:

@@ -343,7 +343,7 @@ public:
 	MappableKeyModState			m_modState;				///< the required state of the ctrl-alt-shift keys
 	CommandUsableInType			m_usableIn;				///< the allowed place the command can be used in
 	// Next fields are added for Key mapping Dialog
-	MappableKeyCategories		m_category;				///< This is the catagory the key falls under
+	MappableKeyCategories		m_category;				///< This is the category the key falls under
 	UnicodeString						m_description;		///< The description string for the keys
 	UnicodeString						m_displayName;		///< The display name of our command
 };

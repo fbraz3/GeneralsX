@@ -200,7 +200,7 @@ public:
 
 	/** this method is used to request a unique ID to assign to the production of a single
 	unit.  It is unique to all units that can be created from this source object, but is
-	not unique amoung multiple source objects */
+	not unique among multiple source objects */
 	virtual ProductionID requestUniqueUnitID( void ) { ProductionID tmp = m_uniqueID; m_uniqueID = (ProductionID)(m_uniqueID+1); return tmp; }
 
 	virtual Bool queueUpgrade( const UpgradeTemplate *upgrade );				///< queue upgrade "research"

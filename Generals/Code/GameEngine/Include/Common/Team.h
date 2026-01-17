@@ -54,7 +54,7 @@ public:
 	TeamRelationMap( void );
 	// virtual destructor provided by memory pool object
 
-	/** @todo I'm jsut wrappign this up in a nice snapshot object, we really should isolate
+	/** @todo I'm just wrapping this up in a nice snapshot object, we really should isolate
 		* m_map from public access and make access methods for our operations */
 	TeamRelationMapType m_map;
 
@@ -710,7 +710,7 @@ public:
 	/// create a team. there must be a TeamPrototype with the given name, or an exception is thrown.
 	Team *createTeam(const AsciiString& name);
 
-	/// create a team given an explicity team prototype rather than a prototype name
+	/// create a team given an explicitly team prototype rather than a prototype name
 	Team *createTeamOnPrototype( TeamPrototype *prototype );
 
 	/// create a team. there must be a TeamPrototype with the given name, or an exception is thrown.

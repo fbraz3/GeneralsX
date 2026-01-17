@@ -275,7 +275,7 @@ private:
 //=================================================================================================
 
 //-------------------------------------------------------------------------------------------------
-/** Module interface specific for Drawbles, this is really just to make a clear distinction
+/** Module interface specific for Drawables, this is really just to make a clear distinction
 	* between modules intended for use in objects and modules intended for use
 	* in drawables */
 //-------------------------------------------------------------------------------------------------

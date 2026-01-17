@@ -292,7 +292,7 @@ public:
 
 	//
 	// Find us our production update interface if we have one.  This method exists simply
-	// because we do this in a lot of places in the code and I want a convenient way to get thsi (CBD)
+	// because we do this in a lot of places in the code and I want a convenient way to get this (CBD)
 	//
 	ProductionUpdateInterface* getProductionUpdateInterface( void );
 
@@ -332,7 +332,7 @@ public:
 
 	// Selectable is individually controlled on an object by object basis for design now.
 	// It defaults to the thingTemplate->isKindof(KINDOF_SELECTABLE), however, it can be overridden on an
-	// object by object basis.  Finally, it can be temporarily overriden by the OBJECT_STATUS_UNSELECTABLE.
+	// object by object basis.  Finally, it can be temporarily overridden by the OBJECT_STATUS_UNSELECTABLE.
 	// jba.
 	void setSelectable(Bool selectable);
 	Bool isSelectable() const;
@@ -392,7 +392,7 @@ public:
 	const PartitionData *friend_getConstPartitionData() const { return m_partitionData; }
 	Bool hasGhostObject() const; ///< This object has a ghost object. This does not imply that a ghost snapshot is taken or active.
 
-	void onPartitionCellChange();///< We have moved a 'significant' amount, so do maintenence that can be considered 'cell-based'
+	void onPartitionCellChange();///< We have moved a 'significant' amount, so do maintenance that can be considered 'cell-based'
 	void handlePartitionCellMaintenance();					///< Undo and redo all shroud actions.  Call when something has changed, like position or ownership or Death
 
 	Real getVisionRange() const;				///< How far can you see?  This is dynamic so it is in Object.
@@ -441,7 +441,7 @@ public:
 	const AsciiString& getCommandSetString() const;
 	void setCommandSetStringOverride( AsciiString newCommandSetString ) { m_commandSetStringOverride = newCommandSetString; }
 
- 	/// People are faking their commandsets, and, Suprise!, they are authoritative.  Challenge everything.
+ 	/// People are faking their commandsets, and, Surprise!, they are authoritative.  Challenge everything.
  	Bool canProduceUpgrade( const UpgradeTemplate *upgrade );
 
 	// Weapons & Damage -------------------------------------------------------------------------------------------------
