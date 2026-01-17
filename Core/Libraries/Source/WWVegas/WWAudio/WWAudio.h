@@ -174,7 +174,7 @@ public:
 
 	//
 	//	Note:  After call Initialize () you can begin using the library, you don't
-	// need to explicity call Open_2D_Device () or Select_3D_Device ().  Those
+	// need to explicitly call Open_2D_Device () or Select_3D_Device ().  Those
 	// methods were provided as a means of opening devices other than the default.
 	//
 	//	The Initialize () method defaults to a stereo, 16bit, 44100hz 2D DirectSound
@@ -560,7 +560,7 @@ private:
 	DynamicVectorClass<HSAMPLE>					m_2DSampleHandles;
 	DynamicVectorClass<H3DSAMPLE>					m_3DSampleHandles;
 
-	// Playlist managment
+	// Playlist management
 	DynamicVectorClass<AudibleSoundClass *>	m_Playlist;
 	DynamicVectorClass<AudibleSoundClass *>	m_CompletedSounds;
 

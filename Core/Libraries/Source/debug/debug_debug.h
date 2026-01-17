@@ -738,7 +738,7 @@ private:
   /** \internal
 
     Undocumented default constructor. Initializes debugging library.
-    We can make this private as well so nobody accidently tries to create
+    We can make this private as well so nobody accidentally tries to create
     a Debug instance. Actually this function does not do anything -
     initialization is rather performed by PreStaticInit() and
     PostStaticInit().

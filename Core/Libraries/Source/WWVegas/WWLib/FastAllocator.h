@@ -106,7 +106,7 @@ class FastAllocatorGeneral;  //Allocates and deletes items of any size. Can use 
 //       StackAllocator<int*, 512, 0> stackAllocator; //Create an instance. We use the 'construct' hint feature here.
 //       int** pArray = stackAllocator.New(nSize);    //Allocate memory.
 //       memset(pArray, 0, nSize*sizeof(int*));       //Do something with the memory.
-//       stackAllocator.Delete(pArray);               //In this example, we explicity free the memory.
+//       stackAllocator.Delete(pArray);               //In this example, we explicitly free the memory.
 //    }
 //
 //    void Example(int nSize){

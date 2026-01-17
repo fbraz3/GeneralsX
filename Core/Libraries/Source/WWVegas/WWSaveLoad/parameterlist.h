@@ -101,7 +101,7 @@ ParameterListClass::Add (void *data, const char *param_name, ParameterClass::Typ
 	ParameterClass *new_param = ParameterClass::Construct (type, data, param_name);
 
 	//
-	//	Add the new paramter object to our list
+	//	Add the new parameter object to our list
 	//
 	WWASSERT (new_param != nullptr);
 	if (new_param != nullptr) {
@@ -118,7 +118,7 @@ inline void
 ParameterListClass::Add (ParameterClass *new_param)
 {
 	//
-	//	Add the new paramter object to our list
+	//	Add the new parameter object to our list
 	//
 	if (new_param != nullptr) {
 		DynamicVectorClass<ParameterClass *>::Add (new_param);

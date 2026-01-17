@@ -190,7 +190,7 @@ class SoundSceneObjClass : public MultiListObjectClass, public PersistClass, pub
 		virtual void						Set_Cullable_Wrapper (SoundCullObjClass *obj)	{ m_PhysWrapper = obj; }
 
 		//////////////////////////////////////////////////////////////////////
-		//	Sound object managment
+		//	Sound object management
 		//////////////////////////////////////////////////////////////////////
 		static void				Register_Sound_Object (SoundSceneObjClass *sound_obj);
 		static void				Unregister_Sound_Object (SoundSceneObjClass *sound_obj);

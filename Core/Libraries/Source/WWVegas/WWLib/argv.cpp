@@ -54,7 +54,7 @@ char 		*ArgvClass::Argv[MAX_ARGC];
  *                                                                                             *
  * INPUT:                                                                                      *
  *    	bool case_sensitive - Do you want to perform a case sensitive search (stricmp)?		  *
- *			bool exact_size     - Do you want string of same lenght (strncmp) ?						  *
+ *			bool exact_size     - Do you want string of same length (strncmp) ?						  *
  *                                                                                             *
  * OUTPUT:                                                                                     *
  *                                                                                             *
@@ -142,7 +142,7 @@ const char *ArgvClass::Find_Again(const char *arg)
  * ArgvClass::Init -- Setup the command line.                                                  *
  *                                                                                             *
  * INPUT:                                                                                      *
- *			LPSTR lpCmdLine - A string of white space seperated strings.  Quotes force spaces to  *
+ *			LPSTR lpCmdLine - A string of white space separated strings.  Quotes force spaces to  *
  *                         be ignored.                                                         *
  *			char *fileprefix - A prefix on an arguement telling system to load postfix file name  *
  *                          as command line params.                                            *

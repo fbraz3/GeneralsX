@@ -301,7 +301,7 @@ public:
 
 	TextureClass(IDirect3DBaseTexture8* d3d_texture);
 
-	// defualt constructors for derived classes (cube & vol)
+	// default constructors for derived classes (cube & vol)
 	TextureClass
 	(
 		unsigned width,

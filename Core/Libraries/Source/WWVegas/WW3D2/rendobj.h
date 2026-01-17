@@ -157,7 +157,7 @@ public:
 	//Added for 'Generals' - MW
  	enum	{USER_DATA_MATERIAL_OVERRIDE = 0x01234567};
 
- 	//This strucutre is used to pass custom rendering parameters into the W3D
+	//This structure is used to pass custom rendering parameters into the W3D
  	//mesh renderer so it can override settings which are usually shared across
  	//all instances of a model - typically material settings like alpha, texture
  	//animation, texture uv scrolling, etc.  Added for 'Generals' -MW
@@ -253,7 +253,7 @@ public:
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Render Object Interface - "Scene Graph"
 	// Some of the functions in this group are non-virtual as they are meant
-	// to be never overriden or are supposed to be implemented in terms of
+	// to be never overridden or are supposed to be implemented in terms of
 	// the other virtual functions.  We want to keep the virtual interface
 	// as small as possible
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -483,7 +483,7 @@ public:
 	int								Is_Self_Shadowed() const													{ return (Bits&IS_SELF_SHADOWED); }
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Persistant object save-load interface
+	// Persistent object save-load interface
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual const PersistFactoryClass &	Get_Factory (void) const;
 	virtual bool					Save (ChunkSaveClass &csave);

@@ -354,7 +354,7 @@ contin:
 
 		fmul		st(0),st(1)				// theta * (sin_table_size/2)
 		fadd		st(0),st(1)				// theta * (sin_table_size/2) + (sin_table_size/2)
-		fistp		beta						// conver to integer
+		fistp		beta						// convert to integer
 		mov		ecx,SIN_TABLE_SIZE_MASK
 		mov		eax,beta
 		and		eax,ecx					// & SIN_TABLE_SIZE_MASK

@@ -46,7 +46,7 @@
 // If there is a arguement <fileprefix><fname> (for example @file.arg) then the fname is loaded up,
 // parsed, and put into the command line.  The format of the parameter file is as follows:
 // 	1. a semicolon (;) at the start of the line is a comment and will be ignored.
-//		2. Each line is a seperate parameter.  This enables white space to be embeded.
+//		2. Each line is a separate parameter.  This enables white space to be embeded.
 //	In typical Argv implementation, the first argument is the name of the application.  This
 // is not the case with this.
 class ArgvClass

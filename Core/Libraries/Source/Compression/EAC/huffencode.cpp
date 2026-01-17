@@ -718,7 +718,7 @@ static void HUFF_analysis(struct HuffEncodeContext *EC,
 /* - maintains perfect tree
 
    - find intest code
-   - find intest branch thats shorter than maximum bits
+   - find intest branch that's shorter than maximum bits
    - graft one branch to the shorter branch
    - shorten the other code by 1
 */

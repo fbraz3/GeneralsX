@@ -270,7 +270,7 @@ FileClass * SimpleFileFactoryClass::Get_File( char const *filename )
 		if (!SubDirectory.Is_Empty()) {
 
 			//
-			// SubDirectory may contain a semicolon seperated search path...
+			// SubDirectory may contain a semicolon separated search path...
 			// If the file doesn't exist, we'll set the path to the last dir in
 			// the search path.  Therefore newly created files will always go in the
 			// last dir in the search path.

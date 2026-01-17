@@ -184,7 +184,7 @@ WWAudioClass::~WWAudioClass (void)
 void
 WWAudioClass::Flush_Cache (void)
 {
-	// Loop through all the hash indicies
+	// Loop through all the hash indices
 	for (int hash_index = 0; hash_index < MAX_CACHE_HASH; hash_index ++) {
 
 		// Loop through all the buffers at this hash index and free them all
@@ -459,7 +459,7 @@ WWAudioClass::Free_Cache_Space (int bytes)
 {
 	int bytes_freed = 0;
 
-	// Loop through all the hash indicies
+	// Loop through all the hash indices
 	for (int hash_index = 0;
 		  (hash_index < MAX_CACHE_HASH) && (bytes_freed < bytes);
 		  hash_index ++) {

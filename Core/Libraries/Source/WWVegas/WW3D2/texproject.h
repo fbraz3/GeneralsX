@@ -86,7 +86,7 @@ class ZTextureClass;
 **   bounding volume first, then defer computing the actual texture until it is
 **   determined that the volume falls into the frustum and is applied to at least one
 **   object.
-**   solution: Code the bounding volume/projection paramter generation separate from
+**   solution: Code the bounding volume/projection parameter generation separate from
 **   the texture generation code.  A derived texture projection object. Let texture
 **   projectors know about the object they are projecting so that they can have that
 **   object rendered from the desired viewpoint.  Need a 'Dirty' flag and a pointer to

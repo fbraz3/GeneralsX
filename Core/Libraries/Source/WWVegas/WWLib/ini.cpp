@@ -386,7 +386,7 @@ int INIClass::Load(const char *filename)
  *   09/29/1997 JLB : Handles the merging case.                                                *
  *   12/09/1997 EHC : Detects duplicate entry CRCs and fails in that case                      *
  *   03/22/2001 AJA : Treat "foobar=" as a valid entry with value " ".                         *
- *   08/23/2001 AJA : Make the loading of "foobar=" dependant on the KeepBlankEntries flag.    *
+ *   08/23/2001 AJA : Make the loading of "foobar=" dependent on the KeepBlankEntries flag.    *
  *=============================================================================================*/
 int INIClass::Load(Straw & ffile)
 {

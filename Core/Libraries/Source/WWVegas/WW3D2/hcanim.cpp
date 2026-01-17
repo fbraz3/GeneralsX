@@ -314,7 +314,7 @@ int HCompressedAnimClass::Load_W3D(ChunkLoadClass & cload)
 							add_channel(tc_chan);
 						} else {
 							// PWG 12-14-98: we have only allocated space for NumNode pivots.
-							// If we have an index thats equal or higher than NumNode we are
+							// If we have an index that's equal or higher than NumNode we are
 							// gonna trash memory.  Boy will we trash memory.
 							// GTH 09-25-2000: print a warning and survive this error
 							delete tc_chan;
@@ -331,7 +331,7 @@ int HCompressedAnimClass::Load_W3D(ChunkLoadClass & cload)
 							add_channel(ad_chan);
 						} else {
 							// PWG 12-14-98: we have only allocated space for NumNode pivots.
-							// If we have an index thats equal or higher than NumNode we are
+							// If we have an index that's equal or higher than NumNode we are
 							// gonna trash memory.  Boy will we trash memory.
 							// GTH 09-25-2000: print a warning and survive this error
 							delete ad_chan;
@@ -349,7 +349,7 @@ int HCompressedAnimClass::Load_W3D(ChunkLoadClass & cload)
 					add_bit_channel(newbitchan);
 				} else {
 					// PWG 12-14-98: we have only allocated space for NumNode pivots.
-					// If we have an index thats equal or higher than NumNode we are
+					// If we have an index that's equal or higher than NumNode we are
 					// gonna trash memory.  Boy will we trash memory.
 					// GTH 09-25-2000: print a warning and survive this error
 					delete newbitchan;

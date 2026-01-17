@@ -300,7 +300,7 @@ int Cftp::AsyncGetHostByName(char * szName, struct sockaddr_in &address )
 *	HRESULT  Cftp::ConnectToServer(LPCSTR szServerName)
 *
 * $_Description :
-*	Overloaded funciton that makes a connection to a server.  Will probably
+*	Overloaded function that makes a connection to a server.  Will probably
 *	fail on (at least) the first call, as it may take a while for the server
 *	to send it's "ready" reply.
 *

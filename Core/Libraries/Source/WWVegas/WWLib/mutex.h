@@ -40,7 +40,7 @@ class MutexClass
 	unsigned locked;
 
 	// Lock and unlock are private so that you can't use them directly. Use LockClass as a sentry instead!
-	// Lock returns true if lock was succesful, false otherwise
+	// Lock returns true if lock was successful, false otherwise
 	bool Lock(int time);
 	void Unlock();
 

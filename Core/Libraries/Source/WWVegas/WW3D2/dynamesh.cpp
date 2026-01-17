@@ -765,7 +765,7 @@ int DynamicMeshClass::Set_Texture(TextureClass *texture, bool dont_search, int p
 		Model->Initialize_Texture_Array(pass, 0, tex);
 		tex->Release_Ref();
 
-		// flag that we need to write the per polygon material overide array
+		// flag that we need to write the per polygon material override array
 		MultiTexture[pass] = true;
 	}
 

@@ -1182,7 +1182,7 @@ void RenderObjClass::Add_Dependencies_To_List
 /****************************************************************************************
 
 
-	RenderObjClass - Persistant object support.
+	RenderObjClass - Persistent object support.
 
 	NOTE: For now, the render obj PersistFactory is going to cheat by simply storing
 	the name of the render object that was saved.  At load time, it will ask the
@@ -1301,7 +1301,7 @@ bool RenderObjClass::Save (ChunkSaveClass &csave)
 {
 	// This should never hit with the persist factory we're using...
 	// Yes this looks like a design flaw but the way we're saving render objects is
-	// a "shortcut".  We specifically designed this capability into the persistant
+	// a "shortcut".  We specifically designed this capability into the persistent
 	// object system so that we could avoid making all render object's save and
 	// load themselves if possible.
 	WWASSERT(0);

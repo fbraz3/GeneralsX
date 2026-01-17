@@ -40,7 +40,7 @@
 #include "wwmemlog.h"
 
 /*
-** Delcare the pool for ListNodes
+** Declare the pool for ListNodes
 */
 DEFINE_AUTO_POOL(MultiListNodeClass, 256);
 

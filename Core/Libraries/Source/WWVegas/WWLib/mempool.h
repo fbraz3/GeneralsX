@@ -38,8 +38,8 @@
  *   ObjectPoolClass::Free_Object -- releases obj back into the pool                           *
  *   ObjectPoolClass::Allocate_Object_Memory -- internal function which returns memory for an  *
  *   ObjectPoolClass::Free_Object_Memory -- internal function, returns object's memory to the  *
- *   AutoPoolClass::operator new -- overriden new which calls the internal ObjectPool          *
- *   AutoPoolClass::operator delete -- overriden delete which calls the internal ObjectPool    *
+ *   AutoPoolClass::operator new -- overridden new which calls the internal ObjectPool          *
+ *   AutoPoolClass::operator delete -- overridden delete which calls the internal ObjectPool    *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
@@ -330,7 +330,7 @@ void ObjectPoolClass<T,BLOCK_SIZE>::Free_Object_Memory(T * obj)
 
 
 /***********************************************************************************************
- * AutoPoolClass::operator new -- overriden new which calls the internal ObjectPool            *
+ * AutoPoolClass::operator new -- overridden new which calls the internal ObjectPool            *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -350,7 +350,7 @@ void * AutoPoolClass<T,BLOCK_SIZE>::operator new( size_t size )
 
 
 /***********************************************************************************************
- * AutoPoolClass::operator delete -- overriden delete which calls the internal ObjectPool      *
+ * AutoPoolClass::operator delete -- overridden delete which calls the internal ObjectPool      *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

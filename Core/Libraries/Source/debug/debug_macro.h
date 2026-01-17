@@ -188,7 +188,7 @@ DFAIL_IF_MSG(!ptrval,"pointer must not be null") return;
     Works just like \ref DLOG but instead of using the current file as a logging group
     the logging group is explicitly specified.
 
-    \note Specifiy the group directly without quotes, e.g.
+    \note Specify the group directly without quotes, e.g.
       \code
         DLOG_GROUP(my_log_group,"hello world")
       \endcode
