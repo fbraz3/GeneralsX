@@ -2173,7 +2173,7 @@ void LayoutScheme::openDialog( void )
 ImageAndColorInfo *LayoutScheme::findEntry( StateIdentifier id )
 {
 
-	// santiy
+	// sanity
 	if( id < 0 || id >= NUM_STATE_IDENTIFIERS )
 	{
 

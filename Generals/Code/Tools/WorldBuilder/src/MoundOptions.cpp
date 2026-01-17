@@ -31,7 +31,7 @@ Int MoundOptions::m_currentWidth = 0;
 Int MoundOptions::m_currentHeight = 0;
 Int MoundOptions::m_currentFeather = 0;
 /////////////////////////////////////////////////////////////////////////////
-/// MoundOptions dialog trivial construstor - Create does the real work.
+/// MoundOptions dialog trivial constructor - Create does the real work.
 
 
 MoundOptions::MoundOptions(CWnd* pParent /*=nullptr*/)

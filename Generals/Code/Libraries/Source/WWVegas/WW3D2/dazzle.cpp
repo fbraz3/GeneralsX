@@ -1317,7 +1317,7 @@ void DazzleRenderObjClass::Special_Render(SpecialRenderInfoClass & rinfo)
 /****************************************************************************************
 
 
-	DazzleRenderObjClass - Persistant object support.
+	DazzleRenderObjClass - Persistent object support.
 
 	Dazzles are going to save their type and their transform and simply
 	re-create another dazzle of the same type when loaded.

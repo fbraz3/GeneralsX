@@ -402,7 +402,7 @@ private:
 	// RenderObject on construction. The native screen size is the screen size
 	// at which the object was designed to be viewed, and it is used in the
 	// texture resizing algorithm (may be used in future for other things).
-	// If the default is overriden, it will usually be in the asset manager
+	// If the default is overridden, it will usually be in the asset manager
 	// post-load callback.
 	static float						DefaultNativeScreenSize;
 

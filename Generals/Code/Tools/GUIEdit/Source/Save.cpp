@@ -719,7 +719,7 @@ static Bool saveComboBoxData( GameWindow *window, FILE *fp, Int dataIndent )
 	sprintf( &buffer[ dataIndent ], "              LETTERSANDNUMBERS: %d;\n", comboData->lettersAndNumbersOnly );
 	writeBufferToFile( fp, buffer );
 
-	//Save teh dropDownButton draw data for the combo box
+	//Save the dropDownButton draw data for the combo box
 	if( comboData->dropDownButton )
 	{
 
@@ -1252,7 +1252,7 @@ Bool GUIEdit::saveData( char *filePathAndFilename, char *filename )
 	// save each of the windows in reverse order, when we load a layout
 	// file in this reverse order, the original window order we presently
 	// see in the editor will be recreated because windows loaded after
-	// other windows are placed on the top of the widnow stack
+	// other windows are placed on the top of the window stack
 	//
 
 	// go to end of window list

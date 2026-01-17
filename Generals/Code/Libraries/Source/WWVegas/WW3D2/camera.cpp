@@ -271,7 +271,7 @@ void CameraClass::Set_Transform(const Matrix3D &m)
 /***********************************************************************************************
  * CameraClass::Set_Position -- Set the position of the camera                                 *
  *                                                                                             *
- *    This is overriden to invalidate the cached frustum parameters                            *
+ *    This is overridden to invalidate the cached frustum parameters                           *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

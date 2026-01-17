@@ -38,7 +38,7 @@
 //
 // Created:    Colin Day, July 2001
 //
-// Desc:			 Manipulation the widows heirarchy through the tree
+// Desc:			 Manipulate the window's hierarchy through the tree
 //
 //-----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
@@ -707,7 +707,7 @@ void HierarchyView::addWindowToTree( GameWindow *window,
 	}
 
 	//
-	// add children if requested, but not on gadgets no matter what becuase
+	// add children if requested, but not on gadgets no matter what because
 	// they are "atomic units", except for tab controls.
 	//
 	if( addChildren && TheEditor->windowIsGadget( window ) == FALSE  ||  (window->winGetStyle() & GWS_TAB_CONTROL) )

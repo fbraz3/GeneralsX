@@ -487,7 +487,7 @@ void *WW3D::Get_Window( void )
 }
 
 /***********************************************************************************************
- * WW3D::Is_Windowed -- returns wether we are currently in a windowed mode                     *
+ * WW3D::Is_Windowed -- returns whether we are currently in a windowed mode                    *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -964,7 +964,7 @@ WW3DErrorType WW3D::Render(SceneClass * scene,CameraClass * cam,bool clear,bool 
 	}
 
 	// Set the global ambient light value here.  If the scene is using the LightEnvironment system
-	// this setting will get overriden.
+	// this setting will get overridden.
 	DX8Wrapper::Set_Ambient(scene->Get_Ambient_Light());
 
 	// render the scene

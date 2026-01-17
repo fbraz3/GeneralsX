@@ -261,7 +261,7 @@ class ParticleBufferClass : public RenderObjClass
 		// last update.
 		void Update_Non_New_Particles(unsigned int elapsed);
 
-		// Seperate circular buffer used by the emitter to pass new particles.
+		// Separate circular buffer used by the emitter to pass new particles.
 		// It is implemented as an array, start and end indices and a count (to
 		// differentiate between completely full and completely empty).
 		NewParticleStruct *	NewParticleQueue;

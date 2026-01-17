@@ -1803,7 +1803,7 @@ AGAIN:
 				{
 					DisplayString *displayString = TheDisplayStringManager->newDisplayString();
 
-					// set word wrap if neccessary
+					// set word wrap if necessary
 
 					Int wordWrapWidth = TheDisplay->getWidth() - 20;
 					displayString->setWordWrap( wordWrapWidth );

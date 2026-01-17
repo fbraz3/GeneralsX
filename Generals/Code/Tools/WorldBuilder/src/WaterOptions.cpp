@@ -39,7 +39,7 @@ Int WaterOptions::m_waterHeight = 7;
 Int WaterOptions::m_waterPointSpacing = MAP_XY_FACTOR;
 Bool WaterOptions::m_creatingWaterAreas = false;
 /////////////////////////////////////////////////////////////////////////////
-/// WaterOptions dialog trivial construstor - Create does the real work.
+/// WaterOptions dialog trivial constructor - Create does the real work.
 
 
 WaterOptions::WaterOptions(CWnd* pParent /*=nullptr*/):

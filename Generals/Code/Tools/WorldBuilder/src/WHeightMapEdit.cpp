@@ -265,7 +265,7 @@ WorldHeightMapEdit::WorldHeightMapEdit(ChunkInputStream *pStrm):
 	for (i=0; i<m_numGlobalTextureClasses; i++) {
 		for (j=0; j<m_numTextureClasses; j++) {
 			if (m_globalTextureClasses[i].name == m_textureClasses[j].name) {
-				DEBUG_ASSERTCRASH(m_textureClasses[j].globalTextureClass == -1, ("oops")); // should be unintialized at this point.
+				DEBUG_ASSERTCRASH(m_textureClasses[j].globalTextureClass == -1, ("oops")); // should be uninitialized at this point.
 				if (m_globalTextureClasses[i].width != m_textureClasses[i].width) {
 					didMajorRemap = true;	// This will handle the differing tile widths in setBlendUsingCanonicalTile
 				}
@@ -1130,7 +1130,7 @@ void WorldHeightMapEdit::blendSpecificTiles(Int xIndex, Int yIndex, Int srcXInde
 	blendInfo.customBlendEdgeClass = edgeClass;
 
 	//Check if there is already a blend tile at the destination and record its flip state.
-	//We need to know this so that we don't accidently apply a third blend layer with with
+	//We need to know this so that we don't accidentally apply a third blend layer with with
 	//a different flip and introduce z-fighting over this tile.
 	Bool baseNeedsFlip = false;
 	UnsignedByte baseIsDiagonal = 0;

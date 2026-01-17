@@ -30,7 +30,7 @@ Int ContourOptions::m_contourStep = 5;
 Int ContourOptions::m_contourOffset = 0;
 Int ContourOptions::m_contourWidth = 1;
 /////////////////////////////////////////////////////////////////////////////
-/// ContourOptions dialog trivial construstor - Create does the real work.
+/// ContourOptions dialog trivial constructor - Create does the real work.
 
 
 ContourOptions::ContourOptions(CWnd* pParent /*=nullptr*/)

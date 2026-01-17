@@ -241,7 +241,7 @@ static void removeScrollbar( GameWindow *listbox )
 }
 
 // resizeMaxItems =============================================================
-/** Change the max items that a listbox can accomodate */
+/** Change the max items that a listbox can accommodate */
 //=============================================================================
 static void resizeMaxItems( GameWindow *listbox, UnsignedInt newMaxItems )
 {

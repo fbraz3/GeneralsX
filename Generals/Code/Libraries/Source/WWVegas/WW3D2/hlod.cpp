@@ -3405,7 +3405,7 @@ void HLodClass::Update_Obj_Space_Bounding_Volumes(void)
 	}
 
 	//
-	//	Attempt to find an OBBox mesh inside the heirarchy
+	//	Attempt to find an OBBox mesh inside the hierarchy
 	//
 	int index = high_lod.Count ();
 	while (index -- && BoundingBoxIndex == -1) {

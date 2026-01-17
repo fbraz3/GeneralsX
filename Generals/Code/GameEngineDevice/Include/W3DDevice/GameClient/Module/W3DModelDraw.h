@@ -391,7 +391,7 @@ public:
 	/**
 		similar to the above, but assumes that the current state is a "ONCE",
 		and is smart about transition states... if there is a transition state
-		"inbetween", it is included in the completion time.
+		"in between", it is included in the completion time.
 	*/
 	virtual void setAnimationCompletionTime(UnsignedInt numFrames);
 

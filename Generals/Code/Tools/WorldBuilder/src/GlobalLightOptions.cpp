@@ -28,7 +28,7 @@
 #include "wbview3d.h"
 
 /////////////////////////////////////////////////////////////////////////////
-/// GlobalLightOptions dialog trivial construstor - Create does the real work.
+/// GlobalLightOptions dialog trivial constructor - Create does the real work.
 
 
 GlobalLightOptions::GlobalLightOptions(CWnd* pParent /*=nullptr*/)

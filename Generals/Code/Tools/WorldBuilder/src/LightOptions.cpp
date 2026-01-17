@@ -30,7 +30,7 @@
 
 LightOptions *LightOptions::m_staticThis = nullptr;
 /////////////////////////////////////////////////////////////////////////////
-/// LightOptions dialog trivial construstor - Create does the real work.
+/// LightOptions dialog trivial constructor - Create does the real work.
 
 
 LightOptions::LightOptions(CWnd* pParent /*=nullptr*/)

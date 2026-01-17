@@ -298,7 +298,7 @@ public:
 	// internally by the Render() function.
 	void Set_Layer(DazzleLayerClass *layer);
 
-	// Persistant object save-load interface
+	// Persistent object save-load interface
 	// Dazzles save their "dazzle-type" and transform
 	virtual const PersistFactoryClass &	Get_Factory (void) const;
 

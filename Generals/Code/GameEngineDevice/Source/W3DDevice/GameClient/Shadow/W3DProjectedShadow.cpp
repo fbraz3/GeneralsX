@@ -60,7 +60,7 @@
 
 /** @todo: We're going to have a pool of a couple rendertargets to use
 in rare cases when dynamic shadows need to be generated.  Maybe we can
-even get away with a single one that gets used immediatly to render, then
+even get away with a single one that gets used immediately to render, then
 recycled.  For most of the objects, we need to have a static texture that
 is reused for all instances on the level.
 
@@ -2128,7 +2128,7 @@ void W3DProjectedShadow::updateTexture(Vector3 &lightPos)
 		m_shadowProjector->Compute_Perspective_Projection(m_robj,objToLight);
 		m_shadowProjector->Set_Render_Target(TheW3DProjectedShadowManager->getRenderTarget());
 
-		//Set ambient to 0, so we get a black shadow on solid backgroud
+		//Set ambient to 0, so we get a black shadow on solid background
 
 		context=TheW3DProjectedShadowManager->getRenderContext();
 

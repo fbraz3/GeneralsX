@@ -50,7 +50,7 @@ GUIEditWindowManager *TheGUIEditWindowManager = nullptr;  ///< editor use only
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------------
-/** Is the given widnow in the clipboard at the top level.  NOTE that
+/** Is the given window in the clipboard at the top level.  NOTE that
 	* children are NOT included in this search */
 //-------------------------------------------------------------------------------------------------
 Bool GUIEditWindowManager::isWindowInClipboard( GameWindow *window,
@@ -762,7 +762,7 @@ void GUIEditWindowManager::pasteClipboard( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Convinience funtion to copy the Draw state info for a given instance */
+/** Convinience function to copy the Draw state info for a given instance */
 //-------------------------------------------------------------------------------------------------
 void InstDrawCopy (  WinInstanceData *instData, WinInstanceData *sourceInstData)
 {

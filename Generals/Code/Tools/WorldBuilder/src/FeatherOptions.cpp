@@ -31,7 +31,7 @@ Int FeatherOptions::m_currentFeather = 0;
 Int FeatherOptions::m_currentRate = 3;
 Int FeatherOptions::m_currentRadius = 1;
 /////////////////////////////////////////////////////////////////////////////
-/// FeatherOptions dialog trivial construstor - Create does the real work.
+/// FeatherOptions dialog trivial constructor - Create does the real work.
 
 
 FeatherOptions::FeatherOptions(CWnd* pParent /*=nullptr*/)
