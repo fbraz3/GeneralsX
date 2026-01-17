@@ -55,7 +55,7 @@
 	YUCK, WHAT NOW
 	--------------
 
-	Let's represent the Model State with two dictinct pieces:
+	Let's represent the Model State with two distinct pieces:
 
 	-- an "ActionState" piece, representing the mutually-exclusive states, which are almost
 		always an action of some sort

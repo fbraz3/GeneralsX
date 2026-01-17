@@ -194,7 +194,7 @@ enum GUICommandType CPP_11(: Int)
 	GUI_COMMAND_COMBATDROP,								///< rappel contents to ground or bldg
 	GUI_COMMAND_SWITCH_WEAPON,						///< switch weapon use
 
-	//Context senstive command modes
+	//Context sensitive command modes
 	GUICOMMANDMODE_HIJACK_VEHICLE,
 	GUICOMMANDMODE_CONVERT_TO_CARBOMB,
 	GUICOMMANDMODE_SABOTAGE_BUILDING,

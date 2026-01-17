@@ -207,7 +207,7 @@ public:
 	UnsignedInt									m_timestamp;									  ///< seconds shown in display string
 	Bool												m_hiddenByScript;
 	Bool												m_hiddenByScience;
- 	Bool												m_ready;											///< Stores if we were ready last draw, since readyness can change without time changing
+ 	Bool												m_ready;											///< Stores if we were ready last draw, since readiness can change without time changing
   Bool                        m_evaReadyPlayed;             ///< Stores if Eva announced superweapon is ready
 // not saved, but public
  	Bool												m_forceUpdateText;
@@ -665,7 +665,7 @@ protected:
 	struct MilitarySubtitleData
 	{
 		UnicodeString subtitle;										///< The complete subtitle to be drawn, each line is separated by L"\n"
-		UnsignedInt index;												///< the current index that we are at through the sibtitle
+		UnsignedInt index;												///< the current index that we are at through the subtitle
 		ICoord2D position;												///< Where on the screen the subtitle should be drawn
 		DisplayString *displayStrings[MAX_SUBTITLE_LINES];	///< We'll only allow MAX_SUBTITLE_LINES worth of display strings
 		UnsignedInt currentDisplayString;					///< contains the current display string we're on. (also lets us know the last display string allocated

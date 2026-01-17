@@ -43,7 +43,7 @@ class AsciiString;
 	us initialize stuff in useful ways, and (2) provide a default constructor that implicitly
 	converts ints into bitsets in a "wrong" way (ie, it treats the int as a mask, not an index).
 	So we wrap to correct this, but leave the bitset "exposed" so that we can use all the non-ctor
-	functions on it directly (since it doesn't overload operator= to do the "wrong" thing, strangley enough)
+	functions on it directly (since it doesn't overload operator= to do the "wrong" thing, strangely enough)
 */
 template <size_t NUMBITS>
 class BitFlags

@@ -89,7 +89,7 @@ protected:
 	Int m_spawnPointCount;														///< How many in the array are actually live and valid
 	Coord3D m_worldCoordSpawnPoints[MAX_SPAWN_POINTS];///< Where my little friends will be created
 	Real m_worldAngleSpawnPoints[MAX_SPAWN_POINTS];		///< And what direction they should face
-	ObjectID m_spawnPointOccupier[MAX_SPAWN_POINTS];	///< Who I think is in each spot.  I can validate their existance to see if I am free to exit something.
+	ObjectID m_spawnPointOccupier[MAX_SPAWN_POINTS];	///< Who I think is in each spot.  I can validate their existence to see if I am free to exit something.
 
 	// Required func to fufill Module requirement
 

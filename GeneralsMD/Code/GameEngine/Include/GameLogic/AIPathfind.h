@@ -566,7 +566,7 @@ public:
 	virtual Path *findPath( Object *obj, const LocomotorSet& locomotorSet, const Coord3D *from,
 		const Coord3D *to )=0;	///< Find a short, valid path between given locations
 	/** Find a short, valid path to a location NEAR the to location.
-		This succeds when the destination is unreachable (like inside a building).
+		This succeeds when the destination is unreachable (like inside a building).
 		If the destination is unreachable, it will adjust the to point.  */
 	virtual Path *findClosestPath( Object *obj, const LocomotorSet& locomotorSet, const Coord3D *from,
 		Coord3D *to, Bool blocked, Real pathCostMultiplier, Bool moveAllies )=0;
@@ -595,7 +595,7 @@ class Pathfinder : PathfindServicesInterface, public Snapshot
 private:
 	virtual Path *findPath( Object *obj, const LocomotorSet& locomotorSet, const Coord3D *from, const Coord3D *to);	///< Find a short, valid path between given locations
 	/** Find a short, valid path to a location NEAR the to location.
-		This succeds when the destination is unreachable (like inside a building).
+		This succeeds when the destination is unreachable (like inside a building).
 		If the destination is unreachable, it will adjust the to point.  */
 	virtual Path *findClosestPath( Object *obj, const LocomotorSet& locomotorSet, const Coord3D *from,
 		Coord3D *to, Bool blocked, Real pathCostMultiplier, Bool moveAllies );

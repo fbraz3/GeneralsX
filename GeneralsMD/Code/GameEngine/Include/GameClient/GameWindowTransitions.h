@@ -619,7 +619,7 @@ public:
 // standard vars
 	NameKeyType	m_winID;
 	GameWindow *m_win;
-	Transition *m_transition; // each window is allowed one trasition
+	Transition *m_transition; // each window is allowed one transition
 	Int m_currentFrameDelay;	// this will change based on if we're going forward or backwards
 };
 
@@ -679,7 +679,7 @@ private:
 	TransitionGroup *m_currentGroup;
 	TransitionGroup *m_pendingGroup;
 	TransitionGroup *m_drawGroup;
-	TransitionGroup *m_secondaryDrawGroup; // needed to draw the last frame of the previvous draw group once more.
+	TransitionGroup *m_secondaryDrawGroup; // needed to draw the last frame of the previous draw group once more.
 };
 
 void PushButtonImageDrawThree(GameWindow *window, Int alpha );

@@ -138,7 +138,7 @@ public:
 	virtual Bool getIsRebuild( void ) = 0;										///< get whether or not this is a rebuild.
 
 	// task actions
-	virtual void newTask( DozerTask task, Object *target ) = 0;	///< set a desire to do the requrested task
+	virtual void newTask( DozerTask task, Object *target ) = 0;	///< set a desire to do the requested task
 	virtual void cancelTask( DozerTask task ) = 0;							///< cancel this task from the queue, if it's the current task the dozer will stop working on it
 
 	// internal methods to manage behavior from within the dozer state machine
@@ -237,7 +237,7 @@ public:
 	virtual Bool getIsRebuild( void ) { return m_isRebuild; }	///< get whether or not this building is a rebuild.
 
 	// task actions
-	virtual void newTask( DozerTask task, Object *target );	///< set a desire to do the requrested task
+	virtual void newTask( DozerTask task, Object *target );	///< set a desire to do the requested task
 	virtual void cancelTask( DozerTask task );							///< cancel this task from the queue, if it's the current task the dozer will stop working on it
 
 	// internal methods to manage behavior from within the dozer state machine

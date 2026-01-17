@@ -217,7 +217,7 @@ public:
 	virtual Int winDestroyAll( void );  ///< destroy all windows in the system
 	virtual GameWindow *winGetWindowList( void );  ///< get head of master list
 
-	/// hide all windows in a certain range of id's (inclusinve );
+	/// hide all windows in a certain range of id's (inclusive );
 	virtual void hideWindowsInRange( GameWindow *baseWindow, Int first, Int last,
 																	 Bool hideFlag );
 	/// enable all windows in a range of id's (inclusive)
@@ -270,7 +270,7 @@ public:
 																WindowMsgData mData1, WindowMsgData mData2 );
 
 	/** get the window pointer from id, starting at 'window' and searching
-	down the heirarchy.  If 'window' is nullptr then all windows will
+	down the hierarchy.  If 'window' is nullptr then all windows will
 	be searched */
 	virtual GameWindow *winGetWindowFromId( GameWindow *window, Int id );
 	virtual Int winCapture( GameWindow *window );  ///< captures the mouse

@@ -280,7 +280,7 @@ private:
 	ProjectileUpdateInterface*	m_pui;
 	mutable Real								m_velMag;									///< magnitude of cur vel (recalced when m_vel changes)
 
-	Bool												m_originalAllowBounce;		///< orignal state of allow bounce
+	Bool												m_originalAllowBounce;		///< original state of allow bounce
 
 	void setFlag(PhysicsFlagsType f, Bool set) { if (set) m_flags |= f; else m_flags &= ~f; }
 	Bool getFlag(PhysicsFlagsType f) const { return (m_flags & f) != 0; }

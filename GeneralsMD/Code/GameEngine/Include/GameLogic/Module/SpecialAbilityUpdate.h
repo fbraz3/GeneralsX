@@ -273,7 +273,7 @@ private:
 	Int														m_locationCount;
 	std::list<ObjectID>						m_specialObjectIDList; //The list of special objects
 	UnsignedInt										m_specialObjectEntries;				 //The size of the list of member Objects
-	Real													m_captureFlashPhase;    ///< used to track the accellerating flash of the capture FX
+	Real													m_captureFlashPhase;    ///< used to track the accelerating flash of the capture FX
 	PackingState									m_packingState;
 	Bool													m_active;
 	Bool													m_noTargetCommand;

@@ -117,7 +117,7 @@ enum ThingTemplateAudioType CPP_11(: Int)
 	TTAUDIO_soundStealthOff,          ///< Sound when unit destealths
 	TTAUDIO_soundCreated,							///< Sound when unit is created
 	TTAUDIO_soundOnDamaged,           ///< Sound when unit enters damaged state
-	TTAUDIO_soundOnReallyDamaged,     ///< Sound when unit enters reallyd damaged state
+	TTAUDIO_soundOnReallyDamaged,     ///< Sound when unit enters really damaged state
 	TTAUDIO_soundEnter,								///< Sound when another unit enters me.
 	TTAUDIO_soundExit,								///< Sound when another unit exits me.
 	TTAUDIO_soundPromotedVeteran,			///< Sound when unit gets promoted to Veteran level

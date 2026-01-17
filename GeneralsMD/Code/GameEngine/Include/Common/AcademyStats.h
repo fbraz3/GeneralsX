@@ -194,7 +194,7 @@ private:
 	//13) Extra gathers built?
 	UnsignedInt m_gatherersBuilt;
 
-	//14) Heros built?
+	//14) Heroes built?
 	UnsignedInt m_heroesBuilt;
 
 	//+------------------------------+

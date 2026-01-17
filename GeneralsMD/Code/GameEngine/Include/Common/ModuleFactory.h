@@ -25,7 +25,7 @@
 // FILE: ModuleFactory.h //////////////////////////////////////////////////////////////////////////
 // Author: Colin Day, September 2001
 // Desc:	 TheModuleFactory is where we actually instance modules for objects
-//				 and drawbles.  Those modules are things such as an UpdateModule
+//				 and drawables.  Those modules are things such as an UpdateModule
 //			   or DamageModule or DrawModule etc.
 //
 //				 TheModuleFactory will contain a list of ModuleTemplates, when we
@@ -57,7 +57,7 @@ typedef Module *(*NewModuleProc)(Thing *thing, const ModuleData* moduleData);
 typedef ModuleData* (*NewModuleDataProc)(INI* ini);
 
 //-------------------------------------------------------------------------------------------------
-/** We use TheModulyFactory to register classes that will be attached
+/** We use TheModuleFactory to register classes that will be attached
 	* to objects and drawables which will be executed or "called back" in the
 	* correct situations ... such as Die, Damage, Update etc or just as
 	* a place to store data specific to that type of thing */

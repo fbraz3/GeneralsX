@@ -78,7 +78,7 @@ public:
 	virtual UnsignedInt getHeight( void ) { return m_height; }		///< Returns the height of the display
 	virtual void setBitDepth( UnsignedInt bitDepth ) { m_bitDepth = bitDepth; }
 	virtual UnsignedInt getBitDepth( void ) { return m_bitDepth; }
-	virtual void setWindowed( Bool windowed ) { m_windowed = windowed; }  ///< set windowd/fullscreen flag
+	virtual void setWindowed( Bool windowed ) { m_windowed = windowed; }  ///< set windowed/fullscreen flag
 	virtual Bool getWindowed( void ) { return m_windowed; }				///< return widowed/fullscreen flag
 	virtual Bool setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt bitdepth, Bool windowed );	///<sets screen resolution/mode
 	virtual Int getDisplayModeCount(void) {return 0;}	///<return number of display modes/resolutions supported by video card.
@@ -133,7 +133,7 @@ public:
 	virtual void drawFillRect( Int startX, Int startY, Int width, Int height,
 														 UnsignedInt color ) = 0;
 
-	/// Draw a percentage of a rectange, much like a clock
+	/// Draw a percentage of a rectangle, much like a clock
 	virtual void drawRectClock(Int startX, Int startY, Int width, Int height, Int percent, UnsignedInt color) = 0;
 	virtual void drawRemainingRectClock(Int startX, Int startY, Int width, Int height, Int percent, UnsignedInt color) = 0;
 

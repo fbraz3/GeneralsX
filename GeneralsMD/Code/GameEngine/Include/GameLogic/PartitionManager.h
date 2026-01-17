@@ -1302,7 +1302,7 @@ protected:
 	friend void hLineAddValue(Int x1, Int x2, Int y, void *threatValueParms);
 	friend void hLineRemoveValue(Int x1, Int x2, Int y, void *threatValueParms);
 
-	void processPendingUndoShroudRevealQueue(Bool considerTimestamp = TRUE);				///< keep popping and processing untill you get to one that is in the future
+	void processPendingUndoShroudRevealQueue(Bool considerTimestamp = TRUE);				///< keep popping and processing until you get to one that is in the future
 	void resetPendingUndoShroudRevealQueue();					///< Just delete everything in the queue without doing anything with them
 
 public:
@@ -1340,7 +1340,7 @@ public:
 	PartitionCell *getCellAt(Int x, Int y);
 	const PartitionCell *getCellAt(Int x, Int y) const;
 
-	/// A convenience funtion to reveal shroud at some location
+	/// A convenience function to reveal shroud at some location
 	// Queueing does not give you control of the timestamp to enforce the queue.  I own the delay, you don't.
 	void doShroudReveal( Real centerX, Real centerY, Real radius, PlayerMaskType playerMask);
 	void undoShroudReveal( Real centerX, Real centerY, Real radius, PlayerMaskType playerMask);

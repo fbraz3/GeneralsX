@@ -77,7 +77,7 @@ enum DamageType CPP_11(: Int)
 	DAMAGE_STEALTHJET_MISSILES		= 28,
 	DAMAGE_MOLOTOV_COCKTAIL				= 29,
 	DAMAGE_COMANCHE_VULCAN				= 30,
-	DAMAGE_SUBDUAL_MISSILE				= 31,	///< Damage that does not kill you, but produces some special effect based on your Body Module. Seperate HP from normal damage.
+	DAMAGE_SUBDUAL_MISSILE				= 31,	///< Damage that does not kill you, but produces some special effect based on your Body Module. Separate HP from normal damage.
 	DAMAGE_SUBDUAL_VEHICLE				= 32,
 	DAMAGE_SUBDUAL_BUILDING				= 33,
 	DAMAGE_SUBDUAL_UNRESISTABLE		= 34,
@@ -280,7 +280,7 @@ public:
 	PlayerMaskType m_sourcePlayerMask;			///< Player mask of m_sourceID.
 	DamageType		 m_damageType;						///< type of damage
 	ObjectStatusTypes m_damageStatusType;		///< If status damage, what type
-	DamageType		 m_damageFXOverride;			///< If not marked as the default of Unresistable, the damage type to use in doDamageFX instead of the real damamge type
+	DamageType		 m_damageFXOverride;			///< If not marked as the default of Unresistable, the damage type to use in doDamageFX instead of the real damage type
 	DeathType			 m_deathType;						///< if this kills us, death type to be used
 	Real					 m_amount;								///< # value of how much damage to inflict
 	Bool						m_kill;									///< will always cause object to die regardless of damage.

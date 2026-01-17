@@ -213,7 +213,7 @@ public:
 	Int	 m_minVehiclesForGroup;		// We need at least this many vehicles to do it.
 	Real m_minDistanceForGroup;		// We need to move at least this far to do it.
 	Real m_distanceRequiresGroup; // If we are moving this far or farther, force group moving.
-	Real m_minClumpDensity;				// What density constitues a clump.  .5 means units occupying 1/2 of their bounding area.
+	Real m_minClumpDensity;				// What density constitutes a clump.  .5 means units occupying 1/2 of their bounding area.
 
 	Int	 m_infantryPathfindDiameter; // Diameter of path in cells for infantry.
 	Int  m_vehiclePathfindDiameter;  // Diameter of path in cells for vehicles.

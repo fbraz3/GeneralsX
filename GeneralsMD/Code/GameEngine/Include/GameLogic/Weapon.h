@@ -119,7 +119,7 @@ enum WeaponAffectsMaskType CPP_11(: Int)
 	WEAPON_DOESNT_AFFECT_AIRBORNE	= 0x40, // Radius damage doesn't affect airborne units, unless they are the primary target. (used for poison fields.)
 };
 
-//#ifdef DEFINE_WEAPONAFFECTSMASK_NAMES ; Removed protection so other clases can use these strings... not sure why this was protected in the 1st place
+//#ifdef DEFINE_WEAPONAFFECTSMASK_NAMES ; Removed protection so other classes can use these strings... not sure why this was protected in the 1st place
 static const char *const TheWeaponAffectsMaskNames[] =
 {
 	"SELF",

@@ -683,7 +683,7 @@ private:
 	Bool chooseLocomotorSetExplicit(LocomotorSetType wst);
 
 private:
-	UnsignedInt					m_priorWaypointID;						///< ID of the path we follwed to before the most recent one
+	UnsignedInt					m_priorWaypointID;						///< ID of the path we followed to before the most recent one
 	UnsignedInt					m_currentWaypointID;					///< ID of the most recent one...
 
 	AIStateMachine*			m_stateMachine;							///< the state machine
