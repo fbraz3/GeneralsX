@@ -6471,9 +6471,9 @@ Path *Pathfinder::buildGroundPath(Bool isCrusher, const Coord3D *fromPos, Pathfi
 /**
  * Work backwards from goal cell to construct final path.
  */
-Path *Pathfinder::buildHierachicalPath( const Coord3D *fromPos, PathfindCell *goalCell )
+Path *Pathfinder::buildHierarchicalPath( const Coord3D *fromPos, PathfindCell *goalCell )
 {
-	DEBUG_ASSERTCRASH( goalCell, ("Pathfinder::buildHierachicalPath: goalCell == nullptr") );
+	DEBUG_ASSERTCRASH( goalCell, ("Pathfinder::buildHierarchicalPath: goalCell == nullptr") );
 
 	Path *path = newInstance(Path);
 
@@ -7437,7 +7437,7 @@ Path *Pathfinder::internal_findHierarchicalPath( Bool isHuman, const LocomotorSu
 
 			m_isTunneling = false;
 			// construct and return path
-			Path *path =  buildHierachicalPath( from, goalCell );
+			Path *path =  buildHierarchicalPath( from, goalCell );
 #if defined(RTS_DEBUG)
 			Bool show = TheGlobalData->m_debugAI==AI_DEBUG_PATHS;
 			show |= (TheGlobalData->m_debugAI==AI_DEBUG_GROUND_PATHS);
@@ -7626,7 +7626,7 @@ Path *Pathfinder::internal_findHierarchicalPath( Bool isHuman, const LocomotorSu
 	if (closestOK && closestCell) {
 		m_isTunneling = false;
 		// construct and return path
-		Path *path =  buildHierachicalPath( from, closestCell );
+		Path *path =  buildHierarchicalPath( from, closestCell );
 
 #if RETAIL_COMPATIBLE_PATHFINDING
 		if (!s_useFixedPathfinding)

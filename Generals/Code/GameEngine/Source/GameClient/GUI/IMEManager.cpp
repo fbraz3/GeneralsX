@@ -97,7 +97,7 @@ class IMEManager : public IMEManagerInterface
 		virtual void					update( void );
 
 		virtual void					attach( GameWindow *window );		///< attach IME to specified window
-		virtual void					detatch( void );								///< detatch IME from current window
+		virtual void					detach( void );								///< detach IME from current window
 		virtual void					enable( void );									///< Enable IME
 		virtual void					disable( void );								///< Disable IME
 		virtual Bool					isEnabled( void );							///< Is IME enabled
@@ -539,7 +539,7 @@ IMEManager::~IMEManager()
 
 	delete [] m_candidateString;
 
-	detatch();
+	detach();
 	ImmAssociateContext( ApplicationHWnd, m_oldContext );
 	ImmReleaseContext( ApplicationHWnd, m_oldContext );
 	if ( m_context )
@@ -604,7 +604,7 @@ void IMEManager::init( void )
 		m_candidateTextArea->winSetUserData( TheIMEManager );
 	}
 
-	detatch();
+	detach();
 	enable();
 }
 
@@ -634,7 +634,7 @@ void IMEManager::attach( GameWindow *window )
 {
 	if ( m_window != window )
 	{
-		detatch();
+		detach();
 		if ( m_disabled == 0 )
 		{
 			ImmAssociateContext( ApplicationHWnd, m_context );
@@ -646,10 +646,10 @@ void IMEManager::attach( GameWindow *window )
 }
 
 //============================================================================
-// IMEManager::detatch
+// IMEManager::detach
 //============================================================================
 
-void IMEManager::detatch( void )
+void IMEManager::detach( void )
 {
 	//ImmAssociateContext( ApplicationHWnd, nullptr );
 	m_window = nullptr;

@@ -196,7 +196,7 @@ void SinglePlayerLoadScreen::moveWindows( Int frame )
 	enum{
 		STATE_BEGIN = 250,
 		STATE_SHOW_LOCATION = 251,
-		STATE_BEGIN_BREIFING = 255,
+		STATE_BEGIN_BRIEFING = 255,
 //		STATE_BEGIN_ANIMATING_TEXT = 250,
 		STATE_SHOW_CAMEO_1 = 434,
 		STATE_BEGIN_ANIMATING_TEXT = 356,
@@ -212,7 +212,7 @@ void SinglePlayerLoadScreen::moveWindows( Int frame )
 	if(frame < STATE_BEGIN || frame > STATE_END)
 		return;
 
-	if( frame == STATE_BEGIN_BREIFING)
+	if( frame == STATE_BEGIN_BRIEFING)
 	{
 		// add sound support here
 		TheAudio->friend_forcePlayAudioEventRTS(&TheCampaignManager->getCurrentMission()->m_briefingVoice);
@@ -278,9 +278,9 @@ void SinglePlayerLoadScreen::moveWindows( Int frame )
 		STATE_BEGIN = 275,
 		STATE_BEGIN_ANIM = 290,
 		STATE_ANIM_CAMEO1 = 300,
-		STATE_ANIM_CAMEO1_TRASITION_CAMEO2 = 350,
+		STATE_ANIM_CAMEO1_TRANSITION_CAMEO2 = 350,
 		STATE_ANIM_CAMEO2 = 400,
-		STATE_ANIM_CAMEO2_TRASITION_CAMEO3 = 450,
+		STATE_ANIM_CAMEO2_TRANSITION_CAMEO3 = 450,
 		STATE_ANIM_CAMEO3 = 500,
 		STATED_END_ANIM = 550,
 		STATE_END = 800
@@ -300,7 +300,7 @@ void SinglePlayerLoadScreen::moveWindows( Int frame )
 		GadgetStaticTextSetText(m_cameoText, TheGameText->fetch(TheCampaignManager->getCurrentMission()->m_cameoImageName[0]));
 		//save of positions
 	}
-	else if( frame == STATE_ANIM_CAMEO1_TRASITION_CAMEO2)
+	else if( frame == STATE_ANIM_CAMEO1_TRANSITION_CAMEO2)
 	{
 		m_cameoWindow1->winEnable(FALSE);
 		GadgetStaticTextSetText(m_cameoText, UnicodeString::TheEmptyString);
@@ -314,11 +314,11 @@ void SinglePlayerLoadScreen::moveWindows( Int frame )
 		endPos.y = startPos.y;
 
 	}
-	else if( frame > STATE_ANIM_CAMEO1_TRASITION_CAMEO2 && frame < STATE_ANIM_CAMEO2)
+	else if( frame > STATE_ANIM_CAMEO1_TRANSITION_CAMEO2 && frame < STATE_ANIM_CAMEO2)
 	{
 
 		//extrapolate between start and end pos
-		Real percent = INT_TO_REAL((frame - STATE_ANIM_CAMEO1_TRASITION_CAMEO2)) / (STATE_ANIM_CAMEO2 - STATE_ANIM_CAMEO1_TRASITION_CAMEO2);
+		Real percent = INT_TO_REAL((frame - STATE_ANIM_CAMEO1_TRANSITION_CAMEO2)) / (STATE_ANIM_CAMEO2 - STATE_ANIM_CAMEO1_TRANSITION_CAMEO2);
 		m_cameoFrame->winSetPosition(startPos.x + (endPos.x - startPos.x) * percent, endPos.y);
 	}
 	else if( frame == STATE_ANIM_CAMEO2 )
@@ -327,7 +327,7 @@ void SinglePlayerLoadScreen::moveWindows( Int frame )
 		m_cameoFrame->winSetPosition(endPos.x, endPos.y);
 		GadgetStaticTextSetText(m_cameoText, TheGameText->fetch(TheCampaignManager->getCurrentMission()->m_cameoImageName[1]));
 	}
-	else if( frame == STATE_ANIM_CAMEO2_TRASITION_CAMEO3)
+	else if( frame == STATE_ANIM_CAMEO2_TRANSITION_CAMEO3)
 	{
 		m_cameoWindow2->winEnable(FALSE);
 		GadgetStaticTextSetText(m_cameoText, UnicodeString::TheEmptyString);
@@ -341,11 +341,11 @@ void SinglePlayerLoadScreen::moveWindows( Int frame )
 		endPos.y = startPos.y;
 
 	}
-	else if( frame > STATE_ANIM_CAMEO2_TRASITION_CAMEO3 && frame < STATE_ANIM_CAMEO3)
+	else if( frame > STATE_ANIM_CAMEO2_TRANSITION_CAMEO3 && frame < STATE_ANIM_CAMEO3)
 	{
 
 		//extrapolate between start and end pos
-		Real percent = INT_TO_REAL((frame - STATE_ANIM_CAMEO2_TRASITION_CAMEO3)) / (STATE_ANIM_CAMEO3 - STATE_ANIM_CAMEO2_TRASITION_CAMEO3);
+		Real percent = INT_TO_REAL((frame - STATE_ANIM_CAMEO2_TRANSITION_CAMEO3)) / (STATE_ANIM_CAMEO3 - STATE_ANIM_CAMEO2_TRANSITION_CAMEO3);
 		m_cameoFrame->winSetPosition(startPos.x + (endPos.x - startPos.x) * percent, endPos.y);
 	}
 	else if( frame == STATE_ANIM_CAMEO3 )

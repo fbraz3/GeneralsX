@@ -295,9 +295,9 @@ Int ConnectionManager::getPingsSent()
 	return (m_disconnectManager)?m_disconnectManager->getPingsSent():0;
 }
 
-Int ConnectionManager::getPingsRecieved()
+Int ConnectionManager::getPingsReceived()
 {
-	return (m_disconnectManager)?m_disconnectManager->getPingsRecieved():0;
+	return (m_disconnectManager)?m_disconnectManager->getPingsReceived():0;
 }
 
 Bool ConnectionManager::isPlayerConnected( Int playerID )

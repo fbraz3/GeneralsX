@@ -114,9 +114,9 @@ class MeshDeformSetClass
 
 		// Information
 		bool					Is_Empty (void) const;
-		int					Get_Vertex_Count (int keyframe) const				{ return m_KeyFrames[keyframe]->verticies.Count (); }
+		int					Get_Vertex_Count (int keyframe) const				{ return m_KeyFrames[keyframe]->vertices.Count (); }
 		int					Get_Color_Count (int keyframe) const				{ return m_KeyFrames[keyframe]->colors.Count (); }
-		const VERT_INFO &	Get_Vertex_Data (int keyframe, int index) const	{ return m_KeyFrames[keyframe]->verticies[index]; }
+		const VERT_INFO &	Get_Vertex_Data (int keyframe, int index) const	{ return m_KeyFrames[keyframe]->vertices[index]; }
 		const VERT_INFO &	Get_Color_Data (int keyframe, int index) const	{ return m_KeyFrames[keyframe]->colors[index]; }
 
 		// Persistent storage
@@ -150,7 +150,7 @@ class MeshDeformSetClass
 		//////////////////////////////////////////////////////////////////////
 		typedef struct
 		{
-			DEFORM_LIST	verticies;
+			DEFORM_LIST	vertices;
 			DEFORM_LIST	colors;
 			BitArray		affected_verts;
 			BitArray		affected_colors;
@@ -171,7 +171,7 @@ class MeshDeformSetClass
 		float					m_State;
 		bool					m_bAutoApply;
 
-		// Array representing which verticies are part of the set
+		// Array representing which vertices are part of the set
 		BitArray				m_SetMembers;
 
 		// List of key frames

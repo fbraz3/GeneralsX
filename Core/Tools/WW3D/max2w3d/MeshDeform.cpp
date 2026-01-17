@@ -499,7 +499,7 @@ MeshDeformClass::GetSubObjectCenters
 	Matrix3 transform = node->GetObjectTM (time_val);
 	Box3 box;
 
-	// Loop through all the selected verticies and create a bounding
+	// Loop through all the selected vertices and create a bounding
 	// box which we can use to determine the selection center.
 	for (int index = 0; index < mesh->getNumVerts (); index++ ) {
 		if (sel_array[index]) {

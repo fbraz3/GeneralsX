@@ -2859,8 +2859,8 @@ Bool Weapon::isWithinTargetPitch(const Object *source, const Object *victim) con
 	const Coord3D* src = source->getPosition();
 	const Coord3D* dst = victim->getPosition();
 
-	const Real ACCCEPTABLE_DZ = 10.0f;
-	if (fabs(dst->z - src->z) < ACCCEPTABLE_DZ)
+	const Real ACCEPTABLE_DZ = 10.0f;
+	if (fabs(dst->z - src->z) < ACCEPTABLE_DZ)
 		return true;	// always good enough if dz is small, regardless of pitch
 
 	Real minPitch, maxPitch;

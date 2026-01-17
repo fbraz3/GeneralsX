@@ -206,7 +206,7 @@ enum GUICommandType CPP_11(: Int)
 	GUI_COMMAND_NUM_COMMANDS
 };
 
-#ifdef DEFINE_GUI_COMMMAND_NAMES
+#ifdef DEFINE_GUI_COMMAND_NAMES
 static const char *const TheGuiCommandNames[] =
 {
 	"NONE",

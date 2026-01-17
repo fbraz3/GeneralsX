@@ -277,7 +277,7 @@ MeshDeformSaveClass::Export_Keyframes
 			if (retval) {
 
 				//
-				//	Loop through all the verticies in this keyframe
+				//	Loop through all the vertices in this keyframe
 				//
 				int data_count = set_save.Get_Deform_Data_Count (keyframe_index);
 				for (int index = 0; (index < data_count) && retval; index ++) {

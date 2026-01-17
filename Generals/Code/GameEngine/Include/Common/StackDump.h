@@ -24,7 +24,7 @@
 
 #pragma once
 
-#ifndef IG_DEGBUG_STACKTRACE
+#ifndef IG_DEBUG_STACKTRACE
 #define IG_DEBUG_STACKTRACE	1
 #endif
 

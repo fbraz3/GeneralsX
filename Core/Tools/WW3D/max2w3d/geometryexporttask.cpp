@@ -1125,7 +1125,7 @@ Point3 MeshGeometryExportTaskClass::Get_Shared_Vertex_Normal(const Point3 & worl
 			if ((face_smgroup & smgroup) || (face_smgroup == smgroup)) {
 
 				/*
-				**	Find out if any of the verticies of this face share the
+				**	Find out if any of the vertices of this face share the
 				** same space as the vertex we are looking for.
 				*/
 				bool found = false;

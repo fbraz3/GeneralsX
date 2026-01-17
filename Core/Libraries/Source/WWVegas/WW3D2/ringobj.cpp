@@ -1101,7 +1101,7 @@ void RingRenderObjClass::Scale(float scalex, float scaley, float scalez)
 
 
 /***********************************************************************************************
- * RingRenderObjClass::Update_On_Visibilty -- Either starts or stops the animation based on vis*
+ * RingRenderObjClass::Update_On_Visibility -- Either starts or stops the animation based on vis*
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -1112,7 +1112,7 @@ void RingRenderObjClass::Scale(float scalex, float scaley, float scalez)
  * HISTORY:                                                                                    *
  *   4/04/00    pds : Created.                                                                 *
  *=============================================================================================*/
-void RingRenderObjClass::Update_On_Visibilty(void)
+void RingRenderObjClass::Update_On_Visibility(void)
 {
 	// Simply start or stop the animation based on
 	// the visibility state of the primitive.

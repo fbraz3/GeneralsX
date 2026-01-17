@@ -2027,20 +2027,20 @@ void ChunkTableClass::List_W3D_CHUNK_BOX(ChunkItem * Item,CListCtrl * list)
 	if (box->Attributes & W3D_BOX_ATTRIBUTE_ALIGNED) {
 		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBUTE_ALIGNED","flag");
 	}
-	if (box->Attributes & W3D_BOX_ATTRIBTUE_COLLISION_TYPE_PHYSICAL) {
-		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBTUE_COLLISION_TYPE_PHYSICAL","flag");
+	if (box->Attributes & W3D_BOX_ATTRIBUTE_COLLISION_TYPE_PHYSICAL) {
+		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBUTE_COLLISION_TYPE_PHYSICAL","flag");
 	}
-	if (box->Attributes & W3D_BOX_ATTRIBTUE_COLLISION_TYPE_PROJECTILE) {
-		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBTUE_COLLISION_TYPE_PROJECTILE","flag");
+	if (box->Attributes & W3D_BOX_ATTRIBUTE_COLLISION_TYPE_PROJECTILE) {
+		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBUTE_COLLISION_TYPE_PROJECTILE","flag");
 	}
-	if (box->Attributes & W3D_BOX_ATTRIBTUE_COLLISION_TYPE_VIS) {
-		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBTUE_COLLISION_TYPE_VIS","flag");
+	if (box->Attributes & W3D_BOX_ATTRIBUTE_COLLISION_TYPE_VIS) {
+		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBUTE_COLLISION_TYPE_VIS","flag");
 	}
-	if (box->Attributes & W3D_BOX_ATTRIBTUE_COLLISION_TYPE_CAMERA) {
-		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBTUE_COLLISION_TYPE_CAMERA","flag");
+	if (box->Attributes & W3D_BOX_ATTRIBUTE_COLLISION_TYPE_CAMERA) {
+		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBUTE_COLLISION_TYPE_CAMERA","flag");
 	}
-	if (box->Attributes & W3D_BOX_ATTRIBTUE_COLLISION_TYPE_VEHICLE) {
-		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBTUE_COLLISION_TYPE_VEHICLE","flag");
+	if (box->Attributes & W3D_BOX_ATTRIBUTE_COLLISION_TYPE_VEHICLE) {
+		AddItem(list,counter,"Attributes","W3D_BOX_ATTRIBUTE_COLLISION_TYPE_VEHICLE","flag");
 	}
 
 	AddItem(list,counter,"Name",box->Name);

@@ -24,7 +24,7 @@
 
 #pragma once
 
-#ifndef IG_DEGBUG_STACKTRACE
+#ifndef IG_DEBUG_STACKTRACE
 #define IG_DEBUG_STACKTRACE	1
 #endif // Unsure about this one -ML 3/25/03
 #if defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)

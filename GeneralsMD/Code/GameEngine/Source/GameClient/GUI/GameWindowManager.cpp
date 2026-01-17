@@ -917,7 +917,7 @@ WinInputReturnCode GameWindowManager::winProcessMouseEvent( GameWindowMessage ms
 					BitClear( m_grabWindow->m_status, WIN_STATUS_ACTIVE );
 					if( m_grabWindow->winPointInWindow( mousePos->x, mousePos->y ) )
 						winSendInputMsg( m_grabWindow, GWM_LEFT_UP, packedMouseCoords, 0 );
-					else if( BitIsSet( m_grabWindow->m_status, WIN_STATUS_DRAGABLE ))
+					else if( BitIsSet( m_grabWindow->m_status, WIN_STATUS_DRAGGABLE ))
 					{
 						winSendInputMsg( m_grabWindow, GWM_LEFT_UP, packedMouseCoords, 0 );
 					}
@@ -932,7 +932,7 @@ WinInputReturnCode GameWindowManager::winProcessMouseEvent( GameWindowMessage ms
 				case GWM_LEFT_DRAG:
 				{
 
-					if( BitIsSet( m_grabWindow->m_status, WIN_STATUS_DRAGABLE ) )
+					if( BitIsSet( m_grabWindow->m_status, WIN_STATUS_DRAGGABLE ) )
 					{
 						ICoord2D *mouseDelta = (ICoord2D *)data;
 						dx = mouseDelta->x;
@@ -2266,7 +2266,7 @@ GameWindow *GameWindowManager::gogoGadgetSlider( GameWindow *parent,
 
 	// create the slider thumb button
 	WinInstanceData buttonInstData;
-	UnsignedInt statusFlags = status | WIN_STATUS_ENABLED | WIN_STATUS_DRAGABLE;
+	UnsignedInt statusFlags = status | WIN_STATUS_ENABLED | WIN_STATUS_DRAGGABLE;
 
 	buttonInstData.init();
 
@@ -3672,7 +3672,7 @@ Bool GameWindowManager::initTestGUI( void )
 
 //	UnsignedByte alpha = 200;
 	GameWindow *window;
-	UnsignedInt statusFlags = WIN_STATUS_ENABLED | WIN_STATUS_DRAGABLE | WIN_STATUS_IMAGE;
+	UnsignedInt statusFlags = WIN_STATUS_ENABLED | WIN_STATUS_DRAGGABLE | WIN_STATUS_IMAGE;
 	WinInstanceData instData;
 
 	// make some windows inside each other in the upper left
@@ -3737,7 +3737,7 @@ Bool GameWindowManager::initTestGUI( void )
 																								 &instData, nullptr, TRUE );
 
 	// make window to hold radio buttons
-	window = winCreate( nullptr, WIN_STATUS_ENABLED | WIN_STATUS_DRAGABLE,
+	window = winCreate( nullptr, WIN_STATUS_ENABLED | WIN_STATUS_DRAGGABLE,
 																				200, 200, 250, 45, nullptr );
 	window->winSetInputFunc( testGrab );
 	window->winSetEnabledColor( 0, winMakeColor( 50, 50, 50, 200 ) );

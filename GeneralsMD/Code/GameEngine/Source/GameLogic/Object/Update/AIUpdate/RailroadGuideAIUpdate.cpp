@@ -152,8 +152,8 @@ RailroadBehavior::RailroadBehavior( Thing *thing, const ModuleData *moduleData )
 	m_waitingInWings = TRUE;
 	m_endOfLine = FALSE;
 	m_isLocomotive = modData->m_isLocomotive;
-	m_isLeadCarraige = m_isLocomotive;  // for now, I am the lead, only if I am the locomotive
-	m_wantsToBeLeadCarraige = FALSE;
+	m_isLeadCarriage = m_isLocomotive;  // for now, I am the lead, only if I am the locomotive
+	m_wantsToBeLeadCarriage = FALSE;
 	m_disembark = FALSE;
 	m_inTunnel = FALSE;
   m_held = FALSE;
@@ -194,7 +194,7 @@ Bool RailroadBehavior::isRailroad() const
 		return FALSE;
 	if (m_endOfLine)
 		return FALSE;
-	if (m_isLeadCarraige)
+	if (m_isLeadCarriage)
 		return TRUE;
 	if (m_trailerID==INVALID_ID)
 		return TRUE;
@@ -237,7 +237,7 @@ void RailroadBehavior::onCollide( Object *other, const Coord3D *loc, const Coord
 			{
 				other->kill();
 			}
-			else if ( m_isLeadCarraige ) //yikes! I just coasted into some other carriage
+			else if ( m_isLeadCarriage ) //yikes! I just coasted into some other carriage
 			{
 				other->kill();
 				obj->kill();//and I am dead, too
@@ -769,12 +769,12 @@ UpdateSleepTime RailroadBehavior::update( void )
 
 
 
-	if ( m_wantsToBeLeadCarraige > FRAMES_UNPULLED_LONG_ENOUGH_TO_UNHITCH )//if this flag survived until now, I have lost my puller
+	if ( m_wantsToBeLeadCarriage > FRAMES_UNPULLED_LONG_ENOUGH_TO_UNHITCH )//if this flag survived until now, I have lost my puller
 	{
-		m_isLeadCarraige = TRUE;
+		m_isLeadCarriage = TRUE;
 	}
 
-	if ( m_isLeadCarraige )
+	if ( m_isLeadCarriage )
 	{
 
 		if ( m_conductorState == COAST )
@@ -819,9 +819,9 @@ UpdateSleepTime RailroadBehavior::update( void )
 				TheGameLogic->destroyObject( getObject() );
 		}
 	}
-	else if ( m_wantsToBeLeadCarraige <= FRAMES_UNPULLED_LONG_ENOUGH_TO_UNHITCH )// if I am not the lead carriage
+	else if ( m_wantsToBeLeadCarriage <= FRAMES_UNPULLED_LONG_ENOUGH_TO_UNHITCH )// if I am not the lead carriage
 	{
-		m_wantsToBeLeadCarraige ++; // like every young carriage, I aspire to be the lead carriage some day
+		m_wantsToBeLeadCarriage ++; // like every young carriage, I aspire to be the lead carriage some day
 															// unless getpulled() set this false, I will be on the next update! Joy!
 	}
 
@@ -1165,7 +1165,7 @@ void RailroadBehavior::hitchNewCarriagebyProximity( ObjectID locoID, TrainTrack 
 void RailroadBehavior::getPulled( PullInfo *info )
 {
 	//ENFORCE MY STATUS AS A PULLEE, NOT A PULLER, and update my position, speed etc.
-	m_wantsToBeLeadCarraige = 0;
+	m_wantsToBeLeadCarriage = 0;
 
 	if ( ! m_track )
 	{
@@ -1567,11 +1567,11 @@ void RailroadBehavior::xfer( Xfer *xfer )
 		//Bool m_isLocomotive; ///< Am I a locomotive,
 		xfer->xferBool( &m_isLocomotive );
 
-		//Bool m_isLeadCarraige; ///< Am the carraige in front,
-		xfer->xferBool( &m_isLeadCarraige );
+		//Bool m_isLeadCarriage; ///< Am the carraige in front,
+		xfer->xferBool( &m_isLeadCarriage );
 
-		//Int m_wantsToBeLeadCarraige; ///< Am the carraige in front,
-		xfer->xferInt( &m_wantsToBeLeadCarraige );
+		//Int m_wantsToBeLeadCarriage; ///< Am the carraige in front,
+		xfer->xferInt( &m_wantsToBeLeadCarriage );
 
 		//Bool m_disembark; ///< If I wait at a station, I should also evacuate everybody when I get theres
 		xfer->xferBool( &m_disembark );

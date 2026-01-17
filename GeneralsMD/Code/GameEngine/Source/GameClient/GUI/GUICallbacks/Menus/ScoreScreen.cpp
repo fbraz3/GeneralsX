@@ -1731,7 +1731,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						{
 							// we pinged on the last frame someone was there - i.e. game ended in a disconnect.
 							// check if we were to blame.
-							if (TheNetwork->getPingsRecieved() < max(1, TheNetwork->getPingsSent()/2)) /// @todo: what's a good percent of pings to have gotten?
+							if (TheNetwork->getPingsReceived() < max(1, TheNetwork->getPingsSent()/2)) /// @todo: what's a good percent of pings to have gotten?
 							{
 								DEBUG_LOG(("We were to blame.  Leaving gameEndedInDisconnect = true"));
 							}

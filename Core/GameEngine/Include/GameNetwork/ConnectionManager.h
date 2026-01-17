@@ -144,7 +144,7 @@ public:
 	// For disconnect blame assignment
 	UnsignedInt getPingFrame();
 	Int getPingsSent();
-	Int getPingsRecieved();
+	Int getPingsReceived();
 
 private:
 	void doRelay();

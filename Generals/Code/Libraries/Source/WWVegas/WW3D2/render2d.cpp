@@ -416,7 +416,7 @@ void	Render2DClass::Add_Tri( const Vector2 & v0, const Vector2 & v1, const Vecto
 	int new_vert_count = old_vert_count + 3;
 	int new_index_count = Indices.Count() + 3;
 
-	// Add the verticies (translated to new coordinates)
+	// Add the vertices (translated to new coordinates)
 #if 0
 	Vertices.Add( Convert_Vert( v0 ), new_vert_count );
 	Vertices.Add( Convert_Vert( v1 ), new_vert_count );

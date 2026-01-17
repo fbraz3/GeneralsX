@@ -266,10 +266,10 @@ public:
 
 	virtual void					Scale(float scale);
 	virtual void					Scale(float scalex, float scaley, float scalez);
-	virtual void					Set_Hidden(int onoff)				{ RenderObjClass::Set_Hidden (onoff); Update_On_Visibilty (); }
-	virtual void					Set_Visible(int onoff)				{ RenderObjClass::Set_Visible (onoff); Update_On_Visibilty (); }
-	virtual void					Set_Animation_Hidden(int onoff)	{ RenderObjClass::Set_Animation_Hidden (onoff); Update_On_Visibilty (); }
-	virtual void					Set_Force_Visible(int onoff)		{ RenderObjClass::Set_Force_Visible (onoff); Update_On_Visibilty (); }
+	virtual void					Set_Hidden(int onoff)				{ RenderObjClass::Set_Hidden (onoff); Update_On_Visibility (); }
+	virtual void					Set_Visible(int onoff)				{ RenderObjClass::Set_Visible (onoff); Update_On_Visibility (); }
+	virtual void					Set_Animation_Hidden(int onoff)	{ RenderObjClass::Set_Animation_Hidden (onoff); Update_On_Visibility (); }
+	virtual void					Set_Force_Visible(int onoff)		{ RenderObjClass::Set_Force_Visible (onoff); Update_On_Visibility (); }
 
 
 	const AABoxClass	&			Get_Box(void);
@@ -341,7 +341,7 @@ protected:
 
 	virtual void			 		update_cached_box(void);
 	virtual void			 		Update_Cached_Bounding_Volumes(void) const;
-	void								Update_On_Visibilty(void);
+	void								Update_On_Visibility(void);
 
 	// Initialization stuff
 	void								Init_Material (void);

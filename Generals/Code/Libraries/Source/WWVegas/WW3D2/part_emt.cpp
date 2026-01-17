@@ -383,7 +383,7 @@ void ParticleEmitterClass::Reset(void)
 	// Note:  This flag needs to be set first thing, otherwise
 	// getting the transform will result in an 'update_x' call
 	// which in turn results in a 'Set_Animation_Hidden' call, which
-	// in turn will cause the Update_Visibilty function to call
+	// in turn will cause the Update_Visibility function to call
 	// Start().  This won't cause a stack overflow like in Start
 	// but it would do some extra work.
 	Active = true;
@@ -403,7 +403,7 @@ void ParticleEmitterClass::Start(void)
 	// Note:  This flag needs to be set first thing, otherwise
 	// getting the transform will result in an 'update_x' call
 	// which in turn results in a 'Set_Animation_Hidden' call, which
-	// in turn will cause the Update_Visibilty function to call
+	// in turn will cause the Update_Visibility function to call
 	// this method.  And then... Stack Overflow!  ;)
 	Active = true;
 
@@ -835,7 +835,7 @@ ParticleEmitterClass::Set_Name (const char *pname)
 
 
 void
-ParticleEmitterClass::Update_On_Visibilty(void)
+ParticleEmitterClass::Update_On_Visibility(void)
 {
 	// Simply start or stop the emission based on
 	// the visibility state of the emitter.

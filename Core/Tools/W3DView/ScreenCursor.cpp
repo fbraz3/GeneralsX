@@ -227,7 +227,7 @@ ScreenCursorClass::On_Frame_Update (void)
 	z_pos				= 0;
 
 	//
-	//	Build the verticies from the position and extents
+	//	Build the vertices from the position and extents
 	//
 	m_Verticies[0].X = x_pos;
 	m_Verticies[0].Y = y_pos;

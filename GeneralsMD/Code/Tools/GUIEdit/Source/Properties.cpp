@@ -808,8 +808,8 @@ void CommonDialogInitialize( GameWindow *window, HWND dialog )
 	// populate common properties
 	if( BitIsSet( window->winGetStatus(), WIN_STATUS_ENABLED ) )
 		CheckDlgButton( dialog, CHECK_ENABLED, BST_CHECKED );
-	if( BitIsSet( window->winGetStatus(), WIN_STATUS_DRAGABLE ) )
-		CheckDlgButton( dialog, CHECK_DRAGABLE, BST_CHECKED );
+	if( BitIsSet( window->winGetStatus(), WIN_STATUS_DRAGGABLE ) )
+		CheckDlgButton( dialog, CHECK_DRAGGABLE, BST_CHECKED );
 	if( BitIsSet( window->winGetStatus(), WIN_STATUS_HIDDEN ) )
 		CheckDlgButton( dialog, CHECK_HIDDEN, BST_CHECKED );
 	if( BitIsSet( window->winGetStatus(), WIN_STATUS_NO_INPUT ) )
@@ -1068,9 +1068,9 @@ Bool SaveCommonDialogProperties( HWND dialog, GameWindow *window )
 	// save bits
 	window->winEnable( IsDlgButtonChecked( dialog, CHECK_ENABLED ) );
 
-	bit = WIN_STATUS_DRAGABLE;
+	bit = WIN_STATUS_DRAGGABLE;
 	window->winClearStatus( bit );
-	if( IsDlgButtonChecked( dialog, CHECK_DRAGABLE ) )
+	if( IsDlgButtonChecked( dialog, CHECK_DRAGGABLE ) )
 		window->winSetStatus( bit );
 
 	bit = WIN_STATUS_HIDDEN;

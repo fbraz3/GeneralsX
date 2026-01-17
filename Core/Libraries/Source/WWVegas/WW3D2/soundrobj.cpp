@@ -195,7 +195,7 @@ SoundRenderObjClass::Set_Hidden (int onoff)
 	//
 	if (IsInitialized == false || Is_Not_Hidden_At_All () != before) {
 		IsInitialized = true;
-		Update_On_Visibilty ();
+		Update_On_Visibility ();
 	}
 
 	return ;
@@ -218,7 +218,7 @@ SoundRenderObjClass::Set_Visible (int onoff)
 	//
 	if (IsInitialized == false || Is_Not_Hidden_At_All () != before) {
 		IsInitialized = true;
-		Update_On_Visibilty ();
+		Update_On_Visibility ();
 	}
 
 	return ;
@@ -241,7 +241,7 @@ SoundRenderObjClass::Set_Animation_Hidden (int onoff)
 	//
 	if (IsInitialized == false || Is_Not_Hidden_At_All () != before) {
 		IsInitialized = true;
-		Update_On_Visibilty ();
+		Update_On_Visibility ();
 	}
 
 	return ;
@@ -264,7 +264,7 @@ SoundRenderObjClass::Set_Force_Visible (int onoff)
 	//
 	if (IsInitialized == false || Is_Not_Hidden_At_All () != before) {
 		IsInitialized = true;
-		Update_On_Visibilty ();
+		Update_On_Visibility ();
 	}
 
 	return ;
@@ -273,11 +273,11 @@ SoundRenderObjClass::Set_Force_Visible (int onoff)
 
 //////////////////////////////////////////////////////////////////////////////////
 //
-//	Update_On_Visibilty
+//	Update_On_Visibility
 //
 //////////////////////////////////////////////////////////////////////////////////
 void
-SoundRenderObjClass::Update_On_Visibilty (void)
+SoundRenderObjClass::Update_On_Visibility (void)
 {
 	if (Sound == nullptr) {
 		return ;
@@ -363,7 +363,7 @@ SoundRenderObjClass::Notify_Added (SceneClass *scene)
 	RenderObjClass::Notify_Added (scene);
 	scene->Register (this, SceneClass::ON_FRAME_UPDATE);
 
-	Update_On_Visibilty ();
+	Update_On_Visibility ();
 	return ;
 }
 
@@ -379,7 +379,7 @@ SoundRenderObjClass::Notify_Removed (SceneClass *scene)
 	scene->Unregister (this, SceneClass::ON_FRAME_UPDATE);
 	RenderObjClass::Notify_Removed (scene);
 
-	Update_On_Visibilty ();
+	Update_On_Visibility ();
 	return ;
 }
 
@@ -396,7 +396,7 @@ SoundRenderObjClass::Set_Transform (const Matrix3D &tm)
 
 	if (IsInitialized == false) {
 		IsInitialized = true;
-		Update_On_Visibilty ();
+		Update_On_Visibility ();
 	}
 
 	return ;
@@ -415,7 +415,7 @@ SoundRenderObjClass::Set_Position (const Vector3 &pos)
 
 	if (IsInitialized == false) {
 		IsInitialized = true;
-		Update_On_Visibilty ();
+		Update_On_Visibility ();
 	}
 
 	return ;

@@ -151,10 +151,10 @@ class ParticleEmitterClass : public RenderObjClass
 
       virtual void			Get_Obj_Space_Bounding_Sphere(SphereClass & sphere) const { sphere.Center.Set(0,0,0); sphere.Radius = 0; }
       virtual void			Get_Obj_Space_Bounding_Box(AABoxClass & box) const { box.Center.Set(0,0,0); box.Extent.Set(0,0,0); }
-		virtual void			Set_Hidden(int onoff)				{ RenderObjClass::Set_Hidden (onoff); Update_On_Visibilty (); }
-		virtual void			Set_Visible(int onoff)				{ RenderObjClass::Set_Visible (onoff); Update_On_Visibilty (); }
-		virtual void			Set_Animation_Hidden(int onoff)	{ RenderObjClass::Set_Animation_Hidden (onoff); Update_On_Visibilty (); }
-		virtual void			Set_Force_Visible(int onoff)		{ RenderObjClass::Set_Force_Visible (onoff); Update_On_Visibilty (); }
+		virtual void			Set_Hidden(int onoff)				{ RenderObjClass::Set_Hidden (onoff); Update_On_Visibility (); }
+		virtual void			Set_Visible(int onoff)				{ RenderObjClass::Set_Visible (onoff); Update_On_Visibility (); }
+		virtual void			Set_Animation_Hidden(int onoff)	{ RenderObjClass::Set_Animation_Hidden (onoff); Update_On_Visibility (); }
+		virtual void			Set_Force_Visible(int onoff)		{ RenderObjClass::Set_Force_Visible (onoff); Update_On_Visibility (); }
 
 		virtual void			Set_LOD_Bias(float bias)			{ if (Buffer) Buffer->Set_LOD_Bias(bias); }
 
@@ -284,7 +284,7 @@ class ParticleEmitterClass : public RenderObjClass
 		virtual void			Add_Dependencies_To_List (DynamicVectorClass<StringClass> &file_list, bool textures_only = false);
 
 		// This method is called each time the visiblity state of the emitter changes.
-		virtual void			Update_On_Visibilty (void);
+		virtual void			Update_On_Visibility (void);
 
 	private:
 

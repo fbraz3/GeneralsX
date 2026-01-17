@@ -181,10 +181,10 @@ void W3DMainMenuDraw( GameWindow *window, WinInstanceData *instData )
 	IRegion2D	bottomHorizontal2= {pos.x, pos.y + size.y, pos.x + size.x, pos.y + size.y 	};
 	IRegion2D	bottomHorizontal2drop= {pos.x, pos.y + size.y + 1, pos.x + size.x, pos.y + size.y + 1	};
 
-	IRegion2D	verticle1 ={pos.x + Int(size.x * .225), pos.y , pos.x + Int(size.x * .225), height 	};
-	IRegion2D	verticle2 ={pos.x + Int(size.x * .445), pos.y, pos.x + Int(size.x * .445), height 	};
-	IRegion2D	verticle3 ={pos.x + Int(size.x * .6662), pos.y, pos.x + Int(size.x * .6662), height 	};
-	IRegion2D	verticle4 ={pos.x + Int(size.x * .885), pos.y , pos.x + Int(size.x * .885), height 	};
+	IRegion2D	vertical1 ={pos.x + Int(size.x * .225), pos.y , pos.x + Int(size.x * .225), height 	};
+	IRegion2D	vertical2 ={pos.x + Int(size.x * .445), pos.y, pos.x + Int(size.x * .445), height 	};
+	IRegion2D	vertical3 ={pos.x + Int(size.x * .6662), pos.y, pos.x + Int(size.x * .6662), height 	};
+	IRegion2D	vertical4 ={pos.x + Int(size.x * .885), pos.y , pos.x + Int(size.x * .885), height 	};
 //	static IRegion2D	verticle5 ={pos.x + (size.x * .7250), pos.y + (size.y * .12), pos.x + (size.x * .7250), pos.y + (size.y * .86) 	};
 //	static IRegion2D	verticle6 ={pos.x + (size.x * .9062), pos.y + (size.y * .12), pos.x + (size.x * .9062), pos.y + (size.y * .86) 	};
 
@@ -200,10 +200,10 @@ void W3DMainMenuDraw( GameWindow *window, WinInstanceData *instData )
 
 
 
-	TheDisplay->drawLine(verticle1.lo.x,verticle1.lo.y,verticle1.hi.x,verticle1.hi.y,3,color);
-	TheDisplay->drawLine(verticle2.lo.x,verticle2.lo.y,verticle2.hi.x,verticle2.hi.y,3,color);
-	TheDisplay->drawLine(verticle3.lo.x,verticle3.lo.y,verticle3.hi.x,verticle3.hi.y,3,color);
-	TheDisplay->drawLine(verticle4.lo.x,verticle4.lo.y,verticle4.hi.x,verticle4.hi.y,3,color);
+	TheDisplay->drawLine(vertical1.lo.x,vertical1.lo.y,vertical1.hi.x,vertical1.hi.y,3,color);
+	TheDisplay->drawLine(vertical2.lo.x,vertical2.lo.y,vertical2.hi.x,vertical2.hi.y,3,color);
+	TheDisplay->drawLine(vertical3.lo.x,vertical3.lo.y,vertical3.hi.x,vertical3.hi.y,3,color);
+	TheDisplay->drawLine(vertical4.lo.x,vertical4.lo.y,vertical4.hi.x,vertical4.hi.y,3,color);
 //	TheDisplay->drawLine(verticle5.lo.x,verticle5.lo.y,verticle5.hi.x,verticle5.hi.y,3,color);
 //	TheDisplay->drawLine(verticle6.lo.x,verticle6.lo.y,verticle6.hi.x,verticle6.hi.y,3,color);
 //	TheDisplay->drawLine(m_rightLineFromButton.lo.x,m_rightLineFromButton.lo.y,m_rightLineFromButton.hi.x,m_rightLineFromButton.hi.y,3,color1,color2);
@@ -245,10 +245,10 @@ void W3DMainMenuFourDraw( GameWindow *window, WinInstanceData *instData )
 	IRegion2D	bottomHorizontal2= {pos.x, pos.y + size.y, pos.x + size.x, pos.y + size.y 	};
 	IRegion2D	bottomHorizontal2drop= {pos.x, pos.y + size.y + 1, pos.x + size.x, pos.y + size.y + 1	};
 
-	IRegion2D	verticle1 ={pos.x + Int(size.x * .295), pos.y , pos.x + Int(size.x * .295), height 	};
-	IRegion2D	verticle2 ={pos.x + Int(size.x * .59), pos.y, pos.x + Int(size.x * .59), height 	};
-	//IRegion2D	verticle3 ={pos.x + (size.x * .6662), pos.y, pos.x + (size.x * .6662), height 	};
-	IRegion2D	verticle4 ={pos.x + Int(size.x * .885), pos.y , pos.x + Int(size.x * .885), height 	};
+	IRegion2D	vertical1 ={pos.x + Int(size.x * .295), pos.y , pos.x + Int(size.x * .295), height 	};
+	IRegion2D	vertical2 ={pos.x + Int(size.x * .59), pos.y, pos.x + Int(size.x * .59), height 	};
+	//IRegion2D	vertical3 ={pos.x + (size.x * .6662), pos.y, pos.x + (size.x * .6662), height 	};
+	IRegion2D	vertical4 ={pos.x + Int(size.x * .885), pos.y , pos.x + Int(size.x * .885), height 	};
 //	static IRegion2D	verticle5 ={pos.x + (size.x * .7250), pos.y + (size.y * .12), pos.x + (size.x * .7250), pos.y + (size.y * .86) 	};
 //	static IRegion2D	verticle6 ={pos.x + (size.x * .9062), pos.y + (size.y * .12), pos.x + (size.x * .9062), pos.y + (size.y * .86) 	};
 
@@ -264,10 +264,10 @@ void W3DMainMenuFourDraw( GameWindow *window, WinInstanceData *instData )
 
 
 
-	TheDisplay->drawLine(verticle1.lo.x,verticle1.lo.y,verticle1.hi.x,verticle1.hi.y,3,color);
-	TheDisplay->drawLine(verticle2.lo.x,verticle2.lo.y,verticle2.hi.x,verticle2.hi.y,3,color);
-	//TheDisplay->drawLine(verticle3.lo.x,verticle3.lo.y,verticle3.hi.x,verticle3.hi.y,3,color);
-	TheDisplay->drawLine(verticle4.lo.x,verticle4.lo.y,verticle4.hi.x,verticle4.hi.y,3,color);
+	TheDisplay->drawLine(vertical1.lo.x,vertical1.lo.y,vertical1.hi.x,vertical1.hi.y,3,color);
+	TheDisplay->drawLine(vertical2.lo.x,vertical2.lo.y,vertical2.hi.x,vertical2.hi.y,3,color);
+	//TheDisplay->drawLine(vertical3.lo.x,vertical3.lo.y,vertical3.hi.x,vertical3.hi.y,3,color);
+	TheDisplay->drawLine(vertical4.lo.x,vertical4.lo.y,vertical4.hi.x,vertical4.hi.y,3,color);
 //	TheDisplay->drawLine(verticle5.lo.x,verticle5.lo.y,verticle5.hi.x,verticle5.hi.y,3,color);
 //	TheDisplay->drawLine(verticle6.lo.x,verticle6.lo.y,verticle6.hi.x,verticle6.hi.y,3,color);
 //	TheDisplay->drawLine(m_rightLineFromButton.lo.x,m_rightLineFromButton.lo.y,m_rightLineFromButton.hi.x,m_rightLineFromButton.hi.y,3,color1,color2);

@@ -386,7 +386,7 @@ WindowMsgHandledType GadgetTextEntrySystem( GameWindow *window, UnsignedInt msg,
 				e->conCharPos = 0;
 				if(TheIMEManager && TheIMEManager->isAttachedTo(window))
 					TheIMEManager->attach(nullptr);
-				//TheIMEManager->detatch();
+				//TheIMEManager->detach();
 			}
 			else
 			{

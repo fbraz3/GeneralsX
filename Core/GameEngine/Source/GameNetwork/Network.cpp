@@ -176,7 +176,7 @@ public:
 	// For disconnect blame assignment
 	UnsignedInt getPingFrame();
 	Int getPingsSent();
-	Int getPingsRecieved();
+	Int getPingsReceived();
 
 protected:
 	void GetCommandsFromCommandList();														///< Remove commands from TheCommandList and put them on the Network command list.
@@ -231,9 +231,9 @@ Int Network::getPingsSent()
 	return (m_conMgr)?m_conMgr->getPingsSent():0;
 }
 
-Int Network::getPingsRecieved()
+Int Network::getPingsReceived()
 {
-	return (m_conMgr)?m_conMgr->getPingsRecieved():0;
+	return (m_conMgr)?m_conMgr->getPingsReceived():0;
 }
 
 Bool Network::isPlayerConnected( Int playerID ) {

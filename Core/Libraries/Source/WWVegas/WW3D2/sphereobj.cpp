@@ -1058,7 +1058,7 @@ AlphaVectorStruct SphereRenderObjClass::Get_Default_Vector(void) const
 
 
 /***********************************************************************************************
- * SphereRenderObjClass::Update_On_Visibilty	-- Either starts or stops the animation based on visibility*
+ * SphereRenderObjClass::Update_On_Visibility	-- Either starts or stops the animation based on visibility*
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -1069,7 +1069,7 @@ AlphaVectorStruct SphereRenderObjClass::Get_Default_Vector(void) const
  * HISTORY:                                                                                    *
  *   4/04/00    pds : Created.                                                                 *
  *=============================================================================================*/
-void SphereRenderObjClass::Update_On_Visibilty(void)
+void SphereRenderObjClass::Update_On_Visibility(void)
 {
 	// Simply start or stop the animation based on
 	// the visibility state of the primitive.
