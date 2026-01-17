@@ -303,7 +303,7 @@ void CountermeasuresBehavior::launchVolley()
 		//Each flare in a volley will calculate a different vector to fly out. We have a +/- angle to
 		//spread out equally. With only one flare, it'll come straight out the back. Two flares will
 		//launch at the extreme positive and negative angle. Three flares will launch at extreme angles
-		//plus straight back. Four or more will divy it up equally.
+		//plus straight back. Four or more will divvy it up equally.
 		Real currentVolley = (Real)i;
 		Real ratio = 0.0f;
 		if( volleySize != 1.0f )

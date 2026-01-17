@@ -229,7 +229,7 @@ void POWTruckAIUpdate::setTask( POWTruckTask task, Object *taskObject )
 
 	}
 
-	// when leaving the collecting target state, we need to do some bookeeping
+	// when leaving the collecting target state, we need to do some bookkeeping
 	if( oldTask == POW_TRUCK_TASK_COLLECTING_TARGET )
 	{
 
@@ -479,7 +479,7 @@ void POWTruckAIUpdate::updateCollectingTarget( void )
 	if( targetAI->isIdle() )
 	{
 
-		// are we close enought to tell them to start moving to us
+		// are we close enough to tell them to start moving to us
 		Real distSq = pow( us->getGeometryInfo().getBoundingSphereRadius() * 2.0f, 2 );
 		if( ThePartitionManager->getDistanceSquared( us, target, FROM_CENTER_2D ) <= distSq )
 		{
@@ -593,7 +593,7 @@ void POWTruckAIUpdate::doReturnPrisoners( void )
 }
 
 // ------------------------------------------------------------------------------------------------
-/** Initate a return of our empty truck back near the closest prison */
+/** Initiate a return of our empty truck back near the closest prison */
 // ------------------------------------------------------------------------------------------------
 void POWTruckAIUpdate::doReturnToPrison( Object *prison )
 {
@@ -704,7 +704,7 @@ Object *POWTruckAIUpdate::findBestTarget( void )
 }
 
 // ------------------------------------------------------------------------------------------------
-/** We are chosing to pass a structure through the iterate function to unload the
+/** We are choosing to pass a structure through the iterate function to unload the
 	* prisoners because it's more flexible in that, perhaps someday in the future, we
 	* could fail to add an object to the prison (maybe it's full or something), and in
 	* that case it's better to manually do actions each time a successful

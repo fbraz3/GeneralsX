@@ -345,7 +345,7 @@ void WaveGuideUpdate::computeWaveShapePoints( void )
 
 // ------------------------------------------------------------------------------------------------
 /** Given the current position and orientation of the wave guide, transform all the wave
-	* shape points so we can quickly access them for mutliple reasons */
+	* shape points so we can quickly access them for multiple reasons */
 // ------------------------------------------------------------------------------------------------
 void WaveGuideUpdate::transformWaveShape( void )
 {
@@ -504,7 +504,7 @@ void WaveGuideUpdate::doShoreEffects( void )
 			//
 			if( underWater == TRUE && i != 0 )
 			{
-				Coord3D *prevPoint = &effectPoints[ i - 1 ];  // the prev point is actuall on the water so we'll use it
+				Coord3D *prevPoint = &effectPoints[ i - 1 ];  // the prev point is actually on the water so we'll use it
 
 				particleSystem = TheParticleSystemManager->createParticleSystem( right );
 				if( particleSystem )
@@ -542,7 +542,7 @@ void WaveGuideUpdate::doShoreEffects( void )
 }
 
 // ------------------------------------------------------------------------------------------------
-/** Do damage to things that have fallen victim in the path of this enourmous wave */
+/** Do damage to things that have fallen victim in the path of this enormous wave */
 // ------------------------------------------------------------------------------------------------
 void WaveGuideUpdate::doDamage( void )
 {
@@ -715,7 +715,7 @@ void WaveGuideUpdate::doDamage( void )
 								z.z = 1.0f;
 
 								//
-								// angle is rotated, becuase we computed from 'from' and 'to' points of
+								// angle is rotated, because we computed from 'from' and 'to' points of
 								// the bridge going *across* the valley, not pointing *down* it
 								//
 								u.x = Cos( angle + modData->m_bridgeParticleAngleFudge );
@@ -801,7 +801,7 @@ UpdateSleepTime WaveGuideUpdate::update( void )
 
 	}
 
-	// every half second we try to play a random spash sound
+	// every half second we try to play a random splash sound
 	if( TheGameLogic->getFrame() - m_splashSoundFrame > LOGICFRAMES_PER_SECOND / 2.0f )
 	{
 
@@ -834,7 +834,7 @@ UpdateSleepTime WaveGuideUpdate::update( void )
 		static const ParticleSystemTemplate *waveSplash = TheParticleSystemManager->findTemplate( "WaveSplash01" );
 		ParticleSystem *particleSys;
 
-		// create spash effect
+		// create splash effect
 		particleSys = TheParticleSystemManager->createParticleSystem( waveSplash );
 		if( particleSys )
 			particleSys->setLocalTransform( waveGuide->getTransformMatrix() );

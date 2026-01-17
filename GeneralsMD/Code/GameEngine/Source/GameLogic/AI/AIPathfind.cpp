@@ -732,7 +732,7 @@ inline Bool isReallyClose(const Coord3D& a, const Coord3D& b)
  * If 'allowBacktrack' is true, the entire path is considered.
  * If it is false, the point computed cannot be prior to previously returned non-backtracking points on this path.
  * Because the path "knows" the direction of travel, it will "lead" the given position a bit
- * to ensure the path is followed in the inteded direction.
+ * to ensure the path is followed in the intended direction.
  *
  * Note: The path cleanup does not take into account rolling terrain, so we can end up with
  * these situations:
@@ -1570,7 +1570,7 @@ PathfindCell *PathfindCell::putOnSortedOpenList( PathfindCell *list )
 		// insertion sort
 		PathfindCell *c, *lastCell = nullptr;
 #if RETAIL_COMPATIBLE_PATHFINDING
-		// TheSuperHackers @bugfix In the retail compatible pathfinding, on rare ocassions, we get stuck in an infinite loop
+		// TheSuperHackers @bugfix In the retail compatible pathfinding, on rare occasions, we get stuck in an infinite loop
 		// External code should pickup on the bad behaviour and cleanup properly, but we need to explicitly break out here
 		// The fixed pathfinding does not have this issue due to the proper cleanup of pathfindCells and their pathfindCellInfos
 		UnsignedInt cellCount = 0;
@@ -3094,7 +3094,7 @@ void PathfindLayer::reset(void)
 }
 
 /**
- * Returns true if the layer is avaialble for use.
+ * Returns true if the layer is available for use.
  */
 Bool PathfindLayer::isUnused(void)
 {
@@ -7838,7 +7838,7 @@ Bool Pathfinder::clientSafeQuickDoesPathExistForUI( const LocomotorSet& locomoto
 		return true;
 	}
 	/* Do the effective terrain zone.  This feedback is for the ui, so we won't take structures into account,
-		beacuse if they are visible it will be obvious, and if they are stealthed they should be invisible to the
+		because if they are visible it will be obvious, and if they are stealthed they should be invisible to the
 		pathing as well. jba. */
 	zone1 = parentCell->getZone();
 	zone1 = m_zoneManager.getEffectiveTerrainZone(zone1);

@@ -141,7 +141,7 @@ UpdateSleepTime OCLUpdate::update( void )
 
 	const OCLUpdateModuleData *data = getOCLUpdateModuleData();
 
-	// Test if the OCL update is faction dependant. If so, check for faction changes
+	// Test if the OCL update is faction dependent. If so, check for faction changes
 	if (data->m_isFactionTriggered)
 	{
 		Player *player = getObject()->getControllingPlayer();
@@ -172,7 +172,7 @@ UpdateSleepTime OCLUpdate::update( void )
 			}
 		}
 
-		// If the building is neutal, skip futher update
+		// If the building is neutal, skip further update
 		if (m_isFactionNeutral)
 			return UPDATE_SLEEP_NONE;
 	}
@@ -209,7 +209,7 @@ UpdateSleepTime OCLUpdate::update( void )
 			// Get and store the faction side to compare with the faction ocl list
 			if (playerT->getSide().str()) playerFactionName = playerT->getSide().str();
 
-			// Loop through the list of faction ocls to find the matching faction that triggeres the specific ocls
+			// Loop through the list of faction ocls to find the matching faction that triggers the specific ocls
 			for (OCLUpdateModuleData::FactionOCLList::const_iterator it = data->m_factionOCL.begin(); it != data->m_factionOCL.end(); ++it)
 			{
 				OCLUpdateModuleData::FactionOCLInfo info = *it;

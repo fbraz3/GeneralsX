@@ -1096,7 +1096,7 @@ void TerrainLogic::update( void )
 				//
 				// because some water implementation store the height as integers, some changes
 				// are too small to keep track of in the actual water data structures so we have to
-				// keep track of it outselves
+				// keep track of it ourselves
 				//
 				currentHeight += changePerFrame;
 				m_waterToUpdate[ i ].currentHeight = currentHeight;
@@ -2366,7 +2366,7 @@ void TerrainLogic::setWaterHeight( const WaterHandle *water, Real height, Real d
 		Coord3D center;
 		center.x = affectedRegion.lo.x + affectedRegion.width() / 2.0f;
 		center.y = affectedRegion.lo.y + affectedRegion.height() / 2.0f;
-		center.z = 0.0f;  // irrelavant
+		center.z = 0.0f;  // irrelevant
 
 		// the max radius to scan around us is the diagonal of the bounding region
 		Real maxDist = sqrt( affectedRegion.width() * affectedRegion.width() +
@@ -2928,7 +2928,7 @@ void TerrainLogic::xfer( Xfer *xfer )
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
-	// active boundrary
+	// active boundary
 	Int activeBoundary = m_activeBoundary;
 	xfer->xferInt( &activeBoundary );
 	if( xfer->getXferMode() == XFER_LOAD )

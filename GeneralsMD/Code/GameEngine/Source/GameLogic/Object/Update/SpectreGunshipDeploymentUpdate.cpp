@@ -203,7 +203,7 @@ Bool SpectreGunshipDeploymentUpdate::initiateIntentToDoSpecialPower(const Specia
 
 
 
-      // HERE WE NEED TO CREATE THE POINT FURTHER OFF THE MAP SO WE CANT SEE THE LAME HOVER AND ACCELLERATE BEHAVIOR
+      // HERE WE NEED TO CREATE THE POINT FURTHER OFF THE MAP SO WE CANT SEE THE LAME HOVER AND ACCELERATE BEHAVIOR
     Coord3D deltaToCreationPoint = m_initialTargetPosition;
     deltaToCreationPoint.sub( &creationCoord );
     Real distanceFromTarget = deltaToCreationPoint.length();

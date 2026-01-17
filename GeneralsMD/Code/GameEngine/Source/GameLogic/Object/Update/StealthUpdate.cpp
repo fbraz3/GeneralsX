@@ -480,7 +480,7 @@ StealthLookType StealthUpdate::calcStealthedStatusForPlayer(const Object* obj, c
 		If detected, you always appears as (sd).
 
 		Sorry, there is one more condition, stealthed, but visible to friendly folks, YET detected
-		In this state we render outselves visible and we ovlerlay the detection effect as a warning
+		In this state we render ourselves visible and we ovlerlay the detection effect as a warning
 		we'll call this STEALTHLOOK_VISIBLE_FRIENDLY_DETECTED
 
 

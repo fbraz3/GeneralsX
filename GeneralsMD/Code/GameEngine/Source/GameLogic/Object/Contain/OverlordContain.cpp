@@ -160,7 +160,7 @@ void OverlordContain::onBodyDamageStateChange( const DamageInfo* damageInfo,
 																				BodyDamageType oldState,
 																				BodyDamageType newState)  ///< state change callback
 {
-	// I can't use any convienience functions, as they will all get routed to the bunker I may carry.
+	// I can't use any convenience functions, as they will all get routed to the bunker I may carry.
 	// I want just me.
 	// Oh, and I don't want this function trying to do death.  That is more complicated and will be handled
 	// on my death.
@@ -175,7 +175,7 @@ void OverlordContain::onBodyDamageStateChange( const DamageInfo* damageInfo,
 //-------------------------------------------------------------------------------------------------
 ContainModuleInterface *OverlordContain::getRedirectedContain() const
 {
-	// Naturally, I can not use a redirectible convienience function
+	// Naturally, I can not use a redirectible convenience function
 	// to answer if I am redirecting yet.
 
 	// If I am empty, say no.
@@ -404,7 +404,7 @@ void OverlordContain::onContaining( Object *obj, Bool wasSelected )
 //-------------------------------------------------------------------------------------------------
 void OverlordContain::killAllContained( void )
 {
-	// This is a game call meant to clear actual passengers.  We don't want it to kill our turret.  That'd be wierd.
+	// This is a game call meant to clear actual passengers.  We don't want it to kill our turret.  That'd be weird.
 	if( getRedirectedContain() )
 	{
 		getRedirectedContain()->killAllContained();

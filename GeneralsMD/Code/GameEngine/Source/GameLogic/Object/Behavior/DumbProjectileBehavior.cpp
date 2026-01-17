@@ -588,7 +588,7 @@ UpdateSleepTime DumbProjectileBehavior::update()
 	{
 		// No more steps to use. Would go out of bounds on vector, so have to do something.
 		// We could allow physics to take over and make us fall, but the point of this whole task
-		// is to guarentee where the shell explodes.  This way, it _will_ explode at the target point.
+		// is to guarantee where the shell explodes.  This way, it _will_ explode at the target point.
 		detonate();
 		return UPDATE_SLEEP_NONE;
 	}

@@ -411,7 +411,7 @@ UpdateSleepTime SpectreGunshipUpdate::update()
         Real distanceToTarget = perigee.length();
         perigee.normalize();
 
-        //apogee is the anteclockwise point fathest from the perigee line
+        //apogee is the anteclockwise point farthest from the perigee line
         Coord3D apogee;
         apogee.z = zero;
         apogee.x = -perigee.y;

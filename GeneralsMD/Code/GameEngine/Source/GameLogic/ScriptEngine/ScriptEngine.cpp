@@ -6959,7 +6959,7 @@ void ScriptEngine::executeScript( Script *pScript )
 		case DIFFICULTY_NORMAL : if (!pScript->isNormal()) return;  break;
 		case DIFFICULTY_HARD : if (!pScript->isHard()) return;  break;
 	}
-	// If we are doing peridic evaluation, check the frame.
+	// If we are doing periodic evaluation, check the frame.
 	if (TheGameLogic->getFrame()<pScript->getFrameToEvaluate()) {
 		return;
 	}
@@ -7706,7 +7706,7 @@ const ConditionTemplate * ScriptEngine::getConditionTemplate( Int ndx )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Fills the named object cache initally. */
+/** Fills the named object cache initially. */
 //-------------------------------------------------------------------------------------------------
 void ScriptEngine::createNamedCache( void )
 {
@@ -8980,7 +8980,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 	if( xfer->getXferMode() == XFER_SAVE )
 	{
 
-		// iterate elemnts
+		// iterate elements
 		VecNamedRequestsIt it;
 		for( it = m_namedObjects.begin(); it != m_namedObjects.end(); ++it )
 		{

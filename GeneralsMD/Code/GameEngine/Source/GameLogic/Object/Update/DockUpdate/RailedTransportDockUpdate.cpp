@@ -292,7 +292,7 @@ void RailedTransportDockUpdate::doPullInDocking( void )
 			//
 			// set the model condition for the object as "moving" even though it really
 			// isn't in the traditional sense, but we don't want them to scoot slide into
-			// the transport and look wierd
+			// the transport and look weird
 			//
 			docker->setModelConditionState( MODELCONDITION_MOVING );
 
@@ -382,7 +382,7 @@ void RailedTransportDockUpdate::doPushOutDocking( void )
 			//
 			// set the model condition for the object as "moving" even though it really
 			// isn't in the traditional sense, but we don't want them to scoot slide into
-			// the transport and look wierd
+			// the transport and look weird
 			//
 			unloader->setModelConditionState( MODELCONDITION_MOVING );
 

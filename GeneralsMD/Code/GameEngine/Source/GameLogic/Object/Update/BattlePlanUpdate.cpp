@@ -899,7 +899,7 @@ void BattlePlanUpdate::xfer( Xfer *xfer )
 	// next ready frame
 	xfer->xferUnsignedInt( &m_nextReadyFrame );
 
-	// don't need to save this interface, it's retrived on object creation
+	// don't need to save this interface, it's retrieved on object creation
 	// SpecialPowerModuleInterface *m_specialPowerModule;
 
 	// invalid settings

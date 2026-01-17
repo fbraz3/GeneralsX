@@ -430,7 +430,7 @@ void ToppleUpdate::xfer( Xfer *xfer )
 	// topple state
 	xfer->xferUser( &m_toppleState, sizeof( ToppleState	) );
 
-	// angluar accumulation
+	// angular accumulation
 	xfer->xferReal( &m_angularAccumulation );
 
 	// angle delta X

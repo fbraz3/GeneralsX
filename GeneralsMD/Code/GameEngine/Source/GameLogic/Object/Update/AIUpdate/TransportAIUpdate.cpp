@@ -65,7 +65,7 @@ void TransportAIUpdate::privateAttackObject( Object *victim, Int maxShotsToFire,
 	if( contain != nullptr  &&  contain->isPassengerAllowedToFire() )
 	{
 		// As an extension of the normal attack, I may want to tell my passengers to attack
-		// too, but only if this is a direct command.  (As opposed to a passive aquire)
+		// too, but only if this is a direct command.  (As opposed to a passive acquire)
 		if( cmdSource == CMD_FROM_PLAYER  ||  cmdSource == CMD_FROM_SCRIPT )
 		{
 			const ContainedItemsList *passengerList = contain->getContainedItemsList();
@@ -110,7 +110,7 @@ void TransportAIUpdate::privateForceAttackObject( Object *victim, Int maxShotsTo
 	if( contain != nullptr  &&  contain->isPassengerAllowedToFire() )
 	{
 		// As an extension of the normal attack, I may want to tell my passengers to attack
-		// too, but only if this is a direct command.  (As opposed to a passive aquire)
+		// too, but only if this is a direct command.  (As opposed to a passive acquire)
 		if( cmdSource == CMD_FROM_PLAYER  ||  cmdSource == CMD_FROM_SCRIPT )
 		{
 			const ContainedItemsList *passengerList = contain->getContainedItemsList();
@@ -155,7 +155,7 @@ void TransportAIUpdate::privateAttackPosition( const Coord3D *pos, Int maxShotsT
 	if( contain != nullptr  &&  contain->isPassengerAllowedToFire() )
 	{
 		// As an extension of the normal attack, I may want to tell my passengers to attack
-		// too, but only if this is a direct command.  (As opposed to a passive aquire)
+		// too, but only if this is a direct command.  (As opposed to a passive acquire)
 		if( cmdSource == CMD_FROM_PLAYER  ||  cmdSource == CMD_FROM_SCRIPT )
 		{
 			const ContainedItemsList *passengerList = contain->getContainedItemsList();

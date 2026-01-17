@@ -100,7 +100,7 @@ WorkerAIUpdate::WorkerAIUpdate( Thing *thing, const ModuleData* moduleData ) :
 		}
 	}
 	m_currentTask = DOZER_TASK_INVALID;
-	m_buildSubTask = DOZER_SELECT_BUILD_DOCK_LOCATION;  // irrelavant, but I want non-garbage value
+	m_buildSubTask = DOZER_SELECT_BUILD_DOCK_LOCATION;  // irrelevant, but I want non-garbage value
 
 	m_supplyTruckStateMachine = nullptr;
 	m_numberBoxes = 0;
@@ -658,7 +658,7 @@ void WorkerAIUpdate::newTask( DozerTask task, Object* target )
 	m_task[ task ].m_targetObjectID = target->getID();
 	m_task[ task ].m_taskOrderFrame = TheGameLogic->getFrame();
 
-	// reset the dozer behavior so that it can re-evluate which task to continue working on
+	// reset the dozer behavior so that it can re-evaluate which task to continue working on
 	m_dozerMachine->resetToDefaultState();
 
 	// reset the workermachine, if we've been acting like a supply truck

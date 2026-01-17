@@ -26,7 +26,7 @@
 //
 // FILE: HijackerUpdate.cpp
 // Author: Mark Lorenzen, July 2002
-// Desc:   Allows hijacker to kepp with his hijacked vehicle (though hidden) until it dies, then
+// Desc:   Allows hijacker to keep with his hijacked vehicle (though hidden) until it dies, then
 // to become a hijacker once more
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +234,7 @@ void HijackerUpdate::xfer( Xfer *xfer )
 	// eject pos
 	xfer->xferCoord3D( &m_ejectPos );
 
-	// udpate
+	// update
 	xfer->xferBool( &m_update );
 
 	// is in vehicle
@@ -254,7 +254,7 @@ void HijackerUpdate::loadPostProcess( void )
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-	// set the target object, this will also tie up teh m_ejectPilotDMI pointer
+	// set the target object, this will also tie up the m_ejectPilotDMI pointer
 	Object *obj = TheGameLogic->findObjectByID( m_targetID );
 	setTargetObject( obj );
 

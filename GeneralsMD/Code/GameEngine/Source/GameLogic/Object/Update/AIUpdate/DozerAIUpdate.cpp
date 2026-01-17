@@ -97,7 +97,7 @@ protected:
 protected:
 
 	DozerTask m_task;							///< our task
-	Int m_failedAttempts;					/**< counter for successive unsuccessfull attempts to pick
+	Int m_failedAttempts;					/**< counter for successive unsuccessful attempts to pick
 																		 and move to an action position */
 
 };
@@ -582,7 +582,7 @@ StateReturnType DozerActionDoActionState::update( void )
 					if( player )
 					{
 
-						// notification for build completeion
+						// notification for build completion
 						player->onStructureConstructionComplete( dozer, goalObject, dozerAI->getIsRebuild() );
 
 						player->getAcademyStats()->recordProduction( goalObject, dozer );
@@ -985,7 +985,7 @@ protected:
 protected:
 
 	UnsignedInt m_idleTooLongTimestamp;		///< when this is more than our idle too long time we try to do something about it
-	Int m_idlePlayerNumber;				///< Remeber what list we were added to.
+	Int m_idlePlayerNumber;				///< Remember what list we were added to.
 	Bool m_isMarkedAsIdle;
 };
 EMPTY_DTOR(DozerPrimaryIdleState)
@@ -1073,7 +1073,7 @@ StateReturnType DozerPrimaryIdleState::update( void )
 	//
 	// These are to add into the IngameUI idle worker button thingy
 	// we don't want to add in if we're already in the list or if
-	// we're "Effectivly dead"
+	// we're "Effectively dead"
 	//
 	if( ai->isIdle() && !m_isMarkedAsIdle && !dozer->isEffectivelyDead())
 	{
@@ -1458,7 +1458,7 @@ DozerAIUpdate::DozerAIUpdate( Thing *thing, const ModuleData* moduleData ) :
 	}
 	m_currentTask = DOZER_TASK_INVALID;
 
-	m_buildSubTask = DOZER_SELECT_BUILD_DOCK_LOCATION;  // irrelavant, but I want non-garbage value
+	m_buildSubTask = DOZER_SELECT_BUILD_DOCK_LOCATION;  // irrelevant, but I want non-garbage value
 
 	//
 	// initialize the dozer machine to nullptr, we want to do this and create it during the update
@@ -2024,7 +2024,7 @@ void DozerAIUpdate::newTask( DozerTask task, Object *target )
 	m_task[ task ].m_targetObjectID = target->getID();
 	m_task[ task ].m_taskOrderFrame = TheGameLogic->getFrame();
 
-	// reset the dozer behavior so that it can re-evluate which task to continue working on
+	// reset the dozer behavior so that it can re-evaluate which task to continue working on
 	m_dozerMachine->resetToDefaultState();
 
 }

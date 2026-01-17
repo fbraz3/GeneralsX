@@ -2290,7 +2290,7 @@ void AIPlayer::repairStructure(ObjectID structure)
 	Object *structureObj = TheGameLogic->findObjectByID(structure);
 	if (structureObj==nullptr) return;
 	if (structureObj->getBodyModule()==nullptr) return;
-	// If the structure is not noticably damaged, don't bother.
+	// If the structure is not noticeably damaged, don't bother.
 	BodyDamageType structureState = structureObj->getBodyModule()->getDamageState();
 	if (structureState==BODY_PRISTINE) {
 		return;

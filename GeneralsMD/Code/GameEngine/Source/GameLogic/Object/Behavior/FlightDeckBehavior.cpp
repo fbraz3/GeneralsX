@@ -771,7 +771,7 @@ const std::vector<Coord3D>* FlightDeckBehavior::getCreationLocations( ObjectID i
 //-------------------------------------------------------------------------------------------------
 Bool FlightDeckBehavior::isAbleToGiveUpParkingSpace( Object *jet )
 {
-	//If we're airborne or non-existant, someone else can have my spot if they need it.
+	//If we're airborne or non-existent, someone else can have my spot if they need it.
 	if( !jet || jet->isAirborneTarget() )
 	{
 		return TRUE;

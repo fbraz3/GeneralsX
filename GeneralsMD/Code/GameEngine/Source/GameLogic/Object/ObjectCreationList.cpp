@@ -188,7 +188,7 @@ public:
     }
 
 		// Star trekkin, across the universe.
-		// Boldly goin forward now, cause we can't find reverse!
+		// Boldly going forward now, cause we can't find reverse!
 
 		// 1:30 left on the clock, Demo looming, should I de-const all of OCL since this one effect needs the
 		// Primary to help make the objects?  Should I rewrite superweapons to completely subsume them
@@ -1475,7 +1475,7 @@ private:
 	Int												m_objectCount; // how many objects will there be?
 	AudioEventRTS							m_bounceSound;
 	Bool											m_requiresLivePlayer;
-	Bool											m_containInsideSourceObject; ///< The created stuff will be added to the Conatin module of the SourceObject
+	Bool											m_containInsideSourceObject; ///< The created stuff will be added to the Contain module of the SourceObject
 	Bool											m_preserveLayer;
 	Bool											m_nameAreObjects;
 	Bool											m_okToChangeModelColor;

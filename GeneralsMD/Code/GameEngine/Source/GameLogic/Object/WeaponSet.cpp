@@ -554,7 +554,7 @@ CanAttackResult WeaponSet::getAbleToAttackSpecificObject( AbleToAttackType attac
 		//care about relationships (and fixes broken scripts).
 		if( commandSource == CMD_FROM_PLAYER && (!victim->testScriptStatusBit( OBJECT_STATUS_SCRIPT_TARGETABLE ) || r == ALLIES) )
 		{
-			//Unless the object has a map propertly that sets it to be targetable (and not allied), then give up.
+			//Unless the object has a map properly that sets it to be targetable (and not allied), then give up.
 			return ATTACKRESULT_NOT_POSSIBLE;
 		}
 	}
@@ -580,7 +580,7 @@ CanAttackResult WeaponSet::getAbleToAttackSpecificObject( AbleToAttackType attac
 				//care about relationships (and fixes broken scripts).
 				if( commandSource == CMD_FROM_PLAYER && (!victim->testScriptStatusBit( OBJECT_STATUS_SCRIPT_TARGETABLE ) || r == ALLIES) )
 				{
-					//Unless the object has a map propertly that sets it to be targetable (and not allied), then give up.
+					//Unless the object has a map properly that sets it to be targetable (and not allied), then give up.
 					return ATTACKRESULT_NOT_POSSIBLE;
 				}
 			}

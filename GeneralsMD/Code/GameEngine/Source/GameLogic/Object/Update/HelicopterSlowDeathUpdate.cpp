@@ -24,7 +24,7 @@
 
 // FILE: HelicopterSlowDeathBehavior.cpp ////////////////////////////////////////////////////////////
 // Author: Colin Day, March 2002
-// Desc:   Helicoptor slow deaths
+// Desc:   Helicopter slow deaths
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
@@ -295,7 +295,7 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 	{
 
 		//
-		// change the angle of the helicoptor based on the spiral rate for the turning on the
+		// change the angle of the helicopter based on the spiral rate for the turning on the
 		// large downward spin circle
 		//
 

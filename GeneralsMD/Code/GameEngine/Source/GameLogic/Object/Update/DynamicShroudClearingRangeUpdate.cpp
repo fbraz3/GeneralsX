@@ -264,7 +264,7 @@ UpdateSleepTime DynamicShroudClearingRangeUpdate::update( void )
 	}
 
 	if ( m_stateCountDown > 0 ) m_stateCountDown --;// it is important that this gets called every frame without sleeping
-	//beacuse it handles animation and may need to respond to changing vision range from scripts & stuff
+	//because it handles animation and may need to respond to changing vision range from scripts & stuff
 
 
 	if( m_changeIntervalCountdown > 0 )
