@@ -77,7 +77,7 @@ void ThingFactory::freeDatabase( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** add the thing template passed in, into the databse */
+/** add the thing template passed in, into the database */
 //-------------------------------------------------------------------------------------------------
 void ThingFactory::addTemplate( ThingTemplate *tmplate )
 {

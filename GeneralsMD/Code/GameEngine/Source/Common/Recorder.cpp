@@ -483,7 +483,7 @@ void RecorderClass::stopPlayback() {
 }
 
 /**
- * Update function for recording a game. Basically all the pertinant logic commands for this frame are written out
+ * Update function for recording a game. Basically all the pertinent logic commands for this frame are written out
  * to a file.
  */
 void RecorderClass::updateRecord()

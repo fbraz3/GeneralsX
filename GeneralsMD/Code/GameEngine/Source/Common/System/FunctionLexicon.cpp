@@ -445,7 +445,7 @@ void *FunctionLexicon::findFunction( NameKeyType key, TableIndex index )
 	if( key == NAMEKEY_INVALID )
 		return nullptr;
 
-	// search ALL tables for function if the index paramater allows if
+	// search ALL tables for function if the index parameter allows if
 	if( index == TABLE_ANY )
 	{
 
@@ -527,7 +527,7 @@ FunctionLexicon::~FunctionLexicon( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Initialize our dictionary of funtion pointers and symbols */
+/** Initialize our dictionary of function pointers and symbols */
 //-------------------------------------------------------------------------------------------------
 void FunctionLexicon::init( void )
 {

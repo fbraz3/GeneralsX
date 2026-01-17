@@ -205,7 +205,7 @@ void AcademyStats::init( const Player *player )
 	//13) Extra gatherers built?
 	m_gatherersBuilt = 0;
 
-	//14) Heros built?
+	//14) Heroes built?
 	m_heroesBuilt = 0;
 
 	//+------------------------------+
@@ -401,7 +401,7 @@ void AcademyStats::recordProduction( const Object *obj, const Object *constructo
 		m_gatherersBuilt++;
 	}
 
-	//14) Heros built?
+	//14) Heroes built?
 	if( obj->isKindOf( KINDOF_HERO ) )
 	{
 		m_heroesBuilt++;
@@ -702,7 +702,7 @@ void AcademyStats::evaluateTier1Advice( AcademyAdviceInfo *info, Int numAvailabl
 		numAvailableTips--;
 	}
 
-	//14) Heros built?
+	//14) Heroes built?
 	if( !m_heroesBuilt )
 	{
 		availableTips++;
@@ -1174,7 +1174,7 @@ void AcademyStats::xfer( Xfer *xfer )
 	//13) Extra gathers built?
 	xfer->xferUnsignedInt( &m_gatherersBuilt );
 
-	//14) Heros built?
+	//14) Heroes built?
 	xfer->xferUnsignedInt( &m_heroesBuilt );
 
 	//+------------------------------+

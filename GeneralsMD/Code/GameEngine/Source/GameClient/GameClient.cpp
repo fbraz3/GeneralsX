@@ -283,7 +283,7 @@ void GameClient::init( void )
 	{
 
 		//
-		// NOTE: Make sure m_translators[] is large enough to accomodate all the translators you
+		// NOTE: Make sure m_translators[] is large enough to accommodate all the translators you
 		// are loading here.  See MAX_CLIENT_TRANSLATORS
 		//
 
@@ -526,7 +526,7 @@ void GameClient::update( void )
 		playSizzle = TRUE;
 	}
 
-	//Initial Game Codition.  We must show the movie first and then we can display the shell
+	//Initial Game Condition.  We must show the movie first and then we can display the shell
 	if(TheGlobalData->m_afterIntro && !TheDisplay->isMoviePlaying())
 	{
 		if( playSizzle && TheGlobalData->m_playSizzle )
@@ -1046,7 +1046,7 @@ void GameClient::getRayEffectData( Drawable *draw, RayEffectData *effectData )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** remove the drawble from the ray effects sytem if present */
+/** remove the drawble from the ray effects system if present */
 void GameClient::removeFromRayEffects( Drawable *draw )
 {
 
@@ -1396,7 +1396,7 @@ void GameClient::xfer( Xfer *xfer )
 	// !!!DON'T DO THIS!!! ----> xfer->xferDrawableID( &m_nextDrawableID ); <---- !!!DON'T DO THIS!!!
 
 	//
-	// xfer a table of contents that contain thing template and indentifier pairs.  this
+	// xfer a table of contents that contain thing template and identifier pairs.  this
 	// table of contents is good for this save file only as unique numbers are only
 	// generated and stored for the actual things that are on this map
 	//
@@ -1613,7 +1613,7 @@ void GameClient::loadPostProcess( void )
 
 	//
 	// due to the fact that during the load process we have called newDrawable for drawables
-	// without objects, and then overwrote their ids with data from the save file, our allocater
+	// without objects, and then overwrote their ids with data from the save file, our allocator
 	// id may be far higher than it needs to be.  We'll pull it back down as low as we can
 	//
 	Drawable *draw;

@@ -459,7 +459,7 @@ Bool ModuleInfo::clearCopiedFromDefaultEntries(Int interfaceMask, const AsciiStr
 			    ret = true;
         }
         else
-			    ++it;//no match, preserve the default instnace of this Module for now
+			    ++it;//no match, preserve the default instance of this Module for now
       }
       else // just dump this instance of this Module, since one of the same interface mask has been added by caller
       {

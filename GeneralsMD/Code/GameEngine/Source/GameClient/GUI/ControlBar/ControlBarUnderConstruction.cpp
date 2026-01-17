@@ -51,7 +51,7 @@ void ControlBar::updateConstructionTextDisplay( Object *obj )
 	static UnsignedInt descID = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:UnderConstructionDesc" );
 	GameWindow *descWindow = TheWindowManager->winGetWindowFromId( nullptr, descID );
 
-	// santiy
+	// sanity
 	DEBUG_ASSERTCRASH( descWindow, ("Under construction window not found") );
 
 	// format the message

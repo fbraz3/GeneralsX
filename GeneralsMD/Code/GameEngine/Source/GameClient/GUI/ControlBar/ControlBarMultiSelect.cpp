@@ -304,7 +304,7 @@ void ControlBar::updateContextMultiSelect( void )
 	// zero the array that counts how many objects can do each command
 	memset( objectsThatCanDoCommand, 0, sizeof( objectsThatCanDoCommand ) );
 
-	// santiy
+	// sanity
 	DEBUG_ASSERTCRASH( TheInGameUI->getSelectCount() > 1,
 										 ("updateContextMultiSelect: TheInGameUI only has '%d' things selected",
 										  TheInGameUI->getSelectCount()) );

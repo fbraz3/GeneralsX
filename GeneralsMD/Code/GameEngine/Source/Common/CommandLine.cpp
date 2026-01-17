@@ -1418,7 +1418,7 @@ static void parseCommandLine(const CommandLineParam* params, int numParams)
 	// and functions to handle them.  Comparisons can be case-(in)sensitive, and
 	// can check the entire string (for testing the presence of a flag) or check
 	// just the start (for a key=val argument).  The handling function can also
-	// look at the next argument(s), to accomodate multi-arg parameters, e.g. "-p 1234".
+	// look at the next argument(s), to accommodate multi-arg parameters, e.g. "-p 1234".
 	while (arg<argc)
 	{
 		// Look at arg #i

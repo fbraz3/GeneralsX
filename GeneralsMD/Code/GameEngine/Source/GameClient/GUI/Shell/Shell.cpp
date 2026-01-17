@@ -184,7 +184,7 @@ void Shell::update( void )
 	Int now = timeGetTime();
 
 	//
-	// we keep the shell updates fixed in time so that we can write consitent animation
+	// we keep the shell updates fixed in time so that we can write consistent animation
 	// speeds during the screen update functions
 	//
 	if( now - lastUpdate >= ((1000.0f / shellUpdateDelay ) - 1) )
@@ -355,7 +355,7 @@ void Shell::push( AsciiString filename, Bool shutdownImmediate )
 	WindowLayout *currentTop = top();
 
 	//
-	// if we have someting on the top of the stack we won't do the push
+	// if we have something on the top of the stack we won't do the push
 	// right now, we will instead shutdown the top, and when the top tells
 	// us it's done shutting down (via the shutdownComplete() method) we do
 	// the push then

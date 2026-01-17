@@ -1244,14 +1244,14 @@ void Drawable::updateDrawable( void )
 		}
 		else if( testTintStatus(TINT_STATUS_GAINING_SUBDUAL_DAMAGE) )
 		{
-			// Disabled has precendence, so it goes first
+			// Disabled has precedence, so it goes first
 			if (m_colorTintEnvelope == nullptr)
 				m_colorTintEnvelope = newInstance(TintEnvelope);
 			m_colorTintEnvelope->play( &SUBDUAL_DAMAGE_COLOR, 150, 150, SUSTAIN_INDEFINITELY);
 		}
 		else if( testTintStatus(TINT_STATUS_FRENZY) )
 		{
-			// Disabled has precendence, so it goes first
+			// Disabled has precedence, so it goes first
 			if (m_colorTintEnvelope == nullptr)
 				m_colorTintEnvelope = newInstance(TintEnvelope);
 
@@ -2541,7 +2541,7 @@ void Drawable::setStealthLook(StealthLookType look)
 				Object *obj = getObject();
 				if( obj )
 				{
-					//Try to get the stealthupdate module and see if the opacity value is overriden.
+					//Try to get the stealthupdate module and see if the opacity value is overridden.
           StealthUpdate *stealth = obj->getStealth();
 					if( stealth )
 					{
@@ -3838,7 +3838,7 @@ void Drawable::drawHealthBar(const IRegion2D* healthBarRegion)
 		return;
 
 	//
-	// only draw health for selected drawbles and drawables that have been moused over
+	// only draw health for selected drawables and drawables that have been moused over
 	// by the cursor
 	//
 	if( TheGlobalData->m_showObjectHealth &&
@@ -4714,7 +4714,7 @@ void Drawable::notifyDrawableDependencyCleared()
 //-------------------------------------------------------------------------------------------------
 void Drawable::setSelectable( Bool selectable )
 {
-	// unselct drawable if it is no longer selectable.
+	// unselect drawable if it is no longer selectable.
 	if( !selectable )
 		TheInGameUI->deselectDrawable( this );
 

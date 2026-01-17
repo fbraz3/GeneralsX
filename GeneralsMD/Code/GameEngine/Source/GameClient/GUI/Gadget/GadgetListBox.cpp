@@ -178,7 +178,7 @@ static Int getListboxTopEntry( ListboxData *list )
 {
 	Int entry;
 
-	// determin which entry is at the top of the display area
+	// determine which entry is at the top of the display area
 	for( entry=0; ; entry++ )
 	{
 		if( list->listData[entry].listHeight > list->displayPos )
@@ -227,7 +227,7 @@ static void removeSelection( ListboxData *list, Int i )
 }
 
 // adjustDisplay ==============================================================
-/** Update Display List information inlcuding scrollbar */
+/** Update Display List information including scrollbar */
 //=============================================================================
 static void adjustDisplay( GameWindow *window, Int adjustment,
 													 Bool updateSlider )
@@ -236,7 +236,7 @@ static void adjustDisplay( GameWindow *window, Int adjustment,
 	SliderData *sData;
 	ListboxData *list = (ListboxData *)window->winGetUserData();
 
-	// determin which entry is at the top of the display area
+	// determine which entry is at the top of the display area
 	entry = getListboxTopEntry( list ) + adjustment;
 
 	if( entry < 0 )
@@ -2331,7 +2331,7 @@ void GadgetListboxCreateScrollbar( GameWindow *listbox )
 	top = title ? (fontHeight + 1):0;
 	bottom = title ? (height - (fontHeight + 1)):height;
 
-	// intialize instData
+	// initialize instData
 	winInstData.init();
 
 	// size of button
@@ -2385,7 +2385,7 @@ void GadgetListboxCreateScrollbar( GameWindow *listbox )
 	sliderButtonWidth = buttonWidth;//GADGET_SIZE;
 	sliderButtonHeight = GADGET_SIZE;
 
-	// intialize instData
+	// initialize instData
 	winInstData.init();
 	winInstData.m_style = GWS_VERT_SLIDER;
 	winInstData.m_owner = listbox;
@@ -2394,7 +2394,7 @@ void GadgetListboxCreateScrollbar( GameWindow *listbox )
 	if( BitIsSet( listbox->winGetStyle(), GWS_MOUSE_TRACK ) )
 		BitSet( winInstData.m_style, GWS_MOUSE_TRACK );
 
-	// intialize sData
+	// initialize sData
 	memset( &sData, 0, sizeof(SliderData) );
 
 	// Create Slider
@@ -2626,7 +2626,7 @@ void GadgetListBoxGetSelected( GameWindow *listbox, Int *selectList )
 	if( listbox == nullptr )
 		return;
 
-	// get selected indeces via system message
+	// get selected indices via system message
 	TheWindowManager->winSendSystemMsg( listbox, GLM_GET_SELECTION, 0, (WindowMsgData)selectList );
 
 }

@@ -67,7 +67,7 @@
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-// GadgetVerticlaSliderInput ==================================================
+// GadgetVerticalSliderInput ==================================================
 /** Handle input for vertical slider */
 //=============================================================================
 WindowMsgHandledType GadgetVerticalSliderInput( GameWindow *window, UnsignedInt msg,

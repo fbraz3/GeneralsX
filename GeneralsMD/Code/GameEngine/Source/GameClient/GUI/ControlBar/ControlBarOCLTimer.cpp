@@ -53,7 +53,7 @@ void ControlBar::updateOCLTimerTextDisplay( UnsignedInt totalSeconds, Real perce
 	static UnsignedInt barID = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:OCLTimerProgressBar" );
 	GameWindow *barWindow = TheWindowManager->winGetWindowFromId( nullptr, barID );
 
-	// santiy
+	// sanity
 	DEBUG_ASSERTCRASH( descWindow, ("Under construction window not found") );
 
 	Int minutes = totalSeconds / 60;

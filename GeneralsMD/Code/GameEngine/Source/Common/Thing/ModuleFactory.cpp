@@ -25,7 +25,7 @@
 // FILE: ModuleFactory.cpp ////////////////////////////////////////////////////////////////////////
 // Author: Colin Day, September 2001
 // Desc:	 TheModuleFactory is where we actually instance modules for objects
-//				 and drawbles.  Those modules are things such as an UpdateModule
+//				 and drawables.  Those modules are things such as an UpdateModule
 //			   or DamageModule or DrawModule etc.
 //
 //				 TheModuleFactory will contain a list of ModuleTemplates, when we
@@ -623,7 +623,7 @@ const ModuleFactory::ModuleTemplate* ModuleFactory::findModuleTemplate(const Asc
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Allocate a new acton class istance given the name */
+/** Allocate a new acton class instance given the name */
 //-------------------------------------------------------------------------------------------------
 Module *ModuleFactory::newModule( Thing *thing, const AsciiString& name, const ModuleData* moduleData, ModuleType type )
 {

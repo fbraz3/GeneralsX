@@ -190,7 +190,7 @@ void ControlBar::doTransportInventoryUI( Object *transport, const CommandSet *co
 
 			//
 			// since we're assuming all inventory exit commands appear in a continuous order,
-			// we need to also need to keep track of what is the last valid inventory commadn index
+			// we need to also need to keep track of what is the last valid inventory command index
 			//
 			lastInventoryIndex = i;
 
@@ -700,7 +700,7 @@ void ControlBar::updateContextCommand( void )
 		obj = m_currentSelectedDrawable->getObject();
 
 	//
-	// the contents of objects are ususally showed on the UI, when those contents change
+	// the contents of objects are usually showed on the UI, when those contents change
 	// we always to update the UI
 	//
 	ContainModuleInterface *contain = obj ? obj->getContain() : nullptr;
@@ -1205,7 +1205,7 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 			CanMakeType makeType = TheBuildAssistant->canMakeUnit( obj, command->getThingTemplate() );
 			if( makeType == CANMAKE_MAXED_OUT_FOR_PLAYER || makeType == CANMAKE_PARKING_PLACES_FULL )
 			{
-				//Disable the button if the player has a max amount of these units in build queue or existance.
+				//Disable the button if the player has a max amount of these units in build queue or existence.
 				return COMMAND_RESTRICTED;
 			}
 			if( makeType == CANMAKE_NO_MONEY )
@@ -1309,7 +1309,7 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 /// @todo ml  -- and note: that the "now-1" below causes zero-clip-reload weapons to never be ready, so I added this
 /// If you make changes to this code, make sure that the DragonTank's firewall weapon can be retargeted while active,
 /// that is, while the tank is squirting out flames all over the floor, you can click the firewall button (or "F"),
-/// and re-target the firewall without having to stop or move in-betwen.. Thanks for reading
+/// and re-target the firewall without having to stop or move in-between.. Thanks for reading
 				|| (w->getPossibleNextShotFrame()==now-1)
 				)
 			{

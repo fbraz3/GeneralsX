@@ -773,7 +773,7 @@ WindowMsgHandledType SaveLoadMenuSystem( GameWindow *window, UnsignedInt msg,
 					closeSaveMenu( window );
 
 					//
-					// given the context of this menu figure out which type of save game we're acutally
+					// given the context of this menu figure out which type of save game we're actually
 					// saving right now.  As it turns out, when this menu is used in the save only
 					// mode it means that the save is a mission save between maps because you can only
 					// save the game between maps and can of course not load one
@@ -836,7 +836,7 @@ WindowMsgHandledType SaveLoadMenuSystem( GameWindow *window, UnsignedInt msg,
 				AvailableGameInfo *selectedGameInfo = getSelectedSaveFileInfo( listboxGames );
 
 				//
-				// given the context of this menu figure out which type of save game we're acutally
+				// given the context of this menu figure out which type of save game we're actually
 				// saving right now.  As it turns out, when this menu is used in the save only
 				// mode it means that the save is a mission save between maps because you can only
 				// save the game between maps and can of course not load one

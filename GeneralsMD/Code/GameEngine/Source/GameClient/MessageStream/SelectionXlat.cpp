@@ -74,7 +74,7 @@ static Bool TheDebugSelectionMode = false;
 //-----------------------------------------------------------------------------
 static Bool currentlyLookingForSelection( )
 {
-	// This needs to check if we are currently targetting for special weapons fire.
+	// This needs to check if we are currently targeting for special weapons fire.
 	return TheInGameUI->getGUICommand() == nullptr;
 }
 
@@ -372,7 +372,7 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 
 	if(	!TheInGameUI->getInputEnabled() )
 	{
-		//Keep the message so the other translaters (WindowXlat) can handle.
+		//Keep the message so the other translators (WindowXlat) can handle.
 		if( m_dragSelecting )
 		{
 			//Turn off drag select
@@ -1008,7 +1008,7 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 				else
 				{
 					//In alternate mouse mode, right click still cancels building placement.
-					// TheSuperHackers @tweak Stubbjax 08/08/2025 Cancelling building placement no longer deselects the builder.
+					// TheSuperHackers @tweak Stubbjax 08/08/2025 Canceling building placement no longer deselects the builder.
 					if (TheInGameUI->getPendingPlaceSourceObjectID() != INVALID_ID)
 					{
 						TheInGameUI->placeBuildAvailable(nullptr, nullptr);

@@ -795,7 +795,7 @@ CanAttackResult ActionManager::getCanAttackObject( const Object *obj, const Obje
 				}
 			}
 		}
-    else if( result == ATTACKRESULT_NOT_POSSIBLE )// oh dear me. The wierd case of a garrisoncontainer being a KINDOF_SPAWNS_ARE_THE_WEAPONS... the AmericaBuildingFirebase
+    else if( result == ATTACKRESULT_NOT_POSSIBLE )// oh dear me. The weird case of a garrisoncontainer being a KINDOF_SPAWNS_ARE_THE_WEAPONS... the AmericaBuildingFirebase
     {
       ContainModuleInterface *contain = obj->getContain();
       if ( contain )

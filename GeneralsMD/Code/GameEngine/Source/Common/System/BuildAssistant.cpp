@@ -1113,7 +1113,7 @@ void BuildAssistant::addBibs(const Coord3D *worldPos,
 	* actually used for the tiling is returned along with a pointer to the array
 	* of positions in the tile build info.
 	*
-	* REQUIRES: Note that the array at 'postions' must be large enough to hold 'maxTiles'
+	* REQUIRES: Note that the array at 'positions' must be large enough to hold 'maxTiles'
 	* entries of positions
 	*/
 //-------------------------------------------------------------------------------------------------
@@ -1132,7 +1132,7 @@ BuildAssistant::TileBuildInfo *BuildAssistant::buildTiledLocations( const ThingT
 
 	//
 	// we will fill out our own internal array of positions, it better be big enough to
-	// accomodate max tiles, if it's not lets make it bigger!
+	// accommodate max tiles, if it's not lets make it bigger!
 	//
 	if( maxTiles > m_buildPositionSize )
 	{
@@ -1160,7 +1160,7 @@ BuildAssistant::TileBuildInfo *BuildAssistant::buildTiledLocations( const ThingT
 	placementVector.z = 0.0f;  //end->z - start->z;
 
 	//
-	// get the lengh of the placement vector in the world, we'll use this to see how
+	// get the length of the placement vector in the world, we'll use this to see how
 	// many objects we'll need to fill the entire line
 	//
 	Real placementLength = placementVector.length();
@@ -1604,7 +1604,7 @@ void BuildAssistant::sellObject( Object *obj )
 
 	// destroy any mines that are owned by this structure, right now.
 	// unfortunately, structures don't keep list of mines they own, so we must do
-	// this the hard way :-( [fortunately, this doens't happen very often, so this
+	// this the hard way :-( [fortunately, this doesn't happen very often, so this
 	// is probably an acceptable, if icky, solution.] (srj)
 	for (Object* mine = TheGameLogic->getFirstObject(); mine; mine = mine->getNextObject())
 	{

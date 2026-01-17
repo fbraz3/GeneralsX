@@ -54,7 +54,7 @@ WindowMsgHandledType IMECandidateWindowInput( GameWindow *window, UnsignedInt ms
 }
 
 //-------------------------------------------------------------------------------------------------
-/** System callback for the IME Candidate widnow */
+/** System callback for the IME Candidate window */
 //-------------------------------------------------------------------------------------------------
 WindowMsgHandledType IMECandidateWindowSystem( GameWindow *window, UnsignedInt msg,
 																			 WindowMsgData mData1, WindowMsgData mData2 )
@@ -191,7 +191,7 @@ void IMECandidateTextAreaDraw( GameWindow *window, WinInstanceData *instData )
 	selected = selected - first;
 	UnicodeString number;
 
-	// calulate the widest number text
+	// calculate the widest number text
 	Int width;
 	Dstring->setText(L"00:");
 	width = Dstring->getWidth();

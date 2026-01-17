@@ -255,7 +255,7 @@ static void restartMissionMenu()
 //-------------------------------------------------------------------------------------------------
 void HideQuitMenu( void )
 {
-	// Note: This is called as a safety a lot, without checking for the prescence of the quit menu.
+	// Note: This is called as a safety a lot, without checking for the presence of the quit menu.
 	// So don't do anything that counts on that menu actually being here.
 	if(!isVisible)
 		return;
@@ -312,7 +312,7 @@ void ToggleQuitMenu()
 		return;
 	}
 
-	// if we're visable hide our quit menu
+	// if we're visible hide our quit menu
 	if(isVisible && quitMenuLayout)
 	{
 
