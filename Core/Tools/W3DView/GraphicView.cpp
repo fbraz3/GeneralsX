@@ -1238,8 +1238,8 @@ CGraphicView::Reset_Camera_To_Display_Sphere (SphereClass &sphere)
 		m_pCamera->Set_Clip_Planes (min_dist, max_dist);
 
 		// Adjust the fog near clipping plane to the new value, but
-		// leave the far clip plane alone (since it is scene dependant
-		// not camera dependant).
+		// leave the far clip plane alone (since it is scene dependent
+		// not camera dependent).
 		float fog_near, fog_far;
 		doc->GetScene()->Get_Fog_Range(&fog_near, &fog_far);
 		doc->GetScene()->Set_Fog_Range(min_dist, fog_far);

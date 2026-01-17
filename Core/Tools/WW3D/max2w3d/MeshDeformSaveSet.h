@@ -101,11 +101,11 @@ public:
 		//	Public methods
 		//////////////////////////////////////////////////////////////////////
 
-		// Keyframe managment
+		// Keyframe management
 		void					Begin_Keyframe (float state);
 		void					End_Keyframe (void);
 
-		// Vertex managment
+		// Vertex management
 		void					Add_Vert (UINT vert_index, const Point3 &position, const VertColor &color);
 
 		// Misc

@@ -1880,7 +1880,7 @@ Bool WorldHeightMap::getUVForTileIndex(Int ndx, Short tileNdx, float U[4], float
 				return;
 #endif
 				Real dx = (h3-h2)*HEIGHT_SCALE;
-				dx = sqrt(1+dx*dx); // lenght of the bottom of the cell
+				dx = sqrt(1+dx*dx); // length of the bottom of the cell
 				Real dy =	(h3-h0)*HEIGHT_SCALE;
 				dy = sqrt(1+dy*dy); // length of the left side.
 				if (dx<STRETCH_LIMIT) dx = 1.0f; // don't make a seam unless there is great stretch.
@@ -1896,7 +1896,7 @@ Bool WorldHeightMap::getUVForTileIndex(Int ndx, Short tileNdx, float U[4], float
 				}
 				// recalc for point 1.
 				dx = (h1-h0)*HEIGHT_SCALE;
-				dx = sqrt(1+dx*dx); // lenght of the bottom of the cell
+				dx = sqrt(1+dx*dx); // length of the bottom of the cell
 				dy =	(h2-h1)*HEIGHT_SCALE;
 				dy = sqrt(1+dy*dy); // length of the left side.
 				if (dx<STRETCH_LIMIT) dx = 1.0f; // don't make a seam unless there is great stretch.

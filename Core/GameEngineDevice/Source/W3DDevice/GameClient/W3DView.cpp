@@ -905,7 +905,7 @@ static void drawAudioLocations( Drawable *draw, void *userData )
   }
 
   // Copied in hideously inappropriate code copying ways from DrawObject.cpp
-  // Should definately be a global, probably read in from an INI file <gasp>
+  // Should definitely be a global, probably read in from an INI file <gasp>
   static const Int poleHeight = 20;
   static const Int flagHeight = 10;
   static const Int flagWidth = 10;

@@ -739,7 +739,7 @@ Int UString::CompareNoCase(const UString& s) const
 *     UString::Find - ANSI character
 *
 * DESCRIPTION
-*     Find the first occurance of character
+*     Find the first occurrence of character
 *
 * INPUTS
 *     Char - ANSI character to search for
@@ -761,7 +761,7 @@ Int UString::Find(Char c) const
 *     UString::Find - Unicode character
 *
 * DESCRIPTION
-*     Find the first occurance of character
+*     Find the first occurrence of character
 *
 * INPUTS
 *     Char - Unicode character to search for.
@@ -791,7 +791,7 @@ Int UString::Find(WChar c) const
 *     UString::FindLast - ANSI character
 *
 * DESCRIPTION
-*     Find the last occurance of a character
+*     Find the last occurrence of a character
 *
 * INPUTS
 *     Char - ANSI character
@@ -813,7 +813,7 @@ Int UString::FindLast(Char c) const
 *     UString::FindLast - Unicode character
 *
 * DESCRIPTION
-*     Find the last occurance of a character
+*     Find the last occurrence of a character
 *
 * INPUTS
 *     Char - Unicode character

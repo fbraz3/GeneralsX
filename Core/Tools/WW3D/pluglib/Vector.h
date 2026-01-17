@@ -637,7 +637,7 @@ int DynamicVectorClass<T>::ID(T const & object)
  * DynamicVectorClass<T>::Add -- Add an element to the vector.                                 *
  *                                                                                             *
  *    Use this routine to add an element to the vector. The vector will automatically be       *
- *    resized to accomodate the new element IF the vector was allocated previously and the     *
+ *    resized to accommodate the new element IF the vector was allocated previously and the    *
  *    growth rate is not zero.                                                                 *
  *                                                                                             *
  * INPUT:   object   -- Reference to the object that will be added to the vector.              *
@@ -809,7 +809,7 @@ bool DynamicVectorClass<T>::Delete(int index)
  * INPUT:   none.                                                                              *
  *                                                                                             *
  * OUTPUT:  T *; Points to the empty space where the new object is to be created. (If the      *
- *               space was not added succesfully, returns nullptr).                              *
+ *               space was not added successfully, returns nullptr).                            *
  *                                                                                             *
  * WARNINGS:   If memory area is left uninitialized, Very Bad Things will happen.              *
  *                                                                                             *

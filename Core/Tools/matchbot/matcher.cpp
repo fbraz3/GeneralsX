@@ -312,7 +312,7 @@ static void AuthenticateCDKeyCallback
 
 void MatcherClass::connectAndLoop(void)
 {
-	// Game-specific initializations, if neccessary
+	// Game-specific initializations, if necessary
 	init();
 
 	// Check for possible quit from init()-based self-tests

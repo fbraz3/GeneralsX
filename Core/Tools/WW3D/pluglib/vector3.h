@@ -36,7 +36,7 @@
  *   Scalar Division Operator -- Divide a vector by a scalar                                   *
  *   Scalar Multiply Operator -- Multiply a vector by a scalar                                 *
  *   Vector Addition Operator -- Add two vectors                                               *
- *   Vector Subtraction Operator -- Subract two vectors                                        *
+ *   Vector Subtraction Operator -- Subtract two vectors                                       *
  *   Vector Inner Product Operator -- Compute the inner or dot product                         *
  *   Vector Equality Operator -- Determine if two vectors are identical                        *
  *   Vector Inequality Operator -- Determine if two vectors are identical                      *
@@ -244,7 +244,7 @@ WWINLINE Vector3 operator + (const Vector3 &a,const Vector3 &b)
 }
 
 /**************************************************************************
- * Vector Subtraction Operator -- Subract two vectors                     *
+ * Vector Subtraction Operator -- Subtract two vectors                    *
  *                                                                        *
  * INPUT:                                                                 *
  *                                                                        *

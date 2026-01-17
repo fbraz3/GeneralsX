@@ -289,7 +289,7 @@ void DrawButton::Draw_Text ( HDC hDC )
 //	OUTPUT: 	bool -- true of false.
 //
 // WARNINGS:	No keyboard/mouse/paint handling built in.  Do manually.
-//				Note: width is shortened below to accomodate actual bitmap area.
+//				Note: width is shortened below to accommodate actual bitmap area.
 //
 // HISTORY:
 //   07/15/1996  MML : Created.

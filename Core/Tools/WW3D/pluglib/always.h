@@ -88,7 +88,7 @@ void* __cdecl operator new(unsigned int s);
 ** Define the MIN and MAX macros.
 ** NOTE: Joe used to #include <minmax.h> in the various compiler header files.  This
 ** header defines 'min' and 'max' macros which conflict with the surrender code so
-** I'm relpacing all occurances of 'min' and 'max with 'MIN' and 'MAX'.  For code which
+** I'm relpacing all occurrences of 'min' and 'max with 'MIN' and 'MAX'.  For code which
 ** is out of our domain (e.g. Max sdk) I'm declaring template functions for 'min' and 'max'
 */
 #define NOMINMAX

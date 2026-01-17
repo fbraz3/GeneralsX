@@ -168,7 +168,7 @@ CameraSettingsDialogClass::OnOK (void)
 	//
 	// Update the fog settings. The fog near clip plane should always be equal
 	// to the camera near clip plane, but the fog far clip plane is scene
-	// dependant. We will be sure to modify only the near clip plane here.
+	// dependent. We will be sure to modify only the near clip plane here.
 	//
 	float fog_near, fog_far;
 	doc->GetScene()->Get_Fog_Range(&fog_near, &fog_far);

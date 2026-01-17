@@ -428,7 +428,7 @@ void MotionClass::compute_frame_motion(int frame)
          if ((node)&&(vis))  {
 
 	         if (frame != 0) {
-					// sample previous frame, and an inbetween time
+					// sample previous frame, and an in between time
 					// to determine if there's a binary movement
 
 					TimeValue frametime_prev = frametime - GetTicksPerFrame();

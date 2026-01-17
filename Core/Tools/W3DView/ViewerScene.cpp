@@ -105,7 +105,7 @@ RenderObjClass * ViewerSceneIterator::Current_Item(void)
 //
 //	Visibility_Check
 //
-//	Note: We overide this method to remove the LOD preparation.  We
+//	Note: We override this method to remove the LOD preparation.  We
 // need to be able to specify an LOD and not have it switch on us.
 //
 ////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ ViewerSceneClass::Add_To_Lineup (RenderObjClass *obj)
 	assert(obj);
 
 	// If this is an insignificant object (ie. we don't need to
-	// rearrange existing objects to accomodate it), don't bother
+	// rearrange existing objects to accommodate it), don't bother
 	// adding it to the lineup. Ex: Adding a light to the lineup
 	// is pretty silly.
 	if (!Can_Line_Up(obj))

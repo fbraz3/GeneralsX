@@ -350,7 +350,7 @@ void AsciiString::trimEnd(const char c)
 
 	if (m_data)
 	{
-		// Clip trailing consecutive occurances of c from the string.
+		// Clip trailing consecutive occurrences of c from the string.
 		const int len = strlen(peek());
 		int index = len;
 		while (index > 0 && getCharAt(index - 1) == c)

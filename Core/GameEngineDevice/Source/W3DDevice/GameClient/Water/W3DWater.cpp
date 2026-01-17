@@ -3408,7 +3408,7 @@ void WaterRenderObjClass::renderSkyBody(Matrix3D *mat)
 	DX8Wrapper::Set_Vertex_Buffer(vb_access);
 
 	Matrix3D tm(1);
-	//set postion of skybody in world
+	//set position of skybody in world
 //	tm.Set_Translation(Vector3(40,0,0));
 	DX8Wrapper::Set_Transform(D3DTS_WORLD,tm);
 

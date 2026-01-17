@@ -445,7 +445,7 @@ NATConnectionState NAT::connectionUpdate() {
 }
 
 // this is the function that starts the NAT/firewall negotiation process.
-// after calling this, you should call the update function untill it returns
+// after calling this, you should call the update function until it returns
 // NATSTATE_DONE.
 void NAT::establishConnectionPaths() {
 	DEBUG_LOG(("NAT::establishConnectionPaths - entering"));

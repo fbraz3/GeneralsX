@@ -126,7 +126,7 @@ public:
   virtual DynamicAudioEventInfo * getDynamicAudioEventInfo() { return nullptr; }  ///< If this object is REALLY a DynamicAudioEventInfo, return a pointer to the derived class
   virtual const DynamicAudioEventInfo * getDynamicAudioEventInfo() const { return nullptr; } ///< If this object is REALLY a DynamicAudioEventInfo, return a pointer to the derived class
 
-  /// Is this a permenant sound? That is, if I start this sound up, will it ever end
+  /// Is this a permanent sound? That is, if I start this sound up, will it ever end
   /// "on its own" or only if I explicitly kill it?
   Bool isPermanentSound() const { return BitIsSet( m_control, AC_LOOP ) && (m_loopCount == 0 );  }
 

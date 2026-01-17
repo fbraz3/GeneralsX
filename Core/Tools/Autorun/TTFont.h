@@ -272,7 +272,7 @@ bool			Is_True_Type_Font	( TextPrintType flags );	// True Type???
 
 //-------------------------------------------------------------------------
 // This class is a wrapper around all the fonts that we want to be available.
-// The constructer will make them, and the destructor will remove them for us.
+// The constructor will make them, and the destructor will remove them for us.
 //-------------------------------------------------------------------------
 class FontManagerClass
 {

@@ -46,7 +46,7 @@ public:
 	CAnimMixingPage	m_MixingPage;
 	CAnimReportPage	m_ReportPage;
 
-	// Indeces of animations selected in the mixing page.
+	// Indices of animations selected in the mixing page.
 	DynamicVectorClass<int>	m_SelectedAnims;
 
 // Operations

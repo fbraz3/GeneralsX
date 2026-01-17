@@ -382,7 +382,7 @@ bool CDControlClass::Prevent_Removal_Of_Volume( HANDLE volume, bool prevent )
  *                                                                                             *
  * INPUT:    HANDLE of volume to eject                                                         *
  *                                                                                             *
- * OUTPUT:   true if ejection occured                                                          *
+ * OUTPUT:   true if ejection occurred                                                         *
  *                                                                                             *
  * WARNINGS: None                                                                              *
  *                                                                                             *

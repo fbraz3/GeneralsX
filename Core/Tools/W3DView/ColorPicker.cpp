@@ -590,7 +590,7 @@ ColorPickerClass::Paint_DIB
 	width = rect.Width ();
 	height = rect.Height ();
 
-	// Build an array of column indicies where we will switch color
+	// Build an array of column indices where we will switch color
 	// components...
 	int col_remainder = (width % 6);
 	int channel_switch_cols[6];

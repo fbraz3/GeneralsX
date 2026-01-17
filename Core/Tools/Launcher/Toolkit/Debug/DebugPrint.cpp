@@ -50,7 +50,7 @@ char debugLogName[_MAX_PATH];
 *     DebugPrint(String, ArgList...)
 *
 * DESCRIPTION
-*     Ouput debug print messages to the debugger and log file.
+*     Output debug print messages to the debugger and log file.
 *
 * INPUTS
 *     String  - String to output.

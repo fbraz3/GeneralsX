@@ -517,7 +517,7 @@ bit8 Wstring::truncate(char c)
   return(TRUE);
 }
 
-// Get a token from this string that's seperated by one or more
+// Get a token from this string that's separated by one or more
 //  chars from the 'delim' string , start at offset & return offset
 sint32 Wstring::getToken(int offset,const char *delim,Wstring &out) const
 {

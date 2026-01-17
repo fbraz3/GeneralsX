@@ -834,7 +834,7 @@ void MeshBuilderClass::Compute_Vertex_Normals(void)
 	}
 
 	/*
-	** Propogate the accumulated normals to all of the other verts which share them
+	** Propagate the accumulated normals to all of the other verts which share them
 	*/
 	for (vertidx = 0; vertidx < VertCount; vertidx++) {
 		int shadeindex = Verts[vertidx].ShadeIndex;

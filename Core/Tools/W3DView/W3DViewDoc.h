@@ -238,7 +238,7 @@ public:
 	void					Update_LOD_Prototype (HLodClass &hlod);
 
 	//
-	//	Cursor managment
+	//	Cursor management
 	//
 	void					Show_Cursor (bool onoff);
 	void					Set_Cursor (LPCTSTR resource_name);

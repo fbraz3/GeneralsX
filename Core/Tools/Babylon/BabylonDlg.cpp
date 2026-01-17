@@ -1538,7 +1538,7 @@ int CBabylonDlg::UpdateLabel( BabylonLabel *source, BabylonLabel *destination, U
 	}
 
 
-	// ask the user to resolve remaing unmatched strings
+	// ask the user to resolve remaining unmatched strings
 
 	{
 

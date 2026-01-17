@@ -153,7 +153,7 @@ class TextureListNodeClass
 __inline void
 TextureListNodeClass::Free_Subobj_List (void)
 {
-	// Loop through all the subobject entries and free thier pointers
+	// Loop through all the subobject entries and free their pointers
 	for (int index = 0; index < m_SubObjectList.Count (); index ++) {
 		SAFE_DELETE (m_SubObjectList[index]);
 	}

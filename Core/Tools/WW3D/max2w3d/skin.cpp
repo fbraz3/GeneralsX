@@ -297,7 +297,7 @@ RefResult SkinWSMObjectClass::NotifyRefChanged(Interval changeInt,RefTargetHandl
 			}
 			if (i < BoneTab.Count()) {
 				BoneTab.Delete(i,1);
-				// TODO: cause all Modifier objects to re-index to accomodate
+				// TODO: cause all Modifier objects to re-index to accommodate
 				// the deletion of this bone!!
 			}
 			break;

@@ -892,7 +892,7 @@ Bool TexturePage::addImage( ImageInfo *image )
 {
 	IRegion2D region;
 
-	// santiy
+	// sanity
 	if( image == nullptr )
 	{
 

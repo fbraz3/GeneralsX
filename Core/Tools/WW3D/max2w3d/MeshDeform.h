@@ -147,7 +147,7 @@ class MeshDeformClass : public OSModifier
 		int							SubObjectIndex (HitRecord *hitRec) { return hitRec->hitInfo; }
 		void							ClearSelection (int selLevel);
 
-		// Transformation managment
+		// Transformation management
 		void							Move (TimeValue time_val, Matrix3 &parent_tm, Matrix3 &tm_axis, Point3 &point, BOOL local_origin);
 		void							Rotate (TimeValue time_val, Matrix3 &parent_tm, Matrix3 &tm_axis, Quat &rotation, BOOL local_origin);
 		void							Scale (TimeValue time_val, Matrix3 &parent_tm, Matrix3 &tm_axis, Point3 &value, BOOL local_origin);
@@ -186,7 +186,7 @@ class MeshDeformClass : public OSModifier
 		NUScaleModBoxCMode *		m_ModeNUScale;
 		SquashModBoxCMode *		m_ModeSquash;
 
-		// Set managment
+		// Set management
 		bool							m_bSetDirty;
 		int							m_CurrentSet;
 		int							m_MaxSets;

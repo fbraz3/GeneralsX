@@ -244,7 +244,7 @@ void
 EmitterPropertySheetClass::Update_Emitter (void)
 {
 	//
-	//	Update those pages that are dependant on the particle's
+	//	Update those pages that are dependent on the particle's
 	// lifetime.
 	//
 	float lifetime = m_GeneralPage.Get_Lifetime ();

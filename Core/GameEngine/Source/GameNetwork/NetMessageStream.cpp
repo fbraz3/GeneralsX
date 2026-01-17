@@ -91,7 +91,7 @@ static Bool AddToNetCommandList(GameMessage *msg, UnsignedInt timestamp, Command
 }
 
 /**
- * AddToRemoteNetCommandList is used by TheNetwork to queue up commands recieved from other players.
+ * AddToRemoteNetCommandList is used by TheNetwork to queue up commands received from other players.
  *
 Bool AddToNetCommandList(Int playerNum, GameMessage *msg, UnsignedInt timestamp)
 {

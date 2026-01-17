@@ -4039,7 +4039,7 @@ CMainFrame::OnUpdateBindSubobjectLod (CCmdUI *pCmdUI)
 	if (doc != nullptr && doc->GetDisplayedObject () != nullptr) {
 
 		//
-		//	Set the check if we are currenly forcing sub object matching
+		//	Set the check if we are currently forcing sub object matching
 		//
 		RenderObjClass *render_obj = doc->GetDisplayedObject ();
 		bool is_enabled = (render_obj->Is_Sub_Objects_Match_LOD_Enabled () != 0);

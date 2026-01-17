@@ -2227,7 +2227,7 @@ int GameMtl::Compute_PC_Shader_From_PS2_Shader(int pass)
 		}
 	}
 
-	// The alpha paramater.
+	// The alpha parameter.
 	switch(param_value[3])
 	{
 			case PSS_SRC_ALPHA:

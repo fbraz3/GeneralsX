@@ -670,9 +670,9 @@ relative to the ray so we can early exit as soon as we have a hit.
 /** Return intersection of a ray with the heightmap mesh.
 This is a quick version that just checks every polygon inside
 a 2D bounding rectangle of the ray projected onto the heightfield plane.
-For most of our view-picking cases the ray in almost perpendicular to the
+For most of our view-picking cases the ray is almost perpendicular to the
 map plane so this is very quick (small bounding box).  But it can become slow
-for arbitrary rays such as those used in AI visbility checks.(2 units on
+for arbitrary rays such as those used in AI visibility checks(2 units on
 opposite corners of the map would check every polygon in the map).
 */
 //=============================================================================

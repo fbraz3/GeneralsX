@@ -414,7 +414,7 @@ Filename_From_Asset_Name (LPCTSTR asset_name)
 CString
 Get_Filename_From_Path (LPCTSTR path)
 {
-	// Find the last occurance of the directory deliminator
+	// Find the last occurrence of the directory deliminator
 	LPCTSTR filename = ::strrchr (path, '\\');
 	if (filename != nullptr) {
 		// Increment past the directory deliminator
@@ -439,7 +439,7 @@ Strip_Filename_From_Path (LPCTSTR path)
 	TCHAR temp_path[MAX_PATH];
 	::lstrcpy (temp_path, path);
 
-	// Find the last occurance of the directory deliminator
+	// Find the last occurrence of the directory deliminator
 	LPTSTR filename = ::strrchr (temp_path, '\\');
 	if (filename != nullptr) {
 		// Strip off the filename
@@ -763,7 +763,7 @@ Load_RC_Texture (LPCTSTR resource_name)
 
 	// TheSuperHackers @info Not implemented
 
-	// Reutrn a pointer to the new texture
+	// Return a pointer to the new texture
 	return texture;
 }
 

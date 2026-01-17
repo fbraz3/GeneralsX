@@ -533,7 +533,7 @@ void GeneralsMatcher::checkMatchesInUserMap(UserMap& userMap, int ladderID, int 
 		s.append(intToString(userMap.size()));
 	}
 
-	// iterate through users, timing them out as neccessary
+	// iterate through users, timing them out as necessary
 	for (i1 = userMap.begin(); i1 != userMap.end(); ++i1)
 	{
 		if (showPoolSize)

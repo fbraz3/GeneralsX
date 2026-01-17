@@ -303,7 +303,7 @@ void Locale_Restore ( void )
 }
 
 /****************************************************************************/
-/* retreiving strings												 		*/
+/* retrieving strings												 		*/
 /****************************************************************************/
 
 const char* Locale_GetString( int StringID, char *String )

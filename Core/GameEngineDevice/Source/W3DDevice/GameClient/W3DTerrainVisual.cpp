@@ -905,7 +905,7 @@ void W3DTerrainVisual::setRawMapHeight(const ICoord2D *gridPos, Int height)
       if ( m_clientHeightMap )
       {
         if ( height < m_clientHeightMap->getHeight( x,y ) )
-          m_clientHeightMap->setRawHeight( x, y, height ); // if the client map is heigher than this height, it will fall down to it anyway!
+          m_clientHeightMap->setRawHeight( x, y, height ); // if the client map is higher than this height, it will fall down to it anyway!
       }
 #endif
 

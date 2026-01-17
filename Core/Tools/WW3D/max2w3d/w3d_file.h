@@ -593,7 +593,7 @@ struct W3dRGBAStruct
 // MATERIALS
 //
 // Surrender 1.40 significantly changed the way that materials are described.  To
-// accomodate this, the w3d file format has changed since there are new features and
+// accommodate this, the w3d file format has changed since there are new features and
 // optimizations that we want to take advangage of.
 //
 // The VertexMaterial defines parameters which control the calculation of the primary

@@ -252,7 +252,7 @@ public:
 	void trimEnd(void);
 
 	/**
-	  Remove all consecutive occurances of c from the end of the string.
+	  Remove all consecutive occurrences of c from the end of the string.
 	*/
 	void trimEnd(const WideChar c);
 

@@ -415,7 +415,7 @@ int LOCALE_getbankstringcount(void)
 ; DESCRIPTION
 ;
 ; Loads the specified language from the string file into the
-; current bank.  Returns non zero if the operation was succesful.
+; current bank.  Returns non-zero if the operation was successful.
 ; The bank must be free before you can call LOCALE_loadtable.  To
 ; free a bank use the LOCALE_freetable function.  To determine
 ; if the bank is free use the LOCALE_getbankstringcount function.

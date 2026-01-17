@@ -1019,7 +1019,7 @@ INodeListClass * W3dExportClass::get_origin_list(void)
 	/*
 	** If we didn't find any origins, add the scene root as an origin.
 	** NOTE: it would also be a problem if the origin list contained both the scene root
-	** and the user placed origins.  Thats not happening now because the OriginList
+	** and the user placed origins.  That's not happening now because the OriginList
 	** does not collect the scene root... were that to change we'd have to update this
 	** code as well.
 	*/
@@ -1219,7 +1219,7 @@ static bool check_lod_extensions (INodeListClass &list, INode *origin)
 	{
 		char *this_ext = strrchr(list[i]->GetName(), '.');
 
-		// Check for the existance of an extension in this node.
+		// Check for the existence of an extension in this node.
 		if (this_ext == nullptr)
 			return false;
 

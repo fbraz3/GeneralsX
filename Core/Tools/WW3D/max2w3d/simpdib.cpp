@@ -91,7 +91,7 @@ SimpleDIBClass::SimpleDIBClass(HWND hwnd,int width,int height,PaletteClass & pal
 	Pitch = (Width + 3) & 0xfffffffC;
 
 	// Check if the DIB is bottom-up or top-down.
-	// (it better be top-down, thats what I'm asking for!!!)
+	// (it better be top-down, that's what I'm asking for!!!)
 	if (Info->bmiHeader.biHeight > 0) {
 
 		// bottom-up DIB

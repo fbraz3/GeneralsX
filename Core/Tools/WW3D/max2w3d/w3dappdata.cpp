@@ -683,7 +683,7 @@ bool Is_Vehicle_Collision(INode * node)
  *                                                                                             *
  * WARNINGS:                                                                                   *
  * This has nothing to do with its hidden status inside of max.  Things hidden in max are      *
- * ignored by the exporter.  (artist request way back...wierd huh?)                            *
+ * ignored by the exporter.  (artist request way back...weird huh?)                            *
  *                                                                                             *
  * HISTORY:                                                                                    *
  *   11/18/98   GTH : Created.                                                                 *
