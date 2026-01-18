@@ -45,12 +45,8 @@ if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQU
     include(cmake/dx8.cmake)
 endif()
 
-# Define a dummy stlport target when not on VC6.
-if (IS_VS6_BUILD)
-    include(cmake/stlport.cmake)
-else()
-    add_library(stlport INTERFACE)
-endif()
+# Modern MSVC2022 uses native STL; no STLPort replacement needed
+add_library(stlport INTERFACE)
 
 include(cmake/config.cmake)
 include(cmake/gamespy.cmake)
@@ -59,11 +55,7 @@ include(cmake/sdl2.cmake)
 include(cmake/openal.cmake)
 include(cmake/vulkan.cmake)
 
-if (IS_VS6_BUILD)
-    # The original max sdk does not compile against a modern compiler.
-    # If there is a desire to make this work, then a fixed max sdk needs to be created.
-    add_subdirectory(Dependencies/MaxSDK)
-endif()
+# MaxSDK is only for historical VC6 compatibility; skipped for MSVC2022 modernization
 add_subdirectory(Dependencies/Utility)
 add_subdirectory(resources)
 
