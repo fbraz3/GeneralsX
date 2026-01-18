@@ -212,12 +212,21 @@
 			}
 		},
 		{
-			"label": "Build GeneralsXZH (Windows VC6)",
+			"label": "Build GeneralsXZH (Windows MSVC2022)",
 			"type": "shell",
-			"command": "pwsh",
+			"command": "cmake",
 			"args": [
-				"-Command",
-				". .\\scripts\\setup_vc6_env.ps1; cd build\\vc6; ninja GeneralsXZH.exe -j 3 2>&1 | Tee-Object -FilePath ..\\..\\logs\\build_generalszh.log"
+				"--build",
+				"build/win32",
+				"--target",
+				"z_generals",
+				"--parallel",
+				"4",
+				"2>&1",
+				"|",
+				"Tee-Object",
+				"-FilePath",
+				"${workspaceFolder}\\logs\\build_zh_msvc2022.log"
 			],
 			"isBackground": false,
 			"group": "build",
@@ -230,12 +239,21 @@
 			}
 		},
 		{
-			"label": "Build GeneralsX (Windows VC6)",
+			"label": "Build GeneralsX (Windows MSVC2022)",
 			"type": "shell",
-			"command": "pwsh",
+			"command": "cmake",
 			"args": [
-				"-Command",
-				". .\\scripts\\setup_vc6_env.ps1; cd build\\vc6; ninja GeneralsX.exe -j 3 2>&1 | Tee-Object -FilePath ..\\..\\logs\\build_generalsv.log"
+				"--build",
+				"build/win32",
+				"--target",
+				"g_generals",
+				"--parallel",
+				"4",
+				"2>&1",
+				"|",
+				"Tee-Object",
+				"-FilePath",
+				"${workspaceFolder}\\logs\\build_generals_msvc2022.log"
 			],
 			"isBackground": false,
 			"group": "build",
@@ -250,7 +268,11 @@
 		{
 			"label": "Deploy GeneralsXZH (Windows)",
 			"type": "shell",
-			"command": "${workspaceFolder}\\scripts\\deploy_zh.bat",
+			"command": "pwsh",
+			"args": [
+				"-Command",
+				"$ZhExe = '${workspaceFolder}\\\\build\\\\win32\\\\GeneralsMD\\\\Release\\\\GeneralsXZH.exe'; $DeployDir = \"$env:USERPROFILE\\\\GeneralsX\\\\GeneralsMD\"; if (Test-Path $ZhExe) { Copy-Item -Path $ZhExe -Destination $DeployDir -Force; Write-Host \"Deploy successful: $DeployDir\\\\GeneralsXZH.exe\" -ForegroundColor Green } else { Write-Host \"Error: Executable not found at $ZhExe\" -ForegroundColor Red }"
+			],
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -264,7 +286,11 @@
 		{
 			"label": "Deploy GeneralsX (Windows)",
 			"type": "shell",
-			"command": "${workspaceFolder}\\scripts\\deploy_generals.bat",
+			"command": "pwsh",
+			"args": [
+				"-Command",
+				"$GenExe = '${workspaceFolder}\\\\build\\\\win32\\\\Generals\\\\Release\\\\GeneralsX.exe'; $DeployDir = \"$env:USERPROFILE\\\\GeneralsX\\\\Generals\"; if (Test-Path $GenExe) { Copy-Item -Path $GenExe -Destination $DeployDir -Force; Write-Host \"Deploy successful: $DeployDir\\\\GeneralsX.exe\" -ForegroundColor Green } else { Write-Host \"Error: Executable not found at $GenExe\" -ForegroundColor Red }"
+			],
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -276,12 +302,12 @@
 			}
 		},
 		{
-			"label": "Run GeneralsXZH (Windows)",
+			"label": "Run GeneralsXZH (Windows MSVC2022)",
 			"type": "shell",
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; .\\GeneralsXZH.exe -win -noshellmap 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_vc6.log"
+				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; if (Test-Path .\\GeneralsXZH.exe) { .\\GeneralsXZH.exe -win -noshellmap 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_msvc2022.log } else { Write-Host 'Error: GeneralsXZH.exe not found. Run Deploy task first.' -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "test",
@@ -294,12 +320,12 @@
 			}
 		},
 		{
-			"label": "Run GeneralsX (Windows)",
+			"label": "Run GeneralsX (Windows MSVC2022)",
 			"type": "shell",
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\Generals; .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_generalsv.log"
+				"cd $env:USERPROFILE\\GeneralsX\\Generals; if (Test-Path .\\GeneralsX.exe) { .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_generals_msvc2022.log } else { Write-Host 'Error: GeneralsX.exe not found. Run Deploy task first.' -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "test",
@@ -312,12 +338,12 @@
 			}
 		},
 		{
-			"label": "Debug GeneralsXZH (Windows)",
+			"label": "Debug GeneralsXZH (Windows MSVC2022)",
 			"type": "shell",
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; Write-Host 'Starting debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsXZH.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_vc6.log"
+				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; if (Test-Path .\\GeneralsXZH.exe) { Write-Host 'Starting WinDbg debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsXZH.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_msvc2022.log } else { Write-Host 'Error: GeneralsXZH.exe not found. Run Deploy task first.' -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "test",
@@ -330,12 +356,12 @@
 			}
 		},
 		{
-			"label": "Debug GeneralsX (Windows)",
+			"label": "Debug GeneralsX (Windows MSVC2022)",
 			"type": "shell",
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\Generals; Write-Host 'Starting debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_generalsv.log"
+				"cd $env:USERPROFILE\\GeneralsX\\Generals; if (Test-Path .\\GeneralsX.exe) { Write-Host 'Starting WinDbg debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_generals_msvc2022.log } else { Write-Host 'Error: GeneralsX.exe not found. Run Deploy task first.' -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "test",
