@@ -14,10 +14,11 @@
 if(WIN32)
     set(VCPKG_DEFAULT_TRIPLET "x86-windows" CACHE STRING "vcpkg target triplet")
     
-    # Try standard vcpkg install locations
+    # Try standard vcpkg install locations (packages/ first, then installed/)
     set(VCPKG_POSSIBLE_ROOTS
-        "$ENV{VCPKG_ROOT}/installed/${VCPKG_DEFAULT_TRIPLET}"
         "$ENV{VCPKG_ROOT}/packages/openal-soft_${VCPKG_DEFAULT_TRIPLET}"
+        "C:/vcpkg/packages/openal-soft_${VCPKG_DEFAULT_TRIPLET}"
+        "$ENV{VCPKG_ROOT}/installed/${VCPKG_DEFAULT_TRIPLET}"
         "C:/vcpkg/installed/${VCPKG_DEFAULT_TRIPLET}"
         "C:/Users/$ENV{USERNAME}/vcpkg/installed/${VCPKG_DEFAULT_TRIPLET}"
     )
@@ -25,7 +26,7 @@ if(WIN32)
     foreach(VCPKG_ROOT ${VCPKG_POSSIBLE_ROOTS})
         if(EXISTS "${VCPKG_ROOT}/include/AL/al.h")
             message(STATUS "Phase 07: Found OpenAL headers at ${VCPKG_ROOT}")
-            set(OPENAL_INCLUDE_DIR "${VCPKG_ROOT}/include" CACHE PATH "OpenAL include directory")
+            set(OPENAL_INCLUDE_DIR "${VCPKG_ROOT}/include" CACHE PATH "OpenAL include directory" FORCE)
             
             # Find library
             find_library(OPENAL_LIBRARY 
@@ -51,7 +52,7 @@ if(NOT OPENAL_FOUND)
     endif()
 endif()
 
-# Report status
+# Report status and create target if needed
 if(OPENAL_FOUND OR OpenAL_FOUND)
     message(STATUS "Phase 07: ✅ OpenAL configured successfully")
     # Normalize variable names for compatibility
@@ -60,6 +61,15 @@ if(OPENAL_FOUND OR OpenAL_FOUND)
     endif()
     if(NOT OPENAL_LIBRARY AND OpenAL_LIBRARIES)
         set(OPENAL_LIBRARY ${OpenAL_LIBRARIES})
+    endif()
+    
+    # Create OpenAL::OpenAL target if it doesn't exist
+    if(NOT TARGET OpenAL::OpenAL)
+        add_library(OpenAL::OpenAL UNKNOWN IMPORTED)
+        set_target_properties(OpenAL::OpenAL PROPERTIES
+            IMPORTED_LOCATION "${OPENAL_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${OPENAL_INCLUDE_DIR}"
+        )
     endif()
 else()
     message(FATAL_ERROR "Phase 07: ❌ OpenAL library not found!")
