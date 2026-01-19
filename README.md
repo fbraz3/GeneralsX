@@ -1,91 +1,183 @@
-[![GitHub Release](https://img.shields.io/github/v/release/TheSuperHackers/GeneralsGameCode?include_prereleases&sort=date&display_name=tag&style=flat&label=Release)](https://github.com/TheSuperHackers/GeneralsGameCode/releases)
-![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/TheSuperHackers/GeneralsGameCode/3)
-![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/TheSuperHackers/GeneralsGameCode/1)
-![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/TheSuperHackers/GeneralsGameCode/4)
-![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/TheSuperHackers/GeneralsGameCode/5)
-![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/TheSuperHackers/GeneralsGameCode/6)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/fbraz3/GeneralsGameCode)
 
-[![GitHub issues by-label](https://img.shields.io/github/issues/TheSuperHackers/GeneralsGameCode/bug?style=flat&label=Bug%20Issues&labelColor=%23c4c4c4&color=%23424242)](https://github.com/TheSuperHackers/GeneralsGameCode/issues?q=label%3ABug)
-[![GitHub issues by-label](https://img.shields.io/github/issues/TheSuperHackers/GeneralsGameCode/enhancement?style=flat&label=Enhancement%20Issues&labelColor=%23c4c4c4&color=%23424242)](https://github.com/TheSuperHackers/GeneralsGameCode/issues?q=label%3AEnhancement)
-[![GitHub issues by-label](https://img.shields.io/github/issues/TheSuperHackers/GeneralsGameCode/major?style=flat&label=Major%20Issues&labelColor=%23c4c4c4&color=%23424242)](https://github.com/TheSuperHackers/GeneralsGameCode/issues?q=label%3AMajor)
-[![GitHub issues by-label](https://img.shields.io/github/issues/TheSuperHackers/GeneralsGameCode/critical?style=flat&label=Critical%20Issues&labelColor=%23c4c4c4&color=%23424242)](https://github.com/TheSuperHackers/GeneralsGameCode/issues?q=label%3ACritical)
-[![GitHub issues by-label](https://img.shields.io/github/issues/TheSuperHackers/GeneralsGameCode/blocker?style=flat&label=Blocker%20Issues&labelColor=%23c4c4c4&color=%23424242)](https://github.com/TheSuperHackers/GeneralsGameCode/issues?q=label%3ABlocker)
+# GeneralsX - Cross-Platform Command & Conquer: Generals
 
-# Welcome to the Generals Game Code Project
+A comprehensive cross-platform port of Command & Conquer: Generals and Zero Hour, bringing the classic RTS experience to **macOS**, **Linux**, and **Windows** through modern Vulkan rendering and SDL2 API.
 
-GeneralsGameCode is a community-driven project aimed at fixing and improving the classic RTS game, *Command &
-Conquer: Generals* and its expansion *Zero Hour*. This repository contains the source code for both games, with a
-primary focus on *Zero Hour*.
+## Project Goals
 
-Additionally, there is a complementary project repository for fixing and improving game data and assets such as
-INI scripts, GUI, AI, maps, models, textures, audio, localization. You can find it
-[here](https://github.com/TheSuperHackers/GeneralsGamePatch/) and contribute to it as well.
+This repository focuses on **cross-platform development** and serves as the technical foundation for multi-platform support of the classic RTS game.
 
-## Project Overview
+To keep updated about this project status, visit our [Dev Blog](docs/DEV_BLOG/)
 
-The game was originally developed using Visual Studio 6 and C++98. We've updated the code to be compatible with Visual
-Studio 2022 and C++20.
+For **official releases and stable builds** (Windows only), visit:
 
-The initial goal of this project is to fix critical bugs and implement improvements while maintaining compatibility with
-the original *Generals* version 1.08 and *Zero Hour* version 1.04. Once we can break retail compatibility, more fixes
-and features will be possible to implement.
+**👉 [TheSuperHackers/GeneralsGameCode Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases)**
 
-## Current Focus and Future Plans
+## 💖 Support This Project
 
-Here's an overview of our current focus and future plans
+Cross-platform game development requires significant time, resources, and technical expertise. If GeneralsX has been valuable to you or the Command & Conquer community, consider supporting continued development:
 
-- **Modernizing the Codebase**: Transitioning to modern C++ standards and refactoring old code.
-- **Critical Bug Fixes**: Fixing game-breaking issues (e.g., fullscreen crash).
-- **Minor Bug Fixes**: Addressing minor bugs (e.g., UI issues, graphical glitches).
-- **Cross-Platform Support**: Adding support for more platforms (e.g., Linux, macOS).
-- **Engine Improvements**: Enhancing the game engine to improve performance and stability.
-- **Client-Side Features**: Enhancing the game's client with features such as an improved replay viewer and UI updates.
-- **Multiplayer Improvements**: Implementing a new game server and an upgraded matchmaking lobby.
-- **Tooling Improvements**: Developing new or improving existing tools for modding and game development.
-- **Community-Driven Improvements**: Once the community grows, we plan to incorporate more features, updates, and
-  changes based on player feedback.
+**[🎯 Sponsor on GitHub](https://github.com/sponsors/fbraz3)**
 
-## Running the Game
+Your support helps with:
 
-To run *Generals* or *Zero Hour* using this project, you need to have the original *Command & Conquer: Generals and Zero Hour* game
-installed. The easiest way to get it is through *Command & Conquer The Ultimate Collection*
-on [Steam](https://store.steampowered.com/bundle/39394). Once the game is ready, download the latest version of the
-project from [GitHub Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases), extract the necessary 
-files, and follow the instructions in the [Wiki](https://github.com/TheSuperHackers/GeneralsGameCode/wiki).
+- **Development Time** - Hundreds of hours invested in cross-platform porting
+- **Testing Infrastructure** - Multiple platforms, hardware configurations, and tools
+- **Documentation** - Comprehensive guides and technical resources
+- **Community Support** - Maintaining issues, discussions, and contributions
 
+*Every contribution, no matter the size, makes a difference in keeping classic games alive across all platforms!*
 
-## Joining the Community
+### 🌍 Cross-Platform Vision
 
-You can chat and discuss the development of the project on our [Discord channel](https://www.community-outpost.com/discord) to get the latest updates,
-report bugs, and contribute to the project!
+This project transforms the Windows-exclusive Command & Conquer: Generals into a truly cross-platform game:
 
-## Building the Game Yourself
+- **🍎 macOS Native Support** - Full compatibility with Apple Silicon and Intel Macs
+- **🐧 Linux Distribution** - Native builds for major Linux distributions
+- **🪟 Windows Enhanced** - Improved stability and modern graphics support
+- **🎮 Unified Experience** - Consistent gameplay across all platforms
+- **🔧 Modern Architecture** - Updated from VC6/C++98 to modern C++20 standards
 
-We provide support for building the project using Visual Studio 6 (VS6) and Visual Studio 2022. For detailed build
-instructions, check the [Wiki](https://github.com/TheSuperHackers/GeneralsGameCode/wiki/build_guides), which also
-includes guides for building with Docker, CLion, and links to forks supporting additional versions.
+### 🎮 Features
 
-### Dependency management
+**Cross-Platform Compatibility**:
 
-The repository uses a vcpkg manifest (`vcpkg.json`) paired with a lockfile (`vcpkg-lock.json`). When you add or upgrade
-dependencies, run `vcpkg install --x-manifest-root . --triplet <triplet>` with `VCPKG_FEATURE_FLAGS=versions` so the
-lockfile picks up the new versions and include the updated lockfile in your change. GitHub Actions consumes these ports
-through `VCPKG_BINARY_SOURCES=clear;files,<workspace>/vcpkg-bincache,readwrite` (paired with an `actions/cache` entry for
-that folder), so the first CI build warms the cache and subsequent builds pull prebuilt binaries instead of
-re-compiling everything.
+- Native compilation on macOS, Linux, and Windows
+- Unified configuration system via INI files (replacing Windows Registry)
+- Platform-native file system integration
+- Wine/Proton compatibility for Linux via Windows subsystem
 
-## Contributing
+**Graphics Enhancements**:
 
-We welcome contributions to the project! If you’re interested in contributing, you need to have knowledge of C++. Join
-the developer chat on Discord for more information on how to get started. Please make sure to read our
-[Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request. You can also check out 
-the [Wiki](https://github.com/TheSuperHackers/GeneralsGameCode/wiki) for more detailed documentation.
+- Vulkan rendering pipeline for modern GPU compatibility
+- Improved texture loading and memory management
+- Enhanced graphics debugging and profiling tools
+- SDL2 for cross-platform window management and input handling
 
+**Modern Development**:
 
-## License & Legal Disclaimer
+- Updated from Visual C++ 6.0 to modern C++20 standards
+- CMake build system for consistent cross-platform builds
+- Comprehensive development documentation and phase tracking
+- Automated builds for Windows, macOS, and Linux
+
+## 📦 Official Downloads
+
+For **stable releases and official builds**, visit:
+**[TheSuperHackers/GeneralsGameCode Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases)**
+
+## 🔨 Building from Source
+
+### Windows
+
+Primary development platform with full MSVC BuildTools 2022 support:
+
+```bash
+# Quick build (Windows)
+git clone https://github.com/fbraz3/GeneralsX.git
+cd GeneralsX
+cmake --preset win32
+cmake --build build/win32 --target GeneralsXZH -j 4
+```
+
+### macOS - In Development
+
+Comprehensive build instructions for macOS development:
+**[📖 macOS Build Guide](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md)**
+
+Key requirements:
+
+- Xcode Command Line Tools
+- Homebrew (CMake, Ninja)
+- Original game assets
+
+### Linux - Planned
+
+Linux port is under development based on macOS foundation and Wine compatibility layer.
+
+### 📖 Documentation
+
+Complete documentation is available in the **[docs/](docs/)** directory:
+
+- **[docs/ETC/MACOS_BUILD_INSTRUCTIONS.md](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md)** - Complete macOS build instructions and troubleshooting
+- **[docs/ETC/LINUX_BUILD_INSTRUCTIONS.md](docs/ETC/LINUX_BUILD_INSTRUCTIONS.md)** - Linux port status and contribution guidelines
+- **[docs/DEV_BLOG/](docs/DEV_BLOG/)** - Technical development diary organized by month
+- **[docs/WORKDIR/](docs/WORKDIR/)** - Phase planning, implementation notes, and strategic decisions
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
+
+### 🐛 Known Issues & Limitations
+
+For documented limitations and known bugs, check the development diary in [docs/DEV_BLOG/](docs/DEV_BLOG/).
+
+### ⚙️ Build Requirements
+
+The repository uses a vcpkg manifest (`vcpkg.json`) paired with a lockfile (`vcpkg-lock.json`). Key dependencies:
+
+- **SDL2** - Cross-platform windowing and input handling
+- **OpenAL** - Cross-platform audio system
+- **Vulkan SDK** - Modern graphics rendering (optional for Phase 1)
+- **CMake** - Build system
+
+For dependency management details, see [vcpkg.json](vcpkg.json).
+
+## 🚀 Project Phases
+
+The modernization is organized into phases:
+
+- **Phase 1 (Current)**: Windows 32-bit with SDL2/OpenAL
+- **Phase 2**: Vulkan graphics backend (replacing DirectX 8)
+- **Phase 3**: Wine cross-platform support for macOS/Linux
+- **Phase 4+**: Enhanced features and optimizations
+
+See [docs/DEV_BLOG/](docs/DEV_BLOG/) for detailed phase progress.
+
+## 🚀 Future Enhancements
+
+### 🧵 Multithreading Modernization
+
+Future initiative to leverage multi-core CPUs while preserving deterministic gameplay. High-level plan:
+
+- Start with low-risk tasks (parallel asset/INI loading, background audio/I/O)
+- Evolve to moderate threading (AI batches, object updates with partitioning)
+- Consider advanced loop decoupling (producer–consumer) once stable
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! We're particularly interested in:
+
+**Current Priority Areas**:
+
+- **Graphics Pipeline Testing** - Validate rendering functionality
+- **Cross-Platform Testing** - Validate functionality across systems
+- **Wine Compatibility Research** - Prepare foundation for Linux/macOS ports
+- **Performance Optimization** - Identify and fix bottlenecks
+- **Documentation** - Improve build guides and technical resources
+
+**How to Contribute**:
+
+1. Check current issues and GitHub discussions
+2. Read platform-specific build guides ([Windows](docs/ETC/), [macOS](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md), [Linux](docs/ETC/LINUX_BUILD_INSTRUCTIONS.md))
+3. Follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
+4. Submit issues or pull requests with detailed information
+
+**Contributing to Official Project**:
+For contributions to the main project, visit: [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode)
+
+## 🙏 Special Thanks
+
+- **[TheSuperHackers Team](https://github.com/TheSuperHackers)** for their foundational work and **official integration** of this cross-platform effort
+- **[Xezon](https://github.com/xezon)** and contributors for maintaining the GeneralsGameCode project
+- **Westwood Studios** for creating the legendary Command & Conquer series
+- **EA Games** for Command & Conquer: Generals, which continues to inspire gaming communities
+- **All contributors and sponsors** helping to make this game truly cross-platform and accessible worldwide
+
+*Special thanks to [GitHub Sponsors](https://github.com/sponsors/fbraz3) supporting this open-source effort!*
+
+## 📄 License
+
+See the [LICENSE](./LICENSE.md) file for details.
 
 EA has not endorsed and does not support this product. All trademarks are the property of their respective owners.
-
-This project is licensed under the [GPL-3.0 License](https://www.gnu.org/licenses/gpl-3.0.html), which allows you to
-freely modify and distribute the source code under the terms of this license. Please see [LICENSE.md](LICENSE.md) 
-for details.
