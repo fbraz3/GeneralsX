@@ -19,8 +19,7 @@
 #pragma once
 
 #include "Lib/BaseType.h"
-
-class AsciiString;
+#include "Common/AsciiString.h"
 
 // ============================================================================
 // Registry Compatibility Wrapper
@@ -96,3 +95,21 @@ extern void SetRegistryReal(const AsciiString& keyPath, Real value);
  * Flush all pending configuration changes to disk
  */
 extern void FlushRegistry();
+
+// ============================================================================
+// Legacy Generals registry API compatibility
+//
+// The original game used the Windows Registry. GeneralsX uses the INI-backed
+// ConfigurationManager, but many legacy call sites (and mods) still reference
+// these older functions.
+// ============================================================================
+
+// Original-style helpers (kept for source compatibility)
+Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val);
+Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val);
+Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val);
+
+AsciiString GetRegistryLanguage(void);
+AsciiString GetRegistryGameName(void);
+UnsignedInt GetRegistryVersion(void);
+UnsignedInt GetRegistryMapPackVersion(void);

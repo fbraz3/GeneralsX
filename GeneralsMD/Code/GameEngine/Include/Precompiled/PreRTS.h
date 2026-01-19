@@ -40,7 +40,9 @@ class STLSpecialAlloc;
 // PLEASE DO NOT ABUSE WINDOWS OR IT WILL BE REMOVED ENTIRELY. :-)
 //--------------------------------------------------------------------------------- System Includes
 #define WIN32_LEAN_AND_MEAN
+#if defined(_MSC_VER) && _MSC_VER < 1300
 #include <atlbase.h>
+#endif
 #include <windows.h>
 
 #include <assert.h>

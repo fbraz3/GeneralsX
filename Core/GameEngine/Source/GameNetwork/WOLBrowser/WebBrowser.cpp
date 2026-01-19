@@ -46,6 +46,8 @@
 #include "GameClient/GameWindow.h"
 #include "GameClient/Display.h"
 
+#include <oleauto.h>
+
 
 /**
 	* OLEInitializer class - Init and shutdown OLE & COM as a global
@@ -65,9 +67,7 @@ public:
 	}
 };
 OLEInitializer g_OLEInitializer;
-CComModule _Module;
-
-CComObject<WebBrowser> * TheWebBrowser = NULL;
+WebBrowser * TheWebBrowser = NULL;
 
 
 /******************************************************************************
@@ -91,6 +91,35 @@ WebBrowser::WebBrowser() :
 {
 	DEBUG_LOG(("Instantiating embedded WebBrowser"));
 	m_urlList = NULL;
+	m_typeInfo = NULL;
+	m_dispatch = NULL;
+
+	// Build a standard IDispatch wrapper for this object (no ATL required).
+	// If this fails, we still keep the game running; the embedded browser can
+	// operate without game->browser scripting callbacks.
+	ITypeLib* typeLib = NULL;
+	wchar_t modulePath[MAX_PATH] = { 0 };
+	if (GetModuleFileNameW(NULL, modulePath, MAX_PATH) != 0)
+	{
+		HRESULT hr = LoadTypeLib(modulePath, &typeLib);
+		if (SUCCEEDED(hr) && typeLib)
+		{
+			hr = typeLib->GetTypeInfoOfGuid(IID_IBrowserDispatch, &m_typeInfo);
+			typeLib->Release();
+			typeLib = NULL;
+
+			if (SUCCEEDED(hr) && m_typeInfo)
+			{
+				IUnknown* unknownDispatch = NULL;
+				hr = CreateStdDispatch(static_cast<IUnknown*>(this), static_cast<IBrowserDispatch*>(this), m_typeInfo, &unknownDispatch);
+				if (SUCCEEDED(hr) && unknownDispatch)
+				{
+					unknownDispatch->QueryInterface(IID_IDispatch, reinterpret_cast<void**>(&m_dispatch));
+					unknownDispatch->Release();
+				}
+			}
+		}
+	}
 }
 
 
@@ -123,6 +152,17 @@ WebBrowser::~WebBrowser()
 		url = url->m_next;
 		deleteInstance(temp);
 		temp = NULL;
+	}
+
+	if (m_dispatch)
+	{
+		m_dispatch->Release();
+		m_dispatch = NULL;
+	}
+	if (m_typeInfo)
+	{
+		m_typeInfo->Release();
+		m_typeInfo = NULL;
 	}
 }
 
@@ -239,6 +279,10 @@ STDMETHODIMP WebBrowser::QueryInterface(REFIID iid, void** ppv) IUNKNOWN_NOEXCEP
 	if ((iid == IID_IUnknown) || (iid == IID_IBrowserDispatch))
 	{
 		*ppv = static_cast<IBrowserDispatch*>(this);
+	}
+	else if ((iid == IID_IDispatch) && m_dispatch)
+	{
+		*ppv = static_cast<IDispatch*>(m_dispatch);
 	}
 	else
 	{

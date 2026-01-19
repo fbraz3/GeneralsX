@@ -1135,6 +1135,13 @@ set(GAMEENGINE_SRC
     Source/Precompiled/PreRTS.cpp
 )
 
+if(NOT IS_VS6_BUILD)
+    # Use the Core INI-backed registry compatibility layer instead.
+    list(REMOVE_ITEM GAMEENGINE_SRC
+        Source/Common/System/registry.cpp
+    )
+endif()
+
 if(RTS_GAMEMEMORY_ENABLE)
     # Uses the original Game Memory implementation.
     list(APPEND GAMEENGINE_SRC

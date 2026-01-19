@@ -43,11 +43,10 @@
 #pragma once
 
 #include "Common/SubsystemInterface.h"
-#include <atlbase.h>
 #include <windows.h>
+#include <oaidl.h>
 #include <Common/GameMemory.h>
 #include "EABrowserDispatch/BrowserDispatch.h"
-#include "FEBDispatch.h"
 #include <Lib/BaseType.h>
 
 class GameWindow;
@@ -75,7 +74,7 @@ public:
 
 
 class WebBrowser :
-		public FEBDispatch<WebBrowser, IBrowserDispatch, &IID_IBrowserDispatch>,
+		public IBrowserDispatch,
 		public SubsystemInterface
 	{
 	public:
@@ -105,6 +104,8 @@ class WebBrowser :
 	protected:
 		ULONG mRefCount;
 		WebBrowserURL *m_urlList;
+		ITypeInfo* m_typeInfo;
+		IDispatch* m_dispatch;
 
 	//---------------------------------------------------------------------------
 	// IUnknown methods
@@ -121,4 +122,4 @@ class WebBrowser :
 		STDMETHOD(TestMethod)(Int num1);
 	};
 
-extern CComObject<WebBrowser> *TheWebBrowser;
+extern WebBrowser *TheWebBrowser;

@@ -29,6 +29,12 @@
 #include "Common/Registry.h"
 #include "Common/ConfigurationManager.h"
 
+static const AsciiString& getRegistryCompatGeneralSection()
+{
+	static AsciiString section = "General";
+	return section;
+}
+
 // ============================================================================
 // Legacy GetRegistryXxx functions - compatibility wrappers for mods/tools
 // ============================================================================
@@ -197,6 +203,61 @@ Real GetRegistryReal(const AsciiString& keyPath, Real defaultValue)
 	}
 	
 	return defaultValue;
+}
+
+// ============================================================================
+// Original Generals-style registry API (INI-backed)
+// ============================================================================
+
+Bool GetStringFromGeneralsRegistry(AsciiString /*path*/, AsciiString key, AsciiString& val)
+{
+	// Generals and Zero Hour share the same INI-backed storage.
+	return GetStringFromRegistry("", key, val);
+}
+
+Bool GetStringFromRegistry(AsciiString /*path*/, AsciiString key, AsciiString& val)
+{
+	return ConfigurationManager::getString(getRegistryCompatGeneralSection(), key, val);
+}
+
+Bool GetUnsignedIntFromRegistry(AsciiString /*path*/, AsciiString key, UnsignedInt& val)
+{
+	return ConfigurationManager::getUnsignedInt(getRegistryCompatGeneralSection(), key, val);
+}
+
+AsciiString GetRegistryLanguage(void)
+{
+	static Bool cached = FALSE;
+	static AsciiString val = "english";
+	if (cached)
+	{
+		return val;
+	}
+
+	cached = TRUE;
+	ConfigurationManager::getString(getRegistryCompatGeneralSection(), "Language", val);
+	return val;
+}
+
+AsciiString GetRegistryGameName(void)
+{
+	AsciiString val = "GeneralsX";
+	ConfigurationManager::getString(getRegistryCompatGeneralSection(), "SKU", val);
+	return val;
+}
+
+UnsignedInt GetRegistryVersion(void)
+{
+	UnsignedInt val = 65536;
+	ConfigurationManager::getUnsignedInt(getRegistryCompatGeneralSection(), "Version", val);
+	return val;
+}
+
+UnsignedInt GetRegistryMapPackVersion(void)
+{
+	UnsignedInt val = 65536;
+	ConfigurationManager::getUnsignedInt(getRegistryCompatGeneralSection(), "MapPackVersion", val);
+	return val;
 }
 
 // ============================================================================

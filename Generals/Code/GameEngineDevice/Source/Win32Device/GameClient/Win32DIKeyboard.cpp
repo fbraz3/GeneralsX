@@ -47,7 +47,9 @@ enum { KEYBOARD_BUFFER_SIZE = 256 };
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 // DirectInput8 GUID definition (required for VC6 linker)
+#if defined(_MSC_VER) && _MSC_VER < 1300
 const GUID IID_IDirectInput8A = {0xBF798030,0x483A,0x4DA2,{0xAA,0x99,0x5D,0x64,0xED,0x36,0x97,0x00}};
+#endif
 
 struct ErrorLookup
 {

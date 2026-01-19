@@ -170,7 +170,9 @@ void initSubsystem(
 
 //-------------------------------------------------------------------------------------------------
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
+#if defined(_MSC_VER) && _MSC_VER < 1300
 extern CComModule _Module;
+#endif
 
 //-------------------------------------------------------------------------------------------------
 static void updateTGAtoDDS();
@@ -252,7 +254,9 @@ GameEngine::GameEngine( void )
 	m_quitting = FALSE;
 	m_isActive = FALSE;
 
+	#if defined(_MSC_VER) && _MSC_VER < 1300
 	_Module.Init(NULL, ApplicationHInstance, NULL);
+	#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -294,7 +298,9 @@ GameEngine::~GameEngine()
 
 	Drawable::killStaticImages();
 
+	#if defined(_MSC_VER) && _MSC_VER < 1300
 	_Module.Term();
+	#endif
 
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();

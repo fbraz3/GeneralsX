@@ -2,205 +2,13 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Build GeneralsXZH (macOS)",
+			"label": "Configure (Windows MSVC BuildTools, win32 preset)",
 			"type": "shell",
-			"command": "cmake",
+			"command": "pwsh",
 			"args": [
-				"--build",
-				"build/macos",
-				"--target",
-				"GeneralsXZH",
-				"-j",
-				"4",
-				"2>&1",
-				"|",
-				"tee",
-				"logs/build.log"
+				"-Command",
+				". .\\scripts\\setup_msvc_buildtools_env.ps1; cmake --preset win32 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\configure_win32_msvc_buildtools.log"
 			],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Build GeneralsX (macOS)",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--build",
-				"build/macos",
-				"--target",
-				"GeneralsX",
-				"-j",
-				"4",
-				"2>&1",
-				"|",
-				"tee",
-				"logs/build_generals.log"
-			],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Deploy GeneralsXZH (macOS)",
-			"type": "shell",
-			"command": "cp -v ${workspaceFolder}/build/macos/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Deploy completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Deploy GeneralsX (macOS)",
-			"type": "shell",
-			"command": "cp -v ${workspaceFolder}/build/macos/Generals/GeneralsX $HOME/GeneralsX/Generals/GeneralsX && echo 'Deploy completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Sign GeneralsXZH (macOS)",
-			"type": "shell",
-			"command": "codesign --force --deep --sign - $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Sign completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Sign GeneralsX (macOS)",
-			"type": "shell",
-			"command": "codesign --force --deep --sign - $HOME/GeneralsX/Generals/GeneralsX && echo 'Sign completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Run GeneralsXZH Terminal (macOS)",
-			"type": "shell",
-			"command": "${workspaceFolder}/scripts/runTerminal.sh",
-			"args": [
-				"$HOME/GeneralsX/GeneralsMD/GeneralsXZH -win -noshellmap 2>&1 | tee ${workspaceFolder}/logs/runTerminal.log"
-			],
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Run GeneralsX Terminal (macOS)",
-			"type": "shell",
-			"command": "${workspaceFolder}/scripts/runTerminal.sh",
-			"args": [
-				"$HOME/GeneralsX/Generals/GeneralsX 2>&1 | tee ${workspaceFolder}/logs/runTerminal_generals.log"
-			],
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Debug GeneralsXZH Terminal (macOS)",
-			"type": "shell",
-			"command": "${workspaceFolder}/scripts/runTerminal.sh",
-			"args": [
-				"${workspaceFolder}/scripts/lldb_debug.sh $HOME/GeneralsX/GeneralsMD/GeneralsXZH 2>&1 | tee ${workspaceFolder}/logs/debugTerminal.log"
-			],
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Debug GeneralsX Terminal (macOS)",
-			"type": "shell",
-			"command": "${workspaceFolder}/scripts/runTerminal.sh",
-			"args": [
-				"${workspaceFolder}/scripts/lldb_debug.sh $HOME/GeneralsX/Generals/GeneralsX 2>&1 | tee ${workspaceFolder}/logs/debugTerminal_generals.log"
-			],
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Deploy GeneralsXZH (Linux)",
-			"type": "shell",
-			"command": "cp -v ${workspaceFolder}/build/linux/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Deploy completed successfully'",
-			"args": [],
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
-		},
-		{
-			"label": "Deploy GeneralsXZH (Linux-Debug)",
-			"type": "shell",
-			"command": "cp -v ${workspaceFolder}/build/linux-debug/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/GeneralsXZH && echo 'Deploy completed successfully'",
-			"args": [],
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -214,19 +22,10 @@
 		{
 			"label": "Build GeneralsXZH (Windows MSVC2022)",
 			"type": "shell",
-			"command": "cmake",
+			"command": "pwsh",
 			"args": [
-				"--build",
-				"build/win32",
-				"--target",
-				"z_generals",
-				"--parallel",
-				"4",
-				"2>&1",
-				"|",
-				"Tee-Object",
-				"-FilePath",
-				"${workspaceFolder}\\logs\\build_zh_msvc2022.log"
+				"-Command",
+				". .\\scripts\\setup_msvc_buildtools_env.ps1; cmake --build build\\win32 --target z_generals --config Release --parallel 4 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\build_zh_msvc2022.log"
 			],
 			"isBackground": false,
 			"group": "build",
@@ -241,19 +40,10 @@
 		{
 			"label": "Build GeneralsX (Windows MSVC2022)",
 			"type": "shell",
-			"command": "cmake",
+			"command": "pwsh",
 			"args": [
-				"--build",
-				"build/win32",
-				"--target",
-				"g_generals",
-				"--parallel",
-				"4",
-				"2>&1",
-				"|",
-				"Tee-Object",
-				"-FilePath",
-				"${workspaceFolder}\\logs\\build_generals_msvc2022.log"
+				"-Command",
+				". .\\scripts\\setup_msvc_buildtools_env.ps1; cmake --build build\\win32 --target g_generals --config Release --parallel 4 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\build_generals_msvc2022.log"
 			],
 			"isBackground": false,
 			"group": "build",

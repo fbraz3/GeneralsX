@@ -57,17 +57,12 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 		return FALSE;
 	}
 
-#ifdef __GNUC__
-	CComQIIDPtr<I_ID(IDispatch)> idisp(m_dispatch);
-#else
-	CComQIPtr<IDispatch> idisp(m_dispatch);
-#endif
 	if (m_dispatch == NULL)
 	{
 		return FALSE;
 	}
 
-	DX8WebBrowser::CreateBrowser(windowName.str(), url->m_url.str(), x, y, w, h, 0, BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, (LPDISPATCH)this);
+	DX8WebBrowser::CreateBrowser(windowName.str(), url->m_url.str(), x, y, w, h, 0, BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, m_dispatch);
 
 	return TRUE;
 }

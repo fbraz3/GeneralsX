@@ -238,9 +238,9 @@ add_library(corei_ww3d2 INTERFACE)
 target_sources(corei_ww3d2 INTERFACE ${WW3D2_SRC})
 
 if (NOT IS_VS6_BUILD)
-    target_link_libraries(corei_ww3d2 INTERFACE
-        comsuppw
-    )
+    # NOTE: comsuppw pulls in ATL (atls.lib). Many BuildTools-only installs
+    # don't ship ATL/MFC, which breaks linking. We avoid this dependency unless
+    # we find a concrete need for it.
 endif()
 
 target_link_libraries(corei_ww3d2 INTERFACE

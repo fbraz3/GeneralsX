@@ -46,16 +46,59 @@
 
 #else
 
-#include <comutil.h>
-#include <comip.h>
+#include <windows.h>
+#include <objbase.h>
+#include <oleauto.h>
 
 #include "EABrowserEngine/BrowserEngine.h"
 
-typedef _com_ptr_t<_com_IIID<IFEBrowserEngine2, &__uuidof(IFEBrowserEngine2)>> IFEBrowserEngine2Ptr;
+class AutoBSTR
+{
+public:
+	AutoBSTR() : m_bstr(NULL) {}
+	explicit AutoBSTR(const char* ansi) : m_bstr(NULL) { reset(ansi); }
+	~AutoBSTR() { reset(NULL); }
+
+	BSTR get() const { return m_bstr; }
+	operator BSTR() const { return m_bstr; }
+
+	void reset(const char* ansi)
+	{
+		if (m_bstr)
+		{
+			SysFreeString(m_bstr);
+			m_bstr = NULL;
+		}
+		if (!ansi)
+		{
+			return;
+		}
+
+		int wideLen = MultiByteToWideChar(CP_ACP, 0, ansi, -1, NULL, 0);
+		if (wideLen <= 0)
+		{
+			return;
+		}
+
+		m_bstr = SysAllocStringLen(NULL, wideLen - 1);
+		if (!m_bstr)
+		{
+			return;
+		}
+		MultiByteToWideChar(CP_ACP, 0, ansi, -1, m_bstr, wideLen);
+	}
+
+private:
+	BSTR m_bstr;
+};
 
 #endif
 
-static	IFEBrowserEngine2Ptr	pBrowser = 0;
+#if defined(_MSC_VER) && _MSC_VER < 1300
+static IFEBrowserEngine2Ptr pBrowser = 0;
+#else
+static IFEBrowserEngine2* pBrowser = 0;
+#endif
 
 HWND		DX8WebBrowser::hWnd = 0;
 
@@ -70,7 +113,11 @@ bool DX8WebBrowser::Initialize(	const char* badpageurl,
 		CoInitialize(0);
 
 		// Create an instance of the browser control
+#if defined(_MSC_VER) && _MSC_VER < 1300
 		HRESULT hr = pBrowser.CreateInstance(__uuidof(FEBrowserEngine2));
+#else
+		HRESULT hr = CoCreateInstance(__uuidof(FEBrowserEngine2), NULL, CLSCTX_INPROC_SERVER, __uuidof(IFEBrowserEngine2), reinterpret_cast<void**>(&pBrowser));
+#endif
 
 		if(hr == REGDB_E_CLASSNOTREG)
 		{
@@ -82,7 +129,11 @@ bool DX8WebBrowser::Initialize(	const char* badpageurl,
 				{
 					proc();
 					// Create an instance of the browser control
+					#if defined(_MSC_VER) && _MSC_VER < 1300
 					hr = pBrowser.CreateInstance(__uuidof(FEBrowserEngine2));
+					#else
+					hr = CoCreateInstance(__uuidof(FEBrowserEngine2), NULL, CLSCTX_INPROC_SERVER, __uuidof(IFEBrowserEngine2), reinterpret_cast<void**>(&pBrowser));
+					#endif
 				}
 				FreeLibrary(lib);
 			}
@@ -95,16 +146,32 @@ bool DX8WebBrowser::Initialize(	const char* badpageurl,
 			pBrowser->Initialize(reinterpret_cast<long*>(DX8Wrapper::_Get_D3D_Device8()));
 
 			if(badpageurl)
+				#if defined(_MSC_VER) && _MSC_VER < 1300
 				pBrowser->put_BadPageURL(_bstr_t(badpageurl));
+				#else
+				pBrowser->put_BadPageURL(AutoBSTR(badpageurl));
+				#endif
 
 			if(loadingpageurl)
+				#if defined(_MSC_VER) && _MSC_VER < 1300
 				pBrowser->put_LoadingPageURL(_bstr_t(loadingpageurl));
+				#else
+				pBrowser->put_LoadingPageURL(AutoBSTR(loadingpageurl));
+				#endif
 
 			if(mousefilename)
+				#if defined(_MSC_VER) && _MSC_VER < 1300
 				pBrowser->put_MouseFileName(_bstr_t(mousefilename));
+				#else
+				pBrowser->put_MouseFileName(AutoBSTR(mousefilename));
+				#endif
 
 			if(mousebusyfilename)
+				#if defined(_MSC_VER) && _MSC_VER < 1300
 				pBrowser->put_MouseBusyFileName(_bstr_t(mousebusyfilename));
+				#else
+				pBrowser->put_MouseBusyFileName(AutoBSTR(mousebusyfilename));
+				#endif
 		}
 		else
 		{
@@ -123,8 +190,12 @@ void DX8WebBrowser::Shutdown()
 		// Shutdown the browser
 		pBrowser->Shutdown();
 
-		// Release the smart pointer.
+		#if defined(_MSC_VER) && _MSC_VER < 1300
 		pBrowser = 0;
+		#else
+		pBrowser->Release();
+		pBrowser = 0;
+		#endif
 
 		hWnd = 0;
 
@@ -192,9 +263,16 @@ void	DX8WebBrowser::CreateBrowser(const char* browsername, const char* url, int 
 	WWDEBUG_SAY(("DX8WebBrowser::CreateBrowser - Creating browser with the name %s, url = %s, (x, y, w, h) = (%d, %d, %d, %d), update ticks = %d", browsername, url, x, y, h, w, updateticks));
 	if(pBrowser)
 	{
+		#if defined(_MSC_VER) && _MSC_VER < 1300
 		_bstr_t brsname(browsername);
 		pBrowser->CreateBrowser(brsname, _bstr_t(url), reinterpret_cast<long>(hWnd), x, y, w, h, options, gamedispatch);
 		pBrowser->SetUpdateRate(brsname, updateticks);
+		#else
+		AutoBSTR brsname(browsername);
+		AutoBSTR burl(url);
+		pBrowser->CreateBrowser(brsname.get(), burl.get(), reinterpret_cast<long>(hWnd), x, y, w, h, options, gamedispatch);
+		pBrowser->SetUpdateRate(brsname.get(), updateticks);
+		#endif
 	}
 }
 
@@ -214,7 +292,11 @@ void	DX8WebBrowser::DestroyBrowser(const char* browsername)
 {
 	WWDEBUG_SAY(("DX8WebBrowser::DestroyBrowser - destroying browser %s", browsername));
 	if(pBrowser)
+		#if defined(_MSC_VER) && _MSC_VER < 1300
 		pBrowser->DestroyBrowser(_bstr_t(browsername));
+		#else
+		pBrowser->DestroyBrowser(AutoBSTR(browsername));
+		#endif
 }
 
 
@@ -236,7 +318,7 @@ bool	DX8WebBrowser::Is_Browser_Open(const char* browsername)
 	return (pBrowser->IsOpen(_bstr_t(browsername)) != 0);
 #else
 	long isOpen;
-	return (pBrowser->IsOpen(_bstr_t(browsername), &isOpen) != 0);
+	return (pBrowser->IsOpen(AutoBSTR(browsername), &isOpen) != 0);
 #endif
 }
 
@@ -254,7 +336,11 @@ bool	DX8WebBrowser::Is_Browser_Open(const char* browsername)
 void	DX8WebBrowser::Navigate(const char* browsername, const char* url)
 {
 	if(pBrowser == 0) return;
+	#if defined(_MSC_VER) && _MSC_VER < 1300
 	pBrowser->Navigate(_bstr_t(browsername),_bstr_t(url));
+	#else
+	pBrowser->Navigate(AutoBSTR(browsername), AutoBSTR(url));
+	#endif
 }
 
 #endif
