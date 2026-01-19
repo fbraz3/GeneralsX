@@ -9,6 +9,22 @@ agent: agent
 
 You are assisting with setting up a complete Windows development environment for GeneralsX, a C++20 port of Command & Conquer: Generals Zero Hour from legacy Win32/DirectX 8 to modern SDL2 and Vulkan.
 
+## Preferred Automation (VS Code Tasks)
+
+Prefer using the repository's preconfigured VS Code tasks, because they already:
+- load the MSVC BuildTools environment
+- pick the correct CMake preset and build folder
+- log output to files under `logs/`
+
+Suggested task flow:
+1. `Configure (Windows MSVC BuildTools, win32 preset)`
+2. `Build GeneralsXZH (Windows MSVC2022)`
+3. `Deploy GeneralsXZH (Windows)`
+4. `Run GeneralsXZH (Windows MSVC2022)`
+
+For crash investigation:
+- `Debug GeneralsXZH (Windows MSVC2022)`
+
 ## Environment Specifications
 
 - **Target Platform**: Windows 32-bit (x86)
@@ -23,9 +39,9 @@ You are assisting with setting up a complete Windows development environment for
 ### Step 1: Install Visual Studio Build Tools 2022
 
 1. Download from: [Visual Studio Build Tools 2022](https://visualstudio.microsoft.com/downloads/)
-2. Run installer → Select "Modify"
-3. Click "..." button → Select "Import configuration"
-4. Navigate to project `.vsconfig` file
+2. Run installer -> Select "Modify"
+3. Click "..." button -> Select "Import configuration"
+4. Navigate to the project VS configuration file: `assets/.vsconfig`
 5. Complete installation (15-30 minutes)
 
 **Verification:**
@@ -64,11 +80,16 @@ cd c:\Users\<YourUsername>\Projects\GeneralsX
 .\scripts\cmake_final.ps1 -Preset win32
 ```
 
+Optional (sanity checks):
+```powershell
+.\scripts\verify_environment.ps1
+```
+
 **Expected output includes:**
-- ✅ SDL2 configured successfully
-- ✅ OpenAL configured successfully
-- ✅ ZLib found: version 1.3.1
-- ✅ CMake configuration SUCCESSFUL
+- SDL2 configured successfully
+- OpenAL configured successfully
+- ZLib found: version 1.3.1
+- CMake configuration SUCCESSFUL
 
 ### Step 5: Build the Project
 
@@ -126,7 +147,7 @@ cd "$env:USERPROFILE\GeneralsX\GeneralsMD"
 ### Build fails with "fatal error C1083: Cannot open include file"
 - **Fix**: Clear cache and reconfigure
 ```powershell
-rm -r build\win32
+Remove-Item -Recurse -Force build\win32
 .\scripts\cmake_final.ps1 -Preset win32
 ```
 

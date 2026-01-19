@@ -1,18 +1,18 @@
 # GeneralsX - Windows Local Development Setup
 
-> **Status**: Complete guide for Windows x86/x64 development with VC6 portable toolchain.  
-> **Last Updated**: January 2026  
-> **Platform**: Windows 10/11, x86_64  
+> **Status**: Complete guide for Windows development using Visual Studio 2022 / MSVC Build Tools (win32 preset).
+> **Last Updated**: January 2026
+> **Platform**: Windows 10/11, x86_64
 
 ---
 
 ## Overview
 
-This guide walks through setting up a **complete local development environment** on Windows for building GeneralsX with **Visual C++ 6 Portable** and modern C++20 toolchain. The process adapts the automated GitHub Actions pipeline for local machines.
+This guide walks through setting up a **complete local development environment** on Windows for building GeneralsX with **Visual Studio 2022** and modern C++20 toolchain. The process adapts the automated GitHub Actions pipeline for local machines.
 
 **Key Features:**
-- ✅ VC6 portable (no Visual Studio installation required)
-- ✅ Automated hash verification for security
+- ✅ Visual Studio 2022 with CMake integration
+- ✅ Automated .vsconfig component installation
 - ✅ vcpkg dependency management
 - ✅ CMake + Ninja build system
 - ✅ Full local build & run workflow
@@ -25,17 +25,17 @@ This guide walks through setting up a **complete local development environment**
 
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
-| OS | Windows 10 (Build 14393) | Windows 11 |
-| Architecture | x86_64 | x86_64 |
-| Disk Space | 50 GB free | 100 GB free |
-| RAM | 8 GB | 16+ GB |
-| Network | 2 Mbps (downloads) | 10+ Mbps |
+| OS | Windows 10 Build 19041+ | Windows 11 |
+| Architecture | x86_64 (ARM64 partial support) | x86_64 |
+| Disk Space | 60 GB free | 100+ GB free |
+| RAM | 16 GB | 32+ GB |
+| Network | 5 Mbps (downloads) | 25+ Mbps |
 
 ### Why These Specs?
 
-- **50 GB minimum**: 15 GB build artifacts + 30 GB game assets (.big files) + 5 GB tools
-- **16 GB RAM recommended**: Parallel compilation (-j 4 uses ~1.5 GB per job)
-- **Windows 10+ required**: Native Bash support via WSL2 (optional), PowerShell 5.0+
+- **60 GB minimum**: 20 GB Visual Studio 2022 + 15 GB build artifacts + 30 GB game assets (.big files) + 5 GB vcpkg cache
+- **16+ GB RAM recommended**: Parallel compilation (-j 4 uses ~2 GB per job; Visual Studio uses additional memory)
+- **Windows 10 Build 19041+ required**: Full MSVC2022 and CMake support
 
 ---
 
@@ -94,18 +94,46 @@ choco install ninja
 ninja --version
 ```
 
-### 1.4: Visual Studio 2022 (Optional, for win32 preset)
+### 1.4: Visual Studio 2022 (Required)
 
-Only needed if you want to build with modern MSVC instead of VC6:
+Download and install from [visualstudio.microsoft.com](https://visualstudio.microsoft.com/downloads/):
+
+**Option A: Automated Installation (Recommended)**
+
+The project includes a `.vsconfig` file that specifies all required components:
 
 ```powershell
-# Download Visual Studio 2022 Community
-# https://visualstudio.microsoft.com/downloads/
+# Run Visual Studio Installer and import the configuration
+# File > Import configuration > Select assets\.vsconfig
 
-# During installation, select:
-# - Desktop development with C++
-# - Windows 10 SDK
-# - MSVC v143 toolset
+# Or use command line:
+$vsInstaller = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe'
+$vsConfigPath = '.\assets\.vsconfig'
+Start-Process -FilePath $vsInstaller -ArgumentList "import --config `"$vsConfigPath`"" -Wait
+```
+
+**Option B: Manual Selection**
+
+If importing fails, select these workloads during installation:
+- ✅ **Desktop development with C++**
+- ✅ **Windows 10 SDK**
+- ✅ **C++ CMake tools for Windows**
+- ✅ **Visual C++ build tools**
+
+Then install individual components:
+- ✅ MSVC v143 C++ x64/x86 build tools (latest)
+- ✅ C++ CMake tools for Windows
+- ✅ vcpkg package manager
+
+**Verify Installation**
+
+```powershell
+# Check MSVC compiler
+Test-Path 'C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.4*\bin\Hostx64\x64\cl.exe'
+# Should return: True
+
+# Check CMake integration
+cmake --version
 ```
 
 ---
@@ -126,119 +154,51 @@ git status
 
 ---
 
-## Step 3: Automatic VC6 Portable Setup (Recommended)
+## Step 3: Initialize vcpkg Dependencies
 
-We provide **VS Code integration tasks** to automate VC6 download and verification. Open the project in VS Code and run tasks from the Command Palette (`Ctrl+Shift+P`):
+The project uses **vcpkg** for managing C++ dependencies. Initialize it before building:
 
+```powershell
+# Download and bootstrap vcpkg
+git submodule update --init --recursive
+
+# If vcpkg is not initialized, run from project root
+.\vcpkg\bootstrap-vcpkg.bat
+
+# Verify vcpkg
+.\vcpkg\vcpkg.exe --version
 ```
-> Tasks: Run Task > Setup VC6 Portable (Windows)
-```
-
-This task:
-1. ✅ Downloads VC6 portable from itsmattkc/MSVC600
-2. ✅ Verifies SHA256 hash for security
-3. ✅ Extracts to `C:\VC6\VC6SP6\`
-4. ✅ Sets up environment variables
-5. ✅ Caches installation for faster rebuilds
 
 **Expected output:**
+
 ```
-Downloading VC6 Portable Installation...
-Verifying File Integrity...
-Extracting Archive...
-VC6 setup completed successfully!
-```
-
-### 3.1: Manual VC6 Setup (Alternative)
-
-If VS Code tasks are unavailable:
-
-```powershell
-# Create VC6 directory
-New-Item -ItemType Directory -Force -Path "C:\VC6" | Out-Null
-
-# Download VC6 Portable from itsmattkc repo
-# Using PowerShell 7+ (recommended)
-$VC6Url = "https://github.com/itsmattkc/MSVC600/archive/001c4bafdcf2ef4b474d693acccd35a91e848f40.zip"
-$OutputFile = "$env:TEMP\VS6_VisualStudio6.zip"
-$ExpectedHash = "D0EE1F6DCEF7DB3AD703120D9FB4FAD49EBCA28F44372E40550348B1C00CA583"
-
-Write-Host "Downloading VC6 Portable..." -ForegroundColor Cyan
-Invoke-WebRequest -Uri $VC6Url -OutFile $OutputFile
-
-# Verify hash
-$FileHash = (Get-FileHash -Path $OutputFile -Algorithm SHA256).Hash
-Write-Host "Downloaded hash: $FileHash"
-Write-Host "Expected hash:   $ExpectedHash"
-
-if ($FileHash -ne $ExpectedHash) {
-    Write-Error "Hash verification failed!"
-    exit 1
-}
-
-# Extract
-Write-Host "Extracting VC6..." -ForegroundColor Cyan
-Expand-Archive -Path $OutputFile -DestinationPath "C:\VC6" -Force
-Move-Item -Path "C:\VC6\MSVC600-001c4bafdcf2ef4b474d693acccd35a91e848f40" -Destination "C:\VC6\VC6SP6" -Force
-Remove-Item $OutputFile
-
-Write-Host "VC6 setup completed!" -ForegroundColor Green
-```
-
-### 3.2: Verify VC6 Installation
-
-```powershell
-# Check directory structure
-Get-ChildItem "C:\VC6\VC6SP6" | Format-Table
-
-# Expected:
-# ├── Common\
-# ├── VC98\
-# └── ...
-
-# Verify compiler exists
-Test-Path "C:\VC6\VC6SP6\VC98\BIN\cl.exe"
-# Should return: True
+vcpkg package management program version 2025-01-XX
 ```
 
 ---
 
 ## Step 4: Configure CMake Presets
 
-### 4.1: VC6 Preset (32-bit)
+### 4.1: Win32 Preset (Primary - 32-bit with Modern MSVC)
 
 ```powershell
-# Configure using VC6 preset
-cmake --preset vc6
+# Configure using win32 preset
+cmake --preset win32
 
-# This creates: build\vc6\
-# ✅ Uses VC6 portable toolchain
+# This creates: build\win32\
+# ✅ Uses MSVC 2022 (v143) from Visual Studio
 # ✅ 32-bit output (GeneralsX.exe, GeneralsXZH.exe)
 # ✅ Release mode with optimizations
+# ✅ vcpkg manages all C++ dependencies
 ```
 
-### 4.2: Win32 Preset (64-bit with Modern MSVC)
+### 4.2: Alternative Presets
 
-```powershell
-# If Visual Studio 2022 is installed
-cmake --preset win32-vcpkg
-
-# This creates: build\win32-vcpkg\
-# ✅ Uses MSVC 2022 (v143)
-# ✅ 64-bit output
-# ✅ vcpkg manages dependencies
-```
-
-### 4.3: Available Presets
-
-| Preset | Compiler | Architecture | Output |
-|--------|----------|--------------|--------|
-| `vc6` | VC6 Portable | 32-bit | Release |
-| `vc6-debug` | VC6 Portable | 32-bit | Debug |
-| `vc6-profile` | VC6 Portable | 32-bit | Profile |
+| Preset | Compiler | Architecture | Build Type |
+| --- | --- | --- | --- |
 | `win32` | MSVC 2022 | 32-bit | Release |
 | `win32-debug` | MSVC 2022 | 32-bit | Debug |
-| `win32-vcpkg` | MSVC 2022 + vcpkg | 32-bit | Release |
+| `win32-releaselog` | MSVC 2022 | 32-bit | Release + Logging |
 
 ```powershell
 # List all presets
@@ -255,31 +215,31 @@ cmake --build build/vc6 --list-presets
 ### 5.1: Build GeneralsXZH (Zero Hour - Primary)
 
 ```powershell
-# Build using VC6 preset
-cmake --build build/vc6 --target GeneralsXZH -j 4 2>&1 | Tee-Object -FilePath logs/build.log
+# Build using win32 preset
+cmake --build build/win32 --target z_generals --config Release --parallel 4 2>&1 | Tee-Object -FilePath logs/build_zh_msvc2022.log
 
 # Expected output:
-# [1/150] Compiling...
-# [150/150] Linking GeneralsXZH.exe
-# Build complete (25-45 minutes first time, 30-60 seconds with ccache)
+# [1/250] Compiling...
+# [250/250] Linking GeneralsXZH.exe
+# Build complete (30-60 minutes first time, depends on disk speed and parallelism)
 
 # Check for errors
-Select-String -Path "logs/build.log" -Pattern "error|fatal" | Select-Object -First 10
+Select-String -Path "logs/build_zh_msvc2022.log" -Pattern "error|fatal" | Select-Object -First 10
 ```
 
 ### 5.2: Build Generals (Original - Secondary)
 
 ```powershell
 # Build original Generals
-cmake --build build/vc6 --target GeneralsX -j 4 2>&1 | Tee-Object -FilePath logs/build_generals.log
+cmake --build build/win32 --target g_generals --config Release --parallel 4 2>&1 | Tee-Object -FilePath logs/build_generals_msvc2022.log
 ```
 
 ### 5.3: Build with Logging Enabled
 
 ```powershell
-# Configure with debug logging (GeneralsXZH)
-cmake --preset vc6-releaselog
-cmake --build build/vc6-releaselog --target GeneralsXZH -j 4
+# Configure with release + logging
+cmake --preset win32-releaselog
+cmake --build build/win32-releaselog --target z_generals --config Release --parallel 4
 
 # This build includes:
 # ✅ Debug logging output
@@ -306,14 +266,22 @@ Get-Item "$env:USERPROFILE\GeneralsX"
 
 ```powershell
 # Deploy GeneralsXZH (Zero Hour)
-Copy-Item -Path "build/vc6/GeneralsMD/GeneralsXZH.exe" `
+Copy-Item -Path "build/win32/GeneralsMD/Release/GeneralsXZH.exe" `
           -Destination "$env:USERPROFILE\GeneralsX\GeneralsMD\GeneralsXZH.exe" `
           -Force -Verbose
 
 # Deploy GeneralsX (Generals)
-Copy-Item -Path "build/vc6/Generals/GeneralsX.exe" `
+Copy-Item -Path "build/win32/Generals/Release/GeneralsX.exe" `
           -Destination "$env:USERPROFILE\GeneralsX\Generals\GeneralsX.exe" `
           -Force -Verbose
+
+# Deploy vcpkg dependencies (if required)
+# fmt.dll and other runtime libraries
+$fmtDll = 'C:\vcpkg\buildtrees\fmt\x86-windows-rel\bin\fmt.dll'
+if (-not (Test-Path $fmtDll)) { $fmtDll = 'C:\vcpkg\installed\x86-windows\bin\fmt.dll' }
+if (Test-Path $fmtDll) {
+    Copy-Item -Path $fmtDll -Destination "$env:USERPROFILE\GeneralsX\GeneralsMD\fmt.dll" -Force
+}
 
 # Verify
 Get-ChildItem "$env:USERPROFILE\GeneralsX\GeneralsMD\*.exe"
@@ -395,8 +363,8 @@ cd "$env:USERPROFILE\GeneralsX\GeneralsMD"
 .\GeneralsXZH.exe -fullscreen 2>&1 | Tee-Object -FilePath run.log
 
 # Check for crash logs
-Get-ChildItem "$env:USERPROFILE\Documents\Command and Conquer Generals Zero Hour Data\*.txt" | 
-    Sort-Object LastWriteTime -Descending | 
+Get-ChildItem "$env:USERPROFILE\Documents\Command and Conquer Generals Zero Hour Data\*.txt" |
+    Sort-Object LastWriteTime -Descending |
     Select-Object -First 5
 ```
 
@@ -427,46 +395,41 @@ Use the provided VS Code tasks:
 ### 9.1: Quick Rebuild
 
 ```powershell
-# Fast incremental build (30-60 seconds)
-cmake --build build/vc6 --target GeneralsXZH -j 4
+# Fast incremental build (2-10 minutes depending on changes)
+cmake --build build/win32 --target z_generals --config Release --parallel 4
 
 # Deploy & run
-Copy-Item "build/vc6/GeneralsMD/GeneralsXZH.exe" `
+Copy-Item "build/win32/GeneralsMD/Release/GeneralsXZH.exe" `
           "$env:USERPROFILE\GeneralsX\GeneralsMD\GeneralsXZH.exe" -Force
 cd "$env:USERPROFILE\GeneralsX\GeneralsMD"
 .\GeneralsXZH.exe -win
 ```
 
-### 9.2: Clean Rebuild (if cache corruption)
+### 9.2: Clean Rebuild (if dependencies changed)
 
 ```powershell
 # Full clean rebuild
-Remove-Item -Path "build\vc6" -Recurse -Force -ErrorAction SilentlyContinue
-cmake --preset vc6
-cmake --build build/vc6 --target GeneralsXZH -j 4
+Remove-Item -Path "build\win32" -Recurse -Force -ErrorAction SilentlyContinue
+cmake --preset win32
+cmake --build build/win32 --target z_generals --config Release --parallel 4
 
-# This takes 25-45 minutes
+# This takes 30-60 minutes depending on system and parallelism
 ```
 
-### 9.3: Use ccache for Faster Rebuilds
+### 9.3: Use Parallel Compilation
 
-ccache dramatically speeds up rebuilds by caching compilation results:
+MSVC2022 supports parallel compilation for faster builds:
 
 ```powershell
-# Install ccache via Chocolatey
-choco install ccache
+# Use all CPU cores
+cmake --build build/win32 --target z_generals --config Release --parallel
 
-# Verify installation
-ccache --version
+# Or specify number of parallel jobs
+cmake --build build/win32 --target z_generals --config Release --parallel 8
 
-# Clear cache if needed
-ccache --clear
-
-# Monitor cache usage
-ccache --show-stats
+# Monitor build with verbose output
+cmake --build build/win32 --target z_generals --config Release --parallel 4 --verbose
 ```
-
-With ccache enabled, subsequent builds drop from 25-45 minutes to **30-60 seconds**.
 
 ---
 
@@ -556,7 +519,7 @@ $env:PATH
 
 ```powershell
 # Check crash logs
-Get-ChildItem "$env:USERPROFILE\Documents\Command and Conquer Generals Zero Hour Data\" | 
+Get-ChildItem "$env:USERPROFILE\Documents\Command and Conquer Generals Zero Hour Data\" |
     Sort-Object LastWriteTime -Descending |
     Select-Object -First 3
 
@@ -578,10 +541,19 @@ Get-ChildItem "$env:USERPROFILE\GeneralsX\GeneralsMD\Data\" | Measure-Object
 # Check INI configuration files
 Get-ChildItem "$env:USERPROFILE\.config\GeneralsX\" -ErrorAction SilentlyContinue
 
-# If missing, copy from assets:
-Copy-Item "build\vc6\GeneralsMD\*" `
-          "$env:USERPROFILE\GeneralsX\GeneralsMD\" `
-          -Exclude "*.exe" -Force -Verbose
+# If missing, ensure assets are linked/copied correctly
+Test-Path "$env:USERPROFILE\GeneralsX\GeneralsMD\Data\art.big"
+```
+
+### Issue: \"vcpkg dependencies missing\"
+
+```powershell
+# Reinstall vcpkg dependencies
+.\vcpkg\vcpkg.exe install
+
+# Or clean and reconfigure CMake
+Remove-Item -Path "build\win32\CMakeCache.txt" -Force
+cmake --preset win32
 ```
 
 ---
@@ -634,23 +606,24 @@ Run verification:
 ## Time Estimates
 
 | Step | Time |
-|------|------|
-| **Step 1**: Install tools | 10-15 min |
-| **Step 2**: Clone repo | 5 min |
-| **Step 3**: VC6 setup | 15-20 min (download + verify) |
-| **Step 4**: CMake configure | 2-3 min |
-| **Step 5**: First build | 25-45 min |
-| **Step 6**: Deploy | 1 min |
-| **Step 7**: Asset setup | 10-20 min (or instant with symlink) |
-| **Step 8**: First run | 2-5 min |
-| **TOTAL** | **60-120 minutes** |
-| Subsequent builds | 30-60 sec (with ccache) |
+| --- | --- |
+| **Step 1**: Install tools (CMake/Ninja) | 5-10 min |
+| **Step 2**: Clone repo + submodules | 10-15 min |
+| **Step 3**: Install Visual Studio 2022 | 45-90 min |
+| **Step 4**: Initialize vcpkg | 3-5 min |
+| **Step 5**: CMake configure | 2-5 min |
+| **Step 6**: First build | 30-60 min (high I/O, -j 4) |
+| **Step 7**: Deploy | 1-2 min |
+| **Step 8**: Asset setup | 10-20 min (or instant with symlink) |
+| **Step 9**: First run | 2-5 min |
+| **TOTAL** | **2-3 hours** |
+| Subsequent builds | 5-15 min (with -j 4) |
 
 ---
 
 ## Next Steps
 
-1. ✅ **Build**: `cmake --build build/vc6 --target GeneralsXZH -j 4`
+1. ✅ **Build**: `cmake --build build/win32 --target z_generals --config Release --parallel 4`
 2. ✅ **Deploy**: Copy .exe to `$env:USERPROFILE\GeneralsX\GeneralsMD\`
 3. ✅ **Run**: `.\GeneralsXZH.exe -win -noshellmap`
 4. ✅ **Develop**: Edit code, rebuild, test
@@ -660,10 +633,11 @@ Run verification:
 
 ## References
 
-- [VC6 Portable - itsmattkc/MSVC600](https://github.com/itsmattkc/MSVC600)
+- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/)
 - [CMake Documentation](https://cmake.org/cmake/help/latest/)
 - [Ninja Build System](https://ninja-build.org/)
 - [vcpkg Package Manager](https://vcpkg.io/)
+- [MSVC Compiler Documentation](https://docs.microsoft.com/en-us/cpp/)
 - [GeneralsX GitHub](https://github.com/fbraz3/GeneralsX)
 
 ---
@@ -678,6 +652,6 @@ Run verification:
 
 ---
 
-**Created**: January 2026  
-**Maintained by**: GeneralsX Development Team  
+**Created**: January 2026
+**Maintained by**: GeneralsX Development Team
 **License**: GPL-3.0 (same as GeneralsX)
