@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "components": [
+    "Microsoft.VisualStudio.Component.Roslyn.Compiler",
+    "Microsoft.Component.MSBuild",
+    "Microsoft.VisualStudio.Component.CoreBuildTools",
+    "Microsoft.VisualStudio.Workload.MSBuildTools",
+    "Microsoft.VisualStudio.Component.Windows10SDK",
+    "Microsoft.VisualStudio.Component.VC.CoreBuildTools",
+    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+    "Microsoft.VisualStudio.Component.VC.Redist.14.Latest",
+    "Microsoft.VisualStudio.Component.Windows11SDK.26100",
+    "Microsoft.VisualStudio.Component.VC.CMake.Project",
+    "Microsoft.VisualStudio.Component.TestTools.BuildTools",
+    "Microsoft.VisualStudio.Component.VC.ASAN",
+    "Microsoft.VisualStudio.Component.TextTemplating",
+    "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core",
+    "Microsoft.VisualStudio.Component.Vcpkg",
+    "Microsoft.VisualStudio.Workload.VCTools",
+    "Microsoft.VisualStudio.Component.VC.Tools.ARM64EC",
+    "Microsoft.VisualStudio.Component.VC.14.44.17.14.ARM64",
+    "Component.LinuxBuildTools",
+    "Microsoft.VisualStudio.Workload.LinuxBuildTools",
+    "Microsoft.VisualStudio.Component.VC.ATL.ARM64.Spectre",
+    "Microsoft.VisualStudio.Component.VC.ATL.Spectre",
+    "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64EC.Spectre",
+    "Microsoft.VisualStudio.Component.VC.14.50.18.0.ARM64",
+    "Microsoft.VisualStudio.Component.VC.14.50.18.0.ARM64.Spectre"
+  ],
+  "extensions": []
+}

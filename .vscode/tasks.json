@@ -61,7 +61,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"$ZhExe = '${workspaceFolder}\\\\build\\\\win32\\\\GeneralsMD\\\\Release\\\\GeneralsXZH.exe'; $DeployDir = \"$env:USERPROFILE\\\\GeneralsX\\\\GeneralsMD\"; if (Test-Path $ZhExe) { Copy-Item -Path $ZhExe -Destination $DeployDir -Force; Write-Host \"Deploy successful: $DeployDir\\\\GeneralsXZH.exe\" -ForegroundColor Green } else { Write-Host \"Error: Executable not found at $ZhExe\" -ForegroundColor Red }"
+				"$ZhExe = '${workspaceFolder}\\\\build\\\\win32\\\\GeneralsMD\\\\Release\\\\GeneralsXZH.exe'; $DeployDir = \"$env:USERPROFILE\\\\GeneralsX\\\\GeneralsMD\"; $FmtDll = 'C:\\vcpkg\\buildtrees\\fmt\\x86-windows-rel\\bin\\fmt.dll'; if (-not (Test-Path $FmtDll)) { $FmtDll = 'C:\\vcpkg\\installed\\x86-windows\\bin\\fmt.dll' }; if (Test-Path $ZhExe) { Copy-Item -Path $ZhExe -Destination $DeployDir -Force; if (Test-Path $FmtDll) { Copy-Item -Path $FmtDll -Destination $DeployDir -Force; Write-Host \"Deploy successful: $DeployDir\\\\GeneralsXZH.exe and fmt.dll (from $FmtDll)\" -ForegroundColor Green } else { Write-Host \"Deploy successful: $DeployDir\\\\GeneralsXZH.exe (WARNING: fmt.dll not found at any location!)\" -ForegroundColor Yellow } } else { Write-Host \"Error: Executable not found at $ZhExe\" -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "build",
@@ -79,7 +79,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"$GenExe = '${workspaceFolder}\\\\build\\\\win32\\\\Generals\\\\Release\\\\GeneralsX.exe'; $DeployDir = \"$env:USERPROFILE\\\\GeneralsX\\\\Generals\"; if (Test-Path $GenExe) { Copy-Item -Path $GenExe -Destination $DeployDir -Force; Write-Host \"Deploy successful: $DeployDir\\\\GeneralsX.exe\" -ForegroundColor Green } else { Write-Host \"Error: Executable not found at $GenExe\" -ForegroundColor Red }"
+				"$GenExe = '${workspaceFolder}\\\\build\\\\win32\\\\Generals\\\\Release\\\\GeneralsX.exe'; $DeployDir = \"$env:USERPROFILE\\\\GeneralsX\\\\Generals\"; $FmtDll = 'C:\\vcpkg\\buildtrees\\fmt\\x86-windows-rel\\bin\\fmt.dll'; if (-not (Test-Path $FmtDll)) { $FmtDll = 'C:\\vcpkg\\installed\\x86-windows\\bin\\fmt.dll' }; if (Test-Path $GenExe) { Copy-Item -Path $GenExe -Destination $DeployDir -Force; if (Test-Path $FmtDll) { Copy-Item -Path $FmtDll -Destination $DeployDir -Force; Write-Host \"Deploy successful: $DeployDir\\\\GeneralsX.exe and fmt.dll (from $FmtDll)\" -ForegroundColor Green } else { Write-Host \"Deploy successful: $DeployDir\\\\GeneralsX.exe (WARNING: fmt.dll not found at any location!)\" -ForegroundColor Yellow } } else { Write-Host \"Error: Executable not found at $GenExe\" -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "build",
