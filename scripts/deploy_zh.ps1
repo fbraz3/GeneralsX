@@ -5,15 +5,22 @@
 #
 
 param(
-    [string]$Preset = "vc6",
+    [string]$Preset = "win32",
     [switch]$Generals,
     [switch]$NoSign
 )
 
 $ErrorActionPreference = "Stop"
 
-$BuildDir = "build/$Preset"
+# Get script directory and go to project root
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = Split-Path -Parent $ScriptDir
+Set-Location $ProjectRoot
+
+$BuildDir = "build\$Preset"
 $DeployBase = "$env:USERPROFILE\GeneralsX"
+
+Write-Host "📂 Working directory: $(Get-Location)" -ForegroundColor Gray
 
 Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║                  GeneralsX Deploy Script                   ║" -ForegroundColor Cyan
@@ -24,19 +31,19 @@ Write-Host ""
 # Determine target
 if ($Generals) {
     $GameDir = "Generals"
-    $BuildTarget = "$BuildDir\Generals\GeneralsX.exe"
+    $BuildTarget = "$BuildDir\Generals\Release\GeneralsX.exe"
     $DeployTarget = "$DeployBase\Generals\GeneralsX.exe"
     $DisplayName = "GeneralsX (Original)"
 } else {
     $GameDir = "GeneralsMD"
-    $BuildTarget = "$BuildDir\GeneralsMD\GeneralsXZH.exe"
+    $BuildTarget = "$BuildDir\GeneralsMD\Release\GeneralsXZH.exe"
     $DeployTarget = "$DeployBase\GeneralsMD\GeneralsXZH.exe"
     $DisplayName = "GeneralsXZH (Zero Hour)"
 }
 
 # Check if build exists
 if (-not (Test-Path $BuildTarget)) {
-    Write-Error "Build output not found: $BuildTarget`nPlease run build_zh.ps1 first."
+    Write-Error "Build output not found: $BuildTarget`nPlease run 'Build GeneralsXZH (Windows MSVC2022)' task first."
     exit 1
 }
 

@@ -61,7 +61,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"$ZhExe = '${workspaceFolder}\\\\build\\\\win32\\\\GeneralsMD\\\\Release\\\\GeneralsXZH.exe'; $DeployDir = \"$env:USERPROFILE\\\\GeneralsX\\\\GeneralsMD\"; $FmtDll = 'C:\\vcpkg\\buildtrees\\fmt\\x86-windows-rel\\bin\\fmt.dll'; if (-not (Test-Path $FmtDll)) { $FmtDll = 'C:\\vcpkg\\installed\\x86-windows\\bin\\fmt.dll' }; if (Test-Path $ZhExe) { Copy-Item -Path $ZhExe -Destination $DeployDir -Force; if (Test-Path $FmtDll) { Copy-Item -Path $FmtDll -Destination $DeployDir -Force; Write-Host \"Deploy successful: $DeployDir\\\\GeneralsXZH.exe and fmt.dll (from $FmtDll)\" -ForegroundColor Green } else { Write-Host \"Deploy successful: $DeployDir\\\\GeneralsXZH.exe (WARNING: fmt.dll not found at any location!)\" -ForegroundColor Yellow } } else { Write-Host \"Error: Executable not found at $ZhExe\" -ForegroundColor Red }"
+				". ${workspaceFolder}\\scripts\\deploy_zh.ps1"
 			],
 			"isBackground": false,
 			"group": "build",
@@ -79,7 +79,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"$GenExe = '${workspaceFolder}\\\\build\\\\win32\\\\Generals\\\\Release\\\\GeneralsX.exe'; $DeployDir = \"$env:USERPROFILE\\\\GeneralsX\\\\Generals\"; $FmtDll = 'C:\\vcpkg\\buildtrees\\fmt\\x86-windows-rel\\bin\\fmt.dll'; if (-not (Test-Path $FmtDll)) { $FmtDll = 'C:\\vcpkg\\installed\\x86-windows\\bin\\fmt.dll' }; if (Test-Path $GenExe) { Copy-Item -Path $GenExe -Destination $DeployDir -Force; if (Test-Path $FmtDll) { Copy-Item -Path $FmtDll -Destination $DeployDir -Force; Write-Host \"Deploy successful: $DeployDir\\\\GeneralsX.exe and fmt.dll (from $FmtDll)\" -ForegroundColor Green } else { Write-Host \"Deploy successful: $DeployDir\\\\GeneralsX.exe (WARNING: fmt.dll not found at any location!)\" -ForegroundColor Yellow } } else { Write-Host \"Error: Executable not found at $GenExe\" -ForegroundColor Red }"
+				". ${workspaceFolder}\\scripts\\deploy_zh.ps1 -Generals"
 			],
 			"isBackground": false,
 			"group": "build",
@@ -133,7 +133,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; if (Test-Path .\\GeneralsXZH.exe) { Write-Host 'Starting WinDbg debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsXZH.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_msvc2022.log } else { Write-Host 'Error: GeneralsXZH.exe not found. Run Deploy task first.' -ForegroundColor Red }"
+				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; if (Test-Path .\\GeneralsXZH.exe) { Write-Host 'Starting WinDbg debugger...' -ForegroundColor Cyan; WinDbgX.exe .\\GeneralsXZH.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_msvc2022.log } else { Write-Host 'Error: GeneralsXZH.exe not found. Run Deploy task first.' -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "test",
@@ -151,7 +151,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\Generals; if (Test-Path .\\GeneralsX.exe) { Write-Host 'Starting WinDbg debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_generals_msvc2022.log } else { Write-Host 'Error: GeneralsX.exe not found. Run Deploy task first.' -ForegroundColor Red }"
+				"cd $env:USERPROFILE\\GeneralsX\\Generals; if (Test-Path .\\GeneralsX.exe) { Write-Host 'Starting WinDbg debugger...' -ForegroundColor Cyan; WinDbgX.exe .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_generals_msvc2022.log } else { Write-Host 'Error: GeneralsX.exe not found. Run Deploy task first.' -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "test",
