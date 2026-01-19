@@ -5,11 +5,7 @@ argument-hint: "[step|windows|cmake|vcpkg|build|deploy|run]"
 agent: agent
 ---
 
-# GeneralsX Development Environment Setup (Windows MSVC 2022)
-
-You are assisting with setting up a complete Windows development environment for GeneralsX, a C++20 port of Command & Conquer: Generals Zero Hour from legacy Win32/DirectX 8 to modern SDL2 and Vulkan.
-
-## Goal (Success Criteria)
+## Your Goal (Success Criteria)
 
 The final goal of this prompt is to ensure the VS Code task:
 
@@ -49,6 +45,7 @@ When diagnosing failures, ask for that log (or guide the user to open it) and fo
 - **Build Tools**: MSVC Build Tools 2022 (v14.50.35717)
 - **Build System**: CMake 3.31+ with Ninja 1.11+
 - **Package Manager**: vcpkg at `C:\vcpkg\`
+- **Debugger**: WinDbg (Windows Debugger) for crash analysis
 - **CMake Preset**: `win32` (Release, 32-bit)
 - **Dependencies**: SDL2 2.32.10, FFmpeg 8.0.1, OpenAL-Soft 1.25.0, ZLib 1.3.1, fmt 12.1.0
 
@@ -91,7 +88,26 @@ cd C:\vcpkg
 .\vcpkg.exe list --triplet x86-windows
 ```
 
-### Step 4: Configure CMake Project
+### Step 4: Install WinDbg (Debugger)
+
+WinDbg is required for crash investigation and debugging:
+
+```powershell
+cd c:\Users\<YourUsername>\Projects\GeneralsX
+.\scripts\install_windbg.ps1
+```
+
+**Verify installation:**
+```powershell
+windbg.exe -version
+```
+
+If the script cannot auto-install, follow the manual installation:
+1. Download from: [Debugging Tools for Windows](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools)
+2. Run installer, accept default location
+3. Verify: `Get-Command windbg.exe`
+
+### Step 5: Configure CMake Project
 
 ```powershell
 cd c:\Users\<YourUsername>\Projects\GeneralsX
@@ -114,7 +130,7 @@ Optional (sanity checks):
 - ZLib found: version 1.3.1
 - CMake configuration SUCCESSFUL
 
-### Step 5: Build the Project
+### Step 6: Build the Project
 
 ```powershell
 cmake --build build\win32 --target z_generals --config Release --parallel 4
@@ -124,7 +140,7 @@ cmake --build build\win32 --target z_generals --config Release --parallel 4
 **Output**: `build\win32\GeneralsMD\Release\GeneralsXZH.exe`
 **Log**: `logs\build_zh_msvc2022.log`
 
-### Step 6: Deploy Executables
+### Step 7: Deploy Executables
 
 ```powershell
 $DeployDir = "$env:USERPROFILE\GeneralsX\GeneralsMD"
@@ -133,7 +149,7 @@ Copy-Item build\win32\GeneralsMD\Release\GeneralsXZH.exe $DeployDir -Force
 Copy-Item C:\vcpkg\installed\x86-windows\bin\fmt.dll $DeployDir -Force
 ```
 
-### Step 7: Configure Game Assets
+### Step 8: Configure Game Assets
 
 ```powershell
 # Option A: Copy from original game
@@ -144,7 +160,7 @@ Copy-Item $OriginalGame "$env:USERPROFILE\GeneralsX\GeneralsMD\Data" -Recurse -F
 New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\GeneralsX\GeneralsMD\Data" -Target $OriginalGame -Force
 ```
 
-### Step 8: Run the Game
+### Step 9: Run the Game
 
 ```powershell
 cd "$env:USERPROFILE\GeneralsX\GeneralsMD"
@@ -166,6 +182,12 @@ cd "$env:USERPROFILE\GeneralsX\GeneralsMD"
 ### "SDL2 not found"
 - **Cause**: vcpkg SDL2 not installed or CMake search path incorrect
 - **Fix**: Verify `cmake/sdl2.cmake` includes `C:/vcpkg/packages/sdl2_${VCPKG_DEFAULT_TRIPLET}`
+
+### "windbg.exe not found"
+- **Cause**: Debugging Tools for Windows not installed
+- **Fix**: Run `.\scripts\install_windbg.ps1` or manually install from Microsoft
+- **Manual**: [Debugging Tools for Windows Download](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools)
+- **Note**: Required for Debug tasks; can still build/run without it
 
 ### Build fails with "fatal error C1083: Cannot open include file"
 - **Fix**: Clear cache and reconfigure
@@ -202,4 +224,5 @@ Get-Content logs\build_zh_msvc2022.log -Tail 50
 - **GeneralsXZH is primary**: Zero Hour expansion (stable/tested)
 - **vcpkg_installed/ is gitignored**: Build artifacts (5GB+) not committed
 - **Windowed mode crucial**: Prevents fullscreen lockups during crashes
+- **WinDbg is required for debugging**: Use Debug tasks for crash investigation (logs to `logs/debugTerminal_msvc2022.log`)
 - **PowerShell only**: Use `pwsh` terminal, not cmd.exe
