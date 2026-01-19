@@ -62,3 +62,7 @@ build.ninja
 # Build and runtime logs
 /logs
 *.log
+
+# vcpkg build artifacts and cache
+/vcpkg_installed
+vcpkg_installed/
