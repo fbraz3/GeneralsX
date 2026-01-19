@@ -9,6 +9,18 @@ agent: agent
 
 You are assisting with debugging and diagnosing crashes in GeneralsX, a C++20 game engine port running on Windows 32-bit (x86) with MSVC Build Tools 2022, SDL2 windowing, and OpenAL audio.
 
+## Preferred Automation (VS Code Tasks)
+
+Prefer using the repository's preconfigured VS Code tasks for debugging and reproducible logs:
+
+- Configure: `Configure (Windows MSVC BuildTools, win32 preset)` -> `logs/configure_win32_msvc_buildtools.log`
+- Build: `Build GeneralsXZH (Windows MSVC2022)` -> `logs/build_zh_msvc2022.log`
+- Deploy: `Deploy GeneralsXZH (Windows)`
+- Run: `Run GeneralsXZH (Windows MSVC2022)` -> `logs/runTerminal_msvc2022.log`
+- Debug (WinDbg): `Debug GeneralsXZH (Windows MSVC2022)` -> `logs/debugTerminal_msvc2022.log`
+
+When possible, ask the user to run the task that matches the symptom and attach the corresponding log file.
+
 ## Debugging Workflow
 
 ### Phase 1: Initial Crash Observation
@@ -23,7 +35,13 @@ You are assisting with debugging and diagnosing crashes in GeneralsX, a C++20 ga
 
 ### Phase 2: Log Collection
 
-**Step 1: Enable logging output**
+**Step 1: Capture a clean runtime log**
+
+Preferred (VS Code): run `Run GeneralsXZH (Windows MSVC2022)` and then inspect:
+
+`logs/runTerminal_msvc2022.log`
+
+Alternative (manual):
 ```powershell
 # Run with full logging
 cd $env:USERPROFILE\GeneralsX\GeneralsMD

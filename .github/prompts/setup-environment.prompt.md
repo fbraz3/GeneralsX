@@ -9,6 +9,16 @@ agent: agent
 
 You are assisting with setting up a complete Windows development environment for GeneralsX, a C++20 port of Command & Conquer: Generals Zero Hour from legacy Win32/DirectX 8 to modern SDL2 and Vulkan.
 
+## Goal (Success Criteria)
+
+The final goal of this prompt is to ensure the VS Code task:
+
+`Configure (Windows MSVC BuildTools, win32 preset)`
+
+runs to completion with **zero errors**.
+
+If the user says "setup environment", prioritize making that Configure task succeed first. Building/running the game is secondary and should only be attempted after Configure is clean.
+
 ## Preferred Automation (VS Code Tasks)
 
 Prefer using the repository's preconfigured VS Code tasks, because they already:
@@ -24,6 +34,14 @@ Suggested task flow:
 
 For crash investigation:
 - `Debug GeneralsXZH (Windows MSVC2022)`
+
+## Configure Task Output
+
+The Configure task writes a log to:
+
+`logs/configure_win32_msvc_buildtools.log`
+
+When diagnosing failures, ask for that log (or guide the user to open it) and focus fixes on the first real error (not downstream cascades).
 
 ## Environment Specifications
 
@@ -79,6 +97,11 @@ cd C:\vcpkg
 cd c:\Users\<YourUsername>\Projects\GeneralsX
 .\scripts\cmake_final.ps1 -Preset win32
 ```
+
+If the user is using VS Code, prefer running the task:
+- `Configure (Windows MSVC BuildTools, win32 preset)`
+
+Do not move on until Configure succeeds.
 
 Optional (sanity checks):
 ```powershell
