@@ -59,11 +59,34 @@ if(SDL2_FOUND)
 
     # Create SDL2::SDL2 target if it doesn't exist
     if(NOT TARGET SDL2::SDL2)
-        add_library(SDL2::SDL2 UNKNOWN IMPORTED)
-        set_target_properties(SDL2::SDL2 PROPERTIES
-            IMPORTED_LOCATION "${SDL2_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
-        )
+        if(WIN32)
+            # On Windows, SDL2 from vcpkg is static, but we need to link it dynamically
+            # Create an interface library that adds SDL2.lib with proper DLL linking
+            add_library(SDL2::SDL2 INTERFACE IMPORTED)
+
+            set_target_properties(SDL2::SDL2 PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+                INTERFACE_LINK_LIBRARIES "${SDL2_LIBRARY}"
+            )
+
+            # Get the SDL2 DLL directory for adding to DELAYLOAD
+            get_filename_component(SDL2_LIB_DIR "${SDL2_LIBRARY}" DIRECTORY)
+            set(SDL2_BIN_DIR "${SDL2_LIB_DIR}/../bin")
+
+            find_file(SDL2_DLL
+                NAMES SDL2.dll
+                PATHS "${SDL2_BIN_DIR}"
+                NO_DEFAULT_PATH
+            )
+
+            if(SDL2_DLL)
+                message(STATUS "Phase 08: Found SDL2 DLL at ${SDL2_DLL}")
+                # Mark SDL2.dll as a delayload to ensure it appears in dependencies
+                set_target_properties(SDL2::SDL2 PROPERTIES
+                    INTERFACE_LINK_OPTIONS "/DELAYLOAD:SDL2.dll"
+                )
+            endif()
+        endif()
     endif()
 else()
     message(FATAL_ERROR "Phase 08: ❌ SDL2 library not found!")

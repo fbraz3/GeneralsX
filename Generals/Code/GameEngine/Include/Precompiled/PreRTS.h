@@ -38,7 +38,8 @@ class STLSpecialAlloc;
 // We actually don't use Windows for much other than timeGetTime, but it was included in 40
 // different .cpp files, so I bit the bullet and included it here.
 // PLEASE DO NOT ABUSE WINDOWS OR IT WILL BE REMOVED ENTIRELY. :-)
-//--------------------------------------------------------------------------------- System Includes
+//---------------------------------------------------------------------------------
+// System Includes
 #define WIN32_LEAN_AND_MEAN
 #if defined(_MSC_VER) && _MSC_VER < 1300
 #include <atlbase.h>
@@ -55,9 +56,6 @@ class STLSpecialAlloc;
 #include <io.h>
 #include <limits.h>
 #include <lmcons.h>
-#if defined(_MSC_VER) && _MSC_VER < 1300
-#include <mapicode.h>
-#endif
 #include <math.h>
 #include <memory.h>
 #include <mmsystem.h>

@@ -103,12 +103,10 @@ private:
 	Int m_wheelDelta;
 
 	// Helper methods
-	MouseButtonState checkForDoubleClick(UnsignedInt currentTime, UnsignedInt &lastClickTime, 
+	MouseButtonState checkForDoubleClick(UnsignedInt currentTime, UnsignedInt &lastClickTime,
 	                                      Int x, Int y, Int &lastX, Int &lastY);
 	void clearMouseState();
 };
 
 // EXTERNALS //////////////////////////////////////////////////////////////////
 extern SDL2Mouse *TheSDL2Mouse;
-
-#endif // SDL2MOUSE_H

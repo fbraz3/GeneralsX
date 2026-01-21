@@ -34,8 +34,23 @@
 #include <cstring>
 #include <signal.h>
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
 // SDL2 INCLUDES //////////////////////////////////////////////////////////////
+#if defined(_WIN32)
+// We provide our own WinMain, so do not let SDL redefine main.
+#define SDL_MAIN_HANDLED
+#endif
 #include <SDL2/SDL.h>
+#if defined(_WIN32)
+#include <SDL2/SDL_syswm.h>
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "SDL2Main.h"
@@ -79,9 +94,21 @@ class SDL2Mouse *TheSDL2Mouse = NULL;
 /// @note Timestamp of last event (mirrors Win32 TheMessageTime)
 Uint32 g_eventTimestamp = 0;
 
+/// @note ApplicationHWnd stub for Win32Device compatibility
+/// Win32Device code expects this global, but SDL2 doesn't use HWND
+#ifdef _WIN32
+HWND ApplicationHWnd = NULL;
+HINSTANCE ApplicationHInstance = NULL;
+
+// Forward declare Win32Mouse for stub
+class Win32Mouse;
+Win32Mouse *TheWin32Mouse = NULL; ///< Win32Mouse stub for compatibility
+#endif
+const char *gAppPrefix = "";
+
+// Global string file paths - used by GameText for localization
 const Char *g_strFile = "data\\Generals.str";
 const Char *g_csfFile = "data\\%s\\Generals.csf";
-const char *gAppPrefix = "";
 
 static Bool gInitializing = false;
 static Bool gDoPaint = true;
@@ -117,7 +144,7 @@ static Bool initializeAppWindow(Int width, Int height, Bool runWindowed)
 
 	// Determine window flags
 	Uint32 windowFlags = SDL_WINDOW_SHOWN;
-	
+
 	if (!runWindowed)
 	{
 		windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -139,6 +166,21 @@ static Bool initializeAppWindow(Int width, Int height, Bool runWindowed)
 		SDL_Quit();
 		return false;
 	}
+
+#if defined(_WIN32)
+	// Populate legacy Win32 globals used by WW3D/D3D initialization.
+	// WW3D still expects an HWND even when windowing/input is provided by SDL.
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	if (!SDL_GetWindowWMInfo(g_applicationWindow, &wmInfo))
+	{
+		DEBUG_CRASH(("SDL_GetWindowWMInfo failed: %s", SDL_GetError()));
+	}
+
+	ApplicationHWnd = wmInfo.info.win.window;
+	ApplicationHInstance = (HINSTANCE)GetModuleHandle(NULL);
+	DEBUG_LOG(("SDL2 window HWND=%p", (void*)ApplicationHWnd));
+#endif
 
 	// Create renderer for future use (SDL2 graphics)
 	// For now, we're not using it (W3D handles rendering)
@@ -192,10 +234,7 @@ GameEngine *CreateGameEngine(void)
 	return engine;
 }
 
-//-------------------------------------------------------------------------------------------------
-/** Main entry point for SDL2 platforms */
-//-------------------------------------------------------------------------------------------------
-int main(int argc, char *argv[])
+static int AppMain(int argc, char *argv[])
 {
 	Int exitcode = 1;
 
@@ -226,7 +265,7 @@ int main(int argc, char *argv[])
 		{
 			strncpy(buffer, argv[0], sizeof(buffer) - 1);
 			buffer[sizeof(buffer) - 1] = 0;
-			
+
 			// Find last path separator
 			char *slash = strrchr(buffer, '/');
 #ifdef _WIN32
@@ -237,7 +276,11 @@ int main(int argc, char *argv[])
 			if (slash)
 			{
 				*slash = 0;
+				#ifdef _WIN32
+				_chdir(buffer);
+				#else
 				chdir(buffer);
+				#endif
 			}
 		}
 
@@ -250,10 +293,10 @@ int main(int argc, char *argv[])
 
 		// Create SDL2 window
 		gInitializing = true;
-		Int displayWidth = TheGlobalData ? TheGlobalData->m_displayWidth : DEFAULT_DISPLAY_WIDTH;
-		Int displayHeight = TheGlobalData ? TheGlobalData->m_displayHeight : DEFAULT_DISPLAY_HEIGHT;
-		
-		if (!TheGlobalData->m_headless && 
+		Int displayWidth = TheGlobalData ? TheGlobalData->m_xResolution : DEFAULT_DISPLAY_WIDTH;
+		Int displayHeight = TheGlobalData ? TheGlobalData->m_yResolution : DEFAULT_DISPLAY_HEIGHT;
+
+		if (TheGlobalData && !TheGlobalData->m_headless &&
 		    !initializeAppWindow(displayWidth, displayHeight, TheGlobalData->m_windowed))
 		{
 			return exitcode;
@@ -310,3 +353,21 @@ int main(int argc, char *argv[])
 
 	return exitcode;
 }
+
+//-------------------------------------------------------------------------------------------------
+/** Entry point
+ *  - Windows: WinMain for WIN32 subsystem builds
+ *  - Other: main
+ */
+//-------------------------------------------------------------------------------------------------
+#if defined(_WIN32)
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+	return AppMain(__argc, __argv);
+}
+#else
+int main(int argc, char *argv[])
+{
+	return AppMain(argc, argv);
+}
+#endif

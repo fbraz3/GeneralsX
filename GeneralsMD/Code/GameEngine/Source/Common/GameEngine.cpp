@@ -28,6 +28,9 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <cstdarg>
+#include <cstdio>
+
 #include "Common/ActionManager.h"
 #include "Common/AudioAffect.h"
 #include "Common/BuildAssistant.h"
@@ -108,6 +111,28 @@
 #include "GameNetwork/GameSpy/GameResultsThread.h"
 
 #include "Common/version.h"
+
+
+static void boot_trace_log(const char *fmt, ...)
+{
+	FILE *fp = std::fopen("boot_trace.log", "a");
+	if (!fp) {
+		return;
+	}
+
+	SYSTEMTIME st;
+	::GetLocalTime(&st);
+	std::fprintf(fp, "[%02u:%02u:%02u.%03u] ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+
+	va_list args;
+	va_start(args, fmt);
+	std::vfprintf(fp, fmt, args);
+	va_end(args);
+
+	std::fprintf(fp, "\n");
+	std::fflush(fp);
+	std::fclose(fp);
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -352,8 +377,12 @@ Bool GameEngine::isGameHalted()
 void GameEngine::init()
 {
 	try {
+		// AGGRESSIVE LOGGING FOR DEBUGGING (boot_trace.log)
+		boot_trace_log("[GameEngine::init] Starting initialization");
+
 		//create an INI object to use for loading stuff
 		INI ini;
+		boot_trace_log("[GameEngine::init] INI object created");
 
 #ifdef DEBUG_LOGGING
 		if (TheVersion)
@@ -428,9 +457,10 @@ void GameEngine::init()
 
 		XferCRC xferCRC;
 		xferCRC.open("lightCRC");
-
+		boot_trace_log("[GameEngine::init] Creating TheLocalFileSystem");
 
 		initSubsystem(TheLocalFileSystem, "TheLocalFileSystem", createLocalFileSystem(), NULL);
+		boot_trace_log("[GameEngine::init] TheLocalFileSystem created");
 
 
     	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -451,9 +481,14 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
+		boot_trace_log("[GameEngine::init] Loading TheWritableGlobalData");
+
 		DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
 		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
+		boot_trace_log("[GameEngine::init] TheWritableGlobalData loaded, parsing custom definition");
+
 		TheWritableGlobalData->parseCustomDefinition();
+		boot_trace_log("[GameEngine::init] TheWritableGlobalData parsed");
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -470,14 +505,21 @@ void GameEngine::init()
 		ini.loadFileDirectory( "Data\\INI\\GameDataDebug", INI_LOAD_OVERWRITE, NULL );
 	#endif
 
+		boot_trace_log("[GameEngine::init] Parsing command line for engine init");
+
 		// special-case: parse command-line parameters after loading global data
 		CommandLine::parseCommandLineForEngineInit();
 
+		boot_trace_log("[GameEngine::init] Loading mods");
+
 		TheArchiveFileSystem->loadMods();
+
+		boot_trace_log("[GameEngine::init] Creating GameLODManager");
 
 		// doesn't require resets so just create a single instance here.
 		TheGameLODManager = MSGNEW("GameEngineSubsystem") GameLODManager;
 		TheGameLODManager->init();
+		boot_trace_log("[GameEngine::init] GameLODManager created");
 
 		// after parsing the command line, we may want to perform dds stuff. Do that here.
 		if (TheGlobalData->m_shouldUpdateTGAToDDS) {
@@ -504,8 +546,13 @@ void GameEngine::init()
 #ifdef DEBUG_CRC
 		initSubsystem(TheDeepCRCSanityCheck, "TheDeepCRCSanityCheck", MSGNEW("GameEngineSubystem") DeepCRCSanityCheck, NULL);
 #endif // DEBUG_CRC
+		boot_trace_log("[GameEngine::init] Creating TheGameText");
+
 		initSubsystem(TheGameText, "TheGameText", CreateGameTextInterface(), NULL);
+		boot_trace_log("[GameEngine::init] TheGameText created, updating window title");
+
 		updateWindowTitle();
+		boot_trace_log("[GameEngine::init] Window title updated, loading science store");
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -516,19 +563,36 @@ void GameEngine::init()
 
 
 		initSubsystem(TheScienceStore,"TheScienceStore", MSGNEW("GameEngineSubsystem") ScienceStore(), &xferCRC, "Data\\INI\\Default\\Science", "Data\\INI\\Science");
+		boot_trace_log("[GameEngine::init] TheScienceStore initialized");
+
 		initSubsystem(TheMultiplayerSettings,"TheMultiplayerSettings", MSGNEW("GameEngineSubsystem") MultiplayerSettings(), &xferCRC, "Data\\INI\\Default\\Multiplayer", "Data\\INI\\Multiplayer");
+		boot_trace_log("[GameEngine::init] TheMultiplayerSettings initialized");
+
 		initSubsystem(TheTerrainTypes,"TheTerrainTypes", MSGNEW("GameEngineSubsystem") TerrainTypeCollection(), &xferCRC, "Data\\INI\\Default\\Terrain", "Data\\INI\\Terrain");
+		boot_trace_log("[GameEngine::init] TheTerrainTypes initialized");
+
 		initSubsystem(TheTerrainRoads,"TheTerrainRoads", MSGNEW("GameEngineSubsystem") TerrainRoadCollection(), &xferCRC, "Data\\INI\\Default\\Roads", "Data\\INI\\Roads");
+		boot_trace_log("[GameEngine::init] TheTerrainRoads initialized");
+
+		boot_trace_log("[GameEngine::init] About to create TheGlobalLanguageData");
+
 		initSubsystem(TheGlobalLanguageData,"TheGlobalLanguageData",MSGNEW("GameEngineSubsystem") GlobalLanguage, NULL); // must be before the game text
+		boot_trace_log("[GameEngine::init] TheGlobalLanguageData created");
+
 		TheGlobalLanguageData->parseCustomDefinition();
+		boot_trace_log("[GameEngine::init] TheGlobalLanguageData parsed");
+
 		initSubsystem(TheCDManager,"TheCDManager", CreateCDManager(), NULL);
+		boot_trace_log("[GameEngine::init] TheCDManager initialized");
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
 	sprintf(Buf,"----------------------------------------------------------------------------After TheCDManager = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
   startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
+		boot_trace_log("[GameEngine::init] initSubsystem TheAudio begin");
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
+		boot_trace_log("[GameEngine::init] initSubsystem TheAudio end");
 		// DEVELOPMENT MODE: Don't quit if music files not loaded from CD
 		// Music is optional in development - all other assets are in local directories
 		// if (!TheAudio->isMusicAlreadyLoaded())
@@ -542,14 +606,36 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
+		boot_trace_log("[GameEngine::init] initSubsystem TheFunctionLexicon begin");
 		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), NULL);
+		boot_trace_log("[GameEngine::init] initSubsystem TheFunctionLexicon end");
+
+		boot_trace_log("[GameEngine::init] initSubsystem TheModuleFactory begin");
 		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), NULL);
+		boot_trace_log("[GameEngine::init] initSubsystem TheModuleFactory end");
+
+		boot_trace_log("[GameEngine::init] initSubsystem TheMessageStream begin");
 		initSubsystem(TheMessageStream,"TheMessageStream", createMessageStream(), NULL);
+		boot_trace_log("[GameEngine::init] initSubsystem TheMessageStream end");
+
+		boot_trace_log("[GameEngine::init] initSubsystem TheSidesList begin");
 		initSubsystem(TheSidesList,"TheSidesList", MSGNEW("GameEngineSubsystem") SidesList(), NULL);
+		boot_trace_log("[GameEngine::init] initSubsystem TheSidesList end");
+
+		boot_trace_log("[GameEngine::init] initSubsystem TheCaveSystem begin");
 		initSubsystem(TheCaveSystem,"TheCaveSystem", MSGNEW("GameEngineSubsystem") CaveSystem(), NULL);
+		boot_trace_log("[GameEngine::init] initSubsystem TheCaveSystem end");
+		boot_trace_log("[GameEngine::init] initSubsystem TheRankInfoStore begin");
 		initSubsystem(TheRankInfoStore,"TheRankInfoStore", MSGNEW("GameEngineSubsystem") RankInfoStore(), &xferCRC, NULL, "Data\\INI\\Rank");
+		boot_trace_log("[GameEngine::init] initSubsystem TheRankInfoStore end");
+
+		boot_trace_log("[GameEngine::init] initSubsystem ThePlayerTemplateStore begin");
 		initSubsystem(ThePlayerTemplateStore,"ThePlayerTemplateStore", MSGNEW("GameEngineSubsystem") PlayerTemplateStore(), &xferCRC, "Data\\INI\\Default\\PlayerTemplate", "Data\\INI\\PlayerTemplate");
+		boot_trace_log("[GameEngine::init] initSubsystem ThePlayerTemplateStore end");
+
+		boot_trace_log("[GameEngine::init] initSubsystem TheParticleSystemManager begin");
 		initSubsystem(TheParticleSystemManager,"TheParticleSystemManager", createParticleSystemManager(), NULL);
+		boot_trace_log("[GameEngine::init] initSubsystem TheParticleSystemManager end");
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -578,7 +664,9 @@ void GameEngine::init()
 
 
 
+		boot_trace_log("[GameEngine::init] initSubsystem TheThingFactory begin");
 		initSubsystem(TheThingFactory,"TheThingFactory", createThingFactory(), &xferCRC, "Data\\INI\\Default\\Object", "Data\\INI\\Object");
+		boot_trace_log("[GameEngine::init] initSubsystem TheThingFactory end");
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -588,8 +676,13 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
+		boot_trace_log("[GameEngine::init] initSubsystem TheUpgradeCenter begin");
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
+		boot_trace_log("[GameEngine::init] initSubsystem TheUpgradeCenter end");
+
+		boot_trace_log("[GameEngine::init] initSubsystem TheGameClient begin");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), NULL);
+		boot_trace_log("[GameEngine::init] initSubsystem TheGameClient end");
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -744,13 +837,19 @@ void GameEngine::init()
 	}
 	catch (ErrorCode ec)
 	{
+		fprintf(stderr, "[GameEngine::init] Caught ErrorCode exception\n");
+		fflush(stderr);
 		if (ec == ERROR_INVALID_D3D)
 		{
+			fprintf(stderr, "[GameEngine::init] ERROR_INVALID_D3D caught\n");
+			fflush(stderr);
 			RELEASE_CRASHLOCALIZED("ERROR:D3DFailurePrompt", "ERROR:D3DFailureMessage");
 		}
 	}
 	catch (INIException e)
 	{
+		fprintf(stderr, "[GameEngine::init] Caught INIException: %s\n", e.mFailureMessage ? e.mFailureMessage : "NULL");
+		fflush(stderr);
 		if (e.mFailureMessage)
 			RELEASE_CRASH((e.mFailureMessage));
 		else
@@ -759,6 +858,8 @@ void GameEngine::init()
 	}
 	catch (...)
 	{
+		fprintf(stderr, "[GameEngine::init] Caught unknown exception\n");
+		fflush(stderr);
 		RELEASE_CRASH(("Uncaught Exception during initialization."));
 	}
 

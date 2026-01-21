@@ -39,6 +39,8 @@ static void drawFramerateBar(void);
 #include <windows.h>
 #include <io.h>
 #include <time.h>
+#include <cstdarg>
+#include <cstdio>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/FramePacer.h"
@@ -108,6 +110,28 @@ static void drawFramerateBar(void);
 #endif
 
 #include "WinMain.h"
+
+
+static void boot_trace_log(const char *fmt, ...)
+{
+	FILE *fp = std::fopen("boot_trace.log", "a");
+	if (!fp) {
+		return;
+	}
+
+	SYSTEMTIME st;
+	::GetLocalTime(&st);
+	std::fprintf(fp, "[%02u:%02u:%02u.%03u] ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+
+	va_list args;
+	va_start(args, fmt);
+	std::vfprintf(fp, fmt, args);
+	va_end(args);
+
+	std::fprintf(fp, "\n");
+	std::fflush(fp);
+	std::fclose(fp);
+}
 
 
 // DEFINE AND ENUMS ///////////////////////////////////////////////////////////
@@ -698,7 +722,10 @@ void W3DDisplay::init( void )
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
-		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
+		boot_trace_log("[W3DDisplay::init] WW3D::Init begin (hwnd=%p)", (void*)ApplicationHWnd);
+		WW3DErrorType ww3dInitResult = WW3D::Init( ApplicationHWnd );
+		boot_trace_log("[W3DDisplay::init] WW3D::Init result=%d", (int)ww3dInitResult);
+		if (ww3dInitResult != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
@@ -761,6 +788,14 @@ void W3DDisplay::init( void )
 			}
 			}
 
+			boot_trace_log(
+				"[W3DDisplay::init] Set_Render_Device attempt=%d width=%d height=%d bpp=%d windowed=%d",
+				attempt,
+				getWidth(),
+				getHeight(),
+				getBitDepth(),
+				getWindowed());
+
 			renderDeviceError = WW3D::Set_Render_Device(
 				0,
 				getWidth(),
@@ -768,6 +803,7 @@ void W3DDisplay::init( void )
 				getBitDepth(),
 				getWindowed(),
 				true );
+			boot_trace_log("[W3DDisplay::init] Set_Render_Device result=%d", (int)renderDeviceError);
 
 			++attempt;
 		}
@@ -775,6 +811,7 @@ void W3DDisplay::init( void )
 
 		if (renderDeviceError != WW3D_ERROR_OK)
 		{
+			boot_trace_log("[W3DDisplay::init] ERROR: Render device init failed, shutting down WW3D");
 			WW3D::Shutdown();
 			WWMath::Shutdown();
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
@@ -798,38 +835,58 @@ void W3DDisplay::init( void )
 			setGamma(TheGlobalData->m_displayGamma,0.0f,1.0f,FALSE);
 	}
 
+	boot_trace_log("[W3DDisplay::init] initAssets begin");
 	initAssets();
+	boot_trace_log("[W3DDisplay::init] initAssets end");
 
 	if (!TheGlobalData->m_headless)
 	{
+		boot_trace_log("[W3DDisplay::init] init2DScene begin");
 		init2DScene();
+		boot_trace_log("[W3DDisplay::init] init2DScene end");
+
+		boot_trace_log("[W3DDisplay::init] init3DScene begin");
 		init3DScene();
+		boot_trace_log("[W3DDisplay::init] init3DScene end");
+
+		boot_trace_log("[W3DDisplay::init] W3DShaderManager::init begin");
 		W3DShaderManager::init();
+		boot_trace_log("[W3DDisplay::init] W3DShaderManager::init end");
 
 		// Create and initialize the debug display
+		boot_trace_log("[W3DDisplay::init] Creating W3DDebugDisplay");
 		m_nativeDebugDisplay = NEW W3DDebugDisplay();
 		m_debugDisplay = m_nativeDebugDisplay;
 		if ( m_nativeDebugDisplay )
 		{
+			boot_trace_log("[W3DDisplay::init] W3DDebugDisplay::init begin");
 			m_nativeDebugDisplay->init();
+			boot_trace_log("[W3DDisplay::init] W3DDebugDisplay::init end");
 			GameFont *font;
 
 			if (TheGlobalLanguageData && TheGlobalLanguageData->m_nativeDebugDisplay.name.isNotEmpty())
 			{
+				boot_trace_log("[W3DDisplay::init] Getting debug font (localized)");
 				font=TheFontLibrary->getFont(
 					TheGlobalLanguageData->m_nativeDebugDisplay.name,
 					TheGlobalLanguageData->m_nativeDebugDisplay.size,
 					TheGlobalLanguageData->m_nativeDebugDisplay.bold);
 			}
 			else
+			{
+				boot_trace_log("[W3DDisplay::init] Getting debug font FixedSys");
 				font=TheFontLibrary->getFont( "FixedSys", 8, FALSE );
+			}
 
+			boot_trace_log("[W3DDisplay::init] Setting debug font (ptr=%p)", (void*)font);
 			m_nativeDebugDisplay->setFont( font );
 			m_nativeDebugDisplay->setFontHeight( 13 );
 			m_nativeDebugDisplay->setFontWidth( 9 );
 		}
 
-		DX8WebBrowser::Initialize();
+		boot_trace_log("[W3DDisplay::init] DX8WebBrowser::Initialize begin");
+		Bool webBrowserOk = DX8WebBrowser::Initialize();
+		boot_trace_log("[W3DDisplay::init] DX8WebBrowser::Initialize end (ok=%d)", (int)webBrowserOk);
 	}
 
 	// we're now online
@@ -838,6 +895,7 @@ void W3DDisplay::init( void )
 	{
 		m_debugDisplayCallback = StatDebugDisplay;
 	}
+	boot_trace_log("[W3DDisplay::init] Completed successfully");
 }
 
 // W3DDisplay::reset ===========================================================

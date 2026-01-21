@@ -23,11 +23,12 @@ target_link_libraries(z_generals PRIVATE
     z_gameengine
     z_gameenginedevice
     zi_always
+    SDL2::SDL2
 )
 
-# Add SDL2 for non-Windows builds
-if(NOT (WIN32 AND MSVC))
-    target_link_libraries(z_generals PRIVATE SDL2::SDL2)
+# Add delay load import library for Windows builds (needed for /DELAYLOAD)
+if(WIN32)
+    target_link_libraries(z_generals PRIVATE delayimp)
 endif()
 
 # TODO Originally referred to build host and user, replace with git info perhaps?
@@ -58,14 +59,14 @@ target_include_directories(z_generals PRIVATE
 )
 
 # Platform-specific entry point
-# Windows 32-bit with VC6: WinMain.cpp
-# macOS, Linux, other: SDL2Main.cpp
-if(WIN32 AND MSVC)
+# VS6 build keeps the original Win32 entrypoint.
+# All other builds use the SDL2 entrypoint.
+if(IS_VS6_BUILD)
     set(ENTRY_POINT_SRC WinMain.cpp WinMain.h)
-    message(STATUS "Main: Using WinMain.cpp (Windows VC6)")
+    message(STATUS "Main: Using WinMain.cpp (VS6 legacy entry)")
 else()
     set(ENTRY_POINT_SRC SDL2Main.cpp SDL2Main.h)
-    message(STATUS "Main: Using SDL2Main.cpp (SDL2-based entry)")
+    message(STATUS "Main: Using SDL2Main.cpp (SDL2 entry)")
 endif()
 
 target_sources(z_generals PRIVATE

@@ -29,6 +29,8 @@
 
 #include <SDL2/SDL.h>
 
+class GameEngine;
+
 // GLOBALS ////////////////////////////////////////////////////////////////////
 
 /// SDL2 main window (replaces HWND ApplicationHWnd)
@@ -44,18 +46,7 @@ extern SDL2Mouse *TheSDL2Mouse;
 /// Event timestamp (replaces DWORD TheMessageTime)
 extern Uint32 g_eventTimestamp;
 
-// Default display dimensions
-#ifndef DEFAULT_DISPLAY_WIDTH
-#define DEFAULT_DISPLAY_WIDTH  1024
-#endif
-
-#ifndef DEFAULT_DISPLAY_HEIGHT
-#define DEFAULT_DISPLAY_HEIGHT  768
-#endif
-
 // FUNCTION DECLARATIONS //////////////////////////////////////////////////////
 
 /// Create the SDL2 game engine
 extern GameEngine *CreateGameEngine(void);
-
-#endif // SDL2MAIN_H

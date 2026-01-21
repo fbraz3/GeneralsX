@@ -30,12 +30,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "Common/GameEngine.h"
+#include "GameLogic/GameLogic.h"
+#include "GameNetwork/NetworkInterface.h"
+
+#include "MilesAudioDevice/MilesAudioManager.h"
+
+#include "Win32Device/Common/Win32BIGFileSystem.h"
+#include "Win32Device/Common/Win32LocalFileSystem.h"
+
+#include "W3DDevice/Common/W3DModuleFactory.h"
+#include "W3DDevice/Common/W3DFunctionLexicon.h"
+#include "W3DDevice/Common/W3DRadar.h"
+#include "W3DDevice/Common/W3DThingFactory.h"
+#include "W3DDevice/GameClient/W3DGameClient.h"
+#include "W3DDevice/GameClient/W3DWebBrowser.h"
+#include "W3DDevice/GameLogic/W3DGameLogic.h"
 
 // FORWARD DECLARATIONS ///////////////////////////////////////////////////////
-// SDL2 types - forward declared to avoid SDL2 header include issues in VC6
-typedef struct SDL_Window SDL_Window;
-typedef struct SDL_Event SDL_Event;
-typedef union SDL_Event_Anon SDL_WindowEvent;
+// Only forward declare what we need in the header to keep compile order flexible.
+struct SDL_WindowEvent;
 
 // CONSTANTS //////////////////////////////////////////////////////////////////
 
@@ -88,9 +101,35 @@ protected:
 	/** Handle SDL quit event */
 	void handleQuitEvent(void);
 
+	// Factories (must be implemented to make GameEngine concrete)
+	virtual GameLogic *createGameLogic(void) override;
+	virtual GameClient *createGameClient(void) override;
+	virtual ModuleFactory *createModuleFactory(void) override;
+	virtual ThingFactory *createThingFactory(void) override;
+	virtual FunctionLexicon *createFunctionLexicon(void) override;
+	virtual LocalFileSystem *createLocalFileSystem(void) override;
+	virtual ArchiveFileSystem *createArchiveFileSystem(void) override;
+	virtual NetworkInterface *createNetwork(void); // kept for parity with Win32GameEngine
+	virtual Radar *createRadar(void) override;
+	virtual WebBrowser *createWebBrowser(void) override;
+	virtual AudioManager *createAudioManager(void) override;
+	virtual ParticleSystemManager *createParticleSystemManager(void) override;
+
 private:
 
 	// No additional state needed for basic event handling
 };
 
-#endif // SDL2GAMEENGINE_H
+// INLINE -----------------------------------------------------------------------------------------
+inline GameLogic *SDL2GameEngine::createGameLogic(void) { return NEW W3DGameLogic; }
+inline GameClient *SDL2GameEngine::createGameClient(void) { return NEW W3DGameClient; }
+inline ModuleFactory *SDL2GameEngine::createModuleFactory(void) { return NEW W3DModuleFactory; }
+inline ThingFactory *SDL2GameEngine::createThingFactory(void) { return NEW W3DThingFactory; }
+inline FunctionLexicon *SDL2GameEngine::createFunctionLexicon(void) { return NEW W3DFunctionLexicon; }
+inline LocalFileSystem *SDL2GameEngine::createLocalFileSystem(void) { return NEW Win32LocalFileSystem; }
+inline ArchiveFileSystem *SDL2GameEngine::createArchiveFileSystem(void) { return NEW Win32BIGFileSystem; }
+inline ParticleSystemManager *SDL2GameEngine::createParticleSystemManager(void) { return NEW W3DParticleSystemManager; }
+
+inline NetworkInterface *SDL2GameEngine::createNetwork(void) { return NetworkInterface::createNetwork(); }
+inline Radar *SDL2GameEngine::createRadar(void) { return NEW W3DRadar; }
+inline WebBrowser *SDL2GameEngine::createWebBrowser(void) { return NEW W3DWebBrowser; }

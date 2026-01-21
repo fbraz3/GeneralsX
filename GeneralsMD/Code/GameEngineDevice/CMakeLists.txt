@@ -212,7 +212,7 @@ if(USE_SDL2_DEVICE)
         Include/SDL2Device/Common/SDL2GameEngine.h
         #Include/SDL2Device/GameClient/SDL2Keyboard.h
         #Include/SDL2Device/GameClient/SDL2Mouse.h
-        #Source/SDL2Device/Common/SDL2GameEngine.cpp
+        Source/SDL2Device/Common/SDL2GameEngine.cpp
         #Source/SDL2Device/GameClient/SDL2Keyboard.cpp
         #Source/SDL2Device/GameClient/SDL2Mouse.cpp
     )

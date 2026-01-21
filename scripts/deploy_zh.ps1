@@ -74,6 +74,28 @@ if (-not (Test-Path $DeployTarget)) {
 $FileSize = (Get-Item $DeployTarget).Length / 1MB
 Write-Host "   ✓ Size: $([Math]::Round($FileSize, 2)) MB" -ForegroundColor Green
 
+# Copy required DLLs
+Write-Host "📚 Copying required DLLs..." -ForegroundColor Cyan
+$DLLsPath = "$ProjectRoot\vcpkg_installed\x86-windows\bin"
+$RequiredDLLs = @("fmt.dll", "SDL2.dll", "OpenAL32.dll")
+
+foreach ($dll in $RequiredDLLs) {
+    $DllSource = Join-Path $DLLsPath $dll
+    $DllDest = Join-Path "$DeployBase\$GameDir" $dll
+
+    if (Test-Path $DllSource) {
+        try {
+            Copy-Item -Path $DllSource -Destination $DllDest -Force
+            Write-Host "   ✓ Copied: $dll" -ForegroundColor Green
+        } catch {
+            Write-Error "Failed to copy $dll`nError: $_"
+            exit 1
+        }
+    } else {
+        Write-Warning "   ⚠ Not found: $DllSource"
+    }
+}
+
 Write-Host ""
 Write-Host "✅ Deployment completed successfully" -ForegroundColor Green
 

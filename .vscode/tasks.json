@@ -61,7 +61,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				". ${workspaceFolder}\\scripts\\deploy_zh.ps1"
+				"Stop-Process -Name GeneralsXZH -Force -ErrorAction SilentlyContinue; . ${workspaceFolder}\\scripts\\deploy_zh.ps1"
 			],
 			"isBackground": false,
 			"group": "build",
@@ -79,7 +79,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				". ${workspaceFolder}\\scripts\\deploy_zh.ps1 -Generals"
+				"Stop-Process -Name GeneralsX -Force -ErrorAction SilentlyContinue; . ${workspaceFolder}\\scripts\\deploy_zh.ps1 -Generals"
 			],
 			"isBackground": false,
 			"group": "build",
@@ -97,7 +97,7 @@
 			"command": "pwsh",
 			"args": [
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; if (Test-Path .\\GeneralsXZH.exe) { .\\GeneralsXZH.exe -win -noshellmap 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_msvc2022.log } else { Write-Host 'Error: GeneralsXZH.exe not found. Run Deploy task first.' -ForegroundColor Red }"
+				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; Remove-Item .\\boot_trace.log -ErrorAction SilentlyContinue; if (Test-Path .\\GeneralsXZH.exe) { .\\GeneralsXZH.exe -win -noshellmap 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_msvc2022.log; if (Test-Path .\\boot_trace.log) { Copy-Item .\\boot_trace.log ${workspaceFolder}\\logs\\boot_trace_msvc2022.log -Force } } else { Write-Host 'Error: GeneralsXZH.exe not found. Run Deploy task first.' -ForegroundColor Red }"
 			],
 			"isBackground": false,
 			"group": "test",
