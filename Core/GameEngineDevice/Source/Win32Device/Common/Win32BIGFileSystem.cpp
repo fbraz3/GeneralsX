@@ -62,6 +62,7 @@ void Win32BIGFileSystem::init() {
 #if RTS_ZEROHOUR
     // load original Generals assets
     AsciiString installPath;
+    extern Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val);
     GetStringFromGeneralsRegistry("", "InstallPath", installPath );
     //@todo this will need to be ramped up to a crash for release
     DEBUG_ASSERTCRASH(!installPath.isEmpty(), ("Be 1337! Go install Generals!"));

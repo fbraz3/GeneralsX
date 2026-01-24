@@ -238,8 +238,10 @@ VideoStreamInterface*	BinkVideoPlayer::open( AsciiString movieTitle )
 			}
 		}
 
+		extern AsciiString GetRegistryLanguage(void);
 		char localizedFilePath[ _MAX_PATH ];
-		sprintf( localizedFilePath, VIDEO_LANG_PATH_FORMAT, GetRegistryLanguage().str(), pVideo->m_filename.str(), VIDEO_EXT );
+		AsciiString langCode = GetRegistryLanguage();
+		sprintf( localizedFilePath, VIDEO_LANG_PATH_FORMAT, langCode.str(), pVideo->m_filename.str(), VIDEO_EXT );
 		HBINK handle = BinkOpen(localizedFilePath , BINKPRELOADALL );
 		DEBUG_ASSERTLOG(!handle, ("opened localized bink file %s", localizedFilePath));
 		if (!handle)

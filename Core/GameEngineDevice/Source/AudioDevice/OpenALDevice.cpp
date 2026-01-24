@@ -80,6 +80,12 @@ bool OpenALDevice::init()
 
     m_initialized = true;
     m_lastError = "";
+
+    DEBUG_LOG(("[INIT] OpenAL Audio Device Opened"));
+    DEBUG_LOG(("[INIT] OpenAL Device Name: %s", alcGetString(m_alDevice, ALC_DEVICE_SPECIFIER) ? alcGetString(m_alDevice, ALC_DEVICE_SPECIFIER) : "Default"));
+    DEBUG_LOG(("[INIT] OpenAL Context Created Successfully"));
+    DEBUG_LOG(("[INIT] Audio Manager: OpenAL Backend ACTIVE"));
+    
     return true;
 }
 

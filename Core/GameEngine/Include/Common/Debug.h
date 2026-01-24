@@ -49,7 +49,8 @@
 
 class AsciiString;
 
-#define NO_RELEASE_DEBUG_LOGGING
+// #define NO_RELEASE_DEBUG_LOGGING  // COMMENTED OUT: Enable DEBUG_LOG output in Release builds for backend verification
+#define RELEASE_DEBUG_LOGGING  // ENABLED: Captures debug logs during game startup for verifying SDL2+OpenAL backend usage
 
 #ifdef RELEASE_DEBUG_LOGGING  ///< Creates a DebugLogFile.txt (No I or D) with all the debug log goodness.  Good for startup problems.
 	#define ALLOW_DEBUG_UTILS 1

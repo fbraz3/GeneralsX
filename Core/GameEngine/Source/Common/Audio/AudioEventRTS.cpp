@@ -774,6 +774,7 @@ AsciiString AudioEventRTS::generateFilenamePrefix( AudioType audioTypeToPlay, Bo
 	retStr.concat("\\");
 
 	if (localized) {
+		extern AsciiString GetRegistryLanguage(void);
 		retStr.concat(GetRegistryLanguage());
 		retStr.concat("\\");
 	}

@@ -52,8 +52,12 @@ SDL2GameEngine::~SDL2GameEngine()
 //-------------------------------------------------------------------------------------------------
 void SDL2GameEngine::init(void)
 {
+	DEBUG_LOG(("[INIT] SDL2 Game Engine Initialization Starting"));
+	
 	// Stub: SDL2 initialization will be done in Phase 09
 	GameEngine::init();
+	
+	DEBUG_LOG(("[INIT] SDL2 Game Engine Initialized - Using SDL2 windowing + OpenAL audio"));
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -151,7 +151,8 @@ static Bool initializeAppWindow(Int width, Int height, Bool runWindowed)
 	gInitializing = false;
 	isApplicationActive = true;
 
-	DEBUG_LOG(("SDL2 window created successfully (windowed=%d)", runWindowed));
+	DEBUG_LOG(("[INIT] SDL2 Initialized Successfully - Windowed: %s", runWindowed ? "YES" : "NO"));
+	DEBUG_LOG(("[INIT] SDL2 Window Size: %dx%d", width, height));
 	return true;
 }
 

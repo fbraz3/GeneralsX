@@ -46,6 +46,8 @@ extern DWORD TheMessageTime;
 //-------------------------------------------------------------------------------------------------
 Win32GameEngine::Win32GameEngine()
 {
+	DEBUG_LOG(("[LEGACY] WARNING: Win32GameEngine Constructor Called - Should NOT appear if using SDL2GameEngine!"));
+	
 	// Stop blue screen
 	m_previousErrorMode = SetErrorMode( SEM_FAILCRITICALERRORS );
 }
@@ -65,6 +67,7 @@ Win32GameEngine::~Win32GameEngine()
 //-------------------------------------------------------------------------------------------------
 void Win32GameEngine::init( void )
 {
+	DEBUG_LOG(("[LEGACY] WARNING: Win32GameEngine::init() Called - Should NOT appear if using SDL2GameEngine!"));
 
 	// extending functionality
 	GameEngine::init();

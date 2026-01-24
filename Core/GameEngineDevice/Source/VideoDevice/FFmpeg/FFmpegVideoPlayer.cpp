@@ -244,8 +244,10 @@ VideoStreamInterface*	FFmpegVideoPlayer::open( AsciiString movieTitle )
 			}
 		}
 
+		extern AsciiString GetRegistryLanguage(void);
 		char localizedFilePath[ _MAX_PATH ];
-		sprintf( localizedFilePath, VIDEO_LANG_PATH_FORMAT, GetRegistryLanguage().str(), pVideo->m_filename.str(), VIDEO_EXT );
+		AsciiString langCode = GetRegistryLanguage();
+		sprintf( localizedFilePath, VIDEO_LANG_PATH_FORMAT, langCode.str(), pVideo->m_filename.str(), VIDEO_EXT );
 		File* file =  TheFileSystem->openFile(localizedFilePath);
 		DEBUG_ASSERTLOG(!file, ("opened localized bink file %s", localizedFilePath));
 		if (!file)

@@ -1440,12 +1440,16 @@ void MilesAudioManager::openDevice( void )
 	const AudioSettings *audioSettings = getAudioSettings();
 	m_selectedSpeakerType = TheAudio->translateSpeakerTypeToUnsignedInt(m_prefSpeaker);
 
+	DEBUG_LOG(("[LEGACY] Miles Audio System Initializing - AIL_quick_startup() being called"));
+	DEBUG_LOG(("[LEGACY] WARNING: This SHOULD NOT appear if running full SDL2+OpenAL!"));
+	
 	retval = AIL_quick_startup(audioSettings->m_useDigital, audioSettings->m_useMidi, audioSettings->m_outputRate, audioSettings->m_outputBits, audioSettings->m_outputChannels);
 
 	// Quick handles tells us where to store the various devices. For now, we're only interested in the digital handle.
 	AIL_quick_handles(&m_digitalHandle, NULL, NULL);
 
 	if (retval) {
+		DEBUG_LOG(("[LEGACY] Miles Audio System Initialized Successfully"));
 		buildProviderList();
 	} else {
 		// if we couldn't initialize any devices, turn sound off (fail silently)

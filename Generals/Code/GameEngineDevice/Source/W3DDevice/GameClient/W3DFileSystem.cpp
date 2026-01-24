@@ -274,8 +274,10 @@ char const * GameFileClass::Set_Name( char const *filename )
 	{
 		if( isImageFileType(fileType) )
 		{
+			extern AsciiString GetRegistryLanguage(void);
 			static const char *localizedPathFormat = "Data/%s/Art/Textures/";
-			sprintf(m_filePath,localizedPathFormat, GetRegistryLanguage().str());
+			AsciiString langCode = GetRegistryLanguage();
+			sprintf(m_filePath,localizedPathFormat, langCode.str());
 			strlcat(m_filePath, filename, ARRAY_SIZE(m_filePath));
 
 		}

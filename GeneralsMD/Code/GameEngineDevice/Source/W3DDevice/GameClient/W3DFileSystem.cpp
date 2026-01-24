@@ -172,7 +172,10 @@ char const * GameFileClass::Set_Name( char const *filename )
 	if( fileType == FILE_TYPE_W3D )
 	{
 		static const char *localizedPathFormat = "Data/%s/Art/W3D/";
-		sprintf(m_filePath,localizedPathFormat, GetRegistryLanguage().str());
+		// Default to "english" if GetRegistryLanguage() is not available in this build context
+		extern AsciiString GetRegistryLanguage(void);
+		AsciiString langCode = GetRegistryLanguage();
+		sprintf(m_filePath, localizedPathFormat, langCode.str());
 		strlcat(m_filePath, filename, ARRAY_SIZE(m_filePath));
 
 	}
@@ -180,7 +183,10 @@ char const * GameFileClass::Set_Name( char const *filename )
 	else if( isImageFileType(fileType) )
 	{
 		static const char *localizedPathFormat = "Data/%s/Art/Textures/";
-		sprintf(m_filePath,localizedPathFormat, GetRegistryLanguage().str());
+		// Default to "english" if GetRegistryLanguage() is not available in this build context
+		extern AsciiString GetRegistryLanguage(void);
+		AsciiString langCode = GetRegistryLanguage();
+		sprintf(m_filePath, localizedPathFormat, langCode.str());
 		strlcat(m_filePath, filename, ARRAY_SIZE(m_filePath));
 
 	}
