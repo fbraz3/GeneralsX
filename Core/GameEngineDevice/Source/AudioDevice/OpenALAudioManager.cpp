@@ -22,9 +22,8 @@
  * Wraps OpenALDevice to provide GameAudio.h AudioManager interface
  */
 
-#include "PreRTS.h"
-#include "AudioDevice/OpenALAudioManager.h"
 #include "Common/GameAudio.h"
+#include "AudioDevice/OpenALAudioManager.h"
 #include "Common/Debug.h"
 #include <stdio.h>
 
