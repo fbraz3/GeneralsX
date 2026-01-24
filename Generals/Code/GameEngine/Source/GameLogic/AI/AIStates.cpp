@@ -6082,6 +6082,15 @@ void AIEnterState::onExit( StateExitType status )
 	}
 }
 
+static bool hasVerticalOverlap(const Object* a, const Object* b)
+{
+	const float aLower = a->getPosition()->z;
+	const float aUpper = aLower + a->getGeometryInfo().getMaxHeightAbovePosition();
+	const float bLower = b->getPosition()->z;
+	const float bUpper = bLower + b->getGeometryInfo().getMaxHeightAbovePosition();
+	return aUpper >= bLower && aLower <= bUpper;
+}
+
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIEnterState::update()
 {
@@ -6145,7 +6154,13 @@ StateReturnType AIEnterState::update()
 	StateReturnType code = AIInternalMoveToState::update();
 
 	// if it's airborne, wait for it to land
+#if RETAIL_COMPATIBLE_CRC
 	if (code == STATE_SUCCESS && goal->isAboveTerrain() && !obj->isAboveTerrain())
+#else
+	// TheSuperHackers @bugfix Stubbjax 05/11/2025 Check for vertical overlap when entering containers.
+	// This prevents levitating or airborne units from entering containers they are not actually touching.
+	if (code == STATE_SUCCESS && !hasVerticalOverlap(goal, obj))
+#endif
 	{
 		code = STATE_CONTINUE;
 	}
