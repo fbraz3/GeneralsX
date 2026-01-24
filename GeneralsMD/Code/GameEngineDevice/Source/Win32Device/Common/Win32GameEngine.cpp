@@ -37,7 +37,9 @@
 
 // Phase 07: AudioDevice abstraction
 #include "AudioDevice/AudioDeviceFactory.h"
+#include "AudioDevice/OpenALAudioManager.h"
 #include "MilesAudioDevice/MilesAudioManager.h"
+#include <stdio.h>
 
 extern DWORD TheMessageTime;
 
@@ -180,16 +182,23 @@ void Win32GameEngine::serviceWindowsOS( void )
 //-------------------------------------------------------------------------------------------------
 AudioManager* Win32GameEngine::createAudioManager(void)
 {
-	// Try to create OpenAL audio manager via factory
-	GeneralsX::Audio::AudioDevice* audioDevice = GeneralsX::Audio::AudioDeviceFactory::createAudioDevice();
+	fprintf(stderr, "[Win32GameEngine] Creating audio manager...\n");
+	fflush(stderr);
 	
-	if (audioDevice != NULL && audioDevice->init())
+	// Try to create OpenAL audio manager
+	GeneralsX::Audio::AudioDeviceFactory::BackendType backend = 
+		GeneralsX::Audio::AudioDeviceFactory::BackendType::OPENAL;
+	
+	if (GeneralsX::Audio::AudioDeviceFactory::isBackendAvailable(backend))
 	{
-		// OpenAL successfully initialized - use it
-		return NEW MilesAudioManager();  // Note: MilesAudioManager is AudioManager interface
+		fprintf(stderr, "[Win32GameEngine] OpenAL backend available - creating OpenALAudioManager\n");
+		fflush(stderr);
+		return NEW OpenALAudioManager();
 	}
 	
-	// Fallback: Create standard MilesAudioManager (legacy)
+	// Fallback: Use legacy Miles Audio
+	fprintf(stderr, "[Win32GameEngine] OpenAL not available - falling back to Miles Audio\n");
+	fflush(stderr);
 	return NEW MilesAudioManager();
 }
 

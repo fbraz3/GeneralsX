@@ -7,6 +7,7 @@
 
 #include "../Include/AudioDevice/AudioDeviceFactory.h"
 #include "../Include/AudioDevice/OpenALDevice.h"
+#include <stdio.h>
 
 namespace GeneralsX {
 namespace Audio {
@@ -30,33 +31,54 @@ static bool isOpenALAvailable() {
 }
 
 AudioDevice* AudioDeviceFactory::createAudioDevice() {
+    fprintf(stderr, "[AUDIO] Audio Device Factory: Attempting to initialize audio backends...\n");
+    fflush(stderr);
+    
     // Try backends in order of preference
     if (isBackendAvailable(BackendType::OPENAL)) {
+        fprintf(stderr, "[AUDIO] OpenAL backend is available, attempting initialization...\n");
+        fflush(stderr);
         return createAudioDevice(BackendType::OPENAL);
     }
 
     // If no backends available, return nullptr
+    fprintf(stderr, "[AUDIO] ERROR: No audio backends available! Audio will be disabled.\n");
+    fflush(stderr);
     return nullptr;
 }
 
 AudioDevice* AudioDeviceFactory::createAudioDevice(BackendType backend) {
     switch (backend) {
         case BackendType::OPENAL: {
+            fprintf(stderr, "[AUDIO] Creating OpenAL audio device...\n");
+            fflush(stderr);
+            
             OpenALDevice* device = new OpenALDevice();
             if (device->init()) {
                 s_activeBackend = BackendType::OPENAL;
+                fprintf(stderr, "[AUDIO] SUCCESS: OpenAL audio device initialized and ready\n");
+                fprintf(stderr, "[AUDIO] Audio Backend: %s\n", getBackendName(BackendType::OPENAL));
+                fflush(stderr);
                 return device;
             } else {
+                fprintf(stderr, "[AUDIO] FAILED: OpenAL device initialization failed - %s\n", device->getLastError());
+                fflush(stderr);
                 delete device;
                 return nullptr;
             }
         }
 
-        case BackendType::MILES:
+        case BackendType::MILES: {
+            fprintf(stderr, "[AUDIO] Miles Audio backend requested but not yet implemented\n");
+            fflush(stderr);
+            return nullptr;
+        }
+
         case BackendType::NATIVE:
         case BackendType::UNKNOWN:
         default:
-            // Not yet implemented
+            fprintf(stderr, "[AUDIO] ERROR: Unsupported audio backend type: %d\n", (int)backend);
+            fflush(stderr);
             return nullptr;
     }
 }

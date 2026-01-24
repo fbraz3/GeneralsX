@@ -2,6 +2,7 @@ set(GAMEENGINEDEVICE_SRC
     Include/AudioDevice/AudioDevice.h
     Include/AudioDevice/AudioDeviceFactory.h
     Include/AudioDevice/OpenALDevice.h
+    Include/AudioDevice/OpenALAudioManager.h
     Include/GraphicsDevice/GraphicsDevice.h
     Include/GraphicsDevice/GraphicsDeviceFactory.h
     Include/GraphicsDevice/RenderState.h
@@ -106,6 +107,7 @@ set(GAMEENGINEDEVICE_SRC
     Source/MilesAudioDevice/MilesAudioManager.cpp
     Source/AudioDevice/AudioDeviceFactory.cpp
     Source/AudioDevice/OpenALDevice.cpp
+    Source/AudioDevice/OpenALAudioManager.cpp
     Source/GraphicsDevice/GraphicsDeviceFactory.cpp
     Source/VideoDevice/Bink/BinkVideoPlayer.cpp
 #    Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp

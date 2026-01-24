@@ -56,21 +56,35 @@ bool OpenALDevice::init()
 {
     if (m_initialized) return true;
 
+    fprintf(stderr, "[OpenAL] Initializing OpenAL device...\n");
+    fflush(stderr);
+
     // Open default audio device
     m_alDevice = alcOpenDevice(NULL);
     if (!m_alDevice) {
         m_lastError = "Failed to open OpenAL device";
+        fprintf(stderr, "[OpenAL] ERROR: %s\n", m_lastError.c_str());
+        fflush(stderr);
         return false;
     }
+
+    fprintf(stderr, "[OpenAL] Device opened successfully: %s\n", 
+            alcGetString(m_alDevice, ALC_DEVICE_SPECIFIER) ? alcGetString(m_alDevice, ALC_DEVICE_SPECIFIER) : "Default");
+    fflush(stderr);
 
     // Create audio context
     m_alContext = alcCreateContext(m_alDevice, NULL);
     if (!m_alContext) {
+        m_lastError = "Failed to create OpenAL context";
+        fprintf(stderr, "[OpenAL] ERROR: %s\n", m_lastError.c_str());
+        fflush(stderr);
         alcCloseDevice(m_alDevice);
         m_alDevice = NULL;
-        m_lastError = "Failed to create OpenAL context";
         return false;
     }
+
+    fprintf(stderr, "[OpenAL] Context created successfully\n");
+    fflush(stderr);
 
     // Make context current
     alcMakeContextCurrent(m_alContext);
@@ -80,6 +94,10 @@ bool OpenALDevice::init()
 
     m_initialized = true;
     m_lastError = "";
+
+    fprintf(stderr, "[OpenAL] Distance model set to AL_INVERSE_DISTANCE_CLAMPED\n");
+    fprintf(stderr, "[OpenAL] OpenAL initialization complete - Audio is ACTIVE\n");
+    fflush(stderr);
 
     DEBUG_LOG(("[INIT] OpenAL Audio Device Opened"));
     DEBUG_LOG(("[INIT] OpenAL Device Name: %s", alcGetString(m_alDevice, ALC_DEVICE_SPECIFIER) ? alcGetString(m_alDevice, ALC_DEVICE_SPECIFIER) : "Default"));

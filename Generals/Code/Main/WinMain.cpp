@@ -60,6 +60,7 @@
 #include "GameClient/IMEManager.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "Win32Device/Common/Win32GameEngine.h"
+#include "SDL2Device/Common/SDL2GameEngine.h"
 #include "Common/version.h"
 #include "BuildVersion.h"
 #include "GeneratedVersion.h"
@@ -907,13 +908,13 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 }
 
 // CreateGameEngine ===========================================================
-/** Create the Win32 game engine we're going to use */
+/** Create the SDL2 game engine we're going to use */
 //=============================================================================
 GameEngine *CreateGameEngine( void )
 {
-	Win32GameEngine *engine;
+	SDL2GameEngine *engine;
 
-	engine = NEW Win32GameEngine;
+	engine = NEW SDL2GameEngine;
 	//game engine may not have existed when app got focus so make sure it
 	//knows about current focus state.
 	engine->setIsActive(isWinMainActive);
