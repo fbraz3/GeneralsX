@@ -55,6 +55,10 @@ endif()
 if(SDL2_FOUND)
     message(STATUS "Phase 08: ✅ SDL2 configured successfully")
     
+    # Export SDL2 variables to parent scope for explicit include dirs if needed
+    set(SDL2_INCLUDE_DIR "${SDL2_INCLUDE_DIR}" CACHE PATH "SDL2 include directory" FORCE)
+    set(SDL2_LIBRARY "${SDL2_LIBRARY}" CACHE FILEPATH "SDL2 library" FORCE)
+    
     # Create SDL2::SDL2 target if it doesn't exist
     if(NOT TARGET SDL2::SDL2)
         add_library(SDL2::SDL2 UNKNOWN IMPORTED)

@@ -66,7 +66,7 @@ public:
 	virtual Bool isCurrentlyPlaying(AudioHandle handle) { return false; }
 
 	virtual void notifyOfAudioCompletion(UnsignedInt audioCompleted, UnsignedInt flags) {}
-	virtual PlayingAudio *findPlayingAudioFrom(UnsignedInt audioCompleted, UnsignedInt flags) { return nullptr; }
+	virtual void *findPlayingAudioFrom(UnsignedInt audioCompleted, UnsignedInt flags) { return nullptr; }
 
 	virtual UnsignedInt getProviderCount(void) const { return 1; }
 	virtual AsciiString getProviderName(UnsignedInt providerNum) const;
@@ -110,6 +110,8 @@ public:
 	virtual Real getFileLengthMS(AsciiString strToLoad) const { return 0.0f; }
 
 	virtual void closeAnySamplesUsingFile(const void *fileToClose) {}
+
+	virtual void setDeviceListenerPosition(void) {}
 
 	virtual Bool has3DSensitiveStreamsPlaying(void) const { return false; }
 

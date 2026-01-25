@@ -196,9 +196,9 @@ if(USE_SDL2_DEVICE)
     message(STATUS "  Adding SDL2Device sources")
     list(APPEND GAMEENGINEDEVICE_SRC
         Include/SDL2Device/Common/SDL2GameEngine.h
+        Source/SDL2Device/Common/SDL2GameEngine.cpp
         #Include/SDL2Device/GameClient/SDL2Keyboard.h
         #Include/SDL2Device/GameClient/SDL2Mouse.h
-        #Source/SDL2Device/Common/SDL2GameEngine.cpp
         #Source/SDL2Device/GameClient/SDL2Keyboard.cpp
         #Source/SDL2Device/GameClient/SDL2Mouse.cpp
     )
@@ -232,7 +232,8 @@ target_link_libraries(g_gameenginedevice PRIVATE
 
 # Add SDL2 dependency for non-Windows builds
 if(USE_SDL2_DEVICE)
-    target_link_libraries(g_gameenginedevice PRIVATE SDL2::SDL2)
+    # Link SDL2 as PUBLIC so its includes are exposed to this target's consumers
+    target_link_libraries(g_gameenginedevice PUBLIC SDL2::SDL2)
 endif()
 
 # Phase 07: Add OpenAL support for audio playback
