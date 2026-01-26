@@ -64,6 +64,12 @@ $Checks = @(
         Path = "$env:USERPROFILE\GeneralsX"
         Critical = $false
         FixGuide = "Will be created automatically on first deploy"
+    },
+    @{
+        Name = "CDB.exe (Console Debugger)"
+        Command = "Get-Command cdb.exe"
+        Critical = $false
+        FixGuide = "Run .\scripts\install_windbg.ps1 (installs Debugging Tools for Windows)"
     }
 )
 
@@ -78,7 +84,7 @@ foreach ($Check in $Checks) {
         Critical = $Check.Critical
         Fix = $Check.FixGuide
     }
-    
+
     if ($Check.Command) {
         try {
             $Output = Invoke-Expression $Check.Command 2>&1 | Select-Object -First 1
@@ -101,7 +107,7 @@ foreach ($Check in $Checks) {
             }
         }
     }
-    
+
     $Results += $Result
 }
 
@@ -112,12 +118,12 @@ Write-Host ""
 foreach ($Result in $Results) {
     $Color = if ($Result.Status -eq "✅") { "Green" } else { "Red" }
     $Critical = if ($Result.Critical) { " [CRITICAL]" } else { "" }
-    
+
     Write-Host "$($Result.Status) $($Result.Name)$Critical" -ForegroundColor $Color
     if ($Result.Message) {
         Write-Host "   $($Result.Message)" -ForegroundColor DarkGray
     }
-    
+
     if ($Result.Status -eq "❌" -and -not $Fix) {
         Write-Host "   Fix: $($Result.Fix)" -ForegroundColor Yellow
     }
@@ -131,27 +137,27 @@ if ($AllChecksPass) {
     Write-Host "║           ✅ All critical components verified!             ║" -ForegroundColor Green
     Write-Host "║                  Ready to build GeneralsX                  ║" -ForegroundColor Green
     Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Green
-    
+
     Write-Host ""
     Write-Host "🚀 Quick start:" -ForegroundColor Cyan
     Write-Host "  1. .\scripts\build_zh.ps1" -ForegroundColor White
     Write-Host "  2. .\scripts\deploy_zh.ps1" -ForegroundColor White
     Write-Host "  3. .\scripts\run_zh.ps1" -ForegroundColor White
-    
+
 } else {
     Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Red
     Write-Host "║        ❌ Missing critical components                       ║" -ForegroundColor Red
     Write-Host "║            Please fix issues above before building        ║" -ForegroundColor Red
     Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Red
-    
+
     Write-Host ""
     Write-Host "Missing components:" -ForegroundColor Yellow
-    
+
     foreach ($Result in ($Results | Where-Object { $_.Status -eq "❌" -and $_.Critical })) {
         Write-Host "  • $($Result.Name)" -ForegroundColor Yellow
         Write-Host "    $($Result.Fix)" -ForegroundColor DarkGray
     }
-    
+
     exit 1
 }
 

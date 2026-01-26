@@ -8,6 +8,8 @@ set "SDL2_SRC=C:\vcpkg\installed\x86-windows\bin\SDL2.dll"
 set "SDL2_DST=%USERPROFILE%\GeneralsX\Generals\SDL2.dll"
 set "DLL_SRC=C:\vcpkg\installed\x86-windows\bin\OpenAL32.dll"
 set "DLL_DST=%USERPROFILE%\GeneralsX\Generals\OpenAL32.dll"
+set "FMT_SRC=C:\vcpkg\installed\x86-windows\bin\fmt.dll"
+set "FMT_DST=%USERPROFILE%\GeneralsX\Generals\fmt.dll"
 
 echo Creating destination directory...
 if not exist "%USERPROFILE%\GeneralsX\Generals" mkdir "%USERPROFILE%\GeneralsX\Generals"
@@ -33,5 +35,12 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo Deploy completed successfully (GeneralsX.exe + SDL2.dll + OpenAL32.dll)
+echo Copying fmt.dll...
+copy /Y "!FMT_SRC!" "!FMT_DST!"
+if errorlevel 1 (
+    echo Error copying fmt.dll
+    exit /b 1
+)
+
+echo Deploy completed successfully (GeneralsX.exe + SDL2.dll + OpenAL32.dll + fmt.dll)
 exit /b 0

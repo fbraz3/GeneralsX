@@ -23,6 +23,7 @@
  */
 
 #include "Common/GameAudio.h"
+#include "Common/AudioEventRTS.h"
 #include "AudioDevice/OpenALAudioManager.h"
 #include "Common/Debug.h"
 #include <stdio.h>
@@ -156,5 +157,79 @@ AsciiString OpenALAudioManager::getProviderName(UnsignedInt providerNum) const
 		return "OpenAL-soft";
 	}
 	return "Unknown";
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Play an audio event */
+//-------------------------------------------------------------------------------------------------
+void OpenALAudioManager::friend_forcePlayAudioEventRTS(const AudioEventRTS* eventToPlay)
+{
+	if (!m_audioDevice || !m_isInitialized || !eventToPlay) {
+		return;
+	}
+
+	// Generate the filename to load
+	AudioEventRTS* nonConstEvent = const_cast<AudioEventRTS*>(eventToPlay);
+	nonConstEvent->generateFilename();
+	
+	AsciiString filename = nonConstEvent->getFilename();
+	if (filename.isEmpty()) {
+		fprintf(stderr, "[OpenALAudioManager] WARNING: Empty filename for event '%s'\n", 
+				eventToPlay->getEventName().str());
+		fflush(stderr);
+		return;
+	}
+
+	// Get volume from event (or use default)
+	float volume = eventToPlay->getVolume();
+	if (volume < 0.0f) {
+		volume = 1.0f;  // Default volume
+	}
+
+	fprintf(stderr, "[OpenALAudioManager] Playing audio: '%s' (vol=%.2f)\n", 
+			filename.str(), volume);
+	fflush(stderr);
+
+	// Determine if this is 3D audio based on event properties
+	// For now, treat all as 2D (non-positional)
+	int playHandle = m_audioDevice->playSound(filename.str(), volume);
+	
+	if (playHandle >= 0) {
+		fprintf(stderr, "[OpenALAudioManager] Successfully started audio playback (handle=%d)\n", playHandle);
+		fflush(stderr);
+	} else {
+		fprintf(stderr, "[OpenALAudioManager] ERROR: Failed to play audio '%s'\n", filename.str());
+		fprintf(stderr, "[OpenALAudioManager] Device error: %s\n", m_audioDevice->getLastError());
+		fflush(stderr);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Update listener position from AudioManager */
+//-------------------------------------------------------------------------------------------------
+void OpenALAudioManager::setDeviceListenerPosition(void)
+{
+	if (!m_audioDevice || !m_isInitialized) {
+		return;
+	}
+
+	// Get listener position from the base AudioManager class
+	// The game's AudioManager stores this in m_listenerPosition
+	// We need to forward it to the OpenAL device
+	
+	// Note: This is called by AudioManager::update() after it calculates listener position
+	// We get the position via getListenerPosition() which is set by AudioManager
+	const Coord3D* listenerPos = getListenerPosition();
+	if (listenerPos) {
+		m_audioDevice->setListenerPosition(listenerPos->x, listenerPos->y, listenerPos->z);
+		
+		// Also set listener orientation (forward/up vectors)
+		// Defaults: looking down -Z (forward) with +Y as up
+		m_audioDevice->setListenerOrientation(0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f);
+		
+		fprintf(stderr, "[OpenALAudioManager] Updated listener position: (%.2f, %.2f, %.2f)\n", 
+				listenerPos->x, listenerPos->y, listenerPos->z);
+		fflush(stderr);
+	}
 }
 

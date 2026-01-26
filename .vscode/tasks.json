@@ -3,181 +3,163 @@
 	"tasks": [
 		{
 			"label": "Configure (Windows VC6)",
-			"type": "shell",
+			"type": "process",
 			"command": "pwsh",
 			"args": [
+				"-NoProfile",
 				"-Command",
 				". .\\scripts\\setup_vc6_env.ps1; cmake --preset vc6 2>&1 | Tee-Object -FilePath .\\logs\\configure_vc6.log"
 			],
 			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			},
-			"problemMatcher": []
+			"group": "build"
 		},
 		{
 			"label": "Build GeneralsXZH (Windows VC6)",
-			"type": "shell",
+			"type": "process",
 			"command": "pwsh",
 			"args": [
+				"-NoProfile",
 				"-Command",
 				". .\\scripts\\setup_vc6_env.ps1; cd build\\vc6; ninja GeneralsXZH.exe -j 3 2>&1 | Tee-Object -FilePath ..\\..\\logs\\build_generalszh.log"
 			],
 			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
+			"group": "build"
 		},
 		{
 			"label": "Build GeneralsX (Windows VC6)",
-			"type": "shell",
+			"type": "process",
 			"command": "pwsh",
 			"args": [
+				"-NoProfile",
 				"-Command",
 				". .\\scripts\\setup_vc6_env.ps1; cd build\\vc6; ninja GeneralsX.exe -j 3 2>&1 | Tee-Object -FilePath ..\\..\\logs\\build_generalsv.log"
 			],
 			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
+			"group": "build"
 		},
 		{
 			"label": "Deploy GeneralsXZH (Windows)",
-			"type": "shell",
+			"type": "process",
 			"command": "${workspaceFolder}\\scripts\\deploy_zh.bat",
 			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
+			"group": "build"
 		},
 		{
 			"label": "Deploy GeneralsX (Windows)",
-			"type": "shell",
+			"type": "process",
 			"command": "${workspaceFolder}\\scripts\\deploy_generals.bat",
 			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
+			"group": "build"
 		},
 		{
 			"label": "Run GeneralsXZH (Windows)",
-			"type": "shell",
+			"type": "process",
 			"command": "pwsh",
 			"args": [
+				"-NoProfile",
 				"-Command",
 				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; .\\GeneralsXZH.exe -win -noshellmap 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_vc6.log"
 			],
 			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
+			"group": "test"
 		},
 		{
 			"label": "Run GeneralsX (Windows)",
-			"type": "shell",
+			"type": "process",
 			"command": "pwsh",
 			"args": [
+				"-NoProfile",
 				"-Command",
 				"cd $env:USERPROFILE\\GeneralsX\\Generals; .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\runTerminal_generalsv.log"
 			],
 			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
+			"group": "test"
 		},
 		{
-			"label": "Debug GeneralsXZH (Windows)",
-			"type": "shell",
+			"label": "Debug GeneralsXZH (WinDbg GUI)",
+			"type": "process",
 			"command": "pwsh",
 			"args": [
+				"-NoProfile",
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; Write-Host 'Starting debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsXZH.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_vc6.log"
+				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; Write-Host 'Starting WinDbg GUI debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsXZH.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_vc6.log"
 			],
 			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
+			"group": "test"
 		},
 		{
-			"label": "Debug GeneralsX (Windows)",
-			"type": "shell",
+			"label": "Debug GeneralsX (WinDbg GUI)",
+			"type": "process",
 			"command": "pwsh",
 			"args": [
+				"-NoProfile",
 				"-Command",
-				"cd $env:USERPROFILE\\GeneralsX\\Generals; Write-Host 'Starting debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_generalsv.log"
+				"cd $env:USERPROFILE\\GeneralsX\\Generals; Write-Host 'Starting WinDbg GUI debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debugTerminal_generalsv.log"
 			],
 			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": true
-			}
+			"group": "test"
 		},
 		{
-			"type": "cppbuild",
-			"label": "C/C++: g++ build active file",
-			"command": "/usr/bin/g++",
+			"label": "Crash Analysis GeneralsXZH (CDB)",
+			"type": "process",
+			"command": "pwsh",
 			"args": [
-				"-fdiagnostics-color=always",
-				"-g",
-				"${file}",
-				"-o",
-				"${fileDirname}/${fileBasenameNoExtension}"
+				"-NoProfile",
+				"-Command",
+				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; Write-Host 'Starting CDB crash analysis...' -ForegroundColor Cyan; $cdb=(Get-Command cdb.exe -ErrorAction SilentlyContinue).Source; if(-not $cdb){$candidates=@(\"$env:ProgramFiles\\Windows Kits\\10\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\10\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\11\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\11\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\10\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\10\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\11\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\11\\Debuggers\\x64\\cdb.exe\"); $cdb=$candidates | Where-Object { Test-Path $_ } | Select-Object -First 1 }; if(-not $cdb){Write-Error 'cdb.exe not found. Run task: Install CDB.exe (Windows SDK)'; exit 1}; & $cdb -c 'g; .lastevent; kb; q' .\\GeneralsXZH.exe -win -noshellmap 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\cdbTerminal_vc6.log"
 			],
-			"options": {
-				"cwd": "${fileDirname}"
-			},
-			"problemMatcher": [
-				"$gcc"
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Crash Analysis GeneralsX (CDB)",
+			"type": "process",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"cd $env:USERPROFILE\\GeneralsX\\Generals; Write-Host 'Starting CDB crash analysis...' -ForegroundColor Cyan; $cdb=(Get-Command cdb.exe -ErrorAction SilentlyContinue).Source; if(-not $cdb){$candidates=@(\"$env:ProgramFiles\\Windows Kits\\10\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\10\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\11\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\11\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\10\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\10\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\11\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\11\\Debuggers\\x64\\cdb.exe\"); $cdb=$candidates | Where-Object { Test-Path $_ } | Select-Object -First 1 }; if(-not $cdb){Write-Error 'cdb.exe not found. Run task: Install CDB.exe (Windows SDK)'; exit 1}; & $cdb -c 'g; .lastevent; kb; q' .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\cdbTerminal_generalsv.log"
 			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"detail": "Task generated by Debugger."
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Verify CDB.exe (Debugging Tools)",
+			"type": "process",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$cmd=(Get-Command cdb.exe -ErrorAction SilentlyContinue); if($cmd){Write-Host ('Found cdb.exe in PATH: ' + $cmd.Source) -ForegroundColor Green; exit 0}; $candidates=@(\"$env:ProgramFiles\\Windows Kits\\10\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\10\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\11\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles\\Windows Kits\\11\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\10\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\10\\Debuggers\\x64\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\11\\Debuggers\\x86\\cdb.exe\",\"$env:ProgramFiles(x86)\\Windows Kits\\11\\Debuggers\\x64\\cdb.exe\"); $found=$candidates | Where-Object { Test-Path $_ } | Select-Object -First 1; if($found){Write-Host ('Found cdb.exe at: ' + $found) -ForegroundColor Yellow; exit 0}; Write-Error 'cdb.exe not found (neither PATH nor common Windows Kits locations). Run task: Install CDB.exe (Windows SDK)'; exit 1"
+			],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Install CDB.exe (Windows SDK)",
+			"type": "process",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"& '${workspaceFolder}\\scripts\\install_cdb.ps1' 2>&1 | Tee-Object -FilePath '${workspaceFolder}\\logs\\install_cdb.log'"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Tail Log: install_cdb.ps1",
+			"type": "process",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"if(Test-Path '${workspaceFolder}\\logs\\install_cdb.log'){Get-Content '${workspaceFolder}\\logs\\install_cdb.log' -Tail 160}else{Write-Error 'Log not found: logs\\install_cdb.log'; exit 1}"
+			],
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

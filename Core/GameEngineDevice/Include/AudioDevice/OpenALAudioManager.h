@@ -80,7 +80,7 @@ public:
 	virtual void *getHandleForBink(void) { return nullptr; }
 	virtual void releaseHandleForBink(void) {}
 
-	virtual void friend_forcePlayAudioEventRTS(const AudioEventRTS* eventToPlay) {}
+	virtual void friend_forcePlayAudioEventRTS(const AudioEventRTS* eventToPlay);
 
 	virtual UnsignedInt getNum2DSamples(void) const { return 64; }
 	virtual UnsignedInt getNum3DSamples(void) const { return 32; }
@@ -111,7 +111,12 @@ public:
 
 	virtual void closeAnySamplesUsingFile(const void *fileToClose) {}
 
-	virtual void setDeviceListenerPosition(void) {}
+	virtual void setDeviceListenerPosition(void);
+
+protected:
+	// Helper to convert Coord3D to float for OpenAL
+	static float coordToFloat(const Coord3D* coord, int index);
+
 
 	virtual Bool has3DSensitiveStreamsPlaying(void) const { return false; }
 
