@@ -1263,7 +1263,13 @@ void ActiveBody::internalAddSubdualDamage( Real delta )
 	const ActiveBodyModuleData *data = getActiveBodyModuleData();
 
 	m_currentSubdualDamage += delta;
+#if RETAIL_COMPATIBLE_CRC
 	m_currentSubdualDamage = min(m_currentSubdualDamage, data->m_subdualDamageCap);
+#else
+	// TheSuperHackers @bugfix Stubbjax 25/01/2026 Subdual damage can no longer go negative, which
+	// stops weak subdual damage + rapid healing from negatively stacking subdual damage over time.
+	m_currentSubdualDamage = clamp(0.0f, m_currentSubdualDamage, data->m_subdualDamageCap);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
