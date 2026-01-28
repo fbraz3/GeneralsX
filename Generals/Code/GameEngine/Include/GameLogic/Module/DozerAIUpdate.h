@@ -140,6 +140,7 @@ public:
 	// task actions
 	virtual void newTask( DozerTask task, Object *target ) = 0;	///< set a desire to do the requrested task
 	virtual void cancelTask( DozerTask task ) = 0;							///< cancel this task from the queue, if it's the current task the dozer will stop working on it
+	virtual void resumePreviousTask(void) = 0;									///< resume the previous task if there was one
 
 	// internal methods to manage behavior from within the dozer state machine
 	virtual void internalTaskComplete( DozerTask task ) = 0;					///< set a dozer task as successfully completed
@@ -239,6 +240,7 @@ public:
 	// task actions
 	virtual void newTask( DozerTask task, Object *target );	///< set a desire to do the requrested task
 	virtual void cancelTask( DozerTask task );							///< cancel this task from the queue, if it's the current task the dozer will stop working on it
+	virtual void resumePreviousTask(void);									///< resume the previous task if there was one
 
 	// internal methods to manage behavior from within the dozer state machine
 	virtual void internalTaskComplete( DozerTask task );					///< set a dozer task as successfully completed
@@ -276,12 +278,20 @@ protected:
 
 	struct DozerTaskInfo
 	{
+		DozerTaskInfo()
+		{
+			m_targetObjectID = INVALID_ID;
+			m_taskOrderFrame = 0;
+		}
+
 		ObjectID m_targetObjectID;				///< target object ID of task
 		UnsignedInt m_taskOrderFrame;			///< logic frame we decided we wanted to do this task
 	} m_task[ DOZER_NUM_TASKS ];				///< tasks we want to do indexed by DozerTask
 
 	DozerPrimaryStateMachine *m_dozerMachine;  ///< the custom state machine for Dozer behavior
 	DozerTask m_currentTask;						///< current task the dozer is attending to (if any)
+	DozerTask m_previousTask;						///< previous task the dozer was attending to (if any)
+	DozerTaskInfo m_previousTaskInfo;		///< info on the previous task the dozer was attending to (if any)
 	AudioEventRTS	m_buildingSound;			///< sound is pulled from the object we are building!
 	Bool m_isRebuild;										///< is this a rebuild of a previous building?
 

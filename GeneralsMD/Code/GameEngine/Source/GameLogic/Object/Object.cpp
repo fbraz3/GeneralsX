@@ -3853,11 +3853,21 @@ void Object::onDisabledEdge(Bool becomingDisabled)
 		(*module)->onDisabledEdge( becomingDisabled );
 
 	DozerAIInterface *dozerAI = getAI() ? getAI()->getDozerAIInterface() : nullptr;
-	if( becomingDisabled  &&  dozerAI )
+	if (dozerAI)
 	{
-		// Have to say goodbye to the thing we might be building or repairing so someone else can do it.
-		if( dozerAI->getCurrentTask() != DOZER_TASK_INVALID )
-			dozerAI->cancelTask( dozerAI->getCurrentTask() );
+		if (becomingDisabled)
+		{
+			// Have to say goodbye to the thing we might be building or repairing so someone else can do it.
+			if (dozerAI->getCurrentTask() != DOZER_TASK_INVALID)
+				dozerAI->cancelTask(dozerAI->getCurrentTask());
+		}
+		else
+		{
+#if !RETAIL_COMPATIBLE_CRC
+			// TheSuperHackers @bugfix Stubbjax 17/11/2025 Resume previous task when re-enabled.
+			dozerAI->resumePreviousTask();
+#endif
+		}
 	}
 
 	Player* controller = getControllingPlayer();
