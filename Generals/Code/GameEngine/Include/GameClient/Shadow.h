@@ -73,6 +73,18 @@ public:
 
 		struct	ShadowTypeInfo
 		{
+				ShadowTypeInfo()
+				{
+						m_ShadowName[0] = '\0';
+						m_type = SHADOW_NONE;
+						allowUpdates = false;
+						allowWorldAlign = false;
+						m_sizeX = 0.0f;
+						m_sizeY = 0.0f;
+						m_offsetX = 0.0f;
+						m_offsetY = 0.0f;
+				}
+
 				char	m_ShadowName[64];	//when set, overrides the default model shadow (used mostly for Decals).
 				ShadowType m_type;			//type of shadow
 				Bool	allowUpdates;			//whether to update the shadow image when object/light moves.
