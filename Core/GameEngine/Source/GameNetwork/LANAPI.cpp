@@ -1112,6 +1112,23 @@ LANGameInfo * LANAPI::LookupGameByListOffset( Int offset )
 	return theGame; // null means we didn't find anything.
 }
 
+LANGameInfo* LANAPI::LookupGameByHost(UnsignedInt hostIP)
+{
+	LANGameInfo* lastGame = nullptr;
+	UnsignedInt lastHeard = 0;
+
+	for (LANGameInfo* game = m_games; game; game = game->getNext())
+	{
+		if (game->getHostIP() == hostIP && game->getLastHeard() >= lastHeard)
+		{
+			lastGame = game;
+			lastHeard = game->getLastHeard();
+		}
+	}
+
+	return lastGame;
+}
+
 void LANAPI::removeGame( LANGameInfo *game )
 {
 	LANGameInfo *g = m_games;
