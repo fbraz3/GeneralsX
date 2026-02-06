@@ -224,6 +224,7 @@ void AudioManager::init()
 	// do the miscellaneous sound files last so that we find the AudioEventRTS associated with the events.
 	ini.loadFileDirectory( "Data\\INI\\MiscAudio", INI_LOAD_OVERWRITE, nullptr);
 
+#if RTS_CD_SUPPORT
 	// determine if one of the music tracks exists. Since their now BIGd, one implies all.
 	// If they don't exist, then attempt to load them from the CD.
 	if (!TheGlobalData->m_headless && !isMusicAlreadyLoaded())
@@ -239,7 +240,7 @@ void AudioManager::init()
 				break;
 			}
 			// We loop infinitely on the splash screen if we don't allow breaking out of this loop.
-//#if !defined( RTS_DEBUG )
+
 			else
 			{
 				// Display the warning.
@@ -249,9 +250,9 @@ void AudioManager::init()
 					break;
 				}
 			}
-//#endif
 		}
 	}
+#endif
 
 	m_music = NEW MusicManager;
 	m_sound = NEW SoundManager;

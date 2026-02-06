@@ -176,6 +176,7 @@ void Win32CDManager::init( void )
 
 	destroyAllDrives();
 
+#if RTS_CD_SUPPORT
 	// detect CD Drives
 	for ( Char driveLetter = 'a'; driveLetter <= 'z'; driveLetter++ )
 	{
@@ -187,6 +188,7 @@ void Win32CDManager::init( void )
 			newDrive( drivePath.str() );
 		}
 	}
+#endif
 
 	refreshDrives();
 }

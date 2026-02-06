@@ -437,8 +437,10 @@ void GameEngine::init()
 		TheGlobalLanguageData->parseCustomDefinition();
 		initSubsystem(TheCDManager,"TheCDManager", CreateCDManager(), nullptr);
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), nullptr);
+#if RTS_CD_SUPPORT
 		if (!TheAudio->isMusicAlreadyLoaded())
 			setQuitting(TRUE);
+#endif
 		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), nullptr);
 		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), nullptr);
 		initSubsystem(TheMessageStream,"TheMessageStream", createMessageStream(), nullptr);
