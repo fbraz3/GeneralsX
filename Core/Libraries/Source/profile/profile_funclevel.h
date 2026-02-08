@@ -29,6 +29,30 @@
 
 #pragma once
 
+// Platform-specific 64-bit type compatibility
+#ifdef _WIN32
+    // Windows: _int64 is native MSVC type
+    typedef unsigned _int64 u64;
+    typedef _int64 i64;
+#else
+    // Linux: Use C++11 standard types
+    #include <cstdint>
+    typedef uint64_t u64;
+    typedef int64_t i64;
+    // Define _int64 for use in (unsigned _int64) patterns
+    typedef uint64_t _int64;
+#endif
+#include <Utility/intrin_compat.h>
+#include <cstdint>
+
+#ifndef __int64
+	typedef int64_t __int64;
+#endif
+
+#ifndef _int64
+	typedef int64_t _int64;
+#endif
+
 /**
   \brief The function level profiler.
 

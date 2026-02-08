@@ -47,6 +47,9 @@ class STLSpecialAlloc;
 #include <atlbase.h>
 #include <windows.h>
 
+// Platform compatibility
+#include <Utility/intrin_compat.h>
+
 #include <assert.h>
 #include <ctype.h>
 #include <direct.h>

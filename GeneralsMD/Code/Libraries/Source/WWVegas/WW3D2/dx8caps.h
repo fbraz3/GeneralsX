@@ -41,7 +41,11 @@
 
 #include "always.h"
 #include "ww3dformat.h"
+#ifdef _WIN32
 #include <d3d8.h>
+#else
+// Linux: Graphics layer stubs for Phase 1 (DXVK will provide d3d8)
+#endif
 
 class DX8Caps
 {

@@ -31,6 +31,7 @@
 // please talk to MDC (x36804) before taking this out
 #define NO_DEBUG_CRC
 
+#include <Utility/intrin_compat.h>	// For _isnan compatibility
 #include "Common/PerfTimer.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"

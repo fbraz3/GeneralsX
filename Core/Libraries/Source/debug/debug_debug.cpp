@@ -874,6 +874,7 @@ Debug& Debug::operator<<(unsigned short val)
   return (*this) << _itoa(val,help,m_radix);
 }
 
+#ifdef _WIN32
 Debug& Debug::operator<<(__int64 val)
 {
   // usually having a fixed size buffer and a function
@@ -893,6 +894,7 @@ Debug& Debug::operator<<(unsigned __int64 val)
   AddOutput(m_prefix,strlen(m_prefix));
   return (*this) << _ui64toa(val,help,m_radix);
 }
+#endif
 
 Debug& Debug::operator<<(const void *ptr)
 {
