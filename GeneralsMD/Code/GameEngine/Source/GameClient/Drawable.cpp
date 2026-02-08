@@ -29,6 +29,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <Utility/intrin_compat.h>	// For _isnan compatibility
 #include "Common/AudioEventInfo.h"
 #include "Common/DynamicAudioEventInfo.h"
 #include "Common/AudioSettings.h"

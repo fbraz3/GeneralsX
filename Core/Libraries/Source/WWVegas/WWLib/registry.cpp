@@ -38,9 +38,16 @@
 #include "INI.h"
 #include "inisup.h"
 #include <assert.h>
+#ifdef _WIN32
 #include <windows.h>
+#else
+// Linux: No Windows registry
+#endif
 
 //#include "wwdebug.h"
+
+#ifdef _WIN32
+// Windows: Full registry implementation
 
 bool RegistryClass::IsLocked = false;
 
@@ -732,11 +739,19 @@ void RegistryClass::Delete_Registry_Tree(char *path)
 	}
 }
 
+#else // _WIN32 - Linux: No registry support
 
+// Static member stub
+bool RegistryClass::IsLocked = false;
 
+// Method stubs for Linux
+bool RegistryClass::Exists(const char*) { return false; }
+RegistryClass::RegistryClass(const char*, bool) : IsValid(false), Key(0) {}
+RegistryClass::~RegistryClass() {}
+int RegistryClass::Get_Int(const char*, int def_value) { return def_value; }
+int RegistryClass::Get_Int(const wchar_t*, int def_value) { return def_value; }
 
-
-
+#endif // _WIN32
 
 
 

@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <cmath>	// For isnan() on Linux
 #define DEFINE_WEAPONCONDITIONMAP
 #include "Common/BitFlagsIO.h"
 #include "Common/BuildAssistant.h"

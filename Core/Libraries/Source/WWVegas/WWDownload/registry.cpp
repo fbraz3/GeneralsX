@@ -23,9 +23,16 @@
 #include <string>
 
 #define WIN32_LEAN_AND_MEAN
+#ifdef _WIN32
 #include <windows.h>
+#else
+// Linux: No Windows registry
+#endif
 
 #include "Registry.h"
+
+#ifdef _WIN32
+// Windows: Full registry implementation
 
 bool  getStringFromRegistry(HKEY root, std::string path, std::string key, std::string& val)
 {
@@ -174,4 +181,20 @@ bool SetUnsignedIntInRegistry( std::string path, std::string key, unsigned int v
 
 	return setUnsignedIntInRegistry( HKEY_CURRENT_USER, fullPath, key, val );
 }
+
+#else // _WIN32 - Linux: No registry support
+
+// Stub implementations for Linux
+bool  getStringFromRegistry(HKEY, std::string, std::string, std::string&) { return false; }
+bool getUnsignedIntFromRegistry(HKEY, std::string, std::string, unsigned int&) { return false; }
+bool setStringInRegistry(HKEY, std::string, std::string, std::string) { return false; }
+bool setUnsignedIntInRegistry(HKEY, std::string, std::string, unsigned int) { return false; }
+
+void setTeamsPath() {}
+void getTeamsPath(std::string &path) { path = ""; }
+void setGamePath( unsigned int index, std::string path ) {}
+void getGamePath( std::string &path ) {}
+
+#endif // _WIN32
+
 

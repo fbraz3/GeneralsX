@@ -43,7 +43,11 @@
 
 #include "always.h"
 #include "dllist.h"
+#ifdef _WIN32
 #include "d3d8.h"
+#else
+// Linux: No d3d8 - this is graphics layer, será implementado con DXVK wrapper en Phase 1
+#endif
 #include "matrix4.h"
 #include "statistics.h"
 #include "wwstring.h"

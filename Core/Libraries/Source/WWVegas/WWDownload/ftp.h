@@ -22,7 +22,11 @@
 
 //#include "../resource.h"       // main symbols
 
+#ifdef _WIN32
 #include <winsock.h>
+#else
+// Linux: No winsock
+#endif
 #include <Utility/stdio_adapter.h>
 
 #include "WWDownload/ftpdefs.h"

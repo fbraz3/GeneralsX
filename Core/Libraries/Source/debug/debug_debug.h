@@ -29,6 +29,17 @@
 
 #pragma once
 
+#include <Utility/intrin_compat.h>
+#include <cstdint>
+
+#ifndef __int64
+	typedef int64_t __int64;
+#endif
+
+#ifndef __forceinline
+	#define __forceinline inline
+#endif
+
 /**
   \class Debug debug.h <rts/debug.h>
 
@@ -566,7 +577,9 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     \param val signed 64 bit integer
     \return *this
   */
+#ifdef _WIN32
   Debug& operator<<(__int64 val);
+#endif
 
   /** \internal
 
@@ -575,7 +588,9 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     \param val unsigned 64 bit integer
     \return *this
   */
+#ifdef _WIN32
   Debug& operator<<(unsigned __int64 val);
+#endif
 
   /** \internal
 

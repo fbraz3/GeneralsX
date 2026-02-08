@@ -31,6 +31,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <climits>	// For INT_MAX on Linux
 #define DEFINE_SURFACECATEGORY_NAMES
 #define DEFINE_LOCO_Z_NAMES
 #define DEFINE_LOCO_APPEARANCE_NAMES

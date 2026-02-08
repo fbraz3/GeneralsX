@@ -26,7 +26,9 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <stdlib.h>
+#ifdef _WIN32
 #include <process.h>
+#endif
 #include <sys/stat.h>
 #include <io.h>
 #include <time.h>
