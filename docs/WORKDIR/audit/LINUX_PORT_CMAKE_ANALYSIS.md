@@ -196,365 +196,183 @@ target_include_directories(d3d8lib INTERFACE
 ## Problemas HIGH (3 encontrados)
 
 ### 🟠 HIGH - Conditional Logic Assimétrica (Windows vs Linux)
+# Audit: Antipatterns and Design Issues - Linux Port CMake / Headers
 
-**Arquivos Afetados**: [GeneralsMD/Code/CompatLib/CMakeLists.txt](GeneralsMD/Code/CompatLib/CMakeLists.txt#L1-L70)
-
-**Problema**:
-
-```cmake
-# Line 1-2: AMBIGUOUS operator precedence!
-if (UNIX OR WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-    # d3dx8 criado para UNIX OU (WIN32 E 64-bit)
-endif()
-
-if (UNIX)
-    # Configura d3d8lib para UNIX
-endif()
-
-if (WIN32)
-    # Configura d3dx8 para WIN32, mas...
-    # d3d8lib fica vazio (não configurado aqui)
-endif()
-```
-
-**Operator Precedence Issue** (C++ style, mesmo em CMake):
-- `UNIX OR WIN32 AND 64-bit` é interpretado como `UNIX OR (WIN32 AND 64-bit)` ❌
-- Significa: "UNIX de qualquer tamanho OU apenas WIN32 64-bit"
-- Deveria ser: `(UNIX OR WIN32) AND 64-bit` ou claramente separado
-
-**Consequências**:
-- 32-bit Windows builds podem ser excluídos inesperadamente
-- Fonte d3dx8 pode estar compilado ou não dependendo de precedência
-- Confuso para manutenção
+**Date**: 8 February 2026
+**Scope**: Review of `cmake/dx8.cmake`, top-level `CMakeLists.txt`, `Core/CMakeLists.txt`,
+`GeneralsMD/Code/CompatLib/CMakeLists.txt`, `windows_compat.h` and `types_compat.h`.
 
 ---
 
-### 🟠 HIGH - CMakeLists.txt Includes Não-Guardados sem Fallback
+## Executive Summary
 
-**Arquivos Afetados**: [CMakeLists.txt](CMakeLists.txt#L45-63)
+The Linux port exhibits critical issues in CMake and header handling that
+affect both Linux and Windows builds. The most urgent problems are:
+1. Asymmetric `d3d8lib` configuration between Windows and Linux
+2. Missing initialization of the `SAGE_USE_DX8` CMake flag
+3. No proper `windows.h` shim / include redirection
+4. Potential circular/uninitialized dependencies caused by early target declaration
 
-**Problema**:
-
-```cmake
-# Line 45-46: Includes INCONDICIONALMENTE
-if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-    include(cmake/miles.cmake)    # Miles Sound System (Windows only)
-    include(cmake/bink.cmake)     # Bink video (Windows only)
-endif()
-
-# Line 50: Sempre incluído, SEM FALLBACK
-include(cmake/dx8.cmake)
-# Assume SAGE_USE_DX8 é inicializado, mas não é!
-```
-
-**Consequências**:
-- Se dx8.cmake tiver erro de sintaxe, **ambos** Windows e Linux quebram
-- Sem warning/error checking se `dxvk_SOURCE_DIR` ficar vazio
-- Sem `if(SAGE_USE_DX8)` proteção
+Total issues found: 9 (4 Critical, 3 High, 2 Medium, 2 Low)
 
 ---
 
-### 🟠 HIGH - Empty/Unconfigured Stubs
+## Findings (by severity)
 
-**Arquivos Afetados**: [GeneralsMD/Code/GameEngine/CMakeLists.txt](GeneralsMD/Code/GameEngine/CMakeLists.txt)
+### 🔴 CRITICAL — `d3d8lib` configured asymmetrically
 
-**Problema** (Muitos includes commented):
+Files involved:
+- `GeneralsMD/Code/CompatLib/CMakeLists.txt`
+- `Core/CMakeLists.txt`
 
-```cmake
-# Source/Common/Audio/GameAudio.cpp - COMMENTED OUT
-#    Source/Common/Audio/GameAudio.cpp
-#    Source/Common/Audio/GameMusic.cpp
-#    Source/Common/Audio/GameSounds.cpp
+Problem: `d3d8lib` is declared early in `Core/CMakeLists.txt` as an
+INTERFACE target but only configured for UNIX in the CompatLib CMake file.
+On Windows the target remains empty, causing silent link-time failures or
+missing include propagation.
 
-# Source/GameClient/VideoPlayer.cpp - COMMENTED OUT
-#    Source/GameClient/VideoPlayer.cpp
+Impact: Windows builds may link against an inert `d3d8lib` target and
+fail unpredictably. Targets should always be created and configured
+consistently for their intended platforms.
 
-# Múltiplos outros arquivos...
-```
-
-**Consequências**:
-- Audio/Video compilado é incompleto (stubs/não-funcionais)
-- Comentários hard-coded em CMake (bad practice - deveria ser config flags)
-- Impossível saber se comentado de propósito ou acidentalmente
+Recommendation: Ensure `d3d8lib` is configured for both Windows and Linux
+paths (DX8 SDK for Windows, DXVK for Linux) or delay its creation until
+the correct configuration is known.
 
 ---
 
-## Problemas MEDIUM (2 encontrados)
+### 🔴 CRITICAL — `SAGE_USE_DX8` not initialized consistently
 
-### 🟡 MEDIUM - windows_compat.h Include Order Problem
+Files involved:
+- `CMakeLists.txt` (root)
+- `cmake/dx8.cmake`
+- `CMakePresets.json`
 
-**Problema**:
+Problem: `cmake/dx8.cmake` branches on `SAGE_USE_DX8` but that cache
+variable is not initialized consistently across presets. Only the
+`linux64-deploy` preset sets it to `OFF`. Other presets (vc6, win32)
+do not set it, leading to non-deterministic behavior.
 
-```cpp
-// Se alguém faz:
-#include "windows_compat.h"  // Define tipos: HANDLE, DWORD, etc
-#include <windows.h>         // Windows real headers
+Impact: Build behavior depends on preset values and may select the
+wrong path for headers/libraries.
 
-// Pode causar redefinição de tipos ou conflitos
-```
-
-**Além disso, windows_compat.h não protege contra windows.h**:
-
-Deveria ter:
-```cpp
-#pragma once
-
-#ifndef _WINDOWS_COMPAT_H_
-#define _WINDOWS_COMPAT_H_
-
-// ... tipos compat ...
-
-#endif // _WINDOWS_COMPAT_H_
-```
-
-Mas também **FALTA redirecionamento de windows.h**:
-
-```cpp
-// NÃO existe isso:
-#define windows.h  // Não é possível em C
-// Deveria ser tratado com compiler flags ou precompiled headers
-```
+Recommendation: Add a `cmake_dependent_option` or explicit `set(... CACHE BOOL)`
+in the root `CMakeLists.txt` to make the default and platform-dependent
+choices explicit and deterministic.
 
 ---
 
-### 🟡 MEDIUM - d3d8lib INTERFACE Target Tem Dependências Mas Sem Garantia
+### 🔴 CRITICAL — `windows.h` is not redirected to the compatibility layer
 
-**Problema**:
+Files involved:
+- Many sources include `<windows.h>` directly (e.g. `WinMain.cpp`)
+- `GeneralsMD/Code/CompatLib/Include/windows_compat.h`
 
-```cmake
-# GeneralsMD/Code/CompatLib/CMakeLists.txt (line 67)
-target_link_libraries(d3d8lib INTERFACE d3dx8)
+Problem: `windows_compat.h` provides compatibility typedefs/macros but is
+not installed as a proper shim for `<windows.h>`. Many sources include the
+real `<windows.h>` directly, or include `windows_compat.h` after `<windows.h>`.
+This causes ordering conflicts and breaks Linux builds.
 
-# Mas quando d3d8lib é adicionado em Core/CMakeLists.txt,
-# d3dx8 NÃO EXISTE YET (CompatLib é subdirectory de GeneralsMD, não Core)
-```
+Impact: Linux builds will fail on direct `<windows.h>` includes. Even
+when a compat header exists, include ordering may produce type conflicts.
 
-**Timeline**:
-1. [Core/CMakeLists.txt#L9](Core/CMakeLists.txt#L9) - cria d3d8lib (vazio)
-2. [Core/CMakeLists.txt#L40](Core/CMakeLists.txt#L40) - add_subdirectory(GameEngine)
-3. [Core/CMakeLists.txt#L42](Core/CMakeLists.txt#L42) - add_subdirectory(GameEngineDevice)
-4. [CMakeLists.txt#L56](CMakeLists.txt#L56) - add_subdirectory(GeneralsMD) ← d3dx8 criado AQUI
-5. Mas GameEngine já foi adicionado! Pode ter linkado contra d3d8lib vazio
-
----
-
-## Problemas LOW (2 encontrados)
-
-### 🔵 LOW - Falta Documentação CMake Cache Variables
-
-**Problema**:
-
-`SAGE_USE_DX8` e `SAGE_USE_SDL3` não estão documentados em CMake com mensagens explicativas.
-
-**Solução**:
-Adicionar em [CMakeLists.txt](CMakeLists.txt) (root):
-
-```cmake
-set(SAGE_USE_DX8 ON CACHE BOOL "Use DirectX 8 SDK (Windows) or DXVK (Linux)")
-set(SAGE_USE_SDL3 OFF CACHE BOOL "Use SDL3 for windowing (Linux)")
-set(SAGE_USE_OPENAL OFF CACHE BOOL "Use OpenAL for audio (Linux)")
-```
+Recommendation: Add a small `windows_shim.h` and either require it in the
+precompiled header or ensure `CompatLib/Include` is prioritized in target
+include paths. Use `#ifdef` guards to ensure the shim only substitutes on
+non-Windows platforms.
 
 ---
 
-### 🔵 LOW - Inconsistent Type Naming in types_compat.h
+### 🔴 CRITICAL — Circular / uninitialized dependency for `d3d8lib`
 
-**Problema**:
+Files involved:
+- `GeneralsMD/Code/CompatLib/CMakeLists.txt`
+- `Core/CMakeLists.txt`
+- top-level `CMakeLists.txt`
 
-```cpp
-typedef int64_t _int64;
-typedef uint64_t _uint64;
-typedef int64_t int64;      // Nome posix-style
-typedef uint64_t uint64;    // Nome posix-style
+Problem: `d3d8lib` is created early (in `Core`) and assumed to be configured
+later by `GeneralsMD`. When `GameEngine` is added before `GeneralsMD`, it
+may link against `d3d8lib` before `d3dx8` exists or before DXVK/min-dx8 were
+fetched, resulting in undefined variables like `${dxvk_SOURCE_DIR}`.
 
-// Podem conflitar se stdint.h já definiu int64_t
-```
+Impact: CMake configuration errors or silent missing transitive includes.
 
-**Não é crítico**, mas viola "one name per concept" principle.
-
----
-
-## Recomendações de Fix (Ordenado por Prioridade)
-
-### 1️⃣ IMMEDIATE FIX - Inicializar SAGE_USE_DX8 Corretamente
-
-**Arquivo**: [CMakeLists.txt](CMakeLists.txt) (root)
-
-**Ação**:
-```cmake
-# Após "set(CMAKE_MODULE_PATH ...)" adicionar:
-
-include(CMakeDependentOption)
-
-set(SAGE_USE_DX8 ON CACHE BOOL "Use DirectX 8 SDK (Windows) or DXVK (Linux)")
-
-# Para ser claro: Windows usa DX8 SDK, Linux usa DXVK
-if(WIN32)
-    set(SAGE_USE_DX8 ON CACHE BOOL "Use DirectX 8 SDK" FORCE)
-elseif(UNIX)
-    set(SAGE_USE_DX8 OFF CACHE BOOL "Use DXVK (DirectX→Vulkan)" FORCE)
-endif()
-
-message(STATUS "SAGE_USE_DX8: ${SAGE_USE_DX8}")
-```
+Recommendation: Either create and configure `d3d8lib` in the same place
+based on `SAGE_USE_DX8`, or ensure ordering by adding `add_subdirectory(GeneralsMD)`
+earlier or delaying target linkages until configuration is complete.
 
 ---
 
-### 2️⃣ IMMEDIATE FIX - Simetrizar d3d8lib Configuration
+## HIGH (3 items)
 
-**Arquivo**: [GeneralsMD/Code/CompatLib/CMakeLists.txt](GeneralsMD/Code/CompatLib/CMakeLists.txt)
+1) Conditional logic precedence — expressions like
+   `if (UNIX OR WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)` are ambiguous.
+   Use explicit parentheses to make intent clear.
 
-**Problema**: Windows path fica vazio
+2) Unprotected includes in top-level `CMakeLists.txt` (e.g. `include(cmake/dx8.cmake)`)
+   should be guarded and validated (warn if expected FetchContent vars are missing).
 
-**Ação**:
-```cmake
-# Windows configuration (ADD THIS):
-if (WIN32)
-    # Configure d3d8lib para usar min-dx8-sdk headers
-    target_include_directories(d3d8lib INTERFACE
-        ${dx8_SOURCE_DIR}/include
-    )
-    target_link_libraries(d3d8lib INTERFACE d3dx8)
-endif()
-```
+3) Numerous commented-out sources in `GameEngine/CMakeLists.txt` represent
+   stubs — convert them to feature flags (e.g. `RTS_AUDIO_ENABLED`) rather
+   than leaving commented lines.
 
 ---
 
-### 3️⃣ IMMEDIATE FIX - Adicionar windows.h Shim
+## MEDIUM (2 items)
 
-**Arquivo**: Criar [GeneralsMD/Code/CompatLib/Include/windows_shim.h](GeneralsMD/Code/CompatLib/Include/windows_shim.h)
+1) `windows_compat.h` include-order risk — add standard include guards and
+   document include ordering. Prefer a `windows_shim.h` for portability.
 
-**Ação**:
-```cpp
-#pragma once
-
-// Windows API shim - redireciona para compatibility layer
-// Inclua isto ANTES de outros headers
-
-#ifndef _WINDOWS_SHIM_H_
-#define _WINDOWS_SHIM_H_
-
-// Em Linux, redireciona windows.h para nosso compat layer
-#ifdef __linux__
-    #define NOMINMAX
-    #include "windows_compat.h"
-#else
-    // Windows - usa header real mas com nossos tipos
-    #include <windows.h>
-#endif
-
-#endif // _WINDOWS_SHIM_H_
-```
-
-E adicionar include directory a todos os targets:
-```cmake
-target_include_directories(d3d8lib INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include
-)
-```
+2) `d3d8lib` references `d3dx8` but `d3dx8` may be created later — ensure
+   targets exist before linking or fold target creation into one conditional.
 
 ---
 
-### 4️⃣ HIGH PRIORITY FIX - Corrigir Operator Precedence
+## LOW (2 items)
 
-**Arquivo**: [GeneralsMD/Code/CompatLib/CMakeLists.txt](GeneralsMD/Code/CompatLib/CMakeLists.txt#L2)
+1) Document CMake cache variables (`SAGE_USE_DX8`, `SAGE_USE_SDL3`, `SAGE_USE_OPENAL`).
+   Add descriptive `set(... CACHE BOOL ...)` entries in root `CMakeLists.txt`.
 
-**Antes**:
-```cmake
-if (UNIX OR WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-```
-
-**Depois**:
-```cmake
-if ((UNIX) OR (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8))
-list(APPEND SOURCE_D3DX_COMPAT ...)
-elseif(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-list(APPEND SOURCE_D3DX_COMPAT ...)
-endif()
-```
+2) `types_compat.h` uses multiple type aliases (`_int64`, `int64`) — standardize
+   to avoid conflicts.
 
 ---
 
-### 5️⃣ HIGH PRIORITY - Adicionar Fallback/Validation
+## Recommended fixes (priority ordered)
 
-**Arquivo**: [CMakeLists.txt](CMakeLists.txt)
+1) Initialize `SAGE_USE_DX8` explicitly in the root `CMakeLists.txt` with
+   platform-dependent defaults using `cmake_dependent_option` or `set(... CACHE BOOL)`.
 
-**Ação**:
-```cmake
-include(cmake/dx8.cmake)
+2) Make `d3d8lib` symmetric: configure it for both Windows and Linux in the
+   CompatLib CMake file using the `SAGE_USE_DX8` value.
 
-# Validate after dx8.cmake
-if(SAGE_USE_DX8 AND NOT dx8_SOURCE_DIR)
-    message(WARNING "SAGE_USE_DX8=ON but dx8_SOURCE_DIR not set - may cause linker errors")
-elseif(NOT SAGE_USE_DX8 AND NOT dxvk_SOURCE_DIR)
-    message(WARNING "SAGE_USE_DX8=OFF but dxvk_SOURCE_DIR not set - may cause linker errors")
-endif()
-```
+3) Add a `windows_shim.h` that includes `windows_compat.h` on non-Windows
+   platforms and the real `<windows.h>` on Windows, and ensure compat include
+   dirs are first in targets that need them.
 
----
+4) Fix ambiguous `if` expressions by using explicit parentheses.
 
-### 6️⃣ MEDIUM PRIORITY - Consolidar Audio/Video Stubs
+5) Add validation after running `cmake/dx8.cmake` to warn when `dxvk_SOURCE_DIR`
+   or `dx8_SOURCE_DIR` are not available.
 
-**Arquivo**: [GeneralsMD/Code/GameEngine/CMakeLists.txt](GeneralsMD/Code/GameEngine/CMakeLists.txt)
-
-**Ação**: Converter comentários hard-coded para feature flags:
-
-```cmake
-# Em lugar de:
-#    Source/Common/Audio/GameAudio.cpp
-
-# Usar:
-if(RTS_AUDIO_ENABLED)
-    list(APPEND GAMEENGINE_SRC Source/Common/Audio/GameAudio.cpp)
-endif()
-```
+6) Replace commented-out source lists with feature flags so build options are clear.
 
 ---
 
-## Checklist de Validação
+## Validation checklist
 
-### ✅ Após Fixes, Validar:
+After the fixes, validate:
 
-1. **Windows Build (vc6)**:
-   - [ ] `SAGE_USE_DX8` é inicializado como `ON`
-   - [ ] `d3d8lib` target tem `dx8_SOURCE_DIR/include`
-   - [ ] Sem erros de link relacionados a d3d8lib
-
-2. **Linux Build (linux64-deploy)**:
-   - [ ] `SAGE_USE_DX8` é inicializado como `OFF`
-   - [ ] `d3d8lib` target tem `dxvk_SOURCE_DIR/include`
-   - [ ] Linker pode encontrar `libdxvk_d3d8.so`
-
-3. **Include Order**:
-   - [ ] Nenhum `.cpp` tem `#include <windows.h>` antes de `#include "windows_shim.h"`
-   - [ ] Linux build não consegue compilar `#include <windows.h>` sem shim
-
-4. **CMake Validation**:
-   - [ ] `cmake --preset vc6 -DSAGE_USE_DX8=ON` funciona
-   - [ ] `cmake --preset linux64-deploy -SAGE_USE_DX8=OFF` funciona
-   - [ ] Mensagens de warning aparecem se variáveis estão vazias
+- Windows (vc6): `SAGE_USE_DX8=ON`, `d3d8lib` points to `dx8_SOURCE_DIR/include`.
+- Linux (linux64-deploy): `SAGE_USE_DX8=OFF`, `d3d8lib` points to `dxvk_SOURCE_DIR/include`.
+- No source includes `<windows.h>` before the shim.
+- CMake warns when required FetchContent variables are missing.
 
 ---
 
-## Ref erências
+## References
 
-**Comparação com Fighter19 Port**:
-- fighter19 usa: `cmake_dependent_option(SAGE_USE_DX8 "Use DirectX 8" ON "WIN32" OFF)`
-- fighter19 separa Windows (d3d8lib com DX8 SDK) de Linux (d3d8lib com DXVK)
-- fighter19 não tem o mesmo problema de d3d8lib não-configurado porque:
-  1. Cria d3d8lib DENTRO do if(UNIX) ou else() - nunca fica vazio
-  2. SAGE_USE_DX8 é claramente inicializado com padrão
+- fighter19 port: uses `cmake_dependent_option(SAGE_USE_DX8 "Use DirectX 8" ON "WIN32" OFF)`
+- TheSuperHackers notes: min-dx8-sdk and d3d8lib usage
 
-**TheSuperHackers Reference**:
-- Nota em mingw.cmake: "The min-dx8-sdk (dx8.cmake) handles this correctly via d3d8lib interface target"
-- Mas referência parece estar de um estado anterior onde era "correto"
+Estimated fix time: 2–3 hours (including tests)
 
----
-
-**Total Issues**: 9  
-**Critical**: 4  
-**High**: 3  
-**Medium**: 2  
-**Low**: 2
-
-**Estimated Fix Time**: 2-3 horas (testes inclusos)
