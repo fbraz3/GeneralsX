@@ -90,6 +90,9 @@ set(GAMEENGINEDEVICE_SRC
     Include/Win32Device/GameClient/Win32DIKeyboard.h
     Include/Win32Device/GameClient/Win32DIMouse.h
     Include/Win32Device/GameClient/Win32Mouse.h
+    # Linux SDL3/OpenAL devices (Phase 1 - TheSuperHackers @feature CnC_Generals_Linux 07/02/2026)
+    Include/SDL3GameEngine.h
+    Include/OpenALAudioManager.h
 #    Source/MilesAudioDevice/MilesAudioManager.cpp
 #    Source/VideoDevice/Bink/BinkVideoPlayer.cpp
     Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
@@ -189,6 +192,9 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/Win32Device/Common/Win32LocalFile.cpp
 #    Source/Win32Device/Common/Win32LocalFileSystem.cpp
     Source/Win32Device/Common/Win32OSDisplay.cpp
+    # Linux SDL3/OpenAL implementations (Phase 1 - TheSuperHackers @feature CnC_Generals_Linux 07/02/2026)
+    Source/SDL3GameEngine.cpp
+    Source/OpenALAudioManager.cpp
     Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     #Source/Win32Device/GameClient/Win32DIMouse.cpp
     Source/Win32Device/GameClient/Win32Mouse.cpp
@@ -208,7 +214,7 @@ target_precompile_headers(z_gameenginedevice PRIVATE
     [["Common/SubsystemInterface.h"]]
     [["INI.h"]]
     [["WWCommon.h"]]
-    <windows.h>
+    [["PchCompat.h"]] # TheSuperHackers @build 08/02/2026 Platform-safe windows.h wrapper
 )
 
 target_link_libraries(z_gameenginedevice PRIVATE

@@ -90,6 +90,11 @@ static inline uint32_t _lrotl(uint32_t value, int shift)
 #endif // _WIN32
 #endif // _rdtsc
 #ifndef _rdtsc
+
+// Fallback for architectures without RDTSC (e.g., ARM64)
+// Use clock() as a generic clock source
+#include <ctime>
+
 static inline uint64_t _rdtsc()
 {
 #ifdef _WIN32
@@ -99,7 +104,9 @@ static inline uint64_t _rdtsc()
 #elif defined(__has_builtin) && __has_builtin(__builtin_ia32_rdtsc)
     return __builtin_ia32_rdtsc();
 #else
-#error "No implementation for _rdtsc"
+    // Fallback: use clock() - returns elapsed processor time in CLOCKS_PER_SEC units
+    // Multiply by 1000000 to approximate as nanosecond-like resolution
+    return static_cast<uint64_t>(std::clock()) * 1000000ULL / CLOCKS_PER_SEC;
 #endif
 }
 #endif // _rdtsc
