@@ -27,6 +27,23 @@
 #include "Common/MessageStream.h"
 #include "GameNetwork/GameInfo.h"
 
+#ifdef _WIN32
+	#include <windows.h>
+#else
+	// Linux: Define Windows-compatible SYSTEMTIME
+	struct SYSTEMTIME 
+	{
+		unsigned short wYear;
+		unsigned short wMonth;
+		unsigned short wDayOfWeek;
+		unsigned short wDay;
+		unsigned short wHour;
+		unsigned short wMinute;
+		unsigned short wSecond;
+		unsigned short wMilliseconds;
+	};
+#endif
+
 class File;
 
 /**

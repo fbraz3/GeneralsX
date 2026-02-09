@@ -37,6 +37,29 @@
 #include "GameNetwork/NetworkDefs.h"
 #include "trim.h"
 
+#include <string>
+
+#ifdef _WIN32
+	// Windows: Already have windows.h
+#else
+	// Linux: Provide Windows-compatible stat functions
+	#include <sys/stat.h>
+	struct _stat 
+	{ 
+		mode_t st_mode;
+		_stat() : st_mode(0) {}
+	};
+	inline int _stat(const char* path, struct _stat* buf) 
+	{ 
+		struct stat sbuf;
+		if (stat(path, &sbuf) != 0) return -1;
+		buf->st_mode = sbuf.st_mode;
+		return 0;
+	}
+	#define _S_IFDIR S_IFDIR
+	// GetCommandLineA is already declared elsewhere or handled by argv in main
+#endif
+
 
 
 
@@ -1390,6 +1413,7 @@ static void parseCommandLine(const CommandLineParam* params, int numParams)
 {
 	std::vector<char*> argv;
 
+#ifdef _WIN32
 	std::string cmdLine = GetCommandLineA();
 	char *token = nextParam(&cmdLine[0], "\" ");
 	while (token != nullptr)
@@ -1397,6 +1421,16 @@ static void parseCommandLine(const CommandLineParam* params, int numParams)
 		argv.push_back(strtrim(token));
 		token = nextParam(nullptr, "\" ");
 	}
+#else
+	// Linux: Use global __argv  (or reconstruct from first param if available)
+	// For now, just use argv[0] as program name
+	extern char **__argv;
+	extern int __argc;
+	for (int i = 1; i < __argc; i++)
+	{
+		argv.push_back(__argv[i]);
+	}
+#endif
 	int argc = argv.size();
 
 	int arg = 1;

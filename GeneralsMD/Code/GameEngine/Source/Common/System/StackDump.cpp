@@ -24,7 +24,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#if defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)
+#if (defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)) && defined(_WIN32)
 
 #pragma pack(push, 8)
 
@@ -635,6 +635,15 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 
 
 #pragma pack(pop)
+
+#else
+
+// Non-Windows or non-debug stubs
+AsciiString g_LastErrorDump;
+void StackDumpFromAddresses(void** addresses, unsigned int count, void (*callback)(const char*)) {}
+void FillStackAddresses(void** addresses, unsigned int count, unsigned int skip) {}
+void DumpExceptionInfo(unsigned int u, EXCEPTION_POINTERS* e_info) {}
+void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* linenumber, unsigned int* address) {}
 
 #endif
 
