@@ -17,6 +17,13 @@
 */
 #include "Lib/BaseType.h"
 
+#ifdef _WIN32
+	#include <windows.h>
+#else
+	// Linux: Define Windows-compatible HANDLE
+	typedef void* HANDLE;
+#endif
+
 namespace rts
 {
 

@@ -108,6 +108,7 @@ W3DMouse::W3DMouse( void )
 
 W3DMouse::~W3DMouse( void )
 {
+#ifdef _WIN32
 	LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	if (m_pDev)
@@ -115,6 +116,7 @@ W3DMouse::~W3DMouse( void )
 		m_pDev->ShowCursor(FALSE);	//kill DX8 cursor
 		Win32Mouse::setCursor(ARROW); //enable default windows cursor
 	}
+#endif
 
 	freeD3DAssets();
 	freeW3DAssets();
@@ -365,6 +367,7 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	CriticalSectionClass::LockClass m(mutex);
 
 	m_directionFrame=0;
+#ifdef _WIN32
 	if (m_currentRedrawMode == RM_WINDOWS)
 	{	//Windows default cursor needs to refreshed whenever we get a WM_SETCURSOR
 		m_currentD3DCursor=NONE;
@@ -376,6 +379,7 @@ void W3DMouse::setCursor( MouseCursor cursor )
 		m_currentCursor = cursor;
 		return;
 	}
+#endif
 
 	// extend
 	Mouse::setCursor( cursor );
@@ -385,6 +389,7 @@ void W3DMouse::setCursor( MouseCursor cursor )
 		return;
 
 	//make sure Windows didn't reset our cursor
+#ifdef _WIN32
 	if (m_currentRedrawMode == RM_DX8)
 	{
 		SetCursor(nullptr);	//Kill Windows Cursor
@@ -464,13 +469,16 @@ void W3DMouse::setCursor( MouseCursor cursor )
 			m_currentW3DCursor=cursor;
 		}
 	}
+#endif
 
 	// save current cursor
 	m_currentCursor = cursor;
 
 }
 
+#ifdef _WIN32
 extern HWND ApplicationHWnd;
+#endif
 
 void W3DMouse::draw(void)
 {
@@ -481,6 +489,7 @@ void W3DMouse::draw(void)
 	//make sure the correct cursor image is selected
 	setCursor(m_currentCursor);
 
+#ifdef _WIN32
 	if (m_currentRedrawMode == RM_DX8 && m_currentD3DCursor != NONE)
 	{
 		//called from update thread or rendering loop.  Tells D3D where
@@ -513,7 +522,9 @@ void W3DMouse::draw(void)
 			}
 		}
 	}
-	else if (m_currentRedrawMode == RM_POLYGON)
+	else
+#endif
+	if (m_currentRedrawMode == RM_POLYGON)
 	{
 		const Image *image=cursorImages[m_currentPolygonCursor];
 		if (image)
