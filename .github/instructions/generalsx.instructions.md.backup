@@ -1,0 +1,186 @@
+---
+applyTo: '**'
+---
+
+# Objectives
+
+GeneralsX is a **community-driven modernization** of Command & Conquer: Generals Zero Hour (2003), preserving the classic gameplay while enabling modern development workflows.
+
+This is a **massive C++ game engine** (~500k+ LOC) being carefully modernized from Visual C++ 6 (C++98) to MSVC 2022 (C++20) while maintaining compatibility with the original game's architecture.
+
+**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code. Our strategy is to learn from proven modernization efforts while adapting them for Zero Hour.
+
+## Project Structure & Upstream Context
+
+### EA Games Source Release (2024)
+The original Command & Conquer Generals/Zero Hour source code was released by EA Games. Two major community projects emerged:
+
+### TheSuperHackers (Our Upstream Base)
+- **Repository**: `git@github.com:TheSuperHackers/GeneralsGameCode.git`
+- **Strategy**: Maintain compatibility with original executables
+- **Build System**: VC6 + DirectX 8 + Miles Sound System
+- **Coverage**: Both Generals AND Zero Hour
+- **Focus**: Bugfixes, stability, code unification
+- **VC6 Preset**: **STABLE** (production-ready, retail compatible)
+- **Win32 Preset (MSVC 2022)**: Experimental (future modernization path)
+- **Status**: VC6 is the stable baseline; Win32 is deferred modernization
+
+### jmarshall's Port (Reference Implementation)
+- **Repository**: `references/jmarshall-win64-modern/` (local copy)
+- **Deepwiki Repo**: `jmarshall2323/CnC_Generals_Zero_Hour`
+- **Strategy**: Aggressive modernization (VS2022 + Win64 + DX9/DX12)
+- **Build System**: CMake + C++20 + d3d9on12 wrapper
+- **Coverage**: Generals base game ONLY (Zero Hour not ported)
+- **Focus**: Modern toolchain, performance, new features
+- **Audio**: Likely OpenAL (replacing Miles)
+- **Status**: Fully functional modern build
+
+### fighter19's DXVK Port (Linux Reference)
+- **Repository**: `references/fighter19-dxvk-port/` (local copy)
+- **Deepwiki Repo**: `Fighter19/CnC_Generals_Zero_Hour`
+- **Strategy**: Linux port with Vulkan via DXVK
+- **Build System**: CMake + MinGW + DXVK
+- **Coverage**: Both Generals AND Zero Hour
+- **Focus**: Graphics layer modernization, Linux compatibility
+- **Status**: Fully functional Linux build
+
+## Our Mission
+
+**Primary Goal (this branch)**: Make *Generals: Zero Hour* (`GeneralsXZH`) runs under linux environment using dxvk as implemented by fighter-19 while preserving the original gameplay and maintaining a stable VC6 baseline. We can also use jmarshall's port as a reference OpenAL implementation and need to investigate a video playback alternative.
+
+**Non-goals (unless required to unblock dxvk-native)**:
+- Video playback replacement (Bink → alternative)
+- New gameplay features, balance changes, or “modern enhancements” (widescreen hacks, framerate unlocks, etc.)
+
+**Strategy**:
+1. **Base**: TheSuperHackers code (Zero Hour support, retail-compat patterns)
+2. **Reference**: `references/fighter19-dxvk-port/` for DXVK/dxvk-native integration patterns; `references/jmarshall-win64-modern/` for modernization patterns (adapt carefully; Generals-only)
+3. **Focus**: Zero Hour first; backport to Generals (`GeneralsX`) only when the change is clearly shared and low-risk
+4. **Method**: Research-first, minimal diffs, and strict separation between game logic and platform/render backends
+
+## Modernization Strategy
+
+We follow a **research-first hybrid approach** with an explicit scope: **dxvk-native graphics backend first**, everything else is deferred.
+
+### Phase 0: Deep Analysis & Planning (CURRENT)
+**Goal**: Produce a concrete dxvk-native integration plan before large code changes.
+
+**Deliverables**:
+- Current renderer architecture map (DX8 entry points, device creation, swap chain/present, capability queries)
+- Reference comparison notes (fighter19/jmarshall) with “what applies to Zero Hour” explicitly called out
+- A step-by-step integration plan with acceptance criteria and rollback strategy
+
+### Phase 1: dxvk-native Bring-up (Win32 preset)
+**Goal**: Get `GeneralsXZH` rendering through Vulkan via dxvk-native with feature parity sufficient to reach menus and load into a map.
+
+**Rules of engagement**:
+- Keep gameplay and simulation code untouched unless dxvk-native truly requires it
+- Keep platform-specific changes confined to render/device layers (e.g., `Core/GameEngineDevice/`, `ww3d2`)
+- Prefer toggles/compile options or backend selection mechanisms that keep the DX8 path available for bisecting
+
+### Phase 2: dxvk-native Hardening & Parity
+**Goal**: Close parity gaps with the original DX8 renderer (visual correctness, stability, performance) while keeping changes minimal and well-isolated.
+
+### Wishlist (Out of Scope for this branch)
+- SDL-based windowing/input
+- OpenAL audio
+- Bink video replacement
+
+### Build System Status (this branch)
+- **VC6 preset (Visual Studio 6)**: **STABLE baseline** - all changes must compile and pass replay tests here first
+- **Win32 preset (MSVC 2022)**: Experimental future path; NOT required for this phase
+- **Testing approach**: VC6 for implementation/verification (retail compatibility); Win32 testing deferred
+
+### Phase 0 Acceptance Criteria
+
+Phase 0 is **COMPLETE** when:
+- ✅ TheSuperHackers baseline render path documented (DX8)
+- ✅ dxvk-native feasibility confirmed for our target architecture (Zero Hour)
+- ✅ Integration approach selected (where to hook device creation/present, how to keep DX8 fallback)
+- ✅ fighter19/jmarshall reference applicability documented (what we will and will not reuse)
+- ✅ Risk assessment completed (stability, determinism, debugging, deployment)
+- ✅ Concrete Phase 1/2 plan written with acceptance criteria
+- ✅ Team consensus on the dxvk-native-first roadmap
+
+# Update Dev Blog Before Commits
+
+Before committing changes, update the development diary at `docs/DEV_BLOG/YYYY-MM-DIARY.md` (YYYY-MM is the current year and month). Follow `.github/instructions/docs.instructions.md`.
+
+# Guidelines (dxvk-native Branch)
+
+- **Scope discipline**: This branch is for dxvk-native renderer integration and parity work. Avoid unrelated refactors or feature work.
+- **Root cause**: Do not patch around symptoms; fix the underlying issue.
+- **Isolation**: Keep platform- and backend-specific code out of game logic; confine it to platform/renderer layers (e.g., `Core/GameEngineDevice/`, `ww3d2`).
+- **DX8 fallback**: Keep the original DX8 path available where practical for bisecting and validation.
+- **Determinism**: Do not introduce nondeterministic behavior into simulation code. Rendering changes must not affect gameplay outcomes.
+- **English only**: All code, comments, identifiers, and documentation must be in English.
+- **No lazy workarounds**: Avoid empty stubs, empty `catch` blocks, or disabling components to “make it work”.
+- **Terminal hygiene**: Do not use emojis or exclamation marks in terminal commands.
+
+## Build & Run
+
+- Prefer VS Code Tasks for build/deploy/run/debug (they set up build environment and capture logs).
+- Always capture build/run/debug output to `logs/` using `Tee-Object` (already baked into tasks/scripts).
+- **Primary configuration**: `vc6` preset (stable baseline for retail compatibility)
+- **Secondary configuration**: `win32` preset (future modernization; currently experimental)
+
+## Logging Conventions
+
+- When creating new scripts/tasks, write logs to `logs/phaseXX_build.log` and `logs/phaseXX_debug.log` (replace `XX` with the phase).
+
+## Target Priority
+
+- Primary stable target: `GeneralsXZH` (Zero Hour).
+- Backport to `GeneralsX` only when the change is clearly shared and low-risk.
+
+# Merge From TheSuperHackers Upstream
+
+- Ensure a read-only git remote named `thesuperhackers` points to `git@github.com:TheSuperHackers/GeneralsGameCode.git`.
+- Once per day before starting work, merge `thesuperhackers/main` into the current branch.
+  - Resolve conflicts carefully; avoid `theirs` strategy unless truly necessary.
+  - Run at least a configure + build on the primary preset after merging.
+
+# Available Reference Repositories
+
+Use references to understand proven solutions, not as copy-paste blueprints.
+
+- `references/fighter19-dxvk-port/` (Zero Hour): Graphics-layer patterns for DXVK/dxvk-native style work.
+- `references/jmarshall-win64-modern/` (Generals only): Modernization patterns (adapt carefully; not Zero Hour).
+- `references/thesuperhackers-main/`: Upstream baseline and behavior reference.
+
+# Project Directory Structure
+
+- `/Generals` - Base game source code
+- `/GeneralsMD` - Zero Hour expansion source code (primary)
+- `/Core` - Shared libraries/utilities
+- `/Dependencies` - External dependencies
+
+# Build Presets
+
+- **`vc6`** - Windows 32-bit (Visual Studio 6) - **STABLE BASELINE** (retail compatible)
+- `win32` - Windows 32-bit (MSVC 2022) - Experimental (future path, not required now)
+- `win32-vcpkg` - Windows 32-bit with vcpkg toolchain - Experimental
+- `mingw-w64-i686` - Experimental (Linux/cross-compile)
+
+# Vulkan Documentation
+
+If you need Vulkan API reference locally, download and extract the Vulkan SDK documentation:
+
+```cmd
+mkdir -p docs/Support/Vulkan
+cd docs/Support/Vulkan
+wget https://vulkan.lunarg.com/doc/download/VulkanSDK-Windows-Docs-1.4.335.0.zip
+unzip VulkanSDK-Windows-Docs-1.4.335.0.zip
+rm -rf VulkanSDK-Windows-Docs-1.4.335.0.zip
+```
+
+# Command Line Parameters
+
+Common command line parameters for `GeneralsX` and `GeneralsXZH`:
+
+- `-win`: Forces windowed mode (`m_windowed = true`)
+- `-fullscreen`: Forces fullscreen mode (`m_windowed = false`)
+- `-noshellmap`: Disables the shell map (`m_shellMapOn = false`)
+- `-mod <path>`: Loads a mod from a directory or `.big` file (absolute path or relative to user data path)
+
+For a full list, see `docs/ETC/COMMAND_LINE_PARAMETERS.md`.
