@@ -45,7 +45,6 @@ thumbs.db
 /CMakeUserPresets.json
 /.cache
 .clang-format
-/.vscode
 /Dependencies/MaxSDK/maxsdk
 /tmp/
 
@@ -67,3 +66,6 @@ build.ninja
 ## Python
 __pycache__/
 *.pyc
+
+## Build Logs (generated during development)
+/logs/
