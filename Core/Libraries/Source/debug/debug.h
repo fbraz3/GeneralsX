@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include <Utility/intrin_compat.h>
+
 /**
   \page lib_var Library variants
 

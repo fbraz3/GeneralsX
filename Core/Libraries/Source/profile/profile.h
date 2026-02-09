@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include <Utility/intrin_compat.h>
+
 // include all our public header files (use double quotes here)
 #include "profile_doc.h"
 #include "profile_highlevel.h"

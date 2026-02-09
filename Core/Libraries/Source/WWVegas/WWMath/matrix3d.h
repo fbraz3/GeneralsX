@@ -1813,9 +1813,13 @@ public:
 // Reason being, D3DMATRIX is row-major, and Matrix3D is column-major and therefore copying one matrix to the
 // other will always require a transpose.
 
+#ifdef _WIN32
+
 struct _D3DMATRIX;
 struct D3DXMATRIX;
 
 extern void To_D3DMATRIX(_D3DMATRIX& dxm, const Matrix3D& m);
 extern _D3DMATRIX To_D3DMATRIX(const Matrix3D& m);
 extern D3DXMATRIX To_D3DXMATRIX(const Matrix3D& m);
+
+#endif // _WIN32

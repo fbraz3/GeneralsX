@@ -18,6 +18,8 @@
 
 #include "DbgHelpGuard.h"
 
+#ifdef _WIN32
+
 #include "DbgHelpLoader.h"
 
 
@@ -47,3 +49,13 @@ void DbgHelpGuard::deactivate()
 		m_needsUnload = false;
 	}
 }
+
+#else
+
+// Non-Windows stubs
+DbgHelpGuard::DbgHelpGuard() : m_needsUnload(false) {}
+DbgHelpGuard::~DbgHelpGuard() {}
+void DbgHelpGuard::activate() {}
+void DbgHelpGuard::deactivate() {}
+
+#endif
