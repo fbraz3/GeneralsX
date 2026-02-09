@@ -34,8 +34,8 @@ on:
           - 'false'
           - 'true'
 
-  schedule:
-    - cron: '0 9 * * 5'
+#  schedule:
+#    - cron: '0 9 * * 5'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
