@@ -19,6 +19,8 @@
 // This file contains string macros and alias functions to help compiling on non-windows platforms
 #pragma once
 #include <ctype.h>
+#include <string.h>
+#include <wchar.h>
 
 typedef const char* LPCSTR;
 typedef char* LPSTR;
@@ -33,6 +35,11 @@ inline char *_strlwr(char *str) {
 
 #define strlwr _strlwr
 #define stricmp strcasecmp
+#define _stricmp strcasecmp
 #define strnicmp strncasecmp
 #define strcmpi strcasecmp
+
+// Wide character string mapping
+#define wcscmp wcscmp
+#define wcslen wcslen
 
