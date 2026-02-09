@@ -18,6 +18,8 @@
 
 #include "DbgHelpLoader.h"
 
+#ifdef _WIN32
+// TheSuperHackers @build 08/02/2026 DbgHelpLoader is Windows-only (minidump, imagehlp.h, HANDLE, etc)
 
 DbgHelpLoader* DbgHelpLoader::Inst = nullptr;
 CriticalSectionClass DbgHelpLoader::CriticalSection;
@@ -359,4 +361,6 @@ BOOL DbgHelpLoader::miniDumpWriteDump(
 
 	return FALSE;
 }
-#endif
+#endif // RTS_ENABLE_CRASHDUMP
+
+#endif // _WIN32

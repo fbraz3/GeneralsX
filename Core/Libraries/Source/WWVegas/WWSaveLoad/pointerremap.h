@@ -37,7 +37,7 @@
 #pragma once
 
 #ifdef _UNIX
-#include "osdep/osdep.h"
+#include "../WWLib/osdep.h"  // TheSuperHackers @build 08/02/2026 Fix include path
 #endif
 
 #include "always.h"

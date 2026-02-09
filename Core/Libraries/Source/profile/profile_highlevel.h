@@ -29,6 +29,13 @@
 
 #pragma once
 
+#include <Utility/intrin_compat.h>
+#include <cstdint>
+
+#ifndef _int64
+	typedef int64_t _int64;
+#endif
+
 /// \internal internal Id representation
 class ProfileId;
 

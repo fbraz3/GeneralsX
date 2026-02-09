@@ -29,16 +29,20 @@
 
 #pragma once
 
+#include <Utility/intrin_compat.h>
+
 #include "../debug/debug.h"
 #include "internal_funclevel.h"
 #include "internal_highlevel.h"
 #include "internal_cmd.h"
 #include "internal_result.h"
+
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #if !(defined(_MSC_VER) && _MSC_VER < 1300)
 #include <atomic>
-#include <Utility/intrin_compat.h>
 #endif
 
 class ProfileFastCS
@@ -46,7 +50,9 @@ class ProfileFastCS
   ProfileFastCS(const ProfileFastCS&) CPP_11(= delete);
   ProfileFastCS& operator=(const ProfileFastCS&) CPP_11(= delete);
 
+#ifdef _WIN32
 	static HANDLE testEvent;
+#endif
 
 #if defined(_MSC_VER) && _MSC_VER < 1300
 	volatile unsigned m_Flag;
