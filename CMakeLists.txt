@@ -52,8 +52,12 @@ endif()
 if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
     include(cmake/miles.cmake)
     include(cmake/bink.cmake)
-    include(cmake/dx8.cmake)
 endif()
+
+# Always include DX8 headers (needed for both Windows and Linux builds)
+# On Windows: min-dx8-sdk headers
+# On Linux: DXVK headers (for D3D8→Vulkan translation)
+include(cmake/dx8.cmake)
 
 # Define a dummy stlport target when not on VC6.
 if (IS_VS6_BUILD)

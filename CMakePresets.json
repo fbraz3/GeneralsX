@@ -190,6 +190,20 @@
             "cacheVariables": {
                 "RTS_BUILD_OPTION_PROFILE": "ON"
             }
+        },
+        {
+            "name": "linux64-deploy",
+            "displayName": "Linux 64-bit DXVK/SDL3/OpenAL Release",
+            "generator": "Ninja",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "SAGE_USE_DX8": "OFF",
+                "SAGE_USE_SDL3": "ON",
+                "SAGE_USE_OPENAL": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -289,6 +303,12 @@
             "configurePreset": "mingw-w64-i686-profile",
             "displayName": "Build MinGW-w64 32-bit (i686) Profile",
             "description": "Build MinGW-w64 32-bit (i686) Profile"
+        },
+        {
+            "name": "linux64-deploy",
+            "configurePreset": "linux64-deploy",
+            "displayName": "Build Linux 64-bit DXVK/SDL3/OpenAL Release",
+            "description": "Build Linux 64-bit with DXVK graphics, SDL3 windowing, and OpenAL audio"
         }
     ],
     "workflowPresets": [
