@@ -7,6 +7,10 @@ add_library(corei_main INTERFACE)
 add_library(corei_always INTERFACE)
 add_library(corei_always_no_pch INTERFACE) # Use this for Shared Libs with MFC AFX
 
+# Create d3d8lib INTERFACE target early so Core/GameEngine can link to it
+# This will be configured later by GeneralsMD/Code/CompatLib/CMakeLists.txt
+add_library(d3d8lib INTERFACE)
+
 target_include_directories(corei_gameengine_include INTERFACE "GameEngine/Include")
 target_include_directories(corei_libraries_include INTERFACE "Libraries/Include")
 target_include_directories(corei_libraries_source_wwvegas INTERFACE "Libraries/Source/WWVegas")
