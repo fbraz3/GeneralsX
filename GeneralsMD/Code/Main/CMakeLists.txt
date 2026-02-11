@@ -55,10 +55,10 @@ target_include_directories(z_generals PRIVATE
 )
 
 target_sources(z_generals PRIVATE
-    WinMain.cpp
-    WinMain.h
-    # Linux SDL3 entry point (Phase 1 - TheSuperHackers @feature CnC_Generals_Linux 07/02/2026)
-    SDL3Main.cpp
+    $<$<BOOL:${WIN32}>:WinMain.cpp>
+    $<$<BOOL:${WIN32}>:WinMain.h>
+    # Linux SDL3 entry point (Phase 1.5 - TheSuperHackers @build 10/02/2026 Bender)
+    $<$<NOT:$<BOOL:${WIN32}>>:SDL3Main.cpp>
 )
 
 # RC files optional for MinGW builds

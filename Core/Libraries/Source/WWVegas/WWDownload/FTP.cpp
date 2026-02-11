@@ -22,22 +22,30 @@
 /*_$                      Include Files                                  */
 /*************************************************************************/
 
-
+// TheSuperHackers @build fbraz 10/02/2026
+// Platform headers with socket_compat.h providing Winsock → POSIX mapping
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <stdlib.h>
 #ifdef _WIN32
 #include <process.h>
-#endif
-#include <sys/stat.h>
 #include <io.h>
-#include <time.h>
-#include "assert.h"
-#include "ftp.h"
-#include <time.h>
+#include "winsock.h"
 #include <direct.h>
-#include <errno.h>
-#include <WWCommon.h>
+#else
+#include "windows_compat.h"  // Includes socket_compat.h (Winsock → POSIX BSD sockets)
+#include <unistd.h>
+#include <sys/stat.h>
+#define _getcwd getcwd
+#define _chmod chmod
+#define _S_IWRITE S_IWRITE
+#define _S_IREAD S_IREAD
+#define HOSTENT hostent
+#include <filesystem>
+// TODO: Implement _splitpath for Linux (currently no-op)
+#define _splitpath(a,b,c,d,e) (void)0
+#endif
 //#include "wlib/wstring.h"
 
 #include "DownloadDebug.h"

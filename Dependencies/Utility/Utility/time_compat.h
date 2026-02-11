@@ -18,6 +18,11 @@
 
 // This file contains the time functions for compatibility with non-windows platforms.
 #pragma once
+
+// TheSuperHackers @build 10/02/2026 Bender
+// Skip this old compat if new CompatLib headers are already included (via WWCommon.h)
+#ifndef DEPENDENCIES_UTILITY_COMPAT_H
+
 #include <time.h>
 
 #define TIMERR_NOERROR 0
@@ -38,4 +43,6 @@ inline unsigned int GetTickCount()
   // Return ms since boot
   return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
+
+#endif /* DEPENDENCIES_UTILITY_COMPAT_H */
 

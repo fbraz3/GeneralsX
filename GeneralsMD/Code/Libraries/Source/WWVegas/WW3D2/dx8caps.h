@@ -41,11 +41,8 @@
 
 #include "always.h"
 #include "ww3dformat.h"
-#ifdef _WIN32
+// TheSuperHackers @build fbraz 10/02/2026 Include DXVK d3d8.h on Linux
 #include <d3d8.h>
-#else
-// Linux: Graphics layer stubs for Phase 1 (DXVK will provide d3d8)
-#endif
 
 class DX8Caps
 {

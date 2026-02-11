@@ -40,16 +40,18 @@
     typedef uint64_t u64;
     typedef int64_t i64;
     // Define _int64 for use in (unsigned _int64) patterns
-    typedef uint64_t _int64;
+    // Only define if not already defined by types_compat.h
+    #ifndef _int64
+    typedef int64_t _int64;
+    #endif
 #endif
 #include <Utility/intrin_compat.h>
 #include <cstdint>
 
-#ifndef __int64
+// TheSuperHackers @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
+#ifndef _INT64_TYPES_DEFINED
+	#define _INT64_TYPES_DEFINED
 	typedef int64_t __int64;
-#endif
-
-#ifndef _int64
 	typedef int64_t _int64;
 #endif
 
@@ -148,7 +150,9 @@ public:
       \param frame number of recorded frame, or Total
       \return number of calls
     */
-    unsigned _int64 GetCalls(unsigned frame) const;
+    // TheSuperHackers @refactor fighter19 10/02/2026 Bender
+    // Changed from unsigned _int64 (MSVC-specific) to u64 (platform typedef)
+    u64 GetCalls(unsigned frame) const;
 
     /**
       \brief Determine time spend in this function and its children.
@@ -156,7 +160,7 @@ public:
       \param frame number of recorded frame, or Total
       \return time spend (in CPU ticks)
     */
-    unsigned _int64 GetTime(unsigned frame) const;
+    u64 GetTime(unsigned frame) const;
 
     /**
       \brief Determine time spend in this function only (exclude
@@ -165,7 +169,7 @@ public:
       \param frame number of recorded frame, or Total
       \return time spend in this function alone (in CPU ticks)
     */
-    unsigned _int64 GetFunctionTime(unsigned frame) const;
+    u64 GetFunctionTime(unsigned frame) const;
 
     /**
       \brief Determine the list of caller Ids.
@@ -204,9 +208,11 @@ public:
 
       \return profile thread ID
     */
-    unsigned GetId(void) const
+    // TheSuperHackers @refactor fighter19 10/02/2026 Bender
+    // Changed unsigned → uintptr_t to avoid pointer precision loss on 64-bit
+    uintptr_t GetId(void) const
     {
-      return unsigned(m_threadID);
+      return (uintptr_t)m_threadID;
     }
 
   private:

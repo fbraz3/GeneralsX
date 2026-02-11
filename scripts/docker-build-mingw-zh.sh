@@ -6,22 +6,24 @@ set -e
 
 PRESET="${1:-mingw-w64-i686}"
 LOG_FILE="logs/build_zh_${PRESET}_docker.log"
+DOCKER_IMAGE="generalsx/mingw-builder:latest"
 
 echo "🐳 Building GeneralsXZH (Windows/MinGW, preset: ${PRESET})..."
 mkdir -p logs
 
+# Check if Docker image exists, build if not
+if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
+    echo "⚠️  Docker image not found: $DOCKER_IMAGE"
+    echo "📦 Building image (this will take a few minutes)..."
+    ./scripts/docker-build-images.sh mingw
+fi
+
 docker run --rm \
     -v "$PWD:/work" \
     -w /work \
-    ubuntu:22.04 \
+    "$DOCKER_IMAGE" \
     bash -c "
         set -e
-        echo '📦 Installing dependencies (MinGW cross-compiler)...'
-        apt-get update -qq
-        apt-get install -y -qq build-essential ninja-build git mingw-w64 curl
-        
-        echo '📦 Installing CMake 3.25+ (required for CMakePresets.json v6)...'
-        curl -sL https://github.com/Kitware/CMake/releases/download/v3.25.0/cmake-3.25.0-linux-aarch64.tar.gz | tar -xz -C /usr/local --strip-components=1
         
         echo '⚙️  Configuring CMake (MinGW cross-compile)...'
         cmake --preset ${PRESET}

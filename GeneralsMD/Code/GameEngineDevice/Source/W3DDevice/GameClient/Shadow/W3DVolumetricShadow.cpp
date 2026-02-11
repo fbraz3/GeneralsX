@@ -1351,8 +1351,13 @@ void W3DVolumetricShadow::RenderMeshVolume(Int meshIndex, Int lightIndex, const 
 	if( numVerts == 0 || numPolys == 0 )
 		return;
 
-	D3DMATRIX dxmWorld = To_D3DMATRIX(*meshXform);
-	m_pDev->SetTransform(D3DTS_WORLD,&dxmWorld);
+	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// Applied fighter19 pattern: transpose Matrix3D→Matrix4x4, cast pointer
+	Matrix4x4 mWorld(*meshXform);
+	Matrix4x4 mWorldTransposed = mWorld.Transpose();
+
+	///@todo: W3D always does transpose on all of matrix sets.  Slow???  Better to hack view matrix.
+	m_pDev->SetTransform(D3DTS_WORLD,(D3DMATRIX*)&mWorldTransposed);
 
 	W3DBufferManager::W3DVertexBufferSlot *vbSlot=m_shadowVolumeVB[lightIndex][ meshIndex ];
 	if (!vbSlot)
@@ -1465,12 +1470,12 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 
 	m_pDev->SetIndices(shadowIndexBufferD3D,nShadowStartBatchVertex);
 
-	D3DMATRIX dxmWorld = To_D3DMATRIX(*meshXform);
-	m_pDev->SetTransform(D3DTS_WORLD,&dxmWorld);
+	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// Applied fighter19 pattern: transpose Matrix3D→Matrix4x4, cast pointer
+	Matrix4x4 mWorld(*meshXform);
+	Matrix4x4 mWorldTransposed = mWorld.Transpose();
 
-	if (shadowVertexBufferD3D != lastActiveVertexBuffer)
-	{	m_pDev->SetStreamSource(0,shadowVertexBufferD3D,sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX));
-		lastActiveVertexBuffer = shadowVertexBufferD3D;
+	m_pDev->SetTransform(D3DTS_WORLD,(D3DMATRIX*)&mWorldTransposed);
 	}
 
 	if (DX8Wrapper::_Is_Triangle_Draw_Enabled())
@@ -1619,9 +1624,11 @@ void W3DVolumetricShadow::RenderMeshVolumeBounds(Int meshIndex, Int lightIndex, 
 
 
 	//todo: replace this with mesh transform
+	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// Applied fighter19 pattern: identity matrix transposed and cast
 	Matrix4x4 mWorld(1);	//identity since boxes are pre-transformed to world space.
-	D3DMATRIX dxmWorld = To_D3DMATRIX(mWorld);
-	m_pDev->SetTransform(D3DTS_WORLD,&dxmWorld);
+	Matrix4x4 mWorldTransposed = mWorld.Transpose();
+	m_pDev->SetTransform(D3DTS_WORLD,(D3DMATRIX*)&mWorldTransposed);
 
 	m_pDev->SetStreamSource(0,shadowVertexBufferD3D,sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX));
 	m_pDev->SetVertexShader(SHADOW_DYNAMIC_VOLUME_FVF);

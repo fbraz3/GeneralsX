@@ -60,8 +60,9 @@ set(WW3D2_SRC
     dx8texman.h
     #dx8vertexbuffer.cpp
     #dx8vertexbuffer.h
-    dx8webbrowser.cpp
-    dx8webbrowser.h
+    # TheSuperHackers @build fbraz 10/02/2026 Bender - dx8webbrowser uses EA BrowserEngine (Windows-only HTML UI, Phase 3 out-of-scope)
+    #dx8webbrowser.cpp
+    #dx8webbrowser.h
     #dx8wrapper.cpp
     #dx8wrapper.h
     dynamesh.cpp
@@ -70,8 +71,9 @@ set(WW3D2_SRC
     font3d.h
     formconv.cpp
     formconv.h
-    FramGrab.cpp
-    framgrab.h
+    # TheSuperHackers @build fbraz 10/02/2026 Bender - FramGrab uses Windows-only VFW/AVI APIs (Phase 3 out-of-scope)
+    #FramGrab.cpp
+    #framgrab.h
     hanim.cpp
     hanim.h
     #hanimmgr.cpp
@@ -237,14 +239,27 @@ add_library(corei_ww3d2 INTERFACE)
 
 target_sources(corei_ww3d2 INTERFACE ${WW3D2_SRC})
 
+# TheSuperHackers @build fbraz 11/02/2026 Bender - Enable FreeType text rendering on Linux
+target_compile_definitions(corei_ww3d2 INTERFACE
+    $<$<PLATFORM_ID:Linux>:SAGE_USE_FREETYPE>
+)
+
 if (MSVC AND NOT IS_VS6_BUILD)
     target_link_libraries(corei_ww3d2 INTERFACE
         comsuppw
     )
 endif()
 
+# TheSuperHackers @build fbraz 11/02/2026 Bender - FreeType2 for Linux text rendering (Phase 1.5)
+if(UNIX AND NOT APPLE)
+    find_package(Freetype REQUIRED)
+    find_package(Fontconfig REQUIRED)
+endif()
+
 target_link_libraries(corei_ww3d2 INTERFACE
     core_browserengine
     core_wwlib
     core_wwmath
+    $<$<PLATFORM_ID:Linux>:Freetype::Freetype>
+    $<$<PLATFORM_ID:Linux>:Fontconfig::Fontconfig>
 )

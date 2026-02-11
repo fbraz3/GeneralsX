@@ -82,6 +82,7 @@
 
 
 #include "ww3d.h"
+#include "win.h"  // TheSuperHackers @build fbraz 10/02/2026 Bender - For MMRESULT/timeBeginPeriod/BITMAP structures
 #include "rinfo.h"
 #include "assetmgr.h"
 #include "boxrobj.h"

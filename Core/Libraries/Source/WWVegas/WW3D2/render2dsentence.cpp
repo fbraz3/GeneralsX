@@ -1186,12 +1186,18 @@ Render2DSentenceClass::Build_Sentence (const WCHAR *text, int *hkX, int *hkY)
 //
 ////////////////////////////////////////////////////////////////////////////////////
 FontCharsClass::FontCharsClass (void) :
+#ifdef _WIN32
 	OldGDIFont(	nullptr ),
 	OldGDIBitmap( nullptr ),
 	GDIFont( nullptr ),
 	GDIBitmap( nullptr ),
 	GDIBitmapBits ( nullptr ),
 	MemDC( nullptr ),
+#endif
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+	FTLibrary( nullptr ),
+	FTFace( nullptr ),
+#endif
 	CurrPixelOffset( 0 ),
 	PointSize( 0 ),
 	CharHeight( 0 ),
@@ -1218,7 +1224,11 @@ FontCharsClass::~FontCharsClass (void)
 		BufferList.Delete(0);
 	}
 
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+	Free_Freetype_Font();
+#else
 	Free_GDI_Font();
+#endif
 	Free_Character_Arrays();
 	return ;
 }
@@ -1250,9 +1260,14 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 
 	//
 	//	If the character wasn't found, then add it to our list
+	//  TheSuperHackers @feature FreeType port 10/02/2026 Dispatch to FreeType on Linux
 	//
 	if ( retval == nullptr ) {
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+		retval = Store_Freetype_Char( ch );
+#else
 		retval = Store_GDI_Char( ch );
+#endif
 	}
 
 	WWASSERT( retval->Value == ch );
@@ -1334,10 +1349,13 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 }
 
 
+#ifdef _WIN32
+
 ////////////////////////////////////////////////////////////////////////////////////
 //
 //	Store_GDI_Char
 //
+// TheSuperHackers @build fbraz 11/02/2026 - Windows-only GDI text rendering
 ////////////////////////////////////////////////////////////////////////////////////
 const FontCharsClassCharDataStruct *
 FontCharsClass::Store_GDI_Char (WCHAR ch)
@@ -1641,6 +1659,324 @@ FontCharsClass::Free_GDI_Font (void)
 	return ;
 }
 
+#endif // _WIN32
+
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Locate_Font_FontConfig
+//
+// TheSuperHackers @feature FreeType port 10/02/2026 Locate system font using Fontconfig
+////////////////////////////////////////////////////////////////////////////////////
+const char *
+FontCharsClass::Locate_Font_FontConfig (const char *font_name)
+{
+	//
+	//	Initialize Fontconfig library
+	//
+	FcConfig *config = FcInitLoadConfigAndFonts();
+	if ( config == nullptr ) {
+		return nullptr;
+	}
+
+	//
+	//	Create a pattern for the requested font
+	//
+	FcPattern *pattern = FcNameParse( (const FcChar8*)font_name );
+	if ( pattern == nullptr ) {
+		FcConfigDestroy( config );
+		return nullptr;
+	}
+
+	//
+	//	Configure the pattern
+	//
+	FcConfigSubstitute( config, pattern, FcMatchPattern );
+	FcDefaultSubstitute( pattern );
+
+	//
+	//	Find the best match
+	//
+	FcResult result = FcResultNoMatch;
+	FcPattern *font = FcFontMatch( config, pattern, &result );
+
+	const char *font_path = nullptr;
+	if ( font != nullptr && result == FcResultMatch ) {
+		//
+		//	Extract the font file path
+		//
+		FcChar8 *file_path = nullptr;
+		if ( FcPatternGetString( font, FC_FILE, 0, &file_path ) == FcResultMatch ) {
+			FreetypeFontPath = (const char*)file_path;
+			font_path = FreetypeFontPath;
+		}
+
+		FcPatternDestroy( font );
+	}
+
+	FcPatternDestroy( pattern );
+	FcConfigDestroy( config );
+
+	return font_path;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Create_Freetype_Font
+//
+// TheSuperHackers @build fbraz 11/02/2026 Bender -  Initialize FreeType font (fighter19 pattern)
+////////////////////////////////////////////////////////////////////////////////////
+bool
+FontCharsClass::Create_Freetype_Font (const char *font_name)
+{
+	//
+	//	Initialize FreeType library
+	//
+	FT_Error error = FT_Init_FreeType( &FTLibrary );
+	if ( error != 0 ) {
+		return false;
+	}
+
+	//
+	//	Handle "Generals" font mapping to Arial
+	//
+	bool doingGenerals = false;
+	if ( strcmp( font_name, "Generals" ) == 0 ) {
+		font_name = "Arial";
+		doingGenerals = true;
+	}
+
+	//
+	//	Calculate font height in pixels (96 DPI standard)
+	//
+	const int dotsPerInch = 96;
+	int font_height = FT_MulDiv( PointSize, dotsPerInch, 72 );
+
+	//
+	//	Locate the font file using Fontconfig
+	//
+	const char *font_path = Locate_Font_FontConfig( font_name );
+	if ( font_path == nullptr ) {
+		FT_Done_FreeType( FTLibrary );
+		FTLibrary = nullptr;
+		return false;
+	}
+
+	//
+	//	Load the font face
+	//
+	error = FT_New_Face( FTLibrary, font_path, 0, &FTFace );
+	if ( error != 0 ) {
+		FT_Done_FreeType( FTLibrary );
+		FTLibrary = nullptr;
+		return false;
+	}
+
+	//
+	//	Set the font size (using pixel sizes for simplicity)
+	//
+	error = FT_Set_Pixel_Sizes( FTFace, 0, font_height );
+	if ( error != 0 ) {
+		FT_Done_Face( FTFace );
+		FT_Done_FreeType( FTLibrary );
+		FTFace = nullptr;
+		FTLibrary = nullptr;
+		return false;
+	}
+
+	//
+	//	Calculate font metrics (Wine-compatible, same as fighter19)
+	//
+	if ( FT_IS_SCALABLE( FTFace ) ) {
+		CharAscent = FT_MulFix( FTFace->ascender, FTFace->size->metrics.y_scale ) >> 6;
+		int descent = -FT_MulFix( FTFace->descender, FTFace->size->metrics.y_scale ) >> 6;
+		CharHeight = CharAscent + descent;
+		CharOverhang = 0;
+	} else {
+		//
+		//	Non-scalable fonts not supported
+		//
+		FT_Done_Face( FTFace );
+		FT_Done_FreeType( FTLibrary );
+		FTFace = nullptr;
+		FTLibrary = nullptr;
+		return false;
+	}
+
+	if ( doingGenerals ) {
+		CharOverhang = 0;
+	}
+
+	//
+	//	Calculate pixel overlap (same logic as GDI version)
+	//
+	PixelOverlap = (-font_height) / 8;
+	if ( PixelOverlap < 0 ) PixelOverlap = 0;
+	if ( PixelOverlap > 4 ) PixelOverlap = 4;
+
+	return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Store_Freetype_Char
+//
+// TheSuperHackers @build fbraz 11/02/2026 Bender - FreeType character rendering (fighter19 pattern)
+////////////////////////////////////////////////////////////////////////////////////
+const FontCharsClassCharDataStruct *
+FontCharsClass::Store_Freetype_Char (WCHAR ch)
+{
+	//
+	//	Get the glyph index for the character
+	//
+	FT_UInt glyph_index = FT_Get_Char_Index( FTFace, ch );
+
+	//
+	//	Load the glyph (without rendering yet)
+	//
+	FT_Error error = FT_Load_Glyph( FTFace, glyph_index, FT_LOAD_DEFAULT );
+	if ( error != 0 ) {
+		return nullptr;
+	}
+
+	//
+	//	Convert to an anti-aliased bitmap
+	//
+	error = FT_Render_Glyph( FTFace->glyph, FT_RENDER_MODE_NORMAL );
+	if ( error != 0 ) {
+		return nullptr;
+	}
+
+	FT_GlyphSlot glyph = FTFace->glyph;
+
+	//
+	//	Calculate X position (special case for 'W')
+	//
+	int x_pos = 0;
+	if ( ch == 'W' ) {
+		x_pos = 1;
+	}
+
+	//
+	//	Calculate character width (advance + overlap)
+	//
+	unsigned int char_width = glyph->advance.x >> 6;
+
+	//
+	//	Sometimes bitmap is wider than advancement (fix it)
+	//
+	if ( char_width < glyph->bitmap.width + glyph->bitmap_left ) {
+		char_width = glyph->bitmap.width + glyph->bitmap_left;
+	}
+	char_width += PixelOverlap + x_pos;
+
+	//
+	//	Get a pointer to the buffer for this character (allocates if needed)
+	//
+	Update_Current_Buffer( char_width );
+	uint16 *curr_buffer_p = BufferList[BufferList.Count() - 1]->Buffer;
+	curr_buffer_p += CurrPixelOffset;
+
+	//
+	//	Calculate bitmap offsets (match GDI baseline)
+	//
+	int x_offset = glyph->bitmap_left;
+	int descent = CharHeight - CharAscent;
+	int y_offset = (CharHeight - glyph->bitmap_top) - descent;
+
+	//
+	//	Prevent invalid buffer access
+	//
+	if ( x_offset < 0 ) x_offset = 0;
+	if ( y_offset < 0 ) y_offset = 0;
+
+	//
+	//	Copy FreeType bitmap to our buffer (convert 8-bit gray → 16-bit format)
+	//
+	for ( unsigned int row = 0; row < glyph->bitmap.rows; row++ ) {
+		int src_index = row * glyph->bitmap.pitch;
+		int dst_index = (y_offset + row) * char_width;
+
+		for ( unsigned int col = 0; col < glyph->bitmap.width; col++ ) {
+			//
+			//	Get 8-bit grayscale pixel
+			//
+			uint8 pixel_value = glyph->bitmap.buffer[src_index + col];
+
+			uint16 pixel_color = 0;
+			if ( pixel_value != 0 ) {
+				pixel_color = 0x0FFF;	// White (12-bit RGB444)
+			}
+
+			//
+			//	Format: 4-bit alpha (top nibble) + 12-bit color (bottom bits)
+			//	SAME FORMAT AS GDI IMPLEMENTATION
+			//
+			uint8 alpha_value = (pixel_value >> 4) & 0xF;
+			curr_buffer_p[dst_index + x_offset + col] = pixel_color | (alpha_value << 12);
+		}
+	}
+
+	//
+	//	Save information about this character
+	//
+	FontCharsClassCharDataStruct *char_data = W3DNEW FontCharsClassCharDataStruct;
+	char_data->Value = ch;
+	char_data->Width = (short)char_width;
+	char_data->Buffer = BufferList[BufferList.Count() - 1]->Buffer + CurrPixelOffset;
+
+	//
+	//	Insert into character array (ASCII or Unicode)
+	//
+	if ( ch < 256 ) {
+		ASCIICharArray[ch] = char_data;
+	} else {
+		UnicodeCharArray[ch - FirstUnicodeChar] = char_data;
+	}
+
+	//
+	//	Advance the pixel offset for next character
+	//
+	CurrPixelOffset += (char_width * CharHeight);
+
+	//
+	//	Return the character data
+	//
+	return char_data;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Free_Freetype_Font
+//
+// TheSuperHackers @build fbraz 11/02/2026 Bender - Cleanup FreeType resources
+////////////////////////////////////////////////////////////////////////////////////
+void
+FontCharsClass::Free_Freetype_Font (void)
+{
+	//
+	//	Free the FreeType face
+	//
+	if ( FTFace != nullptr ) {
+		FT_Done_Face( FTFace );
+		FTFace = nullptr;
+	}
+
+	//
+	//	Free the FreeType library
+	//
+	if ( FTLibrary != nullptr ) {
+		FT_Done_FreeType( FTLibrary );
+		FTLibrary = nullptr;
+	}
+}
+
+#endif // SAGE_USE_FREETYPE && !_WIN32
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
@@ -1663,9 +1999,14 @@ FontCharsClass::Initialize_GDI_Font (const char *font_name, int point_size, bool
 	IsBold		= is_bold;
 
 	//
-	//	Create the actual font object
+	//	Create the actual font object (platform-specific)
+	//  TheSuperHackers @feature FreeType port 10/02/2026 Dispatch to FreeType on Linux
 	//
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+	return Create_Freetype_Font (font_name);
+#else
 	return Create_GDI_Font (font_name);
+#endif
 }
 
 

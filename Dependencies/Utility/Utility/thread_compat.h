@@ -18,6 +18,11 @@
 
 // This file contains thread related functions for compatibility with non-windows platforms.
 #pragma once
+
+// TheSuperHackers @build 10/02/2026 Bender
+// Skip this old compat if new CompatLib headers are already included (via WWCommon.h)
+#ifndef DEPENDENCIES_UTILITY_COMPAT_H
+
 #include <pthread.h>
 #include <unistd.h>
 
@@ -30,4 +35,6 @@ inline void Sleep(int ms)
 {
   usleep(ms * 1000);
 }
+
+#endif /* DEPENDENCIES_UTILITY_COMPAT_H */
 

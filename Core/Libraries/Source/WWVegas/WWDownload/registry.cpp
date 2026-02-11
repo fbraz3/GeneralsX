@@ -26,7 +26,9 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-// Linux: No Windows registry
+// TheSuperHackers @build fighter19 10/02/2026 Bender
+// Linux: No Windows registry - define HKEY as opaque handle for stub signatures
+typedef void* HKEY;
 #endif
 
 #include "Registry.h"

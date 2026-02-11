@@ -44,10 +44,9 @@
 #include <assert.h>
 
 #include "WWLib/win.h"
-#ifdef _WIN32
+// TheSuperHackers @build fbraz 10/02/2026 Include D3D8 headers on Linux (DXVK provides)
 #include <d3d8types.h>
 #include <d3dx8math.h>
-#endif
 
 /***********************************************************************************************
  * Matrix4x4::Multiply -- Multiply two Matrix4x4's together                                        *
@@ -201,7 +200,7 @@ int operator != (const Matrix4x4 & a, const Matrix4x4 & b)
 	return (!(a == b));
 }
 
-#ifdef _WIN32
+// TheSuperHackers @build fbraz 10/02/2026 Remove Windows-only guard (DXVK provides D3DMATRIX on Linux)
 
 void To_D3DMATRIX(_D3DMATRIX& dxm, const Matrix4x4& m)
 {
@@ -269,5 +268,3 @@ Matrix4x4 To_Matrix4x4(const _D3DMATRIX& dxm)
 	To_Matrix4x4(m, dxm);
 	return m;
 }
-
-#endif // _WIN32

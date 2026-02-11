@@ -42,24 +42,15 @@
 #pragma once
 
 #include "always.h"
-#ifdef _WIN32
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// Removed platform guards - DXVK provides d3d8.h on Linux
 #include <d3d8.h>
-#else
-// Linux: Graphics layer stubs for Phase 1 (DXVK will provide d3d8)
-// Define minimal constants to avoid compilation errors
-#define D3DFVF_XYZ 0
-#define D3DFVF_NORMAL 0
-#define D3DFVF_TEX1 0
-#define D3DFVF_TEX2 0
-#define D3DFVF_DIFFUSE 0
-#endif
 #ifdef WWDEBUG
 #include "wwdebug.h"
 #endif
 
 class StringClass;
 
-#ifdef _WIN32
 enum {
 	DX8_FVF_XYZ				= D3DFVF_XYZ,
 	DX8_FVF_XYZN			= D3DFVF_XYZ|D3DFVF_NORMAL,

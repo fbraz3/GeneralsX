@@ -30,7 +30,15 @@
 #include "profile.h"
 #include "internal.h"
 #include <new>
+// TheSuperHackers @build fbraz 03/02/2026 Add C string functions for Linux
+#include <cstring>
+// TheSuperHackers @build fbraz 03/02/2026 Platform-specific headers
+#ifdef _WIN32
 #include "mmsystem.h"
+#else
+#include <time.h>  // clock_gettime for Linux timing
+#include <stdlib.h> // malloc/free
+#endif
 
 // yuk, I'm doing this so weird because the destructor
 // of cmd must never be called...
@@ -43,10 +51,18 @@ static bool __RegisterDebugCmdGroup_Profile=Debug::AddCommands("profile",&cmd);
 
 void *ProfileAllocMemory(unsigned numBytes)
 {
+// TheSuperHackers @build fbraz 03/02/2026 Use malloc on Linux, GlobalAlloc on Windows
+#ifdef _WIN32
   HGLOBAL h=GlobalAlloc(GMEM_FIXED,numBytes);
   if (!h)
     DCRASH_RELEASE("Debug mem alloc failed");
   return (void *)h;
+#else
+  void *ptr = malloc(numBytes);
+  if (!ptr)
+    DCRASH_RELEASE("Debug mem alloc failed");
+  return ptr;
+#endif
 }
 
 void *ProfileReAllocMemory(void *oldPtr, unsigned newSize)
@@ -58,10 +74,17 @@ void *ProfileReAllocMemory(void *oldPtr, unsigned newSize)
   // Shrinking to 0 size is basically freeing memory
   if (!newSize)
   {
+// TheSuperHackers @build fbraz 03/02/2026 Use free on Linux, GlobalFree on Windows
+#ifdef _WIN32
     GlobalFree((HGLOBAL)oldPtr);
+#else
+    free(oldPtr);
+#endif
     return nullptr;
   }
 
+// TheSuperHackers @build fbraz 03/02/2026 Platform-specific memory reallocation
+#ifdef _WIN32
   // now try GlobalReAlloc first
   HGLOBAL h=GlobalReAlloc((HGLOBAL)oldPtr,newSize,0);
   if (!h)
@@ -75,14 +98,27 @@ void *ProfileReAllocMemory(void *oldPtr, unsigned newSize)
     memcpy((void *)h,oldPtr,oldSize<newSize?oldSize:newSize);
     GlobalFree((HGLOBAL)oldPtr);
   }
-
   return (void *)h;
+#else
+  // Linux: use standard realloc
+  void *ptr = realloc(oldPtr, newSize);
+  if (!ptr)
+    DCRASH_RELEASE("Debug mem realloc failed");
+  return ptr;
+#endif
 }
 
 void ProfileFreeMemory(void *ptr)
 {
   if (ptr)
+  {
+// TheSuperHackers @build fbraz 03/02/2026 Use free on Linux, GlobalFree on Windows
+#ifdef _WIN32
     GlobalFree((HGLOBAL)ptr);
+#else
+    free(ptr);
+#endif
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -104,6 +140,8 @@ static _int64 GetClockCyclesFast(void)
   _int64 n[3];
   for (int k=0;k<3;k++)
   {
+// TheSuperHackers @build fbraz 03/02/2026 Platform-specific high-resolution timing
+#ifdef _WIN32
     // wait for end of current tick
     unsigned timeEnd=timeGetTime()+2;
     while (timeGetTime()<timeEnd);
@@ -128,6 +166,29 @@ static _int64 GetClockCyclesFast(void)
     {
       n[k]=(n[k]*1000)/20;
     }
+#else
+    // Linux: use clock_gettime for high-resolution timing (fighter19 pattern)
+    struct timespec ts_start, ts_end;
+    _int64 start;
+    
+    clock_gettime(CLOCK_MONOTONIC, &ts_start);
+    ProfileGetTime(start);
+    
+    // Sleep for ~20ms
+    struct timespec sleep_time = {0, 20000000}; // 20ms in nanoseconds
+    nanosleep(&sleep_time, nullptr);
+    
+    clock_gettime(CLOCK_MONOTONIC, &ts_end);
+    ProfileGetTime(n[k]);
+    n[k] -= start;
+    
+    // Convert to 1 second
+    _int64 elapsed_ns = (ts_end.tv_sec - ts_start.tv_sec) * 1000000000LL + (ts_end.tv_nsec - ts_start.tv_nsec);
+    if (elapsed_ns > 0)
+      n[k] = (n[k] * 1000000000LL) / elapsed_ns;  // Scale to 1 second
+    else
+      n[k] = (n[k] * 1000) / 20;  // Fallback estimate
+#endif
   }
 
   // find two closest values
@@ -296,7 +357,12 @@ void Profile::StopRange(const char *range)
       m_frameNames[k].lastGlobalIndex=m_rec;
       m_recNames=(char **)ProfileReAllocMemory(m_recNames,(m_rec+1)*sizeof(char *));
       m_recNames[m_rec]=(char *)ProfileAllocMemory(strlen(range)+1+6);
+// TheSuperHackers @build fbraz 03/02/2026 Use snprintf on Linux, wsprintf on Windows
+#ifdef _WIN32
       wsprintf(m_recNames[m_rec++],"%s:%i",range,++m_frameNames[k].frames);
+#else
+      snprintf(m_recNames[m_rec++], strlen(range)+7, "%s:%i", range, ++m_frameNames[k].frames);
+#endif
     }
     else
       atIndex=m_frameNames[k].lastGlobalIndex;

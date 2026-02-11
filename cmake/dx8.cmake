@@ -1,27 +1,30 @@
 # DirectX 8 headers and rendering backend selection
+# TheSuperHackers @build fighter19 10/02/2026 Bender - Session 18
+# Fighter19's approach: Fetch ONE OR THE OTHER, never both
 # 
-# On Windows: Use min-dx8-sdk (minimal Windows DirectX headers)
-# On Linux: Use DXVK (DirectX→Vulkan translation) or min-dx8-sdk
+# On Windows: Use min-dx8-sdk (minimal Windows DirectX headers + libs)
+# On Linux: Use DXVK native (Wine-compatible DirectX headers + Vulkan libs)
 #
-# Set SAGE_USE_DX8=ON to use min-dx8-sdk (Windows native DX8)
-# Set SAGE_USE_DX8=OFF to use DXVK (Linux D3D8→Vulkan)
+# CRITICAL: Mixing headers causes conflicts - dx8-src has incomplete types,
+# DXVK has full DirectX8+Wine headers. Compiler picks first path = wrong headers.
 
 if(SAGE_USE_DX8)
-  # Windows path: Use minimal DX8 SDK for native DirectX rendering
+  # Windows: Fetch min-dx8-sdk for native DirectX 8
   FetchContent_Declare(
     dx8
     GIT_REPOSITORY https://github.com/TheSuperHackers/min-dx8-sdk.git
     GIT_TAG        7bddff8c01f5fb931c3cb73d4aa8e66d303d97bc
   )
   FetchContent_MakeAvailable(dx8)
-  message(STATUS "Using Windows DX8 SDK (min-dx8-sdk)")
+  message(STATUS "Using DirectX 8 SDK (Windows native)")
 else()
-  # Linux path: Use DXVK for DirectX→Vulkan translation
+  # Linux: Fetch DXVK native for DirectX→Vulkan translation
+  # DXVK includes complete Wine-compatible DirectX headers (no min-dx8-sdk needed)
   FetchContent_Declare(
     dxvk
     URL        https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-native-2.6-steamrt-sniper.tar.gz
   )
   FetchContent_MakeAvailable(dxvk)
-  message(STATUS "Using Linux DXVK (DirectX→Vulkan)")
+  message(STATUS "Using DXVK native (Linux DirectX→Vulkan)")
   message(STATUS "DXVK source directory: ${dxvk_SOURCE_DIR}")
 endif()

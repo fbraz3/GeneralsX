@@ -37,9 +37,15 @@
 #pragma once
 
 #include "always.h"
+
+// TheSuperHackers @build 09/02/2026 Conditionally include Miles (Windows only)
+#if !defined(SAGE_USE_OPENAL)
 #pragma warning (push, 3)
 #include "mss.h"
 #pragma warning (pop)
+#else
+#include "MilesStub.h"
+#endif
 
 #include "Vector.h"
 #include "SoundBuffer.h"

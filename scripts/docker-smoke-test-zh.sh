@@ -7,6 +7,7 @@ set -e
 PRESET="${1:-linux64-deploy}"
 BINARY="build/${PRESET}/GeneralsMD/GeneralsXZH"
 LOG_FILE="logs/smoke_test_zh_${PRESET}.log"
+DOCKER_IMAGE="generalsx/linux-builder:latest"
 
 echo "🧪 Smoke testing GeneralsXZH (Linux)..."
 mkdir -p logs
@@ -22,15 +23,18 @@ echo "ℹ️  Note: This will likely fail (needs game assets, libraries, etc.)"
 echo "ℹ️  Goal: Check initialization output and crash logs"
 echo ""
 
+# Check if Docker image exists, build if not
+if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
+    echo "⚠️  Docker image not found: $DOCKER_IMAGE"
+    echo "📦 Building image (this will take a few minutes)..."
+    ./scripts/docker-build-images.sh linux
+fi
+
 docker run --rm \
     -v "$PWD:/work" \
     -w /work \
-    ubuntu:22.04 \
+    "$DOCKER_IMAGE" \
     bash -c "
-        echo '📦 Installing runtime dependencies...'
-        apt-get update -qq
-        apt-get install -y -qq lib64stdc++6 curl
-        
         echo '🚀 Launching GeneralsXZH...'
         echo '   (Expect crash, we want to see initialization output)'
         echo ''

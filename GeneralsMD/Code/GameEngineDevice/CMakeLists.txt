@@ -93,6 +93,9 @@ set(GAMEENGINEDEVICE_SRC
     # Linux SDL3/OpenAL devices (Phase 1 - TheSuperHackers @feature CnC_Generals_Linux 07/02/2026)
     Include/SDL3GameEngine.h
     Include/OpenALAudioManager.h
+    # Linux SDL3 input devices (Phase 1.5 - TheSuperHackers @build 10/02/2026 Bender)
+    Include/SDL3Device/GameClient/SDL3Mouse.h
+    Include/SDL3Device/GameClient/SDL3Keyboard.h
 #    Source/MilesAudioDevice/MilesAudioManager.cpp
 #    Source/VideoDevice/Bink/BinkVideoPlayer.cpp
     Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
@@ -195,6 +198,9 @@ set(GAMEENGINEDEVICE_SRC
     # Linux SDL3/OpenAL implementations (Phase 1 - TheSuperHackers @feature CnC_Generals_Linux 07/02/2026)
     Source/SDL3GameEngine.cpp
     Source/OpenALAudioManager.cpp
+    # Linux SDL3 input devices (Phase 1.5 - TheSuperHackers @build 10/02/2026 Bender)
+    Source/SDL3Device/GameClient/SDL3Mouse.cpp
+    Source/SDL3Device/GameClient/SDL3Keyboard.cpp
     Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     #Source/Win32Device/GameClient/Win32DIMouse.cpp
     Source/Win32Device/GameClient/Win32Mouse.cpp

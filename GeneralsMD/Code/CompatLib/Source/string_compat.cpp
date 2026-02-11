@@ -50,3 +50,14 @@ char* _strlwr(char* str)
   }
   return str;
 }
+
+// TheSuperHackers @build fbraz 11/02/2026 Bender - Linux portability: uppercase string
+__attribute__((weak))
+char* _strupr(char* str)
+{
+  for (int i = 0; str[i] != '\0'; i++)
+  {
+    str[i] = toupper(str[i]);
+  }
+  return str;
+}

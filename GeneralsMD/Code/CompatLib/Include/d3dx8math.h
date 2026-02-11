@@ -1,5 +1,10 @@
 #pragma once
 
+// CRITICAL: windows.h MUST come before d3d8.h
+// On Linux: windows.h → windows_base.h (DXVK) → windows_compat.h
+// On Windows: windows.h → Windows SDK
+#include <windows.h>
+
 #include <d3d8.h>
 
 #ifdef __cplusplus
@@ -7,6 +12,9 @@ extern "C"
 {
 #endif
 
+// D3DXMATRIX: Wrapper around D3DMATRIX with operator overloads
+// DXVK D3DMATRIX uses union { struct { _11, _12, ... }; float m[4][4]; }
+// Access via m[row][col] for portability
 typedef struct D3DXMATRIX : D3DMATRIX
 {
 #ifdef __cplusplus

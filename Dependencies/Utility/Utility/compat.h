@@ -20,6 +20,9 @@
 #pragma once
 
 #ifndef _WIN32
+// Define guard to tell new compat layer (GeneralsMD/Code/CompatLib) that old compat is active
+#define DEPENDENCIES_UTILITY_COMPAT_H 1
+
 // For size_t
 #include <cstddef>
 // For isdigit

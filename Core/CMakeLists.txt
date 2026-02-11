@@ -9,7 +9,10 @@ add_library(corei_always_no_pch INTERFACE) # Use this for Shared Libs with MFC A
 
 # Create d3d8lib INTERFACE target early so Core/GameEngine can link to it
 # This will be configured later by GeneralsMD/Code/CompatLib/CMakeLists.txt
-add_library(d3d8lib INTERFACE)
+# Only create if not already created by min-dx8-sdk CMakeLists
+if(NOT TARGET d3d8lib)
+    add_library(d3d8lib INTERFACE)
+endif()
 
 target_include_directories(corei_gameengine_include INTERFACE "GameEngine/Include")
 target_include_directories(corei_libraries_include INTERFACE "Libraries/Include")

@@ -32,7 +32,9 @@
 #include <Utility/intrin_compat.h>
 #include <cstdint>
 
-#ifndef __int64
+// TheSuperHackers @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
+#ifndef _INT64_TYPES_DEFINED
+	#define _INT64_TYPES_DEFINED
 	typedef int64_t __int64;
 #endif
 

@@ -19,12 +19,23 @@
 // Download.cpp : Implementation of CDownload
 #include "DownloadDebug.h"
 #include "Download.h"
-#include "stringex.h"
-#include <mmsystem.h>
+
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// Added platform guards for Windows-specific headers
 #include <assert.h>
-#include <direct.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/stat.h>
+
+#ifdef _WIN32
+#include <mmsystem.h>
+#include <direct.h>
+#else
+#include <string.h>
+#define SEVERITY_ERROR 1
+#define FACILITY_ITF 2
+#define E_FAIL 0x80004005
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDownload

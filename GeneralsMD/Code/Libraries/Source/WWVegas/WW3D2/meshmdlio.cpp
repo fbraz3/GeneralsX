@@ -91,7 +91,8 @@
 #include "dx8wrapper.h"
 
 #ifdef _UNIX
-#include "osdep/osdep.h"
+// TheSuperHackers @build fighter19 10/02/2026 Bender - Include osdep.h from WWLib, not osdep/
+#include "osdep.h"
 #endif
 
 #define MESH_SINGLE_MATERIAL_HACK		0		// (gth) forces all multi-material meshes to use their first material only. (NOT RECOMMENDED, TESTING ONLY!)

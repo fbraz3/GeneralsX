@@ -9,27 +9,42 @@ list(TRANSFORM SOURCE_D3DX_COMPAT PREPEND "Source/")
 
 add_library(d3dx8 STATIC ${SOURCE_D3DX_COMPAT})
 
+# GLI requires GLM_ENABLE_EXPERIMENTAL for internal extensions (like gli/core/coord.hpp)
+target_compile_definitions(d3dx8 PRIVATE GLM_ENABLE_EXPERIMENTAL)
+
+# TheSuperHackers @build 09/02/2025 Bender
+# Use vcpkg find_package (like fighter19) instead of FetchContent
+# This ensures compatible GLM/GLI versions via vcpkg baseline
 if(NOT SAGE_USE_GLM)
     message(FATAL_ERROR "GLM is required for d3dx8 compatibility layer")
 endif()
 
-find_package(glm REQUIRED)
+find_package(glm CONFIG REQUIRED)
 target_link_libraries(d3dx8 PUBLIC glm::glm)
 
-find_package(gli REQUIRED)
+find_package(gli CONFIG REQUIRED)
 target_link_libraries(d3dx8 PUBLIC gli)
 
-# d3dx8 is a pure math library, no platform-specific headers needed
+# d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)
+# Add only WWLib directory (not full core_wwcommon to avoid d3d8.h conflicts from WWAudio)
 target_include_directories(d3dx8 PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
+    ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WWLib
 )
+
+# Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
+target_link_libraries(d3dx8 PUBLIC d3d8lib)
 
 endif()
 
+# TheSuperHackers @build fighter19 10/02/2026 Bender
 # Configure d3d8lib target globally (created early in Core/CMakeLists.txt)
-# This MUST be done for both Windows and Linux, not just UNIX
+# Fighter19's approach: Windows uses min-dx8-sdk, Linux uses ONLY DXVK headers
 if(SAGE_USE_DX8)
-    # Windows: Use min-dx8-sdk headers
+    # Windows native: Use min-dx8-sdk headers and libs
+    if(NOT dx8_SOURCE_DIR)
+        message(FATAL_ERROR "DirectX 8 SDK (min-dx8-sdk) not fetched! Ensure cmake/dx8.cmake was included")
+    endif()
     target_include_directories(d3d8lib INTERFACE
         ${dx8_SOURCE_DIR}/include
     )
@@ -37,21 +52,18 @@ if(SAGE_USE_DX8)
         ${dx8_SOURCE_DIR}/lib
     )
 else()
-    # Linux: Use DXVK headers for DirectX→Vulkan translation
+    # Linux: Use ONLY DXVK headers (not min-dx8-sdk) to avoid conflicts
+    # DXVK provides complete Wine-compatible DirectX 8 headers
     if(NOT dxvk_SOURCE_DIR)
         message(FATAL_ERROR "DXVK not fetched! Ensure SAGE_USE_DX8=OFF and cmake/dx8.cmake was included")
     endif()
     target_include_directories(d3d8lib INTERFACE
-        ${dxvk_SOURCE_DIR}/include
         ${dxvk_SOURCE_DIR}/include/dxvk
     )
     target_link_directories(d3d8lib INTERFACE
         ${dxvk_SOURCE_DIR}/lib
     )
 endif()
-
-# Link d3d8lib to our d3dx8 math library
-target_link_libraries(d3d8lib INTERFACE d3dx8)
 
 if (UNIX)
 set(SOURCE_COMPAT
@@ -71,7 +83,14 @@ target_include_directories(CompatLib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
 )
 
-# Link CompatLib to d3d8lib (already configured globally above)
-target_link_libraries(CompatLib PUBLIC d3d8lib)
+# TheSuperHackers @build fighter19 10/02/2026 Bender
+# Fighter19 pattern: d3d8lib (INTERFACE) links TO CompatLib
+# This makes CompatLib includes transitively available to all targets linking d3d8lib
+# REVERSED from previous (CompatLib linking TO d3d8lib)
+target_link_libraries(d3d8lib INTERFACE CompatLib)
+
+# CompatLib needs d3dx8 for D3DX types
+# SDL3 headers available via vcpkg but linking happens in GameEngineDevice/Main
+target_link_libraries(CompatLib PUBLIC d3dx8)
 
 endif()

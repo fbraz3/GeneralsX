@@ -242,20 +242,26 @@ target_compile_definitions(z_ww3d2 PRIVATE
     $<$<BOOL:${IS_VS6_BUILD}>:WINVER=0x0500>
 )
 
-target_precompile_headers(z_ww3d2 PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
-    dx8wrapper.h
-    [["always.h"]]
-    [["STLUtils.h"]]
-    [["win.h"]]
-    [["WWCommon.h"]]
-    [["wwstring.h"]]
-    <windows.h>
-)
+# TheSuperHackers @build fbraz 03/02/2026 Disable PCH on Linux (fighter19 pattern)
+# PCH causes header ordering issues with CompatLib wrapper headers on Linux
+# Windows builds keep PCH for performance (VC6/Win32 compatibility)
+if(WIN32)
+    target_precompile_headers(z_ww3d2 PRIVATE
+        [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+        dx8wrapper.h
+        [["always.h"]]
+        [["STLUtils.h"]]
+        [["win.h"]]
+        [["WWCommon.h"]]
+        [["wwstring.h"]]
+        <windows.h>
+    )
+endif()
 
 target_link_libraries(z_ww3d2 PRIVATE
     core_wwdebug
     corei_ww3d2
     z_wwcommon
     zi_always
+    d3d8lib  # Provides d3d8.h headers (Windows SDK or DXVK)
 )

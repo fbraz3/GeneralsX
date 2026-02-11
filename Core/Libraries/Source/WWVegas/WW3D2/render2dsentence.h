@@ -43,6 +43,13 @@
 #include "wwstring.h"
 #include "win.h"
 
+// TheSuperHackers @build fbraz 11/02/2026 Bender - FreeType2 for Linux text rendering (Phase 1.5)
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+    #include <ft2build.h>
+    #include FT_FREETYPE_H
+    #include <fontconfig/fontconfig.h>
+#endif
+
 /*
 ** FontCharsClass
 */
@@ -99,9 +106,21 @@ private:
 	//
 	//	Private methods
 	//
+	// TheSuperHackers @build fbraz 11/02/2026 Bender - Windows GDI text rendering
+#ifdef _WIN32
 	bool							Create_GDI_Font( const char *font_name );
 	void							Free_GDI_Font( void );
 	const FontCharsClassCharDataStruct *	Store_GDI_Char( WCHAR ch );
+#endif
+	
+	// TheSuperHackers @build fbraz 11/02/2026 Bender - FreeType2 methods for Linux
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+	bool							Create_Freetype_Font( const char *font_name );
+	void							Free_Freetype_Font( void );
+	const FontCharsClassCharDataStruct *	Store_Freetype_Char( WCHAR ch );
+	const char *					Locate_Font_FontConfig( const char *font_name );
+#endif
+	
 	void							Update_Current_Buffer( int char_width );
 	const FontCharsClassCharDataStruct	*	Get_Char_Data( WCHAR ch );
 
@@ -120,12 +139,23 @@ private:
 	int									PixelOverlap;
 	int									PointSize;
 	StringClass							GDIFontName;
+	
+	// TheSuperHackers @build fbraz 11/02/2026 Bender - Platform-specific font rendering members
+#ifdef _WIN32
 	HFONT									OldGDIFont;
 	HBITMAP								OldGDIBitmap;
 	HBITMAP								GDIBitmap;
 	HFONT									GDIFont;
 	uint8 *								GDIBitmapBits;
 	HDC									MemDC;
+#endif
+
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+	FT_Library							FTLibrary;
+	FT_Face								FTFace;
+	StringClass							FreetypeFontPath;
+#endif
+	
 	FontCharsClassCharDataStruct *					ASCIICharArray[256];
 	FontCharsClassCharDataStruct **					UnicodeCharArray;
 	uint16								FirstUnicodeChar;
