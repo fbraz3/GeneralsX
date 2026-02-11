@@ -93,3 +93,8 @@ if(SAGE_USE_OPENAL)
     target_compile_definitions(core_config INTERFACE SAGE_USE_OPENAL)
     message(STATUS "OpenAL audio backend enabled")
 endif()
+
+if(SAGE_USE_GLM)
+    target_compile_definitions(core_config INTERFACE SAGE_USE_GLM)
+    message(STATUS "GLM math library enabled (DirectX 8 replacement)")
+endif()
