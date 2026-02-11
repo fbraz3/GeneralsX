@@ -67,6 +67,16 @@ The original Command & Conquer Generals/Zero Hour source code was released by EA
 4. **Focus**: Zero Hour first; backport to Generals only when clearly applicable
 5. **Method**: Research-first, minimal diffs, strict platform/backend isolation
 
+## Golden Rules
+
+1. **IMPERATIVE** - No band-aids or workarounds, only real solutions.
+2. Use the `fighter19` reference repo because it successfully made it work on Linux.
+3. The `jmarshall` repo may have interesting insights since it successfully created a 64-bit Windows build.
+4. The focus is to create a Linux build without losing Windows compatibility, so be very careful when removing things.
+5. Use DXVK which provides d3d8.h and translates DirectX8 → Vulkan.
+6. The Linux build focus is SDL3 - no native POSIX calls.
+7. Some solutions from `fighter19` and `jmarshall` may involve removing components; in that case, stop and ask the user what should be done, as it may be something the game depends on and cannot be removed (e.g., audio, video playback).
+
 ## Modernization Strategy - Linux Port Phases
 
 We follow a **multi-phase research-first approach** with clear acceptance criteria.

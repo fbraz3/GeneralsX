@@ -14,6 +14,7 @@ char* itoa(int value, char* str, int base);
 int _vsnwprintf(wchar_t* buffer, size_t count, const wchar_t* format, va_list args);
 // TheSuperHackers @build fbraz 11/02/2026 Bender - Removed _strlwr declaration (conflicts with Utility inline definition)
 // TheSuperHackers @build fbraz 11/02/2026 Bender - _strupr implemented in string_compat.cpp as weak symbol
+char* _strupr(char* str);
 }
 #define _vsnprintf vsnprintf
 #define _snprintf snprintf

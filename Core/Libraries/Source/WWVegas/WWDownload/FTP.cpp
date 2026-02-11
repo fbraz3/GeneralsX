@@ -22,6 +22,10 @@
 /*_$                      Include Files                                  */
 /*************************************************************************/
 
+// TheSuperHackers @build fbraz 11/02/2026
+// Must include class declaration BEFORE implementation
+#include "WWDownload/ftp.h"
+
 // TheSuperHackers @build fbraz 10/02/2026
 // Platform headers with socket_compat.h providing Winsock → POSIX mapping
 #include <stdio.h>
