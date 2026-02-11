@@ -61,6 +61,20 @@ typedef const void *LPCVOID;
 #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
 #endif
 
+// HRESULT success value (S_OK)
+#ifndef S_OK
+#define S_OK ((HRESULT)0L)
+#endif
+
+// HRESULT severity and facility codes (COM/OLE error codes)
+#ifndef SEVERITY_ERROR
+#define SEVERITY_ERROR 1
+#endif
+
+#ifndef FACILITY_ITF
+#define FACILITY_ITF 4  // Interface-specific facility code
+#endif
+
 // Note: PALETTEENTRY, LARGE_INTEGER, RGNDATA provided by DXVK windows_base.h on Linux
 // (included via d3d8.h). These types are Windows SDK on Windows builds.
 

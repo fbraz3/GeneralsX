@@ -132,6 +132,7 @@ inline int closesocket(SOCKET s) {
 #ifndef HKEY_LOCAL_MACHINE
 typedef void* HKEY;
 #define HKEY_LOCAL_MACHINE ((HKEY)0x80000002)
+#define HKEY_CURRENT_USER  ((HKEY)0x80000001)
 #endif
 
 #ifndef LPDWORD
@@ -140,6 +141,17 @@ typedef DWORD* LPDWORD;
 
 #ifndef KEY_READ
 #define KEY_READ 0x20019
+#endif
+#ifndef KEY_WRITE
+#define KEY_WRITE 0x20006
+#endif
+
+// Registry value types
+#ifndef REG_SZ
+#define REG_SZ 1
+#endif
+#ifndef REG_OPTION_NON_VOLATILE
+#define REG_OPTION_NON_VOLATILE 0x00000000
 #endif
 
 // Registry function stubs (return failure - no registry on Linux)
@@ -160,6 +172,20 @@ inline long RegCloseKey(HKEY hKey) {
     return 0; // Success (no-op)
 }
 
+inline long RegCreateKeyEx(HKEY hKey, const char* lpSubKey, DWORD Reserved,
+                           char* lpClass, DWORD dwOptions, DWORD samDesired,
+                           void* lpSecurityAttributes, HKEY* phkResult, DWORD* lpdwDisposition) {
+    (void)hKey; (void)lpSubKey; (void)Reserved; (void)lpClass; (void)dwOptions;
+    (void)samDesired; (void)lpSecurityAttributes; (void)phkResult; (void)lpdwDisposition;
+    return 1; // ERROR_FILE_NOT_FOUND equivalent
+}
+
+inline long RegSetValueEx(HKEY hKey, const char* lpValueName, DWORD Reserved,
+                          DWORD dwType, const BYTE* lpData, DWORD cbData) {
+    (void)hKey; (void)lpValueName; (void)Reserved; (void)dwType; (void)lpData; (void)cbData;
+    return 1; // ERROR_FILE_NOT_FOUND equivalent
+}
+
 // CreateDirectory stub (Linux: mkdir already available via <sys/stat.h>)
 // FTP.cpp uses this for download directories
 inline int CreateDirectory(const char* lpPathName, void* lpSecurityAttributes) {
@@ -167,14 +193,42 @@ inline int CreateDirectory(const char* lpPathName, void* lpSecurityAttributes) {
     return mkdir(lpPathName, 0755) == 0;
 }
 
-// CreateThread stub (FTP.cpp AsyncGetHostByName)
+// CreateThread stub (FTP.cpp AsyncGetHo stByName)
 // Returns nullptr (thread creation not supported in stub)
+// Signature matches Windows API: HANDLE CreateThread(LPSECURITY_ATTRIBUTES, SIZE_T, LPTHREAD_START_ROUTINE, LPVOID, DWORD, LPDWORD)
+typedef uint32_t (WINAPI *LPTHREAD_START_ROUTINE)(void*);
 inline void* CreateThread(void* lpThreadAttributes, size_t dwStackSize, 
-                         void* lpStartAddress, void* lpParameter,
-                         uint32_t dwCreationFlags, uint32_t* lpThreadId) {
+                         LPTHREAD_START_ROUTINE lpStartAddress, void* lpParameter,
+                         uint32_t dwCreationFlags, unsigned long* lpThreadId) {
     (void)lpThreadAttributes; (void)dwStackSize; (void)lpStartAddress;
     (void)lpParameter; (void)dwCreationFlags; (void)lpThreadId;
     return nullptr; // Stub: Thread creation not supported
+}
+
+// OutputDebugString stub (FTP.cpp debug logging)
+inline void OutputDebugString(const char* lpOutputString) {
+    // On Linux: write to stderr (equivalent to Windows debug output)
+    if (lpOutputString) {
+        fprintf(stderr, "[DEBUG] %s", lpOutputString);
+    }
+}
+
+// strlcpy weak symbol (FTP.cpp uses for safe string copy)
+// Declared weak to avoid conflicts with BSD libc or Dependencies/Utility version
+extern "C" __attribute__((weak))
+size_t strlcpy(char *dst, const char *src, size_t dsize) {
+    const char *osrc = src;
+    size_t nleft = dsize;
+    if (nleft != 0) {
+        while (--nleft != 0) {
+            if ((*dst++ = *src++) == '\0') break;
+        }
+    }
+    if (nleft == 0) {
+        if (dsize != 0) *dst = '\0';
+        while (*src++) ;
+    }
+    return(src - osrc - 1);
 }
 
 #endif // !_WIN32

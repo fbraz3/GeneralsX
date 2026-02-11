@@ -22,13 +22,12 @@
 
 #include <string>
 
+// TheSuperHackers @build fbraz 11/02/2026
+// HKEY and registry stubs now provided by socket_compat.h (via windows_compat.h)
+// No need to redefine HKEY here
 #define WIN32_LEAN_AND_MEAN
 #ifdef _WIN32
 #include <windows.h>
-#else
-// TheSuperHackers @build fighter19 10/02/2026 Bender
-// Linux: No Windows registry - define HKEY as opaque handle for stub signatures
-typedef void* HKEY;
 #endif
 
 #include "Registry.h"
