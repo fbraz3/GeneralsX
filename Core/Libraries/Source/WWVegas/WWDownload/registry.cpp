@@ -22,12 +22,15 @@
 
 #include <string>
 
-// TheSuperHackers @build fbraz 11/02/2026
-// HKEY and registry stubs now provided by socket_compat.h (via windows_compat.h)
-// No need to redefine HKEY here
 #define WIN32_LEAN_AND_MEAN
+
+// TheSuperHackers @build Bender 11/02/2026 
+// Include compat headers for HKEY typedef (Linux stubs need it too)
 #ifdef _WIN32
 #include <windows.h>
+#else
+// Linux: Include compat headers for HKEY typedef + registry stubs  
+#include "../../GeneralsMD/Code/CompatLib/Include/socket_compat.h"
 #endif
 
 #include "Registry.h"
