@@ -68,6 +68,10 @@ endif()
 
 if(UNIX)
     target_compile_definitions(core_config INTERFACE _UNIX)
+    # Ubuntu 24.04+ and macOS have strlcpy/strlcat/wcslcpy/wcslcat in libc
+    # TheSuperHackers @build Bender 11/02/2026 Added guards for glibc 2.38+
+    target_compile_definitions(core_config INTERFACE 
+        HAVE_STRLCPY HAVE_STRLCAT HAVE_WCSLCPY HAVE_WCSLCAT)
 endif()
 
 if(RTS_BUILD_OPTION_DEBUG)

@@ -2,11 +2,11 @@
 # Base image for building GeneralsX/GeneralsXZH Linux binaries
 # Platform: linux/amd64 (x86_64)
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 LABEL maintainer="GeneralsX Project"
 LABEL description="Linux native build environment for GeneralsX (GCC/Clang + CMake + vcpkg)"
-LABEL version="1.0"
+LABEL version="2.0"
 
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,6 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && \
     apt-get install -y -qq --no-install-recommends \
         build-essential \
+        cmake \
         ninja-build \
         git \
         curl \
@@ -29,14 +30,12 @@ RUN apt-get update -qq && \
         autoconf \
         automake \
         autoconf-archive \
+        libtool \
         libltdl-dev \
+        libopenal-dev \
+        libasound2-dev \
         && \
     rm -rf /var/lib/apt/lists/*
-
-# Install CMake 3.25+ (required for CMakePresets.json v6)
-RUN curl -sL https://github.com/Kitware/CMake/releases/download/v3.25.0/cmake-3.25.0-linux-x86_64.tar.gz | \
-    tar -xz -C /usr/local --strip-components=1 && \
-    cmake --version
 
 # Note: vcpkg is mounted as volume at runtime (not included in image)
 # This keeps image size small and allows easy vcpkg updates

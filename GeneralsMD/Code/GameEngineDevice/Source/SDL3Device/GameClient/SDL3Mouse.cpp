@@ -27,7 +27,7 @@
 
 #ifndef _WIN32
 
-#include "SDL3Mouse.h"
+#include "GameEngineDevice/SDL3Device/GameClient/SDL3Mouse.h"
 #include <cstdio>
 #include <cstring>
 
