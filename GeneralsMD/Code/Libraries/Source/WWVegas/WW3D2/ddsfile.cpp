@@ -25,7 +25,15 @@
 #include "dx8wrapper.h"
 #include "bitmaphandler.h"
 #include "colorspace.h"
+
+// TheSuperHackers @build fbraz 10/02/2026 DirectDraw header Windows-only
+// Linux: Define DDS constants locally (fighter19 pattern)
+#ifdef _WIN32
 #include <ddraw.h>
+#else
+#define DDSCAPS2_CUBEMAP 0x00000200
+#define DDSCAPS2_VOLUME  0x00200000
+#endif
 
 // ----------------------------------------------------------------------------
 

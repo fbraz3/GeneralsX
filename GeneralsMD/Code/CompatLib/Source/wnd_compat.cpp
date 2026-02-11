@@ -1,6 +1,9 @@
 #include "types_compat.h"
 #include "wnd_compat.h"
+// TheSuperHackers @build fighter19 10/02/2026 Bender - SDL3 only for windowing builds (Phase 2)
+#ifdef SAGE_USE_SDL3
 #include <SDL3/SDL.h>
+#endif
 
 DWORD GetWindowLong(HWND hWnd, int nIndex)
 {
@@ -20,6 +23,7 @@ BOOL ShowWindow(HWND hWnd, int nCmdShow)
 
 void SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
+#ifdef SAGE_USE_SDL3
   SDL_Window *window = (SDL_Window *)hWnd;
   if (!window) return;
 
@@ -30,6 +34,7 @@ void SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy,
   if (!(uFlags & SWP_NOSIZE)) {
     SDL_SetWindowSize(window, cx, cy);
   }
+#endif
 }
 
 void GetWindowRect(HWND hWnd, RECT *pRect)

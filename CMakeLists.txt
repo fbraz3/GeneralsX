@@ -33,6 +33,13 @@ endif()
 # Top level project, doesn't really affect anything.
 project(genzh LANGUAGES C CXX)
 
+# TheSuperHackers @build 10/02/2026 Bender
+# Linux port: Make CompatLib headers globally accessible so Core libraries (WWLib, WWMath, etc.)
+# can access platform compatibility types when building for non-Windows platforms
+if(UNIX)
+    include_directories(${CMAKE_SOURCE_DIR}/GeneralsMD/Code/CompatLib/Include)
+endif()
+
 # This file handles extra settings wanted/needed for different compilers.
 include(cmake/compilers.cmake)
 

@@ -799,7 +799,7 @@ RenderObjClass * WW3DAssetManager::Create_Render_Obj(const char * name)
 		char filename [MAX_PATH];
 		const char *mesh_name = ::strchr (name, '.');
 		if (mesh_name != nullptr) {
-			::lstrcpyn (filename, name, ((int)mesh_name) - ((int)name) + 1);
+			::lstrcpyn (filename, name, ((SIZE_T)mesh_name) - ((SIZE_T)name) + 1);		// TheSuperHackers @build fighter19 10/02/2026 Bender - Use SIZE_T for 64-bit safe pointer arithmetic
 			::lstrcat (filename, ".w3d");
 		} else {
 			sprintf( filename, "%s.w3d", name);

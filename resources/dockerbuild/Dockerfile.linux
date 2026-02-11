@@ -1,0 +1,49 @@
+# GeneralsX Linux Native Builder
+# Base image for building GeneralsX/GeneralsXZH Linux binaries
+# Platform: linux/amd64 (x86_64)
+
+FROM ubuntu:22.04
+
+LABEL maintainer="GeneralsX Project"
+LABEL description="Linux native build environment for GeneralsX (GCC/Clang + CMake + vcpkg)"
+LABEL version="1.0"
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install essential build tools
+RUN apt-get update -qq && \
+    apt-get install -y -qq --no-install-recommends \
+        build-essential \
+        ninja-build \
+        git \
+        curl \
+        ca-certificates \
+        zip \
+        unzip \
+        tar \
+        pkg-config \
+        python3 \
+        python3-pip \
+        python3-dev \
+        autoconf \
+        automake \
+        autoconf-archive \
+        libltdl-dev \
+        && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install CMake 3.25+ (required for CMakePresets.json v6)
+RUN curl -sL https://github.com/Kitware/CMake/releases/download/v3.25.0/cmake-3.25.0-linux-x86_64.tar.gz | \
+    tar -xz -C /usr/local --strip-components=1 && \
+    cmake --version
+
+# Note: vcpkg is mounted as volume at runtime (not included in image)
+# This keeps image size small and allows easy vcpkg updates
+ENV VCPKG_ROOT=/opt/vcpkg
+
+# Set working directory
+WORKDIR /work
+
+# Default command (override in docker run)
+CMD ["/bin/bash"]

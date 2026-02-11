@@ -26,6 +26,9 @@ target_link_libraries(zi_always_no_pch INTERFACE
     corei_always_no_pch # Must stay below so headers from game are included first
 )
 
+# CompatLib: Platform compatibility layer (Linux headers, d3d8lib config)
+add_subdirectory(CompatLib)
+
 # Contains internal libraries
 add_subdirectory(Libraries)
 

@@ -3,9 +3,12 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
+// CRITICAL: windows_compat must be included BEFORE d3d8.h so Win32 types (DWORD, FLOAT, etc.) are defined
 #include "windows_compat.h"
+#include "com_compat.h"  // COM/DirectX macros (DECLARE_INTERFACE_, STDMETHOD, etc.) - needed for d3d8.h
 #endif
 
+// Now d3d8.h can find DWORD, FLOAT, UINT, etc.
 #include <d3d8.h>
 
 #define D3DX_DEFAULT                     UINT_MAX

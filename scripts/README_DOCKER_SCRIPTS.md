@@ -2,11 +2,69 @@
 
 Shell scripts for building GeneralsX/GeneralsXZH in Docker containers (Linux + MinGW cross-compile).
 
+⚡ **NEW**: All scripts now use **pre-built Docker images** with **vcpkg as volume** for 40-50% faster builds! See [Docker Workflow Documentation](../docs/WORKDIR/support/DOCKER_WORKFLOW.md) for details.
+
+**Image sizes**: ~90MB (Linux), ~660MB (MinGW)  
+**vcpkg location**: `~/.generalsx/vcpkg` (shared across builds)
+
 ## Prerequisites
 
 - **Docker** installed and running
 - **macOS/Linux host** (scripts use bash)
 - Check Docker: `docker --version` or run VS Code task "Validate: Check Docker Prerequisites"
+
+## Quick Start
+
+### First Time Setup
+
+```bash
+# Build Docker images (one-time, ~5-10 minutes)
+./scripts/docker-build-images.sh all
+
+# Or let build scripts auto-build images on first run
+./scripts/docker-build-linux-zh.sh  # Will auto-build if missing
+```
+
+### Subsequent Builds
+
+```bash
+# Fast builds (no package installation!)
+./scripts/docker-build-linux-zh.sh       # Zero Hour (Linux)
+./scripts/docker-build-linux-generals.sh # Generals (Linux)
+./scripts/docker-build-mingw-zh.sh       # Zero Hour (Windows .exe)
+```
+
+**Key Benefits**:
+- ✅ No package installation per build (saved in image)
+- ✅ No vcpkg bootstrap per build (saved in image)
+- ✅ 40-50% faster build times
+- ✅ Automatic image management (scripts check/build if missing)
+
+## Scripts
+
+### Image Management
+
+**`docker-build-images.sh [linux|mingw|all]`** 🆕
+- **Purpose**: Build pre-configured Docker images with all dependencies
+- **When**: First time setup, or when updating toolchain/CMake/vcpkg
+- **Images**:
+  - `generalsx/linux-builder:latest` - Native Linux builds (GCC, CMake, vcpkg)
+  - `generalsx/mingw-builder:latest` - MinGW cross-compilation (MinGW-w64, CMake)
+- **Time**: ~5-10 minutes (one-time)
+
+```bash
+# Build all images
+./scripts/docker-build-images.sh all
+
+# Build specific image
+./scripts/docker-build-images.sh linux
+./scripts/docker-build-images.sh mingw
+
+# Rebuild when toolchain changes
+./scripts/docker-build-images.sh all  # Force rebuild
+```
+
+**Note**: All other scripts auto-detect and build images if missing.
 
 ## Scripts
 

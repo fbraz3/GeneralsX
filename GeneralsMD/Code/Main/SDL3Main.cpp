@@ -22,83 +22,113 @@
 ** Entry point for Linux builds using SDL3 windowing and DXVK graphics.
 **
 ** TheSuperHackers @feature CnC_Generals_Linux 07/02/2026
-** Provides SDL3 window creation with Vulkan support for DXVK integration.
+** Entry point replaces WinMain() for Linux builds.
+** Instantiates SDL3GameEngine and calls GameMain().
 */
 
 #ifndef _WIN32
 
+// SYSTEM INCLUDES
 #include <SDL3/SDL.h>
 #include <cstdlib>
 #include <cstring>
-#include "gameengine.h"
+#include <cstdio>
+
+// USER INCLUDES (match WinMain.cpp pattern)
+#include "Lib/BaseType.h"
+#include "Common/CommandLine.h"
+#include "Common/CriticalSection.h"
+#include "Common/GlobalData.h"
+#include "Common/GameEngine.h"
+#include "Common/GameMemory.h"
+#include "Common/Debug.h"
+#include "SDL3GameEngine.h"
+
+// CRITICAL SECTIONS (Linux needs these too)
+static CriticalSection critSec1;
+static CriticalSection critSec2;
+static CriticalSection critSec3;
+static CriticalSection critSec4;
+static CriticalSection critSec5;
+
+// Extern declarations (from GameMain.cpp)
+extern Int GameMain();
 
 /**
- * SDL3Main_InitWindow
+ * CreateGameEngine
  *
- * Creates an SDL3 window with Vulkan support for DXVK.
- * Sets required environment variables for DXVK WSI configuration.
+ * Factory function for SDL3GameEngine on Linux.
+ * Called by GameMain() to instantiate platform-specific engine.
  *
- * @return SDL_Window pointer on success, nullptr on failure
+ * @return SDL3GameEngine instance
  */
-SDL_Window* SDL3Main_InitWindow(int width, int height, bool windowed)
+GameEngine *CreateGameEngine(void)
 {
-	// Set DXVK WSI driver to SDL3 before loading Vulkan libraries
-	setenv("DXVK_WSI_DRIVER", "SDL3", 1);
-
-	// Load Vulkan library for SDL3
-	if (!SDL_Vulkan_LoadLibrary(nullptr)) {
-		fprintf(stderr, "ERROR: Failed to load Vulkan library for SDL3\n");
-		return nullptr;
-	}
-
-	// Create SDL3 window with Vulkan support
-	Uint32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
-	if (!windowed) {
-		flags |= SDL_WINDOW_FULLSCREEN;
-	}
-
-	SDL_Window* window = SDL_CreateWindow(
-		"Command & Conquer Generals: Zero Hour",
-		width,
-		height,
-		flags
-	);
-
-	if (!window) {
-		fprintf(stderr, "ERROR: Failed to create SDL3 window: %s\n", SDL_GetError());
-		return nullptr;
-	}
-
-	return window;
+	fprintf(stderr, "INFO: CreateGameEngine() - Creating SDL3GameEngine for Linux\n");
+	SDL3GameEngine *engine = NEW SDL3GameEngine();
+	return engine;
 }
 
 /**
- * SDL3Main_Init
+ * main
  *
- * Initialize SDL3 for the game.
- * Called once at startup.
+ * Linux entry point (replaces WinMain on Windows).
+ * Initializes subsystems and calls GameMain().
  *
- * @return true on success, false on failure
+ * @param argc Command line argument count
+ * @param argv Command line arguments
+ * @return Exit code (0 = success)
  */
-bool SDL3Main_Init()
+int main(int argc, char* argv[])
 {
-	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
-		fprintf(stderr, "ERROR: Failed to initialize SDL3: %s\n", SDL_GetError());
-		return false;
+	int exitcode = 1;
+
+	fprintf(stderr, "=================================================\n");
+	fprintf(stderr, " Command & Conquer Generals: Zero Hour (Linux)\n");
+	fprintf(stderr, " SDL3 + DXVK Build\n");
+	fprintf(stderr, "=================================================\n\n");
+
+	try {
+		// Initialize critical sections (required by game engine)
+		TheAsciiStringCriticalSection = &critSec1;
+		TheUnicodeStringCriticalSection = &critSec2;
+		TheDmaCriticalSection = &critSec3;
+		TheMemoryPoolCriticalSection = &critSec4;
+		TheDebugLogCriticalSection = &critSec5;
+
+		// Initialize memory manager early (required by NEW operator)
+		initMemoryManager();
+
+		// Parse command line (converts argv to TheCommandLine)
+		// TheSuperHackers @build 10/02/2026 Bender - Phase 1.5
+		// GameMain expects TheCommandLine to be populated
+		TheCommandLine.argc = argc;
+		TheCommandLine.argv = argv;
+
+		fprintf(stderr, "INFO: Calling GameMain()...\n");
+
+		// Call cross-platform game entry point
+		exitcode = GameMain();
+
+		fprintf(stderr, "INFO: GameMain() returned with code %d\n", exitcode);
+
+	} catch (const std::exception& e) {
+		fprintf(stderr, "FATAL: Unhandled exception in main(): %s\n", e.what());
+		exitcode = 1;
+	} catch (...) {
+		fprintf(stderr, "FATAL: Unknown exception in main()\n");
+		exitcode = 1;
 	}
 
-	return true;
-}
+	// Cleanup critical sections
+	TheAsciiStringCriticalSection = nullptr;
+	TheUnicodeStringCriticalSection = nullptr;
+	TheDmaCriticalSection = nullptr;
+	TheMemoryPoolCriticalSection = nullptr;
+	TheDebugLogCriticalSection = nullptr;
 
-/**
- * SDL3Main_Shutdown
- *
- * Clean up SDL3 resources.
- * Called on game shutdown.
- */
-void SDL3Main_Shutdown()
-{
-	SDL_Quit();
+	fprintf(stderr, "\nExiting with code %d\n", exitcode);
+	return exitcode;
 }
 
 #endif // !_WIN32

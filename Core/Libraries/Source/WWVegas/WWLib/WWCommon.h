@@ -23,6 +23,30 @@
 #include "stringex.h"
 #include <Utility/stdio_adapter.h>
 
+// TheSuperHackers @build 10/02/2026 Bender
+// Linux port: Include platform compatibility headers BEFORE any DirectX/Windows headers are parsed
+// This ensures Win32 types (DWORD, HANDLE, etc.) and COM types (IUnknown, GUID, etc.) are defined
+#if !defined(_WIN32)
+    // Define guard to tell old Utility/compat.h that new compat is already included
+    #define DEPENDENCIES_UTILITY_COMPAT_H 1
+    
+    // Order matters: bittype.h defines basic types, types_compat adds Windows types, com_compat adds COM
+    #include "bittype.h"           // Basic types: uint32, DWORD, BYTE, etc.
+    #include "types_compat.h"      // Windows types: HANDLE, HWND, HMONITOR, RGNDATA, etc.
+    #include "windows_compat.h"    // Windows API compatibility: GetDoubleClickTime, HIWORD, etc.
+    #include "com_compat.h"        // COM/DirectX: IUnknown, GUID, REFIID, DECLARE_INTERFACE_, etc.
+    
+    // TheSuperHackers @build fbraz 10/02/2026 Bender
+    // CRITICAL: Include time_compat.h and gdi_compat.h DIRECTLY here because windows_compat.h
+    // skips them when DEPENDENCIES_UTILITY_COMPAT_H is defined (see windows_compat.h line 138)
+    // ww3d.cpp needs MMRESULT/timeBeginPeriod (time_compat.h) and BITMAP structures (gdi_compat.h)
+    #include "time_compat.h"       // MMRESULT, timeBeginPeriod, timeEndPeriod stubs
+    #include "gdi_compat.h"        // BITMAPFILEHEADER, BITMAPINFOHEADER, BI_RGB
+    #include "string_compat.h"     // lstrlen, lstrcpy, lstrcmpi mappings
+    #include "file_compat.h"       // GetCurrentDirectory, GetFileAttributes stubs
+    #include "vfw_compat.h"        // VFW/AVI API stubs (FramGrab.cpp movie capture - Phase 3 out-of-scope)
+#endif
+
 
 // This macro serves as a general way to determine the number of elements within an array.
 #ifndef ARRAY_SIZE

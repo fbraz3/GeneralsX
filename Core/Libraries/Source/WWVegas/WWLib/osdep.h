@@ -20,6 +20,10 @@ typedef wchar_t WCHAR;
 
 #define _vsnprintf vsnprintf
 #define _snprintf snprintf
+#define _strdup strdup      // TheSuperHackers @build fighter19 10/02/2026 Bender - String duplication
+#define lstrcpy strcpy      // TheSuperHackers @build fighter19 10/02/2026 Bender - String copy
+#define lstrcpyn strncpy    // TheSuperHackers @build fighter19 10/02/2026 Bender - String copy with length
+#define lstrcat strcat      // TheSuperHackers @build fighter19 10/02/2026 Bender - String concatenation
 
 static char *strupr(char *str)
 {

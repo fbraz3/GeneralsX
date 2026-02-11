@@ -1158,7 +1158,16 @@ target_sources(z_gameengine PRIVATE ${GAMEENGINE_SRC})
 
 target_include_directories(z_gameengine PUBLIC
     Include
+    ../CompatLib/Include  # Needed for d3dx8math.h in PCH
 )
+
+# Ensure DXVK headers are available when building on Linux
+if(NOT SAGE_USE_DX8 AND dxvk_SOURCE_DIR)
+    target_include_directories(z_gameengine PUBLIC
+        ${dxvk_SOURCE_DIR}/usr/include
+        ${dxvk_SOURCE_DIR}/usr/include/dxvk
+    )
+endif()
 
 target_include_directories(z_gameengine PRIVATE
     Include/Precompiled
@@ -1172,6 +1181,7 @@ target_link_libraries(z_gameengine PRIVATE
 target_link_libraries(z_gameengine PUBLIC
     corei_gameengine_public
     z_wwvegas
+    d3d8lib  # Ensure DirectX8 headers available (Windows SDK or DXVK)
 )
 
 target_precompile_headers(z_gameengine PRIVATE

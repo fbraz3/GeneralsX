@@ -30,8 +30,16 @@
 
 #include "SDL3GameEngine.h"
 #include "OpenALAudioManager.h"
+#include "SDL3Device/GameClient/SDL3Mouse.h"
+#include "SDL3Device/GameClient/SDL3Keyboard.h"
+#include "GameClient/Mouse.h"
+#include "GameClient/Keyboard.h"
 #include <cstdio>
 #include <cstdlib>
+
+// Extern globals for input devices (set by GameClient)
+extern Mouse *TheMouse;
+extern Keyboard *TheKeyboard;
 
 /**
  * Constructor: Initialize SDL3 game engine state
@@ -198,6 +206,10 @@ void SDL3GameEngine::pollSDL3Events(void)
 				handleMouseButtonEvent(event.button);
 				break;
 
+			case SDL_EVENT_MOUSE_WHEEL:
+				handleMouseWheelEvent(event.wheel);
+				break;
+
 			case SDL_EVENT_WINDOW_RESIZED:
 				handleWindowEvent(event.window);
 				break;
@@ -210,34 +222,63 @@ void SDL3GameEngine::pollSDL3Events(void)
 }
 
 /**
- * Handle keyboard event - dispatch to Keyboard manager
- * TODO: Phase 2 - Wire to actual Keyboard manager
+ * Handle keyboard event -dispatch to Keyboard manager
+ * TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 event wiring
  */
 void SDL3GameEngine::handleKeyboardEvent(const SDL_KeyboardEvent& event)
 {
-	// TODO: Phase 2 - Get Keyboard manager from subsystems and dispatch event
-	// fprintf(stderr, "DEBUG: Keyboard event (keycode=%d, pressed=%s)\n", event.keysym.scancode, event.down ? "true" : "false");
+	// Dispatch to SDL3Keyboard if available
+	if (TheKeyboard) {
+		SDL3Keyboard* sdlKeyboard = dynamic_cast<SDL3Keyboard*>(TheKeyboard);
+		if (sdlKeyboard) {
+			sdlKeyboard->addSDL3KeyEvent(event);
+		}
+	}
 }
 
 /**
  * Handle mouse motion event - dispatch to Mouse manager
- * TODO: Phase 2 - Wire to actual Mouse manager
+ * TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 event wiring
  */
 void SDL3GameEngine::handleMouseMotionEvent(const SDL_MouseMotionEvent& event)
 {
-	// TODO: Phase 2 - Get Mouse manager and dispatch motion event
-	// fprintf(stderr, "DEBUG: Mouse motion (x=%d, y=%d, rel_x=%d, rel_y=%d)\n", 
-	//        event.x, event.y, event.rel_x, event.rel_y);
+	// Dispatch to SDL3Mouse if available
+	if (TheMouse) {
+		SDL3Mouse* sdlMouse = dynamic_cast<SDL3Mouse*>(TheMouse);
+		if (sdlMouse) {
+			sdlMouse->addSDL3MouseMotionEvent(event);
+		}
+	}
 }
 
 /**
  * Handle mouse button event - dispatch to Mouse manager
- * TODO: Phase 2 - Wire to actual Mouse manager
+ * TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 event wiring
  */
 void SDL3GameEngine::handleMouseButtonEvent(const SDL_MouseButtonEvent& event)
 {
-	// TODO: Phase 2 - Get Mouse manager and dispatch button event
-	// fprintf(stderr, "DEBUG: Mouse button (button=%d, pressed=%s)\n", event.button, event.down ? "true" : "false");
+	// Dispatch to SDL3Mouse if available
+	if (TheMouse) {
+		SDL3Mouse* sdlMouse = dynamic_cast<SDL3Mouse*>(TheMouse);
+		if (sdlMouse) {
+			sdlMouse->addSDL3MouseButtonEvent(event);
+		}
+	}
+}
+
+/**
+ * Handle mouse wheel event - dispatch to Mouse manager
+ * TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 event wiring
+ */
+void SDL3GameEngine::handleMouseWheelEvent(const SDL_MouseWheelEvent& event)
+{
+	// Dispatch to SDL3Mouse if available
+	if (TheMouse) {
+		SDL3Mouse* sdlMouse = dynamic_cast<SDL3Mouse*>(TheMouse);
+		if (sdlMouse) {
+			sdlMouse->addSDL3MouseWheelEvent(event);
+		}
+	}
 }
 
 /**

@@ -1,3 +1,7 @@
+// GLI requires GLM_ENABLE_EXPERIMENTAL for internal extensions
+// Must be defined BEFORE including any headers
+#define GLM_ENABLE_EXPERIMENTAL
+
 #ifdef _WIN32
 #include <windows.h>
 #else

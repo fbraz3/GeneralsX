@@ -53,6 +53,13 @@
 #include "Win32Device/GameClient/Win32DIMouse.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "W3DDevice/GameClient/W3DMouse.h"
+
+// TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 SDL3 input devices
+#ifndef _WIN32
+#include "SDL3Device/GameClient/SDL3Mouse.h"
+#include "SDL3Device/GameClient/SDL3Keyboard.h"
+#include "SDL3GameEngine.h"  // For getSDLWindow()
+#endif
 #include "W3DDevice/GameClient/W3DSnow.h"
 
 class ThingTemplate;
@@ -126,11 +133,30 @@ protected:
 
 };
 
-inline Keyboard *W3DGameClient::createKeyboard( void ) { return NEW DirectInputKeyboard; }
+// TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 SDL3 input factory wiring
+inline Keyboard *W3DGameClient::createKeyboard( void ) {
+#ifndef _WIN32
+	return NEW SDL3Keyboard();  // Linux: SDL3 keyboard
+#else
+	return NEW DirectInputKeyboard;  // Windows: DirectInput keyboard
+#endif
+}
+
 inline Mouse *W3DGameClient::createMouse( void )
 {
-	//return new DirectInputMouse;
+// TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 SDL3 mouse factory wiring
+#ifndef _WIN32
+	// Linux: SDL3 mouse (requires SDL window handle)
+	SDL3GameEngine* sdlEngine = dynamic_cast<SDL3GameEngine*>(TheGameEngine);
+	if (sdlEngine && sdlEngine->getSDLWindow()) {
+		return NEW SDL3Mouse(sdlEngine->getSDLWindow());
+	}
+	fprintf(stderr, "ERROR: SDL3GameEngine not found, cannot create SDL3Mouse\n");
+	return nullptr;
+#else
+	// Windows: W3DMouse (wraps Win32Mouse with 3D cursor)
 	Win32Mouse * mouse = NEW W3DMouse;
 	TheWin32Mouse = mouse;   ///< global cheat for the WndProc()
 	return mouse;
+#endif
 }

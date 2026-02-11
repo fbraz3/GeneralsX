@@ -43,7 +43,13 @@
 #include "texture.h"
 #include "wwstring.h"
 
+// TheSuperHackers @build fighter19 10/02/2026 Bender - guard Windows headers
+#ifdef _WIN32
 #include <windows.h>
+#else
+#include "windows_compat.h"
+#include <filesystem>
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -257,7 +263,8 @@ AggregateDefClass::Find_Subobject
 				if (ptemp_obj == nullptr)
 					continue;
 
-				if (::lstrcmpi (ptemp_obj->Get_Name (), mesh_path[index]) == 0) {
+				// TheSuperHackers @build fighter19 10/02/2026 Bender - Remove :: for macro
+				if (lstrcmpi (ptemp_obj->Get_Name (), mesh_path[index]) == 0) {
 					sub_obj = ptemp_obj;
 				} else {
 					REF_PTR_RELEASE (ptemp_obj);
@@ -351,19 +358,21 @@ AggregateDefClass::Load_Assets (const char *passet_name)
 
 		// Determine what the current working directory is
 		char path[MAX_PATH];
-		::GetCurrentDirectory (sizeof (path), path);
+		// TheSuperHackers @build fighter19 10/02/2026 Bender - Remove :: for macros
+		GetCurrentDirectory (sizeof (path), path);
 
 		// Ensure the path is directory delimited
-		if (path[::lstrlen(path)-1] != '\\') {
-			::lstrcat (path, "\\");
+		if (path[lstrlen(path)-1] != '\\') {
+			lstrcat (path, "\\");
 		}
 
 		// Assume the filename is simply the "asset name" + the w3d extension
-		::lstrcat (path, passet_name);
-		::lstrcat (path, ".w3d");
+		// TheSuperHackers @build fighter19 10/02/2026 Bender - Remove :: for macros
+		lstrcat (path, passet_name);
+		lstrcat (path, ".w3d");
 
 		// If the file exists, then load it into the asset manager.
-		if (::GetFileAttributes (path) != 0xFFFFFFFF) {
+		if (GetFileAttributes (path) != 0xFFFFFFFF) {
 			retval = WW3DAssetManager::Get_Instance()->Load_3D_Assets (path);
 		}
 	}
@@ -519,8 +528,9 @@ AggregateDefClass::Is_Object_In_List
 		RenderObjClass *prender_obj = node_list[node_index];
 
 		// Is this the render object we were looking for?
+		// TheSuperHackers @build fighter19 10/02/2026 Bender - Remove :: for macro
 		if (prender_obj != nullptr &&
-		    ::lstrcmpi (prender_obj->Get_Name (), passet_name) == 0) {
+		    lstrcmpi (prender_obj->Get_Name (), passet_name) == 0) {
 			retval = true;
 		}
 	}

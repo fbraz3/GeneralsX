@@ -579,7 +579,12 @@ const char *ProfileFuncLevel::Id::GetSource(void) const
                                          helpFile,sizeof(helpFile),&func->funcLine,nullptr);
 
     char help[300];
+// TheSuperHackers @build fbraz 03/02/2026 Use snprintf on Linux, wsprintf on Windows
+#ifdef _WIN32
     wsprintf(help,ofsFunc?"%s+0x%x":"%s",helpFunc,ofsFunc);
+#else
+    snprintf(help, sizeof(help), ofsFunc?"%s+0x%x":"%s", helpFunc, ofsFunc);
+#endif
     func->funcSource=(char *)ProfileAllocMemory(strlen(helpFile)+1);
     strcpy(func->funcSource,helpFile);
     func->funcName=(char *)ProfileAllocMemory(strlen(help)+1);
@@ -617,7 +622,9 @@ unsigned ProfileFuncLevel::Id::GetLine(void) const
   return func->funcLine;
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetCalls(unsigned frame) const
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// Changed from unsigned _int64 to u64 (platform typedef)
+u64 ProfileFuncLevel::Id::GetCalls(unsigned frame) const
 {
   if (!m_funcPtr)
     return 0;
@@ -634,7 +641,7 @@ unsigned _int64 ProfileFuncLevel::Id::GetCalls(unsigned frame) const
   }
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetTime(unsigned frame) const
+u64 ProfileFuncLevel::Id::GetTime(unsigned frame) const
 {
   if (!m_funcPtr)
     return 0;
@@ -651,7 +658,7 @@ unsigned _int64 ProfileFuncLevel::Id::GetTime(unsigned frame) const
   }
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetFunctionTime(unsigned frame) const
+u64 ProfileFuncLevel::Id::GetFunctionTime(unsigned frame) const
 {
   if (!m_funcPtr)
     return 0;
@@ -755,17 +762,17 @@ unsigned ProfileFuncLevel::Id::GetLine(void) const
   return 0;
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetCalls(unsigned frame) const
+u64 ProfileFuncLevel::Id::GetCalls(unsigned frame) const
 {
   return 0;
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetTime(unsigned frame) const
+u64 ProfileFuncLevel::Id::GetTime(unsigned frame) const
 {
   return 0;
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetFunctionTime(unsigned frame) const
+u64 ProfileFuncLevel::Id::GetFunctionTime(unsigned frame) const
 {
   return 0;
 }
@@ -792,4 +799,7 @@ ProfileFuncLevel::ProfileFuncLevel(void)
 #endif // !defined HAS_PROFILE
 
 ProfileFuncLevel ProfileFuncLevel::Instance;
+// TheSuperHackers @build fbraz 03/02/2026 testEvent only exists on Windows (see internal.h)
+#ifdef _WIN32
 HANDLE ProfileFastCS::testEvent=::CreateEvent(nullptr,FALSE,FALSE,"");
+#endif

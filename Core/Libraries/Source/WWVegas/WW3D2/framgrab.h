@@ -42,9 +42,23 @@
 #pragma warning (push, 3)	// (gth) system headers complain at warning level 4...
 #endif
 
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender - guard Windows-only headers for Linux compatibility
+#ifdef _WIN32
+#ifndef _WINDOWS_
 #include "windows.h"
+#endif
+
+#ifndef _INC_WINDOWSX
 #include "windowsx.h"
+#endif
+
+#ifndef _INC_VFW
 #include "vfw.h"
+#endif
+#else
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender - fallback for Linux (stub types)
+#include "windows_compat.h"
+#endif // _WIN32
 
 #if defined (_MSC_VER)
 #pragma warning (pop)
@@ -70,7 +84,12 @@ public:
 	void ConvertGrab(void *BitmapPointer);
 	void Grab(void *BitmapPointer);
 
+	// TheSuperHackers @refactor fighter19 10/02/2026 Bender - conditional GetBuffer for Linux stub
+#ifdef _WIN32
 	long * GetBuffer()			{ return Bitmap; }
+#else
+	void * GetBuffer()			{ return NULL; }
+#endif
 	float	GetFrameRate()			{ return FrameRate; }
 
 protected:
@@ -83,12 +102,15 @@ protected:
 	void GrabAVI(void *BitmapPointer);
 	void GrabRawFrame(void *BitmapPointer);
 
+	// TheSuperHackers @refactor fighter19 10/02/2026 Bender - guard Windows AVI members for Linux compatibility
+#ifdef _WIN32
 	// avi settings
 	PAVIFILE				AVIFile;
 	long					*Bitmap;
 	PAVISTREAM			Stream;
 	AVISTREAMINFO		AVIStreamInfo;
 	BITMAPINFOHEADER	BitmapInfoHeader;
+#endif
 
 	// general purpose cleanup routine
 	void CleanupAVI();

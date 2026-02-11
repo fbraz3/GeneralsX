@@ -21,24 +21,27 @@ set(DEBUG_SRC
     "internal.h"
 )
 
-add_library(core_debug STATIC)
+# Debug library is Windows-only (depends on windows.h)
+if(WIN32)
+    add_library(core_debug STATIC)
 
-target_sources(core_debug PRIVATE ${DEBUG_SRC})
+    target_sources(core_debug PRIVATE ${DEBUG_SRC})
 
-target_include_directories(core_debug INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
+    target_include_directories(core_debug INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
 
-target_precompile_headers(core_debug PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
-    "debug.h"
-    "internal.h"
-    "internal_except.h"
-    "internal_io.h"
-    <windows.h>
-)
+    target_precompile_headers(core_debug PRIVATE
+        [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+        "debug.h"
+        "internal.h"
+        "internal_except.h"
+        "internal_io.h"
+        <windows.h>
+    )
 
-target_link_libraries(core_debug PRIVATE
-    core_wwcommon
-    corei_always
-)
+    target_link_libraries(core_debug PRIVATE
+        core_wwcommon
+        corei_always
+    )
+endif()

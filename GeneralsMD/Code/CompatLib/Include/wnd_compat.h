@@ -1,4 +1,6 @@
 #pragma once
+// TheSuperHackers @build fighter19 10/02/2026 Bender - Need Win32 types
+#include "types_compat.h"
 #include "tchar_compat.h"
 #define GWL_STYLE 1
 

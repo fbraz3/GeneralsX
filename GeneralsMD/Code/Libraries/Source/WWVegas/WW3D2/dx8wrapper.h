@@ -43,11 +43,10 @@
 
 #include "always.h"
 #include "dllist.h"
-#ifdef _WIN32
-#include "d3d8.h"
-#else
-// Linux: No d3d8 - this is graphics layer, será implementado con DXVK wrapper en Phase 1
-#endif
+// TheSuperHackers @build fighter19 10/02/2026 Bender
+// Use angle brackets (not quotes) to skip local d3d8.h stub and get DXVK headers
+// DXVK's d3d8.h includes d3d8types.h internally - no manual includes needed
+#include <d3d8.h>
 #include "matrix4.h"
 #include "statistics.h"
 #include "wwstring.h"
@@ -183,8 +182,11 @@ struct RenderStateStruct
 	D3DLIGHT8 Lights[4];
 	bool LightEnable[4];
   //unsigned lightsHash;
-	D3DMATRIX world;
-	D3DMATRIX view;
+	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// Changed from D3DMATRIX to Matrix4x4 - fighter19 pattern eliminates conversion functions
+	// Matrices stored transposed, cast to D3DMATRIX* when calling D3D APIs
+	Matrix4x4 world;
+	Matrix4x4 view;
 	unsigned vertex_buffer_types[MAX_VERTEX_STREAMS];
 	unsigned index_buffer_type;
 	unsigned short vba_offset;
@@ -312,7 +314,7 @@ public:
 
 	// Note that *_DX8_Transform() functions take the matrix in DX8 format - transposed from Westwood convention.
 
-	static void _Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const D3DMATRIX& m);
+	static void _Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const Matrix4x4& m);
 	static void _Get_DX8_Transform(D3DTRANSFORMSTATETYPE transform, D3DMATRIX& m);
 
 	static void Set_DX8_Light(int index,D3DLIGHT8* light);
@@ -625,7 +627,8 @@ protected:
 
 	static RenderStateStruct			render_state;
 	static unsigned						render_state_changed;
-	static D3DMATRIX						DX8Transforms[D3DTS_WORLD+1];
+	// TheSuperHackers @refactor fighter19 10/02/2026 Bender - fighter19 pattern Matrix4x4 not D3DMATRIX
+	static Matrix4x4						DX8Transforms[D3DTS_WORLD+1];
 
 	static bool								IsInitted;
 	static bool								IsDeviceLost;
@@ -705,7 +708,9 @@ protected:
 	static int								ZBias;
 	static float							ZNear;
 	static float							ZFar;
-	static D3DMATRIX					ProjectionMatrix;
+	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// Changed from D3DMATRIX to Matrix4x4 - fighter19 pattern
+	static Matrix4x4					ProjectionMatrix;
 
 	friend void DX8_Assert();
 	friend class WW3D;
@@ -756,8 +761,8 @@ WWINLINE void DX8Wrapper::Set_Pixel_Shader_Constant(int reg, const void* data, i
 	DX8CALL(SetPixelShaderConstant(reg,data,count));
 }
 // shader system updates KJM ^
-
-WWINLINE void DX8Wrapper::_Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const D3DMATRIX& m)
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender - fighter19 pattern Matrix4x4 parameter not D3DMATRIX
+WWINLINE void DX8Wrapper::_Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const Matrix4x4& m)
 {
 	WWASSERT(transform<=D3DTS_WORLD);
 #if 0 // (gth) this optimization is breaking generals because they set the transform behind our backs.
@@ -765,13 +770,14 @@ WWINLINE void DX8Wrapper::_Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, co
 #endif
 	{
 		DX8Transforms[transform]=m;
-		SNAPSHOT_SAY(("DX8 - SetTransform %d [%f,%f,%f,%f][%f,%f,%f,%f][%f,%f,%f,%f]",
+		SNAPSHOT_SAY(("DX8 - SetTransform %d [%f,%f,%f,%f][%f,%f,%f,%f][%f,%f,%f,%f][%f,%f,%f,%f]",
 			transform,
-			m.m[0][0],m.m[0][1],m.m[0][2],m.m[0][3],
-			m.m[1][0],m.m[1][1],m.m[1][2],m.m[1][3],
-			m.m[2][0],m.m[2][1],m.m[2][2],m.m[2][3]));
+			m[0][0],m[0][1],m[0][2],m[0][3],
+			m[1][0],m[1][1],m[1][2],m[1][3],
+			m[2][0],m[2][1],m[2][2],m[2][3],
+			m[3][0],m[3][1],m[3][2],m[3][3]));
 		DX8_RECORD_MATRIX_CHANGE();
-		DX8CALL(SetTransform(transform,&m));
+		DX8CALL(SetTransform(transform,(D3DMATRIX*)&m));
 	}
 }
 
@@ -1198,22 +1204,24 @@ WWINLINE void DX8Wrapper::Set_Shader(const ShaderClass& shader)
 	SNAPSHOT_SAY(("DX8Wrapper::Set_Shader(%s)",shader.Get_Description(str).str()));
 }
 
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// Applied fighter19 pattern: store Matrix4x4 transposed, cast to D3DMATRIX* for D3D calls
 WWINLINE void DX8Wrapper::Set_Projection_Transform_With_Z_Bias(const Matrix4x4& matrix, float znear, float zfar)
 {
 	ZFar=zfar;
 	ZNear=znear;
-	ProjectionMatrix=To_D3DMATRIX(matrix);
+	ProjectionMatrix=matrix.Transpose();
 
 	if (!Get_Current_Caps()->Support_ZBias() && ZNear!=ZFar) {
-		D3DMATRIX tmp=ProjectionMatrix;
+		Matrix4x4 tmp=ProjectionMatrix;
 		float tmp_zbias=ZBias;
 		tmp_zbias*=(1.0f/16.0f);
 		tmp_zbias*=1.0f / (ZFar - ZNear);
-		tmp.m[2][2]-=tmp_zbias*tmp.m[3][2];
-		DX8CALL(SetTransform(D3DTS_PROJECTION,&tmp));
+		tmp[2][2]-=tmp_zbias*tmp[3][2];
+		DX8CALL(SetTransform(D3DTS_PROJECTION,(D3DMATRIX*)&tmp));
 	}
 	else {
-		DX8CALL(SetTransform(D3DTS_PROJECTION,&ProjectionMatrix));
+		DX8CALL(SetTransform(D3DTS_PROJECTION,(D3DMATRIX*)&ProjectionMatrix));
 	}
 }
 
@@ -1225,64 +1233,70 @@ WWINLINE void DX8Wrapper::Set_DX8_ZBias(int zbias)
 	ZBias=zbias;
 
 	if (!Get_Current_Caps()->Support_ZBias() && ZNear!=ZFar) {
-		D3DMATRIX tmp=ProjectionMatrix;
+		// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+		// Changed D3DMATRIX → Matrix4x4 to match ProjectionMatrix type change
+		Matrix4x4 tmp=ProjectionMatrix;
 		float tmp_zbias=ZBias;
 		tmp_zbias*=(1.0f/16.0f);
 		tmp_zbias*=1.0f / (ZFar - ZNear);
-		tmp.m[2][2]-=tmp_zbias*tmp.m[3][2];
-		DX8CALL(SetTransform(D3DTS_PROJECTION,&tmp));
+		tmp[2][2]-=tmp_zbias*tmp[3][2];
+		DX8CALL(SetTransform(D3DTS_PROJECTION,(D3DMATRIX*)&tmp));
 	}
 	else {
 		Set_DX8_Render_State (D3DRS_ZBIAS, ZBias);
 	}
 }
 
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// Applied fighter19 pattern: transpose and store as Matrix4x4, cast pointer for D3D calls
 WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix4x4& m)
 {
 	switch ((int)transform) {
 	case D3DTS_WORLD:
-		render_state.world=To_D3DMATRIX(m);
+		render_state.world=m.Transpose();
 		render_state_changed|=(unsigned)WORLD_CHANGED;
 		render_state_changed&=~(unsigned)WORLD_IDENTITY;
 		break;
 	case D3DTS_VIEW:
-		render_state.view=To_D3DMATRIX(m);
+		render_state.view=m.Transpose();
 		render_state_changed|=(unsigned)VIEW_CHANGED;
 		render_state_changed&=~(unsigned)VIEW_IDENTITY;
 		break;
 	case D3DTS_PROJECTION:
 		{
-			D3DMATRIX ProjectionMatrix=To_D3DMATRIX(m);
+			Matrix4x4 ProjectionMatrix=m.Transpose();
 			ZFar=0.0f;
 			ZNear=0.0f;
-			DX8CALL(SetTransform(D3DTS_PROJECTION,&ProjectionMatrix));
+			DX8CALL(SetTransform(D3DTS_PROJECTION,(D3DMATRIX*)&ProjectionMatrix));
 		}
 		break;
 	default:
 		DX8_RECORD_MATRIX_CHANGE();
-		D3DMATRIX dxm=To_D3DMATRIX(m);
-		DX8CALL(SetTransform(transform,&dxm));
+		Matrix4x4 m2=m.Transpose();
+		DX8CALL(SetTransform(transform,(D3DMATRIX*)&m2));
 		break;
 	}
 }
 
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// Applied fighter19 pattern: convert Matrix3D to Matrix4x4, transpose, cast for D3D calls
 WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix3D& m)
 {
 	switch ((int)transform) {
 	case D3DTS_WORLD:
-		render_state.world=To_D3DMATRIX(m);
+		render_state.world=Matrix4x4(m).Transpose();
 		render_state_changed|=(unsigned)WORLD_CHANGED;
 		render_state_changed&=~(unsigned)WORLD_IDENTITY;
 		break;
 	case D3DTS_VIEW:
-		render_state.view=To_D3DMATRIX(m);
+		render_state.view=Matrix4x4(m).Transpose();
 		render_state_changed|=(unsigned)VIEW_CHANGED;
 		render_state_changed&=~(unsigned)VIEW_IDENTITY;
 		break;
 	default:
 		DX8_RECORD_MATRIX_CHANGE();
-		D3DMATRIX dxm=To_D3DMATRIX(m);
-		DX8CALL(SetTransform(transform,&dxm));
+		Matrix4x4 m2=Matrix4x4(m).Transpose();
+		DX8CALL(SetTransform(transform,(D3DMATRIX*)&m2));
 		break;
 	}
 }
@@ -1297,21 +1311,25 @@ WWINLINE bool DX8Wrapper::Is_View_Identity()
 	return !!(render_state_changed&(unsigned)VIEW_IDENTITY);
 }
 
+// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// Applied fighter19 pattern: transpose back when reading stored matrices
 WWINLINE void DX8Wrapper::Get_Transform(D3DTRANSFORMSTATETYPE transform, Matrix4x4& m)
 {
+	D3DMATRIX mat;
+
 	switch ((int)transform) {
 	case D3DTS_WORLD:
 		if (render_state_changed&WORLD_IDENTITY) m.Make_Identity();
-		else m=To_Matrix4x4(render_state.world);
+		else m=render_state.world.Transpose();
 		break;
 	case D3DTS_VIEW:
 		if (render_state_changed&VIEW_IDENTITY) m.Make_Identity();
-		else m=To_Matrix4x4(render_state.view);
+		else m=render_state.view.Transpose();
 		break;
 	default:
-		D3DMATRIX dxm;
-		DX8CALL(GetTransform(transform,&dxm));
-		m=To_Matrix4x4(dxm);
+		DX8CALL(GetTransform(transform,&mat));
+		m=*(Matrix4x4*)&mat;
+		m=m.Transpose();
 		break;
 	}
 }

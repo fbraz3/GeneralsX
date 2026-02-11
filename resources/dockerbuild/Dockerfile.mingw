@@ -1,0 +1,49 @@
+# GeneralsX MinGW Cross-Compiler Builder
+# Base image for cross-compiling GeneralsX/GeneralsXZH Windows binaries
+# Platform: MinGW-w64 (i686 and x86_64 targets)
+
+FROM ubuntu:22.04
+
+LABEL maintainer="GeneralsX Project"
+LABEL description="MinGW cross-compile environment for GeneralsX (Windows .exe on Linux)"
+LABEL version="1.0"
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install cross-compilation toolchain
+RUN apt-get update -qq && \
+    apt-get install -y -qq --no-install-recommends \
+        build-essential \
+        ninja-build \
+        git \
+        curl \
+        ca-certificates \
+        zip \
+        unzip \
+        tar \
+        pkg-config \
+        mingw-w64 \
+        wine64 \
+        && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install CMake 3.25+ (required for CMakePresets.json v6)
+# Note: Using x86_64 build (not aarch64) since we're on amd64
+RUN curl -sL https://github.com/Kitware/CMake/releases/download/v3.25.0/cmake-3.25.0-linux-x86_64.tar.gz | \
+    tar -xz -C /usr/local --strip-components=1 && \
+    cmake --version
+
+# Verify MinGW toolchain
+RUN i686-w64-mingw32-gcc --version && \
+    x86_64-w64-mingw32-gcc --version
+
+# Note: vcpkg is mounted as volume at runtime (not included in image)
+# This keeps image size small and allows easy vcpkg updates
+ENV VCPKG_ROOT=/opt/vcpkg
+
+# Set working directory
+WORKDIR /work
+
+# Default command (override in docker run)
+CMD ["/bin/bash"]
