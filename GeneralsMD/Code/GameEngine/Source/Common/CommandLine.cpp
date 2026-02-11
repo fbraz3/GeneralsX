@@ -39,25 +39,9 @@
 
 #include <string>
 
-#ifdef _WIN32
-	// Windows: Already have windows.h
-#else
-	// Linux: Provide Windows-compatible stat functions
-	#include <sys/stat.h>
-	struct _stat 
-	{ 
-		mode_t st_mode;
-		_stat() : st_mode(0) {}
-	};
-	inline int _stat(const char* path, struct _stat* buf) 
-	{ 
-		struct stat sbuf;
-		if (stat(path, &sbuf) != 0) return -1;
-		buf->st_mode = sbuf.st_mode;
-		return 0;
-	}
+#ifndef _WIN32
+	#include "file_compat.h"
 	#define _S_IFDIR S_IFDIR
-	// GetCommandLineA is already declared elsewhere or handled by argv in main
 #endif
 
 
