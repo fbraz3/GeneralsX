@@ -25,6 +25,9 @@ typedef wchar_t WCHAR;
 #define lstrcpyn strncpy    // TheSuperHackers @build fighter19 10/02/2026 Bender - String copy with length
 #define lstrcat strcat      // TheSuperHackers @build fighter19 10/02/2026 Bender - String concatenation
 
+// TheSuperHackers @build Bender 11/02/2026 Only define strupr/strrev if not already provided by compat headers
+// Note: Check for macro definition, not function existence
+#if !defined(strupr)
 static char *strupr(char *str)
 {
     for (int i = 0; i < strlen(str); i++)
@@ -32,7 +35,9 @@ static char *strupr(char *str)
 
     return str;
 }
+#endif
 
+#if !defined(strrev)
 static char *strrev(char *str)
 {
     if (!str || ! *str)
@@ -53,4 +58,6 @@ static char *strrev(char *str)
 }
 #endif
 
-#endif
+#endif // _UNIX
+
+#endif // OSDEP_H

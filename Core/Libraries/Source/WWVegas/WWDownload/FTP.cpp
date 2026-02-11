@@ -1024,10 +1024,16 @@ unsigned long MyIPAddress( int sockfd )
 
 	if( sockfd != -1 )
 	{
-		i = sizeof( sin );
-		getsockname( sockfd, (struct sockaddr *)&sin, &i );
+		// TheSuperHackers @build Bender 11/02/2026 Use socklen_t for getsockname (POSIX compatibility)
+		socklen_t addrlen = sizeof( sin );
+		getsockname( sockfd, (struct sockaddr *)&sin, &addrlen );
 
+		// TheSuperHackers @build Bender 11/02/2026 POSIX in_addr uses s_addr directly (not S_un.S_addr)
+#ifdef _WIN32
 		ip = sin.sin_addr.S_un.S_addr;
+#else
+		ip = sin.sin_addr.s_addr;
+#endif
 	}
 	else
 	{
@@ -1141,9 +1147,10 @@ int Cftp::SendNewPort( void )
 		}
 
 
-		i = sizeof( m_DataSockAddr);
+		// TheSuperHackers @build Bender 11/02/2026 Use socklen_t for getsockname (POSIX compatibility)
+		socklen_t addrlen = sizeof( m_DataSockAddr);
 
-		getsockname( m_iDataSocket, (struct sockaddr *)&m_DataSockAddr, &i );
+		getsockname( m_iDataSocket, (struct sockaddr *)&m_DataSockAddr, &addrlen );
 
 		listen( m_iDataSocket, 5 );
 

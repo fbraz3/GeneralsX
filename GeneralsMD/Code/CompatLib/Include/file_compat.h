@@ -13,6 +13,11 @@
 #include <climits>
 #include <cstring>
 
+// TheSuperHackers @build Bender 11/02/2026 Windows _mkdir → POSIX mkdir (with default perms)
+inline int _mkdir(const char* path)  {
+    return mkdir(path, 0755); // rwxr-xr-x
+}
+
 // Windows file attributes → POSIX stat
 inline uint32_t GetFileAttributes(const char* path) {
   struct stat st;

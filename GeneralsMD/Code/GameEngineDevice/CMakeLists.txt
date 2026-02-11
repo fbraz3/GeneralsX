@@ -188,23 +188,32 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameLogic/W3DGameLogic.cpp
     Source/W3DDevice/GameLogic/W3DGhostObject.cpp
     Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
-#    Source/Win32Device/Common/Win32BIGFile.cpp
-#    Source/Win32Device/Common/Win32BIGFileSystem.cpp
-    Source/Win32Device/Common/Win32CDManager.cpp
-    Source/Win32Device/Common/Win32GameEngine.cpp
-#    Source/Win32Device/Common/Win32LocalFile.cpp
-#    Source/Win32Device/Common/Win32LocalFileSystem.cpp
-    Source/Win32Device/Common/Win32OSDisplay.cpp
-    # Linux SDL3/OpenAL implementations (Phase 1 - TheSuperHackers @feature CnC_Generals_Linux 07/02/2026)
-    Source/SDL3GameEngine.cpp
-    Source/OpenALAudioManager.cpp
-    # Linux SDL3 input devices (Phase 1.5 - TheSuperHackers @build 10/02/2026 Bender)
-    Source/SDL3Device/GameClient/SDL3Mouse.cpp
-    Source/SDL3Device/GameClient/SDL3Keyboard.cpp
-    Source/Win32Device/GameClient/Win32DIKeyboard.cpp
-    #Source/Win32Device/GameClient/Win32DIMouse.cpp
-    Source/Win32Device/GameClient/Win32Mouse.cpp
 )
+
+# TheSuperHackers @build Bender 11/02/2026 Separate Windows and Linux platform-specific files
+if(WIN32)
+    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
+    list(APPEND GAMEENGINEDEVICE_SRC
+#        Source/Win32Device/Common/Win32BIGFile.cpp
+#        Source/Win32Device/Common/Win32BIGFileSystem.cpp
+        Source/Win32Device/Common/Win32CDManager.cpp
+        Source/Win32Device/Common/Win32GameEngine.cpp
+#        Source/Win32Device/Common/Win32LocalFile.cpp
+#        Source/Win32Device/Common/Win32LocalFileSystem.cpp
+        Source/Win32Device/Common/Win32OSDisplay.cpp
+        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+#        Source/Win32Device/GameClient/Win32DIMouse.cpp
+        Source/Win32Device/GameClient/Win32Mouse.cpp
+    )
+else()
+    # Linux-specific files (SDL3, OpenAL, DXVK)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/SDL3GameEngine.cpp
+        Source/OpenALAudioManager.cpp
+        Source/SDL3Device/GameClient/SDL3Mouse.cpp
+        Source/SDL3Device/GameClient/SDL3Keyboard.cpp
+    )
+endif()
 
 add_library(z_gameenginedevice STATIC)
 
