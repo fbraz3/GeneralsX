@@ -32,6 +32,7 @@
 #include <new>
 // TheSuperHackers @build fbraz 03/02/2026 Add C string functions for Linux
 #include <cstring>
+#include <cstdio>  // TheSuperHackers @build Bender 11/02/2026 snprintf for Linux
 // TheSuperHackers @build fbraz 03/02/2026 Platform-specific headers
 #ifdef _WIN32
 #include "mmsystem.h"
