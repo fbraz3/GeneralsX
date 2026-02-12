@@ -130,7 +130,8 @@ static void populateLadderListBox( void )
 	GadgetListBoxGetSelected(listboxLadderSelect, &selIndex);
 	if (selIndex < 0)
 		return;
-	selID = (Int)GadgetListBoxGetItemData(listboxLadderSelect, selIndex);
+	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	selID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLadderSelect, selIndex)));
 	if (!selID)
 		return;
 	updateLadderDetails(selID, staticTextLadderName, listboxLadderDetails);
@@ -373,7 +374,8 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 				if (selectPos < 0)
 					break;
 
-				ladderIndex = (Int)GadgetListBoxGetItemData( listboxLadderSelect, selectPos, 0 );
+			// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+			ladderIndex = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData( listboxLadderSelect, selectPos, 0 )));
 				const LadderInfo *li = TheLadderList->findLadderByIndex( ladderIndex );
 				if (li && li->cryptedPassword.isNotEmpty())
 				{
@@ -439,12 +441,8 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 			if (selIndex < 0)
 				break;
 
-			selID = (Int)GadgetListBoxGetItemData(listboxLadderSelect, selIndex);
-			if (!selID)
-				break;
-
-			updateLadderDetails(selID, staticTextLadderName, listboxLadderDetails);
-			break;
+		// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+		selID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLadderSelect, selIndex)));
 		}
 
     //---------------------------------------------------------------------------------------------
@@ -631,11 +629,8 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 			{
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
-				Int selectedID = (Int)window->winGetUserData();
-				if(!selectedID)
-					break;
-				closeRightClickMenu(window);
-
+			// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+			Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(window->winGetUserData()));
 				if (controlID == ladderInfoID)
 				{
 					StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();
@@ -657,12 +652,11 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 							rcMenu->winBringToTop();
 							rcMenu->winHide(FALSE);
 
-							rcMenu->winSetUserData((void *)selectedID);
-							TheWindowManager->winSetLoneWindow(rcMenu);
+				// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast (int to pointer)
+				rcMenu->winSetUserData(reinterpret_cast<void*>(static_cast<intptr_t>(selectedID)));				TheWindowManager->winSetLoneWindow(rcMenu);
 
-							GameWindow *st = TheWindowManager->winGetWindowFromId(nullptr,
-								NAMEKEY("PopupLadderDetails.wnd:StaticTextLadderName"));
-							GameWindow *lb = TheWindowManager->winGetWindowFromId(nullptr,
+				GameWindow *st = TheWindowManager->winGetWindowFromId(nullptr,
+					NAMEKEY("PopupLadderDetails.wnd:StaticTextLadderName"));							GameWindow *lb = TheWindowManager->winGetWindowFromId(nullptr,
 								NAMEKEY("PopupLadderDetails.wnd:ListBoxLadderDetails"));
 							updateLadderDetails(selectedID, st, lb);
 						}

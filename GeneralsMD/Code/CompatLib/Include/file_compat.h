@@ -59,6 +59,72 @@ inline int DeleteFile(const char* path) {
   }
 }
 
+// TheSuperHackers @build BenderAI 12/02/2026 CopyFile stub for Linux
+// Replay save system needs this to duplicate .rep files
+inline int CopyFile(const char* existingFile, const char* newFile, int failIfExists) {
+  try {
+    std::filesystem::copy_options opts = failIfExists 
+      ? std::filesystem::copy_options::none 
+      : std::filesystem::copy_options::overwrite_existing;
+    std::filesystem::copy_file(existingFile, newFile, opts);
+    return 1; // TRUE
+  } catch (...) {
+    return 0; // FALSE
+  }
+}
+
+// TheSuperHackers @build BenderAI 12/02/2026 FormatMessageW stub for Linux
+// Used to format error messages from GetLastError() - always returns generic error
+#define FORMAT_MESSAGE_FROM_SYSTEM 0x00001000
+inline int FormatMessageW(unsigned long flags, const void* source, unsigned long messageId, 
+                          unsigned long languageId, wchar_t* buffer, unsigned long size, void* args) {
+  if (buffer && size > 0) {
+    // Generic error message in wide string
+    const wchar_t* msg = L"File operation failed";
+    size_t len = 0;
+    while (msg[len] && len < size - 1) {
+      buffer[len] = msg[len];
+      len++;
+    }
+    buffer[len] = 0;
+    return (int)len;
+  }
+  return 0;
+}
+
+// TheSuperHackers @build BenderAI 12/02/2026 FormatMessage stub (ASCII version)
+// Used by ReplayMenu.cpp for error message formatting
+inline int FormatMessage(unsigned long flags, const void* source, unsigned long messageId, 
+                         unsigned long languageId, char* buffer, unsigned long size, void* args) {
+  if (buffer && size > 0) {
+    const char* msg = "File operation failed";
+    size_t len = 0;
+    while (msg[len] && len < size - 1) {
+      buffer[len] = msg[len];
+      len++;
+    }
+    buffer[len] = 0;
+    return (int)len;
+  }
+  return 0;
+}
+
+// TheSuperHackers @build BenderAI 12/02/2026 Windows Shell API stubs
+// Used by ReplayMenu.cpp to get desktop folder path - stubbed for Linux
+typedef void* LPITEMIDLIST;  // Pointer to item ID list (shell folder identifier)
+#define CSIDL_DESKTOPDIRECTORY 0x0010  // Desktop folder constant
+
+// Get special folder location (always fails on Linux)
+inline int SHGetSpecialFolderLocation(void* hwndOwner, int nFolder, LPITEMIDLIST* ppidl) {
+  if (ppidl) *ppidl = nullptr;
+  return -1;  // E_FAIL
+}
+
+// Get path from item ID list (always returns false)
+inline int SHGetPathFromIDList(LPITEMIDLIST pidl, char* pszPath) {
+  return 0;  // FALSE
+}
+
 // WIN32_FIND_DATA structure for file iteration
 #ifndef MAX_PATH
 #define MAX_PATH 260
