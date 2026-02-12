@@ -48,6 +48,37 @@
 #include "Common/UserPreferences.h"
 #include "Common/version.h"
 
+// TheSuperHackers @build fighter19 11/02/2026 POSIX CopyFile implementation for Linux
+#ifndef _WIN32
+#include <fstream>
+#include <sys/stat.h>
+
+static inline bool CopyFile(const char* source, const char* dest, bool failIfExists)
+{
+	if (failIfExists) {
+		struct stat buffer;
+		if (stat(dest, &buffer) == 0) {
+			// File exists
+			return false;
+		}
+	}
+
+	std::ifstream src(source, std::ios::binary);
+	if (!src) {
+		return false;
+	}
+
+	std::ofstream dst(dest, std::ios::binary);
+	if (!dst) {
+		return false;
+	}
+
+	dst << src.rdbuf();
+
+	return src.good() && dst.good();
+}
+#endif
+
 constexpr const char s_genrep[] = "GENREP";
 constexpr const UnsignedInt replayBufferBytes = 8192;
 

@@ -34,8 +34,14 @@
 #include "GameClient/DebugDisplay.h"
 #include "GameClient/Display.h"
 #include "GameClient/GraphDraw.h"
+#include <cstdint>
 
+// TheSuperHackers @build fighter19 11/02/2026 Cross-platform types (__int64 → int64_t, __forceinline → inline)
+#ifdef _WIN32
 __forceinline void ProfileGetTime(__int64 &t)
+#else
+inline void ProfileGetTime(int64_t &t)
+#endif
 {
 	t = _rdtsc();
 }

@@ -29,6 +29,10 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
+#ifndef _WIN32
+#include <filesystem>     // std::filesystem for Linux directory operations
+#include "socket_compat.h" // CreateDirectory stub for Linux
+#endif
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
@@ -205,10 +209,12 @@ GameState::SnapshotBlock *GameState::findBlockInfoByToken( AsciiString token, Sn
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// TheSuperHackers @build Bender 11/02/2026 Cross-platform date formatting (Windows locale vs POSIX strftime)
 UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal)
 {
 	// setup date buffer for local region date format
 	#define DATE_BUFFER_SIZE 256
+#ifdef _WIN32
 	OSVERSIONINFO	osvi;
 	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
 	UnicodeString displayDateBuffer;
@@ -235,12 +241,22 @@ UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal)
 	displayDateBuffer.set(dateBuffer);
 	return displayDateBuffer;
 	//displayDateBuffer.format( L"%ls", dateBuffer );
+#else
+	// Linux: Use simple ISO 8601 date format (YYYY-MM-DD)
+	UnicodeString displayDateBuffer;
+	char dateBuffer[DATE_BUFFER_SIZE];
+	snprintf(dateBuffer, DATE_BUFFER_SIZE, "%04d-%02d-%02d", 
+		timeVal.wYear, timeVal.wMonth, timeVal.wDay);
+	displayDateBuffer.translate(dateBuffer);
+	return displayDateBuffer;
+#endif
 }
 
 UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
 {
 	// setup time buffer for local region time format
 	UnicodeString displayTimeBuffer;
+#ifdef _WIN32
 	OSVERSIONINFO	osvi;
 	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
 	if (GetVersionEx(&osvi))
@@ -249,10 +265,10 @@ UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
 		{
 			char timeBuffer[ DATE_BUFFER_SIZE ];
 			GetTimeFormat( LOCALE_SYSTEM_DEFAULT,
-										 TIME_NOSECONDS|TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,
-										 &timeVal,
-										 nullptr,
-										 timeBuffer, sizeof(timeBuffer) );
+									 TIME_NOSECONDS|TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,
+									 &timeVal,
+									 nullptr,
+									 timeBuffer, sizeof(timeBuffer) );
 			displayTimeBuffer.translate(timeBuffer);
 			return displayTimeBuffer;
 		}
@@ -261,17 +277,23 @@ UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
 	#define TIME_BUFFER_SIZE 256
 	wchar_t timeBuffer[ TIME_BUFFER_SIZE ];
 	GetTimeFormatW( LOCALE_SYSTEM_DEFAULT,
-								 TIME_NOSECONDS,
-								 &timeVal,
-								 nullptr,
-								 timeBuffer,
-								 ARRAY_SIZE(timeBuffer) );
+							 TIME_NOSECONDS,
+							 &timeVal,
+							 nullptr,
+							 timeBuffer,
+							 ARRAY_SIZE(timeBuffer) );
 	displayTimeBuffer.set(timeBuffer);
 	return displayTimeBuffer;
+#else
+	// Linux: Use simple 24-hour time format (HH:MM)
+	char timeBuffer[DATE_BUFFER_SIZE];
+	snprintf(timeBuffer, DATE_BUFFER_SIZE, "%02d:%02d", 
+		timeVal.wHour, timeVal.wMinute);
+	displayTimeBuffer.translate(timeBuffer);
+	return displayTimeBuffer;
+#endif
 }
 
-
-// ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 GameState::GameState( void )
 {
@@ -1258,6 +1280,7 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 		return;
 
 	// save the current directory
+#ifdef _WIN32
 	char currentDirectory[ _MAX_PATH ];
 	GetCurrentDirectory( _MAX_PATH, currentDirectory );
 
@@ -1267,6 +1290,36 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 	// iterate all items in the directory
 	WIN32_FIND_DATA item;  // search item
 	HANDLE hFile = INVALID_HANDLE_VALUE;  // handle for search resources
+#else
+	auto currentDirectory = std::filesystem::current_path();
+	std::filesystem::current_path( getSaveDirectory().str() );
+
+	// Linux: iterate using std::filesystem directory_iterator
+	try {
+		for (const auto& entry : std::filesystem::directory_iterator(".")) {
+			if (entry.is_regular_file()) {
+				std::string filename_str = entry.path().filename().string();
+				
+				// See if there is a ".sav" at end of this filename
+				const char* c = strrchr( filename_str.c_str(), '.' );
+				if( c && stricmp( c, ".sav" ) == 0 ) {
+					AsciiString filename;
+					filename.set( filename_str.c_str() );
+					callback( filename, userData );
+				}
+			}
+		}
+	} catch (const std::filesystem::filesystem_error&) {
+		// Silently ignore errors
+	}
+	
+	// restore the current directory
+	std::filesystem::current_path( currentDirectory );
+	return;
+#endif
+
+// TheSuperHackers @build fighter19 11/02/2026 Bender - Windows file iteration (protected for Linux build)
+#ifdef _WIN32
 	Bool done = FALSE;
 	Bool first = TRUE;
 	while( done == FALSE )
@@ -1317,6 +1370,7 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 
 	// restore the current directory
 	SetCurrentDirectory( currentDirectory );
+#endif
 
 }
 

@@ -25,6 +25,12 @@ target_link_libraries(z_generals PRIVATE
     zi_always
 )
 
+# Linux SDL3 windowing/input (Phase 1)
+# TheSuperHackers @build fighter19 11/02/2026 Bender
+if(SAGE_USE_SDL3)
+    target_link_libraries(z_generals PRIVATE sdl3lib)
+endif()
+
 # TODO Originally referred to build host and user, replace with git info perhaps?
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
 "#pragma once

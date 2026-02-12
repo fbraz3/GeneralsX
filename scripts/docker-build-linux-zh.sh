@@ -26,6 +26,11 @@ docker run --rm \
     "$DOCKER_IMAGE" \
     bash -c "
         set -e
+
+        PROC=1
+        if command -v nproc &> /dev/null; then
+            PROC=\$(( (\$(nproc) + 1) / 2 ))
+        fi
         
         # Bootstrap vcpkg in Docker volume if not exists
         if [ ! -f /opt/vcpkg/vcpkg ]; then
@@ -45,7 +50,7 @@ docker run --rm \
         cmake --preset ${PRESET}
         
         echo '🔨 Building GeneralsXZH...'
-        cmake --build build/${PRESET} --target z_generals
+        cmake --build build/${PRESET} --target z_generals -j${PROC}
         
         echo '✅ Build complete!'
         ls -lh build/${PRESET}/GeneralsMD/GeneralsXZH || echo '⚠️  Binary not found'

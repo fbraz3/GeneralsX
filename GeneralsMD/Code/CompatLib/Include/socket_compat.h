@@ -28,6 +28,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <filesystem>    // std::filesystem for CreateDirectory
 #include <fcntl.h>
 #include <errno.h>
 
@@ -186,11 +187,16 @@ inline long RegSetValueEx(HKEY hKey, const char* lpValueName, DWORD Reserved,
     return 1; // ERROR_FILE_NOT_FOUND equivalent
 }
 
-// CreateDirectory stub (Linux: mkdir already available via <sys/stat.h>)
-// FTP.cpp uses this for download directories
+// CreateDirectory stub (Linux: uses C++17 std::filesystem for recursive creation)
+// FTP.cpp and GameState.cpp use this for download/save directories
+// TheSuperHackers @build fighter19 11/02/2026 Bender - Upgraded to recursive mkdir
 inline int CreateDirectory(const char* lpPathName, void* lpSecurityAttributes) {
     (void)lpSecurityAttributes;
-    return mkdir(lpPathName, 0755) == 0;
+    try {
+        return std::filesystem::create_directories(lpPathName) ? 1 : 0;
+    } catch (...) {
+        return 0; // FALSE
+    }
 }
 
 // CreateThread stub (FTP.cpp AsyncGetHo stByName)
@@ -207,12 +213,15 @@ inline void* CreateThread(void* lpThreadAttributes, size_t dwStackSize,
 }
 
 // OutputDebugString stub (FTP.cpp debug logging)
+// TheSuperHackers @build fighter19 11/02/2026 Bender - Guard against old compat layer macro collision
+#ifndef DEPENDENCIES_UTILITY_COMPAT_H
 inline void OutputDebugString(const char* lpOutputString) {
     // On Linux: write to stderr (equivalent to Windows debug output)
     if (lpOutputString) {
         fprintf(stderr, "[DEBUG] %s", lpOutputString);
     }
 }
+#endif
 
 // strlcpy weak symbol (FTP.cpp uses for safe string copy)
 // Declared weak to avoid conflicts with BSD libc or Dependencies/Utility version

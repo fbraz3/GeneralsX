@@ -99,14 +99,11 @@ int main(int argc, char* argv[])
 		// Initialize memory manager early (required by NEW operator)
 		initMemoryManager();
 
-		// Parse command line (converts argv to TheCommandLine)
-		// TheSuperHackers @build 10/02/2026 Bender - Phase 1.5
-		// GameMain expects TheCommandLine to be populated
-		TheCommandLine.argc = argc;
-		TheCommandLine.argv = argv;
-
-		fprintf(stderr, "INFO: Calling GameMain()...\n");
-
+	// Parse command line (CommandLine class handles argc/argv internally)
+	// TheSuperHackers @build felipebraz 10/02/2026 Phase 1.5
+	// Store argc/argv for CommandLine parser to access via _NSGetArgc/_NSGetArgv or /proc/self/cmdline
+	// For now, let CommandLine::parseCommandLineForStartup() handle this
+	CommandLine::parseCommandLineForStartup();
 		// Call cross-platform game entry point
 		exitcode = GameMain();
 

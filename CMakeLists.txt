@@ -66,6 +66,12 @@ endif()
 # On Linux: DXVK headers (for D3D8→Vulkan translation)
 include(cmake/dx8.cmake)
 
+# SDL3 windowing/input for Linux builds (Phase 1)
+# TheSuperHackers @build fighter19 11/02/2026 Bender
+if(SAGE_USE_SDL3)
+    include(cmake/sdl3.cmake)
+endif()
+
 # Define a dummy stlport target when not on VC6.
 if (IS_VS6_BUILD)
     include(cmake/stlport.cmake)

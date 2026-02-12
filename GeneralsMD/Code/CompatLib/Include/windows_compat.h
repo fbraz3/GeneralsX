@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string.h>  // For memset, used by GlobalMemoryStatus stub
+
 #ifndef CALLBACK
 #define CALLBACK
 #endif
@@ -113,6 +115,43 @@ typedef const void *LPCVOID;
 #include <unistd.h>
 #include <sys/time.h>
 
+// TheSuperHackers @build Bender 11/02/2026 Windows crash dump types (stubbed for Linux)
+#ifndef _WIN32
+struct _EXCEPTION_POINTERS;
+typedef struct _EXCEPTION_POINTERS EXCEPTION_POINTERS;
+#endif
+
+// TheSuperHackers @build fighter19 11/02/2026 Bender - Windows version info stubs (GameState.cpp)
+#ifndef _WIN32
+
+// OSVERSIONINFO structure for version checking (stubbed on Linux)
+typedef struct _OSVERSIONINFO {
+    DWORD dwOSVersionInfoSize;
+    DWORD dwMajorVersion;
+    DWORD dwMinorVersion;
+    DWORD dwBuildNumber;
+    DWORD dwPlatformId;
+    char szCSDVersion[128];
+} OSVERSIONINFO;
+
+// GetVersionEx stub (always returns false on Linux)
+inline BOOL GetVersionEx(OSVERSIONINFO* lpVersionInfo) {
+    (void)lpVersionInfo;
+    return FALSE; // Not Windows
+}
+
+// Locale/time formatting constants (not used on Linux, but needed for compilation)
+#define LOCALE_SYSTEM_DEFAULT 0x0800
+#define TIME_NOSECONDS 0x0002
+#define TIME_FORCE24HOURFORMAT 0x0008
+#define TIME_NOTIMEMARKER 0x0004
+
+// Platform ID constants
+#define VER_PLATFORM_WIN32_WINDOWS 1
+#define VER_PLATFORM_WIN32_NT 2
+
+#endif // !_WIN32
+
 static inline int GetCurrentThreadId()
 {
     return (int)pthread_self();
@@ -161,4 +200,44 @@ static inline DWORD timeEndPeriod(DWORD period)
 #include "file_compat.h"
 #include "socket_compat.h"  // TheSuperHackers @build fbraz 10/02/2026 - Win32 Sockets → POSIX BSD sockets (WWDownload)
 //#include "intrin_compat.h"
+
+// ================================================================================================
+// MUTEX & ERROR HANDLING STUBS (ClientInstance multi-instance check)
+// TheSuperHackers @build fighter19 11/02/2026 Bender - Multi-instance protection (always allows on Linux)
+// ================================================================================================
+
+// GetLastError - returns pseudo error code (always 0 = success on Linux stub)
+inline unsigned long GetLastError() {
+    return 0;  // ERROR_SUCCESS
+}
+
+// Error constants
+#ifndef ERROR_ALREADY_EXISTS
+#define ERROR_ALREADY_EXISTS 183  // Windows error code for existing mutex
+#endif
+
+// CreateMutex stub - always succeeds on Linux (no actual mutex created)
+// Returns dummy handle (1) to indicate success
+inline void* CreateMutex(void* lpMutexAttributes, int bInitialOwner, const char* lpName) {
+    (void)lpMutexAttributes;
+    (void)bInitialOwner;
+    (void)lpName;
+    return (void*)1;  // Fake handle (non-null = success)
+}
+
+// CloseHandle stub - no-op on Linux (nothing to close)
+inline int CloseHandle(void* hObject) {
+    (void)hObject;
+    return 1;  // TRUE
+}
+
+// __max and __min - MSVC intrinsics (use safe macro wrapping)
+#ifndef __max
+#define __max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef __min
+#define __min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
 #endif

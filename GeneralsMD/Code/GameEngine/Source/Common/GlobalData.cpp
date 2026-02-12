@@ -59,6 +59,13 @@
 
 #include "GameNetwork/FirewallHelper.h"
 
+// TheSuperHackers @build fighter19 11/02/2026 Linux POSIX compatibility headers
+#ifndef _WIN32
+#include <unistd.h>     // readlink()
+#include <sys/stat.h>   // mkdir()
+#include <cstdlib>      // getenv()
+#endif
+
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
 GlobalData* TheWritableGlobalData = nullptr;				///< The global data singleton
 
@@ -1038,7 +1045,24 @@ GlobalData::GlobalData()
   // Set user data directory based on registry settings instead of INI parameters. This allows us to
   // localize the leaf name.
   char temp[_MAX_PATH + 1];
+// TheSuperHackers @build fighter19 11/02/2026 Cross-platform user documents path
+#ifdef _WIN32
   if (::SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true))
+#else
+  // Linux: Use XDG_DOCUMENTS_DIR or fall back to $HOME/Documents
+  const char* xdg_docs = getenv("XDG_DOCUMENTS_DIR");
+  if (xdg_docs) {
+    snprintf(temp, sizeof(temp), "%s", xdg_docs);
+  } else {
+    const char* home = getenv("HOME");
+    if (home) {
+      snprintf(temp, sizeof(temp), "%s/Documents", home);
+    } else {
+      temp[0] = '\0';
+    }
+  }
+  if (temp[0] != '\0')
+#endif
   {
     AsciiString myDocumentsDirectory = temp;
 
@@ -1058,7 +1082,12 @@ GlobalData::GlobalData()
     if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != '\\')
       myDocumentsDirectory.concat( '\\' );
 
+// TheSuperHackers @build fighter19 11/02/2026 Cross-platform directory creation
+#ifdef _WIN32
     CreateDirectory(myDocumentsDirectory.str(), nullptr);
+#else
+    mkdir(myDocumentsDirectory.str(), 0755);
+#endif
     m_userDataDir = myDocumentsDirectory;
   }
 
@@ -1278,7 +1307,18 @@ UnsignedInt GlobalData::generateExeCRC()
 #else
 	{
 		Char buffer[ _MAX_PATH ];
+// TheSuperHackers @build fighter19 11/02/2026 Cross-platform executable path retrieval
+#ifdef _WIN32
 		GetModuleFileName( nullptr, buffer, sizeof( buffer ) );
+#else
+		// Linux: Read /proc/self/exe symlink
+		ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+		if (len != -1) {
+			buffer[len] = '\0';
+		} else {
+			buffer[0] = '\0';
+		}
+#endif
 		fp = TheFileSystem->openFile(buffer, File::READ | File::BINARY);
 		if (fp != nullptr) {
 			unsigned char crcBlock[blockSize];

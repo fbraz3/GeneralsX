@@ -43,15 +43,20 @@
 #pragma once
 
 #include "Common/SubsystemInterface.h"
+// TheSuperHackers @build fighter19 11/02/2026 Stub WebBrowser for Linux (WOL servers offline since 2010)
+#ifdef _WIN32
 #include <atlbase.h>
 #include <windows.h>
 #include <Common/GameMemory.h>
 #include "EABrowserDispatch/BrowserDispatch.h"
 #include "FEBDispatch.h"
+#endif
 #include <Lib/BaseType.h>
 
 class GameWindow;
 
+#ifdef _WIN32
+// Windows implementation with COM support
 class WebBrowserURL : public MemoryPoolObject
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE( WebBrowserURL, "WebBrowserURL" )
@@ -122,3 +127,42 @@ class WebBrowser :
 	};
 
 extern CComObject<WebBrowser> *TheWebBrowser;
+
+#else
+// Linux stub - WOL (Westwood Online) servers offline since 2010
+class WebBrowserURL
+{
+public:
+	WebBrowserURL() : m_next(nullptr) {}
+	~WebBrowserURL() {}
+
+	AsciiString m_tag;
+	AsciiString m_url;
+	WebBrowserURL *m_next;
+
+	const FieldParse *getFieldParse( void ) const { return nullptr; }
+};
+
+class WebBrowser : public SubsystemInterface
+{
+public:
+	void init( void ) {}
+	void reset( void ) {}
+	void update( void ) {}
+
+	virtual Bool createBrowserWindow(const char *tag, GameWindow *win) { return false; }
+	virtual void closeBrowserWindow(GameWindow *win) {}
+
+	WebBrowserURL *makeNewURL(AsciiString tag) { return nullptr; }
+	WebBrowserURL *findURL(AsciiString tag) { return nullptr; }
+
+protected:
+	WebBrowser() : mRefCount(0), m_urlList(nullptr) {}
+	virtual ~WebBrowser() {}
+
+	unsigned long mRefCount;
+	WebBrowserURL *m_urlList;
+};
+
+extern WebBrowser *TheWebBrowser;
+#endif

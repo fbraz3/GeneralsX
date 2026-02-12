@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef __linux__
 #include <malloc.h>
@@ -31,4 +32,30 @@ static size_t GlobalSize(void *ptr)
 #endif
 }
 
-struct MEMORYSTATUS;
+// MEMORYSTATUS - Windows memory status structure (for GlobalMemoryStatus)
+// TheSuperHackers @build BenderAI 11/02/2026 Linux stub - memory profiling disabled
+// NOTE: Game uses this for DEBUG_LOG only (dwAvailPageFile, dwAvailPhys, dwAvailVirtual).
+// DXVK's windows_base.h has minimal version (2 fields). We provide full 8-field version.
+// Guard prevents DXVK from redefining with incomplete struct.
+#ifndef _MEMORYSTATUS_DEFINED
+typedef struct MEMORYSTATUS {
+    unsigned long dwLength;
+    unsigned long dwMemoryLoad;
+    unsigned long dwTotalPhys;
+    unsigned long dwAvailPhys;
+    unsigned long dwTotalPageFile;
+    unsigned long dwAvailPageFile;
+    unsigned long dwTotalVirtual;
+    unsigned long dwAvailVirtual;
+} MEMORYSTATUS, *LPMEMORYSTATUS;
+#define _MEMORYSTATUS_DEFINED
+#endif
+
+// GlobalMemoryStatus stub - no-op on Linux (returns zeros)
+// Used for debug logging only - safe to stub
+static inline void GlobalMemoryStatus(LPMEMORYSTATUS lpBuffer) {
+    if (lpBuffer) {
+        memset(lpBuffer, 0, sizeof(MEMORYSTATUS));
+        lpBuffer->dwLength = sizeof(MEMORYSTATUS);
+    }
+}
