@@ -25,8 +25,12 @@ inline int IsEqualGUID(const GUID &a, const GUID &b) {
 #endif
 
 // GUID reference types
+// TheSuperHackers @bugfix BenderAI 12/02/2026 Skip if DXVK already defined as macros
+// DXVK's windows_base.h defines these as macros: #define REFGUID const GUID&
+// Our typedef would conflict with the macro expansion. Use DXVK's macros on Linux.
 #ifndef REFGUID_DEFINED
 #define REFGUID_DEFINED
+#ifndef REFGUID  // Only define if DXVK macro doesn't exist
 #ifdef __cplusplus
 typedef const GUID &REFGUID;
 typedef const GUID &REFIID;
@@ -36,7 +40,8 @@ typedef const GUID *REFGUID;
 typedef const GUID *REFIID;
 typedef const GUID *REFCLSID;
 #endif
-#endif
+#endif  // REFGUID
+#endif  // REFGUID_DEFINED
 
 // IID/CLSID types
 typedef GUID IID;

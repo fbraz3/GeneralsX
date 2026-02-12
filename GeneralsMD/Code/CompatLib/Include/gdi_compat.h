@@ -204,3 +204,18 @@ static inline COLORREF SetBkColor(HDC hdc, COLORREF color) {
 static inline COLORREF SetTextColor(HDC hdc, COLORREF color) {
     return 0;
 }
+
+// Font resource management
+// TheSuperHackers @build BenderAI 12/02/2026 - Dynamic font loading stubs
+// Used by GlobalLanguage for localized font support (e.g., Chinese, Arabic fonts)
+// On Windows: Loads TrueType fonts from Data\<language>\Fonts\
+// On Linux: No-op stubs (system fonts used instead, SDL_ttf handles rendering)
+static inline int AddFontResource(const char* lpszFilename) {
+    (void)lpszFilename;
+    return 1;  // Return 1 (success) - font "loaded" (no-op)
+}
+
+static inline BOOL RemoveFontResource(const char* lpszFilename) {
+    (void)lpszFilename;
+    return TRUE;  // TRUE (success) - font "unloaded" (no-op)
+}

@@ -312,7 +312,8 @@ static MessageBoxReturnType checkCDCallback( void *userData )
 	}
 	else
 	{
-		prepareCampaignGame((GameDifficulty)(Int)(Int *)userData);
+		// TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit
+		prepareCampaignGame((GameDifficulty)static_cast<Int>(reinterpret_cast<intptr_t>(userData)));
 		return MB_RETURN_CLOSE;
 	}
 }

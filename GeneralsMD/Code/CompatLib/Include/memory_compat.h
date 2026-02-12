@@ -34,10 +34,11 @@ static size_t GlobalSize(void *ptr)
 
 // MEMORYSTATUS - Windows memory status structure (for GlobalMemoryStatus)
 // TheSuperHackers @build BenderAI 11/02/2026 Linux stub - memory profiling disabled
+// TheSuperHackers @bugfix BenderAI 12/02/2026 Define unconditionally - guard pre-set in windows_compat.h
 // NOTE: Game uses this for DEBUG_LOG only (dwAvailPageFile, dwAvailPhys, dwAvailVirtual).
 // DXVK's windows_base.h has minimal version (2 fields). We provide full 8-field version.
-// Guard prevents DXVK from redefining with incomplete struct.
-#ifndef _MEMORYSTATUS_DEFINED
+// The _MEMORYSTATUS_DEFINED guard is pre-defined in windows_compat.h BEFORE windows_base.h,
+// so DXVK skips its definition and only ours exists. Define unconditionally here.
 typedef struct MEMORYSTATUS {
     unsigned long dwLength;
     unsigned long dwMemoryLoad;
@@ -47,9 +48,10 @@ typedef struct MEMORYSTATUS {
     unsigned long dwAvailPageFile;
     unsigned long dwTotalVirtual;
     unsigned long dwAvailVirtual;
-} MEMORYSTATUS, *LPMEMORYSTATUS;
-#define _MEMORYSTATUS_DEFINED
-#endif
+} MEMORYSTATUS;
+
+// Pointer typedef for MEMORYSTATUS
+typedef MEMORYSTATUS *LPMEMORYSTATUS;
 
 // GlobalMemoryStatus stub - no-op on Linux (returns zeros)
 // Used for debug logging only - safe to stub

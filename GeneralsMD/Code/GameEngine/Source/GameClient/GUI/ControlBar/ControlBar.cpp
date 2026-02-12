@@ -811,7 +811,10 @@ void CommandSet::parseCommandButton( INI* ini, void *instance, void *store, cons
 
 	// get the index to store the command at, and the command array itself
 	const CommandButton **buttonArray = (const CommandButton **)store;
-	Int buttonIndex = (Int)userData;
+	// TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
+	// userData is actually an integer index stored as a pointer (common pattern in callbacks).
+	// On 64-bit Linux, void* is 8 bytes but Int is 4 bytes. Cast through intptr_t first.
+	Int buttonIndex = static_cast<Int>(reinterpret_cast<intptr_t>(userData));
 
 	// sanity
 	DEBUG_ASSERTCRASH( buttonIndex < MAX_COMMANDS_PER_SET, ("parseCommandButton: button index '%d' out of range",
