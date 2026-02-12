@@ -258,6 +258,59 @@ mkdir -p docs/DEV_BLOG
 touch docs/DEV_BLOG/$(date +%Y-%m)-DIARY.md
 ```
 
+## CRITICAL: DXVK Ephemeral Patches
+
+**The Problem**: DXVK headers are fetched via CMake `FetchContent` into `build/_deps/dxvk-src/`. Clean builds or reconfigures refetch pristine DXVK from git, **losing all manual patches**.
+
+**Impact**: Type conflicts return (MEMORYSTATUS, IUnknown redefinitions) after:
+- `rm -rf build/` (clean build)
+- `docker-configure-linux.sh` (reconfigure)
+- CMake cache invalidation
+
+**The Solution - Pre-Guard Pattern (PREFERRED)**:
+
+Add type guards **BEFORE** including DXVK headers in `GeneralsMD/Code/CompatLib/Include/windows_compat.h`:
+
+```cpp
+// Pre-define guards to prevent DXVK from defining incomplete types
+#ifndef _WIN32
+    #define _MEMORYSTATUS_DEFINED 1
+    #define _IUNKNOWN_DEFINED 1
+#endif
+
+// Now DXVK will skip these definitions
+#include <windows_base.h>
+```
+
+**When To Reapply**: Only if you see these errors after reconfigure:
+- `redefinition of 'struct MEMORYSTATUS'`
+- `redefinition of 'struct IUnknown'`
+- `conflicting declaration 'typedef ... LARGE_INTEGER'`
+
+**Manual Patch (If Pre-Guards Fail)**:
+
+Edit these files in `build/_deps/dxvk-src/include/dxvk/`:
+
+1. **windows_base.h** - Add guard around MEMORYSTATUS:
+```cpp
+#ifndef _MEMORYSTATUS_DEFINED
+typedef struct MEMORYSTATUS { /* ... */ } MEMORYSTATUS;
+#define _MEMORYSTATUS_DEFINED 1
+#endif
+```
+
+2. **unknwn.h** - Add guard around IUnknown:
+```cpp
+#ifndef _IUNKNOWN_DEFINED
+struct IUnknown { /* ... */ };
+#define _IUNKNOWN_DEFINED 1
+#endif
+```
+
+**Future TODO**: Automate patching via CMake `CMAKE_PATCH_COMMAND` or `file(APPEND)` in `CMakeLists.txt`.
+
+**Reference**: See Session 28 writeup in `docs/DEV_BLOG/2026-02-DIARY.md` for full context.
+
 ## Guidelines (Linux Port Branch)
 
 ### Code Quality & Maintainability
