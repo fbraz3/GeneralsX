@@ -242,3 +242,9 @@ target_link_libraries(z_gameenginedevice PUBLIC
     corei_gameenginedevice_public
     z_gameengine
 )
+
+# Linux SDL3 windowing/input (Phase 1)
+# TheSuperHackers @build fighter19 11/02/2026 Bender
+if(SAGE_USE_SDL3)
+    target_link_libraries(z_gameenginedevice PUBLIC sdl3lib)
+endif()

@@ -170,7 +170,10 @@ void initSubsystem(
 
 //-------------------------------------------------------------------------------------------------
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
+// TheSuperHackers @build fighter19 11/02/2026 COM module (Windows-only)
+#ifdef _WIN32
 extern CComModule _Module;
+#endif
 
 //-------------------------------------------------------------------------------------------------
 static void updateTGAtoDDS();
@@ -237,9 +240,14 @@ static void updateWindowTitle()
 
 		extern HWND ApplicationHWnd;  ///< our application window handle
 		if (ApplicationHWnd) {
+// TheSuperHackers @build fighter19 11/02/2026 SetWindowText is Windows-only
+#ifdef _WIN32
 			//Set it twice because Win 9x does not support SetWindowTextW.
 			::SetWindowText(ApplicationHWnd, titleA.str());
 			::SetWindowTextW(ApplicationHWnd, title.str());
+#else
+			// Linux: SDL3 handles window title (set via SDL_SetWindowTitle if needed)
+#endif
 		}
 	}
 }
@@ -252,7 +260,10 @@ GameEngine::GameEngine( void )
 	m_quitting = FALSE;
 	m_isActive = FALSE;
 
+// TheSuperHackers @build fighter19 11/02/2026 COM initialization (Windows-only)
+#ifdef _WIN32
 	_Module.Init(nullptr, ApplicationHInstance, nullptr);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -294,7 +305,10 @@ GameEngine::~GameEngine()
 
 	Drawable::killStaticImages();
 
+// TheSuperHackers @build fighter19 11/02/2026 COM termination (Windows-only)
+#ifdef _WIN32
 	_Module.Term();
+#endif
 
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();
@@ -1097,7 +1111,12 @@ void updateTGAtoDDS()
 
 	fp->close();
 
+// TheSuperHackers @build fighter19 11/02/2026 Windows-only texture conversion
+#ifdef _WIN32
 	system(CONVERT_EXEC1);
+#else
+	// Linux: TGA to DDS conversion not needed (or handle differently)
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1106,4 +1125,9 @@ void updateTGAtoDDS()
 // If we're using the Wide character version of MessageBox, then there's no additional
 // processing necessary. Please note that this is a sleazy way to get this information,
 // but pending a better one, this'll have to do.
+// TheSuperHackers @build fighter19 11/02/2026 MessageBox detection (Windows-only)
+#ifdef _WIN32
 extern const Bool TheSystemIsUnicode = (((void*) (::MessageBox)) == ((void*) (::MessageBoxW)));
+#else
+extern const Bool TheSystemIsUnicode = true;  // Linux: Always Unicode (UTF-8)
+#endif

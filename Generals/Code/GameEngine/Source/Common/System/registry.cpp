@@ -30,6 +30,56 @@
 
 #include "Common/Registry.h"
 
+// TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
+// Windows Registry types not available on Linux - define stub types
+#ifdef _UNIX
+typedef void* HKEY;  // Stub type for Linux (unused but needed for compilation)
+#define HKEY_LOCAL_MACHINE  ((HKEY)(uintptr_t)0x80000002)
+#define HKEY_CURRENT_USER   ((HKEY)(uintptr_t)0x80000001)
+#endif
+
+// TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
+// Windows Registry API not available on Linux - stub implementations return failure
+// Game gracefully degrades to default values (later can be replaced with INI files)
+#ifdef _UNIX
+
+// Linux stubs - return FALSE (registry not available on Linux)
+Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
+{
+	return FALSE;
+}
+
+Bool getUnsignedIntFromRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt& val)
+{
+	return FALSE;
+}
+
+Bool setStringInRegistry( HKEY root, AsciiString path, AsciiString key, AsciiString val)
+{
+	return FALSE;
+}
+
+Bool setUnsignedIntInRegistry( HKEY root, AsciiString path, AsciiString key, UnsignedInt val)
+{
+	return FALSE;
+}
+
+Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val)
+{
+	return FALSE;
+}
+
+Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
+{
+	return FALSE;
+}
+
+Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val)
+{
+	return FALSE;
+}
+
+#else // Windows implementation
 
 Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
 {
@@ -165,6 +215,10 @@ Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& 
 	return getUnsignedIntFromRegistry(HKEY_CURRENT_USER, fullPath.str(), key.str(), val);
 }
 
+#endif // _UNIX
+
+// TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
+// These functions work on both platforms - call registry functions which return FALSE on Linux
 AsciiString GetRegistryLanguage(void)
 {
 	static Bool cached = FALSE;

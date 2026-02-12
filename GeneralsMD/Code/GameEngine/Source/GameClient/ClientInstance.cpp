@@ -16,6 +16,9 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "PreRTS.h"
+#ifndef _WIN32
+#include "windows_compat.h"  // Linux stubs for mutex APIs
+#endif
 #include "GameClient/ClientInstance.h"
 
 #define GENERALS_GUID "685EAFF2-3216-4265-B047-251C5F4B82F3"

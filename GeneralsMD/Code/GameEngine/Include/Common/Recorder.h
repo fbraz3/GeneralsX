@@ -27,21 +27,11 @@
 #include "Common/MessageStream.h"
 #include "GameNetwork/GameInfo.h"
 
+// TheSuperHackers @build fighter19 11/02/2026 Use time_compat.h for SYSTEMTIME on Linux
 #ifdef _WIN32
 	#include <windows.h>
 #else
-	// Linux: Define Windows-compatible SYSTEMTIME
-	struct SYSTEMTIME 
-	{
-		unsigned short wYear;
-		unsigned short wMonth;
-		unsigned short wDayOfWeek;
-		unsigned short wDay;
-		unsigned short wHour;
-		unsigned short wMinute;
-		unsigned short wSecond;
-		unsigned short wMilliseconds;
-	};
+	#include "time_compat.h"
 #endif
 
 class File;

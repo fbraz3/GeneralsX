@@ -26,12 +26,21 @@ typedef const char* LPCSTR;
 typedef char* LPSTR;
 
 // String functions
+// TheSuperHackers @build fighter19 11/02/2026 Bender - Use extern "C" linkage to match GameSpy SDK declaration
+#ifndef __GSPLATFORM_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 inline char *_strlwr(char *str) {
   for (int i = 0; str[i] != '\0'; i++) {
     str[i] = tolower(str[i]);
   }
   return str;
 }
+#ifdef __cplusplus
+}
+#endif
+#endif
 
 #define strlwr _strlwr
 #define stricmp strcasecmp

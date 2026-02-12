@@ -30,6 +30,12 @@
 
 #include "Common/PerfTimer.h"
 
+// TheSuperHackers @build felipebraz 10/02/2026 Phase 1.5
+// Include threads_compat for Linux CRITICAL_SECTION support
+#ifdef _UNIX
+#include "threads_compat.h"
+#endif
+
 #ifdef PERF_TIMERS
 extern PerfGather TheCritSecPerfGather;
 #endif

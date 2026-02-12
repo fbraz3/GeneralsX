@@ -55,6 +55,7 @@
 #include "GameClient/DisplayString.h"
 #include "GameClient/WinInstanceData.h"
 #include "GameClient/Color.h"
+#include <cstdint>  // TheSuperHackers @build fighter19 11/02/2026 For uintptr_t in WindowMsgData
 
 ///////////////////////////////////////////////////////////////////////////////
 // FORWARD REFERENCES /////////////////////////////////////////////////////////
@@ -72,8 +73,9 @@ struct GameWindowEditData;
 enum { WIN_COLOR_UNDEFINED = GAME_COLOR_UNDEFINED };
 
 // WindowMsgData --------------------------------------------------------------
+// TheSuperHackers @build fighter19 11/02/2026 Use uintptr_t for 64-bit pointer compatibility
 //-----------------------------------------------------------------------------
-typedef UnsignedInt WindowMsgData;
+typedef uintptr_t WindowMsgData;
 
 //-----------------------------------------------------------------------------
 enum WindowMsgHandledType CPP_11(: Int) { MSG_IGNORED, MSG_HANDLED };

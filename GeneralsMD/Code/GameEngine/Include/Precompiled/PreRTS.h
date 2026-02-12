@@ -47,6 +47,9 @@ class STLSpecialAlloc;
     #endif
     #include <atlbase.h>
     #include <windows.h>
+#else
+    // TheSuperHackers @build BenderAI 09/02/2026 Linux compatibility - Windows API stubs
+    #include "windows_compat.h"
 #endif
 
 // Platform compatibility

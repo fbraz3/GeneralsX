@@ -105,8 +105,10 @@ typedef GUID CLSID;
 #endif
 
 // IUnknown - Base COM interface (all DirectX interfaces inherit from this)
+// TheSuperHackers @build BenderAI 11/02/2026 Added DXVK guard to prevent redefinition
 #ifndef __IUnknown_INTERFACE_DEFINED__
 #define __IUnknown_INTERFACE_DEFINED__
+#define _IUNKNOWN_DEFINED  // Prevent DXVK's unknwn.h from redefining
 DECLARE_INTERFACE(IUnknown)
 {
     STDMETHOD(QueryInterface)(THIS_ REFIID riid, void **ppvObject) PURE;
