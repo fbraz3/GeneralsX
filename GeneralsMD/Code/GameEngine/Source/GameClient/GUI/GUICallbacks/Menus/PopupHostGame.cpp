@@ -508,7 +508,7 @@ WindowMsgHandledType PopupHostGameSystem( GameWindow *window, UnsignedInt msg, W
 				{
 					if (pos >= 0)
 					{
-						Int ladderID = (Int)GadgetComboBoxGetItemData(control, pos);
+						Int ladderID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(control, pos)));
 						if (ladderID < 0)
 						{
 							// "Choose a ladder" selected - open overlay
@@ -597,7 +597,8 @@ void createGame( void )
 	req.stagingRoomCreation.ladPort = 0;
 	if (ladderSelectPos >= 0)
 	{
-		ladderID = (Int)GadgetComboBoxGetItemData(comboBoxLadderName, ladderSelectPos);
+		// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+		ladderID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboBoxLadderName, ladderSelectPos)));
 		if (ladderID != 0)
 		{
 			// actual ladder
