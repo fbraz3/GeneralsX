@@ -2,6 +2,20 @@
 
 #include <string.h>  // For memset, used by GlobalMemoryStatus stub
 
+// TheSuperHackers @build BenderAI 12/02/2026 Pre-define guards to prevent DXVK conflicts
+// CRITICAL: Define these BEFORE including windows_base.h so DXVK skips its incomplete versions!
+#ifndef _WIN32
+#define _MEMORYSTATUS_DEFINED  // Tell DXVK: we'll provide the full 8-field MEMORYSTATUS later
+#define _IUNKNOWN_DEFINED      // Tell DXVK: we'll provide IUnknown via DECLARE_INTERFACE later
+#endif
+
+// TheSuperHackers @build BenderAI 12/02/2026 Include DXVK Windows types FIRST
+// CRITICAL: On Linux, DXVK provides core Windows types (WINBOOL, LARGE_INTEGER, PALETTEENTRY, etc.)
+// Must be included BEFORE our compatibility layer so d3d8types.h can find them!
+#ifndef _WIN32
+#include <windows_base.h>  // DXVK's minimal Windows API (DWORD, BOOL, WINBOOL, LARGE_INTEGER, etc.)
+#endif
+
 #ifndef CALLBACK
 #define CALLBACK
 #endif
@@ -239,5 +253,21 @@ inline int CloseHandle(void* hObject) {
 #ifndef __min
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
+
+// Process spawning stubs (WorldBuilder/external tools)
+// TheSuperHackers @build BenderAI 12/02/2026 - MSVC _spawnl not available on Linux
+// Used to launch WorldBuilder.exe (Windows-only map editor) via Main Menu button
+// Phase 1 (compilation): Stub returns -1 (error) since .exe won't run on Linux anyway
+// Future: Could use wine/proton to launch WorldBuilder, or build native Linux map editor
+#ifndef _P_NOWAIT
+#define _P_NOWAIT 1  // Async spawn mode (original value unimportant for stub)
+#endif
+
+inline int _spawnl(int mode, const char* cmdname, const char* arg0, ...) {
+    (void)mode;
+    (void)cmdname;
+    (void)arg0;
+    return -1;  // Error code - external tool not available on Linux
+}
 
 #endif

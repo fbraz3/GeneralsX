@@ -344,7 +344,8 @@ static void playerTooltip(GameWindow *window,
 		return;
 	}
 
-	UnsignedInt playerIP = (UnsignedInt)GadgetListBoxGetItemData( window, row, col );
+	// TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via uintptr_t for 64-bit compatibility
+	UnsignedInt playerIP = static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(GadgetListBoxGetItemData( window, row, col )));
 	LANPlayer *player = TheLAN->LookupPlayer(playerIP);
 	if (!player)
 	{

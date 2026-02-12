@@ -394,7 +394,8 @@ static void handleColorSelection(int index)
 	GameWindow *combo = comboBoxColor[index];
 	Int color, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	color = (Int)GadgetComboBoxGetItemData(combo, selIndex);
+	// TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
+	color = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 
 	LANGameInfo *myGame = TheLAN->GetMyGame();
 
@@ -452,7 +453,8 @@ static void handlePlayerTemplateSelection(int index)
 	GameWindow *combo = comboBoxPlayerTemplate[index];
 	Int playerTemplate, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	playerTemplate = (Int)GadgetComboBoxGetItemData(combo, selIndex);
+	// TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
+	playerTemplate = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 	LANGameInfo *myGame = TheLAN->GetMyGame();
 
 	if (myGame)
@@ -564,7 +566,8 @@ static void handleTeamSelection(int index)
 	GameWindow *combo = comboBoxTeam[index];
 	Int team, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	team = (Int)GadgetComboBoxGetItemData(combo, selIndex);
+	// TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
+	team = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 	LANGameInfo *myGame = TheLAN->GetMyGame();
 
 	if (myGame)
@@ -609,7 +612,8 @@ static void handleStartingCashSelection()
     GadgetComboBoxGetSelectedPos(comboBoxStartingCash, &selIndex);
 
     Money startingCash;
-    startingCash.deposit( (UnsignedInt)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE, FALSE );
+    // TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via uintptr_t for 64-bit compatibility
+    startingCash.deposit( static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ))), FALSE, FALSE );
     myGame->setStartingCash( startingCash );
     myGame->resetAccepted();
 
@@ -967,7 +971,8 @@ void updateGameOptions( void )
     Int index = 0;
     for ( ; index < itemCount; index++ )
     {
-      Int value  = (Int)GadgetComboBoxGetItemData(comboBoxStartingCash, index);
+      // TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
+      Int value  = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboBoxStartingCash, index)));
       if ( value == theGame->getStartingCash().countMoney() )
       {
         GadgetComboBoxSetSelectedPos(comboBoxStartingCash, index, TRUE);

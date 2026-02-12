@@ -148,8 +148,11 @@ private:
 	{
 	size_t operator()(ConstGameWindowPtr p) const
 	{
-		std::hash<UnsignedInt> hasher;
-		return hasher((UnsignedInt)p);
+		// TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via uintptr_t for 64-bit compatibility
+		// On 64-bit Linux, pointers are 8 bytes but UnsignedInt is 4 bytes, causing precision loss.
+		// Use uintptr_t (matches pointer size) as intermediate cast before hashing.
+		std::hash<uintptr_t> hasher;
+		return hasher(reinterpret_cast<uintptr_t>(p));
 	}
 	};
 
