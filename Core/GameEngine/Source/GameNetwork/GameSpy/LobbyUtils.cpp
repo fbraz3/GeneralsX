@@ -698,6 +698,10 @@ void RefreshGameListBox( GameWindow *win, Bool showMap )
 	{
 	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
 	selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(win, selectedIndex)));
+	}
+	int prevPos = GadgetListBoxGetTopVisibleEntry( win );
+
+	// empty listbox
 	GadgetListBoxReset(win);
 
 	// sort our games

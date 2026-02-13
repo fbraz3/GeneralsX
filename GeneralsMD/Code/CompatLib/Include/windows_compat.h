@@ -68,6 +68,11 @@ static unsigned int GetDoubleClickTime()
 // TheSuperHackers @build fighter19 10/02/2026 Bender - Win32 window management API stubs
 #include "wnd_compat.h"
 
+// TheSuperHackers @build BenderAI 13/02/2026 pthread-based threading (fighter19 pattern)
+#ifndef _WIN32
+#include "thread_compat.h"
+#endif
+
 // const void* type (Windows API)
 #ifndef LPCVOID
 typedef const void *LPCVOID;
@@ -80,6 +85,11 @@ typedef const void *LPCVOID;
 
 #ifndef SUCCEEDED
 #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+#endif
+
+// FAR pointer qualifier (legacy 16-bit Windows, stubbed for modern builds)
+#ifndef FAR
+#define FAR
 #endif
 
 // HRESULT success value (S_OK)
@@ -171,18 +181,8 @@ inline BOOL GetVersionEx(OSVERSIONINFO* lpVersionInfo) {
 
 #endif // !_WIN32
 
-static inline int GetCurrentThreadId()
-{
-    return (int)pthread_self();
-}
-
-static inline void Sleep(int milliseconds)
-{
-    usleep(milliseconds * 1000);
-}
-
 // TheSuperHackers @build 10/02/2026 Bender
-// Timing functions: timeGetTime(), timeBeginPeriod(), timeEndPeriod() for Linux
+// Timing functions: timeBeginPeriod(), timeEndPeriod() for Linux
 static inline DWORD timeGetTime(void)
 {
     struct timeval tv;

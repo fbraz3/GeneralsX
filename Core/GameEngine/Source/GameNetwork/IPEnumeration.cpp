@@ -83,7 +83,7 @@ EnumeratedIP * IPEnumeration::getAddresses( void )
 	DEBUG_LOG(("Hostname is '%s'", hostname));
 
 	// get host information from the host name
-	HOSTENT* hostEnt = gethostbyname(hostname);
+	hostent* hostEnt = gethostbyname(hostname);
 	if (hostEnt == nullptr)
 	{
 		DEBUG_LOG(("Failed call to gethostbyname; WSAGetLastError returned %d", WSAGetLastError()));

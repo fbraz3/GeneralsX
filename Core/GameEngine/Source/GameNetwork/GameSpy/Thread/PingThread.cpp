@@ -28,7 +28,15 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
 #include <winsock.h>	// This one has to be here. Prevents collisions with windsock2.h
+#else
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#endif
 
 #include "GameNetwork/GameSpy/PingThread.h"
 #include "mutex.h"
@@ -269,22 +277,19 @@ void PingThreadClass::Thread_Function()
 			}
 			else
 			{
-				HOSTENT *hostStruct;
-				in_addr *hostNode;
-				hostStruct = gethostbyname(hostnameBuffer);
-				if (hostStruct == nullptr)
-				{
-					DEBUG_LOG(("pinging %s - host lookup failed", hostnameBuffer));
+			hostent *hostStruct;
+			hostStruct = gethostbyname(hostnameBuffer);
+			if (hostStruct == nullptr)
+			{
+				DEBUG_LOG(("pinging %s - host lookup failed", hostnameBuffer));
 
-					// Even though this failed to resolve IP, still need to send a
-					//   callback.
-					IP = 0xFFFFFFFF;   // flag for IP resolve failed
-				}
-				else
-				{
-					hostNode = (in_addr *) hostStruct->h_addr;
-					IP = hostNode->s_addr;
-					DEBUG_LOG(("pinging %s IP = %s", hostnameBuffer, inet_ntoa(*hostNode) ));
+				// Even though this failed to resolve IP, still need to send a
+				//   callback.
+				IP = 0xFFFFFFFF;   // flag for IP resolve failed
+			}
+			else
+			{
+				in_addr *hostNode = (in_addr *) hostStruct->h_addr;
 				}
 			}
 
@@ -463,8 +468,8 @@ Int PingThreadClass::doPing(UnsignedInt IP, Int timeout)
     */
    lpfnIcmpCreateFile = (void * (__stdcall *)(void))GetProcAddress( (HINSTANCE)hICMP_DLL, "IcmpCreateFile");
    lpfnIcmpCloseHandle = (int (__stdcall *)(void *))GetProcAddress( (HINSTANCE)hICMP_DLL, "IcmpCloseHandle");
-   lpfnIcmpSendEcho = (unsigned long (__stdcall *)(void *, unsigned long, void *, unsigned short,
-                       void *, void *, unsigned long, unsigned long))GetProcAddress( (HINSTANCE)hICMP_DLL, "IcmpSendEcho" );
+   // TheSuperHackers @bugfix BenderAI 13/02/2026 Use DWORD instead of unsigned long for cross-platform compatibility
+   lpfnIcmpSendEcho = (DWORD (__stdcall *)(HANDLE, DWORD, LPVOID, WORD, LPVOID, LPVOID, DWORD, DWORD))GetProcAddress( (HINSTANCE)hICMP_DLL, "IcmpSendEcho" );
 
    if ((!lpfnIcmpCreateFile) ||
          (!lpfnIcmpCloseHandle) ||

@@ -35,6 +35,7 @@
     #include <windows.h>
 #else
     // Linux/Unix platform - provide compatibility stubs
-    // Windows.h provides timeGetTime and other utilities on Windows,
-    // but these are handled through platform abstraction layers on Linux.
+    // TheSuperHackers @build BenderAI 13/02/2026 Include windows_compat.h for Linux builds
+    // Provides __max/__min macros, threading APIs, file I/O stubs, etc.
+    #include "windows_compat.h"
 #endif
