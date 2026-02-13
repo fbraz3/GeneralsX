@@ -107,6 +107,19 @@ KeyboardIO *SDL3Keyboard::getKeyboard(void)
 }
 
 /**
+ * Get Caps Lock state (Linux stub)
+ * Returns 0 (Caps Lock not active) - Windows would query keyboard driver state
+ * On Linux/SDL3, we don't track Caps Lock state yet
+ * TheSuperHackers @build fbraz 12/02/2026 Bender
+ */
+Bool SDL3Keyboard::getCapsState(void)
+{
+	// TODO: Phase 2 - Query SDL3 keyboard modifiers for Caps Lock
+	// For now, assume Caps Lock is not active
+	return 0;
+}
+
+/**
  * Get next keyboard event (called by parent Keyboard::update())
  */
 void SDL3Keyboard::getKey(KeyboardIO *key)

@@ -106,6 +106,13 @@ typedef size_t WPARAM;
 // TheSuperHackers @build fighter19 10/02/2026 Bender - Pointer-sized unsigned integer for 64-bit safe pointer arithmetic
 typedef size_t SIZE_T;
 
+// TheSuperHackers @build fbraz 12/02/2026 Bender - COM/OLE types (for WOL browser support)
+// LPDISPATCH is IDispatch* - COM interface pointer for runtime method dispatch
+// On Linux, used only for dx8webbrowser CreateBrowser parameter stub
+#ifndef LPDISPATCH
+typedef void *LPDISPATCH;
+#endif
+
 #ifndef FALSE
 #define FALSE 0
 #endif
