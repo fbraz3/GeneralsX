@@ -367,17 +367,28 @@ W3DAssetManager *W3DDisplay::m_assetManager = nullptr;
 //=============================================================================
 	// note, can't use the ones from PerfTimer.h 'cuz they are currently
 	// only valid when "-vtune" is used... (srj)
+// TheSuperHackers @build BenderAI 13/02/2026 Add platform-specific performance counter wrappers
 inline Int64 getPerformanceCounter()
 {
 	Int64 tmp;
+#ifdef _WIN32
 	QueryPerformanceCounter((LARGE_INTEGER*)&tmp);
+#else
+	// Linux: Use time_compat.h wrapper which calls clock_gettime(CLOCK_MONOTONIC)
+	QueryPerformanceCounter(&tmp);
+#endif
 	return tmp;
 }
 
 inline Int64 getPerformanceCounterFrequency()
 {
 	Int64 tmp;
+#ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*)&tmp);
+#else
+	// Linux: Use time_compat.h wrapper which returns 10 million (100-nanosecond intervals)
+	QueryPerformanceFrequency(&tmp);
+#endif
 	return tmp;
 }
 
@@ -2662,10 +2673,11 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				//	Clip the polygons to the specified area
 				//
 
-				clipped_rect.Left		= __max (screen_rect.Left, m_clipRegion.lo.x);
-				clipped_rect.Right	= __min (screen_rect.Right, m_clipRegion.hi.x);
-				clipped_rect.Top		= __max (screen_rect.Top, m_clipRegion.lo.y);
-				clipped_rect.Bottom	= __min (screen_rect.Bottom, m_clipRegion.hi.y);
+				// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+				clipped_rect.Left		= MAX (screen_rect.Left, m_clipRegion.lo.x);
+				clipped_rect.Right	= MIN (screen_rect.Right, m_clipRegion.hi.x);
+				clipped_rect.Top		= MAX (screen_rect.Top, m_clipRegion.lo.y);
+				clipped_rect.Bottom	= MIN (screen_rect.Bottom, m_clipRegion.hi.y);
 
 				//
 				//	Clip the texture to the specified area
@@ -2691,10 +2703,11 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				//	Clip the polygons to the specified area
 				//
 
-				clipped_rect.Left		= __max (screen_rect.Left, m_clipRegion.lo.x);
-				clipped_rect.Right	= __min (screen_rect.Right, m_clipRegion.hi.x);
-				clipped_rect.Top		= __max (screen_rect.Top, m_clipRegion.lo.y);
-				clipped_rect.Bottom	= __min (screen_rect.Bottom, m_clipRegion.hi.y);
+				// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+				clipped_rect.Left		= MAX (screen_rect.Left, m_clipRegion.lo.x);
+				clipped_rect.Right	= MIN (screen_rect.Right, m_clipRegion.hi.x);
+				clipped_rect.Top		= MAX (screen_rect.Top, m_clipRegion.lo.y);
+				clipped_rect.Bottom	= MIN (screen_rect.Bottom, m_clipRegion.hi.y);
 
 				//
 				//	Clip the texture to the specified area
@@ -2920,20 +2933,22 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
+// TheSuperHackers @build BenderAI 13/02/2026 Screenshot is Windows-specific functionality
+#ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
 	HANDLE hf;                  // file handle
 	BITMAPFILEHEADER hdr;       // bitmap file-header
-	PBITMAPINFOHEADER pbih;     // bitmap info-header
-	LPBYTE lpBits;              // memory pointer
+	BITMAPINFOHEADER* pbih;     // bitmap info-header
+	unsigned char* lpBits;      // memory pointer
 	DWORD dwTotal;              // total count of bytes
 	DWORD cb;                   // incremental count of bytes
 	BYTE *hp;                   // byte pointer
 	DWORD dwTmp;
 
-	PBITMAPINFO pbmi;
+	BITMAPINFO* pbmi;
 
-	pbmi = (PBITMAPINFO) LocalAlloc(LPTR,sizeof(BITMAPINFOHEADER));
+	pbmi = (BITMAPINFO*) LocalAlloc(LPTR,sizeof(BITMAPINFOHEADER));
 	if (pbmi == nullptr)
 		return;
 
@@ -2946,8 +2961,8 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 	pbmi->bmiHeader.biSizeImage = (pbmi->bmiHeader.biWidth + 7) /8 * pbmi->bmiHeader.biHeight * 24;
 	pbmi->bmiHeader.biClrImportant = 0;
 
-	pbih = (PBITMAPINFOHEADER) pbmi;
-	lpBits = (LPBYTE) image;
+	pbih = (BITMAPINFOHEADER*) pbmi;
+	lpBits = (unsigned char*) image;
 
 	// Create the .BMP file.
 	hf = CreateFile(pszFile,
@@ -2970,8 +2985,8 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 
 		// Compute the offset to the array of color indices.
 		hdr.bfOffBits = (DWORD) sizeof(BITMAPFILEHEADER) +
-										pbih->biSize + pbih->biClrUsed
-										* sizeof (RGBQUAD);
+									pbih->biSize + pbih->biClrUsed
+									* sizeof (RGBQUAD);
 
 		// Copy the BITMAPFILEHEADER into the .BMP file.
 		if (WriteFile(hf, (LPVOID) &hdr, sizeof(BITMAPFILEHEADER),
@@ -2994,8 +3009,15 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 	// Free memory.
 	LocalFree( (HLOCAL) pbmi);
 }
-
-///Save Screen Capture to a file
+#else
+// Linux stub: Screenshot not implemented (would require SDL3 surface capture)
+static void CreateBMPFile(const char* pszFile, char *image, Int width, Int height)
+{
+	// TODO (Phase 3): Implement SDL3-based screenshot capture
+}
+#endif
+// TheSuperHackers @build BenderAI 13/02/2026 Screenshot is Windows-specific functionality
+#ifdef _WIN32
 void W3DDisplay::takeScreenShot(void)
 {
 	char leafname[256];
@@ -3132,6 +3154,13 @@ void W3DDisplay::takeScreenShot(void)
 	ufileName.translate(leafname);
 	TheInGameUI->message(TheGameText->fetch("GUI:ScreenCapture"), ufileName.str());
 }
+#else
+// Linux stub: Screenshot capture not implemented
+void W3DDisplay::takeScreenShot(void)
+{
+	// TODO (Phase 3): Implement SDL3-based screenshot capture
+}
+#endif
 
 /** Start/Stop capturing an AVI movie*/
 void W3DDisplay::toggleMovieCapture(void)

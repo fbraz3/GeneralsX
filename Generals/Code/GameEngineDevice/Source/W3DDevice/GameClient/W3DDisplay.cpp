@@ -2548,10 +2548,11 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				//	Clip the polygons to the specified area
 				//
 
-				clipped_rect.Left		= __max (screen_rect.Left, m_clipRegion.lo.x);
-				clipped_rect.Right	= __min (screen_rect.Right, m_clipRegion.hi.x);
-				clipped_rect.Top		= __max (screen_rect.Top, m_clipRegion.lo.y);
-				clipped_rect.Bottom	= __min (screen_rect.Bottom, m_clipRegion.hi.y);
+				// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+				clipped_rect.Left		= MAX (screen_rect.Left, m_clipRegion.lo.x);
+				clipped_rect.Right	= MIN (screen_rect.Right, m_clipRegion.hi.x);
+				clipped_rect.Top		= MAX (screen_rect.Top, m_clipRegion.lo.y);
+				clipped_rect.Bottom	= MIN (screen_rect.Bottom, m_clipRegion.hi.y);
 
 				//
 				//	Clip the texture to the specified area
@@ -2577,10 +2578,11 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				//	Clip the polygons to the specified area
 				//
 
-				clipped_rect.Left		= __max (screen_rect.Left, m_clipRegion.lo.x);
-				clipped_rect.Right	= __min (screen_rect.Right, m_clipRegion.hi.x);
-				clipped_rect.Top		= __max (screen_rect.Top, m_clipRegion.lo.y);
-				clipped_rect.Bottom	= __min (screen_rect.Bottom, m_clipRegion.hi.y);
+				// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+				clipped_rect.Left		= MAX (screen_rect.Left, m_clipRegion.lo.x);
+				clipped_rect.Right	= MIN (screen_rect.Right, m_clipRegion.hi.x);
+				clipped_rect.Top		= MAX (screen_rect.Top, m_clipRegion.lo.y);
+				clipped_rect.Bottom	= MIN (screen_rect.Bottom, m_clipRegion.hi.y);
 
 				//
 				//	Clip the texture to the specified area

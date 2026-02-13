@@ -1,14 +1,148 @@
 # 2026-02 Lessons Learned - Phase 1 Linux Graphics Port
 
 **Month**: February 2026  
-**Sessions Covered**: 19-24, 28-30  
-**Focus Area**: Linux graphics port (DXVK + SDL3) + build system stabilization + compilation blockers
+**Sessions Covered**: 19-24, 28-30, 33, 34, 35  
+**Focus Area**: Linux graphics port (DXVK + SDL3) + build system stabilization + compilation blockers + compat headers
 
 ---
 
 ## 🎯 Critical Lessons
 
-### 1. CMake Asymmetry Spreads Like Wildfire 🔴
+### 1 (Session 35). Time/Clock Compatibility Layer Pattern — Pre-Stub Approach 🕐
+
+**Problem**: W3DDisplay.cpp needs `QueryPerformanceCounter`/`QueryPerformanceFrequency` (Windows kernel32 APIs). GCC/Clang don't have these; must stub before code includes them.
+
+**Attempted Approach (❌ WRONG)**:
+- Define stubs inline in W3DDisplay.cpp
+- Result: Conflicts with DXVK headers that also define them (ephemeral patch issue)
+- Cause: Stubs must be defined BEFORE any conflicting includes
+
+**Correct Approach (✅ RIGHT)**:
+- Create compat header (`time_compat.h`) with pre-guards
+- Define QueryPerformanceCounter/Frequency BEFORE anything includes Windows.h
+- Use `#ifdef _WIN32` to expose Windows externs, `#else` for POSIX implementations
+
+**Implementation**:
+```cpp
+// In GeneralsMD/Code/CompatLib/Include/time_compat.h
+#ifdef _WIN32
+extern "C" {
+    BOOL __stdcall QueryPerformanceCounter(void* lpPerformanceCount);
+    BOOL __stdcall QueryPerformanceFrequency(void* lpFrequency);
+}
+#else
+// Linux: Implement using POSIX clock_gettime
+inline BOOL QueryPerformanceCounter(void* lpPerformanceCount) {
+    if (!lpPerformanceCount) return 0;
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) return 0;
+    // Convert to 100-nanosecond intervals for Windows API compatibility
+    int64_t* pCount = (int64_t*)lpPerformanceCount;
+    *pCount = ts.tv_sec * 10000000LL + ts.tv_nsec / 100;
+    return 1;
+}
+// Similar for QueryPerformanceFrequency...
+#endif
+
+// Then in source files that need it:
+#include "compat/time_compat.h"  // Works everywhere
+QueryPerformanceCounter(&tmp);   // Uses Windows API on Windows, clock_gettime on Linux
+```
+
+**Why This Works**:
+- ✅ Defined in ONE place (no ephemeral patch issues)
+- ✅ Pre-guard pattern prevents redefinition conflicts
+- ✅ Inline implementations work for Linux stubs (no lib dependencies)
+- ✅ Windows code uses native kernel32 implementations unchanged
+
+**Reference**: Fighter19's approach + Session 33 Network.cpp pattern verification.
+
+---
+
+### 2 (Session 34-35). MSVC Compiler Builtins Are Not Portable — Use Standard Macros Instead 💻
+
+**Problem**: MSVC has compiler intrinsics `__max`, `__min`, `__int64` not available in GCC/Clang.
+
+**Anti-Pattern (❌ WRONG)**:
+```cpp
+Int buffer_size = __max(DEFAULT_SIZE, requested_size);  // MSVC only
+Int64 timestamp = __int64 value;  // Platform-specific
+```
+
+**Correct Pattern (✅ RIGHT)**:
+```cpp
+// Use defined macros/typedefs from BaseTypeCore.h (already existing!)
+Int buffer_size = MAX(DEFAULT_SIZE, requested_size);  // Portable
+Int64 timestamp = value;  // Already typedef'd to int64_t on Linux
+```
+
+**Discovery**: The game codebase ALREADY has these macros/typedefs defined:
+- `BaseTypeCore.h` defines `MAX(a,b)` macro
+- `BaseTypeCore.h` defines `Int64` typedef = `int64_t`
+- Sessions 34-35 just needed to find and use them
+
+**Cleanup Audit**:
+```bash
+# After major compilation session, grep for remaining MSVC builtins:
+grep -r "__max|__min|__int64" GeneralsMD/ Generals/ Core/ \
+  | grep -v "// TheSuperHackers @" | head -20  # Find unchanged instances
+```
+
+---
+
+### 3 (Session 35). Large Mono-Platform Functions Need Wrapper Wrapping, Not Line-By-Line Stubbing 📦
+
+**Problem**: Screenshot function (CreateBMPFile, takeScreenShot) uses 80+ lines with 7+ Windows APIs (CreateFile, WriteFile, LocalAlloc, bitmap types, etc.).
+
+**Anti-Pattern (❌ WRONG)**:
+```cpp
+// Stub each line individually
+#ifdef _WIN32
+    hf = CreateFile(...);
+#else
+    // Create a dummy handle?
+#endif
+
+#ifdef _WIN32
+    WriteFile(hf, ...);
+#else
+    // Write to... what?
+#endif
+// Nightmare: 80 lines, 8+ guards, incomprehensible
+```
+
+**Correct Pattern (✅ RIGHT - Wrapper Wrapping)**:
+```cpp
+// Wrap ENTIRE function
+#ifdef _WIN32
+static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height) {
+    // Full Windows impl (80 lines, all Windows-specific)
+    HANDLE hf = CreateFile(...);
+    WriteFile(...);
+    LocalFree(...);
+    CloseHandle(hf);
+}
+#else
+// Linux stub - defer to Phase 3
+static void CreateBMPFile(const char* pszFile, char *image, Int width, Int height) {
+    // TODO (Phase 3): Implement SDL3-based screenshot capture
+}
+#endif
+```
+
+**When to Use Wrapper Wrapping**:
+1. **Dependency Density**: >50% of function uses Windows APIs
+2. **Type Complexity**: Uses 5+ Windows-specific types/constants
+3. **Non-critical Feature**: Screenshot export, file save dialogs, admin ops (don't affect core gameplay determinism)
+
+**When NOT to Use**:
+- Low-dependency code (1-2 API calls) → use inline stubs
+- Gameplay logic (must work on both platforms) → refactor into platform layer
+- Performance-critical paths → profile before wrapping
+
+---
+
+### 1 (Session 19-30). CMake Asymmetry Spreads Like Wildfire 🔴
 
 **Problem**: Initial CMake setup configured d3d8lib differently for Windows vs Linux builds.
 
