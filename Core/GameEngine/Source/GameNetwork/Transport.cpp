@@ -350,7 +350,8 @@ Bool Transport::doRecv()
 				{
 					// Empty slot; use it
 					m_inBuffer[i].length = incomingMessage.length;
-					m_inBuffer[i].addr = ntohl(from.sin_addr.S_un.S_addr);
+					// TheSuperHackers @bugfix BenderAI 13/02/2026 Use POSIX s_addr (no S_un union on Linux)
+					m_inBuffer[i].addr = ntohl(from.sin_addr.s_addr);
 					m_inBuffer[i].port = ntohs(from.sin_port);
 					memcpy(&m_inBuffer[i], buf, len);
 					break;

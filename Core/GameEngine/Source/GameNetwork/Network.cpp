@@ -202,9 +202,10 @@ protected:
 	Int m_lastExecutionFrame;																	///< The highest frame number that a command could have been executed on.
 	Int m_lastFrameCompleted;
 	Bool m_didSelfSlug;
-	__int64 m_perfCountFreq;														///< The frequency of the performance counter.
+	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use int64_t instead of __int64 (C99 standard, fighter19 pattern)
+	int64_t m_perfCountFreq;														///< The frequency of the performance counter.
 
-	__int64 m_nextFrameTime;														///< When did we execute the last frame?  For slugging the GameLogic...
+	int64_t m_nextFrameTime;														///< When did we execute the last frame?  For slugging the GameLogic...
 
 	Bool m_frameDataReady;																		///< Is the frame data for the next frame ready to be executed by TheGameLogic?
 	Bool m_isStalling;
@@ -337,7 +338,12 @@ void Network::init()
 
 	m_localStatus = NETLOCALSTATUS_PREGAME;
 
+	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+	#ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER *)&m_perfCountFreq);
+	#else
+	m_perfCountFreq = 1000; // Linux uses microseconds in clock_gettime conversion
+	#endif
 	m_nextFrameTime = 0;
 	m_sawCRCMismatch = FALSE;
 	m_checkCRCsThisFrame = FALSE;
@@ -724,8 +730,15 @@ void Network::update( void )
 		}
 	}
 	else {
-		__int64 curTime;
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+		int64_t curTime;
+		#ifdef _WIN32
 		QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
+		#else
+		struct timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		curTime = ts.tv_sec * 1000000 + ts.tv_nsec / 1000; // Convert to microseconds
+		#endif
 		m_isStalling = curTime >= m_nextFrameTime;
 	}
 }
@@ -765,9 +778,16 @@ void Network::endOfGameCheck() {
 }
 
 Bool Network::timeForNewFrame() {
-	__int64 curTime;
+	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+	int64_t curTime;
+	#ifdef _WIN32
 	QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
-	__int64 frameDelay = m_perfCountFreq / m_frameRate;
+	#else
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	curTime = ts.tv_sec * 1000000 + ts.tv_nsec / 1000; // Convert to microseconds
+	#endif
+	int64_t frameDelay = m_perfCountFreq / m_frameRate;
 
 	/*
 	 * If we're pushing up against the edge of our run ahead, we should slow the framerate down a bit
@@ -778,7 +798,7 @@ Bool Network::timeForNewFrame() {
 		Real cushion = m_conMgr->getMinimumCushion();
 		Real runAheadPercentage = m_runAhead * (TheGlobalData->m_networkRunAheadSlack / (Real)100.0); // If we are at least 50% into our slack, we need to slow down.
 		if (cushion < runAheadPercentage) {
-			__int64 oldFrameDelay = frameDelay;
+			int64_t oldFrameDelay = frameDelay;
 			frameDelay += oldFrameDelay / 10; // temporarily decrease the frame rate by 20%.
 //			DEBUG_LOG(("Average cushion = %f, run ahead percentage = %f.  Adjusting frameDelay from %I64d to %I64d", cushion, runAheadPercentage, oldFrameDelay, frameDelay));
 			m_didSelfSlug = TRUE;

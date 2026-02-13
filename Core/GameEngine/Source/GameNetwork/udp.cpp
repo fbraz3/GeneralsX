@@ -177,12 +177,8 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
     return(status);
   }
 
-  int namelen=sizeof(addr);
-  getsockname(fd, (struct sockaddr *)&addr, &namelen);
-
-  myIP=ntohl(addr.sin_addr.s_addr);
-  myPort=ntohs(addr.sin_port);
-
+// TheSuperHackers @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
+socklen_t namelen=sizeof(addr);
   retval=SetBlocking(FALSE);
   if (retval==-1)
     fprintf(stderr,"Couldn't set nonblocking mode!\n");
@@ -262,7 +258,8 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
 Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 {
   Int retval;
-  int    alen=sizeof(sockaddr_in);
+  // TheSuperHackers @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
+  socklen_t alen=sizeof(sockaddr_in);
 
   if (from!=nullptr)
   {
@@ -373,8 +370,11 @@ UDP::sockStat UDP::GetStatus(void)
       return ALREADY;
     case EAGAIN:
       return AGAIN;
+    // TheSuperHackers @bugfix BenderAI 13/02/2026 EWOULDBLOCK == EAGAIN on Linux (duplicate case)
+    #if EAGAIN != EWOULDBLOCK
     case EWOULDBLOCK:
       return WOULDBLOCK;
+    #endif
     case EBADF:
       return BADF;
     default:
@@ -505,7 +505,9 @@ Int UDP::SetOutputBuffer(UnsignedInt bytes)
 
 int UDP::GetInputBuffer(void)
 {
-   int retval,arg=0,len=sizeof(int);
+   int retval,arg=0;
+   // TheSuperHackers @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
+   socklen_t len=sizeof(int);
 
    retval=getsockopt(fd,SOL_SOCKET,SO_RCVBUF,
      (char *)&arg,&len);
@@ -515,7 +517,9 @@ int UDP::GetInputBuffer(void)
 
 int UDP::GetOutputBuffer(void)
 {
-   int retval,arg=0,len=sizeof(int);
+   int retval,arg=0;
+   // TheSuperHackers @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
+   socklen_t len=sizeof(int);
 
    retval=getsockopt(fd,SOL_SOCKET,SO_SNDBUF,
      (char *)&arg,&len);
