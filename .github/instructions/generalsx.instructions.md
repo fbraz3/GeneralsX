@@ -76,6 +76,7 @@ The original Command & Conquer Generals/Zero Hour source code was released by EA
 5. Use DXVK which provides d3d8.h and translates DirectX8 → Vulkan.
 6. The Linux build focus is SDL3 - no native POSIX calls.
 7. Some solutions from `fighter19` and `jmarshall` may involve removing components; in that case, stop and ask the user what should be done, as it may be something the game depends on and cannot be removed (e.g., audio, video playback).
+8. Any lesson learned should be documented in `docs/WORKDIR/lessons` for future reference and to avoid repeating mistakes. You should also consult that directory for insights from previous sessions.
 
 ## Modernization Strategy - Linux Port Phases
 

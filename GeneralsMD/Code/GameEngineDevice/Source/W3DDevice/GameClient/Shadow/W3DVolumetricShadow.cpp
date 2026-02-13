@@ -1476,8 +1476,8 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 	Matrix4x4 mWorldTransposed = mWorld.Transpose();
 
 	m_pDev->SetTransform(D3DTS_WORLD,(D3DMATRIX*)&mWorldTransposed);
-	}
 
+	// TheSuperHackers @bugfix BenderAI 13/02/2026 Removed orphaned brace from Phase 1.5 refactoring
 	if (DX8Wrapper::_Is_Triangle_Draw_Enabled())
 	{
 		Debug_Statistics::Record_DX8_Polys_And_Vertices(numPolys,numVerts,ShaderClass::_PresetOpaqueShader);
@@ -2769,7 +2769,8 @@ void W3DVolumetricShadow::constructVolume( Vector3 *lightPosObject,Real shadowEx
 #ifdef RECORD_SHADOW_STRIP_STATS
 		//Continuing strip.
 		stripLength++;
-		maxStripLength=__max(maxStripLength,stripLength);
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform, defined in BaseTypeCore.h)
+		maxStripLength=MAX(maxStripLength,stripLength);
 #endif
 	}
 
@@ -2931,7 +2932,8 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 	#ifdef RECORD_SHADOW_STRIP_STATS
 			//Continuing strip.
 			stripLength++;
-			maxStripLength=__max(maxStripLength,stripLength);
+			// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform)
+			maxStripLength=MAX(maxStripLength,stripLength);
 	#endif
 		}
 	}

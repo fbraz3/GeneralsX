@@ -378,11 +378,12 @@ Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *
 		Int	startY=REAL_TO_INT_FLOOR(((cy - dy)*mapScaleInv));
 		Int endY=REAL_TO_INT_CEIL(((cy + dy)*mapScaleInv));
 
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
 		//clip bounds to extents of heightmap
-		startX = __max(startX,0);
-		endX = __min(endX,hmap->getXExtent()-1);
-		startY = __max(startY,0);
-		endY = __min(endY,hmap->getYExtent()-1);
+		startX = MAX(startX,0);
+		endX = MIN(endX,hmap->getXExtent()-1);
+		startY = MAX(startY,0);
+		endY = MIN(endY,hmap->getYExtent()-1);
 
 		Int vertsPerRow=endX - startX+1;	//number of cells +1
 		Int vertsPerColumn=endY-startY+1;	//number of cells +1
@@ -890,11 +891,12 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		max_x=min_x=boxCorners[0].X;
 		max_y=min_y=boxCorners[0].Y;
 
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform)
 		for (Int bi=1; bi<4; bi++)
-		{	max_x = __max(max_x,boxCorners[bi].X);
-			min_x = __min(min_x,boxCorners[bi].X);
-			max_y = __max(max_y,boxCorners[bi].Y);
-			min_y = __min(min_y,boxCorners[bi].Y);
+		{	max_x = MAX(max_x,boxCorners[bi].X);
+			min_x = MIN(min_x,boxCorners[bi].X);
+			max_y = MAX(max_y,boxCorners[bi].Y);
+			min_y = MIN(min_y,boxCorners[bi].Y);
 		}
 
 		uVector *= shadow->m_oowDecalSizeX;
@@ -956,15 +958,16 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		Int	startY=REAL_TO_INT_FLOOR(((objPos.Y+min_y)*mapScaleInv)) + borderSize;
 		Int endY=REAL_TO_INT_CEIL(((objPos.Y+max_y)*mapScaleInv)) + borderSize;
 
-		startX = __max(startX,m_drawStartX);
-		startX = __min(startX,m_drawEdgeX);
-		startY = __max(startY,m_drawStartY);
-		startY = __min(startY,m_drawEdgeY);
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform)
+		startX = MAX(startX,m_drawStartX);
+		startX = MIN(startX,m_drawEdgeX);
+		startY = MAX(startY,m_drawStartY);
+		startY = MIN(startY,m_drawEdgeY);
 
-		endX = __max(endX,m_drawStartX);
-		endX = __min(endX,m_drawEdgeX);
-		endY = __max(endY,m_drawStartY);
-		endY = __min(endY,m_drawEdgeY);
+		endX = MAX(endX,m_drawStartX);
+		endX = MIN(endX,m_drawEdgeX);
+		endY = MAX(endY,m_drawStartY);
+		endY = MIN(endY,m_drawEdgeY);
 
 		//Check if decal too large to fit inside 65536 index buffer.
 		//try clipping each direction to < 104 since that's more than
@@ -1038,7 +1041,8 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 					for (i=startX; i <= endX; i++)
 					{
 						hmapVertex.X=(float)(i-borderSize)*MAP_XY_FACTOR;
-						hmapVertex.Z=__max((float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE,layerHeight);
+						// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform)
+						hmapVertex.Z=MAX((float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE,layerHeight);
 						pvVertices->x=hmapVertex.X;
 						pvVertices->y=hmapVertex.Y;
 						pvVertices->z=hmapVertex.Z;
