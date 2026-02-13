@@ -614,7 +614,8 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				if( controlID == TheNameKeyGenerator->nameToKey(name))
 				{
 					Bool notBuddy = TRUE;
-					Int playerID = (Int)GadgetButtonGetData(TheWindowManager->winGetWindowFromId(nullptr,controlID));
+					// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+					Int playerID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetButtonGetData(TheWindowManager->winGetWindowFromId(nullptr,controlID))));
 											// request to add a buddy
 					BuddyInfoMap *buddies = TheGameSpyInfo->getBuddyMap();
 					BuddyInfoMap::iterator bIt;

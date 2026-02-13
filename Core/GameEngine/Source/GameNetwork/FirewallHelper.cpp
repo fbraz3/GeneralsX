@@ -685,13 +685,12 @@ Bool FirewallHelperClass::detectionBeginUpdate() {
 				break;
 			}
 		}
-		/*
-		** Add the address in if we didn't find it.
-		*/
+		// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+		// NOTE: Original code casts array pointer to UnsignedInt (result likely ignored)
 		if (!found) {
 			Int m = m_numManglers++;
 			memcpy(&mangler_addresses[m][0], &host_info->h_addr_list[0][0], 4);
-			ntohl((UnsignedInt)mangler_addresses[m]);
+			ntohl(static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(mangler_addresses[m])));
 			DEBUG_LOG(("Found mangler address at %d.%d.%d.%d", mangler_addresses[m][0], mangler_addresses[m][1], mangler_addresses[m][2], mangler_addresses[m][3]));
 		}
 

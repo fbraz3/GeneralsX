@@ -842,6 +842,10 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 
 	/// do additional reporting on the crash, if possible
 
+	// TheSuperHackers @build BenderAI 12/02/2026 Platform-specific crash reporting
+	// Windows: Native MessageBox dialogs
+	// Linux: Console output (crash dialogs would need SDL_ShowSimpleMessageBox)
+	#ifdef _WIN32
 	if (!DX8Wrapper_IsWindowed) {
 		if (ApplicationHWnd) {
 			ShowWindow(ApplicationHWnd, SW_HIDE);
@@ -863,6 +867,10 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 		::SetWindowPos(ApplicationHWnd, HWND_NOTOPMOST, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
 		::MessageBoxA(nullptr, mesgA.str(), promptA.str(), MB_OK|MB_TASKMODAL|MB_ICONERROR);
 	}
+	#else
+	// Linux: Output to stderr (game will crash anyway after this)
+	fprintf(stderr, "FATAL ERROR: %s\n%s\n", prompt.str(), mesg.str());
+	#endif
 
 	char prevbuf[ _MAX_PATH ];
 	char curbuf[ _MAX_PATH ];

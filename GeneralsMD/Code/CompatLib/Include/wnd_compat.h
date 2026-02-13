@@ -75,6 +75,18 @@ typedef enum eMessageBoxResult
 
 int MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType);
 
+// TheSuperHackers @build BenderAI 12/02/2026 Add MessageBoxW/A stubs for Linux
+// Windows: Use real Win32 API (via namespace resolution ::MessageBoxW/A)
+// Linux: Stub returns safe default value
+#ifndef _WIN32
+inline int MessageBoxW(HWND hWnd, const wchar_t* lpText, const wchar_t* lpCaption, UINT uType) {
+    return MessageBox(hWnd, nullptr, nullptr, uType);
+}
+inline int MessageBoxA(HWND hWnd, const char* lpText, const char* lpCaption, UINT uType) {
+    return MessageBox(hWnd, nullptr, nullptr, uType);
+}
+#endif
+
 void SetCursor(void *hCursor);
 void GetCursorPos(struct POINT *ptCursor);
 void ScreenToClient(HWND hWnd, struct POINT *ptCursor);
