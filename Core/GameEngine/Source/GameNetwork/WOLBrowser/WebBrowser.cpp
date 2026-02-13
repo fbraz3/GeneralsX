@@ -46,6 +46,8 @@
 #include "GameClient/GameWindow.h"
 #include "GameClient/Display.h"
 
+// TheSuperHackers @build BenderAI 13/02/2026 Stub WebBrowser on Linux (WOL/Westwood Online servers offline since 2010, fighter19 pattern)
+#ifdef _WIN32
 
 /**
 	* OLEInitializer class - Init and shutdown OLE & COM as a global
@@ -308,3 +310,12 @@ STDMETHODIMP WebBrowser::TestMethod(Int num1)
 	DEBUG_LOG(("WebBrowser::TestMethod - num1 = %d", num1));
 	return S_OK;
 }
+
+#else
+
+// Linux stub - WOL (Westwood Online) servers offline since 2010
+#pragma message("WebBrowser is stubbed on this platform!")
+
+WebBrowser *TheWebBrowser = nullptr;
+
+#endif // _WIN32
