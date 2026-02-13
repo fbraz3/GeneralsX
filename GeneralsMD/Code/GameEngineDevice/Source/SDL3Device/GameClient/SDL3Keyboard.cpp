@@ -27,7 +27,8 @@
 
 #ifndef _WIN32
 
-#include "SDL3Keyboard.h"
+// TheSuperHackers @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
+#include "SDL3Device/GameClient/SDL3Keyboard.h"
 #include <cstdio>
 #include <cstring>
 
@@ -180,16 +181,16 @@ KeyVal SDL3Keyboard::translateScanCodeToKeyVal(unsigned char scan)
 	
 	// Quick mapping for essential keys
 	switch ((SDL_Scancode)scan) {
-		case SDL_SCANCODE_ESCAPE: return KEY_ESCAPE;
-		case SDL_SCANCODE_RETURN: return KEY_RETURN;
+		case SDL_SCANCODE_ESCAPE: return KEY_ESC;      // TheSuperHackers @bugfix BenderAI 13/02/2026 Fix key constant name
+		case SDL_SCANCODE_RETURN: return KEY_ENTER;    // TheSuperHackers @bugfix BenderAI 13/02/2026 Fix key constant name
 		case SDL_SCANCODE_SPACE: return KEY_SPACE;
 		case SDL_SCANCODE_TAB: return KEY_TAB;
 		case SDL_SCANCODE_LSHIFT: return KEY_LSHIFT;
 		case SDL_SCANCODE_RSHIFT: return KEY_RSHIFT;
-		case SDL_SCANCODE_LCTRL: return KEY_LCONTROL;
-		case SDL_SCANCODE_RCTRL: return KEY_RCONTROL;
-		case SDL_SCANCODE_LALT: return KEY_LMENU;
-		case SDL_SCANCODE_RALT: return KEY_RMENU;
+		case SDL_SCANCODE_LCTRL: return KEY_LCTRL;     // TheSuperHackers @bugfix BenderAI 13/02/2026 Fix key constant name
+		case SDL_SCANCODE_RCTRL: return KEY_RCTRL;     // TheSuperHackers @bugfix BenderAI 13/02/2026 Fix key constant name
+		case SDL_SCANCODE_LALT: return KEY_LALT;       // TheSuperHackers @bugfix BenderAI 13/02/2026 Fix key constant name
+		case SDL_SCANCODE_RALT: return KEY_RALT;       // TheSuperHackers @bugfix BenderAI 13/02/2026 Fix key constant name
 		
 		// Arrow keys
 		case SDL_SCANCODE_UP: return KEY_UP;

@@ -1091,11 +1091,10 @@ Bool BaseHeightMapRenderObjClass::isClearLineOfSight(const Coord3D& pos, const C
 
 		Int idx = x + y*xExtent;
 		float height = data[idx];
-		height = __max(height, data[idx + 1]);
-		height = __max(height, data[idx + xExtent]);
-		height = __max(height, data[idx + xExtent + 1]);
-		height *= MAP_HEIGHT_SCALE;
-
+	// TheSuperHackers @bugfix BenderAI 13/02/2026 Replace __max with MAX (fighter19 pattern)
+	height = MAX(height, data[idx + 1]);
+	height = MAX(height, data[idx + xExtent]);
+	height = MAX(height, data[idx + xExtent + 1]);
 		// if terrainHeight > z, we can't see, so punt.
 		// add a little fudge to account for slop.
 		const Real LOS_FUDGE = 0.5f;
@@ -1229,9 +1228,10 @@ Real BaseHeightMapRenderObjClass::getMaxCellHeight(Real x, Real y) const
 	p3=data[iX+(iY+offset)*logicHeightMap->getXExtent()]*MAP_HEIGHT_SCALE;
 
 	height=p0;
-	height=__max(height,p1);
-	height=__max(height,p2);
-	height=__max(height,p3);
+	// TheSuperHackers @bugfix BenderAI 13/02/2026 Replace __max with MAX (fighter19 pattern)
+	height=MAX(height,p1);
+	height=MAX(height,p2);
+	height=MAX(height,p3);
 
 	return height;
 }
