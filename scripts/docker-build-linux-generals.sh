@@ -30,6 +30,7 @@ docker run --rm \
         if command -v nproc &> /dev/null; then
             PROC=\$(( (\$(nproc) + 1) / 2 ))
         fi
+        echo \"🛠  Using \$PROC parallel jobs for building...\"
         
         # Bootstrap vcpkg in Docker volume if not exists
         if [ ! -f /opt/vcpkg/vcpkg ]; then
@@ -49,7 +50,7 @@ docker run --rm \
         cmake --preset ${PRESET}
         
         echo '🔨 Building GeneralsX...'
-        cmake --build build/${PRESET} --target g_generals -j${PROC}
+        cmake --build build/${PRESET} --target g_generals -j\$PROC
         
         echo '✅ Build complete!'
         ls -lh build/${PRESET}/Generals/GeneralsX || echo '⚠️  Binary not found'

@@ -37,7 +37,12 @@ static void drawFramerateBar(void);
 #include <numeric>
 #include <stdlib.h>
 #include <windows.h>
+// TheSuperHackers @bugfix fighter19 13/02/2026 BenderAI - io.h is Windows-specific, use unistd.h on Linux
+#ifdef _WIN32
 #include <io.h>
+#else
+#include <unistd.h> // access() for file existence checks
+#endif
 #include <time.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
