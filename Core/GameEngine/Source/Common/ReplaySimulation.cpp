@@ -27,6 +27,16 @@
 #include "GameLogic/GameLogic.h"
 #include "GameClient/GameClient.h"
 
+// TheSuperHackers @build BenderAI 12/02/2026 Cross-platform executable path retrieval
+#ifndef _WIN32
+#ifdef __linux__
+#include <unistd.h>  // readlink
+#include <limits.h>  // PATH_MAX
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>  // _NSGetExecutablePath
+#endif
+#endif
+
 
 Bool ReplaySimulation::s_isRunning = false;
 UnsignedInt ReplaySimulation::s_replayIndex = 0;
@@ -133,8 +143,34 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 {
 	DWORD totalStartTimeMillis = GetTickCount();
 
+	// TheSuperHackers @build BenderAI 12/02/2026 Cross-platform executable path retrieval
+#ifdef _WIN32
 	WideChar exePath[1024];
 	GetModuleFileNameW(nullptr, exePath, ARRAY_SIZE(exePath));
+#else
+	char exePathNarrow[1024];
+#ifdef __linux__
+	ssize_t len = readlink("/proc/self/exe", exePathNarrow, sizeof(exePathNarrow) - 1);
+	if (len != -1) {
+		exePathNarrow[len] = '\0';
+	} else {
+		exePathNarrow[0] = '\0';
+	}
+#elif defined(__APPLE__)
+	uint32_t size = sizeof(exePathNarrow);
+	if (_NSGetExecutablePath(exePathNarrow, &size) != 0) {
+		exePathNarrow[0] = '\0';
+	}
+#else
+	exePathNarrow[0] = '\0';
+#endif
+	WideChar exePath[1024];
+	// Convert narrow char to WideChar for command formatting
+	for (size_t i = 0; i < sizeof(exePathNarrow) && exePathNarrow[i] != '\0'; ++i) {
+		exePath[i] = static_cast<WideChar>(exePathNarrow[i]);
+	}
+	exePath[sizeof(exePathNarrow) - 1] = L'\0';
+#endif
 
 	std::vector<WorkerProcess> processes;
 	int filenamePositionStarted = 0;

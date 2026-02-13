@@ -19,6 +19,11 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/WorkerProcess.h"
 
+// TheSuperHackers @build BenderAI 12/02/2026 WorkerProcess is Windows-specific (pipes, job objects)
+// Linux: Stubbed for now - replay testing disabled until POSIX fork/exec implementation
+// TODO Phase 2: Implement Linux worker process using fork(), pipe2(), and waitpid()
+#ifdef _WIN32
+
 // We need Job-related functions, but these aren't defined in the Windows-headers that VC6 uses.
 // So we define them here and load them dynamically.
 #if defined(_MSC_VER) && _MSC_VER < 1300
@@ -228,4 +233,65 @@ void WorkerProcess::kill()
 	m_stdOutput.clear();
 	m_isDone = false;
 }
+
+#else // !_WIN32 - Linux stubs
+
+// TheSuperHackers @build BenderAI 12/02/2026 Linux stub implementation
+// ReplaySimulation will compile but worker processes won't spawn on Linux
+// TODO: Implement using fork(), pipe2(), dup2(), execvp(), waitpid()
+
+WorkerProcess::WorkerProcess()
+{
+	m_processHandle = nullptr;
+	m_readHandle = nullptr;
+	m_jobHandle = nullptr;
+	m_exitcode = 0;
+	m_isDone = false;
+}
+
+bool WorkerProcess::startProcess(UnicodeString command)
+{
+	// Linux stub: Always fails
+	m_stdOutput.clear();
+	m_isDone = true;
+	m_exitcode = 1;
+	return false;
+}
+
+void WorkerProcess::update()
+{
+	// Linux stub: No-op
+}
+
+bool WorkerProcess::isRunning() const
+{
+	return false;
+}
+
+bool WorkerProcess::isDone() const
+{
+	return m_isDone;
+}
+
+DWORD WorkerProcess::getExitCode() const
+{
+	return m_exitcode;
+}
+
+AsciiString WorkerProcess::getStdOutput() const
+{
+	return m_stdOutput;
+}
+
+void WorkerProcess::kill()
+{
+	// Linux stub: No-op
+}
+
+bool WorkerProcess::fetchStdOutput()
+{
+	return true;
+}
+
+#endif // _WIN32
 

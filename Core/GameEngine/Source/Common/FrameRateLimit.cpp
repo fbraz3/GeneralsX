@@ -19,19 +19,33 @@
 #include "PreRTS.h"
 #include "Common/FrameRateLimit.h"
 
+// TheSuperHackers @build BenderAI 12/02/2026 Platform-specific high-resolution timing
+#ifndef _WIN32
+#include <time.h>    // clock_gettime, nanosleep
+#include <unistd.h>  // usleep (fallback)
+#endif
 
 FrameRateLimit::FrameRateLimit()
 {
+#ifdef _WIN32
 	LARGE_INTEGER freq;
 	LARGE_INTEGER start;
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start);
 	m_freq = freq.QuadPart;
 	m_start = start.QuadPart;
+#else
+	// Linux: Use CLOCK_MONOTONIC for high-resolution timing
+	struct timespec start;
+	clock_gettime(CLOCK_MONOTONIC, &start);
+	m_freq = 1000000000; // nanoseconds per second
+	m_start = static_cast<Int64>(start.tv_sec) * 1000000000 + start.tv_nsec;
+#endif
 }
 
 Real FrameRateLimit::wait(UnsignedInt maxFps)
 {
+#ifdef _WIN32
 	LARGE_INTEGER tick;
 	QueryPerformanceCounter(&tick);
 	double elapsedSeconds = static_cast<double>(tick.QuadPart - m_start) / m_freq;
@@ -55,6 +69,36 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 
 	m_start = tick.QuadPart;
 	return (Real)elapsedSeconds;
+#else
+	// Linux: Use CLOCK_MONOTONIC for high-resolution timing
+	struct timespec tick;
+	clock_gettime(CLOCK_MONOTONIC, &tick);
+	Int64 tickValue = static_cast<Int64>(tick.tv_sec) * 1000000000 + tick.tv_nsec;
+	double elapsedSeconds = static_cast<double>(tickValue - m_start) / static_cast<double>(m_freq);
+	const double targetSeconds = 1.0 / maxFps;
+	const double sleepSeconds = targetSeconds - elapsedSeconds - 0.002; // leave ~2ms for spin wait
+
+	if (sleepSeconds > 0.0)
+	{
+		// Non busy wait with nanosleep
+		struct timespec sleepTime;
+		sleepTime.tv_sec = static_cast<time_t>(sleepSeconds);
+		sleepTime.tv_nsec = static_cast<long>((sleepSeconds - sleepTime.tv_sec) * 1000000000);
+		nanosleep(&sleepTime, nullptr);
+	}
+
+	// Busy wait for remaining time
+	do
+	{
+		clock_gettime(CLOCK_MONOTONIC, &tick);
+		tickValue = static_cast<Int64>(tick.tv_sec) * 1000000000 + tick.tv_nsec;
+		elapsedSeconds = static_cast<double>(tickValue - m_start) / static_cast<double>(m_freq);
+	}
+	while (elapsedSeconds < targetSeconds);
+
+	m_start = tickValue;
+	return static_cast<Real>(elapsedSeconds);
+#endif
 }
 
 

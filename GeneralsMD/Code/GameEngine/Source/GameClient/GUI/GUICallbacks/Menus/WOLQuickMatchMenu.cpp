@@ -1750,14 +1750,16 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 						{
 							Int numberComboBoxEntries = GadgetComboBoxGetLength(comboBoxSide);
 							Int randomPick = GameClientRandomValue(0, numberComboBoxEntries - 1);
-						// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
-						index = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData( comboBoxSide, randomPick )));
+							// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+							index = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData( comboBoxSide, randomPick )));
+							req.QM.side = index;
+							randomTries++;
+						}
 					}
 
 					index = -1;
 					GadgetComboBoxGetSelectedPos( comboBoxColor, &selected );
 					if (selected >= 0)
-						// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
 						index = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData( comboBoxColor, selected )));
 					req.QM.color = index;
 

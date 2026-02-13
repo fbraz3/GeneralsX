@@ -118,7 +118,8 @@ Bool SabotageInternetCenterCrateCollide::isValidToExecute( const Object *other )
 
 static void disableHacker( Object *obj, void *userData )
 {
-	UnsignedInt frame = (UnsignedInt)userData;
+	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	UnsignedInt frame = static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(userData));
 	if( obj )
 	{
 		obj->setDisabledUntil( DISABLED_HACKED, frame );
@@ -129,7 +130,8 @@ static void disableInternetCenterSpyVision( Object *obj, void *userData )
 {
 	if( obj && obj->isKindOf( KINDOF_FS_INTERNET_CENTER ) )
 	{
-		UnsignedInt frame = (UnsignedInt)userData;
+		// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+		UnsignedInt frame = static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(userData));
 
 		//Loop through all it's SpyVisionUpdates() and wake them all up so they can be shut down. This is weird because
 		//it's one of the few update modules that is actually properly sleepified.

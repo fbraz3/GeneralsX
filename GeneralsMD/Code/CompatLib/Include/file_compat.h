@@ -205,6 +205,55 @@ inline int FindClose(void* hFindFile) {
   return 1; // TRUE
 }
 
+// TheSuperHackers @build BenderAI 12/02/2026 GetDateFormat stub for age verification
+// Note: LOCALE_SYSTEM_DEFAULT already defined in windows_compat.h (0x0800)
+// Note: SYSTEMTIME already defined in time_compat.h
+inline int GetDateFormat(unsigned long locale, unsigned long flags, const SYSTEMTIME* lpDate,
+                         const char* lpFormat, char* lpDateStr, int cchDate) {
+  if (!lpDateStr || cchDate <= 0) {
+    return 0; // Failure
+  }
+  
+  // Get current time if lpDate is nullptr
+  time_t now = time(nullptr);
+  struct tm* timeinfo = (lpDate == nullptr) ? localtime(&now) : nullptr;
+  
+  // If lpDate provided, convert SYSTEMTIME to tm
+  struct tm custom_time;
+  if (lpDate != nullptr) {
+    custom_time.tm_year = lpDate->wYear - 1900;
+    custom_time.tm_mon = lpDate->wMonth - 1;
+    custom_time.tm_mday = lpDate->wDay;
+    custom_time.tm_hour = lpDate->wHour;
+    custom_time.tm_min = lpDate->wMinute;
+    custom_time.tm_sec = lpDate->wSecond;
+    custom_time.tm_wday = lpDate->wDayOfWeek;
+    custom_time.tm_isdst = -1;
+    timeinfo = &custom_time;
+  }
+  
+  if (!timeinfo) {
+    return 0; // Failure
+  }
+  
+  // Simple format string handling (supports common patterns used in the game)
+  const char* format_to_use = "%Y-%m-%d"; // Default fallback
+  if (lpFormat) {
+    if (strcmp(lpFormat, "yyyy") == 0) {
+      format_to_use = "%Y";
+    } else if (strcmp(lpFormat, "MM") == 0) {
+      format_to_use = "%m";
+    } else if (strcmp(lpFormat, "dd") == 0) {
+      format_to_use = "%d";
+    } else if (strcmp(lpFormat, "yyyy-MM-dd") == 0 || strcmp(lpFormat, "yyyy/MM/dd") == 0) {
+      format_to_use = "%Y-%m-%d";
+    }
+  }
+  
+  size_t result = strftime(lpDateStr, cchDate, format_to_use, timeinfo);
+  return (result > 0) ? static_cast<int>(result) : 0;
+}
+
 #define INVALID_HANDLE_VALUE ((void*)-1)
 
 #endif // !_WIN32

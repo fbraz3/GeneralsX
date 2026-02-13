@@ -24,6 +24,11 @@
 #define __stdcall
 #endif
 
+// TheSuperHackers @build BenderAI 12/02/2026 Windows __fastcall passes first 2 args in ECX/EDX registers
+#if !defined(__fastcall)
+#define __fastcall
+#endif
+
 #ifndef WINAPI
 #define WINAPI
 #endif

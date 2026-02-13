@@ -48,7 +48,13 @@
 #include "PreRTS.h"
 
 #include <fcntl.h>
+// TheSuperHackers @build BenderAI 12/02/2026 io.h is Windows-specific (file descriptors)
+// Linux: Uses POSIX unistd.h for read/write/close/lseek instead
+#ifdef _WIN32
 #include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include <sys/stat.h>
 
 #include "Common/AsciiString.h"
