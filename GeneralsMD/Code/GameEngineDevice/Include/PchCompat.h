@@ -35,6 +35,7 @@
     #include <windows.h>
 #else
     // Linux/Unix platform - provide compatibility stubs
-    // The game logic doesn't actually use much from windows.h in rendering,
-    // as DirectX calls are mediated through DXVK.
+    // TheSuperHackers @build BenderAI 13/02/2026 Include windows_compat.h for Linux builds
+    // Provides __max/__min macros, threading APIs, file I/O stubs, etc.
+    #include "windows_compat.h"
 #endif

@@ -199,18 +199,9 @@ inline int CreateDirectory(const char* lpPathName, void* lpSecurityAttributes) {
     }
 }
 
-// CreateThread stub (FTP.cpp AsyncGetHo stByName)
-// Returns nullptr (thread creation not supported in stub)
-// Signature matches Windows API: HANDLE CreateThread(LPSECURITY_ATTRIBUTES, SIZE_T, LPTHREAD_START_ROUTINE, LPVOID, DWORD, LPDWORD)
-// TheSuperHackers @build Bender 11/02/2026 Fixed typedef syntax
-typedef uint32_t (*LPTHREAD_START_ROUTINE)(void*);
-inline void* CreateThread(void* lpThreadAttributes, size_t dwStackSize, 
-                         LPTHREAD_START_ROUTINE lpStartAddress, void* lpParameter,
-                         uint32_t dwCreationFlags, unsigned long* lpThreadId) {
-    (void)lpThreadAttributes; (void)dwStackSize; (void)lpStartAddress;
-    (void)lpParameter; (void)dwCreationFlags; (void)lpThreadId;
-    return nullptr; // Stub: Thread creation not supported
-}
+// TheSuperHackers @build BenderAI 13/02/2026 Removed CreateThread stub - now provided by thread_compat.h
+// (thread_compat.h included via windows_compat.h since Session 31)
+// LPTHREAD_START_ROUTINE typedef removed - use start_routine from thread_compat.h instead
 
 // OutputDebugString stub (FTP.cpp debug logging)
 // TheSuperHackers @build fighter19 11/02/2026 Bender - Guard against old compat layer macro collision
