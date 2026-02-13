@@ -1,8 +1,8 @@
 # 2026-02 Lessons Learned - Phase 1 Linux Graphics Port
 
 **Month**: February 2026  
-**Sessions Covered**: 19-24  
-**Focus Area**: Linux graphics port (DXVK + SDL3) + build system stabilization
+**Sessions Covered**: 19-24, 28-30  
+**Focus Area**: Linux graphics port (DXVK + SDL3) + build system stabilization + compilation blockers
 
 ---
 
@@ -144,6 +144,121 @@ No:    Reference → Copy-Paste → Compile Error → Give Up
 ./scripts/docker-build-mingw-zh.sh mingw-w64-i686    # Windows cross-compile
 ./scripts/docker-build-linux-zh.sh linux64-deploy    # Linux native build
 # Both must succeed
+```
+
+---
+
+### 6. DXVK Pre-Guards Are Ineffective 🛡️
+
+**Problem**: Attempted to prevent DXVK type conflicts by pre-defining guard macros in windows_compat.h.
+
+**Impact**:
+- Pre-guards failed completely (DXVK doesn't check them before defining types)
+- Build stuck at [321/1254] for entire session debugging
+- Manual ephemeral patches required in DXVK headers directly
+- Patches lost on every clean build (`rm -rf build/`)
+
+**Lesson**:
+- ✅ **DXVK wrapper headers don't check custom guards** - must patch source directly
+- ✅ **Ephemeral patches are dangerous** - lost on CMake reconfigure
+- ✅ **Automate patching via CMake** - use `ExternalProject_Add` with `PATCH_COMMAND`
+- ✅ **Guard pattern location matters** - add guards IN the header being included, not before
+
+**Pattern**:
+```cpp
+// ❌ DOESN'T WORK - DXVK ignores this
+// GeneralsMD/Code/CompatLib/Include/windows_compat.h
+#ifndef _WIN32
+    #define _MEMORYSTATUS_DEFINED 1    // Trying to prevent DXVK from defining
+    #define _IUNKNOWN_DEFINED 1
+#endif
+#include <windows_base.h>              // DXVK still defines them anyway!
+
+// ✅ WORKS - Patch DXVK header directly
+// build/_deps/dxvk-src/include/dxvk/windows_base.h
+#ifndef _MEMORYSTATUS_DEFINED
+typedef struct MEMORYSTATUS {
+    DWORD  dwLength;
+    SIZE_T dwTotalPhys;
+} MEMORYSTATUS;
+#define _MEMORYSTATUS_DEFINED 1
+#endif
+```
+
+**Future Fix**: Automate with CMake patch command (avoid manual edits).
+
+---
+
+### 7. Incremental Builds Mask True Complexity 📊
+
+**Problem**: Build target count varied wildly (1254→936→128) between builds, making progress tracking confusing.
+
+**Impact**:
+- Hard to measure actual progress ("Did we fix things or just recompile less?")
+- Ninja only rebuilds changed files + dependents
+- CompatLib change = entire Core + Game rebuild (100s of targets)
+- Clean build reveals true scale (1254 targets for full GeneralsXZH)
+
+**Lesson**:
+- ✅ **Target count is NOT progress metric** - use percentage of total instead
+- ✅ **Understand Ninja dependency tracking** - file timestamp changes trigger cascading rebuilds
+- ✅ **Clean builds reveal reality** - incremental hides technical debt
+- ✅ **Track cumulative fixes, not current target count**
+
+**Breakdown** (Clean Build Target Distribution):
+```
+Total: 1254 targets (GeneralsXZH linux64-deploy)
+- SDL3 dependencies: ~600 targets
+- GameSpy networking: ~50 targets  
+- CompatLib: ~20 targets
+- Core engine: ~100 targets
+- Game logic: ~400 targets
+- Tools: ~84 targets
+```
+
+**Why Counts Vary**:
+- Change `windows_compat.h` → recompile Core + Game (~500 targets)
+- Change `LocalFile.cpp` only → recompile dependents (~10 targets)
+- Clean build → ALL 1254 targets
+
+---
+
+### 8. GameSpy Code Is Safe to Stub (Legacy Services) 🪦
+
+**Problem**: GameSpy networking code (lobby, SNMP, matchmaking) has Windows-specific APIs that don't port easily.
+
+**Impact**:
+- StagingRoomGameInfo.cpp blocker (44 SNMP errors)
+- Concerns about breaking multiplayer functionality
+- Temptation to invest weeks porting complex networking stack
+
+**Lesson**:
+- ✅ **GameSpy online services shut down in 2013** - servers don't exist anymore
+- ✅ **LAN multiplayer doesn't need GameSpy lobby** - direct IP connection works
+- ✅ **Stubbing online features is safe** - preserves offline/LAN gameplay
+- ✅ **fighter19/jmarshall both removed GameSpy** - proven approach
+
+**What's Safe to Stub**:
+- Online lobby/matchmaking (servers dead)
+- GameSpy SNMP monitoring (diagnostic tool)
+- NAT traversal helpers (needed for online only)
+- Account authentication (no servers)
+
+**What Must Work**:
+- LAN discovery (local network)
+- Direct IP connection
+- Replay system
+- Single-player campaign
+
+**Pattern** (Reference from fighter19):
+```cpp
+// GameSpy lobby functions
+#ifdef _WIN32
+    // Full Windows GameSpy implementation
+#else
+    // Linux: Stub returns failure, LAN multiplayer unaffected
+    bool ConnectToGameSpyLobby() { return false; }
+#endif
 ```
 
 ---
@@ -293,16 +408,26 @@ echo "✓ Both platforms validated"
 - Handoff documentation clarity improves velocity
 - Learned: **Transparency into progress boosts morale**
 
+### Session 28-30: Systematic Blocker Elimination 🔨
+- DXVK conflicts require direct patching (pre-guards insufficient)
+- 64-bit pointer cast pattern established (20+ occurrences fixed)
+- Platform isolation working (`#ifdef _WIN32` guards compile cleanly)
+- "100 targets/day" question answered: **viable when clean, blockers more valuable than raw speed**
+- Progress: [321/1254] → [~800/1254] (25.6% → 63.8%)
+- Learned: **Methodical blocker resolution beats rushing toward arbitrary metrics**
+
 ---
 
 ## Metrics & Velocity
 
 | Metric | Value | Trend |
 |--------|-------|-------|
-| Build completion % | 112→200+ files (per session) | ⬆️ Accelerating |
-| Error categories resolved | 8+ (per phase) | ⬆️ Growing |
-| Session handoff clarity | Sessions 19-24 | ⬆️ Improving |
+| Build completion % | 112→200+ files (S19-24), 321→800/1254 (S28-30) | ⬆️ Accelerating |
+| Error categories resolved | 8+ (per phase), 11 blockers (S28-30) | ⬆️ Growing |
+| Session handoff clarity | Sessions 19-24, 28-30 | ⬆️ Improving |
 | Windows regression count | 1 (Session 23, fixed) | ➡️ Stable |
+| Phase 1 compilation progress | 63.8% (800/1254 targets) | ⬆️ Strong |
+| Pointer cast fixes | 20+ cumulative (S28-30) | ⬆️ Pattern established |
 
 ---
 
@@ -320,6 +445,6 @@ echo "✓ Both platforms validated"
 
 ---
 
-**Written**: 2026-02-11  
-**Based on**: Sessions 19-24 handoffs and reports  
+**Written**: 2026-02-11 (Sessions 19-24), Updated: 2026-02-13 (Sessions 28-30)  
+**Based on**: Sessions 19-24, 28-30 handoffs and reports  
 **Next review**: 2026-03-15 (after Phase 2 completion)
