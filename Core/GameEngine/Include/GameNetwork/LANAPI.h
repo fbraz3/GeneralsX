@@ -149,6 +149,11 @@ public:
 // Network protocol must use fixed-size types, so use uint16_t for wide chars in LAN packets
 typedef uint16_t WideCharWindows;
 
+// TheSuperHackers @build BenderAI 13/02/2026 Helper functions for WideCharWindows <-> wchar_t conversion (fighter19 pattern)
+#define MAX_COMPUTERNAME_LENGTH 256
+void CopyWcharToWindowsWideChar( WideCharWindows *dest, const WideChar *src, UnsignedInt len );
+wchar_t *GetWindowsWideCharAsWchar( WideCharWindows *src );
+
 #pragma pack(push, 1)
 struct LANMessage
 {
