@@ -41,6 +41,15 @@ typedef enum eSetWindowPosFlags
 void SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 void GetWindowRect(HWND hWnd, RECT *pRect);
 
+// TheSuperHackers @build fbraz 12/02/2026 Bender - Window state query API
+// IsIconic: Check if window is minimized (Windows API -> BOOL)
+// Linux stub: Always return 0 (not minimized) - rendering not gated on minimized state in SDL3
+#ifndef _WIN32
+inline BOOL IsIconic(HWND hWnd) {
+    return 0;  // Always render on Linux - SDL3 handles visibility separately
+}
+#endif
+
 void GetClientRect(HWND hWnd, RECT *pRect);
 
 HWND GetDesktopWindow();

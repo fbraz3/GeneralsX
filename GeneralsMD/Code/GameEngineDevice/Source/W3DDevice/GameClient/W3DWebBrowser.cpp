@@ -57,22 +57,33 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 		return FALSE;
 	}
 
-#ifdef __GNUC__
+#ifdef _WIN32
+	#ifdef __GNUC__
 	CComQIIDPtr<I_ID(IDispatch)> idisp(m_dispatch);
-#else
+	#else
 	CComQIPtr<IDispatch> idisp(m_dispatch);
-#endif
+	#endif
 	if (m_dispatch == nullptr)
 	{
 		return FALSE;
 	}
 
 	DX8WebBrowser::CreateBrowser(windowName.str(), url->m_url.str(), x, y, w, h, 0, BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, (LPDISPATCH)this);
+#else
+	// TheSuperHackers @build fbraz 12/02/2026 Bender - Web browser stub for Linux
+	// WOL (Westwood Online) was discontinued years ago; browser COM/ATL only available on Windows
+	DEBUG_LOG(("W3DWebBrowser::createBrowserWindow - Web browser not supported on Linux"));
+#endif
 
 	return TRUE;
 }
 
 void W3DWebBrowser::closeBrowserWindow(GameWindow *win)
 {
+#ifdef _WIN32
 	DX8WebBrowser::DestroyBrowser(win->winGetInstanceData()->m_decoratedNameString.str());
+#else
+	// TheSuperHackers @build fbraz 12/02/2026 Bender - Web browser stub for Linux
+	// No-op on Linux since browser was never created
+#endif
 }
