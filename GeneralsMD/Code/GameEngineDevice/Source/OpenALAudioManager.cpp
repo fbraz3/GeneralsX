@@ -30,6 +30,8 @@
 #ifdef SAGE_USE_OPENAL
 
 #include "OpenALAudioManager.h"
+#include "Common/AudioAffect.h"
+#include "Common/AudioHandleSpecialValues.h"
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
@@ -399,11 +401,11 @@ void OpenALAudioManager::killAudioEventImmediately(AudioHandle audioEvent)
 AudioHandle OpenALAudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 {
 	if (!m_isInitialized) {
-		return AUDIO_HANDLE_INVALID;
+		return AHSV_Error;
 	}
 
 	fprintf(stderr, "DEBUG: OpenALAudioManager::addAudioEvent() - stub (Phase 2)\n");
-	return AUDIO_HANDLE_INVALID;
+	return AHSV_Error;
 }
 
 /**
@@ -462,6 +464,178 @@ Bool OpenALAudioManager::hasMusicTrackCompleted(const AsciiString &trackName, In
 AsciiString OpenALAudioManager::getMusicTrackName(void) const
 {
 	return m_currentMusicTrack;
+}
+
+// TheSuperHackers @build BenderAI 13/02/2026 - Implement remaining pure virtual methods (Phase 2 stubs)
+// These methods are required by AudioManager interface but will be fully implemented in Phase 2
+
+// Device interface
+void *OpenALAudioManager::getDevice(void) 
+{
+	return m_alcContext;
+}
+
+void OpenALAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, UnsignedInt flags)
+{
+	// TODO: Phase 2 - Track completed audio events
+}
+
+// Provider interface (provider = audio device driver)
+UnsignedInt OpenALAudioManager::getProviderCount(void) const
+{
+	return 1;  // OpenAL has one provider
+}
+
+AsciiString OpenALAudioManager::getProviderName(UnsignedInt providerNum) const
+{
+	if (providerNum == 0) {
+		return AsciiString("OpenAL");
+	}
+	return AsciiString::TheEmptyString;
+}
+
+UnsignedInt OpenALAudioManager::getProviderIndex(AsciiString providerName) const
+{
+	if (providerName == "OpenAL") {
+		return 0;
+	}
+	return 0;  // Default to OpenAL
+}
+
+void OpenALAudioManager::selectProvider(UnsignedInt providerNdx)
+{
+	// OpenAL is the only provider, no-op
+}
+
+void OpenALAudioManager::unselectProvider(void)
+{
+	// No-op for OpenAL
+}
+
+UnsignedInt OpenALAudioManager::getSelectedProvider(void) const
+{
+	return 0;  // OpenAL is always selected
+}
+
+// Speaker type interface
+void OpenALAudioManager::setSpeakerType(UnsignedInt speakerType)
+{
+	// TODO: Phase 2 - Configure OpenAL speaker configuration
+}
+
+UnsignedInt OpenALAudioManager::getSpeakerType(void)
+{
+	return 0;  // Speaker mono/stereo config (TODO: Phase 2)
+}
+
+// Sample pool queries
+UnsignedInt OpenALAudioManager::getNum2DSamples(void) const
+{
+	return OPENAL_SOURCES_2D;
+}
+
+UnsignedInt OpenALAudioManager::getNum3DSamples(void) const
+{
+	return OPENAL_SOURCES_3D;
+}
+
+UnsignedInt OpenALAudioManager::getNumStreams(void) const
+{
+	return OPENAL_STREAMS;
+}
+
+// Audio event priority and conflict resolution
+Bool OpenALAudioManager::doesViolateLimit(AudioEventRTS *event) const
+{
+	// TODO: Phase 2 - Check if event violates priority limits
+	return false;
+}
+
+Bool OpenALAudioManager::isPlayingLowerPriority(AudioEventRTS *event) const
+{
+	// TODO: Phase 2 - Check priority against playing audio
+	return false;
+}
+
+Bool OpenALAudioManager::isPlayingAlready(AudioEventRTS *event) const
+{
+	// TODO: Phase 2 - Check if event already playing
+	return false;
+}
+
+Bool OpenALAudioManager::isObjectPlayingVoice(UnsignedInt objID) const
+{
+	// TODO: Phase 2 - Check if object is playing voice
+	return false;
+}
+
+// Volume adjustment
+void OpenALAudioManager::adjustVolumeOfPlayingAudio(AsciiString eventName, Real newVolume)
+{
+	// TODO: Phase 2 - Find and adjust volume of playing event
+}
+
+// Audio removal
+void OpenALAudioManager::removePlayingAudio(AsciiString eventName)
+{
+	// TODO: Phase 2 - Find and remove audio by event name
+}
+
+void OpenALAudioManager::removeAllDisabledAudio()
+{
+	// TODO: Phase 2 - Clean up disabled audio events
+}
+
+// 3D audio
+Bool OpenALAudioManager::has3DSensitiveStreamsPlaying(void) const
+{
+	return false;  // TODO: Phase 2 - Track 3D streams
+}
+
+// Bink video audio handle (Bink video uses audio from game engine)
+void *OpenALAudioManager::getHandleForBink(void)
+{
+	return nullptr;  // Bink video support deferred to Phase 3
+}
+
+void OpenALAudioManager::releaseHandleForBink(void)
+{
+	// No-op for now
+}
+
+// Force play (for load screens, etc.)
+void OpenALAudioManager::friend_forcePlayAudioEventRTS(const AudioEventRTS* eventToPlay)
+{
+	// TODO: Phase 2 - Implement forced audio playback (bypasses limits)
+}
+
+// Provider preferences
+void OpenALAudioManager::setPreferredProvider(AsciiString providerNdx)
+{
+	// OpenAL only, no-op
+}
+
+void OpenALAudioManager::setPreferredSpeaker(AsciiString speakerType)
+{
+	// TODO: Phase 2 - Set speaker preference
+}
+
+// File operations
+Real OpenALAudioManager::getFileLengthMS(AsciiString strToLoad) const
+{
+	// TODO: Phase 2 - Return audio file duration
+	return 0.0f;
+}
+
+void OpenALAudioManager::closeAnySamplesUsingFile(const void *fileToClose)
+{
+	// TODO: Phase 2 - Close audio file references
+}
+
+// 3D listener positioning (called by game engine each frame)
+void OpenALAudioManager::setDeviceListenerPosition(void)
+{
+	// TODO: Phase 2 - Update OpenAL listener position from game state
 }
 
 #endif // SAGE_USE_OPENAL

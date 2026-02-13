@@ -34,6 +34,8 @@
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/Keyboard.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 #include <cstdio>
 #include <cstdlib>
 
