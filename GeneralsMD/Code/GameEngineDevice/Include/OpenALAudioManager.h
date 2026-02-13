@@ -92,6 +92,62 @@ public:
 	// Query state
 	virtual Bool isInitialized() const { return m_isInitialized; }
 
+	// TheSuperHackers @build BenderAI 13/02/2026 - Missing AudioManager pure virtual declarations
+	// (These override abstract base class AudioManager methods)
+	
+	// Device interface
+	virtual void *getDevice(void);
+	virtual void notifyOfAudioCompletion(UnsignedInt audioCompleted, UnsignedInt flags);
+	
+	// Provider interface (audio device driver management)
+	virtual UnsignedInt getProviderCount(void) const;
+	virtual AsciiString getProviderName(UnsignedInt providerNum) const;
+	virtual UnsignedInt getProviderIndex(AsciiString providerName) const;
+	virtual void selectProvider(UnsignedInt providerNdx);
+	virtual void unselectProvider(void);
+	virtual UnsignedInt getSelectedProvider(void) const;
+	
+	// Speaker type interface
+	virtual void setSpeakerType(UnsignedInt speakerType);
+	virtual UnsignedInt getSpeakerType(void);
+	
+	// Sample pool queries
+	virtual UnsignedInt getNum2DSamples(void) const;
+	virtual UnsignedInt getNum3DSamples(void) const;
+	virtual UnsignedInt getNumStreams(void) const;
+	
+	// Audio event priority and conflict resolution
+	virtual Bool doesViolateLimit(AudioEventRTS *event) const;
+	virtual Bool isPlayingLowerPriority(AudioEventRTS *event) const;
+	virtual Bool isPlayingAlready(AudioEventRTS *event) const;
+	virtual Bool isObjectPlayingVoice(UnsignedInt objID) const;
+	
+	// Volume and audio removal
+	virtual void adjustVolumeOfPlayingAudio(AsciiString eventName, Real newVolume);
+	virtual void removePlayingAudio(AsciiString eventName);
+	virtual void removeAllDisabledAudio();
+	
+	// 3D audio and effects
+	virtual Bool has3DSensitiveStreamsPlaying(void) const;
+	
+	// Bink video audio support
+	virtual void *getHandleForBink(void);
+	virtual void releaseHandleForBink(void);
+	
+	// Force play (bypasses priority limits)
+	virtual void friend_forcePlayAudioEventRTS(const AudioEventRTS* eventToPlay);
+	
+	// Provider preferences
+	virtual void setPreferredProvider(AsciiString providerNdx);
+	virtual void setPreferredSpeaker(AsciiString speakerType);
+	
+	// Audio file operations
+	virtual Real getFileLengthMS(AsciiString strToLoad) const;
+	virtual void closeAnySamplesUsingFile(const void *fileToClose);
+	
+	// 3D listener positioning
+	virtual void setDeviceListenerPosition(void);
+
 protected:
 	// Device management
 	ALCdevice*		m_alcDevice;

@@ -25,8 +25,16 @@ if(SAGE_USE_SDL3)
     set(SDL_TEST OFF CACHE BOOL "" FORCE)
     set(SDL_TESTS OFF CACHE BOOL "" FORCE)
     
-    # Minimal SDL3 config for headless Docker builds (no X11/Wayland required)
-    set(SDL_VIDEO OFF CACHE BOOL "" FORCE)
+    # TheSuperHackers @build BenderAI 13/02/2026 - Enable VIDEO and VULKAN for graphics support
+    # VIDEO must be ON to use Vulkan (SDL_Vulkan_LoadLibrary requires video driver)
+    set(SDL_VIDEO ON CACHE BOOL "" FORCE)
+    set(SDL_VULKAN ON CACHE BOOL "" FORCE)
+    
+    # Graphics driver selection (Vulkan is primary, fallback to software)
+    set(SDL_VIDEO_VULKAN ON CACHE BOOL "" FORCE)
+    set(SDL_VIDEO_KMSDRM ON CACHE BOOL "" FORCE)  # Linux KMS/DRM driver (headless support)
+    
+    # Disable legacy/unused drivers for faster compilation
     set(SDL_X11 OFF CACHE BOOL "" FORCE)
     set(SDL_WAYLAND OFF CACHE BOOL "" FORCE)
     set(SDL_UNIX_CONSOLE_BUILD ON CACHE BOOL "" FORCE)
