@@ -4,6 +4,8 @@
 **Status**: Ready for execution  
 **Strategy**: Leverage fighter19 proven code + avoid sunk-cost engineering
 
+🔗 **Related Document**: [Proprietary Tech Roadmap](./PROPRIETARY_TECH_ROADMAP.md) - Strategic elimination of proprietary dependencies across phases
+
 ---
 
 ## 🎯 Why Reorganize?

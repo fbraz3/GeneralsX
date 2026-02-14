@@ -449,6 +449,49 @@ Next Steps
 
 ---
 
+## Appendix A: Future Architecture Proposals
+
+### A1. SDL3 Audio Migration (Phase 4 Strategic Priority)
+
+**Proposal**: Migrate from OpenAL to SDL3 Audio backend.
+
+**Strategic Significance** ⭐⭐⭐:
+This migration represents the **final liberation** of a 23-year-old proprietary game engine:
+- **Original (2003)**: Miles Sound System + Bink Video (RAD Game Tools proprietary), DirectX (Microsoft proprietary)
+- **Phase 2 (Current)**: OpenAL (open) + FFmpeg (open) + Vulkan (open) - mostly free but still 4 libraries
+- **Phase 4 Goal**: **100% open source**, unified under single SDL3 library (graphics + audio)
+- **Outcome**: Fully auditable, zero proprietary tech, community-maintainable indefinitely
+
+**Technical Rationale**:
+- Unify graphics (SDL3) + audio (SDL3) under single library ecosystem
+- Reduce external dependencies (4 libs → 3 libs, no `libopenal`)
+- Automatic audio/video sync (FFmpeg integration in Phase 3)
+- Benefit Phase 5 (macOS port) with unified SDL3 system
+
+**When to Consider**:
+✅ After Phase 2 (OpenAL) is stable  
+✅ Audio quality validated with user feedback  
+✅ Strategic goal matters to community (\"fully open source\" narrative)  
+✅ Not blocking critical Path-to-Release  
+❌ NOT during Phase 2 development (too risky)
+
+**Effort**: ~24-35 hours (3-4 developer-days)
+- Phase 2 Design: 2-3 hours
+- Phase 3 Prototype: 8-12 hours
+- Integration: 8-12 hours
+- Optimization: 4-8 hours
+
+**Full Proposal**: See [future-sdl3-audio-migration.md](../support/future-sdl3-audio-migration.md)
+
+**Decision Criteria** (collect End of Phase 2):
+1. Is audio quality acceptable? (target >90% positive)
+2. Is FPS impact acceptable? (target <5% overhead)
+3. Does strategic goal (\"100% open source\") matter to community/stakeholders?
+
+If all "YES", SDL3 Audio becomes **HIGH PRIORITY** Phase 4 slot. Otherwise, defer (keep OpenAL).
+
+---
+
 ## Notes
 
 - **Phase 4 is where the port becomes "production-ready"**: Don't rush, quality matters
@@ -456,6 +499,7 @@ Next Steps
 - **Performance parity is a must**: If Linux is slower, adoption will suffer
 - **Documentation is as important as code**: Users can't enjoy what they can't install
 - **Packaging matters**: AppImage or Flatpak > tarball > "build from source"
+- **Future architectures**: See Appendix A for long-term enhancement ideas (SDL3 Audio, etc.)
 
 ---
 
