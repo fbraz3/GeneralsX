@@ -124,11 +124,17 @@ int main(int argc, char* argv[])
 		// Initialize memory manager early (required by NEW operator)
 		initMemoryManager();
 
-	// Parse command line (CommandLine class handles argc/argv internally)
-	// TheSuperHackers @build felipebraz 10/02/2026 Phase 1.5
-	// Store argc/argv for CommandLine parser to access via _NSGetArgc/_NSGetArgv or /proc/self/cmdline
-	// For now, let CommandLine::parseCommandLineForStartup() handle this
-	CommandLine::parseCommandLineForStartup();
+		// TheSuperHackers @bugfix BenderAI 14/02/2026 Initialize Version singleton
+		// GameEngine::init() calls updateWindowTitle() which uses TheVersion
+		// Must be created before GameMain() to avoid nullptr dereference
+		TheVersion = NEW Version;
+
+		// Parse command line (CommandLine class handles argc/argv internally)
+		// TheSuperHackers @build felipebraz 10/02/2026 Phase 1.5
+		// Store argc/argv for CommandLine parser to access via _NSGetArgc/_NSGetArgv or /proc/self/cmdline
+		// For now, let CommandLine::parseCommandLineForStartup() handle this
+		CommandLine::parseCommandLineForStartup();
+
 		// Call cross-platform game entry point
 		exitcode = GameMain();
 
@@ -148,6 +154,12 @@ int main(int argc, char* argv[])
 	TheDmaCriticalSection = nullptr;
 	TheMemoryPoolCriticalSection = nullptr;
 	TheDebugLogCriticalSection = nullptr;
+
+	// TheSuperHackers @bugfix BenderAI 14/02/2026 Cleanup Version singleton
+	if (TheVersion) {
+		delete TheVersion;
+		TheVersion = nullptr;
+	}
 
 	fprintf(stderr, "\nExiting with code %d\n", exitcode);
 	return exitcode;
