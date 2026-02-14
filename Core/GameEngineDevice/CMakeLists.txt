@@ -86,8 +86,6 @@ set(GAMEENGINEDEVICE_SRC
     Include/Win32Device/Common/Win32BIGFileSystem.h
 #    Include/Win32Device/Common/Win32CDManager.h
 #    Include/Win32Device/Common/Win32GameEngine.h
-    Include/Win32Device/Common/Win32LocalFile.h
-    Include/Win32Device/Common/Win32LocalFileSystem.h
 #    Include/Win32Device/GameClient/Win32DIKeyboard.h
 #    Include/Win32Device/GameClient/Win32DIMouse.h
 #    Include/Win32Device/GameClient/Win32Mouse.h
@@ -187,13 +185,22 @@ set(GAMEENGINEDEVICE_SRC
     Source/Win32Device/Common/Win32BIGFileSystem.cpp
 #    Source/Win32Device/Common/Win32CDManager.cpp
 #    Source/Win32Device/Common/Win32GameEngine.cpp
-    Source/Win32Device/Common/Win32LocalFile.cpp
-    Source/Win32Device/Common/Win32LocalFileSystem.cpp
-#    Source/Win32Device/Common/Win32OSDisplay.cpp
-#    Source/Win32Device/GameClient/Win32DIKeyboard.cpp
-    #Source/Win32Device/GameClient/Win32DIMouse.cpp
+#    Source/Win32Device/GameClient/Win32DIMouse.cpp
 #    Source/Win32Device/GameClient/Win32Mouse.cpp
 )
+
+# TheSuperHackers @build BenderAI 13/02/2026 Platform-specific file implementations
+if(WIN32)
+    # Windows-specific files (use Windows API for filesystem)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Include/Win32Device/Common/Win32LocalFile.h
+        Include/Win32Device/Common/Win32LocalFileSystem.h
+        Source/Win32Device/Common/Win32LocalFile.cpp
+        Source/Win32Device/Common/Win32LocalFileSystem.cpp
+#        Source/Win32Device/Common/Win32OSDisplay.cpp
+#        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+    )
+endif()
 
 # Add C++ 17 FileSystem implementation for non-VS6 builds
 if(NOT IS_VS6_BUILD)
@@ -223,12 +230,25 @@ target_link_libraries(corei_gameenginedevice_private INTERFACE
     corei_main
 )
 
+# TheSuperHackers @build BenderAI 13/02/2026 Platform-specific multimedia stubs
 target_link_libraries(corei_gameenginedevice_public INTERFACE
-    binkstub
     corei_gameengine_public
-    d3d8lib
-    milesstub
 )
+
+if(WIN32)
+    target_link_libraries(corei_gameenginedevice_public INTERFACE
+        binkstub
+        d3d8lib
+        milesstub
+    )
+endif()
+
+# TheSuperHackers @build BenderAI 13/02/2026 OpenAL audio library for Linux
+if(SAGE_USE_OPENAL)
+    find_package(OpenAL REQUIRED)
+    target_include_directories(corei_gameenginedevice_public INTERFACE ${OPENAL_INCLUDE_DIR})
+    target_link_libraries(corei_gameenginedevice_public INTERFACE ${OPENAL_LIBRARY})
+endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
     find_package(FFMPEG REQUIRED)
