@@ -739,17 +739,55 @@ void RegistryClass::Delete_Registry_Tree(char *path)
 	}
 }
 
-#else // _WIN32 - Linux: No registry support
+// TheSuperHackers @build BenderAI 13/02/2026 Linux: No registry support - stub all methods
+#else // _WIN32
 
 // Static member stub
 bool RegistryClass::IsLocked = false;
 
-// Method stubs for Linux
+// Static methods
 bool RegistryClass::Exists(const char*) { return false; }
+void RegistryClass::Delete_Registry_Tree(char*) {}
+void RegistryClass::Load_Registry(const char*, char*, char*) {}
+void RegistryClass::Save_Registry(const char*, char*) {}
+void RegistryClass::Delete_Registry_Values(HKEY) {}
+void RegistryClass::Save_Registry_Tree(char*, INIClass*) {}
+void RegistryClass::Save_Registry_Values(HKEY, char*, INIClass*) {}
+
+// Constructor/Destructor
 RegistryClass::RegistryClass(const char*, bool) : IsValid(false), Key(0) {}
 RegistryClass::~RegistryClass() {}
+
+// Int methods 
 int RegistryClass::Get_Int(const char*, int def_value) { return def_value; }
-int RegistryClass::Get_Int(const wchar_t*, int def_value) { return def_value; }
+void RegistryClass::Set_Int(const char*, int) {}
+
+// Bool methods
+bool RegistryClass::Get_Bool(const char*, bool def_value) { return def_value; }
+void RegistryClass::Set_Bool(const char*, bool) {}
+
+// Float methods
+float RegistryClass::Get_Float(const char*, float def_value) { return def_value; }
+void RegistryClass::Set_Float(const char*, float) {}
+
+// String methods (char*)
+char* RegistryClass::Get_String(const char*, char* value, int, const char*) { if (value) *value = '\0'; return value; }
+void RegistryClass::Get_String(const char*, StringClass& string, const char*) { string = ""; }
+void RegistryClass::Set_String(const char*, const char*) {}
+
+// Wide string methods (wchar_t)
+void RegistryClass::Get_String(const WCHAR*, WideStringClass& string, const WCHAR*) { string = L""; }
+void RegistryClass::Set_String(const WCHAR*, const WCHAR*) {}
+
+// Binary methods
+void RegistryClass::Get_Bin(const char*, void*, int) {}
+int RegistryClass::Get_Bin_Size(const char*) { return 0; }
+void RegistryClass::Set_Bin(const char*, const void*, int) {}
+
+// Value list methods
+void RegistryClass::Get_Value_List(DynamicVectorClass<StringClass>&) {}
+void RegistryClass::Delete_Value(const char*) {}
+void RegistryClass::Deleta_All_Values() {}
 
 #endif // _WIN32
 

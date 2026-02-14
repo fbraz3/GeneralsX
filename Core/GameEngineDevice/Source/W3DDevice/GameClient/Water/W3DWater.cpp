@@ -45,6 +45,8 @@
 #include "dx8wrapper.h"
 #include "light.h"
 #include "d3dx8math.h"
+// TheSuperHackers @bugfix BenderAI 13/02/2026 Include d3dx8core.h for LPD3DXBUFFER
+#include "d3dx8core.h"
 #include "simplevec.h"
 #include "mesh.h"
 #include "matinfo.h"
@@ -239,16 +241,18 @@ void WaterRenderObjClass::setupJbaWaterShader(void)
 		DX8Wrapper::Set_DX8_Texture_Stage_State(2,  D3DTSS_ADDRESSU, D3DTADDRESS_WRAP);
 		DX8Wrapper::Set_DX8_Texture_Stage_State(2,  D3DTSS_ADDRESSV, D3DTADDRESS_WRAP);
 
-		D3DXMATRIX curView;
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+		Matrix4x4 curView;
 		DX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, curView);
 		D3DXMATRIX inv;
 		float det;
-		D3DXMatrixInverse(&inv, &det, &curView);
+		D3DXMatrixInverse(&inv, &det, (D3DXMATRIX*)&curView);
 		D3DXMATRIX scale;
 		D3DXMatrixScaling(&scale, NOISE_REPEAT_FACTOR, NOISE_REPEAT_FACTOR,1);
-		D3DXMATRIX destMatrix = inv * scale;
+		Matrix4x4 destMatrix;
+		*((D3DXMATRIX*)&destMatrix) = inv * scale;
 		D3DXMatrixTranslation(&scale, m_riverVOrigin, m_riverVOrigin,0);
-		destMatrix = destMatrix*scale;
+		*((D3DXMATRIX*)&destMatrix) = *((D3DXMATRIX*)&destMatrix)*scale;
 		DX8Wrapper::_Set_DX8_Transform(D3DTS_TEXTURE2, destMatrix);
 
 	}
@@ -904,7 +908,10 @@ void WaterRenderObjClass::ReAcquireResources(void)
 
 	if (W3DShaderManager::getChipset() >= DC_GENERIC_PIXEL_SHADER_1_1)
 	{
-		ID3DXBuffer *compiledShader;
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 Runtime shader compilation Windows-only (stubbed on Linux)
+#ifdef _WIN32
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 LPD3DXBUFFER instead of ID3DXBuffer for compat
+		LPD3DXBUFFER compiledShader;
 		const char *shader =
 			"ps.1.1\n \
 			tex t0 \n\
@@ -949,6 +956,7 @@ void WaterRenderObjClass::ReAcquireResources(void)
 			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_trapezoidWaterPixelShader);
 			compiledShader->Release();
 		}
+#endif // _WIN32 - Runtime shader compilation
 	}
 
 	//W3D Invalidate textures after losing the device and since we peek at the textures directly, it won't
@@ -1602,14 +1610,14 @@ void WaterRenderObjClass::Render(RenderInfoClass & rinfo)
 				/**************************************************************************************/
 
 				//get current view matrix
-				D3DXMATRIX curView;
-				DX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, curView);
+			// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+			Matrix4x4 curView;
+			DX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, curView);
 
-				//get inverse of view matrix(= view to world matrix)
-				D3DXMATRIX inv;
-				Real det;
-				D3DXMatrixInverse(&inv, &det, &curView);
-
+			//get inverse of view matrix(= view to world matrix)
+			D3DXMATRIX inv;
+			Real det;
+			D3DXMatrixInverse(&inv, &det, (D3DXMATRIX*)&curView);
 				//create clipping matrix by inserting our plane equation into the 1st column
 				D3DXMATRIX clipMatrix;
 				D3DXMatrixIdentity(&clipMatrix);
@@ -1785,14 +1793,16 @@ void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 	if (!getClippedWaterPlane(&rinfo.Camera,&seaBox))
 		return;	//the sea is not visible
 
-	D3DXMATRIX matProj, matView, matWW3D;
+	// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+Matrix4x4 matProj, matView, matWW3D;
 
 	//create a transform which will flip the y and z coordinates to fit our system
 	memset(&matWW3D,0,sizeof(D3DMATRIX));
-	matWW3D._11=1.0f;
-	matWW3D._32=1.0f;
-	matWW3D._23=1.0f;
-	matWW3D._44=1.0f;
+	// TheSuperHackers @bugfix BenderAI 13/02/2026 GLM Matrix4x4 uses [row][col] not ._##
+	matWW3D[0][0]=1.0f;
+	matWW3D[2][1]=1.0f;
+	matWW3D[1][2]=1.0f;
+	matWW3D[3][3]=1.0f;
 
 	DX8Wrapper::Set_Transform(D3DTS_WORLD,Transform);	//position the water surface
 	DX8Wrapper::Set_Texture(0,nullptr);	//we'll be setting our own textures, so reset W3D
@@ -1906,16 +1916,17 @@ void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 	{
 		for (startX=patchX=(seaBox.Center.X-seaBox.Extent.X)/(PATCH_WIDTH*PATCH_SCALE); (patchX*PATCH_WIDTH*PATCH_SCALE)<(seaBox.Center.X+seaBox.Extent.X); patchX++)
 		{
-			D3DXMATRIX matWorldViewProj, matTemp, matTempWorld;
+			// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+			Matrix4x4 matWorldViewProj, matTemp, matTempWorld;
 			patchMatrix._41=(float)(patchX*PATCH_WIDTH*PATCH_SCALE );
 			patchMatrix._43=(float)(patchY*PATCH_WIDTH*PATCH_SCALE );
 			//convert the default D3D coordinate system into ours
-			D3DXMatrixMultiply(&matTempWorld, &patchMatrix, &matWW3D);
+			D3DXMatrixMultiply((D3DXMATRIX*)&matTempWorld, &patchMatrix, (D3DXMATRIX*)&matWW3D);
 
-			D3DXMatrixMultiply(&matTemp, &matTempWorld, &matView);
-			D3DXMatrixMultiply(&matWorldViewProj, &matTemp, &matProj);
+			D3DXMatrixMultiply((D3DXMATRIX*)&matTemp, (D3DXMATRIX*)&matTempWorld, (D3DXMATRIX*)&matView);
+			D3DXMatrixMultiply((D3DXMATRIX*)&matWorldViewProj, (D3DXMATRIX*)&matTemp, (D3DXMATRIX*)&matProj);
 			//matrices must be transposed before loading into vertex shader registers
-			D3DXMatrixTranspose(&matWorldViewProj, &matWorldViewProj);
+			D3DXMatrixTranspose((D3DXMATRIX*)&matWorldViewProj, (D3DXMATRIX*)&matWorldViewProj);
 			m_pDev->SetVertexShaderConstant(CV_WORLDVIEWPROJ_0, &matWorldViewProj, 4);	//pass transform matrix into shader
 
 			m_pDev->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP,0,m_numVertices,0,m_numIndices);
@@ -1965,11 +1976,12 @@ void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 		{
 			for (startX=patchX=(seaBox.Center.X-seaBox.Extent.X)/(PATCH_WIDTH*PATCH_SCALE); (patchX*PATCH_WIDTH*PATCH_SCALE)<(seaBox.Center.X+seaBox.Extent.X); patchX++)
 			{
-				D3DXMATRIX matTemp;
+				// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+				Matrix4x4 matTemp;
 				patchMatrix._41=(float)(patchX*PATCH_WIDTH*PATCH_SCALE);
 				patchMatrix._43=(float)(patchY*PATCH_WIDTH*PATCH_SCALE);
 
-				D3DXMatrixMultiply(&matTemp, &patchMatrix, &matWW3D);
+				D3DXMatrixMultiply((D3DXMATRIX*)&matTemp, &patchMatrix, (D3DXMATRIX*)&matWW3D);
 
 				DX8Wrapper::_Set_DX8_Transform(D3DTS_WORLD, matTemp);
 
@@ -3001,16 +3013,18 @@ void WaterRenderObjClass::setupFlatWaterShader(void)
 		DX8Wrapper::Set_DX8_Texture_Stage_State(2,  D3DTSS_ADDRESSU, D3DTADDRESS_WRAP);
 		DX8Wrapper::Set_DX8_Texture_Stage_State(2,  D3DTSS_ADDRESSV, D3DTADDRESS_WRAP);
 
-		D3DXMATRIX curView;
+		// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+		Matrix4x4 curView;
 		DX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, curView);
 		D3DXMATRIX inv;
 		float det;
-		D3DXMatrixInverse(&inv, &det, &curView);
+		D3DXMatrixInverse(&inv, &det, (D3DXMATRIX*)&curView);
 		D3DXMATRIX scale;
 		D3DXMatrixScaling(&scale, NOISE_REPEAT_FACTOR, NOISE_REPEAT_FACTOR,1);
-		D3DXMATRIX destMatrix = inv * scale;
+		Matrix4x4 destMatrix;
+		*((D3DXMATRIX*)&destMatrix) = inv * scale;
 		D3DXMatrixTranslation(&scale, m_riverVOrigin, m_riverVOrigin,0);
-		destMatrix = destMatrix*scale;
+		*((D3DXMATRIX*)&destMatrix) = *((D3DXMATRIX*)&destMatrix)*scale;
 		DX8Wrapper::_Set_DX8_Transform(D3DTS_TEXTURE2, destMatrix);
 
 	}
