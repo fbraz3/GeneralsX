@@ -49,16 +49,24 @@
 #ifdef __MINGW32__
 #include "Utility/comsupp_compat.h"  // MinGW COM support compatibility
 #endif
+
+#ifdef _WIN32
 #include <comutil.h>
 #include <comip.h>
-
 #include "EABrowserEngine/BrowserEngine.h"
+#endif
 
+
+#ifdef _WIN32
 typedef _com_ptr_t<_com_IIID<IFEBrowserEngine2, &__uuidof(IFEBrowserEngine2)>> IFEBrowserEngine2Ptr;
+static	IFEBrowserEngine2Ptr	pBrowser = 0;
+#else
+static void* pBrowser = nullptr;  // Stub for Linux
+#endif
 
 #endif
 
-static	IFEBrowserEngine2Ptr	pBrowser = 0;
+#ifdef _WIN32
 
 HWND		DX8WebBrowser::hWnd = nullptr;
 
@@ -260,4 +268,63 @@ void	DX8WebBrowser::Navigate(const char* browsername, const char* url)
 	pBrowser->Navigate(_bstr_t(browsername),_bstr_t(url));
 }
 
-#endif
+#else  // _WIN32
+
+// ***** LINUX STUBS FOR DX8WEBBROWSER *****/
+// TheSuperHackers @build felipebraz 13/02/2026 (P3)
+// Embedded web browser is Windows-specific. On Linux, browsing operations are stubs.
+
+HWND DX8WebBrowser::hWnd = nullptr;
+
+bool DX8WebBrowser::Initialize(const char* badpageurl,
+                                const char* loadingpageurl,
+                                const char* mousefilename,
+                                const char* mousebusyfilename)
+{
+	fprintf(stderr, "WARNING: DX8WebBrowser::Initialize() - Linux stub (browser not available)\n");
+	return false;  // Embedded browser not supported on Linux
+}
+
+void DX8WebBrowser::Shutdown()
+{
+	fprintf(stderr, "WARNING: DX8WebBrowser::Shutdown() - Linux stub\n");
+	// Nothing to shutdown - browser not initialized
+}
+
+void DX8WebBrowser::Update(void)
+{
+	// No update needed - browser not initialized on Linux
+}
+
+void DX8WebBrowser::Render(int backbufferindex)
+{
+	// No rendering needed - browser not initialized on Linux
+}
+
+void DX8WebBrowser::CreateBrowser(const char* browsername, const char* url, int x, int y, int w, int h, int updateticks, LONG options, LPDISPATCH gamedispatch)
+{
+	fprintf(stderr, "WARNING: DX8WebBrowser::CreateBrowser() - Linux stub (browser not available)\n");
+	// Browser creation not supported on Linux
+}
+
+void DX8WebBrowser::DestroyBrowser(const char* browsername)
+{
+	fprintf(stderr, "WARNING: DX8WebBrowser::DestroyBrowser() - Linux stub\n");
+	// Nothing to destroy - browser not created on Linux
+}
+
+bool DX8WebBrowser::Is_Browser_Open(const char* browsername)
+{
+	return false;  // No browsers on Linux
+}
+
+void DX8WebBrowser::Navigate(const char* browsername, const char* url)
+{
+	fprintf(stderr, "WARNING: DX8WebBrowser::Navigate('%s', '%s') - Linux stub\n", 
+		browsername ? browsername : "(null)", url ? url : "(null)");
+	// Navigation not supported on Linux
+}
+
+#endif  // _WIN32
+
+#endif  // ENABLE_EMBEDDED_BROWSER

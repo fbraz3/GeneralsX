@@ -51,6 +51,26 @@ static CriticalSection critSec3;
 static CriticalSection critSec4;
 static CriticalSection critSec5;
 
+// GLOBAL COMMAND LINE ARGUMENTS
+// TheSuperHackers @build felipebraz 13/02/2026
+// Store argc/argv from main() for use by CommandLine.cpp parseCommandLine() on Linux
+// Windows provides these automatically; Linux needs explicit globals
+int __argc = 0;          ///< global argument count
+char** __argv = nullptr; ///< global argument vector
+
+// GLOBAL WINDOW HANDLE
+// TheSuperHackers @build felipebraz 13/02/2026
+// ApplicationHWnd is declared extern in GeneralsMD/Code/Main/WinMain.h
+// On Linux, we cast SDL_Window* to HWND type for compatibility
+HWND ApplicationHWnd = nullptr;  ///< our application window handle
+
+// GAME TEXT FILE PATHS
+// TheSuperHackers @build felipebraz 13/02/2026
+// GameText.cpp uses these paths to load CSF and STR files (game localization)
+// Format %s is replaced with language code in GameTextManager::init()
+const Char *g_csfFile = "data/%s/Generals.csf";  ///< CSF file path (with language code)
+const Char *g_strFile = "data/Generals.str";     ///< STR file path
+
 // Extern declarations (from GameMain.cpp)
 extern Int GameMain();
 
@@ -82,6 +102,11 @@ GameEngine *CreateGameEngine(void)
 int main(int argc, char* argv[])
 {
 	int exitcode = 1;
+
+	// TheSuperHackers @build felipebraz 13/02/2026
+	// Store command line arguments in globals for CommandLine.cpp parser
+	__argc = argc;
+	__argv = argv;
 
 	fprintf(stderr, "=================================================\n");
 	fprintf(stderr, " Command & Conquer Generals: Zero Hour (Linux)\n");

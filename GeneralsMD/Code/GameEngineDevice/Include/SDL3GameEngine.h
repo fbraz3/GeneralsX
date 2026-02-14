@@ -31,9 +31,23 @@
 #ifndef _WIN32
 
 #include "Common/GameEngine.h"
+#include "Common/LocalFileSystem.h"
+#include "Common/ArchiveFileSystem.h"
 #include <SDL3/SDL.h>
 
-// Forward declarations
+// Forward declarations - full definitions in SDL3GameEngine.cpp
+class StdLocalFileSystem;
+class StdBIGFileSystem;
+class W3DModuleFactory;
+class W3DGameLogic;
+class W3DGameClient;
+class W3DWebBrowser;
+class W3DFunctionLexicon;
+class W3DRadar;
+class W3DThingFactory;
+class W3DParticleSystemManager;
+
+// Forward declarations for base classes
 class AudioManager;
 class Mouse;
 class Keyboard;

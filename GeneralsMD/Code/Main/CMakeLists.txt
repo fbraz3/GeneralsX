@@ -72,6 +72,8 @@ target_sources(z_generals PRIVATE
     $<$<BOOL:${WIN32}>:WinMain.h>
     # Linux SDL3 entry point (Phase 1.5 - TheSuperHackers @build 10/02/2026 Bender)
     $<$<NOT:$<BOOL:${WIN32}>>:SDL3Main.cpp>
+    # Linux stubs for P2-P3 platform functions (P2-P3 - TheSuperHackers @build 13/02/2026 Bender Session 37)
+    $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
 )
 
 # RC files optional for MinGW builds

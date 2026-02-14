@@ -60,9 +60,9 @@ set(WW3D2_SRC
     dx8texman.h
     #dx8vertexbuffer.cpp
     #dx8vertexbuffer.h
-    # TheSuperHackers @build fbraz 10/02/2026 Bender - dx8webbrowser uses EA BrowserEngine (Windows-only HTML UI, Phase 3 out-of-scope)
-    #dx8webbrowser.cpp
-    #dx8webbrowser.h
+    # TheSuperHackers @build fbraz 10/02/2026 Bender - dx8webbrowser uses EA BrowserEngine (Windows-only HTML UI, Linux stubs in dx8webbrowser.cpp)
+    dx8webbrowser.cpp
+    dx8webbrowser.h
     #dx8wrapper.cpp
     #dx8wrapper.h
     dynamesh.cpp

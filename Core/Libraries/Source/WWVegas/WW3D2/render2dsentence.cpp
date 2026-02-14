@@ -1482,42 +1482,6 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
-//	Update_Current_Buffer
-//
-////////////////////////////////////////////////////////////////////////////////////
-void
-FontCharsClass::Update_Current_Buffer (int char_width)
-{
-	//
-	//	Check to see if we need to allocate a new buffer
-	//
-	bool needs_new_buffer = (BufferList.Count () == 0);
-	if (needs_new_buffer == false) {
-
-		//
-		//	Would we extend past this buffer?
-		//
-		if ( (CurrPixelOffset + (char_width * CharHeight)) > CHAR_BUFFER_LEN ) {
-			needs_new_buffer = true;
-		}
-	}
-
-	//
-	//	Do we need to create a new surface?
-	//
-	if (needs_new_buffer)
-	{
-		FontCharsBuffer* new_buffer = W3DNEW FontCharsBuffer;
-		BufferList.Add( new_buffer );
-		CurrPixelOffset = 0;
-	}
-
-	return ;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////
-//
 //	Create_GDI_Font
 //
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1660,6 +1624,42 @@ FontCharsClass::Free_GDI_Font (void)
 }
 
 #endif // _WIN32
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Update_Current_Buffer (Platform-independent text buffer management)
+//
+// TheSuperHackers @build fbraz 11/02/2026 - Used by both Windows GDI and Linux FreeType
+////////////////////////////////////////////////////////////////////////////////////
+void
+FontCharsClass::Update_Current_Buffer (int char_width)
+{
+	//
+	//	Check to see if we need to allocate a new buffer
+	//
+	bool needs_new_buffer = (BufferList.Count () == 0);
+	if (needs_new_buffer == false) {
+
+		//
+		//	Would we extend past this buffer?
+		//
+		if ( (CurrPixelOffset + (char_width * CharHeight)) > CHAR_BUFFER_LEN ) {
+			needs_new_buffer = true;
+		}
+	}
+
+	//
+	//	Do we need to create a new surface?
+	//
+	if (needs_new_buffer)
+	{
+		FontCharsBuffer* new_buffer = W3DNEW FontCharsBuffer;
+		BufferList.Add( new_buffer );
+		CurrPixelOffset = 0;
+	}
+
+	return ;
+}
 
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
 
