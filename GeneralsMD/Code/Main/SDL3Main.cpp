@@ -42,6 +42,7 @@
 #include "Common/GameEngine.h"
 #include "Common/GameMemory.h"
 #include "Common/Debug.h"
+#include "Common/version.h"  // TheSuperHackers @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
 #include "SDL3GameEngine.h"
 
 // CRITICAL SECTIONS (Linux needs these too)
