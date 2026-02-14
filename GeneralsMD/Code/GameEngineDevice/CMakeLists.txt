@@ -212,6 +212,7 @@ else()
         Source/OpenALAudioManager.cpp
         Source/SDL3Device/GameClient/SDL3Mouse.cpp
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
+        Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
 endif()
 

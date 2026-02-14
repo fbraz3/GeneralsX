@@ -34,6 +34,16 @@
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/Keyboard.h"
+#include "W3DDevice/GameLogic/W3DGameLogic.h"
+#include "W3DDevice/GameClient/W3DGameClient.h"
+#include "W3DDevice/Common/W3DModuleFactory.h"
+#include "W3DDevice/Common/W3DThingFactory.h"
+#include "W3DDevice/Common/W3DFunctionLexicon.h"
+#include "W3DDevice/Common/W3DRadar.h"
+#include "W3DDevice/GameClient/W3DParticleSys.h"
+#include "W3DDevice/GameClient/W3DWebBrowser.h"
+#include "StdDevice/Common/StdLocalFileSystem.h"
+#include "StdDevice/Common/StdBIGFileSystem.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <cstdio>
@@ -102,6 +112,14 @@ void SDL3GameEngine::init(void)
 		SDL_Quit();
 		return;
 	}
+
+	// TheSuperHackers @build felipebraz 13/02/2026
+	// Store SDL3 window pointer in global ApplicationHWnd for compatibility
+	// Code throughout the engine uses ApplicationHWnd as if it were a Windows HWND
+	// On Linux, we simply cast the SDL_Window* pointer to HWND type
+	extern HWND ApplicationHWnd;
+	ApplicationHWnd = (HWND)m_SDLWindow;
+	fprintf(stderr, "INFO: ApplicationHWnd set to SDL_Window pointer\n");
 
 	m_IsInitialized = true;
 	m_IsActive = true;
@@ -293,97 +311,71 @@ void SDL3GameEngine::handleWindowEvent(const SDL_WindowEvent& event)
 }
 
 /**
- * Factory method: LocalFileSystem
- * TODO: Phase 2 - Return SDL3-compatible LocalFileSystem
+ * Factory Methods for GameEngine subsystems
+ * TheSuperHackers @build felipebraz 13/02/2026
+ * Implementations in .cpp to provide complete type definitions and avoid circular includes
  */
+
 LocalFileSystem *SDL3GameEngine::createLocalFileSystem(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createLocalFileSystem() - stub\n");
-	return GameEngine::createLocalFileSystem();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createLocalFileSystem() -> StdLocalFileSystem\n");
+	return NEW StdLocalFileSystem;
 }
 
-/**
- * Factory method: ArchiveFileSystem
- * TODO: Phase 2 - Return SDL3-compatible ArchiveFileSystem
- */
 ArchiveFileSystem *SDL3GameEngine::createArchiveFileSystem(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createArchiveFileSystem() - stub\n");
-	return GameEngine::createArchiveFileSystem();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createArchiveFileSystem() -> StdBIGFileSystem\n");
+	return NEW StdBIGFileSystem;
 }
 
-/**
- * Factory method: GameLogic
- * TODO: Phase 2 - Return GameLogic subsystem
- */
 GameLogic *SDL3GameEngine::createGameLogic(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createGameLogic() - stub\n");
-	return GameEngine::createGameLogic();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createGameLogic() -> W3DGameLogic\n");
+	return NEW W3DGameLogic;
 }
 
-/**
- * Factory method: GameClient
- * TODO: Phase 2 - Return GameClient subsystem
- */
 GameClient *SDL3GameEngine::createGameClient(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createGameClient() - stub\n");
-	return GameEngine::createGameClient();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createGameClient() -> W3DGameClient\n");
+	return NEW W3DGameClient;
 }
 
-/**
- * Factory method: ModuleFactory
- */
 ModuleFactory *SDL3GameEngine::createModuleFactory(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createModuleFactory() - stub\n");
-	return GameEngine::createModuleFactory();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createModuleFactory() -> W3DModuleFactory\n");
+	return NEW W3DModuleFactory;
 }
 
-/**
- * Factory method: ThingFactory
- */
 ThingFactory *SDL3GameEngine::createThingFactory(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createThingFactory() - stub\n");
-	return GameEngine::createThingFactory();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createThingFactory() -> W3DThingFactory\n");
+	return NEW W3DThingFactory;
 }
 
-/**
- * Factory method: FunctionLexicon
- */
 FunctionLexicon *SDL3GameEngine::createFunctionLexicon(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createFunctionLexicon() - stub\n");
-	return GameEngine::createFunctionLexicon();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createFunctionLexicon() -> W3DFunctionLexicon\n");
+	return NEW W3DFunctionLexicon;
 }
 
-/**
- * Factory method: Radar
- */
 Radar *SDL3GameEngine::createRadar(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createRadar() - stub\n");
-	return GameEngine::createRadar();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createRadar() -> W3DRadar\n");
+	return NEW W3DRadar;
 }
 
-/**
- * Factory method: WebBrowser
- */
-WebBrowser *SDL3GameEngine::createWebBrowser(void)
-{
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createWebBrowser() - stub\n");
-	return GameEngine::createWebBrowser();  // Call parent for now
-}
-
-/**
- * Factory method: ParticleSystemManager
- */
 ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(void)
 {
-	fprintf(stderr, "DEBUG: SDL3GameEngine::createParticleSystemManager() - stub\n");
-	return GameEngine::createParticleSystemManager();  // Call parent for now
+	fprintf(stderr, "INFO: SDL3GameEngine::createParticleSystemManager() -> W3DParticleSystemManager\n");
+	return NEW W3DParticleSystemManager;
+}
+
+WebBrowser *SDL3GameEngine::createWebBrowser(void)
+{
+	// WebBrowser uses Windows COM (CComObject<W3DWebBrowser>)
+	// Not available on Linux - return nullptr
+	fprintf(stderr, "WARNING: WebBrowser not available on Linux platform\n");
+	return nullptr;
 }
 
 /**

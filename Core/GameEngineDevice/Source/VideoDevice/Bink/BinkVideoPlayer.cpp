@@ -53,6 +53,11 @@
 #include "Common/GlobalData.h"
 #include "Common/Registry.h"
 
+#ifdef _WIN32
+// ============================================================================
+// WINDOWS: Full Bink SDK implementation
+// ============================================================================
+
 //----------------------------------------------------------------------------
 //         Externals
 //----------------------------------------------------------------------------
@@ -444,5 +449,79 @@ Int		BinkVideoStream::width( void )
 	return m_handle->Width;
 }
 
+#else
+// ============================================================================
+// LINUX: Bink stubs (Bink codec not available on Linux)
+// TheSuperHackers @build felipebraz 13/02/2026 - Phase 3 (video codec)
+// ============================================================================
 
+BinkVideoPlayer::BinkVideoPlayer()
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer() constructor - Linux stub\n");
+}
+
+BinkVideoPlayer::~BinkVideoPlayer()
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer() destructor - Linux stub\n");
+}
+
+void BinkVideoPlayer::init(void)
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer::init() - Linux stub\n");
+}
+
+void BinkVideoPlayer::deinit(void)
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer::deinit() - Linux stub\n");
+}
+
+void BinkVideoPlayer::reset(void)
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer::reset() - Linux stub\n");
+}
+
+void BinkVideoPlayer::update(void)
+{
+	// No-op: video playback disabled
+}
+
+void BinkVideoPlayer::loseFocus(void)
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer::loseFocus() - Linux stub\n");
+}
+
+void BinkVideoPlayer::regainFocus(void)
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer::regainFocus() - Linux stub\n");
+}
+
+VideoStreamInterface* BinkVideoPlayer::createStream(HBINK handle)
+{
+	fprintf(stderr, "WARNING: BinkVideoPlayer::createStream() - Bink codec not available on Linux\n");
+	return nullptr;
+}
+
+VideoStreamInterface* BinkVideoPlayer::open(AsciiString movieTitle)
+{
+	fprintf(stderr, "WARNING: BinkVideoPlayer::open('%s') - Bink codec not available on Linux\n", movieTitle.str());
+	return nullptr;
+}
+
+VideoStreamInterface* BinkVideoPlayer::load(AsciiString movieTitle)
+{
+	fprintf(stderr, "WARNING: BinkVideoPlayer::load('%s') - Bink codec not available on Linux\n", movieTitle.str());
+	return nullptr;
+}
+
+void BinkVideoPlayer::notifyVideoPlayerOfNewProvider(Bool nowHasValid)
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer::notifyVideoPlayerOfNewProvider(%s) - stub\n", nowHasValid ? "true" : "false");
+}
+
+void BinkVideoPlayer::initializeBinkWithMiles(void)
+{
+	fprintf(stderr, "INFO: BinkVideoPlayer::initializeBinkWithMiles() - Linux stub\n");
+}
+
+#endif // _WIN32
 

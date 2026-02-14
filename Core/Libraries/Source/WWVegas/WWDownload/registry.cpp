@@ -194,6 +194,36 @@ bool getUnsignedIntFromRegistry(HKEY, std::string, std::string, unsigned int&) {
 bool setStringInRegistry(HKEY, std::string, std::string, std::string) { return false; }
 bool setUnsignedIntInRegistry(HKEY, std::string, std::string, unsigned int) { return false; }
 
+// TheSuperHackers @build felipebraz 13/02/2026 - Add stubs for uppercase public API
+// Linux has no registry, return false (not found) for all queries
+// This allows the game to gracefully handle missing registry data
+
+bool GetStringFromRegistry(std::string path, std::string key, std::string& val)
+{
+	fprintf(stderr, "INFO: GetStringFromRegistry('%s', '%s') - Linux stub (no registry)\n", path.c_str(), key.c_str());
+	val = "";  // Return empty string on Linux
+	return false;  // Registry lookup failed
+}
+
+bool GetUnsignedIntFromRegistry(std::string path, std::string key, unsigned int& val)
+{
+	fprintf(stderr, "INFO: GetUnsignedIntFromRegistry('%s', '%s') - Linux stub (no registry)\n", path.c_str(), key.c_str());
+	val = 0;  // Return 0 on Linux
+	return false;  // Registry lookup failed
+}
+
+bool SetStringInRegistry(std::string path, std::string key, std::string val)
+{
+	fprintf(stderr, "INFO: SetStringInRegistry('%s', '%s', '%s') - Linux stub (no registry)\n", path.c_str(), key.c_str(), val.c_str());
+	return false;  // Registry write failed on Linux
+}
+
+bool SetUnsignedIntInRegistry(std::string path, std::string key, unsigned int val)
+{
+	fprintf(stderr, "INFO: SetUnsignedIntInRegistry('%s', '%s', %u) - Linux stub (no registry)\n", path.c_str(), key.c_str(), val);
+	return false;  // Registry write failed on Linux
+}
+
 void setTeamsPath() {}
 void getTeamsPath(std::string &path) { path = ""; }
 void setGamePath( unsigned int index, std::string path ) {}

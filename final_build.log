@@ -1,0 +1,2582 @@
+🐳 Building GeneralsXZH (Linux, preset: linux64-deploy)...
+🛠  Using 3 parallel jobs for building...
+⚙️  Configuring CMake with vcpkg...
+Preset CMake variables:
+
+  CMAKE_BUILD_TYPE="RelWithDebInfo"
+  CMAKE_EXPORT_COMPILE_COMMANDS="ON"
+  CMAKE_MSVC_DEBUG_INFORMATION_FORMAT="$<$<CONFIG:Release,Debug,RelWithDebInfo>:Embedded>"
+  CMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
+  CMAKE_TOOLCHAIN_FILE="/opt/vcpkg/scripts/buildsystems/vcpkg.cmake"
+  RTS_CRASHDUMP_ENABLE="OFF"
+  SAGE_USE_DX8="OFF"
+  SAGE_USE_GLM="ON"
+  SAGE_USE_OPENAL="ON"
+  SAGE_USE_SDL3="ON"
+
+-- Running vcpkg install
+Detecting compiler hash for triplet x64-linux...
+Compiler found: /usr/bin/c++
+The following packages are already installed:
+  * brotli:x64-linux@1.1.0#1
+  * bzip2[core,tool]:x64-linux@1.0.8#6
+  * dirent:x64-linux@1.24
+  * expat:x64-linux@2.7.1
+    fontconfig:x64-linux@2.15.0#2
+    freetype[brotli,bzip2,core,png,zlib]:x64-linux@2.13.3
+    gli:x64-linux@2021-07-06#2
+    glm:x64-linux@1.0.1#3
+  * gperf:x64-linux@3.1#7
+  * libiconv:x64-linux@1.18#1
+  * libpng:x64-linux@1.6.46
+  * libuuid:x64-linux@1.0.3#15
+  * pthread:x64-linux@3.0.0#2
+  * pthreads:x64-linux@3.0.0#14
+  * vcpkg-cmake:x64-linux@2024-04-23
+  * vcpkg-cmake-config:x64-linux@2024-05-23
+  * vcpkg-cmake-get-vars:x64-linux@2024-09-22
+  * vcpkg-tool-meson:x64-linux@1.6.1
+    zlib:x64-linux@1.3.1
+The package zlib is compatible with built-in CMake targets:
+
+    find_package(ZLIB REQUIRED)
+    target_link_libraries(main PRIVATE ZLIB::ZLIB)
+
+freetype is compatible with built-in CMake targets:
+
+    find_package(Freetype REQUIRED)
+    target_link_libraries(main PRIVATE Freetype::Freetype) # since CMake 3.10
+
+fontconfig is compatible with built-in CMake targets:
+
+  find_package(Fontconfig REQUIRED) # since CMake 3.14
+  target_link_libraries(main PRIVATE Fontconfig::Fontconfig)
+
+fontconfig provides pkg-config modules:
+
+  # Font configuration and customization library
+  fontconfig
+
+The package glm provides CMake targets:
+
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm)
+
+    # Or use the header-only version
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm-header-only)
+
+gli provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(gli CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE gli)
+
+All requested installations completed successfully in: 2.74 ms
+-- Running vcpkg install - done
+-- CMAKE_CXX_COMPILER: /usr/bin/c++
+-- CMAKE_CXX_COMPILER_ID: GNU
+-- CMAKE_CXX_COMPILER_VERSION: 13.3.0
+-- CMAKE_INSTALL_PREFIX: /usr/local
+-- Using DXVK native (Linux DirectX→Vulkan)
+-- DXVK source directory: /work/build/linux64-deploy/_deps/dxvk-src
+-- Fetching SDL3 from GitHub...
+-- dynamic libasound -> libasound.so.2
+-- Checking for module 'jack'
+--   Package 'jack', required by 'virtual:world', not found
+-- Checking for module 'libpipewire-0.3>=0.3.44'
+--   Package 'libpipewire-0.3', required by 'virtual:world', not found
+-- Checking for module 'libpulse>=0.9.15'
+--   Package 'libpulse', required by 'virtual:world', not found
+-- Checking for module 'sndio'
+--   Package 'sndio', required by 'virtual:world', not found
+-- Could NOT find OpenGL (missing: OPENGL_opengl_LIBRARY OPENGL_glx_LIBRARY OPENGL_INCLUDE_DIR) 
+-- Checking for module 'libdrm'
+--   Package 'libdrm', required by 'virtual:world', not found
+-- Checking for module 'gbm'
+--   Package 'gbm', required by 'virtual:world', not found
+-- Checking for one of the modules 'dbus-1;dbus'
+-- Checking for one of the modules 'ibus-1.0;ibus'
+-- Checking for modules 'libunwind;libunwind-generic'
+--   Package 'libunwind', required by 'virtual:world', not found
+--   Package 'libunwind-generic', required by 'virtual:world', not found
+-- Checking for module 'libusb-1.0>=1.0.16'
+--   Package 'libusb-1.0', required by 'virtual:world', not found
+-- Could NOT find LibUSB (missing: LibUSB_LIBRARY LibUSB_INCLUDE_PATH) (found version "LibUSB_VERSION-NOTFOUND")
+-- 
+-- SDL3 was configured with the following options:
+-- 
+-- Platform: Linux-6.12.67-linuxkit
+-- 64-bit:   TRUE
+-- Compiler: /usr/bin/cc
+-- Revision: 
+-- Vendor:   
+-- 
+-- Subsystems:
+--   Audio:    ON
+--   Video:    ON
+--   GPU:      ON
+--   Render:   ON
+--   Camera:   ON
+--   Joystick: ON
+--   Haptic:   ON
+--   Hidapi:   ON
+--   Power:    ON
+--   Sensor:   ON
+--   Dialog:   ON
+-- 
+-- Options:
+--   SDL_ALSA                    (Wanted: ON): ON
+--   SDL_ALSA_SHARED             (Wanted: ON): ON
+--   SDL_ALTIVEC                 (Wanted: OFF): OFF
+--   SDL_ARMNEON                 (Wanted: OFF): OFF
+--   SDL_ARMSIMD                 (Wanted: OFF): OFF
+--   SDL_ASAN                    (Wanted: OFF): OFF
+--   SDL_ASSEMBLY                (Wanted: ON): ON
+--   SDL_ASSERTIONS              (Wanted: auto): auto
+--   SDL_AVX                     (Wanted: ON): ON
+--   SDL_AVX2                    (Wanted: ON): ON
+--   SDL_AVX512F                 (Wanted: ON): ON
+--   SDL_BACKGROUNDING_SIGNAL    (Wanted: OFF): OFF
+--   SDL_CCACHE                  (Wanted: OFF): OFF
+--   SDL_CLANG_TIDY              (Wanted: OFF): OFF
+--   SDL_CLOCK_GETTIME           (Wanted: ON): ON
+--   SDL_COCOA                   (Wanted: OFF): OFF
+--   SDL_DBUS                    (Wanted: ON): OFF
+--   SDL_DIRECTX                 (Wanted: OFF): OFF
+--   SDL_DISABLE_INSTALL         (Wanted: ON): OFF
+--   SDL_DISABLE_UNINSTALL       (Wanted: OFF): OFF
+--   SDL_DISKAUDIO               (Wanted: ON): ON
+--   SDL_DUMMYAUDIO              (Wanted: ON): ON
+--   SDL_DUMMYCAMERA             (Wanted: ON): ON
+--   SDL_DUMMYVIDEO              (Wanted: ON): ON
+--   SDL_EXAMPLES                (Wanted: OFF): OFF
+--   SDL_EXAMPLES_LINK_SHARED    (Wanted: ON): OFF
+--   SDL_FOREGROUNDING_SIGNAL    (Wanted: OFF): OFF
+--   SDL_GCC_ATOMICS             (Wanted: ON): ON
+--   SDL_GPU_DXVK                (Wanted: OFF): OFF
+--   SDL_HIDAPI                  (Wanted: ON): ON
+--   SDL_HIDAPI_JOYSTICK         (Wanted: ON): ON
+--   SDL_HIDAPI_LIBUSB           (Wanted: ON): OFF
+--   SDL_HIDAPI_LIBUSB_SHARED    (Wanted: ON): OFF
+--   SDL_IBUS                    (Wanted: ON): OFF
+--   SDL_INSTALL_TESTS           (Wanted: OFF): OFF
+--   SDL_JACK                    (Wanted: ON): OFF
+--   SDL_JACK_SHARED             (Wanted: ON): OFF
+--   SDL_KMSDRM                  (Wanted: ON): OFF
+--   SDL_KMSDRM_SHARED           (Wanted: ON): OFF
+--   SDL_LASX                    (Wanted: OFF): OFF
+--   SDL_LIBC                    (Wanted: ON): ON
+--   SDL_LIBICONV                (Wanted: OFF): OFF
+--   SDL_LIBUDEV                 (Wanted: ON): OFF
+--   SDL_LSX                     (Wanted: OFF): OFF
+--   SDL_METAL                   (Wanted: OFF): OFF
+--   SDL_MMX                     (Wanted: ON): ON
+--   SDL_OFFSCREEN               (Wanted: ON): ON
+--   SDL_OPENGL                  (Wanted: ON): OFF
+--   SDL_OPENGLES                (Wanted: ON): ON
+--   SDL_OPENVR                  (Wanted: OFF): OFF
+--   SDL_OSS                     (Wanted: OFF): OFF
+--   SDL_PIPEWIRE                (Wanted: ON): OFF
+--   SDL_PIPEWIRE_SHARED         (Wanted: ON): OFF
+--   SDL_PTHREADS                (Wanted: ON): ON
+--   SDL_PTHREADS_SEM            (Wanted: ON): ON
+--   SDL_PULSEAUDIO              (Wanted: ON): OFF
+--   SDL_PULSEAUDIO_SHARED       (Wanted: ON): OFF
+--   SDL_RENDER_D3D              (Wanted: OFF): OFF
+--   SDL_RENDER_D3D11            (Wanted: OFF): OFF
+--   SDL_RENDER_D3D12            (Wanted: OFF): OFF
+--   SDL_RENDER_GPU              (Wanted: ON): ON
+--   SDL_RENDER_METAL            (Wanted: ON): OFF
+--   SDL_RENDER_VULKAN           (Wanted: ON): ON
+--   SDL_ROCKCHIP                (Wanted: OFF): OFF
+--   SDL_RPATH                   (Wanted: ON): ON
+--   SDL_RPI                     (Wanted: OFF): OFF
+--   SDL_SNDIO                   (Wanted: ON): OFF
+--   SDL_SNDIO_SHARED            (Wanted: ON): OFF
+--   SDL_SSE                     (Wanted: ON): ON
+--   SDL_SSE2                    (Wanted: ON): ON
+--   SDL_SSE3                    (Wanted: ON): ON
+--   SDL_SSE4_1                  (Wanted: ON): ON
+--   SDL_SSE4_2                  (Wanted: ON): ON
+--   SDL_SYSTEM_ICONV            (Wanted: ON): ON
+--   SDL_TESTS                   (Wanted: OFF): OFF
+--   SDL_TESTS_LINK_SHARED       (Wanted: ON): OFF
+--   SDL_VIRTUAL_JOYSTICK        (Wanted: ON): ON
+--   SDL_VIVANTE                 (Wanted: OFF): OFF
+--   SDL_VULKAN                  (Wanted: ON): ON
+--   SDL_WASAPI                  (Wanted: OFF): OFF
+--   SDL_WAYLAND                 (Wanted: OFF): OFF
+--   SDL_WAYLAND_LIBDECOR        (Wanted: OFF): OFF
+--   SDL_WAYLAND_LIBDECOR_SHARED (Wanted: OFF): OFF
+--   SDL_WAYLAND_SHARED          (Wanted: OFF): OFF
+--   SDL_X11                     (Wanted: OFF): OFF
+--   SDL_X11_SHARED              (Wanted: OFF): OFF
+--   SDL_X11_XCURSOR             (Wanted: OFF): OFF
+--   SDL_X11_XDBE                (Wanted: OFF): OFF
+--   SDL_X11_XFIXES              (Wanted: OFF): OFF
+--   SDL_X11_XINPUT              (Wanted: OFF): OFF
+--   SDL_X11_XRANDR              (Wanted: OFF): OFF
+--   SDL_X11_XSCRNSAVER          (Wanted: OFF): OFF
+--   SDL_X11_XSHAPE              (Wanted: OFF): OFF
+--   SDL_XINPUT                  (Wanted: OFF): OFF
+-- 
+--  Build Shared Library: ON
+--  Build Static Library: OFF
+-- 
+-- If something was not detected, although the libraries
+-- were installed, then make sure you have set the
+-- CMAKE_C_FLAGS and CMAKE_PREFIX_PATH CMake variables correctly.
+-- 
+-- SDL3 fetched and configured ()
+-- SDL3 windowing backend enabled
+-- OpenAL audio backend enabled
+-- GLM math library enabled (DirectX 8 replacement)
+-- GameSpy server name is set to server.cnc-online.net
+-- Populating lzhl
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /work/build/linux64-deploy/lzhl-subbuild
+[0/7] Performing update step for 'lzhl-populate'
+[1/7] No patch step for 'lzhl-populate'
+[3/7] No configure step for 'lzhl-populate'
+[4/7] No build step for 'lzhl-populate'
+[5/7] No install step for 'lzhl-populate'
+[6/7] No test step for 'lzhl-populate'
+[7/7] Completed 'lzhl-populate'
+-- Zero Hour install path not found. Registry keys for 'Command and Conquer Generals Zero Hour' not found. Zero Hour targets will be built, but not installed. You can specify the path manually by setting RTS_INSTALL_PREFIX_ZEROHOUR.
+-- Generals install path not found. Registry keys for 'Generals' not found. Generals targets will be built, but not installed. You can specify the path manually by setting RTS_INSTALL_PREFIX_GENERALS.
+-- Enabled features:
+ * CoreTools, Build Core Mod Tools
+ * ZeroHourStuff, Build Zero Hour code
+ * GeneralsStuff, Build Generals code
+ * SDL3Windowing, Using SDL3 for windowing (Linux)
+ * OpenALAudio, Using OpenAL for audio (Linux)
+ * ZeroHourTools, Build Zero Hour Mod Tools
+ * GeneralsTools, Build Generals Mod Tools
+ * GameMemoryEnable, Build with the original game memory implementation
+ * MemoryPoolMpsbDlink, Build with Memory Pool backlink
+ * MemoryPoolDebug, Build with Memory Pool debug
+ * MemoryPoolDebugCustomNew, Build with Memory Pool custom new
+ * MemoryPoolDebugBoundingwall, Build with Memory Pool Bounding Wall
+ * SecureConnections, Connect to services using HTTPS.
+
+-- Disabled features:
+ * CoreExtras, Build Core Extra Tools/Tests
+ * ProfileBuild, Building as a "Profile" build
+ * DebugBuild, Building as a "Debug" build
+ * AddressSanitizer, Building with address sanitizer
+ * Vc6FullDebug, Building VC6 with full debug info
+ * FFmpegSupport, Building with FFmpeg support
+ * ZeroHourExtras, Build Zero Hour Extra Tools/Tests
+ * ZeroHourDocs, Build Zero Hour Documentation
+ * GeneralsExtras, Build Generals Extra Tools/Tests
+ * GeneralsDocs, Build Generals Documentation
+ * DebugCheats, Build with Debug Cheats in release builds
+ * DebugIncludeDebugLogInCrcLog, Build with Debug Logging in CRC log
+ * DebugMultiInstance, Build with Multi Client Instance support
+ * MemoryPoolOverrideMalloc, Build with Memory Pool malloc
+ * MemoryPoolDebugCheckpointing, Build with Memory Pool checkpointing
+ * MemoryPoolDebugStacktrace, Build with Memory Pool Stacktrace
+ * MemoryPoolDebugIntenseVerify, Build with Memory Pool intense verify
+ * MemoryPoolDebugCheckBlockOwnership, Build with Memory Pool block ownership checks
+ * MemoryPoolDebugIntenseDmaBookkeeping, Build with Memory Pool intense DMA bookkeeping
+ * CrashDumpEnable, Build with Crash Dumps
+ * OpenSSL, Use OpenSSL library for HTTPS support.
+ * HttpLogging, Log HTTP activity.
+ * BuildTests, Build small test applications to demo the library.
+ * IncludeVoiceSDK, Library will include the Voice2 SDK component.
+
+-- Configuring done (13.4s)
+-- Generating done (1.3s)
+-- Build files have been written to: /work/build/linux64-deploy
+🔨 Building GeneralsXZH...
+[1/926] Building CXX object GeneralsMD/Code/CompatLib/CMakeFiles/CompatLib.dir/Source/string_compat.cpp.o
+[2/926] Building CXX object GeneralsMD/Code/CompatLib/CMakeFiles/CompatLib.dir/Source/module_compat.cpp.o
+[3/926] Checking the git repository for changes...
+[4/924] Building CXX object GeneralsMD/Code/CompatLib/CMakeFiles/CompatLib.dir/Source/thread_compat.cpp.o
+[5/924] Building CXX object GeneralsMD/Code/CompatLib/CMakeFiles/CompatLib.dir/Source/time_compat.cpp.o
+[6/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/crc.cpp.o
+[7/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/cstraw.cpp.o
+[8/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/DbgHelpLoader.cpp.o
+[9/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/DbgHelpGuard.cpp.o
+[10/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/cpudetect.cpp.o
+/work/Core/Libraries/Source/WWVegas/WWLib/cpudetect.cpp:922:2: warning: #warning FIX Init_Memory() [-Wcpp]
+  922 | #warning FIX Init_Memory()
+      |  ^~~~~~~
+/work/Core/Libraries/Source/WWVegas/WWLib/cpudetect.cpp:970:2: warning: #warning FIX Init_OS() [-Wcpp]
+  970 | #warning FIX Init_OS()
+      |  ^~~~~~~
+[11/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/Except.cpp.o
+[12/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/FastAllocator.cpp.o
+[13/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/ffactory.cpp.o
+[14/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/gcd_lcm.cpp.o
+[15/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/hash.cpp.o
+[16/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/jshell.cpp.o
+[17/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/multilist.cpp.o
+[18/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/mutex.cpp.o
+[19/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/ini.cpp.o
+[20/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/nstrdup.cpp.o
+[21/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/pipe.cpp.o
+[22/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/ramfile.cpp.o
+[23/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/random.cpp.o
+[24/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/readline.cpp.o
+[25/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/realcrc.cpp.o
+[26/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/rawfile.cpp.o
+[27/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/refcount.cpp.o
+[28/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/slnode.cpp.o
+[29/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/stimer.cpp.o
+[30/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/strtok_r.cpp.o
+[31/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/straw.cpp.o
+[32/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/systimer.cpp.o
+[33/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/tgatodxt.cpp.o
+/work/Core/Libraries/Source/WWVegas/WWLib/tgatodxt.cpp:37:96: note: '#pragma message: (gth) disabling TGAtoDXTClass temporarily so I can test the WW libs merge...'
+   37 | #pragma message ("(gth) disabling TGAtoDXTClass temporarily so I can test the WW libs merge...")
+      |                                                                                                ^
+[34/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/textfile.cpp.o
+[35/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/TARGA.cpp.o
+[36/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/thread.cpp.o
+[37/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/trim.cpp.o
+[38/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/vector.cpp.o
+[39/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/wwfile.cpp.o
+[40/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/widestring.cpp.o
+[41/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/wwstring.cpp.o
+[42/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/xpipe.cpp.o
+[43/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/xstraw.cpp.o
+[44/924] Building CXX object Core/Libraries/Source/WWVegas/WWLib/CMakeFiles/core_wwlib.dir/registry.cpp.o
+[45/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/catmullromspline.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/curve.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/hermitespline.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/catmullromspline.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/catmullromspline.cpp:46:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[46/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/cardinalspline.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/curve.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/hermitespline.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/cardinalspline.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/cardinalspline.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[47/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/aabtreecull.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/cullsys.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/aabtreecull.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/aabtreecull.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[48/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmath.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[49/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathaabox.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathaabox.cpp:45:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[50/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathaabtri.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathaabtri.cpp:50:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[51/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathfrustum.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathfrustum.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[52/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathline.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathline.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[53/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathobbobb.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathobbobb.cpp:56:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+/work/Core/Libraries/Source/WWVegas/WWMath/colmathobbobb.cpp: In function 'void compute_contact_normal(ObbCollisionStruct&, CastResultStruct*)':
+/work/Core/Libraries/Source/WWVegas/WWMath/colmathobbobb.cpp:760:68: note: '#pragma message: Fatal assert disabled for demo, obb-obb collision'
+  760 | #pragma message("Fatal assert disabled for demo, obb-obb collision")
+      |                                                                    ^
+[54/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathobbox.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathobbox.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[55/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathobbtri.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathobbtri.cpp:54:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+/work/Core/Libraries/Source/WWVegas/WWMath/colmathobbtri.cpp: In static member function 'static bool CollisionMath::Collide(const OBBoxClass&, const Vector3&, const TriClass&, const Vector3&, CastResultStruct*)':
+/work/Core/Libraries/Source/WWVegas/WWMath/colmathobbtri.cpp:1066:88: note: '#pragma message: (gth) disabling an assert in obb->tri collision, investigate later
+   '
+ 1066 | #pragma message ("(gth) disabling an assert in obb->tri collision, investigate later\n")
+      |                                                                                        ^
+[56/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathplane.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathplane.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[57/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/colmathsphere.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/colmathsphere.cpp:46:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[58/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/cullsys.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/cullsys.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/cullsys.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[59/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/curve.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/curve.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/curve.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[60/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/euler.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/euler.h:40,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/euler.cpp:43:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[61/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/frustum.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/vector3.h:68,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/frustum.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/frustum.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[62/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/gridcull.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/cullsys.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/gridcull.h:56,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/gridcull.cpp:57:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[63/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/hermitespline.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/curve.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/hermitespline.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/hermitespline.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[64/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/lineseg.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/lineseg.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/lineseg.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[65/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/lookuptable.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/lookuptable.h:41,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/lookuptable.cpp:39:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[66/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/matrix3.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/matrix3.h:61,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/matrix3.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[67/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/matrix3d.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/matrix3d.h:87,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/matrix3d.cpp:58:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[68/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/matrix4.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/matrix4.h:61,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/matrix4.cpp:43:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[69/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/pot.cpp.o
+[70/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/ode.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/ode.h:40,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/ode.cpp:42:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[71/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/obbox.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/obbox.h:46,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/obbox.cpp:50:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[72/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/quat.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/quat.h:40,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/quat.cpp:52:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[73/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/tri.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/tri.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/tri.cpp:39:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[74/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/tcbspline.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/curve.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/hermitespline.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/tcbspline.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/tcbspline.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[75/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/v3_rnd.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/v3_rnd.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/v3_rnd.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[76/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/vehiclecurve.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/curve.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/vehiclecurve.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/vehiclecurve.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[77/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/vp.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/vector2.h:54,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/vp.cpp:39:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[78/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/cmake_pch.hxx.gch
+[79/924] Building CXX object Core/Libraries/Source/WWVegas/WWMath/CMakeFiles/core_wwmath.dir/wwmath.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/wwmath.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/wwmath.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[80/924] Building CXX object Core/Libraries/Source/profile/CMakeFiles/core_profile.dir/cmake_pch.hxx.gch
+[81/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/definitionfactory.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definitionfactory.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definitionfactory.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[82/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/definition.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definition.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definition.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[83/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/definitionfactorymgr.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definitionfactorymgr.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definitionfactorymgr.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[84/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/persistfactory.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/persistfactory.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/persistfactory.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[85/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/definitionmgr.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definitionmgr.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definitionmgr.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[86/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/parameter.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/parameter.h:41,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/parameter.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[87/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/pointerremap.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/pointerremap.h:43,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/pointerremap.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[88/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/saveload.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/saveload.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/saveload.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[89/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/saveloadstatus.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/saveloadstatus.h:21,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/saveloadstatus.cpp:19:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[90/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/saveloadsubsystem.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/saveloadsubsystem.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/saveloadsubsystem.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[91/924] Building CXX object Core/Libraries/Source/profile/CMakeFiles/core_profile.dir/profile_cmd.cpp.o
+[92/924] Building CXX object Core/Libraries/Source/profile/CMakeFiles/core_profile.dir/profile_funclevel.cpp.o
+[93/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/twiddler.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definition.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/twiddler.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/twiddler.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[94/924] Building CXX object Core/Libraries/Source/WWVegas/WWSaveLoad/CMakeFiles/core_wwsaveload.dir/wwsaveload.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/definitionmgr.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWSaveLoad/wwsaveload.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[95/924] Building CXX object Core/Libraries/Source/profile/CMakeFiles/core_profile.dir/profile_result.cpp.o
+/work/Core/Libraries/Source/profile/profile_result.cpp: In member function 'void ProfileResultFileCSV::WriteThread(ProfileFuncLevel::Thread&)':
+/work/Core/Libraries/Source/profile/profile_result.cpp:50:24: warning: format '%x' expects argument of type 'unsigned int', but argument 3 has type 'uintptr_t' {aka 'long unsigned int'} [-Wformat=]
+   50 |   sprintf(help,"prof%08x-all.csv",thread.GetId());
+      |                     ~~~^          ~~~~~~~~~~~~~~
+      |                        |                      |
+      |                        unsigned int           uintptr_t {aka long unsigned int}
+      |                     %08lx
+/work/Core/Libraries/Source/profile/profile_result.cpp:80:24: warning: format '%i' expects argument of type 'int', but argument 3 has type 'u64' {aka 'long unsigned int'} [-Wformat=]
+   80 |       fprintf(f,"\t%I64i",id.GetCalls(i));
+      |                    ~~~~^  ~~~~~~~~~~~~~~
+      |                        |             |
+      |                        int           u64 {aka long unsigned int}
+      |                    %I64li
+/work/Core/Libraries/Source/profile/profile_result.cpp:83:24: warning: format '%i' expects argument of type 'int', but argument 3 has type 'u64' {aka 'long unsigned int'} [-Wformat=]
+   83 |       fprintf(f,"\t%I64i",id.GetFunctionTime(i));
+      |                    ~~~~^  ~~~~~~~~~~~~~~~~~~~~~
+      |                        |                    |
+      |                        int                  u64 {aka long unsigned int}
+      |                    %I64li
+/work/Core/Libraries/Source/profile/profile_result.cpp:86:24: warning: format '%i' expects argument of type 'int', but argument 3 has type 'u64' {aka 'long unsigned int'} [-Wformat=]
+   86 |       fprintf(f,"\t%I64i",id.GetTime(i));
+      |                    ~~~~^  ~~~~~~~~~~~~~
+      |                        |            |
+      |                        int          u64 {aka long unsigned int}
+      |                    %I64li
+/work/Core/Libraries/Source/profile/profile_result.cpp:89:24: warning: format '%i' expects argument of type 'int', but argument 3 has type 'u64' {aka 'long unsigned int'} [-Wformat=]
+   89 |       fprintf(f,"\t%I64i",id.GetFunctionTime(i)/id.GetCalls(i));
+      |                    ~~~~^  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                        |                       |
+      |                        int                     u64 {aka long unsigned int}
+      |                    %I64li
+/work/Core/Libraries/Source/profile/profile_result.cpp:92:24: warning: format '%i' expects argument of type 'int', but argument 3 has type 'u64' {aka 'long unsigned int'} [-Wformat=]
+   92 |       fprintf(f,"\t%I64i",id.GetTime(i)/id.GetCalls(i));
+      |                    ~~~~^  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                        |               |
+      |                        int             u64 {aka long unsigned int}
+      |                    %I64li
+[96/924] Building CXX object Core/Libraries/Source/profile/CMakeFiles/core_profile.dir/profile.cpp.o
+[97/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/cmake_pch.hxx.gch
+[98/924] Building CXX object Core/Libraries/Source/profile/CMakeFiles/core_profile.dir/profile_highlevel.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/profile/profile_highlevel.cpp:35:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[99/924] Building CXX object GeneralsMD/Code/CompatLib/CMakeFiles/CompatLib.dir/Source/wchar_compat.cpp.o
+[100/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/CompressionManager.cpp.o
+[101/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/btreeabout.cpp.o
+[102/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/btreedecode.cpp.o
+[103/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/huffabout.cpp.o
+[104/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/btreeencode.cpp.o
+[105/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/refabout.cpp.o
+[106/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/huffdecode.cpp.o
+[107/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/huffencode.cpp.o
+[108/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/refdecode.cpp.o
+[109/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/EAC/refencode.cpp.o
+[110/924] Building CXX object GeneralsMD/Code/CompatLib/CMakeFiles/CompatLib.dir/Source/wnd_compat.cpp.o
+[111/924] Building CXX object Core/Libraries/Source/Compression/CMakeFiles/core_compression.dir/LZHCompress/NoxCompress.cpp.o
+/work/Core/Libraries/Source/Compression/LZHCompress/NoxCompress.cpp: In function 'Bool DecompressFile(char*, char*)':
+/work/Core/Libraries/Source/Compression/LZHCompress/NoxCompress.cpp:64:24: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   64 |                 NoxRead(&rawSize, 1, sizeof(UnsignedInt), inFilePtr);
+      |                        ^
+/work/Core/Libraries/Source/Compression/LZHCompress/NoxCompress.cpp:78:24: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+   78 |                 NoxRead(inBlock, 1, compressedSize, inFilePtr);
+      |                        ^
+/work/Core/Libraries/Source/Compression/LZHCompress/NoxCompress.cpp: In function 'Bool CompressFile(char*, char*)':
+/work/Core/Libraries/Source/Compression/LZHCompress/NoxCompress.cpp:159:24: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  159 |                 NoxRead(inBlock, 1, rawSize, inFilePtr);
+      |                        ^
+[112/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/cmake_pch.hxx.gch
+[113/924] Linking CXX static library GeneralsMD/Code/CompatLib/libCompatLib.a
+[114/924] Linking CXX static library Core/Libraries/Source/Compression/libcompression.a
+[115/924] Linking CXX static library GeneralsMD/Code/CompatLib/libd3dx8.a
+[116/924] Linking CXX static library Core/Libraries/Source/WWVegas/WWDebug/libwwdebug.a
+[117/924] Linking CXX static library Core/Libraries/Source/WWVegas/WWLib/libwwlib.a
+[118/924] Linking CXX static library Core/Libraries/Source/WWVegas/WWSaveLoad/libwwsaveload.a
+[119/924] Linking CXX static library Core/Libraries/Source/WWVegas/WWMath/libwwmath.a
+[120/924] Linking CXX static library Core/Libraries/Source/profile/libcore_profile.a
+[121/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/aabtreebuilder.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/aabtreebuilder.h:41,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/aabtreebuilder.cpp:60:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[122/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/animobj.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/animobj.h:43,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/animobj.cpp:61:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[123/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/assetmgr.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/assetmgr.h:40,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/assetmgr.cpp:80:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WW3D2/ringobj.h:48,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/assetmgr.cpp:118:
+/work/Core/Libraries/Source/WWVegas/WW3D2/prim_anim.h: In member function 'float PrimitiveAnimationChannelClass<T>::KeyClass::Set_Time(float)':
+/work/Core/Libraries/Source/WWVegas/WW3D2/prim_anim.h:85:90: warning: no return statement in function returning non-void [-Wreturn-type]
+   85 |                 float                   Set_Time (float time)           { m_Time = time; }
+      |                                                                                          ^
+[124/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/camera.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/camera.h:48,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/camera.cpp:74:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[125/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/boxrobj.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/boxrobj.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/boxrobj.cpp:91:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[126/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/ddsfile.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/ddsfile.h:23,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/ddsfile.cpp:21:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[127/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/dazzle.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dazzle.h:21,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dazzle.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[128/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/decalmsh.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/decalmsh.h:41,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/decalmsh.cpp:54:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[129/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/dx8fvf.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8fvf.h:44,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8fvf.cpp:42:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[130/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/dx8caps.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8caps.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[131/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/dx8indexbuffer.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8indexbuffer.h:41,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8indexbuffer.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[132/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/dx8rendererdebugger.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8rendererdebugger.h:41,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8rendererdebugger.cpp:19:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[133/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/dx8vertexbuffer.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8vertexbuffer.h:42,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8vertexbuffer.cpp:42:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[134/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/dx8renderer.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8renderer.h:42,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8renderer.cpp:43:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[135/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/hanimmgr.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/hanimmgr.h:40,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/hanimmgr.cpp:49:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[136/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/dx8wrapper.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h:44,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp:53:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+/work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp: In static member function 'static bool DX8Wrapper::Set_Device_Resolution(int, int, int, int, bool)':
+/work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp:1286:84: note: '#pragma message: TODO: support changing windowed status and changing the bit depth'
+ 1286 | #pragma message("TODO: support changing windowed status and changing the bit depth")
+      |                                                                                    ^
+[137/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/hlod.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/animobj.h:43,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/hlod.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/hlod.cpp:129:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[138/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/hmorphanim.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/hmorphanim.h:41,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/hmorphanim.cpp:39:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[139/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/hrawanim.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/hrawanim.h:41,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/hrawanim.cpp:53:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[140/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/htreemgr.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/htreemgr.h:40,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/htreemgr.cpp:47:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[141/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/light.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/light.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/light.cpp:59:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[142/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/lightenvironment.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/lightenvironment.h:42,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/lightenvironment.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[143/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/linegrp.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/sharebuf.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/linegrp.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[144/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/mapper.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/mapper.h:42,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/mapper.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[145/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/matrixmapper.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/matrixmapper.h:42,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/matrixmapper.cpp:53:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[146/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/mesh.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/mesh.h:40,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/mesh.cpp:89:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[147/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/meshbuild.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshbuild.h:43,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshbuild.cpp:61:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[148/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/meshgeometry.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshgeometry.h:41,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshgeometry.cpp:88:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[149/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/meshmatdesc.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshmatdesc.h:41,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshmatdesc.cpp:39:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[150/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/meshmdl.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/vector2.h:54,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshmdl.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshmdl.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[151/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/meshmdlio.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWMath/vector2.h:54,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshmdl.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshmdlio.cpp:78:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[152/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/motchan.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/motchan.h:40,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/motchan.cpp:47:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[153/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/nullrobj.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/rendobj.h:43,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/nullrobj.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/nullrobj.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[154/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/part_emt.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/rendobj.h:43,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/part_emt.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/part_emt.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[155/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/part_buf.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/rendobj.h:43,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/part_buf.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/part_buf.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[156/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/part_ldr.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/proto.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/part_ldr.h:37,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/part_ldr.cpp:36:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[157/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/rinfo.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/rinfo.h:42,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/rinfo.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[158/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/render2d.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/render2d.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[159/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/scene.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/scene.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/scene.cpp:64:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[160/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/shader.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/shader.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/shader.cpp:43:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+/work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/shader.cpp: In member function 'void ShaderClass::Apply()':
+/work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/shader.cpp:967:116: note: '#pragma message: (gth) Generals added a feature here WW3D::Is_Coloring_Enabled() which needs to be merged properly'
+  967 | #pragma message("(gth) Generals added a feature here WW3D::Is_Coloring_Enabled() which needs to be merged properly")
+      |                                                                                                                    ^
+[161/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/sortingrenderer.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/sortingrenderer.h:21,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/sortingrenderer.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[162/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/vertmaterial.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/vertmaterial.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/vertmaterial.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[163/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/ww3d.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/ww3d.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/ww3d.cpp:84:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+/work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/ww3d.cpp:165:146: warning: arithmetic between floating-point type 'float' and enumeration type '<unnamed enum>' is deprecated [-Wdeprecated-enum-float-conversion]
+  165 | float                                                                                                           WW3D::LogicFrameTimeMs = 1000.0f / WWSyncPerSecond; // initialized to something to avoid division by zero on first use
+      |                                                                                                                                          ~~~~~~~~^~~~~~~~~~~~~~~~~
+[164/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/aabtree.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/aabtree.h:42,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/aabtree.cpp:65:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[165/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/agg_def.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/proto.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/agg_def.h:37,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/agg_def.cpp:36:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[166/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/animatedsoundmgr.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/simplevec.h:52,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/animatedsoundmgr.h:42,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/animatedsoundmgr.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWAudio/AudibleSound.h:53,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/animatedsoundmgr.cpp:49:
+/work/Core/Libraries/Source/WWVegas/WWAudio/SoundSceneObj.h: In member function 'virtual void SoundSceneObjClass::On_Event(AudioCallbackClass::EVENTS, uint32, uint32)':
+/work/Core/Libraries/Source/WWVegas/WWAudio/SoundSceneObj.h:245:64: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+  245 |                                 m_pCallback->On_Logical_Heard ((LogicalListenerClass *)param1, (LogicalSoundClass *)param2);
+      |                                                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/work/Core/Libraries/Source/WWVegas/WWAudio/SoundSceneObj.h:245:96: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+  245 |                                 m_pCallback->On_Logical_Heard ((LogicalListenerClass *)param1, (LogicalSoundClass *)param2);
+      |                                                                                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+[167/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/assetstatus.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/assetstatus.h:21,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/assetstatus.cpp:19:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[168/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/bitmaphandler.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/bitmaphandler.h:21,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/bitmaphandler.cpp:19:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[169/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/bwrender.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/bwrender.h:41,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/bwrender.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[170/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/bmp2d.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshgeometry.h:41,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dynamesh.h:37,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/bmp2d.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/bmp2d.cpp:40:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[171/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/coltest.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/coltest.h:42,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/coltest.cpp:38:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[172/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/collect.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/rendobj.h:43,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/collect.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/collect.cpp:74:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[173/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/composite.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/rendobj.h:43,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/composite.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/composite.cpp:58:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[174/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/decalsys.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/decalsys.h:41,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/decalsys.cpp:50:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[175/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/dx8polygonrenderer.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dx8polygonrenderer.h:41,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dx8polygonrenderer.cpp:41:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[176/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/distlod.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/proto.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/distlod.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/distlod.cpp:80:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[177/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.cpp.o
+FAILED: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.cpp.o 
+/usr/bin/c++ -DDISABLE_MEMORYPOOL_CHECKPOINTING=1 -DDISABLE_MEMORYPOOL_STACKTRACE=1 -DHAVE_STRLCAT -DHAVE_STRLCPY -DHAVE_WCSLCAT -DHAVE_WCSLCPY -DNDEBUG -DRTS_RELEASE -DRTS_ZEROHOUR=1 -DSAGE_USE_FREETYPE -DSAGE_USE_GLM -DSAGE_USE_OPENAL -DSAGE_USE_SDL3 -DWIN32_LEAN_AND_MEAN -D_UNIX -I/work/GeneralsMD/Code/CompatLib/Include -I/work/build/linux64-deploy/Core/Libraries/Source/EABrowserEngine/.. -I/work/Core/Libraries/Source/WWVegas/WWLib -I/work/GeneralsMD/Code/Libraries/Source/WWVegas -I/work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2 -I/work/Core/Libraries/Source/WWVegas -I/work/Core/Libraries/Source/WWVegas/WW3D2 -I/work/Core/Libraries/Source/WWVegas/WWAudio -I/work/Core/Libraries/Source/WWVegas/WWDebug -I/work/Core/Libraries/Source/WWVegas/WWMath -I/work/Core/Libraries/Source/WWVegas/WWSaveLoad -I/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk -I/work/Dependencies/Utility -I/work/Core/Libraries/Include -I/work/resources/gitinfo -isystem /work/build/linux64-deploy/vcpkg_installed/x64-linux/include -O2 -g -DNDEBUG -std=c++20 -pthread -DXML_STATIC -Winvalid-pch -include /work/build/linux64-deploy/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/cmake_pch.hxx -MD -MT GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.cpp.o -MF GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.cpp.o.d -o GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.cpp.o -c /work/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.cpp
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:219,
+                 from /work/GeneralsMD/Code/CompatLib/Include/windows.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.h:35,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.cpp:33:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:66:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:78: note: this is the location of the previous definition
+   78 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+/work/Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.cpp:55:10: fatal error: EABrowserEngine/BrowserEngine.h: No such file or directory
+   55 | #include "EABrowserEngine/BrowserEngine.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+[178/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/dx8texman.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dx8texman.h:42,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dx8texman.cpp:53:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+[179/924] Building CXX object GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/CMakeFiles/z_ww3d2.dir/__/__/__/__/__/__/Core/Libraries/Source/WWVegas/WW3D2/dynamesh.cpp.o
+In file included from /work/GeneralsMD/Code/CompatLib/Include/windows_compat.h:16,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:36,
+                 from /work/Core/Libraries/Source/WWVegas/WWLib/always.h:39,
+                 from /work/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/meshgeometry.h:41,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dynamesh.h:37,
+                 from /work/Core/Libraries/Source/WWVegas/WW3D2/dynamesh.cpp:37:
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:130: warning: "DECLARE_HANDLE" redefined
+  130 | #define DECLARE_HANDLE(a) typedef HANDLE a
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:35:
+/work/GeneralsMD/Code/CompatLib/Include/types_compat.h:60: note: this is the location of the previous definition
+   60 | #define DECLARE_HANDLE(name) typedef HANDLE name
+      | 
+In file included from /work/Core/Libraries/Source/WWVegas/WWLib/WWCommon.h:46:
+/work/GeneralsMD/Code/CompatLib/Include/file_compat.h:257: warning: "INVALID_HANDLE_VALUE" redefined
+  257 | #define INVALID_HANDLE_VALUE ((void*)-1)
+      | 
+/work/build/linux64-deploy/_deps/dxvk-src/include/dxvk/windows_base.h:372: note: this is the location of the previous definition
+  372 | #define INVALID_HANDLE_VALUE ((HANDLE)-1)
+      | 
+ninja: build stopped: subcommand failed.
+✅ Build complete. Log: logs/build_zh_linux64-deploy_docker.log
