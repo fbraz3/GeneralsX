@@ -1066,8 +1066,15 @@ GlobalData::GlobalData()
   {
     AsciiString myDocumentsDirectory = temp;
 
-    if (myDocumentsDirectory.getCharAt(myDocumentsDirectory.getLength() -1) != '\\')
-      myDocumentsDirectory.concat( '\\' );
+// TheSuperHackers @bugfix BenderAI 14/02/2026 Cross-platform path separator
+#ifdef _WIN32
+    const char pathSep = '\\';
+#else
+    const char pathSep = '/';
+#endif
+
+    if (myDocumentsDirectory.getCharAt(myDocumentsDirectory.getLength() -1) != pathSep)
+      myDocumentsDirectory.concat( pathSep );
 
     AsciiString leafName;
 
@@ -1079,8 +1086,8 @@ GlobalData::GlobalData()
     }
 
     myDocumentsDirectory.concat( leafName );
-    if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != '\\')
-      myDocumentsDirectory.concat( '\\' );
+    if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != pathSep)
+      myDocumentsDirectory.concat( pathSep );
 
 // TheSuperHackers @build fighter19 11/02/2026 Cross-platform directory creation
 #ifdef _WIN32
