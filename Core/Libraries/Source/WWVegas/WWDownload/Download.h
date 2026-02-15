@@ -22,7 +22,7 @@
 
 //#include "../resource.h"       // main symbols
 
-// TheSuperHackers @build fbraz 10/02/2026
+// GeneralsX @build fbraz 10/02/2026
 // Need windows_compat.h for HRESULT type on Linux
 #ifndef _WIN32
 #include "windows_compat.h"

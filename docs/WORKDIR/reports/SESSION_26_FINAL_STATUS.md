@@ -143,7 +143,7 @@ Windows-specific compiler intrinsics require macro wrappers for GCC:
 - Replace line 34 `struct MEMORYSTATUS;` with:
 ```cpp
 // MEMORYSTATUS - Windows memory status structure
-// TheSuperHackers @build BenderAI 11/02/2026 Linux stub - memory profiling disabled
+// GeneralsX @build BenderAI 11/02/2026 Linux stub - memory profiling disabled
 typedef struct _MEMORYSTATUS {
     unsigned long dwLength;
     unsigned long dwMemoryLoad;

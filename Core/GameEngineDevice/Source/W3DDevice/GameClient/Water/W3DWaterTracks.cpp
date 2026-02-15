@@ -837,7 +837,7 @@ void WaterTracksRenderSystem::update()
 	}
 }
 
-// TheSuperHackers @bugfix BenderAI 13/02/2026 Windows-only debug function (keyboard input)
+// GeneralsX @bugfix BenderAI 13/02/2026 Windows-only debug function (keyboard input)
 #ifdef _WIN32
 void TestWaterUpdate(void);
 #endif
@@ -860,7 +860,7 @@ Try improving the fit to vertical surfaces like cliffs.
 		return;
 
 	if (TheGlobalData->m_usingWaterTrackEditor)
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Windows-only debug function
+	// GeneralsX @bugfix BenderAI 13/02/2026 Windows-only debug function
 #ifdef _WIN32
 	if (TheGlobalData->m_usingWaterTrackEditor)
 		TestWaterUpdate();
@@ -1089,7 +1089,7 @@ extern HWND ApplicationHWnd;
 //TODO: Fix editor so it actually draws the wave segment instead of line while editing
 //Could freeze all the water while editing?  Or keep setting elapsed time on current segment.
 //Have to make it so seamless merge of segments at final position.
-// TheSuperHackers @bugfix BenderAI 13/02/2026 Windows-only debug function (keyboard input)
+// GeneralsX @bugfix BenderAI 13/02/2026 Windows-only debug function (keyboard input)
 #ifdef _WIN32
 void TestWaterUpdate(void)
 {

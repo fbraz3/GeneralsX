@@ -2,14 +2,14 @@
 
 #include <string.h>  // For memset, used by GlobalMemoryStatus stub
 
-// TheSuperHackers @build BenderAI 12/02/2026 Pre-define guards to prevent DXVK conflicts
+// GeneralsX @build BenderAI 12/02/2026 Pre-define guards to prevent DXVK conflicts
 // CRITICAL: Define these BEFORE including windows_base.h so DXVK skips its incomplete versions!
 #ifndef _WIN32
 #define _MEMORYSTATUS_DEFINED  // Tell DXVK: we'll provide the full 8-field MEMORYSTATUS later
 #define _IUNKNOWN_DEFINED      // Tell DXVK: we'll provide IUnknown via DECLARE_INTERFACE later
 #endif
 
-// TheSuperHackers @build BenderAI 12/02/2026 Include DXVK Windows types FIRST
+// GeneralsX @build BenderAI 12/02/2026 Include DXVK Windows types FIRST
 // CRITICAL: On Linux, DXVK provides core Windows types (WINBOOL, LARGE_INTEGER, PALETTEENTRY, etc.)
 // Must be included BEFORE our compatibility layer so d3d8types.h can find them!
 #ifndef _WIN32
@@ -24,7 +24,7 @@
 #define __stdcall
 #endif
 
-// TheSuperHackers @build BenderAI 12/02/2026 Windows __fastcall passes first 2 args in ECX/EDX registers
+// GeneralsX @build BenderAI 12/02/2026 Windows __fastcall passes first 2 args in ECX/EDX registers
 #if !defined(__fastcall)
 #define __fastcall
 #endif
@@ -65,10 +65,10 @@ static unsigned int GetDoubleClickTime()
 // types_compat.h adds Windows-specific types (HANDLE, HWND, etc.)
 #include "types_compat.h"
 
-// TheSuperHackers @build fighter19 10/02/2026 Bender - Win32 window management API stubs
+// GeneralsX @build BenderAI 10/02/2026 - Win32 window management API stubs
 #include "wnd_compat.h"
 
-// TheSuperHackers @build BenderAI 13/02/2026 pthread-based threading (fighter19 pattern)
+// GeneralsX @build BenderAI 13/02/2026 pthread-based threading (fighter19 pattern)
 #ifndef _WIN32
 #include "thread_compat.h"
 #endif
@@ -144,13 +144,13 @@ typedef const void *LPCVOID;
 #include <unistd.h>
 #include <sys/time.h>
 
-// TheSuperHackers @build Bender 11/02/2026 Windows crash dump types (stubbed for Linux)
+// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Windows crash dump types (stubbed for Linux)
 #ifndef _WIN32
 struct _EXCEPTION_POINTERS;
 typedef struct _EXCEPTION_POINTERS EXCEPTION_POINTERS;
 #endif
 
-// TheSuperHackers @build fighter19 11/02/2026 Bender - Windows version info stubs (GameState.cpp)
+// GeneralsX @build BenderAI 11/02/2026 - Windows version info stubs (GameState.cpp)
 #ifndef _WIN32
 
 // OSVERSIONINFO structure for version checking (stubbed on Linux)
@@ -206,7 +206,7 @@ static inline DWORD timeEndPeriod(DWORD period)
 // to avoid conflicts between old and new compat systems
 #ifndef DEPENDENCIES_UTILITY_COMPAT_H
 // Threading functions now defined above, no need for thread_compat.h
-// #include "thread_compat.h"  // TheSuperHackers @build 10/02/2026 Bender - Commented out (functions now inline above)
+// #include "thread_compat.h"  // TheSuperHackers @build 10/02/2026 BenderAI - Commented out (functions now inline above)
 #include "tchar_compat.h"
 #include "time_compat.h"
 #include "string_compat.h"
@@ -217,12 +217,12 @@ static inline DWORD timeEndPeriod(DWORD period)
 #include "gdi_compat.h"
 #include "wnd_compat.h"
 #include "file_compat.h"
-#include "socket_compat.h"  // TheSuperHackers @build fbraz 10/02/2026 - Win32 Sockets → POSIX BSD sockets (WWDownload)
+#include "socket_compat.h"  // GeneralsX @build fbraz 10/02/2026 - Win32 Sockets → POSIX BSD sockets (WWDownload)
 //#include "intrin_compat.h"
 
 // ================================================================================================
 // MUTEX & ERROR HANDLING STUBS (ClientInstance multi-instance check)
-// TheSuperHackers @build fighter19 11/02/2026 Bender - Multi-instance protection (always allows on Linux)
+// GeneralsX @build BenderAI 11/02/2026 - Multi-instance protection (always allows on Linux)
 // ================================================================================================
 
 // GetLastError - returns pseudo error code (always 0 = success on Linux stub)
@@ -260,7 +260,7 @@ inline int CloseHandle(void* hObject) {
 #endif
 
 // Process spawning stubs (WorldBuilder/external tools)
-// TheSuperHackers @build BenderAI 12/02/2026 - MSVC _spawnl not available on Linux
+// GeneralsX @build BenderAI 12/02/2026 - MSVC _spawnl not available on Linux
 // Used to launch WorldBuilder.exe (Windows-only map editor) via Main Menu button
 // Phase 1 (compilation): Stub returns -1 (error) since .exe won't run on Linux anyway
 // Future: Could use wine/proton to launch WorldBuilder, or build native Linux map editor

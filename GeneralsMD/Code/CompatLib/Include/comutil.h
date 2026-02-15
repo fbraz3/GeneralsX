@@ -1,6 +1,6 @@
 #pragma once
 
-// TheSuperHackers @build fbraz 10/02/2026 Bender
+// GeneralsX @build fbraz 10/02/2026 Bender
 // COM utility header wrapper - redirects to platform-specific implementation
 
 #ifdef _WIN32

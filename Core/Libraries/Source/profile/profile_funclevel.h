@@ -48,7 +48,7 @@
 #include <Utility/intrin_compat.h>
 #include <cstdint>
 
-// TheSuperHackers @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
+// GeneralsX @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
 #ifndef _INT64_TYPES_DEFINED
 	#define _INT64_TYPES_DEFINED
 	typedef int64_t __int64;
@@ -150,7 +150,7 @@ public:
       \param frame number of recorded frame, or Total
       \return number of calls
     */
-    // TheSuperHackers @refactor fighter19 10/02/2026 Bender
+    // GeneralsX @refactor BenderAI 10/02/2026
     // Changed from unsigned _int64 (MSVC-specific) to u64 (platform typedef)
     u64 GetCalls(unsigned frame) const;
 
@@ -208,7 +208,7 @@ public:
 
       \return profile thread ID
     */
-    // TheSuperHackers @refactor fighter19 10/02/2026 Bender
+    // GeneralsX @refactor BenderAI 10/02/2026
     // Changed unsigned → uintptr_t to avoid pointer precision loss on 64-bit
     uintptr_t GetId(void) const
     {

@@ -27,7 +27,7 @@
 #include "GameLogic/GameLogic.h"
 #include "GameClient/GameClient.h"
 
-// TheSuperHackers @build BenderAI 12/02/2026 Cross-platform executable path retrieval
+// GeneralsX @build BenderAI 12/02/2026 Cross-platform executable path retrieval
 #ifndef _WIN32
 #ifdef __linux__
 #include <unistd.h>  // readlink
@@ -143,7 +143,7 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 {
 	DWORD totalStartTimeMillis = GetTickCount();
 
-	// TheSuperHackers @build BenderAI 12/02/2026 Cross-platform executable path retrieval
+	// GeneralsX @build BenderAI 12/02/2026 Cross-platform executable path retrieval
 #ifdef _WIN32
 	WideChar exePath[1024];
 	GetModuleFileNameW(nullptr, exePath, ARRAY_SIZE(exePath));

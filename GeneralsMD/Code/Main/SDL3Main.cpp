@@ -42,7 +42,7 @@
 #include "Common/GameEngine.h"
 #include "Common/GameMemory.h"
 #include "Common/Debug.h"
-#include "Common/version.h"  // TheSuperHackers @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
+#include "Common/version.h"  // GeneralsX @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
 #include "SDL3GameEngine.h"
 
 // CRITICAL SECTIONS (Linux needs these too)
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 		// Initialize memory manager early (required by NEW operator)
 		initMemoryManager();
 
-		// TheSuperHackers @bugfix BenderAI 14/02/2026 Initialize Version singleton
+		// GeneralsX @bugfix BenderAI 14/02/2026 Initialize Version singleton
 		// GameEngine::init() calls updateWindowTitle() which uses TheVersion
 		// Must be created before GameMain() to avoid nullptr dereference
 		TheVersion = NEW Version;
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
 	TheMemoryPoolCriticalSection = nullptr;
 	TheDebugLogCriticalSection = nullptr;
 
-	// TheSuperHackers @bugfix BenderAI 14/02/2026 Cleanup Version singleton
+	// GeneralsX @bugfix BenderAI 14/02/2026 Cleanup Version singleton
 	if (TheVersion) {
 		delete TheVersion;
 		TheVersion = nullptr;

@@ -81,7 +81,7 @@ endif()
 #include "always.h"
 #include "dllist.h"
 
-// TheSuperHackers @build 10/02/2026 Bender
+// GeneralsX @build 10/02/2026 BenderAI
 // Include <d3d8types.h> BEFORE <d3d8.h> but AFTER "always.h" (compat headers must load first)
 #ifndef _WIN32
     // On Linux, DXVK's d3d8types.h has guards: #if defined(_WIN32) && !defined(_WIN64)

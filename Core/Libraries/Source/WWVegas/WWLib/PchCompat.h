@@ -35,7 +35,7 @@
     #include <windows.h>
 #else
     // Linux/Unix platform - provide compatibility stubs
-    // TheSuperHackers @build BenderAI 13/02/2026 Include windows_compat.h for Linux builds
+    // GeneralsX @build BenderAI 13/02/2026 Include windows_compat.h for Linux builds
     // Provides __max/__min macros, threading APIs, file I/O stubs, etc.
     #include "windows_compat.h"
 #endif

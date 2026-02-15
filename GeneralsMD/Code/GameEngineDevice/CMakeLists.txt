@@ -190,7 +190,7 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
 )
 
-# TheSuperHackers @build Bender 11/02/2026 Separate Windows and Linux platform-specific files
+# GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Separate Windows and Linux platform-specific files
 if(WIN32)
     # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
     list(APPEND GAMEENGINEDEVICE_SRC
@@ -245,7 +245,7 @@ target_link_libraries(z_gameenginedevice PUBLIC
 )
 
 # Linux SDL3 windowing/input (Phase 1)
-# TheSuperHackers @build fighter19 11/02/2026 Bender
+# GeneralsX @build BenderAI 11/02/2026
 if(SAGE_USE_SDL3)
     target_link_libraries(z_gameenginedevice PUBLIC sdl3lib)
 endif()

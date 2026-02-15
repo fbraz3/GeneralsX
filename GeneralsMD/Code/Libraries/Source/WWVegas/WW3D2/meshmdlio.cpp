@@ -91,7 +91,7 @@
 #include "dx8wrapper.h"
 
 #ifdef _UNIX
-// TheSuperHackers @build fighter19 10/02/2026 Bender - Include osdep.h from WWLib, not osdep/
+// GeneralsX @build BenderAI 10/02/2026 - Include osdep.h from WWLib, not osdep/
 #include "osdep.h"
 #endif
 

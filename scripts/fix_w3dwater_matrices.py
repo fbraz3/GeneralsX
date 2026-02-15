@@ -44,7 +44,7 @@ def fix_w3dwater_matrices(filepath):
     replacement1 = (
         r'\1'
         '\n'
-        '\t\t// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)\n'
+        '\t\t// GeneralsX @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)\n'
         '\t\tMatrix4x4 curView;\n'
         '\t\tDX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, curView);\n'
         '\t\tD3DXMATRIX inv;\n'
@@ -67,7 +67,7 @@ def fix_w3dwater_matrices(filepath):
     
     # Fix 2: Line 1788 - matProj, matView, matWW3D declaration
     pattern2 = r'D3DXMATRIX matProj, matView, matWW3D;'
-    replacement2 = '// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)\nMatrix4x4 matProj, matView, matWW3D;'
+    replacement2 = '// GeneralsX @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)\nMatrix4x4 matProj, matView, matWW3D;'
     
     if pattern2 in content:
         content = content.replace(pattern2, replacement2, 1)
@@ -98,7 +98,7 @@ def fix_w3dwater_matrices(filepath):
     replacement3 = (
         r'\1'
         '\n'
-        '\t\t// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)\n'
+        '\t\t// GeneralsX @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)\n'
         '\t\tMatrix4x4 curView;\n'
         '\t\tDX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, curView);\n'
         '\t\tD3DXMATRIX inv;\n'

@@ -359,7 +359,7 @@ replace_string_in_file → read_file VERIFY → rebuild
 ### 3. Include Fighter19 Context in Edits
 ```cpp
 // GOOD comment:
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
+// GeneralsX @refactor BenderAI 10/02/2026 - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
 Matrix4x4 DX8Transforms[D3DTS_WORLD+1];
 
 // Documents WHY + WHEN + WHO + SOURCE

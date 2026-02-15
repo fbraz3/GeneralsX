@@ -130,7 +130,7 @@ static void populateLadderListBox( void )
 	GadgetListBoxGetSelected(listboxLadderSelect, &selIndex);
 	if (selIndex < 0)
 		return;
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	selID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLadderSelect, selIndex)));
 	if (!selID)
 		return;
@@ -374,7 +374,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 				if (selectPos < 0)
 					break;
 
-			// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+			// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 			ladderIndex = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData( listboxLadderSelect, selectPos, 0 )));
 				const LadderInfo *li = TheLadderList->findLadderByIndex( ladderIndex );
 				if (li && li->cryptedPassword.isNotEmpty())
@@ -441,7 +441,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 			if (selIndex < 0)
 				break;
 
-		// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+		// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 		selID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLadderSelect, selIndex)));
 		}
 
@@ -629,7 +629,7 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 			{
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
-			// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+			// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 			Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(window->winGetUserData()));
 				if (controlID == ladderInfoID)
 				{
@@ -652,7 +652,7 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 							rcMenu->winBringToTop();
 							rcMenu->winHide(FALSE);
 
-				// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast (int to pointer)
+				// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast (int to pointer)
 				rcMenu->winSetUserData(reinterpret_cast<void*>(static_cast<intptr_t>(selectedID)));				TheWindowManager->winSetLoneWindow(rcMenu);
 
 				GameWindow *st = TheWindowManager->winGetWindowFromId(nullptr,

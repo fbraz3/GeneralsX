@@ -49,7 +49,7 @@
 #include "Common/Registry.h"
 #include "W3DDevice/GameClient/W3DFileSystem.h"
 
-// TheSuperHackers @bugfix fighter19 13/02/2026 BenderAI - io.h is Windows-specific, use unistd.h on Linux
+// GeneralsX @bugfix BenderAI 13/02/2026AI - io.h is Windows-specific, use unistd.h on Linux
 #ifdef _WIN32
 #include <io.h>
 #else

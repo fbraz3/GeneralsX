@@ -80,7 +80,7 @@ interface IUnknown { /* ... */ };
 **Solution A - Debug.cpp Platform Isolation:**
 ```cpp
 // Core/GameEngine/Source/Common/System/Debug.cpp (lines 842-873)
-// TheSuperHackers @build BenderAI 12/02/2026 Platform-specific crash reporting
+// GeneralsX @build BenderAI 12/02/2026 Platform-specific crash reporting
 #ifdef _WIN32
     if (!DX8Wrapper_IsWindowed) {
         if (ApplicationHWnd) {
@@ -106,7 +106,7 @@ interface IUnknown { /* ... */ };
 **Solution B - CompatLib MessageBox Stubs:**
 ```cpp
 // GeneralsMD/Code/CompatLib/Include/wnd_compat.h (lines 76-86)
-// TheSuperHackers @build BenderAI 12/02/2026 Add MessageBoxW/A stubs for Linux
+// GeneralsX @build BenderAI 12/02/2026 Add MessageBoxW/A stubs for Linux
 #ifndef _WIN32
 inline int MessageBoxW(HWND hWnd, const wchar_t* lpText, const wchar_t* lpCaption, UINT uType) {
     return MessageBox(hWnd, nullptr, nullptr, uType);
@@ -143,7 +143,7 @@ inline int MessageBoxA(HWND hWnd, const char* lpText, const char* lpCaption, UIN
 **Solution - Platform Guards:**
 ```cpp
 // Core/GameEngine/Source/Common/WorkerProcess.cpp
-// TheSuperHackers @build BenderAI 12/02/2026 WorkerProcess is Windows-specific
+// GeneralsX @build BenderAI 12/02/2026 WorkerProcess is Windows-specific
 // Linux: Stubbed for now - replay testing disabled until POSIX fork/exec implementation
 // TODO Phase 2: Implement Linux worker process using fork(), pipe2(), and waitpid()
 #ifdef _WIN32
@@ -197,7 +197,7 @@ Int value = static_cast<Int>(reinterpret_cast<uintptr_t>(pointerVariable));
 **Pattern Applied:**
 ```cpp
 #include <fcntl.h>
-// TheSuperHackers @build BenderAI 12/02/2026 io.h is Windows-specific
+// GeneralsX @build BenderAI 12/02/2026 io.h is Windows-specific
 // Linux: Uses POSIX unistd.h for read/write/close/lseek instead
 #ifdef _WIN32
 #include <io.h>
@@ -349,7 +349,7 @@ Major Windows API compatibility fixes for Linux port:
 Progress: ~800+/1254 targets compiled (~63.8%)
 Blocker: StagingRoomGameInfo.cpp SNMP code (44 errors) - Session 31
 
-TheSuperHackers @build BenderAI 12-13/02/2026
+GeneralsX @build BenderAI 12-13/02/2026
 ```
 
 ---
@@ -373,6 +373,6 @@ The next major blocker is GameSpy SNMP networking code in StagingRoomGameInfo.cp
 ---
 
 *Report generated for Session 30 - Linux Port Progress*  
-*TheSuperHackers @build BenderAI 13/02/2026*  
+*GeneralsX @build BenderAI 13/02/2026*  
 *"Bite my shiny metal ass!" - Build progress report complete 🤖*
 

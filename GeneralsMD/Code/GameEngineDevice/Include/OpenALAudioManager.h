@@ -92,7 +92,7 @@ public:
 	// Query state
 	virtual Bool isInitialized() const { return m_isInitialized; }
 
-	// TheSuperHackers @build BenderAI 13/02/2026 - Missing AudioManager pure virtual declarations
+	// GeneralsX @build BenderAI 13/02/2026 - Missing AudioManager pure virtual declarations
 	// (These override abstract base class AudioManager methods)
 	
 	// Device interface

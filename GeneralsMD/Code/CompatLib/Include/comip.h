@@ -1,6 +1,6 @@
 #pragma once
 
-// TheSuperHackers @build fbraz 11/02/2026 Bender
+// GeneralsX @build fbraz 11/02/2026 Bender
 // COM Interface Pointer header wrapper - redirects to platform-specific implementation
 // Used by dx8webbrowser.cpp (DirectX web browser embedding)
 

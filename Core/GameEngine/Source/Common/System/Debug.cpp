@@ -842,7 +842,7 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 
 	/// do additional reporting on the crash, if possible
 
-	// TheSuperHackers @build BenderAI 12/02/2026 Platform-specific crash reporting
+	// GeneralsX @build BenderAI 12/02/2026 Platform-specific crash reporting
 	// Windows: Native MessageBox dialogs
 	// Linux: Console output (crash dialogs would need SDL_ShowSimpleMessageBox)
 	#ifdef _WIN32

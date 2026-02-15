@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 #include <stdarg.h>
-#include <string.h>  // TheSuperHackers @build fbraz 10/02/2026 - strlen, memcpy for strlcpy/strlcat
+#include <string.h>  // GeneralsX @build fbraz 10/02/2026 - strlen, memcpy for strlcpy/strlcat
 
 typedef const char* LPCSTR;
 typedef char* LPSTR;
@@ -12,8 +12,8 @@ extern "C"
 char* itoa(int value, char* str, int base);
 
 int _vsnwprintf(wchar_t* buffer, size_t count, const wchar_t* format, va_list args);
-// TheSuperHackers @build fbraz 11/02/2026 Bender - Removed _strlwr declaration (conflicts with Utility inline definition)
-// TheSuperHackers @build fbraz 11/02/2026 Bender - _strupr implemented in string_compat.cpp as weak symbol
+// GeneralsX @build fbraz 11/02/2026 BenderAI - Removed _strlwr declaration (conflicts with Utility inline definition)
+// GeneralsX @build fbraz 11/02/2026 BenderAI - _strupr implemented in string_compat.cpp as weak symbol
 char* _strupr(char* str);
 }
 #define _vsnprintf vsnprintf
@@ -32,7 +32,7 @@ char* _strupr(char* str);
 #define strnicmp strncasecmp
 #define _strdup strdup
 
-// TheSuperHackers @build fbraz 10/02/2026 Bender
+// GeneralsX @build fbraz 10/02/2026 Bender
 // NOTE: strlcpy/strlcat originally added here for WWDownload/FTP.cpp but WWLib/stringex.h
 // already defines them (lines 137/140). Since WWCommon.h includes stringex.h first,
 // we don't need to redefine. Keeping commented code for reference.

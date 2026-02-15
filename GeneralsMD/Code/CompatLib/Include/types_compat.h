@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// TheSuperHackers @build fighter19 10/02/2026 Bender
+// GeneralsX @build BenderAI 10/02/2026
 // Basic Win32 types - CompatLib must be self-contained
 // These MAY also be defined in bittype.h, but CompatLib compiles standalone
 #ifndef DWORD
@@ -34,12 +34,12 @@ typedef const char* LPCSTR;
 typedef const wchar_t* LPCWSTR;
 #endif
 
-// TheSuperHackers @build fbraz 11/02/2026 Bender - GDI color reference (0x00BBGGRR format)
+// GeneralsX @build fbraz 11/02/2026 BenderAI - GDI color reference (0x00BBGGRR format)
 #ifndef COLORREF
 typedef DWORD COLORREF;
 #endif
 
-// TheSuperHackers @build fbraz 10/02/2026
+// GeneralsX @build fbraz 10/02/2026
 // ARRAY_SIZE macro - get element count of static array
 // Used by WWDownload/FTP.cpp
 #ifndef ARRAY_SIZE
@@ -68,9 +68,9 @@ typedef HANDLE HWND;
 typedef HANDLE HINSTANCE;
 typedef HANDLE HKEY;
 typedef HANDLE HDC;
-typedef HANDLE HFONT;     // TheSuperHackers @build fighter19 10/02/2026 Bender - GDI font handle
-typedef HANDLE HBITMAP;   // TheSuperHackers @build fighter19 10/02/2026 Bender - GDI bitmap handle
-typedef HANDLE HGDIOBJ;   // TheSuperHackers @build fbraz 11/02/2026 Bender - Generic GDI object handle
+typedef HANDLE HFONT;     // GeneralsX @build BenderAI 10/02/2026 - GDI font handle
+typedef HANDLE HBITMAP;   // GeneralsX @build BenderAI 10/02/2026 - GDI bitmap handle
+typedef HANDLE HGDIOBJ;   // GeneralsX @build fbraz 11/02/2026 BenderAI - Generic GDI object handle
 typedef HANDLE HMONITOR;  // Monitor handle (multi-monitor APIs)
 typedef int32_t HRESULT;
 #endif /* _HANDLE_TYPES_DEFINED */
@@ -103,10 +103,10 @@ typedef uint64_t uint64;
 typedef int32_t *LPARAM;
 typedef size_t WPARAM;
 
-// TheSuperHackers @build fighter19 10/02/2026 Bender - Pointer-sized unsigned integer for 64-bit safe pointer arithmetic
+// GeneralsX @build BenderAI 10/02/2026 - Pointer-sized unsigned integer for 64-bit safe pointer arithmetic
 typedef size_t SIZE_T;
 
-// TheSuperHackers @build fbraz 12/02/2026 Bender - COM/OLE types (for WOL browser support)
+// GeneralsX @build fbraz 12/02/2026 BenderAI - COM/OLE types (for WOL browser support)
 // LPDISPATCH is IDispatch* - COM interface pointer for runtime method dispatch
 // On Linux, used only for dx8webbrowser CreateBrowser parameter stub
 #ifndef LPDISPATCH

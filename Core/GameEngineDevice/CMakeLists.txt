@@ -1,4 +1,4 @@
-# TheSuperHackers @build BenderAI 13/02/2026 Disable Miles/Bink for Linux (Windows-only)
+# GeneralsX @build BenderAI 13/02/2026 Disable Miles/Bink for Linux (Windows-only)
 set(GAMEENGINEDEVICE_SRC
 #    Include/MilesAudioDevice/MilesAudioManager.h
 #    Include/VideoDevice/Bink/BinkVideoPlayer.h (see GeneralsMD/Code/GameEngineDevice/Include/W3DDevice/GameClient/W3DGameClient.h createVideoPlayer)
@@ -189,7 +189,7 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/Win32Device/GameClient/Win32Mouse.cpp
 )
 
-# TheSuperHackers @build BenderAI 13/02/2026 Platform-specific file implementations
+# GeneralsX @build BenderAI 13/02/2026 Platform-specific file implementations
 if(WIN32)
     # Windows-specific files (use Windows API for filesystem)
     list(APPEND GAMEENGINEDEVICE_SRC
@@ -230,7 +230,7 @@ target_link_libraries(corei_gameenginedevice_private INTERFACE
     corei_main
 )
 
-# TheSuperHackers @build BenderAI 13/02/2026 Platform-specific multimedia stubs
+# GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
 target_link_libraries(corei_gameenginedevice_public INTERFACE
     corei_gameengine_public
 )
@@ -243,7 +243,7 @@ if(WIN32)
     )
 endif()
 
-# TheSuperHackers @build BenderAI 13/02/2026 OpenAL audio library for Linux
+# GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
 if(SAGE_USE_OPENAL)
     find_package(OpenAL REQUIRED)
     target_include_directories(corei_gameenginedevice_public INTERFACE ${OPENAL_INCLUDE_DIR})

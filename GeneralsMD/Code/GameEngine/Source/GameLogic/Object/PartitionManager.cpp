@@ -5633,7 +5633,7 @@ void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	Int playerIndex = static_cast<Int>(reinterpret_cast<intptr_t>(playerIndexVoid));
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
@@ -5651,7 +5651,7 @@ void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	Int playerIndex = static_cast<Int>(reinterpret_cast<intptr_t>(playerIndexVoid));
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
@@ -5669,7 +5669,7 @@ void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	Int playerIndex = static_cast<Int>(reinterpret_cast<intptr_t>(playerIndexVoid));
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
@@ -5687,7 +5687,7 @@ void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	Int playerIndex = static_cast<Int>(reinterpret_cast<intptr_t>(playerIndexVoid));
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.

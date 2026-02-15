@@ -1,7 +1,7 @@
 #pragma once
 
 // Linux/Unix compatibility shim for Windows.h
-// TheSuperHackers @build BenderAI 11/02/2026 Windows API compatibility layer
+// GeneralsX @build BenderAI 11/02/2026 Windows API compatibility layer
 // STRATEGY: Provide our own complete Windows types/functions FIRST.
 // DXVK headers (d3d8.h) will include their own windows_base.h later.
 // Our types take precedence via PCH (PreRTS.h includes windows_compat.h early).

@@ -82,10 +82,10 @@ void __cdecl Print_Win32Error(unsigned long win32Error);
 #endif // RTS_DEBUG
 
 #else // _WIN32
-// TheSuperHackers @build fbraz 03/02/2026 Include CompatLib headers for Linux Windows API compatibility
+// GeneralsX @build fbraz 03/02/2026 Include CompatLib headers for Linux Windows API compatibility
 #include <windows.h>  // CompatLib wrapper that includes windows_base.h (DXVK) + windows_compat.h (stubs)
 
-// TheSuperHackers @build fbraz 10/02/2026 Bender
+// GeneralsX @build fbraz 10/02/2026 Bender
 // Explicit fallback mappings (belt & suspenders approach for WW3D2 compatibility)
 #ifndef lstrlen
 #define lstrlen strlen

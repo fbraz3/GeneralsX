@@ -1066,7 +1066,7 @@ GlobalData::GlobalData()
   {
     AsciiString myDocumentsDirectory = temp;
 
-// TheSuperHackers @bugfix BenderAI 14/02/2026 Cross-platform path separator
+// GeneralsX @bugfix BenderAI 14/02/2026 Cross-platform path separator
 #ifdef _WIN32
     const char pathSep = '\\';
 #else

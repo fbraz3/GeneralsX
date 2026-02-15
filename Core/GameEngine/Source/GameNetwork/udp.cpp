@@ -177,7 +177,7 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
     return(status);
   }
 
-// TheSuperHackers @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
+// GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
 socklen_t namelen=sizeof(addr);
   retval=SetBlocking(FALSE);
   if (retval==-1)
@@ -258,7 +258,7 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
 Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 {
   Int retval;
-  // TheSuperHackers @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
+  // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
   socklen_t alen=sizeof(sockaddr_in);
 
   if (from!=nullptr)
@@ -370,7 +370,7 @@ UDP::sockStat UDP::GetStatus(void)
       return ALREADY;
     case EAGAIN:
       return AGAIN;
-    // TheSuperHackers @bugfix BenderAI 13/02/2026 EWOULDBLOCK == EAGAIN on Linux (duplicate case)
+    // GeneralsX @bugfix BenderAI 13/02/2026 EWOULDBLOCK == EAGAIN on Linux (duplicate case)
     #if EAGAIN != EWOULDBLOCK
     case EWOULDBLOCK:
       return WOULDBLOCK;
@@ -506,7 +506,7 @@ Int UDP::SetOutputBuffer(UnsignedInt bytes)
 int UDP::GetInputBuffer(void)
 {
    int retval,arg=0;
-   // TheSuperHackers @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
+   // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
    socklen_t len=sizeof(int);
 
    retval=getsockopt(fd,SOL_SOCKET,SO_RCVBUF,
@@ -518,7 +518,7 @@ int UDP::GetInputBuffer(void)
 int UDP::GetOutputBuffer(void)
 {
    int retval,arg=0;
-   // TheSuperHackers @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
+   // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
    socklen_t len=sizeof(int);
 
    retval=getsockopt(fd,SOL_SOCKET,SO_SNDBUF,

@@ -1,14 +1,14 @@
 # Interface libraries to set common defines and includes, avoid duplication later
 add_library(z_wwcommon INTERFACE)
 
-# TheSuperHackers @build BenderAI 13/02/2026 d3d8lib is INTERFACE (headers only) - safe for all
+# GeneralsX @build BenderAI 13/02/2026 d3d8lib is INTERFACE (headers only) - safe for all
 target_link_libraries(z_wwcommon INTERFACE
     core_wwcommon
     d3d8lib     # INTERFACE target: provides DXVK/DirectX types (DWORD, BOOL, etc.)
     stlport
 )
 
-# TheSuperHackers @build BenderAI 13/02/2026 Platform-specific multimedia stubs
+# GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
 if(WIN32)
     target_link_libraries(z_wwcommon INTERFACE
         milesstub

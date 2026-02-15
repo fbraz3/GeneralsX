@@ -1714,7 +1714,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 	DX8Wrapper::Apply_Render_State_Changes();
 
 	if (m_dwTreeVertexShader) {
-		// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+		// GeneralsX @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
 		Matrix4x4 matProj, matView, matWorld;
 		DX8Wrapper::_Get_DX8_Transform(D3DTS_WORLD, matWorld);
 		DX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, matView);

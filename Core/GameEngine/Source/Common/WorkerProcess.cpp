@@ -19,7 +19,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/WorkerProcess.h"
 
-// TheSuperHackers @build BenderAI 12/02/2026 WorkerProcess is Windows-specific (pipes, job objects)
+// GeneralsX @build BenderAI 12/02/2026 WorkerProcess is Windows-specific (pipes, job objects)
 // Linux: Stubbed for now - replay testing disabled until POSIX fork/exec implementation
 // TODO Phase 2: Implement Linux worker process using fork(), pipe2(), and waitpid()
 #ifdef _WIN32
@@ -236,7 +236,7 @@ void WorkerProcess::kill()
 
 #else // !_WIN32 - Linux stubs
 
-// TheSuperHackers @build BenderAI 12/02/2026 Linux stub implementation
+// GeneralsX @build BenderAI 12/02/2026 Linux stub implementation
 // ReplaySimulation will compile but worker processes won't spawn on Linux
 // TODO: Implement using fork(), pipe2(), dup2(), execvp(), waitpid()
 

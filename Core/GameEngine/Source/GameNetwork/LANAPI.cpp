@@ -519,7 +519,7 @@ void LANAPI::update( void )
 			LANMessage msg;
 			fillInLANMessage( &msg );
 			msg.messageType = LANMessage::MSG_REQUEST_GAME_LEAVE;
-			// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+			// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 			CopyWcharToWindowsWideChar(msg.name, m_currentGame->getPlayerName(0).str(), ARRAY_SIZE(msg.name) - 1);
 			handleRequestGameLeave(&msg, m_currentGame->getIP(0));
 			UnicodeString text;
@@ -538,7 +538,7 @@ void LANAPI::update( void )
 					UnicodeString theStr;
 					theStr.format(TheGameText->fetch("LAN:PlayerDropped"), m_currentGame->getPlayerName(p).str());
 					msg.messageType = LANMessage::MSG_REQUEST_GAME_LEAVE;
-					// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+					// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 					CopyWcharToWindowsWideChar(msg.name, m_currentGame->getPlayerName(p).str(), ARRAY_SIZE(msg.name) - 1);
 					handleRequestGameLeave(&msg, m_currentGame->getIP(p));
 					OnChat(UnicodeString::TheEmptyString, m_localIP, theStr, LANCHAT_SYSTEM);
@@ -670,7 +670,7 @@ void LANAPI::RequestGameJoinDirectConnect(UnsignedInt ipaddress)
 	msg.messageType = LANMessage::MSG_REQUEST_GAME_INFO;
 	fillInLANMessage(&msg);
 	msg.PlayerInfo.ip = GetLocalIP();
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 	CopyWcharToWindowsWideChar(msg.PlayerInfo.playerName, m_name.str(), ARRAY_SIZE(msg.PlayerInfo.playerName) - 1);
 
 	sendMessage(&msg, ipaddress);
@@ -684,7 +684,7 @@ void LANAPI::RequestGameLeave( void )
 	LANMessage msg;
 	msg.messageType = LANMessage::MSG_REQUEST_GAME_LEAVE;
 	fillInLANMessage( &msg );
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 	CopyWcharToWindowsWideChar(msg.PlayerInfo.playerName, m_name.str(), ARRAY_SIZE(msg.PlayerInfo.playerName) - 1);
 	sendMessage(&msg);
 	m_transport->update();  // Send immediately, before OnPlayerLeave below resets everything.
@@ -717,7 +717,7 @@ void LANAPI::RequestGameAnnounce( void )
 
 			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
 			strlcpy(reply.GameInfo.options,gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
-			// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+			// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 			CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
 			reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
 			reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
@@ -736,7 +736,7 @@ void LANAPI::RequestAccept( void )
 	fillInLANMessage( &msg );
 	msg.messageType = LANMessage::MSG_SET_ACCEPT;
 	msg.Accept.isAccepted = true;
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 	CopyWcharToWindowsWideChar(msg.Accept.gameName, m_currentGame->getName().str(), ARRAY_SIZE(msg.Accept.gameName) - 1);
 	sendMessage(&msg);
 }
@@ -750,7 +750,7 @@ void LANAPI::RequestHasMap( void )
 	fillInLANMessage( &msg );
 	msg.messageType = LANMessage::MSG_MAP_AVAILABILITY;
 	msg.MapStatus.hasMap = m_currentGame->getSlot(m_currentGame->getLocalSlotNum())->hasMap();
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 	CopyWcharToWindowsWideChar(msg.MapStatus.gameName, m_currentGame->getName().str(), ARRAY_SIZE(msg.MapStatus.gameName) - 1);
 	CRC mapNameCRC;
 //mapNameCRC.computeCRC(m_currentGame->getMap().str(), m_currentGame->getMap().getLength());
@@ -788,11 +788,11 @@ void LANAPI::RequestChat( UnicodeString message, ChatType format )
 {
 	LANMessage msg;
 	fillInLANMessage( &msg );
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 	CopyWcharToWindowsWideChar(msg.Chat.gameName, (m_currentGame) ? m_currentGame->getName().str() : L"", ARRAY_SIZE(msg.Chat.gameName) - 1);
 	msg.messageType = LANMessage::MSG_CHAT;
 	msg.Chat.chatType = format;
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 	CopyWcharToWindowsWideChar(msg.Chat.message, message.str(), ARRAY_SIZE(msg.Chat.message) - 1);
 	sendMessage(&msg);
 
@@ -1077,7 +1077,7 @@ void LANAPI::fillInLANMessage( LANMessage *msg )
 	if (!msg)
 		return;
 
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 	CopyWcharToWindowsWideChar(msg->name, m_name.str(), ARRAY_SIZE(msg->name) - 1);
 	strlcpy(msg->userName, m_userName.str(), ARRAY_SIZE(msg->userName));
 	strlcpy(msg->hostName, m_hostName.str(), ARRAY_SIZE(msg->hostName));

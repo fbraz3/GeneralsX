@@ -38,7 +38,7 @@
 /*		7/18/2002 : Initial creation                                           */
 /*---------------------------------------------------------------------------*/
 
-// TheSuperHackers @build BenderAI 13/02/2026 Wrap DirectSound header (fighter19 pattern)
+// GeneralsX @build BenderAI 13/02/2026 Wrap DirectSound header (fighter19 pattern)
 #ifdef _WIN32
 #include <dsound.h>
 #endif

@@ -22,7 +22,7 @@
 
 //#include "../resource.h"       // main symbols
 
-// TheSuperHackers @build fbraz 10/02/2026
+// GeneralsX @build fbraz 10/02/2026
 // Use socket_compat.h (provides Winsock → POSIX BSD sockets mapping)
 #ifdef _WIN32
 #include <winsock.h>

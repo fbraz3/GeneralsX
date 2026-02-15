@@ -579,7 +579,7 @@ const char *ProfileFuncLevel::Id::GetSource(void) const
                                          helpFile,sizeof(helpFile),&func->funcLine,nullptr);
 
     char help[300];
-// TheSuperHackers @build fbraz 03/02/2026 Use snprintf on Linux, wsprintf on Windows
+// GeneralsX @build fbraz 03/02/2026 Use snprintf on Linux, wsprintf on Windows
 #ifdef _WIN32
     wsprintf(help,ofsFunc?"%s+0x%x":"%s",helpFunc,ofsFunc);
 #else
@@ -622,7 +622,7 @@ unsigned ProfileFuncLevel::Id::GetLine(void) const
   return func->funcLine;
 }
 
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// GeneralsX @refactor BenderAI 10/02/2026
 // Changed from unsigned _int64 to u64 (platform typedef)
 u64 ProfileFuncLevel::Id::GetCalls(unsigned frame) const
 {
@@ -799,7 +799,7 @@ ProfileFuncLevel::ProfileFuncLevel(void)
 #endif // !defined HAS_PROFILE
 
 ProfileFuncLevel ProfileFuncLevel::Instance;
-// TheSuperHackers @build fbraz 03/02/2026 testEvent only exists on Windows (see internal.h)
+// GeneralsX @build fbraz 03/02/2026 testEvent only exists on Windows (see internal.h)
 #ifdef _WIN32
 HANDLE ProfileFastCS::testEvent=::CreateEvent(nullptr,FALSE,FALSE,"");
 #endif

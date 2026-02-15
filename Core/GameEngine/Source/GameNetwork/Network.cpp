@@ -202,7 +202,7 @@ protected:
 	Int m_lastExecutionFrame;																	///< The highest frame number that a command could have been executed on.
 	Int m_lastFrameCompleted;
 	Bool m_didSelfSlug;
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use int64_t instead of __int64 (C99 standard, fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use int64_t instead of __int64 (C99 standard, fighter19 pattern)
 	int64_t m_perfCountFreq;														///< The frequency of the performance counter.
 
 	int64_t m_nextFrameTime;														///< When did we execute the last frame?  For slugging the GameLogic...
@@ -338,7 +338,7 @@ void Network::init()
 
 	m_localStatus = NETLOCALSTATUS_PREGAME;
 
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
 	#ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER *)&m_perfCountFreq);
 	#else
@@ -730,7 +730,7 @@ void Network::update( void )
 		}
 	}
 	else {
-		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+		// GeneralsX @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
 		int64_t curTime;
 		#ifdef _WIN32
 		QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
@@ -778,7 +778,7 @@ void Network::endOfGameCheck() {
 }
 
 Bool Network::timeForNewFrame() {
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
 	int64_t curTime;
 	#ifdef _WIN32
 	QueryPerformanceCounter((LARGE_INTEGER *)&curTime);

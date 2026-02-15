@@ -151,7 +151,7 @@ set(WWLIB_SRC
     XSTRAW.h
 )
 
-# TheSuperHackers @build BenderAI 13/02/2026 registry.cpp has stubs for Linux (#else at end)
+# GeneralsX @build BenderAI 13/02/2026 registry.cpp has stubs for Linux (#else at end)
 list(APPEND WWLIB_SRC
     registry.cpp
     registry.h

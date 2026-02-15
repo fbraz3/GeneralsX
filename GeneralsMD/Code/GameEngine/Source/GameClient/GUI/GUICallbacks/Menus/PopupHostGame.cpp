@@ -597,7 +597,7 @@ void createGame( void )
 	req.stagingRoomCreation.ladPort = 0;
 	if (ladderSelectPos >= 0)
 	{
-		// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+		// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 		ladderID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboBoxLadderName, ladderSelectPos)));
 		if (ladderID != 0)
 		{

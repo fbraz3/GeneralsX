@@ -72,7 +72,7 @@
 
 **A) Added Cross-Platform Includes (lines 30-37):**
 ```cpp
-// TheSuperHackers @build BenderAI 12/02/2026 Cross-platform executable path retrieval
+// GeneralsX @build BenderAI 12/02/2026 Cross-platform executable path retrieval
 #ifndef _WIN32
 #ifdef __linux__
 #include <unistd.h>  // readlink
@@ -85,7 +85,7 @@
 
 **B) Replaced GetModuleFileNameW (lines 135-165):**
 ```cpp
-// TheSuperHackers @build BenderAI 12/02/2026 Cross-platform executable path retrieval
+// GeneralsX @build BenderAI 12/02/2026 Cross-platform executable path retrieval
 #ifdef _WIN32
     WideChar exePath[1024];
     GetModuleFileNameW(nullptr, exePath, ARRAY_SIZE(exePath));
@@ -130,7 +130,7 @@
 **File:** `GeneralsMD/Code/CompatLib/Include/windows_compat.h` (lines 5-10)
 
 ```cpp
-// TheSuperHackers @build BenderAI 12/02/2026 Pre-define guards to prevent DXVK conflicts
+// GeneralsX @build BenderAI 12/02/2026 Pre-define guards to prevent DXVK conflicts
 // CRITICAL: Define these BEFORE including windows_base.h so DXVK skips its incomplete versions!
 #ifndef _WIN32
 #define _MEMORYSTATUS_DEFINED  // Tell DXVK: we'll provide the full 8-field MEMORYSTATUS later
@@ -487,7 +487,7 @@ Files Read (Analysis): 15+
 Lines Added: 33
 Lines Removed: 2
 Net Change: +31 lines
-Comments Added: 8 (all with TheSuperHackers @build convention)
+Comments Added: 8 (all with GeneralsX @build convention)
 ```
 
 ### Error Resolution
@@ -579,7 +579,7 @@ feat(linux): Disable crash dumps and add ReplaySimulation cross-platform support
   * Windows: Original GetModuleFileNameW preserved
   * Enables replay validation testing on all platforms
 
-TheSuperHackers @build BenderAI 12/02/2026
+GeneralsX @build BenderAI 12/02/2026
 Resolves: Session 30 MiniDumper/Debug/ReplaySimulation blockers
 Progress: 321/1254 (25.6%) - Clean build in progress, 0 errors
 ```

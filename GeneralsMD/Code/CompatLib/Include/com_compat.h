@@ -25,7 +25,7 @@ inline int IsEqualGUID(const GUID &a, const GUID &b) {
 #endif
 
 // GUID reference types
-// TheSuperHackers @bugfix BenderAI 12/02/2026 Skip if DXVK already defined as macros
+// GeneralsX @bugfix BenderAI 12/02/2026 Skip if DXVK already defined as macros
 // DXVK's windows_base.h defines these as macros: #define REFGUID const GUID&
 // Our typedef would conflict with the macro expansion. Use DXVK's macros on Linux.
 #ifndef REFGUID_DEFINED
@@ -110,7 +110,7 @@ typedef GUID CLSID;
 #endif
 
 // IUnknown - Base COM interface (all DirectX interfaces inherit from this)
-// TheSuperHackers @build BenderAI 11/02/2026 Added DXVK guard to prevent redefinition
+// GeneralsX @build BenderAI 11/02/2026 Added DXVK guard to prevent redefinition
 #ifndef __IUnknown_INTERFACE_DEFINED__
 #define __IUnknown_INTERFACE_DEFINED__
 #define _IUNKNOWN_DEFINED  // Prevent DXVK's unknwn.h from redefining

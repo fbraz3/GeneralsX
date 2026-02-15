@@ -46,7 +46,7 @@
 #include "GameClient/GameWindow.h"
 #include "GameClient/Display.h"
 
-// TheSuperHackers @build BenderAI 13/02/2026 Stub WebBrowser on Linux (WOL/Westwood Online servers offline since 2010, fighter19 pattern)
+// GeneralsX @build BenderAI 13/02/2026 Stub WebBrowser on Linux (WOL/Westwood Online servers offline since 2010, fighter19 pattern)
 #ifdef _WIN32
 
 /**

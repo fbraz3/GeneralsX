@@ -209,7 +209,7 @@ GameState::SnapshotBlock *GameState::findBlockInfoByToken( AsciiString token, Sn
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// TheSuperHackers @build Bender 11/02/2026 Cross-platform date formatting (Windows locale vs POSIX strftime)
+// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Cross-platform date formatting (Windows locale vs POSIX strftime)
 UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal)
 {
 	// setup date buffer for local region date format
@@ -1318,7 +1318,7 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 	return;
 #endif
 
-// TheSuperHackers @build fighter19 11/02/2026 Bender - Windows file iteration (protected for Linux build)
+// GeneralsX @build BenderAI 11/02/2026 - Windows file iteration (protected for Linux build)
 #ifdef _WIN32
 	Bool done = FALSE;
 	Bool first = TRUE;

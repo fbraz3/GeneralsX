@@ -19,7 +19,7 @@
 #include "PreRTS.h"
 #include "Common/FrameRateLimit.h"
 
-// TheSuperHackers @build BenderAI 12/02/2026 Platform-specific high-resolution timing
+// GeneralsX @build BenderAI 12/02/2026 Platform-specific high-resolution timing
 #ifndef _WIN32
 #include <time.h>    // clock_gettime, nanosleep
 #include <unistd.h>  // usleep (fallback)

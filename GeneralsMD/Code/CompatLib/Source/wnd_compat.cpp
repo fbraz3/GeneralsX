@@ -1,6 +1,6 @@
 #include "types_compat.h"
 #include "wnd_compat.h"
-// TheSuperHackers @build fighter19 10/02/2026 Bender - SDL3 only for windowing builds (Phase 2)
+// GeneralsX @build BenderAI 10/02/2026 - SDL3 only for windowing builds (Phase 2)
 #ifdef SAGE_USE_SDL3
 #include <SDL3/SDL.h>
 #endif

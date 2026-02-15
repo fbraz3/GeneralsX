@@ -42,7 +42,7 @@
 #pragma once
 
 #include "always.h"
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// GeneralsX @refactor BenderAI 10/02/2026
 // Removed platform guards - DXVK provides d3d8.h on Linux
 #include <d3d8.h>
 #ifdef WWDEBUG

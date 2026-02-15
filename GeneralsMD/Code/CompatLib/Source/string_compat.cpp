@@ -51,7 +51,7 @@ char* _strlwr(char* str)
   return str;
 }
 
-// TheSuperHackers @build fbraz 11/02/2026 Bender - Linux portability: uppercase string
+// GeneralsX @build fbraz 11/02/2026 BenderAI - Linux portability: uppercase string
 __attribute__((weak))
 char* _strupr(char* str)
 {

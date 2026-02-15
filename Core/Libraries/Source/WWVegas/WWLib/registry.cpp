@@ -739,7 +739,7 @@ void RegistryClass::Delete_Registry_Tree(char *path)
 	}
 }
 
-// TheSuperHackers @build BenderAI 13/02/2026 Linux: No registry support - stub all methods
+// GeneralsX @build BenderAI 13/02/2026 Linux: No registry support - stub all methods
 #else // _WIN32
 
 // Static member stub

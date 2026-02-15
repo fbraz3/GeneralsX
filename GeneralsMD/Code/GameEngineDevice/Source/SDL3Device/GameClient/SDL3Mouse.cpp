@@ -27,7 +27,7 @@
 
 #ifndef _WIN32
 
-// TheSuperHackers @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
+// GeneralsX @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include <cstdio>
 #include <cstring>

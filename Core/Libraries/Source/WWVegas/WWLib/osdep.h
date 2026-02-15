@@ -20,12 +20,12 @@ typedef wchar_t WCHAR;
 
 #define _vsnprintf vsnprintf
 #define _snprintf snprintf
-#define _strdup strdup      // TheSuperHackers @build fighter19 10/02/2026 Bender - String duplication
-#define lstrcpy strcpy      // TheSuperHackers @build fighter19 10/02/2026 Bender - String copy
-#define lstrcpyn strncpy    // TheSuperHackers @build fighter19 10/02/2026 Bender - String copy with length
-#define lstrcat strcat      // TheSuperHackers @build fighter19 10/02/2026 Bender - String concatenation
+#define _strdup strdup      // GeneralsX @build BenderAI 10/02/2026 - String duplication
+#define lstrcpy strcpy      // GeneralsX @build BenderAI 10/02/2026 - String copy
+#define lstrcpyn strncpy    // GeneralsX @build BenderAI 10/02/2026 - String copy with length
+#define lstrcat strcat      // GeneralsX @build BenderAI 10/02/2026 - String concatenation
 
-// TheSuperHackers @build Bender 11/02/2026 Only define strupr/strrev if not already provided by compat headers
+// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Only define strupr/strrev if not already provided by compat headers
 // Note: Check for macro definition, not function existence
 #if !defined(strupr)
 static char *strupr(char *str)

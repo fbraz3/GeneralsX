@@ -308,7 +308,7 @@ PCH integration discovered necessary for Windows macro availability.
 
 Progress: Resolved 20+ GameSpy Thread errors + 3 cascading architecture issues
 
-TheSuperHackers @build BenderAI 13/02/2026
+GeneralsX @build BenderAI 13/02/2026
 ```
 
 ## Session Statistics

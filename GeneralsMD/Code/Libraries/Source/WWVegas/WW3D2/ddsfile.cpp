@@ -26,7 +26,7 @@
 #include "bitmaphandler.h"
 #include "colorspace.h"
 
-// TheSuperHackers @build fbraz 10/02/2026 DirectDraw header Windows-only
+// GeneralsX @build fbraz 10/02/2026 DirectDraw header Windows-only
 // Linux: Define DDS constants locally (fighter19 pattern)
 #ifdef _WIN32
 #include <ddraw.h>

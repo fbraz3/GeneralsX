@@ -153,7 +153,7 @@ void SubsystemInterfaceList::removeSubsystem(SubsystemInterface* sys)
 //-----------------------------------------------------------------------------
 void SubsystemInterfaceList::initSubsystem(SubsystemInterface* sys, const char* path1, const char* path2, Xfer *pXfer, AsciiString name)
 {
-	// TheSuperHackers @bugfix BenderAI 14/02/2026 Handle nullptr subsystems (e.g., CDManager on Linux)
+	// GeneralsX @bugfix BenderAI 14/02/2026 Handle nullptr subsystems (e.g., CDManager on Linux)
 	// CreateCDManager() and other platform-specific factories may return nullptr
 	// Do not attempt to initialize nullptr systems - just skip them
 	if (sys == nullptr) {

@@ -26,7 +26,7 @@ typedef const char* LPCSTR;
 typedef char* LPSTR;
 
 // String functions
-// TheSuperHackers @build fighter19 11/02/2026 Bender - Use extern "C" linkage to match GameSpy SDK declaration
+// GeneralsX @build BenderAI 11/02/2026 - Use extern "C" linkage to match GameSpy SDK declaration
 #ifndef __GSPLATFORM_H__
 #ifdef __cplusplus
 extern "C" {

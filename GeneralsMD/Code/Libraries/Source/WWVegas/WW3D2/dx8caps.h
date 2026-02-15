@@ -41,7 +41,7 @@
 
 #include "always.h"
 #include "ww3dformat.h"
-// TheSuperHackers @build fbraz 10/02/2026 Include DXVK d3d8.h on Linux
+// GeneralsX @build fbraz 10/02/2026 Include DXVK d3d8.h on Linux
 #include <d3d8.h>
 
 class DX8Caps

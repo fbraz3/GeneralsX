@@ -46,7 +46,7 @@
 //----------------------------------------------------------------------------
 
 #include "GameClient/VideoPlayer.h"
-// TheSuperHackers @build Bender 11/02/2026 Stub Bink for Phase 1 (proprietary SDK)
+// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Stub Bink for Phase 1 (proprietary SDK)
 // TODO Phase 3: Replace with FFmpeg or skip videos gracefully
 // #include "bink.h"
 

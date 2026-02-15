@@ -1351,7 +1351,7 @@ void W3DVolumetricShadow::RenderMeshVolume(Int meshIndex, Int lightIndex, const 
 	if( numVerts == 0 || numPolys == 0 )
 		return;
 
-	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// GeneralsX @refactor BenderAI 10/02/2026
 	// Applied fighter19 pattern: transpose Matrix3D→Matrix4x4, cast pointer
 	Matrix4x4 mWorld(*meshXform);
 	Matrix4x4 mWorldTransposed = mWorld.Transpose();
@@ -1470,14 +1470,14 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 
 	m_pDev->SetIndices(shadowIndexBufferD3D,nShadowStartBatchVertex);
 
-	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// GeneralsX @refactor BenderAI 10/02/2026
 	// Applied fighter19 pattern: transpose Matrix3D→Matrix4x4, cast pointer
 	Matrix4x4 mWorld(*meshXform);
 	Matrix4x4 mWorldTransposed = mWorld.Transpose();
 
 	m_pDev->SetTransform(D3DTS_WORLD,(D3DMATRIX*)&mWorldTransposed);
 
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Removed orphaned brace from Phase 1.5 refactoring
+	// GeneralsX @bugfix BenderAI 13/02/2026 Removed orphaned brace from Phase 1.5 refactoring
 	if (DX8Wrapper::_Is_Triangle_Draw_Enabled())
 	{
 		Debug_Statistics::Record_DX8_Polys_And_Vertices(numPolys,numVerts,ShaderClass::_PresetOpaqueShader);
@@ -1624,7 +1624,7 @@ void W3DVolumetricShadow::RenderMeshVolumeBounds(Int meshIndex, Int lightIndex, 
 
 
 	//todo: replace this with mesh transform
-	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// GeneralsX @refactor BenderAI 10/02/2026
 	// Applied fighter19 pattern: identity matrix transposed and cast
 	Matrix4x4 mWorld(1);	//identity since boxes are pre-transformed to world space.
 	Matrix4x4 mWorldTransposed = mWorld.Transpose();
@@ -2769,7 +2769,7 @@ void W3DVolumetricShadow::constructVolume( Vector3 *lightPosObject,Real shadowEx
 #ifdef RECORD_SHADOW_STRIP_STATS
 		//Continuing strip.
 		stripLength++;
-		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform, defined in BaseTypeCore.h)
+		// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform, defined in BaseTypeCore.h)
 		maxStripLength=MAX(maxStripLength,stripLength);
 #endif
 	}
@@ -2932,7 +2932,7 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 	#ifdef RECORD_SHADOW_STRIP_STATS
 			//Continuing strip.
 			stripLength++;
-			// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform)
+			// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform)
 			maxStripLength=MAX(maxStripLength,stripLength);
 	#endif
 		}

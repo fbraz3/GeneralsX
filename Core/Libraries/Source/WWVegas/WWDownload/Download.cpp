@@ -20,7 +20,7 @@
 #include "DownloadDebug.h"
 #include "Download.h"
 
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// GeneralsX @refactor BenderAI 10/02/2026
 // Added platform guards for Windows-specific headers
 #include <assert.h>
 #include <stdlib.h>
