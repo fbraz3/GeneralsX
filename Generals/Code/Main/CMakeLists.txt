@@ -1,10 +1,12 @@
 add_executable(g_generals WIN32)
 
 # Use a binary name that doesn't conflict with original game.
+# TheSuperHackers @build BenderAI 15/02/2026 Linux branding update
 if("${CMAKE_SYSTEM}" MATCHES "Windows")
     set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
 else()
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
+    # Linux: Use GeneralsX branding
+    set_target_properties(g_generals PROPERTIES OUTPUT_NAME GeneralsX)
 endif()
 
 target_link_libraries(g_generals PRIVATE
