@@ -54,7 +54,7 @@ The expected comment format is
 // GeneralsX @keyword author DD/MM/YYYY A meaningful description for this change.
 ```
 
-The `TheSuperHackers` word and `@keyword` are mandatory. `author` and date can be omitted when preferred.
+The `GeneralsX` word and `@keyword` are mandatory. `author` and date can be omitted when preferred.
 
 | Keyword          | Use-case                                                    |
 |------------------|-------------------------------------------------------------|

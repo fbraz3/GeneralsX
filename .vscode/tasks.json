@@ -1,0 +1,464 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Configure (Windows MSVC2022, win32 preset)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --preset win32 2>&1 | Tee-Object -FilePath .\\logs\\configure_win32.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Build GeneralsXZH (Windows MSVC2022)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --build --preset win32 --target z_generals 2>&1 | Tee-Object -FilePath .\\logs\\build_zh_win32.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Build GeneralsX (Windows MSVC2022)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --build --preset win32 --target g_generals 2>&1 | Tee-Object -FilePath .\\logs\\build_generals_win32.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Configure (Windows VC6)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_vc6_env.ps1; $ErrorActionPreference='Continue'; cmake --preset vc6 2>&1 | Tee-Object -FilePath .\\logs\\configure_vc6.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Build GeneralsXZH (Windows VC6)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_vc6_env.ps1; $ErrorActionPreference='Continue'; cmake --build --preset vc6 --target z_generals 2>&1 | Tee-Object -FilePath .\\logs\\build_zh_vc6.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Build GeneralsX (Windows VC6)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_vc6_env.ps1; $ErrorActionPreference='Continue'; cmake --build --preset vc6 --target g_generals 2>&1 | Tee-Object -FilePath .\\logs\\build_generals_vc6.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Deploy GeneralsXZH (Windows, win32)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; & .\\scripts\\deploy_zh.ps1 -Preset win32 2>&1 | Tee-Object -FilePath .\\logs\\deploy_zh_win32.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Deploy GeneralsX (Windows, win32)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; & .\\scripts\\deploy_zh.ps1 -Preset win32 -Generals 2>&1 | Tee-Object -FilePath .\\logs\\deploy_generals_win32.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Run GeneralsXZH (Windows, win32)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; & .\\scripts\\run_zh.ps1 2>&1 | Tee-Object -FilePath .\\logs\\run_zh.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Run GeneralsX (Windows, win32)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; & .\\scripts\\run_zh.ps1 -Generals 2>&1 | Tee-Object -FilePath .\\logs\\run_generals.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			}
+		},
+		{
+			"label": "Debug GeneralsXZH (WinDbg GUI, win32)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"cd $env:USERPROFILE\\GeneralsX\\GeneralsMD; Write-Host 'Starting WinDbg GUI debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsXZH.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debug_zh.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			}
+		},
+		{
+			"label": "Debug GeneralsX (WinDbg GUI, win32)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"cd $env:USERPROFILE\\GeneralsX\\Generals; Write-Host 'Starting WinDbg GUI debugger...' -ForegroundColor Cyan; windbg.exe .\\GeneralsX.exe -win 2>&1 | Tee-Object -FilePath ${workspaceFolder}\\logs\\debug_generals.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			}
+		},
+		{
+			"label": "Pipeline Run GeneralsXZH (Windows, win32)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"& { New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --preset win32; cmake --build --preset win32 --target z_generals; & .\\scripts\\deploy_zh.ps1 -Preset win32; & .\\scripts\\run_zh.ps1 } 2>&1 | Tee-Object -FilePath .\\logs\\pipeline_run_zh_win32.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Pipeline Run GeneralsX (Windows, win32)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"& { New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --preset win32; cmake --build --preset win32 --target g_generals; & .\\scripts\\deploy_zh.ps1 -Preset win32 -Generals; & .\\scripts\\run_zh.ps1 -Generals } 2>&1 | Tee-Object -FilePath .\\logs\\pipeline_run_generals_win32.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Configure (Linux Docker, linux64-deploy)",
+			"type": "shell",
+			"command": "./scripts/docker-configure-linux.sh linux64-deploy",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build GeneralsXZH (Linux Docker)",
+			"type": "shell",
+			"command": "./scripts/docker-build-linux-zh.sh linux64-deploy",
+			"isBackground": false,
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build GeneralsX (Linux Docker)",
+			"type": "shell",
+			"command": "./scripts/docker-build-linux-generals.sh linux64-deploy",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Pipeline: Docker Build ZH (Full)",
+			"type": "shell",
+			"command": "./scripts/docker-build-linux-zh.sh linux64-deploy",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build Windows (MinGW Docker)",
+			"type": "shell",
+			"command": "./scripts/docker-build-mingw-zh.sh mingw-w64-i686",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate: Check Docker Prerequisites",
+			"type": "shell",
+			"command": "echo 'Checking Docker installation...' && docker --version && docker run --rm hello-world || echo 'ERROR: Docker not working. Install: brew install --cask docker'",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Docker: Build Images (All)",
+			"type": "shell",
+			"command": "./scripts/docker-build-images.sh all",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Docker: Build Linux Builder Image",
+			"type": "shell",
+			"command": "./scripts/docker-build-images.sh linux",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Docker: Build MinGW Builder Image",
+			"type": "shell",
+			"command": "./scripts/docker-build-images.sh mingw",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Test: Smoke Test GeneralsXZH (Linux Docker)",
+			"type": "shell",
+			"command": "./scripts/docker-smoke-test-zh.sh linux64-deploy",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Docs: Update Dev Blog",
+			"type": "shell",
+			"command": "code docs/DEV_BLOG/2026-02-DIARY.md",
+			"isBackground": false,
+			"group": "none",
+			"presentation": {
+				"reveal": "never",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		}
+	]
+}
