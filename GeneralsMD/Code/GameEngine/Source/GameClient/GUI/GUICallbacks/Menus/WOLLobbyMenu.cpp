@@ -1483,7 +1483,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 
 						PeerRequest req;
 						req.peerRequestType = PeerRequest::PEERREQUEST_GETEXTENDEDSTAGINGROOMINFO;
-					// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+					// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 					req.stagingRoom.id = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(control, rowSelected, 0)));
 
 						lastID = req.stagingRoom.id;
@@ -1557,7 +1557,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					GadgetListBoxGetSelected(GetGameListBox(), &selected);
 					if (selected >= 0)
 					{
-						// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+						// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 						Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(GetGameListBox(), selected)));
 						if (selectedID > 0)
 						{
@@ -1669,7 +1669,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					if (rowSelected >= 0)
 					{
 						Int groupID;
-						// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+						// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 						groupID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboLobbyGroupRooms, rowSelected)));
 						DEBUG_LOG(("ItemData was %d, current Group Room is %d", groupID, TheGameSpyInfo->getCurrentGroupRoom()));
 						if (groupID && groupID != TheGameSpyInfo->getCurrentGroupRoom())
@@ -1795,7 +1795,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 						break;
 					}
 
-					// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+					// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 					Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(control, rc->pos)));
 					if (selectedID > 0)
 					{

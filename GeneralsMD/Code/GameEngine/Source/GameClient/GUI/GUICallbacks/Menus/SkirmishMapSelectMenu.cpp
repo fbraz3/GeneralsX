@@ -99,7 +99,7 @@ static void mapListTooltipFunc(GameWindow *window,
 		return;
 	}
 
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	Int imageItemData = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(window, row, 1)));
 	UnicodeString tooltip;
 	switch (imageItemData)

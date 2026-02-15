@@ -1,6 +1,6 @@
 #pragma once
 
-// TheSuperHackers @build fighter19 10/02/2026 Bender - Need DWORD type
+// GeneralsX @build BenderAI 10/02/2026 - Need DWORD type
 #include "types_compat.h"
 #include <stdint.h>
 
@@ -42,7 +42,7 @@ void Sleep(DWORD ms);
 
 void GetLocalTime(SYSTEMTIME* st);
 
-// TheSuperHackers @build BenderAI 13/02/2026 Add QueryPerformance stubs for cross-platform portability
+// GeneralsX @build BenderAI 13/02/2026 Add QueryPerformance stubs for cross-platform portability
 // Windows API for high-resolution performance counters (used in W3DDisplay.cpp)
 #ifdef _WIN32
 // Windows has native implementations in kernel32.lib

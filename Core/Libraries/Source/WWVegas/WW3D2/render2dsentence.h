@@ -43,7 +43,7 @@
 #include "wwstring.h"
 #include "win.h"
 
-// TheSuperHackers @build fbraz 11/02/2026 Bender - FreeType2 for Linux text rendering (Phase 1.5)
+// GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Linux text rendering (Phase 1.5)
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
     #include <ft2build.h>
     #include FT_FREETYPE_H
@@ -106,14 +106,14 @@ private:
 	//
 	//	Private methods
 	//
-	// TheSuperHackers @build fbraz 11/02/2026 Bender - Windows GDI text rendering
+	// GeneralsX @build fbraz 11/02/2026 BenderAI - Windows GDI text rendering
 #ifdef _WIN32
 	bool							Create_GDI_Font( const char *font_name );
 	void							Free_GDI_Font( void );
 	const FontCharsClassCharDataStruct *	Store_GDI_Char( WCHAR ch );
 #endif
 	
-	// TheSuperHackers @build fbraz 11/02/2026 Bender - FreeType2 methods for Linux
+	// GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 methods for Linux
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
 	bool							Create_Freetype_Font( const char *font_name );
 	void							Free_Freetype_Font( void );
@@ -140,7 +140,7 @@ private:
 	int									PointSize;
 	StringClass							GDIFontName;
 	
-	// TheSuperHackers @build fbraz 11/02/2026 Bender - Platform-specific font rendering members
+	// GeneralsX @build fbraz 11/02/2026 BenderAI - Platform-specific font rendering members
 #ifdef _WIN32
 	HFONT									OldGDIFont;
 	HBITMAP								OldGDIBitmap;

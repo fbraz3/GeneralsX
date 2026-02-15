@@ -33,7 +33,7 @@ endif()
 # Top level project, doesn't really affect anything.
 project(genzh LANGUAGES C CXX)
 
-# TheSuperHackers @build 10/02/2026 Bender
+# GeneralsX @build BenderAI 10/02/2026
 # Linux port: Make CompatLib headers globally accessible so Core libraries (WWLib, WWMath, etc.)
 # can access platform compatibility types when building for non-Windows platforms
 if(UNIX)
@@ -67,7 +67,7 @@ endif()
 include(cmake/dx8.cmake)
 
 # SDL3 windowing/input for Linux builds (Phase 1)
-# TheSuperHackers @build fighter19 11/02/2026 Bender
+# GeneralsX @build BenderAI 11/02/2026
 if(SAGE_USE_SDL3)
     include(cmake/sdl3.cmake)
 endif()

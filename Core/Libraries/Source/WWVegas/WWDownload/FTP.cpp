@@ -22,11 +22,11 @@
 /*_$                      Include Files                                  */
 /*************************************************************************/
 
-// TheSuperHackers @build fbraz 11/02/2026
+// GeneralsX @build fbraz 11/02/2026
 // Must include class declaration BEFORE implementation
 #include "WWDownload/ftp.h"
 
-// TheSuperHackers @build fbraz 10/02/2026
+// GeneralsX @build fbraz 10/02/2026
 // Platform headers with socket_compat.h providing Winsock → POSIX mapping
 #include <stdio.h>
 #include <sys/types.h>
@@ -1024,11 +1024,11 @@ unsigned long MyIPAddress( int sockfd )
 
 	if( sockfd != -1 )
 	{
-		// TheSuperHackers @build Bender 11/02/2026 Use socklen_t for getsockname (POSIX compatibility)
+		// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Use socklen_t for getsockname (POSIX compatibility)
 		socklen_t addrlen = sizeof( sin );
 		getsockname( sockfd, (struct sockaddr *)&sin, &addrlen );
 
-		// TheSuperHackers @build Bender 11/02/2026 POSIX in_addr uses s_addr directly (not S_un.S_addr)
+		// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 POSIX in_addr uses s_addr directly (not S_un.S_addr)
 #ifdef _WIN32
 		ip = sin.sin_addr.S_un.S_addr;
 #else
@@ -1147,7 +1147,7 @@ int Cftp::SendNewPort( void )
 		}
 
 
-		// TheSuperHackers @build Bender 11/02/2026 Use socklen_t for getsockname (POSIX compatibility)
+		// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Use socklen_t for getsockname (POSIX compatibility)
 		socklen_t addrlen = sizeof( m_DataSockAddr);
 
 		getsockname( m_iDataSocket, (struct sockaddr *)&m_DataSockAddr, &addrlen );

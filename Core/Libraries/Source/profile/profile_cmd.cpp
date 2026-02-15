@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "profile.h"
-// TheSuperHackers @build fbraz 03/02/2026 Add C string functions for Linux (strcmp, strlen, strcpy)
+// GeneralsX @build fbraz 03/02/2026 Add C string functions for Linux (strcmp, strlen, strcpy)
 #include <cstring>
 #include "internal.h"
 

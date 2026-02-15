@@ -6,13 +6,13 @@ target_compile_definitions(core_wwcommon INTERFACE
     WIN32_LEAN_AND_MEAN
 )
 
-# TheSuperHackers @build BenderAI 13/02/2026 d3d8lib is INTERFACE (headers only) - safe for all
+# GeneralsX @build BenderAI 13/02/2026 d3d8lib is INTERFACE (headers only) - safe for all
 target_link_libraries(core_wwcommon INTERFACE
     d3d8lib     # INTERFACE target: provides DXVK/DirectX types (DWORD, BOOL, etc.)
     stlport
 )
 
-# TheSuperHackers @build BenderAI 13/02/2026 Platform-specific multimedia stubs
+# GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
 if(WIN32)
     target_link_libraries(core_wwcommon INTERFACE
         milesstub

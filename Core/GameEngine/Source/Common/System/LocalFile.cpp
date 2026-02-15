@@ -48,7 +48,7 @@
 #include "PreRTS.h"
 
 #include <fcntl.h>
-// TheSuperHackers @build BenderAI 12/02/2026 Windows-specific low-level file I/O
+// GeneralsX @build BenderAI 12/02/2026 Windows-specific low-level file I/O
 #ifdef _WIN32
 #include <io.h>
 #endif
@@ -450,7 +450,7 @@ Int LocalFile::writeFormat( const WideChar* format, ... )
 // LocalFile::writeChar - Ascii
 //=================================================================
 
-// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 // NOTE: Original code returns pointer value (bizarre!), but needed for compatibility
 Int LocalFile::writeChar( const Char* character )
 {
@@ -465,7 +465,7 @@ Int LocalFile::writeChar( const Char* character )
 // LocalFile::writeChar - Wide character
 //=================================================================
 
-// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 // NOTE: Original code returns pointer value (bizarre!), but needed for compatibility
 Int LocalFile::writeChar( const WideChar* character )
 {

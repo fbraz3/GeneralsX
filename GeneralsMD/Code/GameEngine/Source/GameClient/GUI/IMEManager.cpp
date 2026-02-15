@@ -47,7 +47,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-// TheSuperHackers @build BenderAI 12/02/2026 Use compat header for Linux mbstring compatibility
+// GeneralsX @build BenderAI 12/02/2026 Use compat header for Linux mbstring compatibility
 #include "mbstring_compat.h"
 
 #include "Common/Debug.h"
@@ -73,7 +73,7 @@
 
 IMEManagerInterface *TheIMEManager = nullptr;
 
-// TheSuperHackers @build BenderAI 12/02/2026 Windows-specific IME (Input Method Editor) for CJK text input
+// GeneralsX @build BenderAI 12/02/2026 Windows-specific IME (Input Method Editor) for CJK text input
 // Linux handles IME via system-level services (ibus, fcitx) through SDL text input APIs
 #ifdef _WIN32
 

@@ -770,7 +770,7 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 		const char *mesh_name = strchr (name, '.');
 		if (mesh_name != nullptr)
 		{
-			// TheSuperHackers @bugfix fighter19 13/02/2026 BenderAI - Use intptr_t for pointer arithmetic (64-bit compat)
+			// GeneralsX @bugfix BenderAI 13/02/2026AI - Use intptr_t for pointer arithmetic (64-bit compat)
 			lstrcpyn(filename, name, ((intptr_t)mesh_name) - ((intptr_t)name) + 1);
 			lstrcat(filename, ".w3d");
 		} else {
@@ -1371,7 +1371,7 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(const char * name,float scal
 		char filename [MAX_PATH];
 		char *mesh_name = ::strchr (name, '.');
 		if (mesh_name != nullptr) {
-			// TheSuperHackers @bugfix fighter19 13/02/2026 BenderAI - Use intptr_t for pointer arithmetic (64-bit compat)
+			// GeneralsX @bugfix BenderAI 13/02/2026AI - Use intptr_t for pointer arithmetic (64-bit compat)
 			::lstrcpyn (filename, name, ((intptr_t)mesh_name) - ((intptr_t)name) + 1);
 			if (isGranny)
 				::lstrcat (filename, ".gr2");

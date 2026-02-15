@@ -633,7 +633,7 @@ void LANAPI::OnPlayerList( LANPlayer *playerList )
 		GadgetListBoxGetSelected(listboxPlayers, &selectedIndex);
 
 		if (selectedIndex != -1 )
-			// TheSuperHackers @bugfix BenderAI 13/02/2026 Use uintptr_t for 64-bit safe pointer cast
+			// GeneralsX @bugfix BenderAI 13/02/2026 Use uintptr_t for 64-bit safe pointer cast
 			selectedIP = (uintptr_t) GadgetListBoxGetItemData(listboxPlayers, selectedIndex, 0);
 
 		GadgetListBoxReset(listboxPlayers);

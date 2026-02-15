@@ -506,7 +506,7 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 {
 	ThingTemplate* self = (ThingTemplate*)instance;
 	ModuleInfo* mi = (ModuleInfo*)store;
-	// TheSuperHackers @build fighter19 11/02/2026 Bender - Use uintptr_t for pointer-to-int cast (64-bit compat)
+	// GeneralsX @build BenderAI 11/02/2026 - Use uintptr_t for pointer-to-int cast (64-bit compat)
 	ModuleType type = (ModuleType)(UnsignedInt)(uintptr_t)userData;
 	const char* token = ini->getNextToken();
 	AsciiString tokenStr = token;
@@ -614,7 +614,7 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 //-------------------------------------------------------------------------------------------------
 void ThingTemplate::parseIntList(INI* ini, void *instance, void* store, const void* userData)
 {
-	// TheSuperHackers @build fighter19 11/02/2026 Bender - Use uintptr_t for pointer-to-int cast (64-bit compat)
+	// GeneralsX @build BenderAI 11/02/2026 - Use uintptr_t for pointer-to-int cast (64-bit compat)
 	Int numberEntries = (Int)(uintptr_t)userData;
 	Int *intList = (Int*)store;
 

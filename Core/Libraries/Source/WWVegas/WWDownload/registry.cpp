@@ -24,7 +24,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-// TheSuperHackers @build Bender 11/02/2026 
+// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 
 // Include compat headers for HKEY typedef (Linux stubs need it too)
 #ifdef _WIN32
 #include <windows.h>

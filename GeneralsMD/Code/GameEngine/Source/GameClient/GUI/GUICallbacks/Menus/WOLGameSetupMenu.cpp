@@ -524,7 +524,7 @@ static void handleColorSelection(int index)
 	GameWindow *combo = comboBoxColor[index];
 	Int color, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	color = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 
 	GameInfo *myGame = TheGameSpyInfo->getCurrentStagingRoom();
@@ -588,7 +588,7 @@ static void handlePlayerTemplateSelection(int index)
 	GameWindow *combo = comboBoxPlayerTemplate[index];
 	Int playerTemplate, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	playerTemplate = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 	GameInfo *myGame = TheGameSpyInfo->getCurrentStagingRoom();
 
@@ -714,7 +714,7 @@ static void handleTeamSelection(int index)
 	GameWindow *combo = comboBoxTeam[index];
 	Int team, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	team = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 	GameInfo *myGame = TheGameSpyInfo->getCurrentStagingRoom();
 
@@ -761,7 +761,7 @@ static void handleStartingCashSelection()
     GadgetComboBoxGetSelectedPos(comboBoxStartingCash, &selIndex);
 
     Money startingCash;
-    // TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+    // GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
     startingCash.deposit( static_cast<UnsignedInt>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ))), FALSE, FALSE );
     myGame->setStartingCash( startingCash );
     myGame->resetAccepted();
@@ -1016,7 +1016,7 @@ void WOLDisplayGameOptions( void )
   Int index = 0;
   for ( ; index < itemCount; index++ )
   {
-    // TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+    // GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
     Int value  = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboBoxStartingCash, index)));
     if ( value == theGame->getStartingCash().countMoney() )
     {

@@ -111,7 +111,7 @@
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 
-// TheSuperHackers @build BenderAI 12/02/2026 C99 FPU control for Linux
+// GeneralsX @build BenderAI 12/02/2026 C99 FPU control for Linux
 #ifndef _WIN32
 #include <fenv.h>
 #endif
@@ -208,7 +208,7 @@ void setFPMode( void )
 	// is in the (vain?) hope of any slight speed boost.
 	//
 	
-	// TheSuperHackers @build BenderAI 12/02/2026 Platform-specific FPU control for determinism
+	// GeneralsX @build BenderAI 12/02/2026 Platform-specific FPU control for determinism
 	#ifdef _WIN32
 	_fpreset();
 

@@ -46,7 +46,7 @@ typedef unsigned short	uint16;
 typedef signed char		sint8;
 typedef signed short	sint16;
 
-// TheSuperHackers @build 10/02/2026 Bender  
+// TheSuperHackers @build 10/02/2026 BenderAI  
 // uint32/sint32: Use fixed-width types on 64-bit platforms (long is 64-bit on Linux/macOS x64)
 #if defined(__linux__) || defined(__APPLE__)
     typedef uint32_t uint32;
@@ -60,7 +60,7 @@ typedef signed short	sint16;
 typedef unsigned int    uint;
 typedef signed int      sint;
 
-// TheSuperHackers @build 10/02/2026 Bender + @bugfix fbraz 03/02/2026
+// TheSuperHackers @build 10/02/2026 BenderAI + @bugfix fbraz 03/02/2026
 // 64-bit integer types: On Linux, these are provided by debug_debug.h/profile_funclevel.h to avoid conflicts
 // Only define on MSVC where they're native compiler extensions
 #ifdef _MSC_VER

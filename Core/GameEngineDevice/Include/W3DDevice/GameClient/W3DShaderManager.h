@@ -82,7 +82,7 @@ public:
 
 	static ChipsetType getChipset(void);	///<return current device chipset.
 	static GraphicsVenderID getCurrentVendor(void) {return m_currentVendor;}	///<return current card vendor.
-	// TheSuperHackers @bugfix fighter19 13/02/2026 BenderAI - Use Int64 instead of __int64 (cross-platform)
+	// GeneralsX @bugfix BenderAI 13/02/2026AI - Use Int64 instead of __int64 (cross-platform)
 	static Int64 getCurrentDriverVersion(void) {return m_driverVersion; }	///<return current driver version.
 	static Int getShaderPasses(ShaderTypes shader);	///<rendering passes required for shader
 	static Int setShader(ShaderTypes shader, Int pass);	///<enable specific shader pass.
@@ -119,7 +119,7 @@ protected:
 	static TextureClass *m_Textures[8];	///textures assigned to each of the possible stages
 	static ChipsetType m_currentChipset;	///<last video card chipset that was detected.
 	static GraphicsVenderID m_currentVendor;	///<last video card vendor
-	// TheSuperHackers @bugfix fighter19 13/02/2026 BenderAI - Use Int64 instead of __int64 (cross-platform)
+	// GeneralsX @bugfix BenderAI 13/02/2026AI - Use Int64 instead of __int64 (cross-platform)
 	static Int64 m_driverVersion;			///<driver version of last chipset.
 	static ShaderTypes m_currentShader;	///<last shader that was set.
 	static Int m_currentShaderPass;		///<pass of last shader that was set.

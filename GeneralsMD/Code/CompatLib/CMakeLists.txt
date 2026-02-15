@@ -37,7 +37,7 @@ target_link_libraries(d3dx8 PUBLIC d3d8lib)
 
 endif()
 
-# TheSuperHackers @build fighter19 10/02/2026 Bender
+# GeneralsX @build BenderAI 10/02/2026
 # Configure d3d8lib target globally (created early in Core/CMakeLists.txt)
 # Fighter19's approach: Windows uses min-dx8-sdk, Linux uses ONLY DXVK headers
 if(SAGE_USE_DX8)
@@ -83,7 +83,7 @@ target_include_directories(CompatLib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
 )
 
-# TheSuperHackers @build fighter19 10/02/2026 Bender
+# GeneralsX @build BenderAI 10/02/2026
 # Fighter19 pattern: d3d8lib (INTERFACE) links TO CompatLib
 # This makes CompatLib includes transitively available to all targets linking d3d8lib
 # REVERSED from previous (CompatLib linking TO d3d8lib)

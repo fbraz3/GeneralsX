@@ -51,7 +51,7 @@ User facing changes need to be accompanied by comment(s) where the change is mad
 The expected comment format is
 
 ```
-// TheSuperHackers @keyword author DD/MM/YYYY A meaningful description for this change.
+// GeneralsX @keyword author DD/MM/YYYY A meaningful description for this change.
 ```
 
 The `TheSuperHackers` word and `@keyword` are mandatory. `author` and date can be omitted when preferred.
@@ -71,14 +71,14 @@ The `TheSuperHackers` word and `@keyword` are mandatory. `author` and date can b
 Block comment sample
 
 ```
-    // TheSuperHackers @bugfix JAJames 17/03/2025 Fix uninitialized memory access and add more Windows versions.
+    // GeneralsX @bugfix JAJames 17/03/2025 Fix uninitialized memory access and add more Windows versions.
     memset(&os_info,0,sizeof(os_info));
 ```
 
 Optionally, the pull request number can be appended to the comment. This can only be done after the pull request has been created.
 
 ```
-// TheSuperHackers @bugfix JAJames 17/03/2025 Fix uninitialized memory access and add more Windows versions. (#123)
+// GeneralsX @bugfix JAJames 17/03/2025 Fix uninitialized memory access and add more Windows versions. (#123)
 ```
 
 ### Pull request documentation

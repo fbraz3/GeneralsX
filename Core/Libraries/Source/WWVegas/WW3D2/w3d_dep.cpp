@@ -48,7 +48,7 @@
  *   Make_W3D_Filename -- Converts a W3D object name into a W3D filename.                      *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-// TheSuperHackers @build fbraz 11/02/2026 Bender - Linux portability: size_t declaration
+// GeneralsX @build fbraz 11/02/2026 BenderAI - Linux portability: size_t declaration
 #include <cstddef>
 
 //-----------------------------------------------------------------------------

@@ -31,7 +31,7 @@
 #include "internal.h"
 #include <new>
 #include <stdlib.h>
-// TheSuperHackers @build fbraz 03/02/2026 Add C string functions for Linux
+// GeneralsX @build fbraz 03/02/2026 Add C string functions for Linux
 #include <cstring>
 #include <Utility/stdio_adapter.h>
 

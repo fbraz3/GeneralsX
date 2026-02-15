@@ -8,7 +8,7 @@
 **	(at your option) any later version.
 */
 
-// TheSuperHackers @build fbraz 10/02/2026
+// GeneralsX @build fbraz 10/02/2026
 // Socket compatibility layer - Win32 Sockets → POSIX BSD sockets
 // Pattern: Own implementation (fighter19 excluded WWDownload entirely)
 
@@ -189,7 +189,7 @@ inline long RegSetValueEx(HKEY hKey, const char* lpValueName, DWORD Reserved,
 
 // CreateDirectory stub (Linux: uses C++17 std::filesystem for recursive creation)
 // FTP.cpp and GameState.cpp use this for download/save directories
-// TheSuperHackers @build fighter19 11/02/2026 Bender - Upgraded to recursive mkdir
+// GeneralsX @build BenderAI 11/02/2026 - Upgraded to recursive mkdir
 inline int CreateDirectory(const char* lpPathName, void* lpSecurityAttributes) {
     (void)lpSecurityAttributes;
     try {
@@ -199,12 +199,12 @@ inline int CreateDirectory(const char* lpPathName, void* lpSecurityAttributes) {
     }
 }
 
-// TheSuperHackers @build BenderAI 13/02/2026 Removed CreateThread stub - now provided by thread_compat.h
+// GeneralsX @build BenderAI 13/02/2026 Removed CreateThread stub - now provided by thread_compat.h
 // (thread_compat.h included via windows_compat.h since Session 31)
 // LPTHREAD_START_ROUTINE typedef removed - use start_routine from thread_compat.h instead
 
 // OutputDebugString stub (FTP.cpp debug logging)
-// TheSuperHackers @build fighter19 11/02/2026 Bender - Guard against old compat layer macro collision
+// GeneralsX @build BenderAI 11/02/2026 - Guard against old compat layer macro collision
 #ifndef DEPENDENCIES_UTILITY_COMPAT_H
 inline void OutputDebugString(const char* lpOutputString) {
     // On Linux: write to stderr (equivalent to Windows debug output)
@@ -232,7 +232,7 @@ size_t strlcpy(char *dst, const char *src, size_t dsize) {
     return(src - osrc - 1);
 }
 
-// TheSuperHackers @build Bender 11/02/2026 strlcat weak symbol (Download.cpp, FTP.cpp)
+// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 strlcat weak symbol (Download.cpp, FTP.cpp)
 extern "C" __attribute__((weak))
 size_t strlcat(char *dst, const char *src, size_t dsize) {
    const char *odst = dst;

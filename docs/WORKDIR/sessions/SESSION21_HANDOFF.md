@@ -267,7 +267,7 @@ Before committing Session 22 changes:
 - [ ] No new warnings about DWORD/BOOL types "not declared"
 - [ ] Windows builds still functional (VC6/Win32 presets compile)
 - [ ] Changes isolated to compat layer (no game logic touched)
-- [ ] All fixes have `TheSuperHackers @build fighter19` comments
+- [ ] All fixes have `GeneralsX @build BenderAI` comments
 - [ ] Dev diary updated (`docs/DEV_BLOG/2026-02-DIARY.md`)
 
 ---

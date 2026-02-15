@@ -696,7 +696,7 @@ void RefreshGameListBox( GameWindow *win, Bool showMap )
 	GadgetListBoxGetSelected(win, &selectedIndex);
 	if (selectedIndex != -1 )
 	{
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(win, selectedIndex)));
 	}
 	int prevPos = GadgetListBoxGetTopVisibleEntry( win );
@@ -888,7 +888,7 @@ void playerTemplateComboBoxTooltip(GameWindow *wndComboBox, WinInstanceData *ins
 {
 	Int index = 0;
 	GadgetComboBoxGetSelectedPos(wndComboBox, &index);
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	Int templateNum = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(wndComboBox, index)));
 	UnicodeString ustringTooltip;
 	if (templateNum == -1)
@@ -920,7 +920,7 @@ void playerTemplateListBoxTooltip(GameWindow *wndListBox, WinInstanceData *instD
 	if (row == -1 || col == -1)
 		return;
 
-// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer cast
+// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 Int templateNum = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(wndListBox, row, col)));
 	UnicodeString ustringTooltip;
 	if (templateNum == -1)

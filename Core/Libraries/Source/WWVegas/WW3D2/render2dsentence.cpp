@@ -1355,7 +1355,7 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 //
 //	Store_GDI_Char
 //
-// TheSuperHackers @build fbraz 11/02/2026 - Windows-only GDI text rendering
+// GeneralsX @build fbraz 11/02/2026 - Windows-only GDI text rendering
 ////////////////////////////////////////////////////////////////////////////////////
 const FontCharsClassCharDataStruct *
 FontCharsClass::Store_GDI_Char (WCHAR ch)
@@ -1629,7 +1629,7 @@ FontCharsClass::Free_GDI_Font (void)
 //
 //	Update_Current_Buffer (Platform-independent text buffer management)
 //
-// TheSuperHackers @build fbraz 11/02/2026 - Used by both Windows GDI and Linux FreeType
+// GeneralsX @build fbraz 11/02/2026 - Used by both Windows GDI and Linux FreeType
 ////////////////////////////////////////////////////////////////////////////////////
 void
 FontCharsClass::Update_Current_Buffer (int char_width)
@@ -1726,7 +1726,7 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 //
 //	Create_Freetype_Font
 //
-// TheSuperHackers @build fbraz 11/02/2026 Bender -  Initialize FreeType font (fighter19 pattern)
+// GeneralsX @build fbraz 11/02/2026 BenderAI -  Initialize FreeType font (fighter19 pattern)
 ////////////////////////////////////////////////////////////////////////////////////
 bool
 FontCharsClass::Create_Freetype_Font (const char *font_name)
@@ -1824,7 +1824,7 @@ FontCharsClass::Create_Freetype_Font (const char *font_name)
 //
 //	Store_Freetype_Char
 //
-// TheSuperHackers @build fbraz 11/02/2026 Bender - FreeType character rendering (fighter19 pattern)
+// GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType character rendering (fighter19 pattern)
 ////////////////////////////////////////////////////////////////////////////////////
 const FontCharsClassCharDataStruct *
 FontCharsClass::Store_Freetype_Char (WCHAR ch)
@@ -1953,7 +1953,7 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 //
 //	Free_Freetype_Font
 //
-// TheSuperHackers @build fbraz 11/02/2026 Bender - Cleanup FreeType resources
+// GeneralsX @build fbraz 11/02/2026 BenderAI - Cleanup FreeType resources
 ////////////////////////////////////////////////////////////////////////////////////
 void
 FontCharsClass::Free_Freetype_Font (void)

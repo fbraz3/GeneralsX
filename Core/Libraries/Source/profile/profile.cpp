@@ -30,10 +30,10 @@
 #include "profile.h"
 #include "internal.h"
 #include <new>
-// TheSuperHackers @build fbraz 03/02/2026 Add C string functions for Linux
+// GeneralsX @build fbraz 03/02/2026 Add C string functions for Linux
 #include <cstring>
-#include <cstdio>  // TheSuperHackers @build Bender 11/02/2026 snprintf for Linux
-// TheSuperHackers @build fbraz 03/02/2026 Platform-specific headers
+#include <cstdio>  // GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 snprintf for Linux
+// GeneralsX @build fbraz 03/02/2026 Platform-specific headers
 #ifdef _WIN32
 #include "mmsystem.h"
 #else
@@ -52,7 +52,7 @@ static bool __RegisterDebugCmdGroup_Profile=Debug::AddCommands("profile",&cmd);
 
 void *ProfileAllocMemory(unsigned numBytes)
 {
-// TheSuperHackers @build fbraz 03/02/2026 Use malloc on Linux, GlobalAlloc on Windows
+// GeneralsX @build fbraz 03/02/2026 Use malloc on Linux, GlobalAlloc on Windows
 #ifdef _WIN32
   HGLOBAL h=GlobalAlloc(GMEM_FIXED,numBytes);
   if (!h)
@@ -75,7 +75,7 @@ void *ProfileReAllocMemory(void *oldPtr, unsigned newSize)
   // Shrinking to 0 size is basically freeing memory
   if (!newSize)
   {
-// TheSuperHackers @build fbraz 03/02/2026 Use free on Linux, GlobalFree on Windows
+// GeneralsX @build fbraz 03/02/2026 Use free on Linux, GlobalFree on Windows
 #ifdef _WIN32
     GlobalFree((HGLOBAL)oldPtr);
 #else
@@ -84,7 +84,7 @@ void *ProfileReAllocMemory(void *oldPtr, unsigned newSize)
     return nullptr;
   }
 
-// TheSuperHackers @build fbraz 03/02/2026 Platform-specific memory reallocation
+// GeneralsX @build fbraz 03/02/2026 Platform-specific memory reallocation
 #ifdef _WIN32
   // now try GlobalReAlloc first
   HGLOBAL h=GlobalReAlloc((HGLOBAL)oldPtr,newSize,0);
@@ -113,7 +113,7 @@ void ProfileFreeMemory(void *ptr)
 {
   if (ptr)
   {
-// TheSuperHackers @build fbraz 03/02/2026 Use free on Linux, GlobalFree on Windows
+// GeneralsX @build fbraz 03/02/2026 Use free on Linux, GlobalFree on Windows
 #ifdef _WIN32
     GlobalFree((HGLOBAL)ptr);
 #else
@@ -141,7 +141,7 @@ static _int64 GetClockCyclesFast(void)
   _int64 n[3];
   for (int k=0;k<3;k++)
   {
-// TheSuperHackers @build fbraz 03/02/2026 Platform-specific high-resolution timing
+// GeneralsX @build fbraz 03/02/2026 Platform-specific high-resolution timing
 #ifdef _WIN32
     // wait for end of current tick
     unsigned timeEnd=timeGetTime()+2;
@@ -358,7 +358,7 @@ void Profile::StopRange(const char *range)
       m_frameNames[k].lastGlobalIndex=m_rec;
       m_recNames=(char **)ProfileReAllocMemory(m_recNames,(m_rec+1)*sizeof(char *));
       m_recNames[m_rec]=(char *)ProfileAllocMemory(strlen(range)+1+6);
-// TheSuperHackers @build fbraz 03/02/2026 Use snprintf on Linux, wsprintf on Windows
+// GeneralsX @build fbraz 03/02/2026 Use snprintf on Linux, wsprintf on Windows
 #ifdef _WIN32
       wsprintf(m_recNames[m_rec++],"%s:%i",range,++m_frameNames[k].frames);
 #else

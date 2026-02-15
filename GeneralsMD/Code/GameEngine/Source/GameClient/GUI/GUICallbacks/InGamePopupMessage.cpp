@@ -77,7 +77,7 @@ static GameWindow *parent = nullptr;
 static GameWindow *staticTextMessage = nullptr;
 static GameWindow *buttonOk = nullptr;
 
-// TheSuperHackers @bugfix BenderAI 12/02/2026 - Renamed 'pause' to 'shouldPause'
+// GeneralsX @bugfix BenderAI 12/02/2026 - Renamed 'pause' to 'shouldPause'
 // Avoids conflict with POSIX pause() function from <unistd.h> on Linux
 static Bool shouldPause = FALSE;
 //-----------------------------------------------------------------------------

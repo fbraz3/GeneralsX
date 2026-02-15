@@ -51,9 +51,9 @@
 #endif
 
 #include "dx8wrapper.h"
-// TheSuperHackers @build fighter19 10/02/2026 Bender - Need LoadLibrary/GetProcAddress/FreeLibrary for dynamic loading
+// GeneralsX @build BenderAI 10/02/2026 - Need LoadLibrary/GetProcAddress/FreeLibrary for dynamic loading
 #include "module_compat.h"
-// TheSuperHackers @build fighter19 10/02/2026 Bender - Embedded browser Windows-only (requires COM LPDISPATCH)
+// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)
 #ifdef _WIN32
 #include "dx8webbrowser.h"
 #endif
@@ -173,7 +173,7 @@ bool								DX8Wrapper::IsDeviceLost;
 int								DX8Wrapper::ZBias;
 float								DX8Wrapper::ZNear;
 float								DX8Wrapper::ZFar;
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
+// GeneralsX @refactor BenderAI 10/02/2026 - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
 Matrix4x4						DX8Wrapper::ProjectionMatrix;
 Matrix4x4						DX8Wrapper::DX8Transforms[D3DTS_WORLD+1];
 
@@ -325,7 +325,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	Invalidate_Cached_Render_States();
 
 	if (!lite) {
-		// TheSuperHackers @build fighter19 10/02/2026 Bender - Platform-specific DLL/SO loading
+		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO loading
 #ifdef _WIN32
 		D3D8Lib = LoadLibrary("D3D8.DLL");
 #else
@@ -978,7 +978,7 @@ void DX8Wrapper::Resize_And_Position_Window()
 
 			DEBUG_LOG(("Window positioned to x:%d y:%d, resized to w:%d h:%d", left, top, width, height));
 #else
-			// TheSuperHackers @build fighter19 10/02/2026 Bender - SDL3 window management on Linux (no Monitor API needed)
+			// GeneralsX @build BenderAI 10/02/2026 - SDL3 window management on Linux (no Monitor API needed)
 			::SetWindowPos (_Hwnd, nullptr, 0, 0, width, height, SWP_NOZORDER);
 
 			DEBUG_LOG(("Window resized (Linux/SDL) to w:%d h:%d", width, height));
@@ -1738,7 +1738,7 @@ void DX8Wrapper::Begin_Scene(void)
 
 	DX8CALL(BeginScene());
 
-	// TheSuperHackers @build fighter19 10/02/2026 Bender - Embedded browser Windows-only
+	// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only
 #ifdef _WIN32
 	DX8WebBrowser::Update();
 #endif
@@ -1749,7 +1749,7 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 	DX8_THREAD_ASSERT();
 	DX8CALL(EndScene());
 
-	// TheSuperHackers @build fighter19 10/02/2026 Bender - Embedded browser Windows-only
+	// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only
 #ifdef _WIN32
 	DX8WebBrowser::Render(0);
 #endif
@@ -2109,7 +2109,7 @@ void DX8Wrapper::Draw(
 
 #ifdef MESH_RENDER_SNAPSHOT_ENABLED
 	if (WW3D::Is_Snapshot_Activated()) {
-		DWORD passes=0;		// TheSuperHackers @build fighter19 10/02/2026 Bender - Use DWORD (32-bit) instead of unsigned long (platform-dependent)
+		DWORD passes=0;		// GeneralsX @build BenderAI 10/02/2026 - Use DWORD (32-bit) instead of unsigned long (platform-dependent)
 		SNAPSHOT_SAY(("ValidateDevice:"));
 		HRESULT res=D3DDevice->ValidateDevice(&passes);
 		switch (res) {
@@ -2360,12 +2360,12 @@ void DX8Wrapper::Apply_Render_State_Changes()
 
 	if (render_state_changed&WORLD_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply world matrix"));
-		// TheSuperHackers @refactor fighter19 10/02/2026 Bender - pass Matrix4x4 directly (no D3DMATRIX conversion)
+		// GeneralsX @refactor BenderAI 10/02/2026 - pass Matrix4x4 directly (no D3DMATRIX conversion)
 		_Set_DX8_Transform(D3DTS_WORLD, render_state.world);
 	}
 	if (render_state_changed&VIEW_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply view matrix"));
-		// TheSuperHackers @refactor fighter19 10/02/2026 Bender - pass Matrix4x4 directly (no D3DMATRIX conversion)
+		// GeneralsX @refactor BenderAI 10/02/2026 - pass Matrix4x4 directly (no D3DMATRIX conversion)
 		_Set_DX8_Transform(D3DTS_VIEW, render_state.view);
 	}
 	if (render_state_changed&VERTEX_BUFFER_CHANGED) {
@@ -3753,7 +3753,7 @@ void DX8Wrapper::Set_Gamma(float gamma,float bright,float contrast,bool calibrat
 	if (Get_Current_Caps()->Support_Gamma())	{
 		DX8Wrapper::_Get_D3D_Device8()->SetGammaRamp(flag,&ramp);
 	}
-	// TheSuperHackers @build fbraz 10/02/2026 GDI gamma fallback Windows-only
+	// GeneralsX @build fbraz 10/02/2026 GDI gamma fallback Windows-only
 	// Linux: Gamma adjustment via device only (no GDI fallback)
 #ifdef _WIN32
 	else {
@@ -3784,7 +3784,7 @@ void DX8Wrapper::Set_World_Identity()
 {
 	if (render_state_changed&(unsigned)WORLD_IDENTITY)
 		return;
-	// TheSuperHackers @build fbraz 10/02/2026 Use Matrix4x4 native method
+	// GeneralsX @build fbraz 10/02/2026 Use Matrix4x4 native method
 	render_state.world.Make_Identity();
 	render_state_changed|=(unsigned)WORLD_CHANGED|(unsigned)WORLD_IDENTITY;
 }
@@ -3793,7 +3793,7 @@ void DX8Wrapper::Set_View_Identity()
 {
 	if (render_state_changed&(unsigned)VIEW_IDENTITY)
 		return;
-	// TheSuperHackers @build fbraz 10/02/2026 Use Matrix4x4 native method
+	// GeneralsX @build fbraz 10/02/2026 Use Matrix4x4 native method
 	render_state.view.Make_Identity();
 	render_state_changed|=(unsigned)VIEW_CHANGED|(unsigned)VIEW_IDENTITY;
 }

@@ -30,7 +30,7 @@
 #include "profile.h"
 #include "internal.h"
 #include <new>
-// TheSuperHackers @build fbraz 03/02/2026 Add C string functions for Linux
+// GeneralsX @build fbraz 03/02/2026 Add C string functions for Linux
 #include <cstring>
 #include <WWCommon.h>
 
@@ -198,7 +198,7 @@ void ProfileId::Maximum(double max)
 const char *ProfileId::AsString(double v) const
 {
   char help1[10],help[40];
-// TheSuperHackers @build fbraz 03/02/2026 Use snprintf on Linux, wsprintf on Windows
+// GeneralsX @build fbraz 03/02/2026 Use snprintf on Linux, wsprintf on Windows
 #ifdef _WIN32
   wsprintf(help1,"%%%i.lf",m_precision);
 #else

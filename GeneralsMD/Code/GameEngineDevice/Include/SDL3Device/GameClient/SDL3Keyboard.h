@@ -56,13 +56,13 @@ public:
 
 	// Keyboard interface
 	virtual KeyboardIO *getKeyboard(void);
-	virtual Bool getCapsState(void);  // TheSuperHackers @build fbraz 12/02/2026 Bender - Caps Lock state
+	virtual Bool getCapsState(void);  // GeneralsX @build fbraz 12/02/2026 BenderAI - Caps Lock state
 	
 	// SDL3-specific methods
 	void addSDL3KeyEvent(const SDL_KeyboardEvent& event);
 
 protected:
-	virtual void getKey(KeyboardIO *key);  // TheSuperHackers @build fbraz 12/02/2026 Bender - Get keyboard event
+	virtual void getKey(KeyboardIO *key);  // GeneralsX @build fbraz 12/02/2026 BenderAI - Get keyboard event
 	virtual KeyVal translateScanCodeToKeyVal(unsigned char scan);
 
 private:

@@ -1792,7 +1792,7 @@ WindowMsgHandledType GadgetListBoxSystem( GameWindow *window, UnsignedInt msg,
 		{
 
 			if( list->multiSelect )
-				// TheSuperHackers @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
+				// GeneralsX @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
 				// list->selections is a pointer being stored as Int (common pattern for GUI message passing).
 				// On 64-bit Linux, pointers are 8 bytes but Int is 4 bytes. Cast through intptr_t first.
 				*(Int*)mData2 = static_cast<Int>(reinterpret_cast<intptr_t>(list->selections));

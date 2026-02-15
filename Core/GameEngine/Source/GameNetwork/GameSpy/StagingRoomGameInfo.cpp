@@ -71,7 +71,7 @@ GameSpyGameSlot::GameSpyGameSlot()
 ** Function definitions for the MIB-II entry points.
 */
 
-// TheSuperHackers @build BenderAI 13/02/2026 SNMP is Windows-only (GameSpy servers dead since 2013)
+// GeneralsX @build BenderAI 13/02/2026 SNMP is Windows-only (GameSpy servers dead since 2013)
 #ifdef _WIN32
 BOOL (__stdcall *SnmpExtensionInitPtr)(IN DWORD dwUpTimeReference, OUT HANDLE *phSubagentTrapEvent, OUT AsnObjectIdentifier *pFirstSupportedRegion);
 BOOL (__stdcall *SnmpExtensionQueryPtr)(IN BYTE bPduType, IN OUT RFC1157VarBindList *pVarBindList, OUT AsnInteger32 *pErrorStatus, OUT AsnInteger32 *pErrorIndex);
@@ -103,7 +103,7 @@ typedef struct tConnInfoStruct {
  *=============================================================================================*/
 Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverPort, UnsignedInt& localIP)
 {
-// TheSuperHackers @build BenderAI 13/02/2026 SNMP network diagnostics not needed on Linux (GameSpy online services dead 2013)
+// GeneralsX @build BenderAI 13/02/2026 SNMP network diagnostics not needed on Linux (GameSpy online services dead 2013)
 #ifndef _WIN32
 	return false;  // Linux: Stub - LAN multiplayer doesn't need SNMP TCP connection tracking
 #else

@@ -43,7 +43,7 @@
 
 #include "always.h"
 #include "dllist.h"
-// TheSuperHackers @build fighter19 10/02/2026 Bender
+// GeneralsX @build BenderAI 10/02/2026
 // Use angle brackets (not quotes) to skip local d3d8.h stub and get DXVK headers
 // DXVK's d3d8.h includes d3d8types.h internally - no manual includes needed
 #include <d3d8.h>
@@ -182,7 +182,7 @@ struct RenderStateStruct
 	D3DLIGHT8 Lights[4];
 	bool LightEnable[4];
   //unsigned lightsHash;
-	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// GeneralsX @refactor BenderAI 10/02/2026
 	// Changed from D3DMATRIX to Matrix4x4 - fighter19 pattern eliminates conversion functions
 	// Matrices stored transposed, cast to D3DMATRIX* when calling D3D APIs
 	Matrix4x4 world;
@@ -315,7 +315,7 @@ public:
 	// Note that *_DX8_Transform() functions take the matrix in DX8 format - transposed from Westwood convention.
 
 	static void _Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const Matrix4x4& m);
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
 	static void _Get_DX8_Transform(D3DTRANSFORMSTATETYPE transform, Matrix4x4& m);
 
 	static void Set_DX8_Light(int index,D3DLIGHT8* light);
@@ -628,7 +628,7 @@ protected:
 
 	static RenderStateStruct			render_state;
 	static unsigned						render_state_changed;
-	// TheSuperHackers @refactor fighter19 10/02/2026 Bender - fighter19 pattern Matrix4x4 not D3DMATRIX
+	// GeneralsX @refactor BenderAI 10/02/2026 - fighter19 pattern Matrix4x4 not D3DMATRIX
 	static Matrix4x4						DX8Transforms[D3DTS_WORLD+1];
 
 	static bool								IsInitted;
@@ -709,7 +709,7 @@ protected:
 	static int								ZBias;
 	static float							ZNear;
 	static float							ZFar;
-	// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+	// GeneralsX @refactor BenderAI 10/02/2026
 	// Changed from D3DMATRIX to Matrix4x4 - fighter19 pattern
 	static Matrix4x4					ProjectionMatrix;
 
@@ -762,7 +762,7 @@ WWINLINE void DX8Wrapper::Set_Pixel_Shader_Constant(int reg, const void* data, i
 	DX8CALL(SetPixelShaderConstant(reg,data,count));
 }
 // shader system updates KJM ^
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender - fighter19 pattern Matrix4x4 parameter not D3DMATRIX
+// GeneralsX @refactor BenderAI 10/02/2026 - fighter19 pattern Matrix4x4 parameter not D3DMATRIX
 WWINLINE void DX8Wrapper::_Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const Matrix4x4& m)
 {
 	WWASSERT(transform<=D3DTS_WORLD);
@@ -782,7 +782,7 @@ WWINLINE void DX8Wrapper::_Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, co
 	}
 }
 
-// TheSuperHackers @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
+// GeneralsX @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
 WWINLINE void DX8Wrapper::_Get_DX8_Transform(D3DTRANSFORMSTATETYPE transform, Matrix4x4& m)
 {
 	DX8CALL(GetTransform(transform,(D3DMATRIX*)&m));
@@ -1206,7 +1206,7 @@ WWINLINE void DX8Wrapper::Set_Shader(const ShaderClass& shader)
 	SNAPSHOT_SAY(("DX8Wrapper::Set_Shader(%s)",shader.Get_Description(str).str()));
 }
 
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// GeneralsX @refactor BenderAI 10/02/2026
 // Applied fighter19 pattern: store Matrix4x4 transposed, cast to D3DMATRIX* for D3D calls
 WWINLINE void DX8Wrapper::Set_Projection_Transform_With_Z_Bias(const Matrix4x4& matrix, float znear, float zfar)
 {
@@ -1235,7 +1235,7 @@ WWINLINE void DX8Wrapper::Set_DX8_ZBias(int zbias)
 	ZBias=zbias;
 
 	if (!Get_Current_Caps()->Support_ZBias() && ZNear!=ZFar) {
-		// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+		// GeneralsX @refactor BenderAI 10/02/2026
 		// Changed D3DMATRIX → Matrix4x4 to match ProjectionMatrix type change
 		Matrix4x4 tmp=ProjectionMatrix;
 		float tmp_zbias=ZBias;
@@ -1249,7 +1249,7 @@ WWINLINE void DX8Wrapper::Set_DX8_ZBias(int zbias)
 	}
 }
 
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// GeneralsX @refactor BenderAI 10/02/2026
 // Applied fighter19 pattern: transpose and store as Matrix4x4, cast pointer for D3D calls
 WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix4x4& m)
 {
@@ -1280,7 +1280,7 @@ WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Ma
 	}
 }
 
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// GeneralsX @refactor BenderAI 10/02/2026
 // Applied fighter19 pattern: convert Matrix3D to Matrix4x4, transpose, cast for D3D calls
 WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix3D& m)
 {
@@ -1313,7 +1313,7 @@ WWINLINE bool DX8Wrapper::Is_View_Identity()
 	return !!(render_state_changed&(unsigned)VIEW_IDENTITY);
 }
 
-// TheSuperHackers @refactor fighter19 10/02/2026 Bender
+// GeneralsX @refactor BenderAI 10/02/2026
 // Applied fighter19 pattern: transpose back when reading stored matrices
 WWINLINE void DX8Wrapper::Get_Transform(D3DTRANSFORMSTATETYPE transform, Matrix4x4& m)
 {

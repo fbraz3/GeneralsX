@@ -378,7 +378,7 @@ Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *
 		Int	startY=REAL_TO_INT_FLOOR(((cy - dy)*mapScaleInv));
 		Int endY=REAL_TO_INT_CEIL(((cy + dy)*mapScaleInv));
 
-		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+		// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
 		//clip bounds to extents of heightmap
 		startX = MAX(startX,0);
 		endX = MIN(endX,hmap->getXExtent()-1);
@@ -891,7 +891,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		max_x=min_x=boxCorners[0].X;
 		max_y=min_y=boxCorners[0].Y;
 
-		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform)
+		// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform)
 		for (Int bi=1; bi<4; bi++)
 		{	max_x = MAX(max_x,boxCorners[bi].X);
 			min_x = MIN(min_x,boxCorners[bi].X);
@@ -958,7 +958,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		Int	startY=REAL_TO_INT_FLOOR(((objPos.Y+min_y)*mapScaleInv)) + borderSize;
 		Int endY=REAL_TO_INT_CEIL(((objPos.Y+max_y)*mapScaleInv)) + borderSize;
 
-		// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform)
+		// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform)
 		startX = MAX(startX,m_drawStartX);
 		startX = MIN(startX,m_drawEdgeX);
 		startY = MAX(startY,m_drawStartY);
@@ -1041,7 +1041,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 					for (i=startX; i <= endX; i++)
 					{
 						hmapVertex.X=(float)(i-borderSize)*MAP_XY_FACTOR;
-						// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform)
+						// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX macro (cross-platform)
 						hmapVertex.Z=MAX((float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE,layerHeight);
 						pvVertices->x=hmapVertex.X;
 						pvVertices->y=hmapVertex.Y;

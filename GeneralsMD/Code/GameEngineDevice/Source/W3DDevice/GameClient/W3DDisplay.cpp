@@ -37,7 +37,7 @@ static void drawFramerateBar(void);
 #include <numeric>
 #include <stdlib.h>
 #include <windows.h>
-// TheSuperHackers @bugfix fighter19 13/02/2026 BenderAI - io.h is Windows-specific, use unistd.h on Linux
+// GeneralsX @bugfix BenderAI 13/02/2026AI - io.h is Windows-specific, use unistd.h on Linux
 #ifdef _WIN32
 #include <io.h>
 #else
@@ -367,7 +367,7 @@ W3DAssetManager *W3DDisplay::m_assetManager = nullptr;
 //=============================================================================
 	// note, can't use the ones from PerfTimer.h 'cuz they are currently
 	// only valid when "-vtune" is used... (srj)
-// TheSuperHackers @build BenderAI 13/02/2026 Add platform-specific performance counter wrappers
+// GeneralsX @build BenderAI 13/02/2026 Add platform-specific performance counter wrappers
 inline Int64 getPerformanceCounter()
 {
 	Int64 tmp;
@@ -2673,7 +2673,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				//	Clip the polygons to the specified area
 				//
 
-				// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+				// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
 				clipped_rect.Left		= MAX (screen_rect.Left, m_clipRegion.lo.x);
 				clipped_rect.Right	= MIN (screen_rect.Right, m_clipRegion.hi.x);
 				clipped_rect.Top		= MAX (screen_rect.Top, m_clipRegion.lo.y);
@@ -2703,7 +2703,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				//	Clip the polygons to the specified area
 				//
 
-				// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+				// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
 				clipped_rect.Left		= MAX (screen_rect.Left, m_clipRegion.lo.x);
 				clipped_rect.Right	= MIN (screen_rect.Right, m_clipRegion.hi.x);
 				clipped_rect.Top		= MAX (screen_rect.Top, m_clipRegion.lo.y);
@@ -2933,7 +2933,7 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
-// TheSuperHackers @build BenderAI 13/02/2026 Screenshot is Windows-specific functionality
+// GeneralsX @build BenderAI 13/02/2026 Screenshot is Windows-specific functionality
 #ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
@@ -3016,7 +3016,7 @@ static void CreateBMPFile(const char* pszFile, char *image, Int width, Int heigh
 	// TODO (Phase 3): Implement SDL3-based screenshot capture
 }
 #endif
-// TheSuperHackers @build BenderAI 13/02/2026 Screenshot is Windows-specific functionality
+// GeneralsX @build BenderAI 13/02/2026 Screenshot is Windows-specific functionality
 #ifdef _WIN32
 void W3DDisplay::takeScreenShot(void)
 {

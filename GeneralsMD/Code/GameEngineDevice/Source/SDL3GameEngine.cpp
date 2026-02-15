@@ -243,7 +243,7 @@ void SDL3GameEngine::pollSDL3Events(void)
 
 /**
  * Handle keyboard event -dispatch to Keyboard manager
- * TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 event wiring
+ * TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 event wiring
  */
 void SDL3GameEngine::handleKeyboardEvent(const SDL_KeyboardEvent& event)
 {
@@ -258,7 +258,7 @@ void SDL3GameEngine::handleKeyboardEvent(const SDL_KeyboardEvent& event)
 
 /**
  * Handle mouse motion event - dispatch to Mouse manager
- * TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 event wiring
+ * TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 event wiring
  */
 void SDL3GameEngine::handleMouseMotionEvent(const SDL_MouseMotionEvent& event)
 {
@@ -273,7 +273,7 @@ void SDL3GameEngine::handleMouseMotionEvent(const SDL_MouseMotionEvent& event)
 
 /**
  * Handle mouse button event - dispatch to Mouse manager
- * TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 event wiring
+ * TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 event wiring
  */
 void SDL3GameEngine::handleMouseButtonEvent(const SDL_MouseButtonEvent& event)
 {
@@ -288,7 +288,7 @@ void SDL3GameEngine::handleMouseButtonEvent(const SDL_MouseButtonEvent& event)
 
 /**
  * Handle mouse wheel event - dispatch to Mouse manager
- * TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 event wiring
+ * TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 event wiring
  */
 void SDL3GameEngine::handleMouseWheelEvent(const SDL_MouseWheelEvent& event)
 {

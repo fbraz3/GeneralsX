@@ -9,7 +9,7 @@ with open(filepath, 'r') as f:
 # Find line 863 (0-indexed as 862)
 if len(lines) > 862 and 'TestWaterUpdate' in lines[862]:
     # Replace lines 862-863
-    lines[862] = '\t// TheSuperHackers @bugfix BenderAI 13/02/2026 Windows-only debug function\n'
+    lines[862] = '\t// GeneralsX @bugfix BenderAI 13/02/2026 Windows-only debug function\n'
     lines.insert(863, '#ifdef _WIN32\n')
     lines.insert(864, '\tif (TheGlobalData->m_usingWaterTrackEditor)\n')
     lines.insert(865, '\t\tTestWaterUpdate();\n')

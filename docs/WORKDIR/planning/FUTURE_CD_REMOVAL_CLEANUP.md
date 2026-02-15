@@ -256,7 +256,7 @@ echo "Refactoring: Adopted githubawn comprehensive CD/DRM removal
 - Reference: githubawn commit 765c35e89b82bf1ea5ed35b7dbbc8aa8b1affe6c
 - Zero gameplay impact: Music.big was DRM hash verification only
 
-// TheSuperHackers @refactor GeneralsX Team 14/02/2026 CD/DRM removal
+// GeneralsX @refactor Bender AI 14/02/2026 CD/DRM removal
 " > logs/cd_removal_commit_message.txt
 git commit -F logs/cd_removal_commit_message.txt
 ```

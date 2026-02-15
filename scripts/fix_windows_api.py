@@ -20,7 +20,7 @@ def fix_windows_api(filepath):
     count1 = content.count('__int64 W3DShaderManager::m_driverVersion;')
     content = content.replace(
         '__int64 W3DShaderManager::m_driverVersion;',
-        '// TheSuperHackers @bugfix BenderAI 13/02/2026 Int64 for cross-platform (fighter19 pattern)\nInt64 W3DShaderManager::m_driverVersion;'
+        '// GeneralsX @bugfix BenderAI 13/02/2026 Int64 for cross-platform (fighter19 pattern)\nInt64 W3DShaderManager::m_driverVersion;'
     )
     
     # Fix 2: HeapAlloc → new DWORD[]
@@ -33,7 +33,7 @@ def fix_windows_api(filepath):
 		return E_FAIL;
 	}'''
     
-    new_heap_alloc = '''// TheSuperHackers @bugfix BenderAI 13/02/2026 Use new[] instead of HeapAlloc (fighter19 pattern)
+    new_heap_alloc = '''// GeneralsX @bugfix BenderAI 13/02/2026 Use new[] instead of HeapAlloc (fighter19 pattern)
 	const DWORD* pShader = new DWORD[dwFileSize / sizeof(DWORD)]();
 	if (!pShader)
 	{
@@ -48,7 +48,7 @@ def fix_windows_api(filepath):
     count3 = content.count('HeapFree(GetProcessHeap(), 0, (void*)pShader);')
     content = content.replace(
         'HeapFree(GetProcessHeap(), 0, (void*)pShader);',
-        '// TheSuperHackers @bugfix BenderAI 13/02/2026 Use delete[] instead of HeapFree (fighter19 pattern)\n	delete[] pShader;'
+        '// GeneralsX @bugfix BenderAI 13/02/2026 Use delete[] instead of HeapFree (fighter19 pattern)\n	delete[] pShader;'
     )
     
     # Fix 4: QueryPerformanceFrequency/Counter - opening block
@@ -56,7 +56,7 @@ def fix_windows_api(filepath):
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
 	QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);'''
     
-    new_query_start = '''// TheSuperHackers @bugfix BenderAI 13/02/2026 Int64 and cross-platform timing (fighter19 pattern)
+    new_query_start = '''// GeneralsX @bugfix BenderAI 13/02/2026 Int64 and cross-platform timing (fighter19 pattern)
   	Int64 endTime64,freq64,startTime64;
 #ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
@@ -73,7 +73,7 @@ def fix_windows_api(filepath):
     old_query_end = '''	QueryPerformanceCounter((LARGE_INTEGER *)&endTime64);
 	return ((double)(endTime64-startTime64)/(double)(freq64));'''
     
-    new_query_end = '''// TheSuperHackers @bugfix BenderAI 13/02/2026 Cross-platform timing end (fighter19 pattern)
+    new_query_end = '''// GeneralsX @bugfix BenderAI 13/02/2026 Cross-platform timing end (fighter19 pattern)
 #ifdef _WIN32
 	QueryPerformanceCounter((LARGE_INTEGER *)&endTime64);
 #else

@@ -36,7 +36,7 @@
     #include "windows_compat.h"    // Windows API compatibility: GetDoubleClickTime, HIWORD, etc.
     #include "com_compat.h"        // COM/DirectX: IUnknown, GUID, REFIID, DECLARE_INTERFACE_, etc.
     
-    // TheSuperHackers @build fbraz 10/02/2026 Bender
+    // GeneralsX @build fbraz 10/02/2026 Bender
     // CRITICAL: Include time_compat.h and gdi_compat.h DIRECTLY here because windows_compat.h
     // skips them when DEPENDENCIES_UTILITY_COMPAT_H is defined (see windows_compat.h line 138)
     // ww3d.cpp needs MMRESULT/timeBeginPeriod (time_compat.h) and BITMAP structures (gdi_compat.h)

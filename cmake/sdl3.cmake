@@ -1,5 +1,5 @@
 # SDL3 windowing/input library for Linux builds
-# TheSuperHackers @build fighter19 11/02/2026 Bender - Session 26
+# GeneralsX @build BenderAI 11/02/2026 - Session 26
 # SDL3 provides cross-platform windowing, input events, and OS integration
 # Used by SDL3GameEngine (replaces Win32 window management on Linux)
 #
@@ -25,7 +25,7 @@ if(SAGE_USE_SDL3)
     set(SDL_TEST OFF CACHE BOOL "" FORCE)
     set(SDL_TESTS OFF CACHE BOOL "" FORCE)
     
-    # TheSuperHackers @build BenderAI 13/02/2026 - Enable VIDEO and VULKAN for graphics support
+    # GeneralsX @build BenderAI 13/02/2026 - Enable VIDEO and VULKAN for graphics support
     # VIDEO must be ON to use Vulkan (SDL_Vulkan_LoadLibrary requires video driver)
     set(SDL_VIDEO ON CACHE BOOL "" FORCE)
     set(SDL_VULKAN ON CACHE BOOL "" FORCE)

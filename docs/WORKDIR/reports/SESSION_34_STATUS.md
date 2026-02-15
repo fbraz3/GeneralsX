@@ -400,7 +400,7 @@ REFERENCES:
 - Fighter19 commits: 5b561c4e (intptr_t), d0295438 (Int64), 45dbfb34 (io.h)
 - DeepWiki AI consultations: 3× for pattern verification
 
-TheSuperHackers @build BenderAI 13/02/2026
+GeneralsX @build BenderAI 13/02/2026
 ```
 
 ---

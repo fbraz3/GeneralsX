@@ -1,4 +1,4 @@
-// TheSuperHackers @build BenderAI 12/02/2026 mbstring.h compatibility for Linux
+// GeneralsX @build BenderAI 12/02/2026 mbstring.h compatibility for Linux
 #ifndef MBSTRING_COMPAT_H
 #define MBSTRING_COMPAT_H
 

@@ -144,12 +144,12 @@ public:
 /**
  * LAN message class
  */
-// TheSuperHackers @bugfix fighter19 11/02/2026 Bender - Use WideCharWindows for cross-platform LAN protocol (always 2 bytes)
+// GeneralsX @bugfix BenderAI 11/02/2026 - Use WideCharWindows for cross-platform LAN protocol (always 2 bytes)
 // On Windows: wchar_t = 2 bytes (UTF-16), on Linux: wchar_t = 4 bytes (UTF-32)
 // Network protocol must use fixed-size types, so use uint16_t for wide chars in LAN packets
 typedef uint16_t WideCharWindows;
 
-// TheSuperHackers @build BenderAI 13/02/2026 Helper functions for WideCharWindows <-> wchar_t conversion (fighter19 pattern)
+// GeneralsX @build BenderAI 13/02/2026 Helper functions for WideCharWindows <-> wchar_t conversion (fighter19 pattern)
 #define MAX_COMPUTERNAME_LENGTH 256
 void CopyWcharToWindowsWideChar( WideCharWindows *dest, const WideChar *src, UnsignedInt len );
 wchar_t *GetWindowsWideCharAsWchar( WideCharWindows *src );

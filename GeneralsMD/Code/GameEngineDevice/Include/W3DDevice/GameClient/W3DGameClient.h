@@ -54,7 +54,7 @@
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "W3DDevice/GameClient/W3DMouse.h"
 
-// TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 SDL3 input devices
+// TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 input devices
 #ifndef _WIN32
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
@@ -133,7 +133,7 @@ protected:
 
 };
 
-// TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 SDL3 input factory wiring
+// TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 input factory wiring
 inline Keyboard *W3DGameClient::createKeyboard( void ) {
 #ifndef _WIN32
 	return NEW SDL3Keyboard();  // Linux: SDL3 keyboard
@@ -144,7 +144,7 @@ inline Keyboard *W3DGameClient::createKeyboard( void ) {
 
 inline Mouse *W3DGameClient::createMouse( void )
 {
-// TheSuperHackers @build 10/02/2026 Bender - Phase 1.5 SDL3 mouse factory wiring
+// TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 mouse factory wiring
 #ifndef _WIN32
 	// Linux: SDL3 mouse (requires SDL window handle)
 	SDL3GameEngine* sdlEngine = dynamic_cast<SDL3GameEngine*>(TheGameEngine);

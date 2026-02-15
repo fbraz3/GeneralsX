@@ -44,7 +44,7 @@
 #include <assert.h>
 
 #include "WWLib/win.h"
-// TheSuperHackers @build fbraz 10/02/2026 Include D3D8 headers on Linux (DXVK provides)
+// GeneralsX @build fbraz 10/02/2026 Include D3D8 headers on Linux (DXVK provides)
 #include <d3d8types.h>
 #include <d3dx8math.h>
 
@@ -200,7 +200,7 @@ int operator != (const Matrix4x4 & a, const Matrix4x4 & b)
 	return (!(a == b));
 }
 
-// TheSuperHackers @build fbraz 10/02/2026 Remove Windows-only guard (DXVK provides D3DMATRIX on Linux)
+// GeneralsX @build fbraz 10/02/2026 Remove Windows-only guard (DXVK provides D3DMATRIX on Linux)
 
 void To_D3DMATRIX(_D3DMATRIX& dxm, const Matrix4x4& m)
 {

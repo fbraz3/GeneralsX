@@ -33,8 +33,8 @@ static size_t GlobalSize(void *ptr)
 }
 
 // MEMORYSTATUS - Windows memory status structure (for GlobalMemoryStatus)
-// TheSuperHackers @build BenderAI 11/02/2026 Linux stub - memory profiling disabled
-// TheSuperHackers @bugfix BenderAI 13/02/2026 Add conditional guard - DXVK may have defined it
+// GeneralsX @build BenderAI 11/02/2026 Linux stub - memory profiling disabled
+// GeneralsX @bugfix BenderAI 13/02/2026 Add conditional guard - DXVK may have defined it
 // NOTE: Game uses this for DEBUG_LOG only (dwAvailPageFile, dwAvailPhys, dwAvailVirtual).
 #ifndef _MEMORYSTATUS_DEFINED
 typedef struct MEMORYSTATUS {

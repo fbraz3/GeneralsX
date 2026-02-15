@@ -2548,7 +2548,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				//	Clip the polygons to the specified area
 				//
 
-				// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+				// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
 				clipped_rect.Left		= MAX (screen_rect.Left, m_clipRegion.lo.x);
 				clipped_rect.Right	= MIN (screen_rect.Right, m_clipRegion.hi.x);
 				clipped_rect.Top		= MAX (screen_rect.Top, m_clipRegion.lo.y);
@@ -2578,7 +2578,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				//	Clip the polygons to the specified area
 				//
 
-				// TheSuperHackers @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
+				// GeneralsX @bugfix BenderAI 13/02/2026 Use MAX/MIN macros (cross-platform, defined in BaseTypeCore.h)
 				clipped_rect.Left		= MAX (screen_rect.Left, m_clipRegion.lo.x);
 				clipped_rect.Right	= MIN (screen_rect.Right, m_clipRegion.hi.x);
 				clipped_rect.Top		= MAX (screen_rect.Top, m_clipRegion.lo.y);

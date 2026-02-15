@@ -1,6 +1,6 @@
 #pragma once
 
-// TheSuperHackers @build fbraz 10/02/2026 Bender
+// GeneralsX @build fbraz 10/02/2026 Bender
 // Video for Windows (VFW) / AVI File API compatibility stubs
 // Used by WW3D2/FramGrab.cpp (movie capture system)
 // Phase 3 out-of-scope: Stubs return failure, disabling movie capture on Linux
@@ -9,7 +9,7 @@
 
 #ifndef _WIN32
 
-// TheSuperHackers @build fbraz 10/02/2026 Bender
+// GeneralsX @build fbraz 10/02/2026 Bender
 // Need full RECT definition (not just forward declaration) for SetRect() function
 // DXVK windows_base.h provides complete RECT structure
 #include <windows_base.h>

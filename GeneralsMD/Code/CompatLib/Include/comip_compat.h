@@ -1,6 +1,6 @@
 #pragma once
 
-// TheSuperHackers @build fbraz 11/02/2026 Bender
+// GeneralsX @build fbraz 11/02/2026 Bender
 // COM Interface Pointer compatibility stub
 // Used by WW3D2/dx8webbrowser.cpp (DirectX web browser embedding)
 // Phase 3 out-of-scope: Minimal stubs to allow compilation

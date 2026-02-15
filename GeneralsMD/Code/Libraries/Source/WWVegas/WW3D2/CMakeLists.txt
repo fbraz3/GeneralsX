@@ -242,7 +242,7 @@ target_compile_definitions(z_ww3d2 PRIVATE
     $<$<BOOL:${IS_VS6_BUILD}>:WINVER=0x0500>
 )
 
-# TheSuperHackers @build fbraz 03/02/2026 Disable PCH on Linux (fighter19 pattern)
+# GeneralsX @build fbraz 03/02/2026 Disable PCH on Linux (fighter19 pattern)
 # PCH causes header ordering issues with CompatLib wrapper headers on Linux
 # Windows builds keep PCH for performance (VC6/Win32 compatibility)
 if(WIN32)

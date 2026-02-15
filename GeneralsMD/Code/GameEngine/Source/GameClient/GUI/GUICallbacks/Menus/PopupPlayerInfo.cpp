@@ -308,7 +308,7 @@ void BattleHonorTooltip(GameWindow *window,
 		return;
 	}
 
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer casts
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer casts
 	Int battleHonor = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData( window, row, col )));
 	Int extraValue = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData( window, row - 1, col )));
 	if (battleHonor == 0)
@@ -485,7 +485,7 @@ void InsertBattleHonor(GameWindow *list, const Image *image, Bool enabled, Int i
 		itemData |= BATTLE_HONOR_NOT_GAINED;
 
 	GadgetListBoxAddEntryImage(list, image, row, column, height, width, TRUE, color);
-	// TheSuperHackers @build BenderAI 12/02/2026 64-bit safe pointer casts (int to pointer)
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer casts (int to pointer)
 	GadgetListBoxSetItemData(list, reinterpret_cast<void*>(static_cast<intptr_t>(itemData)), row, column );
 	GadgetListBoxSetItemData(list, reinterpret_cast<void*>(static_cast<intptr_t>(extra)), row - 1, column );
 

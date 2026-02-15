@@ -1,5 +1,5 @@
 # DirectX 8 headers and rendering backend selection
-# TheSuperHackers @build fighter19 10/02/2026 Bender - Session 18
+# GeneralsX @build BenderAI 10/02/2026 - Session 18
 # Fighter19's approach: Fetch ONE OR THE OTHER, never both
 # 
 # On Windows: Use min-dx8-sdk (minimal Windows DirectX headers + libs)

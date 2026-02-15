@@ -106,7 +106,7 @@ FilterTypes W3DShaderManager::m_currentFilter=FT_NULL_FILTER; ///< Last filter t
 Int W3DShaderManager::m_currentShaderPass;
 ChipsetType W3DShaderManager::m_currentChipset;
 GraphicsVenderID W3DShaderManager::m_currentVendor;
-// TheSuperHackers @bugfix BenderAI 13/02/2026 Int64 for cross-platform (fighter19 pattern)
+// GeneralsX @bugfix BenderAI 13/02/2026 Int64 for cross-platform (fighter19 pattern)
 Int64 W3DShaderManager::m_driverVersion;
 
 Bool W3DShaderManager::m_renderingToTexture = false;
@@ -3019,7 +3019,7 @@ HRESULT W3DShaderManager::LoadAndCreateD3DShader(const char* strFilePath, const 
 		TheFileSystem->getFileInfo(AsciiString(strFilePath), &fileInfo);
 		DWORD dwFileSize = fileInfo.sizeLow;
 
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use new[] instead of HeapAlloc (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use new[] instead of HeapAlloc (fighter19 pattern)
 	const DWORD* pShader = new DWORD[dwFileSize / sizeof(DWORD)]();
 	if (!pShader)
 	{
@@ -3040,7 +3040,7 @@ HRESULT W3DShaderManager::LoadAndCreateD3DShader(const char* strFilePath, const 
 		hr = DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader(pShader, pHandle);
 	}
 
-	// TheSuperHackers @bugfix BenderAI 13/02/2026 Use delete[] instead of HeapFree (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 13/02/2026 Use delete[] instead of HeapFree (fighter19 pattern)
 	delete[] pShader;
 
 	if (FAILED(hr))
@@ -3145,7 +3145,7 @@ Real W3DShaderManager::GetCPUBenchTime(void)
 	float ztot, yran, ymult, ymod, x, y, z, pi, prod;
     long int low, ixran, itot, j, iprod;
 
-  	// TheSuperHackers @bugfix BenderAI 13/02/2026 Int64 and cross-platform timing (fighter19 pattern)
+  	// GeneralsX @bugfix BenderAI 13/02/2026 Int64 and cross-platform timing (fighter19 pattern)
   	Int64 endTime64,freq64,startTime64;
 #ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER *)&freq64);
@@ -3180,7 +3180,7 @@ Real W3DShaderManager::GetCPUBenchTime(void)
 	}
 	pi = 4.0 * (float)low/(float)itot;
 
-// TheSuperHackers @bugfix BenderAI 13/02/2026 Cross-platform timing end (fighter19 pattern)
+// GeneralsX @bugfix BenderAI 13/02/2026 Cross-platform timing end (fighter19 pattern)
 #ifdef _WIN32
 	QueryPerformanceCounter((LARGE_INTEGER *)&endTime64);
 #else
