@@ -527,7 +527,7 @@ StateReturnType AIRappelState::onEnter()
 		obj->setLayer(layerAtDest);
 
 	AIUpdateInterface *ai = obj->getAI();
-	Real MAX_RAPPEL_RATE = fabs(TheGlobalData->m_gravity) * LOGICFRAMES_PER_SECOND * 2.5f;
+	Real MAX_RAPPEL_RATE = fabs(TheGlobalData->m_gravity) * static_cast<float>(LOGICFRAMES_PER_SECOND) * 2.5f;
 	m_rappelRate = -min(ai->getDesiredSpeed(), MAX_RAPPEL_RATE);
 
 	return STATE_CONTINUE;
@@ -1838,7 +1838,7 @@ StateReturnType AIInternalMoveToState::update()
 			obj->clearModelConditionState( MODELCONDITION_RAPPELLING );
 		}
 	}
-	if (ai->getNumFramesBlocked()>LOGICFRAMES_PER_SECOND/4)
+	if (ai->getNumFramesBlocked()>static_cast<float>(LOGICFRAMES_PER_SECOND)/4)
 	{
 		obj->clearModelConditionState( MODELCONDITION_MOVING );
 	}

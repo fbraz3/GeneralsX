@@ -2340,7 +2340,7 @@ void AIPlayer::updateBridgeRepair(void)
 	// Check once a second.
 	m_bridgeTimer--;
 	if (m_bridgeTimer>0) return;
-	m_bridgeTimer = LOGICFRAMES_PER_SECOND;
+	m_bridgeTimer = static_cast<float>(LOGICFRAMES_PER_SECOND);
 	Object *bridgeObj=nullptr;
 	while (bridgeObj==nullptr && m_structuresInQueue>0) {
 		bridgeObj = TheGameLogic->findObjectByID(m_structuresToRepair[0]);

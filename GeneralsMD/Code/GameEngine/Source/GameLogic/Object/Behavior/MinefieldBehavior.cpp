@@ -58,7 +58,7 @@ MinefieldBehaviorModuleData::MinefieldBehaviorModuleData()
 	m_stopsRegenAfterCreatorDies = true;
 	m_regenerates = false;
 	m_workersDetonate = false;
-	m_creatorDeathCheckRate = LOGICFRAMES_PER_SECOND;
+	m_creatorDeathCheckRate = static_cast<float>(LOGICFRAMES_PER_SECOND);
 	m_scootFromStartingPointTime = 0;
 	m_repeatDetonateMoveThresh = 1.0f;
 	m_numVirtualMines = 1;
@@ -255,7 +255,7 @@ UpdateSleepTime MinefieldBehavior::update()
 	if (m_draining)
 	{
 		DamageInfo damageInfo;
-		damageInfo.in.m_amount = (obj->getBodyModule()->getMaxHealth() * d->m_healthPercentToDrainPerSecond) / LOGICFRAMES_PER_SECOND;
+		damageInfo.in.m_amount = (obj->getBodyModule()->getMaxHealth() * d->m_healthPercentToDrainPerSecond) / static_cast<float>(LOGICFRAMES_PER_SECOND);
 		damageInfo.in.m_sourceID = obj->getID();
 		damageInfo.in.m_damageType = DAMAGE_UNRESISTABLE;
 		damageInfo.in.m_deathType = DEATH_NORMAL;
