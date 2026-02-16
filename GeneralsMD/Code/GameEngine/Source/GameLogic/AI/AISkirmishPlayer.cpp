@@ -257,7 +257,7 @@ void AISkirmishPlayer::processBaseBuilding( void )
 				bldgInfo->decrementNumRebuilds();
 
 				m_readyToBuildStructure = false;
-				m_structureTimer = TheAI->getAiData()->m_structureSeconds*LOGICFRAMES_PER_SECOND;
+				m_structureTimer = TheAI->getAiData()->m_structureSeconds*static_cast<float>(LOGICFRAMES_PER_SECOND);
 				if (m_player->getMoney()->countMoney() < TheAI->getAiData()->m_resourcesPoor) {
 					m_structureTimer = m_structureTimer/TheAI->getAiData()->m_structuresPoorMod;
 				}	else if (m_player->getMoney()->countMoney() > TheAI->getAiData()->m_resourcesWealthy) {

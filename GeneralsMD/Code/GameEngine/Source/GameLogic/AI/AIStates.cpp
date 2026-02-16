@@ -3672,7 +3672,7 @@ StateReturnType AIAttackMoveToState::update()
 		if (m_retryCount<1) return ret;
 		/* check for close enough. */
 		Real distSqr = sqr(owner->getPosition()->x - m_pathGoalPosition.x) + sqr(owner->getPosition()->y-m_pathGoalPosition.y);
-		if (distSqr < sqr(ATTACK_CLOSE_ENOUGH_CELLS*PATHFIND_CELL_SIZE_F)) {
+		if (distSqr < sqr(static_cast<float>(ATTACK_CLOSE_ENOUGH_CELLS)*PATHFIND_CELL_SIZE_F)) {
 			return ret;
 		}
 		DEBUG_LOG(("AIAttackMoveToState::update Distance from goal %f, retrying.", sqrt(distSqr)));
