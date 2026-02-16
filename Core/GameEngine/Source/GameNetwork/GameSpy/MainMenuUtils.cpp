@@ -31,6 +31,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <cstdint>
 #include <fcntl.h>
 
 //#include "Common/Registry.h"
@@ -870,10 +871,10 @@ static void reallyStartPatchCheck( void )
 	DEBUG_LOG(("Map patch check: [%s]", mapURL.c_str()));
 	DEBUG_LOG(("Config: [%s]", configURL.c_str()));
 	DEBUG_LOG(("MOTD: [%s]", motdURL.c_str()));
-	ghttpGet(gameURL.c_str(), GHTTPFalse, gamePatchCheckCallback, (void *)timeThroughOnline);
-	ghttpGet(mapURL.c_str(), GHTTPFalse, gamePatchCheckCallback, (void *)timeThroughOnline);
-	ghttpHead(configURL.c_str(), GHTTPFalse, configHeadCallback, (void *)timeThroughOnline);
-	ghttpGet(motdURL.c_str(), GHTTPFalse, motdCallback, (void *)timeThroughOnline);
+	ghttpGet(gameURL.c_str(), GHTTPFalse, gamePatchCheckCallback, reinterpret_cast<void*>(std::uintptr_t(timeThroughOnline)));
+	ghttpGet(mapURL.c_str(), GHTTPFalse, gamePatchCheckCallback, reinterpret_cast<void*>(std::uintptr_t(timeThroughOnline)));
+	ghttpHead(configURL.c_str(), GHTTPFalse, configHeadCallback, reinterpret_cast<void*>(std::uintptr_t(timeThroughOnline)));
+	ghttpGet(motdURL.c_str(), GHTTPFalse, motdCallback, reinterpret_cast<void*>(std::uintptr_t(timeThroughOnline)));
 
 	// check total game stats
 	CheckOverallStats();

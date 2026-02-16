@@ -31,6 +31,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <cstdint>
 #include "Common/GameEngine.h"
 #include "Common/MultiplayerSettings.h"
 #include "Common/PlayerTemplate.h"
@@ -570,7 +571,7 @@ static Int insertGame( GameWindow *win, GameSpyStagingRoom *game, Bool showMap )
 
 
 	Int index = GadgetListBoxAddEntryText(win, game->getGameName(), gameColor, -1, COLUMN_NAME);
-	GadgetListBoxSetItemData(win, (void *)game->getID(), index);
+	GadgetListBoxSetItemData(win, reinterpret_cast<void*>(std::uintptr_t(game->getID())), index);
 
 	UnicodeString s;
 
