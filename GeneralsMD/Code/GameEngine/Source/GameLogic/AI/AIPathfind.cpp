@@ -6668,11 +6668,11 @@ Path *Pathfinder::buildHierarchicalPath( const Coord3D *fromPos, PathfindCell *g
 	// This allows the unit to get around friendly units that may be near it.
 	Coord3D pos = *path->getFirstNode()->getPosition();
 	Coord3D minPos = pos;
-	minPos.x -= PathfindZoneManager::ZONE_BLOCK_SIZE*PATHFIND_CELL_SIZE_F;
-	minPos.y -= PathfindZoneManager::ZONE_BLOCK_SIZE*PATHFIND_CELL_SIZE_F;
+	minPos.x -= static_cast<float>(PathfindZoneManager::ZONE_BLOCK_SIZE)*PATHFIND_CELL_SIZE_F;
+	minPos.y -= static_cast<float>(PathfindZoneManager::ZONE_BLOCK_SIZE)*PATHFIND_CELL_SIZE_F;
 	Coord3D maxPos = pos;
-	maxPos.x += PathfindZoneManager::ZONE_BLOCK_SIZE*PATHFIND_CELL_SIZE_F;
-	maxPos.y += PathfindZoneManager::ZONE_BLOCK_SIZE*PATHFIND_CELL_SIZE_F;
+	maxPos.x += static_cast<float>(PathfindZoneManager::ZONE_BLOCK_SIZE)*PATHFIND_CELL_SIZE_F;
+	maxPos.y += static_cast<float>(PathfindZoneManager::ZONE_BLOCK_SIZE)*PATHFIND_CELL_SIZE_F;
 	ICoord2D cellNdxMin, cellNdxMax;
 	worldToCell(&minPos, &cellNdxMin);
 	worldToCell(&maxPos, &cellNdxMax);
