@@ -162,7 +162,7 @@ Int UpgradeTemplate::calcTimeToBuild( Player *player ) const
 #endif
 
 	///@todo modify this by power state of player
-	return m_buildTime * LOGICFRAMES_PER_SECOND;
+	return m_buildTime * static_cast<float>(LOGICFRAMES_PER_SECOND);
 
 }
 

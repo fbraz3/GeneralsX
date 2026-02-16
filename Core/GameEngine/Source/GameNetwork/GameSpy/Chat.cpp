@@ -28,6 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <cstdint>
 #include "Common/AudioEventRTS.h"
 #include "Common/INI.h"
 #include "GameClient/GameText.h"
@@ -311,7 +312,7 @@ void GameSpyInfo::addChat( PlayerInfo p, UnicodeString msg, Bool isPublic, Bool 
 	Int index = addText(fullMsg, GameSpyColor[style], win);
 	if (index >= 0)
 	{
-		GadgetListBoxSetItemData(win, (void *)p.m_profileID, index);
+		GadgetListBoxSetItemData(win, reinterpret_cast<void*>(std::uintptr_t(p.m_profileID)), index);
 	}
 }
 

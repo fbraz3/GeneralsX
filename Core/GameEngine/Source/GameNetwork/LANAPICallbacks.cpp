@@ -29,6 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <cstdint>
 #include "strtok_r.h"
 #include "Common/GameEngine.h"
 #include "Common/GlobalData.h"
@@ -642,7 +643,7 @@ void LANAPI::OnPlayerList( LANPlayer *playerList )
 		while (player)
 		{
 			Int addedIndex = GadgetListBoxAddEntryText(listboxPlayers, player->getName(), playerColor, -1, -1);
-			GadgetListBoxSetItemData(listboxPlayers, (void *)player->getIP(),addedIndex, 0 );
+			GadgetListBoxSetItemData(listboxPlayers, reinterpret_cast<void*>(std::uintptr_t(player->getIP())),addedIndex, 0 );
 
 			if (selectedIP == player->getIP())
 				indexToSelect = addedIndex;

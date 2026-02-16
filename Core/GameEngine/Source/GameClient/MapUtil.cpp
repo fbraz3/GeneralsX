@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <cstdint>
 
 #include "Common/crc.h"
 #include "Common/FileSystem.h"
@@ -844,7 +845,7 @@ static Bool addMapToMapListbox(
 
 		if (lbData.numColumns > 1)
 		{
-			GadgetListBoxSetItemData( lbData.listbox, (void *)imageItemData, index, 1 );
+			GadgetListBoxSetItemData( lbData.listbox, reinterpret_cast<void*>(std::uintptr_t(imageItemData)), index, 1 );
 		}
 
 		// TheSuperHackers @performance Now stops processing when the list is full.
