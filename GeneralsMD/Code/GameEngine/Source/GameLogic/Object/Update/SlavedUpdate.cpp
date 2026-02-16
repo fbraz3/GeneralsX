@@ -503,7 +503,7 @@ void SlavedUpdate::doRepairLogic()
 		if( body )
 		{
 			//Calculate the repair rate per frame.
-			Real repairAmount = data->m_repairRatePerSecond / LOGICFRAMES_PER_SECOND;
+			Real repairAmount = data->m_repairRatePerSecond / static_cast<float>(LOGICFRAMES_PER_SECOND);
 
 			DamageInfo healingInfo;
 			healingInfo.in.m_amount = repairAmount;
@@ -638,7 +638,7 @@ void SlavedUpdate::setRepairState( RepairStates repairState )
 							}
 
 							weldingSys->setPosition( &pos );
-							Real time = (Real)(m_framesToWait * LOGICFRAMES_PER_SECOND);
+							Real time = (Real)(m_framesToWait * static_cast<float>(LOGICFRAMES_PER_SECOND));
 							weldingSys->setLifetimeRange( time, time );
 
 							AudioEventRTS soundToPlay = TheAudio->getMiscAudio()->m_repairSparks;

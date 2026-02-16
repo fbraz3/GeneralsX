@@ -68,7 +68,7 @@ const Real STUN_RELIEF_EPSILON = 0.5f;
 
 #include "Common/CRCDebug.h"
 
-const Int MOTIVE_FRAMES = LOGICFRAMES_PER_SECOND / 3;
+const Int MOTIVE_FRAMES = static_cast<float>(LOGICFRAMES_PER_SECOND) / 3;
 
 #define SLEEPY_PHYSICS
 

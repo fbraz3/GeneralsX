@@ -1771,7 +1771,7 @@ void InGameUI::update( void )
 	// frame
 	//
 	UnsignedInt currLogicFrame = TheGameLogic->getFrame();
-	const int messageTimeout = m_messageDelayMS / LOGICFRAMES_PER_SECOND / 1000;
+	const int messageTimeout = m_messageDelayMS / static_cast<float>(LOGICFRAMES_PER_SECOND) / 1000;
 	UnsignedByte r, g, b, a;
 	Int amount;
 	for( i = MAX_UI_MESSAGES - 1; i >= 0; i-- )
@@ -3808,7 +3808,7 @@ void InGameUI::postDraw( void )
  								if( module->getReadyFrame() < TheGameLogic->getFrame() )
 									readySecs = 0;
  								else
- 									readySecs = (module->getReadyFrame() - TheGameLogic->getFrame()) / LOGICFRAMES_PER_SECOND;
+ 									readySecs = (module->getReadyFrame() - TheGameLogic->getFrame()) / static_cast<float>(LOGICFRAMES_PER_SECOND);
 								// Yes, integer math.  We can't have float imprecision display 4:01 on a disabled superweapon.
 
                 // Only if we actually changed the ready status do we want to play an Eva event.
@@ -5533,7 +5533,7 @@ void InGameUI::addWorldAnimation( Anim2DTemplate *animTemplate,
 
 	// assign all data
 	wad->m_anim = anim;
-	wad->m_expireFrame = TheGameLogic->getFrame() + (durationInSeconds * LOGICFRAMES_PER_SECOND);
+	wad->m_expireFrame = TheGameLogic->getFrame() + (durationInSeconds * static_cast<float>(LOGICFRAMES_PER_SECOND));
 	wad->m_options = options;
 	wad->m_worldPos = *pos;
 	wad->m_zRisePerSecond = zRisePerSecond;
@@ -5567,7 +5567,7 @@ void InGameUI::clearWorldAnimations( void )
 
 }
 
-static const UnsignedInt FRAMES_BEFORE_EXPIRE_TO_FADE = LOGICFRAMES_PER_SECOND * 1;
+static const UnsignedInt FRAMES_BEFORE_EXPIRE_TO_FADE = static_cast<float>(LOGICFRAMES_PER_SECOND) * 1;
 // ------------------------------------------------------------------------------------------------
 /** Update all world animations and draw the visible ones */
 // ------------------------------------------------------------------------------------------------
@@ -5604,7 +5604,7 @@ void InGameUI::updateAndDrawWorldAnimations( void )
 
 			// update the Z value
 			if( wad->m_zRisePerSecond )
-				wad->m_worldPos.z += wad->m_zRisePerSecond / LOGICFRAMES_PER_SECOND;
+				wad->m_worldPos.z += wad->m_zRisePerSecond / static_cast<float>(LOGICFRAMES_PER_SECOND);
 
 		}
 

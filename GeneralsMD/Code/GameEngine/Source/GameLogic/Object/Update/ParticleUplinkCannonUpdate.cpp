@@ -577,7 +577,7 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 				}
 
 				//Convert speed to speed per frame.
-				speed /= LOGICFRAMES_PER_SECOND;
+				speed /= static_cast<float>(LOGICFRAMES_PER_SECOND);
 
 				//Calculate the distance from our current position to our target dest.
 				Coord3D vector = m_overrideTargetDestination;
@@ -692,7 +692,7 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 
 				DamageInfo damageInfo;
 
-				Real totalFiringSeconds = data->m_totalFiringFrames / LOGICFRAMES_PER_SECOND;
+				Real totalFiringSeconds = data->m_totalFiringFrames / static_cast<float>(LOGICFRAMES_PER_SECOND);
 				Real damagePerPulse = (Real)(totalFiringSeconds * data->m_damagePerSecond) / (Real)data->m_totalDamagePulses;
 
 				damageInfo.in.m_amount = damagePerPulse;
