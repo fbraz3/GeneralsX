@@ -1031,7 +1031,7 @@ void TerrainLogic::update( void )
 				 targetHeight,
 				 currentHeight;
 		Bool finalTransition,
-				 doDamageThisFrame = (TheGameLogic->getFrame() % static_cast<float>(LOGICFRAMES_PER_SECOND)) == 0;
+				 doDamageThisFrame = (TheGameLogic->getFrame() % LOGICFRAMES_PER_SECOND) == 0;
 
 		for( Int i = m_numWaterToUpdate - 1; i >= 0; --i )
 		{
