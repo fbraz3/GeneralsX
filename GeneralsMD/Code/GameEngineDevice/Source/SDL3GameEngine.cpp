@@ -86,6 +86,12 @@ void SDL3GameEngine::init(void)
 	// Set DXVK WSI driver BEFORE loading Vulkan libraries
 	setenv("DXVK_WSI_DRIVER", "SDL3", 1);
 
+	// GeneralsX @bugfix felipebraz 16/02/2026
+	// Force AMD RADV driver only to avoid Lavapipe LLVM crash during initialization
+	// Lavapipe uses LLVM JIT compilation which causes SIGSEGV during vkEnumerateInstanceExtensionProperties
+	// This environment variable restricts Vulkan to AMD RADV driver only (GPU native driver)
+	setenv("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/radeon_icd.json", 1);
+
 	// Initialize SDL3
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
 		fprintf(stderr, "ERROR: Failed to initialize SDL3: %s\n", SDL_GetError());

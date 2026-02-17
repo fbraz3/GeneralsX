@@ -459,6 +459,21 @@
 				"panel": "shared"
 			},
 			"problemMatcher": []
+		},
+		{
+			"label": "Debug GeneralsXZH (Linux GDB, Backtrace)",
+			"type": "shell",
+			"command": "mkdir -p logs && gdb -batch -ex \"run -win\" -ex \"bt full\" -ex \"info locals\" -ex \"frame 0\" -ex \"list\" -ex \"thread apply all bt\" ./build/linux64-deploy/GeneralsMD/GeneralsXZH 2>&1 | tee logs/gdb.log",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": true
+			},
+			"problemMatcher": []
 		}
 	]
 }

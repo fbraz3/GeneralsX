@@ -8,9 +8,18 @@ PRESET="${1:-linux64-deploy}"
 BINARY="build/${PRESET}/GeneralsMD/GeneralsXZH"
 LOG_FILE="logs/smoke_test_zh_${PRESET}.log"
 DOCKER_IMAGE="generalsx/linux-builder:latest"
+CONTAINER_NAME="generalsx-smoke-test-zh-${PRESET}"
 
 echo "🧪 Smoke testing GeneralsXZH (Linux)..."
 mkdir -p logs
+
+# Check if container is already running
+if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    echo "⚠️  Container '${CONTAINER_NAME}' is already running!"
+    echo "Wait for the current test to finish or stop it with:"
+    echo "    docker stop ${CONTAINER_NAME}"
+    exit 1
+fi
 
 if [ ! -f "$BINARY" ]; then
     echo "❌ Binary not found: $BINARY"
@@ -31,6 +40,7 @@ if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
 fi
 
 docker run --rm \
+    --name "$CONTAINER_NAME" \
     -v "$PWD:/work" \
     -w /work \
     "$DOCKER_IMAGE" \
