@@ -35,6 +35,11 @@
 #include "Common/ArchiveFileSystem.h"
 #include <SDL3/SDL.h>
 
+// EXTERNALS
+// GeneralsX @feature felipebraz 16/02/2026
+// SDL3 window created in SDL3Main.cpp before GameEngine instantiation (fighter19 pattern)
+extern SDL_Window* TheSDL3Window;
+
 // Forward declarations - full definitions in SDL3GameEngine.cpp
 class StdLocalFileSystem;
 class StdBIGFileSystem;

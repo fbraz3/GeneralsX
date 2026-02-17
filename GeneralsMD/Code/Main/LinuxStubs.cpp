@@ -31,7 +31,6 @@
 #include <cstdio>
 #include "../../../Core/Libraries/Include/Lib/BaseType.h"
 #include "../../../Core/GameEngine/Include/Common/AsciiString.h"
-#include "../GameEngine/Include/Common/CDManager.h"
 
 // P2: OSDisplay functions (cursor, warning dialogs)
 
@@ -60,18 +59,6 @@ void OSDisplayWarningBox(AsciiString title, AsciiString message, unsigned int ic
 	// For now, we print to stderr and continue
 }
 
-// P3: Legacy features (CD-ROM manager, video player, web browser)
-
-/**
- * CreateCDManager - Initialize CD-ROM manager (P3)
- * TheSuperHackers @build felipebraz 13/02/2026 - Linux stub
- * Legacy feature: Game originally checked for Zero Hour CD in drive
- * On Linux with DXVK, no CD-ROM support needed
- */
-CDManagerInterface* CreateCDManager(void)
-{
-	fprintf(stderr, "WARNING: CreateCDManager() called - returning nullptr (no CD support on Linux)\n");
-	return nullptr;  // No CD-ROM support on Linux
-}
+// P3: Legacy features (video player, web browser)
 
 #endif // !_WIN32

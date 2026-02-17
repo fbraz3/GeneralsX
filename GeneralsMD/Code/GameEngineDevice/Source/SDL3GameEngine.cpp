@@ -78,61 +78,34 @@ SDL3GameEngine::~SDL3GameEngine()
 
 /**
  * From GameEngine: init() - initialize subsystems
+ * 
+ * GeneralsX @bugfix felipebraz 16/02/2026
+ * Simplified to follow fighter19 pattern - SDL3/Vulkan initialized in SDL3Main.cpp
+ * before GameEngine is created. This init() only delegates to parent GameEngine::init().
+ * ApplicationHWnd and TheSDL3Window are already set by main() before this is called.
  */
 void SDL3GameEngine::init(void)
 {
 	fprintf(stderr, "INFO: SDL3GameEngine::init() starting\n");
 
-	// Set DXVK WSI driver BEFORE loading Vulkan libraries
-	setenv("DXVK_WSI_DRIVER", "SDL3", 1);
-
-	// GeneralsX @bugfix felipebraz 16/02/2026
-	// Force AMD RADV driver only to avoid Lavapipe LLVM crash during initialization
-	// Lavapipe uses LLVM JIT compilation which causes SIGSEGV during vkEnumerateInstanceExtensionProperties
-	// This environment variable restricts Vulkan to AMD RADV driver only (GPU native driver)
-	setenv("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/radeon_icd.json", 1);
-
-	// Initialize SDL3
-	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
-		fprintf(stderr, "ERROR: Failed to initialize SDL3: %s\n", SDL_GetError());
-		return;
-	}
-
-	// Load Vulkan library for SDL3  
-	if (!SDL_Vulkan_LoadLibrary(nullptr)) {
-		fprintf(stderr, "ERROR: Failed to load Vulkan library for SDL3: %s\n", SDL_GetError());
-		SDL_Quit();
-		return;
-	}
-
-	// Create SDL3 window with Vulkan support
-	Uint32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
-	m_SDLWindow = SDL_CreateWindow(
-		"Command & Conquer Generals: Zero Hour",
-		1024, 768,  // Default resolution
-		flags
-	);
-
-	if (!m_SDLWindow) {
-		fprintf(stderr, "ERROR: Failed to create SDL3 window: %s\n", SDL_GetError());
-		SDL_Quit();
-		return;
-	}
-
-	// TheSuperHackers @build felipebraz 13/02/2026
-	// Store SDL3 window pointer in global ApplicationHWnd for compatibility
-	// Code throughout the engine uses ApplicationHWnd as if it were a Windows HWND
-	// On Linux, we simply cast the SDL_Window* pointer to HWND type
+	// Verify window was created by SDL3Main.cpp
+	extern SDL_Window* TheSDL3Window;
 	extern HWND ApplicationHWnd;
-	ApplicationHWnd = (HWND)m_SDLWindow;
-	fprintf(stderr, "INFO: ApplicationHWnd set to SDL_Window pointer\n");
+	
+	if (!TheSDL3Window || !ApplicationHWnd) {
+		fprintf(stderr, "FATAL: SDL3 window not initialized before GameEngine::init()\n");
+		fprintf(stderr, "FATAL: TheSDL3Window=%p, ApplicationHWnd=%p\n", TheSDL3Window, ApplicationHWnd);
+		return;
+	}
 
+	// Store window reference locally
+	m_SDLWindow = TheSDL3Window;
 	m_IsInitialized = true;
 	m_IsActive = true;
 
-	fprintf(stderr, "INFO: SDL3GameEngine::init() - Vulkan window created\n");
+	fprintf(stderr, "INFO: SDL3GameEngine using pre-initialized window\n");
 
-	// Call parent init to initialize subsystems
+	// Call parent init to initialize game subsystems
 	GameEngine::init();
 }
 

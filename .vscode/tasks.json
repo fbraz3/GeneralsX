@@ -344,6 +344,36 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Deploy GeneralsXZH (Linux)",
+			"type": "shell",
+			"command": "./scripts/deploy-linux-zh.sh",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Pipeline: Build + Deploy + Run ZH (Linux)",
+			"type": "shell",
+			"command": "./scripts/docker-build-linux-zh.sh linux64-deploy && ./scripts/deploy-linux-zh.sh && ./scripts/run-linux-zh.sh -win",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Pipeline: Docker Build ZH (Full)",
 			"type": "shell",
 			"command": "./scripts/docker-build-linux-zh.sh linux64-deploy",
@@ -444,6 +474,21 @@
 				"panel": "dedicated",
 				"showReuseMessage": false,
 				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Run GeneralsXZH (Linux)",
+			"type": "shell",
+			"command": "./scripts/run-linux-zh.sh -win",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
 				"focus": false
 			},
 			"problemMatcher": []

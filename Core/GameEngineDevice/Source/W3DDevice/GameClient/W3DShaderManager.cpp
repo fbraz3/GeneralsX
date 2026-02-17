@@ -302,12 +302,18 @@ Int ScreenBWFilter::init(void)
 				(D3DVSD_END())
 			};
 
+			// GeneralsX @bugfix BenderAI 13/02/2026 - Don't crash if monochrome.pso missing (optional effect)
 			//Monochrome pixel shader.
 			hr = W3DShaderManager::LoadAndCreateD3DShader("shaders\\monochrome.pso", &Declaration[0], 0, false, &m_dwBWPixelShader);
 			if (FAILED(hr))
+			{
+				DEBUG_LOG(("W3DShaderManager: monochrome.pso not found, BW screen filter unavailable"));
+				// Monochrome filter is optional - game can run without it
 				return FALSE;
+			}
 
 			W3DFilters[FT_VIEW_BW_FILTER]=&screenBWFilter;
+			DEBUG_LOG(("W3DShaderManager: BW screen filter enabled"));
 
 			return TRUE;
 		}
@@ -1970,29 +1976,58 @@ Int TerrainShaderPixelShader::init( void )
 				(D3DVSD_END())
 			};
 
+			// GeneralsX @bugfix BenderAI 13/02/2026 - Graceful fallback when pixel shader files don't exist
+			// Try to load pixel shaders, but don't fail if files are missing - just use 2-stage fallback
+			Bool pixelShadersAvailable = TRUE;
+
 			//base version which doesn't apply any noise textures.
 			HRESULT hr = W3DShaderManager::LoadAndCreateD3DShader("shaders\\terrain.pso", &Declaration[0], 0, false, &m_dwBasePixelShader);
 			if (FAILED(hr))
-				return FALSE;
+			{
+				DEBUG_LOG(("W3DShaderManager: terrain.pso not found, using 2-stage fallback"));
+				pixelShadersAvailable = FALSE;
+			}
 
 			//version which blends 1 noise texture.
-			hr = W3DShaderManager::LoadAndCreateD3DShader("shaders\\terrainnoise.pso", &Declaration[0], 0, false, &m_dwBaseNoise1PixelShader);
-			if (FAILED(hr))
-				return FALSE;
+			if (pixelShadersAvailable)
+			{
+				hr = W3DShaderManager::LoadAndCreateD3DShader("shaders\\terrainnoise.pso", &Declaration[0], 0, false, &m_dwBaseNoise1PixelShader);
+				if (FAILED(hr))
+				{
+					DEBUG_LOG(("W3DShaderManager: terrainnoise.pso not found, using 2-stage fallback"));
+					pixelShadersAvailable = FALSE;
+				}
+			}
 
 			//version which blends 2 noise textures.
-			hr = W3DShaderManager::LoadAndCreateD3DShader("shaders\\terrainnoise2.pso", &Declaration[0], 0, false, &m_dwBaseNoise2PixelShader);
-			if (FAILED(hr))
-				return FALSE;
+			if (pixelShadersAvailable)
+			{
+				hr = W3DShaderManager::LoadAndCreateD3DShader("shaders\\terrainnoise2.pso", &Declaration[0], 0, false, &m_dwBaseNoise2PixelShader);
+				if (FAILED(hr))
+				{
+					DEBUG_LOG(("W3DShaderManager: terrainnoise2.pso not found, using 2-stage fallback"));
+					pixelShadersAvailable = FALSE;
+				}
+			}
 
-			W3DShaders[W3DShaderManager::ST_TERRAIN_BASE]=&terrainShaderPixelShader;
-			W3DShaders[W3DShaderManager::ST_TERRAIN_BASE_NOISE1]=&terrainShaderPixelShader;
-			W3DShaders[W3DShaderManager::ST_TERRAIN_BASE_NOISE2]=&terrainShaderPixelShader;
-			W3DShaders[W3DShaderManager::ST_TERRAIN_BASE_NOISE12]=&terrainShaderPixelShader;
-			W3DShadersPassCount[W3DShaderManager::ST_TERRAIN_BASE]=1;
-			W3DShadersPassCount[W3DShaderManager::ST_TERRAIN_BASE_NOISE1]=1;
-			W3DShadersPassCount[W3DShaderManager::ST_TERRAIN_BASE_NOISE2]=1;
-			W3DShadersPassCount[W3DShaderManager::ST_TERRAIN_BASE_NOISE12]=1;
+			// Only set pixel shader mode if ALL shaders loaded successfully
+			if (pixelShadersAvailable)
+			{
+				W3DShaders[W3DShaderManager::ST_TERRAIN_BASE]=&terrainShaderPixelShader;
+				W3DShaders[W3DShaderManager::ST_TERRAIN_BASE_NOISE1]=&terrainShaderPixelShader;
+				W3DShaders[W3DShaderManager::ST_TERRAIN_BASE_NOISE2]=&terrainShaderPixelShader;
+				W3DShaders[W3DShaderManager::ST_TERRAIN_BASE_NOISE12]=&terrainShaderPixelShader;
+				W3DShadersPassCount[W3DShaderManager::ST_TERRAIN_BASE]=1;
+				W3DShadersPassCount[W3DShaderManager::ST_TERRAIN_BASE_NOISE1]=1;
+				W3DShadersPassCount[W3DShaderManager::ST_TERRAIN_BASE_NOISE2]=1;
+				W3DShadersPassCount[W3DShaderManager::ST_TERRAIN_BASE_NOISE12]=1;
+				DEBUG_LOG(("W3DShaderManager: Using pixel shader path for terrain"));
+			}
+			else
+			{
+				DEBUG_LOG(("W3DShaderManager: Falling back to 2-stage shader for terrain (pixel shaders unavailable)"));
+			}
+			// GeneralsX @bugfix BenderAI 13/02/2026 - Always return TRUE if 2-stage shader initialized
 			return TRUE;
 		}
 	}
@@ -2261,15 +2296,21 @@ Int RoadShaderPixelShader::init( void )
 				(D3DVSD_END())
 			};
 
+			// GeneralsX @bugfix BenderAI 13/02/2026 - Graceful fallback when roadnoise2.pso doesn't exist
 			//version which blends 2 noise textures.
 			HRESULT hr = W3DShaderManager::LoadAndCreateD3DShader("shaders\\roadnoise2.pso", &Declaration[0], 0, false, &m_dwBaseNoise2PixelShader);
 			if (FAILED(hr))
-				return FALSE;
+			{
+				DEBUG_LOG(("W3DShaderManager: roadnoise2.pso not found, using 2-stage fallback"));
+				// Fall back to 2-stage shader - don't fail init
+				return TRUE;
+			}
 
 			//Only set this shader for use in dual noise mode.  The 2Stage shader will take care of
 			//all the other modes.
 			W3DShaders[W3DShaderManager::ST_ROAD_BASE_NOISE12]=&roadShaderPixelShader;
 			W3DShadersPassCount[W3DShaderManager::ST_ROAD_BASE_NOISE12]=1;
+			DEBUG_LOG(("W3DShaderManager: Using pixel shader for road dual-noise mode"));
 			return TRUE;
 		}
 	}
@@ -3011,7 +3052,11 @@ HRESULT W3DShaderManager::LoadAndCreateD3DShader(const char* strFilePath, const 
 		file = TheFileSystem->openFile(strFilePath, File::READ | File::BINARY);
 		if (file == nullptr)
 		{
-			OutputDebugString("Could not find file \n" );
+			// GeneralsX @bugfix BenderAI 13/02/2026 Log actual filename that's missing
+			char debugMsg[512];
+			snprintf(debugMsg, sizeof(debugMsg), "ERROR: Could not find shader file: '%s'\n", 
+				strFilePath ? strFilePath : "(null)");
+			OutputDebugString(debugMsg);
 			return E_FAIL;
 		}
 
@@ -3019,43 +3064,44 @@ HRESULT W3DShaderManager::LoadAndCreateD3DShader(const char* strFilePath, const 
 		TheFileSystem->getFileInfo(AsciiString(strFilePath), &fileInfo);
 		DWORD dwFileSize = fileInfo.sizeLow;
 
-	// GeneralsX @bugfix BenderAI 13/02/2026 Use new[] instead of HeapAlloc (fighter19 pattern)
-	const DWORD* pShader = new DWORD[dwFileSize / sizeof(DWORD)]();
-	if (!pShader)
+		// GeneralsX @bugfix BenderAI 13/02/2026 Use new[] instead of HeapAlloc (fighter19 pattern)
+		const DWORD* pShader = new DWORD[dwFileSize / sizeof(DWORD)]();
+		if (!pShader)
+		{
+			OutputDebugString( "Failed to allocate memory to load shader\n " );
+			file->close();
+			return E_FAIL;
+		}
+
+		file->read((void *)pShader, dwFileSize);
+		file->close();
+		file = nullptr;
+
+		if (ShaderType) // SHADERTYPE_VERTEX
+		{
+			hr = DX8Wrapper::_Get_D3D_Device8()->CreateVertexShader(pDeclaration, pShader, pHandle, Usage);
+		}
+		else // SHADERTYPE_PIXEL
+		{
+			hr = DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader(pShader, pHandle);
+		}
+
+		// GeneralsX @bugfix BenderAI 13/02/2026 Use delete[] instead of HeapFree (fighter19 pattern)
+		delete[] pShader;
+
+		if (FAILED(hr))
+		{
+			OutputDebugString( "Failed to create shader\n ");
+			return E_FAIL;
+		}
+	}
+	catch(...)
 	{
-		OutputDebugString( "Failed to allocate memory to load shader\n " );
+		OutputDebugString( "Error opening file \n" );
 		return E_FAIL;
 	}
 
-	file->read((void *)pShader, dwFileSize);
-	file->close();
-	file = nullptr;
-
-	if (ShaderType) // SHADERTYPE_VERTEX
-	{
-		hr = DX8Wrapper::_Get_D3D_Device8()->CreateVertexShader(pDeclaration, pShader, pHandle, Usage);
-	}
-	else // SHADERTYPE_PIXEL
-	{
-		hr = DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader(pShader, pHandle);
-	}
-
-	// GeneralsX @bugfix BenderAI 13/02/2026 Use delete[] instead of HeapFree (fighter19 pattern)
-	delete[] pShader;
-
-	if (FAILED(hr))
-	{
-		OutputDebugString( "Failed to create shader\n ");
-		return E_FAIL;
-	}
-}
-catch(...)
-{
-	OutputDebugString( "Error opening file \n" );
-	return E_FAIL;
-}
-
-return S_OK;
+	return S_OK;
 }
 
 //For the MP test, we're enforcing high min-spec requirements that need to be verified.

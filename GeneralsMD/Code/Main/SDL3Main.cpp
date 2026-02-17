@@ -30,6 +30,7 @@
 
 // SYSTEM INCLUDES
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
@@ -44,6 +45,10 @@
 #include "Common/Debug.h"
 #include "Common/version.h"  // GeneralsX @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
 #include "SDL3GameEngine.h"
+
+// DXVK WSI
+#define DXVK_WSI_SDL3 1
+#include <wsi/native_wsi.h>
 
 // CRITICAL SECTIONS (Linux needs these too)
 static CriticalSection critSec1;
@@ -65,11 +70,17 @@ char** __argv = nullptr; ///< global argument vector
 // On Linux, we cast SDL_Window* to HWND type for compatibility
 HWND ApplicationHWnd = nullptr;  ///< our application window handle
 
+// GLOBAL SDL3 WINDOW
+// GeneralsX @feature felipebraz 16/02/2026
+// SDL3 window created in main() before GameMain(), stored globally for engine access
+SDL_Window* TheSDL3Window = nullptr;
+
 // GAME TEXT FILE PATHS
 // TheSuperHackers @build felipebraz 13/02/2026
 // GameText.cpp uses these paths to load CSF and STR files (game localization)
 // Format %s is replaced with language code in GameTextManager::init()
-const Char *g_csfFile = "data/%s/Generals.csf";  ///< CSF file path (with language code)
+// GeneralsX @bugfix BenderAI 13/02/2026 - Fix case-sensitivity on Linux (generals.csf vs Generals.csf)
+const Char *g_csfFile = "data/%s/generals.csf";  ///< CSF file path (lowercase for Linux compatibility)
 const Char *g_strFile = "data/Generals.str";     ///< STR file path
 
 // Extern declarations (from GameMain.cpp)
@@ -136,6 +147,45 @@ int main(int argc, char* argv[])
 		// For now, let CommandLine::parseCommandLineForStartup() handle this
 		CommandLine::parseCommandLineForStartup();
 
+		// GeneralsX @bugfix felipebraz 16/02/2026
+		// Initialize SDL3 and Vulkan BEFORE creating GameEngine (fighter19 pattern)
+		// This prevents LLVM SIGSEGV crash during Vulkan driver enumeration
+		// Must be done here, not in SDL3GameEngine::init() which is too late
+		fprintf(stderr, "INFO: Initializing SDL3 video subsystem...\n");
+		if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+			fprintf(stderr, "FATAL: Failed to initialize SDL3: %s\n", SDL_GetError());
+			return 1;
+		}
+
+		// Set DXVK WSI driver before loading Vulkan
+		setenv("DXVK_WSI_DRIVER", "SDL3", 1);
+
+		// Load Vulkan library for DXVK DirectX8→Vulkan translation
+		fprintf(stderr, "INFO: Loading Vulkan library...\n");
+		if (!SDL_Vulkan_LoadLibrary(nullptr)) {
+			fprintf(stderr, "WARNING: Failed to load Vulkan: %s\n", SDL_GetError());
+			fprintf(stderr, "WARNING: Continuing without Vulkan (may use software rendering)\n");
+		}
+
+		// Create SDL3 window with Vulkan support
+		fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
+		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
+		TheSDL3Window = SDL_CreateWindow(
+			"Command & Conquer Generals: Zero Hour",
+			1024, 768,  // Default resolution
+			windowFlags
+		);
+
+		if (!TheSDL3Window) {
+			fprintf(stderr, "FATAL: Failed to create SDL3 window: %s\n", SDL_GetError());
+			SDL_Quit();
+			return 1;
+		}
+
+		// Store window handle globally (cast SDL_Window* to HWND for compatibility)
+		ApplicationHWnd = (HWND)TheSDL3Window;
+		fprintf(stderr, "INFO: SDL3 window created successfully\n");
+
 		// Call cross-platform game entry point
 		exitcode = GameMain();
 
@@ -148,6 +198,14 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "FATAL: Unknown exception in main()\n");
 		exitcode = 1;
 	}
+
+	// GeneralsX @feature felipebraz 16/02/2026 Cleanup SDL3 resources
+	if (TheSDL3Window) {
+		SDL_DestroyWindow(TheSDL3Window);
+		TheSDL3Window = nullptr;
+		ApplicationHWnd = nullptr;
+	}
+	SDL_Quit();
 
 	// Cleanup critical sections
 	TheAsciiStringCriticalSection = nullptr;

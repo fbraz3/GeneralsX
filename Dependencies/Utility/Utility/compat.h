@@ -47,7 +47,7 @@
 
 // OutputDebugString
 #ifndef OutputDebugString
-#define OutputDebugString(str) printf("%s\n", str)
+#define OutputDebugString(str) fprintf(stderr, "[DEBUG] %s\n", str)
 #endif
 
 // _MAX_DRIVE, _MAX_DIR, _MAX_FNAME, _MAX_EXT, _MAX_PATH

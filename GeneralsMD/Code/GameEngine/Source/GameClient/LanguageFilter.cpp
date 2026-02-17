@@ -42,16 +42,26 @@ LanguageFilter::~LanguageFilter() {
 }
 
 void LanguageFilter::init() {
+	fprintf(stderr, "DEBUG: LanguageFilter::init() - clearing word list...\n");
 	m_wordList.clear();
+	fprintf(stderr, "DEBUG: LanguageFilter::init() - word list cleared\n");
 
 	// read in the file already.
+	fprintf(stderr, "DEBUG: LanguageFilter::init() - opening file '%s'...\n", BadWordFileName);
 	File *file1 = TheFileSystem->openFile(BadWordFileName, File::READ | File::BINARY);
 	if (file1 == nullptr) {
+		fprintf(stderr, "DEBUG: LanguageFilter::init() - file not found, returning\n");
 		return;
 	}
+	fprintf(stderr, "DEBUG: LanguageFilter::init() - file opened successfully\n");
 
 	wchar_t word[128];
+	int word_count = 0;
 	while (readWord(file1, word)) {
+		word_count++;
+		if (word_count % 100 == 0) {
+			fprintf(stderr, "DEBUG: LanguageFilter::init() - read %d words so far\n", word_count);
+		}
 		Int wordLen = wcslen(word);
 		if (wordLen == 0) {
 			continue;
@@ -64,9 +74,12 @@ void LanguageFilter::init() {
 		//DEBUG_LOG(("Just read %ls from the bad word file.  Entered as %ls", word, uniword.str()));
 		m_wordList[uniword] = true;
 	}
+	fprintf(stderr, "DEBUG: LanguageFilter::init() - finished reading words\n");
 
+	fprintf(stderr, "DEBUG: LanguageFilter::init() - closing file...\n");
 	file1->close();
 	file1 = nullptr;
+	fprintf(stderr, "DEBUG: LanguageFilter::init() - COMPLETE\n");
 }
 
 void LanguageFilter::reset() {
@@ -165,7 +178,8 @@ Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
 	}
 	buf[index] = c;
 
-	while (buf[index] != L' ') {
+	// GeneralsX @bugfix felipebraz 16/02/2026 Add bounds check to prevent buffer overflow
+	while (buf[index] != L' ' && index < 127) {  // Leave room for null terminator
 		++index;
 		val = file1->read(&c, sizeof(WideChar));
 		if ((val == -1) || (val == 0)) {
@@ -180,6 +194,16 @@ Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
 			break;
 		}
 		buf[index] = c;
+	}
+	
+	// If we hit the buffer limit, null-terminate and skip to next space in file
+	if (index >= 127) {
+		buf[127] = 0;
+		fprintf(stderr, "WARNING: LanguageFilter::readWord() - word too long, truncated\n");
+		// Skip rest of word in file
+		while (c != L' ' && val > 0) {
+			val = file1->read(&c, sizeof(WideChar));
+		}
 	}
 	return retval;
 }
