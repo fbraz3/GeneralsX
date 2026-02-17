@@ -58,7 +58,11 @@ public:
 	virtual KeyboardIO *getKeyboard(void);
 	virtual Bool getCapsState(void);  // GeneralsX @build fbraz 12/02/2026 BenderAI - Caps Lock state
 	
-	// SDL3-specific methods
+	// SDL3-specific methods - Fighter19 pattern
+	// GeneralsX @refactor felipebraz 16/02/2026 Add direct addSDLEvent() method
+	void addSDLEvent(SDL_Event *event);
+	
+	// Legacy method (kept for compatibility)
 	void addSDL3KeyEvent(const SDL_KeyboardEvent& event);
 
 protected:
@@ -68,19 +72,13 @@ protected:
 private:
 	void translateKeyEvent(const SDL_KeyboardEvent& event);
 	
-	// SDL3 event buffer
-	static const int MAX_SDL3_KEY_EVENTS = 64;
+	// SDL3 event buffer - Fighter19 pattern
+	// GeneralsX @refactor felipebraz 16/02/2026 Use raw SDL_Event buffer with sentinel
+	static const UnsignedInt MAX_SDL3_KEY_EVENTS = 64;
 	
-	struct SDL3KeyEvent {
-		SDL_KeyboardEvent event;
-	};
-	
-	SDL3KeyEvent m_eventBuffer[MAX_SDL3_KEY_EVENTS];
-	int m_eventHead;
-	int m_eventTail;
-	
-	const bool* m_SDLKeyState;  // Pointer to SDL3's internal key state array
-	int m_NumKeys;
+	SDL_Event m_eventBuffer[MAX_SDL3_KEY_EVENTS];
+	UnsignedInt m_nextFreeIndex;  // Write position
+	UnsignedInt m_nextGetIndex;   // Read position
 };
 
 #endif // !_WIN32

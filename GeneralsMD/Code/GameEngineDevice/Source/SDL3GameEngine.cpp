@@ -193,20 +193,28 @@ void SDL3GameEngine::pollSDL3Events(void)
 
 			case SDL_EVENT_KEY_DOWN:
 			case SDL_EVENT_KEY_UP:
-				handleKeyboardEvent(event.key);
+				// Fighter19 pattern: direct addSDLEvent() call
+				// GeneralsX @refactor felipebraz 16/02/2026 Simplified event routing
+				if (TheKeyboard) {
+					SDL3Keyboard* keyboard = dynamic_cast<SDL3Keyboard*>(TheKeyboard);
+					if (keyboard) {
+						keyboard->addSDLEvent(&event);
+					}
+				}
 				break;
 
 			case SDL_EVENT_MOUSE_MOTION:
-				handleMouseMotionEvent(event.motion);
-				break;
-
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			case SDL_EVENT_MOUSE_BUTTON_UP:
-				handleMouseButtonEvent(event.button);
-				break;
-
 			case SDL_EVENT_MOUSE_WHEEL:
-				handleMouseWheelEvent(event.wheel);
+				// Fighter19 pattern: direct addSDLEvent() call with raw SDL_Event
+				// GeneralsX @refactor felipebraz 16/02/2026 Simplified event routing
+				if (TheMouse) {
+					SDL3Mouse* mouse = dynamic_cast<SDL3Mouse*>(TheMouse);
+					if (mouse) {
+						mouse->addSDLEvent(&event);
+					}
+				}
 				break;
 
 			case SDL_EVENT_WINDOW_RESIZED:

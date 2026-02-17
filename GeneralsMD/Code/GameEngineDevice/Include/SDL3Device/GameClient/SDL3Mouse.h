@@ -57,6 +57,11 @@ public:
 	virtual void regainFocus();
 
 	// SDL3-specific methods
+	// Fighter19 pattern: addSDLEvent() accepts raw SDL_Event directly
+	// GeneralsX @refactor felipebraz 16/02/2026 Switch to fighter19 event model
+	void addSDLEvent(SDL_Event *event);
+	
+	// Legacy methods (kept for compatibility, will be removed after validation)
 	void addSDL3MouseMotionEvent(const SDL_MouseMotionEvent& event);
 	void addSDL3MouseButtonEvent(const SDL_MouseButtonEvent& event);
 	void addSDL3MouseWheelEvent(const SDL_MouseWheelEvent& event);
@@ -67,25 +72,22 @@ protected:
 	virtual UnsignedByte getMouseEvent(MouseIO *result, Bool flush);
 
 private:
+	// Event translation from SDL_Event (raw format)
+	// GeneralsX @refactor felipebraz 16/02/2026 Unified translation method
+	void translateEvent(UnsignedInt eventIndex, MouseIO *result);
+
+	// Legacy translation methods (kept for compatibility)
 	void translateMotionEvent(const SDL_MouseMotionEvent& event, MouseIO *result);
 	void translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO *result);
 	void translateWheelEvent(const SDL_MouseWheelEvent& event, MouseIO *result);
 
-	// SDL3 event buffer (ring buffer for queued events)
-	static const int MAX_SDL3_MOUSE_EVENTS = 128;
+	// SDL3 event buffer - Fighter19 pattern: raw SDL_Event array with sentinels
+	// GeneralsX @refactor felipebraz 16/02/2026 Use raw SDL_Event buffer like fighter19
+	static const UnsignedInt MAX_SDL3_MOUSE_EVENTS = 128;
 	
-	struct SDL3MouseEvent {
-		enum Type { MOTION, BUTTON, WHEEL } type;
-		union {
-			SDL_MouseMotionEvent motion;
-			SDL_MouseButtonEvent button;
-			SDL_MouseWheelEvent wheel;
-		};
-	};
-
-	SDL3MouseEvent m_eventBuffer[MAX_SDL3_MOUSE_EVENTS];
-	int m_eventHead;  // Write position
-	int m_eventTail;  // Read position
+	SDL_Event m_eventBuffer[MAX_SDL3_MOUSE_EVENTS];
+	UnsignedInt m_nextFreeIndex;  // Write position (insert new events here)
+	UnsignedInt m_nextGetIndex;   // Read position (retrieve events from here)
 
 	SDL_Window* m_Window;
 	Bool m_IsCaptured;

@@ -37,12 +37,14 @@
  */
 SDL3Keyboard::SDL3Keyboard(void)
 	: Keyboard(),
-	  m_eventHead(0),
-	  m_eventTail(0),
-	  m_SDLKeyState(nullptr),
-	  m_NumKeys(0)
+	  m_nextFreeIndex(0),
+	  m_nextGetIndex(0)
 {
 	fprintf(stderr, "DEBUG: SDL3Keyboard::SDL3Keyboard() created\n");
+	
+	// Initialize event buffer with SDL_EVENT_FIRST sentinel
+	// GeneralsX @refactor felipebraz 16/02/2026 Fighter19 pattern
+	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
 }
 
 /**
@@ -63,14 +65,16 @@ void SDL3Keyboard::init(void)
 	// Call parent init
 	Keyboard::init();
 	
-	// Get SDL3 keyboard state array
-	m_SDLKeyState = SDL_GetKeyboardState(&m_NumKeys);
+	// TODO: Phase 2 - Get SDL3 keyboard state array
+	// m_SDLKeyState = SDL_GetKeyboardState(&m_NumKeys);
 	
-	// Clear event buffer
-	m_eventHead = 0;
-	m_eventTail = 0;
+	// Clear event buffer - Fighter19 pattern
+	// GeneralsX @refactor felipebraz 16/02/2026
+	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
+	m_nextFreeIndex = 0;
+	m_nextGetIndex = 0;
 	
-	fprintf(stderr, "INFO: SDL3Keyboard::init() complete (%d keys)\n", m_NumKeys);
+	fprintf(stderr, "INFO: SDL3Keyboard::init() complete\n");
 }
 
 /**
@@ -82,9 +86,11 @@ void SDL3Keyboard::reset(void)
 	
 	Keyboard::reset();
 	
-	// Clear event buffer
-	m_eventHead = 0;
-	m_eventTail = 0;
+	// Clear event buffer - Fighter19 pattern
+	// GeneralsX @refactor felipebraz 16/02/2026
+	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
+	m_nextFreeIndex = 0;
+	m_nextGetIndex = 0;
 }
 
 /**
@@ -122,11 +128,13 @@ Bool SDL3Keyboard::getCapsState(void)
 
 /**
  * Get next keyboard event (called by parent Keyboard::update())
+ * Fighter19 pattern: check for SDL_EVENT_FIRST sentinel (means empty)
  */
 void SDL3Keyboard::getKey(KeyboardIO *key)
 {
-	// Check if buffer is empty
-	if (m_eventTail == m_eventHead) {
+	// Check if buffer is empty: if event type is SDL_EVENT_FIRST (0), slot is empty
+	// GeneralsX @refactor felipebraz 16/02/2026 Fighter19 pattern: sentinel check
+	if (m_eventBuffer[m_nextGetIndex].type == SDL_EVENT_FIRST) {
 		key->key = KEY_NONE;
 		key->status = KeyboardIO::STATUS_UNUSED;
 		key->state = 0;
@@ -134,40 +142,98 @@ void SDL3Keyboard::getKey(KeyboardIO *key)
 		return;
 	}
 	
-	// Get event from buffer
-	SDL3KeyEvent& evt = m_eventBuffer[m_eventTail];
-	
-	// Translate SDL3 key code to game KeyDefType
-	KeyDefType keyDef = translateScanCodeToKeyVal(evt.event.scancode);
-	
-	key->key = keyDef;
-	key->status = KeyboardIO::STATUS_UNUSED;
-	key->state = evt.event.down ? KEY_STATE_DOWN : KEY_STATE_UP;
-	key->keyDownTimeMsec = evt.event.timestamp;
-	
-	// Advance tail (circular buffer)
-	m_eventTail = (m_eventTail + 1) % MAX_SDL3_KEY_EVENTS;
-}
-
-/**
- * Add SDL3 keyboard event to buffer
- * Called by SDL3GameEngine::handleKeyboardEvent()
- */
-void SDL3Keyboard::addSDL3KeyEvent(const SDL_KeyboardEvent& event)
-{
-	int nextHead = (m_eventHead + 1) % MAX_SDL3_KEY_EVENTS;
-	
-	// Check if buffer is full
-	if (nextHead == m_eventTail) {
-		fprintf(stderr, "WARNING: SDL3Keyboard event buffer full (dropped key event)\n");
+	// Only handle keyboard events
+	if (m_eventBuffer[m_nextGetIndex].type != SDL_EVENT_KEY_DOWN &&
+	    m_eventBuffer[m_nextGetIndex].type != SDL_EVENT_KEY_UP) {
+		// Mark as processed (sentinel)
+		m_eventBuffer[m_nextGetIndex].type = SDL_EVENT_FIRST;
+		// Advance read position
+		m_nextGetIndex = (m_nextGetIndex + 1) % MAX_SDL3_KEY_EVENTS;
+		// Return empty
+		key->key = KEY_NONE;
+		key->status = KeyboardIO::STATUS_UNUSED;
+		key->state = 0;
+		key->keyDownTimeMsec = 0;
 		return;
 	}
 	
-	// Add to buffer
-	SDL3KeyEvent& evt = m_eventBuffer[m_eventHead];
-	evt.event = event;
+	// Get keyboard event from buffer
+	const SDL_KeyboardEvent& keyEvent = m_eventBuffer[m_nextGetIndex].key;
 	
-	m_eventHead = nextHead;
+	// Translate SDL3 key code to game KeyDefType
+	KeyDefType keyDef = translateScanCodeToKeyVal(keyEvent.scancode);
+	
+	key->key = keyDef;
+	key->status = KeyboardIO::STATUS_UNUSED;
+	key->state = keyEvent.down ? KEY_STATE_DOWN : KEY_STATE_UP;
+	key->keyDownTimeMsec = keyEvent.timestamp;
+	
+	// Mark this slot as empty (sentinel)
+	m_eventBuffer[m_nextGetIndex].type = SDL_EVENT_FIRST;
+	
+	// Advance read position (circular buffer)
+	m_nextGetIndex = (m_nextGetIndex + 1) % MAX_SDL3_KEY_EVENTS;
+}
+
+/**
+ * Add raw SDL_Event to keyboard event buffer
+ * Fighter19 pattern: unified method that accepts any SDL_Event
+ * Called by SDL3GameEngine::serviceWindowsOS() directly from event loop
+ *
+ * @param event Raw SDL_Event from SDL_PollEvent()
+ *
+ * GeneralsX @refactor felipebraz 16/02/2026 Fighter19 event model
+ */
+void SDL3Keyboard::addSDLEvent(SDL_Event *event)
+{
+	if (!event) {
+		return;
+	}
+	
+	// Filter only keyboard-related events
+	if (event->type != SDL_EVENT_KEY_DOWN && event->type != SDL_EVENT_KEY_UP) {
+		return;  // Not a keyboard event, ignore
+	}
+	
+	// Check if buffer is full
+	UnsignedInt nextFreeIndex = (m_nextFreeIndex + 1) % MAX_SDL3_KEY_EVENTS;
+	if (nextFreeIndex == m_nextGetIndex) {
+		fprintf(stderr, "WARNING: SDL3Keyboard::addSDLEvent() buffer full (dropped event)\n");
+		return;
+	}
+	
+	// Copy entire event to buffer
+	m_eventBuffer[m_nextFreeIndex] = *event;
+	
+	fprintf(stderr, "DEBUG: SDL3Keyboard::addSDLEvent() type=%u index=%u\n", event->type, m_nextFreeIndex);
+	
+	// Advance write position (circular buffer)
+	m_nextFreeIndex = nextFreeIndex;
+}
+
+/**
+ * Add SDL3 keyboard event to buffer (LEGACY - kept for compatibility)
+ * Called by SDL3GameEngine::handleKeyboardEvent()
+ * TODO: Remove after transition to addSDLEvent() is complete
+ */
+void SDL3Keyboard::addSDL3KeyEvent(const SDL_KeyboardEvent& event)
+{
+	UnsignedInt nextFreeIndex = (m_nextFreeIndex + 1) % MAX_SDL3_KEY_EVENTS;
+	
+	// Check if buffer is full
+	if (nextFreeIndex == m_nextGetIndex) {
+		fprintf(stderr, "WARNING: SDL3Keyboard::addSDL3KeyEvent() buffer full (dropped key event)\n");
+		return;
+	}
+	
+	// Create SDL_Event wrapper around SDL_KeyboardEvent
+	SDL_Event sdlEvent;
+	memset(&sdlEvent, 0, sizeof(sdlEvent));
+	sdlEvent.type = event.down ? SDL_EVENT_KEY_DOWN : SDL_EVENT_KEY_UP;
+	sdlEvent.key = event;
+	
+	// Add to buffer using unified method
+	addSDLEvent(&sdlEvent);
 }
 
 /**

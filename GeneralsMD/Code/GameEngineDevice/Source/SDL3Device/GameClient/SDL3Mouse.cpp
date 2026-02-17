@@ -42,13 +42,17 @@ SDL3Mouse::SDL3Mouse(SDL_Window* window)
 	  m_Window(window),
 	  m_IsCaptured(false),
 	  m_IsVisible(true),
-	  m_eventHead(0),
-	  m_eventTail(0),
+	  m_nextFreeIndex(0),   // Fighter19 pattern: write position for new events
+	  m_nextGetIndex(0),    // Fighter19 pattern: read position for events
 	  m_LeftButtonDownTime(0),
 	  m_RightButtonDownTime(0),
 	  m_MiddleButtonDownTime(0)
 {
 	fprintf(stderr, "DEBUG: SDL3Mouse::SDL3Mouse() created\n");
+	
+	// Initialize event buffer with SDL_EVENT_FIRST sentinel (means "empty" slot)
+	// GeneralsX @refactor felipebraz 16/02/2026 Fighter19 pattern
+	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
 	
 	m_LeftButtonDownPos.x = 0;
 	m_LeftButtonDownPos.y = 0;
@@ -81,9 +85,11 @@ void SDL3Mouse::init(void)
 	SDL_ShowCursor();
 	m_IsVisible = true;
 	
-	// Clear event buffer
-	m_eventHead = 0;
-	m_eventTail = 0;
+	// Clear event buffer - Fighter19 pattern
+	// GeneralsX @refactor felipebraz 16/02/2026
+	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
+	m_nextFreeIndex = 0;
+	m_nextGetIndex = 0;
 	
 	fprintf(stderr, "INFO: SDL3Mouse::init() complete\n");
 }
@@ -101,9 +107,11 @@ void SDL3Mouse::reset(void)
 	SDL_ShowCursor();
 	m_IsVisible = true;
 	
-	// Clear event buffer
-	m_eventHead = 0;
-	m_eventTail = 0;
+	// Clear event buffer - Fighter19 pattern
+	// GeneralsX @refactor felipebraz 16/02/2026
+	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
+	m_nextFreeIndex = 0;
+	m_nextGetIndex = 0;
 }
 
 /**
@@ -211,6 +219,7 @@ void SDL3Mouse::releaseCapture(void)
 /**
  * Get next mouse event from buffer
  * Called by Mouse::update() in parent class
+ * Fighter19 pattern: check for SDL_EVENT_FIRST sentinel (value 0 = empty)
  *
  * @param result Output MouseIO structure
  * @param flush If true, flush all events
@@ -218,93 +227,68 @@ void SDL3Mouse::releaseCapture(void)
  */
 UnsignedByte SDL3Mouse::getMouseEvent(MouseIO *result, Bool flush)
 {
-	// Check if buffer is empty
-	if (m_eventTail == m_eventHead) {
+	// Check if buffer is empty: if event type is SDL_EVENT_FIRST (0), slot is empty
+	// GeneralsX @refactor felipebraz 16/02/2026 Fighter19 pattern: raw SDL_Event with sentinel
+	if (m_eventBuffer[m_nextGetIndex].type == SDL_EVENT_FIRST) {
 		return MOUSE_NONE;
 	}
 	
-	// Get event from buffer
-	SDL3MouseEvent& evt = m_eventBuffer[m_eventTail];
+	// Translate SDL_Event to MouseIO
+	// GeneralsX @refactor felipebraz 16/02/2026 Use unified translateEvent()
+	translateEvent(m_nextGetIndex, result);
 	
-	// Translate SDL3 event to MouseIO
-	switch (evt.type) {
-		case SDL3MouseEvent::MOTION:
-			translateMotionEvent(evt.motion, result);
-			break;
-		case SDL3MouseEvent::BUTTON:
-			translateButtonEvent(evt.button, result);
-			break;
-		case SDL3MouseEvent::WHEEL:
-			translateWheelEvent(evt.wheel, result);
-			break;
-	}
+	// Mark this slot as empty (sentinel)
+	m_eventBuffer[m_nextGetIndex].type = SDL_EVENT_FIRST;
 	
-	// Advance tail (circular buffer)
-	m_eventTail = (m_eventTail + 1) % MAX_SDL3_MOUSE_EVENTS;
+	// Advance read position (circular buffer)
+	m_nextGetIndex = (m_nextGetIndex + 1) % MAX_SDL3_MOUSE_EVENTS;
 	
 	return MOUSE_OK;
 }
 
 /**
- * Add SDL3 mouse motion event to buffer
- * Called by SDL3GameEngine::handleMouseMotionEvent()
+ * Add SDL3 mouse motion event to buffer (LEGACY - being phased out)
+ * Refactored to use unified addSDLEvent() internally
+ * GeneralsX @refactor felipebraz 16/02/2026 Transitioning to Fighter19 model
  */
 void SDL3Mouse::addSDL3MouseMotionEvent(const SDL_MouseMotionEvent& event)
 {
-	int nextHead = (m_eventHead + 1) % MAX_SDL3_MOUSE_EVENTS;
-	
-	// Check if buffer is full
-	if (nextHead == m_eventTail) {
-		fprintf(stderr, "WARNING: SDL3Mouse event buffer full (dropped motion event)\n");
-		return;
-	}
-	
-	// Add to buffer
-	SDL3MouseEvent& evt = m_eventBuffer[m_eventHead];
-	evt.type = SDL3MouseEvent::MOTION;
-	evt.motion = event;
-	
-	m_eventHead = nextHead;
+	// Wrap in SDL_Event and call unified handler
+	SDL_Event sdlEvent;
+	memset(&sdlEvent, 0, sizeof(sdlEvent));
+	sdlEvent.type = SDL_EVENT_MOUSE_MOTION;
+	sdlEvent.motion = event;
+	addSDLEvent(&sdlEvent);
 }
 
 /**
- * Add SDL3 mouse button event to buffer
- * Called by SDL3GameEngine::handleMouseButtonEvent()
+ * Add SDL3 mouse button event to buffer (LEGACY - being phased out)
+ * Refactored to use unified addSDLEvent() internally
+ * GeneralsX @refactor felipebraz 16/02/2026 Transitioning to Fighter19 model
  */
 void SDL3Mouse::addSDL3MouseButtonEvent(const SDL_MouseButtonEvent& event)
 {
-	int nextHead = (m_eventHead + 1) % MAX_SDL3_MOUSE_EVENTS;
-	
-	if (nextHead == m_eventTail) {
-		fprintf(stderr, "WARNING: SDL3Mouse event buffer full (dropped button event)\n");
-		return;
-	}
-	
-	SDL3MouseEvent& evt = m_eventBuffer[m_eventHead];
-	evt.type = SDL3MouseEvent::BUTTON;
-	evt.button = event;
-	
-	m_eventHead = nextHead;
+	// Wrap in SDL_Event and call unified handler
+	SDL_Event sdlEvent;
+	memset(&sdlEvent, 0, sizeof(sdlEvent));
+	sdlEvent.type = event.down ? SDL_EVENT_MOUSE_BUTTON_DOWN : SDL_EVENT_MOUSE_BUTTON_UP;
+	sdlEvent.button = event;
+	addSDLEvent(&sdlEvent);
 }
 
 /**
- * Add SDL3 mouse wheel event to buffer
- * Called by SDL3GameEngine::handleMouseWheelEvent()
+ * Add SDL3 mouse wheel event to buffer (LEGACY - being phased out)
+ * Refactored to use unified addSDLEvent() internally
+ * GeneralsX @refactor felipebraz 16/02/2026 Transitioning to Fighter19 model
  */
 void SDL3Mouse::addSDL3MouseWheelEvent(const SDL_MouseWheelEvent& event)
 {
-	int nextHead = (m_eventHead + 1) % MAX_SDL3_MOUSE_EVENTS;
-	
-	if (nextHead == m_eventTail) {
-		fprintf(stderr, "WARNING: SDL3Mouse event buffer full (dropped wheel event)\n");
-		return;
-	}
-	
-	SDL3MouseEvent& evt = m_eventBuffer[m_eventHead];
-	evt.type = SDL3MouseEvent::WHEEL;
-	evt.wheel = event;
-	
-	m_eventHead = nextHead;
+	// Wrap in SDL_Event and call unified handler
+	SDL_Event sdlEvent;
+	memset(&sdlEvent, 0, sizeof(sdlEvent));
+	sdlEvent.type = SDL_EVENT_MOUSE_WHEEL;
+	sdlEvent.wheel = event;
+	addSDLEvent(&sdlEvent);
 }
 
 /**
@@ -344,10 +328,15 @@ void SDL3Mouse::translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO 
 	
 	MouseButtonState state = event.down ? MBS_Down : MBS_Up;
 	
+	// GeneralsX @bugfix BenderAI 17/02/2026 Debug mouse button events
+	fprintf(stderr, "[MOUSE] Button event: button=%d state=%s pos=(%d,%d)\n",
+		event.button, event.down ? "DOWN" : "UP", (Int)event.x, (Int)event.y);
+	
 	// Map SDL3 button to MouseIO button
 	switch (event.button) {
 		case SDL_BUTTON_LEFT:
 			result->leftState = state;
+			fprintf(stderr, "[MOUSE] Left button: %s\n", event.down ? "DOWN" : "UP");
 			if (event.down) {
 				m_LeftButtonDownTime = event.timestamp;
 				m_LeftButtonDownPos.x = (Int)event.x;
@@ -368,6 +357,7 @@ void SDL3Mouse::translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO 
 			
 		case SDL_BUTTON_RIGHT:
 			result->rightState = state;
+			fprintf(stderr, "[MOUSE] Right button: %s\n", event.down ? "DOWN" : "UP");
 			if (event.down) {
 				m_RightButtonDownTime = event.timestamp;
 				m_RightButtonDownPos.x = (Int)event.x;
@@ -408,6 +398,81 @@ void SDL3Mouse::translateWheelEvent(const SDL_MouseWheelEvent& event, MouseIO *r
 	result->leftState = MBS_None;
 	result->rightState = MBS_None;
 	result->middleState = MBS_None;
+}
+
+/**
+ * Add raw SDL_Event to mouse event buffer
+ * Fighter19 pattern: unified method that accepts any SDL_Event
+ * Called by SDL3GameEngine::serviceWindowsOS() directly from event loop
+ *
+ * @param event Raw SDL_Event from SDL_PollEvent()
+ *
+ * GeneralsX @refactor felipebraz 16/02/2026 Fighter19 event model
+ */
+void SDL3Mouse::addSDLEvent(SDL_Event *event)
+{
+	if (!event) {
+		return;
+	}
+	
+	// Filter only mouse-related events
+	if (event->type != SDL_EVENT_MOUSE_MOTION &&
+	    event->type != SDL_EVENT_MOUSE_BUTTON_DOWN &&
+	    event->type != SDL_EVENT_MOUSE_BUTTON_UP &&
+	    event->type != SDL_EVENT_MOUSE_WHEEL) {
+		return;  // Not a mouse event, ignore
+	}
+	
+	// Check if buffer is full
+	UnsignedInt nextFreeIndex = (m_nextFreeIndex + 1) % MAX_SDL3_MOUSE_EVENTS;
+	if (nextFreeIndex == m_nextGetIndex) {
+		fprintf(stderr, "WARNING: SDL3Mouse::addSDLEvent() buffer full (dropped event)\n");
+		return;
+	}
+	
+	// Copy entire event to buffer
+	m_eventBuffer[m_nextFreeIndex] = *event;
+	
+	fprintf(stderr, "DEBUG: SDL3Mouse::addSDLEvent() type=%u index=%u\n", event->type, m_nextFreeIndex);
+	
+	// Advance write position (circular buffer)
+	m_nextFreeIndex = nextFreeIndex;
+}
+
+/**
+ * Translate SDL_Event at given buffer index to MouseIO
+ * Unified translation method that handles all mouse event types
+ *
+ * @param eventIndex Index in m_eventBuffer to translate
+ * @param result Output MouseIO structure
+ *
+ * GeneralsX @refactor felipebraz 16/02/2026 Unified translation
+ */
+void SDL3Mouse::translateEvent(UnsignedInt eventIndex, MouseIO *result)
+{
+	if (eventIndex >= MAX_SDL3_MOUSE_EVENTS || !result) {
+		return;
+	}
+	
+	const SDL_Event& event = m_eventBuffer[eventIndex];
+	
+	// Switch on event type and delegate to appropriate translation method
+	switch (event.type) {
+		case SDL_EVENT_MOUSE_MOTION:
+			translateMotionEvent(event.motion, result);
+			break;
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		case SDL_EVENT_MOUSE_BUTTON_UP:
+			translateButtonEvent(event.button, result);
+			break;
+		case SDL_EVENT_MOUSE_WHEEL:
+			translateWheelEvent(event.wheel, result);
+			break;
+		default:
+			// Should not happen (sentinel value)
+			memset(result, 0, sizeof(*result));
+			break;
+	}
 }
 
 #endif // !_WIN32

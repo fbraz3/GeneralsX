@@ -178,9 +178,11 @@ void Mouse::updateMouseData( )
 
 	}
 
-	if( index > 0 )
+	if( index > 0 ) {
+		// GeneralsX @bugfix BenderAI 17/02/2026 Debug mouse events
+		fprintf(stderr, "[MOUSE] updateMouseData: %d events this frame\n", index - 1);
 		m_eventsThisFrame = index - 1;
-	else
+	} else
 		m_eventsThisFrame = 0;
 
 }
