@@ -291,11 +291,14 @@ void GameTextManager::init( void )
 	csfFile.format(g_csfFile, GetRegistryLanguage().str());
 	Int format;
 
-	// GeneralsX @bugfix BenderAI 16/02/2026 - Debug CSF init
-	fprintf(stderr, "[CSF] init() - START\n");
+	// GeneralsX @bugfix BenderAI 13/02/2026 - Debug init flow
+	char debugInit[128];
+	snprintf(debugInit, sizeof(debugInit), "GameTextManager::init() - START (m_initialized=%d)\n", m_initialized);
+	OutputDebugString(debugInit);
 
 	if ( m_initialized )
 	{
+		OutputDebugString("GameTextManager::init() - Already initialized, returning early\n");
 		return;
 	}
 
@@ -312,21 +315,27 @@ void GameTextManager::init( void )
 
 	if ( m_useStringFile && getStringCount( g_strFile, m_textCount ) )
 	{
+		OutputDebugString("GameTextManager::init() - Using STRING_FILE format\n");
 		format = STRING_FILE;
 	}
 	else if ( getCSFInfo ( csfFile.str() ) )
 	{
-		fprintf(stderr, "[CSF] init() - getCSFInfo OK, textCount=%d\n", m_textCount);
+		char debugCSF[128];
+		snprintf(debugCSF, sizeof(debugCSF), "GameTextManager::init() - Using CSF_FILE format, m_textCount=%d\n", m_textCount);
+		OutputDebugString(debugCSF);
 		format = CSF_FILE;
 	}
 	else
 	{
-		fprintf(stderr, "[CSF] init() - getCSFInfo FAILED\n");
+		OutputDebugString("GameTextManager::init() - FAILED: getCSFInfo returned FALSE! Bailing out.\n");
+		deinit();
 		return;
 	}
 
 	if( m_textCount == 0 )
 	{
+		OutputDebugString("GameTextManager::init() - FAILED: m_textCount is ZERO! Bailing out.\n");
+		deinit();
 		return;
 	}
 
@@ -350,14 +359,11 @@ void GameTextManager::init( void )
 	}
 	else
 	{
-		fprintf(stderr, "[CSF] init() - Calling parseCSF()...\n");
 		if ( !parseCSF ( csfFile.str() ) )
 		{
-			fprintf(stderr, "[CSF] init() - parseCSF FAILED\n");
 			deinit();
 			return;
 		}
-		fprintf(stderr, "[CSF] init() - parseCSF SUCCESS\n");
 	}
 
 	m_stringLUT = NEW StringLookUp[m_textCount];
@@ -853,15 +859,47 @@ Bool GameTextManager::getCSFInfo ( const Char *filename )
 {
 	CSFHeader header;
 	Int ok = FALSE;
+	
+	// GeneralsX @bugfix BenderAI 13/02/2026 - Log CSF file path for debugging
+	fprintf(stderr, ">>> getCSFInfo() called with filename='%s' <<<\n", filename);
+	
+	char debugMsg[512];
+	snprintf(debugMsg, sizeof(debugMsg), "GameTextManager: Attempting to load CSF file: '%s'\n", filename);
+	
+	fprintf(stderr, ">>> After snprintf, about to call OutputDebugString <<<\n");
+	
+	OutputDebugString(debugMsg);
+	
+	fprintf(stderr, ">>> AFTER OutputDebugString, BEFORE openFile() call <<<\n");
+	
 	File *file = TheFileSystem->openFile(filename, File::READ | File::BINARY);
+	
+	fprintf(stderr, ">>> AFTER openFile() call, file=%p <<<\n", (void*)file);
+	
 	DEBUG_LOG(("Looking in %s for compiled string file", filename));
 
 	if ( file != nullptr )
 	{
-		if ( file->read( &header, sizeof ( header )) == sizeof ( header ) )
+		// GeneralsX @bugfix BenderAI 13/02/2026 - Debug file read
+		size_t bytesRead = file->read( &header, sizeof ( header ) );
+		char debugRead[256];
+		snprintf(debugRead, sizeof(debugRead),
+			"GameTextManager: CSF file->read() returned %zu bytes, expected %zu bytes (CSFHeader size)\n",
+			bytesRead, sizeof(header));
+		OutputDebugString(debugRead);
+		
+		if ( bytesRead == sizeof ( header ) )
 		{
+			// GeneralsX @bugfix BenderAI 13/02/2026 - Debug CSF header validation
+			char debugHeader[256];
+			snprintf(debugHeader, sizeof(debugHeader),
+				"GameTextManager: CSF Header Read - ID=0x%08X (expected 0x%08X), version=%d, labels=%d\n",
+				header.id, CSF_ID, header.version, header.num_labels);
+			OutputDebugString(debugHeader);
+			
 			if ( header.id == CSF_ID )
 			{
+				OutputDebugString("GameTextManager: CSF header ID MATCH - proceeding with init\n");
 				m_textCount = header.num_labels;
 
 				if ( header.version >= 2 )
@@ -875,10 +913,27 @@ Bool GameTextManager::getCSFInfo ( const Char *filename )
 
 				ok = TRUE;
 			}
+			else
+			{
+				// GeneralsX @bugfix BenderAI 13/02/2026 - Log header ID mismatch
+				OutputDebugString("GameTextManager: ERROR - CSF header ID MISMATCH! Parse failed.\n");
+			}
+		}
+		else
+		{
+			// GeneralsX @bugfix BenderAI 13/02/2026 - Log read failure
+			OutputDebugString("GameTextManager: ERROR - Failed to read CSF header! File may be corrupt or wrong format.\n");
 		}
 
 		file->close();
 		file = nullptr;
+	}
+	else
+	{
+		// GeneralsX @bugfix BenderAI 13/02/2026 - Log when file open fails
+		printf("*** CSF FILE OPEN FAILED! ***\n");
+		fflush(stdout);
+		OutputDebugString("GameTextManager: ERROR - Failed to open CSF file!\n");
 	}
 
 	return ok;
@@ -890,6 +945,11 @@ Bool GameTextManager::getCSFInfo ( const Char *filename )
 
 Bool GameTextManager::parseCSF( const Char *filename )
 {
+	// GeneralsX @bugfix BenderAI 13/02/2026 - Debug parseCSF flow
+	char debugMsg[256];
+	snprintf(debugMsg, sizeof(debugMsg), "GameTextManager::parseCSF() - START, filename='%s'\n", filename);
+	OutputDebugString(debugMsg);
+	
 	File *file;
 	Int id;
 	Int len;
@@ -897,37 +957,25 @@ Bool GameTextManager::parseCSF( const Char *filename )
 	Bool ok = FALSE;
 	CSFHeader header;
 
-	// GeneralsX @bugfix BenderAI 16/02/2026 - Debug parseCSF
-	fprintf(stderr, "[CSF] parseCSF() - START filename='%s'\n", filename);
-
 	file = TheFileSystem->openFile(filename, File::READ | File::BINARY);
 
 	if ( file == nullptr )
 	{
-		fprintf(stderr, "[CSF] parseCSF() - openFile FAILED\n");
+		OutputDebugString("GameTextManager::parseCSF() - ERROR: Failed to open file!\n");
 		return FALSE;
 	}
-
-	fprintf(stderr, "[CSF] parseCSF() - File opened\n");
+	
+	OutputDebugString("GameTextManager::parseCSF() - File opened successfully\n");
 
 	if (  file->read ( &header, sizeof ( CSFHeader)) != sizeof ( CSFHeader) )
 	{
-		fprintf(stderr, "[CSF] parseCSF() - read header FAILED\n");
+		OutputDebugString("GameTextManager::parseCSF() - ERROR: Failed to read CSFHeader!\n");
 		return FALSE;
 	}
-
-	// GeneralsX @bugfix BenderAI 17/02/2026 - Log header for debugging
-	fprintf(stderr, "[CSF] parseCSF() - Header: id=%#x version=%d num_labels=%d num_strings=%d skip=%d langid=%d\n",
-		header.id, header.version, header.num_labels, header.num_strings, header.skip, header.langid);
-
-	// GeneralsX @bugfix BenderAI 17/02/2026 - Skip extra bytes after header
-	// The 'skip' field indicates how many bytes to advance before reading first label
-	if (header.skip > 0) {
-		fprintf(stderr, "[CSF] parseCSF() - Skipping %d bytes as indicated by header.skip\n", header.skip);
-		file->seek(header.skip, File::CURRENT);
-	}
-
-	fprintf(stderr, "[CSF] parseCSF() - Starting main loop (textCount=%d)...\n", m_textCount);
+	
+	char debugHeader[128];
+	snprintf(debugHeader, sizeof(debugHeader), "GameTextManager::parseCSF() - Header read, starting to parse %d labels...\n", header.num_labels);
+	OutputDebugString(debugHeader);
 
 	while( file->read ( &id, sizeof (id)) == sizeof ( id) )
 	{
@@ -936,7 +984,6 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 		if ( id != CSF_LABEL )
 		{
-			fprintf(stderr, "[CSF] parseCSF() - ERROR: Expected CSF_LABEL (%#x), got %#x at label %d\n", CSF_LABEL, id, listCount);
 			goto quit;
 		}
 
@@ -967,8 +1014,6 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 			if ( id != CSF_STRING && id != CSF_STRINGWITHWAVE )
 			{
-				fprintf(stderr, "[CSF] parseCSF() - ERROR: Expected CSF_STRING (%#x) or CSF_STRINGWITHWAVE (%#x), got %#x at label %d, string %d\n", 
-					CSF_STRING, CSF_STRINGWITHWAVE, id, listCount, num);
 				goto quit;
 			}
 
@@ -976,18 +1021,7 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 			if ( len )
 			{
-				// GeneralsX @bugfix BenderAI 17/02/2026 Linux wchar_t compatibility
-				// CSF files store 16-bit wide chars (UCS-2), but Linux wchar_t is 32-bit (UCS-4)
-#ifdef _WIN32
 				file->read ( m_tbuffer, len*sizeof(WideChar) );
-#else
-				uint16_t convert_buffer[MAX_UITEXT_LENGTH*2];
-				file->read ( convert_buffer, len*sizeof(uint16_t) );
-				for (int i = 0; i < len; i++)
-				{
-					m_tbuffer[i] = convert_buffer[i];
-				}
-#endif
 			}
 
 			if ( num == 0 )
@@ -1002,13 +1036,7 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 					while ( *ptr )
 					{
-						// GeneralsX @bugfix BenderAI 17/02/2026 Bitwise NOT for 16-bit values only
-#ifdef _WIN32
 						*ptr = ~*ptr;
-#else
-						// only negate the lower 16 bits (32-bit widechar on Linux)
-						*ptr = ~*ptr & 0x0000FFFF;
-#endif
 						ptr++;
 					}
 				}
@@ -1038,20 +1066,11 @@ Bool GameTextManager::parseCSF( const Char *filename )
 		}
 
 		listCount++;
-		
-		// GeneralsX @bugfix BenderAI 17/02/2026 Progress logging every 500 labels
-		if (listCount % 500 == 0) {
-			fprintf(stderr, "[CSF] parseCSF() - Progress: %d/%d labels processed\n", listCount, m_textCount);
-		}
 	}
 
-	fprintf(stderr, "[CSF] parseCSF() - Main loop complete! Processed %d/%d labels\n", listCount, m_textCount);
 	ok = TRUE;
 
 quit:
-
-	fprintf(stderr, "[CSF] parseCSF() - Reached quit label: ok=%s, listCount=%d/%d\n", 
-		ok ? "TRUE" : "FALSE", listCount, m_textCount);
 
 	file->close();
 	file = nullptr;
@@ -1154,6 +1173,10 @@ Bool GameTextManager::parseStringFile( const char *filename )
 	}
 
 quit:
+	// GeneralsX @bugfix BenderAI 13/02/2026 - Debug parseCSF completion
+	char debugResult[128];
+	snprintf(debugResult, sizeof(debugResult), "GameTextManager::parseCSF() - COMPLETE, ok=%d, listCount=%d\n", ok, listCount);
+	OutputDebugString(debugResult);
 
 	file->close();
 	file = nullptr;

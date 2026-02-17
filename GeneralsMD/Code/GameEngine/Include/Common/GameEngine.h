@@ -28,6 +28,9 @@
 
 #pragma once
 
+// GeneralsX @bugfix felipebraz 16/02/2026 Need fprintf for debug logging
+#include <stdio.h>
+
 #include "Common/SubsystemInterface.h"
 #include "Common/GameType.h"
 
@@ -103,7 +106,13 @@ protected:
 	Bool m_isActive; ///< app has OS focus.
 };
 
-inline void GameEngine::setQuitting( Bool quitting ) { m_quitting = quitting; }
+// GeneralsX @bugfix felipebraz 16/02/2026 Add logging to track quit calls
+inline void GameEngine::setQuitting( Bool quitting ) { 
+	if (quitting && !m_quitting) {
+		fprintf(stderr, "DEBUG: GameEngine::setQuitting(TRUE) called!\n");
+	}
+	m_quitting = quitting; 
+}
 inline Bool GameEngine::getQuitting(void) { return m_quitting; }
 
 // the game engine singleton

@@ -53,6 +53,10 @@
 #include "dx8wrapper.h"
 // GeneralsX @build BenderAI 10/02/2026 - Need LoadLibrary/GetProcAddress/FreeLibrary for dynamic loading
 #include "module_compat.h"
+// GeneralsX @build felipebraz 16/02/2026 - Need dlerror() for dlopen() error reporting on Linux
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 // GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)
 #ifdef _WIN32
 #include "dx8webbrowser.h"
@@ -329,18 +333,33 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 #ifdef _WIN32
 		D3D8Lib = LoadLibrary("D3D8.DLL");
 #else
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.so...\n");
 		D3D8Lib = LoadLibrary("libdxvk_d3d8.so");
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - LoadLibrary result: %p\n", (void*)D3D8Lib);
+		if (D3D8Lib == nullptr) {
+			const char* error = dlerror();
+			fprintf(stderr, "ERROR: DX8Wrapper::Init() - dlerror(): %s\n", error ? error : "unknown");
+		}
 #endif
 
-		if (D3D8Lib == nullptr) return false;	// Return false at this point if init failed
+		if (D3D8Lib == nullptr) {
+			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to load D3D8 library\n");
+			return false;	// Return false at this point if init failed
+		}
 
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Getting Direct3DCreate8 function pointer...\n");
 		Direct3DCreate8Ptr = (Direct3DCreate8Type) GetProcAddress(D3D8Lib, "Direct3DCreate8");
-		if (Direct3DCreate8Ptr == nullptr) return false;
+		if (Direct3DCreate8Ptr == nullptr) {
+			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to get Direct3DCreate8 function\n");
+			return false;
+		}
 
 		/*
 		** Create the D3D interface object
 		*/
 		WWDEBUG_SAY(("Create Direct3D8"));
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - About to call Direct3DCreate8(D3D_SDK_VERSION=%d)\n", D3D_SDK_VERSION);
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Window handle: %p\n", hwnd);
 		{
 			// TheSuperHackers @bugfix xezon 13/06/2025 Front load the system dbghelp.dll to prevent
 			// the graphics driver from potentially loading the old game dbghelp.dll and then crashing the game process.
@@ -348,7 +367,9 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 
 			D3DInterface = Direct3DCreate8Ptr(D3D_SDK_VERSION);		// TODO: handle failure cases...
 		}
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Direct3DCreate8 returned: %p\n", (void*)D3DInterface);
 		if (D3DInterface == nullptr) {
+			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 returned NULL (DXVK failed to create D3D8 interface)\n");
 			return(false);
 		}
 		IsInitted = true;

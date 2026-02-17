@@ -944,7 +944,18 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 			if ( len )
 			{
+				// GeneralsX @bugfix BenderAI 17/02/2026 Linux wchar_t compatibility
+				// CSF files store 16-bit wide chars (UCS-2), but Linux wchar_t is 32-bit (UCS-4)
+#ifdef _WIN32
 				file->read ( m_tbuffer, len*sizeof(WideChar) );
+#else
+				uint16_t convert_buffer[MAX_UITEXT_LENGTH*2];
+				file->read ( convert_buffer, len*sizeof(uint16_t) );
+				for (int i = 0; i < len; i++)
+				{
+					m_tbuffer[i] = convert_buffer[i];
+				}
+#endif
 			}
 
 			if ( num == 0 )
@@ -959,7 +970,13 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 					while ( *ptr )
 					{
+						// GeneralsX @bugfix BenderAI 17/02/2026 Bitwise NOT for 16-bit values only
+#ifdef _WIN32
 						*ptr = ~*ptr;
+#else
+						// only negate the lower 16 bits (32-bit widechar on Linux)
+						*ptr = ~*ptr & 0x0000FFFF;
+#endif
 						ptr++;
 					}
 				}

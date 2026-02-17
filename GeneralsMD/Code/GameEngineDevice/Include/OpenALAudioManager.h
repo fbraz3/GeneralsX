@@ -83,6 +83,9 @@ public:
 	virtual Bool isMusicPlaying(void) const;
 	virtual Bool hasMusicTrackCompleted(const AsciiString &trackName, Int numberOfTimes) const;
 	virtual AsciiString getMusicTrackName(void) const;
+	
+	// GeneralsX @bugfix felipebraz 16/02/2026 No music load dialog on Linux, always return TRUE
+	virtual Bool isMusicAlreadyLoaded(void) const override { return TRUE; }
 
 	// AudioManager interface - audio events (placeholder for Phase 2)
 	virtual AudioHandle addAudioEvent(const AudioEventRTS *eventToAdd);

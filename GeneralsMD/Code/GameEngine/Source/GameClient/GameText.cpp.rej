@@ -1,0 +1,15 @@
+--- GeneralsMD/Code/GameEngine/Source/GameClient/GameText.cpp
++++ GeneralsMD/Code/GameEngine/Source/GameClient/GameText.cpp
+@@ -979,6 +979,12 @@
+ 
+ while( file->read ( &id, sizeof (id)) == sizeof ( id) )
+ {
++// GeneralsX @bugfix BenderAI 13/02/2026 - Progress logging
++if (listCount % 1000 == 0) {
++char progressMsg[128];
++snprintf(progressMsg, sizeof(progressMsg), "GameTextManager::parseCSF() - Parsing label %d/%d...\n", listCount, header.num_labels);
++OutputDebugString(progressMsg);
++}
+ t num;
+ t num_strings;
+ 

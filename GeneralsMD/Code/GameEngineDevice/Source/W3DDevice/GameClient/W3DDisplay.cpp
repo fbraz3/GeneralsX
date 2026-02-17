@@ -37,11 +37,12 @@ static void drawFramerateBar(void);
 #include <numeric>
 #include <stdlib.h>
 #include <windows.h>
-// GeneralsX @bugfix BenderAI 13/02/2026AI - io.h is Windows-specific, use unistd.h on Linux
+// GeneralsX @bugfix BenderAI 13/02/2026 - io.h is Windows-specific, use unistd.h on Linux
 #ifdef _WIN32
 #include <io.h>
 #else
 #include <unistd.h> // access() for file existence checks
+#include <SDL3/SDL.h> // For SDL_ShowWindow() on Linux
 #endif
 #include <time.h>
 
@@ -714,8 +715,36 @@ void W3DDisplay::init( void )
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
-		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
+		
+		// GeneralsX @bugfix felipebraz 16/02/2026 Add detailed WW3D init logging
+		fprintf(stderr, "DEBUG: About to call WW3D::Init() with ApplicationHWnd=%p\n", ApplicationHWnd);
+		WW3DErrorType ww3d_result = WW3D::Init( ApplicationHWnd );
+		
+		// Decode error type
+		const char* error_names[] = {
+			"WW3D_ERROR_OK",
+			"WW3D_ERROR_GENERIC", 
+			"WW3D_ERROR_LOAD_FAILED",
+			"WW3D_ERROR_SAVE_FAILED",
+			"WW3D_ERROR_WINDOW_NOT_OPEN",
+			"WW3D_ERROR_INITIALIZATION_FAILED"
+		};
+		const char* error_name = (ww3d_result >= 0 && ww3d_result <= 5) ? error_names[ww3d_result] : "UNKNOWN";
+		fprintf(stderr, "DEBUG: WW3D::Init() returned: %d (%s)\n", ww3d_result, error_name);
+		
+		if (ww3d_result != WW3D_ERROR_OK) {
+			fprintf(stderr, "ERROR: WW3D::Init() failed with %s - DirectX8/DXVK initialization error\n", error_name);
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
+		}
+
+		// GeneralsX @bugfix felipebraz 16/02/2026 Show window after DirectX8/DXVK initialized
+		#ifndef _WIN32
+		extern SDL_Window* TheSDL3Window;
+		if (TheSDL3Window) {
+			fprintf(stderr, "DEBUG: Showing SDL3 window after WW3D init...\n");
+			SDL_ShowWindow(TheSDL3Window);
+		}
+		#endif
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
