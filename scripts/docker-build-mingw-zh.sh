@@ -7,9 +7,18 @@ set -e
 PRESET="${1:-mingw-w64-i686}"
 LOG_FILE="logs/build_zh_${PRESET}_docker.log"
 DOCKER_IMAGE="generalsx/mingw-builder:latest"
+CONTAINER_NAME="generalsx-build-mingw-zh-${PRESET}"
 
 echo "🐳 Building GeneralsXZH (Windows/MinGW, preset: ${PRESET})..."
 mkdir -p logs
+
+# Check if container is already running
+if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    echo "⚠️  Container '${CONTAINER_NAME}' is already running!"
+    echo "Wait for the current build to finish or stop it with:"
+    echo "    docker stop ${CONTAINER_NAME}"
+    exit 1
+fi
 
 # Check if Docker image exists, build if not
 if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
@@ -19,6 +28,7 @@ if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
 fi
 
 docker run --rm \
+    --name "$CONTAINER_NAME" \
     -v "$PWD:/work" \
     -w /work \
     "$DOCKER_IMAGE" \

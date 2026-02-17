@@ -7,9 +7,18 @@ set -e
 PRESET="${1:-linux64-deploy}"
 LOG_FILE="logs/configure_${PRESET}_docker.log"
 DOCKER_IMAGE="generalsx/linux-builder:latest"
+CONTAINER_NAME="generalsx-configure-${PRESET}"
 
 echo "🐳 Configuring Linux build (preset: ${PRESET})..."
 mkdir -p logs
+
+# Check if container is already running
+if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    echo "⚠️  Container '${CONTAINER_NAME}' is already running!"
+    echo "Wait for the current configuration to finish or stop it with:"
+    echo "    docker stop ${CONTAINER_NAME}"
+    exit 1
+fi
 
 # Check if Docker image exists, build if not
 if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
@@ -19,6 +28,7 @@ if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
 fi
 
 docker run --rm \
+    --name "$CONTAINER_NAME" \
     --platform linux/amd64 \
     -v "$PWD:/work" \
     -v "generalsx-vcpkg:/opt/vcpkg" \
