@@ -18,6 +18,11 @@
 
 #pragma once
 
+// GeneralsX @bugfix BenderAI 20/02/2026 Include stdint.h for fixed-width integer types
+// TGA binary structs use int32_t to ensure correct 4-byte size on all platforms
+// (Linux 64-bit: long=8 bytes, Windows: long=4 bytes)
+#include <stdint.h>
+
 /****************************************************************************
 *
 *         C O N F I D E N T I A L --- W E S T W O O D   S T U D I O S
@@ -131,15 +136,20 @@ typedef struct _TGAHeader
  * RsvdChar  - Reserved character, must be ASCII "." (period)
  * BZST      - Binary Zero String Terminator.
  */
+// GeneralsX @bugfix BenderAI 20/02/2026 Use int32_t instead of long for file offsets
+// long is 4 bytes on Windows but 8 bytes on Linux 64-bit, corrupting TGA2 footer reads.
+// The TGA 2.0 spec defines these fields as 32-bit values. sizeof(TGA2Footer) must == 26.
 typedef struct _TGA2Footer
 	{
-	long Extension;
-	long Developer;
+	int32_t Extension;
+	int32_t Developer;
 	char Signature[16];
 	char RsvdChar;
 	char BZST;
 	_TGA2Footer() {}
 	} TGA2Footer;
+// TGA 2.0 spec: footer is exactly 26 bytes (4+4+16+1+1)
+static_assert(sizeof(TGA2Footer) == 26, "TGA2Footer size mismatch - check long vs int32_t");
 
 /* TGA2DateStamp - A series of 3 WORD values which define the integer value
  *                 for the date the image was saved.
@@ -213,6 +223,8 @@ typedef struct _TGA2Ratio
  * ScanLine    - Scan line table offset.
  * Attributes  - Alpha channel attributes. (Set defines below)
  */
+// GeneralsX @bugfix BenderAI 20/02/2026 Use int32_t instead of long for file offsets/colors
+// Same long-size issue: TGA 2.0 spec defines all these fields as 32-bit values.
 typedef struct _TGA2Extension
 	{
 	short         ExtSize;
@@ -224,12 +236,12 @@ typedef struct _TGA2Extension
 	TGA2TimeStamp JobTime;
 	char          SoftID[41];
 	TGA2SoftVer   SoftVer;
-	long          KeyColor;
+	int32_t       KeyColor;
 	TGA2Ratio     Aspect;
 	TGA2Ratio     Gamma;
-	long          ColorCor;
-	long          PostStamp;
-	long          ScanLine;
+	int32_t       ColorCor;
+	int32_t       PostStamp;
+	int32_t       ScanLine;
 	char          Attributes;
 	} TGA2Extension;
 

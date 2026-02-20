@@ -579,6 +579,120 @@ echo "✓ Both platforms validated"
 
 ---
 
-**Written**: 2026-02-11 (Sessions 19-24), Updated: 2026-02-13 (Sessions 28-30)  
-**Based on**: Sessions 19-24, 28-30 handoffs and reports  
+**Written**: 2026-02-11 (Sessions 19-24), Updated: 2026-02-13 (Sessions 28-30), Updated: 2026-02-18 (Session 43)
+**Based on**: Sessions 19-24, 28-30 handoffs and reports, Session 43 asset loading investigation
 **Next review**: 2026-03-15 (after Phase 2 completion)
+
+---
+
+## Session 43 Addendum — Steam ZH Standalone & Language Detection (2026-02-18)
+
+### Lesson A: Steam ZH standalone uses `ZH_Generals/` subdir, not siblings
+
+**Problem**: On a fresh Steam install of Zero Hour, the base Generals .big files
+(`Textures.big`, `W3D.big`, `shaders.big`, etc.) are inside `GeneralsMD/ZH_Generals/`,
+not in a sibling `Generals/` directory. Our `GetStringFromGeneralsRegistry` fallback
+only looked for `../Generals/`, which doesn't exist on a pure Steam install.
+
+**Correct Approach**:
+- Check `ZH_Generals/` FIRST (Steam standalone layout, most common for Linux users)
+- Fall back to `../Generals/` (dev split install, project dev layout)
+- Both paths probe via `stat()` to avoid any hardcoding
+
+**Implementation location**: `registry.cpp` → `tryRelativeGeneralsPath()`
+
+---
+
+### Lesson B: Language must be auto-detected from BIG file presence on Linux
+
+**Problem**: `GetRegistryLanguage()` defaults to `"english"` when the Windows registry
+is unavailable (Linux). A Brazilian Portuguese Steam install has `BrazilianZH.big`
+but no `EnglishZH.big`. The CSF loader tried `data/english/generals.csf` → crash.
+
+**Correct Approach**:
+- In `GetStringFromRegistry` for key `"Language"`, probe for `*ZH.big` files in CWD
+- Return the corresponding language string that the game loader expects
+- Support all known localizations: brazilian, english, german, french, spanish, chinese, korean, polish
+
+**Key Insight**: The language string used for BIG file detection MUST match the language
+string the CSF loader expects for its path (`data/<language>/generals.csf`).
+
+**Implementation location**: `registry.cpp` → `tryAutoDetectLanguage()`
+
+---
+
+### Lesson C: Never add duplicate draw() calls outside GameClient
+
+**Problem**: A previous session added `TheDisplay->step()` + `TheDisplay->draw()`
+to `GameEngine::update()` after `TheFramePacer->update()`. This caused double-drawing
+every frame because `GameClient::update()` already dispatches `TheDisplay->DRAW()`.
+
+**Why it was wrong**:
+- `GameEngine::update()` calls `TheGameClient->UPDATE()` (unconditionally)
+- `GameClient::update()` calls `TheDisplay->DRAW()` at the bottom
+- The extra call after FramePacer ran AGAIN, potentially presenting a second frame
+  with wrong/empty state
+
+**Fighter19 reference confirms**: No `TheDisplay->draw()` call exists in
+fighter19's `GameEngine.cpp`. The dispatch is exclusively via `GameClient`.
+
+**Rule**: `TheDisplay->draw()` is owned by `GameClient`. Do not call it from
+`GameEngine` or any other location outside of `GameClient`.
+
+---
+
+### Lesson D: Always verify env var NAMES match between scripts and C++ code
+
+**Problem**: The run script used `CNC_ZH_INSTALLPATH` but `GetStringFromGeneralsRegistry`
+reads `CNC_GENERALS_INSTALLPATH`. These map to DIFFERENT C++ functions and have
+different semantics. A mismatch silently fails (no error, no warning).
+
+**Correct Approach**:
+- `CNC_GENERALS_<KEY>` → `GetStringFromGeneralsRegistry()` (base Generals settings)
+- `CNC_ZH_<KEY>` → `GetStringFromRegistry()` (Zero Hour settings)
+- Document the mapping clearly in both the script and registry.cpp
+
+**Rule**: When adding env var overrides, verify the prefix matches the C++ function
+being called. Test with `export CNC_GENERALS_INSTALLPATH=/path && run-linux-zh.sh`.
+
+
+---
+
+## Lesson S47: Binary File Format Structs Must Use Fixed-Width Integer Types
+
+**Session**: 47 (2026-02-20)
+**Context**: 4 TGA textures failing as TEX_MISSING on Linux 64-bit despite files existing in BIG archives
+
+**The Problem**: `TGA2Footer` in `TARGA.h` used `long` for file offset fields:
+```cpp
+typedef struct _TGA2Footer {
+    long Extension;   // 4 bytes on Windows, 8 bytes on Linux 64-bit!
+    long Developer;   // same issue
+    char Signature[16];
+    char RsvdChar;
+    char BZST;
+} TGA2Footer;
+```
+`sizeof(TGA2Footer)`: Windows = 26, Linux 64-bit = **34** (wrong!)
+
+`Targa::Open()` hardcodes `File_Seek(-26, SEEK_END)` then tries to read `sizeof(TGA2Footer)` = 34 bytes → only 26 available → read returns 26 ≠ 34 → TGAERR_READ → texture fails.
+
+**The Fix**: Use `int32_t` for all fields that must be exactly 4 bytes per the file format spec:
+```cpp
+#include <stdint.h>
+typedef struct _TGA2Footer {
+    int32_t Extension;   // always 4 bytes everywhere
+    int32_t Developer;   // always 4 bytes everywhere
+    ...
+} TGA2Footer;
+static_assert(sizeof(TGA2Footer) == 26, "TGA2Footer size mismatch");
+```
+
+**Golden Rule**: **Any struct that is read/written as binary file data must use `<stdint.h>` fixed-width types** (`int32_t`, `uint32_t`, `uint16_t`, `int16_t`, etc.) instead of `long`, `int`, `short`. Add `static_assert(sizeof(Struct) == N, "...")` to catch future regressions.
+
+**ABI Context**:
+- Windows: LLP64 — `long` = 4 bytes on both 32-bit and 64-bit
+- Linux 64-bit: LP64 — `long` = 8 bytes
+- This is the same category of bug as Session 45's `void* Surface` in `LegacyDDSURFACEDESC2`
+
+**Key Files**: `Core/Libraries/Source/WWVegas/WWLib/TARGA.h`

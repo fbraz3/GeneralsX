@@ -194,7 +194,6 @@ char const * GameFileClass::Set_Name( char const *filename )
 	m_fileExists = TheFileSystem->doesFileExist( m_filePath );
 
 
-
 	// Now try the main lookup of hitting local files and big files
 	if( m_fileExists == FALSE )
 	{
@@ -317,6 +316,52 @@ char const * GameFileClass::Set_Name( char const *filename )
 		// see if the file exists
 		m_fileExists = TheFileSystem->doesFileExist( m_filePath );
 
+	}
+
+	// GeneralsX @bugfix BenderAI 18/02/2026 - Cross-extension fallback for TGA/DDS mismatches.
+	// Some regional game installs (e.g. Brazilian Steam) store textures with a different
+	// extension than what the W3D/INI data requests (.tga vs .dds or vice versa).
+	// If all lookups above failed, retry with the alternate extension so both cases work.
+	if( m_fileExists == FALSE && isImageFileType(fileType) )
+	{
+		// Build alternate filename with swapped extension
+		char altFilename[_MAX_PATH];
+		strlcpy(altFilename, filename, ARRAY_SIZE(altFilename));
+		char *ext = strrchr(altFilename, '.');
+		if (ext)
+		{
+			if (fileType == FILE_TYPE_DDS)
+			{
+				// Requested .dds but not found — try .tga
+				ext[1]='t'; ext[2]='g'; ext[3]='a'; ext[4]='\0';
+			}
+			else // FILE_TYPE_TGA
+			{
+				// Requested .tga but not found — try .dds
+				ext[1]='d'; ext[2]='d'; ext[3]='s'; ext[4]='\0';
+			}
+
+			// Replay lookup chain with alternate extension (localized path first)
+			static const char *localizedPathFormat = "Data/%s/Art/Textures/";
+			sprintf(m_filePath, localizedPathFormat, GetRegistryLanguage().str());
+			strlcat(m_filePath, altFilename, ARRAY_SIZE(m_filePath));
+			m_fileExists = TheFileSystem->doesFileExist(m_filePath);
+
+			if( m_fileExists == FALSE )
+			{
+				static_assert(ARRAY_SIZE(m_filePath) >= ARRAY_SIZE(TGA_DIR_PATH), "Incorrect array size");
+				strcpy(m_filePath, TGA_DIR_PATH);
+				strlcat(m_filePath, altFilename, ARRAY_SIZE(m_filePath));
+				m_fileExists = TheFileSystem->doesFileExist(m_filePath);
+			}
+
+			// If found, record the alternate filename as the real filename so
+			// callers (Targa::Open, DDSFileClass) use the correct extension.
+			if( m_fileExists )
+			{
+				strlcpy(m_filename, altFilename, _MAX_PATH);
+			}
+		}
 	}
 
 	return m_filename;
