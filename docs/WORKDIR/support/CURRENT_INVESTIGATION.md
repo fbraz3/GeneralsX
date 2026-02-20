@@ -2,7 +2,7 @@
 
 **Updated**: 2026-02-19  
 **Status**: Root cause hypothesis identified — needs verification in Session 49
-
+   
 ## Problem Statement
 - Game launches and shows the main menu successfully
 - **Static background image** is displayed instead of the 3D animated shell map

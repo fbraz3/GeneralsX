@@ -696,3 +696,66 @@ static_assert(sizeof(TGA2Footer) == 26, "TGA2Footer size mismatch");
 - This is the same category of bug as Session 45's `void* Surface` in `LegacyDDSURFACEDESC2`
 
 **Key Files**: `Core/Libraries/Source/WWVegas/WWLib/TARGA.h`
+
+---
+
+## LESSON-51: DataChunk Unicode Strings — sizeof(WideChar) Ruins Map Parsing on Linux
+
+**Session**: 51 (2026-02-20)
+**Files**: `Core/GameEngine/Source/Common/System/DataChunk.cpp`, `Generals/Code/GameEngine/Source/Common/System/DataChunk.cpp`
+
+### The Bug
+
+`DataChunk::readUnicodeString()` and `writeUnicodeString()` used `sizeof(WideChar)` to compute how many bytes to read/write per character:
+
+```cpp
+file->read(buf, len * sizeof(WideChar));
+info->decrementDataLeft(len * sizeof(WideChar));
+```
+
+`WideChar = wchar_t`. On **Windows** `sizeof(wchar_t)` = **2** (UTF-16). On **Linux** `sizeof(wchar_t)` = **4** (UTF-32).
+
+The `.map` file format stores Unicode strings as UTF-16LE (2 bytes/char, same as Windows). On Linux the code reads 4 bytes per character instead of 2, then decrements `dataLeft` by 4 per char instead of 2. This desynchronizes the chunk parser: all sub-chunks after the first Unicode string appear consumed, so they parse as empty.
+
+### The Symptom Trail
+
+The bug was silent — no crash, no error. Symptoms:
+
+1. Shell map terrain rendered (no Unicode fields before terrain)
+2. **Zero units, frozen camera, no scripts** (all come from `PlayerScriptsList` sub-chunk, which is parsed AFTER player display names — Unicode fields)
+3. `ScriptEngine` reported `scripts=0 groups=0` for ALL 11 player sides
+4. Diagnostic confirmed `canUpdateLogic=1` (game loop was fine, logic was running)
+
+### The Investigation Method That Found It
+
+Conservative: log `canUpdateLogic` first → logic fine → log object count after `startNewGame()` → 0 → log script count per player → 0 for all 11 sides → inspect `SidesList::ParseSidesDataChunk` → find `readUnicodeString` uses `sizeof(WideChar)` → testable hypothesis → fix.
+
+### The Fix
+
+```cpp
+// Always 2 bytes per char on disk (UTF-16LE, matches Windows .map file format)
+static const Int WCHAR_DISK_SIZE = sizeof(UnsignedShort);
+
+// Read: load 2-byte chars from file, widen to wchar_t on Linux
+for (Int i = 0; i < (Int)len; i++) {
+    UnsignedShort ch16 = 0;
+    file->read(&ch16, WCHAR_DISK_SIZE);
+    buf[i] = (WideChar)ch16;
+}
+info->decrementDataLeft(len * WCHAR_DISK_SIZE);
+```
+
+Write is the mirror: narrow `WideChar` to `UnsignedShort` before writing.
+
+### Golden Rule
+
+**Any code that reads binary file data into `wchar_t` or `WideChar` must use the on-disk byte width (2 for UTF-16LE), NOT `sizeof(wchar_t)`**.
+
+This is the same category as LESSON-50 (`long` in TGA structs) and LESSON-45 (`void*` in DDS struct): **never use ABI-dependent types when reading fixed-width binary file formats**.
+
+**Checklist**:
+- `sizeof(wchar_t)` appearing near file I/O → potential bug on Linux
+- `sizeof(WideChar)` appearing near chunk `decrementDataLeft` → definite bug
+- Any struct with `wchar_t[]` fields loaded via `memcpy` or `fread` → likely broken on Linux
+
+**Key Files**: `Core/GameEngine/Source/Common/System/DataChunk.cpp`

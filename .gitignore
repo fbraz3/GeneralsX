@@ -69,5 +69,7 @@ __pycache__/
 
 ## Build Logs (generated during development)
 /logs/
+GeneralsMD/logs/
+Generals/logs/
 # External reference repositories (large, don't commit)
 references/

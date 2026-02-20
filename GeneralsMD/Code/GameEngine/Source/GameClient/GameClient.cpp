@@ -321,19 +321,13 @@ void GameClient::init( void )
 	TheMouse = TheGlobalData->m_headless ? NEW MouseDummy : createMouse();
 	TheMouse->parseIni();
 	TheMouse->initCursorResources();
-	fprintf(stderr, "DEBUG: TheMouse initialized successfully\n");
  	TheMouse->setName("TheMouse");
-	fprintf(stderr, "DEBUG: TheMouse name set\n");
 
 	// instantiate the display
-	fprintf(stderr, "DEBUG: About to call createGameDisplay()\n");
 	TheDisplay = createGameDisplay();
-	fprintf(stderr, "DEBUG: createGameDisplay() returned: %p\n", TheDisplay);
 	if( TheDisplay ) {
-		fprintf(stderr, "DEBUG: About to call TheDisplay->init()\n");
 		try {
 			TheDisplay->init();
-			fprintf(stderr, "DEBUG: TheDisplay->init() completed successfully\n");
 		} catch (const std::exception& e) {
 			fprintf(stderr, "ERROR: TheDisplay->init() threw exception: %s\n", e.what());
 			throw;
@@ -342,7 +336,6 @@ void GameClient::init( void )
 			throw;
 		}
  		TheDisplay->setName("TheDisplay");
-		fprintf(stderr, "DEBUG: TheDisplay initialized\n");
 	}
 
 	TheHeaderTemplateManager = MSGNEW("GameClientSubsystem") HeaderTemplateManager;
@@ -426,50 +419,35 @@ void GameClient::init( void )
 		TheVideoPlayer->init();
  		TheVideoPlayer->setName("TheVideoPlayer");
 	}
-	fprintf(stderr, "DEBUG: TheVideoPlayer initialized\n");
 
 	// create the language filter.
-	fprintf(stderr, "DEBUG: Creating TheLanguageFilter...\n");
 	TheLanguageFilter = createLanguageFilter();
-	fprintf(stderr, "DEBUG: TheLanguageFilter object created at %p\n", (void*)TheLanguageFilter);
 	if (TheLanguageFilter)
 	{
-		fprintf(stderr, "DEBUG: Calling TheLanguageFilter->init()...\n");
 		TheLanguageFilter->init();
-		fprintf(stderr, "DEBUG: TheLanguageFilter->init() returned\n");
  		TheLanguageFilter->setName("TheLanguageFilter");
 	}
-	fprintf(stderr, "DEBUG: TheLanguageFilter initialized\n");
 
-	fprintf(stderr, "DEBUG: Creating TheCampaignManager...\n");
 	TheCampaignManager = MSGNEW("GameClientSubsystem") CampaignManager;
 	TheCampaignManager->init();
-	fprintf(stderr, "DEBUG: TheCampaignManager initialized\n");
 
-	fprintf(stderr, "DEBUG: Creating TheEva...\n");
 	TheEva = MSGNEW("GameClientSubsystem") Eva;
 	TheEva->init();
  	TheEva->setName("TheEva");
-	fprintf(stderr, "DEBUG: TheEva initialized\n");
 
-	fprintf(stderr, "DEBUG: Calling TheDisplayStringManager->postProcessLoad()...\n");
 	TheDisplayStringManager->postProcessLoad();
-	fprintf(stderr, "DEBUG: TheDisplayStringManager->postProcessLoad() complete\n");
 
-	fprintf(stderr, "DEBUG: Creating TheSnowManager...\n");
 	TheSnowManager = createSnowManager();
 	if (TheSnowManager)
 	{
 		TheSnowManager->init();
 		TheSnowManager->setName("TheSnowManager");
 	}
-	fprintf(stderr, "DEBUG: TheSnowManager initialized\n");
 
 #ifdef PERF_TIMERS
 	TheGraphDraw = new GraphDraw;
 #endif
 
-	fprintf(stderr, "DEBUG: GameClient::init() COMPLETE\n");
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -605,9 +583,9 @@ void GameClient::update( void )
 
 			}
 
-			TheShell->showShellMap(TRUE);
-			TheShell->showShell();
-			TheWritableGlobalData->m_afterIntro = FALSE;
+		TheShell->showShellMap(TRUE);
+		TheShell->showShell();
+		TheWritableGlobalData->m_afterIntro = FALSE;
 		}
 	}
 

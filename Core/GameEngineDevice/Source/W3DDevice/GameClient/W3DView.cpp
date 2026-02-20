@@ -1074,6 +1074,7 @@ void W3DView::update(void)
 	//USE_PERF_TIMER(W3DView_updateView)
 	Bool recalcCamera = false;
 	Bool didScriptedMovement = false;
+
 #ifdef LOG_FRAME_TIMES
 	__int64 curTime64,freq64;
 	static __int64 prevTime64=0;

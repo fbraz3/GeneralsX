@@ -161,16 +161,37 @@ void SubsystemInterfaceList::initSubsystem(SubsystemInterface* sys, const char* 
 		return;
 	}
 
+	// GeneralsX @feature BenderAI 20/02/2026 Debug traces for hang investigation
+	fprintf(stderr, "[SUBSYS] initSubsystem('%s') START\n", name.str());
+	fflush(stderr);
+
 	sys->setName(name);
+	
+	fprintf(stderr, "[SUBSYS] initSubsystem('%s') - About to call sys->init()\n", name.str());
+	fflush(stderr);
 	sys->init();
+	fprintf(stderr, "[SUBSYS] initSubsystem('%s') - sys->init() completed\n", name.str());
+	fflush(stderr);
 
 	INI ini;
-	if (path1)
+	if (path1) {
+		fprintf(stderr, "[SUBSYS] initSubsystem('%s') - loadFileDirectory('%s') START\n", name.str(), path1);
+		fflush(stderr);
 		ini.loadFileDirectory(path1, INI_LOAD_OVERWRITE, pXfer );
-	if (path2)
+		fprintf(stderr, "[SUBSYS] initSubsystem('%s') - loadFileDirectory('%s') DONE\n", name.str(), path1);
+		fflush(stderr);
+	}
+	if (path2) {
+		fprintf(stderr, "[SUBSYS] initSubsystem('%s') - loadFileDirectory('%s') START\n", name.str(), path2);
+		fflush(stderr);
 		ini.loadFileDirectory(path2, INI_LOAD_OVERWRITE, pXfer );
+		fprintf(stderr, "[SUBSYS] initSubsystem('%s') - loadFileDirectory('%s') DONE\n", name.str(), path2);
+		fflush(stderr);
+	}
 
 	m_subsystems.push_back(sys);
+	fprintf(stderr, "[SUBSYS] initSubsystem('%s') END\n", name.str());
+	fflush(stderr);
 }
 
 //-----------------------------------------------------------------------------

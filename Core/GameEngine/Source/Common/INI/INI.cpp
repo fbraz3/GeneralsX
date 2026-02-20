@@ -208,6 +208,10 @@ INI::~INI( void )
 //-------------------------------------------------------------------------------------------------
 UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadType, Xfer *pXfer, Bool subdirs )
 {
+	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
+	fprintf(stderr, "[INI] loadFileDirectory('%s') START\n", fileDirName.str());
+	fflush(stderr);
+	
 	UnsignedInt filesRead = 0;
 
 	AsciiString iniDir = fileDirName;
@@ -225,20 +229,35 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 		iniFile.concat(ext);
 	}
 
+	fprintf(stderr, "[INI] loadFileDirectory - checking iniFile: '%s'\n", iniFile.str());
+	fflush(stderr);
+	
 	if (TheFileSystem->doesFileExist(iniFile.str()))
 	{
+		fprintf(stderr, "[INI] loadFileDirectory - loading iniFile: '%s' START\n", iniFile.str());
+		fflush(stderr);
 		filesRead += load(iniFile, loadType, pXfer);
+		fprintf(stderr, "[INI] loadFileDirectory - loading iniFile: '%s' END\n", iniFile.str());
+		fflush(stderr);
 	}
 
 	// Load any additional ini files from a "filename" directory and its subdirectories.
+	fprintf(stderr, "[INI] loadFileDirectory - calling loadDirectory('%s') START\n", iniDir.str());
+	fflush(stderr);
 	filesRead += loadDirectory(iniDir, loadType, pXfer, subdirs);
+	fprintf(stderr, "[INI] loadFileDirectory - calling loadDirectory('%s') END\n", iniDir.str());
+	fflush(stderr);
 
 	// Expect to open and load at least one file.
 	if (filesRead == 0)
 	{
+		fprintf(stderr, "[INI] ERROR: No files read from directory '%s'\n", fileDirName.str());
+		fflush(stderr);
 		throw INI_CANT_OPEN_FILE;
 	}
 
+	fprintf(stderr, "[INI] loadFileDirectory('%s') END - filesRead=%d\n", fileDirName.str(), filesRead);
+	fflush(stderr);
 	return filesRead;
 }
 
@@ -249,32 +268,56 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 //-------------------------------------------------------------------------------------------------
 UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer *pXfer, Bool subdirs )
 {
+	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
+	fprintf(stderr, "[INI] loadDirectory('%s') START\n", dirName.str());
+	fflush(stderr);
+	
 	UnsignedInt filesRead = 0;
 
 	// sanity
 	if( dirName.isEmpty() )
+	{
+		fprintf(stderr, "[INI] ERROR: Empty directory name in loadDirectory\n");
+		fflush(stderr);
 		throw INI_INVALID_DIRECTORY;
+	}
 
 	try
 	{
 		FilenameList filenameList;
 		dirName.concat('\\');
+		
+		fprintf(stderr, "[INI] loadDirectory - calling getFileListInDirectory('%s') START\n", dirName.str());
+		fflush(stderr);
 		TheFileSystem->getFileListInDirectory(dirName, "*.ini", filenameList, subdirs);
+		fprintf(stderr, "[INI] loadDirectory - got %d files from getFileListInDirectory\n", filenameList.size());
+		fflush(stderr);
+		
 		// Load the INI files in the dir now, in a sorted order.  This keeps things the same between machines
 		// in a network game.
 		FilenameList::const_iterator it = filenameList.begin();
 		while (it != filenameList.end())
 		{
+			fprintf(stderr, "[INI] loadDirectory - First pass: loading file '%s' START\n", it->str());
+			fflush(stderr);
+			
 			AsciiString tempname;
 			tempname = (*it).str() + dirName.getLength();
 
 			if ((tempname.find('\\') == nullptr) && (tempname.find('/') == nullptr)) {
 				// this file doesn't reside in a subdirectory, load it first.
+				fprintf(stderr, "[INI] loadDirectory - file is in root, loading NOW\n");
+				fflush(stderr);
 				filesRead += load( *it, loadType, pXfer );
+				fprintf(stderr, "[INI] loadDirectory - file loaded successfully\n");
+				fflush(stderr);
 			}
 			++it;
 		}
 
+		fprintf(stderr, "[INI] loadDirectory - second pass: loading subdirectory files\n");
+		fflush(stderr);
+		
 		it = filenameList.begin();
 		while (it != filenameList.end())
 		{
@@ -282,13 +325,22 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 			tempname = (*it).str() + dirName.getLength();
 
 			if ((tempname.find('\\') != nullptr) || (tempname.find('/') != nullptr)) {
+				fprintf(stderr, "[INI] loadDirectory - file is in subdirectory, loading '%s' START\n", it->str());
+				fflush(stderr);
 				filesRead += load( *it, loadType, pXfer );
+				fprintf(stderr, "[INI] loadDirectory - file loaded successfully\n");
+				fflush(stderr);
 			}
 			++it;
 		}
+		
+		fprintf(stderr, "[INI] loadDirectory('%s') END - filesRead=%d\n", dirName.str(), filesRead);
+		fflush(stderr);
 	}
 	catch (...)
 	{
+		fprintf(stderr, "[INI] ERROR in loadDirectory - exception caught\n");
+		fflush(stderr);
 		// propagate the exception
 		throw;
 	}
@@ -391,18 +443,33 @@ static INIFieldParseProc findFieldParse(const FieldParse* parseTable, const char
 //-------------------------------------------------------------------------------------------------
 UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 {
+	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
+	fprintf(stderr, "[INI] load('%s') START\n", filename.str());
+	fflush(stderr);
+	
 	setFPMode(); // so we have consistent Real values for GameLogic -MDC
 
 	s_xfer = pXfer;
+	fprintf(stderr, "[INI] load - calling prepFile('%s') START\n", filename.str());
+	fflush(stderr);
 	prepFile(filename, loadType);
+	fprintf(stderr, "[INI] load - prepFile completed\n");
+	fflush(stderr);
 
 	try
 	{
 
 		// read all lines in the file
 		DEBUG_ASSERTCRASH( m_endOfFile == FALSE, ("INI::load, EOF at the beginning!") );
+		UnsignedInt lineCount = 0;
 		while( m_endOfFile == FALSE )
 		{
+			lineCount++;
+			if ((lineCount % 100) == 0) {
+				fprintf(stderr, "[INI] load - processed %d lines\n", lineCount);
+				fflush(stderr);
+			}
+			
 			// read this line
 			readLine();
 
@@ -443,9 +510,13 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 			}
 
 		}
+		fprintf(stderr, "[INI] load - processed total %d lines\n", lineCount);
+		fflush(stderr);
 	}
 	catch (...)
 	{
+		fprintf(stderr, "[INI] ERROR in load('%s') - exception caught\n", filename.str());
+		fflush(stderr);
 		unPrepFile();
 
 		// propagate the exception.
@@ -454,6 +525,8 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 
 	unPrepFile();
 
+	fprintf(stderr, "[INI] load('%s') END\n", filename.str());
+	fflush(stderr);
 	return 1;
 }
 

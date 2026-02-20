@@ -355,9 +355,25 @@ void DataChunkOutput::writeAsciiString( const AsciiString& theString )
 
 void DataChunkOutput::writeUnicodeString( UnicodeString theString )
 {
+	// GeneralsX @bugfix BenderAI 20/02/2026 File format uses UTF-16 (2 bytes/char, Windows wchar_t).
+	// On Linux sizeof(WideChar)==4; always write 2 bytes/char for cross-platform compatibility.
 	UnsignedShort len = theString.getLength();
 	::fwrite( (const char *)&len, sizeof(UnsignedShort) , 1, m_tmp_file );
-	::fwrite( theString.str(), len*sizeof(WideChar) , 1, m_tmp_file );
+	if (sizeof(WideChar) == sizeof(UnsignedShort))
+	{
+		// Windows: WideChar is 2 bytes - write directly
+		::fwrite( theString.str(), len * (Int)sizeof(UnsignedShort), 1, m_tmp_file );
+	}
+	else
+	{
+		// Linux: WideChar is 4 bytes - narrow each char to UTF-16 before writing
+		const WideChar *src = theString.str();
+		UnsignedShort *tmp = NEW UnsignedShort[len + 1];
+		for (Int i = 0; i < (Int)len; i++)
+			tmp[i] = (UnsignedShort)src[i];
+		::fwrite( tmp, len * (Int)sizeof(UnsignedShort), 1, m_tmp_file );
+		delete[] tmp;
+	}
 }
 
 void DataChunkOutput::writeNameKey( const NameKeyType key )
@@ -962,16 +978,33 @@ AsciiString DataChunkInput::readAsciiString(void)
 
 UnicodeString DataChunkInput::readUnicodeString(void)
 {
+	// GeneralsX @bugfix BenderAI 20/02/2026 File format uses UTF-16 (2 bytes/char, Windows wchar_t).
+	// On Linux sizeof(WideChar)==4; reading len*sizeof(WideChar) bytes over-consumed file data,
+	// corrupting chunk dataLeft and preventing PlayerScriptsList from being parsed (no scripts/camera).
 	UnsignedShort len;
 	DEBUG_ASSERTCRASH(m_chunkStack->dataLeft>=sizeof(UnsignedShort), ("Read past end of chunk."));
 	m_file->read( &len, sizeof(UnsignedShort) );
 	decrementDataLeft( sizeof(UnsignedShort) );
-	DEBUG_ASSERTCRASH(m_chunkStack->dataLeft>=len, ("Read past end of chunk."));
+	const Int bytesInFile = (Int)len * (Int)sizeof(UnsignedShort);  // always 2 bytes/char in file
+	DEBUG_ASSERTCRASH(m_chunkStack->dataLeft>=bytesInFile, ("Read past end of chunk."));
 	UnicodeString theString;
 	if (len>0) {
 		WideChar *str = theString.getBufferForRead(len);
-		m_file->read( (char*)str, len*sizeof(WideChar) );
-		decrementDataLeft( len*sizeof(WideChar) );
+		if (sizeof(WideChar) == sizeof(UnsignedShort))
+		{
+			// Windows: WideChar is 2 bytes - read directly
+			m_file->read( (char*)str, bytesInFile );
+		}
+		else
+		{
+			// Linux: WideChar is 4 bytes - read UTF-16 then widen each char
+			UnsignedShort *tmp = NEW UnsignedShort[len + 1];
+			m_file->read( (char*)tmp, bytesInFile );
+			for (Int i = 0; i < (Int)len; i++)
+				str[i] = (WideChar)tmp[i];
+			delete[] tmp;
+		}
+		decrementDataLeft( bytesInFile );
 		// add null delimiter to string.  Note that getBufferForRead allocates space for terminating null.
 		str[len] = '\000';
 	}

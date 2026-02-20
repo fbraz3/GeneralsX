@@ -64,6 +64,7 @@
 #include <unistd.h>     // readlink()
 #include <sys/stat.h>   // mkdir()
 #include <cstdlib>      // getenv()
+#include <filesystem>   // std::filesystem::create_directories()
 #endif
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
@@ -1044,59 +1045,43 @@ GlobalData::GlobalData()
 
   // Set user data directory based on registry settings instead of INI parameters. This allows us to
   // localize the leaf name.
-  char temp[_MAX_PATH + 1];
-// TheSuperHackers @build fighter19 11/02/2026 Cross-platform user documents path
 #ifdef _WIN32
+// TheSuperHackers @build fighter19 11/02/2026 Cross-platform user documents path
+  char temp[_MAX_PATH + 1];
   if (::SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true))
-#else
-  // Linux: Use XDG_DOCUMENTS_DIR or fall back to $HOME/Documents
-  const char* xdg_docs = getenv("XDG_DOCUMENTS_DIR");
-  if (xdg_docs) {
-    snprintf(temp, sizeof(temp), "%s", xdg_docs);
-  } else {
-    const char* home = getenv("HOME");
-    if (home) {
-      snprintf(temp, sizeof(temp), "%s/Documents", home);
-    } else {
-      temp[0] = '\0';
-    }
-  }
-  if (temp[0] != '\0')
-#endif
   {
     AsciiString myDocumentsDirectory = temp;
 
-// GeneralsX @bugfix BenderAI 14/02/2026 Cross-platform path separator
-#ifdef _WIN32
-    const char pathSep = '\\';
-#else
-    const char pathSep = '/';
-#endif
-
-    if (myDocumentsDirectory.getCharAt(myDocumentsDirectory.getLength() -1) != pathSep)
-      myDocumentsDirectory.concat( pathSep );
+    if (myDocumentsDirectory.getCharAt(myDocumentsDirectory.getLength() - 1) != '\\')
+      myDocumentsDirectory.concat( '\\' );
 
     AsciiString leafName;
-
     if ( !GetStringFromRegistry( "", "UserDataLeafName", leafName ) )
-    {
-      // Use something, anything
-      // [MH] had to remove this, otherwise mapcache build step won't run... DEBUG_CRASH( ( "Could not find registry key UserDataLeafName; defaulting to \"Command and Conquer Generals Zero Hour Data\" " ) );
       leafName = "Command and Conquer Generals Zero Hour Data";
-    }
 
     myDocumentsDirectory.concat( leafName );
-    if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != pathSep)
-      myDocumentsDirectory.concat( pathSep );
+    if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != '\\')
+      myDocumentsDirectory.concat( '\\' );
 
-// TheSuperHackers @build fighter19 11/02/2026 Cross-platform directory creation
-#ifdef _WIN32
     CreateDirectory(myDocumentsDirectory.str(), nullptr);
-#else
-    mkdir(myDocumentsDirectory.str(), 0755);
-#endif
     m_userDataDir = myDocumentsDirectory;
   }
+#else
+  // GeneralsX @bugfix BenderAI 20/02/2026 Use XDG Base Directory spec for user data on Linux
+  // Mirrors fighter19's approach: $XDG_DATA_HOME/generals_zh/ or $HOME/.local/share/generals_zh/
+  {
+    std::filesystem::path userDataDir;
+    const char* xdgDataHome = getenv("XDG_DATA_HOME");
+    if (xdgDataHome)
+      userDataDir = std::filesystem::path(xdgDataHome);
+    else
+      userDataDir = std::filesystem::path(getenv("HOME")) / ".local" / "share";
+
+    userDataDir = userDataDir / "generals_zh" / "";
+    std::filesystem::create_directories(userDataDir);
+    m_userDataDir = userDataDir.string().c_str();
+  }
+#endif
 
 	//-allAdvice feature
 	//m_allAdvice = FALSE;

@@ -156,9 +156,14 @@ Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
 	Bool retval = TRUE;
 	Int val = 0;
 
+	// GeneralsX @bugfix BenderAI 20/02/2026 langdata.dat stores UTF-16LE (2 bytes/char);
+	// sizeof(WideChar)==4 on Linux would read 4 bytes per char and corrupt the parser.
+	// Always use sizeof(UnsignedShort) (=2) for disk reads.
 	WideChar c;
+	UnsignedShort c16 = 0;
 
-	val = file1->read(&c, sizeof(WideChar));
+	val = file1->read(&c16, sizeof(UnsignedShort));
+	c = (WideChar)c16;
 	if ((val == -1) || (val == 0)) {
 		buf[index] = 0;
 		return FALSE;
@@ -167,7 +172,9 @@ Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
 
 	while (buf[index] != L' ') {
 		++index;
-		val = file1->read(&c, sizeof(WideChar));
+		c16 = 0;
+		val = file1->read(&c16, sizeof(UnsignedShort));
+		c = (WideChar)c16;
 		if ((val == -1) || (val == 0)) {
 			c = WEOF;
 		}

@@ -538,16 +538,21 @@ void Shell::showShellMap(Bool useShellMap )
 {
 	// we don't want any of this to show if we're loading straight into a file
 	if (TheGlobalData->m_initialFile.isNotEmpty() || !TheGameLogic || !TheGlobalData->m_simulateReplays.empty())
+	{
 		return;
+	}
 	if(useShellMap && TheGlobalData->m_shellMapOn)
 	{
 		// we're already in a shell game, return
 		if(TheGameLogic->isInGame() && TheGameLogic->getGameMode() == GAME_SHELL)
+		{
 			return;
+		}
 		// we're in some other kind of game, clear it out foo!
 		if(TheGameLogic->isInGame())
+		{
 			TheGameLogic->exitGame();
-
+		}
 		TheWritableGlobalData->m_pendingFile = TheGlobalData->m_shellMapName;
 		InitGameLogicRandom(0);
 		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
@@ -558,13 +563,19 @@ void Shell::showShellMap(Bool useShellMap )
 	{
 		// we're in a shell game, stop it!
 		if(TheGameLogic->isInGame() && TheGameLogic->getGameMode() == GAME_SHELL)
+		{
 			TheGameLogic->exitGame();
+		}
 
 		// if the shell is active,we need a background
 		if(!m_isShellActive)
+		{
 			return;
+		}
 		if(!m_background)
+		{
 			m_background = TheWindowManager->winCreateLayout("Menus/BlankWindow.wnd");
+		}
 
 		DEBUG_ASSERTCRASH(m_background,("We Couldn't Load Menus/BlankWindow.wnd"));
 		m_background->getFirstWindow()->winSetStatus(WIN_STATUS_IMAGE);
