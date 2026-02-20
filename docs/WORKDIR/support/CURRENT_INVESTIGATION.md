@@ -1,20 +1,125 @@
-# Current Investigation: Shell Menu Not Rendering (Feb 18, 2026)
+# Current Investigation: Shell Map Not Loading (Static Background Instead of 3D)
 
-## Status
-**HANG LOCATION IDENTIFIED** - Program halts inside `initSubsystem(TheWritableGlobalData)` call during GameEngine initialization.
+**Updated**: 2026-02-19  
+**Status**: Root cause hypothesis identified — needs verification in Session 49
 
 ## Problem Statement
-- Game loads SDL3 window and initializes DXVK graphics successfully  
-- `GameEngine::init()` starts executing
-- Program halts during `initSubsystem(TheWritableGlobalData, ...)` call
-- Shell menu never appears; screen stays magenta
+- Game launches and shows the main menu successfully
+- **Static background image** is displayed instead of the 3D animated shell map
+- Behavior is identical to passing `-noshellmap` on the command line
+- The 3D rotating battlefield scene (shell game) never starts
+---
 
-## Key Findings
+## Shell Map Flow
 
-### 1. Shell Code IS Present and Uncommented ✅
-- Location: [GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp](GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp#L703)
-- Code: `TheShell->push( "Menus/MainMenu.wnd" );`
-- Status: **CONFIRMED** - Line exists and is NOT commented out
+1. `GameClient::update()` → `TheShell->showShellMap(TRUE)` → `TheShell->showShell()`
+   ([GameClient.cpp#L608](../../../GeneralsMD/Code/GameEngine/Source/GameClient/GameClient.cpp#L608))
+
+2. `Shell::showShellMap(useShellMap)` at [Shell.cpp#L537](../../../GeneralsMD/Code/GameEngine/Source/GameClient/GUI/Shell/Shell.cpp#L537):
+   - If `useShellMap && TheGlobalData->m_shellMapOn` → sends `MSG_NEW_GAME(GAME_SHELL)` with `m_pendingFile = m_shellMapName`
+   - Else → loads `Menus/BlankWindow.wnd` (**static background**)
+
+3. Default: `m_shellMapOn = TRUE`, `m_shellMapName = "Maps\\ShellMap1\\ShellMap1.map"`
+   ([GlobalData.cpp#L1008](../../../GeneralsMD/Code/GameEngine/Source/Common/GlobalData.cpp#L1008))
+
+4. `GameData.ini` (inside `INIZH.big`) overrides the name to the correct ZH value:
+   ```
+   ShellMapName = Maps\ShellMapMD\ShellMapMD.map
+   ```
+
+5. `Maps\ShellMapMD\ShellMapMD.map` **IS present** in `MapsZH.big` ✅
+
+---
+
+## Hypotheses (Prioritized)
+
+### H1 (Most Likely): Map file load fails silently → fallback to static BG
+
+The BIG VFS on Linux may fail to match the path `Maps\ShellMapMD\ShellMapMD.map` because
+of backslash vs forward-slash handling inconsistency. If `MSG_NEW_GAME(GAME_SHELL)` is
+dispatched but the map fails to load, the game likely falls back to the static background
+without user-visible error.
+
+**Where to check**: `StdBIGFileSystem::openFile()` path comparison — does it normalize
+`\` → `/` before comparing against BIG entry names?
+
+### H2: INI not read / wrong shellmap name loaded
+
+If `INIZH.big` fails to load or `GameData.ini` parsing is skipped, `m_shellMapName`
+stays as `Maps\ShellMap1\ShellMap1.map` (Generals, not ZH). That path doesn't exist
+in any BIG archive → map load fails → **static background**.
+
+**Where to check**: Print `m_shellMapName` and `m_shellMapOn` at runtime just before
+`showShellMap(TRUE)` is called.
+
+### H3: `m_shellMapOn` set to FALSE by unexpected code path
+
+Some code path calls `parseNoShellMap()` or directly sets `m_shellMapOn = FALSE` before
+`showShellMap(TRUE)` runs. Possible if Linux SDL command-line args are being mis-parsed
+by the game's arg parser.
+
+**Where to check**: Add log at entry of `parseNoShellMap()`.
+
+### H4: `MSG_NEW_GAME(GAME_SHELL)` dispatched but game logic fails
+
+Map IS found but the shell game logic (W3D terrain setup, heightmap, etc.) crashes or
+is silently skipped on Linux. The shell then never enters the game mode.
+
+---
+
+## Debug Plan for Session 49
+
+### Step 1 — Confirm values at runtime
+
+Add before `showShellMap(TRUE)` in `GameClient.cpp`:
+```cpp
+fprintf(stderr, "[SHELL_DIAG] m_shellMapOn=%d m_shellMapName='%s'\n",
+    (int)TheGlobalData->m_shellMapOn, TheGlobalData->m_shellMapName.str());
+fflush(stderr);
+```
+
+### Step 2 — Trace showShellMap branch taken
+
+Add at top of `Shell::showShellMap()`:
+```cpp
+fprintf(stderr, "[SHELL_DIAG] showShellMap(use=%d) shellMapOn=%d -> %s\n",
+    useShellMap, TheGlobalData->m_shellMapOn,
+    (useShellMap && TheGlobalData->m_shellMapOn) ? "3D MAP" : "STATIC BG");
+fflush(stderr);
+```
+
+### Step 3 — If 3D path IS taken: trace MSG_NEW_GAME(GAME_SHELL)
+
+Follow `GameLogic`'s handling of `GAME_SHELL` new game message.
+
+### Step 4 — If static path IS taken: confirm H2 or H3
+
+Check if `m_shellMapName` is the correct ZH path, and whether `m_shellMapOn` became FALSE.
+
+---
+
+## Relevant Files
+
+| File | Purpose |
+|------|---------|
+| [GlobalData.cpp#L1008](../../../GeneralsMD/Code/GameEngine/Source/Common/GlobalData.cpp#L1008) | Default init of shellMapName / shellMapOn |
+| [Shell.cpp#L537](../../../GeneralsMD/Code/GameEngine/Source/GameClient/GUI/Shell/Shell.cpp#L537) | The showShellMap() decision branch |
+| [GameClient.cpp#L608](../../../GeneralsMD/Code/GameEngine/Source/GameClient/GameClient.cpp#L608) | Initial showShellMap(TRUE) call |
+| [CommandLine.cpp#L776](../../../GeneralsMD/Code/GameEngine/Source/Common/CommandLine.cpp#L776) | parseNoShellMap() — should NOT be called |
+| `Core/GameEngineDevice/Source/StdDevice/Common/StdBIGFileSystem.cpp` | BIG VFS path comparison / normalization |
+
+---
+
+## What Is NOT the Cause
+
+- `-noshellmap` CLI arg: NOT passed ✅
+- Default `m_shellMapOn`: TRUE ✅
+- Replay mode: NOT active ✅
+- `ShellMapMD.map` in archive: File IS in `MapsZH.big` ✅
+- `GameData.ini` value: Correct ZH path in `INIZH.big` ✅
+
+---
+**Updated**: 2026-02-19 | Session 48
 
 ### 2. GameEngine::init() IS Being Called ✅  
 - Entry: [GeneralsMD/Code/GameEngine/Source/Common/GameMain.cpp](GeneralsMD/Code/GameEngine/Source/Common/GameMain.cpp#L46-L47)
