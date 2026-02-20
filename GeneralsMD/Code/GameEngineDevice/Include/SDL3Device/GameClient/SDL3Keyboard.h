@@ -74,7 +74,8 @@ private:
 	
 	// SDL3 event buffer - Fighter19 pattern
 	// GeneralsX @refactor felipebraz 16/02/2026 Use raw SDL_Event buffer with sentinel
-	static const UnsignedInt MAX_SDL3_KEY_EVENTS = 64;
+	// GeneralsX @bugfix felipebraz 18/02/2026 Increase to 256 to match Mouse::NUM_MOUSE_EVENTS
+	static const UnsignedInt MAX_SDL3_KEY_EVENTS = 256;
 	
 	SDL_Event m_eventBuffer[MAX_SDL3_KEY_EVENTS];
 	UnsignedInt m_nextFreeIndex;  // Write position

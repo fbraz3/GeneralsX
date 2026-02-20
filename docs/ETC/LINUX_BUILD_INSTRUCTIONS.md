@@ -351,7 +351,7 @@ The Linux port **Phase 1 (Graphics) is COMPLETE** ✅
 For Linux build-specific issues, check [Issues](https://github.com/fbraz3/GeneralsX/issues) or open a new one with the `linux` label.
 
 ---
-**Last updated**: February 17, 2026
+**Last updated**: February 18, 2026
 **Target Architecture**: Linux 64-bit (x86_64) native ELF
-**Status**: Phase 1 (Graphics) Complete ✅ | Phase 2 (Audio) Next 🔄
+**Status**: Phase 1 (Graphics) In progress 🔄
 **Technology**: DXVK (DirectX → Vulkan) + SDL3 + Docker

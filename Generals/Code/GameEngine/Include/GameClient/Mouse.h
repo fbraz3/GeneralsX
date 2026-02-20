@@ -108,12 +108,15 @@ struct MouseIO
 
 	MouseButtonState leftState;					// button state: None (no event), Up, Down, DoubleClick
 	Int leftEvent;											// Most important event this frame
+	UnsignedInt leftFrame;						// GeneralsX @bugfix felipebraz 18/02/2026 Frame number for replay determinism
 
 	MouseButtonState rightState;
 	Int rightEvent;
+	UnsignedInt rightFrame;					// GeneralsX @bugfix felipebraz 18/02/2026 Frame number for replay determinism
 
 	MouseButtonState middleState;
 	Int middleEvent;
+	UnsignedInt middleFrame;					// GeneralsX @bugfix felipebraz 18/02/2026 Frame number for replay determinism
 };
 
 class CursorInfo

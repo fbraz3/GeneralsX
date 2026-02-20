@@ -321,6 +321,9 @@ void Shell::hide( Bool hide )
 //-------------------------------------------------------------------------------------------------
 void Shell::push( AsciiString filename, Bool shutdownImmediate )
 {
+	// GeneralsX @feature BenderAI 18/02/2026 Debug logging for shell push
+	fprintf(stderr, "DEBUG: Shell::push() called with filename='%s'\n", filename.str());
+	fflush(stderr);
 
 	// sanity
 	if( filename.isEmpty() )
@@ -343,6 +346,8 @@ void Shell::push( AsciiString filename, Bool shutdownImmediate )
 
 		DEBUG_LOG(( "Unable to load screen '%s', max '%d' reached",
 								filename.str(), MAX_SHELL_STACK ));
+		fprintf(stderr, "DEBUG: Shell::push() failed - max stack reached\n");
+		fflush(stderr);
 		return;
 
 	}
@@ -350,6 +355,8 @@ void Shell::push( AsciiString filename, Bool shutdownImmediate )
 	// set a push as pending with the layout name passed in
 	m_pendingPush = TRUE;
 	m_pendingPushName = filename;
+	fprintf(stderr, "DEBUG: Shell::push() marked as pending, will load '%s' next frame\n", filename.str());
+	fflush(stderr);
 
 	// get the top of the current stack
 	WindowLayout *currentTop = top();
@@ -664,12 +671,21 @@ void Shell::unlinkScreen( WindowLayout *screen )
 //-------------------------------------------------------------------------------------------------
 void Shell::doPush( AsciiString layoutFile )
 {
+	// GeneralsX @feature BenderAI 18/02/2026 Debug logging - actually pushing layout
+	fprintf(stderr, "DEBUG: Shell::doPush() called with layoutFile='%s'\n", layoutFile.str());
+	fflush(stderr);
+
 	if(TheGameSpyInfo)
 			GameSpyCloseAllOverlays();
 	WindowLayout *newScreen;
 
 	// create new layout and load from window manager
+	fprintf(stderr, "DEBUG: About to call TheWindowManager->winCreateLayout('%s')\n", layoutFile.str());
+	fflush(stderr);
 	newScreen = TheWindowManager->winCreateLayout( layoutFile );
+	fprintf(stderr, "DEBUG: winCreateLayout returned: %p\n", newScreen);
+	fflush(stderr);
+	
 	DEBUG_ASSERTCRASH( newScreen != nullptr, ("Shell unable to load pending push layout") );
 
 	// link screen to the top
@@ -682,7 +698,8 @@ void Shell::doPush( AsciiString layoutFile )
 	newScreen->runInit( nullptr );
 	newScreen->bringForward();
 
-
+	fprintf(stderr, "DEBUG: Shell::doPush() completed successfully\n");
+	fflush(stderr);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -743,6 +760,9 @@ void Shell::shutdownComplete( WindowLayout *screen, Bool impendingPush )
 	// check for pending push or pop
 	if( m_pendingPush )
 	{
+		// GeneralsX @feature BenderAI 18/02/2026 Debug logging - pending push being processed
+		fprintf(stderr, "DEBUG: Shell::update() - Processing pending push: '%s'\n", m_pendingPushName.str());
+		fflush(stderr);
 
 		// do the push
 		doPush( m_pendingPushName );
@@ -750,6 +770,8 @@ void Shell::shutdownComplete( WindowLayout *screen, Bool impendingPush )
 		// no more pending pushy for you!
 		m_pendingPush = FALSE;
 		m_pendingPushName.set( "" );
+		fprintf(stderr, "DEBUG: Shell::update() - Push completed\n");
+		fflush(stderr);
 
 	}
 	else if( m_pendingPop )

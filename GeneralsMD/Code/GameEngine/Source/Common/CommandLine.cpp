@@ -125,7 +125,7 @@ Int parseNoLogOrCrash(char *args[], int)
 Int parseWin(char *args[], int)
 {
 	TheWritableGlobalData->m_windowed = true;
-
+	fprintf(stderr, "[DEBUG-WIN] parseWin() called: m_windowed set to TRUE\n");
 	return 1;
 }
 
@@ -1406,11 +1406,12 @@ static void parseCommandLine(const CommandLineParam* params, int numParams)
 		token = nextParam(nullptr, "\" ");
 	}
 #else
-	// Linux: Use global __argv  (or reconstruct from first param if available)
-	// For now, just use argv[0] as program name
+	// GeneralsX @bugfix BenderAI 19/02/2026 - Include argv[0] (program name) to match the Windows
+	// GetCommandLineA() behavior where the exe path appears at argv[0]. The parsing loop starts at
+	// arg=1, so without argv[0] as a placeholder all real flags end up at argv[0] and are skipped.
 	extern char **__argv;
 	extern int __argc;
-	for (int i = 1; i < __argc; i++)
+	for (int i = 0; i < __argc; i++)
 	{
 		argv.push_back(__argv[i]);
 	}

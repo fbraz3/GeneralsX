@@ -32,6 +32,9 @@
 #include <cstdio>
 #include <cstring>
 
+// GeneralsX @bugfix felipebraz 18/02/2026 Include GameLogic for frame tracking
+#include "GameLogic/GameLogic.h"
+
 /**
  * Constructor
  *
@@ -42,13 +45,16 @@ SDL3Mouse::SDL3Mouse(SDL_Window* window)
 	  m_Window(window),
 	  m_IsCaptured(false),
 	  m_IsVisible(true),
+	  m_LostFocus(false),           // GeneralsX @bugfix felipebraz 18/02/2026 Initialize focus state
 	  m_nextFreeIndex(0),   // Fighter19 pattern: write position for new events
 	  m_nextGetIndex(0),    // Fighter19 pattern: read position for events
 	  m_LeftButtonDownTime(0),
 	  m_RightButtonDownTime(0),
-	  m_MiddleButtonDownTime(0)
+	  m_MiddleButtonDownTime(0),
+	  m_LastFrameNumber(0)  // GeneralsX @bugfix felipebraz 18/02/2026 Initialize frame tracking
 {
-	fprintf(stderr, "DEBUG: SDL3Mouse::SDL3Mouse() created\n");
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "DEBUG: SDL3Mouse::SDL3Mouse() created\n");
 	
 	// Initialize event buffer with SDL_EVENT_FIRST sentinel (means "empty" slot)
 	// GeneralsX @refactor felipebraz 16/02/2026 Fighter19 pattern
@@ -68,7 +74,8 @@ SDL3Mouse::SDL3Mouse(SDL_Window* window)
 SDL3Mouse::~SDL3Mouse(void)
 {
 	releaseCapture();
-	fprintf(stderr, "DEBUG: SDL3Mouse::~SDL3Mouse() destroyed\n");
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "DEBUG: SDL3Mouse::~SDL3Mouse() destroyed\n");
 }
 
 /**
@@ -76,7 +83,8 @@ SDL3Mouse::~SDL3Mouse(void)
  */
 void SDL3Mouse::init(void)
 {
-	fprintf(stderr, "INFO: SDL3Mouse::init()\n");
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "INFO: SDL3Mouse::init()\n");
 	
 	// Call parent init (loads cursor info from INI, etc.)
 	Mouse::init();
@@ -91,7 +99,8 @@ void SDL3Mouse::init(void)
 	m_nextFreeIndex = 0;
 	m_nextGetIndex = 0;
 	
-	fprintf(stderr, "INFO: SDL3Mouse::init() complete\n");
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "INFO: SDL3Mouse::init() complete\n");
 }
 
 /**
@@ -99,7 +108,8 @@ void SDL3Mouse::init(void)
  */
 void SDL3Mouse::reset(void)
 {
-	fprintf(stderr, "DEBUG: SDL3Mouse::reset()\n");
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "DEBUG: SDL3Mouse::reset()\n");
 	
 	Mouse::reset();
 	
@@ -129,7 +139,8 @@ void SDL3Mouse::update(void)
  */
 void SDL3Mouse::initCursorResources(void)
 {
-	fprintf(stderr, "DEBUG: SDL3Mouse::initCursorResources() - stub (Phase 2)\n");
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "DEBUG: SDL3Mouse::initCursorResources() - stub (Phase 2)\n");
 	// TODO: Phase 2 - Load SDL3 cursor images from files
 }
 
@@ -166,6 +177,7 @@ void SDL3Mouse::setVisibility(Bool visible)
  */
 void SDL3Mouse::loseFocus()
 {
+	m_LostFocus = true;           // GeneralsX @bugfix felipebraz 18/02/2026 Set focus flag
 	releaseCapture();
 }
 
@@ -174,6 +186,7 @@ void SDL3Mouse::loseFocus()
  */
 void SDL3Mouse::regainFocus()
 {
+	m_LostFocus = false;          // GeneralsX @bugfix felipebraz 18/02/2026 Clear focus flag
 	// Capture may be re-enabled by game logic
 }
 
@@ -194,7 +207,8 @@ void SDL3Mouse::capture(void)
 	
 	m_IsCaptured = true;
 	
-	fprintf(stderr, "DEBUG: SDL3Mouse::capture() - mouse captured\n");
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "DEBUG: SDL3Mouse::capture() - mouse captured\n");
 }
 
 /**
@@ -213,7 +227,8 @@ void SDL3Mouse::releaseCapture(void)
 	
 	m_IsCaptured = false;
 	
-	fprintf(stderr, "DEBUG: SDL3Mouse::releaseCapture() - mouse released\n");
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "DEBUG: SDL3Mouse::releaseCapture() - mouse released\n");
 }
 
 /**
@@ -300,7 +315,8 @@ void SDL3Mouse::translateMotionEvent(const SDL_MouseMotionEvent& event, MouseIO 
 	result->pos.y = (Int)event.y;
 	result->deltaPos.x = (Int)event.xrel;
 	result->deltaPos.y = (Int)event.yrel;
-	result->time = event.timestamp;
+	// GeneralsX @bugfix felipebraz 18/02/2026 Normalize timestamp to milliseconds (SDL3 uses nanoseconds)
+	result->time = (Uint32)(event.timestamp / 1000000);
 	
 	// No button state change on motion
 	result->leftState = MBS_None;
@@ -318,7 +334,8 @@ void SDL3Mouse::translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO 
 	result->pos.y = (Int)event.y;
 	result->deltaPos.x = 0;
 	result->deltaPos.y = 0;
-	result->time = event.timestamp;
+	// GeneralsX @bugfix felipebraz 18/02/2026 Normalize timestamp to milliseconds (SDL3 uses nanoseconds)
+	result->time = (Uint32)(event.timestamp / 1000000);
 	result->wheelPos = 0;
 	
 	// Initialize all button states to None
@@ -326,52 +343,61 @@ void SDL3Mouse::translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO 
 	result->rightState = MBS_None;
 	result->middleState = MBS_None;
 	
+	// GeneralsX @bugfix felipebraz 18/02/2026 Initialize frame tracking for replay determinism
+	result->leftFrame = 0;
+	result->rightFrame = 0;
+	result->middleFrame = 0;
+	
 	MouseButtonState state = event.down ? MBS_Down : MBS_Up;
 	
 	// GeneralsX @bugfix BenderAI 17/02/2026 Debug mouse button events
-	fprintf(stderr, "[MOUSE] Button event: button=%d state=%s pos=(%d,%d)\n",
-		event.button, event.down ? "DOWN" : "UP", (Int)event.x, (Int)event.y);
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "[MOUSE] Button event: button=%d state=%s pos=(%d,%d)\n",
+	//	event.button, event.down ? "DOWN" : "UP", (Int)event.x, (Int)event.y);
+	
+	// Get current frame for replay determinism
+	// GeneralsX @bugfix felipebraz 18/02/2026 Use game frame instead of timestamp
+	UnsignedInt currentFrame = (TheGameLogic) ? TheGameLogic->getFrame() : 1;
 	
 	// Map SDL3 button to MouseIO button
 	switch (event.button) {
 		case SDL_BUTTON_LEFT:
-			result->leftState = state;
-			fprintf(stderr, "[MOUSE] Left button: %s\n", event.down ? "DOWN" : "UP");
-			if (event.down) {
-				m_LeftButtonDownTime = event.timestamp;
-				m_LeftButtonDownPos.x = (Int)event.x;
-				m_LeftButtonDownPos.y = (Int)event.y;
+			// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+			// fprintf(stderr, "[MOUSE] Left button: %s\n", event.down ? "DOWN" : "UP");
+			// GeneralsX @bugfix felipebraz 18/02/2026 Use native SDL3 clicks field for double-click
+			// SDL3 button events contain clicks count: 1=single, 2=double
+			if (event.clicks >= 2) {
+				result->leftState = MBS_DoubleClick;
+				// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+				// fprintf(stderr, "[MOUSE] Left double-click detected (clicks=%d)\n", event.clicks);
 			} else {
-				// Check for double-click (within CLICK_SENSITIVITY frames)
-				Uint32 deltaTime = event.timestamp - m_LeftButtonDownTime;
-				Int deltaX = (Int)event.x - m_LeftButtonDownPos.x;
-				Int deltaY = (Int)event.y - m_LeftButtonDownPos.y;
-				Int distSq = deltaX * deltaX + deltaY * deltaY;
-				
-				// TODO: CLICK_SENSITIVITY is in frames, not milliseconds - need conversion
-				if (deltaTime < 500 && distSq < CLICK_DISTANCE_DELTA_SQUARED) {
-					result->leftState = MBS_DoubleClick;
-				}
+				result->leftState = state;
 			}
+			result->leftFrame = currentFrame;  // GeneralsX @bugfix felipebraz 18/02/2026 Track frame for replay
 			break;
 			
 		case SDL_BUTTON_RIGHT:
-			result->rightState = state;
-			fprintf(stderr, "[MOUSE] Right button: %s\n", event.down ? "DOWN" : "UP");
-			if (event.down) {
-				m_RightButtonDownTime = event.timestamp;
-				m_RightButtonDownPos.x = (Int)event.x;
-				m_RightButtonDownPos.y = (Int)event.y;
+			// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+			// fprintf(stderr, "[MOUSE] Right button: %s\n", event.down ? "DOWN" : "UP");
+			// GeneralsX @bugfix felipebraz 18/02/2026 Use native SDL3 clicks for right button too
+			if (event.down && event.clicks >= 2) {
+				result->rightState = MBS_DoubleClick;
+				// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+				// fprintf(stderr, "[MOUSE] Right double-click detected (clicks=%d)\n", event.clicks);
+			} else {
+				result->rightState = state;
 			}
+			result->rightFrame = currentFrame;  // GeneralsX @bugfix felipebraz 18/02/2026 Track frame for replay
 			break;
 			
 		case SDL_BUTTON_MIDDLE:
-			result->middleState = state;
-			if (event.down) {
-				m_MiddleButtonDownTime = event.timestamp;
-				m_MiddleButtonDownPos.x = (Int)event.x;
-				m_MiddleButtonDownPos.y = (Int)event.y;
+			// GeneralsX @bugfix felipebraz 18/02/2026 Support double-click for middle button
+			if (event.down && event.clicks >= 2) {
+				result->middleState = MBS_DoubleClick;
+			} else {
+				result->middleState = state;
 			}
+			result->middleFrame = currentFrame;  // GeneralsX @bugfix felipebraz 18/02/2026 Track frame for replay
 			break;
 	}
 }
@@ -389,7 +415,8 @@ void SDL3Mouse::translateWheelEvent(const SDL_MouseWheelEvent& event, MouseIO *r
 	result->pos.y = (Int)mouseY;
 	result->deltaPos.x = 0;
 	result->deltaPos.y = 0;
-	result->time = event.timestamp;
+	// GeneralsX @bugfix felipebraz 18/02/2026 Normalize timestamp to milliseconds (SDL3 uses nanoseconds)
+	result->time = (Uint32)(event.timestamp / 1000000);
 	
 	// SDL3 wheel: positive = up/away, negative = down/toward user
 	// Multiply by MOUSE_WHEEL_DELTA (120) to match Windows behavior
@@ -426,14 +453,16 @@ void SDL3Mouse::addSDLEvent(SDL_Event *event)
 	// Check if buffer is full
 	UnsignedInt nextFreeIndex = (m_nextFreeIndex + 1) % MAX_SDL3_MOUSE_EVENTS;
 	if (nextFreeIndex == m_nextGetIndex) {
-		fprintf(stderr, "WARNING: SDL3Mouse::addSDLEvent() buffer full (dropped event)\n");
+		// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+		// fprintf(stderr, "WARNING: SDL3Mouse::addSDLEvent() buffer full (dropped event)\n");
 		return;
 	}
 	
 	// Copy entire event to buffer
 	m_eventBuffer[m_nextFreeIndex] = *event;
 	
-	fprintf(stderr, "DEBUG: SDL3Mouse::addSDLEvent() type=%u index=%u\n", event->type, m_nextFreeIndex);
+	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
+	// fprintf(stderr, "DEBUG: SDL3Mouse::addSDLEvent() type=%u index=%u\n", event->type, m_nextFreeIndex);
 	
 	// Advance write position (circular buffer)
 	m_nextFreeIndex = nextFreeIndex;

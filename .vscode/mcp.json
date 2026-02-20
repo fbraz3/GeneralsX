@@ -6,17 +6,10 @@
 		},
 
 		"git": {
-			"command": "docker",
+			"command": "sh",
 			"args": [
-				"run",
-				"--rm",
-				"-i",
-				"--mount", "type=bind,src=${workspaceFolder},dst=${workspaceFolder}",
-				"-v",
-				"/Users/felipebraz/.gitconfig:/root/.gitconfig",
-				"-v",
-				"/Users/felipebraz/.gitignore_global:/Users/felipebraz/.gitignore_global",
-				"mcp/git"
+				"-c",
+				"touch ~/.gitconfig; touch ~/.gitignore_global; docker run --rm -i --mount type=bind,src=${workspaceFolder},dst=${workspaceFolder} -v ~/.gitconfig:/root/.gitconfig -v ~/.gitignore_global:/root/.gitignore_global mcp/git"
 			]
         },
 

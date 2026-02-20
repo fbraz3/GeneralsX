@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
 		exitcode = 1;
 	}
 
-	// GeneralsX @feature felipebraz 16/02/2026 Cleanup SDL3 resources
+	// Cleanup SDL3 resources
 	if (TheSDL3Window) {
 		SDL_DestroyWindow(TheSDL3Window);
 		TheSDL3Window = nullptr;
@@ -207,18 +207,24 @@ int main(int argc, char* argv[])
 	}
 	SDL_Quit();
 
-	// Cleanup critical sections
-	TheAsciiStringCriticalSection = nullptr;
-	TheUnicodeStringCriticalSection = nullptr;
-	TheDmaCriticalSection = nullptr;
-	TheMemoryPoolCriticalSection = nullptr;
-	TheDebugLogCriticalSection = nullptr;
-
 	// GeneralsX @bugfix BenderAI 14/02/2026 Cleanup Version singleton
 	if (TheVersion) {
 		delete TheVersion;
 		TheVersion = nullptr;
 	}
+
+	// GeneralsX @bugfix BenderAI 19/02/2026 Shutdown memory manager BEFORE nulling critical
+	// sections. Without this, global pool destructors (ObjectPoolClass) crash during atexit()
+	// because they call ::operator delete after the memory manager is already gone (SIGSEGV).
+	// Matches WinMain.cpp cleanup order: TheVersion -> shutdownMemoryManager -> null critSecs.
+	shutdownMemoryManager();
+
+	// Cleanup critical sections (after memory manager, which may use them during shutdown)
+	TheAsciiStringCriticalSection = nullptr;
+	TheUnicodeStringCriticalSection = nullptr;
+	TheDmaCriticalSection = nullptr;
+	TheMemoryPoolCriticalSection = nullptr;
+	TheDebugLogCriticalSection = nullptr;
 
 	fprintf(stderr, "\nExiting with code %d\n", exitcode);
 	return exitcode;

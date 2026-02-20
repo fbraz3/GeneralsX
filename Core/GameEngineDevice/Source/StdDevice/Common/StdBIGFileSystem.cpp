@@ -64,8 +64,23 @@ void StdBIGFileSystem::init() {
     GetStringFromGeneralsRegistry("", "InstallPath", installPath );
     //@todo this will need to be ramped up to a crash for release
     DEBUG_ASSERTCRASH(!installPath.isEmpty(), ("Be 1337! Go install Generals!"));
+#ifndef _WIN32
+    fprintf(stderr, "[BIG] Generals installPath='%s' empty=%d\n",
+            installPath.str(), installPath.isEmpty() ? 1 : 0);
+    fflush(stderr);
+#endif
     if (!installPath.isEmpty())
-      loadBigFilesFromDirectory(installPath, "*.big");
+    {
+#ifndef _WIN32
+        fprintf(stderr, "[BIG] Loading base Generals BIG files from '%s'\n", installPath.str());
+        fflush(stderr);
+#endif
+        Bool loaded = loadBigFilesFromDirectory(installPath, "*.big");
+#ifndef _WIN32
+        fprintf(stderr, "[BIG] loadBigFilesFromDirectory result: %d\n", loaded ? 1 : 0);
+        fflush(stderr);
+#endif
+    }
 #endif
 }
 

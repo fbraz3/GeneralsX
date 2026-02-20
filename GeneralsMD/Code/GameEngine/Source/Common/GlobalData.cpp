@@ -1294,6 +1294,8 @@ void GlobalData::parseCustomDefinition()
 
 UnsignedInt GlobalData::generateExeCRC()
 {
+	fprintf(stderr, "DEBUG: generateExeCRC() starting\n");
+	fflush(stderr);
 	DEBUG_ASSERTCRASH(TheFileSystem != nullptr, ("TheFileSystem is null"));
 
 	// lets CRC the executable!  Whee!
@@ -1311,6 +1313,14 @@ UnsignedInt GlobalData::generateExeCRC()
 	exeCRC.set(GENERALSMD_104_CD_EXE_CRC);
 	DEBUG_LOG(("Fake EXE CRC is 0x%8.8X", exeCRC.get()));
 
+#elif defined(__linux__)
+	// GeneralsX @bugfix BenderAI 18/02/2026
+	// On Linux, reading the entire 180MB+ binary for CRC is prohibitively slow
+	// and unnecessary. Instead, use version-based CRC which is fast and sufficient.
+	// Only compute CRC from version number below.
+	fprintf(stderr, "DEBUG: Using version-based CRC on Linux (skipping binary read)\n");
+	fflush(stderr);
+
 #else
 	{
 		Char buffer[ _MAX_PATH ];
@@ -1319,26 +1329,54 @@ UnsignedInt GlobalData::generateExeCRC()
 		GetModuleFileName( nullptr, buffer, sizeof( buffer ) );
 #else
 		// Linux: Read /proc/self/exe symlink
+		fprintf(stderr, "DEBUG: Reading /proc/self/exe symlink\n");
+		fflush(stderr);
 		ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
 		if (len != -1) {
 			buffer[len] = '\0';
+			fprintf(stderr, "DEBUG: exe path: %s\n", buffer);
 		} else {
 			buffer[0] = '\0';
+			fprintf(stderr, "DEBUG: readlink failed\n");
 		}
+		fflush(stderr);
 #endif
+		fprintf(stderr, "DEBUG: Attempting to open executable file\n");
+		fflush(stderr);
 		fp = TheFileSystem->openFile(buffer, File::READ | File::BINARY);
+		fprintf(stderr, "DEBUG: openFile returned, fp = %p\n", fp);
+		fflush(stderr);
 		if (fp != nullptr) {
 			unsigned char crcBlock[blockSize];
 			Int amtRead = 0;
+			Int readCount = 0;
+			fprintf(stderr, "DEBUG: Starting read loop...\n");
+			fflush(stderr);
 			while ( (amtRead=fp->read(crcBlock, blockSize)) > 0 )
 			{
+				readCount++;
+				fprintf(stderr, "DEBUG: Read iteration %d: %d bytes\n", readCount, amtRead);
+				fflush(stderr);
 				exeCRC.computeCRC(crcBlock, amtRead);
+				if (readCount > 1000) {
+					fprintf(stderr, "DEBUG: File read loop exceeded 1000 iterations! Breaking.\n");
+					fflush(stderr);
+					break;
+				}
 			}
+			fprintf(stderr, "DEBUG: Read loop completed, total iterations: %d\n", readCount);
+			fflush(stderr);
 			DEBUG_LOG(("EXE CRC is 0x%8.8X", exeCRC.get()));
+			fprintf(stderr, "DEBUG: Closing file...\n");
+			fflush(stderr);
 			fp->close();
 			fp = nullptr;
+			fprintf(stderr, "DEBUG: File closed\n");
+			fflush(stderr);
 		}
 		else {
+			fprintf(stderr, "DEBUG: Failed to open executable file, calling DEBUG_CRASH\n");
+			fflush(stderr);
 			DEBUG_CRASH(("Executable file has failed to open"));
 		}
 	}
@@ -1350,19 +1388,31 @@ UnsignedInt GlobalData::generateExeCRC()
 		version = TheVersion->getVersionNumber();
 		exeCRC.computeCRC( &version, sizeof(UnsignedInt) );
 	}
+	fprintf(stderr, "DEBUG: About to load SkirmishScripts.scb\n");
+	fflush(stderr);
 	// Add in MP scripts to the EXE CRC, since the game will go out of sync if they change
 	fp = TheFileSystem->openFile("Data\\Scripts\\SkirmishScripts.scb", File::READ | File::BINARY);
+	fprintf(stderr, "DEBUG: openFile returned for SkirmishScripts.scb, fp = %p\n", fp);
+	fflush(stderr);
 	if (fp != nullptr) {
 		unsigned char crcBlock[blockSize];
 		Int amtRead = 0;
+		fprintf(stderr, "DEBUG: Starting SkirmishScripts read loop...\n");
+		fflush(stderr);
 		while ( (amtRead=fp->read(crcBlock, blockSize)) > 0 )
 		{
 			exeCRC.computeCRC(crcBlock, amtRead);
 		}
+		fprintf(stderr, "DEBUG: SkirmishScripts read loop done, closing file\n");
+		fflush(stderr);
 		fp->close();
 		fp = nullptr;
 	}
+	fprintf(stderr, "DEBUG: About to load MultiplayerScripts.scb\n");
+	fflush(stderr);
 	fp = TheFileSystem->openFile("Data\\Scripts\\MultiplayerScripts.scb", File::READ | File::BINARY);
+	fprintf(stderr, "DEBUG: openFile returned for MultiplayerScripts.scb, fp = %p\n", fp);
+	fflush(stderr);
 	if (fp != nullptr) {
 		unsigned char crcBlock[blockSize];
 		Int amtRead = 0;
@@ -1374,7 +1424,12 @@ UnsignedInt GlobalData::generateExeCRC()
 		fp = nullptr;
 	}
 
+	fprintf(stderr, "DEBUG: About to return from generateExeCRC\n");
+	fflush(stderr);
 	DEBUG_LOG(("EXE+Version(%d.%d)+SCB CRC is 0x%8.8X", version >> 16, version & 0xffff, exeCRC.get()));
-
+	fprintf(stderr, "DEBUG: generateExeCRC() about to return CRC: 0x%8.8X\n", exeCRC.get());
+	fflush(stderr);
+	fprintf(stderr, "DEBUG: generateExeCRC() - END, about to execute return statement\n");
+	fflush(stderr);
 	return exeCRC.get();
 }

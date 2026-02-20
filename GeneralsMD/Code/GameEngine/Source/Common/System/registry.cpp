@@ -30,20 +30,28 @@
 
 #include "Common/Registry.h"
 
-// TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
+// GeneralsX @build felipebraz 11/02/2026 Phase 1.5 - Linux port
 // Windows Registry types not available on Linux - define stub types
 #ifdef _UNIX
+#ifndef HKEY_LOCAL_MACHINE
 typedef void* HKEY;  // Stub type for Linux (unused but needed for compilation)
 #define HKEY_LOCAL_MACHINE  ((HKEY)(uintptr_t)0x80000002)
 #define HKEY_CURRENT_USER   ((HKEY)(uintptr_t)0x80000001)
 #endif
+#include <ctype.h>   // toupper
+#include <stdlib.h>  // getenv
+#include <sys/stat.h> // stat
+#include <unistd.h>  // getcwd
+#endif
 
-// TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
-// Windows Registry API not available on Linux - stub implementations return failure
-// Game gracefully degrades to default values (later can be replaced with INI files)
+// GeneralsX @build felipebraz 11/02/2026 Phase 1.5 - Linux port
+// Windows Registry API not available on Linux.
+// Approach adapted from fighter19's DXVK port: map registry keys to
+// environment variables (CNC_GENERALS_<KEY>, CNC_ZH_<KEY>), with a
+// relative-path fallback for the standard project layout.
 #ifdef _UNIX
 
-// Linux stubs - return FALSE (registry not available on Linux)
+// Low-level helpers - no Win32 registry on Linux, always return FALSE.
 Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
 {
 	return FALSE;
@@ -64,13 +72,130 @@ Bool setUnsignedIntInRegistry( HKEY root, AsciiString path, AsciiString key, Uns
 	return FALSE;
 }
 
+// GeneralsX @feature felipebraz 25/02/2026 Environment variable registry for Linux
+// Maps registry key lookups to environment variables so Linux users can
+// configure install paths without a Windows registry.
+// Pattern: CNC_GENERALS_<UPPERCASED_KEY> for base Generals,
+//          CNC_ZH_<UPPERCASED_KEY> for Zero Hour.
+// Example: export CNC_GENERALS_INSTALLPATH=/path/to/generals/
+static Bool getEnvVar(const char *prefix, AsciiString key, AsciiString& val)
+{
+	char envName[256] = { 0 };
+	const char* keyStr = key.str();
+	int prefixLen = strlen(prefix);
+
+	if (prefixLen + strlen(keyStr) + 1 > sizeof(envName))
+		return FALSE;
+
+	strcpy(envName, prefix);
+	for (int i = 0; keyStr[i] != '\0'; ++i)
+		envName[prefixLen + i] = toupper((unsigned char)keyStr[i]);
+	envName[prefixLen + strlen(keyStr)] = '\0';
+
+	const char* envValue = getenv(envName);
+	if (envValue && envValue[0] != '\0')
+	{
+		val = envValue;
+		DEBUG_LOG(("getEnvVar - found %s = %s", envName, envValue));
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+// GeneralsX @feature felipebraz 18/02/2026 Auto-detect base Generals install path
+// Steam ZH standalone puts base Generals assets in ./ZH_Generals/ (subdir).
+// Dev split install puts them in ../Generals/ (sibling dir).
+// Check both in priority order.
+static Bool tryRelativeGeneralsPath(AsciiString& val)
+{
+	struct stat st;
+
+	// Steam standalone ZH: base Generals assets live in ZH_Generals/ subdirectory
+	const char *steamPath = "ZH_Generals/";
+	if (stat(steamPath, &st) == 0 && S_ISDIR(st.st_mode))
+	{
+		val = steamPath;
+		DEBUG_LOG(("tryRelativeGeneralsPath - found base Generals at %s (Steam standalone)", steamPath));
+		return TRUE;
+	}
+
+	// Dev split install: Generals and ZH installed side-by-side under same parent
+	const char *devPath = "../Generals/";
+	if (stat(devPath, &st) == 0 && S_ISDIR(st.st_mode))
+	{
+		val = devPath;
+		DEBUG_LOG(("tryRelativeGeneralsPath - found base Generals at %s (dev layout)", devPath));
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+// GeneralsX @feature felipebraz 18/02/2026 Auto-detect game language from BIG files
+// On Linux there is no Windows registry. Detect the language by checking which
+// language-specific BIG file is present in the working directory.
+// Precedence mirrors the Windows installer language selection.
+static Bool tryAutoDetectLanguage(AsciiString& val)
+{
+	struct stat st;
+
+	// Each entry: BIG file to probe → language string the game expects
+	const struct { const char *bigFile; const char *language; } candidates[] = {
+		{ "BrazilianZH.big", "brazilian" },
+		{ "EnglishZH.big",   "english"   },
+		{ "GermanZH.big",    "german"    },
+		{ "FrenchZH.big",    "french"    },
+		{ "SpanishZH.big",   "spanish"   },
+		{ "ChineseZH.big",   "chinese"   },
+		{ "KoreanZH.big",    "korean"    },
+		{ "PolishZH.big",    "polish"    },
+		{ nullptr,           nullptr     }
+	};
+
+	for (int i = 0; candidates[i].bigFile != nullptr; ++i)
+	{
+		if (stat(candidates[i].bigFile, &st) == 0)
+		{
+			val = candidates[i].language;
+			DEBUG_LOG(("tryAutoDetectLanguage - detected language '%s' from %s",
+					candidates[i].language, candidates[i].bigFile));
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val)
 {
+	// Try environment variable first: CNC_GENERALS_INSTALLPATH, etc.
+	if (getEnvVar("CNC_GENERALS_", key, val))
+		return TRUE;
+
+	// Fallback: auto-detect base Generals path for InstallPath key
+	if (key == "InstallPath")
+	{
+		if (tryRelativeGeneralsPath(val))
+			return TRUE;
+	}
+
 	return FALSE;
 }
 
 Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 {
+	// Try environment variable: CNC_ZH_INSTALLPATH, CNC_ZH_LANGUAGE, etc.
+	if (getEnvVar("CNC_ZH_", key, val))
+		return TRUE;
+
+	// Fallback: auto-detect language from available BIG files in CWD
+	if (key == "Language")
+	{
+		if (tryAutoDetectLanguage(val))
+			return TRUE;
+	}
+
 	return FALSE;
 }
 
@@ -217,8 +342,7 @@ Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& 
 
 #endif // _UNIX
 
-// TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
-// These functions work on both platforms - call registry functions which return FALSE on Linux
+// Cross-platform functions - call registry/env-var functions above
 AsciiString GetRegistryLanguage(void)
 {
 	static Bool cached = FALSE;

@@ -85,9 +85,9 @@ cmake --preset win32
 cmake --build build/win32 --target GeneralsXZH -j 4
 ```
 
-### Linux - ✅ FUNCTIONAL (Docker)
+### Linux - 🔄 Work In Progress
 
-Linux native builds are **fully functional** using Docker:
+Linux native is building, but not redering 3D assets, sounds or videos.
 **[📖 Linux Build Guide](docs/ETC/LINUX_BUILD_INSTRUCTIONS.md)**
 
 Quick start:
@@ -144,8 +144,8 @@ For dependency management details, see [vcpkg.json](vcpkg.json).
 The Linux native port is organized into phases:
 
 - **Phase 0**: ✅ **COMPLETE** - Deep analysis & planning (DXVK architecture, OpenAL patterns)
-- **Phase 1**: ✅ **COMPLETE** - Linux Graphics (DXVK integration, SDL3 windowing, Docker builds)
-- **Phase 2**: 🔄 **NEXT** - Linux Audio (OpenAL integration, Miles → OpenAL compatibility)
+- **Phase 1**: 🔄 **IN PROGRESS** - Linux Graphics (DXVK integration, SDL3 windowing, Docker builds)
+- **Phase 2**: 📋 **PLANNED** - Linux Audio (OpenAL integration, Miles → OpenAL compatibility)
 - **Phase 3**: 📋 **PLANNED** - Video Playback (Bink alternative investigation)
 - **Phase 4+**: 📋 **FUTURE** - Polish, optimization, macOS port
 

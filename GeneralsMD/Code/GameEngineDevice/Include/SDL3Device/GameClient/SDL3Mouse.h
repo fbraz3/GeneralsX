@@ -83,7 +83,8 @@ private:
 
 	// SDL3 event buffer - Fighter19 pattern: raw SDL_Event array with sentinels
 	// GeneralsX @refactor felipebraz 16/02/2026 Use raw SDL_Event buffer like fighter19
-	static const UnsignedInt MAX_SDL3_MOUSE_EVENTS = 128;
+	// GeneralsX @bugfix felipebraz 18/02/2026 Increase to 256 to match Mouse::NUM_MOUSE_EVENTS
+	static const UnsignedInt MAX_SDL3_MOUSE_EVENTS = 256;
 	
 	SDL_Event m_eventBuffer[MAX_SDL3_MOUSE_EVENTS];
 	UnsignedInt m_nextFreeIndex;  // Write position (insert new events here)
@@ -92,11 +93,13 @@ private:
 	SDL_Window* m_Window;
 	Bool m_IsCaptured;
 	Bool m_IsVisible;
+	Bool m_LostFocus;             // GeneralsX @bugfix felipebraz 18/02/2026 Track window focus state
 	
 	// Track button states for click detection
 	Uint32 m_LeftButtonDownTime;
 	Uint32 m_RightButtonDownTime;
 	Uint32 m_MiddleButtonDownTime;
+	UnsignedInt m_LastFrameNumber;       // GeneralsX @bugfix felipebraz 18/02/2026 Frame tracking for determinism
 	
 	ICoord2D m_LeftButtonDownPos;
 	ICoord2D m_RightButtonDownPos;

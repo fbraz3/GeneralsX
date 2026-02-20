@@ -753,6 +753,7 @@ void W3DDisplay::init( void )
 		WW3D::Set_Screen_UV_Bias( TRUE );  ///< this makes text look good :)
 		WW3D::Set_Texture_Bitdepth(32);
 
+		fprintf(stderr, "[DEBUG-WIN] W3DDisplay::init() - TheGlobalData->m_windowed=%d\n", (int)TheGlobalData->m_windowed);
 		setWindowed( TheGlobalData->m_windowed );
 
 		// create a 2D renderer helper

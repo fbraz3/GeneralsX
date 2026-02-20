@@ -358,9 +358,15 @@ Bool GameEngine::isGameHalted()
  */
 void GameEngine::init()
 {
+	// GeneralsX @feature BenderAI 18/02/2026 Debug initialization trace
+	fprintf(stderr, "DEBUG: GameEngine::init() START\n");
+	fflush(stderr);
+
 	try {
 		//create an INI object to use for loading stuff
 		INI ini;
+		fprintf(stderr, "DEBUG: GameEngine::init() - INI created\n");
+		fflush(stderr);
 
 #ifdef DEBUG_LOGGING
 		if (TheVersion)
@@ -459,9 +465,16 @@ void GameEngine::init()
 
 
 		DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
-		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
-		TheWritableGlobalData->parseCustomDefinition();
-
+	fprintf(stderr, "DEBUG: GameEngine::init() - About to call initSubsystem(TheWritableGlobalData...)\n");
+	fflush(stderr);
+	initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
+	fprintf(stderr, "DEBUG: GameEngine::init() - initSubsystem(TheWritableGlobalData) returned\n");
+	fflush(stderr);
+	fprintf(stderr, "DEBUG: GameEngine::init() - About to call parseCustomDefinition()\n");
+	fflush(stderr);
+	TheWritableGlobalData->parseCustomDefinition();
+	fprintf(stderr, "DEBUG: GameEngine::init() - parseCustomDefinition() returned\n");
+	fflush(stderr);
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -700,8 +713,15 @@ void GameEngine::init()
 			m_quitting = TRUE;
 		}
 
+		// GeneralsX @feature BenderAI 18/02/2026 Debug - about to push shell
+		fprintf(stderr, "DEBUG: GameEngine::init() - About to call TheShell->push()\n");
+		fflush(stderr);
+
 		// load the initial shell screen
-		//TheShell->push( "Menus/MainMenu.wnd" );
+		TheShell->push( "Menus/MainMenu.wnd" );
+
+		fprintf(stderr, "DEBUG: GameEngine::init() - Shell push completed\n");
+		fflush(stderr);
 
 		// This allows us to run a map from the command line
 		if (TheGlobalData->m_initialFile.isEmpty() == FALSE)
@@ -1008,6 +1028,10 @@ void GameEngine::execute( void )
 			}
 
 			TheFramePacer->update();
+
+			// NOTE: TheDisplay->draw() is called via TheGameClient->UPDATE() above.
+			// GameClient::update() dispatches TheDisplay->DRAW() each frame.
+			// Do NOT add an extra draw() call here - it would double-present per frame.
 		}
 
 #ifdef PERF_TIMERS

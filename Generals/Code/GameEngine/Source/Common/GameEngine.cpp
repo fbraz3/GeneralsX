@@ -343,6 +343,9 @@ Bool GameEngine::isGameHalted()
  */
 void GameEngine::init()
 {
+	// GeneralsX @feature BenderAI 18/02/2026 Add diagnostic logging for engine initialization
+	fprintf(stderr, "INFO: GameEngine::init() - Starting initialization\n");
+
 	try {
 		//create an INI object to use for loading stuff
 		INI ini;
@@ -385,9 +388,15 @@ void GameEngine::init()
 		initSubsystem(TheLocalFileSystem, "TheLocalFileSystem", createLocalFileSystem(), nullptr);
 		initSubsystem(TheArchiveFileSystem, "TheArchiveFileSystem", createArchiveFileSystem(), nullptr); // this MUST come after TheLocalFileSystem creation
 
+		// GeneralsX @feature BenderAI 18/02/2026 Add asset loading diagnostics
+		fprintf(stderr, "INFO: GameEngine::init() - ArchiveFileSystem initialized\n");
+
 		DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
+		fprintf(stderr, "INFO: GameEngine::init() - About to initialize TheWritableGlobalData\n");
 		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
+		fprintf(stderr, "INFO: GameEngine::init() - TheWritableGlobalData initialized\n");
 		TheWritableGlobalData->parseCustomDefinition();
+		fprintf(stderr, "INFO: GameEngine::init() - TheWritableGlobalData parseCustomDefinition complete\n");
 
 
 
@@ -521,7 +530,7 @@ void GameEngine::init()
 		}
 
 		// load the initial shell screen
-		//TheShell->push( "Menus/MainMenu.wnd" );
+		TheShell->push( "Menus/MainMenu.wnd" );
 
 		// This allows us to run a map from the command line
 		if (TheGlobalData->m_initialFile.isEmpty() == FALSE)
@@ -824,6 +833,14 @@ void GameEngine::execute( void )
 			}
 
 			TheFramePacer->update();
+
+			// GeneralsX @build BenderAI 18/02/2026 - Call display step and draw every frame
+			// This was missing, causing only magenta screen (no UI rendering)
+			if (TheDisplay != nullptr)
+			{
+				TheDisplay->step();
+				TheDisplay->draw();
+			}
 		}
 
 #ifdef PERF_TIMERS
