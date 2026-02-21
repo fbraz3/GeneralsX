@@ -25,6 +25,7 @@ applyTo: '**/*.md'
 - **Phase planning** (`docs/WORKDIR/phases/PHASEXX_*.md`): Update `[x]` checklist at session end
 - **Technical discoveries**: Place in `docs/WORKDIR/support/` (e.g., `CRITICAL_VFS_DISCOVERY.md`)
 - **Lessons learned** (`docs/WORKDIR/lessons/LESSONS_LEARNED.md`): Key takeaways from phases and work cycles
+- **Known Issues**: Place in `docs/KNOWN_ISSUES/` with format `ISSUE-XXX_description.md` (e.g., `ISSUE-001_shell_map_unit_immortality.md`)
 
 ## Documentation Organization
 
@@ -108,6 +109,46 @@ applyTo: '**/*.md'
 **Only this goes here**: Diary entries and README
 
 **Not here**: Session reports, summaries, analysis, phase progress
+
+### `docs/KNOWN_ISSUES/` - Issue Tracking
+**Purpose**: Documented known issues, bugs, limitations, and pending investigations
+**Structure**: One issue per file
+**Naming Convention**: `ISSUE-XXX_slug_description.md`
+  - `XXX` = Zero-padded issue number (001, 002, 003, etc.)
+  - `slug_description` = Brief lowercase, underscore-separated description
+
+**Examples**:
+- `ISSUE-001_shell_map_unit_immortality.md`
+- `ISSUE-002_audio_crackling_on_startup.md`
+- `ISSUE-003_replay_desync_multiplayer.md`
+
+**Status Values**:
+- OPEN — Confirmed issue, awaiting investigation or fix
+- INVESTIGATING — Currently being researched; uncertain root cause
+- BLOCKED — Waiting for external feedback, data access, or prerequisites
+- RESOLVED — Fixed; waiting for verification or release
+- WONTFIX — Intentionally deferred; rationale documented
+
+**Severity Levels**:
+- Critical — Game-breaking, prevents progress
+- High — Major feature impaired, significant gameplay impact
+- Medium — Observable but workaroundable, cosmetic impact
+- Low — Cosmetic only, no gameplay impact
+
+**Component Categories**:
+- Graphics, Audio, Gameplay, Platform, Build, Other
+
+**Structure**:
+- Status, Session Discovered, Severity, Component, Reproducibility (header)
+- Symptom (observable behavior)
+- Investigation Summary (root cause analysis, hypotheses)
+- Code Audit Results (what was checked)
+- Next Steps (actionable items for future investigation)
+- Workaround (if available)
+- Impact (gameplay, stability, determinism, release blocker)
+- Reference (links to code, dev diary, etc.)
+
+See `docs/KNOWN_ISSUES/README.md` for detailed template and guidelines.
 
 ### `docs/ETC/` - Reference & Historical Materials
 **Purpose**: Older reference materials, archived analysis, and miscellaneous documentation
