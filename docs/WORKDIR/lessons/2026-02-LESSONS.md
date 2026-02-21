@@ -759,3 +759,83 @@ This is the same category as LESSON-50 (`long` in TGA structs) and LESSON-45 (`v
 - Any struct with `wchar_t[]` fields loaded via `memcpy` or `fread` → likely broken on Linux
 
 **Key Files**: `Core/GameEngine/Source/Common/System/DataChunk.cpp`
+
+---
+
+## Lesson: SDL Mouse Coordinate Scaling is MANDATORY (Session 52)
+
+**Problem**: SDL3 (and SDL2) report mouse coordinates in physical window pixels. The game's UI hit-testing uses its internal logical resolution (e.g. 800×600). Without scaling, clicks land at wrong positions and every button press is silently ignored by the game. The symptom is: menus render fine, cursor moves, but nothing is clickable.
+
+**Root Cause Pattern**: Any SDL port that copies raw `event.x / event.y` values directly into `MouseIO::pos` without scaling will exhibit this bug. It is platform and SDL-version independent.
+
+**Fix**: Add `scaleMouseCoordinates(rawX, rawY, windowID, scaledX, scaledY)` (fighter19 reference) and apply it in the central `translateEvent()` after dispatching to type-specific handlers. Always extract `windowID` from the SDL event and call `SDL_GetWindowSize` to compute the scale factor against `TheDisplay->getWidth/Height()`.
+
+**Applies To**: `SDL3Mouse::translateEvent()` — all three event types (motion, button, wheel). For wheel events use `event.wheel.mouse_x/mouse_y`, not a separate `SDL_GetMouseState()` call.
+
+**Reference**: `references/fighter19-dxvk-port/GeneralsMD/Code/GameEngineDevice/Source/SDL3Device/GameClient/SDL3Mouse.cpp` → `scaleMouseCoordinates()`
+
+---
+
+## Lesson: SDL3Mouse MUST set m_inputMovesAbsolute = TRUE in init() (Session 53)
+
+**Problem**: Even with correct coordinate scaling, menu clicks still did not register. SDL3 reports absolute window-pixel positions, but `Mouse::processMouseEvent()` defaults to `MOUSE_MOVE_RELATIVE` mode (adds incoming coordinate to tracked position as a delta). The internal tracked cursor drifts exponentially from the real cursor position. No click ever lands where it should.
+
+**Root Cause**: `SDL3Mouse::init()` was missing `m_inputMovesAbsolute = TRUE`, which both `Win32Mouse::init()` and fighter19's `SDL3Mouse::init()` set explicitly.
+
+**Fix**: In `SDL3Mouse::init()`, after calling `Mouse::init()`:
+```cpp
+m_inputMovesAbsolute = TRUE;
+```
+
+**Rule**: Any SDL mouse backend that supplies absolute positions MUST set this flag. If it is missing, the cursor and click positions will diverge immediately and no UI interaction will work. Check this first when porting any new SDL mouse backend.
+
+
+---
+
+## Lesson: TheSuperHackers API Differences From fighter19 (Session 54 — Phase 2 Audio)
+
+When porting code from fighter19's DXVK branch to TheSuperHackers base, expect these systematic API differences:
+
+| fighter19 | TheSuperHackers | Reason |
+|---|---|---|
+| `BitTestEA(mask, bit)` | `BitIsSet(mask, bit)` | Renamed in TSH to avoid `winnt.h` macro conflict (BaseType.h line 90) |
+| `req->deleteInstance()` | `deleteInstance(req)` | Free function from GameMemory.h — `MemoryPoolObject` subclasses do NOT have a `deleteInstance` member |
+| `getUninterruptable()` | `getUninterruptible()` | Spelling corrected upstream |
+| `#include "Common/File.h"` | `#include "Common/file.h"` | Linux filesystem is case-sensitive; TSH uses lowercase `file.h` |
+| `) AL_API_NOEXCEPT17 {` | `) noexcept {` | Ubuntu 24.04 OpenAL 1.23.1 package does not define `AL_API_NOEXCEPT17` |
+| OpenAL debug extension symbols | `#ifdef AL_EXT_debug` guard | Debug extension (`AL_EXT_debug`) not present in Ubuntu's OpenAL package |
+
+**Scan for all of these before building** — they appear in any audio or game logic file ported directly from fighter19.
+
+---
+
+## Lesson: CMake FindFFmpeg.cmake pkg-config Variable Prefix Bug (Session 54)
+
+**Problem**: The `FindFFmpeg.cmake` module (from jmarshall) uses a `find_component()` macro that constructs hint paths as `PC_LIB${_component}_INCLUDEDIR` (e.g. `PC_LIBAVCODEC_INCLUDEDIR`), but `pkg_check_modules()` actually sets `PC_${_component}_INCLUDEDIR` (e.g. `PC_AVCODEC_INCLUDEDIR`). This mismatch means the paths are never found, causing configure to fail even when FFmpeg is installed.
+
+**Fix**: Replace `find_package(FFmpeg REQUIRED COMPONENTS ...)` entirely with:
+```cmake
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+    libavcodec
+    libavformat
+    libavutil
+    libswresample)
+target_link_libraries(target PRIVATE PkgConfig::FFMPEG)
+```
+
+This bypasses FindFFmpeg.cmake entirely and is more reliable on Linux.
+
+---
+
+## Lesson: OpenAL + FFmpeg Audio Port Strategy (Session 54)
+
+The fastest path to working audio on Linux is to port fighter19's implementation wholesale rather than building from scratch:
+
+1. fighter19 already has a complete 3,490-line Zero Hour OpenAL + FFmpeg implementation
+2. The adaptation diff is small (7 known API differences documented above)
+3. Structure: `OpenALAudioManager.cpp` + `OpenALAudioCache.cpp` (FFmpeg decoder) + `OpenALAudioStream.cpp` (buffer-queue) + `FFmpegFile.cpp` (AVIO custom reader)
+4. Keep old stub (`Source/OpenALAudioManager.cpp`) as fallback for `SAGE_USE_OPENAL=OFF` builds
+5. Add `Source/OpenALAudioDevice/` as PRIVATE include dir so `OpenALAudioCache.h` is not exposed
+
+**Result**: Menu music and audio backend confirmed working in one session.

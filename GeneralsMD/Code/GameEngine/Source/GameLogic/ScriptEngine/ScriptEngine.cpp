@@ -5570,34 +5570,6 @@ void ScriptEngine::update( void )
 	}
 
 	// Evaluate the scripts.
-// GeneralsX @bugfix BenderAI 20/02/2026 Diagnostic: log script execution stats periodically
-#ifndef _WIN32
-	{
-		static UnsignedInt s_scriptFrame = 0;
-		s_scriptFrame++;
-		if (s_scriptFrame <= 5 || s_scriptFrame == 30 || s_scriptFrame == 100)
-		{
-			Int numSides = TheSidesList ? TheSidesList->getNumSides() : -1;
-			// Count total scripts across all sides
-			Int totalScripts = 0;
-			Int totalGroups = 0;
-			if (TheSidesList) {
-				for (Int si = 0; si < numSides; si++) {
-					ScriptList *pSL = TheSidesList->getSideInfo(si)->getScriptList();
-					if (!pSL) continue;
-					for (Script *s = pSL->getScript(); s; s = s->getNext()) totalScripts++;
-					for (ScriptGroup *g = pSL->getScriptGroup(); g; g = g->getNext()) {
-						totalGroups++;
-						for (Script *s = g->getScript(); s; s = s->getNext()) totalScripts++;
-					}
-				}
-			}
-			fprintf(stderr, "[DIAG_SCRIPT] scriptFrame=%u numSides=%d scripts=%d groups=%d firstUpdate=%d\n",
-				s_scriptFrame, numSides, totalScripts, totalGroups, (int)m_firstUpdate);
-			fflush(stderr);
-		}
-	}
-#endif
 	for (i=0; i<TheSidesList->getNumSides(); i++) {
 		m_currentPlayer = ThePlayerList->getNthPlayer(i);
 		ScriptList *pSL = TheSidesList->getSideInfo(i)->getScriptList();

@@ -222,6 +222,8 @@ public:
 
 	UnicodeString getPlayerDisplayName() { return m_playerDisplayName; }
 	NameKeyType getPlayerNameKey() const { return m_playerNameKey; }
+	/// GeneralsX @bugfix felipebraz 21/02/2026 Expose ASCII player name for skirmish team ownership lookup
+	const AsciiString& getPlayerName() const { return m_playerName; }
 
 	AsciiString getSide() const { return m_side; }
 	AsciiString getBaseSide() const { return m_baseSide; }

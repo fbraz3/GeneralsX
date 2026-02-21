@@ -110,6 +110,21 @@ Player *PlayerList::findPlayerWithNameKey(NameKeyType key)
 	return nullptr;
 }
 
+// GeneralsX @bugfix felipebraz 21/02/2026 Find player by ASCII name string.
+// Needed because Player::initFromDict (skirmish path) updates m_playerName but not m_playerNameKey,
+// so team ownership lookup by name key fails for qualified skirmish players.
+Player *PlayerList::findPlayerWithName(const AsciiString& name)
+{
+	for (Int i = 0; i < m_playerCount; i++)
+	{
+		if (m_players[i]->getPlayerName() == name)
+		{
+			return m_players[i];
+		}
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 void PlayerList::reset()
 {

@@ -34,6 +34,8 @@
 
 // GeneralsX @bugfix felipebraz 18/02/2026 Include GameLogic for frame tracking
 #include "GameLogic/GameLogic.h"
+// GeneralsX @bugfix felipebraz 20/02/2026 Include Display to get internal resolution for coordinate scaling
+#include "GameClient/Display.h"
 
 /**
  * Constructor
@@ -88,7 +90,15 @@ void SDL3Mouse::init(void)
 	
 	// Call parent init (loads cursor info from INI, etc.)
 	Mouse::init();
-	
+
+	// SDL3 always reports absolute window pixel coordinates (not deltas).
+	// Without this flag, Mouse::processMouseEvent() uses MOUSE_MOVE_RELATIVE mode
+	// and ADDS the incoming coordinate to the current tracked position, causing the
+	// internal cursor to drift infinitely away from the visible cursor.
+	// fighter19 / Win32Mouse both set this; we MUST too.
+	// GeneralsX @bugfix felipebraz 21/02/2026 Fix mouse click never registering on UI
+	m_inputMovesAbsolute = TRUE;
+
 	// Show cursor by default
 	SDL_ShowCursor();
 	m_IsVisible = true;
@@ -428,6 +438,45 @@ void SDL3Mouse::translateWheelEvent(const SDL_MouseWheelEvent& event, MouseIO *r
 }
 
 /**
+ * Scale raw SDL3 window pixel coordinates to game internal resolution.
+ * This is CRITICAL for correct hit-testing: the game's UI layout is based on
+ * its internal resolution (e.g. 800x600), but SDL reports pixel coordinates
+ * relative to the actual window size (e.g. 1920x1080). Without scaling, clicks
+ * land at the wrong position and the game ignores them.
+ *
+ * Port of fighter19's scaleMouseCoordinates() - direct adaptation.
+ *
+ * GeneralsX @bugfix felipebraz 20/02/2026 Fix mouse click coordinates not matching UI layout
+ */
+void SDL3Mouse::scaleMouseCoordinates(int rawX, int rawY, Uint32 windowID, int& scaledX, int& scaledY)
+{
+	SDL_Window* window = SDL_GetWindowFromID(windowID);
+	if (!window || !TheDisplay) {
+		scaledX = rawX;
+		scaledY = rawY;
+		return;
+	}
+
+	int windowWidth = 0, windowHeight = 0;
+	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+
+	if (windowWidth <= 0 || windowHeight <= 0) {
+		scaledX = rawX;
+		scaledY = rawY;
+		return;
+	}
+
+	int internalWidth  = TheDisplay->getWidth();
+	int internalHeight = TheDisplay->getHeight();
+
+	float factorX = static_cast<float>(internalWidth)  / static_cast<float>(windowWidth);
+	float factorY = static_cast<float>(internalHeight) / static_cast<float>(windowHeight);
+
+	scaledX = static_cast<int>(rawX * factorX);
+	scaledY = static_cast<int>(rawY * factorY);
+}
+
+/**
  * Add raw SDL_Event to mouse event buffer
  * Fighter19 pattern: unified method that accepts any SDL_Event
  * Called by SDL3GameEngine::serviceWindowsOS() directly from event loop
@@ -484,24 +533,46 @@ void SDL3Mouse::translateEvent(UnsignedInt eventIndex, MouseIO *result)
 	}
 	
 	const SDL_Event& event = m_eventBuffer[eventIndex];
-	
+
+	// Raw window-pixel coordinates and window ID, extracted per event type
+	int rawX = 0, rawY = 0;
+	Uint32 windowID = 0;
+
 	// Switch on event type and delegate to appropriate translation method
 	switch (event.type) {
 		case SDL_EVENT_MOUSE_MOTION:
 			translateMotionEvent(event.motion, result);
+			rawX     = (int)event.motion.x;
+			rawY     = (int)event.motion.y;
+			windowID = event.motion.windowID;
 			break;
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP:
 			translateButtonEvent(event.button, result);
+			rawX     = (int)event.button.x;
+			rawY     = (int)event.button.y;
+			windowID = event.button.windowID;
 			break;
 		case SDL_EVENT_MOUSE_WHEEL:
 			translateWheelEvent(event.wheel, result);
+			rawX     = (int)event.wheel.mouse_x;
+			rawY     = (int)event.wheel.mouse_y;
+			windowID = event.wheel.windowID;
 			break;
 		default:
 			// Should not happen (sentinel value)
 			memset(result, 0, sizeof(*result));
-			break;
+			return;
 	}
+
+	// Scale from SDL window-pixel space to game internal resolution.
+	// GeneralsX @bugfix felipebraz 20/02/2026 Without this, UI hit-testing fails because
+	// the game checks clicks against its internal resolution (e.g. 800x600) but SDL
+	// reports coordinates in actual window pixels (e.g. 1920x1080).
+	int scaledX = 0, scaledY = 0;
+	scaleMouseCoordinates(rawX, rawY, windowID, scaledX, scaledY);
+	result->pos.x = scaledX;
+	result->pos.y = scaledY;
 }
 
 #endif // !_WIN32

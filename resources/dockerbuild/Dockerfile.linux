@@ -34,6 +34,10 @@ RUN apt-get update -qq && \
         libltdl-dev \
         libopenal-dev \
         libasound2-dev \
+        libavcodec-dev \
+        libavformat-dev \
+        libavutil-dev \
+        libswresample-dev \
         && \
     rm -rf /var/lib/apt/lists/*
 

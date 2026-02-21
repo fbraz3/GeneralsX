@@ -236,6 +236,15 @@ void TeamFactory::initTeam(const AsciiString& name, const AsciiString& owner, Bo
 {
 	DEBUG_ASSERTCRASH(findTeamPrototype(name)==nullptr,("team already exists"));
 	Player *pOwner = ThePlayerList->findPlayerWithNameKey(NAMEKEY(owner));
+	if (!pOwner && !owner.isEmpty())
+	{
+		// GeneralsX @bugfix felipebraz 21/02/2026 ISSUE-002: fallback to name-string search.
+		// Player::initFromDict (skirmish path) updates m_playerName to the qualified name but keeps
+		// m_playerNameKey pointing to the original slot name (e.g. "player1"). The qualified team
+		// owner (e.g. "PlyrChina0") therefore fails the nameKey lookup and must be resolved by
+		// comparing m_playerName directly.
+		pOwner = ThePlayerList->findPlayerWithName(owner);
+	}
 	DEBUG_ASSERTCRASH(pOwner, ("no owner found for team %s (%s)",name.str(),owner.str()));
 	if (!pOwner)
 		pOwner = ThePlayerList->getNeutralPlayer();

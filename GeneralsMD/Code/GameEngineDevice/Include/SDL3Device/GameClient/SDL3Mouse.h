@@ -76,6 +76,10 @@ private:
 	// GeneralsX @refactor felipebraz 16/02/2026 Unified translation method
 	void translateEvent(UnsignedInt eventIndex, MouseIO *result);
 
+	// Scale raw SDL window coordinates to game internal resolution
+	// GeneralsX @bugfix felipebraz 20/02/2026 Port fighter19 coordinate scaling fix
+	static void scaleMouseCoordinates(int rawX, int rawY, Uint32 windowID, int& scaledX, int& scaledY);
+
 	// Legacy translation methods (kept for compatibility)
 	void translateMotionEvent(const SDL_MouseMotionEvent& event, MouseIO *result);
 	void translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO *result);

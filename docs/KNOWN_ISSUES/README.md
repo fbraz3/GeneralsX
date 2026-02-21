@@ -88,3 +88,12 @@ Each issue file should contain:
 
 **Generated**: 2026-02-20  
 **Phase**: 1 (Linux Graphics Port)
+
+## Issue Index
+
+| ID | Title | Severity | Status | Component |
+|----|-------|----------|--------|-----------|
+| [ISSUE-001](ISSUE-001_shell_map_unit_immortality.md) | Shell Map Units Immortal Under Bombardment | Medium | OPEN | Gameplay |
+| [ISSUE-002](ISSUE-002_skirmish_instant_victory.md) | Skirmish vs CPU Ends Immediately with Victory Screen | Critical | OPEN | Gameplay |
+| [ISSUE-003](ISSUE-003_mouse_cursor_invisible.md) | Mouse Cursor Not Visible In-Game | Medium | OPEN | Platform / Graphics |
+| [ISSUE-004](ISSUE-004_generals_challenge_segfault.md) | Generals Challenge Mode Crashes with Segfault | High | OPEN | Platform / Video |

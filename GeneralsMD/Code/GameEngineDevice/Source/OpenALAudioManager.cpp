@@ -404,7 +404,7 @@ AudioHandle OpenALAudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		return AHSV_Error;
 	}
 
-	fprintf(stderr, "DEBUG: OpenALAudioManager::addAudioEvent() - stub (Phase 2)\n");
+	//fprintf(stderr, "DEBUG: OpenALAudioManager::addAudioEvent() - stub (Phase 2)\n");
 	return AHSV_Error;
 }
 
@@ -413,7 +413,7 @@ AudioHandle OpenALAudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
  */
 void OpenALAudioManager::removeAudioEvent(AudioHandle audioEvent)
 {
-	fprintf(stderr, "DEBUG: OpenALAudioManager::removeAudioEvent(0x%x) - stub\n", audioEvent);
+	//fprintf(stderr, "DEBUG: OpenALAudioManager::removeAudioEvent(0x%x) - stub\n", audioEvent);
 }
 
 /**

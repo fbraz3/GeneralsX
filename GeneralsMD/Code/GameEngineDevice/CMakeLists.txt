@@ -204,14 +204,28 @@ if(WIN32)
         Source/Win32Device/GameClient/Win32Mouse.cpp
     )
 else()
-    # Linux-specific files (SDL3, OpenAL, DXVK)
+    # Linux-specific files (SDL3, OpenAL+FFmpeg audio, DXVK)
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/SDL3GameEngine.cpp
-        Source/OpenALAudioManager.cpp
         Source/SDL3Device/GameClient/SDL3Mouse.cpp
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
         Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
+
+    if(SAGE_USE_OPENAL)
+        # OpenAL audio + FFmpeg decoding (Phase 2 - fighter19 port)
+        # GeneralsX @feature BenderAI 21/02/2026 Full OpenAL implementation
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Source/OpenALAudioDevice/OpenALAudioManager.cpp
+            Source/OpenALAudioDevice/OpenALAudioStream.cpp
+            Source/OpenALAudioDevice/OpenALAudioCache.cpp
+            Source/VideoDevice/FFmpeg/FFmpegFile.cpp
+        )
+    else()
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Source/OpenALAudioManager.cpp
+        )
+    endif()
 endif()
 
 add_library(z_gameenginedevice STATIC)
@@ -246,4 +260,21 @@ target_link_libraries(z_gameenginedevice PUBLIC
 # GeneralsX @build BenderAI 11/02/2026
 if(SAGE_USE_SDL3)
     target_link_libraries(z_gameenginedevice PUBLIC sdl3lib)
+endif()
+# Linux OpenAL audio + FFmpeg decoding (Phase 2)
+# GeneralsX @feature BenderAI 21/02/2026 OpenAL+FFmpeg audio backend
+if(SAGE_USE_OPENAL)
+    find_package(OpenAL REQUIRED)
+    target_link_libraries(z_gameenginedevice PUBLIC OpenAL::OpenAL)
+
+    # FFmpeg is mandatory for audio file decoding (MP3, WAV via libavcodec)
+    # Use pkg_check_modules directly - more reliable than FindFFmpeg.cmake on Ubuntu multiarch
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil)
+    target_include_directories(z_gameenginedevice PRIVATE ${FFMPEG_INCLUDE_DIRS})
+    target_link_libraries(z_gameenginedevice PRIVATE PkgConfig::FFMPEG)
+    target_compile_definitions(z_gameenginedevice PUBLIC SAGE_USE_FFMPEG)
+
+    # Private include path for OpenALAudioCache.h (local to Source/OpenALAudioDevice/)
+    target_include_directories(z_gameenginedevice PRIVATE Source/OpenALAudioDevice)
 endif()
