@@ -1,9 +1,9 @@
 # PHASE03: Video Playback - Bink Alternative (SPIKE)
 
-**Status**: � In Progress (Framework Copied from fighter19, Testing Phase)
+**Status**: 🚀 In Progress (Framework Compiled, Testing Phase)
 **Type**: Implementation (not a spike - fighter19 provides complete reference)
 **Created**: 2026-02-08
-**Updated**: 2026-02-21 (Framework integration)
+**Updated**: 2026-02-22 (Compilation successful, game launches)
 **Prerequisites**: Phase 1 + Phase 2 complete
 
 ## Goal
@@ -56,35 +56,47 @@ Integrate FFmpeg-based video playback for Linux from fighter19 reference. Replac
 
 ---
 
-## Implementation Status (Session 55 - 2026-02-21)
+## Implementation Status (Session 56 - 2026-02-22)
 
 ### ✅ Completed
 
 **From fighter19 Reference**:
-- [ ] ✅ **VideoDevice Architecture**: Copied from fighter19 (`Include/VideoDevice/` and `Source/VideoDevice/`)
+- [x] ✅ **VideoDevice Architecture**: Copied from fighter19 (`Include/VideoDevice/` and `Source/VideoDevice/`)
   - `VideoDevice/Bink/BinkVideoPlayer.{h,cpp}` — Windows video player (Bink API)
   - `VideoDevice/FFmpeg/FFmpegVideoPlayer.{h,cpp}` — Linux/cross-platform FFmpeg player
   - `VideoDevice/FFmpeg/FFmpegFile.{h,cpp}` — FFmpeg file I/O and frame decoding
 
-- [ ] ✅ **CMake Configuration**: Updated `GeneralsMD/Code/GameEngineDevice/CMakeLists.txt`
+- [x] ✅ **CMake Configuration**: Updated `GeneralsMD/Code/GameEngineDevice/CMakeLists.txt`
   - Added `libswscale` to FFmpeg dependencies (YUV→RGB frame conversion)
   - Configured `SAGE_USE_FFMPEG` compilation flag
   - Linked VideoDevice sources conditionally when `SAGE_USE_FFMPEG` is ON
 
-- [ ] ✅ **Docker Build Dependencies**: Updated `resources/dockerbuild/Dockerfile.linux`
+- [x] ✅ **Docker Build Dependencies**: Updated `resources/dockerbuild/Dockerfile.linux`
   - Added `libswscale-dev` (frame format conversion library)
   - Already had `libavcodec-dev`, `libavformat-dev`, `libavutil-dev`
 
+- [x] ✅ **Compilation Success** (Session 56):
+  - Docker image rebuilt with libswscale-dev ✅
+  - CMake reconfigured: finds all 4 FFmpeg libraries ✅
+  - FFmpegFile.cpp include path fixed (file.h not File.h) ✅
+  - VideoDevice FFmpeg sources compile without errors ✅
+  - Final binary: 179M GeneralsXZH ✅
+
+- [x] ✅ **Game Launch** (Session 56):
+  - Game initializes without crashes ✅
+  - SDL3 video subsystem loads ✅
+  - Audio system initialized ✅
+  - File system accessible ✅
+
 ### 🔨 In Progress
 
-- [ ] **Test Compilation**: Build with Linux preset to verify no linking errors
-- [ ] **Video File Support**: Verify what formats game uses (`.bik` files)
-- [ ] **Game Integration Points**: Locate where videos are triggered in GameClient
-- [ ] **Playback Handler**: Connect FFmpeg player to game video system
+- [ ] **Video Playback Test**: Trigger video in-game and verify FFmpegVideoPlayer handles it
+- [ ] **Audio/Video Sync**: Check if audio and video timestamps align
+- [ ] **Format Support**: Verify what video formats are supported (Bink, WebM, MP4, etc.)
 
 ### ❌ Blockers
 
-None — framework is complete, awaiting compilation and testing.
+None remaining — framework is complete and compiling successfully.
 
 ---
 
@@ -92,62 +104,55 @@ None — framework is complete, awaiting compilation and testing.
 
 ---
 
-## Next Steps (Session 56+)
+## Next Steps (Session 57+)
 
-### Phase 3: Compilation & Integration (In Progress)
+### Phase 3: Video Playback Testing
+
+**We've crossed a milestone**: ✅ Framework compiled, game launches. Now test actual video playback.
 
 **Immediate Tasks**:
-- [ ] **1. Docker Build Test**: Verify Dockerfile.linux builds with `libswscale-dev`
+- [ ] **1. Locate Video Call Sites**: Where does the game trigger videos?
   ```bash
-  docker build -t generalsx-build:phase3 -f resources/dockerbuild/Dockerfile.linux .
+  grep -r "BinkOpen\|PlayVideo\|theVideoPlayer\|VideoPlayer" GeneralsMD/Code/GameClient/ | head -20
   ```
-  Expected: Docker image includes `libswscale.so` and other FFmpeg libraries
+  Expected: Find intro video, campaign briefing, victory cinematics
 
-- [ ] **2. CMake Verification**: Test FFmpeg package detection with libswscale
-  ```bash
-  ./scripts/docker-configure-linux.sh linux64-deploy
-  ```
-  Expected: CMake finds libavcodec, libavformat, libavutil, libswscale
-
-- [ ] **3. Compilation Test**: Build VideoDevice FFmpeg sources
-  - Check for symbol errors, undefined references
-  - May require include path adjustments from fighter19 code
-  - Expected: No errors in FFmpegFile.cpp or FFmpegVideoPlayer.cpp
-
-- [ ] **4. Video File Discovery**: Identify game video locations
+- [ ] **2. Identify Video File Locations**: What video files exist?
   ```bash
   find GeneralsMD/Data -name "*.bik" -o -name "*.webm" -o -name "*.mp4" 2>/dev/null
   ```
-  - Determine video file locations (likely `GeneralsMD/Data/Movies/`)
-  - Check what video formats are currently used
-  - Document for conversion planning
+  Expected: Likely `GeneralsMD/Data/Movies/*.bik` or similar
 
-- [ ] **5. Bink Integration Points**: Locate where videos are triggered
-  ```bash
-  grep -r "BinkOpen\|PlayVideo\|theVideoPlayer" GeneralsMD/Code/GameClient/
-  ```
-  - Find main menu intro video
-  - Find campaign briefing videos
-  - Find victory/defeat cinematics
-  - Document call sites for FFmpeg integration
+- [ ] **3. Test Video Loading**: Manually call FFmpegVideoPlayer with a video file
+  - Create simple test: Load `Data/Movies/intro.bik` (if exists)
+  - Verify no crashes, file opens successfully
+  - Check FFmpeg log for decode errors
 
-- [ ] **6. Game Engine Wiring**: Create VideoDevice provider
-  - Add video player factory method to GameEngineDevice
-  - Implement cross-platform selection:
-    ```cpp
-    // In GameEngineDevice initialization
-    #ifdef _WIN32
-        m_VideoPlayer = new BinkVideoPlayer();
-    #else
-        m_VideoPlayer = new FFmpegVideoPlayer();
-    #endif
-    ```
+- [ ] **4. Game Integration**: Wire FFmpeg player into game engine
+  - Find where BinkOpen/BinkDoFrame are called
+  - Replace with FFmpegVideoPlayer equivalent
+  - Handle both Windows (Bink) and Linux (FFmpeg) paths
 
-- [ ] **7. Integration Test**: Verify game launches
-  - Run: `./scripts/run-linux-zh.sh -win`
-  - Expected: Game reaches main menu, video section doesn't crash with FFmpeg stubs
+- [ ] **5. Format Conversion Planning**: If game only has .bik files
+  - Document how to convert Bink to WebM/H.264
+  - Plan for user distribution (if needed)
+  - Check if FFmpeg can decode Bink natively
 
-### Phase 3 Interim Outcome (After Compilation)
+### Phase 3 Complete Outcome (After Testing)
+
+**Success Path**:
+✅ If videos play:
+- [ ] At least one intro/campaign video plays without crashes
+- [ ] Audio (if any) syncs with video
+- [ ] Videos can be skipped (ESC key or timeout)
+- [ ] Windows Bink path unchanged
+
+**Fallback Path**:
+✅ If videos can't be decoded:
+- [ ] Implement VideoPlayerStub (graceful skip)
+- [ ] Log: "Video playback not supported on Linux"
+- [ ] Game continues to menu without hanging
+- [ ] Clear documentation of limitation
 
 **Success Path**:
 ✅ If compilation succeeds:
