@@ -38,6 +38,7 @@ RUN apt-get update -qq && \
         libavformat-dev \
         libavutil-dev \
         libswresample-dev \
+        libswscale-dev \
         && \
     rm -rf /var/lib/apt/lists/*
 

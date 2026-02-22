@@ -1,7 +1,9 @@
 # ISSUE-002: Skirmish vs CPU Ends Immediately with Victory Screen
 
-**Status**: OPEN  
+**Status**: INVESTIGATING  
 **Session Discovered**: 53 (2026-02-21)  
+**Session Diagnosed**: 55 (2026-02-21)  
+**Status Note**: Bug **DIAGNOSED** but **NOT FIXED** — root cause identified, solution designed but not yet implemented  
 **Severity**: Critical  
 **Component**: Gameplay  
 **Reproducibility**: 100% — Start any skirmish match against a CPU opponent  
@@ -12,7 +14,27 @@ Starting a skirmish game against CPU loads the map and runs for a few seconds, t
 
 ## Investigation Summary
 
-No investigation done yet.
+**ROOT CAUSE IDENTIFIED (Session 55)**:
+
+Player name key mismatch in skirmish initialization:
+- During skirmish, `Player::initFromDict()` updates `m_playerName` to qualified name (e.g., "PlyrChina0")
+- However, `m_playerNameKey` remains pointing to old slot name (e.g., "player1")
+- When `TeamFactory::initTeam()` searches for team owner via `findPlayerWithNameKey("PlyrChina0")` → returns NULL
+- Team defaults to neutral player → `hasAnyBuildings()` returns false → `m_localPlayerDefeated = true` → instant defeat/victory
+
+**PROPOSED SOLUTION** (not yet implemented):
+1. Add `Player::getPlayerName()` getter that returns current `m_playerName`
+2. Add `PlayerList::findPlayerWithName()` method for string-based fallback lookup
+3. Modify `Team::initTeam()` to use secondary name-based lookup when nameKey fails:
+   ```cpp
+   Player* pOwner = ThePlayerList->findPlayerWithNameKey(NAMEKEY(owner));
+   if (!pOwner && !owner.isEmpty())
+       pOwner = ThePlayerList->findPlayerWithName(owner);  // Fallback
+   if (!pOwner)
+       pOwner = ThePlayerList->getNeutralPlayer();
+   ```
+
+**STATUS**: Code changes identified but NOT YET APPLIED to main codebase
 
 ### Hypotheses (in priority order)
 
