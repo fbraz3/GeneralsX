@@ -262,33 +262,26 @@ if(SAGE_USE_SDL3)
     target_link_libraries(z_gameenginedevice PUBLIC sdl3lib)
 endif()
 # Phase 3: Video playback (FFmpeg) + Phase 2: Audio decoding (FFmpeg)
-# GeneralsX @feature BenderAI 21/02/2026 FFmpeg video + audio backend
+# GeneralsX @feature BenderAI 21/02/2026 OpenAL audio backend (Audio + Video via FFmpeg)
 if(SAGE_USE_OPENAL)
     find_package(OpenAL REQUIRED)
     target_link_libraries(z_gameenginedevice PUBLIC OpenAL::OpenAL)
-
-    # FFmpeg is mandatory for audio file decoding (MP3, WAV via libavcodec)
-    # and video playback (Bink → FFmpeg conversion, decode via libavcodec + libswscale)
-    # Use pkg_check_modules directly - more reliable than FindFFmpeg.cmake on Ubuntu multiarch
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
-    target_include_directories(z_gameenginedevice PRIVATE ${FFMPEG_INCLUDE_DIRS})
-    target_link_libraries(z_gameenginedevice PRIVATE PkgConfig::FFMPEG)
-    target_compile_definitions(z_gameenginedevice PUBLIC SAGE_USE_FFMPEG)
 
     # Private include path for OpenALAudioCache.h (local to Source/OpenALAudioDevice/)
     target_include_directories(z_gameenginedevice PRIVATE Source/OpenALAudioDevice)
 endif()
 
-# Phase 3: Video playback with FFmpeg (from fighter19 reference)
+# Phase 3: Video playback with FFmpeg (configured by Core/GameEngineDevice when RTS_BUILD_OPTION_FFMPEG=ON)
 # GeneralsX @feature BenderAI 21/02/2026 Video playback framework
-if(SAGE_USE_FFMPEG)
+if(RTS_BUILD_OPTION_FFMPEG)
     # Add VideoDevice FFmpeg implementation (video playback)
-    target_sources(z_gameenginedevice PRIVATE
+    # FFmpeg libraries and includes are already configured by Core/GameEngineDevice
+    target_sources(z_gameenginedevice PUBLIC
         Include/VideoDevice/Bink/BinkVideoPlayer.h
         Include/VideoDevice/FFmpeg/FFmpegFile.h
         Include/VideoDevice/FFmpeg/FFmpegVideoPlayer.h
         Source/VideoDevice/FFmpeg/FFmpegFile.cpp
         Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
     )
+    target_compile_definitions(z_gameenginedevice PUBLIC SAGE_USE_FFMPEG)
 endif()
