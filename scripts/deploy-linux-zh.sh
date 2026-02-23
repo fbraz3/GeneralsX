@@ -8,6 +8,9 @@ set -e
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/linux64-deploy"
 DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
+SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
+SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
+GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
 RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
 # Note: CMakeLists.txt uses OUTPUT_NAME GeneralsXZH on Linux (see GeneralsMD/Code/Main/CMakeLists.txt)
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
@@ -33,6 +36,26 @@ if [[ ! -d "${DXVK_LIB_DIR}" ]]; then
     exit 1
 fi
 
+# Check if SDL3 libraries exist
+if [[ ! -d "${SDL3_LIB_DIR}" ]]; then
+    echo "ERROR: SDL3 libraries not found at ${SDL3_LIB_DIR}"
+    echo "Build first: ./scripts/docker-build-linux-zh.sh linux64-deploy"
+    exit 1
+fi
+
+if [[ ! -d "${SDL3_IMAGE_LIB_DIR}" ]]; then
+    echo "ERROR: SDL3_image libraries not found at ${SDL3_IMAGE_LIB_DIR}"
+    echo "Build first: ./scripts/docker-build-linux-zh.sh linux64-deploy"
+    exit 1
+fi
+
+# Check if GameSpy library exists
+if [[ ! -f "${GAMESPY_LIB}" ]]; then
+    echo "ERROR: GameSpy library not found at ${GAMESPY_LIB}"
+    echo "Build first: ./scripts/docker-build-linux-zh.sh linux64-deploy"
+    exit 1
+fi
+
 # Create runtime directory if needed
 mkdir -p "${RUNTIME_DIR}"
 
@@ -45,6 +68,15 @@ chmod +x "${RUNTIME_DIR}/GeneralsXZH"
 echo "  Copying DXVK libraries..."
 cp -v "${DXVK_LIB_DIR}"/libdxvk_d3d8.so* "${RUNTIME_DIR}/"
 cp -v "${DXVK_LIB_DIR}"/libdxvk_d3d9.so* "${RUNTIME_DIR}/" 2>/dev/null || true
+
+# Copy SDL3 and SDL3_image libraries (for cursor loading and window management)
+echo "  Copying SDL3 libraries..."
+cp -v "${SDL3_LIB_DIR}"/libSDL3.so* "${RUNTIME_DIR}/"
+cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
+
+# Copy GameSpy library (for online multiplayer)
+echo "  Copying GameSpy library..."
+cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
 # Set RPATH so executable finds libraries in same directory
 echo "  Setting RPATH to \$ORIGIN..."
@@ -85,6 +117,8 @@ echo ""
 echo "Deploy complete"
 echo "   Executable: ${RUNTIME_DIR}/GeneralsXZH"
 echo "   Libraries:  ${RUNTIME_DIR}/libdxvk_*.so*"
+echo "   SDL3 libs:  ${RUNTIME_DIR}/libSDL3*.so* + ${RUNTIME_DIR}/libSDL3_image*.so*"
+echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.so"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"

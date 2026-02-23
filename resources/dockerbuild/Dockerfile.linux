@@ -6,12 +6,13 @@ FROM ubuntu:24.04
 
 LABEL maintainer="GeneralsX Project"
 LABEL description="Linux native build environment for GeneralsX (GCC/Clang + CMake + vcpkg)"
-LABEL version="2.0"
+LABEL version="2.2-SDL3.4.2-native-build"
 
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install essential build tools
+# Install essential build tools + SDL3 build dependencies
+# Based on: https://github.com/libsdl-org/SDL/blob/main/.github/workflows/build.yml
 RUN apt-get update -qq && \
     apt-get install -y -qq --no-install-recommends \
         build-essential \
@@ -34,11 +35,40 @@ RUN apt-get update -qq && \
         libltdl-dev \
         libopenal-dev \
         libasound2-dev \
+        libpulse-dev \
+        libaudio-dev \
         libavcodec-dev \
         libavformat-dev \
         libavutil-dev \
         libswresample-dev \
         libswscale-dev \
+        libpng-dev \
+        zlib1g-dev \
+        libfribidi-dev \
+        libjack-dev \
+        libsndio-dev \
+        libx11-dev \
+        libxext-dev \
+        libxrandr-dev \
+        libxcursor-dev \
+        libxfixes-dev \
+        libxi-dev \
+        libxss-dev \
+        libxtst-dev \
+        libxkbcommon-dev \
+        libdrm-dev \
+        libgbm-dev \
+        libgl1-mesa-dev \
+        libgles2-mesa-dev \
+        libegl1-mesa-dev \
+        libdbus-1-dev \
+        libibus-1.0-dev \
+        libudev-dev \
+        libthai-dev \
+        libpipewire-0.3-dev \
+        libwayland-dev \
+        libdecor-0-dev \
+        liburing-dev \
         && \
     rm -rf /var/lib/apt/lists/*
 

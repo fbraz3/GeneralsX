@@ -36,10 +36,96 @@
 #include "GameLogic/GameLogic.h"
 // GeneralsX @bugfix felipebraz 20/02/2026 Include Display to get internal resolution for coordinate scaling
 #include "GameClient/Display.h"
+// GeneralsX @bugfix BenderAI 22/02/2026 Add SDL3_image for cursor loading
+// SDL3_image now finds system libpng via pkg-config (CMAKE_PREFIX_PATH reordered in cmake/sdl3.cmake)
+#include <SDL3_image/SDL_image.h>
+// GeneralsX @bugfix BenderAI 22/02/2026 Add array header for AnimatedCursor
+#include <array>
+// GeneralsX @bugfix BenderAI 22/02/2026 Add file system includes for cursor loading
+#include "Common/Debug.h"
+#include "Common/file.h"
+#include "Common/FileSystem.h"
 
 /**
- * Constructor
- *
+ * AnimatedCursor - Helper struct for cursor animation (fighter19 pattern)
+ * Holds the frames of an animated cursor with frame timing info
+ */
+struct AnimatedCursor {
+	std::array<SDL_Cursor*, MAX_2D_CURSOR_ANIM_FRAMES> m_frameCursors;
+	std::array<SDL_Surface*, MAX_2D_CURSOR_ANIM_FRAMES> m_frameSurfaces;
+	int m_currentFrame = 0;
+	int m_frameCount = 0;
+	int m_frameRate = 0; // the time a frame is displayed in 1/60th of a second
+
+	~AnimatedCursor()
+	{
+		for (int i = 0; i < MAX_2D_CURSOR_ANIM_FRAMES; i++)
+		{
+			if (m_frameCursors[i])
+			{
+				SDL_DestroyCursor(m_frameCursors[i]);
+				m_frameCursors[i] = nullptr;
+			}
+			if (m_frameSurfaces[i])
+			{
+				SDL_DestroySurface(m_frameSurfaces[i]);
+				m_frameSurfaces[i] = nullptr;
+			}
+		}
+	}
+};
+
+// Global cursor resources array - fighter19 pattern
+// GeneralsX @bugfix BenderAI 22/02/2026 Global cursor resource cache
+AnimatedCursor* cursorResources[Mouse::NUM_MOUSE_CURSORS][MAX_2D_CURSOR_DIRECTIONS];
+
+// RIFF/ANI parsing helpers (fighter19 pattern)
+// GeneralsX @bugfix BenderAI 22/02/2026 RIFF format parsing for cursor loading
+typedef std::array<char, 4> FourCC;
+constexpr FourCC riff_id = {'R', 'I', 'F', 'F'};
+constexpr FourCC acon_id = {'A', 'C', 'O', 'N'};
+constexpr FourCC anih_id = {'a', 'n', 'i', 'h'};
+constexpr FourCC fram_id = {'f', 'r', 'a', 'm'};
+constexpr FourCC icon_id = {'i', 'c', 'o', 'n'};
+constexpr FourCC seq_id = {'s', 'e', 'q', ' '};
+constexpr FourCC rate_id = {'r', 'a', 't', 'e'};
+constexpr FourCC list_id = {'L', 'I', 'S', 'T'};
+
+struct ANIHeader
+{
+	uint32_t size; // Should be 32 bytes (all fields below)
+	uint32_t frames;
+	uint32_t steps;
+	uint32_t width;
+	uint32_t height;
+	uint32_t bitsPerPixel;
+	uint32_t planes;
+	uint32_t displayRate;
+	uint32_t flags;
+};
+
+struct RIFFChunk
+{
+	FourCC id; // Should be 'RIFF' for the first 4 bytes
+	uint32_t size; // Size of the file minus 8 bytes
+	FourCC type; // Should be 'ACON' in the first chunk
+};
+
+static_assert(sizeof(ANIHeader) == 36, "ANIHeader size is not 36 bytes");
+
+static RIFFChunk* getNextChunk(RIFFChunk* chunk)
+{
+	return (RIFFChunk*)((char*)chunk + sizeof(RIFFChunk) + chunk->size - 4);
+}
+
+static void* getChunkData(RIFFChunk* chunk)
+{
+	// Type is also part of the chunk, but also data, remove it from the size
+	return (char*)chunk + sizeof(RIFFChunk) - 4;
+}
+
+/**
+ * Constructor - Initialize SDL3Mouse with window handle
  * @param window SDL3 window handle (required for mouse capture)
  */
 SDL3Mouse::SDL3Mouse(SDL_Window* window)
@@ -53,7 +139,9 @@ SDL3Mouse::SDL3Mouse(SDL_Window* window)
 	  m_LeftButtonDownTime(0),
 	  m_RightButtonDownTime(0),
 	  m_MiddleButtonDownTime(0),
-	  m_LastFrameNumber(0)  // GeneralsX @bugfix felipebraz 18/02/2026 Initialize frame tracking
+	  m_LastFrameNumber(0),  // GeneralsX @bugfix felipebraz 18/02/2026 Initialize frame tracking
+	  m_directionFrame(0),   // GeneralsX @bugfix BenderAI 22/02/2026 Initialize cursor direction frame
+	  m_inputFrame(0)        // GeneralsX @bugfix BenderAI 22/02/2026 Initialize input frame counter
 {
 	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 	// fprintf(stderr, "DEBUG: SDL3Mouse::SDL3Mouse() created\n");
@@ -78,6 +166,128 @@ SDL3Mouse::~SDL3Mouse(void)
 	releaseCapture();
 	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 	// fprintf(stderr, "DEBUG: SDL3Mouse::~SDL3Mouse() destroyed\n");
+}
+
+/**
+ * Load cursor from ANI file (fighter19 pattern with RIFF parsing)
+ * GeneralsX @bugfix BenderAI 22/02/2026 Port fighter19 cursor loading
+ */
+AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
+{
+	File* file = TheFileSystem->openFile(filepath, File::READ | File::BINARY);
+	if (!file)
+	{
+		DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: Failed to open ANI cursor [%s]", filepath));
+		return NULL;
+	}
+
+	// Read entire file and close it
+	Int size  = file->size();
+	char* file_buffer = file->readEntireAndClose();
+
+	if (!file_buffer)
+	{
+		DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: Failed to read ANI cursor [%s]", filepath));
+		file->close();
+		return NULL;
+	}
+
+	RIFFChunk *riff_header = (RIFFChunk*)file_buffer;
+	if (riff_header->id != riff_id)
+	{
+		DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: Not a RIFF file"));
+		delete[] file_buffer;
+		return NULL;
+	}
+
+	if(riff_header->type != acon_id) {
+		DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: Not an animated cursor file"));
+		delete[] file_buffer;
+		return NULL;
+	}
+	
+	DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: loading %s", filepath));
+	AnimatedCursor* cursor = new AnimatedCursor();
+
+	RIFFChunk* chunk = (RIFFChunk*)((char*)file_buffer + sizeof(RIFFChunk));
+
+	while (chunk != NULL && (char *)chunk < file_buffer + size)
+	{
+		if (chunk->id == anih_id)
+		{
+			if (chunk->size != sizeof(ANIHeader))
+			{
+				DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: Invalid ANI header size"));
+				delete cursor;
+				delete[] file_buffer;
+				return NULL;
+			}
+
+			ANIHeader *ani_header = (ANIHeader*)getChunkData(chunk);
+
+			cursor->m_frameCount = ani_header->frames;
+			cursor->m_frameRate = ani_header->displayRate;
+		}
+		else if (chunk->id == list_id && chunk->type == fram_id)
+		{
+			int frame_index = 0;
+			size_t frame_offset = 0;
+
+			RIFFChunk *frame = (RIFFChunk*)((char *)chunk + sizeof(RIFFChunk));
+			while (frame != NULL && (char *)frame < file_buffer + size)
+			{
+				if (frame->id == icon_id)
+				{
+					const void *frame_buffer = getChunkData(frame);
+					SDL_IOStream *io_stream = SDL_IOFromConstMem(frame_buffer, frame->size);
+					SDL_Surface *surface = cursor->m_frameSurfaces[frame_index] = IMG_LoadTyped_IO(io_stream, true, "ico");
+
+					if (!surface)
+					{
+						DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: Failed to load frame"));
+						delete cursor;
+						delete[] file_buffer;
+						return NULL;
+					}
+
+					// Allow specifying the hot spot via properties on the surface
+					SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
+					int hot_spot_x = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, 0);
+					int hot_spot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, 0);
+
+					cursor->m_frameCursors[frame_index++] = SDL_CreateColorCursor(surface, hot_spot_x, hot_spot_y);
+				}
+
+				if (frame_index >= MAX_2D_CURSOR_ANIM_FRAMES)
+				{
+					DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: Too many frames"));
+					break;
+				}
+
+				frame = getNextChunk(frame);
+			}
+			break;
+		}
+		else
+		{
+			DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: Unhandled chunk"));
+		}
+		chunk = getNextChunk(chunk);
+	}
+
+#ifdef _DEBUG
+	size_t loaded_frames = 0;
+	for (int i = 0; i < MAX_2D_CURSOR_ANIM_FRAMES; i++)
+	{
+		if (cursor->m_frameCursors[i])
+			loaded_frames++;
+	}
+
+	// DEBUG_ASSERTCRASH(loaded_frames == cursor->m_frameCount, ("Loaded frames do not match header"));
+#endif
+
+	delete[] file_buffer;
+	return cursor;
 }
 
 /**
@@ -144,28 +354,78 @@ void SDL3Mouse::update(void)
 }
 
 /**
- * Initialize cursor resources (load cursor images, etc.)
- * For Phase 1.5, stub this - cursor resources loaded later
+ * Initialize cursor resources (load cursor images from ANI files)
+ * GeneralsX @bugfix BenderAI 22/02/2026 Port fighter19 cursor loading
  */
 void SDL3Mouse::initCursorResources(void)
 {
-	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
-	// fprintf(stderr, "DEBUG: SDL3Mouse::initCursorResources() - stub (Phase 2)\n");
-	// TODO: Phase 2 - Load SDL3 cursor images from files
+	for (Int cursor=FIRST_CURSOR; cursor<NUM_MOUSE_CURSORS; cursor++)
+	{
+		for (Int direction=0; direction<m_cursorInfo[cursor].numDirections; direction++)
+		{	if (!cursorResources[cursor][direction] && !m_cursorInfo[cursor].textureName.isEmpty())
+			{	//this cursor has never been loaded before.
+				char resourcePath[256];
+				//Check if this is a directional cursor
+				if (m_cursorInfo[cursor].numDirections > 1)
+					sprintf(resourcePath,"Data/Cursors/%s%d.ani",m_cursorInfo[cursor].textureName.str(),direction);
+				else
+					sprintf(resourcePath,"Data/Cursors/%s.ani",m_cursorInfo[cursor].textureName.str());
+
+				cursorResources[cursor][direction]=loadCursorFromFile(resourcePath);
+				DEBUG_ASSERTCRASH(cursorResources[cursor][direction], ("MissingCursor %s\n",resourcePath));
+			}
+		}
+	}
 }
 
 /**
  * Set mouse cursor type
- * For Phase 1.5, just use system arrow cursor
+ * GeneralsX @bugfix BenderAI 22/02/2026 Implement cursor animation and selection
  */
 void SDL3Mouse::setCursor(MouseCursor cursor)
 {
-	// TODO: Phase 2 - Map MouseCursor enum to SDL3 system cursors
-	// For now, just use default arrow
-	SDL_Cursor* sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
-	if (sdlCursor) {
-		SDL_SetCursor(sdlCursor);
+	// extend
+	Mouse::setCursor( cursor );
+
+	if (m_LostFocus)  // GeneralsX @bugfix BenderAI 22/02/2026 Fix case: m_LostFocus not m_lostFocus
+		return;	//stop messing with mouse cursor if we don't have focus.
+
+	bool bUseDefaultCursor = false;
+	if (cursor == NONE || !m_visible)
+	{
+		bUseDefaultCursor = true;
 	}
+	else
+	{
+		AnimatedCursor* currentCursor = cursorResources[cursor][m_directionFrame];
+		if (currentCursor)
+		{
+			// The game runs at 30FPS, the frame rate within the metadata is for 60FPS
+			size_t index = m_inputFrame * 2 / currentCursor->m_frameRate;
+			SDL_SetCursor(currentCursor->m_frameCursors[index % currentCursor->m_frameCount]);
+		}
+		else
+		{
+			bUseDefaultCursor = true;
+		}
+	}
+
+	if (bUseDefaultCursor)
+	{
+		if (cursorResources[NORMAL][0])
+		{
+			SDL_SetCursor(cursorResources[NORMAL][0]->m_frameCursors[0]);
+		}
+		else
+		{
+			// Fallback to SDL's default cursor in case of failure
+			// This is to avoid crashing in case of case sensitivity issues
+			SDL_SetCursor(SDL_GetDefaultCursor());
+		}
+	}
+
+	// save current cursor
+	m_currentCursor = cursor;
 }
 
 /**

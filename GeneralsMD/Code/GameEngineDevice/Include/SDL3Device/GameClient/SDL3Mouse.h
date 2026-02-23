@@ -31,9 +31,14 @@
 
 // SYSTEM INCLUDES
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <array>
 
 // USER INCLUDES
 #include "GameClient/Mouse.h"
+
+// FORWARD REFERENCES
+struct AnimatedCursor;
 
 // SDL3Mouse ------------------------------------------------------------------
 /** Mouse interface using SDL3 APIs for Linux */
@@ -80,6 +85,10 @@ private:
 	// GeneralsX @bugfix felipebraz 20/02/2026 Port fighter19 coordinate scaling fix
 	static void scaleMouseCoordinates(int rawX, int rawY, Uint32 windowID, int& scaledX, int& scaledY);
 
+	// Load cursor from ANI file (fighter19 pattern)
+	// GeneralsX @bugfix BenderAI 22/02/2026 Port fighter19 cursor loading
+	AnimatedCursor* loadCursorFromFile(const char* filepath);
+
 	// Legacy translation methods (kept for compatibility)
 	void translateMotionEvent(const SDL_MouseMotionEvent& event, MouseIO *result);
 	void translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO *result);
@@ -108,6 +117,10 @@ private:
 	ICoord2D m_LeftButtonDownPos;
 	ICoord2D m_RightButtonDownPos;
 	ICoord2D m_MiddleButtonDownPos;
+	
+	// GeneralsX @bugfix BenderAI 22/02/2026 Add cursor animation tracking
+	Int m_directionFrame;         ///< current frame of directional cursor (from 0 points up)
+	UnsignedInt m_inputFrame;     ///< input frame counter for animation timing
 };
 
 #endif // !_WIN32
