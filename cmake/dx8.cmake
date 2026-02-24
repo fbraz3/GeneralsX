@@ -57,7 +57,15 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     message(FATAL_ERROR "DXVK macOS build requires ninja: brew install ninja")
   endif()
 
-  message(STATUS "Building DXVK ${DXVK_VERSION} for macOS with Meson (${MESON_EXECUTABLE})")
+  # Detect host architecture so Clang targets the correct slice
+  # (critical on Apple Silicon: /usr/local/bin/meson is x86_64 via Rosetta,
+  #  but we must produce arm64 dylibs for the native game process)
+  execute_process(
+    COMMAND uname -m
+    OUTPUT_VARIABLE DXVK_HOST_ARCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  message(STATUS "Building DXVK ${DXVK_VERSION} for macOS/${DXVK_HOST_ARCH} with Meson (${MESON_EXECUTABLE})")
 
   include(ExternalProject)
   set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src")
@@ -73,8 +81,15 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     PATCH_COMMAND
       ${CMAKE_COMMAND} -E echo "Applying macOS patches to DXVK..." &&
       ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}
-    # Configure with Meson using SDL3 windowing system
+    # Configure with Meson using SDL3 windowing system.
+    # Force -arch flag so that even an x86_64 Meson (Rosetta) produces the
+    # correct slice for the host CPU (arm64 on Apple Silicon).
     CONFIGURE_COMMAND
+      ${CMAKE_COMMAND} -E env
+        CC=clang CXX=clang++
+        "CFLAGS=-arch ${DXVK_HOST_ARCH}"
+        "CXXFLAGS=-arch ${DXVK_HOST_ARCH}"
+        "LDFLAGS=-arch ${DXVK_HOST_ARCH}"
       ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR}
         -Ddxvk_native_wsi=sdl3
         --buildtype=release
