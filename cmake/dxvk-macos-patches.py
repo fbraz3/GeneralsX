@@ -10,6 +10,8 @@ macOS requires:
                           ambiguous between uint32_t and uint64_t overloads
   4. util_bit.h:          Add uintptr_t overloads for tzcnt/lzcnt
   5. src/*/meson.build:   --version-script is GNU ld only, not macOS ld
+  6. util_env.cpp:        getExePath() has no macOS branch; add _NSGetExecutablePath
+                          (/proc/self/exe doesn't exist on macOS)
 
 Usage: dxvk-macos-patches.py <dxvk_source_dir>
 """
@@ -112,7 +114,7 @@ def main():
         "uintptr_t overloads for tzcnt/lzcnt (macOS arm64)"
     )
 
-    # Patch 5: meson.build files - --version-script is GNU ld only
+    # Patch 5: meson.build files
     # macOS ld does not support --version-script. Guard the flag with a
     # platform != 'darwin' check.
     meson_files = [
@@ -132,6 +134,61 @@ def main():
             ),
             "--version-script: guard with platform != 'darwin'"
         )
+
+    # Patch 6: util_env.cpp - getExePath() has no macOS branch
+    # getExePath() only handles _WIN32, __linux__, __FreeBSD__.
+    # On macOS the function body is empty → compiler inserts brk 1 (UB trap).
+    # Fix: add __APPLE__ include and __APPLE__ implementation branch.
+    def patch_util_env_getexepath(c):
+        # Already patched?
+        if "_NSGetExecutablePath" in c:
+            return c
+        # Add macOS include after the FreeBSD include block
+        c = c.replace(
+            "#elif defined(__FreeBSD__)\n"
+            "#include <sys/sysctl.h>\n"
+            "#include <unistd.h>\n"
+            "#include <limits.h>\n"
+            "#endif",
+            "#elif defined(__FreeBSD__)\n"
+            "#include <sys/sysctl.h>\n"
+            "#include <unistd.h>\n"
+            "#include <limits.h>\n"
+            "#elif defined(__APPLE__)\n"
+            "#include <mach-o/dyld.h>\n"
+            "#include <limits.h>\n"
+            "#endif"
+        )
+        # Add macOS getExePath() branch before the closing #endif of getExePath
+        c = c.replace(
+            "    return std::string(exePath);\n"
+            "#endif\n"
+            "  }\n"
+            "\n"
+            "\n"
+            "  void setThreadName",
+            "    return std::string(exePath);\n"
+            "#elif defined(__APPLE__)\n"
+            "    // macOS: _NSGetExecutablePath from <mach-o/dyld.h>\n"
+            "    // /proc/self/exe does not exist on macOS.\n"
+            "    char buf[PATH_MAX] = {};\n"
+            "    uint32_t size = sizeof(buf);\n"
+            "    if (_NSGetExecutablePath(buf, &size) != 0)\n"
+            "      return std::string();\n"
+            "    return std::string(buf);\n"
+            "#endif\n"
+            "  }\n"
+            "\n"
+            "\n"
+            "  void setThreadName"
+        )
+        return c
+
+    patch_file(
+        os.path.join(src, "src/util/util_env.cpp"),
+        patch_util_env_getexepath,
+        "getExePath(): add __APPLE__ branch using _NSGetExecutablePath"
+    )
 
     print("\nAll macOS patches applied successfully.")
 
