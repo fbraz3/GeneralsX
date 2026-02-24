@@ -1,0 +1,77 @@
+#!/bin/bash
+# GeneralsX @build BenderAI 24/02/2026 Deploy macOS build to runtime directory
+# Copies GeneralsXZH binary and required dylibs to ~/GeneralsX/GeneralsMD
+
+set -e
+
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BUILD_DIR="${PROJECT_ROOT}/build/macos-vulkan"
+SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
+SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
+GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
+RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
+BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
+
+echo "Deploying GeneralsXZH (macOS) to ${RUNTIME_DIR}"
+
+if [[ ! -f "${BINARY_SRC}" ]]; then
+    echo "ERROR: Binary not found at ${BINARY_SRC}"
+    echo "Build first: cmake --build build/macos-vulkan --target z_generals"
+    exit 1
+fi
+if [[ ! -s "${BINARY_SRC}" ]]; then
+    echo "ERROR: Binary at ${BINARY_SRC} is empty - build may have failed"
+    exit 1
+fi
+
+mkdir -p "${RUNTIME_DIR}"
+
+echo "  Copying GeneralsXZH..."
+cp -v "${BINARY_SRC}" "${RUNTIME_DIR}/GeneralsXZH"
+chmod +x "${RUNTIME_DIR}/GeneralsXZH"
+
+echo "  Copying SDL3 libraries..."
+cp -v "${SDL3_LIB_DIR}"/libSDL3.0.dylib "${RUNTIME_DIR}/"
+ln -sf libSDL3.0.dylib "${RUNTIME_DIR}/libSDL3.dylib" 2>/dev/null || true
+cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/"
+ln -sf libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/libSDL3_image.0.dylib" 2>/dev/null || true
+ln -sf libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/libSDL3_image.dylib" 2>/dev/null || true
+
+echo "  Copying GameSpy library..."
+cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
+
+# Write wrapper run script that sets DYLD_LIBRARY_PATH at launch time
+echo "  Writing run.sh wrapper..."
+cat > "${RUNTIME_DIR}/run.sh" << WRAPPER
+#!/bin/bash
+# GeneralsX @build BenderAI 24/02/2026 - macOS wrapper for runtime directory
+SCRIPT_DIR="\$(cd "\$(dirname "\$0")" && pwd)"
+
+# SDL3 and gamespy dylibs are in same dir; Vulkan/MoltenVK stays in SDK
+export DYLD_LIBRARY_PATH="\${SCRIPT_DIR}:\${DYLD_LIBRARY_PATH:-}"
+
+# MoltenVK — use Vulkan SDK ICD if available
+VULKAN_SDK="\$(find /Users -maxdepth 4 -name "MoltenVK_icd.json" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || true)"
+if [[ -n "\${VULKAN_SDK}" ]]; then
+    export VK_ICD_FILENAMES="\${VULKAN_SDK}/MoltenVK_icd.json"
+fi
+
+# Auto-detect base Generals install path
+if [[ -z "\${CNC_GENERALS_INSTALLPATH:-}" && -d "\${SCRIPT_DIR}/../Generals" ]]; then
+    export CNC_GENERALS_INSTALLPATH="\${SCRIPT_DIR}/../Generals/"
+fi
+
+exec "\${SCRIPT_DIR}/GeneralsXZH" "\$@"
+WRAPPER
+chmod +x "${RUNTIME_DIR}/run.sh"
+
+echo ""
+echo "Deploy complete"
+echo "   Executable: ${RUNTIME_DIR}/GeneralsXZH"
+echo "   SDL3 libs:  ${RUNTIME_DIR}/libSDL3*.dylib"
+echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.dylib"
+echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
+echo ""
+echo "Run with:"
+echo "  ${PROJECT_ROOT}/scripts/run-macos-zh.sh -win"
+echo "  or: cd ~/GeneralsX/GeneralsMD && ./run.sh -win"

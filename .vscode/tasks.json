@@ -494,6 +494,84 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Configure (macOS, macos-vulkan preset)",
+			"type": "shell",
+			"command": "mkdir -p logs && cmake --preset macos-vulkan 2>&1 | tee logs/configure_macos.log",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build GeneralsXZH (macOS)",
+			"type": "shell",
+			"command": "mkdir -p logs && cmake --build build/macos-vulkan --target z_generals -- -j$(sysctl -n hw.logicalcpu) 2>&1 | tee logs/build_zh_macos.log",
+			"isBackground": false,
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Deploy GeneralsXZH (macOS)",
+			"type": "shell",
+			"command": "./scripts/deploy-macos-zh.sh",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Run GeneralsXZH (macOS)",
+			"type": "shell",
+			"command": "./scripts/run-macos-zh.sh -win",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Pipeline: Build + Deploy + Run ZH (macOS)",
+			"type": "shell",
+			"command": "mkdir -p logs && cmake --build build/macos-vulkan --target z_generals -- -j$(sysctl -n hw.logicalcpu) 2>&1 | tee logs/build_zh_macos.log && ./scripts/deploy-macos-zh.sh && ./scripts/run-macos-zh.sh -win",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Docs: Update Dev Blog",
 			"type": "shell",
 			"command": "code docs/DEV_BLOG/2026-02-DIARY.md",
