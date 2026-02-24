@@ -9,6 +9,7 @@ BUILD_DIR="${PROJECT_ROOT}/build/macos-vulkan"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
+DXVK_D3D8_LIB="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
 RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 
@@ -40,6 +41,15 @@ ln -sf libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/libSDL3_image.dylib" 2>/dev/nul
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
+echo "  Copying DXVK d3d8 library..."
+if [[ -f "${DXVK_D3D8_LIB}" ]]; then
+    cp -v "${DXVK_D3D8_LIB}" "${RUNTIME_DIR}/"
+    ln -sf libdxvk_d3d8.0.dylib "${RUNTIME_DIR}/libdxvk_d3d8.dylib" 2>/dev/null || true
+else
+    echo "WARNING: ${DXVK_D3D8_LIB} not found."
+    echo "  Run cmake --build build/macos-vulkan --target dxvk_d3d8_install to build DXVK first."
+fi
+
 # Write wrapper run script that sets DYLD_LIBRARY_PATH at launch time
 echo "  Writing run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << WRAPPER
@@ -70,6 +80,7 @@ echo "Deploy complete"
 echo "   Executable: ${RUNTIME_DIR}/GeneralsXZH"
 echo "   SDL3 libs:  ${RUNTIME_DIR}/libSDL3*.dylib"
 echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.dylib"
+echo "   DXVK d3d8:  ${RUNTIME_DIR}/libdxvk_d3d8.0.dylib"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"
