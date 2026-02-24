@@ -17,9 +17,24 @@ if(SAGE_USE_DX8)
   )
   FetchContent_MakeAvailable(dx8)
   message(STATUS "Using DirectX 8 SDK (Windows native)")
+elseif(APPLE AND SAGE_USE_MOLTENVK)
+  # macOS: Fetch DXVK source code and compile with MoltenVK (Vulkan→Metal bridge)
+  # GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port
+  # MoltenVK provides Vulkan API on macOS via Metal translation layer
+  # DXVK-native supports SDL3 WSI (PR #4404) and builds on macOS with Meson
+  message(STATUS "Configuring DXVK (v2.6) from source for macOS with MoltenVK...")
+  
+  FetchContent_Declare(
+    dxvk
+    GIT_REPOSITORY https://github.com/doitsujin/dxvk.git
+    GIT_TAG        v2.6
+  )
+  FetchContent_MakeAvailable(dxvk)
+  message(STATUS "DXVK source directory: ${dxvk_SOURCE_DIR}")
+  message(STATUS "Note: DXVK compilation requires Meson installed: brew install meson")
 else()
-  # Linux: Fetch DXVK native for DirectX→Vulkan translation
-  # DXVK includes complete Wine-compatible DirectX headers (no min-dx8-sdk needed)
+  # Linux: Fetch pre-built DXVK native binary for DirectX→Vulkan translation
+  # Native 32-bit and 64-bit Linux binaries (.so)
   FetchContent_Declare(
     dxvk
     URL        https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-native-2.6-steamrt-sniper.tar.gz

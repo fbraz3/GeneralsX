@@ -10,8 +10,11 @@ option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
 option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
 
 # Linux/SDL3 and OpenAL options (Phase 1 Linux port)
-option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux)" OFF)
-option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux)" OFF)
+option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS)" OFF)
+option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux/macOS)" OFF)
+
+# macOS port option (Phase 5)
+option(SAGE_USE_MOLTENVK "Use MoltenVK for Vulkan on macOS (Phase 5 macOS port)" OFF)
 
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
@@ -97,4 +100,19 @@ endif()
 if(SAGE_USE_GLM)
     target_compile_definitions(core_config INTERFACE SAGE_USE_GLM)
     message(STATUS "GLM math library enabled (DirectX 8 replacement)")
+endif()
+
+# macOS MoltenVK detection (Phase 5)
+# GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port
+if(APPLE AND SAGE_USE_MOLTENVK)
+    find_package(Vulkan REQUIRED COMPONENTS MoltenVK)
+    if(NOT Vulkan_FOUND)
+        message(FATAL_ERROR "MoltenVK not found. Install: brew install --cask vulkan-sdk")
+    endif()
+    
+    target_compile_definitions(core_config INTERFACE SAGE_USE_MOLTENVK)
+    target_link_libraries(core_config INTERFACE Vulkan::Vulkan)
+    message(STATUS "MoltenVK (Vulkan on macOS) detected and enabled")
+    message(STATUS "  Vulkan SDK: ${Vulkan_INCLUDE_DIRS}")
+    message(STATUS "  MoltenVK: Will translate Vulkan to Metal")
 endif()

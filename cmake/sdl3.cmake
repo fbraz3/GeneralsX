@@ -47,19 +47,44 @@ if(SAGE_USE_SDL3)
     
     FetchContent_MakeAvailable(SDL3)
     
-    # GeneralsX @bugfix BenderAI 22/02/2026
-    # Before SDL3_image build: force PNG discovery to system libpng16.so (not vcpkg PNG::PNG)
-    # vcpkg's PNG::PNG is INTERFACE_LIBRARY (static) - incompatible with SDL3_image need for .so
-    # System libpng16.so is dynamic shared library - exactly what SDL3_image requires
-    set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
-    set(PNG_INCLUDE_DIR "/usr/include" CACHE PATH "PNG include dir (system)" FORCE)
-    set(PNG_LIBRARY "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG library (system .so)" FORCE)
-    set(PNG_LIBRARY_DEBUG "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG debug library" FORCE)
-    set(PNG_LIBRARY_RELEASE "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG release library" FORCE)
-    set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+    # GeneralsX @bugfix BenderAI 22/02/2026 (updated 24/02/2026 for macOS)
+    # Before SDL3_image build: force PNG discovery to platform-specific libpng
+    # Linux: System libpng16.so is dynamic shared library
+    # macOS: Use Homebrew PNG or system framework
+    if(NOT APPLE)
+        # Linux: explicit libpng16.so path
+        set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
+        set(PNG_INCLUDE_DIR "/usr/include" CACHE PATH "PNG include dir (system)" FORCE)
+        set(PNG_LIBRARY "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG library (system .so)" FORCE)
+        set(PNG_LIBRARY_DEBUG "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG debug library" FORCE)
+        set(PNG_LIBRARY_RELEASE "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG release library" FORCE)
+        set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+        find_package(PNG REQUIRED MODULE)
+    else()
+        # macOS: Force Homebrew's dynamic libpng, bypassing vcpkg's static .a
+        # GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port
+        # vcpkg provides static libpng16.a but SDL3_image requires dynamic .dylib
+        # Homebrew installs libpng16.16.dylib at /usr/local/lib (Intel) or /opt/homebrew/lib (ARM)
+        set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
+        if(EXISTS "/usr/local/lib/libpng16.dylib")
+            # Intel Mac (Homebrew prefix: /usr/local)
+            set(PNG_INCLUDE_DIR "/usr/local/include" CACHE PATH "PNG include dir (Homebrew)" FORCE)
+            set(PNG_LIBRARY "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "PNG library (Homebrew .dylib)" FORCE)
+            set(PNG_LIBRARY_DEBUG "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+            set(PNG_LIBRARY_RELEASE "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+        elseif(EXISTS "/opt/homebrew/lib/libpng16.dylib")
+            # Apple Silicon Mac (Homebrew prefix: /opt/homebrew)
+            set(PNG_INCLUDE_DIR "/opt/homebrew/include" CACHE PATH "PNG include dir (Homebrew)" FORCE)
+            set(PNG_LIBRARY "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "PNG library (Homebrew .dylib)" FORCE)
+            set(PNG_LIBRARY_DEBUG "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+            set(PNG_LIBRARY_RELEASE "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+        else()
+            message(FATAL_ERROR "libpng not found. Install: brew install libpng")
+        endif()
+        find_package(PNG REQUIRED MODULE)
+    endif()
     
     # Tell CMake to find PNG - this should use our explicit system .so above, not vcpkg
-    find_package(PNG REQUIRED MODULE)
     
     # SDL3_image - Image format support (PNG, JPG for cursor ANI loading)
     message(STATUS "Configuring SDL3_image (v3.4.0) with FetchContent (native build)...")

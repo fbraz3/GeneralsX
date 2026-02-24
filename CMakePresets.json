@@ -208,6 +208,28 @@
                 "RTS_CRASHDUMP_ENABLE": "OFF",
                 "RTS_BUILD_OPTION_FFMPEG": "ON"
             }
+        },
+        {
+            "name": "macos-vulkan",
+            "displayName": "macOS (MoltenVK + SDL3 + OpenAL) Universal Binary",
+            "inherits": "default-vcpkg",
+            "generator": "Ninja",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "11.0",
+                "SAGE_USE_DX8": "OFF",
+                "SAGE_USE_SDL3": "ON",
+                "SAGE_USE_OPENAL": "ON",
+                "SAGE_USE_GLM": "ON",
+                "SAGE_USE_MOLTENVK": "ON",
+                "RTS_CRASHDUMP_ENABLE": "OFF",
+                "RTS_BUILD_OPTION_FFMPEG": "ON"
+            },
+            "description": "Phase 5 macOS port: Universal binary (Intel x86_64 + Apple Silicon arm64) with MoltenVK for graphics, SDL3 for windowing, OpenAL for audio"
         }
     ],
     "buildPresets": [
