@@ -39,7 +39,15 @@
 #include "always.h"
 #include "wwdebug.h"
 #include "mutex.h"
+
+// GeneralsX @build BenderAI 24/02/2026 Phase 5 - macOS malloc.h compatibility
+// malloc.h exists on Windows/Linux but not on macOS (use stdlib.h instead)
+#ifdef _WIN32
 #include <malloc.h>
+#else
+#include <stdlib.h>  // malloc, free, realloc on macOS/POSIX systems
+#endif
+
 #include <stddef.h> //size_t & ptrdiff_t definition
 
 ///////////////////////////////////////////////////////////////////////////////

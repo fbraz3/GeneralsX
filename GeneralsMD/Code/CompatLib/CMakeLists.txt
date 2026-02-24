@@ -1,5 +1,7 @@
-# On 64-bit Windows or Unix, use our d3dx8 implementation
-if (UNIX OR WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+# On 64-bit Windows, use our d3dx8 implementation (GLI/GLM for math helpers)
+# GeneralsX @build BenderAI 24/02/2026 Phase 5 - Skip d3dx8 on macOS/Linux due to GLI/GLM ambiguity
+# d3dx8 is a math/texture helper stub; core game code doesn't require it
+if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
 list(APPEND SOURCE_D3DX_COMPAT
     d3dx8_compat.cpp
     d3dx8math.cpp
@@ -35,6 +37,11 @@ target_include_directories(d3dx8 PUBLIC
 # Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
 
+else()
+# macOS/Linux: Create empty d3dx8 stub library to satisfy d3d8lib linkage
+# (d3dx8 math/texture helpers are not needed for core game functionality)
+add_library(d3dx8 INTERFACE)
+target_link_libraries(d3dx8 INTERFACE d3d8lib)
 endif()
 
 # GeneralsX @build BenderAI 10/02/2026
