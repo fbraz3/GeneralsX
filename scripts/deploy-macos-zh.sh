@@ -10,6 +10,7 @@ SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
 DXVK_D3D8_LIB="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
+DXVK_D3D9_LIB="${BUILD_DIR}/libdxvk_d3d9.0.dylib"
 RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 
@@ -41,7 +42,14 @@ ln -sf libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/libSDL3_image.dylib" 2>/dev/nul
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
-echo "  Copying DXVK d3d8 library..."
+echo "  Copying DXVK libraries (d3d9 + d3d8)..."
+# d3d8 links against d3d9 via @rpath — both must be present in the runtime dir
+if [[ -f "${DXVK_D3D9_LIB}" ]]; then
+    cp -v "${DXVK_D3D9_LIB}" "${RUNTIME_DIR}/"
+    ln -sf libdxvk_d3d9.0.dylib "${RUNTIME_DIR}/libdxvk_d3d9.dylib" 2>/dev/null || true
+else
+    echo "WARNING: ${DXVK_D3D9_LIB} not found (d3d8 will fail to load without it)."
+fi
 if [[ -f "${DXVK_D3D8_LIB}" ]]; then
     cp -v "${DXVK_D3D8_LIB}" "${RUNTIME_DIR}/"
     ln -sf libdxvk_d3d8.0.dylib "${RUNTIME_DIR}/libdxvk_d3d8.dylib" 2>/dev/null || true
@@ -80,6 +88,7 @@ echo "Deploy complete"
 echo "   Executable: ${RUNTIME_DIR}/GeneralsXZH"
 echo "   SDL3 libs:  ${RUNTIME_DIR}/libSDL3*.dylib"
 echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.dylib"
+echo "   DXVK d3d9:  ${RUNTIME_DIR}/libdxvk_d3d9.0.dylib"
 echo "   DXVK d3d8:  ${RUNTIME_DIR}/libdxvk_d3d8.0.dylib"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""

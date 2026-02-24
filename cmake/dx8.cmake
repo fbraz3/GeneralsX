@@ -71,6 +71,7 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src")
   set(DXVK_BUILD_DIR  "${CMAKE_BINARY_DIR}/_deps/dxvk-build-macos")
   set(DXVK_D3D8_LIB  "${DXVK_BUILD_DIR}/src/d3d8/libdxvk_d3d8.0.dylib")
+  set(DXVK_D3D9_LIB  "${DXVK_BUILD_DIR}/src/d3d9/libdxvk_d3d9.0.dylib")
 
   ExternalProject_Add(dxvk_macos_build
     GIT_REPOSITORY    https://github.com/doitsujin/dxvk.git
@@ -94,27 +95,37 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
         -Ddxvk_native_wsi=sdl3
         --buildtype=release
         --reconfigure
-    # Build only d3d8 target (GeneralsXZH uses D3D8 only)
+    # Build d3d9 first (d3d8 links against it at runtime via @rpath),
+    # then d3d8. Both dylibs must be present in the runtime directory.
     BUILD_COMMAND
-      ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d8/libdxvk_d3d8.0.dylib
-    # DXVK install is not needed; we deploy the dylib manually
+      ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR}
+        src/d3d9/libdxvk_d3d9.0.dylib
+        src/d3d8/libdxvk_d3d8.0.dylib
+    # DXVK install is not needed; we deploy the dylibs manually
     INSTALL_COMMAND   ""
     # Only re-patch/reconfigure when the git tag changes
     UPDATE_DISCONNECTED TRUE
   )
 
-  # Create symlink libdxvk_d3d8.dylib -> libdxvk_d3d8.0.dylib in build dir
+  # Copy libdxvk_d3d9 + libdxvk_d3d8 to build dir and create unversioned symlinks.
+  # d3d8 links against d3d9 via @rpath, so both must be present at runtime.
   add_custom_command(
-    OUTPUT  "${CMAKE_BINARY_DIR}/libdxvk_d3d8.0.dylib"
+    OUTPUT  "${CMAKE_BINARY_DIR}/libdxvk_d3d9.0.dylib"
+            "${CMAKE_BINARY_DIR}/libdxvk_d3d8.0.dylib"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              ${DXVK_D3D9_LIB} "${CMAKE_BINARY_DIR}/libdxvk_d3d9.0.dylib"
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+              libdxvk_d3d9.0.dylib "${CMAKE_BINARY_DIR}/libdxvk_d3d9.dylib"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
               ${DXVK_D3D8_LIB} "${CMAKE_BINARY_DIR}/libdxvk_d3d8.0.dylib"
     COMMAND ${CMAKE_COMMAND} -E create_symlink
               libdxvk_d3d8.0.dylib "${CMAKE_BINARY_DIR}/libdxvk_d3d8.dylib"
     DEPENDS dxvk_macos_build
-    COMMENT "Installing libdxvk_d3d8.dylib to build directory"
+    COMMENT "Installing libdxvk_d3d8 + libdxvk_d3d9 to build directory"
   )
   add_custom_target(dxvk_d3d8_install ALL
     DEPENDS "${CMAKE_BINARY_DIR}/libdxvk_d3d8.0.dylib"
+            "${CMAKE_BINARY_DIR}/libdxvk_d3d9.0.dylib"
   )
 
   # Export path so other cmake files know where the headers are
