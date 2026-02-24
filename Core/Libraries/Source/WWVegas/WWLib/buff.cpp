@@ -173,7 +173,8 @@ Buffer & Buffer::operator = (Buffer const & buffer)
 {
 	if (&buffer != this) {
 		if (IsAllocated) {
-			delete [] BufferPtr;
+			// GeneralsX @bugfix felipe 24/02/2026 Cast to char* before delete[] to avoid UB on void* (allocated as new char[])
+			delete [] static_cast<char *>(BufferPtr);
 		}
 		IsAllocated = false;
 		BufferPtr = buffer.BufferPtr;
@@ -223,7 +224,8 @@ Buffer::~Buffer(void)
 void Buffer::Reset(void)
 {
 	if (IsAllocated) {
-		delete [] BufferPtr;
+		// GeneralsX @bugfix felipe 24/02/2026 Cast to char* before delete[] to avoid UB on void* (allocated as new char[])
+		delete [] static_cast<char *>(BufferPtr);
 	}
 	BufferPtr = nullptr;
 	Size = 0;
