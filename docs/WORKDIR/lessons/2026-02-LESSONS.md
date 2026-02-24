@@ -881,3 +881,47 @@ target_link_libraries(mytarget INTERFACE
 )
 ```
 On macOS, CMake's `FindIconv` resolves to `/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/libiconv.tbd` (system stub — correct for arm64).
+
+---
+
+## Session 62 — 24/02/2026: Meson from Rosetta Homebrew Produces x86_64 Even on Apple Silicon
+
+### Problem
+`dlopen(libdxvk_d3d8.dylib)` failed with "incompatible architecture (have 'x86_64', need 'arm64')".
+The game process is `arm64` (native Apple Silicon) but the dylib was built as `x86_64`.
+
+### Root Cause
+`/usr/local/bin/meson` is the Intel (x86_64) Homebrew binary running under Rosetta 2.
+Without explicit `-arch arm64` flags, Clang defaults to the Rosetta process's arch (`x86_64`).
+The entire DXVK build came out x86_64 even though the Mac is Apple Silicon.
+
+### Fix
+Pass explicit architecture flags via `cmake -E env` before `meson setup` in `cmake/dx8.cmake`:
+```cmake
+# Detect host arch (arm64 on Apple Silicon, x86_64 on Intel)
+execute_process(COMMAND uname -m OUTPUT_VARIABLE DXVK_HOST_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+CONFIGURE_COMMAND
+  ${CMAKE_COMMAND} -E env
+    CC=clang CXX=clang++
+    "CFLAGS=-arch ${DXVK_HOST_ARCH}"
+    "CXXFLAGS=-arch ${DXVK_HOST_ARCH}"
+    "LDFLAGS=-arch ${DXVK_HOST_ARCH}"
+  ${MESON_EXECUTABLE} setup ...
+```
+
+### Manual Rebuild Command (arm64)
+```bash
+DXVK_SRC="build/macos-vulkan/_deps/dxvk-src"
+rm -rf /tmp/dxvk-arm64-build
+CC=clang CXX=clang++ CFLAGS="-arch arm64" CXXFLAGS="-arch arm64" LDFLAGS="-arch arm64" \
+  /usr/local/bin/meson setup /tmp/dxvk-arm64-build "$DXVK_SRC" -Ddxvk_native_wsi=sdl3 --buildtype=release
+ninja -j8 -C /tmp/dxvk-arm64-build src/d3d8/libdxvk_d3d8.0.dylib
+# Validation:
+file /tmp/dxvk-arm64-build/src/d3d8/libdxvk_d3d8.0.dylib
+# → Mach-O 64-bit dynamically linked shared library arm64  ✅
+```
+
+### Key Rule
+**Always run `file` on produced dylibs when dlopen fails on macOS.**  
+On machines with dual Homebrew installs (Intel + arm64), always pass explicit `-arch` flags.
