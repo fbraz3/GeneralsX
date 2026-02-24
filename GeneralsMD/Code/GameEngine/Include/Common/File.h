@@ -23,12 +23,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //----------------------------------------------------------------------------=
-//                                                                          
-//                       Westwood Studios Pacific.                          
-//                                                                          
-//                       Confidential Information					                  
-//                Copyright(C) 2001 - All Rights Reserved                  
-//                                                                          
+//
+//                       Westwood Studios Pacific.
+//
+//                       Confidential Information
+//                Copyright(C) 2001 - All Rights Reserved
+//
 //----------------------------------------------------------------------------
 //
 // Project:    WSYS Library
@@ -43,20 +43,20 @@
 
 #pragma once
 
-#ifndef __FILE_H
-#define __FILE_H
-
-
+// GeneralsX @build fbraz 24/02/2026 Sync with Core/GameEngine/Include/Common/file.h
+// GeneralsMD version was incomplete (missing readChar, readWideChar, writeFormat, writeChar, flush etc.)
+// The Core version is a superset and required by Recorder.cpp and other ZH code.
 
 //----------------------------------------------------------------------------
-//           Includes                                                      
+//           Includes
 //----------------------------------------------------------------------------
 
 #include "Lib/BaseType.h"
+// GeneralsX @build fbraz 24/02/2026 Include stdio.h for BUFSIZ (used by BUFFERSIZE enum)
+// Clang on macOS does not pull it transitively unlike MSVC/GCC
+#include <stdio.h>
 #include "Common/AsciiString.h"
 #include "Common/GameMemory.h"
-// include FileSystem.h as it will be used alot with File.h
-//#include "Common/FileSystem.h"
 
 //----------------------------------------------------------------------------
 //           Forward References
@@ -76,6 +76,8 @@
 	*
 	* All code should use the File class and not its derivatives, unless
 	* absolutely necessary. Also FS::Open should be used to create File objects and open files.
+	*
+	* TheSuperHackers @feature Adds LINEBUF and FULLBUF modes and buffer size argument for file open.
 	*/
 //===============================
 
@@ -86,22 +88,31 @@ class File : public MemoryPoolObject
 //	friend class FileSystem;
 
 	public:
-	
+
 		enum access
 		{
-			NONE			= 0x00000000,				
+			NONE			= 0x00000000,				///< Access file. Reading by default
+
 			READ			= 0x00000001,				///< Access file for reading
 			WRITE			= 0x00000002,				///< Access file for writing
+			READWRITE = (READ | WRITE),
+
 			APPEND		= 0x00000004,				///< Seek to end of file on open
 			CREATE		= 0x00000008,				///< Create file if it does not exist
 			TRUNCATE	= 0x00000010,				///< Delete all data in file when opened
+
+			// NOTE: accesses file as binary data if neither TEXT and BINARY are set
 			TEXT			= 0x00000020,				///< Access file as text data
 			BINARY		= 0x00000040,				///< Access file as binary data
-			READWRITE = (READ | WRITE),
+
 			ONLYNEW		= 0x00000080,				///< Only create file if it does not exist
-			
+
 			// NOTE: STREAMING is Mutually exclusive with WRITE
-			STREAMING = 0x00000100				///< Do not read this file into a ram file, read it as requested.
+			STREAMING = 0x00000100,				///< Do not read this file into a ram file, read it as requested.
+
+			// NOTE: accesses file with full buffering if neither LINEBUF and FULLBUF are set
+			LINEBUF   = 0x00000200,				///< Access file with line buffering
+			FULLBUF   = 0x00000400,				///< Access file with full buffering
 		};
 
 		enum seekMode
@@ -111,35 +122,66 @@ class File : public MemoryPoolObject
 			END														///< Seek position is relative from the end of the file
 		};
 
+		enum
+		{
+			BUFFERSIZE = BUFSIZ,
+		};
+
 	protected:
 
 		AsciiString	m_nameStr;						///< Stores file name
 		Int					m_access;									///< How the file was opened
 		Bool				m_open;										///< Has the file been opened
 		Bool				m_deleteOnClose;					///< delete File object on close()
-		
-		
+
+
 		File();											///< This class can only used as a base class
 		//virtual				~File();
 
+		void closeWithoutDelete();
+
 	public:
-		
+
 
 						Bool	eof();
-		virtual Bool	open( const Char *filename, Int access = 0 );				///< Open a file for access
+		virtual Bool	open( const Char *filename, Int access = NONE, size_t bufferSize = BUFFERSIZE ); ///< Open a file for access
 		virtual void	close( void );																			///< Close the file !!! File object no longer valid after this call !!!
 
-		virtual Int		read( void *buffer, Int bytes ) = 0 ;						/**< Read the specified number of bytes from the file in to the 
+		virtual Int		read( void *buffer, Int bytes ) = 0 ;						/**< Read the specified number of bytes from the file in to the
 																																			  *  memory pointed at by buffer. Returns the number of bytes read.
-																																			  *  Returns -1 if an error occured.
+																																			  *  Returns -1 if an error occurred.
 																																			  */
-		virtual Int		write( const void *buffer, Int bytes ) = 0 ;						/**< Write the specified number of bytes from the    
+		virtual Int		readChar() = 0 ;											/**< Read a character from the file
+																																			  *  Returns the character converted to an integer.
+																																			  *  Returns EOF if an error occurred.
+																																			  */
+		virtual Int		readWideChar() = 0 ;										/**< Read a wide character from the file
+																																			  *  Returns the wide character converted to an integer.
+																																			  *  Returns wide EOF if an error occurred.
+																																			  */
+		virtual Int		write( const void *buffer, Int bytes ) = 0 ;						/**< Write the specified number of bytes from the
 																																			  *	 memory pointed at by buffer to the file. Returns the number of bytes written.
-																																			  *	 Returns -1 if an error occured.
+																																			  *	 Returns -1 if an error occurred.
+																																			  */
+		virtual Int		writeFormat( const Char* format, ... ) = 0 ;						/**< Write an unterminated formatted string to the file
+																																			  *	 Returns the number of bytes written.
+																																			  *	 Returns -1 if an error occurred.
+																																			  */
+		virtual Int		writeFormat( const WideChar* format, ... ) = 0 ;						/**< Write an unterminated formatted wide character string to the file
+																																			  *	 Returns the number of bytes written.
+																																			  *	 Returns -1 if an error occurred.
+																																			  */
+		virtual Int		writeChar( const Char* character ) = 0 ;						/**< Write a character to the file
+																																			  *	 Returns a copy of the character written.
+																																			  *	 Returns EOF if an error occurred.
+																																			  */
+		virtual Int		writeChar( const WideChar* character ) = 0 ;						/**< Write a wide character to the file
+																																			  *	 Returns a copy of the wide character written.
+																																			  *	 Returns wide EOF if an error occurred.
 																																			  */
 		virtual Int		seek( Int bytes, seekMode mode = CURRENT ) = 0;	/**< Sets the file position of the next read/write operation. Returns the new file
 																																				*  position as the number of bytes from the start of the file.
-																																				*  Returns -1 if an error occured.
+																																				*  Returns -1 if an error occurred.
 																																				*
 																																				*  seekMode determines how the seek is done:
 																																				*
@@ -147,13 +189,14 @@ class File : public MemoryPoolObject
 																																				*  CURRENT: means seek the specified the number of bytes from the current file position
 																																				*  END: means seek the specified number of bytes back from the end of the file
 																																				*/
-		virtual void	nextLine(Char *buf = 0, Int bufSize = 0) = 0;		///< reads until it reaches a new-line character
+		virtual Bool	flush() = 0;											///< flush data to disk
+		virtual void	nextLine(Char *buf = nullptr, Int bufSize = 0) = 0;		///< reads until it reaches a new-line character
 
 		virtual Bool	scanInt(Int &newInt) = 0;														///< read an integer from the current file position.
 		virtual Bool	scanReal(Real &newReal) = 0;												///< read a real number from the current file position.
 		virtual Bool	scanString(AsciiString &newString) = 0;							///< read a string from the current file position.
 
-		virtual Bool	print ( const Char *format, ...);										///< Prints formated string to text file
+		virtual Bool	print ( const Char *format, ...);										///< Prints formatted string to text file
 		virtual Int		size( void );																				///< Returns the size of the file
 		virtual Int		position( void );																		///< Returns the current read/write position
 
@@ -165,7 +208,7 @@ class File : public MemoryPoolObject
 		void					deleteOnClose ( void );															///< Causes the File object to delete itself when it closes
 
 		/**
-			Allocate a buffer large enough to hold entire file, read 
+			Allocate a buffer large enough to hold entire file, read
 			the entire file into the buffer, then close the file.
 			the buffer is owned by the caller, who is responsible
 			for freeing is (via delete[]). This is a Good Thing to
@@ -179,16 +222,10 @@ class File : public MemoryPoolObject
 
 
 //----------------------------------------------------------------------------
-//           Inlining                                                       
+//           Inlining
 //----------------------------------------------------------------------------
 
 inline const char* File::getName( void ) const { return m_nameStr.str(); }
 inline void File::setName( const char *name ) { m_nameStr.set(name); }
 inline Int File::getAccess( void ) const { return m_access; }
 inline void File::deleteOnClose( void ) { m_deleteOnClose = TRUE; }
-
-
-
-
-
-#endif // __FILE_H

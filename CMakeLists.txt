@@ -40,6 +40,10 @@ if(UNIX)
     include_directories(${CMAKE_SOURCE_DIR}/GeneralsMD/Code/CompatLib/Include)
 endif()
 
+# Compiler cache (ccache) – must be included before compilers.cmake so the
+# launcher is registered before CMake finalizes the compiler selection.
+include(cmake/ccache.cmake)
+
 # This file handles extra settings wanted/needed for different compilers.
 include(cmake/compilers.cmake)
 
