@@ -250,10 +250,12 @@ if (MSVC AND NOT IS_VS6_BUILD)
     )
 endif()
 
-# GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Linux text rendering (Phase 1.5)
-if(UNIX AND NOT APPLE)
+# GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Unix text rendering (Linux + macOS Phase 5)
+if(UNIX)
     find_package(Freetype REQUIRED)
-    find_package(Fontconfig REQUIRED)
+    if(NOT APPLE)
+        find_package(Fontconfig REQUIRED)
+    endif()
 endif()
 
 target_link_libraries(corei_ww3d2 INTERFACE
@@ -261,5 +263,6 @@ target_link_libraries(corei_ww3d2 INTERFACE
     core_wwlib
     core_wwmath
     $<$<PLATFORM_ID:Linux>:Freetype::Freetype>
+    $<$<PLATFORM_ID:Darwin>:Freetype::Freetype>
     $<$<PLATFORM_ID:Linux>:Fontconfig::Fontconfig>
 )

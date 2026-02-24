@@ -4,12 +4,28 @@
 
 #include <time.h>
 
+// GeneralsX @feature BenderAI 24/02/2026 Phase 5 macOS timer support (CLOCK_BOOTTIME -> CLOCK_UPTIME)
+#ifdef __APPLE__
+#include <mach/mach_time.h>
+#endif
+
 DWORD timeGetTime(void)
 {
   // Boost could be used but is slow
+#ifdef __APPLE__
+  // macOS: Use mach_absolute_time() for uptime
+  static mach_timebase_info_data_t tb = { 0, 0 };
+  if (tb.denom == 0) {
+    mach_timebase_info(&tb);
+  }
+  uint64_t elapsed = mach_absolute_time();
+  uint64_t nanoseconds = elapsed * tb.numer / tb.denom;
+  DWORD diff = (DWORD)(nanoseconds / 1000000);
+#else
   struct timespec ts;
   clock_gettime(CLOCK_BOOTTIME, &ts);
   DWORD diff = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+#endif
   return diff;
 }
 

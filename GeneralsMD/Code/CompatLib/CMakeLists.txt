@@ -52,13 +52,16 @@ if(SAGE_USE_DX8)
         ${dx8_SOURCE_DIR}/lib
     )
 else()
-    # Linux: Use ONLY DXVK headers (not min-dx8-sdk) to avoid conflicts
+    # Linux + macOS: Use ONLY DXVK headers (not min-dx8-sdk) to avoid conflicts
     # DXVK provides complete Wine-compatible DirectX 8 headers
+    # GeneralsX @build BenderAI 24/02/2026 Phase 5 - DXVK v2.6 uses include/native/windows + include/native/directx
     if(NOT dxvk_SOURCE_DIR)
         message(FATAL_ERROR "DXVK not fetched! Ensure SAGE_USE_DX8=OFF and cmake/dx8.cmake was included")
     endif()
     target_include_directories(d3d8lib INTERFACE
-        ${dxvk_SOURCE_DIR}/include/dxvk
+        ${dxvk_SOURCE_DIR}/include/native/windows
+        ${dxvk_SOURCE_DIR}/include/native/directx
+        ${dxvk_SOURCE_DIR}/include/vulkan
     )
     target_link_directories(d3d8lib INTERFACE
         ${dxvk_SOURCE_DIR}/lib
@@ -78,6 +81,10 @@ set(SOURCE_COMPAT
 list(TRANSFORM SOURCE_COMPAT PREPEND "Source/")
 
 add_library(CompatLib STATIC ${SOURCE_COMPAT})
+
+# GeneralsX @build BenderAI 24/02/2026 Phase 5 - Require C++17 for std::filesystem in compat headers
+set_property(TARGET CompatLib PROPERTY CXX_STANDARD 17)
+set_property(TARGET d3dx8 PROPERTY CXX_STANDARD 17)
 
 target_include_directories(CompatLib PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
