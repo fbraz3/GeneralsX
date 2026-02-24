@@ -396,7 +396,8 @@ ActiveCategoryStackClass::operator = (const ActiveCategoryStackClass & that)
 ***************************************************************************************************/
 ActiveCategoryStackClass & ActiveCategoryClass::Get_Active_Stack(void)
 {
-	int current_thread = ::GetCurrentThreadId();
+	// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - Use GetCurrentThreadIdAsInt for int-based thread tracking
+	int current_thread = GetCurrentThreadIdAsInt();
 
 	/*
 	** If we already have an allocated category stack for the current thread,

@@ -94,7 +94,15 @@
 #include	"win.h"
 #include "XPIPE.h"
 #include "XSTRAW.h"
+
+// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - macOS compat: malloc.h not available on Apple
+// Linux has malloc.h natively; only macOS needs stdlib.h as a replacement
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
+
 #ifdef _UNIX
 #include <ctype.h>
 #endif

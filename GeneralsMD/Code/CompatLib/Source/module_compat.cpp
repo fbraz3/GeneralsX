@@ -2,12 +2,8 @@
 #include "module_compat.h"
 
 #include <unistd.h>
-
 #include <dlfcn.h>
-
 #include <string.h>
-
-#include <filesystem>
 
 // GeneralsX @feature BenderAI 24/02/2026 Phase 5 macOS executable path detection
 #ifdef __APPLE__

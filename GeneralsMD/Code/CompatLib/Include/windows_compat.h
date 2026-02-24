@@ -276,3 +276,12 @@ inline int _spawnl(int mode, const char* cmdname, const char* arg0, ...) {
 }
 
 #endif
+// GeneralsX @build BenderAI 24/02/2026 Phase 5 - malloc.h compatibility for macOS ONLY
+// macOS does not ship malloc.h; Linux has it natively and works without this stub.
+// Do NOT apply to Linux - it would shadow the real malloc.h and break alloca/memalign.
+#ifdef __APPLE__
+#ifndef _MALLOC_H_
+#define _MALLOC_H_
+#include <stdlib.h>
+#endif
+#endif

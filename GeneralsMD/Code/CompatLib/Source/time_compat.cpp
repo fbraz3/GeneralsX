@@ -21,9 +21,15 @@ DWORD timeGetTime(void)
   uint64_t elapsed = mach_absolute_time();
   uint64_t nanoseconds = elapsed * tb.numer / tb.denom;
   DWORD diff = (DWORD)(nanoseconds / 1000000);
-#else
+#elif defined(__linux__)
+  // Linux: CLOCK_BOOTTIME is Linux-specific (system uptime)
   struct timespec ts;
   clock_gettime(CLOCK_BOOTTIME, &ts);
+  DWORD diff = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+#else
+  // Other POSIX: Use CLOCK_MONOTONIC (fallback for BSD, etc.)
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
   DWORD diff = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 #endif
   return diff;

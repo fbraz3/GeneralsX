@@ -12,5 +12,9 @@ typedef uint32_t (*start_routine)(void *);
 THREAD_ID GetCurrentThreadId();
 #endif
 
+// GeneralsX @feature BenderAI 24/02/2026 Phase 5 - Convert pthread_t to int for compatibility
+// Maps pthread_t to unique integers (max 256 threads tracked)
+int GetCurrentThreadIdAsInt();
+
 void* CreateThread(void *lpSecure, size_t dwStackSize, start_routine lpStartAddress, void *lpParameter, unsigned long dwCreationFlags, unsigned long *lpThreadId);
 int TerminateThread(void *hThread, unsigned long dwExitCode);
