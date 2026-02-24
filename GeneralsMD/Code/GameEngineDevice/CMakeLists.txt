@@ -264,6 +264,8 @@ endif()
 # Phase 3: Video playback (FFmpeg) + Phase 2: Audio decoding (FFmpeg)
 # GeneralsX @feature BenderAI 21/02/2026 OpenAL audio backend (Audio + Video via FFmpeg)
 if(SAGE_USE_OPENAL)
+    # GeneralsX @build fbraz 24/02/2026 - On macOS prefer openal-soft over deprecated Apple framework
+    include(${CMAKE_SOURCE_DIR}/cmake/openal.cmake)
     find_package(OpenAL REQUIRED)
     target_link_libraries(z_gameenginedevice PUBLIC OpenAL::OpenAL)
 
@@ -275,7 +277,6 @@ endif()
 # GeneralsX @feature BenderAI 21/02/2026 Video playback framework
 if(RTS_BUILD_OPTION_FFMPEG)
     # Add VideoDevice FFmpeg implementation (video playback)
-    # FFmpeg libraries and includes are already configured by Core/GameEngineDevice
     target_sources(z_gameenginedevice PUBLIC
         Include/VideoDevice/Bink/BinkVideoPlayer.h
         Include/VideoDevice/FFmpeg/FFmpegFile.h
@@ -284,4 +285,13 @@ if(RTS_BUILD_OPTION_FFMPEG)
         Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
     )
     target_compile_definitions(z_gameenginedevice PUBLIC SAGE_USE_FFMPEG)
+    # GeneralsX @build felipebraz 20/06/2025 PkgConfig::FFMPEG is PRIVATE in corei_gameenginedevice_private so it
+    # does not propagate transitively to consumers of z_gameenginedevice (z_generals). Explicitly
+    # expose it as PUBLIC so the final linker of z_generals can resolve av_* symbols.
+    # Use IMPORTED_TARGET guard to avoid re-calling pkg_check_modules if Core already called it.
+    if(NOT TARGET PkgConfig::FFMPEG)
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    endif()
+    target_link_libraries(z_gameenginedevice PUBLIC PkgConfig::FFMPEG)
 endif()

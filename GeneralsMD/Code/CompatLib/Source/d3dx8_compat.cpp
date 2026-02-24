@@ -4,8 +4,12 @@
 
 #include "d3dx8core.h"
 
+// GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang (GLM version mismatch).
+// On macOS, exclude GLI and use stub implementations for the surface scaling path.
+#ifndef __APPLE__
 #include <gli/gli.hpp>
 #include <gli/generate_mipmaps.hpp>
+#endif
 
 HRESULT WINAPID3DXGetErrorStringA(HRESULT hr, LPSTR pBuffer, UINT BufferLen)
 {
@@ -92,6 +96,7 @@ D3DXLoadSurfaceFromSurface(
 		return D3D_OK;
 	}
 
+#ifndef __APPLE__
 	// Pick a compatible format
 	gli::format imageFormat = gli::format::FORMAT_RGBA8_UNORM_PACK8;
 
@@ -133,6 +138,13 @@ D3DXLoadSurfaceFromSurface(
 	pSrcSurface->UnlockRect();
 
 	return D3D_OK;
+#else
+	// GeneralsX @build felipebraz 20/06/2025 macOS: GLI not available due to Apple Clang ambiguity.
+	// Surface scaling (different dimensions) not supported on macOS.
+	pDestSurface->UnlockRect();
+	pSrcSurface->UnlockRect();
+	return D3DERR_INVALIDCALL;
+#endif
 }
 
 HRESULT WINAPI

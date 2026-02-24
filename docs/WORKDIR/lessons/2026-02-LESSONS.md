@@ -839,3 +839,45 @@ The fastest path to working audio on Linux is to port fighter19's implementation
 5. Add `Source/OpenALAudioDevice/` as PRIVATE include dir so `OpenALAudioCache.h` is not exposed
 
 **Result**: Menu music and audio backend confirmed working in one session.
+
+---
+
+## Lesson: macOS Apple Silicon — Two Homebrew Prefixes (Phase 5, Session 60)
+
+**Problem**: Building arm64 target but linker fails with `symbol(s) not found for architecture arm64` for FFmpeg symbols despite FFmpeg being installed.
+
+**Root Cause**: macOS Apple Silicon has two Homebrew installations:
+- `/usr/local/` — Intel (Rosetta 2) Homebrew, default system `pkg-config`, all dylibs are **x86_64**
+- `/opt/homebrew/` — Apple Silicon Homebrew, dylibs are **arm64**
+
+CMake's `pkg_check_modules` uses `/usr/local/bin/pkg-config` (in `$PATH` by default), which resolves FFmpeg to Intel x86_64 dylibs at `/usr/local/Cellar/ffmpeg/`. Linking arm64 objects against x86_64 dylibs fails at link time.
+
+**Fix**: Set `PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig` in the CMake configure preset's `"environment"` block:
+```json
+"environment": {
+    "PKG_CONFIG_PATH": "/opt/homebrew/lib/pkgconfig"
+}
+```
+
+**Corollary**: Universal Binary (`arm64;x86_64`) requires ALL external dylibs to be fat binaries. When third-party dylibs (FFmpeg, openal-soft) are single-arch, build arm64-only first. Revisit Universal Binary in the polish phase.
+
+---
+
+## Lesson: fontconfig Static Library Needs Explicit iconv on macOS (Phase 5, Session 60)
+
+**Problem**: Linking a static fontconfig from vcpkg fails with `_iconv`, `_iconv_open`, `_iconv_close` undefined.
+
+**Root Cause**: fontconfig's `fcfreetype.c` uses `iconv()` for charset conversion. When fontconfig is a static library, its iconv dependency must be explicitly resolved at link time.
+
+**Fix**: Add `find_package(Iconv REQUIRED)` and `Iconv::Iconv` linkage wherever fontconfig is linked:
+```cmake
+if(UNIX)
+    find_package(Fontconfig REQUIRED)
+    find_package(Iconv REQUIRED)  # fontconfig static lib needs iconv
+endif()
+target_link_libraries(mytarget INTERFACE
+    $<$<PLATFORM_ID:Darwin>:Fontconfig::Fontconfig>
+    $<$<PLATFORM_ID:Darwin>:Iconv::Iconv>
+)
+```
+On macOS, CMake's `FindIconv` resolves to `/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/libiconv.tbd` (system stub — correct for arm64).

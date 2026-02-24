@@ -1,7 +1,8 @@
 # On 64-bit Windows, use our d3dx8 implementation (GLI/GLM for math helpers)
 # GeneralsX @build BenderAI 24/02/2026 Phase 5 - Skip d3dx8 on macOS/Linux due to GLI/GLM ambiguity
+# GeneralsX @build felipebraz 20/06/2025 - Also build d3dx8 STATIC on macOS (D3DX math/texture stubs required for link)
 # d3dx8 is a math/texture helper stub; core game code doesn't require it
-if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+if ((WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8) OR APPLE)
 list(APPEND SOURCE_D3DX_COMPAT
     d3dx8_compat.cpp
     d3dx8math.cpp
@@ -24,8 +25,11 @@ endif()
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(d3dx8 PUBLIC glm::glm)
 
-find_package(gli CONFIG REQUIRED)
-target_link_libraries(d3dx8 PUBLIC gli)
+# GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang - only link on Windows
+if(NOT APPLE)
+    find_package(gli CONFIG REQUIRED)
+    target_link_libraries(d3dx8 PUBLIC gli)
+endif()
 
 # d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)
 # Add only WWLib directory (not full core_wwcommon to avoid d3d8.h conflicts from WWAudio)
@@ -38,8 +42,8 @@ target_include_directories(d3dx8 PUBLIC
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
 
 else()
-# macOS/Linux: Create empty d3dx8 stub library to satisfy d3d8lib linkage
-# (d3dx8 math/texture helpers are not needed for core game functionality)
+# Linux only: Create empty d3dx8 stub library to satisfy d3d8lib linkage
+# macOS and Win64 both build real d3dx8 STATIC above; Linux can use the stub for now
 add_library(d3dx8 INTERFACE)
 target_link_libraries(d3dx8 INTERFACE d3d8lib)
 endif()
@@ -62,10 +66,12 @@ else()
     # Linux + macOS: Use ONLY DXVK headers (not min-dx8-sdk) to avoid conflicts
     # DXVK provides complete Wine-compatible DirectX 8 headers
     # GeneralsX @build BenderAI 24/02/2026 Phase 5 - DXVK v2.6 uses include/native/windows + include/native/directx
+    # GeneralsX @build fbraz 24/02/2026 - Also need include/native for WSI headers (wsi/native_wsi.h)
     if(NOT dxvk_SOURCE_DIR)
         message(FATAL_ERROR "DXVK not fetched! Ensure SAGE_USE_DX8=OFF and cmake/dx8.cmake was included")
     endif()
     target_include_directories(d3d8lib INTERFACE
+        ${dxvk_SOURCE_DIR}/include/native
         ${dxvk_SOURCE_DIR}/include/native/windows
         ${dxvk_SOURCE_DIR}/include/native/directx
         ${dxvk_SOURCE_DIR}/include/vulkan

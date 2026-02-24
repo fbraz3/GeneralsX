@@ -253,9 +253,10 @@ endif()
 # GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Unix text rendering (Linux + macOS Phase 5)
 if(UNIX)
     find_package(Freetype REQUIRED)
-    if(NOT APPLE)
-        find_package(Fontconfig REQUIRED)
-    endif()
+    # GeneralsX @build felipebraz 20/06/2025 fontconfig needed on macOS too (render2dsentence.cpp uses Locate_Font_FontConfig)
+    find_package(Fontconfig REQUIRED)
+    # GeneralsX @build felipebraz 24/02/2026 fontconfig static lib (vcpkg) links iconv; must be explicit on macOS
+    find_package(Iconv REQUIRED)
 endif()
 
 target_link_libraries(corei_ww3d2 INTERFACE
@@ -265,4 +266,6 @@ target_link_libraries(corei_ww3d2 INTERFACE
     $<$<PLATFORM_ID:Linux>:Freetype::Freetype>
     $<$<PLATFORM_ID:Darwin>:Freetype::Freetype>
     $<$<PLATFORM_ID:Linux>:Fontconfig::Fontconfig>
+    $<$<PLATFORM_ID:Darwin>:Fontconfig::Fontconfig>
+    $<$<PLATFORM_ID:Darwin>:Iconv::Iconv>
 )

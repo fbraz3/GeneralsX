@@ -114,7 +114,13 @@ static char theLogFileNamePrev[ _MAX_PATH ];
 #define LARGE_BUFFER	8192
 static char theBuffer[ LARGE_BUFFER ];	// make it big to avoid weird overflow bugs in debug mode
 static int theDebugFlags = 0;
+// GeneralsX @build fbraz 24/02/2026 On UNIX GetCurrentThreadId() returns THREAD_ID (pthread_t),
+// which is a pointer on macOS and unsigned long on Linux — not compatible with DWORD (uint32_t).
+#ifdef _WIN32
 static DWORD theMainThreadID = 0;
+#else
+static THREAD_ID theMainThreadID = 0;
+#endif
 // ----------------------------------------------------------------------------
 // PUBLIC DATA
 // ----------------------------------------------------------------------------

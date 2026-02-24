@@ -219,7 +219,7 @@
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "11.0",
                 "SAGE_USE_DX8": "OFF",
                 "SAGE_USE_SDL3": "ON",
@@ -229,7 +229,10 @@
                 "RTS_CRASHDUMP_ENABLE": "OFF",
                 "RTS_BUILD_OPTION_FFMPEG": "ON"
             },
-            "description": "Phase 5 macOS port: Universal binary (Intel x86_64 + Apple Silicon arm64) with MoltenVK for graphics, SDL3 for windowing, OpenAL for audio"
+            "environment": {
+                "PKG_CONFIG_PATH": "/opt/homebrew/lib/pkgconfig"
+            },
+            "description": "Phase 5 macOS port: arm64 native (Apple Silicon) with MoltenVK for graphics, SDL3 for windowing, OpenAL for audio. Universal binary deferred until all dylib deps have fat versions."
         }
     ],
     "buildPresets": [
