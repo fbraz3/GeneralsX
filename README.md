@@ -4,7 +4,7 @@
 
 A comprehensive cross-platform port of Command & Conquer: Generals and Zero Hour, bringing the classic RTS experience to **Linux** and **Windows** through native DXVK (DirectX 8 → Vulkan) rendering and SDL3 API.
 
-**Current Status**: Linux native builds functional with Docker (Phase 1 complete). macOS planned for future development.
+**Current Status**: Linux native builds functional with Docker (Phase 1 complete). macOS native builds in progress (ARM64 / Apple Silicon, DXVK + MoltenVK).
 
 ## Project Goals
 
@@ -37,7 +37,7 @@ This project transforms the Windows-exclusive Command & Conquer: Generals into a
 
 - **🐧 Linux Native Support** - ✅ **FUNCTIONAL** - Native builds via Docker with DXVK + SDL3
 - **🪟 Windows Enhanced** - Maintained compatibility with original VC6 builds
-- **🍎 macOS Native Support** - 📋 **PLANNED** - Future development target
+- **🍎 macOS Native Support** - � **IN PROGRESS** - ARM64 native builds working (DXVK + MoltenVK)
 - **🎮 Modern Graphics** - DXVK translates DirectX 8 → Vulkan for native Linux rendering
 - **🔧 Modern Architecture** - SDL3 windowing/input, portable INI configuration
 
@@ -104,14 +104,23 @@ Key features:
 - SDL3 for windowing/input
 - Docker-based builds (no system pollution)
 
-### macOS - 📋 PLANNED (Future)
+### macOS - � IN PROGRESS (Apple Silicon)
 
-**⚠️ macOS builds are NOT currently functional - this is a future development target.**
+Native ARM64 builds working via DXVK + MoltenVK. Audio and video are not yet
+implemented (Phase 2/3), but the game engine initializes and renders.
 
-Planned build instructions for macOS development:
-**[📖 macOS Build Guide](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md)** *(Reference only)*
+**[📖 macOS Build Guide](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md)**
 
-Targeted for future implementation after Linux port stabilization.
+Quick start:
+```bash
+# Install prerequisites once: brew install cmake ninja meson
+# + LunarG Vulkan SDK: https://vulkan.lunarg.com/sdk/home#mac
+git clone https://github.com/fbraz3/GeneralsX.git
+cd GeneralsX
+./scripts/build-macos-zh.sh
+./scripts/deploy-macos-zh.sh
+./scripts/run-macos-zh.sh -win
+```
 
 ### 📖 Documentation
 
@@ -147,7 +156,7 @@ The Linux native port is organized into phases:
 - **Phase 1**: 🔄 **IN PROGRESS** - Linux Graphics (DXVK integration, SDL3 windowing, Docker builds)
 - **Phase 2**: 📋 **PLANNED** - Linux Audio (OpenAL integration, Miles → OpenAL compatibility)
 - **Phase 3**: 📋 **PLANNED** - Video Playback (Bink alternative investigation)
-- **Phase 4+**: 📋 **FUTURE** - Polish, optimization, macOS port
+- **Phase 4+**: 📋 **FUTURE** - Polish, optimization, macOS hardening
 
 **Approach**: Native DXVK (DirectX → Vulkan), NOT Wine emulation.
 
@@ -176,7 +185,7 @@ Contributions are welcome! We're particularly interested in:
 - **Cross-Platform Testing** - Validate functionality across distributions
 - **Performance Optimization** - Identify and fix bottlenecks
 - **Documentation** - Improve build guides and technical resources
-- **macOS Port** - Future development (after Linux stabilization)
+- **macOS Port** - 🔄 In progress (ARM64 native, DXVK + MoltenVK)
 
 **How to Contribute**:
 

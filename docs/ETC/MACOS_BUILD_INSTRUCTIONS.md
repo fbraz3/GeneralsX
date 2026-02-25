@@ -1,247 +1,268 @@
-# GeneralsX - macOS Build Instructions
+# GeneralsX - macOS Build Instructions (Apple Silicon)
 
-> ⚠️ **IMPORTANT NOTICE - macOS BUILD NOT FUNCTIONAL**
-> 
-> **This guide is for FUTURE REFERENCE ONLY**. macOS builds are currently **NOT functional** and represent a **planned future development target**.
-> 
-> **Current Status**:
-> - ❌ macOS builds **DO NOT WORK** yet
-> - 📋 This is a **planned feature** for post-Linux stabilization
-> - 🐧 Active development is on **Linux native builds** (Phase 1 complete)
-> 
-> **Why This Guide Exists**:
-> - Planning reference for future macOS port
-> - Architecture documentation for when Linux port is stable
-> - Will be uncommented and tested after Phase 2-3 (Audio/Video) complete
-> 
-> **What Works NOW**: Linux builds via Docker - See [LINUX_BUILD_INSTRUCTIONS.md](./LINUX_BUILD_INSTRUCTIONS.md)
-> 
-> **Proceed at your own risk** - these instructions are untested and may not compile.
+> **Status**: 🔄 **IN PROGRESS** — Native ARM64 builds working.
+>
+> Graphics rendering (DXVK → MoltenVK → Metal) is functional. Audio and video playback
+> are not yet implemented (Phase 2/3 targets), so the game runs silently.
+>
+> The entire DXVK patch series (9 patches for macOS compatibility) is scripted and
+> applied automatically by CMake — no manual intervention needed.
 
 ---
 
-## Prerequisites (NOT YET FUNCTIONAL)
+## Prerequisites
 
-### Essential Tools
-- **Xcode Command Line Tools** (latest version)
-- **Homebrew** for package management
-- **CMake** 3.20 or higher
-- **Ninja** build system (recommended)
-- **Apple Silicon (M1/M2/M3)** macOS
+### System Requirements
 
-### Install Prerequisites
+- **macOS 13 (Ventura) or later** on Apple Silicon (M1/M2/M3/M4)
+- **Xcode Command Line Tools** 14+
+- ~10 GB free disk space (build artifacts + DXVK Meson build)
+
+### 1. Xcode Command Line Tools
 
 ```bash
-# Install Xcode Command Line Tools
 xcode-select --install
-
-# Install Homebrew (if not installed)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Install CMake and Ninja
-brew install cmake ninja
 ```
 
-## Build Configuration
+### 2. Homebrew
 
-### 1. Clone Repository
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+### 3. Build Tools
+
+```bash
+brew install cmake ninja meson python3
+```
+
+> **Note on `meson`**: The DXVK sub-project requires Meson >= 1.0. The Homebrew arm64
+> bottle is sufficient. CMake overrides the build arches via `CFLAGS/CXXFLAGS=-arch arm64`.
+
+### 4. Vulkan SDK (REQUIRED — NOT from Homebrew)
+
+Download the **macOS Vulkan SDK** from LunarG. **Do not use the Homebrew `vulkan-headers` package**
+— it lacks the MoltenVK ICD JSON that routes Vulkan calls to Metal.
+
+1. Go to <https://vulkan.lunarg.com/sdk/home#mac>
+2. Download the latest SDK installer (`.dmg`)
+3. Run the installer — it installs to `~/VulkanSDK/<version>/macOS/`
+
+After installation, verify:
+
+```bash
+ls ~/VulkanSDK/*/macOS/lib/libvulkan.dylib   # should list one file
+ls ~/VulkanSDK/*/macOS/lib/libMoltenVK.dylib # should list one file
+```
+
+### 5. Game Files
+
+Copy your retail Command & Conquer: Generals Zero Hour installation to:
+
+```
+~/GeneralsX/GeneralsMD/
+```
+
+Required files from the retail install:
+
+- `generalszh.big`, `W3DZH.big`, `MapsZH.big` (and other `.big` archives)
+- `AudioZH.big` (even though audio is not yet functional)
+
+---
+
+## Building
+
+### Clone the Repository
+
 ```bash
 git clone https://github.com/fbraz3/GeneralsX.git
 cd GeneralsX
 ```
 
-### 2. Configure Build (ARM64 Apple Silicon)
-```bash
-# Configure using macos preset for native ARM64 architecture
-cmake --preset macos
-```
-
-#### Legacy VC6 preset
-```bash
-# For compatibility or Windows development
-cmake --preset vc6
-```
-
-## Build Targets
-
-### Primary Target: Zero Hour (GeneralsXZH)
-```bash
-# Build the main Zero Hour executable
-cmake --build build/macos --target GeneralsXZH -j 4
-
-# Executable location: build/macos/GeneralsMD/GeneralsXZH
-```
-
-### Secondary Target: Original Generals (GeneralsX)
-```bash
-# Build the original Generals executable
-cmake --build build/macos --target GeneralsX -j 4
-
-# Executable location: build/macos/Generals/GeneralsX
-```
-
-### Core Libraries (Optional Testing)
-```bash
-# Build core libraries independently
-cmake --build build/macos --target ww3d2 wwlib wwmath -j 4
-```
-
-### Build with Dynamic Core Allocation
-```bash
-# Use half of available CPU cores to avoid system overload
-cmake --build build/macos --target GeneralsXZH -j $(sysctl -n hw.ncpu | awk '{print int($1/2)}')
-```
-
-## Compilation Cache (ccache)
-
-**Highly recommended** for significantly faster rebuilds.
-
-### Installation & Setup
+### Configure and Build
 
 ```bash
-# Install ccache via Homebrew
-brew install ccache
-
-# Configure cache size (10GB recommended)
-ccache --set-config=max_size=10G
-
-# Verify configuration
-ccache -s
+./scripts/build-macos-zh.sh
 ```
 
-### Using ccache with CMake
+This does:
 
-ccache is **automatically enabled by default** when installed.
+1. Checks all prerequisites (cmake, ninja, meson, Vulkan SDK)
+2. Runs `cmake --preset macos-vulkan` (fetches + patches + builds DXVK via Meson)
+3. Builds `z_generals` target (Zero Hour executable)
+4. Prints the binary path on success
+
+**First run takes 5-10 minutes** because DXVK is fetched from git and compiled
+via Meson. Subsequent builds reuse the Meson cache and finish in under a minute.
+
+> **`--build-only` flag**: If you have already configured (cmake cache exists),
+> skip configuration:
+> ```bash
+> ./scripts/build-macos-zh.sh --build-only
+> ```
+
+### Manual cmake commands (equivalent)
 
 ```bash
-# Standard build - ccache automatically used if installed
-cmake --preset macos
-cmake --build build/macos --target GeneralsXZH -j 4
+cmake --preset macos-vulkan
+cmake --build build/macos-vulkan --target z_generals -j$(sysctl -n hw.logicalcpu)
 ```
-
-### Performance Comparison
-- **First build (no cache)**: ~3-4 minutes
-- **Rebuild with 10% changes**: ~30-60 seconds (3-6x faster)
-- **Rebuild with 1% changes**: ~10-20 seconds (6-12x faster)
-- **Full rebuild from cache**: ~45-90 seconds (2-4x faster)
-
-### ccache Statistics & Management
-
-```bash
-# View cache statistics
-ccache -s
-
-# Clear cache (if needed)
-ccache -C
-
-# Zero cache statistics (reset counters)
-ccache -z
-```
-
-### Optional Environment Variables
-
-```bash
-# Add to ~/.zshrc or ~/.bashrc for persistent configuration
-export CCACHE_DIR=$HOME/.ccache
-export CCACHE_MAXSIZE=10G
-export CCACHE_COMPRESS=1
-export CCACHE_COMPRESSLEVEL=6
-export CCACHE_SLOPPINESS=pch_defines,time_macros
-
-# Apply changes
-source ~/.zshrc
-```
-
-## Debug Build Configurations
-
-### Debug Build
-```bash
-cmake --preset macos -DRTS_BUILD_OPTION_DEBUG=ON
-cmake --build build/macos --target GeneralsXZH -j 4
-```
-
-### Release Build (Default)
-```bash
-cmake --preset macos -DRTS_BUILD_OPTION_DEBUG=OFF
-cmake --build build/macos --target GeneralsXZH -j 4
-```
-
-## Build Cleanup
-
-```bash
-# Clean previous build if experiencing issues
-rm -rf build/macos
-cmake --preset macos
-```
-
-## Troubleshooting
-
-### CMake can't find dependencies
-
-```bash
-# Update Homebrew and reinstall CMake
-brew update && brew upgrade cmake
-```
-
-### Architecture mismatch errors
-
-```bash
-# Clean and rebuild
-rm -rf build/macos
-cmake --preset macos
-cmake --build build/macos --target GeneralsXZH -j 4
-```
-
-### Linking errors
-
-```bash
-# Clean and rebuild
-rm -rf build/macos
-cmake --preset macos
-cmake --build build/macos --target GeneralsXZH -j 4
-```
-
-### ccache not working
-
-```bash
-# Check if ccache is being used
-echo $CMAKE_C_COMPILER_LAUNCHER
-echo $CMAKE_CXX_COMPILER_LAUNCHER
-# Should output: /usr/local/bin/ccache
-
-# Verify installation
-which ccache
-ccache --version
-
-# Verbose output for debugging
-CCACHE_DEBUG=1 cmake --build build/macos --target GeneralsXZH -j 4
-```
-
-### Verify Architecture
-
-```bash
-file build/macos/GeneralsMD/GeneralsXZH
-# Should show: Mach-O 64-bit executable arm64
-```
-
-## Additional Resources
-
-- **Linux Builds (WORKING)**: See [./LINUX_BUILD_INSTRUCTIONS.md](./LINUX_BUILD_INSTRUCTIONS.md) - **USE THIS INSTEAD**
-- **Development Diary**: See [../DEV_BLOG/README.md](../DEV_BLOG/README.md)
-- **Phase Documentation**: See [../WORKDIR/phases/](../WORKDIR/phases/)
-- **Docker Scripts**: See [../../scripts/README_DOCKER_SCRIPTS.md](../../scripts/README_DOCKER_SCRIPTS.md)
-
-## Support
-
-For **working Linux builds**, use the Docker scripts in [LINUX_BUILD_INSTRUCTIONS.md](./LINUX_BUILD_INSTRUCTIONS.md).
-
-For macOS port planning/future development, check [Issues](https://github.com/fbraz3/GeneralsX/issues) with the `macos` label.
 
 ---
 
-> ⚠️ **REMINDER**: macOS builds are **NOT FUNCTIONAL** - This is a **future development target** planned after Linux port stabilization (Phase 2-3 complete).
+## Deploying
 
-**Last updated**: February 17, 2026  
-**Target Architecture**: ARM64 Native (Apple Silicon) - **PLANNED FUTURE**  
-**Status**: ❌ **NOT FUNCTIONAL** - Documentation only for future reference  
-**Current Focus**: 🐧 Linux native builds (Phase 1 complete ✅)
+After a successful build, deploy the binary and Vulkan runtime to the game directory:
+
+```bash
+./scripts/deploy-macos-zh.sh
+```
+
+This script:
+
+- Copies `build/macos-vulkan/GeneralsMD/GeneralsXZH` to `~/GeneralsX/GeneralsMD/`
+- Detects the Vulkan SDK in `~/VulkanSDK/` and copies:
+  - `libvulkan.dylib`, `libvulkan.1.dylib`
+  - `libMoltenVK.dylib`
+- Writes the `MoltenVK_icd.json` ICD manifest
+- Generates a `run.sh` wrapper that sets `VK_ICD_FILENAMES` before launching
+
+---
+
+## Running
+
+```bash
+./scripts/run-macos-zh.sh -win
+```
+
+Or use the generated wrapper in the deploy directory:
+
+```bash
+~/GeneralsX/GeneralsMD/run.sh -win -noshellmap
+```
+
+Common flags:
+
+| Flag | Effect |
+|------|--------|
+| `-win` | Windowed mode (recommended for debugging) |
+| `-fullscreen` | Fullscreen mode |
+| `-noshellmap` | Skip the animated main menu shell map |
+| `-xres 1280 -yres 720` | Set resolution |
+
+---
+
+## How DXVK Patches Work
+
+The macOS DXVK port requires 9 patches to DXVK 2.6 source code. These are fully
+automated — **no manual patching is required**.
+
+`cmake/dx8.cmake` uses CMake's `ExternalProject_Add` with a `PATCH_COMMAND` that
+invokes `cmake/dxvk-macos-patches.py` immediately after fetching DXVK from git:
+
+```cmake
+ExternalProject_Add(dxvk
+    ...
+    PATCH_COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py
+        ${DXVK_SOURCE_DIR}
+    ...
+)
+```
+
+### Patch Summary
+
+| # | File | Problem | Fix |
+|---|------|---------|-----|
+| 1 | `util_win32_compat.h` | `__unix__` macro undefined on macOS | Add `|| defined(__APPLE__)` |
+| 2 | `util_env.cpp` | `pthread_setname_np` Linux 2-arg form | Use 1-arg macOS form with `#ifdef __APPLE__` |
+| 3 | `util_small_vector.h` | `lzcnt(size_t)` ambiguous on arm64 | Cast to `uint64_t` |
+| 4 | `util_bit.h` | `uintptr_t` overload ambiguity | Add explicit `uintptr_t` overloads |
+| 5 | `meson.build` x5 | `--version-script` is GNU ld only | Guard with `if platform != 'darwin'` |
+| 6 | `util_env.cpp` | `getExePath()` returns empty on macOS | Use `_NSGetExecutablePath()` |
+| 7 | `vulkan_loader.cpp` | Tries to dlopen `libvulkan.so` (Linux name) | Add `#elif defined(__APPLE__)` block with `.dylib` names |
+| 8 | `dxvk_extensions.h` + `dxvk_instance.cpp` | `vkEnumeratePhysicalDevices` returns `VK_ERROR_INCOMPATIBLE_DRIVER` | Enable `VK_KHR_portability_enumeration` + `ENUMERATE_PORTABILITY` flag |
+| 9 | `dxvk_adapter.cpp` | `vkCreateDevice` returns `VK_ERROR_FEATURE_NOT_PRESENT` (tessellationShader, shaderFloat64, robustness2) | Enable `VK_KHR_portability_subset`, mask core features against device caps, inject pNext chain |
+
+---
+
+## Troubleshooting
+
+### "Vulkan SDK not found"
+
+```
+ERROR: Vulkan SDK not found at ~/VulkanSDK/
+```
+
+Install from <https://vulkan.lunarg.com/sdk/home#mac>. The SDK must be in
+`~/VulkanSDK/<version>/macOS/lib/libvulkan.dylib`.
+
+### "meson: command not found"
+
+```bash
+brew install meson
+```
+
+### DXVK Meson build fails with linker error
+
+If you see `--version-script` linker errors, it means Patch 5 did not apply.
+Clean the DXVK build cache and reconfigure:
+
+```bash
+rm -rf build/macos-vulkan/_deps/dxvk-src build/macos-vulkan/_deps/dxvk-build
+cmake --preset macos-vulkan
+```
+
+### `VK_ERROR_INCOMPATIBLE_DRIVER` in logs
+
+This was fixed by Patch 8 (portability enumeration). If you see it:
+
+1. Ensure the Vulkan SDK is installed via LunarG installer (not Homebrew)
+2. Ensure `deploy-macos-zh.sh` was run (MoltenVK ICD JSON must be present)
+3. Verify `VK_ICD_FILENAMES` points to the correct JSON in the runtime dir
+
+### Game crashes at startup (SIGSEGV)
+
+Run with verbose MoltenVK output:
+
+```bash
+cd ~/GeneralsX/GeneralsMD
+VK_ICD_FILENAMES=./MoltenVK_icd.json MVK_CONFIG_LOG_LEVEL=4 ./GeneralsXZH -win
+```
+
+### "Feature not present" Vulkan validation error
+
+Patch 9 masks core features against what the physical device actually supports.
+If you still see this, MoltenVK may need an update. Re-running `deploy-macos-zh.sh`
+after updating the Vulkan SDK copies the new `libMoltenVK.dylib` to the runtime dir.
+
+---
+
+## Current Status
+
+| Feature | Status |
+|---------|--------|
+| CMake configure | Working |
+| DXVK compile via Meson | Working (9-patch series auto-applied) |
+| GeneralsXZH binary | Builds successfully |
+| Vulkan device init | Working (MoltenVK -> Metal) |
+| 3D rendering | Under active testing |
+| Audio (OpenAL) | Not yet implemented (Phase 2) |
+| Video (Bink) | Not yet implemented (Phase 3) |
+
+---
+
+## Related Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/build-macos-zh.sh` | Configure + build `GeneralsXZH` |
+| `scripts/deploy-macos-zh.sh` | Deploy binary + Vulkan runtime to game dir |
+| `scripts/run-macos-zh.sh` | Launch with correct environment |
+| `cmake/dx8.cmake` | DXVK ExternalProject build (includes PATCH_COMMAND) |
+| `cmake/dxvk-macos-patches.py` | All 9 DXVK patches (auto-applied by cmake) |
+| `CMakePresets.json` (`macos-vulkan`) | Build preset (arm64, MoltenVK, SDL3, OpenAL, ffmpeg) |
+
+---
+
+*See the [Dev Blog](../../DEV_BLOG/) for detailed session-by-session technical notes.*
