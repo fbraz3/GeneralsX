@@ -12,6 +12,8 @@ macOS requires:
   5. src/*/meson.build:   --version-script is GNU ld only, not macOS ld
   6. util_env.cpp:        getExePath() has no macOS branch; add _NSGetExecutablePath
                           (/proc/self/exe doesn't exist on macOS)
+  7. vulkan_loader.cpp:   loadVulkanLibrary() only tries libvulkan.so/libvulkan.so.1 (Linux).
+                          Add macOS branch: libvulkan.dylib, libvulkan.1.dylib, libMoltenVK.dylib
 
 Usage: dxvk-macos-patches.py <dxvk_source_dir>
 """
@@ -188,6 +190,54 @@ def main():
         os.path.join(src, "src/util/util_env.cpp"),
         patch_util_env_getexepath,
         "getExePath(): add __APPLE__ branch using _NSGetExecutablePath"
+    )
+
+    # Patch 7: vulkan_loader.cpp
+    # loadVulkanLibrary() only tries libvulkan.so / libvulkan.so.1 on non-Windows.
+    # On macOS the Vulkan loader from LunarG SDK is libvulkan.dylib.
+    # DXVK succeeds at dlopen only when the library name matches exactly.
+    def patch_vulkan_loader(c):
+        old = (
+            "  static std::pair<HMODULE, PFN_vkGetInstanceProcAddr> loadVulkanLibrary() {\n"
+            "    static const std::array<const char*, 2> dllNames = {{\n"
+            "#ifdef _WIN32\n"
+            "      \"winevulkan.dll\",\n"
+            "      \"vulkan-1.dll\",\n"
+            "#else\n"
+            "      \"libvulkan.so\",\n"
+            "      \"libvulkan.so.1\",\n"
+            "#endif\n"
+            "    }};\n"
+        )
+        new = (
+            "  static std::pair<HMODULE, PFN_vkGetInstanceProcAddr> loadVulkanLibrary() {\n"
+            "#ifdef _WIN32\n"
+            "    static const std::array<const char*, 2> dllNames = {{\n"
+            "      \"winevulkan.dll\",\n"
+            "      \"vulkan-1.dll\",\n"
+            "    }};\n"
+            "#elif defined(__APPLE__)\n"
+            "    // macOS: try the Vulkan loader (from Vulkan SDK) and MoltenVK directly.\n"
+            "    // LoadLibraryA() maps to dlopen() on non-Windows DXVK native builds.\n"
+            "    static const std::array<const char*, 4> dllNames = {{\n"
+            "      \"libvulkan.dylib\",\n"
+            "      \"libvulkan.1.dylib\",\n"
+            "      \"libvulkan.1.4.341.dylib\",\n"
+            "      \"libMoltenVK.dylib\",\n"
+            "    }};\n"
+            "#else\n"
+            "    static const std::array<const char*, 2> dllNames = {{\n"
+            "      \"libvulkan.so\",\n"
+            "      \"libvulkan.so.1\",\n"
+            "    }};\n"
+            "#endif\n"
+        )
+        return c.replace(old, new)
+
+    patch_file(
+        os.path.join(src, "src/vulkan/vulkan_loader.cpp"),
+        patch_vulkan_loader,
+        "loadVulkanLibrary(): add macOS-specific Vulkan/MoltenVK dylib names"
     )
 
     print("\nAll macOS patches applied successfully.")

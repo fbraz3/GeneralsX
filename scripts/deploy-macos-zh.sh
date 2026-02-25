@@ -12,6 +12,14 @@ GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
 DXVK_D3D8_LIB="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
 DXVK_D3D9_LIB="${BUILD_DIR}/libdxvk_d3d9.0.dylib"
 RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
+
+# Locate the installed Vulkan SDK (tries ~/VulkanSDK/ by convention)
+VULKAN_SDK_ROOT=""
+for sdk_candidate in "${HOME}/VulkanSDK"/*/macOS; do
+    if [[ -f "${sdk_candidate}/lib/libvulkan.dylib" ]]; then
+        VULKAN_SDK_ROOT="${sdk_candidate}"
+    fi
+done
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 
 echo "Deploying GeneralsXZH (macOS) to ${RUNTIME_DIR}"
@@ -58,6 +66,31 @@ else
     echo "  Run cmake --build build/macos-vulkan --target dxvk_d3d8_install to build DXVK first."
 fi
 
+echo "  Deploying Vulkan + MoltenVK libraries..."
+if [[ -n "${VULKAN_SDK_ROOT}" ]]; then
+    # Copy libvulkan loader (DXVK dlopen's "libvulkan.dylib" on macOS)
+    cp -v "${VULKAN_SDK_ROOT}/lib/libvulkan.dylib" "${RUNTIME_DIR}/"
+    cp -v "${VULKAN_SDK_ROOT}/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/" 2>/dev/null || true
+    # Copy MoltenVK ICD driver (provides vkGetInstanceProcAddr via libvulkan.dylib)
+    cp -v "${VULKAN_SDK_ROOT}/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/"
+    # Write MoltenVK ICD manifest (Vulkan loader needs VK_ICD_FILENAMES to point here)
+    cat > "${RUNTIME_DIR}/MoltenVK_icd.json" <<'EOF'
+{
+    "file_format_version": "1.0.0",
+    "ICD": {
+        "library_path": "./libMoltenVK.dylib",
+        "api_version": "1.4.0",
+        "is_portability_driver": true
+    }
+}
+EOF
+    echo "  Vulkan SDK libs deployed from: ${VULKAN_SDK_ROOT}"
+else
+    echo "WARNING: Vulkan SDK not found at ~/VulkanSDK/*/macOS."
+    echo "  Install the Vulkan SDK from https://vulkan.lunarg.com/"
+    echo "  DXVK will fail to find vkGetInstanceProcAddr at runtime."
+fi
+
 # Write wrapper run script that sets DYLD_LIBRARY_PATH at launch time
 echo "  Writing run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << WRAPPER
@@ -68,10 +101,9 @@ SCRIPT_DIR="\$(cd "\$(dirname "\$0")" && pwd)"
 # SDL3 and gamespy dylibs are in same dir; Vulkan/MoltenVK stays in SDK
 export DYLD_LIBRARY_PATH="\${SCRIPT_DIR}:\${DYLD_LIBRARY_PATH:-}"
 
-# MoltenVK — use Vulkan SDK ICD if available
-VULKAN_SDK="\$(find /Users -maxdepth 4 -name "MoltenVK_icd.json" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || true)"
-if [[ -n "\${VULKAN_SDK}" ]]; then
-    export VK_ICD_FILENAMES="\${VULKAN_SDK}/MoltenVK_icd.json"
+# MoltenVK ICD manifest — deployed alongside the binary by deploy-macos-zh.sh
+if [[ -f "\${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
+    export VK_ICD_FILENAMES="\${SCRIPT_DIR}/MoltenVK_icd.json"
 fi
 
 # Auto-detect base Generals install path
@@ -90,6 +122,9 @@ echo "   SDL3 libs:  ${RUNTIME_DIR}/libSDL3*.dylib"
 echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.dylib"
 echo "   DXVK d3d9:  ${RUNTIME_DIR}/libdxvk_d3d9.0.dylib"
 echo "   DXVK d3d8:  ${RUNTIME_DIR}/libdxvk_d3d8.0.dylib"
+echo "   Vulkan:     ${RUNTIME_DIR}/libvulkan.dylib"
+echo "   MoltenVK:   ${RUNTIME_DIR}/libMoltenVK.dylib"
+echo "   VK ICD:     ${RUNTIME_DIR}/MoltenVK_icd.json"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"
