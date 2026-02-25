@@ -14,6 +14,9 @@ macOS requires:
                           (/proc/self/exe doesn't exist on macOS)
   7. vulkan_loader.cpp:   loadVulkanLibrary() only tries libvulkan.so/libvulkan.so.1 (Linux).
                           Add macOS branch: libvulkan.dylib, libvulkan.1.dylib, libMoltenVK.dylib
+  8. dxvk_extensions.h +  MoltenVK requires VK_KHR_portability_enumeration instance extension
+     dxvk_instance.cpp:   AND VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR in VkInstanceCreateInfo
+                          or vkEnumeratePhysicalDevices returns VK_ERROR_INCOMPATIBLE_DRIVER.
 
 Usage: dxvk-macos-patches.py <dxvk_source_dir>
 """
@@ -238,6 +241,96 @@ def main():
         os.path.join(src, "src/vulkan/vulkan_loader.cpp"),
         patch_vulkan_loader,
         "loadVulkanLibrary(): add macOS-specific Vulkan/MoltenVK dylib names"
+    )
+
+    # Patch 8a: dxvk_extensions.h
+    # MoltenVK requires VK_KHR_portability_enumeration as an Optional instance
+    # extension. Without it, VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+    # cannot be set and vkEnumeratePhysicalDevices returns VK_ERROR_INCOMPATIBLE_DRIVER.
+    def patch_extensions_h(c):
+        old = (
+            "  struct DxvkInstanceExtensions {\n"
+            "    DxvkExt extDebugUtils                   = { VK_EXT_DEBUG_UTILS_EXTENSION_NAME,                      DxvkExtMode::Optional };\n"
+            "    DxvkExt extSurfaceMaintenance1          = { VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME,            DxvkExtMode::Optional };\n"
+            "    DxvkExt khrGetSurfaceCapabilities2      = { VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,       DxvkExtMode::Optional };\n"
+            "    DxvkExt khrSurface                      = { VK_KHR_SURFACE_EXTENSION_NAME,                          DxvkExtMode::Required };\n"
+            "  };"
+        )
+        new = (
+            "  struct DxvkInstanceExtensions {\n"
+            "    DxvkExt extDebugUtils                   = { VK_EXT_DEBUG_UTILS_EXTENSION_NAME,                      DxvkExtMode::Optional };\n"
+            "    DxvkExt extSurfaceMaintenance1          = { VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME,            DxvkExtMode::Optional };\n"
+            "    DxvkExt khrGetSurfaceCapabilities2      = { VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,       DxvkExtMode::Optional };\n"
+            "    DxvkExt khrPortabilityEnumeration       = { VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,          DxvkExtMode::Optional };\n"
+            "    DxvkExt khrSurface                      = { VK_KHR_SURFACE_EXTENSION_NAME,                          DxvkExtMode::Required };\n"
+            "  };"
+        )
+        return c.replace(old, new)
+
+    patch_file(
+        os.path.join(src, "src/dxvk/dxvk_extensions.h"),
+        patch_extensions_h,
+        "DxvkInstanceExtensions: add khrPortabilityEnumeration (Optional) for MoltenVK"
+    )
+
+    # Patch 8b: dxvk_instance.cpp (two sub-patches)
+    def patch_instance_cpp(c):
+        # Sub-patch 8b-1: Add khrPortabilityEnumeration to getExtensionList()
+        old1 = (
+            "  std::vector<DxvkExt*> DxvkInstance::getExtensionList(DxvkInstanceExtensions& ext, bool withDebug) {\n"
+            "    std::vector<DxvkExt*> result = {{\n"
+            "      &ext.extSurfaceMaintenance1,\n"
+            "      &ext.khrGetSurfaceCapabilities2,\n"
+            "      &ext.khrSurface,\n"
+            "    }};"
+        )
+        new1 = (
+            "  std::vector<DxvkExt*> DxvkInstance::getExtensionList(DxvkInstanceExtensions& ext, bool withDebug) {\n"
+            "    std::vector<DxvkExt*> result = {{\n"
+            "      &ext.extSurfaceMaintenance1,\n"
+            "      &ext.khrGetSurfaceCapabilities2,\n"
+            "      &ext.khrSurface,\n"
+            "      // MoltenVK/macOS: VK_KHR_portability_enumeration must be enabled or\n"
+            "      // vkEnumeratePhysicalDevices returns VK_ERROR_INCOMPATIBLE_DRIVER (-9).\n"
+            "      &ext.khrPortabilityEnumeration,\n"
+            "    }};"
+        )
+        c = c.replace(old1, new1)
+        # Sub-patch 8b-2: Set VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR in VkInstanceCreateInfo
+        old2 = (
+            "      VkInstanceCreateInfo info = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };\n"
+            "      info.pApplicationInfo         = &appInfo;\n"
+            "      info.enabledLayerCount        = layerList.count();\n"
+            "      info.ppEnabledLayerNames      = layerList.names();\n"
+            "      info.enabledExtensionCount    = m_extensionNames.count();\n"
+            "      info.ppEnabledExtensionNames  = m_extensionNames.names();\n"
+            "\n"
+            "      VkResult status = m_vkl->vkCreateInstance(&info, nullptr, &instance);"
+        )
+        new2 = (
+            "      // MoltenVK/macOS requires VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR\n"
+            "      // when VK_KHR_portability_enumeration is enabled, otherwise\n"
+            "      // vkEnumeratePhysicalDevices returns VK_ERROR_INCOMPATIBLE_DRIVER.\n"
+            "      VkInstanceCreateFlags createFlags = 0;\n"
+            "      if (m_extensionSet.supports(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME))\n"
+            "        createFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;\n"
+            "\n"
+            "      VkInstanceCreateInfo info = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };\n"
+            "      info.flags                    = createFlags;\n"
+            "      info.pApplicationInfo         = &appInfo;\n"
+            "      info.enabledLayerCount        = layerList.count();\n"
+            "      info.ppEnabledLayerNames      = layerList.names();\n"
+            "      info.enabledExtensionCount    = m_extensionNames.count();\n"
+            "      info.ppEnabledExtensionNames  = m_extensionNames.names();\n"
+            "\n"
+            "      VkResult status = m_vkl->vkCreateInstance(&info, nullptr, &instance);"
+        )
+        return c.replace(old2, new2)
+
+    patch_file(
+        os.path.join(src, "src/dxvk/dxvk_instance.cpp"),
+        patch_instance_cpp,
+        "DxvkInstance: add portability_enumeration extension + flag for MoltenVK"
     )
 
     print("\nAll macOS patches applied successfully.")
