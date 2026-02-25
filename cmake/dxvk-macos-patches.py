@@ -17,6 +17,13 @@ macOS requires:
   8. dxvk_extensions.h +  MoltenVK requires VK_KHR_portability_enumeration instance extension
      dxvk_instance.cpp:   AND VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR in VkInstanceCreateInfo
                           or vkEnumeratePhysicalDevices returns VK_ERROR_INCOMPATIBLE_DRIVER.
+  9. dxvk_adapter.cpp:   vkCreateDevice fails with VK_ERROR_FEATURE_NOT_PRESENT for valid
+                          features (tessellationShader, shaderFloat64, robustBufferAccess2,
+                          nullDescriptor) because:
+                          (a) VK_KHR_portability_subset must be enabled + its features struct
+                              added to pNext when the device supports it (MoltenVK requirement);
+                          (b) core VkPhysicalDeviceFeatures must be masked against what the
+                              device actually supports before calling vkCreateDevice.
 
 Usage: dxvk-macos-patches.py <dxvk_source_dir>
 """
@@ -331,6 +338,122 @@ def main():
         os.path.join(src, "src/dxvk/dxvk_instance.cpp"),
         patch_instance_cpp,
         "DxvkInstance: add portability_enumeration extension + flag for MoltenVK"
+    )
+
+    # Patch 9: dxvk_adapter.cpp
+    # vkCreateDevice fails with VK_ERROR_FEATURE_NOT_PRESENT on MoltenVK because:
+    #   (a) VK_KHR_portability_subset must be enabled when the device supports it and
+    #       VkPhysicalDevicePortabilitySubsetFeaturesKHR must be in the pNext chain.
+    #   (b) core VkPhysicalDeviceFeatures (tessellationShader, shaderFloat64, etc.)
+    #       must be masked against actual device capabilities before vkCreateDevice.
+    # VK_ENABLE_BETA_EXTENSIONS must be defined before including vulkan_core.h to
+    # expose the portability subset sType enum and struct (they are in vulkan_beta.h).
+    def patch_adapter_portability_subset(c):
+        # Sub-patch 9a: define VK_ENABLE_BETA_EXTENSIONS + include vulkan_beta.h
+        old_top = (
+            '#include <cstring>\n'
+            '#include <unordered_set>\n'
+            '\n'
+            '#include "dxvk_adapter.h"\n'
+            '#include "dxvk_device.h"\n'
+            '#include "dxvk_instance.h"'
+        )
+        new_top = (
+            '// macOS: Enable Vulkan beta extensions to expose VK_KHR_portability_subset types\n'
+            '// (VkPhysicalDevicePortabilitySubsetFeaturesKHR, VK_STRUCTURE_TYPE_*_PORTABILITY_SUBSET_*).\n'
+            '// These are guarded by VK_ENABLE_BETA_EXTENSIONS in vulkan_core.h and vulkan_beta.h.\n'
+            '// This define MUST appear before any Vulkan header is pulled in.\n'
+            '#ifdef __APPLE__\n'
+            '#define VK_ENABLE_BETA_EXTENSIONS\n'
+            '#endif\n'
+            '\n'
+            '#include <cstring>\n'
+            '#include <unordered_set>\n'
+            '\n'
+            '#include "dxvk_adapter.h"\n'
+            '#include "dxvk_device.h"\n'
+            '#include "dxvk_instance.h"\n'
+            '\n'
+            '// macOS: VkPhysicalDevicePortabilitySubsetFeaturesKHR lives in vulkan_beta.h.\n'
+            '// Included after dxvk headers (which pull in vulkan.h) but VK_ENABLE_BETA_EXTENSIONS\n'
+            '// defined above ensures the portability types are active in vulkan_core.h too.\n'
+            '#ifdef __APPLE__\n'
+            '#include <vulkan/vulkan_beta.h>\n'
+            '#endif'
+        )
+        c = c.replace(old_top, new_top)
+
+        # Sub-patch 9b: enable VK_KHR_portability_subset extension + mask core features
+        old_ext = (
+            '    // Enable additional extensions if necessary\n'
+            '    extensionsEnabled.merge(m_extraExtensions);\n'
+            '    DxvkNameList extensionNameList = extensionsEnabled.toNameList();\n'
+            '\n'
+            '    // Always enable robust buffer access\n'
+            '    enabledFeatures.core.features.robustBufferAccess = VK_TRUE;'
+        )
+        new_ext = (
+            '    // Enable additional extensions if necessary\n'
+            '    extensionsEnabled.merge(m_extraExtensions);\n'
+            '\n'
+            '    // macOS/MoltenVK: VK_KHR_portability_subset MUST be enabled when the device supports it.\n'
+            '    // Without it, vkCreateDevice rejects valid features (robustBufferAccess2, nullDescriptor, etc.)\n'
+            '    // with VK_ERROR_FEATURE_NOT_PRESENT due to MoltenVK\'s portability subset enforcement.\n'
+            '    const bool hasPortabilitySubset =\n'
+            '      m_deviceExtensions.supports(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME) != 0u;\n'
+            '    if (hasPortabilitySubset)\n'
+            '      extensionsEnabled.add(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);\n'
+            '\n'
+            '    DxvkNameList extensionNameList = extensionsEnabled.toNameList();\n'
+            '\n'
+            '    // macOS/MoltenVK: mask all core features against actual device capabilities.\n'
+            '    // Prevents requesting tessellationShader, shaderFloat64, etc. that M1 reports as 0,\n'
+            '    // which MoltenVK rejects with VK_ERROR_FEATURE_NOT_PRESENT in vkCreateDevice.\n'
+            '    {\n'
+            '      const VkBool32* src = reinterpret_cast<const VkBool32*>(&m_deviceFeatures.core.features);\n'
+            '      VkBool32*       dst = reinterpret_cast<VkBool32*>(&enabledFeatures.core.features);\n'
+            '      const size_t  count = sizeof(VkPhysicalDeviceFeatures) / sizeof(VkBool32);\n'
+            '      for (size_t i = 0; i < count; ++i)\n'
+            '        dst[i] = dst[i] & src[i];\n'
+            '    }\n'
+            '\n'
+            '    // Always enable robust buffer access\n'
+            '    enabledFeatures.core.features.robustBufferAccess = VK_TRUE;'
+        )
+        c = c.replace(old_ext, new_ext)
+
+        # Sub-patch 9c: inject VkPhysicalDevicePortabilitySubsetFeaturesKHR into pNext chain
+        old_chain = (
+            '    // Create pNext chain for additional device features\n'
+            '    initFeatureChain(enabledFeatures, devExtensions, instance->extensions());\n'
+            '\n'
+            '    // Log feature support info an extension list'
+        )
+        new_chain = (
+            '    // Create pNext chain for additional device features\n'
+            '    initFeatureChain(enabledFeatures, devExtensions, instance->extensions());\n'
+            '\n'
+            '    // macOS/MoltenVK: when VK_KHR_portability_subset is enabled, the Vulkan spec requires\n'
+            '    // VkPhysicalDevicePortabilitySubsetFeaturesKHR in VkDeviceCreateInfo.pNext set to\n'
+            '    // device-queried values. Without this, MoltenVK may reject features it reported as\n'
+            '    // supported in vkGetPhysicalDeviceFeatures2 (e.g. robustBufferAccess2, nullDescriptor).\n'
+            '    VkPhysicalDevicePortabilitySubsetFeaturesKHR portabilityFeatures = {\n'
+            '      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR };\n'
+            '    if (hasPortabilitySubset) {\n'
+            '      VkPhysicalDeviceFeatures2 query = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };\n'
+            '      query.pNext = &portabilityFeatures;\n'
+            '      m_vki->vkGetPhysicalDeviceFeatures2(m_handle, &query);\n'
+            '      portabilityFeatures.pNext = std::exchange(enabledFeatures.core.pNext, &portabilityFeatures);\n'
+            '    }\n'
+            '\n'
+            '    // Log feature support info an extension list'
+        )
+        return c.replace(old_chain, new_chain)
+
+    patch_file(
+        os.path.join(src, "src/dxvk/dxvk_adapter.cpp"),
+        patch_adapter_portability_subset,
+        "dxvk_adapter: portability_subset extension + feature masking for MoltenVK"
     )
 
     print("\nAll macOS patches applied successfully.")
