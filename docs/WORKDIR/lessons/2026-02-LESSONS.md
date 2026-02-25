@@ -925,3 +925,54 @@ file /tmp/dxvk-arm64-build/src/d3d8/libdxvk_d3d8.0.dylib
 ### Key Rule
 **Always run `file` on produced dylibs when dlopen fails on macOS.**  
 On machines with dual Homebrew installs (Intel + arm64), always pass explicit `-arch` flags.
+---
+
+## Lesson (Session 63). DXVK Vulkan Loader: macOS Library Names — vulkan_loader.cpp
+
+**Problem**: After Patch 6 fixed `getExeName()`, DXVK reached `createLibraryLoader()` → `loadVulkanLibrary()` and logged:
+```
+err:   Vulkan: vkGetInstanceProcAddr not found
+[1]    segmentation fault  ./GeneralsXZH
+```
+Crash in `DxvkInstance::createLibraryLoader` (null function call, PC=0x0).
+
+**Root Cause**: `vulkan_loader.cpp` `loadVulkanLibrary()` only tries:
+```cpp
+#ifdef _WIN32
+  "winevulkan.dll", "vulkan-1.dll"
+#else
+  "libvulkan.so", "libvulkan.so.1"    // Linux names only
+#endif
+```
+On macOS, `dlopen("libvulkan.so")` fails (no such file). The function returns `{ nullptr, nullptr }`. DXVK then tries to call through the null `vkGetInstanceProcAddr` → SIGSEGV at 0x0.
+
+**Important**: `libvulkan.1.4.341.dylib` from the Vulkan SDK was appearing in crash binary images because `DYLD_LIBRARY_PATH` or `dlopen` indirectly loaded it — but not through DXVK's explicit search.
+
+**Fix (Patch 7)**:
+
+Split `dllNames` into per-platform static arrays (`std::array` size varies per platform):
+```cpp
+#ifdef _WIN32
+  static const std::array<const char*, 2> dllNames = {{ "winevulkan.dll", "vulkan-1.dll" }};
+#elif defined(__APPLE__)
+  // LunarG Vulkan SDK installs libvulkan.dylib; MoltenVK is the ICd driver.
+  static const std::array<const char*, 4> dllNames = {{
+    "libvulkan.dylib", "libvulkan.1.dylib", "libvulkan.1.4.341.dylib", "libMoltenVK.dylib"
+  }};
+#else
+  static const std::array<const char*, 2> dllNames = {{ "libvulkan.so", "libvulkan.so.1" }};
+#endif
+```
+
+**Deploy Fix**: `deploy-macos-zh.sh` was not copying Vulkan/MoltenVK libs to the runtime dir. Added:
+- Auto-detect Vulkan SDK at `~/VulkanSDK/*/macOS`
+- Copy `libvulkan.dylib`, `libvulkan.1.dylib`, `libMoltenVK.dylib` to runtime dir
+- Write `MoltenVK_icd.json` with `"library_path": "./libMoltenVK.dylib"` (relative)
+- Update `run.sh` to set `VK_ICD_FILENAMES="${SCRIPT_DIR}/MoltenVK_icd.json"`
+
+**Rule**:
+> **Every non-Windows DXVK port needs explicit Vulkan library names for the target OS.**
+> On macOS: `libvulkan.dylib` (LunarG SDK loader), NOT `libvulkan.so`.
+> The Vulkan loader must also be deployed alongside the binary with a valid MoltenVK ICD JSON.
+
+**Commits**: `95c7911b3`
