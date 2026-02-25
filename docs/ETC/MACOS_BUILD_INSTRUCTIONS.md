@@ -183,6 +183,7 @@ ExternalProject_Add(dxvk
 | 7 | `vulkan_loader.cpp` | Tries to dlopen `libvulkan.so` (Linux name) | Add `#elif defined(__APPLE__)` block with `.dylib` names |
 | 8 | `dxvk_extensions.h` + `dxvk_instance.cpp` | `vkEnumeratePhysicalDevices` returns `VK_ERROR_INCOMPATIBLE_DRIVER` | Enable `VK_KHR_portability_enumeration` + `ENUMERATE_PORTABILITY` flag |
 | 9 | `dxvk_adapter.cpp` | `vkCreateDevice` returns `VK_ERROR_FEATURE_NOT_PRESENT` (tessellationShader, shaderFloat64, robustness2) | Enable `VK_KHR_portability_subset`, mask core features against device caps, inject pNext chain |
+| 10 | `dxvk_adapter.cpp` | MoltenVK bug: `vkGetPhysicalDeviceFeatures2` reports `robustBufferAccess2`/`nullDescriptor` as 1, but `vkCreateDevice` rejects them (1st and 3rd flags in `VkPhysicalDeviceRobustness2FeaturesKHR`) when `portability_subset` is active | `#ifdef __APPLE__` guard — force all three `extRobustness2` features to `VK_FALSE` on macOS |
 
 ---
 
@@ -221,6 +222,22 @@ This was fixed by Patch 8 (portability enumeration). If you see it:
 2. Ensure `deploy-macos-zh.sh` was run (MoltenVK ICD JSON must be present)
 3. Verify `VK_ICD_FILENAMES` points to the correct JSON in the runtime dir
 
+### `VK_ERROR_FEATURE_NOT_PRESENT` — robustBufferAccess2 / nullDescriptor
+
+```
+[mvk-error] VK_ERROR_FEATURE_NOT_PRESENT: vkCreateDevice(): Requested physical
+device feature specified by the 1st flag in VkPhysicalDeviceRobustness2FeaturesKHR
+is not available on this device.
+```
+
+Fixed by Patch 10. If you see this, the DXVK dylib in the game directory is stale
+(was built before Patch 10 was applied). Rebuild and redeploy:
+
+```bash
+./scripts/build-macos-zh.sh --build-only
+./scripts/deploy-macos-zh.sh
+```
+
 ### Game crashes at startup (SIGSEGV)
 
 Run with verbose MoltenVK output:
@@ -243,7 +260,7 @@ after updating the Vulkan SDK copies the new `libMoltenVK.dylib` to the runtime 
 | Feature | Status |
 |---------|--------|
 | CMake configure | Working |
-| DXVK compile via Meson | Working (9-patch series auto-applied) |
+| DXVK compile via Meson | Working (10-patch series auto-applied) |
 | GeneralsXZH binary | Builds successfully |
 | Vulkan device init | Working (MoltenVK -> Metal) |
 | 3D rendering | Under active testing |
@@ -260,7 +277,7 @@ after updating the Vulkan SDK copies the new `libMoltenVK.dylib` to the runtime 
 | `scripts/deploy-macos-zh.sh` | Deploy binary + Vulkan runtime to game dir |
 | `scripts/run-macos-zh.sh` | Launch with correct environment |
 | `cmake/dx8.cmake` | DXVK ExternalProject build (includes PATCH_COMMAND) |
-| `cmake/dxvk-macos-patches.py` | All 9 DXVK patches (auto-applied by cmake) |
+| `cmake/dxvk-macos-patches.py` | All 10 DXVK patches (auto-applied by cmake) |
 | `CMakePresets.json` (`macos-vulkan`) | Build preset (arm64, MoltenVK, SDL3, OpenAL, ffmpeg) |
 
 ---
