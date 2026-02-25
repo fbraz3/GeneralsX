@@ -24,6 +24,12 @@ macOS requires:
                               added to pNext when the device supports it (MoltenVK requirement);
                           (b) core VkPhysicalDeviceFeatures must be masked against what the
                               device actually supports before calling vkCreateDevice.
+ 10. dxvk_adapter.cpp:   vkCreateDevice fails with VK_ERROR_FEATURE_NOT_PRESENT for the 1st
+                          and 3rd flags in VkPhysicalDeviceRobustness2FeaturesKHR
+                          (robustBufferAccess2, nullDescriptor). MoltenVK incorrectly reports
+                          these as supported in vkGetPhysicalDeviceFeatures2 but rejects them
+                          in vkCreateDevice when VK_KHR_portability_subset is active.
+                          Fix: do not request robustness2 features on macOS.
 
 Usage: dxvk-macos-patches.py <dxvk_source_dir>
 """
@@ -454,6 +460,45 @@ def main():
         os.path.join(src, "src/dxvk/dxvk_adapter.cpp"),
         patch_adapter_portability_subset,
         "dxvk_adapter: portability_subset extension + feature masking for MoltenVK"
+    )
+
+    # Patch 10: dxvk_adapter.cpp
+    # MoltenVK bug: vkGetPhysicalDeviceFeatures2 reports robustBufferAccess2 and
+    # nullDescriptor as supported (returns 1), but vkCreateDevice rejects them with
+    # VK_ERROR_FEATURE_NOT_PRESENT when VK_KHR_portability_subset is active.
+    # Fix: on macOS, do not request these two robustness2 features.
+    def patch_adapter_robustness2(c):
+        old = (
+            '    // Require robustBufferAccess2 since we use the robustness alignment\n'
+            '    // info in a number of places, and require null descriptor support\n'
+            '    // since we no longer have a fallback for those in the backend\n'
+            '    enabledFeatures.extRobustness2.robustBufferAccess2 = VK_TRUE;\n'
+            '    enabledFeatures.extRobustness2.robustImageAccess2 = m_deviceFeatures.extRobustness2.robustImageAccess2;\n'
+            '    enabledFeatures.extRobustness2.nullDescriptor = VK_TRUE;'
+        )
+        new = (
+            '    // Require robustBufferAccess2 since we use the robustness alignment\n'
+            '    // info in a number of places, and require null descriptor support\n'
+            '    // since we no longer have a fallback for those in the backend\n'
+            '    // macOS/MoltenVK: despite reporting these features as supported via\n'
+            '    // vkGetPhysicalDeviceFeatures2, vkCreateDevice rejects them with\n'
+            '    // VK_ERROR_FEATURE_NOT_PRESENT when VK_KHR_portability_subset is active.\n'
+            '#ifdef __APPLE__\n'
+            '    enabledFeatures.extRobustness2.robustBufferAccess2 = VK_FALSE;\n'
+            '    enabledFeatures.extRobustness2.robustImageAccess2 = VK_FALSE;\n'
+            '    enabledFeatures.extRobustness2.nullDescriptor = VK_FALSE;\n'
+            '#else\n'
+            '    enabledFeatures.extRobustness2.robustBufferAccess2 = VK_TRUE;\n'
+            '    enabledFeatures.extRobustness2.robustImageAccess2 = m_deviceFeatures.extRobustness2.robustImageAccess2;\n'
+            '    enabledFeatures.extRobustness2.nullDescriptor = VK_TRUE;\n'
+            '#endif'
+        )
+        return c.replace(old, new)
+
+    patch_file(
+        os.path.join(src, "src/dxvk/dxvk_adapter.cpp"),
+        patch_adapter_robustness2,
+        "dxvk_adapter: do not request robustness2 features on macOS (MoltenVK portability_subset bug)"
     )
 
     print("\nAll macOS patches applied successfully.")

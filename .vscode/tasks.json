@@ -511,7 +511,7 @@
 		{
 			"label": "Build GeneralsXZH (macOS)",
 			"type": "shell",
-			"command": "mkdir -p logs && cmake --build build/macos-vulkan --target z_generals -- -j$(sysctl -n hw.logicalcpu) 2>&1 | tee logs/build_zh_macos.log",
+			"command": "./scripts/build-macos-zh.sh --build-only 2>&1 | tee logs/build_zh_macos.log",
 			"isBackground": false,
 			"group": {
 				"kind": "build",
@@ -557,9 +557,9 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Pipeline: Build + Deploy + Run ZH (macOS)",
+			"label": "Pipeline: Configure + Build + Deploy + Run ZH (macOS)",
 			"type": "shell",
-			"command": "mkdir -p logs && cmake --build build/macos-vulkan --target z_generals -- -j$(sysctl -n hw.logicalcpu) 2>&1 | tee logs/build_zh_macos.log && ./scripts/deploy-macos-zh.sh && ./scripts/run-macos-zh.sh -win",
+			"command": "./scripts/build-macos-zh.sh 2>&1 | tee logs/build_zh_macos.log && ./scripts/deploy-macos-zh.sh && ./scripts/run-macos-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
 			"presentation": {
