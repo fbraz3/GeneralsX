@@ -66,18 +66,24 @@ if(SAGE_USE_SDL3)
         # vcpkg provides static libpng16.a but SDL3_image requires dynamic .dylib
         # Homebrew installs libpng16.16.dylib at /usr/local/lib (Intel) or /opt/homebrew/lib (ARM)
         set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
-        if(EXISTS "/usr/local/lib/libpng16.dylib")
-            # Intel Mac (Homebrew prefix: /usr/local)
-            set(PNG_INCLUDE_DIR "/usr/local/include" CACHE PATH "PNG include dir (Homebrew)" FORCE)
-            set(PNG_LIBRARY "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "PNG library (Homebrew .dylib)" FORCE)
-            set(PNG_LIBRARY_DEBUG "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
-            set(PNG_LIBRARY_RELEASE "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
-        elseif(EXISTS "/opt/homebrew/lib/libpng16.dylib")
+        # GeneralsX @bugfix BenderAI 25/02/2026 Check Apple Silicon Homebrew (/opt/homebrew) FIRST.
+        # A machine with both Homebrew installations (Intel Rosetta + native arm64) could have
+        # /usr/local/lib/libpng16.dylib (x86_64) AND /opt/homebrew/lib/libpng16.dylib (arm64).
+        # Linking the x86_64 dylib into an arm64 binary produces:
+        #   ld: warning: ignoring file '...libpng16.dylib': found architecture 'x86_64', required 'arm64'
+        # Always prefer /opt/homebrew (arm64) for arm64 builds.
+        if(EXISTS "/opt/homebrew/lib/libpng16.dylib")
             # Apple Silicon Mac (Homebrew prefix: /opt/homebrew)
             set(PNG_INCLUDE_DIR "/opt/homebrew/include" CACHE PATH "PNG include dir (Homebrew)" FORCE)
             set(PNG_LIBRARY "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "PNG library (Homebrew .dylib)" FORCE)
             set(PNG_LIBRARY_DEBUG "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
             set(PNG_LIBRARY_RELEASE "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+        elseif(EXISTS "/usr/local/lib/libpng16.dylib")
+            # Intel Mac fallback (Homebrew prefix: /usr/local)
+            set(PNG_INCLUDE_DIR "/usr/local/include" CACHE PATH "PNG include dir (Homebrew)" FORCE)
+            set(PNG_LIBRARY "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "PNG library (Homebrew .dylib)" FORCE)
+            set(PNG_LIBRARY_DEBUG "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+            set(PNG_LIBRARY_RELEASE "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
         else()
             message(FATAL_ERROR "libpng not found. Install: brew install libpng")
         endif()

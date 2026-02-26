@@ -92,6 +92,16 @@ else
 fi
 
 # Write wrapper run script that sets DYLD_LIBRARY_PATH at launch time
+echo "  Deploying dxvk.conf..."
+# GeneralsX @bugfix BenderAI 25/02/2026 Deploy DXVK configuration
+# Forces forceSamplerTypeSpecConstants=True to fix terrain shader MSL generation bug.
+DXVK_CONF_SRC="${PROJECT_ROOT}/GeneralsMD/Run/dxvk.conf"
+if [[ -f "${DXVK_CONF_SRC}" ]]; then
+    cp -v "${DXVK_CONF_SRC}" "${RUNTIME_DIR}/dxvk.conf"
+else
+    echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail to compile on macOS."
+fi
+
 echo "  Writing run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << WRAPPER
 #!/bin/bash
@@ -125,6 +135,7 @@ echo "   DXVK d3d8:  ${RUNTIME_DIR}/libdxvk_d3d8.0.dylib"
 echo "   Vulkan:     ${RUNTIME_DIR}/libvulkan.dylib"
 echo "   MoltenVK:   ${RUNTIME_DIR}/libMoltenVK.dylib"
 echo "   VK ICD:     ${RUNTIME_DIR}/MoltenVK_icd.json"
+echo "   DXVK conf:  ${RUNTIME_DIR}/dxvk.conf"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"

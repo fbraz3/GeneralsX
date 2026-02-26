@@ -89,8 +89,16 @@ static WW3DFormat findFormat(const WW3DFormat formats[])
 		}
 
 	}
+	// GeneralsX @bugfix BenderAI 24/02/2026 W3DRadar: When DXVK/MoltenVK caps query returns no supported
+	// format (e.g. CheckDeviceFormat fails on macOS for R8G8B8/R5G6B5), fall back to X8R8G8B8 which
+	// is guaranteed to be supported on any modern Vulkan-capable GPU. Without this, texture creation
+	// silently produces a null D3D texture and crashes later in buildTerrainTexture.
+#if !defined(_WIN32)
+	fprintf(stderr, "W3DRadar: findFormat: no supported format found in caps query - falling back to WW3D_FORMAT_X8R8G8B8\n");
+	fflush(stderr);
+#endif
 	DEBUG_CRASH(("WW3DRadar: No appropriate texture format") );
-	return WW3D_FORMAT_UNKNOWN;
+	return WW3D_FORMAT_X8R8G8B8;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1064,6 +1072,17 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 	// get the terrain surface to draw in
 	surface = m_terrainTexture->Get_Surface_Level();
 	DEBUG_ASSERTCRASH( surface, ("W3DRadar: Can't get surface for terrain texture") );
+	// GeneralsX @bugfix BenderAI 24/02/2026 W3DRadar: Guard against null surface level — can occur
+	// when terrain texture creation silently fails (e.g. DXVK format fallback still not supported).
+	// Without this guard the code dereferences a null pointer and crashes at surfaceDesc offset 0x18.
+	if( !surface )
+	{
+#if !defined(_WIN32)
+		fprintf(stderr, "W3DRadar: buildTerrainTexture: null surface level — terrain texture unavailable, skipping terrain build\n");
+		fflush(stderr);
+#endif
+		return;
+	}
 
 	// build the terrain
 	RGBColor sampleColor;
@@ -1290,7 +1309,15 @@ void W3DRadar::clearShroud()
 		return;
 #endif
 
+	// GeneralsX @bugfix felipebraz 10/06/2025 Defensive null check: on macOS/DXVK the underlying
+	// D3D texture creation may fail silently (DX8_ErrorCode is a no-op in non-debug builds), leaving
+	// Get_Surface_Level() returning nullptr. reset() already does this for the other textures.
+	if (!m_shroudTexture)
+		return;
+
 	SurfaceClass *surface = m_shroudTexture->Get_Surface_Level();
+	if (!surface)
+		return;
 
 	// fill to clear, shroud will make black.  Don't want to make something black that logic can't clear
 

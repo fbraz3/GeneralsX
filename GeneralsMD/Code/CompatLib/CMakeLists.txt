@@ -76,9 +76,15 @@ else()
         ${dxvk_SOURCE_DIR}/include/native/directx
         ${dxvk_SOURCE_DIR}/include/vulkan
     )
-    target_link_directories(d3d8lib INTERFACE
-        ${dxvk_SOURCE_DIR}/lib
-    )
+    # GeneralsX @bugfix BenderAI 25/02/2026 On macOS, DXVK dylibs live in the Meson build dir
+    # (_deps/dxvk-build-macos/src/d3d*/), not in ${dxvk_SOURCE_DIR}/lib — that path does not exist.
+    # Linux prebuilt DXVK native package does have a lib/ dir, so the guard is macOS-only.
+    # Passing a non-existent -L path produces: ld: warning: search path '.../dxvk-src/lib' not found
+    if(NOT APPLE)
+        target_link_directories(d3d8lib INTERFACE
+            ${dxvk_SOURCE_DIR}/lib
+        )
+    endif()
 endif()
 
 if (UNIX)

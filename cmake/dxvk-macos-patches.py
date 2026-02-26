@@ -30,6 +30,18 @@ macOS requires:
                           these as supported in vkGetPhysicalDeviceFeatures2 but rejects them
                           in vkCreateDevice when VK_KHR_portability_subset is active.
                           Fix: do not request robustness2 features on macOS.
+ 11. d3d8_batch.h:        D3D8Batcher::StateChange() restores D3D9 state post-flush by calling
+                          m_device->SetStreamSource(0, GetD3D9Nullable(m_stream), ...) and
+                          m_device->SetIndices(GetD3D9Nullable(m_indices)). Since m_stream is
+                          always a D3D8BatchBuffer with nullptr D3D9 backing, GetD3D9Nullable
+                          returns null, nullifying D3D9 stream 0. This races with the caller:
+                          D3D8Device::SetStreamSource first sets a real D3D9 vertex buffer,
+                          THEN triggers StateChange() via the batcher — StateChange nullifies
+                          the just-set buffer, leaving DrawIndexedPrimitive with no stream
+                          source → null VkBuffer → MVKBuffer::getMTLBuffer() null deref crash.
+                          Fix: remove the post-draw SetStreamSource/SetIndices restore calls;
+                          DrawIndexedPrimitiveUP already nulls them per D3D9 spec, and the
+                          D3D8Device layer correctly re-sets state before any subsequent draw.
 
 Usage: dxvk-macos-patches.py <dxvk_source_dir>
 """
@@ -499,6 +511,135 @@ def main():
         os.path.join(src, "src/dxvk/dxvk_adapter.cpp"),
         patch_adapter_robustness2,
         "dxvk_adapter: do not request robustness2 features on macOS (MoltenVK portability_subset bug)"
+    )
+
+    # Patch 11: d3d8_batch.h
+    # D3D8Batcher::StateChange() restores D3D9 stream state after flushing batched
+    # draws via DrawIndexedPrimitiveUP by calling:
+    #   m_device->SetStreamSource(0, D3D8VertexBuffer::GetD3D9Nullable(m_stream), 0, stride)
+    #   m_device->SetIndices(D3D8IndexBuffer::GetD3D9Nullable(m_indices))
+    # However m_stream is always a D3D8BatchBuffer constructed with nullptr as its D3D9
+    # backing buffer, so GetD3D9Nullable always returns null. This call:
+    #   1. Is a no-op (DrawIndexedPrimitiveUP already unbinds stream 0 + index buffer per D3D9 spec)
+    #   2. CORRUPTS state when StateChange() is triggered from D3D8Device::SetStreamSource:
+    #      D3D8Device sets D3D9 stream 0 to a real buffer first, THEN calls batcher->SetStream
+    #      which calls StateChange(), which nullifies the just-set D3D9 stream 0.
+    #      The following DrawIndexedPrimitive then finds stream 0 = null → null VkBuffer
+    #      → CRASH in MVKBuffer::getMTLBuffer() (ldr x0, [x0, #0x58] with x0=null).
+    # Fix: remove the post-draw SetStreamSource and SetIndices restore calls in StateChange().
+    def patch_batcher_state_restore(c):
+        old = (
+            '        m_device->SetStreamSource(0, D3D8VertexBuffer::GetD3D9Nullable(m_stream), 0, m_stride);\n'
+            '        m_device->SetIndices(D3D8IndexBuffer::GetD3D9Nullable(m_indices));\n'
+        )
+        new = (
+            '        // GeneralsX Patch 11: do NOT restore D3D9 state here.\n'
+            '        // m_stream is a CPU-only D3D8BatchBuffer with null D3D9 backing;\n'
+            '        // GetD3D9Nullable returns null and would overwrite the real D3D9\n'
+            '        // stream source already set by D3D8Device::SetStreamSource before\n'
+            '        // triggering this StateChange(). DrawIndexedPrimitiveUP has already\n'
+            '        // unbound stream 0 and indices per D3D9 spec. The D3D8Device layer\n'
+            '        // is responsible for re-setting correct state before the next draw.\n'
+        )
+        return c.replace(old, new)
+
+    patch_file(
+        os.path.join(src, "src/d3d8/d3d8_batch.h"),
+        patch_batcher_state_restore,
+        "d3d8_batch: remove post-flush SetStreamSource/SetIndices null-overwrite (null VkBuffer crash)"
+    )
+
+    # Patch 12: dxvk_context.cpp - updateVertexBufferBindings passes VK_NULL_HANDLE to vkCmdBindVertexBuffers2
+    # When a vertex buffer slot has no buffer bound (length == 0), DXVK sets:
+    #   buffers[i] = VK_NULL_HANDLE
+    # and then calls cmdBindVertexBuffers with that null handle.
+    # Per Vulkan spec, passing VK_NULL_HANDLE requires nullDescriptor feature (VK_EXT_robustness2).
+    # MoltenVK does NOT handle VK_NULL_HANDLE gracefully: it casts the handle directly to MVKBuffer*,
+    # resulting in a null pointer dereference in MVKBuffer::getMTLBuffer() (crash: ldr x0, [x0, #0x58]).
+    # DXVK already uses dummyResources().bufferHandle() for xfb null slots (same file, nearby).
+    # Fix: use the same dummy buffer handle for unbound vertex buffer slots.
+    def patch_null_vertex_buffer(c):
+        old = (
+            '      } else {\n'
+            '        buffers[i] = VK_NULL_HANDLE;\n'
+            '        offsets[i] = 0;\n'
+            '        lengths[i] = 0;\n'
+            '        strides[i] = 0;\n'
+            '      }\n'
+        )
+        new = (
+            '      } else {\n'
+            '        // GeneralsX Patch 12: MoltenVK crashes on VK_NULL_HANDLE in\n'
+            '        // vkCmdBindVertexBuffers2 (no nullDescriptor support). Use the\n'
+            '        // DXVK dummy buffer instead — same pattern as xfb null slots.\n'
+            '        buffers[i] = m_common->dummyResources().bufferHandle();\n'
+            '        offsets[i] = 0;\n'
+            '        lengths[i] = 0;\n'
+            '        strides[i] = 0;\n'
+            '      }\n'
+        )
+        return c.replace(old, new)
+
+    patch_file(
+        os.path.join(src, "src/dxvk/dxvk_context.cpp"),
+        patch_null_vertex_buffer,
+        "dxvk_context: use dummyResources().bufferHandle() for unbound vertex slots (null VkBuffer MoltenVK crash)"
+    )
+
+    # Patch 13: dxso_compiler.cpp - PS1.x shaders (majorVersion < 2) emit all sampler type variants
+    # via spec constants in BOTH the declaration AND the sample instruction paths.
+    # SPIRV-Cross (MoltenVK) generates ps_main() with all type variants as params for every OpSwitch
+    # that uses SpecSamplerType. Metal entry-point wrapper only initializes 2D descriptors, leaving
+    # shadow/3D/cube variants undeclared → "use of undeclared identifier 's0_cubeSmplr'" etc.
+    #
+    # Fix TWO locations in dxso_compiler.cpp:
+    #   1. emitDclSampler (~line 754): `implicit` declaration — removes auto-trigger for PS1.x
+    #   2. emitTextureSample (~line 3015): sample instruction path — removes PS1.x spec-const OpSwitch
+    # With forceSamplerTypeSpecConstants=False (default), both paths use the detected 2D type directly.
+    def patch_ps1x_sampler_implicit(c):
+        # Part A: fix declaration path (emitDclSampler)
+        old_decl = (
+            '    const bool implicit = m_programInfo.majorVersion() < 2 || m_moduleInfo.options.forceSamplerTypeSpecConstants;\n'
+        )
+        new_decl = (
+            '    // GeneralsX Patch 13: MoltenVK/SPIRV-Cross does not declare dummy variables for inactive\n'
+            '    // sampler type variants in the MSL entry-point wrapper. Removing the majorVersion() < 2\n'
+            '    // auto-trigger prevents DXVK from emitting all-type SPIR-V for PS1.x shaders. Only\n'
+            '    // forceSamplerTypeSpecConstants=True (explicit opt-in) enables multi-type mode.\n'
+            '    const bool implicit = m_moduleInfo.options.forceSamplerTypeSpecConstants;\n'
+        )
+        # Part B: fix sample instruction path (emitTextureSample)
+        old_sample = (
+            '    if (m_programInfo.majorVersion() >= 2 && !m_moduleInfo.options.forceSamplerTypeSpecConstants) {\n'
+            '      DxsoSamplerType samplerType =\n'
+            '        SamplerTypeFromTextureType(sampler.type);\n'
+            '\n'
+            '      SampleType(samplerType);\n'
+            '    }\n'
+            '    else {'
+        )
+        new_sample = (
+            '    // GeneralsX Patch 13b: Remove majorVersion() < 2 auto-trigger for spec-constant sampler\n'
+            '    // type switching. Same rationale as Patch 13: for PS1.x + forceSamplerTypeSpecConstants=False,\n'
+            '    // emit a direct 2D sample call instead of an OpSwitch over {2D, 3D, Cube} spec constants.\n'
+            '    // SPIRV-Cross generates ps_main() params for every OpSwitch case label even when those\n'
+            '    // samplers were not declared as SPIR-V bindings → "undeclared identifier" in Metal MSL.\n'
+            '    if (!m_moduleInfo.options.forceSamplerTypeSpecConstants) {\n'
+            '      DxsoSamplerType samplerType =\n'
+            '        SamplerTypeFromTextureType(sampler.type);\n'
+            '\n'
+            '      SampleType(samplerType);\n'
+            '    }\n'
+            '    else {'
+        )
+        c = c.replace(old_decl, new_decl)
+        c = c.replace(old_sample, new_sample)
+        return c
+
+    patch_file(
+        os.path.join(src, "src/dxso/dxso_compiler.cpp"),
+        patch_ps1x_sampler_implicit,
+        "dxso_compiler: remove PS1.x majorVersion<2 sampler spec-const auto-trigger in declaration AND sample paths (MoltenVK MSL undeclared identifier fix)"
     )
 
     print("\nAll macOS patches applied successfully.")

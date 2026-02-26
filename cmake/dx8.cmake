@@ -57,14 +57,22 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     message(FATAL_ERROR "DXVK macOS build requires ninja: brew install ninja")
   endif()
 
-  # Detect host architecture so Clang targets the correct slice
-  # (critical on Apple Silicon: /usr/local/bin/meson is x86_64 via Rosetta,
-  #  but we must produce arm64 dylibs for the native game process)
-  execute_process(
-    COMMAND uname -m
-    OUTPUT_VARIABLE DXVK_HOST_ARCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
+  # Detect host architecture so Clang targets the correct slice.
+  # IMPORTANT: prefer CMAKE_OSX_ARCHITECTURES (set by the preset) over uname -m.
+  # On Apple Silicon Macs running CMake / meson via Rosetta, uname -m returns
+  # x86_64 even though the native executable arch is arm64. Using CMAKE_OSX_ARCHITECTURES
+  # (e.g. "arm64" from the macos-vulkan preset) avoids building an x86_64 dylib that
+  # the arm64 game binary cannot dlopen.
+  if(CMAKE_OSX_ARCHITECTURES)
+    # Use the first entry (handles "arm64;x86_64" fat-binary requests too)
+    list(GET CMAKE_OSX_ARCHITECTURES 0 DXVK_HOST_ARCH)
+  else()
+    execute_process(
+      COMMAND uname -m
+      OUTPUT_VARIABLE DXVK_HOST_ARCH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  endif()
   message(STATUS "Building DXVK ${DXVK_VERSION} for macOS/${DXVK_HOST_ARCH} with Meson (${MESON_EXECUTABLE})")
 
   include(ExternalProject)
@@ -83,15 +91,17 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
       ${CMAKE_COMMAND} -E echo "Applying macOS patches to DXVK..." &&
       ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}
     # Configure with Meson using SDL3 windowing system.
-    # Force -arch flag so that even an x86_64 Meson (Rosetta) produces the
-    # correct slice for the host CPU (arm64 on Apple Silicon).
+    # Force arm64 compilation despite Rosetta2 emulation:
+    # 1. Pass -mcpu=apple-m1 -arch arm64 to Clang
+    # 2. Use --native-file to tell Meson the build machine is aarch64
     CONFIGURE_COMMAND
       ${CMAKE_COMMAND} -E env
         CC=clang CXX=clang++
-        "CFLAGS=-arch ${DXVK_HOST_ARCH}"
-        "CXXFLAGS=-arch ${DXVK_HOST_ARCH}"
+        "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1"
+        "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1"
         "LDFLAGS=-arch ${DXVK_HOST_ARCH}"
       ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR}
+        --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini
         -Ddxvk_native_wsi=sdl3
         --buildtype=release
         --reconfigure
@@ -130,6 +140,9 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
 
   # Export path so other cmake files know where the headers are
   set(DXVK_INCLUDE_DIR "${DXVK_SOURCE_DIR}/include/native" CACHE PATH "DXVK native headers")
+  # GeneralsX @build felipebraz 10/06/2025 Mirror lowercase dxvk_SOURCE_DIR that FetchContent sets on Linux
+  # so CompatLib/CMakeLists.txt check works on macOS as well (CACHE PATH survives auto-regeneration)
+  set(dxvk_SOURCE_DIR "${DXVK_SOURCE_DIR}" CACHE PATH "DXVK source directory (macOS)")
   message(STATUS "DXVK source directory: ${DXVK_SOURCE_DIR}")
   message(STATUS "DXVK d3d8 library:     ${DXVK_D3D8_LIB}")
 

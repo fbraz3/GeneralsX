@@ -1,12 +1,34 @@
 # 2026-02 Lessons Learned - Phase 1 Linux Graphics Port
 
 **Month**: February 2026  
-**Sessions Covered**: 19-24, 28-30, 33, 34, 35  
+**Sessions Covered**: 19-24, 28-30, 33, 34, 35, 66  
 **Focus Area**: Linux graphics port (DXVK + SDL3) + build system stabilization + compilation blockers + compat headers
 
 ---
 
 ## 🎯 Critical Lessons
+
+### 0 (Session 66). Exit-time SIGSEGV — C++ Global Destructors on macOS 🚪
+
+**Problem**: Every game exit triggered SIGSEGV in `ObjectPoolClass<X,256>::~ObjectPoolClass()` via
+`__cxa_finalize_ranges`. Crash at corrupted `BlockListHead` (symbol: `AutoPoolClass<MultiListNodeClass,256>::Allocator`).
+
+**Root Cause**: On macOS/Linux, returning from `main()` triggers `__cxa_finalize_ranges` which runs all C++
+global/static object destructors. The `AutoPoolClass<X,256>::Allocator` global pools crash because their
+block list memory is in an inconsistent state after game shutdown.
+On Windows, `ExitProcess()` terminates immediately — C++ global destructors NEVER run. Game designed for that.
+
+**Correct Approach (✅ RIGHT)**:
+```cpp
+// SDL3Main.cpp — end of main(), after SDL_Quit + shutdownMemoryManager:
+_exit(exitcode);  // NOT return exitcode
+```
+`_exit()` terminates like `ExitProcess`: no atexit handlers, no C++ global destructors.
+
+**Diagnosis**: Crash in `__cxa_finalize_ranges` / `exit()` call chain always means global dtor issue.
+Use `nm -n binary | grep crash_offset` to identify the template instantiation.
+
+---
 
 ### 1 (Session 35). Time/Clock Compatibility Layer Pattern — Pre-Stub Approach 🕐
 
@@ -976,3 +998,92 @@ Split `dllNames` into per-platform static arrays (`std::array` size varies per p
 > The Vulkan loader must also be deployed alongside the binary with a valid MoltenVK ICD JSON.
 
 **Commits**: `95c7911b3`
+
+---
+
+## LESSON: D3D8Batcher StateChange Null VkBuffer — Post-Flush State Restore Bug (Session 64)
+
+**Category**: DXVK macOS Porting
+
+**Problem**: Game crashes in dxvk-cs thread at `MVKBuffer::getMTLBuffer() + 20` during first
+`DrawIndexedPrimitive`. ARM64: `ldr x0, [x0, #0x58]` with x0=null.
+
+**Root Cause**: `D3D8Batcher::StateChange()` — after flushing batched draws via
+`DrawIndexedPrimitiveUP` — calls `m_device->SetStreamSource(0, GetD3D9Nullable(m_stream), ...)`.
+`m_stream` is always a `D3D8BatchBuffer(pDevice, nullptr, ...)` — null D3D9 backing.
+`GetD3D9Nullable` returns null → D3D9 stream 0 gets overwritten with null.
+
+This races with `D3D8Device::SetStreamSource`: caller sets D3D9 stream 0 to a real buffer,
+then triggers `StateChange()` via the batcher, which nullifies the just-set buffer.
+`DrawIndexedPrimitive` then finds stream 0 = null → null VkBuffer → null MVKBuffer → crash.
+
+**Fix**: Remove `m_device->SetStreamSource()` and `m_device->SetIndices()` from `StateChange()`.
+`DrawIndexedPrimitiveUP` already unbinds them per D3D9 spec; the D3D8Device layer re-sets
+correct state before every subsequent draw call.
+
+**DXVK Patch**: Patch 11 in `cmake/dxvk-macos-patches.py`, targets `src/d3d8/d3d8_batch.h`.
+
+**Rule**: When porting DXVK to macOS (MoltenVK), any code path that binds a null Vulkan buffer
+as active stream source crashes in `MVKBuffer::getMTLBuffer()`. Audit all DXVK batcher flush
+paths that attempt to "restore state" using CPU-only objects with no D3D9/Vulkan backing.
+
+---
+
+## LESSON: Null VkBuffer in updateVertexBufferBindings — MoltenVK nullDescriptor (Session 65)
+
+**Category**: DXVK macOS Porting
+
+**Problem**: Game crashes in dxvk-cs thread at `MVKBuffer::getMTLBuffer() + 20` from
+`DxvkContext::updateVertexBufferBindings()` → `vkCmdBindVertexBuffers2`. ARM64: `ldr x0, [x0, #0x58]` with x0=null.
+
+**Root Cause**: `DxvkContext::updateVertexBufferBindings()` iterates pipeline input layout bindings.
+If a slot has no buffer (`length() == 0`), DXVK sets `buffers[i] = VK_NULL_HANDLE` and then
+calls `vkCmdBindVertexBuffers2` with that null handle included.
+
+Per Vulkan spec, `VK_NULL_HANDLE` in vertex buffers requires `nullDescriptor` (`VK_EXT_robustness2`).
+MoltenVK does NOT support `nullDescriptor` — it casts the handle directly to `MVKBuffer*`,
+so `VK_NULL_HANDLE` (0x0) → null pointer dereference → SIGSEGV.
+
+**Fix**: Replace `buffers[i] = VK_NULL_HANDLE` with `buffers[i] = m_common->dummyResources().bufferHandle()`.
+DXVK already uses `dummyResources().bufferHandle()` for transform feedback null slots in the same
+function — same pattern applied to vertex buffer slots.
+
+**DXVK Patch**: Patch 12 in `cmake/dxvk-macos-patches.py`, targets `src/dxvk/dxvk_context.cpp`.
+
+**Rule**: MoltenVK does not support `nullDescriptor` and will crash on any `VK_NULL_HANDLE` passed
+as a bound Vulkan resource. Always substitute with `m_common->dummyResources()` handles when
+targeting MoltenVK/macOS — never pass `VK_NULL_HANDLE` to `vkCmdBind*` functions.
+
+---
+
+## Lesson (Session 66): DXVK PS1.x Sampler Spec Constants — MSL Undeclared Identifier on macOS (Patch 13)
+
+**Context**: DXVK 2.6.0 + MoltenVK 1.4.1. D3D8/D3D9 terrain shaders fail with 80 Metal errors:
+`use of undeclared identifier 's0_cube_shadowSmplr'` etc.
+18 `VK_ERROR_INITIALIZATION_FAILED` pipeline failures. All terrain/asset textures invisible.
+
+**Root Cause**: In `dxso_compiler.cpp::emitDclSampler()`:
+```cpp
+const bool implicit = m_programInfo.majorVersion() < 2 || m_moduleInfo.options.forceSamplerTypeSpecConstants;
+```
+`majorVersion() < 2` is always true for D3D8/PS1.x shaders. This ALWAYS forces "implicit" mode
+(all 5 sampler type variants per slot declared in SPIR-V via spec constants). SPIRV-Cross generates
+`ps_main()` with all 5 variants as params. MoltenVK's MSL entry-point wrapper only initializes the
+actually-bound 2D descriptors; it does NOT generate dummy variable declarations for the non-2D
+variants. Metal compiler then fails on undeclared identifiers like `s0_cubeSmplr`.
+
+**False Lead**: `d3d9.forceSamplerTypeSpecConstants = True` in `dxvk.conf` did fix PS2.x shaders
+(errors 99 → 49) where `implicit` previously wasn't forced. For PS1.x, it was always forced by
+`majorVersion() < 2`, making the option irrelevant. **Key diagnostic**: if the failing shader hash
+is IDENTICAL across option changes, the SPIR-V is NOT changing — look for another condition.
+
+**Fix (DXVK Patch 13)**: Remove `majorVersion() < 2` override: `implicit = forceSamplerTypeSpecConstants` only.
+With `False` (default), PS1.x declares only the detected type (2D), SPIRV-Cross generates clean
+minimal MSL params, no undeclared identifiers.
+
+**Files**: `cmake/dxvk-macos-patches.py` (Patch 13), `build/../dxso_compiler.cpp` (live), `GeneralsMD/Run/dxvk.conf`
+
+**Rules**:
+1. If shader hash is identical across config changes → option is not changing SPIR-V → different code path.
+2. MoltenVK SPIRV-Cross does NOT generate null/dummy declarations for unused sampler type variants in MSL.
+3. Always clear `*.dxvk-cache` after patching DXVK shader compilation or changing dxvk.conf.

@@ -387,7 +387,7 @@ for Apple Silicon (M1 Pro crashes, M2 Pro issues). This is the **highest risk it
   - Should not freeze
 
 - [ ] 3d. Smoke test: Audio
-  - Start skirmish or load map
+  - Start skirmish or load mazp
   - Listen for in-game sound effects
   - If silent: Check OpenAL initialization errors
 
