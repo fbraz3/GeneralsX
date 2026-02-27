@@ -212,7 +212,7 @@
         {
             "name": "win64-modern",
             "displayName": "Windows 64-bit Modern (DXVK + SDL3 + OpenAL)",
-            "generator": "Ninja",
+            "generator": "Ninja Multi-Config",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
@@ -232,7 +232,7 @@
         {
             "name": "win64-modern-debug",
             "displayName": "Windows 64-bit Modern Debug (DXVK + SDL3 + OpenAL)",
-            "generator": "Ninja",
+            "generator": "Ninja Multi-Config",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
