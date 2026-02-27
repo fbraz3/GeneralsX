@@ -5,6 +5,7 @@
       "zlib",
       "glm",
       "gli",
+      "libpng",
       {
         "name": "freetype",
         "platform": "!windows"

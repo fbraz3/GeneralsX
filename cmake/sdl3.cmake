@@ -57,25 +57,27 @@ if(SAGE_USE_SDL3)
     
     FetchContent_MakeAvailable(SDL3)
     
-    # GeneralsX @bugfix BenderAI 22/02/2026 (updated 26/02/2026 for Windows support)
-    # Before SDL3_image build: force PNG discovery to system libpng (not vcpkg PNG::PNG)
-    # vcpkg's PNG::PNG is INTERFACE_LIBRARY (static) - incompatible with SDL3_image need for .so/.dll
-    # System libpng is dynamic shared library - exactly what SDL3_image requires
+    # GeneralsX @bugfix BenderAI 22/02/2026 (updated 27/02/2026 for Windows libpng via vcpkg)
+    # Before SDL3_image build: force PNG discovery to system libpng or vcpkg
+    # Linux: system libpng-dev via dynamic .so library
+    # Windows: vcpkg's libpng (declared in vcpkg.json)
     if(NOT WIN32)
-        # Linux paths
+        # Linux: Use system libpng-dev
         set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
         set(PNG_INCLUDE_DIR "/usr/include" CACHE PATH "PNG include dir (system)" FORCE)
         set(PNG_LIBRARY "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG library (system .so)" FORCE)
         set(PNG_LIBRARY_DEBUG "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG debug library" FORCE)
         set(PNG_LIBRARY_RELEASE "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG release library" FORCE)
         set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+        find_package(PNG REQUIRED MODULE)
     else()
-        # Windows: PNG is found via FindPNG standard module
-        set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
+        # Windows: Use vcpkg's libpng (vcpkg.json declares libpng dependency for SDL3)
+        find_package(PNG REQUIRED CONFIG QUIET)
+        if(NOT PNG_FOUND)
+            message(WARNING "PNG not found via vcpkg CONFIG, falling back to MODULE...")
+            find_package(PNG REQUIRED MODULE)
+        endif()
     endif()
-    
-    # Tell CMake to find PNG - on Windows this will use system/vcpkg; on Linux uses explicit paths
-    find_package(PNG REQUIRED MODULE)
     
     # SDL3_image - Image format support (PNG, JPG for cursor ANI loading)
     message(STATUS "Configuring SDL3_image (v3.4.0) with FetchContent (native build)...")
