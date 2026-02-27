@@ -43,8 +43,8 @@ elseif(WIN32)
   # Download Windows release binaries (contains d3d8.dll for deployment)
   FetchContent_Declare(
     dxvk_win_release
-    URL https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-2.6.tar.gz
-    URL_HASH SHA256=0c86dd5d4f3b06df3b6d0aabd5fb6a60ca1b87aa6e4c8c03c1c2c5b8d5c8d8d
+    URL https://github.com/doitsujin/dxvk/releases/download/v2.7.1/dxvk-2.7.1.tar.gz
+    URL_HASH SHA256=d85ce7c79f57ecd765aaa1b9e7007cb875e6fde9f6d331df799bce73d513ce87
   )
   FetchContent_MakeAvailable(dxvk_win_release)
 
