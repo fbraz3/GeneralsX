@@ -1,0 +1,101 @@
+name: Build macOS
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_call:
+    inputs:
+      game:
+        required: true
+        type: string
+        description: "Game to build (GeneralsMD, Generals)"
+      preset:
+        required: false
+        type: string
+        default: "macos-vulkan"
+        description: "CMake preset for macOS"
+  workflow_dispatch:
+    inputs:
+      game:
+        type: choice
+        description: "Game to build"
+        options:
+          - GeneralsMD
+          - Generals
+        default: GeneralsMD
+      preset:
+        type: choice
+        description: "CMake preset for macOS"
+        options:
+          - macos-vulkan
+        default: macos-vulkan
+
+jobs:
+  build:
+    name: ${{ inputs.game }}@${{ inputs.preset }}
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        run: |
+          echo "Installing macOS build dependencies..."
+          brew install cmake ninja meson
+          
+          # Install Vulkan SDK (required for DXVK + MoltenVK)
+          if [ ! -d "$HOME/VulkanSDK" ]; then
+            echo "Downloading Vulkan SDK..."
+            curl -L https://sdk.lunarg.com/download/latest/mac/vulkan-sdk.dmg -o /tmp/vulkan-sdk.dmg
+            hdiutil attach /tmp/vulkan-sdk.dmg -mountpoint /tmp/vulkan-mount
+            sudo cp -r /tmp/vulkan-mount/VulkanSDK/*macOS* $HOME/VulkanSDK || true
+            hdiutil detach /tmp/vulkan-mount
+          fi
+          echo "Vulkan SDK installed at: $HOME/VulkanSDK"
+
+      - name: Configure CMake (macOS)
+        run: |
+          mkdir -p logs
+          cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_macos.log
+          echo "CMake configuration complete."
+
+      - name: Build ${{ inputs.game }}
+        run: |
+          mkdir -p logs
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            cmake --build build/${{ inputs.preset }} --target GeneralsXZH 2>&1 | tee logs/build_zh_macos.log
+          else
+            cmake --build build/${{ inputs.preset }} --target Generals 2>&1 | tee logs/build_generals_macos.log
+          fi
+          echo "Build complete."
+
+      - name: Verify Build Artifacts
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+          else
+            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+          fi
+          
+          if [ -f "$BINARY" ]; then
+            echo "✅ Binary built: $BINARY"
+            file "$BINARY"
+            ls -lh "$BINARY"
+          else
+            echo "❌ Binary NOT found: $BINARY"
+            exit 1
+          fi
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-macos-${{ inputs.game }}
+          path: logs/
+          retention-days: 7

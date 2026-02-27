@@ -178,3 +178,23 @@ jobs:
       userdata: "GeneralsReplays/GeneralsZH/1.04"
       preset: ${{ matrix.preset }}
     secrets: inherit
+
+  build-generalsmd-macos:
+    name: Build GeneralsMD@macOS
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generalsmd == 'true' || needs.detect-changes.outputs.shared == 'true' }}
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      game: "GeneralsMD"
+      preset: "macos-vulkan"
+    secrets: inherit
+
+  build-generals-macos:
+    name: Build Generals@macOS
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generals == 'true' || needs.detect-changes.outputs.shared == 'true' }}
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      game: "Generals"
+      preset: "macos-vulkan"
+    secrets: inherit
