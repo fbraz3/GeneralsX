@@ -1,20 +1,6 @@
 {
 	"version": "2.0.0",
 	"tasks": [
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		{
 			"label": "Configure (Linux Docker, linux64-deploy)",
 			"type": "shell",

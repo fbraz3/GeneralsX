@@ -37,7 +37,7 @@ if ($Clean) {
     }
 }
 
-& ".\scripts\configure_cmake_modern.ps1"
+& "$PSScriptRoot\configure_cmake_modern.ps1"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "❌ Configure failed"
     exit 1
@@ -50,7 +50,7 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 Write-Host "STEP 2: Build GeneralsXZH" -ForegroundColor Cyan
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
 
-& ".\scripts\build_zh_modern.ps1" -Jobs $Jobs
+& "$PSScriptRoot\build_zh_modern.ps1" -Jobs $Jobs
 if ($LASTEXITCODE -ne 0) {
     Write-Error "❌ Build failed"
     exit 1
@@ -63,7 +63,7 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 Write-Host "STEP 3: Deploy (Copy DLLs + EXE)" -ForegroundColor Cyan
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
 
-& ".\scripts\deploy_zh_modern.ps1" -Preset win64-modern
+& "$PSScriptRoot\deploy_zh_modern.ps1" -Preset win64-modern
 if ($LASTEXITCODE -ne 0) {
     Write-Error "❌ Deploy failed"
     exit 1
@@ -77,7 +77,7 @@ if (-not $SkipRun) {
     Write-Host "STEP 4: Launch Game" -ForegroundColor Cyan
     Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
 
-    & ".\scripts\run_zh_modern.ps1"
+    & "$PSScriptRoot\run_zh_modern.ps1"
 }
 
 $EndTime = Get-Date

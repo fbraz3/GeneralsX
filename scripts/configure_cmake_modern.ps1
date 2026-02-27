@@ -26,7 +26,7 @@ Write-Host ""
 # Setup MSVC environment
 Write-Host "⚙️  Setting up MSVC BuildTools environment..." -ForegroundColor Cyan
 Write-Host "   Architecture: $Arch (host: $HostArch)" -ForegroundColor Gray
-& ".\scripts\setup_msvc_buildtools_env.ps1" -Arch $Arch -HostArch $HostArch
+& "$PSScriptRoot\setup_msvc_buildtools_env.ps1" -Arch $Arch -HostArch $HostArch
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "MSVC environment setup failed. Verify Visual Studio 2022 is installed."

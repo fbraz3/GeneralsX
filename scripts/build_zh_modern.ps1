@@ -32,7 +32,7 @@ Write-Host ""
 
 # Setup MSVC environment
 Write-Host "⚙️  Setting up MSVC BuildTools environment..." -ForegroundColor Cyan
-& ".\scripts\setup_msvc_buildtools_env.ps1" -Arch x64 -HostArch x64 | Out-Null
+& "$PSScriptRoot\setup_msvc_buildtools_env.ps1" -Arch x64 -HostArch x64 | Out-Null
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "MSVC environment setup failed"
