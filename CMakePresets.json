@@ -219,7 +219,6 @@
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_MAKE_PROGRAM": "ninja.exe",
                 "SAGE_USE_DX8": "OFF",
                 "SAGE_USE_SDL3": "ON",
                 "SAGE_USE_OPENAL": "ON",
@@ -238,7 +237,6 @@
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_MAKE_PROGRAM": "ninja.exe",
                 "SAGE_USE_DX8": "OFF",
                 "SAGE_USE_SDL3": "ON",
                 "SAGE_USE_OPENAL": "ON",
