@@ -13,21 +13,27 @@ add_library(d3dx8 STATIC ${SOURCE_D3DX_COMPAT})
 target_compile_definitions(d3dx8 PRIVATE GLM_ENABLE_EXPERIMENTAL)
 
 # TheSuperHackers @build 09/02/2025 Bender
-# Use FetchContent for GLM (header-only library, no compilation needed)
+# Use FetchContent for GLM and GLI (both header-only libraries)
 # This avoids vcpkg compilation issues with MSVC runtime library
 if(NOT SAGE_USE_GLM)
     message(FATAL_ERROR "GLM is required for d3dx8 compatibility layer")
 endif()
 
 include(${CMAKE_SOURCE_DIR}/cmake/glm.cmake)
-find_package(glm CONFIG QUIET)  # Try vcpkg first for compatibility
-if(NOT glm_FOUND)
-    # Fall back to our FetchContent GLM from glm.cmake
-endif()
-target_link_libraries(d3dx8 PUBLIC glm::glm)
+include(${CMAKE_SOURCE_DIR}/cmake/gli.cmake)
 
-find_package(gli CONFIG REQUIRED)
-target_link_libraries(d3dx8 PUBLIC gli)
+# Try vcpkg first for compatibility, fall back to FetchContent
+find_package(glm CONFIG QUIET)
+if(NOT glm_FOUND)
+    # FetchContent is already loaded via include(glm.cmake)
+endif()
+
+find_package(gli CONFIG QUIET)
+if(NOT gli_FOUND)
+    # FetchContent is already loaded via include(gli.cmake)
+endif()
+
+target_link_libraries(d3dx8 PUBLIC glm::glm gli::gli)
 
 # d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)
 # Add only WWLib directory (not full core_wwcommon to avoid d3d8.h conflicts from WWAudio)
