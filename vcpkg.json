@@ -2,8 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "builtin-baseline": "ffc071e0c08432c60c9b64f00334c0227667931b",
   "dependencies": [
-    "zlib",
-    "libpng",
     {
       "name": "freetype",
       "platform": "!windows"
