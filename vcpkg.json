@@ -1,18 +1,18 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-    "builtin-baseline": "533a5fda5c0646d1771345fb572e759283444d5f",
-    "dependencies": [
-      "zlib",
-      "glm",
-      "gli",
-      "libpng",
-      {
-        "name": "freetype",
-        "platform": "!windows"
-      },
-      {
-        "name": "fontconfig",
-        "platform": "!windows"
-      }
-    ]
-  }
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "builtin-baseline": "ffc071e0c08432c60c9b64f00334c0227667931b",
+  "dependencies": [
+    "zlib",
+    "glm",
+    "gli",
+    "libpng",
+    {
+      "name": "freetype",
+      "platform": "!windows"
+    },
+    {
+      "name": "fontconfig",
+      "platform": "!windows"
+    }
+  ]
+}
