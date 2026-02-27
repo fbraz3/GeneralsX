@@ -194,7 +194,10 @@ We follow a **multi-phase research-first approach** with clear acceptance criter
   - Native ELF binaries
   - DXVK + SDL3 + OpenAL
 - **`linux64-testing`** -- Linux debug variant
-- **`macos-deploy`** -- macOS x86_64/arm64 -- **TBD**
+- **`macos-vulkan`** -- macOS ARM64 (Apple Silicon) -- **ACTIVE**
+  - Native Mach-O binaries
+  - DXVK + MoltenVK + SDL3 + OpenAL
+  - macOS 15.0+ minimum; Universal binary (arm64 + x86_64) planned
 - **`windows64-deploy`** -- Windows x86_64 (MSVC or MinGW) -- **TBD**
 - **`mingw-w64-i686`** -- MinGW cross-compile (32-bit Windows .exe from Linux/macOS)
 
@@ -525,30 +528,57 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 
 ## macOS
 
-**Branch**: TBD
-**Status**: Not yet started
+**Branch**: `main` (active development alongside Linux)
+**Status**: Active development -- Phase 1 (Graphics/DXVK) complete on ARM64 Apple Silicon
 
-### Architecture Plan
+### Architecture
 - SDL3 for windowing/input (same as Linux)
-- DXVK + MoltenVK for DirectX 8 to Vulkan to Metal translation
+- DXVK + MoltenVK for DirectX 8 to Vulkan to Metal translation (DX8 → Vulkan → Metal chain)
 - OpenAL for audio (same as Linux)
-- Universal binary target: x86_64 + arm64 (Apple Silicon)
+- Current target: **ARM64 (Apple Silicon)** -- macOS 15.0+
+- Universal binary (arm64 + x86_64) planned for future
 
 ### Key Considerations
 - MoltenVK translates Vulkan to Metal; DXVK sits on top of it (DX8 to Vulkan to Metal chain)
-- Code signing and notarization requirements for distribution
+- DXVK is built via Meson as an ExternalProject -- must pass `-arch arm64` explicitly via `cmake/meson-arm64-native.ini` to avoid Rosetta2 confusing the host arch
+- The full DXVK patch series (~13 patches) is applied automatically by `cmake/dxvk-macos-patches.py` -- do not apply manually
+- Vulkan SDK **must** be installed from LunarG (not Homebrew) -- it provides the MoltenVK ICD JSON required to route Vulkan calls to Metal
+- Code signing and notarization requirements for distribution (future)
 - macOS-specific SDL3 quirks (Retina scaling, fullscreen spaces, etc.)
-- Homebrew or vcpkg for dependency management
 
-### Build Presets (Planned)
-- **`macos-deploy`** -- Universal binary (x86_64 + arm64), Release
-- **`macos-testing`** -- Debug variant
+### Build Presets
+- **`macos-vulkan`** -- macOS ARM64, RelWithDebInfo -- **PRIMARY MACOS TARGET**
+  - Native Mach-O binaries (`GeneralsXZH`)
+  - DXVK + MoltenVK + SDL3 + OpenAL + FFmpeg (video TBD)
 
-### TBD Items
-- [ ] MoltenVK integration tested with DXVK
-- [ ] CMake preset created and tested
+### Build Workflow
+```bash
+# Prerequisites (once): brew install cmake ninja meson
+# + LunarG Vulkan SDK: https://vulkan.lunarg.com/sdk/home#mac
+./scripts/build-macos-zh.sh          # configure + build
+./scripts/deploy-macos-zh.sh         # copy to ~/GeneralsX/GeneralsMD/
+./scripts/run-macos-zh.sh -win       # launch windowed
+```
+
+### macOS-Specific Notes
+- **Rosetta2 + Meson adversarial**: Use `cmake/meson-arm64-native.ini` to force `-arch arm64` in DXVK sub-build
+- **DXVK patches are scripted**: `cmake/dxvk-macos-patches.py` applies all 13 MoltenVK/ARM64 compatibility patches automatically at configure time
+- **SDL3 from source**: Fetched via CMake FetchContent -- no system package needed
+- **Vulkan SDK path**: `~/VulkanSDK/<version>/macOS/` -- must contain `libvulkan.dylib` and `libMoltenVK.dylib`
+- **No Cocoa/Metal calls in game code**: All platform access goes through SDL3 + DXVK layers
+
+### Current Progress (as of February 2026)
+- Phase 0 (Planning): Complete
+- Phase 1 (Graphics/DXVK): Complete -- game renders and runs on ARM64 Apple Silicon
+- Phase 2 (Audio/OpenAL): In progress (CMake flag `SAGE_USE_OPENAL=ON` set; full integration pending)
+- Phase 3 (Video/FFmpeg): CMake flag `RTS_BUILD_OPTION_FFMPEG=ON` set; playback integration not started
+
+### Remaining Items
+- [ ] Audio (OpenAL) fully wired and tested
+- [ ] Video (FFmpeg) playback integrated
 - [ ] App bundle (.app) packaging
 - [ ] Code signing workflow
+- [ ] Universal binary (arm64 + x86_64)
 - [ ] CI/CD pipeline for macOS builds
 
 ---

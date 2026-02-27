@@ -4,7 +4,7 @@
 
 A community-driven cross-platform port of Command & Conquer: Generals and Zero Hour, enabling the classic RTS to run natively on **Linux, macOS, and Windows** under a single modern codebase: **SDL3** (windowing/input) + **DXVK** (DirectX 8 → Vulkan graphics) + **OpenAL** (audio) + **64-bit**.
 
-**Current Status**: Linux native builds functional with Docker (Phase 1 complete). macOS native builds in progress (ARM64 / Apple Silicon, DXVK + MoltenVK).
+**Current Status**: Linux native builds functional (Phase 1 complete). macOS ARM64 native builds functional (Phase 1 complete, DXVK + MoltenVK working). Audio (Phase 2) in progress on both platforms.
 
 ## Project Goals
 
@@ -48,7 +48,7 @@ This project transforms the Windows-exclusive Command & Conquer: Generals into a
 - **Single codebase** for Linux, macOS, and Windows
 - **Linux native builds** via Docker or native GCC/Clang (SDL3 + DXVK)
 - **Windows legacy builds** maintained (VC6/MSVC2022 presets)
-- **macOS planned** via DXVK + MoltenVK (Vulkan → Metal)
+- **macOS in progress** via DXVK + MoltenVK (Vulkan → Metal) -- ARM64 native builds working
 - Unified configuration system via INI files (replacing Windows Registry)
 - Platform-native file system integration
 - **No Wine/Proton required** - Native DirectX → Vulkan translation via DXVK
@@ -108,16 +108,6 @@ cmake --build build/win32 --target GeneralsXZH -j 4
 
 Modern 64-bit Windows build using the same SDL3 + DXVK + OpenAL stack. Separate branch, TBD.
 
-### macOS - 📋 PLANNED
-
-Native macOS build via DXVK → MoltenVK (Vulkan → Metal). Separate branch, TBD.
-
-Key features:
-- Native ELF binaries (not Wine/Proton)
-- DXVK for DirectX 8 → Vulkan rendering
-- SDL3 for windowing/input
-- Docker-based builds (no system pollution)
-
 ### macOS - � IN PROGRESS (Apple Silicon)
 
 Native ARM64 builds working via DXVK + MoltenVK. Audio and video are not yet
@@ -167,10 +157,10 @@ For dependency management details, see [vcpkg.json](vcpkg.json).
 The cross-platform port is organized into phases (each platform branch may progress independently):
 
 - **Phase 0**: ✅ **COMPLETE** - Deep analysis & planning (DXVK architecture, OpenAL patterns)
-- **Phase 1**: 🔄 **IN PROGRESS** - Linux Graphics (DXVK integration, SDL3 windowing, Docker builds)
-- **Phase 2**: 📋 **PLANNED** - Linux Audio (OpenAL integration, Miles → OpenAL compatibility)
+- **Phase 1**: ✅ **COMPLETE** - Graphics (DXVK + SDL3): Linux x86_64 and macOS ARM64 native builds working
+- **Phase 2**: 🔄 **IN PROGRESS** - Audio (OpenAL integration, Miles → OpenAL compatibility)
 - **Phase 3**: 📋 **PLANNED** - Video Playback (Bink alternative investigation)
-- **Phase 4+**: 📋 **FUTURE** - Polish, optimization, macOS hardening
+- **Phase 4+**: 📋 **FUTURE** - Polish, optimization, hardening
 
 **Approach**: Single codebase, SDL3 + DXVK + OpenAL on all platforms. Native Vulkan, NOT Wine emulation.
 
@@ -195,13 +185,12 @@ Contributions are welcome! We're particularly interested in:
 **Current Priority Areas**:
 
 - **Phase 2 (Audio)** - OpenAL integration for cross-platform audio
-- **Runtime Testing** - Validate Linux binary smoke tests and gameplay
-- **Cross-Platform Testing** - Validate functionality across Linux distributions
-- **macOS Port** - DXVK + MoltenVK + SDL3 integration (separate branch)
-- **Windows Modern Port** - SDL3 + DXVK + OpenAL 64-bit build (separate branch)
+- **Runtime Testing** - Validate Linux and macOS binary smoke tests and gameplay
+- **Cross-Platform Testing** - Validate functionality across Linux distributions and macOS versions
+- **macOS Port** - 🔄 In progress (ARM64 native working, Phase 2 audio pending)
+- **Windows Modern Port** - SDL3 + DXVK + OpenAL 64-bit build (TBD)
 - **Performance Optimization** - Identify and fix bottlenecks
 - **Documentation** - Improve build guides and technical resources
-- **macOS Port** - 🔄 In progress (ARM64 native, DXVK + MoltenVK)
 
 **How to Contribute**:
 

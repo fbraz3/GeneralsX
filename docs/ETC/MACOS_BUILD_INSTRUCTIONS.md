@@ -5,7 +5,7 @@
 > Graphics rendering (DXVK → MoltenVK → Metal) is functional. Audio and video playback
 > are not yet implemented (Phase 2/3 targets), so the game runs silently.
 >
-> The entire DXVK patch series (9 patches for macOS compatibility) is scripted and
+> The entire DXVK patch series (13 patches for macOS compatibility) is scripted and
 > applied automatically by CMake — no manual intervention needed.
 
 ---
@@ -14,7 +14,7 @@
 
 ### System Requirements
 
-- **macOS 13 (Ventura) or later** on Apple Silicon (M1/M2/M3/M4)
+- **macOS 15 (Sequoia) or later** on Apple Silicon (M1/M2/M3/M4)
 - **Xcode Command Line Tools** 14+
 - ~10 GB free disk space (build artifacts + DXVK Meson build)
 
@@ -154,7 +154,7 @@ Common flags:
 
 ## How DXVK Patches Work
 
-The macOS DXVK port requires 9 patches to DXVK 2.6 source code. These are fully
+The macOS DXVK port requires 13 patches to DXVK 2.6 source code. These are fully
 automated — **no manual patching is required**.
 
 `cmake/dx8.cmake` uses CMake's `ExternalProject_Add` with a `PATCH_COMMAND` that
@@ -183,7 +183,10 @@ ExternalProject_Add(dxvk
 | 7 | `vulkan_loader.cpp` | Tries to dlopen `libvulkan.so` (Linux name) | Add `#elif defined(__APPLE__)` block with `.dylib` names |
 | 8 | `dxvk_extensions.h` + `dxvk_instance.cpp` | `vkEnumeratePhysicalDevices` returns `VK_ERROR_INCOMPATIBLE_DRIVER` | Enable `VK_KHR_portability_enumeration` + `ENUMERATE_PORTABILITY` flag |
 | 9 | `dxvk_adapter.cpp` | `vkCreateDevice` returns `VK_ERROR_FEATURE_NOT_PRESENT` (tessellationShader, shaderFloat64, robustness2) | Enable `VK_KHR_portability_subset`, mask core features against device caps, inject pNext chain |
-| 10 | `dxvk_adapter.cpp` | MoltenVK bug: `vkGetPhysicalDeviceFeatures2` reports `robustBufferAccess2`/`nullDescriptor` as 1, but `vkCreateDevice` rejects them (1st and 3rd flags in `VkPhysicalDeviceRobustness2FeaturesKHR`) when `portability_subset` is active | `#ifdef __APPLE__` guard — force all three `extRobustness2` features to `VK_FALSE` on macOS |
+| 10 | `dxvk_adapter.cpp` | MoltenVK bug: `vkGetPhysicalDeviceFeatures2` reports `robustBufferAccess2`/`nullDescriptor` as 1, but `vkCreateDevice` rejects them when `portability_subset` is active | Force all three `extRobustness2` features to `VK_FALSE` on macOS via `#ifdef __APPLE__` |
+| 11 | `d3d8_batcher.cpp` | `D3D8Batcher::StateChange()` calls `SetStreamSource(0, nullptr)` after flushing, nullifying the real vertex buffer → MoltenVK null deref crash | Remove erroneous restore `SetStreamSource` calls in `StateChange()` |
+| 12 | `dxvk_context.cpp` | `updateVertexBufferBindings()` passes `VK_NULL_HANDLE` for unbound VB slots; MoltenVK dereferences null → SIGSEGV | Replace `VK_NULL_HANDLE` with `dummyResources().bufferHandle()` (same pattern as xfb null slots) |
+| 13 | `dxso_compiler.cpp` | `majorVersion() < 2` auto-triggers all-sampler-type spec-constants for all PS1.x shaders, generating phantom undeclared Metal identifiers in terrain shaders | Remove `majorVersion() < 2` condition; only `forceSamplerTypeSpecConstants = True` activates it |
 
 ---
 
