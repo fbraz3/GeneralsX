@@ -45,6 +45,19 @@ if (-not $cl) {
 Write-Host "✅ MSVC compiler verified: $($cl.Source)" -ForegroundColor Green
 Write-Host ""
 
+# Force vcpkg to use MSVC 14.50 (which has complete CRT libs including MSVCRTD.lib)
+# MSVC 14.44 is present but missing MSVCRTD.lib - vcpkg would pick 14.44 otherwise
+$VCToolsRoot = "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Tools\MSVC"
+$preferredMSVC = "14.50.35717"
+if (Test-Path "$VCToolsRoot\$preferredMSVC\lib\x64\msvcrtd.lib") {
+    $env:VCToolsVersion = $preferredMSVC
+    $env:VCToolsInstallDir = "$VCToolsRoot\$preferredMSVC\"
+    Write-Host "✅ Forced MSVC version: $preferredMSVC (has complete CRT libs)" -ForegroundColor Green
+} else {
+    Write-Host "⚠️  MSVC $preferredMSVC not found, using default" -ForegroundColor Yellow
+}
+Write-Host ""
+
 # Run CMake configure with win64-modern preset
 Write-Host "🔧 Configuring CMake with preset: win64-modern" -ForegroundColor Cyan
 Write-Host "   This will download and build dependencies (SDL3, DXVK, OpenAL, FFmpeg)..." -ForegroundColor Gray
@@ -53,8 +66,14 @@ Write-Host ""
 
 $StartTime = Get-Date
 
+# BuildTools discovery workaround for cmake
+# Set CMAKE_C_COMPILER and CMAKE_CXX_COMPILER explicitly if cmake can't find VS
+$CompilerPath = "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Tools\MSVC\14.50.35717\bin\Hostx64\x64\cl.exe"
+
 try {
-    cmake --preset win64-modern
+    # Try with preset first
+    Write-Host "Attempting CMake configure with preset..."
+    cmake --preset win64-modern -DCMAKE_C_COMPILER="$CompilerPath" -DCMAKE_CXX_COMPILER="$CompilerPath"
     $ExitCode = $LASTEXITCODE
 } catch {
     Write-Error "CMake configuration failed: $_"
