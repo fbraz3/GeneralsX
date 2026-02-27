@@ -212,7 +212,7 @@
         {
             "name": "win64-modern",
             "displayName": "Windows 64-bit Modern (DXVK + SDL3 + OpenAL)",
-            "generator": "Visual Studio 16 2019",
+            "generator": "Visual Studio 17 2022",
             "architecture": "x64",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
@@ -220,7 +220,7 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                " SAGE_USE_DX8": "OFF",
+                "SAGE_USE_DX8": "OFF",
                 "SAGE_USE_SDL3": "ON",
                 "SAGE_USE_OPENAL": "ON",
                 "SAGE_USE_GLM": "ON",
@@ -231,7 +231,7 @@
         {
             "name": "win64-modern-debug",
             "displayName": "Windows 64-bit Modern Debug (DXVK + SDL3 + OpenAL)",
-            "generator": "Visual Studio 16 2019",
+            "generator": "Visual Studio 17 2022",
             "architecture": "x64",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
