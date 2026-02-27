@@ -212,12 +212,12 @@
         {
             "name": "win64-modern",
             "displayName": "Windows 64-bit Modern (DXVK + SDL3 + OpenAL)",
-            "generator": "Ninja Multi-Config",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL",
                 "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "Embedded",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
@@ -232,12 +232,12 @@
         {
             "name": "win64-modern-debug",
             "displayName": "Windows 64-bit Modern Debug (DXVK + SDL3 + OpenAL)",
-            "generator": "Ninja Multi-Config",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebugDLL",
                 "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "Embedded",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
