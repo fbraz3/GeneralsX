@@ -212,12 +212,11 @@
         {
             "name": "win64-modern",
             "displayName": "Windows 64-bit Modern (DXVK + SDL3 + OpenAL)",
-            "generator": "NMake Makefiles",
+            "generator": "Ninja Multi-Config",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
                 "SAGE_USE_DX8": "OFF",
@@ -231,12 +230,11 @@
         {
             "name": "win64-modern-debug",
             "displayName": "Windows 64-bit Modern Debug (DXVK + SDL3 + OpenAL)",
-            "generator": "NMake Makefiles",
+            "generator": "Ninja Multi-Config",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebugDLL",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
                 "SAGE_USE_DX8": "OFF",
