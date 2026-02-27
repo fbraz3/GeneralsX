@@ -58,6 +58,19 @@ if (Test-Path "$VCToolsRoot\$preferredMSVC\lib\x64\msvcrtd.lib") {
 }
 Write-Host ""
 
+# Use VS BuildTools bundled CMake + Ninja (CMake 4.1.1, compatible with Ninja 1.12.1)
+# External cmake 3.31 has a bug with Ninja 1.12 and rules.ninja generation
+$vsCMakeDir = "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake"
+$vsCMake = "$vsCMakeDir\CMake\bin\cmake.exe"
+$vsNinja = "$vsCMakeDir\Ninja\ninja.exe"
+if (Test-Path $vsCMake) {
+    $env:PATH = "$vsCMakeDir\CMake\bin;$vsCMakeDir\Ninja;$env:PATH"
+    Write-Host "✅ Using VS BuildTools CMake $(& $vsCMake --version | Select-String 'cmake version')" -ForegroundColor Green
+} else {
+    Write-Host "⚠️  VS BuildTools CMake not found, using default cmake" -ForegroundColor Yellow
+}
+Write-Host ""
+
 # Run CMake configure with win64-modern preset
 Write-Host "🔧 Configuring CMake with preset: win64-modern" -ForegroundColor Cyan
 Write-Host "   This will download and build dependencies (SDL3, DXVK, OpenAL, FFmpeg)..." -ForegroundColor Gray
