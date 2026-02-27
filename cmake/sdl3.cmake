@@ -40,25 +40,41 @@ if(SAGE_USE_SDL3)
     set(SDL_VIDEO ON CACHE BOOL "Enable video subsystem" FORCE)
     
     # Platform support
-    set(SDL_WAYLAND ON CACHE BOOL "Enable Wayland support (Linux)" FORCE)
-    set(SDL_X11 ON CACHE BOOL "Enable X11 support (Linux)" FORCE)
+    if(NOT WIN32)
+        # Linux: Wayland and X11 support
+        set(SDL_WAYLAND ON CACHE BOOL "Enable Wayland support (Linux)" FORCE)
+        set(SDL_X11 ON CACHE BOOL "Enable X11 support (Linux)" FORCE)
+    else()
+        # Windows: DirectX and WASAPI support
+        set(SDL_DIRECTX ON CACHE BOOL "Enable DirectX support (Windows)" FORCE)
+        set(SDL_WASAPI ON CACHE BOOL "Enable WASAPI audio (Windows)" FORCE)
+        set(SDL_WAYLAND OFF CACHE BOOL "Disable Wayland (Windows)" FORCE)
+        set(SDL_X11 OFF CACHE BOOL "Disable X11 (Windows)" FORCE)
+    endif()
+    
     set(SDL_CAMERA OFF CACHE BOOL "Disable camera (unused)" FORCE)
     set(SDL_QSPI OFF CACHE BOOL "Disable QSPI (unused)" FORCE)
     
     FetchContent_MakeAvailable(SDL3)
     
-    # GeneralsX @bugfix BenderAI 22/02/2026
-    # Before SDL3_image build: force PNG discovery to system libpng16.so (not vcpkg PNG::PNG)
-    # vcpkg's PNG::PNG is INTERFACE_LIBRARY (static) - incompatible with SDL3_image need for .so
-    # System libpng16.so is dynamic shared library - exactly what SDL3_image requires
-    set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
-    set(PNG_INCLUDE_DIR "/usr/include" CACHE PATH "PNG include dir (system)" FORCE)
-    set(PNG_LIBRARY "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG library (system .so)" FORCE)
-    set(PNG_LIBRARY_DEBUG "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG debug library" FORCE)
-    set(PNG_LIBRARY_RELEASE "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG release library" FORCE)
-    set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+    # GeneralsX @bugfix BenderAI 22/02/2026 (updated 26/02/2026 for Windows support)
+    # Before SDL3_image build: force PNG discovery to system libpng (not vcpkg PNG::PNG)
+    # vcpkg's PNG::PNG is INTERFACE_LIBRARY (static) - incompatible with SDL3_image need for .so/.dll
+    # System libpng is dynamic shared library - exactly what SDL3_image requires
+    if(NOT WIN32)
+        # Linux paths
+        set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
+        set(PNG_INCLUDE_DIR "/usr/include" CACHE PATH "PNG include dir (system)" FORCE)
+        set(PNG_LIBRARY "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG library (system .so)" FORCE)
+        set(PNG_LIBRARY_DEBUG "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG debug library" FORCE)
+        set(PNG_LIBRARY_RELEASE "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG release library" FORCE)
+        set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+    else()
+        # Windows: PNG is found via FindPNG standard module
+        set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
+    endif()
     
-    # Tell CMake to find PNG - this should use our explicit system .so above, not vcpkg
+    # Tell CMake to find PNG - on Windows this will use system/vcpkg; on Linux uses explicit paths
     find_package(PNG REQUIRED MODULE)
     
     # SDL3_image - Image format support (PNG, JPG for cursor ANI loading)

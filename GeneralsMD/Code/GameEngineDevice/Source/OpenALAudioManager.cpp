@@ -19,14 +19,14 @@
 /*
 ** OpenALAudioManager.cpp
 **
-** OpenAL audio backend implementation for Linux builds.
+** OpenAL audio backend implementation (cross-platform).
 **
 ** TheSuperHackers @feature CnC_Generals_Linux 07/02/2026
 ** Provides OpenAL-based audio playback for sound effects, music, and voices.
+** Enabled when SAGE_USE_OPENAL is ON (cross-platform: Linux and Windows Modern).
 ** Based on fighter19 reference implementation.
 */
 
-#ifndef _WIN32
 #ifdef SAGE_USE_OPENAL
 
 #include "OpenALAudioManager.h"
@@ -639,5 +639,4 @@ void OpenALAudioManager::setDeviceListenerPosition(void)
 }
 
 #endif // SAGE_USE_OPENAL
-#endif // !_WIN32
 

@@ -72,6 +72,12 @@ if(SAGE_USE_SDL3)
     include(cmake/sdl3.cmake)
 endif()
 
+# OpenAL audio backend for cross-platform builds (Phase 1+ Linux, Phase 6 Windows Modern)
+# GeneralsX @build BenderAI 26/02/2026
+if(SAGE_USE_OPENAL)
+    include(cmake/openal.cmake)
+endif()
+
 # Define a dummy stlport target when not on VC6.
 if (IS_VS6_BUILD)
     include(cmake/stlport.cmake)

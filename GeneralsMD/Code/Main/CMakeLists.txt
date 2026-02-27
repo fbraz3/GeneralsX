@@ -70,10 +70,15 @@ target_include_directories(z_generals PRIVATE
 )
 
 target_sources(z_generals PRIVATE
-    $<$<BOOL:${WIN32}>:WinMain.cpp>
-    $<$<BOOL:${WIN32}>:WinMain.h>
-    # Linux SDL3 entry point (Phase 1.5 - TheSuperHackers @build 10/02/2026)
-    $<$<NOT:$<BOOL:${WIN32}>>:SDL3Main.cpp>
+    # Entry point selection based on windowing backend
+    # GeneralsX @build BenderAI 26/02/2026 - Phase 6
+    # If SAGE_USE_SDL3=ON: SDL3 entry point (cross-platform: Linux and Windows Modern)
+    # If SAGE_USE_SDL3=OFF and WIN32: Win32 entry point (Windows Legacy: vc6/win32 presets)
+    $<$<AND:$<BOOL:${WIN32}>,$<NOT:$<BOOL:${SAGE_USE_SDL3}>>>:WinMain.cpp>
+    $<$<AND:$<BOOL:${WIN32}>,$<NOT:$<BOOL:${SAGE_USE_SDL3}>>>:WinMain.h>
+    # SDL3 entry point (Phase 1.5 - TheSuperHackers @build 10/02/2026)
+    # Now also used on Windows Modern (Phase 6 - BenderAI 26/02/2026)
+    $<$<OR:$<NOT:$<BOOL:${WIN32}>>,$<BOOL:${SAGE_USE_SDL3}>>:SDL3Main.cpp>
     # Linux stubs for P2-P3 platform functions (P2-P3 - TheSuperHackers @build 13/02/2026 BenderAI Session 37)
     $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
 )

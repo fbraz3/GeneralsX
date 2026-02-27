@@ -19,16 +19,17 @@
 /*
 ** SDL3GameEngine.h
 **
-** Linux implementation of GameEngine using SDL3 for windowing/input.
+** Implementation of GameEngine using SDL3 for windowing/input.
+** Enabled when SAGE_USE_SDL3 is ON (cross-platform: Linux and Windows Modern).
 **
 ** TheSuperHackers @feature CnC_Generals_Linux 07/02/2026
-** Provides SDL3-based input and window management for Linux builds.
+** Provides SDL3-based input and window management.
 ** Based on fighter19 reference implementation.
 */
 
 #pragma once
 
-#ifndef _WIN32
+#ifdef SAGE_USE_SDL3
 
 #include "Common/GameEngine.h"
 #include "Common/LocalFileSystem.h"
@@ -114,4 +115,4 @@ protected:
 	void handleWindowEvent(const SDL_WindowEvent& event);
 };
 
-#endif // !_WIN32
+#endif // SAGE_USE_SDL3

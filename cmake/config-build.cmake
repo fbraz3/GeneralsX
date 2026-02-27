@@ -9,9 +9,9 @@ option(RTS_BUILD_OPTION_ASAN "Build code with Address Sanitizer." OFF)
 option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
 option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
 
-# Linux/SDL3 and OpenAL options (Phase 1 Linux port)
-option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux)" OFF)
-option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux)" OFF)
+# SDL3 and OpenAL options (cross-platform: Linux and Windows Modern)
+option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (cross-platform)" OFF)
+option(SAGE_USE_OPENAL "Use OpenAL for audio backend (cross-platform)" OFF)
 
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
@@ -27,8 +27,8 @@ add_feature_info(DebugBuild RTS_BUILD_OPTION_DEBUG "Building as a \"Debug\" buil
 add_feature_info(AddressSanitizer RTS_BUILD_OPTION_ASAN "Building with address sanitizer")
 add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with full debug info")
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
-add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux)")
-add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Linux)")
+add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (cross-platform: Linux and Windows)")
+add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio backend (cross-platform: Linux and Windows)")
 
 if(RTS_BUILD_ZEROHOUR)
     option(RTS_BUILD_ZEROHOUR_TOOLS "Build tools for Zero Hour" ON)

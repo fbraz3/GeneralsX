@@ -2,18 +2,27 @@
 
 #include <string.h>  // For memset, used by GlobalMemoryStatus stub
 
-// GeneralsX @build BenderAI 12/02/2026 Pre-define guards to prevent DXVK conflicts
-// CRITICAL: Define these BEFORE including windows_base.h so DXVK skips its incomplete versions!
-#ifndef _WIN32
-#define _MEMORYSTATUS_DEFINED  // Tell DXVK: we'll provide the full 8-field MEMORYSTATUS later
-#define _IUNKNOWN_DEFINED      // Tell DXVK: we'll provide IUnknown via DECLARE_INTERFACE later
+// GeneralsX @build BenderAI 12/02/2026 (updated 26/02/2026 Phase 6)
+// Pre-define guards to prevent DXVK conflicts
+// CRITICAL: Define these BEFORE including windows_base.h so DXVK skips incomplete definitions!
+//
+// Applied when:
+//   - Linux: Always (DXVK native provides stub types)
+//   - Windows Modern (win64-modern): DXVK headers are compiled; MSVC windows.h has full types
+//   - Windows Legacy (vc6/win32): NOT applied (native windows.h has full types)
+#if !defined(_WIN32) || (defined(_WIN32) && !defined(SAGE_USE_DX8))
+    #define _MEMORYSTATUS_DEFINED   // Tell DXVK: we'll provide full 8-field MEMORYSTATUS
+    #define _IUNKNOWN_DEFINED       // Tell DXVK: we'll provide IUnknown via DECLARE_INTERFACE
 #endif
 
-// GeneralsX @build BenderAI 12/02/2026 Include DXVK Windows types FIRST
-// CRITICAL: On Linux, DXVK provides core Windows types (WINBOOL, LARGE_INTEGER, PALETTEENTRY, etc.)
-// Must be included BEFORE our compatibility layer so d3d8types.h can find them!
-#ifndef _WIN32
-#include <windows_base.h>  // DXVK's minimal Windows API (DWORD, BOOL, WINBOOL, LARGE_INTEGER, etc.)
+// GeneralsX @build BenderAI 12/02/2026 (updated 26/02/2026 Phase 6)
+// Include DXVK Windows types FIRST
+// CRITICAL: On Linux and Windows Modern (DXVK), windows_base.h provides core Windows types
+// (WINBOOL, LARGE_INTEGER, PALETTEENTRY, etc.). Must be included BEFORE our compatibility layer
+// so d3d8types.h can find them!
+// On Windows Legacy (DX8 native): <windows.h> from MSVC already has full types.
+#if !defined(_WIN32) || (defined(_WIN32) && !defined(SAGE_USE_DX8))
+    #include <windows_base.h>  // DXVK's minimal Windows API (DWORD, BOOL, WINBOOL, LARGE_INTEGER, etc.)
 #endif
 
 #ifndef CALLBACK

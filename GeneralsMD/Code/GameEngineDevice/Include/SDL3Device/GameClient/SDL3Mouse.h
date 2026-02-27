@@ -19,15 +19,16 @@
 /*
 ** SDL3Mouse.h
 **
-** SDL3-based mouse implementation for Linux builds.
+** SDL3-based mouse implementation (cross-platform).
 **
 ** TheSuperHackers @feature CnC_Generals_Linux 10/02/2026 Bender
-** Replaces Win32Mouse/Win32DIMouse with SDL3 mouse APIs for Linux.
+** Replaces Win32Mouse/Win32DIMouse with SDL3 mouse APIs.
+** Enabled when SAGE_USE_SDL3 is ON (cross-platform: Linux and Windows Modern).
 */
 
 #pragma once
 
-#ifndef _WIN32
+#ifdef SAGE_USE_SDL3
 
 // SYSTEM INCLUDES
 #include <SDL3/SDL.h>
@@ -123,4 +124,4 @@ private:
 	UnsignedInt m_inputFrame;     ///< input frame counter for animation timing
 };
 
-#endif // !_WIN32
+#endif // SAGE_USE_SDL3

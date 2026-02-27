@@ -19,14 +19,15 @@
 /*
 ** SDL3GameEngine.cpp
 **
-** Linux implementation of GameEngine using SDL3 for windowing/input.
+** Implementation of GameEngine using SDL3 for windowing/input.
+** Enabled when SAGE_USE_SDL3 is ON (cross-platform: Linux and Windows Modern).
 **
 ** TheSuperHackers @feature CnC_Generals_Linux 07/02/2026
-** Provides SDL3-based input and window management for Linux builds.
+** Provides SDL3-based input and window management.
 ** Based on fighter19 reference implementation.
 */
 
-#ifndef _WIN32
+#ifdef SAGE_USE_SDL3
 
 #include "SDL3GameEngine.h"
 #include "OpenALAudioManager.h"
@@ -383,5 +384,5 @@ AudioManager *SDL3GameEngine::createAudioManager(void)
 #endif
 }
 
-#endif // !_WIN32
+#endif // SAGE_USE_SDL3
 

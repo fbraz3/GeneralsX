@@ -19,14 +19,13 @@
 /*
 ** SDL3Main.cpp
 **
-** Entry point for Linux builds using SDL3 windowing and DXVK graphics.
+** Entry point for cross-platform builds using SDL3 windowing and DXVK graphics.
+** Enabled when SAGE_USE_SDL3 is ON (cross-platform: Linux and Windows Modern).
 **
 ** TheSuperHackers @feature CnC_Generals_Linux 07/02/2026
-** Entry point replaces WinMain() for Linux builds.
+** Entry point replaces WinMain() for SDL3-based builds.
 ** Instantiates SDL3GameEngine and calls GameMain().
 */
-
-#ifndef _WIN32
 
 // SYSTEM INCLUDES
 #include <SDL3/SDL.h>
@@ -157,8 +156,13 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 
-		// Set DXVK WSI driver before loading Vulkan
+		// Set DXVK WSI driver before loading Vulkan (Linux only)
+		// GeneralsX @build BenderAI 26/02/2026 - Phase 6: POSIX setenv() not on Windows
+		// Windows: DXVK-Windows uses native Win32 WSI; SDL3 WSI not needed
+		// Linux: DXVK-native requires SDL3 WSI for Vulkan window integration
+		#ifndef _WIN32
 		setenv("DXVK_WSI_DRIVER", "SDL3", 1);
+		#endif
 
 		// Load Vulkan library for DXVK DirectX8→Vulkan translation
 		fprintf(stderr, "INFO: Loading Vulkan library...\n");
@@ -229,5 +233,3 @@ int main(int argc, char* argv[])
 	fprintf(stderr, "\nExiting with code %d\n", exitcode);
 	return exitcode;
 }
-
-#endif // !_WIN32

@@ -519,6 +519,178 @@
 				"focus": true
 			},
 			"problemMatcher": []
+		},
+		{
+			"label": "Configure (Windows MSVC2022, win64-modern preset)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --preset win64-modern 2>&1 | Tee-Object -FilePath .\\logs\\configure_win64-modern.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Build GeneralsXZH (Windows MSVC2022, win64-modern)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --build --preset win64-modern --target z_generals 2>&1 | Tee-Object -FilePath .\\logs\\build_zh_win64-modern.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Build GeneralsX (Windows MSVC2022, win64-modern)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --build --preset win64-modern --target g_generals 2>&1 | Tee-Object -FilePath .\\logs\\build_generals_win64-modern.log"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Deploy GeneralsXZH (Windows win64-modern)",
+			"type": "shell",
+			"command": ".\\scripts\\deploy_zh_modern.ps1",
+			"args": [
+				"-Preset",
+				"win64-modern"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Deploy GeneralsX (Windows win64-modern)",
+			"type": "shell",
+			"command": ".\\scripts\\deploy_zh_modern.ps1",
+			"args": [
+				"-Preset",
+				"win64-modern",
+				"-Generals"
+			],
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Run GeneralsXZH (Windows win64-modern, windowed)",
+			"type": "process",
+			"command": ".\\GeneralsMD\\Run\\GeneralsXZH.exe",
+			"args": ["-win"],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Run GeneralsX (Windows win64-modern, windowed)",
+			"type": "process",
+			"command": ".\\Generals\\Run\\GeneralsX.exe",
+			"args": ["-win"],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Pipeline: Configure + Build + Deploy + Run (win64-modern ZH)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"& { New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --preset win64-modern; cmake --build --preset win64-modern --target z_generals; .\\scripts\\deploy_zh_modern.ps1 -Preset win64-modern; & .\\GeneralsMD\\Run\\GeneralsXZH.exe -win } 2>&1 | Tee-Object -FilePath .\\logs\\pipeline_run_zh_win64-modern.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
+		},
+		{
+			"label": "Pipeline: Configure + Build + Deploy + Run (win64-modern Generals)",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"& { New-Item -ItemType Directory -Force -Path .\\logs | Out-Null; . .\\scripts\\setup_msvc_buildtools_env.ps1; $ErrorActionPreference='Continue'; cmake --preset win64-modern; cmake --build --preset win64-modern --target g_generals; .\\scripts\\deploy_zh_modern.ps1 -Preset win64-modern -Generals; & .\\Generals\\Run\\GeneralsX.exe -win } 2>&1 | Tee-Object -FilePath .\\logs\\pipeline_run_generals_win64-modern.log"
+			],
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			}
 		}
 	]
 }
