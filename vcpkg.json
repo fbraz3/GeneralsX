@@ -3,7 +3,6 @@
   "builtin-baseline": "ffc071e0c08432c60c9b64f00334c0227667931b",
   "dependencies": [
     "zlib",
-    "glm",
     "gli",
     "libpng",
     {
