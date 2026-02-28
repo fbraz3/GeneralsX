@@ -44,51 +44,128 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Cache brew packages
+        id: cache-brew
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: brew-macos-${{ runner.os }}-${{ hashFiles('.github/workflows/build-macos.yml') }}
+          restore-keys: |
+            brew-macos-${{ runner.os }}-
+
       - name: Install Dependencies
         run: |
           echo "Installing macOS build dependencies..."
           brew install cmake ninja meson
+          cmake --version
+          ninja --version
+          echo "✅ Build tools installed"
+
+      - name: Install Vulkan SDK
+        run: |
+          echo "Installing Vulkan SDK (required for DXVK + MoltenVK)..."
           
-          # Install Vulkan SDK (required for DXVK + MoltenVK)
+          # Fallback 1: Direct download with retry
+          VULKAN_URL="https://sdk.lunarg.com/download/latest/mac/vulkan-sdk.dmg"
+          VULKAN_DMG="/tmp/vulkan-sdk.dmg"
+          
           if [ ! -d "$HOME/VulkanSDK" ]; then
-            echo "Downloading Vulkan SDK..."
-            curl -L https://sdk.lunarg.com/download/latest/mac/vulkan-sdk.dmg -o /tmp/vulkan-sdk.dmg
-            hdiutil attach /tmp/vulkan-sdk.dmg -mountpoint /tmp/vulkan-mount
-            sudo cp -r /tmp/vulkan-mount/VulkanSDK/*macOS* $HOME/VulkanSDK || true
-            hdiutil detach /tmp/vulkan-mount
+            for attempt in 1 2 3; do
+              echo "Download attempt $attempt..."
+              if curl -L --max-time 60 -o "$VULKAN_DMG" "$VULKAN_URL"; then
+                break
+              fi
+              if [ $attempt -lt 3 ]; then sleep 10; fi
+            done
+            
+            if [ -f "$VULKAN_DMG" ]; then
+              echo "Mounting DMG..."
+              hdiutil attach "$VULKAN_DMG" -mountpoint /tmp/vulkan-mount
+              sudo mkdir -p "$HOME/VulkanSDK"
+              sudo cp -r /tmp/vulkan-mount/VulkanSDK/*macOS* "$HOME/VulkanSDK" || true
+              hdiutil detach /tmp/vulkan-mount
+              rm -f "$VULKAN_DMG"
+            else
+              echo "⚠️ Vulkan SDK download failed; build may fail if not using system Vulkan"
+            fi
           fi
-          echo "Vulkan SDK installed at: $HOME/VulkanSDK"
+          
+          # Set environment variables for downstream steps
+          export VULKAN_SDK="$(find $HOME/VulkanSDK -name 'macOS*' -type d | head -1)"
+          if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
+            echo "⚠️ Vulkan SDK not found in expected location"
+            VULKAN_SDK="$HOME/VulkanSDK"
+          fi
+          
+          echo "VULKAN_SDK=$VULKAN_SDK" >> $GITHUB_ENV
+          echo "✅ Vulkan SDK path: $VULKAN_SDK"
+          
+          # Verify MoltenVK presence
+          if [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
+            echo "✅ MoltenVK found at $VULKAN_SDK/lib/libMoltenVK.dylib"
+          else
+            echo "⚠️ MoltenVK not found; graphics may fail"
+          fi
 
       - name: Configure CMake (macOS)
+        env:
+          VULKAN_SDK: ${{ env.VULKAN_SDK }}
         run: |
           mkdir -p logs
+          echo "VULKAN_SDK=$VULKAN_SDK"
           cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_macos.log
-          echo "CMake configuration complete."
+          if [ $? -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
 
       - name: Build ${{ inputs.game }}
         run: |
           mkdir -p logs
+          NPROC=$(sysctl -n hw.ncpu)
+          echo "Building with $NPROC parallel jobs..."
+          
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            cmake --build build/${{ inputs.preset }} --target GeneralsXZH 2>&1 | tee logs/build_zh_macos.log
+            cmake --build build/${{ inputs.preset }} --target z_generals -j $NPROC 2>&1 | tee logs/build_zh_macos.log
+            BUILD_STATUS=${PIPESTATUS[0]}
+            LOG_FILE="logs/build_zh_macos.log"
           else
-            cmake --build build/${{ inputs.preset }} --target Generals 2>&1 | tee logs/build_generals_macos.log
+            cmake --build build/${{ inputs.preset }} --target g_generals -j $NPROC 2>&1 | tee logs/build_generals_macos.log
+            BUILD_STATUS=${PIPESTATUS[0]}
+            LOG_FILE="logs/build_generals_macos.log"
           fi
-          echo "Build complete."
+          
+          if [ $BUILD_STATUS -eq 0 ]; then
+            echo "✅ Build completed successfully"
+          else
+            echo "❌ Build failed; see $LOG_FILE for details"
+            tail -100 "$LOG_FILE"
+            exit 1
+          fi
 
       - name: Verify Build Artifacts
         run: |
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/z_generals"
+            DISPLAY_NAME="GeneralsXZH"
           else
-            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+            BINARY="build/${{ inputs.preset }}/Generals/g_generals"
+            DISPLAY_NAME="Generals"
           fi
           
           if [ -f "$BINARY" ]; then
-            echo "✅ Binary built: $BINARY"
+            echo "✅ Binary built: $DISPLAY_NAME"
             file "$BINARY"
             ls -lh "$BINARY"
+            
+            # Verify it's a valid Mach-O binary
+            if file "$BINARY" | grep -q "Mach-O"; then
+              echo "✅ Valid Mach-O binary"
+            else
+              echo "❌ File exists but is not a valid Mach-O binary"
+              exit 1
+            fi
           else
             echo "❌ Binary NOT found: $BINARY"
+            echo "Checking build directory:"
+            ls -la build/${{ inputs.preset }}/GeneralsMD/ 2>/dev/null || ls -la build/${{ inputs.preset }}/Generals/ 2>/dev/null || echo "Build directories not found"
             exit 1
           fi
 
@@ -99,3 +176,14 @@ jobs:
           name: build-logs-macos-${{ inputs.game }}
           path: logs/
           retention-days: 7
+
+      - name: Upload Binary Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-macos-${{ inputs.game }}-${{ inputs.preset }}
+          path: |
+            build/${{ inputs.preset }}/GeneralsMD/z_generals
+            build/${{ inputs.preset }}/Generals/g_generals
+          retention-days: 7
+          if-no-files-found: warn
