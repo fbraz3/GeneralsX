@@ -145,9 +145,11 @@ jobs:
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
             BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
             DISPLAY_NAME="GeneralsXZH"
+            GAME_DIR="GeneralsMD"
           else
             BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
             DISPLAY_NAME="Generals"
+            GAME_DIR="Generals"
           fi
           
           if [ -f "$BINARY" ]; then
@@ -169,6 +171,55 @@ jobs:
             exit 1
           fi
 
+      - name: Deploy Bundle (Binary + Libraries + Wrapper)
+        if: success()
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+            GAME_DIR="GeneralsMD"
+          else
+            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+            GAME_DIR="Generals"
+          fi
+          
+          RUNTIME_DIR="/tmp/GeneralsX-${{ inputs.game }}-macos-deploy"
+          mkdir -p "${RUNTIME_DIR}"
+          
+          echo "Creating deployment bundle at: ${RUNTIME_DIR}"
+          echo "  Copying executable..."
+          cp -v "${BINARY}" "${RUNTIME_DIR}/$(basename ${BINARY})"
+          chmod +x "${RUNTIME_DIR}/$(basename ${BINARY})"
+          
+          echo "  Copying framework libraries..."
+          mkdir -p "${RUNTIME_DIR}/lib"
+          
+          # DXVK dylibs
+          find "build/${{ inputs.preset }}/_deps" -name "*.dylib" -o -name "*.dylib.so" 2>/dev/null | while read f; do
+            [ -f "$f" ] && cp -v "$f" "${RUNTIME_DIR}/lib/" || true
+          done
+          
+          # MoltenVK dylib from Vulkan SDK
+          if [ -f "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" ]; then
+            echo "  Copying MoltenVK..."
+            cp -v "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+          fi
+          
+          echo "  Creating run.sh wrapper..."
+          cat > "${RUNTIME_DIR}/run.sh" << 'WRAPPER_EOF'
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export DYLD_LIBRARY_PATH="${SCRIPT_DIR}/lib:${DYLD_LIBRARY_PATH:-}"
+export DXVK_WSI_DRIVER="SDL3"
+export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
+export DXVK_HUD="${DXVK_HUD:-0}"
+exec "${SCRIPT_DIR}/$(basename "${BINARY}")" "$@"
+WRAPPER_EOF
+          chmod +x "${RUNTIME_DIR}/run.sh"
+          
+          echo "✅ Bundle ready at: ${RUNTIME_DIR}"
+          ls -lh "${RUNTIME_DIR}/"
+          ls -lh "${RUNTIME_DIR}/lib/" 2>/dev/null || echo "(no libs directory)"
+
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -177,13 +228,11 @@ jobs:
           path: logs/
           retention-days: 7
 
-      - name: Upload Binary Artifact
+      - name: Upload Deployment Bundle
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: binary-macos-${{ inputs.game }}-${{ inputs.preset }}
-          path: |
-            build/${{ inputs.preset }}/GeneralsMD/z_generals
-            build/${{ inputs.preset }}/Generals/g_generals
+          name: bundle-macos-${{ inputs.game }}-${{ inputs.preset }}
+          path: /tmp/GeneralsX-${{ inputs.game }}-macos-deploy/
           retention-days: 7
           if-no-files-found: warn
