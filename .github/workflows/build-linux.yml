@@ -45,6 +45,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Cache vcpkg
+        id: cache-vcpkg
+        uses: actions/cache@v4
+        with:
+          path: /opt/vcpkg
+          key: vcpkg-linux-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          restore-keys: |
+            vcpkg-linux-${{ runner.os }}-
+
       - name: Install Dependencies
         run: |
           echo "Installing Linux build dependencies (matching Dockerfile.linux)..."
@@ -108,7 +117,25 @@ jobs:
           echo "Dependencies installed."
           cmake --version
           ninja --version
-          meson --version 2>/dev/null || echo "meson will be installed via pip if needed"
+
+      - name: Bootstrap vcpkg
+        run: |
+          echo "Bootstrapping vcpkg..."
+          mkdir -p /opt/vcpkg
+          
+          # Check if vcpkg already cached
+          if [ ! -f /opt/vcpkg/vcpkg ]; then
+            echo "Cloning vcpkg from GitHub..."
+            git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
+            echo "Running vcpkg bootstrap..."
+            /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          else
+            echo "Using cached vcpkg"
+          fi
+          
+          export VCPKG_ROOT=/opt/vcpkg
+          echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
+          echo "✅ vcpkg ready at: /opt/vcpkg"
 
       - name: Configure CMake (Linux)
         run: |
