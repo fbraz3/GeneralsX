@@ -47,27 +47,68 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          echo "Installing Linux build dependencies..."
-          sudo apt-get update
-          sudo apt-get install -y \
+          echo "Installing Linux build dependencies (matching Dockerfile.linux)..."
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
             build-essential \
             cmake \
             ninja-build \
-            meson \
+            git \
+            curl \
+            ca-certificates \
+            zip \
+            unzip \
+            tar \
             pkg-config \
-            libglvnd-dev \
+            python3 \
+            python3-pip \
+            python3-dev \
+            autoconf \
+            automake \
+            autoconf-archive \
+            libtool \
+            libltdl-dev \
+            libopenal-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libaudio-dev \
+            libavcodec-dev \
+            libavformat-dev \
+            libavutil-dev \
+            libswresample-dev \
+            libswscale-dev \
+            libpng-dev \
+            zlib1g-dev \
+            libfribidi-dev \
+            libjack-dev \
+            libsndio-dev \
             libx11-dev \
-            libxrandr-dev \
-            libxinerama-dev \
-            libxcursor-dev \
-            libxi-dev \
             libxext-dev \
+            libxrandr-dev \
+            libxcursor-dev \
+            libxfixes-dev \
+            libxi-dev \
+            libxss-dev \
+            libxtst-dev \
             libxkbcommon-dev \
-            libwayland-dev
+            libdrm-dev \
+            libgbm-dev \
+            libgl1-mesa-dev \
+            libgles2-mesa-dev \
+            libegl1-mesa-dev \
+            libdbus-1-dev \
+            libibus-1.0-dev \
+            libudev-dev \
+            libthai-dev \
+            libpipewire-0.3-dev \
+            libwayland-dev \
+            libdecor-0-dev \
+            liburing-dev
           
           echo "Dependencies installed."
           cmake --version
           ninja --version
+          meson --version 2>/dev/null || echo "meson will be installed via pip if needed"
 
       - name: Configure CMake (Linux)
         run: |
@@ -79,22 +120,24 @@ jobs:
         run: |
           mkdir -p logs
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            cmake --build build/${{ inputs.preset }} --target GeneralsXZH 2>&1 | tee logs/build_zh_linux.log
+            cmake --build build/${{ inputs.preset }} --target z_generals 2>&1 | tee logs/build_zh_linux.log
           else
-            cmake --build build/${{ inputs.preset }} --target Generals 2>&1 | tee logs/build_generals_linux.log
+            cmake --build build/${{ inputs.preset }} --target g_generals 2>&1 | tee logs/build_generals_linux.log
           fi
           echo "Build complete."
 
       - name: Verify Build Artifacts
         run: |
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/z_generals"
+            DISPLAY_NAME="GeneralsXZH"
           else
-            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+            BINARY="build/${{ inputs.preset }}/Generals/g_generals"
+            DISPLAY_NAME="Generals"
           fi
           
           if [ -f "$BINARY" ]; then
-            echo "✅ Binary built: $BINARY"
+            echo "✅ Binary built: $DISPLAY_NAME ($BINARY)"
             file "$BINARY"
             ls -lh "$BINARY"
           else
@@ -116,6 +159,6 @@ jobs:
         with:
           name: binary-linux-${{ inputs.game }}-${{ inputs.preset }}
           path: |
-            build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH
-            build/${{ inputs.preset }}/Generals/GeneralsX
+            build/${{ inputs.preset }}/GeneralsMD/z_generals
+            build/${{ inputs.preset }}/Generals/g_generals
           retention-days: 7
