@@ -178,3 +178,23 @@ jobs:
       userdata: "GeneralsReplays/GeneralsZH/1.04"
       preset: ${{ matrix.preset }}
     secrets: inherit
+
+  build-generalsmd-linux:
+    name: Build GeneralsMD@Linux
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generalsmd == 'true' || needs.detect-changes.outputs.shared == 'true' }}
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      game: "GeneralsMD"
+      preset: "linux64-deploy"
+    secrets: inherit
+
+  build-generals-linux:
+    name: Build Generals@Linux
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generals == 'true' || needs.detect-changes.outputs.shared == 'true' }}
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      game: "Generals"
+      preset: "linux64-deploy"
+    secrets: inherit

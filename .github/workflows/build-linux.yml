@@ -1,0 +1,121 @@
+name: Build Linux
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_call:
+    inputs:
+      game:
+        required: true
+        type: string
+        description: "Game to build (GeneralsMD, Generals)"
+      preset:
+        required: false
+        type: string
+        default: "linux64-deploy"
+        description: "CMake preset for Linux"
+  workflow_dispatch:
+    inputs:
+      game:
+        type: choice
+        description: "Game to build"
+        options:
+          - GeneralsMD
+          - Generals
+        default: GeneralsMD
+      preset:
+        type: choice
+        description: "CMake preset for Linux"
+        options:
+          - linux64-deploy
+          - linux64-testing
+        default: linux64-deploy
+
+jobs:
+  build:
+    name: ${{ inputs.game }}@${{ inputs.preset }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        run: |
+          echo "Installing Linux build dependencies..."
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            meson \
+            pkg-config \
+            libglvnd-dev \
+            libx11-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxext-dev \
+            libxkbcommon-dev \
+            libwayland-dev
+          
+          echo "Dependencies installed."
+          cmake --version
+          ninja --version
+
+      - name: Configure CMake (Linux)
+        run: |
+          mkdir -p logs
+          cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_linux.log
+          echo "CMake configuration complete."
+
+      - name: Build ${{ inputs.game }}
+        run: |
+          mkdir -p logs
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            cmake --build build/${{ inputs.preset }} --target GeneralsXZH 2>&1 | tee logs/build_zh_linux.log
+          else
+            cmake --build build/${{ inputs.preset }} --target Generals 2>&1 | tee logs/build_generals_linux.log
+          fi
+          echo "Build complete."
+
+      - name: Verify Build Artifacts
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+          else
+            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+          fi
+          
+          if [ -f "$BINARY" ]; then
+            echo "✅ Binary built: $BINARY"
+            file "$BINARY"
+            ls -lh "$BINARY"
+          else
+            echo "❌ Binary NOT found: $BINARY"
+            exit 1
+          fi
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-linux-${{ inputs.game }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Binary Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-linux-${{ inputs.game }}-${{ inputs.preset }}
+          path: |
+            build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH
+            build/${{ inputs.preset }}/Generals/GeneralsX
+          retention-days: 7
