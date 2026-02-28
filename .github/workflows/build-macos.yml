@@ -143,10 +143,10 @@ jobs:
       - name: Verify Build Artifacts
         run: |
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            BINARY="build/${{ inputs.preset }}/GeneralsMD/z_generals"
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
             DISPLAY_NAME="GeneralsXZH"
           else
-            BINARY="build/${{ inputs.preset }}/Generals/g_generals"
+            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
             DISPLAY_NAME="Generals"
           fi
           
