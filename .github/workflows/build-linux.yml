@@ -205,14 +205,15 @@ jobs:
           find "build/${{ inputs.preset }}" -name "libgamespy.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
           
           echo "  Creating run.sh wrapper..."
-          cat > "${RUNTIME_DIR}/run.sh" << 'WRAPPER_EOF'
+          BINARY_NAME=$(basename "${BINARY}")
+          cat > "${RUNTIME_DIR}/run.sh" << WRAPPER_EOF
 #!/bin/bash
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-export LD_LIBRARY_PATH="${SCRIPT_DIR}/lib:${LD_LIBRARY_PATH:-}"
-export DXVK_WSI_DRIVER="SDL3"
-export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
-export DXVK_HUD="${DXVK_HUD:-0}"
-exec "${SCRIPT_DIR}/$(basename "${BINARY}")" "$@"
+SCRIPT_DIR=\"$(cd \"$(dirname \"$0\")\" && pwd)\"
+export LD_LIBRARY_PATH=\"\${SCRIPT_DIR}/lib:\${LD_LIBRARY_PATH:-}\"
+export DXVK_WSI_DRIVER=\"SDL3\"
+export DXVK_LOG_LEVEL=\"\${DXVK_LOG_LEVEL:-info}\"
+export DXVK_HUD=\"\${DXVK_HUD:-0}\"
+exec \"\${SCRIPT_DIR}/${BINARY_NAME}\" \"$@\"
 WRAPPER_EOF
           chmod +x "${RUNTIME_DIR}/run.sh"
           
