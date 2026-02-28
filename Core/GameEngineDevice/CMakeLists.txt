@@ -244,10 +244,18 @@ if(WIN32)
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
+# GeneralsX @bugfix BenderAI 27/02/2026 Use OpenAL::OpenAL target directly when available (FetchContent)
+# cmake's FindOpenAL.cmake cannot find FetchContent-built openal-soft; use imported target instead.
 if(SAGE_USE_OPENAL)
-    find_package(OpenAL REQUIRED)
-    target_include_directories(corei_gameenginedevice_public INTERFACE ${OPENAL_INCLUDE_DIR})
-    target_link_libraries(corei_gameenginedevice_public INTERFACE ${OPENAL_LIBRARY})
+    if(TARGET OpenAL::OpenAL)
+        # FetchContent-provided openal-soft: interface includes propagated via target
+        target_link_libraries(corei_gameenginedevice_public INTERFACE OpenAL::OpenAL)
+    else()
+        # System install of OpenAL (Linux with libopenal-dev, etc.)
+        find_package(OpenAL REQUIRED)
+        target_include_directories(corei_gameenginedevice_public INTERFACE ${OPENAL_INCLUDE_DIR})
+        target_link_libraries(corei_gameenginedevice_public INTERFACE ${OPENAL_LIBRARY})
+    endif()
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)

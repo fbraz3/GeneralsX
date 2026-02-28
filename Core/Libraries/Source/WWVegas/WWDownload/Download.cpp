@@ -80,15 +80,28 @@ HRESULT CDownload::DownloadFile(LPCSTR server, LPCSTR username, LPCSTR password,
 	_mkdir("download");
 
 	// Copy parameters to member variables.
-	strlcpy( m_Server, server, sizeof( m_Server ) );
-	strlcpy( m_Login, username, sizeof( m_Login ) );
-	strlcpy( m_Password, password, sizeof( m_Password ) );
-	strlcpy( m_File, file, sizeof( m_File ) );
-	strlcpy( m_LocalFile, localfile, sizeof( m_LocalFile ) );
+	// GeneralsX @build BenderAI 28/02/2026 - strlcpy is POSIX BSD; MSVC needs strcpy_s or strncpy
+	#ifdef _WIN32
+		strncpy_s( m_Server, sizeof( m_Server ), server, _TRUNCATE );
+		strncpy_s( m_Login, sizeof( m_Login ), username, _TRUNCATE );
+		strncpy_s( m_Password, sizeof( m_Password ), password, _TRUNCATE );
+		strncpy_s( m_File, sizeof( m_File ), file, _TRUNCATE );
+		strncpy_s( m_LocalFile, sizeof( m_LocalFile ), localfile, _TRUNCATE );
+		strncpy_s( m_LastLocalFile, sizeof( m_LastLocalFile ), localfile, _TRUNCATE );
+	#else
+		strlcpy( m_Server, server, sizeof( m_Server ) );
+		strlcpy( m_Login, username, sizeof( m_Login ) );
+		strlcpy( m_Password, password, sizeof( m_Password ) );
+		strlcpy( m_File, file, sizeof( m_File ) );
+		strlcpy( m_LocalFile, localfile, sizeof( m_LocalFile ) );
+		strlcpy( m_LastLocalFile, localfile, sizeof( m_LastLocalFile ) );
+	#endif
 
-	strlcpy( m_LastLocalFile, localfile, sizeof( m_LastLocalFile ) );
-
-	strlcpy( m_RegKey, regkey, sizeof( m_RegKey ) );
+	#ifdef _WIN32
+		strncpy_s( m_RegKey, sizeof( m_RegKey ), regkey, _TRUNCATE );
+	#else
+		strlcpy( m_RegKey, regkey, sizeof( m_RegKey ) );
+	#endif
 	m_TryResume = tryresume;
 	m_StartPosition=0;
 

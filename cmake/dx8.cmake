@@ -49,8 +49,36 @@ elseif(WIN32)
   FetchContent_MakeAvailable(dxvk_win_release)
 
   # Extract paths for use in target_include_directories and deployment
-  set(DXVK_INCLUDE_DIR "${dxvk_headers_SOURCE_DIR}/include/dxvk" CACHE PATH "DXVK headers")
+  # GeneralsX @build BenderAI 28/02/2026 Strategy shift:
+  # Instead of using DXVK headers (which have MinGW types like __MSABI_LONG incompatible with MSVC x64),
+  # use jmarshall's battle-tested DX90SDK headers which are proven to compile on Windows x64.
+  # DXVK is ONLY for Vulkan (not DirectX headers).
+  # D3D8 headers come from Code/Libraries/DX90SDK (copied from jmarshall-win64-modern).
+  
+  # Check if DX90SDK exists (was copied from jmarshall reference)
+  # Try shared location first (Core/Libraries), then game-specific locations
+  if(EXISTS "${CMAKE_SOURCE_DIR}/Core/Libraries/DX90SDK/Include")
+    set(DXVK_D3D8_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Core/Libraries/DX90SDK/Include" CACHE PATH "D3D8/D3D9 headers (jmarshall DX90SDK)" FORCE)
+    message(STATUS "✅ Using D3D8 headers from jmarshall DX90SDK (Core/Libraries): ${DXVK_D3D8_INCLUDE_DIR}")
+  elseif(EXISTS "${CMAKE_SOURCE_DIR}/GeneralsMD/Code/Libraries/DX90SDK/Include")
+    set(DXVK_D3D8_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/GeneralsMD/Code/Libraries/DX90SDK/Include" CACHE PATH "D3D8/D3D9 headers (jmarshall DX90SDK)" FORCE)
+    message(STATUS "✅ Using D3D8 headers from jmarshall DX90SDK (GeneralsMD): ${DXVK_D3D8_INCLUDE_DIR}")
+  elseif(EXISTS "${CMAKE_SOURCE_DIR}/Generals/Code/Libraries/DX90SDK/Include")
+    set(DXVK_D3D8_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Generals/Code/Libraries/DX90SDK/Include" CACHE PATH "D3D8/D3D9 headers (jmarshall DX90SDK)" FORCE)
+    message(STATUS "✅ Using D3D8 headers from jmarshall DX90SDK (Generals): ${DXVK_D3D8_INCLUDE_DIR}")
+  else()
+    # Fallback: use DXVK native headers (NOT RECOMMENDED - has MinGW type conflicts on MSVC x64)
+    set(DXVK_D3D8_INCLUDE_DIR "${dxvk_headers_SOURCE_DIR}/include/native/directx" CACHE PATH "D3D8 headers (DXVK fallback, may have x64 issues on Windows)" FORCE)
+    message(STATUS "⚠️  WARNING: DX90SDK not found. Falling back to DXVK native headers (may cause x64 compilation issues on Windows/MSVC).")
+  endif()
+  
+  # DXVK include path is FOR VULKAN ONLY, not DirectX
+  set(DXVK_INCLUDE_DIR "${dxvk_headers_SOURCE_DIR}/include" CACHE PATH "DXVK Vulkan headers" FORCE)
   set(DXVK_WIN_DLL_DIR "${dxvk_win_release_SOURCE_DIR}/x64" CACHE PATH "DXVK Windows DLLs (x64)")
+  
+  message(STATUS "Using DXVK headers (Windows Modern, D3D8→Vulkan at runtime)")
+  message(STATUS "  D3D8 headers: ${DXVK_D3D8_INCLUDE_DIR}")
+  message(STATUS "  DXVK DLL dir: ${DXVK_WIN_DLL_DIR}")
   
   message(STATUS "Using DXVK headers (Windows Modern, D3D8→Vulkan at runtime)")
   message(STATUS "  DXVK headers: ${DXVK_INCLUDE_DIR}")

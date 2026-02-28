@@ -122,9 +122,16 @@ typedef BOOL  (WINAPI *SymInitializeType) (HANDLE hProcess, LPSTR UserSearchPath
 typedef BOOL  (WINAPI *SymLoadModuleType) (HANDLE hProcess, HANDLE hFile, LPSTR ImageName, LPSTR ModuleName, DWORD BaseOfDll, DWORD SizeOfDll);
 typedef DWORD (WINAPI *SymSetOptionsType) (DWORD SymOptions);
 typedef BOOL  (WINAPI *SymUnloadModuleType) (HANDLE hProcess, DWORD BaseOfDll);
+// GeneralsX @build Felipe 27/02/2026 Add Win64-compatible imagehlp types for win64-modern preset
+#if defined(_WIN64)
+typedef BOOL  (WINAPI *StackWalkType) (DWORD MachineType, HANDLE hProcess, HANDLE hThread, LPSTACKFRAME64 StackFrame, LPVOID ContextRecord, PREAD_PROCESS_MEMORY_ROUTINE64 ReadMemoryRoutine, PFUNCTION_TABLE_ACCESS_ROUTINE64 FunctionTableAccessRoutine, PGET_MODULE_BASE_ROUTINE64 GetModuleBaseRoutine, PTRANSLATE_ADDRESS_ROUTINE64 TranslateAddress);
+typedef LPVOID (WINAPI *SymFunctionTableAccessType) (HANDLE hProcess, DWORD64 AddrBase);
+typedef DWORD64 (WINAPI *SymGetModuleBaseType) (HANDLE hProcess, DWORD64 dwAddr);
+#else
 typedef BOOL  (WINAPI *StackWalkType) (DWORD MachineType, HANDLE hProcess, HANDLE hThread, LPSTACKFRAME StackFrame, LPVOID ContextRecord, PREAD_PROCESS_MEMORY_ROUTINE ReadMemoryRoutine, PFUNCTION_TABLE_ACCESS_ROUTINE FunctionTableAccessRoutine, PGET_MODULE_BASE_ROUTINE GetModuleBaseRoutine, PTRANSLATE_ADDRESS_ROUTINE TranslateAddress);
 typedef LPVOID (WINAPI *SymFunctionTableAccessType) (HANDLE hProcess, DWORD AddrBase);
 typedef DWORD (WINAPI *SymGetModuleBaseType) (HANDLE hProcess, DWORD dwAddr);
+#endif  // _WIN64
 
 
 static SymCleanupType							_SymCleanup = nullptr;
@@ -465,17 +472,23 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	symptr->SizeOfStruct = sizeof (IMAGEHLP_SYMBOL);
 	symptr->MaxNameLength = 256-sizeof (IMAGEHLP_SYMBOL);
 	symptr->Size = 0;
-	symptr->Address = context->Eip;
+// GeneralsX @build Felipe 27/02/2026 Use Rip on x64, Eip on x86
+#if defined(_WIN64)
+	DWORD_PTR context_ip = (DWORD_PTR)context->Rip;
+#else
+	DWORD_PTR context_ip = (DWORD_PTR)context->Eip;
+#endif
+	symptr->Address = context_ip;
 
-	if (!IsBadCodePtr((FARPROC)context->Eip)) {
-		if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), context->Eip, &displacement, symptr)) {
-			sprintf (scrap, "Exception occurred at %08X - %s + %08X\r\n", context->Eip, symptr->Name, displacement);
+	if (!IsBadCodePtr((FARPROC)context_ip)) {
+		if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), (DWORD)context_ip, &displacement, symptr)) {
+			sprintf (scrap, "Exception occurred at %p - %s + %08X\r\n", (void*)context_ip, symptr->Name, displacement);
 		} else {
 			DebugString ("Exception Handler: Failed to get symbol for EIP\r\n");
 			if (_SymGetSymFromAddr != nullptr) {
 				DebugString ("Exception Handler: SymGetSymFromAddr failed with code %d - %s\n", GetLastError(), Last_Error_Text());
 			}
-			sprintf (scrap, "Exception occurred at %08X\r\n", context->Eip);
+			sprintf (scrap, "Exception occurred at %p\r\n", (void*)context_ip);
 		}
 	} else {
 		DebugString ("Exception Handler: context->Eip is bad code pointer\n");
@@ -580,7 +593,24 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 
 	/*
 	** Dump the registers.
+	** GeneralsX @build Felipe 27/02/2026 Use x64 register names on _WIN64
 	*/
+#if defined(_WIN64)
+	sprintf(scrap, "Rip:%016llX\tRsp:%016llX\tRbp:%016llX\r\n", (unsigned long long)context->Rip, (unsigned long long)context->Rsp, (unsigned long long)context->Rbp);
+	Add_Txt(scrap);
+	sprintf(scrap, "Rax:%016llX\tRbx:%016llX\tRcx:%016llX\r\n", (unsigned long long)context->Rax, (unsigned long long)context->Rbx, (unsigned long long)context->Rcx);
+	Add_Txt(scrap);
+	sprintf(scrap, "Rdx:%016llX\tRsi:%016llX\tRdi:%016llX\r\n", (unsigned long long)context->Rdx, (unsigned long long)context->Rsi, (unsigned long long)context->Rdi);
+	Add_Txt(scrap);
+	sprintf(scrap, "R8 :%016llX\tR9 :%016llX\tR10:%016llX\r\n", (unsigned long long)context->R8, (unsigned long long)context->R9, (unsigned long long)context->R10);
+	Add_Txt(scrap);
+	sprintf(scrap, "R11:%016llX\tR12:%016llX\tR13:%016llX\r\n", (unsigned long long)context->R11, (unsigned long long)context->R12, (unsigned long long)context->R13);
+	Add_Txt(scrap);
+	sprintf(scrap, "R14:%016llX\tR15:%016llX\tEFlags:%08X\r\n", (unsigned long long)context->R14, (unsigned long long)context->R15, context->EFlags);
+	Add_Txt(scrap);
+	sprintf(scrap, "CS:%04x  SS:%04x  FS:%04x  GS:%04x\r\n", context->SegCs, context->SegSs, context->SegFs, context->SegGs);
+	Add_Txt(scrap);
+#else
 	sprintf(scrap, "Eip:%08X\tEsp:%08X\tEbp:%08X\r\n", context->Eip, context->Esp, context->Ebp);
 	Add_Txt(scrap);
 	sprintf(scrap, "Eax:%08X\tEbx:%08X\tEcx:%08X\r\n", context->Eax, context->Ebx, context->Ecx);
@@ -591,11 +621,14 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	Add_Txt(scrap);
 	sprintf(scrap, "CS:%04x  SS:%04x  DS:%04x  ES:%04x  FS:%04x  GS:%04x\r\n", context->SegCs, context->SegSs, context->SegDs, context->SegEs, context->SegFs, context->SegGs);
 	Add_Txt(scrap);
+#endif  // _WIN64
 
 
 	/*
-	** Now the FP registers.
+	** Now the FP registers (x86 only - FloatSave not available on x64).
+	** GeneralsX @build Felipe 27/02/2026 Guard x87 FP registers as x86-only
 	*/
+#if defined(_M_IX86)
 	Add_Txt("\r\nFloating point status\r\n");
 	sprintf(scrap, "     Control word: %08x\r\n", context->FloatSave.ControlWord);
 	Add_Txt(scrap);
@@ -636,13 +669,20 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 		Add_Txt(scrap);
 	}
 
+// GeneralsX @build Felipe 27/02/2026 End x86-only FloatSave block
+#endif  // _M_IX86
+
 	/*
-	** Dump the bytes at EIP. This will make it easier to match the crash address with later versions of the game.
+	** Dump the bytes at IP. This will make it easier to match the crash address with later versions of the game.
 	*/
 	DebugString("EIP bytes dump...\n");
+#if defined(_WIN64)
+	sprintf(scrap, "\r\nBytes at CS:RIP (%p)  : ", (void*)context->Rip);
+	unsigned char *eip_ptr = (unsigned char *)(context->Rip);
+#else
 	sprintf(scrap, "\r\nBytes at CS:EIP (%08X)  : ", context->Eip);
-
 	unsigned char *eip_ptr = (unsigned char *) (context->Eip);
+#endif
 	char bytestr[32];
 
 	for (int c = 0 ; c < 32 ; c++) {
@@ -663,7 +703,12 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	*/
 	DebugString("Stack dump...\n");
 	Add_Txt("Stack dump (* indicates possible code address) :\r\n");
+// GeneralsX @build Felipe 27/02/2026 Use Rsp on x64, Esp on x86
+#if defined(_WIN64)
+	unsigned long *stackptr = (unsigned long*)(void*)context->Rsp;
+#else
 	unsigned long *stackptr = (unsigned long*) context->Esp;
+#endif
 
 	for (int j=0 ; j<2048 ; j++) {
 		if (IsBadReadPtr(stackptr, 4)) {
@@ -1221,13 +1266,20 @@ int Stack_Walk(unsigned long *return_addresses, int num_addresses, CONTEXT *cont
 
 	/*
 	** Set up the stack frame structure for the start point of the stack walk (i.e. here).
+	** GeneralsX @build Felipe 27/02/2026 Use STACKFRAME64 on x64
 	*/
+#if defined(_WIN64)
+	STACKFRAME64 stack_frame;
+	memset(&stack_frame, 0, sizeof(stack_frame));
+#else
 	STACKFRAME stack_frame;
 	memset(&stack_frame, 0, sizeof(stack_frame));
+#endif
 
 	unsigned long reg_eip, reg_ebp, reg_esp;
 
-#if defined(_MSC_VER)
+// GeneralsX @build Felipe 27/02/2026 Add x64 path (RtlCaptureContext) - __asm not supported on x64 MSVC
+#if defined(_MSC_VER) && !defined(_WIN64)
 	__asm {
 here:
 		lea	eax,here
@@ -1235,6 +1287,13 @@ here:
 		mov	reg_ebp,ebp
 		mov	reg_esp,esp
 	}
+#elif defined(_WIN64)
+	// x64: use RtlCaptureContext instead of inline assembly
+	CONTEXT ctx64;
+	RtlCaptureContext(&ctx64);
+	reg_eip = (unsigned long)(ctx64.Rip & 0xFFFFFFFF);
+	reg_ebp = (unsigned long)(ctx64.Rbp & 0xFFFFFFFF);
+	reg_esp = (unsigned long)(ctx64.Rsp & 0xFFFFFFFF);
 #elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(_M_IX86))
 	__asm__ __volatile__ (
 		"call 1f\n\t"
@@ -1256,11 +1315,18 @@ here:
 
 	/*
 	** Use the context struct if it was provided.
+	** GeneralsX @build Felipe 27/02/2026 Use Rip/Rsp/Rbp on x64
 	*/
 	if (context) {
+#if defined(_WIN64)
+		stack_frame.AddrPC.Offset = context->Rip;
+		stack_frame.AddrStack.Offset = context->Rsp;
+		stack_frame.AddrFrame.Offset = context->Rbp;
+#else
 		stack_frame.AddrPC.Offset = context->Eip;
 		stack_frame.AddrStack.Offset = context->Esp;
 		stack_frame.AddrFrame.Offset = context->Ebp;
+#endif
 	}
 
 	int pointer_index = 0;
@@ -1269,7 +1335,12 @@ here:
 	** Walk the stack by the requested number of return address iterations.
 	*/
 	for (int i = 0; i < num_addresses + 1; i++) {
+// GeneralsX @build Felipe 27/02/2026 Use correct machine type and frame type for x64
+#if defined(_WIN64)
+		if (_StackWalk(IMAGE_FILE_MACHINE_AMD64, GetCurrentProcess(), GetCurrentThread(), (LPSTACKFRAME64)&stack_frame, nullptr, nullptr, _SymFunctionTableAccess, _SymGetModuleBase, nullptr)) {
+#else
 		if (_StackWalk(IMAGE_FILE_MACHINE_I386, GetCurrentProcess(), GetCurrentThread(), &stack_frame, nullptr, nullptr, _SymFunctionTableAccess, _SymGetModuleBase, nullptr)) {
+#endif
 
 			/*
 			** First result will always be the return address we were called from.

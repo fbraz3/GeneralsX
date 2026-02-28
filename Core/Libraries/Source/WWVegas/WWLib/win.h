@@ -57,11 +57,30 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+// GeneralsX @build BenderAI 28/02/2026
+// Request multimedia components BEFORE windows.h when WIN32_LEAN_AND_MEAN is active
+// These defines tell windows.h to include multimedia APIs even with LEAN_AND_MEAN
+#ifndef NOMCI
+#define NOMCI
+#endif
+#ifndef NOFIO
+#define NOFIO
+#endif
+
 #include	<windows.h>
-//#include <mmsystem.h>
+#include <timeapi.h>  // GeneralsX @build BenderAI 28/02/2026 - Modern location for timeBeginPeriod, timeEndPeriod
+#include <mmsystem.h>  // GeneralsX @build BenderAI 10/02/2026 - Required for timeBeginPeriod, timeEndPeriod, MMRESULT
 //#include	<windowsx.h>
 //#include	<winnt.h>
 //#include	<winuser.h>
+
+// GeneralsX @build BenderAI 28/02/2026
+// WINBOOL compatibility for Wine/DXVK native headers (e.g. d3d8types.h from DXVK include/native/directx)
+// Wine uses WINBOOL as an alias for BOOL (int). MSVC/Windows SDK does not define WINBOOL.
+// Define it here so any Wine-sourced header included under WIN32 compiles cleanly with MSVC.
+#ifndef WINBOOL
+#define WINBOOL BOOL
+#endif
 
 #if (_MSC_VER >= 1200)
 #pragma warning(pop)

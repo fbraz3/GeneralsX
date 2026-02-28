@@ -33,6 +33,7 @@
 #include "assetmgr.h"
 #include "agg_def.h"
 #include "hlod.h"
+#include <videocap.h>  // GeneralsX @build BenderAI 28/02/2026 - Required for DRV_USER used by vfw.h
 #include <VFW.h>
 #include "rcfile.h"
 

@@ -37,9 +37,17 @@
 #pragma once
 
 /*
-** This header just includes mmsystem.h with warning 4201 disabled
+** This header just includes mmsystem.h with warning 4201 disabled.
+** Also includes timeapi.h directly: Windows SDK 10.0.26100+ moved timeGetTime()
+** to timeapi.h which is only conditionally included from mmsystem.h under
+** #ifndef MMNOTIMER. Explicitly including it ensures timeGetTime is always available.
+** GeneralsX @build Felipe 27/02/2026 Fix timeGetTime not found on Windows SDK 26100+
 */
 
 #pragma warning(disable:4201)
 #include <mmsystem.h>
 #pragma warning(default:4201)
+
+#ifdef _WIN32
+#include <timeapi.h>  // timeGetTime() lives here in Windows SDK 10.0.26100.0+
+#endif

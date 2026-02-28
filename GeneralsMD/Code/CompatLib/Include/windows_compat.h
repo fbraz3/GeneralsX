@@ -17,12 +17,11 @@
 
 // GeneralsX @build BenderAI 12/02/2026 (updated 26/02/2026 Phase 6)
 // Include DXVK Windows types FIRST
-// CRITICAL: On Linux and Windows Modern (DXVK), windows_base.h provides core Windows types
-// (WINBOOL, LARGE_INTEGER, PALETTEENTRY, etc.). Must be included BEFORE our compatibility layer
-// so d3d8types.h can find them!
-// On Windows Legacy (DX8 native): <windows.h> from MSVC already has full types.
-#if !defined(_WIN32) || (defined(_WIN32) && !defined(SAGE_USE_DX8))
-    #include <windows_base.h>  // DXVK's minimal Windows API (DWORD, BOOL, WINBOOL, LARGE_INTEGER, etc.)
+// CRITICAL: On Linux (DXVK cross-compile), windows_base.h provides core Windows types
+// (WINBOOL, LARGE_INTEGER, PALETTEENTRY, etc.). Must be included BEFORE our compatibility layer.
+// On Windows (all variants): <windows.h> from MSVC already provides full types.
+#ifndef _WIN32
+    #include <windows_base.h>  // DXVK's minimal Windows API on Linux
 #endif
 
 #ifndef CALLBACK
@@ -33,8 +32,10 @@
 #define __stdcall
 #endif
 
-// GeneralsX @build BenderAI 12/02/2026 Windows __fastcall passes first 2 args in ECX/EDX registers
-#if !defined(__fastcall)
+// GeneralsX @build BenderAI 12/02/2026 - Windows __fastcall passes first 2 args in ECX/EDX registers
+// On Windows (MSVC/Win32): Already defined - protect against redefiniton
+// On Linux (cross): Stub to empty - all x86-64 SysV ABI uses first arguments in RDI/RSI/RDX/RCX
+#if !defined _MSC_VER && !defined(__fastcall)
 #define __fastcall
 #endif
 
@@ -149,9 +150,11 @@ typedef const void *LPCVOID;
 
 // TheSuperHackers @build 10/02/2026 Bender
 // Threading functions: GetCurrentThreadId() and Sleep() for Linux
+#ifndef _WIN32
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/time.h>
+#endif
 
 // GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Windows crash dump types (stubbed for Linux)
 #ifndef _WIN32
@@ -160,8 +163,6 @@ typedef struct _EXCEPTION_POINTERS EXCEPTION_POINTERS;
 #endif
 
 // GeneralsX @build BenderAI 11/02/2026 - Windows version info stubs (GameState.cpp)
-#ifndef _WIN32
-
 // OSVERSIONINFO structure for version checking (stubbed on Linux)
 typedef struct _OSVERSIONINFO {
     DWORD dwOSVersionInfoSize;
@@ -188,7 +189,9 @@ inline BOOL GetVersionEx(OSVERSIONINFO* lpVersionInfo) {
 #define VER_PLATFORM_WIN32_WINDOWS 1
 #define VER_PLATFORM_WIN32_NT 2
 
-#endif // !_WIN32
+// GeneralsX @build BenderAI 28/02/2026
+// Linux-only timing functions: timeBeginPeriod(), timeEndPeriod()
+// CRITICAL: These must remain within #ifndef _WIN32 to avoid timeval on Windows
 
 // TheSuperHackers @build 10/02/2026 Bender
 // Timing functions: timeBeginPeriod(), timeEndPeriod() for Linux

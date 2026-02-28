@@ -81,7 +81,9 @@ class STLSpecialAlloc;
 #include <sys/types.h>
 #include <tchar.h>
 #include <time.h>
-#include <vfw.h>
+// GeneralsX @build BenderAI 28/02/2026 - VFW is Phase 3 (movie capture, out-of-scope for Phase 1 graphics)
+// Removing to avoid header conflicts. FramGrab uses vfw_compat.h stubs anyway.
+// #include <vfw.h>  // PHASE 3 FEATURE - disabled for Phase 1
 #include <winerror.h>
 #include <wininet.h>
 #include <winreg.h>

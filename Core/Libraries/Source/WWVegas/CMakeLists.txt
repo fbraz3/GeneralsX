@@ -33,7 +33,11 @@ target_include_directories(core_wwcommon INTERFACE
 add_subdirectory(WW3D2)
 add_subdirectory(WWAudio)
 add_subdirectory(WWDebug)
-add_subdirectory(WWDownload)
+# GeneralsX @build BenderAI 28/02/2026 - WWDownload uses BSD sockets (strlcpy, socket_compat)
+# Not compatible with Windows MSVC; skip on Windows builds
+if(UNIX)
+  add_subdirectory(WWDownload)
+endif()
 add_subdirectory(WWLib)
 add_subdirectory(WWMath)
 add_subdirectory(WWSaveLoad)

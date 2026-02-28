@@ -44,8 +44,16 @@ class STLSpecialAlloc;
     // TheSuperHackers @build JohnsterID 05/01/2026 Add ATL compatibility for MinGW-w64 builds
     #if defined(__GNUC__)
         #include <Utility/atl_compat.h>
+    #else
+        // GeneralsX @build BenderAI 10/02/2026 - Try to include atlbase.h for MSVC only if available
+        // (Windows SDK installation varies; some installs don't include ATL headers)
+        // Fallback: use atl_compat.h stub if atlbase.h not found
+        #if __has_include(<atlbase.h>)
+            #include <atlbase.h>
+        #elif __has_include(<Utility/atl_compat.h>)
+            #include <Utility/atl_compat.h>
+        #endif
     #endif
-    #include <atlbase.h>
     #include <windows.h>
 #else
     // GeneralsX @build BenderAI 09/02/2026 Linux compatibility - Windows API stubs
@@ -96,7 +104,9 @@ class STLSpecialAlloc;
 #endif
 #include <time.h>
 #ifdef _WIN32
-    #include <vfw.h>
+    // GeneralsX @build BenderAI 28/02/2026 - VFW is Phase 3 (movie capture, out-of-scope for Phase 1 graphics)
+    // Removing to avoid header conflicts. FramGrab uses vfw_compat.h stubs anyway.
+    // #include <vfw.h>  // PHASE 3 FEATURE - disabled for Phase 1
     #include <winerror.h>
     #include <wininet.h>
     #include <winreg.h>

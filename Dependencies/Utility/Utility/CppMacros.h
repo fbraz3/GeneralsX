@@ -71,3 +71,14 @@ inline void move_or_swap(T& dest, T& src)
 
 } // namespace stl
 #endif
+
+// GeneralsX @build BenderAI 28/02/2026
+// WINBOOL is a Wine/MinGW-specific alias for BOOL (which is typedef int BOOL on WIN32).
+// MSVC + Windows SDK do NOT define WINBOOL.
+// DXVK's Wine-sourced DirectX headers (include/native/directx/d3d8.h, d3d8types.h)
+// use WINBOOL. This must be defined before any DXVK/D3D8 header is included.
+// This header (CppMacros.h) is always listed first in precompiled headers across all targets.
+// On Linux: MinGW/Wine defines WINBOOL automatically. On WIN32: we define it here as int.
+#if defined(_WIN32) && !defined(WINBOOL)
+#define WINBOOL int
+#endif

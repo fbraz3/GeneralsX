@@ -3,40 +3,24 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// GeneralsX @build BenderAI 10/02/2026
-// Basic Win32 types - CompatLib must be self-contained
-// These MAY also be defined in bittype.h, but CompatLib compiles standalone
-#ifndef DWORD
-typedef uint32_t DWORD;
-#endif
-#ifndef ULONG
-typedef uint32_t ULONG;
-#endif
-#ifndef UINT
-typedef unsigned int UINT;
-#endif
-#ifndef BYTE
-typedef uint8_t BYTE;
-#endif
-#ifndef BOOL
-typedef int BOOL;
-#endif
-#ifndef WORD
-typedef uint16_t WORD;
-#endif
-#ifndef USHORT
-typedef uint16_t USHORT;
-#endif
-#ifndef LPCSTR
-typedef const char* LPCSTR;
-#endif
-#ifndef LPCWSTR
-typedef const wchar_t* LPCWSTR;
-#endif
+// GeneralsX @build BenderAI 28/02/2026
+// NOTE: bittype.h from WWLib is the authoritative source for basic Win32 types
+// (DWORD, ULONG, UINT, BYTE, BOOL, WORD, USHORT, LPCSTR).
+// DO NOT redefine here to avoid MSVC "redefinition; types basic differ" errors.
+// types_compat.h ONLY defines Windows-specific types that bittype.h doesn't have.
 
-// GeneralsX @build fbraz 11/02/2026 BenderAI - GDI color reference (0x00BBGGRR format)
+// GeneralsX @build BenderAI 10/02/2026
+// Removed duplicate DWORD/ULONG/UINT/BYTE/BOOL/WORD/USHORT/LPCSTR typedefs
+// All of these are already in bittype.h which is included first in windows_compat.h
+
+// GDI color reference (0x00BBGGRR format) - not in bittype.h
 #ifndef COLORREF
 typedef DWORD COLORREF;
+#endif
+
+// Unicode string types - not in bittype.h
+#ifndef LPCWSTR
+typedef const wchar_t* LPCWSTR;
 #endif
 
 // GeneralsX @build fbraz 10/02/2026

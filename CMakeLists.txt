@@ -40,6 +40,13 @@ if(UNIX)
     include_directories(${CMAKE_SOURCE_DIR}/GeneralsMD/Code/CompatLib/Include)
 endif()
 
+# GeneralsX @build BenderAI 27/02/2026
+# Compiler cache (sccache for Windows/Linux, ccache for macOS)
+# Must be included BEFORE compilers.cmake so the launcher is registered before CMake
+# finalizes the compiler selection. This significantly speeds up rebuilds and respects
+# __TIME__/__DATE__ macros via nondeterministic behavior handling (62.46% cache hit issue).
+include(cmake/sccache.cmake)
+
 # This file handles extra settings wanted/needed for different compilers.
 include(cmake/compilers.cmake)
 

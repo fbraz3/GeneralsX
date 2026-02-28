@@ -8,7 +8,14 @@ add_library(zi_always_no_pch INTERFACE) # Use this for Shared Libs with MFC AFX
 target_include_directories(zi_gameengine_include INTERFACE "GameEngine/Include")
 target_include_directories(zi_libraries_source_wwvegas INTERFACE "Libraries/Source/WWVegas")
 target_include_directories(zi_main INTERFACE "Main")
-target_include_directories(zi_always INTERFACE "CompatLib/Include")  # TheSuperHackers @build 08/02/2026 Add DirectX 8 compat headers
+# GeneralsX @build BenderAI 28/02/2026 - CompatLib/Include contains Linux-only headers
+# (windows.h shim, types_compat.h, pthread.h, etc.) that break MSVC compilation.
+# On Linux: Must be included so D3DX8 stubs, Windows compat layer, etc. are found.
+# On WIN32 (all variants): D3DX8 headers come via d3d8lib INTERFACE (DXVK native or DX8 SDK).
+# TheSuperHackers @build 08/02/2026 Add DirectX 8 compat headers
+if(NOT WIN32)
+    target_include_directories(zi_always INTERFACE "CompatLib/Include")
+endif()
 
 target_compile_definitions(zi_always INTERFACE
     RTS_ZEROHOUR=1

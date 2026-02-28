@@ -37,7 +37,11 @@ target_link_libraries(d3dx8 PUBLIC glm::glm gli::gli)
 
 # d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)
 # Add only WWLib directory (not full core_wwcommon to avoid d3d8.h conflicts from WWAudio)
-target_include_directories(d3dx8 PUBLIC 
+# GeneralsX @build BenderAI 28/02/2026 - Changed PUBLIC → PRIVATE:
+# CompatLib/Include contains Linux-only headers (windows.h shim, types_compat.h, pthread.h etc.)
+# that break MSVC compilation when propagated to consumers.
+# Callers get D3DXMATRIX types via d3d8lib INTERFACE (DXVK_INCLUDE_DIR/d3dx8math.h shim).
+target_include_directories(d3dx8 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
     ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WWLib
 )
@@ -62,17 +66,29 @@ if(SAGE_USE_DX8)
         ${dx8_SOURCE_DIR}/lib
     )
 else()
-    # Linux: Use ONLY DXVK headers (not min-dx8-sdk) to avoid conflicts
-    # DXVK provides complete Wine-compatible DirectX 8 headers
-    if(NOT dxvk_SOURCE_DIR)
-        message(FATAL_ERROR "DXVK not fetched! Ensure SAGE_USE_DX8=OFF and cmake/dx8.cmake was included")
+    # Non-legacy: use DXVK headers
+    # On Windows Modern (win64-modern): dxvk_headers_SOURCE_DIR (DXVK headers only, no lib)
+    # On Linux (linux64-deploy):        dxvk_SOURCE_DIR  (DXVK native with lib)
+    if(WIN32)
+        # Windows Modern: DXVK_D3D8_INCLUDE_DIR is pre-set in cmake/dx8.cmake
+        # Strategy: Use jmarshall DX90SDK headers (proven x64 compatible) instead of DXVK native headers (MinGW types)
+        if(NOT DXVK_D3D8_INCLUDE_DIR)
+            message(FATAL_ERROR "D3D8 headers not found! Ensure cmake/dx8.cmake was included before CompatLib")
+        endif()
+        target_include_directories(d3d8lib INTERFACE ${DXVK_D3D8_INCLUDE_DIR})
+        # No link directories needed: DXVK DLL loaded at runtime (d3d8.dll alongside EXE)
+    else()
+        # Linux: DXVK native provides both headers and lib
+        if(NOT dxvk_SOURCE_DIR)
+            message(FATAL_ERROR "DXVK not fetched! Ensure SAGE_USE_DX8=OFF and cmake/dx8.cmake was included")
+        endif()
+        target_include_directories(d3d8lib INTERFACE
+            ${dxvk_SOURCE_DIR}/include/dxvk
+        )
+        target_link_directories(d3d8lib INTERFACE
+            ${dxvk_SOURCE_DIR}/lib
+        )
     endif()
-    target_include_directories(d3d8lib INTERFACE
-        ${dxvk_SOURCE_DIR}/include/dxvk
-    )
-    target_link_directories(d3d8lib INTERFACE
-        ${dxvk_SOURCE_DIR}/lib
-    )
 endif()
 
 if (UNIX)

@@ -58,16 +58,29 @@ if (Test-Path "$VCToolsRoot\$preferredMSVC\lib\x64\msvcrtd.lib") {
 }
 Write-Host ""
 
-# Use VS BuildTools bundled CMake + Ninja (CMake 4.1.1, compatible with Ninja 1.12.1)
-# External cmake 3.31 has a bug with Ninja 1.12 and rules.ninja generation
+# Use VS BuildTools bundled CMake 4.1.1 + ninja-wrapper
+# CMake's Ninja generator has a bug in try_compile: it generates build.ninja with
+# "include CMakeFiles/rules.ninja" but never creates that file. When CMake calls
+# "ninja -t recompact" on the try_compile directory, ninja fails with:
+#   "build.ninja:35: loading 'CMakeFiles\rules.ninja': GetLastError() = 2"
+# The ninja-wrapper pre-creates CMakeFiles/rules.ninja as a stub before forwarding.
+# Source: C:\tools\ninja-wrapper\ninja_wrapper.c (compiled with cl.exe)
 $vsCMakeDir = "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake"
 $vsCMake = "$vsCMakeDir\CMake\bin\cmake.exe"
-$vsNinja = "$vsCMakeDir\Ninja\ninja.exe"
+$ninjaWrapperDir = "C:\tools\ninja-wrapper"
+$ninjaWrapper = "$ninjaWrapperDir\ninja.exe"
 if (Test-Path $vsCMake) {
-    $env:PATH = "$vsCMakeDir\CMake\bin;$vsCMakeDir\Ninja;$env:PATH"
+    # Prepend ninja-wrapper FIRST so it shadows both bundled Ninja 1.12 and C:\tools\ninja
+    $env:PATH = "$ninjaWrapperDir;$vsCMakeDir\CMake\bin;$env:PATH"
     Write-Host "✅ Using VS BuildTools CMake $(& $vsCMake --version | Select-String 'cmake version')" -ForegroundColor Green
 } else {
     Write-Host "⚠️  VS BuildTools CMake not found, using default cmake" -ForegroundColor Yellow
+}
+if (Test-Path $ninjaWrapper) {
+    Write-Host "✅ Using ninja-wrapper (pre-creates CMakeFiles/rules.ninja for CMake try_compile bug)" -ForegroundColor Green
+} else {
+    Write-Host "⚠️  ninja-wrapper not found at $ninjaWrapperDir" -ForegroundColor Yellow
+    Write-Host "   Rebuild: cl /nologo /O2 $ninjaWrapperDir\ninja_wrapper.c /Fe:$ninjaWrapperDir\ninja.exe /link kernel32.lib" -ForegroundColor Gray
 }
 Write-Host ""
 
@@ -84,9 +97,15 @@ $StartTime = Get-Date
 $CompilerPath = "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Tools\MSVC\14.50.35717\bin\Hostx64\x64\cl.exe"
 
 try {
-    # Try with preset first
+    # Use forward slashes for compiler path (backslashes cause cmake to generate
+    # invalid escape sequences in CMakeCCompiler.cmake, breaking inner cmake runs)
+    $CompilerPathFwd = $CompilerPath.Replace('\', '/')
+    $ninja111Exe = "C:/tools/ninja-wrapper/ninja.exe"
     Write-Host "Attempting CMake configure with preset..."
-    cmake --preset win64-modern -DCMAKE_C_COMPILER="$CompilerPath" -DCMAKE_CXX_COMPILER="$CompilerPath"
+    cmake --preset win64-modern `
+        -DCMAKE_C_COMPILER="$CompilerPathFwd" `
+        -DCMAKE_CXX_COMPILER="$CompilerPathFwd" `
+        -DCMAKE_MAKE_PROGRAM="$ninja111Exe"
     $ExitCode = $LASTEXITCODE
 } catch {
     Write-Error "CMake configuration failed: $_"

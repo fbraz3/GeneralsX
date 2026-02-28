@@ -1,5 +1,11 @@
 #pragma once
 
+// GeneralsX @build BenderAI 28/02/2026
+// memory_compat.h is Linux-only - provides GlobalAlloc/GlobalFree/GlobalSize and MEMORYSTATUS
+// Windows has these natively; on Windows, the real Windows.h provides them
+
+#ifndef _WIN32
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,8 +33,6 @@ static size_t GlobalSize(void *ptr)
   return malloc_usable_size(ptr);
 #elif defined(__APPLE__)
   return malloc_size(ptr);
-#else
-  #error "GlobalSize not implemented for this platform"
 #endif
 }
 
@@ -60,3 +64,5 @@ static inline void GlobalMemoryStatus(LPMEMORYSTATUS lpBuffer) {
         lpBuffer->dwLength = sizeof(MEMORYSTATUS);
     }
 }
+
+#endif // !_WIN32

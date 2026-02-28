@@ -50,6 +50,18 @@ if(SAGE_USE_SDL3)
         set(SDL_WASAPI ON CACHE BOOL "Enable WASAPI audio (Windows)" FORCE)
         set(SDL_WAYLAND OFF CACHE BOOL "Disable Wayland (Windows)" FORCE)
         set(SDL_X11 OFF CACHE BOOL "Disable X11 (Windows)" FORCE)
+        
+        # GeneralsX @build BenderAI 27/02/2026
+        # WASAPI requires WinRT headers (roapi.h) which are in Windows SDK winrt\ folder
+        # Add winrt include path for SDL3 compilation
+        if(MSVC)
+            # Find Windows SDK version and add winrt headers
+            get_filename_component(WINDOWS_SDK_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots;KitsRoot10]" ABSOLUTE)
+            if(WINDOWS_SDK_ROOT)
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /I\"${WINDOWS_SDK_ROOT}/Include/10.0.26100.0/winrt\"")
+                message(STATUS "Added Windows SDK WinRT headers: ${WINDOWS_SDK_ROOT}/Include/10.0.26100.0/winrt")
+            endif()
+        endif()
     endif()
     
     set(SDL_CAMERA OFF CACHE BOOL "Disable camera (unused)" FORCE)
@@ -57,10 +69,9 @@ if(SAGE_USE_SDL3)
     
     FetchContent_MakeAvailable(SDL3)
     
-    # GeneralsX @bugfix BenderAI 22/02/2026 (updated 27/02/2026 for Windows libpng via vcpkg)
-    # Before SDL3_image build: force PNG discovery to system libpng or vcpkg
-    # Linux: system libpng-dev via dynamic .so library
-    # Windows: vcpkg's libpng (declared in vcpkg.json)
+    # GeneralsX @build BenderAI 27/02/2026 (updated for Windows compat)
+    # SDL3_image is only needed on Linux (PNG/JPG cursor loading, X cursor support)
+    # On Windows: DirectX handles image loading; skip SDL3_image to avoid libpng dependency
     if(NOT WIN32)
         # Linux: Use system libpng-dev
         set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
@@ -70,53 +81,48 @@ if(SAGE_USE_SDL3)
         set(PNG_LIBRARY_RELEASE "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG release library" FORCE)
         set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
         find_package(PNG REQUIRED MODULE)
-    else()
-        # Windows: Use vcpkg's libpng (vcpkg.json declares libpng dependency for SDL3)
-        find_package(PNG REQUIRED CONFIG QUIET)
-        if(NOT PNG_FOUND)
-            message(WARNING "PNG not found via vcpkg CONFIG, falling back to MODULE...")
-            find_package(PNG REQUIRED MODULE)
-        endif()
+
+        # SDL3_image - Image format support (PNG, JPG for cursor ANI loading, Linux only)
+        message(STATUS "Configuring SDL3_image (v3.4.0) with FetchContent (Linux build)...")
+
+        set(SDL3_IMAGE_VERSION "3.4.0")
+        set(SDL3_IMAGE_URL "https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL3_IMAGE_VERSION}/SDL3_image-${SDL3_IMAGE_VERSION}.tar.gz")
+        set(SDL3_IMAGE_URL_HASH "SHA256=2ceb75eab4235c2c7e93dafc3ef3268ad368ca5de40892bf8cffdd510f29d9d8")
+
+        FetchContent_Declare(
+            SDL3_image
+            URL ${SDL3_IMAGE_URL}
+            URL_HASH ${SDL3_IMAGE_URL_HASH}
+        )
+
+        set(SDL3IMAGE_INSTALL ON CACHE BOOL "Install SDL3_image" FORCE)
+        set(SDL3IMAGE_DEPS_SHARED ON CACHE BOOL "Use system shared dependencies" FORCE)
+        set(SDL3IMAGE_JPG ON CACHE BOOL "Enable JPG support" FORCE)
+        set(SDL3IMAGE_PNG ON CACHE BOOL "Enable PNG support (ANI cursor loading)" FORCE)
+        set(SDL3IMAGE_TIF ON CACHE BOOL "Enable TIF support" FORCE)
+        set(SDL3IMAGE_WEBP ON CACHE BOOL "Enable WebP support" FORCE)
+        set(SDL3IMAGE_AVIF OFF CACHE BOOL "Disable AVIF (optional)" FORCE)
+        set(SDL3IMAGE_XCUR ON CACHE BOOL "Enable X cursor support" FORCE)
+
+        FetchContent_MakeAvailable(SDL3_image)
     endif()
-    
-    # SDL3_image - Image format support (PNG, JPG for cursor ANI loading)
-    message(STATUS "Configuring SDL3_image (v3.4.0) with FetchContent (native build)...")
-    
-    set(SDL3_IMAGE_VERSION "3.4.0")
-    set(SDL3_IMAGE_URL "https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL3_IMAGE_VERSION}/SDL3_image-${SDL3_IMAGE_VERSION}.tar.gz")
-    set(SDL3_IMAGE_URL_HASH "SHA256=2ceb75eab4235c2c7e93dafc3ef3268ad368ca5de40892bf8cffdd510f29d9d8")
-    
-    FetchContent_Declare(
-        SDL3_image
-        URL ${SDL3_IMAGE_URL}
-        URL_HASH ${SDL3_IMAGE_URL_HASH}
-    )
-    
-    # Configure SDL3_image build options
-    # Note: PNG will use system libpng-dev (installed in Docker, no vcpkg conflicts)
-    set(SDL3IMAGE_INSTALL ON CACHE BOOL "Install SDL3_image" FORCE)
-    set(SDL3IMAGE_DEPS_SHARED ON CACHE BOOL "Use system shared dependencies" FORCE)
-    set(SDL3IMAGE_JPG ON CACHE BOOL "Enable JPG support" FORCE)
-    set(SDL3IMAGE_PNG ON CACHE BOOL "Enable PNG support (ANI cursor loading)" FORCE)
-    set(SDL3IMAGE_TIF ON CACHE BOOL "Enable TIF support" FORCE)
-    set(SDL3IMAGE_WEBP ON CACHE BOOL "Enable WebP support" FORCE)
-    set(SDL3IMAGE_AVIF OFF CACHE BOOL "Disable AVIF (optional)" FORCE)
-    set(SDL3IMAGE_XCUR ON CACHE BOOL "Enable X cursor support" FORCE)
-    
-    FetchContent_MakeAvailable(SDL3_image)
-    
+
     # Create unified interface library for linking
     add_library(sdl3lib INTERFACE)
-    target_link_libraries(sdl3lib INTERFACE SDL3::SDL3 SDL3_image::SDL3_image)
-    
-    # Expose include directories
-    target_include_directories(sdl3lib INTERFACE 
-        "${SDL3_SOURCE_DIR}/include"
-        "${sdl3_image_SOURCE_DIR}/include"
-    )
-    
-    message(STATUS "✓ SDL3 (${SDL3_VERSION}) + SDL3_image (${SDL3_IMAGE_VERSION}) configured")
+    if(NOT WIN32)
+        target_link_libraries(sdl3lib INTERFACE SDL3::SDL3 SDL3_image::SDL3_image)
+        target_include_directories(sdl3lib INTERFACE
+            "${SDL3_SOURCE_DIR}/include"
+            "${sdl3_image_SOURCE_DIR}/include"
+        )
+        message(STATUS "SDL3 (${SDL3_VERSION}) + SDL3_image (${SDL3_IMAGE_VERSION}) configured (Linux)")
+    else()
+        target_link_libraries(sdl3lib INTERFACE SDL3::SDL3)
+        target_include_directories(sdl3lib INTERFACE
+            "${SDL3_SOURCE_DIR}/include"
+        )
+        message(STATUS "SDL3 (${SDL3_VERSION}) configured (Windows, no SDL3_image)")
+    endif()
     message(STATUS "  Build approach: Native FetchContent compilation")
-    message(STATUS "  PNG support: System libpng-dev (dynamic linking)")
     
 endif()

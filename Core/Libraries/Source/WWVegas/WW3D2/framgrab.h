@@ -52,12 +52,28 @@
 #include "windowsx.h"
 #endif
 
-#ifndef _INC_VFW
-#include "vfw.h"
+// GeneralsX @build BenderAI 28/02/2026
+// FRAME_GRABBER feature requires VFW (Video for Windows)
+// VFW headers have missing DRV_USER constants in Windows SDK 10.0.26100.0
+// Phase 3 out-of-scope feature - disable for Phase 1 graphics focus
+#if defined(ENABLE_FRAME_GRABBER) && !defined(DISABLE_VFW)
+  #ifndef _INC_VFW
+  #include "vfw.h"
+  #endif
+#else
+  // Frame grabber disabled (out-of-scope for Phase 1)
+  // Provide minimal typedefs for FramGrab class structure
+  typedef void* PAVIFILE;
+  typedef void* PAVISTREAM;
+  typedef struct { DWORD cbSize; } AVISTREAMINFO;
 #endif
 #else
 // GeneralsX @refactor BenderAI 10/02/2026 - fallback for Linux (stub types)
 #include "windows_compat.h"
+// Linux stubs for AVI types
+typedef void* PAVIFILE;
+typedef void* PAVISTREAM;
+typedef struct { DWORD cbSize; } AVISTREAMINFO;
 #endif // _WIN32
 
 #if defined (_MSC_VER)

@@ -22,7 +22,10 @@ target_include_directories(z_wwcommon INTERFACE
 
 add_subdirectory(WWAudio)
 add_subdirectory(WW3D2)
-add_subdirectory(WWDownload)
+# GeneralsX @build BenderAI 28/02/2026 - WWDownload uses BSD sockets; UNIX only
+if(UNIX)
+  add_subdirectory(WWDownload)
+endif()
 
 # Helpful interface to bundle the ww modules together.
 add_library(z_wwvegas INTERFACE)
