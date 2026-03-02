@@ -1,0 +1,230 @@
+name: Build Linux
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_call:
+    inputs:
+      game:
+        required: true
+        type: string
+        description: "Game to build (GeneralsMD, Generals)"
+      preset:
+        required: false
+        type: string
+        default: "linux64-deploy"
+        description: "CMake preset for Linux"
+  workflow_dispatch:
+    inputs:
+      game:
+        type: choice
+        description: "Game to build"
+        options:
+          - GeneralsMD
+          - Generals
+        default: GeneralsMD
+      preset:
+        type: choice
+        description: "CMake preset for Linux"
+        options:
+          - linux64-deploy
+          - linux64-testing
+        default: linux64-deploy
+
+jobs:
+  build:
+    name: ${{ inputs.game }}@${{ inputs.preset }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache vcpkg
+        id: cache-vcpkg
+        uses: actions/cache@v4
+        with:
+          path: /opt/vcpkg
+          key: vcpkg-linux-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          restore-keys: |
+            vcpkg-linux-${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: |
+          echo "Installing Linux build dependencies (matching Dockerfile.linux)..."
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            build-essential \
+            cmake \
+            ninja-build \
+            git \
+            curl \
+            ca-certificates \
+            zip \
+            unzip \
+            tar \
+            pkg-config \
+            python3 \
+            python3-pip \
+            python3-dev \
+            autoconf \
+            automake \
+            autoconf-archive \
+            libtool \
+            libltdl-dev \
+            libopenal-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libaudio-dev \
+            libavcodec-dev \
+            libavformat-dev \
+            libavutil-dev \
+            libswresample-dev \
+            libswscale-dev \
+            libpng-dev \
+            zlib1g-dev \
+            libfribidi-dev \
+            libjack-dev \
+            libsndio-dev \
+            libx11-dev \
+            libxext-dev \
+            libxrandr-dev \
+            libxcursor-dev \
+            libxfixes-dev \
+            libxi-dev \
+            libxss-dev \
+            libxtst-dev \
+            libxkbcommon-dev \
+            libdrm-dev \
+            libgbm-dev \
+            libgl1-mesa-dev \
+            libgles2-mesa-dev \
+            libegl1-mesa-dev \
+            libdbus-1-dev \
+            libibus-1.0-dev \
+            libudev-dev \
+            libthai-dev \
+            libpipewire-0.3-dev \
+            libwayland-dev \
+            libdecor-0-dev \
+            liburing-dev
+          
+          echo "Dependencies installed."
+          cmake --version
+          ninja --version
+
+      - name: Bootstrap vcpkg
+        run: |
+          echo "Bootstrapping vcpkg..."
+          mkdir -p /opt/vcpkg
+          
+          # Check if vcpkg already cached
+          if [ ! -f /opt/vcpkg/vcpkg ]; then
+            echo "Cloning vcpkg from GitHub..."
+            git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
+            echo "Running vcpkg bootstrap..."
+            /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          else
+            echo "Using cached vcpkg"
+          fi
+          
+          export VCPKG_ROOT=/opt/vcpkg
+          echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
+          echo "✅ vcpkg ready at: /opt/vcpkg"
+
+      - name: Configure CMake (Linux)
+        run: |
+          mkdir -p logs
+          cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_linux.log
+          echo "CMake configuration complete."
+
+      - name: Build ${{ inputs.game }}
+        run: |
+          mkdir -p logs
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            cmake --build build/${{ inputs.preset }} --target z_generals 2>&1 | tee logs/build_zh_linux.log
+          else
+            cmake --build build/${{ inputs.preset }} --target g_generals 2>&1 | tee logs/build_generals_linux.log
+          fi
+          echo "Build complete."
+
+      - name: Verify Build Artifacts
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+            DISPLAY_NAME="GeneralsXZH"
+            GAME_DIR="GeneralsMD"
+          else
+            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+            DISPLAY_NAME="GeneralsX"
+            GAME_DIR="Generals"
+          fi
+          
+          if [ -f "$BINARY" ]; then
+            echo "✅ Binary built: $DISPLAY_NAME ($BINARY)"
+            file "$BINARY"
+            ls -lh "$BINARY"
+          else
+            echo "❌ Binary NOT found: $BINARY"
+            exit 1
+          fi
+
+      - name: Deploy Bundle (Binary + Libraries + Wrapper)
+        if: success()
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+            GAME_DIR="GeneralsMD"
+          else
+            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+            GAME_DIR="Generals"
+          fi
+          
+          RUNTIME_DIR="/tmp/GeneralsX-${{ inputs.game }}-deploy"
+          mkdir -p "${RUNTIME_DIR}"
+          
+          echo "Creating deployment bundle at: ${RUNTIME_DIR}"
+          echo "  Copying executable..."
+          cp -v "${BINARY}" "${RUNTIME_DIR}/$(basename ${BINARY})"
+          chmod +x "${RUNTIME_DIR}/$(basename ${BINARY})"
+          
+          echo "  Copying DXVK libraries..."
+          mkdir -p "${RUNTIME_DIR}/lib"
+          find "build/${{ inputs.preset }}/_deps/dxvk-src/lib" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
+          
+          echo "  Copying SDL3 libraries..."
+          find "build/${{ inputs.preset }}/_deps/sdl3-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
+          find "build/${{ inputs.preset }}/_deps/sdl3_image-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
+          
+          echo "  Copying GameSpy library..."
+          find "build/${{ inputs.preset }}" -name "libgamespy.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
+          
+          echo "  Copying run.sh wrapper from scripts..."
+          cp -v "scripts/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
+          chmod +x "${RUNTIME_DIR}/run.sh"
+          
+          echo "✅ Bundle ready at: ${RUNTIME_DIR}"
+          ls -lh "${RUNTIME_DIR}/"
+          ls -lh "${RUNTIME_DIR}/lib/" 2>/dev/null || echo "(no libs directory)"
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-linux-${{ inputs.game }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Deployment Bundle
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-linux-${{ inputs.game }}-${{ inputs.preset }}
+          path: /tmp/GeneralsX-${{ inputs.game }}-deploy/
+          retention-days: 7
+          if-no-files-found: warn
