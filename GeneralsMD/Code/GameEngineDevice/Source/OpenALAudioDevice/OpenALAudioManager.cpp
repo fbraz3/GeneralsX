@@ -68,10 +68,13 @@
 
 #include <AL/alext.h>
 
+// GeneralsX @bugfix BenderAI 01/03/2026 FFmpeg headers only when SAGE_USE_FFMPEG
+#ifdef SAGE_USE_FFMPEG
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
 }
+#endif
 
 #ifdef _INTERNAL
 //#pragma optimize("", off)
@@ -765,6 +768,8 @@ void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 			return;
 		}
 
+// GeneralsX @bugfix BenderAI 01/03/2026 Streaming audio requires FFmpeg; guard entire block
+#ifdef SAGE_USE_FFMPEG
 		FFmpegFile* ffmpegFile = NEW FFmpegFile();
 		if (!ffmpegFile->open(file))
 		{
@@ -838,6 +843,12 @@ void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 			audio = NULL;
 		}
 		break;
+#else
+		// Streaming audio requires FFmpeg which is not available on this build
+		DEBUG_LOG(("OpenALAudioManager: FFmpeg not available, cannot play streaming audio '%s'\n", fileToPlay.str()));
+		releasePlayingAudio(audio);
+		return;
+#endif // SAGE_USE_FFMPEG
 	}
 
 	case AT_SoundEffect:
@@ -1165,11 +1176,13 @@ void OpenALAudioManager::releaseOpenALHandles(PlayingAudio* release)
 		delete release->m_stream;
 		release->m_stream = NULL;
 	}
+#ifdef SAGE_USE_FFMPEG
 	if (release->m_ffmpegFile)
 	{
 		delete release->m_ffmpegFile;
 		release->m_ffmpegFile = NULL;
 	}
+#endif
 
 	release->m_type = PAT_INVALID;
 }

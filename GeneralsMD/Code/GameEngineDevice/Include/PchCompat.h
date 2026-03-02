@@ -32,6 +32,11 @@
 
 #ifdef _WIN32
     // Windows-specific precompiled headers
+    // GeneralsX @bugfix BenderAI 09/07/2025 Prevent windows.h from pulling in winsock.h (Winsock1);
+    // winsock2.h MUST be included BEFORE windows.h — it defines _WINSOCKAPI_ itself and pulls in
+    // ws2ipdef.h (PIP_MSFILTER, MULTICAST_MODE_TYPE, etc.) required by ws2tcpip.h downstream.
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
     #include <windows.h>
 #else
     // Linux/Unix platform - provide compatibility stubs

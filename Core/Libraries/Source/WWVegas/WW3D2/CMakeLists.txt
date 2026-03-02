@@ -71,9 +71,11 @@ set(WW3D2_SRC
     font3d.h
     formconv.cpp
     formconv.h
-    # GeneralsX @build fbraz 10/02/2026 BenderAI - FramGrab uses Windows-only VFW/AVI APIs (Phase 3 out-of-scope)
-    #FramGrab.cpp
-    #framgrab.h
+    # GeneralsX @bugfix BenderAI 02/03/2026 FramGrab.cpp uses Win32 VFW/AVI APIs; enable for Windows builds
+    # On Windows (both legacy and win64-modern), VFW APIs are available and work on x64
+    # Use absolute path: corei_ww3d2 is INTERFACE so sources propagate to consumers in other dirs
+    $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/FramGrab.cpp>
+    $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/framgrab.h>
     hanim.cpp
     hanim.h
     #hanimmgr.cpp

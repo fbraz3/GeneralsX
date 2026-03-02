@@ -26,7 +26,10 @@
 // #endif
 
 #include "OpenALAudioDevice/OpenALAudioManager.h"
+// GeneralsX @bugfix BenderAI 01/03/2026 FFmpegFile only needed when SAGE_USE_FFMPEG
+#ifdef SAGE_USE_FFMPEG
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
+#endif
 
 #include <mutex>
 #include <unordered_map>
@@ -35,7 +38,9 @@ struct PlayingAudio
 {
 	ALuint m_source = 0;
 	OpenALAudioStream* m_stream = nullptr;
+#ifdef SAGE_USE_FFMPEG
 	FFmpegFile* m_ffmpegFile = nullptr;
+#endif
 
 	PlayingAudioType m_type;
 	AudioEventRTS* m_audioEventRTS;
@@ -59,7 +64,9 @@ struct PlayingAudio
 struct OpenAudioFile
 {
 	ALuint m_buffer = 0;
+#ifdef SAGE_USE_FFMPEG
 	FFmpegFile* m_ffmpegFile = NULL;
+#endif
 	UnsignedInt m_openCount = 0;
 	UnsignedInt m_fileSize = 0;
 	UnsignedInt m_channels = 0;
@@ -124,7 +131,9 @@ protected:
 	Bool freeEnoughSpaceForSample(const OpenAudioFile& sampleThatNeedsSpace);
 
 	// FFmpeg related
+#ifdef SAGE_USE_FFMPEG
 	Bool decodeFFmpeg(OpenAudioFile* fileToDecode);
+#endif
 
 	OpenFilesHash m_openFiles;
 	UnsignedInt m_currentlyUsedSize;

@@ -8,8 +8,10 @@ $clDir  = "$vsRoot\VC\Tools\MSVC\14.50.35717\bin\Hostx64\x64"
 $wdk    = "C:\Program Files (x86)\Windows Kits\10"
 
 $env:PATH    = "C:\tools\ninja-wrapper;$vsRoot\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin;$vsRoot\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja;$clDir;$wdk\bin\10.0.26100.0\x64;$($env:PATH)"
-$env:INCLUDE = "$vsRoot\VC\Tools\MSVC\14.50.35717\include;$wdk\Include\10.0.26100.0\ucrt;$wdk\Include\10.0.26100.0\um;$wdk\Include\10.0.26100.0\shared"
-$env:LIB     = "$vsRoot\VC\Tools\MSVC\14.50.35717\lib\x64;$wdk\Lib\10.0.26100.0\um\x64;$wdk\Lib\10.0.26100.0\ucrt\x64"
+# GeneralsX @build BenderAI 26/05/2026 - ATL/MFC headers needed by WOLBrowser/WebBrowser.h
+$atl     = "$vsRoot\VC\Tools\MSVC\14.50.35717\atlmfc"
+$env:INCLUDE = "$vsRoot\VC\Tools\MSVC\14.50.35717\include;$atl\include;$wdk\Include\10.0.26100.0\ucrt;$wdk\Include\10.0.26100.0\um;$wdk\Include\10.0.26100.0\shared;$wdk\Include\10.0.26100.0\winrt"
+$env:LIB     = "$vsRoot\VC\Tools\MSVC\14.50.35717\lib\x64;$atl\lib\x64;$wdk\Lib\10.0.26100.0\um\x64;$wdk\Lib\10.0.26100.0\ucrt\x64"
 
 $target  = if ($args[0]) { $args[0] } else { "z_generals" }
 $jobs    = if ($args[1]) { $args[1] } else { "4" }

@@ -110,7 +110,12 @@ void DebugExceptionhandler::LogExceptionLocation(Debug &dbg, struct _EXCEPTION_P
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
   char buf[512];
+  // GeneralsX @bugfix BenderAI 01/03/2026 x64 uses Rip instead of Eip
+#ifndef _WIN64
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,buf,sizeof(buf));
+#else
+  DebugStackwalk::Signature::GetSymbol(ctx.Rip,buf,sizeof(buf));
+#endif
   dbg << "Exception occured at\n" << buf << ".";
 }
 
@@ -118,9 +123,10 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
 {
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
-  dbg << Debug::FillChar('0')
-      << Debug::Hex()
-      <<  "EAX:" << Debug::Width(8) << ctx.Eax
+  // GeneralsX @bugfix BenderAI 01/03/2026 x64 uses 64-bit register names (Rax, Rbx, etc.)
+  dbg << Debug::FillChar('0') << Debug::Hex();
+#ifndef _WIN64
+  dbg << "EAX:" << Debug::Width(8) << ctx.Eax
       << " EBX:" << Debug::Width(8) << ctx.Ebx
       << " ECX:" << Debug::Width(8) << ctx.Ecx << "\n"
       <<  "EDX:" << Debug::Width(8) << ctx.Edx
@@ -128,9 +134,28 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
       << " EDI:" << Debug::Width(8) << ctx.Edi << "\n"
       <<  "EIP:" << Debug::Width(8) << ctx.Eip
       << " ESP:" << Debug::Width(8) << ctx.Esp
-      << " EBP:" << Debug::Width(8) << ctx.Ebp << "\n"
-      <<  "Flags:" << Debug::Bin() << Debug::Width(32) << ctx.EFlags << Debug::Hex() << "\n"
-      <<  "CS:" << Debug::Width(4) << ctx.SegCs
+      << " EBP:" << Debug::Width(8) << ctx.Ebp << "\n";
+#else
+  dbg << "RAX:" << Debug::Width(16) << ctx.Rax
+      << " RBX:" << Debug::Width(16) << ctx.Rbx
+      << " RCX:" << Debug::Width(16) << ctx.Rcx << "\n"
+      <<  "RDX:" << Debug::Width(16) << ctx.Rdx
+      << " RSI:" << Debug::Width(16) << ctx.Rsi
+      << " RDI:" << Debug::Width(16) << ctx.Rdi << "\n"
+      <<  "RIP:" << Debug::Width(16) << ctx.Rip
+      << " RSP:" << Debug::Width(16) << ctx.Rsp
+      << " RBP:" << Debug::Width(16) << ctx.Rbp << "\n"
+      <<  "R8: " << Debug::Width(16) << ctx.R8
+      << " R9: " << Debug::Width(16) << ctx.R9
+      << " R10:" << Debug::Width(16) << ctx.R10 << "\n"
+      <<  "R11:" << Debug::Width(16) << ctx.R11
+      << " R12:" << Debug::Width(16) << ctx.R12
+      << " R13:" << Debug::Width(16) << ctx.R13 << "\n"
+      <<  "R14:" << Debug::Width(16) << ctx.R14
+      << " R15:" << Debug::Width(16) << ctx.R15 << "\n";
+#endif
+  dbg << "Flags:" << Debug::Bin() << Debug::Width(32) << ctx.EFlags << Debug::Hex() << "\n"
+      << "CS:" << Debug::Width(4) << ctx.SegCs
       << " DS:" << Debug::Width(4) << ctx.SegDs
       << " SS:" << Debug::Width(4) << ctx.SegSs
       << "\nES:" << Debug::Width(4) << ctx.SegEs
@@ -142,6 +167,8 @@ void DebugExceptionhandler::LogFPURegisters(Debug &dbg, struct _EXCEPTION_POINTE
 {
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
+  // GeneralsX @bugfix BenderAI 01/03/2026 x64 doesn't have FLOATING_SAVE_AREA/FloatSave; uses XMM regs
+#ifndef _WIN64
   if (!(ctx.ContextFlags&CONTEXT_FLOATING_POINT))
   {
     dbg << "FP registers not available\n";
@@ -181,6 +208,10 @@ void DebugExceptionhandler::LogFPURegisters(Debug &dbg, struct _EXCEPTION_POINTE
     dbg << "\n";
   }
   dbg << Debug::FillChar() << Debug::Dec();
+#else
+  // x64: XMM register dump not implemented (x87 FPU state layout differs)
+  dbg << "FP register dump not available on x64\n";
+#endif
 }
 
 // include exception dialog box
@@ -240,7 +271,12 @@ static BOOL CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
   // address
   struct _CONTEXT &ctx=*exPtrs->ContextRecord;
+  // GeneralsX @bugfix BenderAI 01/03/2026 x64 uses Rip instead of Eip
+#ifndef _WIN64
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,regInfo,sizeof(regInfo));
+#else
+  DebugStackwalk::Signature::GetSymbol(ctx.Rip,regInfo,sizeof(regInfo));
+#endif
   SendDlgItemMessage(hWnd,102,WM_SETTEXT,0,(LPARAM)regInfo);
 
   // stack
@@ -396,7 +432,12 @@ LONG __stdcall DebugExceptionhandler::ExceptionFilter(struct _EXCEPTION_POINTERS
   dbg.m_stackWalk.StackWalk(sig,pExPtrs->ContextRecord);
   dbg << sig << "\n";
 
+  // GeneralsX @bugfix BenderAI 01/03/2026 x64 uses Rip instead of Eip
+#ifndef _WIN64
   dbg << "Bytes around EIP:" << Debug::MemDump::Char(((char *)(pExPtrs->ContextRecord->Eip))-32,80);
+#else
+  dbg << "Bytes around RIP:" << Debug::MemDump::Char(((char *)(pExPtrs->ContextRecord->Rip))-32,80);
+#endif
 
   dbg.FlushOutput();
 
@@ -407,7 +448,8 @@ LONG __stdcall DebugExceptionhandler::ExceptionFilter(struct _EXCEPTION_POINTERS
   // Show a dialog box
   InitCommonControls();
   exPtrs=pExPtrs;
-  DialogBoxIndirect(NULL,(LPDLGTEMPLATE)rcException,nullptr,ExceptionDlgProc);
+  // GeneralsX @bugfix BenderAI 01/03/2026 Cast to DLGPROC: SDK uses INT_PTR return, code uses BOOL
+  DialogBoxIndirect(NULL,(LPDLGTEMPLATE)rcException,nullptr,(DLGPROC)ExceptionDlgProc);
 
   // Now die
   return EXCEPTION_EXECUTE_HANDLER;

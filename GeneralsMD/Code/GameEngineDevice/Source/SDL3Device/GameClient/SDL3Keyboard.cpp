@@ -25,7 +25,9 @@
 ** Replaces Win32DIKeyboard with SDL3 keyboard APIs for Linux.
 */
 
-#ifndef _WIN32
+// GeneralsX @bugfix BenderAI 02/03/2026 Remove #ifndef _WIN32 outer guard.
+// SDL3Keyboard is cross-platform (SDL3 runs on Windows + Linux). The file was previously
+// Linux-only but win64-modern also uses SDL3 for input.
 
 // GeneralsX @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
@@ -323,5 +325,3 @@ KeyVal SDL3Keyboard::translateScanCodeToKeyVal(unsigned char scan)
 			return KEY_NONE;
 	}
 }
-
-#endif // !_WIN32

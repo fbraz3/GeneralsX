@@ -23,6 +23,8 @@ if ([string]::IsNullOrEmpty($GameDir)) {
 
 # Build output directory
 $BuildDir = Join-Path $PSScriptRoot "..\build\$Preset\$TargetDir"
+# Build root (for _deps which live at build/<preset>/_deps, not inside the target subdir)
+$BuildDepsDir = Join-Path $PSScriptRoot "..\build\$Preset\_deps"
 
 # Ensure target directories exist
 if (!(Test-Path $GameDir)) {
@@ -46,17 +48,21 @@ Write-Host "Copying EXE..." -ForegroundColor Green
 $ExeSource = Join-Path $BuildDir "$TargetName.exe"
 if (Test-Path $ExeSource) {
     Copy-Item $ExeSource $GameDir -Force
-    Write-Host "✓ Copied $TargetName.exe" -ForegroundColor Green
+    Write-Host "OK Copied $TargetName.exe" -ForegroundColor Green
 } else {
-    Write-Host "✗ EXE not found: $ExeSource" -ForegroundColor Yellow
+    Write-Host "EXE not found: $ExeSource" -ForegroundColor Red
+    Write-Host "Expected build output at: $ExeSource" -ForegroundColor Yellow
+    Write-Host "Run build first: cmake --build build/$Preset --target z_generals" -ForegroundColor Yellow
 }
 
 # 2. Copy DXVK Windows DLLs (x64)
+# GeneralsX @bugfix BenderAI 03/03/2026 - DXVK dir is under build/<preset>/_deps, not build/_deps; d3d12.dll removed (not in package)
 Write-Host ""
 Write-Host "Copying DXVK DLLs..." -ForegroundColor Green
-$DxvkDir = Join-Path $PSScriptRoot "..\build\_deps\dxvk_win_release-src\x64"
+$DxvkDir = Join-Path $BuildDepsDir "dxvk_win_release-src\x64"
 if (Test-Path $DxvkDir) {
-    $DxvkDlls = @("d3d8.dll", "d3d9.dll", "d3d10core.dll", "d3d11.dll", "d3d12.dll", "dxgi.dll")
+    # d3d12.dll intentionally omitted - not included in DXVK Windows release package
+    $DxvkDlls = @("d3d8.dll", "d3d9.dll", "d3d10core.dll", "d3d11.dll", "dxgi.dll")
     foreach ($dll in $DxvkDlls) {
         $src = Join-Path $DxvkDir $dll
         if (Test-Path $src) {
@@ -70,49 +76,37 @@ if (Test-Path $DxvkDir) {
 }
 
 # 3. Copy SDL3.dll
+# GeneralsX @bugfix BenderAI 03/03/2026 - SDL3 _deps lives at build/<preset>/_deps (build root), not inside target subdir; dir name is lowercase sdl3-build
 Write-Host ""
 Write-Host "Copying SDL3 DLL..." -ForegroundColor Green
-$Sdl3Dll = Join-Path $BuildDir "_deps\SDL3-build\SDL3.dll"
+$Sdl3Dll = Join-Path $BuildDepsDir "sdl3-build\SDL3.dll"
 if (Test-Path $Sdl3Dll) {
     Copy-Item $Sdl3Dll $GameDir -Force
-    Write-Host "✓ Copied SDL3.dll" -ForegroundColor Green
+    Write-Host "OK Copied SDL3.dll" -ForegroundColor Green
 } else {
-    # Try alternate location (if built as shared)
-    $Sdl3Dll = Join-Path $BuildDir "SDL3.dll"
-    if (Test-Path $Sdl3Dll) {
-        Copy-Item $Sdl3Dll $GameDir -Force
-        Write-Host "✓ Copied SDL3.dll" -ForegroundColor Green
-    } else {
-        Write-Host "! SDL3.dll not found" -ForegroundColor Yellow
-    }
+    Write-Host "SDL3.dll not found at: $Sdl3Dll" -ForegroundColor Red
 }
 
-# 4. Copy SDL3_image.dll
-Write-Host "Copying SDL3_image DLL..." -ForegroundColor Green
-$Sdl3ImageDll = Join-Path $BuildDir "_deps\SDL3_image-build\SDL3_image.dll"
+# 4. Copy SDL3_image.dll (optional - Windows build uses native cursor loading, SDL3_image may not be present)
+Write-Host "Copying SDL3_image DLL (optional)..." -ForegroundColor Green
+$Sdl3ImageDll = Join-Path $BuildDepsDir "SDL3_image-build\SDL3_image.dll"
 if (Test-Path $Sdl3ImageDll) {
     Copy-Item $Sdl3ImageDll $GameDir -Force
-    Write-Host "✓ Copied SDL3_image.dll" -ForegroundColor Green
+    Write-Host "OK Copied SDL3_image.dll" -ForegroundColor Green
 } else {
-    Write-Host "! SDL3_image.dll not found" -ForegroundColor Yellow
+    Write-Host "  (SDL3_image.dll not present - expected on Windows builds)" -ForegroundColor Gray
 }
 
 # 5. Copy OpenAL Soft
+# GeneralsX @bugfix BenderAI 03/03/2026 - OpenAL _deps also lives at build root, not inside target subdir
 Write-Host ""
 Write-Host "Copying OpenAL DLL..." -ForegroundColor Green
-$OpenalDll = Join-Path $BuildDir "_deps\openal_soft-build\OpenAL32.dll"
+$OpenalDll = Join-Path $BuildDepsDir "openal_soft-build\OpenAL32.dll"
 if (Test-Path $OpenalDll) {
     Copy-Item $OpenalDll $GameDir -Force
-    Write-Host "✓ Copied OpenAL32.dll" -ForegroundColor Green
+    Write-Host "OK Copied OpenAL32.dll" -ForegroundColor Green
 } else {
-    # Try alternate name
-    $OpenalDll = Join-Path $BuildDir "_deps\openal_soft-build\openal.dll"
-    if (Test-Path $OpenalDll) {
-        Copy-Item $OpenalDll $GameDir -Force
-        Write-Host "✓ Copied openal.dll" -ForegroundColor Green
-    } else {
-        Write-Host "! OpenAL DLL not found" -ForegroundColor Yellow
-    }
+    Write-Host "OpenAL DLL not found at: $OpenalDll" -ForegroundColor Red
 }
 
 # 6. Copy FFmpeg DLLs (optional, if built)

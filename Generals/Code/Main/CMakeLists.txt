@@ -1,13 +1,8 @@
 add_executable(g_generals WIN32)
 
-# Use a binary name that doesn't conflict with original game.
-# GeneralsX @build BenderAI 15/02/2026 Linux branding update
-if("${CMAKE_SYSTEM}" MATCHES "Windows")
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
-else()
-    # Linux: Use GeneralsX branding
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME GeneralsX)
-endif()
+# GeneralsX @bugfix BenderAI 02/03/2026 - OUTPUT_NAME was inverted (Windows got placeholder name, Linux got branding).
+# Branding: executable name must be GeneralsX on all platforms.
+set_target_properties(g_generals PROPERTIES OUTPUT_NAME GeneralsX)
 
 target_link_libraries(g_generals PRIVATE
     binkstub

@@ -32,7 +32,10 @@
 
 // SYSTEM INCLUDES
 #include <SDL3/SDL.h>
+// GeneralsX @bugfix BenderAI 01/03/2026 SDL3_image is Linux-only; Windows (win64-modern) falls back to SDL default cursor
+#ifndef _WIN32
 #include <SDL3_image/SDL_image.h>
+#endif
 #include <array>
 
 // USER INCLUDES

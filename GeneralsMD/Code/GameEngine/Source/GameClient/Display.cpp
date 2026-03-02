@@ -28,6 +28,14 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+// GeneralsX @build BenderAI 26/05/2026 - Explicitly include timeapi.h to guarantee timeGetTime()
+// is declared on MSVC x64. mmsystem.h includes timeapi.h, but include-guard conflicts with
+// imagehlp.h (also in PreRTS.h) can silently skip it on Windows SDK 10.0.26100+.
+#ifdef _WIN32
+#include <timeapi.h>
+#pragma comment(lib, "winmm.lib")
+#endif
+
 #include "GameClient/Display.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/VideoPlayer.h"

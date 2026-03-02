@@ -35,16 +35,27 @@ endif()
 
 target_link_libraries(d3dx8 PUBLIC glm::glm gli::gli)
 
-# d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)
-# Add only WWLib directory (not full core_wwcommon to avoid d3d8.h conflicts from WWAudio)
-# GeneralsX @build BenderAI 28/02/2026 - Changed PUBLIC → PRIVATE:
-# CompatLib/Include contains Linux-only headers (windows.h shim, types_compat.h, pthread.h etc.)
-# that break MSVC compilation when propagated to consumers.
-# Callers get D3DXMATRIX types via d3d8lib INTERFACE (DXVK_INCLUDE_DIR/d3dx8math.h shim).
+# GeneralsX @build BenderAI 26/05/2026 - Disable MSVC two-phase name lookup for d3dx8.
+# GLM 1.0.3 added glm::make_vec4 which conflicts with gli::make_vec4 via ADL inside
+# gli::detail::convertFunc templates. /Zc:twoPhase- prevents ADL from finding glm::make_vec4
+# when called within the gli namespace, resolving the "ambiguous call" C2668 errors.
+if(MSVC)
+    target_compile_options(d3dx8 PRIVATE /Zc:twoPhase-)
+endif()
+
+# GeneralsX @build BenderAI 26/05/2026 - CompatLib/Include is Linux-only for d3dx8:
+# On Linux: CompatLib shim headers (windows.h → windows_compat.h) intercept <windows.h>
+# On Windows: src files use relative paths (../Include/xxx.h). Real SDK windows.h is found
+#             via INCLUDE env var (no CompatLib/Include to shadow it).
 target_include_directories(d3dx8 PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include
     ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WWLib
 )
+if(UNIX)
+    target_include_directories(d3dx8 PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Include
+    )
+endif()
+
 
 # Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
@@ -76,7 +87,9 @@ else()
             message(FATAL_ERROR "D3D8 headers not found! Ensure cmake/dx8.cmake was included before CompatLib")
         endif()
         target_include_directories(d3d8lib INTERFACE ${DXVK_D3D8_INCLUDE_DIR})
-        # No link directories needed: DXVK DLL loaded at runtime (d3d8.dll alongside EXE)
+        # GeneralsX @build BenderAI 01/03/2026 Add DX90SDK lib dir so linker can find d3d8.lib
+        # d3d8.lib is a generated import stub from DXVK's d3d8.dll (see Core/Libraries/DX90SDK/Lib/x64/d3d8.lib)
+        target_link_directories(d3d8lib INTERFACE "${DXVK_D3D8_INCLUDE_DIR}/../Lib/x64")
     else()
         # Linux: DXVK native provides both headers and lib
         if(NOT dxvk_SOURCE_DIR)

@@ -33,10 +33,14 @@
 #include <cstdint>
 
 // GeneralsX @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
+// GeneralsX @bugfix BenderAI 26/05/2026 Guard with #ifndef _MSC_VER:
+// On MSVC, __int64 is a built-in type keyword; typedef to it causes C2628.
+#ifndef _MSC_VER
 #ifndef _INT64_TYPES_DEFINED
 	#define _INT64_TYPES_DEFINED
 	typedef int64_t __int64;
 #endif
+#endif // !_MSC_VER
 
 #ifndef __forceinline
 	#define __forceinline inline

@@ -71,14 +71,15 @@ void StdBIGFileSystem::init() {
 #endif
     if (!installPath.isEmpty())
     {
+        // GeneralsX @bugfix BenderAI 01/03/2026 Avoid C4189 unused variable on Windows
 #ifndef _WIN32
         fprintf(stderr, "[BIG] Loading base Generals BIG files from '%s'\n", installPath.str());
         fflush(stderr);
-#endif
         Bool loaded = loadBigFilesFromDirectory(installPath, "*.big");
-#ifndef _WIN32
         fprintf(stderr, "[BIG] loadBigFilesFromDirectory result: %d\n", loaded ? 1 : 0);
         fflush(stderr);
+#else
+        loadBigFilesFromDirectory(installPath, "*.big");
 #endif
     }
 #endif

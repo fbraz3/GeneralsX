@@ -50,7 +50,9 @@
 //----------------------------------------------------------------------------
 
 #include "GameClient/VideoPlayer.h"
-#ifdef _WIN32
+// GeneralsX @bugfix BenderAI 09/07/2025 Use RTS_BUILD_WITH_BINK instead of _WIN32;
+// win64-modern does not include the Bink SDK (32-bit legacy only)
+#ifdef RTS_BUILD_WITH_BINK
 #include "bink.h"
 #else
 typedef struct BINK *HBINK;

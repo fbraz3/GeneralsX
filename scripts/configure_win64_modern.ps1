@@ -13,8 +13,9 @@ $ninjaWrap  = "C:/tools/ninja-wrapper/ninja.exe"
 $env:VCToolsVersion  = "14.50.35717"
 $env:VCToolsInstallDir = "$vsRoot\VC\Tools\MSVC\14.50.35717\"
 $env:PATH    = "C:\tools\ninja-wrapper;$vsRoot\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin;$vsRoot\VC\Tools\MSVC\14.50.35717\bin\Hostx64\x64;C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64;$env:PATH"
-$env:INCLUDE = "$vsRoot\VC\Tools\MSVC\14.50.35717\include;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared"
-$env:LIB     = "$vsRoot\VC\Tools\MSVC\14.50.35717\lib\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\ucrt\x64"
+# GeneralsX @build BenderAI 26/05/2026 - ATL/MFC headers needed by WOLBrowser/WebBrowser.h
+$env:INCLUDE = "$vsRoot\VC\Tools\MSVC\14.50.35717\include;$vsRoot\VC\Tools\MSVC\14.50.35717\atlmfc\include;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt"
+$env:LIB     = "$vsRoot\VC\Tools\MSVC\14.50.35717\lib\x64;$vsRoot\VC\Tools\MSVC\14.50.35717\atlmfc\lib\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\ucrt\x64"
 
 Write-Host "-- cmake: $vsCMake"
 Write-Host "-- cl:    $clFwd"

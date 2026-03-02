@@ -28,11 +28,24 @@
 */
 
 // SYSTEM INCLUDES
+// GeneralsX @bugfix BenderAI 02/03/2026 Include SDL_main.h on Windows to get WinMain
+// entry point from SDL3.dll. SDL_main.h remaps main() -> SDL_main() so SDL3's
+// WinMain (compiled into SDL3.dll/SDL3.lib) can call it. Required for /subsystem:windows.
+#ifdef _WIN32
+#include <SDL3/SDL_main.h>
+#endif
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+// GeneralsX @bugfix BenderAI 01/03/2026 CriticalSection.h uses CRITICAL_SECTION which requires <windows.h>.
+// Include winsock2.h + windows.h before game headers on Win32 (SDL3Main is used cross-platform).
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+#endif
 
 // USER INCLUDES (match WinMain.cpp pattern)
 #include "Lib/BaseType.h"
@@ -59,15 +72,26 @@ static CriticalSection critSec5;
 // GLOBAL COMMAND LINE ARGUMENTS
 // TheSuperHackers @build felipebraz 13/02/2026
 // Store argc/argv from main() for use by CommandLine.cpp parseCommandLine() on Linux
-// Windows provides these automatically; Linux needs explicit globals
+// Windows provides these via MSVC CRT (__argc/__argv are already defined by the runtime)
+#ifndef _WIN32
 int __argc = 0;          ///< global argument count
 char** __argv = nullptr; ///< global argument vector
+#endif
 
 // GLOBAL WINDOW HANDLE
 // TheSuperHackers @build felipebraz 13/02/2026
 // ApplicationHWnd is declared extern in GeneralsMD/Code/Main/WinMain.h
 // On Linux, we cast SDL_Window* to HWND type for compatibility
 HWND ApplicationHWnd = nullptr;  ///< our application window handle
+
+// GLOBAL WIN32MOUSE POINTER (Windows only)
+// GeneralsX @bugfix BenderAI 01/03/2026 TheWin32Mouse declared extern in W3DGameClient.h on _WIN32.
+// WinMain.cpp defines it; SDL3Main.cpp must also define it since WinMain.cpp is NOT compiled on win64-modern.
+// On SDL3 Windows builds, WndProc is not used, so this is always nullptr.
+#ifdef _WIN32
+class Win32Mouse;
+Win32Mouse *TheWin32Mouse = nullptr;
+#endif
 
 // GLOBAL SDL3 WINDOW
 // GeneralsX @feature felipebraz 16/02/2026

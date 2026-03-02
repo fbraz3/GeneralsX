@@ -24,8 +24,10 @@
 
 // GeneralsX @build fbraz 10/02/2026
 // Use socket_compat.h (provides Winsock → POSIX BSD sockets mapping)
+// GeneralsX @build BenderAI 03/03/2026 - Use winsock2.h (project links ws2_32.lib); winsock2 must
+// come before windows.h to avoid the winsock1/winsock2 include-order conflict.
 #ifdef _WIN32
-#include <winsock.h>
+#include <winsock2.h>   // Replaces winsock.h: project uses ws2_32.lib (Winsock2)
 #else
 #include "windows_compat.h"  // Includes socket_compat.h on Linux
 #endif

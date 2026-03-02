@@ -36,6 +36,8 @@
 // GeneralsX @build fbraz 03/02/2026 Platform-specific headers
 #ifdef _WIN32
 #include "mmsystem.h"
+// GeneralsX @build BenderAI 01/03/2026 Windows SDK 10.0.26100+ moved timeGetTime() to timeapi.h
+#include <timeapi.h>
 #else
 #include <time.h>  // clock_gettime for Linux timing
 #include <stdlib.h> // malloc/free

@@ -33,10 +33,16 @@
 #include <sys/timeb.h>
 #include <stdlib.h>
 #ifdef _WIN32
+// GeneralsX @build BenderAI 03/03/2026 - Windows-specific includes for MSVC (win64-modern).
+// winsock2.h is already included via ftp.h (included above), so no re-include needed.
+// windows.h must come after winsock2.h to avoid the winsock1 vs winsock2 conflict.
+#include <windows.h>    // DWORD, UINT, OutputDebugString, etc.
 #include <process.h>
 #include <io.h>
-#include "winsock.h"
+#include <time.h>       // time(), difftime()
+#include <sys/stat.h>   // _S_IWRITE, _S_IREAD for _chmod() call
 #include <direct.h>
+#include "wwdownload_compat.h"  // strlcpy, strlcat, socklen_t, ARRAY_SIZE
 #else
 #include "windows_compat.h"  // Includes socket_compat.h (Winsock → POSIX BSD sockets)
 #include <unistd.h>

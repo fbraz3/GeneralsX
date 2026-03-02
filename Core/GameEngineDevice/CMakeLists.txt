@@ -237,10 +237,16 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
 
 if(WIN32)
     target_link_libraries(corei_gameenginedevice_public INTERFACE
-        binkstub
         d3d8lib
-        milesstub
     )
+    if(NOT SAGE_USE_SDL3)
+        # GeneralsX @build BenderAI 01/03/2026 Bink/Miles stubs for legacy 32-bit Windows builds only
+        # win64-modern uses DXVK (no Bink) and OpenAL (no Miles); stubs not available for 64-bit
+        target_link_libraries(corei_gameenginedevice_public INTERFACE
+            binkstub
+            milesstub
+        )
+    endif()
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
@@ -259,18 +265,22 @@ if(SAGE_USE_OPENAL)
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    # GeneralsX @bugfix BenderAI 09/07/2025 PkgConfig is not available on Windows;
+    # FFmpeg is optional - if not found, video playback is disabled gracefully.
+    find_package(PkgConfig)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(FFMPEG IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
 
-    if(FFMPEG_FOUND)
-        target_sources(corei_gameenginedevice_private INTERFACE
-            Include/VideoDevice/FFmpeg/FFmpegFile.h
-            Include/VideoDevice/FFmpeg/FFmpegVideoPlayer.h
-            Source/VideoDevice/FFmpeg/FFmpegFile.cpp
-            Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
-        )
-        target_include_directories(corei_gameenginedevice_private INTERFACE ${FFMPEG_INCLUDE_DIRS})
-        target_link_libraries(corei_gameenginedevice_private INTERFACE PkgConfig::FFMPEG)
-        target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_FFMPEG)
+        if(FFMPEG_FOUND)
+            target_sources(corei_gameenginedevice_private INTERFACE
+                Include/VideoDevice/FFmpeg/FFmpegFile.h
+                Include/VideoDevice/FFmpeg/FFmpegVideoPlayer.h
+                Source/VideoDevice/FFmpeg/FFmpegFile.cpp
+                Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
+            )
+            target_include_directories(corei_gameenginedevice_private INTERFACE ${FFMPEG_INCLUDE_DIRS})
+            target_link_libraries(corei_gameenginedevice_private INTERFACE PkgConfig::FFMPEG)
+            target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_FFMPEG)
+        endif()
     endif()
 endif()

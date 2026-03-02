@@ -2,18 +2,14 @@
 
 #include <string.h>  // For memset, used by GlobalMemoryStatus stub
 
-// GeneralsX @build BenderAI 12/02/2026 (updated 26/02/2026 Phase 6)
-// Pre-define guards to prevent DXVK conflicts
-// CRITICAL: Define these BEFORE including windows_base.h so DXVK skips incomplete definitions!
-//
-// Applied when:
-//   - Linux: Always (DXVK native provides stub types)
-//   - Windows Modern (win64-modern): DXVK headers are compiled; MSVC windows.h has full types
-//   - Windows Legacy (vc6/win32): NOT applied (native windows.h has full types)
-#if !defined(_WIN32) || (defined(_WIN32) && !defined(SAGE_USE_DX8))
-    #define _MEMORYSTATUS_DEFINED   // Tell DXVK: we'll provide full 8-field MEMORYSTATUS
-    #define _IUNKNOWN_DEFINED       // Tell DXVK: we'll provide IUnknown via DECLARE_INTERFACE
-#endif
+// GeneralsX @build BenderAI 12/02/2026 (updated 01/03/2026 audit fix)
+// Pre-define guards to prevent DXVK from emitting its own incomplete MEMORYSTATUS / IUnknown.
+// CRITICAL: Define these BEFORE including windows_base.h so DXVK skips those definitions.
+// NOTE: windows_compat.h is only ever included on Linux (the shim windows.h gates it with
+//       #ifndef _WIN32).  On Windows (all presets) the real SDK windows.h is used directly
+//       and this file is never reached.  The guards are therefore unconditional here.
+#define _MEMORYSTATUS_DEFINED   // Tell DXVK: skip incomplete MEMORYSTATUS
+#define _IUNKNOWN_DEFINED       // Tell DXVK: skip incomplete IUnknown
 
 // GeneralsX @build BenderAI 12/02/2026 (updated 26/02/2026 Phase 6)
 // Include DXVK Windows types FIRST
@@ -189,9 +185,12 @@ inline BOOL GetVersionEx(OSVERSIONINFO* lpVersionInfo) {
 #define VER_PLATFORM_WIN32_WINDOWS 1
 #define VER_PLATFORM_WIN32_NT 2
 
-// GeneralsX @build BenderAI 28/02/2026
-// Linux-only timing functions: timeBeginPeriod(), timeEndPeriod()
-// CRITICAL: These must remain within #ifndef _WIN32 to avoid timeval on Windows
+// GeneralsX @build BenderAI 28/02/2026 (updated 26/05/2026)
+// Linux-only timing functions: timeGetTime(), timeBeginPeriod(), timeEndPeriod()
+// CRITICAL: These use POSIX timeval/gettimeofday which do NOT exist on Windows.
+// On Windows: timeGetTime() / timeBeginPeriod() / timeEndPeriod() are in mmsystem.h
+//             which PreRTS.h includes (via #ifdef _WIN32 / #include <mmsystem.h>).
+#ifndef _WIN32
 
 // TheSuperHackers @build 10/02/2026 Bender
 // Timing functions: timeBeginPeriod(), timeEndPeriod() for Linux
@@ -213,6 +212,8 @@ static inline DWORD timeEndPeriod(DWORD period)
     // NOOP on Linux
     return 0;
 }
+
+#endif // !_WIN32
 
 // Only include compat headers if old Dependencies/Utility/Utility/compat.h hasn't been included
 // to avoid conflicts between old and new compat systems

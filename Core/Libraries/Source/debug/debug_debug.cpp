@@ -306,22 +306,20 @@ bool Debug::SkipNext(void)
   // do not implement this function inline, we do need
   // a valid frame pointer here!
   unsigned help;
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && (defined(_M_IX86))
   _asm
   {
     mov eax,[ebp+4]   // return address
     mov help,eax
   };
-#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(_M_IX86))
-  // GCC/Clang inline assembly for x86-32
-  __asm__ __volatile__(
-    "mov 4(%%ebp), %0"
-    : "=r"(help)
-    :
-    : "memory"
-  );
+#elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64))
+  // GeneralsX @bugfix BenderAI 01/03/2026 x64 MSVC: _asm not supported; use _ReturnAddress() intrinsic
+  help = (unsigned)(uintptr_t)_ReturnAddress();
+#elif defined(__GNUC__) || defined(__clang__)
+  // GCC/Clang: works on all supported architectures (x86, x86_64, arm64)
+  help = (unsigned)(uintptr_t)__builtin_return_address(0);
 #else
-  #error "Unsupported compiler or architecture for inline assembly"
+  #error "Unsupported compiler or architecture for return address"
 #endif
   curStackFrame=help;
 
@@ -435,7 +433,8 @@ bool Debug::AssertDone(void)
           break;
         case IDRETRY:
 #if defined(_MSC_VER)
-          _asm int 0x03
+          // GeneralsX @bugfix BenderAI 01/03/2026 __debugbreak() works on x86 and x64 MSVC; _asm int 0x03 is x86 only
+          __debugbreak();
 #elif defined(__GNUC__)
           __builtin_trap();
 #else

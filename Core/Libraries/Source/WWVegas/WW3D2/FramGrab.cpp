@@ -29,7 +29,13 @@
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
+// GeneralsX @build BenderAI 02/03/2026 - Full VFW implementation is gated on ENABLE_FRAME_GRABBER.
+// win64-modern Phase 1/2 builds do not define ENABLE_FRAME_GRABBER, so lightweight stubs are used
+// that provide the required symbol definitions without requiring vfw32.lib or VFW SDK headers.
+// Define ENABLE_FRAME_GRABBER (and ensure vfw.h is reachable) to enable the real AVI recording.
 //////////////////////////////////////////////////////////////////////
+
+#if defined(ENABLE_FRAME_GRABBER) && !defined(DISABLE_VFW)
 
 FrameGrabClass::FrameGrabClass(const char *filename, MODE mode, int width, int height, int bitcount, float framerate)
 {
@@ -42,6 +48,9 @@ FrameGrabClass::FrameGrabClass(const char *filename, MODE mode, int width, int h
 
 	Stream = nullptr;
 	AVIFile = nullptr;
+	Bitmap = nullptr;
+	memset(&BitmapInfoHeader, 0, sizeof(BitmapInfoHeader));
+	memset(&AVIStreamInfo, 0, sizeof(AVIStreamInfo));
 
 	if(Mode != AVI) return;
 
@@ -65,7 +74,6 @@ FrameGrabClass::FrameGrabClass(const char *filename, MODE mode, int width, int h
 		CleanupAVI();
 		return;
 	}
-
 
     // Create a stream using AVIFileCreateStream.
 	AVIStreamInfo.fccType = streamtypeVIDEO;
@@ -126,15 +134,12 @@ void FrameGrabClass::CleanupAVI() {
 	if(Bitmap != nullptr) { GlobalFreePtr(Bitmap); Bitmap = nullptr; }
 	if(Stream != nullptr) { AVIStreamRelease(Stream); Stream = nullptr; }
 	if(AVIFile != nullptr) { AVIFileRelease(AVIFile); AVIFile = nullptr; }
-
 	AVIFileExit();
 	Mode = RAW;
 }
 
 void FrameGrabClass::GrabAVI(void *BitmapPointer)
 {
-    // CompressDIB(&bi, lpOld, &biNew, lpNew);
-
     // Save the compressed data using AVIStreamWrite.
     HRESULT hr = AVIStreamWrite(Stream, Counter++, 1, BitmapPointer, BitmapInfoHeader.biSizeImage, AVIIF_KEYFRAME, nullptr, nullptr);
 	if(hr != 0) {
@@ -144,18 +149,54 @@ void FrameGrabClass::GrabAVI(void *BitmapPointer)
 	}
 }
 
-void FrameGrabClass::GrabRawFrame(void * /*BitmapPointer*/)
-{
+#else // !ENABLE_FRAME_GRABBER || DISABLE_VFW
 
+// GeneralsX @build BenderAI 02/03/2026 - Stub implementations: symbols present for linking,
+// AVI recording is disabled. vfw32.lib and VFW SDK headers are NOT required in this path.
+
+FrameGrabClass::FrameGrabClass(const char *filename, MODE mode, int width, int height, int bitcount, float framerate)
+{
+	Mode = mode;
+	Filename = filename;
+	FrameRate = framerate;
+	Counter = 0;
+#ifdef _WIN32
+	Stream = nullptr;
+	AVIFile = nullptr;
+	Bitmap = nullptr;
+	memset(&BitmapInfoHeader, 0, sizeof(BitmapInfoHeader));
+	memset(&AVIStreamInfo, 0, sizeof(AVIStreamInfo));
+	// Store dimensions so ConvertFrame loop bounds are sane (biWidth/biHeight stay 0 → loops skip)
+	BitmapInfoHeader.biWidth = width;
+	BitmapInfoHeader.biHeight = height;
+	BitmapInfoHeader.biBitCount = (unsigned short)bitcount;
+	BitmapInfoHeader.biSize = sizeof(BITMAPINFOHEADER);
+	BitmapInfoHeader.biPlanes = 1;
+	BitmapInfoHeader.biCompression = BI_RGB;
+#else
+	(void)width; (void)height; (void)bitcount;
+#endif
 }
 
+FrameGrabClass::~FrameGrabClass() {}
+
+void FrameGrabClass::CleanupAVI() {}
+
+void FrameGrabClass::GrabAVI(void * /*BitmapPointer*/) {}
+
+#endif // ENABLE_FRAME_GRABBER
+
+// The following methods do not depend on VFW directly and compile in all configurations.
+
+void FrameGrabClass::GrabRawFrame(void * /*BitmapPointer*/)
+{
+}
 
 void FrameGrabClass::ConvertGrab(void *BitmapPointer)
 {
 	ConvertFrame(BitmapPointer);
 	Grab( Bitmap );
 }
-
 
 void FrameGrabClass::Grab(void *BitmapPointer)
 {
@@ -165,10 +206,9 @@ void FrameGrabClass::Grab(void *BitmapPointer)
 		GrabRawFrame(BitmapPointer);
 }
 
-
 void FrameGrabClass::ConvertFrame(void *BitmapPointer)
 {
-
+#ifdef _WIN32
 	int width = BitmapInfoHeader.biWidth;
 	int height = BitmapInfoHeader.biHeight;
 	long *image = (long *) BitmapPointer;
@@ -190,4 +230,7 @@ void FrameGrabClass::ConvertFrame(void *BitmapPointer)
 			c[3] = 0;
 		}
 	}
+#else
+	(void)BitmapPointer;
+#endif
 }

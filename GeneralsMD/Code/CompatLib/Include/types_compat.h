@@ -14,6 +14,7 @@
 // All of these are already in bittype.h which is included first in windows_compat.h
 
 // GDI color reference (0x00BBGGRR format) - not in bittype.h
+#ifndef _WIN32
 #ifndef COLORREF
 typedef DWORD COLORREF;
 #endif
@@ -22,6 +23,7 @@ typedef DWORD COLORREF;
 #ifndef LPCWSTR
 typedef const wchar_t* LPCWSTR;
 #endif
+#endif // !_WIN32
 
 // GeneralsX @build fbraz 10/02/2026
 // ARRAY_SIZE macro - get element count of static array
@@ -35,6 +37,10 @@ typedef const wchar_t* LPCWSTR;
 // We only define Windows-specific types that bittype.h doesn't have
 
 // DECLARE_HANDLE macro (from windef.h) - creates opaque handle types
+// GeneralsX @build BenderAI 26/05/2026 - Guard with #ifndef _WIN32:
+// On Windows: windef.h (via windows.h) provides DECLARE_HANDLE, HANDLE, and all H* types.
+// Redefining them here causes C2371 "redefinition; different basic types" conflicts.
+#ifndef _WIN32
 #ifndef DECLARE_HANDLE
 #ifdef STRICT
 typedef void *HANDLE;
@@ -73,29 +79,37 @@ typedef float FLOAT;
 #define CONST const
 #endif
 
-// Note: RGNDATA provided by DXVK windows_base.h on Linux
-// (included via d3d8.h → windows.h). Windows SDK provides on Windows builds.
-
-// TheSuperHackers @build 10/02/2026 Bender
-// 64-bit types now defined in bittype.h (_int64, __int64, _uint64, __uint64)
-// Removed duplicate definitions to avoid conflicts
-// typedef int64_t _int64;   // REMOVED - use bittype.h
-// typedef uint64_t _uint64; // REMOVED - use bittype.h
-typedef int64_t int64;
-typedef uint64_t uint64;
-
 typedef int32_t *LPARAM;
 typedef size_t WPARAM;
 
-// GeneralsX @build BenderAI 10/02/2026 - Pointer-sized unsigned integer for 64-bit safe pointer arithmetic
+// Pointer-sized unsigned integer for 64-bit safe pointer arithmetic
 typedef size_t SIZE_T;
 
-// GeneralsX @build fbraz 12/02/2026 BenderAI - COM/OLE types (for WOL browser support)
+// COM/OLE types (for WOL browser support)
 // LPDISPATCH is IDispatch* - COM interface pointer for runtime method dispatch
-// On Linux, used only for dx8webbrowser CreateBrowser parameter stub
 #ifndef LPDISPATCH
 typedef void *LPDISPATCH;
 #endif
+
+#ifndef S_OK
+#define S_OK 0
+#endif
+
+// Microsoft direction specifiers, used purely for documentation purposes
+#ifndef IN
+#define IN
+#endif
+#ifndef OUT
+#define OUT
+#endif
+
+#endif // !_WIN32
+
+// TheSuperHackers @build 10/02/2026 Bender
+// 64-bit convenience aliases (not in Windows SDK or bittype.h by these names)
+// Used by game code on both Windows and Linux builds.
+typedef int64_t int64;
+typedef uint64_t uint64;
 
 #ifndef FALSE
 #define FALSE 0
@@ -105,11 +119,7 @@ typedef void *LPDISPATCH;
 #define TRUE 1
 #endif
 
-#define S_OK 0
-
-// Microsoft direction specifiers, used purely for documentation purposes
-#define IN
-#define OUT
-
+#ifndef _WIN32
 #define _isnan isnan
 #define _finite isfinite
+#endif

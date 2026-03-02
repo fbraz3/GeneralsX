@@ -32,9 +32,15 @@
 #include <Utility/intrin_compat.h>
 #include <cstdint>
 
+// GeneralsX @bugfix BenderAI 26/05/2026: On MSVC, _int64 is a built-in type keyword.
+// #ifndef _int64 checks for a macro, but MSVC defines _int64 as a type (not a macro),
+// so the #ifndef is TRUE and typedef attempts to alias onto a built-in — C2628.
+// Guard with #ifndef _MSC_VER to skip on MSVC where _int64 is available natively.
+#ifndef _MSC_VER
 #ifndef _int64
 	typedef int64_t _int64;
 #endif
+#endif // !_MSC_VER
 
 /// \internal internal Id representation
 class ProfileId;

@@ -4,6 +4,14 @@
 #include <stdarg.h>
 #include <string.h>  // GeneralsX @build fbraz 10/02/2026 - strlen, memcpy for strlcpy/strlcat
 
+// GeneralsX @build BenderAI 26/05/2026 - string_compat.h is Linux-only.
+// On Windows: MSVC's string.h / winnt.h / winnls.h provide all these declarations.
+// Redefining LPCSTR, itoa, _strupr, _stricmp etc. on Windows causes:
+//   C2375 "itoa: redefinition with different linkage"
+//   C4273 "_strupr: inconsistent dll linkage"
+//   C2084 "function already has a body" (via vsnprintf/snprintf macros)
+#ifndef _WIN32
+
 typedef const char* LPCSTR;
 typedef char* LPSTR;
 
@@ -31,6 +39,8 @@ char* _strupr(char* str);
 #define _strnicmp strncasecmp
 #define strnicmp strncasecmp
 #define _strdup strdup
+
+#endif // !_WIN32
 
 // GeneralsX @build fbraz 10/02/2026 Bender
 // NOTE: strlcpy/strlcat originally added here for WWDownload/FTP.cpp but WWLib/stringex.h

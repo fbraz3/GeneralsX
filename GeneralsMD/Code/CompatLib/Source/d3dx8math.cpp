@@ -2,14 +2,18 @@
 // Must be defined BEFORE including any headers
 #define GLM_ENABLE_EXPERIMENTAL
 
+// GeneralsX @build BenderAI 26/05/2026 - Use relative paths so CompatLib/Include
+// is not required in the include path on Windows (avoids windows.h shim shadowing SDK).
+// On Windows: <windows.h> goes directly to the real SDK via INCLUDE env var.
+// On Linux: ../Include/d3dx8math.h → <windows.h> shim → windows_compat.h.
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include "windows_compat.h"
+#include "../Include/windows_compat.h"
 #endif
-#include "d3dx8core.h"
+#include "../Include/d3dx8core.h"
 
-#include "d3dx8math.h"
+#include "../Include/d3dx8math.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

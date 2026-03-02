@@ -289,8 +289,12 @@ void PingThreadClass::Thread_Function()
 			}
 			else
 			{
+				// GeneralsX @bugfix BenderAI 01/03/2026 hostNode was declared but IP never assigned —
+				// hostname resolution result was silently discarded, causing ping to always skip the loop.
 				in_addr *hostNode = (in_addr *) hostStruct->h_addr;
-				}
+				IP = (UnsignedInt)hostNode->s_addr;
+				DEBUG_LOG(("pinging %s - IP = %s", hostnameBuffer, inet_ntoa(*hostNode)));
+			}
 			}
 
 			// do ping

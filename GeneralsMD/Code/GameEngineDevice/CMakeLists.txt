@@ -190,8 +190,33 @@ set(GAMEENGINEDEVICE_SRC
 )
 
 # GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Separate Windows and Linux platform-specific files
-if(WIN32)
-    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
+# GeneralsX @bugfix BenderAI 01/03/2026 Split WIN32+SDL3 (win64-modern) from WIN32-only (legacy vc6/win32)
+if(WIN32 AND SAGE_USE_SDL3)
+    # Windows Modern (win64-modern): SDL3 engine + SDL3 input + OpenAL, no Miles SDK
+    # Win32GameEngine.cpp requires Miles SDK (mss/mss.h) which is not available on win64-modern
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/SDL3GameEngine.cpp           # SDL3+OpenAL engine (replaces Win32GameEngine)
+        Source/SDL3Device/GameClient/SDL3Mouse.cpp
+        Source/SDL3Device/GameClient/SDL3Keyboard.cpp
+        Source/Win32Device/Common/Win32OSDisplay.cpp
+    )
+    if(SAGE_USE_OPENAL)
+        # GeneralsX @feature BenderAI 01/03/2026 Full OpenAL (fighter19 implementation)
+        # FFmpeg-dependent code in these sources is guarded by #ifdef SAGE_USE_FFMPEG
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Source/OpenALAudioDevice/OpenALAudioManager.cpp
+            Source/OpenALAudioDevice/OpenALAudioStream.cpp
+            Source/OpenALAudioDevice/OpenALAudioCache.cpp
+        )
+        if(FFMPEG_FOUND)
+            # FFmpeg audio decoding (optional; SAGE_USE_FFMPEG defined when this is present)
+            list(APPEND GAMEENGINEDEVICE_SRC
+                Source/VideoDevice/FFmpeg/FFmpegFile.cpp
+            )
+        endif()
+    endif()
+elseif(WIN32)
+    # Windows Legacy (vc6/win32): Win32 engine + Miles SDK + DirectInput
     list(APPEND GAMEENGINEDEVICE_SRC
 #        Source/Win32Device/Common/Win32BIGFile.cpp
 #        Source/Win32Device/Common/Win32BIGFileSystem.cpp
@@ -204,12 +229,11 @@ if(WIN32)
         Source/Win32Device/GameClient/Win32Mouse.cpp
     )
 else()
-    # Linux-specific files (SDL3, OpenAL+FFmpeg audio, DXVK)
+    # Linux: SDL3 engine + SDL3 input + OpenAL
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/SDL3GameEngine.cpp
         Source/SDL3Device/GameClient/SDL3Mouse.cpp
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
-        Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
 
     if(SAGE_USE_OPENAL)
@@ -226,6 +250,15 @@ else()
             Source/OpenALAudioManager.cpp
         )
     endif()
+endif()
+
+# GeneralsX @bugfix BenderAI 09/07/2025 Use BinkVideoPlayerStub when Bink SDK is not available.
+# Bink SDK is only available for 32-bit Windows legacy builds (RTS_HAS_BINK_SDK set in CMakeLists.txt).
+# win64-modern and Linux builds both use this stub.
+if(NOT RTS_HAS_BINK_SDK)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/VideoDevice/BinkVideoPlayerStub.cpp
+    )
 endif()
 
 add_library(z_gameenginedevice STATIC)
@@ -274,9 +307,11 @@ if(SAGE_USE_OPENAL)
     target_include_directories(z_gameenginedevice PRIVATE Source/OpenALAudioDevice)
 endif()
 
-# Phase 3: Video playback with FFmpeg (configured by Core/GameEngineDevice when RTS_BUILD_OPTION_FFMPEG=ON)
-# GeneralsX @feature BenderAI 21/02/2026 Video playback framework
-if(RTS_BUILD_OPTION_FFMPEG)
+# Phase 3: Video playback with FFmpeg (only when FFmpeg libraries are actually available).
+# RTS_BUILD_OPTION_FFMPEG=ON enables the feature, but FFMPEG_FOUND confirms the libs are present.
+# On Windows without PkgConfig, FFMPEG_FOUND is unset, so FFmpeg sources are skipped.
+# GeneralsX @bugfix BenderAI 01/03/2026 Guard with FFMPEG_FOUND (not just RTS_BUILD_OPTION_FFMPEG)
+if(FFMPEG_FOUND)
     # Add VideoDevice FFmpeg implementation (video playback)
     # FFmpeg libraries and includes are already configured by Core/GameEngineDevice
     target_sources(z_gameenginedevice PUBLIC

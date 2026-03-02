@@ -32,6 +32,11 @@
 #include <windows.h>
 #include "stringex.h"
 #include <imagehlp.h>
+// GeneralsX @bugfix BenderAI 01/03/2026 imagehlp.h on x64 redefines StackWalk->StackWalk64,
+// which would mangle our method name DebugStackwalk::StackWalk. Undef to prevent that.
+#ifdef StackWalk
+#undef StackWalk
+#endif
 
 // Definitions to allow run-time linking to the dbghelp.dll functions.
 
@@ -353,6 +358,7 @@ int DebugStackwalk::StackWalk(Signature &sig, struct _CONTEXT *ctx)
 	stackFrame.AddrStack.Mode = AddrModeFlat;
 	stackFrame.AddrFrame.Mode = AddrModeFlat;
 
+#ifndef _WIN64
 	// Use the context struct if it was provided.
 	if (ctx)
   {
@@ -400,6 +406,49 @@ int DebugStackwalk::StackWalk(Signature &sig, struct _CONTEXT *ctx)
     else
       sig.m_addr[sig.m_numAddr++]=stackFrame.AddrPC.Offset;
   }
+#else // _WIN64
+  // GeneralsX @bugfix BenderAI 01/03/2026 x64 stack walk: use RtlCaptureContext + STACKFRAME64 + AMD64 machine type
+  CONTEXT capturedCtx;
+  if (ctx)
+  {
+    capturedCtx = *ctx;
+  }
+  else
+  {
+    RtlCaptureContext(&capturedCtx);
+  }
+  stackFrame.AddrPC.Offset    = capturedCtx.Rip;
+  stackFrame.AddrStack.Offset = capturedCtx.Rsp;
+  stackFrame.AddrFrame.Offset = capturedCtx.Rbp;
+
+  // GeneralsX @bugfix BenderAI 09/07/2025 x64: gDbg._StackWalk has 32-bit signature; must load
+  // StackWalk64 / SymFunctionTableAccess64 / SymGetModuleBase64 directly with 64-bit signatures.
+  typedef BOOL (WINAPI *StackWalk64Fn)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID,
+                                       PREAD_PROCESS_MEMORY_ROUTINE64,
+                                       PFUNCTION_TABLE_ACCESS_ROUTINE64,
+                                       PGET_MODULE_BASE_ROUTINE64,
+                                       PTRANSLATE_ADDRESS_ROUTINE64);
+  typedef PVOID (WINAPI *SymFunctionTableAccess64Fn)(HANDLE, DWORD64);
+  typedef DWORD64 (WINAPI *SymGetModuleBase64Fn)(HANDLE, DWORD64);
+
+  StackWalk64Fn             pfnStackWalk64              = (StackWalk64Fn)            GetProcAddress(g_dbghelp, "StackWalk64");
+  SymFunctionTableAccess64Fn pfnSymFunctionTableAccess64 = (SymFunctionTableAccess64Fn)GetProcAddress(g_dbghelp, "SymFunctionTableAccess64");
+  SymGetModuleBase64Fn       pfnSymGetModuleBase64        = (SymGetModuleBase64Fn)      GetProcAddress(g_dbghelp, "SymGetModuleBase64");
+
+  if (!pfnStackWalk64)
+    return 0;
+
+  bool skipFirst=!ctx;
+  while (sig.m_numAddr<Signature::MAX_ADDR&&
+         pfnStackWalk64(IMAGE_FILE_MACHINE_AMD64,GetCurrentProcess(),GetCurrentThread(),
+                        &stackFrame,&capturedCtx,nullptr,pfnSymFunctionTableAccess64,pfnSymGetModuleBase64,nullptr))
+  {
+    if (skipFirst)
+      skipFirst=false;
+    else
+      sig.m_addr[sig.m_numAddr++]=(unsigned)stackFrame.AddrPC.Offset;
+  }
+#endif // _WIN64
 
 	return sig.m_numAddr;
 }

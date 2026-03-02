@@ -101,7 +101,12 @@ class File : public MemoryPoolObject
 			ONLYNEW		= 0x00000080,				///< Only create file if it does not exist
 			
 			// NOTE: STREAMING is Mutually exclusive with WRITE
-			STREAMING = 0x00000100				///< Do not read this file into a ram file, read it as requested.
+			STREAMING = 0x00000100,				///< Do not read this file into a ram file, read it as requested.
+
+			// GeneralsX @build BenderAI 01/03/2026 - Sync with Core/file.h (TheSuperHackers upstream).
+			// NOTE: accesses file with full buffering if neither LINEBUF and FULLBUF are set
+			LINEBUF   = 0x00000200,				///< Access file with line buffering
+			FULLBUF   = 0x00000400,				///< Access file with full buffering
 		};
 
 		enum seekMode
@@ -109,6 +114,13 @@ class File : public MemoryPoolObject
 			START,												///< Seek position is relative to start of file
 			CURRENT,											///< Seek position is relative to current file position
 			END														///< Seek position is relative from the end of the file
+		};
+
+		// GeneralsX @bugfix BenderAI 26/05/2026 - Core/FileSystem.h references File::BUFFERSIZE; Core/file.h
+		// defines it but GeneralsMD/file.h was missing it, causing C2039 on MSVC win64-modern.
+		enum
+		{
+			BUFFERSIZE = BUFSIZ,
 		};
 
 	protected:
@@ -121,12 +133,13 @@ class File : public MemoryPoolObject
 		
 		File();											///< This class can only used as a base class
 		//virtual				~File();
-
+		// GeneralsX @build BenderAI 01/03/2026 - Sync with Core/file.h (TheSuperHackers upstream).
+		void closeWithoutDelete();
 	public:
 		
 
 						Bool	eof();
-		virtual Bool	open( const Char *filename, Int access = 0 );				///< Open a file for access
+		virtual Bool	open( const Char *filename, Int access = NONE, size_t bufferSize = BUFFERSIZE );				///< Open a file for access
 		virtual void	close( void );																			///< Close the file !!! File object no longer valid after this call !!!
 
 		virtual Int		read( void *buffer, Int bytes ) = 0 ;						/**< Read the specified number of bytes from the file in to the 
@@ -147,7 +160,16 @@ class File : public MemoryPoolObject
 																																				*  CURRENT: means seek the specified the number of bytes from the current file position
 																																				*  END: means seek the specified number of bytes back from the end of the file
 																																				*/
-		virtual void	nextLine(Char *buf = 0, Int bufSize = 0) = 0;		///< reads until it reaches a new-line character
+		// GeneralsX @bugfix BenderAI 26/05/2026 - Methods present in Core/file.h but missing here.
+		// Core/GameEngine/Include/Common/Recorder.cpp calls these, and Core LocalFile/RAMFile implement them.
+		virtual Int		readChar() = 0 ;										///< Read a character from the file. Returns the char or EOF on error.
+		virtual Int		readWideChar() = 0 ;									///< Read a wide character from the file. Returns it or wide EOF on error.
+		virtual Int		writeFormat( const Char* format, ... ) = 0 ;			///< Write a formatted string to the file. Returns bytes written or -1.
+		virtual Int		writeFormat( const WideChar* format, ... ) = 0 ;		///< Write a formatted wide string to the file. Returns bytes written or -1.
+		virtual Int		writeChar( const Char* character ) = 0 ;				///< Write a character to the file. Returns copy or EOF on error.
+		virtual Int		writeChar( const WideChar* character ) = 0 ;			///< Write a wide character to the file. Returns copy or wide EOF on error.
+		virtual Bool	flush() = 0;											///< Flush data to disk
+		virtual void	nextLine(Char *buf = nullptr, Int bufSize = 0) = 0;		///< reads until it reaches a new-line character
 
 		virtual Bool	scanInt(Int &newInt) = 0;														///< read an integer from the current file position.
 		virtual Bool	scanReal(Real &newReal) = 0;												///< read a real number from the current file position.

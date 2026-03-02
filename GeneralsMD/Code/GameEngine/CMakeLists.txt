@@ -1155,8 +1155,19 @@ target_sources(z_gameengine PRIVATE ${GAMEENGINE_SRC})
 
 target_include_directories(z_gameengine PUBLIC
     Include
-    ../CompatLib/Include  # Needed for d3dx8math.h in PCH
 )
+
+# GeneralsX @build BenderAI 26/05/2026 - CompatLib/Include is Linux-only
+# On Linux: CompatLib headers provide POSIX compat for Windows APIs (windows_compat.h, etc.)
+# On Windows: The real Windows SDK (via MSVC INCLUDE env) provides all types.
+#             Adding CompatLib/Include on Windows causes our fake windows.h shim
+#             to shadow the SDK's windows.h, breaking the entire type system.
+# The CompatLib PUBLIC include is already propagated via d3d8lib → CompatLib on Linux.
+if(UNIX)
+    target_include_directories(z_gameengine PUBLIC
+        ../CompatLib/Include
+    )
+endif()
 
 # Ensure DXVK headers are available when building on Linux
 if(NOT SAGE_USE_DX8 AND dxvk_SOURCE_DIR)
@@ -1181,7 +1192,18 @@ target_link_libraries(z_gameengine PUBLIC
     d3d8lib  # Ensure DirectX8 headers available (Windows SDK or DXVK)
 )
 
+# GeneralsX @build BenderAI 26/05/2026 - GLM for BezierSegment.h and other math code
+# SAGE_USE_GLM enables #include <glm/glm.hpp> in game headers (e.g. BezierSegment.h).
+# GLM is fetched via CompatLib's cmake/glm.cmake and exposed via the glm::glm CMake target.
+if(SAGE_USE_GLM AND TARGET glm::glm)
+    target_link_libraries(z_gameengine PRIVATE glm::glm)
+endif()
+
+# Precompiled header for z_gameengine.
+# CppMacros.h must come first (VC6 new/delete macros must precede all STL includes).
+# PreRTS.h is the main PCH: cross-platform guarded for Windows SDK vs CompatLib shim.
 target_precompile_headers(z_gameengine PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+    [[<Utility/CppMacros.h>]] # Must be first, to be removed when abandoning VC6
     Include/Precompiled/PreRTS.h
 )
+

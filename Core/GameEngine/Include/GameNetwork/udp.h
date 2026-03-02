@@ -29,7 +29,9 @@
 #endif
 
 #ifdef _WIN32
-#include <winsock.h>
+// GeneralsX @bugfix BenderAI 01/03/2026 Use WinSock2 (defines socklen_t) instead of legacy winsock.h
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <io.h>
 //#define close _close
 //#define read  _read

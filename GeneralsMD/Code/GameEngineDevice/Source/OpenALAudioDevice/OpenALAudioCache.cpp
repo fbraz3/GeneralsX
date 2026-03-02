@@ -1,8 +1,11 @@
 #include "OpenALAudioCache.h"
 
+// GeneralsX @bugfix BenderAI 01/03/2026 FFmpeg includes only when SAGE_USE_FFMPEG
+#ifdef SAGE_USE_FFMPEG
 extern "C" {
 #include <libavcodec/avcodec.h>
 }
+#endif
 
 #include "Common/AudioEventInfo.h"
 #include "Common/AudioEventRTS.h"
@@ -18,6 +21,8 @@ OpenALAudioFileCache::OpenALAudioFileCache() : m_maxSize(14*1024*1024), m_curren
 {
 }
 
+// GeneralsX @bugfix BenderAI 01/03/2026 FFmpeg decode only compiled when SAGE_USE_FFMPEG
+#ifdef SAGE_USE_FFMPEG
 Bool OpenALAudioFileCache::decodeFFmpeg(OpenAudioFile* file)
 {
 	std::vector<uint8_t> audioData;
@@ -64,6 +69,7 @@ Bool OpenALAudioFileCache::decodeFFmpeg(OpenAudioFile* file)
 
 	return true;
 }
+#endif // SAGE_USE_FFMPEG
 
 //-------------------------------------------------------------------------------------------------
 OpenALAudioFileCache::~OpenALAudioFileCache()
@@ -136,6 +142,7 @@ ALuint OpenALAudioFileCache::getBufferForFile(const OpenFileInfo &fileInfo)
 	OpenAudioFile openedAudioFile;
 	alGenBuffers(1, &openedAudioFile.m_buffer);
 	openedAudioFile.m_eventInfo = eventToOpenFrom ? eventToOpenFrom->getAudioEventInfo() : NULL;
+#ifdef SAGE_USE_FFMPEG
 	openedAudioFile.m_ffmpegFile = new FFmpegFile();
 
 	// This transfer ownership of file
@@ -158,6 +165,12 @@ ALuint OpenALAudioFileCache::getBufferForFile(const OpenFileInfo &fileInfo)
 	}
 
 	openedAudioFile.m_ffmpegFile->close();
+#else
+	// Without FFmpeg, audio files cannot be decoded in the cache on this platform
+	DEBUG_LOG(("OpenALAudioFileCache::getBufferForFile: SAGE_USE_FFMPEG not set, cannot decode '%s'\n", strToFind.str()));
+	releaseOpenAudioFile(&openedAudioFile);
+	return 0;
+#endif // SAGE_USE_FFMPEG
 
 	openedAudioFile.m_fileSize = fileSize;
 	m_currentlyUsedSize += openedAudioFile.m_fileSize;
@@ -225,17 +238,21 @@ void OpenALAudioFileCache::releaseOpenAudioFile(OpenAudioFile* fileToRelease)
 		TheAudio->closeAnySamplesUsingFile((const void*)(uintptr_t)fileToRelease->m_buffer);
 	}
 
+#ifdef SAGE_USE_FFMPEG
 	if (fileToRelease->m_ffmpegFile) {
 		// Free FFMPEG handles
 		delete fileToRelease->m_ffmpegFile;
 	}
+#endif
 
 	if (fileToRelease->m_buffer)
 	{
 		// Free the OpenAL buffer
 		alDeleteBuffers(1, &fileToRelease->m_buffer);
 	}
+#ifdef SAGE_USE_FFMPEG
 	fileToRelease->m_ffmpegFile = NULL;
+#endif
 	fileToRelease->m_buffer = 0;
 	fileToRelease->m_eventInfo = NULL;
 }

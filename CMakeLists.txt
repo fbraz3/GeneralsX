@@ -66,6 +66,9 @@ endif()
 if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
     include(cmake/miles.cmake)
     include(cmake/bink.cmake)
+    # GeneralsX @bugfix BenderAI 09/07/2025 Explicit flag so source files know real Bink SDK is available
+    add_compile_definitions(RTS_BUILD_WITH_BINK=1)
+    set(RTS_HAS_BINK_SDK TRUE CACHE BOOL "Bink SDK is available (32-bit Windows only)" FORCE)
 endif()
 
 # Always include DX8 headers (needed for both Windows and Linux builds)

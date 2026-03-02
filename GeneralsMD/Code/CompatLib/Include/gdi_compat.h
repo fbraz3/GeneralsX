@@ -2,6 +2,11 @@
 
 #include <stdint.h>
 
+// GeneralsX @build BenderAI 26/05/2026 - gdi_compat.h is Linux-only.
+// On Windows: wingdi.h (via windows.h) provides all GDI types, constants, and functions.
+// On Linux: These stubs satisfy the game engine's GDI API calls with no-op implementations.
+#ifndef _WIN32
+
 // GeneralsX @build fbraz 11/02/2026 BenderAI - Font/text constants
 enum eFontWeights
 {
@@ -83,7 +88,6 @@ typedef SIZE *LPSIZE;
 typedef TEXTMETRIC *LPTEXTMETRIC;
 
 // GeneralsX @build BenderAI 10/02/2026 - BMP screenshot structures (need before CreateDIBSection)
-#ifndef _WIN32
 #pragma pack(push, 1)
 
 // RGB quad structure
@@ -128,8 +132,6 @@ typedef struct tagBITMAPFILEHEADER {
 
 // Bitmap compression modes
 #define BI_RGB 0
-
-#endif // !_WIN32
 
 // GeneralsX @build fbraz 11/02/2026 BenderAI - GDI function stubs for text rendering (render2dsentence.cpp)
 // Phase 3 out-of-scope: Return failure/nullptr to disable text rendering on Linux
@@ -219,3 +221,5 @@ static inline BOOL RemoveFontResource(const char* lpszFilename) {
     (void)lpszFilename;
     return TRUE;  // TRUE (success) - font "unloaded" (no-op)
 }
+
+#endif // !_WIN32

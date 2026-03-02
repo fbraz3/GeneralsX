@@ -2,7 +2,9 @@
 // Must be defined BEFORE including GLM/GLI headers
 #define GLM_ENABLE_EXPERIMENTAL
 
-#include "d3dx8core.h"
+// GeneralsX @build BenderAI 26/05/2026 - Use relative path so CompatLib/Include
+// is not required in the include path on Windows (avoids windows.h shim shadowing SDK).
+#include "../Include/d3dx8core.h"
 
 #include <gli/gli.hpp>
 #include <gli/generate_mipmaps.hpp>

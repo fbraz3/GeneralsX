@@ -28,8 +28,13 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
-#include <mmsystem.h>
+// GeneralsX @build BenderAI 03/03/2026 - Windows-specific includes for MSVC (win64-modern).
+// winsock2.h already included via Download.h -> ftp.h; windows.h must follow.
+#include <windows.h>    // Must precede mmsystem.h (mmsystem needs windows types)
+#include <timeapi.h>    // timeGetTime() - explicit; mmsystem.h may skip it with WIN32_LEAN_AND_MEAN
+#include <mmsystem.h>   // timeGetTime() backwards-compat include (harmless if timeapi.h already included)
 #include <direct.h>
+#include "wwdownload_compat.h"  // strlcpy polyfill
 #else
 #include <string.h>
 #define SEVERITY_ERROR 1

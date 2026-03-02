@@ -16,10 +16,12 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// BinkVideoPlayerStub.cpp - Linux stub for Bink video codec (not available)
+// BinkVideoPlayerStub.cpp - stub for Bink video codec when Bink SDK is not available
 // TheSuperHackers @build felipebraz 13/02/2026 - Phase 3
+// GeneralsX @bugfix BenderAI 09/07/2025 Use RTS_BUILD_WITH_BINK instead of _WIN32;
+// win64-modern (64-bit Windows) also uses this stub since Bink SDK is 32-bit only
 
-#ifndef _WIN32
+#ifndef RTS_BUILD_WITH_BINK
 
 #include "VideoDevice/Bink/BinkVideoPlayer.h"
 #include <cstdio>

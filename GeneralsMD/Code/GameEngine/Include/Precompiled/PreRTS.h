@@ -83,6 +83,9 @@ class STLSpecialAlloc;
 #include <memory.h>
 #ifdef _WIN32
     #include <mmsystem.h>
+    // GeneralsX @build BenderAI 01/03/2026 Windows SDK 10.0.26100+ moved timeGetTime() to timeapi.h
+    // mmsystem.h conditionally includes it under #ifndef MMNOTIMER, but explicit include is safer.
+    #include <timeapi.h>
     #include <objbase.h>
     #include <ocidl.h>
     #include <process.h>

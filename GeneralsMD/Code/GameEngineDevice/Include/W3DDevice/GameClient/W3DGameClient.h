@@ -55,7 +55,8 @@
 #include "W3DDevice/GameClient/W3DMouse.h"
 
 // TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 input devices
-#ifndef _WIN32
+// GeneralsX @bugfix BenderAI 01/03/2026 win64-modern IS _WIN32 but also requires SDL3 input; update guard
+#if !defined(_WIN32) || defined(SAGE_USE_SDL3)
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
 #include "SDL3GameEngine.h"  // For getSDLWindow()
@@ -134,19 +135,21 @@ protected:
 };
 
 // TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 input factory wiring
+// GeneralsX @bugfix BenderAI 01/03/2026 win64-modern IS _WIN32 but also uses SDL3 keyboard
 inline Keyboard *W3DGameClient::createKeyboard( void ) {
-#ifndef _WIN32
-	return NEW SDL3Keyboard();  // Linux: SDL3 keyboard
+#if !defined(_WIN32) || defined(SAGE_USE_SDL3)
+	return NEW SDL3Keyboard();  // SDL3 keyboard (Linux + win64-modern)
 #else
-	return NEW DirectInputKeyboard;  // Windows: DirectInput keyboard
+	return NEW DirectInputKeyboard;  // Windows Legacy: DirectInput keyboard
 #endif
 }
 
 inline Mouse *W3DGameClient::createMouse( void )
 {
 // TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 mouse factory wiring
-#ifndef _WIN32
-	// Linux: SDL3 mouse (requires SDL window handle)
+// GeneralsX @bugfix BenderAI 01/03/2026 win64-modern IS _WIN32 but also uses SDL3 mouse
+#if !defined(_WIN32) || defined(SAGE_USE_SDL3)
+	// SDL3 mouse (Linux + win64-modern: requires SDL window handle)
 	SDL3GameEngine* sdlEngine = dynamic_cast<SDL3GameEngine*>(TheGameEngine);
 	if (sdlEngine && sdlEngine->getSDLWindow()) {
 		return NEW SDL3Mouse(sdlEngine->getSDLWindow());
@@ -154,7 +157,7 @@ inline Mouse *W3DGameClient::createMouse( void )
 	fprintf(stderr, "ERROR: SDL3GameEngine not found, cannot create SDL3Mouse\n");
 	return nullptr;
 #else
-	// Windows: W3DMouse (wraps Win32Mouse with 3D cursor)
+	// Windows Legacy: W3DMouse (wraps Win32Mouse with 3D cursor)
 	Win32Mouse * mouse = NEW W3DMouse;
 	TheWin32Mouse = mouse;   ///< global cheat for the WndProc()
 	return mouse;

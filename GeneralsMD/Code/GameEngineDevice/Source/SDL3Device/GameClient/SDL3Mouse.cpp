@@ -25,7 +25,9 @@
 ** Replaces Win32Mouse/Win32DIMouse with SDL3 mouse APIs for Linux.
 */
 
-#ifndef _WIN32
+// GeneralsX @bugfix BenderAI 02/03/2026 Remove #ifndef _WIN32 outer guard.
+// SDL3Mouse is cross-platform (SDL3 runs on Windows + Linux). The file was previously
+// Linux-only but win64-modern also uses SDL3 for input. Inner SDL3_image guard already present.
 
 // GeneralsX @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
 #include "SDL3Device/GameClient/SDL3Mouse.h"
@@ -38,7 +40,10 @@
 #include "GameClient/Display.h"
 // GeneralsX @bugfix BenderAI 22/02/2026 Add SDL3_image for cursor loading
 // SDL3_image now finds system libpng via pkg-config (CMAKE_PREFIX_PATH reordered in cmake/sdl3.cmake)
+// GeneralsX @bugfix BenderAI 01/03/2026 SDL3_image is Linux-only; Windows (win64-modern) falls back to SDL default cursor
+#ifndef _WIN32
 #include <SDL3_image/SDL_image.h>
+#endif
 // GeneralsX @bugfix BenderAI 22/02/2026 Add array header for AnimatedCursor
 #include <array>
 // GeneralsX @bugfix BenderAI 22/02/2026 Add file system includes for cursor loading
@@ -231,7 +236,6 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 		else if (chunk->id == list_id && chunk->type == fram_id)
 		{
 			int frame_index = 0;
-			size_t frame_offset = 0;
 
 			RIFFChunk *frame = (RIFFChunk*)((char *)chunk + sizeof(RIFFChunk));
 			while (frame != NULL && (char *)frame < file_buffer + size)
@@ -240,7 +244,13 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 				{
 					const void *frame_buffer = getChunkData(frame);
 					SDL_IOStream *io_stream = SDL_IOFromConstMem(frame_buffer, frame->size);
-					SDL_Surface *surface = cursor->m_frameSurfaces[frame_index] = IMG_LoadTyped_IO(io_stream, true, "ico");
+				// GeneralsX @bugfix BenderAI 01/03/2026 SDL3_image not available on Windows; fall back to SDL default cursor
+#ifndef _WIN32
+				SDL_Surface *surface = cursor->m_frameSurfaces[frame_index] = IMG_LoadTyped_IO(io_stream, true, "ico");
+#else
+				SDL_CloseIO(io_stream);
+				SDL_Surface *surface = cursor->m_frameSurfaces[frame_index] = nullptr;
+#endif
 
 					if (!surface)
 					{
@@ -834,5 +844,3 @@ void SDL3Mouse::translateEvent(UnsignedInt eventIndex, MouseIO *result)
 	result->pos.x = scaledX;
 	result->pos.y = scaledY;
 }
-
-#endif // !_WIN32

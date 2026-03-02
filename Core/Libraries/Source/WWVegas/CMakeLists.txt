@@ -13,7 +13,8 @@ target_link_libraries(core_wwcommon INTERFACE
 )
 
 # GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
-if(WIN32)
+if(WIN32 AND NOT SAGE_USE_SDL3)
+    # Legacy 32-bit Windows: Miles audio stub (not needed for win64-modern with OpenAL)
     target_link_libraries(core_wwcommon INTERFACE
         milesstub
     )

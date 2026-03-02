@@ -3,8 +3,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+// GeneralsX @build BenderAI 26/05/2026 - Linux-only: map Windows CRT names to POSIX names.
+// On Windows: _access and _stat are the CORRECT CRT function names (in io.h / sys/stat.h).
+// Redefining them to their POSIX equivalents breaks Windows builds.
+#ifndef _WIN32
 #define _access access
 #define _stat stat
+#endif
 
 // GeneralsX @build BenderAI 10/02/2026 - Win32 file API → POSIX
 #ifndef _WIN32
