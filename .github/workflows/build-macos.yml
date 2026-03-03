@@ -112,16 +112,21 @@ jobs:
               VULKAN_APP=""
             else
               echo "Found installer: $VULKAN_APP"
+              INSTALLER="$VULKAN_APP/Contents/MacOS/InstallVulkan"
               
-              # Run the installer
-              INSTALL_TARGET="$HOME/VulkanSDK/1.4.341.1"
-              echo "Running Vulkan SDK installer to $INSTALL_TARGET..."
-              
-              "$VULKAN_APP/Contents/MacOS/InstallVulkan" \
-                --root "$INSTALL_TARGET" \
-                --accept-licenses \
-                --default-answer \
-                --confirm-command install
+              if [ ! -f "$INSTALLER" ]; then
+                echo "❌ Installer not found at $INSTALLER"
+                ls -la "$VULKAN_APP/Contents/MacOS/"
+                VULKAN_APP=""
+              else
+                INSTALL_TARGET="$HOME/VulkanSDK/1.4.341.1"
+                echo "Running Vulkan SDK installer to $INSTALL_TARGET..."
+                "$INSTALLER" \
+                  --root "$INSTALL_TARGET" \
+                  --accept-licenses \
+                  --default-answer \
+                  --confirm-command install
+              fi
               
               INSTALL_STATUS=$?
               if [ $INSTALL_STATUS -eq 0 ]; then
