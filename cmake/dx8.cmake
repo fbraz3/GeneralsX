@@ -115,7 +115,7 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   elseif(VULKAN_SDK_ENV AND EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
     message(STATUS "DXVK macOS build: Using Vulkan SDK at ${VULKAN_SDK_ENV} (lib)")
     set(VULKAN_SDK_ENV_VAR "VULKAN_SDK=${VULKAN_SDK_ENV}")
-  else
+  else()
     message(WARNING "DXVK macOS build: Vulkan SDK not found or MoltenVK missing; Meson will search in system paths")
     if(VULKAN_SDK_ENV)
       message(STATUS "  VULKAN_SDK_ENV set to: ${VULKAN_SDK_ENV}")
@@ -128,35 +128,13 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
 
   ExternalProject_Add(dxvk_macos_build
     GIT_REPOSITORY    https://github.com/doitsujin/dxvk.git
-    GIT_TAG           ad253b8a7e20b7cf16fce7d1c505928a434eac29  # v2.6 pinned commit SHA
+    GIT_TAG           ad253b8a7e20b7cf16fce7d1c505928a434eac29
     SOURCE_DIR        ${DXVK_SOURCE_DIR}
     BINARY_DIR        ${DXVK_BUILD_DIR}
-    # Apply macOS patches before configuring
-    PATCH_COMMAND
-      ${CMAKE_COMMAND} -E echo "Applying macOS patches to DXVK..." &&
-      ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}
-    # Configure with Meson using SDL3 windowing system.
-    # Force arm64 compilation despite Rosetta2 emulation:
-    # 1. Pass -mcpu=apple-m1 -arch arm64 to Clang
-    # 2. Use --native-file to tell Meson the build machine is aarch64
-    # 3. Pass VULKAN_SDK to Meson if detected
-    # NOTE: VULKAN_SDK_ENV_VAR must be on same line to avoid CMake parse errors
-    CONFIGURE_COMMAND
-      ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR}
-      ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR}
-        --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini
-        -Ddxvk_native_wsi=sdl3
-        --buildtype=release
-        --reconfigure
-    # Build d3d9 first (d3d8 links against it at runtime via @rpath),
-    # then d3d8. Both dylibs must be present in the runtime directory.
-    BUILD_COMMAND
-      ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR}
-        src/d3d9/libdxvk_d3d9.0.dylib
-        src/d3d8/libdxvk_d3d8.0.dylib
-    # DXVK install is not needed; we deploy the dylibs manually
+    PATCH_COMMAND     ${CMAKE_COMMAND} -E echo "Applying macOS patches to DXVK..." && ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR} ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR} --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini -Ddxvk_native_wsi=sdl3 --buildtype=release --reconfigure
+    BUILD_COMMAND     ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d9/libdxvk_d3d9.0.dylib src/d3d8/libdxvk_d3d8.0.dylib
     INSTALL_COMMAND   ""
-    # Only re-patch/reconfigure when the git tag changes
     UPDATE_DISCONNECTED TRUE
   )
 
