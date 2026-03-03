@@ -81,47 +81,48 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   set(DXVK_D3D8_LIB  "${DXVK_BUILD_DIR}/src/d3d8/libdxvk_d3d8.0.dylib")
   set(DXVK_D3D9_LIB  "${DXVK_BUILD_DIR}/src/d3d9/libdxvk_d3d9.0.dylib")
 
-  # Detect Vulkan SDK location for Meson configuration
-  # GeneralsX @build BenderAI 03/03/2026: Handle cases where VULKAN_SDK is not installed
+  # Detect Vulkan SDK location for Meson configuration.
+  # VULKAN_SDK must point to the platform subdir (e.g. ~/VulkanSDK/1.4.x/macOS)
+  # where lib/libvulkan.dylib and lib/libMoltenVK.dylib live.
+  # GeneralsX @build BenderAI 03/03/2026: Normalize env path to macOS platform subdir
   set(VULKAN_SDK_ENV "$ENV{VULKAN_SDK}")
-  if(NOT VULKAN_SDK_ENV)
-    # Try home directory for manually installed SDK (installer puts it in $HOME/VulkanSDK/VERSION/)
-    file(GLOB VULKAN_HOME_DIRS "$ENV{HOME}/VulkanSDK/*")
+
+  # If VULKAN_SDK points to the version root (has macOS/ subdir), normalize it
+  if(VULKAN_SDK_ENV AND EXISTS "${VULKAN_SDK_ENV}/macOS/lib/libMoltenVK.dylib")
+    set(VULKAN_SDK_ENV "${VULKAN_SDK_ENV}/macOS")
+    message(STATUS "DXVK macOS build: Normalized VULKAN_SDK to platform subdir: ${VULKAN_SDK_ENV}")
+  endif()
+
+  if(NOT VULKAN_SDK_ENV OR NOT EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
+    # Try home directory: look for ~/VulkanSDK/*/macOS
+    file(GLOB VULKAN_HOME_DIRS "$ENV{HOME}/VulkanSDK/*/macOS")
     if(VULKAN_HOME_DIRS)
-      # Find the latest version directory
       list(SORT VULKAN_HOME_DIRS)
       list(REVERSE VULKAN_HOME_DIRS)
       list(GET VULKAN_HOME_DIRS 0 POTENTIAL_SDK)
-      # Check both macOS/lib (primary) and lib (fallback) locations
-      if(EXISTS "${POTENTIAL_SDK}/macOS/lib/libMoltenVK.dylib" OR EXISTS "${POTENTIAL_SDK}/lib/libMoltenVK.dylib")
+      if(EXISTS "${POTENTIAL_SDK}/lib/libMoltenVK.dylib")
         set(VULKAN_SDK_ENV "${POTENTIAL_SDK}")
-      endif()
-    endif()
-    
-    # Try common Homebrew locations if home directory search failed
-    if(NOT VULKAN_SDK_ENV)
-      if(EXISTS "/usr/local/Caskroom/vulkan-sdk")
-        set(VULKAN_SDK_ENV "/usr/local/Caskroom/vulkan-sdk/latest/VulkanSDK")
-      elseif(EXISTS "/opt/homebrew/Caskroom/vulkan-sdk")
-        set(VULKAN_SDK_ENV "/opt/homebrew/Caskroom/vulkan-sdk/latest/VulkanSDK")
       endif()
     endif()
   endif()
 
-  # Check for MoltenVK in primary location (macOS/lib) then fallback (lib)
-  if(VULKAN_SDK_ENV AND EXISTS "${VULKAN_SDK_ENV}/macOS/lib/libMoltenVK.dylib")
-    message(STATUS "DXVK macOS build: Using Vulkan SDK at ${VULKAN_SDK_ENV} (macOS/lib)")
-    set(VULKAN_SDK_ENV_VAR "VULKAN_SDK=${VULKAN_SDK_ENV}")
-  elseif(VULKAN_SDK_ENV AND EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
-    message(STATUS "DXVK macOS build: Using Vulkan SDK at ${VULKAN_SDK_ENV} (lib)")
+  if(NOT VULKAN_SDK_ENV OR NOT EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
+    # Try common Homebrew locations
+    foreach(BREW_PATH "/usr/local/Caskroom/vulkan-sdk/latest/VulkanSDK/macOS" "/opt/homebrew/Caskroom/vulkan-sdk/latest/VulkanSDK/macOS")
+      if(EXISTS "${BREW_PATH}/lib/libMoltenVK.dylib")
+        set(VULKAN_SDK_ENV "${BREW_PATH}")
+        break()
+      endif()
+    endforeach()
+  endif()
+
+  if(VULKAN_SDK_ENV AND EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
+    message(STATUS "DXVK macOS build: Using Vulkan SDK at ${VULKAN_SDK_ENV}")
     set(VULKAN_SDK_ENV_VAR "VULKAN_SDK=${VULKAN_SDK_ENV}")
   else()
-    message(WARNING "DXVK macOS build: Vulkan SDK not found or MoltenVK missing; Meson will search in system paths")
+    message(WARNING "DXVK macOS build: Vulkan SDK / MoltenVK not found; Meson will search system paths")
     if(VULKAN_SDK_ENV)
-      message(STATUS "  VULKAN_SDK_ENV set to: ${VULKAN_SDK_ENV}")
-      message(STATUS "  Checked paths:")
-      message(STATUS "    - ${VULKAN_SDK_ENV}/macOS/lib/libMoltenVK.dylib")
-      message(STATUS "    - ${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
+      message(STATUS "  VULKAN_SDK checked: ${VULKAN_SDK_ENV}")
     endif()
     set(VULKAN_SDK_ENV_VAR "")
   endif()

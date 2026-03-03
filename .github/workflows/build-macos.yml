@@ -181,8 +181,14 @@ jobs:
                 INSTALL_STATUS=$?
                 
                 if [ $INSTALL_STATUS -eq 0 ]; then
-                  VULKAN_SDK="$INSTALL_TARGET"
-                  echo "✅ Vulkan SDK installed to $VULKAN_SDK"
+                  # Normalize to platform subdirectory (CMake FindVulkan expects VULKAN_SDK/lib, not VULKAN_SDK/macOS/lib)
+                  if [ -d "$INSTALL_TARGET/macOS" ]; then
+                    VULKAN_SDK="$INSTALL_TARGET/macOS"
+                  else
+                    VULKAN_SDK="$INSTALL_TARGET"
+                  fi
+                  echo "✅ Vulkan SDK installed to $INSTALL_TARGET"
+                  echo "✅ Normalized VULKAN_SDK to: $VULKAN_SDK"
                 else
                   echo "❌ Installer failed with status $INSTALL_STATUS"
                   VULKAN_SDK=""
@@ -214,8 +220,17 @@ jobs:
           
           # Set environment variables for downstream steps
           if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
-            # Last resort: search for any installed SDK
-            VULKAN_SDK="$(find $HOME/VulkanSDK -maxdepth 1 -type d 2>/dev/null | head -1)"
+            # Last resort: search for any installed SDK, prefer macOS subdir
+            for candidate in $(find $HOME/VulkanSDK -maxdepth 2 -type d -name "macOS" 2>/dev/null); do
+              VULKAN_SDK="$candidate"
+              break
+            done
+          fi
+
+          # Normalize: if VULKAN_SDK points to version root (has macOS subdir), use macOS subdir
+          if [ -d "$VULKAN_SDK/macOS" ] && [ -f "$VULKAN_SDK/macOS/lib/libvulkan.dylib" ]; then
+            VULKAN_SDK="$VULKAN_SDK/macOS"
+            echo "Normalized VULKAN_SDK to platform subdirectory"
           fi
           
           if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
@@ -226,15 +241,13 @@ jobs:
           echo "VULKAN_SDK=$VULKAN_SDK" >> $GITHUB_ENV
           echo "✅ Vulkan SDK path set to: $VULKAN_SDK"
           
-          # Verify MoltenVK presence (primary: macOS/lib, fallback: lib)
-          if [ -f "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" ]; then
-            echo "✅ MoltenVK found at $VULKAN_SDK/macOS/lib/libMoltenVK.dylib"
-          elif [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
+          # Verify MoltenVK presence
+          if [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
             echo "✅ MoltenVK found at $VULKAN_SDK/lib/libMoltenVK.dylib"
           else
-            echo "⚠️ MoltenVK not found at expected location; build may still work if system Vulkan is available"
+            echo "⚠️ MoltenVK not found at $VULKAN_SDK/lib/libMoltenVK.dylib"
             echo "Checking for alternate locations..."
-            find "$VULKAN_SDK" -name "libMoltenVK*" 2>/dev/null | head -5 || echo "(none found)"
+            find "$(dirname $VULKAN_SDK)" -name "libMoltenVK*" 2>/dev/null | head -5 || echo "(none found)"
           fi
 
       - name: Configure CMake (macOS)
