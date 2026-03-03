@@ -1,6 +1,5 @@
-// GLI requires GLM_ENABLE_EXPERIMENTAL for internal extensions
-// Must be defined BEFORE including GLM/GLI headers
-#define GLM_ENABLE_EXPERIMENTAL
+// GLM_ENABLE_EXPERIMENTAL is passed via target_compile_definitions in CMakeLists.txt.
+// Do NOT redefine it here -- that causes -Wmacro-redefined with Clang.
 
 #include "d3dx8core.h"
 

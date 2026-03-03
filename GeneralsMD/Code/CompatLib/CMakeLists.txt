@@ -117,6 +117,17 @@ add_library(CompatLib STATIC ${SOURCE_COMPAT})
 set_property(TARGET CompatLib PROPERTY CXX_STANDARD 17)
 set_property(TARGET d3dx8 PROPERTY CXX_STANDARD 17)
 
+# GeneralsX @bugfix BenderAI 02/03/2026 - Enforce DXVK source availability before CompatLib compiles
+# On macOS, DXVK is built via ExternalProject (Meson) which clones the source during the BUILD phase,
+# not during configure. This means _deps/dxvk-src/include/native/windows/windows_base.h does not
+# exist when d3dx8 or CompatLib start compiling unless we declare an explicit ordering dependency.
+# On Linux, DXVK is a pre-built tarball fetched via FetchContent (available since configure), so
+# no ordering dependency is needed there.
+if(APPLE AND TARGET dxvk_macos_build)
+    add_dependencies(d3dx8 dxvk_macos_build)
+    add_dependencies(CompatLib dxvk_macos_build)
+endif()
+
 target_include_directories(CompatLib PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
 )
