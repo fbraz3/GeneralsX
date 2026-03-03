@@ -101,59 +101,85 @@ jobs:
           # Extract and install if valid ZIP
           if [ -f "$VULKAN_ZIP" ] && [ "$(stat -f%z "$VULKAN_ZIP" 2>/dev/null || echo 0)" -gt 100000000 ]; then
             echo "Extracting Vulkan SDK ZIP..."
-            mkdir -p /tmp/vulkan-extract
-            unzip -q "$VULKAN_ZIP" -d /tmp/vulkan-extract
             
-            # List extracted contents for debugging
-            echo "Extracted contents:"
-            ls -la /tmp/vulkan-extract/
-            
-            # Strategy 1: Look for direct executable (vulkansdk-macOS-*)
-            VULKAN_EXECUTABLE=$(find /tmp/vulkan-extract -name "vulkansdk-macOS-*" -type f -executable 2>/dev/null | head -1)
-            if [ -z "$VULKAN_EXECUTABLE" ]; then
-              # Try non-executable variant (in case permissions not set)
-              VULKAN_EXECUTABLE=$(find /tmp/vulkan-extract -name "vulkansdk-macOS-*" -type f 2>/dev/null | head -1)
-              if [ -n "$VULKAN_EXECUTABLE" ]; then
-                echo "Making executable: $VULKAN_EXECUTABLE"
-                chmod +x "$VULKAN_EXECUTABLE"
-              fi
-            fi
-            
-            # Strategy 2: Look for .app bundle if executable not found
-            if [ -z "$VULKAN_EXECUTABLE" ]; then
-              VULKAN_APP=$(find /tmp/vulkan-extract -name "*.app" -type d 2>/dev/null | head -1)
-              if [ -n "$VULKAN_APP" ] && [ -f "$VULKAN_APP/Contents/MacOS/InstallVulkan" ]; then
-                VULKAN_EXECUTABLE="$VULKAN_APP/Contents/MacOS/InstallVulkan"
-                echo "Found app bundle installer: $VULKAN_EXECUTABLE"
-              fi
-            fi
-            
-            # Execute installer if found
-            if [ -n "$VULKAN_EXECUTABLE" ] && [ -f "$VULKAN_EXECUTABLE" ]; then
-              INSTALL_TARGET="$HOME/VulkanSDK/1.4.341.1"
-              echo "Running Vulkan SDK installer to $INSTALL_TARGET..."
-              "$VULKAN_EXECUTABLE" \
-                --root "$INSTALL_TARGET" \
-                --accept-licenses \
-                --default-answer \
-                --confirm-command install
-              INSTALL_STATUS=$?
+            # Verify ZIP integrity before extraction
+            echo "Validating ZIP file integrity..."
+            if ! unzip -t "$VULKAN_ZIP" > /dev/null 2>&1; then
+              echo "❌ ZIP file is corrupted"
+              unzip -t "$VULKAN_ZIP" || true
+              rm -f "$VULKAN_ZIP"
+              VULKAN_SDK=""
+            else
+              echo "✅ ZIP file is valid"
               
-              if [ $INSTALL_STATUS -eq 0 ]; then
-                VULKAN_SDK="$INSTALL_TARGET"
-                echo "✅ Vulkan SDK installed to $VULKAN_SDK"
+              # List ZIP contents for debugging
+              echo "ZIP contents:"
+              unzip -l "$VULKAN_ZIP" | head -20
+              
+              # Extract with verbose output (not quiet)
+              mkdir -p /tmp/vulkan-extract
+              unzip -o "$VULKAN_ZIP" -d /tmp/vulkan-extract
+              
+              # List extracted contents
+              echo "Extracted structure:"
+              find /tmp/vulkan-extract -type f -o -type d | head -30
+              
+              # Strategy 1: Look for .app bundle (primary)
+              VULKAN_APP=$(find /tmp/vulkan-extract -name "*.app" -type d 2>/dev/null | head -1)
+              if [ -n "$VULKAN_APP" ]; then
+                INSTALLER="$VULKAN_APP/Contents/MacOS/vulkansdk-macOS-1.4.341.1"
+                if [ -f "$INSTALLER" ]; then
+                  echo "Found .app bundle installer: $INSTALLER"
+                  VULKAN_EXECUTABLE="$INSTALLER"
+                else
+                  echo "⚠️ .app bundle found but executable not at expected path"
+                  ls -la "$VULKAN_APP/Contents/MacOS/" || true
+                  VULKAN_EXECUTABLE=""
+                fi
               else
-                echo "❌ Installer failed with status $INSTALL_STATUS"
+                echo "⚠️ No .app bundle found"
+              fi
+              
+              # Strategy 2: Look for direct executable if no .app found
+              if [ -z "$VULKAN_EXECUTABLE" ]; then
+                VULKAN_EXECUTABLE=$(find /tmp/vulkan-extract -name "vulkansdk-macOS-*" -type f -executable 2>/dev/null | head -1)
+                if [ -n "$VULKAN_EXECUTABLE" ]; then
+                  echo "Found direct executable: $VULKAN_EXECUTABLE"
+                else
+                  # Try non-executable variant
+                  VULKAN_EXECUTABLE=$(find /tmp/vulkan-extract -name "vulkansdk-macOS-*" -type f 2>/dev/null | head -1)
+                  if [ -n "$VULKAN_EXECUTABLE" ]; then
+                    echo "Found executable (making executable): $VULKAN_EXECUTABLE"
+                    chmod +x "$VULKAN_EXECUTABLE"
+                  fi
+                fi
+              fi
+              
+              # Execute installer if found
+              if [ -n "$VULKAN_EXECUTABLE" ] && [ -f "$VULKAN_EXECUTABLE" ]; then
+                INSTALL_TARGET="$HOME/VulkanSDK/1.4.341.1"
+                echo "Running Vulkan SDK installer to $INSTALL_TARGET..."
+                "$VULKAN_EXECUTABLE" \
+                  --root "$INSTALL_TARGET" \
+                  --accept-licenses \
+                  --default-answer \
+                  --confirm-command install
+                INSTALL_STATUS=$?
+                
+                if [ $INSTALL_STATUS -eq 0 ]; then
+                  VULKAN_SDK="$INSTALL_TARGET"
+                  echo "✅ Vulkan SDK installed to $VULKAN_SDK"
+                else
+                  echo "❌ Installer failed with status $INSTALL_STATUS"
+                  VULKAN_SDK=""
+                fi
+              else
+                echo "❌ No installer found"
                 VULKAN_SDK=""
               fi
-            else
-              echo "❌ No installer found (neither executable nor .app bundle)"
-              echo "Extracted structure:"
-              find /tmp/vulkan-extract -type f | head -20
-              VULKAN_SDK=""
+              
+              rm -rf /tmp/vulkan-extract "$VULKAN_ZIP"
             fi
-            
-            rm -rf /tmp/vulkan-extract "$VULKAN_ZIP"
           else
             echo "⚠️ Vulkan SDK versioned download/validation failed; trying Homebrew fallback"
           fi
