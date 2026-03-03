@@ -1,9 +1,9 @@
 #!/bin/bash
 # Script to test ccache effectiveness
 
-set -e
+set -eo pipefail
 
-PROJECT_DIR="/Users/felipebraz/PhpstormProjects/pessoal/GeneralsX"
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${PROJECT_DIR}/build/macos-vulkan"
 
 echo "========================================"

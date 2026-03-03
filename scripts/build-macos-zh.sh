@@ -15,7 +15,7 @@
 #   ./scripts/deploy-macos-zh.sh           # copy to runtime dir
 #   ./scripts/run-macos-zh.sh -win         # launch windowed
 
-set -e
+set -eo pipefail
 
 PRESET="macos-vulkan"
 BUILD_DIR="build/${PRESET}"

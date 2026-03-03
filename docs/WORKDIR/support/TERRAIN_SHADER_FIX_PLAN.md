@@ -1,12 +1,12 @@
 # Terrain Shader Metal Compilation Fix — Session 67
 
-**Status**: Em Progresso  
-**Priority**: CRÍTICO — Bloqueando renderização de terrenos  
-**Root Cause**: DXVK Patch 13 precisa ser reaplicado ao DXVK macOS
+**Status**: In Progress
+**Priority**: CRITICAL — Blocking terrain rendering
+**Root Cause**: DXVK Patch 13 needs to be re-applied to DXVK macOS
 
 ---
 
-## O Problema
+## The Problem
 
 ### Log Error
 ```log
@@ -14,84 +14,84 @@
 program_source:393:122: error: use of undeclared identifier 's0_2d_shadowSmplr'
 ```
 
-### Por  Que Ocorre
-1. DXVK processa D3D8 pixel shaders (PS1.x) com SEMPRE "implicit mode"
-2. PS1.x força `majorVersion() < 2` + `forceSamplerTypeSpecConstants` → emite TODOS os 5 tipos de sampler no SPIR-V:
+### Why It Occurs
+1. DXVK processes D3D8 pixel shaders (PS1.x) always using "implicit mode"
+2. PS1.x forces `majorVersion() < 2` + `forceSamplerTypeSpecConstants` → emits ALL 5 sampler types in SPIR-V:
    - `s0_2d`, `s0_2d_shadow`
    - `s0_3d`
    - `s0_cube`, `s0_cube_shadow`
-3. SPIRV-Cross gera entrada de shader Metal que passa TODOS como parâmetros:
+3. SPIRV-Cross generates a Metal shader entry point that passes ALL types as parameters:
    ```metal
    ps_main(v, ..., s0_2d, s0_2dSmplr, s0_2d_shadow, s0_2d_shadowSmplr, s0_3d, s0_3dSmplr, s0_cube, s0_cubeSmplr, ...)
    ```
-4. MoltenVK MSL wrapper só inicializa descritores **realmente usados** (só 2D para terreno):
+4. MoltenVK MSL wrapper only initializes descriptors that are **actually used** (only 2D for terrain):
    ```metal
    s0_2d = spvDescriptorSet0.s0_2d         // OK
    s0_2dSmplr = spvDescriptorSet0.s0_2dSmplr   // OK
-   // s0_2d_shadowSmplr, s0_3d, etc. NÃO EXISTEM
+   // s0_2d_shadowSmplr, s0_3d, etc. DO NOT EXIST
    ```
-5. Metal compiler vê `ps_main(..., s0_2d_shadow, s0_2d_shadowSmplr, ...)` como referências não declaradas → ERRO
+5. Metal compiler sees `ps_main(..., s0_2d_shadow, s0_2d_shadowSmplr, ...)` as undeclared references → ERROR
 
 ---
 
-## A Solução: DXVK Patch 13
+## The Solution: DXVK Patch 13
 
-**Local**: `cmake/dxvk-macos-patches.py` (linha 596+)
+**Location**: `cmake/dxvk-macos-patches.py` (line 596+)
 
-**Alvo**: `build/macos-vulkan/_deps/dxvk-src/src/dxso/dxso_compiler.cpp`
+**Target**: `build/macos-vulkan/_deps/dxvk-src/src/dxso/dxso_compiler.cpp`
 
-### Mudança 1: emitDclSampler() ~line 754
-**Antes**:
+### Change 1: emitDclSampler() ~line 754
+**Before**:
 ```cpp
 const bool implicit = m_programInfo.majorVersion() < 2 || m_moduleInfo.options.forceSamplerTypeSpecConstants;
 ```
 
-**Depois**:
+**After**:
 ```cpp
 // GeneralsX Patch 13: Remove PS1.x auto-trigger
 const bool implicit = m_moduleInfo.options.forceSamplerTypeSpecConstants;
 ```
 
-**Efeito**: Com `forceSamplerTypeSpecConstants=False` (default), PS1.x shaders agora usam o tipo detectado (2D), não todos os 5 tipos.
+**Effect**: With `forceSamplerTypeSpecConstants=False` (default), PS1.x shaders now use the detected type (2D), not all 5 types.
 
-### Mudança 2: emitTextureSample() ~line 3015
-**Antes**:
+### Change 2: emitTextureSample() ~line 3015
+**Before**:
 ```cpp
 if (m_programInfo.majorVersion() >= 2 && !m_moduleInfo.options.forceSamplerTypeSpecConstants) {
 ```
 
-**Depois**:
+**After**:
 ```cpp
 if (!m_moduleInfo.options.forceSamplerTypeSpecConstants) {
 ```
 
-**Efeito**: Para PS1.x, não emite `OpSwitch` de spec constants; emite diretamente o tipo detectado.
+**Effect**: For PS1.x, does not emit an `OpSwitch` over spec constants; emits the detected type directly.
 
 ---
 
-## Passos de Implementação
+## Implementation Steps
 
-### 1. Reconfigurar CMake
+### 1. Reconfigure CMake
 ```bash
-cd /Users/felipebraz/PhpstormProjects/pessoal/GeneralsX
+cd /path/to/GeneralsX
 rm -rf build/macos-vulkan
 cmake --preset macos-vulkan
 ```
-- CMake executa `FetchContent_MakeAvailable(dxvk)` → download DXVK pristino
-- Depois chama `add_custom_command` que roda `cmake/dxvk-macos-patches.py`
-- Script aplica Patch 13 + outros patches
+- CMake runs `FetchContent_MakeAvailable(dxvk)` → downloads pristine DXVK
+- Then calls `add_custom_command` which runs `cmake/dxvk-macos-patches.py`
+- Script applies Patch 13 + other patches
 
-### 2. Recompilar DXVK
+### 2. Recompile DXVK
 ```bash
 cmake --build build/macos-vulkan --target dxvk_compiler --parallel
 ```
 
-### 3. Recompilar GeneralsXZH
+### 3. Recompile GeneralsXZH
 ```bash
-cmake --build build/macos-vulkan --target GeneralsXZH --parallel
+cmake --build build/macos-vulkan --target z_generals --parallel
 ```
 
-### 4. Deploy e Test
+### 4. Deploy and Test
 ```bash
 ./scripts/deploy-macos-zh.sh
 ./scripts/run-macos-zh.sh -win
@@ -101,29 +101,29 @@ cmake --build build/macos-vulkan --target GeneralsXZH --parallel
 
 ## Diagnostic Checks
 
-### Verificar Patch Aplicado
+### Verify Patch Applied
 ```bash
 grep -A5 "GeneralsX Patch 13" build/macos-vulkan/_deps/dxvk-src/src/dxso/dxso_compiler.cpp
-# Deve mostrar:
+# Should show:
 # const bool implicit = m_moduleInfo.options.forceSamplerTypeSpecConstants;
 ```
 
-### Verificar Metal Shader Compilation
+### Verify Metal Shader Compilation
 ```bash
-# No xcode build output, buscar por "Metal shader compiled"
-# Terreno deve renderizar SEM erros "undeclared identifier"
+# In the Xcode build output, look for "Metal shader compiled"
+# Terrain should render WITHOUT "undeclared identifier" errors
 ```
 
 ---
 
-## Resultado Esperado
+## Expected Result
 
-- ✅ Terreno renderiza com texturas visíveis
-- ✅ Menu principal carrega sem shader errors
-- ✅ Nenhum erro `VK_ERROR_INITIALIZATION_FAILED` em shaders
+- Terrain renders with visible textures
+- Main menu loads without shader errors
+- No `VK_ERROR_INITIALIZATION_FAILED` errors in shaders
 
 ---
 
-## Documentação Relacionada
+## Related Documentation
 - `docs/WORKDIR/lessons/2026-02-LESSONS.md` — Lesson: "DXVK PS1.x Sampler Spec Constants"
 - `docs/DEV_BLOG/2026-02-DIARY.md` — Session 66 entry

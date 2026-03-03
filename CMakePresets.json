@@ -211,7 +211,7 @@
         },
         {
             "name": "macos-vulkan",
-            "displayName": "macOS (MoltenVK + SDL3 + OpenAL) Universal Binary",
+            "displayName": "macOS (MoltenVK + SDL3 + OpenAL) arm64 Native",
             "inherits": "default-vcpkg",
             "generator": "Ninja",
             "hidden": false,

@@ -83,7 +83,7 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
 
   ExternalProject_Add(dxvk_macos_build
     GIT_REPOSITORY    https://github.com/doitsujin/dxvk.git
-    GIT_TAG           ${DXVK_VERSION}
+    GIT_TAG           ad253b8a7e20b7cf16fce7d1c505928a434eac29  # v2.6 pinned commit SHA
     SOURCE_DIR        ${DXVK_SOURCE_DIR}
     BINARY_DIR        ${DXVK_BUILD_DIR}
     # Apply macOS patches before configuring

@@ -2,7 +2,7 @@ name: Build macOS
 
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
 
 on:
   workflow_call:
@@ -81,8 +81,8 @@ jobs:
             if [ -f "$VULKAN_DMG" ]; then
               echo "Mounting DMG..."
               hdiutil attach "$VULKAN_DMG" -mountpoint /tmp/vulkan-mount
-              sudo mkdir -p "$HOME/VulkanSDK"
-              sudo cp -r /tmp/vulkan-mount/VulkanSDK/*macOS* "$HOME/VulkanSDK" || true
+              mkdir -p "$HOME/VulkanSDK"
+              cp -r /tmp/vulkan-mount/VulkanSDK/*macOS* "$HOME/VulkanSDK" || true
               hdiutil detach /tmp/vulkan-mount
               rm -f "$VULKAN_DMG"
             else
@@ -114,7 +114,8 @@ jobs:
           mkdir -p logs
           echo "VULKAN_SDK=$VULKAN_SDK"
           cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_macos.log
-          if [ $? -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
+          CONFIG_STATUS=${PIPESTATUS[0]}
+          if [ $CONFIG_STATUS -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
 
       - name: Build ${{ inputs.game }}
         run: |

@@ -18,17 +18,12 @@ if(SAGE_USE_CCACHE)
         message(STATUS "ccache enabled: ${CCACHE_PROGRAM}")
         
         # GeneralsX @build BenderAI 25/02/2026
-        # Apply time_macros sloppiness to fix 62.46% uncacheable calls issue
-        # __TIME__ and __DATE__ in WinMain.cpp were breaking cache hits
+        # Use CCACHE_SLOPPINESS env var so we don't mutate the global ccache config
+        # as a side-effect of CMake configure.  The env var is inherited by compiler
+        # invocations launched through CMAKE_<LANG>_COMPILER_LAUNCHER.
         if(APPLE)
-            # macOS uses both XDG and macOS-specific config paths
-            execute_process(
-                COMMAND ccache -o sloppiness=time_macros,locale
-                RESULT_VARIABLE CCACHE_CONFIG_RESULT
-            )
-            if(CCACHE_CONFIG_RESULT EQUAL 0)
-                message(STATUS "ccache: sloppiness configured for nondeterministic macros (time_macros,locale)")
-            endif()
+            set(ENV{CCACHE_SLOPPINESS} "time_macros,locale")
+            message(STATUS "ccache: CCACHE_SLOPPINESS=time_macros,locale set for this build")
         endif()
     else()
         message(STATUS "ccache not found, building without compiler cache")

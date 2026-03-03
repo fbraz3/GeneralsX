@@ -14,6 +14,7 @@ macOS requires:
                           (/proc/self/exe doesn't exist on macOS)
   7. vulkan_loader.cpp:   loadVulkanLibrary() only tries libvulkan.so/libvulkan.so.1 (Linux).
                           Add macOS branch: libvulkan.dylib, libvulkan.1.dylib, libMoltenVK.dylib
+                          (use stable names only; avoid versioned dylib names that become stale)
   8. dxvk_extensions.h +  MoltenVK requires VK_KHR_portability_enumeration instance extension
      dxvk_instance.cpp:   AND VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR in VkInstanceCreateInfo
                           or vkEnumeratePhysicalDevices returns VK_ERROR_INCOMPATIBLE_DRIVER.
@@ -247,10 +248,9 @@ def main():
             "#elif defined(__APPLE__)\n"
             "    // macOS: try the Vulkan loader (from Vulkan SDK) and MoltenVK directly.\n"
             "    // LoadLibraryA() maps to dlopen() on non-Windows DXVK native builds.\n"
-            "    static const std::array<const char*, 4> dllNames = {{\n"
+            "    static const std::array<const char*, 3> dllNames = {{\n"
             "      \"libvulkan.dylib\",\n"
             "      \"libvulkan.1.dylib\",\n"
-            "      \"libvulkan.1.4.341.dylib\",\n"
             "      \"libMoltenVK.dylib\",\n"
             "    }};\n"
             "#else\n"
