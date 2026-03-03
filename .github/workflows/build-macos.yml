@@ -73,6 +73,9 @@ jobs:
           # Freetype + Fontconfig (required by font rendering)
           brew install freetype fontconfig
           
+          # GLM (required by CompatLib for math, SAGE_USE_GLM)
+          brew install glm
+          
           # Verify all tools are available
           cmake --version | head -1
           ninja --version | head -1
@@ -80,6 +83,7 @@ jobs:
           pkg-config --version | head -1
           clang --version | head -1
           pkg-config --modversion libavcodec 2>/dev/null && echo "✅ FFmpeg: libavcodec available" || echo "❌ FFmpeg: libavcodec NOT found"
+          find /opt/homebrew -name "glmConfig.cmake" 2>/dev/null | head -1 && echo "✅ GLM cmake config found" || echo "❌ GLM cmake config NOT found"
           
           echo "✅ Build tools installed"
 
