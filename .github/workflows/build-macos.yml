@@ -56,9 +56,19 @@ jobs:
       - name: Install Dependencies
         run: |
           echo "Installing macOS build dependencies..."
+          # Ensure xcode-select is properly configured (needed for clang/clang++)
+          xcode-select --install 2>/dev/null || echo "xcode-select already installed"
+          xcode-select -p || (echo "❌ Xcode command-line tools not installed"; exit 1)
+          
+          # Install CMake, Ninja, Meson via Homebrew
           brew install cmake ninja meson
-          cmake --version
-          ninja --version
+          
+          # Verify all tools are available
+          cmake --version | head -1
+          ninja --version | head -1
+          meson --version | head -1
+          clang --version | head -1
+          
           echo "✅ Build tools installed"
 
       - name: Install Vulkan SDK
@@ -212,8 +222,10 @@ jobs:
           echo "VULKAN_SDK=$VULKAN_SDK" >> $GITHUB_ENV
           echo "✅ Vulkan SDK path set to: $VULKAN_SDK"
           
-          # Verify MoltenVK presence
-          if [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
+          # Verify MoltenVK presence (primary: macOS/lib, fallback: lib)
+          if [ -f "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" ]; then
+            echo "✅ MoltenVK found at $VULKAN_SDK/macOS/lib/libMoltenVK.dylib"
+          elif [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
             echo "✅ MoltenVK found at $VULKAN_SDK/lib/libMoltenVK.dylib"
           else
             echo "⚠️ MoltenVK not found at expected location; build may still work if system Vulkan is available"
