@@ -212,7 +212,7 @@
         {
             "name": "macos-vulkan",
             "displayName": "macOS (MoltenVK + SDL3 + OpenAL) arm64 Native",
-            "inherits": "default",
+            "inherits": "default-vcpkg",
             "generator": "Ninja",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",

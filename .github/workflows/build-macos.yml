@@ -53,6 +53,11 @@ jobs:
           restore-keys: |
             brew-macos-${{ runner.os }}-
 
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '533a5fda5c0646d1771345fb572e759283444d5f'
+
       - name: Install Dependencies
         run: |
           echo "Installing macOS build dependencies..."
@@ -265,6 +270,8 @@ jobs:
       - name: Configure CMake (macOS)
         env:
           VULKAN_SDK: ${{ env.VULKAN_SDK }}
+          VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
+          VCPKG_DEFAULT_TRIPLET: arm64-osx
           CC: clang
           CXX: clang++
         run: |
