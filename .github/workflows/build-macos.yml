@@ -56,6 +56,10 @@ jobs:
       - name: Install Dependencies
         run: |
           echo "Installing macOS build dependencies..."
+          
+          # Update Homebrew to ensure fresh formulas
+          brew update
+          
           # Ensure xcode-select is properly configured (needed for clang/clang++)
           xcode-select --install 2>/dev/null || echo "xcode-select already installed"
           xcode-select -p || (echo "❌ Xcode command-line tools not installed"; exit 1)
@@ -236,9 +240,13 @@ jobs:
       - name: Configure CMake (macOS)
         env:
           VULKAN_SDK: ${{ env.VULKAN_SDK }}
+          CC: clang
+          CXX: clang++
         run: |
           mkdir -p logs
           echo "VULKAN_SDK=$VULKAN_SDK"
+          echo "CC=$CC"
+          echo "CXX=$CXX"
           cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_macos.log
           CONFIG_STATUS=${PIPESTATUS[0]}
           if [ $CONFIG_STATUS -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
@@ -325,10 +333,15 @@ jobs:
             [ -f "$f" ] && cp -v "$f" "${RUNTIME_DIR}/lib/" || true
           done
           
-          # MoltenVK dylib from Vulkan SDK
-          if [ -f "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" ]; then
-            echo "  Copying MoltenVK..."
+          # MoltenVK dylib from Vulkan SDK (check both primary and fallback paths)
+          if [ -f "${{ env.VULKAN_SDK }}/macOS/lib/libMoltenVK.dylib" ]; then
+            echo "  Copying MoltenVK from macOS/lib..."
+            cp -v "${{ env.VULKAN_SDK }}/macOS/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+          elif [ -f "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" ]; then
+            echo "  Copying MoltenVK from lib..."
             cp -v "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+          else
+            echo "  ⚠️ MoltenVK dylib not found in Vulkan SDK"
           fi
           
           echo "  Copying run.sh wrapper from scripts..."
