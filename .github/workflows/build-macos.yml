@@ -64,14 +64,22 @@ jobs:
           xcode-select --install 2>/dev/null || echo "xcode-select already installed"
           xcode-select -p || (echo "❌ Xcode command-line tools not installed"; exit 1)
           
-          # Install CMake, Ninja, Meson via Homebrew
-          brew install cmake ninja meson
+          # Build tools
+          brew install cmake ninja meson pkg-config
+          
+          # FFmpeg (required by GameEngineDevice for video playback via pkg-config)
+          brew install ffmpeg
+          
+          # Freetype + Fontconfig (required by font rendering)
+          brew install freetype fontconfig
           
           # Verify all tools are available
           cmake --version | head -1
           ninja --version | head -1
           meson --version | head -1
+          pkg-config --version | head -1
           clang --version | head -1
+          pkg-config --modversion libavcodec 2>/dev/null && echo "✅ FFmpeg: libavcodec available" || echo "❌ FFmpeg: libavcodec NOT found"
           
           echo "✅ Build tools installed"
 
