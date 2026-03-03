@@ -43,13 +43,13 @@ BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"      # WRONG
 ```
 
 **Root Cause**: Binary directory structure doesn't match. Actual paths are:
-- `build/{preset}/GeneralsMD/z_generals` (not GeneralsXZH)
-- `build/{preset}/Generals/g_generals` (not GeneralsX)
+- `build/{preset}/GeneralsMD/GeneralsXZH` (OUTPUT_NAME set in GeneralsMD/Code/Main/CMakeLists.txt)
+- `build/{preset}/Generals/GeneralsX` (OUTPUT_NAME set in Generals/Code/Main/CMakeLists.txt)
 
 **Fix Applied**:
 ```yaml
-BINARY="build/${{ inputs.preset }}/GeneralsMD/z_generals"   # CORRECT
-BINARY="build/${{ inputs.preset }}/Generals/g_generals"     # CORRECT
+BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"   # CORRECT
+BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"        # CORRECT
 ```
 
 **Impact**: Artifact verification fails even after successful build.

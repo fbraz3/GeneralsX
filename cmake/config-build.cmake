@@ -107,7 +107,7 @@ endif()
 if(APPLE AND SAGE_USE_MOLTENVK)
     find_package(Vulkan REQUIRED COMPONENTS MoltenVK)
     if(NOT Vulkan_FOUND)
-        message(FATAL_ERROR "MoltenVK not found. Install: brew install --cask vulkan-sdk")
+        message(FATAL_ERROR "MoltenVK not found. Install from https://vulkan.lunarg.com/sdk/home#mac (LunarG installer to ~/VulkanSDK/<version>/macOS)")
     endif()
     
     target_compile_definitions(core_config INTERFACE SAGE_USE_MOLTENVK)

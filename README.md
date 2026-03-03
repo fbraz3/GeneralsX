@@ -37,7 +37,7 @@ This project transforms the Windows-exclusive Command & Conquer: Generals into a
 
 - **🐧 Linux Native Support** - ✅ **FUNCTIONAL** - Native builds via Docker with DXVK + SDL3
 - **🪟 Windows Enhanced** - Maintained compatibility with original VC6 builds
-- **🍎 macOS Native Support** - � **IN PROGRESS** - ARM64 native builds working (DXVK + MoltenVK)
+- **🍎 macOS Native Support** - **IN PROGRESS** - ARM64 native builds working (DXVK + MoltenVK)
 - **🎮 Modern Graphics** - DXVK translates DirectX 8 → Vulkan for native Linux rendering
 - **🔧 Modern Architecture** - SDL3 windowing/input, portable INI configuration
 

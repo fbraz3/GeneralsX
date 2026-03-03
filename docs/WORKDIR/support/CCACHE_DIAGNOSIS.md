@@ -1,86 +1,90 @@
-# RELATÓRIO: Diagnóstico e Solução do CCCache GeneralsX
+# REPORT: CCCache Diagnosis and Solution for GeneralsX
 
-## Problema Identificado
+## Problem Identified
 
-**CCCache está praticamente inútil neste projeto!**
+**CCCache is nearly useless in this project!**
 
-StatísticaS encontradas:
-- **37.53%** de chamadas "Cacheable" 
-- **62.46%** de chamadas "UNCACHEABLE" ← **ESTE É O PROBLEMA!**
-- De apenas 37.53% cacheable, temos 73.36% de hits
-- Isso significa: apenas ~27% das compilações aproveitam o cache!
+Statistics found:
+- **37.53%** of calls "Cacheable"
+- **62.46%** of calls "UNCACHEABLE" <- **THIS IS THE PROBLEM!**
+- Of the 37.53% cacheable, we have 73.36% hits
+- Meaning: only ~27% of compilations actually use the cache!
 
-## Causa Raiz
+## Root Cause
 
-### `__TIME__` e `__DATE__` em WinMain.cpp
+### `__TIME__` and `__DATE__` in WinMain.cpp
 
-Arquivo: `GeneralsMD/Code/Main/WinMain.cpp` linha 899
+File: `GeneralsMD/Code/Main/WinMain.cpp` line 899
 
 ```cpp
 AsciiString(__TIME__), AsciiString(__DATE__)
 ```
 
-Esses macros **mudam A CADA SEGUNDO**, interferindo na cache key do ccache.
+These macros **change EVERY SECOND**, interfering with the ccache key.
 
-**Mas espera...** isso deveria ser tratável com ccache sloppiness!
+**But wait...** this should be addressable with ccache sloppiness!
 
-## Solução Proposta
+## Proposed Solution
 
-### 1. Configurar CCCache com `time_macros` Sloppiness
+### 1. Configure CCCache with `time_macros` Sloppiness
 
-Criar arquivo: `~/.config/ccache/ccache.conf`
+Create file: `~/.config/ccache/ccache.conf`
 
 ```ini
-# GeneralsX ccache configuration  
-cache_dir = /Users/felipebraz/Library/Caches/ccache
+# GeneralsX ccache configuration
 max_size = 20.0G
 compress = true
 compression_level = 9
 
-# KEY: Ignorar __TIME__, __DATE__, __TIMESTAMP__ na cache key
+# KEY: Ignore __TIME__, __DATE__, __TIMESTAMP__ in the cache key
 sloppiness = time_macros,locale
 
 direct_mode = true
 stats = true
 ```
 
-**EM macOS**, o ccache procura em:
+**On macOS**, ccache looks in:
 - `~/.config/ccache/ccache.conf` (XDG standard)
 - `~/Library/Preferences/ccache/ccache.conf` (macOS specific)
 
-### 2. Verificar se está aplicado
+Alternatively, set per-build without modifying the global config:
+```bash
+CCACHE_SLOPPINESS=time_macros,locale cmake --build ...
+```
+
+### 2. Verify it is applied
 
 ```bash
 ccache -p | grep sloppiness
-# Deve mostrar: sloppiness = time_macros,locale
+# Should show: sloppiness = time_macros,locale
 ```
 
-### 3. Testar a melhoria
+### 3. Test the improvement
 
 ```bash
-# Limpar stats
+# Clear stats
 ccache -z
 
-# Compilar (primeira vez)
+# Compile (first time)
 time cmake --build build/macos-vulkan --target z_ww3d2
 
-# Stats intermediárias  
+# Intermediate stats
 ccache -s
 
-# Compilar novamente (segunda vez - deve usar cache)
+# Compile again (second time -- should use cache)
 time cmake --build build/macos-vulkan --target z_ww3d2
 
-# Stats finais
+# Final stats
 ccache -s
 ```
 
-**Resultado esperado**: 
-- Segunda compilação deve ser **2-3x mais rápida**
-- Hit rate deve subir para **>70%**
+**Expected result**:
+- Second compilation should be **2-3x faster**
+- Hit rate should rise to **>70%**
 
-## Alternativa: Remover __TIME__ e __DATE__ (Nuclear Option)
+## Alternative: Remove `__TIME__` and `__DATE__` (Nuclear Option)
 
-Se mesmo com `time_macros` ainda tiver problemas:
+If even with `time_macros` there are still problems:
 
 ```cpp
 // GeneralsX @bugfix BenderAI 25/02/2026
@@ -89,40 +93,38 @@ Se mesmo com `time_macros` ainda tiver problemas:
 AsciiString("00:00:00"), AsciiString("Jan 01 1970")
 ```
 
-**Contra**: Metadata fica incorreta na build info.
+**Downside**: Build metadata becomes inaccurate.
 
-## Status Técnico
+## Technical Status
 
-### Arquivos Envolvidos
+### Files Involved
 
-- `cmake/ccache.cmake` - Integração CMake (já está correto)
-- `GeneralsMD/Code/Main/WinMain.cpp` - Source do __TIME__/__DATE__ 
-- `/Users/felipebraz/.config/ccache/ccache.conf` - Config (criado)
-- `/Users/felipebraz/Library/Preferences/ccache/ccache.conf` - Config macOS backup (pendente criar)
+- `cmake/ccache.cmake` - CMake integration (sets CCACHE_SLOPPINESS env var)
+- `GeneralsMD/Code/Main/WinMain.cpp` - Source of __TIME__/__DATE__
+- `~/.config/ccache/ccache.conf` - User config (optional, see setup_ccache.sh)
 
-### Próximas Ações
+### Next Actions
 
-1. [ ] Garantir que `sloppiness = time_macros,locale` está em ambos os config files
-2. [ ] `ccache -p | grep sloppiness` deve mostrar `time_macros,locale`
-3. [ ] Rodar test_ccache.sh para validar melhoria
-4. [ ] Se ainda não funcionar, investigar outras 62% uncacheable
-5. [ ] Considerar nuclear option (remover __TIME__/__DATE__)
+1. [ ] Ensure `sloppiness = time_macros,locale` is active (via env var or config file)
+2. [ ] `ccache -p | grep sloppiness` should show `time_macros,locale`
+3. [ ] Run test_ccache.sh to validate improvement
+4. [ ] If still not working, investigate other 62% uncacheable calls
+5. [ ] Consider nuclear option (remove __TIME__/__DATE__)
 
-## Benchmarks Esperados (com sloppiness aplicado)
+## Expected Benchmarks (with sloppiness applied)
 
-### Antes (sem sloppiness):
+### Before (without sloppiness):
 - 62.46% uncacheable
-- Build z_ww3d2 primeira vez: ~130 segundos
-- Build z_ww3d2 segunda vez: ~120 segundos (pouca diferença!)
+- Build z_ww3d2 first time: ~130 seconds
+- Build z_ww3d2 second time: ~120 seconds (little difference!)
 
-### Depois (com sloppiness + time_macros):
-- ~27% uncacheable (significativa redução)
-- Build z_ww3d2 primeira vez: ~130 segundos
-- Build z_ww3d2 segunda vez: ~20-30 segundos (4-6x mais rápido!) 
+### After (with sloppiness + time_macros):
+- ~27% uncacheable (significant reduction)
+- Build z_ww3d2 first time: ~130 seconds
+- Build z_ww3d2 second time: ~20-30 seconds (4-6x faster!)
 
-## Referências
+## References
 
-- CCCache 4.12.2 (instalado no projeto)
-- `time_macros` sloppiness: Ignora `__TIME__`, `__DATE__`, `__TIMESTAMP__`
-- Locale sloppiness: Ignora diferenças de locale nos preprocessor directives
-
+- CCCache 4.12.2 (used in this project)
+- `time_macros` sloppiness: Ignores `__TIME__`, `__DATE__`, `__TIMESTAMP__`
+- Locale sloppiness: Ignores locale differences in preprocessor directives

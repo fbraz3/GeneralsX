@@ -1,5 +1,3 @@
-# Análise de Viabilidade: Port de GeneralsX/GeneralsXZH para macOS
-
 # Feasibility Analysis: Porting GeneralsX/GeneralsXZH to macOS
 
 **Date:** February 23, 2026  

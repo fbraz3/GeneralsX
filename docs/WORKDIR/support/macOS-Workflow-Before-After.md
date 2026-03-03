@@ -10,25 +10,25 @@
 ### ❌ BEFORE (Incorrect)
 ```yaml
 Build ${{ inputs.game }}:
-  - target: GeneralsXZH    # ❌ WRONG - Not a CMake target
-  - target: Generals       # ❌ WRONG - Not a CMake target
+  - target: GeneralsXZH    # WRONG - Not a CMake target
+  - target: Generals       # WRONG - Not a CMake target
 
 Verify Artifacts:
-  - BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"  # ❌ WRONG PATH
-  - BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"      # ❌ WRONG PATH
+  - BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"  # CORRECT PATH (OUTPUT_NAME)
+  - BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"      # CORRECT PATH (OUTPUT_NAME)
 ```
 
-**Result**: Build fails (no such target), artifact verification fails.
+**Result**: Build step fails (no such target `GeneralsXZH`), artifact verification would work if build succeeded.
 
 ### ✅ AFTER (Correct)
 ```yaml
 Build ${{ inputs.game }}:
-  - target: z_generals     # ✅ CORRECT (from GeneralsMD/CMakeLists.txt)
-  - target: g_generals     # ✅ CORRECT (from Generals/CMakeLists.txt)
+  - target: z_generals     # CORRECT (from GeneralsMD/CMakeLists.txt)
+  - target: g_generals     # CORRECT (from Generals/CMakeLists.txt)
 
 Verify Artifacts:
-  - BINARY="build/${{ inputs.preset }}/GeneralsMD/z_generals"   # ✅ CORRECT PATH
-  - BINARY="build/${{ inputs.preset }}/Generals/g_generals"     # ✅ CORRECT PATH
+  - BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"  # CORRECT PATH (OUTPUT_NAME)
+  - BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"      # CORRECT PATH (OUTPUT_NAME)
 ```
 
 ---

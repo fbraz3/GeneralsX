@@ -280,7 +280,7 @@ after updating the Vulkan SDK copies the new `libMoltenVK.dylib` to the runtime 
 | `scripts/deploy-macos-zh.sh` | Deploy binary + Vulkan runtime to game dir |
 | `scripts/run-macos-zh.sh` | Launch with correct environment |
 | `cmake/dx8.cmake` | DXVK ExternalProject build (includes PATCH_COMMAND) |
-| `cmake/dxvk-macos-patches.py` | All 10 DXVK patches (auto-applied by cmake) |
+| `cmake/dxvk-macos-patches.py` | All 13 DXVK patches (auto-applied by cmake) |
 | `CMakePresets.json` (`macos-vulkan`) | Build preset (arm64, MoltenVK, SDL3, OpenAL, ffmpeg) |
 
 ---

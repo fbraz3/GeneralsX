@@ -24,9 +24,20 @@ fi
 # Dylibs in game dir + Vulkan SDK for MoltenVK
 export DYLD_LIBRARY_PATH="${GAME_DIR}:${DYLD_LIBRARY_PATH:-}"
 
-# MoltenVK ICD so Vulkan loader finds MoltenVK
-MVK_ICD="$(find "${HOME}" /Users -maxdepth 6 -name "MoltenVK_icd.json" 2>/dev/null | head -1 || true)"
-if [[ -n "${MVK_ICD}" ]]; then
+# MoltenVK ICD so Vulkan loader finds MoltenVK.
+# deploy-macos-zh.sh copies MoltenVK_icd.json into the game runtime dir;
+# fall back to the Vulkan SDK path if it is not there yet.
+MVK_ICD="${GAME_DIR}/MoltenVK_icd.json"
+if [[ ! -f "${MVK_ICD}" ]]; then
+    # Try the Vulkan SDK installation path (LunarG installer layout)
+    for sdk_candidate in "${HOME}/VulkanSDK"/*/macOS; do
+        if [[ -f "${sdk_candidate}/share/vulkan/icd.d/MoltenVK_icd.json" ]]; then
+            MVK_ICD="${sdk_candidate}/share/vulkan/icd.d/MoltenVK_icd.json"
+            break
+        fi
+    done
+fi
+if [[ -f "${MVK_ICD}" ]]; then
     export VK_ICD_FILENAMES="${MVK_ICD}"
 fi
 
