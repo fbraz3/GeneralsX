@@ -140,13 +140,9 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     # 1. Pass -mcpu=apple-m1 -arch arm64 to Clang
     # 2. Use --native-file to tell Meson the build machine is aarch64
     # 3. Pass VULKAN_SDK to Meson if detected
+    # NOTE: VULKAN_SDK_ENV_VAR must be on same line to avoid CMake parse errors
     CONFIGURE_COMMAND
-      ${CMAKE_COMMAND} -E env
-        CC=clang CXX=clang++
-        "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1"
-        "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1"
-        "LDFLAGS=-arch ${DXVK_HOST_ARCH}"
-        ${VULKAN_SDK_ENV_VAR}
+      ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR}
       ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR}
         --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini
         -Ddxvk_native_wsi=sdl3
