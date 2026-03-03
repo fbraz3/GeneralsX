@@ -329,11 +329,19 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	Invalidate_Cached_Render_States();
 
 	if (!lite) {
-		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO loading
+		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO/DYLIB loading (Phase 5: macOS)
 #ifdef _WIN32
 		D3D8Lib = LoadLibrary("D3D8.DLL");
+#elif defined(__APPLE__)
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.dylib (macOS)...\n");
+		D3D8Lib = LoadLibrary("libdxvk_d3d8.dylib");
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - LoadLibrary result: %p\n", (void*)D3D8Lib);
+		if (D3D8Lib == nullptr) {
+			const char* error = dlerror();
+			fprintf(stderr, "ERROR: DX8Wrapper::Init() - dlerror(): %s\n", error ? error : "unknown");
+		}
 #else
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.so...\n");
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.so (Linux)...\n");
 		D3D8Lib = LoadLibrary("libdxvk_d3d8.so");
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - LoadLibrary result: %p\n", (void*)D3D8Lib);
 		if (D3D8Lib == nullptr) {
@@ -2569,6 +2577,18 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 
 	}
 	DX8_ErrorCode(ret);
+
+	// GeneralsX @bugfix felipebraz 10/06/2025 On non-Windows builds DX8_ErrorCode is a silent no-op
+	// in non-debug builds (WWASSERT expands to nothing). Log failures to stderr so crashes can be
+	// diagnosed without a debugger attached.
+#if !defined(_WIN32)
+	if (!SUCCEEDED(ret)) {
+		StringClass format_name(0, true);
+		Get_WW3D_Format_Name(static_cast<WW3DFormat>(format), format_name);
+		fprintf(stderr, "[GeneralsX] _Create_DX8_Texture FAILED: hresult=0x%08X %dx%d fmt=%s mips=%d pool=%d rendertarget=%d\n",
+			ret, (int)width, (int)height, format_name.str(), (int)mip_level_count, (int)pool, (int)rendertarget);
+	}
+#endif
 
 	return texture;
 }

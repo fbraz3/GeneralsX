@@ -29,6 +29,9 @@
 #ifdef _WIN32
 #include <process.h>
 #include <windows.h>
+#else
+// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - GetCurrentThreadIdAsInt for non-Windows
+#include "thread_compat.h"
 #endif
 
 ThreadClass::ThreadClass(const char *thread_name, ExceptionHandlerType exception_handler) : handle(0), running(false), thread_priority(0)
@@ -52,7 +55,12 @@ void __cdecl ThreadClass::Internal_Thread_Function(void* params)
 {
 	ThreadClass* tc=reinterpret_cast<ThreadClass*>(params);
 	tc->running=true;
+	// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - pthread_t is a pointer on macOS; use int wrapper
+#ifdef _WIN32
 	tc->ThreadID = GetCurrentThreadId();
+#else
+	tc->ThreadID = GetCurrentThreadIdAsInt();
+#endif
 
 #ifdef _WIN32
 	Register_Thread_ID(tc->ThreadID, tc->ThreadName);

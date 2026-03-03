@@ -1,0 +1,231 @@
+name: Build macOS
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  workflow_call:
+    inputs:
+      game:
+        required: true
+        type: string
+        description: "Game to build (GeneralsMD, Generals)"
+      preset:
+        required: false
+        type: string
+        default: "macos-vulkan"
+        description: "CMake preset for macOS"
+  workflow_dispatch:
+    inputs:
+      game:
+        type: choice
+        description: "Game to build"
+        options:
+          - GeneralsMD
+          - Generals
+        default: GeneralsMD
+      preset:
+        type: choice
+        description: "CMake preset for macOS"
+        options:
+          - macos-vulkan
+        default: macos-vulkan
+
+jobs:
+  build:
+    name: ${{ inputs.game }}@${{ inputs.preset }}
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache brew packages
+        id: cache-brew
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: brew-macos-${{ runner.os }}-${{ hashFiles('.github/workflows/build-macos.yml') }}
+          restore-keys: |
+            brew-macos-${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: |
+          echo "Installing macOS build dependencies..."
+          brew install cmake ninja meson
+          cmake --version
+          ninja --version
+          echo "✅ Build tools installed"
+
+      - name: Install Vulkan SDK
+        run: |
+          echo "Installing Vulkan SDK (required for DXVK + MoltenVK)..."
+          
+          # Fallback 1: Direct download with retry
+          VULKAN_URL="https://sdk.lunarg.com/download/latest/mac/vulkan-sdk.dmg"
+          VULKAN_DMG="/tmp/vulkan-sdk.dmg"
+          
+          if [ ! -d "$HOME/VulkanSDK" ]; then
+            for attempt in 1 2 3; do
+              echo "Download attempt $attempt..."
+              if curl -L --max-time 60 -o "$VULKAN_DMG" "$VULKAN_URL"; then
+                break
+              fi
+              if [ $attempt -lt 3 ]; then sleep 10; fi
+            done
+            
+            if [ -f "$VULKAN_DMG" ]; then
+              echo "Mounting DMG..."
+              hdiutil attach "$VULKAN_DMG" -mountpoint /tmp/vulkan-mount
+              mkdir -p "$HOME/VulkanSDK"
+              cp -r /tmp/vulkan-mount/VulkanSDK/*macOS* "$HOME/VulkanSDK" || true
+              hdiutil detach /tmp/vulkan-mount
+              rm -f "$VULKAN_DMG"
+            else
+              echo "⚠️ Vulkan SDK download failed; build may fail if not using system Vulkan"
+            fi
+          fi
+          
+          # Set environment variables for downstream steps
+          export VULKAN_SDK="$(find $HOME/VulkanSDK -name 'macOS*' -type d | head -1)"
+          if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
+            echo "⚠️ Vulkan SDK not found in expected location"
+            VULKAN_SDK="$HOME/VulkanSDK"
+          fi
+          
+          echo "VULKAN_SDK=$VULKAN_SDK" >> $GITHUB_ENV
+          echo "✅ Vulkan SDK path: $VULKAN_SDK"
+          
+          # Verify MoltenVK presence
+          if [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
+            echo "✅ MoltenVK found at $VULKAN_SDK/lib/libMoltenVK.dylib"
+          else
+            echo "⚠️ MoltenVK not found; graphics may fail"
+          fi
+
+      - name: Configure CMake (macOS)
+        env:
+          VULKAN_SDK: ${{ env.VULKAN_SDK }}
+        run: |
+          mkdir -p logs
+          echo "VULKAN_SDK=$VULKAN_SDK"
+          cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_macos.log
+          CONFIG_STATUS=${PIPESTATUS[0]}
+          if [ $CONFIG_STATUS -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
+
+      - name: Build ${{ inputs.game }}
+        run: |
+          mkdir -p logs
+          NPROC=$(sysctl -n hw.ncpu)
+          echo "Building with $NPROC parallel jobs..."
+          
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            cmake --build build/${{ inputs.preset }} --target z_generals -j $NPROC 2>&1 | tee logs/build_zh_macos.log
+            BUILD_STATUS=${PIPESTATUS[0]}
+            LOG_FILE="logs/build_zh_macos.log"
+          else
+            cmake --build build/${{ inputs.preset }} --target g_generals -j $NPROC 2>&1 | tee logs/build_generals_macos.log
+            BUILD_STATUS=${PIPESTATUS[0]}
+            LOG_FILE="logs/build_generals_macos.log"
+          fi
+          
+          if [ $BUILD_STATUS -eq 0 ]; then
+            echo "✅ Build completed successfully"
+          else
+            echo "❌ Build failed; see $LOG_FILE for details"
+            tail -100 "$LOG_FILE"
+            exit 1
+          fi
+
+      - name: Verify Build Artifacts
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+            DISPLAY_NAME="GeneralsXZH"
+            GAME_DIR="GeneralsMD"
+          else
+            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+            DISPLAY_NAME="Generals"
+            GAME_DIR="Generals"
+          fi
+          
+          if [ -f "$BINARY" ]; then
+            echo "✅ Binary built: $DISPLAY_NAME"
+            file "$BINARY"
+            ls -lh "$BINARY"
+            
+            # Verify it's a valid Mach-O binary
+            if file "$BINARY" | grep -q "Mach-O"; then
+              echo "✅ Valid Mach-O binary"
+            else
+              echo "❌ File exists but is not a valid Mach-O binary"
+              exit 1
+            fi
+          else
+            echo "❌ Binary NOT found: $BINARY"
+            echo "Checking build directory:"
+            ls -la build/${{ inputs.preset }}/GeneralsMD/ 2>/dev/null || ls -la build/${{ inputs.preset }}/Generals/ 2>/dev/null || echo "Build directories not found"
+            exit 1
+          fi
+
+      - name: Deploy Bundle (Binary + Libraries + Wrapper)
+        if: success()
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
+            GAME_DIR="GeneralsMD"
+          else
+            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
+            GAME_DIR="Generals"
+          fi
+          
+          RUNTIME_DIR="/tmp/GeneralsX-${{ inputs.game }}-macos-deploy"
+          mkdir -p "${RUNTIME_DIR}"
+          
+          echo "Creating deployment bundle at: ${RUNTIME_DIR}"
+          echo "  Copying executable..."
+          cp -v "${BINARY}" "${RUNTIME_DIR}/$(basename ${BINARY})"
+          chmod +x "${RUNTIME_DIR}/$(basename ${BINARY})"
+          
+          echo "  Copying framework libraries..."
+          mkdir -p "${RUNTIME_DIR}/lib"
+          
+          # DXVK dylibs
+          find "build/${{ inputs.preset }}/_deps" -name "*.dylib" -o -name "*.dylib.so" 2>/dev/null | while read f; do
+            [ -f "$f" ] && cp -v "$f" "${RUNTIME_DIR}/lib/" || true
+          done
+          
+          # MoltenVK dylib from Vulkan SDK
+          if [ -f "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" ]; then
+            echo "  Copying MoltenVK..."
+            cp -v "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+          fi
+          
+          echo "  Copying run.sh wrapper from scripts..."
+          cp -v "scripts/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
+          chmod +x "${RUNTIME_DIR}/run.sh"
+          
+          echo "✅ Bundle ready at: ${RUNTIME_DIR}"
+          ls -lh "${RUNTIME_DIR}/"
+          ls -lh "${RUNTIME_DIR}/lib/" 2>/dev/null || echo "(no libs directory)"
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-macos-${{ inputs.game }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Deployment Bundle
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-macos-${{ inputs.game }}-${{ inputs.preset }}
+          path: /tmp/GeneralsX-${{ inputs.game }}-macos-deploy/
+          retention-days: 7
+          if-no-files-found: warn

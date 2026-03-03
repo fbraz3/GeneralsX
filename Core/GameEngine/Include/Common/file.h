@@ -48,6 +48,9 @@
 //----------------------------------------------------------------------------
 
 #include "Lib/BaseType.h"
+// GeneralsX @build fbraz 24/02/2026 Include stdio.h for BUFSIZ (used by BUFFERSIZE enum)
+// Clang on macOS does not pull it transitively unlike MSVC/GCC
+#include <stdio.h>
 #include "Common/AsciiString.h"
 #include "Common/GameMemory.h"
 
