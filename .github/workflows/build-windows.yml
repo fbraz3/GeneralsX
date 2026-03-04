@@ -1,0 +1,50 @@
+name: Build Windows
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  workflow_call:
+    inputs:
+      game:
+        required: true
+        type: string
+        description: "Game to build (GeneralsMD, Generals)"
+      preset:
+        required: false
+        type: string
+        default: "windows64-deploy"
+        description: "CMake preset for Windows"
+  workflow_dispatch:
+    inputs:
+      game:
+        type: choice
+        description: "Game to build"
+        options:
+          - GeneralsMD
+          - Generals
+        default: GeneralsMD
+      preset:
+        type: choice
+        description: "CMake preset for Windows"
+        options:
+          - windows64-deploy
+        default: windows64-deploy
+
+jobs:
+  build:
+    name: ${{ inputs.game }}@${{ inputs.preset }}
+    runs-on: windows-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Not Yet Implemented
+        shell: bash
+        run: |
+          echo "Windows build (SDL3 + DXVK + OpenAL 64-bit) is not yet implemented."
+          echo "See docs/WORKDIR/phases/ for the Windows roadmap."
+          echo ""
+          echo "To run the real build, switch to the branch that has Windows support"
+          echo "and re-run this workflow from that branch."
+          exit 1
