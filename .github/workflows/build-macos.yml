@@ -71,6 +71,9 @@ jobs:
           
           # Build tools
           brew install cmake ninja meson pkg-config
+
+          # Autotools (required by vcpkg when building packages like gperf from source)
+          brew install autoconf autoconf-archive automake libtool
           
           # FFmpeg (required by GameEngineDevice for video playback via pkg-config)
           brew install ffmpeg

@@ -112,7 +112,8 @@ jobs:
             libpipewire-0.3-dev \
             libwayland-dev \
             libdecor-0-dev \
-            liburing-dev
+            liburing-dev \
+            libvulkan-dev
           
           echo "Dependencies installed."
           cmake --version
