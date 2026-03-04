@@ -14,9 +14,11 @@
 // All of these are already in bittype.h which is included first in windows_compat.h
 
 // GDI color reference (0x00BBGGRR format) - not in bittype.h
+// GeneralsX @bugfix fbraz3 04/03/2026 Use uint32_t directly; DWORD may not yet
+// be defined when types_compat.h is included before windows_compat.h/bittype.h
 #ifndef _WIN32
 #ifndef COLORREF
-typedef DWORD COLORREF;
+typedef uint32_t COLORREF;
 #endif
 
 // Unicode string types - not in bittype.h
