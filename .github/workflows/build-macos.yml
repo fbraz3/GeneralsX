@@ -84,6 +84,9 @@ jobs:
           # glslang (required by DXVK Meson build to compile GLSL shaders to SPIR-V)
           brew install glslang
 
+          # OpenAL Soft (required by audio layer; provides <AL/al.h> — macOS system OpenAL framework uses <OpenAL/al.h> which is incompatible)
+          brew install openal-soft
+
           # Verify all tools are available
           cmake --version | head -1
           ninja --version | head -1
