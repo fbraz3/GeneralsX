@@ -65,6 +65,11 @@
 #include <sys/stat.h>   // mkdir()
 #include <cstdlib>      // getenv()
 #include <filesystem>   // std::filesystem::create_directories()
+
+// GeneralsX @feature BenderAI 24/02/2026 Phase 5 macOS cross-platform exe path detection
+#ifdef __APPLE__
+#include <mach-o/dyld.h>  // _NSGetExecutablePath()
+#endif
 #endif
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
@@ -1066,6 +1071,19 @@ GlobalData::GlobalData()
     CreateDirectory(myDocumentsDirectory.str(), nullptr);
     m_userDataDir = myDocumentsDirectory;
   }
+#elif defined(__APPLE__)
+  // GeneralsX @feature BenderAI 24/02/2026 Phase 5 macOS user data directory (~/Library/Application Support)
+  {
+    std::filesystem::path userDataDir;
+    const char* home = getenv("HOME");
+    if (home) {
+      userDataDir = std::filesystem::path(home) / "Library" / "Application Support" / "Generals Zero Hour" / "";
+      std::filesystem::create_directories(userDataDir);
+      m_userDataDir = userDataDir.string().c_str();
+    } else {
+      m_userDataDir = ".";
+    }
+  }
 #else
   // GeneralsX @bugfix BenderAI 20/02/2026 Use XDG Base Directory spec for user data on Linux
   // Mirrors fighter19's approach: $XDG_DATA_HOME/generals_zh/ or $HOME/.local/share/generals_zh/
@@ -1309,9 +1327,20 @@ UnsignedInt GlobalData::generateExeCRC()
 #else
 	{
 		Char buffer[ _MAX_PATH ];
-// TheSuperHackers @build fighter19 11/02/2026 Cross-platform executable path retrieval
+// TheSuperHackers @build fighter19 11/02/2026 Cross-platform executable path retrieval (Phase 5: macOS)
 #ifdef _WIN32
 		GetModuleFileName( nullptr, buffer, sizeof( buffer ) );
+#elif defined(__APPLE__)
+		// macOS: Use _NSGetExecutablePath from mach-o/dyld.h
+		uint32_t len = sizeof(buffer);
+		int ret = _NSGetExecutablePath(buffer, &len);
+		if (ret != 0) {
+			buffer[0] = '\0';
+			fprintf(stderr, "DEBUG: _NSGetExecutablePath failed\n");
+		} else {
+			fprintf(stderr, "DEBUG: exe path (macOS): %s\n", buffer);
+		}
+		fflush(stderr);
 #else
 		// Linux: Read /proc/self/exe symlink
 		fprintf(stderr, "DEBUG: Reading /proc/self/exe symlink\n");

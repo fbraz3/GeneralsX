@@ -1,5 +1,9 @@
-# On 64-bit Windows or Unix, use our d3dx8 implementation
-if (UNIX OR WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+# On 64-bit Windows, macOS, and Linux: use our d3dx8 implementation (GLI/GLM for math helpers)
+# GeneralsX @build BenderAI 24/02/2026 Phase 5 - Skip d3dx8 on macOS/Linux due to GLI/GLM ambiguity
+# GeneralsX @build felipebraz 20/06/2025 - Also build d3dx8 STATIC on macOS (D3DX math/texture stubs required for link)
+# GeneralsX @bugfix felipebraz 02/03/2026 - Build real d3dx8 STATIC on Linux too (D3DXGetFVFVertexSize / D3DXLoadSurfaceFromSurface required for link)
+# d3dx8 is a math/texture helper stub; core game code doesn't require it
+if((WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8) OR APPLE OR (UNIX AND NOT APPLE))
 list(APPEND SOURCE_D3DX_COMPAT
     d3dx8_compat.cpp
     d3dx8math.cpp
@@ -22,18 +26,19 @@ endif()
 include(${CMAKE_SOURCE_DIR}/cmake/glm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/gli.cmake)
 
-# Try vcpkg first for compatibility, fall back to FetchContent
+# Try vcpkg first for GLM compatibility, fall back to FetchContent (already loaded by glm.cmake)
 find_package(glm CONFIG QUIET)
-if(NOT glm_FOUND)
-    # FetchContent is already loaded via include(glm.cmake)
-endif()
 
+# GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang
+# Only find/link GLI on non-Apple platforms to avoid the collision in gli::detail::convertFunc
 find_package(gli CONFIG QUIET)
-if(NOT gli_FOUND)
-    # FetchContent is already loaded via include(gli.cmake)
-endif()
 
-target_link_libraries(d3dx8 PUBLIC glm::glm gli::gli)
+if(NOT APPLE)
+    target_link_libraries(d3dx8 PUBLIC glm::glm gli::gli)
+else()
+    # macOS/Apple Clang: link GLM only (GLI omitted to prevent make_vec4 ADL ambiguity)
+    target_link_libraries(d3dx8 PUBLIC glm::glm)
+endif()
 
 # GeneralsX @build BenderAI 26/05/2026 - Disable MSVC two-phase name lookup for d3dx8.
 # GLM 1.0.3 added glm::make_vec4 which conflicts with gli::make_vec4 via ADL inside
@@ -60,6 +65,11 @@ endif()
 # Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
 
+else()
+# Linux only: Create empty d3dx8 stub library to satisfy d3d8lib linkage
+# macOS and Win64 both build real d3dx8 STATIC above; Linux can use the stub for now
+add_library(d3dx8 INTERFACE)
+target_link_libraries(d3dx8 INTERFACE d3d8lib)
 endif()
 
 # GeneralsX @build BenderAI 10/02/2026
@@ -77,21 +87,39 @@ if(SAGE_USE_DX8)
         ${dx8_SOURCE_DIR}/lib
     )
 else()
-    # Non-legacy: use DXVK headers
-    # On Windows Modern (win64-modern): dxvk_headers_SOURCE_DIR (DXVK headers only, no lib)
-    # On Linux (linux64-deploy):        dxvk_SOURCE_DIR  (DXVK native with lib)
+    # Non-legacy: use DXVK headers for all modern platforms
+    # Windows Modern (win64-modern): DX90SDK headers (proven x64 compatible, from jmarshall reference)
+    # macOS   (macos-vulkan):        DXVK built from source, Wine-style include/native layout
+    # Linux   (linux64-deploy):      DXVK pre-built steamrt tarball, flat include/dxvk/
     if(WIN32)
-        # Windows Modern: DXVK_D3D8_INCLUDE_DIR is pre-set in cmake/dx8.cmake
-        # Strategy: Use jmarshall DX90SDK headers (proven x64 compatible) instead of DXVK native headers (MinGW types)
+        # Windows Modern: DXVK_D3D8_INCLUDE_DIR is pre-set by cmake/dx8.cmake to jmarshall's DX90SDK
+        # Strategy: DX90SDK headers are MSVC x64-proven; DXVK native headers have MinGW types.
         if(NOT DXVK_D3D8_INCLUDE_DIR)
             message(FATAL_ERROR "D3D8 headers not found! Ensure cmake/dx8.cmake was included before CompatLib")
         endif()
         target_include_directories(d3d8lib INTERFACE ${DXVK_D3D8_INCLUDE_DIR})
-        # GeneralsX @build BenderAI 01/03/2026 Add DX90SDK lib dir so linker can find d3d8.lib
-        # d3d8.lib is a generated import stub from DXVK's d3d8.dll (see Core/Libraries/DX90SDK/Lib/x64/d3d8.lib)
+        # GeneralsX @build BenderAI 01/03/2026 Add DX90SDK lib dir so linker finds d3d8.lib
+        # d3d8.lib is an import stub generated from DXVK's d3d8.dll
         target_link_directories(d3d8lib INTERFACE "${DXVK_D3D8_INCLUDE_DIR}/../Lib/x64")
+    elseif(APPLE)
+        # macOS: DXVK built from git source -- Wine-style include/native layout
+        # GeneralsX @build BenderAI 24/02/2026 Phase 5 - DXVK v2.6 uses include/native/windows + include/native/directx
+        # GeneralsX @build fbraz 24/02/2026 - Also need include/native for WSI headers (wsi/native_wsi.h)
+        if(NOT dxvk_SOURCE_DIR)
+            message(FATAL_ERROR "DXVK not fetched! Ensure SAGE_USE_DX8=OFF and cmake/dx8.cmake was included")
+        endif()
+        target_include_directories(d3d8lib INTERFACE
+            ${dxvk_SOURCE_DIR}/include/native
+            ${dxvk_SOURCE_DIR}/include/native/windows
+            ${dxvk_SOURCE_DIR}/include/native/directx
+            ${dxvk_SOURCE_DIR}/include/vulkan
+        )
+        # GeneralsX @bugfix BenderAI 25/02/2026 On macOS, DXVK dylibs live in the Meson build dir
+        # (_deps/dxvk-build-macos/src/d3d*/), not in ${dxvk_SOURCE_DIR}/lib.
+        # Passing a non-existent -L path produces: ld: warning: search path not found
     else()
-        # Linux: DXVK native provides both headers and lib
+        # Linux: DXVK pre-built steamrt tarball -- all headers flat in include/dxvk/
+        # GeneralsX @bugfix felipebraz 02/03/2026 - Restore Linux path (tarball = include/dxvk, not include/native)
         if(NOT dxvk_SOURCE_DIR)
             message(FATAL_ERROR "DXVK not fetched! Ensure SAGE_USE_DX8=OFF and cmake/dx8.cmake was included")
         endif()
@@ -117,6 +145,21 @@ set(SOURCE_COMPAT
 list(TRANSFORM SOURCE_COMPAT PREPEND "Source/")
 
 add_library(CompatLib STATIC ${SOURCE_COMPAT})
+
+# GeneralsX @build BenderAI 24/02/2026 Phase 5 - Require C++17 for std::filesystem in compat headers
+set_property(TARGET CompatLib PROPERTY CXX_STANDARD 17)
+set_property(TARGET d3dx8 PROPERTY CXX_STANDARD 17)
+
+# GeneralsX @bugfix BenderAI 02/03/2026 - Enforce DXVK source availability before CompatLib compiles
+# On macOS, DXVK is built via ExternalProject (Meson) which clones the source during the BUILD phase,
+# not during configure. This means _deps/dxvk-src/include/native/windows/windows_base.h does not
+# exist when d3dx8 or CompatLib start compiling unless we declare an explicit ordering dependency.
+# On Linux, DXVK is a pre-built tarball fetched via FetchContent (available since configure), so
+# no ordering dependency is needed there.
+if(APPLE AND TARGET dxvk_macos_build)
+    add_dependencies(d3dx8 dxvk_macos_build)
+    add_dependencies(CompatLib dxvk_macos_build)
+endif()
 
 target_include_directories(CompatLib PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include

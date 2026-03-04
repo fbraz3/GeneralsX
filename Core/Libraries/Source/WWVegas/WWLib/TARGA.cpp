@@ -64,7 +64,12 @@
 #ifndef TGA_USES_WWLIB_FILE_CLASSES
 #include "WWDebug/wwdebug.h"
 #endif
+// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - malloc.h not on macOS
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
 #include <memory.h>
 #include "stringex.h"
 #ifdef TGA_USES_WWLIB_FILE_CLASSES

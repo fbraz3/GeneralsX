@@ -18,7 +18,12 @@
 
 #include "PreRTS.h"
 
+// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - malloc.h not on macOS
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
 
 #include "Common/GameMemoryNull.h"
 

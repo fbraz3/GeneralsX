@@ -67,7 +67,8 @@ static std::filesystem::path fixFilenameFromWindowsPath(const Char *filename, In
 
 		std::filesystem::path pathFixed;
 		std::filesystem::path pathCurrent;
-		for (auto& p : path)
+		// GeneralsX @build felipebraz 20/06/2025 const auto& required because libc++ std::filesystem::path iterator yields temporaries (non-const lvalue reference would fail on Apple clang)
+		for (const auto& p : path)
 		{
 			std::filesystem::path pathFixedPart;
 			if (pathCurrent.empty())

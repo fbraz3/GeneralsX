@@ -69,10 +69,14 @@ if(SAGE_USE_SDL3)
     
     FetchContent_MakeAvailable(SDL3)
     
-    # GeneralsX @build BenderAI 27/02/2026 (updated for Windows compat)
-    # SDL3_image is only needed on Linux (PNG/JPG cursor loading, X cursor support)
-    # On Windows: DirectX handles image loading; skip SDL3_image to avoid libpng dependency
+    # GeneralsX @build BenderAI 27/02/2026 (updated for Windows compat; macOS support added 24/02/2026)
+    # SDL3_image is NOT needed on Windows (DirectX handles image loading; skip SDL3_image to avoid libpng dependency)
+    # On Linux/macOS: SDL3_image used for PNG/JPG cursor loading and X cursor support
+    # Before SDL3_image build: force PNG discovery to platform-specific libpng
+    # Linux: System libpng16.so is dynamic shared library
+    # macOS: Use Homebrew PNG (libpng16.dylib)
     if(NOT WIN32)
+        if(NOT APPLE)
         # Linux: Use system libpng-dev
         set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
         set(PNG_INCLUDE_DIR "/usr/include" CACHE PATH "PNG include dir (system)" FORCE)
@@ -81,20 +85,51 @@ if(SAGE_USE_SDL3)
         set(PNG_LIBRARY_RELEASE "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG release library" FORCE)
         set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
         find_package(PNG REQUIRED MODULE)
-
-        # SDL3_image - Image format support (PNG, JPG for cursor ANI loading, Linux only)
-        message(STATUS "Configuring SDL3_image (v3.4.0) with FetchContent (Linux build)...")
-
+        else()
+            # macOS: Force Homebrew's dynamic libpng, bypassing vcpkg's static .a
+            # GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port
+            # vcpkg provides static libpng16.a but SDL3_image requires dynamic .dylib
+            # Homebrew installs libpng16.16.dylib at /usr/local/lib (Intel) or /opt/homebrew/lib (ARM)
+            set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
+            # GeneralsX @bugfix BenderAI 25/02/2026 Check Apple Silicon Homebrew (/opt/homebrew) FIRST.
+            # A machine with both Homebrew installations (Intel Rosetta + native arm64) could have
+            # /usr/local/lib/libpng16.dylib (x86_64) AND /opt/homebrew/lib/libpng16.dylib (arm64).
+            # Linking the x86_64 dylib into an arm64 binary produces:
+            #   ld: warning: ignoring file '...libpng16.dylib': found architecture 'x86_64', required 'arm64'
+            # Always prefer /opt/homebrew (arm64) for arm64 builds.
+            if(EXISTS "/opt/homebrew/lib/libpng16.dylib")
+                # Apple Silicon Mac (Homebrew prefix: /opt/homebrew)
+                set(PNG_INCLUDE_DIR "/opt/homebrew/include" CACHE PATH "PNG include dir (Homebrew)" FORCE)
+                set(PNG_LIBRARY "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "PNG library (Homebrew .dylib)" FORCE)
+                set(PNG_LIBRARY_DEBUG "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+                set(PNG_LIBRARY_RELEASE "/opt/homebrew/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+            elseif(EXISTS "/usr/local/lib/libpng16.dylib")
+                # Intel Mac fallback (Homebrew prefix: /usr/local)
+                set(PNG_INCLUDE_DIR "/usr/local/include" CACHE PATH "PNG include dir (Homebrew)" FORCE)
+                set(PNG_LIBRARY "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "PNG library (Homebrew .dylib)" FORCE)
+                set(PNG_LIBRARY_DEBUG "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+                set(PNG_LIBRARY_RELEASE "/usr/local/lib/libpng16.dylib" CACHE FILEPATH "" FORCE)
+            else()
+                message(FATAL_ERROR "libpng not found. Install: brew install libpng")
+            endif()
+            find_package(PNG REQUIRED MODULE)
+        endif()
+        
+        # SDL3_image - Image format support (PNG, JPG for cursor ANI loading)
+        message(STATUS "Configuring SDL3_image (v3.4.0) with FetchContent (native build)...")
+        
         set(SDL3_IMAGE_VERSION "3.4.0")
         set(SDL3_IMAGE_URL "https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL3_IMAGE_VERSION}/SDL3_image-${SDL3_IMAGE_VERSION}.tar.gz")
         set(SDL3_IMAGE_URL_HASH "SHA256=2ceb75eab4235c2c7e93dafc3ef3268ad368ca5de40892bf8cffdd510f29d9d8")
-
+        
         FetchContent_Declare(
             SDL3_image
             URL ${SDL3_IMAGE_URL}
             URL_HASH ${SDL3_IMAGE_URL_HASH}
         )
-
+        
+        # Configure SDL3_image build options
+        # Note: PNG will use system libpng-dev (installed in Docker, no vcpkg conflicts)
         set(SDL3IMAGE_INSTALL ON CACHE BOOL "Install SDL3_image" FORCE)
         set(SDL3IMAGE_DEPS_SHARED ON CACHE BOOL "Use system shared dependencies" FORCE)
         set(SDL3IMAGE_JPG ON CACHE BOOL "Enable JPG support" FORCE)
@@ -103,7 +138,7 @@ if(SAGE_USE_SDL3)
         set(SDL3IMAGE_WEBP ON CACHE BOOL "Enable WebP support" FORCE)
         set(SDL3IMAGE_AVIF OFF CACHE BOOL "Disable AVIF (optional)" FORCE)
         set(SDL3IMAGE_XCUR ON CACHE BOOL "Enable X cursor support" FORCE)
-
+        
         FetchContent_MakeAvailable(SDL3_image)
     endif()
 

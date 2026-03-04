@@ -1,12 +1,34 @@
 # 2026-02 Lessons Learned - Phase 1 Linux Graphics Port
 
 **Month**: February 2026  
-**Sessions Covered**: 19-24, 28-30, 33, 34, 35  
+**Sessions Covered**: 19-24, 28-30, 33, 34, 35, 66  
 **Focus Area**: Linux graphics port (DXVK + SDL3) + build system stabilization + compilation blockers + compat headers
 
 ---
 
 ## 🎯 Critical Lessons
+
+### 0 (Session 66). Exit-time SIGSEGV — C++ Global Destructors on macOS 🚪
+
+**Problem**: Every game exit triggered SIGSEGV in `ObjectPoolClass<X,256>::~ObjectPoolClass()` via
+`__cxa_finalize_ranges`. Crash at corrupted `BlockListHead` (symbol: `AutoPoolClass<MultiListNodeClass,256>::Allocator`).
+
+**Root Cause**: On macOS/Linux, returning from `main()` triggers `__cxa_finalize_ranges` which runs all C++
+global/static object destructors. The `AutoPoolClass<X,256>::Allocator` global pools crash because their
+block list memory is in an inconsistent state after game shutdown.
+On Windows, `ExitProcess()` terminates immediately — C++ global destructors NEVER run. Game designed for that.
+
+**Correct Approach (✅ RIGHT)**:
+```cpp
+// SDL3Main.cpp — end of main(), after SDL_Quit + shutdownMemoryManager:
+_exit(exitcode);  // NOT return exitcode
+```
+`_exit()` terminates like `ExitProcess`: no atexit handlers, no C++ global destructors.
+
+**Diagnosis**: Crash in `__cxa_finalize_ranges` / `exit()` call chain always means global dtor issue.
+Use `nm -n binary | grep crash_offset` to identify the template instantiation.
+
+---
 
 ### 1 (Session 35). Time/Clock Compatibility Layer Pattern — Pre-Stub Approach 🕐
 
@@ -839,3 +861,229 @@ The fastest path to working audio on Linux is to port fighter19's implementation
 5. Add `Source/OpenALAudioDevice/` as PRIVATE include dir so `OpenALAudioCache.h` is not exposed
 
 **Result**: Menu music and audio backend confirmed working in one session.
+
+---
+
+## Lesson: macOS Apple Silicon — Two Homebrew Prefixes (Phase 5, Session 60)
+
+**Problem**: Building arm64 target but linker fails with `symbol(s) not found for architecture arm64` for FFmpeg symbols despite FFmpeg being installed.
+
+**Root Cause**: macOS Apple Silicon has two Homebrew installations:
+- `/usr/local/` — Intel (Rosetta 2) Homebrew, default system `pkg-config`, all dylibs are **x86_64**
+- `/opt/homebrew/` — Apple Silicon Homebrew, dylibs are **arm64**
+
+CMake's `pkg_check_modules` uses `/usr/local/bin/pkg-config` (in `$PATH` by default), which resolves FFmpeg to Intel x86_64 dylibs at `/usr/local/Cellar/ffmpeg/`. Linking arm64 objects against x86_64 dylibs fails at link time.
+
+**Fix**: Set `PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig` in the CMake configure preset's `"environment"` block:
+```json
+"environment": {
+    "PKG_CONFIG_PATH": "/opt/homebrew/lib/pkgconfig"
+}
+```
+
+**Corollary**: Universal Binary (`arm64;x86_64`) requires ALL external dylibs to be fat binaries. When third-party dylibs (FFmpeg, openal-soft) are single-arch, build arm64-only first. Revisit Universal Binary in the polish phase.
+
+---
+
+## Lesson: fontconfig Static Library Needs Explicit iconv on macOS (Phase 5, Session 60)
+
+**Problem**: Linking a static fontconfig from vcpkg fails with `_iconv`, `_iconv_open`, `_iconv_close` undefined.
+
+**Root Cause**: fontconfig's `fcfreetype.c` uses `iconv()` for charset conversion. When fontconfig is a static library, its iconv dependency must be explicitly resolved at link time.
+
+**Fix**: Add `find_package(Iconv REQUIRED)` and `Iconv::Iconv` linkage wherever fontconfig is linked:
+```cmake
+if(UNIX)
+    find_package(Fontconfig REQUIRED)
+    find_package(Iconv REQUIRED)  # fontconfig static lib needs iconv
+endif()
+target_link_libraries(mytarget INTERFACE
+    $<$<PLATFORM_ID:Darwin>:Fontconfig::Fontconfig>
+    $<$<PLATFORM_ID:Darwin>:Iconv::Iconv>
+)
+```
+On macOS, CMake's `FindIconv` resolves to `/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/libiconv.tbd` (system stub — correct for arm64).
+
+---
+
+## Session 62 — 24/02/2026: Meson from Rosetta Homebrew Produces x86_64 Even on Apple Silicon
+
+### Problem
+`dlopen(libdxvk_d3d8.dylib)` failed with "incompatible architecture (have 'x86_64', need 'arm64')".
+The game process is `arm64` (native Apple Silicon) but the dylib was built as `x86_64`.
+
+### Root Cause
+`/usr/local/bin/meson` is the Intel (x86_64) Homebrew binary running under Rosetta 2.
+Without explicit `-arch arm64` flags, Clang defaults to the Rosetta process's arch (`x86_64`).
+The entire DXVK build came out x86_64 even though the Mac is Apple Silicon.
+
+### Fix
+Pass explicit architecture flags via `cmake -E env` before `meson setup` in `cmake/dx8.cmake`:
+```cmake
+# Detect host arch (arm64 on Apple Silicon, x86_64 on Intel)
+execute_process(COMMAND uname -m OUTPUT_VARIABLE DXVK_HOST_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+CONFIGURE_COMMAND
+  ${CMAKE_COMMAND} -E env
+    CC=clang CXX=clang++
+    "CFLAGS=-arch ${DXVK_HOST_ARCH}"
+    "CXXFLAGS=-arch ${DXVK_HOST_ARCH}"
+    "LDFLAGS=-arch ${DXVK_HOST_ARCH}"
+  ${MESON_EXECUTABLE} setup ...
+```
+
+### Manual Rebuild Command (arm64)
+```bash
+DXVK_SRC="build/macos-vulkan/_deps/dxvk-src"
+rm -rf /tmp/dxvk-arm64-build
+CC=clang CXX=clang++ CFLAGS="-arch arm64" CXXFLAGS="-arch arm64" LDFLAGS="-arch arm64" \
+  /usr/local/bin/meson setup /tmp/dxvk-arm64-build "$DXVK_SRC" -Ddxvk_native_wsi=sdl3 --buildtype=release
+ninja -j8 -C /tmp/dxvk-arm64-build src/d3d8/libdxvk_d3d8.0.dylib
+# Validation:
+file /tmp/dxvk-arm64-build/src/d3d8/libdxvk_d3d8.0.dylib
+# → Mach-O 64-bit dynamically linked shared library arm64  ✅
+```
+
+### Key Rule
+**Always run `file` on produced dylibs when dlopen fails on macOS.**  
+On machines with dual Homebrew installs (Intel + arm64), always pass explicit `-arch` flags.
+---
+
+## Lesson (Session 63). DXVK Vulkan Loader: macOS Library Names — vulkan_loader.cpp
+
+**Problem**: After Patch 6 fixed `getExeName()`, DXVK reached `createLibraryLoader()` → `loadVulkanLibrary()` and logged:
+```
+err:   Vulkan: vkGetInstanceProcAddr not found
+[1]    segmentation fault  ./GeneralsXZH
+```
+Crash in `DxvkInstance::createLibraryLoader` (null function call, PC=0x0).
+
+**Root Cause**: `vulkan_loader.cpp` `loadVulkanLibrary()` only tries:
+```cpp
+#ifdef _WIN32
+  "winevulkan.dll", "vulkan-1.dll"
+#else
+  "libvulkan.so", "libvulkan.so.1"    // Linux names only
+#endif
+```
+On macOS, `dlopen("libvulkan.so")` fails (no such file). The function returns `{ nullptr, nullptr }`. DXVK then tries to call through the null `vkGetInstanceProcAddr` → SIGSEGV at 0x0.
+
+**Important**: `libvulkan.1.4.341.dylib` from the Vulkan SDK was appearing in crash binary images because `DYLD_LIBRARY_PATH` or `dlopen` indirectly loaded it — but not through DXVK's explicit search.
+
+**Fix (Patch 7)**:
+
+Split `dllNames` into per-platform static arrays (`std::array` size varies per platform):
+```cpp
+#ifdef _WIN32
+  static const std::array<const char*, 2> dllNames = {{ "winevulkan.dll", "vulkan-1.dll" }};
+#elif defined(__APPLE__)
+  // LunarG Vulkan SDK installs libvulkan.dylib; MoltenVK is the ICd driver.
+  static const std::array<const char*, 4> dllNames = {{
+    "libvulkan.dylib", "libvulkan.1.dylib", "libvulkan.1.4.341.dylib", "libMoltenVK.dylib"
+  }};
+#else
+  static const std::array<const char*, 2> dllNames = {{ "libvulkan.so", "libvulkan.so.1" }};
+#endif
+```
+
+**Deploy Fix**: `deploy-macos-zh.sh` was not copying Vulkan/MoltenVK libs to the runtime dir. Added:
+- Auto-detect Vulkan SDK at `~/VulkanSDK/*/macOS`
+- Copy `libvulkan.dylib`, `libvulkan.1.dylib`, `libMoltenVK.dylib` to runtime dir
+- Write `MoltenVK_icd.json` with `"library_path": "./libMoltenVK.dylib"` (relative)
+- Update `run.sh` to set `VK_ICD_FILENAMES="${SCRIPT_DIR}/MoltenVK_icd.json"`
+
+**Rule**:
+> **Every non-Windows DXVK port needs explicit Vulkan library names for the target OS.**
+> On macOS: `libvulkan.dylib` (LunarG SDK loader), NOT `libvulkan.so`.
+> The Vulkan loader must also be deployed alongside the binary with a valid MoltenVK ICD JSON.
+
+**Commits**: `95c7911b3`
+
+---
+
+## LESSON: D3D8Batcher StateChange Null VkBuffer — Post-Flush State Restore Bug (Session 64)
+
+**Category**: DXVK macOS Porting
+
+**Problem**: Game crashes in dxvk-cs thread at `MVKBuffer::getMTLBuffer() + 20` during first
+`DrawIndexedPrimitive`. ARM64: `ldr x0, [x0, #0x58]` with x0=null.
+
+**Root Cause**: `D3D8Batcher::StateChange()` — after flushing batched draws via
+`DrawIndexedPrimitiveUP` — calls `m_device->SetStreamSource(0, GetD3D9Nullable(m_stream), ...)`.
+`m_stream` is always a `D3D8BatchBuffer(pDevice, nullptr, ...)` — null D3D9 backing.
+`GetD3D9Nullable` returns null → D3D9 stream 0 gets overwritten with null.
+
+This races with `D3D8Device::SetStreamSource`: caller sets D3D9 stream 0 to a real buffer,
+then triggers `StateChange()` via the batcher, which nullifies the just-set buffer.
+`DrawIndexedPrimitive` then finds stream 0 = null → null VkBuffer → null MVKBuffer → crash.
+
+**Fix**: Remove `m_device->SetStreamSource()` and `m_device->SetIndices()` from `StateChange()`.
+`DrawIndexedPrimitiveUP` already unbinds them per D3D9 spec; the D3D8Device layer re-sets
+correct state before every subsequent draw call.
+
+**DXVK Patch**: Patch 11 in `cmake/dxvk-macos-patches.py`, targets `src/d3d8/d3d8_batch.h`.
+
+**Rule**: When porting DXVK to macOS (MoltenVK), any code path that binds a null Vulkan buffer
+as active stream source crashes in `MVKBuffer::getMTLBuffer()`. Audit all DXVK batcher flush
+paths that attempt to "restore state" using CPU-only objects with no D3D9/Vulkan backing.
+
+---
+
+## LESSON: Null VkBuffer in updateVertexBufferBindings — MoltenVK nullDescriptor (Session 65)
+
+**Category**: DXVK macOS Porting
+
+**Problem**: Game crashes in dxvk-cs thread at `MVKBuffer::getMTLBuffer() + 20` from
+`DxvkContext::updateVertexBufferBindings()` → `vkCmdBindVertexBuffers2`. ARM64: `ldr x0, [x0, #0x58]` with x0=null.
+
+**Root Cause**: `DxvkContext::updateVertexBufferBindings()` iterates pipeline input layout bindings.
+If a slot has no buffer (`length() == 0`), DXVK sets `buffers[i] = VK_NULL_HANDLE` and then
+calls `vkCmdBindVertexBuffers2` with that null handle included.
+
+Per Vulkan spec, `VK_NULL_HANDLE` in vertex buffers requires `nullDescriptor` (`VK_EXT_robustness2`).
+MoltenVK does NOT support `nullDescriptor` — it casts the handle directly to `MVKBuffer*`,
+so `VK_NULL_HANDLE` (0x0) → null pointer dereference → SIGSEGV.
+
+**Fix**: Replace `buffers[i] = VK_NULL_HANDLE` with `buffers[i] = m_common->dummyResources().bufferHandle()`.
+DXVK already uses `dummyResources().bufferHandle()` for transform feedback null slots in the same
+function — same pattern applied to vertex buffer slots.
+
+**DXVK Patch**: Patch 12 in `cmake/dxvk-macos-patches.py`, targets `src/dxvk/dxvk_context.cpp`.
+
+**Rule**: MoltenVK does not support `nullDescriptor` and will crash on any `VK_NULL_HANDLE` passed
+as a bound Vulkan resource. Always substitute with `m_common->dummyResources()` handles when
+targeting MoltenVK/macOS — never pass `VK_NULL_HANDLE` to `vkCmdBind*` functions.
+
+---
+
+## Lesson (Session 66): DXVK PS1.x Sampler Spec Constants — MSL Undeclared Identifier on macOS (Patch 13)
+
+**Context**: DXVK 2.6.0 + MoltenVK 1.4.1. D3D8/D3D9 terrain shaders fail with 80 Metal errors:
+`use of undeclared identifier 's0_cube_shadowSmplr'` etc.
+18 `VK_ERROR_INITIALIZATION_FAILED` pipeline failures. All terrain/asset textures invisible.
+
+**Root Cause**: In `dxso_compiler.cpp::emitDclSampler()`:
+```cpp
+const bool implicit = m_programInfo.majorVersion() < 2 || m_moduleInfo.options.forceSamplerTypeSpecConstants;
+```
+`majorVersion() < 2` is always true for D3D8/PS1.x shaders. This ALWAYS forces "implicit" mode
+(all 5 sampler type variants per slot declared in SPIR-V via spec constants). SPIRV-Cross generates
+`ps_main()` with all 5 variants as params. MoltenVK's MSL entry-point wrapper only initializes the
+actually-bound 2D descriptors; it does NOT generate dummy variable declarations for the non-2D
+variants. Metal compiler then fails on undeclared identifiers like `s0_cubeSmplr`.
+
+**False Lead**: `d3d9.forceSamplerTypeSpecConstants = True` in `dxvk.conf` did fix PS2.x shaders
+(errors 99 → 49) where `implicit` previously wasn't forced. For PS1.x, it was always forced by
+`majorVersion() < 2`, making the option irrelevant. **Key diagnostic**: if the failing shader hash
+is IDENTICAL across option changes, the SPIR-V is NOT changing — look for another condition.
+
+**Fix (DXVK Patch 13)**: Remove `majorVersion() < 2` override: `implicit = forceSamplerTypeSpecConstants` only.
+With `False` (default), PS1.x declares only the detected type (2D), SPIRV-Cross generates clean
+minimal MSL params, no undeclared identifiers.
+
+**Files**: `cmake/dxvk-macos-patches.py` (Patch 13), `build/../dxso_compiler.cpp` (live), `GeneralsMD/Run/dxvk.conf`
+
+**Rules**:
+1. If shader hash is identical across config changes → option is not changing SPIR-V → different code path.
+2. MoltenVK SPIRV-Cross does NOT generate null/dummy declarations for unused sampler type variants in MSL.
+3. Always clear `*.dxvk-cache` after patching DXVK shader compilation or changing dxvk.conf.

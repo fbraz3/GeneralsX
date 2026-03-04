@@ -66,10 +66,9 @@
 #include "quat.h"
 
 #include "WWLib/win.h"
-#ifdef _WIN32
+// GeneralsX @build fbraz 10/02/2026 Include D3D8 headers on Linux/macOS (DXVK provides)
 #include <d3d8types.h>
 #include <d3dx8math.h>
-#endif
 
 // some static matrices which are sometimes useful
 const Matrix3D Matrix3D::Identity
@@ -1290,8 +1289,7 @@ bool Matrix3D::Solve_Linear_System(Matrix3D & system)
 }
 
 
-#ifdef _WIN32
-
+// GeneralsX @build fbraz 10/02/2026 Remove Windows-only guard (DXVK provides D3DMATRIX on Linux/macOS)
 void To_D3DMATRIX(_D3DMATRIX& dxm, const Matrix3D& m)
 {
 	dxm.m[0][0] = m[0][0];
@@ -1328,5 +1326,3 @@ D3DXMATRIX To_D3DXMATRIX(const Matrix3D& m)
 	To_D3DMATRIX(dxm, m);
 	return dxm;
 }
-
-#endif // _WIN32

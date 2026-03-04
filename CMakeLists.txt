@@ -43,8 +43,8 @@ endif()
 # GeneralsX @build BenderAI 27/02/2026
 # Compiler cache (sccache for Windows/Linux, ccache for macOS)
 # Must be included BEFORE compilers.cmake so the launcher is registered before CMake
-# finalizes the compiler selection. This significantly speeds up rebuilds and respects
-# __TIME__/__DATE__ macros via nondeterministic behavior handling (62.46% cache hit issue).
+# finalizes the compiler selection. sccache.cmake delegates to ccache.cmake on macOS
+# for backward compat. This speeds up rebuilds significantly on all platforms.
 include(cmake/sccache.cmake)
 
 # This file handles extra settings wanted/needed for different compilers.
