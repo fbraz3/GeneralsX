@@ -81,8 +81,11 @@ jobs:
           # Freetype + Fontconfig (required by font rendering)
           brew install freetype fontconfig
           
-          # GLM (required by CompatLib for math, SAGE_USE_GLM)
-          brew install glm
+          # NOTE: GLM is intentionally NOT installed via Homebrew.
+          # It is fetched via CMake FetchContent in cmake/glm.cmake (tag 1.0.3).
+          # Installing a system GLM causes glm::glm vs glm::glm-header-only target
+          # conflicts when vcpkg's cmake wrapper calls _find_package(glm) and finds
+          # both the Homebrew-installed version and the FetchContent version.
 
           # glslang (required by DXVK Meson build to compile GLSL shaders to SPIR-V)
           brew install glslang
@@ -96,10 +99,10 @@ jobs:
           meson --version | head -1
           pkg-config --version | head -1
           clang --version | head -1
-          pkg-config --modversion libavcodec 2>/dev/null && echo "✅ FFmpeg: libavcodec available" || echo "❌ FFmpeg: libavcodec NOT found"
-          find /opt/homebrew -name "glmConfig.cmake" 2>/dev/null | head -1 && echo "✅ GLM cmake config found" || echo "❌ GLM cmake config NOT found"
-          
-          echo "✅ Build tools installed"
+          pkg-config --modversion libavcodec 2>/dev/null && echo "FFmpeg: libavcodec available" || echo "FFmpeg: libavcodec NOT found"
+          # Note: GLM cmake config check omitted intentionally — GLM comes from FetchContent, not Homebrew.
+
+          echo "Build tools installed"
 
       - name: Install Vulkan SDK
         run: |
