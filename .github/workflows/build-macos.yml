@@ -80,7 +80,10 @@ jobs:
           
           # GLM (required by CompatLib for math, SAGE_USE_GLM)
           brew install glm
-          
+
+          # glslang (required by DXVK Meson build to compile GLSL shaders to SPIR-V)
+          brew install glslang
+
           # Verify all tools are available
           cmake --version | head -1
           ninja --version | head -1
