@@ -144,6 +144,27 @@ static StackWalkType								_StackWalk = nullptr;
 static SymFunctionTableAccessType	_SymFunctionTableAccess = nullptr;
 static SymGetModuleBaseType				_SymGetModuleBase = nullptr;
 
+// GeneralsX @bugfix BenderAI 04/03/2026 - Win64: DbgHelp requires the "64" suffix variants
+// for StackWalk64, SymFunctionTableAccess64 and SymGetModuleBase64 — their typedefs were
+// already updated above to use the 64-bit signatures.
+// SymGetSymFromAddr and SymLoadModule intentionally keep 32-bit names: their typedefs were
+// not updated and the 32-bit DbgHelp exports still exist on x64 Windows for backward compat.
+// Also fixes pre-existing typo "SymGetModuleBaseType" (correct name: SymGetModuleBase).
+#if defined(_WIN64)
+static char const *const ImagehelpFunctionNames[] =
+{
+	"SymCleanup",
+	"SymGetSymFromAddr",      // typedef is 32-bit; 32-bit export still present on x64 DbgHelp
+	"SymInitialize",
+	"SymLoadModule",          // typedef is 32-bit; 32-bit export still present on x64 DbgHelp
+	"SymSetOptions",
+	"SymUnloadModule",
+	"StackWalk64",            // typedef updated to 64-bit signature above
+	"SymFunctionTableAccess64", // typedef updated to 64-bit signature above
+	"SymGetModuleBase64",     // typedef updated to 64-bit signature above
+	nullptr
+};
+#else
 static char const *const ImagehelpFunctionNames[] =
 {
 	"SymCleanup",
@@ -154,9 +175,10 @@ static char const *const ImagehelpFunctionNames[] =
 	"SymUnloadModule",
 	"StackWalk",
 	"SymFunctionTableAccess",
-	"SymGetModuleBaseType",
+	"SymGetModuleBase",       // fixes pre-existing typo "SymGetModuleBaseType"
 	nullptr
 };
+#endif
 
 
 
@@ -362,13 +384,16 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	if (imagehelp != nullptr) {
 		DebugString ("Exception Handler: Found IMAGEHLP.DLL - linking to required functions\n");
 		char const *function_name = nullptr;
-		unsigned long *fptr = (unsigned long*) &_SymCleanup;
+		// GeneralsX @bugfix BenderAI 04/03/2026 - Use void** (pointer-sized) instead of unsigned long*
+		// On x64: sizeof(unsigned long)==4 but sizeof(void*)==8, so fptr++ advanced only 4 bytes,
+		// corrupting ALL function pointer slots after the first one.
+		void **fptr = (void **) &_SymCleanup;
 		int count = 0;
 
 		do {
 			function_name = ImagehelpFunctionNames[count];
 			if (function_name) {
-				*fptr = (unsigned long) GetProcAddress(imagehelp, function_name);
+				*fptr = (void *) GetProcAddress(imagehelp, function_name);
 				fptr++;
 				count++;
 			}
@@ -1106,13 +1131,14 @@ void Load_Image_Helper(void)
 
 		if (ImageHelp != nullptr) {
 			char const *function_name = nullptr;
-			unsigned long *fptr = (unsigned long *) &_SymCleanup;
+			// GeneralsX @bugfix BenderAI 04/03/2026 - Same void** fix as in Dump_Exception_Info loader above.
+			void **fptr = (void **) &_SymCleanup;
 			int count = 0;
 
 			do {
 				function_name = ImagehelpFunctionNames[count];
 				if (function_name) {
-					*fptr = (unsigned long) GetProcAddress(ImageHelp, function_name);
+					*fptr = (void *) GetProcAddress(ImageHelp, function_name);
 					fptr++;
 					count++;
 				}
@@ -1288,12 +1314,14 @@ here:
 		mov	reg_esp,esp
 	}
 #elif defined(_WIN64)
-	// x64: use RtlCaptureContext instead of inline assembly
+	// GeneralsX @bugfix BenderAI 04/03/2026 - Capture full 64-bit addresses; do NOT truncate
+	// Old code did (unsigned long)(ctx64.Rip & 0xFFFFFFFF) which loses the upper 32 bits.
+	// Since reg_eip/rbp/rsp are unsigned long (32-bit on MSVC), we keep the local variables
+	// but assign the STACKFRAME64 fields directly from the context below (see override block).
 	CONTEXT ctx64;
 	RtlCaptureContext(&ctx64);
-	reg_eip = (unsigned long)(ctx64.Rip & 0xFFFFFFFF);
-	reg_ebp = (unsigned long)(ctx64.Rbp & 0xFFFFFFFF);
-	reg_esp = (unsigned long)(ctx64.Rsp & 0xFFFFFFFF);
+	// Temporarily zero the locals - they will be overridden by the ctx64 block below.
+	reg_eip = 0; reg_ebp = 0; reg_esp = 0;
 #elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(_M_IX86))
 	__asm__ __volatile__ (
 		"call 1f\n\t"
@@ -1307,11 +1335,19 @@ here:
 #endif
 
 	stack_frame.AddrPC.Mode = AddrModeFlat;
-	stack_frame.AddrPC.Offset = reg_eip;
 	stack_frame.AddrStack.Mode = AddrModeFlat;
-	stack_frame.AddrStack.Offset = reg_esp;
 	stack_frame.AddrFrame.Mode = AddrModeFlat;
+	// GeneralsX @bugfix BenderAI 04/03/2026 - Initialize STACKFRAME offsets per platform.
+	// On _WIN64 we must use the full 64-bit values from ctx64; reg_eip/rsp/rbp are 32-bit (unsigned long).
+#if defined(_WIN64)
+	stack_frame.AddrPC.Offset    = ctx64.Rip;
+	stack_frame.AddrStack.Offset = ctx64.Rsp;
+	stack_frame.AddrFrame.Offset = ctx64.Rbp;
+#else
+	stack_frame.AddrPC.Offset    = reg_eip;
+	stack_frame.AddrStack.Offset = reg_esp;
 	stack_frame.AddrFrame.Offset = reg_ebp;
+#endif
 
 	/*
 	** Use the context struct if it was provided.
