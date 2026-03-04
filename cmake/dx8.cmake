@@ -239,24 +239,31 @@ else()
   FetchContent_Declare(
     dxvk
     URL https://github.com/doitsujin/dxvk/releases/download/${DXVK_VERSION}/dxvk-native-${DXVK_VERSION_BARE}-steamrt-sniper.tar.gz
+    URL_HASH SHA256=bf0ebbc4bcdee52811b084abbedba51ccaaa304810ec633b76554e91957d2e20
   )
   FetchContent_MakeAvailable(dxvk)
   message(STATUS "Using DXVK native (Linux DirectX→Vulkan)")
   message(STATUS "  DXVK source directory: ${dxvk_SOURCE_DIR}")
 endif()
 
-# ── Vulkan SDK detection for DXVK builds ──────────────────────────────────────
-# DXVK requires Vulkan headers + libraries at build time on all modern platforms:
-# Windows Modern (win64-modern), macOS (macos-vulkan), Linux (linux64-deploy).
-# vc6/win32 presets have SAGE_USE_DX8=ON so they skip this block.
-# GeneralsX @build BenderAI 26/02/2026 - Phase 6 Windows Modern + Phase 5 macOS
-if(NOT SAGE_USE_DX8)
-  # Either Windows Modern (DXVK) or Linux (DXVK native)
+# ── Vulkan SDK detection (Windows Modern only) ────────────────────────────────
+# find_package(Vulkan) is only needed at CMake configure time for Windows Modern.
+# Platform reasoning:
+#   Windows Modern (win64-modern): DXVK headers include Vulkan types; Vulkan SDK
+#     headers must be on the include path at compile time.
+#   macOS (macos-vulkan):          Vulkan is handled by the DXVK Meson ExternalProject;
+#     VULKAN_SDK is passed as env var to Meson during the BUILD phase, not configure.
+#   Linux (linux64-deploy):        DXVK native tarball is pre-compiled with Vulkan
+#     baked in; no Vulkan SDK needed at compile time.
+# vc6/win32 presets have SAGE_USE_DX8=ON so they skip this block entirely.
+# GeneralsX @build BenderAI 26/02/2026 - Phase 6 Windows Modern
+# GeneralsX @bugfix BenderAI 02/03/2026 - Scope Vulkan to Windows only (macOS/Linux do not need it at configure time)
+if(WIN32 AND NOT SAGE_USE_DX8)
   find_package(Vulkan REQUIRED)
   
   if(NOT Vulkan_FOUND)
     message(FATAL_ERROR
-      "Vulkan SDK not found. Required for DXVK builds.\n"
+      "Vulkan SDK not found. Required for Windows Modern (win64-modern) DXVK builds.\n"
       "Install from: https://vulkan.lunarg.com/sdk/home\n"
       "Then ensure VULKAN_SDK environment variable is set.")
   endif()
