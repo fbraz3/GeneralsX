@@ -27,7 +27,10 @@
 #
 # Reference: docs/WORKDIR/lessons/2026-02-LESSONS.md (Session 61)
 
-set(DXVK_VERSION "v2.6")
+# GeneralsX @build BenderAI 28/05/2026 - Align DXVK_VERSION with Windows runtime DLLs (was v2.6)
+set(DXVK_VERSION "v2.7.1")
+# Strip leading 'v' for use in filenames (e.g. dxvk-native-2.7.1-steamrt-sniper.tar.gz)
+string(REGEX REPLACE "^v" "" DXVK_VERSION_BARE "${DXVK_VERSION}")
 
 if(SAGE_USE_DX8)
   # ── Windows Legacy (vc6/win32): DirectX 8 native ──────────────────────────────
@@ -232,6 +235,11 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
 else()
   # ── Linux (linux64-deploy): DXVK pre-built native ────────────────────────────
   # Fetch DXVK native (Steam Runtime) for DirectX→Vulkan translation on Linux.
+  # GeneralsX @build BenderAI 28/05/2026 - Restore FetchContent_Declare lost during merge conflict resolution
+  FetchContent_Declare(
+    dxvk
+    URL https://github.com/doitsujin/dxvk/releases/download/${DXVK_VERSION}/dxvk-native-${DXVK_VERSION_BARE}-steamrt-sniper.tar.gz
+  )
   FetchContent_MakeAvailable(dxvk)
   message(STATUS "Using DXVK native (Linux DirectX→Vulkan)")
   message(STATUS "  DXVK source directory: ${dxvk_SOURCE_DIR}")

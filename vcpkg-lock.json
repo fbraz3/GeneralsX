@@ -2,12 +2,6 @@
     "version": 1,
     "dependencies": [
         {
-            "name": "ffmpeg",
-            "version-string": "7.1.1",
-            "port-version": 1,
-            "git-tree": "6ff75f1f596ada519241989f44077cda442480b2"
-        },
-        {
             "name": "pkgconf",
             "version-string": "2.3.0",
             "port-version": 0,

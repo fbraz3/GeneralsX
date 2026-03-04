@@ -60,6 +60,7 @@ jobs:
           if (-not (Test-Path "C:\vcpkg\vcpkg.exe")) {
             Write-Host "Cloning vcpkg from GitHub..."
             git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+            git -C C:\vcpkg checkout ffc071e0c08432c60c9b64f00334c0227667931b
             Write-Host "Running vcpkg bootstrap..."
             & C:\vcpkg\bootstrap-vcpkg.bat -disableMetrics
           } else {
