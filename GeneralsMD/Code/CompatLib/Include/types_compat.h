@@ -16,38 +16,28 @@
 // GeneralsX @bugfix fbraz3 04/03/2026 Define basic Win32 types for non-Windows platforms.
 // On Windows these come from bittype.h (via windows_compat.h), but headers such as
 // time_compat.h are included directly without windows_compat.h, so DWORD/BOOL/etc.
-// would be undefined. Use #ifndef guards to avoid conflicts when bittype.h is
-// included later in the same translation unit.
+// would be undefined in those translation units.
+//
+// IMPORTANT: These definitions MUST mirror bittype.h's types exactly.
+// C++11 permits identical typedef redefinition, but conflicting types are an error.
+// #ifndef guards do NOT work for typedefs (only for macros), so we rely on type
+// identity: if bittype.h was already included, both TUs define the same underlying
+// type and the compiler accepts it.
+//
+// bittype.h uses uint32_t (not unsigned long) for DWORD/ULONG on Linux/macOS
+// because unsigned long is 64-bit on x86_64, which would break Win32 ABI compatibility.
 #ifndef _WIN32
-#ifndef DWORD
-typedef uint32_t DWORD;
-#endif
-#ifndef WORD
-typedef uint16_t WORD;
-#endif
-#ifndef BYTE
-typedef uint8_t BYTE;
-#endif
-#ifndef UINT
-typedef unsigned int UINT;
-#endif
-#ifndef ULONG
-typedef unsigned long ULONG;
-#endif
-#ifndef BOOL
-typedef int BOOL;
-#endif
-#ifndef LPCSTR
-typedef const char* LPCSTR;
-#endif
-#ifndef USHORT
-typedef uint16_t USHORT;
-#endif
+typedef uint32_t    DWORD;
+typedef uint32_t    ULONG;
+typedef unsigned short WORD;
+typedef unsigned char  BYTE;
+typedef int            BOOL;
+typedef unsigned int   UINT;
+typedef const char*    LPCSTR;
+typedef uint16_t       USHORT;
 
 // GDI color reference (0x00BBGGRR format) - not in bittype.h
-#ifndef COLORREF
 typedef uint32_t COLORREF;
-#endif
 
 // Unicode string types - not in bittype.h
 #ifndef LPCWSTR
