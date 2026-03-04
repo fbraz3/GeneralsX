@@ -81,7 +81,8 @@ HRESULT WINAPI DXTraceW( __in_z const char* strFile, __in DWORD dwLine, __in HRE
 //
 // Helper macros
 //
-#if defined(DEBUG) | defined(_DEBUG)
+// GeneralsX @bugfix Copilot 04/03/2026 Use logical OR for debug macro condition to match standard preprocessor style
+#if defined(DEBUG) || defined(_DEBUG)
 #define DXTRACE_MSG(str)              DXTrace( __FILE__, (DWORD)__LINE__, 0, str, FALSE )
 #define DXTRACE_ERR(str,hr)           DXTrace( __FILE__, (DWORD)__LINE__, hr, str, FALSE )
 #define DXTRACE_ERR_MSGBOX(str,hr)    DXTrace( __FILE__, (DWORD)__LINE__, hr, str, TRUE )

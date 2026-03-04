@@ -132,7 +132,11 @@
 
 
 // primitive types
+// GeneralsX @bugfix Copilot 04/03/2026 Avoid FLOAT32 typedef redefinition with other audio headers
+#ifndef _FLOAT32_DEFINED
+#define _FLOAT32_DEFINED
 typedef float FLOAT32; // 32-bit IEEE float
+#endif
 typedef D3DVECTOR X3DAUDIO_VECTOR; // float 3D vector
 
 // instance handle of precalculated constants

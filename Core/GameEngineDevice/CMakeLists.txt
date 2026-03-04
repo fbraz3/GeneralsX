@@ -240,8 +240,8 @@ if(WIN32)
         d3d8lib
     )
     if(NOT SAGE_USE_SDL3)
-        # GeneralsX @build BenderAI 01/03/2026 Bink/Miles stubs for legacy 32-bit Windows builds only
-        # win64-modern uses DXVK (no Bink) and OpenAL (no Miles); stubs not available for 64-bit
+        # GeneralsX @build BenderAI 01/03/2026 Bink/Miles stubs for legacy Windows builds only (non-SDL3 path)
+        # SDL3-based builds use DXVK (no Bink) and OpenAL (no Miles); stubs not needed or available for those builds
         target_link_libraries(corei_gameenginedevice_public INTERFACE
             binkstub
             milesstub

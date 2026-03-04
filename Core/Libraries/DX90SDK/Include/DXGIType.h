@@ -3,7 +3,8 @@
 #define __dxgitype_h__
 
 
-#include "dxgiformat.h"
+// GeneralsX @bugfix Copilot 04/03/2026 Fix DXGIFormat include casing for case-sensitive filesystems
+#include "DXGIFormat.h"
 
 #define _FACDXGI    0x87a
 #define MAKE_DXGI_HRESULT(code) MAKE_HRESULT(1, _FACDXGI, code)

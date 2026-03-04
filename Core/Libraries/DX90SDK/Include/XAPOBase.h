@@ -47,7 +47,11 @@
 
 
 // primitive types
+// GeneralsX @bugfix Copilot 04/03/2026 Avoid FLOAT32 typedef redefinition with other audio headers
+#ifndef _FLOAT32_DEFINED
+#define _FLOAT32_DEFINED
 typedef float FLOAT32; // 32-bit IEEE float
+#endif
 
 
   ////

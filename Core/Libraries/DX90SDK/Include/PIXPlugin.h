@@ -8,6 +8,9 @@
 
 #pragma once
 
+// GeneralsX @bugfix Copilot 04/03/2026 Include windef.h to ensure Win32 types (HINSTANCE, WCHAR, DWORD, BOOL, WINAPI) are available
+#include <windef.h>
+
 #ifdef __cplusplus
 extern "C" 
 {

@@ -42,8 +42,8 @@
 
 
 // Includes
+// GeneralsX @bugfix Copilot 04/03/2026 Remove self-include to avoid recursive inclusion and rely on component headers.
 #include "d3d10.h"
-#include "d3dx10.h"
 #include "d3dx10math.h"
 #include "d3dx10core.h"
 #include "d3dx10tex.h"

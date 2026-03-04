@@ -46,8 +46,8 @@
 
 
 // Includes
+// GeneralsX @bugfix Copilot 04/03/2026 Remove self-include to avoid recursive inclusion and rely on component headers.
 #include "d3d11.h"
-#include "d3dx11.h"
 #include "d3dx11core.h"
 #include "d3dx11tex.h"
 #include "d3dx11async.h"
