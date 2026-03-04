@@ -136,10 +136,123 @@ Write-Host "Checking for DXVK config..." -ForegroundColor Green
 $DxvkConf = Join-Path $PSScriptRoot "../dxvk.conf"
 if (Test-Path $DxvkConf) {
     Copy-Item $DxvkConf $GameDir -Force
-    Write-Host "✓ Copied dxvk.conf (enables detailed logging)" -ForegroundColor Green
+    Write-Host "OK Copied dxvk.conf" -ForegroundColor Green
 } else {
     Write-Host "  (No dxvk.conf found - using DXVK defaults)" -ForegroundColor Gray
 }
+
+# 9. Generate run.bat and run.ps1 in game dir (mirrors Linux run.sh pattern)
+# GeneralsX @build felipebraz 03/03/2026 Generate launcher wrappers in game dir
+Write-Host ""
+Write-Host "Generating run launchers in game dir..." -ForegroundColor Green
+
+$GameDirAbs = (Resolve-Path $GameDir).Path
+
+# --- run.bat (double-click friendly, cmd/powershell compatible) ---
+$RunBatContent = @"
+@echo off
+rem GeneralsX @build felipebraz 03/03/2026 Windows launcher wrapper
+rem Sets DXVK environment variables and launches the game.
+rem Usage: run.bat [-win] [-noshellmap] [-fullscreen] [other args]
+rem        Double-click to launch windowed (default flags applied).
+
+setlocal
+
+set "SCRIPT_DIR=%~dp0"
+
+rem ---- DXVK environment ----
+if not defined DXVK_LOG_LEVEL set DXVK_LOG_LEVEL=warn
+if not defined DXVK_HUD       set DXVK_HUD=0
+
+rem ---- Auto-detect base Generals install path ----
+rem Mirrors Linux: if ZH_Generals\ sibling dir exists, point to it.
+if not defined CNC_GENERALS_INSTALLPATH (
+    if exist "%SCRIPT_DIR%ZH_Generals\" (
+        set "CNC_GENERALS_INSTALLPATH=%SCRIPT_DIR%ZH_Generals\"
+    )
+)
+
+rem ---- Custom Vulkan ICD (optional, for SwiftShader / lavapipe testing) ----
+rem Uncomment and set path to use a software Vulkan renderer:
+rem set "VK_ICD_FILENAMES=%SCRIPT_DIR%lvp_icd.x86_64.json"
+
+rem ---- Redirect stderr to log file ----
+if not exist "%SCRIPT_DIR%logs\" mkdir "%SCRIPT_DIR%logs"
+
+rem ---- Launch ----
+cd /d "%SCRIPT_DIR%"
+if "%~1"=="" (
+    rem No args: default windowed + skip shell map
+    "$TargetName.exe" -win -noshellmap 2>"%SCRIPT_DIR%logs\run.log"
+) else (
+    "$TargetName.exe" %* 2>"%SCRIPT_DIR%logs\run.log"
+)
+
+endlocal
+"@
+
+Set-Content -Path (Join-Path $GameDirAbs "run.bat") -Value $RunBatContent -Encoding ASCII
+Write-Host "OK Generated run.bat" -ForegroundColor Green
+
+# --- run.ps1 (PowerShell, waits for process and tees log to console) ---
+$RunPs1Content = @"
+# GeneralsX @build felipebraz 03/03/2026 Windows PowerShell launcher wrapper
+# Sets DXVK environment variables and launches the game, waiting for it to exit.
+# Usage: .\run.ps1 [-win] [-noshellmap] [-fullscreen] [-Debug] [other args]
+param(
+    [switch]`$Win        = `$true,
+    [switch]`$NoShellMap = `$true,
+    [switch]`$Fullscreen,
+    [switch]`$Debug
+)
+
+`$ScriptDir = `$PSScriptRoot
+`$Exe       = Join-Path `$ScriptDir '$TargetName.exe'
+`$LogDir    = Join-Path `$ScriptDir 'logs'
+`$LogFile   = Join-Path `$LogDir    'run.log'
+
+if (-not (Test-Path `$Exe)) {
+    Write-Error "Executable not found: `$Exe"
+    exit 1
+}
+
+New-Item -ItemType Directory -Force -Path `$LogDir | Out-Null
+
+# ---- DXVK environment ----
+if (-not `$env:DXVK_LOG_LEVEL) { `$env:DXVK_LOG_LEVEL = if (`$Debug) { 'info' } else { 'warn' } }
+if (-not `$env:DXVK_HUD)       { `$env:DXVK_HUD       = '0' }
+
+# ---- Auto-detect base Generals install path ----
+if (-not `$env:CNC_GENERALS_INSTALLPATH) {
+    `$zhGenerals = Join-Path `$ScriptDir 'ZH_Generals'
+    if (Test-Path `$zhGenerals) { `$env:CNC_GENERALS_INSTALLPATH = `$zhGenerals }
+}
+
+# ---- Custom Vulkan ICD (optional, uncomment for SwiftShader / lavapipe) ----
+# `$env:VK_ICD_FILENAMES = Join-Path `$ScriptDir 'lvp_icd.x86_64.json'
+
+# ---- Build args ----
+`$GameArgs = @()
+if (`$Fullscreen) { `$GameArgs += '-fullscreen' } else { if (`$Win)        { `$GameArgs += '-win' } }
+if (`$NoShellMap) { `$GameArgs += '-noshellmap' }
+
+Write-Host "Launching $TargetName"
+Write-Host "  Args : `$(`$GameArgs -join ' ')"
+Write-Host "  Log  : `$LogFile"
+Write-Host ""
+
+Push-Location `$ScriptDir
+try {
+    & `$Exe `$GameArgs 2>&1 | Tee-Object -FilePath `$LogFile
+} finally {
+    Pop-Location
+    Remove-Item Env:\DXVK_LOG_LEVEL -ErrorAction SilentlyContinue
+    Remove-Item Env:\DXVK_HUD       -ErrorAction SilentlyContinue
+}
+"@
+
+Set-Content -Path (Join-Path $GameDirAbs "run.ps1") -Value $RunPs1Content -Encoding UTF8
+Write-Host "OK Generated run.ps1" -ForegroundColor Green
 
 # Summary
 Write-Host ""
@@ -147,9 +260,10 @@ Write-Host "=====================================================" -ForegroundCo
 Write-Host "Deploy complete!" -ForegroundColor Green
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Deployed to: $GameDir" -ForegroundColor Cyan
+Write-Host "Deployed to: $GameDirAbs" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Yellow
-Write-Host "  1. Run: .\scripts\run_zh.ps1 -Preset $Preset -Win" -ForegroundColor Yellow
-Write-Host "  2. Or manually run: $TargetName.exe -win" -ForegroundColor Yellow
+Write-Host "Run options:" -ForegroundColor Yellow
+Write-Host "  Double-click : $TargetName\Run\run.bat" -ForegroundColor Yellow
+Write-Host "  PowerShell   : cd '$GameDirAbs'; .\run.ps1" -ForegroundColor Yellow
+Write-Host "  Direct       : cd '$GameDirAbs'; .\$TargetName.exe -win -noshellmap" -ForegroundColor Yellow
 Write-Host ""

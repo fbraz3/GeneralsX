@@ -774,7 +774,16 @@ void ReleaseCrash(const char *reason)
 	char curbuf[ _MAX_PATH ];
 
 	if (TheGlobalData==nullptr) {
-		return; // We are shutting down, and TheGlobalData has been freed.  jba. [4/15/2003]
+		// GeneralsX @bugfix felipebraz 03/03/2026 Show error dialog even when TheGlobalData is null,
+		// instead of silently returning. This catches fatal errors during early init (e.g. DXVK/Vulkan failure).
+		#ifdef _WIN32
+		char earlyBuf[1024];
+		snprintf(earlyBuf, sizeof(earlyBuf), "Fatal error during early initialization:\n\n%s\n\nThis can happen when Vulkan drivers are missing or DXVK failed to initialize.", reason);
+		::MessageBoxA(nullptr, earlyBuf, "GeneralsX - Fatal Error", MB_OK|MB_SYSTEMMODAL|MB_ICONERROR);
+		#else
+		fprintf(stderr, "FATAL: %s\n", reason);
+		#endif
+		_exit(1);
 	}
 
 	strlcpy(prevbuf, TheGlobalData->getPath_UserData().str(), ARRAY_SIZE(prevbuf));
