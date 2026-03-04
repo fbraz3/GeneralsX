@@ -135,10 +135,6 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   # where lib/libvulkan.dylib and lib/libMoltenVK.dylib live.
   # GeneralsX @build BenderAI 03/03/2026: Normalize env path to macOS platform subdir
   set(VULKAN_SDK_ENV "$ENV{VULKAN_SDK}")
-<<<<<<< HEAD
-  if(NOT VULKAN_SDK_ENV)
-    file(GLOB VULKAN_HOME_DIRS "$ENV{HOME}/VulkanSDK/*")
-=======
 
   # If VULKAN_SDK points to the version root (has macOS/ subdir), normalize it
   if(VULKAN_SDK_ENV AND EXISTS "${VULKAN_SDK_ENV}/macOS/lib/libMoltenVK.dylib")
@@ -149,7 +145,6 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   if(NOT VULKAN_SDK_ENV OR NOT EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
     # Try home directory: look for ~/VulkanSDK/*/macOS
     file(GLOB VULKAN_HOME_DIRS "$ENV{HOME}/VulkanSDK/*/macOS")
->>>>>>> 846b9393d11e37eed35706ece689052dbe8f9bcd
     if(VULKAN_HOME_DIRS)
       list(SORT VULKAN_HOME_DIRS)
       list(REVERSE VULKAN_HOME_DIRS)
@@ -158,13 +153,6 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
         set(VULKAN_SDK_ENV "${POTENTIAL_SDK}")
       endif()
     endif()
-<<<<<<< HEAD
-    if(NOT VULKAN_SDK_ENV)
-      if(EXISTS "/usr/local/Caskroom/vulkan-sdk")
-        set(VULKAN_SDK_ENV "/usr/local/Caskroom/vulkan-sdk/latest/VulkanSDK")
-      elseif(EXISTS "/opt/homebrew/Caskroom/vulkan-sdk")
-        set(VULKAN_SDK_ENV "/opt/homebrew/Caskroom/vulkan-sdk/latest/VulkanSDK")
-=======
   endif()
 
   if(NOT VULKAN_SDK_ENV OR NOT EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
@@ -173,7 +161,6 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
       if(EXISTS "${BREW_PATH}/lib/libMoltenVK.dylib")
         set(VULKAN_SDK_ENV "${BREW_PATH}")
         break()
->>>>>>> 846b9393d11e37eed35706ece689052dbe8f9bcd
       endif()
     endforeach()
   endif()
@@ -194,9 +181,7 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     GIT_TAG           ad253b8a7e20b7cf16fce7d1c505928a434eac29
     SOURCE_DIR        ${DXVK_SOURCE_DIR}
     BINARY_DIR        ${DXVK_BUILD_DIR}
-<<<<<<< HEAD
     PATCH_COMMAND
-      ${CMAKE_COMMAND} -E echo "Applying macOS patches to DXVK..." &&
       ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}
     CONFIGURE_COMMAND
       ${CMAKE_COMMAND} -E env
@@ -214,11 +199,6 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
       ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR}
         src/d3d9/libdxvk_d3d9.0.dylib
         src/d3d8/libdxvk_d3d8.0.dylib
-=======
-    PATCH_COMMAND     /bin/bash -lc "${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}"
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR} ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR} --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini -Ddxvk_native_wsi=sdl3 --buildtype=release --reconfigure
-    BUILD_COMMAND     ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d9/libdxvk_d3d9.0.dylib src/d3d8/libdxvk_d3d8.0.dylib
->>>>>>> 846b9393d11e37eed35706ece689052dbe8f9bcd
     INSTALL_COMMAND   ""
     UPDATE_DISCONNECTED TRUE
   )
