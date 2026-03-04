@@ -393,6 +393,11 @@ jobs:
           ls -lh "${RUNTIME_DIR}/"
           ls -lh "${RUNTIME_DIR}/lib/" 2>/dev/null || echo "(no libs directory)"
 
+          ARCHIVE="/tmp/bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz"
+          echo "Creating archive: ${ARCHIVE}"
+          tar -czf "${ARCHIVE}" -C "$(dirname ${RUNTIME_DIR})" "$(basename ${RUNTIME_DIR})"
+          echo "Archive size: $(du -sh ${ARCHIVE} | cut -f1)"
+
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -405,7 +410,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: bundle-macos-${{ inputs.game }}-${{ inputs.preset }}
-          path: /tmp/GeneralsX-${{ inputs.game }}-macos-deploy/
+          name: bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz
+          path: /tmp/bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz
           retention-days: 7
           if-no-files-found: warn

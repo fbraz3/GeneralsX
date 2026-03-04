@@ -196,6 +196,12 @@ jobs:
           Write-Host "Bundle ready at: $deployDir"
           Get-ChildItem $deployDir | Format-Table Name, Length -AutoSize
 
+          $archivePath = "$env:RUNNER_TEMP\bundle-windows-${{ inputs.game }}-${{ inputs.preset }}.zip"
+          Write-Host "Creating archive: $archivePath"
+          Compress-Archive -Path "$deployDir\*" -DestinationPath $archivePath -Force
+          $sizeMB = [Math]::Round((Get-Item $archivePath).Length / 1MB, 2)
+          Write-Host "Archive size: $sizeMB MB"
+
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -208,7 +214,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: bundle-windows-${{ inputs.game }}-${{ inputs.preset }}
-          path: ${{ runner.temp }}/GeneralsX-${{ inputs.game }}-deploy/
+          name: bundle-windows-${{ inputs.game }}-${{ inputs.preset }}.zip
+          path: ${{ runner.temp }}/bundle-windows-${{ inputs.game }}-${{ inputs.preset }}.zip
           retention-days: 7
           if-no-files-found: warn
