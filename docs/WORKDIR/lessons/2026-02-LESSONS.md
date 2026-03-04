@@ -1,12 +1,37 @@
 # 2026-02 Lessons Learned - Phase 1 Linux Graphics Port
 
 **Month**: February 2026  
-**Sessions Covered**: 19-24, 28-30, 33, 34, 35, 66  
+**Sessions Covered**: 19-24, 28-30, 33, 34, 35, 66, 77  
 **Focus Area**: Linux graphics port (DXVK + SDL3) + build system stabilization + compilation blockers + compat headers
 
 ---
 
 ## 🎯 Critical Lessons
+
+### (Session 77). vcpkg in GitHub Actions CI — Never remove the toolchain to fix env vars 🔧
+
+**Problem**: `gli CONFIG REQUIRED` failure in CI — `gli` is header-only and not available on Homebrew.
+
+**Root Cause**: Session 72 changed `macos-vulkan` preset from `inherits: "default-vcpkg"` to `inherits: "default"`
+to fix a `$env{VCPKG_ROOT}` resolution failure. But this removed the vcpkg CMake toolchain entirely. All
+packages in `vcpkg.json` (gli, glm, zlib, freetype, fontconfig) stopped being provided.
+Locally, `VCPKG_ROOT=/Users/felipebraz/vcpkg` was set in the shell — hid the problem for weeks.
+
+**Correct Approach (✅ RIGHT)**:
+1. Keep `inherits: "default-vcpkg"` in the preset — it sets `CMAKE_TOOLCHAIN_FILE`
+2. In CI, use `lukka/run-vcpkg@v11` action to bootstrap vcpkg at the `builtin-baseline` commit from `vcpkg.json`
+3. Export `VCPKG_ROOT` and `VCPKG_DEFAULT_TRIPLET=arm64-osx` to the Configure CMake step
+
+**Wrong Approach (❌ WRONG)**:
+- Changing `inherits: "default-vcpkg"` → `"default"` to avoid the env var issue (breaks vcpkg integration)
+- Installing everything via Homebrew: `gli` is NOT on Homebrew
+
+**Key Insight**: If a CMake preset fails with `$env{VCPKG_ROOT} not set`, the fix is to SET the
+environment variable in CI, not to gut the preset. Use `lukka/run-vcpkg@v11`.
+
+**Rule**: If `vcpkg.json` exists, always use `lukka/run-vcpkg@v11` in CI. Never sidestep vcpkg to use system packages alone.
+
+---
 
 ### 0 (Session 66). Exit-time SIGSEGV — C++ Global Destructors on macOS 🚪
 

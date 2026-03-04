@@ -130,11 +130,26 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   set(DXVK_D3D8_LIB  "${DXVK_BUILD_DIR}/src/d3d8/libdxvk_d3d8.0.dylib")
   set(DXVK_D3D9_LIB  "${DXVK_BUILD_DIR}/src/d3d9/libdxvk_d3d9.0.dylib")
 
-  # Detect Vulkan SDK location for Meson configuration
-  # GeneralsX @build BenderAI 03/03/2026: Handle cases where VULKAN_SDK is not installed
+  # Detect Vulkan SDK location for Meson configuration.
+  # VULKAN_SDK must point to the platform subdir (e.g. ~/VulkanSDK/1.4.x/macOS)
+  # where lib/libvulkan.dylib and lib/libMoltenVK.dylib live.
+  # GeneralsX @build BenderAI 03/03/2026: Normalize env path to macOS platform subdir
   set(VULKAN_SDK_ENV "$ENV{VULKAN_SDK}")
+<<<<<<< HEAD
   if(NOT VULKAN_SDK_ENV)
     file(GLOB VULKAN_HOME_DIRS "$ENV{HOME}/VulkanSDK/*")
+=======
+
+  # If VULKAN_SDK points to the version root (has macOS/ subdir), normalize it
+  if(VULKAN_SDK_ENV AND EXISTS "${VULKAN_SDK_ENV}/macOS/lib/libMoltenVK.dylib")
+    set(VULKAN_SDK_ENV "${VULKAN_SDK_ENV}/macOS")
+    message(STATUS "DXVK macOS build: Normalized VULKAN_SDK to platform subdir: ${VULKAN_SDK_ENV}")
+  endif()
+
+  if(NOT VULKAN_SDK_ENV OR NOT EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
+    # Try home directory: look for ~/VulkanSDK/*/macOS
+    file(GLOB VULKAN_HOME_DIRS "$ENV{HOME}/VulkanSDK/*/macOS")
+>>>>>>> 846b9393d11e37eed35706ece689052dbe8f9bcd
     if(VULKAN_HOME_DIRS)
       list(SORT VULKAN_HOME_DIRS)
       list(REVERSE VULKAN_HOME_DIRS)
@@ -143,28 +158,43 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
         set(VULKAN_SDK_ENV "${POTENTIAL_SDK}")
       endif()
     endif()
+<<<<<<< HEAD
     if(NOT VULKAN_SDK_ENV)
       if(EXISTS "/usr/local/Caskroom/vulkan-sdk")
         set(VULKAN_SDK_ENV "/usr/local/Caskroom/vulkan-sdk/latest/VulkanSDK")
       elseif(EXISTS "/opt/homebrew/Caskroom/vulkan-sdk")
         set(VULKAN_SDK_ENV "/opt/homebrew/Caskroom/vulkan-sdk/latest/VulkanSDK")
+=======
+  endif()
+
+  if(NOT VULKAN_SDK_ENV OR NOT EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
+    # Try common Homebrew locations
+    foreach(BREW_PATH "/usr/local/Caskroom/vulkan-sdk/latest/VulkanSDK/macOS" "/opt/homebrew/Caskroom/vulkan-sdk/latest/VulkanSDK/macOS")
+      if(EXISTS "${BREW_PATH}/lib/libMoltenVK.dylib")
+        set(VULKAN_SDK_ENV "${BREW_PATH}")
+        break()
+>>>>>>> 846b9393d11e37eed35706ece689052dbe8f9bcd
       endif()
-    endif()
+    endforeach()
   endif()
 
   if(VULKAN_SDK_ENV AND EXISTS "${VULKAN_SDK_ENV}/lib/libMoltenVK.dylib")
     message(STATUS "DXVK macOS build: Using Vulkan SDK at ${VULKAN_SDK_ENV}")
     set(VULKAN_SDK_ENV_VAR "VULKAN_SDK=${VULKAN_SDK_ENV}")
   else()
-    message(WARNING "DXVK macOS build: Vulkan SDK not found; Meson will search in system paths")
+    message(WARNING "DXVK macOS build: Vulkan SDK / MoltenVK not found; Meson will search system paths")
+    if(VULKAN_SDK_ENV)
+      message(STATUS "  VULKAN_SDK checked: ${VULKAN_SDK_ENV}")
+    endif()
     set(VULKAN_SDK_ENV_VAR "")
   endif()
 
   ExternalProject_Add(dxvk_macos_build
     GIT_REPOSITORY    https://github.com/doitsujin/dxvk.git
-    GIT_TAG           ad253b8a7e20b7cf16fce7d1c505928a434eac29  # v2.6 pinned commit SHA
+    GIT_TAG           ad253b8a7e20b7cf16fce7d1c505928a434eac29
     SOURCE_DIR        ${DXVK_SOURCE_DIR}
     BINARY_DIR        ${DXVK_BUILD_DIR}
+<<<<<<< HEAD
     PATCH_COMMAND
       ${CMAKE_COMMAND} -E echo "Applying macOS patches to DXVK..." &&
       ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}
@@ -184,6 +214,11 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
       ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR}
         src/d3d9/libdxvk_d3d9.0.dylib
         src/d3d8/libdxvk_d3d8.0.dylib
+=======
+    PATCH_COMMAND     /bin/bash -lc "${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}"
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR} ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR} --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini -Ddxvk_native_wsi=sdl3 --buildtype=release --reconfigure
+    BUILD_COMMAND     ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d9/libdxvk_d3d9.0.dylib src/d3d8/libdxvk_d3d8.0.dylib
+>>>>>>> 846b9393d11e37eed35706ece689052dbe8f9bcd
     INSTALL_COMMAND   ""
     UPDATE_DISCONNECTED TRUE
   )
