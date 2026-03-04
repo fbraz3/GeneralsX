@@ -13,10 +13,38 @@
 // Removed duplicate DWORD/ULONG/UINT/BYTE/BOOL/WORD/USHORT/LPCSTR typedefs
 // All of these are already in bittype.h which is included first in windows_compat.h
 
-// GDI color reference (0x00BBGGRR format) - not in bittype.h
-// GeneralsX @bugfix fbraz3 04/03/2026 Use uint32_t directly; DWORD may not yet
-// be defined when types_compat.h is included before windows_compat.h/bittype.h
+// GeneralsX @bugfix fbraz3 04/03/2026 Define basic Win32 types for non-Windows platforms.
+// On Windows these come from bittype.h (via windows_compat.h), but headers such as
+// time_compat.h are included directly without windows_compat.h, so DWORD/BOOL/etc.
+// would be undefined. Use #ifndef guards to avoid conflicts when bittype.h is
+// included later in the same translation unit.
 #ifndef _WIN32
+#ifndef DWORD
+typedef uint32_t DWORD;
+#endif
+#ifndef WORD
+typedef uint16_t WORD;
+#endif
+#ifndef BYTE
+typedef uint8_t BYTE;
+#endif
+#ifndef UINT
+typedef unsigned int UINT;
+#endif
+#ifndef ULONG
+typedef unsigned long ULONG;
+#endif
+#ifndef BOOL
+typedef int BOOL;
+#endif
+#ifndef LPCSTR
+typedef const char* LPCSTR;
+#endif
+#ifndef USHORT
+typedef uint16_t USHORT;
+#endif
+
+// GDI color reference (0x00BBGGRR format) - not in bittype.h
 #ifndef COLORREF
 typedef uint32_t COLORREF;
 #endif
