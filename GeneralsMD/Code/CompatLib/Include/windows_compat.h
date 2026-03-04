@@ -186,20 +186,16 @@ inline BOOL GetVersionEx(OSVERSIONINFO* lpVersionInfo) {
 #define VER_PLATFORM_WIN32_NT 2
 
 // GeneralsX @build BenderAI 28/02/2026 (updated 26/05/2026)
-// Linux-only timing functions: timeGetTime(), timeBeginPeriod(), timeEndPeriod()
-// CRITICAL: These use POSIX timeval/gettimeofday which do NOT exist on Windows.
-// On Windows: timeGetTime() / timeBeginPeriod() / timeEndPeriod() are in mmsystem.h
-//             which PreRTS.h includes (via #ifdef _WIN32 / #include <mmsystem.h>).
+// Linux-only timing functions: timeBeginPeriod(), timeEndPeriod()
+// CRITICAL: These use POSIX calls which do NOT exist on Windows.
+// On Windows: these are in mmsystem.h (included via PreRTS.h).
+// GeneralsX @bugfix fbraz3 04/03/2026 Removed static inline timeGetTime() from
+// here — the authoritative implementation is in time_compat.cpp (uses
+// CLOCK_BOOTTIME on Linux, mach_absolute_time on macOS). Keeping a second
+// static inline definition here caused a linkage conflict when windows_compat.h
+// included time_compat.h, giving both an extern declaration and a static inline
+// definition for the same symbol in the same translation unit.
 #ifndef _WIN32
-
-// TheSuperHackers @build 10/02/2026 Bender
-// Timing functions: timeBeginPeriod(), timeEndPeriod() for Linux
-static inline DWORD timeGetTime(void)
-{
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return (DWORD)((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
-}
 
 static inline DWORD timeBeginPeriod(DWORD period)
 {

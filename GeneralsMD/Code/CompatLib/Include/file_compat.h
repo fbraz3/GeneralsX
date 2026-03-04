@@ -259,6 +259,12 @@ inline int GetDateFormat(unsigned long locale, unsigned long flags, const SYSTEM
   return (result > 0) ? static_cast<int>(result) : 0;
 }
 
+// GeneralsX @bugfix fbraz3 04/03/2026 Guard with #ifndef to avoid redefinition
+// warning/error: types_compat.h already defines INVALID_HANDLE_VALUE as
+// ((HANDLE)-1); this inline cast to void* is equivalent but triggers -Wmacro-
+// redefined. Any TU that sees types_compat.h first will already have the macro.
+#ifndef INVALID_HANDLE_VALUE
 #define INVALID_HANDLE_VALUE ((void*)-1)
+#endif
 
 #endif // !_WIN32

@@ -1,6 +1,10 @@
 #pragma once
 
 #include <stdint.h>
+// GeneralsX @bugfix fbraz3 04/03/2026 Include types_compat.h for HANDLE, DWORD, BOOL, etc.
+// gdi_compat.h uses these types (HANDLE HFONT, HANDLE HDC, etc.) and may be
+// included before windows_compat.h/bittype.h in some translation units.
+#include "types_compat.h"
 
 // GeneralsX @build BenderAI 26/05/2026 - gdi_compat.h is Linux-only.
 // On Windows: wingdi.h (via windows.h) provides all GDI types, constants, and functions.
