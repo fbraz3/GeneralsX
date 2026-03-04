@@ -71,6 +71,9 @@
 */
 #ifdef _WIN32
 #include <windows.h>
+// GeneralsX @bugfix BenderAI 03/03/2026 - GetCurrentThreadIdAsInt is defined in thread_compat.h (POSIX-only).
+// On Windows, provide it as an inline wrapper around the native Win32 GetCurrentThreadId().
+inline static int GetCurrentThreadIdAsInt() { return static_cast<int>(::GetCurrentThreadId()); }
 #define MEMLOG_USE_MUTEX					0
 #define MEMLOG_USE_CRITICALSECTION		1
 #define MEMLOG_USE_FASTCRITICALSECTION	0
