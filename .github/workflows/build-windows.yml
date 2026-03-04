@@ -14,7 +14,7 @@ on:
       preset:
         required: false
         type: string
-        default: "windows64-deploy"
+        default: "win64-modern"
         description: "CMake preset for Windows"
   workflow_dispatch:
     inputs:
@@ -29,22 +29,185 @@ on:
         type: choice
         description: "CMake preset for Windows"
         options:
-          - windows64-deploy
-        default: windows64-deploy
+          - win64-modern
+        default: win64-modern
 
 jobs:
   build:
     name: ${{ inputs.game }}@${{ inputs.preset }}
     runs-on: windows-latest
-    timeout-minutes: 5
+    timeout-minutes: 120
 
     steps:
-      - name: Not Yet Implemented
-        shell: bash
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache vcpkg
+        id: cache-vcpkg
+        uses: actions/cache@v4
+        with:
+          path: C:\vcpkg
+          key: vcpkg-windows-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          restore-keys: |
+            vcpkg-windows-${{ runner.os }}-
+
+      - name: Bootstrap vcpkg
+        shell: pwsh
         run: |
-          echo "Windows build (SDL3 + DXVK + OpenAL 64-bit) is not yet implemented."
-          echo "See docs/WORKDIR/phases/ for the Windows roadmap."
-          echo ""
-          echo "To run the real build, switch to the branch that has Windows support"
-          echo "and re-run this workflow from that branch."
-          exit 1
+          Write-Host "Setting up vcpkg..."
+          if (-not (Test-Path "C:\vcpkg\vcpkg.exe")) {
+            Write-Host "Cloning vcpkg from GitHub..."
+            git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+            Write-Host "Running vcpkg bootstrap..."
+            & C:\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+          } else {
+            Write-Host "Using cached vcpkg"
+          }
+          "VCPKG_ROOT=C:\vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "vcpkg ready at C:\vcpkg"
+
+      - name: Install Vulkan SDK
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.3.283.0
+          install_runtime: true
+          cache: true
+          destination: ${{ github.workspace }}/vulkan-sdk
+
+      - name: Setup MSVC (x64)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Configure CMake (Windows)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          Write-Host "Configuring with preset: ${{ inputs.preset }}"
+          cmake --preset ${{ inputs.preset }} 2>&1 | Tee-Object -FilePath logs/configure_windows.log
+          $status = $LASTEXITCODE
+          if ($status -ne 0) {
+            Write-Host "CMake configuration failed; last 50 lines:"
+            Get-Content logs/configure_windows.log | Select-Object -Last 50
+            exit $status
+          }
+          Write-Host "CMake configuration complete."
+
+      - name: Build ${{ inputs.game }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          $jobs = [Environment]::ProcessorCount
+          Write-Host "Building with $jobs parallel jobs..."
+
+          if ("${{ inputs.game }}" -eq "GeneralsMD") {
+            cmake --build build/${{ inputs.preset }} --target z_generals -j $jobs 2>&1 |
+              Tee-Object -FilePath logs/build_zh_windows.log
+            $status = $LASTEXITCODE
+            $logFile = "logs/build_zh_windows.log"
+          } else {
+            cmake --build build/${{ inputs.preset }} --target g_generals -j $jobs 2>&1 |
+              Tee-Object -FilePath logs/build_generals_windows.log
+            $status = $LASTEXITCODE
+            $logFile = "logs/build_generals_windows.log"
+          }
+
+          if ($status -eq 0) {
+            Write-Host "Build completed successfully."
+          } else {
+            Write-Host "Build failed; last 100 lines of $logFile :"
+            Get-Content $logFile | Select-Object -Last 100
+            exit $status
+          }
+
+      - name: Verify Build Artifacts
+        shell: pwsh
+        run: |
+          if ("${{ inputs.game }}" -eq "GeneralsMD") {
+            $binary      = "build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.exe"
+            $displayName = "GeneralsXZH.exe"
+          } else {
+            $binary      = "build/${{ inputs.preset }}/Generals/GeneralsX.exe"
+            $displayName = "GeneralsX.exe"
+          }
+
+          if (Test-Path $binary) {
+            $sizeMB = [Math]::Round((Get-Item $binary).Length / 1MB, 2)
+            Write-Host "Binary built: $displayName ($sizeMB MB)"
+          } else {
+            Write-Host "Binary NOT found: $binary"
+            Write-Host "Listing build output directory:"
+            Get-ChildItem "build/${{ inputs.preset }}" -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue |
+              Format-Table FullName, Length -AutoSize
+            exit 1
+          }
+
+      - name: Deploy Bundle (Binary + DLLs)
+        if: success()
+        shell: pwsh
+        run: |
+          if ("${{ inputs.game }}" -eq "GeneralsMD") {
+            $binary  = "build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.exe"
+          } else {
+            $binary  = "build/${{ inputs.preset }}/Generals/GeneralsX.exe"
+          }
+
+          $deployDir = "$env:RUNNER_TEMP\GeneralsX-${{ inputs.game }}-deploy"
+          New-Item -ItemType Directory -Force -Path $deployDir | Out-Null
+
+          Write-Host "Creating deployment bundle at: $deployDir"
+
+          # Executable
+          Copy-Item $binary $deployDir -Force
+          Write-Host "  Copied executable"
+
+          # DXVK DLLs (Windows pre-built x64 release)
+          $dxvkDir = "build/${{ inputs.preset }}/_deps/dxvk_win_release-src/x64"
+          if (Test-Path $dxvkDir) {
+            foreach ($dll in @("d3d8.dll","d3d9.dll","d3d10core.dll","d3d11.dll","dxgi.dll")) {
+              $src = Join-Path $dxvkDir $dll
+              if (Test-Path $src) { Copy-Item $src $deployDir -Force; Write-Host "  Copied $dll" }
+            }
+          } else {
+            Write-Host "  DXVK directory not found (will be fetched on configure): $dxvkDir"
+          }
+
+          # SDL3.dll
+          $sdl3Dll = "build/${{ inputs.preset }}/_deps/sdl3-build/SDL3.dll"
+          if (Test-Path $sdl3Dll) {
+            Copy-Item $sdl3Dll $deployDir -Force
+            Write-Host "  Copied SDL3.dll"
+          }
+
+          # OpenAL32.dll
+          $openalDll = Get-ChildItem "build/${{ inputs.preset }}/_deps" `
+            -Filter "OpenAL32.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($openalDll) {
+            Copy-Item $openalDll.FullName $deployDir -Force
+            Write-Host "  Copied OpenAL32.dll"
+          }
+
+          Write-Host "Bundle ready at: $deployDir"
+          Get-ChildItem $deployDir | Format-Table Name, Length -AutoSize
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-windows-${{ inputs.game }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Deployment Bundle
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-windows-${{ inputs.game }}-${{ inputs.preset }}
+          path: ${{ runner.temp }}/GeneralsX-${{ inputs.game }}-deploy/
+          retention-days: 7
+          if-no-files-found: warn

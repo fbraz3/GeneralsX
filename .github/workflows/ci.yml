@@ -216,3 +216,23 @@ jobs:
       game: "Generals"
       preset: "linux64-deploy"
     secrets: inherit
+
+  build-generalsmd-windows:
+    name: Build GeneralsMD@Windows
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generalsmd == 'true' || needs.detect-changes.outputs.shared == 'true' }}
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      game: "GeneralsMD"
+      preset: "win64-modern"
+    secrets: inherit
+
+  build-generals-windows:
+    name: Build Generals@Windows
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generals == 'true' || needs.detect-changes.outputs.shared == 'true' }}
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      game: "Generals"
+      preset: "win64-modern"
+    secrets: inherit
