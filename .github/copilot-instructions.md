@@ -1,15 +1,43 @@
 # AI Coding Agent Quickstart
 
-- **Scope**: Two games; Zero Hour lives in `GeneralsMD/` (primary), Generals in `Generals/`; shared engine/libs under `Core/`.
-- **Platform strategy**: Cross-platform port targeting Linux, macOS, and Windows under a single codebase: SDL3 (windowing/input) + DXVK (DX8 to Vulkan graphics) + OpenAL (audio) + 64-bit. Legacy VC6 + win32 builds remain as upstream baseline. Isolate platform code to `Core/GameEngineDevice/` and `Core/Libraries/Source/Platform/`.
-- **Key entry points**: Game launchers in `GeneralsMD/Code/Main/WinMain.cpp` and `Generals/Code/Main/WinMain.cpp`. Renderer device setup in `Core/GameEngineDevice/Source/` (DX8 now; DXVK path follows fighter19 reference under `references/fighter19-dxvk-port/GeneralsMD/Code/GameEngineDevice/`).
-- **Critical convention**: Every user-facing code change needs `// GeneralsX @keyword author DD/MM/YYYY Description` above it. Keywords: @bugfix/@feature/@performance/@refactor/@tweak/@build.
-- **Build presets**: Legacy: `cmake --preset vc6` or `win32`. Cross-platform: `linux64-deploy` (primary Linux), `macos-vulkan` (macOS ARM64 Apple Silicon -- active), `windows64-deploy` (TBD). Linux via Docker: `./scripts/docker-configure-linux.sh linux64-deploy` then `./scripts/docker-build-linux-zh.sh linux64-deploy`. macOS native: `./scripts/build-macos-zh.sh`. MinGW cross: `./scripts/docker-build-mingw-zh.sh mingw-w64-i686`.
-- **Testing hotspots**: Replay compatibility uses VC6 optimized builds with `RTS_BUILD_OPTION_DEBUG=OFF` and replays in `GeneralsReplays/`; run via `generalszh.exe -jobs 4 -headless -replay subfolder/*.rep`. Keep determinism—avoid logic changes when touching rendering/audio paths.
-- **Platform isolation rules**: No platform-specific code inside gameplay (GameLogic). Use compile guards and device/platform layers. Keep DX8/Miles path working for VC6; add DXVK/OpenAL behind feature flags. SDL3 is the unified platform layer — no native POSIX, Win32, or Cocoa calls in game code.
-- **Reference guides**: DXVK patterns in `references/fighter19-dxvk-port/` (CMake presets, SDL3 hooks, device wrappers). OpenAL/Miles mapping ideas in `references/jmarshall-win64-modern/Code/Audio/` (Generals-only, adapt carefully for Zero Hour).
-- **Docs workflow**: Monthly diary in `docs/DEV_BLOG/YYYY-MM-DIARY.md` (newest-first). Active work notes in `docs/WORKDIR/` (phases/planning/reports/support/audit/lessons). Do not drop working docs directly under `docs/` root.
-- **Common pitfalls**: Manual memory (delete/delete[]; STLPort for VC6). Retail compatibility matters—debug options break replays. Watch include-case on Linux; scripts/cpp/fixIncludesCase.sh can help. Avoid big refactors mixed with gameplay fixes.
-- **Where to tweak build flags**: `CMakePresets.json` for presets; `cmake/config-build.cmake` and `cmake/dx8.cmake` for renderer flags; `cmake/miles.cmake` for audio; `cmake/mingw.cmake` for cross builds.
-- **Run recipes**: Linux binary smoke: `./scripts/docker-smoke-test-zh.sh linux64-deploy`. Quick Windows run (win32 preset): see tasks using `scripts/run_zh.ps1`/`scripts/run_zh.ps1 -Generals`.
-- **When backporting to Generals**: Only for shared platform/back-end changes; avoid expansion-specific logic moves. Keep Zero Hour first.
+## Big Picture
+- Two game targets: `GeneralsMD/` (Zero Hour, primary) and `Generals/` (base game); shared runtime lives in `Core/`.
+- Top-level build wires dependencies and targets in `CMakeLists.txt` (`Core/`, then `GeneralsMD/` / `Generals/`).
+- Architecture direction is one cross-platform codebase: SDL3 + DXVK + OpenAL + 64-bit; legacy VC6/win32 path is kept for retail compatibility.
+- Keep platform work isolated to `Core/GameEngineDevice/`, `Core/Libraries/Source/Platform/`, and `GeneralsMD/Code/CompatLib/`.
+
+## Entry Points & Integration Boundaries
+- Game launch entry points: `GeneralsMD/Code/Main/WinMain.cpp` and `Generals/Code/Main/WinMain.cpp`.
+- Device/backend integration is centered in `Core/GameEngineDevice/Source/` and `cmake/dx8.cmake`, `cmake/sdl3.cmake`, `cmake/openal.cmake`.
+- Build presets and feature toggles are authoritative in `CMakePresets.json` (not in ad-hoc scripts).
+- Reference implementations: `references/fighter19-dxvk-port/` (DXVK/SDL3 patterns), `references/jmarshall-win64-modern/` (OpenAL/64-bit patterns), `references/thesuperhackers-main/` (upstream behavior).
+
+## Critical Workflows (Use These First)
+- VS Code tasks in `.vscode/tasks.json` are the canonical daily workflow (configure/build/deploy/run per platform).
+- Linux Docker: `./scripts/docker-configure-linux.sh linux64-deploy` then `./scripts/docker-build-linux-zh.sh linux64-deploy`.
+- macOS native: `./scripts/build-macos-zh.sh`, deploy with `./scripts/deploy-macos-zh.sh`, run with `./scripts/run-macos-zh.sh -win`.
+- Windows modern: use `win64-modern` (`scripts/configure_cmake_modern.ps1`, `scripts/build_zh_modern.ps1`, `scripts/deploy_zh_modern.ps1`, `scripts/run_zh_modern.ps1`).
+- Replay compatibility check (Windows retail behavior): `generalszh.exe -jobs 4 -headless -replay subfolder/*.rep` with optimized VC6 and `RTS_BUILD_OPTION_DEBUG=OFF`.
+
+## Project-Specific Conventions
+- Every user-facing code change must include: `// GeneralsX @keyword author DD/MM/YYYY Description`.
+- Allowed keywords: `@bugfix`, `@feature`, `@performance`, `@refactor`, `@tweak`, `@build`.
+- Preserve determinism: rendering/audio/platform changes must not alter game logic outcomes.
+- Prefer minimal, isolated diffs; do not refactor gameplay code while doing platform/backend changes.
+
+## Pitfalls That Recur Here
+- SDL3 is cross-platform: do not wrap SDL3 implementation files with `#ifndef _WIN32`.
+- Use platform guards precisely: macOS-only fixes should use `__APPLE__` (not broad `_WIN32`/else patterns that can break Linux).
+- CMake options are not C++ defines unless exported via `target_compile_definitions`.
+- DXVK type conflicts after clean reconfigure are handled via pre-guards in `GeneralsMD/Code/CompatLib/Include/windows_compat.h` (`_MEMORYSTATUS_DEFINED`, `_IUNKNOWN_DEFINED`).
+- Linux include paths are case-sensitive; check/fix case mismatches (`scripts/cpp/fixIncludesCase.sh`).
+
+## Documentation & Session Hygiene
+- Write docs in English only.
+- Dev diary is monthly: `docs/DEV_BLOG/YYYY-MM-DIARY.md` (newest entries first).
+- Put active technical notes in `docs/WORKDIR/` (`phases/`, `reports/`, `support/`, `lessons/`), not directly under `docs/`.
+- Before implementing complex fixes, consult `docs/WORKDIR/lessons/` and relevant `docs/WORKDIR/phases/PHASE*.md`.
+
+## Backport Policy
+- Zero Hour first; backport to `Generals/` only for shared backend/platform changes with low gameplay risk.
+- Do not backport expansion-specific gameplay logic.
