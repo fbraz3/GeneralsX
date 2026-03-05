@@ -381,15 +381,56 @@ jobs:
           done
           
           # MoltenVK dylib from Vulkan SDK (check both primary and fallback paths)
-          if [ -f "${{ env.VULKAN_SDK }}/macOS/lib/libMoltenVK.dylib" ]; then
+          if [ -f "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" ]; then
             echo "  Copying MoltenVK from macOS/lib..."
-            cp -v "${{ env.VULKAN_SDK }}/macOS/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
-          elif [ -f "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" ]; then
+            cp -v "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+          elif [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
             echo "  Copying MoltenVK from lib..."
-            cp -v "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+            cp -v "$VULKAN_SDK/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
           else
             echo "  ⚠️ MoltenVK dylib not found in Vulkan SDK"
           fi
+
+          # GeneralsX @bugfix felipebraz 04/03/2026 Bundle Vulkan loader dylibs required by DXVK at runtime.
+          if [ -f "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" ]; then
+            echo "  Copying Vulkan loader libvulkan.1.dylib from macOS/lib..."
+            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/lib/" || true
+          elif [ -f "$VULKAN_SDK/lib/libvulkan.1.dylib" ]; then
+            echo "  Copying Vulkan loader libvulkan.1.dylib from lib..."
+            cp -v "$VULKAN_SDK/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/lib/" || true
+          else
+            echo "  ⚠️ libvulkan.1.dylib not found in Vulkan SDK"
+          fi
+
+          if [ -f "$VULKAN_SDK/macOS/lib/libvulkan.dylib" ]; then
+            echo "  Copying Vulkan loader libvulkan.dylib from macOS/lib..."
+            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.dylib" "${RUNTIME_DIR}/lib/" || true
+          elif [ -f "$VULKAN_SDK/lib/libvulkan.dylib" ]; then
+            echo "  Copying Vulkan loader libvulkan.dylib from lib..."
+            cp -v "$VULKAN_SDK/lib/libvulkan.dylib" "${RUNTIME_DIR}/lib/" || true
+          else
+            echo "  ⚠️ libvulkan.dylib not found in Vulkan SDK"
+          fi
+
+          # Keep both names available even when SDK ships only one binary.
+          if [ -f "${RUNTIME_DIR}/lib/libvulkan.1.dylib" ] && [ ! -f "${RUNTIME_DIR}/lib/libvulkan.dylib" ]; then
+            ln -sf "libvulkan.1.dylib" "${RUNTIME_DIR}/lib/libvulkan.dylib"
+          fi
+          if [ -f "${RUNTIME_DIR}/lib/libvulkan.dylib" ] && [ ! -f "${RUNTIME_DIR}/lib/libvulkan.1.dylib" ]; then
+            ln -sf "libvulkan.dylib" "${RUNTIME_DIR}/lib/libvulkan.1.dylib"
+          fi
+
+          # GeneralsX @bugfix felipebraz 04/03/2026 Ship local ICD manifest so loader resolves bundled MoltenVK.
+          cat > "${RUNTIME_DIR}/lib/MoltenVK_icd.json" <<'EOF'
+          {
+              "file_format_version": "1.0.0",
+              "ICD": {
+                  "library_path": "./libMoltenVK.dylib",
+                  "api_version": "1.4.0",
+                  "is_portability_driver": true
+              }
+          }
+          EOF
           
           echo "  Copying run.sh wrapper from scripts..."
           cp -v "scripts/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"

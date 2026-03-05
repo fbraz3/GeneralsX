@@ -185,12 +185,41 @@ jobs:
             Write-Host "  Copied SDL3.dll"
           }
 
+          # GeneralsX @bugfix felipebraz 05/03/2026 Include optional SDL3_image runtime DLL in CI bundle when available.
+          $sdl3ImageDll = "build/${{ inputs.preset }}/_deps/SDL3_image-build/SDL3_image.dll"
+          if (Test-Path $sdl3ImageDll) {
+            Copy-Item $sdl3ImageDll $deployDir -Force
+            Write-Host "  Copied SDL3_image.dll"
+          } else {
+            Write-Host "  SDL3_image.dll not found (optional)"
+          }
+
           # OpenAL32.dll
           $openalDll = Get-ChildItem "build/${{ inputs.preset }}/_deps" `
             -Filter "OpenAL32.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($openalDll) {
             Copy-Item $openalDll.FullName $deployDir -Force
             Write-Host "  Copied OpenAL32.dll"
+          }
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Include optional FFmpeg runtime DLLs to match local deploy behavior.
+          $targetDir = if ("${{ inputs.game }}" -eq "GeneralsMD") { "GeneralsMD" } else { "Generals" }
+          $buildGameDir = "build/${{ inputs.preset }}/$targetDir"
+
+          Get-ChildItem $buildGameDir -Filter "av*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item $_.FullName $deployDir -Force
+            Write-Host "  Copied $($_.Name)"
+          }
+
+          Get-ChildItem $buildGameDir -Filter "sw*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item $_.FullName $deployDir -Force
+            Write-Host "  Copied $($_.Name)"
+          }
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Copy optional dxvk.conf for consistent runtime defaults.
+          if (Test-Path "dxvk.conf") {
+            Copy-Item "dxvk.conf" $deployDir -Force
+            Write-Host "  Copied dxvk.conf"
           }
 
           Write-Host "Bundle ready at: $deployDir"

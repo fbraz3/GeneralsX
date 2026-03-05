@@ -17,6 +17,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     export DYLD_LIBRARY_PATH="${SCRIPT_DIR}/lib:${DYLD_LIBRARY_PATH:-}"
     export DYLD_FALLBACK_LIBRARY_PATH="${SCRIPT_DIR}/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"
+    # GeneralsX @bugfix felipebraz 04/03/2026 Ensure Vulkan loader uses bundled MoltenVK ICD manifest.
+    if [[ -f "${SCRIPT_DIR}/lib/MoltenVK_icd.json" ]]; then
+        export VK_ICD_FILENAMES="${SCRIPT_DIR}/lib/MoltenVK_icd.json"
+    fi
 else
     # Linux
     export LD_LIBRARY_PATH="${SCRIPT_DIR}/lib:${LD_LIBRARY_PATH:-}"
