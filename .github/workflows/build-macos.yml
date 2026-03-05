@@ -375,18 +375,15 @@ jobs:
           echo "  Copying framework libraries..."
           mkdir -p "${RUNTIME_DIR}/lib"
           
-          # DXVK dylibs
-          find "build/${{ inputs.preset }}/_deps" -name "*.dylib" -o -name "*.dylib.so" 2>/dev/null | while read f; do
-            [ -f "$f" ] && cp -v "$f" "${RUNTIME_DIR}/lib/" || true
+          # GeneralsX @bugfix felipebraz 05/03/2026 Copy all dylibs from _deps (SDL3, DXVK, OpenAL, SDL3_image).
+          # Use -L to dereference symlinks (e.g. libSDL3.dylib -> libSDL3.0.dylib) so bundle has real files.
+          find "build/${{ inputs.preset }}/_deps" -name "*.dylib" 2>/dev/null | while IFS= read -r f; do
+            cp -Lv "$f" "${RUNTIME_DIR}/lib/" || true
           done
 
-          # GeneralsX @bugfix felipebraz 05/03/2026 Ensure GameSpy runtime dylib is bundled (not under _deps).
-          if [ -f "build/${{ inputs.preset }}/libgamespy.dylib" ]; then
-            echo "  Copying GameSpy dylib..."
-            cp -v "build/${{ inputs.preset }}/libgamespy.dylib" "${RUNTIME_DIR}/lib/"
-          else
-            echo "  ⚠️ libgamespy.dylib not found at build/${{ inputs.preset }}/libgamespy.dylib"
-          fi
+          # GeneralsX @bugfix felipebraz 05/03/2026 Copy GameSpy dylib from build root (FetchContent outputs it
+          # directly to binaryDir, NOT under _deps like most other dependencies).
+          cp -Lv "build/${{ inputs.preset }}/libgamespy.dylib" "${RUNTIME_DIR}/lib/"
           
           # MoltenVK dylib from Vulkan SDK (check both primary and fallback paths)
           if [ -f "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" ]; then
