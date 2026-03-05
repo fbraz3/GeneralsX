@@ -26,12 +26,12 @@ endif()
 include(${CMAKE_SOURCE_DIR}/cmake/glm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/gli.cmake)
 
-# Try vcpkg first for GLM compatibility, fall back to FetchContent (already loaded by glm.cmake)
-find_package(glm CONFIG QUIET)
-
-# GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang
-# Only find/link GLI on non-Apple platforms to avoid the collision in gli::detail::convertFunc
-find_package(gli CONFIG QUIET)
+# GeneralsX @bugfix BenderAI 04/03/2026 - Do NOT call find_package(glm/gli) after FetchContent.
+# cmake/glm.cmake and cmake/gli.cmake create glm::glm and gli::gli targets via FetchContent.
+# Calling find_package(glm CONFIG QUIET) afterwards triggers vcpkg's _find_package which
+# finds the system (Homebrew) GLM and tries to create glm::glm + glm::glm-header-only.
+# Since glm::glm already exists, CMake errors: "Some targets already defined".
+# The FetchContent targets are authoritative -- no find_package needed.
 
 if(NOT APPLE)
     target_link_libraries(d3dx8 PUBLIC glm::glm gli::gli)

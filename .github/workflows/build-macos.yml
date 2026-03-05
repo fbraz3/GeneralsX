@@ -90,8 +90,11 @@ jobs:
           # glslang (required by DXVK Meson build to compile GLSL shaders to SPIR-V)
           brew install glslang
 
-          # OpenAL Soft (required by audio layer; provides <AL/al.h> — macOS system OpenAL framework uses <OpenAL/al.h> which is incompatible)
-          brew install openal-soft
+          # NOTE: OpenAL Soft is intentionally NOT installed via Homebrew.
+          # It is fetched via CMake FetchContent in cmake/openal.cmake (v1.24.2).
+          # Installing Homebrew openal-soft was unreliable on Apple Silicon M-series:
+          # Intel Homebrew (/usr/local) installs x86_64-only binaries which fail to
+          # link against native arm64 builds. FetchContent compiles for the native arch.
 
           # Verify all tools are available
           cmake --version | head -1

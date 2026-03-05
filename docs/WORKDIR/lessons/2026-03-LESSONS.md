@@ -313,3 +313,32 @@ winsock2.h is always the first socket header — the ordering is correct.
 
 **Written**: 2026-03-02, Session 58
 **Based on**: win64-modern LNK2019 fix session — `generalszh.exe` links successfully (10.4 MB)
+
+---
+
+## Lesson N+1 (Session 77): Never call find_package after FetchContent has created the same target
+
+**Context**: `windows-sdl` branch modified `GeneralsMD/Code/CompatLib/CMakeLists.txt` to load GLM via
+FetchContent (`cmake/glm.cmake`) and then immediately call `find_package(glm CONFIG QUIET)`. On macOS
+with Homebrew GLM installed at `/usr/local/share/glm/`, vcpkg's wrapper tried to create `glm::glm` AND
+`glm::glm-header-only` — but `glm::glm` already existed from FetchContent.
+
+**Rule**: Once `cmake/glm.cmake` creates a target via FetchContent, do NOT call `find_package` for the
+same library in downstream CMakeLists. The FetchContent target is authoritative.
+
+**Written**: 2026-03-04, Session 77
+
+---
+
+## Lesson N+2 (Session 77): Never rely on Homebrew path detection for arch-specific libs on Apple Silicon
+
+**Context**: `cmake/openal.cmake` detected openal-soft at `/usr/local/opt/openal-soft` (Intel Homebrew
+at x86_64). The library was x86_64-only and failed to link against native arm64 binary:
+`ld: symbol(s) not found for architecture arm64`.
+
+**Fix**: Use FetchContent for ALL platforms (Linux, macOS, Windows). FetchContent compiles openal-soft
+for the target architecture — always correct on arm64, never victim to arch mismatch from a mismatched
+Homebrew installation.
+
+**Written**: 2026-03-04, Session 77
+**Based on**: macOS arm64 linker failure on windows-sdl branch — binary confirmed arm64 after fix.
