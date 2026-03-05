@@ -222,6 +222,15 @@ jobs:
             Write-Host "  Copied dxvk.conf"
           }
 
+          # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime DLLs in Windows bundle.
+          $requiredDlls = @("d3d8.dll", "SDL3.dll", "OpenAL32.dll")
+          foreach ($dll in $requiredDlls) {
+            if (-not (Test-Path (Join-Path $deployDir $dll))) {
+              Write-Error "Missing required runtime DLL: $dll"
+              exit 1
+            }
+          }
+
           Write-Host "Bundle ready at: $deployDir"
           Get-ChildItem $deployDir | Format-Table Name, Length -AutoSize
 

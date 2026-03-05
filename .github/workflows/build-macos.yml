@@ -379,6 +379,14 @@ jobs:
           find "build/${{ inputs.preset }}/_deps" -name "*.dylib" -o -name "*.dylib.so" 2>/dev/null | while read f; do
             [ -f "$f" ] && cp -v "$f" "${RUNTIME_DIR}/lib/" || true
           done
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Ensure GameSpy runtime dylib is bundled (not under _deps).
+          if [ -f "build/${{ inputs.preset }}/libgamespy.dylib" ]; then
+            echo "  Copying GameSpy dylib..."
+            cp -v "build/${{ inputs.preset }}/libgamespy.dylib" "${RUNTIME_DIR}/lib/"
+          else
+            echo "  ⚠️ libgamespy.dylib not found at build/${{ inputs.preset }}/libgamespy.dylib"
+          fi
           
           # MoltenVK dylib from Vulkan SDK (check both primary and fallback paths)
           if [ -f "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" ]; then
@@ -431,6 +439,14 @@ jobs:
               }
           }
           EOF
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime dylibs so bundle fails fast when incomplete.
+          for required in "lib/libgamespy.dylib" "lib/libdxvk_d3d8.0.dylib" "lib/libSDL3.0.dylib" "lib/libvulkan.1.dylib"; do
+            if [ ! -f "${RUNTIME_DIR}/${required}" ]; then
+              echo "❌ Missing required runtime library: ${required}"
+              exit 1
+            fi
+          done
           
           echo "  Copying run.sh wrapper from scripts..."
           cp -v "scripts/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"

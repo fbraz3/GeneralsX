@@ -209,6 +209,20 @@ jobs:
           echo "  Copying run.sh wrapper from scripts..."
           cp -v "scripts/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
           chmod +x "${RUNTIME_DIR}/run.sh"
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime libraries in Linux bundle.
+          if ! compgen -G "${RUNTIME_DIR}/lib/libgamespy.so*" > /dev/null; then
+            echo "❌ Missing required runtime library: libgamespy.so*"
+            exit 1
+          fi
+          if ! compgen -G "${RUNTIME_DIR}/lib/libdxvk_d3d8.so*" > /dev/null; then
+            echo "❌ Missing required runtime library: libdxvk_d3d8.so*"
+            exit 1
+          fi
+          if ! compgen -G "${RUNTIME_DIR}/lib/libSDL3.so*" > /dev/null; then
+            echo "❌ Missing required runtime library: libSDL3.so*"
+            exit 1
+          fi
           
           echo "✅ Bundle ready at: ${RUNTIME_DIR}"
           ls -lh "${RUNTIME_DIR}/"
