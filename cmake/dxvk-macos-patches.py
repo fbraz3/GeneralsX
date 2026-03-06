@@ -199,13 +199,14 @@ def main():
             "#include <limits.h>\n"
             "#endif"
         )
-        # Add macOS getExePath() branch before the closing #endif of getExePath.
-        # NOTE: blank lines in DXVK source use 2-space indented blanks ("  \n"),
-        # not plain empty lines ("\n"). Use re.sub to handle both variants.
+        # Add macOS getExePath() branch: replace the closing #endif of the
+        # #if/_WIN32/#elif __linux__/#elif __FreeBSD__ chain with an additional
+        # #elif __APPLE__ branch, then the real #endif.
+        # The old #endif is consumed by the replace — only ONE #endif remains.
         import re
         c = re.sub(
-            r'(    return std::string\(exePath\);\n#endif\n  \})\n[ \t]*\n[ \t]*\n(  void setThreadName)',
-            r'\1\n  \n  \n'
+            r'    return std::string\(exePath\);\n#endif\n  \}\n[ \t]*\n[ \t]*\n(  void setThreadName)',
+            r'    return std::string(exePath);\n'
             r'#elif defined(__APPLE__)\n'
             r'    // macOS: _NSGetExecutablePath from <mach-o/dyld.h>\n'
             r'    // /proc/self/exe does not exist on macOS.\n'
@@ -218,7 +219,7 @@ def main():
             r'  }\n'
             r'  \n'
             r'  \n'
-            r'\2',
+            r'\1',
             c, count=1
         )
         return c
