@@ -190,28 +190,27 @@ def main():
             "#include <limits.h>\n"
             "#endif"
         )
-        # Add macOS getExePath() branch before the closing #endif of getExePath
-        c = c.replace(
-            "    return std::string(exePath);\n"
-            "#endif\n"
-            "  }\n"
-            "\n"
-            "\n"
-            "  void setThreadName",
-            "    return std::string(exePath);\n"
-            "#elif defined(__APPLE__)\n"
-            "    // macOS: _NSGetExecutablePath from <mach-o/dyld.h>\n"
-            "    // /proc/self/exe does not exist on macOS.\n"
-            "    char buf[PATH_MAX] = {};\n"
-            "    uint32_t size = sizeof(buf);\n"
-            "    if (_NSGetExecutablePath(buf, &size) != 0)\n"
-            "      return std::string();\n"
-            "    return std::string(buf);\n"
-            "#endif\n"
-            "  }\n"
-            "\n"
-            "\n"
-            "  void setThreadName"
+        # Add macOS getExePath() branch before the closing #endif of getExePath.
+        # NOTE: blank lines in DXVK source use 2-space indented blanks ("  \n"),
+        # not plain empty lines ("\n"). Use re.sub to handle both variants.
+        import re
+        c = re.sub(
+            r'(    return std::string\(exePath\);\n#endif\n  \})\n[ \t]*\n[ \t]*\n(  void setThreadName)',
+            r'\1\n  \n  \n'
+            r'#elif defined(__APPLE__)\n'
+            r'    // macOS: _NSGetExecutablePath from <mach-o/dyld.h>\n'
+            r'    // /proc/self/exe does not exist on macOS.\n'
+            r'    char buf[PATH_MAX] = {};\n'
+            r'    uint32_t size = sizeof(buf);\n'
+            r'    if (_NSGetExecutablePath(buf, &size) != 0)\n'
+            r'      return std::string();\n'
+            r'    return std::string(buf);\n'
+            r'#endif\n'
+            r'  }\n'
+            r'  \n'
+            r'  \n'
+            r'\2',
+            c, count=1
         )
         return c
 
