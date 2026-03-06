@@ -148,6 +148,16 @@ jobs:
             exit 1
           }
 
+      - name: Diagnostics - List All DLLs in Build Tree
+        if: success()
+        shell: pwsh
+        run: |
+          # GeneralsX @bugfix felipebraz 05/03/2026 List all DLLs produced by the build for bundle auditing.
+          Write-Host "=== All DLLs under build/${{ inputs.preset }} ==="
+          Get-ChildItem "build/${{ inputs.preset }}" -Recurse -Filter "*.dll" -ErrorAction SilentlyContinue |
+            Select-Object @{N='Path';E={$_.FullName.Replace((Get-Location).Path + '\', '')}} |
+            Format-Table Path -AutoSize
+
       - name: Deploy Bundle (Binary + DLLs)
         if: success()
         shell: pwsh
@@ -186,12 +196,24 @@ jobs:
           }
 
           # GeneralsX @bugfix felipebraz 05/03/2026 Include optional SDL3_image runtime DLL in CI bundle when available.
-          $sdl3ImageDll = "build/${{ inputs.preset }}/_deps/SDL3_image-build/SDL3_image.dll"
-          if (Test-Path $sdl3ImageDll) {
-            Copy-Item $sdl3ImageDll $deployDir -Force
+          $sdl3ImageDll = Get-ChildItem "build/${{ inputs.preset }}/_deps" `
+            -Filter "SDL3_image.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($sdl3ImageDll) {
+            Copy-Item $sdl3ImageDll.FullName $deployDir -Force
             Write-Host "  Copied SDL3_image.dll"
           } else {
             Write-Host "  SDL3_image.dll not found (optional)"
+          }
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Copy GameSpy DLL from build root (same pattern as Linux/macOS).
+          $gamespyDll = Get-ChildItem "build/${{ inputs.preset }}" `
+            -Filter "gamespy.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($gamespyDll) {
+            Copy-Item $gamespyDll.FullName $deployDir -Force
+            Write-Host "  Copied gamespy.dll from $($gamespyDll.FullName)"
+          } else {
+            Write-Error "gamespy.dll not found anywhere under build/${{ inputs.preset }}"
+            exit 1
           }
 
           # OpenAL32.dll
@@ -223,7 +245,7 @@ jobs:
           }
 
           # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime DLLs in Windows bundle.
-          $requiredDlls = @("d3d8.dll", "SDL3.dll", "OpenAL32.dll")
+          $requiredDlls = @("d3d8.dll", "SDL3.dll", "OpenAL32.dll", "gamespy.dll")
           foreach ($dll in $requiredDlls) {
             if (-not (Test-Path (Join-Path $deployDir $dll))) {
               Write-Error "Missing required runtime DLL: $dll"
