@@ -206,14 +206,15 @@ jobs:
           }
 
           # GeneralsX @bugfix felipebraz 05/03/2026 Copy GameSpy DLL from build root (same pattern as Linux/macOS).
+          # NOTE: On Windows, GameSpy builds as a static lib (BUILD_SHARED_LIBS=OFF by default in the
+          # GamespySDK CMakeLists). No gamespy.dll exists — it is statically linked into the executable.
           $gamespyDll = Get-ChildItem "build/${{ inputs.preset }}" `
             -Filter "gamespy.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($gamespyDll) {
             Copy-Item $gamespyDll.FullName $deployDir -Force
             Write-Host "  Copied gamespy.dll from $($gamespyDll.FullName)"
           } else {
-            Write-Error "gamespy.dll not found anywhere under build/${{ inputs.preset }}"
-            exit 1
+            Write-Host "  gamespy.dll not found (expected: statically linked on Windows)"
           }
 
           # OpenAL32.dll
@@ -245,7 +246,8 @@ jobs:
           }
 
           # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime DLLs in Windows bundle.
-          $requiredDlls = @("d3d8.dll", "SDL3.dll", "OpenAL32.dll", "gamespy.dll")
+          # gamespy.dll is intentionally absent: GameSpy is statically linked on Windows.
+          $requiredDlls = @("d3d8.dll", "SDL3.dll", "OpenAL32.dll")
           foreach ($dll in $requiredDlls) {
             if (-not (Test-Path (Join-Path $deployDir $dll))) {
               Write-Error "Missing required runtime DLL: $dll"
