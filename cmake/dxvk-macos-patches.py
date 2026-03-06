@@ -79,9 +79,10 @@ def main():
     # Patch 1: util_win32_compat.h
     # macOS does NOT define __unix__, so LoadLibraryA/GetProcAddress/FreeLibrary
     # stubs are never compiled. Add __APPLE__ to the guard.
+    # IDEMPOTENCY: old string is a prefix of new, so guard explicitly.
     patch_file(
         os.path.join(src, "src/util/util_win32_compat.h"),
-        lambda c: c.replace(
+        lambda c: c if "|| defined(__APPLE__)" in c else c.replace(
             "#if defined(__unix__)",
             "#if defined(__unix__) || defined(__APPLE__)"
         ),
@@ -91,16 +92,22 @@ def main():
     # Patch 2: util_env.cpp
     # macOS pthread_setname_np only takes 1 argument: pthread_setname_np(name)
     # Linux signature:                                 pthread_setname_np(thread, name)
-    patch_file(
-        os.path.join(src, "src/util/util_env.cpp"),
-        lambda c: c.replace(
+    # IDEMPOTENCY: new string's #else branch re-contains old string; guard explicitly.
+    def patch_pthread_setname(c):
+        if "pthread_setname_np(posixName.data());" in c:
+            return c  # already patched (1-arg form present)
+        return c.replace(
             "    ::pthread_setname_np(pthread_self(), posixName.data());",
             "#ifdef __APPLE__\n"
             "    ::pthread_setname_np(posixName.data());\n"
             "#else\n"
             "    ::pthread_setname_np(pthread_self(), posixName.data());\n"
             "#endif"
-        ),
+        )
+
+    patch_file(
+        os.path.join(src, "src/util/util_env.cpp"),
+        patch_pthread_setname,
         "pthread_setname_np 1-arg macOS signature"
     )
 
@@ -156,9 +163,11 @@ def main():
         "src/d3d11/meson.build",
     ]
     for relpath in meson_files:
+        # IDEMPOTENCY: after patching the version-script line is still present inside
+        # the guard, so re.sub would match it again and double-wrap. Guard explicitly.
         patch_file(
             os.path.join(src, relpath),
-            lambda c: re.sub(
+            lambda c: c if "if platform != 'darwin'" in c else re.sub(
                 r"( +)(.*'-Wl,--version-script'.*\n)",
                 r"  if platform != 'darwin'\n\1\2  endif\n",
                 c
@@ -366,6 +375,11 @@ def main():
     # VK_ENABLE_BETA_EXTENSIONS must be defined before including vulkan_core.h to
     # expose the portability subset sType enum and struct (they are in vulkan_beta.h).
     def patch_adapter_portability_subset(c):
+        # IDEMPOTENCY: old_top block still exists verbatim inside new_top (old includes
+        # are preserved after prepending the __APPLE__ block). Guard explicitly.
+        if "VK_ENABLE_BETA_EXTENSIONS" in c:
+            return c  # already patched
+
         # Sub-patch 9a: define VK_ENABLE_BETA_EXTENSIONS + include vulkan_beta.h
         old_top = (
             '#include <cstring>\n'
