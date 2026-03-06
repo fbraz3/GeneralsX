@@ -202,7 +202,11 @@ jobs:
           echo "  Copying SDL3 libraries..."
           find "build/${{ inputs.preset }}/_deps/sdl3-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
           find "build/${{ inputs.preset }}/_deps/sdl3_image-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
-          
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Bundle OpenAL (openal_soft-build output, not provided by runner).
+          echo "  Copying OpenAL library..."
+          find "build/${{ inputs.preset }}/_deps/openal_soft-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
+
           echo "  Copying GameSpy library..."
           find "build/${{ inputs.preset }}" -name "libgamespy.so*" -exec cp -v {} "${RUNTIME_DIR}/lib/" \; 2>/dev/null || true
           
@@ -221,6 +225,10 @@ jobs:
           fi
           if ! compgen -G "${RUNTIME_DIR}/lib/libSDL3.so*" > /dev/null; then
             echo "❌ Missing required runtime library: libSDL3.so*"
+            exit 1
+          fi
+          if ! compgen -G "${RUNTIME_DIR}/lib/libopenal.so*" > /dev/null; then
+            echo "❌ Missing required runtime library: libopenal.so*"
             exit 1
           fi
           

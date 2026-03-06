@@ -438,7 +438,7 @@ jobs:
           EOF
 
           # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime dylibs so bundle fails fast when incomplete.
-          for required in "lib/libgamespy.dylib" "lib/libdxvk_d3d8.0.dylib" "lib/libSDL3.0.dylib" "lib/libvulkan.1.dylib"; do
+          for required in "lib/libgamespy.dylib" "lib/libdxvk_d3d8.0.dylib" "lib/libSDL3.0.dylib" "lib/libvulkan.1.dylib" "lib/libopenal.1.dylib"; do
             if [ ! -f "${RUNTIME_DIR}/${required}" ]; then
               echo "❌ Missing required runtime library: ${required}"
               exit 1
