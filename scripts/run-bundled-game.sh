@@ -22,7 +22,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     # Ad-hoc sign: dylibs first, then the main executable (order matters for --verify)
     if command -v codesign &>/dev/null; then
-        find "${SCRIPT_DIR}/lib" -name "*.dylib" 2>/dev/null | while IFS= read -r lib; do
+        find "${SCRIPT_DIR}" -maxdepth 1 -name "*.dylib" 2>/dev/null | while IFS= read -r lib; do
             codesign --force --sign - "$lib" 2>/dev/null || true
         done
         for exe in "${SCRIPT_DIR}/GeneralsXZH" "${SCRIPT_DIR}/GeneralsX"; do
@@ -34,15 +34,15 @@ fi
 # Determine OS and set library path variable
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
-    export DYLD_LIBRARY_PATH="${SCRIPT_DIR}/lib:${DYLD_LIBRARY_PATH:-}"
-    export DYLD_FALLBACK_LIBRARY_PATH="${SCRIPT_DIR}/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"
+    export DYLD_LIBRARY_PATH="${SCRIPT_DIR}:${DYLD_LIBRARY_PATH:-}"
+    export DYLD_FALLBACK_LIBRARY_PATH="${SCRIPT_DIR}:${DYLD_FALLBACK_LIBRARY_PATH:-}"
     # GeneralsX @bugfix felipebraz 04/03/2026 Ensure Vulkan loader uses bundled MoltenVK ICD manifest.
-    if [[ -f "${SCRIPT_DIR}/lib/MoltenVK_icd.json" ]]; then
-        export VK_ICD_FILENAMES="${SCRIPT_DIR}/lib/MoltenVK_icd.json"
+    if [[ -f "${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
+        export VK_ICD_FILENAMES="${SCRIPT_DIR}/MoltenVK_icd.json"
     fi
 else
     # Linux
-    export LD_LIBRARY_PATH="${SCRIPT_DIR}/lib:${LD_LIBRARY_PATH:-}"
+    export LD_LIBRARY_PATH="${SCRIPT_DIR}:${LD_LIBRARY_PATH:-}"
 fi
 
 # Set DXVK environment variables

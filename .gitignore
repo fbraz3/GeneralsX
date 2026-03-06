@@ -76,3 +76,6 @@ references/
 
 # @bug when git mcp try to create dir under windows, it will create a dir named "C:Users" instead of "C:\Users", which is not what we want. So we need to ignore any dir named "C:Users" to avoid this issue.
 **/CUsers*/
+# Build artifacts / bundles
+*.zip
+*.tar.gz

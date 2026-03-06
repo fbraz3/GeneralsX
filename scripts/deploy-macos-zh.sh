@@ -6,11 +6,7 @@ set -e
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/macos-vulkan"
-SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
-SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
-DXVK_D3D8_LIB="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
-DXVK_D3D9_LIB="${BUILD_DIR}/libdxvk_d3d9.0.dylib"
 RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
 
 # Locate the installed Vulkan SDK (tries ~/VulkanSDK/ by convention)
@@ -40,31 +36,14 @@ echo "  Copying GeneralsXZH..."
 cp -v "${BINARY_SRC}" "${RUNTIME_DIR}/GeneralsXZH"
 chmod +x "${RUNTIME_DIR}/GeneralsXZH"
 
-echo "  Copying SDL3 libraries..."
-cp -v "${SDL3_LIB_DIR}"/libSDL3.0.dylib "${RUNTIME_DIR}/"
-ln -sf libSDL3.0.dylib "${RUNTIME_DIR}/libSDL3.dylib" 2>/dev/null || true
-cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/"
-ln -sf libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/libSDL3_image.0.dylib" 2>/dev/null || true
-ln -sf libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/libSDL3_image.dylib" 2>/dev/null || true
+echo "  Copying dylibs from _deps (SDL3, DXVK, OpenAL, etc.)..."
+# GeneralsX @bugfix felipebraz 05/03/2026 Use find+cp-L to copy all dylibs from _deps; -L dereferences symlinks.
+find "${BUILD_DIR}/_deps" -name "*.dylib" 2>/dev/null | while IFS= read -r f; do
+    cp -Lv "$f" "${RUNTIME_DIR}/" || true
+done
 
 echo "  Copying GameSpy library..."
-cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
-
-echo "  Copying DXVK libraries (d3d9 + d3d8)..."
-# d3d8 links against d3d9 via @rpath — both must be present in the runtime dir
-if [[ -f "${DXVK_D3D9_LIB}" ]]; then
-    cp -v "${DXVK_D3D9_LIB}" "${RUNTIME_DIR}/"
-    ln -sf libdxvk_d3d9.0.dylib "${RUNTIME_DIR}/libdxvk_d3d9.dylib" 2>/dev/null || true
-else
-    echo "WARNING: ${DXVK_D3D9_LIB} not found (d3d8 will fail to load without it)."
-fi
-if [[ -f "${DXVK_D3D8_LIB}" ]]; then
-    cp -v "${DXVK_D3D8_LIB}" "${RUNTIME_DIR}/"
-    ln -sf libdxvk_d3d8.0.dylib "${RUNTIME_DIR}/libdxvk_d3d8.dylib" 2>/dev/null || true
-else
-    echo "WARNING: ${DXVK_D3D8_LIB} not found."
-    echo "  Run cmake --build build/macos-vulkan --target dxvk_d3d8_install to build DXVK first."
-fi
+cp -Lv "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
 echo "  Deploying Vulkan + MoltenVK libraries..."
 if [[ -n "${VULKAN_SDK_ROOT}" ]]; then
@@ -95,7 +74,7 @@ fi
 echo "  Deploying dxvk.conf..."
 # GeneralsX @bugfix BenderAI 25/02/2026 Deploy DXVK configuration
 # Forces forceSamplerTypeSpecConstants=True to fix terrain shader MSL generation bug.
-DXVK_CONF_SRC="${PROJECT_ROOT}/GeneralsMD/Run/dxvk.conf"
+DXVK_CONF_SRC="${PROJECT_ROOT}/dxvk.conf"
 if [[ -f "${DXVK_CONF_SRC}" ]]; then
     cp -v "${DXVK_CONF_SRC}" "${RUNTIME_DIR}/dxvk.conf"
 else

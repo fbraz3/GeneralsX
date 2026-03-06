@@ -373,25 +373,24 @@ jobs:
           chmod +x "${RUNTIME_DIR}/$(basename ${BINARY})"
           
           echo "  Copying framework libraries..."
-          mkdir -p "${RUNTIME_DIR}/lib"
           
           # GeneralsX @bugfix felipebraz 05/03/2026 Copy all dylibs from _deps (SDL3, DXVK, OpenAL, SDL3_image).
           # Use -L to dereference symlinks (e.g. libSDL3.dylib -> libSDL3.0.dylib) so bundle has real files.
           find "build/${{ inputs.preset }}/_deps" -name "*.dylib" 2>/dev/null | while IFS= read -r f; do
-            cp -Lv "$f" "${RUNTIME_DIR}/lib/" || true
+            cp -Lv "$f" "${RUNTIME_DIR}/" || true
           done
 
           # GeneralsX @bugfix felipebraz 05/03/2026 Copy GameSpy dylib from build root (FetchContent outputs it
           # directly to binaryDir, NOT under _deps like most other dependencies).
-          cp -Lv "build/${{ inputs.preset }}/libgamespy.dylib" "${RUNTIME_DIR}/lib/"
+          cp -Lv "build/${{ inputs.preset }}/libgamespy.dylib" "${RUNTIME_DIR}/"
           
           # MoltenVK dylib from Vulkan SDK (check both primary and fallback paths)
           if [ -f "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" ]; then
             echo "  Copying MoltenVK from macOS/lib..."
-            cp -v "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+            cp -v "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/" || true
           elif [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
             echo "  Copying MoltenVK from lib..."
-            cp -v "$VULKAN_SDK/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+            cp -v "$VULKAN_SDK/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/" || true
           else
             echo "  ⚠️ MoltenVK dylib not found in Vulkan SDK"
           fi
@@ -399,34 +398,34 @@ jobs:
           # GeneralsX @bugfix felipebraz 04/03/2026 Bundle Vulkan loader dylibs required by DXVK at runtime.
           if [ -f "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" ]; then
             echo "  Copying Vulkan loader libvulkan.1.dylib from macOS/lib..."
-            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/lib/" || true
+            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/" || true
           elif [ -f "$VULKAN_SDK/lib/libvulkan.1.dylib" ]; then
             echo "  Copying Vulkan loader libvulkan.1.dylib from lib..."
-            cp -v "$VULKAN_SDK/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/lib/" || true
+            cp -v "$VULKAN_SDK/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/" || true
           else
             echo "  ⚠️ libvulkan.1.dylib not found in Vulkan SDK"
           fi
 
           if [ -f "$VULKAN_SDK/macOS/lib/libvulkan.dylib" ]; then
             echo "  Copying Vulkan loader libvulkan.dylib from macOS/lib..."
-            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.dylib" "${RUNTIME_DIR}/lib/" || true
+            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.dylib" "${RUNTIME_DIR}/" || true
           elif [ -f "$VULKAN_SDK/lib/libvulkan.dylib" ]; then
             echo "  Copying Vulkan loader libvulkan.dylib from lib..."
-            cp -v "$VULKAN_SDK/lib/libvulkan.dylib" "${RUNTIME_DIR}/lib/" || true
+            cp -v "$VULKAN_SDK/lib/libvulkan.dylib" "${RUNTIME_DIR}/" || true
           else
             echo "  ⚠️ libvulkan.dylib not found in Vulkan SDK"
           fi
 
           # Keep both names available even when SDK ships only one binary.
-          if [ -f "${RUNTIME_DIR}/lib/libvulkan.1.dylib" ] && [ ! -f "${RUNTIME_DIR}/lib/libvulkan.dylib" ]; then
-            ln -sf "libvulkan.1.dylib" "${RUNTIME_DIR}/lib/libvulkan.dylib"
+          if [ -f "${RUNTIME_DIR}/libvulkan.1.dylib" ] && [ ! -f "${RUNTIME_DIR}/libvulkan.dylib" ]; then
+            ln -sf "libvulkan.1.dylib" "${RUNTIME_DIR}/libvulkan.dylib"
           fi
-          if [ -f "${RUNTIME_DIR}/lib/libvulkan.dylib" ] && [ ! -f "${RUNTIME_DIR}/lib/libvulkan.1.dylib" ]; then
-            ln -sf "libvulkan.dylib" "${RUNTIME_DIR}/lib/libvulkan.1.dylib"
+          if [ -f "${RUNTIME_DIR}/libvulkan.dylib" ] && [ ! -f "${RUNTIME_DIR}/libvulkan.1.dylib" ]; then
+            ln -sf "libvulkan.dylib" "${RUNTIME_DIR}/libvulkan.1.dylib"
           fi
 
           # GeneralsX @bugfix felipebraz 04/03/2026 Ship local ICD manifest so loader resolves bundled MoltenVK.
-          cat > "${RUNTIME_DIR}/lib/MoltenVK_icd.json" <<'EOF'
+          cat > "${RUNTIME_DIR}/MoltenVK_icd.json" <<'EOF'
           {
               "file_format_version": "1.0.0",
               "ICD": {
@@ -438,7 +437,7 @@ jobs:
           EOF
 
           # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime dylibs so bundle fails fast when incomplete.
-          for required in "lib/libgamespy.dylib" "lib/libdxvk_d3d8.0.dylib" "lib/libSDL3.0.dylib" "lib/libvulkan.1.dylib" "lib/libopenal.1.dylib"; do
+          for required in "libgamespy.dylib" "libdxvk_d3d8.0.dylib" "libSDL3.0.dylib" "libvulkan.1.dylib" "libopenal.1.dylib"; do
             if [ ! -f "${RUNTIME_DIR}/${required}" ]; then
               echo "❌ Missing required runtime library: ${required}"
               exit 1
@@ -451,7 +450,6 @@ jobs:
           
           echo "✅ Bundle ready at: ${RUNTIME_DIR}"
           ls -lh "${RUNTIME_DIR}/"
-          ls -lh "${RUNTIME_DIR}/lib/" 2>/dev/null || echo "(no libs directory)"
 
           ARCHIVE="/tmp/bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz"
           echo "Creating archive: ${ARCHIVE}"

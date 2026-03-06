@@ -78,6 +78,10 @@ cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
+# GeneralsX @bugfix felipebraz 05/03/2026 Bundle OpenAL (openal_soft-build output, not system-provided).
+echo "  Copying OpenAL library..."
+find "${BUILD_DIR}/_deps/openal_soft-build" -name "libopenal.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
+
 # Set RPATH so executable finds libraries in same directory
 echo "  Setting RPATH to \$ORIGIN..."
 patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsXZH" 2>/dev/null || {
