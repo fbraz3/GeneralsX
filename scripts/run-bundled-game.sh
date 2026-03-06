@@ -12,6 +12,25 @@
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# GeneralsX @bugfix felipebraz 05/03/2026 Remove macOS quarantine and ad-hoc sign all binaries on first run.
+# macOS adds com.apple.quarantine to every file extracted from a downloaded archive.
+# This causes Gatekeeper to require one-by-one approval for the binary AND each dylib.
+# Stripping quarantine + ad-hoc codesigning resolves this without a paid Apple Developer ID.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # Strip quarantine attribute from all bundle files (silent if already clear)
+    xattr -rd com.apple.quarantine "${SCRIPT_DIR}" 2>/dev/null || true
+
+    # Ad-hoc sign: dylibs first, then the main executable (order matters for --verify)
+    if command -v codesign &>/dev/null; then
+        find "${SCRIPT_DIR}/lib" -name "*.dylib" 2>/dev/null | while IFS= read -r lib; do
+            codesign --force --sign - "$lib" 2>/dev/null || true
+        done
+        for exe in "${SCRIPT_DIR}/GeneralsXZH" "${SCRIPT_DIR}/GeneralsX"; do
+            [ -f "$exe" ] && codesign --force --sign - "$exe" 2>/dev/null || true
+        done
+    fi
+fi
+
 # Determine OS and set library path variable
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
