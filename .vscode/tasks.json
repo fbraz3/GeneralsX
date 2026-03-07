@@ -125,23 +125,9 @@
 			},
 			"problemMatcher": []
 		},
+
 		{
-			"label": "Docker: Build Images (All)",
-			"type": "shell",
-			"command": "./scripts/docker-build-images.sh all",
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Docker: Build Linux Builder Image",
+			"label": "[Linux] Docker: Create Builder Image",
 			"type": "shell",
 			"command": "./scripts/docker-build-images.sh linux",
 			"isBackground": false,
