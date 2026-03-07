@@ -32,9 +32,11 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <cstdlib>
+#include <cctype>
 #include <cstring>
 #include <cstdio>
 #include <unistd.h>   // _exit()
+#include <glob.h>     // glob() for Vulkan ICD discovery
 
 // USER INCLUDES (match WinMain.cpp pattern)
 #include "Lib/BaseType.h"
@@ -86,6 +88,77 @@ const Char *g_strFile = "data/Generals.str";     ///< STR file path
 
 // Extern declarations (from GameMain.cpp)
 extern Int GameMain();
+
+/**
+ * FilterSoftwareVulkanICDs
+ *
+ * Sets VK_DRIVER_FILES to only hardware Vulkan ICDs, excluding LLVMpipe/lavapipe.
+ *
+ * Workaround for Mesa/LLVM 20.x bug: libvulkan_lvp.so (LLVMpipe Vulkan ICD) crashes
+ * during dlopen() static initialization with a null-ptr deref in llvm::Regex::Regex().
+ * The Vulkan loader loads ALL ICDs found in the ICD directories when
+ * vkEnumerateInstanceExtensionProperties() is called, which triggers the crash.
+ * Filtering hardware-only ICDs via VK_DRIVER_FILES prevents loading libvulkan_lvp.so.
+ *
+ * Only applied when neither VK_DRIVER_FILES nor VK_ICD_FILENAMES is already set,
+ * so the user can always override by setting those variables externally.
+ *
+ * GeneralsX @bugfix BenderAI 06/03/2026
+ */
+static void FilterSoftwareVulkanICDs()
+{
+	if (getenv("VK_DRIVER_FILES") || getenv("VK_ICD_FILENAMES")) {
+		return;
+	}
+
+	auto icd_is_software = [](const char *name) -> bool {
+		char low[256] = "";
+		for (int i = 0; name[i] && i < 255; ++i) {
+			low[i] = (char)tolower((unsigned char)name[i]);
+		}
+		return strstr(low, "lvp") || strstr(low, "lavapipe") || strstr(low, "softpipe") || strstr(low, "llvmpipe");
+	};
+
+	static char hw_icds[4096] = "";
+	const char *patterns[] = {
+		"/usr/share/vulkan/icd.d/*.json",
+		"/etc/vulkan/icd.d/*.json",
+		nullptr
+	};
+
+	glob_t gl = {};
+	int gflags = 0;
+	for (int i = 0; patterns[i]; ++i) {
+		if (glob(patterns[i], gflags, nullptr, &gl) == 0) {
+			gflags = GLOB_APPEND;
+		}
+	}
+
+	bool found_hw = false;
+	for (size_t i = 0; i < gl.gl_pathc; ++i) {
+		const char *path = gl.gl_pathv[i];
+		const char *base = strrchr(path, '/');
+		base = base ? base + 1 : path;
+		if (icd_is_software(base)) {
+			fprintf(stderr, "INFO: Vulkan ICD filter: skipping software ICD '%s'\n", base);
+			continue;
+		}
+		if (found_hw) {
+			strncat(hw_icds, ":", sizeof(hw_icds) - strlen(hw_icds) - 1);
+		}
+		strncat(hw_icds, path, sizeof(hw_icds) - strlen(hw_icds) - 1);
+		found_hw = true;
+	}
+	globfree(&gl);
+
+	if (found_hw) {
+		setenv("VK_DRIVER_FILES", hw_icds, 1);
+		fprintf(stderr, "INFO: Vulkan ICD filter: VK_DRIVER_FILES=%s\n", hw_icds);
+	} else {
+		fprintf(stderr, "WARNING: Vulkan ICD filter: no hardware ICDs found, LLVMpipe exclusion skipped\n");
+		fprintf(stderr, "WARNING: If startup crashes in libvulkan_lvp.so, set VK_DRIVER_FILES manually\n");
+	}
+}
 
 /**
  * CreateGameEngine
@@ -160,6 +233,11 @@ int main(int argc, char* argv[])
 
 		// Set DXVK WSI driver before loading Vulkan
 		setenv("DXVK_WSI_DRIVER", "SDL3", 1);
+
+		// GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD before loading Vulkan.
+		// libvulkan_lvp.so crashes during static initialization with LLVM 20.x when the Vulkan
+		// loader enumerates all ICDs. Restrict to hardware ICDs first.
+		FilterSoftwareVulkanICDs();
 
 		// Load Vulkan library for DXVK DirectX8→Vulkan translation
 		fprintf(stderr, "INFO: Loading Vulkan library...\n");
