@@ -109,6 +109,34 @@ if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; t
     export CNC_GENERALS_INSTALLPATH="${SCRIPT_DIR}/../Generals/"
 fi
 
+# GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD (LLVM 20.x crash workaround)
+# libvulkan_lvp.so (LLVMpipe) crashes during static initialization with LLVM 20.x.
+# Filter hardware-only ICDs via VK_DRIVER_FILES to prevent loading the crashing library.
+# User can override by setting VK_DRIVER_FILES or VK_ICD_FILENAMES before running.
+if [[ -z "${VK_DRIVER_FILES:-}" && -z "${VK_ICD_FILENAMES:-}" ]]; then
+    _hw_icds=""
+    for _dir in /usr/share/vulkan/icd.d /etc/vulkan/icd.d; do
+        [[ -d "$_dir" ]] || continue
+        for _f in "$_dir"/*.json; do
+            [[ -f "$_f" ]] || continue
+            _base="$(basename "$_f")"
+            case "${_base,,}" in
+                *lvp* | *lavapipe* | *softpipe* | *llvmpipe*)
+                    echo "INFO: Vulkan ICD filter: skipping software ICD '$_base'" ;;
+                *)
+                    _hw_icds="${_hw_icds:+${_hw_icds}:}$_f" ;;
+            esac
+        done
+    done
+    if [[ -n "$_hw_icds" ]]; then
+        export VK_DRIVER_FILES="$_hw_icds"
+        echo "INFO: Vulkan ICD filter: VK_DRIVER_FILES=$VK_DRIVER_FILES"
+    else
+        echo "WARNING: Vulkan ICD filter: no hardware ICDs found, LLVMpipe exclusion skipped"
+        echo "WARNING: If startup crashes, set VK_DRIVER_FILES to your hardware Vulkan ICD JSON"
+    fi
+fi
+
 exec "${SCRIPT_DIR}/GeneralsXZH" "$@"
 WRAPPER
 chmod +x "${BUNDLE_DIR}/run.sh"
