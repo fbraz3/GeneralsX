@@ -1091,10 +1091,12 @@ Bool BaseHeightMapRenderObjClass::isClearLineOfSight(const Coord3D& pos, const C
 
 		Int idx = x + y*xExtent;
 		float height = data[idx];
-	// GeneralsX @bugfix BenderAI 13/02/2026 Replace __max with MAX (fighter19 pattern)
-	height = MAX(height, data[idx + 1]);
-	height = MAX(height, data[idx + xExtent]);
-	height = MAX(height, data[idx + xExtent + 1]);
+		height = MAX(height, (float)data[idx + 1]);
+		height = MAX(height, (float)data[idx + xExtent]);
+		height = MAX(height, (float)data[idx + xExtent + 1]);
+		// @fix Convert raw heightmap byte to world-space Z before comparing with LOS line.
+		// Without this, raw values (0-255) are compared against world Z, breaking LOS.
+		height *= MAP_HEIGHT_SCALE;
 		// if terrainHeight > z, we can't see, so punt.
 		// add a little fudge to account for slop.
 		const Real LOS_FUDGE = 0.5f;
