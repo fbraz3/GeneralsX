@@ -131,6 +131,11 @@ extern Int GameMain();
  */
 static void FilterSoftwareVulkanICDs()
 {
+#ifdef _WIN32
+	// GeneralsX @bugfix BenderAI 07/03/2026 Windows does not provide POSIX glob/setenv APIs used below.
+	// Keep filtering Linux/macOS-only where Vulkan ICD scanning via filesystem globs is relevant.
+	return;
+#else
 	if (getenv("VK_DRIVER_FILES") || getenv("VK_ICD_FILENAMES")) {
 		return;
 	}
@@ -182,6 +187,7 @@ static void FilterSoftwareVulkanICDs()
 		fprintf(stderr, "WARNING: Vulkan ICD filter: no hardware ICDs found, LLVMpipe exclusion skipped\n");
 		fprintf(stderr, "WARNING: If startup crashes in libvulkan_lvp.so, set VK_DRIVER_FILES manually\n");
 	}
+#endif
 }
 
 /**
