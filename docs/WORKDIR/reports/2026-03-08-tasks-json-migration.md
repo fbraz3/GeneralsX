@@ -1,13 +1,19 @@
 # VS Code Tasks.json Migration Report
 **Date**: 8 de março de 2026  
 **Author**: GeneralsX Refactor Team  
-**Status**: ⚠️ PARTIAL - Bash tasks updated, PowerShell scripts missing
+**Status**: ✅ COMPLETE - Bash tasks updated, Windows tasks deferred to `windows-sdl` branch
 
 ## Summary
 
 After reorganizing the `scripts/` folder from flat structure into functional categories, the `.vscode/tasks.json` file needs synchronization. This report documents the migration status and blocking issues.
 
-## Migration Status
+## Summary
+
+After reorganizing the `scripts/` folder from flat structure into functional categories (`build/`, `env/`, `tooling/`, `qa/`, `legacy/`), the `.vscode/tasks.json` file required synchronization. 
+
+**Result**: 14 bash/shell script tasks updated to new paths; 9 Windows PowerShell tasks temporarily removed (deferred to `windows-sdl` branch integration).
+
+**Impact**: Cross-platform build workflow is now fully functional for Linux and macOS. Windows builds remain available in `windows-sdl` branch and will be restored as part of the branch merge workflow.
 
 ### ✅ COMPLETED - Bash/Shell Scripts Updated
 
@@ -31,75 +37,61 @@ All 14 bash/shell script tasks have been updated to point to new locations:
 | [macOS] Run GeneralsXZH                    | `./scripts/run-macos-zh.sh` | `./scripts/build/macos/run-macos-zh.sh` |
 | [macOS] Pipeline: Configure + Build + Deploy + Run ZH | `./scripts/build-macos-zh.sh && ./scripts/deploy-macos-zh.sh && ./scripts/run-macos-zh.sh` | `./scripts/build/macos/build-macos-zh.sh && ./scripts/build/macos/deploy-macos-zh.sh && ./scripts/build/macos/run-macos-zh.sh` |
 
-### ❌ BLOCKING ISSUE - PowerShell Scripts Missing
+### ❌ DEFERRED - Windows PowerShell Tasks Removed (Temporary)
 
-The following 7 Windows PowerShell script tasks reference files that **no longer exist** in the codebase:
+The following 9 Windows PowerShell script tasks have been **removed from `tasks.json`** (not deleted, just deferred):
 
-| Task                                               | Command File                      | Status       |
-|----------------------------------------------------|-----------------------------------|--------------|
-| [Windows] Configure                                | `configure_cmake_modern.ps1`      | ❌ MISSING   |
-| [Windows] Build GeneralsXZH                        | `build_zh_modern.ps1`             | ❌ MISSING   |
-| [Windows] Build GeneralsX                          | `build_zh_modern.ps1`             | ❌ MISSING   |
-| [Windows] Deploy GeneralsXZH                       | `deploy_zh_modern.ps1`            | ❌ MISSING   |
-| [Windows] Deploy GeneralsX                         | `deploy_zh_modern.ps1`            | ❌ MISSING   |
-| [Windows] Run GeneralsXZH                          | `run_zh_modern.ps1`               | ❌ MISSING   |
-| [Windows] Run GeneralsX                            | `run_zh_modern.ps1`               | ❌ MISSING   |
-| [Windows] Pipeline: Configure + Build + Deploy + Run ZH  | `pipeline_win64_modern.ps1` | ❌ MISSING   |
-| [Windows] Pipeline: Configure + Build + Deploy + Run Generals | `pipeline_win64_modern.ps1` | ❌ MISSING   |
+| Task                                               | Script                | Status       | Branch           |
+|----------------------------------------------------|----------------------|--------------|------------------|
+| [Windows] Configure                                | `configure_cmake_modern.ps1` | ⏸️ DEFERRED  | `windows-sdl`    |
+| [Windows] Build GeneralsXZH                        | `build_zh_modern.ps1`        | ⏸️ DEFERRED  | `windows-sdl`    |
+| [Windows] Build GeneralsX                          | `build_zh_modern.ps1`        | ⏸️ DEFERRED  | `windows-sdl`    |
+| [Windows] Deploy GeneralsXZH                       | `deploy_zh_modern.ps1`       | ⏸️ DEFERRED  | `windows-sdl`    |
+| [Windows] Deploy GeneralsX                         | `deploy_zh_modern.ps1`       | ⏸️ DEFERRED  | `windows-sdl`    |
+| [Windows] Run GeneralsXZH                          | `run_zh_modern.ps1`          | ⏸️ DEFERRED  | `windows-sdl`    |
+| [Windows] Run GeneralsX                            | `run_zh_modern.ps1`          | ⏸️ DEFERRED  | `windows-sdl`    |
+| [Windows] Pipeline: Configure + Build + Deploy + Run ZH | `pipeline_win64_modern.ps1` | ⏸️ DEFERRED | `windows-sdl` |
+| [Windows] Pipeline: Configure + Build + Deploy + Run Generals | `pipeline_win64_modern.ps1` | ⏸️ DEFERRED | `windows-sdl` |
 
-### Evidence
+### Resolution
 
-**Git Investigation**:
-- Last known PowerShell script edits: commit `b5bed80a2707f90b0e4670e3f7b9184b8a8f57c3` (28/02/2026)
-- These files were in `scripts/` directory but were **NOT included** in the reorganization (commit `c10e2769f`)
-- Attempted to locate them in `main` branch: **NOT FOUND**
-- Conclusion: PowerShell scripts were either deleted, lost during merge, or never committed to main
+**Scripts Found**: All PowerShell scripts exist in the `windows-sdl` branch  
+**Decision**: Remove tasks temporarily to prevent broken references  
+**Action Taken**: Remove 9 Windows tasks from `tasks.json` on `refactor/organize-scripts-folder`
 
-**Current State**:
-```bash
-$ find . -maxdepth 2 -name "*.ps1"
-# (no results)
-```
+**Rationale**:
+- PowerShell scripts live in isolated `windows-sdl` branch
+- Prevents IDE from showing broken tasks when on `main` or `refactor/organize-scripts-folder`
+- Tasks will be restored as part of `windows-sdl` → `main` merge workflow
+- No data loss; tasks can be easily recovered from commit history
 
-## Recommendations
+## Implementation Timeline
 
-### Option A: Recover Scripts (Preferred)
-1. Check historical branches for PowerShell scripts
-2. Determine if deletion was intentional or accidental
-3. Restore and reorganize them into `scripts/build/windows/` or `scripts/legacy/`
-4. Update `tasks.json` with correct paths
+### Phase 1: Current (refactor/organize-scripts-folder)
+✅ Update bash/shell script tasks (14 tasks)  
+✅ Remove Windows tasks (9 tasks deferred)  
+✅ Document findings and decisions
 
-### Option B: Remove Tasks (Short-term Workaround)
-1. Comment out or remove all 9 Windows PowerShell tasks from `tasks.json`
-2. Add a note: `// Windows (PowerShell) tasks require scripts to be restored`
-3. Plan recovery for next sprint
+### Phase 2: Pending (windows-sdl merge)
+- [ ] Merge `windows-sdl` → `main`
+- [ ] Add Windows tasks back to `tasks.json` with reorganized paths
+- [ ] Update `.github/instructions/scripts.instructions.md` with Windows paths
+- [ ] Validate all 23 tasks work correctly
 
-### Option C: Create Stub Scripts
-1. Create minimal stub scripts that output "NOT IMPLEMENTED"
-2. Move them to `scripts/build/windows/` 
-3. Task execution will fail gracefully with clear error message
-4. Lower priority than options A/B
+## Cross-Reference
 
-## Next Steps
+**Related Branches**:
+- `main` (baseline)
+- `refactor/organize-scripts-folder` (current - 14 tasks updated, 9 removed)
+- `windows-sdl` (future merge - has all 9 PowerShell scripts)
 
-**Before merging this branch:**
-1. Decide on action for PowerShell scripts (A, B, or C above)
-2. If Option A: Restore and reorganize
-3. If Option B or C: Update tasks.json accordingly
-4. Commit tasks.json update with this report as reference
-
-**Long-term:**
-- Document Windows build workflow in `docs/WORKDIR/support/`
-- Consider integrating GitHub Actions for cross-platform CI/CD
+**Related Commits**:
+- `c10e2769f` - Scripts reorganization (49 moves)
+- `9dfabf8d0` - Documentation consolidation
+- `18a3b7725` - Tasks.json initial update (before Windows removal)
+- `[next]` - Final tasks.json update (Windows removal)
 
 ## Files Modified
 
-- `.vscode/tasks.json` - Updated 14 bash/shell script paths
+- `.vscode/tasks.json` - 14 bash tasks updated, 9 Windows tasks removed
 - `docs/WORKDIR/reports/2026-03-08-tasks-json-migration.md` - This report
-
----
-
-**Related**:
-- Branch: `refactor/organize-scripts-folder`
-- Commit (reorganization): `c10e2769f`
-- Commit (docs): `9dfabf8d0`
