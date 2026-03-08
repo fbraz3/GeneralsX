@@ -121,10 +121,10 @@ def extract_llvm_version(version_string: str) -> Optional[str]:
 def find_clang_tidy_plugin(project_root: Path) -> Optional[str]:
     """Find the GeneralsGameCode clang-tidy plugin."""
     possible_paths = [
-        project_root / "scripts" / "clang-tidy-plugin" / "build" / "lib" / "libGeneralsGameCodeClangTidyPlugin.so",
-        project_root / "scripts" / "clang-tidy-plugin" / "build" / "lib" / "libGeneralsGameCodeClangTidyPlugin.dylib",
-        project_root / "scripts" / "clang-tidy-plugin" / "build" / "lib" / "libGeneralsGameCodeClangTidyPlugin.dll",
-        project_root / "scripts" / "clang-tidy-plugin" / "build" / "bin" / "libGeneralsGameCodeClangTidyPlugin.dll",
+        project_root / "scripts" / "tooling" / "clang-tidy" / "plugin" / "build" / "lib" / "libGeneralsGameCodeClangTidyPlugin.so",
+        project_root / "scripts" / "tooling" / "clang-tidy" / "plugin" / "build" / "lib" / "libGeneralsGameCodeClangTidyPlugin.dylib",
+        project_root / "scripts" / "tooling" / "clang-tidy" / "plugin" / "build" / "lib" / "libGeneralsGameCodeClangTidyPlugin.dll",
+        project_root / "scripts" / "tooling" / "clang-tidy" / "plugin" / "build" / "bin" / "libGeneralsGameCodeClangTidyPlugin.dll",
     ]
 
     for path in possible_paths:
