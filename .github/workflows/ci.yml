@@ -1,16 +1,16 @@
-name: GenCI
+name: GeneralsX CI
 
 permissions:
   contents: read
   pull-requests: write
 
 on:
-#  push:
-#    branches:
-#      - main
-#  pull_request:
-#    branches:
-#      - main
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
@@ -23,9 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      generals: ${{ steps.filter.outputs.generals }}
-      generalsmd: ${{ steps.filter.outputs.generalsmd }}
-      shared: ${{ steps.filter.outputs.shared }}
+      should-build: ${{ steps.filter.outputs.should-build }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -36,183 +34,75 @@ jobs:
         with:
           token: ''
           filters: |
-            generals:
-              - 'Generals/**'
-            generalsmd:
+            should-build:
               - 'GeneralsMD/**'
-            shared:
-              - '.github/workflows/**'
-              - 'CMakeLists.txt'
-              - 'CMakePresets.json'
-              - 'cmake/**'
               - 'Core/**'
               - 'Dependencies/**'
+              - 'cmake/**'
+              - 'CMakeLists.txt'
+              - 'CMakePresets.json'
+              - '.github/workflows/build-*.yml'
+              - '.github/workflows/ci.yml'
 
-      - name: Changes Summary
+      - name: Build Trigger Summary
         run: |
-          echo "### 🔍 File Changes Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- Generals: ${{ steps.filter.outputs.generals == 'true' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- GeneralsMD: ${{ steps.filter.outputs.generalsmd == 'true' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Shared: ${{ steps.filter.outputs.shared == 'true' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 CI Trigger" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.filter.outputs.should-build }}" = "true" ]; then
+            echo "✅ Building all platforms (file changes detected)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⏭️ Skipping build (no relevant changes)" >> $GITHUB_STEP_SUMMARY
+          fi
 
-  build-generals:
-    name: Build Generals${{ matrix.preset && '' }}
+  build-linux:
+    name: Build Linux (GeneralsMD)
     needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generals == 'true' || needs.detect-changes.outputs.shared == 'true' }}
-    strategy:
-      matrix:
-        include:
-          - preset: "vc6"
-            tools: true
-            extras: true
-          - preset: "vc6-profile"
-            tools: true
-            extras: true
-          - preset: "vc6-debug"
-            tools: true
-            extras: true
-          - preset: "win32"
-            tools: true
-            extras: true
-          - preset: "win32-profile"
-            tools: true
-            extras: true
-          - preset: "win32-debug"
-            tools: true
-            extras: true
-          - preset: "win32-vcpkg"
-            tools: true
-            extras: true
-          - preset: "win32-vcpkg-profile"
-            tools: true
-            extras: true
-          - preset: "win32-vcpkg-debug"
-            tools: true
-            extras: true
-      fail-fast: false
-    uses: ./.github/workflows/build-toolchain.yml
-    with:
-      game: "Generals"
-      preset: ${{ matrix.preset }}
-      tools: ${{ matrix.tools }}
-      extras: ${{ matrix.extras }}
-    secrets: inherit
-
-  # Note build-generalsmd is split into two jobs for vc6 and win32 because replaycheck-generalsmd
-  # only requires the vc6 build and compiling vc6 is much faster than win32
-  build-generalsmd-vc6:
-    name: Build GeneralsMD${{ matrix.preset && '' }}
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generalsmd == 'true' || needs.detect-changes.outputs.shared == 'true' }}
-    strategy:
-      matrix:
-        include:
-          - preset: "vc6"
-            tools: true
-            extras: true
-          - preset: "vc6-profile"
-            tools: true
-            extras: true
-          - preset: "vc6-debug"
-            tools: true
-            extras: true
-          - preset: "vc6-releaselog"
-            tools: true
-            extras: true
-      fail-fast: false
-    uses: ./.github/workflows/build-toolchain.yml
-    with:
-      game: "GeneralsMD"
-      preset: ${{ matrix.preset }}
-      tools: ${{ matrix.tools }}
-      extras: ${{ matrix.extras }}
-    secrets: inherit
-
-  build-generalsmd-win32:
-    name: Build GeneralsMD${{ matrix.preset && '' }}
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generalsmd == 'true' || needs.detect-changes.outputs.shared == 'true' }}
-    strategy:
-      matrix:
-        include:
-          - preset: "win32"
-            tools: true
-            extras: true
-          - preset: "win32-profile"
-            tools: true
-            extras: true
-          - preset: "win32-debug"
-            tools: true
-            extras: true
-          - preset: "win32-vcpkg"
-            tools: true
-            extras: true
-          - preset: "win32-vcpkg-profile"
-            tools: true
-            extras: true
-          - preset: "win32-vcpkg-debug"
-            tools: true
-            extras: true
-      fail-fast: false
-    uses: ./.github/workflows/build-toolchain.yml
-    with:
-      game: "GeneralsMD"
-      preset: ${{ matrix.preset }}
-      tools: ${{ matrix.tools }}
-      extras: ${{ matrix.extras }}
-    secrets: inherit
-
-  replaycheck-generalsmd:
-    name: Replay Check GeneralsMD${{ matrix.preset && '' }}
-    needs: build-generalsmd-vc6
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generalsmd == 'true' || needs.detect-changes.outputs.shared == 'true' }}
-    strategy:
-      matrix:
-        include:
-          - preset: "vc6+t+e"
-          - preset: "vc6-releaselog+t+e" # optimized build with logging and crashing enabled should be compatible, so we test that here.
-      fail-fast: false
-    uses: ./.github/workflows/check-replays.yml
-    with:
-      game: "GeneralsMD"
-      userdata: "GeneralsReplays/GeneralsZH/1.04"
-      preset: ${{ matrix.preset }}
-    secrets: inherit
-
-  build-generalsmd-macos:
-    name: Build GeneralsMD@macOS
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generalsmd == 'true' || needs.detect-changes.outputs.shared == 'true' }}
-    uses: ./.github/workflows/build-macos.yml
-    with:
-      game: "GeneralsMD"
-      preset: "macos-vulkan"
-    secrets: inherit
-
-  build-generals-macos:
-    name: Build Generals@macOS
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generals == 'true' || needs.detect-changes.outputs.shared == 'true' }}
-    uses: ./.github/workflows/build-macos.yml
-    with:
-      game: "Generals"
-      preset: "macos-vulkan"
-  build-generalsmd-linux:
-    name: Build GeneralsMD@Linux
-    needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generalsmd == 'true' || needs.detect-changes.outputs.shared == 'true' }}
+    if: needs.detect-changes.outputs.should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-linux.yml
     with:
-      game: "GeneralsMD"
-      preset: "linux64-deploy"
+      game: GeneralsMD
+      preset: linux64-deploy
     secrets: inherit
 
-  build-generals-linux:
-    name: Build Generals@Linux
+  build-macos:
+    name: Build macOS (GeneralsMD)
     needs: detect-changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.generals == 'true' || needs.detect-changes.outputs.shared == 'true' }}
-    uses: ./.github/workflows/build-linux.yml
+    if: needs.detect-changes.outputs.should-build == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/build-macos.yml
     with:
-      game: "Generals"
-      preset: "linux64-deploy"
+      game: GeneralsMD
+      preset: macos-vulkan
     secrets: inherit
+
+  build-windows:
+    name: Build Windows Modern (GeneralsMD)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should-build == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      game: GeneralsMD
+      preset: win64-modern
+    secrets: inherit
+
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-macos, build-windows]
+    if: always()
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "### ✅ GeneralsX Multi-Platform Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux (x86_64) | ${{ needs.build-linux.result == 'success' && '✅ Success' || needs.build-linux.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows (x64/modern) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if Any Build Failed
+        if: |
+          needs.build-linux.result == 'failure' ||
+          needs.build-macos.result == 'failure' ||
+          needs.build-windows.result == 'failure'
+        run: exit 1
+

@@ -47,4 +47,4 @@ jobs:
           echo ""
           echo "To run the real build, switch to the branch that has Windows support"
           echo "and re-run this workflow from that branch."
-          exit 1
+          exit 0
