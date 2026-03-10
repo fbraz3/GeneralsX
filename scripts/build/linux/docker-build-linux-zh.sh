@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build GeneralsXZH (Zero Hour) for Linux using Docker
-# Usage: ./scripts/docker-build-linux-zh.sh [preset]
+# Usage: ./scripts/build/linux/docker-build-linux-zh.sh [preset]
 
 set -e
 

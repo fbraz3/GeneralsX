@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Configure Linux build using Docker (Ubuntu 22.04 x86_64)
-# Usage: ./scripts/docker-configure-linux.sh [preset]
+# Usage: ./scripts/build/linux/docker-configure-linux.sh [preset]
 
 set -e
 

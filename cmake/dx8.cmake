@@ -76,7 +76,8 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   message(STATUS "Building DXVK ${DXVK_VERSION} for macOS/${DXVK_HOST_ARCH} with Meson (${MESON_EXECUTABLE})")
 
   include(ExternalProject)
-  set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src")
+  # GeneralsX @build BenderAI 09/03/2026 Use forked, pre-patched DXVK source on macOS to avoid patch drift.
+  set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src-fbraz3")
   set(DXVK_BUILD_DIR  "${CMAKE_BINARY_DIR}/_deps/dxvk-build-macos")
   set(DXVK_D3D8_LIB  "${DXVK_BUILD_DIR}/src/d3d8/libdxvk_d3d8.0.dylib")
   set(DXVK_D3D9_LIB  "${DXVK_BUILD_DIR}/src/d3d9/libdxvk_d3d9.0.dylib")
@@ -128,11 +129,12 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   endif()
 
   ExternalProject_Add(dxvk_macos_build
-    GIT_REPOSITORY    https://github.com/doitsujin/dxvk.git
-    GIT_TAG           ad253b8a7e20b7cf16fce7d1c505928a434eac29
+    # GeneralsX @build BenderAI 09/03/2026 Pin macOS build to fbraz3 fork commit with baked patchset.
+    GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
+    GIT_TAG           ffcdbcaf1b5a321406ffed43c4e815fd7c7e1797
     SOURCE_DIR        ${DXVK_SOURCE_DIR}
     BINARY_DIR        ${DXVK_BUILD_DIR}
-    PATCH_COMMAND     /bin/bash -lc "${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/dxvk-macos-patches.py ${DXVK_SOURCE_DIR}"
+    PATCH_COMMAND     ""
     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR} ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR} --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini -Ddxvk_native_wsi=sdl3 --buildtype=release --reconfigure
     BUILD_COMMAND     ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d9/libdxvk_d3d9.0.dylib src/d3d8/libdxvk_d3d8.0.dylib
     INSTALL_COMMAND   ""

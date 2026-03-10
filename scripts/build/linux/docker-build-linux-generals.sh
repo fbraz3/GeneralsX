@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build GeneralsX (base game) for Linux using Docker
-# Usage: ./scripts/docker-build-linux-generals.sh [preset]
+# Usage: ./scripts/build/linux/docker-build-linux-generals.sh [preset]
 
 set -e
 
