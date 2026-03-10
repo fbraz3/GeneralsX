@@ -265,8 +265,10 @@ endif()
 # GeneralsX @feature BenderAI 21/02/2026 OpenAL audio backend (Audio + Video via FFmpeg)
 if(SAGE_USE_OPENAL)
     # GeneralsX @build fbraz 24/02/2026 - On macOS prefer openal-soft over deprecated Apple framework
-    include(${CMAKE_SOURCE_DIR}/cmake/openal.cmake)
-    find_package(OpenAL REQUIRED)
+    # GeneralsX @bugfix fbraz 10/03/2026 - openal.cmake included from root CMakeLists.txt; OpenAL::OpenAL already defined
+    if(NOT TARGET OpenAL::OpenAL)
+        find_package(OpenAL REQUIRED)
+    endif()
     target_link_libraries(z_gameenginedevice PUBLIC OpenAL::OpenAL)
 
     # Private include path for OpenALAudioCache.h (local to Source/OpenALAudioDevice/)
