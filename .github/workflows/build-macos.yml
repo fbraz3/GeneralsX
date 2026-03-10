@@ -445,7 +445,7 @@ jobs:
           done
           
           echo "  Copying run.sh wrapper from scripts..."
-          cp -v "scripts/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
+          cp -v "scripts/qa/smoke/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
           chmod +x "${RUNTIME_DIR}/run.sh"
           
           echo "✅ Bundle ready at: ${RUNTIME_DIR}"
