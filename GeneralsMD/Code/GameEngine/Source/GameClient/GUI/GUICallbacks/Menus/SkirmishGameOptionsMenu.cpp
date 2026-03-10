@@ -467,11 +467,8 @@ static MessageBoxReturnType cancelStartBecauseOfNoCD( void *userData )
 
 Bool IsFirstCDPresent(void)
 {
-#if !defined(RTS_DEBUG)
-	return TheFileSystem->areMusicFilesOnCD();
-#else
+	// GeneralsX @bugfix BenderAI 07/03/2026 Skip CD check for native port (no optical drive needed)
 	return TRUE;
-#endif
 }
 
 static MessageBoxReturnType checkCDCallback( void *userData )
