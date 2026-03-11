@@ -4,7 +4,9 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# GeneralsX @bugfix BenderAI 09/03/2026 Resolve repository root correctly from scripts/build/linux.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/linux64-deploy"
 DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
@@ -19,7 +21,7 @@ echo "Bundling GeneralsXZH (Linux x86_64)"
 # Validate binary
 if [[ ! -f "${BINARY_SRC}" ]]; then
     echo "ERROR: Binary not found at ${BINARY_SRC}"
-    echo "Build first: ./scripts/docker-build-linux-zh.sh linux64-deploy"
+    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
     exit 1
 fi
 if [[ ! -s "${BINARY_SRC}" ]]; then
@@ -30,27 +32,27 @@ fi
 # Check if DXVK libraries exist
 if [[ ! -d "${DXVK_LIB_DIR}" ]]; then
     echo "ERROR: DXVK libraries not found at ${DXVK_LIB_DIR}"
-    echo "Configure first: ./scripts/docker-configure-linux.sh linux64-deploy"
+    echo "Configure first: ./scripts/build/linux/docker-configure-linux.sh linux64-deploy"
     exit 1
 fi
 
 # Check if SDL3 libraries exist
 if [[ ! -d "${SDL3_LIB_DIR}" ]]; then
     echo "ERROR: SDL3 libraries not found at ${SDL3_LIB_DIR}"
-    echo "Build first: ./scripts/docker-build-linux-zh.sh linux64-deploy"
+    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
     exit 1
 fi
 
 if [[ ! -d "${SDL3_IMAGE_LIB_DIR}" ]]; then
     echo "ERROR: SDL3_image libraries not found at ${SDL3_IMAGE_LIB_DIR}"
-    echo "Build first: ./scripts/docker-build-linux-zh.sh linux64-deploy"
+    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
     exit 1
 fi
 
 # Check if GameSpy library exists
 if [[ ! -f "${GAMESPY_LIB}" ]]; then
     echo "ERROR: GameSpy library not found at ${GAMESPY_LIB}"
-    echo "Build first: ./scripts/docker-build-linux-zh.sh linux64-deploy"
+    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
     exit 1
 fi
 

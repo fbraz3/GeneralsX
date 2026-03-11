@@ -140,8 +140,89 @@ D3DXLoadSurfaceFromSurface(
 
 	return D3D_OK;
 #else
-	// GeneralsX @build felipebraz 20/06/2025 macOS: GLI not available due to Apple Clang ambiguity.
-	// Surface scaling (different dimensions) not supported on macOS.
+	// GeneralsX @bugfix BenderAI 07/03/2026 macOS: GLI not available due to Apple Clang ambiguity.
+	// Implement manual box filter downsampling for mipmap generation.
+	// This is critical for terrain textures - without mipmaps, terrain renders black.
+	if (descDest.Width == descSrc.Width / 2 && descDest.Height == descSrc.Height / 2)
+	{
+		if (descSrc.Format == D3DFMT_A1R5G5B5)
+		{
+			// Box filter for A1R5G5B5: average 2x2 blocks
+			const uint16_t *src = (const uint16_t *)srcRect.pBits;
+			uint16_t *dst = (uint16_t *)destRect.pBits;
+			uint32_t srcPitch16 = srcRect.Pitch / 2;
+			uint32_t dstPitch16 = destRect.Pitch / 2;
+
+			for (uint32_t y = 0; y < descDest.Height; y++)
+			{
+				for (uint32_t x = 0; x < descDest.Width; x++)
+				{
+					uint32_t sx = x * 2;
+					uint32_t sy = y * 2;
+					uint16_t p00 = src[sy * srcPitch16 + sx];
+					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
+					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
+					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
+
+					// Extract and average each channel (A1 R5 G5 B5)
+					uint32_t r = (((p00 >> 10) & 0x1F) + ((p10 >> 10) & 0x1F) +
+					              ((p01 >> 10) & 0x1F) + ((p11 >> 10) & 0x1F) + 2) >> 2;
+					uint32_t g = (((p00 >> 5) & 0x1F) + ((p10 >> 5) & 0x1F) +
+					              ((p01 >> 5) & 0x1F) + ((p11 >> 5) & 0x1F) + 2) >> 2;
+					uint32_t b = ((p00 & 0x1F) + (p10 & 0x1F) +
+					              (p01 & 0x1F) + (p11 & 0x1F) + 2) >> 2;
+					// Alpha: majority vote (set if 2+ pixels have alpha set)
+					uint32_t a = ((p00 >> 15) + (p10 >> 15) + (p01 >> 15) + (p11 >> 15)) >= 2 ? 1 : 0;
+
+					dst[y * dstPitch16 + x] = (uint16_t)((a << 15) | (r << 10) | (g << 5) | b);
+				}
+			}
+		}
+		else if (descSrc.Format == D3DFMT_A8R8G8B8 || descSrc.Format == D3DFMT_X8R8G8B8)
+		{
+			// Box filter for A8R8G8B8/X8R8G8B8: average 2x2 blocks
+			const uint32_t *src = (const uint32_t *)srcRect.pBits;
+			uint32_t *dst = (uint32_t *)destRect.pBits;
+			uint32_t srcPitch32 = srcRect.Pitch / 4;
+			uint32_t dstPitch32 = destRect.Pitch / 4;
+
+			for (uint32_t y = 0; y < descDest.Height; y++)
+			{
+				for (uint32_t x = 0; x < descDest.Width; x++)
+				{
+					uint32_t sx = x * 2;
+					uint32_t sy = y * 2;
+					uint32_t p00 = src[sy * srcPitch32 + sx];
+					uint32_t p10 = src[sy * srcPitch32 + sx + 1];
+					uint32_t p01 = src[(sy + 1) * srcPitch32 + sx];
+					uint32_t p11 = src[(sy + 1) * srcPitch32 + sx + 1];
+
+					uint32_t a = (((p00 >> 24) & 0xFF) + ((p10 >> 24) & 0xFF) +
+					              ((p01 >> 24) & 0xFF) + ((p11 >> 24) & 0xFF) + 2) >> 2;
+					uint32_t r = (((p00 >> 16) & 0xFF) + ((p10 >> 16) & 0xFF) +
+					              ((p01 >> 16) & 0xFF) + ((p11 >> 16) & 0xFF) + 2) >> 2;
+					uint32_t g = (((p00 >> 8) & 0xFF) + ((p10 >> 8) & 0xFF) +
+					              ((p01 >> 8) & 0xFF) + ((p11 >> 8) & 0xFF) + 2) >> 2;
+					uint32_t b = ((p00 & 0xFF) + (p10 & 0xFF) +
+					              (p01 & 0xFF) + (p11 & 0xFF) + 2) >> 2;
+
+					dst[y * dstPitch32 + x] = (a << 24) | (r << 16) | (g << 8) | b;
+				}
+			}
+		}
+		else
+		{
+			pDestSurface->UnlockRect();
+			pSrcSurface->UnlockRect();
+			return D3DERR_INVALIDCALL;
+		}
+
+		pDestSurface->UnlockRect();
+		pSrcSurface->UnlockRect();
+		return D3D_OK;
+	}
+
+	// Non-power-of-two scaling not supported
 	pDestSurface->UnlockRect();
 	pSrcSurface->UnlockRect();
 	return D3DERR_INVALIDCALL;

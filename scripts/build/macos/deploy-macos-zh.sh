@@ -4,9 +4,16 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# GeneralsX @bugfix BenderAI 09/03/2026 Resolve repository root correctly from scripts/build/macos.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/macos-vulkan"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
+# GeneralsX @bugfix BenderAI 09/03/2026 Resolve DXVK dylib paths from both install copy and Meson output to avoid stale runtime libs.
+DXVK_D3D8_LIB_INSTALL="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
+DXVK_D3D9_LIB_INSTALL="${BUILD_DIR}/libdxvk_d3d9.0.dylib"
+DXVK_D3D8_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d8/libdxvk_d3d8.0.dylib"
+DXVK_D3D9_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d9/libdxvk_d3d9.0.dylib"
 RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
 
 # Locate the installed Vulkan SDK (tries ~/VulkanSDK/ by convention)
@@ -17,6 +24,15 @@ for sdk_candidate in "${HOME}/VulkanSDK"/*/macOS; do
     fi
 done
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
+
+DXVK_D3D8_LIB="${DXVK_D3D8_LIB_INSTALL}"
+DXVK_D3D9_LIB="${DXVK_D3D9_LIB_INSTALL}"
+if [[ ! -f "${DXVK_D3D8_LIB}" && -f "${DXVK_D3D8_LIB_MESON}" ]]; then
+    DXVK_D3D8_LIB="${DXVK_D3D8_LIB_MESON}"
+fi
+if [[ ! -f "${DXVK_D3D9_LIB}" && -f "${DXVK_D3D9_LIB_MESON}" ]]; then
+    DXVK_D3D9_LIB="${DXVK_D3D9_LIB_MESON}"
+fi
 
 echo "Deploying GeneralsXZH (macOS) to ${RUNTIME_DIR}"
 
@@ -44,6 +60,22 @@ done
 
 echo "  Copying GameSpy library..."
 cp -Lv "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
+
+echo "  Copying DXVK libraries (d3d9 + d3d8)..."
+# d3d8 links against d3d9 via @rpath — both must be present in the runtime dir
+if [[ ! -f "${DXVK_D3D9_LIB}" || ! -f "${DXVK_D3D8_LIB}" ]]; then
+    echo "ERROR: Required DXVK dylibs were not found in expected locations:"
+    echo "  d3d9 install: ${DXVK_D3D9_LIB_INSTALL}"
+    echo "  d3d8 install: ${DXVK_D3D8_LIB_INSTALL}"
+    echo "  d3d9 meson:   ${DXVK_D3D9_LIB_MESON}"
+    echo "  d3d8 meson:   ${DXVK_D3D8_LIB_MESON}"
+    echo "Build DXVK first: cmake --build build/macos-vulkan --target dxvk_d3d8_install"
+    exit 1
+fi
+cp -v "${DXVK_D3D9_LIB}" "${RUNTIME_DIR}/libdxvk_d3d9.0.dylib"
+ln -sf libdxvk_d3d9.0.dylib "${RUNTIME_DIR}/libdxvk_d3d9.dylib" 2>/dev/null || true
+cp -v "${DXVK_D3D8_LIB}" "${RUNTIME_DIR}/libdxvk_d3d8.0.dylib"
+ln -sf libdxvk_d3d8.0.dylib "${RUNTIME_DIR}/libdxvk_d3d8.dylib" 2>/dev/null || true
 
 echo "  Deploying Vulkan + MoltenVK libraries..."
 if [[ -n "${VULKAN_SDK_ROOT}" ]]; then
@@ -118,5 +150,5 @@ echo "   DXVK conf:  ${RUNTIME_DIR}/dxvk.conf"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"
-echo "  ${PROJECT_ROOT}/scripts/run-macos-zh.sh -win"
+echo "  ${PROJECT_ROOT}/scripts/build/macos/run-macos-zh.sh -win"
 echo "  or: cd ~/GeneralsX/GeneralsMD && ./run.sh -win"

@@ -82,12 +82,6 @@ if(SAGE_USE_SDL3)
     include(cmake/sdl3.cmake)
 endif()
 
-# OpenAL audio backend for cross-platform builds (Phase 1+ Linux, Phase 6 Windows Modern)
-# GeneralsX @build BenderAI 26/02/2026
-if(SAGE_USE_OPENAL)
-    include(cmake/openal.cmake)
-endif()
-
 # Define a dummy stlport target when not on VC6.
 if (IS_VS6_BUILD)
     include(cmake/stlport.cmake)
@@ -98,6 +92,11 @@ endif()
 include(cmake/config.cmake)
 include(cmake/gamespy.cmake)
 include(cmake/lzhl.cmake)
+
+# GeneralsX @bugfix fbraz 10/03/2026 Include openal.cmake here (before Core subdirectory)
+# so OpenAL::OpenAL target is available when Core/GameEngineDevice/CMakeLists.txt processes.
+# openal.cmake is self-guarded with if(SAGE_USE_OPENAL), so this is always safe to include.
+include(cmake/openal.cmake)
 
 if (IS_VS6_BUILD)
     # The original max sdk does not compile against a modern compiler.

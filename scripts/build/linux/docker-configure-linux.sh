@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
-# Build GeneralsXZH (Zero Hour) for Linux using Docker
-# Usage: ./scripts/docker-build-linux-zh.sh [preset]
+# Configure Linux build using Docker (Ubuntu 22.04 x86_64)
+# Usage: ./scripts/build/linux/docker-configure-linux.sh [preset]
 
 set -e
 
 PRESET="${1:-linux64-deploy}"
-LOG_FILE="logs/build_zh_${PRESET}_docker.log"
+LOG_FILE="logs/configure_${PRESET}_docker.log"
 DOCKER_IMAGE="generalsx/linux-builder:latest"
-CONTAINER_NAME="generalsx-build-zh-${PRESET}"
+CONTAINER_NAME="generalsx-configure-${PRESET}"
 
-echo "🐳 Building GeneralsXZH (Linux, preset: ${PRESET})..."
+echo "🐳 Configuring Linux build (preset: ${PRESET})..."
 mkdir -p logs
 
 # Check if container is already running
 if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "⚠️  Container '${CONTAINER_NAME}' is already running!"
-    echo "Wait for the current build to finish or stop it with:"
+    echo "Wait for the current configuration to finish or stop it with:"
     echo "    docker stop ${CONTAINER_NAME}"
     exit 1
 fi
@@ -36,12 +36,6 @@ docker run --rm \
     "$DOCKER_IMAGE" \
     bash -c "
         set -e
-
-        PROC=1
-        if command -v nproc &> /dev/null; then
-            PROC=\$(( (\$(nproc) + 1) / 2 ))
-        fi
-        echo \"🛠  Using \$PROC parallel jobs for building...\"
         
         # Bootstrap vcpkg in Docker volume if not exists
         if [ ! -f /opt/vcpkg/vcpkg ]; then
@@ -60,11 +54,7 @@ docker run --rm \
         echo '⚙️  Configuring CMake with vcpkg...'
         cmake --preset ${PRESET}
         
-        echo '🔨 Building GeneralsXZH...'
-        cmake --build build/${PRESET} --target z_generals -j\$PROC
-        
-        echo '✅ Build complete!'
-        ls -lh build/${PRESET}/GeneralsMD/GeneralsXZH || echo '⚠️  Binary not found'
+        echo '✅ Configuration complete!'
     " 2>&1 | tee "$LOG_FILE"
 
-echo "✅ Build complete. Log: $LOG_FILE"
+echo "✅ Configure complete. Log: $LOG_FILE"

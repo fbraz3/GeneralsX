@@ -3,7 +3,9 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# GeneralsX @bugfix BenderAI 09/03/2026 Resolve repository root correctly from scripts/build/macos.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/macos-vulkan"
 GAME_DIR="${HOME}/GeneralsX/GeneralsMD"
 GAME_BINARY="${GAME_DIR}/GeneralsXZH"
@@ -11,13 +13,13 @@ LOG_FILE="${PROJECT_ROOT}/logs/run_zh_macos.log"
 
 if [[ ! -f "${GAME_BINARY}" ]]; then
     echo "ERROR: Game binary not found at ${GAME_BINARY}"
-    echo "Run deploy first: ./scripts/deploy-macos-zh.sh"
+    echo "Run deploy first: ./scripts/build/macos/deploy-macos-zh.sh"
     exit 1
 fi
 
 if [[ ! -f "${GAME_DIR}/libSDL3.0.dylib" ]]; then
     echo "ERROR: SDL3 library not found in ${GAME_DIR}"
-    echo "Run deploy first: ./scripts/deploy-macos-zh.sh"
+    echo "Run deploy first: ./scripts/build/macos/deploy-macos-zh.sh"
     exit 1
 fi
 

@@ -250,8 +250,7 @@ if(WIN32)
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
-# GeneralsX @bugfix BenderAI 27/02/2026 Use OpenAL::OpenAL target directly when available (FetchContent)
-# cmake's FindOpenAL.cmake cannot find FetchContent-built openal-soft; use imported target instead.
+# GeneralsX @bugfix fbraz 10/03/2026 Use FetchContent target when available, fallback to find_package
 if(SAGE_USE_OPENAL)
     if(TARGET OpenAL::OpenAL)
         # FetchContent-provided openal-soft: interface includes propagated via target

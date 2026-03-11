@@ -210,7 +210,7 @@ jobs:
           find "build/${{ inputs.preset }}" -name "libgamespy.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
           
           echo "  Copying run.sh wrapper from scripts..."
-          cp -v "scripts/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
+          cp -v "scripts/qa/smoke/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
           chmod +x "${RUNTIME_DIR}/run.sh"
 
           # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime libraries in Linux bundle.

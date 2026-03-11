@@ -408,11 +408,14 @@ void SDL3Mouse::setCursor(MouseCursor cursor)
 	else
 	{
 		AnimatedCursor* currentCursor = cursorResources[cursor][m_directionFrame];
-		if (currentCursor)
+		if (currentCursor && currentCursor->m_frameCount > 0)
 		{
 			// The game runs at 30FPS, the frame rate within the metadata is for 60FPS
-			size_t index = m_inputFrame * 2 / currentCursor->m_frameRate;
-			SDL_SetCursor(currentCursor->m_frameCursors[index % currentCursor->m_frameCount]);
+			// GeneralsX @bugfix BenderAI 07/03/2026 Guard against divide-by-zero
+			size_t index = (currentCursor->m_frameRate > 0)
+				? (m_inputFrame * 2 / currentCursor->m_frameRate) % currentCursor->m_frameCount
+				: 0;
+			SDL_SetCursor(currentCursor->m_frameCursors[index]);
 		}
 		else
 		{
@@ -440,16 +443,21 @@ void SDL3Mouse::setCursor(MouseCursor cursor)
 
 /**
  * Set cursor visibility
+ * GeneralsX @bugfix BenderAI 07/03/2026 - On SDL3, the cursor IS the SDL system cursor
+ * (no W3D rendering). We must always tell the parent that cursor is visible, otherwise
+ * setCursor() checks !m_visible and falls back to NORMAL cursor for all types (attack,
+ * move, etc. all show the same default cursor).
  */
 void SDL3Mouse::setVisibility(Bool visible)
 {
+	// Always tell parent cursor is visible so setCursor() selects the correct cursor type.
+	// On Windows, setVisibility(FALSE) hides OS cursor so W3D draws its own. On SDL3
+	// there is no W3D cursor rendering, so m_visible must stay TRUE.
+	Mouse::setVisibility(TRUE);
 	m_IsVisible = visible;
-	
-	if (visible) {
-		SDL_ShowCursor();
-	} else {
-		SDL_HideCursor();
-	}
+
+	// Always keep SDL cursor visible since it's the only cursor renderer.
+	SDL_ShowCursor();
 }
 
 /**
@@ -478,17 +486,18 @@ void SDL3Mouse::capture(void)
 	if (!m_Window || m_IsCaptured) {
 		return;
 	}
-	
+
 	// SDL3: Capture mouse to window
 	SDL_CaptureMouse(true);
-	
+
 	// SDL3: Grab mouse (confine to window)
 	SDL_SetWindowMouseGrab(m_Window, true);
-	
+
 	m_IsCaptured = true;
-	
-	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
-	// fprintf(stderr, "DEBUG: SDL3Mouse::capture() - mouse captured\n");
+
+	// @fix Notify base class so isCursorCaptured() returns true.
+	// This is required for edge scrolling (canScrollAtScreenEdge checks isCursorCaptured).
+	onCursorCaptured(true);
 }
 
 /**
@@ -499,16 +508,16 @@ void SDL3Mouse::releaseCapture(void)
 	if (!m_IsCaptured) {
 		return;
 	}
-	
+
 	SDL_CaptureMouse(false);
 	if (m_Window) {
 		SDL_SetWindowMouseGrab(m_Window, false);
 	}
-	
+
 	m_IsCaptured = false;
-	
-	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
-	// fprintf(stderr, "DEBUG: SDL3Mouse::releaseCapture() - mouse released\n");
+
+	// @fix Notify base class so isCursorCaptured() returns false.
+	onCursorCaptured(false);
 }
 
 /**
@@ -642,14 +651,12 @@ void SDL3Mouse::translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO 
 	// Map SDL3 button to MouseIO button
 	switch (event.button) {
 		case SDL_BUTTON_LEFT:
-			// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
-			// fprintf(stderr, "[MOUSE] Left button: %s\n", event.down ? "DOWN" : "UP");
-			// GeneralsX @bugfix felipebraz 18/02/2026 Use native SDL3 clicks field for double-click
-			// SDL3 button events contain clicks count: 1=single, 2=double
-			if (event.clicks >= 2) {
+			// GeneralsX @bugfix BenderAI 07/03/2026 Only detect double-click on DOWN events
+			// (matching right/middle button logic). Without this check, rapid clicks cause
+			// UP events with clicks>=2 to become MBS_DoubleClick, which GadgetPushButton
+			// doesn't handle, leaving buttons stuck in WIN_STATE_SELECTED (white overlay).
+			if (event.down && event.clicks >= 2) {
 				result->leftState = MBS_DoubleClick;
-				// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
-				// fprintf(stderr, "[MOUSE] Left double-click detected (clicks=%d)\n", event.clicks);
 			} else {
 				result->leftState = state;
 			}

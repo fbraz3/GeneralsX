@@ -3081,26 +3081,22 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 		if( m_renderObject )
 		{
 			// set collision type for render object.  Used by WW3D2 collision code.
-			if (tmplate->isKindOf(KINDOF_SELECTABLE))
+			// @fix Accumulate pick types instead of replacing sequentially,
+			// so that objects with multiple KindOf flags (e.g. SELECTABLE + FORCEATTACKABLE)
+			// are pickable by any matching pick type query.
 			{
-				m_renderObject->Set_Collision_Type( PICK_TYPE_SELECTABLE );
-			}
-
-			if( tmplate->isKindOf( KINDOF_SHRUBBERY ))
-			{
-				m_renderObject->Set_Collision_Type( PICK_TYPE_SHRUBBERY );
-			}
-			if( tmplate->isKindOf( KINDOF_MINE ))
-			{
-				m_renderObject->Set_Collision_Type( PICK_TYPE_MINES );
-			}
-			if( tmplate->isKindOf( KINDOF_FORCEATTACKABLE ))
-			{
-				m_renderObject->Set_Collision_Type( PICK_TYPE_FORCEATTACKABLE );
-			}
-			if( tmplate->isKindOf( KINDOF_CLICK_THROUGH ))
-			{
-				m_renderObject->Set_Collision_Type( 0 );
+				int collType = 0;
+				if (tmplate->isKindOf(KINDOF_SELECTABLE))
+					collType |= PICK_TYPE_SELECTABLE;
+				if (tmplate->isKindOf(KINDOF_SHRUBBERY))
+					collType |= PICK_TYPE_SHRUBBERY;
+				if (tmplate->isKindOf(KINDOF_MINE))
+					collType |= PICK_TYPE_MINES;
+				if (tmplate->isKindOf(KINDOF_FORCEATTACKABLE))
+					collType |= PICK_TYPE_FORCEATTACKABLE;
+				if (tmplate->isKindOf(KINDOF_CLICK_THROUGH))
+					collType = 0;
+				m_renderObject->Set_Collision_Type( collType );
 			}
 
 			Object *obj = draw->getObject();

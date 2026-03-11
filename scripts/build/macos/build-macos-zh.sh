@@ -8,12 +8,12 @@
 #   (installs to ~/VulkanSDK/<version>/macOS)
 #
 # Usage:
-#   ./scripts/build-macos-zh.sh            # configure + build
-#   ./scripts/build-macos-zh.sh --build-only  # skip configure if already done
+#   ./scripts/build/macos/build-macos-zh.sh               # configure + build
+#   ./scripts/build/macos/build-macos-zh.sh --build-only  # skip configure if already done
 #
 # After building:
-#   ./scripts/deploy-macos-zh.sh           # copy to runtime dir
-#   ./scripts/run-macos-zh.sh -win         # launch windowed
+#   ./scripts/build/macos/deploy-macos-zh.sh  # copy to runtime dir
+#   ./scripts/build/macos/run-macos-zh.sh -win # launch windowed
 
 set -eo pipefail
 
@@ -91,8 +91,8 @@ if [[ -f "${BINARY}" ]]; then
     echo ""
     echo "Next steps:"
     echo "  1. Copy game files to ~/GeneralsX/GeneralsMD/ (retail installation)"
-    echo "  2. Run: ./scripts/deploy-macos-zh.sh"
-    echo "  3. Run: ./scripts/run-macos-zh.sh -win"
+    echo "  2. Run: ./scripts/build/macos/deploy-macos-zh.sh"
+    echo "  3. Run: ./scripts/build/macos/run-macos-zh.sh -win"
 else
     echo "ERROR: Binary not found at ${BINARY}"
     exit 1

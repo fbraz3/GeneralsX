@@ -12,14 +12,14 @@ GAME_BINARY="${GAME_DIR}/GeneralsXZH"
 # Check if binary exists
 if [[ ! -f "${GAME_BINARY}" ]]; then
     echo "❌ ERROR: Game binary not found at ${GAME_BINARY}"
-    echo "Run deploy first: ./scripts/deploy-linux-zh.sh"
+    echo "Run deploy first: ./scripts/build/linux/deploy-linux-zh.sh"
     exit 1
 fi
 
 # Check if DXVK library is deployed
 if [[ ! -f "${GAME_DIR}/libdxvk_d3d8.so" ]]; then
     echo "❌ ERROR: DXVK library not found in ${GAME_DIR}"
-    echo "Run deploy first: ./scripts/deploy-linux-zh.sh"
+    echo "Run deploy first: ./scripts/build/linux/deploy-linux-zh.sh"
     exit 1
 fi
 

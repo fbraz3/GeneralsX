@@ -42,8 +42,6 @@ SDL3Keyboard::SDL3Keyboard(void)
 	  m_nextFreeIndex(0),
 	  m_nextGetIndex(0)
 {
-	fprintf(stderr, "DEBUG: SDL3Keyboard::SDL3Keyboard() created\n");
-	
 	// Initialize event buffer with SDL_EVENT_FIRST sentinel
 	// GeneralsX @refactor felipebraz 16/02/2026 Fighter19 pattern
 	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
@@ -54,7 +52,7 @@ SDL3Keyboard::SDL3Keyboard(void)
  */
 SDL3Keyboard::~SDL3Keyboard(void)
 {
-	fprintf(stderr, "DEBUG: SDL3Keyboard::~SDL3Keyboard() destroyed\n");
+	// destructor
 }
 
 /**
@@ -62,8 +60,6 @@ SDL3Keyboard::~SDL3Keyboard(void)
  */
 void SDL3Keyboard::init(void)
 {
-	fprintf(stderr, "INFO: SDL3Keyboard::init()\n");
-	
 	// Call parent init
 	Keyboard::init();
 	
@@ -76,7 +72,7 @@ void SDL3Keyboard::init(void)
 	m_nextFreeIndex = 0;
 	m_nextGetIndex = 0;
 	
-	fprintf(stderr, "INFO: SDL3Keyboard::init() complete\n");
+	// init complete
 }
 
 /**
@@ -84,8 +80,6 @@ void SDL3Keyboard::init(void)
  */
 void SDL3Keyboard::reset(void)
 {
-	fprintf(stderr, "DEBUG: SDL3Keyboard::reset()\n");
-	
 	Keyboard::reset();
 	
 	// Clear event buffer - Fighter19 pattern
@@ -168,7 +162,8 @@ void SDL3Keyboard::getKey(KeyboardIO *key)
 	key->key = keyDef;
 	key->status = KeyboardIO::STATUS_UNUSED;
 	key->state = keyEvent.down ? KEY_STATE_DOWN : KEY_STATE_UP;
-	key->keyDownTimeMsec = keyEvent.timestamp;
+	// GeneralsX @bugfix BenderAI 07/03/2026 Normalize timestamp to milliseconds (SDL3 uses nanoseconds)
+	key->keyDownTimeMsec = (Uint32)(keyEvent.timestamp / 1000000);
 	
 	// Mark this slot as empty (sentinel)
 	m_eventBuffer[m_nextGetIndex].type = SDL_EVENT_FIRST;
@@ -200,14 +195,12 @@ void SDL3Keyboard::addSDLEvent(SDL_Event *event)
 	// Check if buffer is full
 	UnsignedInt nextFreeIndex = (m_nextFreeIndex + 1) % MAX_SDL3_KEY_EVENTS;
 	if (nextFreeIndex == m_nextGetIndex) {
-		fprintf(stderr, "WARNING: SDL3Keyboard::addSDLEvent() buffer full (dropped event)\n");
+		// Buffer full, dropping event
 		return;
 	}
 	
 	// Copy entire event to buffer
 	m_eventBuffer[m_nextFreeIndex] = *event;
-	
-	fprintf(stderr, "DEBUG: SDL3Keyboard::addSDLEvent() type=%u index=%u\n", event->type, m_nextFreeIndex);
 	
 	// Advance write position (circular buffer)
 	m_nextFreeIndex = nextFreeIndex;
@@ -224,7 +217,7 @@ void SDL3Keyboard::addSDL3KeyEvent(const SDL_KeyboardEvent& event)
 	
 	// Check if buffer is full
 	if (nextFreeIndex == m_nextGetIndex) {
-		fprintf(stderr, "WARNING: SDL3Keyboard::addSDL3KeyEvent() buffer full (dropped key event)\n");
+		// Buffer full, dropping key event
 		return;
 	}
 	

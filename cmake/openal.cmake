@@ -1,16 +1,20 @@
-# OpenAL audio library configuration
-# GeneralsX @build BenderAI 26/02/2026 - Phase 6 (Windows) + fbraz 24/02/2026 - Phase 5 (macOS)
-# GeneralsX @bugfix BenderAI 04/03/2026 - Use FetchContent for ALL platforms (Linux, macOS, Windows).
-#   Homebrew-based detection was unreliable on Apple Silicon M1/M2/M3: Intel Homebrew (/usr/local)
-#   installs x86_64-only binaries which fail to link against native arm64 builds. Using FetchContent
-#   guarantees a native-architecture openal-soft compiled for the target (arm64 on Apple Silicon).
-#   Apple's system OpenAL.framework is explicitly avoided: it uses <OpenAL/al.h> which is
-#   incompatible with the standard <AL/al.h> used throughout jmarshall's OpenAL implementation.
+# GeneralsX @build fbraz 24/02/2026
+# GeneralsX @bugfix fbraz 10/03/2026 Use FetchContent for ALL platforms (macOS, Linux, Windows)
+# OpenAL audio library via FetchContent (openal-soft v1.24.2)
 #
-# Platform strategy (all via FetchContent):
-# - macOS:   CoreAudio backend. Compiled native arm64. No Homebrew dependency.
+# Strategy: FetchContent for ALL platforms -- no Homebrew/system detection.
+# - macOS:   CoreAudio backend. Compiled natively (arm64 on Apple Silicon).
+#            Apple's deprecated OpenAL.framework is avoided -- it uses <OpenAL/al.h>
+#            which is incompatible with the standard <AL/al.h> used throughout the codebase.
+#            Homebrew openal-soft was unreliable: Intel Homebrew (/usr/local) installs
+#            x86_64-only binaries that fail to link against native arm64 builds.
 # - Linux:   ALSA/PipeWire backend.
 # - Windows: WASAPI backend (modern, low-latency).
+#
+# FetchContent_MakeAvailable is idempotent: safe to include from multiple CMakeLists.
+# Callers guard with: if(NOT TARGET OpenAL::OpenAL) find_package... endif()
+#
+# Reference: jmarshall OpenAL implementation uses <AL/al.h> throughout.
 
 if(SAGE_USE_OPENAL)
     message(STATUS "Configuring OpenAL Soft (v1.24.2) with FetchContent...")
@@ -19,18 +23,17 @@ if(SAGE_USE_OPENAL)
 
     FetchContent_Declare(
         openal_soft
-        GIT_REPOSITORY https://github.com/kcat/openal-soft.git
-        GIT_TAG        1.24.2
+        URL "https://github.com/kcat/openal-soft/archive/refs/tags/1.24.2.tar.gz"
+        URL_HASH "SHA256=7efd383d70508587fbc146e4c508771a2235a5fc8ae05bf6fe721c20a348bd7c"
     )
 
-    # Disable unnecessary build components to speed up compilation
+    # Minimal build: no utilities, examples, or tests
     set(ALSOFT_INSTALL_RUNTIME_LIBS  ON  CACHE BOOL "Install runtime libs" FORCE)
     set(ALSOFT_EXAMPLES              OFF CACHE BOOL "Build examples"       FORCE)
     set(ALSOFT_TESTS                 OFF CACHE BOOL "Build tests"          FORCE)
     set(ALSOFT_UTILS                 OFF CACHE BOOL "Build utils"          FORCE)
     set(ALSOFT_NO_CONFIG_UTIL        ON  CACHE BOOL "Disable config util"  FORCE)
 
-    # Platform-specific backend preferences
     if(WIN32)
         # Windows: WASAPI is the modern low-latency audio API
         set(ALSOFT_REQUIRE_WASAPI ON CACHE BOOL "Require WASAPI backend on Windows" FORCE)

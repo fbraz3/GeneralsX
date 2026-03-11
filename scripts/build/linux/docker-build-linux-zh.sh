@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Build GeneralsX (base game) for Linux using Docker
-# Usage: ./scripts/docker-build-linux-generals.sh [preset]
+# Build GeneralsXZH (Zero Hour) for Linux using Docker
+# Usage: ./scripts/build/linux/docker-build-linux-zh.sh [preset]
 
 set -e
 
 PRESET="${1:-linux64-deploy}"
-LOG_FILE="logs/build_generals_${PRESET}_docker.log"
+LOG_FILE="logs/build_zh_${PRESET}_docker.log"
 DOCKER_IMAGE="generalsx/linux-builder:latest"
-CONTAINER_NAME="generalsx-build-generals-${PRESET}"
+CONTAINER_NAME="generalsx-build-zh-${PRESET}"
 
-echo "🐳 Building GeneralsX (Linux, preset: ${PRESET})..."
+echo "🐳 Building GeneralsXZH (Linux, preset: ${PRESET})..."
 mkdir -p logs
 
 # Check if container is already running
@@ -57,14 +57,14 @@ docker run --rm \
         
         export VCPKG_ROOT=/opt/vcpkg
         
-        echo '⚙️  Configuring CMake (if needed)...'
+        echo '⚙️  Configuring CMake with vcpkg...'
         cmake --preset ${PRESET}
         
-        echo '🔨 Building GeneralsX...'
-        cmake --build build/${PRESET} --target g_generals -j\$PROC
+        echo '🔨 Building GeneralsXZH...'
+        cmake --build build/${PRESET} --target z_generals -j\$PROC
         
         echo '✅ Build complete!'
-        ls -lh build/${PRESET}/Generals/GeneralsX || echo '⚠️  Binary not found'
+        ls -lh build/${PRESET}/GeneralsMD/GeneralsXZH || echo '⚠️  Binary not found'
     " 2>&1 | tee "$LOG_FILE"
 
 echo "✅ Build complete. Log: $LOG_FILE"

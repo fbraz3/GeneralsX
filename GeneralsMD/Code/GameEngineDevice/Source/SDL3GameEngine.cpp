@@ -186,10 +186,29 @@ void SDL3GameEngine::pollSDL3Events(void)
 
 			case SDL_EVENT_WINDOW_FOCUS_GAINED:
 				m_IsActive = true;
+				if (TheMouse) {
+					TheMouse->regainFocus();
+					TheMouse->refreshCursorCapture();
+				}
 				break;
 
 			case SDL_EVENT_WINDOW_FOCUS_LOST:
 				m_IsActive = false;
+				if (TheMouse) {
+					TheMouse->loseFocus();
+				}
+				break;
+
+			case SDL_EVENT_WINDOW_MOUSE_ENTER:
+				if (TheMouse) {
+					TheMouse->onCursorMovedInside();
+				}
+				break;
+
+			case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+				if (TheMouse) {
+					TheMouse->onCursorMovedOutside();
+				}
 				break;
 
 			case SDL_EVENT_KEY_DOWN:

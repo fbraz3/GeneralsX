@@ -298,9 +298,8 @@ endif()
 # GeneralsX @feature BenderAI 21/02/2026 OpenAL audio backend (Audio + Video via FFmpeg)
 # GeneralsX @bugfix BenderAI 27/02/2026 Use OpenAL::OpenAL target directly when available (FetchContent)
 if(SAGE_USE_OPENAL)
-    # GeneralsX @build fbraz 24/02/2026 - Include openal.cmake first for platform-specific detection
-    # (macOS: prefer openal-soft over deprecated Apple framework; Windows: use system or vcpkg)
-    include(${CMAKE_SOURCE_DIR}/cmake/openal.cmake)
+    # GeneralsX @build fbraz 24/02/2026 - On macOS prefer openal-soft over deprecated Apple framework
+    # GeneralsX @bugfix fbraz 10/03/2026 - openal.cmake included from root CMakeLists.txt; OpenAL::OpenAL already defined
     if(NOT TARGET OpenAL::OpenAL)
         find_package(OpenAL REQUIRED)
     endif()
