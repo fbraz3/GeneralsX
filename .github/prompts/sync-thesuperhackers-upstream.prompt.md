@@ -34,7 +34,8 @@ The repository is significantly behind upstream `TheSuperHackers`. The purpose o
 
 Expect many conflicts because the projects intentionally diverged. Every conflict must be analyzed individually and in detail.
 
-- Expect many files moved from `Generals/` and `GeneralsMD/` into a unified `Core/` directory. Do not assume that all conflicts in those areas should be resolved by keeping the `TheSuperHackers` version.
+- Expect many files moved from `Generals/` and `GeneralsMD/` into a unified `Core/` directory. 
+- **IMPORTANT:** never ever assume that all conflicts in those areas should be resolved by keeping the `TheSuperHackers` version or the `GeneralsX` version, analyze each conflict carefully and find the real resolution.
 - Do not use blanket conflict strategies for large areas of the tree.
 - Do not sacrifice the cross-platform architecture of `GeneralsX` just to make the merge easy.
 - Do not blindly keep either side. Reconcile changes so that useful `TheSuperHackers` bug fixes, stability work, and optimizations are preserved whenever they do not break the `GeneralsX` platform strategy.
