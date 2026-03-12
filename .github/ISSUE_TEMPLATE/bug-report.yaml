@@ -24,6 +24,20 @@ body:
       - label: "Other (please specify below)"
         required: false
 
+- type: checkboxes
+  attributes:
+    label: Operating System
+    description: Which operating system(s) does this bug appear on? (Select all that apply)
+    options:
+      - label: "macOS"
+        required: false
+      - label: "Linux"
+        required: false
+      - label: "Windows"
+        required: false
+      - label: "Other (please specify below)"
+        required: false
+
 - type: textarea
   attributes:
     label: Bug Description
