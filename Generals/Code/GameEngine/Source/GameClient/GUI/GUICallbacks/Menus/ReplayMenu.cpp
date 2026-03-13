@@ -278,7 +278,13 @@ void PopulateReplayFileListbox(GameWindow *listbox)
 	for (it = replayFilenames.begin(); it != replayFilenames.end(); ++it)
 	{
 		// just want the filename
-		asciistr.set((*it).reverseFind('\\') + 1);
+		// GeneralsX @bugfix copilot 12/03/2026 Handle both slash styles and avoid nullptr + 1 when no separator is found.
+		const char *filenameNoPath = (*it).reverseFind('\\');
+		if (!filenameNoPath)
+		{
+			filenameNoPath = (*it).reverseFind('/');
+		}
+		asciistr.set(filenameNoPath ? filenameNoPath + 1 : (*it).str());
 
 		RecorderClass::ReplayHeader header;
 		ReplayGameInfo info;
@@ -813,7 +819,12 @@ void copyReplay()
 	SHGetPathFromIDList(pidl,path);
 	AsciiString newFilename;
 	newFilename.set(path);
+	// GeneralsX @bugfix copilot 12/03/2026 Use POSIX separator on non-Windows to avoid creating literal backslash filenames.
+#ifdef _WIN32
 	newFilename.concat("\\");
+#else
+	newFilename.concat("/");
+#endif
 	newFilename.concat(translate);
 	if(CopyFile(filename.str(),newFilename.str(), FALSE) == 0)
 	{
