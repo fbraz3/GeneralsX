@@ -36,6 +36,7 @@ jobs:
           filters: |
             should-build:
               - 'GeneralsMD/**'
+              - 'Generals/**'
               - 'Core/**'
               - 'Dependencies/**'
               - 'cmake/**'
