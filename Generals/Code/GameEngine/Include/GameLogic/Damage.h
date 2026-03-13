@@ -236,19 +236,22 @@ typedef UnsignedInt DeathTypeFlags;
 const DeathTypeFlags DEATH_TYPE_FLAGS_ALL = 0xffffffff;
 const DeathTypeFlags DEATH_TYPE_FLAGS_NONE = 0x00000000;
 
+// @fix Use 1U (32-bit) instead of 1UL. On ARM64 macOS, unsigned long is 64-bit,
+// so 1UL << (DEATH_NORMAL - 1) = 1UL << (-1) shifts to bit 63, which is outside
+// the 32-bit DeathTypeFlags range. With 1U, it wraps to bit 31 (matching Windows x86).
 inline Bool getDeathTypeFlag(DeathTypeFlags flags, DeathType dt)
 {
-	return (flags & (1UL << (dt - 1))) != 0;
+	return (flags & (1U << (dt - 1))) != 0;
 }
 
 inline DeathTypeFlags setDeathTypeFlag(DeathTypeFlags flags, DeathType dt)
 {
-	return (flags | (1UL << (dt - 1)));
+	return (flags | (1U << (dt - 1)));
 }
 
 inline DeathTypeFlags clearDeathTypeFlag(DeathTypeFlags flags, DeathType dt)
 {
-	return (flags & ~(1UL << (dt - 1)));
+	return (flags & ~(1U << (dt - 1)));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -259,7 +262,7 @@ class DamageInfoInput : public Snapshot
 
 public:
 
-	DamageInfoInput( void )
+	DamageInfoInput()
 	{
 		m_sourceID = INVALID_ID;
 		m_sourceTemplate = nullptr;
@@ -299,7 +302,7 @@ protected:
 	// snapshot methods
 	virtual void crc( Xfer *xfer ) { }
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void ) { }
+	virtual void loadPostProcess() { }
 
 };
 
@@ -313,7 +316,7 @@ class DamageInfoOutput : public Snapshot
 
 public:
 
-	DamageInfoOutput( void )
+	DamageInfoOutput()
 	{
 		m_actualDamageDealt = 0;
 		m_actualDamageClipped = 0;
@@ -342,7 +345,7 @@ protected:
 	// snapshot methods
 	virtual void crc( Xfer *xfer ) { }
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void ) { }
+	virtual void loadPostProcess() { }
 
 };
 
@@ -368,6 +371,6 @@ protected:
 
 	virtual void crc( Xfer *xfer ) { }
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void ){ }
+	virtual void loadPostProcess(){ }
 
 };

@@ -139,7 +139,7 @@ ImageCollection *TheMappedImageCollection = nullptr;  ///< mapped images
 // PUBLIC FUNCTIONS////////////////////////////////////////////////////////////////////////////////
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-Image::Image( void )
+Image::Image()
 {
 
 	m_name.clear();
@@ -159,7 +159,7 @@ Image::Image( void )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-Image::~Image( void )
+Image::~Image()
 {
 
 }
@@ -196,13 +196,13 @@ UnsignedInt Image::clearStatus( UnsignedInt bit )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ImageCollection::ImageCollection( void )
+ImageCollection::ImageCollection()
 {
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ImageCollection::~ImageCollection( void )
+ImageCollection::~ImageCollection()
 {
   for (ImageMap::iterator i=m_imageMap.begin();i!=m_imageMap.end();++i)
     deleteInstance(i->second);
@@ -252,12 +252,22 @@ void ImageCollection::load( Int textureSize )
 	AsciiString userDataPath;
 	if(TheGlobalData)
 	{
+		// GeneralsX @bugfix copilot 12/03/2026 Use platform-correct separators for user data mapped image paths.
+#ifdef _WIN32
 		userDataPath.format("%sINI\\MappedImages\\*.ini",TheGlobalData->getPath_UserData().str());
 		if(FindFirstFile(userDataPath.str(), &findData) !=INVALID_HANDLE_VALUE)
 		{
 			userDataPath.format("%sINI\\MappedImages",TheGlobalData->getPath_UserData().str());
 			ini.loadDirectory(userDataPath, INI_LOAD_OVERWRITE, nullptr );
 		}
+#else
+		userDataPath.format("%sINI/MappedImages/*.ini",TheGlobalData->getPath_UserData().str());
+		if(FindFirstFile(userDataPath.str(), &findData) !=INVALID_HANDLE_VALUE)
+		{
+			userDataPath.format("%sINI/MappedImages",TheGlobalData->getPath_UserData().str());
+			ini.loadDirectory(userDataPath, INI_LOAD_OVERWRITE, nullptr );
+		}
+#endif
 	}
 
 	// construct path to the mapped images folder of the correct texture size

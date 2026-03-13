@@ -54,7 +54,7 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/W3DDevice/GameClient/W3DGUICallbacks.h
 #    Include/W3DDevice/GameClient/W3DInGameUI.h
 #    Include/W3DDevice/GameClient/W3DMirror.h
-#    Include/W3DDevice/GameClient/W3DMouse.h
+    Include/W3DDevice/GameClient/W3DMouse.h
 #    Include/W3DDevice/GameClient/W3DParticleSys.h
 #    Include/W3DDevice/GameClient/W3DPoly.h
 #    Include/W3DDevice/GameClient/W3DProjectedShadow.h
@@ -84,7 +84,6 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/W3DDevice/GameLogic/W3DTerrainLogic.h
     Include/Win32Device/Common/Win32BIGFile.h
     Include/Win32Device/Common/Win32BIGFileSystem.h
-#    Include/Win32Device/Common/Win32CDManager.h
 #    Include/Win32Device/Common/Win32GameEngine.h
 #    Include/Win32Device/GameClient/Win32DIKeyboard.h
 #    Include/Win32Device/GameClient/Win32DIMouse.h
@@ -156,7 +155,7 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameClient/W3DFileSystem.cpp
 #    Source/W3DDevice/GameClient/W3DGameClient.cpp
 #    Source/W3DDevice/GameClient/W3DInGameUI.cpp
-#    Source/W3DDevice/GameClient/W3DMouse.cpp
+    Source/W3DDevice/GameClient/W3DMouse.cpp
 #    Source/W3DDevice/GameClient/W3DParticleSys.cpp
 #    Source/W3DDevice/GameClient/W3DPoly.cpp
     Source/W3DDevice/GameClient/W3DPropBuffer.cpp
@@ -183,7 +182,6 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
     Source/Win32Device/Common/Win32BIGFile.cpp
     Source/Win32Device/Common/Win32BIGFileSystem.cpp
-#    Source/Win32Device/Common/Win32CDManager.cpp
 #    Source/Win32Device/Common/Win32GameEngine.cpp
 #    Source/Win32Device/GameClient/Win32DIMouse.cpp
 #    Source/Win32Device/GameClient/Win32Mouse.cpp
@@ -244,10 +242,17 @@ if(WIN32)
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
+# GeneralsX @bugfix fbraz 10/03/2026 Use FetchContent target when available, fallback to find_package
 if(SAGE_USE_OPENAL)
-    find_package(OpenAL REQUIRED)
-    target_include_directories(corei_gameenginedevice_public INTERFACE ${OPENAL_INCLUDE_DIR})
-    target_link_libraries(corei_gameenginedevice_public INTERFACE ${OPENAL_LIBRARY})
+    if(TARGET OpenAL::OpenAL)
+        # FetchContent-provided openal-soft: interface includes propagated via target
+        target_link_libraries(corei_gameenginedevice_public INTERFACE OpenAL::OpenAL)
+    else()
+        # System install of OpenAL (Linux with libopenal-dev, etc.)
+        find_package(OpenAL REQUIRED)
+        target_include_directories(corei_gameenginedevice_public INTERFACE ${OPENAL_INCLUDE_DIR})
+        target_link_libraries(corei_gameenginedevice_public INTERFACE ${OPENAL_LIBRARY})
+    endif()
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)

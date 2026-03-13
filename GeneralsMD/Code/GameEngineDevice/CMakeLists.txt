@@ -53,7 +53,7 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/GameClient/W3DGUICallbacks.h
     Include/W3DDevice/GameClient/W3DInGameUI.h
     Include/W3DDevice/GameClient/W3DMirror.h
-    Include/W3DDevice/GameClient/W3DMouse.h
+#    Include/W3DDevice/GameClient/W3DMouse.h
     Include/W3DDevice/GameClient/W3DParticleSys.h
     Include/W3DDevice/GameClient/W3DPoly.h
     Include/W3DDevice/GameClient/W3DProjectedShadow.h
@@ -86,9 +86,6 @@ set(GAMEENGINEDEVICE_SRC
     Include/Win32Device/Common/Win32GameEngine.h
 #    Include/Win32Device/Common/Win32LocalFile.h
 #    Include/Win32Device/Common/Win32LocalFileSystem.h
-    Include/Win32Device/GameClient/Win32DIKeyboard.h
-    Include/Win32Device/GameClient/Win32DIMouse.h
-    Include/Win32Device/GameClient/Win32Mouse.h
     # Linux SDL3/OpenAL devices (Phase 1 - TheSuperHackers @feature CnC_Generals_Linux 07/02/2026)
     Include/SDL3GameEngine.h
     Include/OpenALAudioManager.h
@@ -162,7 +159,7 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/W3DFileSystem.cpp
     Source/W3DDevice/GameClient/W3DGameClient.cpp
     Source/W3DDevice/GameClient/W3DInGameUI.cpp
-    Source/W3DDevice/GameClient/W3DMouse.cpp
+#    Source/W3DDevice/GameClient/W3DMouse.cpp
     Source/W3DDevice/GameClient/W3DParticleSys.cpp
     Source/W3DDevice/GameClient/W3DPoly.cpp
 #    Source/W3DDevice/GameClient/W3DPropBuffer.cpp
@@ -265,8 +262,10 @@ endif()
 # GeneralsX @feature BenderAI 21/02/2026 OpenAL audio backend (Audio + Video via FFmpeg)
 if(SAGE_USE_OPENAL)
     # GeneralsX @build fbraz 24/02/2026 - On macOS prefer openal-soft over deprecated Apple framework
-    include(${CMAKE_SOURCE_DIR}/cmake/openal.cmake)
-    find_package(OpenAL REQUIRED)
+    # GeneralsX @bugfix fbraz 10/03/2026 - openal.cmake included from root CMakeLists.txt; OpenAL::OpenAL already defined
+    if(NOT TARGET OpenAL::OpenAL)
+        find_package(OpenAL REQUIRED)
+    endif()
     target_link_libraries(z_gameenginedevice PUBLIC OpenAL::OpenAL)
 
     # Private include path for OpenALAudioCache.h (local to Source/OpenALAudioDevice/)

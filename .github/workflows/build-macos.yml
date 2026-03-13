@@ -56,7 +56,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: '533a5fda5c0646d1771345fb572e759283444d5f'
+          vcpkgGitCommitId: 'ffc071e0c08432c60c9b64f00334c0227667931b'
 
       - name: Install Dependencies
         run: |
@@ -71,6 +71,9 @@ jobs:
           
           # Build tools
           brew install cmake ninja meson pkg-config
+
+          # Autotools (required by vcpkg when building packages like gperf from source)
+          brew install autoconf autoconf-archive automake libtool
           
           # FFmpeg (required by GameEngineDevice for video playback via pkg-config)
           brew install ffmpeg
@@ -78,14 +81,20 @@ jobs:
           # Freetype + Fontconfig (required by font rendering)
           brew install freetype fontconfig
           
-          # GLM (required by CompatLib for math, SAGE_USE_GLM)
-          brew install glm
+          # NOTE: GLM is intentionally NOT installed via Homebrew.
+          # It is fetched via CMake FetchContent in cmake/glm.cmake (tag 1.0.3).
+          # Installing a system GLM causes glm::glm vs glm::glm-header-only target
+          # conflicts when vcpkg's cmake wrapper calls _find_package(glm) and finds
+          # both the Homebrew-installed version and the FetchContent version.
 
           # glslang (required by DXVK Meson build to compile GLSL shaders to SPIR-V)
           brew install glslang
 
-          # OpenAL Soft (required by audio layer; provides <AL/al.h> — macOS system OpenAL framework uses <OpenAL/al.h> which is incompatible)
-          brew install openal-soft
+          # NOTE: OpenAL Soft is intentionally NOT installed via Homebrew.
+          # It is fetched via CMake FetchContent in cmake/openal.cmake (v1.24.2).
+          # Installing Homebrew openal-soft was unreliable on Apple Silicon M-series:
+          # Intel Homebrew (/usr/local) installs x86_64-only binaries which fail to
+          # link against native arm64 builds. FetchContent compiles for the native arch.
 
           # Verify all tools are available
           cmake --version | head -1
@@ -93,10 +102,10 @@ jobs:
           meson --version | head -1
           pkg-config --version | head -1
           clang --version | head -1
-          pkg-config --modversion libavcodec 2>/dev/null && echo "✅ FFmpeg: libavcodec available" || echo "❌ FFmpeg: libavcodec NOT found"
-          find /opt/homebrew -name "glmConfig.cmake" 2>/dev/null | head -1 && echo "✅ GLM cmake config found" || echo "❌ GLM cmake config NOT found"
-          
-          echo "✅ Build tools installed"
+          pkg-config --modversion libavcodec 2>/dev/null && echo "FFmpeg: libavcodec available" || echo "FFmpeg: libavcodec NOT found"
+          # Note: GLM cmake config check omitted intentionally — GLM comes from FetchContent, not Homebrew.
+
+          echo "Build tools installed"
 
       - name: Install Vulkan SDK
         run: |
@@ -364,31 +373,88 @@ jobs:
           chmod +x "${RUNTIME_DIR}/$(basename ${BINARY})"
           
           echo "  Copying framework libraries..."
-          mkdir -p "${RUNTIME_DIR}/lib"
           
-          # DXVK dylibs
-          find "build/${{ inputs.preset }}/_deps" -name "*.dylib" -o -name "*.dylib.so" 2>/dev/null | while read f; do
-            [ -f "$f" ] && cp -v "$f" "${RUNTIME_DIR}/lib/" || true
+          # GeneralsX @bugfix felipebraz 05/03/2026 Copy all dylibs from _deps (SDL3, DXVK, OpenAL, SDL3_image).
+          # Use -L to dereference symlinks (e.g. libSDL3.dylib -> libSDL3.0.dylib) so bundle has real files.
+          find "build/${{ inputs.preset }}/_deps" -name "*.dylib" 2>/dev/null | while IFS= read -r f; do
+            cp -Lv "$f" "${RUNTIME_DIR}/" || true
           done
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Copy GameSpy dylib from build root (FetchContent outputs it
+          # directly to binaryDir, NOT under _deps like most other dependencies).
+          cp -Lv "build/${{ inputs.preset }}/libgamespy.dylib" "${RUNTIME_DIR}/"
           
           # MoltenVK dylib from Vulkan SDK (check both primary and fallback paths)
-          if [ -f "${{ env.VULKAN_SDK }}/macOS/lib/libMoltenVK.dylib" ]; then
+          if [ -f "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" ]; then
             echo "  Copying MoltenVK from macOS/lib..."
-            cp -v "${{ env.VULKAN_SDK }}/macOS/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
-          elif [ -f "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" ]; then
+            cp -v "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/" || true
+          elif [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
             echo "  Copying MoltenVK from lib..."
-            cp -v "${{ env.VULKAN_SDK }}/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/lib/" || true
+            cp -v "$VULKAN_SDK/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/" || true
           else
             echo "  ⚠️ MoltenVK dylib not found in Vulkan SDK"
           fi
+
+          # GeneralsX @bugfix felipebraz 04/03/2026 Bundle Vulkan loader dylibs required by DXVK at runtime.
+          if [ -f "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" ]; then
+            echo "  Copying Vulkan loader libvulkan.1.dylib from macOS/lib..."
+            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/" || true
+          elif [ -f "$VULKAN_SDK/lib/libvulkan.1.dylib" ]; then
+            echo "  Copying Vulkan loader libvulkan.1.dylib from lib..."
+            cp -v "$VULKAN_SDK/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/" || true
+          else
+            echo "  ⚠️ libvulkan.1.dylib not found in Vulkan SDK"
+          fi
+
+          if [ -f "$VULKAN_SDK/macOS/lib/libvulkan.dylib" ]; then
+            echo "  Copying Vulkan loader libvulkan.dylib from macOS/lib..."
+            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.dylib" "${RUNTIME_DIR}/" || true
+          elif [ -f "$VULKAN_SDK/lib/libvulkan.dylib" ]; then
+            echo "  Copying Vulkan loader libvulkan.dylib from lib..."
+            cp -v "$VULKAN_SDK/lib/libvulkan.dylib" "${RUNTIME_DIR}/" || true
+          else
+            echo "  ⚠️ libvulkan.dylib not found in Vulkan SDK"
+          fi
+
+          # Keep both names available even when SDK ships only one binary.
+          if [ -f "${RUNTIME_DIR}/libvulkan.1.dylib" ] && [ ! -f "${RUNTIME_DIR}/libvulkan.dylib" ]; then
+            ln -sf "libvulkan.1.dylib" "${RUNTIME_DIR}/libvulkan.dylib"
+          fi
+          if [ -f "${RUNTIME_DIR}/libvulkan.dylib" ] && [ ! -f "${RUNTIME_DIR}/libvulkan.1.dylib" ]; then
+            ln -sf "libvulkan.dylib" "${RUNTIME_DIR}/libvulkan.1.dylib"
+          fi
+
+          # GeneralsX @bugfix felipebraz 04/03/2026 Ship local ICD manifest so loader resolves bundled MoltenVK.
+          cat > "${RUNTIME_DIR}/MoltenVK_icd.json" <<'EOF'
+          {
+              "file_format_version": "1.0.0",
+              "ICD": {
+                  "library_path": "./libMoltenVK.dylib",
+                  "api_version": "1.4.0",
+                  "is_portability_driver": true
+              }
+          }
+          EOF
+
+          # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime dylibs so bundle fails fast when incomplete.
+          for required in "libgamespy.dylib" "libdxvk_d3d8.0.dylib" "libSDL3.0.dylib" "libvulkan.1.dylib" "libopenal.1.dylib"; do
+            if [ ! -f "${RUNTIME_DIR}/${required}" ]; then
+              echo "❌ Missing required runtime library: ${required}"
+              exit 1
+            fi
+          done
           
           echo "  Copying run.sh wrapper from scripts..."
-          cp -v "scripts/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
+          cp -v "scripts/qa/smoke/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
           chmod +x "${RUNTIME_DIR}/run.sh"
           
           echo "✅ Bundle ready at: ${RUNTIME_DIR}"
           ls -lh "${RUNTIME_DIR}/"
-          ls -lh "${RUNTIME_DIR}/lib/" 2>/dev/null || echo "(no libs directory)"
+
+          ARCHIVE="/tmp/bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz"
+          echo "Creating archive: ${ARCHIVE}"
+          tar -czf "${ARCHIVE}" -C "$(dirname ${RUNTIME_DIR})" "$(basename ${RUNTIME_DIR})"
+          echo "Archive size: $(du -sh ${ARCHIVE} | cut -f1)"
 
       - name: Upload Build Logs
         if: always()
@@ -402,7 +468,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: bundle-macos-${{ inputs.game }}-${{ inputs.preset }}
-          path: /tmp/GeneralsX-${{ inputs.game }}-macos-deploy/
+          name: bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz
+          path: /tmp/bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz
           retention-days: 7
           if-no-files-found: warn

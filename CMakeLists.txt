@@ -87,12 +87,24 @@ include(cmake/config.cmake)
 include(cmake/gamespy.cmake)
 include(cmake/lzhl.cmake)
 
+# GeneralsX @bugfix fbraz 10/03/2026 Include openal.cmake here (before Core subdirectory)
+# so OpenAL::OpenAL target is available when Core/GameEngineDevice/CMakeLists.txt processes.
+# openal.cmake is self-guarded with if(SAGE_USE_OPENAL), so this is always safe to include.
+include(cmake/openal.cmake)
+
 if (IS_VS6_BUILD)
     # The original max sdk does not compile against a modern compiler.
     # If there is a desire to make this work, then a fixed max sdk needs to be created.
     add_subdirectory(Dependencies/MaxSDK)
 endif()
 add_subdirectory(Dependencies/Utility)
+
+# To be removed when abandoning VC6
+if (IS_VS6_BUILD)
+    include_directories(Dependencies/Utility)
+    add_compile_options(/FIUtility/CppMacros.h)
+endif()
+
 add_subdirectory(resources)
 
 add_subdirectory(Core)

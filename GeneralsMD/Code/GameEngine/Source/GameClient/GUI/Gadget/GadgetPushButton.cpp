@@ -202,6 +202,44 @@ WindowMsgHandledType GadgetPushButtonInput( GameWindow *window,
 		}
 
 		//-------------------------------------------------------------------------
+		// GeneralsX @bugfix BenderAI 07/03/2026 Handle double-click as a regular click.
+		// Without this, rapid clicking on production buttons causes GWM_LEFT_DOUBLE_CLICK
+		// to fall through to default (MSG_IGNORED), leaving WIN_STATE_SELECTED stuck.
+		case GWM_LEFT_DOUBLE_CLICK:
+		{
+			PushButtonData *pData = (PushButtonData *)window->winGetUserData();
+			AudioEventRTS buttonClick;
+			if(pData && pData->altSound.isNotEmpty())
+				buttonClick.setEventName(pData->altSound);
+			else
+				buttonClick.setEventName("GUIClick");
+
+			if( TheAudio )
+			{
+				TheAudio->addAudioEvent( &buttonClick );
+			}
+
+			if( BitIsSet( window->winGetStatus(), WIN_STATUS_CHECK_LIKE ) )
+			{
+				if( BitIsSet( instData->m_state, WIN_STATE_SELECTED ) )
+					BitClear( instData->m_state, WIN_STATE_SELECTED );
+				else
+					BitSet( instData->m_state, WIN_STATE_SELECTED );
+			}
+			else
+			{
+				BitSet( instData->m_state, WIN_STATE_SELECTED );
+			}
+
+			if (buttonTriggersOnMouseDown(window)) {
+				TheWindowManager->winSendSystemMsg( instData->getOwner(), GBM_SELECTED,
+																						(WindowMsgData)window, mData1 );
+			}
+
+			break;
+		}
+
+		//-------------------------------------------------------------------------
 		case GWM_LEFT_UP:
 		{
 
@@ -591,7 +629,7 @@ void GadgetButtonSetText( GameWindow *g, UnicodeString text )
 
 }
 
-PushButtonData * getNewPushButtonData( void )
+PushButtonData * getNewPushButtonData()
 {
 	PushButtonData *p = NEW PushButtonData;
 	if(!p)

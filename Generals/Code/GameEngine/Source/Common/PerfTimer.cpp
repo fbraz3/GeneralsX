@@ -576,7 +576,7 @@ PerfTimer::~PerfTimer( )
 }
 
 //-------------------------------------------------------------------------------------------------
-void PerfTimer::outputInfo( void )
+void PerfTimer::outputInfo()
 {
 	if (TheGlobalData->m_showMetrics) {
 		return;
@@ -629,7 +629,7 @@ void PerfTimer::outputInfo( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-void PerfTimer::showMetrics( void )
+void PerfTimer::showMetrics()
 {
 #if defined(RTS_DEBUG)
 	double totalTimeInMS = 1000.0 * m_runningTime / s_ticksPerSec;

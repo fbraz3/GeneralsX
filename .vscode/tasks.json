@@ -4,7 +4,7 @@
 		{
 			"label": "[Linux] Configure (Docker)",
 			"type": "shell",
-			"command": "./scripts/docker-configure-linux.sh linux64-deploy",
+			"command": "./scripts/build/linux/docker-configure-linux.sh linux64-deploy",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -19,7 +19,7 @@
 		{
 			"label": "[Linux] Build GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/docker-build-linux-zh.sh linux64-deploy",
+			"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy",
 			"isBackground": false,
 			"group": {
 				"kind": "build",
@@ -37,7 +37,7 @@
 		{
 			"label": "[Linux] Build GeneralsX",
 			"type": "shell",
-			"command": "./scripts/docker-build-linux-generals.sh linux64-deploy",
+			"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -52,7 +52,7 @@
 		{
 			"label": "[Linux] Deploy GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/deploy-linux-zh.sh",
+			"command": "./scripts/build/linux/deploy-linux-zh.sh",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -67,7 +67,7 @@
 		{
 			"label": "[Linux] Bundle GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/bundle-linux-zh.sh",
+			"command": "./scripts/build/linux/bundle-linux-zh.sh",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -82,7 +82,7 @@
 		{
 			"label": "[Linux] Pipeline: Build + Deploy + Run ZH",
 			"type": "shell",
-			"command": "./scripts/docker-build-linux-zh.sh linux64-deploy && ./scripts/deploy-linux-zh.sh && ./scripts/run-linux-zh.sh -win",
+			"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy && ./scripts/build/linux/deploy-linux-zh.sh && ./scripts/build/linux/run-linux-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
 			"presentation": {
@@ -97,7 +97,7 @@
 		{
 			"label": "[Linux] Pipeline: Docker Build ZH (Full)",
 			"type": "shell",
-			"command": "./scripts/docker-build-linux-zh.sh linux64-deploy",
+			"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -129,7 +129,7 @@
 		{
 			"label": "[Linux] Docker: Create Builder Image",
 			"type": "shell",
-			"command": "./scripts/docker-build-images.sh linux",
+			"command": "./scripts/env/docker/docker-build-images.sh linux",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -145,7 +145,7 @@
 		{
 			"label": "[Linux] Smoke Test GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/docker-smoke-test-zh.sh linux64-deploy",
+			"command": "./scripts/qa/smoke/docker-smoke-test-zh.sh linux64-deploy",
 			"isBackground": false,
 			"group": "test",
 			"presentation": {
@@ -160,7 +160,7 @@
 		{
 			"label": "[Linux] Run GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/run-linux-zh.sh -win",
+			"command": "./scripts/build/linux/run-linux-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
 			"presentation": {
@@ -190,7 +190,7 @@
 		{
 			"label": "[macOS] Build GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/build-macos-zh.sh --build-only 2>&1 | tee logs/build_zh_macos.log",
+			"command": "./scripts/build/macos/build-macos-zh.sh --build-only 2>&1 | tee logs/build_zh_macos.log",
 			"isBackground": false,
 			"group": {
 				"kind": "build",
@@ -208,7 +208,7 @@
 		{
 			"label": "[macOS] Deploy GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/deploy-macos-zh.sh",
+			"command": "./scripts/build/macos/deploy-macos-zh.sh",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -223,7 +223,7 @@
 		{
 			"label": "[macOS] Bundle GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/bundle-macos-zh.sh",
+			"command": "./scripts/build/macos/bundle-macos-zh.sh",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -238,7 +238,7 @@
 		{
 			"label": "[macOS] Run GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/run-macos-zh.sh -win",
+			"command": "./scripts/build/macos/run-macos-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
 			"presentation": {
@@ -253,7 +253,7 @@
 		{
 			"label": "[macOS] Pipeline: Configure + Build + Deploy + Run ZH",
 			"type": "shell",
-			"command": "./scripts/build-macos-zh.sh 2>&1 | tee logs/build_zh_macos.log && ./scripts/deploy-macos-zh.sh && ./scripts/run-macos-zh.sh -win",
+			"command": "./scripts/build/macos/build-macos-zh.sh 2>&1 | tee logs/build_zh_macos.log && ./scripts/build/macos/deploy-macos-zh.sh && ./scripts/build/macos/run-macos-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
 			"presentation": {
@@ -289,141 +289,6 @@
 				"showReuseMessage": false,
 				"clear": true,
 				"focus": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Configure",
-			"type": "shell",
-			"command": ".\\scripts\\configure_cmake_modern.ps1",
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Build GeneralsXZH",
-			"type": "shell",
-			"command": ".\\scripts\\build_zh_modern.ps1",
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Build GeneralsX",
-			"type": "shell",
-			"command": ".\\scripts\\build_zh_modern.ps1 -Generals",
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Deploy GeneralsXZH",
-			"type": "shell",
-			"command": ".\\scripts\\deploy_zh_modern.ps1 -Preset win64-modern",
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Deploy GeneralsX",
-			"type": "shell",
-			"command": ".\\scripts\\deploy_zh_modern.ps1 -Preset win64-modern -Generals",
-			"isBackground": false,
-			"group": "build",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Run GeneralsXZH",
-			"type": "shell",
-			"command": ".\\scripts\\run_zh_modern.ps1",
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Run GeneralsX",
-			"type": "shell",
-			"command": ".\\scripts\\run_zh_modern.ps1 -Generals",
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Pipeline: Configure + Build + Deploy + Run ZH",
-			"type": "shell",
-			"command": ".\\scripts\\pipeline_win64_modern.ps1",
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[Windows] Pipeline: Configure + Build + Deploy + Run Generals",
-			"type": "shell",
-			"command": ".\\scripts\\pipeline_win64_modern.ps1 -Generals",
-			"isBackground": false,
-			"group": "test",
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
 			},
 			"problemMatcher": []
 		}

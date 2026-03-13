@@ -64,7 +64,7 @@
 #include "Common/SpecialPower.h"
 #include "Common/TerrainTypes.h"
 #include "Common/Upgrade.h"
-#include "Common/UserPreferences.h"
+#include "Common/OptionPreferences.h"
 #include "Common/Xfer.h"
 #include "Common/XferCRC.h"
 #include "Common/GameLOD.h"
@@ -109,7 +109,6 @@
 
 
 #include "Common/version.h"
-#include "Common/CDManager.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -121,16 +120,16 @@ public:
 	DeepCRCSanityCheck() {}
 	virtual ~DeepCRCSanityCheck() {}
 
-	virtual void init(void) {}
-	virtual void reset(void);
-	virtual void update(void) {}
+	virtual void init() {}
+	virtual void reset();
+	virtual void update() {}
 
 protected:
 };
 
 DeepCRCSanityCheck *TheDeepCRCSanityCheck = nullptr;
 
-void DeepCRCSanityCheck::reset(void)
+void DeepCRCSanityCheck::reset()
 {
 	static Int timesThrough = 0;
 	static UnsignedInt lastCRC = 0;
@@ -252,7 +251,7 @@ static void updateWindowTitle()
 }
 
 //-------------------------------------------------------------------------------------------------
-GameEngine::GameEngine( void )
+GameEngine::GameEngine()
 {
 	// initialize to non garbage values
 	m_logicTimeAccumulator = 0.0f;
@@ -447,16 +446,26 @@ void GameEngine::init()
 #endif // DEBUG_CRC
 		initSubsystem(TheGameText, "TheGameText", CreateGameTextInterface(), nullptr);
 		updateWindowTitle();
+
+#if RETAIL_COMPATIBLE_CRC
+		if (xferCRC.getCRC() == 0x2E876341)
+			TheNameKeyGenerator->verifyNameKeyID(1);
+#endif
+
 		initSubsystem(TheScienceStore,"TheScienceStore", MSGNEW("GameEngineSubsystem") ScienceStore(), &xferCRC, "Data\\INI\\Default\\Science", "Data\\INI\\Science");
 		initSubsystem(TheMultiplayerSettings,"TheMultiplayerSettings", MSGNEW("GameEngineSubsystem") MultiplayerSettings(), &xferCRC, "Data\\INI\\Default\\Multiplayer", "Data\\INI\\Multiplayer");
 		initSubsystem(TheTerrainTypes,"TheTerrainTypes", MSGNEW("GameEngineSubsystem") TerrainTypeCollection(), &xferCRC, "Data\\INI\\Default\\Terrain", "Data\\INI\\Terrain");
 		initSubsystem(TheTerrainRoads,"TheTerrainRoads", MSGNEW("GameEngineSubsystem") TerrainRoadCollection(), &xferCRC, "Data\\INI\\Default\\Roads", "Data\\INI\\Roads");
 		initSubsystem(TheGlobalLanguageData,"TheGlobalLanguageData",MSGNEW("GameEngineSubsystem") GlobalLanguage, nullptr); // must be before the game text
 		TheGlobalLanguageData->parseCustomDefinition();
-		initSubsystem(TheCDManager,"TheCDManager", CreateCDManager(), nullptr);
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), nullptr);
 		if (!TheAudio->isMusicAlreadyLoaded())
 			setQuitting(TRUE);
+
+#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
+		TheNameKeyGenerator->syncNameKeyID();
+#endif
+
 		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), nullptr);
 		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), nullptr);
 		initSubsystem(TheMessageStream,"TheMessageStream", createMessageStream(), nullptr);
@@ -474,6 +483,12 @@ void GameEngine::init()
 		initSubsystem(TheArmorStore,"TheArmorStore", MSGNEW("GameEngineSubsystem") ArmorStore(), &xferCRC, nullptr, "Data\\INI\\Armor");
 		initSubsystem(TheBuildAssistant,"TheBuildAssistant", MSGNEW("GameEngineSubsystem") BuildAssistant, nullptr);
 		initSubsystem(TheThingFactory,"TheThingFactory", createThingFactory(), &xferCRC, "Data\\INI\\Default\\Object", "Data\\INI\\Object");
+
+#if RETAIL_COMPATIBLE_CRC
+		if (xferCRC.getCRC() == 0xD9A74E13)
+			TheNameKeyGenerator->verifyNameKeyID(1586);
+#endif
+
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), nullptr);
 		initSubsystem(TheAI,"TheAI", MSGNEW("GameEngineSubsystem") AI(), &xferCRC,  "Data\\INI\\Default\\AIData", "Data\\INI\\AIData");
@@ -614,7 +629,7 @@ void GameEngine::init()
 /** -----------------------------------------------------------------------------------------------
 	* Reset all necessary parts of the game engine to be ready to accept new game data
 	*/
-void GameEngine::reset( void )
+void GameEngine::reset()
 {
 
 	WindowLayout *background = TheWindowManager->winCreateLayout("Menus/BlankWindow.wnd");
@@ -643,7 +658,7 @@ void GameEngine::reset( void )
 }
 
 /// -----------------------------------------------------------------------------------------------
-void GameEngine::resetSubsystems( void )
+void GameEngine::resetSubsystems()
 {
 	// TheSuperHackers @fix xezon 09/06/2025 Reset GameLogic first to purge all world objects early.
 	// This avoids potentially catastrophic issues when objects and subsystems have cross dependencies.
@@ -728,7 +743,7 @@ DECLARE_PERF_TIMER(GameEngine_update)
 /** -----------------------------------------------------------------------------------------------
  * Update the game engine by updating the GameClient and GameLogic singletons.
  */
-void GameEngine::update( void )
+void GameEngine::update()
 {
 	USE_PERF_TIMER(GameEngine_update)
 	{
@@ -748,7 +763,6 @@ void GameEngine::update( void )
 			{
 				TheNetwork->UPDATE();
 			}
-
 		}	// end VERIFY_CRC block
 
 		const Bool canUpdate = canUpdateGameLogic();
@@ -776,7 +790,7 @@ extern HWND ApplicationHWnd;
 /** -----------------------------------------------------------------------------------------------
  * The "main loop" of the game engine. It will not return until the game exits.
  */
-void GameEngine::execute( void )
+void GameEngine::execute()
 {
 #if defined(RTS_DEBUG)
 	DWORD startTime = timeGetTime() / 1000;
@@ -872,7 +886,7 @@ void GameEngine::execute( void )
 /** -----------------------------------------------------------------------------------------------
 	* Factory for the message stream
 	*/
-MessageStream *GameEngine::createMessageStream( void )
+MessageStream *GameEngine::createMessageStream()
 {
 	// if you change this update the tools that use the engine systems
 	// like GUIEdit, it creates a message stream to run in "test" mode
@@ -880,13 +894,13 @@ MessageStream *GameEngine::createMessageStream( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-FileSystem *GameEngine::createFileSystem( void )
+FileSystem *GameEngine::createFileSystem()
 {
 	return MSGNEW("GameEngineSubsystem") FileSystem;
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool GameEngine::isMultiplayerSession( void )
+Bool GameEngine::isMultiplayerSession()
 {
 	return TheRecorder->isMultiplayer();
 }
@@ -900,7 +914,7 @@ logging code that is usually called from another thread.  I'm doing it here
 because there's no way to guarantee the other thread will execute before we
 exit the app.
 */
-void GameEngine::checkAbnormalQuitting(void)
+void GameEngine::checkAbnormalQuitting()
 {
 	if (TheRecorder->isMultiplayer() && TheGameLogic->isInInternetGame())
 	{	//Should not be quitting at this time, record it as a cheat.

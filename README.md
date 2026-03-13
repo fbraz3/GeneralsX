@@ -35,8 +35,8 @@ Your support helps with:
 
 This project transforms the Windows-exclusive Command & Conquer: Generals into a truly cross-platform game:
 
-- **🐧 Linux Native Support** - ✅ **FUNCTIONAL** - Native builds via Docker with DXVK + SDL3
-- **🪟 Windows Enhanced** - Maintained compatibility with original VC6 builds
+- **🐧 Linux Native Support** - **IN PROGRESS** - Native builds via Docker with DXVK + SDL3
+- **🪟 Windows Enhanced** - **IN PROGRESS** - Win64 builds using DXVK + sdl3
 - **🍎 macOS Native Support** - **IN PROGRESS** - ARM64 native builds working (DXVK + MoltenVK)
 - **🎮 Modern Graphics** - DXVK translates DirectX 8 → Vulkan for native Linux rendering
 - **🔧 Modern Architecture** - SDL3 windowing/input, portable INI configuration
@@ -47,7 +47,7 @@ This project transforms the Windows-exclusive Command & Conquer: Generals into a
 
 - **Single codebase** for Linux, macOS, and Windows
 - **Linux native builds** via Docker or native GCC/Clang (SDL3 + DXVK)
-- **Windows legacy builds** maintained (VC6/MSVC2022 presets)
+- **Windows modern builds** 64bit binaries & MSVC2022 preset
 - **macOS in progress** via DXVK + MoltenVK (Vulkan → Metal) -- ARM64 native builds working
 - Unified configuration system via INI files (replacing Windows Registry)
 - Platform-native file system integration
@@ -92,26 +92,14 @@ cmake --preset linux64-deploy
 cmake --build build/linux64-deploy --target z_generals
 ```
 
-### Windows (Legacy VC6/MSVC 2022)
+### Windows (Modern SDL3/DXVK)
 
-Upstream-compatible builds using native DirectX 8 + Miles Sound System:
+Modern 64-bit Windows build using the same SDL3 + DXVK + OpenAL stack. Separate branch - **In Progress**
 
-```bash
-# Quick build (Windows)
-git clone https://github.com/fbraz3/GeneralsX.git
-cd GeneralsX
-cmake --preset win32
-cmake --build build/win32 --target GeneralsXZH -j 4
-```
+### macOS (Apple Silicon)
 
-### Windows (Modern SDL3/DXVK) - 📋 PLANNED
-
-Modern 64-bit Windows build using the same SDL3 + DXVK + OpenAL stack. Separate branch, TBD.
-
-### macOS - � IN PROGRESS (Apple Silicon)
-
-Native ARM64 builds working via DXVK + MoltenVK. Audio and video are not yet
-implemented (Phase 2/3), but the game engine initializes and renders.
+Native ARM64 builds working via DXVK + MoltenVK. Audio is not yet.
+The game engine initializes with a lot of dxvk+moltenvk related bugs.
 
 **[📖 macOS Build Guide](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md)**
 
@@ -152,16 +140,6 @@ The repository uses a vcpkg manifest (`vcpkg.json`) paired with a lockfile (`vcp
 
 For dependency management details, see [vcpkg.json](vcpkg.json).
 
-## 🚀 Project Phases
-
-The cross-platform port is organized into phases (each platform branch may progress independently):
-
-- **Phase 0**: ✅ **COMPLETE** - Deep analysis & planning (DXVK architecture, OpenAL patterns)
-- **Phase 1**: ✅ **COMPLETE** - Graphics (DXVK + SDL3): Linux x86_64 and macOS ARM64 native builds working
-- **Phase 2**: 🔄 **IN PROGRESS** - Audio (OpenAL integration, Miles → OpenAL compatibility)
-- **Phase 3**: 📋 **PLANNED** - Video Playback (Bink alternative investigation)
-- **Phase 4+**: 📋 **FUTURE** - Polish, optimization, hardening
-
 **Approach**: Single codebase, SDL3 + DXVK + OpenAL on all platforms. Native Vulkan, NOT Wine emulation.
 
 See [docs/DEV_BLOG/](docs/DEV_BLOG/) and [docs/WORKDIR/phases/](docs/WORKDIR/phases/) for detailed phase progress.
@@ -184,10 +162,9 @@ Contributions are welcome! We're particularly interested in:
 
 **Current Priority Areas**:
 
-- **Phase 2 (Audio)** - OpenAL integration for cross-platform audio
 - **Runtime Testing** - Validate Linux and macOS binary smoke tests and gameplay
 - **Cross-Platform Testing** - Validate functionality across Linux distributions and macOS versions
-- **macOS Port** - 🔄 In progress (ARM64 native working, Phase 2 audio pending)
+- **macOS Port** - ARM64 native working, Phase 2 audio pending
 - **Windows Modern Port** - SDL3 + DXVK + OpenAL 64-bit build (TBD)
 - **Performance Optimization** - Identify and fix bottlenecks
 - **Documentation** - Improve build guides and technical resources
@@ -204,7 +181,6 @@ For contributions to the main project, visit: [TheSuperHackers/GeneralsGameCode]
 
 ## 🙏 Special Thanks
 
-- **[TheSuperHackers Team](https://github.com/TheSuperHackers)** for their foundational work and **official integration** of this cross-platform effort
 - **[Xezon](https://github.com/xezon)** and contributors for maintaining the GeneralsGameCode project
 - **[Fighter19](https://github.com/Fighter19)** for developing the SDL3 and OpenAL solution that inspired this project
 - **Westwood Studios** for creating the legendary Command & Conquer series

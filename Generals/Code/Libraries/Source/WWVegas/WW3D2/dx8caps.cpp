@@ -517,7 +517,7 @@ bool DX8Caps::Is_Valid_Display_Format(int width, int height, WW3DFormat format)
 
 //Don't really need this but I added this function to free static variables so
 //they don't show up in our memory manager as a leak. -MW 7-22-03
-void DX8Caps::Shutdown(void)
+void DX8Caps::Shutdown()
 {
 	CapsWorkString.Release_Resources();
 }
@@ -738,7 +738,7 @@ void DX8Caps::Vendor_Specific_Hacks(const D3DADAPTER_IDENTIFIER8& adapter_id)
 	}
 
 	if (adapter_id.VendorId==VENDOR_ID_VMWARE) {
-		// TheSuperHackers @bugfix Stubbjax 15/01/2025 Disable DOT3 support for VMWare's virtual GPU.
+		// TheSuperHackers @bugfix Stubbjax 15/01/2026 Disable DOT3 support for VMWare's virtual GPU.
 		// The D3DTA_ALPHAREPLICATE modifier fails when passed to a D3DTOP_MULTIPLYADD operation.
 		SupportDot3 = false;
 	}

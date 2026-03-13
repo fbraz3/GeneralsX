@@ -60,19 +60,4 @@ void OSDisplayWarningBox(AsciiString title, AsciiString message, unsigned int ic
 }
 
 // P3: Legacy features (video player, web browser)
-
-// CD Manager stub - Linux has no physical CD requirement
-#include "Common/CDManager.h"
-
-class LinuxCDManager : public CDManager
-{
-protected:
-	virtual CDDriveInterface* createDrive( void ) { return nullptr; }
-};
-
-CDManagerInterface* CreateCDManager( void )
-{
-	return new LinuxCDManager;
-}
-
 #endif // !_WIN32

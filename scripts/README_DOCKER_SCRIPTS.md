@@ -1,11 +1,18 @@
-# Docker Build Scripts
+# DEPRECATED: Docker Build Scripts
 
-Shell scripts for building GeneralsX/GeneralsXZH in Docker containers (Linux + MinGW cross-compile).
+⚠️ **This file has been consolidated into `README.md`.**
 
-⚡ **NEW**: All scripts now use **pre-built Docker images** with **vcpkg as volume** for 40-50% faster builds! See [Docker Workflow Documentation](../docs/WORKDIR/support/DOCKER_WORKFLOW.md) for details.
+For all Docker build documentation, quick start guides, troubleshooting, and usage examples, see:
+- **[scripts/README.md](README.md)** - Complete and current documentation
 
-**Image sizes**: ~90MB (Linux), ~660MB (MinGW)  
-**vcpkg location**: `~/.generalsx/vcpkg` (shared across builds)
+For detailed Docker workflow insights, see:
+- **[docs/WORKDIR/support/DOCKER_WORKFLOW.md](../docs/WORKDIR/support/DOCKER_WORKFLOW.md)**
+
+---
+
+## Quick Navigation (Legacy Content Below)
+
+The content below is kept for reference but please use the resources above for current information.
 
 ## Prerequisites
 
