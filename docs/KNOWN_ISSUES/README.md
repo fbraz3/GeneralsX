@@ -103,4 +103,6 @@ Each issue file should contain:
 | [ISSUE-008](ISSUE-008_macos_gatekeeper_blocks_unsigned_build.md) | macOS Gatekeeper Blocks Unsigned Build | High | OPEN | Platform |
 | [ISSUE-009](ISSUE-009_macos_terrain_textures_missing.md) | macOS Terrain Textures Missing or Failing to Load | Critical | OPEN | Graphics |
 | [ISSUE-010](ISSUE-010_registry_ini_replacement.md) | Replace Null Registry Stubs with Cross-Platform registry.ini Backend | High | OPEN | Platform |
-| [ISSUE-011](ISSUE-011_replay_menu_loading_screen_segfault.md) | Replay Menu Loading Screen Crashes with SIGSEGV | High | INVESTIGATING | Gameplay / Platform |
+| [ISSUE-011](ISSUE-011_SOLVED_replay_menu_loading_screen_segfault.md) | Replay Menu Loading Screen Crashes with SIGSEGV | High | RESOLVED | Gameplay / Platform |
+| [ISSUE-012](ISSUE-012_SOLVED_linux_save_replay_backslash_paths.md) | Linux Save and Replay Paths Use Backslash Literals | High | RESOLVED | Gameplay / Platform |
+| [ISSUE-013](ISSUE-013_findfirstfile_pattern_ignored_on_linux.md) | Linux Compat `FindFirstFile` Ignores Pattern and Directory | High | OPEN | Platform |

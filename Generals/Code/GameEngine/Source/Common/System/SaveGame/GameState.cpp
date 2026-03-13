@@ -761,7 +761,12 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 AsciiString GameState::getSaveDirectory() const
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
+	// GeneralsX @bugfix copilot 12/03/2026 Use POSIX separator on non-Windows so saves are created inside a real Save directory.
+#ifdef _WIN32
 	tmp.concat("Save\\");
+#else
+	tmp.concat("Save/");
+#endif
 	return tmp;
 }
 
