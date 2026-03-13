@@ -13,7 +13,7 @@ SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
-DXVK_CONF_SRC="${PROJECT_ROOT}/GeneralsMD/Run/dxvk.conf"
+DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
 OUTPUT_TARBALL="${PROJECT_ROOT}/GeneralsXZH-linux-x86_64.tar.gz"
 
 echo "Bundling GeneralsXZH (Linux x86_64)"
