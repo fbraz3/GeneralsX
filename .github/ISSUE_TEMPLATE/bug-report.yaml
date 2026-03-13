@@ -1,6 +1,5 @@
 name: Bug Report
 description: Report bugs or issues you've encountered while playing the game
-type: Bug
 labels: [ "Bug", "⚠️ Triage" ]
 
 body:
