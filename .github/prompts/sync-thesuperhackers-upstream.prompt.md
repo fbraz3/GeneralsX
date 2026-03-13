@@ -29,7 +29,7 @@ The repository is significantly behind upstream `TheSuperHackers`. The purpose o
   - The document must include a list of the most important conflicts, the reasoning behind how they will be resolved, and any special considerations or constraints that will be applied during resolution.
   - For large or complex conflicts, outline the specific steps that will be taken to analyze and resolve them, including any reference materials or repository documentation that will be consulted.
   - The plan should also identify any areas of the codebase that are expected to be particularly risky or contentious during the merge, and how those risks will be mitigated.
-  - The upstream could be moved into a unified `Core/` directory, we need to follow the upstream structure but also preserve the cross-platform architecture of `GeneralsX`, so careful analysis will be required to reconcile these changes.
+  - The upstream could be moved some files into a unified `Core/` directory, we need to follow the upstream structure but also preserve the cross-platform architecture of `GeneralsX`, so carefcul analysis will be required to reconcile these changes.
   - Split the plan into sections if necessary to cover different subsystems or types of conflicts (for example: build system conflicts, platform abstraction conflicts, gameplay code conflicts, etc.).
 8. Load the plan into working memory and execute it step by step, documenting the outcome of each major decision and conflict resolution in detail.
 9. Ensure the repository remains buildable and configurable after conflict resolution.
