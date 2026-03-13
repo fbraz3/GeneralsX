@@ -173,14 +173,15 @@ struct RenderStateStruct
 	TextureBaseClass * Textures[MAX_TEXTURE_STAGES];
 	D3DLIGHT8 Lights[4];
 	bool LightEnable[4];
-	D3DMATRIX world;
-	D3DMATRIX view;
-	unsigned vertex_buffer_type;
+	// GeneralsX @refactor BenderAI 10/02/2026 - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
+	Matrix4x4 world;
+	Matrix4x4 view;
+	unsigned vertex_buffer_type[MAX_VERTEX_STREAMS];
 	unsigned index_buffer_type;
 	unsigned short vba_offset;
 	unsigned short vba_count;
 	unsigned short iba_offset;
-	VertexBufferClass* vertex_buffer;
+	VertexBufferClass* vertex_buffer[MAX_VERTEX_STREAMS];
 	IndexBufferClass* index_buffer;
 	unsigned short index_base_offset;
 
@@ -273,7 +274,7 @@ public:
 
 	static void	Set_Viewport(CONST D3DVIEWPORT8* pViewport);
 
-	static void Set_Vertex_Buffer(const VertexBufferClass* vb);
+	static void Set_Vertex_Buffer(const VertexBufferClass* vb, unsigned stream=0);
 	static void Set_Vertex_Buffer(const DynamicVBAccessClass& vba);
 	static void Set_Index_Buffer(const IndexBufferClass* ib,unsigned short index_base_offset);
 	static void Set_Index_Buffer(const DynamicIBAccessClass& iba,unsigned short index_base_offset);
@@ -299,8 +300,13 @@ public:
 
 	// Note that *_DX8_Transform() functions take the matrix in DX8 format - transposed from Westwood convention.
 
-	static void _Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const D3DMATRIX& m);
+	// GeneralsX @refactor BenderAI 10/02/2026 - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
+	static void _Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const Matrix4x4& m);
 	static void _Get_DX8_Transform(D3DTRANSFORMSTATETYPE transform, D3DMATRIX& m);
+	// GeneralsX @bugfix BenderAI 10/03/2026 - Overload for Matrix4x4 (binary-compatible with D3DMATRIX)
+	static WWINLINE void _Get_DX8_Transform(D3DTRANSFORMSTATETYPE transform, Matrix4x4& m) {
+		_Get_DX8_Transform(transform, reinterpret_cast<D3DMATRIX&>(m));
+	}
 
 	static void Set_DX8_Light(int index,D3DLIGHT8* light);
 	static void Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigned value);
@@ -612,7 +618,8 @@ protected:
 
 	static RenderStateStruct			render_state;
 	static unsigned						render_state_changed;
-	static D3DMATRIX						DX8Transforms[D3DTS_WORLD+1];
+	// GeneralsX @refactor BenderAI 10/02/2026 - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
+	static Matrix4x4						DX8Transforms[D3DTS_WORLD+1];
 
 	static bool								IsInitted;
 	static bool								IsDeviceLost;
@@ -692,7 +699,8 @@ protected:
 	static int								ZBias;
 	static float							ZNear;
 	static float							ZFar;
-	static D3DMATRIX					ProjectionMatrix;
+	// GeneralsX @refactor BenderAI 10/02/2026 - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
+	static Matrix4x4					ProjectionMatrix;
 
 	friend void DX8_Assert();
 	friend class WW3D;
@@ -744,21 +752,25 @@ WWINLINE void DX8Wrapper::Set_Pixel_Shader_Constant(int reg, const void* data, i
 }
 // shader system updates KJM ^
 
-WWINLINE void DX8Wrapper::_Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const D3DMATRIX& m)
+WWINLINE void DX8Wrapper::_Set_DX8_Transform(D3DTRANSFORMSTATETYPE transform, const Matrix4x4& m)
 {
 	WWASSERT(transform<=D3DTS_WORLD);
 #if 0 // (gth) this optimization is breaking generals because they set the transform behind our backs.
 	if (mtx!=DX8Transforms[transform])
 #endif
 	{
+		// GeneralsX @refactor BenderAI 10/02/2026 - DX8Transforms stores pre-transposed Matrix4x4
+		// GeneralsX @bugfix BenderAI 10/03/2026 - m is already in D3D format (bytes match D3DMATRIX);
+		// To_D3DMATRIX() would double-transpose and break world/view transforms. Use reinterpret_cast.
 		DX8Transforms[transform]=m;
+		const D3DMATRIX& dxm=reinterpret_cast<const D3DMATRIX&>(m);
 		SNAPSHOT_SAY(("DX8 - SetTransform %d [%f,%f,%f,%f][%f,%f,%f,%f][%f,%f,%f,%f]",
 			transform,
-			m.m[0][0],m.m[0][1],m.m[0][2],m.m[0][3],
-			m.m[1][0],m.m[1][1],m.m[1][2],m.m[1][3],
-			m.m[2][0],m.m[2][1],m.m[2][2],m.m[2][3]));
+			dxm.m[0][0],dxm.m[0][1],dxm.m[0][2],dxm.m[0][3],
+			dxm.m[1][0],dxm.m[1][1],dxm.m[1][2],dxm.m[1][3],
+			dxm.m[2][0],dxm.m[2][1],dxm.m[2][2],dxm.m[2][3]));
 		DX8_RECORD_MATRIX_CHANGE();
-		DX8CALL(SetTransform(transform,&m));
+		DX8CALL(SetTransform(transform,&dxm));
 	}
 }
 
@@ -1181,21 +1193,22 @@ WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Ma
 {
 	switch ((int)transform) {
 	case D3DTS_WORLD:
-		render_state.world=To_D3DMATRIX(m);
+		// GeneralsX @refactor BenderAI 10/02/2026 - Store Matrix4x4 (transposed) directly
+		render_state.world=m.Transpose();
 		render_state_changed|=(unsigned)WORLD_CHANGED;
 		render_state_changed&=~(unsigned)WORLD_IDENTITY;
 		break;
 	case D3DTS_VIEW:
-		render_state.view=To_D3DMATRIX(m);
+		render_state.view=m.Transpose();
 		render_state_changed|=(unsigned)VIEW_CHANGED;
 		render_state_changed&=~(unsigned)VIEW_IDENTITY;
 		break;
 	case D3DTS_PROJECTION:
 		{
-			D3DMATRIX ProjectionMatrix=To_D3DMATRIX(m);
+			D3DMATRIX dxm=To_D3DMATRIX(m);
 			ZFar=0.0f;
 			ZNear=0.0f;
-			DX8CALL(SetTransform(D3DTS_PROJECTION,&ProjectionMatrix));
+			DX8CALL(SetTransform(D3DTS_PROJECTION,&dxm));
 		}
 		break;
 	default:
@@ -1210,12 +1223,13 @@ WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Ma
 {
 	switch ((int)transform) {
 	case D3DTS_WORLD:
-		render_state.world=To_D3DMATRIX(m);
+		// GeneralsX @refactor BenderAI 10/02/2026 - Store Matrix4x4 (transposed) directly
+		render_state.world=Matrix4x4(m).Transpose();
 		render_state_changed|=(unsigned)WORLD_CHANGED;
 		render_state_changed&=~(unsigned)WORLD_IDENTITY;
 		break;
 	case D3DTS_VIEW:
-		render_state.view=To_D3DMATRIX(m);
+		render_state.view=Matrix4x4(m).Transpose();
 		render_state_changed|=(unsigned)VIEW_CHANGED;
 		render_state_changed&=~(unsigned)VIEW_IDENTITY;
 		break;
@@ -1242,11 +1256,12 @@ WWINLINE void DX8Wrapper::Get_Transform(D3DTRANSFORMSTATETYPE transform, Matrix4
 	switch ((int)transform) {
 	case D3DTS_WORLD:
 		if (render_state_changed&WORLD_IDENTITY) m.Make_Identity();
-		else m=To_Matrix4x4(render_state.world);
+		// GeneralsX @refactor BenderAI 10/02/2026 - render_state.world is Matrix4x4 (transposed)
+		else m=render_state.world.Transpose();
 		break;
 	case D3DTS_VIEW:
 		if (render_state_changed&VIEW_IDENTITY) m.Make_Identity();
-		else m=To_Matrix4x4(render_state.view);
+		else m=render_state.view.Transpose();
 		break;
 	default:
 		D3DMATRIX dxm;
@@ -1269,12 +1284,15 @@ WWINLINE bool DX8Wrapper::Is_Light_Enabled(unsigned index)
 
 WWINLINE void DX8Wrapper::Set_Render_State(const RenderStateStruct& state)
 {
+	unsigned i;
 	if (render_state.index_buffer) {
 		render_state.index_buffer->Release_Engine_Ref();
 	}
 
-	if (render_state.vertex_buffer) {
-		render_state.vertex_buffer->Release_Engine_Ref();
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		if (render_state.vertex_buffer[i]) {
+			render_state.vertex_buffer[i]->Release_Engine_Ref();
+		}
 	}
 
 	render_state=state;
@@ -1284,52 +1302,59 @@ WWINLINE void DX8Wrapper::Set_Render_State(const RenderStateStruct& state)
 		render_state.index_buffer->Add_Engine_Ref();
 	}
 
-	if (render_state.vertex_buffer) {
-		render_state.vertex_buffer->Add_Engine_Ref();
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		if (render_state.vertex_buffer[i]) {
+			render_state.vertex_buffer[i]->Add_Engine_Ref();
+		}
 	}
 }
 
 WWINLINE void DX8Wrapper::Release_Render_State()
 {
+	unsigned i;
 	if (render_state.index_buffer) {
 		render_state.index_buffer->Release_Engine_Ref();
 	}
 
-	if (render_state.vertex_buffer) {
-		render_state.vertex_buffer->Release_Engine_Ref();
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		if (render_state.vertex_buffer[i]) {
+			render_state.vertex_buffer[i]->Release_Engine_Ref();
+		}
+		REF_PTR_RELEASE(render_state.vertex_buffer[i]);
 	}
-
-	REF_PTR_RELEASE(render_state.vertex_buffer);
 	REF_PTR_RELEASE(render_state.index_buffer);
 	REF_PTR_RELEASE(render_state.material);
-	for (unsigned i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_RELEASE(render_state.Textures[i]);
+	for (i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_RELEASE(render_state.Textures[i]);
 }
 
 
 WWINLINE RenderStateStruct::RenderStateStruct()
 	:
 	material(0),
-	vertex_buffer(0),
 	index_buffer(0)
 {
-	for (unsigned i=0;i<MAX_TEXTURE_STAGES;++i) Textures[i]=0;
+	unsigned i;
+	for (i=0;i<MAX_TEXTURE_STAGES;++i) Textures[i]=0;
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) vertex_buffer[i]=0;
 }
 
 WWINLINE RenderStateStruct::~RenderStateStruct()
 {
+	unsigned i;
 	REF_PTR_RELEASE(material);
-	REF_PTR_RELEASE(vertex_buffer);
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) REF_PTR_RELEASE(vertex_buffer[i]);
 	REF_PTR_RELEASE(index_buffer);
-	for (unsigned i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_RELEASE(Textures[i]);
+	for (i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_RELEASE(Textures[i]);
 }
 
 
 WWINLINE RenderStateStruct& RenderStateStruct::operator= (const RenderStateStruct& src)
 {
+	unsigned i;
 	REF_PTR_SET(material,src.material);
-	REF_PTR_SET(vertex_buffer,src.vertex_buffer);
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) REF_PTR_SET(vertex_buffer[i],src.vertex_buffer[i]);
 	REF_PTR_SET(index_buffer,src.index_buffer);
-	for (unsigned i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_SET(Textures[i],src.Textures[i]);
+	for (i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_SET(Textures[i],src.Textures[i]);
 
 	LightEnable[0]=src.LightEnable[0];
 	LightEnable[1]=src.LightEnable[1];
@@ -1351,7 +1376,7 @@ WWINLINE RenderStateStruct& RenderStateStruct::operator= (const RenderStateStruc
 	shader=src.shader;
 	world=src.world;
 	view=src.view;
-	vertex_buffer_type=src.vertex_buffer_type;
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) vertex_buffer_type[i]=src.vertex_buffer_type[i];
 	index_buffer_type=src.index_buffer_type;
 	vba_offset=src.vba_offset;
 	vba_count=src.vba_count;

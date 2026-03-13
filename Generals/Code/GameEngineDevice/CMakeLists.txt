@@ -168,15 +168,44 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameLogic/W3DGameLogic.cpp
     Source/W3DDevice/GameLogic/W3DGhostObject.cpp
     Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
-#    Source/Win32Device/Common/Win32BIGFile.cpp
-#    Source/Win32Device/Common/Win32BIGFileSystem.cpp
-    Source/Win32Device/Common/Win32GameEngine.cpp
-#    Source/Win32Device/Common/Win32LocalFile.cpp
-#    Source/Win32Device/Common/Win32LocalFileSystem.cpp
-    Source/Win32Device/Common/Win32OSDisplay.cpp
-    Source/Win32Device/GameClient/Win32DIKeyboard.cpp
-    Source/Win32Device/GameClient/Win32Mouse.cpp
 )
+
+# GeneralsX @build BenderAI 10/03/2026 - Separate Windows and Linux platform-specific files
+if(WIN32)
+    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
+    list(APPEND GAMEENGINEDEVICE_SRC
+#       Source/Win32Device/Common/Win32BIGFile.cpp
+#       Source/Win32Device/Common/Win32BIGFileSystem.cpp
+        Source/Win32Device/Common/Win32CDManager.cpp
+        Source/Win32Device/Common/Win32GameEngine.cpp
+#       Source/Win32Device/Common/Win32LocalFile.cpp
+#       Source/Win32Device/Common/Win32LocalFileSystem.cpp
+        Source/Win32Device/Common/Win32OSDisplay.cpp
+        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+        Source/Win32Device/GameClient/Win32Mouse.cpp
+    )
+else()
+    # Linux-specific files (SDL3, DXVK)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/SDL3GameEngine.cpp
+        Include/SDL3GameEngine.h
+        Source/SDL3Device/GameClient/SDL3Mouse.cpp
+        Include/SDL3Device/GameClient/SDL3Mouse.h
+        Source/SDL3Device/GameClient/SDL3Keyboard.cpp
+        Include/SDL3Device/GameClient/SDL3Keyboard.h
+    )
+
+    # GeneralsX @feature BenderAI 10/03/2026 - OpenAL audio backend (ported from GeneralsMD/Zero Hour)
+    # Reuses GeneralsMD's OpenAL + FFmpeg implementation directly, sharing the same audio engine.
+    if(SAGE_USE_OPENAL)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioManager.cpp
+            ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioStream.cpp
+            ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioCache.cpp
+            ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/VideoDevice/FFmpeg/FFmpegFile.cpp
+        )
+    endif()
+endif()
 
 add_library(g_gameenginedevice STATIC)
 set_target_properties(g_gameenginedevice PROPERTIES OUTPUT_NAME gameenginedevice)
@@ -206,3 +235,34 @@ target_link_libraries(g_gameenginedevice PUBLIC
     corei_gameenginedevice_public
     g_gameengine
 )
+
+# Linux SDL3 windowing/input
+# GeneralsX @build BenderAI 11/02/2026
+if(SAGE_USE_SDL3)
+    target_link_libraries(g_gameenginedevice PUBLIC sdl3lib)
+endif()
+
+# GeneralsX @feature BenderAI 10/03/2026 - OpenAL audio backend (ported from GeneralsMD/Zero Hour)
+if(SAGE_USE_OPENAL)
+    include(${CMAKE_SOURCE_DIR}/cmake/openal.cmake)
+    find_package(OpenAL REQUIRED)
+    target_link_libraries(g_gameenginedevice PUBLIC OpenAL::OpenAL)
+
+    # GeneralsMD headers for OpenALAudioDevice (public: OpenALAudioManager.h, FFmpegFile.h)
+    target_include_directories(g_gameenginedevice PUBLIC
+        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Include
+    )
+    # Private: OpenALAudioCache.h lives alongside the source
+    target_include_directories(g_gameenginedevice PRIVATE
+        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice
+    )
+endif()
+
+# GeneralsX @feature BenderAI 10/03/2026 - FFmpeg audio/video decoding
+if(RTS_BUILD_OPTION_FFMPEG)
+    if(NOT TARGET PkgConfig::FFMPEG)
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    endif()
+    target_link_libraries(g_gameenginedevice PUBLIC PkgConfig::FFMPEG)
+endif()

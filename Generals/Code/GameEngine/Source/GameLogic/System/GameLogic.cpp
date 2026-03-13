@@ -29,6 +29,10 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifndef _WIN32
+#include <fenv.h>
+#endif
+
 #include "Common/AudioAffect.h"
 #include "Common/AudioHandleSpecialValues.h"
 #include "Common/BuildAssistant.h"
@@ -191,6 +195,8 @@ void setFPMode( void )
 	// anything as long as it is consistent, really, but this
 	// is in the (vain?) hope of any slight speed boost.
 	//
+	// GeneralsX @build BenderAI 12/02/2026 Platform-specific FPU control for determinism
+	#ifdef _WIN32
 	_fpreset();
 
 	UnsignedInt curVal = _statusfp();
@@ -200,6 +206,12 @@ void setFPMode( void )
 	newVal = (newVal & ~_MCW_PC) | (_PC_24   & _MCW_PC);
 
 	_controlfp(newVal, _MCW_PC | _MCW_RC);
+	#else
+	// Linux: Use C99 fenv for FPU control (determinism critical for replay compatibility)
+	fesetenv(FE_DFL_ENV);           // Reset to default environment
+	fesetround(FE_TONEAREST);       // Round to nearest (_RC_NEAR equivalent)
+	// Note: Linux x87 FPU uses 64-bit precision by default (more accurate than Windows _PC_24)
+	#endif
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -308,7 +308,7 @@ W3DBufferManager::W3DVertexBufferSlot * W3DBufferManager::allocateSlotStorage(VB
 
 		pVB=m_W3DVertexBuffers[fvfType];	//get new list head
 
-		Int vbSize=__max(DEFAULT_VERTEX_BUFFER_SIZE,size);
+		Int vbSize=std::max(DEFAULT_VERTEX_BUFFER_SIZE,size);
 
 		pVB->m_DX8VertexBuffer=NEW_REF(DX8VertexBufferClass,(FVFTypeIndexList[fvfType],vbSize,DX8VertexBufferClass::USAGE_DEFAULT));
 		pVB->m_format=fvfType;
@@ -428,7 +428,7 @@ W3DBufferManager::W3DIndexBufferSlot * W3DBufferManager::allocateSlotStorage(Int
 
 		pIB=m_W3DIndexBuffers;	//get new list head
 
-		Int ibSize=__max(DEFAULT_INDEX_BUFFER_SIZE,size);
+		Int ibSize=std::max(DEFAULT_INDEX_BUFFER_SIZE,size);
 
 		pIB->m_DX8IndexBuffer=NEW_REF(DX8IndexBufferClass,(ibSize,DX8IndexBufferClass::USAGE_DEFAULT));
 		pIB->m_startFreeIndex=size;

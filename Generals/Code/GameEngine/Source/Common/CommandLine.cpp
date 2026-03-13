@@ -25,6 +25,11 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifndef _WIN32
+	#include "file_compat.h"
+	#define _S_IFDIR S_IFDIR
+#endif
+
 #include "Common/ArchiveFileSystem.h"
 #include "Common/CommandLine.h"
 #include "Common/CRCDebug.h"
@@ -1390,6 +1395,7 @@ static void parseCommandLine(const CommandLineParam* params, int numParams)
 {
 	std::vector<char*> argv;
 
+#ifdef _WIN32
 	std::string cmdLine = GetCommandLineA();
 	char *token = nextParam(&cmdLine[0], "\" ");
 	while (token != nullptr)
@@ -1397,6 +1403,17 @@ static void parseCommandLine(const CommandLineParam* params, int numParams)
 		argv.push_back(strtrim(token));
 		token = nextParam(nullptr, "\" ");
 	}
+#else
+	// GeneralsX @bugfix BenderAI 19/02/2026 - Include argv[0] (program name) to match the Windows
+	// GetCommandLineA() behavior where the exe path appears at argv[0]. The parsing loop starts at
+	// arg=1, so without argv[0] as a placeholder all real flags end up at argv[0] and are skipped.
+	extern char **__argv;
+	extern int __argc;
+	for (int i = 0; i < __argc; i++)
+	{
+		argv.push_back(__argv[i]);
+	}
+#endif
 	int argc = argv.size();
 
 	int arg = 1;

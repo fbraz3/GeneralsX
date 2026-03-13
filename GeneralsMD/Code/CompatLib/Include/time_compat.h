@@ -4,6 +4,8 @@
 #include "types_compat.h"
 #include <stdint.h>
 
+#ifndef _SYSTEMTIME_DEFINED
+#define _SYSTEMTIME_DEFINED
 struct SYSTEMTIME
 {
 	uint16_t wYear;
@@ -15,6 +17,7 @@ struct SYSTEMTIME
 	uint16_t wSecond;
 	uint16_t wMilliseconds;
 };
+#endif
 
 typedef int MMRESULT;
 

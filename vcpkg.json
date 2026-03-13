@@ -12,6 +12,11 @@
       {
         "name": "fontconfig",
         "platform": "!windows"
+      },
+      {
+        "name": "openal-soft",
+        "platform": "!windows",
+        "features": []
       }
     ]
   }

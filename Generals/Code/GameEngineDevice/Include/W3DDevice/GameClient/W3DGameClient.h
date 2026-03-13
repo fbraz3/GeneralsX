@@ -46,10 +46,20 @@
 #include "W3DDevice/GameClient/W3DGameFont.h"
 #include "W3DDevice/GameClient/W3DDisplayStringManager.h"
 #include "VideoDevice/Bink/BinkVideoPlayer.h"
+#ifdef RTS_HAS_FFMPEG
+#include "VideoDevice/FFmpeg/FFmpegVideoPlayer.h"
+#endif
 #include "Win32Device/GameClient/Win32DIKeyboard.h"
 #include "Win32Device/GameClient/Win32DIMouse.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "W3DDevice/GameClient/W3DMouse.h"
+
+// GeneralsX @build BenderAI 10/03/2026 - Phase 1.5 SDL3 input devices
+#ifndef _WIN32
+#include "SDL3Device/GameClient/SDL3Mouse.h"
+#include "SDL3Device/GameClient/SDL3Keyboard.h"
+#include "SDL3GameEngine.h"  // For getSDLWindow()
+#endif
 
 class ThingTemplate;
 
@@ -107,7 +117,11 @@ protected:
   /// Manager for display strings
 	virtual DisplayStringManager *createDisplayStringManager( void ) { return NEW W3DDisplayStringManager; }
 
+#ifdef RTS_HAS_FFMPEG
+	virtual VideoPlayerInterface *createVideoPlayer( void ) { return NEW FFmpegVideoPlayer; }
+#else
 	virtual VideoPlayerInterface *createVideoPlayer( void ) { return NEW BinkVideoPlayer; }
+#endif
 	/// factory for creating the TerrainVisual
 	virtual TerrainVisual *createTerrainVisual( void ) { return NEW W3DTerrainVisual; }
 
@@ -115,11 +129,30 @@ protected:
 
 };
 
-inline Keyboard *W3DGameClient::createKeyboard( void ) { return NEW DirectInputKeyboard; }
+// GeneralsX @build BenderAI 10/03/2026 - Phase 1.5 SDL3 input factory wiring
+inline Keyboard *W3DGameClient::createKeyboard( void ) {
+#ifndef _WIN32
+	return NEW SDL3Keyboard();  // Linux: SDL3 keyboard
+#else
+	return NEW DirectInputKeyboard;  // Windows: DirectInput keyboard
+#endif
+}
+
 inline Mouse *W3DGameClient::createMouse( void )
 {
-	//return new DirectInputMouse;
+// GeneralsX @build BenderAI 10/03/2026 - Phase 1.5 SDL3 mouse factory wiring
+#ifndef _WIN32
+	// Linux: SDL3 mouse (requires SDL window handle)
+	SDL3GameEngine* sdlEngine = dynamic_cast<SDL3GameEngine*>(TheGameEngine);
+	if (sdlEngine && sdlEngine->getSDLWindow()) {
+		return NEW SDL3Mouse(sdlEngine->getSDLWindow());
+	}
+	fprintf(stderr, "ERROR: SDL3GameEngine not found, cannot create SDL3Mouse\n");
+	return nullptr;
+#else
+	// Windows: W3DMouse (wraps Win32Mouse with 3D cursor)
 	Win32Mouse * mouse = NEW W3DMouse;
 	TheWin32Mouse = mouse;   ///< global cheat for the WndProc()
 	return mouse;
+#endif
 }

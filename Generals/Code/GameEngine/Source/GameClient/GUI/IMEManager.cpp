@@ -47,7 +47,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#include "mbstring.h"
+#include "mbstring_compat.h"
 
 #include "Common/Debug.h"
 #include "Common/Language.h"
@@ -61,6 +61,12 @@
 #include "GameClient/Color.h"
 #include "Common/NameKeyGenerator.h"
 
+
+IMEManagerInterface *TheIMEManager = nullptr;
+
+// GeneralsX @build BenderAI 12/02/2026 Windows-specific IME (Input Method Editor) for CJK text input
+// Linux handles IME via system-level services (ibus, fcitx) through SDL text input APIs
+#ifdef _WIN32
 
 //----------------------------------------------------------------------------
 //         Externals
@@ -315,9 +321,6 @@ IMEManager::MessageInfo IMEManager::m_setSmodeInfo[] =
 //----------------------------------------------------------------------------
 //         Public Data
 //----------------------------------------------------------------------------
-
-IMEManagerInterface *TheIMEManager = nullptr;
-
 
 //----------------------------------------------------------------------------
 //         Private Prototypes
@@ -1597,4 +1600,19 @@ void IMEManager::updateStatusWindow( void )
 {
 
 }
+
+#else // !_WIN32
+
+//============================================================================
+// Linux stub - IME handled by system services (ibus/fcitx) via SDL
+//============================================================================
+
+IMEManagerInterface *CreateIMEManagerInterface( void )
+{
+	// Linux doesn't need Windows IME manager - text input handled by SDL3
+	// All TheIMEManager call sites are already null-checked
+	return nullptr;
+}
+
+#endif // _WIN32
 

@@ -794,7 +794,8 @@ RenderObjClass * WW3DAssetManager::Create_Render_Obj(const char * name)
 		char filename [MAX_PATH];
 		const char *mesh_name = ::strchr (name, '.');
 		if (mesh_name != nullptr) {
-			::lstrcpyn (filename, name, ((int)mesh_name) - ((int)name) + 1);
+			// GeneralsX @bugfix BenderAI 10/02/2026 - Use ptrdiff_t to avoid pointer-to-int truncation on 64-bit
+		::lstrcpyn (filename, name, (int)(mesh_name - name) + 1);
 			::lstrcat (filename, ".w3d");
 		} else {
 			sprintf( filename, "%s.w3d", name);

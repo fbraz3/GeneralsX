@@ -589,6 +589,7 @@ set(GAMEENGINE_SRC
 #    Source/Common/System/ArchiveFile.cpp
 #    Source/Common/System/ArchiveFileSystem.cpp
 #    Source/Common/System/AsciiString.cpp
+    Source/Common/System/CDManager.cpp
     Source/Common/System/BuildAssistant.cpp
     Source/Common/System/CriticalSection.cpp
     Source/Common/System/DataChunk.cpp

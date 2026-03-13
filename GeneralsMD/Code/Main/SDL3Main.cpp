@@ -161,6 +161,48 @@ static void FilterSoftwareVulkanICDs()
 }
 
 /**
+ * FilterPipeWireOpenAL
+ *
+ * Sets ALSOFT_DRIVERS to skip PipeWire, falling back to pulse/alsa.
+ *
+ * Workaround for openal-soft PipeWire backend crash: alcOpenDevice() segfaults
+ * inside the PipeWire backend while opening the default playback device.
+ * The crash occurs in PipeWire's stream/context internals and is unrecoverable
+ * from userspace. Excluding PipeWire via ALSOFT_DRIVERS causes openal-soft to
+ * fall back to the PulseAudio backend, which works correctly on PipeWire systems
+ * via the PulseAudio compatibility layer.
+ *
+ * NOTE: openal-soft reads ALSOFT_DRIVERS from a static global constructor when
+ * libopenal.so is loaded by the dynamic linker, which is before main() runs.
+ * This function is therefore only effective for builds that use lazy
+ * initialization. The authoritative fix is in the launch scripts (run-linux-zh.sh
+ * etc.), which set ALSOFT_DRIVERS before the binary starts.
+ *
+ * Only applied when ALSOFT_DRIVERS is not already set by the user.
+ *
+ * GeneralsX @bugfix 09/03/2026
+ */
+static void FilterPipeWireOpenAL()
+{
+	// Crash: alcOpenDevice() hits 'movaps %xmm1,0x26260(%rbx)' — SSE movaps requires
+	// 16-byte alignment; a misaligned ALCdevice struct faults regardless of backend.
+	// Disabling CPU extensions forces openal-soft to use scalar code that has no
+	// alignment requirements. Also exclude pipewire which has its own crash at
+	// device-open time on PipeWire 1.4.x.
+	// NOTE: these env vars are authoritative only when set before the binary loads
+	// (openal-soft reads them from a static constructor). The launch scripts set them
+	// first; this is a best-effort fallback for lazy-init builds.
+	if (!getenv("ALSOFT_DISABLE_CPU_EXTS")) {
+		setenv("ALSOFT_DISABLE_CPU_EXTS", "all", 1);
+		fprintf(stderr, "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)\n");
+	}
+	if (!getenv("ALSOFT_DRIVERS")) {
+		setenv("ALSOFT_DRIVERS", "pulse,alsa,oss,jack,null,wave", 1);
+		fprintf(stderr, "INFO: OpenAL: ALSOFT_DRIVERS=pulse,alsa,oss,jack,null,wave (pipewire excluded)\n");
+	}
+}
+
+/**
  * CreateGameEngine
  *
  * Factory function for SDL3GameEngine on Linux.
@@ -238,6 +280,7 @@ int main(int argc, char* argv[])
 		// libvulkan_lvp.so crashes during static initialization with LLVM 20.x when the Vulkan
 		// loader enumerates all ICDs. Restrict to hardware ICDs first.
 		FilterSoftwareVulkanICDs();
+		FilterPipeWireOpenAL();
 
 		// Load Vulkan library for DXVK DirectX8→Vulkan translation
 		fprintf(stderr, "INFO: Loading Vulkan library...\n");

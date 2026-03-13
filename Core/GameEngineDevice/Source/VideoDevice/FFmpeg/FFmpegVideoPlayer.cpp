@@ -46,7 +46,7 @@ extern "C" {
 	#include <libswscale/swscale.h>
 }
 
-#ifdef RTS_HAS_OPENAL
+#ifdef SAGE_USE_OPENAL
 #include "OpenALAudioDevice/OpenALAudioManager.h"
 #include "OpenALAudioDevice/OpenALAudioStream.h"
 #endif
@@ -311,7 +311,7 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 	m_ffmpegFile->setFrameCallback(onFrame);
 	m_ffmpegFile->setUserData(this);
 
-#ifdef RTS_USE_OPENAL
+#ifdef SAGE_USE_OPENAL
 	// Release the audio handle if it's already in use
 	OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
 	audioStream->reset();
@@ -321,7 +321,7 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 	while (m_good && m_gotFrame == false)
 		m_good = m_ffmpegFile->decodePacket();
 
- #ifdef RTS_USE_OPENAL
+#ifdef SAGE_USE_OPENAL
 	// Start audio playback
 	audioStream->play();
 #endif
@@ -349,10 +349,13 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 		videoStream->m_frame = av_frame_clone(frame);
 		videoStream->m_gotFrame = true;
 	}
-#ifdef RTS_USE_OPENAL
+#ifdef SAGE_USE_OPENAL
 	else if (stream_type == AVMEDIA_TYPE_AUDIO) {
 		OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
-		audioStream->update();
+		// Unqueue processed buffers first, then buffer new data, then
+		// (re)start playback. update() is called AFTER bufferData() so that
+		// the newly queued buffer is already present when update() checks
+		// whether to call alSourcePlay().
 		AVSampleFormat sampleFmt = static_cast<AVSampleFormat>(frame->format);
 		const int bytesPerSample = av_get_bytes_per_sample(sampleFmt);
 		const int frameSize = av_samples_get_buffer_size(nullptr, frame->ch_layout.nb_channels, frame->nb_samples, sampleFmt, 1);
@@ -383,6 +386,7 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 
 		ALenum format = OpenALAudioManager::getALFormat(frame->ch_layout.nb_channels, bytesPerSample * 8);
 		audioStream->bufferData(frameData, frameSize, format, frame->sample_rate);
+		audioStream->update();
 	}
 #endif
 }
@@ -394,10 +398,15 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 
 void FFmpegVideoStream::update( void )
 {
-#ifdef RTS_USE_OPENAL
-	// Start audio playback
+#ifdef SAGE_USE_OPENAL
+	// Resume audio playback only if not already playing.
+	// Calling alSourcePlay() on an AL_PLAYING source restarts it from the
+	// first unprocessed buffer (OpenAL 1.1 spec §4.3.9), which causes
+	// effective silence when invoked every game frame.
 	OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
-	audioStream->play();
+	if (!audioStream->isPlaying()) {
+		audioStream->play();
+	}
 #endif
 	//BinkWait( m_handle );
 }
