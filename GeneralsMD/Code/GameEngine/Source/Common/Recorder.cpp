@@ -1685,7 +1685,12 @@ RecorderClass::CullBadCommandsResult RecorderClass::cullBadCommands() {
 AsciiString RecorderClass::getReplayDir()
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
+	// GeneralsX @bugfix copilot 12/03/2026 Use POSIX separator on non-Windows so replay files are stored in the actual Replays directory.
+#ifdef _WIN32
 	tmp.concat("Replays\\");
+#else
+	tmp.concat("Replays/");
+#endif
 	return tmp;
 }
 
@@ -1695,7 +1700,12 @@ AsciiString RecorderClass::getReplayDir()
 AsciiString RecorderClass::getReplayArchiveDir()
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
+	// GeneralsX @bugfix copilot 12/03/2026 Use POSIX separator on non-Windows so archived replays are stored in the actual directory.
+#ifdef _WIN32
 	tmp.concat("ArchivedReplays\\");
+#else
+	tmp.concat("ArchivedReplays/");
+#endif
 	return tmp;
 }
 

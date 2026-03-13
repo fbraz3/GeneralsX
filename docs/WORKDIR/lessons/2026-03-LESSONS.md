@@ -31,3 +31,11 @@
 - Insight: Headless replay is excellent for determinism and logic regressions, but it can bypass graphics/audio/UI startup paths and miss bootstrap crashes.
 - Decision: Use layered CI gates: build integrity, runtime bootstrap smoke (required), replay determinism (required, scoped), and sanitizers (nightly).
 - Reference: `docs/WORKDIR/planning/PLAN-021_CI_RUNTIME_CONFIDENCE.md`.
+
+## Session 2026-03-12 - Backslash path literals break save/replay on Linux
+
+- Problem: Save and replay directory helpers used Windows suffixes like `"Save\\"` and `"Replays\\"` unconditionally.
+- Symptom: Linux created literal entries such as `Save\\` and `Save\\00000002.sav` under `~/.local/share/generals_zh/`, so save/load and replay discovery behaved incorrectly.
+- Root cause: Backslash is a normal filename character on POSIX, not a path separator.
+- Fix: Added platform-specific separators in `GameState::getSaveDirectory()` and `RecorderClass::getReplayDir()/getReplayArchiveDir()` for both ZH and Generals (`\\` on Windows, `/` on non-Windows).
+- Prevention: Never hardcode Windows path separators in cross-platform code; centralize path construction by platform or use filesystem paths when possible.
