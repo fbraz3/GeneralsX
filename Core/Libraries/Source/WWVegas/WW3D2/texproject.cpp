@@ -85,9 +85,28 @@
 #include "bwrender.h"
 #include "assetmgr.h"
 #include "dx8wrapper.h"
+#include <cstdlib>
+#include <cstdio>
 
 
 // DEBUG DEBUG
+
+namespace {
+// GeneralsX @bugfix BenderAI 13/03/2026 Runtime gate for projected-shadow debug instrumentation
+bool Is_Projected_Shadow_Debug_Enabled()
+{
+	static bool initialized = false;
+	static bool enabled = false;
+
+	if (!initialized) {
+		const char *env = std::getenv("GENERALSX_DEBUG_PROJECTED_SHADOW");
+		enabled = (env != nullptr) && (env[0] != '\0') && (env[0] != '0');
+		initialized = true;
+	}
+
+	return enabled;
+}
+}
 #include "MPU.h"
 
 #define DEBUG_SHADOW_RENDERING					0
@@ -1354,6 +1373,29 @@ void TexProjectClass::Pre_Render_Update(const Matrix3D & camera)
 //		MaterialPass->Peek_Texture()->Get_Level_Description(surface_desc);
 		Set_Texture_Size(MaterialPass->Peek_Texture()->Get_Width());
 		WWASSERT(Get_Texture_Size() != 0);
+	}
+
+	// GeneralsX @bugfix BenderAI 13/03/2026 Log projector/camera matrix inputs to diagnose oversized projected headlight shadows
+	if (Is_Projected_Shadow_Debug_Enabled()) {
+		static unsigned projection_log_counter = 0;
+		if ((projection_log_counter++ % 120U) == 0U) {
+			std::fprintf(
+				stderr,
+				"ProjectedShadow TexProject::Pre_Render_Update perspective=%d texSize=%.3f zNear=%.6f zFar=%.6f hfov=%.6f vfov=%.6f "
+				"view_to_texture_r0=[%.6f %.6f %.6f %.6f] r1=[%.6f %.6f %.6f %.6f] r2=[%.6f %.6f %.6f %.6f] r3=[%.6f %.6f %.6f %.6f]\n",
+				Get_Flag(PERSPECTIVE) ? 1 : 0,
+				Get_Texture_Size(),
+				ZNear,
+				ZFar,
+				HFov,
+				VFov,
+				view_to_texture[0][0], view_to_texture[0][1], view_to_texture[0][2], view_to_texture[0][3],
+				view_to_texture[1][0], view_to_texture[1][1], view_to_texture[1][2], view_to_texture[1][3],
+				view_to_texture[2][0], view_to_texture[2][1], view_to_texture[2][2], view_to_texture[2][3],
+				view_to_texture[3][0], view_to_texture[3][1], view_to_texture[3][2], view_to_texture[3][3]
+			);
+			std::fflush(stderr);
+		}
 	}
 
 	Mapper->Set_Texture_Transform(view_to_texture,Get_Texture_Size());

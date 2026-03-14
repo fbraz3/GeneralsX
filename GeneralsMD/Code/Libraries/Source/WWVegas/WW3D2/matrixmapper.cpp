@@ -52,6 +52,25 @@
 
 #include "matrixmapper.h"
 #include "dx8wrapper.h"
+#include <cstdlib>
+#include <cstdio>
+
+namespace {
+// GeneralsX @bugfix BenderAI 13/03/2026 Runtime gate for projected-shadow debug instrumentation
+bool Is_Projected_Shadow_Debug_Enabled()
+{
+	static bool initialized = false;
+	static bool enabled = false;
+
+	if (!initialized) {
+		const char *env = std::getenv("GENERALSX_DEBUG_PROJECTED_SHADOW");
+		enabled = (env != nullptr) && (env[0] != '\0') && (env[0] != '0');
+		initialized = true;
+	}
+
+	return enabled;
+}
+}
 
 
 /***********************************************************************************************
@@ -247,6 +266,25 @@ void MatrixMapperClass::Apply(int uv_array_index)
 		DX8Wrapper::Set_Transform((D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0 + Stage),m);
 		DX8Wrapper::Set_DX8_Texture_Stage_State(Stage,D3DTSS_TEXCOORDINDEX,D3DTSS_TCI_CAMERASPACEPOSITION);
 		DX8Wrapper::Set_DX8_Texture_Stage_State(Stage,D3DTSS_TEXTURETRANSFORMFLAGS,D3DTTFF_PROJECTED|D3DTTFF_COUNT3);
+		// GeneralsX @bugfix BenderAI 13/03/2026 Log projected-shadow texture transform state to diagnose giant headlight projections
+		if (Is_Projected_Shadow_Debug_Enabled()) {
+			static unsigned projected_log_counter = 0;
+			if ((projected_log_counter++ % 120U) == 0U) {
+				std::fprintf(
+					stderr,
+					"ProjectedShadow MatrixMapper::Apply stage=%u uv_array_index=%d texcoord=0x%X flags=0x%X "
+					"M0=[%.6f %.6f %.6f %.6f] M1=[%.6f %.6f %.6f %.6f] M2=[%.6f %.6f %.6f %.6f]\n",
+					Stage,
+					uv_array_index,
+					(unsigned)D3DTSS_TCI_CAMERASPACEPOSITION,
+					(unsigned)(D3DTTFF_PROJECTED | D3DTTFF_COUNT3),
+					m[0][0], m[0][1], m[0][2], m[0][3],
+					m[1][0], m[1][1], m[1][2], m[1][3],
+					m[2][0], m[2][1], m[2][2], m[2][3]
+				);
+				std::fflush(stderr);
+			}
+		}
 		break;
 	case DEPTH_GRADIENT:
 		/*

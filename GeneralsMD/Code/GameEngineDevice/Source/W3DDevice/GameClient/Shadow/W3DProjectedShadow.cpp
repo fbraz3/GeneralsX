@@ -35,6 +35,8 @@
 #include "always.h"
 #include "GameClient/View.h"
 #include "WW3D2/camera.h"
+#include <cstdlib>
+#include <cstdio>
 #include "WW3D2/light.h"
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/hlod.h"
@@ -77,6 +79,23 @@ Maybe project onto a deformed terrain patch that molds to trays/bibs.
 W3DProjectedShadowManager *TheW3DProjectedShadowManager=nullptr;	//global singleton
 ProjectedShadowManager	*TheProjectedShadowManager;				//global singleton with simpler interface.
 extern const FrustumClass *shadowCameraFrustum;	//defined in W3DShadow.
+
+namespace {
+// GeneralsX @bugfix BenderAI 13/03/2026 Runtime gate for projected-shadow diagnostics in shadow manager path
+bool Is_Projected_Shadow_Debug_Enabled()
+{
+	static bool initialized = false;
+	static bool enabled = false;
+
+	if (!initialized) {
+		const char *env = std::getenv("GENERALSX_DEBUG_PROJECTED_SHADOW");
+		enabled = (env != nullptr) && (env[0] != '\0') && (env[0] != '0');
+		initialized = true;
+	}
+
+	return enabled;
+}
+}
 ///@todo: Externs from volumetric shadow renderer - these need to be moved into W3DBufferManager
 extern LPDIRECT3DVERTEXBUFFER8 shadowVertexBufferD3D;		///<D3D vertex buffer
 extern LPDIRECT3DINDEXBUFFER8	shadowIndexBufferD3D;	///<D3D index buffer
@@ -2195,6 +2214,23 @@ void W3DProjectedShadow::updateTexture(Vector3 &lightPos)
 
 void W3DProjectedShadow::updateProjectionParameters(const Matrix3D &cameraXform)
 {
+		// GeneralsX @bugfix BenderAI 13/03/2026 Log projected-shadow manager activity to confirm ShellMap is hitting this path
+		if (Is_Projected_Shadow_Debug_Enabled()) {
+			static unsigned projection_update_log_counter = 0;
+			if ((projection_update_log_counter++ % 120U) == 0U) {
+				const Vector3 robjPos = m_robj ? m_robj->Get_Position() : Vector3(0.0f, 0.0f, 0.0f);
+				std::fprintf(
+					stderr,
+					"ProjectedShadow W3DProjectedShadow::updateProjectionParameters type=%d allowWorldAlign=%d objPos=[%.3f %.3f %.3f]\n",
+					(int)m_type,
+					m_allowWorldAlign ? 1 : 0,
+					robjPos.X,
+					robjPos.Y,
+					robjPos.Z
+				);
+				std::fflush(stderr);
+			}
+		}
 		m_shadowProjector->Pre_Render_Update(cameraXform);
 }
 

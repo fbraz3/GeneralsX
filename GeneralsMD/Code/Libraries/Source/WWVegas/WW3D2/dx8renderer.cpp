@@ -60,6 +60,9 @@
 #include "camera.h"
 #include "stripoptimizer.h"
 #include "meshgeometry.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 /*
 ** Global Instance of the DX8MeshRender
@@ -74,6 +77,71 @@ static DynamicVectorClass<Vector3>				_TempNormalBuffer;
 static MultiListClass<MeshModelClass>			_RegisteredMeshList;
 static TextureCategoryList							texture_category_delete_list;
 static FVFCategoryList								fvf_category_container_delete_list;
+
+// GeneralsX @tweak copilot 13/03/2026 Add runtime probes for headlight and sorted/additive mesh render states.
+static bool Is_Headlight_Debug_Enabled()
+{
+	const char *env = std::getenv("GENERALSX_DEBUG_HEADLIGHTS");
+	return env != nullptr && env[0] != '\0' && env[0] != '0';
+}
+
+static bool Is_Sorted_Additive_Debug_Enabled()
+{
+	const char *env = std::getenv("GENERALSX_DEBUG_SORTED_ADDITIVE");
+	return env != nullptr && env[0] != '\0' && env[0] != '0';
+}
+
+static bool Is_Headlight_Mesh(const MeshClass *mesh)
+{
+	const char *name = mesh != nullptr ? mesh->Get_Name() : nullptr;
+	return name != nullptr && std::strstr(name, "HEADLIGHT") != nullptr;
+}
+
+static void Log_Headlight_Render_State(
+	const char *phase,
+	MeshClass *mesh,
+	const ShaderClass &shader,
+	VertexMaterialClass *material,
+	TextureClass *texture0,
+	bool sorted)
+{
+	if (mesh == nullptr) {
+		return;
+	}
+
+	MeshModelClass *model = mesh->Peek_Model();
+	const bool is_headlight = Is_Headlight_Mesh(mesh);
+	const bool wants_headlight = Is_Headlight_Debug_Enabled() && is_headlight;
+	const bool is_sorted_mesh = sorted || (model != nullptr && model->Get_Flag(MeshGeometryClass::SORT) != 0);
+	const bool is_additive_mesh = mesh->Is_Additive() ||
+		(shader.Get_Src_Blend_Func() == ShaderClass::SRCBLEND_ONE && shader.Get_Dst_Blend_Func() == ShaderClass::DSTBLEND_ONE);
+	const bool is_non_opaque_blend = shader.Get_Dst_Blend_Func() != ShaderClass::DSTBLEND_ZERO || shader.Get_Src_Blend_Func() != ShaderClass::SRCBLEND_ONE;
+	const bool wants_sorted_additive = Is_Sorted_Additive_Debug_Enabled() && is_sorted_mesh && (is_additive_mesh || is_non_opaque_blend);
+
+	if (!wants_headlight && !wants_sorted_additive) {
+		return;
+	}
+
+	std::fprintf(
+		stderr,
+		"RenderProbe phase=%s mesh=%s sorted=%d sortFlag=%d additive=%d headlight=%d alphaOverride=%.3f opacity=%.3f srcBlend=%d dstBlend=%d alphaTest=%d depthMask=%d tex0=%s material=%s shaderBits=0x%08X\n",
+		phase,
+		mesh->Get_Name(),
+		sorted ? 1 : 0,
+		model != nullptr && model->Get_Flag(MeshGeometryClass::SORT) ? 1 : 0,
+		mesh->Is_Additive() ? 1 : 0,
+		is_headlight ? 1 : 0,
+		mesh->Get_Alpha_Override(),
+		material != nullptr ? material->Get_Opacity() : -1.0f,
+		shader.Get_Src_Blend_Func(),
+		shader.Get_Dst_Blend_Func(),
+		shader.Get_Alpha_Test(),
+		shader.Get_Depth_Mask(),
+		texture0 != nullptr ? texture0->Get_Texture_Name().str() : "null",
+		material != nullptr ? material->Get_Name() : "null",
+		shader.Get_Bits());
+	std::fflush(stderr);
+}
 
 // helper data structure
 class PolyRemover : public MultiListObjectClass
@@ -1879,6 +1947,7 @@ void DX8TextureCategoryClass::Render()
 		if (!DX8RendererDebugger::Is_Enabled() || !mesh->Is_Disabled_By_Debugger()) {
 
 		if ((!!mesh->Peek_Model()->Get_Flag(MeshGeometryClass::SORT)) && WW3D::Is_Sorting_Enabled()) {
+			Log_Headlight_Render_State("sorted-submit", mesh, theShader, vmaterial, Peek_Texture(0), true);
 			renderer->Render_Sorted(mesh->Get_Base_Vertex_Offset(),mesh->Get_Bounding_Sphere());
 		} else {
 			//non-transparent mesh that will be rendered immediately.  Okay to adjust the shader/material
@@ -1911,6 +1980,7 @@ void DX8TextureCategoryClass::Render()
 					}
 					vmaterial->Set_Opacity(mesh->Get_Alpha_Override());
 					DX8Wrapper::Set_Shader(theAlphaShader);
+					Log_Headlight_Render_State("immediate-alpha", mesh, theAlphaShader, vmaterial, Peek_Texture(0), false);
 					DX8Wrapper::Apply_Render_State_Changes();
 					DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF,(int)((float)0x60*mesh->Get_Alpha_Override()));
 					renderer->Render(mesh->Get_Base_Vertex_Offset());
@@ -1920,7 +1990,10 @@ void DX8TextureCategoryClass::Render()
 					DX8Wrapper::Set_Shader(theShader);	//restore previous value
 				}
 				else
+				{
+					Log_Headlight_Render_State("immediate-override", mesh, theShader, vmaterial, Peek_Texture(0), false);
 					renderer->Render(mesh->Get_Base_Vertex_Offset());
+				}
 
 				if (oldMapper)	//did we override the uv offset?
 				{	oldMapper->Set_LastUsedSyncTime(oldUVOffsetSyncTime);
@@ -1930,17 +2003,17 @@ void DX8TextureCategoryClass::Render()
 				DX8Wrapper::Set_Material(vmaterial);	//restore previous material.
 			}
 			else
+			{
+				Log_Headlight_Render_State("immediate", mesh, theShader, vmaterial, Peek_Texture(0), false);
 				renderer->Render(mesh->Get_Base_Vertex_Offset());
+			}
 		}
 //--------------------------------------------------------------------
 		if (mesh->Get_ObjectScale() != 1.0f)
 			DX8Wrapper::Set_DX8_Render_State(D3DRS_NORMALIZENORMALS, FALSE);
 //--------------------------------------------------------------------
 
-
-
-
-        }
+		}
 
 		/*
 		** Move to the next render task.  Note that the delete should be fast because prt's are pooled

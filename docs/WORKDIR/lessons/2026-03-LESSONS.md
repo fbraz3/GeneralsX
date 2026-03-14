@@ -31,3 +31,10 @@
 - Insight: Headless replay is excellent for determinism and logic regressions, but it can bypass graphics/audio/UI startup paths and miss bootstrap crashes.
 - Decision: Use layered CI gates: build integrity, runtime bootstrap smoke (required), replay determinism (required, scoped), and sanitizers (nightly).
 - Reference: `docs/WORKDIR/planning/PLAN-021_CI_RUNTIME_CONFIDENCE.md`.
+
+## Session 2026-03-13 - Projected shadow diagnostics should be runtime-gated
+
+- Problem: Headlight projections looked oversized while beam visibility looked inconsistent, but static diffs vs references did not expose a clear behavioral mismatch.
+- Root cause pattern: Projection bugs in this path are often state-order/runtime-data issues (effective texture transform flags, camera-space texcoord source, and final matrix contents), not obvious source-level deltas.
+- Fix strategy: Add low-risk runtime instrumentation at the projection choke points (`MatrixMapperClass::Apply` and `TexProjectClass::Pre_Render_Update`) behind an environment gate (`GENERALSX_DEBUG_PROJECTED_SHADOW`) and throttle logs (every 120 calls).
+- Benefit: Keeps normal builds behavior-identical while enabling deterministic field diagnostics on Linux/macOS without adding permanent noisy logging.
