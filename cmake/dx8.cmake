@@ -76,8 +76,17 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   message(STATUS "Building DXVK ${DXVK_VERSION} for macOS/${DXVK_HOST_ARCH} with Meson (${MESON_EXECUTABLE})")
 
   include(ExternalProject)
-  # GeneralsX @build BenderAI 09/03/2026 Use forked, pre-patched DXVK source on macOS to avoid patch drift.
-  set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src-fbraz3")
+  # GeneralsX @build BenderAI 13/03/2026 Add explicit source mode to keep remote branch updates deterministic by default.
+  set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/references/fbraz3-dxvk")
+  option(SAGE_DXVK_USE_LOCAL_FORK "Build DXVK from local references/fbraz3-dxvk checkout" OFF)
+
+  if(SAGE_DXVK_USE_LOCAL_FORK AND EXISTS "${DXVK_LOCAL_FORK_DIR}/.git")
+    set(DXVK_SOURCE_DIR "${DXVK_LOCAL_FORK_DIR}")
+    message(STATUS "DXVK macOS build: using local fork source at ${DXVK_SOURCE_DIR}")
+  else()
+    set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src-fbraz3")
+    message(STATUS "DXVK macOS build: using GitHub source clone at ${DXVK_SOURCE_DIR}")
+  endif()
   set(DXVK_BUILD_DIR  "${CMAKE_BINARY_DIR}/_deps/dxvk-build-macos")
   set(DXVK_D3D8_LIB  "${DXVK_BUILD_DIR}/src/d3d8/libdxvk_d3d8.0.dylib")
   set(DXVK_D3D9_LIB  "${DXVK_BUILD_DIR}/src/d3d9/libdxvk_d3d9.0.dylib")
@@ -128,18 +137,34 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     set(VULKAN_SDK_ENV_VAR "")
   endif()
 
-  ExternalProject_Add(dxvk_macos_build
-    # GeneralsX @build BenderAI 09/03/2026 Pin macOS build to fbraz3 fork commit with baked patchset.
-    GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
-    GIT_TAG           ffcdbcaf1b5a321406ffed43c4e815fd7c7e1797
-    SOURCE_DIR        ${DXVK_SOURCE_DIR}
-    BINARY_DIR        ${DXVK_BUILD_DIR}
-    PATCH_COMMAND     ""
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR} ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR} --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini -Ddxvk_native_wsi=sdl3 --buildtype=release --reconfigure
-    BUILD_COMMAND     ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d9/libdxvk_d3d9.0.dylib src/d3d8/libdxvk_d3d8.0.dylib
-    INSTALL_COMMAND   ""
-    UPDATE_DISCONNECTED TRUE
-  )
+  if(SAGE_DXVK_USE_LOCAL_FORK AND EXISTS "${DXVK_LOCAL_FORK_DIR}/.git")
+    ExternalProject_Add(dxvk_macos_build
+      # GeneralsX @build BenderAI 13/03/2026 Build from local fbraz3 fork to avoid stale remote hash pins.
+      SOURCE_DIR        ${DXVK_SOURCE_DIR}
+      BINARY_DIR        ${DXVK_BUILD_DIR}
+      DOWNLOAD_COMMAND  ""
+      UPDATE_COMMAND    ""
+      PATCH_COMMAND     ""
+      CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR} ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR} --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini -Ddxvk_native_wsi=sdl3 --buildtype=release --reconfigure
+      BUILD_COMMAND     ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d9/libdxvk_d3d9.0.dylib src/d3d8/libdxvk_d3d8.0.dylib
+      INSTALL_COMMAND   ""
+      UPDATE_DISCONNECTED TRUE
+    )
+  else()
+    ExternalProject_Add(dxvk_macos_build
+      # GeneralsX @build BenderAI 13/03/2026 Default to remote fbraz3 v2.6 branch with update step enabled.
+      GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
+      GIT_TAG           generalsx-macos-v2.6
+      GIT_SHALLOW       TRUE
+      SOURCE_DIR        ${DXVK_SOURCE_DIR}
+      BINARY_DIR        ${DXVK_BUILD_DIR}
+      PATCH_COMMAND     ""
+      CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR} ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR} --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini -Ddxvk_native_wsi=sdl3 --buildtype=release --reconfigure
+      BUILD_COMMAND     ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d9/libdxvk_d3d9.0.dylib src/d3d8/libdxvk_d3d8.0.dylib
+      INSTALL_COMMAND   ""
+      UPDATE_DISCONNECTED FALSE
+    )
+  endif()
 
   # Copy libdxvk_d3d9 + libdxvk_d3d8 to build dir and create unversioned symlinks.
   # d3d8 links against d3d9 via @rpath, so both must be present at runtime.

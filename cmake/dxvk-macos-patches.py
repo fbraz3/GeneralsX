@@ -642,6 +642,66 @@ def main():
         "dxso_compiler: remove PS1.x majorVersion<2 sampler spec-const auto-trigger in declaration AND sample paths (MoltenVK MSL undeclared identifier fix)"
     )
 
+    # Patch 14: d3d9_fixed_function.cpp - fixed-function PS path emits sampler-type OpSwitch
+    # over {2D,3D,Cube} for every texture stage, even though the texture type is known from
+    # m_fsKey.Stages[i].TextureType at compile time.
+    #
+    # On MoltenVK/SPIRV-Cross this can produce MSL wrappers that reference shadow sampler
+    # params (e.g. s0_2d_shadowSmplr) that are not declared in the generated entry point,
+    # failing pipeline creation with VK_ERROR_INITIALIZATION_FAILED.
+    #
+    # Fix: Use the compile-time sampler type from m_ps.samplers[textureStage].type directly
+    # instead of generating an OpSwitch over SpecSamplerType for fixed-function pixel shaders.
+    def patch_ff_sampler_switch(c):
+        old = (
+            '          std::array<SpirvSwitchCaseLabel, 3> typeCaseLabels = {{\n'
+            '            { static_cast<uint32_t>(SamplerTypeTexture2D),           m_module.allocateId() },\n'
+            '            { static_cast<uint32_t>(SamplerTypeTexture3D),           m_module.allocateId() },\n'
+            '            { static_cast<uint32_t>(SamplerTypeTextureCube),         m_module.allocateId() },\n'
+            '          }};\n'
+            '\n'
+            '          std::array<SpirvPhiLabel, 3> phiLabels;\n'
+            '\n'
+            '          uint32_t switchEndLabel = m_module.allocateId();\n'
+            '          uint32_t type = m_spec.get(m_module, m_specUbo, SpecSamplerType, textureStage * 2, 2);\n'
+            '          m_module.opSelectionMerge(switchEndLabel, spv::SelectionControlMaskNone);\n'
+            '          m_module.opSwitch(type,\n'
+            '            typeCaseLabels[static_cast<uint32_t>(SamplerTypeTexture2D)].labelId,\n'
+            '            typeCaseLabels.size(),\n'
+            '            typeCaseLabels.data());\n'
+            '\n'
+            '          for (uint32_t typeCaseI = 0; typeCaseI < typeCaseLabels.size(); typeCaseI++) {\n'
+            '            const auto& caseLabel = typeCaseLabels[typeCaseI];\n'
+            '            auto& phiLabel = phiLabels[typeCaseI];\n'
+            '            m_module.opLabel(caseLabel.labelId);\n'
+            '            phiLabel.labelId = caseLabel.labelId;\n'
+            '            phiLabel.varId = SampleType(textureStage, static_cast<D3D9FFSamplerType>(caseLabel.literal), texcoordId, previousTextureValId);\n'
+            '            uint32_t extraLabel = m_module.allocateId();\n'
+            '            m_module.opBranch(extraLabel);\n'
+            '            m_module.opLabel(extraLabel);\n'
+            '            phiLabel.labelId = extraLabel;\n'
+            '            m_module.opBranch(switchEndLabel);\n'
+            '          }\n'
+            '\n'
+            '          m_module.opLabel(switchEndLabel);\n'
+            '\n'
+            '          texture = m_module.opPhi(m_vec4Type, phiLabels.size(), phiLabels.data());\n'
+        )
+        new = (
+            '          // GeneralsX Patch 14: Fixed-function pixel shaders already know the\n'
+            '          // sampler type from m_fsKey.Stages[i].TextureType, so avoid emitting\n'
+            '          // a SpecSamplerType OpSwitch that can trigger undeclared shadow sampler\n'
+            '          // params in MoltenVK/SPIRV-Cross generated MSL wrappers.\n'
+            '          texture = SampleType(textureStage, m_ps.samplers[textureStage].type, texcoordId, previousTextureValId);\n'
+        )
+        return c.replace(old, new)
+
+    patch_file(
+        os.path.join(src, "src/d3d9/d3d9_fixed_function.cpp"),
+        patch_ff_sampler_switch,
+        "d3d9_fixed_function: use compile-time sampler type instead of SpecSamplerType OpSwitch (MoltenVK undeclared shadow sampler fix)"
+    )
+
     print("\nAll macOS patches applied successfully.")
 
 

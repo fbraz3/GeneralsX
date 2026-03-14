@@ -230,56 +230,23 @@ cmake --build build/vc6 --target z_generals
 2. **Replay compatibility**: VC6 optimized builds with `RTS_BUILD_OPTION_DEBUG=OFF` (determinism)
 3. **Cross-platform validation**: Same replays must remain valid across platforms (rendering/audio changes must not affect game logic)
 
-## CRITICAL: DXVK Ephemeral Patches
+## CRITICAL: DXVK Source of Truth (macOS)
 
-**The Problem**: DXVK headers are fetched via CMake `FetchContent` into `build/_deps/dxvk-src/`. Clean builds or reconfigures refetch pristine DXVK from git, **losing all manual patches**.
+**Current Model**:
+- DXVK fixes must live in the fork repository source (`references/fbraz3-dxvk`) and be pushed upstream to the fork branch.
+- macOS build defaults to a GitHub clone source (`build/_deps/dxvk-src-fbraz3`) and tracks branch `generalsx-macos-v2.6`.
+- CMake remote mode keeps update step enabled (`UPDATE_DISCONNECTED FALSE`) so configure/build can pull the latest fork branch state.
 
-**Impact**: Type conflicts return (MEMORYSTATUS, IUnknown redefinitions) after:
-- `rm -rf build/` (clean build)
-- CMake reconfigure
-- CMake cache invalidation
+**Local Development Mode**:
+- Use local fork source only when explicitly requested:
+  - `-DSAGE_DXVK_USE_LOCAL_FORK=ON`
+- In this mode, source is `references/fbraz3-dxvk` and update/fetch are disabled by design.
 
-**The Solution -- Pre-Guard Pattern (PREFERRED)**:
-
-Add type guards **BEFORE** including DXVK headers in `GeneralsMD/Code/CompatLib/Include/windows_compat.h`:
-
-```cpp
-// Pre-define guards to prevent DXVK from defining incomplete types
-#ifndef _WIN32
-    #define _MEMORYSTATUS_DEFINED 1
-    #define _IUNKNOWN_DEFINED 1
-#endif
-
-// Now DXVK will skip these definitions
-#include <windows_base.h>
-```
-
-**When To Reapply**: Only if you see these errors after reconfigure:
-- `redefinition of 'struct MEMORYSTATUS'`
-- `redefinition of 'struct IUnknown'`
-- `conflicting declaration 'typedef ... LARGE_INTEGER'`
-
-**Manual Patch (If Pre-Guards Fail)**:
-
-Edit these files in `build/_deps/dxvk-src/include/dxvk/`:
-
-1. **windows_base.h** -- Add guard around MEMORYSTATUS:
-```cpp
-#ifndef _MEMORYSTATUS_DEFINED
-typedef struct MEMORYSTATUS { /* ... */ } MEMORYSTATUS;
-#define _MEMORYSTATUS_DEFINED 1
-#endif
-```
-
-2. **unknwn.h** -- Add guard around IUnknown:
-```cpp
-#ifndef _IUNKNOWN_DEFINED
-struct IUnknown { /* ... */ };
-#define _IUNKNOWN_DEFINED 1
-#endif
-```
-
-**Future TODO**: Automate patching via CMake `CMAKE_PATCH_COMMAND` or `file(APPEND)` in `CMakeLists.txt`.
+**Rules**:
+1. Do not patch DXVK files directly inside `build/_deps/...`.
+2. Do not rely on transient patch scripts as the primary maintenance path.
+3. Keep Linux/macOS aligned on DXVK 2.6 branch policy unless explicitly changed by project decision.
+4. If a DXVK fix is validated locally, commit/push it in the DXVK fork first, then consume it from the tracked branch.
 
 ## Guidelines
 
@@ -514,7 +481,7 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 - **Case-sensitive filesystem**: Include paths must match exact case. Use `scripts/cpp/fixIncludesCase.sh` to fix.
 - **DXVK requires Vulkan**: Ensure Vulkan drivers are installed (`vulkan-tools`, `mesa-vulkan-drivers` or proprietary GPU drivers).
 - **SDL3 from source**: SDL3 is fetched via CMake FetchContent. No system package needed.
-- **DXVK ephemeral patches**: See "CRITICAL: DXVK Ephemeral Patches" section above -- type guard pattern prevents redefinition errors after clean builds.
+- **DXVK source policy**: Keep DXVK fixes in the fork source of truth and avoid editing `build/_deps/...` directly.
 - **CompatLib**: Linux builds use `GeneralsMD/Code/CompatLib/` for Win32 API compatibility shims (windows_compat.h, etc.).
 - **No native POSIX calls**: Use SDL3 abstractions for timers, threads, file I/O. Do not add raw `pthread_*`, `open()`, etc. into game code.
 
@@ -541,7 +508,7 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 ### Key Considerations
 - MoltenVK translates Vulkan to Metal; DXVK sits on top of it (DX8 to Vulkan to Metal chain)
 - DXVK is built via Meson as an ExternalProject -- must pass `-arch arm64` explicitly via `cmake/meson-arm64-native.ini` to avoid Rosetta2 confusing the host arch
-- The full DXVK patch series (~13 patches) is applied automatically by `cmake/dxvk-macos-patches.py` -- do not apply manually
+- DXVK source of truth is the fork branch `generalsx-macos-v2.6`; by default CMake tracks the remote branch, with optional local-fork mode via `SAGE_DXVK_USE_LOCAL_FORK`
 - Vulkan SDK **must** be installed from LunarG (not Homebrew) -- it provides the MoltenVK ICD JSON required to route Vulkan calls to Metal
 - Code signing and notarization requirements for distribution (future)
 - macOS-specific SDL3 quirks (Retina scaling, fullscreen spaces, etc.)
@@ -562,7 +529,7 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 
 ### macOS-Specific Notes
 - **Rosetta2 + Meson adversarial**: Use `cmake/meson-arm64-native.ini` to force `-arch arm64` in DXVK sub-build
-- **DXVK patches are scripted**: `cmake/dxvk-macos-patches.py` applies all 13 MoltenVK/ARM64 compatibility patches automatically at configure time
+- **DXVK update policy**: Default is remote tracked branch (`generalsx-macos-v2.6`); set `SAGE_DXVK_USE_LOCAL_FORK=ON` only for active local DXVK development
 - **SDL3 from source**: Fetched via CMake FetchContent -- no system package needed
 - **Vulkan SDK path**: `~/VulkanSDK/<version>/macOS/` -- must contain `libvulkan.dylib` and `libMoltenVK.dylib`
 - **No Cocoa/Metal calls in game code**: All platform access goes through SDL3 + DXVK layers

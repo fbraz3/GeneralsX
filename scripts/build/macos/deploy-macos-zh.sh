@@ -107,13 +107,19 @@ fi
 
 # Write wrapper run script that sets DYLD_LIBRARY_PATH at launch time
 echo "  Deploying dxvk.conf..."
-# GeneralsX @bugfix BenderAI 25/02/2026 Deploy DXVK configuration
-# Forces forceSamplerTypeSpecConstants=True to fix terrain shader MSL generation bug.
-DXVK_CONF_SRC="${PROJECT_ROOT}/GeneralsMD/Run/dxvk.conf"
+# GeneralsX @bugfix BenderAI 13/03/2026 Make DXVK config deployment explicit and fail fast.
+# Missing dxvk.conf silently caused terrain shader debugging to be misleading on macOS.
+DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
+DXVK_CONF_LEGACY_SRC="${PROJECT_ROOT}/GeneralsMD/Run/dxvk.conf"
 if [[ -f "${DXVK_CONF_SRC}" ]]; then
     cp -v "${DXVK_CONF_SRC}" "${RUNTIME_DIR}/dxvk.conf"
+elif [[ -f "${DXVK_CONF_LEGACY_SRC}" ]]; then
+    echo "WARNING: Using legacy DXVK config path: ${DXVK_CONF_LEGACY_SRC}"
+    cp -v "${DXVK_CONF_LEGACY_SRC}" "${RUNTIME_DIR}/dxvk.conf"
 else
-    echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail to compile on macOS."
+    echo "ERROR: ${DXVK_CONF_SRC} not found."
+    echo "       Refusing deploy because DXVK runtime config is required for macOS terrain investigation."
+    exit 1
 fi
 
 echo "  Writing run.sh wrapper..."
