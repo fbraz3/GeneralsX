@@ -31,6 +31,9 @@
 
 #ifndef _WIN32
 #include <fenv.h>
+#if defined(__SSE__) || defined(__x86_64__)
+#include <xmmintrin.h>
+#endif
 #endif
 
 #include "Common/AudioAffect.h"
@@ -195,7 +198,7 @@ void setFPMode()
 	// anything as long as it is consistent, really, but this
 	// is in the (vain?) hope of any slight speed boost.
 	//
-	// GeneralsX @build BenderAI 12/02/2026 Platform-specific FPU control for determinism
+	// GeneralsX @bugfix BenderAI 14/03/2026 Align non-Windows x86 FPU control with the Windows replay determinism baseline.
 	#ifdef _WIN32
 	_fpreset();
 
@@ -207,10 +210,22 @@ void setFPMode()
 
 	_controlfp(newVal, _MCW_PC | _MCW_RC);
 	#else
-	// Linux: Use C99 fenv for FPU control (determinism critical for replay compatibility)
-	fesetenv(FE_DFL_ENV);           // Reset to default environment
-	fesetround(FE_TONEAREST);       // Round to nearest (_RC_NEAR equivalent)
-	// Note: Linux x87 FPU uses 64-bit precision by default (more accurate than Windows _PC_24)
+	fesetenv(FE_DFL_ENV);
+	feclearexcept(FE_ALL_EXCEPT);
+	fesetround(FE_TONEAREST);
+
+	#if defined(__i386__) || defined(__x86_64__)
+	unsigned short controlWord = 0;
+	__asm__ __volatile__("fnstcw %0" : "=m" (controlWord));
+	controlWord = static_cast<unsigned short>(controlWord & ~0x0F00u);
+	__asm__ __volatile__("fldcw %0" : : "m" (controlWord));
+	#endif
+
+	#if defined(__SSE__) || defined(__x86_64__)
+	UnsignedInt mxcsr = static_cast<UnsignedInt>(_mm_getcsr());
+	mxcsr = (mxcsr & ~static_cast<UnsignedInt>(_MM_ROUND_MASK)) | static_cast<UnsignedInt>(_MM_ROUND_NEAREST);
+	_mm_setcsr(mxcsr);
+	#endif
 	#endif
 }
 

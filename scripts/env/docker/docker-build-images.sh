@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build Docker images for GeneralsX development
-# Usage: ./scripts/docker-build-images.sh [linux|mingw|all]
+# Usage: ./scripts/env/docker/docker-build-images.sh [linux|mingw|all]
 
 set -e
 
@@ -57,7 +57,7 @@ show_summary() {
     echo "   MinGW builds:  Use image '$MINGW_IMAGE'"
     echo ""
     echo "🔧 Rebuild images:"
-    echo "   ./scripts/docker-build-images.sh all"
+    echo "   ./scripts/env/docker/docker-build-images.sh all"
 }
 
 case "$BUILD_TARGET" in

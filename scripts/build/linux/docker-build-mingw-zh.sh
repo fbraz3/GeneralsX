@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build GeneralsXZH for Windows using MinGW cross-compiler in Docker
-# Usage: ./scripts/docker-build-mingw-zh.sh [preset]
+# Usage: ./scripts/build/linux/docker-build-mingw-zh.sh [preset]
 
 set -e
 
@@ -24,7 +24,8 @@ fi
 if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
     echo "⚠️  Docker image not found: $DOCKER_IMAGE"
     echo "📦 Building image (this will take a few minutes)..."
-    ./scripts/docker-build-images.sh mingw
+    # GeneralsX @bugfix BenderAI 14/03/2026 Follow scripts/env/docker relocation for builder image bootstrap.
+    ./scripts/env/docker/docker-build-images.sh mingw
 fi
 
 docker run --rm \

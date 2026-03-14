@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Smoke test GeneralsXZH Linux binary (launch and check output)
-# Usage: ./scripts/docker-smoke-test-zh.sh [preset]
+# Usage: ./scripts/qa/smoke/docker-smoke-test-zh.sh [preset]
 
 set -e
 
@@ -23,7 +23,7 @@ fi
 
 if [ ! -f "$BINARY" ]; then
     echo "❌ Binary not found: $BINARY"
-    echo "Run: ./scripts/docker-build-linux-zh.sh first"
+    echo "Run: ./scripts/build/linux/docker-build-linux-zh.sh first"
     exit 1
 fi
 
@@ -36,7 +36,8 @@ echo ""
 if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
     echo "⚠️  Docker image not found: $DOCKER_IMAGE"
     echo "📦 Building image (this will take a few minutes)..."
-    ./scripts/docker-build-images.sh linux
+    # GeneralsX @bugfix BenderAI 14/03/2026 Follow scripts/env/docker relocation for builder image bootstrap.
+    ./scripts/env/docker/docker-build-images.sh linux
 fi
 
 docker run --rm \
