@@ -379,10 +379,10 @@ Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *
 		Int endY=REAL_TO_INT_CEIL(((cy + dy)*mapScaleInv));
 
 		//clip bounds to extents of heightmap
-		startX = __max(startX,0);
-		endX = __min(endX,hmap->getXExtent()-1);
-		startY = __max(startY,0);
-		endY = __min(endY,hmap->getYExtent()-1);
+		startX = std::max(startX,0);
+		endX = std::min(endX,hmap->getXExtent()-1);
+		startY = std::max(startY,0);
+		endY = std::min(endY,hmap->getYExtent()-1);
 
 		Int vertsPerRow=endX - startX+1;	//number of cells +1
 		Int vertsPerColumn=endY-startY+1;	//number of cells +1
@@ -891,10 +891,10 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		max_y=min_y=boxCorners[0].Y;
 
 		for (Int bi=1; bi<4; bi++)
-		{	max_x = __max(max_x,boxCorners[bi].X);
-			min_x = __min(min_x,boxCorners[bi].X);
-			max_y = __max(max_y,boxCorners[bi].Y);
-			min_y = __min(min_y,boxCorners[bi].Y);
+		{	max_x = std::max(max_x,boxCorners[bi].X);
+			min_x = std::min(min_x,boxCorners[bi].X);
+			max_y = std::max(max_y,boxCorners[bi].Y);
+			min_y = std::min(min_y,boxCorners[bi].Y);
 		}
 
 		uVector *= shadow->m_oowDecalSizeX;
@@ -956,15 +956,15 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		Int	startY=REAL_TO_INT_FLOOR(((objPos.Y+min_y)*mapScaleInv)) + borderSize;
 		Int endY=REAL_TO_INT_CEIL(((objPos.Y+max_y)*mapScaleInv)) + borderSize;
 
-		startX = __max(startX,m_drawStartX);
-		startX = __min(startX,m_drawEdgeX);
-		startY = __max(startY,m_drawStartY);
-		startY = __min(startY,m_drawEdgeY);
+		startX = std::max(startX,m_drawStartX);
+		startX = std::min(startX,m_drawEdgeX);
+		startY = std::max(startY,m_drawStartY);
+		startY = std::min(startY,m_drawEdgeY);
 
-		endX = __max(endX,m_drawStartX);
-		endX = __min(endX,m_drawEdgeX);
-		endY = __max(endY,m_drawStartY);
-		endY = __min(endY,m_drawEdgeY);
+		endX = std::max(endX,m_drawStartX);
+		endX = std::min(endX,m_drawEdgeX);
+		endY = std::max(endY,m_drawStartY);
+		endY = std::min(endY,m_drawEdgeY);
 
 		//Check if decal too large to fit inside 65536 index buffer.
 		//try clipping each direction to < 104 since that's more than
@@ -1038,7 +1038,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 					for (i=startX; i <= endX; i++)
 					{
 						hmapVertex.X=(float)(i-borderSize)*MAP_XY_FACTOR;
-						hmapVertex.Z=__max((float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE,layerHeight);
+						hmapVertex.Z=std::max((float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE,layerHeight);
 						pvVertices->x=hmapVertex.X;
 						pvVertices->y=hmapVertex.Y;
 						pvVertices->z=hmapVertex.Z;

@@ -171,7 +171,10 @@ void initSubsystem(
 
 //-------------------------------------------------------------------------------------------------
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
+// TheSuperHackers @build fighter19 11/02/2026 COM module (Windows-only)
+#ifdef _WIN32
 extern CComModule _Module;
+#endif
 
 //-------------------------------------------------------------------------------------------------
 static void updateTGAtoDDS();
@@ -238,9 +241,11 @@ static void updateWindowTitle()
 
 		extern HWND ApplicationHWnd;  ///< our application window handle
 		if (ApplicationHWnd) {
+	#ifdef _WIN32
 			//Set it twice because Win 9x does not support SetWindowTextW.
 			::SetWindowText(ApplicationHWnd, titleA.str());
 			::SetWindowTextW(ApplicationHWnd, title.str());
+#endif
 		}
 	}
 }
@@ -253,7 +258,9 @@ GameEngine::GameEngine()
 	m_quitting = FALSE;
 	m_isActive = FALSE;
 
+#ifdef _WIN32
 	_Module.Init(nullptr, ApplicationHInstance, nullptr);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -292,7 +299,9 @@ GameEngine::~GameEngine()
 
 	Drawable::killStaticImages();
 
+#ifdef _WIN32
 	_Module.Term();
+#endif
 
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();
@@ -754,7 +763,7 @@ void GameEngine::update()
 			{
 				TheNetwork->UPDATE();
 			}
-		}
+		}	// end VERIFY_CRC block
 
 		const Bool canUpdate = canUpdateGameLogic();
 		const Bool canUpdateLogic = canUpdate && !TheFramePacer->isGameHalted() && !TheFramePacer->isTimeFrozen();

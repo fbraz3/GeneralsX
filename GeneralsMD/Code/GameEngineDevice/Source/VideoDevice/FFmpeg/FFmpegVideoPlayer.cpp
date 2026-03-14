@@ -365,7 +365,10 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 #ifdef SAGE_USE_OPENAL
     else if (stream_type == AVMEDIA_TYPE_AUDIO) {
         OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
-        audioStream->update();
+        // Unqueue processed buffers first, then buffer new data, then
+        // (re)start playback. update() is called AFTER bufferData() so that
+        // the newly queued buffer is already present when update() checks
+        // whether to call alSourcePlay().
         AVSampleFormat sampleFmt = static_cast<AVSampleFormat>(frame->format);
         const int bytesPerSample = av_get_bytes_per_sample(sampleFmt);
         const int frameSize =
@@ -399,6 +402,7 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 
         ALenum format = OpenALAudioManager::getALFormat(frame->ch_layout.nb_channels, bytesPerSample * 8);
         audioStream->bufferData(frameData, frameSize, format, frame->sample_rate);
+        audioStream->update();
     }
 #endif
 }
@@ -411,9 +415,14 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 void FFmpegVideoStream::update( void )
 {
 #ifdef SAGE_USE_OPENAL
-    // Start audio playback
+    // Resume audio playback only if not already playing.
+    // Calling alSourcePlay() on an AL_PLAYING source restarts it from the
+    // first unprocessed buffer (OpenAL 1.1 spec §4.3.9), which causes
+    // effective silence when invoked every game frame.
     OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
-    audioStream->play();
+    if (!audioStream->isPlaying()) {
+        audioStream->play();
+    }
 #endif
 	//BinkWait( m_handle );
 }

@@ -71,16 +71,34 @@ void OpenALAudioStream::update()
         }
     }
 
+    // Only restart a stopped source when there is data queued to play.
+    // Calling alSourcePlay() with an empty queue produces no sound and
+    // immediately transitions the source back to AL_STOPPED.
     if (sourceState == AL_STOPPED) {
-		   play();
+        ALint num_remaining;
+        alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_remaining);
+        if (num_remaining > 0) {
+            play();
+        }
     }
 }
 
 void OpenALAudioStream::reset()
 {
     DEBUG_LOG(("Resetting stream\n"));
-    alSourceRewind(m_source);
-    alSourcei(m_source, AL_BUFFER, 0);
+    // alSourceStop() marks all queued buffers as processed so they can be
+    // unqueued. alSourceRewind() transitions to AL_INITIAL but does NOT move
+    // unprocessed buffers to processed state, so the subsequent
+    // alSourcei(AL_BUFFER, 0) would fail with AL_INVALID_OPERATION if any
+    // buffers were still pending.
+    alSourceStop(m_source);
+    ALint num_queued;
+    alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_queued);
+    while (num_queued > 0) {
+        ALuint buf;
+        alSourceUnqueueBuffers(m_source, 1, &buf);
+        num_queued--;
+    }
     m_current_buffer_idx = 0;
 }
 

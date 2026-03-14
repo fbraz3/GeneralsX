@@ -32,6 +32,10 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifndef _WIN32
+#include <filesystem>
+#endif
+
 #include "Common/GlobalData.h"
 
 #define DEFINE_TERRAIN_LOD_NAMES
@@ -1173,16 +1177,43 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 
 	TheWritableGlobalData->m_userDataDir.clear();
 
-	char temp[_MAX_PATH];
-	if (::SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true))
+#ifdef _WIN32
 	{
-		if (temp[strlen(temp)-1] != '\\')
+		char temp[_MAX_PATH];
+		if (::SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true))
+		{
+			if (temp[strlen(temp)-1] != '\\')
+				strcat(temp, "\\");
+			strcat(temp, TheWritableGlobalData->m_userDataLeafName.str());
 			strcat(temp, "\\");
-		strcat(temp, TheWritableGlobalData->m_userDataLeafName.str());
-		strcat(temp, "\\");
-		CreateDirectory(temp, nullptr);
-		TheWritableGlobalData->m_userDataDir = temp;
+			CreateDirectory(temp, nullptr);
+			TheWritableGlobalData->m_userDataDir = temp;
+		}
 	}
+#elif defined(__APPLE__)
+	// GeneralsX @feature macOS user data directory (~/Library/Application Support)
+	{
+		const char* home = getenv("HOME");
+		if (home) {
+			std::filesystem::path userDataDir = std::filesystem::path(home) / "Library" / "Application Support" / TheWritableGlobalData->m_userDataLeafName.str() / "";
+			std::filesystem::create_directories(userDataDir);
+			TheWritableGlobalData->m_userDataDir = userDataDir.string().c_str();
+		}
+	}
+#else
+	// GeneralsX @bugfix Linux user data directory (XDG Base Directory spec)
+	{
+		std::filesystem::path userDataDir;
+		const char* xdgDataHome = getenv("XDG_DATA_HOME");
+		if (xdgDataHome)
+			userDataDir = std::filesystem::path(xdgDataHome);
+		else
+			userDataDir = std::filesystem::path(getenv("HOME")) / ".local" / "share";
+		userDataDir = userDataDir / TheWritableGlobalData->m_userDataLeafName.str() / "";
+		std::filesystem::create_directories(userDataDir);
+		TheWritableGlobalData->m_userDataDir = userDataDir.string().c_str();
+	}
+#endif
 
 	// override INI values with user preferences
 	OptionPreferences optionPref;

@@ -2,6 +2,14 @@
 # GeneralsX @bugfix fbraz 10/03/2026 Use FetchContent for ALL platforms (macOS, Linux, Windows)
 # OpenAL audio library via FetchContent (openal-soft v1.24.2)
 #
+# On Linux, openal-soft is managed via vcpkg (see vcpkg.json). The vcpkg build compiles
+# openal-soft with ALSA-only backend (no PipeWire, no PulseAudio), which avoids a SIGSEGV
+# crash in the system libopenal1 1.25.1 Debian package. find_package(OpenAL) picks up the
+# vcpkg-installed version automatically when the vcpkg toolchain is active.
+#
+# On macOS, CMake's FindOpenAL prefers Apple's deprecated OpenAL.framework which uses
+# <OpenAL/al.h> instead of the standard <AL/al.h> expected by the Linux-compatible code.
+# Prefer openal-soft (brew install openal-soft) which matches the Linux layout.
 # Strategy: FetchContent for ALL platforms -- no Homebrew/system detection.
 # - macOS:   CoreAudio backend. Compiled natively (arm64 on Apple Silicon).
 #            Apple's deprecated OpenAL.framework is avoided -- it uses <OpenAL/al.h>

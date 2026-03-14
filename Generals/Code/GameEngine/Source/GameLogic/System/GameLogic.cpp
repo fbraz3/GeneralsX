@@ -29,6 +29,13 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifndef _WIN32
+#include <fenv.h>
+#if defined(__SSE__) || defined(__x86_64__)
+#include <xmmintrin.h>
+#endif
+#endif
+
 #include "Common/AudioAffect.h"
 #include "Common/AudioHandleSpecialValues.h"
 #include "Common/BuildAssistant.h"
@@ -191,6 +198,8 @@ void setFPMode()
 	// anything as long as it is consistent, really, but this
 	// is in the (vain?) hope of any slight speed boost.
 	//
+	// GeneralsX @bugfix BenderAI 14/03/2026 Align non-Windows x86 FPU control with the Windows replay determinism baseline.
+	#ifdef _WIN32
 	_fpreset();
 
 	UnsignedInt curVal = _statusfp();
@@ -200,6 +209,24 @@ void setFPMode()
 	newVal = (newVal & ~_MCW_PC) | (_PC_24   & _MCW_PC);
 
 	_controlfp(newVal, _MCW_PC | _MCW_RC);
+	#else
+	fesetenv(FE_DFL_ENV);
+	feclearexcept(FE_ALL_EXCEPT);
+	fesetround(FE_TONEAREST);
+
+	#if defined(__i386__) || defined(__x86_64__)
+	unsigned short controlWord = 0;
+	__asm__ __volatile__("fnstcw %0" : "=m" (controlWord));
+	controlWord = static_cast<unsigned short>(controlWord & ~0x0F00u);
+	__asm__ __volatile__("fldcw %0" : : "m" (controlWord));
+	#endif
+
+	#if defined(__SSE__) || defined(__x86_64__)
+	UnsignedInt mxcsr = static_cast<UnsignedInt>(_mm_getcsr());
+	mxcsr = (mxcsr & ~static_cast<UnsignedInt>(_MM_ROUND_MASK)) | static_cast<UnsignedInt>(_MM_ROUND_NEAREST);
+	_mm_setcsr(mxcsr);
+	#endif
+	#endif
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -40,7 +40,9 @@
 #ifdef _WIN32
 	#include <windows.h>
 #else
-	// Linux: Define SYSTEMTIME if not available
+	// Linux: Define SYSTEMTIME if not already defined (time_compat.h may have defined it)
+	#ifndef _SYSTEMTIME_DEFINED
+	#define _SYSTEMTIME_DEFINED
 	struct SYSTEMTIME {
 		unsigned short wYear;
 		unsigned short wMonth;
@@ -51,6 +53,7 @@
 		unsigned short wSecond;
 		unsigned short wMilliseconds;
 	};
+	#endif
 #endif
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////

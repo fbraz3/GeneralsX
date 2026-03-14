@@ -56,6 +56,7 @@
 
 // TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 input devices
 #ifndef _WIN32
+#include <cstdlib>
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
 #include "SDL3GameEngine.h"  // For getSDLWindow()
@@ -144,15 +145,15 @@ inline Keyboard *W3DGameClient::createKeyboard() {
 
 inline Mouse *W3DGameClient::createMouse()
 {
-// TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 mouse factory wiring
+// GeneralsX @bugfix BenderAI 14/03/2026 SDL3 mouse creation must fail fast instead of returning nullptr.
 #ifndef _WIN32
-	// Linux: SDL3 mouse (requires SDL window handle)
+	// Linux: SDL3 mouse requires the pre-initialized SDL3GameEngine window.
 	SDL3GameEngine* sdlEngine = dynamic_cast<SDL3GameEngine*>(TheGameEngine);
 	if (sdlEngine && sdlEngine->getSDLWindow()) {
 		return NEW SDL3Mouse(sdlEngine->getSDLWindow());
 	}
-	fprintf(stderr, "ERROR: SDL3GameEngine not found, cannot create SDL3Mouse\n");
-	return nullptr;
+	fprintf(stderr, "FATAL: W3DGameClient::createMouse() requires SDL3GameEngine with an initialized SDL window\n");
+	std::abort();
 #else
 	// Windows: W3DMouse (wraps Win32Mouse with 3D cursor)
 	Win32Mouse * mouse = NEW W3DMouse;

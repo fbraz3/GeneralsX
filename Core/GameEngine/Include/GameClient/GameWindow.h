@@ -75,6 +75,7 @@ enum { WIN_COLOR_UNDEFINED = GAME_COLOR_UNDEFINED };
 // WindowMsgData --------------------------------------------------------------
 // TheSuperHackers @build fighter19 11/02/2026 Use uintptr_t for 64-bit pointer compatibility
 //-----------------------------------------------------------------------------
+#include <cstdint>
 typedef uintptr_t WindowMsgData;
 
 //-----------------------------------------------------------------------------

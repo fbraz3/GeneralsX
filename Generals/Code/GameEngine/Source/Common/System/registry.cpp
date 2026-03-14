@@ -33,9 +33,15 @@
 // TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
 // Windows Registry types not available on Linux - define stub types
 #ifdef _UNIX
+#ifndef HKEY_LOCAL_MACHINE
 typedef void* HKEY;  // Stub type for Linux (unused but needed for compilation)
 #define HKEY_LOCAL_MACHINE  ((HKEY)(uintptr_t)0x80000002)
 #define HKEY_CURRENT_USER   ((HKEY)(uintptr_t)0x80000001)
+#endif
+#include <ctype.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 // TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
@@ -64,13 +70,102 @@ Bool setUnsignedIntInRegistry( HKEY root, AsciiString path, AsciiString key, Uns
 	return FALSE;
 }
 
+// GeneralsX @feature felipebraz 14/03/2026 Linux registry env mapping for base Generals
+// Maps registry key lookups to environment variables so Linux users can override
+// install path and language without a Windows registry.
+// Pattern: CNC_GENERALS_<UPPERCASED_KEY>
+static Bool getEnvVar(const char *prefix, AsciiString key, AsciiString& val)
+{
+	char envName[256] = { 0 };
+	const char* keyStr = key.str();
+	int prefixLen = strlen(prefix);
+
+	if (prefixLen + strlen(keyStr) + 1 > sizeof(envName))
+		return FALSE;
+
+	strcpy(envName, prefix);
+	for (int i = 0; keyStr[i] != '\0'; ++i)
+		envName[prefixLen + i] = toupper((unsigned char)keyStr[i]);
+	envName[prefixLen + strlen(keyStr)] = '\0';
+
+	const char* envValue = getenv(envName);
+	if (envValue && envValue[0] != '\0')
+	{
+		val = envValue;
+		DEBUG_LOG(("getEnvVar - found %s = %s", envName, envValue));
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+// GeneralsX @feature felipebraz 14/03/2026 Linux language autodetect for non-English installs
+// Detect language from localized BIG files when registry is unavailable.
+// This preserves original behavior where installer-provided language drives Data/<lang>/ paths.
+static Bool tryAutoDetectLanguage(AsciiString& val)
+{
+	struct stat st;
+
+	// Prefer base Generals BIG names first, then accept ZH names for shared installs.
+	const struct { const char *bigFile; const char *language; } candidates[] = {
+		{ "Brazilian.big",   "brazilian" },
+		{ "English.big",     "english"   },
+		{ "German.big",      "german"    },
+		{ "French.big",      "french"    },
+		{ "Spanish.big",     "spanish"   },
+		{ "Chinese.big",     "chinese"   },
+		{ "Korean.big",      "korean"    },
+		{ "Polish.big",      "polish"    },
+		{ "BrazilianZH.big", "brazilian" },
+		{ "EnglishZH.big",   "english"   },
+		{ "GermanZH.big",    "german"    },
+		{ "FrenchZH.big",    "french"    },
+		{ "SpanishZH.big",   "spanish"   },
+		{ "ChineseZH.big",   "chinese"   },
+		{ "KoreanZH.big",    "korean"    },
+		{ "PolishZH.big",    "polish"    },
+		{ nullptr,            nullptr      }
+	};
+
+	for (int i = 0; candidates[i].bigFile != nullptr; ++i)
+	{
+		if (stat(candidates[i].bigFile, &st) == 0)
+		{
+			val = candidates[i].language;
+			DEBUG_LOG(("tryAutoDetectLanguage - detected language '%s' from %s",
+					candidates[i].language, candidates[i].bigFile));
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val)
 {
+	if (getEnvVar("CNC_GENERALS_", key, val))
+		return TRUE;
+
+	if (key == "Language")
+	{
+		if (tryAutoDetectLanguage(val))
+			return TRUE;
+	}
+
 	return FALSE;
 }
 
 Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 {
+	if (getEnvVar("CNC_GENERALS_", key, val))
+		return TRUE;
+
+	if (key == "Language")
+	{
+		if (tryAutoDetectLanguage(val))
+			return TRUE;
+	}
+
 	return FALSE;
 }
 

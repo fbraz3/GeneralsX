@@ -27,7 +27,7 @@
 /////////////////////////////////////////////////
 
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
-#include "Common/File.h"
+#include "Common/file.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>

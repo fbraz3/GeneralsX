@@ -50,9 +50,39 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "[Linux] Deploy GeneralsX",
+			"type": "shell",
+			"command": "./scripts/build/linux/deploy-linux.sh",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "[Linux] Deploy GeneralsXZH",
 			"type": "shell",
 			"command": "./scripts/build/linux/deploy-linux-zh.sh",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Linux] Bundle GeneralsX",
+			"type": "shell",
+			"command": "./scripts/build/linux/bundle-linux.sh",
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -75,6 +105,21 @@
 				"panel": "dedicated",
 				"showReuseMessage": false,
 				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Linux] Pipeline: Build + Deploy + Run Generals",
+			"type": "shell",
+			"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy && ./scripts/build/linux/deploy-linux.sh && ./scripts/build/linux/run-linux.sh -win",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
 				"focus": false
 			},
 			"problemMatcher": []
@@ -153,6 +198,21 @@
 				"panel": "dedicated",
 				"showReuseMessage": false,
 				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Linux] Run GeneralsX",
+			"type": "shell",
+			"command": "./scripts/build/linux/run-linux.sh -win",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
 				"focus": false
 			},
 			"problemMatcher": []

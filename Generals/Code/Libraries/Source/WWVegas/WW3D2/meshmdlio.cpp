@@ -90,8 +90,9 @@
 #include "realcrc.h"
 #include "dx8wrapper.h"
 
+// GeneralsX @build BenderAI 10/02/2026 - Include osdep.h from WWLib, not osdep/
 #ifdef _UNIX
-#include "osdep/osdep.h"
+#include "osdep.h"
 #endif
 
 #define MESH_SINGLE_MATERIAL_HACK		0		// (gth) forces all multi-material meshes to use their first material only. (NOT RECOMMENDED, TESTING ONLY!)

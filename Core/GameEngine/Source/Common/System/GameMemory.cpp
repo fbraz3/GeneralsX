@@ -531,7 +531,13 @@ inline void **BlockCheckpointInfo::getStacktraceInfo() { return m_stacktrace; }
 */
 inline void* MemoryPoolSingleBlock::getUserDataNoDbg()
 {
-	char* p = ((char*)this) + sizeof(MemoryPoolSingleBlock);
+	// GeneralsX @bugfix 09/03/2026
+	// Round header size up to 16-byte boundary so user data is always 16-byte aligned.
+	// Third-party code (e.g. openal-soft DeviceBase) may use SSE movaps which requires
+	// 16-byte alignment. sizeof(MemoryPoolSingleBlock) == 24 (3 ptrs, MPSB_DLINK), so
+	// the raw offset would be only 8-byte aligned; rounding to 32 fixes this.
+	static constexpr size_t kHeaderSize = (sizeof(MemoryPoolSingleBlock) + 15) & ~size_t(15);
+	char* p = ((char*)this) + kHeaderSize;
 	#ifdef MEMORYPOOL_BOUNDINGWALL
 	p += WALLSIZE;
 	#endif
@@ -557,10 +563,19 @@ inline void* MemoryPoolSingleBlock::getUserData()
 */
 inline /*static*/ Int MemoryPoolSingleBlock::calcRawBlockSize(Int logicalSize)
 {
-	Int s = ::roundUpMemBound(logicalSize) + sizeof(MemoryPoolSingleBlock);
+	// GeneralsX @bugfix 09/03/2026
+	// Use the 16-byte-rounded header size (same as getUserDataNoDbg / recoverBlockFromUserData).
+	// Round the total up to a multiple of 16 so that every block in a blob array starts at a
+	// 16-byte aligned address (malloc/sysAllocate guarantees 16-byte alignment for the first
+	// block). This ensures user data returned by getUserData() is always 16-byte aligned, which
+	// is required by SSE movaps used in third-party libraries (e.g. openal-soft DeviceBase).
+	static constexpr size_t kHeaderSize = (sizeof(MemoryPoolSingleBlock) + 15) & ~size_t(15);
+	Int s = ::roundUpMemBound(logicalSize) + (Int)kHeaderSize;
 	#ifdef MEMORYPOOL_BOUNDINGWALL
 	s += WALLSIZE*2;
 	#endif
+	// Round total block stride up to 16-byte boundary.
+	s = (s + 15) & ~15;
 	return s;
 }
 
@@ -903,7 +918,8 @@ void MemoryPoolSingleBlock::initBlock(Int logicalSize, MemoryPoolBlob *owningBlo
 	DEBUG_ASSERTCRASH(pUserData, ("null pUserData"));
 	if (!pUserData)
 		return nullptr;
-	char* p = ((char*)pUserData) - sizeof(MemoryPoolSingleBlock);
+	static constexpr size_t kHeaderSize = (sizeof(MemoryPoolSingleBlock) + 15) & ~size_t(15);
+	char* p = ((char*)pUserData) - kHeaderSize;
 	#ifdef MEMORYPOOL_BOUNDINGWALL
 	p -= WALLSIZE;
 	#endif
@@ -3359,6 +3375,54 @@ void operator delete[](void * p, const char *, int)
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != nullptr, ("must init memory manager before calling global operator delete"));
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
+
+//-----------------------------------------------------------------------------
+// C++17 aligned operator new/delete — required on non-Windows platforms where
+// third-party libraries (e.g. openal-soft) allocate over-aligned types (>8 bytes).
+// The game pool allocator only guarantees MEM_BOUND_ALIGNMENT (4-byte), so SSE
+// movaps instructions in library constructors crash on pool-allocated memory.
+// These overloads bypass the pool and use posix_memalign for such allocations.
+// GeneralsX @bugfix 09/03/2026
+#ifndef _WIN32
+#include <new>
+#include <cstdlib>
+
+void *operator new(size_t size, std::align_val_t alignment)
+{
+	void *p = nullptr;
+	if (::posix_memalign(&p, static_cast<size_t>(alignment), size) != 0)
+		throw std::bad_alloc();
+	return p;
+}
+
+void *operator new[](size_t size, std::align_val_t alignment)
+{
+	void *p = nullptr;
+	if (::posix_memalign(&p, static_cast<size_t>(alignment), size) != 0)
+		throw std::bad_alloc();
+	return p;
+}
+
+void operator delete(void *p, std::align_val_t) noexcept
+{
+	::free(p);
+}
+
+void operator delete[](void *p, std::align_val_t) noexcept
+{
+	::free(p);
+}
+
+void operator delete(void *p, size_t, std::align_val_t) noexcept
+{
+	::free(p);
+}
+
+void operator delete[](void *p, size_t, std::align_val_t) noexcept
+{
+	::free(p);
+}
+#endif // !_WIN32
 
 //-----------------------------------------------------------------------------
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC

@@ -37,7 +37,13 @@ static void drawFramerateBar();
 #include <numeric>
 #include <stdlib.h>
 #include <windows.h>
+// GeneralsX @bugfix BenderAI 10/03/2026 - io.h is Windows-specific, use unistd.h on Linux
+#ifdef _WIN32
 #include <io.h>
+#else
+#include <unistd.h> // access() for file existence checks
+#include <SDL3/SDL.h> // For SDL_ShowWindow() on Linux
+#endif
 #include <time.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -315,14 +321,24 @@ W3DAssetManager *W3DDisplay::m_assetManager = nullptr;
 inline Int64 getPerformanceCounter()
 {
 	Int64 tmp;
+#ifdef _WIN32
 	QueryPerformanceCounter((LARGE_INTEGER*)&tmp);
+#else
+	// Linux: Use time_compat.h wrapper which calls clock_gettime(CLOCK_MONOTONIC)
+	QueryPerformanceCounter(&tmp);
+#endif
 	return tmp;
 }
 
 inline Int64 getPerformanceCounterFrequency()
 {
 	Int64 tmp;
+#ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*)&tmp);
+#else
+	// Linux: Use time_compat.h wrapper which returns 10 million (100-nanosecond intervals)
+	QueryPerformanceFrequency(&tmp);
+#endif
 	return tmp;
 }
 
@@ -650,6 +666,15 @@ void W3DDisplay::init()
 		}
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
+
+		// GeneralsX @bugfix felipebraz 16/02/2026 Show window after DirectX8/DXVK initialized
+		#ifndef _WIN32
+		extern SDL_Window* TheSDL3Window;
+		if (TheSDL3Window) {
+			fprintf(stderr, "DEBUG: Showing SDL3 window after WW3D init...\n");
+			SDL_ShowWindow(TheSDL3Window);
+		}
+		#endif
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
@@ -2805,6 +2830,8 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
+// GeneralsX @build BenderAI 10/03/2026 Screenshot is Windows-specific functionality
+#ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
 	HANDLE hf;                  // file handle
@@ -3017,6 +3044,12 @@ void W3DDisplay::takeScreenShot()
 	ufileName.translate(leafname);
 	TheInGameUI->message(TheGameText->fetch("GUI:ScreenCapture"), ufileName.str());
 }
+#else
+void W3DDisplay::takeScreenShot(void)
+{
+	// TODO (Phase 3): Implement SDL3-based screenshot capture
+}
+#endif
 
 /** Start/Stop capturing an AVI movie*/
 void W3DDisplay::toggleMovieCapture()

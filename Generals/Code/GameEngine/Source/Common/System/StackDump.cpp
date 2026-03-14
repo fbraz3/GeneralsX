@@ -645,3 +645,5 @@ void FillStackAddresses(void** addresses, unsigned int count, unsigned int skip)
 void DumpExceptionInfo(unsigned int u, EXCEPTION_POINTERS* e_info) {}
 void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* linenumber, unsigned int* address) {}
 
+#endif // (defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)) && defined(_WIN32)
+

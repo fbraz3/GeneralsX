@@ -24,7 +24,8 @@ fi
 if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
     echo "⚠️  Docker image not found: $DOCKER_IMAGE"
     echo "📦 Building image (this will take a few minutes)..."
-    ./scripts/docker-build-images.sh linux
+    # GeneralsX @bugfix BenderAI 14/03/2026 Follow scripts/env/docker relocation for builder image bootstrap.
+    ./scripts/env/docker/docker-build-images.sh linux
 fi
 
 docker run --rm \
