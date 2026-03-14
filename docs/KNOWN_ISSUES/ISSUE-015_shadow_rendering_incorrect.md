@@ -1,4 +1,4 @@
-# ISSUE-005: Building and Unit Shadows Render Incorrectly
+# ISSUE-015: Building and Unit Shadows Render Incorrectly
 
 **Status**: OPEN  
 **Session Discovered**: Backlog (2026-03-12)  

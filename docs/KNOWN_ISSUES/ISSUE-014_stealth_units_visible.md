@@ -1,4 +1,4 @@
-# ISSUE-006: Stealth Units and GLA Stealth Buildings Render as Visible
+# ISSUE-014: Stealth Units and GLA Stealth Buildings Render as Visible
 
 **Status**: OPEN  
 **Session Discovered**: Backlog (2026-03-12)  

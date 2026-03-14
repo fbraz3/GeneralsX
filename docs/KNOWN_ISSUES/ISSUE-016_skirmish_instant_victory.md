@@ -1,4 +1,4 @@
-# ISSUE-002: Skirmish vs CPU Ends Immediately with Victory Screen
+# ISSUE-016: Skirmish vs CPU Ends Immediately with Victory Screen
 
 **Status**: INVESTIGATING  
 **Session Discovered**: 53 (2026-02-21)  

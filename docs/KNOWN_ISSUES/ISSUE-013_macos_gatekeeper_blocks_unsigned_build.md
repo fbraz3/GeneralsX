@@ -1,4 +1,4 @@
-# ISSUE-008: macOS Gatekeeper Blocks Unsigned Build
+# ISSUE-013: macOS Gatekeeper Blocks Unsigned Build
 
 **Status**: OPEN  
 **Session Discovered**: Backlog (2026-03-12)  

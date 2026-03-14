@@ -1,6 +1,6 @@
-# ISSUE-009: macOS Terrain Textures Missing or Failing to Load
+# ISSUE-012: macOS Terrain Textures Missing or Failing to Load
 
-**Status**: OPEN  
+**Status**: RESOLVED  
 **Session Discovered**: Backlog (2026-03-12)  
 **Severity**: Critical  
 **Component**: Graphics  
