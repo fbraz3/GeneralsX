@@ -1,5 +1,13 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-14 - Base Generals language detection parity with Zero Hour
+
+- Problem: Base Generals on Linux always attempted `Data\\english\\Language.ini` even on localized installs.
+- Symptom: Startup logs showed `loadFileDirectory('Data\\english\\Language')` with zero files read on Brazilian Portuguese data sets.
+- Root cause: `Generals/Code/GameEngine/Source/Common/System/registry.cpp` kept `_UNIX` stubs that always returned `FALSE`, so `GetRegistryLanguage()` stayed on cached default `"english"`. Zero Hour already had Linux fallback logic (`tryAutoDetectLanguage`) but base Generals did not.
+- Fix: Added Linux env-var registry mapping (`CNC_GENERALS_<KEY>`) and BIG-based language auto-detection in base Generals registry code, with candidates for both base (`English.big`, `Brazilian.big`, etc.) and ZH-style (`EnglishZH.big`, `BrazilianZH.big`, etc.) localized packs.
+- Prevention: For shared platform behavior (registry emulation, language fallback), always audit both `Generals/` and `GeneralsMD/` implementations before closing Linux parity tasks.
+
 ## Session 2026-03-14 - Input factories must preserve non-null initialization contracts
 
 - Problem: `W3DGameClient::createMouse()` on non-Windows could return `nullptr` if `SDL3GameEngine` or its window handle was unavailable.
