@@ -1,6 +1,6 @@
-# ISSUE-011: Replay Menu Loading Screen Crashes with SIGSEGV
+# ISSUE-018: Replay Menu Loading Screen Crashes with SIGSEGV
 
-**Status**: INVESTIGATING  
+**Status**: RESOLVED  
 **Session Discovered**: Backlog (2026-03-12)  
 **Severity**: High  
 **Component**: Gameplay / Platform  

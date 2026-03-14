@@ -1,4 +1,4 @@
-# ISSUE-013: Linux Compat `FindFirstFile` Ignores Pattern and Directory
+# ISSUE-020: Linux Compat `FindFirstFile` Ignores Pattern and Directory
 
 **Status**: OPEN  
 **Session Discovered**: 2026-03-12  

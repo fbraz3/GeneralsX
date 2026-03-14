@@ -1,4 +1,4 @@
-# ISSUE-010: Replace Null Registry Stubs with Cross-Platform registry.ini Backend
+# ISSUE-017: Replace Null Registry Stubs with Cross-Platform registry.ini Backend
 
 **Status**: OPEN  
 **Session Discovered**: Backlog (2026-03-12)  
