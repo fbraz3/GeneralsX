@@ -1242,20 +1242,24 @@ FontCharsClass::~FontCharsClass ()
 const FontCharsClassCharDataStruct *
 FontCharsClass::Get_Char_Data (WCHAR ch)
 {
+	// GeneralsX @bugfix BenderAI/felipebraz 14/03/2026 Normalize to 16-bit code units to match legacy font array indexing on non-Windows wchar_t
+	const uint16 normalized_char = static_cast<uint16>(ch);
+	const WCHAR glyph = static_cast<WCHAR>(normalized_char);
+
 	const FontCharsClassCharDataStruct *retval = nullptr;
 
-	if ( ch < 256 )
+	if ( normalized_char < 256 )
 	{
-		retval = ASCIICharArray[ch];
+		retval = ASCIICharArray[normalized_char];
 	}
  	else if ( AlternateUnicodeFont && this != AlternateUnicodeFont )
 	{
-		return AlternateUnicodeFont->Get_Char_Data( ch );
+		return AlternateUnicodeFont->Get_Char_Data( glyph );
 	}
 	else
 	{
-		Grow_Unicode_Array( ch );
-		retval = UnicodeCharArray[ch - FirstUnicodeChar];
+		Grow_Unicode_Array( glyph );
+		retval = UnicodeCharArray[normalized_char - FirstUnicodeChar];
 	}
 
 	//
@@ -1264,13 +1268,13 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 	//
 	if ( retval == nullptr ) {
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
-		retval = Store_Freetype_Char( ch );
+		retval = Store_Freetype_Char( glyph );
 #else
-		retval = Store_GDI_Char( ch );
+		retval = Store_GDI_Char( glyph );
 #endif
 	}
 
-	WWASSERT( retval->Value == ch );
+	WWASSERT( retval->Value == glyph );
 	return retval;
 }
 
