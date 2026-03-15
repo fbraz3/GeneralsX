@@ -47,6 +47,10 @@
     #include "vfw_compat.h"        // VFW/AVI API stubs (FramGrab.cpp movie capture - Phase 3 out-of-scope)
 #endif
 
+// TheSuperHackers @build (merged from upstream) Utility COM macro for safe Release calls
+#ifndef SAFE_RELEASE
+#define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=nullptr; } }
+#endif
 
 // This macro serves as a general way to determine the number of elements within an array.
 #ifndef ARRAY_SIZE
