@@ -25,7 +25,7 @@ applyTo: '**/*.md'
 - **Phase planning** (`docs/WORKDIR/phases/PHASEXX_*.md`): Update `[x]` checklist at session end
 - **Technical discoveries**: Place in `docs/WORKDIR/support/` (e.g., `CRITICAL_VFS_DISCOVERY.md`)
 - **Lessons learned** (`docs/WORKDIR/lessons/LESSONS_LEARNED.md`): Key takeaways from phases and work cycles
-- **Known Issues**: Place in `docs/KNOWN_ISSUES/` with format `ISSUE-XXX_description.md` (e.g., `ISSUE-001_shell_map_unit_immortality.md`)
+- **Known Issues**: Track in [GitHub Issues](https://github.com/fbraz3/GeneralsX/issues/) — do NOT create new markdown issue files
 
 ## Documentation Organization
 
@@ -160,11 +160,9 @@ If an issue is closed/resolved in GitHub:
 ### Legacy `.md` Issues (Historical Reference)
 
 If you need to reference older markdown issues for historical context:
-- Keep in `docs/ETC/ARCHIVED_ISSUES/` (not `docs/KNOWN_ISSUES/`)
+- Keep in `docs/ETC/archive/` (not `docs/KNOWN_ISSUES/`)
 - Update the path and add a note that these are archived
 - Do not maintain these going forward
-
-See `docs/KNOWN_ISSUES/README.md` for detailed template and guidelines.
 
 ### `docs/ETC/` - Reference & Historical Materials
 **Purpose**: Older reference materials, archived analysis, and miscellaneous documentation
