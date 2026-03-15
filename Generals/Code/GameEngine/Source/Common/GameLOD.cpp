@@ -319,6 +319,23 @@ void GameLODManager::init()
 	//always get this data in case we need it later.
 	testMinimumRequirements(nullptr,&m_cpuType,&m_cpuFreq,&m_numRAM,nullptr,nullptr,nullptr);
 
+	// GeneralsX @bugfix fighter19 14/03/2026 Apply reasonable hardware defaults on non-Windows only when detection fails
+#ifndef _WIN32
+	// Apply fallback defaults on non-Windows platforms when testMinimumRequirements cannot determine these values.
+	if (m_numRAM == 0)
+	{
+		m_numRAM = 1024*1024*1024; // assume 1GB RAM
+	}
+	if (m_cpuType == XX)
+	{
+		m_cpuType = P4;            // assume P4
+	}
+	if (m_cpuFreq == 0)
+	{
+		m_cpuFreq = 2000;          // assume 2GHz
+	}
+#endif
+
 	if ((Real)(m_numRAM)/(Real)(256*1024*1024) >= PROFILE_ERROR_LIMIT)
 		m_memPassed=TRUE;	//check if they have at least 256 MB
 
