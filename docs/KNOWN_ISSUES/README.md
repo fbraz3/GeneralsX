@@ -1,52 +1,37 @@
-# Known Issues
+# Known Issues — DEPRECATED
 
-This directory contains documentation for all known issues, bugs, and limitations discovered during development.
+**⚠️ ARCHIVED DIRECTORY**
 
-## File Naming Convention
+This directory is **DEPRECATED**. All issue tracking is now centralized in **GitHub Issues**:  
+👉 [`github.com/fbraz3/GeneralsX/issues`](https://github.com/fbraz3/GeneralsX/issues/)
 
-Use the format: `ISSUE-XXX_slug_description.md`
+## Migration Policy
 
-Where:
-- `XXX` = Zero-padded issue number (001, 002, 003, etc.)
-- `slug_description` = Brief lowercase, underscore-separated description of the issue
+- **New issues**: Create directly in GitHub using `gh issue create` command
+- **Existing markdown issues in this directory**: Kept for historical reference only
+- **Active tracking**: Use GitHub Issues exclusively (labels, assignees, milestones, automation)
 
-**Examples:**
-- `ISSUE-001_shell_map_unit_immortality.md`
-- `ISSUE-002_audio_crackling_on_startup.md`
-- `ISSUE-003_replay_desync_multiplayer.md`
+## Creating a New Issue (Correct Way)
 
-## Issue Document Structure
+Use the GitHub CLI:
 
-Each issue file should contain:
+```bash
+gh issue create \
+  --title "Brief, actionable title" \
+  --body "## Context
+...description...
 
-```markdown
-# ISSUE-XXX: [Full Title]
+## Goal
+...what should be done...
 
-**Status**: [OPEN|INVESTIGATING|BLOCKED|RESOLVED|WONTFIX]
-**Session Discovered**: XX (YYYY-MM-DD)
-**Severity**: [Critical|High|Medium|Low]
-**Component**: [Graphics|Audio|Gameplay|Platform|Build|Other]
-**Reproducibility**: [100%|High|Intermittent|Rare]
+## Acceptance Criteria
+- [ ] Item 1
+- [ ] Item 2" \
+  --label "bug" \
+  --label "Linux"
+```
 
-## Symptom
-
-(Clear description of observable behavior)
-
-## Investigation Summary
-
-(Root cause analysis, potential hypotheses, findings)
-
-## Code Audit Results
-
-(What was checked, what was found)
-
-## Next Steps (for Future Session)
-
-(Actionable investigation items)
-
-## Workaround
-
-(If any exists)
+See `.github/instructions/docs.instructions.md` for issue creation guidelines.
 
 ## Impact
 

@@ -110,43 +110,59 @@ applyTo: '**/*.md'
 
 **Not here**: Session reports, summaries, analysis, phase progress
 
-### `docs/KNOWN_ISSUES/` - Issue Tracking
-**Purpose**: Documented known issues, bugs, limitations, and pending investigations
-**Structure**: One issue per file
-**Naming Convention**: `ISSUE-XXX_slug_description.md`
-  - `XXX` = Zero-padded issue number (001, 002, 003, etc.)
-  - `slug_description` = Brief lowercase, underscore-separated description
+## Issue Tracking — GitHub is the Source of Truth
 
-**Examples**:
-- `ISSUE-001_shell_map_unit_immortality.md`
-- `ISSUE-002_audio_crackling_on_startup.md`
-- `ISSUE-003_replay_desync_multiplayer.md`
+**CRITICAL POLICY**: All issues, bugs, feature requests, and enhancements MUST be tracked in **GitHub Issues** (`https://github.com/fbraz3/GeneralsX/issues/`), NOT in markdown documentation.
 
-**Status Values**:
-- OPEN — Confirmed issue, awaiting investigation or fix
-- INVESTIGATING — Currently being researched; uncertain root cause
-- BLOCKED — Waiting for external feedback, data access, or prerequisites
-- RESOLVED — Fixed; waiting for verification or release
-- WONTFIX — Intentionally deferred; rationale documented
+### Why GitHub is Source of Truth
+- **Single source**: One place to track status, assign ownership, and manage priorities
+- **Versioning**: GitHub automatically tracks discussion history as features evolve
+- **Automation**: CI/CD, PR linking, and automation hooks depend on GitHub issues
+- **Collaboration**: Easier for team members to discover, comment, and contribute
+- **External visibility**: Users and contributors can search and report issues directly
 
-**Severity Levels**:
-- Critical — Game-breaking, prevents progress
-- High — Major feature impaired, significant gameplay impact
-- Medium — Observable but workaroundable, cosmetic impact
-- Low — Cosmetic only, no gameplay impact
+### Creating New Issues
 
-**Component Categories**:
-- Graphics, Audio, Gameplay, Platform, Build, Other
+Use the `gh issue create` command to create issues:
 
-**Structure**:
-- Status, Session Discovered, Severity, Component, Reproducibility (header)
-- Symptom (observable behavior)
-- Investigation Summary (root cause analysis, hypotheses)
-- Code Audit Results (what was checked)
-- Next Steps (actionable items for future investigation)
-- Workaround (if available)
-- Impact (gameplay, stability, determinism, release blocker)
-- Reference (links to code, dev diary, etc.)
+```bash
+gh issue create \
+  --title "Brief, actionable title" \
+  --body "## Context\n...\n## Goal\n...\n## Acceptance Criteria\n..." \
+  --label "enhancement" \
+  --label "Linux"
+```
+
+**Labels** (always apply 1-2):
+- `enhancement` — New feature or improvement
+- `bug` — Something isn't working
+- `documentation` — Documentation improvements
+- `Linux`, `macOS` — Platform-specific
+- `Generals`, `Zero Hour` — Game variant
+- `Blocker` — Blocks other work
+- See `.github/instructions/docs.instructions.md` for complete label reference
+
+### Markdown Documentation (Legacy)
+
+Older `.md` files in `docs/KNOWN_ISSUES/` are **DEPRECATED**.  
+- **Do NOT** create new markdown issue files
+- **Remove** files that duplicate active GitHub issues
+- **Archive** resolved issues in GitHub, then delete the `.md` file
+- **Migrate** any investigation findings to GitHub issue comments
+
+### Deleted/Resolved/Archived Issues
+
+If an issue is closed/resolved in GitHub:
+1. Close the issue on GitHub with appropriate resolution
+2. Delete the corresponding `.md` file from `docs/KNOWN_ISSUES/`
+3. Do NOT keep markdown copies of resolved issues
+
+### Legacy `.md` Issues (Historical Reference)
+
+If you need to reference older markdown issues for historical context:
+- Keep in `docs/ETC/ARCHIVED_ISSUES/` (not `docs/KNOWN_ISSUES/`)
+- Update the path and add a note that these are archived
+- Do not maintain these going forward
 
 See `docs/KNOWN_ISSUES/README.md` for detailed template and guidelines.
 
