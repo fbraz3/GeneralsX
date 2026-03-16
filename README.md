@@ -4,23 +4,42 @@
 
 A community-driven cross-platform port of Command & Conquer: Generals and Zero Hour, enabling the classic RTS to run natively on **Linux, macOS, and Windows** under a single modern codebase: **SDL3** (windowing/input) + **DXVK** (DirectX 8 → Vulkan graphics) + **OpenAL** (audio) + **64-bit**.
 
-**Current Status**: Linux native builds functional (Phase 1 complete). macOS ARM64 native builds functional (Phase 1 complete, DXVK + MoltenVK working). Audio (Phase 2) in progress on both platforms.
+**Current Status**:
+
+- Linux build: Functional with [a few issues](https://github.com/fbraz3/GeneralsX/issues?q=is%3Aissue%20state%3Aopen%20label%3ALinux)
+- macOS build: Functional with [minor issues](https://github.com/fbraz3/GeneralsX/issues?q=is%3Aissue%20state%3Aopen%20label%3AmacOS)
+- Windows build: [Planned](https://github.com/fbraz3/GeneralsX/issues/29)
 
 ## Project Goals
 
 This repository targets a **single codebase** that builds and runs on all three major desktop platforms, replacing the original Windows-only DirectX 8 / Miles Sound System stack with portable open-source equivalents.
 
-To keep updated about this project status, visit our [Dev Blog](docs/DEV_BLOG/)
+To stay up to date on project status, visit our [Dev Blog](docs/DEV_BLOG/).
 
-For **official releases and stable builds** (Windows only), visit:
+## How does this project differ from TheSuperHackers' work?
 
-**👉 [TheSuperHackers/GeneralsGameCode Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases)**
+The excellent work from TheSuperHackers focuses on stability and bug fixes while maintaining compatibility with original game binaries. Our goal is to deliver cross-platform support, even when that may break retail compatibility.
+
+## Where does the GeneralsX name come from?
+
+There are two reasons for this name:
+
+1. X = Cross - reflects the cross-platform efforts
+2. I am a big fan of the Mega Man X franchise, so this is also a way to pay my respects to that classic series.
+
+## How to download
+
+For **official releases and instructions**, visit:
+
+* [GeneralsX Releases](https://github.com/fbraz3/GeneralsX/releases)
+* [TheSuperHackers Releases (Windows only)](https://github.com/TheSuperHackers/GeneralsGameCode/releases)
 
 ## 💖 Support This Project
 
 Cross-platform game development requires significant time, resources, and technical expertise. If GeneralsX has been valuable to you or the Command & Conquer community, consider supporting continued development:
 
-**[🎯 Sponsor on GitHub](https://github.com/sponsors/fbraz3)**
+**[Sponsor on GitHub](https://github.com/sponsors/fbraz3)**
+** [Donate via Paypal](https://www.paypal.com/donate/?business=39MLZ7PVRA74A&no_recurring=0&item_name=GeneralsX+project+donation&currency_code=USD)
 
 Your support helps with:
 
@@ -31,53 +50,11 @@ Your support helps with:
 
 *Every contribution, no matter the size, makes a difference in keeping classic games alive across all platforms!*
 
-### 🌍 Cross-Platform Vision
-
-This project transforms the Windows-exclusive Command & Conquer: Generals into a truly cross-platform game:
-
-- **🐧 Linux Native Support** - **IN PROGRESS** - Native builds via Docker with DXVK + SDL3
-- **🪟 Windows Enhanced** - **IN PROGRESS** - Win64 builds using DXVK + sdl3
-- **🍎 macOS Native Support** - **IN PROGRESS** - ARM64 native builds working (DXVK + MoltenVK)
-- **🎮 Modern Graphics** - DXVK translates DirectX 8 → Vulkan for native Linux rendering
-- **🔧 Modern Architecture** - SDL3 windowing/input, portable INI configuration
-
-### 🎮 Features
-
-**Cross-Platform Compatibility**:
-
-- **Single codebase** for Linux, macOS, and Windows
-- **Linux native builds** via Docker or native GCC/Clang (SDL3 + DXVK)
-- **Windows modern builds** 64bit binaries & MSVC2022 preset
-- **macOS in progress** via DXVK + MoltenVK (Vulkan → Metal) -- ARM64 native builds working
-- Unified configuration system via INI files (replacing Windows Registry)
-- Platform-native file system integration
-- **No Wine/Proton required** - Native DirectX → Vulkan translation via DXVK
-
-**Graphics Enhancements**:
-
-- **DXVK** - Native DirectX 8 → Vulkan translation layer
-- **SDL3** for cross-platform window management and input handling
-- Improved texture loading and memory management
-- Enhanced graphics debugging and profiling tools
-- Modern GPU compatibility via Vulkan backend
-
-**Modern Development**:
-
-- Updated from Visual C++ 6.0 to modern C++20 standards
-- CMake build system for consistent cross-platform builds
-- Comprehensive development documentation and phase tracking
-- Automated builds for Windows, macOS, and Linux
-
-## 📦 Official Downloads
-
-For **stable releases and official builds**, visit:
-**[TheSuperHackers/GeneralsGameCode Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases)**
-
 ## 🔨 Building from Source
 
-### Linux - ✅ Primary Focus
+### Linux
 
-Native ELF builds with DXVK + SDL3. Graphics working, audio in progress.
+Native ELF builds with minor issues.
 
 **[📖 Linux Build Guide](docs/ETC/LINUX_BUILD_INSTRUCTIONS.md)**
 
@@ -94,12 +71,11 @@ cmake --build build/linux64-deploy --target z_generals
 
 ### Windows (Modern SDL3/DXVK)
 
-Modern 64-bit Windows build using the same SDL3 + DXVK + OpenAL stack. Separate branch - **In Progress**
+Modern 64-bit Windows build using the same SDL3 + DXVK + OpenAL stack. Separate branch - **Planned**
 
 ### macOS (Apple Silicon)
 
-Native ARM64 builds working via DXVK + MoltenVK. Audio is not yet.
-The game engine initializes with a lot of dxvk+moltenvk related bugs.
+Native macOS builds with minor issues.
 
 **[📖 macOS Build Guide](docs/ETC/MACOS_BUILD_INSTRUCTIONS.md)**
 
@@ -126,7 +102,7 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 
 ### 🐛 Known Issues & Limitations
 
-For documented limitations and known bugs, check the development diary in [docs/DEV_BLOG/](docs/DEV_BLOG/).
+For documented limitations and known bugs, check the [issues page](https://github.com/fbraz3/GeneralsX/issues).
 
 ### ⚙️ Build Requirements
 
@@ -176,9 +152,6 @@ Contributions are welcome! We're particularly interested in:
 3. Follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
 4. Submit issues or pull requests with detailed information
 
-**Contributing to Official Project**:
-For contributions to the main project, visit: [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode)
-
 ## 🙏 Special Thanks
 
 - **[Xezon](https://github.com/xezon)** and contributors for maintaining the GeneralsGameCode project
@@ -186,8 +159,6 @@ For contributions to the main project, visit: [TheSuperHackers/GeneralsGameCode]
 - **Westwood Studios** for creating the legendary Command & Conquer series
 - **EA Games** for Command & Conquer: Generals, which continues to inspire gaming communities
 - **All contributors and sponsors** helping to make this game truly cross-platform and accessible worldwide
-
-*Special thanks to [GitHub Sponsors](https://github.com/sponsors/fbraz3) supporting this open-source effort!*
 
 ## 📄 License
 
