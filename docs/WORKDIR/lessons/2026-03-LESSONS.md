@@ -1,5 +1,17 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-16 - GitHub Actions: Use granular change detection for multi-variant builds
+
+- Problem: CI workflow used single boolean filter (`should-build`) that triggered all platform builds (Linux, macOS, Windows) when ANY file in [GeneralsMD, Generals, Core, cmake] changed.
+- Symptom: Pushing a fix to Generals base game caused wasteful ZH builds on all platforms (Linux, macOS, Windows). Pushing a ZH fix unnecessarily triggered base-game Generals build even though it wasn't affected.
+- Root cause: `paths-filter@v3` job in orchestrator only exposed one output flag, forcing all downstream build jobs to use the same trigger condition.
+- Fix: Split `detect-changes` outputs into two independent filters:
+  - `zh-should-build`: Triggered by GeneralsMD/, Core/, cmake/ changes
+  - `base-should-build`: Triggered by Generals/, Core/, cmake/ changes
+  - Each build job (build-linux, build-macos, build-macos-generals, build-windows) now consults only its relevant output.
+- Validation: Workflow YAML verified for correct output references and conditional syntax.
+- Prevention: When orchestrating multi-variant matrix builds, separate concern by input file paths and expose granular filter outputs. Each build job should specify its dependencies explicitly in the `if:` condition.
+
 ## Session 2026-03-15 - macOS base-game port should mirror Zero Hour script hardening
 
 - Problem: Base Generals had no dedicated macOS build/deploy scripts while Zero Hour already carried validated logic for Vulkan SDK checks, DXVK dylib fallback paths, and runtime wrapper generation.
