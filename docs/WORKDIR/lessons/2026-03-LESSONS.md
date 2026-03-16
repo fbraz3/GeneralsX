@@ -1,5 +1,14 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-15 - macOS base-game port should mirror Zero Hour script hardening
+
+- Problem: Base Generals had no dedicated macOS build/deploy scripts while Zero Hour already carried validated logic for Vulkan SDK checks, DXVK dylib fallback paths, and runtime wrapper generation.
+- Symptom: macOS base-game setup required manual command sequences and ad-hoc file copies, which increased drift risk versus Zero Hour.
+- Root cause: Script parity work had focused on Zero Hour first, but the equivalent base-game path was never backported.
+- Fix: Added `scripts/build/macos/build-macos-generals.sh` and `scripts/build/macos/deploy-macos-generals.sh`, then wired matching VS Code tasks for build/deploy/pipeline without auto-run.
+- Validation: Built target `g_generals` on preset `macos-vulkan` and deployed runtime payload into `~/GeneralsX/Generals` successfully.
+- Prevention: When platform scripts are introduced for one game variant, create a parity checklist and mirror the hardened behaviors to the sibling variant in the same session.
+
 ## Session 2026-03-14 - Base Generals language detection parity with Zero Hour
 
 - Problem: Base Generals on Linux always attempted `Data\\english\\Language.ini` even on localized installs.
