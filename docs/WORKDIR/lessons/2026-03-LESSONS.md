@@ -1,5 +1,26 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-17 - macOS CI bundle must match local deploy runtime contract
+
+- Problem: The GitHub Actions macOS bundle packed dylibs at the runtime root, but `run.sh` exported `DYLD_LIBRARY_PATH` to `${SCRIPT_DIR}/lib`, which does not exist in the artifact.
+- Symptom: CI bundle was "built successfully" but runtime launch could fail to resolve dynamic libraries and Vulkan ICD setup differed from local deploy.
+- Root cause: CI used a generic wrapper (`scripts/qa/smoke/run-bundled-game.sh`) that expects a `lib/` layout and does not export `VK_ICD_FILENAMES`, while local deploy scripts assume root-level dylibs and set a local ICD manifest.
+- Fix: Updated `.github/workflows/build-macos.yml` to include `resources/dxvk/dxvk.conf`, generate a macOS-specific `run.sh` aligned with local deploy (`DYLD_LIBRARY_PATH=${SCRIPT_DIR}`, `VK_ICD_FILENAMES=${SCRIPT_DIR}/MoltenVK_icd.json`), and keep required-lib checks focused on runtime-critical files.
+- Prevention: For macOS, CI packaging must follow the same runtime contract as `scripts/build/macos/deploy-macos-*.sh` (library layout, ICD env vars, and DXVK config handling) to avoid "CI green, runtime broken" regressions.
+
+## Session 2026-03-16 - Asset root must be resolved before BIG scan for packaged layouts
+
+- Problem: BIG loading historically assumed assets lived in the current working directory (or registry-only install path), which breaks packaged distribution where binaries and data are split.
+- Symptom: Launching from app/deb/rpm style layouts failed to find BIG/shader assets unless users started the process from the data folder.
+- Root cause: `StdBIGFileSystem` and `Win32BIGFileSystem` initialized archive search paths with CWD-first assumptions and no unified runtime override chain.
+- Fix: Implemented a deterministic lookup order for primary assets in both filesystem backends: `ENV > INI > default > current`.
+  - ENV: `CNC_GENERALS_PATH` (Generals) and `CNC_GENERALS_ZH_PATH` (Zero Hour), with compatibility fallback for previous variable names
+  - INI: `[Paths] AssetPath` from `Options.ini`
+  - Default: registry install path and executable-relative fallbacks
+  - Current: CWD as final fallback only
+- Zero Hour extension: Added parallel lookup for base Generals assets (`CNC_GENERALS_PATH`, `[Paths] GeneralsAssetPath` in `Options.ini`, then existing install defaults).
+- Validation: Incremental macOS builds succeeded for both `GeneralsXZH` and `GeneralsX` after the path-resolution changes.
+
 ## Session 2026-03-16 - GitHub Actions: Use granular change detection for multi-variant builds
 
 - Problem: CI workflow used single boolean filter (`should-build`) that triggered all platform builds (Linux, macOS, Windows) when ANY file in [GeneralsMD, Generals, Core, cmake] changed.
