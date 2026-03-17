@@ -100,6 +100,36 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 - **[docs/WORKDIR/](docs/WORKDIR/)** - Phase planning, implementation notes, and strategic decisions
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
 
+### Runtime Asset Paths (Packaged Layouts)
+
+GeneralsX supports running binaries and game assets from different directories. This is useful for package/distribution formats like `.deb`, `.rpm`, and `.app` bundles.
+
+Asset root resolution order:
+
+1. Environment variables
+2. `Options.ini`
+3. Default install path resolution (registry/platform fallback)
+4. Current working directory (last fallback)
+
+Environment variables:
+
+- `CNC_GENERALS_PATH`: Base Generals asset root
+- `CNC_GENERALS_ZH_PATH`: Zero Hour asset root
+
+Optional `Options.ini` overrides:
+
+```ini
+[Paths]
+AssetPath=/path/to/assets/current-game
+GeneralsAssetPath=/path/to/assets/base-generals
+```
+
+Notes:
+
+- `AssetPath` is used for the current game executable.
+- `GeneralsAssetPath` is used by Zero Hour when it needs base Generals data.
+- Environment variables have higher priority than `Options.ini`.
+
 ### 🐛 Known Issues & Limitations
 
 For documented limitations and known bugs, check the [issues page](https://github.com/fbraz3/GeneralsX/issues).

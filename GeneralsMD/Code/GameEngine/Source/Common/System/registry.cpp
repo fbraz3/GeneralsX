@@ -103,6 +103,50 @@ static Bool getEnvVar(const char *prefix, AsciiString key, AsciiString& val)
 	return FALSE;
 }
 
+// GeneralsX @bugfix GitHubCopilot 16/03/2026 Detect language BIGs in configured asset roots, not only CWD.
+static Bool doesLanguageBigExist(const char* rootPath, const char* bigFile)
+{
+	struct stat st;
+	char lowerBigFile[256] = { 0 };
+
+	for (int i = 0; bigFile[i] != '\0' && i < static_cast<int>(sizeof(lowerBigFile) - 1); ++i) {
+		lowerBigFile[i] = static_cast<char>(tolower(static_cast<unsigned char>(bigFile[i])));
+	}
+
+	if (rootPath == nullptr || rootPath[0] == '\0') {
+		if (stat(bigFile, &st) == 0 || stat(lowerBigFile, &st) == 0) {
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	AsciiString fullPath = rootPath;
+	const Int len = fullPath.getLength();
+	if (len > 0) {
+		const char lastChar = fullPath.getCharAt(len - 1);
+		if (lastChar != '/' && lastChar != '\\') {
+			fullPath.concat('/');
+		}
+	}
+	fullPath.concat(bigFile);
+
+	if (stat(fullPath.str(), &st) == 0) {
+		return TRUE;
+	}
+
+	AsciiString lowerPath = rootPath;
+	const Int lowerLen = lowerPath.getLength();
+	if (lowerLen > 0) {
+		const char lastChar = lowerPath.getCharAt(lowerLen - 1);
+		if (lastChar != '/' && lastChar != '\\') {
+			lowerPath.concat('/');
+		}
+	}
+	lowerPath.concat(lowerBigFile);
+
+	return stat(lowerPath.str(), &st) == 0;
+}
+
 // GeneralsX @feature felipebraz 18/02/2026 Auto-detect base Generals install path
 // Steam ZH standalone puts base Generals assets in ./ZH_Generals/ (subdir).
 // Dev split install puts them in ../Generals/ (sibling dir).
@@ -138,8 +182,6 @@ static Bool tryRelativeGeneralsPath(AsciiString& val)
 // Precedence mirrors the Windows installer language selection.
 static Bool tryAutoDetectLanguage(AsciiString& val)
 {
-	struct stat st;
-
 	// Each entry: BIG file to probe → language string the game expects
 	const struct { const char *bigFile; const char *language; } candidates[] = {
 		{ "BrazilianZH.big", "brazilian" },
@@ -153,14 +195,24 @@ static Bool tryAutoDetectLanguage(AsciiString& val)
 		{ nullptr,           nullptr     }
 	};
 
+	const char* searchRoots[] = {
+		getenv("CNC_GENERALS_ZH_PATH"),
+		getenv("CNC_GENERALS_PATH"),
+		getenv("CNC_ZH_INSTALLPATH"),
+		nullptr
+	};
+
 	for (int i = 0; candidates[i].bigFile != nullptr; ++i)
 	{
-		if (stat(candidates[i].bigFile, &st) == 0)
-		{
-			val = candidates[i].language;
-			DEBUG_LOG(("tryAutoDetectLanguage - detected language '%s' from %s",
-					candidates[i].language, candidates[i].bigFile));
-			return TRUE;
+		for (int rootIndex = 0; rootIndex < static_cast<int>(ARRAY_SIZE(searchRoots)); ++rootIndex) {
+			if (doesLanguageBigExist(searchRoots[rootIndex], candidates[i].bigFile)) {
+				val = candidates[i].language;
+				DEBUG_LOG(("tryAutoDetectLanguage - detected language '%s' from %s (root=%s)",
+						candidates[i].language,
+						candidates[i].bigFile,
+						searchRoots[rootIndex] != nullptr ? searchRoots[rootIndex] : "<cwd>"));
+				return TRUE;
+			}
 		}
 	}
 
