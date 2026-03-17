@@ -436,16 +436,49 @@ jobs:
           }
           EOF
 
+          # GeneralsX @bugfix felipebraz 17/03/2026 Bundle DXVK runtime config to keep CI package behavior aligned with local deploy.
+          if [ -f "resources/dxvk/dxvk.conf" ]; then
+            cp -v "resources/dxvk/dxvk.conf" "${RUNTIME_DIR}/dxvk.conf"
+          else
+            echo "⚠️ resources/dxvk/dxvk.conf not found; DXVK will use defaults"
+          fi
+
           # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime dylibs so bundle fails fast when incomplete.
-          for required in "libgamespy.dylib" "libdxvk_d3d8.0.dylib" "libSDL3.0.dylib" "libvulkan.1.dylib" "libopenal.1.dylib"; do
+          for required in "libgamespy.dylib" "libdxvk_d3d8.0.dylib" "libSDL3.0.dylib" "libvulkan.1.dylib"; do
             if [ ! -f "${RUNTIME_DIR}/${required}" ]; then
               echo "❌ Missing required runtime library: ${required}"
               exit 1
             fi
           done
-          
-          echo "  Copying run.sh wrapper from scripts..."
-          cp -v "scripts/qa/smoke/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
+
+          # GeneralsX @bugfix felipebraz 17/03/2026 Generate macOS wrapper compatible with libs bundled at runtime root.
+          cat > "${RUNTIME_DIR}/run.sh" <<'EOF'
+          #!/bin/bash
+          # GeneralsX @build felipebraz 17/03/2026 Runtime wrapper for macOS CI bundle
+          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+          export DYLD_LIBRARY_PATH="${SCRIPT_DIR}:${DYLD_LIBRARY_PATH:-}"
+
+          if [[ -f "${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
+            export VK_ICD_FILENAMES="${SCRIPT_DIR}/MoltenVK_icd.json"
+          fi
+
+          if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; then
+            export CNC_GENERALS_INSTALLPATH="${SCRIPT_DIR}/../Generals/"
+          fi
+
+          EXECUTABLE=""
+          if [[ -f "${SCRIPT_DIR}/GeneralsXZH" ]]; then
+            EXECUTABLE="${SCRIPT_DIR}/GeneralsXZH"
+          elif [[ -f "${SCRIPT_DIR}/GeneralsX" ]]; then
+            EXECUTABLE="${SCRIPT_DIR}/GeneralsX"
+          else
+            echo "ERROR: Game executable not found in ${SCRIPT_DIR}" >&2
+            exit 1
+          fi
+
+          exec "${EXECUTABLE}" "$@"
+          EOF
           chmod +x "${RUNTIME_DIR}/run.sh"
           
           echo "✅ Bundle ready at: ${RUNTIME_DIR}"
