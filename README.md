@@ -25,7 +25,7 @@ The excellent work from TheSuperHackers focuses on stability and bug fixes while
 There are two reasons for this name:
 
 1. X = Cross - reflects the cross-platform efforts
-2. I am a big fan of the Mega Man X franchise, so this is also a way to pay my respects to that classic series.
+2. I am a big fan of the Mega Man X franchise, so this is also a tribute to that classic series.
 
 ## How to download
 
@@ -38,8 +38,7 @@ For **official releases and instructions**, visit:
 
 Cross-platform game development requires significant time, resources, and technical expertise. If GeneralsX has been valuable to you or the Command & Conquer community, consider supporting continued development:
 
-**[Sponsor on GitHub](https://github.com/sponsors/fbraz3)**
-** [Donate via Paypal](https://www.paypal.com/donate/?business=39MLZ7PVRA74A&no_recurring=0&item_name=GeneralsX+project+donation&currency_code=USD)
+- **[Sponsor on GitHub](https://github.com/sponsors/fbraz3)**
 
 Your support helps with:
 
