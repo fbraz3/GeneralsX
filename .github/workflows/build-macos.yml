@@ -95,6 +95,11 @@ jobs:
           # glslang (required by DXVK Meson build to compile GLSL shaders to SPIR-V)
           brew install glslang
 
+          # GeneralsX @bugfix fbraz3 20/03/2026 SDL3 must be installed via Homebrew so DXVK's
+          # Meson build discovers it via pkg-config and compiles the SDL3 WSI backend.
+          # Without this, meson falls back to SDL2-only and DXVK_WSI_DRIVER=SDL3 fails at runtime.
+          brew install sdl3
+
           # NOTE: OpenAL Soft is intentionally NOT installed via Homebrew.
           # It is fetched via CMake FetchContent in cmake/openal.cmake (v1.24.2).
           # Installing Homebrew openal-soft was unreliable on Apple Silicon M-series:

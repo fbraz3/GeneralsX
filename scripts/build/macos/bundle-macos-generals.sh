@@ -327,8 +327,13 @@ LIB_DIR="${RESOURCES_DIR}/lib"
 
 export DYLD_LIBRARY_PATH="${LIB_DIR}:${BIN_DIR}:${DYLD_LIBRARY_PATH:-}"
 
+# GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires this env var on non-Win32; SDL3 matches game windowing layer
+export DXVK_WSI_DRIVER="SDL3"
+
 if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="${RESOURCES_DIR}/MoltenVK_icd.json"
+    # GeneralsX @bugfix fbraz3 20/03/2026 Vulkan Loader 1.3.236+ uses VK_DRIVER_FILES; keep VK_ICD_FILENAMES for older loaders
+    export VK_DRIVER_FILES="${RESOURCES_DIR}/MoltenVK_icd.json"
 fi
 
 # Default asset path matching the standard macOS deploy layout (allow user override)

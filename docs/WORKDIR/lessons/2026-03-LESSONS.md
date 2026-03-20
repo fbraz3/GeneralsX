@@ -1,5 +1,21 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-20 - DXVK on macOS requires DXVK_WSI_DRIVER + SDL3 installed for meson
+
+- **Problem**: CI-built macOS .app crashes with "unknown exception" from `TheDisplay->init()`.
+- **Root cause (multi-layered)**:
+  1. `DXVK_WSI_DRIVER` env var is **required** on non-Win32 platforms by DXVK (it throws `DxvkError` if not set and the platform is not Win32). Neither run scripts nor CI workflow set it.
+  2. `DxvkError` did NOT inherit `std::exception`, so the game's `catch(std::exception& e)` could not catch it → always "unknown exception".
+  3. CI did NOT have `sdl3` installed via Homebrew, so DXVK's meson found only SDL2 (via ffmpeg) and compiled with `-DDXVK_WSI_SDL2` only. Setting `DXVK_WSI_DRIVER=SDL3` at runtime then fails with "Failed to initialize WSI." because the SDL3 WSI backend was not compiled in. The game uses SDL3 windows, so SDL2 WSI would also fail at Vulkan surface creation.
+  4. `VK_ICD_FILENAMES` was deprecated in Vulkan Loader 1.3.236+ — must also set `VK_DRIVER_FILES`.
+- **Fixes**:
+  - `DxvkError` now inherits `std::exception` in DXVK fork's `util_error.h`.
+  - `wsi_platform.cpp` auto-selects SDL3 > SDL2 > GLFW when `DXVK_WSI_DRIVER` is unset.
+  - All macOS run scripts set `DXVK_WSI_DRIVER="SDL3"`.
+  - `build-macos.yml` now runs `brew install sdl3` so DXVK gets compiled with SDL3 WSI.
+  - All bundle/deploy run.sh scripts set both `VK_ICD_FILENAMES` and `VK_DRIVER_FILES`.
+- **Prevention**: DXVK native builds include SDL2 **and** SDL3 WSI backends when both are installed. The correct one (SDL3 for us) must be selected at runtime via `DXVK_WSI_DRIVER`. CI environments must explicitly install SDL3 via Homebrew before running the cmake configure step, or DXVK will silently fall back to SDL2-only.
+
 ## Session 2026-03-19 - Bundle must include non-system dylibs from host toolchains
 
 - Problem: Local bundles could launch on the build machine but miss host-linked non-system dylibs (for example Homebrew-installed libraries) on another machine.

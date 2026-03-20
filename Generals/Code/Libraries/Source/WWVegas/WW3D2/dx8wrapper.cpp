@@ -53,7 +53,10 @@
 // GeneralsX @build felipebraz 16/02/2026 - Need dlerror() for dlopen() error reporting on Linux
 #ifndef _WIN32
 #include <dlfcn.h>
+#include <cxxabi.h>
 #endif
+// GeneralsX @bugfix fbraz3 20/03/2026 - Need typeinfo for unknown-exception type logging
+#include <typeinfo>
 // GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)
 #ifdef _WIN32
 #include "dx8webbrowser.h"
@@ -370,7 +373,26 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 			// the graphics driver from potentially loading the old game dbghelp.dll and then crashing the game process.
 			DbgHelpGuard dbgHelpGuard;
 
-			D3DInterface = Direct3DCreate8Ptr(D3D_SDK_VERSION);		// TODO: handle failure cases...
+			// GeneralsX @bugfix fbraz3 20/03/2026 Wrap DXVK Direct3DCreate8 in try/catch so the actual
+			// DXVK/Vulkan error message is logged before the exception propagates up. DxvkError
+			// inherits std::exception (fixed in DXVK fork), and this catch makes the message visible
+			// even in case of unknown exceptions (e.g. NSException on macOS from MoltenVK).
+			try {
+				D3DInterface = Direct3DCreate8Ptr(D3D_SDK_VERSION);
+			} catch (const std::exception& e) {
+				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw std::exception: %s\n", e.what());
+				throw;
+			} catch (...) {
+#if defined(__APPLE__) || defined(__linux__)
+				// Log the demangled exception type to help diagnose NSException or other non-std throws
+				const std::type_info* ti = abi::__cxa_current_exception_type();
+				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw unknown exception (type: %s)\n",
+				        ti ? ti->name() : "<null>");
+#else
+				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw unknown exception\n");
+#endif
+				throw;
+			}
 		}
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Direct3DCreate8 returned: %p\n", (void*)D3DInterface);
 		if (D3DInterface == nullptr) {

@@ -46,6 +46,9 @@ fi
 # Disable validation layers in production runs (remove for debug)
 export VK_INSTANCE_LAYERS=""
 
+# GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires DXVK_WSI_DRIVER on non-Win32; must match game windowing (SDL3)
+export DXVK_WSI_DRIVER="SDL3"
+
 # GeneralsX @bugfix BenderAI 13/03/2026 Explicitly point DXVK to runtime config file.
 # Relying only on CWD can hide config/deploy issues and mislead terrain shader diagnostics.
 if [[ -f "${GAME_DIR}/dxvk.conf" ]]; then
