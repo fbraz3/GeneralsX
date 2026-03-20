@@ -73,3 +73,8 @@ GeneralsMD/logs/
 Generals/logs/
 # External reference repositories (large, don't commit)
 references/
+
+#tmp and log files on root folder
+*-macos-*.zip
+logs_*.zip
+*.log

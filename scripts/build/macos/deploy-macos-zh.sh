@@ -131,9 +131,14 @@ SCRIPT_DIR="\$(cd "\$(dirname "\$0")" && pwd)"
 # SDL3 and gamespy dylibs are in same dir; Vulkan/MoltenVK stays in SDK
 export DYLD_LIBRARY_PATH="\${SCRIPT_DIR}:\${DYLD_LIBRARY_PATH:-}"
 
+# GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires DXVK_WSI_DRIVER on non-Win32; must match game windowing (SDL3)
+export DXVK_WSI_DRIVER="SDL3"
+
 # MoltenVK ICD manifest — deployed alongside the binary by deploy-macos-zh.sh
 if [[ -f "\${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="\${SCRIPT_DIR}/MoltenVK_icd.json"
+    # GeneralsX @bugfix fbraz3 20/03/2026 Vulkan Loader 1.3.236+ uses VK_DRIVER_FILES; keep VK_ICD_FILENAMES for older loaders
+    export VK_DRIVER_FILES="\${SCRIPT_DIR}/MoltenVK_icd.json"
 fi
 
 # Auto-detect base Generals install path

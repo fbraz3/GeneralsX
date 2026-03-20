@@ -18,8 +18,11 @@ Scripts for Linux native and Docker-based builds:
 
 #### `build/macos/` - macOS Build
 - `build-macos-zh.sh` - Configure + build GeneralsXZH
+- `build-macos-generals.sh` - Configure + build GeneralsX
 - `bundle-macos-zh.sh` - Bundle app
+- `bundle-macos-generals.sh` - Bundle app
 - `deploy-macos-zh.sh` - Deploy binaries
+- `deploy-macos-generals.sh` - Deploy binaries
 - `run-macos-zh.sh` - Launch the game
 
 #### `build/windows/` - Windows Build (Pending)
@@ -181,7 +184,11 @@ All scripts are integrated into VS Code tasks (Cmd+Shift+P → "Tasks: Run Task"
 | [Linux] Deploy GeneralsXZH | `build/linux/deploy-linux-zh.sh` | Deploy binaries |
 | [Linux] Run GeneralsXZH | `build/linux/run-linux-zh.sh -win` | Launch game |
 | [macOS] Build GeneralsXZH | `build/macos/build-macos-zh.sh` | Build + deploy + run |
+| [macOS] Build GeneralsX | `build/macos/build-macos-generals.sh` | Build base game |
 | [macOS] Deploy GeneralsXZH | `build/macos/deploy-macos-zh.sh` | Deploy binaries |
+| [macOS] Deploy GeneralsX | `build/macos/deploy-macos-generals.sh` | Deploy binaries |
+| [macOS] Bundle GeneralsXZH | `build/macos/bundle-macos-zh.sh` | Bundle app (.app + zip) |
+| [macOS] Bundle GeneralsX | `build/macos/bundle-macos-generals.sh` | Bundle app (.app + zip) |
 | Validate: Check Docker Prerequisites | Verify Docker works | Pre-flight check |
 
 ---
@@ -239,6 +246,8 @@ docker rmi generalsx/linux-builder:latest generalsx/mingw-builder:latest
 - **Verbose output**: All commands echo to terminal + log file
 - **Error exit**: Scripts use `set -e` (stop immediately on first error)
 - **Backward compatibility**: Old script paths (`scripts/run-clang-tidy.py`, `scripts/cpp/`) still work; forward compatibility maintained
+- **macOS bundle dylibs**: macOS bundle scripts include non-system linked dylibs discovered via `otool -L` (including Homebrew paths when linked)
+- **macOS bundle toggle**: set `GX_BUNDLE_INCLUDE_EXTERNAL_DYLIBS=0` to disable external dylib scanning when producing smaller local test artifacts
 
 ---
 
