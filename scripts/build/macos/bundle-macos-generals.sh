@@ -145,7 +145,8 @@ collect_external_dylibs() {
 
             if [[ ! -f "${dep_dst}" ]]; then
                 echo "  + external ${dep_name} (from ${resolved_dep})"
-                cp "${resolved_dep}" "${dep_dst}"
+                # GeneralsX @bugfix Copilot 20/03/2026 Dereference symlinks so we copy the actual dylib, not a dangling symlink.
+                cp -L "${resolved_dep}" "${dep_dst}"
             fi
 
             if ! grep -Fqx "${dep_dst}" "${processed_file}" && ! grep -Fqx "${dep_dst}" "${pending_file}"; then
@@ -292,8 +293,17 @@ if [[ -n "${VULKAN_SDK_ROOT}" ]]; then
 }
 EOF
 else
-    echo "WARNING: Vulkan SDK not found at ~/VulkanSDK/*/macOS - Vulkan libs will be missing from bundle"
-    echo "  Install from: https://vulkan.lunarg.com/"
+    # GeneralsX @build Copilot 20/03/2026 Fail bundle when Vulkan SDK is missing unless explicitly allowed.
+    if [[ "${GX_ALLOW_MISSING_VULKAN_IN_BUNDLE:-0}" == "1" ]]; then
+        echo "WARNING: Vulkan SDK not found at ~/VulkanSDK/*/macOS - Vulkan libs will be missing from bundle"
+        echo "  GX_ALLOW_MISSING_VULKAN_IN_BUNDLE=1 set; producing bundle without Vulkan for local experiments"
+        echo "  Note: This .app/.zip may be non-functional on machines without a system Vulkan/MoltenVK install."
+    else
+        echo "ERROR: Vulkan SDK not found at ~/VulkanSDK/*/macOS - Vulkan libs cannot be copied into bundle" >&2
+        echo "  Install from: https://vulkan.lunarg.com/ and ensure VULKAN_SDK_ROOT is set," >&2
+        echo "  or set GX_ALLOW_MISSING_VULKAN_IN_BUNDLE=1 to intentionally produce a non-Vulkan bundle." >&2
+        exit 1
+    fi
 fi
 
 # DXVK config
@@ -321,8 +331,8 @@ if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="${RESOURCES_DIR}/MoltenVK_icd.json"
 fi
 
-# Default asset path for local/distribution testing (allow user override)
-export CNC_GENERALS_PATH="${CNC_GENERALS_PATH:-${HOME}/Generalsx/data/Generals}"
+# Default asset path matching the standard macOS deploy layout (allow user override)
+export CNC_GENERALS_PATH="${CNC_GENERALS_PATH:-${HOME}/GeneralsX/Generals}"
 
 # Backward compatibility for existing runtime readers
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
@@ -372,4 +382,4 @@ echo "  2) run: ./run.sh -win"
 echo "  3) or open: open ${APP_DIR_NAME}"
 echo ""
 echo "Runtime env defaults inside app launcher:"
-echo '  CNC_GENERALS_PATH=$HOME/Generalsx/data/Generals'
+echo '  CNC_GENERALS_PATH=$HOME/GeneralsX/Generals'
