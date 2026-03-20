@@ -384,7 +384,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 				throw;
 			} catch (...) {
 #if defined(__APPLE__) || defined(__linux__)
-				// Log the demangled exception type to help diagnose NSException or other non-std throws
+				// Log the raw (implementation-defined, often mangled) exception type to help diagnose NSException or other non-std throws
 				const std::type_info* ti = abi::__cxa_current_exception_type();
 				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw unknown exception (type: %s)\n",
 				        ti ? ti->name() : "<null>");

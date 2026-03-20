@@ -19,6 +19,22 @@
 				"-c",
 				"mkdir -p ${workspaceFolder}/logs/mcp/ 2>/dev/null; touch ${workspaceFolder}/logs/mcp/memory.json; docker run -i -v '${workspaceFolder}/logs/mcp/memory.json:/app/dist/memory.json' --rm mcp/memory"
 			]
+		},
+
+		"fetch": {
+			"command": "sh",
+			"args": [
+				"-c",
+				"docker run --rm -i -v '${workspaceFolder}:/workspace' mcp/fetch"
+			]
+		},
+
+		"sequentialthinking": {
+			"command": "sh",
+			"args": [
+				"-c",
+				"docker run --rm -i -v '${workspaceFolder}:/workspace' mcp/sequentialthinking"
+			]
 		}
 	}
 }
