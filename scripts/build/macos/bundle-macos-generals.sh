@@ -133,10 +133,16 @@ collect_external_dylibs() {
         local dep resolved_dep
         while IFS= read -r dep; do
             [[ -z "${dep}" ]] && continue
+            # Skip known system libraries based on the raw otool entry before resolution.
+            if [[ "${dep}" == /System/Library/* ]] || [[ "${dep}" == /usr/lib/* ]]; then
+                continue
+            fi
             resolved_dep="$(resolve_dep_path "${target}" "${dep}" "${executable_dir}" || true)"
-            [[ -z "${resolved_dep}" ]] && continue
-            [[ "${resolved_dep}" == /System/Library/* ]] && continue
-            [[ "${resolved_dep}" == /usr/lib/* ]] && continue
+            if [[ -z "${resolved_dep}" ]]; then
+                # GeneralsX @bugfix Copilot 20/03/2026 Warn when a non-system dep cannot be resolved instead of silently dropping it.
+                echo "WARNING: Unable to resolve dependency '${dep}' for target '${target}'" >&2
+                continue
+            fi
             [[ ! -f "${resolved_dep}" ]] && continue
 
             local dep_name dep_dst
@@ -156,13 +162,22 @@ collect_external_dylibs() {
     done
 }
 
-# Locate installed Vulkan SDK (tries ~/VulkanSDK/ by convention)
-VULKAN_SDK_ROOT=""
-for sdk_candidate in "${HOME}/VulkanSDK"/*/macOS; do
-    if [[ -f "${sdk_candidate}/lib/libvulkan.dylib" ]]; then
-        VULKAN_SDK_ROOT="${sdk_candidate}"
-    fi
-done
+# Locate installed Vulkan SDK:
+#  1) Prefer explicit env vars (VULKAN_SDK, then VULKAN_SDK_ROOT)
+#  2) Fall back to ~/VulkanSDK/*/macOS by convention
+# GeneralsX @bugfix Copilot 20/03/2026 Honor VULKAN_SDK/VULKAN_SDK_ROOT before scanning ~/VulkanSDK.
+if [[ -n "${VULKAN_SDK:-}" ]] && [[ -f "${VULKAN_SDK}/lib/libvulkan.dylib" ]]; then
+    VULKAN_SDK_ROOT="${VULKAN_SDK}"
+elif [[ -n "${VULKAN_SDK_ROOT:-}" ]] && [[ -f "${VULKAN_SDK_ROOT}/lib/libvulkan.dylib" ]]; then
+    : # pre-exported VULKAN_SDK_ROOT is valid; keep as-is
+else
+    VULKAN_SDK_ROOT=""
+    for sdk_candidate in "${HOME}/VulkanSDK"/*/macOS; do
+        if [[ -f "${sdk_candidate}/lib/libvulkan.dylib" ]]; then
+            VULKAN_SDK_ROOT="${sdk_candidate}"
+        fi
+    done
+fi
 
 # GeneralsX @feature Copilot 19/03/2026 Produce a macOS .app bundle with internal runtime env defaults.
 APP_NAME="GeneralsX"
