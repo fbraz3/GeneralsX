@@ -1,24 +1,23 @@
 #!/bin/bash
-# GeneralsX @build BenderAI 02/03/2026 Bundle macOS GeneralsXZH binary + dylibs into a zip archive
+# GeneralsX @build Copilot 19/03/2026 Bundle macOS GeneralsX binary + dylibs into a zip archive
 # Packages a self-contained .app for local distribution testing.
 
 set -e
 
-# GeneralsX @bugfix BenderAI 09/03/2026 Resolve repository root correctly from scripts/build/macos.
+# GeneralsX @build Copilot 19/03/2026 Resolve repository root correctly from scripts/build/macos.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/macos-vulkan"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
-# GeneralsX @bugfix BenderAI 09/03/2026 Resolve DXVK dylib paths from both install copy and Meson output to avoid stale/incomplete bundles.
 DXVK_D3D8_LIB_INSTALL="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
 DXVK_D3D9_LIB_INSTALL="${BUILD_DIR}/libdxvk_d3d9.0.dylib"
 DXVK_D3D8_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d8/libdxvk_d3d8.0.dylib"
 DXVK_D3D9_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d9/libdxvk_d3d9.0.dylib"
-BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
+BINARY_SRC="${BUILD_DIR}/Generals/GeneralsX"
 DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
-OUTPUT_ZIP="${PROJECT_ROOT}/GeneralsXZH-macos-arm64.zip"
+OUTPUT_ZIP="${PROJECT_ROOT}/GeneralsX-macos-arm64.zip"
 
 DXVK_D3D8_LIB="${DXVK_D3D8_LIB_INSTALL}"
 DXVK_D3D9_LIB="${DXVK_D3D9_LIB_INSTALL}"
@@ -165,7 +164,7 @@ for sdk_candidate in "${HOME}/VulkanSDK"/*/macOS; do
 done
 
 # GeneralsX @feature Copilot 19/03/2026 Produce a macOS .app bundle with internal runtime env defaults.
-APP_NAME="GeneralsXZH"
+APP_NAME="GeneralsX"
 APP_DIR_NAME="${APP_NAME}.app"
 INCLUDE_EXTERNAL_DYLIBS="${GX_BUNDLE_INCLUDE_EXTERNAL_DYLIBS:-1}"
 
@@ -174,7 +173,7 @@ echo "Bundling ${APP_NAME} (macOS ARM64)"
 # Validate binary
 if [[ ! -f "${BINARY_SRC}" ]]; then
     echo "ERROR: Binary not found at ${BINARY_SRC}"
-    echo "Build first: ./scripts/build/macos/build-macos-zh.sh"
+    echo "Build first: ./scripts/build/macos/build-macos-generals.sh"
     exit 1
 fi
 if [[ ! -s "${BINARY_SRC}" ]]; then
@@ -200,11 +199,11 @@ cat > "${CONTENTS_DIR}/Info.plist" <<'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>GeneralsXZH</string>
+    <string>GeneralsX</string>
     <key>CFBundleDisplayName</key>
-    <string>GeneralsXZH</string>
+    <string>GeneralsX</string>
     <key>CFBundleIdentifier</key>
-    <string>com.generalsx.generalsxzh</string>
+    <string>com.generalsx.generalsx</string>
     <key>CFBundleVersion</key>
     <string>0.1.0</string>
     <key>CFBundleShortVersionString</key>
@@ -212,7 +211,7 @@ cat > "${CONTENTS_DIR}/Info.plist" <<'PLIST'
     <key>CFBundleExecutable</key>
     <string>run.sh</string>
     <key>CFBundleIconFile</key>
-    <string>generalsx-zh_icon.png</string>
+    <string>generalsx_icon.png</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
@@ -224,13 +223,13 @@ PLIST
 echo "  Staging files to ${APP_DIR}..."
 
 # Binary
-echo "  + GeneralsXZH"
-cp "${BINARY_SRC}" "${BIN_DIR}/GeneralsXZH"
-chmod +x "${BIN_DIR}/GeneralsXZH"
+echo "  + GeneralsX"
+cp "${BINARY_SRC}" "${BIN_DIR}/GeneralsX"
+chmod +x "${BIN_DIR}/GeneralsX"
 
 # Icon
-echo "  + Icon (generalsx-zh_icon.png)"
-cp "${PROJECT_ROOT}/assets/generalsx-zh_icon.png" "${RESOURCES_DIR}/"
+echo "  + Icon (generalsx_icon.png)"
+cp "${PROJECT_ROOT}/assets/generalsx_icon.png" "${RESOURCES_DIR}/"
 
 # SDL3
 echo "  + libSDL3"
@@ -266,7 +265,7 @@ ln -sf libdxvk_d3d8.0.dylib "${LIB_DIR}/libdxvk_d3d8.dylib"
 if [[ "${INCLUDE_EXTERNAL_DYLIBS}" == "1" ]]; then
     echo "  + scanning for external dylibs (Homebrew/system extras)"
     collect_external_dylibs "${LIB_DIR}" \
-        "${BIN_DIR}/GeneralsXZH" \
+        "${BIN_DIR}/GeneralsX" \
         "${LIB_DIR}/libSDL3.0.dylib" \
         "${LIB_DIR}/libSDL3_image.0.4.0.dylib" \
         "${LIB_DIR}/libgamespy.dylib" \
@@ -322,9 +321,8 @@ if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="${RESOURCES_DIR}/MoltenVK_icd.json"
 fi
 
-# Default asset paths for local/distribution testing (allow user override)
+# Default asset path for local/distribution testing (allow user override)
 export CNC_GENERALS_PATH="${CNC_GENERALS_PATH:-${HOME}/Generalsx/data/Generals}"
-export CNC_GENERALS_ZH_PATH="${CNC_GENERALS_ZH_PATH:-${HOME}/Generalsx/data/GeneralsMD}"
 
 # Backward compatibility for existing runtime readers
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
@@ -335,17 +333,17 @@ if [[ -f "${RESOURCES_DIR}/dxvk.conf" ]]; then
     export DXVK_CONFIG_FILE="${RESOURCES_DIR}/dxvk.conf"
 fi
 
-# Run from the detected Zero Hour asset root when available.
-if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
-    cd "${CNC_GENERALS_ZH_PATH}"
+# Run from the detected Generals asset root when available.
+if [[ -d "${CNC_GENERALS_PATH}" ]]; then
+    cd "${CNC_GENERALS_PATH}"
 fi
 
-exec "${BIN_DIR}/GeneralsXZH" "$@"
+exec "${BIN_DIR}/GeneralsX" "$@"
 WRAPPER
 chmod +x "${MACOS_DIR}/run.sh"
 
 # Keep compatibility with direct calls using the game name.
-ln -sf run.sh "${MACOS_DIR}/GeneralsXZH"
+ln -sf run.sh "${MACOS_DIR}/GeneralsX"
 
 # Helper CLI launcher for terminal-based local tests.
 echo "  + run.sh"
@@ -353,7 +351,7 @@ cat > "${STAGE_DIR}/run.sh" << 'RUNNER'
 #!/bin/bash
 # GeneralsX @feature Copilot 19/03/2026 Helper runner for launching the generated .app from terminal.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-exec "${SCRIPT_DIR}/GeneralsXZH.app/Contents/MacOS/run.sh" "$@"
+exec "${SCRIPT_DIR}/GeneralsX.app/Contents/MacOS/run.sh" "$@"
 RUNNER
 chmod +x "${STAGE_DIR}/run.sh"
 
@@ -375,4 +373,3 @@ echo "  3) or open: open ${APP_DIR_NAME}"
 echo ""
 echo "Runtime env defaults inside app launcher:"
 echo '  CNC_GENERALS_PATH=$HOME/Generalsx/data/Generals'
-echo '  CNC_GENERALS_ZH_PATH=$HOME/Generalsx/data/GeneralsMD'

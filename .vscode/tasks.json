@@ -326,6 +326,21 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "[macOS] Bundle GeneralsX",
+			"type": "shell",
+			"command": "./scripts/build/macos/bundle-macos-generals.sh",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "[macOS] Run GeneralsXZH",
 			"type": "shell",
 			"command": "./scripts/build/macos/run-macos-zh.sh -win",

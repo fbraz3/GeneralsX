@@ -1,5 +1,28 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-19 - Bundle must include non-system dylibs from host toolchains
+
+- Problem: Local bundles could launch on the build machine but miss host-linked non-system dylibs (for example Homebrew-installed libraries) on another machine.
+- Symptom: Runtime dyld failures in distributed bundles even though core project dylibs were copied.
+- Root cause: Bundle scripts copied only known project/runtime libraries and did not recursively collect absolute non-system dependencies reported by `otool -L`.
+- Fix: Added recursive dependency scanning in macOS bundle scripts to copy non-system absolute-path dylibs into the bundle `Resources/lib` directory.
+- Prevention: For macOS distribution artifacts, always verify linked dependencies with `otool -L` and bundle everything outside `/System/Library` and `/usr/lib`.
+
+## Session 2026-03-19 - `@rpath` dependencies need explicit resolution during bundle scan
+
+- Problem: Bundle startup failed with `dyld` error for `@rpath/libsharpyuv.0.dylib` referenced by `libwebp.7.dylib`.
+- Root cause: External dependency collector skipped all `@*` entries from `otool -L`, so indirect `@rpath` libraries were never copied.
+- Fix: Resolve `@rpath`, `@loader_path`, and `@executable_path` against `LC_RPATH` plus fallback Homebrew paths during recursive dylib scan.
+- Prevention: Never discard `@rpath` entries in macOS bundle dependency traversal; resolve and copy or fail with actionable diagnostics.
+
+## Session 2026-03-19 - Avoid GNU-only `head -n -2` in macOS scripts
+
+- Problem: The macOS bundle script failed at the final archive listing step even after generating the zip successfully.
+- Symptom: Script exited non-zero with `head: illegal line count -- -2` on macOS (BSD userland).
+- Root cause: The script used GNU-style `head -n -2`, which is not supported by BSD `head`.
+- Fix: Replaced `tail/head` trimming with portable `sed '1,3d;$d'` when printing `unzip -l` output.
+- Prevention: In cross-platform shell scripts, avoid GNU-specific flags for `head`, `sed`, and `stat`; prefer POSIX-compatible expressions.
+
 ## Session 2026-03-17 - macOS CI bundle must match local deploy runtime contract
 
 - Problem: The GitHub Actions macOS bundle packed dylibs at the runtime root, but `run.sh` exported `DYLD_LIBRARY_PATH` to `${SCRIPT_DIR}/lib`, which does not exist in the artifact.
@@ -120,3 +143,16 @@
 - Root cause: Backslash is a normal filename character on POSIX, not a path separator.
 - Fix: Added platform-specific separators in `GameState::getSaveDirectory()` and `RecorderClass::getReplayDir()/getReplayArchiveDir()` for both ZH and Generals (`\\` on Windows, `/` on non-Windows).
 - Prevention: Never hardcode Windows path separators in cross-platform code; centralize path construction by platform or use filesystem paths when possible.
+
+## Session 2026-03-19 - GitHub Actions: Replace loose dylib bundling with .app bundle scripts
+
+- Problem: macOS CI workflow manually copied dylibs into a tar.gz with a generic `run.sh` wrapper, duplicating logic from local bundle scripts and missing external Homebrew dependencies.
+- Symptom: CI package could be missing transitive dylibs (e.g., libsharpyuv from libwebp), causing runtime failures even though the package "built successfully".
+- Root cause: Manual dylib copying in CI did not recursively collect external dependencies or run the bundle script's `@rpath` resolver.
+- Solution: 
+  - Updated `.github/workflows/build-macos.yml` to install explicit FFmpeg + all discovered dependency packages (libbluray, gnutls, librist, srt, libssh, zeromq, libvpx, webp, jpeg-xl, dav1d, opencore-amr, snappy, aom, libvmaf, lame, xz, aribb24, libpng).
+  - Replaced "Deploy Bundle (loose dylibs)" step with execution of `scripts/build/macos/bundle-macos-zh.sh` or `.../bundle-macos-generals.sh`.
+  - Bundle scripts now generate distributable `.app` bundles (`.zip`) with full `@rpath` resolution, icons, and proper environment setup.
+  - Simplified CI packaging logic from 129 lines to 36 lines by reusing and trusting existing bundle scripts.
+- Validation: CI workflow now uses the same bundling code as local development, reducing "works locally but fails in CI" regressions.
+- Prevention: For future CI artifact changes, always execute existing local scripts (build, bundle, test) in CI instead of reimplementing them; trust scripts over ad-hoc shell glue.

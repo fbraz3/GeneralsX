@@ -76,7 +76,12 @@ jobs:
           brew install autoconf autoconf-archive automake libtool
           
           # FFmpeg (required by GameEngineDevice for video playback via pkg-config)
-          brew install ffmpeg
+          # Note: FFmpeg brings most codec/protocol dependencies, but we explicitly list
+          # discovered dylibs to ensure no optional deps are missed in bundle step
+          brew install ffmpeg \
+            libbluray gnutls librist srt libssh zeromq \
+            libvpx webp jpeg-xl dav1d opencore-amr snappy aom libvmaf lame \
+            xz aribb24 libpng
           
           # Freetype + Fontconfig (required by font rendering)
           brew install freetype fontconfig
@@ -353,141 +358,41 @@ jobs:
             exit 1
           fi
 
-      - name: Deploy Bundle (Binary + Libraries + Wrapper)
+      - name: Bundle .app (GeneralsX macOS Distribution)
         if: success()
+        env:
+          VULKAN_SDK: ${{ env.VULKAN_SDK }}
         run: |
+          mkdir -p logs
+          echo "Bundling ${{ inputs.game }} into macOS .app package..."
+          
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
-            GAME_DIR="GeneralsMD"
+            echo "Executing: ./scripts/build/macos/bundle-macos-zh.sh"
+            ./scripts/build/macos/bundle-macos-zh.sh 2>&1 | tee logs/bundle_zh_macos.log
+            BUNDLE_STATUS=${PIPESTATUS[0]}
+            OUTPUT_ZIP="GeneralsXZH-macos-arm64.zip"
           else
-            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
-            GAME_DIR="Generals"
+            echo "Executing: ./scripts/build/macos/bundle-macos-generals.sh"
+            ./scripts/build/macos/bundle-macos-generals.sh 2>&1 | tee logs/bundle_generals_macos.log
+            BUNDLE_STATUS=${PIPESTATUS[0]}
+            OUTPUT_ZIP="GeneralsX-macos-arm64.zip"
           fi
           
-          RUNTIME_DIR="/tmp/GeneralsX-${{ inputs.game }}-macos-deploy"
-          mkdir -p "${RUNTIME_DIR}"
-          
-          echo "Creating deployment bundle at: ${RUNTIME_DIR}"
-          echo "  Copying executable..."
-          cp -v "${BINARY}" "${RUNTIME_DIR}/$(basename ${BINARY})"
-          chmod +x "${RUNTIME_DIR}/$(basename ${BINARY})"
-          
-          echo "  Copying framework libraries..."
-          
-          # GeneralsX @bugfix felipebraz 05/03/2026 Copy all dylibs from _deps (SDL3, DXVK, OpenAL, SDL3_image).
-          # Use -L to dereference symlinks (e.g. libSDL3.dylib -> libSDL3.0.dylib) so bundle has real files.
-          find "build/${{ inputs.preset }}/_deps" -name "*.dylib" 2>/dev/null | while IFS= read -r f; do
-            cp -Lv "$f" "${RUNTIME_DIR}/" || true
-          done
-
-          # GeneralsX @bugfix felipebraz 05/03/2026 Copy GameSpy dylib from build root (FetchContent outputs it
-          # directly to binaryDir, NOT under _deps like most other dependencies).
-          cp -Lv "build/${{ inputs.preset }}/libgamespy.dylib" "${RUNTIME_DIR}/"
-          
-          # MoltenVK dylib from Vulkan SDK (check both primary and fallback paths)
-          if [ -f "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" ]; then
-            echo "  Copying MoltenVK from macOS/lib..."
-            cp -v "$VULKAN_SDK/macOS/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/" || true
-          elif [ -f "$VULKAN_SDK/lib/libMoltenVK.dylib" ]; then
-            echo "  Copying MoltenVK from lib..."
-            cp -v "$VULKAN_SDK/lib/libMoltenVK.dylib" "${RUNTIME_DIR}/" || true
-          else
-            echo "  ⚠️ MoltenVK dylib not found in Vulkan SDK"
-          fi
-
-          # GeneralsX @bugfix felipebraz 04/03/2026 Bundle Vulkan loader dylibs required by DXVK at runtime.
-          if [ -f "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" ]; then
-            echo "  Copying Vulkan loader libvulkan.1.dylib from macOS/lib..."
-            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/" || true
-          elif [ -f "$VULKAN_SDK/lib/libvulkan.1.dylib" ]; then
-            echo "  Copying Vulkan loader libvulkan.1.dylib from lib..."
-            cp -v "$VULKAN_SDK/lib/libvulkan.1.dylib" "${RUNTIME_DIR}/" || true
-          else
-            echo "  ⚠️ libvulkan.1.dylib not found in Vulkan SDK"
-          fi
-
-          if [ -f "$VULKAN_SDK/macOS/lib/libvulkan.dylib" ]; then
-            echo "  Copying Vulkan loader libvulkan.dylib from macOS/lib..."
-            cp -v "$VULKAN_SDK/macOS/lib/libvulkan.dylib" "${RUNTIME_DIR}/" || true
-          elif [ -f "$VULKAN_SDK/lib/libvulkan.dylib" ]; then
-            echo "  Copying Vulkan loader libvulkan.dylib from lib..."
-            cp -v "$VULKAN_SDK/lib/libvulkan.dylib" "${RUNTIME_DIR}/" || true
-          else
-            echo "  ⚠️ libvulkan.dylib not found in Vulkan SDK"
-          fi
-
-          # Keep both names available even when SDK ships only one binary.
-          if [ -f "${RUNTIME_DIR}/libvulkan.1.dylib" ] && [ ! -f "${RUNTIME_DIR}/libvulkan.dylib" ]; then
-            ln -sf "libvulkan.1.dylib" "${RUNTIME_DIR}/libvulkan.dylib"
-          fi
-          if [ -f "${RUNTIME_DIR}/libvulkan.dylib" ] && [ ! -f "${RUNTIME_DIR}/libvulkan.1.dylib" ]; then
-            ln -sf "libvulkan.dylib" "${RUNTIME_DIR}/libvulkan.1.dylib"
-          fi
-
-          # GeneralsX @bugfix felipebraz 04/03/2026 Ship local ICD manifest so loader resolves bundled MoltenVK.
-          cat > "${RUNTIME_DIR}/MoltenVK_icd.json" <<'EOF'
-          {
-              "file_format_version": "1.0.0",
-              "ICD": {
-                  "library_path": "./libMoltenVK.dylib",
-                  "api_version": "1.4.0",
-                  "is_portability_driver": true
-              }
-          }
-          EOF
-
-          # GeneralsX @bugfix felipebraz 17/03/2026 Bundle DXVK runtime config to keep CI package behavior aligned with local deploy.
-          if [ -f "resources/dxvk/dxvk.conf" ]; then
-            cp -v "resources/dxvk/dxvk.conf" "${RUNTIME_DIR}/dxvk.conf"
-          else
-            echo "⚠️ resources/dxvk/dxvk.conf not found; DXVK will use defaults"
-          fi
-
-          # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime dylibs so bundle fails fast when incomplete.
-          for required in "libgamespy.dylib" "libdxvk_d3d8.0.dylib" "libSDL3.0.dylib" "libvulkan.1.dylib"; do
-            if [ ! -f "${RUNTIME_DIR}/${required}" ]; then
-              echo "❌ Missing required runtime library: ${required}"
+          if [ $BUNDLE_STATUS -eq 0 ]; then
+            echo "✅ Bundle completed successfully"
+            if [ -f "${OUTPUT_ZIP}" ]; then
+              echo "✅ Output: ${OUTPUT_ZIP}"
+              du -sh "${OUTPUT_ZIP}"
+            else
+              echo "❌ Output zip not found: ${OUTPUT_ZIP}"
               exit 1
             fi
-          done
-
-          # GeneralsX @bugfix felipebraz 17/03/2026 Generate macOS wrapper compatible with libs bundled at runtime root.
-          cat > "${RUNTIME_DIR}/run.sh" <<'EOF'
-          #!/bin/bash
-          # GeneralsX @build felipebraz 17/03/2026 Runtime wrapper for macOS CI bundle
-          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-          export DYLD_LIBRARY_PATH="${SCRIPT_DIR}:${DYLD_LIBRARY_PATH:-}"
-
-          if [[ -f "${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
-            export VK_ICD_FILENAMES="${SCRIPT_DIR}/MoltenVK_icd.json"
-          fi
-
-          if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; then
-            export CNC_GENERALS_INSTALLPATH="${SCRIPT_DIR}/../Generals/"
-          fi
-
-          EXECUTABLE=""
-          if [[ -f "${SCRIPT_DIR}/GeneralsXZH" ]]; then
-            EXECUTABLE="${SCRIPT_DIR}/GeneralsXZH"
-          elif [[ -f "${SCRIPT_DIR}/GeneralsX" ]]; then
-            EXECUTABLE="${SCRIPT_DIR}/GeneralsX"
           else
-            echo "ERROR: Game executable not found in ${SCRIPT_DIR}" >&2
+            echo "❌ Bundle script failed; see logs for details"
+            tail -100 logs/bundle_*_macos.log || true
             exit 1
-          fi
-
-          exec "${EXECUTABLE}" "$@"
-          EOF
-          chmod +x "${RUNTIME_DIR}/run.sh"
-          
-          echo "✅ Bundle ready at: ${RUNTIME_DIR}"
-          ls -lh "${RUNTIME_DIR}/"
-
-          ARCHIVE="/tmp/bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz"
-          echo "Creating archive: ${ARCHIVE}"
-          tar -czf "${ARCHIVE}" -C "$(dirname ${RUNTIME_DIR})" "$(basename ${RUNTIME_DIR})"
-          echo "Archive size: $(du -sh ${ARCHIVE} | cut -f1)"
+            fi
+          done
 
       - name: Upload Build Logs
         if: always()
@@ -497,11 +402,13 @@ jobs:
           path: logs/
           retention-days: 7
 
-      - name: Upload Deployment Bundle
+      - name: Upload Bundle
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz
-          path: /tmp/bundle-macos-${{ inputs.game }}-${{ inputs.preset }}.tar.gz
+          name: ${{ inputs.game }}-macos-arm64-bundle
+          path: |
+            GeneralsXZH-macos-arm64.zip
+            GeneralsX-macos-arm64.zip
           retention-days: 7
           if-no-files-found: warn
