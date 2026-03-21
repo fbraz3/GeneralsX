@@ -1351,13 +1351,9 @@ void W3DVolumetricShadow::RenderMeshVolume(Int meshIndex, Int lightIndex, const 
 	if( numVerts == 0 || numPolys == 0 )
 		return;
 
-	// GeneralsX @refactor BenderAI 10/02/2026
-	// Applied fighter19 pattern: transpose Matrix3D→Matrix4x4, cast pointer
-	Matrix4x4 mWorld(*meshXform);
-	Matrix4x4 mWorldTransposed = mWorld.Transpose();
-
-	///@todo: W3D always does transpose on all of matrix sets.  Slow???  Better to hack view matrix.
-	m_pDev->SetTransform(D3DTS_WORLD,(D3DMATRIX*)&mWorldTransposed);
+	// GeneralsX @bugfix BenderAI 21/03/2026 Align mesh world transform with Generals base shadow path.
+	D3DMATRIX dxmWorld = To_D3DMATRIX(*meshXform);
+	m_pDev->SetTransform(D3DTS_WORLD, &dxmWorld);
 
 	W3DBufferManager::W3DVertexBufferSlot *vbSlot=m_shadowVolumeVB[lightIndex][ meshIndex ];
 	if (!vbSlot)
@@ -1470,12 +1466,9 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 
 	m_pDev->SetIndices(shadowIndexBufferD3D,nShadowStartBatchVertex);
 
-	// GeneralsX @refactor BenderAI 10/02/2026
-	// Applied fighter19 pattern: transpose Matrix3D→Matrix4x4, cast pointer
-	Matrix4x4 mWorld(*meshXform);
-	Matrix4x4 mWorldTransposed = mWorld.Transpose();
-
-	m_pDev->SetTransform(D3DTS_WORLD,(D3DMATRIX*)&mWorldTransposed);
+	// GeneralsX @bugfix BenderAI 21/03/2026 Use stable DX8 matrix conversion for animated mesh shadow rendering.
+	D3DMATRIX dxmWorld = To_D3DMATRIX(*meshXform);
+	m_pDev->SetTransform(D3DTS_WORLD, &dxmWorld);
 
 	// GeneralsX @bugfix BenderAI 13/02/2026 Removed orphaned brace from Phase 1.5 refactoring
 	if (DX8Wrapper::_Is_Triangle_Draw_Enabled())
@@ -1624,11 +1617,10 @@ void W3DVolumetricShadow::RenderMeshVolumeBounds(Int meshIndex, Int lightIndex, 
 
 
 	//todo: replace this with mesh transform
-	// GeneralsX @refactor BenderAI 10/02/2026
-	// Applied fighter19 pattern: identity matrix transposed and cast
+	// GeneralsX @bugfix BenderAI 21/03/2026 Keep bounds pass consistent with Generals matrix convention.
 	Matrix4x4 mWorld(1);	//identity since boxes are pre-transformed to world space.
-	Matrix4x4 mWorldTransposed = mWorld.Transpose();
-	m_pDev->SetTransform(D3DTS_WORLD,(D3DMATRIX*)&mWorldTransposed);
+	D3DMATRIX dxmWorld = To_D3DMATRIX(mWorld);
+	m_pDev->SetTransform(D3DTS_WORLD, &dxmWorld);
 
 	m_pDev->SetStreamSource(0,shadowVertexBufferD3D,sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX));
 	m_pDev->SetVertexShader(SHADOW_DYNAMIC_VOLUME_FVF);
@@ -2168,6 +2160,9 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 			// construct the shadow volume at this light position in the
 			// passed shadow volume geometry index
 			//
+			// GeneralsX @bugfix BenderAI 21/03/2026 Clamp extrusion length to prevent runaway volume spikes on shallow light rays.
+			if (vectorScaleMax > MAX_EXTRUSION_LENGTH)
+				vectorScaleMax = MAX_EXTRUSION_LENGTH;
 			if (m_shadowVolume[ lightIndex ][meshIndex]->GetFlags() & SHADOW_DYNAMIC)
 				constructVolume( &lightPosObject, vectorScaleMax, lightIndex, meshIndex );
 			else
@@ -2644,9 +2639,13 @@ void W3DVolumetricShadow::constructVolume( Vector3 *lightPosObject,Real shadowEx
 		for (k=i+2; k<indicesPerMesh; k+=2)
 			if (silhouetteIndices[k]==currentEdgeEnd)
 			{	//swap the two edges
-				Int tempIndex=*(Int *)(&silhouetteIndices[i+2]);
-				*(Int *)&silhouetteIndices[i+2]=*(Int *)&silhouetteIndices[k];
-				*(Int *)&silhouetteIndices[k]=tempIndex;
+				// GeneralsX @bugfix BenderAI 21/03/2026 Avoid strict-aliasing/alignment UB when swapping edge pairs on 64-bit/ARM.
+				Short edge0a = silhouetteIndices[i+2];
+				Short edge0b = silhouetteIndices[i+3];
+				silhouetteIndices[i+2] = silhouetteIndices[k];
+				silhouetteIndices[i+3] = silhouetteIndices[k+1];
+				silhouetteIndices[k] = edge0a;
+				silhouetteIndices[k+1] = edge0b;
 				break;
 			}
 
@@ -2873,9 +2872,13 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 			for (k=i+2; k<indicesPerMesh; k+=2)
 				if (silhouetteIndices[k]==currentEdgeEnd)
 				{	//swap the two edges
-					Int tempIndex=*(Int *)(&silhouetteIndices[i+2]);
-					*(Int *)&silhouetteIndices[i+2]=*(Int *)&silhouetteIndices[k];
-					*(Int *)&silhouetteIndices[k]=tempIndex;
+					// GeneralsX @bugfix BenderAI 21/03/2026 Avoid strict-aliasing/alignment UB when swapping edge pairs on 64-bit/ARM.
+					Short edge0a = silhouetteIndices[i+2];
+					Short edge0b = silhouetteIndices[i+3];
+					silhouetteIndices[i+2] = silhouetteIndices[k];
+					silhouetteIndices[i+3] = silhouetteIndices[k+1];
+					silhouetteIndices[k] = edge0a;
+					silhouetteIndices[k+1] = edge0b;
 					break;
 				}
 

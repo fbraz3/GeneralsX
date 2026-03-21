@@ -334,7 +334,8 @@ void W3DProjectedShadowManager::updateRenderTargetTextures()
 	for( shadow = m_shadowList; shadow; shadow = shadow->m_next )
 	{	//decals don't need any updates on a per-frame basis since
 		//the image never changes.
-		if (shadow->m_type != SHADOW_DECAL)
+		// GeneralsX @bugfix BenderAI 21/03/2026 ShadowType is bitmask; only projection-type shadows require texture updates.
+		if (shadow->m_type & (SHADOW_PROJECTION | SHADOW_DYNAMIC_PROJECTION))
 			shadow->update();
 	}
 }
@@ -1717,7 +1718,8 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 	if (shadowInfo)
 	{
 		//determine what kind of shadow is needed
-		if (shadowInfo->m_type==SHADOW_DECAL)
+		// GeneralsX @bugfix BenderAI 21/03/2026 Accept combined decal flags (directional/dynamic) using bitmask checks.
+		if (shadowInfo->m_type & SHADOW_DECAL)
 		{		//simple decal using the premade texture specified.
 				//can be always perpendicular to model's z-axis or projected
 				//onto world geometry.
@@ -1753,7 +1755,7 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 					m_W3DShadowTextureManager->addTexture( st );
 					st->setTexture(w3dTexture);
 				}
-				shadowType=SHADOW_DECAL;
+				shadowType=(ShadowType)(shadowInfo->m_type | SHADOW_DECAL);
 				allowSunDirection=shadowInfo->m_type & SHADOW_DIRECTIONAL_PROJECTION;
 				decalSizeX=shadowInfo->m_sizeX;
 				decalSizeY=shadowInfo->m_sizeY;
@@ -1761,7 +1763,7 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 				decalOffsetY=shadowInfo->m_offsetY;
 		}
 		else
-		if (shadowInfo->m_type==SHADOW_PROJECTION)
+		if (shadowInfo->m_type & (SHADOW_PROJECTION | SHADOW_DYNAMIC_PROJECTION))
 		{		//projection of object geometry into a texture.
 				//can be applied on a plane horizontal to model's z-axis or
 				//projected onto world geometry.
@@ -1788,7 +1790,7 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 					if (st==nullptr)
 						return nullptr;	//could not create the shadow texture
 				}
-				shadowType=SHADOW_PROJECTION;
+				shadowType=(ShadowType)(shadowInfo->m_type | SHADOW_PROJECTION);
 		}
 	}
 	else
@@ -1854,6 +1856,11 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 	shadow->m_decalOffsetV= decalOffsetY;
 
 	shadow->m_flags	= allowSunDirection;
+	if ((shadowType & SHADOW_DYNAMIC_PROJECTION) || (shadowInfo && shadowInfo->allowUpdates))
+	{
+		// GeneralsX @bugfix BenderAI 21/03/2026 Keep projected shadow texture in sync for animated casters without root translation.
+		shadow->m_flags |= SHADOW_DYNAMIC_PROJECTION;
+	}
 
 	shadow->init();
 
@@ -2104,7 +2111,7 @@ void W3DProjectedShadow::init()
 
 	DEBUG_ASSERTCRASH(m_shadowProjector == nullptr, ("Init of existing shadow projector"));
 
-	if (m_type == SHADOW_PROJECTION)
+	if (m_type & SHADOW_PROJECTION)
 	{
 		m_shadowProjector = NEW_REF(TexProjectClass,());
 		m_shadowProjector->Set_Intensity(0.4f,true);
@@ -2155,7 +2162,7 @@ void W3DProjectedShadow::updateTexture(Vector3 &lightPos)
 		m_shadowTexture[0]->updateBounds(TheW3DShadowManager->getLightPosWorld(0),m_robj);	//update local shadow bounds
 	}
 	else
-	if (m_type == SHADOW_DECAL)
+	if (m_type & SHADOW_DECAL)
 	{	//decal shadows use artist supplied textures.  We just need to tweak the uv coordinates to match
 		//the light direction.
 		Vector3 objPos=m_robj->Get_Position();
@@ -2204,12 +2211,17 @@ void W3DProjectedShadow::update()
 	{	//light has moved since last time this shadow was calculated. Need update
 		updateTexture(TheW3DShadowManager->getLightPosWorld(0));
 	}
+	else if (m_flags & SHADOW_DYNAMIC_PROJECTION)
+	{
+		// GeneralsX @bugfix BenderAI 21/03/2026 Animated sub-mesh shadows need per-frame texture refresh even without object translation.
+		updateTexture(TheW3DShadowManager->getLightPosWorld(0));
+	}
 	if (m_lastObjPosition != m_robj->Get_Position())
 	{	//object has moved.  Texture stays the same but projection matrix needs updating.
 		//force light always 2000 units from object - for some reason projection fails if
 		//light is too far.
 		///@todo: See why infinite light sources don't project shadows correctly.
-		if (m_type == SHADOW_PROJECTION)
+		if (m_type & SHADOW_PROJECTION)
 		{
 			Vector3 objToLight=TheW3DShadowManager->getLightPosWorld(0) - m_robj->Get_Position();
 			objToLight.Normalize();

@@ -1,5 +1,26 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-21 - Rotor streak artifacts from volumetric edge-pair UB and unbounded extrusion
+
+- **Problem**: Animated helicopter rotor shadows produced rotating black streaks extending to the screen edge.
+- **Root cause**:
+  1. Silhouette edge sorting in `W3DVolumetricShadow::constructVolume` and `constructVolumeVB` used `Int` pointer reinterprets on `Short` arrays to swap edge pairs, which is strict-aliasing/alignment UB on 64-bit/ARM and can corrupt strip connectivity.
+  2. Shadow extrusion distance (`vectorScaleMax`) was passed to volume construction without clamping in `updateMeshVolume`, so shallow light rays could generate runaway extrusion spikes.
+- **Fix**:
+  - Replaced `Int` reinterpret-cast swaps with explicit `Short` pair swaps.
+  - Clamped `vectorScaleMax` to `MAX_EXTRUSION_LENGTH` before calling `constructVolume` / `constructVolumeVB`.
+- **Validation**: `GeneralsXZH` macOS build and deploy completed successfully after the patch.
+- **Prevention**: Avoid packed type-punning in geometry index pipelines; always clamp world-space extrusion lengths before feeding volume builders.
+
+## Session 2026-03-21 - Avoid Matrix4x4 transpose shortcuts in ZH volumetric shadow world transforms
+
+- **Problem**: Animated object shadows in Zero Hour rendered with incorrect orientation while static shadows remained correct.
+- **Symptom**: Moving/animated casters (for example rotor or moving sub-mesh cases) produced visibly wrong projected/stencil shadow geometry.
+- **Root cause**: Zero Hour `W3DVolumetricShadow.cpp` had a refactor that replaced the stable `To_D3DMATRIX(...)` path with manual `Matrix4x4(...).Transpose()` and direct `D3DMATRIX` cast in three render paths (`RenderMeshVolume`, `RenderDynamicMeshVolume`, and bounds rendering). This introduced matrix-convention drift versus the Generals base implementation.
+- **Fix**: Restored Generals-stable matrix conversion in ZH using `To_D3DMATRIX(*meshXform)` (and `To_D3DMATRIX(identity)` for bounds path), removing manual transpose/cast usage.
+- **Validation**: `GeneralsXZH` macOS build completed successfully after patch.
+- **Prevention**: For shadow/render transform uploads, prefer engine conversion helpers (`To_D3DMATRIX`) over manual transpose/cast patterns, and always diff against Generals base before accepting ZH-only math changes.
+
 ## Session 2026-03-20 - DXVK on macOS requires DXVK_WSI_DRIVER + SDL3 installed for meson
 
 - **Problem**: CI-built macOS .app crashes with "unknown exception" from `TheDisplay->init()`.
