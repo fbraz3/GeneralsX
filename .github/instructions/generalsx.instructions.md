@@ -414,12 +414,13 @@ Common parameters for testing `GeneralsX` and `GeneralsXZH`:
 # Load a mod (testing mod compatibility)
 ./GeneralsXZH -mod /path/to/mod.big
 
-# Route legacy debug logging to console path (diagnostics)
+# Route legacy debug logging to console path (diagnostics; debug builds only)
 ./GeneralsXZH -logToCon
 ```
 
 Important Linux note:
 - `-logToCon` enables `DEBUG_LOG` console routing, but critical runtime traces may still require direct `fprintf(stderr, ...)` probes because `OutputDebugString`-based paths are not reliably visible on Linux.
+- **`-logToCon` is only available in debug builds** (`RTS_BUILD_OPTION_DEBUG=ON`); it is unrecognized and has no effect in release builds.
 - For diagnostics, prefer capturing stderr to a log file and grep targeted markers.
 
 Recommended debugging command:
