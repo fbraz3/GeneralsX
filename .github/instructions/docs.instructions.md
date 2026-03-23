@@ -6,6 +6,7 @@ applyTo: '**/*.md'
 
 - All documentation **MUST BE** in English
 - Use Markdown format
+- Keep `docs/ETC/COMMAND_LINE_PARAMETERS.md` updated with runtime-critical diagnostic flags and caveats (for example `-logToCon` behavior differences on Linux).
 - Don't add documentation files directly in the root `docs/` folder
 - The root folder `/` should only contain project-level files (README.md, LICENSE, etc.)
 - **Active Work**: Place in `docs/WORKDIR/` with appropriate subdirectory (phases, planning, reports, support, audit, lessons)

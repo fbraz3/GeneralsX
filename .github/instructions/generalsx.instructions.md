@@ -413,6 +413,19 @@ Common parameters for testing `GeneralsX` and `GeneralsXZH`:
 
 # Load a mod (testing mod compatibility)
 ./GeneralsXZH -mod /path/to/mod.big
+
+# Route legacy debug logging to console path (diagnostics)
+./GeneralsXZH -logToCon
+```
+
+Important Linux note:
+- `-logToCon` enables `DEBUG_LOG` console routing, but critical runtime traces may still require direct `fprintf(stderr, ...)` probes because `OutputDebugString`-based paths are not reliably visible on Linux.
+- For diagnostics, prefer capturing stderr to a log file and grep targeted markers.
+
+Recommended debugging command:
+```bash
+cd ~/GeneralsX/GeneralsMD
+./run.sh -win -logToCon 2>&1 | grep -v "D3DRS_PATCHSEGMENTS" | tee ~/Projects/GeneralsX/logs/manual_run.log
 ```
 
 For a full list, see `docs/ETC/COMMAND_LINE_PARAMETERS.md` (create if missing).
