@@ -32,6 +32,7 @@
 #include "StdDevice/Common/StdLocalFileSystem.h"
 #include "StdDevice/Common/StdLocalFile.h"
 
+#include <algorithm>
 #include <filesystem>
 
 #ifndef _WIN32
