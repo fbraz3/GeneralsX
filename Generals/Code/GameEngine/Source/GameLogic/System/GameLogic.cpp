@@ -1396,6 +1396,7 @@ void GameLogic::startNewGame( Bool loadingSaveGame )
 		if (numTeams > 1)
 		{
 			// add in the multiplayer victory/defeat scripts
+			// GeneralsX @bugfix Copilot 22/03/2026 Load shared multiplayer scripts relative to the asset root on Linux.
 			AsciiString path = "Data\\Scripts\\MultiplayerScripts.scb";
 			CachedFileInputStream theInputStream;
 			if (theInputStream.open(path))

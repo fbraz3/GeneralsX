@@ -507,7 +507,8 @@ void SidesList::prepareForMP_or_Skirmish()
 		}
 	}
 	if (!gotScripts) {
-		AsciiString path = "data\\Scripts\\SkirmishScripts.scb";
+		// GeneralsX @bugfix Copilot 22/03/2026 Load default skirmish scripts relative to the configured asset root.
+		AsciiString path = "Data\\Scripts\\SkirmishScripts.scb";
 		DEBUG_LOG(("Skirmish map using standard scripts"));
 		m_skirmishTeamrec.clear();
 		CachedFileInputStream theInputStream;

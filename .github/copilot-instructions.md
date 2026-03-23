@@ -11,6 +11,8 @@
 - **DXVK source/update policy (macOS)**: Default build uses remote fork branch `generalsx-macos-v2.6` (auto-update enabled in CMake). Use local DXVK checkout only when explicitly needed via `-DSAGE_DXVK_USE_LOCAL_FORK=ON`; do not patch files under `build/_deps/...` directly.
 - **Docs workflow**: Monthly diary in `docs/DEV_BLOG/YYYY-MM-DIARY.md` (newest-first). Active work notes in `docs/WORKDIR/` (phases/planning/reports/support/audit/lessons). Do not drop working docs directly under `docs/` root.
 - **Common pitfalls**: Manual memory (delete/delete[]; STLPort for VC6). Retail compatibility matters—debug options break replays. Watch include-case on Linux; scripts/cpp/fixIncludesCase.sh can help. Avoid big refactors mixed with gameplay fixes.
+- **Logging diagnostics pitfall**: `-logToCon` is useful for enabling legacy `DEBUG_LOG` console routing, but on Linux you often still need explicit `fprintf(stderr, ...)` probes because `OutputDebugString` paths are not reliably visible.
 - **Where to tweak build flags**: `CMakePresets.json` for presets; `cmake/config-build.cmake` and `cmake/dx8.cmake` for renderer flags; `cmake/miles.cmake` for audio; `cmake/mingw.cmake` for cross builds.
 - **Run recipes**: Linux binary smoke: `./scripts/docker-smoke-test-zh.sh linux64-deploy`. Quick Windows run (win32 preset): see tasks using `scripts/run_zh.ps1`/`scripts/run_zh.ps1 -Generals`.
+- **Linux log capture recipe**: `cd ~/GeneralsX/GeneralsMD && ./run.sh -win -logToCon 2>&1 | grep -v "D3DRS_PATCHSEGMENTS" | tee ~/Projects/GeneralsX/logs/manual_run.log`.
 - **When backporting to Generals**: Only for shared platform/back-end changes; avoid expansion-specific logic moves. Keep Zero Hour first.

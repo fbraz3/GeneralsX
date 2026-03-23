@@ -74,7 +74,12 @@ Generals/logs/
 # External reference repositories (large, don't commit)
 references/
 
+# Release bundles
+GeneralsX-macos-*.zip
+GeneralsXZH-macos-*.zip
+GeneralsX-linux-*.tar.gz
+GeneralsXZH-linux-*.tar.gz
+
 #tmp and log files on root folder
-*-macos-*.zip
 logs_*.zip
 *.log

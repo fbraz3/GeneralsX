@@ -18,6 +18,7 @@ Common command line parameters for `GeneralsX` (Generals) and `GeneralsXZH` (Zer
 | `-noshellmap` | Disables the shell map (skip intro) | `./GeneralsXZH -noshellmap` |
 | `-quickstart` | Quick launch (skip movies + shell) | `./GeneralsXZH -quickstart` |
 | `-debug` | Enable debug mode | `./GeneralsXZH -debug` |
+| `-logToCon` | Enables legacy debug-log console routing (`DEBUG_LOG`). **Debug builds only** (`ALLOW_DEBUG_UTILS` / `RTS_BUILD_OPTION_DEBUG=ON`); ignored in release builds. | `./GeneralsXZH -logToCon` |
 
 ## Mods & Content
 
@@ -63,6 +64,23 @@ Test in windowed mode at 1440p resolution.
 - Must use `-` prefix
 - Paths must use forward slashes
 - Some parameters may not work until Linux port is complete
+- `-logToCon` sets a debug flag, but many Linux diagnostics still require explicit `fprintf(stderr, ...)` instrumentation because `OutputDebugString` paths are stubbed/non-visible on this platform.
+- **`-logToCon` is only available in debug builds** (`RTS_BUILD_OPTION_DEBUG=ON` / `ALLOW_DEBUG_UTILS` defined). It is unrecognized and has no effect in release builds.
+
+## Logging Diagnostics Recipe
+
+Use this when investigating runtime behavior (example: skirmish startup flow):
+
+```bash
+cd ~/GeneralsX/GeneralsMD
+./run.sh -win -logToCon 2>&1 | grep -v "D3DRS_PATCHSEGMENTS" | tee ~/Projects/GeneralsX/logs/manual_run.log
+```
+
+Then filter the generated log for targeted markers:
+
+```bash
+grep -n "SKIRMISH_DIAG\|ScoreScreen\|SkirmishGameOptionsMenu" ~/Projects/GeneralsX/logs/manual_run.log
+```
 
 ## Source Code Reference
 
