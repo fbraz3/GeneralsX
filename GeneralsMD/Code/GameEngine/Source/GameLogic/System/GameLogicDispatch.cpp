@@ -265,6 +265,13 @@ void GameLogic::clearGameData( Bool showScoreScreen )
 	if ((!isInShellGame() || !isInGame()) && showScoreScreen && !TheGlobalData->m_headless)
 	{
 		shellGame = TRUE;
+		// GeneralsX @bugfix Copilot 22/03/2026 Emit runtime diagnostics when ScoreScreen is pushed after game end.
+		fprintf(stderr, "[SKIRMISH_DIAG] clearGameData showScoreScreen=%d isInShellGame=%d isInGame=%d headless=%d -> pushing ScoreScreen\n",
+			showScoreScreen ? 1 : 0,
+			isInShellGame() ? 1 : 0,
+			isInGame() ? 1 : 0,
+			TheGlobalData->m_headless ? 1 : 0);
+		fflush(stderr);
 		TheTransitionHandler->setGroup("FadeWholeScreen");
 		TheShell->push("Menus/ScoreScreen.wnd");
 		TheShell->showShell(FALSE); // by passing in false, we don't want to run the Init on the shell screen we just pushed on

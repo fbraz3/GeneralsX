@@ -498,6 +498,13 @@ void StdBIGFileSystem::init() {
 	const Bool loadedPrimaryAssets = loadPrimaryGameAssets(this, &primaryAssetsDirectory);
 	DEBUG_ASSERTCRASH(loadedPrimaryAssets, ("No BIG files were loaded for the primary game assets."));
 
+	// GeneralsX @bugfix felipebraz 23/03/2026 Propagate the resolved asset root to the local file system.
+	// On Linux/macOS the binary cwd and the game data directory (asset root) are separate. Loose files like
+	// Data\Scripts\SkirmishScripts.scb must be resolvable from the asset root, not just from cwd.
+	if (primaryAssetsDirectory.isNotEmpty()) {
+		TheLocalFileSystem->setAssetRootPath(primaryAssetsDirectory);
+	}
+
 #if RTS_ZEROHOUR
 	loadBaseGeneralsAssetsForZH(this, primaryAssetsDirectory);
 #endif

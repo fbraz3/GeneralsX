@@ -517,22 +517,32 @@ void SidesList::prepareForMP_or_Skirmish()
 		}
 	}
 	if (!gotScripts) {
-		AsciiString path = "data\\Scripts\\SkirmishScripts.scb";
+		// GeneralsX @bugfix Copilot 22/03/2026 Load default skirmish scripts relative to the configured asset root.
+		// GeneralsX @bugfix Copilot 22/03/2026 Emit runtime diagnostics for SkirmishScripts loading on Linux.
+		AsciiString path = "Data\\Scripts\\SkirmishScripts.scb";
+		fprintf(stderr, "[SKIRMISH_DIAG] SidesList::prepareForMP_or_Skirmish gotScripts=false path='%s'\n", path.str());
+		fflush(stderr);
 		DEBUG_LOG(("Skirmish map using standard scripts"));
 		m_skirmishTeamrec.clear();
 		CachedFileInputStream theInputStream;
 		if (theInputStream.open(path)) {
+				fprintf(stderr, "[SKIRMISH_DIAG] Opened SkirmishScripts.scb successfully\n");
+				fflush(stderr);
 				ChunkInputStream *pStrm = &theInputStream;
 				DataChunkInput file( pStrm );
 				file.registerParser( "PlayerScriptsList", AsciiString::TheEmptyString, ScriptList::ParseScriptsDataChunk );
 				file.registerParser( "ScriptsPlayers", AsciiString::TheEmptyString, ParsePlayersDataChunk );
 				file.registerParser( "ScriptTeams", AsciiString::TheEmptyString, ParseTeamsDataChunk );
 				if (!file.parse(this)) {
+					fprintf(stderr, "[SKIRMISH_DIAG] ERROR parsing SkirmishScripts.scb\n");
+					fflush(stderr);
 					DEBUG_LOG(("ERROR - Unable to read in skirmish scripts."));
 					return;
 				}
 				ScriptList *scripts[MAX_PLAYER_COUNT];
 				Int count = ScriptList::getReadScripts(scripts);
+				fprintf(stderr, "[SKIRMISH_DIAG] Parsed SkirmishScripts.scb scriptCount=%d\n", count);
+				fflush(stderr);
 				Int i;
 				for (i=0; i<count; i++) {
 					Int curSide = -1;
@@ -553,6 +563,9 @@ void SidesList::prepareForMP_or_Skirmish()
 				for (i=0; i<MAX_PLAYER_COUNT; i++) {
 					static_readPlayerNames[i].clear();
 				}
+		} else {
+			fprintf(stderr, "[SKIRMISH_DIAG] FAILED to open SkirmishScripts.scb path='%s'\n", path.str());
+			fflush(stderr);
 		}
 
 

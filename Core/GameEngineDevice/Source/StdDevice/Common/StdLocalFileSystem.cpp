@@ -34,6 +34,14 @@
 
 #include <filesystem>
 
+#ifndef _WIN32
+// GeneralsX @bugfix felipebraz 23/03/2026 Asset root fallback path for loose file lookups.
+// On Linux/macOS the game binary's cwd and the data directory (asset root, CNC_GENERALS_ZH_PATH) are separate.
+// The StdBIGFileSystem sets this after resolving the primary asset directory so that relative paths like
+// "Data\Scripts\SkirmishScripts.scb" can be found in the asset root when the cwd lookup fails.
+static std::filesystem::path s_assetFallbackPath;
+#endif
+
 StdLocalFileSystem::StdLocalFileSystem() : LocalFileSystem()
 {
 }
@@ -62,6 +70,17 @@ static std::filesystem::path fixFilenameFromWindowsPath(const Char *filename, In
 	if (!std::filesystem::exists(path, ec) &&
 		((!(access & File::WRITE)) || ((access & File::WRITE) && !std::filesystem::exists(path.parent_path(), ec))))
 	{
+		// GeneralsX @bugfix felipebraz 23/03/2026 Before attempting expensive case-insensitive cwd traversal,
+		// check if the relative path resolves directly from the asset root (e.g. CNC_GENERALS_ZH_PATH).
+		// On Windows cwd == install dir so this is never needed; on Linux/macOS they are separate.
+		if (!s_assetFallbackPath.empty() && path.is_relative()) {
+			std::filesystem::path assetRootPath = s_assetFallbackPath / path;
+			std::error_code ecAsset;
+			const bool writeAndParentExists = (access & File::WRITE) && std::filesystem::exists(assetRootPath.parent_path(), ecAsset);
+			if (std::filesystem::exists(assetRootPath, ecAsset) || writeAndParentExists) {
+				return assetRootPath;
+			}
+		}
 		// Traverse path to try and match case-insensitively
 		std::filesystem::path parent = path.parent_path();
 
@@ -348,3 +367,16 @@ AsciiString StdLocalFileSystem::normalizePath(const AsciiString& filePath) const
 	std::filesystem::path pathNonNormalized(nonNormalized);
 	return AsciiString(pathNonNormalized.lexically_normal().string().c_str());
 }
+
+#ifndef _WIN32
+// GeneralsX @bugfix felipebraz 23/03/2026 Receive the asset root path from StdBIGFileSystem after it resolves
+// CNC_GENERALS_ZH_PATH. Used as a fallback in fixFilenameFromWindowsPath so that loose data files
+// (e.g. Data\Scripts\SkirmishScripts.scb) can be found even when cwd != asset root directory.
+void StdLocalFileSystem::setAssetRootPath(const AsciiString& path)
+{
+	std::string p(path.str());
+	std::replace(p.begin(), p.end(), '\\', '/');
+	s_assetFallbackPath = std::filesystem::path(std::move(p));
+	DEBUG_LOG(("StdLocalFileSystem::setAssetRootPath - asset fallback path set to '%s'", s_assetFallbackPath.string().c_str()));
+}
+#endif

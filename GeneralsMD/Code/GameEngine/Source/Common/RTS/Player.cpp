@@ -795,6 +795,8 @@ void Player::initFromDict(const Dict* d)
 	Bool exists;
 	Bool skirmish = false;
 	Bool forceHuman = false;
+	// GeneralsX @bugfix Copilot 22/03/2026 Initialize multiplayer start index before any skirmish name/script qualification.
+	m_mpStartIndex = d->getInt(TheKey_multiplayerStartIndex, &exists);
 	if (d->getBool(TheKey_playerIsSkirmish, &exists))
 	{
 
@@ -862,7 +864,6 @@ void Player::initFromDict(const Dict* d)
 	{
 		setPlayerType(PLAYER_COMPUTER, skirmish);
 	}
-	m_mpStartIndex = d->getInt(TheKey_multiplayerStartIndex, &exists);
 	if (skirmish) {
 		// Copy and qualify scripts, and teams.
 

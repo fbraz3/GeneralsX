@@ -1557,19 +1557,29 @@ void GameLogic::startNewGame( Bool loadingSaveGame )
 		if (numTeams > 1)
 		{
 			// add in the multiplayer victory/defeat scripts
+			// GeneralsX @bugfix Copilot 22/03/2026 Load shared multiplayer scripts relative to the asset root on Linux.
+			// GeneralsX @bugfix Copilot 22/03/2026 Emit runtime diagnostics for MultiplayerScripts loading on Linux.
 			AsciiString path = "Data\\Scripts\\MultiplayerScripts.scb";
+			fprintf(stderr, "[SKIRMISH_DIAG] GameLogic::startNewGame numTeams=%d isSkirmish=%d path='%s'\n", numTeams, isSkirmishOrSkirmishReplay ? 1 : 0, path.str());
+			fflush(stderr);
 			CachedFileInputStream theInputStream;
 			if (theInputStream.open(path))
 			{
+				fprintf(stderr, "[SKIRMISH_DIAG] Opened MultiplayerScripts.scb successfully\n");
+				fflush(stderr);
 				ChunkInputStream *pStrm = &theInputStream;
 				DataChunkInput file( pStrm );
 				file.registerParser( "PlayerScriptsList", AsciiString::TheEmptyString, ScriptList::ParseScriptsDataChunk );
 				if (!file.parse(nullptr)) {
+					fprintf(stderr, "[SKIRMISH_DIAG] ERROR parsing MultiplayerScripts.scb\n");
+					fflush(stderr);
 					DEBUG_LOG(("ERROR - Unable to read in multiplayer scripts."));
 					return;
 				}
 				ScriptList *scripts[MAX_PLAYER_COUNT];
 				Int count = ScriptList::getReadScripts(scripts);
+				fprintf(stderr, "[SKIRMISH_DIAG] Parsed MultiplayerScripts.scb scriptCount=%d\n", count);
+				fflush(stderr);
 				if (count)
 				{
 					ScriptList *pSL = TheSidesList->getSideInfo(0)->getScriptList();
@@ -1588,6 +1598,11 @@ void GameLogic::startNewGame( Bool loadingSaveGame )
 				{
 					deleteInstance(scripts[i]);
 				}
+			}
+			else
+			{
+				fprintf(stderr, "[SKIRMISH_DIAG] FAILED to open MultiplayerScripts.scb path='%s'\n", path.str());
+				fflush(stderr);
 			}
 		}
 
