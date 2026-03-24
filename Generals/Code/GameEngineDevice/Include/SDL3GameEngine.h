@@ -94,7 +94,8 @@ public:
 	virtual FunctionLexicon *createFunctionLexicon(void);
 	virtual Radar *createRadar(void);
 	virtual WebBrowser *createWebBrowser(void);
-	virtual ParticleSystemManager* createParticleSystemManager(void);
+	// GeneralsX @bugfix Copilot 24/03/2026 Match upstream GameEngine pure-virtual signature after sync.
+	virtual ParticleSystemManager* createParticleSystemManager(Bool dummy);
 	virtual AudioManager *createAudioManager(void);
 
 	// SDL3 specific

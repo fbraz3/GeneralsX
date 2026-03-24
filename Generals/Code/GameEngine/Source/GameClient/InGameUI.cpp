@@ -1337,9 +1337,9 @@ void InGameUI::init()
 	been moved to where all the other translators are attached in game client */
 
 	// create the tactical view
-	if (TheDisplay)
+	TheTacticalView = createView(TheGlobalData->m_headless);
+	if (TheTacticalView && TheDisplay)
 	{
-		TheTacticalView = createView();
 		TheTacticalView->init();
 		TheDisplay->attachView( TheTacticalView );
 

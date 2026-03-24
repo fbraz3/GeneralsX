@@ -1367,15 +1367,16 @@ void InGameUI::init()
 	been moved to where all the other translators are attached in game client */
 
 	// create the tactical view
-	if (TheDisplay)
+	TheTacticalView = createView(TheGlobalData->m_headless);
+	if (TheTacticalView && TheDisplay)
 	{
-		TheTacticalView = createView();
 		TheTacticalView->init();
 		TheDisplay->attachView( TheTacticalView );
 
 		// make the tactical display the full screen width and height
 		TheTacticalView->setWidth( TheDisplay->getWidth() );
 		TheTacticalView->setHeight( TheDisplay->getHeight() );
+		// GeneralsX @tweak Copilot 24/03/2026 Preserve cross-platform tactical camera height limits.
 		TheTacticalView->setCameraHeightAboveGroundLimitsToDefault();
 	}
 

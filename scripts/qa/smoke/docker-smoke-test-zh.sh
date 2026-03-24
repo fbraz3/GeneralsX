@@ -10,6 +10,10 @@ LOG_FILE="logs/smoke_test_zh_${PRESET}.log"
 DOCKER_IMAGE="generalsx/linux-builder:latest"
 CONTAINER_NAME="generalsx-smoke-test-zh-${PRESET}"
 
+# GeneralsX @build BenderAI 24/03/2026 Preserve host file ownership for smoke-test logs and artifacts.
+HOST_UID="$(id -u)"
+HOST_GID="$(id -g)"
+
 echo "🧪 Smoke testing GeneralsXZH (Linux)..."
 mkdir -p logs
 
@@ -42,10 +46,14 @@ fi
 
 docker run --rm \
     --name "$CONTAINER_NAME" \
+    --user "${HOST_UID}:${HOST_GID}" \
+    -e HOME=/tmp/generalsx-home \
+    -e XDG_CACHE_HOME=/tmp/generalsx-cache \
     -v "$PWD:/work" \
     -w /work \
     "$DOCKER_IMAGE" \
     bash -c "
+        mkdir -p \"\$HOME\" \"\$XDG_CACHE_HOME\"
         echo '🚀 Launching GeneralsXZH...'
         echo '   (Expect crash, we want to see initialization output)'
         echo ''
