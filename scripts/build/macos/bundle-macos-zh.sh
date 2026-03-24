@@ -10,6 +10,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/macos-vulkan"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
+FONTCONFIG_ETC_DIR="${BUILD_DIR}/vcpkg_installed/arm64-osx/etc/fonts"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
 # GeneralsX @bugfix BenderAI 09/03/2026 Resolve DXVK dylib paths from both install copy and Meson output to avoid stale/incomplete bundles.
 DXVK_D3D8_LIB_INSTALL="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
@@ -335,6 +336,17 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail on macOS"
 fi
 
+# GeneralsX @bugfix Copilot 24/03/2026 Bundle Fontconfig config so FreeType/Fontconfig font matching works in app launcher runtime.
+if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
+    echo "  + Fontconfig config"
+    mkdir -p "${RESOURCES_DIR}/fontconfig"
+    cp "${FONTCONFIG_ETC_DIR}/fonts.conf" "${RESOURCES_DIR}/fontconfig/fonts.conf"
+    rm -rf "${RESOURCES_DIR}/fontconfig/conf.d"
+    cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RESOURCES_DIR}/fontconfig/conf.d"
+else
+    echo "WARNING: ${FONTCONFIG_ETC_DIR}/fonts.conf not found - in-game font lookup may fail on macOS"
+fi
+
 # App launcher wrapper
 echo "  + App launcher"
 cat > "${MACOS_DIR}/run.sh" << 'WRAPPER'
@@ -368,6 +380,12 @@ fi
 
 if [[ -f "${RESOURCES_DIR}/dxvk.conf" ]]; then
     export DXVK_CONFIG_FILE="${RESOURCES_DIR}/dxvk.conf"
+fi
+
+# GeneralsX @bugfix Copilot 24/03/2026 Set bundled Fontconfig config path to avoid "Cannot load default config file: (null)" on macOS.
+if [[ -f "${RESOURCES_DIR}/fontconfig/fonts.conf" ]]; then
+    export FONTCONFIG_FILE="${RESOURCES_DIR}/fontconfig/fonts.conf"
+    export FONTCONFIG_PATH="${RESOURCES_DIR}/fontconfig"
 fi
 
 # Run from the detected Zero Hour asset root when available.

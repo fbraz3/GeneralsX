@@ -10,6 +10,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/macos-vulkan"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
+FONTCONFIG_ETC_DIR="${BUILD_DIR}/vcpkg_installed/arm64-osx/etc/fonts"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.dylib"
 # GeneralsX @bugfix BenderAI 09/03/2026 Resolve DXVK dylib paths from both install copy and Meson output to avoid stale runtime libs.
 DXVK_D3D8_LIB_INSTALL="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
@@ -122,6 +123,18 @@ else
     exit 1
 fi
 
+# GeneralsX @bugfix Copilot 24/03/2026 Deploy Fontconfig config into runtime dir so FreeType/Fontconfig can resolve fonts on macOS.
+echo "  Deploying Fontconfig config..."
+if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
+    mkdir -p "${RUNTIME_DIR}/fontconfig"
+    cp -v "${FONTCONFIG_ETC_DIR}/fonts.conf" "${RUNTIME_DIR}/fontconfig/fonts.conf"
+    rm -rf "${RUNTIME_DIR}/fontconfig/conf.d"
+    cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RUNTIME_DIR}/fontconfig/conf.d"
+else
+    echo "WARNING: Fontconfig config not found at ${FONTCONFIG_ETC_DIR}."
+    echo "  Runtime may fail to resolve fonts in Save/Load/Replay menus."
+fi
+
 echo "  Writing run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << WRAPPER
 #!/bin/bash
@@ -139,6 +152,12 @@ if [[ -f "\${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="\${SCRIPT_DIR}/MoltenVK_icd.json"
     # GeneralsX @bugfix fbraz3 20/03/2026 Vulkan Loader 1.3.236+ uses VK_DRIVER_FILES; keep VK_ICD_FILENAMES for older loaders
     export VK_DRIVER_FILES="\${SCRIPT_DIR}/MoltenVK_icd.json"
+fi
+
+# GeneralsX @bugfix Copilot 24/03/2026 Set bundled Fontconfig config path to avoid "Cannot load default config file: (null)" on macOS.
+if [[ -f "\${SCRIPT_DIR}/fontconfig/fonts.conf" ]]; then
+    export FONTCONFIG_FILE="\${SCRIPT_DIR}/fontconfig/fonts.conf"
+    export FONTCONFIG_PATH="\${SCRIPT_DIR}/fontconfig"
 fi
 
 # Auto-detect base Generals install path
@@ -161,6 +180,7 @@ echo "   Vulkan:     ${RUNTIME_DIR}/libvulkan.dylib"
 echo "   MoltenVK:   ${RUNTIME_DIR}/libMoltenVK.dylib"
 echo "   VK ICD:     ${RUNTIME_DIR}/MoltenVK_icd.json"
 echo "   DXVK conf:  ${RUNTIME_DIR}/dxvk.conf"
+echo "   Fontconfig: ${RUNTIME_DIR}/fontconfig/fonts.conf"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"

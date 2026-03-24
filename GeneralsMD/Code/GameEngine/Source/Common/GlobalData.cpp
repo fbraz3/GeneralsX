@@ -1078,7 +1078,7 @@ GlobalData::GlobalData()
     std::filesystem::path userDataDir;
     const char* home = getenv("HOME");
     if (home) {
-      userDataDir = std::filesystem::path(home) / "Library" / "Application Support" / "Generals Zero Hour" / "";
+      userDataDir = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "GeneralsZH" / "";
       std::filesystem::create_directories(userDataDir);
       m_userDataDir = userDataDir.string().c_str();
     } else {
@@ -1087,16 +1087,19 @@ GlobalData::GlobalData()
   }
 #else
   // GeneralsX @bugfix BenderAI 20/02/2026 Use XDG Base Directory spec for user data on Linux
-  // Mirrors fighter19's approach: $XDG_DATA_HOME/generals_zh/ or $HOME/.local/share/generals_zh/
+  // Mirrors fighter19's approach: $XDG_DATA_HOME/GeneralsX/GeneralsZH/ or $HOME/.local/share/GeneralsX/GeneralsZH/
   {
     std::filesystem::path userDataDir;
     const char* xdgDataHome = getenv("XDG_DATA_HOME");
+		const char* home = getenv("HOME");
     if (xdgDataHome)
       userDataDir = std::filesystem::path(xdgDataHome);
-    else
-      userDataDir = std::filesystem::path(getenv("HOME")) / ".local" / "share";
+		else if (home)
+			userDataDir = std::filesystem::path(home) / ".local" / "share";
+		else
+			userDataDir = ".";
 
-    userDataDir = userDataDir / "generals_zh" / "";
+    userDataDir = userDataDir / "GeneralsX" / "GeneralsZH" / "";
     std::filesystem::create_directories(userDataDir);
     m_userDataDir = userDataDir.string().c_str();
   }
