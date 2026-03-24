@@ -1,41 +1,14 @@
----
-applyTo: '**'
----
-
 # GeneralsX: Instructions for AI Coding Agents (Claude)
 
 This file ensures that Claude Code, Claude in VS Code, and other AI agents working on GeneralsX read the core project conventions before implementing changes.
 
 **⚠️ BEFORE YOU START**: Read the core instruction files in order:
 
-1. **[`.github/copilot-instructions.md`](.github/copilot-instructions.md)** — Quick reference (5 min read)
-   - Project scope and structure
-   - Build presets and testing hotspots
-   - Common pitfalls to avoid
-   - Where to tweak build flags
-
-2. **[`.github/instructions/generalsx.instructions.md`](.github/instructions/generalsx.instructions.md)** — Core strategy document (CRITICAL)
-   - Project mission and golden rules
-   - Platform strategy (SDL3 + DXVK + OpenAL)
-   - Phase structure and acceptance criteria
-   - Reference repositories and how to use them
-   - Dev environment and directory structure
-
-3. **[`.github/instructions/git-commit.instructions.md`](.github/instructions/git-commit.instructions.md)** — Commit message standards
-   - Conventional Commits format adapted for GeneralsX
-   - Type, scope, description guidelines
-   - When to squash/amend commits
-   - Examples of well-formed commits
-
-4. **[`.github/instructions/docs.instructions.md`](.github/instructions/docs.instructions.md)** — Documentation guidelines
-   - Dev blog updates required before commits
-   - Phase checklist management
-   - Where to place active work docs vs. reference materials
-
-5. **[`.github/instructions/scripts.instructions.md`](.github/instructions/scripts.instructions.md)** — Script organization rules
-   - Where to place new build/test scripts
-   - Naming conventions
-   - Standard shell practices
+See @.github/copilot-instructions.md for a quick reference
+See @.github/instructions/generalsx.instructions.md for a Core strategy document
+See @.github/instructions/git-commit.instructions.md for commit message standards
+See @.github/instructions/docs.instructions.md for documentation guidelines
+See @.github/instructions/scripts.instructions.md for script organization rules
 
 ---
 
@@ -159,8 +132,3 @@ void Engine::UpdateInput() {
 - **Upstream changes**: See `generalsx.instructions.md` Merge From TheSuperHackers section
 - **Documentation**: See `.github/instructions/docs.instructions.md`
 - **Scripts**: See `.github/instructions/scripts.instructions.md`
-
----
-
-**Last updated**: 24 March 2026
-**For questions or clarifications**: Consult the referenced instruction files or submit an issue.
