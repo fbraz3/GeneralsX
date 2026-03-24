@@ -4270,9 +4270,12 @@ void ScriptActions::doCameraStopTetherNamed()
 //-------------------------------------------------------------------------------------------------
 /** doCameraSetDefault */
 //-------------------------------------------------------------------------------------------------
-void ScriptActions::doCameraSetDefault(Real pitch, Real angle, Real maxHeight)
+void ScriptActions::doCameraSetDefault(Real pitch, Real angle, Real heighScale)
 {
-	TheTacticalView->setDefaultView(pitch, angle, maxHeight);
+	// GeneralsX @tweak Copilot 23/03/2026 Mirror ZH scripted camera defaults for aspect-ratio-aware limits.
+	TheTacticalView->setCameraHeightAboveGroundLimitsToDefault(heighScale);
+	TheTacticalView->setPitch(pitch);
+	TheTacticalView->setAngle(angle);
 }
 
 //-------------------------------------------------------------------------------------------------
