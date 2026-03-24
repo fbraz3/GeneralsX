@@ -1091,13 +1091,13 @@ GlobalData::GlobalData()
   {
     std::filesystem::path userDataDir;
     const char* xdgDataHome = getenv("XDG_DATA_HOME");
-		const char* home = getenv("HOME");
+    const char* home = getenv("HOME");
     if (xdgDataHome)
       userDataDir = std::filesystem::path(xdgDataHome);
-		else if (home)
-			userDataDir = std::filesystem::path(home) / ".local" / "share";
-		else
-			userDataDir = ".";
+    else if (home)
+      userDataDir = std::filesystem::path(home) / ".local" / "share";
+    else
+      userDataDir = "./";
 
     userDataDir = userDataDir / "GeneralsX" / "GeneralsZH" / "";
     std::filesystem::create_directories(userDataDir);

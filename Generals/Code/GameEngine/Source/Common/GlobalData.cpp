@@ -1199,7 +1199,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 			std::filesystem::create_directories(userDataDir);
 			TheWritableGlobalData->m_userDataDir = userDataDir.string().c_str();
 		} else {
-			TheWritableGlobalData->m_userDataDir = ".";
+			// GeneralsX @bugfix Copilot 24/03/2026 Ensure macOS HOME-missing fallback has trailing separator
+			TheWritableGlobalData->m_userDataDir = "./";
 		}
 	}
 #else

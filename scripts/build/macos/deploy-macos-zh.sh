@@ -124,12 +124,18 @@ else
 fi
 
 # GeneralsX @bugfix Copilot 24/03/2026 Deploy Fontconfig config into runtime dir so FreeType/Fontconfig can resolve fonts on macOS.
+# GeneralsX @bugfix BenderAI 24/03/2026 Guard Fontconfig conf.d copy so missing directory does not abort deploy under set -e.
 echo "  Deploying Fontconfig config..."
 if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
     mkdir -p "${RUNTIME_DIR}/fontconfig"
     cp -v "${FONTCONFIG_ETC_DIR}/fonts.conf" "${RUNTIME_DIR}/fontconfig/fonts.conf"
     rm -rf "${RUNTIME_DIR}/fontconfig/conf.d"
-    cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RUNTIME_DIR}/fontconfig/conf.d"
+    if [[ -d "${FONTCONFIG_ETC_DIR}/conf.d" ]]; then
+        cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RUNTIME_DIR}/fontconfig/conf.d"
+    else
+        echo "WARNING: Fontconfig conf.d directory not found at ${FONTCONFIG_ETC_DIR}/conf.d."
+        echo "  Runtime may fail to resolve some fonts if per-font configs are missing."
+    fi
 else
     echo "WARNING: Fontconfig config not found at ${FONTCONFIG_ETC_DIR}."
     echo "  Runtime may fail to resolve fonts in Save/Load/Replay menus."
@@ -180,7 +186,12 @@ echo "   Vulkan:     ${RUNTIME_DIR}/libvulkan.dylib"
 echo "   MoltenVK:   ${RUNTIME_DIR}/libMoltenVK.dylib"
 echo "   VK ICD:     ${RUNTIME_DIR}/MoltenVK_icd.json"
 echo "   DXVK conf:  ${RUNTIME_DIR}/dxvk.conf"
-echo "   Fontconfig: ${RUNTIME_DIR}/fontconfig/fonts.conf"
+# GeneralsX @bugfix BenderAI 24/03/2026 Show Fontconfig status only when deployed to avoid misleading summary output.
+if [[ -f "${RUNTIME_DIR}/fontconfig/fonts.conf" ]]; then
+    echo "   Fontconfig: ${RUNTIME_DIR}/fontconfig/fonts.conf"
+else
+    echo "   Fontconfig: (not deployed)"
+fi
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"
