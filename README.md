@@ -20,7 +20,9 @@ To stay up to date on project status, visit our [Dev Blog](docs/DEV_BLOG/).
 
 ## How does this project differ from TheSuperHackers' work?
 
-The excellent work from TheSuperHackers focuses on stability and bug fixes while maintaining compatibility with original game binaries. Our goal is to deliver cross-platform support, even when that may break retail compatibility.
+TheSuperHackers is the upstream foundation behind GeneralsX. Their project prioritizes stability, bug fixes, and compatibility with the original retail binaries, while GeneralsX focuses on a native cross-platform port for Linux, macOS, and modern Windows using SDL3, DXVK, OpenAL, and a 64-bit toolchain.
+
+Because of that difference, not every change made here belongs upstream. Improvements that also fit TheSuperHackers' goals should be contributed there; changes that exist specifically for cross-platform support, new dependencies, or retail-breaking portability work stay in GeneralsX.
 
 ## Where does the GeneralsX name come from?
 
@@ -33,8 +35,8 @@ There are two reasons for this name:
 
 For **official releases and instructions**, visit:
 
-* [GeneralsX Releases](https://github.com/fbraz3/GeneralsX/releases)
-* [TheSuperHackers Releases (Windows only)](https://github.com/TheSuperHackers/GeneralsGameCode/releases)
+* [GeneralsX Releases](https://github.com/fbraz3/GeneralsX/releases)  - Linux and Mac / 64bit
+* [TheSuperHackers Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases) - Windows only / 32bit
 
 ## 💖 Support This Project
 

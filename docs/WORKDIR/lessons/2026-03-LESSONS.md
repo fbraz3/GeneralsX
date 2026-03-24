@@ -1,5 +1,22 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-24 - Do not force Linux OpenAL driver list on macOS
+
+- Problem: macOS runtime launched and rendered normally but had no audio output.
+- Symptom: Startup logs showed `ALSOFT_DRIVERS=pulse,alsa,oss,jack,null,wave` being set in `SDL3Main.cpp` before audio initialization.
+- Root cause: `FilterPipeWireOpenAL()` was executed on non-Linux platforms and forced a Linux-specific backend list. On macOS this excludes CoreAudio and can fall through to `null`, producing silence.
+- Fix: Scoped the PipeWire/OpenAL workaround to Linux only in both `GeneralsMD/Code/Main/SDL3Main.cpp` and `Generals/Code/Main/SDL3Main.cpp`; non-Linux now keeps default OpenAL backend selection.
+- Validation: macOS build + deploy + runtime test confirmed audio playback restored; log now reports `OpenAL: keeping default driver selection on non-Linux platform`.
+- Prevention: Keep backend workaround env vars platform-scoped. Never export Linux backend lists (`pulse/alsa/...`) on macOS where CoreAudio must remain selectable.
+
+## Session 2026-03-24 - macOS bundle @rpath scan must check staged sibling dylibs first
+
+- Problem: `bundle-macos-zh.sh` emitted repeated `WARNING: Unable to resolve dependency` messages for `@rpath/libgamespy.dylib`, `@rpath/libdxvk_d3d8.0.dylib`, `@rpath/libdxvk_d3d9.0.dylib`, and `@rpath/libopenal.1.dylib` even though those libraries were already copied into `Contents/Resources/lib`.
+- Root cause: The recursive dependency resolver only searched `LC_RPATH` expansions and external fallback paths for `@rpath/*`, but did not try the current loader directory first. For staged bundle libs with self/sibling links, this produced false unresolved warnings.
+- Fix: In both macOS bundle scripts, `resolve_dep_path()` now checks `${loader_dir}/${dep_name}` before iterating `LC_RPATH` candidates.
+- Validation: Re-running `./scripts/build/macos/bundle-macos-zh.sh` completed with zero `WARNING: Unable to resolve dependency` lines.
+- Prevention: During macOS bundle traversal, always resolve `@rpath` against staged sibling dylibs first, then `LC_RPATH`, then toolchain fallbacks.
+
 ## Session 2026-03-21 - Rotor streak artifacts from volumetric edge-pair UB and unbounded extrusion
 
 - **Problem**: Animated helicopter rotor shadows produced rotating black streaks extending to the screen edge.

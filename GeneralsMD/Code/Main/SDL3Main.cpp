@@ -184,6 +184,8 @@ static void FilterSoftwareVulkanICDs()
  */
 static void FilterPipeWireOpenAL()
 {
+	// GeneralsX @bugfix Copilot 24/03/2026 PipeWire/OpenAL workaround is Linux-only; keep macOS CoreAudio backend selection untouched.
+	#if defined(__linux__)
 	// Crash: alcOpenDevice() hits 'movaps %xmm1,0x26260(%rbx)' — SSE movaps requires
 	// 16-byte alignment; a misaligned ALCdevice struct faults regardless of backend.
 	// Disabling CPU extensions forces openal-soft to use scalar code that has no
@@ -200,6 +202,9 @@ static void FilterPipeWireOpenAL()
 		setenv("ALSOFT_DRIVERS", "pulse,alsa,oss,jack,null,wave", 1);
 		fprintf(stderr, "INFO: OpenAL: ALSOFT_DRIVERS=pulse,alsa,oss,jack,null,wave (pipewire excluded)\n");
 	}
+	#else
+	fprintf(stderr, "INFO: OpenAL: keeping default driver selection on non-Linux platform\n");
+	#endif
 }
 
 /**

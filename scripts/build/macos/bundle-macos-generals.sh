@@ -64,6 +64,11 @@ resolve_dep_path() {
 
     if [[ "${dep}" == @rpath/* ]]; then
         dep_name="${dep#@rpath/}"
+
+        # GeneralsX @bugfix Copilot 24/03/2026 Resolve @rpath deps already staged in the same lib directory before scanning LC_RPATH.
+        candidate="${loader_dir}/${dep_name}"
+        [[ -f "${candidate}" ]] && { echo "${candidate}"; return 0; }
+
         while IFS= read -r rpath; do
             [[ -z "${rpath}" ]] && continue
             rpath="${rpath//@loader_path/${loader_dir}}"
