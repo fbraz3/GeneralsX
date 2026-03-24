@@ -9,6 +9,10 @@ LOG_FILE="logs/build_zh_${PRESET}_docker.log"
 DOCKER_IMAGE="generalsx/mingw-builder:latest"
 CONTAINER_NAME="generalsx-build-mingw-zh-${PRESET}"
 
+# GeneralsX @build BenderAI 24/03/2026 Preserve host file ownership for bind mounts created by cross-builds.
+HOST_UID="$(id -u)"
+HOST_GID="$(id -g)"
+
 echo "🐳 Building GeneralsXZH (Windows/MinGW, preset: ${PRESET})..."
 mkdir -p logs
 
@@ -30,11 +34,15 @@ fi
 
 docker run --rm \
     --name "$CONTAINER_NAME" \
+    --user "${HOST_UID}:${HOST_GID}" \
+    -e HOME=/tmp/generalsx-home \
+    -e XDG_CACHE_HOME=/tmp/generalsx-cache \
     -v "$PWD:/work" \
     -w /work \
     "$DOCKER_IMAGE" \
     bash -c "
         set -e
+        mkdir -p \"\$HOME\" \"\$XDG_CACHE_HOME\"
         
         echo '⚙️  Configuring CMake (MinGW cross-compile)...'
         cmake --preset ${PRESET}

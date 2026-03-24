@@ -9,8 +9,20 @@ LOG_FILE="logs/configure_${PRESET}_docker.log"
 DOCKER_IMAGE="generalsx/linux-builder:latest"
 CONTAINER_NAME="generalsx-configure-${PRESET}"
 
+# GeneralsX @build BenderAI 24/03/2026 Preserve host file ownership for bind mounts and vcpkg cache.
+HOST_UID="$(id -u)"
+HOST_GID="$(id -g)"
+VCPKG_DIR="${VCPKG_DIR:-${HOME}/.generalsx/vcpkg}"
+
 echo "🐳 Configuring Linux build (preset: ${PRESET})..."
 mkdir -p logs
+mkdir -p "$VCPKG_DIR"
+
+if [[ ! -w "$VCPKG_DIR" ]]; then
+    echo "ERROR: vcpkg directory is not writable: $VCPKG_DIR" >&2
+    echo "Fix ownership or set VCPKG_DIR to a writable path." >&2
+    exit 1
+fi
 
 # Check if container is already running
 if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
@@ -31,12 +43,16 @@ fi
 docker run --rm \
     --name "$CONTAINER_NAME" \
     --platform linux/amd64 \
+    --user "${HOST_UID}:${HOST_GID}" \
+    -e HOME=/tmp/generalsx-home \
+    -e XDG_CACHE_HOME=/tmp/generalsx-cache \
     -v "$PWD:/work" \
-    -v "generalsx-vcpkg:/opt/vcpkg" \
+    -v "$VCPKG_DIR:/opt/vcpkg" \
     -w /work \
     "$DOCKER_IMAGE" \
     bash -c "
         set -e
+        mkdir -p \"\$HOME\" \"\$XDG_CACHE_HOME\"
         
         # Bootstrap vcpkg in Docker volume if not exists
         if [ ! -f /opt/vcpkg/vcpkg ]; then

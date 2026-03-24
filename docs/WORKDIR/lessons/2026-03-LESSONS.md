@@ -1,5 +1,21 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-24 - Docker host UID/GID propagation must include the vcpkg mount strategy
+
+- Problem: Docker-based Linux configure/build scripts wrote root-owned files into the repository on macOS/Linux hosts.
+- Root cause: The containers ran as root while bind-mounting the workspace, and the modern scripts also diverged from the documented vcpkg strategy by using a named Docker volume instead of a host-owned path.
+- Fix: Run Docker build/configure/smoke containers with the host UID:GID, set ephemeral writable HOME/XDG cache directories inside the container, and mount vcpkg from a host-owned path (`~/.generalsx/vcpkg` by default, overridable with `VCPKG_DIR`).
+- Validation: Script audit confirmed every active `docker run` path now propagates host UID/GID except the legacy wrapper, which was already doing so.
+- Prevention: When a container must write into a bind-mounted workspace, treat `--user <host_uid>:<host_gid>` and a host-owned cache mount as a single change; fixing only one side leaves either ownership regressions or permission failures.
+
+## Session 2026-03-24 - Upstream merge can silently make SDL3GameEngine abstract via virtual signature drift
+
+- Problem: macOS Zero Hour build failed in `GeneralsMD/Code/Main/SDL3Main.cpp` with `error: allocating an object of abstract class type 'SDL3GameEngine'`.
+- Root cause: Upstream sync changed `GameEngine` pure virtual `createParticleSystemManager` signature to `createParticleSystemManager(Bool dummy)`, but SDL3 backends in both `GeneralsMD` and `Generals` still used `createParticleSystemManager(void)`.
+- Fix: Updated SDL3GameEngine headers and implementations in both game variants to match `Bool dummy` signature; kept behavior unchanged with `(void)dummy` and existing `W3DParticleSystemManager` return.
+- Validation: `cmake --build build/macos-vulkan --target z_generals` returned `EXIT:0`.
+- Prevention: After every upstream merge, diff all pure virtual interface declarations (`GameEngine`, `SubsystemInterface`, device interfaces) against SDL3/Win32 implementations before first full build.
+
 ## Session 2026-03-24 - Do not force Linux OpenAL driver list on macOS
 
 - Problem: macOS runtime launched and rendered normally but had no audio output.

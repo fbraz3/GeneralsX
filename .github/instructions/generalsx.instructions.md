@@ -44,6 +44,8 @@ The original Command & Conquer Generals/Zero Hour source code was released by EA
 - **Focus**: Modern toolchain, OpenAL audio implementation
 - **Status**: Fully functional modern Windows build with working audio
 
+Note: You may want to use local Deepwiki Repo `fbraz3/GeneralsX` for helping local code navigation.
+
 ## Our Mission
 
 **Primary Goal**: Make *Generals: Zero Hour* (`GeneralsXZH`) run natively on **Linux, macOS, and Windows** using a single modern codebase: SDL3 (windowing/input), DXVK (DirectX 8 to Vulkan graphics), OpenAL (audio), and 64-bit architecture.

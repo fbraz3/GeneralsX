@@ -354,8 +354,10 @@ Radar *SDL3GameEngine::createRadar(void)
 	return NEW W3DRadar;
 }
 
-ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(void)
+// GeneralsX @bugfix Copilot 24/03/2026 Match upstream GameEngine pure-virtual signature after sync.
+ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(Bool dummy)
 {
+	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createParticleSystemManager() -> W3DParticleSystemManager\n");
 	return NEW W3DParticleSystemManager;
 }
