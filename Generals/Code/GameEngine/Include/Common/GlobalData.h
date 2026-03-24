@@ -185,8 +185,11 @@ public:
 	Real m_cameraPitch;
 	Real m_cameraYaw;
 	Real m_cameraHeight;
+
+	// GeneralsX @tweak Copilot 23/03/2026 Mirror ZH note: these are 4:3 camera limits, scaled for other aspect ratios.
 	Real m_maxCameraHeight;
 	Real m_minCameraHeight;
+
 	Real m_terrainHeightAtEdgeOfMap;
 	Real m_unitDamagedThresh;
 	Real m_unitReallyDamagedThresh;

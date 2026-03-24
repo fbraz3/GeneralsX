@@ -1346,8 +1346,9 @@ void InGameUI::init()
 		// make the tactical display the full screen width and height
 		TheTacticalView->setWidth( TheDisplay->getWidth() );
 		TheTacticalView->setHeight( TheDisplay->getHeight() );
+		// GeneralsX @tweak Copilot 23/03/2026 Mirror ZH camera defaults for aspect-ratio-aware limits.
+		TheTacticalView->setCameraHeightAboveGroundLimitsToDefault();
 	}
-	TheTacticalView->setDefaultView(0.0f, 0.0f, 1.0f);
 
 	/** @todo this may be the wrong place to create the sidebar, but for now
 	this is where it lives */
@@ -2091,7 +2092,8 @@ void InGameUI::reset()
 	// reset the command bar
 	TheControlBar->reset();
 
-	TheTacticalView->setDefaultView(0.0f, 0.0f, 1.0f);
+	// GeneralsX @tweak Copilot 23/03/2026 Keep reset aligned with aspect-ratio-aware camera defaults.
+	TheTacticalView->setCameraHeightAboveGroundLimitsToDefault();
 
 	ResetInGameChat();
 

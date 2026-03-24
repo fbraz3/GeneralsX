@@ -823,6 +823,10 @@ static void saveOptions()
 
 				TheInGameUI->recreateControlBar();
 				TheInGameUI->refreshCustomUiResources();
+
+				// GeneralsX @tweak Copilot 23/03/2026 Update shell camera limits and zoom after display mode changes.
+				TheTacticalView->setCameraHeightAboveGroundLimitsToDefault();
+				TheTacticalView->setZoomToMax();
 			}
 		}
 	}

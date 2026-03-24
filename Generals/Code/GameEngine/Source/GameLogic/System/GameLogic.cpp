@@ -1815,9 +1815,12 @@ void GameLogic::startNewGame( Bool loadingSaveGame )
 	// update the loadscreen
 	updateLoadProgress(LOAD_PROGRESS_POST_PRELOAD_ASSETS);
 
+	// GeneralsX @tweak Copilot 23/03/2026 Keep camera defaults aligned after resolution/aspect changes.
+	TheTacticalView->setCameraHeightAboveGroundLimitsToDefault();
 	TheTacticalView->setAngleToDefault();
 	TheTacticalView->setPitchToDefault();
 	TheTacticalView->setZoomToDefault();
+	TheTacticalView->setZoomToMax();
 
 	if( TheRecorder )
 		TheRecorder->initControls();
