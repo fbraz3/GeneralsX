@@ -1191,13 +1191,16 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 		}
 	}
 #elif defined(__APPLE__)
-	// GeneralsX @feature macOS user data directory (~/Library/Application Support)
+	// GeneralsX @feature macOS user data directory (~/Library/Application Support/)
 	{
 		const char* home = getenv("HOME");
 		if (home) {
-			std::filesystem::path userDataDir = std::filesystem::path(home) / "Library" / "Application Support" / TheWritableGlobalData->m_userDataLeafName.str() / "";
+			std::filesystem::path userDataDir = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "Generals" / "";
 			std::filesystem::create_directories(userDataDir);
 			TheWritableGlobalData->m_userDataDir = userDataDir.string().c_str();
+		} else {
+			// GeneralsX @bugfix Copilot 24/03/2026 Ensure macOS HOME-missing fallback has trailing separator
+			TheWritableGlobalData->m_userDataDir = "./";
 		}
 	}
 #else
@@ -1205,11 +1208,15 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	{
 		std::filesystem::path userDataDir;
 		const char* xdgDataHome = getenv("XDG_DATA_HOME");
+		const char* home = getenv("HOME");
 		if (xdgDataHome)
 			userDataDir = std::filesystem::path(xdgDataHome);
+		else if (home)
+			userDataDir = std::filesystem::path(home) / ".local" / "share";
 		else
-			userDataDir = std::filesystem::path(getenv("HOME")) / ".local" / "share";
-		userDataDir = userDataDir / TheWritableGlobalData->m_userDataLeafName.str() / "";
+			userDataDir = ".";
+
+		userDataDir = userDataDir / "GeneralsX" / "Generals" / "";
 		std::filesystem::create_directories(userDataDir);
 		TheWritableGlobalData->m_userDataDir = userDataDir.string().c_str();
 	}
