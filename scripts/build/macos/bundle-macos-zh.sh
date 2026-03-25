@@ -337,12 +337,17 @@ else
 fi
 
 # GeneralsX @bugfix Copilot 24/03/2026 Bundle Fontconfig config so FreeType/Fontconfig font matching works in app launcher runtime.
+# GeneralsX @bugfix Copilot 24/03/2026 Guard Fontconfig conf.d copy so missing directory does not break bundling under set -e.
 if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
     echo "  + Fontconfig config"
     mkdir -p "${RESOURCES_DIR}/fontconfig"
     cp "${FONTCONFIG_ETC_DIR}/fonts.conf" "${RESOURCES_DIR}/fontconfig/fonts.conf"
     rm -rf "${RESOURCES_DIR}/fontconfig/conf.d"
-    cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RESOURCES_DIR}/fontconfig/conf.d"
+    if [[ -d "${FONTCONFIG_ETC_DIR}/conf.d" ]]; then
+        cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RESOURCES_DIR}/fontconfig/conf.d"
+    else
+        echo "WARNING: ${FONTCONFIG_ETC_DIR}/conf.d not found - using default Fontconfig configuration; font matching may differ at runtime"
+    fi
 else
     echo "WARNING: ${FONTCONFIG_ETC_DIR}/fonts.conf not found - in-game font lookup may fail on macOS"
 fi
