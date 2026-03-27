@@ -398,6 +398,37 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare .app Artifact
+        if: success()
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            OUTPUT_ZIP="GeneralsXZH-macos-arm64.zip"
+            APP_NAME="GeneralsXZH.app"
+          else
+            OUTPUT_ZIP="GeneralsX-macos-arm64.zip"
+            APP_NAME="GeneralsX.app"
+          fi
+
+          ARTIFACT_DIR="/tmp/macos-artifact-${{ inputs.game }}"
+          rm -rf "${ARTIFACT_DIR}"
+          mkdir -p "${ARTIFACT_DIR}"
+
+          unzip -q "${OUTPUT_ZIP}" -d "${ARTIFACT_DIR}"
+
+          if [ ! -d "${ARTIFACT_DIR}/${APP_NAME}" ]; then
+            echo "❌ App bundle not found after extracting ${OUTPUT_ZIP}: ${ARTIFACT_DIR}/${APP_NAME}"
+            find "${ARTIFACT_DIR}" -maxdepth 2 -print
+            exit 1
+          fi
+
+          echo "✅ Prepared app bundle artifact: ${ARTIFACT_DIR}/${APP_NAME}"
+          du -sh "${ARTIFACT_DIR}/${APP_NAME}"
+
+          # GeneralsX @build fbraz3 27/03/2026 Archive .app as tar (no compression) to preserve symlinks and executable bits.
+          BUNDLE_TAR="${ARTIFACT_DIR}/${APP_NAME%.app}.tar"
+          tar -C "${ARTIFACT_DIR}" -cf "${BUNDLE_TAR}" "${APP_NAME}"
+          echo "✅ Archive ready: ${BUNDLE_TAR}"
+
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -410,9 +441,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.game }}-macos-arm64-bundle
-          path: |
-            GeneralsXZH-macos-arm64.zip
-            GeneralsX-macos-arm64.zip
+          name: ${{ inputs.game == 'GeneralsMD' && 'macos-generalsxzh-app' || 'macos-generalsx-app' }}
+          path: /tmp/macos-artifact-${{ inputs.game }}/*.tar
           retention-days: 7
           if-no-files-found: warn
