@@ -251,7 +251,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ format('linux-{0}-{1}-bundle', inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx', inputs.preset) }}
+          name: ${{ format('linux-{0}-{1}-bundle', inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx', inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset) }}
           path: /tmp/GeneralsX-${{ inputs.game }}-${{ inputs.preset }}.tar
           retention-days: 7
           if-no-files-found: warn
