@@ -234,11 +234,6 @@ jobs:
           echo "✅ Bundle ready at: ${RUNTIME_DIR}"
           ls -lh "${RUNTIME_DIR}/"
 
-          ARCHIVE="/tmp/bundle-linux-${{ inputs.game }}-${{ inputs.preset }}.tar.gz"
-          echo "Creating archive: ${ARCHIVE}"
-          tar -czf "${ARCHIVE}" -C "$(dirname ${RUNTIME_DIR})" "$(basename ${RUNTIME_DIR})"
-          echo "Archive size: $(du -sh ${ARCHIVE} | cut -f1)"
-
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -251,7 +246,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: bundle-linux-${{ inputs.game }}-${{ inputs.preset }}.tar.gz
-          path: /tmp/bundle-linux-${{ inputs.game }}-${{ inputs.preset }}.tar.gz
+          name: ${{ inputs.game == 'GeneralsMD' && 'linux-generalsxzh-linux64-bundle' || 'linux-generalsx-linux64-bundle' }}
+          path: /tmp/GeneralsX-${{ inputs.game }}-deploy
           retention-days: 7
           if-no-files-found: warn
