@@ -234,6 +234,11 @@ jobs:
           echo "✅ Bundle ready at: ${RUNTIME_DIR}"
           ls -lh "${RUNTIME_DIR}/"
 
+          # GeneralsX @build fbraz3 27/03/2026 Archive bundle as tar (no compression) to preserve POSIX permissions.
+          BUNDLE_TAR="/tmp/GeneralsX-${{ inputs.game }}-${{ inputs.preset }}.tar"
+          tar -C "/tmp" -cf "${BUNDLE_TAR}" "GeneralsX-${{ inputs.game }}-deploy/"
+          echo "✅ Archive ready: ${BUNDLE_TAR}"
+
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -246,7 +251,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.game == 'GeneralsMD' && 'linux-generalsxzh-linux64-bundle' || 'linux-generalsx-linux64-bundle' }}
-          path: /tmp/GeneralsX-${{ inputs.game }}-deploy
+          name: ${{ format('linux-{0}-{1}-bundle', inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx', inputs.preset) }}
+          path: /tmp/GeneralsX-${{ inputs.game }}-${{ inputs.preset }}.tar
           retention-days: 7
           if-no-files-found: warn

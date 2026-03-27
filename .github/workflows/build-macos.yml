@@ -424,6 +424,11 @@ jobs:
           echo "✅ Prepared app bundle artifact: ${ARTIFACT_DIR}/${APP_NAME}"
           du -sh "${ARTIFACT_DIR}/${APP_NAME}"
 
+          # GeneralsX @build fbraz3 27/03/2026 Archive .app as tar (no compression) to preserve symlinks and executable bits.
+          BUNDLE_TAR="${ARTIFACT_DIR}/${APP_NAME%.app}.tar"
+          tar -C "${ARTIFACT_DIR}" -cf "${BUNDLE_TAR}" "${APP_NAME}"
+          echo "✅ Archive ready: ${BUNDLE_TAR}"
+
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -437,6 +442,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.game == 'GeneralsMD' && 'macos-generalsxzh-app' || 'macos-generalsx-app' }}
-          path: /tmp/macos-artifact-${{ inputs.game }}/*.app
+          path: /tmp/macos-artifact-${{ inputs.game }}/*.tar
           retention-days: 7
           if-no-files-found: warn
