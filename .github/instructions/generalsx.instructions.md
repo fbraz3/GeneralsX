@@ -442,6 +442,26 @@ mkdir -p docs/DEV_BLOG
 touch docs/DEV_BLOG/$(date +%Y-%m)-DIARY.md
 ```
 
+## GitHub CLI PR/Issue Body Formatting
+
+When creating PRs or issues with `gh`, avoid literal `\n` sequences in the body.
+
+- Prefer `--body-file` with a real Markdown file (temporary file is fine).
+- If using `--body`, pass a multi-line quoted string with actual line breaks.
+- After creation, verify body formatting:
+
+```bash
+body=$(gh pr view <number> --json body --jq .body)
+printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HAS_LITERAL_BACKSLASH_N=NO"
+```
+
+Issue validation uses the same pattern:
+
+```bash
+body=$(gh issue view <number> --json body --jq .body)
+printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HAS_LITERAL_BACKSLASH_N=NO"
+```
+
 ## VS Code Tasks
 
 Tasks configured for multi-platform development. See `.vscode/tasks.json` for complete task definitions.
