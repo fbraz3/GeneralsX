@@ -16,6 +16,21 @@ on:
         type: string
         default: "macos-vulkan"
         description: "CMake preset for macOS"
+      runs_on:
+        required: false
+        type: string
+        default: "macos-latest"
+        description: "GitHub runner label for macOS build"
+      vcpkg_triplet:
+        required: false
+        type: string
+        default: "arm64-osx"
+        description: "vcpkg triplet for macOS build"
+      bundle_enabled:
+        required: false
+        type: string
+        default: "true"
+        description: "Set to false to skip .app bundling"
   workflow_dispatch:
     inputs:
       game:
@@ -31,11 +46,32 @@ on:
         options:
           - macos-vulkan
         default: macos-vulkan
+      runs_on:
+        type: choice
+        description: "GitHub runner label for macOS build"
+        options:
+          - macos-latest
+          - macos-13
+        default: macos-latest
+      vcpkg_triplet:
+        type: choice
+        description: "vcpkg triplet for macOS build"
+        options:
+          - arm64-osx
+          - x64-osx
+        default: arm64-osx
+      bundle_enabled:
+        type: choice
+        description: "Run bundle step (.app/.zip)"
+        options:
+          - "true"
+          - "false"
+        default: "true"
 
 jobs:
   build:
-    name: ${{ inputs.game }}@${{ inputs.preset }}
-    runs-on: macos-latest
+    name: ${{ inputs.game }}@${{ inputs.preset }} (${{ inputs.runs_on }}, ${{ inputs.vcpkg_triplet }})
+    runs-on: ${{ inputs.runs_on }}
     timeout-minutes: 120
 
     steps:
@@ -296,7 +332,7 @@ jobs:
         env:
           VULKAN_SDK: ${{ env.VULKAN_SDK }}
           VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
-          VCPKG_DEFAULT_TRIPLET: arm64-osx
+          VCPKG_DEFAULT_TRIPLET: ${{ inputs.vcpkg_triplet }}
           CC: clang
           CXX: clang++
         run: |
@@ -364,7 +400,7 @@ jobs:
           fi
 
       - name: Bundle .app (GeneralsX macOS Distribution)
-        if: success()
+        if: success() && inputs.bundle_enabled == 'true'
         env:
           VULKAN_SDK: ${{ env.VULKAN_SDK }}
         run: |
@@ -399,7 +435,7 @@ jobs:
           fi
 
       - name: Prepare .app Artifact
-        if: success()
+        if: success() && inputs.bundle_enabled == 'true'
         run: |
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
             OUTPUT_ZIP="GeneralsXZH-macos-arm64.zip"
@@ -433,15 +469,15 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-logs-macos-${{ inputs.game }}
+          name: build-logs-macos-${{ inputs.game }}-${{ runner.arch }}-${{ inputs.vcpkg_triplet }}
           path: logs/
           retention-days: 7
 
       - name: Upload Bundle
-        if: success()
+        if: success() && inputs.bundle_enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.game == 'GeneralsMD' && 'macos-generalsxzh-app' || 'macos-generalsx-app' }}
+          name: ${{ format('{0}-{1}-{2}', inputs.game == 'GeneralsMD' && 'macos-generalsxzh-app' || 'macos-generalsx-app', runner.arch, inputs.vcpkg_triplet) }}
           path: /tmp/macos-artifact-${{ inputs.game }}/*.tar
           retention-days: 7
           if-no-files-found: warn

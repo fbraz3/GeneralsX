@@ -16,6 +16,11 @@ on:
         type: string
         default: "linux64-deploy"
         description: "CMake preset for Linux"
+      runs_on:
+        required: false
+        type: string
+        default: "ubuntu-latest"
+        description: "GitHub runner label for Linux build"
   workflow_dispatch:
     inputs:
       game:
@@ -32,11 +37,18 @@ on:
           - linux64-deploy
           - linux64-testing
         default: linux64-deploy
+      runs_on:
+        type: choice
+        description: "GitHub runner label for Linux build"
+        options:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+        default: ubuntu-latest
 
 jobs:
   build:
-    name: ${{ inputs.game }}@${{ inputs.preset }}
-    runs-on: ubuntu-latest
+    name: ${{ inputs.game }}@${{ inputs.preset }} (${{ inputs.runs_on }})
+    runs-on: ${{ inputs.runs_on }}
     timeout-minutes: 120
 
     steps:
@@ -243,7 +255,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-logs-linux-${{ inputs.game }}
+          name: build-logs-linux-${{ inputs.game }}-${{ runner.arch }}
           path: logs/
           retention-days: 7
 
@@ -251,7 +263,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ format('linux-{0}-{1}-bundle', inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx', inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset) }}
+          name: ${{ format('linux-{0}-{1}-{2}-bundle', inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx', inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset, runner.arch) }}
           path: /tmp/GeneralsX-${{ inputs.game }}-${{ inputs.preset }}.tar
           retention-days: 7
           if-no-files-found: warn

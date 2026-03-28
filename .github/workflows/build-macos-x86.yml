@@ -1,0 +1,37 @@
+name: Build macOS x86_64 (Manual)
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      game:
+        type: choice
+        description: "Game to build"
+        options:
+          - GeneralsMD
+          - Generals
+        default: GeneralsMD
+      preset:
+        type: choice
+        description: "CMake preset for macOS"
+        options:
+          - macos-vulkan
+        default: macos-vulkan
+
+jobs:
+  build-macos-x86:
+    name: macOS x86_64 / ${{ inputs.game }}@${{ inputs.preset }}
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      game: ${{ inputs.game }}
+      preset: ${{ inputs.preset }}
+      # GeneralsX @build Copilot 28/03/2026 Dedicated Intel macOS runner for manual CI diagnosis.
+      runs_on: macos-13
+      # GeneralsX @build Copilot 28/03/2026 Match vcpkg triplet to Intel architecture while testing x86_64.
+      vcpkg_triplet: x64-osx
+      # GeneralsX @build Copilot 28/03/2026 Skip bundle while x86_64 build path is under bring-up.
+      bundle_enabled: "false"
+    secrets: inherit

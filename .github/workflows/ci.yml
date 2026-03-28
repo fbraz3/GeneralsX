@@ -12,6 +12,17 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      run_linux_arm64:
+        description: "Run additional Linux ARM64 build"
+        type: boolean
+        required: false
+        default: false
+      run_macos_x86_64:
+        description: "Run additional macOS x86_64 build"
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -121,10 +132,34 @@ jobs:
       preset: win64-modern
     secrets: inherit
 
+  build-linux-arm64-manual:
+    name: Build Linux ARM64 (GeneralsMD, Manual)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' && inputs.run_linux_arm64
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      game: GeneralsMD
+      preset: linux64-deploy
+      runs_on: ubuntu-24.04-arm
+    secrets: inherit
+
+  build-macos-x86-manual:
+    name: Build macOS x86_64 (GeneralsMD, Manual)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' && inputs.run_macos_x86_64
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      game: GeneralsMD
+      preset: macos-vulkan
+      runs_on: macos-13
+      vcpkg_triplet: x64-osx
+      bundle_enabled: "false"
+    secrets: inherit
+
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [build-linux, build-linux-generals, build-macos, build-macos-generals, build-windows]
+    needs: [build-linux, build-linux-generals, build-macos, build-macos-generals, build-windows, build-linux-arm64-manual, build-macos-x86-manual]
     if: always()
     steps:
       - name: Generate Summary
@@ -138,6 +173,8 @@ jobs:
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS Generals Base (arm64) | ${{ needs.build-macos-generals.result == 'success' && '✅ Success' || needs.build-macos-generals.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Windows (x64/modern) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux (arm64, manual) | ${{ needs.build-linux-arm64-manual.result == 'success' && '✅ Success' || needs.build-linux-arm64-manual.result == 'skipped' && '⏭️ Not requested' || needs.build-linux-arm64-manual.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS (x86_64, manual) | ${{ needs.build-macos-x86-manual.result == 'success' && '✅ Success' || needs.build-macos-x86-manual.result == 'skipped' && '⏭️ Not requested' || needs.build-macos-x86-manual.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if Any Build Failed
         if: |
@@ -145,6 +182,8 @@ jobs:
           needs.build-linux-generals.result == 'failure' ||
           needs.build-macos.result == 'failure' ||
           needs.build-macos-generals.result == 'failure' ||
-          needs.build-windows.result == 'failure'
+          needs.build-windows.result == 'failure' ||
+          needs.build-linux-arm64-manual.result == 'failure' ||
+          needs.build-macos-x86-manual.result == 'failure'
         run: exit 1
 
