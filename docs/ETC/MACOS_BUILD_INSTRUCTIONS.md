@@ -33,7 +33,7 @@ xcode-select --install
 ### 3. Build Tools
 
 ```bash
-brew install cmake ninja meson python3
+brew install cmake ninja meson python3 pkgconf ffmpeg glm
 ```
 
 > **Note on `meson`**: The DXVK sub-project requires Meson >= 1.0. The Homebrew arm64
