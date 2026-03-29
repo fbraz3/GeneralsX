@@ -404,7 +404,7 @@ Total: 1254 targets (GeneralsXZH linux64-deploy)
 
 ---
 
-### 8. GameSpy Code Is Safe to Stub (Legacy Services) 🪦
+### 8. Historical Note: Temporary GameSpy Stubbing Was Acceptable During Linux Bring-Up
 
 **Problem**: GameSpy networking code (lobby, SNMP, matchmaking) has Windows-specific APIs that don't port easily.
 
@@ -413,17 +413,25 @@ Total: 1254 targets (GeneralsXZH linux64-deploy)
 - Concerns about breaking multiplayer functionality
 - Temptation to invest weeks porting complex networking stack
 
-**Lesson**:
-- ✅ **GameSpy online services shut down in 2013** - servers don't exist anymore
+**Lesson at the time**:
+- ✅ **GameSpy online services shut down in 2013** - legacy services were not required for Linux bring-up
 - ✅ **LAN multiplayer doesn't need GameSpy lobby** - direct IP connection works
-- ✅ **Stubbing online features is safe** - preserves offline/LAN gameplay
-- ✅ **fighter19/jmarshall both removed GameSpy** - proven approach
+- ✅ **Temporary stubbing of some online-facing paths was acceptable** for compile/runtime progress
+- ✅ **fighter19/jmarshall both removed GameSpy** - proven reference for a narrower porting scope
 
-**What's Safe to Stub**:
-- Online lobby/matchmaking (servers dead)
-- GameSpy SNMP monitoring (diagnostic tool)
-- NAT traversal helpers (needed for online only)
-- Account authentication (no servers)
+**Current GeneralsX clarification**:
+
+- GeneralsX should still preserve GameSpy-related compatibility when practical because future integration with community online services remains desirable.
+- This lesson should be read as a **historical bring-up tactic**, not as a standing rule to remove or permanently stub networking features indiscriminately.
+
+**What was considered safe to stub during that phase**:
+- Online lobby/matchmaking tied only to dead legacy services
+- GameSpy SNMP monitoring used only as a diagnostic dependency
+- Account authentication paths tied only to legacy services
+
+**What now requires more caution**:
+- Any GameSpy-related code that may matter for future Generals Online compatibility
+- NAT and peer negotiation paths that may be reused by community online backends
 
 **What Must Work**:
 - LAN discovery (local network)
