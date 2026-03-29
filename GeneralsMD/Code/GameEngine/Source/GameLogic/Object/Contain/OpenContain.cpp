@@ -447,32 +447,38 @@ void OpenContain::removeAllContained( Bool exposeStealthUnits )
 //-------------------------------------------------------------------------------------------------
 void OpenContain::killAllContained()
 {
-	// TheSuperHackers @bugfix xezon 23/05/2025 Empty m_containList straight away
-	// to prevent a potential child call to catastrophically modify the m_containList as well.
-	// This scenario can happen if the killed occupant(s) apply deadly damage on death
-	// to the host container, which then attempts to remove all remaining occupants
-	// on the death of the host container. This is reproducible by shooting with
-	// Neutron Shells on a GLA Technical containing GLA Terrorists.
+	// TheSuperHackers @bugfix Caball009 11/03/2026 The contain list must be updated while iterating over it,
+	// because e.g. garrisoned infantry relies on that behavior for the team ownership of civilian buildings.
 
-	ContainedItemsList list;
-	list.swap(m_containList);
-	m_containListSize = 0;
-
-	ContainedItemsList::iterator it = list.begin();
-
-	while ( it != list.end() )
+	ContainedItemsList::iterator it = m_containList.begin();
+	while ( it != m_containList.end() )
 	{
-		Object *rider = *it++;
+		Object *rider = *it;
 
 		DEBUG_ASSERTCRASH( rider, ("Contain list must not contain null element"));
 		if ( rider )
 		{
+			m_containList.erase(it);
+			--m_containListSize;
+
 			onRemoving( rider );
 			rider->onRemovedFrom( getObject() );
 			rider->kill();
+
+			// After kill, the iterator may or may not be invalidated and the list may or may not be empty.
+			// Set the iterator to the beginning of the list.
+			it = m_containList.begin();
+		}
+		else
+		{
+			++it;
 		}
 	}
 
+	DEBUG_ASSERTCRASH(m_containList.empty(), ("killAllContained should have emptied the contain list"));
+
+	m_containList.clear();
+	m_containListSize = 0;
 }
 
 //--------------------------------------------------------------------------------------------------------
