@@ -84,6 +84,34 @@ MultiplayerSettings::MultiplayerSettings()
 	m_showRandomColor = TRUE;
 	m_observerColor;
 	m_randomColor;
+	// GeneralsX @tweak fbraz 30/03/2026 Add larger starting money options to the default list
+	// Ensure these values exist so the UI dropdown includes them even if INI doesn't define them
+	{
+		Money money100k; money100k.setStartingCash(100000);
+		Money money150k; money150k.setStartingCash(150000);
+		Money money200k; money200k.setStartingCash(200000);
+
+		Bool found = FALSE;
+		for (MultiplayerStartingMoneyList::const_iterator it = m_startingMoneyList.begin(); it != m_startingMoneyList.end(); ++it)
+		{
+			if ( it->amountEqual(money100k) ) { found = TRUE; break; }
+		}
+		if (!found) addStartingMoneyChoice(money100k, FALSE);
+
+		found = FALSE;
+		for (MultiplayerStartingMoneyList::const_iterator it = m_startingMoneyList.begin(); it != m_startingMoneyList.end(); ++it)
+		{
+			if ( it->amountEqual(money150k) ) { found = TRUE; break; }
+		}
+		if (!found) addStartingMoneyChoice(money150k, FALSE);
+
+		found = FALSE;
+		for (MultiplayerStartingMoneyList::const_iterator it = m_startingMoneyList.begin(); it != m_startingMoneyList.end(); ++it)
+		{
+			if ( it->amountEqual(money200k) ) { found = TRUE; break; }
+		}
+		if (!found) addStartingMoneyChoice(money200k, FALSE);
+	}
 }
 
 MultiplayerColorDefinition::MultiplayerColorDefinition()
