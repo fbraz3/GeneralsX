@@ -29,6 +29,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Registry.h"
+#include "registryini.h"
 
 // GeneralsX @build felipebraz 11/02/2026 Phase 1.5 - Linux port
 // Windows Registry types not available on Linux - define stub types
@@ -51,25 +52,45 @@ typedef void* HKEY;  // Stub type for Linux (unused but needed for compilation)
 // relative-path fallback for the standard project layout.
 #ifdef _UNIX
 
-// Low-level helpers - no Win32 registry on Linux, always return FALSE.
+// GeneralsX @feature GitHubCopilot 29/03/2026 Persist non-Windows registry values in registry.ini.
+static const char *getRegistryIniRoot(HKEY root)
+{
+	return root == HKEY_LOCAL_MACHINE ? RegistryIni::LocalMachineRoot() : RegistryIni::CurrentUserRoot();
+}
+
+// GeneralsX @feature GitHubCopilot 29/03/2026 Route low-level non-Windows registry reads through registry.ini.
 Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
 {
-	return FALSE;
+	std::string storedValue;
+	if (!RegistryIni::ReadString(getRegistryIniRoot(root), path.str(), key.str(), storedValue))
+	{
+		return FALSE;
+	}
+
+	val = storedValue.c_str();
+	return TRUE;
 }
 
 Bool getUnsignedIntFromRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt& val)
 {
-	return FALSE;
+	unsigned int storedValue = 0;
+	if (!RegistryIni::ReadUnsignedInt(getRegistryIniRoot(root), path.str(), key.str(), storedValue))
+	{
+		return FALSE;
+	}
+
+	val = storedValue;
+	return TRUE;
 }
 
 Bool setStringInRegistry( HKEY root, AsciiString path, AsciiString key, AsciiString val)
 {
-	return FALSE;
+	return RegistryIni::WriteString(getRegistryIniRoot(root), path.str(), key.str(), val.str()) ? TRUE : FALSE;
 }
 
 Bool setUnsignedIntInRegistry( HKEY root, AsciiString path, AsciiString key, UnsignedInt val)
 {
-	return FALSE;
+	return RegistryIni::WriteUnsignedInt(getRegistryIniRoot(root), path.str(), key.str(), val) ? TRUE : FALSE;
 }
 
 // GeneralsX @feature felipebraz 25/02/2026 Environment variable registry for Linux
@@ -225,6 +246,18 @@ Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiStrin
 	if (getEnvVar("CNC_GENERALS_", key, val))
 		return TRUE;
 
+	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Generals";
+	fullPath.concat(path);
+	if (getStringFromRegistry(HKEY_CURRENT_USER, fullPath.str(), key.str(), val))
+	{
+		return TRUE;
+	}
+
+	if (getStringFromRegistry(HKEY_LOCAL_MACHINE, fullPath.str(), key.str(), val))
+	{
+		return TRUE;
+	}
+
 	// Fallback: auto-detect base Generals path for InstallPath key
 	if (key == "InstallPath")
 	{
@@ -241,6 +274,18 @@ Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 	if (getEnvVar("CNC_ZH_", key, val))
 		return TRUE;
 
+	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer Generals Zero Hour";
+	fullPath.concat(path);
+	if (getStringFromRegistry(HKEY_CURRENT_USER, fullPath.str(), key.str(), val))
+	{
+		return TRUE;
+	}
+
+	if (getStringFromRegistry(HKEY_LOCAL_MACHINE, fullPath.str(), key.str(), val))
+	{
+		return TRUE;
+	}
+
 	// Fallback: auto-detect language from available BIG files in CWD
 	if (key == "Language")
 	{
@@ -253,7 +298,14 @@ Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 
 Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val)
 {
-	return FALSE;
+	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer Generals Zero Hour";
+	fullPath.concat(path);
+	if (getUnsignedIntFromRegistry(HKEY_CURRENT_USER, fullPath.str(), key.str(), val))
+	{
+		return TRUE;
+	}
+
+	return getUnsignedIntFromRegistry(HKEY_LOCAL_MACHINE, fullPath.str(), key.str(), val);
 }
 
 #else // Windows implementation

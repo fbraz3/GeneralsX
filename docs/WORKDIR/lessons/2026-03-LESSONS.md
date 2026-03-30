@@ -1,5 +1,13 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-29 - DXVK util_math.h must include cstddef on macOS clang arm64
+
+- Problem: macOS Zero Hour build failed while compiling DXVK `d3d9_options.cpp` with `unknown type name 'size_t'; did you mean 'std::size_t'?`.
+- Root cause: `references/fbraz3-dxvk/src/util/util_math.h` declared `CACHE_LINE_SIZE` using `size_t` but only included `<cmath>`, relying on transitive includes that are not guaranteed by clang arm64.
+- Fix: Added `#include <cstddef>` in `src/util/util_math.h` on DXVK fork branch.
+- Validation: Reconfigured with `-DSAGE_DXVK_USE_LOCAL_FORK=ON` and rebuilt `z_generals`; final link step for `GeneralsMD/GeneralsXZH` completed and binary exists in `build/macos-vulkan/GeneralsMD/GeneralsXZH`.
+- Prevention: For DXVK utility headers consumed broadly across targets, include direct standard headers for foundational types (`size_t`, fixed-width ints) instead of relying on indirect includes.
+
 ## Session 2026-03-24 - Docker host UID/GID propagation must include the vcpkg mount strategy
 
 - Problem: Docker-based Linux configure/build scripts wrote root-owned files into the repository on macOS/Linux hosts.
