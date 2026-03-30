@@ -71,10 +71,6 @@ const unsigned MAX_VERTEX_SHADER_CONSTANTS=96;
 const unsigned MAX_PIXEL_SHADER_CONSTANTS=8;
 const unsigned MAX_SHADOW_MAPS=1;
 
-#define prevVer
-#define nextVer
-
-
 enum {
 	BUFFER_TYPE_DX8,
 	BUFFER_TYPE_SORTING,
@@ -310,11 +306,6 @@ public:
 	static void Set_Light_Environment(LightEnvironmentClass* light_env);
 	static LightEnvironmentClass* Get_Light_Environment() { return Light_Environment; }
 	static void Set_Fog(bool enable, const Vector3 &color, float start, float end);
-
-	static WWINLINE const D3DLIGHT8& Peek_Light(unsigned index);
-	static WWINLINE bool Is_Light_Enabled(unsigned index);
-
-	static bool Validate_Device();
 
 	// Deferred
 
@@ -633,9 +624,6 @@ protected:
 	static D3DFORMAT					DisplayFormat;
 	static D3DMULTISAMPLE_TYPE	MultiSampleAntiAliasing;
 
-	static D3DMATRIX						old_world;
-	static D3DMATRIX						old_view;
-	static D3DMATRIX						old_prj;
 
 	// shader system updates KJM v
 	static DWORD							Vertex_Shader;
@@ -645,7 +633,6 @@ protected:
 	static Vector4							Pixel_Shader_Constants[MAX_PIXEL_SHADER_CONSTANTS];
 
 	static LightEnvironmentClass*		Light_Environment;
-	static RenderInfoClass*				Render_Info;
 
 	static DWORD							Vertex_Processing_Behavior;
 
@@ -1259,17 +1246,6 @@ WWINLINE void DX8Wrapper::Get_Transform(D3DTRANSFORMSTATETYPE transform, Matrix4
 		break;
 	}
 }
-
-WWINLINE const D3DLIGHT8& DX8Wrapper::Peek_Light(unsigned index)
-{
-	return render_state.Lights[index];
-}
-
-WWINLINE bool DX8Wrapper::Is_Light_Enabled(unsigned index)
-{
-	return render_state.LightEnable[index];
-}
-
 
 WWINLINE void DX8Wrapper::Set_Render_State(const RenderStateStruct& state)
 {

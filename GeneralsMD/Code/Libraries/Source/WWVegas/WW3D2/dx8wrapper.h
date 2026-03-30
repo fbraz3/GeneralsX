@@ -74,10 +74,6 @@ const unsigned MAX_VERTEX_SHADER_CONSTANTS=96;
 const unsigned MAX_PIXEL_SHADER_CONSTANTS=8;
 const unsigned MAX_SHADOW_MAPS=1;
 
-#define prevVer
-#define nextVer
-
-
 enum {
 	BUFFER_TYPE_DX8,
 	BUFFER_TYPE_SORTING,
@@ -95,10 +91,8 @@ class DynamicVBAccessClass;
 class IndexBufferClass;
 class DynamicIBAccessClass;
 class TextureClass;
-class ZTextureClass;
 class LightClass;
 class SurfaceClass;
-class DX8Caps;
 
 #define DX8_RECORD_MATRIX_CHANGE()				matrix_changes++
 #define DX8_RECORD_MATERIAL_CHANGE()			material_changes++
@@ -295,7 +289,6 @@ public:
 
 	// Set_ and Get_Transform() functions take the matrix in Westwood convention format.
 
-	static void Set_DX8_ZBias(int zbias);
 	static void Set_Projection_Transform_With_Z_Bias(const Matrix4x4& matrix,float znear, float zfar);	// pointer to 16 matrices
 
 	static void Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix4x4& m);
@@ -319,11 +312,6 @@ public:
 	static void Set_Light_Environment(LightEnvironmentClass* light_env);
 	static LightEnvironmentClass* Get_Light_Environment() { return Light_Environment; }
 	static void Set_Fog(bool enable, const Vector3 &color, float start, float end);
-
-	static WWINLINE const D3DLIGHT8& Peek_Light(unsigned index);
-	static WWINLINE bool Is_Light_Enabled(unsigned index);
-
-	static bool Validate_Device();
 
 	// Deferred
 
@@ -642,9 +630,6 @@ protected:
 	static D3DFORMAT					DisplayFormat;
 	static D3DMULTISAMPLE_TYPE	MultiSampleAntiAliasing;
 
-	static D3DMATRIX						old_world;
-	static D3DMATRIX						old_view;
-	static D3DMATRIX						old_prj;
 
 	// shader system updates KJM v
 	static DWORD							Vertex_Shader;
@@ -654,7 +639,6 @@ protected:
 	static Vector4							Pixel_Shader_Constants[MAX_PIXEL_SHADER_CONSTANTS];
 
 	static LightEnvironmentClass*		Light_Environment;
-	static RenderInfoClass*				Render_Info;
 
 	static DWORD							Vertex_Processing_Behavior;
 
@@ -1217,26 +1201,6 @@ WWINLINE void DX8Wrapper::Set_Projection_Transform_With_Z_Bias(const Matrix4x4& 
 	}
 }
 
-WWINLINE void DX8Wrapper::Set_DX8_ZBias(int zbias)
-{
-	if (zbias==ZBias) return;
-	if (zbias>15) zbias=15;
-	if (zbias<0) zbias=0;
-	ZBias=zbias;
-
-	if (!Get_Current_Caps()->Support_ZBias() && ZNear!=ZFar) {
-		D3DMATRIX tmp=ProjectionMatrix;
-		float tmp_zbias=ZBias;
-		tmp_zbias*=(1.0f/16.0f);
-		tmp_zbias*=1.0f / (ZFar - ZNear);
-		tmp.m[2][2]-=tmp_zbias*tmp.m[3][2];
-		DX8CALL(SetTransform(D3DTS_PROJECTION,&tmp));
-	}
-	else {
-		Set_DX8_Render_State (D3DRS_ZBIAS, ZBias);
-	}
-}
-
 WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix4x4& m)
 {
 	switch ((int)transform) {
@@ -1315,17 +1279,6 @@ WWINLINE void DX8Wrapper::Get_Transform(D3DTRANSFORMSTATETYPE transform, Matrix4
 		break;
 	}
 }
-
-WWINLINE const D3DLIGHT8& DX8Wrapper::Peek_Light(unsigned index)
-{
-	return render_state.Lights[index];
-}
-
-WWINLINE bool DX8Wrapper::Is_Light_Enabled(unsigned index)
-{
-	return render_state.LightEnable[index];
-}
-
 
 WWINLINE void DX8Wrapper::Set_Render_State(const RenderStateStruct& state)
 {
@@ -1414,20 +1367,6 @@ WWINLINE RenderStateStruct::~RenderStateStruct()
 }
 
 
-WWINLINE unsigned flimby( char* name, unsigned crib )
-{
-  unsigned lnt prevVer = 0x00000000;
-  unsigned D3D2_BASE_VEC nextVer = 0;
-  for( unsigned t = 0; t < crib; ++t )
-  {
-    (D3D2_BASE_VEC)nextVer += name[t];
-    (D3D2_BASE_VEC)nextVer %= 32;
-    (D3D2_BASE_VEC)nextVer-- ;
-    (lnt) prevVer ^=  ( 1 << (D3D2_BASE_VEC)prevVer );
-  }
-  return (lnt) prevVer;
-}
-
 WWINLINE RenderStateStruct& RenderStateStruct::operator= (const RenderStateStruct& src)
 {
 	unsigned i;
@@ -1457,10 +1396,6 @@ WWINLINE RenderStateStruct& RenderStateStruct::operator= (const RenderStateStruc
 				}
 			}
 		}
-
-
-    //lightsHash = flimby((char*)(&Lights[0]), sizeof(D3DLIGHT8)-1 );
-
 	}
 
 	shader=src.shader;
