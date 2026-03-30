@@ -224,13 +224,54 @@ namespace {
 			parts.push_back(current);
 		}
 
-		normalized.clear();
-		for (std::vector<std::string>::const_iterator it = parts.begin(); it != parts.end(); ++it) {
-			if (!normalized.empty()) {
-				normalized += "\\";
-			}
-			normalized += *it;
-		}
+		 // GeneralsX @feature GitHubCopilot 29/03/2026
+		 // Apply known product name aliases to improve compatibility with mods
+		 // and variants that write/read multiple product registry paths.
+		 if (!parts.empty()) {
+			 static const struct Alias { const char *from; const char *to; } aliases[] = {
+				 {"zero hour", "command and conquer generals zero hour"},
+				 {"generals zero hour", "command and conquer generals zero hour"},
+				 {"command & conquer generals zero hour", "command and conquer generals zero hour"},
+				 {"command and conquer generals", "command and conquer generals"},
+				 {"command and conquer generals zh", "command and conquer generals zero hour"},
+				 {"cnc_generals_zh", "command and conquer generals zero hour"},
+			 };
+
+			 for (std::size_t i = 0; i < parts.size(); ++i) {
+				 // Try to match multi-part aliases (up to 6 parts) by joining parts with spaces
+				 for (std::size_t aliasTry = 0; aliasTry < 6 && i + aliasTry < parts.size(); ++aliasTry) {
+					 std::string combined = parts[i];
+					 for (std::size_t k = 1; k <= aliasTry; ++k) {
+						 combined += " ";
+						 combined += parts[i + k];
+					 }
+
+					 for (std::size_t a = 0; a < sizeof(aliases)/sizeof(aliases[0]); ++a) {
+						 if (combined == aliases[a].from) {
+							 // replace sequence [i .. i+aliasTry] with single canonical part
+							 parts[i] = std::string(aliases[a].to);
+							 // erase the extra parts
+							 if (aliasTry > 0) {
+								 parts.erase(parts.begin() + i + 1, parts.begin() + i + 1 + aliasTry);
+							 }
+							 break;
+						 }
+					 }
+					 // if we matched, stop attempting longer joins at this index
+					 if (parts[i] != combined) {
+						 break;
+					 }
+				 }
+			 }
+		 }
+
+		 normalized.clear();
+		 for (std::vector<std::string>::const_iterator it = parts.begin(); it != parts.end(); ++it) {
+			 if (!normalized.empty()) {
+				 normalized += "\\";
+			 }
+			 normalized += *it;
+		 }
 
 		return normalized;
 	}
