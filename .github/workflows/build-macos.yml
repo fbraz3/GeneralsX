@@ -51,7 +51,7 @@ on:
         description: "GitHub runner label for macOS build"
         options:
           - macos-latest
-          - macos-13
+          - macos-26-intel
         default: macos-latest
       vcpkg_triplet:
         type: choice
