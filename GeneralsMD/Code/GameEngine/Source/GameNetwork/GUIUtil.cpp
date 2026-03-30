@@ -331,21 +331,26 @@ void PopulateStartingCashComboBox(GameWindow *comboBox, GameInfo *myGame)
 {
   GadgetComboBoxReset(comboBox);
 
-  const MultiplayerStartingMoneyList & startingCashMap = TheMultiplayerSettings->getStartingMoneyList();
-  Int currentSelectionIndex = -1;
+	const MultiplayerStartingMoneyList & startingCashMap = TheMultiplayerSettings->getStartingMoneyList();
+	Int currentSelectionIndex = -1;
 
-  MultiplayerStartingMoneyList::const_iterator it = startingCashMap.begin();
-  for ( ; it != startingCashMap.end(); it++ )
-  {
-    Int newIndex = GadgetComboBoxAddEntry(comboBox, formatMoneyForStartingCashComboBox( *it ),
-                                          comboBox->winGetEnabled() ? comboBox->winGetEnabledTextColor() : comboBox->winGetDisabledTextColor());
-    GadgetComboBoxSetItemData(comboBox, newIndex, (void *)it->countMoney());
+	// Copy and sort the starting money list so entries are shown in ascending order
+	MultiplayerStartingMoneyList sortedList = startingCashMap;
+	std::sort(sortedList.begin(), sortedList.end(), [](const Money &a, const Money &b){
+		return a.countMoney() < b.countMoney();
+	});
 
-    if ( myGame->getStartingCash().amountEqual( *it ) )
-    {
-      currentSelectionIndex = newIndex;
-    }
-  }
+	for ( MultiplayerStartingMoneyList::const_iterator it = sortedList.begin(); it != sortedList.end(); ++it )
+	{
+		Int newIndex = GadgetComboBoxAddEntry(comboBox, formatMoneyForStartingCashComboBox( *it ),
+																					comboBox->winGetEnabled() ? comboBox->winGetEnabledTextColor() : comboBox->winGetDisabledTextColor());
+		GadgetComboBoxSetItemData(comboBox, newIndex, (void *)it->countMoney());
+
+		if ( myGame->getStartingCash().amountEqual( *it ) )
+		{
+			currentSelectionIndex = newIndex;
+		}
+	}
 
   if ( currentSelectionIndex == -1 )
   {
