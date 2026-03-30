@@ -165,6 +165,23 @@ If you need to reference older markdown issues for historical context:
 - Update the path and add a note that these are archived
 - Do not maintain these going forward
 
+### `docs/BUILD/` - Platform Build Instructions
+**Purpose**: Platform-specific build and environment setup guides for active platforms (Linux, macOS, Windows, etc.)
+**Naming Convention**: One file per platform, all caps (e.g., `LINUX.md`, `MACOS.md`, `WINDOWS.md`)
+**Content**: Step-by-step build, deploy, and troubleshooting instructions for each supported platform. These are the canonical build docs referenced by contributors and CI.
+
+**Examples:**
+- LINUX.md — Linux build instructions
+- MACOS.md — macOS build instructions
+- WINDOWS.md — Windows build instructions (future)
+
+**Guidelines**:
+- All new build instructions must go here (not ETC)
+- Update cross-references in other docs to point to this directory
+- Keep instructions up to date with build scripts and CI
+
+**Not here**: General reference, historical analysis, or non-build docs
+
 ### `docs/ETC/` - Reference & Historical Materials
 **Purpose**: Older reference materials, archived analysis, and miscellaneous documentation
 - General reference materials
@@ -177,4 +194,4 @@ If you need to reference older markdown issues for historical context:
 - Use for long-term reference materials
 - Archive completed analysis here if still needed for reference
 
-**Not here**: Active phase work, current session reports, active planning
+**Not here**: Active phase work, current session reports, active planning, or build instructions
