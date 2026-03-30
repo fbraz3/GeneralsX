@@ -4,7 +4,14 @@
 
 # GeneralsX - Cross-Platform Command & Conquer: Generals
 
-A community-driven cross-platform port of Command & Conquer: Generals and Zero Hour, enabling the classic RTS to run natively on **Linux, macOS, and Windows** under a single modern codebase: **SDL3** (windowing/input) + **DXVK** (DirectX 8 → Vulkan graphics) + **OpenAL** (audio) + **64-bit**.
+A community-driven port of Command & Conquer: Generals and Zero Hour, enabling the classic RTS to run natively on **Linux, macOS, and Windows** under a single modern codebase: **SDL3** (windowing/input) + **DXVK** (DirectX 8 → Vulkan graphics) + **OpenAL** (audio) + **64-bit**.
+
+> **Important**: GeneralsX is an engine port of Command & Conquer: Generals and Zero Hour.
+>
+> It does NOT modify gameplay or add new content.  
+> The goal is to run the original game **“as is”**, preserving its behavior as closely as possible.
+>
+> This project is closer to an engine port than a traditional mod.
 
 **Current Status**:
 
