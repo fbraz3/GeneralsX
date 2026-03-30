@@ -50,9 +50,9 @@ on:
         type: choice
         description: "GitHub runner label for macOS build"
         options:
-          - macos-latest
+          - macos-26
           - macos-26-intel
-        default: macos-latest
+        default: macos-26
       vcpkg_triplet:
         type: choice
         description: "vcpkg triplet for macOS build"
