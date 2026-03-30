@@ -155,6 +155,8 @@ set(WWLIB_SRC
 list(APPEND WWLIB_SRC
     registry.cpp
     registry.h
+    registryini.cpp
+    registryini.h
 )
 
 if(WIN32)
