@@ -377,8 +377,7 @@ GameWindow *win = nullptr;
 
 }
 
-// TheSuperHackers @tweak Now prints version information in an optional version label.
-// Originally this label does not exist in the Main Menu. It can be copied from the Options Menu.
+// GeneralsX @tweak BenderAI 31/03/2026 Print fixed project watermark in optional main-menu LabelVersion widget.
 static void initLabelVersion()
 {
 	NameKeyType versionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:LabelVersion" );
@@ -388,14 +387,7 @@ static void initLabelVersion()
 
 	if (labelVersion)
 	{
-		if (TheVersion && TheGlobalData)
-		{
-			GadgetStaticTextSetText( labelVersion, creditText );
-		}
-		else
-		{
-			labelVersion->winHide( TRUE );
-		}
+		GadgetStaticTextSetText( labelVersion, creditText );
 		return;
 	}
 

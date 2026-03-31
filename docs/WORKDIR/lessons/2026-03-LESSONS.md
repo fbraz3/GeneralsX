@@ -1,5 +1,13 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-31 - Avoid static managed DisplayString in menu draw callbacks
+
+- Problem: Watermark draw callback used a static `DisplayString*` created via `TheDisplayStringManager->newDisplayString()` with no matching free call.
+- Root cause: The callback lifetime was tied to static function state, but `DisplayStringManager` expects all managed strings to be explicitly released before shutdown.
+- Fix: Replaced static managed string with callback-owned text path (`instData->setText(...)` and `instData->getTextDisplayString()`), eliminating persistent manager-owned allocation.
+- Validation: No diagnostics errors in updated callback files; review concern about shutdown assert risk resolved.
+- Prevention: In high-frequency GUI callbacks, do not keep static manager-owned `DisplayString` unless a guaranteed teardown path calls `freeDisplayString`.
+
 ## Session 2026-03-31 - Main menu fallback labels must be owned by menu lifecycle
 
 - Problem: The GeneralsX watermark fallback label remained visible after leaving the main menu and entering gameplay.

@@ -414,26 +414,19 @@ void W3DGeneralsXCreditDraw( GameWindow *window, WinInstanceData *instData )
 {
 	// GeneralsX @bugfix BenderAI 31/03/2026 Avoid per-frame throttle so late callbacks (clock path) can redraw above menu layers.
 
-	// GeneralsX @bugfix BenderAI 31/03/2026 Use managed DisplayString so shell callbacks can render watermark even when instData is null.
-	static DisplayString *s_creditString = nullptr;
-	if (!s_creditString)
-	{
-		if (!TheDisplayStringManager)
-			return;
+	// GeneralsX @bugfix BenderAI 31/03/2026 Reuse callback instance text display string to avoid static managed DisplayString lifetime leaks.
+	if (!instData)
+		return;
 
-		s_creditString = TheDisplayStringManager->newDisplayString();
-		if (!s_creditString)
-			return;
+	UnicodeString ucredit;
+	ucredit.translate("GeneralsX - Multiplatform C&C Generals");
+	instData->setText(ucredit);
 
-		UnicodeString ucredit;
-		ucredit.translate("GeneralsX - Multiplatform C&C Generals");
-		s_creditString->setText(ucredit);
-		s_creditString->setFont(TheFontLibrary->getFont("Arial",12,0));
-	}
-
-	DisplayString *dString = s_creditString;
+	DisplayString *dString = instData->getTextDisplayString();
 	if (!dString)
 		return;
+
+	dString->setFont(TheFontLibrary->getFont("Arial",12,0));
 
 	Int textWidth = 0;
 	Int textHeight = 0;
