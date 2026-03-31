@@ -176,6 +176,8 @@ static Bool buttonPushed = FALSE;
 static Bool isShuttingDown = FALSE;
 static Bool startGame = FALSE;
 static Int	initialGadgetDelay = 210;
+// GeneralsX @bugfix BenderAI 31/03/2026 Keep fallback credit label tied to main menu lifecycle so it does not leak into gameplay.
+static GameWindow *fallbackCreditLabel = nullptr;
 
 enum
 {
@@ -317,6 +319,11 @@ static void doGameStart()
 static void shutdownComplete( WindowLayout *layout )
 {
 	isShuttingDown = FALSE;
+	if (fallbackCreditLabel)
+	{
+		TheWindowManager->winDestroy(fallbackCreditLabel);
+		fallbackCreditLabel = nullptr;
+	}
 
 	// hide the layout
 	layout->hide( TRUE );
@@ -410,17 +417,57 @@ static void initLabelVersion()
 {
 	NameKeyType versionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:LabelVersion" );
 	GameWindow *labelVersion = TheWindowManager->winGetWindowFromId( nullptr, versionID );
+	UnicodeString creditText;
+	creditText.translate("GeneralsX - Multiplatform C&C Generals");
 
 	if (labelVersion)
 	{
 		if (TheVersion && TheGlobalData)
 		{
-			UnicodeString text = TheVersion->getUnicodeProductVersionHashString();
-			GadgetStaticTextSetText( labelVersion, text );
+			GadgetStaticTextSetText( labelVersion, creditText );
 		}
 		else
 		{
 			labelVersion->winHide( TRUE );
+		}
+		return;
+	}
+
+	if (!fallbackCreditLabel && TheWindowManager && parentMainMenu)
+	{
+		if (TheDisplay)
+		{
+			WinInstanceData instData;
+			TextData textData;
+			instData.init();
+			memset(&textData, 0, sizeof(textData));
+			textData.centered = 0;
+
+			instData.m_style = GWS_STATIC_TEXT | GWS_MOUSE_TRACK;
+			instData.m_textLabelString = "GeneralsXCreditLabel";
+
+			const Int width = 560;
+			const Int height = 28;
+			const Int x = 8;
+			const Int y = TheDisplay->getHeight() - height - 8;
+
+			// GeneralsX @feature BenderAI 31/03/2026 Fallback credit label when MainMenu.wnd lacks LabelVersion.
+			fallbackCreditLabel = TheWindowManager->gogoGadgetStaticText(parentMainMenu,
+				WIN_STATUS_ENABLED,
+				x, y,
+				width, height,
+				&instData,
+				&textData,
+				nullptr,
+				FALSE);
+
+			if (fallbackCreditLabel)
+			{
+				// GeneralsX @tweak BenderAI 31/03/2026 Keep fallback watermark subtle and aligned to bottom-left target placement.
+				fallbackCreditLabel->winSetFont(TheWindowManager->winFindFont("Arial", 12, FALSE));
+				fallbackCreditLabel->winSetEnabledTextColors(GameMakeColor(255, 220, 60, 255), GameMakeColor(0, 0, 0, 0));
+				GadgetStaticTextSetText(fallbackCreditLabel, creditText);
+			}
 		}
 	}
 }
@@ -646,6 +693,11 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 {
 	if (!startGame)
 		isShuttingDown = TRUE;
+	if (fallbackCreditLabel)
+	{
+		TheWindowManager->winDestroy(fallbackCreditLabel);
+		fallbackCreditLabel = nullptr;
+	}
 
 	CancelPatchCheckCallback();
 

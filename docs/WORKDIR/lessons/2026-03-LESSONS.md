@@ -1,5 +1,13 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-31 - Main menu fallback labels must be owned by menu lifecycle
+
+- Problem: The GeneralsX watermark fallback label remained visible after leaving the main menu and entering gameplay.
+- Root cause: The fallback `GameWindow` was created from the root window manager and not consistently tied to the main menu parent/lifecycle.
+- Fix: Create the fallback label under `parentMainMenu` and destroy/reset it in both menu shutdown paths (`shutdownComplete` and `MainMenuShutdown`) for Generals and Zero Hour.
+- Validation: After build and runtime verification, watermark appears in main menu only and no longer leaks into in-game scenes.
+- Prevention: Any temporary/fallback UI created for menu rendering must be parent-owned by menu containers and explicitly torn down on all menu exit paths.
+
 ## Session 2026-03-29 - DXVK util_math.h must include cstddef on macOS clang arm64
 
 - Problem: macOS Zero Hour build failed while compiling DXVK `d3d9_options.cpp` with `unknown type name 'size_t'; did you mean 'std::size_t'?`.

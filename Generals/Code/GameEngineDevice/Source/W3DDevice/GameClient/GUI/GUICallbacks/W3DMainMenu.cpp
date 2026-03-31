@@ -66,10 +66,14 @@
 #include "GameClient/GameWindowGlobal.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetPushButton.h"
+#include "GameClient/DisplayStringManager.h"
 #include "W3DDevice/GameClient/W3DDisplay.h"
 #include "W3DDevice/GameClient/W3DGadget.h"
 
 #include "GameClient/GUICallbacks.h"
+
+// forward declaration for credit draw added by GeneralsX
+extern void W3DGeneralsXCreditDraw( GameWindow *window, WinInstanceData *instData );
 
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -151,6 +155,9 @@ void W3DShellMenuSchemeDraw( GameWindow *window, WinInstanceData *instData )
 {
 	if(TheShell && TheShell->isShellActive())
 		TheShell->getShellMenuSchemeManager()->draw();
+
+	// GeneralsX @bugfix BenderAI 31/03/2026 Draw watermark through active shell callback without replacing root menu draw.
+	W3DGeneralsXCreditDraw(window, instData);
 }
 
 void W3DMainMenuDraw( GameWindow *window, WinInstanceData *instData )
@@ -215,6 +222,9 @@ void W3DMainMenuDraw( GameWindow *window, WinInstanceData *instData )
 
 	//TheDisplay->drawLine();
 
+	// draw GeneralsX credit in bottom-left
+	W3DGeneralsXCreditDraw(window, instData);
+
 }
 
 void W3DMainMenuFourDraw( GameWindow *window, WinInstanceData *instData )
@@ -278,6 +288,9 @@ void W3DMainMenuFourDraw( GameWindow *window, WinInstanceData *instData )
 	advancePosition(nullptr, TheMappedImageCollection->findImageByName("MainMenuPulse"),pos.x,pos.y,size.x, size.y);
 
 	//TheDisplay->drawLine();
+
+	// GeneralsX @bugfix BenderAI 31/03/2026 Draw credits in both menu variants.
+	W3DGeneralsXCreditDraw(window, instData);
 
 }
 
@@ -348,7 +361,7 @@ void W3DMetalBarMenuDraw( GameWindow *window, WinInstanceData *instData )
 //	//TheDisplay->drawLine();
 //
 
-
+ 
 void W3DClockDraw( GameWindow *window, WinInstanceData *instData )
 {
 	W3DGameWinDefaultDraw( window, instData );
@@ -392,7 +405,59 @@ void W3DClockDraw( GameWindow *window, WinInstanceData *instData )
 	dString->setClipRegion(&clockClipRegion);
 	dString->draw( textPos.x, textPos.y, GameMakeColor(255,255,255,255), GameMakeColor(0,0,0,255) );
 
+	// GeneralsX @bugfix BenderAI 31/03/2026 Draw credit from clock callback to match a proven always-visible main-menu draw path.
+	W3DGeneralsXCreditDraw(window, instData);
 
+}
+
+void W3DGeneralsXCreditDraw( GameWindow *window, WinInstanceData *instData )
+{
+	// GeneralsX @bugfix BenderAI 31/03/2026 Avoid per-frame throttle so late callbacks (clock path) can redraw above menu layers.
+
+	// GeneralsX @bugfix BenderAI 31/03/2026 Use managed DisplayString so shell callbacks can render watermark even when instData is null.
+	static DisplayString *s_creditString = nullptr;
+	if (!s_creditString)
+	{
+		if (!TheDisplayStringManager)
+			return;
+
+		s_creditString = TheDisplayStringManager->newDisplayString();
+		if (!s_creditString)
+			return;
+
+		UnicodeString ucredit;
+		ucredit.translate("GeneralsX - Multiplatform C&C Generals");
+		s_creditString->setText(ucredit);
+		s_creditString->setFont(TheFontLibrary->getFont("Arial",12,0));
+	}
+
+	DisplayString *dString = s_creditString;
+	if (!dString)
+		return;
+
+	Int textWidth = 0;
+	Int textHeight = 0;
+	ICoord2D textPos;
+	IRegion2D clipRegion;
+
+	dString->getSize(&textWidth, &textHeight);
+
+	const Int displayWidth = TheDisplay->getWidth();
+	const Int displayHeight = TheDisplay->getHeight();
+
+	clipRegion.lo.x = 1;
+	clipRegion.lo.y = 1;
+	clipRegion.hi.x = displayWidth - 1;
+	clipRegion.hi.y = displayHeight - 1;
+
+	// GeneralsX @bugfix BenderAI 31/03/2026 Use display coordinates to avoid clipping in narrow callback windows.
+	// bottom-left with small margin
+	const Int MARGIN = 4;
+	textPos.x = MARGIN;
+	textPos.y = displayHeight - textHeight - MARGIN;
+
+	dString->setClipRegion(&clipRegion);
+	dString->draw(textPos.x, textPos.y, GameMakeColor(255,255,255,255), GameMakeColor(0,0,0,255));
 
 }
 

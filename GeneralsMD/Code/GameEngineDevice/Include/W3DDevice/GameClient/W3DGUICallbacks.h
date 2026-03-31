@@ -46,6 +46,7 @@ extern void W3DMainMenuFourDraw( GameWindow *window, WinInstanceData *instData )
 extern void W3DMetalBarMenuDraw( GameWindow *window, WinInstanceData *instData );
 extern void W3DCreditsMenuDraw( GameWindow *window, WinInstanceData *instData );
 extern void W3DClockDraw( GameWindow *window, WinInstanceData *instData );
+extern void W3DGeneralsXCreditDraw( GameWindow *window, WinInstanceData *instData );
 extern void W3DMainMenuMapBorder( GameWindow *window, WinInstanceData *instData );
 extern void W3DMainMenuButtonDropShadowDraw( GameWindow *window, WinInstanceData *instData );
 extern void W3DMainMenuRandomTextDraw( GameWindow *window, WinInstanceData *instData );
