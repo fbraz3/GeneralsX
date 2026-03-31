@@ -209,16 +209,10 @@ else()
         Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
 
-    if(SAGE_USE_OPENAL)
-        # OpenAL audio + FFmpeg decoding (Phase 2 - fighter19 port)
-        # GeneralsX @feature BenderAI 21/02/2026 Full OpenAL implementation
-        list(APPEND GAMEENGINEDEVICE_SRC
-            Source/OpenALAudioDevice/OpenALAudioManager.cpp
-            Source/OpenALAudioDevice/OpenALAudioStream.cpp
-            Source/OpenALAudioDevice/OpenALAudioCache.cpp
-            Source/VideoDevice/FFmpeg/FFmpegFile.cpp
-        )
-    else()
+    # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
+    # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
+    # are now provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
+    if(NOT SAGE_USE_OPENAL)
         list(APPEND GAMEENGINEDEVICE_SRC
             Source/OpenALAudioManager.cpp
         )
@@ -267,9 +261,7 @@ if(SAGE_USE_OPENAL)
         find_package(OpenAL REQUIRED)
     endif()
     target_link_libraries(z_gameenginedevice PUBLIC OpenAL::OpenAL)
-
-    # Private include path for OpenALAudioCache.h (local to Source/OpenALAudioDevice/)
-    target_include_directories(z_gameenginedevice PRIVATE Source/OpenALAudioDevice)
+    # GeneralsX @refactor fbraz3 31/03/2026 Private include for OpenALAudioCache.h now provided by corei_gameenginedevice_private
 endif()
 
 # Phase 3: Video playback with FFmpeg (configured by Core/GameEngineDevice when RTS_BUILD_OPTION_FFMPEG=ON)
