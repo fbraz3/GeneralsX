@@ -8,10 +8,9 @@ A community-driven port of Command & Conquer: Generals and Zero Hour, enabling t
 
 > **Important**: GeneralsX is an engine port of Command & Conquer: Generals and Zero Hour.
 >
-> It does NOT modify gameplay or add new content.  
-> The goal is to run the original game **“as is”**, preserving its behavior as closely as possible.
+> This project is not related to any mods with similar names and does not aim to extend or modify gameplay.
 >
-> This project is closer to an engine port than a traditional mod.
+> The goal is to run the original game **“as is”**, preserving it's behavior as closely as possible.
 
 **Current Status**:
 
