@@ -151,8 +151,8 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
       UPDATE_DISCONNECTED TRUE
     )
   else()
-    # GeneralsX @build copilot 31/03/2026 Pin remote DXVK to immutable commit to avoid main breakage from moving branch heads.
-    set(DXVK_REMOTE_REF 35965877b85c22c8bd0ce54b099a96bd9954b411)
+    # GeneralsX @build copilot 01/04/2026 Pin remote DXVK to immutable commit produced by fix/macos-size_t-cstddef.
+    set(DXVK_REMOTE_REF 46a3bc018bcae408d49d3c500e4e536a11f6789a)
     ExternalProject_Add(dxvk_macos_build
       # GeneralsX @build BenderAI 13/03/2026 Default to remote fbraz3 v2.6 branch with update step enabled.
       GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
