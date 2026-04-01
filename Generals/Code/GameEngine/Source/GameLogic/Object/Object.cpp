@@ -1711,7 +1711,7 @@ void Object::attemptDamage( DamageInfo *damageInfo )
 			damageInfo->in.m_damageType != DAMAGE_HEALING &&
 			!BitIsSet(damageInfo->in.m_sourcePlayerMask, getControllingPlayer()->getPlayerMask()) &&
 			m_radarData != nullptr &&
-			getControllingPlayer() == ThePlayerList->getLocalPlayer() )
+			isLocallyControlled() )
 		TheRadar->tryUnderAttackEvent( this );
 
 }

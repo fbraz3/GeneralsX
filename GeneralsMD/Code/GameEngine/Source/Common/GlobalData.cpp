@@ -1049,61 +1049,12 @@ GlobalData::GlobalData()
 
 	m_keyboardCameraRotateSpeed = 0.1f;
 
-  // Set user data directory based on registry settings instead of INI parameters. This allows us to
-  // localize the leaf name.
-#ifdef _WIN32
-// TheSuperHackers @build fighter19 11/02/2026 Cross-platform user documents path
-  char temp[_MAX_PATH + 1];
-  if (::SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true))
-  {
-    AsciiString myDocumentsDirectory = temp;
-
-    if (myDocumentsDirectory.getCharAt(myDocumentsDirectory.getLength() - 1) != '\\')
-      myDocumentsDirectory.concat( '\\' );
-
-    AsciiString leafName;
-    if ( !GetStringFromRegistry( "", "UserDataLeafName", leafName ) )
-      leafName = "Command and Conquer Generals Zero Hour Data";
-
-    myDocumentsDirectory.concat( leafName );
-    if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != '\\')
-      myDocumentsDirectory.concat( '\\' );
-
-    CreateDirectory(myDocumentsDirectory.str(), nullptr);
-    m_userDataDir = myDocumentsDirectory;
-  }
-#elif defined(__APPLE__)
-  // GeneralsX @feature BenderAI 24/02/2026 Phase 5 macOS user data directory (~/Library/Application Support)
-  {
-    std::filesystem::path userDataDir;
-    const char* home = getenv("HOME");
-    if (home) {
-      userDataDir = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "GeneralsZH" / "";
-      std::filesystem::create_directories(userDataDir);
-      m_userDataDir = userDataDir.string().c_str();
-    } else {
-      m_userDataDir = ".";
-    }
-  }
-#else
-  // GeneralsX @bugfix BenderAI 20/02/2026 Use XDG Base Directory spec for user data on Linux
-  // Mirrors fighter19's approach: $XDG_DATA_HOME/GeneralsX/GeneralsZH/ or $HOME/.local/share/GeneralsX/GeneralsZH/
-  {
-    std::filesystem::path userDataDir;
-    const char* xdgDataHome = getenv("XDG_DATA_HOME");
-    const char* home = getenv("HOME");
-    if (xdgDataHome)
-      userDataDir = std::filesystem::path(xdgDataHome);
-    else if (home)
-      userDataDir = std::filesystem::path(home) / ".local" / "share";
-    else
-      userDataDir = "./";
-
-    userDataDir = userDataDir / "GeneralsX" / "GeneralsZH" / "";
-    std::filesystem::create_directories(userDataDir);
-    m_userDataDir = userDataDir.string().c_str();
-  }
-#endif
+	// GeneralsX @feature Bender 01/04/2026 Cross-platform user data directory (Registry-based)
+	// Adopts upstream refactoring with extended cross-platform support
+	// Set user data directory based on registry settings instead of INI parameters.
+	// This allows us to localize the leaf name.
+	m_userDataDir = BuildUserDataPathFromRegistry();
+	CreateDirectory(m_userDataDir.str(), nullptr);
 
 	//-allAdvice feature
 	//m_allAdvice = FALSE;
@@ -1403,4 +1354,105 @@ UnsignedInt GlobalData::generateExeCRC()
 
 	DEBUG_LOG(("EXE+Version(%d.%d)+SCB CRC is 0x%8.8X", version >> 16, version & 0xffff, exeCRC.get()));
 	return exeCRC.get();
+}
+
+AsciiString GlobalData::BuildUserDataPathFromRegistry()
+{
+	AsciiString userDataDir;
+
+#ifdef _WIN32
+	// GeneralsX @refactor Bender 01/04/2026 Windows-specific path handling (Registry-based)
+	// Integrates upstream bug-fix for OneDrive/Group Policy folder redirection
+#if defined(_MSC_VER) && (_MSC_VER < 1300)
+	// VC6 lacks FOLDERID_Documents and KF_FLAG_DEFAULT
+	const GUID FOLDERID_Documents = { 0xFDD39AD0, 0x238F, 0x46AF, 0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7 };
+	const DWORD KF_FLAG_DEFAULT = 0;
+#endif
+
+	typedef HRESULT(WINAPI* PFN_SHGetKnownFolderPath)(const GUID& rfid, DWORD dwFlags, HANDLE hToken, PWSTR* ppszPath);
+
+	AsciiString myDocumentsDirectory;
+	HMODULE shell32module = GetModuleHandleA("shell32.dll");
+	PFN_SHGetKnownFolderPath pSHGetKnownFolderPath = nullptr;
+
+	// TheSuperHackers @bugfix Mauller 20/03/2026 Fix the handling of folder redirection
+	// OneDrive and Group Policy folder redirection is better supported by SHGetKnownFolderPath()
+	// SHGetKnownFolderPath() is only supported in windows Vista onwards so we check for it being available
+	if (shell32module) {
+		pSHGetKnownFolderPath = (PFN_SHGetKnownFolderPath)GetProcAddress(shell32module, "SHGetKnownFolderPath");
+	}
+
+	if (pSHGetKnownFolderPath) {
+		PWSTR pszPath = nullptr;
+		HRESULT hr = pSHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_DEFAULT, nullptr, &pszPath);
+
+		if (SUCCEEDED(hr) && pszPath) {
+			myDocumentsDirectory.translate(pszPath);
+			CoTaskMemFree(pszPath);
+		}
+	}
+	else {
+		char temp[_MAX_PATH + 1];
+		if (SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true)) {
+			myDocumentsDirectory = temp;
+		}
+	}
+
+	if (!myDocumentsDirectory.isEmpty()) {
+		// Now build the full path string
+		if (!myDocumentsDirectory.endsWith("\\"))
+			myDocumentsDirectory.concat('\\');
+
+		AsciiString leafName;
+		if (!GetStringFromRegistry("", "UserDataLeafName", leafName))
+		{
+			// Use something, anything
+			// [MH] had to remove this, otherwise mapcache build step won't run... DEBUG_CRASH( ( "Could not find registry key UserDataLeafName; defaulting to \"Command and Conquer Generals Zero Hour Data\" " ) );
+			leafName = "Command and Conquer Generals Zero Hour Data";
+		}
+
+		myDocumentsDirectory.concat(leafName);
+		if (!myDocumentsDirectory.endsWith("\\"))
+			myDocumentsDirectory.concat('\\');
+	}
+
+	userDataDir = myDocumentsDirectory;
+
+#elif defined(__APPLE__)
+	// GeneralsX @feature Bender 01/04/2026 macOS user data directory
+	// Uses ~/Library/Application Support as standard macOS location for Zero Hour
+	{
+		const char* home = getenv("HOME");
+		if (home) {
+			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "GeneralsZH" / "";
+			std::filesystem::create_directories(path);
+			userDataDir = path.string().c_str();
+		} else {
+			userDataDir = "./";
+		}
+	}
+
+#else
+	// GeneralsX @feature Bender 01/04/2026 Linux user data directory
+	// Uses XDG Base Directory specification for Zero Hour
+	{
+		std::filesystem::path path;
+		const char* xdgDataHome = getenv("XDG_DATA_HOME");
+		const char* home = getenv("HOME");
+		
+		if (xdgDataHome) {
+			path = std::filesystem::path(xdgDataHome);
+		} else if (home) {
+			path = std::filesystem::path(home) / ".local" / "share";
+		} else {
+			path = "./";
+		}
+
+		path = path / "GeneralsX" / "GeneralsZH" / "";
+		std::filesystem::create_directories(path);
+		userDataDir = path.string().c_str();
+	}
+#endif
+
+	return userDataDir;
 }

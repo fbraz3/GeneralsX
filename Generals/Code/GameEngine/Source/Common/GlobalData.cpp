@@ -1177,50 +1177,10 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 
 	TheWritableGlobalData->m_userDataDir.clear();
 
-#ifdef _WIN32
-	{
-		char temp[_MAX_PATH];
-		if (::SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true))
-		{
-			if (temp[strlen(temp)-1] != '\\')
-				strcat(temp, "\\");
-			strcat(temp, TheWritableGlobalData->m_userDataLeafName.str());
-			strcat(temp, "\\");
-			CreateDirectory(temp, nullptr);
-			TheWritableGlobalData->m_userDataDir = temp;
-		}
-	}
-#elif defined(__APPLE__)
-	// GeneralsX @feature macOS user data directory (~/Library/Application Support/)
-	{
-		const char* home = getenv("HOME");
-		if (home) {
-			std::filesystem::path userDataDir = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "Generals" / "";
-			std::filesystem::create_directories(userDataDir);
-			TheWritableGlobalData->m_userDataDir = userDataDir.string().c_str();
-		} else {
-			// GeneralsX @bugfix Copilot 24/03/2026 Ensure macOS HOME-missing fallback has trailing separator
-			TheWritableGlobalData->m_userDataDir = "./";
-		}
-	}
-#else
-	// GeneralsX @bugfix Linux user data directory (XDG Base Directory spec)
-	{
-		std::filesystem::path userDataDir;
-		const char* xdgDataHome = getenv("XDG_DATA_HOME");
-		const char* home = getenv("HOME");
-		if (xdgDataHome)
-			userDataDir = std::filesystem::path(xdgDataHome);
-		else if (home)
-			userDataDir = std::filesystem::path(home) / ".local" / "share";
-		else
-			userDataDir = ".";
-
-		userDataDir = userDataDir / "GeneralsX" / "Generals" / "";
-		std::filesystem::create_directories(userDataDir);
-		TheWritableGlobalData->m_userDataDir = userDataDir.string().c_str();
-	}
-#endif
+	// GeneralsX @feature Bender 01/04/2026 Cross-platform user data directory handling
+	// Adopts upstream refactoring with extended cross-platform support
+	TheWritableGlobalData->m_userDataDir = BuildUserDataPathFromIni();
+	CreateDirectory(TheWritableGlobalData->m_userDataDir.str(), nullptr);
 
 	// override INI values with user preferences
 	OptionPreferences optionPref;
@@ -1351,4 +1311,98 @@ UnsignedInt GlobalData::generateExeCRC()
 	DEBUG_LOG(("EXE+Version(%d.%d)+SCB CRC is 0x%8.8X", version >> 16, version & 0xffff, exeCRC.get()));
 
 	return exeCRC.get();
+}
+
+AsciiString GlobalData::BuildUserDataPathFromIni()
+{
+	AsciiString userDataDir;
+
+#ifdef _WIN32
+	// GeneralsX @refactor Bender 01/04/2026 Windows-specific path handling
+	// Integrates upstream bug-fix for OneDrive/Group Policy folder redirection
+#if defined(_MSC_VER) && (_MSC_VER < 1300)
+	// VC6 lacks FOLDERID_Documents and KF_FLAG_DEFAULT
+	const GUID FOLDERID_Documents = { 0xFDD39AD0, 0x238F, 0x46AF, 0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7 };
+	const DWORD KF_FLAG_DEFAULT = 0;
+#endif
+
+	typedef HRESULT(WINAPI* PFN_SHGetKnownFolderPath)(const GUID& rfid, DWORD dwFlags, HANDLE hToken, PWSTR* ppszPath);
+
+	AsciiString myDocumentsDirectory;
+	HMODULE shell32module = GetModuleHandleA("shell32.dll");
+	PFN_SHGetKnownFolderPath pSHGetKnownFolderPath = nullptr;
+
+	// TheSuperHackers @bugfix Mauller 20/03/2026 Fix the handling of folder redirection
+	// OneDrive and Group Policy folder redirection is better supported by SHGetKnownFolderPath()
+	// SHGetKnownFolderPath() is only supported in windows Vista onwards so we check for it being available
+	if (shell32module) {
+		pSHGetKnownFolderPath = (PFN_SHGetKnownFolderPath)GetProcAddress(shell32module, "SHGetKnownFolderPath");
+	}
+
+	if (pSHGetKnownFolderPath) {
+		PWSTR pszPath = nullptr;
+		HRESULT hr = pSHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_DEFAULT, nullptr, &pszPath);
+
+		if (SUCCEEDED(hr) && pszPath) {
+			myDocumentsDirectory.translate(pszPath);
+			CoTaskMemFree(pszPath);
+		}
+	}
+	else {
+		char temp[_MAX_PATH + 1];
+		if (SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true)) {
+			myDocumentsDirectory = temp;
+		}
+	}
+
+	if (!myDocumentsDirectory.isEmpty()) {
+		// Now build the full path string
+		if (!myDocumentsDirectory.endsWith("\\"))
+			myDocumentsDirectory.concat('\\');
+
+		myDocumentsDirectory.concat(TheWritableGlobalData->m_userDataLeafName.str());
+
+		if (!myDocumentsDirectory.endsWith("\\"))
+			myDocumentsDirectory.concat('\\');
+	}
+
+	userDataDir = myDocumentsDirectory;
+
+#elif defined(__APPLE__)
+	// GeneralsX @feature Bender 01/04/2026 macOS user data directory
+	// Uses ~/Library/Application Support as standard macOS location
+	{
+		const char* home = getenv("HOME");
+		if (home) {
+			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "Generals" / "";
+			std::filesystem::create_directories(path);
+			userDataDir = path.string().c_str();
+		} else {
+			userDataDir = "./";
+		}
+	}
+
+#else
+	// GeneralsX @feature Bender 01/04/2026 Linux user data directory
+	// Uses XDG Base Directory specification
+	{
+		std::filesystem::path path;
+		const char* xdgDataHome = getenv("XDG_DATA_HOME");
+		const char* home = getenv("HOME");
+		
+		if (xdgDataHome) {
+			path = std::filesystem::path(xdgDataHome);
+		} else if (home) {
+			path = std::filesystem::path(home) / ".local" / "share";
+		} else {
+			path = ".";
+		}
+
+		path = path / "GeneralsX" / "Generals" / "";
+		std::filesystem::create_directories(path);
+		userDataDir = path.string().c_str();
+	}
+#endif
+
+	return userDataDir;
 }

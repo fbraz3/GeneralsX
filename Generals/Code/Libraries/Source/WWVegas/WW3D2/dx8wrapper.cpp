@@ -126,10 +126,6 @@ bool								DX8Wrapper::IsWindowed									= false;
 D3DFORMAT					DX8Wrapper::DisplayFormat	= D3DFMT_UNKNOWN;
 D3DMULTISAMPLE_TYPE DX8Wrapper::MultiSampleAntiAliasing	= DEFAULT_MSAA;
 
-D3DMATRIX						DX8Wrapper::old_world;
-D3DMATRIX						DX8Wrapper::old_view;
-D3DMATRIX						DX8Wrapper::old_prj;
-
 // shader system additions KJM v
 DWORD								DX8Wrapper::Vertex_Shader								= 0;
 DWORD								DX8Wrapper::Pixel_Shader								= 0;
@@ -138,7 +134,6 @@ Vector4							DX8Wrapper::Vertex_Shader_Constants[MAX_VERTEX_SHADER_CONSTANTS];
 Vector4							DX8Wrapper::Pixel_Shader_Constants[MAX_PIXEL_SHADER_CONSTANTS];
 
 LightEnvironmentClass*		DX8Wrapper::Light_Environment							= nullptr;
-RenderInfoClass*				DX8Wrapper::Render_Info									= nullptr;
 
 DWORD								DX8Wrapper::Vertex_Processing_Behavior				= 0;
 ZTextureClass*					DX8Wrapper::Shadow_Map[MAX_SHADOW_MAPS];
@@ -310,10 +305,6 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	DX8Wrapper_IsWindowed = false;
 
 	for (int light=0;light<4;++light) CurrentDX8LightEnables[light]=false;
-
-	::ZeroMemory(&old_world, sizeof(D3DMATRIX));
-	::ZeroMemory(&old_view, sizeof(D3DMATRIX));
-	::ZeroMemory(&old_prj, sizeof(D3DMATRIX));
 
 	//old_vertex_shader; TODO
 	//old_sr_shader;
@@ -503,16 +494,6 @@ void DX8Wrapper::Set_Default_Global_Render_States()
 
 //	Set_DX8_Render_State(D3DRS_CULLMODE, D3DCULL_CW);
 	// Set dither mode here?
-}
-
-//MW: I added this for 'Generals'.
-bool DX8Wrapper::Validate_Device()
-{	DWORD numPasses=0;
-	HRESULT hRes;
-
-	hRes=_Get_D3D_Device8()->ValidateDevice(&numPasses);
-
-	return (hRes == D3D_OK);
 }
 
 void DX8Wrapper::Invalidate_Cached_Render_States()
@@ -3524,7 +3505,6 @@ DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
 void
 DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target, bool use_default_depth_buffer)
 {
-//#ifndef _XBOX
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
 
@@ -3639,7 +3619,6 @@ DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target, bool use_default
 
 	IsRenderToTexture = false;
 	return ;
-//#endif // XBOX
 }
 
 
@@ -3653,7 +3632,6 @@ void DX8Wrapper::Set_Render_Target
 	IDirect3DSurface8* depth_buffer
 )
 {
-//#ifndef _XBOX
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
 
@@ -3753,7 +3731,6 @@ void DX8Wrapper::Set_Render_Target
 	}
 
 	IsRenderToTexture=true;
-//#endif // XBOX
 }
 
 
