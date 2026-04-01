@@ -3041,6 +3041,12 @@ void ParticleSystemManager::update()
 			}
 		}
 	}
+	else
+	{
+		// GeneralsX @bugfix Bender 01/04/2026 Clear stale smudges when heat effects are disabled.
+		// Without this, previously flagged smudges may persist in later render passes.
+		TheSmudgeManager->reset();
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

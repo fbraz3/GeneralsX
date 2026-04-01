@@ -164,6 +164,7 @@ static WWINLINE double	Lerp(double a, double b, float t);
 // Returns where v lies between a and b as a ratio, typically in [0, 1].
 static WWINLINE float		Inverse_Lerp(float a, float b, float v);
 static WWINLINE double	Inverse_Lerp(double a, double b, float v);
+static WWINLINE double	Inverse_Lerp(double a, double b, double v);
 
 static WWINLINE long			Float_To_Long(double f);
 
@@ -277,11 +278,24 @@ WWINLINE double WWMath::Lerp(double a, double b, float t)
 
 WWINLINE float WWMath::Inverse_Lerp(float a, float b, float v)
 {
+	// GeneralsX @bugfix Bender 01/04/2026 Avoid division by zero on degenerate interpolation ranges.
+	if (a == b) {
+		return 0.0f;
+	}
 	return (v - a) / (b - a);
 }
 
 WWINLINE double WWMath::Inverse_Lerp(double a, double b, float v)
 {
+	return Inverse_Lerp(a, b, (double)v);
+}
+
+WWINLINE double WWMath::Inverse_Lerp(double a, double b, double v)
+{
+	// GeneralsX @bugfix Bender 01/04/2026 Avoid division by zero on degenerate interpolation ranges.
+	if (a == b) {
+		return 0.0;
+	}
 	return (v - a) / (b - a);
 }
 

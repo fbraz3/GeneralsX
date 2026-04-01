@@ -1342,12 +1342,14 @@ void OpenContain::processDamageToContained(Real percentDamage)
 	// while iterating over it, which may be unsafe.
 
 	constexpr const UnsignedInt smallContainerSize = 16;
-	if (m_containListSize < smallContainerSize)
+	const size_t containCount = m_containList.size();
+	if (containCount < smallContainerSize)
 	{
+		// GeneralsX @bugfix Bender 01/04/2026 Use copied element count to avoid invalid reads in non-assert builds.
 		Object* containCopy[smallContainerSize];
 		std::copy(m_containList.begin(), m_containList.end(), containCopy);
 
-		processDamageToContainedInternal(containCopy, m_containListSize, percentDamage);
+		processDamageToContainedInternal(containCopy, containCount, percentDamage);
 	}
 	else
 	{
