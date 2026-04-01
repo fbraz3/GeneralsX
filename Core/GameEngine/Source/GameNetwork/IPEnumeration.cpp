@@ -28,6 +28,12 @@
 #include "GameNetwork/networkutil.h"
 #include "GameClient/ClientInstance.h"
 
+#ifndef _WIN32
+#include <errno.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#endif
+
 IPEnumeration::IPEnumeration()
 {
 	m_IPlist = nullptr;
@@ -73,30 +79,6 @@ EnumeratedIP * IPEnumeration::getAddresses()
 		m_isWinsockInitialized = true;
 	}
 
-	// get the local machine's host name
-	char hostname[256];
-	if (gethostname(hostname, sizeof(hostname)))
-	{
-		DEBUG_LOG(("Failed call to gethostname; WSAGetLastError returned %d", WSAGetLastError()));
-		return nullptr;
-	}
-	DEBUG_LOG(("Hostname is '%s'", hostname));
-
-	// get host information from the host name
-	hostent* hostEnt = gethostbyname(hostname);
-	if (hostEnt == nullptr)
-	{
-		DEBUG_LOG(("Failed call to gethostbyname; WSAGetLastError returned %d", WSAGetLastError()));
-		return nullptr;
-	}
-
-	// sanity-check the length of the IP adress
-	if (hostEnt->h_length != 4)
-	{
-		DEBUG_LOG(("gethostbyname returns oddly-sized IP addresses!"));
-		return nullptr;
-	}
-
 	// TheSuperHackers @feature Add one unique local host IP address for each multi client instance.
 	if (rts::ClientInstance::isMultiInstance())
 	{
@@ -106,6 +88,75 @@ EnumeratedIP * IPEnumeration::getAddresses()
 			(UnsignedByte)(id >> 16),
 			(UnsignedByte)(id >> 8),
 			(UnsignedByte)(id));
+	}
+
+#ifndef _WIN32
+	// GeneralsX @bugfix BenderAI 31/03/2026 Enumerate active IPv4 interfaces on non-Windows (POSIX) platforms instead of hostname resolution.
+	struct ifaddrs *ifaddr = nullptr;
+	if (getifaddrs(&ifaddr) == 0)
+	{
+		for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
+		{
+			if (ifa->ifa_addr == nullptr)
+			{
+				continue;
+			}
+
+			if (ifa->ifa_addr->sa_family != AF_INET)
+			{
+				continue;
+			}
+
+			if ((ifa->ifa_flags & IFF_UP) == 0 || (ifa->ifa_flags & IFF_LOOPBACK) != 0)
+			{
+				continue;
+			}
+
+			const sockaddr_in *addr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr);
+			// GeneralsX @bugfix BenderAI 31/03/2026 Use ntohl to convert from network byte order before extracting octets;
+			// reading s_addr byte-by-byte on little-endian platforms reverses the IPv4 octets.
+			const UnsignedInt hostAddr = ntohl(addr->sin_addr.s_addr);
+			addNewIP(
+				(UnsignedByte)((hostAddr >> 24) & 0xFF),
+				(UnsignedByte)((hostAddr >> 16) & 0xFF),
+				(UnsignedByte)((hostAddr >> 8) & 0xFF),
+				(UnsignedByte)(hostAddr & 0xFF));
+		}
+		freeifaddrs(ifaddr);
+
+		if (m_IPlist)
+		{
+			return m_IPlist;
+		}
+	}
+	else
+	{
+		DEBUG_LOG(("Failed call to getifaddrs; errno returned %d", errno));
+	}
+#endif
+
+	// get the local machine's host name
+	char hostname[256];
+	if (gethostname(hostname, sizeof(hostname)))
+	{
+		DEBUG_LOG(("Failed call to gethostname; WSAGetLastError returned %d", WSAGetLastError()));
+		return m_IPlist;
+	}
+	DEBUG_LOG(("Hostname is '%s'", hostname));
+
+	// get host information from the host name
+	hostent* hostEnt = gethostbyname(hostname);
+	if (hostEnt == nullptr)
+	{
+		DEBUG_LOG(("Failed call to gethostbyname; WSAGetLastError returned %d", WSAGetLastError()));
+		return m_IPlist;
+	}
+
+	// sanity-check the length of the IP adress
+	if (hostEnt->h_length != 4)
+	{
+		DEBUG_LOG(("gethostbyname returns oddly-sized IP addresses!"));
+		return m_IPlist;
 	}
 
 	// construct a list of addresses
@@ -125,12 +176,19 @@ EnumeratedIP * IPEnumeration::getAddresses()
 
 void IPEnumeration::addNewIP( UnsignedByte a, UnsignedByte b, UnsignedByte c, UnsignedByte d )
 {
+	UnsignedInt ip = AssembleIp(a, b, c, d);
+	for (EnumeratedIP *current = m_IPlist; current != nullptr; current = current->getNext())
+	{
+		if (current->getIP() == ip)
+		{
+			return;
+		}
+	}
+
 	EnumeratedIP *newIP = newInstance(EnumeratedIP);
 
 	AsciiString str;
 	str.format("%d.%d.%d.%d", (int)a, (int)b, (int)c, (int)d);
-
-	UnsignedInt ip = AssembleIp(a, b, c, d);
 
 	newIP->setIPstring(str);
 	newIP->setIP(ip);
