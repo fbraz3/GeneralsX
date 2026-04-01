@@ -40,6 +40,12 @@ For **official releases and instructions**, visit:
 * [GeneralsX Releases](https://github.com/fbraz3/GeneralsX/releases)  - Linux and Mac / 64bit
 * [TheSuperHackers Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases) - Windows only / 32bit
 
+## Running the game
+
+For release/runtime setup instructions (Linux and macOS), see:
+
+- [docs/HOW_TO_RUN.md](docs/HOW_TO_RUN.md)
+
 ## 💖 Support This Project
 
 Cross-platform game development requires significant time, resources, and technical expertise. If GeneralsX has been valuable to you or the Command & Conquer community, consider supporting continued development:

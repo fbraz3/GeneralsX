@@ -72,6 +72,13 @@ Test in windowed mode at 1440p resolution.
 Use this when investigating runtime behavior (example: skirmish startup flow):
 
 ```bash
+cd ~/GeneralsX/GeneralsZH
+./run.sh -win -logToCon 2>&1 | grep -v "D3DRS_PATCHSEGMENTS" | tee ~/Projects/GeneralsX/logs/manual_run.log
+```
+
+Legacy fallback during migration:
+
+```bash
 cd ~/GeneralsX/GeneralsMD
 ./run.sh -win -logToCon 2>&1 | grep -v "D3DRS_PATCHSEGMENTS" | tee ~/Projects/GeneralsX/logs/manual_run.log
 ```

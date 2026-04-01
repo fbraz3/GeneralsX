@@ -13,7 +13,14 @@ DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
-RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
+# GeneralsX @feature BenderAI 01/04/2026 Prefer GeneralsZH runtime dir and keep GeneralsMD compatibility for existing installs.
+PREFERRED_RUNTIME_DIR="${HOME}/GeneralsX/GeneralsZH"
+LEGACY_RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
+RUNTIME_DIR="${PREFERRED_RUNTIME_DIR}"
+if [[ ! -d "${PREFERRED_RUNTIME_DIR}" && -d "${LEGACY_RUNTIME_DIR}" && -n "$(compgen -G "${LEGACY_RUNTIME_DIR}/*.big" 2>/dev/null)" ]]; then
+    RUNTIME_DIR="${LEGACY_RUNTIME_DIR}"
+    echo "INFO: Detected existing legacy Zero Hour install; deploying to ${LEGACY_RUNTIME_DIR}"
+fi
 # Note: CMakeLists.txt uses OUTPUT_NAME GeneralsXZH on Linux (see GeneralsMD/Code/Main/CMakeLists.txt)
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 
@@ -171,6 +178,7 @@ echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.so"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"
-echo "  cd ~/GeneralsX/GeneralsMD && ./run.sh -win"
+echo "  cd ~/GeneralsX/GeneralsZH && ./run.sh -win"
+echo "  (legacy fallback: cd ~/GeneralsX/GeneralsMD && ./run.sh -win)"
 echo "  or"
 echo "  ${PROJECT_ROOT}/scripts/build/linux/run-linux-zh.sh -win"
