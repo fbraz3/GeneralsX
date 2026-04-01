@@ -56,6 +56,7 @@ class W3DParticleSystemManager;
 class AudioManager;
 class Mouse;
 class Keyboard;
+class GameWindow;
 
 /**
  * SDL3GameEngine
@@ -105,9 +106,15 @@ protected:
 	SDL_Window*		m_SDLWindow;
 	Bool			m_IsInitialized;
 	Bool			m_IsActive;
+	Bool			m_IsTextInputActive;
+	GameWindow*	m_TextInputFocusWindow;
 
 	// Event processing
 	void pollSDL3Events(void);
+	// GeneralsX @bugfix felipebraz 01/04/2026 Bridge SDL text events to GUI text-entry widgets.
+	void updateTextInputState(void);
+	// GeneralsX @bugfix felipebraz 01/04/2026 Forward UTF-8 text input as GWM_IME_CHAR messages.
+	void forwardTextInputEvent(const char* utf8Text);
 	void handleKeyboardEvent(const SDL_KeyboardEvent& event);
 	void handleMouseMotionEvent(const SDL_MouseMotionEvent& event);
 	void handleMouseButtonEvent(const SDL_MouseButtonEvent& event);
