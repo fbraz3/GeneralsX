@@ -91,7 +91,7 @@ EnumeratedIP * IPEnumeration::getAddresses()
 	}
 
 #ifndef _WIN32
-	// GeneralsX @bugfix BenderAI 31/03/2026 Enumerate active IPv4 interfaces on Linux instead of hostname resolution.
+	// GeneralsX @bugfix BenderAI 31/03/2026 Enumerate active IPv4 interfaces on non-Windows (POSIX) platforms instead of hostname resolution.
 	struct ifaddrs *ifaddr = nullptr;
 	if (getifaddrs(&ifaddr) == 0)
 	{
@@ -113,8 +113,14 @@ EnumeratedIP * IPEnumeration::getAddresses()
 			}
 
 			const sockaddr_in *addr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr);
-			const UnsignedByte *entry = reinterpret_cast<const UnsignedByte *>(&addr->sin_addr.s_addr);
-			addNewIP(entry[0], entry[1], entry[2], entry[3]);
+			// GeneralsX @bugfix BenderAI 31/03/2026 Use ntohl to convert from network byte order before extracting octets;
+			// reading s_addr byte-by-byte on little-endian platforms reverses the IPv4 octets.
+			const UnsignedInt hostAddr = ntohl(addr->sin_addr.s_addr);
+			addNewIP(
+				(UnsignedByte)((hostAddr >> 24) & 0xFF),
+				(UnsignedByte)((hostAddr >> 16) & 0xFF),
+				(UnsignedByte)((hostAddr >> 8) & 0xFF),
+				(UnsignedByte)(hostAddr & 0xFF));
 		}
 		freeifaddrs(ifaddr);
 
