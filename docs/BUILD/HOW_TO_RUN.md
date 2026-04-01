@@ -1,16 +1,19 @@
+# How to Run GeneralsX
+
 This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
 
-## How to Run
-
-### Prerequisites
+## Prerequisites
 
 1. You must own a legitimate copy of the game. We build and test against the [Steam version](https://store.steampowered.com/app/2732960/Command__Conquer_Generals_Zero_Hour/). Other retail releases may work, but are not officially supported.
 2. Copy the game data from your existing installation (for example, from `C:\Program Files (x86)\Steam\steamapps\common\Command & Conquer Generals - Zero Hour`) to a local folder on your Linux or macOS system. A recommended layout is:
    - `$HOME/GeneralsX/Generals` for Command & Conquer: Generals
    - `$HOME/GeneralsX/GeneralsZH` for Command & Conquer: Generals - Zero Hour
 
+Legacy fallback during migration is still supported:
 
-### Linux
+- `$HOME/GeneralsX/GeneralsMD` for Command & Conquer: Generals - Zero Hour
+
+## Linux
 
 1. Download the Linux archive from this release.
 2. Extract all files into your Zero Hour directory (for example, `$HOME/GeneralsX/GeneralsZH`). Overwrite existing files if prompted.
@@ -18,14 +21,14 @@ This is a **beta** release. Some bugs are still expected. If you run into any pr
 
 If your existing setup still uses `$HOME/GeneralsX/GeneralsMD`, release scripts keep compatibility with that legacy path.
 
-### macOS
+## macOS
 
 1. Download the macOS `.zip` file from this release.
 2. Extract the `.zip` and copy the app bundle into your `Applications` folder.
 3. Make sure your game assets are placed in the following locations:
    - `$HOME/GeneralsX/Generals` for Generals
    - `$HOME/GeneralsX/GeneralsZH` for Zero Hour
-4. Because the app is not code-signed, macOS Gatekeeper will initially block it. After the first launch attempt, go to **System Settings → Privacy & Security** and allow the application to run.
+4. Because the app is not code-signed, macOS Gatekeeper will initially block it. After the first launch attempt, go to **System Settings -> Privacy & Security** and allow the application to run.
 
 If your existing setup still uses `$HOME/GeneralsX/GeneralsMD`, release scripts keep compatibility with that legacy path.
 
@@ -88,7 +91,7 @@ Contributions of all sizes are welcome.
 
 If you are interested in helping with development, bug fixes, testing on additional platforms, or improving compatibility, feel free to open a pull request or start a discussion in the repository.
 
-Even small contributions—such as testing, documentation improvements, or well-documented bug reports—are very valuable.
+Even small contributions, such as testing, documentation improvements, or well-documented bug reports, are very valuable.
 
 ## Credits
 

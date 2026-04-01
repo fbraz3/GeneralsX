@@ -44,7 +44,7 @@ For **official releases and instructions**, visit:
 
 For release/runtime setup instructions (Linux and macOS), see:
 
-- [docs/HOW_TO_RUN.md](docs/HOW_TO_RUN.md)
+- [docs/BUILD/HOW_TO_RUN.md](docs/BUILD/HOW_TO_RUN.md)
 
 ## 💖 Support This Project
 
