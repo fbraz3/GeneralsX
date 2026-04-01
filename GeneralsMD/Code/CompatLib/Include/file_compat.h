@@ -14,6 +14,7 @@
 #include <cstring>
 #include <filesystem>
 #include <dirent.h>
+#include <fnmatch.h>
 
 // GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Windows _mkdir → POSIX mkdir (with default perms)
 inline int _mkdir(const char* path)  {
@@ -143,53 +144,84 @@ struct FIND_HANDLE_DATA {
   DIR* dir;
   struct dirent* entry;
   char pattern[MAX_PATH];
+  char dirpath[MAX_PATH];
 };
 
+// GeneralsX @bugfix BenderAI 30/03/2026 - POSIX FindFirstFile: honor directory and wildcard pattern
 inline void* FindFirstFile(const char* pattern, WIN32_FIND_DATA* findData) {
+  if (!pattern || !findData) return (void*)-1;
+
   FIND_HANDLE_DATA* handle = new FIND_HANDLE_DATA();
-  handle->dir = opendir(".");
-  if (!handle->dir) {
-    delete handle;
-    return (void*)-1; // INVALID_HANDLE_VALUE
-  }
-  
-  // Store pattern for filtering (just "*" for now)
-  strncpy(handle->pattern, pattern, MAX_PATH - 1);
-  handle->pattern[MAX_PATH - 1] = '\0';
-  
-  // Read first entry
-  handle->entry = readdir(handle->dir);
-  if (!handle->entry) {
-    closedir(handle->dir);
+
+  // Parse pattern into directory and filename mask
+  try {
+    std::filesystem::path p(pattern);
+    std::string dir = p.parent_path().string();
+    std::string mask = p.filename().string();
+
+    if (dir.empty()) dir = ".";
+
+    // Store dirpath and pattern
+    strncpy(handle->dirpath, dir.c_str(), MAX_PATH - 1);
+    handle->dirpath[MAX_PATH - 1] = '\0';
+    strncpy(handle->pattern, mask.c_str(), MAX_PATH - 1);
+    handle->pattern[MAX_PATH - 1] = '\0';
+
+    handle->dir = opendir(handle->dirpath);
+    if (!handle->dir) {
+      delete handle;
+      return (void*)-1; // INVALID_HANDLE_VALUE
+    }
+  } catch (...) {
     delete handle;
     return (void*)-1;
   }
-  
-  // Fill find data
-  strncpy(findData->cFileName, handle->entry->d_name, MAX_PATH - 1);
-  findData->cFileName[MAX_PATH - 1] = '\0';
-  findData->dwFileAttributes = (handle->entry->d_type == DT_DIR) ? FILE_ATTRIBUTE_DIRECTORY : 0;
-  
-  return handle;
+
+  // Iterate until we find a matching entry or exhaust
+  while (true) {
+    handle->entry = readdir(handle->dir);
+    if (!handle->entry) {
+      closedir(handle->dir);
+      delete handle;
+      return (void*)-1; // no matches
+    }
+
+    // Apply wildcard matching using fnmatch
+    if (fnmatch(handle->pattern, handle->entry->d_name, 0) == 0) {
+      // Match found
+      strncpy(findData->cFileName, handle->entry->d_name, MAX_PATH - 1);
+      findData->cFileName[MAX_PATH - 1] = '\0';
+      findData->dwFileAttributes = (handle->entry->d_type == DT_DIR) ? FILE_ATTRIBUTE_DIRECTORY : 0;
+      return handle;
+    }
+
+    // otherwise continue searching
+  }
 }
 
+// GeneralsX @bugfix BenderAI 30/03/2026 - POSIX FindNextFile: continue applying wildcard filter
 inline int FindNextFile(void* hFindFile, WIN32_FIND_DATA* findData) {
-  if (!hFindFile || hFindFile == (void*)-1) {
+  if (!hFindFile || hFindFile == (void*)-1 || !findData) {
     return 0; // FALSE
   }
-  
+
   FIND_HANDLE_DATA* handle = static_cast<FIND_HANDLE_DATA*>(hFindFile);
-  handle->entry = readdir(handle->dir);
-  if (!handle->entry) {
-    return 0; // FALSE - no more files
+
+  while (true) {
+    handle->entry = readdir(handle->dir);
+    if (!handle->entry) {
+      return 0; // FALSE - no more files
+    }
+
+    if (fnmatch(handle->pattern, handle->entry->d_name, 0) == 0) {
+      strncpy(findData->cFileName, handle->entry->d_name, MAX_PATH - 1);
+      findData->cFileName[MAX_PATH - 1] = '\0';
+      findData->dwFileAttributes = (handle->entry->d_type == DT_DIR) ? FILE_ATTRIBUTE_DIRECTORY : 0;
+      return 1; // TRUE
+    }
+
+    // else continue loop to next entry
   }
-  
-  // Fill find data
-  strncpy(findData->cFileName, handle->entry->d_name, MAX_PATH - 1);
-  findData->cFileName[MAX_PATH - 1] = '\0';
-  findData->dwFileAttributes = (handle->entry->d_type == DT_DIR) ? FILE_ATTRIBUTE_DIRECTORY : 0;
-  
-  return 1; // TRUE
 }
 
 inline int FindClose(void* hFindFile) {

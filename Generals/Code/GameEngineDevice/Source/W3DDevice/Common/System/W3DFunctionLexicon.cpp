@@ -78,6 +78,7 @@ static FunctionLexicon::TableEntry gameWinDrawTable [] =
 	{ NAMEKEY_INVALID, "W3DMetalBarMenuDraw",                 (void*)W3DMetalBarMenuDraw },
 	{ NAMEKEY_INVALID, "W3DCreditsMenuDraw",                  (void*)W3DCreditsMenuDraw },
 	{ NAMEKEY_INVALID, "W3DClockDraw",                        (void*)W3DClockDraw },
+	{ NAMEKEY_INVALID, "W3DGeneralsXCreditDraw",             (void*)W3DGeneralsXCreditDraw },
 	{ NAMEKEY_INVALID, "W3DMainMenuMapBorder",                (void*)W3DMainMenuMapBorder },
 	{ NAMEKEY_INVALID, "W3DMainMenuButtonDropShadowDraw",     (void*)W3DMainMenuButtonDropShadowDraw },
 	{ NAMEKEY_INVALID, "W3DMainMenuRandomTextDraw",           (void*)W3DMainMenuRandomTextDraw },

@@ -21,6 +21,7 @@
 // Author: Matthew D. Campbell, December 2001
 
 #include <string>
+#include "registryini.h"
 
 #define WIN32_LEAN_AND_MEAN
 
@@ -186,40 +187,79 @@ bool SetUnsignedIntInRegistry( std::string path, std::string key, unsigned int v
 
 #else // _WIN32 - Linux: No registry support
 
-// Stub implementations for Linux
-bool  getStringFromRegistry(HKEY, std::string, std::string, std::string&) { return false; }
-bool getUnsignedIntFromRegistry(HKEY, std::string, std::string, unsigned int&) { return false; }
-bool setStringInRegistry(HKEY, std::string, std::string, std::string) { return false; }
-bool setUnsignedIntInRegistry(HKEY, std::string, std::string, unsigned int) { return false; }
+// GeneralsX @feature GitHubCopilot 29/03/2026 Persist WWDownload registry values in registry.ini.
+static const char *getRegistryIniRoot(HKEY root)
+{
+	return root == HKEY_LOCAL_MACHINE ? RegistryIni::LocalMachineRoot() : RegistryIni::CurrentUserRoot();
+}
 
-// TheSuperHackers @build felipebraz 13/02/2026 - Add stubs for uppercase public API
-// Linux has no registry, return false (not found) for all queries
-// This allows the game to gracefully handle missing registry data
+static std::string getProductRegistryPath()
+{
+#if RTS_GENERALS
+	return "SOFTWARE\\Electronic Arts\\EA Games\\Generals";
+#elif RTS_ZEROHOUR
+	return "SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer Generals Zero Hour";
+#else
+	return "SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer Generals Zero Hour";
+#endif
+}
+
+bool  getStringFromRegistry(HKEY root, std::string path, std::string key, std::string& val)
+{
+	return RegistryIni::ReadString(getRegistryIniRoot(root), path.c_str(), key.c_str(), val);
+}
+
+bool getUnsignedIntFromRegistry(HKEY root, std::string path, std::string key, unsigned int& val)
+{
+	return RegistryIni::ReadUnsignedInt(getRegistryIniRoot(root), path.c_str(), key.c_str(), val);
+}
+
+bool setStringInRegistry(HKEY root, std::string path, std::string key, std::string val)
+{
+	return RegistryIni::WriteString(getRegistryIniRoot(root), path.c_str(), key.c_str(), val.c_str());
+}
+
+bool setUnsignedIntInRegistry(HKEY root, std::string path, std::string key, unsigned int val)
+{
+	return RegistryIni::WriteUnsignedInt(getRegistryIniRoot(root), path.c_str(), key.c_str(), val);
+}
 
 bool GetStringFromRegistry(std::string path, std::string key, std::string& val)
 {
-	fprintf(stderr, "INFO: GetStringFromRegistry('%s', '%s') - Linux stub (no registry)\n", path.c_str(), key.c_str());
-	val = "";  // Return empty string on Linux
-	return false;  // Registry lookup failed
+	std::string fullPath = getProductRegistryPath();
+	fullPath.append(path);
+	if (getStringFromRegistry(HKEY_CURRENT_USER, fullPath.c_str(), key.c_str(), val))
+	{
+		return true;
+	}
+
+	return getStringFromRegistry(HKEY_LOCAL_MACHINE, fullPath.c_str(), key.c_str(), val);
 }
 
 bool GetUnsignedIntFromRegistry(std::string path, std::string key, unsigned int& val)
 {
-	fprintf(stderr, "INFO: GetUnsignedIntFromRegistry('%s', '%s') - Linux stub (no registry)\n", path.c_str(), key.c_str());
-	val = 0;  // Return 0 on Linux
-	return false;  // Registry lookup failed
+	std::string fullPath = getProductRegistryPath();
+	fullPath.append(path);
+	if (getUnsignedIntFromRegistry(HKEY_CURRENT_USER, fullPath.c_str(), key.c_str(), val))
+	{
+		return true;
+	}
+
+	return getUnsignedIntFromRegistry(HKEY_LOCAL_MACHINE, fullPath.c_str(), key.c_str(), val);
 }
 
 bool SetStringInRegistry(std::string path, std::string key, std::string val)
 {
-	fprintf(stderr, "INFO: SetStringInRegistry('%s', '%s', '%s') - Linux stub (no registry)\n", path.c_str(), key.c_str(), val.c_str());
-	return false;  // Registry write failed on Linux
+	std::string fullPath = getProductRegistryPath();
+	fullPath.append(path);
+	return setStringInRegistry(HKEY_CURRENT_USER, fullPath, key, val);
 }
 
 bool SetUnsignedIntInRegistry(std::string path, std::string key, unsigned int val)
 {
-	fprintf(stderr, "INFO: SetUnsignedIntInRegistry('%s', '%s', %u) - Linux stub (no registry)\n", path.c_str(), key.c_str(), val);
-	return false;  // Registry write failed on Linux
+	std::string fullPath = getProductRegistryPath();
+	fullPath.append(path);
+	return setUnsignedIntInRegistry(HKEY_CURRENT_USER, fullPath, key, val);
 }
 
 void setTeamsPath() {}

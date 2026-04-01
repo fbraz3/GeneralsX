@@ -36,6 +36,7 @@
 #include "Common/MultiplayerSettings.h"
 #include "Common/INI.h"
 #include "GameNetwork/GameInfo.h" // for PLAYERTEMPLATE_*
+#include <algorithm>
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
 MultiplayerSettings *TheMultiplayerSettings = nullptr;				///< The MultiplayerSettings singleton
@@ -84,6 +85,38 @@ MultiplayerSettings::MultiplayerSettings()
 	m_showRandomColor = TRUE;
 	m_observerColor;
 	m_randomColor;
+	// GeneralsX @tweak fbraz 30/03/2026 Add larger starting money options to the default list
+	// Ensure these values exist so the UI dropdown includes them even if INI doesn't define them
+	{
+		Money money100k; money100k.setStartingCash(100000);
+		Money money150k; money150k.setStartingCash(150000);
+		Money money200k; money200k.setStartingCash(200000);
+
+		Bool found = FALSE;
+		for (MultiplayerStartingMoneyList::const_iterator it = m_startingMoneyList.begin(); it != m_startingMoneyList.end(); ++it)
+		{
+			if ( it->amountEqual(money100k) ) { found = TRUE; break; }
+		}
+		if (!found) addStartingMoneyChoice(money100k, FALSE);
+
+		found = FALSE;
+		for (MultiplayerStartingMoneyList::const_iterator it = m_startingMoneyList.begin(); it != m_startingMoneyList.end(); ++it)
+		{
+			if ( it->amountEqual(money150k) ) { found = TRUE; break; }
+		}
+		if (!found) addStartingMoneyChoice(money150k, FALSE);
+
+		found = FALSE;
+		for (MultiplayerStartingMoneyList::const_iterator it = m_startingMoneyList.begin(); it != m_startingMoneyList.end(); ++it)
+		{
+			if ( it->amountEqual(money200k) ) { found = TRUE; break; }
+		}
+		if (!found) addStartingMoneyChoice(money200k, FALSE);
+	}
+
+	// Ensure starting money choices are in ascending order for UI presentation
+	std::sort(m_startingMoneyList.begin(), m_startingMoneyList.end(),
+		[](const Money &a, const Money &b) { return a.countMoney() < b.countMoney(); });
 }
 
 MultiplayerColorDefinition::MultiplayerColorDefinition()
@@ -137,6 +170,17 @@ MultiplayerColorDefinition * MultiplayerSettings::newMultiplayerColorDefinition(
 	m_numColors = m_colorList.size();
 
 	return &m_colorList[numColors];
+}
+
+void MultiplayerSettings::addStartingMoneyChoice( const Money & money, Bool isDefault )
+{
+	m_startingMoneyList.push_back( money );
+	if ( isDefault )
+	{
+		DEBUG_ASSERTCRASH( !m_gotDefaultStartingMoney, ("Cannot have more than one default MultiplayerStartingMoneyChoice") );
+		m_defaultStartingMoney = money;
+		m_gotDefaultStartingMoney = true;
+	}
 }
 
 MultiplayerColorDefinition * MultiplayerColorDefinition::operator =(const MultiplayerColorDefinition& other)
