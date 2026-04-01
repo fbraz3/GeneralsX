@@ -1,5 +1,13 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-31 - Quoted-printable Unicode paths must never read raw wide-char bytes
+
+- Problem: Network/LAN user names could be serialized as truncated values like `m_00` on Linux/macOS.
+- Root cause: Quoted-printable helpers and token copy paths assumed `WideChar` was always 2 bytes, but `wchar_t` is 4 bytes on Linux/macOS.
+- Fix: Encode/decode quoted-printable using explicit UTF-16 code units (low/high byte per character) and replace `len*2` memcpy with `len * sizeof(WideChar)`.
+- Validation: Static diagnostics for modified files are clean; serialization logic no longer depends on host `WideChar` width.
+- Prevention: Any shared text serialization helper must define a stable wire format explicitly and never reinterpret platform `WideChar` storage as raw bytes.
+
 ## Session 2026-03-31 - Linux LAN IP list must come from interfaces, not hostname resolution
 
 - Problem: Network options and LAN flows only listed hostname-resolved addresses, which frequently collapsed to loopback (`127.0.0.1`) on Linux and blocked LAN selection in UI.
