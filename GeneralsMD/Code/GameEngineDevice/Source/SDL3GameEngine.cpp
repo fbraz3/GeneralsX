@@ -34,6 +34,9 @@
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/Keyboard.h"
+#include "GameClient/GameWindow.h"
+#include "GameClient/GameWindowManager.h"
+#include "GameClient/Gadget.h"
 #include "W3DDevice/GameLogic/W3DGameLogic.h"
 #include "W3DDevice/GameClient/W3DGameClient.h"
 #include "W3DDevice/Common/W3DModuleFactory.h"
@@ -48,10 +51,69 @@
 #include <SDL3/SDL_vulkan.h>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 // Extern globals for input devices (set by GameClient)
 extern Mouse *TheMouse;
 extern Keyboard *TheKeyboard;
+extern GameWindowManager *TheWindowManager;
+
+namespace {
+
+Bool DecodeNextUtf8Codepoint(const char* text, size_t length, size_t& offset, UnsignedInt& outCodepoint)
+{
+	outCodepoint = 0;
+	if (!text || offset >= length) {
+		return false;
+	}
+
+	const unsigned char first = static_cast<unsigned char>(text[offset]);
+	if (first == 0) {
+		return false;
+	}
+
+	if (first < 0x80) {
+		outCodepoint = first;
+		offset += 1;
+		return true;
+	}
+
+	if ((first & 0xE0) == 0xC0 && offset + 1 < length) {
+		const unsigned char second = static_cast<unsigned char>(text[offset + 1]);
+		if ((second & 0xC0) == 0x80) {
+			outCodepoint = ((first & 0x1F) << 6) | (second & 0x3F);
+			offset += 2;
+			return true;
+		}
+	}
+
+	if ((first & 0xF0) == 0xE0 && offset + 2 < length) {
+		const unsigned char second = static_cast<unsigned char>(text[offset + 1]);
+		const unsigned char third = static_cast<unsigned char>(text[offset + 2]);
+		if ((second & 0xC0) == 0x80 && (third & 0xC0) == 0x80) {
+			outCodepoint = ((first & 0x0F) << 12) | ((second & 0x3F) << 6) | (third & 0x3F);
+			offset += 3;
+			return true;
+		}
+	}
+
+	if ((first & 0xF8) == 0xF0 && offset + 3 < length) {
+		const unsigned char second = static_cast<unsigned char>(text[offset + 1]);
+		const unsigned char third = static_cast<unsigned char>(text[offset + 2]);
+		const unsigned char fourth = static_cast<unsigned char>(text[offset + 3]);
+		if ((second & 0xC0) == 0x80 && (third & 0xC0) == 0x80 && (fourth & 0xC0) == 0x80) {
+			outCodepoint = ((first & 0x07) << 18) | ((second & 0x3F) << 12) | ((third & 0x3F) << 6) | (fourth & 0x3F);
+			offset += 4;
+			return true;
+		}
+	}
+
+	// Invalid UTF-8 sequence: skip one byte and keep processing.
+	offset += 1;
+	return false;
+}
+
+}
 
 /**
  * Constructor: Initialize SDL3 game engine state
@@ -60,7 +122,9 @@ SDL3GameEngine::SDL3GameEngine()
 	: GameEngine(),
 	  m_SDLWindow(nullptr),
 	  m_IsInitialized(false),
-	  m_IsActive(false)
+	  m_IsActive(false),
+	  m_IsTextInputActive(false),
+	  m_TextInputFocusWindow(nullptr)
 {
 	fprintf(stderr, "DEBUG: SDL3GameEngine::SDL3GameEngine() created\n");
 }
@@ -70,6 +134,12 @@ SDL3GameEngine::SDL3GameEngine()
  */
 SDL3GameEngine::~SDL3GameEngine()
 {
+	if (m_SDLWindow && m_IsTextInputActive) {
+		SDL_StopTextInput(m_SDLWindow);
+		m_IsTextInputActive = false;
+		m_TextInputFocusWindow = nullptr;
+	}
+
 	if (m_IsInitialized) {
 		// Window cleanup is done in reset/shutdown
 	}
@@ -115,6 +185,11 @@ void SDL3GameEngine::init(void)
 void SDL3GameEngine::reset(void)
 {
 	fprintf(stderr, "DEBUG: SDL3GameEngine::reset()\n");
+	if (m_SDLWindow && m_IsTextInputActive) {
+		SDL_StopTextInput(m_SDLWindow);
+		m_IsTextInputActive = false;
+		m_TextInputFocusWindow = nullptr;
+	}
 	GameEngine::reset();
 }
 
@@ -172,6 +247,8 @@ void SDL3GameEngine::pollSDL3Events(void)
 		return;
 	}
 
+	updateTextInputState();
+
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -193,6 +270,11 @@ void SDL3GameEngine::pollSDL3Events(void)
 
 			case SDL_EVENT_WINDOW_FOCUS_LOST:
 				m_IsActive = false;
+				if (m_IsTextInputActive) {
+					SDL_StopTextInput(m_SDLWindow);
+					m_IsTextInputActive = false;
+					m_TextInputFocusWindow = nullptr;
+				}
 				if (TheMouse) {
 					TheMouse->loseFocus();
 				}
@@ -222,6 +304,10 @@ void SDL3GameEngine::pollSDL3Events(void)
 				}
 				break;
 
+			case SDL_EVENT_TEXT_INPUT:
+				forwardTextInputEvent(event.text.text);
+				break;
+
 			case SDL_EVENT_MOUSE_MOTION:
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			case SDL_EVENT_MOUSE_BUTTON_UP:
@@ -244,6 +330,74 @@ void SDL3GameEngine::pollSDL3Events(void)
 				// Ignore other events for now
 				break;
 		}
+
+		updateTextInputState();
+	}
+}
+
+// GeneralsX @bugfix felipebraz 01/04/2026 Enable SDL text input only while an entry gadget owns focus.
+void SDL3GameEngine::updateTextInputState(void)
+{
+	if (!m_SDLWindow || !TheWindowManager) {
+		return;
+	}
+
+	GameWindow* focusedWindow = TheWindowManager->winGetFocus();
+	const Bool wantsTextInput =
+		focusedWindow != nullptr && BitIsSet(focusedWindow->winGetStyle(), GWS_ENTRY_FIELD);
+
+	if (wantsTextInput) {
+		if (!m_IsTextInputActive) {
+			if (SDL_StartTextInput(m_SDLWindow)) {
+				m_IsTextInputActive = true;
+			}
+		}
+		m_TextInputFocusWindow = focusedWindow;
+	} else {
+		if (m_IsTextInputActive) {
+			SDL_StopTextInput(m_SDLWindow);
+			m_IsTextInputActive = false;
+		}
+		m_TextInputFocusWindow = nullptr;
+	}
+}
+
+// GeneralsX @bugfix felipebraz 01/04/2026 Forward SDL UTF-8 text input through existing GWM_IME_CHAR path.
+void SDL3GameEngine::forwardTextInputEvent(const char* utf8Text)
+{
+	if (!utf8Text || !TheWindowManager) {
+		return;
+	}
+
+	// GeneralsX @bugfix felipebraz 01/04/2026 Use tracked text-input focus window to keep SDL text delivery stable.
+	GameWindow* targetWindow = m_TextInputFocusWindow;
+	if (!targetWindow || !BitIsSet(targetWindow->winGetStyle(), GWS_ENTRY_FIELD)) {
+		return;
+	}
+
+	const size_t textLength = strlen(utf8Text);
+	size_t offset = 0;
+	while (offset < textLength) {
+		UnsignedInt codepoint = 0;
+		if (!DecodeNextUtf8Codepoint(utf8Text, textLength, offset, codepoint)) {
+			continue;
+		}
+
+		// GeneralsX @bugfix felipebraz 01/04/2026 Clamp IME char forwarding to BMP and reject UTF-16 surrogate range.
+		if (codepoint == 0 || codepoint > 0x10FFFFU) {
+			continue;
+		}
+
+		if (codepoint >= 0xD800U && codepoint <= 0xDFFFU) {
+			continue;
+		}
+
+		if (codepoint > 0xFFFFU) {
+			continue;
+		}
+
+		const WideChar wideCharacter = static_cast<WideChar>(codepoint);
+		TheWindowManager->winSendInputMsg(targetWindow, GWM_IME_CHAR, static_cast<WindowMsgData>(wideCharacter), 0);
 	}
 }
 

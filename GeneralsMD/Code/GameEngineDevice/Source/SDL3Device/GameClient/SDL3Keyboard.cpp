@@ -160,8 +160,8 @@ void SDL3Keyboard::getKey(KeyboardIO *key)
 	key->key = keyDef;
 	key->status = KeyboardIO::STATUS_UNUSED;
 	key->state = keyEvent.down ? KEY_STATE_DOWN : KEY_STATE_UP;
-	// GeneralsX @bugfix BenderAI 07/03/2026 Normalize timestamp to milliseconds (SDL3 uses nanoseconds)
-	key->keyDownTimeMsec = (Uint32)(keyEvent.timestamp / 1000000);
+	// GeneralsX @bugfix felipebraz 01/04/2026 Use the same timer domain as Keyboard::checkKeyRepeat() to avoid immediate duplicate repeats.
+	key->keyDownTimeMsec = keyEvent.down ? timeGetTime() : 0;
 	
 	// Mark this slot as empty (sentinel)
 	m_eventBuffer[m_nextGetIndex].type = SDL_EVENT_FIRST;
@@ -188,6 +188,11 @@ void SDL3Keyboard::addSDLEvent(SDL_Event *event)
 	// Filter only keyboard-related events
 	if (event->type != SDL_EVENT_KEY_DOWN && event->type != SDL_EVENT_KEY_UP) {
 		return;  // Not a keyboard event, ignore
+	}
+
+	// GeneralsX @bugfix felipebraz 01/04/2026 SDL key-repeat is redundant with engine repeat and can duplicate edits like Backspace.
+	if (event->type == SDL_EVENT_KEY_DOWN && event->key.repeat) {
+		return;
 	}
 	
 	// Check if buffer is full
@@ -239,11 +244,19 @@ KeyVal SDL3Keyboard::translateScanCodeToKeyVal(unsigned char scan)
 	// For now, return KEY_NONE (parent class will handle)
 	
 	// Quick mapping for essential keys
+	// GeneralsX @bugfix felipebraz 01/04/2026 Restore editing/navigation keys required by GUI widgets.
 	switch ((SDL_Scancode)scan) {
 		case SDL_SCANCODE_ESCAPE: return KEY_ESC;      // GeneralsX @bugfix BenderAI 13/02/2026 Fix key constant name
 		case SDL_SCANCODE_RETURN: return KEY_ENTER;    // GeneralsX @bugfix BenderAI 13/02/2026 Fix key constant name
+		case SDL_SCANCODE_KP_ENTER: return KEY_KPENTER;
 		case SDL_SCANCODE_SPACE: return KEY_SPACE;
 		case SDL_SCANCODE_TAB: return KEY_TAB;
+		case SDL_SCANCODE_BACKSPACE: return KEY_BACKSPACE;
+		case SDL_SCANCODE_DELETE: return KEY_DEL;
+		case SDL_SCANCODE_HOME: return KEY_HOME;
+		case SDL_SCANCODE_END: return KEY_END;
+		case SDL_SCANCODE_PAGEUP: return KEY_PGUP;
+		case SDL_SCANCODE_PAGEDOWN: return KEY_PGDN;
 		case SDL_SCANCODE_LSHIFT: return KEY_LSHIFT;
 		case SDL_SCANCODE_RSHIFT: return KEY_RSHIFT;
 		case SDL_SCANCODE_LCTRL: return KEY_LCTRL;     // GeneralsX @bugfix BenderAI 13/02/2026 Fix key constant name
