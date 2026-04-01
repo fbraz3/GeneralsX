@@ -93,6 +93,9 @@ const int DEFAULT_BIT_DEPTH = 32;
 const int DEFAULT_TEXTURE_BIT_DEPTH = 16;
 const D3DMULTISAMPLE_TYPE DEFAULT_MSAA = D3DMULTISAMPLE_NONE;
 
+DX8FrameStatistics DX8Wrapper::FrameStatistics;
+static DX8FrameStatistics LastFrameStatistics;
+
 bool DX8Wrapper_IsWindowed = true;
 
 // FPU_PRESERVE
@@ -150,15 +153,6 @@ IDirect3DSurface8 *			DX8Wrapper::DefaultRenderTarget						= nullptr;
 IDirect3DSurface8 *			DX8Wrapper::DefaultDepthBuffer						= nullptr;
 bool								DX8Wrapper::IsRenderToTexture							= false;
 
-unsigned							DX8Wrapper::matrix_changes								= 0;
-unsigned							DX8Wrapper::material_changes							= 0;
-unsigned							DX8Wrapper::vertex_buffer_changes					= 0;
-unsigned							DX8Wrapper::index_buffer_changes                = 0;
-unsigned							DX8Wrapper::light_changes								= 0;
-unsigned							DX8Wrapper::texture_changes							= 0;
-unsigned							DX8Wrapper::render_state_changes						= 0;
-unsigned							DX8Wrapper::texture_stage_state_changes			= 0;
-unsigned							DX8Wrapper::draw_calls									= 0;
 unsigned							DX8Wrapper::_MainThreadID								= 0;
 bool								DX8Wrapper::CurrentDX8LightEnables[4];
 bool								DX8Wrapper::IsDeviceLost;
@@ -178,18 +172,6 @@ D3DADAPTER_IDENTIFIER8		DX8Wrapper::CurrentAdapterIdentifier;
 unsigned long DX8Wrapper::FrameCount = 0;
 
 bool								_DX8SingleThreaded										= false;
-
-unsigned							number_of_DX8_calls										= 0;
-static unsigned				last_frame_matrix_changes								= 0;
-static unsigned				last_frame_material_changes							= 0;
-static unsigned				last_frame_vertex_buffer_changes						= 0;
-static unsigned				last_frame_index_buffer_changes						= 0;
-static unsigned				last_frame_light_changes								= 0;
-static unsigned				last_frame_texture_changes								= 0;
-static unsigned				last_frame_render_state_changes						= 0;
-static unsigned				last_frame_texture_stage_state_changes				= 0;
-static unsigned				last_frame_number_of_DX8_calls						= 0;
-static unsigned				last_frame_draw_calls									= 0;
 
 static D3DPRESENT_PARAMETERS								_PresentParameters;
 static DynamicVectorClass<StringClass>					_RenderDeviceNameTable;
@@ -1649,67 +1631,25 @@ bool DX8Wrapper::Test_Z_Mode(D3DFORMAT colorbuffer,D3DFORMAT backbuffer, D3DFORM
 
 void DX8Wrapper::Reset_Statistics()
 {
-	matrix_changes	= 0;
-	material_changes = 0;
-	vertex_buffer_changes = 0;
-	index_buffer_changes = 0;
-	light_changes = 0;
-	texture_changes = 0;
-	render_state_changes =0;
-	texture_stage_state_changes =0;
-	draw_calls =0;
-
-	number_of_DX8_calls = 0;
-	last_frame_matrix_changes = 0;
-	last_frame_material_changes = 0;
-	last_frame_vertex_buffer_changes = 0;
-	last_frame_index_buffer_changes = 0;
-	last_frame_light_changes = 0;
-	last_frame_texture_changes = 0;
-	last_frame_render_state_changes = 0;
-	last_frame_texture_stage_state_changes = 0;
-	last_frame_number_of_DX8_calls = 0;
-	last_frame_draw_calls =0;
+	FrameStatistics = DX8FrameStatistics();
+	LastFrameStatistics = DX8FrameStatistics();
 }
 
 void DX8Wrapper::Begin_Statistics()
 {
-	matrix_changes=0;
-	material_changes=0;
-	vertex_buffer_changes=0;
-	index_buffer_changes=0;
-	light_changes=0;
-	texture_changes = 0;
-	render_state_changes =0;
-	texture_stage_state_changes =0;
-	number_of_DX8_calls=0;
-	draw_calls=0;
+	FrameStatistics = DX8FrameStatistics();
 }
 
 void DX8Wrapper::End_Statistics()
 {
-	last_frame_matrix_changes=matrix_changes;
-	last_frame_material_changes=material_changes;
-	last_frame_vertex_buffer_changes=vertex_buffer_changes;
-	last_frame_index_buffer_changes=index_buffer_changes;
-	last_frame_light_changes=light_changes;
-	last_frame_texture_changes = texture_changes;
-	last_frame_render_state_changes = render_state_changes;
-	last_frame_texture_stage_state_changes = texture_stage_state_changes;
-	last_frame_number_of_DX8_calls=number_of_DX8_calls;
-	last_frame_draw_calls=draw_calls;
+	LastFrameStatistics = FrameStatistics;
 }
 
-unsigned DX8Wrapper::Get_Last_Frame_Matrix_Changes()			{ return last_frame_matrix_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Material_Changes()		{ return last_frame_material_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Vertex_Buffer_Changes()	{ return last_frame_vertex_buffer_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Index_Buffer_Changes()	{ return last_frame_index_buffer_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Light_Changes()			{ return last_frame_light_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Texture_Changes()			{ return last_frame_texture_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Render_State_Changes()	{ return last_frame_render_state_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Texture_Stage_State_Changes()	{ return last_frame_texture_stage_state_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_DX8_Calls()					{ return last_frame_number_of_DX8_calls; }
-unsigned DX8Wrapper::Get_Last_Frame_Draw_Calls()				{ return last_frame_draw_calls; }
+const DX8FrameStatistics& DX8Wrapper::Get_Last_Frame_Statistics()
+{
+	return LastFrameStatistics;
+}
+
 unsigned long DX8Wrapper::Get_FrameCount() {return FrameCount;}
 
 void DX8_Assert()
@@ -1746,7 +1686,7 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 			hr=_Get_D3D_Device8()->Present(nullptr, nullptr, nullptr, nullptr);
 		}
 
-		number_of_DX8_calls++;
+		DX8_RECORD_DX8_CALLS();
 
 		if (SUCCEEDED(hr)) {
 #ifdef EXTENDED_STATS
@@ -1855,7 +1795,7 @@ void DX8Wrapper::Clear(bool clear_color, bool clear_z_stencil, const Vector3 &co
 	IDirect3DSurface8* depthbuffer;
 
 	_Get_D3D_Device8()->GetDepthStencilSurface(&depthbuffer);
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 
 	if (depthbuffer)
 	{
@@ -3217,7 +3157,7 @@ DX8Wrapper::Create_Render_Target (int width, int height, WW3DFormat format)
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 
 	// Use the current display format if format isn't specified
 	if (format==WW3D_FORMAT_UNKNOWN) {
@@ -3283,7 +3223,7 @@ void DX8Wrapper::Create_Render_Target
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 
 	// Use the current display format if format isn't specified
 	if (format==WW3D_FORMAT_UNKNOWN)
@@ -3684,7 +3624,7 @@ void DX8Wrapper::Flush_DX8_Resource_Manager(unsigned int bytes)
 unsigned int DX8Wrapper::Get_Free_Texture_RAM()
 {
 	DX8_Assert();
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 	return DX8Wrapper::_Get_D3D_Device8()->GetAvailableTextureMem();
 }
 
@@ -3700,7 +3640,7 @@ void DX8Wrapper::Set_Gamma(float gamma,float bright,float contrast,bool calibrat
 	float oo_gamma=1.0f/gamma;
 
 	DX8_Assert();
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 
 	DWORD flag=(calibrate?D3DSGR_CALIBRATE:D3DSGR_NO_CALIBRATION);
 
