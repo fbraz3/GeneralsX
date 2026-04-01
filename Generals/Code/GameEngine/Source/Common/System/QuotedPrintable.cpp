@@ -52,10 +52,25 @@ static int hexDigitToInt(char c)
 	return 0;
 }
 
+// GeneralsX @bugfix copilot 01/04/2026 Keep wire format locale-independent by allowing only ASCII alnum bytes as literal.
+static Bool isAsciiAlphaNumeric(unsigned char value)
+{
+	return (value >= '0' && value <= '9')
+		|| (value >= 'A' && value <= 'Z')
+		|| (value >= 'a' && value <= 'z');
+}
+
+static Bool isHexDigit(char c)
+{
+	return (c >= '0' && c <= '9')
+		|| (c >= 'A' && c <= 'F')
+		|| (c >= 'a' && c <= 'f');
+}
+
 // GeneralsX @bugfix copilot 31/03/2026 Encode/decode UTF-16 code units explicitly to avoid wchar_t size dependency.
 static Bool appendQuotedPrintableByte(char *dest, int &index, unsigned char value)
 {
-	if (isalnum(value))
+	if (isAsciiAlphaNumeric(value))
 	{
 		if (index >= 1023)
 		{
@@ -80,24 +95,22 @@ static Bool decodeQuotedPrintableByte(const unsigned char *&src, unsigned char &
 {
 	if (*src == MAGIC_CHAR)
 	{
-		if (src[1] == '\0')
+		if (src[1] == '\0' || src[2] == '\0')
 		{
 			return false;
 		}
 
-		value = hexDigitToInt(src[1]);
-		src++;
-
-		if (src[1] != '\0')
+		if (!isHexDigit(src[1]) || !isHexDigit(src[2]))
 		{
-			value = (value << 4) | hexDigitToInt(src[1]);
-			src++;
+			return false;
 		}
+
+		value = static_cast<unsigned char>((hexDigitToInt(src[1]) << 4) | hexDigitToInt(src[2]));
+		src += 3;
+		return true;
 	}
-	else
-	{
-		value = *src;
-	}
+
+	value = *src;
 
 	src++;
 	return true;
