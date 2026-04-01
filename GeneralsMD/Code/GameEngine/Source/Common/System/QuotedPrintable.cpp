@@ -115,9 +115,12 @@ AsciiString UnicodeStringToQuotedPrintable(UnicodeString original)
 		const unsigned short codeUnit = static_cast<unsigned short>(*src);
 		const unsigned char lowByte = static_cast<unsigned char>(codeUnit & 0xff);
 		const unsigned char highByte = static_cast<unsigned char>((codeUnit >> 8) & 0xff);
+		// GeneralsX @bugfix copilot 01/04/2026 Commit only full UTF-16 units to avoid partial trailing output.
+		const int savedIndex = i;
 
 		if (!appendQuotedPrintableByte(dest, i, lowByte) || !appendQuotedPrintableByte(dest, i, highByte))
 		{
+			i = savedIndex;
 			break;
 		}
 
@@ -169,13 +172,16 @@ UnicodeString QuotedPrintableToUnicodeString(AsciiString original)
 			break;
 		}
 
-		unsigned char highByte = 0;
-		if (*src)
+		// GeneralsX @bugfix copilot 01/04/2026 Reject truncated odd-byte input instead of synthesizing a partial code unit.
+		if (!*src)
 		{
-			if (!decodeQuotedPrintableByte(src, highByte))
-			{
-				break;
-			}
+			break;
+		}
+
+		unsigned char highByte = 0;
+		if (!decodeQuotedPrintableByte(src, highByte))
+		{
+			break;
 		}
 
 		const unsigned short codeUnit = static_cast<unsigned short>(lowByte | (highByte << 8));

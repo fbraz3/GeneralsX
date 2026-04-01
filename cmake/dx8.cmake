@@ -157,7 +157,8 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
       # GeneralsX @build BenderAI 13/03/2026 Default to remote fbraz3 v2.6 branch with update step enabled.
       GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
       GIT_TAG           ${DXVK_REMOTE_REF}
-      GIT_SHALLOW       TRUE
+      # GeneralsX @build copilot 01/04/2026 Keep pinned commit fetch reliable across clean CI builds.
+      GIT_SHALLOW       FALSE
       SOURCE_DIR        ${DXVK_SOURCE_DIR}
       BINARY_DIR        ${DXVK_BUILD_DIR}
       PATCH_COMMAND     ""
