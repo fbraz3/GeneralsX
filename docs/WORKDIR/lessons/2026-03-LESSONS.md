@@ -1,5 +1,13 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-31 - Linux LAN IP list must come from interfaces, not hostname resolution
+
+- Problem: Network options and LAN flows only listed hostname-resolved addresses, which frequently collapsed to loopback (`127.0.0.1`) on Linux and blocked LAN selection in UI.
+- Root cause: `IPEnumeration::getAddresses()` relied on `gethostname()` + `gethostbyname()` instead of enumerating active interfaces.
+- Fix: Added Linux-specific interface enumeration via `getifaddrs()` with filters for `AF_INET`, `IFF_UP`, and non-loopback interfaces, while keeping the legacy hostname path as fallback and preserving deterministic list ordering.
+- Validation: Static analysis (`get_errors`) on `IPEnumeration.cpp` passed with no diagnostics; resulting list logic now exposes active IPv4 LAN interfaces before fallback behavior.
+- Prevention: For local-network address selection on Linux, always enumerate real interfaces first; hostname resolution alone is insufficient and distro-dependent.
+
 ## Session 2026-03-31 - Avoid static managed DisplayString in menu draw callbacks
 
 - Problem: Watermark draw callback used a static `DisplayString*` created via `TheDisplayStringManager->newDisplayString()` with no matching free call.
