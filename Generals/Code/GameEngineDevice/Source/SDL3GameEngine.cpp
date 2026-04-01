@@ -353,7 +353,8 @@ void SDL3GameEngine::forwardTextInputEvent(const char* utf8Text)
 		return;
 	}
 
-	GameWindow* targetWindow = TheWindowManager->winGetFocus();
+	// GeneralsX @bugfix felipebraz 01/04/2026 Use tracked text-input focus window to keep SDL text delivery stable.
+	GameWindow* targetWindow = m_TextInputFocusWindow;
 	if (!targetWindow || !BitIsSet(targetWindow->winGetStyle(), GWS_ENTRY_FIELD)) {
 		return;
 	}
@@ -366,11 +367,16 @@ void SDL3GameEngine::forwardTextInputEvent(const char* utf8Text)
 			continue;
 		}
 
+		// GeneralsX @bugfix felipebraz 01/04/2026 Clamp IME char forwarding to BMP and reject UTF-16 surrogate range.
 		if (codepoint == 0 || codepoint > 0x10FFFFU) {
 			continue;
 		}
 
-		if (sizeof(WideChar) == 2 && codepoint > 0xFFFFU) {
+		if (codepoint >= 0xD800U && codepoint <= 0xDFFFU) {
+			continue;
+		}
+
+		if (codepoint > 0xFFFFU) {
 			continue;
 		}
 
