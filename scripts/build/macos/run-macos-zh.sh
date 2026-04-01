@@ -57,6 +57,14 @@ else
     echo "WARNING: ${GAME_DIR}/dxvk.conf not found; DXVK will use defaults."
 fi
 
+# GeneralsX @bugfix BenderAI 31/03/2026 Ensure bundled Fontconfig is used when launching via this wrapper.
+if [[ -f "${GAME_DIR}/fontconfig/fonts.conf" ]]; then
+    export FONTCONFIG_FILE="${GAME_DIR}/fontconfig/fonts.conf"
+    export FONTCONFIG_PATH="${GAME_DIR}/fontconfig"
+else
+    echo "WARNING: ${GAME_DIR}/fontconfig/fonts.conf not found; text rendering may fail."
+fi
+
 # GeneralsX @tweak BenderAI 13/03/2026 Optional shader-cache reset for terrain debugging.
 # Use GX_CLEAR_DXVK_SHADER_CACHE=1 to force fresh shader compilation.
 if [[ "${GX_CLEAR_DXVK_SHADER_CACHE:-0}" == "1" ]]; then
@@ -74,6 +82,7 @@ echo "   Game:  ${GAME_BINARY}"
 echo "   SDL3:  ${GAME_DIR}/libSDL3.0.dylib"
 echo "   Vulkan ICD: ${VK_ICD_FILENAMES:-system default}"
 echo "   DXVK config: ${DXVK_CONFIG_FILE:-cwd/dxvk.conf (implicit)}"
+echo "   Fontconfig file: ${FONTCONFIG_FILE:-unset}"
 echo ""
 
 cd "${GAME_DIR}"

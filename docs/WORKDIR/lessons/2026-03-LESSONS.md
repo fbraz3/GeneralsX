@@ -1,5 +1,21 @@
 # 2026-03 Lessons Learned
 
+## Session 2026-03-31 - Avoid static managed DisplayString in menu draw callbacks
+
+- Problem: Watermark draw callback used a static `DisplayString*` created via `TheDisplayStringManager->newDisplayString()` with no matching free call.
+- Root cause: The callback lifetime was tied to static function state, but `DisplayStringManager` expects all managed strings to be explicitly released before shutdown.
+- Fix: Replaced static managed string with callback-owned text path (`instData->setText(...)` and `instData->getTextDisplayString()`), eliminating persistent manager-owned allocation.
+- Validation: No diagnostics errors in updated callback files; review concern about shutdown assert risk resolved.
+- Prevention: In high-frequency GUI callbacks, do not keep static manager-owned `DisplayString` unless a guaranteed teardown path calls `freeDisplayString`.
+
+## Session 2026-03-31 - Main menu fallback labels must be owned by menu lifecycle
+
+- Problem: The GeneralsX watermark fallback label remained visible after leaving the main menu and entering gameplay.
+- Root cause: The fallback `GameWindow` was created from the root window manager and not consistently tied to the main menu parent/lifecycle.
+- Fix: Create the fallback label under `parentMainMenu` and destroy/reset it in both menu shutdown paths (`shutdownComplete` and `MainMenuShutdown`) for Generals and Zero Hour.
+- Validation: After build and runtime verification, watermark appears in main menu only and no longer leaks into in-game scenes.
+- Prevention: Any temporary/fallback UI created for menu rendering must be parent-owned by menu containers and explicitly torn down on all menu exit paths.
+
 ## Session 2026-03-29 - DXVK util_math.h must include cstddef on macOS clang arm64
 
 - Problem: macOS Zero Hour build failed while compiling DXVK `d3d9_options.cpp` with `unknown type name 'size_t'; did you mean 'std::size_t'?`.
