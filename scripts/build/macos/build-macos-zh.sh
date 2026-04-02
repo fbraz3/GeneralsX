@@ -90,7 +90,7 @@ if [[ -f "${BINARY}" ]]; then
     echo "  Log    : ${LOG_FILE}"
     echo ""
     echo "Next steps:"
-    echo "  1. Copy game files to ~/GeneralsX/GeneralsMD/ (retail installation)"
+    echo "  1. Copy game files to ~/GeneralsX/GeneralsZH/ (preferred; legacy fallback: ~/GeneralsX/GeneralsMD/)"
     echo "  2. Run: ./scripts/build/macos/deploy-macos-zh.sh"
     echo "  3. Run: ./scripts/build/macos/run-macos-zh.sh -win"
 else

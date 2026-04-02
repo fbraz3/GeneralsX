@@ -374,9 +374,20 @@ if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_DRIVER_FILES="${RESOURCES_DIR}/MoltenVK_icd.json"
 fi
 
+# GeneralsX @bugfix BenderAI 01/04/2026 Select default Zero Hour asset path by .big presence, with GeneralsMD fallback.
 # Default asset paths matching the standard macOS deploy layout (allow user override)
 export CNC_GENERALS_PATH="${CNC_GENERALS_PATH:-${HOME}/GeneralsX/Generals}"
-export CNC_GENERALS_ZH_PATH="${CNC_GENERALS_ZH_PATH:-${HOME}/GeneralsX/GeneralsMD}"
+if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]]; then
+    if [[ -d "${HOME}/GeneralsX/GeneralsZH" && -n "$(compgen -G "${HOME}/GeneralsX/GeneralsZH/*.big" 2>/dev/null)" ]]; then
+        export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsZH"
+    elif [[ -d "${HOME}/GeneralsX/GeneralsMD" && -n "$(compgen -G "${HOME}/GeneralsX/GeneralsMD/*.big" 2>/dev/null)" ]]; then
+        export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsMD"
+    elif [[ -d "${HOME}/GeneralsX/GeneralsZH" ]]; then
+        export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsZH"
+    else
+        export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsMD"
+    fi
+fi
 
 # Backward compatibility for existing runtime readers
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
@@ -433,4 +444,4 @@ echo "  3) or open: open ${APP_DIR_NAME}"
 echo ""
 echo "Runtime env defaults inside app launcher:"
 echo '  CNC_GENERALS_PATH=$HOME/GeneralsX/Generals'
-echo '  CNC_GENERALS_ZH_PATH=$HOME/GeneralsX/GeneralsMD'
+echo '  CNC_GENERALS_ZH_PATH=$HOME/GeneralsX/GeneralsZH (fallback: $HOME/GeneralsX/GeneralsMD)'

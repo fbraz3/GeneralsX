@@ -60,6 +60,12 @@ ls ~/VulkanSDK/*/macOS/lib/libMoltenVK.dylib # should list one file
 Copy your retail Command & Conquer: Generals Zero Hour installation to:
 
 ```
+~/GeneralsX/GeneralsZH/
+```
+
+Legacy fallback during migration is still supported:
+
+```
 ~/GeneralsX/GeneralsMD/
 ```
 
@@ -120,7 +126,7 @@ After a successful build, deploy the binary and Vulkan runtime to the game direc
 
 This script:
 
-- Copies `build/macos-vulkan/GeneralsMD/GeneralsXZH` to `~/GeneralsX/GeneralsMD/`
+- Copies `build/macos-vulkan/GeneralsMD/GeneralsXZH` to `~/GeneralsX/GeneralsZH/` (or `~/GeneralsX/GeneralsMD/` when legacy assets are detected)
 - Detects the Vulkan SDK in `~/VulkanSDK/` and copies:
   - `libvulkan.dylib`, `libvulkan.1.dylib`
   - `libMoltenVK.dylib`
@@ -136,6 +142,12 @@ This script:
 ```
 
 Or use the generated wrapper in the deploy directory:
+
+```bash
+~/GeneralsX/GeneralsZH/run.sh -win -noshellmap
+```
+
+Legacy fallback path also works:
 
 ```bash
 ~/GeneralsX/GeneralsMD/run.sh -win -noshellmap
@@ -246,7 +258,7 @@ Fixed by Patch 10. If you see this, the DXVK dylib in the game directory is stal
 Run with verbose MoltenVK output:
 
 ```bash
-cd ~/GeneralsX/GeneralsMD
+cd ~/GeneralsX/GeneralsZH
 VK_ICD_FILENAMES=./MoltenVK_icd.json MVK_CONFIG_LOG_LEVEL=4 ./GeneralsXZH -win
 ```
 

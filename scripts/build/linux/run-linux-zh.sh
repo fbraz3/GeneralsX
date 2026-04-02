@@ -6,7 +6,23 @@ set -e
 LOG_FILE="logs/run_zh.log"
 
 # Runtime directory
-GAME_DIR="${HOME}/GeneralsX/GeneralsMD"
+# GeneralsX @feature BenderAI 01/04/2026 Prefer GeneralsZH for user-facing Zero Hour runtime path with GeneralsMD fallback.
+PREFERRED_GAME_DIR="${HOME}/GeneralsX/GeneralsZH"
+LEGACY_GAME_DIR="${HOME}/GeneralsX/GeneralsMD"
+GAME_DIR="${PREFERRED_GAME_DIR}"
+
+if [[ -d "${PREFERRED_GAME_DIR}" && -n "$(compgen -G "${PREFERRED_GAME_DIR}/*.big" 2>/dev/null)" ]]; then
+    GAME_DIR="${PREFERRED_GAME_DIR}"
+elif [[ -d "${LEGACY_GAME_DIR}" && -n "$(compgen -G "${LEGACY_GAME_DIR}/*.big" 2>/dev/null)" ]]; then
+    GAME_DIR="${LEGACY_GAME_DIR}"
+    echo "INFO: Zero Hour assets detected in legacy path; using ${LEGACY_GAME_DIR}"
+elif [[ -d "${PREFERRED_GAME_DIR}" ]]; then
+    GAME_DIR="${PREFERRED_GAME_DIR}"
+elif [[ -d "${LEGACY_GAME_DIR}" ]]; then
+    GAME_DIR="${LEGACY_GAME_DIR}"
+    echo "INFO: Using legacy runtime path ${LEGACY_GAME_DIR}"
+fi
+
 GAME_BINARY="${GAME_DIR}/GeneralsXZH"
 
 # Check if binary exists

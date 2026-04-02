@@ -173,6 +173,7 @@ echo "Bundle complete: ${OUTPUT_TARBALL}"
 echo "Contents:"
 tar -tzf "${OUTPUT_TARBALL}" | head -30
 echo ""
-echo "To use: extract alongside your game data directory (GeneralsMD/)"
+echo "To use: extract alongside your game data directory (GeneralsZH/)"
+echo "  (legacy fallback also supported: GeneralsMD/)"
 echo "  tar -xzf GeneralsXZH-linux-x86_64.tar.gz"
 echo "  ./GeneralsXZH-linux/run.sh -win"

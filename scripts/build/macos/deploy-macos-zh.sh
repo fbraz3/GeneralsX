@@ -1,6 +1,6 @@
 #!/bin/bash
 # GeneralsX @build BenderAI 24/02/2026 Deploy macOS build to runtime directory
-# Copies GeneralsXZH binary and required dylibs to ~/GeneralsX/GeneralsMD
+# Copies GeneralsXZH binary and required dylibs to ~/GeneralsX/GeneralsZH (legacy fallback: ~/GeneralsX/GeneralsMD)
 
 set -e
 
@@ -17,7 +17,23 @@ DXVK_D3D8_LIB_INSTALL="${BUILD_DIR}/libdxvk_d3d8.0.dylib"
 DXVK_D3D9_LIB_INSTALL="${BUILD_DIR}/libdxvk_d3d9.0.dylib"
 DXVK_D3D8_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d8/libdxvk_d3d8.0.dylib"
 DXVK_D3D9_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d9/libdxvk_d3d9.0.dylib"
-RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
+# GeneralsX @bugfix BenderAI 01/04/2026 Align deploy runtime selection with launcher logic by preferring the directory that contains .big assets.
+PREFERRED_RUNTIME_DIR="${HOME}/GeneralsX/GeneralsZH"
+LEGACY_RUNTIME_DIR="${HOME}/GeneralsX/GeneralsMD"
+RUNTIME_DIR="${PREFERRED_RUNTIME_DIR}"
+
+if [[ -d "${PREFERRED_RUNTIME_DIR}" && -n "$(compgen -G "${PREFERRED_RUNTIME_DIR}/*.big" 2>/dev/null)" ]]; then
+    RUNTIME_DIR="${PREFERRED_RUNTIME_DIR}"
+    echo "INFO: Detected Zero Hour assets in ${PREFERRED_RUNTIME_DIR}; deploying there"
+elif [[ -d "${LEGACY_RUNTIME_DIR}" && -n "$(compgen -G "${LEGACY_RUNTIME_DIR}/*.big" 2>/dev/null)" ]]; then
+    RUNTIME_DIR="${LEGACY_RUNTIME_DIR}"
+    echo "INFO: Detected Zero Hour assets in legacy runtime ${LEGACY_RUNTIME_DIR}; deploying there"
+elif [[ -d "${PREFERRED_RUNTIME_DIR}" ]]; then
+    RUNTIME_DIR="${PREFERRED_RUNTIME_DIR}"
+elif [[ -d "${LEGACY_RUNTIME_DIR}" ]]; then
+    RUNTIME_DIR="${LEGACY_RUNTIME_DIR}"
+    echo "INFO: No .big assets found; using existing legacy runtime ${LEGACY_RUNTIME_DIR}"
+fi
 
 # Locate the installed Vulkan SDK (tries ~/VulkanSDK/ by convention)
 VULKAN_SDK_ROOT=""
@@ -196,4 +212,5 @@ echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 echo "Run with:"
 echo "  ${PROJECT_ROOT}/scripts/build/macos/run-macos-zh.sh -win"
-echo "  or: cd ~/GeneralsX/GeneralsMD && ./run.sh -win"
+echo "  or: cd ~/GeneralsX/GeneralsZH && ./run.sh -win"
+echo "  (legacy fallback: cd ~/GeneralsX/GeneralsMD && ./run.sh -win)"
