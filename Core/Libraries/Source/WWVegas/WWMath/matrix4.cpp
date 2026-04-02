@@ -45,7 +45,7 @@
 
 #include "WWLib/win.h"
 // GeneralsX @build fbraz 10/02/2026 Include D3D8 headers on Linux (DXVK provides)
-#include <d3d8types.h>
+#include <d3d8.h>
 #include <d3dx8math.h>
 
 /***********************************************************************************************

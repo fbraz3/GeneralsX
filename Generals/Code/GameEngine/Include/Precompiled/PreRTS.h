@@ -90,6 +90,7 @@ class STLSpecialAlloc;
 #include <sys/stat.h>
 #ifdef _WIN32
     #include <sys/timeb.h>
+    #include <timeapi.h>
 #endif
 #include <sys/types.h>
 #ifdef _WIN32
@@ -97,7 +98,10 @@ class STLSpecialAlloc;
 #endif
 #include <time.h>
 #ifdef _WIN32
+    // GeneralsX @build fbraz 01/04/2026 Keep VfW headers on legacy Win32 only.
+    #if !defined(_WIN64)
     #include <vfw.h>
+    #endif
     #include <winerror.h>
     #include <wininet.h>
     #include <winreg.h>

@@ -307,21 +307,12 @@ bool Debug::SkipNext()
   // a valid frame pointer here!
   unsigned help;
 #if defined(_MSC_VER)
-  _asm
-  {
-    mov eax,[ebp+4]   // return address
-    mov help,eax
-  };
-#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(_M_IX86))
-  // GCC/Clang inline assembly for x86-32
-  __asm__ __volatile__(
-    "mov 4(%%ebp), %0"
-    : "=r"(help)
-    :
-    : "memory"
-  );
+  // GeneralsX @bugfix fbraz 01/04/2026 Use intrinsic return address on Win64 (inline asm is x86-only).
+  help = (unsigned)(uintptr_t)_ReturnAddress();
+#elif defined(__GNUC__) || defined(__clang__)
+  help = (unsigned)(uintptr_t)__builtin_return_address(0);
 #else
-  #error "Unsupported compiler or architecture for inline assembly"
+  #error "Unsupported compiler for return address capture"
 #endif
   curStackFrame=help;
 
@@ -435,7 +426,7 @@ bool Debug::AssertDone()
           break;
         case IDRETRY:
 #if defined(_MSC_VER)
-          _asm int 0x03
+          __debugbreak();
 #elif defined(__GNUC__)
           __builtin_trap();
 #else

@@ -36,6 +36,7 @@
 // GeneralsX @build fbraz 03/02/2026 Platform-specific headers
 #ifdef _WIN32
 #include "mmsystem.h"
+#include <timeapi.h>
 #else
 #include <time.h>  // clock_gettime for Linux timing
 #include <stdlib.h> // malloc/free

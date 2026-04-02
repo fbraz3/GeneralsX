@@ -51,7 +51,16 @@ if(SAGE_USE_SDL3)
     # Before SDL3_image build: force PNG discovery to platform-specific libpng
     # Linux: System libpng16.so is dynamic shared library
     # macOS: Use Homebrew PNG or system framework
-    if(NOT APPLE)
+    if(WIN32)
+        # Windows: use vcpkg-provided libpng discovered by CMake toolchain.
+        # GeneralsX @bugfix BenderAI 01/04/2026 Avoid Linux hardcoded PNG paths when configuring windows64 presets.
+        set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
+        unset(PNG_INCLUDE_DIR CACHE)
+        unset(PNG_LIBRARY CACHE)
+        unset(PNG_LIBRARY_DEBUG CACHE)
+        unset(PNG_LIBRARY_RELEASE CACHE)
+        find_package(PNG REQUIRED)
+    elseif(NOT APPLE)
         # Linux: explicit libpng16.so path
         set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
         set(PNG_INCLUDE_DIR "/usr/include" CACHE PATH "PNG include dir (system)" FORCE)
@@ -108,6 +117,8 @@ if(SAGE_USE_SDL3)
     # Configure SDL3_image build options
     # Note: PNG will use system libpng-dev (installed in Docker, no vcpkg conflicts)
     set(SDL3IMAGE_INSTALL ON CACHE BOOL "Install SDL3_image" FORCE)
+    # GeneralsX @bugfix BenderAI 01/04/2026 Use toolchain/system zlib/libpng on all platforms to avoid missing vendored submodules.
+    set(SDLIMAGE_VENDORED OFF CACHE BOOL "Disable vendored third-party dependencies" FORCE)
     set(SDL3IMAGE_DEPS_SHARED ON CACHE BOOL "Use system shared dependencies" FORCE)
     set(SDL3IMAGE_JPG ON CACHE BOOL "Enable JPG support" FORCE)
     set(SDL3IMAGE_PNG ON CACHE BOOL "Enable PNG support (ANI cursor loading)" FORCE)

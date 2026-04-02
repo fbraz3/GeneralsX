@@ -44,6 +44,21 @@ if(SAGE_USE_DX8)
   FetchContent_MakeAvailable(dx8)
   message(STATUS "Using DirectX 8 SDK (Windows native)")
 
+elseif(WIN32)
+  # Windows x64 modern stack: use min-dx8-sdk headers for legacy DirectX8 declarations,
+  # while runtime implementation comes from DXVK d3d8.dll shipped beside the executable.
+  # GeneralsX @build BenderAI 01/04/2026 Fetch min-dx8-sdk even with SAGE_USE_DX8=OFF to provide d3d8types/d3dx8math headers.
+  FetchContent_Declare(
+    dx8
+    GIT_REPOSITORY https://github.com/TheSuperHackers/min-dx8-sdk.git
+    GIT_TAG        7bddff8c01f5fb931c3cb73d4aa8e66d303d97bc
+  )
+  FetchContent_GetProperties(dx8)
+  if(NOT dx8_POPULATED)
+    FetchContent_Populate(dx8)
+  endif()
+  message(STATUS "Using min-dx8-sdk headers with DXVK runtime override (Windows modern)")
+
 elseif(APPLE AND SAGE_USE_MOLTENVK)
   # macOS: Build DXVK 2.6 from source using Meson + MoltenVK
   # GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port (Session 61)

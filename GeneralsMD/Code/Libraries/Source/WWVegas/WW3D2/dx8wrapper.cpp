@@ -51,10 +51,11 @@
 #endif
 
 #include "dx8wrapper.h"
-// GeneralsX @build BenderAI 10/02/2026 - Need LoadLibrary/GetProcAddress/FreeLibrary for dynamic loading
+// GeneralsX @bugfix BenderAI 01/04/2026 Use native Win32 module APIs on Windows and CompatLib wrapper on non-Windows.
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include "module_compat.h"
-// GeneralsX @build felipebraz 16/02/2026 - Need dlerror() for dlopen() error reporting on Linux
-#ifndef _WIN32
 #include <dlfcn.h>
 #endif
 // GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)

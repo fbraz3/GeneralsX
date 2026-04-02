@@ -33,6 +33,10 @@
 //-----------------------------------------------------------------------------
 //
 // Project:   RTS3
+
+#ifdef _WIN32
+#include <timeapi.h>
+#endif
 //
 // File name: W3DWaterTracks.cpp
 //

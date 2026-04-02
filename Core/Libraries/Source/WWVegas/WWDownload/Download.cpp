@@ -19,6 +19,8 @@
 // Download.cpp : Implementation of CDownload
 #include "DownloadDebug.h"
 #include "Download.h"
+#include "WWCommon.h"
+#include "stringex.h"
 
 // GeneralsX @refactor BenderAI 10/02/2026
 // Added platform guards for Windows-specific headers
@@ -29,6 +31,7 @@
 
 #ifdef _WIN32
 #include <mmsystem.h>
+#include <timeapi.h>
 #include <direct.h>
 #else
 #include <string.h>

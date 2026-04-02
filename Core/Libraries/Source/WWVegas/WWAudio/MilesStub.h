@@ -52,6 +52,17 @@
     typedef signed int     S32;
     typedef float          F32;
     typedef double         F64;
+#else
+    // GeneralsX @bugfix fbraz 01/04/2026 Provide Miles integer aliases on modern Windows OpenAL path.
+    #include "bittype.h"
+    typedef uint8          U8;
+    typedef sint8          S8;
+    typedef uint16         U16;
+    typedef sint16         S16;
+    typedef uint32         U32;
+    typedef sint32         S32;
+    typedef float          F32;
+    typedef double         F64;
 #endif
 
 // Miles Sound System type stubs (not including callback typedefs - those are defined in AudioEvents.h)

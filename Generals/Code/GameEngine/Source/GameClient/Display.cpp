@@ -28,6 +28,11 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+// GeneralsX @bugfix fbraz 01/04/2026 Ensure timeGetTime declaration on modern Windows SDK.
+#ifdef _WIN32
+#include <timeapi.h>
+#endif
+
 #include "GameClient/Display.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/VideoPlayer.h"

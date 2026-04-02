@@ -289,7 +289,10 @@ void PingThreadClass::Thread_Function()
 			}
 			else
 			{
+				// GeneralsX @bugfix fbraz 01/04/2026 Preserve resolved IP for ping execution on modern builds.
 				in_addr *hostNode = (in_addr *) hostStruct->h_addr;
+				IP = hostNode->s_addr;
+				DEBUG_LOG(("pinging %s - IP = %s", hostnameBuffer, inet_ntoa(*hostNode) ));
 				}
 			}
 

@@ -9,7 +9,7 @@ target_link_libraries(z_wwcommon INTERFACE
 )
 
 # GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
-if(WIN32)
+if(WIN32 AND NOT SAGE_USE_OPENAL)
     target_link_libraries(z_wwcommon INTERFACE
         milesstub
     )

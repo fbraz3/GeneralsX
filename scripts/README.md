@@ -25,8 +25,16 @@ Scripts for Linux native and Docker-based builds:
 - `deploy-macos-generals.sh` - Deploy binaries
 - `run-macos-zh.sh` - Launch the game
 
-#### `build/windows/` - Windows Build (Pending)
-Reserved for modern Windows toolchain (VS2022 + SDL3 + DXVK + OpenAL)
+#### `build/windows/` - Windows Build
+- `configure-windows.ps1` - Configure CMake preset for modern x64 Windows
+- `build-windows-zh.ps1` - Configure + build GeneralsXZH (modern x64 preset)
+- `build-windows-generals.ps1` - Configure + build GeneralsX (modern x64 preset)
+- `deploy-windows-generals.ps1` - Deploy GeneralsX executable to runtime directory
+- `deploy-windows-zh.ps1` - Deploy GeneralsXZH executable to runtime directory
+- `bundle-windows-generals.ps1` - Bundle GeneralsX executable into zip artifact
+- `bundle-windows-zh.ps1` - Bundle GeneralsXZH executable into zip artifact
+- `run-windows-generals.ps1` - Launch GeneralsX with optional runtime args
+- `run-windows-zh.ps1` - Launch GeneralsXZH with optional runtime args
 
 ### `env/` - Environment Setup
 
@@ -189,6 +197,14 @@ All scripts are integrated into VS Code tasks (Cmd+Shift+P → "Tasks: Run Task"
 | [macOS] Deploy GeneralsX | `build/macos/deploy-macos-generals.sh` | Deploy binaries |
 | [macOS] Bundle GeneralsXZH | `build/macos/bundle-macos-zh.sh` | Bundle app (.app + zip) |
 | [macOS] Bundle GeneralsX | `build/macos/bundle-macos-generals.sh` | Bundle app (.app + zip) |
+| [Windows] Build GeneralsXZH | `build/windows/build-windows-zh.ps1` | Build Zero Hour (x64 modern) |
+| [Windows] Build GeneralsX | `build/windows/build-windows-generals.ps1` | Build base game (x64 modern) |
+| [Windows] Deploy GeneralsX | `build/windows/deploy-windows-generals.ps1` | Deploy executable |
+| [Windows] Deploy GeneralsXZH | `build/windows/deploy-windows-zh.ps1` | Deploy executable |
+| [Windows] Bundle GeneralsX | `build/windows/bundle-windows-generals.ps1` | Create zip bundle |
+| [Windows] Bundle GeneralsXZH | `build/windows/bundle-windows-zh.ps1` | Create zip bundle |
+| [Windows] Run GeneralsX | `build/windows/run-windows-generals.ps1` | Launch game |
+| [Windows] Run GeneralsXZH | `build/windows/run-windows-zh.ps1` | Launch game |
 | Validate: Check Docker Prerequisites | Verify Docker works | Pre-flight check |
 
 ---

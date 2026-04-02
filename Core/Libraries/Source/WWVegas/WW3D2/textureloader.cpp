@@ -60,6 +60,12 @@
 #include "bitmaphandler.h"
 #include "wwprofile.h"
 
+// GeneralsX @bugfix fbraz 01/04/2026 Ensure WinMM timer declarations are visible on WIN32_LEAN_AND_MEAN builds.
+#ifdef _WIN32
+#include "mmsys.h"
+#include <timeapi.h>
+#endif
+
 bool TextureLoader::TextureLoadSuspended;
 int TextureLoader::TextureInactiveOverrideTime = 0;
 

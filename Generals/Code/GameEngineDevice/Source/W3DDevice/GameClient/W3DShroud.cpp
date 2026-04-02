@@ -42,6 +42,11 @@
 #include "Common/GlobalData.h"
 #include "GameLogic/PartitionManager.h"
 
+// GeneralsX @bugfix BenderAI 01/04/2026 Ensure timeGetTime declaration on modern Windows SDK.
+#ifdef _WIN32
+#include <timeapi.h>
+#endif
+
 
 //-----------------------------------------------------------------------------
 

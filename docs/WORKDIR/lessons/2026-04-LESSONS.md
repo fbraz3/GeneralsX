@@ -23,3 +23,19 @@
 - Fix: In SDL3 keyboard backends (Zero Hour and Generals), ignore SDL repeated keydown events (`event->key.repeat`) and set `keyDownTimeMsec` using `timeGetTime()` so repeat timing uses the same clock domain as engine logic.
 - Validation: Incremental macOS `z_generals` build completed with `EXIT:0`.
 - Prevention: Keep a single repeat authority (engine side) and avoid mixing timestamp domains when feeding input timing into legacy repeat logic.
+
+## Session 2026-04-01 - DeepWiki MCP fallback path for large architectural research
+
+- Problem: `mcp_cognitionai_d_ask_question` returned a runtime tool error (`Cannot read properties of undefined (reading 'invoke')`) during architecture research.
+- Root cause: The question endpoint can intermittently fail in this environment, while repository wiki endpoints remain available.
+- Fix: Use `mcp_cognitionai_d_read_wiki_structure` to enumerate sections, then `mcp_cognitionai_d_read_wiki_contents` to fetch the full corpus and extract only relevant build/architecture sections with targeted file reads.
+- Validation: Successfully retrieved both `TheSuperHackers/GeneralsGameCode` and `electronicarts/CnC_Generals_Zero_Hour` documentation payloads and used them in Phase 6 planning.
+- Prevention: For critical planning tasks, prefer a robust fallback chain: `read_wiki_structure` -> `read_wiki_contents` -> local extraction, instead of blocking on a failed question call.
+
+## Session 2026-04-01 - Windows DXVK uses runtime replacement, not compile-time DXVK headers
+
+- Problem: Enabling `SAGE_USE_DX8=OFF` on Windows x64 incorrectly dropped into the Linux DXVK CMake branch, expecting Linux headers/libs from `dxvk-native` tarball and risking build/runtime mismatch.
+- Root cause: `cmake/dx8.cmake` only distinguished `(SAGE_USE_DX8)` vs `(APPLE + MoltenVK)` vs fallback `(Linux native DXVK)`, with no explicit modern Windows branch.
+- Fix: Added a dedicated `WIN32` branch for modern presets: compile/link against Windows SDK DirectX interfaces (`d3d8`, `dxguid`) while shipping DXVK `d3d8.dll` as runtime override next to the game executable.
+- Validation: CMake paths are now deterministic for `windows64-*` presets and CI bundles `d3d8.dll` with build artifacts.
+- Prevention: For DXVK on Windows, separate concerns explicitly: compile-time ABI from SDK, runtime backend from local DXVK DLL; avoid reusing Linux/macOS DXVK source assumptions.

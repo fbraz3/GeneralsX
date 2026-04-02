@@ -133,7 +133,8 @@ WWINLINE unsigned long SysTimeClass::Get()
 		is_init = true;
 	}
 
-	unsigned long time = timeGetTime();
+	// GeneralsX @bugfix BenderAI 01/04/2026 Use Win32 tick counter API available in modern SDK toolchains.
+	unsigned long time = GetTickCount();
 	if (time > StartTime) {
 		return(time - StartTime);
 	}

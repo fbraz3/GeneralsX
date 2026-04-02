@@ -35,6 +35,11 @@
 //#include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/udp.h"
 
+// GeneralsX @bugfix fbraz 01/04/2026 Winsock does not define socklen_t on Windows toolchains.
+#ifdef _WIN32
+typedef int socklen_t;
+#endif
+
 
 //-------------------------------------------------------------------------
 
@@ -177,8 +182,6 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
     return(status);
   }
 
-// GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
-socklen_t namelen=sizeof(addr);
   retval=SetBlocking(FALSE);
   if (retval==-1)
     fprintf(stderr,"Couldn't set nonblocking mode!\n");

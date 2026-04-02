@@ -33,6 +33,8 @@
 #ifdef _WIN32
     // Windows-specific precompiled headers
     #include <windows.h>
+    #include <mmsystem.h>
+    #include <timeapi.h>
 #else
     // Linux/Unix platform - provide compatibility stubs
     // GeneralsX @build BenderAI 13/02/2026 Include windows_compat.h for Linux builds

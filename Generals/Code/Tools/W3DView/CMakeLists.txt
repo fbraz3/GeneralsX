@@ -10,11 +10,14 @@ target_link_libraries(g_w3dview PRIVATE
     g_wwvegas
     gi_always
     imm32
-    milesstub
     Version
     vfw32
     winmm
 )
+
+if(NOT SAGE_USE_OPENAL)
+    target_link_libraries(g_w3dview PRIVATE milesstub)
+endif()
 
 if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     target_compile_definitions(g_w3dview PRIVATE _AFXDLL)

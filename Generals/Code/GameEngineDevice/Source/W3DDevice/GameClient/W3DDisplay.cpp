@@ -37,6 +37,7 @@ static void drawFramerateBar();
 #include <numeric>
 #include <stdlib.h>
 #include <windows.h>
+#include <timeapi.h>
 // GeneralsX @bugfix BenderAI 10/03/2026 - io.h is Windows-specific, use unistd.h on Linux
 #ifdef _WIN32
 #include <io.h>

@@ -176,13 +176,12 @@ if(WIN32)
     list(APPEND GAMEENGINEDEVICE_SRC
 #       Source/Win32Device/Common/Win32BIGFile.cpp
 #       Source/Win32Device/Common/Win32BIGFileSystem.cpp
-        Source/Win32Device/Common/Win32CDManager.cpp
         Source/Win32Device/Common/Win32GameEngine.cpp
 #       Source/Win32Device/Common/Win32LocalFile.cpp
 #       Source/Win32Device/Common/Win32LocalFileSystem.cpp
         Source/Win32Device/Common/Win32OSDisplay.cpp
-        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
-        Source/Win32Device/GameClient/Win32Mouse.cpp
+    ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+    ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp
     )
 else()
     # Linux-specific files (SDL3, DXVK)
@@ -244,8 +243,17 @@ endif()
 
 # GeneralsX @feature BenderAI 10/03/2026 - OpenAL audio backend (ported from GeneralsMD/Zero Hour)
 if(SAGE_USE_OPENAL)
-    include(${CMAKE_SOURCE_DIR}/cmake/openal.cmake)
-    find_package(OpenAL REQUIRED)
+    target_sources(g_gameenginedevice PRIVATE
+        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioManager.cpp
+        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioStream.cpp
+        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioCache.cpp
+    )
+
+    # openal.cmake is included at root; prefer FetchContent target when available.
+    # GeneralsX @bugfix BenderAI 01/04/2026 Avoid unconditional FindOpenAL on Windows when OpenAL::OpenAL already exists.
+    if(NOT TARGET OpenAL::OpenAL)
+        find_package(OpenAL REQUIRED)
+    endif()
     target_link_libraries(g_gameenginedevice PUBLIC OpenAL::OpenAL)
 
     # GeneralsMD headers for OpenALAudioDevice (public: OpenALAudioManager.h, FFmpegFile.h)
@@ -260,9 +268,16 @@ endif()
 
 # GeneralsX @feature BenderAI 10/03/2026 - FFmpeg audio/video decoding
 if(RTS_BUILD_OPTION_FFMPEG)
-    if(NOT TARGET PkgConfig::FFMPEG)
-        find_package(PkgConfig REQUIRED)
-        pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    # GeneralsX @bugfix BenderAI 01/04/2026 Platform-aware FFmpeg dependency resolution.
+    if(WIN32)
+        find_package(FFmpeg REQUIRED COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE SWRESAMPLE)
+        target_include_directories(g_gameenginedevice PUBLIC ${FFMPEG_INCLUDE_DIRS})
+        target_link_libraries(g_gameenginedevice PUBLIC ${FFMPEG_LIBRARIES})
+    else()
+        if(NOT TARGET PkgConfig::FFMPEG)
+            find_package(PkgConfig REQUIRED)
+            pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale libswresample)
+        endif()
+        target_link_libraries(g_gameenginedevice PUBLIC PkgConfig::FFMPEG)
     endif()
-    target_link_libraries(g_gameenginedevice PUBLIC PkgConfig::FFMPEG)
 endif()

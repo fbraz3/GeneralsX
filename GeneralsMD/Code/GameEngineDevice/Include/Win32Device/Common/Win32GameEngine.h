@@ -36,7 +36,11 @@
 #include "GameClient/ParticleSys.h"
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/NetworkInterface.h"
+#if defined(SAGE_USE_OPENAL)
+#include "OpenALAudioManager.h"
+#else
 #include "MilesAudioDevice/MilesAudioManager.h"
+#endif
 #include "Win32Device/Common/Win32BIGFileSystem.h"
 #include "Win32Device/Common/Win32LocalFileSystem.h"
 #include "W3DDevice/Common/W3DModuleFactory.h"
@@ -99,4 +103,8 @@ inline ParticleSystemManager* Win32GameEngine::createParticleSystemManager(Bool 
 inline NetworkInterface *Win32GameEngine::createNetwork() { return NetworkInterface::createNetwork(); }
 inline Radar *Win32GameEngine::createRadar() { return NEW W3DRadar; }
 inline WebBrowser *Win32GameEngine::createWebBrowser() { return NEW CComObject<W3DWebBrowser>; }
+#if defined(SAGE_USE_OPENAL)
+inline AudioManager *Win32GameEngine::createAudioManager() { return NEW OpenALAudioManager; }
+#else
 inline AudioManager *Win32GameEngine::createAudioManager() { return NEW MilesAudioManager; }
+#endif

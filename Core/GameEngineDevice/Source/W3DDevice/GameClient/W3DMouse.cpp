@@ -28,6 +28,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+#ifdef _WIN32
+#include <timeapi.h>
+#endif
+
 #include "Common/GameMemory.h"
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/rendobj.h"

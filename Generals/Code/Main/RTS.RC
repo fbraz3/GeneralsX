@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "winres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -34,7 +34,7 @@ END
 
 2 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#include ""winres.h""\r\n"
     "\0"
 END
 
@@ -54,7 +54,8 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ApplicationIcon     ICON    DISCARDABLE     "Generals.ico"
+// GeneralsX @build BenderAI 01/04/2026 Use project branding icon from shared assets directory for Windows executable.
+IDI_ApplicationIcon     ICON    DISCARDABLE     "../../../assets/generalsx_icon.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

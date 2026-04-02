@@ -44,7 +44,7 @@
 
 #pragma once
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 
 #include <windows.h>
 #include <ole2.h>
@@ -53,6 +53,11 @@
 
 namespace _com_util
 {
+
+inline void __cdecl _com_issue_error(HRESULT hr)
+{
+    throw _com_error(hr);
+}
 
 inline BSTR WINAPI ConvertStringToBSTR(const char *pSrc)
 {
@@ -136,8 +141,10 @@ inline char* WINAPI ConvertBSTRToString(BSTR pSrc)
 
 }
 
-// Provide vtMissing global variable
-// Use inline variable (C++17) to avoid multiple definition errors
+// Provide vtMissing global variable for MinGW compatibility.
+// MSVC already defines this in the native COM support headers.
+#ifdef __MINGW32__
 inline _variant_t vtMissing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+#endif
 
-#endif // __MINGW32__
+#endif // __MINGW32__ || _MSC_VER

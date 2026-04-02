@@ -196,10 +196,22 @@ if(WIN32)
 #        Source/Win32Device/Common/Win32LocalFile.cpp
 #        Source/Win32Device/Common/Win32LocalFileSystem.cpp
         Source/Win32Device/Common/Win32OSDisplay.cpp
-        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+    ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32DIKeyboard.cpp
 #        Source/Win32Device/GameClient/Win32DIMouse.cpp
-        Source/Win32Device/GameClient/Win32Mouse.cpp
+    ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp
     )
+
+    if(SAGE_USE_OPENAL)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Source/OpenALAudioDevice/OpenALAudioManager.cpp
+            Source/OpenALAudioDevice/OpenALAudioStream.cpp
+            Source/OpenALAudioDevice/OpenALAudioCache.cpp
+        )
+    else()
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Source/OpenALAudioManager.cpp
+        )
+    endif()
 else()
     # Linux-specific files (SDL3, OpenAL+FFmpeg audio, DXVK)
     list(APPEND GAMEENGINEDEVICE_SRC
@@ -284,13 +296,20 @@ if(RTS_BUILD_OPTION_FFMPEG)
         Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
     )
     target_compile_definitions(z_gameenginedevice PUBLIC SAGE_USE_FFMPEG)
-    # GeneralsX @build felipebraz 20/06/2025 PkgConfig::FFMPEG is PRIVATE in corei_gameenginedevice_private so it
-    # does not propagate transitively to consumers of z_gameenginedevice (z_generals). Explicitly
-    # expose it as PUBLIC so the final linker of z_generals can resolve av_* symbols.
-    # Use IMPORTED_TARGET guard to avoid re-calling pkg_check_modules if Core already called it.
-    if(NOT TARGET PkgConfig::FFMPEG)
-        find_package(PkgConfig REQUIRED)
-        pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    # GeneralsX @bugfix BenderAI 01/04/2026 Platform-aware FFmpeg dependency resolution for final link stage.
+    if(WIN32)
+        find_package(FFmpeg REQUIRED COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE SWRESAMPLE)
+        target_include_directories(z_gameenginedevice PUBLIC ${FFMPEG_INCLUDE_DIRS})
+        target_link_libraries(z_gameenginedevice PUBLIC ${FFMPEG_LIBRARIES})
+    else()
+        # GeneralsX @build felipebraz 20/06/2025 PkgConfig::FFMPEG is PRIVATE in corei_gameenginedevice_private so it
+        # does not propagate transitively to consumers of z_gameenginedevice (z_generals). Explicitly
+        # expose it as PUBLIC so the final linker of z_generals can resolve av_* symbols.
+        # Use IMPORTED_TARGET guard to avoid re-calling pkg_check_modules if Core already called it.
+        if(NOT TARGET PkgConfig::FFMPEG)
+            find_package(PkgConfig REQUIRED)
+            pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale libswresample)
+        endif()
+        target_link_libraries(z_gameenginedevice PUBLIC PkgConfig::FFMPEG)
     endif()
-    target_link_libraries(z_gameenginedevice PUBLIC PkgConfig::FFMPEG)
 endif()

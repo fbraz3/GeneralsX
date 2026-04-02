@@ -32,6 +32,10 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+#include <timeapi.h>
+#endif
+
 #include "W3DDevice/GameClient/W3DWater.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/W3DShroud.h"

@@ -50,7 +50,7 @@
 //----------------------------------------------------------------------------
 
 #include "GameClient/VideoPlayer.h"
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SAGE_USE_FFMPEG) && !defined(RTS_HAS_FFMPEG)
 #include "bink.h"
 #else
 typedef struct BINK *HBINK;

@@ -44,6 +44,12 @@
 
 // GeneralsX @refactor BenderAI 10/02/2026 - guard Windows-only headers for Linux compatibility
 #ifdef _WIN32
+// GeneralsX @bugfix BenderAI 01/04/2026 VFW headers require multimedia declarations excluded by WIN32_LEAN_AND_MEAN.
+#ifdef WIN32_LEAN_AND_MEAN
+#undef WIN32_LEAN_AND_MEAN
+#define GENERALSX_RESTORE_WIN32_LEAN_AND_MEAN 1
+#endif
+
 #ifndef _WINDOWS_
 #include "windows.h"
 #endif
@@ -52,8 +58,17 @@
 #include "windowsx.h"
 #endif
 
+#ifndef _INC_MMSYSTEM
+#include <mmsystem.h>
+#endif
+
 #ifndef _INC_VFW
 #include "vfw.h"
+#endif
+
+#ifdef GENERALSX_RESTORE_WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#undef GENERALSX_RESTORE_WIN32_LEAN_AND_MEAN
 #endif
 #else
 // GeneralsX @refactor BenderAI 10/02/2026 - fallback for Linux (stub types)

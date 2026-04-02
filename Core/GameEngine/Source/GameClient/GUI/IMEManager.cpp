@@ -47,8 +47,12 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-// GeneralsX @build BenderAI 12/02/2026 Use compat header for Linux mbstring compatibility
+// GeneralsX @build fbraz 01/04/2026 Use native mbstring on Windows and compat shim on non-Windows.
+#ifdef _WIN32
+#include <mbstring.h>
+#else
 #include "mbstring_compat.h"
+#endif
 
 #include "Common/Debug.h"
 #include "Common/Language.h"

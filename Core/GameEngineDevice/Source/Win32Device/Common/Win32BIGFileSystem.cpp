@@ -498,6 +498,7 @@ void Win32BIGFileSystem::init() {
 	AsciiString primaryAssetsDirectory;
 	const Bool loadedPrimaryAssets = loadPrimaryGameAssets(this, &primaryAssetsDirectory);
 	DEBUG_ASSERTCRASH(loadedPrimaryAssets, ("No BIG files were loaded for the primary game assets."));
+	(void)loadedPrimaryAssets;
 
 #if RTS_ZEROHOUR
     loadBaseGeneralsAssetsForZH(this, primaryAssetsDirectory);

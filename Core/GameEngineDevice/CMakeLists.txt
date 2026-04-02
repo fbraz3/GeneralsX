@@ -234,11 +234,15 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
 )
 
 if(WIN32)
-    target_link_libraries(corei_gameenginedevice_public INTERFACE
-        binkstub
-        d3d8lib
-        milesstub
-    )
+    target_link_libraries(corei_gameenginedevice_public INTERFACE d3d8lib)
+
+    if(NOT RTS_BUILD_OPTION_FFMPEG)
+        target_link_libraries(corei_gameenginedevice_public INTERFACE binkstub)
+    endif()
+
+    if(NOT SAGE_USE_OPENAL)
+        target_link_libraries(corei_gameenginedevice_public INTERFACE milesstub)
+    endif()
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
@@ -256,10 +260,24 @@ if(SAGE_USE_OPENAL)
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    # GeneralsX @bugfix BenderAI 01/04/2026 Use platform-aware FFmpeg discovery.
+    # Windows modern builds do not require pkg-config; rely on FindFFmpeg + vcpkg/lib paths.
+    if(WIN32)
+        find_package(FFmpeg REQUIRED COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE SWRESAMPLE)
 
-    if(FFMPEG_FOUND)
+        target_sources(corei_gameenginedevice_private INTERFACE
+            Include/VideoDevice/FFmpeg/FFmpegFile.h
+            Include/VideoDevice/FFmpeg/FFmpegVideoPlayer.h
+            Source/VideoDevice/FFmpeg/FFmpegFile.cpp
+            Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
+        )
+        target_include_directories(corei_gameenginedevice_private INTERFACE ${FFMPEG_INCLUDE_DIRS})
+        target_link_libraries(corei_gameenginedevice_private INTERFACE ${FFMPEG_LIBRARIES})
+        target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_FFMPEG)
+    else()
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale libswresample)
+
         target_sources(corei_gameenginedevice_private INTERFACE
             Include/VideoDevice/FFmpeg/FFmpegFile.h
             Include/VideoDevice/FFmpeg/FFmpegVideoPlayer.h

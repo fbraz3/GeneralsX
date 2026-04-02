@@ -7,9 +7,21 @@
 // Our types take precedence via PCH (PreRTS.h includes windows_compat.h early).
 
 #ifdef _WIN32
-// Windows: use real Windows.h from SDK (will be found in system paths first)
-// This header is only reached if no SDK windows.h exists
-#include "windows_compat.h"
+// GeneralsX @bugfix BenderAI 01/04/2026 Windows modern builds must use SDK windows.h, not linux compatibility shim.
+// This header name shadows <windows.h> in project include paths; force SDK include explicitly.
+#if defined(_MSC_VER)
+	#if defined(__has_include)
+		#if __has_include(<../um/windows.h>)
+			#include <../um/windows.h>
+		#else
+			#include "windows_compat.h"
+		#endif
+	#else
+		#include "windows_compat.h"
+	#endif
+#else
+	#include "windows_compat.h"
+#endif
 #else
 // Linux: Our compatibility layer only (NO DXVK headers here!)
 // DXVK's windows_base.h will be included by d3d8.h when needed

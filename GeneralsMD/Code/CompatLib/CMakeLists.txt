@@ -1,9 +1,6 @@
-# On 64-bit Windows, macOS, and Linux: use our d3dx8 implementation (GLI/GLM for math helpers)
-# GeneralsX @build BenderAI 24/02/2026 Phase 5 - Skip d3dx8 on macOS/Linux due to GLI/GLM ambiguity
-# GeneralsX @build felipebraz 20/06/2025 - Also build d3dx8 STATIC on macOS (D3DX math/texture stubs required for link)
-# GeneralsX @bugfix felipebraz 02/03/2026 - Build real d3dx8 STATIC on Linux too (D3DXGetFVFVertexSize / D3DXLoadSurfaceFromSurface required for link)
-# d3dx8 is a math/texture helper stub; core game code doesn't require it
-if((WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8) OR APPLE OR (UNIX AND NOT APPLE))
+# On macOS and Linux: use our d3dx8 implementation (GLI/GLM for math helpers)
+# GeneralsX @build BenderAI 01/04/2026 Windows modern also uses d3dx8 compatibility to avoid legacy DX8 x86 libs.
+if(APPLE OR (UNIX AND NOT APPLE) OR (WIN32 AND NOT SAGE_USE_DX8))
 list(APPEND SOURCE_D3DX_COMPAT
     d3dx8_compat.cpp
     d3dx8math.cpp
@@ -34,7 +31,7 @@ endif()
 
 # d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)
 # Add only WWLib directory (not full core_wwcommon to avoid d3d8.h conflicts from WWAudio)
-target_include_directories(d3dx8 PUBLIC 
+target_include_directories(d3dx8 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
     ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WWLib
 )
@@ -43,8 +40,7 @@ target_include_directories(d3dx8 PUBLIC
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
 
 else()
-# Linux only: Create empty d3dx8 stub library to satisfy d3d8lib linkage
-# macOS and Win64 both build real d3dx8 STATIC above; Linux can use the stub for now
+# GeneralsX @build BenderAI 01/04/2026 Windows uses SDK headers path; keep d3dx8 as interface target here.
 add_library(d3dx8 INTERFACE)
 target_link_libraries(d3dx8 INTERFACE d3d8lib)
 endif()
@@ -58,10 +54,19 @@ if(SAGE_USE_DX8)
         message(FATAL_ERROR "DirectX 8 SDK (min-dx8-sdk) not fetched! Ensure cmake/dx8.cmake was included")
     endif()
     target_include_directories(d3d8lib INTERFACE
-        ${dx8_SOURCE_DIR}/include
+        ${dx8_SOURCE_DIR}
     )
     target_link_directories(d3d8lib INTERFACE
         ${dx8_SOURCE_DIR}/lib
+    )
+elseif(WIN32)
+    # Windows modern path: compile against min-dx8-sdk headers, run with DXVK d3d8 runtime DLL.
+    # GeneralsX @build BenderAI 01/04/2026 Keep header surface compatible with legacy code (d3d8types/d3dx8math).
+    if(NOT dx8_SOURCE_DIR)
+        message(FATAL_ERROR "DirectX 8 SDK (min-dx8-sdk) not fetched! Ensure cmake/dx8.cmake was included")
+    endif()
+    target_include_directories(d3d8lib INTERFACE
+        ${dx8_SOURCE_DIR}
     )
 else()
     # Linux + macOS: Use ONLY DXVK headers (not min-dx8-sdk) to avoid conflicts

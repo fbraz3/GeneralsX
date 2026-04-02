@@ -29,10 +29,10 @@
 
 #pragma once
 
-#ifdef _WIN32
-#include <d3dx8math.h>
-#elif defined(SAGE_USE_GLM)
+#ifdef SAGE_USE_GLM
 #include <glm/glm.hpp>
+#elif defined(_WIN32)
+#include <d3dx8math.h>
 #else
 #error "Missing a math library"
 #endif

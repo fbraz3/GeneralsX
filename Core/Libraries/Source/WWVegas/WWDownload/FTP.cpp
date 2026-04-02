@@ -25,6 +25,8 @@
 // GeneralsX @build fbraz 11/02/2026
 // Must include class declaration BEFORE implementation
 #include "WWDownload/ftp.h"
+#include "WWCommon.h"
+#include "stringex.h"
 
 // GeneralsX @build fbraz 10/02/2026
 // Platform headers with socket_compat.h providing Winsock → POSIX mapping
@@ -35,8 +37,13 @@
 #ifdef _WIN32
 #include <process.h>
 #include <io.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <mmsystem.h>
+#include <timeapi.h>
 #include "winsock.h"
 #include <direct.h>
+typedef int socklen_t;
 #else
 #include "windows_compat.h"  // Includes socket_compat.h (Winsock → POSIX BSD sockets)
 #include <unistd.h>

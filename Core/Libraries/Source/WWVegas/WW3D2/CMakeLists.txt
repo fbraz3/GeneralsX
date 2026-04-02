@@ -244,12 +244,6 @@ target_compile_definitions(corei_ww3d2 INTERFACE
     $<$<PLATFORM_ID:Linux,Darwin>:SAGE_USE_FREETYPE>
 )
 
-if (MSVC AND NOT IS_VS6_BUILD)
-    target_link_libraries(corei_ww3d2 INTERFACE
-        comsuppw
-    )
-endif()
-
 # GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Unix text rendering (Linux + macOS Phase 5)
 if(UNIX)
     find_package(Freetype REQUIRED)

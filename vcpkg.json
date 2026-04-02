@@ -3,8 +3,13 @@
     "builtin-baseline": "533a5fda5c0646d1771345fb572e759283444d5f",
     "dependencies": [
       "zlib",
+      "libpng",
       "glm",
       "gli",
+      {
+        "name": "ffmpeg",
+        "platform": "windows"
+      },
       {
         "name": "freetype",
         "platform": "!windows"

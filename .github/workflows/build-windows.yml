@@ -30,21 +30,130 @@ on:
         description: "CMake preset for Windows"
         options:
           - windows64-deploy
+          - windows64-testing
         default: windows64-deploy
 
 jobs:
   build:
     name: ${{ inputs.game }}@${{ inputs.preset }}
     runs-on: windows-latest
-    timeout-minutes: 5
+    timeout-minutes: 90
 
     steps:
-      - name: Not Yet Implemented
-        shell: bash
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup MSVC Dev Environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 'ffc071e0c08432c60c9b64f00334c0227667931b'
+
+      - name: Cache DXVK Runtime
+        id: cache-dxvk-runtime
+        uses: actions/cache@v4
+        with:
+          path: C:/dxvk-runtime
+          key: dxvk-runtime-windows-v2.6
+
+      - name: Download DXVK Runtime DLLs
+        if: steps.cache-dxvk-runtime.outputs.cache-hit != 'true'
+        shell: pwsh
         run: |
-          echo "Windows build (SDL3 + DXVK + OpenAL 64-bit) is not yet implemented."
-          echo "See docs/WORKDIR/phases/ for the Windows roadmap."
-          echo ""
-          echo "To run the real build, switch to the branch that has Windows support"
-          echo "and re-run this workflow from that branch."
-          exit 0
+          New-Item -ItemType Directory -Path C:/dxvk-runtime -Force | Out-Null
+          $archivePath = 'C:/dxvk-runtime/dxvk-2.6.tar.gz'
+          Invoke-WebRequest -Uri 'https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-2.6.tar.gz' -OutFile $archivePath
+          tar -xf $archivePath -C C:/dxvk-runtime
+
+      - name: Configure CMake (Windows)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path logs -Force | Out-Null
+          cmake --preset ${{ inputs.preset }} 2>&1 | Tee-Object -FilePath logs/configure_windows.log
+
+      - name: Build ${{ inputs.game }}
+        shell: pwsh
+        run: |
+          $buildConfig = if ('${{ inputs.preset }}' -eq 'windows64-testing') { 'Debug' } else { 'RelWithDebInfo' }
+          if ('${{ inputs.game }}' -eq 'GeneralsMD') {
+            cmake --build build/${{ inputs.preset }} --target z_generals --config $buildConfig 2>&1 | Tee-Object -FilePath logs/build_zh_windows.log
+          }
+          else {
+            cmake --build build/${{ inputs.preset }} --target g_generals --config $buildConfig 2>&1 | Tee-Object -FilePath logs/build_generals_windows.log
+          }
+
+      - name: Verify Build Artifacts
+        shell: pwsh
+        run: |
+          $buildConfig = if ('${{ inputs.preset }}' -eq 'windows64-testing') { 'Debug' } else { 'RelWithDebInfo' }
+          if ('${{ inputs.game }}' -eq 'GeneralsMD') {
+            $binaryCandidates = @(
+              "build/${{ inputs.preset }}/GeneralsMD/$buildConfig/GeneralsXZH.exe",
+              "build/${{ inputs.preset }}/GeneralsMD/$buildConfig/generalszh.exe",
+              'build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.exe',
+              'build/${{ inputs.preset }}/GeneralsMD/generalszh.exe'
+            )
+          }
+          else {
+            $binaryCandidates = @(
+              "build/${{ inputs.preset }}/Generals/$buildConfig/GeneralsX.exe",
+              "build/${{ inputs.preset }}/Generals/$buildConfig/generalsv.exe",
+              "build/${{ inputs.preset }}/Generals/$buildConfig/generals.exe",
+              'build/${{ inputs.preset }}/Generals/GeneralsX.exe',
+              'build/${{ inputs.preset }}/Generals/generalsv.exe',
+              'build/${{ inputs.preset }}/Generals/generals.exe'
+            )
+          }
+
+          $binary = $binaryCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+          if (-not (Test-Path $binary)) {
+            Write-Error "Binary NOT found: $binary"
+            exit 1
+          }
+
+          Write-Host "Binary built: $binary"
+
+      - name: Create Deployment Bundle
+        shell: pwsh
+        run: |
+          if ('${{ inputs.game }}' -eq 'GeneralsMD') {
+            powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/bundle-windows-zh.ps1 -Preset '${{ inputs.preset }}' -DxvkDllPath 'C:/dxvk-runtime/dxvk-2.6/x64/d3d8.dll'
+            $bundleName = 'generalsxzh'
+            $bundleSource = "build/bundles/windows-generalsxzh-${{ inputs.preset }}.zip"
+          }
+          else {
+            powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/bundle-windows-generals.ps1 -Preset '${{ inputs.preset }}' -DxvkDllPath 'C:/dxvk-runtime/dxvk-2.6/x64/d3d8.dll'
+            $bundleName = 'generalsx'
+            $bundleSource = "build/bundles/windows-generalsx-${{ inputs.preset }}.zip"
+          }
+
+          if (-not (Test-Path $bundleSource)) {
+            Write-Error "Expected bundle zip not found: $bundleSource"
+            exit 1
+          }
+
+          $zipPath = "C:/temp/windows-${bundleName}-bundle.zip"
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Copy-Item -Path $bundleSource -Destination $zipPath -Force
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-windows-${{ inputs.game }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Deployment Bundle
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.game == 'GeneralsMD' && 'windows-generalsxzh-bundle.zip' || 'windows-generalsx-bundle.zip' }}
+          path: ${{ inputs.game == 'GeneralsMD' && 'C:/temp/windows-generalsxzh-bundle.zip' || 'C:/temp/windows-generalsx-bundle.zip' }}
+          retention-days: 7
+          if-no-files-found: error

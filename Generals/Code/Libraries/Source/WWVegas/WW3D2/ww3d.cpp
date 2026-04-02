@@ -82,6 +82,9 @@
 
 
 #include "ww3d.h"
+#include "win.h"  // GeneralsX @build fbraz 01/04/2026 For MMRESULT/timeBeginPeriod declarations
+#include "mmsys.h" // GeneralsX @bugfix BenderAI 01/04/2026 Ensure WinMM declarations on WIN32_LEAN_AND_MEAN builds
+#include <timeapi.h> // GeneralsX @bugfix BenderAI 01/04/2026 Explicit timer API declarations for modern Windows SDKs
 #include "rinfo.h"
 #include "assetmgr.h"
 #include "boxrobj.h"
@@ -117,7 +120,17 @@
 #include "formconv.h"
 #include "animatedsoundmgr.h"
 #include "static_sort_list.h"
+
+// GeneralsX @build fbraz 01/04/2026 Keep legacy VfW capture path available only on 32-bit Windows.
+#if defined(_WIN32) && !defined(_WIN64)
+#define GENERALSX_WW3D_LEGACY_MOVIE_CAPTURE 1
+#endif
+
+class FrameGrabClass;
+
+#if defined(GENERALSX_WW3D_LEGACY_MOVIE_CAPTURE)
 #include "framgrab.h"
+#endif
 
 
 const char* DAZZLE_INI_FILENAME="DAZZLE.INI";
@@ -1491,7 +1504,7 @@ void WW3D::Make_Screen_Shot( const char * filename_base , const float gamma, con
  *=============================================================================================*/
 void WW3D::Start_Movie_Capture( const char * filename_base, float frame_rate )
 {
-#ifdef _WIN32
+#if defined(GENERALSX_WW3D_LEGACY_MOVIE_CAPTURE)
 	if (IsCapturing) {
 		Stop_Movie_Capture();
 	}
@@ -1516,6 +1529,9 @@ void WW3D::Start_Movie_Capture( const char * filename_base, float frame_rate )
 	Movie = W3DNEW FrameGrabClass( filename_base, FrameGrabClass::AVI, width, height, depth, frame_rate);
 
 	WWDEBUG_SAY(( "Starting Movie %s", filename_base ));
+#else
+	(void)filename_base;
+	(void)frame_rate;
 #endif
 }
 
@@ -1534,7 +1550,7 @@ void WW3D::Start_Movie_Capture( const char * filename_base, float frame_rate )
  *=============================================================================================*/
 void WW3D::Stop_Movie_Capture()
 {
-#ifdef _WIN32
+#if defined(GENERALSX_WW3D_LEGACY_MOVIE_CAPTURE)
 	if (IsCapturing) {
 		IsCapturing = false;
 		WWDEBUG_SAY(( "Stopping Movie" ));
@@ -1692,7 +1708,7 @@ bool WW3D::Is_Movie_Ready()
  *=============================================================================================*/
 void WW3D::Update_Movie_Capture()
 {
-#ifdef _WIN32
+#if defined(GENERALSX_WW3D_LEGACY_MOVIE_CAPTURE)
 	WWASSERT( IsCapturing);
 	WWPROFILE("WW3D::Update_Movie_Capture");
 	WWDEBUG_SAY(( "Updating"));
@@ -1769,7 +1785,7 @@ void WW3D::Update_Movie_Capture()
  *=============================================================================================*/
 float	WW3D::Get_Movie_Capture_Frame_Rate()
 {
-#ifdef _WIN32
+#if defined(GENERALSX_WW3D_LEGACY_MOVIE_CAPTURE)
 	if (IsCapturing) {
 		return Movie->GetFrameRate();
 	}

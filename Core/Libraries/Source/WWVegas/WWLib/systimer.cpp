@@ -55,8 +55,8 @@ SysTimeClass SystemTime;
  *=============================================================================================*/
 SysTimeClass::SysTimeClass()
 {
-	//tell windows we need single ms precision.
-	timeBeginPeriod(1);
+	// GeneralsX @bugfix BenderAI 01/04/2026 WinMM timer period APIs are not guaranteed in modern Windows SDK paths.
+	// Keep constructor lightweight; timing uses GetTickCount() in systimer.h.
 }
 
 /***********************************************************************************************
@@ -75,8 +75,7 @@ SysTimeClass::SysTimeClass()
  *=============================================================================================*/
 SysTimeClass::~SysTimeClass()
 {
-	//tell windows we need single ms precision.
-	timeEndPeriod(1);
+	// GeneralsX @bugfix BenderAI 01/04/2026 No WinMM timer period teardown required in modern path.
 }
 
 /***********************************************************************************************
@@ -95,7 +94,8 @@ SysTimeClass::~SysTimeClass()
  *=============================================================================================*/
 void SysTimeClass::Reset()
 {
-	StartTime = timeGetTime();
+	// GeneralsX @bugfix BenderAI 01/04/2026 Use Win32 tick counter available across Windows SDKs.
+	StartTime = GetTickCount();
 	WrapAdd = 0 - StartTime;
 }
 

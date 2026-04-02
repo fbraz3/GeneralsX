@@ -33,6 +33,11 @@
 #include "stringex.h"
 #include <imagehlp.h>
 
+// GeneralsX @bugfix fbraz 01/04/2026 Avoid WinSDK macro rewrite of StackWalk method name.
+#ifdef StackWalk
+#undef StackWalk
+#endif
+
 // Definitions to allow run-time linking to the dbghelp.dll functions.
 
 #define DBGHELP(name,ret,par) typedef ret (WINAPI *name##Type) par;
@@ -352,17 +357,33 @@ int DebugStackwalk::StackWalk(Signature &sig, struct _CONTEXT *ctx)
 	stackFrame.AddrPC.Mode = AddrModeFlat;
 	stackFrame.AddrStack.Mode = AddrModeFlat;
 	stackFrame.AddrFrame.Mode = AddrModeFlat;
+  DWORD machineType = IMAGE_FILE_MACHINE_I386;
 
 	// Use the context struct if it was provided.
 	if (ctx)
   {
+  #if defined(_WIN64)
+    machineType = IMAGE_FILE_MACHINE_AMD64;
+    stackFrame.AddrPC.Offset = ctx->Rip;
+    stackFrame.AddrStack.Offset = ctx->Rsp;
+    stackFrame.AddrFrame.Offset = ctx->Rbp;
+  #else
 		stackFrame.AddrPC.Offset = ctx->Eip;
 		stackFrame.AddrStack.Offset = ctx->Esp;
 		stackFrame.AddrFrame.Offset = ctx->Ebp;
+  #endif
 	}
   else
   {
     // walk stack back using current call chain
+  #if defined(_WIN64)
+    machineType = IMAGE_FILE_MACHINE_AMD64;
+    CONTEXT currentContext;
+    RtlCaptureContext(&currentContext);
+    stackFrame.AddrPC.Offset = currentContext.Rip;
+    stackFrame.AddrStack.Offset = currentContext.Rsp;
+    stackFrame.AddrFrame.Offset = currentContext.Rbp;
+  #else
 	  unsigned long reg_eip, reg_ebp, reg_esp;
 #if defined(_MSC_VER)
 	  __asm
@@ -387,13 +408,19 @@ int DebugStackwalk::StackWalk(Signature &sig, struct _CONTEXT *ctx)
 	  stackFrame.AddrPC.Offset = reg_eip;
 	  stackFrame.AddrStack.Offset = reg_esp;
 	  stackFrame.AddrFrame.Offset = reg_ebp;
+  #endif
   }
 
 	// Walk the stack by the requested number of return address iterations.
   bool skipFirst=!ctx;
   while (sig.m_numAddr<Signature::MAX_ADDR&&
-		     gDbg._StackWalk(IMAGE_FILE_MACHINE_I386,GetCurrentProcess(),GetCurrentThread(),
-                         &stackFrame,nullptr,nullptr,gDbg._SymFunctionTableAccess,gDbg._SymGetModuleBase,nullptr))
+		     gDbg._StackWalk(machineType,GetCurrentProcess(),GetCurrentThread(),
+                         &stackFrame,
+               nullptr,
+               nullptr,
+               reinterpret_cast<PFUNCTION_TABLE_ACCESS_ROUTINE64>(gDbg._SymFunctionTableAccess),
+               reinterpret_cast<PGET_MODULE_BASE_ROUTINE64>(gDbg._SymGetModuleBase),
+               nullptr))
   {
     if (skipFirst)
       skipFirst=false;

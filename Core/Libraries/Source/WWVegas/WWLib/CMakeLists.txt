@@ -151,6 +151,12 @@ set(WWLIB_SRC
     XSTRAW.h
 )
 
+# GeneralsX @build BenderAI 01/04/2026 Use Win64-safe exception implementation on modern Windows x64 builds.
+if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+    list(REMOVE_ITEM WWLIB_SRC Except.cpp)
+    list(APPEND WWLIB_SRC Except_win64.cpp)
+endif()
+
 # GeneralsX @build BenderAI 13/02/2026 registry.cpp has stubs for Linux (#else at end)
 list(APPEND WWLIB_SRC
     registry.cpp

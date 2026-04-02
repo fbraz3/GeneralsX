@@ -352,9 +352,8 @@ WWProfileHierarchyNodeClass	*	WWProfileManager::CurrentRootNode = &WWProfileMana
 int									WWProfileManager::FrameCounter = 0;
 __int64								WWProfileManager::ResetTime = 0;
 
-// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - ThreadID type must match THREAD_ID on all platforms
-#include "thread_compat.h"
-static THREAD_ID				ThreadID = {};  // Default-initialized thread ID (platform-specific)
+// GeneralsX @bugfix BenderAI 01/04/2026 Use native Win32 thread ID in modern Windows builds.
+static DWORD				ThreadID = 0;
 
 
 /***********************************************************************************************

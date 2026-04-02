@@ -386,6 +386,201 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "[Windows] Configure",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/configure-windows.ps1",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Build GeneralsXZH",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/build-windows-zh.ps1",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Build GeneralsX",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/build-windows-generals.ps1",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Deploy GeneralsX",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/deploy-windows-generals.ps1",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Deploy GeneralsXZH",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/deploy-windows-zh.ps1",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Run GeneralsX",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/run-windows-generals.ps1",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Run GeneralsXZH",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/run-windows-zh.ps1",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Bundle GeneralsX",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/bundle-windows-generals.ps1",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Bundle GeneralsXZH",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/bundle-windows-zh.ps1",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Pipeline: Build + Deploy + Run Generals",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/build-windows-generals.ps1; powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/deploy-windows-generals.ps1; powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/run-windows-generals.ps1",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Pipeline: Build + Deploy + Run ZH",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/build-windows-zh.ps1; powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/deploy-windows-zh.ps1; powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/run-windows-zh.ps1",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Pipeline: Configure + Build + Bundle Generals",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/configure-windows.ps1; powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/build-windows-generals.ps1 -BuildOnly; powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/bundle-windows-generals.ps1",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Windows] Pipeline: Configure + Build + Bundle ZH",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/configure-windows.ps1; powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/build-windows-zh.ps1 -BuildOnly; powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/bundle-windows-zh.ps1",
+			"isBackground": false,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Docs: Update Dev Blog",
 			"type": "shell",
 			"command": "code docs/DEV_BLOG/2026-02-DIARY.md",
