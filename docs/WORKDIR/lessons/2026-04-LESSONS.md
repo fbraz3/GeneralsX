@@ -31,3 +31,19 @@
 - Fix: In SDL3 keyboard backends (Zero Hour and Generals), ignore SDL repeated keydown events (`event->key.repeat`) and set `keyDownTimeMsec` using `timeGetTime()` so repeat timing uses the same clock domain as engine logic.
 - Validation: Incremental macOS `z_generals` build completed with `EXIT:0`.
 - Prevention: Keep a single repeat authority (engine side) and avoid mixing timestamp domains when feeding input timing into legacy repeat logic.
+
+## Session 2026-04-02 - SaveLoad crashes can be environment-specific (M1 vs M3, local state)
+
+- Problem: `Menus/SaveLoad.wnd` opened through main menu could exit immediately on one macOS machine while another user (M3) could not reproduce.
+- Root cause hypothesis: Post-layout init path (`SaveLoadMenuFullScreenInit` -> save-file enumeration) was under-instrumented, and non-Windows save directory traversal could throw before/around iteration in environment-specific setups (missing/invalid save directory, stale local runtime state).
+- Fix: Added Apple-only diagnostics in main-menu click path, fullscreen SaveLoad init, and save-file iteration; hardened non-Windows `GameState::iterateSaveFiles()` to wrap directory switch + iteration + restore in guarded exception handling.
+- Validation: Static diagnostics (`get_errors`) reported no issues in edited files; macOS build task completed with warnings only in unrelated code.
+- Prevention: For macOS-only menu/open flows, instrument both UI transition boundaries and filesystem entry points, and never call `std::filesystem::current_path(target)` outside a guarded path when target can depend on local user state.
+
+## Session 2026-04-02 - Save/load data paths must preserve separator and case semantics
+
+- Problem: Save files were listed and selected correctly, but loading failed with `SC_INVALID_DATA` during snapshot transfer on macOS.
+- Root cause: The portable-to-real map path conversion in save-load logic assumed Windows-style path semantics (`\\` separator and forced lowercase output), which can corrupt valid paths on case-sensitive platforms.
+- Fix: Updated map path helpers to accept both `\\` and `/` separators and preserved real path casing on non-Windows builds (keep lowercase normalization only on Windows).
+- Backport: Applied the same path-semantics fix to both Zero Hour and Generals base game codepaths.
+- Validation: Manual macOS Zero Hour flow completed (create save + load save) and process exited cleanly with code 0.

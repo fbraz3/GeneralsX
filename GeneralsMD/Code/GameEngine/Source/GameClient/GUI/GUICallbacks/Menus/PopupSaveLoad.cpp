@@ -393,6 +393,8 @@ static void doLoadGame()
 	// get selected game info
 	AvailableGameInfo *selectedGameInfo = getSelectedSaveFileInfo( listboxGames );
 	DEBUG_ASSERTCRASH( selectedGameInfo, ("doLoadGame: No selected game info found") );
+	if( selectedGameInfo == nullptr )
+		return;
 
 	// when loading a game we also close the quit/esc menu for the user when in-game
 	if( TheShell->isShellActive() == FALSE )

@@ -29,6 +29,10 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
+#ifndef _WIN32
+#include <filesystem>
+#include "socket_compat.h"
+#endif
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
@@ -804,11 +808,17 @@ Bool GameState::isInSaveDirectory(const AsciiString& path) const
 // ------------------------------------------------------------------------------------------------
 AsciiString GameState::getMapLeafName(const AsciiString& in) const
 {
-	const char* p = strrchr(in.str(), '\\');
+	const char* pBackslash = strrchr(in.str(), '\\');
+	const char* pSlash = strrchr(in.str(), '/');
+	const char* p = pBackslash;
+	if (p == nullptr || (pSlash != nullptr && pSlash > p))
+	{
+		p = pSlash;
+	}
 	if (p)
 	{
 		//
-		// p points to the last '\' (if found), however, if a '\' was found there better
+		// p points to the last path separator (if found), however, if a separator was found there better
 		// be another character beyond it, otherwise the map filename would actually
 		// be a *directory*  Just move to the first character beyond it so we are looking
 		// at the name only
@@ -824,11 +834,11 @@ AsciiString GameState::getMapLeafName(const AsciiString& in) const
 }
 
 // ------------------------------------------------------------------------------------------------
-static const char* findLastBackslashInRangeInclusive(const char* start, const char* end)
+static const char* findLastPathSeparatorInRangeInclusive(const char* start, const char* end)
 {
 	while (end >= start)
 	{
-		if (*end == '\\')
+		if (*end == '\\' || *end == '/')
 			return end;
 		--end;
 	}
@@ -840,14 +850,15 @@ static AsciiString getMapLeafAndDirName(const AsciiString& in)
 {
 	const char* start = in.str();
 	const char* end = in.str() + in.getLength() - 1;
-	const char* p = findLastBackslashInRangeInclusive(start, end);
+	const char* p = findLastPathSeparatorInRangeInclusive(start, end);
 	if (p)
 	{
-		const char* p2 = findLastBackslashInRangeInclusive(start, p-1);
+		const char* p2 = findLastPathSeparatorInRangeInclusive(start, p-1);
 		if (p2)
 		{
 			// we have something like:
 			//	maps\foo\foo.map
+			//	maps/foo/foo.map
 			//	c:\mydocs\c&cdata\maps\foo\foo.map
 			return p2 + 1;
 		}
@@ -953,8 +964,10 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 		DEBUG_LOG(("Normalized file path for '%s' was outside the expected base path of '%s'.", prefix.str(), containingBasePath.str()));
 		return AsciiString::TheEmptyString;
 	}
-
+	// GeneralsX @bugfix Copilot 02/04/2026 Preserve path casing on macOS/Linux to avoid load failures on case-sensitive filesystems.
+#ifdef _WIN32
 	prefix.toLower();
+#endif
 	return prefix;
 }
 
@@ -1279,6 +1292,7 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 		return;
 
 	// save the current directory
+#ifdef _WIN32
 	char currentDirectory[ _MAX_PATH ];
 	GetCurrentDirectory( _MAX_PATH, currentDirectory );
 
@@ -1288,6 +1302,45 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 	// iterate all items in the directory
 	WIN32_FIND_DATA item;  // search item
 	HANDLE hFile = INVALID_HANDLE_VALUE;  // handle for search resources
+#else
+	// GeneralsX @bugfix Copilot 02/04/2026 Add robust save-file iteration on macOS/Linux.
+	std::filesystem::path currentDirectory;
+	Bool changedDirectory = FALSE;
+	AsciiString saveDirPath = getSaveDirectory();
+
+	try {
+		currentDirectory = std::filesystem::current_path();
+		const char *saveDir = saveDirPath.str();
+		std::filesystem::current_path( saveDir );
+		changedDirectory = TRUE;
+
+		for( const auto &entry : std::filesystem::directory_iterator(".") ) {
+			if( entry.is_regular_file() ) {
+				std::string filename_str = entry.path().filename().string();
+
+				// See if there is a ".sav" at end of this filename
+				const char *c = strrchr( filename_str.c_str(), '.' );
+				if( c && stricmp( c, ".sav" ) == 0 ) {
+					AsciiString filename;
+					filename.set( filename_str.c_str() );
+					callback( filename, userData );
+				}
+			}
+		}
+	} catch( const std::filesystem::filesystem_error & ) {
+	} catch( ... ) {
+	}
+
+	if( changedDirectory ) {
+		try {
+			std::filesystem::current_path( currentDirectory );
+		} catch( ... ) {
+		}
+	}
+	return;
+#endif
+
+#ifdef _WIN32
 	Bool done = FALSE;
 	Bool first = TRUE;
 	while( done == FALSE )
@@ -1338,6 +1391,8 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 
 	// restore the current directory
 	SetCurrentDirectory( currentDirectory );
+
+#endif
 
 }
 
