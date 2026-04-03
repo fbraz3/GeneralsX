@@ -35,10 +35,10 @@
 ## Session 2026-04-02 - SaveLoad crashes can be environment-specific (M1 vs M3, local state)
 
 - Problem: `Menus/SaveLoad.wnd` opened through main menu could exit immediately on one macOS machine while another user (M3) could not reproduce.
-- Root cause hypothesis: Post-layout init path (`SaveLoadMenuFullScreenInit` -> save-file enumeration) was under-instrumented, and non-Windows save directory traversal could throw before/around iteration in environment-specific setups (missing/invalid save directory, stale local runtime state).
-- Fix: Added Apple-only diagnostics in main-menu click path, fullscreen SaveLoad init, and save-file iteration; hardened non-Windows `GameState::iterateSaveFiles()` to wrap directory switch + iteration + restore in guarded exception handling.
+- Root cause: Non-Windows save-file enumeration and load flow depended on local filesystem/user state, so missing or invalid save directories could fail during iteration and load could proceed without a valid selection.
+- Fix: Hardened non-Windows `GameState::iterateSaveFiles()` to guard directory switch + iteration + restore, and added a load selection guard so the load path bails out safely when no valid save entry is selected.
 - Validation: Static diagnostics (`get_errors`) reported no issues in edited files; macOS build task completed with warnings only in unrelated code.
-- Prevention: For macOS-only menu/open flows, instrument both UI transition boundaries and filesystem entry points, and never call `std::filesystem::current_path(target)` outside a guarded path when target can depend on local user state.
+- Prevention: For cross-platform save/load flows, guard filesystem-dependent save enumeration and validate selected save entries before starting load operations when local user state may differ between machines.
 
 ## Session 2026-04-02 - Save/load data paths must preserve separator and case semantics
 

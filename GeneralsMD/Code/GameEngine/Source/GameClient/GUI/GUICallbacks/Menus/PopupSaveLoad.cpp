@@ -393,6 +393,7 @@ static void doLoadGame()
 	// get selected game info
 	AvailableGameInfo *selectedGameInfo = getSelectedSaveFileInfo( listboxGames );
 	DEBUG_ASSERTCRASH( selectedGameInfo, ("doLoadGame: No selected game info found") );
+	// GeneralsX @bugfix Copilot 02/04/2026 Avoid null dereference on inconsistent list selection states.
 	if( selectedGameInfo == nullptr )
 		return;
 

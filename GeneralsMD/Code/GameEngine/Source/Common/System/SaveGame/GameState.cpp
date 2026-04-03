@@ -1325,14 +1325,27 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 				}
 			}
 		}
-	} catch( const std::filesystem::filesystem_error & ) {
+	} catch( const std::filesystem::filesystem_error &e ) {
+#ifdef _DEBUG
+		DEBUG_LOG(( "GameState::iterateSaveFiles failed while iterating save directory '%s': %s\r\n", saveDirPath.str(), e.what() ));
+#endif
 	} catch( ... ) {
+#ifdef _DEBUG
+		DEBUG_LOG(( "GameState::iterateSaveFiles failed with unknown exception while iterating save directory '%s'\r\n", saveDirPath.str() ));
+#endif
 	}
 
 	if( changedDirectory ) {
 		try {
 			std::filesystem::current_path( currentDirectory );
+		} catch( const std::filesystem::filesystem_error &e ) {
+#ifdef _DEBUG
+			DEBUG_LOG(( "GameState::iterateSaveFiles failed to restore current directory '%s': %s\r\n", currentDirectory.string().c_str(), e.what() ));
+#endif
 		} catch( ... ) {
+#ifdef _DEBUG
+			DEBUG_LOG(( "GameState::iterateSaveFiles failed with unknown exception while restoring current directory\r\n" ));
+#endif
 		}
 	}
 	return;
