@@ -243,6 +243,7 @@ endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
 # GeneralsX @bugfix fbraz 10/03/2026 Use FetchContent target when available, fallback to find_package
+# GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice moved from GeneralsMD to Core (shared by Generals and Zero Hour)
 if(SAGE_USE_OPENAL)
     if(TARGET OpenAL::OpenAL)
         # FetchContent-provided openal-soft: interface includes propagated via target
@@ -252,6 +253,25 @@ if(SAGE_USE_OPENAL)
         find_package(OpenAL REQUIRED)
         target_include_directories(corei_gameenginedevice_public INTERFACE ${OPENAL_INCLUDE_DIR})
         target_link_libraries(corei_gameenginedevice_public INTERFACE ${OPENAL_LIBRARY})
+    endif()
+
+    target_sources(corei_gameenginedevice_private INTERFACE
+        Include/OpenALAudioDevice/OpenALAudioManager.h
+        Include/OpenALAudioDevice/OpenALAudioStream.h
+        Source/OpenALAudioDevice/OpenALAudioManager.cpp
+        Source/OpenALAudioDevice/OpenALAudioStream.cpp
+        Source/OpenALAudioDevice/OpenALAudioCache.cpp
+    )
+    # OpenALAudioCache.h is a private header co-located with its source
+    target_include_directories(corei_gameenginedevice_private INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Source/OpenALAudioDevice
+    )
+    # FFmpegFile.cpp is required by OpenALAudioCache for audio decoding;
+    # add it here when RTS_BUILD_OPTION_FFMPEG has not already provided it.
+    if(NOT RTS_BUILD_OPTION_FFMPEG)
+        target_sources(corei_gameenginedevice_private INTERFACE
+            Source/VideoDevice/FFmpeg/FFmpegFile.cpp
+        )
     endif()
 endif()
 

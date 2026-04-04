@@ -195,16 +195,9 @@ else()
         Include/SDL3Device/GameClient/SDL3Keyboard.h
     )
 
-    # GeneralsX @feature BenderAI 10/03/2026 - OpenAL audio backend (ported from GeneralsMD/Zero Hour)
-    # Reuses GeneralsMD's OpenAL + FFmpeg implementation directly, sharing the same audio engine.
-    if(SAGE_USE_OPENAL)
-        list(APPEND GAMEENGINEDEVICE_SRC
-            ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioManager.cpp
-            ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioStream.cpp
-            ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice/OpenALAudioCache.cpp
-            ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/VideoDevice/FFmpeg/FFmpegFile.cpp
-        )
-    endif()
+    # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources now in Core/GameEngineDevice
+    # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
+    # are provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
 endif()
 
 add_library(g_gameenginedevice STATIC)
@@ -243,19 +236,11 @@ if(SAGE_USE_SDL3)
 endif()
 
 # GeneralsX @feature BenderAI 10/03/2026 - OpenAL audio backend (ported from GeneralsMD/Zero Hour)
+# GeneralsX @refactor fbraz3 31/03/2026 Headers/sources now in Core/GameEngineDevice; include dirs via corei_gameenginedevice_private/public
 if(SAGE_USE_OPENAL)
     include(${CMAKE_SOURCE_DIR}/cmake/openal.cmake)
     find_package(OpenAL REQUIRED)
     target_link_libraries(g_gameenginedevice PUBLIC OpenAL::OpenAL)
-
-    # GeneralsMD headers for OpenALAudioDevice (public: OpenALAudioManager.h, FFmpegFile.h)
-    target_include_directories(g_gameenginedevice PUBLIC
-        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Include
-    )
-    # Private: OpenALAudioCache.h lives alongside the source
-    target_include_directories(g_gameenginedevice PRIVATE
-        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/OpenALAudioDevice
-    )
 endif()
 
 # GeneralsX @feature BenderAI 10/03/2026 - FFmpeg audio/video decoding
