@@ -1,6 +1,4 @@
-# How to Run GeneralsX
-
-This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
+# How to Install GeneralsX
 
 ## Prerequisites
 
