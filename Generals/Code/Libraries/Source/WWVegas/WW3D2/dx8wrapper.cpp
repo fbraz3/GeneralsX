@@ -48,19 +48,7 @@
 #endif
 
 #include "dx8wrapper.h"
-// GeneralsX @build BenderAI 10/02/2026 - Need LoadLibrary/GetProcAddress/FreeLibrary for dynamic loading
-#include "module_compat.h"
-// GeneralsX @build felipebraz 16/02/2026 - Need dlerror() for dlopen() error reporting on Linux
-#ifndef _WIN32
-#include <dlfcn.h>
-#include <cxxabi.h>
-#endif
-// GeneralsX @bugfix fbraz3 20/03/2026 - Need typeinfo for unknown-exception type logging
-#include <typeinfo>
-// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)
-#ifdef _WIN32
 #include "dx8webbrowser.h"
-#endif
 #include "dx8fvf.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
@@ -94,13 +82,15 @@
 #include "bound.h"
 #include "DbgHelpGuard.h"
 
-#include "shdlib.h"
 
 const int DEFAULT_RESOLUTION_WIDTH = 640;
 const int DEFAULT_RESOLUTION_HEIGHT = 480;
 const int DEFAULT_BIT_DEPTH = 32;
 const int DEFAULT_TEXTURE_BIT_DEPTH = 16;
 const D3DMULTISAMPLE_TYPE DEFAULT_MSAA = D3DMULTISAMPLE_NONE;
+
+DX8FrameStatistics DX8Wrapper::FrameStatistics;
+static DX8FrameStatistics LastFrameStatistics;
 
 bool DX8Wrapper_IsWindowed = true;
 
@@ -159,24 +149,14 @@ IDirect3DSurface8 *			DX8Wrapper::DefaultRenderTarget						= nullptr;
 IDirect3DSurface8 *			DX8Wrapper::DefaultDepthBuffer						= nullptr;
 bool								DX8Wrapper::IsRenderToTexture							= false;
 
-unsigned							DX8Wrapper::matrix_changes								= 0;
-unsigned							DX8Wrapper::material_changes							= 0;
-unsigned							DX8Wrapper::vertex_buffer_changes					= 0;
-unsigned							DX8Wrapper::index_buffer_changes                = 0;
-unsigned							DX8Wrapper::light_changes								= 0;
-unsigned							DX8Wrapper::texture_changes							= 0;
-unsigned							DX8Wrapper::render_state_changes						= 0;
-unsigned							DX8Wrapper::texture_stage_state_changes			= 0;
-unsigned							DX8Wrapper::draw_calls									= 0;
 unsigned							DX8Wrapper::_MainThreadID								= 0;
 bool								DX8Wrapper::CurrentDX8LightEnables[4];
 bool								DX8Wrapper::IsDeviceLost;
 int								DX8Wrapper::ZBias;
 float								DX8Wrapper::ZNear;
 float								DX8Wrapper::ZFar;
-// GeneralsX @refactor BenderAI 10/02/2026 - Use Matrix4x4 not D3DMATRIX (fighter19 pattern)
-Matrix4x4						DX8Wrapper::ProjectionMatrix;
-Matrix4x4						DX8Wrapper::DX8Transforms[D3DTS_WORLD+1];
+D3DMATRIX						DX8Wrapper::ProjectionMatrix;
+D3DMATRIX						DX8Wrapper::DX8Transforms[D3DTS_WORLD+1];
 
 DX8Caps*							DX8Wrapper::CurrentCaps = nullptr;
 
@@ -188,20 +168,6 @@ D3DADAPTER_IDENTIFIER8		DX8Wrapper::CurrentAdapterIdentifier;
 unsigned long DX8Wrapper::FrameCount = 0;
 
 bool								_DX8SingleThreaded										= false;
-
-unsigned							number_of_DX8_calls										= 0;
-static unsigned				last_frame_matrix_changes								= 0;
-static unsigned				last_frame_material_changes							= 0;
-static unsigned				last_frame_vertex_buffer_changes						= 0;
-static unsigned				last_frame_index_buffer_changes						= 0;
-static unsigned				last_frame_light_changes								= 0;
-static unsigned				last_frame_texture_changes								= 0;
-static unsigned				last_frame_render_state_changes						= 0;
-static unsigned				last_frame_texture_stage_state_changes				= 0;
-static unsigned				last_frame_number_of_DX8_calls						= 0;
-static unsigned				last_frame_draw_calls									= 0;
-
-static D3DDISPLAYMODE DesktopMode;
 
 static D3DPRESENT_PARAMETERS								_PresentParameters;
 static DynamicVectorClass<StringClass>					_RenderDeviceNameTable;
@@ -322,74 +288,25 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	Invalidate_Cached_Render_States();
 
 	if (!lite) {
-		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO/DYLIB loading (Phase 5: macOS)
-#ifdef _WIN32
 		D3D8Lib = LoadLibrary("D3D8.DLL");
-#elif defined(__APPLE__)
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.dylib (macOS)...\n");
-		D3D8Lib = LoadLibrary("libdxvk_d3d8.dylib");
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - LoadLibrary result: %p\n", (void*)D3D8Lib);
-		if (D3D8Lib == nullptr) {
-			const char* error = dlerror();
-			fprintf(stderr, "ERROR: DX8Wrapper::Init() - dlerror(): %s\n", error ? error : "unknown");
-		}
-#else
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.so (Linux)...\n");
-		D3D8Lib = LoadLibrary("libdxvk_d3d8.so");
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - LoadLibrary result: %p\n", (void*)D3D8Lib);
-		if (D3D8Lib == nullptr) {
-			const char* error = dlerror();
-			fprintf(stderr, "ERROR: DX8Wrapper::Init() - dlerror(): %s\n", error ? error : "unknown");
-		}
-#endif
 
-		if (D3D8Lib == nullptr) {
-			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to load D3D8 library\n");
-			return false;	// Return false at this point if init failed
-		}
+		if (D3D8Lib == nullptr) return false;	// Return false at this point if init failed
 
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Getting Direct3DCreate8 function pointer...\n");
 		Direct3DCreate8Ptr = (Direct3DCreate8Type) GetProcAddress(D3D8Lib, "Direct3DCreate8");
-		if (Direct3DCreate8Ptr == nullptr) {
-			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to get Direct3DCreate8 function\n");
-			return false;
-		}
+		if (Direct3DCreate8Ptr == nullptr) return false;
 
 		/*
 		** Create the D3D interface object
 		*/
 		WWDEBUG_SAY(("Create Direct3D8"));
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - About to call Direct3DCreate8(D3D_SDK_VERSION=%d)\n", D3D_SDK_VERSION);
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Window handle: %p\n", hwnd);
 		{
 			// TheSuperHackers @bugfix xezon 13/06/2025 Front load the system dbghelp.dll to prevent
 			// the graphics driver from potentially loading the old game dbghelp.dll and then crashing the game process.
 			DbgHelpGuard dbgHelpGuard;
 
-			// GeneralsX @bugfix fbraz3 20/03/2026 Wrap DXVK Direct3DCreate8 in try/catch so the actual
-			// DXVK/Vulkan error message is logged before the exception propagates up. DxvkError
-			// inherits std::exception (fixed in DXVK fork), and this catch makes the message visible
-			// even in case of unknown exceptions (e.g. NSException on macOS from MoltenVK).
-			try {
-				D3DInterface = Direct3DCreate8Ptr(D3D_SDK_VERSION);
-			} catch (const std::exception& e) {
-				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw std::exception: %s\n", e.what());
-				throw;
-			} catch (...) {
-#if defined(__APPLE__) || defined(__linux__)
-				// Log the raw (implementation-defined, often mangled) exception type to help diagnose NSException or other non-std throws
-				const std::type_info* ti = abi::__cxa_current_exception_type();
-				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw unknown exception (type: %s)\n",
-				        ti ? ti->name() : "<null>");
-#else
-				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw unknown exception\n");
-#endif
-				throw;
-			}
+			D3DInterface = Direct3DCreate8Ptr(D3D_SDK_VERSION);		// TODO: handle failure cases...
 		}
-		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Direct3DCreate8 returned: %p\n", (void*)D3DInterface);
 		if (D3DInterface == nullptr) {
-			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 returned NULL (DXVK failed to create D3D8 interface)\n");
 			return(false);
 		}
 		IsInitted = true;
@@ -463,7 +380,6 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits()
 	MissingTexture::_Init();
 	TextureFilterClass::_Init_Filters((TextureFilterClass::TextureFilterMode)WW3D::Get_Texture_Filter());
 	TheDX8MeshRenderer.Init();
-	SHD_INIT;
 	BoxRenderObjClass::Init();
 	VertexMaterialClass::Init();
 	PointGroupClass::_Init(); // This needs the VertexMaterialClass to be initted
@@ -535,10 +451,8 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns()
 	** Shutdown ww3d systems
 	*/
 	int i;
-	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
-		if (render_state.vertex_buffer[i]) render_state.vertex_buffer[i]->Release_Engine_Ref();
-		REF_PTR_RELEASE(render_state.vertex_buffer[i]);
-	}
+	if (render_state.vertex_buffer) render_state.vertex_buffer->Release_Engine_Ref();
+	REF_PTR_RELEASE(render_state.vertex_buffer);
 	if (render_state.index_buffer) render_state.index_buffer->Release_Engine_Ref();
 	REF_PTR_RELEASE(render_state.index_buffer);
 	REF_PTR_RELEASE(render_state.material);
@@ -553,7 +467,6 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns()
 	PointGroupClass::_Shutdown();
 	VertexMaterialClass::Shutdown();
 	BoxRenderObjClass::Shutdown();
-	SHD_SHUTDOWN;
 	TheDX8MeshRenderer.Shutdown();
 	MissingTexture::_Deinit();
 
@@ -638,36 +551,7 @@ bool DX8Wrapper::Create_Device()
 
 	if (FAILED(hr))
 	{
-		// The device selection may fail because the device lied that it supports 32 bit zbuffer with 16 bit
-		// display. This happens at least on Voodoo2.
-
-		if ((_PresentParameters.BackBufferFormat==D3DFMT_R5G6B5 ||
-			_PresentParameters.BackBufferFormat==D3DFMT_X1R5G5B5 ||
-			_PresentParameters.BackBufferFormat==D3DFMT_A1R5G5B5) &&
-			(_PresentParameters.AutoDepthStencilFormat==D3DFMT_D32 ||
-			_PresentParameters.AutoDepthStencilFormat==D3DFMT_D24S8 ||
-			_PresentParameters.AutoDepthStencilFormat==D3DFMT_D24X8))
-		{
-			_PresentParameters.AutoDepthStencilFormat=D3DFMT_D16;
-			hr = D3DInterface->CreateDevice
-			(
-				CurRenderDevice,
-				WW3D_DEVTYPE,
-				_Hwnd,
-				Vertex_Processing_Behavior,
-				&_PresentParameters,
-				&D3DDevice
-			);
-
-			if (FAILED(hr))
-			{
-				return false;
-			}
-        }
-		else
-		{
-				return false;
-		}
+		return false;
 	}
 
 	dbgHelpGuard.deactivate();
@@ -686,11 +570,8 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 	if ((IsInitted) && (D3DDevice != nullptr)) {
 		// Release all non-MANAGED stuff
 		WW3D::_Invalidate_Textures();
-
-		for (unsigned i=0;i<MAX_VERTEX_STREAMS;++i)
-		{
-			Set_Vertex_Buffer (nullptr,i);
-		}
+		
+		Set_Vertex_Buffer (nullptr);
 		Set_Index_Buffer (nullptr, 0);
 		if (m_pCleanupHook) {
 			m_pCleanupHook->ReleaseResources();
@@ -698,10 +579,6 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		DynamicVBAccessClass::_Deinit();
 		DynamicIBAccessClass::_Deinit();
 		DX8TextureManagerClass::Release_Textures();
-		SHD_SHUTDOWN_SHADERS;
-
-		// Reset frame count to reflect the flipping chain being reset by Reset()
-		FrameCount = 0;
 
 		memset(Vertex_Shader_Constants,0,sizeof(Vector4)*MAX_VERTEX_SHADER_CONSTANTS);
 		memset(Pixel_Shader_Constants,0,sizeof(Vector4)*MAX_PIXEL_SHADER_CONSTANTS);
@@ -724,7 +601,6 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		}
 		Invalidate_Cached_Render_States();
 		Set_Default_Global_Render_States();
-		SHD_INIT_SHADERS;
 		WWDEBUG_SAY(("Device reset completed"));
 		return true;
 	}
@@ -748,11 +624,8 @@ void DX8Wrapper::Release_Device()
 		/*
 		** Release the current vertex and index buffers
 		*/
-		for (unsigned i=0;i<MAX_VERTEX_STREAMS;++i)
-		{
-			if (render_state.vertex_buffer[i]) render_state.vertex_buffer[i]->Release_Engine_Ref();
-			REF_PTR_RELEASE(render_state.vertex_buffer[i]);
-		}
+		if (render_state.vertex_buffer) render_state.vertex_buffer->Release_Engine_Ref();
+		REF_PTR_RELEASE(render_state.vertex_buffer);
 		if (render_state.index_buffer) render_state.index_buffer->Release_Engine_Ref();
 		REF_PTR_RELEASE(render_state.index_buffer);
 
@@ -807,11 +680,6 @@ void DX8Wrapper::Enumerate_Devices()
 
 			desc.set_driver_version(buf);
 
-			D3DInterface->GetDeviceCaps(adapter_index,WW3D_DEVTYPE,&desc.Caps);
-			D3DInterface->GetAdapterIdentifier(adapter_index,D3DENUM_NO_WHQL_LEVEL,&desc.AdapterIdentifier);
-
-			DX8Caps dx8caps(D3DInterface,desc.Caps,WW3D_FORMAT_UNKNOWN,desc.AdapterIdentifier);
-
 			/*
 			** Enumerate the resolutions
 			*/
@@ -834,11 +702,6 @@ void DX8Wrapper::Enumerate_Devices()
 						case D3DFMT_X1R5G5B5:		bits = 16; break;
 					}
 
-					// Some cards fail in certain modes, DX8Caps keeps list of those.
-					if (!dx8caps.Is_Valid_Display_Format(d3dmode.Width,d3dmode.Height,D3DFormat_To_WW3DFormat(d3dmode.Format))) {
-						bits=0;
-					}
-
 					/*
 					** If we recognize the format, add it to the list
 					** TODO: should we handle more formats?  will any cards report more than 24 or 16 bit?
@@ -849,22 +712,10 @@ void DX8Wrapper::Enumerate_Devices()
 				}
 			}
 
-			// IML: If the device has one or more valid resolutions add it to the device list.
-			// NOTE: Testing has shown that there are drivers with zero resolutions.
-			if (desc.Enumerate_Resolutions().Count() > 0) {
-
-				/*
-				** Set up the device name
-				*/
-				StringClass device_name(id.Description,true);
-				_RenderDeviceNameTable.Add(device_name);
-				_RenderDeviceShortNameTable.Add(device_name);	// for now, just add the same name to the "pretty name table"
-
-				/*
-				** Add the render device to our table
-				*/
-				_RenderDeviceDescriptionTable.Add(desc);
-			}
+			/*
+			** Add the render device to our table
+			*/
+			_RenderDeviceDescriptionTable.Add(desc);
 		}
 	}
 }
@@ -874,14 +725,14 @@ bool DX8Wrapper::Set_Any_Render_Device()
 	// Try windowed first
 	int dev_number = 0;
 	for (; dev_number < _RenderDeviceNameTable.Count(); dev_number++) {
-		if (Set_Render_Device(dev_number,-1,-1,-1,0,false)) {
+		if (Set_Render_Device(dev_number,-1,-1,-1,1,false)) {
 			return true;
 		}
 	}
 
 	// Then fullscreen
 	for (dev_number = 0; dev_number < _RenderDeviceNameTable.Count(); dev_number++) {
-		if (Set_Render_Device(dev_number,-1,-1,-1,1,false)) {
+		if (Set_Render_Device(dev_number,-1,-1,-1,0,false)) {
 			return true;
 		}
 	}
@@ -985,7 +836,6 @@ void DX8Wrapper::Resize_And_Position_Window()
 		}
 		else
 		{
-#ifdef _WIN32
 			// TheSuperHackers @feature helmutbuhler 14/04/2025
 			// Center the window in the workarea of the monitor it is on.
 			MONITORINFO mi = {sizeof(MONITORINFO)};
@@ -1006,12 +856,6 @@ void DX8Wrapper::Resize_And_Position_Window()
 			::SetWindowPos (_Hwnd, nullptr, left, top, width, height, SWP_NOZORDER);
 
 			DEBUG_LOG(("Window positioned to x:%d y:%d, resized to w:%d h:%d", left, top, width, height));
-#else
-			// GeneralsX @build BenderAI 10/02/2026 - SDL3 window management on Linux (no Monitor API needed)
-			::SetWindowPos (_Hwnd, nullptr, 0, 0, width, height, SWP_NOZORDER);
-
-			DEBUG_LOG(("Window resized (Linux/SDL) to w:%d h:%d", width, height));
-#endif
 		}
 	}
 }
@@ -1072,9 +916,7 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	_PresentParameters.BackBufferHeight = ResolutionHeight;
 	_PresentParameters.BackBufferCount = IsWindowed ? 1 : 2;
 
-	_PresentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;
-	//I changed this to discard all the time (even when full-screen) since that the most efficient. 07-16-03 MW:
-	_PresentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;//IsWindowed ? D3DSWAPEFFECT_DISCARD : D3DSWAPEFFECT_FLIP;		// Shouldn't this be D3DSWAPEFFECT_FLIP?
+	_PresentParameters.SwapEffect = IsWindowed ? D3DSWAPEFFECT_DISCARD : D3DSWAPEFFECT_FLIP;		// Shouldn't this be D3DSWAPEFFECT_FLIP?
 	_PresentParameters.hDeviceWindow = _Hwnd;
 	_PresentParameters.Windowed = IsWindowed;
 
@@ -1442,58 +1284,7 @@ bool DX8Wrapper::Registry_Load_Render_Device( const char * sub_key, bool resize_
 		}
 
 		if ( Set_Render_Device( name, width,height,depth,windowed, resize_window ) != true) {
-			if (depth==16) depth=32;
-			else depth=16;
-			if ( Set_Render_Device( name, width,height,depth,windowed, resize_window ) == true) {
-				return true;
-			}
-			if (depth==16) depth=32;
-			else depth=16;
-			// we'll test resolutions down, so if start is 640, increase to begin with...
-			if (width==640) {
-				width=1024;
-				height=768;
-			}
-			for(;;) {
-				if (width>2048) {
-					width=2048;
-					height=1536;
-				}
-				else if (width>1920) {
-					width=1920;
-					height=1440;
-				}
-				else if (width>1600) {
-					width=1600;
-					height=1200;
-				}
-				else if (width>1280) {
-					width=1280;
-					height=1024;
-				}
-				else if (width>1024) {
-					width=1024;
-					height=768;
-				}
-				else if (width>800) {
-					width=800;
-					height=600;
-				}
-				else if (width!=640) {
-					width=640;
-					height=480;
-				}
-				else {
-					return Set_Any_Render_Device();
-				}
-				for (int i=0;i<2;++i) {
-					if ( Set_Render_Device( name, width,height,depth,windowed, resize_window ) == true) {
-						return true;
-					}
-					if (depth==16) depth=32;
-					else depth=16;
-				}
-			}
+			return Set_Any_Render_Device();
 		}
 
 		return true;
@@ -1718,67 +1509,25 @@ bool DX8Wrapper::Test_Z_Mode(D3DFORMAT colorbuffer,D3DFORMAT backbuffer, D3DFORM
 
 void DX8Wrapper::Reset_Statistics()
 {
-	matrix_changes	= 0;
-	material_changes = 0;
-	vertex_buffer_changes = 0;
-	index_buffer_changes = 0;
-	light_changes = 0;
-	texture_changes = 0;
-	render_state_changes =0;
-	texture_stage_state_changes =0;
-	draw_calls =0;
-
-	number_of_DX8_calls = 0;
-	last_frame_matrix_changes = 0;
-	last_frame_material_changes = 0;
-	last_frame_vertex_buffer_changes = 0;
-	last_frame_index_buffer_changes = 0;
-	last_frame_light_changes = 0;
-	last_frame_texture_changes = 0;
-	last_frame_render_state_changes = 0;
-	last_frame_texture_stage_state_changes = 0;
-	last_frame_number_of_DX8_calls = 0;
-	last_frame_draw_calls =0;
+	FrameStatistics = DX8FrameStatistics();
+	LastFrameStatistics = DX8FrameStatistics();
 }
 
 void DX8Wrapper::Begin_Statistics()
 {
-	matrix_changes=0;
-	material_changes=0;
-	vertex_buffer_changes=0;
-	index_buffer_changes=0;
-	light_changes=0;
-	texture_changes = 0;
-	render_state_changes =0;
-	texture_stage_state_changes =0;
-	number_of_DX8_calls=0;
-	draw_calls=0;
+	FrameStatistics = DX8FrameStatistics();
 }
 
 void DX8Wrapper::End_Statistics()
 {
-	last_frame_matrix_changes=matrix_changes;
-	last_frame_material_changes=material_changes;
-	last_frame_vertex_buffer_changes=vertex_buffer_changes;
-	last_frame_index_buffer_changes=index_buffer_changes;
-	last_frame_light_changes=light_changes;
-	last_frame_texture_changes = texture_changes;
-	last_frame_render_state_changes = render_state_changes;
-	last_frame_texture_stage_state_changes = texture_stage_state_changes;
-	last_frame_number_of_DX8_calls=number_of_DX8_calls;
-	last_frame_draw_calls=draw_calls;
+	LastFrameStatistics = FrameStatistics;
 }
 
-unsigned DX8Wrapper::Get_Last_Frame_Matrix_Changes()			{ return last_frame_matrix_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Material_Changes()		{ return last_frame_material_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Vertex_Buffer_Changes()	{ return last_frame_vertex_buffer_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Index_Buffer_Changes()	{ return last_frame_index_buffer_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Light_Changes()			{ return last_frame_light_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Texture_Changes()			{ return last_frame_texture_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Render_State_Changes()	{ return last_frame_render_state_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_Texture_Stage_State_Changes()	{ return last_frame_texture_stage_state_changes; }
-unsigned DX8Wrapper::Get_Last_Frame_DX8_Calls()					{ return last_frame_number_of_DX8_calls; }
-unsigned DX8Wrapper::Get_Last_Frame_Draw_Calls()				{ return last_frame_draw_calls; }
+const DX8FrameStatistics& DX8Wrapper::Get_Last_Frame_Statistics()
+{
+	return LastFrameStatistics;
+}
+
 unsigned long DX8Wrapper::Get_FrameCount() {return FrameCount;}
 
 void DX8_Assert()
@@ -1797,10 +1546,7 @@ void DX8Wrapper::Begin_Scene()
 
 	DX8CALL(BeginScene());
 
-	// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only
-#ifdef _WIN32
 	DX8WebBrowser::Update();
-#endif
 }
 
 void DX8Wrapper::End_Scene(bool flip_frames)
@@ -1808,10 +1554,7 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 	DX8_THREAD_ASSERT();
 	DX8CALL(EndScene());
 
-	// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only
-#ifdef _WIN32
 	DX8WebBrowser::Render(0);
-#endif
 
 	if (flip_frames) {
 		DX8_Assert();
@@ -1821,7 +1564,7 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 			hr=_Get_D3D_Device8()->Present(nullptr, nullptr, nullptr, nullptr);
 		}
 
-		number_of_DX8_calls++;
+		DX8_RECORD_DX8_CALLS();
 
 		if (SUCCEEDED(hr)) {
 #ifdef EXTENDED_STATS
@@ -1912,40 +1655,13 @@ void DX8Wrapper::Flip_To_Primary()
 }
 
 
-//**********************************************************************************************
-//! Clear current render device
-/*! KM
-/* 5/17/02 KM Fixed support for render to texture with depth/stencil buffers
-*/
 void DX8Wrapper::Clear(bool clear_color, bool clear_z_stencil, const Vector3 &color, float dest_alpha, float z, unsigned int stencil)
 {
 	DX8_THREAD_ASSERT();
-
 	// If we try to clear a stencil buffer which is not there, the entire call will fail
-	// KJM fixed this to get format from back buffer (incase render to texture is used)
-	/*bool has_stencil = (	_PresentParameters.AutoDepthStencilFormat == D3DFMT_D15S1 ||
+	bool has_stencil = (	_PresentParameters.AutoDepthStencilFormat == D3DFMT_D15S1 ||
 								_PresentParameters.AutoDepthStencilFormat == D3DFMT_D24S8 ||
-								_PresentParameters.AutoDepthStencilFormat == D3DFMT_D24X4S4);*/
-	bool has_stencil=false;
-	IDirect3DSurface8* depthbuffer;
-
-	_Get_D3D_Device8()->GetDepthStencilSurface(&depthbuffer);
-	number_of_DX8_calls++;
-
-	if (depthbuffer)
-	{
-		D3DSURFACE_DESC desc;
-		depthbuffer->GetDesc(&desc);
-		has_stencil=
-		(
-			desc.Format==D3DFMT_D15S1 ||
-			desc.Format==D3DFMT_D24S8 ||
-			desc.Format==D3DFMT_D24X4S4
-		);
-
-		// release ref
-		depthbuffer->Release();
-	}
+								_PresentParameters.AutoDepthStencilFormat == D3DFMT_D24X4S4);
 
 	DWORD flags = 0;
 	if (clear_color) flags |= D3DCLEAR_TARGET;
@@ -1971,20 +1687,20 @@ void DX8Wrapper::Set_Viewport(CONST D3DVIEWPORT8* pViewport)
 //
 // ----------------------------------------------------------------------------
 
-void DX8Wrapper::Set_Vertex_Buffer(const VertexBufferClass* vb, unsigned stream)
+void DX8Wrapper::Set_Vertex_Buffer(const VertexBufferClass* vb)
 {
 	render_state.vba_offset=0;
 	render_state.vba_count=0;
-	if (render_state.vertex_buffer[stream]) {
-		render_state.vertex_buffer[stream]->Release_Engine_Ref();
+	if (render_state.vertex_buffer) {
+		render_state.vertex_buffer->Release_Engine_Ref();
 	}
-	REF_PTR_SET(render_state.vertex_buffer[stream],const_cast<VertexBufferClass*>(vb));
+	REF_PTR_SET(render_state.vertex_buffer,const_cast<VertexBufferClass*>(vb));
 	if (vb) {
 		vb->Add_Engine_Ref();
-		render_state.vertex_buffer_type[stream]=vb->Type();
+		render_state.vertex_buffer_type=vb->Type();
 	}
 	else {
-		render_state.vertex_buffer_type[stream]=BUFFER_TYPE_INVALID;
+		render_state.index_buffer_type=BUFFER_TYPE_INVALID;
 	}
 	render_state_changed|=VERTEX_BUFFER_CHANGED;
 }
@@ -2023,18 +1739,14 @@ void DX8Wrapper::Set_Index_Buffer(const IndexBufferClass* ib,unsigned short inde
 
 void DX8Wrapper::Set_Vertex_Buffer(const DynamicVBAccessClass& vba_)
 {
-	// Release all streams (only one stream allowed in the legacy pipeline)
-	for (int i=1;i<MAX_VERTEX_STREAMS;++i) {
-		DX8Wrapper::Set_Vertex_Buffer(nullptr, i);
-	}
+	if (render_state.vertex_buffer) render_state.vertex_buffer->Release_Engine_Ref();
 
-	if (render_state.vertex_buffer[0]) render_state.vertex_buffer[0]->Release_Engine_Ref();
 	DynamicVBAccessClass& vba=const_cast<DynamicVBAccessClass&>(vba_);
-	render_state.vertex_buffer_type[0]=vba.Get_Type();
+	render_state.vertex_buffer_type=vba.Get_Type();
 	render_state.vba_offset=vba.VertexBufferOffset;
 	render_state.vba_count=vba.Get_Vertex_Count();
-	REF_PTR_SET(render_state.vertex_buffer[0],vba.VertexBuffer);
-	render_state.vertex_buffer[0]->Add_Engine_Ref();
+	REF_PTR_SET(render_state.vertex_buffer,vba.VertexBuffer);
+	render_state.vertex_buffer->Add_Engine_Ref();
 	render_state_changed|=VERTEX_BUFFER_CHANGED;
 	render_state_changed|=INDEX_BUFFER_CHANGED;		// vba_offset changes so index buffer needs to be reset as well.
 }
@@ -2072,14 +1784,14 @@ void DX8Wrapper::Draw_Sorting_IB_VB(
 	unsigned short min_vertex_index,
 	unsigned short vertex_count)
 {
-	WWASSERT(render_state.vertex_buffer_type[0]==BUFFER_TYPE_SORTING || render_state.vertex_buffer_type[0]==BUFFER_TYPE_DYNAMIC_SORTING);
+	WWASSERT(render_state.vertex_buffer_type==BUFFER_TYPE_SORTING || render_state.vertex_buffer_type==BUFFER_TYPE_DYNAMIC_SORTING);
 	WWASSERT(render_state.index_buffer_type==BUFFER_TYPE_SORTING || render_state.index_buffer_type==BUFFER_TYPE_DYNAMIC_SORTING);
 
 	// Fill dynamic vertex buffer with sorting vertex buffer vertices
 	DynamicVBAccessClass dyn_vb_access(BUFFER_TYPE_DYNAMIC_DX8,dynamic_fvf_type,vertex_count);
 	{
 		DynamicVBAccessClass::WriteLockClass lock(&dyn_vb_access);
-		VertexFormatXYZNDUV2* src = static_cast<SortingVertexBufferClass*>(render_state.vertex_buffer[0])->VertexBuffer;
+		VertexFormatXYZNDUV2* src = static_cast<SortingVertexBufferClass*>(render_state.vertex_buffer)->VertexBuffer;
 		VertexFormatXYZNDUV2* dest= lock.Get_Formatted_Vertex_Array();
 		src += render_state.vba_offset + render_state.index_base_offset + min_vertex_index;
 		unsigned  size = dyn_vb_access.FVF_Info().Get_FVF_Size()*vertex_count/sizeof(unsigned);
@@ -2095,11 +1807,7 @@ void DX8Wrapper::Draw_Sorting_IB_VB(
 		0,
 		static_cast<DX8VertexBufferClass*>(dyn_vb_access.VertexBuffer)->Get_DX8_Vertex_Buffer(),
 		dyn_vb_access.FVF_Info().Get_FVF_Size()));
-	// If using FVF format VB, set the FVF as vertex shader (may not be needed here KM)
-	unsigned fvf=dyn_vb_access.FVF_Info().Get_FVF();
-	if (fvf!=0) {
-		DX8CALL(SetVertexShader(fvf));
-	}
+	DX8CALL(SetVertexShader(dyn_vb_access.FVF_Info().Get_FVF()));
 	DX8_RECORD_VERTEX_BUFFER_CHANGE();
 
 	unsigned index_count=0;
@@ -2168,7 +1876,7 @@ void DX8Wrapper::Draw(
 
 #ifdef MESH_RENDER_SNAPSHOT_ENABLED
 	if (WW3D::Is_Snapshot_Activated()) {
-		DWORD passes=0;		// GeneralsX @build BenderAI 10/02/2026 - Use DWORD (32-bit) instead of unsigned long (platform-dependent)
+		unsigned long passes=0;
 		SNAPSHOT_SAY(("ValidateDevice:"));
 		HRESULT res=D3DDevice->ValidateDevice(&passes);
 		switch (res) {
@@ -2221,10 +1929,10 @@ void DX8Wrapper::Draw(
 
 	if (vertex_count<3) {
 		min_vertex_index=0;
-		switch (render_state.vertex_buffer_type[0]) {
+		switch (render_state.vertex_buffer_type) {
 		case BUFFER_TYPE_DX8:
 		case BUFFER_TYPE_SORTING:
-			vertex_count=render_state.vertex_buffer[0]->Get_Vertex_Count()-render_state.index_base_offset-render_state.vba_offset-min_vertex_index;
+			vertex_count=render_state.vertex_buffer->Get_Vertex_Count()-render_state.index_base_offset-render_state.vba_offset-min_vertex_index;
 			break;
 		case BUFFER_TYPE_DYNAMIC_DX8:
 		case BUFFER_TYPE_DYNAMIC_SORTING:
@@ -2233,7 +1941,7 @@ void DX8Wrapper::Draw(
 		}
 	}
 
-	switch (render_state.vertex_buffer_type[0]) {
+	switch (render_state.vertex_buffer_type) {
 	case BUFFER_TYPE_DX8:
 	case BUFFER_TYPE_DYNAMIC_DX8:
 		switch (render_state.index_buffer_type) {
@@ -2411,7 +2119,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 				}
 				else {
 					Set_DX8_Light(index,nullptr);
-					SNAPSHOT_SAY((" clearing light to NULL"));
+					SNAPSHOT_SAY((" clearing light to null"));
 				}
 			}
 		}
@@ -2419,44 +2127,34 @@ void DX8Wrapper::Apply_Render_State_Changes()
 
 	if (render_state_changed&WORLD_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply world matrix"));
-		// GeneralsX @refactor BenderAI 10/02/2026 - pass Matrix4x4 directly (no D3DMATRIX conversion)
-		_Set_DX8_Transform(D3DTS_WORLD, render_state.world);
+		_Set_DX8_Transform(D3DTS_WORLD,render_state.world);
 	}
 	if (render_state_changed&VIEW_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply view matrix"));
-		// GeneralsX @refactor BenderAI 10/02/2026 - pass Matrix4x4 directly (no D3DMATRIX conversion)
-		_Set_DX8_Transform(D3DTS_VIEW, render_state.view);
+		_Set_DX8_Transform(D3DTS_VIEW,render_state.view);
 	}
 	if (render_state_changed&VERTEX_BUFFER_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply vb change"));
-		for (i=0;i<MAX_VERTEX_STREAMS;++i) {
-			if (render_state.vertex_buffer[i]) {
-				switch (render_state.vertex_buffer_type[i]) {//->Type()) {
-				case BUFFER_TYPE_DX8:
-				case BUFFER_TYPE_DYNAMIC_DX8:
-					DX8CALL(SetStreamSource(
-						i,
-						static_cast<DX8VertexBufferClass*>(render_state.vertex_buffer[i])->Get_DX8_Vertex_Buffer(),
-						render_state.vertex_buffer[i]->FVF_Info().Get_FVF_Size()));
-					DX8_RECORD_VERTEX_BUFFER_CHANGE();
-					{
-						// If the VB format is FVF, set the FVF as a vertex shader
-						unsigned fvf=render_state.vertex_buffer[i]->FVF_Info().Get_FVF();
-						if (fvf!=0) {
-							Set_Vertex_Shader(fvf);
-						}
-					}
-					break;
-				case BUFFER_TYPE_SORTING:
-				case BUFFER_TYPE_DYNAMIC_SORTING:
-					break;
-				default:
-					WWASSERT(0);
-				}
-			} else {
-				DX8CALL(SetStreamSource(i,nullptr,0));
+		if (render_state.vertex_buffer) {
+			switch (render_state.vertex_buffer_type) {//->Type()) {
+			case BUFFER_TYPE_DX8:
+			case BUFFER_TYPE_DYNAMIC_DX8:
+				DX8CALL(SetStreamSource(
+					0,
+					static_cast<DX8VertexBufferClass*>(render_state.vertex_buffer)->Get_DX8_Vertex_Buffer(),
+					render_state.vertex_buffer->FVF_Info().Get_FVF_Size()));
 				DX8_RECORD_VERTEX_BUFFER_CHANGE();
+				DX8CALL(SetVertexShader(render_state.vertex_buffer->FVF_Info().Get_FVF()));
+				break;
+			case BUFFER_TYPE_SORTING:
+			case BUFFER_TYPE_DYNAMIC_SORTING:
+				break;
+			default:
+				WWASSERT(0);
 			}
+		} else {
+			DX8CALL(SetStreamSource(0,nullptr,0));
+			DX8_RECORD_VERTEX_BUFFER_CHANGE();
 		}
 	}
 	if (render_state_changed&INDEX_BUFFER_CHANGED) {
@@ -2529,33 +2227,8 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 		}
 
 		if (ret==D3DERR_OUTOFVIDEOMEMORY) {
-			WWDEBUG_SAY(("Error: Out of memory while creating render target. Trying to release assets..."));
-			// Free all textures that haven't been used in the last 5 seconds
-			TextureClass::Invalidate_Old_Unused_Textures(5000);
-
-			// Invalidate the mesh cache
-			WW3D::_Invalidate_Mesh_Cache();
-
-			ret=D3DXCreateTexture(
-				DX8Wrapper::_Get_D3D_Device8(),
-				width,
-				height,
-				mip_level_count,
-				D3DUSAGE_RENDERTARGET,
-				WW3DFormat_To_D3DFormat(format),
-				pool,
-				&texture);
-
-			if (SUCCEEDED(ret)) {
-				WWDEBUG_SAY(("...Render target creation successful."));
-			}
-			else {
-				WWDEBUG_SAY(("...Render target creation failed."));
-			}
-			if (ret==D3DERR_OUTOFVIDEOMEMORY) {
-				Non_Fatal_Log_DX8_ErrorCode(ret,__FILE__,__LINE__);
-				return nullptr;
-			}
+			Non_Fatal_Log_DX8_ErrorCode(ret,__FILE__,__LINE__);
+			return nullptr;
 		}
 
 		DX8_ErrorCode(ret);
@@ -2564,10 +2237,9 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 		return texture;
 	}
 
-	// We should never run out of video memory when allocating a non-rendertarget texture.
-	// However, it seems to happen sometimes when there are a lot of textures in memory and so
-	// if it happens we'll release assets and try again (anything is better than crashing).
-	unsigned ret=D3DXCreateTexture(
+	// Don't allow any errors in non-render target
+	// texture creation.
+	DX8_ErrorCode(D3DXCreateTexture(
 		DX8Wrapper::_Get_D3D_Device8(),
 		width,
 		height,
@@ -2575,49 +2247,12 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 		0,
 		WW3DFormat_To_D3DFormat(format),
 		pool,
-		&texture);
+		&texture));
 
-	// If ran out of texture ram, try invalidating some textures and mesh cache.
-	if (ret==D3DERR_OUTOFVIDEOMEMORY) {
-		WWDEBUG_SAY(("Error: Out of memory while creating texture. Trying to release assets..."));
-		// Free all textures that haven't been used in the last 5 seconds
-		TextureClass::Invalidate_Old_Unused_Textures(5000);
-
-		// Invalidate the mesh cache
-		WW3D::_Invalidate_Mesh_Cache();
-
-		ret=D3DXCreateTexture(
-			DX8Wrapper::_Get_D3D_Device8(),
-			width,
-			height,
-			mip_level_count,
-			0,
-			WW3DFormat_To_D3DFormat(format),
-			pool,
-			&texture);
-		if (SUCCEEDED(ret)) {
-			WWDEBUG_SAY(("...Texture creation successful."));
-		}
-		else {
-			StringClass format_name(0,true);
-			Get_WW3D_Format_Name(format, format_name);
-			WWDEBUG_SAY(("...Texture creation failed. (%d x %d, format: %s, mips: %d",width,height,format_name.str(),mip_level_count));
-		}
-
-	}
-	DX8_ErrorCode(ret);
-
-	// GeneralsX @bugfix felipebraz 10/06/2025 On non-Windows builds DX8_ErrorCode is a silent no-op
-	// in non-debug builds (WWASSERT expands to nothing). Log failures to stderr so crashes can be
-	// diagnosed without a debugger attached.
-#if !defined(_WIN32)
-	if (!SUCCEEDED(ret)) {
-		StringClass format_name(0, true);
-		Get_WW3D_Format_Name(static_cast<WW3DFormat>(format), format_name);
-		fprintf(stderr, "[GeneralsX] _Create_DX8_Texture FAILED: hresult=0x%08X %dx%d fmt=%s mips=%d pool=%d rendertarget=%d\n",
-			ret, (int)width, (int)height, format_name.str(), (int)mip_level_count, (int)pool, (int)rendertarget);
-	}
-#endif
+//	unsigned reduction=WW3D::Get_Texture_Reduction();
+//	unsigned level_count=texture->GetLevelCount();
+//	if (reduction>=level_count) reduction=level_count-1;
+//	texture->SetLOD(reduction);
 
 	return texture;
 }
@@ -3190,11 +2825,6 @@ void DX8Wrapper::Set_Light(unsigned index,const LightClass &light)
 //
 void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 {
-	// Shader light environment support															*
-//	if (Light_Environment && light_env && (*Light_Environment)==(*light_env)) return;
-
-	Light_Environment=light_env;
-
 	if (light_env)
 	{
 		int light_count = light_env->Get_Light_Count();
@@ -3218,12 +2848,6 @@ void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 			(Vector3&)light.Diffuse=light_env->Get_Light_Diffuse(l);
 			Vector3 dir=-light_env->Get_Light_Direction(l);
 			light.Direction=(const D3DVECTOR&)(dir);
-
-			// (gth) TODO: put specular into LightEnvironment?  Much work to be done on lights :-)'
-			if (l==0) {
-				light.Specular.r = light.Specular.g = light.Specular.b = 1.0f;
-			}
-
 			if (light_env->isPointLight(l)) {
 				light.Type = D3DLIGHT_POINT;
 				(Vector3&)light.Diffuse=light_env->getPointDiffuse(l);
@@ -3235,14 +2859,7 @@ void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 				double a,b;
 				b = light_env->getPointOrad(l);
 				a = light_env->getPointIrad(l);
-
-//(gth) CNC3 Generals code for the attenuation factors is causing the lights to over-brighten
-//I'm changing the Attenuation0 parameter to 1.0 to avoid this problem.
-#if 0
 				light.Attenuation0=0.01f;
-#else
-				light.Attenuation0=1.0f;
-#endif
 				if (fabs(a-b)<1e-5)
 					// if the attenuation range is too small assume uniform with cutoff
 					light.Attenuation1=0.0f;
@@ -3305,7 +2922,7 @@ DX8Wrapper::Create_Render_Target (int width, int height, WW3DFormat format)
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 
 	// Use the current display format if format isn't specified
 	if (format==WW3D_FORMAT_UNKNOWN) {
@@ -3371,7 +2988,7 @@ void DX8Wrapper::Create_Render_Target
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 
 	// Use the current display format if format isn't specified
 	if (format==WW3D_FORMAT_UNKNOWN)
@@ -3772,7 +3389,7 @@ void DX8Wrapper::Flush_DX8_Resource_Manager(unsigned int bytes)
 unsigned int DX8Wrapper::Get_Free_Texture_RAM()
 {
 	DX8_Assert();
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 	return DX8Wrapper::_Get_D3D_Device8()->GetAvailableTextureMem();
 }
 
@@ -3788,7 +3405,7 @@ void DX8Wrapper::Set_Gamma(float gamma,float bright,float contrast,bool calibrat
 	float oo_gamma=1.0f/gamma;
 
 	DX8_Assert();
-	number_of_DX8_calls++;
+	DX8_RECORD_DX8_CALLS();
 
 	DWORD flag=(calibrate?D3DSGR_CALIBRATE:D3DSGR_NO_CALIBRATION);
 
@@ -3818,11 +3435,7 @@ void DX8Wrapper::Set_Gamma(float gamma,float bright,float contrast,bool calibrat
 
 	if (Get_Current_Caps()->Support_Gamma())	{
 		DX8Wrapper::_Get_D3D_Device8()->SetGammaRamp(flag,&ramp);
-	}
-	// GeneralsX @build fbraz 10/02/2026 GDI gamma fallback Windows-only
-	// Linux: Gamma adjustment via device only (no GDI fallback)
-#ifdef _WIN32
-	else {
+	} else {
 		HWND hwnd = GetDesktopWindow();
 		HDC hdc = GetDC(hwnd);
 		if (hdc)
@@ -3831,7 +3444,6 @@ void DX8Wrapper::Set_Gamma(float gamma,float bright,float contrast,bool calibrat
 			ReleaseDC (hwnd, hdc);
 		}
 	}
-#endif
 }
 
 namespace wrapper
@@ -3850,8 +3462,7 @@ void DX8Wrapper::Set_World_Identity()
 {
 	if (render_state_changed&(unsigned)WORLD_IDENTITY)
 		return;
-	// GeneralsX @build fbraz 10/02/2026 Use Matrix4x4 native method
-	render_state.world.Make_Identity();
+	wrapper::D3DMatrixIdentity(&render_state.world);
 	render_state_changed|=(unsigned)WORLD_CHANGED|(unsigned)WORLD_IDENTITY;
 }
 
@@ -3859,8 +3470,7 @@ void DX8Wrapper::Set_View_Identity()
 {
 	if (render_state_changed&(unsigned)VIEW_IDENTITY)
 		return;
-	// GeneralsX @build fbraz 10/02/2026 Use Matrix4x4 native method
-	render_state.view.Make_Identity();
+	wrapper::D3DMatrixIdentity(&render_state.view);
 	render_state_changed|=(unsigned)VIEW_CHANGED|(unsigned)VIEW_IDENTITY;
 }
 
@@ -3996,7 +3606,7 @@ void DX8Wrapper::Apply_Default_State()
 	VertexMaterialClass::Apply_Null();
 
 	for (unsigned index=0;index<4;++index) {
-		SNAPSHOT_SAY(("Clearing light %d to NULL",index));
+		SNAPSHOT_SAY(("Clearing light %d to null",index));
 		Set_DX8_Light(index,nullptr);
 	}
 

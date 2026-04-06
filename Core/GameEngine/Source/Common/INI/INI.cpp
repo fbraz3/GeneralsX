@@ -59,6 +59,17 @@
 #include "GameLogic/ScriptEngine.h"
 #include "GameLogic/Weapon.h"
 
+#if __cplusplus >= 201611L
+#define USE_STD_FROM_CHARS_PARSING 1
+#else
+#define USE_STD_FROM_CHARS_PARSING 0
+#endif
+
+#if USE_STD_FROM_CHARS_PARSING
+#include <charconv>
+#include <string_view>
+#include <type_traits>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -78,70 +89,68 @@ struct BlockParse
 };
 static const BlockParse theTypeTable[] =
 {
-	{ "AIData",							INI::parseAIDataDefinition },
-	{ "Animation",					INI::parseAnim2DDefinition },
-	{ "Armor",							INI::parseArmorDefinition },
-	{ "AudioEvent",					INI::parseAudioEventDefinition },
-	{ "AudioSettings",			INI::parseAudioSettingsDefinition },
-	{ "Bridge",							INI::parseTerrainBridgeDefinition },
-	{ "Campaign",						INI::parseCampaignDefinition },
- 	{ "ChallengeGenerals",				INI::parseChallengeModeDefinition },
-	{ "CommandButton",			INI::parseCommandButtonDefinition },
-	{ "CommandMap",					INI::parseMetaMapDefinition },
-	{ "CommandSet",					INI::parseCommandSetDefinition },
-	{ "ControlBarScheme",		INI::parseControlBarSchemeDefinition },
-	{ "ControlBarResizer",	INI::parseControlBarResizerDefinition },
-	{ "CrateData",					INI::parseCrateTemplateDefinition },
-	{ "Credits",						INI::parseCredits},
-	{ "WindowTransition",		INI::parseWindowTransitions},
-	{ "DamageFX",						INI::parseDamageFXDefinition },
-	{ "DialogEvent",				INI::parseDialogDefinition },
-	{ "DrawGroupInfo",		INI::parseDrawGroupNumberDefinition },
-	{ "EvaEvent",						INI::parseEvaEvent },
-	{ "FXList",							INI::parseFXListDefinition },
-	{ "GameData",						INI::parseGameDataDefinition },
-	{ "InGameUI",						INI::parseInGameUIDefinition },
-	{ "Locomotor",					INI::parseLocomotorTemplateDefinition },
-	{ "Language",						INI::parseLanguageDefinition },
-	{ "MapCache",						INI::parseMapCacheDefinition },
-	{ "MapData",						INI::parseMapDataDefinition },
-	{ "MappedImage",				INI::parseMappedImageDefinition },
-	{ "MiscAudio",					INI::parseMiscAudio},
-	{ "Mouse",							INI::parseMouseDefinition },
-	{ "MouseCursor",				INI::parseMouseCursorDefinition },
-	{ "MultiplayerColor",		INI::parseMultiplayerColorDefinition },
-  { "MultiplayerStartingMoneyChoice",		INI::parseMultiplayerStartingMoneyChoiceDefinition },
-	{ "OnlineChatColors",		INI::parseOnlineChatColorDefinition },
-	{ "MultiplayerSettings",INI::parseMultiplayerSettingsDefinition },
-	{ "MusicTrack",					INI::parseMusicTrackDefinition },
-	{ "Object",							INI::parseObjectDefinition },
-	{ "ObjectCreationList",	INI::parseObjectCreationListDefinition },
-	{ "ObjectReskin",				INI::parseObjectReskinDefinition },
-	{ "ParticleSystem",			INI::parseParticleSystemDefinition },
-	{ "PlayerTemplate",			INI::parsePlayerTemplateDefinition },
-	{ "Road",								INI::parseTerrainRoadDefinition },
-	{ "Science",						INI::parseScienceDefinition },
-	{ "Rank",								INI::parseRankDefinition },
-	{ "SpecialPower",				INI::parseSpecialPowerDefinition },
-	{ "ShellMenuScheme",		INI::parseShellMenuSchemeDefinition },
-	{ "Terrain",						INI::parseTerrainDefinition },
-	{ "Upgrade",						INI::parseUpgradeDefinition },
-	{ "Video",							INI::parseVideoDefinition },
-	{ "WaterSet",						INI::parseWaterSettingDefinition },
-	{ "WaterTransparency",	INI::parseWaterTransparencyDefinition},
-	{ "Weather",	INI::parseWeatherDefinition},
-	{ "Weapon",							INI::parseWeaponTemplateDefinition },
-	{ "WebpageURL",					INI::parseWebpageURLDefinition },
-	{ "HeaderTemplate",			INI::parseHeaderTemplateDefinition },
-	{ "StaticGameLOD",			INI::parseStaticGameLODDefinition },
-	{ "DynamicGameLOD",			INI::parseDynamicGameLODDefinition },
-	{ "LODPreset",					INI::parseLODPreset },
-	{	"BenchProfile",				INI::parseBenchProfile },
-	{	"ReallyLowMHz",				parseReallyLowMHz },
-	{	"ScriptAction",				ScriptEngine::parseScriptAction },
-	{	"ScriptCondition",		ScriptEngine::parseScriptCondition },
-
-	{ nullptr,									nullptr },
+	{ "AIData",                         INI::parseAIDataDefinition },
+	{ "Animation",                      INI::parseAnim2DDefinition },
+	{ "Armor",                          INI::parseArmorDefinition },
+	{ "AudioEvent",                     INI::parseAudioEventDefinition },
+	{ "AudioSettings",                  INI::parseAudioSettingsDefinition },
+	{ "BenchProfile",                   INI::parseBenchProfile },
+	{ "Bridge",                         INI::parseTerrainBridgeDefinition },
+	{ "Campaign",                       INI::parseCampaignDefinition },
+	{ "ChallengeGenerals",              INI::parseChallengeModeDefinition },
+	{ "CommandButton",                  INI::parseCommandButtonDefinition },
+	{ "CommandMap",                     INI::parseMetaMapDefinition },
+	{ "CommandSet",                     INI::parseCommandSetDefinition },
+	{ "ControlBarResizer",              INI::parseControlBarResizerDefinition },
+	{ "ControlBarScheme",               INI::parseControlBarSchemeDefinition },
+	{ "CrateData",                      INI::parseCrateTemplateDefinition },
+	{ "Credits",                        INI::parseCredits },
+	{ "DamageFX",                       INI::parseDamageFXDefinition },
+	{ "DialogEvent",                    INI::parseDialogDefinition },
+	{ "DrawGroupInfo",                  INI::parseDrawGroupNumberDefinition },
+	{ "DynamicGameLOD",                 INI::parseDynamicGameLODDefinition },
+	{ "EvaEvent",                       INI::parseEvaEvent },
+	{ "FXList",                         INI::parseFXListDefinition },
+	{ "GameData",                       INI::parseGameDataDefinition },
+	{ "HeaderTemplate",                 INI::parseHeaderTemplateDefinition },
+	{ "InGameUI",                       INI::parseInGameUIDefinition },
+	{ "LODPreset",                      INI::parseLODPreset },
+	{ "Language",                       INI::parseLanguageDefinition },
+	{ "Locomotor",                      INI::parseLocomotorTemplateDefinition },
+	{ "MapCache",                       INI::parseMapCacheDefinition },
+	{ "MapData",                        INI::parseMapDataDefinition },
+	{ "MappedImage",                    INI::parseMappedImageDefinition },
+	{ "MiscAudio",                      INI::parseMiscAudio },
+	{ "Mouse",                          INI::parseMouseDefinition },
+	{ "MouseCursor",                    INI::parseMouseCursorDefinition },
+	{ "MultiplayerColor",               INI::parseMultiplayerColorDefinition },
+	{ "MultiplayerSettings",            INI::parseMultiplayerSettingsDefinition },
+	{ "MultiplayerStartingMoneyChoice", INI::parseMultiplayerStartingMoneyChoiceDefinition },
+	{ "MusicTrack",                     INI::parseMusicTrackDefinition },
+	{ "Object",                         INI::parseObjectDefinition },
+	{ "ObjectCreationList",             INI::parseObjectCreationListDefinition },
+	{ "ObjectReskin",                   INI::parseObjectReskinDefinition },
+	{ "OnlineChatColors",               INI::parseOnlineChatColorDefinition },
+	{ "ParticleSystem",                 INI::parseParticleSystemDefinition },
+	{ "PlayerTemplate",                 INI::parsePlayerTemplateDefinition },
+	{ "Rank",                           INI::parseRankDefinition },
+	{ "ReallyLowMHz",                   parseReallyLowMHz },
+	{ "Road",                           INI::parseTerrainRoadDefinition },
+	{ "Science",                        INI::parseScienceDefinition },
+	{ "ScriptAction",                   ScriptEngine::parseScriptAction },
+	{ "ScriptCondition",                ScriptEngine::parseScriptCondition },
+	{ "ShellMenuScheme",                INI::parseShellMenuSchemeDefinition },
+	{ "SpecialPower",                   INI::parseSpecialPowerDefinition },
+	{ "StaticGameLOD",                  INI::parseStaticGameLODDefinition },
+	{ "Terrain",                        INI::parseTerrainDefinition },
+	{ "Upgrade",                        INI::parseUpgradeDefinition },
+	{ "Video",                          INI::parseVideoDefinition },
+	{ "WaterSet",                       INI::parseWaterSettingDefinition },
+	{ "WaterTransparency",              INI::parseWaterTransparencyDefinition },
+	{ "Weapon",                         INI::parseWeaponTemplateDefinition },
+	{ "Weather",                        INI::parseWeatherDefinition },
+	{ "WebpageURL",                     INI::parseWebpageURLDefinition },
+	{ "WindowTransition",               INI::parseWindowTransitions },
 };
 
 
@@ -153,21 +162,7 @@ Bool INI::isValidINIFilename( const char *filename )
 	if( filename == nullptr )
 		return FALSE;
 
-	Int len = strlen( filename );
-	if( len < 3 )
-		return FALSE;
-
-	if( filename[ len - 1 ] != 'I' && filename[ len - 1 ] != 'i' )
-		return FALSE;
-
-	if( filename[ len - 2 ] != 'N' && filename[ len - 2 ] != 'n' )
-		return FALSE;
-
-	if( filename[ len - 3 ] != 'I' && filename[ len - 3 ] != 'i' )
-		return FALSE;
-
-	return TRUE;
-
+	return endsWithNoCase(filename, ".ini");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,10 +203,6 @@ INI::~INI()
 //-------------------------------------------------------------------------------------------------
 UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadType, Xfer *pXfer, Bool subdirs )
 {
-	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
-	fprintf(stderr, "[INI] loadFileDirectory('%s') START\n", fileDirName.str());
-	fflush(stderr);
-	
 	UnsignedInt filesRead = 0;
 
 	AsciiString iniDir = fileDirName;
@@ -229,35 +220,20 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 		iniFile.concat(ext);
 	}
 
-	fprintf(stderr, "[INI] loadFileDirectory - checking iniFile: '%s'\n", iniFile.str());
-	fflush(stderr);
-	
 	if (TheFileSystem->doesFileExist(iniFile.str()))
 	{
-		fprintf(stderr, "[INI] loadFileDirectory - loading iniFile: '%s' START\n", iniFile.str());
-		fflush(stderr);
 		filesRead += load(iniFile, loadType, pXfer);
-		fprintf(stderr, "[INI] loadFileDirectory - loading iniFile: '%s' END\n", iniFile.str());
-		fflush(stderr);
 	}
 
 	// Load any additional ini files from a "filename" directory and its subdirectories.
-	fprintf(stderr, "[INI] loadFileDirectory - calling loadDirectory('%s') START\n", iniDir.str());
-	fflush(stderr);
 	filesRead += loadDirectory(iniDir, loadType, pXfer, subdirs);
-	fprintf(stderr, "[INI] loadFileDirectory - calling loadDirectory('%s') END\n", iniDir.str());
-	fflush(stderr);
 
 	// Expect to open and load at least one file.
 	if (filesRead == 0)
 	{
-		fprintf(stderr, "[INI] ERROR: No files read from directory '%s'\n", fileDirName.str());
-		fflush(stderr);
 		throw INI_CANT_OPEN_FILE;
 	}
 
-	fprintf(stderr, "[INI] loadFileDirectory('%s') END - filesRead=%d\n", fileDirName.str(), filesRead);
-	fflush(stderr);
 	return filesRead;
 }
 
@@ -268,81 +244,40 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 //-------------------------------------------------------------------------------------------------
 UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer *pXfer, Bool subdirs )
 {
-	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
-	fprintf(stderr, "[INI] loadDirectory('%s') START\n", dirName.str());
-	fflush(stderr);
-	
 	UnsignedInt filesRead = 0;
 
 	// sanity
 	if( dirName.isEmpty() )
-	{
-		fprintf(stderr, "[INI] ERROR: Empty directory name in loadDirectory\n");
-		fflush(stderr);
 		throw INI_INVALID_DIRECTORY;
+
+	FilenameList filenameList;
+	dirName.concat('\\');
+	TheFileSystem->getFileListInDirectory(dirName, "*.ini", filenameList, subdirs);
+	// Load the INI files in the dir now, in a sorted order.  This keeps things the same between machines
+	// in a network game.
+	FilenameList::const_iterator it = filenameList.begin();
+	while (it != filenameList.end())
+	{
+		AsciiString tempname;
+		tempname = (*it).str() + dirName.getLength();
+
+		if ((tempname.find('\\') == nullptr) && (tempname.find('/') == nullptr)) {
+			// this file doesn't reside in a subdirectory, load it first.
+			filesRead += load( *it, loadType, pXfer );
+		}
+		++it;
 	}
 
-	try
+	it = filenameList.begin();
+	while (it != filenameList.end())
 	{
-		FilenameList filenameList;
-		dirName.concat('\\');
-		
-		fprintf(stderr, "[INI] loadDirectory - calling getFileListInDirectory('%s') START\n", dirName.str());
-		fflush(stderr);
-		TheFileSystem->getFileListInDirectory(dirName, "*.ini", filenameList, subdirs);
-		fprintf(stderr, "[INI] loadDirectory - got %d files from getFileListInDirectory\n", filenameList.size());
-		fflush(stderr);
-		
-		// Load the INI files in the dir now, in a sorted order.  This keeps things the same between machines
-		// in a network game.
-		FilenameList::const_iterator it = filenameList.begin();
-		while (it != filenameList.end())
-		{
-			fprintf(stderr, "[INI] loadDirectory - First pass: loading file '%s' START\n", it->str());
-			fflush(stderr);
-			
-			AsciiString tempname;
-			tempname = (*it).str() + dirName.getLength();
+		AsciiString tempname;
+		tempname = (*it).str() + dirName.getLength();
 
-			if ((tempname.find('\\') == nullptr) && (tempname.find('/') == nullptr)) {
-				// this file doesn't reside in a subdirectory, load it first.
-				fprintf(stderr, "[INI] loadDirectory - file is in root, loading NOW\n");
-				fflush(stderr);
-				filesRead += load( *it, loadType, pXfer );
-				fprintf(stderr, "[INI] loadDirectory - file loaded successfully\n");
-				fflush(stderr);
-			}
-			++it;
+		if ((tempname.find('\\') != nullptr) || (tempname.find('/') != nullptr)) {
+			filesRead += load( *it, loadType, pXfer );
 		}
-
-		fprintf(stderr, "[INI] loadDirectory - second pass: loading subdirectory files\n");
-		fflush(stderr);
-		
-		it = filenameList.begin();
-		while (it != filenameList.end())
-		{
-			AsciiString tempname;
-			tempname = (*it).str() + dirName.getLength();
-
-			if ((tempname.find('\\') != nullptr) || (tempname.find('/') != nullptr)) {
-				fprintf(stderr, "[INI] loadDirectory - file is in subdirectory, loading '%s' START\n", it->str());
-				fflush(stderr);
-				filesRead += load( *it, loadType, pXfer );
-				fprintf(stderr, "[INI] loadDirectory - file loaded successfully\n");
-				fflush(stderr);
-			}
-			++it;
-		}
-		
-		fprintf(stderr, "[INI] loadDirectory('%s') END - filesRead=%d\n", dirName.str(), filesRead);
-		fflush(stderr);
-	}
-	catch (...)
-	{
-		fprintf(stderr, "[INI] ERROR in loadDirectory - exception caught\n");
-		fflush(stderr);
-		// propagate the exception
-		throw;
+		++it;
 	}
 
 	return filesRead;
@@ -402,13 +337,14 @@ void INI::unPrepFile()
 //-------------------------------------------------------------------------------------------------
 static INIBlockParse findBlockParse(const char* token)
 {
-	for (const BlockParse* parse = theTypeTable; parse->token; ++parse)
+	for (size_t i = 0; i < ARRAY_SIZE(theTypeTable); ++i)
 	{
-		if (strcmp( parse->token, token ) == 0)
+		if (strcmp(theTypeTable[i].token, token) == 0)
 		{
-			return parse->parse;
+			return theTypeTable[i].parse;
 		}
 	}
+
 	return nullptr;
 }
 
@@ -443,33 +379,18 @@ static INIFieldParseProc findFieldParse(const FieldParse* parseTable, const char
 //-------------------------------------------------------------------------------------------------
 UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 {
-	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
-	fprintf(stderr, "[INI] load('%s') START\n", filename.str());
-	fflush(stderr);
-	
 	setFPMode(); // so we have consistent Real values for GameLogic -MDC
 
 	s_xfer = pXfer;
-	fprintf(stderr, "[INI] load - calling prepFile('%s') START\n", filename.str());
-	fflush(stderr);
 	prepFile(filename, loadType);
-	fprintf(stderr, "[INI] load - prepFile completed\n");
-	fflush(stderr);
 
 	try
 	{
 
 		// read all lines in the file
 		DEBUG_ASSERTCRASH( m_endOfFile == FALSE, ("INI::load, EOF at the beginning!") );
-		UnsignedInt lineCount = 0;
 		while( m_endOfFile == FALSE )
 		{
-			lineCount++;
-			if ((lineCount % 100) == 0) {
-				fprintf(stderr, "[INI] load - processed %d lines\n", lineCount);
-				fflush(stderr);
-			}
-			
 			// read this line
 			readLine();
 
@@ -511,13 +432,9 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 			}
 
 		}
-		fprintf(stderr, "[INI] load - processed total %d lines\n", lineCount);
-		fflush(stderr);
 	}
 	catch (...)
 	{
-		fprintf(stderr, "[INI] ERROR in load('%s') - exception caught\n", filename.str());
-		fflush(stderr);
 		unPrepFile();
 
 		// propagate the exception.
@@ -526,8 +443,6 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 
 	unPrepFile();
 
-	fprintf(stderr, "[INI] load('%s') END\n", filename.str());
-	fflush(stderr);
 	return 1;
 }
 
@@ -742,8 +657,7 @@ void INI::parseBool( INI* ini, void * /*instance*/, void *store, const void* /*u
 void INI::parseBitInInt32( INI *ini, void *instance, void *store, const void* userData )
 {
 	UnsignedInt* s = (UnsignedInt*)store;
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-	UnsignedInt mask = static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(userData));
+	UnsignedInt mask = (UnsignedInt)userData;
 
 	if (INI::scanBool(ini->getNextToken()))
 		*s |= mask;
@@ -1699,40 +1613,86 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 	return TheScienceStore->friend_lookupScience( token );
 }
 
+#if USE_STD_FROM_CHARS_PARSING
+
+template <typename Type>
+Type scanType(std::string_view token)
+{
+	// TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
+	std::conditional_t<std::is_integral_v<Type>, Int64, Real> result{};
+	const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+
+	if (ec != std::errc{})
+	{
+		throw INI_INVALID_DATA;
+	}
+
+	return static_cast<Type>(result);
+}
+
+#endif
+
 //-------------------------------------------------------------------------------------------------
 /*static*/ Int INI::scanInt(const char* token)
 {
+#if USE_STD_FROM_CHARS_PARSING == 1
+	return scanType<Int>(token);
+#else
 	Int value;
 	if (sscanf( token, "%d", &value ) != 1)
 		throw INI_INVALID_DATA;
+
+#if USE_STD_FROM_CHARS_PARSING == -1
+	if (value != scanType<Int>(token))
+		throw INI_INVALID_DATA;
+#endif
+
 	return value;
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
 /*static*/ UnsignedInt INI::scanUnsignedInt(const char* token)
 {
+#if USE_STD_FROM_CHARS_PARSING == 1
+	return scanType<UnsignedInt>(token);
+#else
 	UnsignedInt value;
 	if (sscanf( token, "%u", &value ) != 1)	// unsigned int is %u, not %d
 		throw INI_INVALID_DATA;
+
+#if USE_STD_FROM_CHARS_PARSING == -1
+	if (value != scanType<UnsignedInt>(token))
+		throw INI_INVALID_DATA;
+#endif
+
 	return value;
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
 /*static*/ Real INI::scanReal(const char* token)
 {
+#if USE_STD_FROM_CHARS_PARSING == 1
+	return scanType<Real>(token);
+#else
 	Real value;
 	if (sscanf( token, "%f", &value ) != 1)
 		throw INI_INVALID_DATA;
+
+#if USE_STD_FROM_CHARS_PARSING == -1
+	if (value != scanType<Real>(token))
+		throw INI_INVALID_DATA;
+#endif
+
 	return value;
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
 /*static*/ Real INI::scanPercentToReal(const char* token)
 {
-	Real value;
-	if (sscanf( token, "%f", &value ) != 1)
-		throw INI_INVALID_DATA;
-	return value / 100.0f;
+	return scanReal(token) / 100.0f;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1771,14 +1731,11 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 	}
 
 	// search for matching name
-	Bool found = false;
 	for( const LookupListRec* lookup = &lookupList[0]; lookup->name; lookup++ )
 	{
 		if( stricmp( lookup->name, token ) == 0 )
 		{
 			return lookup->value;
-			found = true;
-			break;
 		}
 	}
 
