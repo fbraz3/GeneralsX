@@ -28,8 +28,8 @@ bool  getStringFromRegistry(HKEY root, std::string path, std::string key, std::s
 {
 	HKEY handle;
 	unsigned char buffer[256];
-	unsigned long size = 256;
-	unsigned long type;
+	DWORD size = 256;
+	DWORD type;
 	int returnValue;
 
 	if ((returnValue = RegOpenKeyEx( root, path.c_str(), 0, KEY_READ, &handle )) == ERROR_SUCCESS)
@@ -51,8 +51,8 @@ bool getUnsignedIntFromRegistry(HKEY root, std::string path, std::string key, un
 {
 	HKEY handle;
 	unsigned long buffer;
-	unsigned long size = sizeof(buffer);
-	unsigned long type;
+	DWORD size = sizeof(buffer);
+	DWORD type;
 	int returnValue;
 
 	if ((returnValue = RegOpenKeyEx( root, path.c_str(), 0, KEY_READ, &handle )) == ERROR_SUCCESS)
@@ -73,8 +73,8 @@ bool getUnsignedIntFromRegistry(HKEY root, std::string path, std::string key, un
 bool setStringInRegistry( HKEY root, std::string path, std::string key, std::string val)
 {
 	HKEY handle;
-	unsigned long type;
-	unsigned long returnValue;
+	DWORD type;
+	int returnValue;
 	int size;
 	char lpClass[] = "REG_NONE";
 
@@ -88,12 +88,13 @@ bool setStringInRegistry( HKEY root, std::string path, std::string key, std::str
 
 	return (returnValue == ERROR_SUCCESS);
 }
+}
 
 bool setUnsignedIntInRegistry( HKEY root, std::string path, std::string key, unsigned int val)
 {
 	HKEY handle;
-	unsigned long type;
-	unsigned long returnValue;
+	DWORD type;
+	int returnValue;
 	int size;
 	char lpClass[] = "REG_NONE";
 
