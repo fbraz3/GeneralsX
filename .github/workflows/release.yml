@@ -60,16 +60,9 @@ jobs:
       game: Generals
       preset: macos-vulkan
 
-  build-windows-zh:
-    uses: ./.github/workflows/build-windows.yml
-    if: true == false # Temporarily disable Windows build until it's implemented
-    with:
-      game: GeneralsMD
-      preset: win64-modern
-
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [build-linux-zh, build-linux-generals, build-macos-zh, build-macos-generals, build-windows-zh]
+    needs: [build-linux-zh, build-linux-generals, build-macos-zh, build-macos-generals]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
