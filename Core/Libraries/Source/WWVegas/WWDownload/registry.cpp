@@ -88,7 +88,6 @@ bool setStringInRegistry( HKEY root, std::string path, std::string key, std::str
 
 	return (returnValue == ERROR_SUCCESS);
 }
-}
 
 bool setUnsignedIntInRegistry( HKEY root, std::string path, std::string key, unsigned int val)
 {
