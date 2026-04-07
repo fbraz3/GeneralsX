@@ -265,30 +265,6 @@ const char* toString(GameMode mode)
 	}
 }
 
-//-------------------------------------------------------------------------------------------------
-const char* toString(GameMode mode)
-{
-	switch (mode)
-	{
-		case GAME_SINGLE_PLAYER:
-			return "GAME_SINGLE_PLAYER";
-		case GAME_LAN:
-			return "GAME_LAN";
-		case GAME_SKIRMISH:
-			return "GAME_SKIRMISH";
-		case GAME_REPLAY:
-			return "GAME_REPLAY";
-		case GAME_SHELL:
-			return "GAME_SHELL";
-		case GAME_INTERNET:
-			return "GAME_INTERNET";
-		case GAME_NONE:
-			return "GAME_NONE";
-		default:
-			return "GAME_UNKNOWN";
-	}
-}
-
 // ------------------------------------------------------------------------------------------------
 /** GameLogic class constructor */
 // ------------------------------------------------------------------------------------------------
