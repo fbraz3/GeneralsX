@@ -61,7 +61,6 @@
 #include "Common/CommandLine.h"
 #include "Common/Debug.h"
 #include "Common/CRCDebug.h"
-#include "Common/SystemInfo.h"
 #include "Common/UnicodeString.h"
 #include "GameClient/ClientInstance.h"
 #include "GameClient/GameText.h"
@@ -863,7 +862,6 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 			ShowWindow(ApplicationHWnd, SW_HIDE);
 		}
 	}
-
 	if (TheSystemIsUnicode)
 	{
 		::MessageBoxW(nullptr, mesg.str(), prompt.str(), MB_OK|MB_SYSTEMMODAL|MB_ICONERROR);
