@@ -114,7 +114,8 @@ jobs:
   build-windows:
     name: Build Windows Modern (GeneralsMD)
     needs: detect-changes
-    if: needs.detect-changes.outputs.zh-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    #if: needs.detect-changes.outputs.zh-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    if: true == false # Temporarily disable Windows build until it's implemented
     uses: ./.github/workflows/build-windows.yml
     with:
       game: GeneralsMD
