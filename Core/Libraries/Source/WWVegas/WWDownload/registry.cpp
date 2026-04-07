@@ -50,7 +50,7 @@ bool  getStringFromRegistry(HKEY root, std::string path, std::string key, std::s
 bool getUnsignedIntFromRegistry(HKEY root, std::string path, std::string key, unsigned int& val)
 {
 	HKEY handle;
-	unsigned long buffer;
+	DWORD buffer;
 	DWORD size = sizeof(buffer);
 	DWORD type;
 	int returnValue;
