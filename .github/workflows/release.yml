@@ -159,6 +159,8 @@ jobs:
           CHANGELOG_FILE: ${{ steps.changelog.outputs.changelog_file }}
           CONTRIBUTORS_FILE: ${{ steps.contributors.outputs.contributors_file }}
           LATEST_TAG: ${{ steps.latest.outputs.latest_tag }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          REPO: ${{ github.repository }}
         run: |
           BODY_FILE=$(mktemp)
           echo "body_file=$BODY_FILE" >> $GITHUB_OUTPUT
@@ -190,12 +192,12 @@ jobs:
             fi
             
             # Default beta warning
-            cat << 'EOF'
-> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/${{ github.repository }}/issues) so we can investigate.
+            cat << EOF
+> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/${REPO}/issues) so we can investigate.
 
 # Install Instructions
 
-https://github.com/${{ github.repository }}/blob/main/docs/BUILD/INSTALL_INSTRUCTIONS.md
+https://github.com/${REPO}/blob/main/docs/BUILD/INSTALL_INSTRUCTIONS.md
 
 ## What's Changed
 
@@ -220,7 +222,7 @@ EOF
             
             # Full changelog link
             if [ -n "$LATEST_TAG" ]; then
-              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LATEST_TAG}...${{ inputs.release_version }}"
+              echo "**Full Changelog**: https://github.com/${REPO}/compare/${LATEST_TAG}...${RELEASE_VERSION}"
             fi
             
           } > "$BODY_FILE"
@@ -231,6 +233,7 @@ EOF
         run: |
           echo "=== Release Body Preview ==="
           cat "${{ steps.body.outputs.body_file }}"
+          echo ""
           echo "=== End Preview ==="
 
       - name: Create release
@@ -239,6 +242,7 @@ EOF
         run: |
           DRAFT_FLAG=""
           PRERELEASE_FLAG=""
+          NOTES_FILE="${{ steps.body.outputs.body_file }}"
           
           if [ "${{ inputs.is_draft }}" = "true" ]; then
             DRAFT_FLAG="--draft"
@@ -251,7 +255,8 @@ EOF
           gh release create "${{ inputs.release_version }}" \
             $DRAFT_FLAG \
             $PRERELEASE_FLAG \
-            --title "GeneralsX - ${{ inputs.release_version }}" | grep -oP 'releases/tag/\K.*' | tail -1
+            --title "GeneralsX - ${{ inputs.release_version }}" \
+            --notes-file "$NOTES_FILE"
           
           echo "✓ Release created successfully!"
           echo "View at: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_version }}"
