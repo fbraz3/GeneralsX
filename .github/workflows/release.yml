@@ -1,0 +1,312 @@
+name: Release Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version tag (e.g., GeneralsX-Beta-3)'
+        required: true
+        type: string
+      build_notes:
+        description: 'Build notes section (optional markdown)'
+        required: false
+        type: string
+      known_issues:
+        description: 'Known issues section (optional markdown)'
+        required: false
+        type: string
+      custom_text:
+        description: 'Additional text to include (optional markdown)'
+        required: false
+        type: string
+      is_draft:
+        description: 'Create as draft release'
+        required: false
+        type: boolean
+        default: false
+      is_prerelease:
+        description: 'Mark as prerelease'
+        required: false
+        type: boolean
+        default: true
+      dry_run:
+        description: 'Dry run - generate release notes without creating release/tag'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ inputs.release_version }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for changelog generation
+
+      - name: Validate release version
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          DRY_RUN="${{ inputs.dry_run }}"
+          
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: release_version is required"
+            exit 1
+          fi
+          
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "✓ DRY RUN MODE - tag validation skipped"
+            echo "Release version: $VERSION (not created)"
+          else
+            if git show-ref --tags --verify --quiet "refs/tags/$VERSION"; then
+              echo "ERROR: Tag $VERSION already exists"
+              exit 1
+            fi
+            echo "Release version: $VERSION"
+          fi
+
+      - name: Detect latest release
+        id: latest
+        run: |
+          LATEST=$(git tag -l "GeneralsX*" --sort=-version:refname --merged HEAD | head -1)
+          if [ -z "$LATEST" ]; then
+            echo "first_release=true" >> $GITHUB_OUTPUT
+            echo "latest_tag=" >> $GITHUB_OUTPUT
+          else
+            echo "first_release=false" >> $GITHUB_OUTPUT
+            echo "latest_tag=$LATEST" >> $GITHUB_OUTPUT
+          fi
+          echo "Latest release tag: ${LATEST:-none}"
+
+      - name: Generate changelog
+        id: changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST_TAG: ${{ steps.latest.outputs.latest_tag }}
+        run: |
+          CHANGELOG_FILE=$(mktemp)
+          echo "changelog_file=$CHANGELOG_FILE" >> $GITHUB_OUTPUT
+          
+          # Get commit range
+          if [ -z "$LATEST_TAG" ]; then
+            COMMIT_RANGE="HEAD"
+          else
+            COMMIT_RANGE="${LATEST_TAG}..HEAD"
+          fi
+          
+          echo "Generating changelog for: $COMMIT_RANGE"
+          
+          # Simple git log approach - get PR-based entries where possible
+          # git log with PR number extraction
+          git log $COMMIT_RANGE --pretty=format:"%s (%an)" --no-decorate | while IFS= read -r line; do
+            if [ -z "$line" ]; then continue; fi
+            
+            # Check if line contains a PR number
+            if [[ "$line" =~ \(#([0-9]+)\) ]]; then
+              pr_num="${BASH_REMATCH[1]}"
+              # Try to get PR author
+              pr_author=$(gh pr view "$pr_num" --json author --jq '.author.login' 2>/dev/null || echo "")
+              if [ -n "$pr_author" ]; then
+                # Extract message without author part
+                msg=$(echo "$line" | sed 's/ ([^)]*)$//')
+                msg=$(echo "$msg" | sed -E 's/ \(#[0-9]+\)$//')
+                echo "* ${msg} by @${pr_author} in https://github.com/${{ github.repository }}/pull/${pr_num}" >> "$CHANGELOG_FILE"
+              else
+                echo "* $line" >> "$CHANGELOG_FILE"
+              fi
+            else
+              echo "* $line" >> "$CHANGELOG_FILE"
+            fi
+          done
+          
+          echo "Changelog entries created"
+
+      - name: Detect new contributors
+        id: contributors
+        env:
+          LATEST_TAG: ${{ steps.latest.outputs.latest_tag }}
+        run: |
+          NEW_CONTRIBUTORS_FILE=$(mktemp)
+          echo "contributors_file=$NEW_CONTRIBUTORS_FILE" >> $GITHUB_OUTPUT
+          
+          if [ -z "$LATEST_TAG" ]; then
+            echo "First release - skipping new contributor detection"
+            touch "$NEW_CONTRIBUTORS_FILE"
+          else
+            # Get authors from previous releases
+            old_authors=$(git log "$LATEST_TAG" --pretty=format:"%an" 2>/dev/null | sort -u || true)
+            
+            # Get authors in new commits
+            new_authors=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%an" 2>/dev/null | sort -u || true)
+            
+            # Find new contributors
+            while IFS= read -r author; do
+              [ -z "$author" ] && continue
+              if ! printf '%s\n' "$old_authors" | grep -Fqx "$author"; then
+                echo "* ${author} made their first contribution" >> "$NEW_CONTRIBUTORS_FILE"
+              fi
+            done <<< "$new_authors"
+          fi
+
+      - name: Build release body
+        id: body
+        env:
+          BUILD_NOTES: ${{ inputs.build_notes }}
+          KNOWN_ISSUES: ${{ inputs.known_issues }}
+          CUSTOM_TEXT: ${{ inputs.custom_text }}
+          CHANGELOG_FILE: ${{ steps.changelog.outputs.changelog_file }}
+          CONTRIBUTORS_FILE: ${{ steps.contributors.outputs.contributors_file }}
+          LATEST_TAG: ${{ steps.latest.outputs.latest_tag }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          REPO: ${{ github.repository }}
+        run: |
+          BODY_FILE=$(mktemp)
+          echo "body_file=$BODY_FILE" >> $GITHUB_OUTPUT
+          
+          {
+            # Custom text if provided
+            if [ -n "$CUSTOM_TEXT" ]; then
+              echo "$CUSTOM_TEXT"
+              echo ""
+              echo ""
+            fi
+            
+            # Build notes if provided
+            if [ -n "$BUILD_NOTES" ]; then
+              echo "## Build Notes"
+              echo ""
+              echo "$BUILD_NOTES"
+              echo ""
+              echo ""
+            fi
+            
+            # Known issues if provided
+            if [ -n "$KNOWN_ISSUES" ]; then
+              echo "## Known Issues"
+              echo ""
+              echo "$KNOWN_ISSUES"
+              echo ""
+              echo ""
+            fi
+            
+            # Default beta warning
+            echo "> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/${REPO}/issues) so we can investigate."
+            echo ""
+            echo "# Install Instructions"
+            echo ""
+            echo "https://github.com/${REPO}/blob/main/docs/BUILD/INSTALL_INSTRUCTIONS.md"
+            echo ""
+            echo "## What's Changed"
+            echo ""
+            
+            # Add changelog
+            if [ -f "$CHANGELOG_FILE" ] && [ -s "$CHANGELOG_FILE" ]; then
+              cat "$CHANGELOG_FILE"
+            else
+              echo "*No commits since latest release*"
+            fi
+            
+            echo ""
+            
+            # Add new contributors if any
+            if [ -f "$CONTRIBUTORS_FILE" ] && [ -s "$CONTRIBUTORS_FILE" ]; then
+              echo "## New Contributors"
+              echo ""
+              cat "$CONTRIBUTORS_FILE"
+              echo ""
+            fi
+            
+            # Full changelog link
+            if [ -n "$LATEST_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${REPO}/compare/${LATEST_TAG}...${RELEASE_VERSION}"
+            fi
+            
+          } > "$BODY_FILE"
+          
+          echo "Release body generated"
+
+      - name: Preview release body
+        run: |
+          echo "=== Release Body Preview ==="
+          cat "${{ steps.body.outputs.body_file }}"
+          echo ""
+          echo "=== End Preview ==="
+
+      - name: Save markdown for dry-run or review
+        if: success()
+        run: |
+          mkdir -p release-artifacts
+          cp "${{ steps.body.outputs.body_file }}" "release-artifacts/${{ inputs.release_version }}-notes.md"
+          echo "Release notes saved to release-artifacts/${{ inputs.release_version }}-notes.md"
+
+      - name: Upload release notes (dry-run mode)
+        if: success() && inputs.dry_run == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ inputs.release_version }}
+          path: release-artifacts/${{ inputs.release_version }}-notes.md
+          retention-days: 30
+
+      - name: Create release
+        if: success() && inputs.dry_run == false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DRAFT_FLAG=""
+          PRERELEASE_FLAG=""
+          NOTES_FILE="${{ steps.body.outputs.body_file }}"
+          
+          if [ "${{ inputs.is_draft }}" = "true" ]; then
+            DRAFT_FLAG="--draft"
+          fi
+          
+          if [ "${{ inputs.is_prerelease }}" = "true" ]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+          
+          gh release create "${{ inputs.release_version }}" \
+            $DRAFT_FLAG \
+            $PRERELEASE_FLAG \
+            --title "GeneralsX - ${{ inputs.release_version }}" \
+            --notes-file "$NOTES_FILE"
+          
+          echo "✓ Release created successfully!"
+          echo "View at: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_version }}"
+
+      - name: Summary
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "## 🧪 Dry Run Completed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No release or tag was created. Review the release notes artifact above." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### What Would Be Created" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tag**: \`${{ inputs.release_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Draft**: ${{ inputs.is_draft }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Prerelease**: ${{ inputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Base Release**: ${{ steps.latest.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Artifact" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Release notes markdown: **\`${{ inputs.release_version }}-notes.md\`**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Download from this workflow's artifacts to preview, edit, and review." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ Release Created" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tag**: ${{ inputs.release_version }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Draft**: ${{ inputs.is_draft }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Prerelease**: ${{ inputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Latest Release**: ${{ steps.latest.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**View Release**: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_version }}" >> $GITHUB_STEP_SUMMARY
+          fi
