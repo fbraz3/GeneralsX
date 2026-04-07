@@ -205,16 +205,14 @@ jobs:
             fi
             
             # Default beta warning
-            cat << EOF
-> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/${REPO}/issues) so we can investigate.
-
-# Install Instructions
-
-https://github.com/${REPO}/blob/main/docs/BUILD/INSTALL_INSTRUCTIONS.md
-
-## What's Changed
-
-EOF
+            echo "> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/${REPO}/issues) so we can investigate."
+            echo ""
+            echo "# Install Instructions"
+            echo ""
+            echo "https://github.com/${REPO}/blob/main/docs/BUILD/INSTALL_INSTRUCTIONS.md"
+            echo ""
+            echo "## What's Changed"
+            echo ""
             
             # Add changelog
             if [ -f "$CHANGELOG_FILE" ] && [ -s "$CHANGELOG_FILE" ]; then
