@@ -1,6 +1,6 @@
 # Release Pipeline
 
-This workflow runs Linux and macOS builds, collects Zero Hour bundles, generates release notes from local pull requests, and optionally creates a GitHub release.
+This workflow runs Linux and macOS builds for Zero Hour and Generals base, collects bundles, generates release notes from local pull requests, and optionally creates a GitHub release.
 
 ## Inputs
 
@@ -14,11 +14,13 @@ This workflow runs Linux and macOS builds, collects Zero Hour bundles, generates
 
 ## Behavior
 
-1. Runs Linux build for Zero Hour (`GeneralsMD`, `linux64-deploy`).
-2. Runs macOS build for Zero Hour (`GeneralsMD`, `macos-vulkan`).
-3. Downloads generated bundle artifacts from both jobs.
+1. Runs Linux builds for Zero Hour and Generals base (`linux64-deploy`).
+2. Runs macOS builds for Zero Hour and Generals base (`macos-vulkan`).
+3. Downloads generated bundle artifacts from all platform/game jobs.
 4. Produces release assets:
+   - `linux-generalsx-linux64-bundle.zip`
    - `linux-generalsxzh-linux64-bundle.zip`
+   - `macos-generalsx-app.tar.zip`
    - `macos-generalsxzh-app.tar.zip`
 5. Generates release notes with fixed header text plus:
    - `## Additional Notes` (only if provided)

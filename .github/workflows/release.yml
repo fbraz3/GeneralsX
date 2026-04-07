@@ -42,15 +42,34 @@ jobs:
       game: GeneralsMD
       preset: linux64-deploy
 
+  build-linux-generals:
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      game: Generals
+      preset: linux64-deploy
+
   build-macos-zh:
     uses: ./.github/workflows/build-macos.yml
     with:
       game: GeneralsMD
       preset: macos-vulkan
 
+  build-macos-generals:
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      game: Generals
+      preset: macos-vulkan
+
+  build-windows-zh:
+    uses: ./.github/workflows/build-windows.yml
+    if: true == false # Temporarily disable Windows build until it's implemented
+    with:
+      game: GeneralsMD
+      preset: win64-modern
+
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [build-linux-zh, build-macos-zh]
+    needs: [build-linux-zh, build-linux-generals, build-macos-zh, build-macos-generals]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -98,11 +117,23 @@ jobs:
           name: linux-generalsxzh-linux64-bundle
           path: artifacts/linux
 
+      - name: Download Linux Generals bundle artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-generalsx-linux64-bundle
+          path: artifacts/linux-generals
+
       - name: Download macOS bundle artifact
         uses: actions/download-artifact@v4
         with:
           name: macos-generalsxzh-app
           path: artifacts/macos
+
+      - name: Download macOS Generals bundle artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-generalsx-app
+          path: artifacts/macos-generals
 
       - name: Normalize bundle files for release assets
         id: assets
@@ -123,6 +154,20 @@ jobs:
             zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip" .
           )
 
+          LINUX_GENERALS_TAR=$(find artifacts/linux-generals -name "*.tar" | head -1)
+          if [ -z "$LINUX_GENERALS_TAR" ] || [ ! -f "$LINUX_GENERALS_TAR" ]; then
+            echo "ERROR: Linux Generals bundle tar not found in artifacts/linux-generals"
+            find artifacts/linux-generals -maxdepth 3 -type f || true
+            exit 1
+          fi
+
+          mkdir -p /tmp/linux-generals-bundle
+          tar -xf "$LINUX_GENERALS_TAR" -C /tmp/linux-generals-bundle
+          (
+            cd /tmp/linux-generals-bundle
+            zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip" .
+          )
+
           MAC_TAR=$(find artifacts/macos -name "*.tar" | head -1)
           if [ -z "$MAC_TAR" ] || [ ! -f "$MAC_TAR" ]; then
             echo "ERROR: macOS app tar not found in artifacts/macos"
@@ -133,7 +178,19 @@ jobs:
           cp "$MAC_TAR" release-assets/GeneralsXZH-macos-arm64.app.tar
           zip -j release-assets/macos-generalsxzh-app.tar.zip release-assets/GeneralsXZH-macos-arm64.app.tar
 
+          MAC_GENERALS_TAR=$(find artifacts/macos-generals -name "*.tar" | head -1)
+          if [ -z "$MAC_GENERALS_TAR" ] || [ ! -f "$MAC_GENERALS_TAR" ]; then
+            echo "ERROR: macOS Generals app tar not found in artifacts/macos-generals"
+            find artifacts/macos-generals -maxdepth 3 -type f || true
+            exit 1
+          fi
+
+          cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
+          zip -j release-assets/macos-generalsx-app.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
+
+          echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip" >> "$GITHUB_OUTPUT"
           echo "linux_asset=$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip" >> "$GITHUB_OUTPUT"
+          echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsx-app.tar.zip" >> "$GITHUB_OUTPUT"
           echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsxzh-app.tar.zip" >> "$GITHUB_OUTPUT"
 
       - name: Build changelog from local PRs only
@@ -282,7 +339,9 @@ jobs:
             $PRERELEASE_FLAG \
             --title "GeneralsX - ${{ inputs.release_version }}" \
             --notes-file "${{ steps.notes.outputs.notes_file }}" \
+            "${{ steps.assets.outputs.linux_generals_asset }}" \
             "${{ steps.assets.outputs.linux_asset }}" \
+            "${{ steps.assets.outputs.macos_generals_asset }}" \
             "${{ steps.assets.outputs.macos_asset }}"
 
       - name: Summary
@@ -293,7 +352,9 @@ jobs:
           echo "- Create release: ${{ inputs.create_release }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Pre-release: ${{ inputs.is_prerelease }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Dry run: ${{ inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset (Generals): linux-generalsx-linux64-bundle.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- Linux asset: linux-generalsxzh-linux64-bundle.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- macOS asset (Generals): macos-generalsx-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset: macos-generalsxzh-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
