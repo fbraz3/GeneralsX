@@ -20,21 +20,19 @@
 // Simple interface for storing/retrieving registry values
 // Author: Matthew D. Campbell, December 2001
 
-#include <string>
-#include "registryini.h"
-
-#define WIN32_LEAN_AND_MEAN
-
-// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 
-// Include compat headers for HKEY typedef (Linux stubs need it too)
-#ifdef _WIN32
-#include <windows.h>
-#else
-// Linux: Include compat headers for HKEY typedef + registry stubs  
-#include "../../GeneralsMD/Code/CompatLib/Include/socket_compat.h"
-#endif
-
 #include "Registry.h"
+#include <string>
+
+#ifdef _WIN32
+#include "win.h"
+#else
+#include "registryini.h"
+#ifndef HKEY_LOCAL_MACHINE
+typedef void *HKEY;
+#define HKEY_LOCAL_MACHINE ((HKEY)0x80000002)
+#define HKEY_CURRENT_USER ((HKEY)0x80000001)
+#endif
+#endif
 
 #ifdef _WIN32
 // Windows: Full registry implementation
