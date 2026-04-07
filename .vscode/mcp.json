@@ -11,14 +11,6 @@
 				"-c",
 				"touch ~/.gitconfig; touch ~/.gitignore_global; docker run --rm -i --mount type=bind,src=${workspaceFolder},dst=${workspaceFolder} -v ~/.gitconfig:/root/.gitconfig -v ~/.gitignore_global:/root/.gitignore_global mcp/git"
 			]
-        },
-
-		"memory": {
-			"command": "sh",
-			"args": [
-				"-c",
-				"mkdir -p ${workspaceFolder}/logs/mcp/ 2>/dev/null; touch ${workspaceFolder}/logs/mcp/memory.json; docker run -i -v '${workspaceFolder}/logs/mcp/memory.json:/app/dist/memory.json' --rm mcp/memory"
-			]
-		}
+        }
 	}
 }
