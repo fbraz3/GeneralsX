@@ -184,9 +184,9 @@ public:
 	Real m_viewportHeightScale; // The height scale of the tactical view ranging 0..1. Used to hide the world behind the Control Bar.
 	Real m_cameraPitch;
 	Real m_cameraYaw;
+#if PRESERVE_RETAIL_SCRIPTED_CAMERA
 	Real m_cameraHeight;
-
-	// GeneralsX @tweak Copilot 23/03/2026 Mirror ZH note: these are 4:3 camera limits, scaled for other aspect ratios.
+#endif
 	Real m_maxCameraHeight;
 	Real m_minCameraHeight;
 

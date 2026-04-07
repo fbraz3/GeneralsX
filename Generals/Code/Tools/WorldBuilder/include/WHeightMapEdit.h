@@ -57,8 +57,6 @@ typedef struct
 } TGlobalTextureClass;
 
 
-#define NUM_ALPHA_TILES 8
-
 class WorldHeightMapEdit : public WorldHeightMap
 {
 protected:
