@@ -171,3 +171,60 @@ Large non-conflicting touched surface is also high-risk (build scripts/CMake, ga
 - Resolution applied: kept `_WIN32` guard around texture conversion `system(CONVERT_EXEC1)` and retained non-Windows `TheSystemIsUnicode` fallback declaration.
 - Reasoning: upstream-only call path risks wrong runtime behavior on non-Windows where conversion tool path is not guaranteed.
 - Cross-platform impact: Windows behavior unchanged; Linux/macOS path stays safe and buildable.
+
+## Merge Refresh (2026-04-07, upstream head update)
+
+After fetching newer commits from `thesuperhackers/main` (17 commits ahead of previous integration point), a second merge pass introduced additional conflicts and one delete/modify case.
+
+### New conflict set in this pass
+
+1. `.github/workflows/ci.yml`
+2. `Core/GameEngine/Source/Common/INI/INI.cpp`
+3. `Core/GameEngine/Source/Common/System/Debug.cpp`
+4. `Core/Libraries/Source/WWVegas/WWDownload/registry.cpp`
+5. `Generals/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
+6. `GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp`
+7. `GeneralsMD/Code/GameEngineDevice/Include/OpenALAudioManager.h` (modify/delete)
+
+### Pass-2 resolution constraints
+
+- Keep cross-platform build and runtime strategy as first-class priority.
+- Accept upstream CI improvements where they do not remove macOS/Linux validation paths needed by GeneralsX.
+- Do not accept upstream deletions that remove active OpenAL integration artifacts used by current GeneralsX audio backend.
+- Re-validate conflict files after merge by running macOS build flows for both `GeneralsX` and `GeneralsXZH`.
+
+### Pass-2 risk mitigation
+
+- CI workflow conflict: inspect target matrix and script paths to avoid dropping platform jobs or introducing stale script paths.
+- OpenAL header delete/modify conflict: keep file if still referenced by current source/CMake paths; otherwise refactor references in the same pass (no stubs).
+- Engine/parser/debug conflicts: preserve deterministic logic and platform guards; remove temporary diagnostics.
+
+### Pass-2 execution outcomes
+
+1. `.github/workflows/ci.yml`
+- Decision: kept GeneralsX workflow structure that calls `build-linux.yml` and `build-macos.yml` with `zh-should-build` / `base-should-build` outputs.
+- Why: incoming upstream hunk referenced different outputs (`generals`, `shared`, `generalsmd`) and switched jobs to `build-toolchain.yml`, which does not match the local workflow contract in this branch and would risk CI false negatives.
+
+2. `Core/GameEngine/Source/Common/INI/INI.cpp`
+- Decision: kept Apple-safe floating-point parsing fallback (`strtof`) and preserved deterministic two-pass directory loading (root files first, subdirectories after).
+- Why: this keeps previously validated macOS compatibility while retaining upstream deterministic ordering expectations.
+
+3. `Core/GameEngine/Source/Common/System/Debug.cpp`
+- Decision: kept `_WIN32`-guarded MessageBox behavior plus non-Windows `stderr` fatal fallback.
+- Why: upstream-only unconditional `MessageBoxW` path is not valid for Linux/macOS runtime.
+
+4. `Core/Libraries/Source/WWVegas/WWDownload/registry.cpp`
+- Decision: kept `registryini.h` + `win.h` include set.
+- Why: non-Windows path uses `RegistryIni::*` persistence and requires that compatibility include; dropping it would break Linux/macOS registry emulation.
+
+5. `Generals/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
+- Decision: kept the debug counter statics block currently referenced in file.
+- Why: `number_of_DX8_calls` is incremented later in the translation unit; removing declarations would introduce compile errors.
+
+6. `GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp`
+- Decision: kept cross-platform `TheSystemIsUnicode` declaration with non-Windows fallback.
+- Why: Windows behavior remains intact while non-Windows code path avoids Win32 dependency leakage.
+
+7. `GeneralsMD/Code/GameEngineDevice/Include/OpenALAudioManager.h` (modify/delete)
+- Decision: kept the header (ours).
+- Why: it is still referenced by current GeneralsMD source/CMake and acts as an active compatibility forwarder to `OpenALAudioDevice/OpenALAudioManager.h`; accepting upstream deletion would break include paths.
