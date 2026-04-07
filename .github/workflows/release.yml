@@ -33,7 +33,7 @@ concurrency:
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   build-linux-zh:
@@ -69,7 +69,7 @@ jobs:
 
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [build-linux-zh, build-linux-generals, build-macos-zh, build-macos-generals]
+    needs: [build-linux-zh, build-linux-generals, build-macos-zh, build-macos-generals, build-windows-zh]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
