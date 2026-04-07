@@ -38,6 +38,7 @@ Automated GitHub Actions workflow for creating GeneralsX releases with automatic
 | `is_draft` | boolean | false | Create as draft (hidden from releases page) |
 | `is_prerelease` | boolean | true | Mark as prerelease (not as latest) |
 | `download_artifacts` | boolean | false | Attempt to download and attach artifacts |
+| `dry_run` | boolean | false | Test logic without creating release (no tag created) |
 
 ## Examples
 
@@ -88,9 +89,27 @@ is_draft: false
 is_prerelease: true
 ```
 
+### Dry Run - Test Release Notes
+
+```
+release_version: GeneralsX-Beta-3
+build_notes: |
+  - Fixed critical issues
+known_issues: |
+  - Some edge cases remain
+dry_run: true
+```
+
+**Dry Run Behavior**:
+- No tag is created
+- No release is published
+- Release notes markdown is generated as an artifact
+- Download the artifact to review before publishing for real
+- Perfect for testing changelog logic and reviewing notes before commit
+
 ## Workflow Behavior
 
-1. **Validation**: Ensures version doesn't already exist
+1. **Validation**: Ensures version doesn't already exist (skipped in dry-run)
 2. **Detection**: Finds latest release tag (GeneralsX-Beta-2, etc.)
 3. **Changelog Generation**: 
    - Extracts commits since latest release using `git log`
@@ -106,9 +125,12 @@ is_prerelease: true
    - Lists "What's Changed" with PR links
    - Credits new contributors
    - Links to full changelog comparison
-6. **Preview**: Displays body in workflow logs for verification
-7. **Creation**: Uses `gh release create` to publish release
-8. **Summary**: Posts results to workflow summary in Actions tab
+6. **Dry-Run Check**:
+   - If `dry_run: true` → skip release creation, generate markdown artifact only
+   - If `dry_run: false` → proceed to release creation
+7. **Release Creation** (if not dry-run):
+   - Uses `gh release create` to publish release
+8. **Summary**: Posts results to workflow summary (different messages for dry-run vs real release)
 
 ## About Artifacts
 
@@ -123,6 +145,31 @@ To attach artifacts after release creation:
 4. Drag-drop or click to upload files
 
 Future enhancement: Automatically download and attach artifacts from latest successful builds.
+
+## Dry Run Mode
+
+Use dry-run to test the release logic without creating a tag or publishing a release.
+
+**What Happens in Dry Run**:
+- ✓ Changelog is generated
+- ✓ Release notes markdown is created
+- ✓ Markdown file is uploaded as a workflow artifact
+- ✗ No tag is created
+- ✗ No release is published
+- ✗ No GitHub API calls that create/modify data
+
+**Workflow**:
+1. Run workflow with `dry_run: true`
+2. Workflow completes (summary shows "🧪 Dry Run Completed")
+3. Download the markdown artifact from workflow
+4. Review release notes in your editor
+5. If satisfied, run workflow again with `dry_run: false` to publish for real
+
+**Artifact Location**:
+- After dry-run completes, go to workflow run page
+- Scroll to "Artifacts" section
+- Download `release-notes-GeneralsX-Beta-3` (or your version)
+- File is named `GeneralsX-Beta-3-notes.md`
 
 ## Changelog Format
 
@@ -157,6 +204,8 @@ Example output:
 ### "Tag already exists"
 The version you specified already has a release. Use a different tag name.
 
+Note: This error won't occur in `dry_run: true` mode since no tag validation happens.
+
 ### Changelog shows but PR links are missing
 - Ensure commits reference PR numbers in message (e.g., `(#123)`)
 - If PR numbers are not in message, manually add PR links to release notes
@@ -166,6 +215,13 @@ The version you specified already has a release. Use a different tag name.
 This is expected if:
 - No new authors since latest release
 - Or GitHub username couldn't be mapped to author name (manual add needed)
+
+### Want to preview before publishing?
+Use the dry-run mode!
+1. Run with `dry_run: true`
+2. Workflow artifacts will contain the markdown
+3. Download and review
+4. If ok, run again with `dry_run: false`
 
 ## Manual Post-Release Adjustments
 

@@ -34,6 +34,11 @@ on:
         required: false
         type: boolean
         default: false
+      dry_run:
+        description: 'Dry run - generate release notes without creating release/tag'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -51,15 +56,23 @@ jobs:
       - name: Validate release version
         run: |
           VERSION="${{ inputs.release_version }}"
+          DRY_RUN="${{ inputs.dry_run }}"
+          
           if [ -z "$VERSION" ]; then
             echo "ERROR: release_version is required"
             exit 1
           fi
-          if git rev-parse "$VERSION" >/dev/null 2>&1; then
-            echo "ERROR: Tag $VERSION already exists"
-            exit 1
+          
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "✓ DRY RUN MODE - tag validation skipped"
+            echo "Release version: $VERSION (not created)"
+          else
+            if git rev-parse "$VERSION" >/dev/null 2>&1; then
+              echo "ERROR: Tag $VERSION already exists"
+              exit 1
+            fi
+            echo "Release version: $VERSION"
           fi
-          echo "Release version: $VERSION"
 
       - name: Detect latest release
         id: latest
@@ -236,7 +249,23 @@ EOF
           echo ""
           echo "=== End Preview ==="
 
+      - name: Save markdown for dry-run or review
+        if: success()
+        run: |
+          mkdir -p release-artifacts
+          cp "${{ steps.body.outputs.body_file }}" "release-artifacts/${{ inputs.release_version }}-notes.md"
+          echo "Release notes saved to release-artifacts/${{ inputs.release_version }}-notes.md"
+
+      - name: Upload release notes (dry-run mode)
+        if: success() && inputs.dry_run == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ inputs.release_version }}
+          path: release-artifacts/${{ inputs.release_version }}-notes.md
+          retention-days: 30
+
       - name: Create release
+        if: success() && inputs.dry_run == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -263,11 +292,30 @@ EOF
 
       - name: Summary
         run: |
-          echo "## Release Created" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Tag**: ${{ inputs.release_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Draft**: ${{ inputs.is_draft }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Prerelease**: ${{ inputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Latest Release**: ${{ steps.latest.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**View Release**: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_version }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "## 🧪 Dry Run Completed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No release or tag was created. Review the release notes artifact above." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### What Would Be Created" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tag**: \`${{ inputs.release_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Draft**: ${{ inputs.is_draft }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Prerelease**: ${{ inputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Base Release**: ${{ steps.latest.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Artifact" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Release notes markdown: **\`${{ inputs.release_version }}-notes.md\`**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Download from this workflow's artifacts to preview, edit, and review." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ Release Created" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tag**: ${{ inputs.release_version }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Draft**: ${{ inputs.is_draft }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Prerelease**: ${{ inputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Latest Release**: ${{ steps.latest.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**View Release**: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_version }}" >> $GITHUB_STEP_SUMMARY
+          fi
