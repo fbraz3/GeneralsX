@@ -20,21 +20,25 @@ The repository is significantly behind upstream `TheSuperHackers`. The purpose o
 
 ## Required Workflow
 
-1. Determine the current local date and create a branch named exactly `thesuperhackers-sync-MM-DD-YYYY`.
-2. Verify whether the remote `thesuperhackers` exists.
-3. If the remote does not exist, create it using `git@github.com:TheSuperHackers/GeneralsGameCode.git`.
-4. Fetch `thesuperhackers`.
-5. Merge `thesuperhackers/main` into the new branch.
-6. Create a detailed conflict resolution plan based on the merge result and the critical merge instructions below. Document this plan clearly before starting to resolve conflicts.
+1. Verify the working tree is clean before starting (`git status --porcelain` should be empty). If it is not clean, stop and ask the user how to proceed.
+2. Determine the current local date and create a branch named exactly `thesuperhackers-sync-MM-DD-YYYY`.
+3. Verify whether the remote `thesuperhackers` exists.
+4. If the remote does not exist, create it using `git@github.com:TheSuperHackers/GeneralsGameCode.git`.
+5. Fetch `thesuperhackers`.
+6. Merge `thesuperhackers/main` into the new branch.
+7. Create a detailed conflict resolution plan based on the merge result and the critical merge instructions below. Document this plan clearly before starting to resolve conflicts.
   - The document must include a list of the most important conflicts, the reasoning behind how they will be resolved, and any special considerations or constraints that will be applied during resolution.
   - For large or complex conflicts, outline the specific steps that will be taken to analyze and resolve them, including any reference materials or repository documentation that will be consulted.
   - The plan should also identify any areas of the codebase that are expected to be particularly risky or contentious during the merge, and how those risks will be mitigated.
   - The upstream could be moved some files into a unified `Core/` directory, we need to follow the upstream structure but also preserve the cross-platform architecture of `GeneralsX`, so carefcul analysis will be required to reconcile these changes.
   - Split the plan into sections if necessary to cover different subsystems or types of conflicts (for example: build system conflicts, platform abstraction conflicts, gameplay code conflicts, etc.).
 8. Load the plan into working memory and execute it step by step, documenting the outcome of each major decision and conflict resolution in detail.
-9. Ensure the repository remains buildable and configurable after conflict resolution.
-10. Commit the final merge result.
-11. Push the branch `thesuperhackers-sync-MM-DD-YYYY` to origin.
+9. Ensure no unresolved merge markers remain anywhere in the tree before validation (`<<<<<<<`, `=======`, `>>>>>>>`).
+10. Ensure the repository remains buildable and configurable after conflict resolution.
+11. Validate runtime smoke for both products on validated platforms: `GeneralsXZH` and `GeneralsX` should at minimum enter and exit the main loop cleanly.
+12. Remove generated runtime/build artifacts from the working tree before commit (for example local shader/DXVK caches).
+13. Commit the final merge result.
+14. Push the branch `thesuperhackers-sync-MM-DD-YYYY` to origin.
 
 ## Critical Merge Instructions
 
@@ -48,9 +52,11 @@ Expect many conflicts because the projects intentionally diverged. Every conflic
 - Preserve the functional cross-platform stack already established in `GeneralsX`: SDL3 for platform/windowing/input, DXVK for graphics, OpenAL for audio, and FFmpeg where applicable.
 - Preserve platform isolation. Do not allow platform-specific code to leak into gameplay logic.
 - Keep legacy compatibility paths only where they are still intentionally maintained by this repository, but do not let original-binary compatibility override the `GeneralsX` cross-platform objective.
+- Treat INI parser changes as high risk on macOS: upstream numeric parsing optimizations may require platform-specific compatibility handling for Apple deployment targets.
 - Review conflicts with extra care in these areas:
   - build system and presets
   - SDL3, DXVK, OpenAL, FFmpeg, and platform abstraction layers
+  - INI parsing and file load order logic
   - shared engine code under `Core/`
   - `Generals/` and `GeneralsMD/` code that may have been unified or refactored upstream
   - launch paths, renderer setup, audio wiring, and asset/runtime integration
@@ -70,6 +76,8 @@ Prioritize verifying:
 
 Note: validate one platform's configure/build flow fully before moving to the next. Do not attempt to validate all platforms in parallel
 
+If the user explicitly requests a reduced validation scope (for example macOS-only), follow that scope and clearly report what was intentionally deferred.
+
 If a full validation cannot be completed, state exactly what was not run and why.
 
 ## Deliverables
@@ -80,7 +88,8 @@ After the sync is complete, provide:
 2. A conflict-resolution report describing the most important merge decisions and why they were made.
 3. A list of files or subsystems that remain risky and should receive extra review.
 4. The final branch name, commit hash, and push status.
-5. A user checklist of what should be tested next.
+5. Pull request URL/status (if PR creation was requested).
+6. A user checklist of what should be tested next.
 
 ## Required User Checklist
 
