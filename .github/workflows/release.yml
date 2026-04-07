@@ -29,16 +29,15 @@ on:
         required: false
         type: boolean
         default: true
-      download_artifacts:
-        description: 'Attempt to download and attach artifacts'
-        required: false
-        type: boolean
-        default: false
       dry_run:
         description: 'Dry run - generate release notes without creating release/tag'
         required: false
         type: boolean
         default: false
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ inputs.release_version }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -67,7 +66,7 @@ jobs:
             echo "✓ DRY RUN MODE - tag validation skipped"
             echo "Release version: $VERSION (not created)"
           else
-            if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            if git show-ref --tags --verify --quiet "refs/tags/$VERSION"; then
               echo "ERROR: Tag $VERSION already exists"
               exit 1
             fi
@@ -118,6 +117,7 @@ jobs:
               if [ -n "$pr_author" ]; then
                 # Extract message without author part
                 msg=$(echo "$line" | sed 's/ ([^)]*)$//')
+                msg=$(echo "$msg" | sed -E 's/ \(#[0-9]+\)$//')
                 echo "* ${msg} by @${pr_author} in https://github.com/${{ github.repository }}/pull/${pr_num}" >> "$CHANGELOG_FILE"
               else
                 echo "* $line" >> "$CHANGELOG_FILE"
@@ -132,7 +132,6 @@ jobs:
       - name: Detect new contributors
         id: contributors
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LATEST_TAG: ${{ steps.latest.outputs.latest_tag }}
         run: |
           NEW_CONTRIBUTORS_FILE=$(mktemp)
@@ -150,15 +149,9 @@ jobs:
             
             # Find new contributors
             while IFS= read -r author; do
-              if ! echo "$old_authors" | grep -q "^${author}$"; then
-                # Try to find GitHub username
-                gh_user=$(git log --author="$author" --pretty=format:"%B" "${LATEST_TAG}..HEAD" 2>/dev/null | grep -oP 'Co-authored-by:.*<(\K[^>]+)' | head -1 || echo "")
-                if [ -z "$gh_user" ]; then
-                  gh_user=$(gh api search/users --field q="$author in:name" --jq '.items[0].login' 2>/dev/null || echo "")
-                fi
-                if [ -n "$gh_user" ]; then
-                  echo "* @$gh_user made their first contribution in " >> "$NEW_CONTRIBUTORS_FILE"
-                fi
+              [ -z "$author" ] && continue
+              if ! printf '%s\n' "$old_authors" | grep -Fqx "$author"; then
+                echo "* ${author} made their first contribution" >> "$NEW_CONTRIBUTORS_FILE"
               fi
             done <<< "$new_authors"
           fi

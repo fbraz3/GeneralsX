@@ -37,7 +37,6 @@ Automated GitHub Actions workflow for creating GeneralsX releases with automatic
 | `custom_text` | string | — | Additional text to include (markdown) |
 | `is_draft` | boolean | false | Create as draft (hidden from releases page) |
 | `is_prerelease` | boolean | true | Mark as prerelease (not as latest) |
-| `download_artifacts` | boolean | false | Attempt to download and attach artifacts |
 | `dry_run` | boolean | false | Test logic without creating release (no tag created) |
 
 ## Examples
@@ -189,14 +188,14 @@ For commits without associated PRs:
 
 The workflow attempts to identify first-time contributors by:
 1. Comparing author lists before/after the latest release
-2. Looking up GitHub usernames from PR metadata or author info
-3. Creating contributor credit lines
+2. Selecting names that did not exist before the latest release
+3. Creating safe contributor credit lines without exposing email-derived data
 
 Example output:
 
 ```
 ## New Contributors
-* @NewContributor made their first contribution in https://github.com/fbraz3/GeneralsX/pull/99
+* NewContributor made their first contribution
 ```
 
 ## Troubleshooting
@@ -214,7 +213,7 @@ Note: This error won't occur in `dry_run: true` mode since no tag validation hap
 ### No new contributors detected
 This is expected if:
 - No new authors since latest release
-- Or GitHub username couldn't be mapped to author name (manual add needed)
+- Or all changes were made by contributors already present before the latest release
 
 ### Want to preview before publishing?
 Use the dry-run mode!
