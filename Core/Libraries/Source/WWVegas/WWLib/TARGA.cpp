@@ -740,8 +740,9 @@ long Targa::Save(const char* name, long flags, bool addextension)
 		if (!error)
 			{
 			footer.Developer = 0;
+			// GeneralsX @bugfix BenderAI 07/04/2026 Write exactly the 16-byte TGA 2.0 signature field (without terminator).
 			static_assert(sizeof(TGA2_SIGNATURE) - 1 == sizeof(footer.Signature), "TGA2 signature length mismatch");
-			strncpy(footer.Signature, TGA2_SIGNATURE, sizeof(footer.Signature));
+			memcpy(footer.Signature, TGA2_SIGNATURE, sizeof(footer.Signature));
 			footer.RsvdChar = '.';
 			footer.BZST = 0;
 

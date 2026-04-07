@@ -862,21 +862,8 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 			ShowWindow(ApplicationHWnd, SW_HIDE);
 		}
 	}
-	if (TheSystemIsUnicode)
-	{
-		::MessageBoxW(nullptr, mesg.str(), prompt.str(), MB_OK|MB_SYSTEMMODAL|MB_ICONERROR);
-	}
-	else
-	{
-		// However, if we're using the default version of the message box, we need to
-		// translate the string into an AsciiString
-		AsciiString promptA, mesgA;
-		promptA.translate(prompt);
-		mesgA.translate(mesg);
-		//Make sure main window is not TOP_MOST
-		::SetWindowPos(ApplicationHWnd, HWND_NOTOPMOST, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
-		::MessageBoxA(nullptr, mesgA.str(), promptA.str(), MB_OK|MB_TASKMODAL|MB_ICONERROR);
-	}
+	// GeneralsX @bugfix BenderAI 07/04/2026 Use Unicode crash dialog directly on Windows and avoid TheSystemIsUnicode dependency.
+	::MessageBoxW(nullptr, mesg.str(), prompt.str(), MB_OK|MB_SYSTEMMODAL|MB_ICONERROR);
 	#else
 	// Linux: Output to stderr (game will crash anyway after this)
 	fprintf(stderr, "FATAL ERROR: %s\n%s\n", prompt.str(), mesg.str());

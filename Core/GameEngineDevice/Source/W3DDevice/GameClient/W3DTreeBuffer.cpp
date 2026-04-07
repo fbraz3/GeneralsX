@@ -1013,7 +1013,11 @@ void W3DTreeBuffer::updateVertexBuffer()
 			Vector3 loc = m_trees[curTree].location;
 			Real theSin = m_trees[curTree].sin;
 			Real theCos = m_trees[curTree].cos;
-			DEBUG_ASSERTCRASH(type>=0 && m_treeTypes[type].m_mesh!=nullptr, ("Invalid tree type or mesh."));
+			// GeneralsX @bugfix BenderAI 07/04/2026 Keep runtime resilient when tree entries become invalid between rebuilds.
+			if (type < 0 || m_treeTypes[type].m_mesh == nullptr) {
+				DEBUG_ASSERTCRASH(false, ("Invalid tree type or mesh."));
+				continue;
+			}
 
 			Int startVertex = m_trees[curTree].firstIndex;
 			curVb = vb+startVertex;

@@ -1687,7 +1687,7 @@ Type scanType(std::string_view token)
 		Int64 result{};
 		const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
 
-		if (ec != std::errc{})
+		if (ec != std::errc{} || ptr != token.data() + token.size())
 		{
 			throw INI_INVALID_DATA;
 		}

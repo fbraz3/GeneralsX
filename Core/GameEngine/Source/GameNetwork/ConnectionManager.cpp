@@ -178,20 +178,65 @@ static Bool hasValidTransferFileContent(const AsciiString& filePath, const Unsig
 
 	case TransferFileType_Tga:
 	{
-		if (dataSize < sizeof(TGAHeader) + sizeof(TGA2Footer))
+		if (dataSize < sizeof(TGAHeader))
 		{
-			DEBUG_LOG(("TGA file '%s' is too small to be valid.", filePath.str()));
+			DEBUG_LOG(("TGA file '%s' is too small to contain a valid header.", filePath.str()));
 			return false;
 		}
-		TGA2Footer footer;
-		memcpy(&footer, data + dataSize - sizeof(footer), sizeof(footer));
-		const Bool isTGA2 = memcmp(footer.Signature, TGA2_SIGNATURE, sizeof(footer.Signature)) == 0
-			&& footer.RsvdChar == '.'
-			&& footer.BZST == '\0';
-		if (!isTGA2)
+
+		const UnsignedInt idLength = static_cast<UnsignedInt>(data[0]);
+		const UnsignedInt colorMapType = static_cast<UnsignedInt>(data[1]);
+		const UnsignedInt imageType = static_cast<UnsignedInt>(data[2]);
+		const UnsignedInt width = static_cast<UnsignedInt>(data[12]) | (static_cast<UnsignedInt>(data[13]) << 8);
+		const UnsignedInt height = static_cast<UnsignedInt>(data[14]) | (static_cast<UnsignedInt>(data[15]) << 8);
+		const UnsignedInt bitsPerPixel = static_cast<UnsignedInt>(data[16]);
+
+		if (colorMapType > 1)
 		{
-			DEBUG_LOG(("TGA file '%s' is missing TRUEVISION-XFILE footer signature.", filePath.str()));
+			DEBUG_LOG(("TGA file '%s' has invalid color map type %u.", filePath.str(), colorMapType));
 			return false;
+		}
+
+		const Bool hasValidImageType = imageType == TGA_CMAPPED || imageType == TGA_TRUECOLOR || imageType == TGA_MONO
+			|| imageType == TGA_CMAPPED_ENCODED || imageType == TGA_TRUECOLOR_ENCODED || imageType == TGA_MONO_ENCODED;
+		if (!hasValidImageType)
+		{
+			DEBUG_LOG(("TGA file '%s' has invalid image type %u.", filePath.str(), imageType));
+			return false;
+		}
+
+		if (width == 0 || height == 0)
+		{
+			DEBUG_LOG(("TGA file '%s' has invalid image dimensions %ux%u.", filePath.str(), width, height));
+			return false;
+		}
+
+		const Bool hasValidBitsPerPixel = bitsPerPixel == 8 || bitsPerPixel == 15 || bitsPerPixel == 16
+			|| bitsPerPixel == 24 || bitsPerPixel == 32;
+		if (!hasValidBitsPerPixel)
+		{
+			DEBUG_LOG(("TGA file '%s' has invalid bits-per-pixel value %u.", filePath.str(), bitsPerPixel));
+			return false;
+		}
+
+		if (dataSize < sizeof(TGAHeader) + idLength)
+		{
+			DEBUG_LOG(("TGA file '%s' is truncated before the image data section.", filePath.str()));
+			return false;
+		}
+
+		// GeneralsX @bugfix BenderAI 07/04/2026 Accept valid TGA files without requiring a TGA 2.0 footer.
+		if (dataSize >= sizeof(TGAHeader) + sizeof(TGA2Footer))
+		{
+			TGA2Footer footer;
+			memcpy(&footer, data + dataSize - sizeof(footer), sizeof(footer));
+			const Bool isTGA2 = memcmp(footer.Signature, TGA2_SIGNATURE, sizeof(footer.Signature)) == 0
+				&& footer.RsvdChar == '.'
+				&& footer.BZST == '\0';
+			if (!isTGA2)
+			{
+				DEBUG_LOG(("TGA file '%s' has no TGA 2.0 footer; continuing with header-only validation.", filePath.str()));
+			}
 		}
 		break;
 	}
