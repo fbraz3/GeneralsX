@@ -130,6 +130,8 @@ jobs:
 
       - name: Normalize bundle files for release assets
         id: assets
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
           mkdir -p release-assets
 
@@ -176,6 +178,15 @@ jobs:
             echo "ERROR: macOS Generals app tar not found in artifacts/macos-generals"
             find artifacts/macos-generals -maxdepth 3 -type f || true
             exit 1
+          fi
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run enabled: skipping zip normalization to avoid large preview artifacts."
+            echo "linux_generals_asset=" >> "$GITHUB_OUTPUT"
+            echo "linux_asset=" >> "$GITHUB_OUTPUT"
+            echo "macos_generals_asset=" >> "$GITHUB_OUTPUT"
+            echo "macos_asset=" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
@@ -271,6 +282,7 @@ jobs:
           CONTRIBUTORS_FILE: ${{ steps.new_contributors.outputs.contributors_file }}
         run: |
           NOTES_FILE="release-assets/${{ inputs.release_version }}-notes.md"
+          NOTES_TXT_FILE="release-assets/${{ inputs.release_version }}-notes.txt"
           mkdir -p release-assets
 
           {
@@ -305,16 +317,25 @@ jobs:
             fi
           } > "$NOTES_FILE"
 
-          echo "notes_file=$GITHUB_WORKSPACE/$NOTES_FILE" >> "$GITHUB_OUTPUT"
+          cp "$NOTES_FILE" "$NOTES_TXT_FILE"
 
-      - name: Upload preview artifacts
-        if: success() && (inputs.dry_run == true || inputs.create_release == false)
+          echo "notes_file=$GITHUB_WORKSPACE/$NOTES_FILE" >> "$GITHUB_OUTPUT"
+          echo "notes_txt_file=$GITHUB_WORKSPACE/$NOTES_TXT_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload dry-run release description
+        if: success() && inputs.dry_run == true
         uses: actions/upload-artifact@v4
         with:
           name: release-preview-${{ inputs.release_version }}
-          path: |
-            release-assets/*.md
-            release-assets/*.zip
+          path: release-assets/${{ inputs.release_version }}-notes.txt
+          retention-days: 30
+
+      - name: Upload release description preview
+        if: success() && inputs.dry_run == false && inputs.create_release == false
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-preview-${{ inputs.release_version }}
+          path: release-assets/${{ inputs.release_version }}-notes.txt
           retention-days: 30
 
       - name: Create GitHub release and upload assets

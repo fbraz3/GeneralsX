@@ -31,6 +31,11 @@ This workflow runs Linux and macOS builds for Zero Hour and Generals base, colle
 7. If `dry_run=true` or `create_release=false`, uploads preview artifacts instead of creating a release.
 8. Creates GitHub release only when `create_release=true` and `dry_run=false`.
 
+Dry-run preview policy:
+- Generates only one small preview file: `${release_version}-notes.txt`.
+- Does not generate normalized zip assets for preview upload.
+- Still validates build/download steps and notes generation logic.
+
 ## Notes Format
 
 Fixed block:
