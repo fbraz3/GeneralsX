@@ -214,14 +214,19 @@ jobs:
 
           for SHA in $(git rev-list "$COMMIT_RANGE"); do
             PR_JSON=$(gh api "repos/${REPO}/commits/${SHA}/pulls" 2>/dev/null || echo "[]")
-            PR_NUMBER=$(echo "$PR_JSON" | jq -r '.[0].number // empty')
 
-            if [ -z "$PR_NUMBER" ]; then
-              continue
+            # Keep only PRs that belong to this repository (exclude upstream PR URLs).
+            PR_ENTRY=$(echo "$PR_JSON" | jq -r --arg REPO "$REPO" '
+              map(select((.base.repo.full_name // "") == $REPO and (.html_url // "" | startswith("https://github.com/" + $REPO + "/pull/"))))
+              | sort_by(.number)
+              | reverse
+              | .[0]
+              | if . == null then empty else "\(.number)|\(.title)|\(.user.login)|\(.html_url)" end
+            ')
+
+            if [ -n "$PR_ENTRY" ]; then
+              echo "$PR_ENTRY" >> "$PR_DATA_FILE"
             fi
-
-            PR_ENTRY=$(echo "$PR_JSON" | jq -r '.[0] | "\(.number)|\(.title)|\(.user.login)|\(.html_url)"')
-            echo "$PR_ENTRY" >> "$PR_DATA_FILE"
           done
 
           if [ -s "$PR_DATA_FILE" ]; then
