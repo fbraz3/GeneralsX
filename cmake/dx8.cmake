@@ -11,26 +11,10 @@
 #
 # macOS DXVK build (Session 61, 24/02/2026):
 #   DXVK 2.6 builds natively on macOS arm64 via its "native" build mode.
-#   Five source-level patches are required; applied automatically by
-#   cmake/dxvk-macos-patches.py.
+#   macOS fixes are maintained in the DXVK fork history consumed by this build.
+#   This project no longer applies local patch scripts during configure/build.
 #
-# Patches applied to DXVK source for macOS:
-#   1. include/native/windows/windows_base.h and src/util/util_win32_compat.h:
-#      __unix__ is NOT defined on macOS; add __APPLE__ to the #if guard so
-#      LoadLibraryA/GetProcAddress/FreeLibrary shims are compiled.
-#   2. src/util/util_env.cpp:
-#      pthread_setname_np on macOS takes only 1 arg (name), not 2 (thread, name).
-#   3. src/util/util_small_vector.h:
-#      lzcnt(n-1) where n is size_t (unsigned long on macOS arm64) is ambiguous
-#      between uint32_t and uint64_t overloads; cast to uint64_t explicitly.
-#   4. src/util/util_bit.h:
-#      Add uintptr_t overloads for tzcnt/lzcnt (macOS arm64: uintptr_t =
-#      unsigned long, distinct from uint32_t and uint64_t, causing ambiguity).
-#   5. src/{dxgi,d3d8,d3d9,d3d10,d3d11}/meson.build:
-#      -Wl,--version-script is GNU ld only. macOS ld rejects it; guard with
-#      platform != 'darwin'.
-#
-# Reference: docs/WORKDIR/lessons/2026-02-LESSONS.md (Session 61)
+# Reference: docs/WORKDIR/lessons/2026-02-LESSONS.md (historical patch rationale)
 
 set(DXVK_VERSION "v2.6")
 
@@ -154,7 +138,7 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     # GeneralsX @build copilot 01/04/2026 Pin remote DXVK to immutable commit produced by fix/macos-size_t-cstddef.
     set(DXVK_REMOTE_REF 46a3bc018bcae408d49d3c500e4e536a11f6789a)
     ExternalProject_Add(dxvk_macos_build
-      # GeneralsX @build BenderAI 13/03/2026 Default to remote fbraz3 v2.6 branch with update step enabled.
+      # GeneralsX @build BenderAI 08/04/2026 Consume pre-patched source from pinned fork commit.
       GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
       GIT_TAG           ${DXVK_REMOTE_REF}
       # GeneralsX @build copilot 01/04/2026 Keep pinned commit fetch reliable across clean CI builds.
