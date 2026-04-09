@@ -78,7 +78,7 @@ cd GeneralsX
 ### Configure and Build
 
 ```bash
-./scripts/build-macos-zh.sh
+./scripts/build/macos/build-macos-zh.sh
 ```
 
 This does:
@@ -94,7 +94,7 @@ via Meson. Subsequent builds reuse the Meson cache and finish in under a minute.
 > **`--build-only` flag**: If you have already configured (cmake cache exists),
 > skip configuration:
 > ```bash
-> ./scripts/build-macos-zh.sh --build-only
+> ./scripts/build/macos/build-macos-zh.sh --build-only
 > ```
 
 ### Manual cmake commands (equivalent)
@@ -111,7 +111,7 @@ cmake --build build/macos-vulkan --target z_generals -j$(sysctl -n hw.logicalcpu
 After a successful build, deploy the binary and Vulkan runtime to the game directory:
 
 ```bash
-./scripts/deploy-macos-zh.sh
+./scripts/build/macos/deploy-macos-zh.sh
 ```
 
 This script:
@@ -128,7 +128,7 @@ This script:
 ## Running
 
 ```bash
-./scripts/run-macos-zh.sh -win
+./scripts/build/macos/run-macos-zh.sh -win
 ```
 
 Or use the generated wrapper in the deploy directory:
@@ -189,7 +189,7 @@ does not include the darwin linker guard fix in its commit history.
 Clean the DXVK build cache and reconfigure:
 
 ```bash
-rm -rf build/macos-vulkan/_deps/dxvk-src build/macos-vulkan/_deps/dxvk-build
+rm -rf build/macos-vulkan/_deps/dxvk-src-fbraz3 build/macos-vulkan/_deps/dxvk-build-macos
 cmake --preset macos-vulkan
 ```
 
@@ -199,7 +199,7 @@ This is addressed by the portability-enumeration fix included in the pinned fork
 commit. If you see it:
 
 1. Ensure the Vulkan SDK is installed via LunarG installer (not Homebrew)
-2. Ensure `deploy-macos-zh.sh` was run (MoltenVK ICD JSON must be present)
+2. Ensure `scripts/build/macos/deploy-macos-zh.sh` was run (MoltenVK ICD JSON must be present)
 3. Verify `VK_ICD_FILENAMES` points to the correct JSON in the runtime dir
 
 ### `VK_ERROR_FEATURE_NOT_PRESENT` — robustBufferAccess2 / nullDescriptor
@@ -215,8 +215,8 @@ the game directory is stale or from a different DXVK source revision. Rebuild an
 redeploy:
 
 ```bash
-./scripts/build-macos-zh.sh --build-only
-./scripts/deploy-macos-zh.sh
+./scripts/build/macos/build-macos-zh.sh --build-only
+./scripts/build/macos/deploy-macos-zh.sh
 ```
 
 ### Game crashes at startup (SIGSEGV)
@@ -232,8 +232,9 @@ VK_ICD_FILENAMES=./MoltenVK_icd.json MVK_CONFIG_LOG_LEVEL=4 ./GeneralsXZH -win
 
 The pinned DXVK commit masks core features against what the physical device
 actually supports.
-If you still see this, MoltenVK may need an update. Re-running `deploy-macos-zh.sh`
-after updating the Vulkan SDK copies the new `libMoltenVK.dylib` to the runtime dir.
+If you still see this, MoltenVK may need an update. Re-running
+`scripts/build/macos/deploy-macos-zh.sh` after updating the Vulkan SDK copies the
+new `libMoltenVK.dylib` to the runtime dir.
 
 ---
 
@@ -246,8 +247,8 @@ after updating the Vulkan SDK copies the new `libMoltenVK.dylib` to the runtime 
 | GeneralsXZH binary | Builds successfully |
 | Vulkan device init | Working (MoltenVK -> Metal) |
 | 3D rendering | Under active testing |
-| Audio (OpenAL) | Not yet implemented (Phase 2) |
-| Video (Bink) | Not yet implemented (Phase 3) |
+| Audio (OpenAL) | In progress (Phase 2) |
+| Video (FFmpeg/Bink replacement) | In progress (Phase 3 planning/spike pending) |
 
 ---
 
@@ -255,9 +256,9 @@ after updating the Vulkan SDK copies the new `libMoltenVK.dylib` to the runtime 
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/build-macos-zh.sh` | Configure + build `GeneralsXZH` |
-| `scripts/deploy-macos-zh.sh` | Deploy binary + Vulkan runtime to game dir |
-| `scripts/run-macos-zh.sh` | Launch with correct environment |
+| `scripts/build/macos/build-macos-zh.sh` | Configure + build `GeneralsXZH` |
+| `scripts/build/macos/deploy-macos-zh.sh` | Deploy binary + Vulkan runtime to game dir |
+| `scripts/build/macos/run-macos-zh.sh` | Launch with correct environment |
 | `cmake/dx8.cmake` | DXVK ExternalProject build (pinned fork commit) |
 | `cmake/dxvk-macos-patches.py` | Deprecated legacy helper (not used by current build flow) |
 | `CMakePresets.json` (`macos-vulkan`) | Build preset (arm64, MoltenVK, SDL3, OpenAL, ffmpeg) |
