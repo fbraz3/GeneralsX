@@ -140,6 +140,36 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "[Linux] Build Flatpak GeneralsX",
+			"type": "shell",
+			"command": "./scripts/build/linux/build-linux-flatpak.sh linux64-deploy Generals",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Linux] Build Flatpak GeneralsXZH",
+			"type": "shell",
+			"command": "./scripts/build/linux/build-linux-flatpak.sh linux64-deploy GeneralsMD",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "[Linux] Pipeline: Build + Deploy + Run Generals",
 			"type": "shell",
 			"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy && ./scripts/build/linux/deploy-linux.sh && ./scripts/build/linux/run-linux.sh -win",

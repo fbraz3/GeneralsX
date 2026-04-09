@@ -80,6 +80,10 @@ GeneralsXZH-macos-*.zip
 GeneralsX-linux-*.tar.gz
 GeneralsXZH-linux-*.tar.gz
 
+#flatpak build files
+.flatpak-builder/
+flatpak/
+
 #tmp and log files on root folder
 logs_*.zip
 *.log
