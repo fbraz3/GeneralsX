@@ -76,10 +76,10 @@ if ! flatpak --user remote-list | awk '{print $1}' | grep -qx "flathub"; then
     flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 fi
 
-if ! flatpak --user info org.freedesktop.Platform//24.08 >/dev/null 2>&1 || \
-   ! flatpak --user info org.freedesktop.Sdk//24.08 >/dev/null 2>&1; then
-    echo "Installing required Flatpak runtime and SDK (24.08) for current user..."
-    flatpak --user install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+if ! flatpak --user info org.freedesktop.Platform//25.08 >/dev/null 2>&1 || \
+   ! flatpak --user info org.freedesktop.Sdk//25.08 >/dev/null 2>&1; then
+    echo "Installing required Flatpak runtime and SDK (25.08) for current user..."
+    flatpak --user install -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08
 fi
 
 rm -rf "${STAGING_DIR}" "${FLATPAK_BUILD_DIR}" "${FLATPAK_REPO_DIR}"
