@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=GeneralsX
+Comment=Command & Conquer: Generals cross-platform port
+Exec=generalsx-wrapper.sh -win
+Icon=com.generals.GeneralsX
+Type=Application
+Categories=Game;StrategyGame;
+StartupNotify=true
+Terminal=false
