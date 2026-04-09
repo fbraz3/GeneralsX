@@ -50,3 +50,10 @@ if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
 fi
 
 exec /app/bin/GeneralsX "$@"
+
+# GeneralsX @bugfix GitHubCopilot 09/04/2026 Force DXVK software rendering in Flatpak due to Vulkan WSI unavailability.
+# Issue: Vulkan Radeon driver fails to load due to missing xcb_dri3_import_syncobj_checked symbol
+# This is a Freedesktop SDK 25.08 libxcb version incompatibility issue.
+# Workaround: Force DXVK to software-render instead of trying Vulkan.
+export DXVK_RENDERER="software"
+export DXVK_FORCESWRENDER="1"
