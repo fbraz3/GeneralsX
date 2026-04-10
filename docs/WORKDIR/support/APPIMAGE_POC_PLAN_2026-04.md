@@ -7,13 +7,17 @@ A short-term AppImage path reduces distro ABI friction while keeping distributio
 
 ## PoC Scope
 
-- Target: Zero Hour runtime (`GeneralsXZH`)
-- Output: single portable file under `build/`
-- Tooling: `scripts/build/linux/build-linux-appimage-zh.sh`
+- Targets:
+	- Zero Hour runtime (`GeneralsXZH`)
+	- Generals base runtime (`GeneralsX`)
+- Output: portable files under `build/`
+- Tooling:
+	- `scripts/build/linux/build-linux-appimage-zh.sh`
+	- `scripts/build/linux/build-linux-appimage-generals.sh`
 
 ## Included runtime artifacts
 
-- Game binary (`GeneralsXZH`)
+- Game binary (`GeneralsXZH` or `GeneralsX`)
 - DXVK userspace libs (`libdxvk_d3d8.so*`, optional d3d9)
 - SDL3 + SDL3_image
 - OpenAL
@@ -38,11 +42,19 @@ CNC_GENERALS_PATH="/path/to/Generals" \
 ./build/GeneralsXZH-linux64-deploy-x86_64.AppImage -win
 ```
 
+For base Generals:
+
+```bash
+CNC_GENERALS_PATH="/path/to/Generals" \
+./build/GeneralsX-linux64-deploy-x86_64.AppImage -win
+```
+
 ## Build command
 
 Example:
 
 - `./scripts/build/linux/build-linux-appimage-zh.sh linux64-deploy`
+- `./scripts/build/linux/build-linux-appimage-generals.sh linux64-deploy`
 
 ## Validation checklist
 
