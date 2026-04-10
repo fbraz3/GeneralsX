@@ -59,6 +59,7 @@ Utilities for large-scale code refactoring and fixes:
 #### `qa/smoke/` - Smoke Tests
 - `docker-smoke-test-zh.sh` - Quick startup validation (expects crash, checks init output)
 - `run-bundled-game.sh` - Test bundled binary after deployment
+- `collect-flatpak-vulkan-wsi-report.sh` - Collect reproducible Flatpak Vulkan/XCB diagnostics for upstream runtime issues
 
 ### `legacy/` - Deprecated & Compatibility
 
