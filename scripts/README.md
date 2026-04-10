@@ -163,6 +163,10 @@ Scripts support customization:
 export DOCKER_IMAGE="ubuntu:24.04"
 ./scripts/build/linux/docker-build-linux-zh.sh
 
+# Flatpak PoC: inject newer libxcb/X11 libs from an external directory
+export LIBXCB_POC_DIR="$PWD/flatpak/poc-libxcb"
+./scripts/build/linux/build-linux-flatpak.sh linux64-deploy GeneralsMD
+
 # Custom log directory
 export LOG_DIR="my-logs"
 ./scripts/build/linux/docker-build-linux-zh.sh

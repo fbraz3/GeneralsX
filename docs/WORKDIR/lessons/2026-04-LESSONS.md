@@ -1,5 +1,17 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-09 - libxcb Flatpak PoC needs newer source libs, not host baseline copy
+
+- Problem: Vulkan WSI still failed in Flatpak even after introducing a new app-level libxcb PoC injection path.
+- Root cause: The first PoC run copied libxcb/X11 libs from the same host baseline, so symbols expected by runtime Vulkan ICDs (`xcb_present_pixmap_synced`, `xcb_dri3_import_syncobj_checked`) were still unresolved.
+- Fix implemented:
+	- Added `LIBXCB_POC_DIR` support to `scripts/build/linux/build-linux-flatpak.sh`.
+	- When set, the script injects libxcb/X11 companion libs from that directory and skips host fallback XCB copy path.
+	- Added explicit runtime guard to fail fast if `libxcb.so*` is absent from staged runtime.
+	- Added quickstart documentation in `docs/WORKDIR/support/FLATPAK_LIBXCB_POC_QUICKSTART_2026-04.md`.
+- Validation: Build succeeded using `LIBXCB_POC_DIR`, but runtime failure persisted because copied libs were not newer than baseline.
+- Prevention: For this PoC to be meaningful, feed `LIBXCB_POC_DIR` with a genuinely newer libxcb stack (for example, extracted from a newer distro/runtime build), then compare diagnostics logs.
+
 ## Session 2026-04-09 - Flatpak packaging needs explicit runtime source destination and compliant metadata/icon rules
 
 - Problem: Local Flatpak packaging failed first with missing `runtime/.` during module build, then with AppStream metadata validation, and finally with icon export rejection.

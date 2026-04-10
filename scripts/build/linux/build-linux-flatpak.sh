@@ -23,6 +23,7 @@ SDL3_IMAGE_LIB_DIR="${BUILD_ROOT}/_deps/sdl3_image-build"
 OPENAL_LIB_DIR="${BUILD_ROOT}/_deps/openal_soft-build"
 FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
 FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
+LIBXCB_POC_DIR="${LIBXCB_POC_DIR:-}"
 
 case "${GAME}" in
     GeneralsMD)
@@ -159,20 +160,45 @@ copy_codec_dep "libva-x11.so*"
 copy_codec_dep "libvdpau.so*"
 copy_codec_dep "libOpenCL.so*"
 
+# GeneralsX @feature GitHubCopilot 09/04/2026 Add short-term PoC path to inject newer libxcb stack into Flatpak runtime.
+# If LIBXCB_POC_DIR is set, copy libxcb/X11 companion libs from that directory and skip host libxcb injection.
+if [[ -n "${LIBXCB_POC_DIR}" ]]; then
+    if [[ ! -d "${LIBXCB_POC_DIR}" ]]; then
+        echo "ERROR: LIBXCB_POC_DIR is set but directory does not exist: ${LIBXCB_POC_DIR}" >&2
+        exit 1
+    fi
+
+    echo "Using external libxcb PoC directory: ${LIBXCB_POC_DIR}"
+    copy_optional_libs "${LIBXCB_POC_DIR}" "libxcb.so*"
+    copy_optional_libs "${LIBXCB_POC_DIR}" "libxcb-*.so*"
+    copy_optional_libs "${LIBXCB_POC_DIR}" "libX11.so*"
+    copy_optional_libs "${LIBXCB_POC_DIR}" "libX11-xcb.so*"
+    copy_optional_libs "${LIBXCB_POC_DIR}" "libxshmfence.so*"
+    copy_optional_libs "${LIBXCB_POC_DIR}" "libXau.so*"
+    copy_optional_libs "${LIBXCB_POC_DIR}" "libXdmcp.so*"
+fi
+
 # GeneralsX @bugfix GitHubCopilot 09/04/2026 Bundle XCB/Wayland WSI libraries for Vulkan surface extension support in Flatpak.
 # Those libraries are needed by Intel Vulkan driver (libvulkan_intel.so) for VK_KHR_surface, VK_KHR_xcb_surface, VK_KHR_wayland_surface.
-copy_codec_dep "libxcb.so*"
-copy_codec_dep "libxcb-present.so*"
-copy_codec_dep "libxcb-xfixes.so*"
-copy_codec_dep "libxcb-sync.so*"
-copy_codec_dep "libxcb-randr.so*"
-copy_codec_dep "libxcb-shm.so*"
-copy_codec_dep "libxcb-dri3.so*"
-copy_codec_dep "libxshmfence.so*"
-copy_codec_dep "libX11-xcb.so*"
-copy_codec_dep "libX11.so*"
-copy_codec_dep "libxcb-dri2.so*"
-copy_codec_dep "libwayland-client.so*"
+if [[ -z "${LIBXCB_POC_DIR}" ]]; then
+    copy_codec_dep "libxcb.so*"
+    copy_codec_dep "libxcb-present.so*"
+    copy_codec_dep "libxcb-xfixes.so*"
+    copy_codec_dep "libxcb-sync.so*"
+    copy_codec_dep "libxcb-randr.so*"
+    copy_codec_dep "libxcb-shm.so*"
+    copy_codec_dep "libxcb-dri3.so*"
+    copy_codec_dep "libxshmfence.so*"
+    copy_codec_dep "libX11-xcb.so*"
+    copy_codec_dep "libX11.so*"
+    copy_codec_dep "libxcb-dri2.so*"
+    copy_codec_dep "libwayland-client.so*"
+fi
+
+if ! compgen -G "${RUNTIME_DIR}/libxcb.so*" > /dev/null; then
+    echo "ERROR: Missing required runtime library libxcb.so* (set LIBXCB_POC_DIR or ensure host xcb libs are available)." >&2
+    exit 1
+fi
 
 copy_ldd_deps() {
     local root="$1"
