@@ -41,12 +41,14 @@ jobs:
     with:
       game: GeneralsMD
       preset: linux64-deploy
+      package_format: appimage
 
   build-linux-generals:
     uses: ./.github/workflows/build-linux.yml
     with:
       game: Generals
       preset: linux64-deploy
+      package_format: appimage
 
   build-macos-zh:
     uses: ./.github/workflows/build-macos.yml
@@ -135,33 +137,40 @@ jobs:
         run: |
           mkdir -p release-assets
 
-          LINUX_TAR=$(find artifacts/linux -name "*.tar" | head -1)
-          if [ -z "$LINUX_TAR" ] || [ ! -f "$LINUX_TAR" ]; then
-            echo "ERROR: Linux bundle tar not found in artifacts/linux"
-            find artifacts/linux -maxdepth 3 -type f || true
-            exit 1
+          # GeneralsX @build GitHubCopilot 10/04/2026 Prefer AppImage artifacts; fall back to legacy tar bundle.
+          LINUX_APPIMAGE=$(find artifacts/linux -name "*.AppImage" | head -1)
+          if [ -n "$LINUX_APPIMAGE" ] && [ -f "$LINUX_APPIMAGE" ]; then
+            cp "$LINUX_APPIMAGE" release-assets/GeneralsXZH-linux-x86_64.AppImage
+            LINUX_OUT="$GITHUB_WORKSPACE/release-assets/GeneralsXZH-linux-x86_64.AppImage"
+          else
+            LINUX_TAR=$(find artifacts/linux -name "*.tar" | head -1)
+            if [ -z "$LINUX_TAR" ] || [ ! -f "$LINUX_TAR" ]; then
+              echo "ERROR: Linux ZH bundle not found in artifacts/linux"
+              find artifacts/linux -maxdepth 3 -type f || true
+              exit 1
+            fi
+            mkdir -p /tmp/linux-bundle
+            tar -xf "$LINUX_TAR" -C /tmp/linux-bundle
+            (cd /tmp/linux-bundle && zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip" .)
+            LINUX_OUT="$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip"
           fi
 
-          mkdir -p /tmp/linux-bundle
-          tar -xf "$LINUX_TAR" -C /tmp/linux-bundle
-          (
-            cd /tmp/linux-bundle
-            zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip" .
-          )
-
-          LINUX_GENERALS_TAR=$(find artifacts/linux-generals -name "*.tar" | head -1)
-          if [ -z "$LINUX_GENERALS_TAR" ] || [ ! -f "$LINUX_GENERALS_TAR" ]; then
-            echo "ERROR: Linux Generals bundle tar not found in artifacts/linux-generals"
-            find artifacts/linux-generals -maxdepth 3 -type f || true
-            exit 1
+          LINUX_GENERALS_APPIMAGE=$(find artifacts/linux-generals -name "*.AppImage" | head -1)
+          if [ -n "$LINUX_GENERALS_APPIMAGE" ] && [ -f "$LINUX_GENERALS_APPIMAGE" ]; then
+            cp "$LINUX_GENERALS_APPIMAGE" release-assets/GeneralsX-linux-x86_64.AppImage
+            LINUX_GENERALS_OUT="$GITHUB_WORKSPACE/release-assets/GeneralsX-linux-x86_64.AppImage"
+          else
+            LINUX_GENERALS_TAR=$(find artifacts/linux-generals -name "*.tar" | head -1)
+            if [ -z "$LINUX_GENERALS_TAR" ] || [ ! -f "$LINUX_GENERALS_TAR" ]; then
+              echo "ERROR: Linux Generals bundle not found in artifacts/linux-generals"
+              find artifacts/linux-generals -maxdepth 3 -type f || true
+              exit 1
+            fi
+            mkdir -p /tmp/linux-generals-bundle
+            tar -xf "$LINUX_GENERALS_TAR" -C /tmp/linux-generals-bundle
+            (cd /tmp/linux-generals-bundle && zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip" .)
+            LINUX_GENERALS_OUT="$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip"
           fi
-
-          mkdir -p /tmp/linux-generals-bundle
-          tar -xf "$LINUX_GENERALS_TAR" -C /tmp/linux-generals-bundle
-          (
-            cd /tmp/linux-generals-bundle
-            zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip" .
-          )
 
           MAC_TAR=$(find artifacts/macos -name "*.tar" | head -1)
           if [ -z "$MAC_TAR" ] || [ ! -f "$MAC_TAR" ]; then
@@ -192,8 +201,8 @@ jobs:
           cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
           zip -j release-assets/macos-generalsx-app.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
 
-          echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip" >> "$GITHUB_OUTPUT"
-          echo "linux_asset=$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip" >> "$GITHUB_OUTPUT"
+          echo "linux_generals_asset=$LINUX_GENERALS_OUT" >> "$GITHUB_OUTPUT"
+          echo "linux_asset=$LINUX_OUT" >> "$GITHUB_OUTPUT"
           echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsx-app.tar.zip" >> "$GITHUB_OUTPUT"
           echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsxzh-app.tar.zip" >> "$GITHUB_OUTPUT"
 
@@ -371,8 +380,8 @@ jobs:
           echo "- Create release: ${{ inputs.create_release }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Pre-release: ${{ inputs.is_prerelease }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Dry run: ${{ inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset (Generals): linux-generalsx-linux64-bundle.zip" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset: linux-generalsxzh-linux64-bundle.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset (Generals): GeneralsX-linux-x86_64.AppImage" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset: GeneralsXZH-linux-x86_64.AppImage" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset (Generals): macos-generalsx-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset: macos-generalsxzh-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
