@@ -12,6 +12,7 @@ Scripts for Linux native and Docker-based builds:
 - `docker-build-linux-zh.sh` - Build GeneralsXZH (Zero Hour) for Linux
 - `docker-build-linux-generals.sh` - Build GeneralsX (base game) for Linux
 - `docker-build-mingw-zh.sh` - Cross-compile Windows .exe via MinGW in Docker
+- `build-linux-appimage-zh.sh` - Package GeneralsXZH as AppImage (portable single-file Linux distribution)
 - `bundle-linux-zh.sh` - Bundle compiled binaries
 - `deploy-linux-zh.sh` - Deploy to runtime directory
 - `run-linux-zh.sh` - Launch the game windowed
@@ -104,6 +105,9 @@ brew install --cask docker
 
 # 6. Run
 ./scripts/build/linux/run-linux-zh.sh -win
+
+# 7. Optional: build AppImage package
+./scripts/build/linux/build-linux-appimage-zh.sh linux64-deploy
 ```
 
 ### macOS Build
