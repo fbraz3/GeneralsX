@@ -11,6 +11,8 @@ BUILD_DIR="${PROJECT_ROOT}/build/${PRESET}"
 APPIMAGE_ROOT="${PROJECT_ROOT}/build/appimage"
 APPDIR="${APPIMAGE_ROOT}/GeneralsX.AppDir"
 OUTPUT_APPIMAGE="${PROJECT_ROOT}/build/GeneralsX-${PRESET}-x86_64.AppImage"
+APPIMAGETOOL_URL="${APPIMAGETOOL_URL:-https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage}"
+APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-}"
 
 DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
@@ -49,7 +51,14 @@ copy_ldd_deps() {
 
     while IFS= read -r dep; do
         case "${dep}" in
-            /lib64/ld-linux* | /lib/*/ld-linux* | /lib/*/libc.so.* | /lib/*/libm.so.* | /lib/*/libpthread.so.* | /lib/*/librt.so.* | /lib/*/libdl.so.*)
+            # GeneralsX @bugfix GitHubCopilot 10/04/2026 Exclude glibc loader/runtime files across common Linux layouts to preserve AppImage portability.
+            linux-vdso.so.1 | \
+            /lib64/ld-linux* | /lib/*/ld-linux* | /usr/lib/*/ld-linux* | /usr/lib64/ld-linux* | \
+            /lib/*/libc.so.* | /lib64/libc.so.* | /usr/lib/*/libc.so.* | /usr/lib64/libc.so.* | \
+            /lib/*/libm.so.* | /lib64/libm.so.* | /usr/lib/*/libm.so.* | /usr/lib64/libm.so.* | \
+            /lib/*/libpthread.so.* | /lib64/libpthread.so.* | /usr/lib/*/libpthread.so.* | /usr/lib64/libpthread.so.* | \
+            /lib/*/librt.so.* | /lib64/librt.so.* | /usr/lib/*/librt.so.* | /usr/lib64/librt.so.* | \
+            /lib/*/libdl.so.* | /lib64/libdl.so.* | /usr/lib/*/libdl.so.* | /usr/lib64/libdl.so.*)
                 continue
                 ;;
         esac
@@ -61,6 +70,31 @@ copy_ldd_deps() {
             cp -a "${resolved}" "${APPDIR}/usr/lib/" 2>/dev/null || true
         fi
     done < <(ldd "${root}" | awk '{for (i = 1; i <= NF; ++i) { if ($i ~ /^\//) { print $i; break } }}' | sort -u)
+}
+
+verify_sha256_if_configured() {
+    local file_path="$1"
+
+    if [[ -z "${APPIMAGETOOL_SHA256}" ]]; then
+        echo "WARNING: APPIMAGETOOL_SHA256 is not set; skipping appimagetool checksum verification."
+        return 0
+    fi
+
+    if command -v sha256sum >/dev/null 2>&1; then
+        echo "${APPIMAGETOOL_SHA256}  ${file_path}" | sha256sum -c -
+    elif command -v shasum >/dev/null 2>&1; then
+        local actual_sha256
+        actual_sha256="$(shasum -a 256 "${file_path}" | awk '{print $1}')"
+        if [[ "${actual_sha256}" != "${APPIMAGETOOL_SHA256}" ]]; then
+            echo "ERROR: appimagetool SHA-256 mismatch" >&2
+            echo "Expected: ${APPIMAGETOOL_SHA256}" >&2
+            echo "Actual:   ${actual_sha256}" >&2
+            exit 1
+        fi
+    else
+        echo "ERROR: Neither sha256sum nor shasum is available for checksum verification." >&2
+        exit 1
+    fi
 }
 
 if [[ ! -f "${BINARY_SRC}" || ! -s "${BINARY_SRC}" ]]; then
@@ -183,6 +217,12 @@ with_trailing_slash() {
     fi
 }
 
+has_big_files() {
+    local path="$1"
+    [[ -d "${path}" ]] || return 1
+    find "${path}" -maxdepth 1 -type f -iname '*.big' | grep -q .
+}
+
 APPIMAGE_HOST_DIR=""
 if [[ -n "${APPIMAGE:-}" ]]; then
     APPIMAGE_HOST_DIR="$(cd "$(dirname "${APPIMAGE}")" && pwd)"
@@ -201,13 +241,13 @@ fi
 if [[ -z "${CNC_GENERALS_PATH:-}" && -n "${CNC_GENERALS_INSTALLPATH:-}" && -d "${CNC_GENERALS_INSTALLPATH}" ]]; then
     export CNC_GENERALS_PATH="$(with_trailing_slash "${CNC_GENERALS_INSTALLPATH}")"
 fi
-if [[ -z "${CNC_GENERALS_PATH:-}" && -n "${APPIMAGE_HOST_DIR}" && -d "${APPIMAGE_HOST_DIR}" ]]; then
+if [[ -z "${CNC_GENERALS_PATH:-}" && -n "${APPIMAGE_HOST_DIR}" ]] && has_big_files "${APPIMAGE_HOST_DIR}"; then
     export CNC_GENERALS_PATH="$(with_trailing_slash "${APPIMAGE_HOST_DIR}")"
 fi
-if [[ -z "${CNC_GENERALS_PATH:-}" && -d "${LAUNCH_DIR}" ]]; then
+if [[ -z "${CNC_GENERALS_PATH:-}" ]] && has_big_files "${LAUNCH_DIR}"; then
     export CNC_GENERALS_PATH="$(with_trailing_slash "${LAUNCH_DIR}")"
 fi
-if [[ -z "${CNC_GENERALS_PATH:-}" && -d "${HOME}/GeneralsX/Generals" ]]; then
+if [[ -z "${CNC_GENERALS_PATH:-}" ]] && has_big_files "${HOME}/GeneralsX/Generals"; then
     export CNC_GENERALS_PATH="$(with_trailing_slash "${HOME}/GeneralsX/Generals")"
 fi
 
@@ -249,13 +289,15 @@ cp "${ICON_SRC}" "${APPDIR}/usr/share/icons/hicolor/512x512/apps/GeneralsX.png"
 if command -v appimagetool >/dev/null 2>&1; then
     APPIMAGETOOL_BIN="$(command -v appimagetool)"
 else
+    # GeneralsX @build GitHubCopilot 10/04/2026 Allow pinned appimagetool URL + optional SHA256 verification for reproducible CI packaging.
     APPIMAGETOOL_BIN="${APPIMAGE_ROOT}/appimagetool.AppImage"
     mkdir -p "${APPIMAGE_ROOT}"
-    if [[ ! -x "${APPIMAGETOOL_BIN}" ]]; then
+    if [[ ! -f "${APPIMAGETOOL_BIN}" ]]; then
         echo "Downloading appimagetool..."
-        curl -L -o "${APPIMAGETOOL_BIN}" "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-        chmod +x "${APPIMAGETOOL_BIN}"
+        curl -fL --retry 3 --output "${APPIMAGETOOL_BIN}" "${APPIMAGETOOL_URL}"
     fi
+    verify_sha256_if_configured "${APPIMAGETOOL_BIN}"
+    chmod +x "${APPIMAGETOOL_BIN}"
 fi
 
 ARCH=x86_64 "${APPIMAGETOOL_BIN}" "${APPDIR}" "${OUTPUT_APPIMAGE}"

@@ -46,7 +46,25 @@ on:
         default: appimage
 
 jobs:
+  validate-package-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate package format input
+        shell: bash
+        run: |
+          # GeneralsX @bugfix GitHubCopilot 10/04/2026 Reject unexpected package_format values to avoid broken artifact paths.
+          case "${{ inputs.package_format }}" in
+            appimage|gzip)
+              echo "package_format is valid: ${{ inputs.package_format }}"
+              ;;
+            *)
+              echo "ERROR: Invalid package_format '${{ inputs.package_format }}'. Expected 'appimage' or 'gzip'." >&2
+              exit 1
+              ;;
+          esac
+
   build:
+    needs: [validate-package-format]
     name: ${{ inputs.game }}@${{ inputs.preset }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -190,7 +208,7 @@ jobs:
 
       # GeneralsX @build GitHubCopilot 10/04/2026 Package as AppImage (self-contained, no FUSE needed for appimagetool in CI via APPIMAGE_EXTRACT_AND_RUN).
       - name: Package as AppImage
-        if: success() && inputs.package_format != 'gzip'
+        if: success() && inputs.package_format == 'appimage'
         env:
           APPIMAGE_EXTRACT_AND_RUN: "1"
         run: |

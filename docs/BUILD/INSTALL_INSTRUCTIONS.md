@@ -21,6 +21,19 @@ Legacy fallback during migration is still supported:
    ./GeneralsXZH-linux-x86_64.AppImage -win
    ```
 
+   Troubleshooting: AppImages commonly use FUSE to mount their embedded filesystem at launch. If direct execution fails on a minimal or sandboxed system, try:
+
+   ```bash
+   APPIMAGE_EXTRACT_AND_RUN=1 ./GeneralsXZH-linux-x86_64.AppImage -win
+   ```
+
+   Or extract and run manually:
+
+   ```bash
+   ./GeneralsXZH-linux-x86_64.AppImage --appimage-extract
+   ./squashfs-root/AppRun -win
+   ```
+
 3. The AppImage auto-detects game data in the following default locations (checked in order):
    - `$HOME/GeneralsX/GeneralsZH` (preferred)
    - `$HOME/GeneralsX/GeneralsMD` (legacy fallback)
