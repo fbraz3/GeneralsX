@@ -24,6 +24,7 @@ OPENAL_LIB_DIR="${BUILD_ROOT}/_deps/openal_soft-build"
 FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
 FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
 LIBXCB_POC_DIR="${LIBXCB_POC_DIR:-}"
+GENERALSX_FLATPAK_BUNDLE_XCB="${GENERALSX_FLATPAK_BUNDLE_XCB:-0}"
 
 case "${GAME}" in
     GeneralsMD)
@@ -160,44 +161,40 @@ copy_codec_dep "libva-x11.so*"
 copy_codec_dep "libvdpau.so*"
 copy_codec_dep "libOpenCL.so*"
 
-# GeneralsX @feature GitHubCopilot 09/04/2026 Add short-term PoC path to inject newer libxcb stack into Flatpak runtime.
-# If LIBXCB_POC_DIR is set, copy libxcb/X11 companion libs from that directory and skip host libxcb injection.
-if [[ -n "${LIBXCB_POC_DIR}" ]]; then
-    if [[ ! -d "${LIBXCB_POC_DIR}" ]]; then
-        echo "ERROR: LIBXCB_POC_DIR is set but directory does not exist: ${LIBXCB_POC_DIR}" >&2
-        exit 1
+# GeneralsX @bugfix GitHubCopilot 10/04/2026 Do not vendor libxcb/X11/Wayland stack by default in Flatpak.
+# Runtime maintainers confirmed /app/lib/libxcb* overrides runtime libs and can break Vulkan ICD symbol resolution.
+# Use GENERALSX_FLATPAK_BUNDLE_XCB=1 only for isolated PoC/testing with explicit intent.
+if [[ "${GENERALSX_FLATPAK_BUNDLE_XCB}" == "1" ]]; then
+    if [[ -n "${LIBXCB_POC_DIR}" ]]; then
+        if [[ ! -d "${LIBXCB_POC_DIR}" ]]; then
+            echo "ERROR: LIBXCB_POC_DIR is set but directory does not exist: ${LIBXCB_POC_DIR}" >&2
+            exit 1
+        fi
+
+        echo "Using external libxcb PoC directory: ${LIBXCB_POC_DIR}"
+        copy_optional_libs "${LIBXCB_POC_DIR}" "libxcb.so*"
+        copy_optional_libs "${LIBXCB_POC_DIR}" "libxcb-*.so*"
+        copy_optional_libs "${LIBXCB_POC_DIR}" "libX11.so*"
+        copy_optional_libs "${LIBXCB_POC_DIR}" "libX11-xcb.so*"
+        copy_optional_libs "${LIBXCB_POC_DIR}" "libxshmfence.so*"
+        copy_optional_libs "${LIBXCB_POC_DIR}" "libXau.so*"
+        copy_optional_libs "${LIBXCB_POC_DIR}" "libXdmcp.so*"
+    else
+        copy_codec_dep "libxcb.so*"
+        copy_codec_dep "libxcb-present.so*"
+        copy_codec_dep "libxcb-xfixes.so*"
+        copy_codec_dep "libxcb-sync.so*"
+        copy_codec_dep "libxcb-randr.so*"
+        copy_codec_dep "libxcb-shm.so*"
+        copy_codec_dep "libxcb-dri3.so*"
+        copy_codec_dep "libxshmfence.so*"
+        copy_codec_dep "libX11-xcb.so*"
+        copy_codec_dep "libX11.so*"
+        copy_codec_dep "libxcb-dri2.so*"
+        copy_codec_dep "libwayland-client.so*"
     fi
-
-    echo "Using external libxcb PoC directory: ${LIBXCB_POC_DIR}"
-    copy_optional_libs "${LIBXCB_POC_DIR}" "libxcb.so*"
-    copy_optional_libs "${LIBXCB_POC_DIR}" "libxcb-*.so*"
-    copy_optional_libs "${LIBXCB_POC_DIR}" "libX11.so*"
-    copy_optional_libs "${LIBXCB_POC_DIR}" "libX11-xcb.so*"
-    copy_optional_libs "${LIBXCB_POC_DIR}" "libxshmfence.so*"
-    copy_optional_libs "${LIBXCB_POC_DIR}" "libXau.so*"
-    copy_optional_libs "${LIBXCB_POC_DIR}" "libXdmcp.so*"
-fi
-
-# GeneralsX @bugfix GitHubCopilot 09/04/2026 Bundle XCB/Wayland WSI libraries for Vulkan surface extension support in Flatpak.
-# Those libraries are needed by Intel Vulkan driver (libvulkan_intel.so) for VK_KHR_surface, VK_KHR_xcb_surface, VK_KHR_wayland_surface.
-if [[ -z "${LIBXCB_POC_DIR}" ]]; then
-    copy_codec_dep "libxcb.so*"
-    copy_codec_dep "libxcb-present.so*"
-    copy_codec_dep "libxcb-xfixes.so*"
-    copy_codec_dep "libxcb-sync.so*"
-    copy_codec_dep "libxcb-randr.so*"
-    copy_codec_dep "libxcb-shm.so*"
-    copy_codec_dep "libxcb-dri3.so*"
-    copy_codec_dep "libxshmfence.so*"
-    copy_codec_dep "libX11-xcb.so*"
-    copy_codec_dep "libX11.so*"
-    copy_codec_dep "libxcb-dri2.so*"
-    copy_codec_dep "libwayland-client.so*"
-fi
-
-if ! compgen -G "${RUNTIME_DIR}/libxcb.so*" > /dev/null; then
-    echo "ERROR: Missing required runtime library libxcb.so* (set LIBXCB_POC_DIR or ensure host xcb libs are available)." >&2
-    exit 1
+else
+    echo "INFO: Skipping bundled libxcb/X11/Wayland stack (runtime-provided in Flatpak)."
 fi
 
 copy_ldd_deps() {
@@ -207,6 +204,14 @@ copy_ldd_deps() {
     while IFS= read -r dep; do
         case "${dep}" in
             /lib64/ld-linux* | /lib/*/ld-linux* | /lib/*/libc.so.* | /lib/*/libm.so.* | /lib/*/libpthread.so.* | /lib/*/librt.so.* | /lib/*/libdl.so.*)
+                continue
+                ;;
+            # GeneralsX @bugfix GitHubCopilot 10/04/2026 Keep platform graphics/windowing stack from Flatpak runtime to avoid app-level overrides.
+            /lib/*/libxcb*.so* | /lib64/libxcb*.so* | /usr/lib/*/libxcb*.so* | /usr/lib64/libxcb*.so* | \
+            /lib/*/libX11*.so* | /lib64/libX11*.so* | /usr/lib/*/libX11*.so* | /usr/lib64/libX11*.so* | \
+            /lib/*/libwayland*.so* | /lib64/libwayland*.so* | /usr/lib/*/libwayland*.so* | /usr/lib64/libwayland*.so* | \
+            /lib/*/libvulkan*.so* | /lib64/libvulkan*.so* | /usr/lib/*/libvulkan*.so* | /usr/lib64/libvulkan*.so* | \
+            /lib/*/libdrm*.so* | /lib64/libdrm*.so* | /usr/lib/*/libdrm*.so* | /usr/lib64/libdrm*.so*)
                 continue
                 ;;
         esac
