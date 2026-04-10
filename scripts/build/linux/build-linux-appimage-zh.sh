@@ -16,6 +16,8 @@ DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 OPENAL_LIB_DIR="${BUILD_DIR}/_deps/openal_soft-build"
+FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
+FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
 DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
@@ -34,6 +36,32 @@ copy_optional_libs() {
             cp -a "${matches[@]}" "${APPDIR}/usr/lib/"
         fi
     fi
+}
+
+copy_codec_dep() {
+    local pattern="$1"
+    copy_optional_libs "${FFMPEG_DEP_LIB_DIR}" "${pattern}"
+    copy_optional_libs "${FFMPEG_LIB_DIR}" "${pattern}"
+}
+
+copy_ldd_deps() {
+    local root="$1"
+    [[ -e "${root}" ]] || return 0
+
+    while IFS= read -r dep; do
+        case "${dep}" in
+            /lib64/ld-linux* | /lib/*/ld-linux* | /lib/*/libc.so.* | /lib/*/libm.so.* | /lib/*/libpthread.so.* | /lib/*/librt.so.* | /lib/*/libdl.so.*)
+                continue
+                ;;
+        esac
+
+        cp -a "${dep}" "${APPDIR}/usr/lib/" 2>/dev/null || true
+        if [[ -L "${dep}" ]]; then
+            local resolved
+            resolved="$(readlink -f "${dep}")"
+            cp -a "${resolved}" "${APPDIR}/usr/lib/" 2>/dev/null || true
+        fi
+    done < <(ldd "${root}" | awk '{for (i = 1; i <= NF; ++i) { if ($i ~ /^\//) { print $i; break } }}' | sort -u)
 }
 
 if [[ ! -f "${BINARY_SRC}" || ! -s "${BINARY_SRC}" ]]; then
@@ -65,6 +93,65 @@ copy_optional_libs "${DXVK_LIB_DIR}" "libdxvk_d3d9.so*"
 copy_optional_libs "${SDL3_LIB_DIR}" "libSDL3.so*"
 copy_optional_libs "${SDL3_IMAGE_LIB_DIR}" "libSDL3_image.so*"
 copy_optional_libs "${OPENAL_LIB_DIR}" "libopenal.so*"
+
+# GeneralsX @bugfix GitHubCopilot 10/04/2026 Bundle FFmpeg SONAME-compatible libs to avoid host version mismatch (e.g. Ubuntu 25.10).
+copy_codec_dep "libavcodec.so*"
+copy_codec_dep "libavformat.so*"
+copy_codec_dep "libavutil.so*"
+copy_codec_dep "libswresample.so*"
+copy_codec_dep "libswscale.so*"
+
+# Include transitive codec dependencies required by FFmpeg libs.
+copy_codec_dep "libzvbi.so*"
+copy_codec_dep "libsnappy.so*"
+copy_codec_dep "libaom.so*"
+copy_codec_dep "libcodec2.so*"
+copy_codec_dep "libgsm.so*"
+copy_codec_dep "libjxl.so*"
+copy_codec_dep "libjxl_threads.so*"
+copy_codec_dep "libmp3lame.so*"
+copy_codec_dep "libopenjp2.so*"
+copy_codec_dep "libopus.so*"
+copy_codec_dep "librav1e.so*"
+copy_codec_dep "libshine.so*"
+copy_codec_dep "libspeex.so*"
+copy_codec_dep "libSvtAv1Enc.so*"
+copy_codec_dep "libtheoraenc.so*"
+copy_codec_dep "libtheoradec.so*"
+copy_codec_dep "libtwolame.so*"
+copy_codec_dep "libvorbis.so*"
+copy_codec_dep "libvorbisenc.so*"
+copy_codec_dep "libwebp.so*"
+copy_codec_dep "libwebpmux.so*"
+copy_codec_dep "libx264.so*"
+copy_codec_dep "libx265.so*"
+copy_codec_dep "libxvidcore.so*"
+copy_codec_dep "libsoxr.so*"
+copy_codec_dep "libvpl.so*"
+copy_codec_dep "libva.so*"
+copy_codec_dep "libva-drm.so*"
+copy_codec_dep "libva-x11.so*"
+copy_codec_dep "libvdpau.so*"
+copy_codec_dep "libOpenCL.so*"
+
+shopt -s nullglob
+for ffmpeg_root in "${APPDIR}"/usr/lib/libavcodec.so* "${APPDIR}"/usr/lib/libavformat.so* "${APPDIR}"/usr/lib/libavutil.so*; do
+    copy_ldd_deps "${ffmpeg_root}"
+done
+shopt -u nullglob
+
+if ! compgen -G "${APPDIR}/usr/lib/libavcodec.so*" > /dev/null; then
+    echo "ERROR: Missing required AppImage runtime library libavcodec.so*" >&2
+    exit 1
+fi
+if ! compgen -G "${APPDIR}/usr/lib/libavformat.so*" > /dev/null; then
+    echo "ERROR: Missing required AppImage runtime library libavformat.so*" >&2
+    exit 1
+fi
+if ! compgen -G "${APPDIR}/usr/lib/libavutil.so*" > /dev/null; then
+    echo "ERROR: Missing required AppImage runtime library libavutil.so*" >&2
+    exit 1
+fi
 
 if [[ -f "${DXVK_CONF_SRC}" ]]; then
     mkdir -p "${APPDIR}/usr/share/generalsxzh"

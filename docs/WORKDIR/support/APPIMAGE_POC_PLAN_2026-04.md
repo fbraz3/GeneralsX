@@ -22,6 +22,7 @@ A short-term AppImage path reduces distro ABI friction while keeping distributio
 - SDL3 + SDL3_image
 - OpenAL
 - GameSpy
+- FFmpeg runtime libs with matching SONAMEs (`libavcodec.so.60`, `libavformat.so.60`, `libavutil.so.58`, `libswscale.so.7`, `libswresample.so.4`) plus transitive codec deps
 - Optional `dxvk.conf`
 
 ## Launcher behavior
@@ -67,4 +68,4 @@ Example:
 
 - Host driver stack (Vulkan ICD) still remains a runtime dependency
 - Some environments may require additional policy tweaks (for example FUSE or sandbox constraints)
-- FFmpeg/video libraries are not yet bundled in this initial PoC
+- Build baseline still matters for broad compatibility (prefer building AppImage on an older supported distro)
