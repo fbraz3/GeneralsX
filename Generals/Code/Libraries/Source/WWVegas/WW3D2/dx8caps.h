@@ -205,10 +205,8 @@ public:
 	};
 
 
-	DX8Caps(IDirect3D8* direct3d, const D3DCAPS8& caps,WW3DFormat display_format, const D3DADAPTER_IDENTIFIER8& adapter_id);
-	DX8Caps(IDirect3D8* direct3d, IDirect3DDevice8* D3DDevice,WW3DFormat display_format, const D3DADAPTER_IDENTIFIER8& adapter_id);
-	// GeneralsX @build BenderAI 10/02/2026 - Constructor from pre-fetched caps (no live device needed)
 	DX8Caps(IDirect3D8* direct3d, const D3DCAPS8& caps, WW3DFormat display_format, const D3DADAPTER_IDENTIFIER8& adapter_id);
+	DX8Caps(IDirect3D8* direct3d, IDirect3DDevice8* D3DDevice, WW3DFormat display_format, const D3DADAPTER_IDENTIFIER8& adapter_id);
 	bool Is_Valid_Display_Format(int width, int height, WW3DFormat format);
 	static void Shutdown();
 
@@ -227,8 +225,6 @@ public:
 	bool Support_Cubemaps() const { return SupportCubemaps; }
 	bool Can_Do_Multi_Pass() const { return CanDoMultiPass; }
 	bool Is_Fog_Allowed() const { return IsFogAllowed; }
-
-	bool Is_Valid_Display_Format(int width, int height, WW3DFormat format);
 
 	int Get_Max_Textures_Per_Pass() const { return MaxTexturesPerPass; }
 
