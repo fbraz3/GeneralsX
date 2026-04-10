@@ -108,6 +108,11 @@ brew install --cask docker
 
 # 7. Optional: build AppImage package
 ./scripts/build/linux/build-linux-appimage-zh.sh linux64-deploy
+
+# 8. Optional: run AppImage with explicit asset paths
+CNC_GENERALS_ZH_PATH="/path/to/GeneralsZH_or_GeneralsMD" \
+CNC_GENERALS_PATH="/path/to/Generals" \
+./build/GeneralsXZH-linux64-deploy-x86_64.AppImage -win
 ```
 
 ### macOS Build

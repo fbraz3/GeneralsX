@@ -73,6 +73,7 @@ fi
 cat > "${APPDIR}/AppRun" << 'EOF'
 #!/usr/bin/env bash
 # GeneralsX @build GitHubCopilot 09/04/2026 AppImage runtime launcher for GeneralsXZH.
+# GeneralsX @bugfix GitHubCopilot 09/04/2026 Honor CNC_GENERALS_PATH and CNC_GENERALS_ZH_PATH with deterministic precedence.
 set -euo pipefail
 
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -81,14 +82,83 @@ export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
 export DXVK_HUD="${DXVK_HUD:-0}"
 
-if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${HOME}/GeneralsX/Generals" ]]; then
-    export CNC_GENERALS_INSTALLPATH="${HOME}/GeneralsX/Generals/"
+has_big_files() {
+    local dir="$1"
+    [[ -d "${dir}" ]] || return 1
+    compgen -G "${dir}/*.big" > /dev/null
+}
+
+with_trailing_slash() {
+    local path="$1"
+    if [[ "${path}" == */ ]]; then
+        printf '%s' "${path}"
+    else
+        printf '%s/' "${path}"
+    fi
+}
+
+APPIMAGE_HOST_DIR=""
+if [[ -n "${APPIMAGE:-}" ]]; then
+    APPIMAGE_HOST_DIR="$(cd "$(dirname "${APPIMAGE}")" && pwd)"
 fi
-if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${HOME}/GeneralsX/GeneralsZH" ]]; then
-    export CNC_GENERALS_INSTALLPATH="${HOME}/GeneralsX/GeneralsZH/"
+LAUNCH_DIR="$(pwd)"
+
+# Resolve Zero Hour assets path (CNC_GENERALS_ZH_PATH)
+if [[ -n "${CNC_GENERALS_ZH_PATH:-}" ]]; then
+    if [[ ! -d "${CNC_GENERALS_ZH_PATH}" ]]; then
+        echo "WARNING: CNC_GENERALS_ZH_PATH='${CNC_GENERALS_ZH_PATH}' does not exist; falling back to auto-detection"
+        unset CNC_GENERALS_ZH_PATH
+    else
+        export CNC_GENERALS_ZH_PATH="$(with_trailing_slash "${CNC_GENERALS_ZH_PATH}")"
+    fi
 fi
-if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${HOME}/GeneralsX/GeneralsMD" ]]; then
-    export CNC_GENERALS_INSTALLPATH="${HOME}/GeneralsX/GeneralsMD/"
+
+if [[ -z "${CNC_GENERALS_ZH_PATH:-}" && -n "${APPIMAGE_HOST_DIR}" ]] && has_big_files "${APPIMAGE_HOST_DIR}"; then
+    export CNC_GENERALS_ZH_PATH="$(with_trailing_slash "${APPIMAGE_HOST_DIR}")"
+fi
+if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]] && has_big_files "${LAUNCH_DIR}"; then
+    export CNC_GENERALS_ZH_PATH="$(with_trailing_slash "${LAUNCH_DIR}")"
+fi
+if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]] && has_big_files "${HOME}/GeneralsX/GeneralsZH"; then
+    export CNC_GENERALS_ZH_PATH="$(with_trailing_slash "${HOME}/GeneralsX/GeneralsZH")"
+fi
+if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]] && has_big_files "${HOME}/GeneralsX/GeneralsMD"; then
+    export CNC_GENERALS_ZH_PATH="$(with_trailing_slash "${HOME}/GeneralsX/GeneralsMD")"
+fi
+
+# Resolve base Generals path (CNC_GENERALS_PATH / CNC_GENERALS_INSTALLPATH)
+if [[ -n "${CNC_GENERALS_PATH:-}" ]]; then
+    if [[ ! -d "${CNC_GENERALS_PATH}" ]]; then
+        echo "WARNING: CNC_GENERALS_PATH='${CNC_GENERALS_PATH}' does not exist; falling back to auto-detection"
+        unset CNC_GENERALS_PATH
+    else
+        export CNC_GENERALS_PATH="$(with_trailing_slash "${CNC_GENERALS_PATH}")"
+    fi
+fi
+
+if [[ -z "${CNC_GENERALS_PATH:-}" && -n "${CNC_GENERALS_INSTALLPATH:-}" && -d "${CNC_GENERALS_INSTALLPATH}" ]]; then
+    export CNC_GENERALS_PATH="$(with_trailing_slash "${CNC_GENERALS_INSTALLPATH}")"
+fi
+if [[ -z "${CNC_GENERALS_PATH:-}" && -n "${CNC_GENERALS_ZH_PATH:-}" ]]; then
+    _zh_parent="$(cd "${CNC_GENERALS_ZH_PATH}/.." && pwd)"
+    if [[ -d "${_zh_parent}/Generals" ]]; then
+        export CNC_GENERALS_PATH="$(with_trailing_slash "${_zh_parent}/Generals")"
+    fi
+fi
+if [[ -z "${CNC_GENERALS_PATH:-}" && -d "${HOME}/GeneralsX/Generals" ]]; then
+    export CNC_GENERALS_PATH="$(with_trailing_slash "${HOME}/GeneralsX/Generals")"
+fi
+
+if [[ -n "${CNC_GENERALS_PATH:-}" && -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
+    export CNC_GENERALS_INSTALLPATH="$(with_trailing_slash "${CNC_GENERALS_PATH}")"
+fi
+
+if [[ -n "${CNC_GENERALS_ZH_PATH:-}" ]]; then
+    echo "INFO: AppImage assets path (ZH): ${CNC_GENERALS_ZH_PATH}"
+    cd "${CNC_GENERALS_ZH_PATH}"
+fi
+if [[ -n "${CNC_GENERALS_PATH:-}" ]]; then
+    echo "INFO: AppImage base Generals path: ${CNC_GENERALS_PATH}"
 fi
 
 if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then

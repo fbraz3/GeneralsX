@@ -24,8 +24,19 @@ A short-term AppImage path reduces distro ABI friction while keeping distributio
 
 - Uses bundled libs via `LD_LIBRARY_PATH`
 - Exposes DXVK defaults (`DXVK_WSI_DRIVER=SDL3`, logging/HUD knobs)
-- Auto-detects base Generals path from common directories
+- Honors user overrides first, then auto-detects paths:
+	- `CNC_GENERALS_ZH_PATH` (Zero Hour assets)
+	- `CNC_GENERALS_PATH` and `CNC_GENERALS_INSTALLPATH` (base Generals assets)
+	- fallback auto-detection from AppImage directory, current launch directory, and common `~/GeneralsX/*` paths
 - Keeps OpenAL workaround env for known alignment/backend issues
+
+### Recommended launch form with explicit paths
+
+```bash
+CNC_GENERALS_ZH_PATH="/path/to/GeneralsZH_or_GeneralsMD" \
+CNC_GENERALS_PATH="/path/to/Generals" \
+./build/GeneralsXZH-linux64-deploy-x86_64.AppImage -win
+```
 
 ## Build command
 
