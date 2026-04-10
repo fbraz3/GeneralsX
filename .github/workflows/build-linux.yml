@@ -277,20 +277,31 @@ jobs:
           tar -C "/tmp" -cf "${BUNDLE_TAR}" "GeneralsX-${{ inputs.game }}-deploy/"
           echo "Archive ready: ${BUNDLE_TAR}"
 
-      - name: Set artifact path
+      - name: Set artifact metadata
         id: artifact
         if: success()
         run: |
           PRESET="${{ inputs.preset }}"
           FORMAT="${{ inputs.package_format }}"
+          GAME_SLUG="${{ inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx' }}"
+          PRESET_SLUG="${{ inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset }}"
+
           if [ "${FORMAT}" = "gzip" ]; then
+            echo "name=linux-${GAME_SLUG}-${PRESET_SLUG}-bundle" >> "$GITHUB_OUTPUT"
             echo "path=/tmp/GeneralsX-${{ inputs.game }}-${PRESET}.tar" >> "$GITHUB_OUTPUT"
           else
             if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-              echo "path=build/GeneralsXZH-${PRESET}-x86_64.AppImage" >> "$GITHUB_OUTPUT"
+              INPUT_PATH="build/GeneralsXZH-${PRESET}-x86_64.AppImage"
+              OUTPUT_PATH="/tmp/GeneralsXZH-${PRESET}-x86_64.AppImage"
             else
-              echo "path=build/GeneralsX-${PRESET}-x86_64.AppImage" >> "$GITHUB_OUTPUT"
+              INPUT_PATH="build/GeneralsX-${PRESET}-x86_64.AppImage"
+              OUTPUT_PATH="/tmp/GeneralsX-${PRESET}-x86_64.AppImage"
             fi
+
+            # GeneralsX @bugfix GitHubCopilot 10/04/2026 Flatten uploaded AppImage artifact structure (no intermediate directories inside zip).
+            cp -f "${INPUT_PATH}" "${OUTPUT_PATH}"
+            echo "name=linux-${GAME_SLUG}-${PRESET_SLUG}-appimage" >> "$GITHUB_OUTPUT"
+            echo "path=${OUTPUT_PATH}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Upload Build Logs
@@ -305,7 +316,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ format('linux-{0}-{1}-bundle', inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx', inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset) }}
+          name: ${{ steps.artifact.outputs.name }}
           path: ${{ steps.artifact.outputs.path }}
           retention-days: 7
           if-no-files-found: warn

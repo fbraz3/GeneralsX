@@ -106,16 +106,16 @@ jobs:
             echo "first_release=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download Linux bundle artifact
+      - name: Download Linux appimage artifact
         uses: actions/download-artifact@v4
         with:
-          name: linux-generalsxzh-linux64-bundle
+          name: linux-generalsxzh-linux64-appimage
           path: artifacts/linux
 
-      - name: Download Linux Generals bundle artifact
+      - name: Download Linux Generals appimage artifact
         uses: actions/download-artifact@v4
         with:
-          name: linux-generalsx-linux64-bundle
+          name: linux-generalsx-linux64-appimage
           path: artifacts/linux-generals
 
       - name: Download macOS bundle artifact
