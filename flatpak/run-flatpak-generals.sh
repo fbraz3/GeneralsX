@@ -30,8 +30,18 @@ if [[ -z "${VK_ICD_FILENAMES:-}" ]]; then
     fi
 fi
 
-# Enable DXVK software rendering as fallback when Vulkan WSI fails
-export DXVK_FORCESWRENDER="${DXVK_FORCESWRENDER:-0}"
+# GeneralsX @tweak GitHubCopilot 09/04/2026 Allow explicit experimental runtime mode for bundled XCB stack.
+# Usage:
+#   GENERALSX_FLATPAK_RUNTIME_MODE=stock   -> Default behavior
+#   GENERALSX_FLATPAK_RUNTIME_MODE=vendor-xcb -> Force /app/lib first and software Vulkan fallback knobs
+RUNTIME_MODE="${GENERALSX_FLATPAK_RUNTIME_MODE:-stock}"
+if [[ "${RUNTIME_MODE}" == "vendor-xcb" ]]; then
+    export LD_LIBRARY_PATH="/app/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+    export DXVK_RENDERER="software"
+    export DXVK_FORCESWRENDER="1"
+else
+    export DXVK_FORCESWRENDER="${DXVK_FORCESWRENDER:-0}"
+fi
 
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
     if [[ -d "${HOME}/GeneralsX/Generals" ]]; then
@@ -50,10 +60,3 @@ if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
 fi
 
 exec /app/bin/GeneralsX "$@"
-
-# GeneralsX @bugfix GitHubCopilot 09/04/2026 Force DXVK software rendering in Flatpak due to Vulkan WSI unavailability.
-# Issue: Vulkan Radeon driver fails to load due to missing xcb_dri3_import_syncobj_checked symbol
-# This is a Freedesktop SDK 25.08 libxcb version incompatibility issue.
-# Workaround: Force DXVK to software-render instead of trying Vulkan.
-export DXVK_RENDERER="software"
-export DXVK_FORCESWRENDER="1"
