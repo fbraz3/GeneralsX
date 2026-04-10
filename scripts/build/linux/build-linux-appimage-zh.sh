@@ -19,7 +19,8 @@ OPENAL_LIB_DIR="${BUILD_DIR}/_deps/openal_soft-build"
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
 DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
-ICON_SRC="${PROJECT_ROOT}/flatpak/generalsx-zh_icon_512.png"
+ICON_SRC_ZH="${PROJECT_ROOT}/assets/generalsx-zh_icon.png"
+ICON_SRC_FALLBACK="${PROJECT_ROOT}/assets/generalsx_icon.png"
 
 copy_optional_libs() {
     local source_dir="$1"
@@ -184,10 +185,22 @@ Terminal=false
 EOF
 cp "${APPDIR}/GeneralsXZH.desktop" "${APPDIR}/usr/share/applications/GeneralsXZH.desktop"
 
-if [[ -f "${ICON_SRC}" ]]; then
-    cp "${ICON_SRC}" "${APPDIR}/GeneralsXZH.png"
-    cp "${ICON_SRC}" "${APPDIR}/usr/share/icons/hicolor/512x512/apps/GeneralsXZH.png"
+ICON_SRC=""
+if [[ -f "${ICON_SRC_ZH}" ]]; then
+    ICON_SRC="${ICON_SRC_ZH}"
+elif [[ -f "${ICON_SRC_FALLBACK}" ]]; then
+    ICON_SRC="${ICON_SRC_FALLBACK}"
 fi
+
+if [[ -z "${ICON_SRC}" ]]; then
+    echo "ERROR: Missing icon assets. Expected one of:" >&2
+    echo "  ${ICON_SRC_ZH}" >&2
+    echo "  ${ICON_SRC_FALLBACK}" >&2
+    exit 1
+fi
+
+cp "${ICON_SRC}" "${APPDIR}/GeneralsXZH.png"
+cp "${ICON_SRC}" "${APPDIR}/usr/share/icons/hicolor/512x512/apps/GeneralsXZH.png"
 
 if command -v appimagetool >/dev/null 2>&1; then
     APPIMAGETOOL_BIN="$(command -v appimagetool)"

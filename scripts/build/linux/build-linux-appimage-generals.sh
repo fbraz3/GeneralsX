@@ -70,6 +70,11 @@ if [[ -f "${DXVK_CONF_SRC}" ]]; then
     cp "${DXVK_CONF_SRC}" "${APPDIR}/usr/share/generalsx/dxvk.conf"
 fi
 
+if [[ ! -f "${ICON_SRC}" ]]; then
+    echo "ERROR: Missing icon asset: ${ICON_SRC}" >&2
+    exit 1
+fi
+
 cat > "${APPDIR}/AppRun" << 'EOF'
 #!/usr/bin/env bash
 # GeneralsX @build GitHubCopilot 09/04/2026 AppImage runtime launcher for GeneralsX.
@@ -151,10 +156,8 @@ Terminal=false
 EOF
 cp "${APPDIR}/GeneralsX.desktop" "${APPDIR}/usr/share/applications/GeneralsX.desktop"
 
-if [[ -f "${ICON_SRC}" ]]; then
-    cp "${ICON_SRC}" "${APPDIR}/GeneralsX.png"
-    cp "${ICON_SRC}" "${APPDIR}/usr/share/icons/hicolor/512x512/apps/GeneralsX.png"
-fi
+cp "${ICON_SRC}" "${APPDIR}/GeneralsX.png"
+cp "${ICON_SRC}" "${APPDIR}/usr/share/icons/hicolor/512x512/apps/GeneralsX.png"
 
 if command -v appimagetool >/dev/null 2>&1; then
     APPIMAGETOOL_BIN="$(command -v appimagetool)"
