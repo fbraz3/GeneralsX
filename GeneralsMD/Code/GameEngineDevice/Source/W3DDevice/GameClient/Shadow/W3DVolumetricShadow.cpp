@@ -1470,7 +1470,13 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 	D3DMATRIX dxmWorld = To_D3DMATRIX(*meshXform);
 	m_pDev->SetTransform(D3DTS_WORLD, &dxmWorld);
 
-	// GeneralsX @bugfix BenderAI 13/02/2026 Removed orphaned brace from Phase 1.5 refactoring
+	// GeneralsX @bugfix BenderAI 11/04/2026 Rebind dynamic shadow vertex stream to avoid stale VB state on animated casters.
+	if (shadowVertexBufferD3D != lastActiveVertexBuffer)
+	{
+		m_pDev->SetStreamSource(0,shadowVertexBufferD3D,sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX));
+		lastActiveVertexBuffer = shadowVertexBufferD3D;
+	}
+
 	if (DX8Wrapper::_Is_Triangle_Draw_Enabled())
 	{
 		Debug_Statistics::Record_DX8_Polys_And_Vertices(numPolys,numVerts,ShaderClass::_PresetOpaqueShader);
