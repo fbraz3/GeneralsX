@@ -95,6 +95,36 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "[Linux] Build AppImage GeneralsX",
+			"type": "shell",
+			"command": "./scripts/build/linux/build-linux-appimage-generals.sh linux64-deploy",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "[Linux] Build AppImage GeneralsXZH",
+			"type": "shell",
+			"command": "./scripts/build/linux/build-linux-appimage-zh.sh linux64-deploy",
+			"isBackground": false,
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": false,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "[Linux] Bundle GeneralsXZH",
 			"type": "shell",
 			"command": "./scripts/build/linux/bundle-linux-zh.sh",

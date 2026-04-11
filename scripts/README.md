@@ -8,10 +8,12 @@ This folder is organized by function for easier maintenance and discovery.
 
 #### `build/linux/` - Linux & Docker Build
 Scripts for Linux native and Docker-based builds:
+- `build-linux-appimage-generals.sh` - Package GeneralsX as AppImage (portable single-file Linux distribution)
 - `docker-configure-linux.sh` - Configure CMake for Linux build
 - `docker-build-linux-zh.sh` - Build GeneralsXZH (Zero Hour) for Linux
 - `docker-build-linux-generals.sh` - Build GeneralsX (base game) for Linux
 - `docker-build-mingw-zh.sh` - Cross-compile Windows .exe via MinGW in Docker
+- `build-linux-appimage-zh.sh` - Package GeneralsXZH as AppImage (portable single-file Linux distribution)
 - `bundle-linux-zh.sh` - Bundle compiled binaries
 - `deploy-linux-zh.sh` - Deploy to runtime directory
 - `run-linux-zh.sh` - Launch the game windowed
@@ -104,6 +106,17 @@ brew install --cask docker
 
 # 6. Run
 ./scripts/build/linux/run-linux-zh.sh -win
+
+# 7. Optional: build AppImage package
+./scripts/build/linux/build-linux-appimage-zh.sh linux64-deploy
+
+# 7b. Optional: build AppImage package for base Generals
+./scripts/build/linux/build-linux-appimage-generals.sh linux64-deploy
+
+# 8. Optional: run AppImage with explicit asset paths
+CNC_GENERALS_ZH_PATH="/path/to/GeneralsZH_or_GeneralsMD" \
+CNC_GENERALS_PATH="/path/to/Generals" \
+./build/GeneralsXZH-linux64-deploy-x86_64.AppImage -win
 ```
 
 ### macOS Build

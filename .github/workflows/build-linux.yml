@@ -16,6 +16,11 @@ on:
         type: string
         default: "linux64-deploy"
         description: "CMake preset for Linux"
+      package_format:
+        required: false
+        type: string
+        default: "appimage"
+        description: "Artifact packaging format: appimage (default) or gzip"
   workflow_dispatch:
     inputs:
       game:
@@ -32,6 +37,13 @@ on:
           - linux64-deploy
           - linux64-testing
         default: linux64-deploy
+      package_format:
+        type: choice
+        description: "Artifact packaging format"
+        options:
+          - appimage
+          - gzip
+        default: appimage
 
 jobs:
   build:
@@ -44,6 +56,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Normalize package format
+        id: package-format
+        shell: bash
+        run: |
+          # GeneralsX @bugfix GitHubCopilot 10/04/2026 Normalize invalid package_format to appimage to keep workflow resilient.
+          FORMAT="${{ inputs.package_format }}"
+          case "${FORMAT}" in
+            appimage|gzip)
+              echo "package_format is valid: ${FORMAT}"
+              ;;
+            *)
+              echo "WARNING: Invalid package_format '${FORMAT}'. Falling back to 'appimage'."
+              FORMAT="appimage"
+              ;;
+          esac
+          echo "value=${FORMAT}" >> "$GITHUB_OUTPUT"
 
       - name: Cache vcpkg
         id: cache-vcpkg
@@ -176,68 +205,103 @@ jobs:
             exit 1
           fi
 
-      - name: Deploy Bundle (Binary + Libraries + Wrapper)
-        if: success()
+      # GeneralsX @build GitHubCopilot 10/04/2026 Package as AppImage (self-contained, no FUSE needed for appimagetool in CI via APPIMAGE_EXTRACT_AND_RUN).
+      - name: Package as AppImage
+        if: success() && steps.package-format.outputs.value == 'appimage'
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: |
+          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+            ./scripts/build/linux/build-linux-appimage-zh.sh ${{ inputs.preset }}
+          else
+            ./scripts/build/linux/build-linux-appimage-generals.sh ${{ inputs.preset }}
+          fi
+
+      # GeneralsX @build GitHubCopilot 10/04/2026 Legacy gzip bundle kept as opt-in fallback for CI/testing.
+      - name: Package as gzip bundle
+        if: success() && steps.package-format.outputs.value == 'gzip'
         run: |
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
             BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
-            GAME_DIR="GeneralsMD"
           else
             BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
-            GAME_DIR="Generals"
           fi
-          
+
           RUNTIME_DIR="/tmp/GeneralsX-${{ inputs.game }}-deploy"
           mkdir -p "${RUNTIME_DIR}"
-          
+
           echo "Creating deployment bundle at: ${RUNTIME_DIR}"
           echo "  Copying executable..."
           cp -v "${BINARY}" "${RUNTIME_DIR}/$(basename ${BINARY})"
           chmod +x "${RUNTIME_DIR}/$(basename ${BINARY})"
-          
+
           echo "  Copying DXVK libraries..."
           find "build/${{ inputs.preset }}/_deps/dxvk-src/lib" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
-          
+
           echo "  Copying SDL3 libraries..."
           find "build/${{ inputs.preset }}/_deps/sdl3-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
           find "build/${{ inputs.preset }}/_deps/sdl3_image-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
 
-          # GeneralsX @bugfix felipebraz 05/03/2026 Bundle OpenAL (openal_soft-build output, not provided by runner).
           echo "  Copying OpenAL library..."
           find "build/${{ inputs.preset }}/_deps/openal_soft-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
 
           echo "  Copying GameSpy library..."
           find "build/${{ inputs.preset }}" -name "libgamespy.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
-          
+
           echo "  Copying run.sh wrapper from scripts..."
           cp -v "scripts/qa/smoke/run-bundled-game.sh" "${RUNTIME_DIR}/run.sh"
           chmod +x "${RUNTIME_DIR}/run.sh"
 
-          # GeneralsX @bugfix felipebraz 05/03/2026 Validate required runtime libraries in Linux bundle.
           if ! compgen -G "${RUNTIME_DIR}/libgamespy.so*" > /dev/null; then
-            echo "❌ Missing required runtime library: libgamespy.so*"
+            echo "ERROR: Missing required runtime library: libgamespy.so*"
             exit 1
           fi
           if ! compgen -G "${RUNTIME_DIR}/libdxvk_d3d8.so*" > /dev/null; then
-            echo "❌ Missing required runtime library: libdxvk_d3d8.so*"
+            echo "ERROR: Missing required runtime library: libdxvk_d3d8.so*"
             exit 1
           fi
           if ! compgen -G "${RUNTIME_DIR}/libSDL3.so*" > /dev/null; then
-            echo "❌ Missing required runtime library: libSDL3.so*"
+            echo "ERROR: Missing required runtime library: libSDL3.so*"
             exit 1
           fi
           if ! compgen -G "${RUNTIME_DIR}/libopenal.so*" > /dev/null; then
-            echo "❌ Missing required runtime library: libopenal.so*"
+            echo "ERROR: Missing required runtime library: libopenal.so*"
             exit 1
           fi
-          
-          echo "✅ Bundle ready at: ${RUNTIME_DIR}"
+
+          echo "Bundle ready at: ${RUNTIME_DIR}"
           ls -lh "${RUNTIME_DIR}/"
 
-          # GeneralsX @build fbraz3 27/03/2026 Archive bundle as tar (no compression) to preserve POSIX permissions.
           BUNDLE_TAR="/tmp/GeneralsX-${{ inputs.game }}-${{ inputs.preset }}.tar"
           tar -C "/tmp" -cf "${BUNDLE_TAR}" "GeneralsX-${{ inputs.game }}-deploy/"
-          echo "✅ Archive ready: ${BUNDLE_TAR}"
+          echo "Archive ready: ${BUNDLE_TAR}"
+
+      - name: Set artifact metadata
+        id: artifact
+        if: success()
+        run: |
+          PRESET="${{ inputs.preset }}"
+          FORMAT="${{ steps.package-format.outputs.value }}"
+          GAME_SLUG="${{ inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx' }}"
+          PRESET_SLUG="${{ inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset }}"
+
+          if [ "${FORMAT}" = "gzip" ]; then
+            echo "name=linux-${GAME_SLUG}-${PRESET_SLUG}-bundle" >> "$GITHUB_OUTPUT"
+            echo "path=/tmp/GeneralsX-${{ inputs.game }}-${PRESET}.tar" >> "$GITHUB_OUTPUT"
+          else
+            if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+              INPUT_PATH="build/GeneralsXZH-${PRESET}-x86_64.AppImage"
+              OUTPUT_PATH="/tmp/GeneralsXZH-${PRESET}-x86_64.AppImage"
+            else
+              INPUT_PATH="build/GeneralsX-${PRESET}-x86_64.AppImage"
+              OUTPUT_PATH="/tmp/GeneralsX-${PRESET}-x86_64.AppImage"
+            fi
+
+            # GeneralsX @bugfix GitHubCopilot 10/04/2026 Flatten uploaded AppImage artifact structure (no intermediate directories inside zip).
+            cp -f "${INPUT_PATH}" "${OUTPUT_PATH}"
+            echo "name=linux-${GAME_SLUG}-${PRESET_SLUG}-appimage" >> "$GITHUB_OUTPUT"
+            echo "path=${OUTPUT_PATH}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Upload Build Logs
         if: always()
@@ -251,7 +315,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ format('linux-{0}-{1}-bundle', inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx', inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset) }}
-          path: /tmp/GeneralsX-${{ inputs.game }}-${{ inputs.preset }}.tar
+          name: ${{ steps.artifact.outputs.name }}
+          path: ${{ steps.artifact.outputs.path }}
           retention-days: 7
           if-no-files-found: warn

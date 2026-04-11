@@ -13,11 +13,42 @@ Legacy fallback during migration is still supported:
 
 ## Linux
 
-1. Download the Linux archive from this release.
-2. Extract all files into your Zero Hour directory (for example, `$HOME/GeneralsX/GeneralsZH`). Overwrite existing files if prompted.
-3. Some dependencies (such as DXVK) require specific environment variables. The easiest way to launch the game is to run the provided `run.sh` script from a terminal.
+1. Download the `.AppImage` file from this release (`GeneralsXZH-linux-x86_64.AppImage` for Zero Hour, `GeneralsX-linux-x86_64.AppImage` for the base game).
+2. Open a terminal, make it executable, and run it:
 
-If your existing setup still uses `$HOME/GeneralsX/GeneralsMD`, release scripts keep compatibility with that legacy path.
+   ```bash
+   chmod +x GeneralsXZH-linux-x86_64.AppImage
+   ./GeneralsXZH-linux-x86_64.AppImage -win
+   ```
+
+   Troubleshooting: AppImages commonly use FUSE to mount their embedded filesystem at launch. If direct execution fails on a minimal or sandboxed system, try:
+
+   ```bash
+   APPIMAGE_EXTRACT_AND_RUN=1 ./GeneralsXZH-linux-x86_64.AppImage -win
+   ```
+
+   Or extract and run manually:
+
+   ```bash
+   ./GeneralsXZH-linux-x86_64.AppImage --appimage-extract
+   ./squashfs-root/AppRun -win
+   ```
+
+3. The AppImage auto-detects game data in the following default locations (checked in order):
+   - `$HOME/GeneralsX/GeneralsZH` (preferred)
+   - `$HOME/GeneralsX/GeneralsMD` (legacy fallback)
+
+   If your assets are stored elsewhere, set the environment variable before launching:
+
+   ```bash
+   CNC_GENERALS_ZH_PATH=/path/to/your/zero-hour-data ./GeneralsXZH-linux-x86_64.AppImage -win
+   ```
+
+   For the base game, use `CNC_GENERALS_PATH` instead.
+
+4. All runtime libraries (DXVK, SDL3, OpenAL, FFmpeg, etc.) are bundled inside the AppImage. No additional packages need to be installed.
+
+> **GPU Driver note**: Vulkan support must be provided by your host GPU driver. For NVIDIA use the proprietary driver, for AMD/Intel use Mesa 21+. The AppImage does not bundle GPU drivers.
 
 ## macOS
 

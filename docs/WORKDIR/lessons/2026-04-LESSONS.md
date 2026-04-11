@@ -8,6 +8,13 @@
 - Validation: Static diagnostics reported no errors in the edited file; local non-docker build path was not usable due existing cache path mismatch, so full runtime verification is pending smoke test.
 - Prevention: Keep dynamic and static shadow render paths behaviorally aligned between `Generals` and `GeneralsMD`, and audit render-state rebinding when cleaning refactor artifacts.
 
+## Session 2026-04-09 - AppImage can bypass current Flatpak Vulkan/XCB coupling blockers
+
+- Problem: Flatpak remained blocked by Vulkan ICD/XCB symbol incompatibilities despite multiple runtime workarounds.
+- Action: Implemented an AppImage packaging PoC for `GeneralsXZH` bundling userspace runtime libs (DXVK, SDL3, SDL3_image, OpenAL, GameSpy) with a dedicated launcher.
+- Result: AppImage launched successfully and progressed beyond Vulkan window creation and early engine initialization, where Flatpak path previously failed.
+- Insight: For short-term Linux distribution, AppImage is currently lower-risk and faster to stabilize than Flatpak in this codebase state.
+- Prevention: Keep Flatpak as a parallel track for longer-term sandbox goals, but prioritize AppImage for immediate user-facing releases.
 ## Session 2026-04-01 - User-facing path migrations need runtime fallback, not just docs updates
 
 - Problem: Zero Hour user-facing scripts and docs exposed the internal `GeneralsMD` path, which leaks implementation details and conflicts with product naming (`GeneralsZH`).
