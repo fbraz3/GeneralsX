@@ -46,25 +46,7 @@ on:
         default: appimage
 
 jobs:
-  validate-package-format:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Validate package format input
-        shell: bash
-        run: |
-          # GeneralsX @bugfix GitHubCopilot 10/04/2026 Reject unexpected package_format values to avoid broken artifact paths.
-          case "${{ inputs.package_format }}" in
-            appimage|gzip)
-              echo "package_format is valid: ${{ inputs.package_format }}"
-              ;;
-            *)
-              echo "ERROR: Invalid package_format '${{ inputs.package_format }}'. Expected 'appimage' or 'gzip'." >&2
-              exit 1
-              ;;
-          esac
-
   build:
-    needs: [validate-package-format]
     name: ${{ inputs.game }}@${{ inputs.preset }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -74,6 +56,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Normalize package format
+        id: package-format
+        shell: bash
+        run: |
+          # GeneralsX @bugfix GitHubCopilot 10/04/2026 Normalize invalid package_format to appimage to keep workflow resilient.
+          FORMAT="${{ inputs.package_format }}"
+          case "${FORMAT}" in
+            appimage|gzip)
+              echo "package_format is valid: ${FORMAT}"
+              ;;
+            *)
+              echo "WARNING: Invalid package_format '${FORMAT}'. Falling back to 'appimage'."
+              FORMAT="appimage"
+              ;;
+          esac
+          echo "value=${FORMAT}" >> "$GITHUB_OUTPUT"
 
       - name: Cache vcpkg
         id: cache-vcpkg
@@ -208,7 +207,7 @@ jobs:
 
       # GeneralsX @build GitHubCopilot 10/04/2026 Package as AppImage (self-contained, no FUSE needed for appimagetool in CI via APPIMAGE_EXTRACT_AND_RUN).
       - name: Package as AppImage
-        if: success() && inputs.package_format == 'appimage'
+        if: success() && steps.package-format.outputs.value == 'appimage'
         env:
           APPIMAGE_EXTRACT_AND_RUN: "1"
         run: |
@@ -220,7 +219,7 @@ jobs:
 
       # GeneralsX @build GitHubCopilot 10/04/2026 Legacy gzip bundle kept as opt-in fallback for CI/testing.
       - name: Package as gzip bundle
-        if: success() && inputs.package_format == 'gzip'
+        if: success() && steps.package-format.outputs.value == 'gzip'
         run: |
           if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
             BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
@@ -282,7 +281,7 @@ jobs:
         if: success()
         run: |
           PRESET="${{ inputs.preset }}"
-          FORMAT="${{ inputs.package_format }}"
+          FORMAT="${{ steps.package-format.outputs.value }}"
           GAME_SLUG="${{ inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx' }}"
           PRESET_SLUG="${{ inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset }}"
 

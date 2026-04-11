@@ -11,8 +11,10 @@ BUILD_DIR="${PROJECT_ROOT}/build/${PRESET}"
 APPIMAGE_ROOT="${PROJECT_ROOT}/build/appimage"
 APPDIR="${APPIMAGE_ROOT}/GeneralsXZH.AppDir"
 OUTPUT_APPIMAGE="${PROJECT_ROOT}/build/GeneralsXZH-${PRESET}-x86_64.AppImage"
-APPIMAGETOOL_URL="${APPIMAGETOOL_URL:-https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage}"
-APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-}"
+# GeneralsX @build GitHubCopilot 10/04/2026 Pin appimagetool to immutable upstream release and enforce checksum validation.
+APPIMAGETOOL_VERSION="${APPIMAGETOOL_VERSION:-1.9.1}"
+APPIMAGETOOL_URL="${APPIMAGETOOL_URL:-https://github.com/AppImage/appimagetool/releases/download/${APPIMAGETOOL_VERSION}/appimagetool-x86_64.AppImage}"
+APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0}"
 
 DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
@@ -77,8 +79,8 @@ verify_sha256_if_configured() {
     local file_path="$1"
 
     if [[ -z "${APPIMAGETOOL_SHA256}" ]]; then
-        echo "WARNING: APPIMAGETOOL_SHA256 is not set; skipping appimagetool checksum verification."
-        return 0
+        echo "ERROR: APPIMAGETOOL_SHA256 is required for appimagetool verification." >&2
+        exit 1
     fi
 
     if command -v sha256sum >/dev/null 2>&1; then
@@ -97,6 +99,29 @@ verify_sha256_if_configured() {
         exit 1
     fi
 }
+
+validate_appimagetool_source() {
+    case "${APPIMAGETOOL_URL}" in
+        https://github.com/AppImage/appimagetool/releases/download/*/appimagetool-x86_64.AppImage)
+            ;;
+        *)
+            echo "ERROR: APPIMAGETOOL_URL must target a pinned AppImage/appimagetool release asset." >&2
+            exit 1
+            ;;
+    esac
+
+    if [[ "${APPIMAGETOOL_URL}" == *"/releases/download/continuous/"* ]]; then
+        echo "ERROR: APPIMAGETOOL_URL must not use floating continuous channel." >&2
+        exit 1
+    fi
+
+    if [[ ! "${APPIMAGETOOL_SHA256}" =~ ^[A-Fa-f0-9]{64}$ ]]; then
+        echo "ERROR: APPIMAGETOOL_SHA256 must be a 64-character hexadecimal SHA-256 digest." >&2
+        exit 1
+    fi
+}
+
+validate_appimagetool_source
 
 if [[ ! -f "${BINARY_SRC}" || ! -s "${BINARY_SRC}" ]]; then
     echo "ERROR: Missing or empty binary: ${BINARY_SRC}" >&2
@@ -323,10 +348,10 @@ fi
 cp "${ICON_SRC}" "${APPDIR}/GeneralsXZH.png"
 cp "${ICON_SRC}" "${APPDIR}/usr/share/icons/hicolor/512x512/apps/GeneralsXZH.png"
 
-if command -v appimagetool >/dev/null 2>&1; then
+if command -v appimagetool >/dev/null 2>&1 && [[ -z "${CI:-}" ]]; then
     APPIMAGETOOL_BIN="$(command -v appimagetool)"
 else
-    # GeneralsX @build GitHubCopilot 10/04/2026 Allow pinned appimagetool URL + optional SHA256 verification for reproducible CI packaging.
+    # GeneralsX @build GitHubCopilot 10/04/2026 Use pinned appimagetool artifact with mandatory SHA-256 verification for reproducible packaging.
     APPIMAGETOOL_BIN="${APPIMAGE_ROOT}/appimagetool.AppImage"
     mkdir -p "${APPIMAGE_ROOT}"
     if [[ ! -f "${APPIMAGETOOL_BIN}" ]]; then
