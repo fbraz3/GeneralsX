@@ -1,5 +1,13 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
+
+- Problem: A user reported an intermittent crash during 8-player skirmish on macOS (Apple Silicon), while the same broad scenario could not be reproduced on another Apple Silicon machine.
+- Evidence: The crash report pinned thread 0 to `AITNGuardOuterState::update()` with `EXC_BAD_ACCESS` at `0x0000000000000038`, indicating a likely null-pointer dereference with field offset access.
+- Code finding: `AITNGuardOuterState::update()` dereferences `m_attackState` without a null guard, but `AITNGuardOuterState::onEnter()` has early-success paths that can leave `m_attackState` unset.
+- Scope insight: The crash location is in gameplay AI logic (tunnel-network guard state), not in rendering/audio backends, so hardware generation differences (M1 vs newer Apple Silicon) likely change trigger timing rather than root cause.
+- Prevention: For legacy state-machine code, treat early-success state transitions and lazily initialized sub-states as high-risk paths and add explicit invariant checks before dereferencing nested state objects.
+
 ## Session 2026-04-11 - Dynamic shadow draws need explicit stream rebinding
 
 - Problem: Animated object shadows (flags, rotor parts) in Zero Hour rendered incorrectly, while static shadows looked fine and the issue disappeared when `3D shadows` was disabled.
