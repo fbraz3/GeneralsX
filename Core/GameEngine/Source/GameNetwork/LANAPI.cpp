@@ -593,6 +593,10 @@ void LANAPI::update()
 		switch (m_pendingAction)
 		{
 		case ACT_JOIN:
+			// GeneralsX @build GitHubCopilot 12/04/2026 Surface join timeout details to stderr for LAN/direct-connect diagnostics.
+			fprintf(stderr, "[LAN86] action timeout action=ACT_JOIN local=%d.%d.%d.%d remote=%d.%d.%d.%d currentGame=%ls\n",
+				PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(m_directConnectRemoteIP),
+				(m_currentGame != nullptr) ? m_currentGame->getName().str() : L"<null>");
 			OnGameJoin(RET_TIMEOUT, nullptr);
 			m_pendingAction = ACT_NONE;
 			m_currentGame = nullptr;
@@ -605,6 +609,8 @@ void LANAPI::update()
 			m_inLobby = true;
 			break;
 		case ACT_JOINDIRECTCONNECT:
+			fprintf(stderr, "[LAN86] action timeout action=ACT_JOINDIRECTCONNECT local=%d.%d.%d.%d remote=%d.%d.%d.%d\n",
+				PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(m_directConnectRemoteIP));
 			OnGameJoin(RET_TIMEOUT, nullptr);
 			m_pendingAction = ACT_NONE;
 			m_currentGame = nullptr;
@@ -678,6 +684,10 @@ void LANAPI::RequestGameJoin( LANGameInfo *game, UnsignedInt ip /* = 0 */ )
 	AsciiString s;
 	GetStringFromRegistry("\\ergc", "", s);
 	strlcpy(msg.GameToJoin.serial, s.str(), ARRAY_SIZE(msg.GameToJoin.serial));
+	// GeneralsX @build GitHubCopilot 12/04/2026 Trace REQUEST_JOIN targets and pending-action transitions for LAN/direct-connect joins.
+	fprintf(stderr, "[LAN86] RequestGameJoin local=%d.%d.%d.%d hostIP=%d.%d.%d.%d sendIP=%d.%d.%d.%d prevPending=%d game=%ls direct=%d\n",
+		PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(game->getSlot(0)->getIP()), PRINTF_IP_AS_4_INTS(ip),
+		m_pendingAction, game->getName().str(), game->getIsDirectConnect());
 
 	sendMessage(&msg, ip);
 
@@ -700,6 +710,9 @@ void LANAPI::RequestGameJoinDirectConnect(UnsignedInt ipaddress)
 	}
 
 	m_directConnectRemoteIP = ipaddress;
+	// GeneralsX @build GitHubCopilot 12/04/2026 Trace direct-connect discovery requests and pending-action transitions.
+	fprintf(stderr, "[LAN86] RequestGameJoinDirectConnect local=%d.%d.%d.%d remote=%d.%d.%d.%d prevPending=%d\n",
+		PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(ipaddress), m_pendingAction);
 
 	LANMessage msg;
 	msg.messageType = LANMessage::MSG_REQUEST_GAME_INFO;

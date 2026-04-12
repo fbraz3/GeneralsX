@@ -8,6 +8,14 @@
 - Process improvement: For LAN regressions, always log selected bind IP, broadcast destination, bind/send error codes, and incoming source addresses before judging protocol-level compatibility.
 - Prevention: Prefer interface-aware LAN discovery (default-route NIC + subnet broadcast calculation) and keep manual IP override visible/easy in options.
 
+## Session 2026-04-12 - LAN join accept must stay unicast to avoid host-only false positives
+
+- Problem: In direct-connect tests, the host sometimes showed the remote player in the game lobby while the joining machine still timed out and never entered the lobby.
+- Evidence: Fresh `[LAN86]` logs showed the host receiving the join request and then emitting `MSG_JOIN_ACCEPT` as broadcast (`255.255.255.255`) instead of sending it back directly to the joining client IP.
+- Root cause: `LANAPI::handleRequestJoin()` zeroed the response target after adding the player locally, so `sendMessage()` fell through to the broadcast path for the join-accept packet.
+- Fix: Keep the requester IP as the response target for join accept/deny packets; only local game-state updates should be host-local.
+- Prevention: For request/response handshake packets (`REQUEST_JOIN`, `JOIN_ACCEPT`, `JOIN_DENY`), never repurpose the destination selection based on local slot mutation; log both sender and final response target during debugging.
+
 ## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
 
 - Problem: A user reported an intermittent crash during 8-player skirmish on macOS (Apple Silicon), while the same broad scenario could not be reproduced on another Apple Silicon machine.

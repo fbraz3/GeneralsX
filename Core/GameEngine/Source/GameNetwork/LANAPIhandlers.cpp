@@ -317,9 +317,15 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 {
 	UnsignedInt responseIP = senderIP;	// need this cause the player may or may not be
 																			// in the player list at the sendMessage.
+	// GeneralsX @bugfix GitHubCopilot 12/04/2026 Keep join responses unicast so the joining client does not depend on LAN broadcast delivery.
+	fprintf(stderr, "[LAN86] handleRequestJoin sender=%d.%d.%d.%d targetGameIP=%d.%d.%d.%d localIP=%d.%d.%d.%d pending=%d inLobby=%d\n",
+		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameToJoin.gameIP), PRINTF_IP_AS_4_INTS(m_localIP),
+		m_pendingAction, m_inLobby);
 
 	if (msg->GameToJoin.gameIP != m_localIP)
 	{
+		fprintf(stderr, "[LAN86] handleRequestJoin ignored sender=%d.%d.%d.%d reason=wrong-game-ip\n",
+			PRINTF_IP_AS_4_INTS(senderIP));
 		return; // Not us.  Ignore it.
 	}
 	LANMessage reply;
@@ -332,6 +338,8 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 			reply.GameNotJoined.reason = LANAPIInterface::RET_GAME_STARTED;
 			reply.GameNotJoined.gameIP = m_localIP;
 			reply.GameNotJoined.playerIP = senderIP;
+			fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=game-started responseIP=%d.%d.%d.%d\n",
+				PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(responseIP));
 			DEBUG_LOG(("LANAPI::handleRequestJoin - join denied because game already started."));
 		}
 		else
@@ -415,6 +423,8 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					reply.GameNotJoined.gameIP = m_localIP;
 					reply.GameNotJoined.playerIP = senderIP;
 					canJoin = false;
+					fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=invalid-name responseIP=%d.%d.%d.%d\n",
+						PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(responseIP));
 
 					DEBUG_LOG(("LANAPI::handleRequestJoin - join denied because of illegal characters in the player name."));
 				}
@@ -433,6 +443,8 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					reply.GameNotJoined.gameIP = m_localIP;
 					reply.GameNotJoined.playerIP = senderIP;
 					canJoin = false;
+					fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=duplicate-name responseIP=%d.%d.%d.%d\n",
+						PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(responseIP));
 
 					DEBUG_LOG(("LANAPI::handleRequestJoin - join denied because of duplicate names."));
 					break;
@@ -461,10 +473,11 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					newSlot.setSerial(msg->GameToJoin.serial);
 					m_currentGame->setSlot(player,newSlot);
 					DEBUG_LOG(("LANAPI::handleRequestJoin - added player %ls at ip 0x%08x to the game", msg->name, senderIP));
+					fprintf(stderr, "[LAN86] handleRequestJoin accept sender=%d.%d.%d.%d slot=%d responseIP=%d.%d.%d.%d game=%ls\n",
+						PRINTF_IP_AS_4_INTS(senderIP), player, PRINTF_IP_AS_4_INTS(responseIP), m_currentGame->getName().str());
 
 					// GeneralsX @bugfix BenderAI 13/02/2026 Wrap WideCharWindows with GetWindowsWideCharAsWchar (fighter19 pattern)
 					OnPlayerJoin(player, UnicodeString(GetWindowsWideCharAsWchar(msg->name)));
-					responseIP = 0;
 
 					break;
 				}
@@ -478,6 +491,8 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 				reply.GameNotJoined.reason = LANAPIInterface::RET_GAME_FULL;
 				reply.GameNotJoined.gameIP = m_localIP;
 				reply.GameNotJoined.playerIP = senderIP;
+				fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=game-full responseIP=%d.%d.%d.%d\n",
+					PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(responseIP));
 				DEBUG_LOG(("LANAPI::handleRequestJoin - join denied because game is full."));
 			}
 		}
@@ -488,6 +503,8 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 		reply.GameNotJoined.reason = LANAPIInterface::RET_GAME_GONE;
 		reply.GameNotJoined.gameIP = m_localIP;
 		reply.GameNotJoined.playerIP = senderIP;
+		fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=game-gone responseIP=%d.%d.%d.%d\n",
+			PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(responseIP));
 	}
 	sendMessage(&reply, responseIP);
 	RequestGameOptions(GenerateGameOptionsString(), true);
@@ -495,6 +512,10 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 
 void LANAPI::handleJoinAccept( LANMessage *msg, UnsignedInt senderIP )
 {
+	// GeneralsX @build GitHubCopilot 12/04/2026 Trace directed join-accept processing and pending action transitions for LAN/direct-connect debugging.
+	fprintf(stderr, "[LAN86] handleJoinAccept sender=%d.%d.%d.%d playerIP=%d.%d.%d.%d localIP=%d.%d.%d.%d pending=%d slot=%d game=%ls\n",
+		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameJoined.playerIP), PRINTF_IP_AS_4_INTS(m_localIP),
+		m_pendingAction, msg->GameJoined.slotPosition, GetWindowsWideCharAsWchar(msg->GameJoined.gameName));
 	if (msg->GameJoined.playerIP == m_localIP) // Is it for us?
 	{
 		if (m_pendingAction == ACT_JOIN) // Are we trying to join?
@@ -541,11 +562,19 @@ void LANAPI::handleJoinAccept( LANMessage *msg, UnsignedInt senderIP )
 			m_pendingAction = ACT_NONE;
 			m_expiration = 0;
 		}
+		else
+		{
+			fprintf(stderr, "[LAN86] handleJoinAccept ignored sender=%d.%d.%d.%d reason=unexpected-pending-action pending=%d\n",
+				PRINTF_IP_AS_4_INTS(senderIP), m_pendingAction);
+		}
 	}
 }
 
 void LANAPI::handleJoinDeny( LANMessage *msg, UnsignedInt senderIP )
 {
+	fprintf(stderr, "[LAN86] handleJoinDeny sender=%d.%d.%d.%d playerIP=%d.%d.%d.%d localIP=%d.%d.%d.%d pending=%d reason=%d game=%ls\n",
+		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameJoined.playerIP), PRINTF_IP_AS_4_INTS(m_localIP),
+		m_pendingAction, msg->GameNotJoined.reason, GetWindowsWideCharAsWchar(msg->GameNotJoined.gameName));
 	if (msg->GameJoined.playerIP == m_localIP) // Is it for us?
 	{
 		if (m_pendingAction == ACT_JOIN) // Are we trying to join?
