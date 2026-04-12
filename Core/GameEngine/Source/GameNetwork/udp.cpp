@@ -165,9 +165,11 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
 	// GeneralsX @build GitHubCopilot 11/04/2026 Capture socket creation failure details for LAN diagnostics.
 	m_lastError = WSAGetLastError();
 	DEBUG_LOG(("UDP::Bind - socket() failed for %d.%d.%d.%d:%d err=%d",
-		PRINTF_IP_AS_4_INTS(ipHostOrder), portHostOrder, m_lastError));
+    (ipHostOrder >> 24) & 0xFF, (ipHostOrder >> 16) & 0xFF, (ipHostOrder >> 8) & 0xFF, ipHostOrder & 0xFF,
+    portHostOrder, m_lastError));
   fprintf(stderr, "[LAN86] UDP::Bind socket failed %d.%d.%d.%d:%d err=%d\n",
-    PRINTF_IP_AS_4_INTS(ipHostOrder), portHostOrder, m_lastError);
+    (ipHostOrder >> 24) & 0xFF, (ipHostOrder >> 16) & 0xFF, (ipHostOrder >> 8) & 0xFF, ipHostOrder & 0xFF,
+    portHostOrder, m_lastError);
     return(UNKNOWN);
   }
 
@@ -182,9 +184,11 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
   {
 	// GeneralsX @build GitHubCopilot 11/04/2026 Capture bind failure endpoint and error code.
 	DEBUG_LOG(("UDP::Bind - bind() failed for %d.%d.%d.%d:%d err=%d",
-		PRINTF_IP_AS_4_INTS(ipHostOrder), portHostOrder, m_lastError));
+    (ipHostOrder >> 24) & 0xFF, (ipHostOrder >> 16) & 0xFF, (ipHostOrder >> 8) & 0xFF, ipHostOrder & 0xFF,
+    portHostOrder, m_lastError));
   fprintf(stderr, "[LAN86] UDP::Bind bind failed %d.%d.%d.%d:%d err=%d\n",
-    PRINTF_IP_AS_4_INTS(ipHostOrder), portHostOrder, m_lastError);
+    (ipHostOrder >> 24) & 0xFF, (ipHostOrder >> 16) & 0xFF, (ipHostOrder >> 8) & 0xFF, ipHostOrder & 0xFF,
+    portHostOrder, m_lastError);
     status=GetStatus();
     //CERR("Bind failure (" << status << ") IP " << IP << " PORT " << Port )
     return(status);
@@ -260,9 +264,11 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
 		m_lastError = WSAGetLastError();
     // GeneralsX @build GitHubCopilot 11/04/2026 Capture UDP send failure endpoint and error code.
     DEBUG_LOG(("UDP::Write - sendto failed dst=%d.%d.%d.%d:%d len=%d err=%d",
-      PRINTF_IP_AS_4_INTS(IP), port, len, m_lastError));
+      (IP >> 24) & 0xFF, (IP >> 16) & 0xFF, (IP >> 8) & 0xFF, IP & 0xFF,
+      port, len, m_lastError));
     fprintf(stderr, "[LAN86] UDP::Write sendto failed dst=%d.%d.%d.%d:%d len=%d err=%d\n",
-      PRINTF_IP_AS_4_INTS(IP), port, len, m_lastError);
+      (IP >> 24) & 0xFF, (IP >> 16) & 0xFF, (IP >> 8) & 0xFF, IP & 0xFF,
+      port, len, m_lastError);
 #ifdef DEBUG_LOGGING
 		static Int errCount = 0;
 #endif
