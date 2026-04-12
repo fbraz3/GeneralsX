@@ -183,7 +183,10 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 {
 	if (ip != 0)
 	{
-		m_transport->queueSend(ip, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+		// GeneralsX @build GitHubCopilot 11/04/2026 Instrument direct LAN sends for cross-platform diagnostics.
+		Bool queued = m_transport->queueSend(ip, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+		DEBUG_LOG(("LANAPI::sendMessage - direct type=%s dst=%d.%d.%d.%d:%d queued=%d",
+			GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(ip), lobbyPort, queued));
 	}
 	else if ((m_currentGame != nullptr) && (m_currentGame->getIsDirectConnect()))
 	{
@@ -193,14 +196,21 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 			if (i != localSlot) {
 				GameSlot *slot = m_currentGame->getSlot(i);
 				if ((slot != nullptr) && (slot->isHuman())) {
-					m_transport->queueSend(slot->getIP(), lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+					// GeneralsX @build GitHubCopilot 11/04/2026 Instrument direct-connect fan-out sends.
+					Bool queued = m_transport->queueSend(slot->getIP(), lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+					DEBUG_LOG(("LANAPI::sendMessage - direct-connect type=%s dst=%d.%d.%d.%d:%d queued=%d",
+						GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(slot->getIP()), lobbyPort, queued));
 				}
 			}
 		}
 	}
 	else
 	{
-		m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+		// GeneralsX @build GitHubCopilot 11/04/2026 Instrument LAN broadcast target and queue result.
+		Bool queued = m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+		DEBUG_LOG(("LANAPI::sendMessage - broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d",
+			GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort,
+			PRINTF_IP_AS_4_INTS(m_localIP), queued));
 	}
 }
 
@@ -616,6 +626,9 @@ void LANAPI::RequestLocations()
 	LANMessage msg;
 	msg.messageType = LANMessage::MSG_REQUEST_LOCATIONS;
 	fillInLANMessage( &msg );
+	// GeneralsX @build GitHubCopilot 11/04/2026 Trace LAN discovery probes emitted by this client.
+	DEBUG_LOG(("LANAPI::RequestLocations - local=%d.%d.%d.%d broadcast=%d.%d.%d.%d port=%d",
+		PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort));
 	sendMessage(&msg);
 }
 
@@ -1272,11 +1285,17 @@ void LANAPI::addPlayer( LANPlayer *player )
 Bool LANAPI::SetLocalIP( UnsignedInt localIP )
 {
 	Bool retval = TRUE;
+	UnsignedInt oldIP = m_localIP;
 	m_localIP = localIP;
+	// GeneralsX @build GitHubCopilot 11/04/2026 Trace LAN socket rebind lifecycle for issue #86 diagnostics.
+	DEBUG_LOG(("LANAPI::SetLocalIP - rebinding LAN transport from %d.%d.%d.%d to %d.%d.%d.%d:%d",
+		PRINTF_IP_AS_4_INTS(oldIP), PRINTF_IP_AS_4_INTS(m_localIP), lobbyPort));
 
 	m_transport->reset();
 	retval = m_transport->init(m_localIP, lobbyPort);
-	m_transport->allowBroadcasts(true);
+	Bool broadcastsEnabled = m_transport->allowBroadcasts(true);
+	DEBUG_LOG(("LANAPI::SetLocalIP - init=%d allowBroadcasts=%d local=%d.%d.%d.%d:%d",
+		retval, broadcastsEnabled, PRINTF_IP_AS_4_INTS(m_localIP), lobbyPort));
 
 	return retval;
 }

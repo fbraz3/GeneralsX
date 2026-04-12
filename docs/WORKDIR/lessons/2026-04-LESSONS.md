@@ -1,5 +1,13 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-11 - LAN auto-IP and global broadcast can hide hosts cross-platform
+
+- Problem: Linux and macOS builds failed to discover each other in the LAN lobby, and same-platform behavior remained uncertain without multiple test machines per OS.
+- Code finding: LAN discovery sends to a fixed global broadcast target (`INADDR_BROADCAST` / `255.255.255.255`) and LAN menu startup can auto-pick the first enumerated non-loopback IP.
+- Risk: On macOS/Linux systems with VPN/Docker/virtual NICs, first-IP selection can bind sockets to a non-game interface, and global broadcast may not reach peers as expected for the active subnet.
+- Process improvement: For LAN regressions, always log selected bind IP, broadcast destination, bind/send error codes, and incoming source addresses before judging protocol-level compatibility.
+- Prevention: Prefer interface-aware LAN discovery (default-route NIC + subnet broadcast calculation) and keep manual IP override visible/easy in options.
+
 ## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
 
 - Problem: A user reported an intermittent crash during 8-player skirmish on macOS (Apple Silicon), while the same broad scenario could not be reproduced on another Apple Silicon machine.
