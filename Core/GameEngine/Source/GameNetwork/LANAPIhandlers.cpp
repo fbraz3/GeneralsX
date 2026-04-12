@@ -79,6 +79,8 @@ wchar_t *GetWindowsWideCharAsWchar( WideCharWindows *src )
 
 void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 {
+	fprintf(stderr, "[LAN86] handleRequestLocations sender=%d.%d.%d.%d inLobby=%d currentGame=%d\n",
+		PRINTF_IP_AS_4_INTS(senderIP), m_inLobby, (m_currentGame != nullptr));
 	if (m_inLobby)
 	{
 		LANMessage reply;
@@ -131,12 +133,17 @@ void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 	player->setLastHeard(timeGetTime());
 
 	addPlayer(player);
+	fprintf(stderr, "[LAN86] handleRequestLocations player=%d.%d.%d.%d name=%ls host=%s login=%s\n",
+		PRINTF_IP_AS_4_INTS(player->getIP()), player->getName().str(), player->getHost().str(), player->getLogin().str());
 
 	OnNameChange(player->getIP(), player->getName());
 }
 
 void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
 {
+	fprintf(stderr, "[LAN86] handleGameAnnounce sender=%d.%d.%d.%d game=%ls inProgress=%d direct=%d\n",
+		PRINTF_IP_AS_4_INTS(senderIP), GetWindowsWideCharAsWchar(msg->GameInfo.gameName),
+		msg->GameInfo.inProgress, msg->GameInfo.isDirectConnect);
 	if (senderIP == m_localIP)
 	{
 		return; // Don't try to update own info
@@ -194,6 +201,13 @@ void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
 			removeGame(game);
 			delete game;
 			game = nullptr;
+			fprintf(stderr, "[LAN86] handleGameAnnounce parse failed sender=%d.%d.%d.%d\n",
+				PRINTF_IP_AS_4_INTS(senderIP));
+		}
+		else if (game != nullptr)
+		{
+			fprintf(stderr, "[LAN86] handleGameAnnounce accepted game host=%d.%d.%d.%d name=%ls\n",
+				PRINTF_IP_AS_4_INTS(senderIP), game->getName().str());
 		}
 
 		OnGameList( m_games );
@@ -204,6 +218,8 @@ void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
 
 void LANAPI::handleLobbyAnnounce( LANMessage *msg, UnsignedInt senderIP )
 {
+	fprintf(stderr, "[LAN86] handleLobbyAnnounce sender=%d.%d.%d.%d name=%ls host=%s login=%s\n",
+		PRINTF_IP_AS_4_INTS(senderIP), GetWindowsWideCharAsWchar(msg->name), msg->hostName, msg->userName);
 	LANPlayer *player = LookupPlayer(senderIP);
 	if (!player)
 	{
@@ -221,12 +237,16 @@ void LANAPI::handleLobbyAnnounce( LANMessage *msg, UnsignedInt senderIP )
 	player->setLastHeard(timeGetTime());
 
 	addPlayer(player);
+	fprintf(stderr, "[LAN86] handleLobbyAnnounce updated player=%d.%d.%d.%d name=%ls\n",
+		PRINTF_IP_AS_4_INTS(player->getIP()), player->getName().str());
 
 	OnNameChange(player->getIP(), player->getName());
 }
 
 void LANAPI::handleRequestGameInfo( LANMessage *msg, UnsignedInt senderIP )
 {
+	fprintf(stderr, "[LAN86] handleRequestGameInfo sender=%d.%d.%d.%d requesterIP=%d.%d.%d.%d requesterName=%ls\n",
+		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->PlayerInfo.ip), GetWindowsWideCharAsWchar(msg->PlayerInfo.playerName));
 	// In game - are we a game host?
 	if (m_currentGame)
 	{

@@ -87,6 +87,7 @@ Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 {
 	// GeneralsX @build GitHubCopilot 11/04/2026 Trace UDP transport bind inputs for LAN troubleshooting.
 	DEBUG_LOG(("Transport::init - requested bind %d.%d.%d.%d:%d", PRINTF_IP_AS_4_INTS(ip), port));
+	fprintf(stderr, "[LAN86] Transport::init bind request %d.%d.%d.%d:%d\n", PRINTF_IP_AS_4_INTS(ip), port);
 
 	// ----- Initialize Winsock -----
 	if (!m_winsockInit)
@@ -129,6 +130,7 @@ Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 
 	// GeneralsX @build GitHubCopilot 11/04/2026 Confirm successful UDP bind endpoint for LAN diagnostics.
 	DEBUG_LOG(("Transport::init - bind success %d.%d.%d.%d:%d", PRINTF_IP_AS_4_INTS(ip), port));
+	fprintf(stderr, "[LAN86] Transport::init bind success %d.%d.%d.%d:%d\n", PRINTF_IP_AS_4_INTS(ip), port);
 
 	// ------- Clear buffers --------
 	int i=0;
@@ -328,6 +330,8 @@ Bool Transport::doRecv()
 			// GeneralsX @build GitHubCopilot 11/04/2026 Capture source endpoint for dropped/unknown packets.
 			DEBUG_LOG(("Transport::doRecv - unknownPacket len=%d from %d.%d.%d.%d:%d",
 				len, PRINTF_IP_AS_4_INTS(ntohl(from.sin_addr.s_addr)), ntohs(from.sin_port)));
+			fprintf(stderr, "[LAN86] Transport::doRecv unknownPacket len=%d from %d.%d.%d.%d:%d\n",
+				len, PRINTF_IP_AS_4_INTS(ntohl(from.sin_addr.s_addr)), ntohs(from.sin_port));
 			m_unknownPackets[m_statisticsSlot]++;
 			m_unknownBytes[m_statisticsSlot] += len;
 			continue;
