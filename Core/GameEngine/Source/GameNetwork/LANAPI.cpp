@@ -38,10 +38,86 @@
 #include "Common/UserPreferences.h"
 #include "GameLogic/GameLogic.h"
 
+#ifndef _WIN32
+#include <ifaddrs.h>
+#include <net/if.h>
+#endif
 
 static const UnsignedShort lobbyPort = 8086; ///< This is the UDP port used by all LANAPI communication
 
 AsciiString GetMessageTypeString(UnsignedInt type);
+
+#ifndef _WIN32
+// GeneralsX @feature GitHubCopilot 12/04/2026 Discover per-interface IPv4 subnet broadcast addresses for LAN discovery on POSIX.
+static Int GatherSubnetBroadcastAddrs(UnsignedInt localIP, UnsignedInt *outAddrs, Int maxAddrs)
+{
+	if (outAddrs == nullptr || maxAddrs <= 0)
+	{
+		return 0;
+	}
+
+	Int count = 0;
+	struct ifaddrs *ifaddr = nullptr;
+	if (getifaddrs(&ifaddr) != 0)
+	{
+		return 0;
+	}
+
+	for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
+	{
+		if (ifa->ifa_addr == nullptr || ifa->ifa_addr->sa_family != AF_INET)
+		{
+			continue;
+		}
+		if ((ifa->ifa_flags & IFF_UP) == 0 || (ifa->ifa_flags & IFF_LOOPBACK) != 0)
+		{
+			continue;
+		}
+
+		const sockaddr_in *addr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr);
+		const UnsignedInt hostAddr = ntohl(addr->sin_addr.s_addr);
+		if (localIP != 0 && hostAddr != localIP)
+		{
+			continue;
+		}
+
+		UnsignedInt bcast = 0;
+		if (ifa->ifa_broadaddr != nullptr && ifa->ifa_broadaddr->sa_family == AF_INET)
+		{
+			const sockaddr_in *baddr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_broadaddr);
+			bcast = ntohl(baddr->sin_addr.s_addr);
+		}
+		else if (ifa->ifa_netmask != nullptr && ifa->ifa_netmask->sa_family == AF_INET)
+		{
+			const sockaddr_in *nmask = reinterpret_cast<const sockaddr_in *>(ifa->ifa_netmask);
+			const UnsignedInt mask = ntohl(nmask->sin_addr.s_addr);
+			bcast = (hostAddr & mask) | (~mask);
+		}
+		else
+		{
+			continue;
+		}
+
+		Bool duplicate = FALSE;
+		for (Int i = 0; i < count; ++i)
+		{
+			if (outAddrs[i] == bcast)
+			{
+				duplicate = TRUE;
+				break;
+			}
+		}
+
+		if (!duplicate && count < maxAddrs)
+		{
+			outAddrs[count++] = bcast;
+		}
+	}
+
+	freeifaddrs(ifaddr);
+	return count;
+}
+#endif
 
 const UnsignedInt LANAPI::s_resendDelta = 10 * 1000;	///< This is how often we announce ourselves to the world
 /*
@@ -235,13 +311,32 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 	}
 	else
 	{
-		// GeneralsX @build GitHubCopilot 11/04/2026 Instrument LAN broadcast target and queue result.
-		Bool queued = m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
-		DEBUG_LOG(("LANAPI::sendMessage - broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d",
-			GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort,
-			PRINTF_IP_AS_4_INTS(m_localIP), queued));
-		fprintf(stderr, "[LAN86] send broadcast type=%u dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
-			msg->messageType, PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
+		// GeneralsX @feature GitHubCopilot 12/04/2026 Send discovery/control broadcast packets to interface subnet broadcast addresses before global broadcast.
+		Bool sentAny = FALSE;
+#ifndef _WIN32
+		UnsignedInt subnetBroadcasts[8];
+		Int subnetCount = GatherSubnetBroadcastAddrs(m_localIP, subnetBroadcasts, ARRAY_SIZE(subnetBroadcasts));
+		for (Int i = 0; i < subnetCount; ++i)
+		{
+			UnsignedInt dst = subnetBroadcasts[i];
+			Bool queued = m_transport->queueSend(dst, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+			sentAny = TRUE;
+			DEBUG_LOG(("LANAPI::sendMessage - subnet-broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d",
+				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(dst), lobbyPort,
+				PRINTF_IP_AS_4_INTS(m_localIP), queued));
+			fprintf(stderr, "[LAN86] send subnet-broadcast type=%u dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+				msg->messageType, PRINTF_IP_AS_4_INTS(dst), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
+		}
+#endif
+		if (!sentAny)
+		{
+			Bool queued = m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+			DEBUG_LOG(("LANAPI::sendMessage - broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d",
+				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort,
+				PRINTF_IP_AS_4_INTS(m_localIP), queued));
+			fprintf(stderr, "[LAN86] send broadcast type=%u dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+				msg->messageType, PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
+		}
 	}
 }
 

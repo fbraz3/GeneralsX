@@ -23,6 +23,13 @@
 - Fix: Prefer directed fan-out to known human slots for in-game control/state packets, keeping broadcast only as fallback when no slot target exists.
 - Prevention: In cross-platform LAN paths, treat broadcast as discovery-only by default; use explicit per-slot delivery for game/session control events.
 
+## Session 2026-04-12 - LAN discovery should prefer subnet broadcast over global broadcast
+
+- Problem: LAN lobby discovery remained unreliable across macOS/Linux even when direct-connect worked.
+- Evidence: Discovery still depended on global broadcast `255.255.255.255`, which may not be forwarded/handled consistently on mixed-network setups.
+- Fix: In POSIX builds, collect broadcast addresses from active IPv4 interfaces matching the selected local LAN IP and send broadcast packets to those subnet addresses first; keep global broadcast as fallback.
+- Prevention: For multi-platform LAN discovery, avoid single global broadcast as the only path; use interface-scoped subnet broadcast to reduce network-policy sensitivity.
+
 ## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
 
 - Problem: A user reported an intermittent crash during 8-player skirmish on macOS (Apple Silicon), while the same broad scenario could not be reproduced on another Apple Silicon machine.
