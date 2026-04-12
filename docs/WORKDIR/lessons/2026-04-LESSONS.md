@@ -16,6 +16,13 @@
 - Fix: Keep the requester IP as the response target for join accept/deny packets; only local game-state updates should be host-local.
 - Prevention: For request/response handshake packets (`REQUEST_JOIN`, `JOIN_ACCEPT`, `JOIN_DENY`), never repurpose the destination selection based on local slot mutation; log both sender and final response target during debugging.
 
+## Session 2026-04-12 - In-game LAN control packets need directed delivery on mixed OS networks
+
+- Problem: Even after direct-connect join success, clients could miss host-driven updates (game options, game start, and host leave effects), producing partial desync UX.
+- Evidence: Join handshake traffic succeeded with unicast, but follow-up control behavior matched packet classes still emitted as broadcast without explicit destination.
+- Fix: Prefer directed fan-out to known human slots for in-game control/state packets, keeping broadcast only as fallback when no slot target exists.
+- Prevention: In cross-platform LAN paths, treat broadcast as discovery-only by default; use explicit per-slot delivery for game/session control events.
+
 ## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
 
 - Problem: A user reported an intermittent crash during 8-player skirmish on macOS (Apple Silicon), while the same broad scenario could not be reproduced on another Apple Silicon machine.

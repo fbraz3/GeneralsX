@@ -190,9 +190,23 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 		fprintf(stderr, "[LAN86] send direct type=%u dst=%d.%d.%d.%d:%d queued=%d\n",
 			msg->messageType, PRINTF_IP_AS_4_INTS(ip), lobbyPort, queued);
 	}
-	else if ((m_currentGame != nullptr) && (m_currentGame->getIsDirectConnect()))
+	// GeneralsX @bugfix GitHubCopilot 12/04/2026 Prefer directed fan-out for in-game state/control packets to avoid cross-platform broadcast loss.
+	const Bool shouldUseDirectedFanout = (m_currentGame != nullptr)
+		&& ((m_currentGame->getIsDirectConnect())
+			|| (!m_inLobby && msg != nullptr && (
+				msg->messageType == LANMessage::MSG_GAME_OPTIONS
+				|| msg->messageType == LANMessage::MSG_GAME_START
+				|| msg->messageType == LANMessage::MSG_GAME_START_TIMER
+				|| msg->messageType == LANMessage::MSG_REQUEST_GAME_LEAVE
+				|| msg->messageType == LANMessage::MSG_SET_ACCEPT
+				|| msg->messageType == LANMessage::MSG_MAP_AVAILABILITY
+				|| msg->messageType == LANMessage::MSG_CHAT
+				|| msg->messageType == LANMessage::MSG_INACTIVE)));
+
+	if (shouldUseDirectedFanout)
 	{
 		Int localSlot = m_currentGame->getLocalSlotNum();
+		Bool sentAny = FALSE;
 		for (Int i = 0; i < MAX_SLOTS; ++i)
 		{
 			if (i != localSlot) {
@@ -200,12 +214,23 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 				if ((slot != nullptr) && (slot->isHuman())) {
 					// GeneralsX @build GitHubCopilot 11/04/2026 Instrument direct-connect fan-out sends.
 					Bool queued = m_transport->queueSend(slot->getIP(), lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+					sentAny = TRUE;
 					DEBUG_LOG(("LANAPI::sendMessage - direct-connect type=%s dst=%d.%d.%d.%d:%d queued=%d",
 						GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(slot->getIP()), lobbyPort, queued));
-					fprintf(stderr, "[LAN86] send direct-connect type=%u dst=%d.%d.%d.%d:%d queued=%d\n",
+					fprintf(stderr, "[LAN86] send directed-fanout type=%u dst=%d.%d.%d.%d:%d queued=%d inLobby=%d directGame=%d\n",
 						msg->messageType, PRINTF_IP_AS_4_INTS(slot->getIP()), lobbyPort, queued);
 				}
 			}
+		}
+
+		if (!sentAny)
+		{
+			Bool queued = m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+			DEBUG_LOG(("LANAPI::sendMessage - directed-fanout fallback broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d",
+				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort,
+				PRINTF_IP_AS_4_INTS(m_localIP), queued));
+			fprintf(stderr, "[LAN86] send directed-fanout-fallback-broadcast type=%u dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+				msg->messageType, PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
 		}
 	}
 	else
