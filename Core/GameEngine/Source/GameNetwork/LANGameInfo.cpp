@@ -231,7 +231,7 @@ void LANDisplayGameList( GameWindow *gameListbox, LANGameInfo *gameList )
 			// GeneralsX @build GitHubCopilot 12/04/2026 Trace rendered LAN lobby rows to catch announce-vs-UI mismatches.
 			fprintf(stderr, "[LAN86] lobby render row=%d host=%d.%d.%d.%d hostName=%ls gameName=%ls inProgress=%d direct=%d\n",
 				addedIndex, PRINTF_IP_AS_4_INTS(gameList->getHostIP()), gameList->getPlayerName(0).str(), gameList->getName().str(),
-				gameList->isGameInProgress(), gameList->isDirectConnect());
+				gameList->isGameInProgress(), gameList->getIsDirectConnect());
 
 			if (selectedPtr == gameList)
 				indexToSelect = addedIndex;
