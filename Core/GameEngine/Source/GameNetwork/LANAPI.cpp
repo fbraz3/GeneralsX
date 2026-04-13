@@ -649,6 +649,9 @@ void LANAPI::update()
 		if (game != m_currentGame && game->getLastHeard() + s_resendDelta*2 < now)
 		{
 			// He's gone!
+			// GeneralsX @build GitHubCopilot 12/04/2026 Trace lobby-game pruning to verify whether hosts disappear due to hearbeat expiry.
+			fprintf(stderr, "[LAN86] prune game host=%d.%d.%d.%d name=%ls lastHeard=%u now=%u delta=%u\n",
+				PRINTF_IP_AS_4_INTS(game->getHostIP()), game->getName().str(), game->getLastHeard(), now, s_resendDelta * 2);
 			removeGame(game);
 			LANGameInfo *nextGame = game->getNext();
 			delete game;

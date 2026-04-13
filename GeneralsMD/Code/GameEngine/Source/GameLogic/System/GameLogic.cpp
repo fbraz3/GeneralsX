@@ -2690,6 +2690,9 @@ void GameLogic::processCommandList( CommandList *list )
 			if (m_cachedCRCs.size() < numPlayers)
 			{
 				DEBUG_CRASH(("Not enough CRCs!"));
+				// GeneralsX @build GitHubCopilot 12/04/2026 Surface CRC quorum failures for cross-platform mismatch diagnosis.
+				fprintf(stderr, "[LAN86] CRC quorum failure frame=%u cached=%zu players=%d\n",
+					m_frame, m_cachedCRCs.size(), numPlayers);
 				sawCRCMismatch = TRUE;
 			}
 			else
@@ -2705,6 +2708,9 @@ void GameLogic::processCommandList( CommandList *list )
 					if (validatorCRC != validatedCRC)
 					{
 						DEBUG_CRASH(("CRC mismatch!"));
+						// GeneralsX @build GitHubCopilot 12/04/2026 Surface validator/validated CRC divergence before mismatch UI triggers.
+						fprintf(stderr, "[LAN86] CRC mismatch frame=%u validatorPlayer=%d validator=%08X validatedPlayer=%d validated=%08X\n",
+							m_frame, m_cachedCRCs.begin()->first, validatorCRC, crcIt->first, validatedCRC);
 						sawCRCMismatch = TRUE;
 					}
 				}
@@ -2713,6 +2719,15 @@ void GameLogic::processCommandList( CommandList *list )
 
 		if (sawCRCMismatch)
 		{
+			// GeneralsX @build GitHubCopilot 12/04/2026 Dump frame CRC set to stderr so Linux/macOS logs can be compared directly.
+			fprintf(stderr, "[LAN86] CRC mismatch summary frame=%u cached=%zu players=%d\n",
+				m_frame, m_cachedCRCs.size(), numPlayers);
+			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			{
+				Player *player = ThePlayerList->getNthPlayer(crcIt->first);
+				fprintf(stderr, "[LAN86] CRC mismatch entry player=%d name=%ls crc=%08X\n",
+					crcIt->first, player ? player->getPlayerDisplayName().str() : L"<NONE>", crcIt->second);
+			}
 #ifdef DEBUG_LOGGING
 			DEBUG_LOG(("CRC Mismatch - saw %d CRCs from %d players", m_cachedCRCs.size(), numPlayers));
 			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
@@ -4564,6 +4579,8 @@ void GameLogic::testTimeOut()
 void GameLogic::timeOutGameStart()
 {
 	DEBUG_LOG(("We got the Force TimeOut Start Message"));
+	// GeneralsX @build GitHubCopilot 12/04/2026 Surface game-start timeout path alongside CRC mismatch diagnostics.
+	fprintf(stderr, "[LAN86] timeOutGameStart frame=%u forceStartBefore=%d\n", m_frame, m_forceGameStartByTimeOut);
 	m_forceGameStartByTimeOut = TRUE;
 }
 

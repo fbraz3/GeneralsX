@@ -965,6 +965,9 @@ void ConnectionManager::processLoadComplete( NetCommandMsg *msg )
 
 void ConnectionManager::processTimeOutGameStart( NetCommandMsg *msg )
 {
+	// GeneralsX @build GitHubCopilot 12/04/2026 Trace forced-start timeout command reception for cross-platform start debugging.
+	fprintf(stderr, "[LAN86] processTimeOutGameStart localSlot=%d sender=%d id=%d execFrame=%u logicFrame=%u\n",
+		m_localSlot, msg->getPlayerID(), msg->getID(), msg->getExecutionFrame(), TheGameLogic->getFrame());
 	TheGameLogic->timeOutGameStart();
 }
 
@@ -2454,6 +2457,9 @@ void ConnectionManager::sendTimeOutGameStart()
 	if (DoesCommandRequireACommandID(msg->getNetCommandType()) == TRUE) {
 		msg->setID(GenerateNextCommandID());
 	}
+	// GeneralsX @build GitHubCopilot 12/04/2026 Trace who initiates forced game start before the command fans out.
+	fprintf(stderr, "[LAN86] sendTimeOutGameStart localSlot=%d id=%d logicFrame=%u\n",
+		m_localSlot, msg->getID(), TheGameLogic->getFrame());
 	processTimeOutGameStart(msg);
 	sendLocalCommand(msg, 0xff ^ (1 << m_localSlot));
 

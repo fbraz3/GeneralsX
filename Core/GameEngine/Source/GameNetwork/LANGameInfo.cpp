@@ -201,6 +201,7 @@ void LANDisplayGameList( GameWindow *gameListbox, LANGameInfo *gameList )
 	LANGameInfo *selectedPtr = nullptr;
 	Int selectedIndex = -1;
 	Int indexToSelect = -1;
+	Int gameCount = 0;
 	if (gameListbox)
 	{
 		GadgetListBoxGetSelected(gameListbox, &selectedIndex);
@@ -226,6 +227,11 @@ void LANDisplayGameList( GameWindow *gameListbox, LANGameInfo *gameList )
 			}
 			Int addedIndex = GadgetListBoxAddEntryText(gameListbox, txtGName, (gameList->isGameInProgress())?gameInProgressColor:gameColor, -1, -1);
 			GadgetListBoxSetItemData(gameListbox, (void *)gameList, addedIndex, 0 );
+			++gameCount;
+			// GeneralsX @build GitHubCopilot 12/04/2026 Trace rendered LAN lobby rows to catch announce-vs-UI mismatches.
+			fprintf(stderr, "[LAN86] lobby render row=%d host=%d.%d.%d.%d hostName=%ls gameName=%ls inProgress=%d direct=%d\n",
+				addedIndex, PRINTF_IP_AS_4_INTS(gameList->getHostIP()), gameList->getPlayerName(0).str(), gameList->getName().str(),
+				gameList->isGameInProgress(), gameList->isDirectConnect());
 
 			if (selectedPtr == gameList)
 				indexToSelect = addedIndex;
@@ -237,6 +243,10 @@ void LANDisplayGameList( GameWindow *gameListbox, LANGameInfo *gameList )
 			GadgetListBoxSetSelected(gameListbox, indexToSelect);
 		else
 			HideGameInfoWindow(TRUE);
+
+		// GeneralsX @build GitHubCopilot 12/04/2026 Surface final LAN lobby row count after each refresh.
+		fprintf(stderr, "[LAN86] lobby render complete count=%d selectedIndex=%d restoredIndex=%d\n",
+			gameCount, selectedIndex, indexToSelect);
 	}
 }
 

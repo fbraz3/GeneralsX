@@ -1,5 +1,12 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-12 - LAN lobby visibility must be traced at render and prune points, not only at announce receipt
+
+- Problem: Logs could show `handleGameAnnounce` success while the user still reported that the LAN lobby list did not visibly retain the remote game.
+- Code finding: The LAN lobby callback does not apply extra compatibility filtering; it forwards `m_games` directly into `LANDisplayGameList`.
+- Remaining suspects: a parsed game can still fail to appear usefully if its row content is unexpected, or it can disappear shortly after due to `lastHeard`-based pruning.
+- Process improvement: For LAN lobby regressions, instrument both row rendering and timeout-driven removal in addition to message receive/parse logs.
+
 ## Session 2026-04-11 - LAN auto-IP and global broadcast can hide hosts cross-platform
 
 - Problem: Linux and macOS builds failed to discover each other in the LAN lobby, and same-platform behavior remained uncertain without multiple test machines per OS.

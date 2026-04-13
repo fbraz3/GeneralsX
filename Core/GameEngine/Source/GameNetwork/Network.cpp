@@ -373,6 +373,9 @@ void Network::init()
 void Network::setSawCRCMismatch()
 {
 	m_sawCRCMismatch = TRUE;
+	// GeneralsX @build GitHubCopilot 12/04/2026 Surface mismatch UI activation in manual Linux/macOS captures.
+	fprintf(stderr, "[LAN86] setSawCRCMismatch logicFrame=%u latestMismatchFrame=%d runAhead=%d\n",
+		TheGameLogic->getFrame(), TheGameLogic->getFrame() - m_runAhead - 1, m_runAhead);
 
 	TheScriptActions->closeWindows( TRUE );
 	m_messageWindow = TheWindowManager->winCreateFromScript("Menus/CRCMismatch.wnd");

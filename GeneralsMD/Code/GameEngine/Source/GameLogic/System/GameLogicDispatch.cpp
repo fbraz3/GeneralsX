@@ -2072,18 +2072,23 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 #if defined(RTS_DEBUG)
 					// don't even put this in release, cause someone might hack it.
 					if (!TheDebugIgnoreSyncErrors)
+#endif
 					{
-#endif
 						m_shouldValidateCRCs = TRUE;
-#if defined(RTS_DEBUG)
+						// GeneralsX @build GitHubCopilot 12/04/2026 Trace when the local player enables CRC validation for a frame.
+						fprintf(stderr, "[LAN86] local CRC validation enabled frame=%u player=%ls\n",
+							m_frame, msgPlayer->getPlayerDisplayName().str());
 					}
-#endif
 				}
 
 				UnsignedInt newCRC = msg->getArgument(0)->integer;
 				//DEBUG_LOG(("Received CRC of %8.8X from %ls on frame %d", newCRC,
 					//msgPlayer->getPlayerDisplayName().str(), m_frame));
 				m_cachedCRCs[msgPlayer->getPlayerIndex()] = newCRC;
+				// GeneralsX @build GitHubCopilot 12/04/2026 Trace per-player CRC capture to compare Linux/macOS frame state.
+				fprintf(stderr, "[LAN86] cached CRC frame=%u msgPlayerIndex=%d slotIndex=%d name=%ls crc=%08X local=%d\n",
+					m_frame, msgPlayer->getPlayerIndex(), slotIndex, msgPlayer->getPlayerDisplayName().str(), newCRC,
+					msgPlayer->isLocalPlayer());
 			}
 			else if (TheRecorder && TheRecorder->isPlaybackMode())
 			{
