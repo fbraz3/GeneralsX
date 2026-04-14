@@ -954,6 +954,11 @@ void TextureLoader::Load_Thumbnail(TextureBaseClass *tc)
 
 	// load thumbnail texture
 	IDirect3DTexture8 *d3d_texture = Load_Thumbnail(tc->Get_Full_Path(),tc->Get_HSV_Shift());
+	// GeneralsX @bugfix BenderAI 14/04/2026 Avoid null texture dereference when fallback texture is unavailable during early/late device lifetime windows.
+	if (d3d_texture == nullptr)
+	{
+		return;
+	}
 
 	// apply thumbnail to texture
 	if (tc->Get_Asset_Type()==TextureBaseClass::TEX_REGULAR)
@@ -1214,6 +1219,13 @@ bool TextureLoadTaskClass::Begin_Load()
 bool TextureLoadTaskClass::Load()
 {
 	WWMEMLOG(MEM_TEXTURE);
+	
+	// GeneralsX @bugfix BenderAI 14/04/2026 Defend against task becoming stale during background loading phase.
+	if (!Texture || !D3DTexture || !DX8Wrapper::Is_Initted())
+	{
+		return false;
+	}
+
 	WWASSERT(Peek_D3D_Texture());
 
 	bool loaded = false;
@@ -1237,6 +1249,12 @@ bool TextureLoadTaskClass::Load()
 void TextureLoadTaskClass::End_Load()
 {
 	WWASSERT(TextureLoader::Is_DX8_Thread());
+
+	// GeneralsX @bugfix BenderAI 14/04/2026 Guard against texture becoming invalid between Load() and End_Load().
+	if (!Texture || !DX8Wrapper::Is_Initted())
+	{
+		return;
+	}
 
 	Unlock_Surfaces();
 	Apply(true);
@@ -1277,6 +1295,12 @@ void TextureLoadTaskClass::Apply_Missing_Texture()
 	WWASSERT(!D3DTexture);
 
 	D3DTexture = MissingTexture::_Get_Missing_Texture();
+	// GeneralsX @bugfix BenderAI 14/04/2026 Skip apply path when fallback texture cannot be created yet to prevent null dereference in Texture::Apply_New_Surface.
+	if (D3DTexture == nullptr)
+	{
+		return;
+	}
+
 	Apply(true);
 }
 
@@ -1406,6 +1430,13 @@ static bool	Get_Texture_Information
 
 bool TextureLoadTaskClass::Begin_Compressed_Load()
 {
+	// GeneralsX @bugfix BenderAI 14/04/2026 Defend against stale task objects due to pool recycling or premature texture destruction during async background loading.
+	// Verify task and texture are still valid before proceeding.
+	if (!Texture || !DX8Wrapper::Is_Initted())
+	{
+		return false;
+	}
+
 	unsigned orig_w,orig_h,orig_d,orig_mip_count,reduction;
 	WW3DFormat orig_format;
 	if (!Get_Texture_Information
@@ -1537,6 +1568,12 @@ bool TextureLoadTaskClass::Begin_Compressed_Load()
 
 bool TextureLoadTaskClass::Begin_Uncompressed_Load()
 {
+	// GeneralsX @bugfix BenderAI 14/04/2026 Defend against stale task objects due to pool recycling or premature texture destruction during async background loading.
+	if (!Texture || !DX8Wrapper::Is_Initted())
+	{
+		return false;
+	}
+
 	unsigned width,height,depth,orig_mip_count,reduction;
 	WW3DFormat orig_format;
 	if (!Get_Texture_Information
