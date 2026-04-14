@@ -49,12 +49,14 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update -qq
+          # GeneralsX @bugfix GitHubCopilot 14/04/2026 Ensure eu-strip/eu-elfcompress are available for flatpak-builder debuginfo finalization.
           sudo apt-get install -y -qq --no-install-recommends \
             git \
             ca-certificates \
             python3 \
             flatpak \
-            flatpak-builder
+            flatpak-builder \
+            elfutils
 
       - name: Install Flatpak Runtime
         run: |
