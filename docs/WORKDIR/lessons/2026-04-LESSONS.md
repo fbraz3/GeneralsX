@@ -1,5 +1,14 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-13 - Replay header parsing must not depend on host wchar size
+
+- Problem: Headless replay simulation on macOS crashed or rejected valid replay files in mixed real-world datasets.
+- Evidence: Stack protector aborts and malformed replay metadata (invalid/empty GameInfo) occurred while reading replay headers on non-Windows.
+- Root cause: Replay parsing paths implicitly depended on platform `wchar_t` size via wide-char file reads. Windows replay layout stores Unicode fields as UTF-16 (2-byte units), while macOS/Linux `wchar_t` is typically 4 bytes.
+- Fix: Parse replay Unicode fields as explicit 2-byte UTF-16 units, support absolute replay paths, and harden string parsing against overflow/truncation edge cases.
+- Validation: macOS replay suite now processes real-world filenames (including spaces/symbols) without parser crashes; remaining failures are CRC mismatches/determinism, not filename parsing.
+- Prevention: For binary compatibility formats shared with Windows retail assets, never bind on-disk structure parsing to native type widths (`wchar_t`, struct packing, etc.); use explicit fixed-width serialization rules.
+
 ## Session 2026-04-12 - LAN lobby visibility must be traced at render and prune points, not only at announce receipt
 
 - Problem: Logs could show `handleGameAnnounce` success while the user still reported that the LAN lobby list did not visibly retain the remote game.

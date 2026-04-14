@@ -3005,6 +3005,10 @@ void ParticleSystemManager::update()
 		}
 	}
 
+	// GeneralsX @bugfix BenderAI 13/04/2026 Skip render-only smudge work in headless replay simulation.
+	if (TheGlobalData->m_headless)
+		return;
+
 	const Bool drawSmudge = TheSmudgeManager && TheSmudgeManager->getHardwareSupport() && TheGlobalData->m_useHeatEffects;
 
 	if (drawSmudge)
@@ -3014,6 +3018,9 @@ void ParticleSystemManager::update()
 
 		TheSmudgeManager->reset();
 		SmudgeSet *set = TheSmudgeManager->addSmudgeSet(); //global smudge set through which all smudges are rendered.
+		// GeneralsX @bugfix BenderAI 13/04/2026 Headless replay paths may report smudge support without a valid smudge set.
+		if (set == nullptr)
+			return;
 
 		for (ParticleSystemManager::ParticleSystemListIt it = m_allParticleSystemList.begin(); it != m_allParticleSystemList.end(); ++it)
 		{

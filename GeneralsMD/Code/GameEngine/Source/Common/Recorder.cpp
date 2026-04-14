@@ -909,8 +909,24 @@ void RecorderClass::writeArgument(GameMessageArgumentDataType type, const GameMe
  */
 Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 {
-	AsciiString filepath = getReplayDir();
-	filepath.concat(header.filename.str());
+	AsciiString filepath;
+	const char* replayFilename = header.filename.str();
+	const size_t replayFilenameLen = replayFilename != nullptr ? strlen(replayFilename) : 0;
+	const bool isUnixAbsolute = replayFilenameLen >= 1 && replayFilename[0] == '/';
+	const bool isWindowsDriveAbsolute = replayFilenameLen >= 3
+		&& ((replayFilename[0] >= 'A' && replayFilename[0] <= 'Z') || (replayFilename[0] >= 'a' && replayFilename[0] <= 'z'))
+		&& replayFilename[1] == ':'
+		&& (replayFilename[2] == '\\' || replayFilename[2] == '/');
+	const bool isUncAbsolute = replayFilenameLen >= 2 && replayFilename[0] == '\\' && replayFilename[1] == '\\';
+
+	// GeneralsX @bugfix BenderAI 13/04/2026 Accept absolute replay paths passed via -replay instead of forcing ReplayDir prefix.
+	if (isUnixAbsolute || isWindowsDriveAbsolute || isUncAbsolute)
+		filepath = header.filename;
+	else
+	{
+		filepath = getReplayDir();
+		filepath.concat(header.filename.str());
+	}
 
 	// TheSuperHackers @performance More buffered data reduces disk overhead and will improve fast forward playback
 	const UnsignedInt buffersize = header.forPlayback ? replayBufferBytes : File::BUFFERSIZE;
@@ -919,6 +935,9 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 	if (m_file == nullptr)
 	{
 		DEBUG_LOG(("Can't open %s (%s)", filepath.str(), header.filename.str()));
+		// GeneralsX @tweak BenderAI 13/04/2026 Emit explicit replay-open diagnostics for headless replay testing.
+		printf("Replay header open failed: path=\"%s\" source=\"%s\"\n", filepath.str(), header.filename.str());
+		fflush(stdout);
 		return FALSE;
 	}
 
@@ -927,6 +946,9 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 	m_file->read( &genrep, sizeof(s_genrep) - 1 );
 	if ( strncmp(genrep, s_genrep, sizeof(s_genrep) - 1 ) != 0 ) {
 		DEBUG_LOG(("RecorderClass::readReplayHeader - replay file did not have GENREP at the start."));
+		// GeneralsX @tweak BenderAI 13/04/2026 Print replay format mismatch in headless logs.
+		printf("Replay header parse failed: invalid GENREP signature for \"%s\"\n", filepath.str());
+		fflush(stdout);
 		m_file->close();
 		m_file = nullptr;
 		return FALSE;
@@ -969,6 +991,9 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 	if (!ParseAsciiStringToGameInfo(&m_gameInfo, header.gameOptions))
 	{
 		DEBUG_LOG(("RecorderClass::readReplayHeader - replay file did not have a valid GameInfo string."));
+		// GeneralsX @tweak BenderAI 13/04/2026 Print GameInfo parsing failures with length for replay compatibility triage.
+		printf("Replay header parse failed: invalid GameInfo for \"%s\" (len=%d)\n", filepath.str(), header.gameOptions.getLength());
+		fflush(stdout);
 		m_file->close();
 		m_file = nullptr;
 		return FALSE;
@@ -980,6 +1005,9 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 	if (header.localPlayerIndex < -1 || header.localPlayerIndex >= MAX_SLOTS)
 	{
 		DEBUG_LOG(("RecorderClass::readReplayHeader - invalid local slot number."));
+		// GeneralsX @tweak BenderAI 13/04/2026 Print invalid local player index from replay header.
+		printf("Replay header parse failed: invalid local slot=%d for \"%s\"\n", header.localPlayerIndex, filepath.str());
+		fflush(stdout);
 		m_gameInfo.endGame();
 		m_gameInfo.reset();
 		m_file->close();
@@ -1346,27 +1374,24 @@ Bool RecorderClass::playbackFile(AsciiString filename)
  * Read a unicode string from the current file position. The string is assumed to be 0-terminated.
  */
 UnicodeString RecorderClass::readUnicodeString() {
-	WideChar str[1024] = L"";
-	Int index = 0;
+	// GeneralsX @bugfix BenderAI 13/04/2026 Read replay unicode strings as UTF-16 (2 bytes) to keep Windows replay layout on macOS/Linux.
+	const Int maxReplayStringChars = 1024 * 1024;
+	std::vector<WideChar> str;
+	str.reserve(128);
 
-	Int c = m_file->readWideChar();
-	if (c == EOF) {
-		str[index] = 0;
-	}
-	str[index] = c;
-
-	while (index < 1024 && str[index] != 0) {
-		++index;
-		Int c = m_file->readWideChar();
-		if (c == EOF) {
-			str[index] = 0;
+	while (str.size() < static_cast<size_t>(maxReplayStringChars))
+	{
+		uint16_t c16 = 0;
+		if (m_file->read(&c16, sizeof(c16)) != sizeof(c16))
 			break;
-		}
-		str[index] = c;
+		if (c16 == 0)
+			break;
+		str.push_back(static_cast<WideChar>(c16));
 	}
-	str[1023] = L'\0';
 
-	UnicodeString retval(str);
+	str.push_back(L'\0');
+
+	UnicodeString retval(&str[0]);
 	return retval;
 }
 
@@ -1374,27 +1399,22 @@ UnicodeString RecorderClass::readUnicodeString() {
  * Read an ascii string from the current file position. The string is assumed to be 0-terminated.
  */
 AsciiString RecorderClass::readAsciiString() {
-	char str[1024] = "";
-	Int index = 0;
+	// GeneralsX @bugfix BenderAI 13/04/2026 Read replay ascii strings dynamically to avoid truncation-driven parse failures.
+	const Int maxReplayStringChars = 1024 * 1024;
+	std::vector<char> str;
+	str.reserve(128);
 
-	Int c =	m_file->readChar();
-	if (c == EOF) {
-		str[index] = 0;
-	}
-	str[index] = c;
-
-	while (index < 1024 && str[index] != 0) {
-		++index;
+	while (str.size() < static_cast<size_t>(maxReplayStringChars))
+	{
 		Int c = m_file->readChar();
-		if (c == EOF) {
-			str[index] = 0;
+		if (c == EOF || c == 0)
 			break;
-		}
-		str[index] = c;
+		str.push_back(static_cast<char>(c));
 	}
-	str[1023] = '\0';
 
-	AsciiString retval(str);
+	str.push_back('\0');
+
+	AsciiString retval(&str[0]);
 	return retval;
 }
 

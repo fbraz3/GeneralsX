@@ -111,6 +111,9 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 				TheGameLogic->UPDATE();
 				if (TheRecorder->sawCRCMismatch())
 				{
+					// GeneralsX @tweak BenderAI 13/04/2026 Add per-replay CRC mismatch diagnostics for headless runs
+					printf("CRC mismatch detected while simulating replay \"%s\"\n", filename.str());
+					fflush(stdout);
 					numErrors++;
 					break;
 				}
@@ -123,7 +126,10 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 		}
 		else
 		{
-			printf("Cannot open replay\n");
+			// GeneralsX @tweak BenderAI 13/04/2026 Add replay filename and resolved replay directory in open failures
+			printf("Cannot open replay \"%s\"\n", filename.str());
+			printf("Replay directory at failure: \"%s\"\n", TheRecorder->getReplayDir().str());
+			fflush(stdout);
 			numErrors++;
 		}
 	}
@@ -141,6 +147,13 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 
 int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiString> &filenames, int maxProcesses)
 {
+	// GeneralsX @bugfix BenderAI 13/04/2026 WorkerProcess is still Windows-only; use in-process replay simulation on non-Windows.
+#ifndef _WIN32
+	printf("Worker processes are unavailable on this platform. Falling back to in-process replay simulation.\n");
+	fflush(stdout);
+	return simulateReplaysInThisProcess(filenames);
+#endif
+
 	DWORD totalStartTimeMillis = GetTickCount();
 
 	// GeneralsX @build BenderAI 12/02/2026 Cross-platform executable path retrieval
@@ -165,14 +178,19 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 	exePathNarrow[0] = '\0';
 #endif
 	WideChar exePath[1024];
-	// Convert narrow char to WideChar for command formatting
-	for (size_t i = 0; i < sizeof(exePathNarrow) && exePathNarrow[i] != '\0'; ++i) {
-		exePath[i] = static_cast<WideChar>(exePathNarrow[i]);
+	// GeneralsX @bugfix BenderAI 13/04/2026 Ensure wide executable path is properly null-terminated for worker command formatting.
+	size_t exePathWideLen = 0;
+	while (exePathWideLen < ARRAY_SIZE(exePath) - 1 && exePathNarrow[exePathWideLen] != '\0')
+	{
+		exePath[exePathWideLen] = static_cast<WideChar>(exePathNarrow[exePathWideLen]);
+		exePathWideLen++;
 	}
-	exePath[sizeof(exePathNarrow) - 1] = L'\0';
+	exePath[exePathWideLen] = L'\0';
 #endif
 
 	std::vector<WorkerProcess> processes;
+	std::vector<AsciiString> processReplayNames;
+	std::vector<UnicodeString> processCommands;
 	int filenamePositionStarted = 0;
 	int filenamePositionDone = 0;
 	int numErrors = 0;
@@ -188,14 +206,25 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 		{
 			if (!processes[0].isDone())
 				break;
+			AsciiString replayName = processReplayNames[0];
+			UnicodeString replayCommand = processCommands[0];
 			AsciiString stdOutput = processes[0].getStdOutput();
-			printf("%d/%d %s", filenamePositionDone+1, (int)filenames.size(), stdOutput.str());
+			printf("%d/%d Replay \"%s\"\n", filenamePositionDone+1, (int)filenames.size(), replayName.str());
+			if (stdOutput.getLength() > 0)
+				printf("%s", stdOutput.str());
 			DWORD exitcode = processes[0].getExitCode();
 			if (exitcode != 0)
-				printf("Error!\n");
+			{
+				// GeneralsX @tweak BenderAI 13/04/2026 Add worker command and exit diagnostics for replay failures
+				printf("Worker exit code: %lu\n", (unsigned long)exitcode);
+				wprintf(L"Worker command: %ls\n", replayCommand.str());
+				printf("Error while simulating replay \"%s\"\n", replayName.str());
+			}
 			fflush(stdout);
 			numErrors += exitcode == 0 ? 0 : 1;
 			processes.erase(processes.begin());
+			processReplayNames.erase(processReplayNames.begin());
+			processCommands.erase(processCommands.begin());
 			filenamePositionDone++;
 		}
 
@@ -207,14 +236,28 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 			UnicodeString filenameWide;
 			filenameWide.translate(filenames[filenamePositionStarted]);
 			UnicodeString command;
-			command.format(L"\"%s\"%s%s -replay \"%s\"",
+			// GeneralsX @bugfix BenderAI 13/04/2026 Use wide format specifiers to avoid truncating command paths on non-Windows
+			command.format(L"\"%ls\"%ls%ls -replay \"%ls\"",
 				exePath,
 				TheGlobalData->m_windowed ? L" -win" : L"",
 				TheGlobalData->m_headless ? L" -headless" : L"",
 				filenameWide.str());
 
 			processes.push_back(WorkerProcess());
-			processes.back().startProcess(command);
+			if (!processes.back().startProcess(command))
+			{
+				// GeneralsX @tweak BenderAI 13/04/2026 Add explicit worker start diagnostics instead of generic replay error
+				printf("Failed to start worker process for replay \"%s\"\n", filenames[filenamePositionStarted].str());
+				wprintf(L"Worker command: %ls\n", command.str());
+				fflush(stdout);
+				numErrors++;
+				processes.pop_back();
+				filenamePositionStarted++;
+				continue;
+			}
+
+			processReplayNames.push_back(filenames[filenamePositionStarted]);
+			processCommands.push_back(command);
 
 			filenamePositionStarted++;
 			numProcessesRunning++;
