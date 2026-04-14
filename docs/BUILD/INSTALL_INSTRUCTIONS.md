@@ -7,10 +7,6 @@
    - `$HOME/GeneralsX/Generals` for Command & Conquer: Generals
    - `$HOME/GeneralsX/GeneralsZH` for Command & Conquer: Generals - Zero Hour
 
-Legacy fallback during migration is still supported:
-
-- `$HOME/GeneralsX/GeneralsMD` for Command & Conquer: Generals - Zero Hour
-
 ## Linux
 
 1. Download the `.AppImage` file from this release (`GeneralsXZH-linux-x86_64.AppImage` for Zero Hour, `GeneralsX-linux-x86_64.AppImage` for the base game).
@@ -18,25 +14,24 @@ Legacy fallback during migration is still supported:
 
    ```bash
    chmod +x GeneralsXZH-linux-x86_64.AppImage
-   ./GeneralsXZH-linux-x86_64.AppImage -win
+   ./GeneralsXZH-linux-x86_64.AppImage
    ```
 
    Troubleshooting: AppImages commonly use FUSE to mount their embedded filesystem at launch. If direct execution fails on a minimal or sandboxed system, try:
 
    ```bash
-   APPIMAGE_EXTRACT_AND_RUN=1 ./GeneralsXZH-linux-x86_64.AppImage -win
+   APPIMAGE_EXTRACT_AND_RUN=1 ./GeneralsXZH-linux-x86_64.AppImage
    ```
 
    Or extract and run manually:
 
    ```bash
    ./GeneralsXZH-linux-x86_64.AppImage --appimage-extract
-   ./squashfs-root/AppRun -win
+   ./squashfs-root/AppRun
    ```
 
-3. The AppImage auto-detects game data in the following default locations (checked in order):
-   - `$HOME/GeneralsX/GeneralsZH` (preferred)
-   - `$HOME/GeneralsX/GeneralsMD` (legacy fallback)
+3. The AppImage auto-detects game data in the following default location:
+   - `$HOME/GeneralsX/GeneralsZH`
 
    If your assets are stored elsewhere, set the environment variable before launching:
 
@@ -59,8 +54,6 @@ Legacy fallback during migration is still supported:
    - `$HOME/GeneralsX/GeneralsZH` for Zero Hour
 4. Because the app is not code-signed, macOS Gatekeeper will initially block it. After the first launch attempt, go to **System Settings -> Privacy & Security** and allow the application to run.
 
-If your existing setup still uses `$HOME/GeneralsX/GeneralsMD`, release scripts keep compatibility with that legacy path.
-
 ## Requirements
 
 GeneralsX has been developed and tested primarily on the following environments:
@@ -81,29 +74,14 @@ Current development and test matrix:
 
 Support for other platforms and configurations is possible but not yet officially tested.
 
-## Known Issues
+## Multiplayes features
 
-### Multiplayer
+- LAN play - it's broken for now and we have a [issue](https://github.com/fbraz3/GeneralsX/issues/86) to work on that.
+- Online features - not implemented and planned for the future.
 
-- LAN play has not been tested and is likely broken.
-- Online features are not implemented and are only planned for the distant future.
+## Known Issues & Limitations
 
-### Linux
-
-- Skirmish games currently result in an **instant win** as soon as the match starts, so this mode is not yet playable.
-  - Campaign and Generals Challenge modes are working.
-- [Zero Hour] Building and unit shadows do not render correctly. This is a visual issue only and does not affect gameplay logic.
-- Stealth units and GLA stealth buildings are visible as normal units/buildings instead of being hidden.
-- The sound system is mostly functional, but there are issues with long voice lines and some sound effects cutting out or not playing correctly.
-- There may be additional issues that have not yet been identified.
-
-### macOS
-
-All items listed in the Linux section apply, **except**:
-
-- All single-player modes, including Skirmish, Campaign, and Generals Challenge, are currently working on macOS.
-
-## Reporting Bugs
+For documented limitations and known bugs, check the [issues page](https://github.com/fbraz3/GeneralsX/issues).
 
 If you encounter problems while running the game, please [open an issue](https://github.com/fbraz3/GeneralsX/issues/new/choose) and include as much detail as possible, such as:
 
