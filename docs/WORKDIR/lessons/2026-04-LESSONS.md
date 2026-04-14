@@ -1,5 +1,21 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-13 - Flatpak must build inside SDK, not package host binaries/libraries
+
+- Problem: Flatpak packaging mixed host-built binaries with manually copied shared libraries, causing fragile runtime behavior and Wayland/Vulkan instability risks.
+- Root cause: Packaging flow treated Flatpak as a generic container bundle instead of a runtime+SDK build pipeline.
+- Fix:
+	- Migrated manifests to compile the game inside `org.freedesktop.Sdk` (25.08) with `flatpak-builder`.
+	- Declared dependency sources in manifest (`SDL3`, `SDL3_image`, `openal-soft`, `dxvk-native`) and wired them through `FETCHCONTENT_SOURCE_DIR_*` to avoid in-build network fetches.
+	- Removed host library staging logic from the build script and switched to manifest-driven build/export only.
+	- Kept runtime environment/path logic centralized in `/app/bin/run.sh`, with wrappers acting as pass-through entrypoints.
+- Validation:
+	- `flatpak-builder --show-manifest` succeeds for both `com.fbraz3.GeneralsX.yml` and `com.fbraz3.GeneralsXZH.yml`.
+	- `flatpak-builder --user --build-only` now advances to SDK update/install phase (instead of failing on missing system remote refs).
+- Prevention: For Flatpak work, never copy `.so` files from host system paths into app runtime. Build inside SDK and ship only artifacts produced by the manifest modules.
+
+## Session 2026-04-09 - libxcb Flatpak PoC needs newer source libs, not host baseline copy
+
 ## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
 
 - Problem: A user reported an intermittent crash during 8-player skirmish on macOS (Apple Silicon), while the same broad scenario could not be reproduced on another Apple Silicon machine.
@@ -43,7 +59,7 @@
 
 ## Session 2026-04-09 - Flatpak runtime library bundling must preserve SONAME links and avoid self-symlink overwrite
 
-- Problem: `flatpak run com.generals.GeneralsXZH` failed with missing `libSDL3_image.so.0` and later codec libraries such as `libavcodec.so.60` / `libx264.so.164`.
+- Problem: `flatpak run com.fbraz3.GeneralsXZH` failed with missing `libSDL3_image.so.0` and later codec libraries such as `libavcodec.so.60` / `libx264.so.164`.
 - Root cause:
 	- Runtime staging copied only regular files, dropping symlink chains required by SONAME resolution.
 	- Manifest fallback symlink logic could overwrite already-correct `lib*.so.<major>` files into self-symlinks.

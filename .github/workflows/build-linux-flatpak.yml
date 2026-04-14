@@ -4,6 +4,12 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
+    inputs:
+      preset:
+        required: false
+        type: string
+        default: linux64-deploy
   workflow_dispatch:
     inputs:
       preset:
@@ -44,96 +50,24 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends \
-            build-essential \
-            cmake \
-            ninja-build \
             git \
-            curl \
             ca-certificates \
-            zip \
-            unzip \
-            tar \
-            pkg-config \
             python3 \
-            python3-pip \
-            python3-dev \
-            autoconf \
-            automake \
-            autoconf-archive \
-            libtool \
-            libltdl-dev \
-            libopenal-dev \
-            libasound2-dev \
-            libpulse-dev \
-            libaudio-dev \
-            libavcodec-dev \
-            libavformat-dev \
-            libavutil-dev \
-            libswresample-dev \
-            libswscale-dev \
-            libpng-dev \
-            zlib1g-dev \
-            libfribidi-dev \
-            libjack-dev \
-            libsndio-dev \
-            libx11-dev \
-            libxext-dev \
-            libxrandr-dev \
-            libxcursor-dev \
-            libxfixes-dev \
-            libxi-dev \
-            libxss-dev \
-            libxtst-dev \
-            libxkbcommon-dev \
-            libdrm-dev \
-            libgbm-dev \
-            libgl1-mesa-dev \
-            libgles2-mesa-dev \
-            libegl1-mesa-dev \
-            libdbus-1-dev \
-            libibus-1.0-dev \
-            libudev-dev \
-            libthai-dev \
-            libpipewire-0.3-dev \
-            libwayland-dev \
-            libdecor-0-dev \
-            liburing-dev \
-            libvulkan-dev \
             flatpak \
             flatpak-builder
 
       - name: Install Flatpak Runtime
         run: |
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          flatpak --user install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+          flatpak --user install -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08
 
-      - name: Cache vcpkg
+      - name: Cache flatpak-builder state
         uses: actions/cache@v4
         with:
-          path: /opt/vcpkg
-          key: vcpkg-linux-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          path: .flatpak-builder
+          key: flatpak-builder-${{ runner.os }}-${{ inputs.preset }}-${{ hashFiles('flatpak/com.fbraz3.GeneralsX.yml', 'flatpak/com.fbraz3.GeneralsXZH.yml', 'scripts/build/linux/build-linux-flatpak.sh', 'cmake/lzhl.cmake', 'CMakeLists.txt') }}
           restore-keys: |
-            vcpkg-linux-${{ runner.os }}-
-
-      - name: Bootstrap vcpkg
-        run: |
-          mkdir -p /opt/vcpkg
-          if [ ! -f /opt/vcpkg/vcpkg ]; then
-            git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
-            git -C /opt/vcpkg checkout ffc071e0c08432c60c9b64f00334c0227667931b
-            /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
-          fi
-          echo "VCPKG_ROOT=/opt/vcpkg" >> "$GITHUB_ENV"
-
-      - name: Configure CMake (Linux)
-        run: |
-          mkdir -p logs
-          cmake --preset "${{ inputs.preset }}" 2>&1 | tee logs/configure_linux_flatpak.log
-
-      - name: Build ${{ matrix.game.output }}
-        run: |
-          mkdir -p logs
-          cmake --build "build/${{ inputs.preset }}" --target "${{ matrix.game.target }}" 2>&1 | tee "logs/build_${{ matrix.game.log_suffix }}_linux_flatpak.log"
+            flatpak-builder-${{ runner.os }}-${{ inputs.preset }}-
 
       - name: Build Flatpak Bundle
         run: |

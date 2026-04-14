@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=GeneralsX
 Comment=Command & Conquer: Generals cross-platform port
-Exec=generalsx-wrapper.sh -win
-Icon=com.generals.GeneralsX
+Exec=flatpak run com.fbraz3.GeneralsX
+Icon=com.fbraz3.GeneralsX
 Type=Application
 Categories=Game;StrategyGame;
 StartupNotify=true

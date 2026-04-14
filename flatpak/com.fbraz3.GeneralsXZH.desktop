@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=GeneralsX Zero Hour
 Comment=Command & Conquer: Generals Zero Hour cross-platform port
-Exec=generalsxzh-wrapper.sh -win
-Icon=com.generals.GeneralsXZH
+Exec=flatpak run com.fbraz3.GeneralsXZH
+Icon=com.fbraz3.GeneralsXZH
 Type=Application
 Categories=Game;StrategyGame;
 StartupNotify=true

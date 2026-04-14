@@ -40,7 +40,7 @@ export LIBXCB_POC_DIR="$PWD/flatpak/poc-libxcb"
 Use the experimental wrapper mode to prioritize `/app/lib`:
 
 ```bash
-GENERALSX_FLATPAK_RUNTIME_MODE=vendor-xcb flatpak run com.generals.GeneralsXZH -win -noshellmap
+GENERALSX_FLATPAK_RUNTIME_MODE=vendor-xcb flatpak run com.fbraz3.GeneralsXZH -win -noshellmap
 ```
 
 ## Diagnostics
@@ -48,7 +48,7 @@ GENERALSX_FLATPAK_RUNTIME_MODE=vendor-xcb flatpak run com.generals.GeneralsXZH -
 Capture a reproducible report after each PoC run:
 
 ```bash
-./scripts/qa/smoke/collect-flatpak-vulkan-wsi-report.sh com.generals.GeneralsXZH
+./scripts/qa/smoke/collect-flatpak-vulkan-wsi-report.sh com.fbraz3.GeneralsXZH
 ```
 
 Attach the resulting log from `logs/` when comparing PoC variants.

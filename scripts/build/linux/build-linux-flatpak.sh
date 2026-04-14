@@ -1,47 +1,44 @@
 #!/usr/bin/env bash
-# GeneralsX @build GitHubCopilot 09/04/2026 Build Flatpak bundles for GeneralsX/GeneralsXZH from Linux build artifacts.
+# GeneralsX @build GitHubCopilot 13/04/2026 Build Flatpak bundles by compiling inside org.freedesktop.Sdk.
 # Usage:
 #   ./scripts/build/linux/build-linux-flatpak.sh [preset] [game]
 #   game: GeneralsMD (default) or Generals
 set -euo pipefail
 
+# GeneralsX @build GitHubCopilot 14/04/2026 Timestamp helper for progress tracking.
+ts() { date '+%H:%M:%S'; }
+elapsed() {
+    local start="$1"
+    local end
+    end=$(date +%s)
+    local diff=$(( end - start ))
+    printf '%dm%02ds' $(( diff / 60 )) $(( diff % 60 ))
+}
+
 PRESET="${1:-linux64-deploy}"
 GAME="${2:-GeneralsMD}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
-BUILD_ROOT="${PROJECT_ROOT}/build/${PRESET}"
 FLATPAK_DIR="${PROJECT_ROOT}/flatpak"
-STAGING_DIR="${FLATPAK_DIR}/staging"
-RUNTIME_DIR="${STAGING_DIR}/runtime"
 FLATPAK_BUILD_DIR="${PROJECT_ROOT}/build/flatpak-builddir"
 FLATPAK_REPO_DIR="${PROJECT_ROOT}/build/flatpak-repo"
+FLATPAK_STATE_DIR="${PROJECT_ROOT}/.flatpak-builder"
 RUNTIME_REPO_URL="${RUNTIME_REPO_URL:-https://flathub.org/repo/flathub.flatpakrepo}"
-DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
-DXVK_LIB_DIR="${BUILD_ROOT}/_deps/dxvk-src/lib"
-SDL3_LIB_DIR="${BUILD_ROOT}/_deps/sdl3-build"
-SDL3_IMAGE_LIB_DIR="${BUILD_ROOT}/_deps/sdl3_image-build"
-OPENAL_LIB_DIR="${BUILD_ROOT}/_deps/openal_soft-build"
-FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
-FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
-LIBXCB_POC_DIR="${LIBXCB_POC_DIR:-}"
-GENERALSX_FLATPAK_BUNDLE_XCB="${GENERALSX_FLATPAK_BUNDLE_XCB:-0}"
+# GeneralsX @build GitHubCopilot 13/04/2026 Optional hard purge for troubleshooting (drops flatpak-builder cache + workdirs).
+GENERALSX_FLATPAK_PURGE_CACHE="${GENERALSX_FLATPAK_PURGE_CACHE:-0}"
+# GeneralsX @build GitHubCopilot 14/04/2026 Enable flatpak-builder ccache by default for cross-session object reuse.
+GENERALSX_FLATPAK_USE_CCACHE="${GENERALSX_FLATPAK_USE_CCACHE:-1}"
 
 case "${GAME}" in
     GeneralsMD)
-        MANIFEST="${FLATPAK_DIR}/com.generals.GeneralsXZH.yml"
-        APP_ID="com.generals.GeneralsXZH"
+        MANIFEST="${FLATPAK_DIR}/com.fbraz3.GeneralsXZH.yml"
+        APP_ID="com.fbraz3.GeneralsXZH"
         OUTPUT_BUNDLE="${PROJECT_ROOT}/build/GeneralsXZH-${PRESET}.flatpak"
-        BINARY_SRC="${BUILD_ROOT}/GeneralsMD/GeneralsXZH"
-        STAGING_BINARY="GeneralsXZH"
-        BUILD_HINT="./scripts/build/linux/docker-build-linux-zh.sh ${PRESET}"
         ;;
     Generals)
-        MANIFEST="${FLATPAK_DIR}/com.generals.GeneralsX.yml"
-        APP_ID="com.generals.GeneralsX"
+        MANIFEST="${FLATPAK_DIR}/com.fbraz3.GeneralsX.yml"
+        APP_ID="com.fbraz3.GeneralsX"
         OUTPUT_BUNDLE="${PROJECT_ROOT}/build/GeneralsX-${PRESET}.flatpak"
-        BINARY_SRC="${BUILD_ROOT}/Generals/GeneralsX"
-        STAGING_BINARY="GeneralsX"
-        BUILD_HINT="./scripts/build/linux/docker-build-linux-generals.sh ${PRESET}"
         ;;
     *)
         echo "ERROR: Unsupported game '${GAME}'. Use GeneralsMD or Generals." >&2
@@ -49,13 +46,9 @@ case "${GAME}" in
         ;;
 esac
 
-echo "Preparing Flatpak staging for game ${GAME} and preset: ${PRESET}"
+BUILD_START=$(date +%s)
+echo "[$(ts)] Building Flatpak in SDK for game ${GAME} (preset label: ${PRESET})"
 
-if [[ ! -f "${BINARY_SRC}" ]]; then
-    echo "ERROR: Missing binary ${BINARY_SRC}" >&2
-    echo "Build first: ${BUILD_HINT}" >&2
-    exit 1
-fi
 if [[ ! -f "${MANIFEST}" ]]; then
     echo "ERROR: Missing Flatpak manifest ${MANIFEST}" >&2
     exit 1
@@ -65,8 +58,6 @@ if ! command -v flatpak-builder >/dev/null 2>&1; then
     echo "Install with: sudo apt-get install flatpak flatpak-builder" >&2
     exit 1
 fi
-
-# GeneralsX @build GitHubCopilot 09/04/2026 Ensure required Flatpak runtime and SDK exist for local task execution.
 if ! command -v flatpak >/dev/null 2>&1; then
     echo "ERROR: flatpak is not installed." >&2
     echo "Install with: sudo apt-get install flatpak" >&2
@@ -74,191 +65,55 @@ if ! command -v flatpak >/dev/null 2>&1; then
 fi
 
 if ! flatpak --user remote-list | awk '{print $1}' | grep -qx "flathub"; then
-    echo "Adding flathub remote for current user..."
+    echo "[$(ts)] Adding flathub remote for current user..."
     flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 fi
 
 if ! flatpak --user info org.freedesktop.Platform//25.08 >/dev/null 2>&1 || \
    ! flatpak --user info org.freedesktop.Sdk//25.08 >/dev/null 2>&1; then
-    echo "Installing required Flatpak runtime and SDK (25.08) for current user..."
+    echo "[$(ts)] Installing required Flatpak runtime and SDK (25.08) for current user..."
     flatpak --user install -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08
 fi
 
-rm -rf "${STAGING_DIR}" "${FLATPAK_BUILD_DIR}" "${FLATPAK_REPO_DIR}"
-mkdir -p "${RUNTIME_DIR}"
+if [[ "${GENERALSX_FLATPAK_PURGE_CACHE}" == "1" ]]; then
+    echo "[$(ts)] Full purge requested (GENERALSX_FLATPAK_PURGE_CACHE=1): removing Flatpak build dirs and local flatpak-builder cache..."
+    rm -rf "${FLATPAK_BUILD_DIR}" "${FLATPAK_REPO_DIR}"
+    rm -rf "${FLATPAK_STATE_DIR}"
+fi
 
-cp "${BINARY_SRC}" "${STAGING_DIR}/${STAGING_BINARY}"
-chmod +x "${STAGING_DIR}/${STAGING_BINARY}"
+mkdir -p "${FLATPAK_BUILD_DIR}" "${FLATPAK_REPO_DIR}" "${FLATPAK_STATE_DIR}"
 
-if [[ -f "${DXVK_CONF_SRC}" ]]; then
-    cp "${DXVK_CONF_SRC}" "${STAGING_DIR}/dxvk.conf"
+echo "[$(ts)] Running flatpak-builder (build inside SDK sandbox)..."
+FLATPAK_BUILDER_START=$(date +%s)
+BUILDER_ARGS=(
+    --verbose
+    --user
+    --force-clean
+    --state-dir="${FLATPAK_STATE_DIR}"
+    --repo="${FLATPAK_REPO_DIR}"
+    --install-deps-from=flathub
+)
+
+if [[ "${GENERALSX_FLATPAK_USE_CCACHE}" == "1" ]]; then
+    BUILDER_ARGS+=(--ccache)
+    echo "[$(ts)] flatpak-builder ccache enabled (GENERALSX_FLATPAK_USE_CCACHE=1)."
 else
-    echo "WARNING: Missing ${DXVK_CONF_SRC}, creating empty dxvk.conf"
-    : > "${STAGING_DIR}/dxvk.conf"
+    echo "[$(ts)] flatpak-builder ccache disabled (GENERALSX_FLATPAK_USE_CCACHE=0)."
 fi
 
-copy_optional_libs() {
-    local source_dir="$1"
-    local pattern="$2"
-    if [[ -d "${source_dir}" ]]; then
-        # Preserve symlink chains so SONAME entries (for example libSDL3_image.so.0) exist in Flatpak runtime.
-        local matches=()
-        shopt -s nullglob
-        matches=("${source_dir}"/${pattern})
-        shopt -u nullglob
-        if (( ${#matches[@]} > 0 )); then
-            cp -a "${matches[@]}" "${RUNTIME_DIR}/"
-        fi
-    fi
-}
+echo "Using flatpak-builder state/cache dir: ${FLATPAK_STATE_DIR}"
+echo "Set GENERALSX_FLATPAK_PURGE_CACHE=1 for full purge."
+echo "Note: flatpak-builder can stay quiet for a while during finalization/export."
+echo "Do not interrupt after the last module command unless an explicit error is shown."
 
-copy_optional_libs "${DXVK_LIB_DIR}" "libdxvk_d3d8.so*"
-copy_optional_libs "${DXVK_LIB_DIR}" "libdxvk_d3d9.so*"
-copy_optional_libs "${SDL3_LIB_DIR}" "libSDL3.so*"
-copy_optional_libs "${SDL3_IMAGE_LIB_DIR}" "libSDL3_image.so*"
-copy_optional_libs "${OPENAL_LIB_DIR}" "libopenal.so*"
-copy_optional_libs "${FFMPEG_LIB_DIR}" "libavcodec.so*"
-copy_optional_libs "${FFMPEG_LIB_DIR}" "libavformat.so*"
-copy_optional_libs "${FFMPEG_LIB_DIR}" "libavutil.so*"
-copy_optional_libs "${FFMPEG_LIB_DIR}" "libswresample.so*"
-copy_optional_libs "${FFMPEG_LIB_DIR}" "libswscale.so*"
+flatpak-builder "${BUILDER_ARGS[@]}" \
+    "${FLATPAK_BUILD_DIR}" \
+    "${MANIFEST}"
 
-copy_codec_dep() {
-    local pattern="$1"
-    copy_optional_libs "${FFMPEG_DEP_LIB_DIR}" "${pattern}"
-    copy_optional_libs "${FFMPEG_LIB_DIR}" "${pattern}"
-}
-
-copy_codec_dep "libzvbi.so*"
-copy_codec_dep "libsnappy.so*"
-copy_codec_dep "libaom.so*"
-copy_codec_dep "libcodec2.so*"
-copy_codec_dep "libgsm.so*"
-copy_codec_dep "libjxl.so*"
-copy_codec_dep "libjxl_threads.so*"
-copy_codec_dep "libmp3lame.so*"
-copy_codec_dep "libopenjp2.so*"
-copy_codec_dep "libopus.so*"
-copy_codec_dep "librav1e.so*"
-copy_codec_dep "libshine.so*"
-copy_codec_dep "libspeex.so*"
-copy_codec_dep "libSvtAv1Enc.so*"
-copy_codec_dep "libtheoraenc.so*"
-copy_codec_dep "libtheoradec.so*"
-copy_codec_dep "libtwolame.so*"
-copy_codec_dep "libvorbis.so*"
-copy_codec_dep "libvorbisenc.so*"
-copy_codec_dep "libwebp.so*"
-copy_codec_dep "libwebpmux.so*"
-copy_codec_dep "libx264.so*"
-copy_codec_dep "libx265.so*"
-copy_codec_dep "libxvidcore.so*"
-copy_codec_dep "libsoxr.so*"
-copy_codec_dep "libvpl.so*"
-copy_codec_dep "libva.so*"
-copy_codec_dep "libva-drm.so*"
-copy_codec_dep "libva-x11.so*"
-copy_codec_dep "libvdpau.so*"
-copy_codec_dep "libOpenCL.so*"
-
-# GeneralsX @bugfix GitHubCopilot 10/04/2026 Do not vendor libxcb/X11/Wayland stack by default in Flatpak.
-# Runtime maintainers confirmed /app/lib/libxcb* overrides runtime libs and can break Vulkan ICD symbol resolution.
-# Use GENERALSX_FLATPAK_BUNDLE_XCB=1 only for isolated PoC/testing with explicit intent.
-if [[ "${GENERALSX_FLATPAK_BUNDLE_XCB}" == "1" ]]; then
-    if [[ -n "${LIBXCB_POC_DIR}" ]]; then
-        if [[ ! -d "${LIBXCB_POC_DIR}" ]]; then
-            echo "ERROR: LIBXCB_POC_DIR is set but directory does not exist: ${LIBXCB_POC_DIR}" >&2
-            exit 1
-        fi
-
-        echo "Using external libxcb PoC directory: ${LIBXCB_POC_DIR}"
-        copy_optional_libs "${LIBXCB_POC_DIR}" "libxcb.so*"
-        copy_optional_libs "${LIBXCB_POC_DIR}" "libxcb-*.so*"
-        copy_optional_libs "${LIBXCB_POC_DIR}" "libX11.so*"
-        copy_optional_libs "${LIBXCB_POC_DIR}" "libX11-xcb.so*"
-        copy_optional_libs "${LIBXCB_POC_DIR}" "libxshmfence.so*"
-        copy_optional_libs "${LIBXCB_POC_DIR}" "libXau.so*"
-        copy_optional_libs "${LIBXCB_POC_DIR}" "libXdmcp.so*"
-    else
-        copy_codec_dep "libxcb.so*"
-        copy_codec_dep "libxcb-present.so*"
-        copy_codec_dep "libxcb-xfixes.so*"
-        copy_codec_dep "libxcb-sync.so*"
-        copy_codec_dep "libxcb-randr.so*"
-        copy_codec_dep "libxcb-shm.so*"
-        copy_codec_dep "libxcb-dri3.so*"
-        copy_codec_dep "libxshmfence.so*"
-        copy_codec_dep "libX11-xcb.so*"
-        copy_codec_dep "libX11.so*"
-        copy_codec_dep "libxcb-dri2.so*"
-        copy_codec_dep "libwayland-client.so*"
-    fi
-else
-    echo "INFO: Skipping bundled libxcb/X11/Wayland stack (runtime-provided in Flatpak)."
-fi
-
-copy_ldd_deps() {
-    local root="$1"
-    [[ -e "${root}" ]] || return 0
-
-    while IFS= read -r dep; do
-        case "${dep}" in
-            /lib64/ld-linux* | /lib/*/ld-linux* | /lib/*/libc.so.* | /lib/*/libm.so.* | /lib/*/libpthread.so.* | /lib/*/librt.so.* | /lib/*/libdl.so.*)
-                continue
-                ;;
-            # GeneralsX @bugfix GitHubCopilot 10/04/2026 Keep platform graphics/windowing stack from Flatpak runtime to avoid app-level overrides.
-            /lib/*/libxcb*.so* | /lib64/libxcb*.so* | /usr/lib/*/libxcb*.so* | /usr/lib64/libxcb*.so* | \
-            /lib/*/libX11*.so* | /lib64/libX11*.so* | /usr/lib/*/libX11*.so* | /usr/lib64/libX11*.so* | \
-            /lib/*/libwayland*.so* | /lib64/libwayland*.so* | /usr/lib/*/libwayland*.so* | /usr/lib64/libwayland*.so* | \
-            /lib/*/libvulkan*.so* | /lib64/libvulkan*.so* | /usr/lib/*/libvulkan*.so* | /usr/lib64/libvulkan*.so* | \
-            /lib/*/libdrm*.so* | /lib64/libdrm*.so* | /usr/lib/*/libdrm*.so* | /usr/lib64/libdrm*.so*)
-                continue
-                ;;
-        esac
-
-        cp -a "${dep}" "${RUNTIME_DIR}/" 2>/dev/null || true
-        if [[ -L "${dep}" ]]; then
-            local resolved
-            resolved="$(readlink -f "${dep}")"
-            cp -a "${resolved}" "${RUNTIME_DIR}/" 2>/dev/null || true
-        fi
-    done < <(ldd "${root}" | awk '{for (i = 1; i <= NF; ++i) { if ($i ~ /^\//) { print $i; break } }}' | sort -u)
-}
-
-# GeneralsX @bugfix GitHubCopilot 09/04/2026 Bundle Vulkan ICD libraries from GL provider (Intel, NVIDIA, AMD drivers).
-# These are referenced by /usr/share/vulkan/icd.d/*.json manifests and provide VK_KHR_surface implementations.
-if [[ -d "/usr/lib/x86_64-linux-gnu/GL/default/lib" ]]; then
-    copy_optional_libs "/usr/lib/x86_64-linux-gnu/GL/default/lib" "libvulkan*.so*"
-    copy_optional_libs "/usr/lib/x86_64-linux-gnu/GL/default/lib" "libdrm*.so*"
-fi
-
-shopt -s nullglob
-for ffmpeg_root in "${RUNTIME_DIR}"/libavcodec.so* "${RUNTIME_DIR}"/libavformat.so* "${RUNTIME_DIR}"/libavutil.so*; do
-    copy_ldd_deps "${ffmpeg_root}"
-done
-shopt -u nullglob
-
-find "${BUILD_ROOT}" -name "libgamespy.so*" -type f -exec cp {} "${RUNTIME_DIR}/" \;
-
-if ! compgen -G "${RUNTIME_DIR}/libdxvk_d3d8.so*" > /dev/null; then
-    echo "ERROR: Missing required runtime library libdxvk_d3d8.so*" >&2
-    exit 1
-fi
-if ! compgen -G "${RUNTIME_DIR}/libSDL3.so*" > /dev/null; then
-    echo "ERROR: Missing required runtime library libSDL3.so*" >&2
-    exit 1
-fi
-if ! compgen -G "${RUNTIME_DIR}/libgamespy.so*" > /dev/null; then
-    echo "ERROR: Missing required runtime library libgamespy.so*" >&2
-    exit 1
-fi
-
-echo "Building Flatpak..."
-flatpak-builder --force-clean --repo="${FLATPAK_REPO_DIR}" "${FLATPAK_BUILD_DIR}" "${MANIFEST}"
-
+echo "[$(ts)] flatpak-builder completed in $(elapsed ${FLATPAK_BUILDER_START}). Building final .flatpak bundle..."
+BUNDLE_START=$(date +%s)
 flatpak build-bundle --runtime-repo="${RUNTIME_REPO_URL}" "${FLATPAK_REPO_DIR}" "${OUTPUT_BUNDLE}" "${APP_ID}"
 
-echo "Flatpak bundle generated: ${OUTPUT_BUNDLE}"
+echo "[$(ts)] .flatpak bundle created in $(elapsed ${BUNDLE_START}) (total: $(elapsed ${BUILD_START})). Output: ${OUTPUT_BUNDLE}"
 echo "Install example:"
-echo "  flatpak --user remote-add --if-not-exists flathub ${RUNTIME_REPO_URL}"
 echo "  flatpak --user install -y \"${OUTPUT_BUNDLE}\""

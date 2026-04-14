@@ -36,19 +36,10 @@ permissions:
   pull-requests: write
 
 jobs:
-  build-linux-zh:
-    uses: ./.github/workflows/build-linux.yml
+  build-linux-flatpak:
+    uses: ./.github/workflows/build-linux-flatpak.yml
     with:
-      game: GeneralsMD
       preset: linux64-deploy
-      package_format: appimage
-
-  build-linux-generals:
-    uses: ./.github/workflows/build-linux.yml
-    with:
-      game: Generals
-      preset: linux64-deploy
-      package_format: appimage
 
   build-macos-zh:
     uses: ./.github/workflows/build-macos.yml
@@ -64,7 +55,7 @@ jobs:
 
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [build-linux-zh, build-linux-generals, build-macos-zh, build-macos-generals]
+    needs: [build-linux-flatpak, build-macos-zh, build-macos-generals]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -106,17 +97,17 @@ jobs:
             echo "first_release=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download Linux appimage artifact
+      - name: Download Linux Zero Hour Flatpak artifact
         uses: actions/download-artifact@v4
         with:
-          name: linux-generalsxzh-linux64-appimage
-          path: artifacts/linux
+          name: linux-flatpak-generalsxzh-linux64-deploy
+          path: artifacts/linux-flatpak-zh
 
-      - name: Download Linux Generals appimage artifact
+      - name: Download Linux Generals Flatpak artifact
         uses: actions/download-artifact@v4
         with:
-          name: linux-generalsx-linux64-appimage
-          path: artifacts/linux-generals
+          name: linux-flatpak-generalsx-linux64-deploy
+          path: artifacts/linux-flatpak-generals
 
       - name: Download macOS bundle artifact
         uses: actions/download-artifact@v4
@@ -137,39 +128,18 @@ jobs:
         run: |
           mkdir -p release-assets
 
-          # GeneralsX @build GitHubCopilot 10/04/2026 Prefer AppImage artifacts; fall back to legacy tar bundle.
-          LINUX_APPIMAGE=$(find artifacts/linux -name "*.AppImage" | head -1)
-          if [ -n "$LINUX_APPIMAGE" ] && [ -f "$LINUX_APPIMAGE" ]; then
-            cp "$LINUX_APPIMAGE" release-assets/GeneralsXZH-linux-x86_64.AppImage
-            LINUX_OUT="$GITHUB_WORKSPACE/release-assets/GeneralsXZH-linux-x86_64.AppImage"
-          else
-            LINUX_TAR=$(find artifacts/linux -name "*.tar" | head -1)
-            if [ -z "$LINUX_TAR" ] || [ ! -f "$LINUX_TAR" ]; then
-              echo "ERROR: Linux ZH bundle not found in artifacts/linux"
-              find artifacts/linux -maxdepth 3 -type f || true
-              exit 1
-            fi
-            mkdir -p /tmp/linux-bundle
-            tar -xf "$LINUX_TAR" -C /tmp/linux-bundle
-            (cd /tmp/linux-bundle && zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip" .)
-            LINUX_OUT="$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip"
+          LINUX_ZH_FLATPAK=$(find artifacts/linux-flatpak-zh -name "*.flatpak" | head -1)
+          if [ -z "$LINUX_ZH_FLATPAK" ] || [ ! -f "$LINUX_ZH_FLATPAK" ]; then
+            echo "ERROR: Linux ZH Flatpak bundle not found in artifacts/linux-flatpak-zh"
+            find artifacts/linux-flatpak-zh -maxdepth 3 -type f || true
+            exit 1
           fi
 
-          LINUX_GENERALS_APPIMAGE=$(find artifacts/linux-generals -name "*.AppImage" | head -1)
-          if [ -n "$LINUX_GENERALS_APPIMAGE" ] && [ -f "$LINUX_GENERALS_APPIMAGE" ]; then
-            cp "$LINUX_GENERALS_APPIMAGE" release-assets/GeneralsX-linux-x86_64.AppImage
-            LINUX_GENERALS_OUT="$GITHUB_WORKSPACE/release-assets/GeneralsX-linux-x86_64.AppImage"
-          else
-            LINUX_GENERALS_TAR=$(find artifacts/linux-generals -name "*.tar" | head -1)
-            if [ -z "$LINUX_GENERALS_TAR" ] || [ ! -f "$LINUX_GENERALS_TAR" ]; then
-              echo "ERROR: Linux Generals bundle not found in artifacts/linux-generals"
-              find artifacts/linux-generals -maxdepth 3 -type f || true
-              exit 1
-            fi
-            mkdir -p /tmp/linux-generals-bundle
-            tar -xf "$LINUX_GENERALS_TAR" -C /tmp/linux-generals-bundle
-            (cd /tmp/linux-generals-bundle && zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip" .)
-            LINUX_GENERALS_OUT="$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip"
+          LINUX_GENERALS_FLATPAK=$(find artifacts/linux-flatpak-generals -name "*.flatpak" | head -1)
+          if [ -z "$LINUX_GENERALS_FLATPAK" ] || [ ! -f "$LINUX_GENERALS_FLATPAK" ]; then
+            echo "ERROR: Linux Generals Flatpak bundle not found in artifacts/linux-flatpak-generals"
+            find artifacts/linux-flatpak-generals -maxdepth 3 -type f || true
+            exit 1
           fi
 
           MAC_TAR=$(find artifacts/macos -name "*.tar" | head -1)
@@ -198,11 +168,15 @@ jobs:
             exit 0
           fi
 
+          # GeneralsX @build GitHubCopilot 14/04/2026 Release assets must ship the .flatpak at the root of the zip.
+          zip -j release-assets/GeneralsXZH-linux-flatpak.zip "$LINUX_ZH_FLATPAK"
+          zip -j release-assets/GeneralsX-linux-flatpak.zip "$LINUX_GENERALS_FLATPAK"
+
           cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
           zip -j release-assets/macos-generalsx-app.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
 
-          echo "linux_generals_asset=$LINUX_GENERALS_OUT" >> "$GITHUB_OUTPUT"
-          echo "linux_asset=$LINUX_OUT" >> "$GITHUB_OUTPUT"
+          echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/GeneralsX-linux-flatpak.zip" >> "$GITHUB_OUTPUT"
+          echo "linux_asset=$GITHUB_WORKSPACE/release-assets/GeneralsXZH-linux-flatpak.zip" >> "$GITHUB_OUTPUT"
           echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsx-app.tar.zip" >> "$GITHUB_OUTPUT"
           echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsxzh-app.tar.zip" >> "$GITHUB_OUTPUT"
 
@@ -380,8 +354,8 @@ jobs:
           echo "- Create release: ${{ inputs.create_release }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Pre-release: ${{ inputs.is_prerelease }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Dry run: ${{ inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset (Generals): GeneralsX-linux-x86_64.AppImage" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset: GeneralsXZH-linux-x86_64.AppImage" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset (Generals): GeneralsX-linux-flatpak.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset: GeneralsXZH-linux-flatpak.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset (Generals): macos-generalsx-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset: macos-generalsxzh-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"

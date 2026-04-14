@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.generals.GeneralsX</id>
+  <id>com.fbraz3.GeneralsX</id>
   <name>GeneralsX</name>
   <summary>Cross-platform port of Command and Conquer Generals</summary>
   <metadata_license>CC0-1.0</metadata_license>
@@ -13,7 +13,7 @@
       This Flatpak package expects original game assets to be available in user data paths.
     </p>
   </description>
-  <launchable type="desktop-id">com.generals.GeneralsX.desktop</launchable>
+  <launchable type="desktop-id">com.fbraz3.GeneralsX.desktop</launchable>
   <url type="homepage">https://github.com/fbraz3/GeneralsX</url>
   <project_license>GPL-2.0-or-later</project_license>
 </component>

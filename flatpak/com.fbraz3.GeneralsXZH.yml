@@ -1,0 +1,166 @@
+app-id: com.fbraz3.GeneralsXZH
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+command: generalsxzh-wrapper.sh
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=~/GeneralsX:create
+  - --filesystem=xdg-data/GeneralsX:create
+
+modules:
+  - name: glm
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DGLM_BUILD_TESTS=OFF
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: git
+        url: https://github.com/g-truc/glm.git
+        tag: 1.0.1
+
+  - name: gli
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DGLI_TEST_ENABLE=OFF
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: git
+        url: https://github.com/g-truc/gli.git
+        branch: master
+
+  - name: generalsxzh
+    buildsystem: simple
+    build-commands:
+      - |
+        cmake -S . -B build-flatpak -G Ninja \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DCMAKE_INSTALL_PREFIX=/app \
+          -DRTS_BUILD_ZEROHOUR=ON \
+          -DRTS_BUILD_GENERALS=OFF \
+          -DRTS_BUILD_CORE_TOOLS=OFF \
+          -DRTS_BUILD_CORE_EXTRAS=OFF \
+          -DRTS_BUILD_ZEROHOUR_TOOLS=OFF \
+          -DRTS_BUILD_ZEROHOUR_EXTRAS=OFF \
+          -DRTS_BUILD_OPTION_DEBUG=OFF \
+          -DRTS_BUILD_OPTION_PROFILE=OFF \
+          -DRTS_BUILD_OPTION_FFMPEG=ON \
+          -DRTS_CRASHDUMP_ENABLE=OFF \
+          -DSAGE_USE_DX8=OFF \
+          -DSAGE_USE_SDL3=ON \
+          -DSAGE_USE_OPENAL=ON \
+          -DSAGE_USE_GLM=ON \
+          -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
+          -DFETCHCONTENT_UPDATES_DISCONNECTED=ON \
+          -DFETCHCONTENT_SOURCE_DIR_DXVK=/run/build/generalsxzh/dxvk-src \
+          -DFETCHCONTENT_SOURCE_DIR_SDL3=/run/build/generalsxzh/sdl3-src \
+          -DFETCHCONTENT_SOURCE_DIR_SDL3_IMAGE=/run/build/generalsxzh/sdl3-image-src \
+          -DFETCHCONTENT_SOURCE_DIR_OPENAL_SOFT=/run/build/generalsxzh/openal-soft-src \
+          -DFETCHCONTENT_SOURCE_DIR_GAMESPY=/run/build/generalsxzh/gamespy-src \
+          -DFETCHCONTENT_SOURCE_DIR_LZHL=/run/build/generalsxzh/lzhl-src/CompLibHeader
+      - cmake --build build-flatpak --target z_generals -j "${FLATPAK_BUILDER_N_JOBS:-4}"
+      - install -Dm755 build-flatpak/GeneralsMD/GeneralsXZH /app/bin/GeneralsXZH
+      - install -Dm755 flatpak/run-flatpak.sh /app/bin/generalsxzh-wrapper.sh
+      - install -Dm644 flatpak/com.fbraz3.GeneralsXZH.desktop /app/share/applications/com.fbraz3.GeneralsXZH.desktop
+      - install -Dm644 flatpak/com.fbraz3.GeneralsXZH.metainfo.xml /app/share/metainfo/com.fbraz3.GeneralsXZH.metainfo.xml
+      - install -Dm644 flatpak/generalsx-zh_icon_512.png /app/share/icons/hicolor/512x512/apps/com.fbraz3.GeneralsXZH.png
+      - install -Dm644 resources/dxvk/dxvk.conf /app/share/generalsxzh/dxvk.conf
+      - install -d /app/lib
+      - cp -a /run/build/generalsxzh/dxvk-src/lib/libdxvk_d3d8.so* /app/lib/
+      - cp -a /run/build/generalsxzh/dxvk-src/lib/libdxvk_d3d9.so* /app/lib/
+      - cp -a build-flatpak/_deps/sdl3-build/libSDL3.so* /app/lib/
+      - cp -a build-flatpak/_deps/sdl3_image-build/libSDL3_image.so* /app/lib/
+      - cp -a build-flatpak/_deps/openal_soft-build/libopenal.so* /app/lib/
+      - find build-flatpak -name "libgamespy.so*" -type f -exec cp -a {} /app/lib/ \;
+      - |
+        for f in /app/lib/lib*.so.*; do
+          b="$(basename "$f")"
+          if [[ "$b" =~ ^(lib[^.]+\.so)\.([0-9]+)(\..*)?$ ]]; then
+            if [[ -n "${BASH_REMATCH[3]}" ]]; then
+              ln -sf "$b" "/app/lib/${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+            fi
+          fi
+        done
+      - |
+        cat > /app/bin/run.sh <<'EOF'
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        if [[ -n "${LD_LIBRARY_PATH:-}" ]]; then
+          export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/app/lib"
+        else
+          export LD_LIBRARY_PATH="/app/lib"
+        fi
+
+        export DXVK_WSI_DRIVER="SDL3"
+        export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
+        export DXVK_HUD="${DXVK_HUD:-0}"
+
+        # Keep Vulkan ICD selection to the runtime/driver defaults unless user explicitly overrides.
+
+        if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
+          export ALSOFT_DISABLE_CPU_EXTS="all"
+        fi
+        if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
+          export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
+        fi
+
+        if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
+          for candidate in \
+            "${HOME}/GeneralsX/GeneralsZH" \
+            "${HOME}/GeneralsX/GeneralsMD" \
+            "${HOME}/.local/share/GeneralsX/GeneralsZH" \
+            "${HOME}/.local/share/GeneralsX/GeneralsMD"; do
+            if [[ -d "${candidate}" ]]; then
+              export CNC_GENERALS_INSTALLPATH="${candidate}/"
+              break
+            fi
+          done
+        fi
+
+        if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
+          echo "ERROR: Could not find game data directory inside Flatpak sandbox." >&2
+          exit 1
+        fi
+
+        cd "${CNC_GENERALS_INSTALLPATH}"
+        exec /app/bin/GeneralsXZH "$@"
+        EOF
+      - chmod +x /app/bin/run.sh
+    sources:
+      - type: dir
+        path: ..
+      - type: archive
+        url: https://github.com/libsdl-org/SDL/releases/download/release-3.4.2/SDL3-3.4.2.tar.gz
+        sha256: ef39a2e3f9a8a78296c40da701967dd1b0d0d6e267e483863ce70f8a03b4050c
+        dest: sdl3-src
+        strip-components: 1
+      - type: archive
+        url: https://github.com/libsdl-org/SDL_image/releases/download/release-3.4.0/SDL3_image-3.4.0.tar.gz
+        sha256: 2ceb75eab4235c2c7e93dafc3ef3268ad368ca5de40892bf8cffdd510f29d9d8
+        dest: sdl3-image-src
+        strip-components: 1
+      - type: archive
+        url: https://github.com/kcat/openal-soft/archive/refs/tags/1.24.2.tar.gz
+        sha256: 7efd383d70508587fbc146e4c508771a2235a5fc8ae05bf6fe721c20a348bd7c
+        dest: openal-soft-src
+        strip-components: 1
+      - type: archive
+        url: https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-native-2.6-steamrt-sniper.tar.gz
+        sha256: 9c1a2b2c8a6565e71bde5f18b6c1a7e0ac4d621023bd38004a421a5fef4212ac
+        dest: dxvk-src
+        strip-components: 1
+      - type: git
+        url: https://github.com/TheAssemblyArmada/GamespySDK.git
+        commit: 07e3d15c500415abc281efb74322ab6d9c857eb8
+        dest: gamespy-src
+      - type: git
+        url: https://github.com/TheSuperHackers/lzhl-1.0
+        commit: dfd96e2ca64adaddb35dd4ebadd6add7d5586783
+        dest: lzhl-src/CompLibHeader

@@ -6,10 +6,10 @@
 #   ./scripts/qa/smoke/collect-flatpak-vulkan-wsi-report.sh [app-id]
 #
 # Example:
-#   ./scripts/qa/smoke/collect-flatpak-vulkan-wsi-report.sh com.generals.GeneralsXZH
+#   ./scripts/qa/smoke/collect-flatpak-vulkan-wsi-report.sh com.fbraz3.GeneralsXZH
 set -euo pipefail
 
-APP_ID="${1:-com.generals.GeneralsXZH}"
+APP_ID="${1:-com.fbraz3.GeneralsXZH}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 LOG_DIR="${PROJECT_ROOT}/logs"
@@ -58,7 +58,7 @@ mkdir -p "${LOG_DIR}"
         ls -la /usr/share/vulkan/icd.d || true
         for icd in /usr/share/vulkan/icd.d/*.json; do
             echo "-- Testing ICD: ${icd}"
-            VK_ICD_FILENAMES="${icd}" /app/bin/'"$(basename "${APP_ID}" | sed 's/com.generals.//')"' -win -noshellmap || true
+            VK_ICD_FILENAMES="${icd}" /app/bin/'"$(basename "${APP_ID}" | sed 's/com.fbraz3.//')"' -win -noshellmap || true
         done
     ' || true
     echo
