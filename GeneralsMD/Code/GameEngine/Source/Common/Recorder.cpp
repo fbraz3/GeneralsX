@@ -1189,8 +1189,18 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 			DEBUG_LOG(("Replay has gone out of sync!\nInGame:%8.8X Replay:%8.8X\nFrame:%d",
 				playbackCRC, newCRC, mismatchFrame));
 
-			// Print Mismatch in case we are simulating replays from console.
+			// GeneralsX @tweak BenderAI 13/04/2026 Emit deterministic context for first CRC mismatch in headless replay runs.
+			const UnsignedInt seedCRC = GetGameLogicRandomSeedCRC();
 			printf("CRC Mismatch in Frame %d\n", mismatchFrame);
+			printf("CRC mismatch details: inGame=%08X replay=%08X queueSize=%d playerIndex=%d localPlayerIndex=%d seedCRC=%08X currentFrame=%d\n",
+				newCRC,
+				playbackCRC,
+				m_crcInfo->GetQueueSize(),
+				playerIndex,
+				localPlayerIndex,
+				seedCRC,
+				TheGameLogic->getFrame());
+			fflush(stdout);
 
 			// TheSuperHackers @tweak Pause the game on mismatch.
 			// But not when a window with focus is opened, because that can make resuming difficult.

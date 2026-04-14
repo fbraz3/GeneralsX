@@ -964,6 +964,17 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 		DEBUG_LOG(("Normalized file path for '%s' was outside the expected base path of '%s'.", prefix.str(), containingBasePath.str()));
 		return AsciiString::TheEmptyString;
 	}
+	// GeneralsX @bugfix BenderAI 13/04/2026 Normalize replay/map paths to POSIX separators so map cache lookup works on macOS/Linux.
+#ifndef _WIN32
+	AsciiString normalizedPrefix;
+	const int prefixLen = prefix.getLength();
+	for (int i = 0; i < prefixLen; ++i)
+	{
+		const char c = prefix.getCharAt(i);
+		normalizedPrefix.concat(c == '\\' ? '/' : c);
+	}
+	prefix = normalizedPrefix;
+#endif
 	// GeneralsX @bugfix Copilot 02/04/2026 Preserve path casing on macOS/Linux to avoid load failures on case-sensitive filesystems.
 #ifdef _WIN32
 	prefix.toLower();

@@ -33,15 +33,33 @@ static IDirect3DTexture8 * _MissingTexture = nullptr;
 
 IDirect3DTexture8* MissingTexture::_Get_Missing_Texture()
 {
+	// GeneralsX @bugfix BenderAI 14/04/2026 Lazily initialize fallback texture to avoid null dereference when thumbnail fallback happens before explicit device init hooks.
+	if (_MissingTexture == nullptr && DX8Wrapper::Is_Initted())
+	{
+		_Init();
+	}
+
 	WWASSERT(_MissingTexture);
+	if (_MissingTexture == nullptr)
+	{
+		return nullptr;
+	}
+
 	_MissingTexture->AddRef();
 	return _MissingTexture;
 }
 
 IDirect3DSurface8* MissingTexture::_Create_Missing_Surface()
 {
+	IDirect3DTexture8 *missing_texture = _Get_Missing_Texture();
+	if (missing_texture == nullptr)
+	{
+		return nullptr;
+	}
+
 	IDirect3DSurface8 *texture_surface = nullptr;
-	DX8_ErrorCode(_MissingTexture->GetSurfaceLevel(0, &texture_surface));
+	DX8_ErrorCode(missing_texture->GetSurfaceLevel(0, &texture_surface));
+	missing_texture->Release();
 	D3DSURFACE_DESC texture_surface_desc;
 	::ZeroMemory(&texture_surface_desc, sizeof(D3DSURFACE_DESC));
 	DX8_ErrorCode(texture_surface->GetDesc(&texture_surface_desc));
@@ -158,8 +176,12 @@ void MissingTexture::_Init()
 
 void MissingTexture::_Deinit()
 {
-	_MissingTexture->Release();
-	_MissingTexture=nullptr;
+	// GeneralsX @bugfix BenderAI 14/04/2026 Guard shutdown for paths where fallback texture was never instantiated.
+	if (_MissingTexture != nullptr)
+	{
+		_MissingTexture->Release();
+		_MissingTexture = nullptr;
+	}
 }
 
 unsigned int missing_image_palette[]={
