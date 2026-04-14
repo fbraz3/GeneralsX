@@ -168,15 +168,15 @@ jobs:
             exit 0
           fi
 
-          # GeneralsX @build GitHubCopilot 14/04/2026 Release assets must ship the .flatpak at the root of the zip.
-          zip -j release-assets/GeneralsXZH-linux-flatpak.zip "$LINUX_ZH_FLATPAK"
-          zip -j release-assets/GeneralsX-linux-flatpak.zip "$LINUX_GENERALS_FLATPAK"
+          # GeneralsX @build GitHubCopilot 14/04/2026 Linux release now ships native Flatpak bundles instead of zip wrappers.
+          cp "$LINUX_ZH_FLATPAK" release-assets/GeneralsXZH-linux.flatpak
+          cp "$LINUX_GENERALS_FLATPAK" release-assets/GeneralsX-linux.flatpak
 
           cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
           zip -j release-assets/macos-generalsx-app.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
 
-          echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/GeneralsX-linux-flatpak.zip" >> "$GITHUB_OUTPUT"
-          echo "linux_asset=$GITHUB_WORKSPACE/release-assets/GeneralsXZH-linux-flatpak.zip" >> "$GITHUB_OUTPUT"
+          echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/GeneralsX-linux.flatpak" >> "$GITHUB_OUTPUT"
+          echo "linux_asset=$GITHUB_WORKSPACE/release-assets/GeneralsXZH-linux.flatpak" >> "$GITHUB_OUTPUT"
           echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsx-app.tar.zip" >> "$GITHUB_OUTPUT"
           echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsxzh-app.tar.zip" >> "$GITHUB_OUTPUT"
 
@@ -354,8 +354,8 @@ jobs:
           echo "- Create release: ${{ inputs.create_release }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Pre-release: ${{ inputs.is_prerelease }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Dry run: ${{ inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset (Generals): GeneralsX-linux-flatpak.zip" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset: GeneralsXZH-linux-flatpak.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset (Generals): GeneralsX-linux.flatpak" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset: GeneralsXZH-linux.flatpak" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset (Generals): macos-generalsx-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset: macos-generalsxzh-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"

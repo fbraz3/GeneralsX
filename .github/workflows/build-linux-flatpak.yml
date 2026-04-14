@@ -74,6 +74,28 @@ jobs:
           mkdir -p logs
           ./scripts/build/linux/build-linux-flatpak.sh "${{ inputs.preset }}" "${{ matrix.game.value }}" 2>&1 | tee "logs/build_flatpak_${{ matrix.game.log_suffix }}.log"
 
+      - name: Locate generated Flatpak bundle
+        id: bundle
+        run: |
+          EXPECTED="build/${{ matrix.game.output }}-${{ inputs.preset }}.flatpak"
+
+          if [ -f "${EXPECTED}" ]; then
+            echo "path=${EXPECTED}" >> "$GITHUB_OUTPUT"
+            echo "Found expected bundle: ${EXPECTED}"
+            exit 0
+          fi
+
+          # GeneralsX @bugfix GitHubCopilot 14/04/2026 Resolve the generated Flatpak path dynamically to avoid upload failures when naming drifts.
+          CANDIDATE=$(find build -maxdepth 2 -type f -name "${{ matrix.game.output }}*.flatpak" | head -1)
+          if [ -z "${CANDIDATE}" ] || [ ! -f "${CANDIDATE}" ]; then
+            echo "ERROR: Flatpak bundle not found for ${{ matrix.game.id }}"
+            find build -maxdepth 3 -type f -name "*.flatpak" || true
+            exit 1
+          fi
+
+          echo "path=${CANDIDATE}" >> "$GITHUB_OUTPUT"
+          echo "Using detected bundle: ${CANDIDATE}"
+
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -87,6 +109,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-flatpak-${{ matrix.game.id }}-${{ inputs.preset }}
-          path: build/${{ matrix.game.output }}-${{ inputs.preset }}.flatpak
+          path: ${{ steps.bundle.outputs.path }}
           retention-days: 7
           if-no-files-found: error
