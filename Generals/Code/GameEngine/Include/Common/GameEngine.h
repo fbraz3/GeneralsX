@@ -102,6 +102,7 @@ protected:
 
 	Bool m_quitting; ///< true when we need to quit the game
 	Bool m_isActive; ///< app has OS focus.
+	Int m_buildMapCacheFrameCount; ///< GeneralsX @bugfix BenderAI 14/04/2026 Frame counter for graceful buildMapCache exit (=-1: inactive, >=0: counting frames before quit)
 };
 
 inline void GameEngine::setQuitting( Bool quitting ) { m_quitting = quitting; }

@@ -210,7 +210,8 @@ else
 fi
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
+echo "------------------------"
 echo "Run with:"
 echo "  ${PROJECT_ROOT}/scripts/build/macos/run-macos-zh.sh -win"
 echo "  or: cd ~/GeneralsX/GeneralsZH && ./run.sh -win"
-echo "  (legacy fallback: cd ~/GeneralsX/GeneralsMD && ./run.sh -win)"
+echo "------------------------"

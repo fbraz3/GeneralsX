@@ -104,6 +104,7 @@ protected:
 
 	Bool m_quitting; ///< true when we need to quit the game
 	Bool m_isActive; ///< app has OS focus.
+	Int m_buildMapCacheFrameCount; ///< GeneralsX @bugfix BenderAI 14/04/2026 Frame counter for graceful buildMapCache exit (=-1: inactive, >=0: counting frames before quit)
 };
 
 // GeneralsX @bugfix fbraz3 12/03/2026 Restore inline definitions lost during upstream merge conflict resolution

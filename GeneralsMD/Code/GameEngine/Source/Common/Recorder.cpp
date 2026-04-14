@@ -920,10 +920,21 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 	const bool isUncAbsolute = replayFilenameLen >= 2 && replayFilename[0] == '\\' && replayFilename[1] == '\\';
 
 	// GeneralsX @bugfix BenderAI 13/04/2026 Accept absolute replay paths passed via -replay instead of forcing ReplayDir prefix.
+	// GeneralsX @bugfix BenderAI 20/02/2026 Distinguish between CWD-relative paths (with directories, like "GeneralsReplays/...") and replay-dir relative (bare filenames like "replay.rep").
+	const bool containsDirectorySeparator = strchr(replayFilename, '/') != NULL || strchr(replayFilename, '\\') != NULL;
+	
 	if (isUnixAbsolute || isWindowsDriveAbsolute || isUncAbsolute)
+	{
 		filepath = header.filename;
+	}
+	else if (containsDirectorySeparator)
+	{
+		// Path from CLI with directory structure (e.g., "GeneralsReplays/ZH/...") - relative to CWD where binary runs
+		filepath = header.filename;
+	}
 	else
 	{
+		// Bare filename (e.g., "!Golden Replay #1.rep") - resolve from replay directory
 		filepath = getReplayDir();
 		filepath.concat(header.filename.str());
 	}

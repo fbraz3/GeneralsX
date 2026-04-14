@@ -1223,6 +1223,13 @@ bool TextureLoadTaskClass::Load()
 	// GeneralsX @bugfix BenderAI 14/04/2026 Defend against task becoming stale during background loading phase.
 	if (!Texture || !D3DTexture || !DX8Wrapper::Is_Initted())
 	{
+		if (!Texture) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] Load: Stale task detected - Texture ptr became NULL at Load() phase (Type=%d, State=%d)\n", Type, State);
+		} else if (!D3DTexture) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] Load: Stale task detected - D3DTexture ptr is NULL (Type=%d, State=%d)\n", Type, State);
+		} else if (!DX8Wrapper::Is_Initted()) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] Load: Device shutdown during Load phase (Type=%d)\n", Type);
+		}
 		return false;
 	}
 
@@ -1253,6 +1260,11 @@ void TextureLoadTaskClass::End_Load()
 	// GeneralsX @bugfix BenderAI 14/04/2026 Guard against texture becoming invalid between Load() and End_Load().
 	if (!Texture || !DX8Wrapper::Is_Initted())
 	{
+		if (!Texture) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] End_Load: Texture became NULL between Load and End_Load (Type=%d, State=%d)\n", Type, State);
+		} else if (!DX8Wrapper::Is_Initted()) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] End_Load: Device shutdown during End_Load (Type=%d)\n", Type);
+		}
 		return;
 	}
 
@@ -1434,6 +1446,11 @@ bool TextureLoadTaskClass::Begin_Compressed_Load()
 	// Verify task and texture are still valid before proceeding.
 	if (!Texture || !DX8Wrapper::Is_Initted())
 	{
+		if (!Texture) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] Begin_Compressed_Load: Stale task detected - Texture ptr is NULL (Type=%d, Priority=%d, State=%d)\n", Type, Priority, State);
+		} else if (!DX8Wrapper::Is_Initted()) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] Begin_Compressed_Load: Device not initialized (Texture=%p)\n", Texture);
+		}
 		return false;
 	}
 
@@ -1571,6 +1588,11 @@ bool TextureLoadTaskClass::Begin_Uncompressed_Load()
 	// GeneralsX @bugfix BenderAI 14/04/2026 Defend against stale task objects due to pool recycling or premature texture destruction during async background loading.
 	if (!Texture || !DX8Wrapper::Is_Initted())
 	{
+		if (!Texture) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] Begin_Uncompressed_Load: Stale task detected - Texture ptr is NULL (Type=%d, Priority=%d, State=%d)\n", Type, Priority, State);
+		} else if (!DX8Wrapper::Is_Initted()) {
+			fprintf(stderr, "[TEXTURE_GUARD_WARN] Begin_Uncompressed_Load: Device not initialized (Texture=%p)\n", Texture);
+		}
 		return false;
 	}
 

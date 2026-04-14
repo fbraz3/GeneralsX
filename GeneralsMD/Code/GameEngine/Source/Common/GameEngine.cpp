@@ -258,6 +258,7 @@ GameEngine::GameEngine()
 	m_logicTimeAccumulator = 0.0f;
 	m_quitting = FALSE;
 	m_isActive = FALSE;
+	m_buildMapCacheFrameCount = -1; ///< GeneralsX @bugfix BenderAI 14/04/2026 Initialize frame counter to -1 (inactive)
 
 // TheSuperHackers @build fighter19 11/02/2026 COM initialization (Windows-only)
 #ifdef _WIN32
@@ -706,11 +707,11 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		if (TheGlobalData->m_buildMapCache)
-		{
-			// just quit, since the map cache has already updated
-			//populateMapListbox(nullptr, true, true);
-			m_quitting = TRUE;
+// GeneralsX @feature BenderAI 14/04/2026 Graceful buildMapCache exit: let Shell load one frame before quitting
+	if (TheGlobalData->m_buildMapCache)
+	{
+		// Mark that we're in buildMapCache mode and waiting for Shell to load
+		m_buildMapCacheFrameCount = 0;
 		}
 
 		// load the initial shell screen
@@ -956,8 +957,20 @@ void GameEngine::execute()
 #endif
 
 	// pretty basic for now
+	// GeneralsX @feature BenderAI 14/04/2026 Detect when to quit after buildMapCache shell load 
+	if (m_buildMapCacheFrameCount >= 1) 
+	{
+		// Shell has processed one frame, time to quit gracefully
+		m_quitting = TRUE;
+	}
+
 	while( !m_quitting )
 	{
+		// GeneralsX @feature BenderAI 14/04/2026 Increment buildMapCache frame counter during execution
+		if (m_buildMapCacheFrameCount >= 0)
+		{
+			m_buildMapCacheFrameCount++;
+		}
 
 		//if (TheGlobalData->m_vTune)
 		{
