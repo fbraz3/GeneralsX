@@ -111,7 +111,6 @@ static D3DPRESENT_PARAMETERS _PresentParameters;
 // GeneralsX @feature xxorza 15/04/2026 Unified pillarbox for fullscreen and windowed
 bool DX8Wrapper::s_pillarboxEnabled = false;
 bool DX8Wrapper::s_pillarboxActive = false;
-bool DX8Wrapper::s_resizePending = false;
 int DX8Wrapper::s_dstX = 0;
 int DX8Wrapper::s_dstY = 0;
 int DX8Wrapper::s_dstW = 0;
@@ -306,10 +305,6 @@ bool DX8Wrapper::Pillarbox_Get_Rect(int& x, int& y, int& w, int& h)
 	return true;
 }
 
-void DX8Wrapper::Pillarbox_Notify_Resize()
-{
-	if (IsWindowed) s_resizePending = true;
-}
 
 DX8FrameStatistics DX8Wrapper::FrameStatistics;
 static DX8FrameStatistics LastFrameStatistics;
@@ -405,17 +400,18 @@ DX8_CleanupHook	 *DX8Wrapper::m_pCleanupHook=nullptr;
 #ifdef EXTENDED_STATS
 DX8_Stats	 DX8Wrapper::stats;
 #endif
+// Called once per frame from W3DDisplay::draw(). Checks if the window size
+// changed since last frame and reconfigures pillarbox accordingly.
 void DX8Wrapper::Pillarbox_Process_Resize()
 {
-	if (!s_resizePending || !IsWindowed || !D3DDevice) return;
-	s_resizePending = false;
+	if (!IsWindowed || !D3DDevice) return;
 
 	int physW = 0, physH = 0;
 	float density = 1.0f;
 	if (!GetWindowSizeInPixels(physW, physH, density)) return;
 
-	if (s_pillarboxEnabled &&
-		(int)_PresentParameters.BackBufferWidth == physW &&
+	// Nothing to do if backbuffer already matches window
+	if ((int)_PresentParameters.BackBufferWidth == physW &&
 		(int)_PresentParameters.BackBufferHeight == physH) return;
 
 	Pillarbox_Cleanup();
@@ -1566,10 +1562,7 @@ bool DX8Wrapper::Set_Device_Resolution(int width,int height,int bits,int windowe
 #pragma message("TODO: support changing windowed status and changing the bit depth")
 		WWDEBUG_SAY(("DX8Wrapper::Set_Device_Resolution is resetting the device."));
 		bool ok = Reset_Device();
-		if (ok) {
-			Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
-			if (IsWindowed) s_resizePending = true;
-		}
+		if (ok) Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
 		return ok;
 	} else {
 		return false;

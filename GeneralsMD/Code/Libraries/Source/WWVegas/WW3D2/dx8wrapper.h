@@ -515,7 +515,6 @@ public:
 	static bool					Pillarbox_Get_Rect(int& x, int& y, int& w, int& h);
 	static void					Pillarbox_Begin();
 	static void					Pillarbox_End();
-	static void					Pillarbox_Notify_Resize();
 	static void					Pillarbox_Process_Resize();
 	static bool					GetNativeDisplaySize(int& outW, int& outH, float& outDensity);
 
@@ -732,7 +731,6 @@ protected:
 	// Pillarbox state
 	static bool								s_pillarboxEnabled;
 	static bool								s_pillarboxActive;
-	static bool								s_resizePending;
 	static int								s_dstX, s_dstY, s_dstW, s_dstH;
 	static float							s_pixelDensity;
 	static IDirect3DTexture8*			s_offscreenTex;
