@@ -441,6 +441,36 @@ inline Bool isResolutionSupported(const ResolutionDescClass &res)
 	return res.Width >= DEFAULT_DISPLAY_WIDTH && res.BitDepth >= minBitDepth;
 }
 
+// SDL3 display size providers for DX8Wrapper pillarbox (registered at init)
+#ifdef SAGE_USE_SDL3
+static bool SDL3_GetNativeDisplaySize(int& outW, int& outH, float& outDensity)
+{
+	extern SDL_Window* TheSDL3Window;
+	if (!TheSDL3Window) return false;
+	SDL_DisplayID displayId = SDL_GetDisplayForWindow(TheSDL3Window);
+	const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayId);
+	if (!mode || mode->w <= 0 || mode->h <= 0) return false;
+	outDensity = mode->pixel_density > 0 ? mode->pixel_density : 1.0f;
+	outW = (int)(mode->w * outDensity);
+	outH = (int)(mode->h * outDensity);
+	return true;
+}
+
+static bool SDL3_GetWindowSizeInPixels(int& outW, int& outH, float& outDensity)
+{
+	extern SDL_Window* TheSDL3Window;
+	if (!TheSDL3Window) return false;
+	int logW = 0, logH = 0, physW = 0, physH = 0;
+	SDL_GetWindowSize(TheSDL3Window, &logW, &logH);
+	SDL_GetWindowSizeInPixels(TheSDL3Window, &physW, &physH);
+	if (physW <= 0 || physH <= 0) return false;
+	outW = physW;
+	outH = physH;
+	outDensity = (logW > 0) ? (float)physW / (float)logW : 1.0f;
+	return true;
+}
+#endif
+
 // Filtered resolution cache — built once, clamps widths to 4:3..16:9 and deduplicates.
 struct FilteredRes { Int w, h, bits; };
 static std::vector<FilteredRes> s_filteredResolutions;
@@ -670,6 +700,11 @@ void W3DDisplay::init()
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
+		// Register SDL3 display size providers for pillarbox before device init
+#ifdef SAGE_USE_SDL3
+		DX8Wrapper::Set_Display_Size_Provider(SDL3_GetNativeDisplaySize, SDL3_GetWindowSizeInPixels);
+#endif
+
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 

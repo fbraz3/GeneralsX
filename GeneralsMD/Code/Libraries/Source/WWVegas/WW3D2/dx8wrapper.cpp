@@ -57,9 +57,6 @@
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
-#ifdef SAGE_USE_SDL3
-#include <SDL3/SDL.h>
-#endif
 // GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)
 #ifdef _WIN32
 #include "dx8webbrowser.h"
@@ -109,6 +106,8 @@ static D3DPRESENT_PARAMETERS _PresentParameters;
 
 // --- Pillarbox: render game to offscreen RT, blit centered onto backbuffer ---
 // GeneralsX @feature xxorza 15/04/2026 Unified pillarbox for fullscreen and windowed
+DX8Wrapper::DisplaySizeFunc DX8Wrapper::s_getNativeDisplaySize = nullptr;
+DX8Wrapper::DisplaySizeFunc DX8Wrapper::s_getWindowSize = nullptr;
 bool DX8Wrapper::s_pillarboxEnabled = false;
 bool DX8Wrapper::s_pillarboxActive = false;
 int DX8Wrapper::s_dstX = 0;
@@ -122,39 +121,20 @@ IDirect3DSurface8* DX8Wrapper::s_depthSurf = nullptr;
 IDirect3DSurface8* DX8Wrapper::s_savedBackbuffer = nullptr;
 IDirect3DSurface8* DX8Wrapper::s_savedDepth = nullptr;
 
-bool DX8Wrapper::GetNativeDisplaySize(int& outW, int& outH, float& outDensity)
+void DX8Wrapper::Set_Display_Size_Provider(DisplaySizeFunc nativeSize, DisplaySizeFunc windowSize)
 {
-#ifdef SAGE_USE_SDL3
-	extern SDL_Window* TheSDL3Window;
-	if (!TheSDL3Window) return false;
-	SDL_DisplayID displayId = SDL_GetDisplayForWindow(TheSDL3Window);
-	const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayId);
-	if (!mode || mode->w <= 0 || mode->h <= 0) return false;
-	outDensity = mode->pixel_density > 0 ? mode->pixel_density : 1.0f;
-	outW = (int)(mode->w * outDensity);
-	outH = (int)(mode->h * outDensity);
-	return true;
-#else
-	return false;
-#endif
+	s_getNativeDisplaySize = nativeSize;
+	s_getWindowSize = windowSize;
 }
 
-static bool GetWindowSizeInPixels(int& outW, int& outH, float& outDensity)
+bool DX8Wrapper::GetNativeDisplaySize(int& outW, int& outH, float& outDensity)
 {
-#ifdef SAGE_USE_SDL3
-	extern SDL_Window* TheSDL3Window;
-	if (!TheSDL3Window) return false;
-	int logW = 0, logH = 0, physW = 0, physH = 0;
-	SDL_GetWindowSize(TheSDL3Window, &logW, &logH);
-	SDL_GetWindowSizeInPixels(TheSDL3Window, &physW, &physH);
-	if (physW <= 0 || physH <= 0) return false;
-	outW = physW;
-	outH = physH;
-	outDensity = (logW > 0) ? (float)physW / (float)logW : 1.0f;
-	return true;
-#else
-	return false;
-#endif
+	return s_getNativeDisplaySize && s_getNativeDisplaySize(outW, outH, outDensity);
+}
+
+bool DX8Wrapper::GetWindowSize(int& outW, int& outH, float& outDensity)
+{
+	return s_getWindowSize && s_getWindowSize(outW, outH, outDensity);
 }
 
 void DX8Wrapper::Pillarbox_Cleanup()
@@ -178,7 +158,7 @@ bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
 	if (!IsWindowed) {
 		if (!GetNativeDisplaySize(bbW, bbH, density)) return false;
 	} else {
-		if (!GetWindowSizeInPixels(bbW, bbH, density)) {
+		if (!GetWindowSize(bbW, bbH, density)) {
 			bbW = gameW; bbH = gameH; density = 1.0f;
 		}
 	}
@@ -408,7 +388,7 @@ void DX8Wrapper::Pillarbox_Process_Resize()
 
 	int physW = 0, physH = 0;
 	float density = 1.0f;
-	if (!GetWindowSizeInPixels(physW, physH, density)) return;
+	if (!GetWindowSize(physW, physH, density)) return;
 
 	// Nothing to do if backbuffer already matches window
 	if ((int)_PresentParameters.BackBufferWidth == physW &&

@@ -511,12 +511,17 @@ public:
 	static void					Set_Render_Target (IDirect3DSwapChain8 *swap_chain);
 	static bool					Is_Render_To_Texture() { return IsRenderToTexture; }
 
+	// Platform display size provider — set by SDL3 layer at init
+	typedef bool (*DisplaySizeFunc)(int& outW, int& outH, float& outDensity);
+	static void					Set_Display_Size_Provider(DisplaySizeFunc nativeSize, DisplaySizeFunc windowSize);
+	static bool					GetNativeDisplaySize(int& outW, int& outH, float& outDensity);
+	static bool					GetWindowSize(int& outW, int& outH, float& outDensity);
+
 	// Pillarbox: render game at chosen resolution, blit centered onto backbuffer
 	static bool					Pillarbox_Get_Rect(int& x, int& y, int& w, int& h);
 	static void					Pillarbox_Begin();
 	static void					Pillarbox_End();
 	static void					Pillarbox_Process_Resize();
-	static bool					GetNativeDisplaySize(int& outW, int& outH, float& outDensity);
 
 	// for depth map support KJM V
 	static void Create_Render_Target
@@ -727,6 +732,10 @@ protected:
 	static unsigned							DrawPolygonLowBoundLimit;
 
 	static bool								IsRenderToTexture;
+
+	// Display size providers (set by SDL3 layer, called by pillarbox)
+	static DisplaySizeFunc				s_getNativeDisplaySize;
+	static DisplaySizeFunc				s_getWindowSize;
 
 	// Pillarbox state
 	static bool								s_pillarboxEnabled;
