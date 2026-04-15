@@ -249,8 +249,11 @@ void DX8Wrapper::Pillarbox_End()
 	D3DDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 	D3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 	D3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	D3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_LINEAR);
-	D3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR);
+	// Use point filtering when 1:1 pixel mapping to avoid sub-pixel blur
+	DWORD filterMode = (s_dstW == ResolutionWidth && s_dstH == ResolutionHeight)
+		? D3DTEXF_POINT : D3DTEXF_LINEAR;
+	D3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, filterMode);
+	D3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, filterMode);
 
 	float x0 = (float)s_dstX, y0 = (float)s_dstY;
 	float x1 = (float)(s_dstX + s_dstW), y1 = (float)(s_dstY + s_dstH);
