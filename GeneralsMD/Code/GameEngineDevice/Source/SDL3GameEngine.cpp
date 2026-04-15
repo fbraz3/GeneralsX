@@ -466,6 +466,8 @@ void SDL3GameEngine::handleMouseWheelEvent(const SDL_MouseWheelEvent& event)
  */
 void SDL3GameEngine::handleWindowEvent(const SDL_WindowEvent& event)
 {
+	// TODO: Phase 2 - Handle window resize, notify graphics subsystem
+	// fprintf(stderr, "DEBUG: Window event (type=%d)\n", event.type);
 }
 
 /**
