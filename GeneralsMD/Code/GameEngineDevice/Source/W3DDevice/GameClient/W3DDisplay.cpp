@@ -1725,7 +1725,7 @@ void W3DDisplay::draw()
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
 	// GeneralsX @feature xxorza 15/04/2026 Process deferred window resize for pillarbox
-	DX8Wrapper::Pillarbox_Handle_Resize(0, 0);
+	DX8Wrapper::Pillarbox_Process_Resize();
 
 	extern HWND ApplicationHWnd;
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {

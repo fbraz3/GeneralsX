@@ -469,7 +469,7 @@ void SDL3GameEngine::handleMouseWheelEvent(const SDL_MouseWheelEvent& event)
 void SDL3GameEngine::handleWindowEvent(const SDL_WindowEvent& event)
 {
 	if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-		DX8Wrapper::Pillarbox_Handle_Resize(event.data1, event.data2);
+		DX8Wrapper::Pillarbox_Notify_Resize();
 	}
 }
 

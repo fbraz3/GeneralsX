@@ -511,11 +511,12 @@ public:
 	static void					Set_Render_Target (IDirect3DSwapChain8 *swap_chain);
 	static bool					Is_Render_To_Texture() { return IsRenderToTexture; }
 
-	// Pillarbox for ultrawide/resized windows
+	// Pillarbox: render game at chosen resolution, blit centered onto backbuffer
 	static bool					Pillarbox_Get_Rect(int& x, int& y, int& w, int& h);
 	static void					Pillarbox_Begin();
 	static void					Pillarbox_End();
-	static void					Pillarbox_Handle_Resize(int windowW, int windowH);
+	static void					Pillarbox_Notify_Resize();
+	static void					Pillarbox_Process_Resize();
 	static bool					GetNativeDisplaySize(int& outW, int& outH, float& outDensity);
 
 	// for depth map support KJM V
@@ -731,19 +732,17 @@ protected:
 	// Pillarbox state
 	static bool								s_pillarboxEnabled;
 	static bool								s_pillarboxActive;
-	static int								s_nativeW, s_nativeH;
+	static bool								s_resizePending;
 	static int								s_dstX, s_dstY, s_dstW, s_dstH;
 	static float							s_pixelDensity;
-	static bool								s_resizePending;
 	static IDirect3DTexture8*			s_offscreenTex;
 	static IDirect3DSurface8*			s_offscreenSurf;
-	static IDirect3DSurface8*			s_customDepth;
+	static IDirect3DSurface8*			s_depthSurf;
 	static IDirect3DSurface8*			s_savedBackbuffer;
-	static IDirect3DSurface8*			s_savedAutoDepth;
+	static IDirect3DSurface8*			s_savedDepth;
 
 	static bool								Pillarbox_Setup(int gameW, int gameH);
 	static void								Pillarbox_Cleanup();
-	static void								Pillarbox_Blit();
 
 	static int								ZBias;
 	static float							ZNear;
