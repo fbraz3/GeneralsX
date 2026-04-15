@@ -47,6 +47,7 @@
 #include "W3DDevice/GameClient/W3DWebBrowser.h"
 #include "StdDevice/Common/StdLocalFileSystem.h"
 #include "StdDevice/Common/StdBIGFileSystem.h"
+#include "dx8wrapper.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <cstdio>
@@ -464,10 +465,12 @@ void SDL3GameEngine::handleMouseWheelEvent(const SDL_MouseWheelEvent& event)
 /**
  * Handle window event (resize, etc.)
  */
+// GeneralsX @feature xxorza 15/04/2026 Handle window resize for pillarbox
 void SDL3GameEngine::handleWindowEvent(const SDL_WindowEvent& event)
 {
-	// TODO: Phase 2 - Handle window resize, notify graphics subsystem
-	// fprintf(stderr, "DEBUG: Window event (type=%d)\n", event.type);
+	if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+		DX8Wrapper::Pillarbox_Handle_Resize(event.data1, event.data2);
+	}
 }
 
 /**

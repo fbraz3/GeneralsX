@@ -63,7 +63,7 @@ public:
 
 	virtual void setWidth( UnsignedInt width ) override;
 	virtual void setHeight( UnsignedInt height ) override;
-	virtual Bool getViewportRect( Int& x, Int& width, Int& height ) const override;
+	virtual Bool getViewportRect( Int& x, Int& y, Int& width, Int& height ) const override;
 	virtual Bool setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt bitdepth, Bool windowed ) override;
 	virtual Int getDisplayModeCount() override;	///<return number of display modes/resolutions supported by video card.
 	virtual void getDisplayModeDescription(Int modeIndex, Int *xres, Int *yres, Int *bitDepth) override;	///<return description of mode

@@ -511,10 +511,11 @@ public:
 	static void					Set_Render_Target (IDirect3DSwapChain8 *swap_chain);
 	static bool					Is_Render_To_Texture() { return IsRenderToTexture; }
 
-	// Pillarbox for ultrawide monitors
-	static bool					Pillarbox_Get_Rect(int& x, int& w, int& h);
+	// Pillarbox for ultrawide/resized windows
+	static bool					Pillarbox_Get_Rect(int& x, int& y, int& w, int& h);
 	static void					Pillarbox_Begin();
 	static void					Pillarbox_End();
+	static void					Pillarbox_Handle_Resize(int windowW, int windowH);
 	static bool					GetNativeDisplaySize(int& outW, int& outH, float& outDensity);
 
 	// for depth map support KJM V
@@ -733,8 +734,10 @@ protected:
 	static int								s_nativeW, s_nativeH;
 	static int								s_dstX, s_dstY, s_dstW, s_dstH;
 	static float							s_pixelDensity;
+	static bool								s_resizePending;
 	static IDirect3DTexture8*			s_offscreenTex;
 	static IDirect3DSurface8*			s_offscreenSurf;
+	static IDirect3DSurface8*			s_customDepth;
 	static IDirect3DSurface8*			s_savedBackbuffer;
 	static IDirect3DSurface8*			s_savedAutoDepth;
 

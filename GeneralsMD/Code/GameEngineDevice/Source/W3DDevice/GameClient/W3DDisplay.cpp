@@ -573,9 +573,9 @@ Bool W3DDisplay::setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt
 	return FALSE;	//did not change to a new mode.
 }
 
-Bool W3DDisplay::getViewportRect( Int& x, Int& width, Int& height ) const
+Bool W3DDisplay::getViewportRect( Int& x, Int& y, Int& width, Int& height ) const
 {
-	return DX8Wrapper::Pillarbox_Get_Rect(x, width, height) ? TRUE : FALSE;
+	return DX8Wrapper::Pillarbox_Get_Rect(x, y, width, height) ? TRUE : FALSE;
 }
 
 /** Set width of display */
@@ -1723,6 +1723,9 @@ void W3DDisplay::step()
 void W3DDisplay::draw()
 {
 	//USE_PERF_TIMER(W3DDisplay_draw)
+
+	// GeneralsX @feature xxorza 15/04/2026 Process deferred window resize for pillarbox
+	DX8Wrapper::Pillarbox_Handle_Resize(0, 0);
 
 	extern HWND ApplicationHWnd;
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
