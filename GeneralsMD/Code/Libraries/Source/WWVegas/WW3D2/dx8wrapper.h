@@ -597,6 +597,7 @@ public:
 	static const char* Get_DX8_Blend_Op_Name(unsigned value);
 
 	static void Invalidate_Cached_Render_States();
+	static void Set_Transform_Dirty();
 
 	static void Set_Draw_Polygon_Low_Bound_Limit(unsigned n) { DrawPolygonLowBoundLimit=n; }
 

@@ -235,25 +235,26 @@ void DX8Wrapper::Pillarbox_End()
 	D3DDevice->SetViewport(&vp);
 	D3DDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0);
 
+	// Use DX8Wrapper's cached state setters so the cache stays in sync — no invalidation needed.
 	D3DDevice->SetTexture(0, s_offscreenTex);
-	D3DDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-	D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	D3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	D3DDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
-	D3DDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-	D3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
-	D3DDevice->SetRenderState(D3DRS_CLIPPING, FALSE);
-	D3DDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-	D3DDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-	D3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-	D3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	Set_DX8_Render_State(D3DRS_ZENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_ZWRITEENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_LIGHTING, FALSE);
+	Set_DX8_Render_State(D3DRS_ALPHABLENDENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_ALPHATESTENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_CULLMODE, D3DCULL_NONE);
+	Set_DX8_Render_State(D3DRS_FOGENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_STENCILENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_COLORWRITEENABLE, 0xF);
+	Set_DX8_Render_State(D3DRS_CLIPPING, FALSE);
+	Set_DX8_Texture_Stage_State(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	Set_DX8_Texture_Stage_State(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+	Set_DX8_Texture_Stage_State(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+	Set_DX8_Texture_Stage_State(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 	DWORD filterMode = (s_dstW == ResolutionWidth && s_dstH == ResolutionHeight)
 		? D3DTEXF_POINT : D3DTEXF_LINEAR;
-	D3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, filterMode);
-	D3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, filterMode);
+	Set_DX8_Texture_Stage_State(0, D3DTSS_MINFILTER, filterMode);
+	Set_DX8_Texture_Stage_State(0, D3DTSS_MAGFILTER, filterMode);
 
 	// D3D8 half-pixel offset: XYZRHW vertices need -0.5 for exact texel-to-pixel alignment
 	float x0 = (float)s_dstX - 0.5f, y0 = (float)s_dstY - 0.5f;
@@ -266,8 +267,6 @@ void DX8Wrapper::Pillarbox_End()
 	D3DDevice->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_TEX1);
 	D3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(BV));
 	D3DDevice->SetTexture(0, nullptr);
-
-	Invalidate_Cached_Render_States();
 }
 
 bool DX8Wrapper::Pillarbox_Get_Rect(int& x, int& y, int& w, int& h)
@@ -688,6 +687,12 @@ void DX8Wrapper::Invalidate_Cached_Render_States()
 
 	// (gth) clear the matrix shadows too
 	memset(&DX8Transforms, 0, sizeof(DX8Transforms));
+}
+
+void DX8Wrapper::Set_Transform_Dirty()
+{
+	memset(&DX8Transforms, 0, sizeof(DX8Transforms));
+	render_state_changed |= (unsigned)(WORLD_CHANGED | VIEW_CHANGED);
 }
 
 void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns()
