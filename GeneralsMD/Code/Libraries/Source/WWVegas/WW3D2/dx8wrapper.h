@@ -740,6 +740,7 @@ protected:
 	// Pillarbox state
 	static bool								s_pillarboxEnabled;
 	static bool								s_pillarboxActive;
+	static int								s_bbW, s_bbH;
 	static int								s_dstX, s_dstY, s_dstW, s_dstH;
 	static float							s_pixelDensity;
 	static IDirect3DTexture8*			s_offscreenTex;

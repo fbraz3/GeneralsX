@@ -110,6 +110,8 @@ DX8Wrapper::DisplaySizeFunc DX8Wrapper::s_getNativeDisplaySize = nullptr;
 DX8Wrapper::DisplaySizeFunc DX8Wrapper::s_getWindowSize = nullptr;
 bool DX8Wrapper::s_pillarboxEnabled = false;
 bool DX8Wrapper::s_pillarboxActive = false;
+int DX8Wrapper::s_bbW = 0;
+int DX8Wrapper::s_bbH = 0;
 int DX8Wrapper::s_dstX = 0;
 int DX8Wrapper::s_dstY = 0;
 int DX8Wrapper::s_dstW = 0;
@@ -177,9 +179,18 @@ bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
 		return false;
 	}
 
+	// Cache backbuffer size and compute aspect-correct fit rect once
+	s_bbW = bbW; s_bbH = bbH;
 	s_pixelDensity = density;
-	s_dstX = 0; s_dstY = 0;
-	s_dstW = bbW; s_dstH = bbH;
+	float gameAspect = (float)gameW / (float)gameH;
+	float bbAspect = (float)bbW / (float)bbH;
+	if (bbAspect > gameAspect) {
+		s_dstW = (int)(bbH * gameAspect); s_dstH = bbH;
+		s_dstX = (bbW - s_dstW) / 2; s_dstY = 0;
+	} else {
+		s_dstW = bbW; s_dstH = (int)(bbW / gameAspect);
+		s_dstX = 0; s_dstY = (bbH - s_dstH) / 2;
+	}
 	s_pillarboxEnabled = true;
 	fprintf(stderr, "INFO: Pillarbox: game=%dx%d, backbuffer=%dx%d, windowed=%d\n",
 		gameW, gameH, bbW, bbH, IsWindowed ? 1 : 0);
@@ -211,26 +222,8 @@ void DX8Wrapper::Pillarbox_End()
 	s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr;
 	if (s_savedDepth) { s_savedDepth->Release(); s_savedDepth = nullptr; }
 
-	IDirect3DSurface8* bb = nullptr;
-	D3DDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &bb);
-	int bbW = s_dstW, bbH = s_dstH;
-	if (bb) {
-		D3DSURFACE_DESC desc;
-		if (SUCCEEDED(bb->GetDesc(&desc))) { bbW = desc.Width; bbH = desc.Height; }
-		bb->Release();
-	}
-
-	float gameAspect = (float)ResolutionWidth / (float)ResolutionHeight;
-	float bbAspect = (float)bbW / (float)bbH;
-	if (bbAspect > gameAspect) {
-		s_dstW = (int)(bbH * gameAspect); s_dstH = bbH;
-		s_dstX = (bbW - s_dstW) / 2; s_dstY = 0;
-	} else {
-		s_dstW = bbW; s_dstH = (int)(bbW / gameAspect);
-		s_dstX = 0; s_dstY = (bbH - s_dstH) / 2;
-	}
-
-	D3DVIEWPORT8 vp = {0, 0, (DWORD)bbW, (DWORD)bbH, 0.0f, 1.0f};
+	// Blit offscreen texture centered onto backbuffer (fit rect cached in Pillarbox_Setup)
+	D3DVIEWPORT8 vp = {0, 0, (DWORD)s_bbW, (DWORD)s_bbH, 0.0f, 1.0f};
 	D3DDevice->SetViewport(&vp);
 	D3DDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0);
 
@@ -249,14 +242,14 @@ void DX8Wrapper::Pillarbox_End()
 	D3DDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 	D3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 	D3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	// Use point filtering when 1:1 pixel mapping to avoid sub-pixel blur
 	DWORD filterMode = (s_dstW == ResolutionWidth && s_dstH == ResolutionHeight)
 		? D3DTEXF_POINT : D3DTEXF_LINEAR;
 	D3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, filterMode);
 	D3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, filterMode);
 
-	float x0 = (float)s_dstX, y0 = (float)s_dstY;
-	float x1 = (float)(s_dstX + s_dstW), y1 = (float)(s_dstY + s_dstH);
+	// D3D8 half-pixel offset: XYZRHW vertices need -0.5 for exact texel-to-pixel alignment
+	float x0 = (float)s_dstX - 0.5f, y0 = (float)s_dstY - 0.5f;
+	float x1 = (float)(s_dstX + s_dstW) - 0.5f, y1 = (float)(s_dstY + s_dstH) - 0.5f;
 	struct BV { float x, y, z, rhw; float u, v; };
 	BV quad[4] = {
 		{x0, y0, 0, 1, 0, 0}, {x1, y0, 0, 1, 1, 0},
