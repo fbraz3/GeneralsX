@@ -219,6 +219,11 @@ void DX8Wrapper::Pillarbox_Begin()
 	D3DDevice->GetRenderTarget(&s_savedBackbuffer);
 	D3DDevice->GetDepthStencilSurface(&s_savedDepth);
 	D3DDevice->SetRenderTarget(s_offscreenSurf, s_depthSurf);
+	// Clear the offscreen RT and its depth buffer. The Begin_Render clear targeted
+	// the backbuffer before we switched, so without this the offscreen would carry
+	// stale depth from the previous frame.
+	D3DDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
+		0x00000000, 1.0f, 0);
 	D3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 	D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 	D3DDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
@@ -923,6 +928,8 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 
 void DX8Wrapper::Release_Device()
 {
+	Pillarbox_Cleanup();
+
 	if (D3DDevice) {
 
 		for (int a=0;a<MAX_TEXTURE_STAGES;++a)
@@ -1559,7 +1566,10 @@ bool DX8Wrapper::Set_Device_Resolution(int width,int height,int bits,int windowe
 #pragma message("TODO: support changing windowed status and changing the bit depth")
 		WWDEBUG_SAY(("DX8Wrapper::Set_Device_Resolution is resetting the device."));
 		bool ok = Reset_Device();
-		if (ok) Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
+		if (ok) {
+			Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
+			if (IsWindowed) s_resizePending = true;
+		}
 		return ok;
 	} else {
 		return false;
