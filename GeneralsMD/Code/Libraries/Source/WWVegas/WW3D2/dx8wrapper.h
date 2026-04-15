@@ -511,6 +511,12 @@ public:
 	static void					Set_Render_Target (IDirect3DSwapChain8 *swap_chain);
 	static bool					Is_Render_To_Texture() { return IsRenderToTexture; }
 
+	// Pillarbox for ultrawide monitors
+	static bool					Pillarbox_Get_Rect(int& x, int& w, int& h);
+	static void					Pillarbox_Begin();
+	static void					Pillarbox_End();
+	static bool					GetNativeDisplaySize(int& outW, int& outH, float& outDensity);
+
 	// for depth map support KJM V
 	static void Create_Render_Target
 	(
@@ -720,6 +726,21 @@ protected:
 	static unsigned							DrawPolygonLowBoundLimit;
 
 	static bool								IsRenderToTexture;
+
+	// Pillarbox state
+	static bool								s_pillarboxEnabled;
+	static bool								s_pillarboxActive;
+	static int								s_nativeW, s_nativeH;
+	static int								s_dstX, s_dstY, s_dstW, s_dstH;
+	static float							s_pixelDensity;
+	static IDirect3DTexture8*			s_offscreenTex;
+	static IDirect3DSurface8*			s_offscreenSurf;
+	static IDirect3DSurface8*			s_savedBackbuffer;
+	static IDirect3DSurface8*			s_savedAutoDepth;
+
+	static bool								Pillarbox_Setup(int gameW, int gameH);
+	static void								Pillarbox_Cleanup();
+	static void								Pillarbox_Blit();
 
 	static int								ZBias;
 	static float							ZNear;

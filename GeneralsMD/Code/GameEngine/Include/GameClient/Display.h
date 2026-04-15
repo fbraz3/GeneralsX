@@ -80,6 +80,7 @@ public:
 	virtual UnsignedInt getBitDepth() { return m_bitDepth; }
 	virtual void setWindowed( Bool windowed ) { m_windowed = windowed; }  ///< set windowed/fullscreen flag
 	virtual Bool getWindowed() { return m_windowed; }				///< return widowed/fullscreen flag
+	virtual Bool getViewportRect( Int& x, Int& width, Int& height ) const { return FALSE; }  ///< pillarbox viewport in logical pixels
 	virtual Bool setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt bitdepth, Bool windowed );	///<sets screen resolution/mode
 	virtual Int getDisplayModeCount() {return 0;}	///<return number of display modes/resolutions supported by video card.
 	virtual void getDisplayModeDescription(Int modeIndex, Int *xres, Int *yres, Int *bitDepth) {}	///<return description of mode

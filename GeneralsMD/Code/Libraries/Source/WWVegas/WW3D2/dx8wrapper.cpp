@@ -57,6 +57,9 @@
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
+#ifdef SAGE_USE_SDL3
+#include <SDL3/SDL.h>
+#endif
 // GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)
 #ifdef _WIN32
 #include "dx8webbrowser.h"
@@ -101,6 +104,169 @@ const int DEFAULT_RESOLUTION_HEIGHT = 480;
 const int DEFAULT_BIT_DEPTH = 32;
 const int DEFAULT_TEXTURE_BIT_DEPTH = 16;
 const D3DMULTISAMPLE_TYPE DEFAULT_MSAA = D3DMULTISAMPLE_NONE;
+
+// --- Pillarbox static member initialization ---
+bool DX8Wrapper::s_pillarboxEnabled = false;
+bool DX8Wrapper::s_pillarboxActive = false;
+int DX8Wrapper::s_nativeW = 0;
+int DX8Wrapper::s_nativeH = 0;
+int DX8Wrapper::s_dstX = 0;
+int DX8Wrapper::s_dstY = 0;
+int DX8Wrapper::s_dstW = 0;
+int DX8Wrapper::s_dstH = 0;
+float DX8Wrapper::s_pixelDensity = 1.0f;
+IDirect3DTexture8* DX8Wrapper::s_offscreenTex = nullptr;
+IDirect3DSurface8* DX8Wrapper::s_offscreenSurf = nullptr;
+IDirect3DSurface8* DX8Wrapper::s_savedBackbuffer = nullptr;
+IDirect3DSurface8* DX8Wrapper::s_savedAutoDepth = nullptr;
+
+bool DX8Wrapper::GetNativeDisplaySize(int& outW, int& outH, float& outDensity)
+{
+#ifdef SAGE_USE_SDL3
+	extern SDL_Window* TheSDL3Window;
+	if (!TheSDL3Window) return false;
+	SDL_DisplayID displayId = SDL_GetDisplayForWindow(TheSDL3Window);
+	const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayId);
+	if (!mode || mode->w <= 0 || mode->h <= 0) return false;
+	outDensity = mode->pixel_density > 0 ? mode->pixel_density : 1.0f;
+	outW = (int)(mode->w * outDensity);
+	outH = (int)(mode->h * outDensity);
+	return true;
+#else
+	return false;
+#endif
+}
+
+void DX8Wrapper::Pillarbox_Cleanup()
+{
+	if (s_savedBackbuffer) { s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr; }
+	if (s_savedAutoDepth) { s_savedAutoDepth->Release(); s_savedAutoDepth = nullptr; }
+	if (s_offscreenSurf) { s_offscreenSurf->Release(); s_offscreenSurf = nullptr; }
+	if (s_offscreenTex) { s_offscreenTex->Release(); s_offscreenTex = nullptr; }
+	s_pillarboxEnabled = false;
+	s_pillarboxActive = false;
+}
+
+bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
+{
+	Pillarbox_Cleanup();
+
+	if (IsWindowed) return false;  // windowed mode: user controls window shape
+	if (!GetNativeDisplaySize(s_nativeW, s_nativeH, s_pixelDensity)) return false;
+
+	// Initial dest rect (will be recomputed dynamically in Pillarbox_Blit)
+	s_dstX = 0; s_dstY = 0;
+	s_dstW = s_nativeW; s_dstH = s_nativeH;
+
+	HRESULT hr = D3DDevice->CreateTexture(gameW, gameH, 1, D3DUSAGE_RENDERTARGET,
+		D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &s_offscreenTex);
+	if (FAILED(hr)) return false;
+	s_offscreenTex->GetSurfaceLevel(0, &s_offscreenSurf);
+
+	s_pillarboxEnabled = true;
+	fprintf(stderr, "INFO: Pillarbox: game=%dx%d, backbuffer=%dx%d, density=%.1f\n",
+		gameW, gameH, s_nativeW, s_nativeH, s_pixelDensity);
+	return true;
+}
+
+void DX8Wrapper::Pillarbox_Blit()
+{
+	// Get actual backbuffer size (may differ from s_nativeW/H in windowed mode after resize)
+	IDirect3DSurface8* bb = nullptr;
+	D3DDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &bb);
+	int bbW = s_nativeW, bbH = s_nativeH;
+	if (bb) {
+		D3DSURFACE_DESC desc;
+		if (SUCCEEDED(bb->GetDesc(&desc))) { bbW = desc.Width; bbH = desc.Height; }
+		bb->Release();
+	}
+
+	// Compute aspect-correct fit rect (pillarbox OR letterbox depending on shape)
+	float gameAspect = (float)ResolutionWidth / (float)ResolutionHeight;
+	float bbAspect = (float)bbW / (float)bbH;
+	if (bbAspect > gameAspect) {
+		// Wider than game — pillarbox (bars on sides)
+		s_dstW = (int)(bbH * gameAspect);
+		s_dstH = bbH;
+		s_dstX = (bbW - s_dstW) / 2;
+		s_dstY = 0;
+	} else {
+		// Taller than game — letterbox (bars on top/bottom)
+		s_dstW = bbW;
+		s_dstH = (int)(bbW / gameAspect);
+		s_dstX = 0;
+		s_dstY = (bbH - s_dstH) / 2;
+	}
+	s_nativeW = bbW;
+	s_nativeH = bbH;
+
+	D3DVIEWPORT8 vp = {0, 0, (DWORD)bbW, (DWORD)bbH, 0.0f, 1.0f};
+	D3DDevice->SetViewport(&vp);
+	D3DDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0);
+
+	D3DDevice->SetTexture(0, s_offscreenTex);
+	D3DDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+	D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+	D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	D3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	D3DDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
+	D3DDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	D3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
+	D3DDevice->SetRenderState(D3DRS_CLIPPING, FALSE);
+	D3DDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	D3DDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+	D3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+	D3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	D3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_LINEAR);
+	D3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR);
+
+	float x0 = (float)s_dstX, y0 = (float)s_dstY;
+	float x1 = (float)(s_dstX + s_dstW), y1 = (float)(s_dstY + s_dstH);
+	struct BV { float x, y, z, rhw; float u, v; };
+	BV quad[4] = {
+		{x0, y0, 0, 1, 0, 0}, {x1, y0, 0, 1, 1, 0},
+		{x0, y1, 0, 1, 0, 1}, {x1, y1, 0, 1, 1, 1},
+	};
+	D3DDevice->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_TEX1);
+	D3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(BV));
+	D3DDevice->SetTexture(0, nullptr);
+}
+
+void DX8Wrapper::Pillarbox_Begin()
+{
+	if (!s_pillarboxEnabled || !s_offscreenSurf) return;
+	// Save backbuffer + depth for restoration in Pillarbox_End
+	if (s_savedBackbuffer) { s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr; }
+	if (s_savedAutoDepth) { s_savedAutoDepth->Release(); s_savedAutoDepth = nullptr; }
+	D3DDevice->GetRenderTarget(&s_savedBackbuffer);
+	D3DDevice->GetDepthStencilSurface(&s_savedAutoDepth);
+	D3DDevice->SetRenderTarget(s_offscreenSurf, s_savedAutoDepth);
+	// Force depth states after RT switch. The blit from the previous frame set
+	// ZENABLE=FALSE directly on D3D, bypassing DX8Wrapper's cache.
+	D3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+	D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+	D3DDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	s_pillarboxActive = true;
+}
+
+void DX8Wrapper::Pillarbox_End()
+{
+	if (!s_pillarboxEnabled || !s_savedBackbuffer) return;
+	D3DDevice->SetRenderTarget(s_savedBackbuffer, s_savedAutoDepth);
+	s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr;
+	if (s_savedAutoDepth) { s_savedAutoDepth->Release(); s_savedAutoDepth = nullptr; }
+}
+
+bool DX8Wrapper::Pillarbox_Get_Rect(int& x, int& w, int& h)
+{
+	if (!s_pillarboxEnabled) return false;
+	x = (int)(s_dstX / s_pixelDensity);
+	w = (int)(s_dstW / s_pixelDensity);
+	h = (int)(s_dstH / s_pixelDensity);
+	return true;
+}
 
 DX8FrameStatistics DX8Wrapper::FrameStatistics;
 static DX8FrameStatistics LastFrameStatistics;
@@ -1017,8 +1183,17 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	*/
 	::ZeroMemory(&_PresentParameters, sizeof(D3DPRESENT_PARAMETERS));
 
+	// In fullscreen, set backbuffer to native display size for pillarbox rendering.
 	_PresentParameters.BackBufferWidth = ResolutionWidth;
 	_PresentParameters.BackBufferHeight = ResolutionHeight;
+	if (!IsWindowed) {
+		int nativeW, nativeH;
+		float density;
+		if (GetNativeDisplaySize(nativeW, nativeH, density)) {
+			_PresentParameters.BackBufferWidth = nativeW;
+			_PresentParameters.BackBufferHeight = nativeH;
+		}
+	}
 	_PresentParameters.BackBufferCount = IsWindowed ? 1 : 2;
 
 	//I changed this to discard all the time (even when full-screen) since that the most efficient. 07-16-03 MW:
@@ -1162,6 +1337,7 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	if (ret)
 	{
 		Render2DClass::Set_Screen_Resolution( RectClass( 0, 0, ResolutionWidth, ResolutionHeight ) );
+		Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
 	}
 
 	return ret;
@@ -1289,11 +1465,21 @@ bool DX8Wrapper::Set_Device_Resolution(int width,int height,int bits,int windowe
 {
 	if (D3DDevice != nullptr) {
 
-		if (width != -1) {
-			_PresentParameters.BackBufferWidth = ResolutionWidth = width;
-		}
-		if (height != -1) {
-			_PresentParameters.BackBufferHeight = ResolutionHeight = height;
+		if (width != -1) ResolutionWidth = width;
+		if (height != -1) ResolutionHeight = height;
+
+		_PresentParameters.BackBufferWidth = ResolutionWidth;
+		_PresentParameters.BackBufferHeight = ResolutionHeight;
+
+		// Release pillarbox RT before device reset
+		Pillarbox_Cleanup();
+		if (!IsWindowed) {
+			int nativeW, nativeH;
+			float density;
+			if (GetNativeDisplaySize(nativeW, nativeH, density)) {
+				_PresentParameters.BackBufferWidth = nativeW;
+				_PresentParameters.BackBufferHeight = nativeH;
+			}
 		}
 		if (resize_window)
 		{
@@ -1301,7 +1487,9 @@ bool DX8Wrapper::Set_Device_Resolution(int width,int height,int bits,int windowe
 		}
 #pragma message("TODO: support changing windowed status and changing the bit depth")
 		WWDEBUG_SAY(("DX8Wrapper::Set_Device_Resolution is resetting the device."));
-		return Reset_Device();
+		bool ok = Reset_Device();
+		if (ok) Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
+		return ok;
 	} else {
 		return false;
 	}
@@ -1717,7 +1905,21 @@ void DX8Wrapper::Begin_Scene()
 void DX8Wrapper::End_Scene(bool flip_frames)
 {
 	DX8_THREAD_ASSERT();
-	DX8CALL(EndScene());
+
+	// Pillarbox: blit offscreen RT centered onto backbuffer (only during main render pass)
+	if (s_pillarboxActive && s_offscreenTex) {
+		s_pillarboxActive = false;
+		Pillarbox_End();
+		DX8CALL(EndScene());
+		DX8CALL(BeginScene());
+		Pillarbox_Blit();
+		DX8CALL(EndScene());
+		// The blit changed D3D render states (ZENABLE=FALSE, etc.) directly,
+		// bypassing DX8Wrapper's cache. Invalidate so next frame resends all states.
+		Invalidate_Cached_Render_States();
+	} else {
+		DX8CALL(EndScene());
+	}
 
 	// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only
 #ifdef _WIN32
