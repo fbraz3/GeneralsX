@@ -61,6 +61,7 @@ Utilities for large-scale code refactoring and fixes:
 #### `qa/smoke/` - Smoke Tests
 - `docker-smoke-test-zh.sh` - Quick startup validation (expects crash, checks init output)
 - `run-bundled-game.sh` - Test bundled binary after deployment
+- `collect-flatpak-vulkan-wsi-report.sh` - Collect reproducible Flatpak Vulkan/XCB diagnostics for upstream runtime issues
 
 ### `legacy/` - Deprecated & Compatibility
 
@@ -174,6 +175,10 @@ Scripts support customization:
 # Custom Docker image base
 export DOCKER_IMAGE="ubuntu:24.04"
 ./scripts/build/linux/docker-build-linux-zh.sh
+
+# Flatpak PoC: inject newer libxcb/X11 libs from an external directory
+export LIBXCB_POC_DIR="$PWD/flatpak/poc-libxcb"
+./scripts/build/linux/build-linux-flatpak.sh linux64-deploy GeneralsMD
 
 # Custom log directory
 export LOG_DIR="my-logs"

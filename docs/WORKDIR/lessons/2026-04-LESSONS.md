@@ -1,5 +1,21 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-13 - Flatpak must build inside SDK, not package host binaries/libraries
+
+- Problem: Flatpak packaging mixed host-built binaries with manually copied shared libraries, causing fragile runtime behavior and Wayland/Vulkan instability risks.
+- Root cause: Packaging flow treated Flatpak as a generic container bundle instead of a runtime+SDK build pipeline.
+- Fix:
+	- Migrated manifests to compile the game inside `org.freedesktop.Sdk` (25.08) with `flatpak-builder`.
+	- Declared dependency sources in manifest (`SDL3`, `SDL3_image`, `openal-soft`, `dxvk-native`) and wired them through `FETCHCONTENT_SOURCE_DIR_*` to avoid in-build network fetches.
+	- Removed host library staging logic from the build script and switched to manifest-driven build/export only.
+	- Kept runtime environment/path logic centralized in `/app/bin/run.sh`, with wrappers acting as pass-through entrypoints.
+- Validation:
+	- `flatpak-builder --show-manifest` succeeds for both `com.fbraz3.GeneralsX.yml` and `com.fbraz3.GeneralsXZH.yml`.
+	- `flatpak-builder --user --build-only` now advances to SDK update/install phase (instead of failing on missing system remote refs).
+- Prevention: For Flatpak work, never copy `.so` files from host system paths into app runtime. Build inside SDK and ship only artifacts produced by the manifest modules.
+
+## Session 2026-04-09 - libxcb Flatpak PoC needs newer source libs, not host baseline copy
+
 ## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
 
 - Problem: A user reported an intermittent crash during 8-player skirmish on macOS (Apple Silicon), while the same broad scenario could not be reproduced on another Apple Silicon machine.
@@ -23,6 +39,38 @@
 - Result: AppImage launched successfully and progressed beyond Vulkan window creation and early engine initialization, where Flatpak path previously failed.
 - Insight: For short-term Linux distribution, AppImage is currently lower-risk and faster to stabilize than Flatpak in this codebase state.
 - Prevention: Keep Flatpak as a parallel track for longer-term sandbox goals, but prioritize AppImage for immediate user-facing releases.
+
+## Session 2026-04-09 - Flatpak packaging needs explicit runtime source destination and compliant metadata/icon rules
+
+- Problem: Local Flatpak packaging failed first with missing `runtime/.` during module build, then with AppStream metadata validation, and finally with icon export rejection.
+- Root cause:
+	- The `type: dir` source in manifest did not guarantee the expected `runtime/` folder name for the build command.
+	- Metainfo files missed required AppStream `metadata_license`.
+	- Source icon assets were 650x650, while Flatpak export enforces max 512x512 icon size.
+- Fix:
+	- Set `dest: runtime` for staging runtime dir source in both manifests.
+	- Added `<metadata_license>CC0-1.0</metadata_license>` to both metainfo files.
+	- Generated 512x512 icons for Flatpak packaging and switched manifests to install them under `hicolor/512x512`.
+	- Added local script preflight to install Flatpak SDK/runtime (`org.freedesktop.Platform//23.08`, `org.freedesktop.Sdk//23.08`) under `--user` when missing.
+- Validation: Local builds completed for both targets and produced:
+	- `build/GeneralsX-linux64-deploy.flatpak`
+	- `build/GeneralsXZH-linux64-deploy.flatpak`
+- Prevention: For every new Flatpak app module, validate early that sources map to expected in-build paths, metainfo passes `appstreamcli compose`, and icon dimensions satisfy export limits.
+
+## Session 2026-04-09 - Flatpak runtime library bundling must preserve SONAME links and avoid self-symlink overwrite
+
+- Problem: `flatpak run com.fbraz3.GeneralsXZH` failed with missing `libSDL3_image.so.0` and later codec libraries such as `libavcodec.so.60` / `libx264.so.164`.
+- Root cause:
+	- Runtime staging copied only regular files, dropping symlink chains required by SONAME resolution.
+	- Manifest fallback symlink logic could overwrite already-correct `lib*.so.<major>` files into self-symlinks.
+	- FFmpeg-linked binary required a larger codec dependency set than the initial package list.
+- Fix:
+	- Staging now copies runtime libs with `cp -a` globs to preserve symlinks.
+	- Manifest symlink fallback now creates `lib*.so.<major>` links only when source has a minor suffix.
+	- Flatpak build script now includes FFmpeg codec libs and uses `ldd`-based dependency closure copy for FFmpeg roots.
+- Validation: Dynamic loader errors for SDL3_image/FFmpeg libs were eliminated; runtime progressed to Vulkan initialization stage.
+- Prevention: For Flatpak packaging of dynamically linked binaries, validate `NEEDED`/SONAME closure and inspect `/app/lib` for accidental self-symlink artifacts.
+
 ## Session 2026-04-01 - User-facing path migrations need runtime fallback, not just docs updates
 
 - Problem: Zero Hour user-facing scripts and docs exposed the internal `GeneralsMD` path, which leaks implementation details and conflicts with product naming (`GeneralsZH`).
