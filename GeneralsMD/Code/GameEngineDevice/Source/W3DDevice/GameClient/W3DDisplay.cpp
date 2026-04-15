@@ -749,6 +749,17 @@ void W3DDisplay::init()
 		if (TheSDL3Window) {
 			fprintf(stderr, "DEBUG: Showing SDL3 window after WW3D init...\n");
 			SDL_ShowWindow(TheSDL3Window);
+
+			// GeneralsX @bugfix Apply native SDL3 fullscreen on Linux after DXVK device creation.
+			// DXVK is told Windowed=TRUE to avoid its WSI fullscreen path which breaks on Wayland
+			// (SDL_SetWindowPosition rejected). Instead use SDL3's native fullscreen which works
+			// on both Wayland (xdg_toplevel.set_fullscreen) and X11.
+			if (!TheGlobalData->m_windowed) {
+				fprintf(stderr, "DEBUG: Requesting SDL3 native fullscreen...\n");
+				if (!SDL_SetWindowFullscreen(TheSDL3Window, true)) {
+					fprintf(stderr, "WARNING: SDL_SetWindowFullscreen failed: %s\n", SDL_GetError());
+				}
+			}
 		}
 		#endif
 
