@@ -492,6 +492,18 @@ public:
 	static void					Set_Render_Target (IDirect3DSwapChain8 *swap_chain);
 	static bool					Is_Render_To_Texture() { return IsRenderToTexture; }
 
+	// Platform display size provider — set by SDL3 layer at init
+	typedef bool (*DisplaySizeFunc)(int& outW, int& outH, float& outDensity);
+	static void					Set_Display_Size_Provider(DisplaySizeFunc nativeSize, DisplaySizeFunc windowSize);
+	static bool					GetNativeDisplaySize(int& outW, int& outH, float& outDensity);
+	static bool					GetWindowSize(int& outW, int& outH, float& outDensity);
+
+	// Pillarbox: render game at chosen resolution, blit centered onto backbuffer
+	static bool					Pillarbox_Get_Rect(int& x, int& y, int& w, int& h);
+	static void					Pillarbox_Begin();
+	static void					Pillarbox_End();
+	static void					Pillarbox_Process_Resize();
+
 	// for depth map support KJM V
 	static void Create_Render_Target
 	(
@@ -566,6 +578,7 @@ public:
 	static const char* Get_DX8_Blend_Op_Name(unsigned value);
 
 	static void Invalidate_Cached_Render_States();
+	static void Set_Transform_Dirty();
 
 	static void Set_Draw_Polygon_Low_Bound_Limit(unsigned n) { DrawPolygonLowBoundLimit=n; }
 
@@ -697,6 +710,25 @@ protected:
 	static unsigned							DrawPolygonLowBoundLimit;
 
 	static bool								IsRenderToTexture;
+
+	// Display size providers
+	static DisplaySizeFunc				s_getNativeDisplaySize;
+	static DisplaySizeFunc				s_getWindowSize;
+
+	// Pillarbox state
+	static bool								s_pillarboxEnabled;
+	static bool								s_pillarboxActive;
+	static int								s_bbW, s_bbH;
+	static int								s_dstX, s_dstY, s_dstW, s_dstH;
+	static float							s_pixelDensity;
+	static IDirect3DTexture8*			s_offscreenTex;
+	static IDirect3DSurface8*			s_offscreenSurf;
+	static IDirect3DSurface8*			s_depthSurf;
+	static IDirect3DSurface8*			s_savedBackbuffer;
+	static IDirect3DSurface8*			s_savedDepth;
+
+	static bool								Pillarbox_Setup(int gameW, int gameH);
+	static void								Pillarbox_Cleanup();
 
 	static int								ZBias;
 	static float							ZNear;

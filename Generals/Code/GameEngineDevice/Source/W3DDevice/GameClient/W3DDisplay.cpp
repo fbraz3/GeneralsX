@@ -45,6 +45,7 @@ static void drawFramerateBar();
 #include <SDL3/SDL.h> // For SDL_ShowWindow() on Linux
 #endif
 #include <time.h>
+#include <vector>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/FramePacer.h"
@@ -440,58 +441,83 @@ inline Bool isResolutionSupported(const ResolutionDescClass &res)
 	return res.Width >= DEFAULT_DISPLAY_WIDTH && res.BitDepth >= minBitDepth;
 }
 
-/*Return number of screen modes supported by the current device*/
+// SDL3 display size providers for DX8Wrapper pillarbox (registered at init)
+#ifdef SAGE_USE_SDL3
+static bool SDL3_GetNativeDisplaySize(int& outW, int& outH, float& outDensity)
+{
+	extern SDL_Window* TheSDL3Window;
+	if (!TheSDL3Window) return false;
+	SDL_DisplayID displayId = SDL_GetDisplayForWindow(TheSDL3Window);
+	const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayId);
+	if (!mode || mode->w <= 0 || mode->h <= 0) return false;
+	outDensity = mode->pixel_density > 0 ? mode->pixel_density : 1.0f;
+	outW = (int)(mode->w * outDensity);
+	outH = (int)(mode->h * outDensity);
+	return true;
+}
+
+static bool SDL3_GetWindowSizeInPixels(int& outW, int& outH, float& outDensity)
+{
+	extern SDL_Window* TheSDL3Window;
+	if (!TheSDL3Window) return false;
+	int logW = 0, logH = 0, physW = 0, physH = 0;
+	SDL_GetWindowSize(TheSDL3Window, &logW, &logH);
+	SDL_GetWindowSizeInPixels(TheSDL3Window, &physW, &physH);
+	if (physW <= 0 || physH <= 0) return false;
+	outW = physW;
+	outH = physH;
+	outDensity = (logW > 0) ? (float)physW / (float)logW : 1.0f;
+	return true;
+}
+#endif
+
+// Filtered resolution cache — built once, clamps widths to 4:3..16:9 and deduplicates.
+struct FilteredRes { Int w, h, bits; };
+static std::vector<FilteredRes> s_filteredResolutions;
+static bool s_filteredDirty = true;
+
+static void buildFilteredResolutions()
+{
+	s_filteredResolutions.clear();
+	const RenderDeviceDescClass &devDesc = WW3D::Get_Render_Device_Desc(0);
+	const DynamicVectorClass<ResolutionDescClass> &resolutions = devDesc.Enumerate_Resolutions();
+
+	int nativeW = 0, nativeH = 0;
+	float density = 1.0f;
+	DX8Wrapper::GetNativeDisplaySize(nativeW, nativeH, density);
+
+	for (int i = 0; i < resolutions.Count(); i++) {
+		if (!isResolutionSupported(resolutions[i])) continue;
+		Int w = resolutions[i].Width;
+		Int h = resolutions[i].Height;
+		Int bits = resolutions[i].BitDepth;
+		if (nativeH > 0 && h > nativeH) continue;
+		Int minW = h * 4 / 3;
+		Int maxW = h * 16 / 9;
+		if (w < minW) w = minW;
+		if (w > maxW) w = maxW;
+		bool duplicate = false;
+		for (const auto& e : s_filteredResolutions) {
+			if (e.w == w && e.h == h && e.bits == bits) { duplicate = true; break; }
+		}
+		if (!duplicate) s_filteredResolutions.push_back({w, h, bits});
+	}
+	s_filteredDirty = false;
+}
+
 Int W3DDisplay::getDisplayModeCount()
 {
-	const RenderDeviceDescClass &devDesc=WW3D::Get_Render_Device_Desc(0);
-	const DynamicVectorClass <ResolutionDescClass> &resolutions=devDesc.Enumerate_Resolutions();
-
-	Int numResolutions=0;
-/*	Bool needStencil=false;
-	Bool needDestinationAlpha=false;
-	Int minBitDepth=16;
-
-	//Walk through all resolutions and determine which ones are compatible with other settings
-	//chosen by user.  For example, 32-bit may be required for shadows, occlusion, soft water edge, etc.
-	if (TheGlobalData->m_useShadowVolumes || (TheGlobalData->m_enableBehindBuildingMarkers && TheGameLogic->getShowBehindBuildingMarkers()))
-		needStencil=true;
-
-	if (TheGlobalData->m_showSoftWaterEdge)
-	{	minBitDepth=32;
-	}
-*/
-	for (int res = 0; res < resolutions.Count ();  res ++)
-	{
-		// Is this the resolution we are looking for?
-		if (isResolutionSupported(resolutions[res]))
-		{
-			numResolutions++;
-		}
-	}
-
-	return numResolutions;
+	if (s_filteredDirty) buildFilteredResolutions();
+	return (Int)s_filteredResolutions.size();
 }
 
 void W3DDisplay::getDisplayModeDescription(Int modeIndex, Int *xres, Int *yres, Int *bitDepth)
 {
-	Int numResolutions=0;
-	const RenderDeviceDescClass &devDesc=WW3D::Get_Render_Device_Desc(0);
-	const DynamicVectorClass <ResolutionDescClass> &resolutions=devDesc.Enumerate_Resolutions();
-
-	for (int res = 0; res < resolutions.Count ();  res ++)
-	{
-		// Is this the resolution we are looking for?
-		if (isResolutionSupported(resolutions[res]))
-		{
-			if (numResolutions == modeIndex)
-			{	//found the mode
-				*xres=resolutions[res].Width;
-				*yres=resolutions[res].Height;
-				*bitDepth=resolutions[res].BitDepth;
-				return;
-			}
-			numResolutions++;
-		}
+	if (s_filteredDirty) buildFilteredResolutions();
+	if (modeIndex >= 0 && modeIndex < (Int)s_filteredResolutions.size()) {
+		*xres = s_filteredResolutions[modeIndex].w;
+		*yres = s_filteredResolutions[modeIndex].h;
+		*bitDepth = s_filteredResolutions[modeIndex].bits;
 	}
 }
 
@@ -524,6 +550,11 @@ Bool W3DDisplay::setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt
 	Render2DClass::Set_Screen_Resolution(RectClass(0, 0, oldWidth, oldHeight));
 	Display::setDisplayMode(oldWidth, oldHeight, oldBitDepth, oldWindowed);
 	return FALSE;	//did not change to a new mode.
+}
+
+Bool W3DDisplay::getViewportRect( Int& x, Int& y, Int& width, Int& height ) const
+{
+	return DX8Wrapper::Pillarbox_Get_Rect(x, y, width, height) ? TRUE : FALSE;
 }
 
 /** Set width of display */
@@ -669,6 +700,11 @@ void W3DDisplay::init()
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
+		// Register SDL3 display size providers for pillarbox before device init
+#ifdef SAGE_USE_SDL3
+		DX8Wrapper::Set_Display_Size_Provider(SDL3_GetNativeDisplaySize, SDL3_GetWindowSizeInPixels);
+#endif
+
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 
@@ -1632,6 +1668,9 @@ void W3DDisplay::draw()
 {
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
+	// GeneralsX @feature xxorza 15/04/2026 Process deferred window resize for pillarbox
+	DX8Wrapper::Pillarbox_Process_Resize();
+
 	extern HWND ApplicationHWnd;
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
 		return;
@@ -1776,6 +1815,9 @@ AGAIN:
 			if (TheW3DProjectedShadowManager)
 				TheW3DProjectedShadowManager->updateRenderTargetTextures();
 		}
+
+		// Switch to offscreen RT AFTER pre-render (shadows/water) completes, BEFORE main render.
+		DX8Wrapper::Pillarbox_Begin();
 
 		Debug_Statistics::End_Statistics();	//record number of polygons rendered in RenderTargetTextures.
 

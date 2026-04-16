@@ -145,11 +145,11 @@ SDL3Mouse::SDL3Mouse(SDL_Window* window)
 {
 	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 	// fprintf(stderr, "DEBUG: SDL3Mouse::SDL3Mouse() created\n");
-	
+
 	// Initialize event buffer with SDL_EVENT_FIRST sentinel (means "empty" slot)
 	// GeneralsX @refactor felipebraz 16/02/2026 Fighter19 pattern
 	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
-	
+
 	m_LeftButtonDownPos.x = 0;
 	m_LeftButtonDownPos.y = 0;
 	m_RightButtonDownPos.x = 0;
@@ -205,7 +205,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 		delete[] file_buffer;
 		return NULL;
 	}
-	
+
 	DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: loading %s", filepath));
 	AnimatedCursor* cursor = new AnimatedCursor();
 
@@ -297,7 +297,7 @@ void SDL3Mouse::init(void)
 {
 	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 	// fprintf(stderr, "INFO: SDL3Mouse::init()\n");
-	
+
 	// Call parent init (loads cursor info from INI, etc.)
 	Mouse::init();
 
@@ -312,13 +312,13 @@ void SDL3Mouse::init(void)
 	// Show cursor by default
 	SDL_ShowCursor();
 	m_IsVisible = true;
-	
+
 	// Clear event buffer - Fighter19 pattern
 	// GeneralsX @refactor felipebraz 16/02/2026
 	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
 	m_nextFreeIndex = 0;
 	m_nextGetIndex = 0;
-	
+
 	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 	// fprintf(stderr, "INFO: SDL3Mouse::init() complete\n");
 }
@@ -330,13 +330,13 @@ void SDL3Mouse::reset(void)
 {
 	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 	// fprintf(stderr, "DEBUG: SDL3Mouse::reset()\n");
-	
+
 	Mouse::reset();
-	
+
 	releaseCapture();
 	SDL_ShowCursor();
 	m_IsVisible = true;
-	
+
 	// Clear event buffer - Fighter19 pattern
 	// GeneralsX @refactor felipebraz 16/02/2026
 	memset(m_eventBuffer, 0, sizeof(m_eventBuffer));
@@ -526,17 +526,17 @@ UnsignedByte SDL3Mouse::getMouseEvent(MouseIO *result, Bool flush)
 	if (m_eventBuffer[m_nextGetIndex].type == SDL_EVENT_FIRST) {
 		return MOUSE_NONE;
 	}
-	
+
 	// Translate SDL_Event to MouseIO
 	// GeneralsX @refactor felipebraz 16/02/2026 Use unified translateEvent()
 	translateEvent(m_nextGetIndex, result);
-	
+
 	// Mark this slot as empty (sentinel)
 	m_eventBuffer[m_nextGetIndex].type = SDL_EVENT_FIRST;
-	
+
 	// Advance read position (circular buffer)
 	m_nextGetIndex = (m_nextGetIndex + 1) % MAX_SDL3_MOUSE_EVENTS;
-	
+
 	return MOUSE_OK;
 }
 
@@ -596,7 +596,7 @@ void SDL3Mouse::translateMotionEvent(const SDL_MouseMotionEvent& event, MouseIO 
 	result->deltaPos.y = (Int)event.yrel;
 	// GeneralsX @bugfix felipebraz 18/02/2026 Normalize timestamp to milliseconds (SDL3 uses nanoseconds)
 	result->time = (Uint32)(event.timestamp / 1000000);
-	
+
 	// No button state change on motion
 	result->leftState = MBS_None;
 	result->rightState = MBS_None;
@@ -616,28 +616,28 @@ void SDL3Mouse::translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO 
 	// GeneralsX @bugfix felipebraz 18/02/2026 Normalize timestamp to milliseconds (SDL3 uses nanoseconds)
 	result->time = (Uint32)(event.timestamp / 1000000);
 	result->wheelPos = 0;
-	
+
 	// Initialize all button states to None
 	result->leftState = MBS_None;
 	result->rightState = MBS_None;
 	result->middleState = MBS_None;
-	
+
 	// GeneralsX @bugfix felipebraz 18/02/2026 Initialize frame tracking for replay determinism
 	result->leftFrame = 0;
 	result->rightFrame = 0;
 	result->middleFrame = 0;
-	
+
 	MouseButtonState state = event.down ? MBS_Down : MBS_Up;
-	
+
 	// GeneralsX @bugfix BenderAI 17/02/2026 Debug mouse button events
 	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 	// fprintf(stderr, "[MOUSE] Button event: button=%d state=%s pos=(%d,%d)\n",
 	//	event.button, event.down ? "DOWN" : "UP", (Int)event.x, (Int)event.y);
-	
+
 	// Get current frame for replay determinism
 	// GeneralsX @bugfix felipebraz 18/02/2026 Use game frame instead of timestamp
 	UnsignedInt currentFrame = (TheGameLogic) ? TheGameLogic->getFrame() : 1;
-	
+
 	// Map SDL3 button to MouseIO button
 	switch (event.button) {
 		case SDL_BUTTON_LEFT:
@@ -652,7 +652,7 @@ void SDL3Mouse::translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO 
 			}
 			result->leftFrame = currentFrame;  // GeneralsX @bugfix felipebraz 18/02/2026 Track frame for replay
 			break;
-			
+
 		case SDL_BUTTON_RIGHT:
 			// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 			// fprintf(stderr, "[MOUSE] Right button: %s\n", event.down ? "DOWN" : "UP");
@@ -666,7 +666,7 @@ void SDL3Mouse::translateButtonEvent(const SDL_MouseButtonEvent& event, MouseIO 
 			}
 			result->rightFrame = currentFrame;  // GeneralsX @bugfix felipebraz 18/02/2026 Track frame for replay
 			break;
-			
+
 		case SDL_BUTTON_MIDDLE:
 			// GeneralsX @bugfix felipebraz 18/02/2026 Support double-click for middle button
 			if (event.down && event.clicks >= 2) {
@@ -687,18 +687,18 @@ void SDL3Mouse::translateWheelEvent(const SDL_MouseWheelEvent& event, MouseIO *r
 	// SDL3 mouse position not provided in wheel event, get current position
 	float mouseX, mouseY;
 	SDL_GetMouseState(&mouseX, &mouseY);
-	
+
 	result->pos.x = (Int)mouseX;
 	result->pos.y = (Int)mouseY;
 	result->deltaPos.x = 0;
 	result->deltaPos.y = 0;
 	// GeneralsX @bugfix felipebraz 18/02/2026 Normalize timestamp to milliseconds (SDL3 uses nanoseconds)
 	result->time = (Uint32)(event.timestamp / 1000000);
-	
+
 	// SDL3 wheel: positive = up/away, negative = down/toward user
 	// Multiply by MOUSE_WHEEL_DELTA (120) to match Windows behavior
 	result->wheelPos = (Int)(event.y * MOUSE_WHEEL_DELTA);
-	
+
 	result->leftState = MBS_None;
 	result->rightState = MBS_None;
 	result->middleState = MBS_None;
@@ -736,6 +736,19 @@ void SDL3Mouse::scaleMouseCoordinates(int rawX, int rawY, Uint32 windowID, int& 
 	int internalWidth  = TheDisplay->getWidth();
 	int internalHeight = TheDisplay->getHeight();
 
+	int pbX, pbY, pbW, pbH;
+	if (TheDisplay->getViewportRect(pbX, pbY, pbW, pbH)) {
+		int clampedX = rawX - pbX;
+		if (clampedX < 0) clampedX = 0;
+		if (clampedX > pbW) clampedX = pbW;
+		int clampedY = rawY - pbY;
+		if (clampedY < 0) clampedY = 0;
+		if (clampedY > pbH) clampedY = pbH;
+		scaledX = static_cast<int>(clampedX * static_cast<float>(internalWidth) / static_cast<float>(pbW));
+		scaledY = static_cast<int>(clampedY * static_cast<float>(internalHeight) / static_cast<float>(pbH));
+		return;
+	}
+
 	float factorX = static_cast<float>(internalWidth)  / static_cast<float>(windowWidth);
 	float factorY = static_cast<float>(internalHeight) / static_cast<float>(windowHeight);
 
@@ -757,7 +770,7 @@ void SDL3Mouse::addSDLEvent(SDL_Event *event)
 	if (!event) {
 		return;
 	}
-	
+
 	// Filter only mouse-related events
 	if (event->type != SDL_EVENT_MOUSE_MOTION &&
 	    event->type != SDL_EVENT_MOUSE_BUTTON_DOWN &&
@@ -765,7 +778,7 @@ void SDL3Mouse::addSDLEvent(SDL_Event *event)
 	    event->type != SDL_EVENT_MOUSE_WHEEL) {
 		return;  // Not a mouse event, ignore
 	}
-	
+
 	// Check if buffer is full
 	UnsignedInt nextFreeIndex = (m_nextFreeIndex + 1) % MAX_SDL3_MOUSE_EVENTS;
 	if (nextFreeIndex == m_nextGetIndex) {
@@ -773,13 +786,13 @@ void SDL3Mouse::addSDLEvent(SDL_Event *event)
 		// fprintf(stderr, "WARNING: SDL3Mouse::addSDLEvent() buffer full (dropped event)\n");
 		return;
 	}
-	
+
 	// Copy entire event to buffer
 	m_eventBuffer[m_nextFreeIndex] = *event;
-	
+
 	// GeneralsX @bugfix BenderAI 18/02/2026 Temporarily disable debug logging (Phase 1.8)
 	// fprintf(stderr, "DEBUG: SDL3Mouse::addSDLEvent() type=%u index=%u\n", event->type, m_nextFreeIndex);
-	
+
 	// Advance write position (circular buffer)
 	m_nextFreeIndex = nextFreeIndex;
 }
@@ -798,7 +811,7 @@ void SDL3Mouse::translateEvent(UnsignedInt eventIndex, MouseIO *result)
 	if (eventIndex >= MAX_SDL3_MOUSE_EVENTS || !result) {
 		return;
 	}
-	
+
 	const SDL_Event& event = m_eventBuffer[eventIndex];
 
 	// Raw window-pixel coordinates and window ID, extracted per event type
