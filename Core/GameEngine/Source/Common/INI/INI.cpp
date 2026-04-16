@@ -1668,37 +1668,43 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 template <typename Type>
 Type scanType(std::string_view token)
 {
-	if constexpr (std::is_floating_point_v<Type>)
-	{
-		// GeneralsX @bugfix BenderAI 07/04/2026 Apple SDKs in our deployment target do not expose std::from_chars for floats.
-		#if defined(__APPLE__)
-		const std::string tokenString(token);
-		char *end = nullptr;
-		const double result = std::strtod(tokenString.c_str(), &end);
+        DEBUG_ASSERTCRASH(!token.empty(), ("token is not expected to be empty"));
 
-		if (end == tokenString.c_str())
-		{
-			throw INI_INVALID_DATA;
-		}
+        // Unlike sscanf, std::from_chars cannot parse "+".
+        // Consume the plus symbol to accommodate custom ini files that have numbers prefixed with a plus.
+        if (!token.empty() && token[0] == '+')
+        {
+                token.remove_prefix(1);
+        }
 
-		return static_cast<Type>(result);
-		#else
-		Type result{};
-		const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+        if constexpr (std::is_floating_point_v<Type>)
+        {
+                // GeneralsX @bugfix BenderAI 07/04/2026 Apple SDKs in our deployment target do not expose std::from_chars for floats.
+                #if defined(__APPLE__)
+                const std::string tokenString(token);
+                char *end = nullptr;
+                const double result = std::strtod(tokenString.c_str(), &end);
 
-		if (ec != std::errc{})
-		{
-			throw INI_INVALID_DATA;
-		}
+                if (end == tokenString.c_str())
+                {
+                        throw INI_INVALID_DATA;
+                }
 
-		return result;
-		#endif
-	}
+                return static_cast<Type>(result);
+                #else
+                Type result{};
+                const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
 
-	// TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
-	std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
-	const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+                if (ec != std::errc{})
+                {
+                        throw INI_INVALID_DATA;
+                }
 
+                return result;
+                #endif
+        }
+
+        // TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
 	if (ec != std::errc{})
 	{
 		throw INI_INVALID_DATA;
