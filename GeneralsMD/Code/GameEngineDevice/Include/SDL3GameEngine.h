@@ -93,11 +93,11 @@ public:
 	virtual ModuleFactory *createModuleFactory(void);
 	virtual ThingFactory *createThingFactory(void);
 	virtual FunctionLexicon *createFunctionLexicon(void);
-	virtual Radar *createRadar(void);
+	// GeneralsX @bugfix Copilot 15/04/2026 Match upstream GameEngine pure-virtual signatures after sync.
+	virtual Radar *createRadar(Bool dummy);
 	virtual WebBrowser *createWebBrowser(void);
-	// GeneralsX @bugfix Copilot 24/03/2026 Match upstream GameEngine pure-virtual signature after sync.
 	virtual ParticleSystemManager* createParticleSystemManager(Bool dummy);
-	virtual AudioManager *createAudioManager(void);
+	virtual AudioManager *createAudioManager(Bool dummy);
 
 	// SDL3 specific
 	virtual SDL_Window* getSDLWindow(void) const { return m_SDLWindow; }

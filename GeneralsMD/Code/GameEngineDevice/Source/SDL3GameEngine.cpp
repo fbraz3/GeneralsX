@@ -518,8 +518,10 @@ FunctionLexicon *SDL3GameEngine::createFunctionLexicon(void)
 	return NEW W3DFunctionLexicon;
 }
 
-Radar *SDL3GameEngine::createRadar(void)
+// GeneralsX @bugfix Copilot 15/04/2026 Match upstream GameEngine pure-virtual signature after sync.
+Radar *SDL3GameEngine::createRadar(Bool dummy)
 {
+	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createRadar() -> W3DRadar\n");
 	return NEW W3DRadar;
 }
@@ -543,9 +545,11 @@ WebBrowser *SDL3GameEngine::createWebBrowser(void)
 /**
  * Factory method: AudioManager
  * Select audio backend based on compile flags
+ * GeneralsX @bugfix Copilot 15/04/2026 Match upstream GameEngine pure-virtual signature after sync.
  */
-AudioManager *SDL3GameEngine::createAudioManager(void)
+AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 {
+	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createAudioManager()\n");
 
 #ifdef SAGE_USE_OPENAL
