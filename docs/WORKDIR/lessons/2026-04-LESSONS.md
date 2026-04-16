@@ -1,5 +1,17 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-16 - A single issue can hide multiple EXC_BAD_ACCESS root causes
+
+- Problem: A macOS crash issue initially looked like one intermittent defect but later reports in the same thread showed a second stack signature.
+- Root causes:
+	- AI path: `AITNGuardOuterState::update()` could dereference `m_attackState` when it had not been initialized on certain state-entry paths.
+	- Audio path: `OpenALAudioFileCache::freeEnoughSpaceForSample()` could dereference `m_eventInfo` during priority eviction for filename-only cache loads.
+- Fix:
+	- Added lazy attack-state reconstruction plus safer team/prototype checks in tunnel-network guard update logic.
+	- Added null-safe priority selection for OpenAL cache eviction (`AudioEventInfo` optional entries now handled explicitly).
+- Validation: Static diagnostics reported no errors in modified files; issue thread updated with code anchors and retest request.
+- Prevention: Split triage by crash signature (top frame + fault address + subsystem) before assuming a shared cause across reports in the same issue.
+
 ## Session 2026-04-13 - Flatpak must build inside SDK, not package host binaries/libraries
 
 - Problem: Flatpak packaging mixed host-built binaries with manually copied shared libraries, causing fragile runtime behavior and Wayland/Vulkan instability risks.

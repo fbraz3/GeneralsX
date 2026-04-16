@@ -10,6 +10,7 @@ extern "C" {
 #include "Common/FileSystem.h"
 
 #include <cstring>
+#include <limits>
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -246,6 +247,10 @@ Bool OpenALAudioFileCache::freeEnoughSpaceForSample(const OpenAudioFile& sampleT
 
 	Int spaceRequired = m_currentlyUsedSize - m_maxSize;
 	Int runningTotal = 0;
+	// GeneralsX @bugfix fbraz3 16/04/2026 Handle cache entries without AudioEventInfo (filename-only loads).
+	const Int requestedPriority = sampleThatNeedsSpace.m_eventInfo
+		? sampleThatNeedsSpace.m_eventInfo->m_priority
+		: std::numeric_limits<Int>::min();
 
 	std::list<AsciiString> filesToClose;
 	// First, search for any samples that have ref counts of 0. They are low-hanging fruit, and 
@@ -271,7 +276,10 @@ Bool OpenALAudioFileCache::freeEnoughSpaceForSample(const OpenAudioFile& sampleT
 	if (runningTotal < spaceRequired) {
 		for (it = m_openFiles.begin(); it != m_openFiles.end(); ++it) {
 			if (it->second.m_openCount > 0) {
-				if (it->second.m_eventInfo->m_priority < sampleThatNeedsSpace.m_eventInfo->m_priority) {
+				const Int candidatePriority = it->second.m_eventInfo
+					? it->second.m_eventInfo->m_priority
+					: std::numeric_limits<Int>::min();
+				if (candidatePriority < requestedPriority) {
 					filesToClose.push_back(it->first);
 					runningTotal += it->second.m_fileSize;
 
