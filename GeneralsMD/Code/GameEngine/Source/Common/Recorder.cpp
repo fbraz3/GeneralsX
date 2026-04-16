@@ -531,6 +531,10 @@ void RecorderClass::updateRecord()
 			m_originalGameMode = msg->getArgument(0)->integer;
 			DEBUG_LOG(("RecorderClass::updateRecord() - original game is mode %d", m_originalGameMode));
 			lastFrame = 0;
+			// GeneralsX @feature fbraz 16/04/2026 - Log game mode at recording start
+			fprintf(stderr, "[RECORDER_INSTRUMENT] MSG_NEW_GAME received: gameMode=%d (GAME_SKIRMISH=%d, GAME_SINGLE_PLAYER=%d)\n",
+				msg->getArgument(0)->integer, GAME_SKIRMISH, GAME_SINGLE_PLAYER);
+			fflush(stderr);
 			GameDifficulty diff = DIFFICULTY_NORMAL;
 			if (msg->getArgumentCount() >= 2)
 				diff = (GameDifficulty)msg->getArgument(1)->integer;
@@ -542,6 +546,11 @@ void RecorderClass::updateRecord()
 				maxFPS = msg->getArgument(3)->integer;
 
 			startRecording(diff, m_originalGameMode, rankPoints, maxFPS);
+		} else if (msg->getType() == GameMessage::MSG_NEW_GAME) {
+			// GeneralsX @feature fbraz 16/04/2026 - Log rejected game modes
+			fprintf(stderr, "[RECORDER_INSTRUMENT] MSG_NEW_GAME REJECTED: gameMode=%d (GAME_SHELL=%d, GAME_SINGLE_PLAYER=%d, GAME_NONE=%d)\n",
+				msg->getArgument(0)->integer, GAME_SHELL, GAME_SINGLE_PLAYER, GAME_NONE);
+			fflush(stderr);
 		} else if (msg->getType() == GameMessage::MSG_CLEAR_GAME_DATA) {
 			if (m_file != nullptr) {
 				lastFrame = -1;
@@ -690,9 +699,23 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 	logGameStart(theSlotList);
 	DEBUG_LOG(("RecorderClass::startRecording - theSlotList = %s", theSlotList.str()));
 
+	// GeneralsX @feature fbraz 16/04/2026 - Instrumentation for GameInfo serialization debugging
+	fprintf(stderr, "\n[RECORDER_INSTRUMENT] === GameInfo Serialization Debug ===\n");
+	fprintf(stderr, "[RECORDER_INSTRUMENT] TheNetwork=%p, TheLAN=%p, TheSkirmishGameInfo=%p\n", 
+		TheNetwork, TheLAN, TheSkirmishGameInfo);
+	fprintf(stderr, "[RECORDER_INSTRUMENT] theSlotList length=%zu, content='%s'\n", 
+		strlen(theSlotList.str()), theSlotList.str());
+	fprintf(stderr, "[RECORDER_INSTRUMENT] originalGameMode=%d\n", m_originalGameMode);
+	fflush(stderr);
+	fprintf(stderr, "[RECORDER_INSTRUMENT] About to write to file: writeFormat('%%s', ...) with %zu bytes\n", 
+		strlen(theSlotList.str()));
+	fflush(stderr);
+
 	// write slot list (starting spots, color, alliances, etc
 	m_file->writeFormat("%s", theSlotList.str());
 	m_file->writeChar("\0");
+	fprintf(stderr, "[RECORDER_INSTRUMENT] Write complete, m_file flushed\n");
+	fflush(stderr);
 
 	m_file->writeFormat("%d", localIndex);
 	m_file->writeChar("\0");

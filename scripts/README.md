@@ -62,6 +62,9 @@ Utilities for large-scale code refactoring and fixes:
 - `docker-smoke-test-zh.sh` - Quick startup validation (expects crash, checks init output)
 - `run-bundled-game.sh` - Test bundled binary after deployment
 
+#### `qa/debug/` - Replay and Debug Validation
+- `validate-replays-headless.sh` - Batch validate replay files with headless playback and classify outcomes (`PLAYABLE_CRC_MISMATCH`, `INVALID_HEADER`, `INVALID_OPEN`)
+
 ### `legacy/` - Deprecated & Compatibility
 
 #### `legacy/compat/` - Old Scripts
