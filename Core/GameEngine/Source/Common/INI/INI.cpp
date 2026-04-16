@@ -1705,6 +1705,9 @@ Type scanType(std::string_view token)
         }
 
         // TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
+	std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
+	const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+
 	if (ec != std::errc{})
 	{
 		throw INI_INVALID_DATA;
