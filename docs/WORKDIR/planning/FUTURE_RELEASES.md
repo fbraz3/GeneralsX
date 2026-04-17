@@ -21,7 +21,7 @@
 ### Structure
 
 ```yaml
-Package: com.generals.GeneralsXZH.flatpak
+Package: com.fbraz3.GeneralsXZH.flatpak
 
 Contents:
 ├── bin/
@@ -37,9 +37,9 @@ Contents:
 ├── share/
 │   ├── icons/                  # Game icon for app launcher
 │   ├── metainfo/
-│   │   └── com.generals.GeneralsXZH.metainfo.xml
+│   │   └── com.fbraz3.GeneralsXZH.metainfo.xml
 │   └── applications/
-│       └── com.generals.GeneralsXZH.desktop
+│       └── com.fbraz3.GeneralsXZH.desktop
 └── metadata.json               # Flatpak manifest
 
 Game Assets:
@@ -97,7 +97,7 @@ Release: v1.4.601-linux-phase1
 **Option 2: Flatpak Release** (Recommended)
 ```
 Release: v1.4.601-linux-phase1+flatpak
-├── com.generals.GeneralsXZH.flatpak (complete bundle)
+├── com.fbraz3.GeneralsXZH.flatpak (complete bundle)
 └── INSTALL.md (flatseal setup guide)
 ```
 
@@ -194,7 +194,7 @@ Phase 1 Smoke Tests: ✅ PASS
 
 **1. `flatpak/manifest.yaml`**
 ```yaml
-app-id: com.generals.GeneralsXZH
+app-id: com.fbraz3.GeneralsXZH
 runtime: org.freedesktop.Platform
 runtime-version: '23.08'
 sdk: org.freedesktop.Sdk
@@ -223,28 +223,28 @@ modules:
         dest: Run
 ```
 
-**2. `flatpak/com.generals.GeneralsXZH.desktop`**
+**2. `flatpak/com.fbraz3.GeneralsXZH.desktop`**
 ```ini
 [Desktop Entry]
 Name=Command & Conquer: Generals Zero Hour
 Exec=generalszh -win
-Icon=com.generals.GeneralsXZH
+Icon=com.fbraz3.GeneralsXZH
 Type=Application
 Categories=Game;
 ```
 
-**3. `flatpak/com.generals.GeneralsXZH.metainfo.xml`**
+**3. `flatpak/com.fbraz3.GeneralsXZH.metainfo.xml`**
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.generals.GeneralsXZH</id>
+  <id>com.fbraz3.GeneralsXZH</id>
   <name>Command & Conquer: Generals Zero Hour</name>
   <summary>Real-time strategy game - Linux native port</summary>
   <description>
     Play the classic RTS on Linux natively with DXVK graphics translation.
   </description>
   <url>https://github.com/fbraz3/GeneralsX</url>
-  <launchable type="desktop-id">com.generals.GeneralsXZH.desktop</launchable>
+  <launchable type="desktop-id">com.fbraz3.GeneralsXZH.desktop</launchable>
 </component>
 ```
 
@@ -258,20 +258,20 @@ flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.
 flatpak-builder build-dir flatpak/manifest.yaml
 
 # 3. Package as .flatpak
-flatpak build-bundle build-dir com.generals.GeneralsXZH.flatpak
+flatpak build-bundle build-dir com.fbraz3.GeneralsXZH.flatpak
 
 # 4. Install locally for testing
-flatpak install com.generals.GeneralsXZH.flatpak
+flatpak install com.fbraz3.GeneralsXZH.flatpak
 
 # 5. Run
-flatpak run com.generals.GeneralsXZH -win
+flatpak run com.fbraz3.GeneralsXZH -win
 ```
 
 ### Testing Before Release
 
 ```bash
 # Test filesystem access
-flatseal com.generals.GeneralsXZH
+flatseal com.fbraz3.GeneralsXZH
 # → Verify home folder access for save games
 
 # Test GPU rendering
@@ -279,7 +279,7 @@ glxinfo | grep "direct rendering"
 # → Confirm Vulkan/DRI working inside sandbox
 
 # Performance baseline
-flatpak run com.generals.GeneralsXZH -noshellmap
+flatpak run com.fbraz3.GeneralsXZH -noshellmap
 # → Measure FPS, memory usage
 
 # Multi-distro test on (if CI available)
@@ -302,7 +302,7 @@ flatpak run com.generals.GeneralsXZH -noshellmap
 
 **Process**:
 1. Fork `flathub/flathub` repository
-2. Create `com.generals.GeneralsXZH.yml` in maintained/ folder
+2. Create `com.fbraz3.GeneralsXZH.yml` in maintained/ folder
 3. Automated CI tests (buildability, metadata validation)
 4. Maintainer review (~1-2 weeks)
 5. Merge → App appears in GNOME Software/KDE Discover
@@ -332,8 +332,8 @@ flatpak run com.generals.GeneralsXZH -noshellmap
 # Installation
 
 ## Linux (Flatpak recommended)
-flatpak install com.generals.GeneralsXZH.flatpak
-flatpak run com.generals.GeneralsXZH
+flatpak install com.fbraz3.GeneralsXZH.flatpak
+flatpak run com.fbraz3.GeneralsXZH
 
 ## Ubuntu/Debian
 apt install libvulkan1 libsdl3-dev

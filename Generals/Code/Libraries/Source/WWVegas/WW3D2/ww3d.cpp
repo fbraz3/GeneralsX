@@ -1107,10 +1107,11 @@ WW3DErrorType WW3D::End_Render(bool flip_frame)
 
 	Activate_Snapshot(false);
 
-	// (gth) I've found some cases where its not safe to rely on our "shadow" copy (of
-	// matrices for example) across multiple frames.  So even though this is slightly
-	// less "optimal", lets just reset the caches each frame.
-	DX8Wrapper::Invalidate_Cached_Render_States();
+	// (gth) Original code invalidated ALL cached render states every frame as a safety
+	// measure for matrix shadow copies. This is expensive (~33KB memset + texture unbinds).
+	// Instead, just mark matrices as dirty so they get re-sent next frame.
+	// Full invalidation still happens on device init, reset, and pillarbox blit.
+	DX8Wrapper::Set_Transform_Dirty();
 
 	return WW3D_ERROR_OK;
 }

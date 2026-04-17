@@ -1,5 +1,31 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-16 - A single issue can hide multiple EXC_BAD_ACCESS root causes
+
+- Problem: A macOS crash issue initially looked like one intermittent defect but later reports in the same thread showed a second stack signature.
+- Root causes:
+	- AI path: `AITNGuardOuterState::update()` could dereference `m_attackState` when it had not been initialized on certain state-entry paths.
+	- Audio path: `OpenALAudioFileCache::freeEnoughSpaceForSample()` could dereference `m_eventInfo` during priority eviction for filename-only cache loads.
+- Fix:
+	- Added lazy attack-state reconstruction plus safer team/prototype checks in tunnel-network guard update logic.
+	- Added null-safe priority selection for OpenAL cache eviction (`AudioEventInfo` optional entries now handled explicitly).
+- Validation: Static diagnostics reported no errors in modified files; issue thread updated with code anchors and retest request.
+- Prevention: Split triage by crash signature (top frame + fault address + subsystem) before assuming a shared cause across reports in the same issue.
+
+## Session 2026-04-13 - Flatpak must build inside SDK, not package host binaries/libraries
+
+- Problem: Flatpak packaging mixed host-built binaries with manually copied shared libraries, causing fragile runtime behavior and Wayland/Vulkan instability risks.
+- Root cause: Packaging flow treated Flatpak as a generic container bundle instead of a runtime+SDK build pipeline.
+- Fix:
+	- Migrated manifests to compile the game inside `org.freedesktop.Sdk` (25.08) with `flatpak-builder`.
+	- Declared dependency sources in manifest (`SDL3`, `SDL3_image`, `openal-soft`, `dxvk-native`) and wired them through `FETCHCONTENT_SOURCE_DIR_*` to avoid in-build network fetches.
+	- Removed host library staging logic from the build script and switched to manifest-driven build/export only.
+	- Kept runtime environment/path logic centralized in `/app/bin/run.sh`, with wrappers acting as pass-through entrypoints.
+- Validation:
+	- `flatpak-builder --show-manifest` succeeds for both `com.fbraz3.GeneralsX.yml` and `com.fbraz3.GeneralsXZH.yml`.
+	- `flatpak-builder --user --build-only` now advances to SDK update/install phase (instead of failing on missing system remote refs).
+- Prevention: For Flatpak work, never copy `.so` files from host system paths into app runtime. Build inside SDK and ship only artifacts produced by the manifest modules.
+
 ## Session 2026-04-13 - Replay header parsing must not depend on host wchar size
 
 - Problem: Headless replay simulation on macOS crashed or rejected valid replay files in mixed real-world datasets.
@@ -15,14 +41,6 @@
 - Code finding: The LAN lobby callback does not apply extra compatibility filtering; it forwards `m_games` directly into `LANDisplayGameList`.
 - Remaining suspects: a parsed game can still fail to appear usefully if its row content is unexpected, or it can disappear shortly after due to `lastHeard`-based pruning.
 - Process improvement: For LAN lobby regressions, instrument both row rendering and timeout-driven removal in addition to message receive/parse logs.
-
-## Session 2026-04-11 - LAN auto-IP and global broadcast can hide hosts cross-platform
-
-- Problem: Linux and macOS builds failed to discover each other in the LAN lobby, and same-platform behavior remained uncertain without multiple test machines per OS.
-- Code finding: LAN discovery sends to a fixed global broadcast target (`INADDR_BROADCAST` / `255.255.255.255`) and LAN menu startup can auto-pick the first enumerated non-loopback IP.
-- Risk: On macOS/Linux systems with VPN/Docker/virtual NICs, first-IP selection can bind sockets to a non-game interface, and global broadcast may not reach peers as expected for the active subnet.
-- Process improvement: For LAN regressions, always log selected bind IP, broadcast destination, bind/send error codes, and incoming source addresses before judging protocol-level compatibility.
-- Prevention: Prefer interface-aware LAN discovery (default-route NIC + subnet broadcast calculation) and keep manual IP override visible/easy in options.
 
 ## Session 2026-04-12 - LAN join accept must stay unicast to avoid host-only false positives
 
@@ -45,6 +63,16 @@
 - Evidence: Discovery still depended on global broadcast `255.255.255.255`, which may not be forwarded/handled consistently on mixed-network setups.
 - Fix: In POSIX builds, collect broadcast addresses from active IPv4 interfaces matching the selected local LAN IP and send broadcast packets to those subnet addresses first; keep global broadcast as fallback.
 - Prevention: For multi-platform LAN discovery, avoid single global broadcast as the only path; use interface-scoped subnet broadcast to reduce network-policy sensitivity.
+
+## Session 2026-04-11 - LAN auto-IP and global broadcast can hide hosts cross-platform
+
+- Problem: Linux and macOS builds failed to discover each other in the LAN lobby, and same-platform behavior remained uncertain without multiple test machines per OS.
+- Code finding: LAN discovery sends to a fixed global broadcast target (`INADDR_BROADCAST` / `255.255.255.255`) and LAN menu startup can auto-pick the first enumerated non-loopback IP.
+- Risk: On macOS/Linux systems with VPN/Docker/virtual NICs, first-IP selection can bind sockets to a non-game interface, and global broadcast may not reach peers as expected for the active subnet.
+- Process improvement: For LAN regressions, always log selected bind IP, broadcast destination, bind/send error codes, and incoming source addresses before judging protocol-level compatibility.
+- Prevention: Prefer interface-aware LAN discovery (default-route NIC + subnet broadcast calculation) and keep manual IP override visible/easy in options.
+
+## Session 2026-04-09 - libxcb Flatpak PoC needs newer source libs, not host baseline copy
 
 ## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
 
@@ -69,6 +97,38 @@
 - Result: AppImage launched successfully and progressed beyond Vulkan window creation and early engine initialization, where Flatpak path previously failed.
 - Insight: For short-term Linux distribution, AppImage is currently lower-risk and faster to stabilize than Flatpak in this codebase state.
 - Prevention: Keep Flatpak as a parallel track for longer-term sandbox goals, but prioritize AppImage for immediate user-facing releases.
+
+## Session 2026-04-09 - Flatpak packaging needs explicit runtime source destination and compliant metadata/icon rules
+
+- Problem: Local Flatpak packaging failed first with missing `runtime/.` during module build, then with AppStream metadata validation, and finally with icon export rejection.
+- Root cause:
+	- The `type: dir` source in manifest did not guarantee the expected `runtime/` folder name for the build command.
+	- Metainfo files missed required AppStream `metadata_license`.
+	- Source icon assets were 650x650, while Flatpak export enforces max 512x512 icon size.
+- Fix:
+	- Set `dest: runtime` for staging runtime dir source in both manifests.
+	- Added `<metadata_license>CC0-1.0</metadata_license>` to both metainfo files.
+	- Generated 512x512 icons for Flatpak packaging and switched manifests to install them under `hicolor/512x512`.
+	- Added local script preflight to install Flatpak SDK/runtime (`org.freedesktop.Platform//23.08`, `org.freedesktop.Sdk//23.08`) under `--user` when missing.
+- Validation: Local builds completed for both targets and produced:
+	- `build/GeneralsX-linux64-deploy.flatpak`
+	- `build/GeneralsXZH-linux64-deploy.flatpak`
+- Prevention: For every new Flatpak app module, validate early that sources map to expected in-build paths, metainfo passes `appstreamcli compose`, and icon dimensions satisfy export limits.
+
+## Session 2026-04-09 - Flatpak runtime library bundling must preserve SONAME links and avoid self-symlink overwrite
+
+- Problem: `flatpak run com.fbraz3.GeneralsXZH` failed with missing `libSDL3_image.so.0` and later codec libraries such as `libavcodec.so.60` / `libx264.so.164`.
+- Root cause:
+	- Runtime staging copied only regular files, dropping symlink chains required by SONAME resolution.
+	- Manifest fallback symlink logic could overwrite already-correct `lib*.so.<major>` files into self-symlinks.
+	- FFmpeg-linked binary required a larger codec dependency set than the initial package list.
+- Fix:
+	- Staging now copies runtime libs with `cp -a` globs to preserve symlinks.
+	- Manifest symlink fallback now creates `lib*.so.<major>` links only when source has a minor suffix.
+	- Flatpak build script now includes FFmpeg codec libs and uses `ldd`-based dependency closure copy for FFmpeg roots.
+- Validation: Dynamic loader errors for SDL3_image/FFmpeg libs were eliminated; runtime progressed to Vulkan initialization stage.
+- Prevention: For Flatpak packaging of dynamically linked binaries, validate `NEEDED`/SONAME closure and inspect `/app/lib` for accidental self-symlink artifacts.
+
 ## Session 2026-04-01 - User-facing path migrations need runtime fallback, not just docs updates
 
 - Problem: Zero Hour user-facing scripts and docs exposed the internal `GeneralsMD` path, which leaks implementation details and conflicts with product naming (`GeneralsZH`).

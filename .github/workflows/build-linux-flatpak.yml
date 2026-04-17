@@ -1,0 +1,116 @@
+name: Build Linux Flatpak
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      preset:
+        required: false
+        type: string
+        default: linux64-deploy
+  workflow_dispatch:
+    inputs:
+      preset:
+        type: choice
+        description: "CMake preset for Linux"
+        options:
+          - linux64-deploy
+          - linux64-testing
+        default: linux64-deploy
+
+jobs:
+  build-flatpak:
+    name: flatpak-${{ matrix.game.id }}@${{ inputs.preset }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        game:
+          - id: generalsxzh
+            value: GeneralsMD
+            target: z_generals
+            output: GeneralsXZH
+            log_suffix: zh
+          - id: generalsx
+            value: Generals
+            target: g_generals
+            output: GeneralsX
+            log_suffix: generals
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update -qq
+          # GeneralsX @bugfix GitHubCopilot 14/04/2026 Ensure eu-strip/eu-elfcompress are available for flatpak-builder debuginfo finalization.
+          sudo apt-get install -y -qq --no-install-recommends \
+            git \
+            ca-certificates \
+            python3 \
+            flatpak \
+            flatpak-builder \
+            elfutils
+
+      - name: Install Flatpak Runtime
+        run: |
+          flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak --user install -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08
+
+      - name: Cache flatpak-builder state
+        uses: actions/cache@v4
+        with:
+          path: .flatpak-builder
+          key: flatpak-builder-${{ runner.os }}-${{ inputs.preset }}-${{ hashFiles('flatpak/com.fbraz3.GeneralsX.yml', 'flatpak/com.fbraz3.GeneralsXZH.yml', 'scripts/build/linux/build-linux-flatpak.sh', 'cmake/lzhl.cmake', 'CMakeLists.txt') }}
+          restore-keys: |
+            flatpak-builder-${{ runner.os }}-${{ inputs.preset }}-
+
+      - name: Build Flatpak Bundle
+        run: |
+          mkdir -p logs
+          ./scripts/build/linux/build-linux-flatpak.sh "${{ inputs.preset }}" "${{ matrix.game.value }}" 2>&1 | tee "logs/build_flatpak_${{ matrix.game.log_suffix }}.log"
+
+      - name: Locate generated Flatpak bundle
+        id: bundle
+        run: |
+          EXPECTED="build/${{ matrix.game.output }}-${{ inputs.preset }}.flatpak"
+
+          if [ -f "${EXPECTED}" ]; then
+            echo "path=${EXPECTED}" >> "$GITHUB_OUTPUT"
+            echo "Found expected bundle: ${EXPECTED}"
+            exit 0
+          fi
+
+          # GeneralsX @bugfix GitHubCopilot 14/04/2026 Resolve the generated Flatpak path dynamically to avoid upload failures when naming drifts.
+          CANDIDATE=$(find build -maxdepth 2 -type f -name "${{ matrix.game.output }}*.flatpak" | head -1)
+          if [ -z "${CANDIDATE}" ] || [ ! -f "${CANDIDATE}" ]; then
+            echo "ERROR: Flatpak bundle not found for ${{ matrix.game.id }}"
+            find build -maxdepth 3 -type f -name "*.flatpak" || true
+            exit 1
+          fi
+
+          echo "path=${CANDIDATE}" >> "$GITHUB_OUTPUT"
+          echo "Using detected bundle: ${CANDIDATE}"
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-linux-flatpak-${{ matrix.game.id }}-${{ inputs.preset }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Flatpak Bundle
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-flatpak-${{ matrix.game.id }}-${{ inputs.preset }}
+          path: ${{ steps.bundle.outputs.path }}
+          retention-days: 7
+          if-no-files-found: error

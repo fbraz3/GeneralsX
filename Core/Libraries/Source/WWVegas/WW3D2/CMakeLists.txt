@@ -43,8 +43,8 @@ set(WW3D2_SRC
     distlod.cpp
     distlod.h
     dllist.h
-    #dx8caps.cpp
-    #dx8caps.h
+    dx8caps.cpp
+    dx8caps.h
     #dx8fvf.cpp
     #dx8fvf.h
     #dx8indexbuffer.cpp
@@ -63,8 +63,8 @@ set(WW3D2_SRC
     # GeneralsX @build fbraz 10/02/2026 BenderAI - dx8webbrowser uses EA BrowserEngine (Windows-only HTML UI, Linux stubs in dx8webbrowser.cpp)
     dx8webbrowser.cpp
     dx8webbrowser.h
-    #dx8wrapper.cpp
-    #dx8wrapper.h
+    dx8wrapper.cpp
+    dx8wrapper.h
     dynamesh.cpp
     dynamesh.h
     font3d.cpp

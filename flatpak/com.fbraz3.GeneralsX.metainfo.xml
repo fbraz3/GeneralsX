@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.fbraz3.GeneralsX</id>
+  <name>GeneralsX</name>
+  <summary>Cross-platform port of Command and Conquer Generals</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <description>
+    <p>
+      GeneralsX is a native Linux, macOS, and Windows port of Command and Conquer:
+      Generals using SDL3, DXVK, and OpenAL.
+    </p>
+    <p>
+      This Flatpak package expects original game assets to be available in user data paths.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.fbraz3.GeneralsX.desktop</launchable>
+  <url type="homepage">https://github.com/fbraz3/GeneralsX</url>
+  <project_license>GPL-2.0-or-later</project_license>
+</component>
