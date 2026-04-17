@@ -7,10 +7,6 @@ permissions:
 on:
   workflow_call:
     inputs:
-      game:
-        required: true
-        type: string
-        description: "Game to build (GeneralsMD, Generals)"
       preset:
         required: false
         type: string
@@ -18,13 +14,6 @@ on:
         description: "CMake preset for macOS"
   workflow_dispatch:
     inputs:
-      game:
-        type: choice
-        description: "Game to build"
-        options:
-          - GeneralsMD
-          - Generals
-        default: GeneralsMD
       preset:
         type: choice
         description: "CMake preset for macOS"
@@ -34,9 +23,23 @@ on:
 
 jobs:
   build-mac-app:
-    name: ${{ inputs.game }}@${{ inputs.preset }}
+    name: ${{ matrix.game.value }}@${{ inputs.preset }}
     runs-on: macos-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        game:
+          - id: generalsxzh
+            value: GeneralsMD
+            target: z_generals
+            output: GeneralsXZH
+            log_suffix: zh
+          - id: generalsx
+            value: Generals
+            target: g_generals
+            output: GeneralsX
+            log_suffix: generals
 
     steps:
       - name: Checkout Code
@@ -308,21 +311,14 @@ jobs:
           CONFIG_STATUS=${PIPESTATUS[0]}
           if [ $CONFIG_STATUS -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
 
-      - name: Build ${{ inputs.game }}
+      - name: Build ${{ matrix.game.value }}
         run: |
           mkdir -p logs
           NPROC=$(sysctl -n hw.ncpu)
           echo "Building with $NPROC parallel jobs..."
-          
-          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            cmake --build build/${{ inputs.preset }} --target z_generals -j $NPROC 2>&1 | tee logs/build_zh_macos.log
-            BUILD_STATUS=${PIPESTATUS[0]}
-            LOG_FILE="logs/build_zh_macos.log"
-          else
-            cmake --build build/${{ inputs.preset }} --target g_generals -j $NPROC 2>&1 | tee logs/build_generals_macos.log
-            BUILD_STATUS=${PIPESTATUS[0]}
-            LOG_FILE="logs/build_generals_macos.log"
-          fi
+          LOG_FILE="logs/build_${{ matrix.game.log_suffix }}_macos.log"
+          cmake --build build/${{ inputs.preset }} --target ${{ matrix.game.target }} -j $NPROC 2>&1 | tee "${LOG_FILE}"
+          BUILD_STATUS=${PIPESTATUS[0]}
           
           if [ $BUILD_STATUS -eq 0 ]; then
             echo "✅ Build completed successfully"
@@ -334,18 +330,9 @@ jobs:
 
       - name: Verify Build Artifacts
         run: |
-          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
-            DISPLAY_NAME="GeneralsXZH"
-            GAME_DIR="GeneralsMD"
-          else
-            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
-            DISPLAY_NAME="Generals"
-            GAME_DIR="Generals"
-          fi
-          
+          BINARY="build/${{ inputs.preset }}/${{ matrix.game.value }}/${{ matrix.game.output }}"
           if [ -f "$BINARY" ]; then
-            echo "✅ Binary built: $DISPLAY_NAME"
+            echo "✅ Binary built: ${{ matrix.game.output }}"
             file "$BINARY"
             ls -lh "$BINARY"
             
@@ -359,7 +346,7 @@ jobs:
           else
             echo "❌ Binary NOT found: $BINARY"
             echo "Checking build directory:"
-            ls -la build/${{ inputs.preset }}/GeneralsMD/ 2>/dev/null || ls -la build/${{ inputs.preset }}/Generals/ 2>/dev/null || echo "Build directories not found"
+            ls -la "build/${{ inputs.preset }}/${{ matrix.game.value }}/" 2>/dev/null || echo "Build directory not found"
             exit 1
           fi
 
@@ -369,20 +356,16 @@ jobs:
           VULKAN_SDK: ${{ env.VULKAN_SDK }}
         run: |
           mkdir -p logs
-          echo "Bundling ${{ inputs.game }} into macOS .app package..."
-          
-          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+          echo "Bundling ${{ matrix.game.value }} into macOS .app package..."
+          if [ "${{ matrix.game.value }}" = "GeneralsMD" ]; then
             echo "Executing: ./scripts/build/macos/bundle-macos-zh.sh"
-            ./scripts/build/macos/bundle-macos-zh.sh 2>&1 | tee logs/bundle_zh_macos.log
-            BUNDLE_STATUS=${PIPESTATUS[0]}
-            OUTPUT_ZIP="GeneralsXZH-macos-arm64.zip"
+            ./scripts/build/macos/bundle-macos-zh.sh 2>&1 | tee logs/bundle_${{ matrix.game.log_suffix }}_macos.log
           else
             echo "Executing: ./scripts/build/macos/bundle-macos-generals.sh"
-            ./scripts/build/macos/bundle-macos-generals.sh 2>&1 | tee logs/bundle_generals_macos.log
-            BUNDLE_STATUS=${PIPESTATUS[0]}
-            OUTPUT_ZIP="GeneralsX-macos-arm64.zip"
+            ./scripts/build/macos/bundle-macos-generals.sh 2>&1 | tee logs/bundle_${{ matrix.game.log_suffix }}_macos.log
           fi
-          
+          BUNDLE_STATUS=${PIPESTATUS[0]}
+          OUTPUT_ZIP="${{ matrix.game.output }}-macos-arm64.zip"
           if [ $BUNDLE_STATUS -eq 0 ]; then
             echo "✅ Bundle completed successfully"
             if [ -f "${OUTPUT_ZIP}" ]; then
@@ -394,22 +377,16 @@ jobs:
             fi
           else
             echo "❌ Bundle script failed; see logs for details"
-            tail -100 logs/bundle_*_macos.log || true
+            tail -100 logs/bundle_${{ matrix.game.log_suffix }}_macos.log || true
             exit 1
           fi
 
       - name: Prepare .app Artifact
         if: success()
         run: |
-          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            OUTPUT_ZIP="GeneralsXZH-macos-arm64.zip"
-            APP_NAME="GeneralsXZH.app"
-          else
-            OUTPUT_ZIP="GeneralsX-macos-arm64.zip"
-            APP_NAME="GeneralsX.app"
-          fi
-
-          ARTIFACT_DIR="/tmp/macos-artifact-${{ inputs.game }}"
+          OUTPUT_ZIP="${{ matrix.game.output }}-macos-arm64.zip"
+          APP_NAME="${{ matrix.game.output }}.app"
+          ARTIFACT_DIR="/tmp/macos-artifact-${{ matrix.game.id }}"
           rm -rf "${ARTIFACT_DIR}"
           mkdir -p "${ARTIFACT_DIR}"
 
@@ -433,7 +410,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-logs-macos-${{ inputs.game }}
+          name: build-logs-macos-${{ matrix.game.id }}
           path: logs/
           retention-days: 7
 
@@ -441,7 +418,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.game == 'GeneralsMD' && 'macos-generalsxzh-app' || 'macos-generalsx-app' }}
-          path: /tmp/macos-artifact-${{ inputs.game }}/*.tar
+          name: macos-${{ matrix.game.id }}-app
+          path: /tmp/macos-artifact-${{ matrix.game.id }}/*.tar
           retention-days: 7
           if-no-files-found: warn

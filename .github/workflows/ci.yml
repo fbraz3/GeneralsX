@@ -90,42 +90,20 @@ jobs:
           fi
 
   build-linux:
-    name: Build Linux (GeneralsMD)
+    name: Build Linux
     needs: detect-changes
-    if: needs.detect-changes.outputs.zh-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-linux.yml
     with:
-      game: GeneralsMD
-      preset: linux64-deploy
-    secrets: inherit
-
-  build-linux-generals:
-    name: Build Linux (Generals)
-    needs: detect-changes
-    if: needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
-    uses: ./.github/workflows/build-linux.yml
-    with:
-      game: Generals
       preset: linux64-deploy
     secrets: inherit
 
   build-macos:
-    name: Build macOS (GeneralsMD)
+    name: Build macOS
     needs: detect-changes
-    if: needs.detect-changes.outputs.zh-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-macos.yml
     with:
-      game: GeneralsMD
-      preset: macos-vulkan
-    secrets: inherit
-
-  build-macos-generals:
-    name: Build macOS (Generals)
-    needs: detect-changes
-    if: needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
-    uses: ./.github/workflows/build-macos.yml
-    with:
-      game: Generals
       preset: macos-vulkan
     secrets: inherit
 
@@ -141,7 +119,7 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [build-linux, build-linux-generals, build-macos, build-macos-generals, build-linux-flatpak]
+    needs: [build-linux, build-macos, build-linux-flatpak]
     if: always()
     steps:
       - name: Generate Summary
@@ -150,18 +128,14 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Linux (x86_64) | ${{ needs.build-linux.result == 'success' && '✅ Success' || needs.build-linux.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Linux Generals Base (x86_64) | ${{ needs.build-linux-generals.result == 'success' && '✅ Success' || needs.build-linux-generals.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| macOS Generals Base (arm64) | ${{ needs.build-macos-generals.result == 'success' && '✅ Success' || needs.build-macos-generals.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux (x86_64) | ${{ needs.build-linux.result == 'success' && '✅ Success' || needs.build-linux.result == 'skipped' && '⏭️ Skipped' || needs.build-linux.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if Any Build Failed
         if: |
           needs.build-linux.result == 'failure' ||
-          needs.build-linux-generals.result == 'failure' ||
           needs.build-macos.result == 'failure' ||
-          needs.build-macos-generals.result == 'failure' ||
           needs.build-linux-flatpak.result == 'failure'
         run: exit 1
 

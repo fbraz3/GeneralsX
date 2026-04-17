@@ -7,29 +7,13 @@ permissions:
 on:
   workflow_call:
     inputs:
-      game:
-        required: true
-        type: string
-        description: "Game to build (GeneralsMD, Generals)"
       preset:
         required: false
         type: string
         default: "linux64-deploy"
         description: "CMake preset for Linux"
-      package_format:
-        required: false
-        type: string
-        default: "appimage"
-        description: "Artifact packaging format: appimage (default) or gzip"
   workflow_dispatch:
     inputs:
-      game:
-        type: choice
-        description: "Game to build"
-        options:
-          - GeneralsMD
-          - Generals
-        default: GeneralsMD
       preset:
         type: choice
         description: "CMake preset for Linux"
@@ -37,42 +21,33 @@ on:
           - linux64-deploy
           - linux64-testing
         default: linux64-deploy
-      package_format:
-        type: choice
-        description: "Artifact packaging format"
-        options:
-          - appimage
-          - gzip
-        default: appimage
 
 jobs:
   build-linux:
-    name: ${{ inputs.game }}-${{ inputs.package_format }}@${{ inputs.preset }}
+    name: ${{ matrix.game.value }}-${{ matrix.package_format }}@${{ inputs.preset }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        game:
+          - id: generalsxzh
+            value: GeneralsMD
+            target: z_generals
+            output: GeneralsXZH
+            log_suffix: zh
+          - id: generalsx
+            value: Generals
+            target: g_generals
+            output: GeneralsX
+            log_suffix: generals
+        package_format: [appimage, gzip]
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Normalize package format
-        id: package-format
-        shell: bash
-        run: |
-          # GeneralsX @bugfix GitHubCopilot 10/04/2026 Normalize invalid package_format to appimage to keep workflow resilient.
-          FORMAT="${{ inputs.package_format }}"
-          case "${FORMAT}" in
-            appimage|gzip)
-              echo "package_format is valid: ${FORMAT}"
-              ;;
-            *)
-              echo "WARNING: Invalid package_format '${FORMAT}'. Falling back to 'appimage'."
-              FORMAT="appimage"
-              ;;
-          esac
-          echo "value=${FORMAT}" >> "$GITHUB_OUTPUT"
 
       - name: Cache vcpkg
         id: cache-vcpkg
@@ -174,30 +149,17 @@ jobs:
           cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_linux.log
           echo "CMake configuration complete."
 
-      - name: Build ${{ inputs.game }}
+      - name: Build ${{ matrix.game.value }}
         run: |
           mkdir -p logs
-          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            cmake --build build/${{ inputs.preset }} --target z_generals 2>&1 | tee logs/build_zh_linux.log
-          else
-            cmake --build build/${{ inputs.preset }} --target g_generals 2>&1 | tee logs/build_generals_linux.log
-          fi
+          cmake --build build/${{ inputs.preset }} --target ${{ matrix.game.target }} 2>&1 | tee logs/build_${{ matrix.game.log_suffix }}_linux.log
           echo "Build complete."
 
       - name: Verify Build Artifacts
         run: |
-          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
-            DISPLAY_NAME="GeneralsXZH"
-            GAME_DIR="GeneralsMD"
-          else
-            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
-            DISPLAY_NAME="GeneralsX"
-            GAME_DIR="Generals"
-          fi
-          
+          BINARY="build/${{ inputs.preset }}/${{ matrix.game.value }}/${{ matrix.game.output }}"
           if [ -f "$BINARY" ]; then
-            echo "✅ Binary built: $DISPLAY_NAME ($BINARY)"
+            echo "✅ Binary built: ${{ matrix.game.output }} ($BINARY)"
             file "$BINARY"
             ls -lh "$BINARY"
           else
@@ -207,11 +169,11 @@ jobs:
 
       # GeneralsX @build GitHubCopilot 10/04/2026 Package as AppImage (self-contained, no FUSE needed for appimagetool in CI via APPIMAGE_EXTRACT_AND_RUN).
       - name: Package as AppImage
-        if: success() && steps.package-format.outputs.value == 'appimage'
+        if: success() && matrix.package_format == 'appimage'
         env:
           APPIMAGE_EXTRACT_AND_RUN: "1"
         run: |
-          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
+          if [ "${{ matrix.game.value }}" = "GeneralsMD" ]; then
             ./scripts/build/linux/build-linux-appimage-zh.sh ${{ inputs.preset }}
           else
             ./scripts/build/linux/build-linux-appimage-generals.sh ${{ inputs.preset }}
@@ -219,15 +181,10 @@ jobs:
 
       # GeneralsX @build GitHubCopilot 10/04/2026 Legacy gzip bundle kept as opt-in fallback for CI/testing.
       - name: Package as gzip bundle
-        if: success() && steps.package-format.outputs.value == 'gzip'
+        if: success() && matrix.package_format == 'gzip'
         run: |
-          if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-            BINARY="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH"
-          else
-            BINARY="build/${{ inputs.preset }}/Generals/GeneralsX"
-          fi
-
-          RUNTIME_DIR="/tmp/GeneralsX-${{ inputs.game }}-deploy"
+          BINARY="build/${{ inputs.preset }}/${{ matrix.game.value }}/${{ matrix.game.output }}"
+          RUNTIME_DIR="/tmp/GeneralsX-${{ matrix.game.value }}-deploy"
           mkdir -p "${RUNTIME_DIR}"
 
           echo "Creating deployment bundle at: ${RUNTIME_DIR}"
@@ -272,8 +229,8 @@ jobs:
           echo "Bundle ready at: ${RUNTIME_DIR}"
           ls -lh "${RUNTIME_DIR}/"
 
-          BUNDLE_TAR="/tmp/GeneralsX-${{ inputs.game }}-${{ inputs.preset }}.tar"
-          tar -C "/tmp" -cf "${BUNDLE_TAR}" "GeneralsX-${{ inputs.game }}-deploy/"
+          BUNDLE_TAR="/tmp/GeneralsX-${{ matrix.game.value }}-${{ inputs.preset }}.tar"
+          tar -C "/tmp" -cf "${BUNDLE_TAR}" "GeneralsX-${{ matrix.game.value }}-deploy/"
           echo "Archive ready: ${BUNDLE_TAR}"
 
       - name: Set artifact metadata
@@ -281,22 +238,16 @@ jobs:
         if: success()
         run: |
           PRESET="${{ inputs.preset }}"
-          FORMAT="${{ steps.package-format.outputs.value }}"
-          GAME_SLUG="${{ inputs.game == 'GeneralsMD' && 'generalsxzh' || 'generalsx' }}"
+          FORMAT="${{ matrix.package_format }}"
+          GAME_SLUG="${{ matrix.game.id }}"
           PRESET_SLUG="${{ inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset }}"
 
           if [ "${FORMAT}" = "gzip" ]; then
             echo "name=linux-${GAME_SLUG}-${PRESET_SLUG}-bundle" >> "$GITHUB_OUTPUT"
-            echo "path=/tmp/GeneralsX-${{ inputs.game }}-${PRESET}.tar" >> "$GITHUB_OUTPUT"
+            echo "path=/tmp/GeneralsX-${{ matrix.game.value }}-${PRESET}.tar" >> "$GITHUB_OUTPUT"
           else
-            if [ "${{ inputs.game }}" = "GeneralsMD" ]; then
-              INPUT_PATH="build/GeneralsXZH-${PRESET}-x86_64.AppImage"
-              OUTPUT_PATH="/tmp/GeneralsXZH-${PRESET}-x86_64.AppImage"
-            else
-              INPUT_PATH="build/GeneralsX-${PRESET}-x86_64.AppImage"
-              OUTPUT_PATH="/tmp/GeneralsX-${PRESET}-x86_64.AppImage"
-            fi
-
+            INPUT_PATH="build/${{ matrix.game.output }}-${PRESET}-x86_64.AppImage"
+            OUTPUT_PATH="/tmp/${{ matrix.game.output }}-${PRESET}-x86_64.AppImage"
             # GeneralsX @bugfix GitHubCopilot 10/04/2026 Flatten uploaded AppImage artifact structure (no intermediate directories inside zip).
             cp -f "${INPUT_PATH}" "${OUTPUT_PATH}"
             echo "name=linux-${GAME_SLUG}-${PRESET_SLUG}-appimage" >> "$GITHUB_OUTPUT"
@@ -307,7 +258,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-logs-linux-${{ inputs.game }}
+          name: build-logs-linux-${{ matrix.game.id }}-${{ matrix.package_format }}
           path: logs/
           retention-days: 7
 
