@@ -33,7 +33,7 @@ on:
         default: macos-vulkan
 
 jobs:
-  build:
+  build-mac-app:
     name: ${{ inputs.game }}@${{ inputs.preset }}
     runs-on: macos-latest
     timeout-minutes: 120

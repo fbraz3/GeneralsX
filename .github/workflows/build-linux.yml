@@ -46,8 +46,8 @@ on:
         default: appimage
 
 jobs:
-  build:
-    name: ${{ inputs.game }}@${{ inputs.preset }}
+  build-linux:
+    name: ${{ inputs.game }}-${{ inputs.package_format }}@${{ inputs.preset }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
 

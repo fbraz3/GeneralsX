@@ -33,7 +33,7 @@ on:
         default: windows64-deploy
 
 jobs:
-  build:
+  build-windows:
     name: ${{ inputs.game }}@${{ inputs.preset }}
     runs-on: windows-latest
     timeout-minutes: 5
