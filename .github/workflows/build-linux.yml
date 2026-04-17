@@ -12,6 +12,11 @@ on:
         type: string
         default: "linux64-deploy"
         description: "CMake preset for Linux"
+      package_format:
+        required: false
+        type: string
+        default: "gzip"
+        description: "Artifact packaging format: gzip, appimage, or 'gzip + appimage'"
   workflow_dispatch:
     inputs:
       preset:
@@ -21,6 +26,14 @@ on:
           - linux64-deploy
           - linux64-testing
         default: linux64-deploy
+      package_format:
+        type: choice
+        description: "Artifact packaging format"
+        options:
+          - gzip
+          - appimage
+          - gzip + appimage
+        default: gzip
 
 jobs:
   build-linux:
@@ -41,7 +54,8 @@ jobs:
             target: g_generals
             output: GeneralsX
             log_suffix: generals
-        package_format: [appimage, gzip]
+        # GeneralsX @tweak GitHubCopilot 16/04/2026 Allow dispatch-time package selection while keeping matrix expansion deterministic.
+        package_format: ${{ fromJSON(inputs.package_format == 'gzip + appimage' && '["gzip","appimage"]' || format('["{0}"]', inputs.package_format)) }}
 
     steps:
       - name: Checkout Code

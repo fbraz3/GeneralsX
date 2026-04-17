@@ -96,6 +96,7 @@ jobs:
     uses: ./.github/workflows/build-linux.yml
     with:
       preset: linux64-deploy
+      package_format: "gzip"
     secrets: inherit
 
   build-macos:
