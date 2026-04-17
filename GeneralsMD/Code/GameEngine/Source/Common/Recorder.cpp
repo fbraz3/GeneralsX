@@ -102,6 +102,23 @@ static const UnsignedInt desyncOffset = frameCountOffset + sizeof(UnsignedInt);
 static const UnsignedInt quitEarlyOffset = desyncOffset + sizeof(Bool);
 static const UnsignedInt disconOffset = quitEarlyOffset + sizeof(Bool);
 
+// GeneralsX @bugfix BenderAI 17/04/2026 Replay Unicode header fields must be serialized as UTF-16 (2-byte units) for cross-platform compatibility.
+static void WriteReplayUnicodeStringUTF16(File *file, const UnicodeString &value)
+{
+	const WideChar *text = value.str();
+	if (text != nullptr)
+	{
+		for (const WideChar *it = text; *it != 0; ++it)
+		{
+			const uint16_t c16 = static_cast<uint16_t>(*it);
+			file->write(&c16, sizeof(c16));
+		}
+	}
+
+	const uint16_t terminator = 0;
+	file->write(&terminator, sizeof(terminator));
+}
+
 void RecorderClass::logGameStart(AsciiString options)
 {
 	if (!m_file)
@@ -628,8 +645,7 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 	// Print out the name of the replay.
 	UnicodeString replayName;
 	replayName = TheGameText->fetch("GUI:LastReplay");
-	m_file->writeFormat(L"%s", replayName.str());
-	m_file->writeChar(L"\0");
+	WriteReplayUnicodeStringUTF16(m_file, replayName);
 
 	// Date and Time
 	SYSTEMTIME systemTime;
@@ -640,10 +656,8 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 	UnicodeString versionString = TheVersion->getUnicodeVersion();
 	UnicodeString versionTimeString = TheVersion->getUnicodeBuildTime();
 	UnsignedInt versionNumber = TheVersion->getVersionNumber();
-	m_file->writeFormat(L"%s", versionString.str());
-	m_file->writeChar(L"\0");
-	m_file->writeFormat(L"%s", versionTimeString.str());
-	m_file->writeChar(L"\0");
+	WriteReplayUnicodeStringUTF16(m_file, versionString);
+	WriteReplayUnicodeStringUTF16(m_file, versionTimeString);
 	m_file->write(&versionNumber, sizeof(versionNumber));
 	m_file->write(&(TheGlobalData->m_exeCRC), sizeof(TheGlobalData->m_exeCRC));
 	m_file->write(&(TheGlobalData->m_iniCRC), sizeof(TheGlobalData->m_iniCRC));

@@ -1,5 +1,12 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-17 - Replay Unicode writer must match fixed UTF-16 header layout
+
+- Problem: Newly recorded replays contained visible ASCII GameInfo payload in binary dumps, but replay parsing still failed with `invalid GameInfo len=0`.
+- Root cause: Header Unicode fields were written with host `wchar_t` width via `writeFormat(L"%s")` while replay parsing expected Windows-compatible UTF-16 (2-byte units).
+- Fix: Serialize replay header Unicode strings explicitly as UTF-16 code units with a 2-byte terminator in both Zero Hour and Generals Recorder paths.
+- Prevention: For compatibility file formats, never use host-width wide-character write APIs for on-disk layout; always use explicit fixed-width encoding rules on both write and read paths.
+
 ## Session 2026-04-16 - A single issue can hide multiple EXC_BAD_ACCESS root causes
 
 - Problem: A macOS crash issue initially looked like one intermittent defect but later reports in the same thread showed a second stack signature.
