@@ -710,13 +710,13 @@ static Bool saveComboBoxData( GameWindow *window, FILE *fp, Int dataIndent )
 
 	sprintf( &buffer[ dataIndent ], "COMBOBOXDATA = ISEDITABLE: %d,\n", comboData->isEditable );
 	writeBufferToFile( fp, buffer );
-	sprintf( &buffer[ dataIndent ], "              MAXCHARS: %d,\n", comboData->maxChars );
+	sprintf( &buffer[ dataIndent ], "               MAXCHARS: %d,\n", comboData->maxChars );
 	writeBufferToFile( fp, buffer );
-	sprintf( &buffer[ dataIndent ], "              MAXDISPLAY: %d,\n", comboData->maxDisplay );
+	sprintf( &buffer[ dataIndent ], "               MAXDISPLAY: %d,\n", comboData->maxDisplay );
 	writeBufferToFile( fp, buffer );
-	sprintf( &buffer[ dataIndent ], "              ASCIIONLY: %d,\n", comboData->asciiOnly );
+	sprintf( &buffer[ dataIndent ], "               ASCIIONLY: %d,\n", comboData->asciiOnly );
 	writeBufferToFile( fp, buffer );
-	sprintf( &buffer[ dataIndent ], "              LETTERSANDNUMBERS: %d;\n", comboData->lettersAndNumbersOnly );
+	sprintf( &buffer[ dataIndent ], "               LETTERSANDNUMBERS: %d;\n", comboData->lettersAndNumbersOnly );
 	writeBufferToFile( fp, buffer );
 
 	//Save the dropDownButton draw data for the combo box
