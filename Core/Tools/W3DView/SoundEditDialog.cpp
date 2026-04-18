@@ -64,7 +64,6 @@ SoundEditDialogClass::SoundEditDialogClass (CWnd *parent)
 {
 	//{{AFX_DATA_INIT(SoundEditDialogClass)
 	//}}AFX_DATA_INIT
-	return ;
 }
 
 
@@ -76,7 +75,6 @@ SoundEditDialogClass::SoundEditDialogClass (CWnd *parent)
 SoundEditDialogClass::~SoundEditDialogClass ()
 {
 	REF_PTR_RELEASE (SoundRObj);
-	return;
 }
 
 
@@ -93,7 +91,6 @@ SoundEditDialogClass::DoDataExchange (CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VOLUME_SLIDER, VolumeSlider);
 	DDX_Control(pDX, IDC_PRIORITY_SLIDER, PrioritySlider);
 	//}}AFX_DATA_MAP
-	return ;
 }
 
 
@@ -297,7 +294,6 @@ SoundEditDialogClass::OnOK ()
 	}
 
 	CDialog::OnOK ();
-	return ;
 }
 
 
@@ -413,8 +409,6 @@ SoundEditDialogClass::OnBrowse ()
 		//
 		SetDlgItemText (IDC_FILENAME_EDIT, ::Get_Filename_From_Path (dialog.GetPathName ()));
 	}
-
-	return ;
 }
 
 
@@ -427,7 +421,6 @@ void
 SoundEditDialogClass::On2DRadio ()
 {
 	Update_Enable_State ();
-	return ;
 }
 
 
@@ -440,7 +433,6 @@ void
 SoundEditDialogClass::On3DRadio ()
 {
 	Update_Enable_State ();
-	return ;
 }
 
 
@@ -457,7 +449,6 @@ SoundEditDialogClass::Update_Enable_State ()
 	::EnableWindow (::GetDlgItem (m_hWnd, IDC_MAX_VOL_EDIT), enable_3d);
 	::EnableWindow (::GetDlgItem (m_hWnd, IDC_DROP_OFF_EDIT), enable_3d);
 	::EnableWindow (::GetDlgItem (m_hWnd, IDC_TRIGGER_RADIUS_EDIT), !enable_3d);
-	return ;
 }
 
 
@@ -480,7 +471,6 @@ SoundEditDialogClass::OnPlay ()
 	//
 	PlaySoundDialogClass dialog (filename, this);
 	dialog.DoModal ();
-	return ;
 }
 
 
@@ -493,5 +483,4 @@ void
 SoundEditDialogClass::OnCancel ()
 {
 	CDialog::OnCancel ();
-	return ;
 }

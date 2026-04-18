@@ -117,7 +117,6 @@ __inline void Adjust_Light_Intensity (Vector3 &color, float inc)
 	color.X = (color.X > 1.0F) ? 1.0F : color.X;
 	color.Y = (color.Y > 1.0F) ? 1.0F : color.Y;
 	color.Z = (color.Z > 1.0F) ? 1.0F : color.Z;
-	return ;
 }
 
 
@@ -332,7 +331,6 @@ CMainFrame::CMainFrame ()
       m_bShowAnimationBar (TRUE),
 		m_bInitialized (FALSE)
 {
-	return ;
 }
 
 
@@ -343,7 +341,6 @@ CMainFrame::CMainFrame ()
 ////////////////////////////////////////////////////////////////////////////
 CMainFrame::~CMainFrame ()
 {
-    return ;
 }
 
 
@@ -467,8 +464,6 @@ CMainFrame::Restore_Window_State ()
 			::SetWindowPos (m_hWnd, nullptr, rect.left, rect.top, rect.Width (), rect.Height (), SWP_NOZORDER);
 		}
 	}
-
-	return ;
 }
 
 
@@ -482,7 +477,6 @@ CMainFrame::RestoreOriginalSize ()
 {
 	// Resize the window so its the same size it was when the application loaded
 	SetWindowPos (nullptr, 0, 0, m_OrigRect.right-m_OrigRect.left, m_OrigRect.bottom-m_OrigRect.top, SWP_NOMOVE | SWP_NOZORDER);
-	return ;
 }
 
 
@@ -719,7 +713,6 @@ CMainFrame::OnObjectProperties ()
 {
     // Dislay the properties for the currently selected object.
     ShowObjectProperties ();
-    return ;
 }
 
 
@@ -791,8 +784,6 @@ CMainFrame::ShowObjectProperties ()
 					break;
         }
     }
-
-    return ;
 }
 
 
@@ -815,8 +806,6 @@ CMainFrame::OnUpdateObjectProperties (CCmdUI* pCmdUI)
         // Get the name of the currently selected object
         pCmdUI->Enable (pCDataTreeView->GetCurrentSelectionName () != nullptr);
     }
-
-    return ;
 }
 
 
@@ -965,8 +954,6 @@ CMainFrame::OnSelectionChanged (ASSET_TYPE newAssetType)
         // Remember the new asset type for later
         m_currentAssetType = newAssetType;
     }
-
-    return ;
 }
 
 
@@ -1021,8 +1008,6 @@ CMainFrame::OnLodGenerate ()
 			}
 		}
 	}
-
-	return ;
 }
 
 
@@ -1052,7 +1037,6 @@ CMainFrame::OnActivateApp
 
 	// Allow the base class to process this message
     CFrameWnd::OnActivateApp(bActive, hTask);
-    return ;
 }
 
 
@@ -1103,8 +1087,6 @@ CMainFrame::Update_Frame_Time (DWORD clocks)
 
 		m_wndStatusBar.SetPaneText (PANE_RESOLUTION, text);
 	}
-
-	return ;
 }
 
 
@@ -1120,7 +1102,6 @@ CMainFrame::UpdatePolygonCount (int iPolygons)
     stringPolyCount.Format ("Polys %d", iPolygons);
 
     m_wndStatusBar.SetPaneText (PANE_POLYS, stringPolyCount);
-    return ;
 }
 
 
@@ -1136,7 +1117,6 @@ CMainFrame::Update_Particle_Count (int particles)
     count_string.Format ("Particles %d", particles);
 
     m_wndStatusBar.SetPaneText (PANE_PARTICLES, count_string);
-    return ;
 }
 
 
@@ -1157,7 +1137,6 @@ CMainFrame::UpdateFrameCount
     frames.Format ("Frame %d/%d at %.2f fps", iCurrentFrame, iTotalFrames, frame_rate);
 
     m_wndStatusBar.SetPaneText (PANE_FRAMES, frames);
-    return ;
 }
 
 
@@ -1173,7 +1152,6 @@ CMainFrame::UpdateCameraDistance (float cameraDistance)
     distance_string.Format ("Camera %.3f", cameraDistance);
 
     m_wndStatusBar.SetPaneText (PANE_DISTANCE, distance_string);
-    return ;
 }
 
 
@@ -1230,8 +1208,6 @@ CMainFrame::OnFileOpen ()
         // Restore the arrow cursor
         SetCursor (::LoadCursor (nullptr, IDC_ARROW));
     }
-
-    return ;
 }
 
 
@@ -1254,8 +1230,6 @@ CMainFrame::OnAniSpeed ()
             pCGraphicView->SetAnimationSpeed (initialSpeed);
         }
     }
-
-    return ;
 }
 
 
@@ -1278,8 +1252,6 @@ CMainFrame::OnAniStop ()
         m_animationToolbar.SetButtonState (IDM_ANI_START, CFancyToolbar::StateUp);
         m_animationToolbar.SetButtonState (IDM_ANI_PAUSE, CFancyToolbar::StateUp);
     }
-
-    return ;
 }
 
 
@@ -1304,8 +1276,6 @@ CMainFrame::OnAniStart ()
         // Push the 'play' button
         m_animationToolbar.SetButtonState (IDM_ANI_START, CFancyToolbar::StateDn);
     }
-
-    return ;
 }
 
 
@@ -1343,8 +1313,6 @@ CMainFrame::OnAniPause ()
             m_animationToolbar.SetButtonState (IDM_ANI_PAUSE, CFancyToolbar::StateUp);
         }
     }
-
-    return ;
 }
 
 
@@ -1363,8 +1331,6 @@ CMainFrame::OnCameraBack ()
         // Position the camera as requested
         pCGraphicView->SetCameraPos (CGraphicView::CameraBack);
     }
-
-    return ;
 }
 
 
@@ -1383,8 +1349,6 @@ CMainFrame::OnCameraBottom ()
         // Position the camera as requested
         pCGraphicView->SetCameraPos (CGraphicView::CameraBottom);
     }
-
-    return ;
 }
 
 
@@ -1403,8 +1367,6 @@ CMainFrame::OnCameraFront ()
         // Position the camera as requested
         pCGraphicView->SetCameraPos (CGraphicView::CameraFront);
     }
-
-    return ;
 }
 
 
@@ -1423,8 +1385,6 @@ CMainFrame::OnCameraLeft ()
         // Position the camera as requested
         pCGraphicView->SetCameraPos (CGraphicView::CameraLeft);
     }
-
-    return ;
 }
 
 
@@ -1453,8 +1413,6 @@ CMainFrame::OnCameraReset ()
 				}
         }
     }
-
-    return ;
 }
 
 
@@ -1473,8 +1431,6 @@ CMainFrame::OnCameraRight ()
         // Position the camera as requested
         pCGraphicView->SetCameraPos (CGraphicView::CameraRight);
     }
-
-    return ;
 }
 
 
@@ -1493,8 +1449,6 @@ CMainFrame::OnCameraTop ()
         // Position the camera as requested
         pCGraphicView->SetCameraPos (CGraphicView::CameraTop);
     }
-
-    return ;
 }
 
 
@@ -1527,8 +1481,6 @@ CMainFrame::OnObjectRotateZ ()
             m_objectToolbar.SetButtonState (IDM_OBJECT_ROTATE_Z, CFancyToolbar::StateUp);
         }
     }
-
-    return ;
 }
 
 
@@ -1550,8 +1502,6 @@ CMainFrame::OnObjectRotateY ()
         // Start or stop the rotation around Y
         pCGraphicView->RotateObject ((CGraphicView::OBJECT_ROTATION)iYRotation);
     }
-
-    return ;
 }
 
 
@@ -1574,8 +1524,6 @@ CMainFrame::OnObjectRotateX ()
         // Start or stop the rotation around X
         pCGraphicView->RotateObject ((CGraphicView::OBJECT_ROTATION)iXRotation);
     }
-
-    return ;
 }
 
 
@@ -1590,7 +1538,6 @@ CMainFrame::OnLightAmbient ()
     // Show the ambient light dialog
     CAmbientLightDialog ambientLightDialog (this);
     ambientLightDialog.DoModal ();
-    return ;
 
 }
 
@@ -1606,7 +1553,6 @@ CMainFrame::OnLightScene ()
     // Show the scene light dialog
     CSceneLightDialog sceneLightDialog (this);
     sceneLightDialog.DoModal ();
-    return ;
 }
 
 
@@ -1621,7 +1567,6 @@ CMainFrame::OnBackgroundColor ()
     // Show the background color
     CBackgroundColorDialog backgroundColorDialog (this);
     backgroundColorDialog.DoModal ();
-    return ;
 }
 
 
@@ -1668,7 +1613,6 @@ CMainFrame::OnBackgroundBMP ()
     // Show the background BMP dialog
     CBackgroundBMPDialog backgroundBMPDialog (this);
     backgroundBMPDialog.DoModal ();
-    return ;
 }
 
 
@@ -1683,7 +1627,6 @@ CMainFrame::OnSaveSettings ()
     // Show the save settings dialog
     CSaveSettingsDialog saveSettingsDialog (this);
     saveSettingsDialog.DoModal ();
-    return ;
 }
 
 
@@ -1713,8 +1656,6 @@ CMainFrame::OnLoadSettings ()
             pCDoc->LoadSettings (openFileDialog.GetPathName ());
         }
     }
-
-    return ;
 }
 
 
@@ -1729,7 +1670,6 @@ CMainFrame::OnLODSetSwitch ()
     // Display the edit LOD dialog
     CEditLODDialog editLODDialog (this);
     editLODDialog.DoModal ();
-    return ;
 }
 
 
@@ -1747,8 +1687,6 @@ CMainFrame::OnLODSave ()
 	if (pdoc != nullptr) {
 		pdoc->Save_Selected_LOD ();
 	}
-
-	return ;
 }
 
 
@@ -1761,7 +1699,6 @@ void
 CMainFrame::OnLODSaveAll ()
 {
     MessageBox ("Not implemented yet.", "Test", MB_OK | MB_ICONEXCLAMATION);
-    return ;
 }
 
 
@@ -1776,7 +1713,6 @@ CMainFrame::OnBackgroundObject ()
     // Display the background object dialog
 	CBackgroundObjectDialog backgroundObjectDialog (this);
     backgroundObjectDialog.DoModal ();
-	return ;
 }
 
 
@@ -1801,8 +1737,6 @@ CMainFrame::OnUpdateViewAnimationBar (CCmdUI* pCmdUI)
         pCmdUI->Enable (TRUE);
         pCmdUI->SetCheck (m_animationToolbar.IsWindowVisible ());
     }
-
-    return ;
 }
 
 
@@ -1817,7 +1751,6 @@ CMainFrame::OnUpdateViewObjectBar (CCmdUI* pCmdUI)
     // Enable the option and set the correct state of the check
     pCmdUI->Enable (TRUE);
     pCmdUI->SetCheck (m_objectToolbar.IsWindowVisible ());
-    return ;
 }
 
 
@@ -1845,8 +1778,6 @@ CMainFrame::OnViewAnimationBar ()
         // Remember whether or not to auto show this toolbar
         m_bShowAnimationBar = FALSE;
     }
-
-    return ;
 }
 
 
@@ -1868,8 +1799,6 @@ CMainFrame::OnViewObjectBar ()
         // Hide the object control bar
         ShowControlBar (&m_objectToolbar, FALSE, FALSE);
     }
-
-    return ;
 }
 
 
@@ -1888,8 +1817,6 @@ CMainFrame::OnAniStepFwd ()
         // Ask the doc to step the animation forward one frame
         pCDoc->StepAnimation (1);
     }
-
-    return ;
 }
 
 
@@ -1908,8 +1835,6 @@ CMainFrame::OnAniStepBkwd ()
         // Ask the doc to step the animation backward one frame
         pCDoc->StepAnimation (-1);
     }
-
-    return ;
 }
 
 
@@ -1928,8 +1853,6 @@ CMainFrame::OnObjectReset ()
         // Ask the view to reset the rotation of the current object
         pCGraphicView->ResetObject ();
     }
-
-    return ;
 }
 
 
@@ -1966,8 +1889,6 @@ CMainFrame::OnCameraAllowRotateX ()
             m_objectToolbar.SetButtonState (IDM_CAMERA_ALLOW_ROTATE_Z, CFancyToolbar::StateUp);
         }
     }
-
-    return ;
 }
 
 
@@ -2004,8 +1925,6 @@ CMainFrame::OnCameraAllowRotateY ()
             m_objectToolbar.SetButtonState (IDM_CAMERA_ALLOW_ROTATE_Z, CFancyToolbar::StateUp);
         }
     }
-
-    return ;
 }
 
 
@@ -2042,8 +1961,6 @@ CMainFrame::OnCameraAllowRotateZ ()
             m_objectToolbar.SetButtonState (IDM_CAMERA_ALLOW_ROTATE_Z, CFancyToolbar::StateUp);
         }
     }
-
-    return ;
 }
 
 
@@ -2062,8 +1979,6 @@ CMainFrame::OnUpdateCameraAllowRotateX (CCmdUI* pCmdUI)
         // Either turn the check on or off depending on the view's settings
         pCmdUI->SetCheck (pCGraphicView->GetAllowedCameraRotation () == CGraphicView::OnlyRotateX);
     }
-
-    return ;
 }
 
 
@@ -2082,8 +1997,6 @@ CMainFrame::OnUpdateCameraAllowRotateY (CCmdUI* pCmdUI)
         // Either turn the check on or off depending on the view's settings
         pCmdUI->SetCheck (pCGraphicView->GetAllowedCameraRotation () == CGraphicView::OnlyRotateY);
     }
-
-    return ;
 }
 
 
@@ -2102,8 +2015,6 @@ CMainFrame::OnUpdateCameraAllowRotateZ (CCmdUI* pCmdUI)
         // Either turn the check on or off depending on the view's settings
         pCmdUI->SetCheck (pCGraphicView->GetAllowedCameraRotation () == CGraphicView::OnlyRotateZ);
     }
-
-    return ;
 }
 
 
@@ -2122,8 +2033,6 @@ CMainFrame::OnUpdateObjectRotateX (CCmdUI* pCmdUI)
         // Set the check if we are currently rotating around X
         pCmdUI->SetCheck ((pCGraphicView->GetObjectRotation () & (CGraphicView::RotateX)));
     }
-
-	return ;
 }
 
 
@@ -2142,8 +2051,6 @@ CMainFrame::OnUpdateObjectRotateY (CCmdUI* pCmdUI)
         // Set the check if we are currently rotating around Y
         pCmdUI->SetCheck ((pCGraphicView->GetObjectRotation () & (CGraphicView::RotateY)));
     }
-
-	return ;
 }
 
 
@@ -2162,8 +2069,6 @@ CMainFrame::OnUpdateObjectRotateZ (CCmdUI* pCmdUI)
         // Set the check if we are currently rotating around Z
         pCmdUI->SetCheck ((pCGraphicView->GetObjectRotation () & (CGraphicView::RotateZ)));
     }
-
-	return ;
 }
 
 
@@ -2227,8 +2132,6 @@ CMainFrame::Select_Device (bool show_dlg)
 				}
         }
     }
-
-    return ;
 }
 
 
@@ -2245,7 +2148,6 @@ CMainFrame::OnDeviceChange ()
 #else
 	::MessageBox(m_hWnd,"Feature removed during conversion to DX8.","Unsupported Feature",MB_OK|MB_ICONEXCLAMATION);
 #endif
-	return ;
 }
 
 
@@ -2267,7 +2169,6 @@ CMainFrame::OnViewFullscreen ()
 #else
 	::MessageBox(m_hWnd,"Feature removed during conversion to DX8.","Unsupported Feature",MB_OK|MB_ICONEXCLAMATION);
 #endif
-	return ;
 }
 
 
@@ -2281,7 +2182,6 @@ CMainFrame::OnUpdateViewFullscreen (CCmdUI* pCmdUI)
 {
 	CGraphicView *pCGraphicView = (CGraphicView *)m_wndSplitter.GetPane (0, 1);
 	pCmdUI->SetCheck (pCGraphicView->Is_Fullscreen ());
-	return ;
 }
 
 
@@ -2294,8 +2194,6 @@ void
 CMainFrame::OnWindowPosChanging (WINDOWPOS FAR* lpwndpos)
 {
 	CFrameWnd::OnWindowPosChanging (lpwndpos);
-
-	return ;
 }
 
 
@@ -2308,7 +2206,6 @@ void
 CMainFrame::OnGetMinMaxInfo (MINMAXINFO FAR* lpMMI)
 {
 	CFrameWnd::OnGetMinMaxInfo(lpMMI);
-	return ;
 }
 
 
@@ -2331,7 +2228,6 @@ CMainFrame::OnCreateEmitter ()
 													  IDS_EMITTER_PROP_TITLE,
 													  this);
 	prop_sheet.DoModal ();
-	return ;
 }
 
 
@@ -2360,8 +2256,6 @@ CMainFrame::OnEditEmitter ()
 		EmitterPropertySheetClass prop_sheet (instance_list, IDS_EMITTER_PROP_TITLE, this);
 		prop_sheet.DoModal ();
 	}
-
-	return ;
 }
 
 
@@ -2374,7 +2268,6 @@ void
 CMainFrame::OnUpdateEditEmitter (CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable (m_currentAssetType == TypeEmitter);
-	return ;
 }
 
 
@@ -2430,7 +2323,6 @@ void
 CMainFrame::OnUpdateScaleEmitter (CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable (m_currentAssetType == TypeEmitter);
-	return ;
 }
 
 
@@ -2443,7 +2335,6 @@ void
 CMainFrame::OnSaveEmitter ()
 {
 	((CW3DViewDoc *)GetActiveDocument ())->Save_Selected_Emitter ();
-	return ;
 }
 
 
@@ -2456,7 +2347,6 @@ void
 CMainFrame::OnUpdateSaveEmitter (CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable (m_currentAssetType == TypeEmitter);
-	return ;
 }
 
 
@@ -2469,7 +2359,6 @@ void
 CMainFrame::OnBoneAutoAssign ()
 {
 	((CW3DViewDoc *)GetActiveDocument ())->Auto_Assign_Bones ();
-	return ;
 }
 
 
@@ -2488,7 +2377,6 @@ CMainFrame::OnBoneManagement ()
 	BoneMgrDialogClass dialog (prender_obj, this);
 	dialog.DoModal ();
 	Update_Emitters_List ();
-	return ;
 }
 
 
@@ -2501,7 +2389,6 @@ void
 CMainFrame::OnSaveAggregate ()
 {
 	((CW3DViewDoc *)GetActiveDocument ())->Save_Selected_Aggregate ();
-	return ;
 }
 
 
@@ -2516,7 +2403,6 @@ CMainFrame::OnCameraAnimate ()
 	// Toggel the animated state
 	bool banimated = ((CW3DViewDoc *)GetActiveDocument ())->Is_Camera_Animated ();
 	((CW3DViewDoc *)GetActiveDocument ())->Animate_Camera (banimated == false);
-	return ;
 }
 
 
@@ -2529,7 +2415,6 @@ void
 CMainFrame::OnUpdateCameraAnimate (CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck (((CW3DViewDoc *)GetActiveDocument ())->Is_Camera_Animated ());
-	return ;
 }
 
 
@@ -2542,7 +2427,6 @@ void
 CMainFrame::OnUpdateLodSave (CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable (m_currentAssetType == TypeLOD);
-	return ;
 }
 
 
@@ -2555,7 +2439,6 @@ void
 CMainFrame::OnUpdateSaveAggregate (CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable (m_currentAssetType == TypeAggregate);
-	return ;
 }
 
 
@@ -2570,7 +2453,6 @@ CMainFrame::OnCameraResetOnLoad ()
 	// Toggle the auto reset state of the menu option
 	CW3DViewDoc *pdoc = (CW3DViewDoc *)GetActiveDocument ();
 	pdoc->Turn_Camera_Auto_Reset_On ((pdoc->Is_Camera_Auto_Reset_On () == false));
-	return ;
 }
 
 
@@ -2584,7 +2466,6 @@ CMainFrame::OnUpdateCameraResetOnLoad (CCmdUI *pCmdUI)
 {
 	CW3DViewDoc *pdoc = (CW3DViewDoc *)GetActiveDocument ();
 	pCmdUI->SetCheck (pdoc->Is_Camera_Auto_Reset_On ());
-	return ;
 }
 
 
@@ -2605,8 +2486,6 @@ CMainFrame::OnObjectRotateYBack ()
 		rotation &= ~CGraphicView::RotateY;
 		pgraphic_view->RotateObject ((CGraphicView::OBJECT_ROTATION)rotation);
 	}
-
-	return;
 }
 
 
@@ -2627,8 +2506,6 @@ CMainFrame::OnObjectRotateZBack ()
 		rotation &= ~CGraphicView::RotateZ;
 		pgraphic_view->RotateObject ((CGraphicView::OBJECT_ROTATION)rotation);
 	}
-
-	return;
 }
 
 
@@ -2649,8 +2526,6 @@ CMainFrame::OnLightRotateY ()
 		rotation &= ~CGraphicView::RotateYBack;
 		pgraphic_view->Rotate_Light ((CGraphicView::OBJECT_ROTATION)rotation);
 	}
-
-	return ;
 }
 
 
@@ -2671,8 +2546,6 @@ CMainFrame::OnLightRotateYBack ()
 		rotation &= ~CGraphicView::RotateY;
 		pgraphic_view->Rotate_Light ((CGraphicView::OBJECT_ROTATION)rotation);
 	}
-
-	return ;
 }
 
 
@@ -2693,8 +2566,6 @@ CMainFrame::OnLightRotateZ ()
 		rotation &= ~CGraphicView::RotateZBack;
 		pgraphic_view->Rotate_Light ((CGraphicView::OBJECT_ROTATION)rotation);
 	}
-
-	return ;
 }
 
 
@@ -2715,8 +2586,6 @@ CMainFrame::OnLightRotateZBack ()
 		rotation &= ~CGraphicView::RotateZ;
 		pgraphic_view->Rotate_Light ((CGraphicView::OBJECT_ROTATION)rotation);
 	}
-
-	return ;
 }
 
 
@@ -2753,7 +2622,6 @@ CMainFrame::OnDestroy ()
 									(int)((CW3DViewDoc *)GetActiveDocument ())->Is_Camera_Auto_Reset_On ());
 
 	CFrameWnd::OnDestroy ();
-	return ;
 }
 
 
@@ -2781,8 +2649,6 @@ CMainFrame::OnDecLight ()
 		plight->Set_Diffuse (diffuse);
 		plight->Set_Specular (specular);
 	}
-
-	return ;
 }
 
 
@@ -2810,8 +2676,6 @@ CMainFrame::OnIncLight ()
 		plight->Set_Diffuse (diffuse);
 		plight->Set_Specular (specular);
 	}
-
-	return ;
 }
 
 
@@ -2833,8 +2697,6 @@ CMainFrame::OnDecAmbientLight ()
 		Adjust_Light_Intensity (color, -0.05F);
 		pdoc->GetScene ()->Set_Ambient_Light (color);
 	}
-
-	return ;
 }
 
 
@@ -2856,8 +2718,6 @@ CMainFrame::OnIncAmbientLight ()
 		Adjust_Light_Intensity (color, 0.05F);
 		pdoc->GetScene ()->Set_Ambient_Light (color);
 	}
-
-	return ;
 }
 
 void CMainFrame::OnLightingExpose()
@@ -2901,8 +2761,6 @@ CMainFrame::OnMakeAggregate ()
 			pdata_tree->Add_Asset_To_Tree (dialog.Get_Name (), TypeAggregate, true);
 		}
 	}
-
-	return ;
 }
 
 
@@ -2934,8 +2792,6 @@ CMainFrame::OnRenameAggregate ()
 			prender_obj->Set_Name (dialog.Get_Name ());
 		}
 	}
-
-	return ;
 }
 
 
@@ -3018,7 +2874,6 @@ CMainFrame::OnCrashApp ()
 	// Usefull HACK to get the program to crash when needed...
 	LPTSTR hack = nullptr;
 	(*hack) = 0;
-	return ;
 }
 
 
@@ -3051,8 +2906,6 @@ CMainFrame::OnLODRecordScreenArea ()
 		// Update the prototype for this lod to reflect the changes
 		::GetCurrentDocument ()->Update_LOD_Prototype (*((HLodClass *)prender_obj));
 	}
-
-	return ;
 }
 
 
@@ -3076,8 +2929,6 @@ CMainFrame::OnLODIncludeNull ()
 		// Update the prototype for this lod to reflect the changes
 		::GetCurrentDocument ()->Update_LOD_Prototype (*((HLodClass *)prender_obj));
 	}
-
-	return ;
 }
 
 
@@ -3098,8 +2949,6 @@ CMainFrame::OnUpdateLODIncludeNull (CCmdUI *pCmdUI)
 		bool check = ((HLodClass *)prender_obj)->Is_NULL_Lod_Included ();
 		pCmdUI->SetCheck (check);
 	}
-
-	return ;
 }
 
 
@@ -3112,7 +2961,6 @@ void
 CMainFrame::OnLodPrevLevel ()
 {
 	::GetCurrentDocument ()->Switch_LOD (-1);
-	return ;
 }
 
 
@@ -3133,8 +2981,6 @@ CMainFrame::OnUpdateLodPrevLevel (CCmdUI *pCmdUI)
 		int current_lod = ((HLodClass *)prender_obj)->Get_LOD_Level ();
 		pCmdUI->Enable (current_lod > 0);
 	}
-
-	return ;
 }
 
 
@@ -3147,7 +2993,6 @@ void
 CMainFrame::OnLodNextLevel ()
 {
 	::GetCurrentDocument ()->Switch_LOD (1);
-	return ;
 }
 
 
@@ -3169,8 +3014,6 @@ CMainFrame::OnUpdateLodNextLevel (CCmdUI *pCmdUI)
 		int lod_count = ((HLodClass *)prender_obj)->Get_LOD_Count ();
 		pCmdUI->Enable ((current_lod + 1) < lod_count);
 	}
-
-	return ;
 }
 
 
@@ -3185,7 +3028,6 @@ CMainFrame::OnLodAutoswitch ()
 	// Toggle the autoswitch setting
 	ViewerSceneClass *pscene = ::GetCurrentDocument ()->GetScene ();
 	pscene->Allow_LOD_Switching (!pscene->Are_LODs_Switching ());
-	return ;
 }
 
 
@@ -3199,7 +3041,6 @@ CMainFrame::OnUpdateLodAutoswitch (CCmdUI *pCmdUI)
 {
 	ViewerSceneClass *pscene = ::GetCurrentDocument ()->GetScene ();
 	pCmdUI->SetCheck (pscene->Are_LODs_Switching ());
-	return ;
 }
 
 
@@ -3218,8 +3059,6 @@ CMainFrame::OnUpdateMakeMovie (CCmdUI *pCmdUI)
 	bool enabled = ((atype == TypeAnimation) || (atype == TypeCompressedAnimation));
 
 	pCmdUI->Enable ( enabled );
-
-	return ;
 }
 
 
@@ -3235,7 +3074,6 @@ CMainFrame::OnMakeMovie ()
 	//WW3D::Set_Resolution (800, 600, g_iBitsPerPixel, 0);
 
 	::GetCurrentDocument ()->Make_Movie ();
-	return ;
 }
 
 
@@ -3274,7 +3112,6 @@ CMainFrame::OnSaveScreenshot ()
 	Get_Graphic_View ()->RepaintView ();
 	WW3D::Make_Screen_Shot (full_path);
 	GetCurrentDocument ()->Show_Cursor (cursor_shown);
-	return ;
 }
 
 
@@ -3307,8 +3144,6 @@ CMainFrame::Update_Emitters_List ()
 			::InsertMenuItem (hsub_menu, index, TRUE, &info);
 		}
 	}
-
-	return ;
 }
 
 
@@ -3324,8 +3159,6 @@ CMainFrame::OnSlideshowDown ()
 	if (data_tree != nullptr) {
 		data_tree->Select_Next ();
 	}
-
-	return ;
 }
 
 
@@ -3341,8 +3174,6 @@ CMainFrame::OnSlideshowUp ()
 	if (data_tree != nullptr) {
 		data_tree->Select_Prev ();
 	}
-
-	return ;
 }
 
 
@@ -3385,7 +3216,6 @@ CMainFrame::OnCameraSettings ()
 {
 	CameraSettingsDialogClass dialog (this);
 	dialog.DoModal ();
-	return ;
 }
 
 
@@ -3428,7 +3258,6 @@ CMainFrame::OnCopyScreenSize ()
 	::EmptyClipboard ();
 	::SetClipboardData (CF_TEXT, global_mem);
 	CloseClipboard ();
-	return ;
 }
 
 
@@ -3456,8 +3285,6 @@ CMainFrame::OnListMissingTextures ()
 	} else {
 		::MessageBox (::AfxGetMainWnd ()->m_hWnd, "No Missing Textures!", "Texture Info", MB_ICONEXCLAMATION | MB_OK);
 	}
-
-	return ;
 }
 
 
@@ -3480,8 +3307,6 @@ CMainFrame::OnCopyAssets ()
 			doc->Copy_Assets_To_Dir (path);
 		}
 	}
-
-	return ;
 }
 
 
@@ -3501,8 +3326,6 @@ CMainFrame::OnUpdateCopyAssets (CCmdUI *pCmdUI)
 		//
 		pCmdUI->Enable (doc->GetDisplayedObject () != nullptr);
 	}
-
-	return ;
 }
 
 
@@ -3516,7 +3339,6 @@ CMainFrame::OnTexturePath ()
 {
 	TexturePathDialogClass dialog (this);
 	dialog.DoModal ();
-	return ;
 }
 
 
@@ -3534,7 +3356,6 @@ CMainFrame::OnChangeResolution ()
 #else
 	::MessageBox(m_hWnd,"Feature removed during conversion to DX8.","Unsupported Feature",MB_OK|MB_ICONEXCLAMATION);
 #endif
-	return ;
 }
 
 
@@ -3557,7 +3378,6 @@ CMainFrame::OnCreateSphere ()
 	//
 	SpherePropertySheetClass dialog (nullptr, IDS_SPHERE_PROP_TITLE, this);
 	dialog.DoModal ();
-	return ;
 }
 
 
@@ -3580,7 +3400,6 @@ CMainFrame::OnCreateRing ()
 	//
 	RingPropertySheetClass dialog (nullptr, IDS_RING_PROP_TITLE, this);
 	dialog.DoModal ();
-	return ;
 }
 
 
@@ -3619,8 +3438,6 @@ CMainFrame::OnEditPrimitive ()
 			}
 		}
 	}
-
-	return ;
 }
 
 
@@ -3638,8 +3455,6 @@ CMainFrame::OnUpdateEditPrimitive (CCmdUI *pCmdUI)
 	} else {
 		pCmdUI->Enable (false);
 	}
-
-	return ;
 }
 
 
@@ -3652,7 +3467,6 @@ void
 CMainFrame::OnExportPrimitive ()
 {
 	((CW3DViewDoc *)GetActiveDocument ())->Save_Selected_Primitive ();
-	return ;
 }
 
 
@@ -3665,7 +3479,6 @@ void
 CMainFrame::OnUpdateExportPrimitive (CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable (m_currentAssetType == TypePrimitives);
-	return ;
 }
 
 
@@ -3711,8 +3524,6 @@ CMainFrame::OnPrelitMultipass ()
 		data_tree->Reload_Lightmap_Models ();
 		::GetCurrentDocument ()->Reload_Displayed_Object ();
 	}
-
-	return ;
 }
 
 
@@ -3726,7 +3537,6 @@ CMainFrame::OnUpdatePrelitMultipass (CCmdUI *pCmdUI)
 {
 	bool enable = (WW3D::Get_Prelit_Mode () == WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS);
 	pCmdUI->SetRadio (enable);
-	return ;
 }
 
 
@@ -3752,8 +3562,6 @@ CMainFrame::OnPrelitMultitex ()
 		data_tree->Reload_Lightmap_Models ();
 		::GetCurrentDocument ()->Reload_Displayed_Object ();
 	}
-
-	return ;
 }
 
 
@@ -3767,7 +3575,6 @@ CMainFrame::OnUpdatePrelitMultitex (CCmdUI *pCmdUI)
 {
 	bool enable = (WW3D::Get_Prelit_Mode () == WW3D::PRELIT_MODE_LIGHTMAP_MULTI_TEXTURE);
 	pCmdUI->SetRadio (enable);
-	return ;
 }
 
 
@@ -3794,8 +3601,6 @@ CMainFrame::OnPrelitVertex ()
 		data_tree->Reload_Lightmap_Models ();
 		::GetCurrentDocument ()->Reload_Displayed_Object ();
 	}
-
-	return ;
 }
 
 
@@ -3809,7 +3614,6 @@ CMainFrame::OnUpdatePrelitVertex (CCmdUI *pCmdUI)
 {
 	bool enable = (WW3D::Get_Prelit_Mode () == WW3D::PRELIT_MODE_VERTEX);
 	pCmdUI->SetRadio (enable);
-	return ;
 }
 
 
@@ -3879,7 +3683,6 @@ void CMainFrame::OnUpdateAddToLineup(CCmdUI* pCmdUI)
 	}
 
 	pCmdUI->Enable(enable);
-	return ;
 }
 
 
@@ -3937,8 +3740,6 @@ CMainFrame::OnImportFacialAnims ()
 			}
 		}
 	}
-
-	return ;
 }
 
 
@@ -3960,8 +3761,6 @@ CMainFrame::OnUpdateImportFacialAnims (CCmdUI *pCmdUI)
 		const HTreeClass *htree = doc->Get_Current_HTree ();
 		pCmdUI->Enable (htree != nullptr);
 	}
-
-	return ;
 }
 
 
@@ -3978,8 +3777,6 @@ CMainFrame::OnRestrictAnims ()
 		bool enabled = data_tree->Are_Anims_Restricted ();
 		data_tree->Restrict_Anims (!enabled);
 	}
-
-	return ;
 }
 
 
@@ -3999,7 +3796,6 @@ CMainFrame::OnUpdateRestrictAnims (CCmdUI *pCmdUI)
 	}
 
 	pCmdUI->SetCheck (check);
-	return ;
 }
 
 
@@ -4022,8 +3818,6 @@ CMainFrame::OnBindSubobjectLod ()
 		render_obj->Set_Sub_Objects_Match_LOD (!is_enabled);
 		doc->Update_Aggregate_Prototype (*render_obj);
 	}
-
-	return ;
 }
 
 
@@ -4045,8 +3839,6 @@ CMainFrame::OnUpdateBindSubobjectLod (CCmdUI *pCmdUI)
 		bool is_enabled = (render_obj->Is_Sub_Objects_Match_LOD_Enabled () != 0);
 		pCmdUI->SetCheck (is_enabled);
 	}
-
-	return ;
 }
 
 
@@ -4060,7 +3852,6 @@ CMainFrame::OnSetCameraDistance ()
 {
 	CameraDistanceDialogClass dialog (this);
 	dialog.DoModal ();
-	return ;
 }
 
 
@@ -4073,7 +3864,6 @@ void
 CMainFrame::OnObjectAlternateMaterials ()
 {
 	::GetCurrentDocument ()->Toggle_Alternate_Materials ();
-	return ;
 }
 
 
@@ -4087,7 +3877,6 @@ CMainFrame::OnCreateSoundObject ()
 {
 	SoundEditDialogClass dialog (this);
 	dialog.DoModal ();
-	return ;
 }
 
 
@@ -4119,8 +3908,6 @@ CMainFrame::OnEditSoundObject ()
 			dialog.DoModal ();
 		}
 	}
-
-	return ;
 }
 
 
@@ -4133,7 +3920,6 @@ void
 CMainFrame::OnUpdateEditSoundObject (CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable (m_currentAssetType == TypeSound);
-	return ;
 }
 
 
@@ -4146,7 +3932,6 @@ void
 CMainFrame::OnExportSoundObj ()
 {
 	((CW3DViewDoc *)GetActiveDocument ())->Save_Selected_Sound_Object ();
-	return ;
 }
 
 
@@ -4159,7 +3944,6 @@ void
 CMainFrame::OnUpdateExportSoundObj (CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable (m_currentAssetType == TypeSound);
-	return ;
 }
 
 
@@ -4175,7 +3959,6 @@ CMainFrame::OnWireframeMode ()
 
 	bool enable = (scene->Get_Polygon_Mode () != SceneClass::LINE);
 	scene->Set_Polygon_Mode (enable ? SceneClass::LINE : SceneClass::FILL);
-	return ;
 }
 
 
@@ -4189,7 +3972,6 @@ CMainFrame::OnUpdateWireframeMode (CCmdUI *pCmdUI)
 {
 	ViewerSceneClass *scene = ::GetCurrentDocument ()->GetScene ();
 	pCmdUI->SetCheck (scene->Get_Polygon_Mode () == SceneClass::LINE);
-	return ;
 }
 
 
@@ -4460,5 +4242,4 @@ CMainFrame::OnEditAnimatedSoundsOptions ()
 {
 	AnimatedSoundOptionsDialogClass dialog (this);
 	dialog.DoModal ();
-	return ;
 }

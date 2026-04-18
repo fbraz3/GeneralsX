@@ -51,7 +51,6 @@ CAnimationPropPage::CAnimationPropPage ()
 	//{{AFX_DATA_INIT(CAnimationPropPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-    return ;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -60,7 +59,6 @@ CAnimationPropPage::CAnimationPropPage ()
 //
 CAnimationPropPage::~CAnimationPropPage ()
 {
-    return ;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -75,7 +73,6 @@ CAnimationPropPage::DoDataExchange (CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CAnimationPropPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
-    return ;
 }
 
 
