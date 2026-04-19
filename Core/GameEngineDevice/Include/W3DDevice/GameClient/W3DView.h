@@ -57,7 +57,6 @@ typedef struct
 	Real		waySegLength[MAX_WAYPOINTS+2];	// Length of each segment;
 	Real		cameraAngle[MAX_WAYPOINTS+2];	// Camera Angle;
 	Int			timeMultiplier[MAX_WAYPOINTS+2];	// Time speedup factor.
-	Real		groundHeight[MAX_WAYPOINTS+1];	// Ground height.
 	Real		totalTimeMilliseconds;					// Num of ms to do this movement.
 	Real		elapsedTimeMilliseconds;				// Time since start.
 	Real		totalDistance;								// Total length of paths.
@@ -280,7 +279,6 @@ private:
 	Coord2D m_scrollAmount;													///< scroll speed
 	Real m_scrollAmountCutoffSqr;										///< scroll speed at which we do not adjust height
 
-	Real m_groundLevel;															///< height of ground.
 #if PRESERVE_RETAIL_SCRIPTED_CAMERA
 	// TheSuperHackers @tweak Uses the initial ground level for preserving the original look of the scripted camera,
 	// because alterations to the ground level do affect the positioning in subtle ways.
