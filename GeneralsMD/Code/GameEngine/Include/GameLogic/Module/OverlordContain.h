@@ -86,6 +86,11 @@ public:
 	virtual void onContaining( Object *obj, Bool wasSelected ) override;		///< object now contains 'obj'
 	virtual void onRemoving( Object *obj ) override;			///< object no longer contains 'obj'
 	virtual UpdateSleepTime update() override;
+	virtual void containReactToTransformChange() override;
+
+private:
+	void syncPortablePosition();  ///< Sync portable rider position/orientation to the host Overlord.
+
 
 	virtual Bool isValidContainerFor(const Object* obj, Bool checkCapacity) const override;
 	virtual void addToContain( Object *obj ) override;				///< add 'obj' to contain list

@@ -136,7 +136,7 @@ void OverlordContain::onObjectCreated()
   OverlordContain::createPayload();
 }
 
-UpdateSleepTime OverlordContain::update()
+void OverlordContain::syncPortablePosition()
 {
 	Object* portable = (m_containListSize > 0) ? m_containList.front() : nullptr;
 	if (portable && portable->isKindOf(KINDOF_PORTABLE_STRUCTURE))
@@ -145,8 +145,21 @@ UpdateSleepTime OverlordContain::update()
 		portable->setPosition(getObject()->getPosition());
 		portable->setOrientation(getObject()->getOrientation());
 	}
+}
 
+UpdateSleepTime OverlordContain::update()
+{
+	syncPortablePosition();
 	return TransportContain::update();
+}
+
+void OverlordContain::containReactToTransformChange()
+{
+	// Let the base class run redeployOccupants() (bone-based placement).
+	OpenContain::containReactToTransformChange();
+	// GeneralsX @bugfix copilot 19/04/2026 Immediately correct portable position after transform;
+	// bone queries return wrong world coords on POSIX, so override with the host tank's position.
+	syncPortablePosition();
 }
 
 //-------------------------------------------------------------------------------------------------
