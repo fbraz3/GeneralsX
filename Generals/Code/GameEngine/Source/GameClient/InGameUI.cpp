@@ -2236,23 +2236,14 @@ void InGameUI::message( AsciiString stringManagerLabel, ... )
 	// fetch the string from the string manger
 	stringManagerString = TheGameText->fetch( stringManagerLabel.str() );
 
-	// construct the final text after formatting
+	// GeneralsX @bugfix copilot 19/04/2026 Route UI text formatting through UnicodeString for cross-platform wide printf compatibility.
 	va_list args;
 	va_start( args, stringManagerLabel );
-	WideChar buf[ UnicodeString::MAX_FORMAT_BUF_LEN ];
-	int result = vswprintf(buf, sizeof( buf )/sizeof( WideChar ), stringManagerString.str(), args );
+	formattedMessage.format_va(stringManagerString, args);
 	va_end(args);
 
-	if( result >= 0 )
-	{
-		formattedMessage.set( buf );
-		// add the text to the ui
-		addMessageText( formattedMessage );
-	}
-	else
-	{
-		DEBUG_CRASH(("InGameUI::message failed with code:%d", result));
-	}
+	// add the text to the ui
+	addMessageText( formattedMessage );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2277,23 +2268,14 @@ void InGameUI::message( UnicodeString format, ... )
 {
 	UnicodeString formattedMessage;
 
-	// construct the final text after formatting
+	// GeneralsX @bugfix copilot 19/04/2026 Route UI text formatting through UnicodeString for cross-platform wide printf compatibility.
 	va_list args;
 	va_start( args, format );
-	WideChar buf[ UnicodeString::MAX_FORMAT_BUF_LEN ];
-	int result = vswprintf(buf, sizeof( buf )/sizeof( WideChar ), format.str(), args );
+	formattedMessage.format_va(format, args);
 	va_end(args);
 
-	if( result >= 0 )
-	{
-		formattedMessage.set( buf );
-		// add the text to the ui
-		addMessageText( formattedMessage );
-	}
-	else
-	{
-		DEBUG_CRASH(("InGameUI::message failed with code:%d", result));
-	}
+	// add the text to the ui
+	addMessageText( formattedMessage );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2304,23 +2286,14 @@ void InGameUI::messageColor( const RGBColor *rgbColor, UnicodeString format, ...
 {
 	UnicodeString formattedMessage;
 
-	// construct the final text after formatting
+	// GeneralsX @bugfix copilot 19/04/2026 Route UI text formatting through UnicodeString for cross-platform wide printf compatibility.
 	va_list args;
 	va_start( args, format );
-	WideChar buf[ UnicodeString::MAX_FORMAT_BUF_LEN ];
-	int result = vswprintf(buf, sizeof( buf )/sizeof( WideChar ), format.str(), args );
+	formattedMessage.format_va(format, args);
 	va_end(args);
 
-	if( result >= 0 )
-	{
-		formattedMessage.set( buf );
-		// add the text to the ui
-		addMessageText( formattedMessage, rgbColor );
-	}
-	else
-	{
-		DEBUG_CRASH(("InGameUI::messageColor failed with code:%d", result));
-	}
+	// add the text to the ui
+	addMessageText( formattedMessage, rgbColor );
 }
 
 //-------------------------------------------------------------------------------------------------
