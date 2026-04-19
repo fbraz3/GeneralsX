@@ -46,6 +46,33 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/PartitionManager.h"
 
+static void logOverlordPortableEvent(const char* phase, const Object* host, const Object* obj)
+{
+	if (host == nullptr || obj == nullptr)
+		return;
+
+	const ThingTemplate* hostTemplate = host->getTemplate();
+	const ThingTemplate* riderTemplate = obj->getTemplate();
+	const Object* containedBy = obj->getContainedBy();
+	const ThingTemplate* containedByTemplate = containedBy ? containedBy->getTemplate() : nullptr;
+
+	fprintf(
+		stderr,
+		"[GX_OVERLORD_TRACE] phase=%s hostTpl=%s host=%s(%d) riderTpl=%s rider=%s(%d) portable=%d infantry=%d held=%d containedBy=%d containedByTpl=%s\n",
+		phase,
+		hostTemplate ? hostTemplate->getName().str() : "<null>",
+		host->getName().str(),
+		host->getID(),
+		riderTemplate ? riderTemplate->getName().str() : "<null>",
+		obj->getName().str(),
+		obj->getID(),
+		obj->isKindOf(KINDOF_PORTABLE_STRUCTURE) ? 1 : 0,
+		obj->isKindOf(KINDOF_INFANTRY) ? 1 : 0,
+		obj->isDisabledByType(DISABLED_HELD) ? 1 : 0,
+		containedBy ? 1 : 0,
+		containedByTemplate ? containedByTemplate->getName().str() : "<none>");
+}
+
 
 
 
@@ -107,6 +134,19 @@ OverlordContain::~OverlordContain()
 void OverlordContain::onObjectCreated()
 {
   OverlordContain::createPayload();
+}
+
+UpdateSleepTime OverlordContain::update()
+{
+	Object* portable = (m_containListSize > 0) ? m_containList.front() : nullptr;
+	if (portable && portable->isKindOf(KINDOF_PORTABLE_STRUCTURE))
+	{
+		// GeneralsX @bugfix copilot 19/04/2026 Keep Overlord portable structures spatially synced with the host tank.
+		portable->setPosition(getObject()->getPosition());
+		portable->setOrientation(getObject()->getOrientation());
+	}
+
+	return TransportContain::update();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -364,9 +404,25 @@ void OverlordContain::onContaining( Object *obj, Bool wasSelected )
 	{
 		TransportContain::onContaining( obj, wasSelected );
 
+		logOverlordPortableEvent("onContaining-afterTransport", getObject(), obj);
+
 
     if ( obj->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
     {
+			ContainModuleInterface* riderContain = obj->getContain();
+			const Bool isGarrisonablePortable = riderContain && riderContain->isGarrisonable();
+
+			if (!isGarrisonablePortable)
+			{
+				// GeneralsX @bugfix copilot 19/04/2026 Keep non-garrisonable Overlord upgrades active after attach.
+				obj->clearDisabled( DISABLED_HELD );
+				logOverlordPortableEvent("onContaining-afterClearHeld", getObject(), obj);
+			}
+			else
+			{
+				logOverlordPortableEvent("onContaining-keepHeldGarrisonable", getObject(), obj);
+			}
+
   		activateRedirectedContain();//Am now carrying something
 
 			// And this contain style explicitly sucks XP from our little friend.
@@ -572,19 +628,46 @@ void OverlordContain::clientVisibleContainedFlashAsSelected()
 Bool OverlordContain::isPassengerAllowedToFire( ObjectID id ) const
 {
 	Object *passenger = TheGameLogic->findObjectByID(id);
+	Bool logPassenger = FALSE;
+	if (passenger != nullptr)
+	{
+		logPassenger = passenger->isKindOf(KINDOF_PORTABLE_STRUCTURE) || passenger->isKindOf(KINDOF_INFANTRY);
+	}
 
 	if(passenger != nullptr)
 	{
 		//only allow infantry, and turrets and such.  no vehicles.
 		if(passenger->isKindOf(KINDOF_INFANTRY) == FALSE && passenger->isKindOf(KINDOF_PORTABLE_STRUCTURE) == FALSE)
+		{
+			if (logPassenger)
+			{
+				logOverlordPortableEvent("isPassengerAllowedToFire-rejectKind", getObject(), passenger);
+			}
 			return FALSE;
+		}
 	}
 
 
   if ( getObject() && getObject()->getContainedBy() ) // nested containment voids firing, always
+	{
+		if (passenger != nullptr && logPassenger)
+		{
+			logOverlordPortableEvent("isPassengerAllowedToFire-rejectNested", getObject(), passenger);
+		}
     return FALSE;
+	}
 
-  return TransportContain::isPassengerAllowedToFire();
+	Bool allowed = TransportContain::isPassengerAllowedToFire();
+
+	if (passenger != nullptr && logPassenger)
+	{
+		logOverlordPortableEvent(
+			allowed ? "isPassengerAllowedToFire-allow" : "isPassengerAllowedToFire-rejectTransport",
+			getObject(),
+			passenger);
+	}
+
+	return allowed;
 }
 
 

@@ -80,6 +80,19 @@ OverlordContain::~OverlordContain()
 
 }
 
+UpdateSleepTime OverlordContain::update()
+{
+	Object* portable = (m_containListSize > 0) ? m_containList.front() : nullptr;
+	if (portable && portable->isKindOf(KINDOF_PORTABLE_STRUCTURE))
+	{
+		// GeneralsX @bugfix copilot 19/04/2026 Keep Overlord portable structures spatially synced with the host tank.
+		portable->setPosition(getObject()->getPosition());
+		portable->setOrientation(getObject()->getOrientation());
+	}
+
+	return TransportContain::update();
+}
+
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 void OverlordContain::onBodyDamageStateChange( const DamageInfo* damageInfo,
@@ -289,6 +302,17 @@ void OverlordContain::onContaining( Object *obj )
 	if( getRedirectedContain() == nullptr )
 	{
 		TransportContain::onContaining( obj );
+
+		if( obj->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
+		{
+			ContainModuleInterface* riderContain = obj->getContain();
+			const Bool isGarrisonablePortable = riderContain && riderContain->isGarrisonable();
+			if (!isGarrisonablePortable)
+			{
+				// GeneralsX @bugfix copilot 19/04/2026 Keep non-garrisonable Overlord upgrades active after attach.
+				obj->clearDisabled( DISABLED_HELD );
+			}
+		}
 		activateRedirectedContain();//Am now carrying something
 		return;
 	}

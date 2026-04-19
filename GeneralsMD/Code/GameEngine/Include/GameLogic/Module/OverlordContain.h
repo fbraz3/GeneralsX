@@ -85,6 +85,7 @@ public:
 	// Contain stuff we need to override to redirect on a condition
 	virtual void onContaining( Object *obj, Bool wasSelected ) override;		///< object now contains 'obj'
 	virtual void onRemoving( Object *obj ) override;			///< object no longer contains 'obj'
+	virtual UpdateSleepTime update() override;
 
 	virtual Bool isValidContainerFor(const Object* obj, Bool checkCapacity) const override;
 	virtual void addToContain( Object *obj ) override;				///< add 'obj' to contain list
