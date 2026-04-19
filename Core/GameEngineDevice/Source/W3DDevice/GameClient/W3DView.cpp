@@ -1942,7 +1942,10 @@ void W3DView::draw()
 	/// @todo we might want to consider wiping this iterate out if there is nothing to post draw
 	//
 	TheGameClient->resetRenderedObjectCount();
+
+	TheDisplay->beginBatch();
 	TheGameClient->iterateDrawablesInRegion( &axisAlignedRegion, drawablePostDraw, this );
+	TheDisplay->endBatch();
 
 	TheGameClient->flushTextBearingDrawables();
 
