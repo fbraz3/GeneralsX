@@ -71,10 +71,12 @@ void OpenALAudioStream::update()
         }
     }
 
-    // Only restart a stopped source when there is data queued to play.
-    // Calling alSourcePlay() with an empty queue produces no sound and
-    // immediately transitions the source back to AL_STOPPED.
-    if (sourceState == AL_STOPPED) {
+    // GeneralsX @bugfix fbraz3 20/04/2026 Also restart an AL_INITIAL source (freshly created or
+    // reset()ed on a new stream) - alSourceStop() is a no-op on AL_INITIAL so reset() leaves
+    // the source in AL_INITIAL, not AL_STOPPED. Without this, the first video in a session
+    // would never start audio because update() from onFrame() saw AL_INITIAL and skipped play().
+    // Issue: https://github.com/fbraz3/GeneralsX/issues/38
+    if (sourceState == AL_STOPPED || sourceState == AL_INITIAL) {
         ALint num_remaining;
         alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_remaining);
         if (num_remaining > 0) {

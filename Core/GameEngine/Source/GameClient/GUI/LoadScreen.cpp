@@ -568,6 +568,14 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 
 			m_videoStream->frameNext();
 
+			// GeneralsX @bugfix fbraz3 20/04/2026 The LoadScreen video loop is a blocking loop
+			// that never reaches TheVideoPlayer->update(). Without an explicit update() call here,
+			// the OpenAL audio source can underrun (AL_STOPPED) or stay in AL_INITIAL and never
+			// restart. update() calls audioStream->play() if the source is not already playing.
+			// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+			if (TheVideoPlayer)
+				TheVideoPlayer->update();
+
 			if(m_videoBuffer)
 				m_loadScreen->winGetInstanceData()->setVideoBuffer(m_videoBuffer);
 			if(m_videoStream->frameIndex() % progressUpdateCount == 0)
