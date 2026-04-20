@@ -130,7 +130,7 @@ docs: update macOS build instructions for Vulkan SDK setup
 
 - PR title should follow the same format as commit messages
 - the PR description should provide context and link to related issues
-- PR targes must be against main branch of `fbraz3/GeneralsX` repo, unless it's a user instruction to do otherwise (e.g., "Merge to `develop` branch" or "Merge to `feature/xyz` branch")
+- PR targets must be against main branch of `fbraz3/GeneralsX` repo, unless it's a user instruction to do otherwise (e.g., "Merge to `develop` branch" or "Merge to `feature/xyz` branch")
 - There is a subproject called `dxvk-macos` located under `references/fbraz3-dxvk` folder, which is a fork of the original DXVK project. Commits related to that subproject should be made in that repository and follow the same commit message standards.
 - `fbraz3-dxvk` subproject PRs should target the `generalsx-macos-v2.6` branch of `fbraz3/dxvk` repository, and follow the same commit message standards.
 
