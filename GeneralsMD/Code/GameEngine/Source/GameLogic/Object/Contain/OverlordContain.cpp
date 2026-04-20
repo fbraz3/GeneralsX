@@ -422,19 +422,7 @@ void OverlordContain::onContaining( Object *obj, Bool wasSelected )
 
     if ( obj->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
     {
-			ContainModuleInterface* riderContain = obj->getContain();
-			const Bool isGarrisonablePortable = riderContain && riderContain->isGarrisonable();
-
-			if (!isGarrisonablePortable)
-			{
-				// GeneralsX @bugfix copilot 19/04/2026 Keep non-garrisonable Overlord upgrades active after attach.
-				obj->clearDisabled( DISABLED_HELD );
-				logOverlordPortableEvent("onContaining-afterClearHeld", getObject(), obj);
-			}
-			else
-			{
-				logOverlordPortableEvent("onContaining-keepHeldGarrisonable", getObject(), obj);
-			}
+			logOverlordPortableEvent("onContaining-portable", getObject(), obj);
 
   		activateRedirectedContain();//Am now carrying something
 
