@@ -47,11 +47,10 @@
 #include "GameLogic/PartitionManager.h"
 
 // GeneralsX @bugfix copilot 19/04/2026 Instrumentation for issue #95 (Gatling force-attack exit).
-// Re-enable by removing the early return below. Search for GX_OVERLORD_TRACE to find all call sites.
+// Re-enable by defining GX_OVERLORD_TRACE at compile time. Search for GX_OVERLORD_TRACE to find all call sites.
+#if defined(GX_OVERLORD_TRACE)
 static void logOverlordPortableEvent(const char* phase, const Object* host, const Object* obj)
 {
-	return; // instrumentation disabled -- see https://github.com/fbraz3/GeneralsX/issues/95
-
 	if (host == nullptr || obj == nullptr)
 		return;
 
@@ -76,6 +75,9 @@ static void logOverlordPortableEvent(const char* phase, const Object* host, cons
 		containedBy ? 1 : 0,
 		containedByTemplate ? containedByTemplate->getName().str() : "<none>");
 }
+#else
+static inline void logOverlordPortableEvent(const char* /*phase*/, const Object* /*host*/, const Object* /*obj*/) {}
+#endif
 
 
 
@@ -657,11 +659,10 @@ void OverlordContain::clientVisibleContainedFlashAsSelected()
 Bool OverlordContain::isPassengerAllowedToFire( ObjectID id ) const
 {
 	Object *passenger = TheGameLogic->findObjectByID(id);
-	Bool logPassenger = FALSE;
-	if (passenger != nullptr)
-	{
-		logPassenger = passenger->isKindOf(KINDOF_PORTABLE_STRUCTURE) || passenger->isKindOf(KINDOF_INFANTRY);
-	}
+	// logPassenger is true for any non-null passenger so all rejection paths are traceable
+	// when GX_OVERLORD_TRACE is enabled (previously only set for portable/infantry, making
+	// the rejectKind trace unreachable since that path fires for non-portable/non-infantry).
+	Bool logPassenger = (passenger != nullptr);
 
 	if(passenger != nullptr)
 	{

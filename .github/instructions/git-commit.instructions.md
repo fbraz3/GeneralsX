@@ -126,6 +126,14 @@ docs: update macOS build instructions for Vulkan SDK setup
 | `perf` | Performance optimization |
 | `style` | Formatting, spacing (no logic changes) |
 
+## Pull request guidelines
+
+- PR title should follow the same format as commit messages
+- the PR description should provide context and link to related issues
+- PR targes must be against main branch of `fbraz3/GeneralsX` repo, unless it's a user instruction to do otherwise (e.g., "Merge to `develop` branch" or "Merge to `feature/xyz` branch")
+- There is a subproject called `dxvk-macos` located under `references/fbraz3-dxvk` folder, which is a fork of the original DXVK project. Commits related to that subproject should be made in that repository and follow the same commit message standards.
+- `fbraz3-dxvk` subproject PRs should target the `generalsx-macos-v2.6` branch of `fbraz3/dxvk` repository, and follow the same commit message standards.
+
 ---
 
 **Note**: For GeneralsX code changes, also see `.github/copilot-instructions.md` for the code annotation standard (`// GeneralsX @keyword author DD/MM/YYYY Description`), which complements commit message discipline.

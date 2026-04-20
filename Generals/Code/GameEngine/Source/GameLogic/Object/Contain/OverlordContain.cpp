@@ -338,9 +338,6 @@ void OverlordContain::onContaining( Object *obj )
 	{
 		TransportContain::onContaining( obj );
 
-		if( obj->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
-		{
-		}
 		activateRedirectedContain();//Am now carrying something
 		return;
 	}
