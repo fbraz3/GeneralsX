@@ -72,6 +72,7 @@ public:
 	virtual UpdateSleepTime update() override;
 	virtual void containReactToTransformChange() override;
 	virtual Bool isSpecificRiderFreeToExit(Object* obj) override;
+	virtual void exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor) override;
 
 	virtual Bool isValidContainerFor(const Object* obj, Bool checkCapacity) const override;
 	virtual void addToContain( Object *obj ) override;				///< add 'obj' to contain list

@@ -116,6 +116,18 @@ Bool OverlordContain::isSpecificRiderFreeToExit(Object* obj)
 	return TransportContain::isSpecificRiderFreeToExit(obj);
 }
 
+// GeneralsX @bugfix copilot 19/04/2026 Block instant-exit path for portable structures.
+// AIExitInstantlyState::onEnter() calls exitObjectViaDoor(obj, DOOR_1) directly, bypassing
+// reserveDoorForExit and isSpecificRiderFreeToExit entirely. The Gatling Cannon enters
+// AI_EXIT_INSTANTLY when force-attacking empty terrain: attack state machine transitions
+// through CHASE_TARGET (ContinueState) -> EXIT_MACHINE_WITH_FAILURE -> AI_EXIT_INSTANTLY.
+void OverlordContain::exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor)
+{
+	if (exitObj && exitObj->isKindOf(KINDOF_PORTABLE_STRUCTURE))
+		return;
+	TransportContain::exitObjectViaDoor(exitObj, exitDoor);
+}
+
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 void OverlordContain::onBodyDamageStateChange( const DamageInfo* damageInfo,

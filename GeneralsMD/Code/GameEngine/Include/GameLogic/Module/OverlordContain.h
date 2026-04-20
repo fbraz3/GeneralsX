@@ -76,6 +76,7 @@ public:
   virtual Bool isSpecialOverlordStyleContainer() const override {return TRUE;}
 	virtual Bool isPassengerAllowedToFire( ObjectID id = INVALID_ID ) const override;	///< Hey, can I shoot out of this container?
 	virtual Bool isSpecificRiderFreeToExit(Object* obj) override;
+	virtual void exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor) override;
 
 
 	virtual void onDie( const DamageInfo *damageInfo ) override;  ///< the die callback
