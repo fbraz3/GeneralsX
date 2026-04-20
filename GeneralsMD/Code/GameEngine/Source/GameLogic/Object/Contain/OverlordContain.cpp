@@ -46,41 +46,7 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/PartitionManager.h"
 
-// GeneralsX @bugfix copilot 19/04/2026 Instrumentation for issue #95 (Gatling force-attack exit).
-// Re-enable by defining GX_OVERLORD_TRACE at compile time. Search for GX_OVERLORD_TRACE to find all call sites.
-#if defined(GX_OVERLORD_TRACE)
-static void logOverlordPortableEvent(const char* phase, const Object* host, const Object* obj)
-{
-	if (host == nullptr || obj == nullptr)
-		return;
-
-	const ThingTemplate* hostTemplate = host->getTemplate();
-	const ThingTemplate* riderTemplate = obj->getTemplate();
-	const Object* containedBy = obj->getContainedBy();
-	const ThingTemplate* containedByTemplate = containedBy ? containedBy->getTemplate() : nullptr;
-
-	fprintf(
-		stderr,
-		"[GX_OVERLORD_TRACE] phase=%s hostTpl=%s host=%s(%d) riderTpl=%s rider=%s(%d) portable=%d infantry=%d held=%d containedBy=%d containedByTpl=%s\n",
-		phase,
-		hostTemplate ? hostTemplate->getName().str() : "<null>",
-		host->getName().str(),
-		host->getID(),
-		riderTemplate ? riderTemplate->getName().str() : "<null>",
-		obj->getName().str(),
-		obj->getID(),
-		obj->isKindOf(KINDOF_PORTABLE_STRUCTURE) ? 1 : 0,
-		obj->isKindOf(KINDOF_INFANTRY) ? 1 : 0,
-		obj->isDisabledByType(DISABLED_HELD) ? 1 : 0,
-		containedBy ? 1 : 0,
-		containedByTemplate ? containedByTemplate->getName().str() : "<none>");
-}
-#else
-static inline void logOverlordPortableEvent(const char* /*phase*/, const Object* /*host*/, const Object* /*obj*/) {}
-#endif
-
-
-
+ 
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -185,6 +151,30 @@ Bool OverlordContain::isSpecificRiderFreeToExit(Object* obj)
 // AI_EXIT_INSTANTLY because it has attack weapons and its attack state machine transitions
 // through CHASE_TARGET (ContinueState) -> EXIT_MACHINE_WITH_FAILURE -> AI_EXIT_INSTANTLY
 // when force-attacking empty terrain. Propaganda Tower never hits this path (no weapons).
+// GeneralsX @bugfix copilot 20/04/2026 Issue #95: redeployOccupants calls putObjAtNextFirePoint on
+// PORTABLE_STRUCTURE riders which triggers Object::reactToTransformChange and destroys them.
+// The portable position is managed exclusively by syncPortablePosition().
+// Non-portable occupants (if any) are still redeployed via the parent.
+void OverlordContain::redeployOccupants()
+{
+	// In practice the Overlord's own contain list only ever has a single portable upgrade,
+	// so this is effectively a no-op — but guarded correctly for safety.
+	bool hasNonPortable = false;
+	const ContainedItemsList& list = getContainList();
+	for (ContainedItemsList::const_iterator it = list.begin(); it != list.end(); ++it)
+	{
+		Object* obj = *it;
+		if (obj && !obj->isKindOf(KINDOF_PORTABLE_STRUCTURE))
+		{
+			hasNonPortable = true;
+			break;
+		}
+	}
+	if (hasNonPortable)
+		TransportContain::redeployOccupants();
+	// Portables are repositioned by syncPortablePosition() called from containReactToTransformChange().
+}
+
 void OverlordContain::exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor)
 {
 	if (exitObj && exitObj->isKindOf(KINDOF_PORTABLE_STRUCTURE))
@@ -447,13 +437,8 @@ void OverlordContain::onContaining( Object *obj, Bool wasSelected )
 	{
 		TransportContain::onContaining( obj, wasSelected );
 
-		logOverlordPortableEvent("onContaining-afterTransport", getObject(), obj);
-
-
     if ( obj->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
     {
-			logOverlordPortableEvent("onContaining-portable", getObject(), obj);
-
   		activateRedirectedContain();//Am now carrying something
 
 			// And this contain style explicitly sucks XP from our little friend.
@@ -659,45 +644,21 @@ void OverlordContain::clientVisibleContainedFlashAsSelected()
 Bool OverlordContain::isPassengerAllowedToFire( ObjectID id ) const
 {
 	Object *passenger = TheGameLogic->findObjectByID(id);
-	// logPassenger is true for any non-null passenger so all rejection paths are traceable
-	// when GX_OVERLORD_TRACE is enabled (previously only set for portable/infantry, making
-	// the rejectKind trace unreachable since that path fires for non-portable/non-infantry).
-	Bool logPassenger = (passenger != nullptr);
 
 	if(passenger != nullptr)
 	{
 		//only allow infantry, and turrets and such.  no vehicles.
 		if(passenger->isKindOf(KINDOF_INFANTRY) == FALSE && passenger->isKindOf(KINDOF_PORTABLE_STRUCTURE) == FALSE)
-		{
-			if (logPassenger)
-			{
-				logOverlordPortableEvent("isPassengerAllowedToFire-rejectKind", getObject(), passenger);
-			}
 			return FALSE;
-		}
 	}
 
 
   if ( getObject() && getObject()->getContainedBy() ) // nested containment voids firing, always
 	{
-		if (passenger != nullptr && logPassenger)
-		{
-			logOverlordPortableEvent("isPassengerAllowedToFire-rejectNested", getObject(), passenger);
-		}
     return FALSE;
 	}
 
-	Bool allowed = TransportContain::isPassengerAllowedToFire();
-
-	if (passenger != nullptr && logPassenger)
-	{
-		logOverlordPortableEvent(
-			allowed ? "isPassengerAllowedToFire-allow" : "isPassengerAllowedToFire-rejectTransport",
-			getObject(),
-			passenger);
-	}
-
-	return allowed;
+	return TransportContain::isPassengerAllowedToFire();
 }
 
 

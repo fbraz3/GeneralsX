@@ -1,5 +1,20 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-20 - Overlord portable riders must not go through fire-point redeploy on turret rotation
+
+- Problem: Overlord portable upgrades (Gattling Cannon, Propaganda Tower, BattleBunker) could disappear intermittently during force-attack / heavy turret turning on macOS.
+- Root cause:
+	- `OverlordContain::containReactToTransformChange()` executes on turret orientation changes.
+	- Base `OpenContain::redeployOccupants()` moved portable riders through fire points (`putObjAtNextFirePoint`).
+	- Portable `setTransformMatrix` triggered rider `reactToTransformChange`, which could route into `GameLogic::destroyObject`.
+	- BattleBunker loss cascaded to its contained infantry, making the issue appear broader than only one upgrade type.
+- Fix:
+	- Added `OverlordContain::redeployOccupants()` override to skip fire-point redeploy for `KINDOF_PORTABLE_STRUCTURE` riders.
+	- Kept portable transform sync in `syncPortablePosition()` after transform updates.
+	- Preserved base redeploy behavior for non-portable occupants.
+- Validation insight: Removal traces observed during score/reset were expected cleanup (`GameLogic::reset`/`clearGameData`) and should not be treated as gameplay regression.
+- Prevention: For Overlord portable upgrades, never route rider positioning through generic occupant fire-point redeploy; keep portable movement tied to host transform synchronization only.
+
 ## Session 2026-04-19 - Wide printf `%s`/`%S` mismatch causes one-character UI and replay metadata truncation on POSIX
 
 - Problem: Multiple UI texts on macOS/Linux showed only the first character (construction requirements, under-construction/completed labels, replay list fields such as date/time/version).
