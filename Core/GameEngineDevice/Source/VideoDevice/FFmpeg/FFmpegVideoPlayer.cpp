@@ -335,6 +335,17 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 
 FFmpegVideoStream::~FFmpegVideoStream()
 {
+	// GeneralsX @bugfix fbraz3 20/04/2026 Stop and clear queued OpenAL buffers so video audio
+	// does not bleed into gameplay after the loading screen closes the stream.
+	// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+#ifdef SAGE_USE_OPENAL
+	if (TheAudio)
+	{
+		OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
+		if (audioStream)
+			audioStream->reset();
+	}
+#endif
 	av_freep(&m_audioBuffer);
 	av_frame_free(&m_frame);
 	sws_freeContext(m_swsContext);
