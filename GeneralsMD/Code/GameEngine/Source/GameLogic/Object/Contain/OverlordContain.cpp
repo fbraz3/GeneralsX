@@ -162,6 +162,17 @@ void OverlordContain::containReactToTransformChange()
 	syncPortablePosition();
 }
 
+// GeneralsX @bugfix copilot 19/04/2026 Prevent portable structures from ever exiting the Overlord.
+// On Windows/VC6, DISABLED_HELD caused getCurLocomotor() to return null, blocking exit naturally.
+// On POSIX the locomotor is still present even when HELD, so portables could exit when commanded
+// (e.g., force-attack). Portables are permanent upgrades and must never leave the Overlord.
+Bool OverlordContain::isSpecificRiderFreeToExit(Object* obj)
+{
+	if (obj && obj->isKindOf(KINDOF_PORTABLE_STRUCTURE))
+		return FALSE;
+	return TransportContain::isSpecificRiderFreeToExit(obj);
+}
+
 //-------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 void OverlordContain::createPayload()

@@ -80,7 +80,7 @@ OverlordContain::~OverlordContain()
 
 }
 
-UpdateSleepTime OverlordContain::update()
+void OverlordContain::syncPortablePosition()
 {
 	Object* portable = (m_containListSize > 0) ? m_containList.front() : nullptr;
 	if (portable && portable->isKindOf(KINDOF_PORTABLE_STRUCTURE))
@@ -89,8 +89,31 @@ UpdateSleepTime OverlordContain::update()
 		portable->setPosition(getObject()->getPosition());
 		portable->setOrientation(getObject()->getOrientation());
 	}
+}
 
+UpdateSleepTime OverlordContain::update()
+{
+	syncPortablePosition();
 	return TransportContain::update();
+}
+
+void OverlordContain::containReactToTransformChange()
+{
+	OpenContain::containReactToTransformChange();
+	// GeneralsX @bugfix copilot 19/04/2026 Immediately correct portable position after transform;
+	// bone queries return wrong world coords on POSIX, so override with the host tank's position.
+	syncPortablePosition();
+}
+
+// GeneralsX @bugfix copilot 19/04/2026 Prevent portable structures from ever exiting the Overlord.
+// On Windows/VC6, DISABLED_HELD caused getCurLocomotor() to return null, blocking exit naturally.
+// On POSIX the locomotor is still present even when HELD, so portables could exit when commanded
+// (e.g., force-attack). Portables are permanent upgrades and must never leave the Overlord.
+Bool OverlordContain::isSpecificRiderFreeToExit(Object* obj)
+{
+	if (obj && obj->isKindOf(KINDOF_PORTABLE_STRUCTURE))
+		return FALSE;
+	return TransportContain::isSpecificRiderFreeToExit(obj);
 }
 
 //-------------------------------------------------------------------------------------------------
