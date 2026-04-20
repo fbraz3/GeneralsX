@@ -2,7 +2,7 @@
 
 ## Session 2026-04-20 - Overlord portable riders must not go through fire-point redeploy on turret rotation
 
-- Problem: Overlord portable upgrades (Gattling Cannon, Propaganda Tower, BattleBunker) could disappear intermittently during force-attack / heavy turret turning on macOS.
+- Problem: Overlord portable upgrades (Gatling Cannon, Propaganda Tower, BattleBunker) could disappear intermittently during force-attack / heavy turret turning on macOS.
 - Root cause:
 	- `OverlordContain::containReactToTransformChange()` executes on turret orientation changes.
 	- Base `OpenContain::redeployOccupants()` moved portable riders through fire points (`putObjAtNextFirePoint`).
