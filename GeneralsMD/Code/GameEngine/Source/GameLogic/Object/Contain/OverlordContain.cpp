@@ -46,8 +46,12 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/PartitionManager.h"
 
+// GeneralsX @bugfix copilot 19/04/2026 Instrumentation for issue #95 (Gatling force-attack exit).
+// Re-enable by removing the early return below. Search for GX_OVERLORD_TRACE to find all call sites.
 static void logOverlordPortableEvent(const char* phase, const Object* host, const Object* obj)
 {
+	return; // instrumentation disabled -- see https://github.com/fbraz3/GeneralsX/issues/95
+
 	if (host == nullptr || obj == nullptr)
 		return;
 
