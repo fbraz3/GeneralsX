@@ -38,7 +38,9 @@ permissions:
 jobs:
   # GeneralsX @build BenderAI 21/04/2026 Create git tag BEFORE builds so GitTag is set
   # in the binary (git_watcher.cmake uses --exact-match, requires tag at build time).
+  # Skipped entirely on dry_run: no tag should be created or pushed in test runs.
   create-tag:
+    if: inputs.dry_run == false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -57,7 +59,6 @@ jobs:
           echo "Release version: $VERSION"
 
       - name: Create and push git tag
-        if: inputs.dry_run == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
