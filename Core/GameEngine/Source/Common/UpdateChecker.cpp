@@ -142,16 +142,18 @@ int SDLCALL UpdateChecker::threadFunc(void* /*userData*/)
         return 0;
     }
 
-    // Compare with the current build tag
-    // GitTag is empty for non-release builds (already guarded in start()),
-    // but double-check here for safety.
-    if (GitTag[0] == '\0')
+    // Compare with the current build tag.
+    // When GENERALS_FORCE_UPDATE_CHECK is set, skip the empty-tag guard and
+    // treat any non-empty response from GitHub as "update available" so the
+    // button shows in dev builds without a real tag.
+    const bool forceCheck = SDL_getenv("GENERALS_FORCE_UPDATE_CHECK") != nullptr;
+    if (!forceCheck && GitTag[0] == '\0')
     {
         SDL_SetAtomicInt(&s_done, 1);
         return 0;
     }
 
-    if (strcmp(latestTag, GitTag) != 0)
+    if (forceCheck ? (latestTag[0] != '\0') : strcmp(latestTag, GitTag) != 0)
     {
         // Latest tag differs from current build tag: update available
         strncpy(s_latestTag, latestTag, sizeof(s_latestTag) - 1);
