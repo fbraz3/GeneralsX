@@ -1207,9 +1207,11 @@ endif()
 
 # GeneralsX @feature BenderAI 21/04/2026 UpdateChecker shared implementation (SAGE_UPDATE_CHECK builds only)
 # Compiled into both g_gameengine and z_gameengine via INTERFACE source propagation.
+# SDL3::SDL3 is added as a public dependency so that MainMenu.cpp (which calls SDL_OpenURL)
+# can find SDL3/SDL.h even though gameengine does not otherwise depend on the device layer.
 if(SAGE_UPDATE_CHECK)
     target_sources(corei_gameengine_private INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/Common/UpdateChecker.cpp
     )
-    target_link_libraries(corei_gameengine_public INTERFACE CURL::libcurl)
+    target_link_libraries(corei_gameengine_public INTERFACE CURL::libcurl SDL3::SDL3)
 endif()
