@@ -92,6 +92,31 @@ jobs:
       game: Generals
       preset: macos-vulkan
 
+  # GeneralsX @build BenderAI 21/04/2026 Roll back the pushed tag when anything
+  # downstream of create-tag fails, so a re-run with the same version is possible.
+  # Only runs when: create-tag succeeded (tag was actually pushed) AND any
+  # subsequent job failed. Skipped on dry_run because no tag is ever pushed.
+  cleanup-tag-on-failure:
+    if: failure() && needs.create-tag.result == 'success'
+    needs: [create-tag, build-linux-flatpak, build-macos-zh, build-macos-generals, prepare-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Delete orphaned tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          echo "Pipeline failed after tag was pushed. Deleting orphaned tag: $VERSION"
+          git push origin --delete "refs/tags/$VERSION" \
+            && echo "Tag $VERSION deleted from remote." \
+            || echo "Tag $VERSION not found on remote, nothing to delete."
+
   prepare-release:
     runs-on: ubuntu-latest
     needs: [build-linux-flatpak, build-macos-zh, build-macos-generals]
