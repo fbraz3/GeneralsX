@@ -34,12 +34,13 @@
 #include <string>
 
 // ---------------------------------------------------------------------------
-// Static member definitions
+// File-static implementation state (not exposed in the header to avoid
+// leaking SDL3 includes to every consumer of UpdateChecker.h)
 // ---------------------------------------------------------------------------
-SDL_Thread*   UpdateChecker::s_thread    = nullptr;
-SDL_AtomicInt UpdateChecker::s_done      = {0};
-SDL_AtomicInt UpdateChecker::s_hasUpdate = {0};
-char          UpdateChecker::s_latestTag[128] = {0};
+static SDL_Thread*   s_thread    = nullptr;
+static SDL_AtomicInt s_done      = {0};
+static SDL_AtomicInt s_hasUpdate = {0};
+static char          s_latestTag[128] = {0};
 
 // ---------------------------------------------------------------------------
 // GitHub API endpoint for latest release
@@ -97,7 +98,7 @@ static bool extractTagName(const std::string& json, char* outTag, int outTagSize
 // ---------------------------------------------------------------------------
 // Background thread: performs HTTP GET and fills s_latestTag
 // ---------------------------------------------------------------------------
-int SDLCALL UpdateChecker::threadFunc(void* /*userData*/)
+static int SDLCALL threadFunc(void* /*userData*/)
 {
     std::string responseBody;
 
@@ -108,7 +109,7 @@ int SDLCALL UpdateChecker::threadFunc(void* /*userData*/)
         return 0;
     }
 
-    curl_easy_setopt(curl, CURLOPT_URL, getReleasesUrl());
+    curl_easy_setopt(curl, CURLOPT_URL, UpdateChecker::getReleasesUrl());
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/update-checker");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBody);

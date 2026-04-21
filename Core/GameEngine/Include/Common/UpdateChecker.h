@@ -24,15 +24,16 @@
 
 #ifdef SAGE_UPDATE_CHECK
 
-#include <SDL3/SDL.h>
-
 // ---------------------------------------------------------------------------
 // UpdateChecker
 //
 // Spawns a background SDL_Thread to query the GitHub Releases API and detect
 // if a newer release tag is available. Only runs for tagged release builds
-// (GitTag non-empty, no uncommitted changes). Thread-safe result polling via
-// SDL_AtomicInt flag + cached tag string.
+// (GitTag non-empty, no uncommitted changes).
+//
+// NOTE: SDL3 types are intentionally NOT exposed here to avoid propagating
+// SDL3 headers to every translation unit that includes this header.
+// All implementation state lives as file-statics in UpdateChecker.cpp.
 // ---------------------------------------------------------------------------
 class UpdateChecker
 {
@@ -50,14 +51,6 @@ public:
 
     // GitHub repository used for the API query.
     static const char* getReleasesUrl();
-
-private:
-    static int SDLCALL threadFunc(void* userData);
-
-    static SDL_Thread*  s_thread;
-    static SDL_AtomicInt s_done;    // 0=running, 1=done
-    static SDL_AtomicInt s_hasUpdate; // 0=no update, 1=update available
-    static char         s_latestTag[128]; // filled by thread, read-only after s_done=1
 };
 
 #endif // SAGE_UPDATE_CHECK
