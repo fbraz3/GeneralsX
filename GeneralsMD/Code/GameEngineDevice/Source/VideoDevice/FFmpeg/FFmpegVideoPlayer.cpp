@@ -334,7 +334,7 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
     while (m_good && m_gotFrame == false)
         m_good = m_ffmpegFile->decodePacket();
 
- #ifdef SAGE_USE_OPENAL
+#ifdef SAGE_USE_OPENAL
     // Start audio playback
     audioStream->play();
 #endif
@@ -376,10 +376,6 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 #ifdef SAGE_USE_OPENAL
     else if (stream_type == AVMEDIA_TYPE_AUDIO) {
         OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
-        // Unqueue processed buffers first, then buffer new data, then
-        // (re)start playback. update() is called AFTER bufferData() so that
-        // the newly queued buffer is already present when update() checks
-        // whether to call alSourcePlay().
         AVSampleFormat sampleFmt = static_cast<AVSampleFormat>(frame->format);
         const int bytesPerSample = av_get_bytes_per_sample(sampleFmt);
         const int frameSize =

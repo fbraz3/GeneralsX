@@ -71,12 +71,16 @@ void OpenALAudioStream::update()
         }
     }
 
-    // GeneralsX @bugfix fbraz3 20/04/2026 Also restart an AL_INITIAL source (freshly created or
-    // reset()ed on a new stream) - alSourceStop() is a no-op on AL_INITIAL so reset() leaves
-    // the source in AL_INITIAL, not AL_STOPPED. Without this, the first video in a session
-    // would never start audio because update() from onFrame() saw AL_INITIAL and skipped play().
+    // GeneralsX @bugfix fbraz3 20/04/2026 Restart source if it is not playing:
+    // - AL_STOPPED: source ran out of buffers and stopped.
+    // - AL_INITIAL: freshly created / reset()ed source (alSourceStop on AL_INITIAL is a no-op,
+    //   so reset() leaves the source in AL_INITIAL rather than AL_STOPPED).
+    // - AL_PAUSED: OpenAL-Soft on macOS auto-pauses all sources when the application loses
+    //   window focus (Core Audio session suspension). Without this, a momentary focus loss
+    //   during the shell-map / loading-screen transition permanently silences video audio
+    //   because update() never called play() again.
     // Issue: https://github.com/fbraz3/GeneralsX/issues/38
-    if (sourceState == AL_STOPPED || sourceState == AL_INITIAL) {
+    if (sourceState == AL_STOPPED || sourceState == AL_INITIAL || sourceState == AL_PAUSED) {
         ALint num_remaining;
         alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_remaining);
         if (num_remaining > 0) {
