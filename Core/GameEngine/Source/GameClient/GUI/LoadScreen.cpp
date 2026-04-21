@@ -1086,6 +1086,13 @@ void ChallengeLoadScreen::init( GameInfo *game )
 			m_videoStream->frameRender(m_videoBuffer);
 			m_videoStream->frameNext();
 
+			// GeneralsX @bugfix fbraz3 20/04/2026 Same blocking loop fix as SinglePlayerLoadScreen.
+			// TheVideoPlayer->update() must be called explicitly here since this loop never returns
+			// to the main game loop. Without it, OpenAL audio source stays AL_INITIAL/AL_STOPPED.
+			// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+			if (TheVideoPlayer)
+				TheVideoPlayer->update();
+
 			if(m_videoBuffer)
 				m_loadScreen->winGetInstanceData()->setVideoBuffer(m_videoBuffer);
 
