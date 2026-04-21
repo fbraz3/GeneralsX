@@ -1099,10 +1099,4 @@ target_precompile_headers(g_gameengine PRIVATE
     Include/Precompiled/PreRTS.h
 )
 
-# GeneralsX @feature BenderAI 21/04/2026 UpdateChecker source (only compiled for SAGE_UPDATE_CHECK builds)
-if(SAGE_UPDATE_CHECK)
-    target_sources(g_gameengine PRIVATE
-        Source/Common/UpdateChecker.cpp
-    )
-    target_link_libraries(g_gameengine PRIVATE CURL::libcurl)
-endif()
+# UpdateChecker is now in Core/GameEngine (shared between Generals and GeneralsMD).

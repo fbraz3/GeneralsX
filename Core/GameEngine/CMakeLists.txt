@@ -1204,3 +1204,12 @@ target_link_libraries(corei_gameengine_public INTERFACE
 if(MINGW)
     target_link_libraries(corei_gameengine_public INTERFACE reactos_atl)
 endif()
+
+# GeneralsX @feature BenderAI 21/04/2026 UpdateChecker shared implementation (SAGE_UPDATE_CHECK builds only)
+# Compiled into both g_gameengine and z_gameengine via INTERFACE source propagation.
+if(SAGE_UPDATE_CHECK)
+    target_sources(corei_gameengine_private INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Source/Common/UpdateChecker.cpp
+    )
+    target_link_libraries(corei_gameengine_public INTERFACE CURL::libcurl)
+endif()

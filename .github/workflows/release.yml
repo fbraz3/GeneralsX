@@ -36,18 +36,56 @@ permissions:
   pull-requests: write
 
 jobs:
+  # GeneralsX @build BenderAI 21/04/2026 Create git tag BEFORE builds so GitTag is set
+  # in the binary (git_watcher.cmake uses --exact-match, requires tag at build time).
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Validate version input
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: release_version is required"
+            exit 1
+          fi
+          echo "Release version: $VERSION"
+
+      - name: Create and push git tag
+        if: inputs.dry_run == false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          if git show-ref --tags --verify --quiet "refs/tags/$VERSION"; then
+            echo "ERROR: Tag $VERSION already exists"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+
   build-linux-flatpak:
+    needs: [create-tag]
     uses: ./.github/workflows/build-linux-flatpak.yml
     with:
       preset: linux64-deploy
 
   build-macos-zh:
+    needs: [create-tag]
     uses: ./.github/workflows/build-macos.yml
     with:
       game: GeneralsMD
       preset: macos-vulkan
 
   build-macos-generals:
+    needs: [create-tag]
     uses: ./.github/workflows/build-macos.yml
     with:
       game: Generals
@@ -66,21 +104,11 @@ jobs:
       - name: Validate release inputs
         run: |
           VERSION="${{ inputs.release_version }}"
-          DRY_RUN="${{ inputs.dry_run }}"
-
           if [ -z "$VERSION" ]; then
             echo "ERROR: release_version is required"
             exit 1
           fi
-
-          if [ "$DRY_RUN" = "true" ]; then
-            echo "Dry run enabled. Tag/release creation will be skipped."
-          else
-            if git show-ref --tags --verify --quiet "refs/tags/$VERSION"; then
-              echo "ERROR: Tag $VERSION already exists"
-              exit 1
-            fi
-          fi
+          echo "Release version: $VERSION (tag created by create-tag job)"
 
       - name: Detect latest release tag
         id: latest
