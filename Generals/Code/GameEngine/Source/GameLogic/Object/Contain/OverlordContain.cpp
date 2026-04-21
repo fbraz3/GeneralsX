@@ -105,6 +105,30 @@ void OverlordContain::containReactToTransformChange()
 	syncPortablePosition();
 }
 
+// GeneralsX @bugfix copilot 21/04/2026 Issue #95: redeployOccupants calls putObjAtNextFirePoint on
+// PORTABLE_STRUCTURE riders which triggers Object::reactToTransformChange and destroys them.
+// The portable position is managed exclusively by syncPortablePosition().
+// Non-portable occupants (if any) are still redeployed via the parent.
+void OverlordContain::redeployOccupants()
+{
+	// In practice the Overlord's own contain list only ever has a single portable upgrade,
+	// so this is effectively a no-op -- but guarded correctly for safety.
+	bool hasNonPortable = false;
+	const ContainedItemsList& list = getContainList();
+	for (ContainedItemsList::const_iterator it = list.begin(); it != list.end(); ++it)
+	{
+		Object* obj = *it;
+		if (obj && !obj->isKindOf(KINDOF_PORTABLE_STRUCTURE))
+		{
+			hasNonPortable = true;
+			break;
+		}
+	}
+	if (hasNonPortable)
+		TransportContain::redeployOccupants();
+	// Portables are repositioned by syncPortablePosition() called from containReactToTransformChange().
+}
+
 // GeneralsX @bugfix copilot 19/04/2026 Prevent portable structures from ever exiting the Overlord.
 // On Windows/VC6, DISABLED_HELD caused getCurLocomotor() to return null, blocking exit naturally.
 // On POSIX the locomotor is still present even when HELD, so portables could exit when commanded

@@ -71,6 +71,8 @@ public:
 	virtual void onRemoving( Object *obj ) override;			///< object no longer contains 'obj'
 	virtual UpdateSleepTime update() override;
 	virtual void containReactToTransformChange() override;
+	// GeneralsX @bugfix copilot 21/04/2026 Issue #95: avoid fire-point redeploy for PORTABLE_STRUCTURE riders.
+	virtual void redeployOccupants() override;
 	virtual Bool isSpecificRiderFreeToExit(Object* obj) override;
 	virtual void exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor) override;
 
