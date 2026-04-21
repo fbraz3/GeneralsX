@@ -17,6 +17,11 @@
         "name": "openal-soft",
         "platform": "!windows",
         "features": []
+      },
+      {
+        "name": "curl",
+        "platform": "!windows",
+        "features": ["ssl"]
       }
     ]
   }

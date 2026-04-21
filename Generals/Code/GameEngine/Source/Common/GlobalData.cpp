@@ -73,6 +73,8 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /*static*/ const FieldParse GlobalData::s_GlobalDataFieldParseTable[] =
 {
+	// GeneralsX @feature BenderAI 21/04/2026 Opt-out flag for in-game update checker
+	{ "CheckForUpdates",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_checkForUpdates ) },
 	{ "Windowed",									INI::parseBool,				nullptr,			offsetof( GlobalData, m_windowed ) },
 	{ "XResolution",							INI::parseInt,				nullptr,			offsetof( GlobalData, m_xResolution ) },
 	{ "YResolution",							INI::parseInt,				nullptr,			offsetof( GlobalData, m_yResolution ) },
@@ -633,6 +635,8 @@ GlobalData::GlobalData()
 	m_framesPerSecondLimit = 0;
 	m_chipSetType = 0;
 	m_headless = FALSE;
+	// GeneralsX @feature BenderAI 21/04/2026 Default to TRUE; user can override via Options.ini
+	m_checkForUpdates = TRUE;
 	m_windowed = 0;
 	m_xResolution = DEFAULT_DISPLAY_WIDTH;
 	m_yResolution = DEFAULT_DISPLAY_HEIGHT;

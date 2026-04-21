@@ -1174,6 +1174,14 @@ target_link_libraries(z_gameengine PRIVATE
     zi_always
 )
 
+# GeneralsX @feature BenderAI 21/04/2026 UpdateChecker source (only compiled for SAGE_UPDATE_CHECK builds)
+if(SAGE_UPDATE_CHECK)
+    target_sources(z_gameengine PRIVATE
+        Source/Common/UpdateChecker.cpp
+    )
+    target_link_libraries(z_gameengine PRIVATE CURL::libcurl)
+endif()
+
 target_link_libraries(z_gameengine PUBLIC
     corei_gameengine_public
     z_wwvegas

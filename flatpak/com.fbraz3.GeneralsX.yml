@@ -56,6 +56,7 @@ modules:
           -DSAGE_USE_SDL3=ON \
           -DSAGE_USE_OPENAL=ON \
           -DSAGE_USE_GLM=ON \
+          -DSAGE_UPDATE_CHECK=ON \
           -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
           -DFETCHCONTENT_UPDATES_DISCONNECTED=ON \
           -DFETCHCONTENT_SOURCE_DIR_DXVK=/run/build/generalsx/dxvk-src \

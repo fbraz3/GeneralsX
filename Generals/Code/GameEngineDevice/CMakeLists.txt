@@ -251,3 +251,8 @@ if(RTS_BUILD_OPTION_FFMPEG)
     endif()
     target_link_libraries(g_gameenginedevice PUBLIC PkgConfig::FFMPEG)
 endif()
+
+# GeneralsX @feature BenderAI 21/04/2026 libcurl for in-game update checker (SAGE_UPDATE_CHECK builds)
+if(SAGE_UPDATE_CHECK)
+    target_link_libraries(g_gameenginedevice PUBLIC CURL::libcurl)
+endif()

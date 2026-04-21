@@ -1098,3 +1098,11 @@ target_precompile_headers(g_gameengine PRIVATE
     [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
     Include/Precompiled/PreRTS.h
 )
+
+# GeneralsX @feature BenderAI 21/04/2026 UpdateChecker source (only compiled for SAGE_UPDATE_CHECK builds)
+if(SAGE_UPDATE_CHECK)
+    target_sources(g_gameengine PRIVATE
+        Source/Common/UpdateChecker.cpp
+    )
+    target_link_libraries(g_gameengine PRIVATE CURL::libcurl)
+endif()
