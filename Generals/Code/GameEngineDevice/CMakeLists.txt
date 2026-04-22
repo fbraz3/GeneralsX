@@ -251,3 +251,5 @@ if(RTS_BUILD_OPTION_FFMPEG)
     endif()
     target_link_libraries(g_gameenginedevice PUBLIC PkgConfig::FFMPEG)
 endif()
+
+# CURL::libcurl is now propagated transitively via corei_gameengine_public (Core/GameEngine/CMakeLists.txt).

@@ -120,6 +120,9 @@ public:
 	// Run game without graphics, input or audio.
 	Bool m_headless;
 
+	// GeneralsX @feature BenderAI 21/04/2026 Allow user to opt out of the in-game update checker
+	Bool m_checkForUpdates;
+
 	Bool m_windowed;
 	Int m_xResolution;
 	Int m_yResolution;

@@ -92,6 +92,10 @@ include(cmake/lzhl.cmake)
 # openal.cmake is self-guarded with if(SAGE_USE_OPENAL), so this is always safe to include.
 include(cmake/openal.cmake)
 
+# GeneralsX @feature BenderAI 21/04/2026 libcurl for in-game update checker (SAGE_UPDATE_CHECK builds)
+# curl.cmake is self-guarded with if(SAGE_UPDATE_CHECK), so always safe to include.
+include(cmake/curl.cmake)
+
 if (IS_VS6_BUILD)
     # The original max sdk does not compile against a modern compiler.
     # If there is a desire to make this work, then a fixed max sdk needs to be created.
