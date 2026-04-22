@@ -89,14 +89,24 @@ jobs:
             echo "| Linux Flatpak | ⏭️ No changes |" >> $GITHUB_STEP_SUMMARY
           fi
 
-  build-linux:
-    name: Build Linux
+  build-linux-gzip:
+    name: Build Linux gzip
     needs: detect-changes
     if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-linux.yml
     with:
       preset: linux64-deploy
-      package_format: "gzip"
+      package_format: gzip
+    secrets: inherit
+
+  build-linux-appimage:
+    name: Build Linux AppImage
+    needs: detect-changes
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      preset: linux64-deploy
+      package_format: appimage
     secrets: inherit
 
   build-macos:
@@ -120,7 +130,7 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [build-linux, build-macos, build-linux-flatpak]
+    needs: [build-linux-gzip, build-linux-appimage, build-macos, build-linux-flatpak]
     if: always()
     steps:
       - name: Generate Summary
@@ -129,13 +139,15 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Linux (x86_64) | ${{ needs.build-linux.result == 'success' && '✅ Success' || needs.build-linux.result == 'skipped' && '⏭️ Skipped' || needs.build-linux.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux gzip (x86_64) | ${{ needs.build-linux-gzip.result == 'success' && '✅ Success' || needs.build-linux-gzip.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-gzip.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux AppImage (x86_64) | ${{ needs.build-linux-appimage.result == 'success' && '✅ Success' || needs.build-linux-appimage.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-appimage.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if Any Build Failed
         if: |
-          needs.build-linux.result == 'failure' ||
+          needs.build-linux-gzip.result == 'failure' ||
+          needs.build-linux-appimage.result == 'failure' ||
           needs.build-macos.result == 'failure' ||
           needs.build-linux-flatpak.result == 'failure'
         run: exit 1

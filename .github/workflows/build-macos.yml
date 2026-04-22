@@ -23,7 +23,7 @@ on:
 
 jobs:
   build-mac-app:
-    name: ${{ matrix.game.value }}@${{ inputs.preset }}
+    name: ${{ matrix.game.id }}@${{ inputs.preset }}
     runs-on: macos-latest
     timeout-minutes: 120
     strategy:
