@@ -21,8 +21,8 @@ on:
         default: linux64-deploy
 
 jobs:
-  build-flatpak:
-    name: flatpak-${{ matrix.game.id }}@${{ inputs.preset }}
+  build-linux-flatpak:
+    name: ${{ matrix.game.id }}@${{ inputs.preset }}
     runs-on: ubuntu-latest
     timeout-minutes: 150
     strategy:
