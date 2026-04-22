@@ -1174,6 +1174,8 @@ target_link_libraries(z_gameengine PRIVATE
     zi_always
 )
 
+# UpdateChecker is now in Core/GameEngine (shared between Generals and GeneralsMD).
+
 target_link_libraries(z_gameengine PUBLIC
     corei_gameengine_public
     z_wwvegas

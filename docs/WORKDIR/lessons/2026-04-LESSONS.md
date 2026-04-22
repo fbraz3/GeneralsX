@@ -1,5 +1,33 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-20 - Overlord portable riders must not go through fire-point redeploy on turret rotation
+
+- Problem: Overlord portable upgrades (Gatling Cannon, Propaganda Tower, BattleBunker) could disappear intermittently during force-attack / heavy turret turning on macOS.
+- Root cause:
+	- `OverlordContain::containReactToTransformChange()` executes on turret orientation changes.
+	- Base `OpenContain::redeployOccupants()` moved portable riders through fire points (`putObjAtNextFirePoint`).
+	- Portable `setTransformMatrix` triggered rider `reactToTransformChange`, which could route into `GameLogic::destroyObject`.
+	- BattleBunker loss cascaded to its contained infantry, making the issue appear broader than only one upgrade type.
+- Fix:
+	- Added `OverlordContain::redeployOccupants()` override to skip fire-point redeploy for `KINDOF_PORTABLE_STRUCTURE` riders.
+	- Kept portable transform sync in `syncPortablePosition()` after transform updates.
+	- Preserved base redeploy behavior for non-portable occupants.
+- Validation insight: Removal traces observed during score/reset were expected cleanup (`GameLogic::reset`/`clearGameData`) and should not be treated as gameplay regression.
+- Prevention: For Overlord portable upgrades, never route rider positioning through generic occupant fire-point redeploy; keep portable movement tied to host transform synchronization only.
+
+## Session 2026-04-19 - Wide printf `%s`/`%S` mismatch causes one-character UI and replay metadata truncation on POSIX
+
+- Problem: Multiple UI texts on macOS/Linux showed only the first character (construction requirements, under-construction/completed labels, replay list fields such as date/time/version).
+- Root cause:
+	- Legacy code used Windows/MSVC wide `printf` semantics (`%s` for wide string and `%S` for narrow string).
+	- On POSIX libc (`vswprintf`), `%s` expects narrow strings unless `l` modifier is present (`%ls`), so many `UnicodeString::format` callsites truncated output.
+	- Replay headers also wrote wide strings through `LocalFile::writeFormat(L"%s", ...)`, which could persist truncated metadata in newly recorded `.rep` files.
+- Fix:
+	- Added POSIX format normalization in `UnicodeString::format_va` to map MSVC-style wide specifiers safely (`%s` -> `%ls`, `%S` -> `%hs` when no explicit length modifier exists).
+	- Updated `LocalFile::writeFormat(const WideChar*)` to route formatting via `UnicodeString::format_va`, ensuring identical normalization for replay/header serialization paths.
+- Validation: Static diagnostics (`get_errors`) reported no issues in modified files after patching.
+- Prevention: For cross-platform wide formatting, avoid relying on CRT-specific `%s`/`%S` behavior; normalize format strings or use explicit `%ls` / `%hs` in new code.
+
 ## Session 2026-04-16 - A single issue can hide multiple EXC_BAD_ACCESS root causes
 
 - Problem: A macOS crash issue initially looked like one intermittent defect but later reports in the same thread showed a second stack signature.

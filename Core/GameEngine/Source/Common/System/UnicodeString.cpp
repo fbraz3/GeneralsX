@@ -51,6 +51,142 @@
 
 /*static*/ const UnicodeString UnicodeString::TheEmptyString;
 
+#ifndef _WIN32
+static Bool isWidePrintfDigit(WideChar ch)
+{
+	return ch >= L'0' && ch <= L'9';
+}
+
+static Bool isWidePrintfFlag(WideChar ch)
+{
+	return ch == L'-' || ch == L'+' || ch == L' ' || ch == L'#' || ch == L'0' || ch == L'\'';
+}
+
+// GeneralsX @bugfix copilot 19/04/2026 Normalize wide printf specifiers to preserve MSVC semantics on POSIX.
+static Bool normalizeWidePrintfFormatForPosix(const WideChar *src, WideChar *dst, Int dstCapacity)
+{
+	if (src == nullptr || dst == nullptr || dstCapacity <= 0)
+		return FALSE;
+
+	Int srcPos = 0;
+	Int dstPos = 0;
+
+	while (src[srcPos] != 0)
+	{
+		if (dstPos >= dstCapacity - 1)
+			return FALSE;
+
+		if (src[srcPos] != L'%')
+		{
+			dst[dstPos++] = src[srcPos++];
+			continue;
+		}
+
+		dst[dstPos++] = src[srcPos++];
+
+		if (src[srcPos] == L'%')
+		{
+			dst[dstPos++] = src[srcPos++];
+			continue;
+		}
+
+		const Int tokenStart = srcPos;
+		Int tokenPos = srcPos;
+		Bool hasLengthModifier = FALSE;
+
+		while (isWidePrintfDigit(src[tokenPos]))
+			tokenPos++;
+		if (src[tokenPos] == L'$')
+			tokenPos++;
+
+		while (isWidePrintfFlag(src[tokenPos]))
+			tokenPos++;
+
+		if (src[tokenPos] == L'*')
+		{
+			tokenPos++;
+			while (isWidePrintfDigit(src[tokenPos]))
+				tokenPos++;
+			if (src[tokenPos] == L'$')
+				tokenPos++;
+		}
+		else
+		{
+			while (isWidePrintfDigit(src[tokenPos]))
+				tokenPos++;
+		}
+
+		if (src[tokenPos] == L'.')
+		{
+			tokenPos++;
+			if (src[tokenPos] == L'*')
+			{
+				tokenPos++;
+				while (isWidePrintfDigit(src[tokenPos]))
+					tokenPos++;
+				if (src[tokenPos] == L'$')
+					tokenPos++;
+			}
+			else
+			{
+				while (isWidePrintfDigit(src[tokenPos]))
+					tokenPos++;
+			}
+		}
+
+		if (src[tokenPos] == L'h' || src[tokenPos] == L'l')
+		{
+			hasLengthModifier = TRUE;
+			tokenPos++;
+			if (src[tokenPos] == L'h' || src[tokenPos] == L'l')
+				tokenPos++;
+		}
+		else if (src[tokenPos] == L'j' || src[tokenPos] == L'z' || src[tokenPos] == L't' || src[tokenPos] == L'L')
+		{
+			hasLengthModifier = TRUE;
+			tokenPos++;
+		}
+
+		const WideChar conversion = src[tokenPos];
+		if (conversion == 0)
+			return FALSE;
+
+		for (Int i = tokenStart; i < tokenPos; ++i)
+		{
+			if (dstPos >= dstCapacity - 1)
+				return FALSE;
+			dst[dstPos++] = src[i];
+		}
+
+		if (!hasLengthModifier && conversion == L's')
+		{
+			if (dstPos >= dstCapacity - 2)
+				return FALSE;
+			dst[dstPos++] = L'l';
+			dst[dstPos++] = L's';
+		}
+		else if (!hasLengthModifier && conversion == L'S')
+		{
+			if (dstPos >= dstCapacity - 2)
+				return FALSE;
+			dst[dstPos++] = L'h';
+			dst[dstPos++] = L's';
+		}
+		else
+		{
+			if (dstPos >= dstCapacity - 1)
+				return FALSE;
+			dst[dstPos++] = conversion;
+		}
+
+		srcPos = tokenPos + 1;
+	}
+
+	dst[dstPos] = 0;
+	return TRUE;
+}
+#endif
+
 // -----------------------------------------------------
 #ifdef RTS_DEBUG
 void UnicodeString::validate() const
@@ -394,7 +530,15 @@ void UnicodeString::format_va(const WideChar* format, va_list args)
 {
 	validate();
 	WideChar buf[MAX_FORMAT_BUF_LEN];
-	const int result = vswprintf(buf, sizeof(buf)/sizeof(WideChar), format, args);
+	const WideChar *effectiveFormat = format;
+#ifndef _WIN32
+	WideChar normalizedFormat[MAX_FORMAT_BUF_LEN * 2];
+	if (normalizeWidePrintfFormatForPosix(format, normalizedFormat, ARRAY_SIZE(normalizedFormat)))
+	{
+		effectiveFormat = normalizedFormat;
+	}
+#endif
+	const int result = vswprintf(buf, sizeof(buf)/sizeof(WideChar), effectiveFormat, args);
 	if (result >= 0)
 	{
 		set(buf);

@@ -75,6 +75,13 @@
 
 #include "GameClient/InGameUI.h"
 
+// GeneralsX @feature BenderAI 21/04/2026 In-game update checker for tagged release builds
+#ifdef SAGE_UPDATE_CHECK
+#include "Common/UpdateChecker.h"
+#include "GameClient/GadgetPushButton.h"
+#include <SDL3/SDL.h>
+#endif
+
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
@@ -151,6 +158,10 @@ static GameWindow *buttonMOTD = nullptr;
 static GameWindow *buttonWorldBuilder = nullptr;
 static GameWindow *mainMenuMovie = nullptr;
 static GameWindow *getUpdate = nullptr;
+#ifdef SAGE_UPDATE_CHECK
+static GameWindow *updateNotifyButton = nullptr;  // GeneralsX @feature BenderAI 21/04/2026 Dynamically created update notification button
+static AsciiString s_updateLatestTag;             // Tag of available update
+#endif
 static GameWindow *buttonTRAINING = nullptr;
 static GameWindow *buttonChallenge = nullptr;
 static GameWindow *buttonUSA = nullptr;
@@ -626,6 +637,11 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	}
 	/**/
 
+	// GeneralsX @feature BenderAI 21/04/2026 Start background GitHub release check for tagged builds
+#ifdef SAGE_UPDATE_CHECK
+	UpdateChecker::start();
+#endif
+
 	if (TheGameSpyPeerMessageQueue && !TheGameSpyPeerMessageQueue->isConnected())
 	{
 		DEBUG_LOG(("Tearing down GameSpy from MainMenuInit()"));
@@ -690,6 +706,16 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 		TheWindowManager->winDestroy(fallbackCreditLabel);
 		fallbackCreditLabel = nullptr;
 	}
+
+#ifdef SAGE_UPDATE_CHECK
+	// GeneralsX @bugfix BenderAI 21/04/2026 Destroy the update notification button on
+	// shutdown so the pointer cannot dangle if the main menu is reopened in the same session.
+	if (updateNotifyButton)
+	{
+		TheWindowManager->winDestroy(updateNotifyButton);
+		updateNotifyButton = nullptr;
+	}
+#endif
 
 	CancelPatchCheckCallback();
 
@@ -834,6 +860,52 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 	}
 	if(DontShowMainMenu && justEntered)
 		justEntered = FALSE;
+
+	// GeneralsX @feature BenderAI 21/04/2026 Poll background update check; create dynamic button when update found
+#ifdef SAGE_UPDATE_CHECK
+	if (updateNotifyButton == nullptr)
+	{
+		const char* latestTag = nullptr;
+		if (UpdateChecker::poll(&latestTag) && latestTag != nullptr && TheDisplay && parentMainMenu)
+		{
+			s_updateLatestTag = latestTag;
+
+			const Int btnW = 260;
+			const Int btnH = 26;
+			const Int margin = 8;
+			const Int x = TheDisplay->getWidth()  - btnW - margin;
+			const Int y = TheDisplay->getHeight() - btnH - margin;
+
+			WinInstanceData instData;
+			instData.init();
+			BitSet(instData.m_style, GWS_PUSH_BUTTON | GWS_MOUSE_TRACK);
+
+			UnicodeString btnText;
+			btnText.format(L"Update available: %hs - click to download", latestTag);
+			instData.setTooltipText(btnText);
+
+			AsciiString labelKey = "GeneralsXUpdateNotify";
+			instData.m_textLabelString = labelKey;
+
+			updateNotifyButton = TheWindowManager->gogoGadgetPushButton(
+				parentMainMenu,
+				WIN_STATUS_ENABLED,
+				x, y, btnW, btnH,
+				&instData, nullptr, TRUE);
+
+			if (updateNotifyButton)
+			{
+				GameFont* font = TheWindowManager->winFindFont("Arial", 10, FALSE);
+				if (font)
+					updateNotifyButton->winSetFont(font);
+
+				UnicodeString displayText;
+				displayText.format(L"Update available: %hs", latestTag);
+				GadgetButtonSetText(updateNotifyButton, displayText);
+			}
+		}
+	}
+#endif
 
 	if (TheDownloadManager && !TheDownloadManager->isDone())
 	{
@@ -1508,8 +1580,20 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 			else if( controlID == getUpdateID )
 			{
+#ifdef SAGE_UPDATE_CHECK
+				// GeneralsX @feature BenderAI 21/04/2026 Open GitHub releases page instead of legacy GameSpy patch download
+				SDL_OpenURL("https://github.com/fbraz3/GeneralsX/releases");
+#else
 				StartDownloadingPatches();
+#endif
 			}
+#ifdef SAGE_UPDATE_CHECK
+			else if( updateNotifyButton != nullptr && control == updateNotifyButton )
+			{
+				// GeneralsX @feature BenderAI 21/04/2026 Dynamic update button click -> open releases page
+				SDL_OpenURL("https://github.com/fbraz3/GeneralsX/releases");
+			}
+#endif
 			else if( controlID == exitID )
 			{
 				// If we ever want to add a dialog before we exit out of the game, uncomment this line and kill the quitCallback() line below.

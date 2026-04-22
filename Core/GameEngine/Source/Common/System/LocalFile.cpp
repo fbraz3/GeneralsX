@@ -58,6 +58,7 @@
 
 #include "Common/LocalFile.h"
 #include "Common/RAMFile.h"
+#include "Common/UnicodeString.h"
 #include "Lib/BaseType.h"
 #include "Common/PerfTimer.h"
 
@@ -436,14 +437,14 @@ Int LocalFile::writeFormat( const Char* format, ... )
 
 Int LocalFile::writeFormat( const WideChar* format, ... )
 {
-	WideChar buffer[1024];
-
+	// GeneralsX @bugfix copilot 19/04/2026 Route wide formatting through UnicodeString to keep MSVC-compatible %s/%S behavior on POSIX.
 	va_list args;
 	va_start(args, format);
-	Int length = vswprintf(buffer, sizeof(buffer) / sizeof(WideChar), format, args);
+	UnicodeString formatted;
+	formatted.format_va(format, args);
 	va_end(args);
 
-	return write( buffer, length * sizeof(WideChar) );
+	return write(formatted.str(), formatted.getLength() * sizeof(WideChar));
 }
 
 //=================================================================
