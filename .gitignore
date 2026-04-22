@@ -76,7 +76,7 @@ Generals/logs/
 /vcpkg_installed/
 
 # External reference repositories (large, don't commit)
-references/
+# references/
 
 # Release bundles
 GeneralsX-macos-*.zip
