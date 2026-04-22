@@ -38,7 +38,10 @@
 // leaking SDL3 includes to every consumer of UpdateChecker.h)
 // ---------------------------------------------------------------------------
 static SDL_Thread*   s_thread    = nullptr;
-static SDL_AtomicInt s_done      = {0};
+// s_done defaults to 1 ("already done / not started") so poll() returns
+// false immediately on early-return paths in start() that never launch a
+// thread. It is reset to 0 just before the thread is created.
+static SDL_AtomicInt s_done      = {1};
 static SDL_AtomicInt s_hasUpdate = {0};
 static char          s_latestTag[128] = {0};
 
@@ -62,6 +65,53 @@ static size_t curlWriteCallback(char* ptr, size_t size, size_t nmemb, void* user
         return 0; // signal error to curl
     body->append(ptr, total);
     return total;
+}
+
+// ---------------------------------------------------------------------------
+// Published-date extractor: parses "published_at": "VALUE" from JSON.
+// Returns the ISO-8601 datetime string (e.g. "2026-04-01T12:00:00Z").
+// ---------------------------------------------------------------------------
+static bool extractPublishedAt(const std::string& json, char* outDate, int outDateSize)
+{
+    const char* key = "\"published_at\"";
+    const char* pos = strstr(json.c_str(), key);
+    if (!pos)
+        return false;
+
+    pos += strlen(key);
+    while (*pos == ' ' || *pos == '\t' || *pos == ':')
+        ++pos;
+    if (*pos != '"')
+        return false;
+    ++pos;
+
+    int i = 0;
+    while (*pos && *pos != '"' && i < outDateSize - 1)
+        outDate[i++] = *pos++;
+    outDate[i] = '\0';
+    return i > 0;
+}
+
+// ---------------------------------------------------------------------------
+// Parse ISO-8601 UTC datetime "YYYY-MM-DDTHH:MM:SSZ" into time_t.
+// Returns -1 on parse failure.
+// ---------------------------------------------------------------------------
+static time_t parseISO8601(const char* s)
+{
+    struct tm t = {};
+    // sscanf is portable and avoids strptime (not available on all platforms)
+    if (sscanf(s, "%d-%d-%dT%d:%d:%dZ",
+               &t.tm_year, &t.tm_mon, &t.tm_mday,
+               &t.tm_hour, &t.tm_min, &t.tm_sec) != 6)
+        return (time_t)-1;
+    t.tm_year -= 1900;
+    t.tm_mon  -= 1;
+    t.tm_isdst = 0;
+#if defined(_WIN32)
+    return _mkgmtime(&t);
+#else
+    return timegm(&t);
+#endif
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +168,9 @@ static int SDLCALL threadFunc(void* /*userData*/)
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
+    // Prevent libcurl from using process-wide POSIX signals in multi-threaded builds.
+    // Required whenever curl is used from a non-main thread.
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 
     struct curl_slist* headers = nullptr;
     headers = curl_slist_append(headers, "Accept: application/vnd.github+json");
@@ -143,10 +196,10 @@ static int SDLCALL threadFunc(void* /*userData*/)
         return 0;
     }
 
-    // Compare with the current build tag.
-    // When GENERALS_FORCE_UPDATE_CHECK is set, skip the empty-tag guard and
-    // treat any non-empty response from GitHub as "update available" so the
-    // button shows in dev builds without a real tag.
+    // Compare publication date of the remote release against the local build's
+    // commit timestamp. Date comparison is tag-format-agnostic: it works for
+    // "GeneralsX-Beta-3", "v1.0.0", or any future scheme without modification.
+    // In force mode: any non-empty response is treated as "update available".
     const bool forceCheck = SDL_getenv("GENERALS_FORCE_UPDATE_CHECK") != nullptr;
     if (!forceCheck && GitTag[0] == '\0')
     {
@@ -154,9 +207,31 @@ static int SDLCALL threadFunc(void* /*userData*/)
         return 0;
     }
 
-    if (forceCheck ? (latestTag[0] != '\0') : strcmp(latestTag, GitTag) != 0)
+    bool hasUpdate = false;
+    if (forceCheck)
     {
-        // Latest tag differs from current build tag: update available
+        hasUpdate = latestTag[0] != '\0';
+    }
+    else
+    {
+        char publishedAt[64] = {0};
+        if (extractPublishedAt(responseBody, publishedAt, sizeof(publishedAt)))
+        {
+            time_t remoteTime = parseISO8601(publishedAt);
+            // Signal update only when the remote release was published strictly
+            // AFTER the commit this binary was built from.
+            if (remoteTime != (time_t)-1 && remoteTime > GitCommitTimeStamp)
+                hasUpdate = true;
+        }
+        else
+        {
+            // No published_at in response; fall back to tag string comparison.
+            hasUpdate = (strcmp(latestTag, GitTag) != 0);
+        }
+    }
+
+    if (hasUpdate)
+    {
         strncpy(s_latestTag, latestTag, sizeof(s_latestTag) - 1);
         s_latestTag[sizeof(s_latestTag) - 1] = '\0';
         SDL_SetAtomicInt(&s_hasUpdate, 1);
@@ -189,12 +264,21 @@ void UpdateChecker::start()
     SDL_SetAtomicInt(&s_hasUpdate, 0);
     s_latestTag[0] = '\0';
 
+    // Must be called once on the main thread before any curl handle is created.
+    // curl_global_cleanup() is intentionally omitted: the game process handles
+    // cleanup on exit and there is no safe single-owner shutdown hook here.
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
     s_thread = SDL_CreateThread(threadFunc, "UpdateChecker", nullptr);
     if (!s_thread)
     {
         // Thread creation failed; fail silently
         SDL_SetAtomicInt(&s_done, 1);
+        return;
     }
+    // Detach the thread so SDL frees its resources automatically when it exits.
+    // We communicate via SDL_AtomicInt (s_done / s_hasUpdate) instead of joining.
+    SDL_DetachThread(s_thread);
 }
 
 // ---------------------------------------------------------------------------

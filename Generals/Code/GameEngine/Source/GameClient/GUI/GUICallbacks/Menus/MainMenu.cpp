@@ -671,6 +671,16 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 		fallbackCreditLabel = nullptr;
 	}
 
+#ifdef SAGE_UPDATE_CHECK
+	// GeneralsX @bugfix BenderAI 21/04/2026 Destroy the update notification button on
+	// shutdown so the pointer cannot dangle if the main menu is reopened in the same session.
+	if (updateNotifyButton)
+	{
+		TheWindowManager->winDestroy(updateNotifyButton);
+		updateNotifyButton = nullptr;
+	}
+#endif
+
 	CancelPatchCheckCallback();
 
 	// if we are shutting down for an immediate pop, skip the animations

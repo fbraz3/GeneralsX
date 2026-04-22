@@ -38,9 +38,9 @@ permissions:
 jobs:
   # GeneralsX @build BenderAI 21/04/2026 Create git tag BEFORE builds so GitTag is set
   # in the binary (git_watcher.cmake uses --exact-match, requires tag at build time).
-  # Skipped entirely on dry_run: no tag should be created or pushed in test runs.
+  # The job always runs so that dependent build jobs are never skipped on dry_run.
+  # The tag creation step is guarded at step level: no tag is pushed on dry_run.
   create-tag:
-    if: inputs.dry_run == false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -59,6 +59,7 @@ jobs:
           echo "Release version: $VERSION"
 
       - name: Create and push git tag
+        if: inputs.dry_run == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -94,11 +95,19 @@ jobs:
 
   # GeneralsX @build BenderAI 21/04/2026 Roll back the pushed tag when anything
   # downstream of create-tag fails, so a re-run with the same version is possible.
-  # Only runs when: create-tag succeeded (tag was actually pushed) AND any
-  # subsequent job failed. Skipped on dry_run because no tag is ever pushed.
+  # Uses always() so this job runs even when upstream jobs are skipped/failed.
+  # prepare-release is intentionally excluded from needs: if a build fails,
+  # prepare-release is skipped (not failed), which would prevent cleanup from running.
   cleanup-tag-on-failure:
-    if: failure() && needs.create-tag.result == 'success'
-    needs: [create-tag, build-linux-flatpak, build-macos-zh, build-macos-generals, prepare-release]
+    if: >
+      always() &&
+      needs.create-tag.result == 'success' &&
+      (
+        needs.build-linux-flatpak.result == 'failure' ||
+        needs.build-macos-zh.result == 'failure' ||
+        needs.build-macos-generals.result == 'failure'
+      )
+    needs: [create-tag, build-linux-flatpak, build-macos-zh, build-macos-generals]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
