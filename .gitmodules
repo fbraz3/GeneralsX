@@ -10,6 +10,10 @@
 [submodule "references/thesuperhackers-main"]
 	path = references/thesuperhackers-main
 	url = https://github.com/TheSuperHackers/GeneralsGameCode.git
+[submodule "references/generals-online-client"]
+	path = references/generals-online-client
+	url = https://github.com/GeneralsOnlineDevelopmentTeam/GameClient.git
 [submodule "references/fbraz3-dxvk"]
 	path = references/fbraz3-dxvk
 	url = https://github.com/fbraz3/dxvk.git
+	branch = generalsx-macos-v2.6

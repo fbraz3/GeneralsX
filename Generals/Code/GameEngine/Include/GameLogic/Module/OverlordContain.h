@@ -69,6 +69,12 @@ public:
 	// Contain stuff we need to override to redirect on a condition
 	virtual void onContaining( Object *obj ) override;		///< object now contains 'obj'
 	virtual void onRemoving( Object *obj ) override;			///< object no longer contains 'obj'
+	virtual UpdateSleepTime update() override;
+	virtual void containReactToTransformChange() override;
+	// GeneralsX @bugfix copilot 21/04/2026 Issue #95: avoid fire-point redeploy for PORTABLE_STRUCTURE riders.
+	virtual void redeployOccupants() override;
+	virtual Bool isSpecificRiderFreeToExit(Object* obj) override;
+	virtual void exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor) override;
 
 	virtual Bool isValidContainerFor(const Object* obj, Bool checkCapacity) const override;
 	virtual void addToContain( Object *obj ) override;				///< add 'obj' to contain list
@@ -101,6 +107,7 @@ private:
 	ContainModuleInterface *getRedirectedContain() const; ///< And this gets what are redirecting to.
 	void activateRedirectedContain();///< I need to shut this off since I can talk directly to my bunker, but he can never directly see me
 	void deactivateRedirectedContain();
+	void syncPortablePosition();  ///< Sync portable rider position/orientation to the host Overlord.
 
 	Bool m_redirectionActivated;
 

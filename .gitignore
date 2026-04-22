@@ -71,8 +71,12 @@ __pycache__/
 /logs/
 GeneralsMD/logs/
 Generals/logs/
+
+# vcpkg artifacts (generated dependencies)
+/vcpkg_installed/
+
 # External reference repositories (large, don't commit)
-references/
+# references/
 
 # Release bundles
 GeneralsX-macos-*.zip
