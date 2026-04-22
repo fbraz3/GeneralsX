@@ -7,48 +7,52 @@
    - `$HOME/GeneralsX/Generals` for Command & Conquer: Generals
    - `$HOME/GeneralsX/GeneralsZH` for Command & Conquer: Generals - Zero Hour
 
-Legacy fallback during migration is still supported:
-
-- `$HOME/GeneralsX/GeneralsMD` for Command & Conquer: Generals - Zero Hour
-
 ## Linux
 
-1. Download the `.AppImage` file from this release (`GeneralsXZH-linux-x86_64.AppImage` for Zero Hour, `GeneralsX-linux-x86_64.AppImage` for the base game).
-2. Open a terminal, make it executable, and run it:
+1. Install Flatpak for your distribution by following the official setup guide:
+
+   https://flatpak.org/setup/
+
+   Each Linux distribution packages Flatpak differently, so rely on the upstream instructions for installing the Flatpak tool itself.
+
+2. Download the Linux Flatpak release asset (`GeneralsXZH-linux-flatpak.zip` for Zero Hour, `GeneralsX-linux-flatpak.zip` for the base game) and extract it. Each zip contains a single `.flatpak` bundle at the root of the archive.
+
+3. Install the Flatpak bundle:
 
    ```bash
-   chmod +x GeneralsXZH-linux-x86_64.AppImage
-   ./GeneralsXZH-linux-x86_64.AppImage -win
+   unzip GeneralsXZH-linux-flatpak.zip
+   flatpak --user install -y ./GeneralsXZH-linux64-deploy.flatpak
    ```
 
-   Troubleshooting: AppImages commonly use FUSE to mount their embedded filesystem at launch. If direct execution fails on a minimal or sandboxed system, try:
+   For the base game, use `GeneralsX-linux-flatpak.zip` and install `./GeneralsX-linux64-deploy.flatpak`.
+
+4. Launch the game with Flatpak:
 
    ```bash
-   APPIMAGE_EXTRACT_AND_RUN=1 ./GeneralsXZH-linux-x86_64.AppImage -win
+   flatpak run com.fbraz3.GeneralsXZH
    ```
 
-   Or extract and run manually:
+   For the base game:
 
    ```bash
-   ./GeneralsXZH-linux-x86_64.AppImage --appimage-extract
-   ./squashfs-root/AppRun -win
+   flatpak run com.fbraz3.GeneralsX
    ```
 
-3. The AppImage auto-detects game data in the following default locations (checked in order):
-   - `$HOME/GeneralsX/GeneralsZH` (preferred)
-   - `$HOME/GeneralsX/GeneralsMD` (legacy fallback)
+5. The Flatpak package auto-detects game data in the following default locations:
+   - `$HOME/GeneralsX/GeneralsZH`
+   - `$HOME/GeneralsX/Generals`
 
-   If your assets are stored elsewhere, set the environment variable before launching:
+   If your assets are stored elsewhere, pass the path explicitly when launching:
 
    ```bash
-   CNC_GENERALS_ZH_PATH=/path/to/your/zero-hour-data ./GeneralsXZH-linux-x86_64.AppImage -win
+   flatpak run --env=CNC_GENERALS_INSTALLPATH=/path/to/your/game-data com.fbraz3.GeneralsXZH -win
    ```
 
-   For the base game, use `CNC_GENERALS_PATH` instead.
+   The same `CNC_GENERALS_INSTALLPATH` override works for the base game package.
 
-4. All runtime libraries (DXVK, SDL3, OpenAL, FFmpeg, etc.) are bundled inside the AppImage. No additional packages need to be installed.
+6. The Flatpak bundle ships the required userspace runtime libraries (DXVK, SDL3, SDL3_image, OpenAL, FFmpeg, and related dependencies). You do not need to install those libraries manually on the host.
 
-> **GPU Driver note**: Vulkan support must be provided by your host GPU driver. For NVIDIA use the proprietary driver, for AMD/Intel use Mesa 21+. The AppImage does not bundle GPU drivers.
+> **GPU Driver note**: Vulkan support must be provided by your host GPU driver. For NVIDIA use the proprietary driver, for AMD/Intel use Mesa 21+. The Flatpak bundle does not ship GPU drivers.
 
 ## macOS
 
@@ -58,8 +62,6 @@ Legacy fallback during migration is still supported:
    - `$HOME/GeneralsX/Generals` for Generals
    - `$HOME/GeneralsX/GeneralsZH` for Zero Hour
 4. Because the app is not code-signed, macOS Gatekeeper will initially block it. After the first launch attempt, go to **System Settings -> Privacy & Security** and allow the application to run.
-
-If your existing setup still uses `$HOME/GeneralsX/GeneralsMD`, release scripts keep compatibility with that legacy path.
 
 ## Requirements
 
@@ -81,29 +83,14 @@ Current development and test matrix:
 
 Support for other platforms and configurations is possible but not yet officially tested.
 
-## Known Issues
+## Multiplayes features
 
-### Multiplayer
+- LAN play - it's broken for now and we have a [issue](https://github.com/fbraz3/GeneralsX/issues/86) to work on that.
+- Online features - not implemented and planned for the future.
 
-- LAN play has not been tested and is likely broken.
-- Online features are not implemented and are only planned for the distant future.
+## Known Issues & Limitations
 
-### Linux
-
-- Skirmish games currently result in an **instant win** as soon as the match starts, so this mode is not yet playable.
-  - Campaign and Generals Challenge modes are working.
-- [Zero Hour] Building and unit shadows do not render correctly. This is a visual issue only and does not affect gameplay logic.
-- Stealth units and GLA stealth buildings are visible as normal units/buildings instead of being hidden.
-- The sound system is mostly functional, but there are issues with long voice lines and some sound effects cutting out or not playing correctly.
-- There may be additional issues that have not yet been identified.
-
-### macOS
-
-All items listed in the Linux section apply, **except**:
-
-- All single-player modes, including Skirmish, Campaign, and Generals Challenge, are currently working on macOS.
-
-## Reporting Bugs
+For documented limitations and known bugs, check the [issues page](https://github.com/fbraz3/GeneralsX/issues).
 
 If you encounter problems while running the game, please [open an issue](https://github.com/fbraz3/GeneralsX/issues/new/choose) and include as much detail as possible, such as:
 

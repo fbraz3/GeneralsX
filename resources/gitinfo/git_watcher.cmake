@@ -202,7 +202,9 @@ function(GetGitState _working_dir)
             set(ENV{GIT_REV_LIST_COUNT} "0")
         endif()
 
-        RunGitCommand(describe --tags ${object})
+        # GeneralsX @build BenderAI 21/04/2026 Use --exact-match so GitTag is only set on
+        # commits that ARE the tag, never on dev builds with a prior tag in history.
+        RunGitCommand(describe --exact-match --tags ${object})
         if(exit_code EQUAL 0)
             set(ENV{GIT_TAG} ${output})
         else()

@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -22,16 +22,19 @@
  *                                                                                             *
  *                 Project Name : WW3D                                                         *
  *                                                                                             *
- *                     $Archive:: /VSS_Sync/ww3d2/dx8wrapper.cpp                              $*
+ *                     $Archive:: /Commando/Code/ww3d2/dx8wrapper.cpp                         $*
  *                                                                                             *
  *              Original Author:: Jani Penttinen                                               *
  *                                                                                             *
- *                      $Author:: Vss_sync                                                    $*
+ *                      $Author:: Kenny Mitchell                                               *
  *                                                                                             *
- *                     $Modtime:: 8/29/01 7:29p                                               $*
+ *                     $Modtime:: 08/05/02 1:27p                                              $*
  *                                                                                             *
- *                    $Revision:: 134                                                         $*
+ *                    $Revision:: 170                                                         $*
  *                                                                                             *
+ * 06/26/02 KM Matrix name change to avoid MAX conflicts                                       *
+ * 06/27/02 KM Render to shadow buffer texture support														*
+ * 06/27/02 KM Shader system updates																				*
  * 08/05/02 KM Texture class redesign
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
@@ -53,10 +56,7 @@
 // GeneralsX @build felipebraz 16/02/2026 - Need dlerror() for dlopen() error reporting on Linux
 #ifndef _WIN32
 #include <dlfcn.h>
-#include <cxxabi.h>
 #endif
-// GeneralsX @bugfix fbraz3 20/03/2026 - Need typeinfo for unknown-exception type logging
-#include <typeinfo>
 // GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)
 #ifdef _WIN32
 #include "dx8webbrowser.h"
@@ -101,6 +101,183 @@ const int DEFAULT_RESOLUTION_HEIGHT = 480;
 const int DEFAULT_BIT_DEPTH = 32;
 const int DEFAULT_TEXTURE_BIT_DEPTH = 16;
 const D3DMULTISAMPLE_TYPE DEFAULT_MSAA = D3DMULTISAMPLE_NONE;
+
+static D3DPRESENT_PARAMETERS _PresentParameters;
+
+// --- Pillarbox: render game to offscreen RT, blit centered onto backbuffer ---
+// GeneralsX @feature xxorza 15/04/2026 Unified pillarbox for fullscreen and windowed
+DX8Wrapper::DisplaySizeFunc DX8Wrapper::s_getNativeDisplaySize = nullptr;
+DX8Wrapper::DisplaySizeFunc DX8Wrapper::s_getWindowSize = nullptr;
+bool DX8Wrapper::s_pillarboxEnabled = false;
+bool DX8Wrapper::s_pillarboxActive = false;
+int DX8Wrapper::s_bbW = 0;
+int DX8Wrapper::s_bbH = 0;
+int DX8Wrapper::s_dstX = 0;
+int DX8Wrapper::s_dstY = 0;
+int DX8Wrapper::s_dstW = 0;
+int DX8Wrapper::s_dstH = 0;
+float DX8Wrapper::s_pixelDensity = 1.0f;
+IDirect3DTexture8* DX8Wrapper::s_offscreenTex = nullptr;
+IDirect3DSurface8* DX8Wrapper::s_offscreenSurf = nullptr;
+IDirect3DSurface8* DX8Wrapper::s_depthSurf = nullptr;
+IDirect3DSurface8* DX8Wrapper::s_savedBackbuffer = nullptr;
+IDirect3DSurface8* DX8Wrapper::s_savedDepth = nullptr;
+
+void DX8Wrapper::Set_Display_Size_Provider(DisplaySizeFunc nativeSize, DisplaySizeFunc windowSize)
+{
+	s_getNativeDisplaySize = nativeSize;
+	s_getWindowSize = windowSize;
+}
+
+bool DX8Wrapper::GetNativeDisplaySize(int& outW, int& outH, float& outDensity)
+{
+	return s_getNativeDisplaySize && s_getNativeDisplaySize(outW, outH, outDensity);
+}
+
+bool DX8Wrapper::GetWindowSize(int& outW, int& outH, float& outDensity)
+{
+	return s_getWindowSize && s_getWindowSize(outW, outH, outDensity);
+}
+
+void DX8Wrapper::Pillarbox_Cleanup()
+{
+	if (s_savedBackbuffer) { s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr; }
+	if (s_savedDepth) { s_savedDepth->Release(); s_savedDepth = nullptr; }
+	if (s_depthSurf) { s_depthSurf->Release(); s_depthSurf = nullptr; }
+	if (s_offscreenSurf) { s_offscreenSurf->Release(); s_offscreenSurf = nullptr; }
+	if (s_offscreenTex) { s_offscreenTex->Release(); s_offscreenTex = nullptr; }
+	s_pillarboxEnabled = false;
+	s_pillarboxActive = false;
+}
+
+bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
+{
+	Pillarbox_Cleanup();
+
+	// Determine backbuffer dimensions
+	int bbW, bbH;
+	float density;
+	if (!IsWindowed) {
+		if (!GetNativeDisplaySize(bbW, bbH, density)) return false;
+	} else {
+		if (!GetWindowSize(bbW, bbH, density)) {
+			bbW = gameW; bbH = gameH; density = 1.0f;
+		}
+	}
+
+	// No pillarbox needed if backbuffer matches game resolution
+	if (bbW == gameW && bbH == gameH) return false;
+
+	// Create offscreen render target at game resolution
+	HRESULT hr = D3DDevice->CreateTexture(gameW, gameH, 1, D3DUSAGE_RENDERTARGET,
+		D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &s_offscreenTex);
+	if (FAILED(hr)) return false;
+	s_offscreenTex->GetSurfaceLevel(0, &s_offscreenSurf);
+
+	// Create dedicated depth stencil at game resolution
+	hr = D3DDevice->CreateDepthStencilSurface(gameW, gameH,
+		_PresentParameters.AutoDepthStencilFormat, D3DMULTISAMPLE_NONE, &s_depthSurf);
+	if (FAILED(hr)) {
+		s_offscreenSurf->Release(); s_offscreenSurf = nullptr;
+		s_offscreenTex->Release(); s_offscreenTex = nullptr;
+		return false;
+	}
+
+	// Cache backbuffer size and compute aspect-correct fit rect once
+	s_bbW = bbW; s_bbH = bbH;
+	s_pixelDensity = density;
+	float gameAspect = (float)gameW / (float)gameH;
+	float bbAspect = (float)bbW / (float)bbH;
+	if (bbAspect > gameAspect) {
+		s_dstW = (int)(bbH * gameAspect); s_dstH = bbH;
+		s_dstX = (bbW - s_dstW) / 2; s_dstY = 0;
+	} else {
+		s_dstW = bbW; s_dstH = (int)(bbW / gameAspect);
+		s_dstX = 0; s_dstY = (bbH - s_dstH) / 2;
+	}
+	s_pillarboxEnabled = true;
+	fprintf(stderr, "INFO: Pillarbox: game=%dx%d, backbuffer=%dx%d, windowed=%d\n",
+		gameW, gameH, bbW, bbH, IsWindowed ? 1 : 0);
+	return true;
+}
+
+void DX8Wrapper::Pillarbox_Begin()
+{
+	if (!s_pillarboxEnabled || !s_offscreenSurf) return;
+	if (s_savedBackbuffer) { s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr; }
+	if (s_savedDepth) { s_savedDepth->Release(); s_savedDepth = nullptr; }
+	D3DDevice->GetRenderTarget(&s_savedBackbuffer);
+	D3DDevice->GetDepthStencilSurface(&s_savedDepth);
+	D3DDevice->SetRenderTarget(s_offscreenSurf, s_depthSurf);
+	// Clear the offscreen RT and its depth buffer. The Begin_Render clear targeted
+	// the backbuffer before we switched, so without this the offscreen would carry
+	// stale depth from the previous frame.
+	D3DDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
+		0x00000000, 1.0f, 0);
+	D3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+	D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+	D3DDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	s_pillarboxActive = true;
+}
+
+void DX8Wrapper::Pillarbox_End()
+{
+	if (!s_pillarboxActive || !s_savedBackbuffer) return;
+	s_pillarboxActive = false;
+
+	// Restore backbuffer (still inside active scene)
+	D3DDevice->SetRenderTarget(s_savedBackbuffer, s_savedDepth);
+	s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr;
+	if (s_savedDepth) { s_savedDepth->Release(); s_savedDepth = nullptr; }
+
+	// Blit offscreen texture centered onto backbuffer (fit rect cached in Pillarbox_Setup)
+	D3DVIEWPORT8 vp = {0, 0, (DWORD)s_bbW, (DWORD)s_bbH, 0.0f, 1.0f};
+	D3DDevice->SetViewport(&vp);
+	D3DDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0);
+
+	// Use DX8Wrapper's cached state setters so the cache stays in sync — no invalidation needed.
+	D3DDevice->SetTexture(0, s_offscreenTex);
+	Set_DX8_Render_State(D3DRS_ZENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_ZWRITEENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_LIGHTING, FALSE);
+	Set_DX8_Render_State(D3DRS_ALPHABLENDENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_ALPHATESTENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_CULLMODE, D3DCULL_NONE);
+	Set_DX8_Render_State(D3DRS_FOGENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_STENCILENABLE, FALSE);
+	Set_DX8_Render_State(D3DRS_COLORWRITEENABLE, 0xF);
+	Set_DX8_Render_State(D3DRS_CLIPPING, FALSE);
+	Set_DX8_Texture_Stage_State(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	Set_DX8_Texture_Stage_State(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+	Set_DX8_Texture_Stage_State(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+	Set_DX8_Texture_Stage_State(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	DWORD filterMode = (s_dstW == ResolutionWidth && s_dstH == ResolutionHeight)
+		? D3DTEXF_POINT : D3DTEXF_LINEAR;
+	Set_DX8_Texture_Stage_State(0, D3DTSS_MINFILTER, filterMode);
+	Set_DX8_Texture_Stage_State(0, D3DTSS_MAGFILTER, filterMode);
+
+	// D3D8 half-pixel offset: XYZRHW vertices need -0.5 for exact texel-to-pixel alignment
+	float x0 = (float)s_dstX - 0.5f, y0 = (float)s_dstY - 0.5f;
+	float x1 = (float)(s_dstX + s_dstW) - 0.5f, y1 = (float)(s_dstY + s_dstH) - 0.5f;
+	struct BV { float x, y, z, rhw; float u, v; };
+	BV quad[4] = {
+		{x0, y0, 0, 1, 0, 0}, {x1, y0, 0, 1, 1, 0},
+		{x0, y1, 0, 1, 0, 1}, {x1, y1, 0, 1, 1, 1},
+	};
+	D3DDevice->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_TEX1);
+	D3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(BV));
+	D3DDevice->SetTexture(0, nullptr);
+}
+
+bool DX8Wrapper::Pillarbox_Get_Rect(int& x, int& y, int& w, int& h)
+{
+	if (!s_pillarboxEnabled) return false;
+	x = (int)(s_dstX / s_pixelDensity);
+	y = (int)(s_dstY / s_pixelDensity);
+	w = (int)(s_dstW / s_pixelDensity);
+	h = (int)(s_dstH / s_pixelDensity);
+	return true;
+}
 
 DX8FrameStatistics DX8Wrapper::FrameStatistics;
 static DX8FrameStatistics LastFrameStatistics;
@@ -183,7 +360,6 @@ unsigned long DX8Wrapper::FrameCount = 0;
 
 bool								_DX8SingleThreaded										= false;
 
-static D3DPRESENT_PARAMETERS								_PresentParameters;
 static DynamicVectorClass<StringClass>					_RenderDeviceNameTable;
 static DynamicVectorClass<StringClass>					_RenderDeviceShortNameTable;
 static DynamicVectorClass<RenderDeviceDescClass>	_RenderDeviceDescriptionTable;
@@ -197,6 +373,34 @@ DX8_CleanupHook	 *DX8Wrapper::m_pCleanupHook=nullptr;
 #ifdef EXTENDED_STATS
 DX8_Stats	 DX8Wrapper::stats;
 #endif
+// Called once per frame from W3DDisplay::draw(). Checks if the window size
+// changed since last frame and reconfigures pillarbox accordingly.
+void DX8Wrapper::Pillarbox_Process_Resize()
+{
+	if (!IsWindowed || !D3DDevice) return;
+
+	int physW = 0, physH = 0;
+	float density = 1.0f;
+	if (!GetWindowSize(physW, physH, density)) return;
+
+	// Nothing to do if backbuffer already matches window
+	if ((int)_PresentParameters.BackBufferWidth == physW &&
+		(int)_PresentParameters.BackBufferHeight == physH) return;
+
+	Pillarbox_Cleanup();
+	_PresentParameters.BackBufferWidth = physW;
+	_PresentParameters.BackBufferHeight = physH;
+
+	if (!Reset_Device()) {
+		_PresentParameters.BackBufferWidth = ResolutionWidth;
+		_PresentParameters.BackBufferHeight = ResolutionHeight;
+		Reset_Device();
+		return;
+	}
+
+	Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
+}
+
 /***********************************************************************************
 **
 ** DX8Wrapper Implementation
@@ -346,26 +550,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 			// the graphics driver from potentially loading the old game dbghelp.dll and then crashing the game process.
 			DbgHelpGuard dbgHelpGuard;
 
-			// GeneralsX @bugfix fbraz3 20/03/2026 Wrap DXVK Direct3DCreate8 in try/catch so the actual
-			// DXVK/Vulkan error message is logged before the exception propagates up. DxvkError
-			// inherits std::exception (fixed in DXVK fork), and this catch makes the message visible
-			// even in case of unknown exceptions (e.g. NSException on macOS from MoltenVK).
-			try {
-				D3DInterface = Direct3DCreate8Ptr(D3D_SDK_VERSION);
-			} catch (const std::exception& e) {
-				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw std::exception: %s\n", e.what());
-				throw;
-			} catch (...) {
-#if defined(__APPLE__) || defined(__linux__)
-				// Log the raw (implementation-defined, often mangled) exception type to help diagnose NSException or other non-std throws
-				const std::type_info* ti = abi::__cxa_current_exception_type();
-				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw unknown exception (type: %s)\n",
-				        ti ? ti->name() : "<null>");
-#else
-				fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 threw unknown exception\n");
-#endif
-				throw;
-			}
+			D3DInterface = Direct3DCreate8Ptr(D3D_SDK_VERSION);		// TODO: handle failure cases...
 		}
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Direct3DCreate8 returned: %p\n", (void*)D3DInterface);
 		if (D3DInterface == nullptr) {
@@ -504,6 +689,12 @@ void DX8Wrapper::Invalidate_Cached_Render_States()
 	memset(&DX8Transforms, 0, sizeof(DX8Transforms));
 }
 
+void DX8Wrapper::Set_Transform_Dirty()
+{
+	memset(&DX8Transforms, 0, sizeof(DX8Transforms));
+	render_state_changed |= (unsigned)(WORLD_CHANGED | VIEW_CHANGED);
+}
+
 void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns()
 {
 	/*
@@ -511,8 +702,8 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns()
 	*/
 	int i;
 	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
-		if (render_state.vertex_buffer[i]) render_state.vertex_buffer[i]->Release_Engine_Ref();
-		REF_PTR_RELEASE(render_state.vertex_buffer[i]);
+		if (render_state.vertex_buffers[i]) render_state.vertex_buffers[i]->Release_Engine_Ref();
+		REF_PTR_RELEASE(render_state.vertex_buffers[i]);
 	}
 	if (render_state.index_buffer) render_state.index_buffer->Release_Engine_Ref();
 	REF_PTR_RELEASE(render_state.index_buffer);
@@ -577,11 +768,14 @@ bool DX8Wrapper::Create_Device()
 		return false;
 	}
 
-	Vertex_Processing_Behavior=D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-	if (caps.DevCaps&D3DDEVCAPS_HWTRANSFORMANDLIGHT)
+	Vertex_Processing_Behavior=(caps.DevCaps&D3DDEVCAPS_HWTRANSFORMANDLIGHT) ?
+		D3DCREATE_MIXED_VERTEXPROCESSING : D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+
+	// enable this when all 'get' dx calls are removed KJM
+	/*if (caps.DevCaps&D3DDEVCAPS_PUREDEVICE)
 	{
-		Vertex_Processing_Behavior=D3DCREATE_MIXED_VERTEXPROCESSING;
-	}
+		Vertex_Processing_Behavior|=D3DCREATE_PUREDEVICE;
+	}*/
 
 #ifdef CREATE_DX8_MULTI_THREADED
 	Vertex_Processing_Behavior|=D3DCREATE_MULTITHREADED;
@@ -709,6 +903,8 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 
 void DX8Wrapper::Release_Device()
 {
+	Pillarbox_Cleanup();
+
 	if (D3DDevice) {
 
 		for (int a=0;a<MAX_TEXTURE_STAGES;++a)
@@ -725,8 +921,8 @@ void DX8Wrapper::Release_Device()
 		*/
 		for (unsigned i=0;i<MAX_VERTEX_STREAMS;++i)
 		{
-			if (render_state.vertex_buffer[i]) render_state.vertex_buffer[i]->Release_Engine_Ref();
-			REF_PTR_RELEASE(render_state.vertex_buffer[i]);
+			if (render_state.vertex_buffers[i]) render_state.vertex_buffers[i]->Release_Engine_Ref();
+			REF_PTR_RELEASE(render_state.vertex_buffers[i]);
 		}
 		if (render_state.index_buffer) render_state.index_buffer->Release_Engine_Ref();
 		REF_PTR_RELEASE(render_state.index_buffer);
@@ -757,13 +953,6 @@ void DX8Wrapper::Enumerate_Devices()
 		HRESULT res = D3DInterface->GetAdapterIdentifier(adapter_index,D3DENUM_NO_WHQL_LEVEL,&id);
 
 		if (res == D3D_OK) {
-
-			/*
-			** Set up the device name
-			*/
-			StringClass device_name = id.Description;
-			_RenderDeviceNameTable.Add(device_name);
-			_RenderDeviceShortNameTable.Add(device_name);	// for now, just add the same name to the "pretty name table"
 
 			/*
 			** Set up the render device description
@@ -846,7 +1035,7 @@ void DX8Wrapper::Enumerate_Devices()
 
 bool DX8Wrapper::Set_Any_Render_Device()
 {
-	// Try windowed first
+	// Try fullscreen first
 	int dev_number = 0;
 	for (; dev_number < _RenderDeviceNameTable.Count(); dev_number++) {
 		if (Set_Render_Device(dev_number,-1,-1,-1,0,false)) {
@@ -854,7 +1043,7 @@ bool DX8Wrapper::Set_Any_Render_Device()
 		}
 	}
 
-	// Then fullscreen
+	// Then windowed
 	for (dev_number = 0; dev_number < _RenderDeviceNameTable.Count(); dev_number++) {
 		if (Set_Render_Device(dev_number,-1,-1,-1,1,false)) {
 			return true;
@@ -1040,15 +1229,30 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	*/
 	::ZeroMemory(&_PresentParameters, sizeof(D3DPRESENT_PARAMETERS));
 
+	// In fullscreen, set backbuffer to native display size for pillarbox rendering.
 	_PresentParameters.BackBufferWidth = ResolutionWidth;
 	_PresentParameters.BackBufferHeight = ResolutionHeight;
+	if (!IsWindowed) {
+		int nativeW, nativeH;
+		float density;
+		if (GetNativeDisplaySize(nativeW, nativeH, density)) {
+			_PresentParameters.BackBufferWidth = nativeW;
+			_PresentParameters.BackBufferHeight = nativeH;
+		}
+	}
 	_PresentParameters.BackBufferCount = IsWindowed ? 1 : 2;
 
-	_PresentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;
 	//I changed this to discard all the time (even when full-screen) since that the most efficient. 07-16-03 MW:
 	_PresentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;//IsWindowed ? D3DSWAPEFFECT_DISCARD : D3DSWAPEFFECT_FLIP;		// Shouldn't this be D3DSWAPEFFECT_FLIP?
 	_PresentParameters.hDeviceWindow = _Hwnd;
+	#ifndef _WIN32
+	// GeneralsX @bugfix xorza 14/04/2026 Force DXVK to use windowed presentation mode on Linux.
+	// DXVK's SDL3 WSI calls SDL_SetWindowPosition during fullscreen entry which Wayland rejects.
+	// SDL3 native fullscreen is applied separately after device creation (see W3DDisplay::init).
+	_PresentParameters.Windowed = TRUE;
+	#else
 	_PresentParameters.Windowed = IsWindowed;
+	#endif
 
 	_PresentParameters.EnableAutoDepthStencil = TRUE;				// Driver will attempt to match Z-buffer depth
 	_PresentParameters.Flags=0;											// We're not going to lock the backbuffer
@@ -1186,6 +1390,7 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	if (ret)
 	{
 		Render2DClass::Set_Screen_Resolution( RectClass( 0, 0, ResolutionWidth, ResolutionHeight ) );
+		Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
 	}
 
 	return ret;
@@ -1313,11 +1518,21 @@ bool DX8Wrapper::Set_Device_Resolution(int width,int height,int bits,int windowe
 {
 	if (D3DDevice != nullptr) {
 
-		if (width != -1) {
-			_PresentParameters.BackBufferWidth = ResolutionWidth = width;
-		}
-		if (height != -1) {
-			_PresentParameters.BackBufferHeight = ResolutionHeight = height;
+		if (width != -1) ResolutionWidth = width;
+		if (height != -1) ResolutionHeight = height;
+
+		_PresentParameters.BackBufferWidth = ResolutionWidth;
+		_PresentParameters.BackBufferHeight = ResolutionHeight;
+
+		// Release pillarbox RT before device reset
+		Pillarbox_Cleanup();
+		if (!IsWindowed) {
+			int nativeW, nativeH;
+			float density;
+			if (GetNativeDisplaySize(nativeW, nativeH, density)) {
+				_PresentParameters.BackBufferWidth = nativeW;
+				_PresentParameters.BackBufferHeight = nativeH;
+			}
 		}
 		if (resize_window)
 		{
@@ -1325,7 +1540,9 @@ bool DX8Wrapper::Set_Device_Resolution(int width,int height,int bits,int windowe
 		}
 #pragma message("TODO: support changing windowed status and changing the bit depth")
 		WWDEBUG_SAY(("DX8Wrapper::Set_Device_Resolution is resetting the device."));
-		return Reset_Device();
+		bool ok = Reset_Device();
+		if (ok) Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
+		return ok;
 	} else {
 		return false;
 	}
@@ -1741,6 +1958,11 @@ void DX8Wrapper::Begin_Scene()
 void DX8Wrapper::End_Scene(bool flip_frames)
 {
 	DX8_THREAD_ASSERT();
+
+	// Pillarbox: restore backbuffer + blit offscreen, all within the current scene
+	if (s_pillarboxActive && s_offscreenTex) {
+		Pillarbox_End();  // restores backbuffer, blits, invalidates cache
+	}
 	DX8CALL(EndScene());
 
 	// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only
@@ -1865,6 +2087,7 @@ void DX8Wrapper::Clear(bool clear_color, bool clear_z_stencil, const Vector3 &co
 	IDirect3DSurface8* depthbuffer;
 
 	_Get_D3D_Device8()->GetDepthStencilSurface(&depthbuffer);
+	DX8_RECORD_DX8_CALLS();
 
 	if (depthbuffer)
 	{
@@ -1909,16 +2132,16 @@ void DX8Wrapper::Set_Vertex_Buffer(const VertexBufferClass* vb, unsigned stream)
 {
 	render_state.vba_offset=0;
 	render_state.vba_count=0;
-	if (render_state.vertex_buffer[stream]) {
-		render_state.vertex_buffer[stream]->Release_Engine_Ref();
+	if (render_state.vertex_buffers[stream]) {
+		render_state.vertex_buffers[stream]->Release_Engine_Ref();
 	}
-	REF_PTR_SET(render_state.vertex_buffer[stream],const_cast<VertexBufferClass*>(vb));
+	REF_PTR_SET(render_state.vertex_buffers[stream],const_cast<VertexBufferClass*>(vb));
 	if (vb) {
 		vb->Add_Engine_Ref();
-		render_state.vertex_buffer_type[stream]=vb->Type();
+		render_state.vertex_buffer_types[stream]=vb->Type();
 	}
 	else {
-		render_state.vertex_buffer_type[stream]=BUFFER_TYPE_INVALID;
+		render_state.vertex_buffer_types[stream]=BUFFER_TYPE_INVALID;
 	}
 	render_state_changed|=VERTEX_BUFFER_CHANGED;
 }
@@ -1962,13 +2185,13 @@ void DX8Wrapper::Set_Vertex_Buffer(const DynamicVBAccessClass& vba_)
 		DX8Wrapper::Set_Vertex_Buffer(nullptr, i);
 	}
 
-	if (render_state.vertex_buffer[0]) render_state.vertex_buffer[0]->Release_Engine_Ref();
+	if (render_state.vertex_buffers[0]) render_state.vertex_buffers[0]->Release_Engine_Ref();
 	DynamicVBAccessClass& vba=const_cast<DynamicVBAccessClass&>(vba_);
-	render_state.vertex_buffer_type[0]=vba.Get_Type();
+	render_state.vertex_buffer_types[0]=vba.Get_Type();
 	render_state.vba_offset=vba.VertexBufferOffset;
 	render_state.vba_count=vba.Get_Vertex_Count();
-	REF_PTR_SET(render_state.vertex_buffer[0],vba.VertexBuffer);
-	render_state.vertex_buffer[0]->Add_Engine_Ref();
+	REF_PTR_SET(render_state.vertex_buffers[0],vba.VertexBuffer);
+	render_state.vertex_buffers[0]->Add_Engine_Ref();
 	render_state_changed|=VERTEX_BUFFER_CHANGED;
 	render_state_changed|=INDEX_BUFFER_CHANGED;		// vba_offset changes so index buffer needs to be reset as well.
 }
@@ -2006,14 +2229,14 @@ void DX8Wrapper::Draw_Sorting_IB_VB(
 	unsigned short min_vertex_index,
 	unsigned short vertex_count)
 {
-	WWASSERT(render_state.vertex_buffer_type[0]==BUFFER_TYPE_SORTING || render_state.vertex_buffer_type[0]==BUFFER_TYPE_DYNAMIC_SORTING);
+	WWASSERT(render_state.vertex_buffer_types[0]==BUFFER_TYPE_SORTING || render_state.vertex_buffer_types[0]==BUFFER_TYPE_DYNAMIC_SORTING);
 	WWASSERT(render_state.index_buffer_type==BUFFER_TYPE_SORTING || render_state.index_buffer_type==BUFFER_TYPE_DYNAMIC_SORTING);
 
 	// Fill dynamic vertex buffer with sorting vertex buffer vertices
 	DynamicVBAccessClass dyn_vb_access(BUFFER_TYPE_DYNAMIC_DX8,dynamic_fvf_type,vertex_count);
 	{
 		DynamicVBAccessClass::WriteLockClass lock(&dyn_vb_access);
-		VertexFormatXYZNDUV2* src = static_cast<SortingVertexBufferClass*>(render_state.vertex_buffer[0])->VertexBuffer;
+		VertexFormatXYZNDUV2* src = static_cast<SortingVertexBufferClass*>(render_state.vertex_buffers[0])->VertexBuffer;
 		VertexFormatXYZNDUV2* dest= lock.Get_Formatted_Vertex_Array();
 		src += render_state.vba_offset + render_state.index_base_offset + min_vertex_index;
 		unsigned  size = dyn_vb_access.FVF_Info().Get_FVF_Size()*vertex_count/sizeof(unsigned);
@@ -2155,10 +2378,10 @@ void DX8Wrapper::Draw(
 
 	if (vertex_count<3) {
 		min_vertex_index=0;
-		switch (render_state.vertex_buffer_type[0]) {
+		switch (render_state.vertex_buffer_types[0]) {
 		case BUFFER_TYPE_DX8:
 		case BUFFER_TYPE_SORTING:
-			vertex_count=render_state.vertex_buffer[0]->Get_Vertex_Count()-render_state.index_base_offset-render_state.vba_offset-min_vertex_index;
+			vertex_count=render_state.vertex_buffers[0]->Get_Vertex_Count()-render_state.index_base_offset-render_state.vba_offset-min_vertex_index;
 			break;
 		case BUFFER_TYPE_DYNAMIC_DX8:
 		case BUFFER_TYPE_DYNAMIC_SORTING:
@@ -2167,7 +2390,7 @@ void DX8Wrapper::Draw(
 		}
 	}
 
-	switch (render_state.vertex_buffer_type[0]) {
+	switch (render_state.vertex_buffer_types[0]) {
 	case BUFFER_TYPE_DX8:
 	case BUFFER_TYPE_DYNAMIC_DX8:
 		switch (render_state.index_buffer_type) {
@@ -2293,7 +2516,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 	{
 		if (render_state_changed&mask)
 		{
-			SNAPSHOT_SAY(("DX8 - apply texture %d",i));
+			SNAPSHOT_SAY(("DX8 - apply texture %d (%s)",i,render_state.Textures[i] ? render_state.Textures[i]->Get_Full_Path().str() : "null"));
 
 			if (render_state.Textures[i])
 			{
@@ -2345,7 +2568,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 				}
 				else {
 					Set_DX8_Light(index,nullptr);
-					SNAPSHOT_SAY((" clearing light to NULL"));
+					SNAPSHOT_SAY((" clearing light to null"));
 				}
 			}
 		}
@@ -2364,18 +2587,18 @@ void DX8Wrapper::Apply_Render_State_Changes()
 	if (render_state_changed&VERTEX_BUFFER_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply vb change"));
 		for (i=0;i<MAX_VERTEX_STREAMS;++i) {
-			if (render_state.vertex_buffer[i]) {
-				switch (render_state.vertex_buffer_type[i]) {//->Type()) {
+			if (render_state.vertex_buffers[i]) {
+				switch (render_state.vertex_buffer_types[i]) {//->Type()) {
 				case BUFFER_TYPE_DX8:
 				case BUFFER_TYPE_DYNAMIC_DX8:
 					DX8CALL(SetStreamSource(
 						i,
-						static_cast<DX8VertexBufferClass*>(render_state.vertex_buffer[i])->Get_DX8_Vertex_Buffer(),
-						render_state.vertex_buffer[i]->FVF_Info().Get_FVF_Size()));
+						static_cast<DX8VertexBufferClass*>(render_state.vertex_buffers[i])->Get_DX8_Vertex_Buffer(),
+						render_state.vertex_buffers[i]->FVF_Info().Get_FVF_Size()));
 					DX8_RECORD_VERTEX_BUFFER_CHANGE();
 					{
 						// If the VB format is FVF, set the FVF as a vertex shader
-						unsigned fvf=render_state.vertex_buffer[i]->FVF_Info().Get_FVF();
+						unsigned fvf=render_state.vertex_buffers[i]->FVF_Info().Get_FVF();
 						if (fvf!=0) {
 							Set_Vertex_Shader(fvf);
 						}
@@ -2462,6 +2685,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 			return nullptr;
 		}
 
+		// If ran out of texture ram, try invalidating some textures and mesh cache.
 		if (ret==D3DERR_OUTOFVIDEOMEMORY) {
 			WWDEBUG_SAY(("Error: Out of memory while creating render target. Trying to release assets..."));
 			// Free all textures that haven't been used in the last 5 seconds
@@ -3117,16 +3341,14 @@ void DX8Wrapper::Set_Light(unsigned index,const LightClass &light)
 	Set_Light(index,&dlight);
 }
 
-// ----------------------------------------------------------------------------
-//
-// Set the light environment. This is a lighting model which used up to four
-// directional lights to produce the lighting.
-//
+//**********************************************************************************************
+//! Set the light environment. This is a lighting model which used up to four
+//! directional lights to produce the lighting.
+/*! 5/27/02 KJM Added shader light environment support
+*/
 void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 {
 	// Shader light environment support															*
-//	if (Light_Environment && light_env && (*Light_Environment)==(*light_env)) return;
-
 	Light_Environment=light_env;
 
 	if (light_env)
@@ -3930,7 +4152,7 @@ void DX8Wrapper::Apply_Default_State()
 	VertexMaterialClass::Apply_Null();
 
 	for (unsigned index=0;index<4;++index) {
-		SNAPSHOT_SAY(("Clearing light %d to NULL",index));
+		SNAPSHOT_SAY(("Clearing light %d to null",index));
 		Set_DX8_Light(index,nullptr);
 	}
 

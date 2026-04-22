@@ -92,6 +92,10 @@ include(cmake/lzhl.cmake)
 # openal.cmake is self-guarded with if(SAGE_USE_OPENAL), so this is always safe to include.
 include(cmake/openal.cmake)
 
+# GeneralsX @feature BenderAI 21/04/2026 libcurl for in-game update checker (SAGE_UPDATE_CHECK builds)
+# curl.cmake is self-guarded with if(SAGE_UPDATE_CHECK), so always safe to include.
+include(cmake/curl.cmake)
+
 if (IS_VS6_BUILD)
     # The original max sdk does not compile against a modern compiler.
     # If there is a desire to make this work, then a fixed max sdk needs to be created.
@@ -108,6 +112,14 @@ endif()
 add_subdirectory(resources)
 
 add_subdirectory(Core)
+
+# GeneralsX @bugfix GitHubCopilot 14/04/2026 CompatLib must be configured on UNIX even when
+# only Generals (not ZH) is built. It sets up d3d8lib INTERFACE includes for DXVK headers
+# (windows_base.h) that core_wwcommon depends on transitively. When ZH is built,
+# GeneralsMD/Code/CMakeLists.txt already includes CompatLib via add_subdirectory.
+if(UNIX AND NOT RTS_BUILD_ZEROHOUR)
+    add_subdirectory(GeneralsMD/Code/CompatLib)
+endif()
 
 # Add main build targets
 if(RTS_BUILD_ZEROHOUR)

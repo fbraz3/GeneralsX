@@ -25,6 +25,7 @@ jobs:
     outputs:
       zh-should-build: ${{ steps.filter.outputs.zh-should-build }}
       base-should-build: ${{ steps.filter.outputs.base-should-build }}
+      flatpak-should-build: ${{ steps.filter.outputs.flatpak-should-build }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -53,6 +54,18 @@ jobs:
               - 'CMakePresets.json'
               - '.github/workflows/build-*.yml'
               - '.github/workflows/ci.yml'
+            flatpak-should-build:
+              - 'flatpak/**'
+              - 'GeneralsMD/**'
+              - 'Generals/**'
+              - 'Core/**'
+              - 'Dependencies/**'
+              - 'cmake/**'
+              - 'CMakeLists.txt'
+              - 'CMakePresets.json'
+              - 'scripts/build/linux/build-linux-flatpak.sh'
+              - '.github/workflows/build-linux-flatpak.yml'
+              - '.github/workflows/ci.yml'
 
       - name: Build Trigger Summary
         run: |
@@ -70,51 +83,63 @@ jobs:
           else
             echo "| GeneralsX Base (Generals) | ⏭️ No changes |" >> $GITHUB_STEP_SUMMARY
           fi
+          if [ "${{ steps.filter.outputs.flatpak-should-build }}" = "true" ]; then
+            echo "| Linux Flatpak | ✅ Changes detected |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Linux Flatpak | ⏭️ No changes |" >> $GITHUB_STEP_SUMMARY
+          fi
 
-  build-linux:
-    name: Build Linux (GeneralsMD)
+  build-linux-gzip:
+    name: Build Linux gzip
     needs: detect-changes
-    if: needs.detect-changes.outputs.zh-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-linux.yml
     with:
-      game: GeneralsMD
       preset: linux64-deploy
+      package_format: gzip
     secrets: inherit
 
-  build-linux-generals:
-    name: Build Linux (Generals)
+  build-linux-appimage:
+    name: Build Linux AppImage
     needs: detect-changes
-    if: needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-linux.yml
     with:
-      game: Generals
       preset: linux64-deploy
+      package_format: appimage
     secrets: inherit
 
   build-macos:
-    name: Build macOS (GeneralsMD)
+    name: Build macOS
     needs: detect-changes
-    if: needs.detect-changes.outputs.zh-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-macos.yml
     with:
-      game: GeneralsMD
       preset: macos-vulkan
     secrets: inherit
 
-  build-macos-generals:
-    name: Build macOS (Generals)
+  build-linux-flatpak:
+    name: Build Linux Flatpak
     needs: detect-changes
-    if: needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
-    uses: ./.github/workflows/build-macos.yml
+    if: needs.detect-changes.outputs.flatpak-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/build-linux-flatpak.yml
     with:
+<<<<<<< HEAD
       game: Generals
       preset: macos-vulkan
+=======
+      preset: linux64-deploy
+>>>>>>> 5008a2614efef110196d72db68e67578ec600c88
     secrets: inherit
 
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
+<<<<<<< HEAD
     needs: [build-linux, build-linux-generals, build-macos, build-macos-generals]
+=======
+    needs: [build-linux-gzip, build-linux-appimage, build-macos, build-linux-flatpak]
+>>>>>>> 5008a2614efef110196d72db68e67578ec600c88
     if: always()
     steps:
       - name: Generate Summary
@@ -123,16 +148,27 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+<<<<<<< HEAD
           echo "| Linux (x86_64) | ${{ needs.build-linux.result == 'success' && '✅ Success' || needs.build-linux.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Generals Base (x86_64) | ${{ needs.build-linux-generals.result == 'success' && '✅ Success' || needs.build-linux-generals.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS Generals Base (arm64) | ${{ needs.build-macos-generals.result == 'success' && '✅ Success' || needs.build-macos-generals.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+=======
+          echo "| Linux gzip (x86_64) | ${{ needs.build-linux-gzip.result == 'success' && '✅ Success' || needs.build-linux-gzip.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-gzip.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux AppImage (x86_64) | ${{ needs.build-linux-appimage.result == 'success' && '✅ Success' || needs.build-linux-appimage.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-appimage.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+>>>>>>> 5008a2614efef110196d72db68e67578ec600c88
 
       - name: Fail if Any Build Failed
         if: |
-          needs.build-linux.result == 'failure' ||
-          needs.build-linux-generals.result == 'failure' ||
+          needs.build-linux-gzip.result == 'failure' ||
+          needs.build-linux-appimage.result == 'failure' ||
           needs.build-macos.result == 'failure' ||
+<<<<<<< HEAD
           needs.build-macos-generals.result == 'failure'
+=======
+          needs.build-linux-flatpak.result == 'failure'
+>>>>>>> 5008a2614efef110196d72db68e67578ec600c88
         run: exit 1
 

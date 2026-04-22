@@ -52,13 +52,12 @@ if(SAGE_USE_SDL3)
     # Linux: System libpng16.so is dynamic shared library
     # macOS: Use Homebrew PNG or system framework
     if(NOT APPLE)
-        # Linux: explicit libpng16.so path
-        set(PNG_SHARED ON CACHE BOOL "Require PNG as shared library" FORCE)
-        set(PNG_INCLUDE_DIR "/usr/include" CACHE PATH "PNG include dir (system)" FORCE)
-        set(PNG_LIBRARY "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG library (system .so)" FORCE)
-        set(PNG_LIBRARY_DEBUG "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG debug library" FORCE)
-        set(PNG_LIBRARY_RELEASE "/usr/lib/x86_64-linux-gnu/libpng16.so.16" CACHE FILEPATH "PNG release library" FORCE)
-        set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+        # Find system shared libpng, bypassing vcpkg's static .a.
+        # SDL3_image requires a shared .so but vcpkg only provides static libpng16.a.
+        # NO_CMAKE_PATH + NO_CMAKE_FIND_ROOT_PATH skips all vcpkg-injected search paths,
+        # so find_library uses only system paths (/usr/lib, /usr/lib64, multilib dirs).
+        find_library(PNG_LIBRARY NAMES png16 png NO_CMAKE_PATH NO_CMAKE_FIND_ROOT_PATH)
+        find_path(PNG_PNG_INCLUDE_DIR png.h PATH_SUFFIXES libpng16 NO_CMAKE_PATH NO_CMAKE_FIND_ROOT_PATH)
         find_package(PNG REQUIRED MODULE)
     else()
         # macOS: Force Homebrew's dynamic libpng, bypassing vcpkg's static .a

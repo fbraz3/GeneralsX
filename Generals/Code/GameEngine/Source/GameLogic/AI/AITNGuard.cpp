@@ -502,6 +502,27 @@ StateReturnType AITNGuardOuterState::onEnter()
 StateReturnType AITNGuardOuterState::update()
 {
 	Object *owner = getMachineOwner();
+	if (m_attackState == nullptr)
+	{
+		// GeneralsX @bugfix fbraz3 16/04/2026 Recreate missing attack sub-state to avoid null dereference in guard update.
+		Object* nemesis = TheGameLogic->findObjectByID(getGuardMachine()->getNemesisID());
+		if (nemesis == nullptr)
+		{
+			DEBUG_LOG(("AITNGuardOuterState::update has no attack state and no nemesis."));
+			return STATE_SUCCESS;
+		}
+
+		m_exitConditions.m_attackGiveUpFrame = TheGameLogic->getFrame() + TheAI->getAiData()->m_guardChaseUnitFrames;
+		m_attackState = newInstance(AIAttackState)(getMachine(), false, true, false, &m_exitConditions);
+		m_attackState->getMachine()->setGoalObject(nemesis);
+
+		StateReturnType returnVal = m_attackState->onEnter();
+		if (returnVal != STATE_CONTINUE)
+		{
+			return returnVal;
+		}
+	}
+
 	Object* goalObj = m_attackState->getMachineGoalObject();
 	if (goalObj)
 	{
@@ -512,7 +533,10 @@ StateReturnType AITNGuardOuterState::update()
 		}
 		// Check if team auto targets same victim.
 		Object *teamVictim = nullptr;
-		if (goalObj == nullptr && owner->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget)
+		if (goalObj == nullptr
+			&& owner->getTeam()
+			&& owner->getTeam()->getPrototype()
+			&& owner->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget)
 		{
 			teamVictim = owner->getTeam()->getTeamTargetObject();
 			if (teamVictim)

@@ -1098,3 +1098,5 @@ target_precompile_headers(g_gameengine PRIVATE
     [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
     Include/Precompiled/PreRTS.h
 )
+
+# UpdateChecker is now in Core/GameEngine (shared between Generals and GeneralsMD).

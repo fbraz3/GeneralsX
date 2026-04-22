@@ -11,21 +11,15 @@ on:
         description: "Additional notes (optional markdown)"
         required: false
         type: string
-      create_release:
-        description: "Create new release"
+      release_mode:
+        description: "Release mode"
         required: false
-        type: boolean
-        default: false
-      is_prerelease:
-        description: "Mark as pre-release"
-        required: false
-        type: boolean
-        default: false
-      dry_run:
-        description: "Dry run: never create tag/release, only generate notes + artifacts"
-        required: false
-        type: boolean
-        default: false
+        type: choice
+        options:
+          - New Release
+          - Draft
+          - Dry Run
+        default: New Release
 
 concurrency:
   group: release-${{ github.workflow }}-${{ inputs.release_version }}
@@ -36,35 +30,91 @@ permissions:
   pull-requests: write
 
 jobs:
-  build-linux-zh:
-    uses: ./.github/workflows/build-linux.yml
-    with:
-      game: GeneralsMD
-      preset: linux64-deploy
-      package_format: appimage
+  # GeneralsX @build BenderAI 21/04/2026 Create git tag BEFORE builds so GitTag is set
+  # in the binary (git_watcher.cmake uses --exact-match, requires tag at build time).
+  # The job always runs so that dependent build jobs are never skipped on dry_run.
+  # The tag creation step is guarded at step level: no tag is pushed on dry_run.
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
-  build-linux-generals:
-    uses: ./.github/workflows/build-linux.yml
-    with:
-      game: Generals
-      preset: linux64-deploy
-      package_format: appimage
+      - name: Validate version input
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: release_version is required"
+            exit 1
+          fi
+          echo "Release version: $VERSION"
 
-  build-macos-zh:
+      - name: Create and push git tag
+        if: inputs.release_mode != 'Dry Run'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          if git show-ref --tags --verify --quiet "refs/tags/$VERSION"; then
+            echo "ERROR: Tag $VERSION already exists"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+
+  build-linux-flatpak:
+    needs: [create-tag]
+    uses: ./.github/workflows/build-linux-flatpak.yml
+    with:
+      preset: linux64-deploy
+
+  build-macos:
+    needs: [create-tag]
     uses: ./.github/workflows/build-macos.yml
     with:
-      game: GeneralsMD
       preset: macos-vulkan
 
-  build-macos-generals:
-    uses: ./.github/workflows/build-macos.yml
-    with:
-      game: Generals
-      preset: macos-vulkan
+  # GeneralsX @build BenderAI 21/04/2026 Roll back the pushed tag when anything
+  # downstream of create-tag fails, so a re-run with the same version is possible.
+  # Uses always() so this job runs even when upstream jobs are skipped/failed.
+  # prepare-release is intentionally excluded from needs: if a build fails,
+  # prepare-release is skipped (not failed), which would prevent cleanup from running.
+  cleanup-tag-on-failure:
+    if: >
+      always() &&
+      inputs.release_mode != 'Dry Run' &&
+      needs.create-tag.result == 'success' &&
+      (
+        needs.build-linux-flatpak.result == 'failure' ||
+        needs.build-macos.result == 'failure'
+      )
+    needs: [create-tag, build-linux-flatpak, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Delete orphaned tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          echo "Pipeline failed after tag was pushed. Deleting orphaned tag: $VERSION"
+          git push origin --delete "refs/tags/$VERSION" \
+            && echo "Tag $VERSION deleted from remote." \
+            || echo "Tag $VERSION not found on remote, nothing to delete."
 
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [build-linux-zh, build-linux-generals, build-macos-zh, build-macos-generals]
+    needs: [build-linux-flatpak, build-macos]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -75,26 +125,25 @@ jobs:
       - name: Validate release inputs
         run: |
           VERSION="${{ inputs.release_version }}"
-          DRY_RUN="${{ inputs.dry_run }}"
-
+          RELEASE_MODE="${{ inputs.release_mode }}"
           if [ -z "$VERSION" ]; then
             echo "ERROR: release_version is required"
             exit 1
           fi
-
-          if [ "$DRY_RUN" = "true" ]; then
+          echo "Release version: $VERSION"
+          echo "Release mode: $RELEASE_MODE"
+          if [ "$RELEASE_MODE" = "Dry Run" ]; then
             echo "Dry run enabled. Tag/release creation will be skipped."
           else
-            if git show-ref --tags --verify --quiet "refs/tags/$VERSION"; then
-              echo "ERROR: Tag $VERSION already exists"
-              exit 1
-            fi
+            echo "Release tag is managed by create-tag job."
           fi
 
       - name: Detect latest release tag
         id: latest
         run: |
-          LATEST_TAG=$(git tag -l "GeneralsX*" --sort=-version:refname --merged HEAD | head -1)
+          CURRENT_TAG="${{ inputs.release_version }}"
+          # GeneralsX @bugfix GitHubCopilot 21/04/2026 Exclude the in-flight release tag so changelog compares against the previous published release.
+          LATEST_TAG=$(git tag -l "GeneralsX*" --sort=-version:refname --merged HEAD | grep -Fxv "$CURRENT_TAG" | head -1)
           if [ -z "$LATEST_TAG" ]; then
             echo "latest_tag=" >> "$GITHUB_OUTPUT"
             echo "latest_tag_date=" >> "$GITHUB_OUTPUT"
@@ -106,17 +155,17 @@ jobs:
             echo "first_release=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download Linux appimage artifact
+      - name: Download Linux Zero Hour Flatpak artifact
         uses: actions/download-artifact@v4
         with:
-          name: linux-generalsxzh-linux64-appimage
-          path: artifacts/linux
+          name: linux-flatpak-generalsxzh-linux64-deploy
+          path: artifacts/linux-flatpak-zh
 
-      - name: Download Linux Generals appimage artifact
+      - name: Download Linux Generals Flatpak artifact
         uses: actions/download-artifact@v4
         with:
-          name: linux-generalsx-linux64-appimage
-          path: artifacts/linux-generals
+          name: linux-flatpak-generalsx-linux64-deploy
+          path: artifacts/linux-flatpak-generals
 
       - name: Download macOS bundle artifact
         uses: actions/download-artifact@v4
@@ -133,43 +182,22 @@ jobs:
       - name: Normalize bundle files for release assets
         id: assets
         env:
-          DRY_RUN: ${{ inputs.dry_run }}
+          RELEASE_MODE: ${{ inputs.release_mode }}
         run: |
           mkdir -p release-assets
 
-          # GeneralsX @build GitHubCopilot 10/04/2026 Prefer AppImage artifacts; fall back to legacy tar bundle.
-          LINUX_APPIMAGE=$(find artifacts/linux -name "*.AppImage" | head -1)
-          if [ -n "$LINUX_APPIMAGE" ] && [ -f "$LINUX_APPIMAGE" ]; then
-            cp "$LINUX_APPIMAGE" release-assets/GeneralsXZH-linux-x86_64.AppImage
-            LINUX_OUT="$GITHUB_WORKSPACE/release-assets/GeneralsXZH-linux-x86_64.AppImage"
-          else
-            LINUX_TAR=$(find artifacts/linux -name "*.tar" | head -1)
-            if [ -z "$LINUX_TAR" ] || [ ! -f "$LINUX_TAR" ]; then
-              echo "ERROR: Linux ZH bundle not found in artifacts/linux"
-              find artifacts/linux -maxdepth 3 -type f || true
-              exit 1
-            fi
-            mkdir -p /tmp/linux-bundle
-            tar -xf "$LINUX_TAR" -C /tmp/linux-bundle
-            (cd /tmp/linux-bundle && zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip" .)
-            LINUX_OUT="$GITHUB_WORKSPACE/release-assets/linux-generalsxzh-linux64-bundle.zip"
+          LINUX_ZH_FLATPAK=$(find artifacts/linux-flatpak-zh -name "*.flatpak" | head -1)
+          if [ -z "$LINUX_ZH_FLATPAK" ] || [ ! -f "$LINUX_ZH_FLATPAK" ]; then
+            echo "ERROR: Linux ZH Flatpak bundle not found in artifacts/linux-flatpak-zh"
+            find artifacts/linux-flatpak-zh -maxdepth 3 -type f || true
+            exit 1
           fi
 
-          LINUX_GENERALS_APPIMAGE=$(find artifacts/linux-generals -name "*.AppImage" | head -1)
-          if [ -n "$LINUX_GENERALS_APPIMAGE" ] && [ -f "$LINUX_GENERALS_APPIMAGE" ]; then
-            cp "$LINUX_GENERALS_APPIMAGE" release-assets/GeneralsX-linux-x86_64.AppImage
-            LINUX_GENERALS_OUT="$GITHUB_WORKSPACE/release-assets/GeneralsX-linux-x86_64.AppImage"
-          else
-            LINUX_GENERALS_TAR=$(find artifacts/linux-generals -name "*.tar" | head -1)
-            if [ -z "$LINUX_GENERALS_TAR" ] || [ ! -f "$LINUX_GENERALS_TAR" ]; then
-              echo "ERROR: Linux Generals bundle not found in artifacts/linux-generals"
-              find artifacts/linux-generals -maxdepth 3 -type f || true
-              exit 1
-            fi
-            mkdir -p /tmp/linux-generals-bundle
-            tar -xf "$LINUX_GENERALS_TAR" -C /tmp/linux-generals-bundle
-            (cd /tmp/linux-generals-bundle && zip -r "$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip" .)
-            LINUX_GENERALS_OUT="$GITHUB_WORKSPACE/release-assets/linux-generalsx-linux64-bundle.zip"
+          LINUX_GENERALS_FLATPAK=$(find artifacts/linux-flatpak-generals -name "*.flatpak" | head -1)
+          if [ -z "$LINUX_GENERALS_FLATPAK" ] || [ ! -f "$LINUX_GENERALS_FLATPAK" ]; then
+            echo "ERROR: Linux Generals Flatpak bundle not found in artifacts/linux-flatpak-generals"
+            find artifacts/linux-flatpak-generals -maxdepth 3 -type f || true
+            exit 1
           fi
 
           MAC_TAR=$(find artifacts/macos -name "*.tar" | head -1)
@@ -189,7 +217,7 @@ jobs:
             exit 1
           fi
 
-          if [ "$DRY_RUN" = "true" ]; then
+          if [ "$RELEASE_MODE" = "Dry Run" ]; then
             echo "Dry run enabled: skipping zip normalization to avoid large preview artifacts."
             echo "linux_generals_asset=" >> "$GITHUB_OUTPUT"
             echo "linux_asset=" >> "$GITHUB_OUTPUT"
@@ -198,11 +226,15 @@ jobs:
             exit 0
           fi
 
+          # GeneralsX @build GitHubCopilot 14/04/2026 Linux release now ships native Flatpak bundles instead of zip wrappers.
+          cp "$LINUX_ZH_FLATPAK" release-assets/GeneralsXZH-linux.flatpak
+          cp "$LINUX_GENERALS_FLATPAK" release-assets/GeneralsX-linux.flatpak
+
           cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
           zip -j release-assets/macos-generalsx-app.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
 
-          echo "linux_generals_asset=$LINUX_GENERALS_OUT" >> "$GITHUB_OUTPUT"
-          echo "linux_asset=$LINUX_OUT" >> "$GITHUB_OUTPUT"
+          echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/GeneralsX-linux.flatpak" >> "$GITHUB_OUTPUT"
+          echo "linux_asset=$GITHUB_WORKSPACE/release-assets/GeneralsXZH-linux.flatpak" >> "$GITHUB_OUTPUT"
           echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsx-app.tar.zip" >> "$GITHUB_OUTPUT"
           echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsxzh-app.tar.zip" >> "$GITHUB_OUTPUT"
 
@@ -337,15 +369,7 @@ jobs:
           echo "notes_txt_file=$GITHUB_WORKSPACE/$NOTES_TXT_FILE" >> "$GITHUB_OUTPUT"
 
       - name: Upload dry-run release description
-        if: success() && inputs.dry_run == true
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-preview-${{ inputs.release_version }}
-          path: release-assets/${{ inputs.release_version }}-notes.txt
-          retention-days: 30
-
-      - name: Upload release description preview
-        if: success() && inputs.dry_run == false && inputs.create_release == false
+        if: success() && inputs.release_mode == 'Dry Run'
         uses: actions/upload-artifact@v4
         with:
           name: release-preview-${{ inputs.release_version }}
@@ -353,18 +377,18 @@ jobs:
           retention-days: 30
 
       - name: Create GitHub release and upload assets
-        if: success() && inputs.dry_run == false && inputs.create_release == true
+        if: success() && inputs.release_mode != 'Dry Run'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PRERELEASE_FLAG=""
+          DRAFT_FLAG=""
 
-          if [ "${{ inputs.is_prerelease }}" = "true" ]; then
-            PRERELEASE_FLAG="--prerelease"
+          if [ "${{ inputs.release_mode }}" = "Draft" ]; then
+            DRAFT_FLAG="--draft"
           fi
 
           gh release create "${{ inputs.release_version }}" \
-            $PRERELEASE_FLAG \
+            $DRAFT_FLAG \
             --title "GeneralsX - ${{ inputs.release_version }}" \
             --notes-file "${{ steps.notes.outputs.notes_file }}" \
             "${{ steps.assets.outputs.linux_generals_asset }}" \
@@ -377,17 +401,17 @@ jobs:
           echo "## Release Pipeline Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Tag: ${{ inputs.release_version }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Create release: ${{ inputs.create_release }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Pre-release: ${{ inputs.is_prerelease }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Dry run: ${{ inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset (Generals): GeneralsX-linux-x86_64.AppImage" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset: GeneralsXZH-linux-x86_64.AppImage" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Mode: ${{ inputs.release_mode }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset (Generals): GeneralsX-linux.flatpak" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset: GeneralsXZH-linux.flatpak" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset (Generals): macos-generalsx-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- macOS asset: macos-generalsxzh-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
-          if [ "${{ inputs.dry_run }}" = "true" ] || [ "${{ inputs.create_release }}" = "false" ]; then
+          if [ "${{ inputs.release_mode }}" = "Dry Run" ]; then
             echo "No GitHub release was created. Download preview artifacts from this run." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ inputs.release_mode }}" = "Draft" ]; then
+            echo "Draft release created and assets attached." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Release created and assets attached." >> "$GITHUB_STEP_SUMMARY"
           fi

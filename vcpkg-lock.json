@@ -2,6 +2,12 @@
     "version": 1,
     "dependencies": [
         {
+            "name": "curl",
+            "version-string": "8.13.0",
+            "port-version": 0,
+            "git-tree": "242c3849525ab4b1e253b375eeb37f11898f0785"
+        },
+        {
             "name": "ffmpeg",
             "version-string": "7.1.1",
             "port-version": 1,

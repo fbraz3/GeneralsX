@@ -13,6 +13,13 @@ option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
 option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS)" OFF)
 option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux/macOS)" OFF)
 
+# GeneralsX @feature BenderAI 21/04/2026 In-game update checker via GitHub Releases API (SDL3+libcurl builds only)
+# Default ON when SDL3 is enabled, but only if the user has not explicitly set SAGE_UPDATE_CHECK.
+# An explicit -DSAGE_UPDATE_CHECK=OFF on the cmake command line is always respected.
+if(NOT DEFINED CACHE{SAGE_UPDATE_CHECK})
+    set(SAGE_UPDATE_CHECK "${SAGE_USE_SDL3}" CACHE BOOL "Enable in-game update check via GitHub Releases API")
+endif()
+
 # macOS port option (Phase 5)
 option(SAGE_USE_MOLTENVK "Use MoltenVK for Vulkan on macOS (Phase 5 macOS port)" OFF)
 
@@ -32,6 +39,7 @@ add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
 add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux)")
 add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Linux)")
+add_feature_info(UpdateCheck SAGE_UPDATE_CHECK "In-game update check via GitHub Releases API")
 
 set(RTS_BUILD_OUTPUT_SUFFIX "" CACHE STRING "Suffix appended to output names of installable targets")
 
@@ -97,6 +105,12 @@ endif()
 if(SAGE_USE_OPENAL)
     target_compile_definitions(core_config INTERFACE SAGE_USE_OPENAL)
     message(STATUS "OpenAL audio backend enabled")
+endif()
+
+# GeneralsX @feature BenderAI 21/04/2026 Update check compile definition
+if(SAGE_UPDATE_CHECK)
+    target_compile_definitions(core_config INTERFACE SAGE_UPDATE_CHECK)
+    message(STATUS "In-game update checker enabled")
 endif()
 
 if(SAGE_USE_GLM)
