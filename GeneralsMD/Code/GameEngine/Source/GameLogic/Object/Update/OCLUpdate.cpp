@@ -49,12 +49,9 @@ void parseFactionObjectCreationList( INI *ini, void *instance, void *store, cons
 	info.m_ocl = nullptr;
 
 	const char *token = ini->getNextToken( ini->getSepsColon() );
-
 	if ( stricmp(token, "Faction") == 0 )
 	{
-		token = ini->getNextTokenOrNull( ini->getSepsColon() );
-		if (!token)	throw INI_INVALID_DATA;
-
+		token = ini->getNextToken( ini->getSepsColon() );
 		info.m_factionName = token;
 	}
 	else

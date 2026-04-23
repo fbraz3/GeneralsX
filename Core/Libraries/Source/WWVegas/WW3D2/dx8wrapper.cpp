@@ -621,7 +621,10 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits()
 	** Initialize any other subsystems inside of WW3D
 	*/
 	MissingTexture::_Init();
-	TextureFilterClass::_Init_Filters((TextureFilterClass::TextureFilterMode)WW3D::Get_Texture_Filter());
+	TextureFilterClass::_Init_Filters(
+		(TextureFilterClass::TextureFilterMode)WW3D::Get_Texture_Filter(),
+		(TextureFilterClass::AnisotropicFilterMode)WW3D::Get_Anisotropy_Level()
+	);
 	TheDX8MeshRenderer.Init();
 	SHD_INIT;
 	BoxRenderObjClass::Init();
@@ -1556,8 +1559,6 @@ void DX8Wrapper::Get_Device_Resolution(int & set_w,int & set_h,int & set_bits,bo
 	set_h = ResolutionHeight;
 	set_bits = BitDepth;
 	set_windowed = IsWindowed;
-
-	return ;
 }
 
 void DX8Wrapper::Get_Render_Target_Resolution(int & set_w,int & set_h,int & set_bits,bool & set_windowed)
@@ -1576,8 +1577,6 @@ void DX8Wrapper::Get_Render_Target_Resolution(int & set_w,int & set_h,int & set_
 	} else {
 		Get_Device_Resolution (set_w, set_h, set_bits, set_windowed);
 	}
-
-	return ;
 }
 
 bool DX8Wrapper::Registry_Save_Render_Device( const char * sub_key )
@@ -3654,8 +3653,6 @@ DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
 	}
 
 	IsRenderToTexture = false;
-
-	return ;
 }
 
 void
@@ -3774,7 +3771,6 @@ DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target, bool use_default
 //	}
 
 	IsRenderToTexture = false;
-	return ;
 }
 
 

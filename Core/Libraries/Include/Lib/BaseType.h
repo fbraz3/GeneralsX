@@ -58,6 +58,22 @@ inline int sign(NUM x)
 	else return 0;
 }
 
+template <typename NUM>
+inline NUM highestBit(NUM x)
+{
+	static_assert(sizeof(NUM) <= 8, "NUM must be 8 bytes or less");
+	UnsignedInt64 y = static_cast<UnsignedInt64>(x);
+
+	y |= (y >> 1);
+	y |= (y >> 2);
+	y |= (y >> 4);
+	y |= (y >> 8);
+	y |= (y >> 16);
+	y |= (y >> 32);
+
+	return static_cast<NUM>(y & ~(y >> 1));
+}
+
 // TheSuperHackers @refactor JohnsterID 24/01/2026 Add lowercase min/max templates for GameEngine layer.
 // GameEngine code typically uses BaseType.h, but may include WWVegas headers (which define min/max in always.h).
 // Header guard prevents duplicate definitions. VC6's <algorithm> lacks std::min/std::max.
@@ -203,6 +219,11 @@ struct RealRange
 		hi = 0.0f;
 	}
 
+	bool is(Real value) const
+	{
+		return lo == value && hi == value;
+	}
+
 	// combine the given range with us such that we now encompass
 	// both ranges
 	void combine( RealRange &other )
@@ -220,6 +241,11 @@ struct Coord2D
 	{
 		x = 0.0f;
 		y = 0.0f;
+	}
+
+	bool is(Real value) const
+	{
+		return x == value && y == value;
 	}
 
 	Real length() const { return (Real)sqrt( x*x + y*y ); }
@@ -309,6 +335,11 @@ struct ICoord2D
 		y = 0;
 	}
 
+	bool is(Int value) const
+	{
+		return x == value && y == value;
+	}
+
 	Int length() const { return (Int)sqrt( (double)(x*x + y*y) ); }
 };
 
@@ -320,6 +351,11 @@ struct Region2D
 	{
 		lo.zero();
 		hi.zero();
+	}
+
+	bool is(Real value) const
+	{
+		return lo.is(value) && hi.is(value);
 	}
 
 	Real width() const { return hi.x - lo.x; }
@@ -335,6 +371,11 @@ struct IRegion2D
 	{
 		lo.zero();
 		hi.zero();
+	}
+
+	bool is(Int value) const
+	{
+		return lo.is(value) && hi.is(value);
 	}
 
 	Int width() const { return hi.x - lo.x; }
@@ -374,6 +415,11 @@ struct Coord3D
 		x = 0.0f;
 		y = 0.0f;
 		z = 0.0f;
+	}
+
+	bool is(Real value) const
+	{
+		return x == value && y == value && z == value;
 	}
 
 	void add( const Coord3D *a )
@@ -438,6 +484,11 @@ struct ICoord3D
 		y = 0;
 		z = 0;
 	}
+
+	bool is(Int value) const
+	{
+		return x == value && y == value && z == value;
+	}
 };
 
 // For alternative see AABoxClass
@@ -450,6 +501,11 @@ struct Region3D
 	Real depth() const { return hi.z - lo.z; }
 
 	void zero() { lo.zero(); hi.zero(); }
+
+	bool is(Real value) const
+	{
+		return lo.is(value) && hi.is(value);
+	}
 
 	void setFromPointsNoZ(const Coord3D* points, Int count)
 	{
@@ -513,6 +569,11 @@ struct IRegion3D
 	{
 		lo.zero();
 		hi.zero();
+	}
+
+	bool is(Int value) const
+	{
+		return lo.is(value) && hi.is(value);
 	}
 
 	Int width() const { return hi.x - lo.x; }
