@@ -568,6 +568,14 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 
 			m_videoStream->frameNext();
 
+			// GeneralsX @bugfix fbraz3 20/04/2026 The LoadScreen video loop is a blocking loop
+			// that never reaches TheVideoPlayer->update(). Without an explicit update() call here,
+			// the OpenAL audio source can underrun (AL_STOPPED) or stay in AL_INITIAL and never
+			// restart. update() calls audioStream->play() if the source is not already playing.
+			// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+			if (TheVideoPlayer)
+				TheVideoPlayer->update();
+
 			if(m_videoBuffer)
 				m_loadScreen->winGetInstanceData()->setVideoBuffer(m_videoBuffer);
 			if(m_videoStream->frameIndex() % progressUpdateCount == 0)
@@ -951,6 +959,10 @@ void ChallengeLoadScreen::init( GameInfo *game )
 
 	// create the new background video stream
 	m_videoStream = TheVideoPlayer->open( TheCampaignManager->getCurrentMission()->m_movieLabel );
+	if (m_videoStream == nullptr)
+	{
+		return;
+	}
 
 	// Create the new buffer
 	m_videoBuffer = TheDisplay->createVideoBuffer();
@@ -1077,6 +1089,13 @@ void ChallengeLoadScreen::init( GameInfo *game )
 			m_videoStream->frameDecompress();
 			m_videoStream->frameRender(m_videoBuffer);
 			m_videoStream->frameNext();
+
+			// GeneralsX @bugfix fbraz3 20/04/2026 Same blocking loop fix as SinglePlayerLoadScreen.
+			// TheVideoPlayer->update() must be called explicitly here since this loop never returns
+			// to the main game loop. Without it, OpenAL audio source stays AL_INITIAL/AL_STOPPED.
+			// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+			if (TheVideoPlayer)
+				TheVideoPlayer->update();
 
 			if(m_videoBuffer)
 				m_loadScreen->winGetInstanceData()->setVideoBuffer(m_videoBuffer);

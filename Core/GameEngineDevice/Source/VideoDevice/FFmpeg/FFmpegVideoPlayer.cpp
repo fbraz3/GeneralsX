@@ -323,6 +323,9 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 
 #ifdef SAGE_USE_OPENAL
 	// Start audio playback
+	// GeneralsX @bugfix fbraz3 23/04/2026 Ensure video stream starts with audible gain even after prior source reuse.
+	// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+	audioStream->setVolume(1.0f);
 	audioStream->play();
 #endif
 
@@ -335,6 +338,17 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 
 FFmpegVideoStream::~FFmpegVideoStream()
 {
+	// GeneralsX @bugfix fbraz3 20/04/2026 Stop and clear queued OpenAL buffers so video audio
+	// does not bleed into gameplay after the loading screen closes the stream.
+	// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+#ifdef SAGE_USE_OPENAL
+	if (TheAudio)
+	{
+		OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
+		if (audioStream)
+			audioStream->reset();
+	}
+#endif
 	av_freep(&m_audioBuffer);
 	av_frame_free(&m_frame);
 	sws_freeContext(m_swsContext);
@@ -352,24 +366,62 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 #ifdef SAGE_USE_OPENAL
 	else if (stream_type == AVMEDIA_TYPE_AUDIO) {
 		OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
-		// Unqueue processed buffers first, then buffer new data, then
-		// (re)start playback. update() is called AFTER bufferData() so that
-		// the newly queued buffer is already present when update() checks
-		// whether to call alSourcePlay().
 		AVSampleFormat sampleFmt = static_cast<AVSampleFormat>(frame->format);
 		const int bytesPerSample = av_get_bytes_per_sample(sampleFmt);
 		const int frameSize = av_samples_get_buffer_size(nullptr, frame->ch_layout.nb_channels, frame->nb_samples, sampleFmt, 1);
+		if (frameSize <= 0 || bytesPerSample <= 0 || frame->ch_layout.nb_channels <= 0 || frame->nb_samples <= 0)
+			return;
+
+		int outputBitsPerSample = bytesPerSample * 8;
+		int outputFrameSize = frameSize;
 		uint8_t* frameData = frame->data[0];
-		// The format is planar - convert it to interleaved
-		if (av_sample_fmt_is_planar(sampleFmt))
+
+		// GeneralsX @bugfix fbraz3 23/04/2026 Convert float32 FFmpeg output to PCM16 for robust OpenAL compatibility.
+		// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+		if (sampleFmt == AV_SAMPLE_FMT_FLT || sampleFmt == AV_SAMPLE_FMT_FLTP)
 		{
-			videoStream->m_audioBuffer = static_cast<uint8_t*>(av_realloc(videoStream->m_audioBuffer, frameSize));
+			outputBitsPerSample = 16;
+			outputFrameSize = frame->nb_samples * frame->ch_layout.nb_channels * (int)sizeof(int16_t);
+			videoStream->m_audioBuffer = static_cast<uint8_t*>(av_realloc(videoStream->m_audioBuffer, outputFrameSize));
+			if (videoStream->m_audioBuffer == nullptr)
+			{
+				DEBUG_LOG(("Failed to allocate converted audio buffer"));
+				return;
+			}
+			int16_t *dst = reinterpret_cast<int16_t *>(videoStream->m_audioBuffer);
+			if (sampleFmt == AV_SAMPLE_FMT_FLTP)
+			{
+				for (int sample_idx = 0; sample_idx < frame->nb_samples; ++sample_idx)
+				{
+					for (int channel_idx = 0; channel_idx < frame->ch_layout.nb_channels; ++channel_idx)
+					{
+						const float sample = reinterpret_cast<const float *>(frame->data[channel_idx])[sample_idx];
+						const float clamped = (sample < -1.0f) ? -1.0f : ((sample > 1.0f) ? 1.0f : sample);
+						*dst++ = static_cast<int16_t>(clamped * 32767.0f);
+					}
+				}
+			}
+			else
+			{
+				const float *src = reinterpret_cast<const float *>(frame->data[0]);
+				const int totalSamples = frame->nb_samples * frame->ch_layout.nb_channels;
+				for (int i = 0; i < totalSamples; ++i)
+				{
+					const float clamped = (src[i] < -1.0f) ? -1.0f : ((src[i] > 1.0f) ? 1.0f : src[i]);
+					*dst++ = static_cast<int16_t>(clamped * 32767.0f);
+				}
+			}
+			frameData = videoStream->m_audioBuffer;
+		}
+		// The format is planar - convert it to interleaved
+		else if (av_sample_fmt_is_planar(sampleFmt))
+		{
+			videoStream->m_audioBuffer = static_cast<uint8_t*>(av_realloc(videoStream->m_audioBuffer, outputFrameSize));
 			if (videoStream->m_audioBuffer == nullptr)
 			{
 				DEBUG_LOG(("Failed to allocate audio buffer"));
 				return;
 			}
-
 			// Write the samples into our audio buffer
 			for (int sample_idx = 0; sample_idx < frame->nb_samples; sample_idx++)
 			{
@@ -384,8 +436,8 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 			frameData = videoStream->m_audioBuffer;
 		}
 
-		ALenum format = OpenALAudioManager::getALFormat(frame->ch_layout.nb_channels, bytesPerSample * 8);
-		audioStream->bufferData(frameData, frameSize, format, frame->sample_rate);
+		ALenum format = OpenALAudioManager::getALFormat(frame->ch_layout.nb_channels, outputBitsPerSample);
+		audioStream->bufferData(frameData, outputFrameSize, format, frame->sample_rate);
 		audioStream->update();
 	}
 #endif

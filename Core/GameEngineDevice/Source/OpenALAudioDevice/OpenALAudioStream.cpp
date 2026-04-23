@@ -1,13 +1,25 @@
 #include "OpenALAudioDevice/OpenALAudioStream.h"
 #include "OpenALAudioDevice/OpenALAudioManager.h"
+#include <AL/alext.h>
 
 OpenALAudioStream::OpenALAudioStream()
 { 
     alGenSources(1, &m_source);
     alGenBuffers(AL_STREAM_BUFFER_COUNT, m_buffers);
 
-    // Make stream ignore positioning
+    // GeneralsX @bugfix BenderAI 22/04/2026 Force video stream source to non-positional direct playback.
     alSourcei(m_source, AL_SOURCE_RELATIVE, AL_TRUE);
+    alSource3f(m_source, AL_POSITION, 0.0f, 0.0f, 0.0f);
+    alSource3f(m_source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+    alSourcef(m_source, AL_ROLLOFF_FACTOR, 0.0f);
+    alSourcef(m_source, AL_GAIN, 1.0f);
+    alSourcei(m_source, AL_LOOPING, AL_FALSE);
+#ifdef AL_DIRECT_CHANNELS_SOFT
+    alSourcei(m_source, AL_DIRECT_CHANNELS_SOFT, AL_TRUE);
+#endif
+#ifdef AL_SOURCE_SPATIALIZE_SOFT
+    alSourcei(m_source, AL_SOURCE_SPATIALIZE_SOFT, AL_FALSE);
+#endif
 
     DEBUG_LOG(("OpenALAudioStream created: %i\n", m_source));
 }
@@ -34,8 +46,24 @@ bool OpenALAudioStream::bufferData(uint8_t *data, size_t data_size, ALenum forma
     }
 
     ALuint &current_buffer = m_buffers[m_current_buffer_idx];
+    // GeneralsX @bugfix BenderAI 22/04/2026 Detect and reject invalid OpenAL buffer/queue operations.
+    while (alGetError() != AL_NO_ERROR) {}
     alBufferData(current_buffer, format, data, data_size, samplerate);
+    ALenum err = alGetError();
+    if (err != AL_NO_ERROR) {
+        DEBUG_LOG(("OpenALAudioStream::bufferData alBufferData failed: err=0x%x format=0x%x size=%zu rate=%d\n",
+            (unsigned int)err, (unsigned int)format, data_size, samplerate));
+        return false;
+    }
+
     alSourceQueueBuffers(m_source, 1, &current_buffer);
+    err = alGetError();
+    if (err != AL_NO_ERROR) {
+        DEBUG_LOG(("OpenALAudioStream::bufferData alSourceQueueBuffers failed: err=0x%x source=%u buffer=%u\n",
+            (unsigned int)err, (unsigned int)m_source, (unsigned int)current_buffer));
+        return false;
+    }
+
     m_current_buffer_idx++;
 
     if (m_current_buffer_idx >= AL_STREAM_BUFFER_COUNT)
@@ -49,36 +77,45 @@ void OpenALAudioStream::update()
     ALint sourceState;
     alGetSourcei(m_source, AL_SOURCE_STATE, &sourceState);
 
-    ALint processed;
-    alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &processed);
-    DEBUG_LOG(("%i buffers have been processed\n", processed));
-    while (processed > 0) {
-        ALuint buffer;
-        alSourceUnqueueBuffers(m_source, 1, &buffer);
-        processed--;
-    }
-
     ALint num_queued;
     alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_queued);
-    DEBUG_LOG(("Having %i buffers queued\n", num_queued));
-    if (num_queued < AL_STREAM_BUFFER_COUNT/2 && m_requireDataCallback) {
-        // Ask for more data to be buffered
-        // Only fill up to the half, because some formats can output
-        // more than one buffer per decoded frame
-        while (num_queued < AL_STREAM_BUFFER_COUNT/2) {
-            m_requireDataCallback();
-        	num_queued++;
-        }
+
+    // GeneralsX @bugfix BenderAI 22/04/2026 Restart before unqueue to avoid dropping freshly queued
+    // briefing buffers when OpenAL reports AL_STOPPED with processed buffers.
+    if ((sourceState == AL_STOPPED || sourceState == AL_INITIAL || sourceState == AL_PAUSED) && num_queued > 0) {
+        play();
+        alGetSourcei(m_source, AL_SOURCE_STATE, &sourceState);
     }
 
-    // Only restart a stopped source when there is data queued to play.
-    // Calling alSourcePlay() with an empty queue produces no sound and
-    // immediately transitions the source back to AL_STOPPED.
-    if (sourceState == AL_STOPPED) {
-        ALint num_remaining;
-        alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_remaining);
-        if (num_remaining > 0) {
-            play();
+    ALint processedBeforeUnqueue = 0;
+    alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &processedBeforeUnqueue);
+    DEBUG_LOG(("%i buffers have been processed\n", processedBeforeUnqueue));
+
+    // GeneralsX @bugfix BenderAI 22/04/2026 Only unqueue processed data in active playback states.
+    ALint processedToUnqueue = ((sourceState == AL_PLAYING || sourceState == AL_PAUSED) ? processedBeforeUnqueue : 0);
+    while (processedToUnqueue > 0) {
+        ALuint buffer;
+        alSourceUnqueueBuffers(m_source, 1, &buffer);
+        processedToUnqueue--;
+    }
+
+    alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_queued);
+    DEBUG_LOG(("Having %i buffers queued\n", num_queued));
+
+    if (num_queued < AL_STREAM_BUFFER_COUNT / 2 && m_requireDataCallback) {
+        // GeneralsX @bugfix BenderAI 22/04/2026 Do not fake queue growth when callback fails to enqueue data.
+        // Ask for more data to be buffered.
+        // Only fill up to the half, because some formats can output
+        // more than one buffer per decoded frame.
+        while (num_queued < AL_STREAM_BUFFER_COUNT / 2) {
+            m_requireDataCallback();
+
+            ALint refreshedQueued = 0;
+            alGetSourcei(m_source, AL_BUFFERS_QUEUED, &refreshedQueued);
+            if (refreshedQueued <= num_queued) {
+                break;
+            }
+            num_queued = refreshedQueued;
         }
     }
 }
