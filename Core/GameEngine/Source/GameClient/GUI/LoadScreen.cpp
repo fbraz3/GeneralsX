@@ -959,6 +959,10 @@ void ChallengeLoadScreen::init( GameInfo *game )
 
 	// create the new background video stream
 	m_videoStream = TheVideoPlayer->open( TheCampaignManager->getCurrentMission()->m_movieLabel );
+	if (m_videoStream == nullptr)
+	{
+		return;
+	}
 
 	// Create the new buffer
 	m_videoBuffer = TheDisplay->createVideoBuffer();
