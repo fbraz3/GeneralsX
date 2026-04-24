@@ -2,7 +2,7 @@
 # Configure Linux build using Docker (Ubuntu 22.04 x86_64)
 # Usage: ./scripts/build/linux/docker-configure-linux.sh [preset]
 
-set -e
+set -euo pipefail
 
 PRESET="${1:-linux64-deploy}"
 LOG_FILE="logs/configure_${PRESET}_docker.log"
@@ -67,6 +67,17 @@ docker run --rm \
         fi
         
         export VCPKG_ROOT=/opt/vcpkg
+
+        # GeneralsX @bugfix Copilot 23/04/2026 Drop stale host-generated CMake cache when running inside /work container mount.
+        CACHE_FILE='build/${PRESET}/CMakeCache.txt'
+        if [ -f \$CACHE_FILE ]; then
+            CACHE_HOME_DIR=\$(sed -n 's#^CMAKE_HOME_DIRECTORY:INTERNAL=##p' \$CACHE_FILE | head -n1)
+            CACHE_BUILD_DIR=\$(sed -n 's#^CMAKE_CACHEFILE_DIR:INTERNAL=##p' \$CACHE_FILE | head -n1)
+            if [ \$CACHE_HOME_DIR != '/work' ] || [ \$CACHE_BUILD_DIR != '/work/build/${PRESET}' ]; then
+                echo '🧹 Removing incompatible CMake cache generated outside Docker...'
+                rm -rf 'build/${PRESET}'
+            fi
+        fi
         
         echo '⚙️  Configuring CMake with vcpkg...'
         cmake --preset ${PRESET}

@@ -267,7 +267,7 @@ STDMETHODIMP WebBrowser::QueryInterface(REFIID iid, void** ppv) IUNKNOWN_NOEXCEP
 *
 ******************************************************************************/
 
-ULONG STDMETHODCALLTYPE WebBrowser::AddRef(void) IUNKNOWN_NOEXCEPT
+ULONG STDMETHODCALLTYPE WebBrowser::AddRef() IUNKNOWN_NOEXCEPT
 {
 	return ++mRefCount;
 }
@@ -287,7 +287,7 @@ ULONG STDMETHODCALLTYPE WebBrowser::AddRef(void) IUNKNOWN_NOEXCEPT
 *
 ******************************************************************************/
 
-ULONG STDMETHODCALLTYPE WebBrowser::Release(void) IUNKNOWN_NOEXCEPT
+ULONG STDMETHODCALLTYPE WebBrowser::Release() IUNKNOWN_NOEXCEPT
 {
 	DEBUG_ASSERTCRASH(mRefCount > 0, ("Negative reference count"));
 	--mRefCount;

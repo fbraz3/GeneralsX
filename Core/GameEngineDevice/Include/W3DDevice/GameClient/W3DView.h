@@ -57,7 +57,6 @@ typedef struct
 	Real		waySegLength[MAX_WAYPOINTS+2];	// Length of each segment;
 	Real		cameraAngle[MAX_WAYPOINTS+2];	// Camera Angle;
 	Int			timeMultiplier[MAX_WAYPOINTS+2];	// Time speedup factor.
-	Real		groundHeight[MAX_WAYPOINTS+1];	// Ground height.
 	Real		totalTimeMilliseconds;					// Num of ms to do this movement.
 	Real		elapsedTimeMilliseconds;				// Time since start.
 	Real		totalDistance;								// Total length of paths.
@@ -222,7 +221,9 @@ public:
 
 	CameraClass *get3DCamera() const { return m_3DCamera; }
 
-	virtual const Coord3D& get3DCameraPosition() const override;
+	virtual Coord3D get3DCameraPosition() const override; ///< Returns the actual camera position
+	virtual Coord3D get3DCameraDirection() const override; ///< Returns the actual camera view direction
+	virtual void set3DCameraLookAt(const Coord3D &pos, const Coord3D &dir, Real roll) override; ///< Set the actual camera position and view direction
 
 	virtual void setCameraLock(ObjectID id) override;
 	virtual void setSnapMode( CameraLockType lockType, Real lockDist ) override;
@@ -281,7 +282,6 @@ private:
 	Coord2D m_scrollAmount;													///< scroll speed
 	Real m_scrollAmountCutoffSqr;										///< scroll speed at which we do not adjust height
 
-	Real m_groundLevel;															///< height of ground.
 #if PRESERVE_RETAIL_SCRIPTED_CAMERA
 	// TheSuperHackers @tweak Uses the initial ground level for preserving the original look of the scripted camera,
 	// because alterations to the ground level do affect the positioning in subtle ways.
@@ -298,7 +298,9 @@ private:
 	Real getDesiredZoom(Real x, Real y) const;
 	Real getMaxHeight(Real x, Real y) const;
 	Real getMaxZoom(Real x, Real y) const;
-	void setCameraTransform(); ///< set the transform matrix of m_3DCamera, based on m_pos & m_angle
+	void updateCameraTransform(); ///< update the transform matrix of m_3DCamera, based on m_pos & m_angle
+	void updateCameraClipPlanes();
+	void setCameraTransform(const Matrix3D &transform);
 	void buildCameraPosition(Vector3 &sourcePos, Vector3 &targetPos);
 	void buildCameraTransform(Matrix3D *transform, const Vector3 &sourcePos, const Vector3 &targetPos); ///< calculate (but do not set) the transform matrix of m_3DCamera, based on m_pos & m_angle
 	Bool zoomCameraToDesiredHeight();

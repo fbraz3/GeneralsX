@@ -1,5 +1,20 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-23 - Campaign river-water rendering must guard shroud sampling boundaries
+
+- Problem: Linux `GeneralsXZH` could crash with `SIGSEGV` when opening campaign, with stack traces landing in `W3DShroud::getShroudLevel()` via `W3DWater::getRiverVertexDiffuse()`.
+- Root cause:
+	- `getShroudLevel(Int x, Int y)` validated only upper bounds (`x < m_numCellsX`, `y < m_numCellsY`) and assumed texture data was always valid.
+	- During campaign transitions, water rendering can request shroud samples with transient invalid state (negative cell coordinates and/or unavailable source texture data).
+	- This allowed invalid pointer arithmetic into `m_srcTextureData` and a segmentation fault.
+- Fix:
+	- Added defensive early return in `getShroudLevel()` for both Zero Hour and Generals paths when source texture/data is missing or coordinates are negative.
+	- Kept existing upper-bound behavior unchanged, preserving normal shroud shading logic.
+- Validation:
+	- Linux Docker build for `GeneralsXZH` completed successfully after patch.
+	- Static diagnostics (`get_errors`) reported no errors in modified shroud files.
+- Prevention: For rendering-path sampling helpers in legacy code, always guard both pointer validity and full signed coordinate bounds before indexing raw texture/buffer memory.
+
 ## Session 2026-04-20 - Overlord portable riders must not go through fire-point redeploy on turret rotation
 
 - Problem: Overlord portable upgrades (Gatling Cannon, Propaganda Tower, BattleBunker) could disappear intermittently during force-attack / heavy turret turning on macOS.

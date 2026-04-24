@@ -640,8 +640,6 @@ void GameEngine::init()
 		fname.format("Data\\%s\\CommandMap", GetRegistryLanguage().str());
 		initSubsystem(TheMetaMap,"TheMetaMap", MSGNEW("GameEngineSubsystem") MetaMap(), nullptr, fname.str(), "Data\\INI\\CommandMap");
 
-		TheMetaMap->generateMetaMap();
-
 #if defined(RTS_DEBUG)
 		ini.loadFileDirectory("Data\\INI\\CommandMapDebug", INI_LOAD_MULTIFILE, nullptr);
 #endif
@@ -649,6 +647,9 @@ void GameEngine::init()
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 		ini.loadFileDirectory("Data\\INI\\CommandMapDemo", INI_LOAD_MULTIFILE, nullptr);
 #endif
+
+		TheMetaMap->generateMetaMap();
+		TheMetaMap->verifyMetaMap();
 
 
 		initSubsystem(TheActionManager,"TheActionManager", MSGNEW("GameEngineSubsystem") ActionManager(), nullptr);
