@@ -4,6 +4,10 @@
 		{
 			"label": "[Linux] Configure (Docker)",
 			"type": "shell",
+			"icon": {
+				"color": "terminal.ansiBlack",
+				"id": "window"
+			},
 			"command": "./scripts/build/linux/docker-configure-linux.sh linux64-deploy",
 			"isBackground": false,
 			"group": "build",
@@ -21,6 +25,10 @@
 			"type": "shell",
 			"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy",
 			"isBackground": false,
+			"icon": {
+				"color": "terminal.ansiGreen",
+				"id": "gear"
+			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -40,6 +48,10 @@
 			"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiGreen",
+				"id": "gear"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -54,6 +66,10 @@
 			"type": "shell",
 			"command": "./scripts/build/linux/deploy-linux.sh",
 			"isBackground": false,
+			"icon": {
+				"color": "terminal.ansiMagenta",
+				"id": "clone"
+			},
 			"group": "build",
 			"presentation": {
 				"reveal": "always",
@@ -70,6 +86,10 @@
 			"command": "./scripts/build/linux/deploy-linux-zh.sh",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiMagenta",
+				"id": "clone"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -85,6 +105,10 @@
 			"command": "./scripts/build/linux/bundle-linux.sh",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "package"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -100,6 +124,10 @@
 			"command": "./scripts/build/linux/build-linux-appimage-generals.sh linux64-deploy",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "package"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -115,6 +143,10 @@
 			"command": "./scripts/build/linux/build-linux-appimage-zh.sh linux64-deploy",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "package"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -130,6 +162,10 @@
 			"command": "./scripts/build/linux/bundle-linux-zh.sh",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "package"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -145,6 +181,10 @@
 			"command": "./scripts/build/linux/build-linux-flatpak.sh linux64-deploy Generals",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "package"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -160,6 +200,10 @@
 			"command": "./scripts/build/linux/build-linux-flatpak.sh linux64-deploy GeneralsMD",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "package"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -175,6 +219,10 @@
 			"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy && ./scripts/build/linux/deploy-linux.sh && ./scripts/build/linux/run-linux.sh -win",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiBlue",
+				"id": "run-all"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -190,6 +238,10 @@
 			"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy && ./scripts/build/linux/deploy-linux-zh.sh && ./scripts/build/linux/run-linux-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiBlue",
+				"id": "run-all"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -205,6 +257,10 @@
 			"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiGreen",
+				"id": "gear"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -214,13 +270,16 @@
 			},
 			"problemMatcher": []
 		},
-
 		{
 			"label": "Validate: Check Docker Prerequisites",
 			"type": "shell",
 			"command": "echo 'Checking Docker installation...' && docker --version && docker run --rm hello-world || echo 'ERROR: Docker not working. Install: brew install --cask docker'",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "check"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -230,12 +289,15 @@
 			},
 			"problemMatcher": []
 		},
-
 		{
 			"label": "[Linux] Docker: Create Builder Image",
 			"type": "shell",
 			"command": "./scripts/env/docker/docker-build-images.sh linux",
 			"isBackground": false,
+			"icon": {
+				"color": "terminal.ansiBlack",
+				"id": "window"
+			},
 			"group": "build",
 			"presentation": {
 				"reveal": "always",
@@ -246,13 +308,16 @@
 			},
 			"problemMatcher": []
 		},
-
 		{
 			"label": "[Linux] Smoke Test GeneralsXZH",
 			"type": "shell",
 			"command": "./scripts/qa/smoke/docker-smoke-test-zh.sh linux64-deploy",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiCyan",
+				"id": "beaker"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -268,6 +333,10 @@
 			"command": "./scripts/build/linux/run-linux.sh -win",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiCyan",
+				"id": "play"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -283,6 +352,10 @@
 			"command": "./scripts/build/linux/run-linux-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiCyan",
+				"id": "play"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -298,6 +371,10 @@
 			"command": "mkdir -p logs && cmake --preset macos-vulkan 2>&1 | tee logs/configure_macos.log",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiBlack",
+				"id": "window"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -316,6 +393,10 @@
 				"kind": "build",
 				"isDefault": false
 			},
+			"icon": {
+				"color": "terminal.ansiGreen",
+				"id": "gear"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -331,6 +412,10 @@
 			"command": "./scripts/build/macos/build-macos-generals.sh --build-only 2>&1 | tee logs/build_generals_macos.log",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiGreen",
+				"id": "gear"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -346,6 +431,10 @@
 			"command": "./scripts/build/macos/deploy-macos-zh.sh",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiMagenta",
+				"id": "clone"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -361,6 +450,10 @@
 			"command": "./scripts/build/macos/deploy-macos-generals.sh",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiMagenta",
+				"id": "clone"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -376,6 +469,10 @@
 			"command": "./scripts/build/macos/bundle-macos-zh.sh",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "package"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -391,6 +488,10 @@
 			"command": "./scripts/build/macos/bundle-macos-generals.sh",
 			"isBackground": false,
 			"group": "build",
+			"icon": {
+				"color": "terminal.ansiYellow",
+				"id": "package"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -406,6 +507,10 @@
 			"command": "./scripts/build/macos/run-macos-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiCyan",
+				"id": "play"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -421,6 +526,10 @@
 			"command": "./scripts/build/macos/build-macos-generals.sh 2>&1 | tee logs/build_generals_macos.log && ./scripts/build/macos/deploy-macos-generals.sh",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiBlue",
+				"id": "run-all"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -436,6 +545,10 @@
 			"command": "./scripts/build/macos/build-macos-zh.sh 2>&1 | tee logs/build_zh_macos.log && ./scripts/build/macos/deploy-macos-zh.sh && ./scripts/build/macos/run-macos-zh.sh -win",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiBlue",
+				"id": "run-all"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
@@ -451,6 +564,10 @@
 			"command": "code docs/DEV_BLOG/2026-02-DIARY.md",
 			"isBackground": false,
 			"group": "none",
+			"icon": {
+				"color": "terminal.ansiWhite",
+				"id": "book"
+			},
 			"presentation": {
 				"reveal": "never",
 				"panel": "shared"
@@ -463,6 +580,10 @@
 			"command": "mkdir -p logs && gdb -batch -ex \"run -win\" -ex \"bt full\" -ex \"info locals\" -ex \"frame 0\" -ex \"list\" -ex \"thread apply all bt\" ./build/linux64-deploy/GeneralsMD/GeneralsXZH 2>&1 | tee logs/gdb.log",
 			"isBackground": false,
 			"group": "test",
+			"icon": {
+				"color": "terminal.ansiRed",
+				"id": "debug"
+			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated",
