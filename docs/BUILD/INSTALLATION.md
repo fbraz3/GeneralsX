@@ -3,6 +3,9 @@
 ## Prerequisites
 
 1. You must own a legitimate copy of the game. We build and test against the [Steam version](https://store.steampowered.com/app/2732960/Command__Conquer_Generals_Zero_Hour/). Other retail releases may work, but are not officially supported.
+
+   > **On macOS or Linux?** Steam does not offer a native download for this title on these platforms. See [GETTING_THE_GAME_FILES.md](GETTING_THE_GAME_FILES.md) for step-by-step instructions on how to obtain the game files.
+
 2. Copy the game data from your existing installation (for example, from `C:\Program Files (x86)\Steam\steamapps\common\Command & Conquer Generals - Zero Hour`) to a local folder on your Linux or macOS system. A recommended layout is:
    - `$HOME/GeneralsX/Generals` for Command & Conquer: Generals
    - `$HOME/GeneralsX/GeneralsZH` for Command & Conquer: Generals - Zero Hour

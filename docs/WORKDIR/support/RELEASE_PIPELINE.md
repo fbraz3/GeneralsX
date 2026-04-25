@@ -45,7 +45,7 @@ Fixed block:
 
 # Install Instructions
 
-https://github.com/fbraz3/GeneralsX/blob/main/docs/BUILD/INSTALL_INSTRUCTIONS.md
+https://github.com/fbraz3/GeneralsX/blob/main/docs/BUILD/INSTALLATION.md
 ```
 
 What's changed format:
