@@ -130,5 +130,10 @@ if(RTS_BUILD_GENERALS)
     add_subdirectory(Generals)
 endif()
 
+# SagePatch (optional QoL extras, macOS-only for now)
+if(RTS_BUILD_OPTION_SAGE_PATCH)
+    add_subdirectory(Patches/SagePatch)
+endif()
+
 feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "Enabled features:")
 feature_summary(WHAT DISABLED_FEATURES DESCRIPTION "Disabled features:")

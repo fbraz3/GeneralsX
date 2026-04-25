@@ -231,7 +231,8 @@
                 "SAGE_USE_MOLTENVK": "ON",
                 "SAGE_UPDATE_CHECK": "ON",
                 "RTS_CRASHDUMP_ENABLE": "OFF",
-                "RTS_BUILD_OPTION_FFMPEG": "ON"
+                "RTS_BUILD_OPTION_FFMPEG": "ON",
+                "RTS_BUILD_OPTION_SAGE_PATCH": "ON"
             },
             "environment": {
                 "PKG_CONFIG_PATH": "/opt/homebrew/lib/pkgconfig"
