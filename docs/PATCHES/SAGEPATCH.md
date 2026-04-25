@@ -111,20 +111,45 @@ era exposed no other plugin surface. On macOS and Linux we have:
 This keeps SagePatch ~600 lines instead of the ~3000-line full COM proxy
 that a Windows-style implementation would require.
 
+## Already in the engine — no patch needed
+
+These GenTool-era options are already first-class engine command-line flags
+in GeneralsX/TheSuperHackers (see `Common/CommandLine.cpp`). Use them
+directly with `run.sh`:
+
+| Flag | Effect |
+|---|---|
+| `-nologo` | Skip the EA / Westwood intro |
+| `-noShellAnim` | Skip the animated main-menu camera |
+| `-noshellmap` | Skip the animated background map |
+| `-quickstart` | Combined fast-boot |
+| `-xres N -yres N` | Any resolution (the engine no longer locks the list) |
+| `-forcefullviewport` | Full viewport on UI mods like Control Bar Pro |
+| `-win` / `-fullscreen` | Window mode |
+| `-noaudio` / `-nomusic` / `-novideo` | Disable subsystems |
+
+Game-engine bug fixes from the GenTool changelog (Scud bug, Tunnel bug,
+Building bug, multiplayer movement crash, etc.) are handled **upstream by
+TheSuperHackers/GeneralsGameCode**, which is the parent of GeneralsX and
+maintained by the same author who wrote GenTool (xezon). The codebase
+already carries 170+ `@bugfix` annotations including the Tunnel System
+fixes by xezon. SagePatch does **not** duplicate those — duplicating fixes
+would only create merge conflicts when GeneralsX next syncs with upstream.
+
 ## Limits / what's *not* in scope
 
-By design, SagePatch sticks to **casual** QoL:
+By design, SagePatch sticks to **casual** QoL only:
 
 - No replay tools (frame stepping, fog-of-war replay, controls bar)
 - No competitive features (Money Display, Player Table, Random Balance)
 - No anti-cheat (MDS, Game File Validator, version validation)
 - No external server integrations (CNC Online, GameRanger, Upload Mode, ticker,
   ranked maps, ladder, GenTool updater)
-
-Engine-side bug fixes (scud bug, tunnel bug, building bug, multiplayer crash)
-also live outside this patch — they require modifications inside the game's
-source rather than a side-loaded shared library, and SagePatch's whole point is
-to stay outside the source tree.
+- No engine bug fixes — those live in core source, gated by the existing
+  `@bugfix` annotation system, contributed upstream where possible
+- No in-game text overlay (clock, match timer, in-game settings menu) — these
+  need a graphics-pipeline hook (D3D8 proxy or Vulkan layer); see the FPS
+  counter via `DXVK_HUD` for an existing alternative
 
 ## File layout
 
