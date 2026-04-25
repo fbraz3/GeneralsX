@@ -4,6 +4,7 @@
 !.gitignore
 !.gitattributes
 !.github
+!.devin
 !.gitmodules
 
 *.user
