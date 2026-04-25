@@ -57,6 +57,7 @@ modules:
           -DSAGE_USE_OPENAL=ON \
           -DSAGE_USE_GLM=ON \
           -DSAGE_UPDATE_CHECK=ON \
+          -DRTS_BUILD_OPTION_SAGE_PATCH=ON \
           -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
           -DFETCHCONTENT_UPDATES_DISCONNECTED=ON \
           -DFETCHCONTENT_SOURCE_DIR_DXVK=/run/build/generalsxzh/dxvk-src \
@@ -66,6 +67,7 @@ modules:
           -DFETCHCONTENT_SOURCE_DIR_GAMESPY=/run/build/generalsxzh/gamespy-src \
           -DFETCHCONTENT_SOURCE_DIR_LZHL=/run/build/generalsxzh/lzhl-src/CompLibHeader
       - cmake --build build-flatpak --target z_generals -j "${FLATPAK_BUILDER_N_JOBS:-4}"
+      - cmake --build build-flatpak --target sage_patch -j "${FLATPAK_BUILDER_N_JOBS:-4}" || true
       - install -Dm755 build-flatpak/GeneralsMD/GeneralsXZH /app/bin/GeneralsXZH
       - install -Dm755 flatpak/run-flatpak.sh /app/bin/generalsxzh-wrapper.sh
       - install -Dm644 flatpak/com.fbraz3.GeneralsXZH.desktop /app/share/applications/com.fbraz3.GeneralsXZH.desktop
@@ -79,6 +81,10 @@ modules:
       - cp -a build-flatpak/_deps/sdl3_image-build/libSDL3_image.so* /app/lib/
       - cp -a build-flatpak/_deps/openal_soft-build/libopenal.so* /app/lib/
       - find build-flatpak -name "libgamespy.so*" -type f -exec cp -a {} /app/lib/ \;
+      # SagePatch (optional QoL, gated by RTS_BUILD_OPTION_SAGE_PATCH at build).
+      # Only present when the option is ON; -f guard keeps the manifest robust.
+      - if [ -f build-flatpak/Patches/SagePatch/libsage_patch.so ]; then cp -a build-flatpak/Patches/SagePatch/libsage_patch.so /app/lib/; fi
+      - if [ -f Patches/SagePatch/resources/Override.ini ]; then install -Dm644 Patches/SagePatch/resources/Override.ini /app/share/generalsxzh/SagePatch.ini; fi
       - |
         for f in /app/lib/lib*.so.*; do
           b="$(basename "$f")"
@@ -101,7 +107,21 @@ modules:
 
         export DXVK_WSI_DRIVER="SDL3"
         export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
-        export DXVK_HUD="${DXVK_HUD:-0}"
+
+        # SagePatch (optional QoL: F11 screenshot, Scroll Lock cursor lock,
+        # Ctrl+PgUp/Dn brightness, Ctrl+1..5 window snap). Loaded via LD_PRELOAD
+        # only if the .so is present in /app/lib. Default DXVK_HUD to "fps" when
+        # SagePatch is active so casual users see a frame counter.
+        if [[ -f /app/lib/libsage_patch.so && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+          if [[ -n "${LD_PRELOAD:-}" ]]; then
+            export LD_PRELOAD="/app/lib/libsage_patch.so:${LD_PRELOAD}"
+          else
+            export LD_PRELOAD="/app/lib/libsage_patch.so"
+          fi
+          export DXVK_HUD="${DXVK_HUD:-fps}"
+        else
+          export DXVK_HUD="${DXVK_HUD:-0}"
+        fi
 
         # Keep Vulkan ICD selection to the runtime/driver defaults unless user explicitly overrides.
 
@@ -131,6 +151,17 @@ modules:
         fi
 
         cd "${CNC_GENERALS_INSTALLPATH}"
+
+        # SagePatch INI override: engine reads INIs from cwd, not /app/share.
+        # On first launch, copy the bundled override into the asset tree so
+        # casual QoL settings (camera height, scroll speed, pitch) take effect.
+        SAGE_INI_SRC="/app/share/generalsxzh/SagePatch.ini"
+        SAGE_INI_DST="${CNC_GENERALS_INSTALLPATH}Data/INI/Default/GameData/SagePatch.ini"
+        if [[ -f "${SAGE_INI_SRC}" && ! -f "${SAGE_INI_DST}" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+          mkdir -p "$(dirname "${SAGE_INI_DST}")"
+          cp "${SAGE_INI_SRC}" "${SAGE_INI_DST}" 2>/dev/null || true
+        fi
+
         exec /app/bin/GeneralsXZH "$@"
         EOF
       - chmod +x /app/bin/run.sh

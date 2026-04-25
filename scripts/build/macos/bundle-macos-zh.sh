@@ -285,6 +285,19 @@ echo "  + libdxvk_d3d8"
 cp "${DXVK_D3D8_LIB}" "${LIB_DIR}/libdxvk_d3d8.0.dylib"
 ln -sf libdxvk_d3d8.0.dylib "${LIB_DIR}/libdxvk_d3d8.dylib"
 
+# SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
+SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.dylib"
+SAGE_PATCH_OVERRIDE="${PROJECT_ROOT}/Patches/SagePatch/resources/Override.ini"
+if [[ -f "${SAGE_PATCH_LIB}" ]]; then
+    echo "  + libsage_patch (SagePatch QoL)"
+    cp "${SAGE_PATCH_LIB}" "${LIB_DIR}/libsage_patch.dylib"
+    if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
+        mkdir -p "${RESOURCES_DIR}/Data/INI/Default/GameData"
+        cp "${SAGE_PATCH_OVERRIDE}" \
+           "${RESOURCES_DIR}/Data/INI/Default/GameData/SagePatch.ini"
+    fi
+fi
+
 if [[ "${INCLUDE_EXTERNAL_DYLIBS}" == "1" ]]; then
     echo "  + scanning for external dylibs (Homebrew/system extras)"
     collect_external_dylibs "${LIB_DIR}" \
@@ -365,8 +378,26 @@ LIB_DIR="${RESOURCES_DIR}/lib"
 
 export DYLD_LIBRARY_PATH="${LIB_DIR}:${BIN_DIR}:${DYLD_LIBRARY_PATH:-}"
 
+# SagePatch (optional QoL: F11 screenshot, Scroll Lock cursor lock, Ctrl+PgUp/Dn
+# brightness, Ctrl+1..5 window snap). Only loaded when the bundled dylib is
+# present and SAGE_PATCH_DISABLED is not set. Also seeds the engine INI loader
+# via Resources/Data/INI/Default/GameData/SagePatch.ini.
+if [[ -f "${LIB_DIR}/libsage_patch.dylib" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    if [[ -n "${DYLD_INSERT_LIBRARIES:-}" ]]; then
+        export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libsage_patch.dylib:${DYLD_INSERT_LIBRARIES}"
+    else
+        export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libsage_patch.dylib"
+    fi
+fi
+
 # GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires this env var on non-Win32; SDL3 matches game windowing layer
 export DXVK_WSI_DRIVER="SDL3"
+
+# DXVK HUD: when SagePatch is bundled and active, default to "fps" so casual
+# users see a frame counter without extra config. Set DXVK_HUD=0 to disable.
+if [[ -f "${LIB_DIR}/libsage_patch.dylib" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    export DXVK_HUD="${DXVK_HUD:-fps}"
+fi
 
 if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="${RESOURCES_DIR}/MoltenVK_icd.json"
@@ -407,6 +438,16 @@ fi
 # Run from the detected Zero Hour asset root when available.
 if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     cd "${CNC_GENERALS_ZH_PATH}"
+
+    # SagePatch INI override: the engine reads INIs from the cwd, not from
+    # inside the .app bundle. On first launch (or if the user deleted it),
+    # seed the override into the asset directory so casual QoL takes effect.
+    SAGE_INI_SRC="${RESOURCES_DIR}/Data/INI/Default/GameData/SagePatch.ini"
+    SAGE_INI_DST="${CNC_GENERALS_ZH_PATH}/Data/INI/Default/GameData/SagePatch.ini"
+    if [[ -f "${SAGE_INI_SRC}" && ! -f "${SAGE_INI_DST}" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+        mkdir -p "$(dirname "${SAGE_INI_DST}")"
+        cp "${SAGE_INI_SRC}" "${SAGE_INI_DST}"
+    fi
 fi
 
 exec "${BIN_DIR}/GeneralsXZH" "$@"
