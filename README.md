@@ -25,7 +25,9 @@ For **official releases and instructions**, visit:
 
 For release/runtime setup instructions (Linux and macOS), see:
 
-- [docs/BUILD/INSTALL_INSTRUCTIONS.md](docs/BUILD/INSTALL_INSTRUCTIONS.md)
+- [docs/BUILD/INSTALLATION.md](docs/BUILD/INSTALLATION.md)
+
+> **Don't have the game files yet?** The Steam version does not offer a macOS or Linux download. See [docs/BUILD/GETTING_THE_GAME_FILES.md](docs/BUILD/GETTING_THE_GAME_FILES.md) for three ways to obtain the original game assets (copy from Windows, CrossOver trial, or SteamCMD).
 
 ## How does this project differ from TheSuperHackers' work?
 
