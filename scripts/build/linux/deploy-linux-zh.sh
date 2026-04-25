@@ -103,6 +103,22 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsXZH" 2>/dev/null || {
     echo "    Libraries will need LD_LIBRARY_PATH or manual RPATH setting"
 }
 
+# SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
+# When the .so exists, deploy it + the Override.ini into Data/INI/Default/ so
+# the engine picks up the casual QoL settings. The launcher wrapper sets
+# LD_PRELOAD to load the .so at runtime.
+SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.so"
+SAGE_PATCH_OVERRIDE="${PROJECT_ROOT}/Patches/SagePatch/resources/Override.ini"
+if [[ -f "${SAGE_PATCH_LIB}" ]]; then
+    echo "  Deploying SagePatch (libsage_patch.so)..."
+    cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
+    if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
+        mkdir -p "${RUNTIME_DIR}/Data/INI/Default/GameData"
+        cp -v "${SAGE_PATCH_OVERRIDE}" \
+              "${RUNTIME_DIR}/Data/INI/Default/GameData/SagePatch.ini"
+    fi
+fi
+
 # Copy run wrapper script
 echo "  Copying run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << 'EOF'
@@ -118,7 +134,25 @@ export LD_LIBRARY_PATH="${SCRIPT_DIR}:${LD_LIBRARY_PATH:-}"
 # Set DXVK environment
 export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
-export DXVK_HUD="${DXVK_HUD:-0}"
+# DXVK HUD: SagePatch builds default to "fps" so casual users see frame rate
+# without extra config. Set DXVK_HUD=0 explicitly to disable, or anything else
+# (e.g. fps,memory,version) to customize. See DXVK docs for full list.
+if [[ -f "${SCRIPT_DIR}/libsage_patch.so" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    export DXVK_HUD="${DXVK_HUD:-fps}"
+else
+    export DXVK_HUD="${DXVK_HUD:-0}"
+fi
+
+# SagePatch (optional QoL features). Loaded via LD_PRELOAD so it can interpose
+# SDL3 functions for hot-keys (F11 screenshot, Scroll Lock cursor lock,
+# Ctrl+PageUp/PageDown brightness, Ctrl+1..5 window snap).
+if [[ -f "${SCRIPT_DIR}/libsage_patch.so" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    if [[ -n "${LD_PRELOAD:-}" ]]; then
+        export LD_PRELOAD="${SCRIPT_DIR}/libsage_patch.so:${LD_PRELOAD}"
+    else
+        export LD_PRELOAD="${SCRIPT_DIR}/libsage_patch.so"
+    fi
+fi
 
 # GeneralsX @feature felipebraz 25/02/2026 Auto-detect base Generals install path
 # Set CNC_GENERALS_INSTALLPATH if not already set and ../Generals/ exists

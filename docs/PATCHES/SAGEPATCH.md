@@ -1,99 +1,115 @@
-# SagePatch — Casual QoL Extras for GeneralsX (macOS)
+# SagePatch — Casual QoL Extras for GeneralsX
 
 SagePatch is an optional, drop-in patch that adds quality-of-life features to
 GeneralsX without modifying the game source. Inspired by the casual subset of
-GenTool, it ships as a separate dylib that is loaded via `DYLD_INSERT_LIBRARIES`
-plus a small `GameData` INI override that the engine picks up at startup.
+GenTool, it ships as a separate shared library that is loaded via the platform's
+preload mechanism plus a small `GameData` INI override that the engine picks up
+at startup.
+
+## Platform support
+
+| Platform | Mechanism | Status |
+|---|---|---|
+| **macOS** | `DYLD_INSERT_LIBRARIES` + `__DATA,__interpose` | ✅ Phase 1 |
+| **Linux** | `LD_PRELOAD` + `dlsym(RTLD_NEXT, …)` | ✅ Phase 1 (X11 only for brightness) |
+| **Windows** | proxy DLL pattern (deferred) | ⚠️ stubs build but no-op at runtime |
+
+Windows is deferred because Win32 has no native preload mechanism — it would
+need either a proxy `d3d8.dll` (the original GenTool's pattern) or in-process
+inline hooking via Detours/MinHook. Both are larger than the macOS/Linux
+implementations and were skipped to ship the rest. Windows users still have
+the original GenTool available.
 
 ## Features
 
 | Feature | Trigger | Notes |
 |---|---|---|
-| Screenshot | `F11` | PNG saved to `~/Pictures/GeneralsX/`. Captures the actual game window via CoreGraphics. |
-| Cursor lock toggle | `Scroll Lock` | Confines the mouse to the game window. Useful in windowed mode + multi-monitor setups. |
+| Screenshot | `F11` | PNG saved to `~/Pictures/GeneralsX/`. macOS: `screencapture`. Linux: ImageMagick `import` (X11) or `gnome-screenshot`. |
+| Cursor lock toggle | `Scroll Lock` | Confines mouse to the game window. SDL3 — works on every platform. |
 | Brightness up | `Ctrl + Page Up` | +8 step on the gamma curve, range −128…+128. |
-| Brightness down | `Ctrl + Page Down` | −8 step. |
+| Brightness down | `Ctrl + Page Down` | −8 step. macOS: CoreGraphics. Linux: XF86VidMode (X11 only — no-op under Wayland). |
+| Window snap: center | `Ctrl + 1` | SDL3 `SDL_SetWindowPosition` to display center. |
+| Window snap: top-left | `Ctrl + 2` | |
+| Window snap: top-right | `Ctrl + 3` | |
+| Window snap: bottom-left | `Ctrl + 4` | |
+| Window snap: bottom-right | `Ctrl + 5` | |
 | Camera zoom range | (passive) | `MaxCameraHeight=800`, `MinCameraHeight=60`, `EnforceMaxCameraHeight=No`. |
+| Camera pitch | (passive) | `CameraPitch=50` (vanilla ~63). |
 | Keyboard scroll speed | (passive) | `KeyboardScrollSpeedFactor=1.0` (vanilla 0.5). |
+| FPS counter | (passive) | DXVK HUD pre-set to `fps` in the run wrapper when SagePatch is active. |
 
 Hot-key collisions: SagePatch eats the events it handles, so they do not
 also reach the game.
 
 ## How to enable
 
-Build:
+### macOS
 
 ```bash
 cmake --preset macos-vulkan -DRTS_BUILD_OPTION_SAGE_PATCH=ON
 cmake --build build/macos-vulkan --target z_generals -j$(sysctl -n hw.logicalcpu)
-```
-
-(The `macos-vulkan` preset already turns this `ON` by default — disable with
-`-DRTS_BUILD_OPTION_SAGE_PATCH=OFF` if you want a vanilla build.)
-
-Deploy:
-
-```bash
 ./scripts/build/macos/deploy-macos-zh.sh
-```
-
-The deploy script:
-1. Copies `libsage_patch.dylib` next to `GeneralsXZH`
-2. Drops `Override.ini` into `Data/INI/Default/GameData/SagePatch.ini`
-3. Configures the wrapper `run.sh` to set `DYLD_INSERT_LIBRARIES`
-
-Run as usual:
-
-```bash
 ~/GeneralsX/GeneralsZH/run.sh -win
 ```
 
-Take a screenshot mid-game with **F11**.
+(The `macos-vulkan` preset already sets the flag `ON`.)
 
-## Disabling at runtime
+### Linux
 
-Without rebuilding:
+```bash
+cmake --preset linux64-deploy -DRTS_BUILD_OPTION_SAGE_PATCH=ON
+cmake --build build/linux64-deploy --target z_generals -j$(nproc)
+./scripts/build/linux/deploy-linux-zh.sh
+~/GeneralsX/GeneralsZH/run.sh -win
+```
+
+(The `linux64-deploy` preset does **not** set the flag automatically — opt in
+explicitly.)
+
+### Disabling at runtime (no rebuild)
 
 ```bash
 SAGE_PATCH_DISABLED=1 ~/GeneralsX/GeneralsZH/run.sh -win
 ```
 
-This skips the `DYLD_INSERT_LIBRARIES` step. The INI override remains active —
-delete `Data/INI/Default/GameData/SagePatch.ini` to revert camera/scroll values.
+This skips the preload step. The INI override remains active — delete
+`Data/INI/Default/GameData/SagePatch.ini` to revert camera/scroll values.
 
 ## Architecture
 
 ```
 Game process (GeneralsXZH)
     │
-    ├── DYLD_INSERT_LIBRARIES → libsage_patch.dylib
+    ├── DYLD_INSERT_LIBRARIES (macOS) / LD_PRELOAD (Linux) → libsage_patch.{dylib,so}
     │       │
-    │       └── __DATA,__interpose table replaces SDL_PollEvent
+    │       └── SDL_PollEvent gets replaced (interpose table on macOS,
+    │           symbol override + dlsym RTLD_NEXT on Linux)
     │              │
-    │              └── on F11 / Scroll Lock / Ctrl+PgUp/Dn → SagePatch handlers
+    │              └── F11, Scroll Lock, Ctrl+PgUp/Dn, Ctrl+1..5 → SagePatch handlers
     │                      │
-    │                      └── CoreGraphics / SDL3 / CGSetDisplayTransferByFormula
+    │                      └── Per-platform: screencapture / ImageMagick,
+    │                          CoreGraphics gamma / XF86VidMode, SDL_SetWindowPosition
     │
-    └── Engine reads Data/INI/Default/GameData/SagePatch.ini → overrides camera/scroll
+    └── Engine loads Data/INI/Default/GameData/SagePatch.ini → camera/scroll overrides
 ```
 
-No D3D8 proxy, no Vulkan layer, no engine source modifications. The whole patch
-is two files: a dylib and an INI.
+No D3D8 proxy, no Vulkan layer, no engine source modifications.
 
 ## Why this approach
 
 The original GenTool had to be a `d3d8.dll` proxy because Windows games of that
-era exposed no other plugin surface. On modern macOS we have:
+era exposed no other plugin surface. On macOS and Linux we have:
 
-- **`__interpose`** — ld + dyld replace symbol resolution at load time. We see
-  `SDL_PollEvent` exactly as the game calls it.
-- **CoreGraphics window capture** — the macOS compositor already has the
-  composited pixels; we ask for them. No need to read a Vulkan back-buffer.
-- **Engine INI overrides** — GeneralsX's INI loader merges files in
-  `Data/INI/Default/<Subsystem>/`. Parameter tweaks need zero code.
+- **Symbol override at load time** — `__DATA,__interpose` (macOS) and
+  `LD_PRELOAD` (Linux) replace `SDL_PollEvent` with our version without
+  touching the host SDL3 library.
+- **OS-native window capture** — both platforms expose tools that snapshot
+  a single window without graphics-pipeline hooks.
+- **Engine INI overrides** — the GeneralsX INI loader merges files in
+  `Data/INI/Default/<Subsystem>/`, so parameter tweaks need zero code.
 
-This keeps SagePatch ~400 lines instead of the ~3000 lines a full COM proxy
-would require.
+This keeps SagePatch ~600 lines instead of the ~3000-line full COM proxy
+that a Windows-style implementation would require.
 
 ## Limits / what's *not* in scope
 
@@ -107,24 +123,31 @@ By design, SagePatch sticks to **casual** QoL:
 
 Engine-side bug fixes (scud bug, tunnel bug, building bug, multiplayer crash)
 also live outside this patch — they require modifications inside the game's
-source rather than a side-loaded dylib.
+source rather than a side-loaded shared library, and SagePatch's whole point is
+to stay outside the source tree.
 
-## Files
+## File layout
 
 ```
 Patches/SagePatch/
     CMakeLists.txt
-    include/SagePatch/Hooks.h
-    include/SagePatch/Features.h
-    include/SagePatch/Logger.h
-    src/Init.cpp                    # constructor / destructor
-    src/interposers.cpp             # __DATA,__interpose table
-    src/features/KeyHandler.cpp     # dispatches hot-keys
-    src/features/Screenshot.cpp     # F11 → PNG
-    src/features/CursorLock.cpp     # Scroll Lock toggle
-    src/features/Brightness.cpp     # Ctrl+PgUp / Ctrl+PgDn
-    src/util/Logger.cpp             # placeholder
-    src/util/Config.cpp             # placeholder
-    resources/Override.ini          # engine-side INI override
-docs/PATCHES/SAGEPATCH.md           # this file
+    include/SagePatch/{Hooks.h, Features.h, Logger.h}
+    src/
+      common/                          # SDL3 — works on every platform
+        Init.cpp
+        KeyHandler.cpp
+        CursorLock.cpp
+        WindowPosition.cpp
+      macos/                           # macOS-only: __DATA,__interpose, screencapture, CoreGraphics
+        interposers_macos.cpp
+        Screenshot_macos.cpp
+        Brightness_macos.cpp
+      linux/                           # Linux-only: LD_PRELOAD, ImageMagick, XF86VidMode
+        interposers_linux.cpp
+        Screenshot_linux.cpp
+        Brightness_linux.cpp
+      windows/                         # Windows: stubs only (Phase 2)
+        Stubs_windows.cpp
+    resources/Override.ini             # engine-side INI override
+docs/PATCHES/SAGEPATCH.md              # this file
 ```

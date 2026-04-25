@@ -184,7 +184,7 @@ export DYLD_LIBRARY_PATH="\${SCRIPT_DIR}:\${DYLD_LIBRARY_PATH:-}"
 
 # SagePatch (optional QoL features). Loaded via DYLD_INSERT_LIBRARIES so it
 # can interpose SDL3 functions for hot-keys (F11 screenshot, Scroll Lock cursor
-# lock, Ctrl+PageUp/PageDown brightness). Ignored if the dylib is not present.
+# lock, Ctrl+PageUp/PageDown brightness, Ctrl+1..5 window snap).
 if [[ -f "\${SCRIPT_DIR}/libsage_patch.dylib" && "\${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
     if [[ -n "\${DYLD_INSERT_LIBRARIES:-}" ]]; then
         export DYLD_INSERT_LIBRARIES="\${SCRIPT_DIR}/libsage_patch.dylib:\${DYLD_INSERT_LIBRARIES}"
@@ -195,6 +195,13 @@ fi
 
 # GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires DXVK_WSI_DRIVER on non-Win32; must match game windowing (SDL3)
 export DXVK_WSI_DRIVER="SDL3"
+
+# DXVK HUD: SagePatch builds default to "fps" so casual users see frame rate
+# without extra config. Set DXVK_HUD=0 explicitly to disable, or anything else
+# (e.g. fps,memory,version) to customize.
+if [[ -f "\${SCRIPT_DIR}/libsage_patch.dylib" && "\${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    export DXVK_HUD="\${DXVK_HUD:-fps}"
+fi
 
 # MoltenVK ICD manifest — deployed alongside the binary by deploy-macos-zh.sh
 if [[ -f "\${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
