@@ -36,10 +36,23 @@ the original GenTool available.
 | Camera zoom range | (passive) | `MaxCameraHeight=800`, `MinCameraHeight=60`, `EnforceMaxCameraHeight=No`. |
 | Camera pitch | (passive) | `CameraPitch=50` (vanilla ~63). |
 | Keyboard scroll speed | (passive) | `KeyboardScrollSpeedFactor=1.0` (vanilla 0.5). |
-| FPS counter | (passive) | DXVK HUD pre-set to `fps` in the run wrapper when SagePatch is active. |
 
 Hot-key collisions: SagePatch eats the events it handles, so they do not
 also reach the game.
+
+### About FPS counters
+
+The engine already ships a native FPS overlay at the top-left
+(`W3DDisplay::drawFPSStats()`), gated by `#ifdef RTS_DEBUG` plus the runtime
+`-benchmark <seconds>` CLI flag. SagePatch does not duplicate it. An earlier
+revision of this patch defaulted `DXVK_HUD=fps` in the run wrapper as a
+release-build alternative, but on macOS 26 the current MoltenVK SPIRV-Cross
+back-end cannot translate DXVK's HUD pipeline shader (uses `DrawIndex`, no
+MSL equivalent), causing the swap-chain blit pipeline to fail and the game
+to hang at the EA logo. The default is now `DXVK_HUD=0` again. Users who
+want a frame counter on macOS should either build with `RTS_DEBUG=ON` and
+launch with `-benchmark 9999`, or set `DXVK_HUD=fps` themselves once
+upstream MoltenVK ships the DrawIndex emulation patch.
 
 ## How to enable
 
