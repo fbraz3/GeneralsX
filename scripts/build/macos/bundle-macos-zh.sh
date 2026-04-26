@@ -393,11 +393,11 @@ fi
 # GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires this env var on non-Win32; SDL3 matches game windowing layer
 export DXVK_WSI_DRIVER="SDL3"
 
-# DXVK HUD: when SagePatch is bundled and active, default to "fps" so casual
-# users see a frame counter without extra config. Set DXVK_HUD=0 to disable.
-if [[ -f "${LIB_DIR}/libsage_patch.dylib" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
-    export DXVK_HUD="${DXVK_HUD:-fps}"
-fi
+# DXVK HUD: kept opt-in. MoltenVK on macOS 26 cannot compile DXVK's HUD
+# pipeline shader (gl_DrawID / SPIR-V DrawIndex has no MSL equivalent yet).
+# Defaulting it on causes the swap chain blit pipeline to fail. Users wanting
+# an FPS overlay set DXVK_HUD=fps themselves.
+export DXVK_HUD="${DXVK_HUD:-0}"
 
 if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="${RESOURCES_DIR}/MoltenVK_icd.json"

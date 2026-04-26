@@ -372,9 +372,8 @@ fi
 # GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires this env var on non-Win32; SDL3 matches game windowing layer
 export DXVK_WSI_DRIVER="SDL3"
 
-if [[ -f "${LIB_DIR}/libsage_patch.dylib" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
-    export DXVK_HUD="${DXVK_HUD:-fps}"
-fi
+# DXVK HUD: kept opt-in. MoltenVK on macOS 26 can't compile DXVK's HUD shader.
+export DXVK_HUD="${DXVK_HUD:-0}"
 
 if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="${RESOURCES_DIR}/MoltenVK_icd.json"
