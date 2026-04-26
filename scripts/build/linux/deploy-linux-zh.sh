@@ -113,9 +113,13 @@ if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     echo "  Deploying SagePatch (libsage_patch.so)..."
     cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
     if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
-        mkdir -p "${RUNTIME_DIR}/Data/INI/Default/GameData"
+        # path2 (Data/INI/GameData) is loaded after path1 (Data/INI/Default/GameData)
+        # and the path2 BIG file is what carries the real camera/scroll defaults.
+        # Our override must live in path2's subdir to win the last-write race.
+        mkdir -p "${RUNTIME_DIR}/Data/INI/GameData"
         cp -v "${SAGE_PATCH_OVERRIDE}" \
-              "${RUNTIME_DIR}/Data/INI/Default/GameData/SagePatch.ini"
+              "${RUNTIME_DIR}/Data/INI/GameData/SagePatch.ini"
+        rm -f "${RUNTIME_DIR}/Data/INI/Default/GameData/SagePatch.ini"
     fi
 fi
 

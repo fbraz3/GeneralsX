@@ -186,6 +186,21 @@ Patches/SagePatch/
         Brightness_linux.cpp
       windows/                         # Windows: stubs only (Phase 2)
         Stubs_windows.cpp
-    resources/Override.ini             # engine-side INI override
+    resources/Override.ini             # engine-side INI override (deployed to Data/INI/GameData/SagePatch.ini)
 docs/PATCHES/SAGEPATCH.md              # this file
+```
+
+### A note on the INI override path
+
+The engine loads `GameData` INIs in two passes:
+`Data/INI/Default/GameData/...` first, then `Data/INI/GameData/...`. Each
+`GameData` block parsed overwrites the previous values in `TheWritableGlobalData`
+(`INI_LOAD_OVERWRITE` semantics). The vanilla camera defaults
+(`MaxCameraHeight = 310`, etc.) live in the BIG-archived `Data/INI/GameData.ini`
+which is parsed in the **second** pass, so an override placed in
+`Data/INI/Default/GameData/` is silently undone by the second pass. The deploy
+scripts therefore drop our `SagePatch.ini` into `Data/INI/GameData/` so it is
+loaded last and the values stick.
+
+```text
 ```
