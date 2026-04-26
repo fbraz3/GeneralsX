@@ -207,8 +207,13 @@ if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
     echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
 fi
 
+# The engine resolves Local FS lookups (Data/INI/Default/... overrides, etc.)
+# relative to the binary's cwd. Without this cd, anything launched via absolute
+# path misses every loose INI / asset and only sees BIG-archived data.
+cd "${SCRIPT_DIR}"
+
 # Run game with all arguments
-exec "${SCRIPT_DIR}/GeneralsXZH" "$@"
+exec "./GeneralsXZH" "$@"
 EOF
 chmod +x "${RUNTIME_DIR}/run.sh"
 

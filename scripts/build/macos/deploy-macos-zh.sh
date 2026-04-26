@@ -220,7 +220,13 @@ if [[ -z "\${CNC_GENERALS_INSTALLPATH:-}" && -d "\${SCRIPT_DIR}/../Generals" ]];
     export CNC_GENERALS_INSTALLPATH="\${SCRIPT_DIR}/../Generals/"
 fi
 
-exec "\${SCRIPT_DIR}/GeneralsXZH" "\$@"
+# The engine resolves Local FS lookups (e.g. INI overrides under
+# Data/INI/Default/...) relative to the binary's cwd. Without this cd, anything
+# launched via absolute path (Finder, gtimeout, full-path invocation) misses
+# every loose INI / asset and only sees what is bundled inside the BIG files.
+cd "\${SCRIPT_DIR}"
+
+exec "./GeneralsXZH" "\$@"
 WRAPPER
 chmod +x "${RUNTIME_DIR}/run.sh"
 
