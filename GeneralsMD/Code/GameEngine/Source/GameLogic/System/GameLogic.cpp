@@ -111,6 +111,10 @@
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 
+#include <rts/profile.h>
+
+struct QuitGameException {};
+
 DECLARE_PERF_TIMER(SleepyMaintenance)
 
 #include "Common/UnitTimings.h" //Contains the DO_UNIT_TIMINGS define jba.
@@ -284,6 +288,7 @@ GameLogic::GameLogic()
 	m_loadingMap = FALSE;
 	m_loadingSave = FALSE;
 	m_clearingGameData = FALSE;
+	m_quitToDesktopAfterMatch = FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1083,6 +1088,10 @@ void GameLogic::updateLoadProgress( Int progress )
 	if( m_loadScreen )
 		m_loadScreen->update( progress );
 
+	if (TheGameEngine->getQuitting() || m_quitToDesktopAfterMatch)
+	{
+		throw QuitGameException();
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1123,6 +1132,21 @@ void GameLogic::setGameMode( GameMode mode )
 	* point and ready to load up with all the data */
 // ------------------------------------------------------------------------------------------------
 void GameLogic::startNewGame( Bool loadingSaveGame )
+{
+	try
+	{
+		tryStartNewGame(loadingSaveGame);
+	}
+	catch (QuitGameException&)
+	{
+		if (m_quitToDesktopAfterMatch && TheGameEngine)
+		{
+			TheGameEngine->setQuitting(TRUE);
+		}
+	}
+}
+
+void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 {
 
 	#ifdef DUMP_PERF_STATS
@@ -4226,6 +4250,80 @@ void GameLogic::exitGame()
 	message.format("GameEnd: %s", TheGlobalData->m_mapName.str());
 	PROFILER_MSG(message.str(), message.getLength());
 #endif
+}
+
+// ------------------------------------------------------------------------------------------------
+
+void GameLogic::quit(Bool toDesktop)
+{
+	const Bool isNotLoading = (!isLoadingMap() && !isLoadingSave());
+
+	if (isInGame())
+	{
+		if (isInInteractiveGame())
+		{
+			if (canOpenQuitMenu())
+			{
+				ToggleQuitMenu();
+				return;
+			}
+			
+			if (isInMultiplayerGame() && !isInSkirmishGame() && TheGameInfo && !TheGameInfo->isSandbox())
+			{
+				GameMessage *msg = TheMessageStream->appendMessage(GameMessage::MSG_SELF_DESTRUCT);
+				msg->appendBooleanArgument(TRUE);
+			}
+		}
+
+		if (TheRecorder && TheRecorder->getMode() == RECORDERMODETYPE_RECORD)
+		{
+			TheRecorder->stopRecording();
+		}
+
+		setGamePaused(FALSE);
+
+		if (TheScriptEngine && isNotLoading)
+		{
+			TheScriptEngine->forceUnfreezeTime();
+			TheScriptEngine->doUnfreezeTime();
+		}
+
+		if (toDesktop)
+		{
+			if (isInMultiplayerGame())
+			{
+				m_quitToDesktopAfterMatch = TRUE;
+				if (isNotLoading)
+				{
+					exitGame();
+				}
+			}
+			else
+			{
+				if (isNotLoading)
+				{
+					clearGameData();
+				}
+			}
+		}
+		else
+		{
+			exitGame();
+		}
+	}
+
+	if (toDesktop)
+	{
+		if (!isInMultiplayerGame())
+		{
+			TheGameEngine->setQuitting(TRUE);
+		}
+	}
+
+	if (TheInGameUI)
+	{
+		TheInGameUI->setClientQuiet(TRUE);
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
