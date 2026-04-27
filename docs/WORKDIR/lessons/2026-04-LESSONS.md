@@ -13,6 +13,18 @@
 	- Delay the SDL fullscreen transition until after the render device has applied the final game resolution, and resize the SDL window before creating/resetting the device.
 - Prevention: When fullscreen is entered asynchronously through SDL or the platform window manager, do not size the initial swapchain from the target mode unless the window has already completed the transition.
 
+## Session 2026-04-27 - OpenAL stream fixes must account for different producer lifecycles
+
+- Problem: After restoring briefing-video audio in commit `c0ce9f0`, mission intro narrator lines and victory speech stopped playing on OpenAL builds.
+- Root cause:
+	- The shared `OpenALAudioStream::update()` logic was adjusted around the video use case, where FFmpeg queues audio before or during explicit stream maintenance.
+	- Generic `AT_Streaming` speech uses a different lifecycle: the stream can enter `processPlayingList()` with no queued buffers, fill during `update()`, and still be seen as stopped in the same frame if playback is not retriggered after refill.
+	- The manager then releases the stream immediately, so narrator speech never starts.
+- Fix:
+	- Added a post-refill restart check in `OpenALAudioStream::update()` so newly buffered speech data is started before stopped-stream teardown runs.
+	- Preserved the video-specific FFmpeg/OpenAL path introduced for issue #38.
+- Prevention: When hardening shared stream classes for video/audio regressions, always validate both producer models: push-queued video streams and lazy-filled gameplay speech streams.
+
 ## Session 2026-04-23 - Campaign river-water rendering must guard shroud sampling boundaries
 
 - Problem: Linux `GeneralsXZH` could crash with `SIGSEGV` when opening campaign, with stack traces landing in `W3DShroud::getShroudLevel()` via `W3DWater::getRiverVertexDiffuse()`.
