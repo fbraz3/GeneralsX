@@ -524,6 +524,71 @@ static bool SDL3_GetWindowSizeInPixels(int& outW, int& outH, float& outDensity)
 	outDensity = (logW > 0) ? (float)physW / (float)logW : 1.0f;
 	return true;
 }
+
+// GeneralsX @bugfix GitHub Copilot 27/04/2026 Apply SDL3 window sizing/fullscreen only after the final render resolution is known.
+static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, Int renderHeight)
+{
+	extern SDL_Window* TheSDL3Window;
+	if (!TheSDL3Window) return;
+	int beforeLogW = 0;
+	int beforeLogH = 0;
+	int beforePhysW = 0;
+	int beforePhysH = 0;
+	SDL_GetWindowSize(TheSDL3Window, &beforeLogW, &beforeLogH);
+	SDL_GetWindowSizeInPixels(TheSDL3Window, &beforePhysW, &beforePhysH);
+	fprintf(stderr,
+		"[GX-FSDBG] SDL3_ApplyWindowMode begin windowed=%d render=%dx%d beforeLog=%dx%d beforePx=%dx%d\n",
+		windowed ? 1 : 0,
+		renderWidth,
+		renderHeight,
+		beforeLogW,
+		beforeLogH,
+		beforePhysW,
+		beforePhysH);
+
+	if (!windowed) {
+		if (!SDL_SetWindowFullscreen(TheSDL3Window, false)) {
+			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(false) failed: %s\n", SDL_GetError());
+		}
+
+		SDL_DisplayID displayId = SDL_GetDisplayForWindow(TheSDL3Window);
+		const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayId);
+		if (mode) {
+			if (!SDL_SetWindowFullscreenMode(TheSDL3Window, mode)) {
+				fprintf(stderr, "WARNING: SDL_SetWindowFullscreenMode(native) failed: %s\n", SDL_GetError());
+			}
+		}
+		else {
+			fprintf(stderr, "WARNING: SDL_GetCurrentDisplayMode failed for fullscreen transition\n");
+		}
+	}
+	else {
+		if (!SDL_SetWindowSize(TheSDL3Window, renderWidth, renderHeight)) {
+			fprintf(stderr, "WARNING: SDL_SetWindowSize(%d,%d) failed: %s\n", renderWidth, renderHeight, SDL_GetError());
+		}
+	}
+
+	if (!windowed) {
+		if (!SDL_SetWindowFullscreen(TheSDL3Window, true)) {
+			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(true) failed: %s\n", SDL_GetError());
+		}
+	}
+	int afterLogW = 0;
+	int afterLogH = 0;
+	int afterPhysW = 0;
+	int afterPhysH = 0;
+	SDL_GetWindowSize(TheSDL3Window, &afterLogW, &afterLogH);
+	SDL_GetWindowSizeInPixels(TheSDL3Window, &afterPhysW, &afterPhysH);
+	fprintf(stderr,
+		"[GX-FSDBG] SDL3_ApplyWindowMode end windowed=%d render=%dx%d afterLog=%dx%d afterPx=%dx%d\n",
+		windowed ? 1 : 0,
+		renderWidth,
+		renderHeight,
+		afterLogW,
+		afterLogH,
+		afterPhysW,
+		afterPhysH);
+}
 #endif
 
 // Filtered resolution cache — built once, clamps widths to 4:3..16:9 and deduplicates.
@@ -595,6 +660,9 @@ Bool W3DDisplay::setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt
 
 	if (WW3D_ERROR_OK == WW3D::Set_Device_Resolution(xres,yres,bitdepth,windowed,true))
 	{
+		#ifdef SAGE_USE_SDL3
+		SDL3_ApplyWindowModeForRenderConfig(windowed, xres, yres);
+		#endif
 		Render2DClass::Set_Screen_Resolution(RectClass(0, 0, xres, yres));
 		Display::setDisplayMode(xres, yres, bitdepth, windowed);
 		return TRUE;
@@ -889,17 +957,6 @@ void W3DDisplay::init()
 		if (TheSDL3Window) {
 			fprintf(stderr, "DEBUG: Showing SDL3 window after WW3D init...\n");
 			SDL_ShowWindow(TheSDL3Window);
-
-			// GeneralsX @bugfix xorza 14/04/2026 Apply native SDL3 fullscreen on Linux after DXVK device creation.
-			// DXVK is told Windowed=TRUE to avoid its WSI fullscreen path which breaks on Wayland
-			// (SDL_SetWindowPosition rejected). Instead use SDL3's native fullscreen which works
-			// on both Wayland (xdg_toplevel.set_fullscreen) and X11.
-			if (!TheGlobalData->m_windowed) {
-				fprintf(stderr, "DEBUG: Requesting SDL3 native fullscreen...\n");
-				if (!SDL_SetWindowFullscreen(TheSDL3Window, true)) {
-					fprintf(stderr, "WARNING: SDL_SetWindowFullscreen failed: %s\n", SDL_GetError());
-				}
-			}
 		}
 		#endif
 
@@ -997,6 +1054,10 @@ void W3DDisplay::init()
 			DEBUG_CRASH( ("Unable to set render device") );
 			return;
 		}
+
+		#ifdef SAGE_USE_SDL3
+		SDL3_ApplyWindowModeForRenderConfig(getWindowed(), getWidth(), getHeight());
+		#endif
 
 		//Check if level was never set and default to setting most suitable for system.
 		if (TheGameLODManager->getStaticLODLevel() == STATIC_GAME_LOD_UNKNOWN)

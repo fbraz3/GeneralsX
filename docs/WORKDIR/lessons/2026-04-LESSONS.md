@@ -1,5 +1,21 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-27 - SDL fullscreen on macOS must size the initial DXVK backbuffer from the current window, not the target display mode
+
+- Problem: After the ultrawide/pillarbox merge, macOS fullscreen could look like a low-resolution image stretched to fill the screen, with a visible small-window-then-fullscreen transition.
+- Root cause:
+	- Non-Windows builds force DXVK presentation through the windowed path and apply native fullscreen later through SDL.
+	- The new pillarbox code prefilled `D3DPRESENT_PARAMETERS.BackBufferWidth/Height` with the native display size while the SDL window was still at its pre-fullscreen size.
+	- On macOS this could leave the swapchain created/reset at the old window dimensions, while later logic incorrectly believed the backbuffer already matched fullscreen, so the frame was upscaled and blurred.
+- Fix:
+	- For SDL-managed fullscreen on non-Windows builds, initialize/reset the DXVK backbuffer from the current window pixel size first.
+	- Keep native display sizing only as a fallback when the current SDL window size is unavailable.
+	- Delay the SDL fullscreen transition until after the render device has applied the final game resolution, and resize the SDL window before creating/resetting the device.
+	- Compute pillarbox/backbuffer fit from active present/backbuffer dimensions (source of truth), not from display-mode assumptions.
+- Validation:
+	- Runtime fullscreen behavior on macOS was confirmed after synchronizing SDL fullscreen transition, present backbuffer reset, and pillarbox sizing.
+- Prevention: When fullscreen is entered asynchronously through SDL or the platform window manager, do not size the initial swapchain from the target mode unless the window has already completed the transition.
+
 ## Session 2026-04-27 - LAN network pacing must keep consistent time units across platforms
 
 - Problem: LAN matches on Linux could run dramatically faster than intended, while non-network pacing paths looked normal.
