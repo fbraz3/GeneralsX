@@ -279,6 +279,36 @@ bool DX8Wrapper::Pillarbox_Get_Rect(int& x, int& y, int& w, int& h)
 	return true;
 }
 
+// GeneralsX @bugfix GitHub Copilot 27/04/2026 Keep SDL-managed fullscreen swapchains aligned to the current window size until the native fullscreen transition finishes.
+static void Resolve_Present_BackBuffer_Size(int gameW, int gameH, bool isWindowed, UINT& outW, UINT& outH)
+{
+	outW = (UINT)gameW;
+	outH = (UINT)gameH;
+
+#ifndef _WIN32
+	if (!isWindowed) {
+		int windowW = gameW;
+		int windowH = gameH;
+		float density = 1.0f;
+		if (DX8Wrapper::GetWindowSize(windowW, windowH, density)) {
+			outW = (UINT)windowW;
+			outH = (UINT)windowH;
+			return;
+		}
+	}
+#endif
+
+	if (!isWindowed) {
+		int nativeW = 0;
+		int nativeH = 0;
+		float density = 1.0f;
+		if (DX8Wrapper::GetNativeDisplaySize(nativeW, nativeH, density)) {
+			outW = (UINT)nativeW;
+			outH = (UINT)nativeH;
+		}
+	}
+}
+
 DX8FrameStatistics DX8Wrapper::FrameStatistics;
 static DX8FrameStatistics LastFrameStatistics;
 
@@ -1214,7 +1244,6 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		_RenderDeviceNameTable[CurRenderDevice].str(),_RenderDeviceDescriptionTable[CurRenderDevice].Get_Driver_Name(),
 		_RenderDeviceDescriptionTable[CurRenderDevice].Get_Driver_Version(),ResolutionWidth,ResolutionHeight,(IsWindowed ? 1 : 0)));
 
-#ifdef _WIN32
 	// PWG 4/13/2000 - changed so that if you say to resize the window it resizes
 	// regardless of whether its windowed or not as OpenGL resizes its self around
 	// the caption and edges of the window type you provide, so its important to
@@ -1223,7 +1252,6 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	if (resize_window) {
 		Resize_And_Position_Window();
 	}
-#endif
 	//must be either resetting existing device or creating a new one.
 	WWASSERT(reset_device || D3DDevice == nullptr);
 
@@ -1232,17 +1260,12 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	*/
 	::ZeroMemory(&_PresentParameters, sizeof(D3DPRESENT_PARAMETERS));
 
-	// In fullscreen, set backbuffer to native display size for pillarbox rendering.
-	_PresentParameters.BackBufferWidth = ResolutionWidth;
-	_PresentParameters.BackBufferHeight = ResolutionHeight;
-	if (!IsWindowed) {
-		int nativeW, nativeH;
-		float density;
-		if (GetNativeDisplaySize(nativeW, nativeH, density)) {
-			_PresentParameters.BackBufferWidth = nativeW;
-			_PresentParameters.BackBufferHeight = nativeH;
-		}
-	}
+	Resolve_Present_BackBuffer_Size(
+		ResolutionWidth,
+		ResolutionHeight,
+		IsWindowed,
+		_PresentParameters.BackBufferWidth,
+		_PresentParameters.BackBufferHeight);
 	_PresentParameters.BackBufferCount = IsWindowed ? 1 : 2;
 
 	//I changed this to discard all the time (even when full-screen) since that the most efficient. 07-16-03 MW:
@@ -1524,23 +1547,20 @@ bool DX8Wrapper::Set_Device_Resolution(int width,int height,int bits,int windowe
 		if (width != -1) ResolutionWidth = width;
 		if (height != -1) ResolutionHeight = height;
 
-		_PresentParameters.BackBufferWidth = ResolutionWidth;
-		_PresentParameters.BackBufferHeight = ResolutionHeight;
-
-		// Release pillarbox RT before device reset
-		Pillarbox_Cleanup();
-		if (!IsWindowed) {
-			int nativeW, nativeH;
-			float density;
-			if (GetNativeDisplaySize(nativeW, nativeH, density)) {
-				_PresentParameters.BackBufferWidth = nativeW;
-				_PresentParameters.BackBufferHeight = nativeH;
-			}
-		}
 		if (resize_window)
 		{
 			Resize_And_Position_Window();
 		}
+
+		Resolve_Present_BackBuffer_Size(
+			ResolutionWidth,
+			ResolutionHeight,
+			IsWindowed,
+			_PresentParameters.BackBufferWidth,
+			_PresentParameters.BackBufferHeight);
+
+		// Release pillarbox RT before device reset
+		Pillarbox_Cleanup();
 #pragma message("TODO: support changing windowed status and changing the bit depth")
 		WWDEBUG_SAY(("DX8Wrapper::Set_Device_Resolution is resetting the device."));
 		bool ok = Reset_Device();
