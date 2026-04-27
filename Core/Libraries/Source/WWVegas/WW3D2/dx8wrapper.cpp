@@ -154,14 +154,20 @@ bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
 {
 	Pillarbox_Cleanup();
 
-	// Determine backbuffer dimensions
-	int bbW, bbH;
-	float density;
-	if (!IsWindowed) {
-		if (!GetNativeDisplaySize(bbW, bbH, density)) return false;
-	} else {
+	// Determine backbuffer dimensions from the active present parameters first.
+	// GeneralsX @bugfix GitHub Copilot 27/04/2026 Using native display size here can diverge from
+	// the actual DXVK backbuffer during SDL fullscreen transitions and cause zoom/crop artifacts.
+	int bbW = (int)_PresentParameters.BackBufferWidth;
+	int bbH = (int)_PresentParameters.BackBufferHeight;
+	float density = 1.0f;
+
+	if (bbW <= 0 || bbH <= 0) {
 		if (!GetWindowSize(bbW, bbH, density)) {
-			bbW = gameW; bbH = gameH; density = 1.0f;
+			if (!GetNativeDisplaySize(bbW, bbH, density)) {
+				bbW = gameW;
+				bbH = gameH;
+				density = 1.0f;
+			}
 		}
 	}
 
@@ -196,8 +202,14 @@ bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
 		s_dstX = 0; s_dstY = (bbH - s_dstH) / 2;
 	}
 	s_pillarboxEnabled = true;
-	fprintf(stderr, "INFO: Pillarbox: game=%dx%d, backbuffer=%dx%d, windowed=%d\n",
-		gameW, gameH, bbW, bbH, IsWindowed ? 1 : 0);
+	fprintf(stderr, "INFO: Pillarbox: game=%dx%d, backbuffer=%dx%d, present=%ux%u, windowed=%d\n",
+		gameW,
+		gameH,
+		bbW,
+		bbH,
+		_PresentParameters.BackBufferWidth,
+		_PresentParameters.BackBufferHeight,
+		IsWindowed ? 1 : 0);
 	return true;
 }
 
@@ -209,6 +221,17 @@ void DX8Wrapper::Pillarbox_Begin()
 	D3DDevice->GetRenderTarget(&s_savedBackbuffer);
 	D3DDevice->GetDepthStencilSurface(&s_savedDepth);
 	D3DDevice->SetRenderTarget(s_offscreenSurf, s_depthSurf);
+	// GeneralsX @bugfix GitHub Copilot 27/04/2026 Ensure scene render uses game-resolution viewport on the offscreen RT.
+	// Without this, a stale fullscreen-sized viewport can survive the target switch and crop/zoom into the top-left area.
+	D3DVIEWPORT8 sceneViewport = {
+		0,
+		0,
+		(DWORD)ResolutionWidth,
+		(DWORD)ResolutionHeight,
+		0.0f,
+		1.0f
+	};
+	D3DDevice->SetViewport(&sceneViewport);
 	// Clear the offscreen RT and its depth buffer. The Begin_Render clear targeted
 	// the backbuffer before we switched, so without this the offscreen would carry
 	// stale depth from the previous frame.
@@ -407,11 +430,22 @@ DX8_Stats	 DX8Wrapper::stats;
 // changed since last frame and reconfigures pillarbox accordingly.
 void DX8Wrapper::Pillarbox_Process_Resize()
 {
-	if (!IsWindowed || !D3DDevice) return;
+	if (!D3DDevice) return;
 
 	int physW = 0, physH = 0;
 	float density = 1.0f;
-	if (!GetWindowSize(physW, physH, density)) return;
+	if (!GetWindowSize(physW, physH, density)) {
+		if (!IsWindowed) {
+			// GeneralsX @bugfix GitHub Copilot 27/04/2026 SDL fullscreen transitions can change window pixel size
+			// after device creation. Fall back to native display size so we can re-sync the backbuffer.
+			if (!GetNativeDisplaySize(physW, physH, density)) {
+				return;
+			}
+		}
+		else {
+			return;
+		}
+	}
 
 	// Nothing to do if backbuffer already matches window
 	if ((int)_PresentParameters.BackBufferWidth == physW &&
@@ -1176,9 +1210,15 @@ void DX8Wrapper::Resize_And_Position_Window()
 		// Resize the window to fit this resolution
 		if (!IsWindowed)
 		{
+			#ifdef _WIN32
 			::SetWindowPos(_Hwnd, HWND_TOPMOST, 0, 0, width, height, 0);
 
 			DEBUG_LOG(("Window resized to w:%d h:%d", width, height));
+			#else
+			// GeneralsX @bugfix GitHub Copilot 27/04/2026 On SDL platforms, fullscreen size is controlled by SDL display mode.
+			// Forcing window size here can lock fullscreen transitions to the game resolution (for example 1024x768).
+			DEBUG_LOG(("Skipping explicit fullscreen resize on SDL platform"));
+			#endif
 		}
 		else
 		{

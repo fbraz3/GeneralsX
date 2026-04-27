@@ -484,10 +484,22 @@ static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, 
 		if (!SDL_SetWindowFullscreen(TheSDL3Window, false)) {
 			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(false) failed: %s\n", SDL_GetError());
 		}
-	}
 
-	if (!SDL_SetWindowSize(TheSDL3Window, renderWidth, renderHeight)) {
-		fprintf(stderr, "WARNING: SDL_SetWindowSize(%d,%d) failed: %s\n", renderWidth, renderHeight, SDL_GetError());
+		SDL_DisplayID displayId = SDL_GetDisplayForWindow(TheSDL3Window);
+		const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayId);
+		if (mode) {
+			if (!SDL_SetWindowFullscreenMode(TheSDL3Window, mode)) {
+				fprintf(stderr, "WARNING: SDL_SetWindowFullscreenMode(native) failed: %s\n", SDL_GetError());
+			}
+		}
+		else {
+			fprintf(stderr, "WARNING: SDL_GetCurrentDisplayMode failed for fullscreen transition\n");
+		}
+	}
+	else {
+		if (!SDL_SetWindowSize(TheSDL3Window, renderWidth, renderHeight)) {
+			fprintf(stderr, "WARNING: SDL_SetWindowSize(%d,%d) failed: %s\n", renderWidth, renderHeight, SDL_GetError());
+		}
 	}
 
 	if (!windowed) {

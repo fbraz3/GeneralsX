@@ -11,6 +11,9 @@
 	- For SDL-managed fullscreen on non-Windows builds, initialize/reset the DXVK backbuffer from the current window pixel size first.
 	- Keep native display sizing only as a fallback when the current SDL window size is unavailable.
 	- Delay the SDL fullscreen transition until after the render device has applied the final game resolution, and resize the SDL window before creating/resetting the device.
+	- Compute pillarbox/backbuffer fit from active present/backbuffer dimensions (source of truth), not from display-mode assumptions.
+- Validation:
+	- Runtime fullscreen behavior on macOS was confirmed after synchronizing SDL fullscreen transition, present backbuffer reset, and pillarbox sizing.
 - Prevention: When fullscreen is entered asynchronously through SDL or the platform window manager, do not size the initial swapchain from the target mode unless the window has already completed the transition.
 
 ## Session 2026-04-27 - OpenAL stream fixes must account for different producer lifecycles
