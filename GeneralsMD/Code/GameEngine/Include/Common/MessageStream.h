@@ -759,6 +759,7 @@ public:
 
 	virtual GameMessage *appendMessage( GameMessage::Type type );		///< Append a message to the end of the stream
 	virtual GameMessage *insertMessage( GameMessage::Type type, GameMessage *messageToInsertAfter );	// Insert message after messageToInsertAfter.
+	virtual Bool isReadyForMessages() const;											///< Return true if a local player is present and ready to accept messages
 
 	// Methods NOT Inherited ------------------------------------------------------------------------
 	void propagateMessages();													///< Propagate messages through attached translators

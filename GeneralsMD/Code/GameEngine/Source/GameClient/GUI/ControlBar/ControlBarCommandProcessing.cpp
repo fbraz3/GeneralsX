@@ -68,13 +68,9 @@ struct SelectObjectsInfo
 
 //-------------------------------------------------------------------------------------------------
 
-void selectObjectOfType( Object* obj, void* selectObjectsInfo )
+static void selectObjectOfType( Object* obj, void* selectObjectsInfo )
 {
 	SelectObjectsInfo *soInfo = (SelectObjectsInfo*)selectObjectsInfo;
-	if( !obj || !soInfo )
-	{
-		return;
-	}
 
 	//Do the templates match?
 	if( obj->getTemplate()->isEquivalentTo( soInfo->thingTemplate ) )
@@ -277,6 +273,8 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		{
 			//Determine the object that would construct it.
 			const SpecialPowerTemplate *spTemplate = commandButton->getSpecialPowerTemplate();
+			DEBUG_ASSERTCRASH(spTemplate != nullptr, ("Special Power Button is missing Special Power template"));
+
 			SpecialPowerType spType = spTemplate->getSpecialPowerType();
 			Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( spType );
 			if( !obj )
@@ -363,8 +361,6 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 		}
 
-
-
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_DOZER_CONSTRUCT_CANCEL:
 		{
@@ -388,7 +384,6 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_UNIT_BUILD:
 		{
-			//
 			const ThingTemplate *whatToBuild = commandButton->getThingTemplate();
 
 			// get the "factory" object that is going to make the thing

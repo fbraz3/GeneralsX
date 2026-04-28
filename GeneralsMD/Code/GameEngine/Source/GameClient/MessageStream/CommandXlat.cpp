@@ -91,18 +91,12 @@
 
 #include "ww3d.h"
 
-
-#define dont_ALLOW_ALT_F4
-
-
 #if defined(RTS_DEBUG)
 /*non-static*/ Real TheSkateDistOverride = 0.0f;
 
 void countObjects(Object *obj, void *userData)
 {
 	Int *numObjects = (Int *)userData;
-	if (!numObjects || !obj)
-		return;
 
 	DEBUG_LOG(("Looking at obj %d (%s) - isEffectivelyDead()==%d, isDestroyed==%d, numObjects==%d",
 		obj->getID(), obj->getTemplate()->getName().str(), obj->isEffectivelyDead(), obj->isDestroyed(), *numObjects));
@@ -113,9 +107,6 @@ void countObjects(Object *obj, void *userData)
 
 void printObjects(Object *obj, void *userData)
 {
-	if (!obj)
-		return;
-
 	Bool isDead = obj->isEffectivelyDead() || obj->isDestroyed();
 	Bool isInert = obj->isKindOf(KINDOF_INERT);
 	AsciiString statusStr = (isDead)?"Dead":(isInert)?"Inert":"Living";
@@ -916,10 +907,6 @@ struct CommandCenterLocator
 
 void findCommandCenterOrMostExpensiveBuilding(Object* obj, void* vccl)
 {
-	if (!obj) {
-		return;
-	}
-
 	CommandCenterLocator *ccl = (CommandCenterLocator*) vccl;
 
 	// here's the deal. We want to get the first Command Center in the list.
@@ -969,9 +956,7 @@ struct HeroHolder
 
 void amIAHero(Object* obj, void* heroHolder)
 {
-
-
-	if (!obj || ((HeroHolder*)heroHolder)->hero != nullptr)
+	if (((HeroHolder*)heroHolder)->hero != nullptr)
 	{
 		return;
 	}
@@ -4078,26 +4063,12 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 
 		}
 
-
-
-#ifdef ALLOW_ALT_F4
 		case GameMessage::MSG_META_DEMO_INSTANT_QUIT:
-    {
-			if (TheGameLogic->isInGame())
-			{
-				if (TheRecorder->getMode() == RECORDERMODETYPE_RECORD)
-				{
-					TheRecorder->stopRecording();
-				}
-				TheGameLogic->clearGameData();
-			}
-			TheGameEngine->setQuitting(TRUE);
+		{
+			TheGameLogic->quit(TRUE);
 			disp = DESTROY_MESSAGE;
 			break;
-    }
-#endif
-
-
+		}
 
 		//------------------------------------------------------------------------------- DEMO MESSAGES
 
@@ -5587,6 +5558,7 @@ static Bool isSystemMessage( const GameMessage *msg )
 		case GameMessage::MSG_LOGIC_CRC:
 		case GameMessage::MSG_SET_REPLAY_CAMERA:
 		case GameMessage::MSG_FRAME_TICK:
+		case GameMessage::MSG_META_DEMO_INSTANT_QUIT:
 			return TRUE;
 	}
 	return FALSE;

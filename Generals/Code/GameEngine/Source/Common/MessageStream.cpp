@@ -382,6 +382,7 @@ const char *GameMessage::getCommandTypeAsString(GameMessage::Type t)
 	CASE_LABEL(MSG_META_TOGGLE_PAUSE_ALT)
 	CASE_LABEL(MSG_META_STEP_FRAME)
 	CASE_LABEL(MSG_META_STEP_FRAME_ALT)
+	CASE_LABEL(MSG_META_DEMO_INSTANT_QUIT)
 
 #if defined(RTS_DEBUG)
 	CASE_LABEL(MSG_META_DEMO_TOGGLE_BEHIND_BUILDINGS)
@@ -391,7 +392,6 @@ const char *GameMessage::getCommandTypeAsString(GameMessage::Type t)
 	CASE_LABEL(MSG_META_DEMO_LOD_INCREASE)
 	CASE_LABEL(MSG_META_DEMO_TOGGLE_ZOOM_LOCK)
 	CASE_LABEL(MSG_META_DEMO_PLAY_CAMEO_MOVIE)
-	CASE_LABEL(MSG_META_DEMO_INSTANT_QUIT)
 	CASE_LABEL(MSG_META_DEMO_TOGGLE_SPECIAL_POWER_DELAYS)
 	CASE_LABEL(MSG_META_DEMO_BATTLE_CRY)
 	CASE_LABEL(MSG_META_DEMO_SWITCH_TEAMS)
@@ -843,6 +843,11 @@ void MessageStream::update()
 	// extend
 	GameMessageList::update();
 
+}
+
+Bool MessageStream::isReadyForMessages() const
+{
+	return (ThePlayerList != nullptr);
 }
 
 /**

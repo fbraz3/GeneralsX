@@ -113,6 +113,8 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NetworkInterface.h"
 
+struct QuitGameException {};
+
 DECLARE_PERF_TIMER(SleepyMaintenance)
 
 #include "Common/UnitTimings.h" //Contains the DO_UNIT_TIMINGS define jba.
@@ -295,6 +297,7 @@ GameLogic::GameLogic()
 	m_logicTimeScaleEnabledMemory = FALSE;
 	m_loadScreen = nullptr;
 	m_forceGameStartByTimeOut = FALSE;
+	m_quitToDesktopAfterMatch = FALSE;
 #ifdef DUMP_PERF_STATS
 	m_overallFailedPathfinds = 0;
 #endif
@@ -975,6 +978,10 @@ void GameLogic::updateLoadProgress( Int progress )
 	if( m_loadScreen )
 		m_loadScreen->update( progress );
 
+	if (TheGameEngine->getQuitting() || m_quitToDesktopAfterMatch)
+	{
+		throw QuitGameException();
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1016,7 +1023,21 @@ void GameLogic::setGameMode( GameMode mode )
 // ------------------------------------------------------------------------------------------------
 void GameLogic::startNewGame( Bool loadingSaveGame )
 {
+	try
+	{
+		tryStartNewGame(loadingSaveGame);
+	}
+	catch (QuitGameException&)
+	{
+		if (m_quitToDesktopAfterMatch && TheGameEngine)
+		{
+			TheGameEngine->setQuitting(TRUE);
+		}
+	}
+}
 
+void GameLogic::tryStartNewGame( Bool loadingSaveGame )
+{
 	#ifdef DUMP_PERF_STATS
 	__int64 startTime64;
 	__int64 endTime64,freq64;
@@ -2137,13 +2158,17 @@ void GameLogic::startNewGame( Bool loadingSaveGame )
 		TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE( "GUI:FastForwardInstructions", L"Press F to toggle Fast Forward" ) );
   }
 
-
+#ifdef PROFILER_ENABLED
+	AsciiString message;
+	message.format("GameStart: %s", TheGlobalData->m_mapName.str());
+	PROFILER_MSG(message.str(), message.getLength());
+#endif
 }
 
 //-----------------------------------------------------------------------------------------
 static void findAndSelectCommandCenter(Object *obj, void* alreadyFound)
 {
-	if (!((*(Bool*)alreadyFound)) && obj && obj->isKindOf(KINDOF_COMMANDCENTER) )
+	if (!((*(Bool*)alreadyFound)) && obj->isKindOf(KINDOF_COMMANDCENTER) )
 	{
 		((*(Bool*)alreadyFound)) = TRUE;
 		TheGameLogic->selectObject(obj, TRUE, obj->getControllingPlayer()->getPlayerMask(), obj->isLocallyControlled());
@@ -3151,6 +3176,7 @@ extern __int64 Total_Load_3D_Assets;
 void GameLogic::update()
 {
 	USE_PERF_TIMER(GameLogic_update)
+	PROFILER_SECTION_COLOR(0x4CAF50);
 
 	LatchRestore<Bool> inUpdateLatch(m_isInUpdate, TRUE);
 #ifdef DO_UNIT_TIMINGS
@@ -3190,6 +3216,8 @@ void GameLogic::update()
 	// send the current time to the GameClient
 	UnsignedInt now = getFrame();
 	TheGameClient->setFrame(now);
+
+	PROFILER_PLOT("LogicFrame", static_cast<int64_t>(now));
 
 	// update (execute) scripts
 	{
@@ -3687,6 +3715,86 @@ void GameLogic::exitGame()
 	TheScriptEngine->doUnfreezeTime();
 
 	TheMessageStream->appendMessage(GameMessage::MSG_CLEAR_GAME_DATA);
+
+#ifdef PROFILER_ENABLED
+	AsciiString message;
+	message.format("GameEnd: %s", TheGlobalData->m_mapName.str());
+	PROFILER_MSG(message.str(), message.getLength());
+#endif
+}
+
+// ------------------------------------------------------------------------------------------------
+
+void GameLogic::quit(Bool toDesktop)
+{
+	const Bool isNotLoading = (!isLoadingMap() && !isLoadingSave());
+
+	if (isInGame())
+	{
+		if (isInInteractiveGame())
+		{
+			if (canOpenQuitMenu())
+			{
+				ToggleQuitMenu();
+				return;
+			}
+			
+			if (isInMultiplayerGame() && !isInSkirmishGame() && TheGameInfo && !TheGameInfo->isSandbox())
+			{
+				GameMessage *msg = TheMessageStream->appendMessage(GameMessage::MSG_SELF_DESTRUCT);
+				msg->appendBooleanArgument(TRUE);
+			}
+		}
+
+		if (TheRecorder && TheRecorder->getMode() == RECORDERMODETYPE_RECORD)
+		{
+			TheRecorder->stopRecording();
+		}
+
+		setGamePaused(FALSE);
+
+		if (TheScriptEngine && isNotLoading)
+		{
+			TheScriptEngine->forceUnfreezeTime();
+			TheScriptEngine->doUnfreezeTime();
+		}
+
+		if (toDesktop)
+		{
+			if (isInMultiplayerGame())
+			{
+				m_quitToDesktopAfterMatch = TRUE;
+				if (isNotLoading)
+				{
+					exitGame();
+				}
+			}
+			else
+			{
+				if (isNotLoading)
+				{
+					clearGameData();
+				}
+			}
+		}
+		else
+		{
+			exitGame();
+		}
+	}
+
+	if (toDesktop)
+	{
+		if (!isInMultiplayerGame())
+		{
+			TheGameEngine->setQuitting(TRUE);
+		}
+	}
+
+	if (TheInGameUI)
+	{
+		TheInGameUI->setClientQuiet(TRUE);
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
