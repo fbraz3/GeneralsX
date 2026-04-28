@@ -74,7 +74,7 @@ Note: You may want to use local Deepwiki Repo `fbraz3/GeneralsX` for helping loc
 4. **Windowing/Input**: SDL3 on all platforms
 5. **Focus**: Zero Hour first; backport to Generals only when clearly applicable
 6. **Method**: Research-first, minimal diffs, strict platform/backend isolation
-7. **Branching**: Separate branches per platform, merged to `main` as they stabilize
+7. **Branching**: Feature branches per platform or topic area, merged to `main` as they stabilize
 
 **Far-Future Plans (long-term)**:
 
@@ -105,91 +105,15 @@ Note: You may want to use local Deepwiki Repo `fbraz3/GeneralsX` for helping loc
 8. Some solutions from `fighter19` and `jmarshall` may involve removing components; in that case, stop and ask the user what should be done, as it may be something the game depends on and cannot be removed (e.g., audio, video playback).
 9. Any lesson learned should be documented in `docs/WORKDIR/lessons` for future reference and to avoid repeating mistakes. You should also consult that directory for insights from previous sessions.
 
-## Modernization Phases
-
-We follow a **multi-phase research-first approach** with clear acceptance criteria. Phases apply cross-platform but each platform branch may progress independently.
-
-### Phase 0: Deep Analysis & Planning
-**Goal**: Thoroughly analyze reference repositories and document cross-platform architecture before implementation.
-
-**Deliverables**:
-- fighter19's DXVK integration architecture documented
-- jmarshall's OpenAL audio system documented
-- Platform abstraction layer design (SDL3 as common layer)
-- Build system strategy (CMake presets per platform)
-- Testing strategy per platform
-
-**Acceptance Criteria**:
-- [ ] Current renderer architecture documented (DX8 interfaces, entry points)
-- [ ] fighter19 DXVK patterns documented with "what applies to Zero Hour" notes
-- [ ] jmarshall OpenAL patterns documented with "how to adapt for Zero Hour" notes
-- [ ] Platform abstraction layer design approved (minimal changes to game logic)
-- [ ] Build workflow configured and tested per platform
-- [ ] Phase 1 implementation plan written with step-by-step checklist
-
-### Phase 1: Graphics -- DXVK + SDL3 Integration
-**Goal**: Render the game via DXVK (DirectX 8 to Vulkan) with SDL3 windowing on all target platforms.
-
-**Scope**:
-- Implement DXVK DirectX 8 to Vulkan wrapper integration
-- Port SDL3 windowing/input layer (replace Win32 window management)
-- Add CMake build presets for each platform (Linux, macOS, Windows)
-- Isolate graphics changes to `Core/GameEngineDevice/` and platform headers
-- Keep original DX8 path intact behind compile flags (for VC6 baseline)
-
-**Non-scope**: Audio (silent/stubbed), Video playback (deferred)
-
-**Acceptance Criteria**:
-- [ ] Game builds on Linux, macOS, and Windows with respective presets
-- [ ] Native binary launches and reaches main menu with DXVK-rendered graphics
-- [ ] Basic gameplay (skirmish map) runs without crashes
-- [ ] Original VC6 Windows build still compiles and runs correctly
-- [ ] Platform-specific code properly isolated (no platform code in game logic)
-
-### Phase 2: Audio -- OpenAL Integration
-**Goal**: Replace Miles Sound System with OpenAL on all platforms.
-
-**Scope**:
-- Implement OpenAL audio backend (adapt from jmarshall, Zero Hour specifics)
-- Create Miles to OpenAL API compatibility layer
-- Isolate audio changes to `Core/GameEngine/Audio/`
-- Keep Miles path intact behind compile flags for legacy VC6 builds
-
-**Acceptance Criteria**:
-- [ ] Working audio on all three platforms (sound effects, music, voices)
-- [ ] Audio quality comparable to original
-- [ ] Legacy VC6 build still uses Miles Sound System (no regressions)
-- [ ] Audio backend selection via compile flag (`USE_OPENAL` vs `USE_MILES`)
-
-### Phase 3: Video Playback -- Bink Alternative (Spike)
-**Goal**: Investigate and prototype Bink video replacement for intro/campaign videos.
-
-**Scope**: Research FFmpeg or alternative codecs, prototype, recommend path forward.
-
-**This is a SPIKE**: May result in "defer to later" decision if too complex.
-
-**Acceptance Criteria**:
-- [ ] Video playback options researched and documented
-- [ ] At least one prototype implemented and tested
-- [ ] Recommendation written: "implement X" or "defer indefinitely"
-- [ ] If deferred: game fails gracefully without videos (skip to menu)
-
-### Phase 4: Polish & Hardening
-**Goal**: Address platform-specific bugs, performance, and compatibility.
-
-**Scope**: TBD based on Phase 1-3 findings.
-
 ## Development Environment & Build System
 
 ### Build Presets
 
-#### Legacy Windows (Upstream Compatibility)
-- **`vc6`** -- Visual Studio 6 (C++98) -- **UPSTREAM BASELINE** (retail compatible)
-  - Must pass replay tests
-  - Required validation target for any gameplay/logic changes
-  - 32-bit, DirectX 8, Miles Sound System
-- **`win32`** -- MSVC 2022 (C++20) -- Experimental upstream modernization
-  - Secondary Windows target from upstream
+#### Legacy Compatibility Presets (Maintenance Only)
+- **`vc6`** -- Visual Studio 6 (C++98), 32-bit, DirectX 8 + Miles
+- **`win32`** -- MSVC 2022 (C++20), experimental upstream path
+
+These presets remain useful for regression checks and upstream sync, but they are no longer the primary release path.
 
 #### Cross-Platform Builds (SDL3 + DXVK + OpenAL)
 - **`linux64-deploy`** -- Linux x86_64 (GCC/Clang) -- **PRIMARY LINUX TARGET**
@@ -200,19 +124,19 @@ We follow a **multi-phase research-first approach** with clear acceptance criter
   - Native Mach-O binaries
   - DXVK + MoltenVK + SDL3 + OpenAL
   - macOS 15.0+ minimum; Universal binary (arm64 + x86_64) planned
-- **`windows64-deploy`** -- Windows x86_64 (MSVC or MinGW) -- **TBD**
-- **`mingw-w64-i686`** -- MinGW cross-compile (32-bit Windows .exe from Linux/macOS)
+- **`mingw-w64-i686`** -- MinGW-w64 cross-compile for Windows (current active Windows pipeline)
+- **`windows64-deploy`** -- planned MinGW-w64 x86_64 preset (tracked in issue #29)
 
 ### Build Workflow
 
 **Docker-based builds (Linux host or CI)**:
 ```bash
 # Linux native build
-./scripts/docker-configure-linux.sh linux64-deploy
-./scripts/docker-build-linux-zh.sh linux64-deploy
+./scripts/build/linux/docker-configure-linux.sh linux64-deploy
+./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy
 
 # MinGW cross-compile (Windows .exe)
-./scripts/docker-build-mingw-zh.sh mingw-w64-i686
+./scripts/build/linux/docker-build-mingw-zh.sh mingw-w64-i686
 ```
 
 **Native builds (on respective platforms)**:
@@ -221,9 +145,13 @@ We follow a **multi-phase research-first approach** with clear acceptance criter
 cmake --preset linux64-deploy
 cmake --build build/linux64-deploy --target z_generals
 
-# Windows (VC6 upstream baseline)
-cmake --preset vc6
-cmake --build build/vc6 --target z_generals
+# macOS
+cmake --preset macos-vulkan
+cmake --build build/macos-vulkan --target z_generals
+
+# Windows via MinGW cross-build
+cmake --preset mingw-w64-i686
+cmake --build build/mingw-w64-i686 --target z_generals
 ```
 
 ### Testing Strategy
@@ -293,9 +221,9 @@ cmake --build build/vc6 --target z_generals
 - Capture logs to `logs/` directory
 
 **Logging Conventions**:
-- Build logs: `logs/phase<N>_build_<preset>.log`
-- Run logs: `logs/phase<N>_run_<preset>.log`
-- Debug logs: `logs/phase<N>_debug_<preset>.log`
+- Build logs: `logs/build_<preset>.log`
+- Run logs: `logs/run_<preset>.log`
+- Debug logs: `logs/debug_<preset>.log`
 
 ## Target Priority
 
@@ -360,7 +288,7 @@ Key files to study:
 ### Reference Consultation Workflow
 
 **Before implementing a feature**:
-1. Read relevant Phase documentation
+1. Read relevant active design/support documentation in `docs/WORKDIR/`
 2. Study fighter19 implementation (if graphics/platform)
 3. Study jmarshall implementation (if audio/modernization)
 4. Document differences and adaptation strategy
@@ -385,7 +313,6 @@ Key files to study:
 /docs                  - Project documentation
   /DEV_BLOG            - Development diary (REQUIRED before commits)
   /WORKDIR             - Active work documentation
-    /phases            - Phase-specific plans and checklists
     /planning          - Planning & strategic documents
     /reports           - Session reports
     /support           - Technical discoveries
@@ -431,7 +358,7 @@ cd ~/GeneralsX/GeneralsMD
 ./run.sh -win -logToCon 2>&1 | grep -v "D3DRS_PATCHSEGMENTS" | tee ~/Projects/GeneralsX/logs/manual_run.log
 ```
 
-For a full list, see `docs/ETC/COMMAND_LINE_PARAMETERS.md` (create if missing).
+For a full list, see `docs/ETC/COMMAND_LINE_PARAMETERS.md`.
 
 ## Update Dev Blog Before Commits
 
@@ -464,7 +391,15 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 
 ## VS Code Tasks
 
-Tasks configured for multi-platform development. See `.vscode/tasks.json` for complete task definitions.
+Tasks are configured for multi-platform development. Prefer task-first execution before manual commands.
+
+Primary task labels:
+- Linux: `[Linux] Configure (Docker)`, `[Linux] Build GeneralsXZH`, `[Linux] Deploy GeneralsXZH`, `[Linux] Run GeneralsXZH`
+- Linux pipeline: `[Linux] Pipeline: Build + Deploy + Run ZH`
+- Linux smoke test: `[Linux] Smoke Test GeneralsXZH`
+- macOS: `[macOS] Configure`, `[macOS] Build GeneralsXZH`, `[macOS] Deploy GeneralsXZH`, `[macOS] Run GeneralsXZH`
+
+Task commands should map to organized script paths under `scripts/build/...`, `scripts/env/...`, and `scripts/qa/...`.
 
 ---
 
@@ -486,8 +421,8 @@ cmake --build build/linux64-deploy --target z_generals
 
 **Docker (from any host)**:
 ```bash
-./scripts/docker-configure-linux.sh linux64-deploy
-./scripts/docker-build-linux-zh.sh linux64-deploy
+./scripts/build/linux/docker-configure-linux.sh linux64-deploy
+./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy
 ```
 
 ### Build Presets
@@ -499,13 +434,13 @@ cmake --build build/linux64-deploy --target z_generals
 ### Run & Test
 ```bash
 # Deploy game data + binary
-./scripts/deploy-linux-zh.sh
+./scripts/build/linux/deploy-linux-zh.sh
 
 # Run
-./scripts/run-linux-zh.sh -win
+./scripts/build/linux/run-linux-zh.sh -win
 
 # Smoke test via Docker
-./scripts/docker-smoke-test-zh.sh linux64-deploy
+./scripts/qa/smoke/docker-smoke-test-zh.sh linux64-deploy
 
 # Debug with GDB backtrace
 mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all bt" \
@@ -514,25 +449,19 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 
 ### Linux-Specific Notes
 
-- **Case-sensitive filesystem**: Include paths must match exact case. Use `scripts/cpp/fixIncludesCase.sh` to fix.
+- **Case-sensitive filesystem**: Include paths must match exact case. Use `scripts/tooling/cpp/maintenance/fixIncludesCase.sh` to fix.
 - **DXVK requires Vulkan**: Ensure Vulkan drivers are installed (`vulkan-tools`, `mesa-vulkan-drivers` or proprietary GPU drivers).
 - **SDL3 from source**: SDL3 is fetched via CMake FetchContent. No system package needed.
 - **DXVK source policy**: Keep DXVK fixes in the fork source of truth and avoid editing `build/_deps/...` directly.
 - **CompatLib**: Linux builds use `GeneralsMD/Code/CompatLib/` for Win32 API compatibility shims (windows_compat.h, etc.).
 - **No native POSIX calls**: Use SDL3 abstractions for timers, threads, file I/O. Do not add raw `pthread_*`, `open()`, etc. into game code.
 
-### Current Progress (as of February 2026)
-- Phase 0 (Planning): Complete
-- Phase 1 (Graphics/DXVK): Complete -- game renders and runs skirmish maps
-- Phase 2 (Audio/OpenAL): In progress
-- Phase 3 (Video/FFmpeg): Not started
-
 ---
 
 ## macOS
 
 **Branch**: `main` (active development alongside Linux)
-**Status**: Active development -- Phase 1 (Graphics/DXVK) complete on ARM64 Apple Silicon
+**Status**: Active release branch on ARM64 Apple Silicon
 
 ### Architecture
 - SDL3 for windowing/input (same as Linux)
@@ -558,9 +487,9 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 ```bash
 # Prerequisites (once): brew install cmake ninja meson
 # + LunarG Vulkan SDK: https://vulkan.lunarg.com/sdk/home#mac
-./scripts/build-macos-zh.sh          # configure + build
-./scripts/deploy-macos-zh.sh         # copy to ~/GeneralsX/GeneralsMD/
-./scripts/run-macos-zh.sh -win       # launch windowed
+./scripts/build/macos/build-macos-zh.sh          # configure + build
+./scripts/build/macos/deploy-macos-zh.sh         # copy to ~/GeneralsX/GeneralsMD/
+./scripts/build/macos/run-macos-zh.sh -win       # launch windowed
 ```
 
 ### macOS-Specific Notes
@@ -570,51 +499,42 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 - **Vulkan SDK path**: `~/VulkanSDK/<version>/macOS/` -- must contain `libvulkan.dylib` and `libMoltenVK.dylib`
 - **No Cocoa/Metal calls in game code**: All platform access goes through SDL3 + DXVK layers
 
-### Current Progress (as of February 2026)
-- Phase 0 (Planning): Complete
-- Phase 1 (Graphics/DXVK): Complete -- game renders and runs on ARM64 Apple Silicon
-- Phase 2 (Audio/OpenAL): In progress (CMake flag `SAGE_USE_OPENAL=ON` set; full integration pending)
-- Phase 3 (Video/FFmpeg): CMake flag `RTS_BUILD_OPTION_FFMPEG=ON` set; playback integration not started
-
-### Remaining Items
-- [ ] Audio (OpenAL) fully wired and tested
-- [ ] Video (FFmpeg) playback integrated
-- [ ] App bundle (.app) packaging
-- [ ] Code signing workflow
-- [ ] Universal binary (arm64 + x86_64)
-- [ ] CI/CD pipeline for macOS builds
-
 ---
 
-## Windows (Modern SDL3/DXVK Stack)
+## Windows (Modern Stack via MinGW)
 
 **Branch**: TBD
 **Status**: Not yet started
 
-**Note**: This is about the **new** Windows build using SDL3 + DXVK + OpenAL (64-bit). The legacy VC6/win32 builds using native DirectX 8 + Miles remain as the upstream baseline and are NOT part of this section.
+**Note**: Follow issue #29 direction for Windows modernization: MinGW-w64 is the primary toolchain path for SDL3 + DXVK + OpenAL + FFmpeg. Legacy `vc6` and `win32` remain for compatibility checks, not as the main release target.
 
-### Architecture Plan
-- SDL3 for windowing/input (replacing native Win32 window management)
-- DXVK for DirectX 8 to Vulkan (Vulkan is natively supported on Windows)
-- OpenAL for audio (replacing Miles Sound System)
-- 64-bit native (x86_64)
-- MSVC 2022 or MinGW-w64 toolchain
+### Architecture Focus
+- SDL3 for windowing/input
+- DXVK for DirectX 8 to Vulkan translation
+- OpenAL for audio
+- FFmpeg for video playback
+- MinGW-w64 toolchain as default Windows path
 
-### Key Considerations
-- Windows users with Vulkan-capable GPUs can use the modern stack directly
-- Legacy fallback: VC6/win32 presets continue to work for DX8 + Miles path
-- Must coexist with upstream TheSuperHackers builds in same repo
-- Potential for better performance via Vulkan vs legacy DX8
+### Build Presets
+- **`mingw-w64-i686`** -- current Windows cross-build preset used in CI/local Docker
+- **`mingw-w64-i686-debug`** -- debug variant
+- **`mingw-w64-i686-profile`** -- profiling variant
+- **`windows64-deploy`** -- planned MinGW-w64 x86_64 preset (issue #29)
 
-### Build Presets (Planned)
-- **`windows64-deploy`** -- MSVC 2022 or MinGW x86_64, Release
-- **`windows64-testing`** -- Debug variant
-- **`mingw-w64-i686`** -- MinGW cross-compile (existing, 32-bit)
+### Build Workflow
+```bash
+# Cross-build Windows binary from Linux/macOS host using Docker
+./scripts/build/linux/docker-build-mingw-zh.sh mingw-w64-i686
 
-### TBD Items
-- [ ] DXVK on Windows validated (Vulkan drivers required)
-- [ ] CMake preset created and tested
-- [ ] MSVC 2022 or MinGW-w64 toolchain selected
-- [ ] OpenAL integration on Windows
-- [ ] Installer/packaging strategy
-- [ ] CI/CD pipeline for Windows builds
+# Direct preset build (when MinGW toolchain is locally available)
+cmake --preset mingw-w64-i686
+cmake --build build/mingw-w64-i686 --target z_generals
+```
+
+### Current Priorities
+- [ ] Add and validate `windows64-deploy` (MinGW x86_64)
+- [ ] Validate DXVK + Vulkan runtime requirements on Windows
+- [ ] Validate OpenAL integration and runtime audio
+- [ ] Validate FFmpeg intro/briefing videos with audio
+- [ ] Confirm menu and skirmish playability with determinism checks
+- [ ] Publish/update Windows build documentation under `docs/BUILD/`

@@ -338,11 +338,11 @@ void Network::init()
 
 	m_localStatus = NETLOCALSTATUS_PREGAME;
 
-	// GeneralsX @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+	// GeneralsX @bugfix GitHubCopilot 27/04/2026 Align Linux network timing with nanosecond clock frequency
 	#ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER *)&m_perfCountFreq);
 	#else
-	m_perfCountFreq = 1000; // Linux uses microseconds in clock_gettime conversion
+	m_perfCountFreq = 1000000000; // Linux CLOCK_MONOTONIC uses nanoseconds
 	#endif
 	m_nextFrameTime = 0;
 	m_sawCRCMismatch = FALSE;
@@ -366,8 +366,6 @@ void Network::init()
 #if defined(RTS_DEBUG)
 	m_networkOn = TRUE;
 #endif
-
-	return;
 }
 
 void Network::setSawCRCMismatch()
@@ -733,14 +731,14 @@ void Network::update()
 		}
 	}
 	else {
-		// GeneralsX @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+		// GeneralsX @bugfix GitHubCopilot 27/04/2026 Keep stall check in nanoseconds on Linux
 		int64_t curTime;
 		#ifdef _WIN32
 		QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
 		#else
 		struct timespec ts;
 		clock_gettime(CLOCK_MONOTONIC, &ts);
-		curTime = ts.tv_sec * 1000000 + ts.tv_nsec / 1000; // Convert to microseconds
+		curTime = static_cast<int64_t>(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 		#endif
 		m_isStalling = curTime >= m_nextFrameTime;
 	}
@@ -781,14 +779,14 @@ void Network::endOfGameCheck() {
 }
 
 Bool Network::timeForNewFrame() {
-	// GeneralsX @bugfix BenderAI 13/02/2026 Use clock_gettime on Linux (fighter19 pattern)
+	// GeneralsX @bugfix GitHubCopilot 27/04/2026 Keep network frame pacing in nanoseconds on Linux
 	int64_t curTime;
 	#ifdef _WIN32
 	QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
 	#else
 	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	curTime = ts.tv_sec * 1000000 + ts.tv_nsec / 1000; // Convert to microseconds
+	curTime = static_cast<int64_t>(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 	#endif
 	int64_t frameDelay = m_perfCountFreq / m_frameRate;
 

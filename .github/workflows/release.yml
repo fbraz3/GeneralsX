@@ -334,9 +334,11 @@ jobs:
           {
             echo "> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate."
             echo ""
-            echo "# Install Instructions"
+            echo "# Getting Started"
             echo ""
-            echo "https://github.com/fbraz3/GeneralsX/blob/main/docs/BUILD/INSTALL_INSTRUCTIONS.md"
+            echo "**Install the engine:** Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/BUILD/INSTALLATION.md) to set up GeneralsX on your platform."
+            echo ""
+            echo "**Don't have the game files?** Steam does not offer a macOS or Linux download for this title. See [Getting the Game Files](https://github.com/fbraz3/GeneralsX/blob/main/docs/BUILD/GETTING_THE_GAME_FILES.md) for step-by-step instructions (copy from Windows, CrossOver trial, or SteamCMD)."
             echo ""
 
             if [ -n "$ADDITIONAL_NOTES" ]; then

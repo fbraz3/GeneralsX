@@ -1,6 +1,5 @@
 # 2026-04 Lessons Learned
 
-<<<<<<< HEAD
 ## Session 2026-04-12 - LAN lobby visibility must be traced at render and prune points, not only at announce receipt
 
 - Problem: Logs could show `handleGameAnnounce` success while the user still reported that the LAN lobby list did not visibly retain the remote game.
@@ -37,7 +36,61 @@
 - Evidence: Discovery still depended on global broadcast `255.255.255.255`, which may not be forwarded/handled consistently on mixed-network setups.
 - Fix: In POSIX builds, collect broadcast addresses from active IPv4 interfaces matching the selected local LAN IP and send broadcast packets to those subnet addresses first; keep global broadcast as fallback.
 - Prevention: For multi-platform LAN discovery, avoid single global broadcast as the only path; use interface-scoped subnet broadcast to reduce network-policy sensitivity.
-=======
+## Session 2026-04-27 - SDL fullscreen on macOS must size the initial DXVK backbuffer from the current window, not the target display mode
+
+- Problem: After the ultrawide/pillarbox merge, macOS fullscreen could look like a low-resolution image stretched to fill the screen, with a visible small-window-then-fullscreen transition.
+- Root cause:
+	- Non-Windows builds force DXVK presentation through the windowed path and apply native fullscreen later through SDL.
+	- The new pillarbox code prefilled `D3DPRESENT_PARAMETERS.BackBufferWidth/Height` with the native display size while the SDL window was still at its pre-fullscreen size.
+	- On macOS this could leave the swapchain created/reset at the old window dimensions, while later logic incorrectly believed the backbuffer already matched fullscreen, so the frame was upscaled and blurred.
+- Fix:
+	- For SDL-managed fullscreen on non-Windows builds, initialize/reset the DXVK backbuffer from the current window pixel size first.
+	- Keep native display sizing only as a fallback when the current SDL window size is unavailable.
+	- Delay the SDL fullscreen transition until after the render device has applied the final game resolution, and resize the SDL window before creating/resetting the device.
+	- Compute pillarbox/backbuffer fit from active present/backbuffer dimensions (source of truth), not from display-mode assumptions.
+- Validation:
+	- Runtime fullscreen behavior on macOS was confirmed after synchronizing SDL fullscreen transition, present backbuffer reset, and pillarbox sizing.
+- Prevention: When fullscreen is entered asynchronously through SDL or the platform window manager, do not size the initial swapchain from the target mode unless the window has already completed the transition.
+
+## Session 2026-04-27 - LAN network pacing must keep consistent time units across platforms
+
+- Problem: LAN matches on Linux could run dramatically faster than intended, while non-network pacing paths looked normal.
+- Root cause:
+	- `Network::timeForNewFrame()` computes `frameDelay` as `m_perfCountFreq / m_frameRate`.
+	- Linux network path used `clock_gettime(CLOCK_MONOTONIC)` but converted timestamps to microseconds while the configured counter frequency drifted from the expected high-resolution domain.
+	- This mismatch made frame scheduling thresholds too small, allowing network logic frames to advance far too quickly.
+- Fix:
+	- Standardized Linux network pacing to nanoseconds in `Network.cpp` by setting `m_perfCountFreq = 1000000000` and using nanosecond timestamp conversion in both stall checks and frame pacing checks.
+	- Kept Windows `QueryPerformanceCounter` / `QueryPerformanceFrequency` behavior unchanged.
+- Prevention: For any multiplayer pacing code, treat counter frequency and timestamp conversions as a coupled invariant; never change one unit without updating all callsites that compare or accumulate those values.
+
+## Session 2026-04-27 - OpenAL stream fixes must account for different producer lifecycles
+
+- Problem: After restoring briefing-video audio in commit `c0ce9f0`, mission intro narrator lines and victory speech stopped playing on OpenAL builds.
+- Root cause:
+	- The shared `OpenALAudioStream::update()` logic was adjusted around the video use case, where FFmpeg queues audio before or during explicit stream maintenance.
+	- Generic `AT_Streaming` speech uses a different lifecycle: the stream can enter `processPlayingList()` with no queued buffers, fill during `update()`, and still be seen as stopped in the same frame if playback is not retriggered after refill.
+	- The manager then releases the stream immediately, so narrator speech never starts.
+- Fix:
+	- Added a post-refill restart check in `OpenALAudioStream::update()` so newly buffered speech data is started before stopped-stream teardown runs.
+	- Preserved the video-specific FFmpeg/OpenAL path introduced for issue #38.
+- Prevention: When hardening shared stream classes for video/audio regressions, always validate both producer models: push-queued video streams and lazy-filled gameplay speech streams.
+
+## Session 2026-04-23 - Campaign river-water rendering must guard shroud sampling boundaries
+
+- Problem: Linux `GeneralsXZH` could crash with `SIGSEGV` when opening campaign, with stack traces landing in `W3DShroud::getShroudLevel()` via `W3DWater::getRiverVertexDiffuse()`.
+- Root cause:
+	- `getShroudLevel(Int x, Int y)` validated only upper bounds (`x < m_numCellsX`, `y < m_numCellsY`) and assumed texture data was always valid.
+	- During campaign transitions, water rendering can request shroud samples with transient invalid state (negative cell coordinates and/or unavailable source texture data).
+	- This allowed invalid pointer arithmetic into `m_srcTextureData` and a segmentation fault.
+- Fix:
+	- Added defensive early return in `getShroudLevel()` for both Zero Hour and Generals paths when source texture/data is missing or coordinates are negative.
+	- Kept existing upper-bound behavior unchanged, preserving normal shroud shading logic.
+- Validation:
+	- Linux Docker build for `GeneralsXZH` completed successfully after patch.
+	- Static diagnostics (`get_errors`) reported no errors in modified shroud files.
+- Prevention: For rendering-path sampling helpers in legacy code, always guard both pointer validity and full signed coordinate bounds before indexing raw texture/buffer memory.
+
 ## Session 2026-04-20 - Overlord portable riders must not go through fire-point redeploy on turret rotation
 
 - Problem: Overlord portable upgrades (Gatling Cannon, Propaganda Tower, BattleBunker) could disappear intermittently during force-attack / heavy turret turning on macOS.
@@ -93,7 +146,6 @@
 - Prevention: For Flatpak work, never copy `.so` files from host system paths into app runtime. Build inside SDK and ship only artifacts produced by the manifest modules.
 
 ## Session 2026-04-09 - libxcb Flatpak PoC needs newer source libs, not host baseline copy
->>>>>>> 5008a2614efef110196d72db68e67578ec600c88
 
 ## Session 2026-04-11 - 8-player macOS crash points to AI guard-state null dereference path
 

@@ -263,6 +263,9 @@ Bool W3DShroud::ReAcquireResources()
 W3DShroudLevel W3DShroud::getShroudLevel(Int x, Int y)
 {
 	DEBUG_ASSERTCRASH( m_pSrcTexture != nullptr, ("Reading empty shroud"));
+	// GeneralsX @bugfix Copilot 23/04/2026 Prevent invalid shroud sampling during campaign water rendering.
+	if (!m_pSrcTexture || !m_srcTextureData || x < 0 || y < 0)
+		return 0;
 
 	if (x < m_numCellsX && y < m_numCellsY)
 	{

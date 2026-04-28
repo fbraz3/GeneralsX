@@ -73,10 +73,10 @@ class WW3D
 public:
 
 	enum MultiSampleModeEnum {
-		MULTISAMPLE_MODE_NONE,
-		MULTISAMPLE_MODE_2X,
-		MULTISAMPLE_MODE_4X,
-		MULTISAMPLE_MODE_8X
+		MULTISAMPLE_MODE_NONE = 0,
+		MULTISAMPLE_MODE_2X = 2,
+		MULTISAMPLE_MODE_4X = 4,
+		MULTISAMPLE_MODE_8X = 8
 	};
 
 	enum PrelitModeEnum {
@@ -142,6 +142,9 @@ public:
 	// 0 = bilinear, 1 = trilinear, 2 = anisotropic
 	static void					Set_Texture_Filter(int filter);
 	static int					Get_Texture_Filter() { return TextureFilter; }
+
+	static void					Set_Anisotropy_Level(int level);
+	static int					Get_Anisotropy_Level() { return AnisotropyLevel; }
 
 	/*
 	** Rendering functions
@@ -396,6 +399,7 @@ private:
 	static bool							ExposePrelit;
 
 	static int							TextureFilter;
+	static int							AnisotropyLevel;
 
 	static bool							SnapshotActivated;
 	static bool							ThumbnailEnabled;
