@@ -36,7 +36,7 @@ on:
 
 jobs:
   build-linux:
-    name: ${{ matrix.game.id }}.${{ inputs.package_format }}@${{ inputs.preset }}
+    name: ${{ matrix.game.id }}@${{ inputs.preset }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
