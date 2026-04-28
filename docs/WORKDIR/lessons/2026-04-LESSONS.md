@@ -16,6 +16,18 @@
 	- Runtime fullscreen behavior on macOS was confirmed after synchronizing SDL fullscreen transition, present backbuffer reset, and pillarbox sizing.
 - Prevention: When fullscreen is entered asynchronously through SDL or the platform window manager, do not size the initial swapchain from the target mode unless the window has already completed the transition.
 
+## Session 2026-04-27 - LAN network pacing must keep consistent time units across platforms
+
+- Problem: LAN matches on Linux could run dramatically faster than intended, while non-network pacing paths looked normal.
+- Root cause:
+	- `Network::timeForNewFrame()` computes `frameDelay` as `m_perfCountFreq / m_frameRate`.
+	- Linux network path used `clock_gettime(CLOCK_MONOTONIC)` but converted timestamps to microseconds while the configured counter frequency drifted from the expected high-resolution domain.
+	- This mismatch made frame scheduling thresholds too small, allowing network logic frames to advance far too quickly.
+- Fix:
+	- Standardized Linux network pacing to nanoseconds in `Network.cpp` by setting `m_perfCountFreq = 1000000000` and using nanosecond timestamp conversion in both stall checks and frame pacing checks.
+	- Kept Windows `QueryPerformanceCounter` / `QueryPerformanceFrequency` behavior unchanged.
+- Prevention: For any multiplayer pacing code, treat counter frequency and timestamp conversions as a coupled invariant; never change one unit without updating all callsites that compare or accumulate those values.
+
 ## Session 2026-04-27 - OpenAL stream fixes must account for different producer lifecycles
 
 - Problem: After restoring briefing-video audio in commit `c0ce9f0`, mission intro narrator lines and victory speech stopped playing on OpenAL builds.
