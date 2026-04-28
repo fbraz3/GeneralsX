@@ -36,6 +36,23 @@
 - Evidence: Discovery still depended on global broadcast `255.255.255.255`, which may not be forwarded/handled consistently on mixed-network setups.
 - Fix: In POSIX builds, collect broadcast addresses from active IPv4 interfaces matching the selected local LAN IP and send broadcast packets to those subnet addresses first; keep global broadcast as fallback.
 - Prevention: For multi-platform LAN discovery, avoid single global broadcast as the only path; use interface-scoped subnet broadcast to reduce network-policy sensitivity.
+
+## Session 2026-04-27 - Custom map pipelines must treat path separators and map-name encoding as cross-platform invariants
+
+- Problem: User custom maps under `~/Library/Application Support/GeneralsX/GeneralsZH/Maps` could fail discovery/metadata flow when code assumed Windows-only separators and mixed path composition styles.
+- Root cause:
+	- Shared map scan/cache paths used `reverseFind('\\')` and Windows-only suffix checks.
+	- `map.str` lookup composition used `mapDir + fname` assumptions that are fragile when `fname` already carries rooted/qualified path semantics.
+	- Special-character map names rely on quoted-printable conversion; locale-sensitive `isalnum` in ASCII encoding can produce inconsistent behavior.
+- Fix:
+	- Added separator-agnostic path handling (`\\` or `/`) in shared map scanning (`MapUtil.cpp`) and in map cache parsing (`INIMapCache.cpp` for both ZH and Generals).
+	- Built map string-file path from the actual map filepath and separator style instead of recomposing from mixed fragments.
+	- Switched ASCII quoted-printable checks to locale-independent ASCII classification (`isAsciiAlphaNumeric`) in both game variants.
+- Validation:
+	- Custom user-path maps load successfully on macOS after patch.
+	- Stress dataset with names containing spaces, quotes, punctuation, and accented Unicode characters completed without crash in successful run.
+- Prevention: Treat map-name handling as a pipeline (filesystem scan -> cache serialization -> cache parse -> localized display load). Any separator/encoding change must be validated end-to-end, not only at one layer.
+
 ## Session 2026-04-27 - SDL fullscreen on macOS must size the initial DXVK backbuffer from the current window, not the target display mode
 
 - Problem: After the ultrawide/pillarbox merge, macOS fullscreen could look like a low-resolution image stretched to fill the screen, with a visible small-window-then-fullscreen transition.
