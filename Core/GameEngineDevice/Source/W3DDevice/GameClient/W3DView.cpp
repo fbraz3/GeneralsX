@@ -117,20 +117,41 @@ static void normAngle(Real &angle)
 	angle = WWMath::Normalize_Angle(angle);
 }
 
-#define TERRAIN_SAMPLE_SIZE 40.0f
-static Real getHeightAroundPos(Real x, Real y)
+
+Real W3DView::getHeightAroundPos(Real x, Real y, Real terrainSampleSize) const
 {
-	// terrain height + desired height offset == cameraOffset * actual zoom
 	Real terrainHeight = TheTerrainLogic->getGroundHeight(x, y);
 
-	// find best approximation of max terrain height we can see
-	Real terrainHeightMax = terrainHeight;
-	terrainHeightMax = max(terrainHeightMax, TheTerrainLogic->getGroundHeight(x+TERRAIN_SAMPLE_SIZE, y-TERRAIN_SAMPLE_SIZE));
-	terrainHeightMax = max(terrainHeightMax, TheTerrainLogic->getGroundHeight(x-TERRAIN_SAMPLE_SIZE, y-TERRAIN_SAMPLE_SIZE));
-	terrainHeightMax = max(terrainHeightMax, TheTerrainLogic->getGroundHeight(x+TERRAIN_SAMPLE_SIZE, y+TERRAIN_SAMPLE_SIZE));
-	terrainHeightMax = max(terrainHeightMax, TheTerrainLogic->getGroundHeight(x-TERRAIN_SAMPLE_SIZE, y+TERRAIN_SAMPLE_SIZE));
+#if PRESERVE_RETAIL_SCRIPTED_CAMERA
+	// TheSuperHackers @info xezon 06/12/2025 To preserve the exact look of the original scripted camera
+	// it is not possible to change the terrain height sampling method during cinematic scenes.
+	const Bool useSmoothTerrainSample = m_isUserControlled;
+#else
+	const Bool useSmoothTerrainSample = true;
+#endif
+	if (useSmoothTerrainSample)
+	{
+		// TheSuperHackers @tweak Now finds approximation of average terrain height instead of maximum terrain height.
+		// 4 additional sample points around the center point will be averaged.
+		// (3)   (2)
+		//    (1)   
+		// (5)   (4)
+		terrainHeight += TheTerrainLogic->getGroundHeight(x+terrainSampleSize, y-terrainSampleSize);
+		terrainHeight += TheTerrainLogic->getGroundHeight(x-terrainSampleSize, y-terrainSampleSize);
+		terrainHeight += TheTerrainLogic->getGroundHeight(x+terrainSampleSize, y+terrainSampleSize);
+		terrainHeight += TheTerrainLogic->getGroundHeight(x-terrainSampleSize, y+terrainSampleSize);
+		terrainHeight /= 5;
+	}
+	else
+	{
+		// find best approximation of max terrain height we can see
+		terrainHeight = max(terrainHeight, TheTerrainLogic->getGroundHeight(x+terrainSampleSize, y-terrainSampleSize));
+		terrainHeight = max(terrainHeight, TheTerrainLogic->getGroundHeight(x-terrainSampleSize, y-terrainSampleSize));
+		terrainHeight = max(terrainHeight, TheTerrainLogic->getGroundHeight(x+terrainSampleSize, y+terrainSampleSize));
+		terrainHeight = max(terrainHeight, TheTerrainLogic->getGroundHeight(x-terrainSampleSize, y+terrainSampleSize));
+	}
 
-	return terrainHeightMax;
+	return terrainHeight;
 }
 
 
@@ -716,6 +737,24 @@ void W3DView::updateCameraTransform()
 	Vector3 targetPos;
 	buildCameraPosition(sourcePos, targetPos);
 
+#if PRESERVE_RETAIL_SCRIPTED_CAMERA
+	const Bool clipCameraAboveTerrain = m_isUserControlled;
+#else
+	const Bool clipCameraAboveTerrain = true;
+#endif
+	if (clipCameraAboveTerrain)
+	{
+		// TheSuperHackers @fix Moves the camera above the terrain.
+		// Uses averaged terrain height sampling to reduce bumpy movements.
+		const Real minAcceptableCameraHeight = getHeightAroundPos(sourcePos.X, sourcePos.Y, MAP_XY_FACTOR) + NearZ;
+		if (sourcePos.Z < minAcceptableCameraHeight)
+		{
+			const Real repositionZ = minAcceptableCameraHeight - sourcePos.Z;
+			sourcePos.Z += repositionZ;
+			targetPos.Z += repositionZ;
+		}
+	}
+
 	Matrix3D cameraTransform;
 	buildCameraTransform(&cameraTransform, sourcePos, targetPos);
 
@@ -726,20 +765,28 @@ void W3DView::updateCameraTransform()
 //-------------------------------------------------------------------------------------------------
 void W3DView::updateCameraClipPlanes()
 {
-	Real farZ = 1200.0f;
+	// TheSuperHackers @bugfix Extends the initial far Z from 1200 because that is not enough at
+	// default max height 310 and default pitch 37.5.
+	static_assert(WorldHeightMap::NORMAL_DRAW_WIDTH == WorldHeightMap::NORMAL_DRAW_HEIGHT, "Expects squared draw area");
+	Real farZ = (WorldHeightMap::NORMAL_DRAW_WIDTH * 1.08f) * MAP_XY_FACTOR;
+
+	const Real heightMultiplier = m_heightAboveGround / ViewDefaultMaxHeightAboveTerrain;
+	farZ *= std::max(heightMultiplier, 1.0f);
 
 	if (m_useRealZoomCam)	//WST 10.19.2002
 	{
-		if (m_FXPitch<0.95f)
+		if (m_FXPitch < 0.95f)
 		{
-			farZ = farZ / m_FXPitch; //Extend far Z when we pitch up for RealZoomCam
+			//Extend far Z when we pitch up for RealZoomCam
+			farZ /= m_FXPitch;
 		}
 	}
 	else
 	{
-		if ((TheGlobalData->m_drawEntireTerrain) || (m_FXPitch<0.95f || m_zoom>1.05))
-		{	//need to extend far clip plane so entire terrain can be visible
-			farZ *= MAP_XY_FACTOR;
+		if (TheGlobalData->m_drawEntireTerrain || m_FXPitch < 0.95f)
+		{
+			//Extend far clip plane so entire terrain can be visible
+			farZ *= 10.0f;
 		}
 	}
 

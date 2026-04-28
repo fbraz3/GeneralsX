@@ -27,7 +27,7 @@ endif()
 
 # Cross-platform core libraries
 target_link_libraries(z_generals PRIVATE
-    core_profile
+    core_profile_legacy
     d3dx8
     z_gameengine
     z_gameenginedevice
