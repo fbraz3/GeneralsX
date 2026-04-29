@@ -534,26 +534,30 @@ static bool SDL3_GetWindowSizeInPixels(int& outW, int& outH, float& outDensity)
 	return true;
 }
 
+// GeneralsX @bugfix GitHub Copilot 28/04/2026 Ensure SDL3 fullscreen transition actually lands in native fullscreen and foreground.
+static void SDL3_EnsureNativeFullscreen(SDL_Window* window)
+{
+	if (!window) return;
+
+	for (int attempt = 0; attempt < 3; ++attempt) {
+		SDL_PumpEvents();
+		if ((SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0) {
+			break;
+		}
+		if (!SDL_SetWindowFullscreen(window, true)) {
+			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(retry) failed: %s\n", SDL_GetError());
+			break;
+		}
+	}
+
+	SDL_RaiseWindow(window);
+}
+
 // GeneralsX @bugfix GitHub Copilot 27/04/2026 Apply SDL3 window sizing/fullscreen only after the final render resolution is known.
 static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, Int renderHeight)
 {
 	extern SDL_Window* TheSDL3Window;
 	if (!TheSDL3Window) return;
-	int beforeLogW = 0;
-	int beforeLogH = 0;
-	int beforePhysW = 0;
-	int beforePhysH = 0;
-	SDL_GetWindowSize(TheSDL3Window, &beforeLogW, &beforeLogH);
-	SDL_GetWindowSizeInPixels(TheSDL3Window, &beforePhysW, &beforePhysH);
-	fprintf(stderr,
-		"[GX-FSDBG] SDL3_ApplyWindowMode begin windowed=%d render=%dx%d beforeLog=%dx%d beforePx=%dx%d\n",
-		windowed ? 1 : 0,
-		renderWidth,
-		renderHeight,
-		beforeLogW,
-		beforeLogH,
-		beforePhysW,
-		beforePhysH);
 
 	if (!windowed) {
 		if (!SDL_SetWindowFullscreen(TheSDL3Window, false)) {
@@ -581,22 +585,8 @@ static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, 
 		if (!SDL_SetWindowFullscreen(TheSDL3Window, true)) {
 			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(true) failed: %s\n", SDL_GetError());
 		}
+		SDL3_EnsureNativeFullscreen(TheSDL3Window);
 	}
-	int afterLogW = 0;
-	int afterLogH = 0;
-	int afterPhysW = 0;
-	int afterPhysH = 0;
-	SDL_GetWindowSize(TheSDL3Window, &afterLogW, &afterLogH);
-	SDL_GetWindowSizeInPixels(TheSDL3Window, &afterPhysW, &afterPhysH);
-	fprintf(stderr,
-		"[GX-FSDBG] SDL3_ApplyWindowMode end windowed=%d render=%dx%d afterLog=%dx%d afterPx=%dx%d\n",
-		windowed ? 1 : 0,
-		renderWidth,
-		renderHeight,
-		afterLogW,
-		afterLogH,
-		afterPhysW,
-		afterPhysH);
 }
 #endif
 

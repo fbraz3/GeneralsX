@@ -483,6 +483,25 @@ static bool SDL3_GetWindowSizeInPixels(int& outW, int& outH, float& outDensity)
 	return true;
 }
 
+// GeneralsX @bugfix GitHub Copilot 28/04/2026 Ensure SDL3 fullscreen transition actually lands in native fullscreen and foreground.
+static void SDL3_EnsureNativeFullscreen(SDL_Window* window)
+{
+	if (!window) return;
+
+	for (int attempt = 0; attempt < 3; ++attempt) {
+		SDL_PumpEvents();
+		if ((SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0) {
+			break;
+		}
+		if (!SDL_SetWindowFullscreen(window, true)) {
+			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(retry) failed: %s\n", SDL_GetError());
+			break;
+		}
+	}
+
+	SDL_RaiseWindow(window);
+}
+
 // GeneralsX @bugfix GitHub Copilot 27/04/2026 Apply SDL3 window sizing/fullscreen only after the final render resolution is known.
 static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, Int renderHeight)
 {
@@ -515,6 +534,7 @@ static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, 
 		if (!SDL_SetWindowFullscreen(TheSDL3Window, true)) {
 			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(true) failed: %s\n", SDL_GetError());
 		}
+		SDL3_EnsureNativeFullscreen(TheSDL3Window);
 	}
 }
 #endif
