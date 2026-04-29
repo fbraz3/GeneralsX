@@ -1,5 +1,20 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-28 - SDL native fullscreen on macOS needs post-request state verification and foreground enforcement
+
+- Problem: Even with correct render/backbuffer sizing, macOS could intermittently remain in a pseudo-borderless state (Dock/menu visible) after fullscreen request, with degraded focus/cursor behavior.
+- Root cause:
+	- `SDL_SetWindowFullscreen(true)` is asynchronous relative to compositor/window-manager transitions.
+	- A successful call does not guarantee the window is already flagged as fullscreen in the immediate next code path.
+	- If the window stays foreground-inconsistent during that transition, input behavior can degrade in practice.
+- Fix:
+	- After requesting fullscreen, verify window fullscreen flag and retry a few times when needed.
+	- Raise the window once transition is requested to reinforce foreground focus state.
+	- Apply the same logic in both `GeneralsMD` and `Generals` SDL display paths to keep behavior aligned.
+- Validation:
+	- macOS build and deploy completed successfully with the hardened fullscreen path.
+- Prevention: Treat fullscreen entry as a transition state machine on macOS/SDL; validate resulting state, do not rely on a single call as terminal state.
+
 ## Session 2026-04-27 - Custom map pipelines must treat path separators and map-name encoding as cross-platform invariants
 
 - Problem: User custom maps under `~/Library/Application Support/GeneralsX/GeneralsZH/Maps` could fail discovery/metadata flow when code assumed Windows-only separators and mixed path composition styles.
