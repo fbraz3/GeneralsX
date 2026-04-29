@@ -139,3 +139,8 @@ echo "   MoltenVK:   ${RUNTIME_DIR}/libMoltenVK.dylib"
 echo "   VK ICD:     ${RUNTIME_DIR}/MoltenVK_icd.json"
 echo "   DXVK conf:  ${RUNTIME_DIR}/dxvk.conf"
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
+echo ""
+# GeneralsX @tweak BenderAI 28/04/2026 Print post-deploy run instructions for base game like Zero Hour deploy flow.
+echo "Run with:"
+echo "  cd ~/GeneralsX/Generals && ./run.sh -win"
+echo "  or: ${RUNTIME_DIR}/run.sh -win"

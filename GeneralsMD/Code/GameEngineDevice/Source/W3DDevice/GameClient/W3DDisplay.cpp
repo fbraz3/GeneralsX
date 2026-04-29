@@ -78,6 +78,7 @@ static void drawFramerateBar();
 #include "W3DDevice/GameClient/W3DGameClient.h"
 #include "W3DDevice/GameClient/W3DFileSystem.h"
 #include "W3DDevice/GameClient/W3DDynamicLight.h"
+#include "W3DDevice/GameClient/W3DProfilerFrameCapture.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/WorldHeightMap.h"
 #include "W3DDevice/GameClient/W3DScene.h"
@@ -426,6 +427,10 @@ W3DDisplay::W3DDisplay()
 	m_batchMode = DRAW_IMAGE_ALPHA;
 	m_batchGrayscale = FALSE;
 	m_batchNeedsInit = FALSE;
+
+#ifdef PROFILER_ENABLED
+	m_profilerFrameCapture = NEW W3DProfilerFrameCapture();
+#endif
 }
 
 // W3DDisplay::~W3DDisplay ====================================================
@@ -433,6 +438,10 @@ W3DDisplay::W3DDisplay()
 //=============================================================================
 W3DDisplay::~W3DDisplay()
 {
+#ifdef PROFILER_ENABLED
+	delete m_profilerFrameCapture;
+	m_profilerFrameCapture = nullptr;
+#endif
 
 	// get rid of the debug display
 	delete m_debugDisplay;
@@ -525,26 +534,30 @@ static bool SDL3_GetWindowSizeInPixels(int& outW, int& outH, float& outDensity)
 	return true;
 }
 
+// GeneralsX @bugfix GitHub Copilot 28/04/2026 Ensure SDL3 fullscreen transition actually lands in native fullscreen and foreground.
+static void SDL3_EnsureNativeFullscreen(SDL_Window* window)
+{
+	if (!window) return;
+
+	for (int attempt = 0; attempt < 3; ++attempt) {
+		SDL_PumpEvents();
+		if ((SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0) {
+			break;
+		}
+		if (!SDL_SetWindowFullscreen(window, true)) {
+			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(retry) failed: %s\n", SDL_GetError());
+			break;
+		}
+	}
+
+	SDL_RaiseWindow(window);
+}
+
 // GeneralsX @bugfix GitHub Copilot 27/04/2026 Apply SDL3 window sizing/fullscreen only after the final render resolution is known.
 static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, Int renderHeight)
 {
 	extern SDL_Window* TheSDL3Window;
 	if (!TheSDL3Window) return;
-	int beforeLogW = 0;
-	int beforeLogH = 0;
-	int beforePhysW = 0;
-	int beforePhysH = 0;
-	SDL_GetWindowSize(TheSDL3Window, &beforeLogW, &beforeLogH);
-	SDL_GetWindowSizeInPixels(TheSDL3Window, &beforePhysW, &beforePhysH);
-	fprintf(stderr,
-		"[GX-FSDBG] SDL3_ApplyWindowMode begin windowed=%d render=%dx%d beforeLog=%dx%d beforePx=%dx%d\n",
-		windowed ? 1 : 0,
-		renderWidth,
-		renderHeight,
-		beforeLogW,
-		beforeLogH,
-		beforePhysW,
-		beforePhysH);
 
 	if (!windowed) {
 		if (!SDL_SetWindowFullscreen(TheSDL3Window, false)) {
@@ -572,22 +585,8 @@ static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, 
 		if (!SDL_SetWindowFullscreen(TheSDL3Window, true)) {
 			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(true) failed: %s\n", SDL_GetError());
 		}
+		SDL3_EnsureNativeFullscreen(TheSDL3Window);
 	}
-	int afterLogW = 0;
-	int afterLogH = 0;
-	int afterPhysW = 0;
-	int afterPhysH = 0;
-	SDL_GetWindowSize(TheSDL3Window, &afterLogW, &afterLogH);
-	SDL_GetWindowSizeInPixels(TheSDL3Window, &afterPhysW, &afterPhysH);
-	fprintf(stderr,
-		"[GX-FSDBG] SDL3_ApplyWindowMode end windowed=%d render=%dx%d afterLog=%dx%d afterPx=%dx%d\n",
-		windowed ? 1 : 0,
-		renderWidth,
-		renderHeight,
-		afterLogW,
-		afterLogH,
-		afterPhysW,
-		afterPhysH);
 }
 #endif
 
@@ -2216,6 +2215,13 @@ AGAIN:
 #ifdef PERF_TIMERS
 				TheGraphDraw->render();
 				TheGraphDraw->clear();
+#endif
+
+#ifdef PROFILER_ENABLED
+				if (m_profilerFrameCapture && !TheGlobalData->m_headless)
+				{
+					m_profilerFrameCapture->Capture(getWidth(), getHeight());
+				}
 #endif
 				// render is all done!
 				WW3D::End_Render();

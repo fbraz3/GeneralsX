@@ -45,6 +45,8 @@ FrameRateLimit::FrameRateLimit()
 
 Real FrameRateLimit::wait(UnsignedInt maxFps)
 {
+	PROFILER_SECTION;
+
 #ifdef _WIN32
 	LARGE_INTEGER tick;
 	QueryPerformanceCounter(&tick);

@@ -62,6 +62,12 @@ Your support helps with:
 - [🐧 Linux Build Guide](docs/BUILD/LINUX.md)
 - [🍎 macOS Build Guide](docs/BUILD/MACOS.md)
 
+### Profiling
+
+Tracy profiling is available for presets that enable profiling support (for example `win32-profile`).
+Use `tracy-profiler.exe` from [Tracy v0.13.1](https://github.com/wolfpld/tracy/releases/tag/v0.13.1).
+If Tracy fails to start on Windows builds, try removing `dbghelp.dll` from the game binary directory.
+
 ### 🐛 Known Issues & Limitations
 
 For documented limitations and known bugs, check the [issues page](https://github.com/fbraz3/GeneralsX/issues).
