@@ -47,6 +47,49 @@ check_tool ninja "brew install ninja"
 check_tool meson "brew install meson"
 check_tool python3 "brew install python3"
 
+# GeneralsX @build Copilot 03/05/2026 Auto-detect VCPKG_ROOT for preset toolchain resolution
+resolve_vcpkg_root() {
+    local candidate=""
+    local -a candidates=()
+    local brew_vcpkg_root=""
+
+    if [[ -n "${VCPKG_ROOT:-}" ]]; then
+        if [[ -f "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" ]]; then
+            echo "Using VCPKG_ROOT from environment: ${VCPKG_ROOT}"
+            return 0
+        fi
+        echo "WARNING: VCPKG_ROOT is set but invalid: ${VCPKG_ROOT}"
+    fi
+
+    if command -v brew &>/dev/null; then
+        brew_vcpkg_root="$(brew --prefix vcpkg 2>/dev/null || true)"
+    fi
+
+    candidates+=("${PWD}/vcpkg")
+    candidates+=("${HOME}/vcpkg")
+    candidates+=("/opt/vcpkg")
+    candidates+=("/opt/homebrew/opt/vcpkg")
+    candidates+=("/usr/local/opt/vcpkg")
+    if [[ -n "${brew_vcpkg_root}" ]]; then
+        candidates+=("${brew_vcpkg_root}")
+    fi
+
+    for candidate in "${candidates[@]}"; do
+        if [[ -f "${candidate}/scripts/buildsystems/vcpkg.cmake" ]]; then
+            export VCPKG_ROOT="${candidate}"
+            echo "Using detected VCPKG_ROOT: ${VCPKG_ROOT}"
+            return 0
+        fi
+    done
+
+    echo "ERROR: VCPKG_ROOT is not configured and no local vcpkg installation was detected."
+    echo "Set VCPKG_ROOT to a valid vcpkg root containing scripts/buildsystems/vcpkg.cmake"
+    echo "Example: export VCPKG_ROOT=\"/opt/homebrew/opt/vcpkg\""
+    exit 1
+}
+
+resolve_vcpkg_root
+
 # Vulkan SDK check
 VULKAN_FOUND=0
 for sdk_candidate in "${HOME}/VulkanSDK"/*/macOS; do
