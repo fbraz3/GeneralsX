@@ -9,7 +9,7 @@
 #   ./scripts/docker-build.sh                  # Full build (both games)
 #   ./scripts/docker-build.sh --game zh        # Build Zero Hour only
 #   ./scripts/docker-build.sh --game generals  # Build Generals only
-#   ./scripts/docker-build.sh --target generalszh  # Build specific target
+#   ./scripts/docker-build.sh --target z_generals  # Build specific target
 #   ./scripts/docker-build.sh --clean          # Clean build directory
 #   ./scripts/docker-build.sh --interactive    # Enter container shell
 #
@@ -59,7 +59,7 @@ Build Generals/Zero Hour on Linux using Docker (produces Windows executables).
 Options:
     -h, --help          Show this help message
     -g, --game GAME     Build specific game: 'zh' (Zero Hour), 'generals', or 'all' (default: all)
-    -t, --target TARGET Build specific CMake target (e.g., generalszh, WorldBuilderZH)
+    -t, --target TARGET Build specific CMake target (e.g., z_generals, z_worldbuilder)
     -c, --clean         Clean build directory before building
     -i, --interactive   Enter container shell for debugging
     --cmake             Force CMake reconfiguration
@@ -68,7 +68,7 @@ Options:
 Examples:
     $(basename "$0")                      # Build everything
     $(basename "$0") --game zh            # Build Zero Hour only
-    $(basename "$0") --target generalszh  # Build Zero Hour executable only
+    $(basename "$0") --target z_generals  # Build Zero Hour executable only
     $(basename "$0") --clean --game all   # Clean and rebuild everything
     $(basename "$0") --interactive        # Enter container for debugging
 
@@ -250,10 +250,10 @@ done
 if [[ -z "$TARGET" ]]; then
     case "$GAME" in
         zh|zerohour)
-            TARGET="generalszh generalszh_tools"
+            TARGET="z_generals z_worldbuilder core_particleeditor core_debugwindow z_guiedit z_imagepacker z_mapcachebuilder z_w3dview z_wdump"
             ;;
         generals)
-            TARGET="generalsv generalsv_tools"
+            TARGET="g_generals g_worldbuilder core_particleeditor core_debugwindow g_guiedit g_imagepacker g_mapcachebuilder g_w3dview"
             ;;
         all)
             TARGET=""  # Build all
