@@ -207,42 +207,9 @@ public:
 	// BehaviorModule
 	virtual BodyModuleInterface* getBody() override { return this; }
 
-	/**
-		Try to damage this Object. The module's Armor
-		will be taken into account, so the actual damage done may vary
-		considerably from what you requested. Also note that (if damage is done)
-		the DamageFX will be invoked to provide a/v fx as appropriate.
-	*/
-	virtual void attemptDamage( DamageInfo *damageInfo ) = 0;
-
-	/**
-		Instead of having negative damage count as healing, or allowing access to the private
-		changeHealth Method, we will use this parallel to attemptDamage to do healing without hack.
-	*/
-	virtual void attemptHealing( DamageInfo *healingInfo ) = 0;
-
-	/**
-		Estimate the (unclipped) damage that would be done to this object
-		by the given damage (taking bonuses, armor, etc into account),
-		but DO NOT alter the body in any way. (This is used by the AI system
-		to choose weapons.)
-	*/
-	virtual Real estimateDamage( DamageInfoInput& damageInfo ) const = 0;
-
-	virtual Real getHealth() const = 0;													///< get current health
-
 	virtual Real getMaxHealth() const override {return 0.0f;}  ///< return max health
 
 	virtual Real getInitialHealth() const override {return 0.0f;}  // return initial health
-
-	virtual BodyDamageType getDamageState() const = 0;
-	virtual void setDamageState( BodyDamageType newState ) = 0;	///< control damage state directly.  Will adjust hitpoints.
-	virtual void setAflame( Bool setting ) = 0;///< This is a major change like a damage state.
-
-	virtual void onVeterancyLevelChanged( VeterancyLevel oldLevel, VeterancyLevel newLevel, Bool provideFeedback = FALSE ) = 0;	///< I just achieved this level right this moment
-
-	virtual void setArmorSetFlag(ArmorSetType ast) = 0;
-	virtual void clearArmorSetFlag(ArmorSetType ast) = 0;
 
 	virtual const DamageInfo *getLastDamageInfo() const override { return nullptr; }	///< return info on last damage dealt to this object
 	virtual UnsignedInt getLastDamageTimestamp() const override { return 0; }	///< return frame of last damage dealt
@@ -265,15 +232,6 @@ public:
 	//Allows outside systems to apply defensive bonuses or penalties (they all stack as a multiplier!)
 	virtual void applyDamageScalar( Real scalar ) override { m_damageScalar *= scalar; }
 	virtual Real getDamageScalar() const override { return m_damageScalar; }
-
-	/**
-		Change the module's health by the given delta. Note that
-		the module's DamageFX and Armor are NOT taken into
-		account, so you should think about what you're bypassing when you
-		call this directly (especially when when decreasing health, since
-		you probably want "attemptDamage" or "attemptHealing")
-	*/
-	virtual void internalChangeHealth( Real delta ) = 0;
 
 	virtual void evaluateVisualCondition() override { }
 	virtual void updateBodyParticleSystems() override { };// made public for topple anf building collapse updates -ML
