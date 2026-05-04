@@ -31,7 +31,7 @@ For **official releases and instructions**, visit:
 
 * [GeneralsX Releases](https://github.com/fbraz3/GeneralsX/releases)  - Linux and Mac
 * [TheSuperHackers Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases) - Windows
-* [Fighter19 Releases](https://github.com/Fighter19/CnC_Generals_Zero_Hour/releases) - Original Linux-focused upstream cross-platform releases
+* [Fighter19 Releases](https://github.com/Fighter19/CnC_Generals_Zero_Hour/releases) - Original Linux-focused Zero Hour reference releases
 
 ## Installing the game
 
@@ -41,17 +41,17 @@ For release/runtime setup instructions (Linux and macOS), see:
 
 > **Don't have the game files yet?** The Steam version does not offer a macOS or Linux download. See [docs/BUILD/GETTING_THE_GAME_FILES.md](docs/BUILD/GETTING_THE_GAME_FILES.md) for three ways to obtain the original game assets (copy from Windows, CrossOver trial, or SteamCMD).
 
-## How does this project relate to its upstreams?
+## How does this project relate to other community projects?
 
-GeneralsX is a community project built on top of multiple upstream efforts with complementary roles.
+GeneralsX builds on complementary community efforts with different roles.
 
 **TheSuperHackers** provides the main upstream foundation for stability, bug fixes, retail compatibility, and long-term maintenance of the original game code.
 
-**Fighter19's fork**, including major work by **feliwir**, established much of the original cross-platform groundwork used by this ecosystem, including SDL3 windowing, DXVK-based rendering, OpenAL audio, FFmpeg media support, filesystem modernization, and related Linux-focused portability work.
+**Fighter19's fork**, including major work by **feliwir**, is a key Zero Hour cross-platform reference that established much of the ecosystem groundwork used here, including SDL3 windowing, DXVK-based rendering, OpenAL audio, FFmpeg media support, filesystem modernization, and related Linux-focused portability work.
 
 That work is not limited to combining existing code. It also includes project-specific fixes and maintenance needed to keep the stack viable on supported platforms, including cases where upstream projects do not currently accept or prioritize the required path.
 
-These projects have different but complementary goals, so not every change belongs in the same place. Improvements aligned with upstream stability or core maintenance priorities should be contributed back to the relevant upstream project, while GeneralsX keeps changes specific to cross-platform delivery, packaging, and platform integration.
+These projects have different but complementary goals, so not every change belongs in the same place. Improvements aligned with upstream stability or core maintenance priorities should be contributed back to TheSuperHackers, while GeneralsX keeps changes specific to cross-platform delivery, packaging, and platform integration.
 
 ## Where does the GeneralsX name come from?
 
@@ -68,7 +68,7 @@ The optional sponsorship link exists to help cover the maintenance costs specifi
 
 Your support specifically helps with:
 
-- **Integration, Adaptation ans Enhancements** - Merging upstream work, resolving incompatibilities, and carrying project-specific fixes needed for supported platforms
+- **Integration, Adaptation and Enhancements** - Merging reference work, resolving incompatibilities, and carrying project-specific fixes needed for supported platforms
 - **Testing Infrastructure** - Validation across Linux and macOS, plus exploratory work needed to keep future platform paths viable
 - **Packaging & Releases** - AppImage, Flatpak, macOS bundles, CI pipeline
 - **Documentation & Maintenance** - Build guides, installation instructions, developer resources, and ongoing repository upkeep
