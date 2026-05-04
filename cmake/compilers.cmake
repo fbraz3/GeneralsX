@@ -51,6 +51,11 @@ if (NOT IS_VS6_BUILD)
         add_compile_options(/Zc:__cplusplus)
     else()
         add_compile_options(-Wsuggest-override)
+        # GeneralsX @build fbraz 03/05/2026 Disable FMA contraction to avoid
+        # cross-platform rounding divergence in deterministic math paths.
+        # Upstream reference: Okladnoj, PR #2670
+        # https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
+        add_compile_options(-ffp-contract=off)
     endif()
 else()
     if(RTS_BUILD_OPTION_VC6_FULL_DEBUG)

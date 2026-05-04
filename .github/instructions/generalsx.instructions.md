@@ -193,6 +193,7 @@ cmake --build build/mingw-w64-i686 --target z_generals
 - **Terminal hygiene**: No emojis or exclamation marks in terminal commands
 - **C++ heritage**: Maintain consistency with surrounding legacy code patterns
 - **Change annotation**: Every user-facing code change needs `// GeneralsX @keyword author DD/MM/YYYY Description` above it. Keywords: `@bugfix` / `@feature` / `@performance` / `@refactor` / `@tweak` / `@build`
+- **Upstream PR attribution**: When implementing work derived from a specific upstream PR, add an adjacent comment with original author and PR link (for example: `// Upstream reference: <author>, PR #<id>` and the full GitHub URL).
 
 ### Platform Isolation Patterns
 

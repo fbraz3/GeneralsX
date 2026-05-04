@@ -248,7 +248,10 @@ struct Coord2D
 		return x == value && y == value;
 	}
 
-	Real length() const { return (Real)sqrt( x*x + y*y ); }
+	// GeneralsX @refactor fbraz 03/05/2026 Route BaseType length math through shared Sqrt gateway.
+	// Upstream reference: Okladnoj, PR #2670
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
+	Real length() const { return (Real)Sqrt( x*x + y*y ); }
 	Real lengthSqr() const { return x*x + y*y; }
 
 	void normalize()
@@ -273,7 +276,7 @@ inline Real Coord2D::toAngle() const
 	vector.x = x;
 	vector.y = y;
 
-	Real dist = (Real)sqrt(vector.x * vector.x + vector.y * vector.y);
+	Real dist = (Real)Sqrt(vector.x * vector.x + vector.y * vector.y);
 
 	// normalize
 	if (dist == 0.0f)
@@ -340,7 +343,7 @@ struct ICoord2D
 		return x == value && y == value;
 	}
 
-	Int length() const { return (Int)sqrt( (double)(x*x + y*y) ); }
+	Int length() const { return (Int)Sqrt( (double)(x*x + y*y) ); }
 };
 
 struct Region2D
@@ -388,7 +391,7 @@ struct Coord3D
 {
 	Real x, y, z;
 
-	Real length() const { return (Real)sqrt( x*x + y*y + z*z ); }
+	Real length() const { return (Real)Sqrt( x*x + y*y + z*z ); }
 	Real lengthSqr() const { return ( x*x + y*y + z*z ); }
 
 	void normalize()
@@ -476,7 +479,7 @@ struct ICoord3D
 {
 	Int x, y, z;
 
-	Int length() const { return (Int)sqrt( (double)(x*x + y*y + z*z) ); }
+	Int length() const { return (Int)Sqrt( (double)(x*x + y*y + z*z) ); }
 
 	void zero()
 	{
