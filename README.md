@@ -49,9 +49,9 @@ GeneralsX builds on complementary community efforts with different roles.
 
 **Fighter19's fork**, including major work by **feliwir**, is a key Zero Hour cross-platform reference that established much of the ecosystem groundwork used here, including SDL3 windowing, DXVK-based rendering, OpenAL audio, FFmpeg media support, filesystem modernization, and related Linux-focused portability work.
 
-This work goes beyond combining existing code. It also includes project-specific fixes and maintenance needed to keep the stack viable on supported platforms, including cases where upstream projects do not currently accept or prioritize the required path.
+While GeneralsX builds on important community work, this project also includes substantial original effort in integration, adaptation, platform-specific fixes, enhancements, testing, packaging, and ongoing maintenance.
 
-These projects have different but complementary goals, so not every change belongs in the same place. Improvements aligned with upstream stability or core maintenance priorities should be contributed back to TheSuperHackers, while GeneralsX keeps changes specific to cross-platform delivery, packaging, and platform integration.
+Because these projects serve different but complementary goals, not every change belongs in the same place. Improvements aligned with upstream stability or core maintenance priorities should be contributed back to TheSuperHackers, while GeneralsX keeps changes specific to cross-platform delivery, packaging, and platform integration.
 
 ## Where does the GeneralsX name come from?
 
