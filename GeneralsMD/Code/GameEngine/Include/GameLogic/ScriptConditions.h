@@ -45,10 +45,6 @@ public:
 
 	virtual ~ScriptConditionsInterface() override { };
 
-	virtual void init() = 0;		///< Init
-	virtual void reset() = 0;		///< Reset
-	virtual void update() = 0;	///< Update
-
 	virtual Bool evaluateCondition( Condition *pCondition ) = 0; ///< evaluate a a script condition.
 
 	virtual Bool evaluateSkirmishCommandButtonIsReady( Parameter *pSkirmishPlayerParm, Parameter *pTeamParm, Parameter *pCommandButtonParm, Bool allReady ) = 0;

@@ -150,7 +150,7 @@ public:
 	PartitionFilterHasParkingPlace(ObjectID id) : m_id(id) { }
 protected:
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterHasParkingPlace"; }
+	virtual const char* debugGetName() override { return "PartitionFilterHasParkingPlace"; }
 #endif
 	virtual Bool allow(Object *objOther) override
 	{

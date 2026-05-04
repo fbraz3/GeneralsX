@@ -71,7 +71,7 @@ public:
  	virtual void setGamma(Real gamma, Real bright, Real contrast, Bool calibrate) override;
 	virtual void doSmartAssetPurgeAndPreload(const char* usageFileName) override;
 #if defined(RTS_DEBUG)
-	virtual void dumpAssetUsage(const char* mapname);
+	virtual void dumpAssetUsage(const char* mapname) override;
 #endif
 
 	//---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ public:
 	virtual void setShroudLevel(Int x, Int y, CellShroudStatus setting) override;
 	virtual void setBorderShroudLevel(UnsignedByte level) override;	///<color that will appear in unused border terrain.
 #if defined(RTS_DEBUG)
-	virtual void dumpModelAssets(const char *path);	///< dump all used models/textures to a file.
+	virtual void dumpModelAssets(const char *path) override;	///< dump all used models/textures to a file.
 #endif
 	virtual void preloadModelAssets( AsciiString model ) override;			///< preload model asset
 	virtual void preloadTextureAssets( AsciiString texture ) override;	///< preload texture asset

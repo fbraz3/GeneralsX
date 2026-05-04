@@ -72,7 +72,7 @@ private:
 public:
 	PartitionFilterTensileFormationMember( Object* obj ) : m_obj( obj ) { }
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterTensileFormationMember"; }
+	virtual const char* debugGetName() override { return "PartitionFilterTensileFormationMember"; }
 #endif
 	virtual Bool allow( Object *objOther ) override
 	{

@@ -117,7 +117,7 @@ class W3DProjectedShadow	: public Shadow
 		void updateProjectionParameters(const Matrix3D &cameraXform);	///<recompute projection matrix - needed when light or object moves.
 		TexProjectClass *getShadowProjector()	{return m_shadowProjector;}
 		#if defined(RTS_DEBUG)
-		virtual void getRenderCost(RenderCost & rc) const;
+		virtual void getRenderCost(RenderCost & rc) const override;
 		#endif
 		W3DShadowTexture *getTexture(Int lightIndex) {return m_shadowTexture[lightIndex];}
 
