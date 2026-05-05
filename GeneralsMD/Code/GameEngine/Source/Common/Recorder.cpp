@@ -421,6 +421,13 @@ void RecorderClass::updatePlayback() {
 
 	// While there are commands to be queued up for this frame, do it.
 	while (m_nextFrame == curFrame) {
+		// GeneralsX @bugfix fbraz 04/05/2026 Guard replay loop against invalidated file handle.
+		// Replay teardown paths can null m_file while this frame loop is still executing.
+		if (m_file == nullptr) {
+			m_nextFrame = -1;
+			stopPlayback();
+			return;
+		}
 		appendNextCommand();	// append the next command to TheCommandQueue
 		readNextFrame();	// Read the next command's frame number for playback.
 	}
@@ -1333,6 +1340,13 @@ AsciiString RecorderClass::readAsciiString() {
  * is stopped and the next frame is said to be -1.
  */
 void RecorderClass::readNextFrame() {
+	// GeneralsX @bugfix fbraz 04/05/2026 Prevent null dereference when playback file was closed asynchronously.
+	if (m_file == nullptr) {
+		m_nextFrame = -1;
+		stopPlayback();
+		return;
+	}
+
 	Int bytesRead = m_file->read(&m_nextFrame, sizeof(m_nextFrame));
 	if (bytesRead != sizeof(m_nextFrame)) {
 		DEBUG_LOG(("RecorderClass::readNextFrame - read failed on frame %d", TheGameLogic->getFrame()));
@@ -1345,6 +1359,13 @@ void RecorderClass::readNextFrame() {
  * This reads the next command from the replay file and appends it to TheCommandList.
  */
 void RecorderClass::appendNextCommand() {
+	// GeneralsX @bugfix fbraz 04/05/2026 Prevent null dereference when playback file was closed asynchronously.
+	if (m_file == nullptr) {
+		m_nextFrame = -1;
+		stopPlayback();
+		return;
+	}
+
 	GameMessage::Type type;
 	Int bytesRead = m_file->read(&type, sizeof(type));
 	if (bytesRead != sizeof(type)) {

@@ -840,6 +840,8 @@ private:
 class ParticleSystemManagerDummy : public ParticleSystemManager
 {
 public:
+	// GeneralsX @bugfix fbraz 04/05/2026 Prevent headless replay from entering full particle update path.
+	virtual void update() override {}
 	virtual Int getOnScreenParticleCount() override { return 0; }
 	virtual void doParticles(RenderInfoClass &rinfo) override {}
 	virtual void queueParticleRender() override {}

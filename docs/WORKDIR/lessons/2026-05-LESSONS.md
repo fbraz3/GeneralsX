@@ -13,3 +13,10 @@
 - Root cause: `default-vcpkg` preset uses `$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake`; when `VCPKG_ROOT` is empty, CMake resolves to an invalid absolute path.
 - Fix applied: Add `resolve_vcpkg_root()` in macOS build scripts to validate environment value, auto-detect common locations (including Homebrew), and fail with actionable guidance.
 - Prevention: Keep environment checks before `cmake --preset` in user-facing platform scripts.
+
+## 2026-05-04 - Headless dummies must override hot-path virtuals
+
+- Symptom: macOS headless replay crashed inside `ParticleSystemManager::update()` even after routing factory creation to `ParticleSystemManagerDummy`.
+- Root cause: The dummy type did not override `update()`, so virtual dispatch still executed the full particle update path.
+- Fix applied: Override `ParticleSystemManagerDummy::update()` as a no-op in `ParticleSys.h`.
+- Prevention: When introducing dummy/headless subsystem implementations, audit and override all high-frequency virtual methods used by headless loops.
