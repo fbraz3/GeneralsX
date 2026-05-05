@@ -57,6 +57,7 @@ If you have access to a Windows PC or a Windows virtual machine:
    Inside the SteamCMD prompt:
 
    ```
+   @sSteamCmdForcePlatformType windows
    login <your_steam_username>
    force_install_dir ./zh_files
    app_update 2732960 validate
