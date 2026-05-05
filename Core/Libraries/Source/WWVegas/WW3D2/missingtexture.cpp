@@ -33,13 +33,42 @@ static IDirect3DTexture8 * _MissingTexture = nullptr;
 
 IDirect3DTexture8* MissingTexture::_Get_Missing_Texture()
 {
-	WWASSERT(_MissingTexture);
+	// GeneralsX @bugfix fbraz 04/05/2026 Lazily initialize fallback texture to avoid null dereference in headless replay paths.
+	if (_MissingTexture == nullptr)
+	{
+		if (DX8Wrapper::Is_Initted() && DX8Wrapper::_Get_D3D_Device8() != nullptr)
+		{
+			MissingTexture::_Init();
+		}
+	}
+
+	if (_MissingTexture == nullptr)
+	{
+		WWDEBUG_SAY(("MissingTexture::_Get_Missing_Texture failed: fallback texture is unavailable"));
+		return nullptr;
+	}
+
 	_MissingTexture->AddRef();
 	return _MissingTexture;
 }
 
 IDirect3DSurface8* MissingTexture::_Create_Missing_Surface()
 {
+	if (_MissingTexture == nullptr)
+	{
+		IDirect3DTexture8 *texture = MissingTexture::_Get_Missing_Texture();
+		if (texture != nullptr)
+		{
+			texture->Release();
+		}
+	}
+
+	if (_MissingTexture == nullptr)
+	{
+		WWDEBUG_SAY(("MissingTexture::_Create_Missing_Surface failed: fallback texture is unavailable"));
+		return nullptr;
+	}
+
 	IDirect3DSurface8 *texture_surface = nullptr;
 	DX8_ErrorCode(_MissingTexture->GetSurfaceLevel(0, &texture_surface));
 	D3DSURFACE_DESC texture_surface_desc;
@@ -68,6 +97,12 @@ void MissingTexture::_Init()
 		WW3D_FORMAT_A8R8G8B8,
 		MIP_LEVELS_ALL
 	);
+
+	if (tex == nullptr)
+	{
+		WWDEBUG_SAY(("MissingTexture::_Init failed: could not allocate fallback texture"));
+		return;
+	}
 
 	D3DLOCKED_RECT locked_rect;
 	RECT rect;
@@ -158,8 +193,11 @@ void MissingTexture::_Init()
 
 void MissingTexture::_Deinit()
 {
-	_MissingTexture->Release();
-	_MissingTexture=nullptr;
+	if (_MissingTexture)
+	{
+		_MissingTexture->Release();
+		_MissingTexture=nullptr;
+	}
 }
 
 unsigned int missing_image_palette[]={

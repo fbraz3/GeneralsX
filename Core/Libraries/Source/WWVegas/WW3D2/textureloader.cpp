@@ -358,7 +358,29 @@ void TextureLoader::Validate_Texture_Size
 	unsigned& depth
 )
 {
-	const D3DCAPS8& dx8caps=DX8Wrapper::Get_Current_Caps()->Get_DX8_Caps();
+	const DX8Caps* current_caps = DX8Wrapper::Get_Current_Caps();
+	if (current_caps == nullptr)
+	{
+		// GeneralsX @bugfix fbraz 04/05/2026 Avoid null caps dereference during headless/background texture requests.
+		if (width == 0)
+		{
+			width = 1;
+		}
+
+		if (height == 0)
+		{
+			height = 1;
+		}
+
+		if (depth == 0)
+		{
+			depth = 1;
+		}
+
+		return;
+	}
+
+	const D3DCAPS8& dx8caps=current_caps->Get_DX8_Caps();
 
 	unsigned poweroftwowidth = 1;
 	while (poweroftwowidth < width)
@@ -927,6 +949,10 @@ void TextureLoader::Begin_Load_And_Queue(TextureLoadTaskClass *task)
 {
 	// should only be called from the DX8 thread.
 	WWASSERT(Is_DX8_Thread());
+	if (task == nullptr)
+	{
+		return;
+	}
 
 	if (task->Begin_Load()) {
 		// add to front of background queue. This means the
@@ -941,7 +967,10 @@ void TextureLoader::Begin_Load_And_Queue(TextureLoadTaskClass *task)
 		_BackgroundQueue.Push_Front(task);
 	} else {
 		// unable to load.
-		task->Apply_Missing_Texture();
+		if (task->Peek_Texture() != nullptr)
+		{
+			task->Apply_Missing_Texture();
+		}
 		task->Destroy();
 	}
 }
@@ -954,6 +983,12 @@ void TextureLoader::Load_Thumbnail(TextureBaseClass *tc)
 
 	// load thumbnail texture
 	IDirect3DTexture8 *d3d_texture = Load_Thumbnail(tc->Get_Full_Path(),tc->Get_HSV_Shift());
+	if (d3d_texture == nullptr)
+	{
+		// GeneralsX @bugfix fbraz 04/05/2026 Avoid null dereference when fallback missing texture cannot be created.
+		WWDEBUG_SAY(("TextureLoader::Load_Thumbnail failed: null D3D texture for %s", tc->Get_Full_Path()));
+		return;
+	}
 
 	// apply thumbnail to texture
 	if (tc->Get_Asset_Type()==TextureBaseClass::TEX_REGULAR)
@@ -1276,7 +1311,17 @@ void TextureLoadTaskClass::Apply_Missing_Texture()
 	WWASSERT(TextureLoader::Is_DX8_Thread());
 	WWASSERT(!D3DTexture);
 
+	// GeneralsX @bugfix fbraz 04/05/2026 A queued task can be detached before fallback application.
+	if (Texture == nullptr)
+	{
+		return;
+	}
+
 	D3DTexture = MissingTexture::_Get_Missing_Texture();
+	if (D3DTexture == nullptr)
+	{
+		return;
+	}
 	Apply(true);
 }
 
@@ -1284,6 +1329,14 @@ void TextureLoadTaskClass::Apply_Missing_Texture()
 void TextureLoadTaskClass::Apply(bool initialize)
 {
 	WWASSERT(D3DTexture);
+
+	// GeneralsX @bugfix fbraz 04/05/2026 Avoid null dereference if task lost its texture association mid-flight.
+	if (Texture == nullptr)
+	{
+		D3DTexture->Release();
+		D3DTexture = nullptr;
+		return;
+	}
 
 	// Verify that none of the mip levels are locked
 	for (unsigned i=0;i<MipLevelCount;++i) {
@@ -1406,6 +1459,17 @@ static bool	Get_Texture_Information
 
 bool TextureLoadTaskClass::Begin_Compressed_Load()
 {
+	if (Texture == nullptr)
+	{
+		return false;
+	}
+
+	if (DX8Wrapper::Get_Current_Caps() == nullptr)
+	{
+		// GeneralsX @bugfix fbraz 04/05/2026 Skip compressed load when DX8 caps are unavailable in headless execution.
+		return false;
+	}
+
 	unsigned orig_w,orig_h,orig_d,orig_mip_count,reduction;
 	WW3DFormat orig_format;
 	if (!Get_Texture_Information
@@ -1530,6 +1594,12 @@ bool TextureLoadTaskClass::Begin_Compressed_Load()
 #endif
 	);
 
+	// GeneralsX @bugfix fbraz 04/05/2026 Texture allocation may fail in headless paths; abort task safely.
+	if (D3DTexture == nullptr)
+	{
+		return false;
+	}
+
 	MipLevelCount = mip_level_count;
 
 	return true;
@@ -1537,6 +1607,11 @@ bool TextureLoadTaskClass::Begin_Compressed_Load()
 
 bool TextureLoadTaskClass::Begin_Uncompressed_Load()
 {
+	if (Texture == nullptr)
+	{
+		return false;
+	}
+
 	unsigned width,height,depth,orig_mip_count,reduction;
 	WW3DFormat orig_format;
 	if (!Get_Texture_Information
@@ -1624,6 +1699,12 @@ bool TextureLoadTaskClass::Begin_Uncompressed_Load()
 		D3DPOOL_SYSTEMMEM
 #endif
 	);
+
+	// GeneralsX @bugfix fbraz 04/05/2026 Texture allocation may fail in headless paths; abort task safely.
+	if (D3DTexture == nullptr)
+	{
+		return false;
+	}
 
 	return true;
 }

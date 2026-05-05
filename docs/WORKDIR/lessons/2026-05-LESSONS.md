@@ -1,5 +1,12 @@
 # 2026-05 Lessons
 
+## 2026-05-04 - Guard texture creation at all abstraction layers in headless mode
+
+- Symptom: Replay progressed but crashed at `D3DXCreateTexture +0` during uncompressed texture loading.
+- Root cause: Texture allocation path assumed DX8 device availability; in headless transition windows the call chain could reach D3DX8 wrappers with null device/context.
+- Fix applied: Added layered guards in `D3DXCreateTexture`, `DX8Wrapper::_Create_DX8_Texture`, and texture loader begin paths so allocation failures return cleanly.
+- Prevention: For replay/headless stability, enforce defensive checks at API boundary, wrapper boundary, and task boundary instead of relying on a single guard.
+
 ## 2026-05-03 - Route through existing WWMath APIs before adding deterministic-only wrappers
 
 - Symptom: Initial Trig routing to `WWMath::SinTrig`/`CosTrig`/`SqrtOrigin` failed in local branch because those symbols are not present in baseline `wwmath.h`.
