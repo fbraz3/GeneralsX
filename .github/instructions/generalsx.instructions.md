@@ -4,11 +4,11 @@ applyTo: '**'
 
 # Objectives
 
-GeneralsX is a **community-driven cross-platform port** of Command & Conquer: Generals Zero Hour (2003), enabling the classic game to run natively on **Linux, macOS, and Windows** under a single modern codebase using SDL3 + DXVK + OpenAL + 64-bit.
+GeneralsX is a **community-driven downstream cross-platform port** of Command & Conquer: Generals Zero Hour (2003), currently focused on making the game run natively on **Linux and macOS** under a single modern codebase using SDL3 + DXVK + OpenAL + 64-bit. Windows remains a longer-term or exploratory path in this repository, not an active delivery target.
 
 This is a **massive C++ game engine** (~500k+ LOC) being carefully modernized from its original Windows-only DirectX 8 / Miles Sound System architecture to a portable stack while preserving the original gameplay experience.
 
-**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code. Our strategy is to learn from proven port efforts (fighter19, jmarshall) and converge all three platforms onto one unified build pipeline.
+**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code. Our strategy is to learn from proven port efforts (fighter19, jmarshall) and converge the active Linux/macOS work into one unified pipeline while keeping any future Windows path optional and low-commitment until resources exist to support it.
 
 ## Project Structure & Upstream Context
 
@@ -48,12 +48,12 @@ Note: You may want to use local Deepwiki Repo `fbraz3/GeneralsX` for helping loc
 
 ## Our Mission
 
-**Primary Goal**: Make *Generals: Zero Hour* (`GeneralsXZH`) run natively on **Linux, macOS, and Windows** using a single modern codebase: SDL3 (windowing/input), DXVK (DirectX 8 to Vulkan graphics), OpenAL (audio), and 64-bit architecture.
+**Primary Goal**: Make *Generals: Zero Hour* (`GeneralsXZH`) run natively on **Linux and macOS** using a single modern codebase: SDL3 (windowing/input), DXVK (DirectX 8 to Vulkan graphics), OpenAL (audio), and 64-bit architecture.
 
 **Secondary Goal**: Implement the same changes for *Generals* base game (`GeneralsX`) when changes are clearly shared and low-risk.
 
 **Non-negotiable**:
-- **Single codebase**: All three platforms build from the same source tree
+- **Single codebase**: Linux and macOS must build from the same source tree, while keeping a future Windows path possible without turning it into an active maintenance burden today
 - **SDL3 everywhere**: Windowing, input, and platform abstraction via SDL3 on all platforms -- no native Win32/Cocoa/X11 calls in game code
 - **DXVK everywhere**: DirectX 8 to Vulkan translation via DXVK on all platforms (Vulkan is available on Linux, macOS via MoltenVK, and Windows)
 - **OpenAL everywhere**: Audio via OpenAL on all platforms (replaces proprietary Miles Sound System)
@@ -96,7 +96,7 @@ Note: You may want to use local Deepwiki Repo `fbraz3/GeneralsX` for helping loc
 ## Golden Rules
 
 1. **IMPERATIVE** -- No band-aids or workarounds, only real solutions.
-2. **Single codebase** -- All three platforms (Linux, macOS, Windows) must build from the same source. No platform-forked copies.
+2. **Single codebase** -- Linux and macOS must build from the same source. Keep Windows-compatible architectural decisions when practical, but do not treat Windows as an equal active target unless the user explicitly asks for it.
 3. Use the `fighter19` reference repo because it successfully made DXVK + SDL3 work on Linux.
 4. The `jmarshall` repo has the working OpenAL implementation and 64-bit insights.
 5. The focus is cross-platform without breaking any existing platform -- be very careful when removing things.
@@ -124,8 +124,8 @@ These presets remain useful for regression checks and upstream sync, but they ar
   - Native Mach-O binaries
   - DXVK + MoltenVK + SDL3 + OpenAL
   - macOS 15.0+ minimum; Universal binary (arm64 + x86_64) planned
-- **`mingw-w64-i686`** -- MinGW-w64 cross-compile for Windows (current active Windows pipeline)
-- **`windows64-deploy`** -- planned MinGW-w64 x86_64 preset (tracked in issue #29)
+- **`mingw-w64-i686`** -- exploratory MinGW-w64 cross-compile for Windows
+- **`windows64-deploy`** -- planned MinGW-w64 x86_64 preset (issue #29, not an active release target)
 
 ### Build Workflow
 
@@ -135,7 +135,7 @@ These presets remain useful for regression checks and upstream sync, but they ar
 ./scripts/build/linux/docker-configure-linux.sh linux64-deploy
 ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy
 
-# MinGW cross-compile (Windows .exe)
+# Optional exploratory MinGW cross-compile (Windows .exe)
 ./scripts/build/linux/docker-build-mingw-zh.sh mingw-w64-i686
 ```
 
@@ -149,7 +149,7 @@ cmake --build build/linux64-deploy --target z_generals
 cmake --preset macos-vulkan
 cmake --build build/macos-vulkan --target z_generals
 
-# Windows via MinGW cross-build
+# Optional Windows via MinGW cross-build
 cmake --preset mingw-w64-i686
 cmake --build build/mingw-w64-i686 --target z_generals
 ```
@@ -501,14 +501,14 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 
 ---
 
-## Windows (Modern Stack via MinGW)
+## Windows (Future / Exploratory)
 
 **Branch**: TBD
-**Status**: Not yet started
+**Status**: Not an active repository focus
 
-**Note**: Follow issue #29 direction for Windows modernization: MinGW-w64 is the primary toolchain path for SDL3 + DXVK + OpenAL + FFmpeg. Legacy `vc6` and `win32` remain for compatibility checks, not as the main release target.
+**Note**: Follow issue #29 direction for Windows modernization only when the work is explicitly requested. MinGW-w64 is the likely future toolchain path for SDL3 + DXVK + OpenAL + FFmpeg, but Windows is currently not an active delivery target for this repository. Legacy `vc6` and `win32` remain useful for compatibility checks and upstream alignment.
 
-### Architecture Focus
+### Possible Architecture Direction
 - SDL3 for windowing/input
 - DXVK for DirectX 8 to Vulkan translation
 - OpenAL for audio
@@ -516,7 +516,7 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 - MinGW-w64 toolchain as default Windows path
 
 ### Build Presets
-- **`mingw-w64-i686`** -- current Windows cross-build preset used in CI/local Docker
+- **`mingw-w64-i686`** -- exploratory Windows cross-build preset
 - **`mingw-w64-i686-debug`** -- debug variant
 - **`mingw-w64-i686-profile`** -- profiling variant
 - **`windows64-deploy`** -- planned MinGW-w64 x86_64 preset (issue #29)
@@ -531,7 +531,7 @@ cmake --preset mingw-w64-i686
 cmake --build build/mingw-w64-i686 --target z_generals
 ```
 
-### Current Priorities
+### Longer-Term Windows Work
 - [ ] Add and validate `windows64-deploy` (MinGW x86_64)
 - [ ] Validate DXVK + Vulkan runtime requirements on Windows
 - [ ] Validate OpenAL integration and runtime audio

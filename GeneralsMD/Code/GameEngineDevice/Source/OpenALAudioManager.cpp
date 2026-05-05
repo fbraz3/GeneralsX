@@ -19,11 +19,13 @@
 /*
 ** OpenALAudioManager.cpp
 **
-** OpenAL audio backend implementation for Linux builds.
+** OpenAL audio backend implementation for Linux/macOS builds.
 **
-** TheSuperHackers @feature CnC_Generals_Linux 07/02/2026
-** Provides OpenAL-based audio playback for sound effects, music, and voices.
-** Based on fighter19 reference implementation.
+** Original implementation by Stephan Vedder (feliwir), March 2025.
+** https://github.com/Fighter19/CnC_Generals_Zero_Hour
+**
+** Adapted and integrated into GeneralsX by fbraz3.
+** GeneralsX @feature fbraz3 07/02/2026 Integrate OpenAL audio backend (OpenALAudioManager, OpenALAudioStream, OpenALAudioCache)
 */
 
 #ifndef _WIN32
