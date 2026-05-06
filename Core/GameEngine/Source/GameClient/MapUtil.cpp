@@ -363,7 +363,8 @@ AsciiString MapCache::getMapExtension() const
 void MapCache::writeCacheINI( const AsciiString &mapDir )
 {
 	AsciiString filepath = mapDir;
-	filepath.concat('\\');
+	// GeneralsX @bugfix fbraz 06/05/2026 Use portable separator for host filesystem paths to avoid creating literal "\\" filenames on POSIX.
+	filepath.concat('/');
 
 	TheFileSystem->createDirectory(mapDir);
 
@@ -531,7 +532,8 @@ void MapCache::loadMapsFromMapCacheINI( const AsciiString &mapDir )
 {
 	INI ini;
 	AsciiString fname;
-	fname.format("%s\\%s", mapDir.str(), m_mapCacheName);
+	// GeneralsX @bugfix fbraz 06/05/2026 Keep MapCache INI path consistent with writeCacheINI() on POSIX hosts.
+	fname.format("%s/%s", mapDir.str(), m_mapCacheName);
 
 	if (TheFileSystem->doesFileExist(fname.str()))
 	{

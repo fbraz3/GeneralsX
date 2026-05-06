@@ -49,6 +49,9 @@
 
 GameInfo *TheGameInfo = nullptr;
 
+static AsciiString percentEncodeMapName(const AsciiString& mapName);
+static AsciiString percentDecodeMapName(const AsciiString& encodedMapName);
+
 // GameSlot ----------------------------------------
 
 GameSlot::GameSlot()
@@ -924,10 +927,10 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 
 	AsciiString optionsString;
 #if RTS_GENERALS
-	optionsString.format("M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;", game->getMapContentsMask(), newMapName.str(),
+	optionsString.format("M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;", game->getMapContentsMask(), percentEncodeMapName(newMapName).str(),
 		game->getMapCRC(), game->getMapSize(), game->getSeed(), game->getCRCInterval());
 #else
-	optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;O=%c;", game->getUseStats(), game->getMapContentsMask(), newMapName.str(),
+	optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;O=%c;", game->getUseStats(), game->getMapContentsMask(), percentEncodeMapName(newMapName).str(),
 		game->getMapCRC(), game->getMapSize(), game->getSeed(), game->getCRCInterval(), game->getSuperweaponRestriction(),
 		game->getStartingCash().countMoney(), game->oldFactionsOnly() ? 'Y' : 'N' );
 #endif
@@ -995,6 +998,59 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 		optionsString.getLength(), m_lanMaxOptionsLength));
 
 	return optionsString;
+}
+
+// GeneralsX @feature fbraz 05/05/2026 Support special characters in map names via percent encoding.
+// This allows map names with brackets, spaces, and other chars commonly used by C&C community mapmakers.
+static AsciiString percentEncodeMapName(const AsciiString& mapName)
+{
+	// Characters that MUST be encoded in replay header field values:
+	// % (0x25) - escape indicator; MUST be encoded first to avoid double-encoding
+	// [ (0x5B) - INI section marker
+	// ] (0x5D) - INI section marker  
+	// ; (0x3B) - field separator in replay header
+	// = (0x3D) - key-value separator in replay header
+	// Space (0x20) - for safety with paths
+	AsciiString result;
+	const char* src = mapName.str();
+	
+	for (int i = 0; src[i] != '\0'; ++i) {
+		unsigned char c = (unsigned char)src[i];
+		switch (c) {
+			case '%':  result.concat("%25"); break;  // Escape indicator FIRST
+			case '[':  result.concat("%5B"); break;
+			case ']':  result.concat("%5D"); break;
+			case ';':  result.concat("%3B"); break;
+			case '=':  result.concat("%3D"); break;
+			case ' ':  result.concat("%20"); break;
+			default:   result.concat(src[i]); break;
+		}
+	}
+	return result;
+}
+
+// GeneralsX @feature fbraz 05/05/2026 Decode percent-encoded map names (inverse of percentEncodeMapName).
+static AsciiString percentDecodeMapName(const AsciiString& encodedMapName)
+{
+	AsciiString result;
+	const char* src = encodedMapName.str();
+	int len = encodedMapName.getLength();
+	
+	for (int i = 0; i < len; ++i) {
+		if (src[i] == '%' && i + 2 < len) {
+			// Parse two hex digits
+			char hex[3] = { src[i+1], src[i+2], '\0' };
+			int value = -1;
+			if (sscanf(hex, "%x", &value) == 1 && value >= 0 && value <= 255) {
+				result.concat((char)value);
+				i += 2;  // Skip the two hex digits
+				continue;
+			}
+		}
+		// If not a valid escape sequence, just copy the character
+		result.concat(src[i]);
+	}
+	return result;
 }
 
 static Int grabHexInt(const char *s)
@@ -1076,6 +1132,9 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 			mapContentsMask = grabHexInt(val.str());
 
 			AsciiString portableMapPath = val.str() + 2;
+			// GeneralsX @feature fbraz 05/05/2026 Decode percent-encoded map names to support special characters (brackets, spaces, etc).
+			portableMapPath = percentDecodeMapName(portableMapPath);
+			
 			AsciiString legacyPortableMapPath;
 			AsciiString token;
 			AsciiString tempstr = portableMapPath;

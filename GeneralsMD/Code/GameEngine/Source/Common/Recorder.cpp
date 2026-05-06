@@ -846,8 +846,35 @@ void RecorderClass::writeArgument(GameMessageArgumentDataType type, const GameMe
  */
 Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 {
-	AsciiString filepath = getReplayDir();
-	filepath.concat(header.filename.str());
+	AsciiString filepath;
+	const char* replayFilename = header.filename.str();
+	const size_t replayFilenameLen = replayFilename != nullptr ? strlen(replayFilename) : 0;
+	const bool isUnixAbsolute = replayFilenameLen >= 1 && replayFilename[0] == '/';
+	const bool isWindowsDriveAbsolute = replayFilenameLen >= 3
+		&& ((replayFilename[0] >= 'A' && replayFilename[0] <= 'Z') || (replayFilename[0] >= 'a' && replayFilename[0] <= 'z'))
+		&& replayFilename[1] == ':'
+		&& (replayFilename[2] == '\\' || replayFilename[2] == '/');
+	const bool isUncAbsolute = replayFilenameLen >= 2 && replayFilename[0] == '\\' && replayFilename[1] == '\\';
+
+	// GeneralsX @bugfix BenderAI 13/04/2026 Accept absolute replay paths passed via -replay instead of forcing ReplayDir prefix.
+	// GeneralsX @bugfix BenderAI 20/02/2026 Distinguish between CWD-relative paths (with directories, like "GeneralsReplays/...") and replay-dir relative (bare filenames like "replay.rep").
+	const bool containsDirectorySeparator = strchr(replayFilename, '/') != NULL || strchr(replayFilename, '\\') != NULL;
+
+	if (isUnixAbsolute || isWindowsDriveAbsolute || isUncAbsolute)
+	{
+		filepath = header.filename;
+	}
+	else if (containsDirectorySeparator)
+	{
+		// Path from CLI with directory structure (e.g., "GeneralsReplays/ZH/...") - relative to CWD where binary runs
+		filepath = header.filename;
+	}
+	else
+	{
+		// Bare filename (e.g., "!Golden Replay #1.rep") - resolve from replay directory
+		filepath = getReplayDir();
+		filepath.concat(header.filename.str());
+	}
 
 	// TheSuperHackers @performance More buffered data reduces disk overhead and will improve fast forward playback
 	const UnsignedInt buffersize = header.forPlayback ? replayBufferBytes : File::BUFFERSIZE;
@@ -1098,8 +1125,12 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 			DEBUG_LOG(("Replay has gone out of sync!\nInGame:%8.8X Replay:%8.8X\nFrame:%d",
 				playbackCRC, newCRC, mismatchFrame));
 
+			// GeneralsX @bugfix fbraz 05/05/2026 Print detailed mismatch info for headless replay diagnostics; distinguishes game-state desync from map-not-found failures.
 			// Print Mismatch in case we are simulating replays from console.
 			printf("CRC Mismatch in Frame %d\n", mismatchFrame);
+			fprintf(stderr, "[GeneralsX] REPLAY_CRC_MISMATCH frame=%u inGame=0x%08X replay=0x%08X\n",
+				mismatchFrame, playbackCRC, newCRC);
+			fprintf(stderr, "[GeneralsX] This replay is incompatible with the current map/game-code state.\n");
 
 			// TheSuperHackers @tweak Pause the game on mismatch.
 			// But not when a window with focus is opened, because that can make resuming difficult.
