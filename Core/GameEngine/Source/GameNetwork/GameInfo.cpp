@@ -537,7 +537,8 @@ void GameInfo::setMap( AsciiString mapName )
 				// directory name, we can do this since the filename
 				// is just the directory name with the file extention
 				// added onto it.
-				while (mapName.find('\\') != nullptr)
+				// GeneralsX @bugfix fbraz 05/05/2026 Handle both forward and backward separators correctly when building map-sidecar lookup paths
+				while (!mapName.isEmpty() && (mapName.find('\\') != nullptr || mapName.find('/') != nullptr))
 				{
 					if (!newMapName.isEmpty())
 					{
@@ -908,7 +909,8 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 		// directory name, we can do this since the filename
 		// is just the directory name with the file extention
 		// added onto it.
-		while (mapName.find('\\') != nullptr)
+		// GeneralsX @bugfix fbraz 05/05/2026 Handle both forward and backward separators correctly when building map-sidecar lookup paths
+		while (!mapName.isEmpty() && (mapName.find('\\') != nullptr || mapName.find('/') != nullptr))
 		{
 			if (!newMapName.isEmpty())
 			{
@@ -1072,29 +1074,42 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 				break;
 			}
 			mapContentsMask = grabHexInt(val.str());
-			AsciiString tempstr;
+
+			AsciiString portableMapPath = val.str() + 2;
+			AsciiString legacyPortableMapPath;
 			AsciiString token;
-			tempstr = val.str()+2;
+			AsciiString tempstr = portableMapPath;
 			tempstr.nextToken(&token, "\\/");
 			while (!tempstr.isEmpty())
 			{
-				mapName.concat(token);
-				mapName.concat('\\');
+				legacyPortableMapPath.concat(token);
+				legacyPortableMapPath.concat('\\');
 				tempstr.nextToken(&token, "\\/");
 			}
-			mapName.concat(token);
-			mapName.concat('\\');
-			mapName.concat(token);
-			mapName.concat('.');
-			mapName.concat(TheMapCache->getMapExtension());
-			AsciiString realMapName = TheGameState->portableMapPathToRealMapPath(mapName);
+			legacyPortableMapPath.concat(token);
+			legacyPortableMapPath.concat('\\');
+			legacyPortableMapPath.concat(token);
+			legacyPortableMapPath.concat('.');
+			legacyPortableMapPath.concat(TheMapCache->getMapExtension());
+
+			AsciiString realMapName = TheGameState->portableMapPathToRealMapPath(legacyPortableMapPath);
+
+			// GeneralsX @bugfix fbraz 05/05/2026 Recover from malformed replay map fields generated from mixed separator custom map paths.
+			if (realMapName.isEmpty())
+			{
+				AsciiString flatPortableMapPath = portableMapPath;
+				flatPortableMapPath.concat('.');
+				flatPortableMapPath.concat(TheMapCache->getMapExtension());
+				realMapName = TheGameState->portableMapPathToRealMapPath(flatPortableMapPath);
+			}
+
 			if (realMapName.isEmpty())
 			{
 				// TheSuperHackers @security slurmlord 18/06/2025 As the map file name/path from the AsciiString failed to normalize,
 				// in other words is bogus and points outside of the approved target directory for maps, avoid an arbitrary file overwrite vulnerability
 				// if the save or network game embeds a custom map to store at the location, by flagging the options as not OK and rejecting the game.
 				optionsOk = FALSE;
-				DEBUG_LOG(("ParseAsciiStringToGameInfo - saw bogus map name ('%s'); quitting", mapName.str()));
+				DEBUG_LOG(("ParseAsciiStringToGameInfo - saw bogus map name ('%s'); quitting", legacyPortableMapPath.str()));
 				break;
 			}
 			mapName = realMapName;
@@ -1487,6 +1502,41 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 	// In Generals they never were.
 	if (optionsOk && sawMap && sawMapCRC && sawMapSize && sawSeed && sawSlotlist && sawCRC)
 	{
+		// GeneralsX @bugfix fbraz 05/05/2026 Recover old malformed custom-map replay headers by selecting map from cache via CRC/size.
+		if ((!mapName.isEmpty()) && TheMapCache->findMap(mapName) == nullptr)
+		{
+			const MapMetaData* crcMatch = nullptr;
+			const MapMetaData* exactMatch = nullptr;
+
+			for (std::map<AsciiString, MapMetaData>::const_iterator it = TheMapCache->begin(); it != TheMapCache->end(); ++it)
+			{
+				if (it->second.m_CRC != mapCRC)
+				{
+					continue;
+				}
+
+				if (crcMatch == nullptr)
+				{
+					crcMatch = &it->second;
+				}
+
+				if (it->second.m_filesize == mapSize)
+				{
+					exactMatch = &it->second;
+					break;
+				}
+			}
+
+			const MapMetaData* selected = (exactMatch != nullptr) ? exactMatch : crcMatch;
+			if (selected != nullptr)
+			{
+				mapName = selected->m_fileName;
+				DEBUG_LOG(("ParseAsciiStringToGameInfo - map path recovered by CRC: %s", mapName.str()));
+				// GeneralsX @bugfix fbraz 05/05/2026 Use stderr so the CRC-fallback resolution is visible in headless replay runs where DEBUG_LOG may be suppressed.
+				fprintf(stderr, "[GeneralsX] Replay map resolved via CRC fallback: CRC=0x%08X size=%d -> '%s'\n", mapCRC, mapSize, mapName.str());
+			}
+		}
+
 		// We were setting the Global Data directly here, but Instead, I'm now
 		// first setting the data in game.  We'll set the global data when
 		// we start a game.
