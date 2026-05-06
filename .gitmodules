@@ -1,6 +1,3 @@
-[submodule "GeneralsReplays"]
-	path = GeneralsReplays
-	url = https://github.com/TheSuperHackers/GeneralsReplays
 [submodule "references/fighter19-dxvk-port"]
 	path = references/fighter19-dxvk-port
 	url = https://github.com/Fighter19/CnC_Generals_Zero_Hour.git
@@ -17,3 +14,6 @@
 	path = references/fbraz3-dxvk
 	url = https://github.com/fbraz3/dxvk.git
 	branch = generalsx-macos-v2.6
+[submodule "GeneralsReplays"]
+	path = GeneralsReplays
+	url = git@github.com:fbraz3/GeneralsXReplays.git
