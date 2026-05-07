@@ -201,11 +201,6 @@ static int SDLCALL threadFunc(void* /*userData*/)
     // "GeneralsX-Beta-3", "v1.0.0", or any future scheme without modification.
     // In force mode: any non-empty response is treated as "update available".
     const bool forceCheck = SDL_getenv("GENERALS_FORCE_UPDATE_CHECK") != nullptr;
-    if (!forceCheck && GitTag[0] == '\0')
-    {
-        SDL_SetAtomicInt(&s_done, 1);
-        return 0;
-    }
 
     bool hasUpdate = false;
     if (forceCheck)
@@ -214,8 +209,9 @@ static int SDLCALL threadFunc(void* /*userData*/)
     }
     else
     {
+        const bool hasCommitTimestamp = GitCommitTimeStamp > 0;
         char publishedAt[64] = {0};
-        if (extractPublishedAt(responseBody, publishedAt, sizeof(publishedAt)))
+        if (hasCommitTimestamp && extractPublishedAt(responseBody, publishedAt, sizeof(publishedAt)))
         {
             time_t remoteTime = parseISO8601(publishedAt);
             // Signal update only when the remote release was published strictly
@@ -223,9 +219,9 @@ static int SDLCALL threadFunc(void* /*userData*/)
             if (remoteTime != (time_t)-1 && remoteTime > GitCommitTimeStamp)
                 hasUpdate = true;
         }
-        else
+        else if (GitTag[0] != '\0')
         {
-            // No published_at in response; fall back to tag string comparison.
+            // No usable published_at comparison; fall back to tag string comparison.
             hasUpdate = (strcmp(latestTag, GitTag) != 0);
         }
     }
@@ -250,11 +246,18 @@ void UpdateChecker::start()
     if (s_thread != nullptr)
         return;
 
-    // Only run for tagged, clean release builds.
-    // Set env var GENERALS_FORCE_UPDATE_CHECK=1 to bypass the tag guard (for testing).
+    // GeneralsX @bugfix GitHubCopilot 07/05/2026 Accept clean release builds that
+    // provide either an exact tag OR a valid commit timestamp (tag may be empty in
+    // some packaged CI contexts even when the binary is a real release artifact).
+    // Set env var GENERALS_FORCE_UPDATE_CHECK=1 to bypass release guards (for testing).
     const bool forceCheck = SDL_getenv("GENERALS_FORCE_UPDATE_CHECK") != nullptr;
-    if (!forceCheck && (GitTag[0] == '\0' || GitUncommittedChanges))
-        return;
+    if (!forceCheck)
+    {
+        const bool hasTag = (GitTag[0] != '\0');
+        const bool hasCommitTimestamp = (GitCommitTimeStamp > 0);
+        if (GitUncommittedChanges || (!hasTag && !hasCommitTimestamp))
+            return;
+    }
 
     // Respect the user opt-out setting
     if (TheGlobalData && !TheGlobalData->m_checkForUpdates)

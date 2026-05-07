@@ -28,8 +28,9 @@
 // UpdateChecker
 //
 // Spawns a background SDL_Thread to query the GitHub Releases API and detect
-// if a newer release tag is available. Only runs for tagged release builds
-// (GitTag non-empty, no uncommitted changes).
+// if a newer release tag is available. Only runs for clean release builds
+// (no uncommitted changes and at least one release marker: GitTag or
+// GitCommitTimeStamp).
 //
 // NOTE: SDL3 types are intentionally NOT exposed here to avoid propagating
 // SDL3 headers to every translation unit that includes this header.
