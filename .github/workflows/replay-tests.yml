@@ -1,0 +1,330 @@
+name: Replay Tests
+
+# GeneralsX @build BenderAI 07/05/2026 Deterministic headless replay test per platform.
+# Downloads the built binary artifact, game assets (encrypted 7z), and platform replay
+# files, then runs each replay headlessly and reports pass/fail per file.
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+        description: "Target platform: linux or macos"
+      game-artifact:
+        required: true
+        type: string
+        description: "Name of the built game artifact to download (from build workflow)"
+    secrets:
+      ASSETS_KEY:
+        required: true
+        description: "Password for generalszh.7z / generals.7z in the test-files repo"
+
+jobs:
+  replay-test-zh:
+    name: ZH Replay Tests (${{ inputs.platform }})
+    runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || 'macos-latest' }}
+    timeout-minutes: 45
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Download built binary artifact from upstream build job
+      # -----------------------------------------------------------------------
+      - name: Download game artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.game-artifact }}
+          path: /tmp/game-artifact
+
+      # -----------------------------------------------------------------------
+      # 2. Platform-specific system dependencies
+      # -----------------------------------------------------------------------
+      - name: Install system dependencies (Linux)
+        if: inputs.platform == 'linux'
+        run: |
+          sudo apt-get update -qq
+          # lavapipe: software Vulkan renderer (no GPU required in CI)
+          sudo apt-get install -y -qq p7zip-full mesa-vulkan-drivers libvulkan1
+
+      - name: Install system dependencies (macOS)
+        if: inputs.platform == 'macos'
+        run: brew install p7zip coreutils
+
+      # -----------------------------------------------------------------------
+      # 3. Extract game bundle from artifact
+      #    Linux:  GeneralsX-GeneralsMD-deploy/ (binary + .so libs at root)
+      #    macOS:  GeneralsXZH.app/Contents/Resources/bin/ + lib/ + MoltenVK_icd.json
+      # -----------------------------------------------------------------------
+      - name: Extract game bundle (Linux)
+        if: inputs.platform == 'linux'
+        run: |
+          mkdir -p /tmp/game-bundle
+          TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
+          echo "Extracting: $TAR_FILE"
+          tar -xf "$TAR_FILE" -C /tmp/game-bundle
+
+          # Locate the binary to identify the game dir
+          GAME_BIN=$(find /tmp/game-bundle -name "GeneralsXZH" -type f | head -1)
+          GAME_DIR=$(dirname "$GAME_BIN")
+          echo "GAME_DIR=$GAME_DIR" >> $GITHUB_ENV
+          echo "GAME_BIN=$GAME_BIN" >> $GITHUB_ENV
+
+          echo "Game bundle contents:"
+          ls -la "$GAME_DIR/"
+
+      - name: Extract game bundle (macOS)
+        if: inputs.platform == 'macos'
+        run: |
+          mkdir -p /tmp/game-bundle
+          TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
+          echo "Extracting: $TAR_FILE"
+          tar -xf "$TAR_FILE" -C /tmp/game-bundle
+
+          # Resolve app layout directly to avoid path inference mistakes.
+          APP_DIR=$(find /tmp/game-bundle -type d -name "*.app" | head -1)
+          if [ -z "$APP_DIR" ]; then
+            echo "ERROR: .app bundle not found after extraction"
+            find /tmp/game-bundle -maxdepth 4 -print
+            exit 1
+          fi
+
+          APP_RESOURCES="$APP_DIR/Contents/Resources"
+          GAME_DIR="$APP_RESOURCES/bin"
+          GAME_BIN="$GAME_DIR/GeneralsXZH"
+
+          if [ ! -d "$APP_RESOURCES" ]; then
+            echo "ERROR: Resources dir not found: $APP_RESOURCES"
+            find "$APP_DIR" -maxdepth 4 -print
+            exit 1
+          fi
+
+          if [ ! -f "$GAME_BIN" ]; then
+            echo "ERROR: Game binary not found at expected path: $GAME_BIN"
+            find "$APP_RESOURCES" -maxdepth 4 -type f -name "GeneralsXZH" -print
+            exit 1
+          fi
+
+          echo "GAME_BIN=$GAME_BIN" >> $GITHUB_ENV
+          echo "GAME_DIR=$GAME_DIR" >> $GITHUB_ENV
+          echo "APP_RESOURCES=$APP_RESOURCES" >> $GITHUB_ENV
+
+          echo "Game bundle contents (Resources):"
+          ls -la "$APP_RESOURCES/"
+
+      # -----------------------------------------------------------------------
+      # 4. Check out and extract game assets (password-protected 7z, uses LFS)
+      # -----------------------------------------------------------------------
+      - name: Checkout game assets repo
+        uses: actions/checkout@v4
+        with:
+          repository: fbraz3/generalsx-test-files
+          path: ci-assets-repo
+          lfs: true
+
+      - name: Extract game assets (Linux)
+        if: inputs.platform == 'linux'
+        run: |
+          # Assets go alongside the binary (flat layout matching local deploy)
+          echo "Extracting generalszh.7z into: $GAME_DIR"
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
+          echo "Big files found:"
+          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
+
+      - name: Extract game assets (macOS)
+        if: inputs.platform == 'macos'
+        run: |
+          # Assets go into the bin/ dir alongside the binary.
+          # CNC_GENERALS_ZH_PATH env var points the game to this directory.
+          echo "Extracting generalszh.7z into: $GAME_DIR"
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
+          echo "Big files found:"
+          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
+
+      # -----------------------------------------------------------------------
+      # 5. Check out replay repo and install maps + platform-specific replays
+      #    Repo structure: GeneralsXZH/Maps/<MapFolder>/  GeneralsXZH/Replays/<platform>_*.rep
+      # -----------------------------------------------------------------------
+      - name: Checkout replay files repo
+        uses: actions/checkout@v4
+        with:
+          repository: fbraz3/GeneralsXReplays
+          path: ci-replays-repo
+
+      - name: Set up user data directories (Linux)
+        if: inputs.platform == 'linux'
+        run: |
+          USER_DATA="$HOME/.local/share/GeneralsX/GeneralsZH"
+          MAPS_DIR="$USER_DATA/Maps"
+          REPLAYS_DIR="$USER_DATA/Replays"
+          mkdir -p "$MAPS_DIR" "$REPLAYS_DIR"
+
+          # Install custom maps (includes MapCache.ini)
+          if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
+            cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
+            echo "Maps installed:"
+            ls -la "$MAPS_DIR/"
+          fi
+
+          # Install platform-specific replays
+          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/linux_*.rep 2>/dev/null | wc -l)
+          if [ "$REPLAY_COUNT" -eq 0 ]; then
+            echo "WARNING: No linux_*.rep files found in replay repo"
+          else
+            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/linux_*.rep "$REPLAYS_DIR/"
+            echo "Replays installed ($REPLAY_COUNT files):"
+            ls -la "$REPLAYS_DIR/"
+          fi
+
+          echo "USER_DATA=$USER_DATA" >> $GITHUB_ENV
+
+      - name: Set up user data directories (macOS)
+        if: inputs.platform == 'macos'
+        run: |
+          USER_DATA="$HOME/Library/Application Support/GeneralsX/GeneralsZH"
+          MAPS_DIR="$USER_DATA/Maps"
+          REPLAYS_DIR="$USER_DATA/Replays"
+          mkdir -p "$MAPS_DIR" "$REPLAYS_DIR"
+
+          # Install custom maps (includes MapCache.ini)
+          if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
+            cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
+            echo "Maps installed:"
+            ls -la "$MAPS_DIR/"
+          fi
+
+          # Install platform-specific replays
+          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/macos_*.rep 2>/dev/null | wc -l)
+          if [ "$REPLAY_COUNT" -eq 0 ]; then
+            echo "WARNING: No macos_*.rep files found in replay repo"
+          else
+            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/macos_*.rep "$REPLAYS_DIR/"
+            echo "Replays installed ($REPLAY_COUNT files):"
+            ls -la "$REPLAYS_DIR/"
+          fi
+
+          # Store path without spaces in GITHUB_ENV using heredoc syntax
+          {
+            echo "USER_DATA<<GHENV_EOF"
+            echo "$USER_DATA"
+            echo "GHENV_EOF"
+          } >> $GITHUB_ENV
+
+      # -----------------------------------------------------------------------
+      # 6. Run headless replay tests
+      # -----------------------------------------------------------------------
+      - name: Run headless replay tests (Linux)
+        if: inputs.platform == 'linux'
+        run: |
+          PASS=0
+          FAIL=0
+
+          cd "$GAME_DIR"
+          export LD_LIBRARY_PATH="$GAME_DIR:${LD_LIBRARY_PATH:-}"
+          export DXVK_WSI_DRIVER=SDL3
+          export DXVK_LOG_LEVEL=none
+          # Force lavapipe (CPU Vulkan) - no GPU available on GitHub runners
+          export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
+
+          echo "### Replay Test Results (linux)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Replay | Result | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          for rep in "$USER_DATA/Replays"/*.rep; do
+            [ -f "$rep" ] || continue
+            NAME=$(basename "$rep")
+            echo "=== $NAME ==="
+
+            OUTPUT=$(timeout 180 ./GeneralsXZH -headless -replay "$rep" 2>&1 || true)
+            CODE=$?
+
+            echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
+
+            if [ $CODE -eq 0 ]; then
+              echo "PASS"
+              PASS=$((PASS + 1))
+              echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
+            else
+              FAIL=$((FAIL + 1))
+              DETAIL=$(echo "$OUTPUT" | grep -E "Error|CRC|MISMATCH|Exiting" | tail -3 | tr '\n' ' ')
+              echo "FAIL (exit $CODE)"
+              echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo ""
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results: $PASS passed, $FAIL failed**" >> $GITHUB_STEP_SUMMARY
+
+          if [ $FAIL -gt 0 ]; then
+            echo "::error::$FAIL replay(s) failed on linux"
+            exit 1
+          fi
+          if [ $((PASS + FAIL)) -eq 0 ]; then
+            echo "::warning::No replay files were found to test"
+          fi
+
+      - name: Run headless replay tests (macOS)
+        if: inputs.platform == 'macos'
+        run: |
+          PASS=0
+          FAIL=0
+          TIMEOUT_BIN="gtimeout"
+
+          cd "$GAME_DIR"
+          export DYLD_LIBRARY_PATH="$APP_RESOURCES/lib:${DYLD_LIBRARY_PATH:-}"
+          export DYLD_FALLBACK_LIBRARY_PATH="$APP_RESOURCES/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"
+          export DXVK_WSI_DRIVER=SDL3
+          export DXVK_LOG_LEVEL=none
+          # Point the game to the extracted assets dir (bin/ alongside the binary)
+          export CNC_GENERALS_ZH_PATH="$GAME_DIR"
+          # Use MoltenVK bundled inside the .app
+          if [ -f "$APP_RESOURCES/MoltenVK_icd.json" ]; then
+            export VK_ICD_FILENAMES="$APP_RESOURCES/MoltenVK_icd.json"
+            export VK_DRIVER_FILES="$APP_RESOURCES/MoltenVK_icd.json"
+          fi
+          if [ -f "$APP_RESOURCES/dxvk.conf" ]; then
+            export DXVK_CONFIG_FILE="$APP_RESOURCES/dxvk.conf"
+          fi
+
+          echo "### Replay Test Results (macos)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Replay | Result | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          for rep in "$USER_DATA/Replays"/*.rep; do
+            [ -f "$rep" ] || continue
+            NAME=$(basename "$rep")
+            echo "=== $NAME ==="
+
+            OUTPUT=$($TIMEOUT_BIN 180 ./GeneralsXZH -headless -replay "$rep" 2>&1 || true)
+            CODE=$?
+
+            echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
+
+            if [ $CODE -eq 0 ]; then
+              echo "PASS"
+              PASS=$((PASS + 1))
+              echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
+            else
+              FAIL=$((FAIL + 1))
+              DETAIL=$(echo "$OUTPUT" | grep -E "Error|CRC|MISMATCH|Exiting" | tail -3 | tr '\n' ' ')
+              echo "FAIL (exit $CODE)"
+              echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo ""
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results: $PASS passed, $FAIL failed**" >> $GITHUB_STEP_SUMMARY
+
+          if [ $FAIL -gt 0 ]; then
+            echo "::error::$FAIL replay(s) failed on macos"
+            exit 1
+          fi
+          if [ $((PASS + FAIL)) -eq 0 ]; then
+            echo "::warning::No replay files were found to test"
+          fi
