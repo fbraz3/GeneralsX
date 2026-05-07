@@ -1,5 +1,12 @@
 # 2026-05 Lessons
 
+## 2026-05-07 - In unify merges, resolve modify/delete by validating semantic deltas before deleting legacy paths
+
+- Symptom: Upstream unify moved shared gadget implementation files into `Core/`, while local branch still had modifications in legacy `Generals` paths, producing modify/delete conflicts.
+- Root cause: Structural refactor (file relocation) intersected with local functional edits on old paths.
+- Fix applied: Compared conflicted legacy files against new `Core` destinations, verified functional deltas, then resolved conflicts by keeping unified `Core` ownership and deleting obsolete `Generals` files.
+- Prevention: For future unify-sync cycles, always map `old path -> unified Core path` first and diff semantics before accepting delete/rename conflict resolutions.
+
 ## 2026-05-04 - Guard texture creation at all abstraction layers in headless mode
 
 - Symptom: Replay progressed but crashed at `D3DXCreateTexture +0` during uncompressed texture loading.

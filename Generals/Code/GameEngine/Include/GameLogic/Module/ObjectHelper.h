@@ -54,9 +54,6 @@ public:
 		setWakeFrame(getObject(), UPDATE_SLEEP_FOREVER);
 	}
 
-	// inherited from UpdateModuleInterface
-	virtual UpdateSleepTime update() = 0;
-
 	// custom to this class.
 	void sleepUntil(UnsignedInt when);
 

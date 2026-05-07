@@ -82,7 +82,7 @@ public:
 
 	virtual void init( GameInfo *game ) override;		///< Init the loadscreen
 	virtual void reset() override;		///< Reset the system
-	virtual void update()
+	virtual void update() override
 	{
 		DEBUG_CRASH(("Call update(Int) instead.  This update isn't supported"));
 	};
@@ -132,7 +132,7 @@ public:
 
 	virtual void init( GameInfo *game ) override;		///< Init the loadscreen
 	virtual void reset() override;		///< Reset the system
-	virtual void update()
+	virtual void update() override
 	{
 		DEBUG_CRASH(("Call update(Int) instead.  This update isn't supported"));
 	};
@@ -204,7 +204,7 @@ public:
 
 	virtual void init( GameInfo *game ) override;		///< Init the loadscreen
 	virtual void reset() override;		///< Reset the system
-	virtual void update()
+	virtual void update() override
 	{
 		DEBUG_CRASH(("Call update(Int) instead.  This update isn't supported"));
 	};
@@ -232,7 +232,7 @@ public:
 
 	virtual void init( GameInfo *game ) override;		///< Init the loadscreen
 	virtual void reset() override;		///< Reset the system
-	virtual void update()
+	virtual void update() override
 	{
 		DEBUG_CRASH(("Call update(Int) instead.  This update isn't supported"));
 	};
@@ -263,7 +263,7 @@ public:
 
 	virtual void init( GameInfo *game ) override;		///< Init the loadscreen
 	virtual void reset() override;		///< Reset the system
-	virtual void update()
+	virtual void update() override
 	{
 		DEBUG_CRASH(("Call update(Int) instead.  This update isn't supported"));
 	};
@@ -301,7 +301,7 @@ public:
 
 	virtual void init( GameInfo *game ) override;		///< Init the loadscreen
 	virtual void reset() override;							///< Reset the system
-	virtual void update()
+	virtual void update() override
 	{
 		DEBUG_CRASH(("Call update(Int) instead.  This update isn't supported"));
 	};

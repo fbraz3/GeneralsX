@@ -97,8 +97,6 @@ public:
 	// BehaviorModule
 	virtual DieModuleInterface* getDie() override { return this; }
 
-	virtual void onDie( const DamageInfo *damageInfo ) = 0;
-
 protected:
 	Bool isDieApplicable(const DamageInfo *damageInfo) const { return getDieModuleData()->isDieApplicable(getObject(), damageInfo); }
 
