@@ -83,11 +83,29 @@ jobs:
           echo "Extracting: $TAR_FILE"
           tar -xf "$TAR_FILE" -C /tmp/game-bundle
 
-          # Binary lives in Contents/Resources/bin/; libs in Contents/Resources/lib/
-          GAME_BIN=$(find /tmp/game-bundle -name "GeneralsXZH" -type f | head -1)
-          GAME_DIR=$(dirname "$GAME_BIN")
-          CONTENTS_DIR=$(cd "$GAME_DIR/../.." && pwd)
-          APP_RESOURCES="$CONTENTS_DIR/Resources"
+          # Resolve app layout directly to avoid path inference mistakes.
+          APP_DIR=$(find /tmp/game-bundle -type d -name "*.app" | head -1)
+          if [ -z "$APP_DIR" ]; then
+            echo "ERROR: .app bundle not found after extraction"
+            find /tmp/game-bundle -maxdepth 4 -print
+            exit 1
+          fi
+
+          APP_RESOURCES="$APP_DIR/Contents/Resources"
+          GAME_DIR="$APP_RESOURCES/bin"
+          GAME_BIN="$GAME_DIR/GeneralsXZH"
+
+          if [ ! -d "$APP_RESOURCES" ]; then
+            echo "ERROR: Resources dir not found: $APP_RESOURCES"
+            find "$APP_DIR" -maxdepth 4 -print
+            exit 1
+          fi
+
+          if [ ! -f "$GAME_BIN" ]; then
+            echo "ERROR: Game binary not found at expected path: $GAME_BIN"
+            find "$APP_RESOURCES" -maxdepth 4 -type f -name "GeneralsXZH" -print
+            exit 1
+          fi
 
           echo "GAME_BIN=$GAME_BIN" >> $GITHUB_ENV
           echo "GAME_DIR=$GAME_DIR" >> $GITHUB_ENV
