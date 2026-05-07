@@ -28,9 +28,9 @@
  *                                                                                             *
  *                      $Author:: Jani_p                                                      $*
  *                                                                                             *
- *                     $Modtime:: 7/10/01 1:30p                                               $*
+ *                     $Modtime:: 11/09/01 3:12p                                              $*
  *                                                                                             *
- *                    $Revision:: 22                                                          $*
+ *                    $Revision:: 26                                                          $*
  *                                                                                             *
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
@@ -43,6 +43,7 @@
 #include "dx8caps.h"
 #include "sphere.h"
 #include "thread.h"
+#include "wwmemlog.h"
 
 #define DEFAULT_IB_SIZE 5000
 
@@ -292,13 +293,45 @@ DX8IndexBufferClass::DX8IndexBufferClass(unsigned short index_count_,UsageType u
 		((usage&USAGE_DYNAMIC) ? D3DUSAGE_DYNAMIC : 0)|
 		((usage&USAGE_NPATCHES) ? D3DUSAGE_NPATCHES : 0)|
 		((usage&USAGE_SOFTWAREPROCESSING) ? D3DUSAGE_SOFTWAREPROCESSING : 0);
+	if (!DX8Wrapper::Get_Current_Caps()->Support_TnL()) {
+		usage_flags|=D3DUSAGE_SOFTWAREPROCESSING;
+	}
 
-	DX8CALL(CreateIndexBuffer(
+	HRESULT ret=DX8Wrapper::_Get_D3D_Device8()->CreateIndexBuffer(
 		sizeof(WORD)*index_count,
 		usage_flags,
 		D3DFMT_INDEX16,
 		(usage&USAGE_DYNAMIC) ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED,
-		&index_buffer));
+		&index_buffer);
+
+	if (SUCCEEDED(ret)) {
+		return;
+	}
+
+	WWDEBUG_SAY(("Index buffer creation failed, trying to release assets..."));
+
+	// Index buffer creation failed, so try releasing least used textures and flushing the mesh cache.
+
+	// Free all textures that haven't been used in the last 5 seconds
+	TextureClass::Invalidate_Old_Unused_Textures(5000);
+
+	// Invalidate the mesh cache
+	WW3D::_Invalidate_Mesh_Cache();
+
+	// Try again...
+	ret=DX8Wrapper::_Get_D3D_Device8()->CreateIndexBuffer(
+		sizeof(WORD)*index_count,
+		usage_flags,
+		D3DFMT_INDEX16,
+		(usage&USAGE_DYNAMIC) ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED,
+		&index_buffer);
+
+	if (SUCCEEDED(ret)) {
+		WWDEBUG_SAY(("...Index buffer creation successful"));
+	}
+
+	// If it still fails it is fatal
+	DX8_ErrorCode(ret);
 }
 
 // ----------------------------------------------------------------------------
@@ -318,6 +351,7 @@ SortingIndexBufferClass::SortingIndexBufferClass(unsigned short index_count_)
 	:
 	IndexBufferClass(BUFFER_TYPE_SORTING,index_count_)
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(index_count);
 
 	index_buffer=W3DNEWARRAY unsigned short[index_count];
@@ -438,6 +472,7 @@ DynamicIBAccessClass::WriteLockClass::~WriteLockClass()
 
 void DynamicIBAccessClass::Allocate_DX8_Dynamic_Buffer()
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(!_DynamicDX8IndexBufferInUse);
 	_DynamicDX8IndexBufferInUse=true;
 
@@ -473,6 +508,7 @@ void DynamicIBAccessClass::Allocate_DX8_Dynamic_Buffer()
 
 void DynamicIBAccessClass::Allocate_Sorting_Dynamic_Buffer()
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(!_DynamicSortingIndexArrayInUse);
 	_DynamicSortingIndexArrayInUse=true;
 
