@@ -51,7 +51,7 @@ jobs:
 
       - name: Install system dependencies (macOS)
         if: inputs.platform == 'macos'
-        run: brew install p7zip
+        run: brew install p7zip coreutils
 
       # -----------------------------------------------------------------------
       # 3. Extract game bundle from artifact
@@ -103,7 +103,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fbraz3/generalsx-test-files
-          path: /tmp/assets-repo
+          path: ci-assets-repo
           lfs: true
 
       - name: Extract game assets (Linux)
@@ -111,7 +111,7 @@ jobs:
         run: |
           # Assets go alongside the binary (flat layout matching local deploy)
           echo "Extracting generalszh.7z into: $GAME_DIR"
-          7z x -p"${{ secrets.ASSETS_KEY }}" /tmp/assets-repo/generalszh.7z -o"$GAME_DIR" -y
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
           echo "Big files found:"
           ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
 
@@ -121,7 +121,7 @@ jobs:
           # Assets go into the bin/ dir alongside the binary.
           # CNC_GENERALS_ZH_PATH env var points the game to this directory.
           echo "Extracting generalszh.7z into: $GAME_DIR"
-          7z x -p"${{ secrets.ASSETS_KEY }}" /tmp/assets-repo/generalszh.7z -o"$GAME_DIR" -y
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
           echo "Big files found:"
           ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
 
@@ -133,7 +133,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fbraz3/GeneralsXReplays
-          path: /tmp/replays-repo
+          path: ci-replays-repo
 
       - name: Set up user data directories (Linux)
         if: inputs.platform == 'linux'
@@ -144,18 +144,18 @@ jobs:
           mkdir -p "$MAPS_DIR" "$REPLAYS_DIR"
 
           # Install custom maps (includes MapCache.ini)
-          if [ -d /tmp/replays-repo/GeneralsXZH/Maps ]; then
-            cp -r /tmp/replays-repo/GeneralsXZH/Maps/. "$MAPS_DIR/"
+          if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
+            cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
             echo "Maps installed:"
             ls -la "$MAPS_DIR/"
           fi
 
           # Install platform-specific replays
-          REPLAY_COUNT=$(ls /tmp/replays-repo/GeneralsXZH/Replays/linux_*.rep 2>/dev/null | wc -l)
+          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/linux_*.rep 2>/dev/null | wc -l)
           if [ "$REPLAY_COUNT" -eq 0 ]; then
             echo "WARNING: No linux_*.rep files found in replay repo"
           else
-            cp /tmp/replays-repo/GeneralsXZH/Replays/linux_*.rep "$REPLAYS_DIR/"
+            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/linux_*.rep "$REPLAYS_DIR/"
             echo "Replays installed ($REPLAY_COUNT files):"
             ls -la "$REPLAYS_DIR/"
           fi
@@ -171,18 +171,18 @@ jobs:
           mkdir -p "$MAPS_DIR" "$REPLAYS_DIR"
 
           # Install custom maps (includes MapCache.ini)
-          if [ -d /tmp/replays-repo/GeneralsXZH/Maps ]; then
-            cp -r /tmp/replays-repo/GeneralsXZH/Maps/. "$MAPS_DIR/"
+          if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
+            cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
             echo "Maps installed:"
             ls -la "$MAPS_DIR/"
           fi
 
           # Install platform-specific replays
-          REPLAY_COUNT=$(ls /tmp/replays-repo/GeneralsXZH/Replays/macos_*.rep 2>/dev/null | wc -l)
+          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/macos_*.rep 2>/dev/null | wc -l)
           if [ "$REPLAY_COUNT" -eq 0 ]; then
             echo "WARNING: No macos_*.rep files found in replay repo"
           else
-            cp /tmp/replays-repo/GeneralsXZH/Replays/macos_*.rep "$REPLAYS_DIR/"
+            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/macos_*.rep "$REPLAYS_DIR/"
             echo "Replays installed ($REPLAY_COUNT files):"
             ls -la "$REPLAYS_DIR/"
           fi
@@ -254,6 +254,7 @@ jobs:
         run: |
           PASS=0
           FAIL=0
+          TIMEOUT_BIN="gtimeout"
 
           cd "$GAME_DIR"
           export DYLD_LIBRARY_PATH="$APP_RESOURCES/lib:${DYLD_LIBRARY_PATH:-}"
@@ -281,7 +282,7 @@ jobs:
             NAME=$(basename "$rep")
             echo "=== $NAME ==="
 
-            OUTPUT=$(timeout 180 ./GeneralsXZH -headless -replay "$rep" 2>&1 || true)
+            OUTPUT=$($TIMEOUT_BIN 180 ./GeneralsXZH -headless -replay "$rep" 2>&1 || true)
             CODE=$?
 
             echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
