@@ -2719,6 +2719,13 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
 	IDirect3DTexture8 *texture = nullptr;
+	IDirect3DDevice8 *d3d_device = DX8Wrapper::_Get_D3D_Device8();
+
+	// GeneralsX @bugfix fbraz 04/05/2026 Avoid null device calls during headless replay texture requests.
+	if (d3d_device == nullptr)
+	{
+		return nullptr;
+	}
 
 	// Paletted textures not supported!
 	WWASSERT(format!=D3DFMT_P8);
@@ -2730,7 +2737,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 	// which case we return null.
 	if (rendertarget) {
 		unsigned ret=D3DXCreateTexture(
-			DX8Wrapper::_Get_D3D_Device8(),
+			d3d_device,
 			width,
 			height,
 			mip_level_count,
@@ -2754,7 +2761,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 			WW3D::_Invalidate_Mesh_Cache();
 
 			ret=D3DXCreateTexture(
-				DX8Wrapper::_Get_D3D_Device8(),
+				d3d_device,
 				width,
 				height,
 				mip_level_count,
@@ -2785,7 +2792,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 	// However, it seems to happen sometimes when there are a lot of textures in memory and so
 	// if it happens we'll release assets and try again (anything is better than crashing).
 	unsigned ret=D3DXCreateTexture(
-		DX8Wrapper::_Get_D3D_Device8(),
+		d3d_device,
 		width,
 		height,
 		mip_level_count,
@@ -2804,7 +2811,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 		WW3D::_Invalidate_Mesh_Cache();
 
 		ret=D3DXCreateTexture(
-			DX8Wrapper::_Get_D3D_Device8(),
+			d3d_device,
 			width,
 			height,
 			mip_level_count,

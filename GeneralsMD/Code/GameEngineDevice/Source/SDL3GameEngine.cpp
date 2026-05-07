@@ -521,7 +521,13 @@ FunctionLexicon *SDL3GameEngine::createFunctionLexicon(void)
 // GeneralsX @bugfix Copilot 15/04/2026 Match upstream GameEngine pure-virtual signature after sync.
 Radar *SDL3GameEngine::createRadar(Bool dummy)
 {
-	(void)dummy;
+	// GeneralsX @bugfix fbraz 04/05/2026 Respect headless mode and create dummy radar.
+	// Upstream reference: Win32GameEngine headless factory behavior, TheSuperHackers/GeneralsGameCode
+	// https://github.com/TheSuperHackers/GeneralsGameCode
+	if (dummy) {
+		fprintf(stderr, "INFO: SDL3GameEngine::createRadar() -> RadarDummy (headless)\n");
+		return NEW RadarDummy;
+	}
 	fprintf(stderr, "INFO: SDL3GameEngine::createRadar() -> W3DRadar\n");
 	return NEW W3DRadar;
 }
@@ -529,7 +535,11 @@ Radar *SDL3GameEngine::createRadar(Bool dummy)
 // GeneralsX @bugfix Copilot 24/03/2026 Match upstream GameEngine pure-virtual signature after sync.
 ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(Bool dummy)
 {
-	(void)dummy;
+	// GeneralsX @bugfix fbraz 04/05/2026 Respect headless mode and create dummy particle manager.
+	if (dummy) {
+		fprintf(stderr, "INFO: SDL3GameEngine::createParticleSystemManager() -> ParticleSystemManagerDummy (headless)\n");
+		return NEW ParticleSystemManagerDummy;
+	}
 	fprintf(stderr, "INFO: SDL3GameEngine::createParticleSystemManager() -> W3DParticleSystemManager\n");
 	return NEW W3DParticleSystemManager;
 }

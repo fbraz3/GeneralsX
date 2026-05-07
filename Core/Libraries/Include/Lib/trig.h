@@ -28,3 +28,7 @@ Real Cos(Real);
 Real Tan(Real);
 Real ACos(Real);
 Real ASin(Real x);
+// GeneralsX @feature fbraz 03/05/2026 Add shared Sqrt gateway to route core geometry math.
+// Upstream reference: Okladnoj, PR #2670
+// https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
+double Sqrt(double x);

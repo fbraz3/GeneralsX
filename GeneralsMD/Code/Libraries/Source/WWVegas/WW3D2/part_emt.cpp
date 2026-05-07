@@ -144,8 +144,9 @@ ParticleEmitterClass::ParticleEmitterClass(const ParticleEmitterClass & src) :
 	ParticlesLeft(src.ParticlesLeft),
 	MaxParticles(src.MaxParticles),
 	IsComplete(false),
-	NameString(::_strdup (src.NameString)),
-	UserString(::_strdup (src.UserString)),
+	// GeneralsX @bugfix fbraz 06/05/2026 Avoid null-pointer strdup when cloning emitters without optional metadata strings.
+	NameString(src.NameString ? ::_strdup(src.NameString) : nullptr),
+	UserString(src.UserString ? ::_strdup(src.UserString) : nullptr),
 	RemoveOnComplete(src.RemoveOnComplete),
 	IsInScene(false),
 	GroupID(0),

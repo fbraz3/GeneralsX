@@ -25,6 +25,17 @@ D3DXCreateTexture(LPDIRECT3DDEVICE8 pDevice,
 	D3DPOOL Pool,
 	LPDIRECT3DTEXTURE8 *ppTexture)
 {
+	// GeneralsX @bugfix fbraz 04/05/2026 Headless replay can request texture creation before DX8 device initialization.
+	if (ppTexture == nullptr || pDevice == nullptr)
+	{
+		if (ppTexture != nullptr)
+		{
+			*ppTexture = nullptr;
+		}
+
+		return D3DERR_INVALIDCALL;
+	}
+
 	return pDevice->CreateTexture(Width, Height, MipLevels, Usage, Format, Pool, ppTexture);
 }
 

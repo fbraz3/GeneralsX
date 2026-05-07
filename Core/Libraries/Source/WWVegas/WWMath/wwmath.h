@@ -133,8 +133,103 @@ static WWINLINE float Fast_Asin(float val);
 static WWINLINE float Asin(float val);
 
 
-static WWINLINE float		Atan(float x) { return static_cast<float>(atan(x)); }
-static WWINLINE float		Atan2(float y,float x) { return static_cast<float>(atan2(y,x)); }
+// GeneralsX @feature fbraz 03/05/2026 Phase 4 conditional dispatch for deterministic math
+// When USE_DETERMINISTIC_MATH is defined, these wrappers route to GameMath (fdlibm).
+// Otherwise they use platform-native CRT or x87 (fast but platform-specific).
+// Upstream reference: Okladnoj, PR #2670
+// https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
+
+// Include GameMath headers when deterministic math is enabled
+// Note: GameMath integration is pending. This header will be populated when
+// GameMath submodule or library is available. For now, wrappers fallback to CRT.
+#ifdef USE_DETERMINISTIC_MATH
+// TODO: Uncomment when GameMath library is integrated as submodule
+// #include "GameMath/deterministic_math.h"
+#endif
+
+static WWINLINE float		Atan(float x) 
+{ 
+#ifdef USE_DETERMINISTIC_MATH
+	// TODO: return GameMath::Atan(x);
+	return static_cast<float>(atan(x)); 
+#else
+	return static_cast<float>(atan(x)); 
+#endif
+}
+
+static WWINLINE float		Atan2(float y, float x) 
+{ 
+#ifdef USE_DETERMINISTIC_MATH
+	// TODO: return GameMath::Atan2(y, x);
+	return static_cast<float>(atan2(y, x)); 
+#else
+	return static_cast<float>(atan2(y, x)); 
+#endif
+}
+
+// Phase 4: Trig function routing (deterministic vs. platform-native)
+// These wrappers are called from Trig.cpp and BaseType geometry methods
+static WWINLINE float SinTrig(float x) 
+{ 
+#ifdef USE_DETERMINISTIC_MATH
+	// TODO: return GameMath::Sin(x);
+	return Sin(x); 
+#else
+	return Sin(x); 
+#endif
+}
+
+static WWINLINE float CosTrig(float x) 
+{ 
+#ifdef USE_DETERMINISTIC_MATH
+	// TODO: return GameMath::Cos(x);
+	return Cos(x); 
+#else
+	return Cos(x); 
+#endif
+}
+
+static WWINLINE float TanTrig(float x) 
+{ 
+#ifdef USE_DETERMINISTIC_MATH
+	// TODO: return GameMath::Tan(x);
+	return tanf(x); 
+#else
+	return tanf(x); 
+#endif
+}
+
+static WWINLINE float ACosTrig(float x) 
+{ 
+#ifdef USE_DETERMINISTIC_MATH
+	// TODO: return GameMath::Acos(x);
+	return Acos(x); 
+#else
+	return Acos(x); 
+#endif
+}
+
+static WWINLINE float ASinTrig(float x) 
+{ 
+#ifdef USE_DETERMINISTIC_MATH
+	// TODO: return GameMath::Asin(x);
+	return Asin(x); 
+#else
+	return Asin(x); 
+#endif
+}
+
+// Phase 4: Origin sqrt gateway for geometry (Coord2D/Coord3D length calculations)
+// Must dispatch to deterministic Sqrt when enabled
+static WWINLINE double SqrtOrigin(double x) 
+{ 
+#ifdef USE_DETERMINISTIC_MATH
+	// TODO: return GameMath::Sqrt(x);
+	return sqrt(x); 
+#else
+	return sqrt(x); 
+#endif
+}
 static WWINLINE float		Sign(float val);
 static WWINLINE float		Ceil(float val) { return ceilf(val); }
 static WWINLINE float		Floor(float val) { return floorf(val); }
