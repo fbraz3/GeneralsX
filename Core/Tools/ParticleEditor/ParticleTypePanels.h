@@ -47,14 +47,14 @@ class ParticlePanelParticle : public ISwapablePanel
 {
 	public:
 		enum {IDD = IDD_PSEd_ParticlePanelParticle};
-		virtual DWORD GetIDD() { return IDD; }
+		virtual DWORD GetIDD() override { return IDD; }
 		ParticlePanelParticle(UINT nIDTemplate = ParticlePanelParticle::IDD, CWnd* pParentWnd = nullptr);
 
-		void InitPanel();
+		virtual void InitPanel() override;
 
 		// if true, updates the UI from the Particle System.
 		// if false, updates the Particle System from the UI
-		void performUpdate( IN Bool toUI );
+		virtual void performUpdate( IN Bool toUI ) override;
 	protected:
 		afx_msg void OnParticleSystemEdit();
 		DECLARE_MESSAGE_MAP()
@@ -65,15 +65,15 @@ class ParticlePanelDrawable : public ISwapablePanel
 {
 	public:
 		enum {IDD = IDD_PSEd_ParticlePanelDrawable};
-		virtual DWORD GetIDD() { return IDD; }
+		virtual DWORD GetIDD() override { return IDD; }
 		ParticlePanelDrawable(UINT nIDTemplate = ParticlePanelDrawable::IDD, CWnd* pParentWnd = nullptr);
 
-		void InitPanel();
+		virtual void InitPanel() override;
 		void clearAllThingTemplates();
 
 		// if true, updates the UI from the Particle System.
 		// if false, updates the Particle System from the UI
-		void performUpdate( IN Bool toUI );
+		virtual void performUpdate( IN Bool toUI ) override;
 	protected:
 		afx_msg void OnParticleSystemEdit();
 		DECLARE_MESSAGE_MAP()
@@ -84,14 +84,14 @@ class ParticlePanelStreak : public ParticlePanelParticle
 {
 	public:
 		enum {IDD = IDD_PSEd_ParticlePanelStreak};
-		virtual DWORD GetIDD() { return IDD; }
+		virtual DWORD GetIDD() override { return IDD; }
 		ParticlePanelStreak(UINT nIDTemplate = ParticlePanelStreak::IDD, CWnd* pParentWnd = nullptr);
 
-		void InitPanel();
+		virtual void InitPanel() override;
 
 		// if true, updates the UI from the Particle System.
 		// if false, updates the Particle System from the UI
-		void performUpdate( IN Bool toUI );
+		virtual void performUpdate( IN Bool toUI ) override;
 	protected:
 		afx_msg void OnParticleSystemEdit();
 		DECLARE_MESSAGE_MAP()
