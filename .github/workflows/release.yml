@@ -37,8 +37,9 @@ jobs:
   create-tag:
     runs-on: ubuntu-latest
     steps:
+      # GeneralsX @build GitHubCopilot 08/05/2026 Use Node 24 compatible GitHub Actions major versions to remove runner deprecation warnings.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -97,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -117,7 +118,7 @@ jobs:
     needs: [build-linux-flatpak, build-macos]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -156,25 +157,25 @@ jobs:
           fi
 
       - name: Download Linux Zero Hour Flatpak artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-flatpak-generalsxzh-linux64-deploy
           path: artifacts/linux-flatpak-zh
 
       - name: Download Linux Generals Flatpak artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-flatpak-generalsx-linux64-deploy
           path: artifacts/linux-flatpak-generals
 
       - name: Download macOS bundle artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-generalsxzh-app
           path: artifacts/macos
 
       - name: Download macOS Generals bundle artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-generalsx-app
           path: artifacts/macos-generals
@@ -372,7 +373,7 @@ jobs:
 
       - name: Upload dry-run release description
         if: success() && inputs.release_mode == 'Dry Run'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-preview-${{ inputs.release_version }}
           path: release-assets/${{ inputs.release_version }}-notes.txt

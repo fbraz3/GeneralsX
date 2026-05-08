@@ -33,8 +33,9 @@ jobs:
       # -----------------------------------------------------------------------
       # 1. Download built binary artifact from upstream build job
       # -----------------------------------------------------------------------
+      # GeneralsX @build GitHubCopilot 08/05/2026 Use Node 24 compatible GitHub Actions major versions to remove runner deprecation warnings.
       - name: Download game artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.game-artifact }}
           path: /tmp/game-artifact
@@ -118,7 +119,7 @@ jobs:
       # 4. Check out and extract game assets (password-protected 7z, uses LFS)
       # -----------------------------------------------------------------------
       - name: Checkout game assets repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: fbraz3/generalsx-test-files
           path: ci-assets-repo
@@ -148,7 +149,7 @@ jobs:
       #    Repo structure: GeneralsXZH/Maps/<MapFolder>/  GeneralsXZH/Replays/<platform>_*.rep
       # -----------------------------------------------------------------------
       - name: Checkout replay files repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: fbraz3/GeneralsXReplays
           path: ci-replays-repo
