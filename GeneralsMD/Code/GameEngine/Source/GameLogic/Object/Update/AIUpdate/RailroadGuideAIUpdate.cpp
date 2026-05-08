@@ -903,7 +903,7 @@ public:
 	PartitionFilterIsValidCarriage(Object* obj, const RailroadBehaviorModuleData* data) : m_obj(obj), m_data(data) { }
 
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterIsValidCarriage"; }
+	virtual const char* debugGetName() override { return "PartitionFilterIsValidCarriage"; }
 #endif
 
 	virtual Bool allow(Object *objOther) override

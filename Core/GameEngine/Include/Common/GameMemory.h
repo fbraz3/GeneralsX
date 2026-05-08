@@ -627,7 +627,7 @@ private: \
 // ----------------------------------------------------------------------------
 #define MEMORY_POOL_GLUE_WITHOUT_GCMP(ARGCLASS) \
 protected: \
-	virtual ~ARGCLASS(); \
+	virtual ~ARGCLASS() override; \
 public: \
 	enum ARGCLASS##MagicEnum { ARGCLASS##_GLUE_NOT_IMPLEMENTED = 0 }; \
 public: \
@@ -673,7 +673,7 @@ protected: \
 		ARGCLASS::getClassMemoryPool()->freeBlock(p); \
 	} \
 private: \
-	virtual MemoryPool *getObjectMemoryPool() \
+	virtual MemoryPool *getObjectMemoryPool() override \
 	{ \
 		return ARGCLASS::getClassMemoryPool(); \
 	} \
@@ -698,7 +698,7 @@ public: /* include this line at the end to reset visibility to 'public' */
 // this is the version for an Abstract Base Class, which will never be instantiated...
 #define MEMORY_POOL_GLUE_ABC(ARGCLASS) \
 protected: \
-	virtual ~ARGCLASS(); \
+	virtual ~ARGCLASS() override; \
 public: \
 	enum ARGCLASS##MagicEnum { ARGCLASS##_GLUE_NOT_IMPLEMENTED = 0 }; \
 protected: \
@@ -727,7 +727,7 @@ protected: \
 		DEBUG_CRASH(("this should be impossible to call (abstract base class)")); \
 	} \
 private: \
-	virtual MemoryPool *getObjectMemoryPool() \
+	virtual MemoryPool *getObjectMemoryPool() override \
 	{ \
 		throw ERROR_BUG; \
 		return 0; \

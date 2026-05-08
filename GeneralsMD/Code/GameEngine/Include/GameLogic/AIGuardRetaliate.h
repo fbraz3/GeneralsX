@@ -239,7 +239,7 @@ public:
 	virtual StateReturnType update() override;
 	virtual void onExit( StateExitType status ) override;
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 protected:
 	// snapshot interface

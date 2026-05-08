@@ -58,8 +58,6 @@ public:
 	// BehaviorModule
 	virtual DestroyModuleInterface* getDestroy() override { return this; }
 
-	virtual void onDestroy() = 0;
-
 protected:
 
 };

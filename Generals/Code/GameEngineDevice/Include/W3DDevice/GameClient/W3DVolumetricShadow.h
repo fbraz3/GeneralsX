@@ -105,7 +105,7 @@ class W3DVolumetricShadow	: public Shadow
 		virtual void release() override	{TheW3DVolumetricShadowManager->removeShadow(this);}	///<release shadow from manager
 
 		#if defined(RTS_DEBUG)
-		virtual void getRenderCost(RenderCost & rc) const;
+		virtual void getRenderCost(RenderCost & rc) const override;
 		#endif
 
 		// tie in geometry and transformation for this shadow

@@ -54,7 +54,7 @@ class CFancyToolbar : public CControlBar
 	//{{AFX_VIRTUAL(CFancyToolbar)
 	public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs) override;
 	protected:
 	//}}AFX_VIRTUAL
 
@@ -93,13 +93,13 @@ class CFancyToolbar : public CControlBar
         //
         //  Required methods
         //
-        CSize CalcFixedLayout (BOOL, BOOL)
+        virtual CSize CalcFixedLayout (BOOL, BOOL) override
             { return CSize (m_iButtons*BUTTON_WIDTH + BORDER_LEFT + BORDER_RIGHT, BUTTON_HEIGHT + BORDER_TOP + BORDER_BOTTOM); }
 
-        CSize CalcDynamicLayout( int nLength, DWORD dwMode )
+        virtual CSize CalcDynamicLayout( int nLength, DWORD dwMode ) override
             { return CSize (m_iButtons*BUTTON_WIDTH + BORDER_LEFT + BORDER_RIGHT, BUTTON_HEIGHT + BORDER_TOP + BORDER_BOTTOM); }
 
-        void OnUpdateCmdUI (class CFrameWnd*, int) {}
+        virtual void OnUpdateCmdUI (class CFrameWnd*, int) override {}
 
         //
         //  Creation routines
