@@ -42,14 +42,15 @@ jobs:
             log_suffix: generals
 
     steps:
+      # GeneralsX @build GitHubCopilot 08/05/2026 Use Node 24 compatible GitHub Actions major versions to remove runner deprecation warnings.
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Cache brew packages
         id: cache-brew
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/Homebrew
           key: brew-macos-${{ runner.os }}-${{ hashFiles('.github/workflows/build-macos.yml') }}
@@ -408,7 +409,7 @@ jobs:
 
       - name: Upload Build Logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-logs-macos-${{ matrix.game.id }}
           path: logs/
@@ -416,7 +417,7 @@ jobs:
 
       - name: Upload Bundle
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-${{ matrix.game.id }}-app
           path: /tmp/macos-artifact-${{ matrix.game.id }}/*.tar

@@ -41,8 +41,9 @@ jobs:
             log_suffix: generals
 
     steps:
+      # GeneralsX @build GitHubCopilot 08/05/2026 Use Node 24 compatible GitHub Actions major versions to remove runner deprecation warnings.
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -64,7 +65,7 @@ jobs:
           flatpak --user install -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08
 
       - name: Cache flatpak-builder state
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .flatpak-builder
           key: flatpak-builder-${{ runner.os }}-${{ inputs.preset }}-${{ hashFiles('flatpak/com.fbraz3.GeneralsX.yml', 'flatpak/com.fbraz3.GeneralsXZH.yml', 'scripts/build/linux/build-linux-flatpak.sh', 'cmake/lzhl.cmake', 'CMakeLists.txt') }}
@@ -100,7 +101,7 @@ jobs:
 
       - name: Upload Build Logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-logs-linux-flatpak-${{ matrix.game.id }}-${{ inputs.preset }}
           path: logs/
@@ -108,7 +109,7 @@ jobs:
 
       - name: Upload Flatpak Bundle
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-flatpak-${{ matrix.game.id }}-${{ inputs.preset }}
           path: ${{ steps.bundle.outputs.path }}

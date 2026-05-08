@@ -57,14 +57,15 @@ jobs:
           - ${{ inputs.package_format }}
 
     steps:
+      # GeneralsX @build GitHubCopilot 08/05/2026 Use Node 24 compatible GitHub Actions major versions to remove runner deprecation warnings.
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Cache vcpkg
         id: cache-vcpkg
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /opt/vcpkg
           key: vcpkg-linux-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
@@ -269,7 +270,7 @@ jobs:
 
       - name: Upload Build Logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-logs-linux-${{ matrix.game.id }}-${{ matrix.package_format }}
           path: logs/
@@ -277,7 +278,7 @@ jobs:
 
       - name: Upload Deployment Bundle
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact.outputs.name }}
           path: ${{ steps.artifact.outputs.path }}
