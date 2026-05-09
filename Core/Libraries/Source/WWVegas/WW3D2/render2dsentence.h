@@ -51,9 +51,9 @@ class	SurfaceClass;
 //
 //	Private data structures
 //
-class FontCharsClassCharDataStruct : public W3DMPO
+class FontCharsClassCharDataStruct
 {
-	W3DMPO_GLUE(FontCharsClassCharDataStruct)
+	W3DMPO_CODE(FontCharsClassCharDataStruct)
 public:
 	WCHAR				Value;
 	short				Width;
@@ -62,17 +62,17 @@ public:
 
 enum { CHAR_BUFFER_LEN		= 32768 };
 
-class FontCharsBuffer : public W3DMPO
+class FontCharsBuffer
 {
-	W3DMPO_GLUE(FontCharsBuffer)
+	W3DMPO_CODE(FontCharsBuffer)
 public:
 	uint16			Buffer[CHAR_BUFFER_LEN];
 };
 
 
-class FontCharsClass : public W3DMPO, public RefCountClass
+class FontCharsClass : public RefCountClass
 {
-	W3DMPO_GLUE(FontCharsClass)
+	W3DMPO_CODE(FontCharsClass)
 
 public:
 	FontCharsClass();
