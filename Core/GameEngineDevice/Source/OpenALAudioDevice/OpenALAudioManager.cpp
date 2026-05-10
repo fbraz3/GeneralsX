@@ -711,6 +711,15 @@ void OpenALAudioManager::pauseAmbient(Bool shouldPause)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 {
+	// GeneralsX @bugfix BenderAI 09/05/2026 - Voice audio diagnostics
+	if (event && event->getEventName().str()) {
+		AsciiString portionName = "Unknown";
+		if (event->getNextPlayPortion() == PP_Attack) portionName = "Attack";
+		else if (event->getNextPlayPortion() == PP_Sound) portionName = "Sound";
+		else if (event->getNextPlayPortion() == PP_Decay) portionName = "Decay";
+		fprintf(stderr, "[GeneralsX] playAudioEvent: %s | Portion: %s | Handle: %d\n",
+			event->getEventName().str(), portionName.str(), event->getPlayingHandle());
+	}
 #ifdef INTENSIVE_AUDIO_DEBUG
 	DEBUG_LOG(("OPENAL (%d) - Processing play request: %d (%s)", TheGameLogic->getFrame(), event->getPlayingHandle(), event->getEventName().str()));
 #endif
@@ -1671,6 +1680,16 @@ void OpenALAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, Uns
 	}
 
 	playing->m_audioEventRTS->advanceNextPlayPortion();
+	
+	// GeneralsX @bugfix BenderAI 09/05/2026 - Log portion advancement for voice diagnostics
+	AsciiString portionName = "Unknown";
+	if (playing->m_audioEventRTS->getNextPlayPortion() == PP_Attack) portionName = "Attack";
+	else if (playing->m_audioEventRTS->getNextPlayPortion() == PP_Sound) portionName = "Sound";
+	else if (playing->m_audioEventRTS->getNextPlayPortion() == PP_Decay) portionName = "Decay";
+	else if (playing->m_audioEventRTS->getNextPlayPortion() == PP_Done) portionName = "Done";
+	fprintf(stderr, "[GeneralsX] Audio portion advanced to: %s | Event: %s | Handle: %d\n",
+		portionName.str(), playing->m_audioEventRTS->getEventName().str(), playing->m_audioEventRTS->getPlayingHandle());
+	
 	if (playing->m_audioEventRTS->getNextPlayPortion() != PP_Done) {
 		if (playing->m_type == PAT_Sample) {
 			closeBuffer(playing->m_bufferHandle);	// close it so as not to leak it.
@@ -2411,9 +2430,23 @@ void OpenALAudioManager::processPlayingList(void)
 
 		if (sourceIsStopped(playing->m_source))
 		{
-			//m_stoppedAudio.push_back(playing);
-			releasePlayingAudio(playing);
-			it = m_playingSounds.erase(it);
+			// GeneralsX @bugfix BenderAI 09/05/2026 - Advance through Attack/Sound/Decay portions.
+			// Miles used EOS callbacks; OpenAL requires polling. Without this call the Attack
+			// (static/intro) portion plays but Sound (voice) is never started.
+			if (!playing->m_requestStop)
+				notifyOfAudioCompletion(playing->m_source, PAT_Sample);
+			// If notifyOfAudioCompletion started the next portion the source is now playing;
+			// only erase when it is still stopped (done or failed to start next portion).
+			if (sourceIsStopped(playing->m_source))
+			{
+				//m_stoppedAudio.push_back(playing);
+				releasePlayingAudio(playing);
+				it = m_playingSounds.erase(it);
+			}
+			else
+			{
+				++it;
+			}
 		}
 		else
 		{
@@ -2436,9 +2469,20 @@ void OpenALAudioManager::processPlayingList(void)
 
 		if (sourceIsStopped(playing->m_source))
 		{
-			//m_stoppedAudio.push_back(playing);			
-			releasePlayingAudio(playing);
-			it = m_playing3DSounds.erase(it);
+			// GeneralsX @bugfix BenderAI 09/05/2026 - Same fix as for 2D samples: advance
+			// Attack→Sound→Decay before releasing. Miles used EOS callbacks; we must poll.
+			if (!playing->m_requestStop)
+				notifyOfAudioCompletion(playing->m_source, PAT_3DSample);
+			if (sourceIsStopped(playing->m_source))
+			{
+				//m_stoppedAudio.push_back(playing);
+				releasePlayingAudio(playing);
+				it = m_playing3DSounds.erase(it);
+			}
+			else
+			{
+				++it;
+			}
 		}
 		else
 		{
@@ -2937,25 +2981,44 @@ ALuint OpenALAudioManager::playSample3D(AudioEventRTS* event, PlayingAudio* samp
 
 		if (handle) {
 			auto source = sample3D->m_source;
-			// Set the position values of the sample here
-			if (event->getAudioEventInfo()->m_type & ST_GLOBAL) {
-				alSourcef(source, AL_REFERENCE_DISTANCE, audioSettings->m_globalMinRange);
-				alSourcef(source, AL_MAX_DISTANCE, audioSettings->m_globalMaxRange);
-			}
-			else {
-				alSourcef(source, AL_REFERENCE_DISTANCE, event->getAudioEventInfo()->m_minDistance);
-				alSourcef(source, AL_MAX_DISTANCE, event->getAudioEventInfo()->m_maxDistance);
-			}
-
-			Real pitch = event->getPitchShift() != 0.0f ? event->getPitchShift() : 1.0f;
-			alSourcef(source, AL_PITCH, pitch);
-			alSourcef(source, AL_ROLLOFF_FACTOR, 0.5f);
-
-			// Set the position of the sample here
 			Real x = pos->x;
 			Real y = pos->y;
 			Real z = pos->z;
-			alSource3f(source, AL_POSITION, x, y, z);
+			Real pitch = event->getPitchShift() != 0.0f ? event->getPitchShift() : 1.0f;
+			ALint channels = 0;
+			alGetBufferi(handle, AL_CHANNELS, &channels);
+			alSourcef(source, AL_PITCH, pitch);
+
+			if (channels > 1) {
+				// GeneralsX @bugfix Bender 09/05/2026 Fallback multichannel positional voice assets to direct playback instead of dropping them.
+				alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
+				alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
+				alSource3f(source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+				alSourcef(source, AL_ROLLOFF_FACTOR, 0.0f);
+			#ifdef AL_DIRECT_CHANNELS_SOFT
+				alSourcei(source, AL_DIRECT_CHANNELS_SOFT, AL_TRUE);
+			#endif
+			#ifdef AL_SOURCE_SPATIALIZE_SOFT
+				alSourcei(source, AL_SOURCE_SPATIALIZE_SOFT, AL_FALSE);
+			#endif
+				DEBUG_LOG(("OpenAL positional fallback active for '%s' (%d channels)\n",
+					event->getEventName().str(), channels));
+			}
+			else {
+				alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
+				// Set the position values of the sample here
+				if (event->getAudioEventInfo()->m_type & ST_GLOBAL) {
+					alSourcef(source, AL_REFERENCE_DISTANCE, audioSettings->m_globalMinRange);
+					alSourcef(source, AL_MAX_DISTANCE, audioSettings->m_globalMaxRange);
+				}
+				else {
+					alSourcef(source, AL_REFERENCE_DISTANCE, event->getAudioEventInfo()->m_minDistance);
+					alSourcef(source, AL_MAX_DISTANCE, event->getAudioEventInfo()->m_maxDistance);
+				}
+
+				alSourcef(source, AL_ROLLOFF_FACTOR, 0.5f);
+				alSource3f(source, AL_POSITION, x, y, z);
+			}
 			alSourcei(source, AL_BUFFER, handle);
 			DEBUG_LOG(("Playing 3D sample '%s' at %f, %f, %f\n", event->getEventName().str(), x, y, z));
 

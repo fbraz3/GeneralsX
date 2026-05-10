@@ -1,5 +1,12 @@
 # 2026-05 Lessons
 
+## 2026-05-09 - OpenAL positional voice playback must not drop multichannel aircraft samples
+
+- Symptom: Aircraft selection/order voice lines on Linux/macOS played only the radio-static portion while the spoken line never started.
+- Root cause: Some positional aircraft voice assets can be multichannel; `OpenALAudioCache` rejected those buffers outright for positional playback, so OpenAL advanced past the static intro but silently lost the spoken portion.
+- Fix applied: Keep the buffer loadable and make `OpenALAudioManager::playSample3D()` fall back multichannel positional assets to direct non-spatial playback instead of returning silence.
+- Prevention: For cross-platform OpenAL, treat unsupported spatialization formats as fallback-to-2D cases first; only hard-fail when the asset cannot be decoded at all.
+
 ## 2026-05-07 - In unify merges, resolve modify/delete by validating semantic deltas before deleting legacy paths
 
 - Symptom: Upstream unify moved shared gadget implementation files into `Core/`, while local branch still had modifications in legacy `Generals` paths, producing modify/delete conflicts.

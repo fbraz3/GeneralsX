@@ -406,8 +406,8 @@ AudioHandle OpenALAudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		return AHSV_Error;
 	}
 
-	//fprintf(stderr, "DEBUG: OpenALAudioManager::addAudioEvent() - stub (Phase 2)\n");
-	return AHSV_Error;
+	// GeneralsX @bugfix Bender 09/05/2026 Route audio events through the shared queue so aircraft voice lines reach OpenAL.
+	return AudioManager::addAudioEvent(eventToAdd);
 }
 
 /**
