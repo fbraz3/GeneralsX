@@ -711,15 +711,6 @@ void OpenALAudioManager::pauseAmbient(Bool shouldPause)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 {
-	// GeneralsX @bugfix BenderAI 09/05/2026 - Voice audio diagnostics
-	if (event && event->getEventName().str()) {
-		AsciiString portionName = "Unknown";
-		if (event->getNextPlayPortion() == PP_Attack) portionName = "Attack";
-		else if (event->getNextPlayPortion() == PP_Sound) portionName = "Sound";
-		else if (event->getNextPlayPortion() == PP_Decay) portionName = "Decay";
-		fprintf(stderr, "[GeneralsX] playAudioEvent: %s | Portion: %s | Handle: %d\n",
-			event->getEventName().str(), portionName.str(), event->getPlayingHandle());
-	}
 #ifdef INTENSIVE_AUDIO_DEBUG
 	DEBUG_LOG(("OPENAL (%d) - Processing play request: %d (%s)", TheGameLogic->getFrame(), event->getPlayingHandle(), event->getEventName().str()));
 #endif
@@ -1680,16 +1671,6 @@ void OpenALAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, Uns
 	}
 
 	playing->m_audioEventRTS->advanceNextPlayPortion();
-	
-	// GeneralsX @bugfix BenderAI 09/05/2026 - Log portion advancement for voice diagnostics
-	AsciiString portionName = "Unknown";
-	if (playing->m_audioEventRTS->getNextPlayPortion() == PP_Attack) portionName = "Attack";
-	else if (playing->m_audioEventRTS->getNextPlayPortion() == PP_Sound) portionName = "Sound";
-	else if (playing->m_audioEventRTS->getNextPlayPortion() == PP_Decay) portionName = "Decay";
-	else if (playing->m_audioEventRTS->getNextPlayPortion() == PP_Done) portionName = "Done";
-	fprintf(stderr, "[GeneralsX] Audio portion advanced to: %s | Event: %s | Handle: %d\n",
-		portionName.str(), playing->m_audioEventRTS->getEventName().str(), playing->m_audioEventRTS->getPlayingHandle());
-	
 	if (playing->m_audioEventRTS->getNextPlayPortion() != PP_Done) {
 		if (playing->m_type == PAT_Sample) {
 			closeBuffer(playing->m_bufferHandle);	// close it so as not to leak it.
