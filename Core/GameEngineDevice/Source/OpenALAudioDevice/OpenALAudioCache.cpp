@@ -147,9 +147,9 @@ ALuint OpenALAudioFileCache::getBufferForFile(const OpenFileInfo &fileInfo)
 
 	if (eventToOpenFrom && eventToOpenFrom->isPositionalAudio()) {
 		if (openedAudioFile.m_ffmpegFile->getNumChannels() > 1) {
-			DEBUG_CRASH(("Requested Positional Play of audio '%s', but it is in stereo.", strToFind.str()));
-			releaseOpenAudioFile(&openedAudioFile);
-			return 0;
+			// GeneralsX @bugfix Bender 09/05/2026 Keep multichannel positional assets loadable so playback can fall back to non-spatial output.
+			DEBUG_LOG(("OpenAL positional fallback armed for multichannel audio '%s' (%d channels)\n",
+				strToFind.str(), openedAudioFile.m_ffmpegFile->getNumChannels()));
 		}
 	}
 
