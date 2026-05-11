@@ -215,12 +215,11 @@ bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
 
 void DX8Wrapper::Pillarbox_Begin()
 {
-	if (!s_pillarboxEnabled || !s_offscreenSurf) return;
-	if (s_savedBackbuffer) { s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr; }
-	if (s_savedDepth) { s_savedDepth->Release(); s_savedDepth = nullptr; }
-	D3DDevice->GetRenderTarget(&s_savedBackbuffer);
-	D3DDevice->GetDepthStencilSurface(&s_savedDepth);
-	D3DDevice->SetRenderTarget(s_offscreenSurf, s_depthSurf);
+	if (!s_pillarboxEnabled || !s_offscreenSurf || !s_depthSurf) return;
+	// GeneralsX @bugfix GitHub Copilot 10/05/2026 Route pillarbox target switches through the DX8Wrapper cache so render-target size queries stay correct during the frame.
+	Set_Render_Target(s_offscreenSurf, s_depthSurf);
+	// GeneralsX @bugfix GitHub Copilot 10/05/2026 Pillarbox uses an offscreen target for presentation only and must not advertise the whole frame as an effect RTT pass.
+	IsRenderToTexture = false;
 	// GeneralsX @bugfix GitHub Copilot 27/04/2026 Ensure scene render uses game-resolution viewport on the offscreen RT.
 	// Without this, a stale fullscreen-sized viewport can survive the target switch and crop/zoom into the top-left area.
 	D3DVIEWPORT8 sceneViewport = {
@@ -245,13 +244,12 @@ void DX8Wrapper::Pillarbox_Begin()
 
 void DX8Wrapper::Pillarbox_End()
 {
-	if (!s_pillarboxActive || !s_savedBackbuffer) return;
+	if (!s_pillarboxActive || !s_offscreenTex) return;
 	s_pillarboxActive = false;
 
 	// Restore backbuffer (still inside active scene)
-	D3DDevice->SetRenderTarget(s_savedBackbuffer, s_savedDepth);
-	s_savedBackbuffer->Release(); s_savedBackbuffer = nullptr;
-	if (s_savedDepth) { s_savedDepth->Release(); s_savedDepth = nullptr; }
+	Set_Render_Target((IDirect3DSurface8 *)nullptr);
+	IsRenderToTexture = false;
 
 	// Blit offscreen texture centered onto backbuffer (fit rect cached in Pillarbox_Setup)
 	D3DVIEWPORT8 vp = {0, 0, (DWORD)s_bbW, (DWORD)s_bbH, 0.0f, 1.0f};
@@ -2020,7 +2018,9 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 
 	// Pillarbox: restore backbuffer + blit offscreen, all within the current scene
 	if (s_pillarboxActive && s_offscreenTex) {
-		Pillarbox_End();  // restores backbuffer, blits, invalidates cache
+		Pillarbox_End();
+		// GeneralsX @bugfix GitHub Copilot 10/05/2026 Re-sync cached DX8 state after the pillarbox blit mutates global render state at the end of the frame.
+		Invalidate_Cached_Render_States();
 	}
 	DX8CALL(EndScene());
 
