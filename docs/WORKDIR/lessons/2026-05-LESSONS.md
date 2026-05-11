@@ -1,5 +1,12 @@
 # 2026-05 Lessons
 
+## 2026-05-11 - Asset-root fallback must preserve case-insensitive lookup semantics on Linux
+
+- Symptom: On Linux, default/action/attack cursors intermittently fell back to OS pointer; intro/campaign videos also showed inconsistent playback behavior.
+- Root cause: Relative file lookups that fail in cwd were retried from the asset root path, but that fallback did not apply case-insensitive traversal. Mixed-case data references (Windows-style) failed against lowercase files on disk.
+- Fix applied: In `StdLocalFileSystem::fixFilenameFromWindowsPath`, added Linux-only case-insensitive traversal for asset-root fallback paths before returning not found.
+- Prevention: Any new asset-root fallback path in cross-platform filesystem code must mirror the same case-resolution policy used by primary path traversal on Linux.
+
 ## 2026-05-09 - OpenAL positional voice playback must not drop multichannel aircraft samples
 
 - Symptom: Aircraft selection/order voice lines on Linux/macOS played only the radio-static portion while the spoken line never started.

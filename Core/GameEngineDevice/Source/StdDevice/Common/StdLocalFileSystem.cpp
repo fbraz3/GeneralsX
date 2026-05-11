@@ -81,6 +81,55 @@ static std::filesystem::path fixFilenameFromWindowsPath(const Char *filename, In
 			if (std::filesystem::exists(assetRootPath, ecAsset) || writeAndParentExists) {
 				return assetRootPath;
 			}
+
+			#ifdef __linux__
+			// GeneralsX @bugfix BenderAI 11/05/2026 Linux: resolve case-insensitive paths from asset root.
+			// Some cursor files are lowercase on disk (e.g. sccpointer.ani) while INI references mixed-case names.
+			// The existing case-insensitive traversal below only checks cwd, not the asset root fallback.
+			std::filesystem::path assetRootFixed = s_assetFallbackPath;
+			std::filesystem::path assetRootCurrent = s_assetFallbackPath;
+			bool assetRootFound = true;
+			for (const auto& p : path)
+			{
+				std::filesystem::path pathFixedPart;
+				std::error_code ecAssetCase;
+				if (std::filesystem::exists(assetRootCurrent / p, ecAssetCase))
+				{
+					pathFixedPart = p;
+				}
+				else
+				{
+					for (auto& entry : std::filesystem::directory_iterator(assetRootCurrent, ecAssetCase))
+					{
+						if (strcasecmp(entry.path().filename().string().c_str(), p.string().c_str()) == 0)
+						{
+							pathFixedPart = entry.path().filename();
+							break;
+						}
+					}
+				}
+
+				if (pathFixedPart.empty())
+				{
+					assetRootFound = false;
+					break;
+				}
+
+				assetRootFixed /= pathFixedPart;
+				assetRootCurrent /= pathFixedPart;
+			}
+
+			if (assetRootFound)
+			{
+				std::error_code ecAssetFixed;
+				const bool writeAndParentExistsFixed = (access & File::WRITE)
+					&& std::filesystem::exists(assetRootFixed.parent_path(), ecAssetFixed);
+				if (std::filesystem::exists(assetRootFixed, ecAssetFixed) || writeAndParentExistsFixed)
+				{
+					return assetRootFixed;
+				}
+			}
+			#endif
 		}
 		// Traverse path to try and match case-insensitively
 		std::filesystem::path parent = path.parent_path();
