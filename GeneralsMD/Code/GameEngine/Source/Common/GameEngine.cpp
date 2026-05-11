@@ -675,6 +675,13 @@ void GameEngine::init()
 
 		TheSubsystemList->postProcessLoadAll();
 
+		// GeneralsX @bugfix BenderAI 11/05/2026 Always ensure valid FPS limit, regardless of m_useFpsLimit state.
+		// Previous logic was: if (m_useFpsLimit && m_framesPerSecondLimit <= 0) which could leave FPS at 0.
+		if (TheGlobalData->m_framesPerSecondLimit <= 0)
+		{
+			TheWritableGlobalData->m_framesPerSecondLimit = BaseFps;
+		}
+
 		TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 
 		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_musicOn, AudioAffect_Music);
