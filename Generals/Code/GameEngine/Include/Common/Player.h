@@ -221,6 +221,8 @@ public:
 	void deletePlayerAI();
 
 	UnicodeString getPlayerDisplayName() { return m_playerDisplayName; }
+	// GeneralsX @bugfix felipebraz 11/05/2026 Expose the raw ASCII player name so lookup fallbacks can match qualified skirmish owners.
+	AsciiString getPlayerName() const { return m_playerName; }
 	NameKeyType getPlayerNameKey() const { return m_playerNameKey; }
 
 	AsciiString getSide() const { return m_side; }

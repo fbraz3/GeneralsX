@@ -37,7 +37,7 @@ project(genzh LANGUAGES C CXX)
 # Linux port: Make CompatLib headers globally accessible so Core libraries (WWLib, WWMath, etc.)
 # can access platform compatibility types when building for non-Windows platforms
 if(UNIX)
-    include_directories(${CMAKE_SOURCE_DIR}/GeneralsMD/Code/CompatLib/Include)
+    include_directories(${CMAKE_SOURCE_DIR}/Generals/Code/CompatLib/Include)
 endif()
 
 # Compiler cache (ccache) – must be included before compilers.cmake so the

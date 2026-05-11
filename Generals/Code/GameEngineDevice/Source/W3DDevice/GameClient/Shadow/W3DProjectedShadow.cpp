@@ -334,7 +334,8 @@ void W3DProjectedShadowManager::updateRenderTargetTextures()
 	for( shadow = m_shadowList; shadow; shadow = shadow->m_next )
 	{	//decals don't need any updates on a per-frame basis since
 		//the image never changes.
-		if (shadow->m_type != SHADOW_DECAL)
+		// GeneralsX @bugfix Copilot 11/05/2026 ShadowType is bitmask; update only projection shadows.
+		if (shadow->m_type & (SHADOW_PROJECTION | SHADOW_DYNAMIC_PROJECTION))
 			shadow->update();
 	}
 }
@@ -378,11 +379,11 @@ Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *
 		Int	startY=REAL_TO_INT_FLOOR(((cy - dy)*mapScaleInv));
 		Int endY=REAL_TO_INT_CEIL(((cy + dy)*mapScaleInv));
 
-		//clip bounds to extents of heightmap
-		startX = std::max(startX,0);
-		endX = std::min(endX,hmap->getXExtent()-1);
-		startY = std::max(startY,0);
-		endY = std::min(endY,hmap->getYExtent()-1);
+		// GeneralsX @bugfix Copilot 11/05/2026 Use MAX/MIN portability macros for shadow bounds clipping.
+		startX = MAX(startX,0);
+		endX = MIN(endX,hmap->getXExtent()-1);
+		startY = MAX(startY,0);
+		endY = MIN(endY,hmap->getYExtent()-1);
 
 		Int vertsPerRow=endX - startX+1;	//number of cells +1
 		Int vertsPerColumn=endY-startY+1;	//number of cells +1
@@ -890,11 +891,12 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		max_x=min_x=boxCorners[0].X;
 		max_y=min_y=boxCorners[0].Y;
 
+		// GeneralsX @bugfix Copilot 11/05/2026 Use MAX/MIN portability macros for projection bounds.
 		for (Int bi=1; bi<4; bi++)
-		{	max_x = std::max(max_x,boxCorners[bi].X);
-			min_x = std::min(min_x,boxCorners[bi].X);
-			max_y = std::max(max_y,boxCorners[bi].Y);
-			min_y = std::min(min_y,boxCorners[bi].Y);
+		{	max_x = MAX(max_x,boxCorners[bi].X);
+			min_x = MIN(min_x,boxCorners[bi].X);
+			max_y = MAX(max_y,boxCorners[bi].Y);
+			min_y = MIN(min_y,boxCorners[bi].Y);
 		}
 
 		uVector *= shadow->m_oowDecalSizeX;
@@ -956,15 +958,16 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		Int	startY=REAL_TO_INT_FLOOR(((objPos.Y+min_y)*mapScaleInv)) + borderSize;
 		Int endY=REAL_TO_INT_CEIL(((objPos.Y+max_y)*mapScaleInv)) + borderSize;
 
-		startX = std::max(startX,m_drawStartX);
-		startX = std::min(startX,m_drawEdgeX);
-		startY = std::max(startY,m_drawStartY);
-		startY = std::min(startY,m_drawEdgeY);
+		// GeneralsX @bugfix Copilot 11/05/2026 Use MAX/MIN portability macros for draw-window clipping.
+		startX = MAX(startX,m_drawStartX);
+		startX = MIN(startX,m_drawEdgeX);
+		startY = MAX(startY,m_drawStartY);
+		startY = MIN(startY,m_drawEdgeY);
 
-		endX = std::max(endX,m_drawStartX);
-		endX = std::min(endX,m_drawEdgeX);
-		endY = std::max(endY,m_drawStartY);
-		endY = std::min(endY,m_drawEdgeY);
+		endX = MAX(endX,m_drawStartX);
+		endX = MIN(endX,m_drawEdgeX);
+		endY = MAX(endY,m_drawStartY);
+		endY = MIN(endY,m_drawEdgeY);
 
 		//Check if decal too large to fit inside 65536 index buffer.
 		//try clipping each direction to < 104 since that's more than
@@ -1038,7 +1041,8 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 					for (i=startX; i <= endX; i++)
 					{
 						hmapVertex.X=(float)(i-borderSize)*MAP_XY_FACTOR;
-						hmapVertex.Z=std::max((float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE,layerHeight);
+						// GeneralsX @bugfix Copilot 11/05/2026 Use MAX portability macro when clamping bridge-layer shadow height.
+						hmapVertex.Z=MAX((float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE,layerHeight);
 						pvVertices->x=hmapVertex.X;
 						pvVertices->y=hmapVertex.Y;
 						pvVertices->z=hmapVertex.Z;
@@ -1659,6 +1663,11 @@ Shadow* W3DProjectedShadowManager::addDecal(RenderObjClass *robj, Shadow::Shadow
 	shadow->m_decalOffsetV= decalOffsetY;
 
 	shadow->m_flags	= allowSunDirection;
+	if ((shadowType & SHADOW_DYNAMIC_PROJECTION) || (shadowInfo && shadowInfo->allowUpdates))
+	{
+		// GeneralsX @bugfix Copilot 11/05/2026 Keep projected shadow texture in sync for animated casters without root translation.
+		shadow->m_flags |= SHADOW_DYNAMIC_PROJECTION;
+	}
 
 	shadow->init();
 
@@ -1711,7 +1720,8 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 	if (shadowInfo)
 	{
 		//determine what kind of shadow is needed
-		if (shadowInfo->m_type==SHADOW_DECAL)
+		// GeneralsX @bugfix Copilot 11/05/2026 Accept combined decal flags via bitmask checks.
+		if (shadowInfo->m_type & SHADOW_DECAL)
 		{		//simple decal using the premade texture specified.
 				//can be always perpendicular to model's z-axis or projected
 				//onto world geometry.
@@ -1754,7 +1764,7 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 				decalOffsetY=shadowInfo->m_offsetY;
 		}
 		else
-		if (shadowInfo->m_type==SHADOW_PROJECTION)
+		if (shadowInfo->m_type & (SHADOW_PROJECTION | SHADOW_DYNAMIC_PROJECTION))
 		{		//projection of object geometry into a texture.
 				//can be applied on a plane horizontal to model's z-axis or
 				//projected onto world geometry.
@@ -2196,12 +2206,17 @@ void W3DProjectedShadow::update()
 	{	//light has moved since last time this shadow was calculated. Need update
 		updateTexture(TheW3DShadowManager->getLightPosWorld(0));
 	}
+	else if (m_flags & SHADOW_DYNAMIC_PROJECTION)
+	{
+		// GeneralsX @bugfix Copilot 11/05/2026 Animated sub-mesh shadows need per-frame texture refresh even without object translation.
+		updateTexture(TheW3DShadowManager->getLightPosWorld(0));
+	}
 	if (m_lastObjPosition != m_robj->Get_Position())
 	{	//object has moved.  Texture stays the same but projection matrix needs updating.
 		//force light always 2000 units from object - for some reason projection fails if
 		//light is too far.
 		///@todo: See why infinite light sources don't project shadows correctly.
-		if (m_type == SHADOW_PROJECTION)
+		if (m_type & SHADOW_PROJECTION)
 		{
 			Vector3 objToLight=TheW3DShadowManager->getLightPosWorld(0) - m_robj->Get_Position();
 			objToLight.Normalize();

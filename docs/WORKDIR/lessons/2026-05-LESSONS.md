@@ -1,5 +1,47 @@
 # 2026-05 Lessons
 
+## 2026-05-11 - Reverse-diff parity should mirror only low-risk behavioral deltas
+
+- Symptom: Wave 5 reverse scan found multiple Generals-only annotated files, but most differences were expansion-specific or annotation-only.
+- Root cause: File-level candidate extraction highlights where to inspect, not what must be mirrored.
+- Fix applied: Classified six candidates semantically and mirrored only one low-risk behavioral delta (`GameLOD.cpp` non-Windows fallback now applies defaults only when detection returns unknown/zero).
+- Prevention: Keep Wave 5 workflow as `file-level discovery -> semantic classification -> minimal mirror patches` and avoid bulk mirroring in high-divergence gameplay/render files.
+
+## 2026-05-11 - Wave 4 parity must include emitter chunk-path serialization, not only build toggles
+
+- Symptom: Libraries/build parity initially looked complete by annotation scan, but `part_ldr` still diverged in runtime chunk handling (`W3D_CHUNK_EMITTER_LINE_PROPERTIES` and optional `W3D_CHUNK_EMITTER_EXTRA_INFO`).
+- Root cause: Annotation-only inventory under-reported unannotated behavioral deltas in serializer/loader paths.
+- Fix applied: Ported `part_ldr` extra-info API/state and read/save flow to Generals base, including Save pipeline wiring and chunk-ID correction.
+- Prevention: For future wave audits, always follow annotation discovery with targeted file diff for serialization-heavy files (`*_ldr.*`, loaders, save paths) before marking wave complete.
+
+## 2026-05-11 - Volumetric shadow extrusion must be clamped before mesh volume build
+
+- Symptom: Shadow volumes can spike or stretch excessively under shallow light angles during animated updates.
+- Root cause: `vectorScaleMax` reached volume construction without an explicit clamp to `MAX_EXTRUSION_LENGTH` in the Generals base path.
+- Fix applied: Added pre-construction clamp in `W3DVolumetricShadow::Update()` before calling `constructVolume` / `constructVolumeVB`.
+- Prevention: Keep explicit extrusion clamp in any shadow-volume parity ports, especially when touching dynamic/animated caster paths.
+
+## 2026-05-11 - Guard ChallengeGenerals access when porting ZH menu filtering to Generals base
+
+- Symptom: Opening Generals base Singleplayer/Skirmish crashed with `EXC_BAD_ACCESS` in `AsciiString::AsciiString` while populating faction combo entries.
+- Root cause: A Wave 2 parity port added `TheChallengeGenerals->getGeneralByTemplateName(...)` to `PopulatePlayerTemplateComboBox`, but `TheChallengeGenerals` may be null in Generals base during menu setup.
+- Fix applied: Added a null guard in `Generals/Code/GameEngine/Source/GameNetwork/GUIUtil.cpp` and only queried locked-general state when `TheChallengeGenerals` is available.
+- Prevention: For any ZH-to-Generals parity port that references challenge/general subsystems, verify singleton lifetime differences first and guard optional systems in base-game menu paths.
+
+## 2026-05-11 - Base API must be verified before porting name-based fallback logic
+
+- Symptom: A Wave 2 skirmish ownership fallback compiled in Zero Hour but failed in Generals base because `Player` did not expose an ASCII name getter.
+- Root cause: The port assumed the same public API existed in both trees, but the base tree only stored `m_playerName` internally.
+- Fix applied: Added a minimal `Player::getPlayerName()` accessor and kept the fallback logic in `PlayerList` / `TeamFactory` unchanged.
+- Prevention: Before porting any ZH lookup fallback, confirm the base tree exposes the same accessor or add the smallest possible API shim first.
+
+## 2026-05-11 - Header-level CompatLib parity should be established before source/CMake parity in Generals base
+
+- Symptom: Generals base had only one local CompatLib header while Zero Hour maintained a full compatibility include surface, creating an implicit cross-tree dependency and making parity work noisy.
+- Root cause: Parity work started from runtime bugs without first normalizing the local compatibility header foundation in `Generals/Code/CompatLib/Include`.
+- Fix applied: Synchronized missing CompatLib headers from Zero Hour into Generals base as the first low-risk batch and documented Wave 1 classification/decisions in the parity audit sheet.
+- Prevention: For future Generals-vs-ZH parity work, always do include-surface alignment first, then move to source/CMake parity in small validated batches.
+
 ## 2026-05-11 - Asset-root fallback must preserve case-insensitive lookup semantics on Linux
 
 - Symptom: On Linux, default/action/attack cursors intermittently fell back to OS pointer; intro/campaign videos also showed inconsistent playback behavior.

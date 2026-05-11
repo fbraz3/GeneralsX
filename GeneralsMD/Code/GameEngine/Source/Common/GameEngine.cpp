@@ -675,9 +675,8 @@ void GameEngine::init()
 
 		TheSubsystemList->postProcessLoadAll();
 
-		// GeneralsX @bugfix BenderAI 11/05/2026 Always ensure valid FPS limit, regardless of m_useFpsLimit state.
-		// Previous logic was: if (m_useFpsLimit && m_framesPerSecondLimit <= 0) which could leave FPS at 0.
-		if (TheGlobalData->m_framesPerSecondLimit <= 0)
+		// GeneralsX @bugfix Copilot 11/05/2026 Prevent uncapped render when FPS limiter is enabled but no valid limit value was loaded.
+		if (TheGlobalData->m_useFpsLimit && TheGlobalData->m_framesPerSecondLimit <= 0)
 		{
 			TheWritableGlobalData->m_framesPerSecondLimit = BaseFps;
 		}
