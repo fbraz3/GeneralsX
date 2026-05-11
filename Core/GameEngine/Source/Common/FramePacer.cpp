@@ -32,8 +32,11 @@ FramePacer* TheFramePacer = nullptr;
 
 FramePacer::FramePacer()
 {
+	// GeneralsX @bugfix BenderAI 11/05/2026 Protect Windows-specific timer API calls
+#ifdef _WIN32
 	// Set the time slice size to 1 ms.
 	timeBeginPeriod(1);
+#endif
 
 	m_maxFPS = BaseFps;
 	m_logicTimeScaleFPS = LOGICFRAMES_PER_SECOND;
@@ -46,8 +49,11 @@ FramePacer::FramePacer()
 
 FramePacer::~FramePacer()
 {
+	// GeneralsX @bugfix BenderAI 11/05/2026 Protect Windows-specific timer API calls
+#ifdef _WIN32
 	// Restore the previous time slice for Windows.
 	timeEndPeriod(1);
+#endif
 }
 
 void FramePacer::update()
