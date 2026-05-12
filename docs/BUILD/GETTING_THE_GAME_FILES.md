@@ -8,9 +8,39 @@ Once you have the game files, see [INSTALLATION.md](INSTALLATION.md) for how to 
 
 ---
 
-## The Problem: Steam Does Not Offer a macOS / Linux Download
+## Steam Availability on macOS and Linux
 
-The original game is a Windows-only title on Steam. If you open Steam on macOS or Linux, the **Install** button will not appear. You need to obtain the Windows game files through one of the methods below and then copy them to your system.
+The game is a Windows-only title on Steam, but platform behavior is different:
+
+- **macOS**: Steam usually does not show an **Install** button for this title.
+- **Linux**: Steam may still allow installation through **Steam Play / Proton** (depending on your Steam settings).
+
+Because this can vary by setup, we document multiple ways to obtain the game files.
+
+---
+
+## Option 0 - Use an Existing Linux Steam/Proton Install
+
+If you already installed the game on Linux via Steam + Proton, you can use that data directly.
+
+1. Locate the installed game folder (common locations):
+   - `~/.steam/steam/steamapps/common/Command and Conquer Generals Zero Hour`
+   - `~/.local/share/Steam/steamapps/common/Command and Conquer Generals Zero Hour`
+   - `~/.steam/steam/steamapps/common/Command and Conquer Generals`
+   - `~/.local/share/Steam/steamapps/common/Command and Conquer Generals`
+2. Choose one of the following:
+   - Copy the folder(s) to the recommended layout:
+     - `$HOME/GeneralsX/GeneralsZH` for Zero Hour
+     - `$HOME/GeneralsX/Generals` for the base game
+   - Keep files in the Steam directory and provide paths via environment variables when launching (advanced):
+
+   ```bash
+   CNC_GENERALS_ZH_PATH="$HOME/.steam/steam/steamapps/common/Command and Conquer Generals Zero Hour" \
+   CNC_GENERALS_PATH="$HOME/.steam/steam/steamapps/common/Command and Conquer Generals" \
+   ./GeneralsXZH -win
+   ```
+
+   You can set these variables permanently in your shell profile if desired.
 
 ---
 
