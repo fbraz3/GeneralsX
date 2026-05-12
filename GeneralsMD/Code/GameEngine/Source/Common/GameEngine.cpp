@@ -675,6 +675,12 @@ void GameEngine::init()
 
 		TheSubsystemList->postProcessLoadAll();
 
+		// GeneralsX @bugfix Copilot 11/05/2026 Prevent uncapped render when FPS limiter is enabled but no valid limit value was loaded.
+		if (TheGlobalData->m_useFpsLimit && TheGlobalData->m_framesPerSecondLimit <= 0)
+		{
+			TheWritableGlobalData->m_framesPerSecondLimit = BaseFps;
+		}
+
 		TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 
 		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_musicOn, AudioAffect_Music);

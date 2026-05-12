@@ -236,6 +236,11 @@ void TeamFactory::initTeam(const AsciiString& name, const AsciiString& owner, Bo
 {
 	DEBUG_ASSERTCRASH(findTeamPrototype(name)==nullptr,("team already exists"));
 	Player *pOwner = ThePlayerList->findPlayerWithNameKey(NAMEKEY(owner));
+	if (!pOwner && !owner.isEmpty())
+	{
+		// GeneralsX @bugfix felipebraz 11/05/2026 Fallback to player-name lookup when qualified skirmish owner does not match stale nameKey.
+		pOwner = ThePlayerList->findPlayerWithName(owner);
+	}
 	DEBUG_ASSERTCRASH(pOwner, ("no owner found for team %s (%s)",name.str(),owner.str()));
 	if (!pOwner)
 		pOwner = ThePlayerList->getNeutralPlayer();

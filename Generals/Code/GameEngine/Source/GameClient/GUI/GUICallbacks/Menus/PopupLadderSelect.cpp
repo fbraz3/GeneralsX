@@ -130,7 +130,7 @@ static void populateLadderListBox()
 	GadgetListBoxGetSelected(listboxLadderSelect, &selIndex);
 	if (selIndex < 0)
 		return;
-	selID = (Int)(intptr_t)GadgetListBoxGetItemData(listboxLadderSelect, selIndex);
+	selID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLadderSelect, selIndex)));
 	if (!selID)
 		return;
 	updateLadderDetails(selID, staticTextLadderName, listboxLadderDetails);
@@ -373,7 +373,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 				if (selectPos < 0)
 					break;
 
-				ladderIndex = (Int)(intptr_t)GadgetListBoxGetItemData( listboxLadderSelect, selectPos, 0 );
+				ladderIndex = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData( listboxLadderSelect, selectPos, 0 )));
 				const LadderInfo *li = TheLadderList->findLadderByIndex( ladderIndex );
 				if (li && li->cryptedPassword.isNotEmpty())
 				{
@@ -439,7 +439,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 			if (selIndex < 0)
 				break;
 
-			selID = (Int)(intptr_t)GadgetListBoxGetItemData(listboxLadderSelect, selIndex);
+			selID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLadderSelect, selIndex)));
 			if (!selID)
 				break;
 

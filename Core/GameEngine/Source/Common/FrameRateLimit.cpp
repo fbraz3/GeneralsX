@@ -47,6 +47,27 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 {
 	PROFILER_SECTION;
 
+	// GeneralsX @bugfix BenderAI 11/05/2026 Validate FPS limit to prevent division by zero and underflow
+	// Skip limiting if maxFps is 0 or extremely high (uncapped mode)
+	if (maxFps == 0 || maxFps > 1000000)
+	{
+		// Uncapped or invalid: just return elapsed time without limiting
+#ifdef _WIN32
+		LARGE_INTEGER tick;
+		QueryPerformanceCounter(&tick);
+		double elapsedSeconds = static_cast<double>(tick.QuadPart - m_start) / m_freq;
+		m_start = tick.QuadPart;
+		return (Real)elapsedSeconds;
+#else
+		struct timespec tick;
+		clock_gettime(CLOCK_MONOTONIC, &tick);
+		Int64 tickValue = static_cast<Int64>(tick.tv_sec) * 1000000000 + tick.tv_nsec;
+		double elapsedSeconds = static_cast<double>(tickValue - m_start) / static_cast<double>(m_freq);
+		m_start = tickValue;
+		return static_cast<Real>(elapsedSeconds);
+#endif
+	}
+
 #ifdef _WIN32
 	LARGE_INTEGER tick;
 	QueryPerformanceCounter(&tick);
