@@ -324,9 +324,9 @@ public:
 /*
 ** Prototype for Ring objects
 */
-class RingPrototypeClass : public W3DMPO, public PrototypeClass
+class RingPrototypeClass : public PrototypeClass
 {
-	W3DMPO_GLUE(RingPrototypeClass)
+	W3DMPO_CODE(RingPrototypeClass)
 
 public:
 	RingPrototypeClass ();

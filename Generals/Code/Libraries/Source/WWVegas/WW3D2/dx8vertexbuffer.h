@@ -26,12 +26,13 @@
  *                                                                                             *
  *              Original Author:: Jani Penttinen                                               *
  *                                                                                             *
- *                      $Author:: Jani_p                                                      $*
+ *                      $Author:: Kenny Mitchell                                               *
  *                                                                                             *
- *                     $Modtime:: 7/09/01 8:15p                                               $*
+ *                     $Modtime:: 06/26/02 5:06p                                             $*
  *                                                                                             *
- *                    $Revision:: 25                                                          $*
+ *                    $Revision:: 26                                                          $*
  *                                                                                             *
+ * 06/26/02 KM VB Vertex format size update for shaders                                       *
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -72,11 +73,8 @@ public:
 ** DX8VertexBufferClass
 ** This class wraps a DX8 vertex buffer.  Use the lock objects to modify or append to the vertex buffer.
 */
-class VertexBufferClass : public W3DMPO, public RefCountClass
+class VertexBufferClass : public RefCountClass
 {
-	// nope, an ABC
-	//W3DMPO_GLUE(VertexBufferClass)
-
 protected:
 	VertexBufferClass(unsigned type, unsigned FVF, unsigned short VertexCount);
 	virtual ~VertexBufferClass() override;
@@ -199,7 +197,7 @@ inline VertexFormatXYZNDUV2 * DynamicVBAccessClass::WriteLockClass::Get_Formatte
 */
 class DX8VertexBufferClass : public VertexBufferClass
 {
-	W3DMPO_GLUE(DX8VertexBufferClass)
+	W3DMPO_CODE(DX8VertexBufferClass)
 protected:
 	virtual ~DX8VertexBufferClass() override;
 public:
@@ -238,7 +236,7 @@ protected:
 */
 class SortingVertexBufferClass : public VertexBufferClass
 {
-	W3DMPO_GLUE(SortingVertexBufferClass)
+	W3DMPO_CODE(SortingVertexBufferClass)
 
 	friend DX8Wrapper;
 	friend SortingRendererClass;

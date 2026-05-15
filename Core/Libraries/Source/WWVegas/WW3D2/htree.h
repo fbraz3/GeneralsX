@@ -66,9 +66,9 @@ class HRawAnimClass;
 	by the HierarchyModelClass.
 
 */
-class HTreeClass : public W3DMPO
+class HTreeClass
 {
-	W3DMPO_GLUE(HTreeClass)
+	W3DMPO_CODE(HTreeClass)
 public:
 
 	enum
@@ -79,7 +79,7 @@ public:
 
 	HTreeClass();
 	HTreeClass(const HTreeClass & src);
-	virtual ~HTreeClass() override;
+	~HTreeClass();
 
 	int					Load_W3D(ChunkLoadClass & cload);
 	void					Init_Default();

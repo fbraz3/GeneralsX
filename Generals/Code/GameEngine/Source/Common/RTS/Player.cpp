@@ -487,6 +487,9 @@ void Player::init(const PlayerTemplate* pt)
 		deleteInstance(tof);
 	}
 
+	//Always off at the beginning of a game! Only GameLogic::update has
+	//the power to turn it on. Don't want to cause desyncs!
+	m_logicalRetaliationModeEnabled = FALSE;
 }
 
 //=============================================================================
@@ -675,7 +678,7 @@ void Player::update()
 		}
 	}
 
-#if !PRESERVE_RETAIL_BEHAVIOR && !RETAIL_COMPATIBLE_CRC
+#if !PRESERVE_TUNNEL_HEAL_STACKING && !RETAIL_COMPATIBLE_CRC
 	// TheSuperHackers @bugfix Stubbjax 26/09/2025 The Tunnel System now heals
 	// all units once per frame instead of once per frame per Tunnel Network.
 	TunnelTracker* tunnelSystem = getTunnelSystem();
