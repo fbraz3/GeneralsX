@@ -55,16 +55,16 @@ class Quaternion;
 
 ******************************************************************************/
 
-class MotionChannelClass : public W3DMPO
+class MotionChannelClass
 {
-	W3DMPO_GLUE(MotionChannelClass)
+	W3DMPO_CODE(MotionChannelClass)
 
 public:
 	void Do_Data_Compression(int datasize);
 	void Get_Vector(int frame,float * setvec) const;
 
 	MotionChannelClass();
-	virtual ~MotionChannelClass() override;
+	~MotionChannelClass();
 
 	bool	Load_W3D(ChunkLoadClass & cload);
 	WWINLINE int Get_Type() const { return Type; }
@@ -152,14 +152,14 @@ WWINLINE void MotionChannelClass::Get_Vector_As_Quat(int frame, Quaternion& quat
 
 ******************************************************************************/
 
-class BitChannelClass : public W3DMPO
+class BitChannelClass
 {
-	W3DMPO_GLUE(BitChannelClass)
+	W3DMPO_CODE(BitChannelClass)
 
 public:
 
 	BitChannelClass();
-	virtual ~BitChannelClass() override;
+	~BitChannelClass();
 
 	bool	Load_W3D(ChunkLoadClass & cload);
 	WWINLINE int	Get_Type() const { return Type; }
@@ -208,14 +208,14 @@ WWINLINE int BitChannelClass::Get_Bit(int frame) const
 
 ******************************************************************************/
 
-class TimeCodedMotionChannelClass : public W3DMPO
+class TimeCodedMotionChannelClass
 {
-	W3DMPO_GLUE(TimeCodedMotionChannelClass)
+	W3DMPO_CODE(TimeCodedMotionChannelClass)
 
 public:
 
 	TimeCodedMotionChannelClass();
-	virtual ~TimeCodedMotionChannelClass() override;
+	~TimeCodedMotionChannelClass();
 
 	bool	Load_W3D(ChunkLoadClass & cload);
 	int	Get_Type() { return Type; }
@@ -246,14 +246,14 @@ private:
 	friend class HCompressedAnimClass;
 };
 
-class AdaptiveDeltaMotionChannelClass : public W3DMPO
+class AdaptiveDeltaMotionChannelClass
 {
-	W3DMPO_GLUE(AdaptiveDeltaMotionChannelClass)
+	W3DMPO_CODE(AdaptiveDeltaMotionChannelClass)
 
 public:
 
 	AdaptiveDeltaMotionChannelClass();
-	virtual ~AdaptiveDeltaMotionChannelClass() override;
+	~AdaptiveDeltaMotionChannelClass();
 
 	bool	Load_W3D(ChunkLoadClass & cload);
 	int	Get_Type() { return Type; }
@@ -295,14 +295,14 @@ private:
 
 ******************************************************************************/
 
-class TimeCodedBitChannelClass : public W3DMPO
+class TimeCodedBitChannelClass
 {
-	W3DMPO_GLUE(TimeCodedBitChannelClass)
+	W3DMPO_CODE(TimeCodedBitChannelClass)
 
 public:
 
 	TimeCodedBitChannelClass();
-	virtual ~TimeCodedBitChannelClass() override;
+	~TimeCodedBitChannelClass();
 
 	bool	Load_W3D(ChunkLoadClass & cload);
 	int	Get_Type() { return Type; }

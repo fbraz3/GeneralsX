@@ -63,9 +63,9 @@ class MeshMatDescClass;
 ** that the mesh is using.
 **
 ***********************************************************************************************/
-class MaterialInfoClass : public W3DMPO, public RefCountClass
+class MaterialInfoClass : public RefCountClass
 {
-	W3DMPO_GLUE(MaterialInfoClass)
+	W3DMPO_CODE(MaterialInfoClass)
 public:
 
 	MaterialInfoClass();

@@ -44,9 +44,9 @@ class Drawable;
 /**
 This render object handles drawing tracks left by objects moving on the terrain.
 */
-class TerrainTracksRenderObjClass : public W3DMPO, public RenderObjClass
+class TerrainTracksRenderObjClass : public RenderObjClass
 {
-	W3DMPO_GLUE(TerrainTracksRenderObjClass)
+	W3DMPO_CODE(TerrainTracksRenderObjClass)
 
 	friend class TerrainTracksRenderObjClassSystem;
 
