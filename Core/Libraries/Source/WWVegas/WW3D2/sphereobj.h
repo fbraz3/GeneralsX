@@ -433,9 +433,9 @@ public:
 /*
 ** Prototype for Sphere objects
 */
-class SpherePrototypeClass : public W3DMPO, public PrototypeClass
+class SpherePrototypeClass : public PrototypeClass
 {
-	W3DMPO_GLUE(SpherePrototypeClass)
+	W3DMPO_CODE(SpherePrototypeClass)
 public:
 	SpherePrototypeClass ();
 	SpherePrototypeClass (SphereRenderObjClass *sphere);
