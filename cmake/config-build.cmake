@@ -24,6 +24,11 @@ endif()
 # macOS port option (Phase 5)
 option(SAGE_USE_MOLTENVK "Use MoltenVK for Vulkan on macOS (Phase 5 macOS port)" OFF)
 
+# SagePatch — optional QoL features for casual play (screenshot, cursor lock,
+# brightness, camera/scroll INI overrides). Compiles to a separate dylib that
+# is loaded via DYLD_INSERT_LIBRARIES at runtime. macOS-only for now.
+option(RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS, requires SDL3)" OFF)
+
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
     message("You must select one project to build, building Zero Hour by default.")
@@ -41,6 +46,7 @@ add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg sup
 add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux)")
 add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Linux)")
 add_feature_info(UpdateCheck SAGE_UPDATE_CHECK "In-game update check via GitHub Releases API")
+add_feature_info(SagePatch RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS)")
 
 set(RTS_BUILD_OUTPUT_SUFFIX "" CACHE STRING "Suffix appended to output names of installable targets")
 

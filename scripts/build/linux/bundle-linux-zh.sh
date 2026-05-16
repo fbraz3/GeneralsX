@@ -83,6 +83,19 @@ cp "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${BUNDLE_DIR}/"
 echo "  + GameSpy library"
 cp "${GAMESPY_LIB}" "${BUNDLE_DIR}/"
 
+# SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
+SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.so"
+SAGE_PATCH_OVERRIDE="${PROJECT_ROOT}/Patches/SagePatch/resources/Override.ini"
+if [[ -f "${SAGE_PATCH_LIB}" ]]; then
+    echo "  + libsage_patch (SagePatch QoL)"
+    cp "${SAGE_PATCH_LIB}" "${BUNDLE_DIR}/"
+    if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
+        mkdir -p "${BUNDLE_DIR}/Data/INI/Default/GameData"
+        cp "${SAGE_PATCH_OVERRIDE}" \
+           "${BUNDLE_DIR}/Data/INI/Default/GameData/SagePatch.ini"
+    fi
+fi
+
 # DXVK config
 if [[ -f "${DXVK_CONF_SRC}" ]]; then
     echo "  + dxvk.conf"
@@ -104,7 +117,20 @@ export LD_LIBRARY_PATH="${SCRIPT_DIR}:${LD_LIBRARY_PATH:-}"
 # Set DXVK environment
 export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
-export DXVK_HUD="${DXVK_HUD:-0}"
+
+# SagePatch (optional QoL: F11 screenshot, Scroll Lock cursor lock,
+# Ctrl+PgUp/Dn brightness, Ctrl+1..5 window snap). Loaded via LD_PRELOAD only
+# if libsage_patch.so is bundled. DXVK_HUD defaults to "fps" when active.
+if [[ -f "${SCRIPT_DIR}/libsage_patch.so" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    if [[ -n "${LD_PRELOAD:-}" ]]; then
+        export LD_PRELOAD="${SCRIPT_DIR}/libsage_patch.so:${LD_PRELOAD}"
+    else
+        export LD_PRELOAD="${SCRIPT_DIR}/libsage_patch.so"
+    fi
+    export DXVK_HUD="${DXVK_HUD:-fps}"
+else
+    export DXVK_HUD="${DXVK_HUD:-0}"
+fi
 
 # Auto-detect base Generals install path
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; then
