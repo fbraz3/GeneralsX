@@ -223,6 +223,11 @@ jobs:
           FAIL=0
 
           cd "$GAME_DIR"
+
+          echo "Game dir contents before test run:"
+          pwd
+          ls -la
+
           export LD_LIBRARY_PATH="$GAME_DIR:${LD_LIBRARY_PATH:-}"
           export DXVK_WSI_DRIVER=SDL3
           export DXVK_LOG_LEVEL=none
@@ -277,6 +282,11 @@ jobs:
           TIMEOUT_BIN="gtimeout"
 
           cd "$GAME_DIR"
+
+          echo "Game dir contents before test run:"
+          pwd
+          ls -la
+
           export DYLD_LIBRARY_PATH="$APP_RESOURCES/lib:${DYLD_LIBRARY_PATH:-}"
           export DYLD_FALLBACK_LIBRARY_PATH="$APP_RESOURCES/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"
           export DXVK_WSI_DRIVER=SDL3
@@ -302,10 +312,11 @@ jobs:
             NAME=$(basename "$rep")
             echo "=== $NAME ==="
 
-            OUTPUT=$($TIMEOUT_BIN 180 ./GeneralsXZH -headless -replay "$rep" 2>&1 || true)
+            OUTPUT=$($TIMEOUT_BIN 180 ./GeneralsXZH -headless -replay "$rep" 2>&1)
             CODE=$?
 
-            echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
+            #echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
+            echo "$OUTPUT"
 
             if [ $CODE -eq 0 ]; then
               echo "PASS"
