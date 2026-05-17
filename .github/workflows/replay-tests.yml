@@ -232,6 +232,9 @@ jobs:
           export LD_LIBRARY_PATH="$GAME_DIR:${LD_LIBRARY_PATH:-}"
           export DXVK_WSI_DRIVER=SDL3
           export DXVK_LOG_LEVEL=none
+          # GeneralsX @bugfix GitHubCopilot 17/05/2026 Force SDL dummy drivers for Linux headless replay CI on runners without display/audio devices.
+          export SDL_VIDEODRIVER=dummy
+          export SDL_AUDIODRIVER=dummy
           # Force lavapipe (CPU Vulkan) - no GPU available on GitHub runners
           export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
 
