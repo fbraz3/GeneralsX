@@ -4,26 +4,9 @@
 
 # GeneralsX - Cross-Platform Command & Conquer: Generals
 
-GeneralsX delivers native **Linux and macOS** builds of Command & Conquer: Generals and Zero Hour through a single modern codebase using **SDL3** (windowing/input), **DXVK** (DirectX 8 -> Vulkan graphics), **OpenAL** (audio), and **64-bit** builds.
-
-The project focuses on integration, adaptation, platform-specific fixes, enhancements, testing, packaging, and release workflows that make the port practical to build, run, and maintain.
+GeneralsX delivers **Linux and macOS** builds of **Command & Conquer: Generals and Zero Hour** through a single modern codebase.
 
 > Note: This project is not related to any mods with similar names and does not aim to extend or modify gameplay.
-
-## Project Goals
-
-GeneralsX exists to turn upstream preservation and porting work into a practical and maintainable project for active Linux and macOS players.
-
-Its main goals are:
-
-- Preserve retail gameplay behavior while modernizing the platform layer.
-- Maintain a **single codebase** with Linux and macOS as the active targets, while keeping a future Windows path possible.
-- Carry the adaptation work needed to make the stack function in practice across supported platforms, including repository-specific fixes when upstream constraints leave gaps.
-- Deliver reproducible builds, packaging, and release workflows that make the port usable beyond local development setups.
-- Replace the original Windows-only DirectX 8 / Miles stack with portable open-source equivalents where appropriate.
-- Keep upstream lineage clear by distinguishing foundational work from the integration, packaging, and platform support specific to GeneralsX.
-
-To stay up to date on project status, visit our [Dev Blog](docs/DEV_BLOG/).
 
 ## How to download
 
@@ -39,7 +22,22 @@ For release/runtime setup instructions (Linux and macOS), see:
 
 - [docs/BUILD/INSTALLATION.md](docs/BUILD/INSTALLATION.md)
 
-> **Don't have the game files yet?** The Steam version does not offer a macOS or Linux download. See [docs/BUILD/GETTING_THE_GAME_FILES.md](docs/BUILD/GETTING_THE_GAME_FILES.md) for three ways to obtain the original game assets (copy from Windows, CrossOver trial, or SteamCMD).
+> **Don't have the game files yet?** The Steam version does not offer a macOS or Linux download. See [docs/BUILD/GETTING_THE_GAME_FILES.md](docs/BUILD/GETTING_THE_GAME_FILES.md).
+
+## Project Goals
+
+GeneralsX exists to turn upstream preservation and porting work into a practical and maintainable project for active Linux and macOS players.
+
+Its main goals are:
+
+- Preserve retail gameplay behavior while modernizing the platform layer.
+- Maintain a **single codebase** with Linux and macOS as the active targets, while keeping a future Windows path possible.
+- Carry the adaptation work needed to make the stack function in practice across supported platforms, including repository-specific fixes when upstream constraints leave gaps.
+- Deliver reproducible builds, packaging, and release workflows that make the port usable beyond local development setups.
+- Replace the original Windows-only DirectX 8 / Miles stack with portable open-source equivalents where appropriate.
+- Keep upstream lineage clear by distinguishing foundational work from the integration, packaging, and platform support specific to GeneralsX.
+
+To stay up to date on project status, visit our [Dev Blog](docs/DEV_BLOG/).
 
 ## How does this project relate to other community projects?
 
