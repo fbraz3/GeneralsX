@@ -98,10 +98,52 @@ cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
-# GeneralsX @build GitHubCopilot 17/05/2026 Deploy FFmpeg runtime libs alongside Linux binary to avoid host dependency drift.
+copy_ldd_deps() {
+    local root="$1"
+    [[ -e "${root}" ]] || return 0
+
+    while IFS= read -r dep; do
+        case "${dep}" in
+            linux-vdso.so.1 | \
+            /lib64/ld-linux* | /lib/*/ld-linux* | /usr/lib/*/ld-linux* | /usr/lib64/ld-linux* | \
+            /lib/*/libc.so.* | /lib64/libc.so.* | /usr/lib/*/libc.so.* | /usr/lib64/libc.so.* | \
+            /lib/*/libm.so.* | /lib64/libm.so.* | /usr/lib/*/libm.so.* | /usr/lib64/libm.so.* | \
+            /lib/*/libpthread.so.* | /lib64/libpthread.so.* | /usr/lib/*/libpthread.so.* | /usr/lib64/libpthread.so.* | \
+            /lib/*/librt.so.* | /lib64/librt.so.* | /usr/lib/*/librt.so.* | /usr/lib64/librt.so.* | \
+            /lib/*/libdl.so.* | /lib64/libdl.so.* | /usr/lib/*/libdl.so.* | /usr/lib64/libdl.so.*)
+                continue
+                ;;
+        esac
+
+        cp -a "${dep}" "${RUNTIME_DIR}/" 2>/dev/null || true
+        if [[ -L "${dep}" ]]; then
+            local resolved
+            resolved="$(readlink -f "${dep}")"
+            cp -a "${resolved}" "${RUNTIME_DIR}/" 2>/dev/null || true
+        fi
+    done < <(ldd "${root}" | awk '{for (i = 1; i <= NF; ++i) { if ($i ~ /^\//) { print $i; break } }}' | sort -u)
+}
+
+# GeneralsX @build GitHubCopilot 17/05/2026 Deploy FFmpeg runtime libs transitively so runtime does not depend on host SONAME layout.
 echo "  Copying FFmpeg runtime libraries..."
-find "${FFMPEG_LIB_DIR}" -maxdepth 1 \( -name "libavcodec.so*" -o -name "libavformat.so*" -o -name "libavutil.so*" -o -name "libswresample.so*" -o -name "libswscale.so*" \) -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
-find "${FFMPEG_DEP_LIB_DIR}" -maxdepth 1 \( -name "libavcodec.so*" -o -name "libavformat.so*" -o -name "libavutil.so*" -o -name "libswresample.so*" -o -name "libswscale.so*" \) -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
+shopt -s nullglob
+ffmpeg_roots=(
+    "${FFMPEG_LIB_DIR}"/libavcodec.so*
+    "${FFMPEG_LIB_DIR}"/libavformat.so*
+    "${FFMPEG_LIB_DIR}"/libavutil.so*
+    "${FFMPEG_LIB_DIR}"/libswresample.so*
+    "${FFMPEG_LIB_DIR}"/libswscale.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavcodec.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavformat.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavutil.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libswresample.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libswscale.so*
+)
+shopt -u nullglob
+for ffmpeg_root in "${ffmpeg_roots[@]}"; do
+    cp -a "${ffmpeg_root}" "${RUNTIME_DIR}/" 2>/dev/null || true
+    copy_ldd_deps "${ffmpeg_root}"
+done
 
 if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
     echo "ERROR: Missing required runtime library: libavcodec.so*"
