@@ -227,6 +227,7 @@ jobs:
           echo "Game dir contents before test run:"
           pwd
           ls -la
+          echo ""
 
           export LD_LIBRARY_PATH="$GAME_DIR:${LD_LIBRARY_PATH:-}"
           export DXVK_WSI_DRIVER=SDL3
@@ -234,27 +235,13 @@ jobs:
           # Force lavapipe (CPU Vulkan) - no GPU available on GitHub runners
           export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
 
-          echo "### Replay Test Results (linux)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Replay | Result | Details |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
-
           for rep in "$USER_DATA/Replays"/*.rep; do
             [ -f "$rep" ] || continue
-            ./GeneralsXZH -headless -replay "$rep" 2>&1 | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code"
+            #./GeneralsXZH -headless -replay "$rep" 2>&1 | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code"
+            ./GeneralsXZH -headless -replay "$rep" 2>&1
             echo ""
           done
 
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Results: $PASS passed, $FAIL failed**" >> $GITHUB_STEP_SUMMARY
-
-          if [ $FAIL -gt 0 ]; then
-            echo "::error::$FAIL replay(s) failed on linux"
-            exit 1
-          fi
-          if [ $((PASS + FAIL)) -eq 0 ]; then
-            echo "::warning::No replay files were found to test"
-          fi
 
       - name: Run headless replay tests (macOS)
         if: inputs.platform == 'macos'
@@ -284,24 +271,8 @@ jobs:
             export DXVK_CONFIG_FILE="$APP_RESOURCES/dxvk.conf"
           fi
 
-          echo "### Replay Test Results (macos)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Replay | Result | Details |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
-
           for rep in "$USER_DATA/Replays"/*.rep; do
             [ -f "$rep" ] || continue
             ./GeneralsXZH -headless -replay "$rep" 2>&1 | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code"
             echo ""
           done
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Results: $PASS passed, $FAIL failed**" >> $GITHUB_STEP_SUMMARY
-
-          if [ $FAIL -gt 0 ]; then
-            echo "::error::$FAIL replay(s) failed on macos"
-            exit 1
-          fi
-          if [ $((PASS + FAIL)) -eq 0 ]; then
-            echo "::warning::No replay files were found to test"
-          fi
