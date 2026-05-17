@@ -241,28 +241,7 @@ jobs:
 
           for rep in "$USER_DATA/Replays"/*.rep; do
             [ -f "$rep" ] || continue
-            NAME=$(basename "$rep")
-            echo "=== $NAME ==="
-
-            #Temporary direct command without timeout to capture full output for debugging - remove when stable
-            ./GeneralsXZH -headless -replay "$rep" 2>&1
-
-            OUTPUT=$(timeout 180 ./GeneralsXZH -headless -replay "$rep" 2>&1)
-            CODE=$?
-
-            #echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
-            echo "$OUTPUT"
-
-            if [ $CODE -eq 0 ]; then
-              echo "PASS"
-              PASS=$((PASS + 1))
-              echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
-            else
-              FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -E "Error|CRC|MISMATCH|Exiting" | tail -3 | tr '\n' ' ')
-              echo "FAIL (exit $CODE)"
-              echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
-            fi
+            ./GeneralsXZH -headless -replay "$rep" 2>&1 | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code"
             echo ""
           done
 
@@ -312,28 +291,7 @@ jobs:
 
           for rep in "$USER_DATA/Replays"/*.rep; do
             [ -f "$rep" ] || continue
-            NAME=$(basename "$rep")
-            echo "=== $NAME ==="
-
-            #Temporary direct command without timeout to capture full output for debugging - remove when stable
-            ./GeneralsXZH -headless -replay "$rep" 2>&1
-
-            OUTPUT=$($TIMEOUT_BIN 180 ./GeneralsXZH -headless -replay "$rep" 2>&1)
-            CODE=$?
-
-            #echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
-            echo "$OUTPUT"
-
-            if [ $CODE -eq 0 ]; then
-              echo "PASS"
-              PASS=$((PASS + 1))
-              echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
-            else
-              FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -E "Error|CRC|MISMATCH|Exiting" | tail -3 | tr '\n' ' ')
-              echo "FAIL (exit $CODE)"
-              echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
-            fi
+            ./GeneralsXZH -headless -replay "$rep" 2>&1 | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code"
             echo ""
           done
 

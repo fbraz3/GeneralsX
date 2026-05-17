@@ -13,6 +13,8 @@ DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
+FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
+FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
 RUNTIME_DIR="${HOME}/GeneralsX/Generals"
 # Note: CMakeLists.txt uses OUTPUT_NAME GeneralsX on Linux (see Generals/Code/Main/CMakeLists.txt)
 BINARY_SRC="${BUILD_DIR}/Generals/GeneralsX"
@@ -79,6 +81,17 @@ cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
 # Copy GameSpy library (for online multiplayer)
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
+
+# GeneralsX @build GitHubCopilot 17/05/2026 Deploy FFmpeg runtime libs alongside Linux binary to avoid host dependency drift.
+echo "  Copying FFmpeg runtime libraries..."
+find "${FFMPEG_LIB_DIR}" -maxdepth 1 \( -name "libavcodec.so*" -o -name "libavformat.so*" -o -name "libavutil.so*" -o -name "libswresample.so*" -o -name "libswscale.so*" \) -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
+find "${FFMPEG_DEP_LIB_DIR}" -maxdepth 1 \( -name "libavcodec.so*" -o -name "libavformat.so*" -o -name "libavutil.so*" -o -name "libswresample.so*" -o -name "libswscale.so*" \) -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
+
+if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
+    echo "ERROR: Missing required runtime library: libavcodec.so*"
+    echo "Install FFmpeg runtime/dev packages (e.g. libavcodec-dev) and rebuild/deploy"
+    exit 1
+fi
 
 # Set RPATH so executable finds libraries in same directory
 echo "  Setting RPATH to \$ORIGIN..."
@@ -167,6 +180,7 @@ echo "Deploy complete"
 echo "   Executable: ${RUNTIME_DIR}/GeneralsX"
 echo "   SDL3 libs:  ${RUNTIME_DIR}/libSDL3*.so* + ${RUNTIME_DIR}/libSDL3_image*.so*"
 echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.so"
+echo "   FFmpeg:     ${RUNTIME_DIR}/libavcodec*.so* + libavformat*.so* + libavutil*.so*"
 # GeneralsX @tweak BenderAI 28/04/2026 Mirror macOS deploy summary labels/order for cross-platform script UX consistency.
 echo "   DXVK d3d9:  ${RUNTIME_DIR}/libdxvk_d3d9.so*"
 echo "   DXVK d3d8:  ${RUNTIME_DIR}/libdxvk_d3d8.so*"

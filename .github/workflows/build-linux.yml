@@ -199,6 +199,8 @@ jobs:
         run: |
           BINARY="build/${{ inputs.preset }}/${{ matrix.game.value }}/${{ matrix.game.output }}"
           RUNTIME_DIR="/tmp/GeneralsX-${{ matrix.game.value }}-deploy"
+          FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
+          FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
           mkdir -p "${RUNTIME_DIR}"
 
           echo "Creating deployment bundle at: ${RUNTIME_DIR}"
@@ -215,6 +217,11 @@ jobs:
 
           echo "  Copying OpenAL library..."
           find "build/${{ inputs.preset }}/_deps/openal_soft-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
+
+          # GeneralsX @build GitHubCopilot 17/05/2026 Bundle FFmpeg runtime libs in gzip package to match binary linkage used by replay CI.
+          echo "  Copying FFmpeg runtime libraries..."
+          find "${FFMPEG_LIB_DIR}" -maxdepth 1 \( -name "libavcodec.so*" -o -name "libavformat.so*" -o -name "libavutil.so*" -o -name "libswresample.so*" -o -name "libswscale.so*" \) -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
+          find "${FFMPEG_DEP_LIB_DIR}" -maxdepth 1 \( -name "libavcodec.so*" -o -name "libavformat.so*" -o -name "libavutil.so*" -o -name "libswresample.so*" -o -name "libswscale.so*" \) -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
 
           echo "  Copying GameSpy library..."
           find "build/${{ inputs.preset }}" -name "libgamespy.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
@@ -237,6 +244,10 @@ jobs:
           fi
           if ! compgen -G "${RUNTIME_DIR}/libopenal.so*" > /dev/null; then
             echo "ERROR: Missing required runtime library: libopenal.so*"
+            exit 1
+          fi
+          if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
+            echo "ERROR: Missing required runtime library: libavcodec.so*"
             exit 1
           fi
 
