@@ -244,6 +244,9 @@ jobs:
             NAME=$(basename "$rep")
             echo "=== $NAME ==="
 
+            #Temporary direct command without timeout to capture full output for debugging - remove when stable
+            ./GeneralsXZH -headless -replay "$rep" 2>&1
+
             OUTPUT=$(timeout 180 ./GeneralsXZH -headless -replay "$rep" 2>&1)
             CODE=$?
 
@@ -311,6 +314,9 @@ jobs:
             [ -f "$rep" ] || continue
             NAME=$(basename "$rep")
             echo "=== $NAME ==="
+
+            #Temporary direct command without timeout to capture full output for debugging - remove when stable
+            ./GeneralsXZH -headless -replay "$rep" 2>&1
 
             OUTPUT=$($TIMEOUT_BIN 180 ./GeneralsXZH -headless -replay "$rep" 2>&1)
             CODE=$?
