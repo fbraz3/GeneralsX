@@ -239,10 +239,11 @@ jobs:
             NAME=$(basename "$rep")
             echo "=== $NAME ==="
 
-            OUTPUT=$(timeout 180 ./GeneralsXZH -headless -replay "$rep" 2>&1 || true)
+            OUTPUT=$(timeout 180 ./GeneralsXZH -headless -replay "$rep" 2>&1)
             CODE=$?
 
-            echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
+            #echo "$OUTPUT" | grep -E "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH" | tail -10
+            echo "$OUTPUT"
 
             if [ $CODE -eq 0 ]; then
               echo "PASS"
