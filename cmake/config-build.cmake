@@ -8,7 +8,7 @@ option(RTS_BUILD_OPTION_PROFILE_TRACY "Build code with Tracy profiling enabled."
 option(RTS_BUILD_OPTION_DEBUG "Build code with the \"Debug\" configuration." OFF)
 option(RTS_BUILD_OPTION_ASAN "Build code with Address Sanitizer." OFF)
 option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
-option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
+option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support (Windows default ON, Linux/macOS via pkg-config)" ON)
 
 # Linux/SDL3 and OpenAL options (Phase 1 Linux port)
 option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS)" OFF)

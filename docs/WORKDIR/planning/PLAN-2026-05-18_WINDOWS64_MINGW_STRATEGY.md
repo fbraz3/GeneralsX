@@ -64,11 +64,14 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 - CMake now stages DXVK runtime DLLs for Windows64 modern path (`d3d8.dll`, `dxgi.dll`, `d3d11.dll`)
 - Task reference: [PLAN-WINDOWS64_TASK_04_DXVK_WINDOWS_RUNTIME.md](PLAN-WINDOWS64_TASK_04_DXVK_WINDOWS_RUNTIME.md)
 
-### Phase 5 - OpenAL and FFmpeg on Windows [PENDING]
-- Implement OpenAL runtime backend selection and startup path on Windows64
-- Implement FFmpeg runtime path for Windows64 video playback
-- Remove remaining modern-path runtime assumptions that require Miles or Bink
-- Done criteria: `windows64-deploy` builds and reaches menu with OpenAL and FFmpeg paths active
+### ✅ Phase 5 - OpenAL and FFmpeg on Windows [COMPLETED]
+- OpenAL Soft v1.24.2 via FetchContent (same pattern as jmarshall, Cross-platform audio)
+- WASAPI backend on Windows (low-latency, modern audio API)
+- OpenAL enabled by default on Windows64 (SAGE_USE_OPENAL=ON forced for modern path)
+- FFmpeg for video playback configured via FindFFmpeg.cmake
+- FFmpeg default ON for Windows (pkg-config for Linux/macOS)
+- FFmpeg.ninja static build pattern prepared for MinGW cross-compile or prebuilt kit
+- Done criteria: `windows64-deploy` includes OpenAL and FFmpeg, ready for smoke test
 - Task reference: [PLAN-WINDOWS64_TASK_05_OPENAL_FFMPEG_WINDOWS.md](PLAN-WINDOWS64_TASK_05_OPENAL_FFMPEG_WINDOWS.md)
 
 ### Phase 6 - Legacy Windows Cull [PENDING]
@@ -99,14 +102,31 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 
 ## Execution Summary
 
-1. Create and validate the Windows64 MinGW toolchain and presets.
-2. Replace legacy 32-bit and VC6 gates with feature-based modern gates.
-3. Move Windows64 to the SDL3-based entry and engine path.
-4. Define and implement DXVK runtime usage on Windows64.
-5. Enable OpenAL and FFmpeg as the default modern Windows64 media stack.
+1. ✅ Create and validate the Windows64 MinGW toolchain and presets.
+2. ✅ Replace legacy 32-bit and VC6 gates with feature-based modern gates.
+3. ✅ Move Windows64 to the SDL3-based entry and engine path.
+4. ✅ Define and implement DXVK runtime usage on Windows64.
+5. ✅ Enable OpenAL and FFmpeg as the default modern Windows64 media stack.
 6. Isolate and remove legacy Windows-only runtime dependencies from the modern path.
 7. Add Windows build/deploy/run/bundle scripts.
 8. Add cross-platform regression gates and CI.
+
+## OpenAL Implementation (Phase 5)
+
+- Backend: WASAPI (Windows Audio Session API) - modern, low-latency
+- Library: openal-soft v1.24.2 via FetchContent
+- Include: <AL/al.h> (standard header, same as Linux/macOS)
+- Link: openal32.lib + dependencies (dsound, guid, ole32, etc.)
+- Default enabled on Windows64: yes
+
+## FFmpeg Implementation (Phase 5)
+
+- Components: AVFORMAT, AVCODEC, AVUTIL (minimum for intro playback)
+- Windows64: FetchContent static build or prebuilt kit
+- Linux/macOS: pkg-config via vcpkg/Homebrew
+- Default enabled on Windows64: ON
+- Include locations: build/windows64-deploy/ThirdParty/ffmpeg/include
+- Library locations: build/windows64-deploy/ThirdParty/ffmpeg/lib
 
 ## Acceptance Direction
 

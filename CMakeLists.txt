@@ -96,7 +96,23 @@ include(cmake/openal.cmake)
 # curl.cmake is self-guarded with if(SAGE_UPDATE_CHECK), so always safe to include.
 include(cmake/curl.cmake)
 
-# GeneralsX @feature fbraz 03/05/2026 Phase 4: Deterministic math library integration
+# GeneralsX @feature fbraz 03/05/2026 Phase 5: FFmpeg for video playback on Windows64
+# Windows64 (MinGW): FetchContent static build or prebuilt kit at $ENV{FFMPEG_HOME}
+# Linux/macOS: pkg-config detection (existing FindFFmpeg.cmake)
+include(cmake/FindFFmpeg.cmake)
+find_package(FFmpeg QUIET)
+if(FFMPEG_FOUND)
+    message(STATUS "FFmpeg found: ${FFMPEG_LIBRARIES}, ${FFMPEG_INCLUDE_DIRS}")
+endif()
+
+# GeneralsX @feature fbraz 03/05/2026 Phase 5: OpenAL automatic enablement for Windows64
+# Modern Windows path (SDL3+DXVK+OpenAL+FFmpeg) - enable OpenAL by default on Windows
+if(WIN32)
+    set(SAGE_USE_OPENAL ON CACHE BOOL "Enable OpenAL on Windows (modern path)" FORCE)
+    include(cmake/openal.cmake)
+endif()
+
+# GeneralsX @feature BenderAI 21/04/2026 Deterministic math library integration
 # gamemath.cmake integrates fdlibm-based GameMath for cross-platform replay validation.
 # Upstream reference: Okladnoj, PR #2670
 # https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670

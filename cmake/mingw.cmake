@@ -57,7 +57,7 @@ if(MINGW)
         )
     endif()
     
-    # Required Windows libraries for DX8 + COM
+    # Required Windows libraries for DX8 + COM + OpenAL (Phase 5)
     link_libraries(
         uuid        # COM GUIDs
         ole32       # COM runtime
@@ -71,7 +71,18 @@ if(MINGW)
         dinput8     # DirectInput 8
         dsound      # DirectSound
         imm32       # Input Method Manager (IME)
+        openal32    # OpenAL Soft audio (WASAPI backend on Windows)
     )
+
+    # FFmpeg linking (Phase 5) - when available, link the static FFmpeg libraries
+    if(FFMPEG_FOUND)
+        list(APPEND MINGW_LINK_LIBS ${FFMPEG_LIBRARIES})
+    endif()
+    
+    # Link all configured libraries (including FFmpeg if available)
+    if(MINGW_LINK_LIBS)
+        link_libraries(${MINGW_LINK_LIBS})
+    endif()
     
     # Note: MinGW-w64 does not provide comsuppw (COM support utilities library).
     # COM support utilities (_com_util::ConvertStringToBSTR, ConvertBSTRToString)
