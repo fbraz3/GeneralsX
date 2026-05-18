@@ -14,6 +14,14 @@ Define and implement how DXVK is used by the Windows64 modern path.
 
 - The Windows64 modern build uses DXVK runtime assets instead of the native DX8 legacy path.
 
+## Implementation Reading (LLM)
+
+- `cmake/dx8.cmake`
+- `GeneralsMD/Code/CompatLib/CMakeLists.txt`
+- `Core/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
+- `Core/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+- `references/fighter19-dxvk-port/GeneralsMD/Code/CompatLib/CMakeLists.txt`
+
 ## Runtime Policy (Windows64)
 
 - Keep compile-time DirectX8 headers from `min-dx8-sdk` for stable type/import definitions.
@@ -29,3 +37,8 @@ Define and implement how DXVK is used by the Windows64 modern path.
 - Define the `d3d8.dll` bundle policy. (✅ DONE)
 - Confirm load order and runtime search rules. (✅ DONE)
 - Avoid any Linux/macOS regressions in the shared wrapper logic. (Validation tracked in Phase 8 gates)
+
+## Done Criteria
+
+- Windows64 modern build stages DXVK runtime DLLs for local app-first loading.
+- Shared DX8 wrapper path remains compatible with Linux/macOS behavior.

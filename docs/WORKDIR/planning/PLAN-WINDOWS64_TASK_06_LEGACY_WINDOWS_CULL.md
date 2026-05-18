@@ -2,7 +2,7 @@
 
 ## Scope
 
-Audit and classify legacy Windows-only code that collides with the modern path.
+Execute the removal/isolation of legacy Windows-only code that collides with the modern path.
 
 ## Files
 
@@ -14,10 +14,33 @@ Audit and classify legacy Windows-only code that collides with the modern path.
 
 ## Deliverable
 
-- A keep/isolate/remove table with implementation actions.
+- Modern Windows64 build path is free of unnecessary legacy dependencies, with guards/isolation where removal is not yet possible.
+
+## Implementation Reading (LLM)
+
+- `Core/GameEngineDevice/CMakeLists.txt`
+- `cmake/reactos-atl.cmake`
+- `cmake/widl.cmake`
+- `GeneralsMD/Code/Main/WinMain.cpp`
+- `Generals/Code/Main/WinMain.cpp`
+- `references/thesuperhackers-main/`
+
+## Execution Outputs
+
+- Keep/Isolate/Remove table committed with file-level decisions.
+- CMake and source changes that enforce those decisions in build/runtime paths.
+- Validation notes proving the modern path no longer drags legacy-only components by default.
 
 ## Checklist
 
-- Review Win32 display and input remnants.
-- Review ATL/COM and widl assumptions for Windows64 MSYS2.
-- Decide what remains necessary for the modern runtime.
+- Inventory legacy candidates (Win32 display/input, ATL/COM, WIDL, stubs) with owners.
+- Implement `remove` decisions directly in CMake/source where safe.
+- Implement `isolate` decisions behind explicit legacy guards or separate targets.
+- Keep only components proven necessary for modern runtime functionality.
+- Validate `windows64-deploy` configure/build after each cull batch.
+- Record what remains and why, with a concrete follow-up issue/task when not removed.
+
+## Done Criteria
+
+- Modern Windows64 build graph is free of removable legacy-only dependencies.
+- Remaining legacy pieces are explicitly isolated and documented with rationale.
