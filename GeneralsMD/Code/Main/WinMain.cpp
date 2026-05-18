@@ -894,9 +894,13 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 
 		// BGC - initialize COM
-	//	OleInitialize(nullptr);
+		//	OleInitialize(nullptr);
 
-
+		// GeneralsX @build GitHub Copilot 18/05/2026 Phase 3: Entry point selection
+		// Se SAGE_USE_SDL3=ON, usar SDL3GameEngine (modern path)
+		// Se SAGE_USE_SDL3=OFF, usar Win32GameEngine (legacy path)
+		// Note: This WinMain is only compiled when SAGE_USE_SDL3=OFF (legacy path)
+		// When SAGE_USE_SDL3=ON, SDL3Main.cpp is used instead
 
 		// Set up version info
 		TheVersion = NEW Version;
@@ -941,7 +945,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		shutdownMemoryManager();
 
 		// BGC - shut down COM
-	//	OleUninitialize();
+		//	OleUninitialize();
 	}
 	catch (...)
 	{
