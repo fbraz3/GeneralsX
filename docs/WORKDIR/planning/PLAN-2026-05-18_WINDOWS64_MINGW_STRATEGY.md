@@ -47,9 +47,12 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 - Modified `WinMain.cpp` with Phase 3 documentation
 - Feature flag `SAGE_USE_SDL3` controls which entry point is used
 
-### Phase 4 - DXVK Runtime on Windows [PENDING]
-- Extend DXVK integration for Windows64
-- Define `d3d8.dll` bundling and loading strategy
+### ✅ Phase 4 - DXVK Runtime on Windows [COMPLETED]
+- Extend DXVK integration for Windows64 (✅ DONE)
+- Define `d3d8.dll` bundling and loading strategy (✅ DONE)
+- Validate graphics device path without changing Linux/macOS behavior
+- DXVK already integrated via `dxvk_adapter.h`
+- Gate `SAGE_USE_DXVK` already exists
 
 ### Phase 5 - OpenAL and FFmpeg on Windows [PENDING]
 - Promote OpenAL as functional Windows64 audio backend
