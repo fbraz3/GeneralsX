@@ -236,11 +236,18 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
 )
 
 if(WIN32)
+    # GeneralsX @build GitHub Copilot 18/05/2026 Keep modern Windows64 MinGW path linkable when legacy Miles/Bink stubs are disabled.
     target_link_libraries(corei_gameenginedevice_public INTERFACE
-        binkstub
         d3d8lib
-        milesstub
     )
+
+    if(TARGET binkstub)
+        target_link_libraries(corei_gameenginedevice_public INTERFACE binkstub)
+    endif()
+
+    if(TARGET milesstub)
+        target_link_libraries(corei_gameenginedevice_public INTERFACE milesstub)
+    endif()
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux

@@ -60,7 +60,11 @@
 #include "GameClient/Mouse.h"
 #include "GameClient/IMEManager.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
+#ifdef SAGE_USE_SDL3
+#include "SDL3GameEngine.h"
+#else
 #include "Win32Device/Common/Win32GameEngine.h"
+#endif
 #include "Common/version.h"
 #include "BuildVersion.h"
 #include "GeneratedVersion.h"
@@ -937,9 +941,15 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 //=============================================================================
 GameEngine *CreateGameEngine()
 {
+	// GeneralsX @build GitHub Copilot 18/05/2026 Select SDL3 engine on modern Windows64 path while preserving legacy Win32 engine fallback.
+	#if defined(SAGE_USE_SDL3)
+	SDL3GameEngine *engine;
+	engine = NEW SDL3GameEngine;
+	#else
 	Win32GameEngine *engine;
-
 	engine = NEW Win32GameEngine;
+	#endif
+
 	//game engine may not have existed when app got focus so make sure it
 	//knows about current focus state.
 	engine->setIsActive(isWinMainActive);

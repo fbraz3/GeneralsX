@@ -14,8 +14,18 @@ Define and implement how DXVK is used by the Windows64 modern path.
 
 - The Windows64 modern build uses DXVK runtime assets instead of the native DX8 legacy path.
 
+## Runtime Policy (Windows64)
+
+- Keep compile-time DirectX8 headers from `min-dx8-sdk` for stable type/import definitions.
+- Stage DXVK runtime DLLs from the DXVK release bundle `x64/` directory into the build/runtime directory:
+	- `d3d8.dll`
+	- `dxgi.dll`
+	- `d3d11.dll`
+- Keep load behavior based on `LoadLibrary("D3D8.DLL")` from the engine wrapper; Windows DLL search order resolves the application-local DXVK `d3d8.dll` first.
+- Keep Linux/macOS DXVK behavior unchanged.
+
 ## Checklist
 
-- Define the `d3d8.dll` bundle policy.
-- Confirm load order and runtime search rules.
-- Avoid any Linux/macOS regressions in the shared wrapper logic.
+- Define the `d3d8.dll` bundle policy. (✅ DONE)
+- Confirm load order and runtime search rules. (✅ DONE)
+- Avoid any Linux/macOS regressions in the shared wrapper logic. (Validation tracked in Phase 8 gates)

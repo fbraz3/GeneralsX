@@ -10,9 +10,12 @@ target_link_libraries(g_wwcommon INTERFACE
 
 # GeneralsX @build BenderAI 10/03/2026 Platform-specific multimedia stubs
 if(WIN32)
-    target_link_libraries(g_wwcommon INTERFACE
-        milesstub
-    )
+    # GeneralsX @build GitHub Copilot 18/05/2026 Keep modern Windows64 MinGW path linkable when legacy Miles stubs are disabled.
+    if(TARGET milesstub)
+        target_link_libraries(g_wwcommon INTERFACE
+            milesstub
+        )
+    endif()
 endif()
 
 target_include_directories(g_wwcommon INTERFACE

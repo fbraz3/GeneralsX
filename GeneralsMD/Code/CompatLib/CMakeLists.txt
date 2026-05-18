@@ -52,8 +52,9 @@ endif()
 # GeneralsX @build BenderAI 10/02/2026
 # Configure d3d8lib target globally (created early in Core/CMakeLists.txt)
 # Fighter19's approach: Windows uses min-dx8-sdk, Linux uses ONLY DXVK headers
-if(SAGE_USE_DX8)
-    # Windows native: Use min-dx8-sdk headers and libs
+if(SAGE_USE_DX8 OR WIN32)
+    # Windows native + Windows64 modern DXVK runtime: use min-dx8-sdk headers/import libs.
+    # GeneralsX @build GitHub Copilot 18/05/2026 Keep Windows compile-time headers stable while runtime d3d8 is provided by DXVK.
     if(NOT dx8_SOURCE_DIR)
         message(FATAL_ERROR "DirectX 8 SDK (min-dx8-sdk) not fetched! Ensure cmake/dx8.cmake was included")
     endif()

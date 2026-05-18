@@ -11,18 +11,25 @@ endif()
 
 # GeneralsX @build BenderAI 13/02/2026 Windows-specific libraries
 if(WIN32)
+    # GeneralsX @build GitHub Copilot 18/05/2026 Keep modern Windows64 MinGW path linkable when legacy Miles/Bink stubs are disabled.
     target_link_libraries(z_generals PRIVATE
-        binkstub
         comctl32
         core_debug
         d3d8
         dinput8
         dxguid
         imm32
-        milesstub
         vfw32
         winmm
     )
+
+    if(TARGET binkstub)
+        target_link_libraries(z_generals PRIVATE binkstub)
+    endif()
+
+    if(TARGET milesstub)
+        target_link_libraries(z_generals PRIVATE milesstub)
+    endif()
 endif()
 
 # Cross-platform core libraries

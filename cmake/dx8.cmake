@@ -18,15 +18,63 @@
 
 set(DXVK_VERSION "v2.6")
 
-if(SAGE_USE_DX8)
-  # Windows: Fetch min-dx8-sdk for native DirectX 8
+if(SAGE_USE_DX8 OR WIN32)
+  # Windows: always fetch min-dx8-sdk for DirectX8 headers/import libs.
+  # GeneralsX @build GitHub Copilot 18/05/2026 Windows64 modern path still uses SDK headers while runtime D3D8 is provided by DXVK d3d8.dll.
   FetchContent_Declare(
     dx8
     GIT_REPOSITORY https://github.com/TheSuperHackers/min-dx8-sdk.git
     GIT_TAG        7bddff8c01f5fb931c3cb73d4aa8e66d303d97bc
   )
   FetchContent_MakeAvailable(dx8)
-  message(STATUS "Using DirectX 8 SDK (Windows native)")
+
+  if(SAGE_USE_DX8)
+    message(STATUS "Using DirectX 8 SDK (Windows native)")
+  else()
+    # GeneralsX @build GitHub Copilot 18/05/2026 Export a stable source-dir alias so shared CMake logic can resolve Win64 modern headers consistently.
+    set(dxvk_SOURCE_DIR "${dx8_SOURCE_DIR}" CACHE PATH "Header source for Windows64 modern DXVK path" FORCE)
+
+    # GeneralsX @build GitHub Copilot 18/05/2026 Windows64 DXVK runtime policy: stage DXVK d3d8/dxgi/d3d11 beside game executable.
+    FetchContent_Declare(
+      dxvk_windows
+      URL        https://github.com/doitsujin/dxvk/releases/download/${DXVK_VERSION}/dxvk-2.6.tar.gz
+    )
+    FetchContent_MakeAvailable(dxvk_windows)
+
+    set(DXVK_WINDOWS_X64_DIR "${dxvk_windows_SOURCE_DIR}/x64")
+    set(DXVK_WINDOWS_DLLS
+      d3d8.dll
+      dxgi.dll
+      d3d11.dll
+    )
+
+    add_custom_command(
+      OUTPUT  "${CMAKE_BINARY_DIR}/d3d8.dll"
+              "${CMAKE_BINARY_DIR}/dxgi.dll"
+              "${CMAKE_BINARY_DIR}/d3d11.dll"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DXVK_WINDOWS_X64_DIR}/d3d8.dll" "${CMAKE_BINARY_DIR}/d3d8.dll"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DXVK_WINDOWS_X64_DIR}/dxgi.dll" "${CMAKE_BINARY_DIR}/dxgi.dll"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DXVK_WINDOWS_X64_DIR}/d3d11.dll" "${CMAKE_BINARY_DIR}/d3d11.dll"
+      COMMENT "Staging DXVK Windows x64 runtime DLLs (d3d8/dxgi/d3d11)"
+    )
+
+    add_custom_target(dxvk_windows_runtime ALL
+      DEPENDS "${CMAKE_BINARY_DIR}/d3d8.dll"
+              "${CMAKE_BINARY_DIR}/dxgi.dll"
+              "${CMAKE_BINARY_DIR}/d3d11.dll"
+    )
+
+    install(
+      FILES
+        "${CMAKE_BINARY_DIR}/d3d8.dll"
+        "${CMAKE_BINARY_DIR}/dxgi.dll"
+        "${CMAKE_BINARY_DIR}/d3d11.dll"
+      DESTINATION .
+    )
+
+    message(STATUS "Using DXVK Windows runtime (x64) from: ${DXVK_WINDOWS_X64_DIR}")
+    message(STATUS "DXVK staged runtime DLLs: d3d8.dll, dxgi.dll, d3d11.dll")
+  endif()
 
 elseif(APPLE AND SAGE_USE_MOLTENVK)
   # macOS: Build DXVK 2.6 from source using Meson + MoltenVK

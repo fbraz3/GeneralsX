@@ -41,18 +41,18 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 - Modern Windows64 path uses SDL3, DXVK, OpenAL, FFmpeg; Miles/Bink disabled
 
 ### ✅ Phase 3 - Entry Point and Engine Selection [COMPLETED]
-- Unify `WinMain.cpp` and `SDL3Main.cpp` (✅ DONE)
-- Allow Windows64 modern builds to instantiate SDL3-based engine path (✅ DONE)
+- Keep platform entry files separated and controlled by build/platform rules (✅ DONE)
+- Allow Windows64 modern builds to instantiate SDL3-based engine path from WinMain factory (✅ DONE)
 - Keep any remaining legacy Win32 entrypoints isolated and optional
-- Modified `WinMain.cpp` with Phase 3 documentation
-- Feature flag `SAGE_USE_SDL3` controls which entry point is used
+- Modified `WinMain.cpp` factory logic with Phase 3 documentation
+- Feature flag `SAGE_USE_SDL3` controls which engine path is instantiated on Windows
 
 ### ✅ Phase 4 - DXVK Runtime on Windows [COMPLETED]
 - Extend DXVK integration for Windows64 (✅ DONE)
 - Define `d3d8.dll` bundling and loading strategy (✅ DONE)
-- Validate graphics device path without changing Linux/macOS behavior
-- DXVK already integrated via `dxvk_adapter.h`
-- Gate `SAGE_USE_DXVK` already exists
+- Validate graphics device path without changing Linux/macOS behavior (tracked under Phase 8 regression gates)
+- DXVK runtime loading path uses `LoadLibrary("D3D8.DLL")` and resolves app-local DXVK runtime first
+- CMake now stages DXVK runtime DLLs for Windows64 modern path (`d3d8.dll`, `dxgi.dll`, `d3d11.dll`)
 
 ### Phase 5 - OpenAL and FFmpeg on Windows [PENDING]
 - Promote OpenAL as functional Windows64 audio backend
@@ -74,58 +74,6 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 - Add Windows64 MinGW CI pipeline
 - Publish canonical setup documentation
 
-### Phase 1 - Toolchain and Presets
-
-- Add a MinGW-w64 x86_64 toolchain file.
-- Add `windows64-deploy` and `windows64-debug` presets.
-- Validate local MSYS2-based configure on Windows without any Visual Studio dependency.
-
-### Phase 2 - CMake Feature Gates
-
-- Remove hard dependencies on 32-bit checks from the modern path.
-- Gate Miles and Bink behind legacy-only conditions.
-- Ensure the modern path is driven by `SAGE_USE_SDL3`, `SAGE_USE_OPENAL`, `RTS_BUILD_OPTION_FFMPEG`, and DXVK-specific policy.
-
-### Phase 3 - Entry Point and Engine Selection
-
-- Unify `WinMain.cpp` and `SDL3Main.cpp` behind a modern backend selection strategy.
-- Allow Windows64 modern builds to instantiate the SDL3-based engine path.
-- Keep any remaining legacy Win32 entrypoints isolated and optional.
-
-### Phase 4 - DXVK Runtime on Windows
-
-- Extend the current DXVK integration so the Windows64 modern path uses DXVK instead of native DX8.
-- Define how `d3d8.dll` is bundled and loaded.
-- Validate the graphics device path without changing Linux/macOS behavior.
-
-### Phase 5 - OpenAL and FFmpeg on Windows
-
-- Promote OpenAL as the functional Windows64 audio backend.
-- Promote FFmpeg as the functional Windows64 video backend.
-- Remove or isolate any runtime dependency on Miles or Bink for the modern path.
-
-### Phase 6 - Legacy Windows Cull
-
-- Audit Win32 display/input code, DirectInput remnants, ATL/COM shims, and legacy stubs.
-- Classify each piece as keep, isolate, or remove.
-
-### Phase 7 - Bundle and Runtime Validation
-
-- Create a Windows build/deploy/run/bundle script set.
-- Define the runtime artifact layout for SDL3, DXVK, OpenAL, FFmpeg, and the game executables.
-- Add smoke launch validation.
-
-### Phase 8 - Cross-Platform Regression Gates
-
-- Re-run Linux and macOS configure/build smoke after each structural change.
-- Add Windows64 smoke validation with `-win -noshellmap`.
-- Add a minimal replay or determinism check set when feasible.
-
-### Phase 9 - CI and Docs Completion
-
-- Add a Windows64 MinGW CI pipeline.
-- Publish canonical setup and troubleshooting documentation.
-
 ## Task Summary
 
 1. Create and validate the Windows64 MinGW toolchain and presets.
@@ -138,6 +86,10 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 8. Add cross-platform regression gates and CI.
 
 ## Child Task Documents
+
+Notes:
+- Phase 0 is a completed baseline phase and does not have a dedicated child task file.
+- Cross-platform regression gate coverage is split across Task 07 (smoke validation) and Task 08 (CI/docs gates).
 
 - [PLAN-WINDOWS64_TASK_01_TOOLCHAIN_AND_PRESETS.md](PLAN-WINDOWS64_TASK_01_TOOLCHAIN_AND_PRESETS.md)
 - [PLAN-WINDOWS64_TASK_02_CMAKE_FEATURE_GATES.md](PLAN-WINDOWS64_TASK_02_CMAKE_FEATURE_GATES.md)
