@@ -224,11 +224,6 @@ jobs:
 
           cd "$GAME_DIR"
 
-          echo "Game dir contents before test run:"
-          pwd
-          ls -la
-          echo ""
-
           export LD_LIBRARY_PATH="$GAME_DIR:${LD_LIBRARY_PATH:-}"
           export DXVK_WSI_DRIVER=SDL3
           export DXVK_LOG_LEVEL=none
@@ -238,12 +233,49 @@ jobs:
           # Force lavapipe (CPU Vulkan) - no GPU available on GitHub runners
           export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
 
+          # GeneralsX @bugfix GitHubCopilot 17/05/2026 Restore deterministic replay report table with per-file pass/fail status on Linux CI.
+          echo "### Replay Test Results (linux)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Replay | Result | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
           for rep in "$USER_DATA/Replays"/*.rep; do
             [ -f "$rep" ] || continue
-            #./GeneralsXZH -headless -replay "$rep" 2>&1 | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code"
-            ./GeneralsXZH -headless -replay "$rep" 2>&1
+            NAME=$(basename "$rep")
+            echo "=== $NAME ==="
+
+            set +e
+            OUTPUT=$(timeout 180 ./GeneralsXZH -headless -replay "$rep" 2>&1)
+            CODE=$?
+            set -e
+
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+
+            if [ $CODE -eq 0 ]; then
+              PASS=$((PASS + 1))
+              echo "PASS"
+              echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
+            else
+              FAIL=$((FAIL + 1))
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
+              echo "FAIL (exit $CODE)"
+              echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
+            fi
+
             echo ""
           done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results: $PASS passed, $FAIL failed**" >> $GITHUB_STEP_SUMMARY
+
+          if [ $FAIL -gt 0 ]; then
+            echo "::error::$FAIL replay(s) failed on linux"
+            exit 1
+          fi
+          if [ $((PASS + FAIL)) -eq 0 ]; then
+            echo "::warning::No replay files were found to test"
+          fi
 
 
       - name: Run headless replay tests (macOS)
@@ -254,10 +286,6 @@ jobs:
           TIMEOUT_BIN="gtimeout"
 
           cd "$GAME_DIR"
-
-          echo "Game dir contents before test run:"
-          pwd
-          ls -la
 
           export DYLD_LIBRARY_PATH="$APP_RESOURCES/lib:${DYLD_LIBRARY_PATH:-}"
           export DYLD_FALLBACK_LIBRARY_PATH="$APP_RESOURCES/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"
@@ -274,8 +302,46 @@ jobs:
             export DXVK_CONFIG_FILE="$APP_RESOURCES/dxvk.conf"
           fi
 
+          # GeneralsX @bugfix GitHubCopilot 17/05/2026 Restore deterministic replay report table with per-file pass/fail status on macOS CI.
+          echo "### Replay Test Results (macos)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Replay | Result | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
           for rep in "$USER_DATA/Replays"/*.rep; do
             [ -f "$rep" ] || continue
-            ./GeneralsXZH -headless -replay "$rep" 2>&1 | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code"
+            NAME=$(basename "$rep")
+            echo "=== $NAME ==="
+
+            set +e
+            OUTPUT=$($TIMEOUT_BIN 180 ./GeneralsXZH -headless -replay "$rep" 2>&1)
+            CODE=$?
+            set -e
+
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+
+            if [ $CODE -eq 0 ]; then
+              PASS=$((PASS + 1))
+              echo "PASS"
+              echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
+            else
+              FAIL=$((FAIL + 1))
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
+              echo "FAIL (exit $CODE)"
+              echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
+            fi
+
             echo ""
           done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results: $PASS passed, $FAIL failed**" >> $GITHUB_STEP_SUMMARY
+
+          if [ $FAIL -gt 0 ]; then
+            echo "::error::$FAIL replay(s) failed on macos"
+            exit 1
+          fi
+          if [ $((PASS + FAIL)) -eq 0 ]; then
+            echo "::warning::No replay files were found to test"
+          fi
