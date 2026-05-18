@@ -47,6 +47,7 @@
 #include "W3DDevice/GameClient/W3DWebBrowser.h"
 #include "StdDevice/Common/StdLocalFileSystem.h"
 #include "StdDevice/Common/StdBIGFileSystem.h"
+#include "Common/GlobalData.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <cstdio>
@@ -157,6 +158,16 @@ SDL3GameEngine::~SDL3GameEngine()
 void SDL3GameEngine::init(void)
 {
 	fprintf(stderr, "INFO: SDL3GameEngine::init() starting\n");
+
+	if (TheGlobalData && TheGlobalData->m_headless) {
+		// GeneralsX @bugfix Copilot 17/05/2026 Allow headless replay path to initialize engine subsystems without an SDL window.
+		fprintf(stderr, "INFO: SDL3GameEngine::init() headless mode - skipping SDL window binding\n");
+		m_SDLWindow = nullptr;
+		m_IsInitialized = true;
+		m_IsActive = true;
+		GameEngine::init();
+		return;
+	}
 
 	// Verify window was created by SDL3Main.cpp
 	extern SDL_Window* TheSDL3Window;

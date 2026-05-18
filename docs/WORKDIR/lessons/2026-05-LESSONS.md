@@ -1,5 +1,19 @@
 # 2026-05 Lessons
 
+## 2026-05-17 - Linux headless replay must accept GNU-style flags and skip SDL3 bootstrap
+
+- Symptom: Running replay simulation with `--headless --replay <file.rep>` still initialized SDL3 video/Vulkan/window and then failed in normal startup paths (including GameData loading), behaving like non-headless execution.
+- Root cause: Command-line parsing matched only single-hyphen tokens (`-headless`, `-replay`, `-jobs`), so GNU-style double-hyphen flags were silently ignored. Linux `SDL3Main` also lacked an explicit headless guard before SDL video/window initialization.
+- Fix applied: Normalized `--flag` to `-flag` during command-line matching and added Linux entry-point guard to skip SDL3 video/Vulkan/window bootstrap when `m_headless` is set.
+- Prevention: Keep startup parser tolerant to both `-flag` and `--flag` forms for CLI automation, and enforce headless gating in platform entry points before any graphics/window setup.
+
+## 2026-05-17 - SDL3 engine init contract must support headless execution without window handles
+
+- Symptom: After skipping SDL3 bootstrap in headless mode, replay startup logged missing `TheSDL3Window`/`ApplicationHWnd` and then crashed with segmentation fault.
+- Root cause: `SDL3GameEngine::init()` treated missing window handles as fatal and returned before `GameEngine::init()`, leaving required subsystems uninitialized while execution continued.
+- Fix applied: Added explicit `m_headless` branch in `SDL3GameEngine::init()` to initialize engine subsystems via `GameEngine::init()` without binding an SDL window.
+- Prevention: When adding headless guards in platform entry points, keep engine-level init contracts aligned so headless paths still run full subsystem initialization.
+
 ## 2026-05-11 - Reverse-diff parity should mirror only low-risk behavioral deltas
 
 - Symptom: Wave 5 reverse scan found multiple Generals-only annotated files, but most differences were expansion-specific or annotation-only.

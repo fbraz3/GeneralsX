@@ -13,6 +13,8 @@ DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
+FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
+FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
 RUNTIME_DIR="${HOME}/GeneralsX/Generals"
 # Note: CMakeLists.txt uses OUTPUT_NAME GeneralsX on Linux (see Generals/Code/Main/CMakeLists.txt)
 BINARY_SRC="${BUILD_DIR}/Generals/GeneralsX"
@@ -79,6 +81,59 @@ cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
 # Copy GameSpy library (for online multiplayer)
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
+
+copy_ldd_deps() {
+    local root="$1"
+    [[ -e "${root}" ]] || return 0
+
+    while IFS= read -r dep; do
+        case "${dep}" in
+            linux-vdso.so.1 | \
+            /lib64/ld-linux* | /lib/*/ld-linux* | /usr/lib/*/ld-linux* | /usr/lib64/ld-linux* | \
+            /lib/*/libc.so.* | /lib64/libc.so.* | /usr/lib/*/libc.so.* | /usr/lib64/libc.so.* | \
+            /lib/*/libm.so.* | /lib64/libm.so.* | /usr/lib/*/libm.so.* | /usr/lib64/libm.so.* | \
+            /lib/*/libpthread.so.* | /lib64/libpthread.so.* | /usr/lib/*/libpthread.so.* | /usr/lib64/libpthread.so.* | \
+            /lib/*/librt.so.* | /lib64/librt.so.* | /usr/lib/*/librt.so.* | /usr/lib64/librt.so.* | \
+            /lib/*/libdl.so.* | /lib64/libdl.so.* | /usr/lib/*/libdl.so.* | /usr/lib64/libdl.so.*)
+                continue
+                ;;
+        esac
+
+        cp -a "${dep}" "${RUNTIME_DIR}/" 2>/dev/null || true
+        if [[ -L "${dep}" ]]; then
+            local resolved
+            resolved="$(readlink -f "${dep}")"
+            cp -a "${resolved}" "${RUNTIME_DIR}/" 2>/dev/null || true
+        fi
+    done < <(ldd "${root}" | awk '{for (i = 1; i <= NF; ++i) { if ($i ~ /^\//) { print $i; break } }}' | sort -u)
+}
+
+# GeneralsX @build GitHubCopilot 17/05/2026 Deploy FFmpeg runtime libs transitively so runtime does not depend on host SONAME layout.
+echo "  Copying FFmpeg runtime libraries..."
+shopt -s nullglob
+ffmpeg_roots=(
+    "${FFMPEG_LIB_DIR}"/libavcodec.so*
+    "${FFMPEG_LIB_DIR}"/libavformat.so*
+    "${FFMPEG_LIB_DIR}"/libavutil.so*
+    "${FFMPEG_LIB_DIR}"/libswresample.so*
+    "${FFMPEG_LIB_DIR}"/libswscale.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavcodec.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavformat.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavutil.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libswresample.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libswscale.so*
+)
+shopt -u nullglob
+for ffmpeg_root in "${ffmpeg_roots[@]}"; do
+    cp -a "${ffmpeg_root}" "${RUNTIME_DIR}/" 2>/dev/null || true
+    copy_ldd_deps "${ffmpeg_root}"
+done
+
+if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
+    echo "ERROR: Missing required runtime library: libavcodec.so*"
+    echo "Install FFmpeg runtime/dev packages (e.g. libavcodec-dev) and rebuild/deploy"
+    exit 1
+fi
 
 # Set RPATH so executable finds libraries in same directory
 echo "  Setting RPATH to \$ORIGIN..."
@@ -167,6 +222,7 @@ echo "Deploy complete"
 echo "   Executable: ${RUNTIME_DIR}/GeneralsX"
 echo "   SDL3 libs:  ${RUNTIME_DIR}/libSDL3*.so* + ${RUNTIME_DIR}/libSDL3_image*.so*"
 echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.so"
+echo "   FFmpeg:     ${RUNTIME_DIR}/libavcodec*.so* + libavformat*.so* + libavutil*.so*"
 # GeneralsX @tweak BenderAI 28/04/2026 Mirror macOS deploy summary labels/order for cross-platform script UX consistency.
 echo "   DXVK d3d9:  ${RUNTIME_DIR}/libdxvk_d3d9.so*"
 echo "   DXVK d3d8:  ${RUNTIME_DIR}/libdxvk_d3d8.so*"
