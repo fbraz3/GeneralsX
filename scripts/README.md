@@ -36,6 +36,10 @@ Reserved for modern Windows toolchain (VS2022 + SDL3 + DXVK + OpenAL)
 - `docker-build-images.sh` - Build pre-configured Docker images (Linux + MinGW)
 - `docker-install.sh` - Docker environment validation
 
+#### `env/` - Local Windows Environment Helpers
+- `setup-mingw-windows.ps1` - Configure the current PowerShell session for MSYS2 MinGW32
+- `enter-mingw-windows.cmd` - Open a new PowerShell window with the MinGW/MSYS2 environment preloaded
+
 #### `env/cache/` - Compiler Cache
 - `setup_ccache.sh` - Configure ccache (GCC/Clang)
 - `test_ccache.sh` - Test ccache functionality

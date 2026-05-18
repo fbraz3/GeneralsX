@@ -194,6 +194,35 @@
             }
         },
         {
+            "name": "windows64-deploy",
+            "displayName": "Windows 64-bit MinGW-w64 (SDL3/DXVK/OpenAL) Release",
+            "generator": "Ninja",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/mingw-w64-x86_64.cmake",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "SAGE_USE_DX8": "OFF",
+                "SAGE_USE_SDL3": "ON",
+                "SAGE_USE_OPENAL": "ON",
+                "SAGE_USE_GLM": "ON",
+                "SAGE_UPDATE_CHECK": "ON",
+                "RTS_CRASHDUMP_ENABLE": "OFF",
+                "RTS_BUILD_OPTION_FFMPEG": "ON"
+            }
+        },
+        {
+            "name": "windows64-debug",
+            "displayName": "Windows 64-bit MinGW-w64 (SDL3/DXVK/OpenAL) Debug",
+            "hidden": false,
+            "inherits": "windows64-deploy",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "RTS_BUILD_OPTION_DEBUG": "ON"
+            }
+        },
+        {
             "name": "linux64-deploy",
             "displayName": "Linux 64-bit DXVK/SDL3/OpenAL Release",
             "inherits": "default-vcpkg",
@@ -337,6 +366,18 @@
             "configurePreset": "mingw-w64-i686-profile",
             "displayName": "Build MinGW-w64 32-bit (i686) Profile",
             "description": "Build MinGW-w64 32-bit (i686) Profile"
+        },
+        {
+            "name": "windows64-deploy",
+            "configurePreset": "windows64-deploy",
+            "displayName": "Build Windows 64-bit MinGW-w64 (SDL3/DXVK/OpenAL) Release",
+            "description": "Build the modern Windows64 MinGW path with SDL3, DXVK, OpenAL, and FFmpeg"
+        },
+        {
+            "name": "windows64-debug",
+            "configurePreset": "windows64-debug",
+            "displayName": "Build Windows 64-bit MinGW-w64 (SDL3/DXVK/OpenAL) Debug",
+            "description": "Build the modern Windows64 MinGW path in Debug"
         },
         {
             "name": "linux64-deploy",
@@ -538,6 +579,32 @@
                 {
                     "type": "build",
                     "name": "mingw-w64-i686-profile"
+                }
+            ]
+        },
+        {
+            "name": "windows64-deploy",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows64-deploy"
+                },
+                {
+                    "type": "build",
+                    "name": "windows64-deploy"
+                }
+            ]
+        },
+        {
+            "name": "windows64-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows64-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "windows64-debug"
                 }
             ]
         }

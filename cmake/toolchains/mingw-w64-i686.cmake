@@ -6,15 +6,28 @@ set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR i686)
 
 # Specify the cross compiler
-set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
-set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
-set(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
-set(CMAKE_AR i686-w64-mingw32-ar)
-set(CMAKE_RANLIB i686-w64-mingw32-ranlib)
-set(CMAKE_DLLTOOL i686-w64-mingw32-dlltool)
+if(DEFINED ENV{MSYSTEM_PREFIX} AND NOT "$ENV{MSYSTEM_PREFIX}" STREQUAL "")
+	set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
+	set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
+	set(CMAKE_RC_COMPILER windres)
+	set(CMAKE_AR ar)
+	set(CMAKE_RANLIB ranlib)
+	set(CMAKE_DLLTOOL dlltool)
+else()
+	set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
+	set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
+	set(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
+	set(CMAKE_AR i686-w64-mingw32-ar)
+	set(CMAKE_RANLIB i686-w64-mingw32-ranlib)
+	set(CMAKE_DLLTOOL i686-w64-mingw32-dlltool)
+endif()
 
 # Target environment
-set(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32)
+if(DEFINED ENV{MSYSTEM_PREFIX} AND NOT "$ENV{MSYSTEM_PREFIX}" STREQUAL "")
+	set(CMAKE_FIND_ROOT_PATH "$ENV{MSYSTEM_PREFIX}")
+else()
+	set(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32)
+endif()
 
 # Adjust the default behavior of the FIND_XXX() commands:
 # search programs in the host environment
