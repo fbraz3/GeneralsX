@@ -13,7 +13,7 @@ on:
       platform:
         required: true
         type: string
-        description: "Target platform: linux or macos"
+        description: "Target platform: linux, linux-flatpak or macos"
       game-artifact:
         required: true
         type: string
@@ -26,7 +26,7 @@ on:
 jobs:
   replay-test-zh:
     name: ZH Replay Tests (${{ inputs.platform }})
-    runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || 'macos-latest' }}
+    runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
     timeout-minutes: 45
 
     steps:
@@ -49,6 +49,15 @@ jobs:
           sudo apt-get update -qq
           # lavapipe: software Vulkan renderer (no GPU required in CI)
           sudo apt-get install -y -qq p7zip-full mesa-vulkan-drivers libvulkan1
+
+      - name: Install system dependencies (Linux Flatpak)
+        if: inputs.platform == 'linux-flatpak'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq p7zip-full flatpak
+
+          flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak --user install -y flathub org.freedesktop.Platform//25.08
 
       - name: Install system dependencies (macOS)
         if: inputs.platform == 'macos'
@@ -115,6 +124,20 @@ jobs:
           echo "Game bundle contents (Resources):"
           ls -la "$APP_RESOURCES/"
 
+      - name: Install game bundle (Linux Flatpak)
+        if: inputs.platform == 'linux-flatpak'
+        run: |
+          FLATPAK_FILE=$(find /tmp/game-artifact -name "*.flatpak" -type f | head -1)
+          if [ -z "$FLATPAK_FILE" ] || [ ! -f "$FLATPAK_FILE" ]; then
+            echo "ERROR: Flatpak bundle not found in downloaded artifact"
+            find /tmp/game-artifact -maxdepth 5 -type f -print || true
+            exit 1
+          fi
+
+          echo "Installing Flatpak bundle: $FLATPAK_FILE"
+          flatpak --user install -y "$FLATPAK_FILE"
+          flatpak --user info com.fbraz3.GeneralsXZH
+
       # -----------------------------------------------------------------------
       # 4. Check out and extract game assets (password-protected 7z, uses LFS)
       # -----------------------------------------------------------------------
@@ -155,7 +178,7 @@ jobs:
           path: ci-replays-repo
 
       - name: Set up user data directories (Linux)
-        if: inputs.platform == 'linux'
+        if: inputs.platform == 'linux' || inputs.platform == 'linux-flatpak'
         run: |
           USER_DATA="$HOME/.local/share/GeneralsX/GeneralsZH"
           MAPS_DIR="$USER_DATA/Maps"
@@ -180,6 +203,15 @@ jobs:
           fi
 
           echo "USER_DATA=$USER_DATA" >> $GITHUB_ENV
+
+      - name: Extract game assets (Linux Flatpak)
+        if: inputs.platform == 'linux-flatpak'
+        run: |
+          # For Flatpak replay tests assets must be in xdg-data path visible to sandbox.
+          echo "Extracting generalszh.7z into: $USER_DATA"
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$USER_DATA" -y
+          echo "Big files found:"
+          ls "$USER_DATA/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
 
       - name: Set up user data directories (macOS)
         if: inputs.platform == 'macos'
@@ -271,6 +303,60 @@ jobs:
 
           if [ $FAIL -gt 0 ]; then
             echo "::error::$FAIL replay(s) failed on linux"
+            exit 1
+          fi
+          if [ $((PASS + FAIL)) -eq 0 ]; then
+            echo "::warning::No replay files were found to test"
+          fi
+
+      - name: Run headless replay tests (Linux Flatpak)
+        if: inputs.platform == 'linux-flatpak'
+        run: |
+          PASS=0
+          FAIL=0
+
+          export DXVK_LOG_LEVEL=none
+          export SDL_VIDEODRIVER=dummy
+          export SDL_AUDIODRIVER=dummy
+
+          # GeneralsX @bugfix GitHubCopilot 18/05/2026 Run deterministic Linux replay CI using Flatpak runtime instead of gzip bundle.
+          echo "### Replay Test Results (linux-flatpak)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Replay | Result | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          for rep in "$USER_DATA/Replays"/*.rep; do
+            [ -f "$rep" ] || continue
+            NAME=$(basename "$rep")
+            echo "=== $NAME ==="
+
+            set +e
+            OUTPUT=$(timeout 180 flatpak run --env=SDL_VIDEODRIVER=dummy --env=SDL_AUDIODRIVER=dummy --env=DXVK_LOG_LEVEL=none com.fbraz3.GeneralsXZH -headless -replay "$rep" 2>&1)
+            CODE=$?
+            set -e
+
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+
+            if [ $CODE -eq 0 ]; then
+              PASS=$((PASS + 1))
+              echo "PASS"
+              echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
+            else
+              FAIL=$((FAIL + 1))
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
+              echo "FAIL (exit $CODE)"
+              echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
+            fi
+
+            echo ""
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results: $PASS passed, $FAIL failed**" >> $GITHUB_STEP_SUMMARY
+
+          if [ $FAIL -gt 0 ]; then
+            echo "::error::$FAIL replay(s) failed on linux-flatpak"
             exit 1
           fi
           if [ $((PASS + FAIL)) -eq 0 ]; then
