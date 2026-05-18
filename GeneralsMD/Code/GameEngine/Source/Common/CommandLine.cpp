@@ -1433,13 +1433,19 @@ static void parseCommandLine(const CommandLineParam* params, int numParams)
 	{
 		// Look at arg #i
 		Bool found = false;
+		// GeneralsX @bugfix Copilot 17/05/2026 Accept GNU-style "--flag" aliases for existing "-flag" command line options.
+		const char *normalizedArg = argv[arg];
+		if (normalizedArg != nullptr && normalizedArg[0] == '-' && normalizedArg[1] == '-')
+		{
+			normalizedArg += 1;
+		}
 		for (int param=0; !found && param<numParams; ++param)
 		{
 			int len = strlen(params[param].name);
-			int len2 = strlen(argv[arg]);
+			int len2 = strlen(normalizedArg);
 			if (len2 != len)
 				continue;
-			if (strnicmp(argv[arg], params[param].name, len) == 0)
+			if (strnicmp(normalizedArg, params[param].name, len) == 0)
 			{
 				arg += params[param].func(&argv[0]+arg, argc-arg);
 				found = true;

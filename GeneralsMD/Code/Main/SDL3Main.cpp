@@ -268,6 +268,12 @@ int main(int argc, char* argv[])
 		// For now, let CommandLine::parseCommandLineForStartup() handle this
 		CommandLine::parseCommandLineForStartup();
 
+		// GeneralsX @bugfix Copilot 17/05/2026 Skip SDL3 window bootstrap for CLI/headless replay execution.
+		const bool isHeadlessMode = (TheGlobalData != nullptr && TheGlobalData->m_headless);
+		if (isHeadlessMode) {
+			fprintf(stderr, "INFO: Headless mode detected, skipping SDL3 video/Vulkan window initialization\n");
+		} else {
+
 		// GeneralsX @bugfix felipebraz 16/02/2026
 		// Initialize SDL3 and Vulkan BEFORE creating GameEngine (fighter19 pattern)
 		// This prevents LLVM SIGSEGV crash during Vulkan driver enumeration
@@ -312,6 +318,7 @@ int main(int argc, char* argv[])
 		// Store window handle globally (cast SDL_Window* to HWND for compatibility)
 		ApplicationHWnd = (HWND)TheSDL3Window;
 		fprintf(stderr, "INFO: SDL3 window created successfully\n");
+		}
 
 		// Call cross-platform game entry point
 		exitcode = GameMain();

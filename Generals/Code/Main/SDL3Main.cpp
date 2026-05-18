@@ -268,50 +268,57 @@ int main(int argc, char* argv[])
 		// For now, let CommandLine::parseCommandLineForStartup() handle this
 		CommandLine::parseCommandLineForStartup();
 
-		// GeneralsX @bugfix felipebraz 16/02/2026
-		// Initialize SDL3 and Vulkan BEFORE creating GameEngine (fighter19 pattern)
-		// This prevents LLVM SIGSEGV crash during Vulkan driver enumeration
-		// Must be done here, not in SDL3GameEngine::init() which is too late
-		fprintf(stderr, "INFO: Initializing SDL3 video subsystem...\n");
-		if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
-			fprintf(stderr, "FATAL: Failed to initialize SDL3: %s\n", SDL_GetError());
-			return 1;
+		// GeneralsX @bugfix Copilot 17/05/2026 Skip SDL3 window bootstrap for CLI/headless replay execution.
+		const bool isHeadlessMode = (TheGlobalData != nullptr && TheGlobalData->m_headless);
+		if (isHeadlessMode) {
+			fprintf(stderr, "INFO: Headless mode detected, skipping SDL3 video/Vulkan window initialization\n");
+		} else {
+
+			// GeneralsX @bugfix felipebraz 16/02/2026
+			// Initialize SDL3 and Vulkan BEFORE creating GameEngine (fighter19 pattern)
+			// This prevents LLVM SIGSEGV crash during Vulkan driver enumeration
+			// Must be done here, not in SDL3GameEngine::init() which is too late
+			fprintf(stderr, "INFO: Initializing SDL3 video subsystem...\n");
+			if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+				fprintf(stderr, "FATAL: Failed to initialize SDL3: %s\n", SDL_GetError());
+				return 1;
+			}
+
+			// Set DXVK WSI driver before loading Vulkan
+			setenv("DXVK_WSI_DRIVER", "SDL3", 1);
+
+			// GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD before loading Vulkan.
+			// libvulkan_lvp.so crashes during static initialization with LLVM 20.x when the Vulkan
+			// loader enumerates all ICDs. Restrict to hardware ICDs first.
+			FilterSoftwareVulkanICDs();
+			FilterPipeWireOpenAL();
+
+			// Load Vulkan library for DXVK DirectX8→Vulkan translation
+			fprintf(stderr, "INFO: Loading Vulkan library...\n");
+			if (!SDL_Vulkan_LoadLibrary(nullptr)) {
+				fprintf(stderr, "WARNING: Failed to load Vulkan: %s\n", SDL_GetError());
+				fprintf(stderr, "WARNING: Continuing without Vulkan (may use software rendering)\n");
+			}
+
+			// Create SDL3 window with Vulkan support
+			fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
+			Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
+			TheSDL3Window = SDL_CreateWindow(
+				"Command & Conquer Generals",
+				1024, 768,  // Default resolution
+				windowFlags
+			);
+
+			if (!TheSDL3Window) {
+				fprintf(stderr, "FATAL: Failed to create SDL3 window: %s\n", SDL_GetError());
+				SDL_Quit();
+				return 1;
+			}
+
+			// Store window handle globally (cast SDL_Window* to HWND for compatibility)
+			ApplicationHWnd = (HWND)TheSDL3Window;
+			fprintf(stderr, "INFO: SDL3 window created successfully\n");
 		}
-
-		// Set DXVK WSI driver before loading Vulkan
-		setenv("DXVK_WSI_DRIVER", "SDL3", 1);
-
-		// GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD before loading Vulkan.
-		// libvulkan_lvp.so crashes during static initialization with LLVM 20.x when the Vulkan
-		// loader enumerates all ICDs. Restrict to hardware ICDs first.
-		FilterSoftwareVulkanICDs();
-		FilterPipeWireOpenAL();
-
-		// Load Vulkan library for DXVK DirectX8→Vulkan translation
-		fprintf(stderr, "INFO: Loading Vulkan library...\n");
-		if (!SDL_Vulkan_LoadLibrary(nullptr)) {
-			fprintf(stderr, "WARNING: Failed to load Vulkan: %s\n", SDL_GetError());
-			fprintf(stderr, "WARNING: Continuing without Vulkan (may use software rendering)\n");
-		}
-
-		// Create SDL3 window with Vulkan support
-		fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
-		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
-		TheSDL3Window = SDL_CreateWindow(
-			"Command & Conquer Generals",
-			1024, 768,  // Default resolution
-			windowFlags
-		);
-
-		if (!TheSDL3Window) {
-			fprintf(stderr, "FATAL: Failed to create SDL3 window: %s\n", SDL_GetError());
-			SDL_Quit();
-			return 1;
-		}
-
-		// Store window handle globally (cast SDL_Window* to HWND for compatibility)
-		ApplicationHWnd = (HWND)TheSDL3Window;
-		fprintf(stderr, "INFO: SDL3 window created successfully\n");
 
 		// Call cross-platform game entry point
 		exitcode = GameMain();
