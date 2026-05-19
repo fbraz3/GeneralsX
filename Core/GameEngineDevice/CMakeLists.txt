@@ -182,11 +182,13 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameLogic/W3DGameLogic.cpp
 #    Source/W3DDevice/GameLogic/W3DGhostObject.cpp
 #    Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
-    Source/Win32Device/Common/Win32BIGFile.cpp
-    Source/Win32Device/Common/Win32BIGFileSystem.cpp
-#    Source/Win32Device/Common/Win32GameEngine.cpp
-#    Source/Win32Device/GameClient/Win32DIMouse.cpp
-#    Source/Win32Device/GameClient/Win32Mouse.cpp
+    # Legacy Windows input devices: isolate for future removal (RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
+  #    Source/Win32Device/GameClient/Win32DIMouse.cpp (isolated legacy input)
+  #    Source/Win32Device/GameClient/Win32Mouse.cpp (isolated legacy input)
+        # Keep for SDL3 filesystem compatibility on Windows modern path.
+        Source/Win32Device/Common/Win32BIGFile.cpp
+        Source/Win32Device/Common/Win32BIGFileSystem.cpp
+#    Source/Win32Device/Common/Win32GameEngine.cpp (isolated legacy entry point)
 )
 
 # GeneralsX @build BenderAI 13/02/2026 Platform-specific file implementations
@@ -200,6 +202,18 @@ if(WIN32)
 #        Source/Win32Device/Common/Win32OSDisplay.cpp
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     )
+
+    # GeneralsX @build GitHub Copilot 18/05/2026 Phase 6: keep legacy Win32 input/engine files isolated on modern Windows64 path.
+    if(NOT RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Include/Win32Device/Common/Win32GameEngine.h
+            Include/Win32Device/GameClient/Win32DIMouse.h
+            Include/Win32Device/GameClient/Win32Mouse.h
+            Source/Win32Device/Common/Win32GameEngine.cpp
+            Source/Win32Device/GameClient/Win32DIMouse.cpp
+            Source/Win32Device/GameClient/Win32Mouse.cpp
+        )
+    endif()
 endif()
 
 # Add C++ 17 FileSystem implementation for non-VS6 builds

@@ -1,5 +1,7 @@
 # Windows64 Task 06 - Legacy Windows Cull
 
+**Status**: IN PROGRESS
+
 ## Scope
 
 Execute the removal/isolation of legacy Windows-only code that collides with the modern path.
@@ -30,6 +32,15 @@ Execute the removal/isolation of legacy Windows-only code that collides with the
 - Keep/Isolate/Remove table committed with file-level decisions.
 - CMake and source changes that enforce those decisions in build/runtime paths.
 - Validation notes proving the modern path no longer drags legacy-only components by default.
+
+## Current Implementation Progress
+
+- Added build option `RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT` in `cmake/config-build.cmake`.
+- Enabled isolation by default in `windows64-deploy` preset.
+- Added conditional source inclusion in `Core/GameEngineDevice/CMakeLists.txt`:
+	- when isolation is ON: legacy Win32 input/engine sources remain excluded from modern path
+	- when isolation is OFF: legacy Win32 input/engine sources are added back explicitly
+- Kept `Win32BIGFile.cpp` and `Win32BIGFileSystem.cpp` in modern path as required filesystem components.
 
 ## Checklist
 

@@ -74,9 +74,9 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 - Done criteria: `windows64-deploy` includes OpenAL and FFmpeg, ready for smoke test
 - Task reference: [PLAN-WINDOWS64_TASK_05_OPENAL_FFMPEG_WINDOWS.md](PLAN-WINDOWS64_TASK_05_OPENAL_FFMPEG_WINDOWS.md)
 
-### Phase 6 - Legacy Windows Cull [PENDING]
+### Phase 6 - Legacy Windows Cull [IN PROGRESS]
 - Execute keep/isolate/remove actions for Win32 legacy pieces after audit
-- Move unavoidable legacy code behind explicit modern-path guards
+- Move unavoidable legacy code behind explicit modern-path guards (partial: `RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT` implemented)
 - Remove dead legacy-only code from modern path build graphs
 - Done criteria: modern Windows64 build no longer links/depends on legacy-only paths unless explicitly flagged
 - Task reference: [PLAN-WINDOWS64_TASK_06_LEGACY_WINDOWS_CULL.md](PLAN-WINDOWS64_TASK_06_LEGACY_WINDOWS_CULL.md)
