@@ -50,7 +50,7 @@
 
 //#include "wwdebug.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_WIN64)
 // Windows: Full registry implementation
 
 bool RegistryClass::IsLocked = false;
@@ -76,7 +76,6 @@ RegistryClass::RegistryClass( const char * sub_key, bool create ) :
 	IsValid( false )
 {
 	HKEY key;
-	assert( sizeof(HKEY) == sizeof(int) );
 
 	LONG result = -1;
 
@@ -90,14 +89,14 @@ RegistryClass::RegistryClass( const char * sub_key, bool create ) :
 
 	if (ERROR_SUCCESS == result) {
 		IsValid = true;
-		Key = (int)key;
+		Key = key;
 	}
 }
 
 RegistryClass::~RegistryClass()
 {
 	if ( IsValid ) {
-		if (::RegCloseKey( (HKEY)Key ) != ERROR_SUCCESS) {		// Close the reg key
+		if (::RegCloseKey( Key ) != ERROR_SUCCESS) {		// Close the reg key
 		}
 		IsValid = false;
 	}
@@ -732,7 +731,7 @@ void RegistryClass::Delete_Registry_Tree(char *path)
 }
 
 // GeneralsX @build BenderAI 13/02/2026 Linux: No registry support - stub all methods
-#else // _WIN32
+#else // !_WIN32 || _WIN64
 
 namespace {
 	typedef std::map<const RegistryClass *, std::string> RegistryPathMap;

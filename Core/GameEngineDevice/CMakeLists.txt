@@ -299,8 +299,8 @@ if(SAGE_USE_OPENAL)
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    # GeneralsX @build GitHub Copilot 19/05/2026 Phase 5: consume find_package(FFmpeg) results so Windows64 does not require pkg-config.
+    find_package(FFmpeg QUIET)
 
     if(FFMPEG_FOUND)
         target_sources(corei_gameenginedevice_private INTERFACE
@@ -310,7 +310,9 @@ if(RTS_BUILD_OPTION_FFMPEG)
             Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
         )
         target_include_directories(corei_gameenginedevice_private INTERFACE ${FFMPEG_INCLUDE_DIRS})
-        target_link_libraries(corei_gameenginedevice_private INTERFACE PkgConfig::FFMPEG)
+        target_link_libraries(corei_gameenginedevice_private INTERFACE ${FFMPEG_LIBRARIES})
         target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_FFMPEG)
+    else()
+        message(WARNING "RTS_BUILD_OPTION_FFMPEG=ON but FFmpeg was not found. Video playback sources remain disabled.")
     endif()
 endif()

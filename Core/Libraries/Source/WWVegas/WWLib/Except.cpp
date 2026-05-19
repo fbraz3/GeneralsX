@@ -355,13 +355,13 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	if (imagehelp != nullptr) {
 		DebugString ("Exception Handler: Found IMAGEHLP.DLL - linking to required functions\n");
 		char const *function_name = nullptr;
-		unsigned long *fptr = (unsigned long*) &_SymCleanup;
+		ULONG_PTR *fptr = (ULONG_PTR*) &_SymCleanup;
 		int count = 0;
 
 		do {
 			function_name = ImagehelpFunctionNames[count];
 			if (function_name) {
-				*fptr = (unsigned long) GetProcAddress(imagehelp, function_name);
+				*fptr = (ULONG_PTR) GetProcAddress(imagehelp, function_name);
 				fptr++;
 				count++;
 			}
@@ -465,8 +465,24 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	symptr->SizeOfStruct = sizeof (IMAGEHLP_SYMBOL);
 	symptr->MaxNameLength = 256-sizeof (IMAGEHLP_SYMBOL);
 	symptr->Size = 0;
+	#if defined(_WIN64)
+	symptr->Address = (unsigned long) context->Rip;
+	#else
 	symptr->Address = context->Eip;
+	#endif
 
+	#if defined(_WIN64)
+	if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), (unsigned long) context->Rip, &displacement, symptr)) {
+		snprintf(scrap, ARRAY_SIZE(scrap), "Exception occurred at %016llX - %s + %08X\r\n",
+			static_cast<unsigned long long>(context->Rip), symptr->Name, displacement);
+	} else {
+		DebugString ("Exception Handler: Failed to get symbol for RIP\r\n");
+		if (_SymGetSymFromAddr != nullptr) {
+			DebugString ("Exception Handler: SymGetSymFromAddr failed with code %d - %s\n", GetLastError(), Last_Error_Text());
+		}
+		snprintf (scrap, ARRAY_SIZE(scrap), "Exception occurred at %016llX\r\n", static_cast<unsigned long long>(context->Rip));
+	}
+	#else
 	if (!IsBadCodePtr((FARPROC)context->Eip)) {
 		if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), context->Eip, &displacement, symptr)) {
 			snprintf(scrap, ARRAY_SIZE(scrap), "Exception occurred at %08X - %s + %08X\r\n",
@@ -481,6 +497,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	} else {
 		DebugString ("Exception Handler: context->Eip is bad code pointer\n");
 	}
+	#endif
 
 	Add_Txt (scrap);
 
@@ -585,6 +602,14 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	/*
 	** Dump the registers.
 	*/
+	#if defined(_WIN64)
+	snprintf(scrap, ARRAY_SIZE(scrap), "Rip:%016llX\tRsp:%016llX\tRbp:%016llX\r\n",
+		static_cast<unsigned long long>(context->Rip),
+		static_cast<unsigned long long>(context->Rsp),
+		static_cast<unsigned long long>(context->Rbp));
+	Add_Txt(scrap);
+	Add_Txt("Register and stack dump unavailable on 64-bit builds.\r\n");
+	#else
 	sprintf(scrap, "Eip:%08X\tEsp:%08X\tEbp:%08X\r\n", context->Eip, context->Esp, context->Ebp);
 	Add_Txt(scrap);
 	sprintf(scrap, "Eax:%08X\tEbx:%08X\tEcx:%08X\r\n", context->Eax, context->Ebx, context->Ecx);
@@ -706,6 +731,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 		Add_Txt(scrap);
 		stackptr++;
 	}
+	#endif
 
 	/*
 	** Unload the symbols.
@@ -1065,13 +1091,13 @@ void Load_Image_Helper()
 
 		if (ImageHelp != nullptr) {
 			char const *function_name = nullptr;
-			unsigned long *fptr = (unsigned long *) &_SymCleanup;
+			ULONG_PTR *fptr = (ULONG_PTR *) &_SymCleanup;
 			int count = 0;
 
 			do {
 				function_name = ImagehelpFunctionNames[count];
 				if (function_name) {
-					*fptr = (unsigned long) GetProcAddress(ImageHelp, function_name);
+					*fptr = (ULONG_PTR) GetProcAddress(ImageHelp, function_name);
 					fptr++;
 					count++;
 				}
@@ -1135,6 +1161,12 @@ void Load_Image_Helper()
  *=============================================================================================*/
 bool Lookup_Symbol(void *code_ptr, char *symbol, int &displacement)
 {
+	#if defined(_WIN64)
+	(void)code_ptr;
+	(void)symbol;
+	(void)displacement;
+	return false;
+	#else
 	/*
 	** Locals.
 	*/
@@ -1183,6 +1215,7 @@ bool Lookup_Symbol(void *code_ptr, char *symbol, int &displacement)
 		return(true);
 	}
 	return(false);
+	#endif
 }
 
 
@@ -1207,6 +1240,13 @@ bool Lookup_Symbol(void *code_ptr, char *symbol, int &displacement)
 int Stack_Walk(unsigned long *return_addresses, int num_addresses, CONTEXT *context)
 {
 	static HINSTANCE _imagehelp = (HINSTANCE) -1;
+
+	#if defined(_WIN64)
+	(void)return_addresses;
+	(void)num_addresses;
+	(void)context;
+	return 0;
+	#else
 
 	/*
 	** If this is the first time through then fix up the imagehelp function pointers since imagehlp.dll
@@ -1289,6 +1329,7 @@ here:
 	}
 
 	return(pointer_index);
+	#endif
 }
 
 

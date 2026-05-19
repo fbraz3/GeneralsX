@@ -4,6 +4,7 @@
 # GeneralsX @bugfix felipebraz 02/03/2026 - Build real d3dx8 STATIC on Linux too (D3DXGetFVFVertexSize / D3DXLoadSurfaceFromSurface required for link)
 # d3dx8 is a math/texture helper stub; core game code doesn't require it
 if((WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8) OR APPLE OR (UNIX AND NOT APPLE))
+if(NOT TARGET d3dx8)
 list(APPEND SOURCE_D3DX_COMPAT
     d3dx8_compat.cpp
     d3dx8math.cpp
@@ -41,6 +42,9 @@ target_include_directories(d3dx8 PUBLIC
 
 # Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
+else()
+    message(STATUS "Using pre-existing d3dx8 target from toolchain configuration")
+endif()
 
 else()
 # Linux only: Create empty d3dx8 stub library to satisfy d3d8lib linkage

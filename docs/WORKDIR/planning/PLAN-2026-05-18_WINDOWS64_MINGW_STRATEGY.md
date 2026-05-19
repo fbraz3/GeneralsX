@@ -1,6 +1,6 @@
 # Windows64 MinGW Functional Build Execution Strategy
 
-**Status**: Phase 0 COMPLETED | Phase 1-9 IN PROGRESS
+**Status**: Phase 0-4 COMPLETED | Phase 5-6 IN PROGRESS | Phase 7-9 PENDING
 **Date**: 2026-05-18
 **Primary Target**: GeneralsXZH first, Generals backport second
 **Build Target**: `windows64-deploy`
@@ -64,14 +64,16 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 - CMake now stages DXVK runtime DLLs for Windows64 modern path (`d3d8.dll`, `dxgi.dll`, `d3d11.dll`)
 - Task reference: [PLAN-WINDOWS64_TASK_04_DXVK_WINDOWS_RUNTIME.md](PLAN-WINDOWS64_TASK_04_DXVK_WINDOWS_RUNTIME.md)
 
-### ✅ Phase 5 - OpenAL and FFmpeg on Windows [COMPLETED]
+### Phase 5 - OpenAL and FFmpeg on Windows [IN PROGRESS]
 - OpenAL Soft v1.24.2 via FetchContent (same pattern as jmarshall, Cross-platform audio)
 - WASAPI backend on Windows (low-latency, modern audio API)
 - OpenAL enabled by default on Windows64 (SAGE_USE_OPENAL=ON forced for modern path)
 - FFmpeg for video playback configured via FindFFmpeg.cmake
+- GameEngineDevice FFmpeg integration now consumes `find_package(FFmpeg)` results directly (no hard `PkgConfig::FFMPEG` dependency in Windows64 path)
 - FFmpeg default ON for Windows (pkg-config for Linux/macOS)
 - FFmpeg.ninja static build pattern prepared for MinGW cross-compile or prebuilt kit
-- Done criteria: `windows64-deploy` includes OpenAL and FFmpeg, ready for smoke test
+- Validation status: configure/build/smoke evidence for `windows64-deploy` is still pending in current environment
+- Done criteria: `windows64-deploy` includes OpenAL and FFmpeg, and Windows64 smoke evidence is captured
 - Task reference: [PLAN-WINDOWS64_TASK_05_OPENAL_FFMPEG_WINDOWS.md](PLAN-WINDOWS64_TASK_05_OPENAL_FFMPEG_WINDOWS.md)
 
 ### Phase 6 - Legacy Windows Cull [IN PROGRESS]
@@ -106,7 +108,7 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 2. ✅ Replace legacy 32-bit and VC6 gates with feature-based modern gates.
 3. ✅ Move Windows64 to the SDL3-based entry and engine path.
 4. ✅ Define and implement DXVK runtime usage on Windows64.
-5. ✅ Enable OpenAL and FFmpeg as the default modern Windows64 media stack.
+5. Enable OpenAL and FFmpeg as the default modern Windows64 media stack and capture Windows64 validation evidence.
 6. Isolate and remove legacy Windows-only runtime dependencies from the modern path.
 7. Add Windows build/deploy/run/bundle scripts.
 8. Add cross-platform regression gates and CI.
@@ -134,3 +136,7 @@ Deliver a functional Windows x86_64 MinGW build that converges on the same open-
 - `cmake --build build/windows64-deploy --target z_generals` produces a Windows x86_64 executable.
 - The modern Windows64 build path does not require Visual Studio.
 - Linux and macOS continue to configure and build after each structural change.
+
+## Current Validation Note
+
+- `windows64-deploy` full configure/build remains blocked in this environment until MinGW x86_64 compiler tools are available in PATH.

@@ -352,9 +352,7 @@ WWProfileHierarchyNodeClass	*	WWProfileManager::CurrentRootNode = &WWProfileMana
 int									WWProfileManager::FrameCounter = 0;
 __int64								WWProfileManager::ResetTime = 0;
 
-// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - ThreadID type must match THREAD_ID on all platforms
-#include "thread_compat.h"
-static THREAD_ID				ThreadID = {};  // Default-initialized thread ID (platform-specific)
+static unsigned long			ThreadID = 0;
 
 
 /***********************************************************************************************

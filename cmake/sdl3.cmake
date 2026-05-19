@@ -51,7 +51,42 @@ if(SAGE_USE_SDL3)
     # Before SDL3_image build: force PNG discovery to platform-specific libpng
     # Linux: System libpng16.so is dynamic shared library
     # macOS: Use Homebrew PNG or system framework
-    if(NOT APPLE)
+    if(WIN32)
+        # GeneralsX @build GitHub Copilot 19/05/2026 MinGW Windows: use MSYS2 prefix for ZLIB/PNG discovery and ensure PNG::PNG target exists.
+        set(ZLIB_INCLUDE_DIR "C:/msys64/mingw64/include")
+        set(ZLIB_LIBRARY "C:/msys64/mingw64/lib/libz.dll.a")
+        if(NOT ZLIB_INCLUDE_DIR OR NOT ZLIB_LIBRARY)
+            message(FATAL_ERROR "MinGW ZLIB not found. Install mingw-w64-x86_64-zlib in MSYS2.")
+        endif()
+        if(NOT EXISTS "${ZLIB_INCLUDE_DIR}/zlib.h" OR NOT EXISTS "${ZLIB_LIBRARY}")
+            message(FATAL_ERROR "MinGW ZLIB files not found at expected paths under C:/msys64/mingw64.")
+        endif()
+        set(ZLIB_FOUND TRUE)
+        if(NOT TARGET ZLIB::ZLIB)
+            add_library(ZLIB::ZLIB UNKNOWN IMPORTED)
+            set_target_properties(ZLIB::ZLIB PROPERTIES
+                IMPORTED_LOCATION "${ZLIB_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES "${ZLIB_INCLUDE_DIR}"
+            )
+        endif()
+
+        set(PNG_PNG_INCLUDE_DIR "C:/msys64/mingw64/include")
+        set(PNG_LIBRARY "C:/msys64/mingw64/lib/libpng16.dll.a")
+        if(NOT PNG_PNG_INCLUDE_DIR OR NOT PNG_LIBRARY)
+            message(FATAL_ERROR "MinGW libpng not found. Install mingw-w64-x86_64-libpng in MSYS2.")
+        endif()
+        if((NOT EXISTS "${PNG_PNG_INCLUDE_DIR}/png.h") OR (NOT EXISTS "${PNG_LIBRARY}"))
+            message(FATAL_ERROR "MinGW libpng files not found at expected paths under C:/msys64/mingw64.")
+        endif()
+        set(PNG_FOUND TRUE)
+        if(NOT TARGET PNG::PNG)
+            add_library(PNG::PNG UNKNOWN IMPORTED)
+            set_target_properties(PNG::PNG PROPERTIES
+                IMPORTED_LOCATION "${PNG_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES "${PNG_PNG_INCLUDE_DIR}"
+            )
+        endif()
+    elseif(NOT APPLE)
         # Find system shared libpng, bypassing vcpkg's static .a.
         # SDL3_image requires a shared .so but vcpkg only provides static libpng16.a.
         # NO_CMAKE_PATH + NO_CMAKE_FIND_ROOT_PATH skips all vcpkg-injected search paths,
