@@ -1,35 +1,28 @@
+
 add_executable(g_generals WIN32)
 
-# Use a binary name that doesn't conflict with original game.
-# GeneralsX @build BenderAI 15/02/2026 Linux branding update
-if("${CMAKE_SYSTEM}" MATCHES "Windows")
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME "generalsv${RTS_BUILD_OUTPUT_SUFFIX}")
-else()
-    # GeneralsX @build BenderAI 15/02/2026 Linux branding update
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME GeneralsX)
-endif()
+# GeneralsX @feature GitHub Copilot 20/05/2026 Keep executable naming consistent across Linux/macOS/Windows.
+set_target_properties(g_generals PROPERTIES OUTPUT_NAME "GeneralsX")
+
 
 # GeneralsX @build BenderAI 10/03/2026 Windows-specific libraries
 if(WIN32)
-    # GeneralsX @build GitHub Copilot 18/05/2026 Keep modern Windows64 MinGW path linkable when legacy Miles/Bink stubs are disabled.
     target_link_libraries(g_generals PRIVATE
         comctl32
-        d3d8
         dinput8
         dxguid
         imm32
         vfw32
         winmm
     )
-
     if(TARGET binkstub)
         target_link_libraries(g_generals PRIVATE binkstub)
     endif()
-
     if(TARGET milesstub)
         target_link_libraries(g_generals PRIVATE milesstub)
     endif()
 endif()
+
 
 # Cross-platform core libraries
 target_link_libraries(g_generals PRIVATE
@@ -95,13 +88,12 @@ target_sources(g_generals PRIVATE
     $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
 )
 
-# RC files are optional for MinGW builds
-# Icon: LoadIcon() handles missing resource gracefully (uses default system icon)
-# Manifest: DPI awareness metadata (nice to have but not essential)
+# RC files for Windows builds (MSVC + MinGW)
+# GeneralsX @feature GitHub Copilot 20/05/2026 Embed app icon and manifest on all Windows toolchains.
 # TYPELIB: Broken (0 bytes) and causes windres memory exhaustion errors
-if(MSVC)
+if(WIN32)
     # VS2005 and later adds default manifest, we need to turn it off to prevent conflict with custom manifest
-    if(NOT IS_VS6_BUILD)
+    if(MSVC AND NOT IS_VS6_BUILD)
         target_link_options(g_generals PRIVATE
             "/MANIFEST:NO"
         )

@@ -27,10 +27,10 @@
 #include "Common/BezierSegment.h"
 #include "Common/BezFwdIterator.h"
 
-#ifdef _WIN32
-#include <d3dx8math.h>
-#elif defined(SAGE_USE_GLM)
+#if defined(SAGE_USE_GLM)
 #include <glm/glm.hpp>
+#elif defined(_WIN32)
+#include <d3dx8math.h>
 #else
 #error "Missing a math library"
 #endif

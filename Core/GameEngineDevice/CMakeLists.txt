@@ -207,7 +207,7 @@ if(WIN32)
     list(APPEND GAMEENGINEDEVICE_SRC
         Include/Win32Device/GameClient/Win32DIKeyboard.h
         Include/Win32Device/GameClient/Win32Mouse.h
-        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+        Source/Win32Device/GameClient/Win32DIKeyboardStub.cpp
         Source/Win32Device/GameClient/Win32Mouse.cpp
     )
 
