@@ -60,6 +60,11 @@
 #include "bitmaphandler.h"
 #include "wwprofile.h"
 
+#if defined(_WIN32) && defined(__MINGW32__)
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW may miss timeGetTime declaration through legacy include chain in WW3D2 files.
+extern "C" DWORD WINAPI timeGetTime(void);
+#endif
+
 bool TextureLoader::TextureLoadSuspended;
 int TextureLoader::TextureInactiveOverrideTime = 0;
 

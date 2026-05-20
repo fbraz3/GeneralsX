@@ -29,6 +29,10 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW needs mmsystem.h for timeGetTime() Windows MM API.
+#ifdef _WIN32
+#include <mmsystem.h>
+#endif
 #include "GameClient/GameClient.h"
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -534,8 +538,9 @@ void GameClient::update()
 				{
 					legal->hide(FALSE);
 					legal->bringForward();
-					Int beginTime = timeGetTime();
-					while(beginTime + 4000 > timeGetTime() )
+					// GeneralsX @bugfix GitHub Copilot 20/05/2026 Use GetTickCount for MinGW compatibility in legal-page delay timing.
+					Int beginTime = static_cast<Int>(GetTickCount());
+					while(beginTime + 4000 > static_cast<Int>(GetTickCount()) )
 					{
 						if (GameClient::isMovieAbortRequested())
 						{

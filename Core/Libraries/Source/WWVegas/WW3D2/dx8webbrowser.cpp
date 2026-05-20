@@ -46,10 +46,6 @@
 
 #else
 
-#ifdef __MINGW32__
-#include "Utility/comsupp_compat.h"  // MinGW COM support compatibility
-#endif
-
 #ifdef _WIN32
 #include <comutil.h>
 #include <comip.h>
@@ -204,7 +200,9 @@ void	DX8WebBrowser::CreateBrowser(const char* browsername, const char* url, int 
 	if(pBrowser)
 	{
 		_bstr_t brsname(browsername);
-		pBrowser->CreateBrowser(brsname, _bstr_t(url), reinterpret_cast<long>(hWnd), x, y, w, h, options, gamedispatch);
+		// GeneralsX @bugfix GitHub Copilot 19/05/2026 Avoid direct pointer-to-long cast on 64-bit builds.
+		const long browser_hwnd = static_cast<long>(reinterpret_cast<ULONG_PTR>(hWnd));
+		pBrowser->CreateBrowser(brsname, _bstr_t(url), browser_hwnd, x, y, w, h, options, gamedispatch);
 		pBrowser->SetUpdateRate(brsname, updateticks);
 	}
 }

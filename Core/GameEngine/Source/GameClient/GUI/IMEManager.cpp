@@ -1435,7 +1435,8 @@ void IMEManager::updateCandidateList( Int candidateFlags  )
 
 						for( i=0; i < m_candidateCount; i++ )
 						{
-							Char *string = (Char*) ((UnsignedInt) clist + (UnsignedInt) clist->dwOffset[i]);
+							// GeneralsX @bugfix GitHub Copilot 20/05/2026 Use pointer-sized arithmetic for x64 candidate list offsets.
+							Char *string = reinterpret_cast<Char *>(reinterpret_cast<ULONG_PTR>(clist) + static_cast<ULONG_PTR>(clist->dwOffset[i]));
 							if ( unicode )
 							{
 								m_candidateString[i].set( (WideChar *) string);

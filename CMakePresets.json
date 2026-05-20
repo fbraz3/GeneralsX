@@ -207,7 +207,7 @@
                 "SAGE_USE_SDL3": "ON",
                 "SAGE_USE_OPENAL": "ON",
                 "SAGE_USE_GLM": "ON",
-                "SAGE_UPDATE_CHECK": "ON",
+                "SAGE_UPDATE_CHECK": "OFF",
                 "RTS_CRASHDUMP_ENABLE": "OFF",
                 "RTS_BUILD_OPTION_FFMPEG": "ON",
                 "RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT": "ON"

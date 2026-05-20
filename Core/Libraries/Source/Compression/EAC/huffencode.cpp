@@ -1050,8 +1050,10 @@ static void HUFF_pack(struct HuffEncodeContext *EC,
 		if (!i3)
 			HUFF_writecode(EC,dest,i);
 
-		if (((long) bptr1- (long) EC->buffer) >= (long)(EC->plen+curpc))
-			curpc = (long) bptr1 - (long) EC->buffer - EC->plen;
+		// GeneralsX @bugfix GitHub Copilot 19/05/2026 Use pointer-difference arithmetic to avoid 64-bit truncation on MinGW x64.
+		const size_t bytes_from_start = static_cast<size_t>(bptr1 - EC->buffer);
+		if (bytes_from_start >= static_cast<size_t>(EC->plen + curpc))
+			curpc = static_cast<unsigned int>(bytes_from_start - static_cast<size_t>(EC->plen));
 	}
 
 	/* write EOF ([clue] 0gn [10]) */

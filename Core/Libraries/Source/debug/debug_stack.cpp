@@ -33,6 +33,11 @@
 #include "stringex.h"
 #include <imagehlp.h>
 
+#ifdef StackWalk
+// GeneralsX @bugfix GitHub Copilot 20/05/2026 Avoid Win64 API macro remapping DebugStackwalk::StackWalk to StackWalk64.
+#undef StackWalk
+#endif
+
 // Definitions to allow run-time linking to the dbghelp.dll functions.
 
 #define DBGHELP(name,ret,par) typedef ret (WINAPI *name##Type) par;
@@ -93,7 +98,7 @@ static void InitDbghelp()
   unsigned k=0;
   for (;DebughelpFunctionNames[k];++k,++funcptr)
   {
-    *funcptr=(unsigned)GetProcAddress(g_dbghelp,DebughelpFunctionNames[k]);
+		*funcptr=static_cast<unsigned>(reinterpret_cast<ULONG_PTR>(GetProcAddress(g_dbghelp,DebughelpFunctionNames[k])));
     if (!*funcptr)
       break;
   }
@@ -356,13 +361,26 @@ int DebugStackwalk::StackWalk(Signature &sig, struct _CONTEXT *ctx)
 	// Use the context struct if it was provided.
 	if (ctx)
   {
+    #if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64)
+    stackFrame.AddrPC.Offset = ctx->Rip;
+    stackFrame.AddrStack.Offset = ctx->Rsp;
+    stackFrame.AddrFrame.Offset = ctx->Rbp;
+    #else
 		stackFrame.AddrPC.Offset = ctx->Eip;
 		stackFrame.AddrStack.Offset = ctx->Esp;
 		stackFrame.AddrFrame.Offset = ctx->Ebp;
+    #endif
 	}
   else
   {
     // walk stack back using current call chain
+    #if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64)
+    CONTEXT localCtx;
+    RtlCaptureContext(&localCtx);
+    stackFrame.AddrPC.Offset = localCtx.Rip;
+    stackFrame.AddrStack.Offset = localCtx.Rsp;
+    stackFrame.AddrFrame.Offset = localCtx.Rbp;
+    #else
 	  unsigned long reg_eip, reg_ebp, reg_esp;
 #if defined(_MSC_VER)
 	  __asm
@@ -387,12 +405,19 @@ int DebugStackwalk::StackWalk(Signature &sig, struct _CONTEXT *ctx)
 	  stackFrame.AddrPC.Offset = reg_eip;
 	  stackFrame.AddrStack.Offset = reg_esp;
 	  stackFrame.AddrFrame.Offset = reg_ebp;
+    #endif
   }
 
 	// Walk the stack by the requested number of return address iterations.
   bool skipFirst=!ctx;
   while (sig.m_numAddr<Signature::MAX_ADDR&&
-		     gDbg._StackWalk(IMAGE_FILE_MACHINE_I386,GetCurrentProcess(),GetCurrentThread(),
+         gDbg._StackWalk(
+            #if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64)
+            IMAGE_FILE_MACHINE_AMD64,
+            #else
+            IMAGE_FILE_MACHINE_I386,
+            #endif
+            GetCurrentProcess(),GetCurrentThread(),
                          &stackFrame,nullptr,nullptr,gDbg._SymFunctionTableAccess,gDbg._SymGetModuleBase,nullptr))
   {
     if (skipFirst)

@@ -44,15 +44,17 @@
 // Windows type stubs
 #if !defined(_WIN32)
     #define HANDLE void*
-    typedef unsigned char  U8;
-    typedef signed char    S8;
-    typedef unsigned short U16;
-    typedef signed short   S16;
-    typedef unsigned int   U32;
-    typedef signed int     S32;
-    typedef float          F32;
-    typedef double         F64;
 #endif
+
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 OpenAL-only builds on Windows still require Miles scalar typedefs used by WWAudio headers.
+typedef unsigned char  U8;
+typedef signed char    S8;
+typedef unsigned short U16;
+typedef signed short   S16;
+typedef unsigned int   U32;
+typedef signed int     S32;
+typedef float          F32;
+typedef double         F64;
 
 // Miles Sound System type stubs (not including callback typedefs - those are defined in AudioEvents.h)
 typedef void* HDIGDRIVER;

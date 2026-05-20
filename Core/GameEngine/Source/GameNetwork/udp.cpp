@@ -35,6 +35,11 @@
 //#include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/udp.h"
 
+#if defined(_WIN32) && !defined(socklen_t)
+// GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW compatibility: provide socklen_t for WinSock APIs.
+typedef int socklen_t;
+#endif
+
 
 //-------------------------------------------------------------------------
 

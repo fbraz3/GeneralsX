@@ -122,6 +122,12 @@
 #include "framgrab.h"
 #include "Lib/BaseType.h"
 
+#if defined(_WIN32) && defined(__MINGW32__)
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW may miss these declarations through legacy include order in WW3D2.
+extern "C" MMRESULT WINAPI timeBeginPeriod(UINT uPeriod);
+extern "C" MMRESULT WINAPI timeEndPeriod(UINT uPeriod);
+#endif
+
 
 const char* DAZZLE_INI_FILENAME="DAZZLE.INI";
 

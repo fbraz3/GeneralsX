@@ -31,6 +31,7 @@
 #include "internal.h"
 #include "internal_except.h"
 #include "internal_io.h"
+#include <cstdint>
 #include <stdlib.h>
 #include <windows.h>
 #include <WWCommon.h>
@@ -320,6 +321,9 @@ bool Debug::SkipNext()
     :
     : "memory"
   );
+#elif defined(__GNUC__) || defined(__clang__)
+  // GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW x64 fallback for frame capture without inline x86 asm.
+  help = static_cast<unsigned>(reinterpret_cast<uintptr_t>(__builtin_return_address(0)));
 #else
   #error "Unsupported compiler or architecture for inline assembly"
 #endif
@@ -901,8 +905,9 @@ Debug& Debug::operator<<(const void *ptr)
   (*this) << "ptr:";
   if (ptr)
   {
-    char help[9];
-    (*this) << "0x" << _ultoa((unsigned long)ptr,help,16);
+    char help[32];
+    sprintf(help, "%p", ptr);
+    (*this) << help;
   }
   else
     (*this) << "null";
@@ -933,8 +938,11 @@ Debug& Debug::operator<<(const MemDump &dump)
   for (unsigned i=0;i<dump.m_numItems;i+=itemPerLine,cur+=itemPerLine*dump.m_bytePerItem)
   {
     // address
-    char buf[9];
-    sprintf(buf,"%08x",dump.m_absAddr?unsigned(cur):cur-dump.m_startPtr);
+    char buf[32];
+    size_t addr = dump.m_absAddr
+      ? static_cast<size_t>(reinterpret_cast<uintptr_t>(cur))
+      : static_cast<size_t>(cur-dump.m_startPtr);
+    sprintf(buf,"%08zx", addr);
     operator<<(buf);
 
     // items
@@ -1012,9 +1020,10 @@ bool Debug::IsLogEnabled(const char *fileOrGroup)
   // to be used from the D_ISLOG macros only and those guarantee
   // that we are having real static strings let's use
   // that strings address as frame address...
-  FrameHashEntry *e=Instance.LookupFrame((unsigned)fileOrGroup);
+  unsigned frameKey=static_cast<unsigned>(reinterpret_cast<uintptr_t>(fileOrGroup));
+  FrameHashEntry *e=Instance.LookupFrame(frameKey);
   if (!e)
-    e=Instance.AddFrameEntry((unsigned)fileOrGroup,FrameTypeLog,fileOrGroup,0);
+    e=Instance.AddFrameEntry(frameKey,FrameTypeLog,fileOrGroup,0);
   if (e->status==Unknown)
     Instance.UpdateFrameStatus(*e);
   return e->status==NoSkip;

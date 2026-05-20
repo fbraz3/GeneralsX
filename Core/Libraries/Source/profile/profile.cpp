@@ -35,6 +35,7 @@
 #include <cstdio>  // GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 snprintf for Linux
 // GeneralsX @build fbraz 03/02/2026 Platform-specific headers
 #ifdef _WIN32
+#include <windows.h>
 #include "mmsystem.h"
 #else
 #include <time.h>  // clock_gettime for Linux timing
@@ -144,15 +145,16 @@ static _int64 GetClockCyclesFast()
 // GeneralsX @build fbraz 03/02/2026 Platform-specific high-resolution timing
 #ifdef _WIN32
     // wait for end of current tick
-    unsigned timeEnd=timeGetTime()+2;
-    while (timeGetTime()<timeEnd);
+  // GeneralsX @bugfix GitHub Copilot 20/05/2026 Use GetTickCount for MinGW compatibility in profiling calibration.
+  unsigned timeEnd=static_cast<unsigned>(GetTickCount())+2;
+  while (static_cast<unsigned>(GetTickCount())<timeEnd);
 
     // get cycles
     _int64 start,startQPC,endQPC;
     QueryPerformanceCounter((LARGE_INTEGER *)&startQPC);
     ProfileGetTime(start);
     timeEnd+=20;
-    while (timeGetTime()<timeEnd);
+    while (static_cast<unsigned>(GetTickCount())<timeEnd);
     ProfileGetTime(n[k]);
     n[k]-=start;
 

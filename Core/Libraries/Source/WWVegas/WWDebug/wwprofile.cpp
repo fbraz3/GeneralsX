@@ -62,6 +62,16 @@
 #include "hashtemplate.h"
 #include <Utility/intrin_compat.h>
 
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW has no _int64/__int64 builtins (MSVC extension); provide typedef.
+#if defined(_WIN32) && defined(__MINGW32__)
+#  ifndef _int64
+     typedef long long _int64;
+#  endif
+#  ifndef __int64
+     typedef long long __int64;
+#  endif
+#endif
+
 static SimpleDynVecClass<WWProfileHierarchyNodeClass*> ProfileCollectVector;
 static double TotalFrameTimes;
 static bool ProfileCollecting;

@@ -32,8 +32,17 @@
 // Platform-specific 64-bit type compatibility
 #ifdef _WIN32
     // Windows: _int64 is native MSVC type
-    typedef unsigned _int64 u64;
-    typedef _int64 i64;
+    // GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW has no builtin _int64; define before use.
+    #ifdef __MINGW32__
+        #ifndef _int64
+            typedef long long _int64;
+        #endif
+        typedef unsigned long long u64;
+        typedef long long i64;
+    #else
+        typedef unsigned _int64 u64;
+        typedef _int64 i64;
+    #endif
 #else
     // Linux: Use C++11 standard types
     #include <cstdint>
@@ -49,10 +58,13 @@
 #include <cstdint>
 
 // GeneralsX @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW treats __int64 as a GCC keyword; avoid redefining it.
 #ifndef _INT64_TYPES_DEFINED
 	#define _INT64_TYPES_DEFINED
-	typedef int64_t __int64;
-	typedef int64_t _int64;
+	#ifndef __MINGW32__
+		typedef int64_t __int64;
+		typedef int64_t _int64;
+	#endif
 #endif
 
 /**

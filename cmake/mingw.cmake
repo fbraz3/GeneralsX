@@ -29,13 +29,12 @@ if(MINGW)
     )
     
     # MSVC compatibility macros for MinGW
-    # Note: MinGW already defines _cdecl and _stdcall correctly, so we only add __forceinline
+    # Note: MinGW already defines _cdecl, _stdcall, and 64-bit integer keywords.
+    # Keep only __forceinline compatibility to avoid type-macro collisions in profile/debug headers.
     # The escaped syntax below expands to: -D__forceinline="inline __attribute__((always_inline))"
     # Escaping rules: \( \) = literal parentheses, \ (backslash-space) = space in definition
     add_compile_definitions(
         __forceinline=inline\ __attribute__\(\(always_inline\)\)
-        __int64=long\ long
-        _int64=long\ long
     )
     
     # Enable math constants in MinGW's <math.h>
@@ -57,7 +56,8 @@ if(MINGW)
         )
     endif()
     
-    # Required Windows libraries for DX8 + COM + OpenAL (Phase 5)
+    # Required Windows system libraries shared broadly by MinGW targets.
+    # GeneralsX @bugfix GitHub Copilot 19/05/2026 Keep d3d8/openal out of global link_libraries to avoid leaking them into third-party builds (for example SDL3).
     link_libraries(
         uuid        # COM GUIDs
         ole32       # COM runtime
@@ -67,11 +67,9 @@ if(MINGW)
         comctl32    # Common controls
         winmm       # Multimedia (timeGetTime, etc.)
         vfw32       # Video for Windows (AVIFile functions)
-        d3d8        # Direct3D 8
         dinput8     # DirectInput 8
         dsound      # DirectSound
         imm32       # Input Method Manager (IME)
-        openal32    # OpenAL Soft audio (WASAPI backend on Windows)
     )
 
     # FFmpeg linking (Phase 5) - when available, link the static FFmpeg libraries

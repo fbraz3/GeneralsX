@@ -341,7 +341,8 @@ void Keyboard::initKeyNames()
 
 	HKL kLayout = GetKeyboardLayout(0);
 
-	Int low = (UnsignedInt)kLayout & 0xFFFF;
+	// GeneralsX @bugfix GitHub Copilot 20/05/2026 Use pointer-sized cast for HKL on x64 MinGW.
+	Int low = static_cast<Int>(reinterpret_cast<ULONG_PTR>(kLayout) & 0xFFFF);
 	LanguageID currentLanguage = OurLanguage;
 	if(low == 0x040c
 		 || low == 0x080c

@@ -5,6 +5,8 @@
 
 #ifdef __linux__
 #include <malloc.h>
+#elif defined(_WIN32)
+#include <malloc.h>
 #elif __APPLE__
 #include <malloc/malloc.h>
 #endif
@@ -25,6 +27,9 @@ static size_t GlobalSize(void *ptr)
 {
 #ifdef __linux__
   return malloc_usable_size(ptr);
+#elif defined(_WIN32)
+  // GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW x64 path: use CRT allocation size query instead of hard error.
+  return _msize(ptr);
 #elif defined(__APPLE__)
   return malloc_size(ptr);
 #else

@@ -33,9 +33,17 @@
 #include <cstdint>
 
 // GeneralsX @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW treats __int64 as a GCC keyword extension; typedef is invalid there.
 #ifndef _INT64_TYPES_DEFINED
 	#define _INT64_TYPES_DEFINED
-	typedef int64_t __int64;
+	#ifndef __MINGW32__
+		typedef int64_t __int64;
+	#endif
+#endif
+
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW has no builtin _int64 (MSVC extension); define as long long.
+#if defined(__MINGW32__) && !defined(_int64)
+	typedef long long _int64;
 #endif
 
 #ifndef __forceinline

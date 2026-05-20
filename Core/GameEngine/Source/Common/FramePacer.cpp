@@ -32,8 +32,8 @@ FramePacer* TheFramePacer = nullptr;
 
 FramePacer::FramePacer()
 {
-	// GeneralsX @bugfix BenderAI 11/05/2026 Protect Windows-specific timer API calls
-#ifdef _WIN32
+	// GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW fallback: skip winmm timer-period APIs here.
+#if defined(_WIN32) && !defined(__MINGW32__)
 	// Set the time slice size to 1 ms.
 	timeBeginPeriod(1);
 #endif
@@ -49,8 +49,8 @@ FramePacer::FramePacer()
 
 FramePacer::~FramePacer()
 {
-	// GeneralsX @bugfix BenderAI 11/05/2026 Protect Windows-specific timer API calls
-#ifdef _WIN32
+	// GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW fallback: skip winmm timer-period APIs here.
+#if defined(_WIN32) && !defined(__MINGW32__)
 	// Restore the previous time slice for Windows.
 	timeEndPeriod(1);
 #endif

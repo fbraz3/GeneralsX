@@ -1094,6 +1094,11 @@ target_link_libraries(g_gameengine PUBLIC
     g_wwvegas
 )
 
+# GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW/Windows builds need winmm for timeGetTime() API.
+if(WIN32)
+    target_link_libraries(g_gameengine PRIVATE winmm)
+endif()
+
 target_precompile_headers(g_gameengine PRIVATE
     [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
     Include/Precompiled/PreRTS.h
