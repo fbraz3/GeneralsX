@@ -54,6 +54,46 @@
 #include "WW3D2/render2dsentence.h"
 #include "GameClient/GlobalLanguage.h"
 
+namespace
+{
+// GeneralsX @bugfix GitHubCopilot 20/05/2026 Resolve a usable Unicode fallback font on macOS/Linux when localized font names are unavailable.
+FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold)
+{
+	const char *preferred_name = nullptr;
+	if (TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty()) {
+		preferred_name = TheGlobalLanguageData->m_unicodeFontName.str();
+	}
+
+	if (preferred_name != nullptr) {
+		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
+		if (font != nullptr) {
+			return font;
+		}
+	}
+
+	static const char *kFallbackUnicodeFonts[] = {
+		"Arial Unicode MS",
+		"Arial Unicode",
+		"Arial",
+		"Helvetica Neue",
+		"Helvetica",
+		"Noto Sans",
+		"Noto Sans CJK SC",
+		"Noto Sans CJK JP",
+		"DejaVu Sans"
+	};
+
+	for (const char *font_name : kFallbackUnicodeFonts) {
+		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(font_name, size, bold);
+		if (font != nullptr) {
+			return font;
+		}
+	}
+
+	return nullptr;
+}
+}
+
 // DEFINES ////////////////////////////////////////////////////////////////////
 
 // PRIVATE TYPES //////////////////////////////////////////////////////////////
@@ -95,8 +135,7 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	font->height = fontChar->Get_Char_Height();
 
 	// load Unicode of same point size
-	name = TheGlobalLanguageData ? TheGlobalLanguageData->m_unicodeFontName.str() : "Arial Unicode MS";
-	fontChar->AlternateUnicodeFont = WW3DAssetManager::Get_Instance()->Get_FontChars( name, size, bold );
+	fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold);
 
 	return TRUE;
 }
