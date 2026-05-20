@@ -817,10 +817,11 @@ void WaterTracksRenderSystem::shutdown()
 void WaterTracksRenderSystem::update()
 {
 
-	static  Int iLastTime=timeGetTime();
+	// GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW x64: replace legacy timeGetTime with GetTickCount.
+	static  Int iLastTime=static_cast<Int>(GetTickCount());
 	WaterTracksObj *mod=m_usedModules,*nextMod;
 
-	Int timeDiff = timeGetTime()-iLastTime;
+	Int timeDiff = static_cast<Int>(GetTickCount())-iLastTime;
 	iLastTime += timeDiff;
 
 	//first update all the tracks

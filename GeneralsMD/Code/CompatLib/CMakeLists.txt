@@ -27,10 +27,14 @@ endif()
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(d3dx8 PUBLIC glm::glm)
 
-# GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang - only link on Windows
+# GeneralsX @bugfix GitHub Copilot 20/05/2026 GLI is optional on MinGW; keep configure working when package is unavailable.
 if(NOT APPLE)
-    find_package(gli CONFIG REQUIRED)
-    target_link_libraries(d3dx8 PUBLIC gli)
+    find_package(gli CONFIG QUIET)
+    if(gli_FOUND)
+        target_link_libraries(d3dx8 PUBLIC gli)
+    else()
+        message(WARNING "GLI not found; d3dx8 will use fallback mipmap filtering implementation.")
+    endif()
 endif()
 
 # d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)

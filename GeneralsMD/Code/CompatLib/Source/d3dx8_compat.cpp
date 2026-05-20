@@ -3,9 +3,17 @@
 
 #include "d3dx8core.h"
 
-// GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang (GLM version mismatch).
-// On macOS, exclude GLI and use stub implementations for the surface scaling path.
-#ifndef __APPLE__
+// GeneralsX @bugfix GitHub Copilot 20/05/2026 Fallback mip filter path uses fixed-width integer types.
+#include <cstdint>
+
+// GeneralsX @bugfix GitHub Copilot 20/05/2026 Use GLI only when headers are available; otherwise keep a built-in box-filter fallback.
+#if !defined(__APPLE__) && defined(__has_include)
+#if __has_include(<gli/gli.hpp>) && __has_include(<gli/generate_mipmaps.hpp>)
+#define SAGE_HAS_GLI 1
+#endif
+#endif
+
+#if defined(SAGE_HAS_GLI)
 #include <gli/gli.hpp>
 #include <gli/generate_mipmaps.hpp>
 #endif
@@ -106,7 +114,7 @@ D3DXLoadSurfaceFromSurface(
 		return D3D_OK;
 	}
 
-#ifndef __APPLE__
+#if defined(SAGE_HAS_GLI)
 	// Pick a compatible format
 	gli::format imageFormat = gli::format::FORMAT_RGBA8_UNORM_PACK8;
 
@@ -149,8 +157,7 @@ D3DXLoadSurfaceFromSurface(
 
 	return D3D_OK;
 #else
-	// GeneralsX @bugfix BenderAI 07/03/2026 macOS: GLI not available due to Apple Clang ambiguity.
-	// Implement manual box filter downsampling for mipmap generation.
+	// GeneralsX @bugfix GitHub Copilot 20/05/2026 GLI-free fallback path for mipmap downsampling.
 	// This is critical for terrain textures - without mipmaps, terrain renders black.
 	if (descDest.Width == descSrc.Width / 2 && descDest.Height == descSrc.Height / 2)
 	{

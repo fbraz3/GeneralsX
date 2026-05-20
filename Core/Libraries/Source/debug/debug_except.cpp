@@ -110,7 +110,7 @@ void DebugExceptionhandler::LogExceptionLocation(Debug &dbg, struct _EXCEPTION_P
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
   char buf[512];
-#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64)
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
   DebugStackwalk::Signature::GetSymbol(static_cast<unsigned>(ctx.Rip),buf,sizeof(buf));
 #else
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,buf,sizeof(buf));
@@ -122,7 +122,7 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
 {
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64)
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
   dbg << Debug::FillChar('0')
       << Debug::Hex()
       <<  "RAX:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rax)
@@ -165,53 +165,10 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
 
 void DebugExceptionhandler::LogFPURegisters(Debug &dbg, struct _EXCEPTION_POINTERS *exptr)
 {
-  struct _CONTEXT &ctx=*exptr->ContextRecord;
-
-#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64)
-  // GeneralsX @bugfix GitHub Copilot 20/05/2026 x64 CONTEXT uses different FP structures; skip legacy x87 dump path.
+  // GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW/Win64: legacy x87 context layouts are unavailable/incompatible.
+  (void)exptr;
   dbg << "FP register dump not available for x64 context\n";
   return;
-#endif
-
-  if (!(ctx.ContextFlags&CONTEXT_FLOATING_POINT))
-  {
-    dbg << "FP registers not available\n";
-    return;
-  }
-
-  FLOATING_SAVE_AREA &flt=ctx.FloatSave;
-  dbg << Debug::Bin() << Debug::FillChar('0')
-      << "CW:" << Debug::Width(16) << (flt.ControlWord&0xffff) << "\n"
-      << "SW:" << Debug::Width(16) << (flt.StatusWord&0xffff) << "\n"
-      << "TW:" << Debug::Width(16) << (flt.TagWord&0xffff) << "\n"
-      << Debug::Hex()
-      << "ErrOfs:      " << Debug::Width(8) << flt.ErrorOffset
-      << " ErrSel:  "    << Debug::Width(8) << flt.ErrorSelector << "\n"
-      << "DataOfs:     " << Debug::Width(8) << flt.DataOffset
-      << " DataSel: "    << Debug::Width(8) << flt.DataSelector << "\n"
-#if !defined(WOW64_SIZE_OF_80387_REGISTERS)
-      << "Cr0NpxState: " << Debug::Width(8) << flt.Cr0NpxState << "\n"
-#endif
-  ;
-
-  for (unsigned k=0;k<SIZE_OF_80387_REGISTERS/10;++k)
-  {
-    dbg << Debug::Dec() << "ST(" << k << ") ";
-    dbg.SetPrefixAndRadix("",16);
-
-    BYTE *value=flt.RegisterArea+k*10;
-    for (unsigned i=0;i<10;i++)
-      dbg << Debug::Width(2) << value[i];
-
-    // TheSuperHackers @refactor Replaced MSVC inline assembly with portable C++ cast for MinGW compatibility
-    // Convert from temporary real (10 byte) to double (8 bytes).
-    // On x86, long double is the 10-byte x87 format, so we can just cast.
-    double fpVal = (double)(*(long double*)value);
-    dbg << " " << fpVal;
-
-    dbg << "\n";
-  }
-  dbg << Debug::FillChar() << Debug::Dec();
 }
 
 // include exception dialog box
@@ -271,7 +228,7 @@ static INT_PTR CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 
   // address
   struct _CONTEXT &ctx=*exPtrs->ContextRecord;
-#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64)
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
   DebugStackwalk::Signature::GetSymbol(static_cast<unsigned>(ctx.Rip),regInfo,sizeof(regInfo));
 #else
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,regInfo,sizeof(regInfo));
@@ -431,7 +388,7 @@ LONG __stdcall DebugExceptionhandler::ExceptionFilter(struct _EXCEPTION_POINTERS
   dbg.m_stackWalk.StackWalk(sig,pExPtrs->ContextRecord);
   dbg << sig << "\n";
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64)
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
   dbg << "Bytes around RIP:" << Debug::MemDump::Char(((char *)(pExPtrs->ContextRecord->Rip))-32,80);
 #else
   dbg << "Bytes around EIP:" << Debug::MemDump::Char(((char *)(pExPtrs->ContextRecord->Eip))-32,80);

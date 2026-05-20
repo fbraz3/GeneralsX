@@ -50,11 +50,8 @@
 //----------------------------------------------------------------------------
 
 #include "GameClient/VideoPlayer.h"
-#ifdef _WIN32
-#include "bink.h"
-#else
+// GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW/windows64 modern path: avoid hard dependency on proprietary Bink SDK headers.
 typedef struct BINK *HBINK;
-#endif
 
 //----------------------------------------------------------------------------
 //           Forward References

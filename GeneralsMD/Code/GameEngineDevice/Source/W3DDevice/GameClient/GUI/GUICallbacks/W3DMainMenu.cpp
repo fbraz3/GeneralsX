@@ -115,8 +115,9 @@ static void advancePosition(GameWindow *window, const Image *image, UnsignedInt 
 	static Int x = -DEFAULT_DISPLAY_WIDTH;
 	static Int y = pos.y - (image->getImageHeight()/2);
 
-	static UnsignedInt m_startTime = timeGetTime();
-	Int time = timeGetTime() - m_startTime;
+	// GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW x64: replace legacy timeGetTime with GetTickCount.
+	static UnsignedInt m_startTime = static_cast<UnsignedInt>(GetTickCount());
+	Int time = static_cast<Int>(GetTickCount()) - static_cast<Int>(m_startTime);
 	Real percentDone = INT_TO_REAL(time) / 10000;
 
 	if(goingForward)
@@ -124,7 +125,7 @@ static void advancePosition(GameWindow *window, const Image *image, UnsignedInt 
 		if(percentDone >= 1)
 		{
 			y = pos.y + size.y - (image->getImageHeight()/2);
-			m_startTime = timeGetTime();
+			m_startTime = static_cast<UnsignedInt>(GetTickCount());
 			goingForward = FALSE;
 		}
 		else
@@ -138,7 +139,7 @@ static void advancePosition(GameWindow *window, const Image *image, UnsignedInt 
 		if(percentDone >= 1)
 		{
 			y = pos.y - (image->getImageHeight()/2);
-			m_startTime = timeGetTime();
+			m_startTime = static_cast<UnsignedInt>(GetTickCount());
 			goingForward = TRUE;
 		}
 		else

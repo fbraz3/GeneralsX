@@ -36,7 +36,11 @@
 #include "GameClient/ParticleSys.h"
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/NetworkInterface.h"
+#if defined(SAGE_USE_OPENAL)
+#include "OpenALAudioDevice/OpenALAudioManager.h"
+#else
 #include "MilesAudioDevice/MilesAudioManager.h"
+#endif
 #include "Win32Device/Common/Win32BIGFileSystem.h"
 #include "Win32Device/Common/Win32LocalFileSystem.h"
 #include "W3DDevice/Common/W3DModuleFactory.h"
@@ -112,6 +116,16 @@ inline WebBrowser *Win32GameEngine::createWebBrowser() { return NEW CComObject<W
 inline AudioManager *Win32GameEngine::createAudioManager(Bool dummy)
 {
 	if (dummy)
+	{
+		#if defined(SAGE_USE_OPENAL)
+		return NEW OpenALAudioManager;
+		#else
 		return NEW MilesAudioManagerDummy;
+		#endif
+	}
+	#if defined(SAGE_USE_OPENAL)
+	return NEW OpenALAudioManager;
+	#else
 	return NEW MilesAudioManager;
+	#endif
 }

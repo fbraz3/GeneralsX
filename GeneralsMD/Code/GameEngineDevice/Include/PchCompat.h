@@ -33,6 +33,11 @@
 #ifdef _WIN32
     // Windows-specific precompiled headers
     #include <windows.h>
+
+    #if defined(__MINGW32__) && !defined(timeGetTime)
+    // GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW x64 fallback: map legacy timeGetTime() calls to GetTickCount().
+    #define timeGetTime() GetTickCount()
+    #endif
 #else
     // Linux/Unix platform - provide compatibility stubs
     // GeneralsX @build BenderAI 13/02/2026 Include windows_compat.h for Linux builds

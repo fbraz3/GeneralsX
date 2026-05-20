@@ -87,18 +87,8 @@ if(MINGW)
     # are provided by Dependencies/Utility/Utility/comsupp_compat.h as header-only
     # implementations. No library linking required.
     
-    # MinGW-w64 compatibility: Create d3dx8 as an alias to d3dx8d
-    # MinGW-w64 only provides libd3dx8d.a (debug library), not libd3dx8.a
-    # The min-dx8-sdk (dx8.cmake) handles this correctly via d3d8lib interface target,
-    # but for compatibility with direct library references in main executables,
-    # we create an alias so that linking to d3dx8 automatically uses d3dx8d
-    if(NOT TARGET d3dx8)
-        add_library(d3dx8 INTERFACE IMPORTED GLOBAL)
-        set_target_properties(d3dx8 PROPERTIES
-            INTERFACE_LINK_LIBRARIES "d3dx8d"
-        )
-        message(STATUS "Created d3dx8 -> d3dx8d alias for MinGW-w64")
-    endif()
+    # GeneralsX @bugfix GitHub Copilot 20/05/2026 Do not alias d3dx8 to d3dx8d on MinGW.
+    # We provide d3dx8 via CompatLib, and this alias prevents that target from being created.
     
     message(STATUS "MinGW-w64 configuration complete")
 endif()

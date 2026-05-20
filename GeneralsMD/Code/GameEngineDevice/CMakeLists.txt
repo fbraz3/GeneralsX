@@ -189,6 +189,7 @@ set(GAMEENGINEDEVICE_SRC
 # GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Separate Windows and Linux platform-specific files
 if(WIN32)
     # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
+    # GeneralsX @bugfix GitHub Copilot 20/05/2026 Use Bink stub on MinGW when proprietary Bink runtime is unavailable.
     list(APPEND GAMEENGINEDEVICE_SRC
 #        Source/Win32Device/Common/Win32BIGFile.cpp
 #        Source/Win32Device/Common/Win32BIGFileSystem.cpp
@@ -196,7 +197,7 @@ if(WIN32)
 #        Source/Win32Device/Common/Win32LocalFile.cpp
 #        Source/Win32Device/Common/Win32LocalFileSystem.cpp
         Source/Win32Device/Common/Win32OSDisplay.cpp
-#        Source/Win32Device/GameClient/Win32DIMouse.cpp
+        Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
 else()
     # Linux-specific files (SDL3, OpenAL+FFmpeg audio, DXVK)

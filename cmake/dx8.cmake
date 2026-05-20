@@ -31,6 +31,11 @@ if(SAGE_USE_DX8 OR WIN32)
   if(SAGE_USE_DX8)
     message(STATUS "Using DirectX 8 SDK (Windows native)")
   else()
+    # GeneralsX @bugfix GitHub Copilot 20/05/2026 Windows64 MinGW links against DXVK runtime DLLs; keep SDK headers but drop libd3d8 import linkage.
+    if(TARGET d3d8lib)
+      set_property(TARGET d3d8lib PROPERTY INTERFACE_LINK_LIBRARIES "dinput8;dxguid")
+    endif()
+
     # GeneralsX @build GitHub Copilot 18/05/2026 Export a stable source-dir alias so shared CMake logic can resolve Win64 modern headers consistently.
     set(dxvk_SOURCE_DIR "${dx8_SOURCE_DIR}" CACHE PATH "Header source for Windows64 modern DXVK path" FORCE)
 

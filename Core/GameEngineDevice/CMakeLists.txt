@@ -203,15 +203,19 @@ if(WIN32)
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     )
 
-    # GeneralsX @build GitHub Copilot 18/05/2026 Phase 6: keep legacy Win32 input/engine files isolated on modern Windows64 path.
+    # GeneralsX @bugfix GitHub Copilot 20/05/2026 WinMain still depends on Win32Mouse event buffering in Windows64 builds.
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Include/Win32Device/GameClient/Win32DIKeyboard.h
+        Include/Win32Device/GameClient/Win32Mouse.h
+        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+        Source/Win32Device/GameClient/Win32Mouse.cpp
+    )
+
+    # GeneralsX @build GitHub Copilot 18/05/2026 Keep legacy Win32GameEngine isolated on modern Windows64 path.
     if(NOT RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
         list(APPEND GAMEENGINEDEVICE_SRC
             Include/Win32Device/Common/Win32GameEngine.h
-            Include/Win32Device/GameClient/Win32DIMouse.h
-            Include/Win32Device/GameClient/Win32Mouse.h
             Source/Win32Device/Common/Win32GameEngine.cpp
-            Source/Win32Device/GameClient/Win32DIMouse.cpp
-            Source/Win32Device/GameClient/Win32Mouse.cpp
         )
     endif()
 endif()
@@ -289,12 +293,27 @@ if(SAGE_USE_OPENAL)
     target_include_directories(corei_gameenginedevice_private INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/OpenALAudioDevice
     )
-    # FFmpegFile.cpp is required by OpenALAudioCache for audio decoding;
-    # add it here when RTS_BUILD_OPTION_FFMPEG has not already provided it.
+    # FFmpegFile.cpp is required by OpenALAudioCache for audio decoding.
+    # GeneralsX @bugfix GitHub Copilot 20/05/2026 Even with RTS_BUILD_OPTION_FFMPEG=OFF, OpenAL decoding still needs FFmpeg symbols when FFmpegFile.cpp is compiled.
     if(NOT RTS_BUILD_OPTION_FFMPEG)
-        target_sources(corei_gameenginedevice_private INTERFACE
-            Source/VideoDevice/FFmpeg/FFmpegFile.cpp
-        )
+        find_package(FFmpeg QUIET)
+
+        # GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW fallback: use standard MSYS2 FFmpeg import libs when FindFFmpeg fails.
+        if(NOT FFMPEG_FOUND AND MINGW)
+            set(FFMPEG_FOUND TRUE)
+            set(FFMPEG_INCLUDE_DIRS C:/msys64/mingw64/include)
+            set(FFMPEG_LIBRARIES avformat avcodec avutil swresample swscale)
+        endif()
+
+        if(FFMPEG_FOUND)
+            target_sources(corei_gameenginedevice_private INTERFACE
+                Source/VideoDevice/FFmpeg/FFmpegFile.cpp
+            )
+            target_include_directories(corei_gameenginedevice_private INTERFACE ${FFMPEG_INCLUDE_DIRS})
+            target_link_libraries(corei_gameenginedevice_private INTERFACE ${FFMPEG_LIBRARIES})
+        else()
+            message(WARNING "OpenAL audio decode requested FFmpegFile.cpp but FFmpeg was not found.")
+        endif()
     endif()
 endif()
 
