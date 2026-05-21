@@ -45,6 +45,9 @@
 
 // GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW builds may miss timeGetTime declaration through legacy include path.
 #ifdef __MINGW32__
+#ifdef timeGetTime
+#undef timeGetTime
+#endif
 extern "C" DWORD WINAPI timeGetTime(void);
 #endif
 

@@ -36,8 +36,7 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 #include <eh.h>
-#include <ole2.h>
-#include <dbt.h>
+#include <windef.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"

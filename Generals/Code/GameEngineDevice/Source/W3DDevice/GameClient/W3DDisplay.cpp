@@ -45,6 +45,7 @@ static void drawFramerateBar();
 #include <SDL3/SDL.h> // For SDL_ShowWindow() on Linux
 #endif
 #include <time.h>
+#include "systimer.h"
 #include <vector>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////

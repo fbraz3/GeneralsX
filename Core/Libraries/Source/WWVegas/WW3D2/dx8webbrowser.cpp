@@ -46,14 +46,14 @@
 
 #else
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 #include <comutil.h>
 #include <comip.h>
 #include "EABrowserEngine/BrowserEngine.h"
 #endif
 
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 typedef _com_ptr_t<_com_IIID<IFEBrowserEngine2, &__uuidof(IFEBrowserEngine2)>> IFEBrowserEngine2Ptr;
 static	IFEBrowserEngine2Ptr	pBrowser = 0;
 #else
@@ -62,7 +62,7 @@ static void* pBrowser = nullptr;  // Stub for Linux
 
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 
 HWND		DX8WebBrowser::hWnd = nullptr;
 

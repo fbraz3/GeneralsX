@@ -5,7 +5,7 @@
 // Used by WW3D2/dx8webbrowser.cpp (DirectX web browser embedding)
 // Phase 3 out-of-scope: Minimal stubs to allow compilation
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(__MINGW32__) || defined(__MINGW64__)
 
 #include "com_compat.h"
 
@@ -63,4 +63,4 @@ inline const IID& __uuidof(const T&) {
     return dummy;
 }
 
-#endif // !_WIN32
+#endif // !WIN32 or MinGW

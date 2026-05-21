@@ -53,6 +53,7 @@
 #include "Lib/BaseType.h"
 #include "WWCommon.h"
 #include "Common/GameDefines.h"
+#include "systimer.h"
 
 // ----------------------------------------------------------------------------------------------
 #if defined(RTS_DEBUG)

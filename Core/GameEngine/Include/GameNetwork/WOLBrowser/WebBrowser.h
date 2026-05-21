@@ -44,7 +44,8 @@
 
 #include "Common/SubsystemInterface.h"
 // TheSuperHackers @build fighter19 11/02/2026 Stub WebBrowser for Linux (WOL servers offline since 2010)
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
+// GeneralsX @bugfix Copilot 21/05/2026 Keep the embedded browser on the MSVC Windows path; MinGW uses the stub implementation.
 #include <atlbase.h>
 #include <windows.h>
 #include <Common/GameMemory.h>
@@ -55,7 +56,7 @@
 
 class GameWindow;
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 // Windows implementation with COM support
 class WebBrowserURL : public MemoryPoolObject
 {

@@ -1099,9 +1099,14 @@ if(WIN32)
     target_link_libraries(g_gameengine PRIVATE winmm)
 endif()
 
-target_precompile_headers(g_gameengine PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
-    Include/Precompiled/PreRTS.h
-)
+# GeneralsX @build GitHub Copilot 20/05/2026 Work around MinGW silent PCH failure in Generals base GameEngine.
+if(WIN32 AND MINGW)
+    message(STATUS "g_gameengine: disabling precompiled headers for MinGW/Windows")
+else()
+    target_precompile_headers(g_gameengine PRIVATE
+        [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+        Include/Precompiled/PreRTS.h
+    )
+endif()
 
 # UpdateChecker is now in Core/GameEngine (shared between Generals and GeneralsMD).

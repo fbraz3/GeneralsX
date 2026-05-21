@@ -108,7 +108,15 @@ inline Radar *Win32GameEngine::createRadar(Bool dummy)
 		return NEW RadarDummy;
 	return NEW W3DRadar;
 }
-inline WebBrowser *Win32GameEngine::createWebBrowser() { return NEW CComObject<W3DWebBrowser>; }
+inline WebBrowser *Win32GameEngine::createWebBrowser()
+{
+#if defined(_WIN32) && defined(_MSC_VER)
+	return NEW CComObject<W3DWebBrowser>;
+#else
+	// GeneralsX @bugfix Copilot 21/05/2026 Use the non-ATL browser stub on MinGW builds.
+	return NEW W3DWebBrowser;
+#endif
+}
 inline AudioManager *Win32GameEngine::createAudioManager(Bool dummy)
 {
 	if (dummy)
