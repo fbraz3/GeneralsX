@@ -12,16 +12,20 @@ Set-Location $projectRoot
 $env:PATH = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:PATH
 
 $buildDir = "build/windows64-deploy"
-$exeSrc = Join-Path $buildDir "Generals/GeneralsX.exe"
 $bundleDir = "build/bundles/windows-generalsx-windows64-deploy"
 
-if (-not (Test-Path $exeSrc)) {
-    Write-Error "Executable not found: $exeSrc"
+# GeneralsX @bugfix Copilot 20/05/2026 CMake may place the executable under nested target folders in MinGW builds.
+$exeCandidates = Get-ChildItem -Path $buildDir -Filter "GeneralsX.exe" -File -Recurse -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -notlike "*\bundles\*" }
+$exeSrc = $exeCandidates | Select-Object -First 1
+
+if ($null -eq $exeSrc) {
+    Write-Error "Executable not found under: $buildDir"
     exit 1
 }
 
 New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
-Copy-Item $exeSrc (Join-Path $bundleDir "GeneralsX.exe") -Force
+Copy-Item $exeSrc.FullName (Join-Path $bundleDir "GeneralsX.exe") -Force
 
 $runtimeCandidates = @(
     (Join-Path $buildDir "d3d8.dll"),
