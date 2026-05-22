@@ -16,13 +16,12 @@ For **official releases and instructions**, visit:
 * [TheSuperHackers Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases) - Windows
 * [Fighter19 Releases](https://github.com/Fighter19/CnC_Generals_Zero_Hour/releases) - Original Linux-focused Zero Hour reference releases
 
-## Installing the game
+## Where does the GeneralsX name come from?
 
-For release/runtime setup instructions (Linux and macOS), see:
+There are two reasons for this name:
 
-- [docs/BUILD/INSTALLATION.md](docs/BUILD/INSTALLATION.md)
-
-> **Don't have the game files yet?** The Steam version does not offer a macOS or Linux download. See [docs/BUILD/GETTING_THE_GAME_FILES.md](docs/BUILD/GETTING_THE_GAME_FILES.md).
+1. X = Cross - reflects the cross-platform efforts
+2. I am a big fan of the Mega Man X franchise, so this is also a tribute to that classic series.
 
 ## Project Goals
 
@@ -50,13 +49,6 @@ GeneralsX builds on complementary community efforts with different roles.
 While GeneralsX builds on important community work, this project also includes substantial original effort in integration, adaptation, platform-specific fixes, enhancements, testing, packaging, and ongoing maintenance.
 
 Because these projects serve different but complementary goals, not every change belongs in the same place. Improvements aligned with upstream stability or core maintenance priorities should be contributed back to TheSuperHackers, while GeneralsX keeps changes specific to cross-platform delivery, packaging, and platform integration.
-
-## Where does the GeneralsX name come from?
-
-There are two reasons for this name:
-
-1. X = Cross - reflects the cross-platform efforts
-2. I am a big fan of the Mega Man X franchise, so this is also a tribute to that classic series.
 
 ## 💖 Support This Project
 
