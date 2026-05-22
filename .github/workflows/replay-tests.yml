@@ -188,6 +188,10 @@ jobs:
           # Install custom maps (includes MapCache.ini)
           if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
             cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
+            # Drop any pre-generated map cache copied from external machines.
+            # Replay CI must build map cache from files present on the runner.
+            find "$MAPS_DIR" -type f \( -iname "mapcache.ini" -o -iname "mapcache*.ini" \) -delete || true
+            rm -f "$USER_DATA/MapCache.ini" "$USER_DATA/Maps/MapCache.ini" || true
             echo "Maps installed:"
             ls -la "$MAPS_DIR/"
           fi
@@ -224,6 +228,10 @@ jobs:
           # Install custom maps (includes MapCache.ini)
           if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
             cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
+            # Drop any pre-generated map cache copied from external machines.
+            # Replay CI must build map cache from files present on the runner.
+            find "$MAPS_DIR" -type f \( -iname "mapcache.ini" -o -iname "mapcache*.ini" \) -delete || true
+            rm -f "$USER_DATA/MapCache.ini" "$USER_DATA/Maps/MapCache.ini" || true
             echo "Maps installed:"
             ls -la "$MAPS_DIR/"
           fi
