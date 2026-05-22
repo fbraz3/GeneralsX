@@ -316,6 +316,11 @@ STDMETHODIMP WebBrowser::TestMethod(Int num1)
 // Linux stub - WOL (Westwood Online) servers offline since 2010
 #pragma message("WebBrowser is stubbed on this platform!")
 
+// GeneralsX @bugfix GitHub Copilot 22/05/2026 MinGW Windows still needs ATL module symbol exported as _Module.
+#if defined(_WIN32)
+CComModule _Module;
+#endif
+
 WebBrowser *TheWebBrowser = nullptr;
 
 #endif // _WIN32 && _MSC_VER

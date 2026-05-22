@@ -13,9 +13,9 @@ The goal is to make the local machine ready for `windows64-deploy` style work wi
 
 ## Primary References
 
-- Use [scripts/env/setup-mingw-windows.ps1](../../scripts/env/setup-mingw-windows.ps1) to configure the current PowerShell session for MSYS2 MinGW32.
+- Use [scripts/env/setup-mingw-windows.ps1](../../scripts/env/setup-mingw-windows.ps1) to configure the current PowerShell session for MSYS2 MinGW64.
 - Use [scripts/env/enter-mingw-windows.cmd](../../scripts/env/enter-mingw-windows.cmd) to open a new PowerShell window with the MinGW/MSYS2 environment already loaded.
-- Treat [cmake/toolchains/mingw-w64-i686.cmake](../../cmake/toolchains/mingw-w64-i686.cmake) as the current repository example for MSYS2-aware MinGW toolchain wiring.
+- Treat [cmake/toolchains/mingw-w64-x86_64.cmake](../../cmake/toolchains/mingw-w64-x86_64.cmake) as the current repository example for MSYS2-aware MinGW toolchain wiring.
 
 ## Required Workflow
 
@@ -23,12 +23,11 @@ The goal is to make the local machine ready for `windows64-deploy` style work wi
 2. If MSYS2 is missing and the user did not explicitly request validation-only mode, install MSYS2 in a short ASCII-only path.
 3. Update the MSYS2 base system with `pacman -Syuu` until it is fully current.
 4. Install the packages required for the repository bootstrap and MinGW workstream.
-   - At minimum: `base-devel` and `mingw-w64-i686-toolchain`.
-   - If the task scope is Windows64 toolchain preparation, also inspect whether an x86_64 MinGW package set is needed and report that status clearly.
+   - At minimum: `base-devel`, `mingw-w64-x86_64-toolchain`, `mingw-w64-x86_64-ninja`, and `mingw-w64-x86_64-cmake`.
 5. Run or dot-source [scripts/env/setup-mingw-windows.ps1](../../scripts/env/setup-mingw-windows.ps1) with `-ShowSummary`.
 6. If requested, run the script with `-PersistUserRoot` so `GENERALSX_MSYS2_ROOT` is stored for future sessions.
 7. Validate the session by checking:
-   - `i686-w64-mingw32-gcc`
+   - `x86_64-w64-mingw32-gcc`
    - `make`
    - `cmake`
    - `MSYSTEM`
@@ -41,7 +40,7 @@ The goal is to make the local machine ready for `windows64-deploy` style work wi
 After successful setup:
 
 - `GENERALSX_MSYS2_ROOT` should point to the active MSYS2 root.
-- `MSYSTEM` should be set to `MINGW32` for the current bootstrap path unless the task explicitly switches to x86_64 work.
+- `MSYSTEM` should be set to `MINGW64` for the `windows64-deploy` bootstrap path.
 - `MSYSTEM_PREFIX` should point at the active MinGW prefix.
 - The session `PATH` should include the active MinGW `bin` directory and `usr/bin` from MSYS2.
 - `cmake` should remain the repository-preferred Windows installation if already present.

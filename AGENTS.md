@@ -12,9 +12,8 @@ Before starting work, read:
 - `docs/DEV_BLOG/YYYY-MM-DIARY.md` – current development notes
 
 ## Platform Focus
-- **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`)
-- **Future/Exploratory**: Windows (MinGW path, issue #29)
-- **Legacy**: VC6 + DirectX 8 + Miles (reference only)
+- **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`), Windows (`windows64-deploy`, MinGW-w64 x86_64)
+- **Legacy/Reference**: Upstream historical VC6/win32 context is optional reference only and not a support target in this repository
 
 ## Architecture
 | Layer   | Technology          | Replaces                     |
@@ -32,7 +31,7 @@ Before starting work, read:
 2. **SDL3 everywhere** – No native platform calls in game code
 3. **DXVK everywhere** – DX8 → Vulkan translation on all platforms
 4. **OpenAL everywhere** – Cross-platform audio stack
-5. **64-bit native** – x86_64 only (32-bit via VC6 upstream)
+5. **64-bit native** – x86_64 only
 6. **Retail compatibility** – Original replays and mods must work
 7. **Determinism** – Rendering/audio changes must not affect gameplay logic
 8. **No band-aids** – Fix underlying issues, not symptoms
@@ -52,8 +51,8 @@ Before starting work, read:
 ./scripts/build/linux/docker-configure-linux.sh linux64-deploy
 ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy
 
-# Optional: Windows via MinGW cross-build
-./scripts/build/linux/docker-build-mingw-zh.sh mingw-w64-i686
+# Optional: Windows cross-build via Docker
+./scripts/build/linux/docker-build-mingw-zh.sh windows64-deploy
 ```
 
 ### Native Linux
@@ -93,7 +92,7 @@ cmake --build build/macos-vulkan --target z_generals
 - **DXVK needs Vulkan**: Install `vulkan-tools`, `mesa-vulkan-drivers` or GPU drivers.
 - **-logToCon only in debug**: Available only with `RTS_BUILD_OPTION_DEBUG=ON`.
 - **SDL3 from source**: Fetched via CMake FetchContent. No system package needed.
-- **Manual memory**: Always delete/delete[]. Use STLPort for VC6 legacy builds.
+- **Manual memory**: Always delete/delete[] in legacy code paths.
 - **Debug options break replays**: Use `RTS_BUILD_OPTION_DEBUG=OFF` for replay tests.
 
 ## Testing & Validation
@@ -195,9 +194,9 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - **linux64-deploy** – GCC/Clang x86_64, Release (PRIMARY LINUX)
 - **linux64-testing** – Debug variant
 - **macos-vulkan** – macOS ARM64, RelWithDebInfo (PRIMARY MACOS)
-- **mingw-w64-i686** – MinGW cross-compile (exploratory)
-- **vc6** – Visual Studio 6, 32-bit (legacy)
-- **win32** – MSVC 2022, experimental
+- **windows64-deploy** – MinGW-w64 x86_64, RelWithDebInfo (PRIMARY WINDOWS)
+- **windows64-debug** – MinGW-w64 x86_64 debug preset
+- **mingw-w64-i686** – legacy/transition MinGW 32-bit preset (do not prioritize for new work)
 
 ## Directories
 - `GeneralsMD/` – Zero Hour (PRIMARY TARGET)

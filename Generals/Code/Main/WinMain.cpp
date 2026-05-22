@@ -31,12 +31,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
-#define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
+// GeneralsX @bugfix GitHub Copilot 22/05/2026 Ensure WinMain gets full Win32 window/message declarations on MinGW.
 #include <windows.h>
 #include <stdlib.h>
 #include <crtdbg.h>
 #include <eh.h>
-#include <windef.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"

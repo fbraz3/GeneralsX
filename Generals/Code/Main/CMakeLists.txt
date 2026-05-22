@@ -26,7 +26,6 @@ endif()
 
 # Cross-platform core libraries
 target_link_libraries(g_generals PRIVATE
-    d3dx8
     g_gameengine
     g_gameenginedevice
     gi_always
@@ -79,6 +78,16 @@ target_include_directories(g_generals PRIVATE
     ${CMAKE_BINARY_DIR}/Code/Libraries
 )
 
+if(MINGW)
+    # GeneralsX @bugfix GitHub Copilot 22/05/2026 Ensure MinGW SDK headers are searched before CompatLib wrappers for this Win32 entrypoint target.
+    get_filename_component(_mingw_bin_dir "${CMAKE_C_COMPILER}" DIRECTORY)
+    get_filename_component(_mingw_root_dir "${_mingw_bin_dir}/.." ABSOLUTE)
+    set(_mingw_include_dir "${_mingw_root_dir}/include")
+    if(EXISTS "${_mingw_include_dir}/windows.h")
+        target_include_directories(g_generals BEFORE PRIVATE "${_mingw_include_dir}")
+    endif()
+endif()
+
 target_sources(g_generals PRIVATE
     $<$<BOOL:${WIN32}>:WinMain.cpp>
     $<$<BOOL:${WIN32}>:WinMain.h>
@@ -99,9 +108,37 @@ if(WIN32)
         )
     endif()
 
-    target_sources(g_generals PRIVATE
-        RTS.RC
+    if(MINGW)
+        # GeneralsX @bugfix GitHub Copilot 22/05/2026 Use a minimal dedicated windres invocation to avoid memory exhaustion from inherited C/C++ flags.
+        set(g_generals_rc_obj "${CMAKE_CURRENT_BINARY_DIR}/RTS.RC.res")
+        add_custom_command(
+            OUTPUT ${g_generals_rc_obj}
+            COMMAND ${CMAKE_RC_COMPILER} -O coff -I "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/RTS.RC" "${g_generals_rc_obj}"
+            DEPENDS RTS.RC resource.h
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "Compiling RTS.RC with minimal windres flags"
+            VERBATIM
+        )
+        target_sources(g_generals PRIVATE ${g_generals_rc_obj})
+    else()
+        target_sources(g_generals PRIVATE
+            RTS.RC
+        )
+    endif()
+endif()
+
+# GeneralsX @bugfix GitHub Copilot 22/05/2026 Keep MinGW static-library resolution stable by linking dependent Windows libs/stubs after all game/static libraries.
+if(WIN32)
+    target_link_libraries(g_generals PRIVATE
+        d3dx8
+        ws2_32
     )
+    if(TARGET binkstub)
+        target_link_libraries(g_generals PRIVATE binkstub)
+    endif()
+    if(TARGET milesstub)
+        target_link_libraries(g_generals PRIVATE milesstub)
+    endif()
 endif()
 
 # Strip debug symbols to separate file for MinGW Release builds

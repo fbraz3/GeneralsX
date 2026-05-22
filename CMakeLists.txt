@@ -60,7 +60,8 @@ if(MINGW)
 endif()
 
 # Find/Add build dependencies and stubs shared by all projects
-if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+# GeneralsX @bugfix GitHub Copilot 22/05/2026 Keep Miles/Bink stubs available on Windows x64 MinGW when legacy code paths still reference these symbols.
+if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     include(cmake/miles.cmake)
     include(cmake/bink.cmake)
 endif()

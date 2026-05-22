@@ -7,10 +7,6 @@ permissions:
 on:
   workflow_call:
     inputs:
-      game:
-        required: true
-        type: string
-        description: "Game to build (GeneralsMD, Generals)"
       preset:
         required: false
         type: string
@@ -18,13 +14,6 @@ on:
         description: "CMake preset for Windows"
   workflow_dispatch:
     inputs:
-      game:
-        type: choice
-        description: "Game to build"
-        options:
-          - GeneralsMD
-          - Generals
-        default: GeneralsMD
       preset:
         type: choice
         description: "CMake preset for Windows"
@@ -34,17 +23,78 @@ on:
 
 jobs:
   build-windows:
-    name: ${{ inputs.game }}@${{ inputs.preset }}
+    name: ${{ matrix.game.id }}@${{ inputs.preset }}
     runs-on: windows-latest
-    timeout-minutes: 5
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        game:
+          - id: generalsxzh
+            target: z_generals
+            build_script: ./scripts/build/windows/build-windows-zh.ps1
+            deploy_script: ./scripts/build/windows/deploy-windows-zh.ps1
+            bundle_dir: build/bundles/windows-generalsxzh-windows64-deploy
+            log_suffix: zh
+          - id: generalsx
+            target: g_generals
+            build_script: ./scripts/build/windows/build-windows-generals.ps1
+            deploy_script: ./scripts/build/windows/deploy-windows-generals.ps1
+            bundle_dir: build/bundles/windows-generalsx-windows64-deploy
+            log_suffix: generals
 
     steps:
-      - name: Not Yet Implemented
-        shell: bash
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup MSYS2 MinGW64
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-cmake
+
+      - name: Configure CMake (${{ inputs.preset }})
+        shell: pwsh
         run: |
-          echo "Windows build (SDL3 + DXVK + OpenAL 64-bit) is not yet implemented."
-          echo "See docs/WORKDIR/phases/ for the Windows roadmap."
-          echo ""
-          echo "To run the real build, switch to the branch that has Windows support"
-          echo "and re-run this workflow from that branch."
-          exit 0
+          ./scripts/build/windows/configure-windows64.ps1
+
+      - name: Build ${{ matrix.game.target }}
+        shell: pwsh
+        run: |
+          & "${{ matrix.game.build_script }}"
+
+      - name: Generate Windows Bundle
+        shell: pwsh
+        run: |
+          & "${{ matrix.game.deploy_script }}"
+
+      - name: Verify Bundle Output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${{ matrix.game.bundle_dir }}")) {
+            Write-Error "Bundle directory not found: ${{ matrix.game.bundle_dir }}"
+            exit 1
+          }
+          Get-ChildItem -Path "${{ matrix.game.bundle_dir }}" -Force | Format-Table Name, Length
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-logs-windows-${{ matrix.game.id }}-${{ inputs.preset }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Windows Bundle
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-bundle-${{ matrix.game.id }}-${{ inputs.preset }}
+          path: ${{ matrix.game.bundle_dir }}
+          retention-days: 7
+          if-no-files-found: error

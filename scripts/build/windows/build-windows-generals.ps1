@@ -15,11 +15,16 @@ New-Item -ItemType Directory -Path logs -Force | Out-Null
 $logFile = "logs/build_windows64_generals.log"
 
 Write-Host "Building target g_generals..."
+# GeneralsX @bugfix GitHub Copilot 21/05/2026 Prevent PowerShell from treating CMake stderr warnings as terminating errors.
+$previousErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
 cmake --build --preset windows64-deploy --target g_generals -j4 2>&1 | Tee-Object -FilePath $logFile
+$cmakeExitCode = $LASTEXITCODE
+$ErrorActionPreference = $previousErrorActionPreference
 
-if ($LASTEXITCODE -ne 0) {
+if ($cmakeExitCode -ne 0) {
     Write-Error "Build failed. Check $logFile"
-    exit $LASTEXITCODE
+    exit $cmakeExitCode
 }
 
 Write-Host "Build complete. Log: $logFile"

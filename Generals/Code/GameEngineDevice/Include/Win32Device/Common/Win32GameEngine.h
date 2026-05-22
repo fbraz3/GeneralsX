@@ -119,7 +119,12 @@ inline WebBrowser *Win32GameEngine::createWebBrowser()
 }
 inline AudioManager *Win32GameEngine::createAudioManager(Bool dummy)
 {
+#if defined(__MINGW32__)
+	// GeneralsX @bugfix GitHub Copilot 22/05/2026 Use dummy audio manager on MinGW to avoid linking against non-portable Miles implementation.
+	return NEW MilesAudioManagerDummy;
+#else
 	if (dummy)
 		return NEW MilesAudioManagerDummy;
 	return NEW MilesAudioManager;
+#endif
 }

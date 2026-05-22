@@ -5,21 +5,53 @@
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
-# Specify the cross compiler
+# GeneralsX @bugfix GitHub Copilot 21/05/2026 Resolve MinGW tools to absolute paths so native Windows builds can find ar/ranlib/windres and GCC preprocessors.
 if(DEFINED ENV{MSYSTEM_PREFIX} AND NOT "$ENV{MSYSTEM_PREFIX}" STREQUAL "")
-	set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
-	set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
-	set(CMAKE_RC_COMPILER windres)
-	set(CMAKE_AR ar)
-	set(CMAKE_RANLIB ranlib)
-	set(CMAKE_DLLTOOL dlltool)
+	set(_MINGW_X64_BIN_HINTS "$ENV{MSYSTEM_PREFIX}/bin")
 else()
-	set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
-	set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
-	set(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)
-	set(CMAKE_AR x86_64-w64-mingw32-ar)
-	set(CMAKE_RANLIB x86_64-w64-mingw32-ranlib)
-	set(CMAKE_DLLTOOL x86_64-w64-mingw32-dlltool)
+	set(_MINGW_X64_BIN_HINTS
+		"C:/msys64/mingw64/bin"
+		"C:/msys64/ucrt64/bin"
+	)
+endif()
+
+find_program(MINGW64_GCC NAMES x86_64-w64-mingw32-gcc gcc HINTS ${_MINGW_X64_BIN_HINTS})
+find_program(MINGW64_GXX NAMES x86_64-w64-mingw32-g++ g++ HINTS ${_MINGW_X64_BIN_HINTS})
+find_program(MINGW64_WINDRES NAMES x86_64-w64-mingw32-windres windres HINTS ${_MINGW_X64_BIN_HINTS})
+find_program(MINGW64_AR NAMES x86_64-w64-mingw32-ar ar HINTS ${_MINGW_X64_BIN_HINTS})
+find_program(MINGW64_RANLIB NAMES x86_64-w64-mingw32-ranlib ranlib HINTS ${_MINGW_X64_BIN_HINTS})
+find_program(MINGW64_DLLTOOL NAMES x86_64-w64-mingw32-dlltool dlltool HINTS ${_MINGW_X64_BIN_HINTS})
+
+if(NOT MINGW64_GCC)
+	set(MINGW64_GCC x86_64-w64-mingw32-gcc)
+endif()
+if(NOT MINGW64_GXX)
+	set(MINGW64_GXX x86_64-w64-mingw32-g++)
+endif()
+if(NOT MINGW64_WINDRES)
+	set(MINGW64_WINDRES x86_64-w64-mingw32-windres)
+endif()
+if(NOT MINGW64_AR)
+	set(MINGW64_AR x86_64-w64-mingw32-ar)
+endif()
+if(NOT MINGW64_RANLIB)
+	set(MINGW64_RANLIB x86_64-w64-mingw32-ranlib)
+endif()
+if(NOT MINGW64_DLLTOOL)
+	set(MINGW64_DLLTOOL x86_64-w64-mingw32-dlltool)
+endif()
+
+set(CMAKE_C_COMPILER ${MINGW64_GCC})
+set(CMAKE_CXX_COMPILER ${MINGW64_GXX})
+set(CMAKE_RC_COMPILER ${MINGW64_WINDRES})
+set(CMAKE_AR ${MINGW64_AR})
+set(CMAKE_RANLIB ${MINGW64_RANLIB})
+set(CMAKE_DLLTOOL ${MINGW64_DLLTOOL})
+set(CMAKE_C_COMPILER_AR ${MINGW64_AR})
+set(CMAKE_CXX_COMPILER_AR ${MINGW64_AR})
+
+if(MINGW64_GCC)
+	string(APPEND CMAKE_RC_FLAGS_INIT " --preprocessor=${MINGW64_GCC}")
 endif()
 
 # Target environment

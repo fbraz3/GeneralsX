@@ -46,7 +46,7 @@ Launch in windowed mode, skip intro.
 ```bash
 ./GeneralsXZH -jobs 4 -headless -replay subfolder/*.rep
 ```
-Test multiple replays in parallel without graphics (requires optimized VC6 build with `RTS_BUILD_OPTION_DEBUG=OFF`).
+Test multiple replays in parallel without graphics (requires an optimized non-debug build with `RTS_BUILD_OPTION_DEBUG=OFF`).
 
 ### High Resolution Testing
 ```bash

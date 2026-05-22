@@ -180,6 +180,8 @@ if(WIN32)
 #       Source/Win32Device/Common/Win32LocalFile.cpp
 #       Source/Win32Device/Common/Win32LocalFileSystem.cpp
         Source/Win32Device/Common/Win32OSDisplay.cpp
+        # GeneralsX @bugfix GitHub Copilot 22/05/2026 Reuse shared Bink stub implementation in Win64/MinGW builds when legacy Bink player is not built.
+        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
 else()
     # Linux-specific files (SDL3, DXVK)
@@ -206,14 +208,19 @@ target_include_directories(g_gameenginedevice PUBLIC
     Include
 )
 
-target_precompile_headers(g_gameenginedevice PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
-    [["Common/STLTypedefs.h"]]
-    [["Common/SubsystemInterface.h"]]
-    [["INI.h"]]
-    [["WWCommon.h"]]
-    <windows.h>
-)
+# GeneralsX @build GitHub Copilot 22/05/2026 Work around MinGW/Windows PCH generation failure for g_gameenginedevice.
+if(WIN32 AND MINGW)
+    message(STATUS "g_gameenginedevice: disabling precompiled headers for MinGW/Windows")
+else()
+    target_precompile_headers(g_gameenginedevice PRIVATE
+        [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+        [["Common/STLTypedefs.h"]]
+        [["Common/SubsystemInterface.h"]]
+        [["INI.h"]]
+        [["WWCommon.h"]]
+        <windows.h>
+    )
+endif()
 
 target_link_libraries(g_gameenginedevice PRIVATE
     corei_gameenginedevice_private

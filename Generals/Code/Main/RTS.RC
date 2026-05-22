@@ -2,6 +2,6 @@
 
 #include "resource.h"
 
-IDI_ApplicationIcon ICON DISCARDABLE "../../../../assets/generalsx_icon.ico"
-IDB_LOAD_SCREEN BITMAP DISCARDABLE "Install_Final.bmp"
+IDI_ApplicationIcon ICON DISCARDABLE "../../../assets/generalsx_icon.ico"
+// GeneralsX @bugfix GitHub Copilot 22/05/2026 Avoid MinGW windres memory exhaustion by not embedding the large loading bitmap as a PE resource.
 1 24 "app.manifest"
