@@ -351,6 +351,59 @@ jobs:
             exit 1
           fi
 
+      - name: Emit Build Fingerprint (macOS)
+        if: success()
+        run: |
+          mkdir -p logs
+
+          CACHE_FILE="build/${{ inputs.preset }}/CMakeCache.txt"
+          COMPILE_DB="build/${{ inputs.preset }}/compile_commands.json"
+          BINARY="build/${{ inputs.preset }}/${{ matrix.game.value }}/${{ matrix.game.output }}"
+          FP_LOG="logs/fingerprint_${{ matrix.game.log_suffix }}_macos.log"
+
+          {
+            echo "=== Build Fingerprint (macOS) ==="
+            echo "workflow_ref=${GITHUB_WORKFLOW_REF}"
+            echo "github_sha=${GITHUB_SHA}"
+            echo "matrix_game=${{ matrix.game.value }}"
+            echo "preset=${{ inputs.preset }}"
+
+            echo ""
+            echo "-- Toolchain --"
+            cmake --version | head -1 || true
+            clang --version | head -1 || true
+            ninja --version || true
+
+            echo ""
+            echo "-- Binary --"
+            if [ -f "$BINARY" ]; then
+              shasum -a 256 "$BINARY"
+              file "$BINARY" || true
+            else
+              echo "binary_missing=$BINARY"
+            fi
+
+            echo ""
+            echo "-- CMake Cache (key entries) --"
+            if [ -f "$CACHE_FILE" ]; then
+              grep -E "^(CMAKE_BUILD_TYPE|CMAKE_C_COMPILER|CMAKE_CXX_COMPILER|CMAKE_C_FLAGS|CMAKE_CXX_FLAGS|CMAKE_SYSTEM_NAME|CMAKE_SYSTEM_PROCESSOR|RTS_BUILD_OPTION_DEBUG|RTS_BUILD_OPTION_.*|VCPKG_TARGET_TRIPLET|SAGE_.*|BUILD_.*):" "$CACHE_FILE" || true
+            else
+              echo "cache_missing=$CACHE_FILE"
+            fi
+
+            echo ""
+            echo "-- Replay compatibility define source --"
+            grep -n "RETAIL_COMPATIBLE_CRC" Core/GameEngine/Include/Common/GameDefines.h || true
+
+            echo ""
+            echo "-- Compile command sample (GameEngine.cpp) --"
+            if [ -f "$COMPILE_DB" ]; then
+              grep -n "GameEngine.cpp" "$COMPILE_DB" | head -3 || true
+            else
+              echo "compile_commands_missing=$COMPILE_DB"
+            fi
+          } | tee "$FP_LOG"
+
       - name: Bundle .app (GeneralsX macOS Distribution)
         if: success()
         env:
