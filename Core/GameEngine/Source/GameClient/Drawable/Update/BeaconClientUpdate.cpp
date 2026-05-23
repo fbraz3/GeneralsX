@@ -108,14 +108,11 @@ static ParticleSystem* createParticleSystem( Drawable *draw )
 				templateName.format("BeaconSmokeFFFFFF");
 				const ParticleSystemTemplate *failsafeTemplate = TheParticleSystemManager->findTemplate( templateName );
 				DEBUG_ASSERTCRASH(failsafeTemplate, ("Doh, this is bad \n I Could not even find the white particle system to make a failsafe system out of."));
-				if (failsafeTemplate)
+				system = TheParticleSystemManager->createParticleSystem( failsafeTemplate );
+				if (system)
 				{
-					system = TheParticleSystemManager->createParticleSystem( failsafeTemplate );
-					if (system)
-					{
-						system->attachToDrawable( draw );
-						system->tintAllColors( obj->getIndicatorColor() );
-					}
+					system->attachToDrawable( draw );
+					system->tintAllColors( obj->getIndicatorColor() );
 				}
 			}
 		}
