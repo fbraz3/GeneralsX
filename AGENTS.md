@@ -1,15 +1,22 @@
 # GeneralsX: Instructions for AI Coding Agents
 
+Mandatory: always read and follow applicable `.github/instructions/*.instructions.md` files based on each file's `applyTo` pattern before making changes.
+
 ## What I Am
 GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
 ## Must-Load Context
 Before starting work, read:
-- `.github/copilot-instructions.md` – quick reference
 - `.github/instructions/generalsx.instructions.md` – full architecture
 - `.github/instructions/git-commit.instructions.md` – commit standards
 - `.github/instructions/docs.instructions.md` – documentation workflow
+- `.github/instructions/scripts.instructions.md` – script organization rules
 - `docs/DEV_BLOG/YYYY-MM-DIARY.md` – current development notes
+
+## Key Entry Points
+- `GeneralsMD/Code/Main/WinMain.cpp` (Zero Hour launcher)
+- `Generals/Code/Main/WinMain.cpp` (Generals launcher)
+- `Core/GameEngineDevice/Source/` (render device setup and DXVK path)
 
 ## Platform Focus
 - **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`)
@@ -95,6 +102,7 @@ cmake --build build/macos-vulkan --target z_generals
 - **SDL3 from source**: Fetched via CMake FetchContent. No system package needed.
 - **Manual memory**: Always delete/delete[]. Use STLPort for VC6 legacy builds.
 - **Debug options break replays**: Use `RTS_BUILD_OPTION_DEBUG=OFF` for replay tests.
+- **Linux logging caveat**: `-logToCon` helps, but critical traces may still require `fprintf(stderr, ...)` probes.
 
 ## Testing & Validation
 ### Smoke test
@@ -129,6 +137,12 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 # Linux: [Linux] Configure (Docker), [Linux] Build GeneralsXZH, [Linux] Run GeneralsXZH
 # macOS: [macOS] Configure, [macOS] Build GeneralsXZH, [macOS] Run GeneralsXZH
 ```
+
+## Build Config Touchpoints
+- `CMakePresets.json` for presets and active target defaults
+- `cmake/config-build.cmake` and `cmake/dx8.cmake` for renderer/build flags
+- `cmake/miles.cmake` and `cmake/openal.cmake` for audio stack toggles
+- `cmake/mingw.cmake` for exploratory MinGW configuration
 
 ## Branching & Sync
 ### TheSuperHackers upstream sync
@@ -206,3 +220,17 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - `references/` – fighter19, jmarshall, thesuperhackers-main
 - `docs/WORKDIR/` – current work documentation
 - `logs/` – build/run/debug logs (gitignored)
+
+## Instruction Context Loading
+LLM requirement: before starting any task, check instruction files under `.github/instructions/*.instructions.md` and determine which ones match the target paths via each file's `applyTo` pattern.
+
+If a pattern applies, the LLM must read and follow that instruction file for the affected files. If a pattern does not apply, do not enforce that instruction.
+
+| Instruction File Path | applyTo | When to Use |
+|---|---|---|
+| `.github/instructions/generalsx.instructions.md` | `**` | Global project architecture and platform rules |
+| `.github/instructions/git-commit.instructions.md` | `**` | Commit/PR naming and message standards |
+| `.github/instructions/docs.instructions.md` | `**/*.md` | Any markdown documentation creation/update |
+| `.github/instructions/scripts.instructions.md` | `scripts/**` | Any script under scripts/ tree |
+
+LLM maintenance disclaimer: update this table immediately whenever instruction files are added, removed, renamed, or when any `applyTo` pattern changes.

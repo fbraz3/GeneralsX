@@ -638,7 +638,7 @@ void SlavedUpdate::setRepairState( RepairStates repairState )
 							}
 
 							weldingSys->setPosition( &pos );
-							Real time = (Real)(m_framesToWait * static_cast<float>(LOGICFRAMES_PER_SECOND));
+							Real time = (Real)(m_framesToWait * LOGICFRAMES_PER_SECOND);
 							weldingSys->setLifetimeRange( time, time );
 
 							AudioEventRTS soundToPlay = TheAudio->getMiscAudio()->m_repairSparks;

@@ -99,6 +99,50 @@ jobs:
           echo "path=${CANDIDATE}" >> "$GITHUB_OUTPUT"
           echo "Using detected bundle: ${CANDIDATE}"
 
+      - name: Emit Build Fingerprint (Linux Flatpak)
+        if: success()
+        run: |
+          # GeneralsX @bugfix BenderAI 22/05/2026 Emit reproducible Flatpak build fingerprint to diagnose CI/local replay drift.
+          mkdir -p logs
+          FP_LOG="logs/fingerprint_${{ matrix.game.log_suffix }}_linux_flatpak.log"
+          BUILD_LOG="logs/build_flatpak_${{ matrix.game.log_suffix }}.log"
+          BUNDLE_PATH="${{ steps.bundle.outputs.path }}"
+
+          {
+            echo "=== Build Fingerprint (Linux Flatpak) ==="
+            echo "workflow_ref=${GITHUB_WORKFLOW_REF}"
+            echo "github_sha=${GITHUB_SHA}"
+            echo "matrix_game=${{ matrix.game.value }}"
+            echo "preset=${{ inputs.preset }}"
+
+            echo ""
+            echo "-- Toolchain --"
+            flatpak --version || true
+            flatpak-builder --version || true
+            python3 --version || true
+
+            echo ""
+            echo "-- Bundle --"
+            if [ -f "$BUNDLE_PATH" ]; then
+              sha256sum "$BUNDLE_PATH"
+              ls -lh "$BUNDLE_PATH"
+            else
+              echo "bundle_missing=$BUNDLE_PATH"
+            fi
+
+            echo ""
+            echo "-- CMake/Build hints from flatpak log --"
+            if [ -f "$BUILD_LOG" ]; then
+              grep -E "(cmake\s+|CMAKE_BUILD_TYPE|RTS_BUILD_OPTION_DEBUG|RTS_BUILD_OPTION_|VCPKG_TARGET_TRIPLET|SAGE_|RETAIL_COMPATIBLE_CRC|Build with Debug Logging in CRC log)" "$BUILD_LOG" | head -200 || true
+            else
+              echo "build_log_missing=$BUILD_LOG"
+            fi
+
+            echo ""
+            echo "-- Replay compatibility define source --"
+            grep -n "RETAIL_COMPATIBLE_CRC" Core/GameEngine/Include/Common/GameDefines.h || true
+          } | tee "$FP_LOG"
+
       - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v7
