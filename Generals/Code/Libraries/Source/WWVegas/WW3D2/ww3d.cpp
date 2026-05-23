@@ -122,11 +122,6 @@
 #include "framgrab.h"
 #include "Lib/BaseType.h"
 
-// GeneralsX @build Copilot 20/05/2026 Ensure MinGW sees WinMM timer API declarations.
-extern "C" MMRESULT WINAPI timeBeginPeriod(UINT uPeriod);
-extern "C" MMRESULT WINAPI timeEndPeriod(UINT uPeriod);
-
-
 const char* DAZZLE_INI_FILENAME="DAZZLE.INI";
 
 #define DEFAULT_DEBUG_SHADER_BITS	(		SHADE_CNST(\
