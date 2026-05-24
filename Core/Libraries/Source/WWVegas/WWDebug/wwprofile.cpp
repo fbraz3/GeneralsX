@@ -362,7 +362,7 @@ WWProfileHierarchyNodeClass	*	WWProfileManager::CurrentRootNode = &WWProfileMana
 int									WWProfileManager::FrameCounter = 0;
 __int64								WWProfileManager::ResetTime = 0;
 
-static unsigned long			ThreadID = 0;
+static void*				ThreadID = nullptr;
 
 
 /***********************************************************************************************
