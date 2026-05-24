@@ -84,7 +84,9 @@
                 "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "$<$<CONFIG:Release,Debug,RelWithDebInfo>:Embedded>",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets"
+                "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
+                "VCPKG_MANIFEST_MODE": "ON",
+                "VCPKG_MANIFEST_DIR": "${sourceDir}"
             }
         },
         {
@@ -210,7 +212,9 @@
                 "SAGE_UPDATE_CHECK": "OFF",
                 "RTS_CRASHDUMP_ENABLE": "OFF",
                 "RTS_BUILD_OPTION_FFMPEG": "OFF",
-                "RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT": "ON"
+                "RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT": "ON",
+                "VCPKG_MANIFEST_MODE": "ON",
+                "VCPKG_MANIFEST_DIR": "${sourceDir}"
             }
         },
         {

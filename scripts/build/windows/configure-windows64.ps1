@@ -14,6 +14,23 @@ $env:PATH = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:PATH
 New-Item -ItemType Directory -Path logs -Force | Out-Null
 $logFile = "logs/configure_windows64.log"
 
+# GeneralsX @bugfix GitHub Copilot 21/05/2026 Execute vcpkg to install required packages (GLM, GLI, zlib) before CMake
+Write-Host "Installing dependencies via vcpkg..."
+if (Test-Path "vcpkg.exe") {
+    Write-Host "vcpkg.exe found. Installing packages with lock file..."
+    & vcpkg.exe install --triplet x86_64-windows --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
+} else {
+    Write-Host "vcpkg.exe not found. Attempting to download..."
+    $vcpkgUrl = "https://github.com/microsoft/vcpkg/archive/refs/tags/2024.11.11.zip"
+    Invoke-WebRequest -Uri $vcpkgUrl -OutFile "vcpkg.zip" -UseBasicParsing
+    Expand-Archive -Path "vcpkg.zip" -DestinationPath "vcpkg_extract" -Force
+    Move-Item -Path "vcpkg_extract\vcpkg\vcpkg.exe" -Destination "vcpkg.exe" -Force
+    Remove-Item -Path "vcpkg.zip", "vcpkg_extract" -Recurse -Force
+    Write-Host "vcpkg downloaded and extracted successfully."
+    Write-Host "Installing packages with lock file..."
+    & vcpkg.exe install --triplet x86_64-windows --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
+}
+
 Write-Host "Configuring preset windows64-deploy..."
 # GeneralsX @bugfix GitHub Copilot 21/05/2026 Prevent PowerShell from treating CMake stderr warnings as terminating errors.
 $previousErrorActionPreference = $ErrorActionPreference

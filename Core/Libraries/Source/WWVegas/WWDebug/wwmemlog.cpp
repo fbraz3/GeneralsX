@@ -392,7 +392,7 @@ ActiveCategoryStackClass::operator = (const ActiveCategoryStackClass & that)
 ***************************************************************************************************/
 ActiveCategoryStackClass & ActiveCategoryClass::Get_Active_Stack()
 {
-	int current_thread = static_cast<int>(::GetCurrentThreadId());
+	int current_thread = ::GetCurrentThreadId();
 
 	/*
 	** If we already have an allocated category stack for the current thread,
