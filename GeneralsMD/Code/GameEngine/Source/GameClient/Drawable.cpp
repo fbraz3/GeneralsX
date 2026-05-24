@@ -109,6 +109,34 @@ static const char *const TheDrawableIconNames[] =
 };
 static_assert(ARRAY_SIZE(TheDrawableIconNames) == MAX_ICONS + 1, "Incorrect array size");
 
+// GeneralsX @bugfix GitHubCopilot 24/05/2026 Resolve Drawable caption fonts through a deterministic fallback chain when localized font names are unavailable.
+static GameFont *ResolveDrawableCaptionFont()
+{
+	if (TheFontLibrary == nullptr || TheInGameUI == nullptr)
+		return nullptr;
+
+	const Int basePointSize = TheInGameUI->getDrawableCaptionPointSize();
+	const Int pointSize = TheGlobalLanguageData ? TheGlobalLanguageData->adjustFontSize(basePointSize) : basePointSize;
+	const Bool bold = TheInGameUI->isDrawableCaptionBold();
+
+	GameFont *font = TheFontLibrary->getFont(TheInGameUI->getDrawableCaptionFontName(), pointSize, bold);
+	if (font != nullptr)
+		return font;
+
+	if (TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty())
+	{
+		font = TheFontLibrary->getFont(TheGlobalLanguageData->m_unicodeFontName, pointSize, bold);
+		if (font != nullptr)
+			return font;
+	}
+
+	font = TheFontLibrary->getFont("Arial", pointSize, bold);
+	if (font != nullptr)
+		return font;
+
+	return TheFontLibrary->getFont("Arial Unicode MS", pointSize, bold);
+}
+
 
 /**
  * Returns a special DynamicAudioEventInfo which can be used to mark a sound as "no sound".
@@ -365,9 +393,10 @@ Drawable::Drawable( const ThingTemplate *thingTemplate, DrawableStatusBits statu
 	m_lastConstructDisplayed = -1.0f;
 	//Fix for the building percent
 	m_constructDisplayString = TheDisplayStringManager->newDisplayString();
-	m_constructDisplayString->setFont(TheFontLibrary->getFont(TheInGameUI->getDrawableCaptionFontName(),
-																TheGlobalLanguageData->adjustFontSize(TheInGameUI->getDrawableCaptionPointSize()),
-																TheInGameUI->isDrawableCaptionBold() ));
+	if (m_constructDisplayString)
+	{
+		m_constructDisplayString->setFont(ResolveDrawableCaptionFont());
+	}
 
 	m_ambientSound = nullptr;
   m_ambientSoundEnabled = true;
@@ -2009,10 +2038,13 @@ void Drawable::calcPhysicsXformWheels( const Locomotor *locomotor, PhysicsXformI
 	if (!airborne)
 	{
 		m_locoInfo->m_pitchRate += ((-PITCH_STIFFNESS * (m_locoInfo->m_pitch - groundPitch)) + (-PITCH_DAMPING * m_locoInfo->m_pitchRate));		// spring/damper
-		if (m_locoInfo->m_pitchRate > 0.0f)
-			m_locoInfo->m_pitchRate *= 0.5f;
-
 		m_locoInfo->m_rollRate += ((-ROLL_STIFFNESS * (m_locoInfo->m_roll - groundRoll)) + (-ROLL_DAMPING * m_locoInfo->m_rollRate));		// spring/damper
+	}
+	else
+	{
+		//Autolevel
+		m_locoInfo->m_pitchRate += ( (-PITCH_STIFFNESS * m_locoInfo->m_pitch) + (-PITCH_DAMPING * m_locoInfo->m_pitchRate) );		// spring/damper
+		m_locoInfo->m_rollRate += ( (-ROLL_STIFFNESS * m_locoInfo->m_roll) + (-ROLL_DAMPING * m_locoInfo->m_rollRate) );		// spring/damper
 	}
 
 	m_locoInfo->m_pitch += m_locoInfo->m_pitchRate * UNIFORM_AXIAL_DAMPING;
@@ -2028,7 +2060,16 @@ void Drawable::calcPhysicsXformWheels( const Locomotor *locomotor, PhysicsXformI
 
 	// compute total pitch and roll of tank
 	info.m_totalPitch = m_locoInfo->m_pitch + m_locoInfo->m_accelerationPitch;
-	info.m_totalRoll = m_locoInfo->m_roll + m_locoInfo->m_accelerationRoll;
+
+
+  // THis logic had recently been added to Drawable::applyPhysicsXform(), which was naughty, since it clamped the roll in every drawable in the game
+  // Now only motorcycles enjoy this constraint
+  Real unclampedRoll = m_locoInfo->m_roll + m_locoInfo->m_accelerationRoll;
+  info.m_totalRoll = (unclampedRoll > 0.5f && unclampedRoll < -0.5f ? unclampedRoll : 0.0f);
+
+	if( airborne )
+	{
+	}
 
 	if (physics->isMotive())
 	{
@@ -2092,16 +2133,20 @@ void Drawable::calcPhysicsXformWheels( const Locomotor *locomotor, PhysicsXformI
 
 		const Real SPRING_FACTOR = 0.9f;
 		if (pitchHeight<0) {	// Front raising up
-			newInfo.m_frontLeftHeightOffset = SPRING_FACTOR*(pitchHeight/3+pitchHeight/2);
-			newInfo.m_frontRightHeightOffset = SPRING_FACTOR*(pitchHeight/3+pitchHeight/2);
-			newInfo.m_rearLeftHeightOffset = -pitchHeight/2 + pitchHeight/4;
-			newInfo.m_rearRightHeightOffset = -pitchHeight/2 + pitchHeight/4;
-		}	else {	// Back rasing up.
-			newInfo.m_frontLeftHeightOffset = (-pitchHeight/4+pitchHeight/2);
-			newInfo.m_frontRightHeightOffset = (-pitchHeight/4+pitchHeight/2);
-			newInfo.m_rearLeftHeightOffset = SPRING_FACTOR*(-pitchHeight/2 + -pitchHeight/3);
-			newInfo.m_rearRightHeightOffset = SPRING_FACTOR*(-pitchHeight/2 + -pitchHeight/3);
+			newInfo.m_frontLeftHeightOffset		= SPRING_FACTOR*(pitchHeight/3+pitchHeight/2);
+			newInfo.m_rearLeftHeightOffset		= -pitchHeight/2 + pitchHeight/4;
+			newInfo.m_frontRightHeightOffset	= newInfo.m_frontLeftHeightOffset;
+			newInfo.m_rearRightHeightOffset		= newInfo.m_rearLeftHeightOffset;
 		}
+		else
+		{
+			// Back raising up.
+			newInfo.m_frontLeftHeightOffset		= (-pitchHeight/4+pitchHeight/2);
+			newInfo.m_rearLeftHeightOffset		= SPRING_FACTOR*(-pitchHeight/2 + -pitchHeight/3);
+			newInfo.m_frontRightHeightOffset	= newInfo.m_frontLeftHeightOffset;
+			newInfo.m_rearRightHeightOffset		= newInfo.m_rearLeftHeightOffset;
+		}
+		/*
 		if (rollHeight>0) {	// Right raising up
 			newInfo.m_frontRightHeightOffset += -SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 			newInfo.m_rearRightHeightOffset += -SPRING_FACTOR*(rollHeight/3+rollHeight/2);
@@ -2113,29 +2158,28 @@ void Drawable::calcPhysicsXformWheels( const Locomotor *locomotor, PhysicsXformI
 			newInfo.m_rearLeftHeightOffset += SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 			newInfo.m_frontLeftHeightOffset += SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 		}
-		if (newInfo.m_frontLeftHeightOffset < m_locoInfo->m_wheelInfo.m_frontLeftHeightOffset) {
+		*/
+		if (newInfo.m_frontLeftHeightOffset < m_locoInfo->m_wheelInfo.m_frontLeftHeightOffset)
+		{
 			// If it's going down, dampen the movement a bit
 			m_locoInfo->m_wheelInfo.m_frontLeftHeightOffset += (newInfo.m_frontLeftHeightOffset - m_locoInfo->m_wheelInfo.m_frontLeftHeightOffset)/2.0f;
-		}	else {
+			m_locoInfo->m_wheelInfo.m_frontRightHeightOffset = m_locoInfo->m_wheelInfo.m_frontLeftHeightOffset;
+		}
+		else
+		{
 			m_locoInfo->m_wheelInfo.m_frontLeftHeightOffset = newInfo.m_frontLeftHeightOffset;
+			m_locoInfo->m_wheelInfo.m_frontRightHeightOffset = newInfo.m_frontLeftHeightOffset;
 		}
-		if (newInfo.m_frontRightHeightOffset < m_locoInfo->m_wheelInfo.m_frontRightHeightOffset) {
-			// If it's going down, dampen the movement a bit
-			m_locoInfo->m_wheelInfo.m_frontRightHeightOffset += (newInfo.m_frontRightHeightOffset - m_locoInfo->m_wheelInfo.m_frontRightHeightOffset)/2.0f;
-		}	else {
-			m_locoInfo->m_wheelInfo.m_frontRightHeightOffset = newInfo.m_frontRightHeightOffset;
-		}
-		if (newInfo.m_rearLeftHeightOffset < m_locoInfo->m_wheelInfo.m_rearLeftHeightOffset) {
+		if (newInfo.m_rearLeftHeightOffset < m_locoInfo->m_wheelInfo.m_rearLeftHeightOffset)
+		{
 			// If it's going down, dampen the movement a bit
 			m_locoInfo->m_wheelInfo.m_rearLeftHeightOffset += (newInfo.m_rearLeftHeightOffset - m_locoInfo->m_wheelInfo.m_rearLeftHeightOffset)/2.0f;
-		}	else {
-			m_locoInfo->m_wheelInfo.m_rearLeftHeightOffset = newInfo.m_rearLeftHeightOffset;
+			m_locoInfo->m_wheelInfo.m_rearRightHeightOffset = m_locoInfo->m_wheelInfo.m_rearLeftHeightOffset;
 		}
-		if (newInfo.m_rearRightHeightOffset < m_locoInfo->m_wheelInfo.m_rearRightHeightOffset) {
-			// If it's going down, dampen the movement a bit
-			m_locoInfo->m_wheelInfo.m_rearRightHeightOffset += (newInfo.m_rearRightHeightOffset - m_locoInfo->m_wheelInfo.m_rearRightHeightOffset)/2.0f;
-		}	else {
-			m_locoInfo->m_wheelInfo.m_rearRightHeightOffset = newInfo.m_rearRightHeightOffset;
+		else
+		{
+			m_locoInfo->m_wheelInfo.m_rearLeftHeightOffset = newInfo.m_rearLeftHeightOffset;
+			m_locoInfo->m_wheelInfo.m_rearRightHeightOffset = newInfo.m_rearLeftHeightOffset;
 		}
 		//m_locoInfo->m_wheelInfo = newInfo;
 		if (m_locoInfo->m_wheelInfo.m_frontLeftHeightOffset<MAX_SUSPENSION_EXTENSION) {
@@ -2212,7 +2256,7 @@ void Drawable::calcPhysicsXformMotorcycle( const Locomotor *locomotor, PhysicsXf
 	// get object physics state
 	PhysicsBehavior *physics = obj->getPhysics();
 	if (physics == nullptr)
-		return ;
+		return;
 
 	// get our position and direction vector
 	const Coord3D *pos = getPosition();
@@ -2418,7 +2462,7 @@ void Drawable::calcPhysicsXformMotorcycle( const Locomotor *locomotor, PhysicsXf
 		if (rollHeight>0) {	// Right raising up
 			newInfo.m_frontRightHeightOffset += -SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 			newInfo.m_rearLeftHeightOffset += rollHeight/2 - rollHeight/4;
-		}	else {	// Left raising up.
+		}	else {	// Left rasing up.
 			newInfo.m_frontRightHeightOffset += -rollHeight/2 + rollHeight/4;
 			newInfo.m_rearLeftHeightOffset += SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 		}
@@ -3295,7 +3339,7 @@ void Drawable::drawEnthusiastic(const IRegion2D* healthBarRegion)
 			// we are going to draw the healing icon relative to the size of the health bar region
 			// since that region takes into account hit point size and zoom factor of the camera too
 			//
-			Int barWidth = healthBarRegion->hi.x - healthBarRegion->lo.x;// used for position
+			Int barWidth = healthBarRegion->hi.x - healthBarRegion->lo.x;
 
 			// based on our own kind of we have certain icons to display at a size scale
 			Real scale;
@@ -3433,7 +3477,7 @@ void Drawable::drawBombed(const IRegion2D* healthBarRegion)
 				getIconInfo()->m_keepTillFrame[ ICON_CARBOMB ] = FOREVER;
 			}
 		}
-}
+	}
 	else
 	{
 		killIcon(ICON_CARBOMB);
@@ -3544,7 +3588,7 @@ void Drawable::drawBombed(const IRegion2D* healthBarRegion)
 						// given our scaled width and height we need to find the top left point to draw the image at
 						ICoord2D screen;
 						screen.x = REAL_TO_INT( healthBarRegion->lo.x + (barWidth * 0.5f) - (frameWidth * 0.5f) );
-						screen.y = REAL_TO_INT( healthBarRegion->lo.y + barHeight * 0.5f ) + BOMB_ICON_EXTRA_OFFSET;
+						screen.y = healthBarRegion->lo.y + barHeight * 0.5f + BOMB_ICON_EXTRA_OFFSET;
 
 						getIconInfo()->m_icon[ ICON_BOMB_REMOTE ]->draw( screen.x, screen.y, frameWidth, frameHeight );
 						getIconInfo()->m_keepTillFrame[ ICON_BOMB_REMOTE ] = now + 1;
@@ -3655,7 +3699,13 @@ void Drawable::drawConstructPercent( const IRegion2D *healthBarRegion )
 
 	// construction is partially complete, allocate a display string if we need one
 	if( m_constructDisplayString == nullptr )
+	{
 		m_constructDisplayString = TheDisplayStringManager->newDisplayString();
+		if (m_constructDisplayString)
+		{
+			m_constructDisplayString->setFont(ResolveDrawableCaptionFont());
+		}
+	}
 
 	// set the string if the value has changed
 	if( m_lastConstructDisplayed != obj->getConstructionPercent() )
@@ -4276,10 +4326,7 @@ void Drawable::setCaptionText( const UnicodeString& captionText )
 	if( m_captionDisplayString == nullptr )
 	{
 		m_captionDisplayString = TheDisplayStringManager->newDisplayString();
-		GameFont *font = TheFontLibrary->getFont(
-			TheInGameUI->getDrawableCaptionFontName(),
-			TheGlobalLanguageData->adjustFontSize(TheInGameUI->getDrawableCaptionPointSize()),
-			TheInGameUI->isDrawableCaptionBold() );
+		GameFont *font = ResolveDrawableCaptionFont();
 		m_captionDisplayString->setFont( font );
 		m_captionDisplayString->setText( sanitizedString );
 	}
