@@ -362,7 +362,8 @@ WWProfileHierarchyNodeClass	*	WWProfileManager::CurrentRootNode = &WWProfileMana
 int									WWProfileManager::FrameCounter = 0;
 __int64								WWProfileManager::ResetTime = 0;
 
-static void*				ThreadID = nullptr;
+// GeneralsX @bugfix GitHub Copilot 24/05/2026 Keep profiler thread identity in the exact platform-native type returned by GetCurrentThreadId.
+static decltype(::GetCurrentThreadId())		ThreadID = static_cast<decltype(::GetCurrentThreadId())>(0);
 
 
 /***********************************************************************************************
