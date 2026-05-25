@@ -65,9 +65,10 @@ endif()
 # search programs in the host environment
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 
-# search headers and libraries in the target environment
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+# search headers and libraries in both target sysroot and explicit package roots
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Keep vcpkg package discovery working when this toolchain is chainloaded by vcpkg.cmake on Windows CI.
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)
 
 # Force 64-bit pointer size
 set(CMAKE_SIZEOF_VOID_P 8)
