@@ -78,6 +78,16 @@ target_include_directories(g_generals PRIVATE
     ${CMAKE_BINARY_DIR}/Code/Libraries
 )
 
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Ensure g_generals also gets explicit FFmpeg include paths to keep FFmpeg source compilation consistent with ZH target behavior.
+if(RTS_BUILD_OPTION_FFMPEG)
+    find_package(FFmpeg QUIET)
+    if(FFMPEG_FOUND)
+        target_include_directories(g_generals PRIVATE ${FFMPEG_INCLUDE_DIRS})
+    else()
+        message(WARNING "RTS_BUILD_OPTION_FFMPEG=ON but FFmpeg include directories were not found for g_generals.")
+    endif()
+endif()
+
 if(MINGW)
     # GeneralsX @bugfix GitHub Copilot 22/05/2026 Ensure MinGW SDK headers are searched before CompatLib wrappers for this Win32 entrypoint target.
     get_filename_component(_mingw_bin_dir "${CMAKE_C_COMPILER}" DIRECTORY)

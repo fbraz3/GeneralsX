@@ -73,6 +73,16 @@ target_include_directories(z_generals PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Ensure z_generals receives FFmpeg headers explicitly; transitive include propagation was insufficient for CI macOS compile of FFmpeg sources.
+if(RTS_BUILD_OPTION_FFMPEG)
+    find_package(FFmpeg QUIET)
+    if(FFMPEG_FOUND)
+        target_include_directories(z_generals PRIVATE ${FFMPEG_INCLUDE_DIRS})
+    else()
+        message(WARNING "RTS_BUILD_OPTION_FFMPEG=ON but FFmpeg include directories were not found for z_generals.")
+    endif()
+endif()
+
 target_sources(z_generals PRIVATE
     $<$<BOOL:${WIN32}>:WinMain.cpp>
     $<$<BOOL:${WIN32}>:WinMain.h>

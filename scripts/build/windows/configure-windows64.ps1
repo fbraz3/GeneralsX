@@ -20,6 +20,8 @@ Write-Host "Installing dependencies via vcpkg..."
 $vcpkgRoot = Join-Path $projectRoot "vcpkg"
 $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
 $vcpkgCommit = "ffc071e0c08432c60c9b64f00334c0227667931b"
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Use a valid MinGW vcpkg triplet by default; previous x86_64-windows value was invalid and failed both Windows CI matrix jobs.
+$vcpkgTriplet = if ($env:VCPKG_DEFAULT_TRIPLET) { $env:VCPKG_DEFAULT_TRIPLET } else { "x64-mingw-dynamic" }
 
 if (-not (Test-Path $vcpkgExe)) {
     Write-Host "vcpkg.exe not found. Bootstrapping vcpkg from source..."
@@ -63,8 +65,8 @@ if (-not (Test-Path $vcpkgExe)) {
 }
 
 Write-Host "vcpkg.exe ready at: $vcpkgExe"
-Write-Host "Installing packages with lock file..."
-& $vcpkgExe install --triplet x86_64-windows --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
+Write-Host "Installing packages with lock file (triplet: $vcpkgTriplet)..."
+& $vcpkgExe install --triplet $vcpkgTriplet --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "vcpkg install failed. Check logs/vcpkg_install.log"
     exit $LASTEXITCODE
