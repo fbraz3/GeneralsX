@@ -16,19 +16,58 @@ $logFile = "logs/configure_windows64.log"
 
 # GeneralsX @bugfix GitHub Copilot 21/05/2026 Execute vcpkg to install required packages (GLM, GLI, zlib) before CMake
 Write-Host "Installing dependencies via vcpkg..."
-if (Test-Path "vcpkg.exe") {
-    Write-Host "vcpkg.exe found. Installing packages with lock file..."
-    & vcpkg.exe install --triplet x86_64-windows --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
-} else {
-    Write-Host "vcpkg.exe not found. Attempting to download..."
-    $vcpkgUrl = "https://github.com/microsoft/vcpkg/archive/refs/tags/2024.11.11.zip"
-    Invoke-WebRequest -Uri $vcpkgUrl -OutFile "vcpkg.zip" -UseBasicParsing
-    Expand-Archive -Path "vcpkg.zip" -DestinationPath "vcpkg_extract" -Force
-    Move-Item -Path "vcpkg_extract\vcpkg\vcpkg.exe" -Destination "vcpkg.exe" -Force
-    Remove-Item -Path "vcpkg.zip", "vcpkg_extract" -Recurse -Force
-    Write-Host "vcpkg downloaded and extracted successfully."
-    Write-Host "Installing packages with lock file..."
-    & vcpkg.exe install --triplet x86_64-windows --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Replace invalid vcpkg ZIP download flow with deterministic repo bootstrap (ZIP URL returned 404 in CI).
+$vcpkgRoot = Join-Path $projectRoot "vcpkg"
+$vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+$vcpkgCommit = "ffc071e0c08432c60c9b64f00334c0227667931b"
+
+if (-not (Test-Path $vcpkgExe)) {
+    Write-Host "vcpkg.exe not found. Bootstrapping vcpkg from source..."
+
+    if (-not (Test-Path $vcpkgRoot)) {
+        git clone https://github.com/microsoft/vcpkg.git $vcpkgRoot
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to clone vcpkg repository"
+            exit $LASTEXITCODE
+        }
+    }
+
+    Push-Location $vcpkgRoot
+    try {
+        git fetch --tags --prune
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to fetch vcpkg repository updates"
+            exit $LASTEXITCODE
+        }
+
+        git checkout $vcpkgCommit
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to checkout vcpkg commit $vcpkgCommit"
+            exit $LASTEXITCODE
+        }
+
+        & .\bootstrap-vcpkg.bat -disableMetrics
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to bootstrap vcpkg"
+            exit $LASTEXITCODE
+        }
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+if (-not (Test-Path $vcpkgExe)) {
+    Write-Error "vcpkg.exe is still missing after bootstrap"
+    exit 1
+}
+
+Write-Host "vcpkg.exe ready at: $vcpkgExe"
+Write-Host "Installing packages with lock file..."
+& $vcpkgExe install --triplet x86_64-windows --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "vcpkg install failed. Check logs/vcpkg_install.log"
+    exit $LASTEXITCODE
 }
 
 Write-Host "Configuring preset windows64-deploy..."

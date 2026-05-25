@@ -308,9 +308,36 @@ jobs:
           echo "VULKAN_SDK=$VULKAN_SDK"
           echo "CC=$CC"
           echo "CXX=$CXX"
-          cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_macos.log
-          CONFIG_STATUS=${PIPESTATUS[0]}
-          if [ $CONFIG_STATUS -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
+          # GeneralsX @build GitHub Copilot 25/05/2026 Retry configure to mitigate transient vcpkg upstream/network failures (e.g., HTTP 502 while downloading ports).
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          CONFIG_STATUS=1
+
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            ATTEMPT_LOG="logs/configure_macos_attempt_${ATTEMPT}.log"
+            echo "Configure attempt ${ATTEMPT}/${MAX_ATTEMPTS}..."
+            cmake --preset ${{ inputs.preset }} 2>&1 | tee "${ATTEMPT_LOG}"
+            CONFIG_STATUS=${PIPESTATUS[0]}
+
+            if [ $CONFIG_STATUS -eq 0 ]; then
+              cp "${ATTEMPT_LOG}" logs/configure_macos.log
+              echo "✅ CMake configuration complete"
+              break
+            fi
+
+            if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+              echo "⚠️ Configure failed on attempt ${ATTEMPT}; retrying after cleanup..."
+              rm -rf "build/${{ inputs.preset }}"
+              sleep $((ATTEMPT * 15))
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ $CONFIG_STATUS -ne 0 ]; then
+            echo "❌ CMake configuration failed after ${MAX_ATTEMPTS} attempts"
+            exit 1
+          fi
 
       - name: Build ${{ matrix.game.value }}
         run: |
