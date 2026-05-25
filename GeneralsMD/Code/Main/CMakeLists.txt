@@ -32,8 +32,11 @@ target_link_libraries(z_generals PRIVATE
     z_gameenginedevice
     zi_always
     d3dx8
-    ws2_32
 )
+
+if(WIN32)
+    target_link_libraries(z_generals PRIVATE ws2_32)
+endif()
 
 # Linux SDL3 windowing/input (Phase 1)
 # GeneralsX @build BenderAI 11/02/2026

@@ -30,8 +30,9 @@
 
 include(FindPackageHandleStandardArgs)
 
+ # GeneralsX @bugfix GitHub Copilot 25/05/2026 Include swscale by default and prefer pkg-config-provided paths for arm64 FFmpeg.
 if(NOT FFmpeg_FIND_COMPONENTS)
-    set(FFmpeg_FIND_COMPONENTS AVFORMAT AVCODEC AVUTIL)
+    set(FFmpeg_FIND_COMPONENTS AVFORMAT AVCODEC AVUTIL SWSCALE)
 endif()
 
 #
@@ -64,11 +65,15 @@ macro(find_component _component _pkgconfig _library _header)
         endif()
     endif()
 
+    # GeneralsX @bugfix GitHub Copilot 25/05/2026 Clear cached component paths so reconfigure can switch away from stale x86_64 Homebrew entries.
+    unset(${_component}_INCLUDE_DIRS CACHE)
+    unset(${_component}_LIBRARIES CACHE)
+
     find_path(${_component}_INCLUDE_DIRS ${_header}
         HINTS
             ${FFMPEGSDK_INC}
-            ${PC_LIB${_component}_INCLUDEDIR}
-            ${PC_LIB${_component}_INCLUDE_DIRS}
+            ${PC_${_component}_INCLUDEDIR}
+            ${PC_${_component}_INCLUDE_DIRS}
         PATH_SUFFIXES
             ffmpeg
     )
@@ -76,8 +81,8 @@ macro(find_component _component _pkgconfig _library _header)
     find_library(${_component}_LIBRARIES NAMES ${_library}
         HINTS
             ${FFMPEGSDK_LIB}
-            ${PC_LIB${_component}_LIBDIR}
-            ${PC_LIB${_component}_LIBRARY_DIRS}
+            ${PC_${_component}_LIBDIR}
+            ${PC_${_component}_LIBRARY_DIRS}
     )
 
     if(DEFINED ${PC_${_component}_VERSION})

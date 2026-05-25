@@ -32,9 +32,9 @@
 
 #pragma once
 
+// GeneralsX @bugfix GitHub Copilot 25/05/2026 Remove the direct windef include so macOS builds use the windows shim only.
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <windows.h>
-#include <windef.h>
 #include <mmsystem.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
