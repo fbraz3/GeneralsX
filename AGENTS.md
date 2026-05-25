@@ -1,28 +1,40 @@
 # GeneralsX: Instructions for AI Coding Agents
 
 Mandatory: always read and follow applicable `.github/instructions/*.instructions.md` files based on each file's `applyTo` pattern before making changes.
+# GeneralsX: Instructions for AI Coding Agents
+
+Mandatory: always read and follow applicable `.github/instructions/*.instructions.md` files based on each file's `applyTo` pattern before making changes.
 
 ## What I Am
-GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
+GeneralsX is Linux/macOS port of Command & Conquer: Generals Zero Hour. Legacy DirectX 8 + Miles code move to SDL3 + DXVK + OpenAL + 64-bit while retail gameplay stay intact.
 
 ## Must-Load Context
-Before starting work, read:
-- `.github/instructions/generalsx.instructions.md` – full architecture
-- `.github/instructions/git-commit.instructions.md` – commit standards
-- `.github/instructions/docs.instructions.md` – documentation workflow
-- `.github/instructions/scripts.instructions.md` – script organization rules
-- `docs/DEV_BLOG/YYYY-MM-DIARY.md` – current development notes
+Before work, read:
+- `.github/instructions/generalsx.instructions.md`
+- `.github/instructions/git-commit.instructions.md`
+- `.github/instructions/docs.instructions.md`
+- `.github/instructions/scripts.instructions.md`
+- `docs/DEV_BLOG/YYYY-MM-DIARY.md`
 
 ## Key Entry Points
-- `GeneralsMD/Code/Main/WinMain.cpp` (Zero Hour launcher)
-- `Generals/Code/Main/WinMain.cpp` (Generals launcher)
-- `Core/GameEngineDevice/Source/` (render device setup and DXVK path)
+- `GeneralsMD/Code/Main/WinMain.cpp`
+- `Generals/Code/Main/WinMain.cpp`
+- `Core/GameEngineDevice/Source/`
 
 ## Platform Focus
-- **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`), Windows (`windows64-deploy`, MinGW-w64 x86_64)
-- **Legacy/Reference**: Upstream historical VC6/win32 context is optional reference only and not a support target in this repository
+- **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`)
+- **Future/Exploratory**: Windows (MinGW path, issue #29)
+- **Legacy**: VC6 + DirectX 8 + Miles
 
 ## Architecture
+| Layer   | Technology          | Replaces                     |
+|---------|---------------------|------------------------------|
+| Graphics| DXVK                | DirectX 8 (d3d8.dll)         |
+| Windowing| SDL3              | Win32 API                    |
+| Audio   | OpenAL              | Miles Sound System           |
+| Video   | FFmpeg              | Bink Video (intro/videos)    |
+| Platform| SDL3 + libc         | Win32 POSIX calls            |
+**CRITICAL**: Platform code must be isolated to `Core/GameEngineDevice/` and `Core/Libraries/Source/Platform/`; no native Win32/Cocoa/X11 in game logic.
 | Layer   | Technology          | Replaces                     |
 |---------|---------------------|------------------------------|
 | Graphics| DXVK                | DirectX 8 (d3d8.dll)         |
@@ -34,21 +46,18 @@ Before starting work, read:
 **CRITICAL**: Platform code must be isolated to `Core/GameEngineDevice/` and `Core/Libraries/Source/Platform/`. No native Win32/Cocoa/X11 calls in game logic.
 
 ## Golden Rules
-1. **Single codebase** – Linux and macOS build from same source
-2. **SDL3 everywhere** – No native platform calls in game code
-3. **DXVK everywhere** – DX8 → Vulkan translation on all platforms
-4. **OpenAL everywhere** – Cross-platform audio stack
-5. **64-bit native** – x86_64 only
-6. **Retail compatibility** – Original replays and mods must work
-7. **Determinism** – Rendering/audio changes must not affect gameplay logic
-8. **No band-aids** – Fix underlying issues, not symptoms
-9. **Update dev blog** – `docs/DEV_BLOG/YYYY-MM-DIARY.md` before committing
-10. **Reference repos** – Study patterns, don't copy-paste
+1. Single codebase for Linux/macOS.
+2. SDL3, DXVK, OpenAL everywhere.
+3. 64-bit native only.
+4. Preserve retail compatibility and determinism.
+5. No band-aids; fix root cause.
+6. Update dev blog before commit.
+7. Use reference repos as patterns, not copy-paste.
 
 ## Reference Repositories
-- **fighter19-dxvk-port** – Primary graphics/platform reference (DXVK + SDL3 on Linux)
-- **jmarshall-win64-modern** – Audio reference (OpenAL implementation, Generals-only)
-- **thesuperhackers-main** – Upstream baseline for regression checks
+- **fighter19-dxvk-port**: DXVK + SDL3 + Linux platform patterns.
+- **jmarshall-win64-modern**: OpenAL and 64-bit audio reference.
+- **thesuperhackers-main**: Upstream regression baseline.
 
 ## Build Commands
 
@@ -75,14 +84,12 @@ cmake --build build/macos-vulkan --target z_generals
 ```
 
 ## Target Priority
-1. **GeneralsXZH** (Zero Hour) – Primary target, most feature-complete
-2. **GeneralsX** (Base game) – Backport only when changes are clearly shared
+1. **GeneralsXZH** first.
+2. **GeneralsX** only when change is shared and low risk.
 
 ## Backport Rules
-**Backport to Generals when:**
-- Change is platform/backend code (SDL3, DXVK, OpenAL)
-- Change is in shared Core libraries
-- Change is low-risk and clearly applicable
+- Backport platform/backend code and shared Core libs.
+- Skip Zero Hour-only gameplay or risky changes.
 
 **Do NOT backport:**
 - Zero Hour-specific gameplay/logic
@@ -90,18 +97,17 @@ cmake --build build/macos-vulkan --target z_generals
 - High-risk changes to Zero Hour
 
 ## DXVK Source of Truth (macOS)
-- Default: GitHub fork branch `generalsx-macos-v2.6` (auto-update enabled)
-- Local mode: `-DSAGE_DXVK_USE_LOCAL_FORK=ON`
-- **Rule**: Never edit files in `build/_deps/...` directly. Always commit fixes in fork repo first.
+- Branch: `generalsx-macos-v2.6`.
+- Local mode: `-DSAGE_DXVK_USE_LOCAL_FORK=ON`.
+- Never edit `build/_deps/...`; fix fork source first.
 
 ## Common Pitfalls
-- **Linux case sensitivity**: Include paths must match exact case. Use `scripts/tooling/cpp/fixIncludesCase.sh`.
-- **DXVK needs Vulkan**: Install `vulkan-tools`, `mesa-vulkan-drivers` or GPU drivers.
-- **-logToCon only in debug**: Available only with `RTS_BUILD_OPTION_DEBUG=ON`.
-- **SDL3 from source**: Fetched via CMake FetchContent. No system package needed.
-- **Manual memory**: Always delete/delete[] in legacy code paths.
-- **Debug options break replays**: Use `RTS_BUILD_OPTION_DEBUG=OFF` for replay tests.
-- **Linux logging caveat**: `-logToCon` helps, but critical traces may still require `fprintf(stderr, ...)` probes.
+- Linux case sensitivity: include paths must match exact case.
+- DXVK needs Vulkan drivers.
+- `-logToCon` works only in debug builds.
+- SDL3 comes from FetchContent.
+- Use `RTS_BUILD_OPTION_DEBUG=OFF` for replay tests.
+- Linux traces may still need `fprintf(stderr, ...)`.
 
 ## Testing & Validation
 ### Smoke test
@@ -138,10 +144,10 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 ```
 
 ## Build Config Touchpoints
-- `CMakePresets.json` for presets and active target defaults
-- `cmake/config-build.cmake` and `cmake/dx8.cmake` for renderer/build flags
-- `cmake/miles.cmake` and `cmake/openal.cmake` for audio stack toggles
-- `cmake/mingw.cmake` for exploratory MinGW configuration
+- `CMakePresets.json`
+- `cmake/config-build.cmake`, `cmake/dx8.cmake`
+- `cmake/miles.cmake`, `cmake/openal.cmake`
+- `cmake/mingw.cmake`
 
 ## Branching & Sync
 ### TheSuperHackers upstream sync
@@ -152,30 +158,29 @@ git merge thesuperhackers/main
 ```
 
 **Conflict resolution**:
-- Platform code (`Core/GameEngineDevice/`): keep ours
-- Game logic (`GeneralsMD/Code/GameEngine/`): keep theirs
-- Build system: merge carefully, test both versions
+- Platform code: keep ours.
+- Game logic: keep theirs.
+- Build system: merge carefully, test both.
 
 ## Code Conventions
-- **Annotate changes**: `// GeneralsX @keyword author DD/MM/YYYY Description`
-- **Keywords**: `@bugfix` / `@feature` / `@performance` / `@refactor` / `@tweak` / `@build`
-- **Attribution**: Add upstream PR references with author and GitHub URL
-- **English only**: All code, comments, documentation
-- **No lazy code**: No empty stubs, empty catch blocks, or commented-out code
+- Annotate user-facing changes with `// GeneralsX @keyword author DD/MM/YYYY Description`.
+- Use `@bugfix`, `@feature`, `@performance`, `@refactor`, `@tweak`, or `@build`.
+- Add upstream PR attribution when relevant.
+- English only. No empty stubs, empty catch blocks, or commented-out code.
 
 ## GitHub PR/Issue Formatting
-- Use `--body-file` with real Markdown file instead of `--body`
-- Avoid literal `\n` sequences; prefer actual newlines in multi-line strings
+- Use `--body-file`, not `--body`.
+- Avoid literal `\n`; use real newlines.
 
 ## VS Code Tasks
-- Prefer task-first execution for build/test/debug
-- Logs captured to `logs/` directory
-- Primary labels: `[Linux]`, `[macOS]`, `[Linux] Pipeline: Build + Deploy + Run ZH`
+- Prefer task-first build/test/debug.
+- Keep logs in `logs/`.
+- Primary labels: `[Linux]`, `[macOS]`, `[Linux] Pipeline: Build + Deploy + Run ZH`.
 
 ## Docs Workflow
-1. Monthly diary in `docs/DEV_BLOG/YYYY-MM-DIARY.md` (YYYY=year, MM=month only, e.g., `2026-05-DIARY.md`)
-2. Active work notes in `docs/WORKDIR/` (phases/planning/reports/support/audit/lessons)
-3. Never drop working docs directly under `docs/` root
+1. Monthly diary in `docs/DEV_BLOG/YYYY-MM-DIARY.md`.
+2. Active notes in `docs/WORKDIR/`.
+3. Never drop working docs in `docs/` root.
 
 ## GitHub CLI Examples
 **Create issues:**
@@ -213,17 +218,24 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - **mingw-w64-i686** – legacy/transition MinGW 32-bit preset (do not prioritize for new work)
 
 ## Directories
-- `GeneralsMD/` – Zero Hour (PRIMARY TARGET)
-- `Generals/` – Base game
-- `Core/` – Shared libraries (`GameEngine/`, `GameEngineDevice/`, `Libraries/`)
-- `references/` – fighter19, jmarshall, thesuperhackers-main
-- `docs/WORKDIR/` – current work documentation
-- `logs/` – build/run/debug logs (gitignored)
+- `GeneralsMD/`: Zero Hour.
+- `Generals/`: base game.
+- `Core/`: shared libraries.
+- `references/`: fighter19, jmarshall, thesuperhackers-main.
+- `docs/WORKDIR/`: current work docs.
+- `logs/`: build/run/debug logs.
 
 ## Instruction Context Loading
-LLM requirement: before starting any task, check instruction files under `.github/instructions/*.instructions.md` and determine which ones match the target paths via each file's `applyTo` pattern.
+Check `.github/instructions/*.instructions.md` and follow any file whose `applyTo` matches target path.
 
-If a pattern applies, the LLM must read and follow that instruction file for the affected files. If a pattern does not apply, do not enforce that instruction.
+| Instruction File Path | applyTo | When to Use |
+|---|---|---|
+| `.github/instructions/generalsx.instructions.md` | `**` | Global platform rules |
+| `.github/instructions/git-commit.instructions.md` | `**` | Commit/PR standards |
+| `.github/instructions/docs.instructions.md` | `**/*.md` | Markdown docs |
+| `.github/instructions/scripts.instructions.md` | `scripts/**` | Scripts under scripts/ |
+
+Update table when instruction files change.
 
 | Instruction File Path | applyTo | When to Use |
 |---|---|---|
