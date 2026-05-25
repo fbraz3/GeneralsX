@@ -72,6 +72,11 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Ensure CMake preset resolves vcpkg packages (glm/gli/zlib) on Windows CI.
+$env:VCPKG_ROOT = $vcpkgRoot
+$env:VCPKG_DEFAULT_TRIPLET = $vcpkgTriplet
+$env:VCPKG_TARGET_TRIPLET = $vcpkgTriplet
+
 Write-Host "Configuring preset windows64-deploy..."
 # GeneralsX @bugfix GitHub Copilot 21/05/2026 Prevent PowerShell from treating CMake stderr warnings as terminating errors.
 $previousErrorActionPreference = $ErrorActionPreference
