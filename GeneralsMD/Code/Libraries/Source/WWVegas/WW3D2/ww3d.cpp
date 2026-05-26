@@ -83,6 +83,10 @@
 
 #include "ww3d.h"
 #include "win.h"  // GeneralsX @build fbraz 10/02/2026 - For MMRESULT/timeBeginPeriod/BITMAP structures
+// GeneralsX @bugfix GitHub Copilot 25/05/2026 timeBeginPeriod/timeEndPeriod require timeapi.h on MinGW when WIN32_LEAN_AND_MEAN omits mmsystem.h
+#if defined(_WIN32) && defined(__MINGW32__)
+#include <timeapi.h>
+#endif
 #include "rinfo.h"
 #include "assetmgr.h"
 #include "boxrobj.h"

@@ -50,8 +50,11 @@ set(CMAKE_DLLTOOL ${MINGW64_DLLTOOL})
 set(CMAKE_C_COMPILER_AR ${MINGW64_AR})
 set(CMAKE_CXX_COMPILER_AR ${MINGW64_AR})
 
-if(MINGW64_GCC)
-	string(APPEND CMAKE_RC_FLAGS_INIT " --preprocessor=${MINGW64_GCC}")
+if(MINGW64_GCC AND NOT CMAKE_RC_FLAGS_INIT MATCHES "--preprocessor")
+	# GeneralsX @bugfix GitHub Copilot 25/05/2026 windres on MinGW calls the preprocessor without -E by default,
+	# causing gcc to compile+link instead of preprocess. Add --preprocessor-arg=-E and guard against toolchain
+	# being loaded multiple times (which would duplicate the flag via string(APPEND) without a guard).
+	string(APPEND CMAKE_RC_FLAGS_INIT " --preprocessor=${MINGW64_GCC} --preprocessor-arg=-E --preprocessor-arg=-xc-header --preprocessor-arg=-DRC_INVOKED")
 endif()
 
 # Target environment

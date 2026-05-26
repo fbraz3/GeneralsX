@@ -57,7 +57,8 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 		return FALSE;
 	}
 
-#ifdef _WIN32
+	// GeneralsX @bugfix GitHub Copilot 25/05/2026 MinGW uses stub WebBrowser (no COM dispatch); keep COM path only on MSVC.
+#if defined(_WIN32) && defined(_MSC_VER)
 	#ifdef __GNUC__
 	CComQIIDPtr<I_ID(IDispatch)> idisp(m_dispatch);
 	#else
@@ -70,9 +71,8 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 
 	DX8WebBrowser::CreateBrowser(windowName.str(), url->m_url.str(), x, y, w, h, 0, BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, (LPDISPATCH)this);
 #else
-	// GeneralsX @build fbraz 12/02/2026 BenderAI - Web browser stub for Linux
-	// WOL (Westwood Online) was discontinued years ago; browser COM/ATL only available on Windows
-	DEBUG_LOG(("W3DWebBrowser::createBrowserWindow - Web browser not supported on Linux"));
+	// GeneralsX @bugfix GitHub Copilot 25/05/2026 COM browser backend is MSVC-only; MinGW/Linux keep stub behavior.
+	DEBUG_LOG(("W3DWebBrowser::createBrowserWindow - Web browser COM backend unavailable on this build"));
 #endif
 
 	return TRUE;
@@ -80,10 +80,9 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 
 void W3DWebBrowser::closeBrowserWindow(GameWindow *win)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 	DX8WebBrowser::DestroyBrowser(win->winGetInstanceData()->m_decoratedNameString.str());
 #else
-	// GeneralsX @build fbraz 12/02/2026 - Web browser stub for Linux
-	// No-op on Linux since browser was never created
+	// GeneralsX @bugfix GitHub Copilot 25/05/2026 No-op when COM backend is unavailable (MinGW/Linux).
 #endif
 }

@@ -15,6 +15,13 @@ if(POLICY CMP0092)
     cmake_policy(SET CMP0092 NEW)
 endif()
 
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Propagate the active compiler toolchain into try_compile subprojects so MinGW configure checks keep CMAKE_C_COMPILER and CMAKE_CXX_COMPILER during nested vcpkg/FindThreads probes.
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
+    CMAKE_C_COMPILER
+    CMAKE_CXX_COMPILER
+    CMAKE_RC_COMPILER
+)
+
 # Allow specifying MSVC debug configurations.
 #if(POLICY CMP0141)
 #    cmake_policy(SET CMP0141 NEW)
