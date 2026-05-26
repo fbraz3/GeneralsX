@@ -42,19 +42,36 @@ if(MINGW)
             "C:/mingw64/include"
         )
         
-        # Detect Wine include paths dynamically
-        find_path(WINE_WINDOWS_INCLUDE_DIR
-            NAMES oaidl.idl
-            PATHS
-                ${_WIDL_INCLUDE_HINTS}
-                /usr/include/wine/wine/windows
-                /usr/include/wine/windows
-                /usr/include/wine-development/windows
-                /opt/wine-stable/include/wine/windows
-                /usr/local/include/wine/windows
-            DOC "Wine Windows headers directory"
+        # Detect Wine include paths dynamically.
+        set(_WIDL_INCLUDE_CANDIDATES
+            ${_WIDL_INCLUDE_HINTS}
+            "${WIDL_PREFIX_DIR}/share/widl"
+            "${WIDL_PREFIX_DIR}/include/wine/windows"
+            "${WIDL_PREFIX_DIR}/include/wine"
+            "${WIDL_PREFIX_DIR}/include"
+            "C:/msys64/mingw64/share/widl"
+            "C:/msys64/mingw64/include/wine/windows"
+            "C:/msys64/mingw64/include/wine"
+            "C:/msys64/mingw64/include"
+            "C:/mingw64/share/widl"
+            "C:/mingw64/include/wine/windows"
+            "C:/mingw64/include/wine"
+            "C:/mingw64/include"
+            /usr/include/wine/wine/windows
+            /usr/include/wine/windows
+            /usr/include/wine-development/windows
+            /opt/wine-stable/include/wine/windows
+            /usr/local/include/wine/windows
         )
-        
+
+        set(WINE_WINDOWS_INCLUDE_DIR "")
+        foreach(_WIDL_INCLUDE_DIR IN LISTS _WIDL_INCLUDE_CANDIDATES)
+            if(EXISTS "${_WIDL_INCLUDE_DIR}/oaidl.idl")
+                set(WINE_WINDOWS_INCLUDE_DIR "${_WIDL_INCLUDE_DIR}")
+                break()
+            endif()
+        endforeach()
+
         if(WINE_WINDOWS_INCLUDE_DIR)
             message(STATUS "Wine include directory: ${WINE_WINDOWS_INCLUDE_DIR}")
 
