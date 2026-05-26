@@ -27,17 +27,27 @@ if(MINGW)
         
         set(IDL_COMPILER ${WIDL_EXECUTABLE})
         set(IDL_COMPILER_FOUND TRUE)
+
+        # GeneralsX @bugfix GitHub Copilot 26/05/2026 Resolve widl include roots on Windows/MSYS2 so imports like oaidl.idl are found during IID generation.
+        get_filename_component(WIDL_BIN_DIR "${WIDL_EXECUTABLE}" DIRECTORY)
+        get_filename_component(WIDL_PREFIX_DIR "${WIDL_BIN_DIR}/.." ABSOLUTE)
+        set(_WIDL_INCLUDE_HINTS
+            "${WIDL_PREFIX_DIR}/share/widl/include"
+            "${WIDL_PREFIX_DIR}/include/widl"
+            "C:/msys64/mingw64/share/widl/include"
+            "C:/mingw64/share/widl/include"
+        )
         
         # Detect Wine include paths dynamically
         find_path(WINE_WINDOWS_INCLUDE_DIR
             NAMES oaidl.idl
             PATHS
+                ${_WIDL_INCLUDE_HINTS}
                 /usr/include/wine/wine/windows
                 /usr/include/wine/windows
                 /usr/include/wine-development/windows
                 /opt/wine-stable/include/wine/windows
                 /usr/local/include/wine/windows
-            NO_DEFAULT_PATH
             NO_CMAKE_FIND_ROOT_PATH
             DOC "Wine Windows headers directory"
         )
