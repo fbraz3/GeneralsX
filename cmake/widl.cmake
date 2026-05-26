@@ -34,8 +34,12 @@ if(MINGW)
         set(_WIDL_INCLUDE_HINTS
             "${WIDL_PREFIX_DIR}/share/widl/include"
             "${WIDL_PREFIX_DIR}/include/widl"
+            "${WIDL_PREFIX_DIR}/include"
+            "${WIDL_PREFIX_DIR}/x86_64-w64-mingw32/include"
             "C:/msys64/mingw64/share/widl/include"
+            "C:/msys64/mingw64/include"
             "C:/mingw64/share/widl/include"
+            "C:/mingw64/include"
         )
         
         # Detect Wine include paths dynamically
@@ -48,17 +52,23 @@ if(MINGW)
                 /usr/include/wine-development/windows
                 /opt/wine-stable/include/wine/windows
                 /usr/local/include/wine/windows
-            NO_CMAKE_FIND_ROOT_PATH
             DOC "Wine Windows headers directory"
         )
         
         if(WINE_WINDOWS_INCLUDE_DIR)
-            get_filename_component(WINE_BASE_INCLUDE_DIR "${WINE_WINDOWS_INCLUDE_DIR}/.." ABSOLUTE)
             message(STATUS "Wine include directory: ${WINE_WINDOWS_INCLUDE_DIR}")
-            set(WIDL_INCLUDE_PATHS
-                -I${WINE_WINDOWS_INCLUDE_DIR}
-                -I${WINE_BASE_INCLUDE_DIR}
-            )
+
+            set(WIDL_INCLUDE_PATHS -I${WINE_WINDOWS_INCLUDE_DIR})
+
+            # GeneralsX @bugfix GitHub Copilot 26/05/2026 Add sibling include roots when oaidl.idl is found under nested wine/windows directories.
+            get_filename_component(_WIDL_INC_PARENT "${WINE_WINDOWS_INCLUDE_DIR}/.." ABSOLUTE)
+            get_filename_component(_WIDL_INC_GRANDPARENT "${_WIDL_INC_PARENT}/.." ABSOLUTE)
+            if(EXISTS "${_WIDL_INC_PARENT}")
+                list(APPEND WIDL_INCLUDE_PATHS -I${_WIDL_INC_PARENT})
+            endif()
+            if(EXISTS "${_WIDL_INC_GRANDPARENT}")
+                list(APPEND WIDL_INCLUDE_PATHS -I${_WIDL_INC_GRANDPARENT})
+            endif()
         else()
             message(WARNING "Wine include directory not found. widl may fail to compile IDL files.")
             set(WIDL_INCLUDE_PATHS "")
