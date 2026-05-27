@@ -30,6 +30,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include <Utility/intrin_compat.h>	// For _isnan compatibility
+#include <stdio.h>
 #include "Common/AudioEventInfo.h"
 #include "Common/DynamicAudioEventInfo.h"
 #include "Common/AudioSettings.h"
@@ -112,29 +113,67 @@ static_assert(ARRAY_SIZE(TheDrawableIconNames) == MAX_ICONS + 1, "Incorrect arra
 // GeneralsX @bugfix GitHubCopilot 24/05/2026 Resolve Drawable caption fonts through a deterministic fallback chain when localized font names are unavailable.
 static GameFont *ResolveDrawableCaptionFont()
 {
+	// GeneralsX @tweak GitHubCopilot 27/05/2026 Trace Drawable caption font fallback decisions and active source.
+	char log_buffer[512];
+
 	if (TheFontLibrary == nullptr || TheInGameUI == nullptr)
+	{
+		sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont missing TheFontLibrary=%p TheInGameUI=%p", TheFontLibrary, TheInGameUI);
+		fprintf(stderr, "%s\n", log_buffer);
 		return nullptr;
+	}
 
 	const Int basePointSize = TheInGameUI->getDrawableCaptionPointSize();
 	const Int pointSize = TheGlobalLanguageData ? TheGlobalLanguageData->adjustFontSize(basePointSize) : basePointSize;
 	const Bool bold = TheInGameUI->isDrawableCaptionBold();
+	sprintf(log_buffer,
+		"[GX-ISSUE144] Drawable ResolveCaptionFont request uiFont=%s baseSize=%d adjustedSize=%d bold=%d unicode=%s",
+		TheInGameUI->getDrawableCaptionFontName().str(),
+		basePointSize,
+		pointSize,
+		bold,
+		(TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty()) ? TheGlobalLanguageData->m_unicodeFontName.str() : "<empty>");
+	fprintf(stderr, "%s\n", log_buffer);
 
 	GameFont *font = TheFontLibrary->getFont(TheInGameUI->getDrawableCaptionFontName(), pointSize, bold);
 	if (font != nullptr)
+	{
+		sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont hit uiFont=%s", TheInGameUI->getDrawableCaptionFontName().str());
+		fprintf(stderr, "%s\n", log_buffer);
 		return font;
+	}
+	sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont miss uiFont=%s", TheInGameUI->getDrawableCaptionFontName().str());
+	fprintf(stderr, "%s\n", log_buffer);
 
 	if (TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty())
 	{
 		font = TheFontLibrary->getFont(TheGlobalLanguageData->m_unicodeFontName, pointSize, bold);
 		if (font != nullptr)
+		{
+			sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont hit unicodeFont=%s", TheGlobalLanguageData->m_unicodeFontName.str());
+			fprintf(stderr, "%s\n", log_buffer);
 			return font;
+		}
+		sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont miss unicodeFont=%s", TheGlobalLanguageData->m_unicodeFontName.str());
+		fprintf(stderr, "%s\n", log_buffer);
 	}
 
 	font = TheFontLibrary->getFont("Arial", pointSize, bold);
 	if (font != nullptr)
+	{
+		sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont hit fallback=Arial");
+		fprintf(stderr, "%s\n", log_buffer);
 		return font;
+	}
+	sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont miss fallback=Arial");
+	fprintf(stderr, "%s\n", log_buffer);
 
-	return TheFontLibrary->getFont("Arial Unicode MS", pointSize, bold);
+	font = TheFontLibrary->getFont("Arial Unicode MS", pointSize, bold);
+	sprintf(log_buffer,
+		"[GX-ISSUE144] Drawable ResolveCaptionFont final fallback Arial Unicode MS %s",
+		font ? "hit" : "miss");
+	fprintf(stderr, "%s\n", log_buffer);
+	return font;
 }
 
 
@@ -3655,6 +3694,7 @@ void Drawable::drawDisabled(const IRegion2D* healthBarRegion)
 //-------------------------------------------------------------------------------------------------
 void Drawable::drawConstructPercent( const IRegion2D *healthBarRegion )
 {
+	char log_buffer[512];
 
 	// this data is in an attached object
 	Object *obj = getObject();
@@ -3685,6 +3725,11 @@ void Drawable::drawConstructPercent( const IRegion2D *healthBarRegion )
 		if (m_constructDisplayString)
 		{
 			m_constructDisplayString->setFont(ResolveDrawableCaptionFont());
+			sprintf(log_buffer,
+				"[GX-ISSUE144] Drawable construct string allocated drawable=%p obj=%p",
+				this,
+				obj);
+			fprintf(stderr, "%s\n", log_buffer);
 		}
 	}
 
@@ -3699,6 +3744,11 @@ void Drawable::drawConstructPercent( const IRegion2D *healthBarRegion )
 
 		// record this percent as our last displayed so we don't un-necessarily rebuild the string
 		m_lastConstructDisplayed = obj->getConstructionPercent();
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Drawable construct text update drawable=%p percent=%d",
+			this,
+			m_lastConstructDisplayed);
+		fprintf(stderr, "%s\n", log_buffer);
 
 	}
 
@@ -4295,9 +4345,13 @@ const Matrix3D *Drawable::getTransformMatrix() const
 //-------------------------------------------------------------------------------------------------
 void Drawable::setCaptionText( const UnicodeString& captionText )
 {
+	char log_buffer[512];
+
 	if (captionText.isEmpty())
 	{
 		clearCaptionText();
+		sprintf(log_buffer, "[GX-ISSUE144] Drawable caption clear-request drawable=%p", this);
+		fprintf(stderr, "%s\n", log_buffer);
 		return;
 	}
 
@@ -4310,6 +4364,12 @@ void Drawable::setCaptionText( const UnicodeString& captionText )
 		GameFont *font = ResolveDrawableCaptionFont();
 		m_captionDisplayString->setFont( font );
 		m_captionDisplayString->setText( sanitizedString );
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Drawable caption new drawable=%p textLength=%d font=%p",
+			this,
+			sanitizedString.getLength(),
+			font);
+		fprintf(stderr, "%s\n", log_buffer);
 	}
 	else
 	{
@@ -4317,6 +4377,11 @@ void Drawable::setCaptionText( const UnicodeString& captionText )
 		if( m_captionDisplayString->getText().compare(sanitizedString) != 0 )
 		{
 			m_captionDisplayString->setText( sanitizedString );
+			sprintf(log_buffer,
+				"[GX-ISSUE144] Drawable caption update drawable=%p textLength=%d",
+				this,
+				sanitizedString.getLength());
+			fprintf(stderr, "%s\n", log_buffer);
 		}
 	}
 }

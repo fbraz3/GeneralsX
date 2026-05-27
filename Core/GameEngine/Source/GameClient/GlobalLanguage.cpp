@@ -52,6 +52,8 @@
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"
 
+#include <stdio.h>
+
 #include "Common/AddonCompat.h"
 #include "Common/INI.h"
 #include "Common/Registry.h"
@@ -148,12 +150,29 @@ GlobalLanguage::~GlobalLanguage()
 
 void GlobalLanguage::init()
 {
+	// GeneralsX @tweak GitHubCopilot 27/05/2026 Trace active Language.ini source and resolved localized font descriptors.
+	char log_buffer[512];
 	{
+		AsciiString registryLanguage = GetRegistryLanguage();
 		AsciiString fname;
-		fname.format("Data\\%s\\Language", GetRegistryLanguage().str());
+		fname.format("Data\\%s\\Language", registryLanguage.str());
+
+		sprintf(log_buffer,
+			"[GX-ISSUE144] GlobalLanguage init registryLanguage=%s primaryIni=%s",
+			registryLanguage.str(),
+			fname.str());
+		fprintf(stderr, "%s\n", log_buffer);
+		sprintf(log_buffer, "[GX-ISSUE144] GlobalLanguage init Language.ini fallback chain not implemented");
+		fprintf(stderr, "%s\n", log_buffer);
 
 		INI ini;
 		ini.loadFileDirectory( fname, INI_LOAD_OVERWRITE, nullptr );
+		sprintf(log_buffer,
+			"[GX-ISSUE144] GlobalLanguage init loaded unicodeFont=%s drawableCaption=%s defaultWindow=%s",
+			m_unicodeFontName.isNotEmpty() ? m_unicodeFontName.str() : "<empty>",
+			m_drawableCaptionFont.name.isNotEmpty() ? m_drawableCaptionFont.name.str() : "<empty>",
+			m_defaultWindowFont.name.isNotEmpty() ? m_defaultWindowFont.name.str() : "<empty>");
+		fprintf(stderr, "%s\n", log_buffer);
 	}
 
 	StringList::iterator it = m_localFonts.begin();
@@ -162,10 +181,14 @@ void GlobalLanguage::init()
 		AsciiString font = *it;
 		if(AddFontResource(font.str()) == 0)
 		{
+			sprintf(log_buffer, "[GX-ISSUE144] GlobalLanguage local font add FAILED file=%s", font.str());
+			fprintf(stderr, "%s\n", log_buffer);
 			DEBUG_CRASH(("GlobalLanguage::init Failed to add font %s", font.str()));
 		}
 		else
 		{
+			sprintf(log_buffer, "[GX-ISSUE144] GlobalLanguage local font add OK file=%s", font.str());
+			fprintf(stderr, "%s\n", log_buffer);
 			//SendMessage( HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
 		}
 		++it;
@@ -174,6 +197,12 @@ void GlobalLanguage::init()
 	// override values with user preferences
 	OptionPreferences optionPref;
 	m_userResolutionFontSizeAdjustment = optionPref.getResolutionFontAdjustment();
+	sprintf(log_buffer,
+		"[GX-ISSUE144] GlobalLanguage resolutionAdjustment effective=%.3f user=%.3f base=%.3f",
+		getResolutionFontSizeAdjustment(),
+		m_userResolutionFontSizeAdjustment,
+		m_resolutionFontSizeAdjustment);
+	fprintf(stderr, "%s\n", log_buffer);
 }
 
 void GlobalLanguage::reset()

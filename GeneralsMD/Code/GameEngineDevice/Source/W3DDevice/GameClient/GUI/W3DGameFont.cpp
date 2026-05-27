@@ -45,6 +45,7 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
+#include <stdio.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/Debug.h"
@@ -57,18 +58,33 @@
 namespace
 {
 // GeneralsX @bugfix GitHubCopilot 20/05/2026 Resolve a usable Unicode fallback font on macOS/Linux when localized font names are unavailable.
+// GeneralsX @tweak GitHubCopilot 27/05/2026 Add explicit stderr tracing for Unicode fallback font lookup decisions.
 FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold)
 {
 	const char *preferred_name = nullptr;
+	char log_buffer[512];
+
 	if (TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty()) {
 		preferred_name = TheGlobalLanguageData->m_unicodeFontName.str();
 	}
 
+	sprintf(log_buffer,
+		"[GX-ISSUE144] W3DFont fallback start size=%d bold=%d preferred=%s",
+		size,
+		bold,
+		preferred_name ? preferred_name : "<none>");
+	fprintf(stderr, "%s\n", log_buffer);
+
 	if (preferred_name != nullptr) {
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
 		if (font != nullptr) {
+			sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback hit preferred=%s", preferred_name);
+			fprintf(stderr, "%s\n", log_buffer);
 			return font;
 		}
+
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback miss preferred=%s", preferred_name);
+		fprintf(stderr, "%s\n", log_buffer);
 	}
 
 	static const char *kFallbackUnicodeFonts[] = {
@@ -86,9 +102,17 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold)
 	for (const char *font_name : kFallbackUnicodeFonts) {
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(font_name, size, bold);
 		if (font != nullptr) {
+			sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback hit list=%s", font_name);
+			fprintf(stderr, "%s\n", log_buffer);
 			return font;
 		}
+
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback miss list=%s", font_name);
+		fprintf(stderr, "%s\n", log_buffer);
 	}
+
+	sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback exhausted size=%d bold=%d", size, bold);
+	fprintf(stderr, "%s\n", log_buffer);
 
 	return nullptr;
 }
@@ -113,6 +137,8 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold)
 //=============================================================================
 Bool W3DFontLibrary::loadFontData( GameFont *font )
 {
+	char log_buffer[512];
+
 	// sanity
 	if( font == nullptr )
 		return FALSE;
@@ -120,15 +146,22 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	const char* name = font->nameString.str();
 	const Int size = font->pointSize;
 	const Bool bold = font->bold;
+	sprintf(log_buffer, "[GX-ISSUE144] W3DFont load request name=%s size=%d bold=%d", name ? name : "<null>", size, bold);
+	fprintf(stderr, "%s\n", log_buffer);
 
 	// get the font data from the asset manager
 	FontCharsClass *fontChar = WW3DAssetManager::Get_Instance()->Get_FontChars( name, size, bold );
 
 	if( fontChar == nullptr )
 	{
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont load miss name=%s size=%d bold=%d", name ? name : "<null>", size, bold);
+		fprintf(stderr, "%s\n", log_buffer);
 		DEBUG_CRASH(( "Unable to find font '%s' in Asset Manager", name ));
 		return FALSE;
 	}
+
+	sprintf(log_buffer, "[GX-ISSUE144] W3DFont load hit name=%s size=%d bold=%d", name ? name : "<null>", size, bold);
+	fprintf(stderr, "%s\n", log_buffer);
 
 	// assign font data
 	font->fontData = fontChar;
@@ -136,6 +169,11 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 
 	// load Unicode of same point size
 	fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold);
+	sprintf(log_buffer,
+		"[GX-ISSUE144] W3DFont alternate unicode %s for base=%s",
+		fontChar->AlternateUnicodeFont ? "assigned" : "missing",
+		name ? name : "<null>");
+	fprintf(stderr, "%s\n", log_buffer);
 
 	return TRUE;
 }
