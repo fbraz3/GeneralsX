@@ -30,6 +30,8 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <stdio.h>
+
 #include "Common/NameKeyGenerator.h"
 #include "Common/ThingTemplate.h"
 
@@ -47,6 +49,8 @@
 //-------------------------------------------------------------------------------------------------
 void ControlBar::updateConstructionTextDisplay( Object *obj )
 {
+	// GeneralsX @tweak GitHubCopilot 27/05/2026 Trace under-construction text key usage and formatted output updates.
+	char log_buffer[512];
 	UnicodeString text;
 	static UnsignedInt descID = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:UnderConstructionDesc" );
 	GameWindow *descWindow = TheWindowManager->winGetWindowFromId( nullptr, descID );
@@ -58,6 +62,13 @@ void ControlBar::updateConstructionTextDisplay( Object *obj )
 	text.format( TheGameText->fetch( "CONTROLBAR:UnderConstructionDesc" ),
 							 obj->getConstructionPercent() );
 	GadgetStaticTextSetText( descWindow, text );
+	sprintf(log_buffer,
+		"[GX-ISSUE144] UnderConstruction text update obj=%p percent=%d textLen=%d descWindow=%p",
+		obj,
+		obj->getConstructionPercent(),
+		text.getLength(),
+		descWindow);
+	fprintf(stderr, "%s\n", log_buffer);
 
 	// record this as the last percentage displayed
 	m_displayedConstructPercent = obj->getConstructionPercent();

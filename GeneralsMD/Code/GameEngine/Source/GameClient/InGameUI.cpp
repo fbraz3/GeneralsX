@@ -29,6 +29,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <stdio.h>
+
 #define DEFINE_SHADOW_NAMES
 
 #include "Common/ActionManager.h"
@@ -1307,8 +1309,13 @@ InGameUI::~InGameUI()
 //-------------------------------------------------------------------------------------------------
 void InGameUI::init()
 {
+	// GeneralsX @tweak GitHubCopilot 27/05/2026 Trace final in-game UI font slots after language overrides.
+	char log_buffer[512];
+
 	INI ini;
 	ini.loadFileDirectory( "Data\\INI\\InGameUI", INI_LOAD_OVERWRITE, nullptr );
+	sprintf(log_buffer, "[GX-ISSUE144] InGameUI init loaded Data\\INI\\InGameUI");
+	fprintf(stderr, "%s\\n", log_buffer);
 
 	//override INI values with language localized values:
 	if (TheGlobalLanguageData)
@@ -1368,6 +1375,22 @@ void InGameUI::init()
 			m_namedTimerReadyPointSize = TheGlobalLanguageData->m_namedTimerCountdownReadyFont.size;
 			m_namedTimerReadyBold = TheGlobalLanguageData->m_namedTimerCountdownReadyFont.bold;
 		}
+
+		sprintf(log_buffer,
+			"[GX-ISSUE144] InGameUI font override drawableCaption=%s size=%d bold=%d defaultWindow=%s size=%d bold=%d unicode=%s",
+			m_drawableCaptionFont.str(),
+			m_drawableCaptionPointSize,
+			m_drawableCaptionBold,
+			TheGlobalLanguageData->m_defaultWindowFont.name.str(),
+			TheGlobalLanguageData->m_defaultWindowFont.size,
+			TheGlobalLanguageData->m_defaultWindowFont.bold,
+			TheGlobalLanguageData->m_unicodeFontName.isNotEmpty() ? TheGlobalLanguageData->m_unicodeFontName.str() : "<empty>");
+		fprintf(stderr, "%s\\n", log_buffer);
+	}
+	else
+	{
+		sprintf(log_buffer, "[GX-ISSUE144] InGameUI init without TheGlobalLanguageData");
+		fprintf(stderr, "%s\\n", log_buffer);
 	}
 
 	/**@ todo we used to put in the hint spy translator, but it's difficult
