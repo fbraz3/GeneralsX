@@ -4,7 +4,7 @@ applyTo: '**'
 
 # Git Commit Message Instructions
 
-Commit message standards based on [Conventional Commits](https://www.conventionalcommits.org/) specification, adapted for GeneralsX project needs.
+Use [Conventional Commits](https://www.conventionalcommits.org/) style, adapted for GeneralsX.
 
 ## Commit Message Format
 
@@ -18,7 +18,7 @@ Commit message standards based on [Conventional Commits](https://www.conventiona
 
 ### Type
 
-Must be one of:
+Use one of:
 
 - **feat**: A new feature
 - **fix**: A bug fix
@@ -37,32 +37,30 @@ Must be one of:
 
 ### Scope (Optional)
 
-- Name of affected code, file, directory, or logical component
-- Can span multiple scopes if needed (omit scope in that case)
-- Use lowercase with dashes (kebab-case)
-- Examples: `graphics`, `audio-openal`, `cmake-presets`, `dxvk-macos`
+- Affected code, file, directory, or component.
+- Can span multiple scopes; omit if needed.
+- Use lowercase kebab-case.
+- Examples: `graphics`, `audio-openal`, `cmake-presets`, `dxvk-macos`.
 
 ### Description/Subject
 
-- Succinct description of the change (readable without seeing the diff)
-- Use imperative, present tense: "add" not "added" or "adds"
-- Do NOT capitalize the first letter
-- Do NOT end with a period (.)
-- Keep under 50 characters when possible
+- Succinct, readable without diff.
+- Imperative present tense: "add", not "added" or "adds".
+- No leading capital, no trailing period.
+- Keep under 50 chars when possible.
 
 ### Body (Optional)
 
-- Additional context and explanation of **why** the change was made
-- Separate from subject with a blank line
-- Wrap at 72 characters
-- Include motivation, design decisions, or trade-offs
-- Reference related issues if applicable (e.g., `Fixes #123`)
+- Explain why, trade-offs, and design decisions.
+- Separate from subject with blank line.
+- Wrap at 72 chars.
+- Reference issues when useful.
 
 ### Footer (Optional)
 
-- Reference related issues or breaking changes
-- Format: `Fixes #<issue>`, `Closes #<issue>`, `Related-to #<issue>`
-- Breaking changes: `BREAKING CHANGE: <description>`
+- Reference issues or breaking changes.
+- Format: `Fixes #<issue>`, `Closes #<issue>`, `Related-to #<issue>`.
+- Breaking changes: `BREAKING CHANGE: <description>`.
 
 ## Examples
 
@@ -107,10 +105,10 @@ docs: update macOS build instructions for Vulkan SDK setup
 
 ## Commit Discipline
 
-- Commit logically related changes together (not by time/pressure)
-- One feature/fix per commit when possible
-- Keep commits small and reviewable
-- Write a commit message that explains **what** and **why**, not just **what** you changed
+- Group logically related changes.
+- One feature/fix per commit when possible.
+- Keep commits small and reviewable.
+- Explain both what and why.
 
 ## Quick Reference
 
@@ -128,12 +126,12 @@ docs: update macOS build instructions for Vulkan SDK setup
 
 ## Pull request guidelines
 
-- PR title should follow the same format as commit messages
-- the PR description should provide context and link to related issues
-- PR targets must be against main branch of `fbraz3/GeneralsX` repo, unless it's a user instruction to do otherwise (e.g., "Merge to `develop` branch" or "Merge to `feature/xyz` branch")
-- There is a subproject called `dxvk-macos` located under `references/fbraz3-dxvk` folder, which is a fork of the original DXVK project. Commits related to that subproject should be made in that repository and follow the same commit message standards.
-- `fbraz3-dxvk` subproject PRs should target the `generalsx-macos-v2.6` branch of `fbraz3/dxvk` repository, and follow the same commit message standards.
+- PR title follows same format as commit messages.
+- PR description gives context and links issues.
+- PRs target `main` in `fbraz3/GeneralsX` unless user says otherwise.
+- `dxvk-macos` work lives in `references/fbraz3-dxvk` and follows same standards.
+- `fbraz3-dxvk` PRs target `generalsx-macos-v2.6` in `fbraz3/dxvk`.
 
 ---
 
-**Note**: For GeneralsX code changes, also see `.github/copilot-instructions.md` for the code annotation standard (`// GeneralsX @keyword author DD/MM/YYYY Description`), which complements commit message discipline.
+**Note**: For GeneralsX code changes, also see `.github/copilot-instructions.md` for the code annotation standard (`// GeneralsX @keyword author DD/MM/YYYY Description`).

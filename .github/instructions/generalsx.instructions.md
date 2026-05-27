@@ -4,83 +4,64 @@ applyTo: '**'
 
 # Objectives
 
-GeneralsX is a **community-driven downstream cross-platform port** of Command & Conquer: Generals Zero Hour (2003), currently focused on making the game run natively on **Linux and macOS** under a single modern codebase using SDL3 + DXVK + OpenAL + 64-bit. Windows remains a longer-term or exploratory path in this repository, not an active delivery target.
+GeneralsX is downstream cross-platform port of Command & Conquer: Generals Zero Hour, focused on native Linux/macOS with one SDL3 + DXVK + OpenAL + 64-bit codebase. Windows stays exploratory, not active target.
 
-This is a **massive C++ game engine** (~500k+ LOC) being carefully modernized from its original Windows-only DirectX 8 / Miles Sound System architecture to a portable stack while preserving the original gameplay experience.
-
-**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code. Our strategy is to learn from proven port efforts (fighter19, jmarshall) and converge the active Linux/macOS work into one unified pipeline while keeping any future Windows path optional and low-commitment until resources exist to support it.
+This is old, large C++ game code, not greenfield. Modernize carefully, keep gameplay intact, and learn from fighter19 and jmarshall instead of inventing new patterns.
 
 ## Project Structure & Upstream Context
 
 ### EA Games Source Release (2024)
-The original Command & Conquer Generals/Zero Hour source code was released by EA Games. Three major community projects emerged:
+The original Generals/Zero Hour source was released by EA. These refs matter:
 
 ### TheSuperHackers (Our Upstream Base)
 - **Repository**: `git@github.com:TheSuperHackers/GeneralsGameCode.git`
-- **Strategy**: Maintain Windows compatibility with original executables
-- **Build System**: VC6 + DirectX 8 + Miles Sound System
-- **Coverage**: Both Generals AND Zero Hour
-- **Focus**: Bugfixes, stability, code unification
-- **VC6 Preset**: **STABLE** (production-ready, retail compatible)
-- **Win32 Preset (MSVC 2022)**: Experimental (future modernization path)
-- **Status**: Our stable baseline for upstream sync
+- **Use**: upstream sync baseline, Windows compatibility, bugfixes.
 
 ### fighter19's DXVK Port (Primary Graphics/Platform Reference)
-- **Repository**: `references/fighter19-dxvk-port/` (local copy)
+- **Repository**: `references/fighter19-dxvk-port/`
 - **Deepwiki Repo**: `Fighter19/CnC_Generals_Zero_Hour`
-- **Strategy**: Linux port with DirectX to Vulkan via DXVK
-- **Build System**: CMake + MinGW-w64 + DXVK + SDL3
-- **Coverage**: Both Generals AND Zero Hour
-- **Focus**: Graphics layer (DXVK), POSIX compatibility, SDL windowing
-- **Audio**: Stubbed (Miles Sound System removed)
-- **Status**: Fully functional Linux build with working graphics
+- **Use**: DXVK, SDL3, Linux platform patterns.
 
 ### jmarshall's Port (Audio/Modernization Reference)
-- **Repository**: `references/jmarshall-win64-modern/` (local copy)
+- **Repository**: `references/jmarshall-win64-modern/`
 - **Deepwiki Repo**: `jmarshall2323/CnC_Generals_Zero_Hour`
-- **Strategy**: Aggressive modernization (VS2022 + Win64 + DX9/DX12)
-- **Build System**: CMake + C++20 + d3d9on12 wrapper
-- **Coverage**: Generals base game ONLY (Zero Hour not ported)
-- **Focus**: Modern toolchain, OpenAL audio implementation
-- **Status**: Fully functional modern Windows build with working audio
+- **Use**: OpenAL and modern toolchain patterns.
 
-Note: You may want to use local Deepwiki Repo `fbraz3/GeneralsX` for helping local code navigation.
+Use local Deepwiki repo `fbraz3/GeneralsX` for navigation when helpful.
 
 ## Our Mission
 
-**Primary Goal**: Make *Generals: Zero Hour* (`GeneralsXZH`) run natively on **Linux and macOS** using a single modern codebase: SDL3 (windowing/input), DXVK (DirectX 8 to Vulkan graphics), OpenAL (audio), and 64-bit architecture.
+**Primary Goal**: Make `GeneralsXZH` run natively on Linux/macOS with SDL3, DXVK, OpenAL, and 64-bit.
 
-**Secondary Goal**: Implement the same changes for *Generals* base game (`GeneralsX`) when changes are clearly shared and low-risk.
+**Secondary Goal**: Backport same changes to `GeneralsX` when shared and low risk.
 
 **Non-negotiable**:
-- **Single codebase**: Linux and macOS must build from the same source tree, while keeping a future Windows path possible without turning it into an active maintenance burden today
-- **SDL3 everywhere**: Windowing, input, and platform abstraction via SDL3 on all platforms -- no native Win32/Cocoa/X11 calls in game code
-- **DXVK everywhere**: DirectX 8 to Vulkan translation via DXVK on all platforms (Vulkan is available on Linux, macOS via MoltenVK, and Windows)
-- **OpenAL everywhere**: Audio via OpenAL on all platforms (replaces proprietary Miles Sound System)
-- **64-bit native**: All platforms target x86_64 (32-bit legacy support via VC6 upstream only)
-- **MUST preserve retail compatibility**: Original game files, replays, and mods must work
-- **MUST isolate platform code**: Platform-specific changes confined to platform/backend layers
-- **Determinism**: Never break gameplay determinism. Rendering/audio changes must not affect game logic.
+- Single codebase.
+- SDL3 for windowing/input/platform.
+- DXVK for DirectX 8 to Vulkan.
+- OpenAL for audio.
+- 64-bit native.
+- Preserve retail compatibility.
+- Keep platform code isolated.
+- Never break determinism.
 
 **Out of Scope**:
-- New gameplay features, balance changes, or "modern enhancements"
-- Multiplayer/network compatibility with retail builds (future work)
-- 32-bit builds for the new stack (VC6 preset handles legacy 32-bit Windows)
+- New gameplay, balance, or modern enhancements.
+- Retail multiplayer compatibility.
+- 32-bit builds for the new stack.
 
 **Strategy**:
-1. **Base**: TheSuperHackers code (stable upstream baseline)
-2. **Graphics**: fighter19's DXVK integration patterns (adapted for cross-platform)
-3. **Audio**: jmarshall's OpenAL implementation (adapted for Zero Hour)
-4. **Windowing/Input**: SDL3 on all platforms
-5. **Focus**: Zero Hour first; backport to Generals only when clearly applicable
-6. **Method**: Research-first, minimal diffs, strict platform/backend isolation
-7. **Branching**: Feature branches per platform or topic area, merged to `main` as they stabilize
+1. Base on TheSuperHackers.
+2. Adapt fighter19 for graphics/platform.
+3. Adapt jmarshall for audio.
+4. Use SDL3 on all platforms.
+5. Prefer Zero Hour first, then shared Generals backports.
+6. Keep diffs small and platform code isolated.
 
-**Far-Future Plans (long-term)**:
-
-- SDL3 graphics backend (bypassing DXVK) if performance is good enough
-- [GeneralsOnline](https://github.com/GeneralsOnlineDevelopmentTeam/GameClient/) project compatibility (multiplayer, mod support)
-- Webgl version via Emscripten
+**Far-Future Plans**:
+- SDL3 graphics backend if it makes sense.
+- [GeneralsOnline](https://github.com/GeneralsOnlineDevelopmentTeam/GameClient/) compatibility.
+- WebGL via Emscripten.
 
 ## Unified Technology Stack
 
