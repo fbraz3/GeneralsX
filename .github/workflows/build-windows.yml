@@ -51,12 +51,36 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           update: true
+          # GeneralsX @bugfix GitHub Copilot 26/05/2026 Ensure widl can import oaidl.idl by explicitly installing MinGW headers in CI.
           install: >-
             base-devel
             mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-headers
             mingw-w64-x86_64-make
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-cmake
+
+      - name: Validate MinGW IDL Headers
+        shell: pwsh
+        run: |
+          # GeneralsX @bugfix GitHub Copilot 26/05/2026 Fail fast when oaidl.idl is missing so widl failures are diagnosed early.
+          $idlCandidates = @(
+            'C:/msys64/mingw64/include/oaidl.idl',
+            'C:/mingw64/include/oaidl.idl'
+          )
+
+          $found = $false
+          foreach ($idl in $idlCandidates) {
+            if (Test-Path $idl) {
+              Write-Host "Found IDL header: $idl"
+              $found = $true
+            }
+          }
+
+          if (-not $found) {
+            Write-Error 'oaidl.idl not found in MinGW include directories.'
+            exit 1
+          }
 
       - name: Configure CMake (${{ inputs.preset }})
         shell: pwsh
