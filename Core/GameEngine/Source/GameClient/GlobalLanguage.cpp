@@ -150,7 +150,7 @@ GlobalLanguage::~GlobalLanguage()
 
 void GlobalLanguage::init()
 {
-	// GeneralsX @tweak GitHubCopilot 27/05/2026 Trace active Language.ini source and resolved localized font descriptors.
+	// GeneralsX @bugfix GitHubCopilot 27/05/2026 Implement Language.ini fallback chain so stock values fill missing override keys.
 	char log_buffer[512];
 	{
 		AsciiString registryLanguage = GetRegistryLanguage();
@@ -162,13 +162,32 @@ void GlobalLanguage::init()
 			registryLanguage.str(),
 			fname.str());
 		fprintf(stderr, "%s\n", log_buffer);
-		sprintf(log_buffer, "[GX-ISSUE144] GlobalLanguage init Language.ini fallback chain not implemented");
-		fprintf(stderr, "%s\n", log_buffer);
 
 		INI ini;
 		ini.loadFileDirectory( fname, INI_LOAD_OVERWRITE, nullptr );
 		sprintf(log_buffer,
-			"[GX-ISSUE144] GlobalLanguage init loaded unicodeFont=%s drawableCaption=%s defaultWindow=%s",
+			"[GX-ISSUE144] GlobalLanguage init loaded primary unicodeFont=%s",
+			m_unicodeFontName.isNotEmpty() ? m_unicodeFontName.str() : "<empty>");
+		fprintf(stderr, "%s\n", log_buffer);
+
+		// Load stock Language.ini as fallback for missing keys (e.g., russifier may override UnicodeFontName=Arial,
+		// so we load stock English to restore Arial Unicode MS if not redefined)
+		if (registryLanguage.compare("English") != 0)
+		{
+			AsciiString stockFname("Data\\English\\Language");
+			sprintf(log_buffer,
+				"[GX-ISSUE144] GlobalLanguage init loading stock fallback=%s",
+				stockFname.str());
+			fprintf(stderr, "%s\n", log_buffer);
+			ini.loadFileDirectory( stockFname, INI_LOAD_MULTIFILE, nullptr );
+			sprintf(log_buffer,
+				"[GX-ISSUE144] GlobalLanguage init fallback merged unicodeFont=%s (may have been filled)",
+				m_unicodeFontName.isNotEmpty() ? m_unicodeFontName.str() : "<empty>");
+			fprintf(stderr, "%s\n", log_buffer);
+		}
+
+		sprintf(log_buffer,
+			"[GX-ISSUE144] GlobalLanguage init final unicodeFont=%s drawableCaption=%s defaultWindow=%s",
 			m_unicodeFontName.isNotEmpty() ? m_unicodeFontName.str() : "<empty>",
 			m_drawableCaptionFont.name.isNotEmpty() ? m_drawableCaptionFont.name.str() : "<empty>",
 			m_defaultWindowFont.name.isNotEmpty() ? m_defaultWindowFont.name.str() : "<empty>");
