@@ -145,6 +145,12 @@ echo "  Deploying Fontconfig config..."
 if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
     mkdir -p "${RUNTIME_DIR}/fontconfig"
     cp -v "${FONTCONFIG_ETC_DIR}/fonts.conf" "${RUNTIME_DIR}/fontconfig/fonts.conf"
+
+        # GeneralsX @bugfix GitHubCopilot 28/05/2026 Ensure macOS Supplemental fonts are discoverable in bundled Fontconfig runtime.
+        if ! rg -q "/System/Library/Fonts/Supplemental" "${RUNTIME_DIR}/fontconfig/fonts.conf"; then
+                perl -0pi -e 's#(<dir>/System/Library/Fonts</dir>)#$1\n\t<dir>/System/Library/Fonts/Supplemental</dir>#' "${RUNTIME_DIR}/fontconfig/fonts.conf"
+        fi
+
     rm -rf "${RUNTIME_DIR}/fontconfig/conf.d"
     if [[ -d "${FONTCONFIG_ETC_DIR}/conf.d" ]]; then
         cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RUNTIME_DIR}/fontconfig/conf.d"
@@ -152,6 +158,29 @@ if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
         echo "WARNING: Fontconfig conf.d directory not found at ${FONTCONFIG_ETC_DIR}/conf.d."
         echo "  Runtime may fail to resolve some fonts if per-font configs are missing."
     fi
+
+        # GeneralsX @bugfix GitHubCopilot 28/05/2026 Prefer macOS Arial families for Cyrillic-capable rendering when mods request Arial.
+        mkdir -p "${RUNTIME_DIR}/fontconfig/conf.d"
+        cat > "${RUNTIME_DIR}/fontconfig/conf.d/09-generalsx-macos-arial.conf" <<'EOF'
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+    <description>GeneralsX macOS Arial override for Cyrillic-capable fallback</description>
+
+    <match target="pattern">
+        <test qual="any" name="family">
+            <string>Arial</string>
+        </test>
+        <edit name="family" mode="prepend" binding="strong">
+            <string>Arial Unicode MS</string>
+            <string>Arial</string>
+            <string>Helvetica</string>
+            <string>Noto Sans</string>
+            <string>DejaVu Sans</string>
+        </edit>
+    </match>
+</fontconfig>
+EOF
 else
     echo "WARNING: Fontconfig config not found at ${FONTCONFIG_ETC_DIR}."
     echo "  Runtime may fail to resolve fonts in Save/Load/Replay menus."
