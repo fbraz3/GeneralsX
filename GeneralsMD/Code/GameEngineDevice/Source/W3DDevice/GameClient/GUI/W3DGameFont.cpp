@@ -46,6 +46,7 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/Debug.h"
@@ -59,7 +60,8 @@ namespace
 {
 // GeneralsX @bugfix GitHubCopilot 20/05/2026 Resolve a usable Unicode fallback font on macOS/Linux when localized font names are unavailable.
 // GeneralsX @tweak GitHubCopilot 27/05/2026 Add explicit stderr tracing for Unicode fallback font lookup decisions.
-FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold)
+// GeneralsX @bugfix GitHubCopilot 29/05/2026 Prevent circular Unicode fallback when the localized unicode family equals the base font family.
+FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_name)
 {
 	const char *preferred_name = nullptr;
 	char log_buffer[512];
@@ -69,13 +71,14 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold)
 	}
 
 	sprintf(log_buffer,
-		"[GX-ISSUE144] W3DFont fallback start size=%d bold=%d preferred=%s",
+		"[GX-ISSUE144] W3DFont fallback start size=%d bold=%d preferred=%s base=%s",
 		size,
 		bold,
-		preferred_name ? preferred_name : "<none>");
+		preferred_name ? preferred_name : "<none>",
+		base_name ? base_name : "<none>");
 	fprintf(stderr, "%s\n", log_buffer);
 
-	if (preferred_name != nullptr) {
+	if (preferred_name != nullptr && (base_name == nullptr || strcmp(preferred_name, base_name) != 0)) {
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
 		if (font != nullptr) {
 			sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback hit preferred=%s", preferred_name);
@@ -84,6 +87,10 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold)
 		}
 
 		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback miss preferred=%s", preferred_name);
+		fprintf(stderr, "%s\n", log_buffer);
+	}
+	else if (preferred_name != nullptr) {
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback skip preferred=%s reason=same-as-base", preferred_name);
 		fprintf(stderr, "%s\n", log_buffer);
 	}
 
@@ -168,7 +175,7 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	font->height = fontChar->Get_Char_Height();
 
 	// load Unicode of same point size
-	fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold);
+	fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
 	sprintf(log_buffer,
 		"[GX-ISSUE144] W3DFont alternate unicode %s for base=%s",
 		fontChar->AlternateUnicodeFont ? "assigned" : "missing",
