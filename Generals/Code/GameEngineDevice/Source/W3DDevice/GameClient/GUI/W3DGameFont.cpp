@@ -45,6 +45,7 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
+#include <string.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/Debug.h"
@@ -57,14 +58,15 @@
 namespace
 {
 // GeneralsX @bugfix GitHubCopilot 20/05/2026 Resolve a usable Unicode fallback font on macOS/Linux when localized font names are unavailable.
-FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold)
+// GeneralsX @bugfix GitHubCopilot 29/05/2026 Prevent circular Unicode fallback when the localized unicode family equals the base font family.
+FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_name)
 {
 	const char *preferred_name = nullptr;
 	if (TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty()) {
 		preferred_name = TheGlobalLanguageData->m_unicodeFontName.str();
 	}
 
-	if (preferred_name != nullptr) {
+	if (preferred_name != nullptr && (base_name == nullptr || strcmp(preferred_name, base_name) != 0)) {
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
 		if (font != nullptr) {
 			return font;
@@ -135,7 +137,7 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	font->height = fontChar->Get_Char_Height();
 
 	// load Unicode of same point size
-	fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold);
+	fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
 
 	return TRUE;
 }
