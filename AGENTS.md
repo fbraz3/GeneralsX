@@ -4,12 +4,22 @@
 GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
 ## Must-Load Context
+<<<<<<< Updated upstream
 Before starting work, read:
 - `.github/copilot-instructions.md` – quick reference
 - `.github/instructions/generalsx.instructions.md` – full architecture
 - `.github/instructions/git-commit.instructions.md` – commit standards
 - `.github/instructions/docs.instructions.md` – documentation workflow
 - `docs/DEV_BLOG/YYYY-MM-DIARY.md` – current development notes
+=======
+Before work, read:
+- `docs/DEV_BLOG/YYYY-MM-DIARY.md` (current month)
+
+## Key Entry Points
+- `GeneralsMD/Code/Main/WinMain.cpp`
+- `Generals/Code/Main/WinMain.cpp`
+- `Core/GameEngineDevice/Source/`
+>>>>>>> Stashed changes
 
 ## Platform Focus
 - **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`)
@@ -200,9 +210,26 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - **win32** – MSVC 2022, experimental
 
 ## Directories
-- `GeneralsMD/` – Zero Hour (PRIMARY TARGET)
-- `Generals/` – Base game
-- `Core/` – Shared libraries (`GameEngine/`, `GameEngineDevice/`, `Libraries/`)
-- `references/` – fighter19, jmarshall, thesuperhackers-main
-- `docs/WORKDIR/` – current work documentation
-- `logs/` – build/run/debug logs (gitignored)
+- `GeneralsMD/`: Zero Hour.
+- `Generals/`: base game.
+- `Core/`: shared libraries.
+- `references/`: thesuperhackers-main, fbraz3-dxvk (active); archive/ (historical).
+- `docs/WORKDIR/`: current work docs.
+- `logs/`: build/run/debug logs.
+
+## Instruction Context Loading
+
+`AGENTS.md` is the source of truth. The `.github/instructions/` files are scoped VS Code hints — they load only when the file path matches.
+
+| Instruction File | applyTo | Purpose |
+|---|---|---|
+| `generalsx.instructions.md` | `**` | Stub → points to AGENTS.md |
+| `git-commit.instructions.md` | `**` | Commit/PR message standards |
+| `cpp-conventions.instructions.md` | `**/*.{cpp,h,hpp,c}` | Code style, annotations, platform isolation |
+| `build.instructions.md` | `cmake/**,CMakeLists.txt,CMakePresets.json` | Build presets, DXVK source of truth |
+| `platform-linux.instructions.md` | `scripts/build/linux/**` | Linux build notes |
+| `platform-macos.instructions.md` | `scripts/build/macos/**,references/fbraz3-dxvk/**` | macOS/DXVK build notes |
+| `docs.instructions.md` | `**/*.md` | Documentation structure and workflow |
+| `scripts.instructions.md` | `scripts/**` | Script organization and naming |
+
+Update this table when instruction files are added, removed, or renamed.

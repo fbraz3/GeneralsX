@@ -217,4 +217,4 @@ When adding or moving scripts:
 
 - **Main Overview**: [scripts/README.md](../../scripts/README.md)
 - **Build System**: [CMakePresets.json](../../CMakePresets.json)
-- **General Conventions**: [.github/instructions/generalsx.instructions.md](.github/instructions/generalsx.instructions.md)
+- **General Conventions**: [AGENTS.md](../../AGENTS.md)
