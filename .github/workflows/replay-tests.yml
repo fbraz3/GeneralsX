@@ -281,7 +281,7 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -289,7 +289,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
@@ -335,7 +335,7 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -343,7 +343,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
@@ -403,7 +403,7 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -411,7 +411,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
