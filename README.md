@@ -22,8 +22,6 @@ For release/runtime setup instructions (Linux and macOS), see:
 
 - [docs/BUILD/INSTALLATION.md](docs/BUILD/INSTALLATION.md)
 
-> **Don't have the game files yet?** The Steam version does not offer a macOS or Linux download. See [docs/BUILD/GETTING_THE_GAME_FILES.md](docs/BUILD/GETTING_THE_GAME_FILES.md).
-
 ## Project Goals
 
 GeneralsX exists to turn upstream preservation and porting work into a practical and maintainable project for active Linux and macOS players.
