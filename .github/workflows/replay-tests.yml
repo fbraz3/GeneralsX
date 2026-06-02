@@ -309,6 +309,7 @@ jobs:
             echo "::warning::No replay files were found to test"
           fi
 
+<<<<<<< HEAD
       - name: Run headless replay tests (Linux Flatpak)
         if: inputs.platform == 'linux-flatpak'
         run: |
@@ -363,6 +364,8 @@ jobs:
             echo "::warning::No replay files were found to test"
           fi
 
+=======
+>>>>>>> fix/replay-tests
 
       - name: Run headless replay tests (macOS)
         if: inputs.platform == 'macos'
