@@ -78,6 +78,40 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 		base_name ? base_name : "<none>");
 	fprintf(stderr, "%s\n", log_buffer);
 
+	// Build candidate list: the localized preferred name first (may be a limited-coverage font like "Arial"),
+	// then known-good Unicode fonts. We iterate all candidates and pick the first that loads AND has a
+	// different family from the base font. This avoids returning a font that lacks Cyrillic coverage
+	// (e.g., Arial on macOS) when a better universal font like "Arial Unicode MS" is available.
+	static const char *kFallbackUnicodeFonts[] = {
+		"Arial Unicode MS",
+		"Arial Unicode",
+		"Arial",
+		"Helvetica Neue",
+		"Helvetica",
+		"Noto Sans",
+		"Noto Sans CJK SC",
+		"Noto Sans CJK JP",
+		"DejaVu Sans"
+	};
+
+	for (const char *font_name : kFallbackUnicodeFonts) {
+		if (base_name != nullptr && strcmp(font_name, base_name) == 0)
+			continue;
+		if (preferred_name != nullptr && strcmp(font_name, preferred_name) == 0)
+			continue;
+
+		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(font_name, size, bold);
+		if (font != nullptr) {
+			sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback hit list=%s", font_name);
+			fprintf(stderr, "%s\n", log_buffer);
+			return font;
+		}
+
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback miss list=%s", font_name);
+		fprintf(stderr, "%s\n", log_buffer);
+	}
+
+	// Now try the localized preferred name as a last resort (it may load on some platforms)
 	if (preferred_name != nullptr && (base_name == nullptr || strcmp(preferred_name, base_name) != 0)) {
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
 		if (font != nullptr) {
@@ -94,31 +128,10 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 		fprintf(stderr, "%s\n", log_buffer);
 	}
 
-	static const char *kFallbackUnicodeFonts[] = {
-		"Arial Unicode MS",
-		"Arial Unicode",
-		"Arial",
-		"Helvetica Neue",
-		"Helvetica",
-		"Noto Sans",
-		"Noto Sans CJK SC",
-		"Noto Sans CJK JP",
-		"DejaVu Sans"
-	};
-
-	for (const char *font_name : kFallbackUnicodeFonts) {
-		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(font_name, size, bold);
-		if (font != nullptr) {
-			sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback hit list=%s", font_name);
-			fprintf(stderr, "%s\n", log_buffer);
-			return font;
-		}
-
-		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback miss list=%s", font_name);
-		fprintf(stderr, "%s\n", log_buffer);
-	}
-
-	sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback exhausted size=%d bold=%d", size, bold);
+	sprintf(log_buffer,
+		"[GX-ISSUE144] W3DFont fallback exhausted size=%d bold=%d",
+		size,
+		bold);
 	fprintf(stderr, "%s\n", log_buffer);
 
 	return nullptr;
@@ -175,7 +188,29 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	font->height = fontChar->Get_Char_Height();
 
 	// load Unicode of same point size
-	fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
+	// GeneralsX @bugfix fbraz 03/06/2026 Prevent circular AlternateUnicodeFont chain.
+	// Fonts in the fallback candidate list that DON'T need a fallback (full-coverage fonts)
+	// should not get an AlternateUnicodeFont set, otherwise Get_Char_Data enters infinite
+	// recursion: e.g. Arial → Arial Unicode MS → Arial → ...
+	{
+		bool skipFallback = false;
+		// Skip fallback for fonts that already have full Unicode coverage themselves
+		static const char *kFullCoverageFonts[] = {
+			"Arial Unicode MS",
+			"Arial Unicode",
+			"DejaVu Sans",
+			nullptr
+		};
+		for (int i = 0; kFullCoverageFonts[i]; i++) {
+			if (strcmp(name, kFullCoverageFonts[i]) == 0) {
+				skipFallback = true;
+				break;
+			}
+		}
+		if (!skipFallback) {
+			fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
+		}
+	}
 	sprintf(log_buffer,
 		"[GX-ISSUE144] W3DFont alternate unicode %s for base=%s",
 		fontChar->AlternateUnicodeFont ? "assigned" : "missing",

@@ -66,13 +66,9 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 		preferred_name = TheGlobalLanguageData->m_unicodeFontName.str();
 	}
 
-	if (preferred_name != nullptr && (base_name == nullptr || strcmp(preferred_name, base_name) != 0)) {
-		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
-		if (font != nullptr) {
-			return font;
-		}
-	}
-
+	// Try known-good Unicode fonts first. Skip preferred_name and base_name to avoid
+	// returning a limited-coverage font (e.g., "Arial" on macOS) when a better universal
+	// font like "Arial Unicode MS" with Cyrillic support is available.
 	static const char *kFallbackUnicodeFonts[] = {
 		"Arial Unicode MS",
 		"Arial Unicode",
@@ -86,7 +82,20 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 	};
 
 	for (const char *font_name : kFallbackUnicodeFonts) {
+		if (base_name != nullptr && strcmp(font_name, base_name) == 0)
+			continue;
+		if (preferred_name != nullptr && strcmp(font_name, preferred_name) == 0)
+			continue;
+
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(font_name, size, bold);
+		if (font != nullptr) {
+			return font;
+		}
+	}
+
+	// Last resort: try the localized preferred name
+	if (preferred_name != nullptr && (base_name == nullptr || strcmp(preferred_name, base_name) != 0)) {
+		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
 		if (font != nullptr) {
 			return font;
 		}
@@ -137,7 +146,27 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	font->height = fontChar->Get_Char_Height();
 
 	// load Unicode of same point size
-	fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
+	// GeneralsX @bugfix fbraz 03/06/2026 Prevent circular AlternateUnicodeFont chain.
+	// Full-coverage fonts should not get an AlternateUnicodeFont set to avoid
+	// infinite recursion in Get_Char_Data (e.g. Arial → Arial Unicode MS → Arial → ...)
+	{
+		bool skipFallback = false;
+		static const char *kFullCoverageFonts[] = {
+			"Arial Unicode MS",
+			"Arial Unicode",
+			"DejaVu Sans",
+			nullptr
+		};
+		for (int i = 0; kFullCoverageFonts[i]; i++) {
+			if (strcmp(name, kFullCoverageFonts[i]) == 0) {
+				skipFallback = true;
+				break;
+			}
+		}
+		if (!skipFallback) {
+			fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
+		}
+	}
 
 	return TRUE;
 }

@@ -111,10 +111,13 @@ static const char *const TheDrawableIconNames[] =
 static_assert(ARRAY_SIZE(TheDrawableIconNames) == MAX_ICONS + 1, "Incorrect array size");
 
 // GeneralsX @bugfix GitHubCopilot 24/05/2026 Resolve Drawable caption fonts through a deterministic fallback chain when localized font names are unavailable.
+// GeneralsX @bugfix FelipeBraz 03/06/2026 Preferred known Unicode-supporting fonts (Arial Unicode MS) over configured DrawableCaptionFont
+// to ensure Cyrillic and other non-Latin characters render correctly via DXVK on macOS.
+// GeneralsX @test FelipeBraz 03/06/2026 TEST: Hardcode Arial Unicode MS to verify 3D rendering
 static GameFont *ResolveDrawableCaptionFont()
 {
-	// GeneralsX @tweak GitHubCopilot 27/05/2026 Trace Drawable caption font fallback decisions and active source.
 	char log_buffer[512];
+	GameFont *font = nullptr;
 
 	if (TheFontLibrary == nullptr || TheInGameUI == nullptr)
 	{
@@ -126,56 +129,19 @@ static GameFont *ResolveDrawableCaptionFont()
 	const Int basePointSize = TheInGameUI->getDrawableCaptionPointSize();
 	const Int pointSize = TheGlobalLanguageData ? TheGlobalLanguageData->adjustFontSize(basePointSize) : basePointSize;
 	const Bool bold = TheInGameUI->isDrawableCaptionBold();
-	sprintf(log_buffer,
-		"[GX-ISSUE144] Drawable ResolveCaptionFont request uiFont=%s baseSize=%d adjustedSize=%d bold=%d unicode=%s",
-		TheInGameUI->getDrawableCaptionFontName().str(),
-		basePointSize,
-		pointSize,
-		bold,
-		(TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty()) ? TheGlobalLanguageData->m_unicodeFontName.str() : "<empty>");
-	fprintf(stderr, "%s\n", log_buffer);
 
-	GameFont *font = TheFontLibrary->getFont(TheInGameUI->getDrawableCaptionFontName(), pointSize, bold);
-	if (font != nullptr)
-	{
-		sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont hit uiFont=%s", TheInGameUI->getDrawableCaptionFontName().str());
-		fprintf(stderr, "%s\n", log_buffer);
-		return font;
-	}
-	sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont miss uiFont=%s", TheInGameUI->getDrawableCaptionFontName().str());
+	// TEST: hardcode Arial Unicode MS
+	font = TheFontLibrary->getFont("Arial Unicode MS", pointSize, bold);
+	sprintf(log_buffer, "[GX-ISSUE144] TEST ResolveCaptionFont Arial Unicode MS %s pointSize=%d bold=%d",
+		font ? "HIT" : "MISS", pointSize, bold);
 	fprintf(stderr, "%s\n", log_buffer);
-
-	if (TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty())
-	{
-		font = TheFontLibrary->getFont(TheGlobalLanguageData->m_unicodeFontName, pointSize, bold);
-		if (font != nullptr)
-		{
-			sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont hit unicodeFont=%s", TheGlobalLanguageData->m_unicodeFontName.str());
-			fprintf(stderr, "%s\n", log_buffer);
-			return font;
-		}
-		sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont miss unicodeFont=%s", TheGlobalLanguageData->m_unicodeFontName.str());
-		fprintf(stderr, "%s\n", log_buffer);
-	}
+	if (font) return font;
 
 	font = TheFontLibrary->getFont("Arial", pointSize, bold);
-	if (font != nullptr)
-	{
-		sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont hit fallback=Arial");
-		fprintf(stderr, "%s\n", log_buffer);
-		return font;
-	}
-	sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont miss fallback=Arial");
-	fprintf(stderr, "%s\n", log_buffer);
-
-	font = TheFontLibrary->getFont("Arial Unicode MS", pointSize, bold);
-	sprintf(log_buffer,
-		"[GX-ISSUE144] Drawable ResolveCaptionFont final fallback Arial Unicode MS %s",
-		font ? "hit" : "miss");
-	fprintf(stderr, "%s\n", log_buffer);
+	sprintf(log_buffer, "[GX-ISSUE144] TEST ResolveCaptionFont Arial %s pointSize=%d bold=%d",
+		font ? "HIT" : "MISS", pointSize, bold);
 	return font;
 }
-
 
 /**
  * Returns a special DynamicAudioEventInfo which can be used to mark a sound as "no sound".
@@ -434,7 +400,15 @@ Drawable::Drawable( const ThingTemplate *thingTemplate, DrawableStatusBits statu
 	m_constructDisplayString = TheDisplayStringManager->newDisplayString();
 	if (m_constructDisplayString)
 	{
-		m_constructDisplayString->setFont(ResolveDrawableCaptionFont());
+		GameFont *ctorFont = ResolveDrawableCaptionFont();
+		m_constructDisplayString->setFont(ctorFont);
+		{
+			char _lb[256];
+			sprintf(_lb, "[GX-ISSUE144] Drawable ctor constructDS font=%s size=%d",
+				ctorFont ? ctorFont->nameString.str() : "NULL",
+				ctorFont ? ctorFont->pointSize : -1);
+			fprintf(stderr, "%s\n", _lb);
+		}
 	}
 
 	m_ambientSound = nullptr;
@@ -3757,18 +3731,43 @@ void Drawable::drawConstructPercent( const IRegion2D *healthBarRegion )
 	{
 		UnicodeString buffer;
 
+		// Log the raw format string from GameText before formatting
+		{
+			static bool _fetchLogged = false;
+			if (!_fetchLogged) {
+				_fetchLogged = true;
+				UnicodeString fetchResult = TheGameText->fetch("CONTROLBAR:UnderConstructionDesc");
+				const WideChar *fws = fetchResult.str();
+				char fnarrow[128] = {};
+				for (int _fi = 0; _fi < 64 && fws[_fi]; ++_fi)
+					fnarrow[_fi] = (fws[_fi] < 128) ? (char)fws[_fi] : '?';
+				sprintf(log_buffer,
+					"[GX-ISSUE144] fetch UnderConstructionDesc len=%d text=\"%s\"",
+					fetchResult.getLength(), fnarrow);
+				fprintf(stderr, "%s\n", log_buffer);
+			}
+		}
 
 		buffer.format( TheGameText->fetch("CONTROLBAR:UnderConstructionDesc"), obj->getConstructionPercent());
 		m_constructDisplayString->setText( buffer );
 
 		// record this percent as our last displayed so we don't un-necessarily rebuild the string
 		m_lastConstructDisplayed = obj->getConstructionPercent();
-		sprintf(log_buffer,
-			"[GX-ISSUE144] Drawable construct text update drawable=%p percent=%d",
-			this,
-			m_lastConstructDisplayed);
-		fprintf(stderr, "%s\n", log_buffer);
 
+		// Log actual text content (convert wchar to narrow for logging)
+		const WideChar *ws = buffer.str();
+		char narrow[128] = {};
+		for (int _i = 0; _i < 64 && ws[_i]; ++_i)
+			narrow[_i] = (ws[_i] < 128) ? (char)ws[_i] : '?';
+		GameFont *curFont = m_constructDisplayString->getFont();
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Drawable construct text update drawable=%p pct=%g len=%d text=\"%s\" font=%s",
+			this,
+			(double)obj->getConstructionPercent(),
+			buffer.getLength(),
+			narrow,
+			curFont ? curFont->nameString.str() : "NULL");
+		fprintf(stderr, "%s\n", log_buffer);
 	}
 
 	// get center position in drawable
@@ -3779,13 +3778,24 @@ void Drawable::drawConstructPercent( const IRegion2D *healthBarRegion )
 	// convert drawable center position to screen coords
 	TheTacticalView->worldToScreen( &pos, &screen );
 
-  if ( screen.x < 1 )
-    return;
+	if ( screen.x < 1 )
+		return;
 
 	// draw the text
 	Color color = GameMakeColor( 255, 255, 255, 255 );
 	Color dropColor = GameMakeColor( 0, 0, 0, 255 );
-	screen.x -= (m_constructDisplayString->getWidth() / 2);
+	Int tw = m_constructDisplayString->getWidth();
+	static bool _constructDrawLogged = false;
+	if (!_constructDrawLogged) {
+		GameFont *df = m_constructDisplayString->getFont();
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Drawable construct draw drawable=%p screen=(%d,%d) width=%d font=%s",
+			this, screen.x, screen.y, tw,
+			df ? df->nameString.str() : "NULL");
+		fprintf(stderr, "%s\n", log_buffer);
+		_constructDrawLogged = true;
+	}
+	screen.x -= (tw / 2);
 	m_constructDisplayString->draw( screen.x, screen.y, color, dropColor );
 
 }

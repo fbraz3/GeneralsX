@@ -84,6 +84,7 @@
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/GameClient.h"
 #include "GameClient/GameText.h"
+#include "GameClient/GameFont.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/ControlBar.h"
@@ -126,6 +127,42 @@ void ControlBarPopupDescriptionUpdateFunc( WindowLayout *layout, void *param )
 }
 
 // ---------------------------------------------------------------------------------------
+// GeneralsX @bugfix FelipeBraz 03/06/2026 Override gadget fonts to Unicode-supporting fonts
+// for Cyrillic rendering. The WND file specifies "Arial" which fails via DXVK on macOS.
+static void overrideTooltipGadgetFont(GameWindow *win)
+{
+	char log_buffer[512];
+	if (!win || !TheFontLibrary) return;
+	GameFont *oldFont = win->winGetFont();
+	if (!oldFont) return;
+
+	static const char *kUnicodeFonts[] = {
+		"Arial Unicode MS", "Arial Unicode", "Noto Sans", "DejaVu Sans", "FreeSans"
+	};
+	for (int i = 0; i < (int)(sizeof(kUnicodeFonts) / sizeof(kUnicodeFonts[0])); ++i)
+	{
+		GameFont *newFont = TheFontLibrary->getFont(kUnicodeFonts[i], oldFont->pointSize, oldFont->bold);
+		if (newFont)
+		{
+			GadgetStaticTextSetFont(win, newFont);
+			sprintf(log_buffer,
+				"[GX-ISSUE144] Tooltip gadget font overridden old=%s new=%s size=%d bold=%d",
+				oldFont->nameString.str(),
+				kUnicodeFonts[i],
+				oldFont->pointSize,
+				oldFont->bold);
+			fprintf(stderr, "%s\n", log_buffer);
+			return;
+		}
+	}
+	sprintf(log_buffer,
+		"[GX-ISSUE144] Tooltip gadget font override failed old=%s size=%d bold=%d",
+		oldFont->nameString.str(),
+		oldFont->pointSize,
+		oldFont->bold);
+	fprintf(stderr, "%s\n", log_buffer);
+}
+
 void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 {
 	// GeneralsX @tweak GitHubCopilot 27/05/2026 Trace command tooltip population and cost-line visibility decisions.
@@ -266,12 +303,27 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 void ControlBar::repopulateBuildTooltipLayout()
 {
 	char log_buffer[512];
-	if(!prevWindow || !m_buildToolTipLayout)
+	if(!m_buildToolTipLayout)
 	{
 		sprintf(log_buffer,
-			"[GX-ISSUE144] Tooltip repopulate skipped prevWindow=%p layout=%p",
-			prevWindow,
-			m_buildToolTipLayout);
+			"[GX-ISSUE144] Tooltip repopulate skipped layout=null");
+		fprintf(stderr, "%s\n", log_buffer);
+		return;
+	}
+	if(!prevWindow)
+	{
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip repopulate skipped prevWindow=null layout=%p hidden=%d",
+			m_buildToolTipLayout,
+			m_buildToolTipLayout->isHidden());
+		fprintf(stderr, "%s\n", log_buffer);
+		return;
+	}
+	if(m_buildToolTipLayout->isHidden())
+	{
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip repopulate skipped layout-hidden prevWindow=%p",
+			prevWindow);
 		fprintf(stderr, "%s\n", log_buffer);
 		return;
 	}
@@ -655,12 +707,14 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	GameWindow *win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName"));
 	if(win)
 	{
+		overrideTooltipGadgetFont(win);
 		GadgetStaticTextSetText(win, name);
 	}
 
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
 	if(win)
 	{
+		overrideTooltipGadgetFont(win);
 		if( costToBuild > 0 )
 		{
 			win->winHide( FALSE );
@@ -685,6 +739,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription"));
 	if(win)
 	{
+		overrideTooltipGadgetFont(win);
 
 		static NameKeyType winNamekey	= TheNameKeyGenerator->nameToKey( "ControlBar.wnd:BackgroundMarker" );
 		static ICoord2D lastOffset = { 0, 0 };
@@ -694,7 +749,14 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 		DisplayString *tempDString = TheDisplayStringManager->newDisplayString();
 		win->winGetSize(&size.x, &size.y);
-		tempDString->setFont(win->winGetFont());
+		GameFont *tooltipFont = win->winGetFont();
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip description font=%s size=%d bold=%d",
+			tooltipFont ? tooltipFont->nameString.str() : "<null>",
+			tooltipFont ? tooltipFont->pointSize : 0,
+			tooltipFont ? tooltipFont->bold : 0);
+		fprintf(stderr, "%s\n", log_buffer);
+		tempDString->setFont(tooltipFont);
 		tempDString->setWordWrap(size.x - 10);
 		tempDString->setText(descrip);
 		tempDString->getSize(&newSize.x, &newSize.y);
