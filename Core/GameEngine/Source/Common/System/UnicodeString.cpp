@@ -52,8 +52,17 @@
 /*static*/ const UnicodeString UnicodeString::TheEmptyString;
 
 #ifndef _WIN32
+// GeneralsX @bugfix fbraz 03/06/2026 Use POSIX locale for vswprintf to allow non-ASCII
+// wide chars (e.g. Cyrillic) in format strings. macOS needs <xlocale.h>, Linux glibc
+// exposes uselocale/newlocale via <locale.h> under _GNU_SOURCE.
+#if defined(__APPLE__)
+  #include <xlocale.h>
+#else
+  #ifndef _GNU_SOURCE
+    #define _GNU_SOURCE
+  #endif
+#endif
 #include <locale.h>
-#include <xlocale.h>
 
 static Bool isWidePrintfDigit(WideChar ch)
 {
