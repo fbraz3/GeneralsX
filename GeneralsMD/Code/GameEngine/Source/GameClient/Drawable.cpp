@@ -119,6 +119,14 @@ static GameFont *ResolveDrawableCaptionFont()
 	char log_buffer[512];
 	GameFont *font = nullptr;
 
+	// GeneralsX @performance fbraz 04/06/2026 Skip font resolution in headless mode (replay CI).
+	// Loading fonts in headless mode is wasted work and was found to break CRC determinism
+	// (the FreeType/heap layout varies between runs and corrupts the in-game state hash).
+	if (TheGlobalData != nullptr && TheGlobalData->m_headless)
+	{
+		return nullptr;
+	}
+
 	if (TheFontLibrary == nullptr || TheInGameUI == nullptr)
 	{
 		sprintf(log_buffer, "[GX-ISSUE144] Drawable ResolveCaptionFont missing TheFontLibrary=%p TheInGameUI=%p", TheFontLibrary, TheInGameUI);
@@ -397,18 +405,28 @@ Drawable::Drawable( const ThingTemplate *thingTemplate, DrawableStatusBits statu
 
 	m_lastConstructDisplayed = -1.0f;
 	//Fix for the building percent
-	m_constructDisplayString = TheDisplayStringManager->newDisplayString();
-	if (m_constructDisplayString)
+	// GeneralsX @performance fbraz 04/06/2026 Skip construct caption display string allocation
+	// in headless mode (replay CI). Nothing renders in headless, so the font-backed display
+	// string is wasted work that also breaks CRC determinism via FreeType/heap side effects.
+	if (TheGlobalData == nullptr || !TheGlobalData->m_headless)
 	{
-		GameFont *ctorFont = ResolveDrawableCaptionFont();
-		m_constructDisplayString->setFont(ctorFont);
+		m_constructDisplayString = TheDisplayStringManager->newDisplayString();
+		if (m_constructDisplayString)
 		{
-			char _lb[256];
-			sprintf(_lb, "[GX-ISSUE144] Drawable ctor constructDS font=%s size=%d",
-				ctorFont ? ctorFont->nameString.str() : "NULL",
-				ctorFont ? ctorFont->pointSize : -1);
-			fprintf(stderr, "%s\n", _lb);
+			GameFont *ctorFont = ResolveDrawableCaptionFont();
+			m_constructDisplayString->setFont(ctorFont);
+			{
+				char _lb[256];
+				sprintf(_lb, "[GX-ISSUE144] Drawable ctor constructDS font=%s size=%d",
+					ctorFont ? ctorFont->nameString.str() : "NULL",
+					ctorFont ? ctorFont->pointSize : -1);
+				fprintf(stderr, "%s\n", _lb);
+			}
 		}
+	}
+	else
+	{
+		m_constructDisplayString = nullptr;
 	}
 
 	m_ambientSound = nullptr;
@@ -3688,6 +3706,15 @@ void Drawable::drawDisabled(const IRegion2D* healthBarRegion)
 void Drawable::drawConstructPercent( const IRegion2D *healthBarRegion )
 {
 	char log_buffer[512];
+
+	// GeneralsX @performance fbraz 04/06/2026 Skip construct caption rendering path entirely in
+	// headless mode (replay CI). Nothing draws in headless, and the lazy
+	// m_constructDisplayString allocation here would re-introduce the font system into the
+	// headless code path that we just gated in the Drawable ctor.
+	if (TheGlobalData != nullptr && TheGlobalData->m_headless)
+	{
+		return;
+	}
 
 	// this data is in an attached object
 	Object *obj = getObject();

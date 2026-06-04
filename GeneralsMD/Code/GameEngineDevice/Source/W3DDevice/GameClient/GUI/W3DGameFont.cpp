@@ -50,6 +50,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/Debug.h"
+#include "Common/GlobalData.h"
 #include "W3DDevice/GameClient/W3DGameFont.h"
 #include "WW3D2/ww3d.h"
 #include "WW3D2/assetmgr.h"
@@ -192,7 +193,12 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	// Fonts in the fallback candidate list that DON'T need a fallback (full-coverage fonts)
 	// should not get an AlternateUnicodeFont set, otherwise Get_Char_Data enters infinite
 	// recursion: e.g. Arial → Arial Unicode MS → Arial → ...
-	{
+	// GeneralsX @performance fbraz 04/06/2026 Skip AlternateUnicodeFont chain in headless mode
+	// (replay CI). The fallback chain performs additional FreeType loads (one per candidate
+	// font) which corrupts CRC determinism via heap layout. In headless mode nothing draws,
+	// so no fallback is needed; the missing-glyph path will just return nullptr from
+	// Get_Char_Data which the callers handle.
+	if (TheGlobalData == nullptr || !TheGlobalData->m_headless) {
 		bool skipFallback = false;
 		// Skip fallback for fonts that already have full Unicode coverage themselves
 		static const char *kFullCoverageFonts[] = {
@@ -210,12 +216,17 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 		if (!skipFallback) {
 			fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
 		}
+		sprintf(log_buffer,
+			"[GX-ISSUE144] W3DFont alternate unicode %s for base=%s",
+			fontChar->AlternateUnicodeFont ? "assigned" : "missing",
+			name ? name : "<null>");
+		fprintf(stderr, "%s\n", log_buffer);
+	} else {
+		sprintf(log_buffer,
+			"[GX-ISSUE144] W3DFont alternate unicode skipped (headless) for base=%s",
+			name ? name : "<null>");
+		fprintf(stderr, "%s\n", log_buffer);
 	}
-	sprintf(log_buffer,
-		"[GX-ISSUE144] W3DFont alternate unicode %s for base=%s",
-		fontChar->AlternateUnicodeFont ? "assigned" : "missing",
-		name ? name : "<null>");
-	fprintf(stderr, "%s\n", log_buffer);
 
 	return TRUE;
 }
