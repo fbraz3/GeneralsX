@@ -188,10 +188,6 @@ jobs:
           # Install custom maps (includes MapCache.ini)
           if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
             cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
-            # Drop any pre-generated map cache copied from external machines.
-            # Replay CI must build map cache from files present on the runner.
-            find "$MAPS_DIR" -type f \( -iname "mapcache.ini" -o -iname "mapcache*.ini" \) -delete || true
-            rm -f "$USER_DATA/MapCache.ini" "$USER_DATA/Maps/MapCache.ini" || true
             echo "Maps installed:"
             ls -la "$MAPS_DIR/"
           fi
@@ -228,10 +224,6 @@ jobs:
           # Install custom maps (includes MapCache.ini)
           if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
             cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
-            # Drop any pre-generated map cache copied from external machines.
-            # Replay CI must build map cache from files present on the runner.
-            find "$MAPS_DIR" -type f \( -iname "mapcache.ini" -o -iname "mapcache*.ini" \) -delete || true
-            rm -f "$USER_DATA/MapCache.ini" "$USER_DATA/Maps/MapCache.ini" || true
             echo "Maps installed:"
             ls -la "$MAPS_DIR/"
           fi
@@ -252,69 +244,6 @@ jobs:
             echo "$USER_DATA"
             echo "GHENV_EOF"
           } >> $GITHUB_ENV
-
-      - name: Replay input diagnostics
-        run: |
-          # GeneralsX @bugfix BenderAI 22/05/2026 Emit deterministic replay provenance (code/assets/replays) to diagnose CI-vs-local drift.
-          echo "=== Replay Input Diagnostics (${{ inputs.platform }}) ==="
-          echo "GITHUB_SHA=$GITHUB_SHA"
-
-          if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/.git" ]; then
-            echo "REPLAY_REPO_SHA=$(git -C "$GITHUB_WORKSPACE/ci-replays-repo" rev-parse HEAD)"
-          fi
-          if [ -d "$GITHUB_WORKSPACE/ci-assets-repo/.git" ]; then
-            echo "ASSETS_REPO_SHA=$(git -C "$GITHUB_WORKSPACE/ci-assets-repo" rev-parse HEAD)"
-          fi
-
-          echo "USER_DATA=$USER_DATA"
-
-          if [ "${{ inputs.platform }}" = "macos" ]; then
-            if [ -f "$GAME_BIN" ]; then
-              echo "GAME_BIN_SHA256=$(shasum -a 256 "$GAME_BIN" | awk '{print $1}')"
-            fi
-            if [ -d "$USER_DATA/Replays" ]; then
-              echo "Replay checksums:"
-              for rep in "$USER_DATA/Replays"/*.rep; do
-                [ -f "$rep" ] || continue
-                echo "  $(basename "$rep") $(shasum -a 256 "$rep" | awk '{print $1}')"
-              done
-            fi
-            if [ -f "$GAME_DIR/INIZH.big" ]; then
-              echo "INIZH.big SHA256=$(shasum -a 256 "$GAME_DIR/INIZH.big" | awk '{print $1}')"
-            fi
-            if [ -f "$GAME_DIR/MapsZH.big" ]; then
-              echo "MapsZH.big SHA256=$(shasum -a 256 "$GAME_DIR/MapsZH.big" | awk '{print $1}')"
-            fi
-          else
-            if [ -d "$USER_DATA/Replays" ]; then
-              echo "Replay checksums:"
-              for rep in "$USER_DATA/Replays"/*.rep; do
-                [ -f "$rep" ] || continue
-                echo "  $(basename "$rep") $(sha256sum "$rep" | awk '{print $1}')"
-              done
-            fi
-
-            if [ "${{ inputs.platform }}" = "linux" ]; then
-              if [ -f "$GAME_BIN" ]; then
-                echo "GAME_BIN_SHA256=$(sha256sum "$GAME_BIN" | awk '{print $1}')"
-              fi
-              if [ -f "$GAME_DIR/INIZH.big" ]; then
-                echo "INIZH.big SHA256=$(sha256sum "$GAME_DIR/INIZH.big" | awk '{print $1}')"
-              fi
-              if [ -f "$GAME_DIR/MapsZH.big" ]; then
-                echo "MapsZH.big SHA256=$(sha256sum "$GAME_DIR/MapsZH.big" | awk '{print $1}')"
-              fi
-            fi
-
-            if [ "${{ inputs.platform }}" = "linux-flatpak" ]; then
-              if [ -f "$USER_DATA/INIZH.big" ]; then
-                echo "INIZH.big SHA256=$(sha256sum "$USER_DATA/INIZH.big" | awk '{print $1}')"
-              fi
-              if [ -f "$USER_DATA/MapsZH.big" ]; then
-                echo "MapsZH.big SHA256=$(sha256sum "$USER_DATA/MapsZH.big" | awk '{print $1}')"
-              fi
-            fi
-          fi
 
       # -----------------------------------------------------------------------
       # 6. Run headless replay tests
@@ -352,7 +281,7 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -360,7 +289,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
@@ -406,7 +335,7 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -414,7 +343,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
@@ -433,7 +362,6 @@ jobs:
           if [ $((PASS + FAIL)) -eq 0 ]; then
             echo "::warning::No replay files were found to test"
           fi
-
 
       - name: Run headless replay tests (macOS)
         if: inputs.platform == 'macos'
@@ -475,7 +403,7 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -483,7 +411,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY

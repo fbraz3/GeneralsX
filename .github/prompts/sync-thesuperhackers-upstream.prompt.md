@@ -53,6 +53,7 @@ Expect many conflicts because the projects intentionally diverged. Every conflic
 - Preserve platform isolation. Do not allow platform-specific code to leak into gameplay logic.
 - Keep legacy compatibility paths only where they are still intentionally maintained by this repository, but do not let original-binary compatibility override the `GeneralsX` cross-platform objective.
 - Treat INI parser changes as high risk on macOS: upstream numeric parsing optimizations may require platform-specific compatibility handling for Apple deployment targets.
+- **Never replace our CI/CD infrastructure with upstream versions.** Our `.github/workflows/`, `.github/ISSUE_TEMPLATE/`, `.github/copilot-instructions.md` and all CI configuration must be kept intact. Reject any upstream additions or modifications to these paths.
 - Review conflicts with extra care in these areas:
   - build system and presets
   - SDL3, DXVK, OpenAL, FFmpeg, and platform abstraction layers

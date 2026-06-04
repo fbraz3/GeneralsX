@@ -184,4 +184,4 @@ Create one only if you have 3+ related scripts, category is general-purpose, and
 
 - **Main Overview**: [scripts/README.md](../../scripts/README.md)
 - **Build System**: [CMakePresets.json](../../CMakePresets.json)
-- **General Conventions**: [.github/instructions/generalsx.instructions.md](.github/instructions/generalsx.instructions.md)
+- **General Conventions**: [AGENTS.md](../../AGENTS.md)

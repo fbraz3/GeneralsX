@@ -23,6 +23,12 @@ There are two reasons for this name:
 1. X = Cross - reflects the cross-platform efforts
 2. I am a big fan of the Mega Man X franchise, so this is also a tribute to that classic series.
 
+## Installing the game
+
+For release/runtime setup instructions (Linux and macOS), see:
+
+- [docs/BUILD/INSTALLATION.md](docs/BUILD/INSTALLATION.md)
+
 ## Project Goals
 
 GeneralsX exists to turn upstream preservation and porting work into a practical and maintainable project for active Linux and macOS players.
