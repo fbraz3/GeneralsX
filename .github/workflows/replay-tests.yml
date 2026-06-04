@@ -281,7 +281,8 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            #echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            echo "$OUTPUT"
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -335,7 +336,8 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            #echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            echo "$OUTPUT"
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -403,7 +405,8 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            #echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            echo "$OUTPUT"
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
