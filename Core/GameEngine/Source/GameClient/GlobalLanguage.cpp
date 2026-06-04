@@ -170,20 +170,38 @@ void GlobalLanguage::init()
 			m_unicodeFontName.isNotEmpty() ? m_unicodeFontName.str() : "<empty>");
 		fprintf(stderr, "%s\n", log_buffer);
 
-		// Load stock Language.ini as fallback for missing keys (e.g., russifier may override UnicodeFontName=Arial,
-		// so we load stock English to restore Arial Unicode MS if not redefined)
-		if (registryLanguage.compare("English") != 0)
+		// GeneralsX @bugfix fbraz 04/06/2026 Only fall back to stock English if the primary language
+		// did not set UnicodeFontName. This protects two scenarios:
+		// 1) russifier mod overrides UnicodeFontName=Arial (no Cyrillic on macOS), so we need a stock
+		//    English Language.ini to fill the field with Arial Unicode MS.
+		// 2) official localizations (brazilian, etc.) provide their own UnicodeFontName and must not
+		//    be overwritten by English.
+		// Also skip the fallback entirely when Data\English\Language.ini is not present in the deploy,
+		// otherwise INI::loadFileDirectory throws INI_CANT_OPEN_FILE on zero files read.
+		if (m_unicodeFontName.isEmpty() && registryLanguage.compare("English") != 0)
 		{
 			AsciiString stockFname("Data\\English\\Language");
-			sprintf(log_buffer,
-				"[GX-ISSUE144] GlobalLanguage init loading stock fallback=%s",
-				stockFname.str());
-			fprintf(stderr, "%s\n", log_buffer);
-			ini.loadFileDirectory( stockFname, INI_LOAD_MULTIFILE, nullptr );
-			sprintf(log_buffer,
-				"[GX-ISSUE144] GlobalLanguage init fallback merged unicodeFont=%s (may have been filled)",
-				m_unicodeFontName.isNotEmpty() ? m_unicodeFontName.str() : "<empty>");
-			fprintf(stderr, "%s\n", log_buffer);
+			AsciiString stockFnameWithExt = stockFname;
+			stockFnameWithExt.concat(".ini");
+			if (TheFileSystem->doesFileExist(stockFnameWithExt.str()))
+			{
+				sprintf(log_buffer,
+					"[GX-ISSUE144] GlobalLanguage init loading stock fallback=%s",
+					stockFname.str());
+				fprintf(stderr, "%s\n", log_buffer);
+				ini.loadFileDirectory( stockFname, INI_LOAD_MULTIFILE, nullptr );
+				sprintf(log_buffer,
+					"[GX-ISSUE144] GlobalLanguage init fallback merged unicodeFont=%s (may have been filled)",
+					m_unicodeFontName.isNotEmpty() ? m_unicodeFontName.str() : "<empty>");
+				fprintf(stderr, "%s\n", log_buffer);
+			}
+			else
+			{
+				sprintf(log_buffer,
+					"[GX-ISSUE144] GlobalLanguage init stock fallback skipped, file not present: %s",
+					stockFnameWithExt.str());
+				fprintf(stderr, "%s\n", log_buffer);
+			}
 		}
 
 		sprintf(log_buffer,
