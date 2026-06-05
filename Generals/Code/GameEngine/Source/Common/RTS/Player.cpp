@@ -2979,8 +2979,8 @@ void Player::removeUpgrade( const UpgradeTemplate *upgradeTemplate )
 		if( upgrade->getStatus() == UPGRADE_STATUS_COMPLETE )
 			onUpgradeRemoved();
 
+		deleteInstance(upgrade);
 	}
-
 }
 
 

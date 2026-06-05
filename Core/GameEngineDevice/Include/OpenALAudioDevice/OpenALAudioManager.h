@@ -81,8 +81,8 @@ public:
 	OpenALAudioManager();
 	virtual ~OpenALAudioManager();
 
-	virtual void nextMusicTrack(void);
-	virtual void prevMusicTrack(void);
+	virtual AsciiString nextMusicTrack(void);
+	virtual AsciiString prevMusicTrack(void);
 	virtual Bool isMusicPlaying(void) const;
 	virtual Bool hasMusicTrackCompleted(const AsciiString &trackName, Int numberOfTimes) const;
 	virtual AsciiString getMusicTrackName(void) const;

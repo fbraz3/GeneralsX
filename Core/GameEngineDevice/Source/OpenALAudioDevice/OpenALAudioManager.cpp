@@ -1410,7 +1410,7 @@ void OpenALAudioManager::stopAllSpeech(void)
 //}
 
 //-------------------------------------------------------------------------------------------------
-void OpenALAudioManager::nextMusicTrack(void)
+AsciiString OpenALAudioManager::nextMusicTrack(void)
 {
 	AsciiString trackName;
 	std::list<PlayingAudio*>::iterator it;
@@ -1430,10 +1430,12 @@ void OpenALAudioManager::nextMusicTrack(void)
 	trackName = nextTrackName(trackName);
 	AudioEventRTS newTrack(trackName);
 	TheAudio->addAudioEvent(&newTrack);
+
+	return trackName;
 }
 
 //-------------------------------------------------------------------------------------------------
-void OpenALAudioManager::prevMusicTrack(void)
+AsciiString OpenALAudioManager::prevMusicTrack(void)
 {
 	AsciiString trackName;
 	std::list<PlayingAudio*>::iterator it;
@@ -1453,6 +1455,8 @@ void OpenALAudioManager::prevMusicTrack(void)
 	trackName = prevTrackName(trackName);
 	AudioEventRTS newTrack(trackName);
 	TheAudio->addAudioEvent(&newTrack);
+
+	return trackName;
 }
 
 //-------------------------------------------------------------------------------------------------

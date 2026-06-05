@@ -430,17 +430,19 @@ Bool OpenALAudioManager::isCurrentlyPlaying(AudioHandle handle)
 /**
  * Music playback - next track
  */
-void OpenALAudioManager::nextMusicTrack(void)
+AsciiString OpenALAudioManager::nextMusicTrack(void)
 {
 	fprintf(stderr, "DEBUG: OpenALAudioManager::nextMusicTrack() - stub\n");
+	return AsciiString::TheEmptyString;
 }
 
 /**
  * Music playback - previous track
  */
-void OpenALAudioManager::prevMusicTrack(void)
+AsciiString OpenALAudioManager::prevMusicTrack(void)
 {
 	fprintf(stderr, "DEBUG: OpenALAudioManager::prevMusicTrack() - stub\n");
+	return AsciiString::TheEmptyString;
 }
 
 /**
