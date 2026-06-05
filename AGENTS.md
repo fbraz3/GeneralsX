@@ -4,22 +4,17 @@
 GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
 ## Must-Load Context
-<<<<<<< Updated upstream
 Before starting work, read:
 - `.github/copilot-instructions.md` – quick reference
 - `.github/instructions/generalsx.instructions.md` – full architecture
 - `.github/instructions/git-commit.instructions.md` – commit standards
 - `.github/instructions/docs.instructions.md` – documentation workflow
 - `docs/DEV_BLOG/YYYY-MM-DIARY.md` – current development notes
-=======
-Before work, read:
-- `docs/DEV_BLOG/YYYY-MM-DIARY.md` (current month)
 
 ## Key Entry Points
 - `GeneralsMD/Code/Main/WinMain.cpp`
 - `Generals/Code/Main/WinMain.cpp`
 - `Core/GameEngineDevice/Source/`
->>>>>>> Stashed changes
 
 ## Platform Focus
 - **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`)
