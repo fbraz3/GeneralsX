@@ -109,6 +109,34 @@ static const char *const TheDrawableIconNames[] =
 };
 static_assert(ARRAY_SIZE(TheDrawableIconNames) == MAX_ICONS + 1, "Incorrect array size");
 
+// GeneralsX @bugfix GitHubCopilot 24/05/2026 Resolve Drawable caption fonts through a deterministic fallback chain when localized font names are unavailable.
+static GameFont *ResolveDrawableCaptionFont()
+{
+	if (TheFontLibrary == nullptr || TheInGameUI == nullptr)
+		return nullptr;
+
+	const Int basePointSize = TheInGameUI->getDrawableCaptionPointSize();
+	const Int pointSize = TheGlobalLanguageData ? TheGlobalLanguageData->adjustFontSize(basePointSize) : basePointSize;
+	const Bool bold = TheInGameUI->isDrawableCaptionBold();
+
+	GameFont *font = TheFontLibrary->getFont(TheInGameUI->getDrawableCaptionFontName(), pointSize, bold);
+	if (font != nullptr)
+		return font;
+
+	if (TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty())
+	{
+		font = TheFontLibrary->getFont(TheGlobalLanguageData->m_unicodeFontName, pointSize, bold);
+		if (font != nullptr)
+			return font;
+	}
+
+	font = TheFontLibrary->getFont("Arial", pointSize, bold);
+	if (font != nullptr)
+		return font;
+
+	return TheFontLibrary->getFont("Arial Unicode MS", pointSize, bold);
+}
+
 
 /**
  * Returns a special DynamicAudioEventInfo which can be used to mark a sound as "no sound".
@@ -361,9 +389,10 @@ Drawable::Drawable( const ThingTemplate *thingTemplate, DrawableStatusBits statu
 	m_lastConstructDisplayed = -1.0f;
 	//Fix for the building percent
 	m_constructDisplayString = TheDisplayStringManager->newDisplayString();
-	m_constructDisplayString->setFont(TheFontLibrary->getFont(TheInGameUI->getDrawableCaptionFontName(),
-																TheGlobalLanguageData->adjustFontSize(TheInGameUI->getDrawableCaptionPointSize()),
-																TheInGameUI->isDrawableCaptionBold() ));
+	if (m_constructDisplayString)
+	{
+		m_constructDisplayString->setFont(ResolveDrawableCaptionFont());
+	}
 
 	m_ambientSound = nullptr;
   m_ambientSoundEnabled = true;
@@ -3651,7 +3680,13 @@ void Drawable::drawConstructPercent( const IRegion2D *healthBarRegion )
 
 	// construction is partially complete, allocate a display string if we need one
 	if( m_constructDisplayString == nullptr )
+	{
 		m_constructDisplayString = TheDisplayStringManager->newDisplayString();
+		if (m_constructDisplayString)
+		{
+			m_constructDisplayString->setFont(ResolveDrawableCaptionFont());
+		}
+	}
 
 	// set the string if the value has changed
 	if( m_lastConstructDisplayed != obj->getConstructionPercent() )
@@ -4272,10 +4307,7 @@ void Drawable::setCaptionText( const UnicodeString& captionText )
 	if( m_captionDisplayString == nullptr )
 	{
 		m_captionDisplayString = TheDisplayStringManager->newDisplayString();
-		GameFont *font = TheFontLibrary->getFont(
-			TheInGameUI->getDrawableCaptionFontName(),
-			TheGlobalLanguageData->adjustFontSize(TheInGameUI->getDrawableCaptionPointSize()),
-			TheInGameUI->isDrawableCaptionBold() );
+		GameFont *font = ResolveDrawableCaptionFont();
 		m_captionDisplayString->setFont( font );
 		m_captionDisplayString->setText( sanitizedString );
 	}

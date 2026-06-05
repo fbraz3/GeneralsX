@@ -1314,49 +1314,57 @@ void InGameUI::init()
 	if (TheGlobalLanguageData)
 	{
 		if (TheGlobalLanguageData->m_drawableCaptionFont.name.isNotEmpty())
-		{	m_drawableCaptionFont = TheGlobalLanguageData->m_drawableCaptionFont.name;
+		{
+			m_drawableCaptionFont = TheGlobalLanguageData->m_drawableCaptionFont.name;
 			m_drawableCaptionPointSize = TheGlobalLanguageData->m_drawableCaptionFont.size;
 			m_drawableCaptionBold = TheGlobalLanguageData->m_drawableCaptionFont.bold;
 		}
 
 		if (TheGlobalLanguageData->m_messageFont.name.isNotEmpty())
-		{	m_messageFont = TheGlobalLanguageData->m_messageFont.name;
+		{
+			m_messageFont = TheGlobalLanguageData->m_messageFont.name;
 			m_messagePointSize = TheGlobalLanguageData->m_messageFont.size;
 			m_messageBold = TheGlobalLanguageData->m_messageFont.bold;
 		}
 
 		if (TheGlobalLanguageData->m_militaryCaptionTitleFont.name.isNotEmpty())
-		{	m_militaryCaptionTitleFont = TheGlobalLanguageData->m_militaryCaptionTitleFont.name;
+		{
+			m_militaryCaptionTitleFont = TheGlobalLanguageData->m_militaryCaptionTitleFont.name;
 			m_militaryCaptionTitlePointSize = TheGlobalLanguageData->m_militaryCaptionTitleFont.size;
 			m_militaryCaptionTitleBold = TheGlobalLanguageData->m_militaryCaptionTitleFont.bold;
 		}
 
 		if (TheGlobalLanguageData->m_militaryCaptionFont.name.isNotEmpty())
-		{	m_militaryCaptionFont = TheGlobalLanguageData->m_militaryCaptionFont.name;
+		{
+			m_militaryCaptionFont = TheGlobalLanguageData->m_militaryCaptionFont.name;
 			m_militaryCaptionPointSize = TheGlobalLanguageData->m_militaryCaptionFont.size;
 			m_militaryCaptionBold = TheGlobalLanguageData->m_militaryCaptionFont.bold;
 		}
 
 		if (TheGlobalLanguageData->m_superweaponCountdownNormalFont.name.isNotEmpty())
-		{	m_superweaponNormalFont = TheGlobalLanguageData->m_superweaponCountdownNormalFont.name;
+		{
+			m_superweaponNormalFont = TheGlobalLanguageData->m_superweaponCountdownNormalFont.name;
 			m_superweaponNormalPointSize = TheGlobalLanguageData->m_superweaponCountdownNormalFont.size;
 			m_superweaponNormalBold = TheGlobalLanguageData->m_superweaponCountdownNormalFont.bold;
 		}
 
 		if (TheGlobalLanguageData->m_superweaponCountdownReadyFont.name.isNotEmpty())
-		{	m_superweaponReadyFont = TheGlobalLanguageData->m_superweaponCountdownReadyFont.name;
+		{
+			m_superweaponReadyFont = TheGlobalLanguageData->m_superweaponCountdownReadyFont.name;
 			m_superweaponReadyPointSize = TheGlobalLanguageData->m_superweaponCountdownReadyFont.size;
 			m_superweaponReadyBold = TheGlobalLanguageData->m_superweaponCountdownReadyFont.bold;
 		}
 
 		if (TheGlobalLanguageData->m_namedTimerCountdownNormalFont.name.isNotEmpty())
-		{	m_namedTimerNormalFont = TheGlobalLanguageData->m_namedTimerCountdownNormalFont.name;
+		{
+			m_namedTimerNormalFont = TheGlobalLanguageData->m_namedTimerCountdownNormalFont.name;
 			m_namedTimerNormalPointSize = TheGlobalLanguageData->m_namedTimerCountdownNormalFont.size;
 			m_namedTimerNormalBold = TheGlobalLanguageData->m_namedTimerCountdownNormalFont.bold;
 		}
 
 		if (TheGlobalLanguageData->m_namedTimerCountdownReadyFont.name.isNotEmpty())
-		{	m_namedTimerReadyFont = TheGlobalLanguageData->m_namedTimerCountdownReadyFont.name;
+		{
+			m_namedTimerReadyFont = TheGlobalLanguageData->m_namedTimerCountdownReadyFont.name;
 			m_namedTimerReadyPointSize = TheGlobalLanguageData->m_namedTimerCountdownReadyFont.size;
 			m_namedTimerReadyBold = TheGlobalLanguageData->m_namedTimerCountdownReadyFont.bold;
 		}
@@ -1994,7 +2002,7 @@ void InGameUI::update()
 					// We're at the end of the subtitle, set everything to persist till the subtitle has expired
 					m_militarySubtitle->incrementOnFrame = m_militarySubtitle->lifetime + 1;
 				}
-	/*
+/*
 							else
 								{
 									// randomize the space between printing of characters
@@ -4261,7 +4269,7 @@ VideoBuffer* InGameUI::videoBuffer()
 }
 
 // ------------------------------------------------------------------------------------------------
-// InGameUI::playMovie
+// InGameUI::playCameoMovie
 // ------------------------------------------------------------------------------------------------
 void InGameUI::playCameoMovie( const AsciiString& movieName )
 {
@@ -4565,11 +4573,6 @@ CanAttackResult InGameUI::getCanSelectedObjectsAttack( ActionType action, const 
 			case ACTIONTYPE_CONVERT_OBJECT_TO_CARBOMB:
 			case ACTIONTYPE_CAPTURE_BUILDING:
 			case ACTIONTYPE_DISABLE_VEHICLE_VIA_HACKING:
-#ifdef ALLOW_SURRENDER
-			case ACTIONTYPE_PICK_UP_PRISONER:
-#endif
-			case ACTIONTYPE_STEAL_CASH_VIA_HACKING:
-			case ACTIONTYPE_DISABLE_BUILDING_VIA_HACKING:
 			case ACTIONTYPE_MAKE_DEFECTOR:
 			case ACTIONTYPE_SET_RALLY_POINT:
 			default:
@@ -4621,12 +4624,11 @@ Bool InGameUI::canSelectedObjectsDoAction( ActionType action, const Object *obje
 	Int qualify = 0;
 
 	// loop through all the selected drawables
-	Drawable *other;
 	for( DrawableListCIt it = selected->begin(); it != selected->end(); ++it )
 	{
 
 		// get this drawable
-		other = *it;
+		Drawable *other = *it;
 		count++;
 		Bool success = FALSE;
 
@@ -4897,12 +4899,11 @@ Bool InGameUI::canSelectedObjectsEffectivelyUseWeapon( const CommandButton *comm
 	Int qualify = 0;
 
 	// loop through all the selected drawables
-	Drawable *other;
 	for( DrawableListCIt it = selected->begin(); it != selected->end(); ++it )
 	{
 
 		// get this drawable
-		other = *it;
+		Drawable *other = *it;
 		count++;
 
 		if( !doAtObject && !doAtPosition )

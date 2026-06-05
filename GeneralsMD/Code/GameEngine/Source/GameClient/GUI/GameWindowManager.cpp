@@ -1380,7 +1380,8 @@ GameWindow *GameWindowManager::winCreate( GameWindow *parent,
 
 	// set default font
 	if (TheGlobalLanguageData && TheGlobalLanguageData->m_defaultWindowFont.name.isNotEmpty())
-	{		window->winSetFont( winFindFont(
+	{
+		window->winSetFont( winFindFont(
 			TheGlobalLanguageData->m_defaultWindowFont.name,
 			TheGlobalLanguageData->m_defaultWindowFont.size,
 			TheGlobalLanguageData->m_defaultWindowFont.bold) );
