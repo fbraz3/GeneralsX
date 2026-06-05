@@ -1410,7 +1410,7 @@ void OpenALAudioManager::stopAllSpeech(void)
 //}
 
 //-------------------------------------------------------------------------------------------------
-void OpenALAudioManager::nextMusicTrack(void)
+AsciiString OpenALAudioManager::nextMusicTrack(void)
 {
 	AsciiString trackName;
 	std::list<PlayingAudio*>::iterator it;
@@ -1430,10 +1430,12 @@ void OpenALAudioManager::nextMusicTrack(void)
 	trackName = nextTrackName(trackName);
 	AudioEventRTS newTrack(trackName);
 	TheAudio->addAudioEvent(&newTrack);
+
+	return trackName;
 }
 
 //-------------------------------------------------------------------------------------------------
-void OpenALAudioManager::prevMusicTrack(void)
+AsciiString OpenALAudioManager::prevMusicTrack(void)
 {
 	AsciiString trackName;
 	std::list<PlayingAudio*>::iterator it;
@@ -1453,6 +1455,8 @@ void OpenALAudioManager::prevMusicTrack(void)
 	trackName = prevTrackName(trackName);
 	AudioEventRTS newTrack(trackName);
 	TheAudio->addAudioEvent(&newTrack);
+
+	return trackName;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1491,39 +1495,6 @@ Bool OpenALAudioManager::hasMusicTrackCompleted(const AsciiString& trackName, In
 	}
 
 	return FALSE;
-}
-
-//-------------------------------------------------------------------------------------------------
-AsciiString OpenALAudioManager::getMusicTrackName(void) const
-{
-	// First check the requests. If there's one there, then report that as the currently playing track.
-	std::list<AudioRequest*>::const_iterator ait;
-	for (ait = m_audioRequests.begin(); ait != m_audioRequests.end(); ++ait) {
-		if ((*ait)->m_request != AR_Play) {
-			continue;
-		}
-
-		if (!(*ait)->m_usePendingEvent) {
-			continue;
-		}
-
-		if ((*ait)->m_pendingEvent->getAudioEventInfo()->m_soundType == AT_Music) {
-			return (*ait)->m_pendingEvent->getEventName();
-		}
-	}
-
-	std::list<PlayingAudio*>::const_iterator it;
-	PlayingAudio* playing;
-	for (it = m_playingStreams.begin(); it != m_playingStreams.end(); ++it) {
-		playing = *it;
-		// GeneralsX @bugfix BenderAI 11/03/2026 - guard against null audioEventRTS/info
-		const AudioEventInfo* info = (playing && playing->m_audioEventRTS) ? playing->m_audioEventRTS->getAudioEventInfo() : nullptr;
-		if (info && info->m_soundType == AT_Music) {
-			return playing->m_audioEventRTS->getEventName();
-		}
-	}
-
-	return AsciiString::TheEmptyString;
 }
 
 //-------------------------------------------------------------------------------------------------

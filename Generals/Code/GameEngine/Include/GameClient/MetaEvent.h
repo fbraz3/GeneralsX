@@ -366,6 +366,10 @@ public:
 	MetaEventTranslator();
 	virtual ~MetaEventTranslator() override;
 	virtual GameMessageDisposition translateGameMessage(const GameMessage *msg) override;
+
+private:
+	void onMouseEvent(const GameMessage *msg);
+	void onKeyEvent(const GameMessage *msg, GameMessageDisposition &disp);
 };
 
 //-----------------------------------------------------------------------------
