@@ -116,7 +116,7 @@ public:
 	virtual void unreserveDoorForExit( ExitDoorType exitDoor ) override;
 	virtual void exitObjectByBudding( Object *newObj, Object *budHost ) override { return; }
 	virtual Bool getExitPosition( Coord3D& rallyPoint ) const override { return FALSE; }
-	virtual Bool getNaturalRallyPoint( Coord3D& rallyPoint, Bool offset = TRUE ) { return FALSE; }
+	virtual Bool getNaturalRallyPoint( Coord3D& rallyPoint, Bool offset = TRUE ) const override { return FALSE; }
 	virtual void setRallyPoint( const Coord3D *pos ) override {}
 	virtual const Coord3D *getRallyPoint() const override { return nullptr;}
 
@@ -150,8 +150,8 @@ public:
 	// AIUpdateInterface
 	virtual void aiDoCommand(const AICommandParms* parms) override;
 
-	virtual const std::vector<Coord3D>* getTaxiLocations( ObjectID id ) const;
-	virtual const std::vector<Coord3D>* getCreationLocations( ObjectID id ) const;
+	virtual const std::vector<Coord3D>* getTaxiLocations( ObjectID id ) const override;
+	virtual const std::vector<Coord3D>* getCreationLocations( ObjectID id ) const override;
 
 private:
 

@@ -145,7 +145,7 @@ class Sound3DClass : public AudibleSoundClass
 		//	This is the distance where the sound can not be heard any longer.  (its vol is 0)
 		//
 		virtual void			Set_DropOff_Radius (float radius = 1) override;
-		virtual float			Get_DropOff_Radius ()  {return(m_DropOffRadius);}
+		virtual float			Get_DropOff_Radius () const override {return(m_DropOffRadius);}
 
 		// From PersistClass
 		virtual const PersistFactoryClass &	Get_Factory () const override;

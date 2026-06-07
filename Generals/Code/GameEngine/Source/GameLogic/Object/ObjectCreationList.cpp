@@ -995,7 +995,10 @@ protected:
 			DEBUG_LOG(("Object %s inherits veterancy level %d from %s",
 				obj->getTemplate()->getName().str(), sourceObj->getVeterancyLevel(), sourceObj->getTemplate()->getName().str()));
 			VeterancyLevel v = sourceObj->getVeterancyLevel();
-			obj->getExperienceTracker()->setVeterancyLevel(v);
+
+			// TheSuperHackers @bugfix Caball009 22/04/2026 Disable audiovisual cues for a veterancy level change because this object was just created.
+			// Otherwise the cues would be at an incorrect position, because the object's matrix is not set yet.
+			obj->getExperienceTracker()->setVeterancyLevel(v, FALSE);
 
 			//In order to make things easier for the designers, we are going to transfer the unit name
 			//to the ejected thing... so the designer can control the pilot with the scripts.
@@ -1337,7 +1340,7 @@ protected:
 			}
 		}
 
-#if !RETAIL_COMPATIBLE_CRC && !PRESERVE_RETAIL_BEHAVIOR
+#if !RETAIL_COMPATIBLE_CRC && !PRESERVE_NO_XP_FROM_OCL_KILLS
 		ObjectID sinkID = sourceObj->getExperienceTracker()->getExperienceSink();
 		firstObject->getExperienceTracker()->setExperienceSink(sinkID != INVALID_ID ? sinkID : sourceObj->getID());
 #endif

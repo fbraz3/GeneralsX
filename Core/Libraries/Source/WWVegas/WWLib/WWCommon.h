@@ -22,6 +22,7 @@
 #include "STLUtils.h"
 #include "stringex.h"
 #include <Utility/stdio_adapter.h>
+#include <rts/profile.h>
 
 // TheSuperHackers @build 10/02/2026 Bender
 // Linux port: Include platform compatibility headers BEFORE any DirectX/Windows headers are parsed

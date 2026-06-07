@@ -48,14 +48,14 @@ class EmissionPanelPoint : public ISwapablePanel
 {
 	public:
 		enum {IDD = IDD_PSEd_EmissionPanelPoint};
-		virtual DWORD GetIDD() { return IDD; }
+		virtual DWORD GetIDD() override { return IDD; }
 		EmissionPanelPoint(UINT nIDTemplate = EmissionPanelPoint::IDD, CWnd* pParentWnd = nullptr);
 
-		void InitPanel();
+		virtual void InitPanel() override;
 
 		// if true, updates the UI from the Particle System.
 		// if false, updates the Particle System from the UI
-		void performUpdate( IN Bool toUI );
+		virtual void performUpdate( IN Bool toUI ) override;
 	protected:
 		afx_msg void OnParticleSystemEdit();
 		DECLARE_MESSAGE_MAP()
@@ -66,14 +66,14 @@ class EmissionPanelLine : public ISwapablePanel
 {
 	public:
 		enum {IDD = IDD_PSEd_EmissionPanelLine};
-		virtual DWORD GetIDD() { return IDD; }
+		virtual DWORD GetIDD() override { return IDD; }
 		EmissionPanelLine(UINT nIDTemplate = EmissionPanelLine::IDD, CWnd* pParentWnd = nullptr);
 
-		void InitPanel();
+		virtual void InitPanel() override;
 
 		// if true, updates the UI from the Particle System.
 		// if false, updates the Particle System from the UI
-		void performUpdate( IN Bool toUI );
+		virtual void performUpdate( IN Bool toUI ) override;
 	protected:
 		afx_msg void OnParticleSystemEdit();
 		DECLARE_MESSAGE_MAP()
@@ -84,14 +84,14 @@ class EmissionPanelBox : public ISwapablePanel
 {
 	public:
 		enum {IDD = IDD_PSEd_EmissionPanelBox};
-		virtual DWORD GetIDD() { return IDD; }
+		virtual DWORD GetIDD() override { return IDD; }
 		EmissionPanelBox(UINT nIDTemplate = EmissionPanelBox::IDD, CWnd* pParentWnd = nullptr);
 
-		void InitPanel();
+		virtual void InitPanel() override;
 
 		// if true, updates the UI from the Particle System.
 		// if false, updates the Particle System from the UI
-		void performUpdate( IN Bool toUI );
+		virtual void performUpdate( IN Bool toUI ) override;
 	protected:
 		afx_msg void OnParticleSystemEdit();
 		DECLARE_MESSAGE_MAP()
@@ -102,14 +102,14 @@ class EmissionPanelSphere : public ISwapablePanel
 {
 	public:
 		enum {IDD = IDD_PSEd_EmissionPanelSphere};
-		virtual DWORD GetIDD() { return IDD; }
+		virtual DWORD GetIDD() override { return IDD; }
 		EmissionPanelSphere(UINT nIDTemplate = EmissionPanelSphere::IDD, CWnd* pParentWnd = nullptr);
 
-		void InitPanel();
+		virtual void InitPanel() override;
 
 		// if true, updates the UI from the Particle System.
 		// if false, updates the Particle System from the UI
-		void performUpdate( IN Bool toUI );
+		virtual void performUpdate( IN Bool toUI ) override;
 	protected:
 		afx_msg void OnParticleSystemEdit();
 		DECLARE_MESSAGE_MAP()
@@ -120,14 +120,14 @@ class EmissionPanelCylinder : public ISwapablePanel
 {
 	public:
 		enum {IDD = IDD_PSEd_EmissionPanelCylinder};
-		virtual DWORD GetIDD() { return IDD; }
+		virtual DWORD GetIDD() override { return IDD; }
 		EmissionPanelCylinder(UINT nIDTemplate = EmissionPanelCylinder::IDD, CWnd* pParentWnd = nullptr);
 
-		void InitPanel();
+		virtual void InitPanel() override;
 
 		// if true, updates the UI from the Particle System.
 		// if false, updates the Particle System from the UI
-		void performUpdate( IN Bool toUI );
+		virtual void performUpdate( IN Bool toUI ) override;
 	protected:
 		afx_msg void OnParticleSystemEdit();
 		DECLARE_MESSAGE_MAP()

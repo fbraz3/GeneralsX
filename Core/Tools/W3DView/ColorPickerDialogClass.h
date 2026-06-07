@@ -54,11 +54,11 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(ColorPickerDialogClass)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-	virtual void PostNcDestroy();
+	virtual void DoDataExchange(CDataExchange* pDX)  override;    // DDX/DDV support
+	virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) override;
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+	virtual void PostNcDestroy() override;
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -66,7 +66,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(ColorPickerDialogClass)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	afx_msg void OnReset();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

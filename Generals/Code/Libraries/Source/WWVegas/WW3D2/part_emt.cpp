@@ -156,7 +156,8 @@ ParticleEmitterClass::ParticleEmitterClass(const ParticleEmitterClass & src) :
 	FirstTime = true;
 	IsComplete = false;
 
-	NameString = ::_strdup (src.NameString);
+	// GeneralsX @bugfix fbraz 06/05/2026 Avoid null-pointer strdup when cloning emitters without optional metadata strings.
+	NameString = src.NameString ? ::_strdup(src.NameString) : nullptr;
 }
 
 

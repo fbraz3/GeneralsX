@@ -653,7 +653,10 @@ Bool OptionPreferences::getFPSLimitEnabled()
 {
 	OptionPreferences::const_iterator it = find("FPSLimit");
 	if (it == end())
-		return TheGlobalData->m_useFpsLimit;
+	{
+		// GeneralsX @bugfix Copilot 11/05/2026 Keep the FPS limiter enabled by default when no explicit preference exists.
+		return TRUE;
+	}
 
 	if (stricmp(it->second.str(), "yes") == 0) {
 		return TRUE;

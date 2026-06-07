@@ -149,8 +149,8 @@ public:
 	virtual void killAllParkedUnits() override;
 	virtual void defectAllParkedUnits(Team* newTeam, UnsignedInt detectionTime) override;
 	virtual Bool calcBestParkingAssignment( ObjectID id, Coord3D *pos, Int *oldIndex = nullptr, Int *newIndex = nullptr ) override { return FALSE; }
-	virtual const std::vector<Coord3D>* getTaxiLocations( ObjectID id ) const { return nullptr; }
-	virtual const std::vector<Coord3D>* getCreationLocations( ObjectID id ) const { return nullptr; }
+	virtual const std::vector<Coord3D>* getTaxiLocations( ObjectID id ) const override { return nullptr; }
+	virtual const std::vector<Coord3D>* getCreationLocations( ObjectID id ) const override { return nullptr; }
 
 private:
 

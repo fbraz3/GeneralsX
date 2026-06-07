@@ -153,7 +153,7 @@ AsciiString AsciiStringToQuotedPrintable(AsciiString original)
 	int i=0;
 	while ( src[0]!='\0' && i<1021 )
 	{
-		if (!isalnum(*src))
+		if (!isAsciiAlphaNumeric(*src))
 		{
 			dest[i++] = MAGIC_CHAR;
 			dest[i++] = intToHexDigit((*src)>>4);

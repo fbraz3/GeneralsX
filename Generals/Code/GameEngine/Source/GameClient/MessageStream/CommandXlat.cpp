@@ -98,8 +98,6 @@
 void countObjects(Object *obj, void *userData)
 {
 	Int *numObjects = (Int *)userData;
-	if (!numObjects || !obj)
-		return;
 
 	DEBUG_LOG(("Looking at obj %d (%s) - isEffectivelyDead()==%d, isDestroyed==%d, numObjects==%d",
 		obj->getID(), obj->getTemplate()->getName().str(), obj->isEffectivelyDead(), obj->isDestroyed(), *numObjects));
@@ -110,9 +108,6 @@ void countObjects(Object *obj, void *userData)
 
 void printObjects(Object *obj, void *userData)
 {
-	if (!obj)
-		return;
-
 	Bool isDead = obj->isEffectivelyDead() || obj->isDestroyed();
 	Bool isInert = obj->isKindOf(KINDOF_INERT);
 	AsciiString statusStr = (isDead)?"Dead":(isInert)?"Inert":"Living";
@@ -858,10 +853,6 @@ struct CommandCenterLocator
 
 void findCommandCenterOrMostExpensiveBuilding(Object* obj, void* vccl)
 {
-	if (!obj) {
-		return;
-	}
-
 	CommandCenterLocator *ccl = (CommandCenterLocator*) vccl;
 
 	// here's the deal. We want to get the first Command Center in the list.
@@ -911,9 +902,7 @@ struct HeroHolder
 
 void amIAHero(Object* obj, void* heroHolder)
 {
-
-
-	if (!obj || ((HeroHolder*)heroHolder)->hero != nullptr)
+	if (((HeroHolder*)heroHolder)->hero != nullptr)
 	{
 		return;
 	}
@@ -3426,26 +3415,6 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		}
 
 		// --------------------------------------------------------------------------------------------
-		case GameMessage::MSG_CREATE_TEAM0:
-		case GameMessage::MSG_CREATE_TEAM1:
-		case GameMessage::MSG_CREATE_TEAM2:
-		case GameMessage::MSG_CREATE_TEAM3:
-		case GameMessage::MSG_CREATE_TEAM4:
-		case GameMessage::MSG_CREATE_TEAM5:
-		case GameMessage::MSG_CREATE_TEAM6:
-		case GameMessage::MSG_CREATE_TEAM7:
-		case GameMessage::MSG_CREATE_TEAM8:
-		case GameMessage::MSG_CREATE_TEAM9:
-		{
-			Int playerIndex = msg->getPlayerIndex();
-			Player* player = ThePlayerList->getNthPlayer(playerIndex);
-			if (player && player->isLocalPlayer())
-				player->processCreateTeamGameMessage(t - GameMessage::MSG_CREATE_TEAM0, msg);
-
-			break;
-		}
-
-		// --------------------------------------------------------------------------------------------
 		case GameMessage::MSG_CREATE_SELECTED_GROUP:
 		case GameMessage::MSG_SELECT_TEAM0:
 		case GameMessage::MSG_SELECT_TEAM1:
@@ -3699,27 +3668,15 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			break;
 
 		}
-
-
-#if defined(RTS_DEBUG)
-		//------------------------------------------------------------------------- BEGIN DEMO MESSAGES
-		//------------------------------------------------------------------------- BEGIN DEMO MESSAGES
-		//------------------------------------------------------------------------- BEGIN DEMO MESSAGES
-		//------------------------------------------------------------------------------- DEMO MESSAGES
-		//-----------------------------------------------------------------------------------------
+		
 		case GameMessage::MSG_META_DEMO_INSTANT_QUIT:
-			if (TheGameLogic->isInGame())
-			{
-				if (TheRecorder->getMode() == RECORDERMODETYPE_RECORD)
-				{
-					TheRecorder->stopRecording();
-				}
-				TheGameLogic->clearGameData();
-			}
-			TheGameEngine->setQuitting(TRUE);
+		{
+			TheGameLogic->quit(TRUE);
 			disp = DESTROY_MESSAGE;
 			break;
+		}
 
+#if defined(RTS_DEBUG)
 		//------------------------------------------------------------------------------- DEMO MESSAGES
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_DEMO_SWITCH_TEAMS:
@@ -4564,8 +4521,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_DEMO_MUSIC_NEXT_TRACK:
 		{
-			TheAudio->nextMusicTrack();
-			TheInGameUI->message( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugMusicTrack", L"Playing Track: %hs", TheAudio->getMusicTrackName().str()) );
+			AsciiString trackName = TheAudio->nextMusicTrack();
+			TheInGameUI->message( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugMusicTrack", L"Playing Track: %hs", trackName.str()) );
 			disp = DESTROY_MESSAGE;
 			break;
 		}
@@ -4574,8 +4531,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_DEMO_MUSIC_PREV_TRACK:
 		{
-			TheAudio->prevMusicTrack();
-			TheInGameUI->message( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugMusicTrack", L"Playing Track: %hs", TheAudio->getMusicTrackName().str()) );
+			AsciiString trackName = TheAudio->prevMusicTrack();
+			TheInGameUI->message( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugMusicTrack", L"Playing Track: %hs", trackName.str()) );
 			disp = DESTROY_MESSAGE;
 			break;
 		}
@@ -5054,6 +5011,7 @@ static Bool isSystemMessage( const GameMessage *msg )
 		case GameMessage::MSG_LOGIC_CRC:
 		case GameMessage::MSG_SET_REPLAY_CAMERA:
 		case GameMessage::MSG_FRAME_TICK:
+		case GameMessage::MSG_META_DEMO_INSTANT_QUIT:
 			return TRUE;
 	}
 	return FALSE;

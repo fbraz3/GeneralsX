@@ -45,19 +45,19 @@ set(WW3D2_SRC
     #dllist.h
 #    dx8caps.cpp
 #    dx8caps.h
-    dx8fvf.cpp
-    dx8fvf.h
-    dx8indexbuffer.cpp
-    dx8indexbuffer.h
+#    dx8fvf.cpp
+#    dx8fvf.h
+#    dx8indexbuffer.cpp
+#    dx8indexbuffer.h
     #dx8list.h
     #dx8polygonrenderer.cpp
     #dx8polygonrenderer.h
-    dx8renderer.cpp
-    dx8renderer.h
+#    dx8renderer.cpp
+#    dx8renderer.h
     #dx8texman.cpp
     #dx8texman.h
-    dx8vertexbuffer.cpp
-    dx8vertexbuffer.h
+#    dx8vertexbuffer.cpp
+#    dx8vertexbuffer.h
     #dx8webbrowser.cpp
     #dx8webbrowser.h
 #    dx8wrapper.cpp
@@ -237,20 +237,24 @@ target_compile_definitions(g_ww3d2 PRIVATE
     $<$<BOOL:${IS_VS6_BUILD}>:WINVER=0x0500>
 )
 
-target_precompile_headers(g_ww3d2 PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
-    [["dx8wrapper.h"]]
-    [["always.h"]]
-    [["STLUtils.h"]]
-    [["win.h"]]
-    [["WWCommon.h"]]
-    [["wwstring.h"]]
-    <windows.h>
-)
+# GeneralsX @build Copilot 11/05/2026 Keep PCH only on Windows to avoid non-Windows header-order instability in CompatLib/DXVK builds.
+if(WIN32)
+    target_precompile_headers(g_ww3d2 PRIVATE
+        [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+        [["dx8wrapper.h"]]
+        [["always.h"]]
+        [["STLUtils.h"]]
+        [["win.h"]]
+        [["WWCommon.h"]]
+        [["wwstring.h"]]
+        <windows.h>
+    )
+endif()
 
 target_link_libraries(g_ww3d2 PRIVATE
     core_wwdebug
     corei_ww3d2
     g_wwcommon
     gi_always
+    d3d8lib
 )

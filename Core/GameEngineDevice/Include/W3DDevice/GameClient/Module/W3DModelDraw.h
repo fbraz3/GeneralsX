@@ -357,7 +357,7 @@ public:
 	virtual void allocateShadows() override; ///< create shadow resources if not already present. Used by Options screen.
 
 #if defined(RTS_DEBUG)
-	virtual void getRenderCost(RenderCost & rc) const;  ///< estimates the render cost of this draw module
+	virtual void getRenderCost(RenderCost & rc) const override;  ///< estimates the render cost of this draw module
 	void getRenderCostRecursive(RenderCost & rc,RenderObjClass * robj) const;
 #endif
 
@@ -408,7 +408,7 @@ public:
 	virtual void setPauseAnimation(Bool pauseAnim) override;
 
 	//Kris: Manually set a drawable's current animation to specific frame.
-	virtual void setAnimationFrame( int frame );
+	virtual void setAnimationFrame( int frame ) override;
 
 	virtual void updateSubObjects() override;
 	virtual void showSubObject( const AsciiString& name, Bool show ) override;

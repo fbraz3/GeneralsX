@@ -40,7 +40,7 @@ class CColorAlphaDialog : public CDialog
 
 
 	protected:
-		virtual BOOL OnInitDialog();
+		virtual BOOL OnInitDialog() override;
 
 		afx_msg void OnColor1();
 		afx_msg void OnColor2();

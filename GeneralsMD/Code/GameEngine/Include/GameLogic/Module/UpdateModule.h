@@ -169,9 +169,6 @@ public:
 	// BehaviorModule
 	virtual UpdateModuleInterface* getUpdate() override { return this; }
 
-	// UpdateModuleInterface
-	virtual UpdateSleepTime update() = 0;
-
 	virtual DisabledMaskType getDisabledTypesToProcess() const override
 	{
 		return DISABLEDMASK_NONE;

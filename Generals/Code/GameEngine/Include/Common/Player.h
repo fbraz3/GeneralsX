@@ -221,6 +221,8 @@ public:
 	void deletePlayerAI();
 
 	UnicodeString getPlayerDisplayName() { return m_playerDisplayName; }
+	// GeneralsX @bugfix felipebraz 11/05/2026 Expose the raw ASCII player name so lookup fallbacks can match qualified skirmish owners.
+	AsciiString getPlayerName() const { return m_playerName; }
 	NameKeyType getPlayerNameKey() const { return m_playerNameKey; }
 
 	AsciiString getSide() const { return m_side; }
@@ -275,6 +277,22 @@ public:
 			if he has none, return null.
 			if he has multiple, return one arbitrarily. */
 	Object* findNaturalCommandCenter();
+
+	Object* findAnyExistingObjectWithThingTemplate( const ThingTemplate *thing );
+
+	// Finds a short-cut firing special power of specified type returning the first ready power or
+	// the most ready if none ready.
+	Object* findMostReadyShortcutSpecialPowerOfType( SpecialPowerType spType );
+
+	//Find specified thing template's most ready weapon.
+	Object* findMostReadyShortcutWeaponForThing( const ThingTemplate *thing, UnsignedInt &mostReadyPercentage );
+	Object* findMostReadyShortcutSpecialPowerForThing( const ThingTemplate *thing, UnsignedInt &mostReadyPercentage );
+
+	// Finds a short-cut firing special power of any type arbitrarily.
+	Bool hasAnyShortcutSpecialPower();
+
+	// Counts available shortcut special power of specified type that can fire now.
+	Int countReadyShortcutSpecialPowersOfType( SpecialPowerType spType );
 
 	/// return t if the player has the given science, either intrinsically, via specialization, or via capture.
 	Bool hasScience(ScienceType t) const;
@@ -604,10 +622,10 @@ public:
 	void processCreateTeamGameMessage(Int hotkeyNum, const GameMessage *msg);
 
 	/// time to select a hotkey team based on this GameMessage
-	void processSelectTeamGameMessage(Int hotkeyNum, GameMessage *msg);
+	void processSelectTeamGameMessage(Int hotkeyNum);
 
 	// add to the player's current selection this hotkey team.
-	void processAddTeamGameMessage(Int hotkeyNum, GameMessage *msg);
+	void processAddTeamGameMessage(Int hotkeyNum);
 
 	// fills an AIGroup object that is the currently selected group.
 	void getCurrentSelectionAsAIGroup(AIGroup *group);
@@ -634,6 +652,11 @@ public:
 	Real getCashBounty() const { return m_cashBountyPercent; }
 	void setCashBounty(Real percentage) { m_cashBountyPercent = percentage; }
 	void doBountyForKill(const Object* killer, const Object* victim);
+
+	//Set via logical message. Options menu sets the client value in global data. Player::update()
+	//detects a change, and posts a message. When the message gets processed, this value gets set.
+	Bool isLogicalRetaliationModeEnabled() const { return m_logicalRetaliationModeEnabled; }
+	void setLogicalRetaliationModeEnabled( Bool set ) { m_logicalRetaliationModeEnabled = set; }
 
 private:
 
@@ -789,4 +812,5 @@ private:
 	Squad									*m_currentSelection;		///< This player's currently selected group
 
 	Bool									m_isPlayerDead;
+	Bool									m_logicalRetaliationModeEnabled;
 };

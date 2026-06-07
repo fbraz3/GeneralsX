@@ -160,17 +160,17 @@ set(GAMEENGINE_SRC
     Include/GameClient/ExtendedMessageBox.h
     Include/GameClient/FontDesc.h
 #    Include/GameClient/FXList.h
-    Include/GameClient/Gadget.h
-    Include/GameClient/GadgetCheckBox.h
-    Include/GameClient/GadgetComboBox.h
-    Include/GameClient/GadgetListBox.h
-    Include/GameClient/GadgetProgressBar.h
-    Include/GameClient/GadgetPushButton.h
-    Include/GameClient/GadgetRadioButton.h
-    Include/GameClient/GadgetSlider.h
-    Include/GameClient/GadgetStaticText.h
-    Include/GameClient/GadgetTabControl.h
-    Include/GameClient/GadgetTextEntry.h
+#    Include/GameClient/Gadget.h
+#    Include/GameClient/GadgetCheckBox.h
+#    Include/GameClient/GadgetComboBox.h
+#    Include/GameClient/GadgetListBox.h
+#    Include/GameClient/GadgetProgressBar.h
+#    Include/GameClient/GadgetPushButton.h
+#    Include/GameClient/GadgetRadioButton.h
+#    Include/GameClient/GadgetSlider.h
+#    Include/GameClient/GadgetStaticText.h
+#    Include/GameClient/GadgetTabControl.h
+#    Include/GameClient/GadgetTextEntry.h
     Include/GameClient/GameClient.h
 #    Include/GameClient/GameFont.h
     Include/GameClient/GameInfoWindow.h
@@ -238,9 +238,9 @@ set(GAMEENGINE_SRC
     Include/GameLogic/AITNGuard.h
     Include/GameLogic/Armor.h
     Include/GameLogic/ArmorSet.h
-    Include/GameLogic/CaveSystem.h
-    Include/GameLogic/CrateSystem.h
-    Include/GameLogic/Damage.h
+#    Include/GameLogic/CaveSystem.h
+#    Include/GameLogic/CrateSystem.h
+#    Include/GameLogic/Damage.h
     Include/GameLogic/ExperienceTracker.h
     Include/GameLogic/FiringTracker.h
     Include/GameLogic/FPUControl.h
@@ -479,7 +479,7 @@ set(GAMEENGINE_SRC
     Include/GameLogic/PartitionManager.h
     Include/GameLogic/PolygonTrigger.h
     Include/GameLogic/Powers.h
-    Include/GameLogic/RankInfo.h
+#    Include/GameLogic/RankInfo.h
     Include/GameLogic/ScriptActions.h
     Include/GameLogic/ScriptConditions.h
     Include/GameLogic/ScriptEngine.h
@@ -710,17 +710,17 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/ControlBar/ControlBarUnderConstruction.cpp
     Source/GameClient/GUI/DisconnectMenu/DisconnectMenu.cpp
     Source/GameClient/GUI/EstablishConnectionsMenu/EstablishConnectionsMenu.cpp
-    Source/GameClient/GUI/Gadget/GadgetCheckBox.cpp
-    Source/GameClient/GUI/Gadget/GadgetComboBox.cpp
-    Source/GameClient/GUI/Gadget/GadgetHorizontalSlider.cpp
-    Source/GameClient/GUI/Gadget/GadgetListBox.cpp
-    Source/GameClient/GUI/Gadget/GadgetProgressBar.cpp
-    Source/GameClient/GUI/Gadget/GadgetPushButton.cpp
-    Source/GameClient/GUI/Gadget/GadgetRadioButton.cpp
-    Source/GameClient/GUI/Gadget/GadgetStaticText.cpp
-    Source/GameClient/GUI/Gadget/GadgetTabControl.cpp
-    Source/GameClient/GUI/Gadget/GadgetTextEntry.cpp
-    Source/GameClient/GUI/Gadget/GadgetVerticalSlider.cpp
+#    Source/GameClient/GUI/Gadget/GadgetCheckBox.cpp
+#    Source/GameClient/GUI/Gadget/GadgetComboBox.cpp
+#    Source/GameClient/GUI/Gadget/GadgetHorizontalSlider.cpp
+#    Source/GameClient/GUI/Gadget/GadgetListBox.cpp
+#    Source/GameClient/GUI/Gadget/GadgetProgressBar.cpp
+#    Source/GameClient/GUI/Gadget/GadgetPushButton.cpp
+#    Source/GameClient/GUI/Gadget/GadgetRadioButton.cpp
+#    Source/GameClient/GUI/Gadget/GadgetStaticText.cpp
+#    Source/GameClient/GUI/Gadget/GadgetTabControl.cpp
+#    Source/GameClient/GUI/Gadget/GadgetTextEntry.cpp
+#    Source/GameClient/GUI/Gadget/GadgetVerticalSlider.cpp
 #    Source/GameClient/GUI/GameFont.cpp
 #    Source/GameClient/GUI/GameWindow.cpp
 #    Source/GameClient/GUI/GameWindowGlobal.cpp
@@ -1075,12 +1075,12 @@ set(GAMEENGINE_SRC
     Source/GameLogic/ScriptEngine/ScriptEngine.cpp
     Source/GameLogic/ScriptEngine/Scripts.cpp
     Source/GameLogic/ScriptEngine/VictoryConditions.cpp
-    Source/GameLogic/System/CaveSystem.cpp
-    Source/GameLogic/System/CrateSystem.cpp
-    Source/GameLogic/System/Damage.cpp
+#    Source/GameLogic/System/CaveSystem.cpp
+#    Source/GameLogic/System/CrateSystem.cpp
+#    Source/GameLogic/System/Damage.cpp
     Source/GameLogic/System/GameLogic.cpp
-    Source/GameLogic/System/GameLogicDispatch.cpp
-    Source/GameLogic/System/RankInfo.cpp
+#    Source/GameLogic/System/GameLogicDispatch.cpp
+#    Source/GameLogic/System/RankInfo.cpp
 #    Source/GameNetwork/Connection.cpp
 #    Source/GameNetwork/ConnectionManager.cpp
 #    Source/GameNetwork/DisconnectManager.cpp

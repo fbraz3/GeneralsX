@@ -45,22 +45,21 @@ set(WW3D2_SRC
     dllist.h
     dx8caps.cpp
     dx8caps.h
-    #dx8fvf.cpp
-    #dx8fvf.h
-    #dx8indexbuffer.cpp
-    #dx8indexbuffer.h
+    dx8fvf.cpp
+    dx8fvf.h
+    dx8indexbuffer.cpp
+    dx8indexbuffer.h
     dx8list.h
     dx8polygonrenderer.cpp
     dx8polygonrenderer.h
-    #dx8renderer.cpp
-    #dx8renderer.h
+    dx8renderer.cpp
+    dx8renderer.h
     dx8rendererdebugger.cpp
     dx8rendererdebugger.h
     dx8texman.cpp
     dx8texman.h
-    #dx8vertexbuffer.cpp
-    #dx8vertexbuffer.h
-    # GeneralsX @build fbraz 10/02/2026 BenderAI - dx8webbrowser uses EA BrowserEngine (Windows-only HTML UI, Linux stubs in dx8webbrowser.cpp)
+    dx8vertexbuffer.cpp
+    dx8vertexbuffer.h
     dx8webbrowser.cpp
     dx8webbrowser.h
     dx8wrapper.cpp

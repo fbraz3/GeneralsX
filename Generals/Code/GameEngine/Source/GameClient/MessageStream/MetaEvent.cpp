@@ -179,11 +179,10 @@ static const LookupListRec GameMessageMetaTypeNames[] =
 	{ "TOGGLE_PAUSE_ALT",													GameMessage::MSG_META_TOGGLE_PAUSE_ALT },
 	{ "STEP_FRAME",																GameMessage::MSG_META_STEP_FRAME },
 	{ "STEP_FRAME_ALT",														GameMessage::MSG_META_STEP_FRAME_ALT },
+	{ "DEMO_INSTANT_QUIT",												GameMessage::MSG_META_DEMO_INSTANT_QUIT },
 
 #if defined(RTS_DEBUG)
 	{ "HELP",																			GameMessage::MSG_META_HELP },
-	{ "DEMO_INSTANT_QUIT",												GameMessage::MSG_META_DEMO_INSTANT_QUIT },
-
 	{ "DEMO_TOGGLE_BEHIND_BUILDINGS",							GameMessage::MSG_META_DEMO_TOGGLE_BEHIND_BUILDINGS },
 	{ "DEMO_LOD_DECREASE",												GameMessage::MSG_META_DEMO_LOD_DECREASE },
 	{ "DEMO_LOD_INCREASE",												GameMessage::MSG_META_DEMO_LOD_INCREASE },
@@ -401,87 +400,191 @@ static Bool isMessageUsable(CommandUsableInType usableIn)
 GameMessageDisposition MetaEventTranslator::translateGameMessage(const GameMessage *msg)
 {
 	GameMessageDisposition disp = KEEP_MESSAGE;
-	GameMessage::Type t = msg->getType();
+	const GameMessage::Type t = msg->getType();
 
 	if (t == GameMessage::MSG_RAW_KEY_DOWN || t == GameMessage::MSG_RAW_KEY_UP)
 	{
-		MappableKeyType key = (MappableKeyType)msg->getArgument(0)->integer;
-		Int keyState = msg->getArgument(1)->integer;
+		onKeyEvent(msg, disp);
+	}
+	else if (t > GameMessage::MSG_RAW_MOUSE_BEGIN && t < GameMessage::MSG_RAW_MOUSE_END )
+	{
+		onMouseEvent(msg);
+	}
 
-		// for our purposes here, we don't care to distinguish between right and left keys,
-		// so just fudge a little to simplify things.
-		Int newModState = 0;
+	return disp;
+}
 
-		if( keyState & KEY_STATE_CONTROL )
+//-------------------------------------------------------------------------------------------------
+void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
+{
+	Int index = 3;
+	switch (msg->getType())
+	{
+		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_DOWN:
+			--index;
+			FALLTHROUGH;
+		case GameMessage::MSG_RAW_MOUSE_MIDDLE_BUTTON_DOWN:
+			--index;
+			FALLTHROUGH;
+		case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_DOWN:
 		{
-			newModState |= CTRL;
+			--index;
+			m_mouseDownPosition[index] = msg->getArgument(0)->pixel;
+			m_nextUpShouldCreateDoubleClick[index] = FALSE;
+			break;
 		}
 
-		if( keyState & KEY_STATE_SHIFT )
+		case GameMessage::MSG_RAW_MOUSE_LEFT_DOUBLE_CLICK:
+			--index;
+			FALLTHROUGH;
+		case GameMessage::MSG_RAW_MOUSE_MIDDLE_DOUBLE_CLICK:
+			--index;
+			FALLTHROUGH;
+		case GameMessage::MSG_RAW_MOUSE_RIGHT_DOUBLE_CLICK:
 		{
-			newModState |= SHIFT;
+			--index;
+			m_nextUpShouldCreateDoubleClick[index] = TRUE;
+			break;
 		}
 
-		if( keyState & KEY_STATE_ALT )
+		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_UP:
+			--index;
+			FALLTHROUGH;
+		case GameMessage::MSG_RAW_MOUSE_MIDDLE_BUTTON_UP:
+			--index;
+			FALLTHROUGH;
+		case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_UP:
 		{
-			newModState |= ALT;
-		}
+			--index;
 
-		for (const MetaMapRec *map = TheMetaMap->getFirstMetaMapRec(); map; map = map->m_next)
-		{
-			if (!isMessageUsable(map->m_usableIn))
-				continue;
-
-			// check for the special case of mods-only-changed.
-			if (
-						map->m_key == MK_NONE &&
-						newModState != m_lastModState &&
-						(
-							(map->m_transition == UP && map->m_modState == m_lastModState) ||
-							(map->m_transition == DOWN && map->m_modState == newModState)
-						)
-					)
+			constexpr const GameMessage::Type SingleClickMessages[3] =
 			{
-				//DEBUG_LOG(("Frame %d: MetaEventTranslator::translateGameMessage() Mods-only change: %s", TheGameLogic->getFrame(), findGameMessageNameByType(map->m_meta)));
-				/*GameMessage *metaMsg =*/ TheMessageStream->appendMessage(map->m_meta);
-				disp = DESTROY_MESSAGE;
-				break;
+				GameMessage::MSG_MOUSE_LEFT_CLICK,
+				GameMessage::MSG_MOUSE_MIDDLE_CLICK,
+				GameMessage::MSG_MOUSE_RIGHT_CLICK,
+			};
+			constexpr const GameMessage::Type DoubleClickMessages[3] =
+			{
+				GameMessage::MSG_MOUSE_LEFT_DOUBLE_CLICK,
+				GameMessage::MSG_MOUSE_MIDDLE_DOUBLE_CLICK,
+				GameMessage::MSG_MOUSE_RIGHT_DOUBLE_CLICK,
+			};
+
+			const ICoord2D location = msg->getArgument(0)->pixel;
+			const GameMessage::Type messageType = m_nextUpShouldCreateDoubleClick[index] ? DoubleClickMessages[index] : SingleClickMessages[index];
+			GameMessage *newMessage = TheMessageStream->insertMessage(messageType, const_cast<GameMessage*>(msg));
+
+			IRegion2D pixelRegion;
+			buildRegion( &m_mouseDownPosition[index], &location, &pixelRegion );
+			if (abs(pixelRegion.hi.x - pixelRegion.lo.x) < TheMouse->m_dragTolerance &&
+					abs(pixelRegion.hi.y - pixelRegion.lo.y) < TheMouse->m_dragTolerance)
+			{
+				pixelRegion.hi.x = pixelRegion.lo.x;
+				pixelRegion.hi.y = pixelRegion.lo.y;
 			}
 
-			// ok, now check for "normal" key transitions.
-			if (
-						map->m_key == key &&
-						map->m_modState == newModState &&
-						(
-							(map->m_transition == UP && (keyState & KEY_STATE_UP)) ||
-							(map->m_transition == DOWN && (keyState & KEY_STATE_DOWN)) //||
-							//(map->m_transition == DOUBLEDOWN && (keyState & KEY_STATE_DOWN) && m_lastKeyDown == key)
-						)
-					)
+			newMessage->appendPixelRegionArgument( pixelRegion );
+
+			// append the modifier keys to the message.
+			newMessage->appendIntegerArgument( msg->getArgument(1)->integer );
+
+			// append the time to the message.
+			//newMessage->appendIntegerArgument( msg->getArgument(2)->integer );
+			break;
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @refactor fbraz3 06/05/2026 — adopt upstream's structural split (#2758)
+// into a single onKeyEvent() helper while keeping GeneralsX's pre-existing
+// input semantics: a "mods-only-changed" branch using m_lastModState and a
+// m_lastKeyDown-tracking normal key-transition branch. We do not adopt
+// upstream's m_keyDownInfos / KeyDownInfo bit-array (introduced for the
+// "ignore order of modifier release" fix in #2577) because that fix is not
+// part of GeneralsX's behavior, and the bit-array member is not declared
+// in MetaEvent.h.
+void MetaEventTranslator::onKeyEvent(const GameMessage *msg, GameMessageDisposition &disp)
+{
+	const Int systemKey = msg->getArgument(0)->integer;
+	const Int systemKeyState = msg->getArgument(1)->integer;
+
+	const MappableKeyType key = (MappableKeyType)systemKey;
+
+	// for our purposes here, we don't care to distinguish between right and left keys,
+	// so just fudge a little to simplify things.
+	Int newModState = 0;
+
+	if (systemKeyState & KEY_STATE_CONTROL)
+	{
+		newModState |= CTRL;
+	}
+
+	if (systemKeyState & KEY_STATE_SHIFT)
+	{
+		newModState |= SHIFT;
+	}
+
+	if (systemKeyState & KEY_STATE_ALT)
+	{
+		newModState |= ALT;
+	}
+
+	for (const MetaMapRec *map = TheMetaMap->getFirstMetaMapRec(); map; map = map->m_next)
+	{
+		if (!isMessageUsable(map->m_usableIn))
+			continue;
+
+		// check for the special case of mods-only-changed.
+		if (
+				map->m_key == MK_NONE &&
+				newModState != m_lastModState &&
+				(
+					(map->m_transition == UP && map->m_modState == m_lastModState) ||
+					(map->m_transition == DOWN && map->m_modState == newModState)
+				)
+			)
+		{
+			//DEBUG_LOG(("Frame %d: MetaEventTranslator::translateGameMessage() Mods-only change: %s", TheGameLogic->getFrame(), findGameMessageNameByType(map->m_meta)));
+			/*GameMessage *metaMsg =*/ TheMessageStream->appendMessage(map->m_meta);
+			disp = DESTROY_MESSAGE;
+			break;
+		}
+
+		// ok, now check for "normal" key transitions.
+		if (
+				map->m_key == key &&
+				map->m_modState == newModState &&
+				(
+					(map->m_transition == UP && (systemKeyState & KEY_STATE_UP)) ||
+					(map->m_transition == DOWN && (systemKeyState & KEY_STATE_DOWN)) //||
+					//(map->m_transition == DOUBLEDOWN && (systemKeyState & KEY_STATE_DOWN) && m_lastKeyDown == key)
+				)
+			)
+		{
+
+			if (systemKeyState & KEY_STATE_AUTOREPEAT)
+			{
+				// if it's an autorepeat of a "known" key, don't generate the meta-event,
+				// but DO eat the keystroke so no one else can mess with it
+				//DEBUG_LOG(("Frame %d: MetaEventTranslator::translateGameMessage() auto-repeat: %s", TheGameLogic->getFrame(), findGameMessageNameByType(map->m_meta)));
+			}
+			else
 			{
 
-				if( keyState & KEY_STATE_AUTOREPEAT )
-				{
-					// if it's an autorepeat of a "known" key, don't generate the meta-event,
-					// but DO eat the keystroke so no one else can mess with it
-					//DEBUG_LOG(("Frame %d: MetaEventTranslator::translateGameMessage() auto-repeat: %s", TheGameLogic->getFrame(), findGameMessageNameByType(map->m_meta)));
-				}
-				else
-				{
-
-          // THIS IS A GREASY HACK... MESSAGE SHOULD BE HANDLED IN A TRANSLATOR, BUT DURING CINEMATICS THE TRANSLATOR IS DISABLED
-          if( map->m_meta ==  GameMessage::MSG_META_TOGGLE_FAST_FORWARD_REPLAY)
-		      {
+        // THIS IS A GREASY HACK... MESSAGE SHOULD BE HANDLED IN A TRANSLATOR, BUT DURING CINEMATICS THE TRANSLATOR IS DISABLED
+        if (map->m_meta == GameMessage::MSG_META_TOGGLE_FAST_FORWARD_REPLAY)
+	      {
 				#if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)//may be defined in GameCommon.h
-			      if( TheGlobalData )
+			      if (TheGlobalData)
 				#else
-				  if( TheGlobalData && TheGameLogic->isInReplayGame())
+				  if (TheGlobalData && TheGameLogic->isInReplayGame())
 				#endif
 			      {
-	            if ( TheWritableGlobalData )
+	            if (TheWritableGlobalData)
                 TheWritableGlobalData->m_TiVOFastMode = 1 - TheGlobalData->m_TiVOFastMode;
 
-              if ( TheInGameUI )
+              if (TheInGameUI)
 								TheInGameUI->messageNoFormat( TheGlobalData->m_TiVOFastMode
 									? TheGameText->FETCH_OR_SUBSTITUTE("GUI:FF_ON", L"Fast Forward is on")
 									: TheGameText->FETCH_OR_SUBSTITUTE("GUI:FF_OFF", L"Fast Forward is off")
@@ -489,106 +592,23 @@ GameMessageDisposition MetaEventTranslator::translateGameMessage(const GameMessa
 			      }
 			      disp = KEEP_MESSAGE; // cause for goodness sake, this key gets used a lot by non-replay hotkeys
 			      break;
-		      }
+	      }
 
 
-					/*GameMessage *metaMsg =*/ TheMessageStream->appendMessage(map->m_meta);
-					//DEBUG_LOG(("Frame %d: MetaEventTranslator::translateGameMessage() normal: %s", TheGameLogic->getFrame(), findGameMessageNameByType(map->m_meta)));
-				}
-				disp = DESTROY_MESSAGE;
-				break;
+				/*GameMessage *metaMsg =*/ TheMessageStream->appendMessage(map->m_meta);
+				//DEBUG_LOG(("Frame %d: MetaEventTranslator::translateGameMessage() normal: %s", TheGameLogic->getFrame(), findGameMessageNameByType(map->m_meta)));
 			}
+			disp = DESTROY_MESSAGE;
+			break;
 		}
-
-		if (t == GameMessage::MSG_RAW_KEY_DOWN)
-			m_lastKeyDown = key;
-		m_lastModState = newModState;
 	}
 
-
-	if (t > GameMessage::MSG_RAW_MOUSE_BEGIN && t < GameMessage::MSG_RAW_MOUSE_END )
+	if (msg->getType() == GameMessage::MSG_RAW_KEY_DOWN)
 	{
-		Int index = 3;
-		switch (t)
-		{
-			case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_DOWN:
-				--index;
-				FALLTHROUGH;
-			case GameMessage::MSG_RAW_MOUSE_MIDDLE_BUTTON_DOWN:
-				--index;
-				FALLTHROUGH;
-			case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_DOWN:
-			{
-				--index;
-				m_mouseDownPosition[index] = msg->getArgument(0)->pixel;
-				m_nextUpShouldCreateDoubleClick[index] = FALSE;
-				break;
-			}
-
-			case GameMessage::MSG_RAW_MOUSE_LEFT_DOUBLE_CLICK:
-				--index;
-				FALLTHROUGH;
-			case GameMessage::MSG_RAW_MOUSE_MIDDLE_DOUBLE_CLICK:
-				--index;
-				FALLTHROUGH;
-			case GameMessage::MSG_RAW_MOUSE_RIGHT_DOUBLE_CLICK:
-			{
-				--index;
-				m_nextUpShouldCreateDoubleClick[index] = TRUE;
-				break;
-			}
-
-			case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_UP:
-				--index;
-				FALLTHROUGH;
-			case GameMessage::MSG_RAW_MOUSE_MIDDLE_BUTTON_UP:
-				--index;
-				FALLTHROUGH;
-			case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_UP:
-			{
-				--index;
-
-				constexpr const GameMessage::Type SingleClickMessages[3] =
-				{
-					GameMessage::MSG_MOUSE_LEFT_CLICK,
-					GameMessage::MSG_MOUSE_MIDDLE_CLICK,
-					GameMessage::MSG_MOUSE_RIGHT_CLICK,
-				};
-				constexpr const GameMessage::Type DoubleClickMessages[3] =
-				{
-					GameMessage::MSG_MOUSE_LEFT_DOUBLE_CLICK,
-					GameMessage::MSG_MOUSE_MIDDLE_DOUBLE_CLICK,
-					GameMessage::MSG_MOUSE_RIGHT_DOUBLE_CLICK,
-				};
-
-				const ICoord2D location = msg->getArgument(0)->pixel;
-				const GameMessage::Type messageType = m_nextUpShouldCreateDoubleClick[index] ? DoubleClickMessages[index] : SingleClickMessages[index];
-				GameMessage *newMessage = TheMessageStream->insertMessage(messageType, const_cast<GameMessage*>(msg));
-
-				IRegion2D pixelRegion;
-				buildRegion( &m_mouseDownPosition[index], &location, &pixelRegion );
-				if (abs(pixelRegion.hi.x - pixelRegion.lo.x) < TheMouse->m_dragTolerance &&
-						abs(pixelRegion.hi.y - pixelRegion.lo.y) < TheMouse->m_dragTolerance)
-				{
-					pixelRegion.hi.x = pixelRegion.lo.x;
-					pixelRegion.hi.y = pixelRegion.lo.y;
-				}
-
-				newMessage->appendPixelRegionArgument( pixelRegion );
-
-				// append the modifier keys to the message.
-				newMessage->appendIntegerArgument( msg->getArgument(1)->integer );
-
-				// append the time to the message.
-				//newMessage->appendIntegerArgument( msg->getArgument(2)->integer );
-				break;
-			}
-
-		}
-
+		m_lastKeyDown = key;
 	}
 
-	return disp;
+	m_lastModState = newModState;
 }
 
 //-------------------------------------------------------------------------------------------------

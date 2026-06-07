@@ -2998,6 +2998,11 @@ void ParticleSystemManager::update()
 		// TheSuperHackers @info Must increment the list iterator before potential element erasure from the list.
 		ParticleSystem* sys = *it++;
 		DEBUG_ASSERTCRASH(sys != nullptr, ("ParticleSystemManager::update: ParticleSystem is null"));
+		// GeneralsX @bugfix fbraz 04/05/2026 Avoid release crash when a stale null particle system entry is present.
+		if (sys == nullptr)
+		{
+			continue;
+		}
 
 		if (sys->update(m_localPlayerIndex) == false)
 		{
@@ -3005,7 +3010,8 @@ void ParticleSystemManager::update()
 		}
 	}
 
-	const Bool drawSmudge = TheSmudgeManager && TheSmudgeManager->getHardwareSupport() && TheGlobalData->m_useHeatEffects;
+	// GeneralsX @bugfix fbraz 04/05/2026 Skip smudge rendering path in headless replay simulation.
+	const Bool drawSmudge = !TheGlobalData->m_headless && TheSmudgeManager && TheSmudgeManager->getHardwareSupport() && TheGlobalData->m_useHeatEffects;
 
 	if (drawSmudge)
 	{

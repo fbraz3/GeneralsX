@@ -37,7 +37,7 @@ project(genzh LANGUAGES C CXX)
 # Linux port: Make CompatLib headers globally accessible so Core libraries (WWLib, WWMath, etc.)
 # can access platform compatibility types when building for non-Windows platforms
 if(UNIX)
-    include_directories(${CMAKE_SOURCE_DIR}/GeneralsMD/Code/CompatLib/Include)
+    include_directories(${CMAKE_SOURCE_DIR}/Generals/Code/CompatLib/Include)
 endif()
 
 # Compiler cache (ccache) – must be included before compilers.cmake so the
@@ -95,6 +95,13 @@ include(cmake/openal.cmake)
 # GeneralsX @feature BenderAI 21/04/2026 libcurl for in-game update checker (SAGE_UPDATE_CHECK builds)
 # curl.cmake is self-guarded with if(SAGE_UPDATE_CHECK), so always safe to include.
 include(cmake/curl.cmake)
+
+# GeneralsX @feature fbraz 03/05/2026 Phase 4: Deterministic math library integration
+# gamemath.cmake integrates fdlibm-based GameMath for cross-platform replay validation.
+# Upstream reference: Okladnoj, PR #2670
+# https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
+# Self-guarded with if(SAGE_USE_DETERMINISTIC_MATH), so always safe to include.
+include(cmake/gamemath.cmake)
 
 if (IS_VS6_BUILD)
     # The original max sdk does not compile against a modern compiler.

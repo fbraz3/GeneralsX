@@ -114,6 +114,12 @@ public:
 	Player *findPlayerWithNameKey(NameKeyType key);
 
 	/**
+		// GeneralsX @bugfix felipebraz 11/05/2026 Find player by ASCII name string.
+		// Used as a fallback when nameKey is stale in qualified skirmish player paths.
+	*/
+	Player *findPlayerWithName(const AsciiString& name);
+
+	/**
 		Return the "local" player (ie, the human playing the game).
 		This will never return null.
 	*/

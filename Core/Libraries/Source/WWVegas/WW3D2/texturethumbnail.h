@@ -83,7 +83,7 @@ public:
 
 class ThumbnailManagerClass : public DLNodeClass<ThumbnailManagerClass>
 {
-	W3DMPO_GLUE(ThumbnailManagerClass);
+	W3DMPO_CODE(ThumbnailManagerClass);
 
 	friend ThumbnailClass;
 
@@ -96,7 +96,7 @@ class ThumbnailManagerClass : public DLNodeClass<ThumbnailManagerClass>
 	unsigned long DateTime;
 
 	ThumbnailManagerClass(const char* thumbnail_filename);
-	virtual ~ThumbnailManagerClass() override;
+	~ThumbnailManagerClass();
 
 	void Remove_From_Hash(ThumbnailClass* thumb);
 	void Insert_To_Hash(ThumbnailClass* thumb);

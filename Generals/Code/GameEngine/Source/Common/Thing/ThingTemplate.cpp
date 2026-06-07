@@ -531,7 +531,7 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 //-------------------------------------------------------------------------------------------------
 void ThingTemplate::parseIntList(INI* ini, void *instance, void* store, const void* userData)
 {
-	Int numberEntries = (Int)(uintptr_t)userData;
+	Int numberEntries = static_cast<Int>(reinterpret_cast<uintptr_t>(userData));
 	Int *intList = (Int*)store;
 
 	for( Int intIndex = 0; intIndex < numberEntries; intIndex ++ )

@@ -160,7 +160,7 @@ public:
 public:	// overrides.
 	virtual StateReturnType updateStateMachine() override;				///< run one step of the machine
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getCurrentStateName() const ;
+	virtual AsciiString getCurrentStateName() const override;
 #endif
 
 protected:
@@ -573,7 +573,7 @@ public:
 	virtual void onExit( StateExitType status ) override;
 	virtual StateReturnType update() override;
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 
 protected:
@@ -681,7 +681,7 @@ public:
 	virtual void onExit( StateExitType status ) override;
 	virtual StateReturnType update() override;
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 
 protected:
@@ -983,7 +983,7 @@ public:
 	virtual Bool isAttackingObject() const override { return m_isAttackingObject; }
 	virtual Bool isForceAttacking() const { return m_isForceAttacking; }
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 
 	virtual Bool isAttack() const override { return TRUE; }
@@ -1022,7 +1022,7 @@ public:
 	virtual StateReturnType update() override;
 	Object *chooseVictim();
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 
 
@@ -1064,7 +1064,7 @@ public:
 	virtual void onExit( StateExitType status ) override;
 	virtual StateReturnType update() override;
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 
 protected:
@@ -1135,7 +1135,7 @@ public:
 	virtual void onExit( StateExitType status ) override;
 	virtual StateReturnType update() override;
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 protected:
 	// snapshot interface
@@ -1164,7 +1164,7 @@ public:
 	virtual void onExit( StateExitType status ) override;
 	virtual StateReturnType update() override;
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 protected:
 	// snapshot interface
@@ -1193,7 +1193,7 @@ public:
 	virtual void onExit( StateExitType status ) override;
 	virtual StateReturnType update() override;
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 
 protected:
@@ -1223,7 +1223,7 @@ public:
 	virtual void onExit( StateExitType status ) override;
 	virtual StateReturnType update() override;
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const ;
+	virtual AsciiString getName() const override;
 #endif
 
 protected:

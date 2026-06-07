@@ -2015,6 +2015,9 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 			// construct the shadow volume at this light position in the
 			// passed shadow volume geometry index
 			//
+			// GeneralsX @bugfix Copilot 11/05/2026 Clamp extrusion length to prevent runaway volume spikes on shallow light rays.
+			if (vectorScaleMax > MAX_EXTRUSION_LENGTH)
+				vectorScaleMax = MAX_EXTRUSION_LENGTH;
 			if (m_shadowVolume[ lightIndex ][meshIndex]->GetFlags() & SHADOW_DYNAMIC)
 				constructVolume( &lightPosObject, vectorScaleMax, lightIndex, meshIndex );
 			else
@@ -2493,9 +2496,13 @@ void W3DVolumetricShadow::constructVolume( Vector3 *lightPosObject,Real shadowEx
 		for (k=i+2; k<indicesPerMesh; k+=2)
 			if (silhouetteIndices[k]==currentEdgeEnd)
 			{	//swap the two edges
-				Int tempIndex=*(Int *)(&silhouetteIndices[i+2]);
-				*(Int *)&silhouetteIndices[i+2]=*(Int *)&silhouetteIndices[k];
-				*(Int *)&silhouetteIndices[k]=tempIndex;
+				// GeneralsX @bugfix Copilot 11/05/2026 Avoid strict-aliasing/alignment UB when swapping edge pairs on 64-bit/ARM.
+				Short edge0a = silhouetteIndices[i+2];
+				Short edge0b = silhouetteIndices[i+3];
+				silhouetteIndices[i+2] = silhouetteIndices[k];
+				silhouetteIndices[i+3] = silhouetteIndices[k+1];
+				silhouetteIndices[k] = edge0a;
+				silhouetteIndices[k+1] = edge0b;
 				break;
 			}
 
@@ -2618,7 +2625,8 @@ void W3DVolumetricShadow::constructVolume( Vector3 *lightPosObject,Real shadowEx
 #ifdef RECORD_SHADOW_STRIP_STATS
 		//Continuing strip.
 		stripLength++;
-		maxStripLength=__max(maxStripLength,stripLength);
+		// GeneralsX @bugfix Copilot 11/05/2026 Use MAX portability macro for strip statistics.
+		maxStripLength=MAX(maxStripLength,stripLength);
 #endif
 	}
 
@@ -2721,9 +2729,13 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 			for (k=i+2; k<indicesPerMesh; k+=2)
 				if (silhouetteIndices[k]==currentEdgeEnd)
 				{	//swap the two edges
-					Int tempIndex=*(Int *)(&silhouetteIndices[i+2]);
-					*(Int *)&silhouetteIndices[i+2]=*(Int *)&silhouetteIndices[k];
-					*(Int *)&silhouetteIndices[k]=tempIndex;
+					// GeneralsX @bugfix Copilot 11/05/2026 Avoid strict-aliasing/alignment UB when swapping edge pairs on 64-bit/ARM.
+					Short edge0a = silhouetteIndices[i+2];
+					Short edge0b = silhouetteIndices[i+3];
+					silhouetteIndices[i+2] = silhouetteIndices[k];
+					silhouetteIndices[i+3] = silhouetteIndices[k+1];
+					silhouetteIndices[k] = edge0a;
+					silhouetteIndices[k+1] = edge0b;
 					break;
 				}
 
@@ -2780,7 +2792,8 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 	#ifdef RECORD_SHADOW_STRIP_STATS
 			//Continuing strip.
 			stripLength++;
-			maxStripLength=__max(maxStripLength,stripLength);
+			// GeneralsX @bugfix Copilot 11/05/2026 Use MAX portability macro for strip statistics.
+			maxStripLength=MAX(maxStripLength,stripLength);
 	#endif
 		}
 	}

@@ -74,6 +74,40 @@ inline NUM highestBit(NUM x)
 	return static_cast<NUM>(y & ~(y >> 1));
 }
 
+template <typename PTR>
+inline PTR maxPtr(PTR x, PTR y) noexcept
+{
+	static_assert(std::is_pointer<PTR>::value, "maxPtr is for pointer types only!");
+
+	if (x == nullptr)
+		return y;
+
+	if (y == nullptr)
+		return x;
+
+	if (x > y)
+		return x;
+
+	return y;
+}
+
+template <typename PTR>
+inline PTR minPtr(PTR x, PTR y) noexcept
+{
+	static_assert(std::is_pointer<PTR>::value, "minPtr is for pointer types only!");
+
+	if (x == nullptr)
+		return y;
+
+	if (y == nullptr)
+		return x;
+
+	if (x < y)
+		return x;
+
+	return y;
+}
+
 // TheSuperHackers @refactor JohnsterID 24/01/2026 Add lowercase min/max templates for GameEngine layer.
 // GameEngine code typically uses BaseType.h, but may include WWVegas headers (which define min/max in always.h).
 // Header guard prevents duplicate definitions. VC6's <algorithm> lacks std::min/std::max.
@@ -248,7 +282,10 @@ struct Coord2D
 		return x == value && y == value;
 	}
 
-	Real length() const { return (Real)sqrt( x*x + y*y ); }
+	// GeneralsX @refactor fbraz 03/05/2026 Route BaseType length math through shared Sqrt gateway.
+	// Upstream reference: Okladnoj, PR #2670
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
+	Real length() const { return (Real)Sqrt( x*x + y*y ); }
 	Real lengthSqr() const { return x*x + y*y; }
 
 	void normalize()
@@ -273,7 +310,7 @@ inline Real Coord2D::toAngle() const
 	vector.x = x;
 	vector.y = y;
 
-	Real dist = (Real)sqrt(vector.x * vector.x + vector.y * vector.y);
+	Real dist = (Real)Sqrt(vector.x * vector.x + vector.y * vector.y);
 
 	// normalize
 	if (dist == 0.0f)
@@ -340,7 +377,7 @@ struct ICoord2D
 		return x == value && y == value;
 	}
 
-	Int length() const { return (Int)sqrt( (double)(x*x + y*y) ); }
+	Int length() const { return (Int)Sqrt( (double)(x*x + y*y) ); }
 };
 
 struct Region2D
@@ -388,7 +425,7 @@ struct Coord3D
 {
 	Real x, y, z;
 
-	Real length() const { return (Real)sqrt( x*x + y*y + z*z ); }
+	Real length() const { return (Real)Sqrt( x*x + y*y + z*z ); }
 	Real lengthSqr() const { return ( x*x + y*y + z*z ); }
 
 	void normalize()
@@ -476,7 +513,7 @@ struct ICoord3D
 {
 	Int x, y, z;
 
-	Int length() const { return (Int)sqrt( (double)(x*x + y*y + z*z) ); }
+	Int length() const { return (Int)Sqrt( (double)(x*x + y*y + z*z) ); }
 
 	void zero()
 	{

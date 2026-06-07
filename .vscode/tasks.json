@@ -2,13 +2,19 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "[Linux] Configure (Docker)",
+			"label": "[Platform] Configure",
 			"type": "shell",
 			"icon": {
 				"color": "terminal.ansiBlack",
 				"id": "window"
 			},
-			"command": "./scripts/build/linux/docker-configure-linux.sh linux64-deploy",
+			"command": "echo 'Unsupported platform for this task'",
+			"linux": {
+				"command": "./scripts/build/linux/docker-configure-linux.sh linux64-deploy"
+			},
+			"osx": {
+				"command": "mkdir -p logs && cmake --preset macos-vulkan 2>&1 | tee logs/configure_macos.log"
+			},
 			"isBackground": false,
 			"group": "build",
 			"presentation": {
@@ -21,9 +27,15 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "[Linux] Build GeneralsXZH",
+			"label": "[Platform] Build GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy",
+			"command": "echo 'Unsupported platform for this task'",
+			"linux": {
+				"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
+			},
+			"osx": {
+				"command": "./scripts/build/macos/build-macos-zh.sh --build-only 2>&1 | tee logs/build_zh_macos.log"
+			},
 			"isBackground": false,
 			"icon": {
 				"color": "terminal.ansiGreen",
@@ -43,9 +55,15 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "[Linux] Build GeneralsX",
+			"label": "[Platform] Build GeneralsX",
 			"type": "shell",
-			"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy",
+			"command": "echo 'Unsupported platform for this task'",
+			"linux": {
+				"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy"
+			},
+			"osx": {
+				"command": "./scripts/build/macos/build-macos-generals.sh --build-only 2>&1 | tee logs/build_generals_macos.log"
+			},
 			"isBackground": false,
 			"group": "build",
 			"icon": {
@@ -62,9 +80,15 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "[Linux] Deploy GeneralsX",
+			"label": "[Platform] Deploy GeneralsX",
 			"type": "shell",
-			"command": "./scripts/build/linux/deploy-linux.sh",
+			"command": "echo 'Unsupported platform for this task'",
+			"linux": {
+				"command": "./scripts/build/linux/deploy-linux.sh"
+			},
+			"osx": {
+				"command": "./scripts/build/macos/deploy-macos-generals.sh"
+			},
 			"isBackground": false,
 			"icon": {
 				"color": "terminal.ansiMagenta",
@@ -81,9 +105,15 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "[Linux] Deploy GeneralsXZH",
+			"label": "[Platform] Deploy GeneralsXZH",
 			"type": "shell",
-			"command": "./scripts/build/linux/deploy-linux-zh.sh",
+			"command": "echo 'Unsupported platform for this task'",
+			"linux": {
+				"command": "./scripts/build/linux/deploy-linux-zh.sh"
+			},
+			"osx": {
+				"command": "./scripts/build/macos/deploy-macos-zh.sh"
+			},
 			"isBackground": false,
 			"group": "build",
 			"icon": {
@@ -214,9 +244,15 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "[Linux] Pipeline: Build + Deploy + Run Generals",
+			"label": "[Platform] Pipeline: Build + Deploy Generals",
 			"type": "shell",
-			"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy && ./scripts/build/linux/deploy-linux.sh && ./scripts/build/linux/run-linux.sh -win",
+			"command": "echo 'Unsupported platform for this task'",
+			"linux": {
+				"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy && ./scripts/build/linux/deploy-linux.sh"
+			},
+			"osx": {
+				"command": "./scripts/build/macos/build-macos-generals.sh 2>&1 | tee logs/build_generals_macos.log && ./scripts/build/macos/deploy-macos-generals.sh"
+			},
 			"isBackground": false,
 			"group": "test",
 			"icon": {
@@ -233,9 +269,15 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "[Linux] Pipeline: Build + Deploy + Run ZH",
+			"label": "[Platform] Pipeline: Build + Deploy ZH",
 			"type": "shell",
-			"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy && ./scripts/build/linux/deploy-linux-zh.sh && ./scripts/build/linux/run-linux-zh.sh -win",
+			"command": "echo 'Unsupported platform for this task'",
+			"linux": {
+				"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy && ./scripts/build/linux/deploy-linux-zh.sh"
+			},
+			"osx": {
+				"command": "./scripts/build/macos/build-macos-zh.sh 2>&1 | tee logs/build_zh_macos.log && ./scripts/build/macos/deploy-macos-zh.sh"
+			},
 			"isBackground": false,
 			"group": "test",
 			"icon": {
@@ -366,104 +408,6 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "[macOS] Configure",
-			"type": "shell",
-			"command": "mkdir -p logs && cmake --preset macos-vulkan 2>&1 | tee logs/configure_macos.log",
-			"isBackground": false,
-			"group": "build",
-			"icon": {
-				"color": "terminal.ansiBlack",
-				"id": "window"
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[macOS] Build GeneralsXZH",
-			"type": "shell",
-			"command": "./scripts/build/macos/build-macos-zh.sh --build-only 2>&1 | tee logs/build_zh_macos.log",
-			"isBackground": false,
-			"group": {
-				"kind": "build",
-				"isDefault": false
-			},
-			"icon": {
-				"color": "terminal.ansiGreen",
-				"id": "gear"
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[macOS] Build GeneralsX",
-			"type": "shell",
-			"command": "./scripts/build/macos/build-macos-generals.sh --build-only 2>&1 | tee logs/build_generals_macos.log",
-			"isBackground": false,
-			"group": "build",
-			"icon": {
-				"color": "terminal.ansiGreen",
-				"id": "gear"
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[macOS] Deploy GeneralsXZH",
-			"type": "shell",
-			"command": "./scripts/build/macos/deploy-macos-zh.sh",
-			"isBackground": false,
-			"group": "build",
-			"icon": {
-				"color": "terminal.ansiMagenta",
-				"id": "clone"
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": false,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[macOS] Deploy GeneralsX",
-			"type": "shell",
-			"command": "./scripts/build/macos/deploy-macos-generals.sh",
-			"isBackground": false,
-			"group": "build",
-			"icon": {
-				"color": "terminal.ansiMagenta",
-				"id": "clone"
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": false,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
 			"label": "[macOS] Bundle GeneralsXZH",
 			"type": "shell",
 			"command": "./scripts/build/macos/bundle-macos-zh.sh",
@@ -516,44 +460,6 @@
 				"panel": "dedicated",
 				"showReuseMessage": false,
 				"clear": false,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[macOS] Pipeline: Configure + Build + Deploy Generals",
-			"type": "shell",
-			"command": "./scripts/build/macos/build-macos-generals.sh 2>&1 | tee logs/build_generals_macos.log && ./scripts/build/macos/deploy-macos-generals.sh",
-			"isBackground": false,
-			"group": "test",
-			"icon": {
-				"color": "terminal.ansiBlue",
-				"id": "run-all"
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
-				"focus": false
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "[macOS] Pipeline: Configure + Build + Deploy + Run ZH",
-			"type": "shell",
-			"command": "./scripts/build/macos/build-macos-zh.sh 2>&1 | tee logs/build_zh_macos.log && ./scripts/build/macos/deploy-macos-zh.sh && ./scripts/build/macos/run-macos-zh.sh -win",
-			"isBackground": false,
-			"group": "test",
-			"icon": {
-				"color": "terminal.ansiBlue",
-				"id": "run-all"
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated",
-				"showReuseMessage": false,
-				"clear": true,
 				"focus": false
 			},
 			"problemMatcher": []

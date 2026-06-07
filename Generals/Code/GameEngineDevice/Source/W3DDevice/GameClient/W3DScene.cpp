@@ -632,7 +632,8 @@ void RTS3DScene::renderOneObject(RenderInfoClass &rinfo, RenderObjClass *robj, I
 
 		if (draw->isKindOf(KINDOF_INFANTRY))
 		{
-			ambient = m_infantryAmbient;
+			// GeneralsX @bugfix Copilot 11/05/2026 Match Zero Hour infantry lighting path to avoid dark soldier shading on base Generals.
+			//ambient = m_infantryAmbient;  //has no effect - see comment on m_infantryAmbient
 			sceneLights = m_infantryLight;
 		}
 

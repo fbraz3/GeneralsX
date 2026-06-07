@@ -12,9 +12,37 @@ DXVK_LIB_DIR="${BUILD_DIR}/_deps/dxvk-src/lib"
 SDL3_LIB_DIR="${BUILD_DIR}/_deps/sdl3-build"
 SDL3_IMAGE_LIB_DIR="${BUILD_DIR}/_deps/sdl3_image-build"
 GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
+FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
+FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
 OUTPUT_TARBALL="${PROJECT_ROOT}/GeneralsXZH-linux-x86_64.tar.gz"
+
+copy_ldd_deps() {
+    local root="$1"
+    [[ -e "${root}" ]] || return 0
+
+    while IFS= read -r dep; do
+        case "${dep}" in
+            linux-vdso.so.1 | \
+            /lib64/ld-linux* | /lib/*/ld-linux* | /usr/lib/*/ld-linux* | /usr/lib64/ld-linux* | \
+            /lib/*/libc.so.* | /lib64/libc.so.* | /usr/lib/*/libc.so.* | /usr/lib64/libc.so.* | \
+            /lib/*/libm.so.* | /lib64/libm.so.* | /usr/lib/*/libm.so.* | /usr/lib64/libm.so.* | \
+            /lib/*/libpthread.so.* | /lib64/libpthread.so.* | /usr/lib/*/libpthread.so.* | /usr/lib64/libpthread.so.* | \
+            /lib/*/librt.so.* | /lib64/librt.so.* | /usr/lib/*/librt.so.* | /usr/lib64/librt.so.* | \
+            /lib/*/libdl.so.* | /lib64/libdl.so.* | /usr/lib/*/libdl.so.* | /usr/lib64/libdl.so.*)
+                continue
+                ;;
+        esac
+
+        cp -a "${dep}" "${BUNDLE_DIR}/" 2>/dev/null || true
+        if [[ -L "${dep}" ]]; then
+            local resolved
+            resolved="$(readlink -f "${dep}")"
+            cp -a "${resolved}" "${BUNDLE_DIR}/" 2>/dev/null || true
+        fi
+    done < <(ldd "${root}" | awk '{for (i = 1; i <= NF; ++i) { if ($i ~ /^\//) { print $i; break } }}' | sort -u)
+}
 
 echo "Bundling GeneralsXZH (Linux x86_64)"
 
@@ -94,6 +122,32 @@ if [[ -f "${SAGE_PATCH_LIB}" ]]; then
         cp "${SAGE_PATCH_OVERRIDE}" \
            "${BUNDLE_DIR}/Data/INI/Default/GameData/SagePatch.ini"
     fi
+fi
+
+# GeneralsX @build GitHubCopilot 17/05/2026 Copy FFmpeg runtime libs transitively so the bundle is independent of host SONAME layout.
+echo "  + FFmpeg runtime libraries"
+shopt -s nullglob
+ffmpeg_roots=(
+    "${FFMPEG_LIB_DIR}"/libavcodec.so*
+    "${FFMPEG_LIB_DIR}"/libavformat.so*
+    "${FFMPEG_LIB_DIR}"/libavutil.so*
+    "${FFMPEG_LIB_DIR}"/libswresample.so*
+    "${FFMPEG_LIB_DIR}"/libswscale.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavcodec.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavformat.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libavutil.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libswresample.so*
+    "${FFMPEG_DEP_LIB_DIR}"/libswscale.so*
+)
+shopt -u nullglob
+for ffmpeg_root in "${ffmpeg_roots[@]}"; do
+    cp -a "${ffmpeg_root}" "${BUNDLE_DIR}/" 2>/dev/null || true
+    copy_ldd_deps "${ffmpeg_root}"
+done
+
+if ! compgen -G "${BUNDLE_DIR}/libavcodec.so*" > /dev/null; then
+    echo "ERROR: Missing required bundle library libavcodec.so*"
+    exit 1
 fi
 
 # DXVK config

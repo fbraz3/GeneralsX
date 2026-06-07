@@ -19,11 +19,13 @@
 /*
 ** OpenALAudioManager.cpp
 **
-** OpenAL audio backend implementation for Linux builds.
+** OpenAL audio backend implementation for Linux/macOS builds.
 **
-** TheSuperHackers @feature CnC_Generals_Linux 07/02/2026
-** Provides OpenAL-based audio playback for sound effects, music, and voices.
-** Based on fighter19 reference implementation.
+** Original implementation by Stephan Vedder (feliwir), March 2025.
+** https://github.com/Fighter19/CnC_Generals_Zero_Hour
+**
+** Adapted and integrated into GeneralsX by fbraz3.
+** GeneralsX @feature fbraz3 07/02/2026 Integrate OpenAL audio backend (OpenALAudioManager, OpenALAudioStream, OpenALAudioCache)
 */
 
 #ifndef _WIN32
@@ -404,8 +406,8 @@ AudioHandle OpenALAudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		return AHSV_Error;
 	}
 
-	//fprintf(stderr, "DEBUG: OpenALAudioManager::addAudioEvent() - stub (Phase 2)\n");
-	return AHSV_Error;
+	// GeneralsX @bugfix Bender 09/05/2026 Route audio events through the shared queue so aircraft voice lines reach OpenAL.
+	return AudioManager::addAudioEvent(eventToAdd);
 }
 
 /**
@@ -428,17 +430,19 @@ Bool OpenALAudioManager::isCurrentlyPlaying(AudioHandle handle)
 /**
  * Music playback - next track
  */
-void OpenALAudioManager::nextMusicTrack(void)
+AsciiString OpenALAudioManager::nextMusicTrack(void)
 {
 	fprintf(stderr, "DEBUG: OpenALAudioManager::nextMusicTrack() - stub\n");
+	return AsciiString::TheEmptyString;
 }
 
 /**
  * Music playback - previous track
  */
-void OpenALAudioManager::prevMusicTrack(void)
+AsciiString OpenALAudioManager::prevMusicTrack(void)
 {
 	fprintf(stderr, "DEBUG: OpenALAudioManager::prevMusicTrack() - stub\n");
+	return AsciiString::TheEmptyString;
 }
 
 /**
@@ -456,14 +460,6 @@ Bool OpenALAudioManager::hasMusicTrackCompleted(const AsciiString &trackName, In
 {
 	// TODO: Phase 2 - Track music completion count
 	return false;
-}
-
-/**
- * Get current music track name
- */
-AsciiString OpenALAudioManager::getMusicTrackName(void) const
-{
-	return m_currentMusicTrack;
 }
 
 // GeneralsX @build BenderAI 13/02/2026 - Implement remaining pure virtual methods (Phase 2 stubs)

@@ -34,6 +34,7 @@
 
 #include "Lib/BaseType.h"
 #include "Lib/trig.h"
+#include "WWMath/wwmath.h"
 
 #define TWOPI			6.28318530718f
 #define DEG2RAD 	0.0174532925199f
@@ -46,29 +47,38 @@
 #define INT_PI								12868
 #define INT_HALFPI 						6434
 
+// GeneralsX @refactor fbraz 03/05/2026 Route legacy trig functions through WWMath wrappers.
+// Upstream reference: Okladnoj, PR #2670
+// https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
+
 Real Sin(Real x)
 {
-	return sinf(x);
+	return WWMath::SinTrig(x);
 }
 
 Real Cos(Real x)
 {
-	return cosf(x);
+	return WWMath::CosTrig(x);
 }
 
 Real Tan(Real x)
 {
-	return tanf(x);
+	return WWMath::TanTrig(x);
 }
 
 Real ACos(Real x)
 {
-	return acosf(x);
+	return WWMath::ACosTrig(x);
 }
 
 Real ASin(Real x)
 {
-	return asinf(x);
+	return WWMath::ASinTrig(x);
+}
+
+double Sqrt(double x)
+{
+	return WWMath::SqrtOrigin(x);
 }
 
 #ifdef REGENERATE_TRIG_TABLES

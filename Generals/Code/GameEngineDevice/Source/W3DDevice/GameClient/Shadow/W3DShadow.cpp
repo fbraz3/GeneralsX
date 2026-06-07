@@ -184,19 +184,17 @@ Shadow *W3DShadowManager::addShadow( RenderObjClass *robj, Shadow::ShadowTypeInf
 	if (shadowInfo)
 		type = shadowInfo->m_type;
 
-	switch(type)
+	// GeneralsX @bugfix Copilot 11/05/2026 ShadowType is bitmask; route by mask instead of exact enum value.
+	if (type & SHADOW_VOLUME)
 	{
-		case	SHADOW_VOLUME:
-			if (TheW3DVolumetricShadowManager)
-				return (Shadow *)TheW3DVolumetricShadowManager->addShadow(robj, shadowInfo, draw);
-			break;
-		case	SHADOW_PROJECTION:
-		case	SHADOW_DECAL:
-			if (TheW3DProjectedShadowManager)
-				return (Shadow *)TheW3DProjectedShadowManager->addShadow(robj, shadowInfo, draw);
-			break;
-		default:
-			return nullptr;
+		if (TheW3DVolumetricShadowManager)
+			return (Shadow *)TheW3DVolumetricShadowManager->addShadow(robj, shadowInfo, draw);
+	}
+
+	if (type & (SHADOW_PROJECTION | SHADOW_DYNAMIC_PROJECTION | SHADOW_DECAL | SHADOW_ALPHA_DECAL | SHADOW_ADDITIVE_DECAL))
+	{
+		if (TheW3DProjectedShadowManager)
+			return (Shadow *)TheW3DProjectedShadowManager->addShadow(robj, shadowInfo, draw);
 	}
 
 	return nullptr;

@@ -78,6 +78,7 @@ ParticleEmitterDefClass::ParticleEmitterDefClass ()
 {
 	::memset (&m_Info, 0, sizeof (m_Info));
 	::memset (&m_InfoV2, 0, sizeof (m_InfoV2));
+	::memset (&m_ExtraInfo, 0, sizeof (m_ExtraInfo));
 
 	::memset (&m_ColorKeyframes, 0, sizeof (m_ColorKeyframes));
 	::memset (&m_OpacityKeyframes, 0, sizeof (m_OpacityKeyframes));
@@ -104,6 +105,7 @@ ParticleEmitterDefClass::ParticleEmitterDefClass (const ParticleEmitterDefClass 
 {
 	::memset (&m_Info, 0, sizeof (m_Info));
 	::memset (&m_InfoV2, 0, sizeof (m_InfoV2));
+	::memset (&m_ExtraInfo, 0, sizeof (m_ExtraInfo));
 
 	::memset (&m_ColorKeyframes, 0, sizeof (m_ColorKeyframes));
 	::memset (&m_OpacityKeyframes, 0, sizeof (m_OpacityKeyframes));
@@ -166,6 +168,7 @@ ParticleEmitterDefClass::operator= (const ParticleEmitterDefClass &src)
 	//
 	::memcpy (&m_Info, &src.m_Info, sizeof (m_Info));
 	::memcpy (&m_InfoV2, &src.m_InfoV2, sizeof (m_InfoV2));
+	::memcpy (&m_ExtraInfo, &src.m_ExtraInfo, sizeof (m_ExtraInfo));
 	::memcpy (&m_LineProperties, &src.m_LineProperties, sizeof(m_LineProperties));
 
 	//
@@ -373,6 +376,10 @@ ParticleEmitterDefClass::Load_W3D (ChunkLoadClass &chunk_load)
 				ret_val = Read_Blur_Time_Keyframes(chunk_load);
 				break;
 
+			case W3D_CHUNK_EMITTER_EXTRA_INFO:
+				ret_val = Read_Extra_Info(chunk_load);
+				break;
+
 
 			default:
 				WWDEBUG_SAY(("Unhandled Chunk! File: %s Line: %d",__FILE__,__LINE__));
@@ -396,6 +403,7 @@ ParticleEmitterDefClass::Initialize_To_Ver2 ()
 {
 	::memset (&m_Info, 0, sizeof (m_Info));
 	::memset (&m_InfoV2, 0, sizeof (m_InfoV2));
+	::memset (&m_ExtraInfo, 0, sizeof (m_ExtraInfo));
 
 	//
 	//	Set the version 2 values using defaults from version 1
@@ -950,7 +958,7 @@ ParticleEmitterDefClass::Read_Line_Properties(ChunkLoadClass & chunk_load)
 	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
 
 	// Is this the user chunk?
-	if (chunk_load.Cur_Chunk_ID () == W3D_CHUNK_EMITTER_INFO) {
+	if (chunk_load.Cur_Chunk_ID () == W3D_CHUNK_EMITTER_LINE_PROPERTIES) {
 
 		// Read the chunk straight into our member structure
 		if (chunk_load.Read (&m_LineProperties, sizeof (m_LineProperties)) == sizeof (m_LineProperties)) {
@@ -1117,9 +1125,11 @@ ParticleEmitterDefClass::Save_W3D (ChunkSaveClass &chunk_save)
 			 (Save_Info (chunk_save) == WW3D_ERROR_OK) &&
 			 (Save_InfoV2 (chunk_save) == WW3D_ERROR_OK) &&
 			 (Save_Props (chunk_save) == WW3D_ERROR_OK) &&
+			 (Save_Line_Properties (chunk_save) == WW3D_ERROR_OK) &&
 			 (Save_Rotation_Keyframes (chunk_save) == WW3D_ERROR_OK) &&
 			 (Save_Frame_Keyframes (chunk_save) == WW3D_ERROR_OK) &&
-			 (Save_Blur_Time_Keyframes (chunk_save) == WW3D_ERROR_OK))
+			 (Save_Blur_Time_Keyframes (chunk_save) == WW3D_ERROR_OK) &&
+			 (Save_Extra_Info (chunk_save) == WW3D_ERROR_OK))
 		{
 			// Success!
 			ret_val = WW3D_ERROR_OK;
@@ -1182,7 +1192,8 @@ ParticleEmitterDefClass::Save_User_Data (ChunkSaveClass &chunk_save)
 	// Begin a chunk that contains user information
 	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_USER_DATA) == TRUE) {
 
-		DWORD string_len = m_pUserString ? (::lstrlen (m_pUserString) + 1) : 0;
+		// GeneralsX @build Copilot 11/05/2026 Keep osdep macro path active on non-Windows by avoiding explicit ::lstrlen.
+		DWORD string_len = m_pUserString ? (lstrlen (m_pUserString) + 1) : 0;
 
 		// Fill the header structure
 		W3dEmitterUserInfoStruct user_info = { 0 };
@@ -1601,6 +1612,41 @@ ParticleEmitterDefClass::Save_Blur_Time_Keyframes (ChunkSaveClass & chunk_save)
 	}
 
 	// Return the WW3DErrorType return code
+	return ret_val;
+}
+
+WW3DErrorType
+ParticleEmitterDefClass::Read_Extra_Info (ChunkLoadClass &chunk_load)
+{
+	// Assume error
+	WW3DErrorType ret_val = WW3D_ERROR_LOAD_FAILED;
+
+	// GeneralsX @bugfix Copilot 11/05/2026 Read optional emitter extra metadata when present.
+	::memset (&m_ExtraInfo, 0, sizeof (m_ExtraInfo));
+	if (chunk_load.Read (&m_ExtraInfo, sizeof (m_ExtraInfo)) == sizeof (m_ExtraInfo)) {
+		ret_val = WW3D_ERROR_OK;
+	}
+
+	return ret_val;
+}
+
+WW3DErrorType
+ParticleEmitterDefClass::Save_Extra_Info (ChunkSaveClass & chunk_save)
+{
+	// Assume error
+	WW3DErrorType ret_val = WW3D_ERROR_SAVE_FAILED;
+
+	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_EXTRA_INFO) == TRUE) {
+		W3dEmitterExtraInfoStruct data;
+
+		::memset(&data, 0, sizeof(data));
+		data.FutureStartTime = Get_Future_Start_Time();
+		bool success = (chunk_save.Write (&data, sizeof (data)) == sizeof (data));
+		ret_val = success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
+
+		chunk_save.End_Chunk ();
+	}
+
 	return ret_val;
 }
 

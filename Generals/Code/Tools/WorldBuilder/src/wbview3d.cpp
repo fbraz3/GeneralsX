@@ -1512,8 +1512,8 @@ void WbView3d::updateHeightMapInView(WorldHeightMap *htMap, Bool partial, const 
 				htMap->setDrawHeight(htMap->getYExtent());
 				m_heightMapRenderObj->initHeightData(htMap->getXExtent(), htMap->getYExtent(), htMap, &lightListIt);
 			} else {
-				htMap->setDrawWidth(m_partialMapSize);
-				htMap->setDrawHeight(m_partialMapSize);
+				htMap->setDrawWidth(std::min(m_partialMapSize, htMap->getXExtent()));
+				htMap->setDrawHeight(std::min(m_partialMapSize, htMap->getYExtent()));
 				m_heightMapRenderObj->initHeightData(htMap->getDrawWidth(), htMap->getDrawHeight(), htMap, &lightListIt);
 			}
 			m_heightMapRenderObj->updateViewImpassableAreas();
@@ -1964,7 +1964,7 @@ void WbView3d::redraw()
 		++m_updateCount;
 		Int curTicks = GetTickCount();
 		RefRenderObjListIterator lightListIt(&m_lightList);
-		m_heightMapRenderObj->updateCenter(m_camera, &lightListIt);
+		m_heightMapRenderObj->updateCenter(m_camera, &m_cameraTarget, &lightListIt);
 		--m_updateCount;
 
 		curTicks = GetTickCount()-curTicks;

@@ -108,6 +108,15 @@ class WorldHeightMap : public RefCountClass,
 #define NO_EVAL_TILING_MODES
 
 public:
+
+	struct DrawArea
+	{
+		Int originX;
+		Int originY;
+		Int sizeX;
+		Int sizeY;
+	};
+
 #ifdef EVAL_TILING_MODES
 	enum {TILE_4x4, TILE_6x6, TILE_8x8} m_tileMode;
 #endif
@@ -116,6 +125,8 @@ public:
 		NORMAL_DRAW_HEIGHT = 1 + 4*VERTEX_BUFFER_TILE_LENGTH,
 		STRETCH_DRAW_WIDTH = 1 + 2*VERTEX_BUFFER_TILE_LENGTH,
 		STRETCH_DRAW_HEIGHT = 1 + 2*VERTEX_BUFFER_TILE_LENGTH,
+		LOW_ANGLE_DRAW_WIDTH = 1 + (NORMAL_DRAW_WIDTH-1) * 2,
+		LOW_ANGLE_DRAW_HEIGHT = 1 + (NORMAL_DRAW_HEIGHT-1) * 2,
 	};
 
 protected:
@@ -241,8 +252,8 @@ public:  // height map info.
 
 	Int getDrawWidth() {return m_drawWidthX;}
 	Int getDrawHeight() {return m_drawHeightY;}
-	void setDrawWidth(Int width) {m_drawWidthX = width; if (m_drawWidthX>m_width) m_drawWidthX = m_width;}
-	void setDrawHeight(Int height) {m_drawHeightY = height; if (m_drawHeightY>m_height) m_drawHeightY = m_height;}
+	void setDrawWidth(Int width) {DEBUG_ASSERTCRASH(width <= m_width, ("Draw width must not exceed map width")); m_drawWidthX = width;}
+	void setDrawHeight(Int height) {DEBUG_ASSERTCRASH(height <= m_height, ("Draw height must not exceed map height")); m_drawHeightY = height;}
 	virtual Int getBorderSize() override {return m_borderSize;}
   Int getBorderSizeInline() const { return m_borderSize; }
 	/// Get height with the offset that HeightMapRenderObjClass uses built in.
@@ -260,6 +271,8 @@ public:  // height map info.
 
 	void getUVForBlend(Int edgeClass, Region2D *range);
 
+	DrawArea createDrawArea(Int xOrg, Int yOrg);
+	Bool setDrawArea(const DrawArea& drawArea);
 	Bool setDrawOrg(Int xOrg, Int yOrg);
 
 	static void freeListOfMapObjects();

@@ -56,11 +56,6 @@ public:
 
 	static NetworkInterface * createNetwork();
 
-	//---------------------------------------------------------------------------------------
-	// SubsystemInterface functions
-	virtual void init() = 0;																		///< Initialize the network
-	virtual void reset() = 0;																		///< Re-initialize the network
-	virtual void update() = 0;																	///< Updates the network
 	virtual void liteupdate() = 0;															///< does a lightweight update for passing messages around.
 
 	virtual void setLocalAddress(UnsignedInt ip, UnsignedInt port) = 0;	///< Tell the network what local ip and port to bind to.

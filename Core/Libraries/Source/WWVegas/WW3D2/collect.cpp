@@ -117,9 +117,9 @@ protected:
 ** CollectionPrototypeClass this is the render object prototype for
 ** Collections.
 */
-class CollectionPrototypeClass : public W3DMPO, public PrototypeClass
+class CollectionPrototypeClass : public PrototypeClass
 {
-	W3DMPO_GLUE(CollectionPrototypeClass)
+	W3DMPO_CODE(CollectionPrototypeClass)
 public:
 	CollectionPrototypeClass(CollectionDefClass * def)		{ ColDef = def; WWASSERT(ColDef); }
 

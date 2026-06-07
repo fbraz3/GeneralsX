@@ -84,8 +84,6 @@ public:
 	// BehaviorModule
 	virtual CollideModuleInterface* getCollide() override { return this; }
 
-	virtual void onCollide( Object *other, const Coord3D *loc, const Coord3D *normal ) = 0;
-
 	/// this is used for things like pilots, to determine if they can "enter" something
 	virtual Bool wouldLikeToCollideWith(const Object* other) const override { return false; }
 	virtual Bool isHijackedVehicleCrateCollide() const override { return false; }

@@ -455,6 +455,7 @@ public:
 	Bool hasAnyDamageWeapon() const; //Kris: a should be used for real weapons that directly inflict damage... not deploy, hack, etc.
 	Bool hasWeaponToDealDamageType(DamageType typeToDeal) const;
 	Real getLargestWeaponRange() const;
+	UnsignedInt getMostPercentReadyToFireAnyWeapon() const;
 
 	Weapon* getWeaponInWeaponSlot(WeaponSlotType wslot) const { return m_weaponSet.getWeaponInWeaponSlot(wslot); }
 
@@ -525,6 +526,7 @@ public:
 	/// return true if the template has the specified special power flag set
 	// @todo: inline
 	Bool hasSpecialPower( SpecialPowerType type ) const;
+	Bool hasAnySpecialPower() const;
 
 	void setWeaponBonusCondition(WeaponBonusConditionType wst) { m_weaponBonusCondition |= (1 << wst); }
 	void clearWeaponBonusCondition(WeaponBonusConditionType wst) { m_weaponBonusCondition &= ~(1 << wst); }
@@ -715,7 +717,7 @@ private:
 
 	Object*												m_containedBy;					/**< an object can only be contained by at most one
 																	other object, this is that object (if present) */
-	ObjectID											m_xferContainedByID;	///< xfer uses IDs to store pointers and looks them up after
+	ObjectID											m_containedByID;	///< ID of the object we're contained by; only to be used when m_containedBy cannot be used
 	UnsignedInt										m_containedByFrame;	///< frame we were contained by m_containedBy
 
 	Real													m_constructionPercent;			///< for objects being built ... this is the amount completed (0.0 to 100.0)

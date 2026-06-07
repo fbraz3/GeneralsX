@@ -68,6 +68,8 @@ static const FieldParse TheStaticGameLODFieldParseTable[] =
 	{ "UseBuildupScaffolds",			INI::parseBool,					nullptr,	offsetof( StaticGameLODInfo, m_useBuildupScaffolds ) },
 	{ "UseTreeSway",					INI::parseBool,					nullptr,	offsetof( StaticGameLODInfo, m_useTreeSway ) },
 	{ "UseEmissiveNightMaterials",		INI::parseBool,					nullptr,	offsetof( StaticGameLODInfo, m_useEmissiveNightMaterials ) },
+	// GeneralsX @bugfix Copilot 11/05/2026 Keep heat effects in the static LOD table and user preference flow.
+	{ "UseHeatEffects", 				INI::parseBool, 					nullptr,	offsetof( StaticGameLODInfo, m_useHeatEffects ) },
 	{ "TextureReductionFactor",		INI::parseInt,					nullptr,	offsetof( StaticGameLODInfo, m_textureReduction ) },
 };
 
@@ -101,6 +103,8 @@ StaticGameLODInfo::StaticGameLODInfo()
 	m_useBuildupScaffolds=TRUE;
 	m_useTreeSway=TRUE;
 	m_useEmissiveNightMaterials=TRUE;
+	// GeneralsX @bugfix Copilot 11/05/2026 Default heat effects on for all static LOD presets.
+	m_useHeatEffects=TRUE;
 	m_textureReduction = 0;	//none
 	m_useFpsLimit = TRUE;
 	m_enableDynamicLOD = TRUE;
@@ -262,6 +266,8 @@ void GameLODManager::initStaticLODLevels()
 	veryhigh.m_useBuildupScaffolds = TRUE;
 	veryhigh.m_useTreeSway = TRUE;
 	veryhigh.m_useEmissiveNightMaterials = TRUE;
+	// GeneralsX @bugfix Copilot 11/05/2026 Preserve heat effects at the highest preset.
+	veryhigh.m_useHeatEffects = TRUE;
 	veryhigh.m_textureReduction = 0;
 	veryhigh.m_useFpsLimit = TRUE;
 	veryhigh.m_enableDynamicLOD = TRUE;
@@ -401,6 +407,8 @@ void GameLODManager::init()
 		TheWritableGlobalData->m_useLightMap = optionPref.getLightmapEnabled();
 		TheWritableGlobalData->m_useCloudMap = optionPref.getCloudShadowsEnabled();
 		TheWritableGlobalData->m_showSoftWaterEdge = optionPref.getSmoothWaterEnabled();
+		// GeneralsX @bugfix Copilot 11/05/2026 Restore the user heat-effects toggle when custom detail is active.
+		TheWritableGlobalData->m_useHeatEffects = optionPref.getUseHeatEffects();
 		TheWritableGlobalData->m_useDrawModuleLOD = optionPref.getExtraAnimationsDisabled();
 		TheWritableGlobalData->m_useTreeSway = !TheWritableGlobalData->m_useDrawModuleLOD;	//borrow same setting.
 		TheWritableGlobalData->m_useTrees = optionPref.getTreesEnabled();
@@ -423,6 +431,7 @@ void GameLODManager::refreshCustomStaticLODLevel()
 	lodInfo->m_maxTankTrackOpaqueEdges=TheGlobalData->m_maxTankTrackOpaqueEdges;
 	lodInfo->m_maxTankTrackFadeDelay=TheGlobalData->m_maxTankTrackFadeDelay;
 	lodInfo->m_useBuildupScaffolds=!TheGlobalData->m_useDrawModuleLOD;
+	lodInfo->m_useHeatEffects = TheGlobalData->m_useHeatEffects;
 	lodInfo->m_useTreeSway=lodInfo->m_useBuildupScaffolds;// Borrow same setting. //TheGlobalData->m_useTreeSway;
 	lodInfo->m_textureReduction=TheGlobalData->m_textureReductionFactor;
 	lodInfo->m_useFpsLimit = TheGlobalData->m_useFpsLimit;
@@ -624,6 +633,8 @@ void GameLODManager::applyStaticLODLevel(StaticGameLODLevel level)
 		TheWritableGlobalData->m_maxTankTrackOpaqueEdges=lodInfo->m_maxTankTrackOpaqueEdges;
 		TheWritableGlobalData->m_maxTankTrackFadeDelay=lodInfo->m_maxTankTrackFadeDelay;
 		TheWritableGlobalData->m_useTreeSway=lodInfo->m_useTreeSway;
+		// GeneralsX @bugfix Copilot 11/05/2026 Keep the active heat-effects state aligned with the selected static LOD.
+		TheWritableGlobalData->m_useHeatEffects=lodInfo->m_useHeatEffects;
 		TheWritableGlobalData->m_useDrawModuleLOD=!lodInfo->m_useBuildupScaffolds;
 		TheWritableGlobalData->m_enableDynamicLOD = lodInfo->m_enableDynamicLOD;
 		TheWritableGlobalData->m_useFpsLimit = lodInfo->m_useFpsLimit;

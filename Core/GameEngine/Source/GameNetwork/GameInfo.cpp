@@ -49,6 +49,9 @@
 
 GameInfo *TheGameInfo = nullptr;
 
+static AsciiString percentEncodeMapName(const AsciiString& mapName);
+static AsciiString percentDecodeMapName(const AsciiString& encodedMapName);
+
 // GameSlot ----------------------------------------
 
 GameSlot::GameSlot()
@@ -537,7 +540,8 @@ void GameInfo::setMap( AsciiString mapName )
 				// directory name, we can do this since the filename
 				// is just the directory name with the file extention
 				// added onto it.
-				while (mapName.find('\\') != nullptr)
+				// GeneralsX @bugfix fbraz 05/05/2026 Handle both forward and backward separators correctly when building map-sidecar lookup paths
+				while (!mapName.isEmpty() && (mapName.find('\\') != nullptr || mapName.find('/') != nullptr))
 				{
 					if (!newMapName.isEmpty())
 					{
@@ -908,7 +912,8 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 		// directory name, we can do this since the filename
 		// is just the directory name with the file extention
 		// added onto it.
-		while (mapName.find('\\') != nullptr)
+		// GeneralsX @bugfix fbraz 05/05/2026 Handle both forward and backward separators correctly when building map-sidecar lookup paths
+		while (!mapName.isEmpty() && (mapName.find('\\') != nullptr || mapName.find('/') != nullptr))
 		{
 			if (!newMapName.isEmpty())
 			{
@@ -922,10 +927,10 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 
 	AsciiString optionsString;
 #if RTS_GENERALS
-	optionsString.format("M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;", game->getMapContentsMask(), newMapName.str(),
+	optionsString.format("M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;", game->getMapContentsMask(), percentEncodeMapName(newMapName).str(),
 		game->getMapCRC(), game->getMapSize(), game->getSeed(), game->getCRCInterval());
 #else
-	optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;O=%c;", game->getUseStats(), game->getMapContentsMask(), newMapName.str(),
+	optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;O=%c;", game->getUseStats(), game->getMapContentsMask(), percentEncodeMapName(newMapName).str(),
 		game->getMapCRC(), game->getMapSize(), game->getSeed(), game->getCRCInterval(), game->getSuperweaponRestriction(),
 		game->getStartingCash().countMoney(), game->oldFactionsOnly() ? 'Y' : 'N' );
 #endif
@@ -993,6 +998,59 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 		optionsString.getLength(), m_lanMaxOptionsLength));
 
 	return optionsString;
+}
+
+// GeneralsX @feature fbraz 05/05/2026 Support special characters in map names via percent encoding.
+// This allows map names with brackets, spaces, and other chars commonly used by C&C community mapmakers.
+static AsciiString percentEncodeMapName(const AsciiString& mapName)
+{
+	// Characters that MUST be encoded in replay header field values:
+	// % (0x25) - escape indicator; MUST be encoded first to avoid double-encoding
+	// [ (0x5B) - INI section marker
+	// ] (0x5D) - INI section marker  
+	// ; (0x3B) - field separator in replay header
+	// = (0x3D) - key-value separator in replay header
+	// Space (0x20) - for safety with paths
+	AsciiString result;
+	const char* src = mapName.str();
+	
+	for (int i = 0; src[i] != '\0'; ++i) {
+		unsigned char c = (unsigned char)src[i];
+		switch (c) {
+			case '%':  result.concat("%25"); break;  // Escape indicator FIRST
+			case '[':  result.concat("%5B"); break;
+			case ']':  result.concat("%5D"); break;
+			case ';':  result.concat("%3B"); break;
+			case '=':  result.concat("%3D"); break;
+			case ' ':  result.concat("%20"); break;
+			default:   result.concat(src[i]); break;
+		}
+	}
+	return result;
+}
+
+// GeneralsX @feature fbraz 05/05/2026 Decode percent-encoded map names (inverse of percentEncodeMapName).
+static AsciiString percentDecodeMapName(const AsciiString& encodedMapName)
+{
+	AsciiString result;
+	const char* src = encodedMapName.str();
+	int len = encodedMapName.getLength();
+	
+	for (int i = 0; i < len; ++i) {
+		if (src[i] == '%' && i + 2 < len) {
+			// Parse two hex digits
+			char hex[3] = { src[i+1], src[i+2], '\0' };
+			int value = -1;
+			if (sscanf(hex, "%x", &value) == 1 && value >= 0 && value <= 255) {
+				result.concat((char)value);
+				i += 2;  // Skip the two hex digits
+				continue;
+			}
+		}
+		// If not a valid escape sequence, just copy the character
+		result.concat(src[i]);
+	}
+	return result;
 }
 
 static Int grabHexInt(const char *s)
@@ -1072,29 +1130,45 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 				break;
 			}
 			mapContentsMask = grabHexInt(val.str());
-			AsciiString tempstr;
+
+			AsciiString portableMapPath = val.str() + 2;
+			// GeneralsX @feature fbraz 05/05/2026 Decode percent-encoded map names to support special characters (brackets, spaces, etc).
+			portableMapPath = percentDecodeMapName(portableMapPath);
+			
+			AsciiString legacyPortableMapPath;
 			AsciiString token;
-			tempstr = val.str()+2;
+			AsciiString tempstr = portableMapPath;
 			tempstr.nextToken(&token, "\\/");
 			while (!tempstr.isEmpty())
 			{
-				mapName.concat(token);
-				mapName.concat('\\');
+				legacyPortableMapPath.concat(token);
+				legacyPortableMapPath.concat('\\');
 				tempstr.nextToken(&token, "\\/");
 			}
-			mapName.concat(token);
-			mapName.concat('\\');
-			mapName.concat(token);
-			mapName.concat('.');
-			mapName.concat(TheMapCache->getMapExtension());
-			AsciiString realMapName = TheGameState->portableMapPathToRealMapPath(mapName);
+			legacyPortableMapPath.concat(token);
+			legacyPortableMapPath.concat('\\');
+			legacyPortableMapPath.concat(token);
+			legacyPortableMapPath.concat('.');
+			legacyPortableMapPath.concat(TheMapCache->getMapExtension());
+
+			AsciiString realMapName = TheGameState->portableMapPathToRealMapPath(legacyPortableMapPath);
+
+			// GeneralsX @bugfix fbraz 05/05/2026 Recover from malformed replay map fields generated from mixed separator custom map paths.
+			if (realMapName.isEmpty())
+			{
+				AsciiString flatPortableMapPath = portableMapPath;
+				flatPortableMapPath.concat('.');
+				flatPortableMapPath.concat(TheMapCache->getMapExtension());
+				realMapName = TheGameState->portableMapPathToRealMapPath(flatPortableMapPath);
+			}
+
 			if (realMapName.isEmpty())
 			{
 				// TheSuperHackers @security slurmlord 18/06/2025 As the map file name/path from the AsciiString failed to normalize,
 				// in other words is bogus and points outside of the approved target directory for maps, avoid an arbitrary file overwrite vulnerability
 				// if the save or network game embeds a custom map to store at the location, by flagging the options as not OK and rejecting the game.
 				optionsOk = FALSE;
-				DEBUG_LOG(("ParseAsciiStringToGameInfo - saw bogus map name ('%s'); quitting", mapName.str()));
+				DEBUG_LOG(("ParseAsciiStringToGameInfo - saw bogus map name ('%s'); quitting", legacyPortableMapPath.str()));
 				break;
 			}
 			mapName = realMapName;
@@ -1487,6 +1561,41 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 	// In Generals they never were.
 	if (optionsOk && sawMap && sawMapCRC && sawMapSize && sawSeed && sawSlotlist && sawCRC)
 	{
+		// GeneralsX @bugfix fbraz 05/05/2026 Recover old malformed custom-map replay headers by selecting map from cache via CRC/size.
+		if ((!mapName.isEmpty()) && TheMapCache->findMap(mapName) == nullptr)
+		{
+			const MapMetaData* crcMatch = nullptr;
+			const MapMetaData* exactMatch = nullptr;
+
+			for (std::map<AsciiString, MapMetaData>::const_iterator it = TheMapCache->begin(); it != TheMapCache->end(); ++it)
+			{
+				if (it->second.m_CRC != mapCRC)
+				{
+					continue;
+				}
+
+				if (crcMatch == nullptr)
+				{
+					crcMatch = &it->second;
+				}
+
+				if (it->second.m_filesize == mapSize)
+				{
+					exactMatch = &it->second;
+					break;
+				}
+			}
+
+			const MapMetaData* selected = (exactMatch != nullptr) ? exactMatch : crcMatch;
+			if (selected != nullptr)
+			{
+				mapName = selected->m_fileName;
+				DEBUG_LOG(("ParseAsciiStringToGameInfo - map path recovered by CRC: %s", mapName.str()));
+				// GeneralsX @bugfix fbraz 05/05/2026 Use stderr so the CRC-fallback resolution is visible in headless replay runs where DEBUG_LOG may be suppressed.
+				fprintf(stderr, "[GeneralsX] Replay map resolved via CRC fallback: CRC=0x%08X size=%d -> '%s'\n", mapCRC, mapSize, mapName.str());
+			}
+		}
+
 		// We were setting the Global Data directly here, but Instead, I'm now
 		// first setting the data in game.  We'll set the global data when
 		// we start a game.

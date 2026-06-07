@@ -81,17 +81,17 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CW3DViewDoc)
 	public:
-	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
-	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+	virtual BOOL OnNewDocument() override;
+	virtual void Serialize(CArchive& ar) override;
+	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName) override;
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	virtual ~CW3DViewDoc();
 #ifdef RTS_DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid() const override;
+	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
 protected:

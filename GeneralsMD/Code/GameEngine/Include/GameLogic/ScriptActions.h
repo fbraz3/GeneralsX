@@ -48,10 +48,6 @@ public:
 
 	virtual ~ScriptActionsInterface() override { };
 
-	virtual void init() = 0;		///< Init
-	virtual void reset() = 0;		///< Reset
-	virtual void update() = 0;	///< Update
-
 	virtual void executeAction( ScriptAction *pAction ) = 0; ///< execute a script action.
 	virtual void closeWindows( Bool suppressNewWindows ) = 0;
 

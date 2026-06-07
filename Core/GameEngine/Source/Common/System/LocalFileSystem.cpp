@@ -92,12 +92,3 @@ LocalFileSystem *TheLocalFileSystem = nullptr;
 //----------------------------------------------------------------------------
 //         Public Functions
 //----------------------------------------------------------------------------
-
-void LocalFileSystem::init() {
-}
-
-void LocalFileSystem::reset() {
-}
-
-void LocalFileSystem::update() {
-}

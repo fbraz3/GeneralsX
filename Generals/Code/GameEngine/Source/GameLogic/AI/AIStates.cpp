@@ -6275,6 +6275,12 @@ StateReturnType AIExitState::update()
 		if( goalExitInterface == nullptr )
 			return STATE_FAILURE;
 
+#if !RETAIL_COMPATIBLE_CRC
+		// TheSuperHackers @bugfix Stubbjax 03/05/2026 Stop trying to exit if the container is dead, as we are already ejected.
+		if (goal->isEffectivelyDead())
+			return STATE_FAILURE;
+#endif
+
 		if( goalExitInterface->isExitBusy() )
 			return STATE_CONTINUE;// Just wait a sec.
 

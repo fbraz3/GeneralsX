@@ -1,5 +1,76 @@
 # 2026-04 Lessons Learned
 
+## Session 2026-04-28 - SDL native fullscreen on macOS needs post-request state verification and foreground enforcement
+
+- Problem: Even with correct render/backbuffer sizing, macOS could intermittently remain in a pseudo-borderless state (Dock/menu visible) after fullscreen request, with degraded focus/cursor behavior.
+- Root cause:
+	- `SDL_SetWindowFullscreen(true)` is asynchronous relative to compositor/window-manager transitions.
+	- A successful call does not guarantee the window is already flagged as fullscreen in the immediate next code path.
+	- If the window stays foreground-inconsistent during that transition, input behavior can degrade in practice.
+- Fix:
+	- After requesting fullscreen, verify window fullscreen flag and retry a few times when needed.
+	- Raise the window once transition is requested to reinforce foreground focus state.
+	- Apply the same logic in both `GeneralsMD` and `Generals` SDL display paths to keep behavior aligned.
+- Validation:
+	- macOS build and deploy completed successfully with the hardened fullscreen path.
+- Prevention: Treat fullscreen entry as a transition state machine on macOS/SDL; validate resulting state, do not rely on a single call as terminal state.
+
+## Session 2026-04-27 - Custom map pipelines must treat path separators and map-name encoding as cross-platform invariants
+
+- Problem: User custom maps under `~/Library/Application Support/GeneralsX/GeneralsZH/Maps` could fail discovery/metadata flow when code assumed Windows-only separators and mixed path composition styles.
+- Root cause:
+	- Shared map scan/cache paths used `reverseFind('\\')` and Windows-only suffix checks.
+	- `map.str` lookup composition used `mapDir + fname` assumptions that are fragile when `fname` already carries rooted/qualified path semantics.
+	- Special-character map names rely on quoted-printable conversion; locale-sensitive `isalnum` in ASCII encoding can produce inconsistent behavior.
+- Fix:
+	- Added separator-agnostic path handling (`\\` or `/`) in shared map scanning (`MapUtil.cpp`) and in map cache parsing (`INIMapCache.cpp` for both ZH and Generals).
+	- Built map string-file path from the actual map filepath and separator style instead of recomposing from mixed fragments.
+	- Switched ASCII quoted-printable checks to locale-independent ASCII classification (`isAsciiAlphaNumeric`) in both game variants.
+- Validation:
+	- Custom user-path maps load successfully on macOS after patch.
+	- Stress dataset with names containing spaces, quotes, punctuation, and accented Unicode characters completed without crash in successful run.
+- Prevention: Treat map-name handling as a pipeline (filesystem scan -> cache serialization -> cache parse -> localized display load). Any separator/encoding change must be validated end-to-end, not only at one layer.
+
+## Session 2026-04-27 - SDL fullscreen on macOS must size the initial DXVK backbuffer from the current window, not the target display mode
+
+- Problem: After the ultrawide/pillarbox merge, macOS fullscreen could look like a low-resolution image stretched to fill the screen, with a visible small-window-then-fullscreen transition.
+- Root cause:
+	- Non-Windows builds force DXVK presentation through the windowed path and apply native fullscreen later through SDL.
+	- The new pillarbox code prefilled `D3DPRESENT_PARAMETERS.BackBufferWidth/Height` with the native display size while the SDL window was still at its pre-fullscreen size.
+	- On macOS this could leave the swapchain created/reset at the old window dimensions, while later logic incorrectly believed the backbuffer already matched fullscreen, so the frame was upscaled and blurred.
+- Fix:
+	- For SDL-managed fullscreen on non-Windows builds, initialize/reset the DXVK backbuffer from the current window pixel size first.
+	- Keep native display sizing only as a fallback when the current SDL window size is unavailable.
+	- Delay the SDL fullscreen transition until after the render device has applied the final game resolution, and resize the SDL window before creating/resetting the device.
+	- Compute pillarbox/backbuffer fit from active present/backbuffer dimensions (source of truth), not from display-mode assumptions.
+- Validation:
+	- Runtime fullscreen behavior on macOS was confirmed after synchronizing SDL fullscreen transition, present backbuffer reset, and pillarbox sizing.
+- Prevention: When fullscreen is entered asynchronously through SDL or the platform window manager, do not size the initial swapchain from the target mode unless the window has already completed the transition.
+
+## Session 2026-04-27 - LAN network pacing must keep consistent time units across platforms
+
+- Problem: LAN matches on Linux could run dramatically faster than intended, while non-network pacing paths looked normal.
+- Root cause:
+	- `Network::timeForNewFrame()` computes `frameDelay` as `m_perfCountFreq / m_frameRate`.
+	- Linux network path used `clock_gettime(CLOCK_MONOTONIC)` but converted timestamps to microseconds while the configured counter frequency drifted from the expected high-resolution domain.
+	- This mismatch made frame scheduling thresholds too small, allowing network logic frames to advance far too quickly.
+- Fix:
+	- Standardized Linux network pacing to nanoseconds in `Network.cpp` by setting `m_perfCountFreq = 1000000000` and using nanosecond timestamp conversion in both stall checks and frame pacing checks.
+	- Kept Windows `QueryPerformanceCounter` / `QueryPerformanceFrequency` behavior unchanged.
+- Prevention: For any multiplayer pacing code, treat counter frequency and timestamp conversions as a coupled invariant; never change one unit without updating all callsites that compare or accumulate those values.
+
+## Session 2026-04-27 - OpenAL stream fixes must account for different producer lifecycles
+
+- Problem: After restoring briefing-video audio in commit `c0ce9f0`, mission intro narrator lines and victory speech stopped playing on OpenAL builds.
+- Root cause:
+	- The shared `OpenALAudioStream::update()` logic was adjusted around the video use case, where FFmpeg queues audio before or during explicit stream maintenance.
+	- Generic `AT_Streaming` speech uses a different lifecycle: the stream can enter `processPlayingList()` with no queued buffers, fill during `update()`, and still be seen as stopped in the same frame if playback is not retriggered after refill.
+	- The manager then releases the stream immediately, so narrator speech never starts.
+- Fix:
+	- Added a post-refill restart check in `OpenALAudioStream::update()` so newly buffered speech data is started before stopped-stream teardown runs.
+	- Preserved the video-specific FFmpeg/OpenAL path introduced for issue #38.
+- Prevention: When hardening shared stream classes for video/audio regressions, always validate both producer models: push-queued video streams and lazy-filled gameplay speech streams.
+
 ## Session 2026-04-23 - Campaign river-water rendering must guard shroud sampling boundaries
 
 - Problem: Linux `GeneralsXZH` could crash with `SIGSEGV` when opening campaign, with stack traces landing in `W3DShroud::getShroudLevel()` via `W3DWater::getRiverVertexDiffuse()`.

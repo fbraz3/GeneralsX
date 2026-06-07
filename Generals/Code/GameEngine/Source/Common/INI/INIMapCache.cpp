@@ -39,6 +39,25 @@
 #include "Common/WellKnownKeys.h"
 #include "Common/QuotedPrintable.h"
 
+// GeneralsX @bugfix Copilot 27/04/2026 Support both POSIX and Windows separators when deriving map display names.
+static const char *findLastPathSeparator(const AsciiString& path)
+{
+	const char *backslash = path.reverseFind('\\');
+	const char *slash = path.reverseFind('/');
+
+	if (!backslash)
+	{
+		return slash;
+	}
+
+	if (!slash)
+	{
+		return backslash;
+	}
+
+	return slash > backslash ? slash : backslash;
+}
+
 
 class MapMetaDataReader
 {
@@ -149,7 +168,8 @@ void INI::parseMapCacheDefinition( INI* ini )
 	{
 		// maps without localized name tags
 		AsciiString tempdisplayname;
-		tempdisplayname = name.reverseFind('\\') + 1;
+		const char *displayNameStart = findLastPathSeparator(name);
+		tempdisplayname = displayNameStart ? displayNameStart + 1 : name;
 		md.m_displayName.translate(tempdisplayname);
 		if (md.m_numPlayers >= 2)
 		{

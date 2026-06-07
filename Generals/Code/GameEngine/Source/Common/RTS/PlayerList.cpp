@@ -110,6 +110,19 @@ Player *PlayerList::findPlayerWithNameKey(NameKeyType key)
 	return nullptr;
 }
 
+// GeneralsX @bugfix felipebraz 11/05/2026 Find player by ASCII name as fallback when nameKey lookup misses qualified skirmish names.
+Player *PlayerList::findPlayerWithName(const AsciiString& name)
+{
+	for (Int i = 0; i < m_playerCount; i++)
+	{
+		if (m_players[i]->getPlayerName() == name)
+		{
+			return m_players[i];
+		}
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 void PlayerList::reset()
 {

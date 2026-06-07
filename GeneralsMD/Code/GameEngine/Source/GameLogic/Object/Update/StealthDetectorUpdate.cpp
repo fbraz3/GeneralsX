@@ -118,7 +118,7 @@ public:
 	virtual Bool allow(Object *objOther) override;
 
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterStealthedOrStealthGarrisoned"; }
+	virtual const char* debugGetName() override { return "PartitionFilterStealthedOrStealthGarrisoned"; }
 #endif
 };
 

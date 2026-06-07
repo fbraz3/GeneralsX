@@ -45,6 +45,7 @@ class Object;
 class Player;
 class Thing;
 class W3DModelDrawModuleData;	// ugh, hack (srj)
+class W3DTreeDrawModuleData; // ugh, hack (srj)
 struct FieldParse;
 
 // TYPES //////////////////////////////////////////////////////////////////////////////////////////
@@ -109,6 +110,8 @@ public:
 
 	// ugh, hack
 	virtual const W3DModelDrawModuleData* getAsW3DModelDrawModuleData() const { return nullptr; }
+	// ugh, hack
+	virtual const W3DTreeDrawModuleData* getAsW3DTreeDrawModuleData() const { return nullptr; }
 	virtual StaticGameLODLevel getMinimumRequiredGameLOD() const { return (StaticGameLODLevel)0;}
 
 	static void buildFieldParse(MultiIniFieldParse& p)
@@ -133,20 +136,20 @@ private:
 #define MAKE_STANDARD_MODULE_MACRO( cls ) \
 public: \
 	static Module* friend_newModuleInstance( Thing *thing, const ModuleData* moduleData ) { return newInstance( cls )( thing, moduleData ); } \
-	virtual NameKeyType getModuleNameKey() const { static NameKeyType nk = NAMEKEY(#cls); return nk; } \
+	virtual NameKeyType getModuleNameKey() const override { static NameKeyType nk = NAMEKEY(#cls); return nk; } \
 protected: \
-	virtual void crc( Xfer *xfer ); \
-	virtual void xfer( Xfer *xfer ); \
-	virtual void loadPostProcess();
+	virtual void crc( Xfer *xfer ) override; \
+	virtual void xfer( Xfer *xfer ) override; \
+	virtual void loadPostProcess() override;
 
 // ------------------------------------------------------------------------------------------------
 // For the creation of abstract module classes
 // ------------------------------------------------------------------------------------------------
 #define MAKE_STANDARD_MODULE_MACRO_ABC( cls ) \
 protected: \
-	virtual void crc( Xfer *xfer ); \
-	virtual void xfer( Xfer *xfer ); \
-	virtual void loadPostProcess();
+	virtual void crc( Xfer *xfer ) override; \
+	virtual void xfer( Xfer *xfer ) override; \
+	virtual void loadPostProcess() override;
 
 //-------------------------------------------------------------------------------------------------
 // only use this macro for an ABC. for a real class, use MAKE_STANDARD_MODULE_MACRO_WITH_MODULE_DATA.

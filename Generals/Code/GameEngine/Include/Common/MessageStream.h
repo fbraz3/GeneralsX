@@ -277,6 +277,7 @@ public:
 		MSG_META_TOGGLE_PAUSE_ALT,									///< TheSuperHackers @feature Toggle game pause (alternative mapping)
 		MSG_META_STEP_FRAME,												///< TheSuperHackers @feature Step one frame
 		MSG_META_STEP_FRAME_ALT,										///< TheSuperHackers @feature Step one frame (alternative mapping)
+		MSG_META_DEMO_INSTANT_QUIT,									///< bail out of game immediately
 
 
 		// META items that are really for debug/demo/development use only...
@@ -289,7 +290,6 @@ public:
 		MSG_META_DEMO_LOD_INCREASE,                 ///< increase LOD by 1
 		MSG_META_DEMO_TOGGLE_ZOOM_LOCK,							///< Toggle the camera zoom lock on/off
 		MSG_META_DEMO_PLAY_CAMEO_MOVIE,							///< Play a movie in the cameo spot
-		MSG_META_DEMO_INSTANT_QUIT,									///< bail out of game immediately
 		MSG_META_DEMO_TOGGLE_SPECIAL_POWER_DELAYS,	///< Toggle special power delays on/off
 		MSG_META_DEMO_BATTLE_CRY,										///< battle cry
 		MSG_META_DEMO_SWITCH_TEAMS,									///< switch local control to another team
@@ -415,7 +415,8 @@ public:
 		MSG_MOUSEOVER_LOCATION_HINT,								///< (location) The cursor is not over a drawable, but is here.
 		MSG_VALID_GUICOMMAND_HINT,									///< posted when the gui command is valid if the user clicked to execute it.
 		MSG_INVALID_GUICOMMAND_HINT,								///< posted when the gui command is not valid if the user were to click to attempt to execute it.
-		MSG_AREA_SELECTION_HINT,										///< (pixelRegion) rectangular selection area under construction, not confirmed
+		MSG_BEGIN_AREA_SELECTION_HINT,							///< (pixelRegion) rectangular selection area under construction, not confirmed
+		MSG_END_AREA_SELECTION_HINT,                ///< (pixelRegion) rectangular selection area finish construction
 
 		//Command hints
 		MSG_DO_ATTACK_OBJECT_HINT,									///< (victim objectID) If clicked, an attack would be ordered, "Current Selection" is assumed
@@ -472,7 +473,7 @@ public:
 																									* The selected team is created/augmented with the given team members.
 																									* Do not play their selection sounds.
 																									*/
-		MSG_DESTROY_SELECTED_GROUP,									///< (teamID) the given team is no longer valid
+		MSG_DESTROY_SELECTED_GROUP,									///< deselect currently selected objects (which can be none)
 		MSG_REMOVE_FROM_SELECTED_GROUP,							/**< (objectID1, objectID2, ... objectIDN)
 																									* Remove these units from the selected group. (N should almost always be 1)
 																									*/
@@ -532,7 +533,7 @@ public:
 		MSG_EXECUTE_RAILED_TRANSPORT,								///< Execute railed transport sequence
 		MSG_COMBATDROP_AT_LOCATION,									///< dump out all rappellers
 		MSG_COMBATDROP_AT_OBJECT,										///< dump out all rappellers
-		MSG_AREA_SELECTION,													///< (pixelRegion) rectangular selection area
+		MSG_AREA_SELECTION_DEPRECATED,              ///< TheSuperHackers @tweak former MSG_AREA_SELECTION is deprecated as network message.
 		MSG_DO_ATTACK_OBJECT,												///< (objectID, victim objectID)
 		MSG_DO_FORCE_ATTACK_OBJECT,									///< force attack the given object if picked
 		MSG_DO_FORCE_ATTACK_GROUND,									///< (locationID) bombard the given location if picked
@@ -571,6 +572,7 @@ public:
 		MSG_CREATE_FORMATION,												///< Creates a formation.
 		MSG_LOGIC_CRC,															///< CRC from the logic passed around in a network game :)
 		MSG_SET_MINE_CLEARING_DETAIL,								///< CRC from the logic passed around in a network game :)
+		MSG_ENABLE_RETALIATION_MODE,								///< Turn retaliation mode on or off.
 
 		MSG_BEGIN_DEBUG_NETWORK_MESSAGES = 1900,		///< network messages that exist only in debug/internal builds. all grouped separately.
 
@@ -725,6 +727,7 @@ public:
 
 	virtual GameMessage *appendMessage( GameMessage::Type type );		///< Append a message to the end of the stream
 	virtual GameMessage *insertMessage( GameMessage::Type type, GameMessage *messageToInsertAfter );	// Insert message after messageToInsertAfter.
+	virtual Bool isReadyForMessages() const;											///< Return true if a local player is present and ready to accept messages
 
 	// Methods NOT Inherited ------------------------------------------------------------------------
 	void propagateMessages();													///< Propagate messages through attached translators

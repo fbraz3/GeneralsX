@@ -116,11 +116,11 @@ public:
 	virtual void toggleLetterBox() override {}
 	virtual void enableLetterBox(Bool enable) override {}
 #if defined(RTS_DEBUG)
-	virtual void dumpModelAssets(const char *path) {}
+	virtual void dumpModelAssets(const char *path) override {}
 #endif
 	virtual void doSmartAssetPurgeAndPreload(const char* usageFileName) override {}
 #if defined(RTS_DEBUG)
-	virtual void dumpAssetUsage(const char* mapname) {}
+	virtual void dumpAssetUsage(const char* mapname) override {}
 #endif
 
 	virtual Real getAverageFPS() override { return 0; }

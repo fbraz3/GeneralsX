@@ -37,6 +37,7 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
+#include "Common/MapObject.h"
 #include "Common/STLTypedefs.h"
 #include "GameClient/ParabolicEase.h"
 #include "GameClient/View.h"
@@ -47,6 +48,8 @@ class Drawable;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum {MAX_WAYPOINTS=25};
+
+constexpr const Real TERRAIN_SAMPLE_SIZE = MAP_XY_FACTOR * 4;
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -165,8 +168,8 @@ public:
 
 	virtual void forceRedraw() override;
 
-	virtual Bool isDoingScriptedCamera();
-	virtual void stopDoingScriptedCamera();
+	virtual Bool isDoingScriptedCamera() override;
+	virtual void stopDoingScriptedCamera() override;
 
 	virtual void setAngle( Real radians ) override;									///< Rotate the view around the vertical axis to the given angle (yaw)
 	virtual void setPitch( Real radians ) override;									///< Rotate the view around the horizontal axis to the given angle (pitch)
@@ -185,9 +188,9 @@ public:
  	virtual void rotateCamera(Real rotations, Int frames, Real easeIn, Real easeOut) override;					///< Rotate camera about current viewpoint.
 	virtual void rotateCameraTowardObject(ObjectID id, Int milliseconds, Int holdMilliseconds, Real easeIn, Real easeOut) override;	///< Rotate camera to face an object, and hold on it
 	virtual void rotateCameraTowardPosition(const Coord3D *pLoc, Int milliseconds, Real easeIn, Real easeOut, Bool reverseRotation) override;	///< Rotate camera to face a location.
-	virtual void cameraModFreezeTime(){ m_freezeTimeForCameraMovement = true;}					///< Freezes time during the next camera movement.
+	virtual void cameraModFreezeTime() override { m_freezeTimeForCameraMovement = true;}					///< Freezes time during the next camera movement.
 	virtual void cameraModFreezeAngle() override;												///< Freezes time during the next camera movement.
-	virtual Bool isTimeFrozen(){ return m_freezeTimeForCameraMovement;}					///< Freezes time during the next camera movement.
+	virtual Bool isTimeFrozen() override { return m_freezeTimeForCameraMovement;}					///< Freezes time during the next camera movement.
 	virtual void cameraModFinalZoom(Real finalZoom, Real easeIn, Real easeOut) override;	///< Final zoom for current camera movement.
 	virtual void cameraModRollingAverage(Int framesToAverage) override;			///< Number of frames to average movement for current camera movement.
 	virtual void cameraModFinalTimeMultiplier(Int finalMultiplier) override; ///< Final time multiplier for current camera movement.
@@ -293,13 +296,14 @@ private:
 	Bool m_recalcCameraConstraintsAfterScrolling; ///< Recalculates the camera area constraints after the user has moved the camera
 	Bool m_recalcCamera; ///< Recalculates the camera transform in the next render update
 
+	Real getHeightAroundPos(Real x, Real y, Real terrainSampleSize = TERRAIN_SAMPLE_SIZE) const;
 	Real getCameraOffsetZ() const;
 	Real getDesiredHeight(Real x, Real y) const;
 	Real getDesiredZoom(Real x, Real y) const;
 	Real getMaxHeight(Real x, Real y) const;
 	Real getMaxZoom(Real x, Real y) const;
 	void updateCameraTransform(); ///< update the transform matrix of m_3DCamera, based on m_pos & m_angle
-	void updateCameraClipPlanes();
+	void updateCameraClipPlanes(const Matrix3D &transform);
 	void setCameraTransform(const Matrix3D &transform);
 	void buildCameraPosition(Vector3 &sourcePos, Vector3 &targetPos);
 	void buildCameraTransform(Matrix3D *transform, const Vector3 &sourcePos, const Vector3 &targetPos); ///< calculate (but do not set) the transform matrix of m_3DCamera, based on m_pos & m_angle
@@ -311,7 +315,7 @@ private:
 	void clipCameraIntoAreaConstraints();
 	Bool isWithinCameraAreaConstraints() const;
 	Bool isWithinCameraHeightConstraints() const;
-	virtual void setUserControlled(Bool value);
+	virtual void setUserControlled(Bool value) override;
 	Bool hasScriptedState(ScriptedState state) const;
 	void addScriptedState(ScriptedState state);
 	void removeScriptedState(ScriptedState state);

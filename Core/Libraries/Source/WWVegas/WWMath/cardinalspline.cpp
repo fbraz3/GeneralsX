@@ -218,9 +218,9 @@ bool CardinalSpline3DClass::Load(ChunkLoadClass &cload)
 /*
 ** CardinalSpline1DClass Implementation
 */
-int CardinalSpline1DClass::Add_Key(float point,float t)
+int CardinalSpline1DClass::Add_Key(float point,float t,unsigned int extra)
 {
-	int index = HermiteSpline1DClass::Add_Key(point,t);
+	int index = HermiteSpline1DClass::Add_Key(point,t,extra);
 	float tightness = 0.5f;
 	Tightness.Insert(index,tightness);
 	return index;

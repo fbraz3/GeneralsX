@@ -611,7 +611,7 @@ public:
 	PartitionFilterIsFlying() { }
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterIsFlying"; }
+	virtual const char* debugGetName() override { return "PartitionFilterIsFlying"; }
 #endif
 };
 
@@ -627,7 +627,7 @@ public:
 	PartitionFilterWouldCollide(const Coord3D& pos, const GeometryInfo& geom, Real angle, Bool desired);
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterWouldCollide"; }
+	virtual const char* debugGetName() override { return "PartitionFilterWouldCollide"; }
 #endif
 };
 
@@ -643,7 +643,7 @@ public:
 	PartitionFilterSamePlayer(const Player *player) : m_player(player) { }
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterSamePlayer"; }
+	virtual const char* debugGetName() override { return "PartitionFilterSamePlayer"; }
 #endif
 };
 
@@ -669,7 +669,7 @@ public:
 	PartitionFilterRelationship(const Object *obj, Int flags) : m_obj(obj), m_flags(flags) { }
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterRelationship"; }
+	virtual const char* debugGetName() override { return "PartitionFilterRelationship"; }
 #endif
 };
 
@@ -686,7 +686,7 @@ public:
 	PartitionFilterAcceptOnTeam(const Team *team);
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterAcceptOnTeam"; }
+	virtual const char* debugGetName() override { return "PartitionFilterAcceptOnTeam"; }
 #endif
 };
 
@@ -703,7 +703,7 @@ public:
 	PartitionFilterAcceptOnSquad(const Squad *squad);
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterAcceptOnSquad"; }
+	virtual const char* debugGetName() override { return "PartitionFilterAcceptOnSquad"; }
 #endif
 };
 
@@ -726,7 +726,7 @@ public:
 	PartitionFilterLineOfSight(const Object *obj);
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterLineOfSight"; }
+	virtual const char* debugGetName() override { return "PartitionFilterLineOfSight"; }
 #endif
 };
 
@@ -744,7 +744,7 @@ public:
 	PartitionFilterPossibleToAttack(AbleToAttackType t, const Object *obj, CommandSourceType commandSource);
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterPossibleToAttack"; }
+	virtual const char* debugGetName() override { return "PartitionFilterPossibleToAttack"; }
 #endif
 };
 
@@ -760,7 +760,7 @@ public:
 	PartitionFilterLastAttackedBy(Object *obj);
 	virtual Bool allow(Object *other) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterLastAttackedBy"; }
+	virtual const char* debugGetName() override { return "PartitionFilterLastAttackedBy"; }
 #endif
 };
 
@@ -776,7 +776,7 @@ public:
 	PartitionFilterAcceptByObjectStatus(ObjectStatusMaskType mustBeSet, ObjectStatusMaskType mustBeClear) : m_mustBeSet(mustBeSet), m_mustBeClear(mustBeClear) { }
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterAcceptByObjectStatus"; }
+	virtual const char* debugGetName() override { return "PartitionFilterAcceptByObjectStatus"; }
 #endif
 };
 
@@ -796,7 +796,7 @@ public:
 	}
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterRejectByObjectStatus"; }
+	virtual const char* debugGetName() override { return "PartitionFilterRejectByObjectStatus"; }
 #endif
 };
 
@@ -813,7 +813,7 @@ public:
 	PartitionFilterStealthedAndUndetected( const Object *obj, Bool allow ) { m_obj = obj; m_allow = allow; }
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterStealthedAndUndetected"; }
+	virtual const char* debugGetName() override { return "PartitionFilterStealthedAndUndetected"; }
 #endif
 };
 
@@ -829,7 +829,7 @@ public:
 	PartitionFilterAcceptByKindOf(const KindOfMaskType& mustBeSet, const KindOfMaskType& mustBeClear) : m_mustBeSet(mustBeSet), m_mustBeClear(mustBeClear) { }
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterAcceptByKindOf"; }
+	virtual const char* debugGetName() override { return "PartitionFilterAcceptByKindOf"; }
 #endif
 };
 
@@ -849,7 +849,7 @@ public:
 	}
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterRejectByKindOf"; }
+	virtual const char* debugGetName() override { return "PartitionFilterRejectByKindOf"; }
 #endif
 };
 
@@ -866,7 +866,7 @@ public:
 	PartitionFilterRejectBehind( Object *obj );
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterRejectBehind"; }
+	virtual const char* debugGetName() override { return "PartitionFilterRejectBehind"; }
 #endif
 };
 
@@ -881,7 +881,7 @@ public:
 protected:
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterAlive"; }
+	virtual const char* debugGetName() override { return "PartitionFilterAlive"; }
 #endif
 };
 
@@ -899,7 +899,7 @@ public:
 protected:
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterSameMapStatus"; }
+	virtual const char* debugGetName() override { return "PartitionFilterSameMapStatus"; }
 #endif
 };
 
@@ -914,7 +914,7 @@ public:
 protected:
 	virtual Bool allow(Object *objOther) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterOnMap"; }
+	virtual const char* debugGetName() override { return "PartitionFilterOnMap"; }
 #endif
 };
 
@@ -934,7 +934,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterRejectBuildings"; }
+	virtual const char* debugGetName() override { return "PartitionFilterRejectBuildings"; }
 #endif
 };
 
@@ -954,7 +954,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterInsignificantBuildings"; }
+	virtual const char* debugGetName() override { return "PartitionFilterInsignificantBuildings"; }
 #endif
 };
 
@@ -972,7 +972,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterFreeOfFog"; }
+	virtual const char* debugGetName() override { return "PartitionFilterFreeOfFog"; }
 #endif
 };
 
@@ -989,7 +989,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterRepulsor"; }
+	virtual const char* debugGetName() override { return "PartitionFilterRepulsor"; }
 #endif
 };
 
@@ -1010,7 +1010,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterIrregularArea"; }
+	virtual const char* debugGetName() override { return "PartitionFilterIrregularArea"; }
 #endif
 };
 
@@ -1030,7 +1030,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterPolygonTrigger"; }
+	virtual const char* debugGetName() override { return "PartitionFilterPolygonTrigger"; }
 #endif
 };
 
@@ -1050,7 +1050,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterPlayer"; }
+	virtual const char* debugGetName() override { return "PartitionFilterPlayer"; }
 #endif
 };
 
@@ -1075,7 +1075,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterPlayerAffiliation"; }
+	virtual const char* debugGetName() override { return "PartitionFilterPlayerAffiliation"; }
 #endif
 };
 
@@ -1097,7 +1097,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterThing"; }
+	virtual const char* debugGetName() override { return "PartitionFilterThing"; }
 #endif
 };
 
@@ -1119,7 +1119,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterGarrisonable"; }
+	virtual const char* debugGetName() override { return "PartitionFilterGarrisonable"; }
 #endif
 };
 
@@ -1142,7 +1142,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterGarrisonableByPlayer"; }
+	virtual const char* debugGetName() override { return "PartitionFilterGarrisonableByPlayer"; }
 #endif
 };
 
@@ -1160,7 +1160,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterUnmannedObject"; }
+	virtual const char* debugGetName() override { return "PartitionFilterUnmannedObject"; }
 #endif
 };
 
@@ -1182,7 +1182,7 @@ public:
 protected:
 	virtual Bool allow( Object *other ) override;
 #if defined(RTS_DEBUG)
-	virtual const char* debugGetName() { return "PartitionFilterValidCommandButtonTarget"; }
+	virtual const char* debugGetName() override { return "PartitionFilterValidCommandButtonTarget"; }
 #endif
 };
 

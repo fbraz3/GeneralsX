@@ -8,6 +8,7 @@ add_library(gi_always_no_pch INTERFACE) # Use this for Shared Libs with MFC AFX
 target_include_directories(gi_gameengine_include INTERFACE "GameEngine/Include")
 target_include_directories(gi_libraries_source_wwvegas INTERFACE "Libraries/Source/WWVegas")
 target_include_directories(gi_main INTERFACE "Main")
+target_include_directories(gi_always INTERFACE "CompatLib/Include")
 
 target_compile_definitions(gi_always INTERFACE
     RTS_GENERALS=1

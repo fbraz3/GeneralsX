@@ -321,11 +321,20 @@ void GameLODManager::init()
 
 	//always get this data in case we need it later.
 	testMinimumRequirements(nullptr,&m_cpuType,&m_cpuFreq,&m_numRAM,nullptr,nullptr,nullptr);
-// TheSuperHackers @bugfix fighter19 20/02/2026 Assume reasonable hardware on Linux since CPU/RAM detection is Windows-only
+	// GeneralsX @bugfix Copilot 11/05/2026 Apply non-Windows hardware fallbacks only when detection returns unknown/zero values.
 #ifndef _WIN32
-	m_numRAM = 1024*1024*1024; // assume 1GB RAM
-	m_cpuType = P4;            // assume P4
-	m_cpuFreq = 2000;          // assume 2GHz
+	if (m_numRAM == 0)
+	{
+		m_numRAM = 1024*1024*1024; // assume 1GB RAM
+	}
+	if (m_cpuType == XX)
+	{
+		m_cpuType = P4;            // assume P4
+	}
+	if (m_cpuFreq == 0)
+	{
+		m_cpuFreq = 2000;          // assume 2GHz
+	}
 #endif
 
 	if ((Real)(m_numRAM)/(Real)(256*1024*1024) >= PROFILE_ERROR_LIMIT)

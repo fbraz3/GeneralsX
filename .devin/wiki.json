@@ -9,37 +9,37 @@
       "author": "GeneralsX Team"
     },
     {
-      "content": "Build system uses CMake with multiple presets. Legacy Windows: 'vc6' (Visual Studio 6, stable upstream baseline), 'win32' (MSVC 2022, experimental). Cross-platform: 'linux64-deploy' (Linux native ELF, primary), 'linux64-testing' (Linux debug), 'macos-deploy' (macOS, TBD), 'windows64-deploy' (Modern Windows 64-bit, TBD), 'mingw-w64-i686' (MinGW cross-compile). Each platform may be developed on a separate branch and merged to main as it stabilizes. Key scripts in scripts/. Build logs go to logs/. DXVK headers are fetched via CMake FetchContent into build/_deps/dxvk-src/ and require pre-guard patches for type conflicts (MEMORYSTATUS, IUnknown).",
+      "content": "Build system uses CMake with multiple presets. Legacy Windows (maintenance only): 'vc6' (Visual Studio 6, 32-bit, DirectX 8 + Miles), 'win32' (MSVC 2022, experimental upstream path). Cross-platform releases: 'linux64-deploy' (Linux native ELF, primary), 'linux64-testing' (Linux debug), 'macos-vulkan' (macOS ARM64, active release), 'mingw-w64-i686' (MinGW-w64 cross-compile, current active Windows pipeline), 'windows64-deploy' (planned MinGW-w64 x86_64, tracked in issue #29). Development uses feature branches per platform or topic area, merged to main as they stabilize. Scripts are organized under scripts/build/, scripts/env/, scripts/qa/, scripts/tooling/. Build logs go to logs/. DXVK source of truth is the fork branch generalsx-macos-v2.6 in references/fbraz3-dxvk; fixes must be committed there and consumed from the tracked remote branch — never patch build/_deps/ directly.",
       "author": "GeneralsX Team"
     },
     {
-      "content": "Development phases (cross-platform, each platform branch may progress independently): Phase 0 (analysis/planning — COMPLETE), Phase 1 (DXVK + SDL3 graphics — COMPLETE on Linux), Phase 2 (OpenAL audio replacing Miles Sound System — IN PROGRESS on Linux), Phase 3 (Bink video replacement / FFmpeg spike), Phase 4 (polish/hardening). Documentation structure: docs/DEV_BLOG/ (monthly diaries, newest-first), docs/WORKDIR/phases/ (phase plans), docs/WORKDIR/lessons/ (lessons learned), docs/WORKDIR/reports/ (session reports), docs/WORKDIR/support/ (technical discoveries). Every user-facing code change needs a GeneralsX annotation comment: // GeneralsX @keyword author DD/MM/YYYY Description.",
+      "content": "Platform release status: Linux (active release — DXVK graphics working, OpenAL audio working), macOS ARM64 (active release — DXVK + MoltenVK + SDL3 + OpenAL), Windows MinGW-w64 (backlog — tracked in issue #29). Documentation structure: docs/DEV_BLOG/ (monthly diaries, newest-first), docs/WORKDIR/planning/ (strategic documents), docs/WORKDIR/lessons/ (lessons learned), docs/WORKDIR/reports/ (session reports), docs/WORKDIR/support/ (technical discoveries), docs/WORKDIR/audit/ (audit records). Every user-facing code change needs a GeneralsX annotation comment: // GeneralsX @keyword author DD/MM/YYYY Description.",
       "author": "GeneralsX Team"
     },
     {
-      "content": "Core shared engine lives under Core/: GameEngine/ (logic, audio, rendering abstractions), GameEngineDevice/ (platform-specific device implementations — DX8 legacy, DXVK cross-platform target), Libraries/ (utilities: WWVegas, math, containers, STLPort for VC6). The cmake/ directory contains modular cmake scripts: dx8.cmake (renderer), miles.cmake (audio legacy), sdl3.cmake (SDL3 windowing), mingw.cmake (cross-compilation), toolchains/ for platform-specific toolchain files. The unified technology stack is DXVK (graphics) + SDL3 (windowing/input) + OpenAL (audio) on all three platforms.",
+      "content": "Core shared engine lives under Core/: GameEngine/ (logic, audio, rendering abstractions), GameEngineDevice/ (platform-specific device implementations — DX8 legacy, DXVK cross-platform target), Libraries/ (utilities: WWVegas, math, containers, STLPort for VC6). The cmake/ directory contains modular cmake scripts: dx8.cmake (renderer), miles.cmake (audio legacy), openal.cmake (OpenAL audio), sdl3.cmake (SDL3 windowing), mingw.cmake (cross-compilation), config.cmake / config-build.cmake (build options), FindFFmpeg.cmake (video), toolchains/ for platform-specific toolchain files. Dependency management uses vcpkg (vcpkg.json). The unified technology stack is DXVK (graphics) + SDL3 (windowing/input) + OpenAL (audio) on all three platforms.",
       "author": "GeneralsX Team"
     }
   ],
   "pages": [
     {
       "title": "Project Overview",
-      "purpose": "High-level overview of GeneralsX: goals, scope, strategy, platform targets, and relationship between the three reference repositories (TheSuperHackers, fighter19, jmarshall). Explain the port phases and non-negotiable constraints (Windows VC6 compatibility, retail compatibility).",
+      "purpose": "High-level overview of GeneralsX: goals, scope, strategy, platform targets, and relationship between the three reference repositories (TheSuperHackers, fighter19, jmarshall). Cover non-negotiable constraints (retail compatibility, platform isolation, single codebase). Linux and macOS are active releases; Windows MinGW-w64 is in the backlog (issue #29).",
       "parent": null
     },
     {
       "title": "Repository Structure",
-      "purpose": "Document the top-level directory layout: GeneralsMD/ (Zero Hour, primary), Generals/ (base game, secondary), Core/ (shared engine), Dependencies/, references/, cmake/, scripts/, docs/, build/. Explain what belongs in each folder and the platform isolation rules.",
+      "purpose": "Document the top-level directory layout: GeneralsMD/ (Zero Hour, primary), Generals/ (base game, secondary), Core/ (shared engine), Dependencies/ (external SDKs), references/ (fighter19, jmarshall, thesuperhackers, fbraz3-dxvk, generals-online-client), cmake/ (modular CMake scripts), scripts/ (organized build/env/qa/tooling), resources/ (Docker, DXVK runtime, git info, Visual Studio assets), flatpak/ (Flatpak manifests and metadata), assets/, docs/, build/. Explain what belongs in each folder and the platform isolation rules.",
       "parent": "Project Overview"
     },
     {
       "title": "Build System & Presets",
-      "purpose": "Document CMakePresets.json and all build presets: legacy (vc6, win32), cross-platform (linux64-deploy, linux64-testing, macos-deploy, windows64-deploy, mingw-w64-i686). Explain the cmake/ modular scripts (dx8.cmake, miles.cmake, sdl3.cmake, mingw.cmake). Cover Docker-based build workflow for Linux, native builds per platform, and the per-platform branch strategy.",
+      "purpose": "Document CMakePresets.json and all build presets: legacy maintenance-only (vc6, win32), cross-platform releases (linux64-deploy, linux64-testing, macos-vulkan, mingw-w64-i686, mingw-w64-i686-debug, mingw-w64-i686-profile, windows64-deploy planned). Explain the cmake/ modular scripts (dx8.cmake, miles.cmake, sdl3.cmake, openal.cmake, mingw.cmake). Cover Docker-based build workflow for Linux, native builds for Linux/macOS, MinGW cross-builds, and the feature-branch merge strategy.",
       "parent": "Project Overview"
     },
     {
       "title": "Scripts Reference",
-      "purpose": "Document all scripts in scripts/: Docker build scripts (docker-build-linux-zh.sh, docker-build-mingw-zh.sh, docker-build-images.sh), configure scripts (docker-configure-linux.sh), deploy/run scripts (deploy-linux-zh.sh, run-linux-zh.sh, run-macos-zh.sh), build-macos-zh.sh, and fix/patch utilities (fix_*.py, apply-patch-13-manual.sh).",
+      "purpose": "Document the organized scripts/ layout: scripts/build/linux/ (docker-configure-linux.sh, docker-build-linux-zh.sh, docker-build-mingw-zh.sh, deploy-linux-zh.sh, run-linux-zh.sh, bundle-linux-zh.sh, build-linux-appimage-zh.sh, build-linux-flatpak.sh), scripts/build/macos/ (build-macos-zh.sh, deploy-macos-zh.sh, run-macos-zh.sh, bundle-macos-zh.sh), scripts/env/docker/ (docker-build-images.sh), scripts/env/cache/ (ccache/sccache setup), scripts/qa/smoke/ (docker-smoke-test-zh.sh), scripts/tooling/cpp/maintenance/ (fixIncludesCase.sh, fix_*.py), scripts/legacy/compat/ (deprecated shims).",
       "parent": "Build System & Presets"
     },
     {
@@ -54,7 +54,7 @@
     },
     {
       "title": "Audio System",
-      "purpose": "Document the current Miles Sound System integration: where it initializes, how it interfaces with the game engine (Core/GameEngine/Audio/). Document jmarshall's OpenAL implementation in references/jmarshall-win64-modern/Code/Audio/ as the Phase 2 replacement target. Highlight Zero Hour-specific audio hooks that differ from base Generals.",
+      "purpose": "Document the current Miles Sound System integration: where it initializes, how it interfaces with the game engine (Core/GameEngine/Audio/). Document jmarshall's OpenAL implementation in references/jmarshall-win64-modern/Code/Audio/ as the cross-platform replacement target. Highlight Zero Hour-specific audio hooks that differ from base Generals.",
       "parent": "Core Engine Architecture"
     },
     {
@@ -64,37 +64,37 @@
     },
     {
       "title": "Cross-Platform Port Strategy",
-      "purpose": "Document the cross-platform port approach targeting Linux, macOS, and Windows under a single codebase: SDL3 (windowing/input), DXVK (DirectX 8→Vulkan on all platforms), OpenAL (audio), 64-bit native. Cover per-platform branches, the unified technology stack, DXVK pre-guard patch strategy for type conflicts (MEMORYSTATUS, IUnknown), and reference repositories (fighter19 for graphics, jmarshall for audio).",
+      "purpose": "Document the cross-platform port approach targeting Linux, macOS, and Windows under a single codebase: SDL3 (windowing/input), DXVK (DirectX 8→Vulkan on all platforms), OpenAL (audio), 64-bit native. Cover the feature-branch merge strategy, the unified technology stack, DXVK fork source-of-truth policy (references/fbraz3-dxvk, branch generalsx-macos-v2.6), CompatLib pre-guards in windows_compat.h, and reference repositories (fighter19 for graphics, jmarshall for audio).",
       "parent": null
     },
     {
       "title": "DXVK Integration",
-      "purpose": "Document the DXVK DirectX8→Vulkan integration (cross-platform): how DXVK headers are fetched via FetchContent, the ephemeral patch problem and pre-guard solution in GeneralsMD/Code/CompatLib/Include/windows_compat.h, SDL3 windowing hooks, and the device wrapper pattern from fighter19's reference. DXVK works on Linux (native Vulkan), macOS (via MoltenVK), and Windows (native Vulkan). Cover cmake/dx8.cmake and related CMake flags.",
+      "purpose": "Document the DXVK DirectX8→Vulkan integration (cross-platform): DXVK source-of-truth policy (fork branch generalsx-macos-v2.6 in references/fbraz3-dxvk, consumed via CMake FetchContent tracking the remote branch), pre-guard compatibility shims in GeneralsMD/Code/CompatLib/Include/windows_compat.h, SDL3 windowing hooks, and the device wrapper pattern from fighter19's reference. DXVK works on Linux (native Vulkan), macOS (via MoltenVK), and Windows (native Vulkan). Cover cmake/dx8.cmake, SAGE_DXVK_USE_LOCAL_FORK flag, and the rule to never patch build/_deps/ directly.",
       "parent": "Cross-Platform Port Strategy"
     },
     {
-      "title": "OpenAL Audio Integration (Phase 2)",
+      "title": "OpenAL Audio Integration",
       "purpose": "Document the Miles Sound System → OpenAL replacement (cross-platform): API compatibility layer design, audio format conversion, Zero Hour-specific adaptation notes from jmarshall's Generals-only implementation, and the USE_OPENAL vs USE_MILES compile flag strategy. OpenAL runs on all three target platforms.",
       "parent": "Cross-Platform Port Strategy"
     },
     {
       "title": "Linux Platform",
-      "purpose": "Document Linux-specific build, deploy, and run details: linux64-deploy preset, Docker builds, native GCC/Clang builds, deploy-linux-zh.sh, run-linux-zh.sh, Vulkan driver requirements, case-sensitive filesystem notes, CompatLib (windows_compat.h). Current primary focus branch (main). Phase 1 complete, Phase 2 (audio) in progress.",
+      "purpose": "Document Linux-specific build, deploy, and run details: linux64-deploy preset, Docker-based builds via scripts/build/linux/, native GCC/Clang builds, scripts/build/linux/deploy-linux-zh.sh, scripts/build/linux/run-linux-zh.sh, scripts/qa/smoke/docker-smoke-test-zh.sh, Vulkan driver requirements, case-sensitive filesystem (use scripts/tooling/cpp/maintenance/fixIncludesCase.sh), CompatLib (windows_compat.h). Active release on main — DXVK graphics and OpenAL audio working.",
       "parent": "Cross-Platform Port Strategy"
     },
     {
       "title": "macOS Platform",
-      "purpose": "Document macOS-specific plans (TBD): DXVK + MoltenVK (DX8→Vulkan→Metal), SDL3, OpenAL, universal binary (x86_64 + arm64), macos-deploy preset, code signing/notarization, App bundle packaging. Separate branch.",
+      "purpose": "Document macOS-specific build, deploy, and run details: macos-vulkan preset (ARM64 Apple Silicon, macOS 15.0+), DXVK + MoltenVK (DX8→Vulkan→Metal chain), SDL3, OpenAL, scripts/build/macos/ workflow. Covers Rosetta2+Meson adversarial issue (use cmake/meson-arm64-native.ini), LunarG Vulkan SDK requirement, SAGE_DXVK_USE_LOCAL_FORK flag, universal binary plans (arm64+x86_64). Active release on main.",
       "parent": "Cross-Platform Port Strategy"
     },
     {
       "title": "Windows Modern Platform",
-      "purpose": "Document the modern Windows build plans (TBD): SDL3 + DXVK + OpenAL, 64-bit native, windows64-deploy preset, MSVC 2022 or MinGW-w64 toolchain. Coexists with legacy VC6/win32 upstream builds. Separate branch.",
+      "purpose": "Document the modern Windows build (backlog, issue #29): MinGW-w64 as the primary toolchain for SDL3 + DXVK + OpenAL + FFmpeg. Current presets: mingw-w64-i686 (active cross-build via Docker), windows64-deploy (planned x86_64). Legacy vc6/win32 presets remain for maintenance/compatibility only. Covers Docker-based cross-builds from Linux/macOS, Vulkan requirements on Windows, and acceptance criteria tracked in issue #29.",
       "parent": "Cross-Platform Port Strategy"
     },
     {
       "title": "Reference Repositories",
-      "purpose": "Document the three reference repositories under references/: fighter19-dxvk-port/ (DXVK/SDL3, full ZH coverage, primary graphics/platform reference), jmarshall-win64-modern/ (OpenAL/Win64, Generals-only, primary audio reference), thesuperhackers-main/ (upstream Windows baseline). Explain what to use each reference for and adaptation notes for cross-platform work.",
+      "purpose": "Document the reference repositories under references/: fighter19-dxvk-port/ (DXVK/SDL3, full ZH coverage, primary graphics/platform reference), jmarshall-win64-modern/ (OpenAL/Win64, Generals-only, primary audio reference), thesuperhackers-main/ (upstream Windows baseline for sync), fbraz3-dxvk/ (DXVK fork source of truth, branch generalsx-macos-v2.6), generals-online-client/ (GeneralsOnline multiplayer client, far-future compatibility target). Explain what to use each reference for and adaptation notes for cross-platform work.",
       "parent": "Cross-Platform Port Strategy"
     },
     {
@@ -119,7 +119,7 @@
     },
     {
       "title": "Documentation Structure",
-      "purpose": "Document docs/ layout: DEV_BLOG/ (monthly diaries, newest-first format), WORKDIR/phases/ (phase implementation plans), WORKDIR/planning/ (strategic documents), WORKDIR/reports/ (session reports), WORKDIR/support/ (technical discoveries), WORKDIR/audit/, WORKDIR/lessons/ (lessons learned for future sessions), ETC/ (reference/historical), KNOWN_ISSUES/.",
+      "purpose": "Document docs/ layout: DEV_BLOG/ (monthly diaries, newest-first format), WORKDIR/planning/ (strategic documents and roadmaps), WORKDIR/reports/ (session reports), WORKDIR/support/ (technical discoveries), WORKDIR/audit/ (audit and verification), WORKDIR/lessons/ (lessons learned for future sessions), ETC/ (reference/historical materials), KNOWN_ISSUES/. Active work goes to WORKDIR/; diary-only entries go to DEV_BLOG/; issues are tracked in GitHub, not markdown files.",
       "parent": "Development Workflow"
     }
   ]

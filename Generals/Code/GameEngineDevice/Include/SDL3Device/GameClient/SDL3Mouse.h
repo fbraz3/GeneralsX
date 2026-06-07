@@ -120,7 +120,6 @@ private:
 
 	// GeneralsX @bugfix BenderAI 22/02/2026 Add cursor animation tracking
 	Int m_directionFrame;         ///< current frame of directional cursor (from 0 points up)
-	UnsignedInt m_inputFrame;     ///< input frame counter for animation timing
 };
 
 #endif // !_WIN32

@@ -120,12 +120,12 @@ public:
 		HashVal = (int)(item.VertIdx[0]*12345.6f + item.VertIdx[1]*1714.38484f + item.VertIdx[2]*27561.3f)&1023;
 	}
 
-	virtual int		Num_Hash_Bits()
+	virtual int		Num_Hash_Bits() override
 	{
 		return 10;
 	}
 
-	virtual int		Num_Hash_Values()
+	virtual int		Num_Hash_Values() override
 	{
 		return 1;
 	}

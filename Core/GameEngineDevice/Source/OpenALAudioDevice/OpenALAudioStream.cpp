@@ -118,6 +118,14 @@ void OpenALAudioStream::update()
             num_queued = refreshedQueued;
         }
     }
+
+    // GeneralsX @bugfix fbraz3 27/04/2026 Restart after refill when a generic speech stream
+    // began the frame with an empty queue; otherwise processPlayingList() can release it as
+    // stopped before the newly buffered narrator audio ever starts playing.
+    alGetSourcei(m_source, AL_SOURCE_STATE, &sourceState);
+    if ((sourceState == AL_STOPPED || sourceState == AL_INITIAL || sourceState == AL_PAUSED) && num_queued > 0) {
+        play();
+    }
 }
 
 void OpenALAudioStream::reset()

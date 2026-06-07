@@ -86,9 +86,9 @@ RenderObjClass * PrimitivePrototypeClass::Create()
 }
 
 
-class HModelPrototypeClass : public W3DMPO, public PrototypeClass
+class HModelPrototypeClass : public PrototypeClass
 {
-	W3DMPO_GLUE(HModelPrototypeClass)
+	W3DMPO_CODE(HModelPrototypeClass)
 public:
 	HModelPrototypeClass(HModelDefClass * def)				{ HModelDef = def; assert(HModelDef); }
 

@@ -122,7 +122,7 @@ protected:
 
 	virtual AIStateMachine* makeStateMachine() override;
 
-	virtual void privateFollowPath( std::vector<Coord3D>* path, Object *ignoreObject, CommandSourceType cmdSource, Bool exitProduction );///< follow the path defined by the given array of points
+	virtual void privateFollowPath( std::vector<Coord3D>* path, Object *ignoreObject, CommandSourceType cmdSource, Bool exitProduction ) override;///< follow the path defined by the given array of points
 	virtual void privateFollowPathAppend( const Coord3D *pos, CommandSourceType cmdSource ) override;
 	virtual void privateEnter( Object *obj, CommandSourceType cmdSource ) override;							///< enter the given object
 	virtual void privateGetRepaired( Object *repairDepot, CommandSourceType cmdSource ) override;///< get repaired at repair depot

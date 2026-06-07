@@ -80,6 +80,7 @@
 
 #include "W3DDevice/Common/W3DConvert.h"
 #include "W3DDevice/GameClient/HeightMap.h"
+#include "W3DDevice/GameClient/WorldHeightMap.h"
 #include "W3DDevice/GameClient/W3DAssetManager.h"
 #include "W3DDevice/GameClient/W3DDisplay.h"
 #include "W3DDevice/GameClient/W3DScene.h"
@@ -117,20 +118,41 @@ static void normAngle(Real &angle)
 	angle = WWMath::Normalize_Angle(angle);
 }
 
-#define TERRAIN_SAMPLE_SIZE 40.0f
-static Real getHeightAroundPos(Real x, Real y)
+
+Real W3DView::getHeightAroundPos(Real x, Real y, Real terrainSampleSize) const
 {
-	// terrain height + desired height offset == cameraOffset * actual zoom
 	Real terrainHeight = TheTerrainLogic->getGroundHeight(x, y);
 
-	// find best approximation of max terrain height we can see
-	Real terrainHeightMax = terrainHeight;
-	terrainHeightMax = max(terrainHeightMax, TheTerrainLogic->getGroundHeight(x+TERRAIN_SAMPLE_SIZE, y-TERRAIN_SAMPLE_SIZE));
-	terrainHeightMax = max(terrainHeightMax, TheTerrainLogic->getGroundHeight(x-TERRAIN_SAMPLE_SIZE, y-TERRAIN_SAMPLE_SIZE));
-	terrainHeightMax = max(terrainHeightMax, TheTerrainLogic->getGroundHeight(x+TERRAIN_SAMPLE_SIZE, y+TERRAIN_SAMPLE_SIZE));
-	terrainHeightMax = max(terrainHeightMax, TheTerrainLogic->getGroundHeight(x-TERRAIN_SAMPLE_SIZE, y+TERRAIN_SAMPLE_SIZE));
+#if PRESERVE_RETAIL_SCRIPTED_CAMERA
+	// TheSuperHackers @info xezon 06/12/2025 To preserve the exact look of the original scripted camera
+	// it is not possible to change the terrain height sampling method during cinematic scenes.
+	const Bool useSmoothTerrainSample = m_isUserControlled;
+#else
+	const Bool useSmoothTerrainSample = true;
+#endif
+	if (useSmoothTerrainSample)
+	{
+		// TheSuperHackers @tweak Now finds approximation of average terrain height instead of maximum terrain height.
+		// 4 additional sample points around the center point will be averaged.
+		// (3)   (2)
+		//    (1)   
+		// (5)   (4)
+		terrainHeight += TheTerrainLogic->getGroundHeight(x+terrainSampleSize, y-terrainSampleSize);
+		terrainHeight += TheTerrainLogic->getGroundHeight(x-terrainSampleSize, y-terrainSampleSize);
+		terrainHeight += TheTerrainLogic->getGroundHeight(x+terrainSampleSize, y+terrainSampleSize);
+		terrainHeight += TheTerrainLogic->getGroundHeight(x-terrainSampleSize, y+terrainSampleSize);
+		terrainHeight /= 5;
+	}
+	else
+	{
+		// find best approximation of max terrain height we can see
+		terrainHeight = max(terrainHeight, TheTerrainLogic->getGroundHeight(x+terrainSampleSize, y-terrainSampleSize));
+		terrainHeight = max(terrainHeight, TheTerrainLogic->getGroundHeight(x-terrainSampleSize, y-terrainSampleSize));
+		terrainHeight = max(terrainHeight, TheTerrainLogic->getGroundHeight(x+terrainSampleSize, y+terrainSampleSize));
+		terrainHeight = max(terrainHeight, TheTerrainLogic->getGroundHeight(x-terrainSampleSize, y+terrainSampleSize));
+	}
 
-	return terrainHeightMax;
+	return terrainHeight;
 }
 
 
@@ -464,7 +486,7 @@ Bool W3DView::movePivotToGround()
 
 			// Adjust the strength of the repositioning for low camera pitch, because
 			// it feels bad to move the camera around when it looks over the terrain.
-			const Real pitch = WWMath::Asin(fabs(delta.Z) / delta.Length());
+			const Real pitch = asin(fabs(delta.Z) / delta.Length());
 			constexpr const Real lowerPitch = DEG_TO_RADF(15.f);
 			constexpr const Real upperPitch = DEG_TO_RADF(30.f);
 			Real repositionStrength = WWMath::Inverse_Lerp(lowerPitch, upperPitch, pitch);
@@ -596,7 +618,7 @@ Real W3DView::calcCameraAreaOffset(Real maxEdgeZ)
 //-------------------------------------------------------------------------------------------------
 void W3DView::clipCameraIntoAreaConstraints()
 {
-	constexpr const Real eps = 1e-6f;
+	constexpr const Real eps = 0.1f;
 	Coord2D pos = getPosition2D();
 	pos.x = clamp(m_cameraAreaConstraints.lo.x + eps, pos.x, m_cameraAreaConstraints.hi.x - eps);
 	pos.y = clamp(m_cameraAreaConstraints.lo.y + eps, pos.y, m_cameraAreaConstraints.hi.y - eps);
@@ -710,11 +732,27 @@ void W3DView::updateCameraTransform()
 	if (TheGlobalData->m_headless)
 		return;
 
-	updateCameraClipPlanes();
-
 	Vector3 sourcePos;
 	Vector3 targetPos;
 	buildCameraPosition(sourcePos, targetPos);
+
+#if PRESERVE_RETAIL_SCRIPTED_CAMERA
+	const Bool clipCameraAboveTerrain = m_isUserControlled;
+#else
+	const Bool clipCameraAboveTerrain = true;
+#endif
+	if (clipCameraAboveTerrain)
+	{
+		// TheSuperHackers @fix Moves the camera above the terrain.
+		// Uses averaged terrain height sampling to reduce bumpy movements.
+		const Real minAcceptableCameraHeight = getHeightAroundPos(sourcePos.X, sourcePos.Y, MAP_XY_FACTOR) + NearZ;
+		if (sourcePos.Z < minAcceptableCameraHeight)
+		{
+			const Real repositionZ = minAcceptableCameraHeight - sourcePos.Z;
+			sourcePos.Z += repositionZ;
+			targetPos.Z += repositionZ;
+		}
+	}
 
 	Matrix3D cameraTransform;
 	buildCameraTransform(&cameraTransform, sourcePos, targetPos);
@@ -723,23 +761,76 @@ void W3DView::updateCameraTransform()
 }
 
 //-------------------------------------------------------------------------------------------------
+// TheSuperHackers @tweak The far clip plane is now generally aligned with the actual terrain
+// draw size. This is most useful for low camera angles.
 //-------------------------------------------------------------------------------------------------
-void W3DView::updateCameraClipPlanes()
+void W3DView::updateCameraClipPlanes(const Matrix3D &transform)
 {
-	Real farZ = 1200.0f;
+	Real farZ;
+
+	if (TheGlobalData->m_drawEntireTerrain)
+	{
+		farZ = 100000.0f;
+	}
+	else if (TheTerrainRenderObject && TheTerrainRenderObject->getMap())
+	{
+		WorldHeightMap *heightMap = TheTerrainRenderObject->getMap();
+
+		const Vector3 camPos = transform.Get_Translation();
+		const Vector3 camDir = -transform.Get_Z_Vector();
+
+		const Int loX = heightMap->getDrawOrgX() - heightMap->getBorderSize();
+		const Int loY = heightMap->getDrawOrgY() - heightMap->getBorderSize();
+		const Int hiX = loX + heightMap->getDrawWidth();
+		const Int hiY = loY + heightMap->getDrawHeight();
+
+		// Convert to world coordinates
+		const Real minX = loX * MAP_XY_FACTOR;
+		const Real minY = loY * MAP_XY_FACTOR;
+		const Real maxX = hiX * MAP_XY_FACTOR;
+		const Real maxY = hiY * MAP_XY_FACTOR;
+
+		const Real minZ = TheTerrainRenderObject->getMinHeight();
+
+		// Bounding sphere
+		Vector3 center;
+		center.X = (minX + maxX) * 0.5f;
+		center.Y = (minY + maxY) * 0.5f;
+		center.Z = minZ - 1.0f; // -1 to avoid Z clipping when looking straight down
+
+		// Half extents
+		const Real dx = (maxX - minX) * 0.5f;
+		const Real dy = (maxY - minY) * 0.5f;
+
+		// Project center
+		const Vector3 v = center - camPos;
+		const Real projectedDistanceToCenter = fabs(Vector3::Dot_Product(v, camDir));
+
+		// Project radius
+		const Real projectedRadiusToEdge = fabs(dx * camDir.X) + fabs(dy * camDir.Y);
+
+		// Final far plane
+		farZ = projectedDistanceToCenter + projectedRadiusToEdge;
+	}
+	else
+	{
+		farZ = WorldHeightMap::NORMAL_DRAW_WIDTH * MAP_XY_FACTOR;
+	}
 
 	if (m_useRealZoomCam)	//WST 10.19.2002
 	{
-		if (m_FXPitch<0.95f)
+		if (m_FXPitch < 0.95f)
 		{
-			farZ = farZ / m_FXPitch; //Extend far Z when we pitch up for RealZoomCam
+			// Extend far Z when we pitch up for RealZoomCam
+			farZ /= m_FXPitch;
 		}
 	}
 	else
 	{
-		if ((TheGlobalData->m_drawEntireTerrain) || (m_FXPitch<0.95f || m_zoom>1.05))
-		{	//need to extend far clip plane so entire terrain can be visible
-			farZ *= MAP_XY_FACTOR;
+		if (m_FXPitch < 0.95f)
+		{
+			// Extend far clip plane so entire terrain can be visible
+			farZ *= 10.0f;
 		}
 	}
 
@@ -762,6 +853,10 @@ void W3DView::setCameraTransform(const Matrix3D &transform)
 	{
 		updateTerrain();
 	}
+
+	// TheSuperHackers @info Camera clip planes must be updated after the terrain,
+	// because the new terrain draw size is needed to calculate the far clip plane.
+	updateCameraClipPlanes(transform);
 
 	// TheSuperHackers @fix Notify the Radar about the changed view always.
 	// This way the radar view box should always be in sync with the camera view.
@@ -828,7 +923,6 @@ void W3DView::set3DCameraLookAt(const Coord3D &pos, const Coord3D &dir, Real rol
 	Matrix3D transform;
 	transform.Look_At_Dir(camPos, camDir, roll);
 
-	updateCameraClipPlanes();
 	setCameraTransform(transform);
 
 	m_recalcCamera = false;
@@ -3638,7 +3732,27 @@ void W3DView::updateTerrain()
 	DEBUG_ASSERTCRASH(TheTerrainRenderObject != nullptr, ("TheTerrainRenderObject is null"));
 
 	RefRenderObjListIterator *it = W3DDisplay::m_3DScene->createLightsIterator();
-	TheTerrainRenderObject->updateCenter(m_3DCamera, it);
+	const Vector3 cameraPivot(m_pos.x, m_pos.y, m_pos.z);
+	const Real cameraPitch = asin(fabs(m_3DCamera->Get_Forward_Dir().Z));
+	Int drawWidth;
+	Int drawHeight;
+
+	if (cameraPitch > ViewDefaultLowPitchRadians)
+	{
+		drawWidth = WorldHeightMap::NORMAL_DRAW_WIDTH;
+		drawHeight = WorldHeightMap::NORMAL_DRAW_HEIGHT;
+	}
+	else
+	{
+		// TheSuperHackers @tweak xezon 31/12/2025 Increases visible terrain area when lowering the camera pitch.
+		// Note: The default camera pitch in Generals was 37.5, which we prefer to keep the normal draw size for.
+		drawWidth = WorldHeightMap::LOW_ANGLE_DRAW_WIDTH;
+		drawHeight = WorldHeightMap::LOW_ANGLE_DRAW_HEIGHT;
+	}
+
+	TheTerrainRenderObject->setTerrainDrawSize(drawWidth, drawHeight);
+	TheTerrainRenderObject->updateCenter(m_3DCamera, &cameraPivot, it);
+
 	if (it)
 	{
 		W3DDisplay::m_3DScene->destroyLightsIterator(it);
