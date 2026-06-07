@@ -587,20 +587,25 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
 	if(win)
 	{
-		overrideTooltipGadgetFont(win);
 		GadgetStaticTextSetText(win, cost);
 	}
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription"));
 	if(win)
 	{
-		overrideTooltipGadgetFont(win);
 		static NameKeyType winNamekey	= TheNameKeyGenerator->nameToKey( "ControlBar.wnd:BackgroundMarker" );
 		static ICoord2D lastOffset = { 0, 0 };
 		ICoord2D size, newSize, pos;
 		Int diffSize;
+
+		// GeneralsX @bugfix w1semannn 07/06/2026 Fix tooltip height clipping with Unicode fonts (Issue #153)
+		// Use overrideTooltipGadgetFont to set Arial Unicode MS and get the correct font for measurement
+		GameFont *tooltipFont = TheControlBar->overrideTooltipGadgetFont(win);
+		if (!tooltipFont)
+			tooltipFont = win->winGetFont();
+
 		DisplayString *tempDString = TheDisplayStringManager->newDisplayString();
 		win->winGetSize(&size.x, &size.y);
-		tempDString->setFont(win->winGetFont());
+		tempDString->setFont(tooltipFont);
 		tempDString->setWordWrap(size.x - 10);
 		tempDString->setText(descrip);
 		tempDString->getSize(&newSize.x, &newSize.y);

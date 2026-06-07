@@ -747,15 +747,14 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		ICoord2D size, newSize, pos;
 		Int diffSize;
 
+		// GeneralsX @bugfix w1semannn 07/06/2026 Fix tooltip height clipping with Unicode fonts (Issue #153)
+		// Use overrideTooltipGadgetFont to set Arial Unicode MS and get the correct font for measurement
+		GameFont *tooltipFont = TheControlBar->overrideTooltipGadgetFont(win);
+		if (!tooltipFont)
+			tooltipFont = win->winGetFont();
+
 		DisplayString *tempDString = TheDisplayStringManager->newDisplayString();
 		win->winGetSize(&size.x, &size.y);
-		GameFont *tooltipFont = win->winGetFont();
-		sprintf(log_buffer,
-			"[GX-ISSUE144] Tooltip description font=%s size=%d bold=%d",
-			tooltipFont ? tooltipFont->nameString.str() : "<null>",
-			tooltipFont ? tooltipFont->pointSize : 0,
-			tooltipFont ? tooltipFont->bold : 0);
-		fprintf(stderr, "%s\n", log_buffer);
 		tempDString->setFont(tooltipFont);
 		tempDString->setWordWrap(size.x - 10);
 		tempDString->setText(descrip);
@@ -805,13 +804,6 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
  		win->winSetSize(size.x, size.y + diffSize);
 
 		GadgetStaticTextSetText(win, descrip);
-		sprintf(log_buffer,
-			"[GX-ISSUE144] Tooltip description updated command=%s nameLen=%d descLen=%d cost=%u",
-			commandButton ? commandButton->getName().str() : "<generic>",
-			name.getLength(),
-			descrip.getLength(),
-			costToBuild);
-		fprintf(stderr, "%s\n", log_buffer);
 	}
 	m_buildToolTipLayout->hide(FALSE);
 }
