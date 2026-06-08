@@ -8,14 +8,14 @@
 #include "SagePatch/Hooks.h"
 #include "SagePatch/Logger.h"
 
-extern "C" SDL_bool SDL_PollEvent(SDL_Event* event) {
-    using PollFn = SDL_bool (*)(SDL_Event*);
+extern "C" bool SDL_PollEvent(SDL_Event* event) {
+    using PollFn = bool (*)(SDL_Event*);
     static PollFn real = nullptr;
     if (!real) {
         real = reinterpret_cast<PollFn>(dlsym(RTLD_NEXT, "SDL_PollEvent"));
         if (!real) {
             SAGEPATCH_LOG("FATAL: dlsym(RTLD_NEXT, \"SDL_PollEvent\") failed: %s", dlerror());
-            return SDL_FALSE;
+            return false;
         }
     }
     while (real(event)) {
@@ -24,7 +24,7 @@ extern "C" SDL_bool SDL_PollEvent(SDL_Event* event) {
                 continue;
             }
         }
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
