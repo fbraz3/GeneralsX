@@ -128,18 +128,26 @@ if(UNIX AND NOT RTS_BUILD_ZEROHOUR)
     add_subdirectory(GeneralsMD/Code/CompatLib)
 endif()
 
+# SagePatch (casual QoL extras: screenshot, cursor lock, brightness, etc.)
+# Must be added before the game targets so sage_patch target exists when we
+# declare the dependency below.
+if(RTS_BUILD_OPTION_SAGE_PATCH)
+    add_subdirectory(Patches/SagePatch)
+endif()
+
 # Add main build targets
 if(RTS_BUILD_ZEROHOUR)
     add_subdirectory(GeneralsMD)
+    if(TARGET sage_patch)
+        add_dependencies(z_generals sage_patch)
+    endif()
 endif()
 
 if(RTS_BUILD_GENERALS)
     add_subdirectory(Generals)
-endif()
-
-# SagePatch (optional QoL extras, macOS-only for now)
-if(RTS_BUILD_OPTION_SAGE_PATCH)
-    add_subdirectory(Patches/SagePatch)
+    if(TARGET sage_patch)
+        add_dependencies(g_generals sage_patch)
+    endif()
 endif()
 
 feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "Enabled features:")
