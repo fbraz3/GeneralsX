@@ -28,13 +28,19 @@
 
 #include "PreRTS.h"
 
-#include "Common/GameClient.h"
+#include "GameClient/GameClient.h"
 #include "Common/GlobalData.h"
 #include "Common/OptionPreferences.h"
 #include "Common/NameKeyGenerator.h"
-#include "Common/Shell.h"
+#include "GameClient/Shell.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/GameWindow.h"
+#include "GameClient/GameWindowManager.h"
+#include "GameClient/Gadget.h"
+#include "GameClient/GadgetSlider.h"
+#include "GameClient/GadgetPushButton.h"
+#include "GameClient/KeyDefs.h"
+#include "GameClient/WindowLayout.h"
 #include "GameClient/Display.h"
 
 // Widget IDs and pointers
@@ -241,7 +247,7 @@ WindowMsgHandledType ExtrasMenuSystem(GameWindow *window, UnsignedInt msg,
 			break;
 	}
 
-	return MSG_NOT_HANDLED;
+	return MSG_IGNORED;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -250,18 +256,25 @@ WindowMsgHandledType ExtrasMenuInput(GameWindow *window, UnsignedInt msg,
 {
 	switch (msg) {
 
-		case GIM_KEYBOARD_KEY:
+		case GWM_CHAR:
 		{
-			if (mData1 == KEY_ESC) {
-				TheShell->pop();
-				return MSG_HANDLED;
+			UnsignedByte key = mData1;
+			UnsignedByte state = mData2;
+
+			switch (key) {
+
+				case KEY_ESC:
+				{
+					if (BitIsSet(state, KEY_STATE_UP)) {
+						TheShell->pop();
+					}
+					return MSG_HANDLED;
+				}
+
 			}
-			break;
 		}
 
-		default:
-			break;
 	}
 
-	return MSG_NOT_HANDLED;
+	return MSG_IGNORED;
 }
