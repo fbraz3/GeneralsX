@@ -292,9 +292,9 @@ if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     echo "  + libsage_patch (SagePatch QoL)"
     cp "${SAGE_PATCH_LIB}" "${LIB_DIR}/libsage_patch.dylib"
     if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
-        mkdir -p "${RESOURCES_DIR}/Data/INI/Default/GameData"
+        mkdir -p "${RESOURCES_DIR}/Data/INI/GameData"
         cp "${SAGE_PATCH_OVERRIDE}" \
-           "${RESOURCES_DIR}/Data/INI/Default/GameData/SagePatch.ini"
+           "${RESOURCES_DIR}/Data/INI/GameData/SagePatch.ini"
     fi
 fi
 
@@ -381,7 +381,7 @@ export DYLD_LIBRARY_PATH="${LIB_DIR}:${BIN_DIR}:${DYLD_LIBRARY_PATH:-}"
 # SagePatch (optional QoL: F11 screenshot, Scroll Lock cursor lock, Ctrl+PgUp/Dn
 # brightness, Ctrl+1..5 window snap). Only loaded when the bundled dylib is
 # present and SAGE_PATCH_DISABLED is not set. Also seeds the engine INI loader
-# via Resources/Data/INI/Default/GameData/SagePatch.ini.
+# via Resources/Data/INI/GameData/SagePatch.ini.
 if [[ -f "${LIB_DIR}/libsage_patch.dylib" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
     if [[ -n "${DYLD_INSERT_LIBRARIES:-}" ]]; then
         export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libsage_patch.dylib:${DYLD_INSERT_LIBRARIES}"
@@ -442,8 +442,8 @@ if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     # SagePatch INI override: the engine reads INIs from the cwd, not from
     # inside the .app bundle. On first launch (or if the user deleted it),
     # seed the override into the asset directory so casual QoL takes effect.
-    SAGE_INI_SRC="${RESOURCES_DIR}/Data/INI/Default/GameData/SagePatch.ini"
-    SAGE_INI_DST="${CNC_GENERALS_ZH_PATH}/Data/INI/Default/GameData/SagePatch.ini"
+    SAGE_INI_SRC="${RESOURCES_DIR}/Data/INI/GameData/SagePatch.ini"
+    SAGE_INI_DST="${CNC_GENERALS_ZH_PATH}/Data/INI/GameData/SagePatch.ini"
     if [[ -f "${SAGE_INI_SRC}" && ! -f "${SAGE_INI_DST}" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
         mkdir -p "$(dirname "${SAGE_INI_DST}")"
         cp "${SAGE_INI_SRC}" "${SAGE_INI_DST}"

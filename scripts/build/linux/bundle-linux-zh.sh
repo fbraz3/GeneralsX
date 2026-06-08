@@ -118,9 +118,9 @@ if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     echo "  + libsage_patch (SagePatch QoL)"
     cp "${SAGE_PATCH_LIB}" "${BUNDLE_DIR}/"
     if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
-        mkdir -p "${BUNDLE_DIR}/Data/INI/Default/GameData"
+        mkdir -p "${BUNDLE_DIR}/Data/INI/GameData"
         cp "${SAGE_PATCH_OVERRIDE}" \
-           "${BUNDLE_DIR}/Data/INI/Default/GameData/SagePatch.ini"
+           "${BUNDLE_DIR}/Data/INI/GameData/SagePatch.ini"
     fi
 fi
 

@@ -86,7 +86,7 @@ SAGE_PATCH_DISABLED=1 ~/GeneralsX/GeneralsZH/run.sh -win
 ```
 
 This skips the preload step. The INI override remains active — delete
-`Data/INI/Default/GameData/SagePatch.ini` to revert camera/scroll values.
+`Data/INI/GameData/SagePatch.ini` to revert camera/scroll values.
 
 ## Architecture
 
@@ -103,7 +103,7 @@ Game process (GeneralsXZH)
     │                      └── Per-platform: screencapture / ImageMagick,
     │                          CoreGraphics gamma / XF86VidMode, SDL_SetWindowPosition
     │
-    └── Engine loads Data/INI/Default/GameData/SagePatch.ini → camera/scroll overrides
+    └── Engine loads Data/INI/GameData/SagePatch.ini → camera/scroll overrides
 ```
 
 No D3D8 proxy, no Vulkan layer, no engine source modifications.

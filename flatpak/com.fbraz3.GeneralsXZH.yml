@@ -156,7 +156,7 @@ modules:
         # On first launch, copy the bundled override into the asset tree so
         # casual QoL settings (camera height, scroll speed, pitch) take effect.
         SAGE_INI_SRC="/app/share/generalsxzh/SagePatch.ini"
-        SAGE_INI_DST="${CNC_GENERALS_INSTALLPATH}Data/INI/Default/GameData/SagePatch.ini"
+        SAGE_INI_DST="${CNC_GENERALS_INSTALLPATH}Data/INI/GameData/SagePatch.ini"
         if [[ -f "${SAGE_INI_SRC}" && ! -f "${SAGE_INI_DST}" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
           mkdir -p "$(dirname "${SAGE_INI_DST}")"
           cp "${SAGE_INI_SRC}" "${SAGE_INI_DST}" 2>/dev/null || true
