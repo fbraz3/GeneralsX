@@ -1528,6 +1528,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 	static NameKeyType buttonAccept = NAMEKEY_INVALID;
 	static NameKeyType buttonReplayMenu = NAMEKEY_INVALID;
 	static NameKeyType buttonKeyboardOptionsMenu = NAMEKEY_INVALID;
+	static NameKeyType buttonExtrasMenu = NAMEKEY_INVALID;
 
 	switch( msg )
 	{
@@ -1541,6 +1542,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			buttonDefaults = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonDefaults" );
 			buttonAccept = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonAccept" );
 			buttonKeyboardOptionsMenu = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonKeyboardOptions" );
+			buttonExtrasMenu = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonExtras" );
 
 			break;
 
@@ -1659,6 +1661,10 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			else if ( controlID == buttonKeyboardOptionsMenu )
 			{
 				TheShell->push( "Menus/KeyboardOptionsMenu.wnd" );
+			}
+			else if ( controlID == buttonExtrasMenu )
+			{
+				TheShell->push( "Menus/ExtrasMenu.wnd" );
 			}
 			else if(controlID == checkDrawAnchorID )
       {
