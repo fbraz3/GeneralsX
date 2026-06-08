@@ -128,4 +128,9 @@ public:
 	Real getResolutionFontAdjustment();
 
 	Bool getShowMoneyPerMinute() const;
+
+	Real getMaxCameraHeight() const;
+	Real getMinCameraHeight() const;
+	Real getCameraPitch() const;
+	Real getTerrainDrawDistanceScale() const;
 };

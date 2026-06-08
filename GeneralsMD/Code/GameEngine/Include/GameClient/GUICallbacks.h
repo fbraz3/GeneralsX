@@ -163,6 +163,13 @@ extern void DownloadMenuShutdown( WindowLayout *layout, void *userData );
 extern WindowMsgHandledType DownloadMenuSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType DownloadMenuInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 
+// Extras Menu (SagePatch QoL) ----------------------------------------------------------------------------------
+extern void ExtrasMenuInit( WindowLayout *layout, void *userData );
+extern void ExtrasMenuUpdate( WindowLayout *layout, void *userData );
+extern void ExtrasMenuShutdown( WindowLayout *layout, void *userData );
+extern WindowMsgHandledType ExtrasMenuSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
+extern WindowMsgHandledType ExtrasMenuInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
+
 // Popup host Game Internet -----------------------------------------------------------------------------------
 extern void DifficultySelectInit( WindowLayout *layout, void *userData );
 extern WindowMsgHandledType DifficultySelectSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
