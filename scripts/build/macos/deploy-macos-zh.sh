@@ -140,26 +140,12 @@ else
 fi
 
 # SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
-# When the dylib exists, deploy it + the Override.ini into Data/INI/Default/ so the
-# engine picks up the casual QoL settings. The launcher wrapper sets
-# DYLD_INSERT_LIBRARIES to load the dylib at runtime.
+# When the dylib exists, deploy it. The engine auto-creates SagePatch.ini with
+# defaults in the user data directory on first run.
 SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.dylib"
-SAGE_PATCH_OVERRIDE="${PROJECT_ROOT}/Patches/SagePatch/resources/Override.ini"
 if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     echo "  Deploying SagePatch (libsage_patch.dylib)..."
     cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
-    if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
-        # The engine loads GameData INIs in two passes: path1=Data/INI/Default/GameData
-        # then path2=Data/INI/GameData. Path2 is loaded LAST and contains the actual
-        # camera/scroll defaults (MaxCameraHeight, etc.) in BIG-archived GameData.ini.
-        # Our override must therefore go in path2's subdir to take effect, since each
-        # parse of a GameData block overwrites prior values in TheWritableGlobalData.
-        mkdir -p "${RUNTIME_DIR}/Data/INI/GameData"
-        cp -v "${SAGE_PATCH_OVERRIDE}" \
-              "${RUNTIME_DIR}/Data/INI/GameData/SagePatch.ini"
-        # Clean up any prior misplaced copy from earlier deploy versions.
-        rm -f "${RUNTIME_DIR}/Data/INI/Default/GameData/SagePatch.ini"
-    fi
 fi
 
 # GeneralsX @bugfix Copilot 24/03/2026 Deploy Fontconfig config into runtime dir so FreeType/Fontconfig can resolve fonts on macOS.

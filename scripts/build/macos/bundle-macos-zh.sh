@@ -287,15 +287,9 @@ ln -sf libdxvk_d3d8.0.dylib "${LIB_DIR}/libdxvk_d3d8.dylib"
 
 # SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
 SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.dylib"
-SAGE_PATCH_OVERRIDE="${PROJECT_ROOT}/Patches/SagePatch/resources/Override.ini"
 if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     echo "  + libsage_patch (SagePatch QoL)"
     cp "${SAGE_PATCH_LIB}" "${LIB_DIR}/libsage_patch.dylib"
-    if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
-        mkdir -p "${RESOURCES_DIR}/Data/INI/GameData"
-        cp "${SAGE_PATCH_OVERRIDE}" \
-           "${RESOURCES_DIR}/Data/INI/GameData/SagePatch.ini"
-    fi
 fi
 
 if [[ "${INCLUDE_EXTERNAL_DYLIBS}" == "1" ]]; then
@@ -439,15 +433,8 @@ fi
 if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     cd "${CNC_GENERALS_ZH_PATH}"
 
-    # SagePatch INI override: the engine reads INIs from the cwd, not from
-    # inside the .app bundle. On first launch (or if the user deleted it),
-    # seed the override into the asset directory so casual QoL takes effect.
-    SAGE_INI_SRC="${RESOURCES_DIR}/Data/INI/GameData/SagePatch.ini"
-    SAGE_INI_DST="${CNC_GENERALS_ZH_PATH}/Data/INI/GameData/SagePatch.ini"
-    if [[ -f "${SAGE_INI_SRC}" && ! -f "${SAGE_INI_DST}" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
-        mkdir -p "$(dirname "${SAGE_INI_DST}")"
-        cp "${SAGE_INI_SRC}" "${SAGE_INI_DST}"
-    fi
+    # SagePatch INI override: the engine now auto-creates SagePatch.ini with
+    # defaults in the user data directory on first run.
 fi
 
 exec "${BIN_DIR}/GeneralsXZH" "$@"

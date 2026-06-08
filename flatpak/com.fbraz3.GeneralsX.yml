@@ -83,7 +83,6 @@ modules:
       - find build-flatpak -name "libgamespy.so*" -type f -exec cp -a {} /app/lib/ \;
       # SagePatch (optional QoL, gated by RTS_BUILD_OPTION_SAGE_PATCH at build).
       - if [ -f build-flatpak/Patches/SagePatch/libsage_patch.so ]; then cp -a build-flatpak/Patches/SagePatch/libsage_patch.so /app/lib/; fi
-      - if [ -f Patches/SagePatch/resources/Override.ini ]; then install -Dm644 Patches/SagePatch/resources/Override.ini /app/share/generalsx/SagePatch.ini; fi
       - |
         for f in /app/lib/lib*.so.*; do
           b="$(basename "$f")"
@@ -149,14 +148,8 @@ modules:
 
         cd "${CNC_GENERALS_INSTALLPATH}"
 
-        # SagePatch INI override: engine reads INIs from cwd. Seed the bundled
-        # override into the asset tree on first launch.
-        SAGE_INI_SRC="/app/share/generalsx/SagePatch.ini"
-        SAGE_INI_DST="${CNC_GENERALS_INSTALLPATH}Data/INI/GameData/SagePatch.ini"
-        if [[ -f "${SAGE_INI_SRC}" && ! -f "${SAGE_INI_DST}" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
-          mkdir -p "$(dirname "${SAGE_INI_DST}")"
-          cp "${SAGE_INI_SRC}" "${SAGE_INI_DST}" 2>/dev/null || true
-        fi
+        # SagePatch INI override: the engine now auto-creates SagePatch.ini with
+        # defaults in the user data directory on first run.
 
         exec /app/bin/GeneralsX "$@"
         EOF

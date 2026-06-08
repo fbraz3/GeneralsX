@@ -159,23 +159,12 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsXZH" 2>/dev/null || {
 }
 
 # SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
-# When the .so exists, deploy it + the Override.ini into Data/INI/Default/ so
-# the engine picks up the casual QoL settings. The launcher wrapper sets
-# LD_PRELOAD to load the .so at runtime.
+# When the .so exists, deploy it. The engine auto-creates SagePatch.ini with
+# defaults in the user data directory on first run.
 SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.so"
-SAGE_PATCH_OVERRIDE="${PROJECT_ROOT}/Patches/SagePatch/resources/Override.ini"
 if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     echo "  Deploying SagePatch (libsage_patch.so)..."
     cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
-    if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
-        # path2 (Data/INI/GameData) is loaded after path1 (Data/INI/Default/GameData)
-        # and the path2 BIG file is what carries the real camera/scroll defaults.
-        # Our override must live in path2's subdir to win the last-write race.
-        mkdir -p "${RUNTIME_DIR}/Data/INI/GameData"
-        cp -v "${SAGE_PATCH_OVERRIDE}" \
-              "${RUNTIME_DIR}/Data/INI/GameData/SagePatch.ini"
-        rm -f "${RUNTIME_DIR}/Data/INI/Default/GameData/SagePatch.ini"
-    fi
 fi
 
 # Copy run wrapper script

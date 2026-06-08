@@ -113,15 +113,9 @@ cp "${GAMESPY_LIB}" "${BUNDLE_DIR}/"
 
 # SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
 SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.so"
-SAGE_PATCH_OVERRIDE="${PROJECT_ROOT}/Patches/SagePatch/resources/Override.ini"
 if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     echo "  + libsage_patch (SagePatch QoL)"
     cp "${SAGE_PATCH_LIB}" "${BUNDLE_DIR}/"
-    if [[ -f "${SAGE_PATCH_OVERRIDE}" ]]; then
-        mkdir -p "${BUNDLE_DIR}/Data/INI/GameData"
-        cp "${SAGE_PATCH_OVERRIDE}" \
-           "${BUNDLE_DIR}/Data/INI/GameData/SagePatch.ini"
-    fi
 fi
 
 # GeneralsX @build GitHubCopilot 17/05/2026 Copy FFmpeg runtime libs transitively so the bundle is independent of host SONAME layout.
