@@ -59,10 +59,8 @@ if(APPLE)
 elseif(UNIX)
     target_link_libraries(sage_patch PRIVATE
         ${CMAKE_DL_LIBS}
+        SDL3::SDL3
     )
-    # Linux equivalent of `-undefined dynamic_lookup`. SDL_PollEvent etc. are
-    # supplied by the host's libSDL3.so at preload time.
-    target_link_options(sage_patch PRIVATE "LINKER:--unresolved-symbols=ignore-in-shared-libs")
 endif()
 
 set_target_properties(sage_patch PROPERTIES
