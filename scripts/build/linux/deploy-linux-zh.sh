@@ -167,6 +167,14 @@ if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
 fi
 
+# GeneralsX @build BenderAI 08/06/2026 Deploy ExtrasMenu.wnd so the engine can
+# load it via TheFileSystem (local files override BIG archives).
+EXTRAS_WND_SRC="${PROJECT_ROOT}/GeneralsZH/Data/Window/Menus/ExtrasMenu.wnd"
+if [[ -f "${EXTRAS_WND_SRC}" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Window/Menus"
+    cp -v "${EXTRAS_WND_SRC}" "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd"
+fi
+
 # Copy run wrapper script
 echo "  Copying run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << 'EOF'
