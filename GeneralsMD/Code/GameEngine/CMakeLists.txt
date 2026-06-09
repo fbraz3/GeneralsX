@@ -742,6 +742,7 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/GUICallbacks/Menus/DisconnectWindow.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/DownloadMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/EstablishConnectionsWindow.cpp
+    Source/GameClient/GUI/GUICallbacks/Menus/ExtrasMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/GameInfoWindow.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/KeyboardOptionsMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/LanGameOptionsMenu.cpp

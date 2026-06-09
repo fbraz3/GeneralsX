@@ -139,6 +139,23 @@ else
     exit 1
 fi
 
+# SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
+# When the dylib exists, deploy it. The engine auto-creates SagePatch.ini with
+# defaults in the user data directory on first run.
+SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.dylib"
+if [[ -f "${SAGE_PATCH_LIB}" ]]; then
+    echo "  Deploying SagePatch (libsage_patch.dylib)..."
+    cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
+fi
+
+# GeneralsX @build BenderAI 08/06/2026 Deploy ExtrasMenu.wnd so the engine can
+# load it via TheFileSystem (local files override BIG archives).
+EXTRAS_WND_SRC="${PROJECT_ROOT}/GeneralsZH/Data/Window/Menus/ExtrasMenu.wnd"
+if [[ -f "${EXTRAS_WND_SRC}" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Window/Menus"
+    cp -v "${EXTRAS_WND_SRC}" "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd"
+fi
+
 # GeneralsX @bugfix Copilot 24/03/2026 Deploy Fontconfig config into runtime dir so FreeType/Fontconfig can resolve fonts on macOS.
 # GeneralsX @bugfix BenderAI 24/03/2026 Guard Fontconfig conf.d copy so missing directory does not abort deploy under set -e.
 echo "  Deploying Fontconfig config..."
@@ -166,8 +183,25 @@ SCRIPT_DIR="\$(cd "\$(dirname "\$0")" && pwd)"
 # SDL3 and gamespy dylibs are in same dir; Vulkan/MoltenVK stays in SDK
 export DYLD_LIBRARY_PATH="\${SCRIPT_DIR}:\${DYLD_LIBRARY_PATH:-}"
 
+# SagePatch (optional QoL features). Loaded via DYLD_INSERT_LIBRARIES so it
+# can interpose SDL3 functions for hot-keys (F11 screenshot, Scroll Lock cursor
+# lock, Ctrl+PageUp/PageDown brightness, Ctrl+1..5 window snap).
+if [[ -f "\${SCRIPT_DIR}/libsage_patch.dylib" && "\${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    if [[ -n "\${DYLD_INSERT_LIBRARIES:-}" ]]; then
+        export DYLD_INSERT_LIBRARIES="\${SCRIPT_DIR}/libsage_patch.dylib:\${DYLD_INSERT_LIBRARIES}"
+    else
+        export DYLD_INSERT_LIBRARIES="\${SCRIPT_DIR}/libsage_patch.dylib"
+    fi
+fi
+
 # GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires DXVK_WSI_DRIVER on non-Win32; must match game windowing (SDL3)
 export DXVK_WSI_DRIVER="SDL3"
+
+# DXVK HUD: kept opt-in. MoltenVK on macOS 26 cannot compile DXVK's HUD
+# pipeline shader (uses gl_DrawID / SPIR-V DrawIndex which has no MSL
+# equivalent yet), so defaulting it on breaks the swap chain blit pipeline.
+# Users wanting an FPS overlay set DXVK_HUD=fps themselves.
+export DXVK_HUD="\${DXVK_HUD:-0}"
 
 # MoltenVK ICD manifest — deployed alongside the binary by deploy-macos-zh.sh
 if [[ -f "\${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
@@ -187,7 +221,13 @@ if [[ -z "\${CNC_GENERALS_INSTALLPATH:-}" && -d "\${SCRIPT_DIR}/../Generals" ]];
     export CNC_GENERALS_INSTALLPATH="\${SCRIPT_DIR}/../Generals/"
 fi
 
-exec "\${SCRIPT_DIR}/GeneralsXZH" "\$@"
+# The engine resolves Local FS lookups (e.g. INI overrides under
+# Data/INI/Default/...) relative to the binary's cwd. Without this cd, anything
+# launched via absolute path (Finder, gtimeout, full-path invocation) misses
+# every loose INI / asset and only sees what is bundled inside the BIG files.
+cd "\${SCRIPT_DIR}"
+
+exec "./GeneralsXZH" "\$@"
 WRAPPER
 chmod +x "${RUNTIME_DIR}/run.sh"
 

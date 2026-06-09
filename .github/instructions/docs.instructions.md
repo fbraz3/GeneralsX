@@ -195,3 +195,22 @@ If you need to reference older markdown issues for historical context:
 - Archive completed analysis here if still needed for reference
 
 **Not here**: Active phase work, current session reports, active planning, or build instructions
+
+### `docs/HOWTO/` - User-Facing Tutorials
+**Purpose**: Step-by-step guides for common tasks (configuration, troubleshooting, etc.)
+**Format**: One `.md` file per tutorial, UPPERCASE_WITH_UNDERSCORES naming
+**Index**: `docs/HOWTO/README.md` lists all available tutorials
+
+**Naming Convention**: `TOPIC_NAME.md` (e.g., `SAGEPATCH_CONFIGURATION.md`)
+
+**Examples:**
+- SAGEPATCH_CONFIGURATION.md — Camera, scroll, draw distance settings
+- LINUX_TROUBLESHOOTING.md — Common Linux issues and fixes
+
+**Guidelines**:
+- Written for end users, not developers
+- Include clear steps, examples, and troubleshooting sections
+- Update `docs/HOWTO/README.md` when adding new tutorials
+- Cross-link from root `README.md` if the tutorial is particularly important
+
+**Not here**: Developer docs, build instructions, or internal work notes

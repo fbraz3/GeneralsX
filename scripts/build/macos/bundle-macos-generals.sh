@@ -283,6 +283,13 @@ echo "  + libdxvk_d3d8"
 cp "${DXVK_D3D8_LIB}" "${LIB_DIR}/libdxvk_d3d8.0.dylib"
 ln -sf libdxvk_d3d8.0.dylib "${LIB_DIR}/libdxvk_d3d8.dylib"
 
+# SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
+SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.dylib"
+if [[ -f "${SAGE_PATCH_LIB}" ]]; then
+    echo "  + libsage_patch (SagePatch QoL)"
+    cp "${SAGE_PATCH_LIB}" "${LIB_DIR}/libsage_patch.dylib"
+fi
+
 if [[ "${INCLUDE_EXTERNAL_DYLIBS}" == "1" ]]; then
     echo "  + scanning for external dylibs (Homebrew/system extras)"
     collect_external_dylibs "${LIB_DIR}" \
@@ -347,8 +354,20 @@ LIB_DIR="${RESOURCES_DIR}/lib"
 
 export DYLD_LIBRARY_PATH="${LIB_DIR}:${BIN_DIR}:${DYLD_LIBRARY_PATH:-}"
 
+# SagePatch — see notes in bundle-macos-zh.sh.
+if [[ -f "${LIB_DIR}/libsage_patch.dylib" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    if [[ -n "${DYLD_INSERT_LIBRARIES:-}" ]]; then
+        export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libsage_patch.dylib:${DYLD_INSERT_LIBRARIES}"
+    else
+        export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libsage_patch.dylib"
+    fi
+fi
+
 # GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires this env var on non-Win32; SDL3 matches game windowing layer
 export DXVK_WSI_DRIVER="SDL3"
+
+# DXVK HUD: kept opt-in. MoltenVK on macOS 26 can't compile DXVK's HUD shader.
+export DXVK_HUD="${DXVK_HUD:-0}"
 
 if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="${RESOURCES_DIR}/MoltenVK_icd.json"
@@ -371,6 +390,9 @@ fi
 # Run from the detected Generals asset root when available.
 if [[ -d "${CNC_GENERALS_PATH}" ]]; then
     cd "${CNC_GENERALS_PATH}"
+
+    # SagePatch INI override: the engine now auto-creates SagePatch.ini with
+    # defaults in the user data directory on first run.
 fi
 
 exec "${BIN_DIR}/GeneralsX" "$@"

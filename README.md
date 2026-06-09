@@ -16,11 +16,20 @@ For **official releases and instructions**, visit:
 * [TheSuperHackers Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases) - Windows
 * [Fighter19 Releases](https://github.com/Fighter19/CnC_Generals_Zero_Hour/releases) - Original Linux-focused Zero Hour reference releases
 
-## Installing the game
+##  HOWTO Tutorials
 
-For release/runtime setup instructions (Linux and macOS), see:
+Step-by-step guides for common tasks:
 
-- [docs/BUILD/INSTALLATION.md](docs/BUILD/INSTALLATION.md)
+- [Installation](docs/HOWTO/INSTALLATION.md) - Install GeneralsX on Linux or macOS
+- [Getting the Game Files](docs/HOWTO/GETTING_THE_GAME_FILES.md) - Obtain original game assets
+- [SagePatch Configuration](docs/HOWTO/SAGEPATCH_CONFIGURATION.md) - Configure camera, scroll speed, terrain draw distance, and other QoL settings
+
+## Where does the GeneralsX name come from?
+
+There are two reasons for this name:
+
+1. X = Cross - reflects the cross-platform efforts
+2. I am a big fan of the Mega Man X franchise, so this is also a tribute to that classic series.
 
 ## Project Goals
 
@@ -49,13 +58,6 @@ While GeneralsX builds on important community work, this project also includes s
 
 Because these projects serve different but complementary goals, not every change belongs in the same place. Improvements aligned with upstream stability or core maintenance priorities should be contributed back to TheSuperHackers, while GeneralsX keeps changes specific to cross-platform delivery, packaging, and platform integration.
 
-## Where does the GeneralsX name come from?
-
-There are two reasons for this name:
-
-1. X = Cross - reflects the cross-platform efforts
-2. I am a big fan of the Mega Man X franchise, so this is also a tribute to that classic series.
-
 ## 💖 Support This Project
 
 The optional sponsorship link exists to help cover the maintenance costs specific to GeneralsX: Linux/macOS integration, project-specific adaptation work, testing infrastructure, packaging, tooling, release work, and documentation.
@@ -74,12 +76,12 @@ Please also consider supporting the upstream community efforts that made this po
 - [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode)
 - [Fighter19/CnC_Generals_Zero_Hour](https://github.com/Fighter19/CnC_Generals_Zero_Hour)
 
-## 🔨 Building from Source
+##  Building from Source
 
-- [🐧 Linux Build Guide](docs/BUILD/LINUX.md)
-- [🍎 macOS Build Guide](docs/BUILD/MACOS.md)
+- [ Linux Build Guide](docs/BUILD/LINUX.md)
+- [ macOS Build Guide](docs/BUILD/MACOS.md)
 
-### 🐛 Known Issues & Limitations
+###  Known Issues & Limitations
 
 For documented limitations and known bugs, check the [issues page](https://github.com/fbraz3/GeneralsX/issues).
 

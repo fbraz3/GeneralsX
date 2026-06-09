@@ -875,3 +875,59 @@ Bool OptionPreferences::getShowMoneyPerMinute() const
 	}
 	return FALSE;
 }
+
+Real OptionPreferences::getMaxCameraHeight() const
+{
+	OptionPreferences::const_iterator it = find("MaxCameraHeight");
+	if (it == end())
+		return TheGlobalData->m_maxCameraHeight;
+
+	Real val = (Real)atof(it->second.str());
+	if (val < 100.0f)
+		val = 100.0f;
+	if (val > 1000.0f)
+		val = 1000.0f;
+	return val;
+}
+
+Real OptionPreferences::getMinCameraHeight() const
+{
+	OptionPreferences::const_iterator it = find("MinCameraHeight");
+	if (it == end())
+		return TheGlobalData->m_minCameraHeight;
+
+	Real val = (Real)atof(it->second.str());
+	if (val < 50.0f)
+		val = 50.0f;
+	if (val > 300.0f)
+		val = 300.0f;
+	return val;
+}
+
+Real OptionPreferences::getCameraPitch() const
+{
+	OptionPreferences::const_iterator it = find("CameraPitch");
+	if (it == end())
+		return TheGlobalData->m_cameraPitch;
+
+	Real val = (Real)atof(it->second.str());
+	if (val < 20.0f)
+		val = 20.0f;
+	if (val > 60.0f)
+		val = 60.0f;
+	return val;
+}
+
+Real OptionPreferences::getTerrainDrawDistanceScale() const
+{
+	OptionPreferences::const_iterator it = find("TerrainDrawDistanceScale");
+	if (it == end())
+		return TheGlobalData->m_terrainDrawDistanceScale;
+
+	Real val = (Real)atof(it->second.str());
+	if (val < 1.0f)
+		val = 1.0f;
+	if (val > 2.0f)
+		val = 2.0f;
+	return val;
+}
