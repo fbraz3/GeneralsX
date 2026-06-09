@@ -74,12 +74,20 @@ Please also consider supporting the upstream community efforts that made this po
 - [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode)
 - [Fighter19/CnC_Generals_Zero_Hour](https://github.com/Fighter19/CnC_Generals_Zero_Hour)
 
-## 🔨 Building from Source
+##  Building from Source
 
-- [🐧 Linux Build Guide](docs/BUILD/LINUX.md)
-- [🍎 macOS Build Guide](docs/BUILD/MACOS.md)
+- [ Linux Build Guide](docs/BUILD/LINUX.md)
+- [ macOS Build Guide](docs/BUILD/MACOS.md)
 
-### 🐛 Known Issues & Limitations
+##  HOWTO Tutorials
+
+Step-by-step guides for common tasks:
+
+- [SagePatch Configuration](docs/HOWTO/SAGEPATCH_CONFIGURATION.md) - Configure camera, scroll speed, terrain draw distance, and other QoL settings
+
+See the [HOWTO index](docs/HOWTO/README.md) for all available tutorials.
+
+###  Known Issues & Limitations
 
 For documented limitations and known bugs, check the [issues page](https://github.com/fbraz3/GeneralsX/issues).
 
