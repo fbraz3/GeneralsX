@@ -46,6 +46,7 @@
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
+#include <stdio.h>
 
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -83,6 +84,7 @@
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/GameClient.h"
 #include "GameClient/GameText.h"
+#include "GameClient/GameFont.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/ControlBar.h"
@@ -125,10 +127,25 @@ void ControlBarPopupDescriptionUpdateFunc( WindowLayout *layout, void *param )
 }
 
 // ---------------------------------------------------------------------------------------
+
 void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 {
+	// GeneralsX @tweak GitHubCopilot 27/05/2026 Trace command tooltip population and cost-line visibility decisions.
+	char log_buffer[512];
+	sprintf(log_buffer,
+		"[GX-ISSUE144] Tooltip show request cmdWindow=%p prevWindow=%p hidden=%d",
+		cmdButton,
+		prevWindow,
+		m_buildToolTipLayout ? m_buildToolTipLayout->isHidden() : -1);
+	fprintf(stderr, "%s\n", log_buffer);
+
 	if (TheInGameUI->areTooltipsDisabled() 	|| TheScriptEngine->isGameEnding())
 	{
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip show blocked tooltipsDisabled=%d gameEnding=%d",
+			TheInGameUI->areTooltipsDisabled(),
+			TheScriptEngine->isGameEnding());
+		fprintf(stderr, "%s\n", log_buffer);
 		return;
 	}
 
@@ -178,13 +195,21 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 	isInitialized = TRUE;
 
 	if(!cmdButton)
+	{
+		sprintf(log_buffer, "[GX-ISSUE144] Tooltip show aborted null cmdButton");
+		fprintf(stderr, "%s\n", log_buffer);
 		return;
+	}
 	if(BitIsSet(cmdButton->winGetStyle(), GWS_PUSH_BUTTON))
 	{
 		const CommandButton *commandButton = (const CommandButton *)GadgetButtonGetData(cmdButton);
 
 		if(!commandButton)
+		{
+			sprintf(log_buffer, "[GX-ISSUE144] Tooltip show aborted missing CommandButton window=%p", cmdButton);
+			fprintf(stderr, "%s\n", log_buffer);
 			return;
+		}
 
 		// note that, in this branch, ENABLE_SOLO_PLAY is ***NEVER*** defined...
 		// this is so that we have a multiplayer build that cannot possibly be hacked
@@ -209,6 +234,13 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 		//	m_buildToolTipLayout = TheWindowManager->winCreateLayout( "ControlBarPopupDescription.wnd" );
 		//	m_buildToolTipLayout->setUpdate(ControlBarPopupDescriptionUpdateFunc);
 
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip show command=%s textLabel=%s descriptionLabel=%s",
+			commandButton->getName().str(),
+			commandButton->getTextLabel().str(),
+			commandButton->getDescriptionLabel().str());
+		fprintf(stderr, "%s\n", log_buffer);
+
 		populateBuildTooltipLayout(commandButton);
 	}
 	else
@@ -216,6 +248,8 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 		// we're a generic window
 		if(!BitIsSet(cmdButton->winGetStyle(), GWS_USER_WINDOW) && !BitIsSet(cmdButton->winGetStyle(), GWS_STATIC_TEXT))
 			return;
+		sprintf(log_buffer, "[GX-ISSUE144] Tooltip show generic window style=0x%x", cmdButton->winGetStyle());
+		fprintf(stderr, "%s\n", log_buffer);
 		populateBuildTooltipLayout(nullptr, cmdButton);
 	}
 	m_buildToolTipLayout->hide(FALSE);
@@ -233,18 +267,54 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 
 void ControlBar::repopulateBuildTooltipLayout()
 {
-	if(!prevWindow || !m_buildToolTipLayout)
+	char log_buffer[512];
+	if(!m_buildToolTipLayout)
+	{
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip repopulate skipped layout=null");
+		fprintf(stderr, "%s\n", log_buffer);
 		return;
+	}
+	if(!prevWindow)
+	{
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip repopulate skipped prevWindow=null layout=%p hidden=%d",
+			m_buildToolTipLayout,
+			m_buildToolTipLayout->isHidden());
+		fprintf(stderr, "%s\n", log_buffer);
+		return;
+	}
+	if(m_buildToolTipLayout->isHidden())
+	{
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip repopulate skipped layout-hidden prevWindow=%p",
+			prevWindow);
+		fprintf(stderr, "%s\n", log_buffer);
+		return;
+	}
 	if(!BitIsSet(prevWindow->winGetStyle(), GWS_PUSH_BUTTON))
+	{
+		sprintf(log_buffer, "[GX-ISSUE144] Tooltip repopulate skipped non-push style=0x%x", prevWindow->winGetStyle());
+		fprintf(stderr, "%s\n", log_buffer);
 		return;
+	}
 	const CommandButton *commandButton = (const CommandButton *)GadgetButtonGetData(prevWindow);
+	sprintf(log_buffer,
+		"[GX-ISSUE144] Tooltip repopulate command=%s",
+		commandButton ? commandButton->getName().str() : "<null>");
+	fprintf(stderr, "%s\n", log_buffer);
 	populateBuildTooltipLayout(commandButton);
 }
 
 void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton, GameWindow *tooltipWin)
 {
+	char log_buffer[512];
 	if(!m_buildToolTipLayout)
+	{
+		sprintf(log_buffer, "[GX-ISSUE144] Tooltip populate skipped missing layout");
+		fprintf(stderr, "%s\n", log_buffer);
 		return;
+	}
 
 	Player *player = ThePlayerList->getLocalPlayer();
 	UnicodeString name, cost, descrip;
@@ -256,6 +326,14 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 	if(commandButton)
 	{
+		sprintf(log_buffer,
+			"[GX-ISSUE144] Tooltip populate command=%s type=%d textLabel=%s descriptionLabel=%s",
+			commandButton->getName().str(),
+			commandButton->getCommandType(),
+			commandButton->getTextLabel().str(),
+			commandButton->getDescriptionLabel().str());
+		fprintf(stderr, "%s\n", log_buffer);
+
 		const ThingTemplate *thingTemplate = commandButton->getThingTemplate();
 		const UpgradeTemplate *upgradeTemplate = commandButton->getUpgradeTemplate();
 
@@ -594,12 +672,14 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	GameWindow *win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName"));
 	if(win)
 	{
+		TheControlBar->overrideTooltipGadgetFont(win);
 		GadgetStaticTextSetText(win, name);
 	}
 
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
 	if(win)
 	{
+		TheControlBar->overrideTooltipGadgetFont(win);
 		if( costToBuild > 0 )
 		{
 			win->winHide( FALSE );
@@ -614,16 +694,21 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription"));
 	if(win)
 	{
-
 		static NameKeyType winNamekey	= TheNameKeyGenerator->nameToKey( "ControlBar.wnd:BackgroundMarker" );
 		static ICoord2D lastOffset = { 0, 0 };
 
 		ICoord2D size, newSize, pos;
 		Int diffSize;
 
+		// GeneralsX @bugfix w1semannn 07/06/2026 Fix tooltip height clipping with Unicode fonts (Issue #153)
+		// Use overrideTooltipGadgetFont to set Arial Unicode MS and get the correct font for measurement
+		GameFont *tooltipFont = TheControlBar->overrideTooltipGadgetFont(win);
+		if (!tooltipFont)
+			tooltipFont = win->winGetFont();
+
 		DisplayString *tempDString = TheDisplayStringManager->newDisplayString();
 		win->winGetSize(&size.x, &size.y);
-		tempDString->setFont(win->winGetFont());
+		tempDString->setFont(tooltipFont);
 		tempDString->setWordWrap(size.x - 10);
 		tempDString->setText(descrip);
 		tempDString->getSize(&newSize.x, &newSize.y);

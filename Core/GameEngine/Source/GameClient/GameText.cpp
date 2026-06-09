@@ -167,6 +167,9 @@ class GameTextManager : public GameTextInterface
 
 		StringInfo			*m_stringInfo;
 		StringLookUp		*m_stringLUT;
+		StringInfo			*m_fallbackStringInfo;
+		StringLookUp		*m_fallbackStringLUT;
+		Int						m_fallbackTextCount;
 		Bool						m_initialized;
 #if defined(RTS_DEBUG)
 		Bool						m_jabberWockie;
@@ -191,8 +194,8 @@ class GameTextManager : public GameTextInterface
 		void						reverseWord ( Char *file, Char *lp );
 		void						translateCopy( WideChar *outbuf, Char *inbuf );
 		Bool						getStringCount( const Char *filename, Int& textCount );
-		Bool						getCSFInfo ( const Char *filename );
-		Bool						parseCSF(  const Char *filename );
+		Bool						getCSFInfo ( const Char *filename, Int& textCount, LanguageID& language, FileInstance instance = 0 );
+		Bool						parseCSF(  const Char *filename, StringInfo *stringInfo, Int textCount, Int& maxLabelLen, FileInstance instance = 0 );
 		Bool						parseStringFile( const char *filename );
 		Bool						parseMapStringFile( const char *filename );
 		Bool						readLine( char *buffer, Int max, File *file );
@@ -247,6 +250,9 @@ GameTextManager::GameTextManager()
 	m_maxLabelLen(0),
 	m_stringInfo(nullptr),
 	m_stringLUT(nullptr),
+	m_fallbackStringInfo(nullptr),
+	m_fallbackStringLUT(nullptr),
+	m_fallbackTextCount(0),
 	m_initialized(FALSE),
 	m_noStringList(nullptr),
 #if defined(RTS_DEBUG)
@@ -313,7 +319,7 @@ void GameTextManager::init()
 	{
 		format = STRING_FILE;
 	}
-	else if ( getCSFInfo ( csfFile.str() ) )
+	else if ( getCSFInfo ( csfFile.str(), m_textCount, m_language ) )
 	{
 		fprintf(stderr, "[CSF] init() - getCSFInfo OK, textCount=%d\n", m_textCount);
 		format = CSF_FILE;
@@ -350,7 +356,7 @@ void GameTextManager::init()
 	else
 	{
 		fprintf(stderr, "[CSF] init() - Calling parseCSF()...\n");
-		if ( !parseCSF ( csfFile.str() ) )
+		if ( !parseCSF ( csfFile.str(), m_stringInfo, m_textCount, m_maxLabelLen ) )
 		{
 			fprintf(stderr, "[CSF] init() - parseCSF FAILED\n");
 			deinit();
@@ -374,6 +380,59 @@ void GameTextManager::init()
 
 	qsort( m_stringLUT, m_textCount, sizeof(StringLookUp), compareLUT  );
 
+	// GeneralsX @bugfix BenderAI 22/05/2026 Load fallback CSF instance when a mod provides an incomplete table.
+	if ( format == CSF_FILE )
+	{
+		Int fallbackCount = 0;
+		LanguageID originalLanguage = m_language;
+
+		if ( getCSFInfo(csfFile.str(), fallbackCount, m_language, 1) && fallbackCount > 0 )
+		{
+			m_fallbackStringInfo = NEW StringInfo[fallbackCount];
+
+			if ( m_fallbackStringInfo != nullptr )
+			{
+				Int fallbackMaxLabelLen = m_maxLabelLen;
+				if ( parseCSF(csfFile.str(), m_fallbackStringInfo, fallbackCount, fallbackMaxLabelLen, 1) )
+				{
+					m_fallbackTextCount = fallbackCount;
+					m_maxLabelLen = max(m_maxLabelLen, fallbackMaxLabelLen);
+
+					m_fallbackStringLUT = NEW StringLookUp[m_fallbackTextCount];
+
+					if ( m_fallbackStringLUT != nullptr )
+					{
+						StringLookUp *fallbackLut = m_fallbackStringLUT;
+						StringInfo *fallbackInfo = m_fallbackStringInfo;
+
+						for ( Int i = 0; i < m_fallbackTextCount; i++ )
+						{
+							fallbackLut->info = fallbackInfo;
+							fallbackLut->label = &fallbackInfo->label;
+							fallbackLut++;
+							fallbackInfo++;
+						}
+
+						qsort( m_fallbackStringLUT, m_fallbackTextCount, sizeof(StringLookUp), compareLUT );
+					}
+					else
+					{
+						delete [] m_fallbackStringInfo;
+						m_fallbackStringInfo = nullptr;
+						m_fallbackTextCount = 0;
+					}
+				}
+				else
+				{
+					delete [] m_fallbackStringInfo;
+					m_fallbackStringInfo = nullptr;
+				}
+			}
+		}
+
+		m_language = originalLanguage;
+	}
+
 }
 
 //============================================================================
@@ -389,7 +448,14 @@ void GameTextManager::deinit()
 	delete [] m_stringLUT;
 	m_stringLUT = nullptr;
 
+	delete [] m_fallbackStringInfo;
+	m_fallbackStringInfo = nullptr;
+
+	delete [] m_fallbackStringLUT;
+	m_fallbackStringLUT = nullptr;
+
 	m_textCount = 0;
+	m_fallbackTextCount = 0;
 
 	NoString *noString = m_noStringList;
 
@@ -848,11 +914,11 @@ Bool GameTextManager::getStringCount( const char *filename, Int& textCount )
 // GameTextManager::getCSFInfo
 //============================================================================
 
-Bool GameTextManager::getCSFInfo ( const Char *filename )
+Bool GameTextManager::getCSFInfo ( const Char *filename, Int& textCount, LanguageID& language, FileInstance instance )
 {
 	CSFHeader header;
 	Int ok = FALSE;
-	File *file = TheFileSystem->openFile(filename, File::READ | File::BINARY);
+	File *file = TheFileSystem->openFile(filename, File::READ | File::BINARY, File::BUFFERSIZE, instance);
 	DEBUG_LOG(("Looking in %s for compiled string file", filename));
 
 	if ( file != nullptr )
@@ -861,15 +927,15 @@ Bool GameTextManager::getCSFInfo ( const Char *filename )
 		{
 			if ( header.id == CSF_ID )
 			{
-				m_textCount = header.num_labels;
+				textCount = header.num_labels;
 
 				if ( header.version >= 2 )
 				{
-					m_language = (LanguageID) header.langid;
+					language = (LanguageID) header.langid;
 				}
 				else
 				{
-					m_language = LANGUAGE_ID_US;
+					language = LANGUAGE_ID_US;
 				}
 
 				ok = TRUE;
@@ -887,7 +953,7 @@ Bool GameTextManager::getCSFInfo ( const Char *filename )
 // GameTextManager::parseCSF
 //============================================================================
 
-Bool GameTextManager::parseCSF( const Char *filename )
+Bool GameTextManager::parseCSF( const Char *filename, StringInfo *stringInfo, Int textCount, Int& maxLabelLen, FileInstance instance )
 {
 	File *file;
 	Int id;
@@ -899,7 +965,7 @@ Bool GameTextManager::parseCSF( const Char *filename )
 	// GeneralsX @bugfix BenderAI 16/02/2026 - Debug parseCSF
 	fprintf(stderr, "[CSF] parseCSF() - START filename='%s'\n", filename);
 
-	file = TheFileSystem->openFile(filename, File::READ | File::BINARY);
+	file = TheFileSystem->openFile(filename, File::READ | File::BINARY, File::BUFFERSIZE, instance);
 
 	if ( file == nullptr )
 	{
@@ -926,7 +992,7 @@ Bool GameTextManager::parseCSF( const Char *filename )
 		file->seek(header.skip, File::CURRENT);
 	}
 
-	fprintf(stderr, "[CSF] parseCSF() - Starting main loop (textCount=%d)...\n", m_textCount);
+	fprintf(stderr, "[CSF] parseCSF() - Starting main loop (textCount=%d)...\n", textCount);
 
 	while( file->read ( &id, sizeof (id)) == sizeof ( id) )
 	{
@@ -950,12 +1016,12 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 		m_buffer[len] = 0;
 
-		m_stringInfo[listCount].label = m_buffer;
+		stringInfo[listCount].label = m_buffer;
 
 
-		if ( len > m_maxLabelLen )
+		if ( len > maxLabelLen )
 		{
-			m_maxLabelLen = len;
+			maxLabelLen = len;
 		}
 
 		num = 0;
@@ -1013,7 +1079,7 @@ Bool GameTextManager::parseCSF( const Char *filename )
 				}
 
 				stripSpaces ( m_tbuffer );
-				m_stringInfo[listCount].text = m_tbuffer;
+				stringInfo[listCount].text = m_tbuffer;
 			}
 
 			if ( id == CSF_STRINGWITHWAVE )
@@ -1028,7 +1094,7 @@ Bool GameTextManager::parseCSF( const Char *filename )
 				if ( num == 0 && len )
 				{
 					// only use the first string found
-					m_stringInfo[listCount].speech = m_buffer;
+					stringInfo[listCount].speech = m_buffer;
 				}
 
 			}
@@ -1040,17 +1106,17 @@ Bool GameTextManager::parseCSF( const Char *filename )
 		
 		// GeneralsX @bugfix BenderAI 17/02/2026 Progress logging every 500 labels
 		if (listCount % 500 == 0) {
-			fprintf(stderr, "[CSF] parseCSF() - Progress: %d/%d labels processed\n", listCount, m_textCount);
+			fprintf(stderr, "[CSF] parseCSF() - Progress: %d/%d labels processed\n", listCount, textCount);
 		}
 	}
 
-	fprintf(stderr, "[CSF] parseCSF() - Main loop complete! Processed %d/%d labels\n", listCount, m_textCount);
+	fprintf(stderr, "[CSF] parseCSF() - Main loop complete! Processed %d/%d labels\n", listCount, textCount);
 	ok = TRUE;
 
 quit:
 
 	fprintf(stderr, "[CSF] parseCSF() - Reached quit label: ok=%s, listCount=%d/%d\n", 
-		ok ? "TRUE" : "FALSE", listCount, m_textCount);
+		ok ? "TRUE" : "FALSE", listCount, textCount);
 
 	file->close();
 	file = nullptr;
@@ -1322,6 +1388,12 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 	if ( lookUp == nullptr && m_mapStringLUT && m_mapTextCount )
 	{
 		lookUp = (StringLookUp *) bsearch( &key, (void*) m_mapStringLUT, m_mapTextCount, sizeof(StringLookUp), compareLUT );
+	}
+
+	// GeneralsX @bugfix BenderAI 22/05/2026 Fallback to lower-priority CSF when override tables are incomplete.
+	if ( lookUp == nullptr && m_fallbackStringLUT && m_fallbackTextCount )
+	{
+		lookUp = (StringLookUp *) bsearch( &key, (void*) m_fallbackStringLUT, m_fallbackTextCount, sizeof(StringLookUp), compareLUT );
 	}
 
 	if( lookUp == nullptr )

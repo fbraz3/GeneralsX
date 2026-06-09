@@ -45,6 +45,8 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/Debug.h"
@@ -53,6 +55,88 @@
 #include "WW3D2/assetmgr.h"
 #include "WW3D2/render2dsentence.h"
 #include "GameClient/GlobalLanguage.h"
+
+namespace
+{
+// GeneralsX @bugfix GitHubCopilot 20/05/2026 Resolve a usable Unicode fallback font on macOS/Linux when localized font names are unavailable.
+// GeneralsX @tweak GitHubCopilot 27/05/2026 Add explicit stderr tracing for Unicode fallback font lookup decisions.
+// GeneralsX @bugfix GitHubCopilot 29/05/2026 Prevent circular Unicode fallback when the localized unicode family equals the base font family.
+FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_name)
+{
+	const char *preferred_name = nullptr;
+	char log_buffer[512];
+
+	if (TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty()) {
+		preferred_name = TheGlobalLanguageData->m_unicodeFontName.str();
+	}
+
+	sprintf(log_buffer,
+		"[GX-ISSUE144] W3DFont fallback start size=%d bold=%d preferred=%s base=%s",
+		size,
+		bold,
+		preferred_name ? preferred_name : "<none>",
+		base_name ? base_name : "<none>");
+	fprintf(stderr, "%s\n", log_buffer);
+
+	// Build candidate list: the localized preferred name first (may be a limited-coverage font like "Arial"),
+	// then known-good Unicode fonts. We iterate all candidates and pick the first that loads AND has a
+	// different family from the base font. This avoids returning a font that lacks Cyrillic coverage
+	// (e.g., Arial on macOS) when a better universal font like "Arial Unicode MS" is available.
+	static const char *kFallbackUnicodeFonts[] = {
+		"Arial Unicode MS",
+		"Arial Unicode",
+		"Arial",
+		"Helvetica Neue",
+		"Helvetica",
+		"Noto Sans",
+		"Noto Sans CJK SC",
+		"Noto Sans CJK JP",
+		"DejaVu Sans"
+	};
+
+	for (const char *font_name : kFallbackUnicodeFonts) {
+		if (base_name != nullptr && strcmp(font_name, base_name) == 0)
+			continue;
+		if (preferred_name != nullptr && strcmp(font_name, preferred_name) == 0)
+			continue;
+
+		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(font_name, size, bold);
+		if (font != nullptr) {
+			sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback hit list=%s", font_name);
+			fprintf(stderr, "%s\n", log_buffer);
+			return font;
+		}
+
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback miss list=%s", font_name);
+		fprintf(stderr, "%s\n", log_buffer);
+	}
+
+	// Now try the localized preferred name as a last resort (it may load on some platforms)
+	if (preferred_name != nullptr && (base_name == nullptr || strcmp(preferred_name, base_name) != 0)) {
+		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
+		if (font != nullptr) {
+			sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback hit preferred=%s", preferred_name);
+			fprintf(stderr, "%s\n", log_buffer);
+			return font;
+		}
+
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback miss preferred=%s", preferred_name);
+		fprintf(stderr, "%s\n", log_buffer);
+	}
+	else if (preferred_name != nullptr) {
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont fallback skip preferred=%s reason=same-as-base", preferred_name);
+		fprintf(stderr, "%s\n", log_buffer);
+	}
+
+	sprintf(log_buffer,
+		"[GX-ISSUE144] W3DFont fallback exhausted size=%d bold=%d",
+		size,
+		bold);
+	fprintf(stderr, "%s\n", log_buffer);
+
+	return nullptr;
+}
+}
 
 // DEFINES ////////////////////////////////////////////////////////////////////
 
@@ -73,6 +157,8 @@
 //=============================================================================
 Bool W3DFontLibrary::loadFontData( GameFont *font )
 {
+	char log_buffer[512];
+
 	// sanity
 	if( font == nullptr )
 		return FALSE;
@@ -80,23 +166,56 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	const char* name = font->nameString.str();
 	const Int size = font->pointSize;
 	const Bool bold = font->bold;
+	sprintf(log_buffer, "[GX-ISSUE144] W3DFont load request name=%s size=%d bold=%d", name ? name : "<null>", size, bold);
+	fprintf(stderr, "%s\n", log_buffer);
 
 	// get the font data from the asset manager
 	FontCharsClass *fontChar = WW3DAssetManager::Get_Instance()->Get_FontChars( name, size, bold );
 
 	if( fontChar == nullptr )
 	{
+		sprintf(log_buffer, "[GX-ISSUE144] W3DFont load miss name=%s size=%d bold=%d", name ? name : "<null>", size, bold);
+		fprintf(stderr, "%s\n", log_buffer);
 		DEBUG_CRASH(( "Unable to find font '%s' in Asset Manager", name ));
 		return FALSE;
 	}
+
+	sprintf(log_buffer, "[GX-ISSUE144] W3DFont load hit name=%s size=%d bold=%d", name ? name : "<null>", size, bold);
+	fprintf(stderr, "%s\n", log_buffer);
 
 	// assign font data
 	font->fontData = fontChar;
 	font->height = fontChar->Get_Char_Height();
 
 	// load Unicode of same point size
-	name = TheGlobalLanguageData ? TheGlobalLanguageData->m_unicodeFontName.str() : "Arial Unicode MS";
-	fontChar->AlternateUnicodeFont = WW3DAssetManager::Get_Instance()->Get_FontChars( name, size, bold );
+	// GeneralsX @bugfix fbraz 03/06/2026 Prevent circular AlternateUnicodeFont chain.
+	// Fonts in the fallback candidate list that DON'T need a fallback (full-coverage fonts)
+	// should not get an AlternateUnicodeFont set, otherwise Get_Char_Data enters infinite
+	// recursion: e.g. Arial → Arial Unicode MS → Arial → ...
+	{
+		bool skipFallback = false;
+		// Skip fallback for fonts that already have full Unicode coverage themselves
+		static const char *kFullCoverageFonts[] = {
+			"Arial Unicode MS",
+			"Arial Unicode",
+			"DejaVu Sans",
+			nullptr
+		};
+		for (int i = 0; kFullCoverageFonts[i]; i++) {
+			if (strcmp(name, kFullCoverageFonts[i]) == 0) {
+				skipFallback = true;
+				break;
+			}
+		}
+		if (!skipFallback) {
+			fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
+		}
+	}
+	sprintf(log_buffer,
+		"[GX-ISSUE144] W3DFont alternate unicode %s for base=%s",
+		fontChar->AlternateUnicodeFont ? "assigned" : "missing",
+		name ? name : "<null>");
+	fprintf(stderr, "%s\n", log_buffer);
 
 	return TRUE;
 }

@@ -38,6 +38,7 @@
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Drawable;
+class GameFont;
 class GameWindow;
 class Image;
 class Object;
@@ -987,6 +988,7 @@ public:
 	Bool getShowBuildTooltipLayout(){return m_showBuildToolTipLayout;	}
 	void populateBuildTooltipLayout( const CommandButton *commandButton, GameWindow *tooltipWin = nullptr );
 	void repopulateBuildTooltipLayout();
+	GameFont *overrideTooltipGadgetFont( GameWindow *win );
 private:
 
 

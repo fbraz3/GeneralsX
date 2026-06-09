@@ -67,8 +67,10 @@
 #include "GameClient/Display.h"
 #include "GameClient/DisplayStringManager.h"
 #include "GameClient/GameClient.h"
+#include "GameClient/GameFont.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GameText.h"
+#include "GameClient/GlobalLanguage.h"
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GadgetProgressBar.h"
 #include "GameClient/GadgetStaticText.h"
@@ -3816,4 +3818,27 @@ void ControlBar::setFullViewportHeight()
 void ControlBar::setScaledViewportHeight()
 {
 	TheTacticalView->setHeight(TheDisplay->getHeight() * TheGlobalData->m_viewportHeightScale);
+}
+
+// GeneralsX @bugfix w1semannn 07/06/2026 Fix tooltip height clipping with Unicode fonts (Issue #153)
+GameFont *ControlBar::overrideTooltipGadgetFont( GameWindow *win )
+{
+	if( !win )
+		return nullptr;
+
+	// Use the unicode font name from language data, default to "Arial Unicode MS"
+	AsciiString fontName = "Arial Unicode MS";
+	if( TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty() )
+		fontName = TheGlobalLanguageData->m_unicodeFontName;
+
+	// Get the font from the font library (12pt, not bold)
+	GameFont *newFont = TheFontLibrary->getFont( fontName, 12, FALSE );
+	if( !newFont )
+		return nullptr;
+
+	// Set the font on the gadget (updates display strings for rendering)
+	GadgetStaticTextSetFont( win, newFont );
+
+	// Return the new font so callers can use it for measurement
+	return newFont;
 }
