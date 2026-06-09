@@ -1,62 +1,9 @@
-# Russian Language Patch / Русский языковой патч
+# Русский языковой патч / Russian Language Patch
 
-**Applies to / Применимо к:** GeneralsX Zero Hour (English version only / только английская версия)
+**Применимо к:** GeneralsX Zero Hour (только английская версия)
+**Applies to:** GeneralsX Zero Hour (English version only)
 
-**Download / Скачать:** [00RussianZH.zip](https://mega.nz/file/tJpDFIwC#3ITms8nZH59pRKDwmNLVx_-7oyCy4WnH2L9_FAxsdgY)
-
----
-
-## English
-
-### Overview
-
-This patch adds Russian text support to GeneralsX Zero Hour. It works by patching the English `Language.ini` and `generals.csf` files inside the English BIG archive, replacing selected strings with Russian translations.
-
->  **Important:** This patch only works on the **English version** of the game. It directly modifies the English language `.big` file — it does not add a new language option.
-
-### Installation
-
-1. **Download** `00RussianZH.zip` from the link above.
-
-2. **Locate your game installation directory:**
-   | Platform | Path |
-   |---|---|
-   | macOS | `~/Library/Application Support/GeneralsX/GeneralsZH/` |
-   | Linux | `~/.local/share/GeneralsX/GeneralsZH/` |
-
-3. **Extract** the zip file directly into the game directory. The zip contains a single folder `00RussianZH/`. After extraction the structure should look like:
-   ```
-   <game-dir>/
-   ├── 00RussianZH/
-   │   ├── Data/
-   │   │   ├── English/
-   │   │   │   ├── Language.ini
-   │   │   │   └── generals.csf
-   │   │   └── ini/
-   │   │       ├── object/
-   │   │       └── ... (other INI overrides)
-   ```
-
-4. **Launch** the game. Russian text should appear in menus, tooltips, and 3D captions.
-
-### Requirements
-
-- GeneralsX Zero Hour (English version)
-- Cyrillic-capable font installed on your system (e.g., Arial Unicode MS) — typically ships with macOS and most Linux distros
-
-### Notes
-
-- This is a community mod patch, not an official translation.
-- The patch overrides English strings — it does not add a separate language selector.
-- Some mods that change the same files may conflict.
-
-### Troubleshooting
-
-| Problem | Solution |
-|---|---|
-| Text shows as squares `□□□□` | Install a font with Cyrillic glyphs (e.g., Arial Unicode MS, Noto Sans) or run the game with `LANG=ru_RU.UTF-8` |
-| Labels are blank/missing | The `generals.csf` override is incomplete — reinstall the patch |
-| Game crashes on startup | Remove the `00RussianZH/` folder and verify game files |
+**Скачать / Download:** [00RussianZH.zip](https://mega.nz/file/tJpDFIwC#3ITms8nZH59pRKDwmNLVx_-7oyCy4WnH2L9_FAxsdgY)
 
 ---
 
@@ -64,50 +11,78 @@ This patch adds Russian text support to GeneralsX Zero Hour. It works by patchin
 
 ### Обзор
 
-Этот патч добавляет поддержку русского текста в GeneralsX Zero Hour. Он работает путём редактирования английских файлов `Language.ini` и `generals.csf` внутри английского BIG-архива, заменяя выбранные строки на русский перевод.
+Патч добавляет русский текст в GeneralsX Zero Hour. Заменяет английские строки на русские прямо в языковом `.big` файле.
 
->  **Важно:** Патч работает только на **английской версии** игры. Он напрямую изменяет английский языковой `.big` файл — новая опция языка не добавляется.
+> **Важно:** Работает только на **английской версии** игры. Отдельного переключателя языка не добавляется.
 
 ### Установка
 
 1. **Скачайте** `00RussianZH.zip` по ссылке выше.
 
-2. **Найдите папку с игрой:**
-   | Платформа | Путь |
-   |---|---|
-   | macOS | `~/Library/Application Support/GeneralsX/GeneralsZH/` |
-   | Linux | `~/.local/share/GeneralsX/GeneralsZH/` |
+2. **Распакуйте** zip — внутри файл `00RussianZH.big`.
 
-3. **Распакуйте** zip-архив прямо в папку с игрой. Внутри находится папка `00RussianZH/`. После распаковки структура должна выглядеть так:
+3. **Скопируйте** `00RussianZH.big` в папку с игрой:
    ```
-   <папка-игры>/
-   ├── 00RussianZH/
-   │   ├── Data/
-   │   │   ├── English/
-   │   │   │   ├── Language.ini
-   │   │   │   └── generals.csf
-   │   │   └── ini/
-   │   │       ├── object/
-   │   │       └── ... (другие INI-переопределения)
+   $HOME/GeneralsX/GeneralsZH/
    ```
 
-4. **Запустите** игру. Русский текст должен отображаться в меню, подсказках и 3D-титрах.
+4. **Запустите** игру. Русский текст появится в меню, подсказках и 3D-титрах.
 
 ### Требования
 
 - GeneralsX Zero Hour (английская версия)
-- Шрифт с кириллицей (например, Arial Unicode MS) — обычно есть на macOS и большинстве дистрибутивов Linux
+- Шрифт с кириллицей (Arial Unicode MS, Noto Sans) — обычно уже есть в системе
 
 ### Примечания
 
-- Это мод от сообщества, а не официальный перевод.
-- Патч заменяет английские строки — отдельного переключателя языка не добавляется.
-- Другие моды, изменяющие те же файлы, могут конфликтовать.
+- Это мод сообщества, не официальный перевод.
+- Другие моды, меняющие `Language.ini` или `generals.csf`, могут конфликтовать.
 
 ### Решение проблем
 
 | Проблема | Решение |
 |---|---|
-| Текст отображается как `□□□□` | Установите шрифт с кириллицей (Arial Unicode MS, Noto Sans) или запустите игру с `LANG=ru_RU.UTF-8` |
-| Надписи пустые/отсутствуют | CSF-переопределение неполное — переустановите патч |
-| Игра вылетает при запуске | Удалите папку `00RussianZH/` и проверьте файлы игры |
+| Текст квадратиками `□□□□` | Установите шрифт с кириллицей или запустите с `LANG=ru_RU.UTF-8` |
+| Пустые надписи | Удалите `00RussianZH.big` и скачайте патч заново |
+| Вылет при запуске | Удалите `00RussianZH.big` |
+
+---
+
+## English
+
+### Overview
+
+This patch adds Russian text to GeneralsX Zero Hour. It replaces English strings inside the language `.big` file.
+
+> **Important:** Only works on the **English version** of the game. Does not add a separate language selector.
+
+### Installation
+
+1. **Download** `00RussianZH.zip` from the link above.
+
+2. **Extract** the zip — inside is `00RussianZH.big`.
+
+3. **Copy** `00RussianZH.big` to the game directory:
+   ```
+   $HOME/GeneralsX/GeneralsZH/
+   ```
+
+4. **Launch** the game. Russian text appears in menus, tooltips, and 3D captions.
+
+### Requirements
+
+- GeneralsX Zero Hour (English version)
+- Cyrillic-capable font (Arial Unicode MS, Noto Sans) — typically pre-installed
+
+### Notes
+
+- This is a community mod, not an official translation.
+- Other mods that modify `Language.ini` or `generals.csf` may conflict.
+
+### Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| Text shows as `□□□□` | Install a Cyrillic font or run with `LANG=ru_RU.UTF-8` |
+| Blank labels | Remove `00RussianZH.big` and re-download the patch |
+| Crash on startup | Remove `00RussianZH.big` |
