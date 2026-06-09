@@ -167,7 +167,8 @@ git merge thesuperhackers/main
 ## Docs Workflow
 1. Monthly diary in `docs/DEV_BLOG/YYYY-MM-DIARY.md` (YYYY=year, MM=month only, e.g., `2026-05-DIARY.md`)
 2. Active work notes in `docs/WORKDIR/` (phases/planning/reports/support/audit/lessons)
-3. Never drop working docs directly under `docs/` root
+3. Step-by-step tutorials in `docs/HOWTO/` (user-facing guides for common tasks)
+4. Never drop working docs directly under `docs/` root
 
 ## GitHub CLI Examples
 **Create issues:**
@@ -210,6 +211,7 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - `Core/`: shared libraries.
 - `references/`: thesuperhackers-main, fbraz3-dxvk (active); archive/ (historical).
 - `docs/WORKDIR/`: current work docs.
+- `docs/HOWTO/`: user-facing step-by-step tutorials (SagePatch config, etc.)
 - `logs/`: build/run/debug logs.
 
 ## Instruction Context Loading
