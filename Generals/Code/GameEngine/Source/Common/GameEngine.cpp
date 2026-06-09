@@ -410,6 +410,47 @@ void GameEngine::init()
 		TheWritableGlobalData->parseCustomDefinition();
 		fprintf(stderr, "INFO: GameEngine::init() - TheWritableGlobalData parseCustomDefinition complete\n");
 
+	// GeneralsX @feature felipebraz 08/06/2026 Auto-create SagePatch.ini in user data dir with defaults.
+	{
+		AsciiString sagePatchPath = TheWritableGlobalData->getPath_UserData();
+		sagePatchPath.concat("SagePatch.ini");
+
+		if (!TheLocalFileSystem->doesFileExist(sagePatchPath.str()))
+		{
+			FILE *f = fopen(sagePatchPath.str(), "w");
+			if (f)
+			{
+				fprintf(f,
+					"; -----------------------------------------------------------------------------\n"
+					"; SagePatch - Casual QoL overrides for GeneralsX\n"
+					";\n"
+					"; Loaded by the engine after the BIG-archived Data/INI/GameData.ini, so values\n"
+					"; here override (not append to) the originals.\n"
+					"; -----------------------------------------------------------------------------\n"
+					"\n"
+					"GameData\n"
+					"  ; Slightly higher than vanilla (310); further out without seeing past the map border.\n"
+					"  MaxCameraHeight = 350.0\n"
+					"  ; Slightly lower than vanilla (120) so casual zoom-in feels useful.\n"
+					"  MinCameraHeight = 100.0\n"
+					"  ; Still soft-disabled so the user can push past max without a hard clamp.\n"
+					"  EnforceMaxCameraHeight = No\n"
+					"  ; Keyboard scroll - vanilla 0.5 is sluggish, double it.\n"
+					"  KeyboardScrollSpeedFactor = 1.0\n"
+					"  ; ~5% more terrain drawn at max zoom to fix terrain pop-in.\n"
+					"  TerrainDrawDistanceScale = 1.05\n"
+					"End\n"
+				);
+				fclose(f);
+			}
+		}
+
+		if (TheLocalFileSystem->doesFileExist(sagePatchPath.str()))
+		{
+			ini.load(sagePatchPath, INI_LOAD_OVERWRITE, nullptr);
+		}
+	}
+
 
 
 	#if defined(RTS_DEBUG)
