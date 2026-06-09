@@ -16,13 +16,7 @@ For **official releases and instructions**, visit:
 * [TheSuperHackers Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases) - Windows
 * [Fighter19 Releases](https://github.com/Fighter19/CnC_Generals_Zero_Hour/releases) - Original Linux-focused Zero Hour reference releases
 
-##  HOWTO Tutorials
-
-Step-by-step guides for common tasks:
-
-- [Installation](docs/HOWTO/INSTALLATION.md) - Install GeneralsX on Linux or macOS
-- [Getting the Game Files](docs/HOWTO/GETTING_THE_GAME_FILES.md) - Obtain original game assets
-- [SagePatch Configuration](docs/HOWTO/SAGEPATCH_CONFIGURATION.md) - Configure camera, scroll speed, terrain draw distance, and other QoL settings
+> See our [Tutorial Docs](docs/HOWTO/README.md) for step-by-step guides.
 
 ## Where does the GeneralsX name come from?
 
