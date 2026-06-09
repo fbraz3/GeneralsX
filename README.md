@@ -20,7 +20,7 @@ For **official releases and instructions**, visit:
 
 For release/runtime setup instructions (Linux and macOS), see:
 
-- [docs/BUILD/INSTALLATION.md](docs/BUILD/INSTALLATION.md)
+- [docs/HOWTO/INSTALLATION.md](docs/HOWTO/INSTALLATION.md)
 
 ## Project Goals
 
@@ -83,6 +83,8 @@ Please also consider supporting the upstream community efforts that made this po
 
 Step-by-step guides for common tasks:
 
+- [Installation](docs/HOWTO/INSTALLATION.md) - Install GeneralsX on Linux or macOS
+- [Getting the Game Files](docs/HOWTO/GETTING_THE_GAME_FILES.md) - Obtain original game assets
 - [SagePatch Configuration](docs/HOWTO/SAGEPATCH_CONFIGURATION.md) - Configure camera, scroll speed, terrain draw distance, and other QoL settings
 
 See the [HOWTO index](docs/HOWTO/README.md) for all available tutorials.
