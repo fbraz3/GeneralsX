@@ -194,6 +194,8 @@ public:
 	Real m_maxCameraHeight;
 	Real m_minCameraHeight;
 
+	Real m_terrainDrawDistanceScale;
+
 	Real m_terrainHeightAtEdgeOfMap;
 	Real m_unitDamagedThresh;
 	Real m_unitReallyDamagedThresh;

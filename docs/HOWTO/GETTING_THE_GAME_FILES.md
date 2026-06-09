@@ -95,7 +95,7 @@ If you have access to a Windows PC or a Windows virtual machine:
    ```
 
    - App ID `2732960` is *C&C Generals: Zero Hour*.
-   - App ID `2732940` is *C&C Generals* (base game).
+   - App ID `2229870` is *C&C Generals* (base game).
 
 3. After the download completes, move the game folder to the expected location:
    ```bash

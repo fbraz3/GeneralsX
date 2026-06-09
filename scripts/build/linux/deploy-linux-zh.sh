@@ -158,6 +158,23 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsXZH" 2>/dev/null || {
     echo "    Libraries will need LD_LIBRARY_PATH or manual RPATH setting"
 }
 
+# SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
+# When the .so exists, deploy it. The engine auto-creates SagePatch.ini with
+# defaults in the user data directory on first run.
+SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.so"
+if [[ -f "${SAGE_PATCH_LIB}" ]]; then
+    echo "  Deploying SagePatch (libsage_patch.so)..."
+    cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
+fi
+
+# GeneralsX @build BenderAI 08/06/2026 Deploy ExtrasMenu.wnd so the engine can
+# load it via TheFileSystem (local files override BIG archives).
+EXTRAS_WND_SRC="${PROJECT_ROOT}/GeneralsZH/Data/Window/Menus/ExtrasMenu.wnd"
+if [[ -f "${EXTRAS_WND_SRC}" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Window/Menus"
+    cp -v "${EXTRAS_WND_SRC}" "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd"
+fi
+
 # Copy run wrapper script
 echo "  Copying run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << 'EOF'
@@ -173,7 +190,25 @@ export LD_LIBRARY_PATH="${SCRIPT_DIR}:${LD_LIBRARY_PATH:-}"
 # Set DXVK environment
 export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
-export DXVK_HUD="${DXVK_HUD:-0}"
+# DXVK HUD: SagePatch builds default to "fps" so casual users see frame rate
+# without extra config. Set DXVK_HUD=0 explicitly to disable, or anything else
+# (e.g. fps,memory,version) to customize. See DXVK docs for full list.
+if [[ -f "${SCRIPT_DIR}/libsage_patch.so" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    export DXVK_HUD="${DXVK_HUD:-fps}"
+else
+    export DXVK_HUD="${DXVK_HUD:-0}"
+fi
+
+# SagePatch (optional QoL features). Loaded via LD_PRELOAD so it can interpose
+# SDL3 functions for hot-keys (F11 screenshot, Scroll Lock cursor lock,
+# Ctrl+PageUp/PageDown brightness, Ctrl+1..5 window snap).
+if [[ -f "${SCRIPT_DIR}/libsage_patch.so" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    if [[ -n "${LD_PRELOAD:-}" ]]; then
+        export LD_PRELOAD="${SCRIPT_DIR}/libsage_patch.so:${LD_PRELOAD}"
+    else
+        export LD_PRELOAD="${SCRIPT_DIR}/libsage_patch.so"
+    fi
+fi
 
 # GeneralsX @feature felipebraz 25/02/2026 Auto-detect base Generals install path
 # Set CNC_GENERALS_INSTALLPATH if not already set and ../Generals/ exists
@@ -228,8 +263,13 @@ if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
     echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
 fi
 
+# The engine resolves Local FS lookups (Data/INI/Default/... overrides, etc.)
+# relative to the binary's cwd. Without this cd, anything launched via absolute
+# path misses every loose INI / asset and only sees BIG-archived data.
+cd "${SCRIPT_DIR}"
+
 # Run game with all arguments
-exec "${SCRIPT_DIR}/GeneralsXZH" "$@"
+exec "./GeneralsXZH" "$@"
 EOF
 chmod +x "${RUNTIME_DIR}/run.sh"
 

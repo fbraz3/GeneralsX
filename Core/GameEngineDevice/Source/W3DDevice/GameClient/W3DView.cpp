@@ -3750,6 +3750,13 @@ void W3DView::updateTerrain()
 		drawHeight = WorldHeightMap::LOW_ANGLE_DRAW_HEIGHT;
 	}
 
+	const Real terrainScale = TheGlobalData->m_terrainDrawDistanceScale;
+	if (terrainScale != 1.0f)
+	{
+		drawWidth = static_cast<Int>(drawWidth * terrainScale);
+		drawHeight = static_cast<Int>(drawHeight * terrainScale);
+	}
+
 	TheTerrainRenderObject->setTerrainDrawSize(drawWidth, drawHeight);
 	TheTerrainRenderObject->updateCenter(m_3DCamera, &cameraPivot, it);
 

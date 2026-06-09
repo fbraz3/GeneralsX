@@ -468,6 +468,48 @@ void GameEngine::init()
 	initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
 	TheWritableGlobalData->parseCustomDefinition();
 
+	// GeneralsX @feature felipebraz 08/06/2026 Auto-create SagePatch.ini in user data dir with defaults.
+	// This replaces the run.sh copy approach with engine-managed defaults.
+	{
+		AsciiString sagePatchPath = TheWritableGlobalData->getPath_UserData();
+		sagePatchPath.concat("SagePatch.ini");
+
+		if (!TheLocalFileSystem->doesFileExist(sagePatchPath.str()))
+		{
+			FILE *f = fopen(sagePatchPath.str(), "w");
+			if (f)
+			{
+				fprintf(f,
+				"; -----------------------------------------------------------------------------\n"
+				"; SagePatch - Casual QoL overrides for GeneralsX\n"
+				";\n"
+				"; Loaded by the engine after the BIG-archived Data/INI/GameData.ini, so values\n"
+				"; here override (not append to) the originals.\n"
+				"; -----------------------------------------------------------------------------\n"
+				"\n"
+				"GameData\n"
+				"  ; Slightly higher than vanilla (310); further out without seeing past the map border.\n"
+				"  MaxCameraHeight = 350.0\n"
+				"  ; Slightly lower than vanilla (120) so casual zoom-in feels useful.\n"
+				"  MinCameraHeight = 100.0\n"
+					"  ; Still soft-disabled so the user can push past max without a hard clamp.\n"
+					"  EnforceMaxCameraHeight = No\n"
+					"  ; Keyboard scroll - vanilla 0.5 is sluggish, double it.\n"
+					"  KeyboardScrollSpeedFactor = 1.0\n"
+					"  ; ~5% more terrain drawn at max zoom to fix terrain pop-in.\n"
+					"  TerrainDrawDistanceScale = 1.05\n"
+					"End\n"
+				);
+				fclose(f);
+			}
+		}
+
+		if (TheLocalFileSystem->doesFileExist(sagePatchPath.str()))
+		{
+			ini.load(sagePatchPath, INI_LOAD_OVERWRITE, nullptr);
+		}
+	}
+
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
 	sprintf(Buf,"----------------------------------------------------------------------------After  TheWritableGlobalData = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
