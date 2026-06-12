@@ -911,6 +911,15 @@ void MiniAudioManager::openDevice(void)
 	ma_sound_group_init(&m_engine, 0, NULL, &m_sound3DGroup);
 	ma_sound_group_init(&m_engine, 0, NULL, &m_speechGroup);
 
+	// Log the audio backend information for diagnostics
+	ma_device_info *playbackDevice = &m_playbackDevices[0];
+	fprintf(stderr, "AUDIO: MiniAudio backend loaded - version %s, device: %s, sample rate: %d, channels: %d, playback devices: %d\n",
+		ma_version_string(),
+		m_playbackDeviceCount > 0 ? playbackDevice->name : "default",
+		m_engine.sampleRate,
+		m_engine.channels,
+		m_playbackDeviceCount);
+
 	// Now that we're all done, update the cached variables so that everything is in sync.
 	TheAudio->refreshCachedVariables();
 }

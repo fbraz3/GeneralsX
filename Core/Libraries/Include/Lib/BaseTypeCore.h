@@ -117,7 +117,13 @@ typedef uint32_t	                UnsignedInt;	  	    // 4 bytes
 typedef uint16_t	                UnsignedShort;		    // 2 bytes
 typedef int16_t						Short;					// 2 bytes
 typedef unsigned char	            UnsignedByte;			// 1 byte		USED TO BE "Byte"
+// GeneralsX @compat fbraz 12/06/2026 macOS MacTypes.h defines Byte as UInt8 (unsigned char).
+// Match our definition to the system's to avoid typedef redefinition with CoreAudio/miniaudio.
+#ifdef __APPLE__
+typedef unsigned char               Byte;                   // 1 byte      USED TO BE "SignedByte"
+#else
 typedef char						Byte;					// 1 byte		USED TO BE "SignedByte"
+#endif
 typedef char						Char;					// 1 byte of text
 typedef bool						Bool;					//
 // note, the types below should use "long long", but MSVC doesn't support it yet
