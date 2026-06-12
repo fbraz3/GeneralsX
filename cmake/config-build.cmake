@@ -121,6 +121,12 @@ if(SAGE_USE_OPENAL)
     message(STATUS "OpenAL audio backend enabled")
 endif()
 
+# GeneralsX @feature fbraz 11/06/2026 MiniAudio audio backend (alternative to OpenAL)
+if(SAGE_USE_MINIAUDIO)
+    target_compile_definitions(core_config INTERFACE SAGE_USE_MINIAUDIO)
+    message(STATUS "MiniAudio audio backend enabled")
+endif()
+
 # GeneralsX @feature BenderAI 21/04/2026 Update check compile definition
 if(SAGE_UPDATE_CHECK)
     target_compile_definitions(core_config INTERFACE SAGE_UPDATE_CHECK)
