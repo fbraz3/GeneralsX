@@ -66,6 +66,10 @@ extern "C" {
 #include "OpenALAudioDevice/OpenALAudioStream.h"
 #endif
 
+#ifdef SAGE_USE_MINIAUDIO
+#include "MiniAudioDevice/MiniAudioStream.h"
+#endif
+
 #include <chrono>
 
 //----------------------------------------------------------------------------
@@ -330,6 +334,12 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 	audioStream->reset();
 #endif
 
+#ifdef SAGE_USE_MINIAUDIO
+    // Release the audio handle if it's already in use
+    MiniAudioStream* audioStream = (MiniAudioStream*)TheAudio->getHandleForBink();
+    audioStream->reset();
+#endif
+
     // Decode until we have our first video frame
     while (m_good && m_gotFrame == false)
         m_good = m_ffmpegFile->decodePacket();
@@ -338,6 +348,12 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
     // Start audio playback
     // GeneralsX @bugfix fbraz3 23/04/2026 Ensure video stream starts with audible gain even after prior source reuse.
     // Issue: https://github.com/fbraz3/GeneralsX/issues/38
+    audioStream->setVolume(1.0f);
+    audioStream->play();
+#endif
+
+#ifdef SAGE_USE_MINIAUDIO
+    // Start audio playback
     audioStream->setVolume(1.0f);
     audioStream->play();
 #endif
@@ -358,6 +374,15 @@ FFmpegVideoStream::~FFmpegVideoStream()
     if (TheAudio)
     {
         OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
+        if (audioStream)
+            audioStream->reset();
+    }
+#endif
+
+#ifdef SAGE_USE_MINIAUDIO
+    if (TheAudio)
+    {
+        MiniAudioStream* audioStream = (MiniAudioStream*)TheAudio->getHandleForBink();
         if (audioStream)
             audioStream->reset();
     }
@@ -461,6 +486,95 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
         audioStream->update();
     }
 #endif
+
+#ifdef SAGE_USE_MINIAUDIO
+    else if (stream_type == AVMEDIA_TYPE_AUDIO) {
+        MiniAudioStream* audioStream = (MiniAudioStream*)TheAudio->getHandleForBink();
+
+        AVSampleFormat sampleFmt = static_cast<AVSampleFormat>(frame->format);
+        const int bytesPerSample = av_get_bytes_per_sample(sampleFmt);
+        const int frameSize =
+            av_samples_get_buffer_size(NULL, frame->ch_layout.nb_channels, frame->nb_samples, sampleFmt, 1);
+        if (frameSize <= 0 || bytesPerSample <= 0 || frame->ch_layout.nb_channels <= 0 || frame->nb_samples <= 0) {
+            return;
+        }
+
+        int outputFrameSize = frameSize;
+        uint8_t* frameData = frame->data[0];
+
+        // Convert float32 to PCM16 for miniaudio compatibility
+        if (sampleFmt == AV_SAMPLE_FMT_FLT || sampleFmt == AV_SAMPLE_FMT_FLTP)
+        {
+            outputFrameSize = frame->nb_samples * frame->ch_layout.nb_channels * (int)sizeof(int16_t);
+            videoStream->m_audioBuffer = static_cast<uint8_t*>(av_realloc(videoStream->m_audioBuffer, outputFrameSize));
+            if (videoStream->m_audioBuffer == nullptr)
+            {
+                DEBUG_LOG(("Failed to allocate converted audio buffer"));
+                return;
+            }
+
+            int16_t *dst = reinterpret_cast<int16_t *>(videoStream->m_audioBuffer);
+            if (sampleFmt == AV_SAMPLE_FMT_FLTP)
+            {
+                for (int sample_idx = 0; sample_idx < frame->nb_samples; ++sample_idx)
+                {
+                    for (int channel_idx = 0; channel_idx < frame->ch_layout.nb_channels; ++channel_idx)
+                    {
+                        const float sample = reinterpret_cast<const float *>(frame->data[channel_idx])[sample_idx];
+                        const float clamped = (sample < -1.0f) ? -1.0f : ((sample > 1.0f) ? 1.0f : sample);
+                        *dst++ = static_cast<int16_t>(clamped * 32767.0f);
+                    }
+                }
+            }
+            else
+            {
+                const float *src = reinterpret_cast<const float *>(frame->data[0]);
+                const int totalSamples = frame->nb_samples * frame->ch_layout.nb_channels;
+                for (int i = 0; i < totalSamples; ++i)
+                {
+                    const float clamped = (src[i] < -1.0f) ? -1.0f : ((src[i] > 1.0f) ? 1.0f : src[i]);
+                    *dst++ = static_cast<int16_t>(clamped * 32767.0f);
+                }
+            }
+
+            frameData = videoStream->m_audioBuffer;
+        }
+        // The format is planar - convert it to interleaved
+        else if (av_sample_fmt_is_planar(sampleFmt))
+        {
+            videoStream->m_audioBuffer = static_cast<uint8_t*>(av_realloc(videoStream->m_audioBuffer, outputFrameSize));
+            if (videoStream->m_audioBuffer == nullptr)
+            {
+                DEBUG_LOG(("Failed to allocate audio buffer"));
+                return;
+            }
+
+            // Write the samples into our audio buffer
+            for (int sample_idx = 0; sample_idx < frame->nb_samples; sample_idx++)
+            {
+                int byte_offset = sample_idx * bytesPerSample;
+                for (int channel_idx = 0; channel_idx < frame->ch_layout.nb_channels; channel_idx++)
+                {
+                    uint8_t* dst =
+                        &videoStream
+                             ->m_audioBuffer[byte_offset * frame->ch_layout.nb_channels + channel_idx * bytesPerSample];
+                    uint8_t* src = &frame->data[channel_idx][byte_offset];
+                    memcpy(dst, src, bytesPerSample);
+                }
+            }
+            frameData = videoStream->m_audioBuffer;
+        }
+
+        // Determine miniaudio format
+        ma_format maFormat = ma_format_s16;
+        if (bytesPerSample == 1) maFormat = ma_format_u8;
+        else if (bytesPerSample == 2) maFormat = ma_format_s16;
+        else if (bytesPerSample == 4) maFormat = ma_format_f32;
+
+        audioStream->bufferData(frameData, outputFrameSize, maFormat, frame->sample_rate, frame->ch_layout.nb_channels);
+        audioStream->update();
+    }
+#endif
 }
 
 
@@ -476,6 +590,11 @@ void FFmpegVideoStream::update( void )
     // during loadscreen transitions, leading to effective silence.
     OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
     audioStream->update();
+#endif
+
+#ifdef SAGE_USE_MINIAUDIO
+    // miniaudio handles internal buffer management automatically.
+    // No manual update needed unlike OpenAL.
 #endif
 	//BinkWait( m_handle );
 }

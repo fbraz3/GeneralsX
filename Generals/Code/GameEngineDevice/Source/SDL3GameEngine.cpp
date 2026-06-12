@@ -33,6 +33,9 @@
 #ifdef SAGE_USE_OPENAL
 #include "OpenALAudioDevice/OpenALAudioManager.h"
 #endif
+#ifdef SAGE_USE_MINIAUDIO
+#include "MiniAudioDevice/MiniAudioManager.h"
+#endif
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
 #include "GameClient/Mouse.h"
@@ -551,16 +554,21 @@ WebBrowser *SDL3GameEngine::createWebBrowser(void)
  * Factory method: AudioManager
  * GeneralsX @feature BenderAI 10/03/2026 - Use OpenAL when available, otherwise silent dummy
  * GeneralsX @bugfix Copilot 15/04/2026 Match upstream GameEngine pure-virtual signature after sync.
+ * GeneralsX @feature fbraz 11/06/2026 - Add MiniAudio support as alternative to OpenAL
  */
 AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 {
 	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createAudioManager()\n");
-#ifdef SAGE_USE_OPENAL
+
+#ifdef SAGE_USE_MINIAUDIO
+	fprintf(stderr, "INFO: Creating MiniAudio audio backend\n");
+	return NEW MiniAudioManager;
+#elif defined(SAGE_USE_OPENAL)
 	fprintf(stderr, "INFO: Using OpenAL audio backend\n");
 	return NEW OpenALAudioManager;
 #else
-	fprintf(stderr, "INFO: OpenAL not available - using AudioManagerDummy\n");
+	fprintf(stderr, "INFO: No audio backend available - using AudioManagerDummy\n");
 	return NEW AudioManagerDummy;
 #endif
 }

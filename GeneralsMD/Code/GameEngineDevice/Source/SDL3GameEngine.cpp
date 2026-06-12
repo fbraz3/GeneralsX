@@ -30,6 +30,9 @@
 
 #include "SDL3GameEngine.h"
 #include "OpenALAudioManager.h"
+#ifdef SAGE_USE_MINIAUDIO
+#include "MiniAudioDevice/MiniAudioManager.h"
+#endif
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
 #include "GameClient/Mouse.h"
@@ -573,11 +576,14 @@ AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createAudioManager()\n");
 
-#ifdef SAGE_USE_OPENAL
+#ifdef SAGE_USE_MINIAUDIO
+	fprintf(stderr, "INFO: Creating MiniAudio audio backend\n");
+	return new MiniAudioManager();
+#elif defined(SAGE_USE_OPENAL)
 	fprintf(stderr, "INFO: Creating OpenAL audio backend\n");
 	return new OpenALAudioManager();
 #else
-	fprintf(stderr, "INFO: Audio backend not available (SAGE_USE_OPENAL not defined)\n");
+	fprintf(stderr, "INFO: Audio backend not available (SAGE_USE_OPENAL/SAGE_USE_MINIAUDIO not defined)\n");
 	fprintf(stderr, "WARNING: Falls back to parent implementation or silent mode\n");
 	return GameEngine::createAudioManager();  // Call parent (may return stub)
 #endif

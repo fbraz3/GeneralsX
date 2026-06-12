@@ -277,6 +277,25 @@ if(SAGE_USE_OPENAL)
     endif()
 endif()
 
+# GeneralsX @feature fbraz 11/06/2026 MiniAudio audio library (alternative to OpenAL)
+# miniaudio is a single-header C library that replaces OpenAL + FFmpeg for audio decoding/playback.
+# Reference: https://miniaud.io/
+# Reference: https://github.com/feliwir/CnC_Generals_Zero_Hour (MiniAudio backend by Stephan Vedder)
+if(SAGE_USE_MINIAUDIO)
+    if(NOT TARGET miniaudio_lib)
+        message(FATAL_ERROR "SAGE_USE_MINIAUDIO is ON but miniaudio_lib target not found. Include cmake/miniaudio.cmake first.")
+    endif()
+
+    target_link_libraries(corei_gameenginedevice_public INTERFACE miniaudio_lib)
+
+    target_sources(corei_gameenginedevice_private INTERFACE
+        Include/MiniAudioDevice/MiniAudioManager.h
+        Source/MiniAudioDevice/MiniAudioManager.cpp
+        Source/MiniAudioDevice/MiniAudioStream.h
+        Source/MiniAudioDevice/MiniAudioStream.cpp
+    )
+endif()
+
 if(RTS_BUILD_OPTION_FFMPEG)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)

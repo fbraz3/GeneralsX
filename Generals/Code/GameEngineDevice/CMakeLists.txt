@@ -243,6 +243,14 @@ if(SAGE_USE_OPENAL)
     target_link_libraries(g_gameenginedevice PUBLIC OpenAL::OpenAL)
 endif()
 
+# GeneralsX @feature fbraz 11/06/2026 MiniAudio audio backend (alternative to OpenAL)
+if(SAGE_USE_MINIAUDIO)
+    if(NOT TARGET miniaudio_lib)
+        message(FATAL_ERROR "SAGE_USE_MINIAUDIO is ON but miniaudio_lib target not found. Include cmake/miniaudio.cmake first.")
+    endif()
+    target_link_libraries(g_gameenginedevice PUBLIC miniaudio_lib)
+endif()
+
 # GeneralsX @feature BenderAI 10/03/2026 - FFmpeg audio/video decoding
 if(RTS_BUILD_OPTION_FFMPEG)
     if(NOT TARGET PkgConfig::FFMPEG)
