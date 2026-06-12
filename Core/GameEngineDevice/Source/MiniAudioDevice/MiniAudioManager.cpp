@@ -281,19 +281,19 @@ void MiniAudioManager::update()
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::stopAudio(AudioAffect which)
 {
-	if (BitTest(which, AudioAffect_Sound)) {
+	if (BitIsSet(which, AudioAffect_Sound)) {
 		ma_sound_group_stop(&m_soundGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Sound3D)) {
+	if (BitIsSet(which, AudioAffect_Sound3D)) {
 		ma_sound_group_stop(&m_sound3DGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Speech)) {
+	if (BitIsSet(which, AudioAffect_Speech)) {
 		ma_sound_group_stop(&m_speechGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Music)) {
+	if (BitIsSet(which, AudioAffect_Music)) {
 		ma_sound_group_stop(&m_musicGroup);
 	}
 }
@@ -301,19 +301,19 @@ void MiniAudioManager::stopAudio(AudioAffect which)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::pauseAudio(AudioAffect which)
 {
-	if (BitTest(which, AudioAffect_Sound)) {
+	if (BitIsSet(which, AudioAffect_Sound)) {
 		ma_sound_group_stop(&m_soundGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Sound3D)) {
+	if (BitIsSet(which, AudioAffect_Sound3D)) {
 		ma_sound_group_stop(&m_sound3DGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Speech)) {
+	if (BitIsSet(which, AudioAffect_Speech)) {
 		ma_sound_group_stop(&m_speechGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Music)) {
+	if (BitIsSet(which, AudioAffect_Music)) {
 		ma_sound_group_stop(&m_musicGroup);
 	}
 }
@@ -321,19 +321,19 @@ void MiniAudioManager::pauseAudio(AudioAffect which)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::resumeAudio(AudioAffect which)
 {
-	if (BitTest(which, AudioAffect_Sound)) {
+	if (BitIsSet(which, AudioAffect_Sound)) {
 		ma_sound_group_start(&m_soundGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Sound3D)) {
+	if (BitIsSet(which, AudioAffect_Sound3D)) {
 		ma_sound_group_start(&m_sound3DGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Speech)) {
+	if (BitIsSet(which, AudioAffect_Speech)) {
 		ma_sound_group_start(&m_speechGroup);
 	}
 
-	if (BitTest(which, AudioAffect_Music)) {
+	if (BitIsSet(which, AudioAffect_Music)) {
 		ma_sound_group_start(&m_musicGroup);
 	}
 }
@@ -439,7 +439,7 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 		DEBUG_LOG(("- Stream\n"));
 #endif
 
-		if ((info->m_soundType == AT_Streaming) && event->getUninterruptable()) {
+		if ((info->m_soundType == AT_Streaming) && event->getUninterruptible()) {
 			stopAllSpeech();
 		}
 
@@ -447,7 +447,7 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 		audio->m_sound = sound;
 		audio->m_type = PAT_Stream;
 
-		if ((info->m_soundType == AT_Streaming) && event->getUninterruptable()) {
+		if ((info->m_soundType == AT_Streaming) && event->getUninterruptible()) {
 			setDisallowSpeech(TRUE);
 		}
 		break;
@@ -955,7 +955,7 @@ Bool MiniAudioManager::isCurrentlyPlaying(AudioHandle handle)
 }
 
 //-------------------------------------------------------------------------------------------------
-void MiniAudioManager::notifyOfAudioCompletion(UnsignedIntPtr audioCompleted, UnsignedInt flags)
+void MiniAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, UnsignedInt flags)
 {
 	PlayingAudio *playing = findPlayingAudioFrom(audioCompleted, flags);
 	if (!playing) {
@@ -987,7 +987,7 @@ void MiniAudioManager::notifyOfAudioCompletion(UnsignedIntPtr audioCompleted, Un
 }
 
 //-------------------------------------------------------------------------------------------------
-PlayingAudio *MiniAudioManager::findPlayingAudioFrom(UnsignedIntPtr audioCompleted, UnsignedInt flags)
+PlayingAudio *MiniAudioManager::findPlayingAudioFrom(UnsignedInt audioCompleted, UnsignedInt flags)
 {
 	std::list<PlayingAudio *>::iterator it;
 	PlayingAudio *playing;
@@ -1515,7 +1515,7 @@ Real MiniAudioManager::getFileLengthMS(AsciiString strToLoad) const
 		return 0.0f;
 	}
 
-	// Use miniaudio's decoder to get file length
+	// Use miniaudio's decoder to get file length via VFS
 	ma_decoder decoder;
 	ma_decoder_config config = ma_decoder_config_init_default();
 
@@ -1527,9 +1527,8 @@ Real MiniAudioManager::getFileLengthMS(AsciiString strToLoad) const
 	vfs.onRead = vfsFileRead;
 	vfs.onTell = vfsFileTell;
 	vfs.onSeek = vfsFileSeek;
-	config.pVFS = (ma_vfs *)&vfs;
 
-	ma_result result = ma_decoder_init_file(strToLoad.str(), &config, &decoder);
+	ma_result result = ma_decoder_init_vfs((ma_vfs *)&vfs, strToLoad.str(), &config, &decoder);
 	if (result != MA_SUCCESS) {
 		return 0.0f;
 	}

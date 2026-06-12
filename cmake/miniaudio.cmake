@@ -33,11 +33,15 @@ if(SAGE_USE_MINIAUDIO)
 
     # Platform-specific audio backend configuration
     if(APPLE)
-        # Use CoreAudio on macOS
-        target_compile_definitions(miniaudio_lib INTERFACE MA_NO_WASAPI MA_NO_DSOUND MA_NO_WINMM)
+        # Disable CoreAudio backend on macOS to avoid Byte typedef conflict
+        # between macOS MacTypes.h (UInt8) and game BaseTypeCore.h (char).
+        # CoreAudio support will be re-enabled once the typedef conflict is resolved.
+        target_compile_definitions(miniaudio_lib INTERFACE
+            MA_NO_WASAPI MA_NO_DSOUND MA_NO_WINMM MA_NO_COREAUDIO)
     elseif(UNIX)
         # Use ALSA on Linux (PulseAudio/PipeWire via ALSA compat)
-        target_compile_definitions(miniaudio_lib INTERFACE MA_NO_WASAPI MA_NO_DSOUND MA_NO_WINMM MA_NO_COREAUDIO)
+        target_compile_definitions(miniaudio_lib INTERFACE
+            MA_NO_WASAPI MA_NO_DSOUND MA_NO_WINMM MA_NO_COREAUDIO)
     endif()
 
     message(STATUS "miniaudio configured: target miniaudio_lib available")

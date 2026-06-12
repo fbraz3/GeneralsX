@@ -20,7 +20,7 @@
 // MiniAudioStream - Streaming audio for video playback via miniaudio
 // Author: GeneralsX Contributors, June 2026
 
-#include "MiniAudioStream.h"
+#include "MiniAudioDevice/MiniAudioStream.h"
 #include "Lib/BaseType.h"
 
 MiniAudioStream::MiniAudioStream() :

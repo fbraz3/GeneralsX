@@ -290,8 +290,8 @@ if(SAGE_USE_MINIAUDIO)
 
     target_sources(corei_gameenginedevice_private INTERFACE
         Include/MiniAudioDevice/MiniAudioManager.h
+        Include/MiniAudioDevice/MiniAudioStream.h
         Source/MiniAudioDevice/MiniAudioManager.cpp
-        Source/MiniAudioDevice/MiniAudioStream.h
         Source/MiniAudioDevice/MiniAudioStream.cpp
     )
 endif()

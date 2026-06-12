@@ -100,8 +100,8 @@ public:
 	///< NOTE NOTE NOTE !!DO NOT USE THIS IN FOR GAMELOGIC PURPOSES!! NOTE NOTE NOTE
 	virtual Bool isCurrentlyPlaying(AudioHandle handle);
 
-	virtual void notifyOfAudioCompletion(UnsignedIntPtr audioCompleted, UnsignedInt flags);
-	virtual PlayingAudio *findPlayingAudioFrom(UnsignedIntPtr audioCompleted, UnsignedInt flags);
+	virtual void notifyOfAudioCompletion(UnsignedInt audioCompleted, UnsignedInt flags);
+	virtual PlayingAudio *findPlayingAudioFrom(UnsignedInt audioCompleted, UnsignedInt flags);
 
 	virtual UnsignedInt getProviderCount(void) const;
 	virtual AsciiString getProviderName(UnsignedInt providerNum) const;
