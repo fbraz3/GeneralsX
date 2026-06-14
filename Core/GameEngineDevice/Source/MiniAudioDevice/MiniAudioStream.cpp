@@ -22,11 +22,16 @@
 
 #include "MiniAudioDevice/MiniAudioStream.h"
 #include "Lib/BaseType.h"
+#include "Common/GameAudio.h"
 
 MiniAudioStream::MiniAudioStream() :
+    m_engine(NULL),
+    m_sound(NULL),
+    m_sampleRate(0),
+    m_channels(0),
+    m_format(ma_format_unknown),
     m_initialized(false)
 {
-    memset(&m_sound, 0, sizeof(m_sound));
 }
 
 MiniAudioStream::~MiniAudioStream()
@@ -36,46 +41,116 @@ MiniAudioStream::~MiniAudioStream()
 
 bool MiniAudioStream::bufferData(uint8_t *data, size_t data_size, ma_format format, int samplerate, int channels)
 {
-    // For video audio streaming, we use a simple approach:
-    // Initialize the sound from memory on first buffer, then update with new data.
-    // miniaudio handles the internal buffering.
+    if (data_size == 0) return false;
 
     if (!m_initialized) {
-        // First call - we need an engine to initialize the sound.
-        // This will be set up when getHandleForBink() is called from MiniAudioManager.
-        // For now, just store the data.
-        DEBUG_LOG(("MiniAudioStream::bufferData - first buffer, %zu bytes\n", data_size));
+        m_sampleRate = samplerate;
+        m_channels = channels;
+        m_format = format;
+        m_initialized = true;
     }
 
-    // miniaudio doesn't have a direct buffer queue like OpenAL.
-    // For video audio, we'll use a different approach - the sound is initialized
-    // from a memory buffer when the video starts, and we feed data through a decoder.
-    // For now, this is a placeholder that will be enhanced when integrating with FFmpeg.
-
-    DEBUG_LOG(("MiniAudioStream::bufferData - %zu bytes (format=%d, rate=%d, ch=%d)\n",
-        data_size, format, samplerate, channels));
-
+    m_buffer.insert(m_buffer.end(), data, data + data_size);
     return true;
 }
 
 bool MiniAudioStream::isPlaying()
 {
-    if (!m_initialized) return false;
-    return ma_sound_is_playing(&m_sound) == MA_TRUE;
+    if (!m_sound) return false;
+    return ma_sound_is_playing(m_sound) == MA_TRUE;
 }
 
 void MiniAudioStream::update()
 {
-    // miniaudio handles internal buffer management automatically.
-    // No manual buffer queue management needed unlike OpenAL.
 }
 
 void MiniAudioStream::reset()
 {
-    if (m_initialized) {
-        ma_sound_stop(&m_sound);
-        ma_sound_uninit(&m_sound);
-        m_initialized = false;
-        memset(&m_sound, 0, sizeof(m_sound));
+    if (m_sound) {
+        ma_sound_stop(m_sound);
+        ma_sound_uninit(m_sound);
+        free(m_sound);
+        m_sound = NULL;
+    }
+
+    m_initialized = false;
+    m_buffer.clear();
+    m_sampleRate = 0;
+    m_channels = 0;
+    m_format = ma_format_unknown;
+    m_engine = NULL;
+}
+
+void MiniAudioStream::play()
+{
+    if (!m_initialized || m_buffer.empty()) {
+        DEBUG_LOG(("MiniAudioStream: play() ignored (no data)\n"));
+        return;
+    }
+
+    // Get the engine from TheAudio
+    void *device = TheAudio->getDevice();
+    m_engine = (ma_engine *)device;
+    if (!m_engine) {
+        DEBUG_LOG(("MiniAudioStream: play() failed (no engine)\n"));
+        return;
+    }
+
+    // Stop any previous sound
+    if (m_sound) {
+        ma_sound_stop(m_sound);
+        ma_sound_uninit(m_sound);
+        free(m_sound);
+    }
+
+    m_sound = (ma_sound *)malloc(sizeof(ma_sound));
+
+    // Create a memory decoder from accumulated audio data
+    ma_decoder decoder;
+    ma_decoder_config decConfig = ma_decoder_config_init(m_format, m_channels, m_sampleRate);
+
+    ma_result result = ma_decoder_init_memory(m_buffer.data(), m_buffer.size(), &decConfig, &decoder);
+    if (result != MA_SUCCESS) {
+        DEBUG_LOG(("MiniAudioStream: decoder init failed: %d\n", result));
+        free(m_sound);
+        m_sound = NULL;
+        return;
+    }
+
+    // Create sound from decoder (no spatialization, no pitch)
+    result = ma_sound_init_from_data_source(m_engine, &decoder,
+        MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH,
+        NULL, m_sound);
+
+    if (result != MA_SUCCESS) {
+        DEBUG_LOG(("MiniAudioStream: sound init failed: %d\n", result));
+        ma_decoder_uninit(&decoder);
+        free(m_sound);
+        m_sound = NULL;
+        return;
+    }
+
+    ma_sound_start(m_sound);
+    DEBUG_LOG(("MiniAudioStream: playing %zu bytes, %d Hz, %d ch\n",
+        m_buffer.size(), m_sampleRate, m_channels));
+}
+
+void MiniAudioStream::pause()
+{
+    if (m_sound) {
+        ma_sound_stop(m_sound);
+    }
+}
+
+void MiniAudioStream::stop()
+{
+    pause();
+    reset();
+}
+
+void MiniAudioStream::setVolume(float vol)
+{
+    if (m_sound) {
+        ma_sound_set_volume(m_sound, vol);
     }
 }

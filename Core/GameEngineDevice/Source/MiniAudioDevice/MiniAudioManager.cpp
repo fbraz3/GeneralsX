@@ -356,13 +356,16 @@ void MiniAudioManager::stopAllAmbientsBy(Drawable *draw)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 {
-#ifdef INTENSIVE_AUDIO_DEBUG
-	DEBUG_LOG(("MINIAUDIO (%d) - Processing play request: %d (%s)", TheGameLogic->getFrame(), event->getPlayingHandle(), event->getEventName().str()));
-#endif
 	const AudioEventInfo *info = event->getAudioEventInfo();
 	if (!info) {
 		return;
 	}
+
+	AsciiString fileToPlay = event->getFilename();
+	fprintf(stderr, "AUDIO: playAudioEvent '%s' type=%d file='%s'\n",
+		event->getEventName().str(), info->m_soundType, fileToPlay.str());
+
+#ifdef INTENSIVE_AUDIO_DEBUG
 
 	std::list<PlayingAudio *>::iterator it;
 	PlayingAudio *playing = NULL;

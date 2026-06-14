@@ -24,8 +24,7 @@
 #include "always.h"
 #include <miniaudio.h>
 #include <stdint.h>
-
-#define MA_STREAM_BUFFER_COUNT 32
+#include <vector>
 
 class MiniAudioStream final
 {
@@ -38,15 +37,18 @@ public:
     void update();
     void reset();
 
-    void play() { ma_sound_start(&m_sound); }
-    void pause() { ma_sound_stop(&m_sound); }
-    void stop() { ma_sound_stop(&m_sound); }
+    void play();
+    void pause();
+    void stop();
 
-    void setVolume(float vol) { ma_sound_set_volume(&m_sound, vol); }
-
-    ma_sound *getSound() { return &m_sound; }
+    void setVolume(float vol);
 
 protected:
-    ma_sound m_sound;
+    std::vector<uint8_t> m_buffer;
+    ma_engine *m_engine;
+    ma_sound *m_sound;
+    int m_sampleRate;
+    int m_channels;
+    ma_format m_format;
     bool m_initialized;
 };
