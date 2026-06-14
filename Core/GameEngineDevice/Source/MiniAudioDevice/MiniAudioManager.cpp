@@ -365,13 +365,10 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	fprintf(stderr, "AUDIO: playAudioEvent '%s' type=%d file='%s'\n",
 		event->getEventName().str(), info->m_soundType, fileToPlay.str());
 
-#ifdef INTENSIVE_AUDIO_DEBUG
-
 	std::list<PlayingAudio *>::iterator it;
 	PlayingAudio *playing = NULL;
 
 	AudioHandle handleToKill = event->getHandleToKill();
-	AsciiString fileToPlay = event->getFilename();
 	PlayingAudio *audio = allocatePlayingAudio();
 	audio->m_audioEventRTS = event;
 
