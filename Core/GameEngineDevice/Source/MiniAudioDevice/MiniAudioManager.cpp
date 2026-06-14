@@ -61,6 +61,11 @@
 #include "GameLogic/TerrainLogic.h"
 
 #include "Common/File.h"
+#include "VideoDevice/FFmpeg/FFmpegFile.h"
+
+extern "C" {
+#include <libavcodec/avcodec.h>
+}
 
 #ifdef _INTERNAL
 //#pragma optimize("", off)
@@ -366,73 +371,137 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 		event->getEventName().str(), info->m_soundType, fileToPlay.str());
 
 	std::list<PlayingAudio *>::iterator it;
-	PlayingAudio *playing = NULL;
 
 	AudioHandle handleToKill = event->getHandleToKill();
 	PlayingAudio *audio = allocatePlayingAudio();
 	audio->m_audioEventRTS = event;
 
-	Bool foundSoundToReplace = false;
+	// Kill existing sound if handleToKill is set
 	if (handleToKill) {
 		for (it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
-			playing = (*it);
-			if (!playing) {
-				continue;
-			}
-
+			PlayingAudio *playing = (*it);
+			if (!playing) continue;
 			if (playing->m_audioEventRTS && playing->m_audioEventRTS->getPlayingHandle() == handleToKill)
 			{
-				// Release this streaming channel immediately because we are going to play another sound in its place.
 				releasePlayingAudio(playing);
 				m_playingSounds.erase(it);
-				foundSoundToReplace = true;
 				break;
 			}
 		}
 	}
 
 	ma_sound_group *groupToUse = NULL;
-	ma_uint32 flags = 0;
+	ma_uint32 flags = MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH;
 	switch (info->m_soundType)
 	{
 	case AT_Music:
 		groupToUse = &m_musicGroup;
-		flags = MA_SOUND_FLAG_STREAM | MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH;
 		break;
 	case AT_Streaming:
 		groupToUse = &m_speechGroup;
-		flags = MA_SOUND_FLAG_STREAM | MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH;
 		break;
 	case AT_SoundEffect:
 		if (event->isPositionalAudio()) {
 			groupToUse = &m_sound3DGroup;
+			flags = 0; // Allow spatialization for 3D
 		}
 		else {
 			groupToUse = &m_soundGroup;
-			flags = MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH;
 		}
 		break;
 	}
 
-	ma_sound *sound = NULL;
-	if (!handleToKill || foundSoundToReplace) {
-		sound = (ma_sound *)malloc(sizeof(ma_sound));
-		fprintf(stderr, "AUDIO: ma_sound_init_from_file START '%s'\n", fileToPlay.str());
-		fflush(stderr);
-		ma_result result = ma_sound_init_from_file(&m_engine, fileToPlay.str(), flags, groupToUse, NULL, sound);
-		fprintf(stderr, "AUDIO: ma_sound_init_from_file DONE result=%d\n", result);
-		fflush(stderr);
-		if (result != MA_SUCCESS) {
-			DEBUG_LOG(("Failed to initialize sound from file: %s (error: %d)", fileToPlay.str(), result));
-			releasePlayingAudio(audio);
-			return;
-		}
-	}
-	else {
-		DEBUG_LOG(("Skipping sound!"));
+	// Use FFmpeg to decode the file, then feed PCM to miniaudio
+	// This avoids miniaudio's built-in decoders hanging on MP3 streaming via VFS
+	File *file = TheFileSystem->openFile(fileToPlay.str());
+	if (!file) {
+		DEBUG_LOG(("Failed to open file: %s\n", fileToPlay.str()));
 		releasePlayingAudio(audio);
 		return;
 	}
+
+	FFmpegFile *ffmpegFile = NEW FFmpegFile();
+	if (!ffmpegFile->open(file)) {
+		DEBUG_LOG(("Failed to open FFmpeg file: %s\n", fileToPlay.str()));
+		delete ffmpegFile;
+		releasePlayingAudio(audio);
+		return;
+	}
+
+	// Decode all audio frames into a buffer
+	std::vector<uint8_t> pcmData;
+	int sampleRate = 0;
+	int channels = 0;
+	int bytesPerSample = 0;
+
+	auto onFrame = [&](AVFrame *frame, int stream_idx, int stream_type, void *user_data) {
+		if (stream_type != AVMEDIA_TYPE_AUDIO) return;
+
+		sampleRate = frame->sample_rate;
+		channels = frame->ch_layout.nb_channels;
+		bytesPerSample = av_get_bytes_per_sample(static_cast<AVSampleFormat>(frame->format));
+
+		const int frameSize = av_samples_get_buffer_size(NULL, channels, frame->nb_samples,
+			static_cast<AVSampleFormat>(frame->format), 1);
+
+		if (av_sample_fmt_is_planar(static_cast<AVSampleFormat>(frame->format))) {
+			// Interleave planar audio
+			for (int s = 0; s < frame->nb_samples; s++) {
+				for (int c = 0; c < channels; c++) {
+					const uint8_t *src = frame->data[c] + s * bytesPerSample;
+					pcmData.insert(pcmData.end(), src, src + bytesPerSample);
+				}
+			}
+		} else {
+			pcmData.insert(pcmData.end(), frame->data[0], frame->data[0] + frameSize);
+		}
+	};
+
+	ffmpegFile->setFrameCallback(onFrame);
+	ffmpegFile->setUserData(NULL);
+
+	// Decode all packets
+	while (ffmpegFile->decodePacket()) {
+	}
+
+	if (pcmData.empty() || sampleRate == 0) {
+		DEBUG_LOG(("No audio data decoded from: %s\n", fileToPlay.str()));
+		delete ffmpegFile;
+		releasePlayingAudio(audio);
+		return;
+	}
+
+	// Determine miniaudio format
+	ma_format maFmt = ma_format_unknown;
+	if (bytesPerSample == 1) maFmt = ma_format_u8;
+	else if (bytesPerSample == 2) maFmt = ma_format_s16;
+	else if (bytesPerSample == 4) maFmt = ma_format_f32;
+
+	// Create decoder from decoded PCM memory
+	ma_decoder decoder;
+	ma_decoder_config decConfig = ma_decoder_config_init(maFmt, channels, sampleRate);
+	ma_result result = ma_decoder_init_memory(pcmData.data(), pcmData.size(), &decConfig, &decoder);
+	if (result != MA_SUCCESS) {
+		DEBUG_LOG(("Failed to create decoder from memory: %d\n", result));
+		delete ffmpegFile;
+		releasePlayingAudio(audio);
+		return;
+	}
+
+	ma_sound *sound = (ma_sound *)malloc(sizeof(ma_sound));
+	result = ma_sound_init_from_data_source(&m_engine, &decoder,
+		flags, groupToUse, sound);
+	if (result != MA_SUCCESS) {
+		DEBUG_LOG(("Failed to init sound from data source: %d\n", result));
+		ma_decoder_uninit(&decoder);
+		delete ffmpegFile;
+		free(sound);
+		releasePlayingAudio(audio);
+		return;
+	}
+
+	// ma_sound_init_from_data_source copies the data, safe to uninit decoder
+	ma_decoder_uninit(&decoder);
 
 	switch (info->m_soundType)
 	{
@@ -517,7 +586,7 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 
 	fprintf(stderr, "AUDIO: ma_sound_start...\n");
 	fflush(stderr);
-	ma_result result = ma_sound_start(sound);
+	result = ma_sound_start(sound);
 	fprintf(stderr, "AUDIO: ma_sound_start DONE result=%d\n", result);
 	fflush(stderr);
 	if (result != MA_SUCCESS) {
