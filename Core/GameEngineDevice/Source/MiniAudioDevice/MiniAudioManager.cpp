@@ -417,7 +417,11 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	ma_sound *sound = NULL;
 	if (!handleToKill || foundSoundToReplace) {
 		sound = (ma_sound *)malloc(sizeof(ma_sound));
+		fprintf(stderr, "AUDIO: ma_sound_init_from_file START '%s'\n", fileToPlay.str());
+		fflush(stderr);
 		ma_result result = ma_sound_init_from_file(&m_engine, fileToPlay.str(), flags, groupToUse, NULL, sound);
+		fprintf(stderr, "AUDIO: ma_sound_init_from_file DONE result=%d\n", result);
+		fflush(stderr);
 		if (result != MA_SUCCESS) {
 			DEBUG_LOG(("Failed to initialize sound from file: %s (error: %d)", fileToPlay.str(), result));
 			releasePlayingAudio(audio);
@@ -511,7 +515,11 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	}
 	ma_sound_set_volume(sound, initialVolume);
 
+	fprintf(stderr, "AUDIO: ma_sound_start...\n");
+	fflush(stderr);
 	ma_result result = ma_sound_start(sound);
+	fprintf(stderr, "AUDIO: ma_sound_start DONE result=%d\n", result);
+	fflush(stderr);
 	if (result != MA_SUCCESS) {
 		DEBUG_LOG(("Failed to start sound. Error code: %d", result));
 		releasePlayingAudio(audio);
