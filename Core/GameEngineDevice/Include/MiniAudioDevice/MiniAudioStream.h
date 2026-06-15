@@ -44,11 +44,16 @@ public:
     void setVolume(float vol);
 
 protected:
+    void rebuildSound();
+
     std::vector<uint8_t> m_buffer;
     ma_engine *m_engine;
     ma_sound *m_sound;
+    ma_audio_buffer *m_audioBuffer;
     int m_sampleRate;
     int m_channels;
     ma_format m_format;
     bool m_initialized;
+    bool m_playing;
+    size_t m_lastBufferSize;
 };

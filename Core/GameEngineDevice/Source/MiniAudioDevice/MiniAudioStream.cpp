@@ -27,10 +27,13 @@
 MiniAudioStream::MiniAudioStream() :
     m_engine(NULL),
     m_sound(NULL),
+    m_audioBuffer(NULL),
     m_sampleRate(0),
     m_channels(0),
     m_format(ma_format_unknown),
-    m_initialized(false)
+    m_initialized(false),
+    m_playing(false),
+    m_lastBufferSize(0)
 {
 }
 
@@ -56,12 +59,15 @@ bool MiniAudioStream::bufferData(uint8_t *data, size_t data_size, ma_format form
 
 bool MiniAudioStream::isPlaying()
 {
-    if (!m_sound) return false;
-    return ma_sound_is_playing(m_sound) == MA_TRUE;
+    return m_playing;
 }
 
 void MiniAudioStream::update()
 {
+    // If we're playing and new data has arrived, rebuild the sound with updated data
+    if (m_playing && m_initialized && m_buffer.size() > m_lastBufferSize) {
+        rebuildSound();
+    }
 }
 
 void MiniAudioStream::reset()
@@ -73,18 +79,25 @@ void MiniAudioStream::reset()
         m_sound = NULL;
     }
 
+    if (m_audioBuffer) {
+        ma_audio_buffer_uninit(m_audioBuffer);
+        free(m_audioBuffer);
+        m_audioBuffer = NULL;
+    }
+
     m_initialized = false;
+    m_playing = false;
     m_buffer.clear();
     m_sampleRate = 0;
     m_channels = 0;
     m_format = ma_format_unknown;
     m_engine = NULL;
+    m_lastBufferSize = 0;
 }
 
 void MiniAudioStream::play()
 {
     if (!m_initialized || m_buffer.empty()) {
-        DEBUG_LOG(("MiniAudioStream: play() ignored (no data)\n"));
         return;
     }
 
@@ -92,47 +105,70 @@ void MiniAudioStream::play()
     void *device = TheAudio->getDevice();
     m_engine = (ma_engine *)device;
     if (!m_engine) {
-        DEBUG_LOG(("MiniAudioStream: play() failed (no engine)\n"));
         return;
     }
 
-    // Stop any previous sound
+    rebuildSound();
+    m_playing = true;
+}
+
+void MiniAudioStream::rebuildSound()
+{
+    if (!m_engine || m_buffer.empty()) return;
+
+    // Stop and free previous sound
     if (m_sound) {
         ma_sound_stop(m_sound);
         ma_sound_uninit(m_sound);
         free(m_sound);
+        m_sound = NULL;
     }
 
-    m_sound = (ma_sound *)malloc(sizeof(ma_sound));
+    // Free previous audio buffer
+    if (m_audioBuffer) {
+        ma_audio_buffer_uninit(m_audioBuffer);
+        free(m_audioBuffer);
+        m_audioBuffer = NULL;
+    }
 
-    // Create a memory decoder from accumulated audio data
-    ma_decoder decoder;
-    ma_decoder_config decConfig = ma_decoder_config_init(m_format, m_channels, m_sampleRate);
+    // Create audio buffer with copy of data
+    ma_uint64 frameCount = m_buffer.size() / ma_get_bytes_per_frame(m_format, m_channels);
+    ma_audio_buffer_config abConfig = ma_audio_buffer_config_init(
+        m_format, m_channels, frameCount, m_buffer.data(), NULL);
 
-    ma_result result = ma_decoder_init_memory(m_buffer.data(), m_buffer.size(), &decConfig, &decoder);
+    m_audioBuffer = (ma_audio_buffer *)malloc(sizeof(ma_audio_buffer));
+    ma_result result = ma_audio_buffer_init_copy(&abConfig, m_audioBuffer);
     if (result != MA_SUCCESS) {
-        DEBUG_LOG(("MiniAudioStream: decoder init failed: %d\n", result));
-        free(m_sound);
-        m_sound = NULL;
+        free(m_audioBuffer);
+        m_audioBuffer = NULL;
         return;
     }
 
-    // Create sound from decoder (no spatialization, no pitch)
-    result = ma_sound_init_from_data_source(m_engine, &decoder,
+    // Set sample rate
+    m_audioBuffer->ref.sampleRate = m_sampleRate;
+
+    // Create sound from audio buffer
+    m_sound = (ma_sound *)malloc(sizeof(ma_sound));
+    result = ma_sound_init_from_data_source(m_engine, m_audioBuffer,
         MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH,
         NULL, m_sound);
 
     if (result != MA_SUCCESS) {
-        DEBUG_LOG(("MiniAudioStream: sound init failed: %d\n", result));
-        ma_decoder_uninit(&decoder);
+        ma_audio_buffer_uninit(m_audioBuffer);
+        free(m_audioBuffer);
+        m_audioBuffer = NULL;
         free(m_sound);
         m_sound = NULL;
         return;
     }
 
+    // Preserve playback position if possible
+    if (m_playing) {
+        ma_sound_set_volume(m_sound, 1.0f);
+    }
+
     ma_sound_start(m_sound);
-    DEBUG_LOG(("MiniAudioStream: playing %zu bytes, %d Hz, %d ch\n",
-        m_buffer.size(), m_sampleRate, m_channels));
+    m_lastBufferSize = m_buffer.size();
 }
 
 void MiniAudioStream::pause()
@@ -140,6 +176,7 @@ void MiniAudioStream::pause()
     if (m_sound) {
         ma_sound_stop(m_sound);
     }
+    m_playing = false;
 }
 
 void MiniAudioStream::stop()
