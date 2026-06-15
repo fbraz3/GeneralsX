@@ -5543,48 +5543,40 @@ Bool Pathfinder::adjustDestination(Object *obj, const LocomotorSet& locomotorSet
 		layer = TheTerrainLogic->getLayerForDestination(groupDest);
 	}
 
-	Int limit = MAX_ADJUSTMENT_CELL_COUNT;
-	Int i, j;
-	i = cell.x;
-	j = cell.y;
+	Int i = cell.x;
+	Int j = cell.y;
+	// Check the center cell
 	if (checkForAdjust(obj, locomotorSet, isHuman, i,j, layer, iRadius, center, dest, groupDest)) {
 		return true;
 	}
 
-	Int delta=1;
-	Int count;
+	// TheSuperHackers @info Expanding counter-clockwise spiral search around center cell C. Each full lap walks right->up->left->down.
+	// After every pair of directions (right+up, then left+down) length of the segment grows by 1.
+	//
+	//    <------  12
+	//    4  3  2  11
+	//    5  C  1  10
+	//    6  7  8  9
+	//
+	Int limit = MAX_ADJUSTMENT_CELL_COUNT;
+	Int segmentLength = 1;
+	const ICoord2D directions[4] = { {1, 0}, {0, 1}, {-1, 0}, {0, -1} };
 	while (limit>0) {
-		for (count = delta; count>0; count--) {
-			i++;
-			limit--;
-			if (checkForAdjust(obj, locomotorSet, isHuman, i,j, layer, iRadius, center, dest, groupDest)) {
-				return true;
+		for (Int dir = 0; dir < 4; dir++) {
+			for (Int count = segmentLength; count>0; count--) {
+				i+=directions[dir].x;
+				j+=directions[dir].y;
+				limit--;
+				if (checkForAdjust(obj, locomotorSet, isHuman, i, j, layer, iRadius, center, dest, groupDest)) {
+					return true;
+				}
+			}
+			if (dir & 1) {
+				segmentLength++;
 			}
 		}
-		for (count = delta; count>0; count--) {
-			j++;
-			limit--;
-			if (checkForAdjust(obj, locomotorSet, isHuman, i,j, layer, iRadius, center, dest, groupDest)) {
-				return true;
-			}
-		}
-		delta++;
-		for (count = delta; count>0; count--) {
-			i--;
-			limit--;
-			if (checkForAdjust(obj, locomotorSet, isHuman, i,j, layer, iRadius, center, dest, groupDest)) {
-				return true;
-			}
-		}
-		for (count = delta; count>0; count--) {
-			j--;
-			limit--;
-			if (checkForAdjust(obj, locomotorSet, isHuman, i,j, layer, iRadius, center, dest, groupDest)) {
-				return true;
-			}
-		}
-		delta++;
 	}
+
 	if (groupDest) {
 		// Didn't work, so just do simple adjust.
 		return(adjustDestination(obj, locomotorSet, dest, nullptr));
