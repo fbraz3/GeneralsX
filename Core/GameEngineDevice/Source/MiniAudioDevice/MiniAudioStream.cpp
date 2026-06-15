@@ -19,10 +19,14 @@
 // FILE: MiniAudioStream.cpp ////////////////////////////////////////////////////////////////////////
 // MiniAudioStream - Streaming audio for video playback via miniaudio
 // Author: GeneralsX Contributors, June 2026
+//
+// Design: FFmpegVideoStream decodes video packets every frame via decodePacket().
+// Each audio packet decoded calls bufferData() to accumulate PCM data.
+// update() is called every frame and triggers createSound() once the buffer
+// stops growing (all audio decoded for this playback cycle).
 
 #include "MiniAudioDevice/MiniAudioStream.h"
 #include "Lib/BaseType.h"
-#include "Common/GameAudio.h"
 
 MiniAudioStream::MiniAudioStream() :
     m_engine(NULL),
@@ -33,7 +37,9 @@ MiniAudioStream::MiniAudioStream() :
     m_format(ma_format_unknown),
     m_initialized(false),
     m_playing(false),
-    m_lastBufferSize(0)
+    m_soundCreated(false),
+    m_lastBufferSize(0),
+    m_stableFrameCount(0)
 {
 }
 
@@ -48,8 +54,8 @@ bool MiniAudioStream::bufferData(uint8_t *data, size_t data_size, ma_format form
 
     if (!m_initialized) {
         m_sampleRate = samplerate;
-        m_channels = channels;
-        m_format = format;
+        m_channels   = channels;
+        m_format     = format;
         m_initialized = true;
     }
 
@@ -59,20 +65,28 @@ bool MiniAudioStream::bufferData(uint8_t *data, size_t data_size, ma_format form
 
 bool MiniAudioStream::isPlaying()
 {
-    return m_playing;
+    if (!m_sound) return m_playing;  // playing flag set but sound not yet created
+    return ma_sound_is_playing(m_sound) == MA_TRUE;
 }
 
 void MiniAudioStream::update()
 {
-    // Wait until enough audio data has accumulated before creating sound.
-    if (!m_playing || !m_initialized || m_sound != NULL) return;
+    // Only act when play() was called and sound hasn't been created yet
+    if (!m_playing || !m_initialized || m_soundCreated) return;
 
     size_t currentSize = m_buffer.size();
-    // Create sound when buffer stops growing (all data received)
-    // or after we have some data and enough frames have passed
-    if (currentSize > 0 && (currentSize == m_lastBufferSize || currentSize > 1024*1024)) {
-        rebuildSound();
+
+    if (currentSize == m_lastBufferSize && currentSize > 0) {
+        // Buffer hasn't grown this frame — may be complete
+        m_stableFrameCount++;
+        // Wait 2 stable frames to be safe (handles 1-frame decode bursts)
+        if (m_stableFrameCount >= 2) {
+            createSound();
+        }
+    } else {
+        m_stableFrameCount = 0;
     }
+
     m_lastBufferSize = currentSize;
 }
 
@@ -91,46 +105,47 @@ void MiniAudioStream::reset()
         m_audioBuffer = NULL;
     }
 
-    m_initialized = false;
-    m_playing = false;
+    m_initialized    = false;
+    m_playing        = false;
+    m_soundCreated   = false;
     m_buffer.clear();
-    m_sampleRate = 0;
-    m_channels = 0;
-    m_format = ma_format_unknown;
-    m_engine = NULL;
+    m_sampleRate     = 0;
+    m_channels       = 0;
+    m_format         = ma_format_unknown;
     m_lastBufferSize = 0;
+    m_stableFrameCount = 0;
+    // Don't clear m_engine — it's provided externally and persists
 }
 
 void MiniAudioStream::play()
 {
-    // Don't create sound immediately - wait for update() to accumulate data
-    m_playing = true;
-    m_lastBufferSize = 0;  // Reset so update() detects new data
+    m_playing        = true;
+    m_soundCreated   = false;
+    m_lastBufferSize = 0;
+    m_stableFrameCount = 0;
 }
 
-void MiniAudioStream::rebuildSound()
+void MiniAudioStream::createSound()
 {
-    if (!m_engine || m_buffer.empty()) return;
+    if (!m_engine || m_buffer.empty() || m_format == ma_format_unknown) return;
 
-    // Free previous sound
+    // Cleanup previous sound/buffer if any
     if (m_sound) {
         ma_sound_stop(m_sound);
         ma_sound_uninit(m_sound);
         free(m_sound);
         m_sound = NULL;
     }
-
-    // Free previous audio buffer
     if (m_audioBuffer) {
         ma_audio_buffer_uninit(m_audioBuffer);
         free(m_audioBuffer);
         m_audioBuffer = NULL;
     }
 
-    // Create audio buffer with copy of data
     ma_uint64 frameCount = m_buffer.size() / ma_get_bytes_per_frame(m_format, m_channels);
     if (frameCount == 0) return;
 
+    // init_copy copies data into internal storage — safe after m_buffer is freed
     ma_audio_buffer_config abConfig = ma_audio_buffer_config_init(
         m_format, m_channels, frameCount, m_buffer.data(), NULL);
 
@@ -141,7 +156,6 @@ void MiniAudioStream::rebuildSound()
         m_audioBuffer = NULL;
         return;
     }
-
     m_audioBuffer->ref.sampleRate = m_sampleRate;
 
     m_sound = (ma_sound *)malloc(sizeof(ma_sound));
@@ -160,14 +174,13 @@ void MiniAudioStream::rebuildSound()
 
     ma_sound_set_volume(m_sound, 1.0f);
     ma_sound_start(m_sound);
+    m_soundCreated = true;
 }
 
 void MiniAudioStream::pause()
 {
     m_playing = false;
-    if (m_sound) {
-        ma_sound_stop(m_sound);
-    }
+    if (m_sound) ma_sound_stop(m_sound);
 }
 
 void MiniAudioStream::stop()
@@ -178,7 +191,5 @@ void MiniAudioStream::stop()
 
 void MiniAudioStream::setVolume(float vol)
 {
-    if (m_sound) {
-        ma_sound_set_volume(m_sound, vol);
-    }
+    if (m_sound) ma_sound_set_volume(m_sound, vol);
 }

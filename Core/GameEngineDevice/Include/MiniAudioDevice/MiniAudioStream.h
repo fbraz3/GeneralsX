@@ -32,19 +32,24 @@ public:
     MiniAudioStream();
     ~MiniAudioStream();
 
+    // Called by MiniAudioManager to provide engine reference at construction
+    void setEngine(ma_engine *engine) { m_engine = engine; }
+
+    // Push decoded PCM data (called by FFmpegVideoStream::onFrame)
     bool bufferData(uint8_t *data, size_t data_size, ma_format format, int samplerate, int channels);
+
     bool isPlaying();
+    // Must be called every frame from FFmpegVideoStream::update()
     void update();
     void reset();
 
     void play();
     void pause();
     void stop();
-
     void setVolume(float vol);
 
 protected:
-    void rebuildSound();
+    void createSound();
 
     std::vector<uint8_t> m_buffer;
     ma_engine *m_engine;
@@ -55,5 +60,7 @@ protected:
     ma_format m_format;
     bool m_initialized;
     bool m_playing;
+    bool m_soundCreated;
     size_t m_lastBufferSize;
+    int m_stableFrameCount;  // Frames with no new data — used to detect buffer completion
 };
