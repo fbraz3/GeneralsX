@@ -487,7 +487,7 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 
 	ma_result result = ma_audio_buffer_init_copy(&abConfig, audioBuffer);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("Failed to create audio buffer: %d\n", result));
+		fprintf(stderr, "AUDIO: FAILED to create audio buffer: %d for '%s'\n", result, fileToPlay.str());
 		delete ffmpegFile;
 		free(audioBuffer);
 		releasePlayingAudio(audio);
@@ -497,11 +497,14 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	// Set sample rate on the buffer ref (config doesn't have it)
 	audioBuffer->ref.sampleRate = sampleRate;
 
+	fprintf(stderr, "AUDIO: buffer OK %zu bytes, %d Hz, %d ch, fmt=%d for '%s'\n",
+		pcmData.size(), sampleRate, channels, maFmt, fileToPlay.str());
+
 	ma_sound *sound = (ma_sound *)malloc(sizeof(ma_sound));
 	result = ma_sound_init_from_data_source(&m_engine, audioBuffer,
 		flags, groupToUse, sound);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("Failed to init sound from data source: %d\n", result));
+		fprintf(stderr, "AUDIO: FAILED to init sound: %d for '%s'\n", result, fileToPlay.str());
 		ma_audio_buffer_uninit(audioBuffer);
 		free(audioBuffer);
 		delete ffmpegFile;
@@ -509,6 +512,8 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 		releasePlayingAudio(audio);
 		return;
 	}
+
+	fprintf(stderr, "AUDIO: sound init OK for '%s'\n", fileToPlay.str());
 
 	switch (info->m_soundType)
 	{
@@ -594,12 +599,14 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	}
 	ma_sound_set_volume(sound, initialVolume);
 
+	fprintf(stderr, "AUDIO: starting '%s' vol=%.3f\n", fileToPlay.str(), initialVolume);
 	result = ma_sound_start(sound);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("Failed to start sound. Error code: %d", result));
+		fprintf(stderr, "AUDIO: FAILED to start sound: %d for '%s'\n", result, fileToPlay.str());
 		releasePlayingAudio(audio);
 		return;
 	}
+	fprintf(stderr, "AUDIO: playing '%s'\n", fileToPlay.str());
 	m_playingSounds.push_back(audio);
 }
 
