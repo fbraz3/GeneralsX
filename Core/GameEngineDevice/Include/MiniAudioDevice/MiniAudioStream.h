@@ -16,19 +16,19 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// FILE: MiniAudioStream.h //////////////////////////////////////////////////////////////////////////
-// MiniAudioStream - Streaming audio for video playback via miniaudio
-// Author: GeneralsX Contributors, June 2026
 #pragma once
 
 #include "always.h"
 #include <miniaudio.h>
 #include <stdint.h>
 #include <vector>
+#include <mutex>
 
 class MiniAudioStream final
 {
 public:
+    ma_data_source_base base; // MUST BE FIRST
+
     MiniAudioStream();
     ~MiniAudioStream();
 
@@ -48,19 +48,24 @@ public:
     void stop();
     void setVolume(float vol);
 
+    // Custom data source callbacks
+    ma_result readPCM(void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead);
+    ma_result seekPCM(ma_uint64 frameIndex);
+    ma_result getDataFormat(ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap, size_t channelMapCap);
+
 protected:
     void createSound();
 
     std::vector<uint8_t> m_buffer;
+    std::mutex m_mutex;
     ma_engine *m_engine;
     ma_sound *m_sound;
-    ma_audio_buffer *m_audioBuffer;
     int m_sampleRate;
     int m_channels;
     ma_format m_format;
     bool m_initialized;
     bool m_playing;
     bool m_soundCreated;
-    size_t m_lastBufferSize;
-    int m_stableFrameCount;  // Frames with no new data — used to detect buffer completion
+    size_t m_readCursor;
 };
+
