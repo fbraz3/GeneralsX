@@ -64,9 +64,24 @@ bool MiniAudioStream::isPlaying()
 
 void MiniAudioStream::update()
 {
-    // Don't rebuild sound every frame - that causes audio restart and distortion.
-    // The sound plays whatever data was available when play() was called.
-    // New data accumulates in m_buffer but doesn't affect current playback.
+    // Wait until enough audio data has accumulated before creating sound.
+    // The video player calls play() early (after first video frame) but
+    // we accumulate data in bufferData() as more frames arrive.
+    // Once we have enough data (or data stops growing), create the sound.
+    if (!m_playing || !m_initialized || m_sound != NULL) return;
+
+    // Check if data has grown significantly since last check
+    // or if enough time has passed (data stopped growing)
+    static int updateCount = 0;
+    updateCount++;
+
+    size_t currentSize = m_buffer.size();
+    // Create sound when we have at least some data and it hasn't grown for a few frames
+    if (currentSize > 0 && (currentSize == m_lastBufferSize || updateCount > 30)) {
+        rebuildSound();
+        updateCount = 0;
+    }
+    m_lastBufferSize = currentSize;
 }
 
 void MiniAudioStream::reset()
@@ -96,26 +111,16 @@ void MiniAudioStream::reset()
 
 void MiniAudioStream::play()
 {
-    if (!m_initialized || m_buffer.empty()) {
-        return;
-    }
-
-    // Get the engine from TheAudio
-    void *device = TheAudio->getDevice();
-    m_engine = (ma_engine *)device;
-    if (!m_engine) {
-        return;
-    }
-
-    rebuildSound();
+    // Don't create sound immediately - wait for update() to accumulate data
     m_playing = true;
+    m_lastBufferSize = 0;  // Reset so update() detects new data
 }
 
 void MiniAudioStream::rebuildSound()
 {
     if (!m_engine || m_buffer.empty()) return;
 
-    // Stop and free previous sound
+    // Free previous sound
     if (m_sound) {
         ma_sound_stop(m_sound);
         ma_sound_uninit(m_sound);
@@ -132,6 +137,8 @@ void MiniAudioStream::rebuildSound()
 
     // Create audio buffer with copy of data
     ma_uint64 frameCount = m_buffer.size() / ma_get_bytes_per_frame(m_format, m_channels);
+    if (frameCount == 0) return;
+
     ma_audio_buffer_config abConfig = ma_audio_buffer_config_init(
         m_format, m_channels, frameCount, m_buffer.data(), NULL);
 
@@ -143,10 +150,8 @@ void MiniAudioStream::rebuildSound()
         return;
     }
 
-    // Set sample rate
     m_audioBuffer->ref.sampleRate = m_sampleRate;
 
-    // Create sound from audio buffer
     m_sound = (ma_sound *)malloc(sizeof(ma_sound));
     result = ma_sound_init_from_data_source(m_engine, m_audioBuffer,
         MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH,
@@ -161,21 +166,16 @@ void MiniAudioStream::rebuildSound()
         return;
     }
 
-    // Preserve playback position if possible
-    if (m_playing) {
-        ma_sound_set_volume(m_sound, 1.0f);
-    }
-
+    ma_sound_set_volume(m_sound, 1.0f);
     ma_sound_start(m_sound);
-    m_lastBufferSize = m_buffer.size();
 }
 
 void MiniAudioStream::pause()
 {
+    m_playing = false;
     if (m_sound) {
         ma_sound_stop(m_sound);
     }
-    m_playing = false;
 }
 
 void MiniAudioStream::stop()
