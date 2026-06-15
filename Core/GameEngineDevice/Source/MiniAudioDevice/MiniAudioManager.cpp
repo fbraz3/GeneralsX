@@ -477,31 +477,33 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	else if (bytesPerSample == 2) maFmt = ma_format_s16;
 	else if (bytesPerSample == 4) maFmt = ma_format_f32;
 
-	// Create decoder from decoded PCM memory
-	ma_decoder decoder;
-	ma_decoder_config decConfig = ma_decoder_config_init(maFmt, channels, sampleRate);
-	ma_result result = ma_decoder_init_memory(pcmData.data(), pcmData.size(), &decConfig, &decoder);
+	// Create audio buffer from decoded PCM (copies data into internal storage)
+	ma_audio_buffer *audioBuffer = (ma_audio_buffer *)malloc(sizeof(ma_audio_buffer));
+	ma_audio_buffer_config abConfig = ma_audio_buffer_config_init(maFmt, channels,
+		pcmData.size() / ma_get_bytes_per_frame(maFmt, channels),
+		pcmData.data(), NULL);
+
+	ma_result result = ma_audio_buffer_init(&abConfig, audioBuffer);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("Failed to create decoder from memory: %d\n", result));
+		DEBUG_LOG(("Failed to create audio buffer: %d\n", result));
 		delete ffmpegFile;
+		free(audioBuffer);
 		releasePlayingAudio(audio);
 		return;
 	}
 
 	ma_sound *sound = (ma_sound *)malloc(sizeof(ma_sound));
-	result = ma_sound_init_from_data_source(&m_engine, &decoder,
+	result = ma_sound_init_from_data_source(&m_engine, audioBuffer,
 		flags, groupToUse, sound);
 	if (result != MA_SUCCESS) {
 		DEBUG_LOG(("Failed to init sound from data source: %d\n", result));
-		ma_decoder_uninit(&decoder);
+		ma_audio_buffer_uninit(audioBuffer);
+		free(audioBuffer);
 		delete ffmpegFile;
 		free(sound);
 		releasePlayingAudio(audio);
 		return;
 	}
-
-	// ma_sound_init_from_data_source copies the data, safe to uninit decoder
-	ma_decoder_uninit(&decoder);
 
 	switch (info->m_soundType)
 	{
@@ -516,8 +518,9 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 			stopAllSpeech();
 		}
 
-		// Put this on here, so that the audio event RTS will be cleaned up regardless.
-		audio->m_sound = sound;
+	// Put this on here, so that the audio event RTS will be cleaned up regardless.
+	audio->m_sound = sound;
+	audio->m_audioBuffer = audioBuffer;
 		audio->m_type = PAT_Stream;
 
 		if ((info->m_soundType == AT_Streaming) && event->getUninterruptible()) {
@@ -539,6 +542,7 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 #endif
 			// Push it onto the list of playing things
 			audio->m_sound = sound;
+			audio->m_audioBuffer = audioBuffer;
 			audio->m_type = PAT_3DSample;
 
 			// Set the position values of the sample here
@@ -558,6 +562,7 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 		{
 			// Push it onto the list of playing things
 			audio->m_sound = sound;
+			audio->m_audioBuffer = audioBuffer;
 			audio->m_type = PAT_Sample;
 			m_sound->notifyOf2DSampleStart();
 #ifdef INTENSIVE_AUDIO_DEBUG
@@ -584,11 +589,7 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	}
 	ma_sound_set_volume(sound, initialVolume);
 
-	fprintf(stderr, "AUDIO: ma_sound_start...\n");
-	fflush(stderr);
 	result = ma_sound_start(sound);
-	fprintf(stderr, "AUDIO: ma_sound_start DONE result=%d\n", result);
-	fflush(stderr);
 	if (result != MA_SUCCESS) {
 		DEBUG_LOG(("Failed to start sound. Error code: %d", result));
 		releasePlayingAudio(audio);
@@ -700,6 +701,12 @@ void MiniAudioManager::releaseMiniAudioHandles(PlayingAudio *release)
 	if (release->m_sound) {
 		ma_sound_uninit(release->m_sound);
 		free(release->m_sound);
+		release->m_sound = NULL;
+	}
+	if (release->m_audioBuffer) {
+		ma_audio_buffer_uninit(release->m_audioBuffer);
+		free(release->m_audioBuffer);
+		release->m_audioBuffer = NULL;
 	}
 	release->m_type = PAT_INVALID;
 }

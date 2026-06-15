@@ -43,6 +43,7 @@ enum PlayingAudioType
 struct PlayingAudio
 {
 	ma_sound* m_sound;
+	ma_audio_buffer* m_audioBuffer;
 	PlayingAudioType m_type;
 	AudioEventRTS* m_audioEventRTS;
 	Bool m_requestStop;
@@ -51,6 +52,7 @@ struct PlayingAudio
 
 	PlayingAudio() :
 		m_sound(NULL),
+		m_audioBuffer(NULL),
 		m_type(PAT_INVALID),
 		m_audioEventRTS(NULL),
 		m_requestStop(false),
