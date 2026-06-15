@@ -493,6 +493,7 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 
         AVSampleFormat sampleFmt = static_cast<AVSampleFormat>(frame->format);
         const int bytesPerSample = av_get_bytes_per_sample(sampleFmt);
+        int outputBitsPerSample = bytesPerSample * 8;  // May change after float→s16 conversion
         const int frameSize =
             av_samples_get_buffer_size(NULL, frame->ch_layout.nb_channels, frame->nb_samples, sampleFmt, 1);
         if (frameSize <= 0 || bytesPerSample <= 0 || frame->ch_layout.nb_channels <= 0 || frame->nb_samples <= 0) {
@@ -505,6 +506,7 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
         // Convert float32 to PCM16 for miniaudio compatibility
         if (sampleFmt == AV_SAMPLE_FMT_FLT || sampleFmt == AV_SAMPLE_FMT_FLTP)
         {
+            outputBitsPerSample = 16;  // Converted to 16-bit PCM
             outputFrameSize = frame->nb_samples * frame->ch_layout.nb_channels * (int)sizeof(int16_t);
             videoStream->m_audioBuffer = static_cast<uint8_t*>(av_realloc(videoStream->m_audioBuffer, outputFrameSize));
             if (videoStream->m_audioBuffer == nullptr)
@@ -565,11 +567,11 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
             frameData = videoStream->m_audioBuffer;
         }
 
-        // Determine miniaudio format
+        // Determine miniaudio format based on actual output bits per sample
         ma_format maFormat = ma_format_s16;
-        if (bytesPerSample == 1) maFormat = ma_format_u8;
-        else if (bytesPerSample == 2) maFormat = ma_format_s16;
-        else if (bytesPerSample == 4) maFormat = ma_format_f32;
+        if (outputBitsPerSample == 8) maFormat = ma_format_u8;
+        else if (outputBitsPerSample == 16) maFormat = ma_format_s16;
+        else if (outputBitsPerSample == 32) maFormat = ma_format_f32;
 
         audioStream->bufferData(frameData, outputFrameSize, maFormat, frame->sample_rate, frame->ch_layout.nb_channels);
         audioStream->update();

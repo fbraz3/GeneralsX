@@ -64,10 +64,9 @@ bool MiniAudioStream::isPlaying()
 
 void MiniAudioStream::update()
 {
-    // If we're playing and new data has arrived, rebuild the sound with updated data
-    if (m_playing && m_initialized && m_buffer.size() > m_lastBufferSize) {
-        rebuildSound();
-    }
+    // Don't rebuild sound every frame - that causes audio restart and distortion.
+    // The sound plays whatever data was available when play() was called.
+    // New data accumulates in m_buffer but doesn't affect current playback.
 }
 
 void MiniAudioStream::reset()
