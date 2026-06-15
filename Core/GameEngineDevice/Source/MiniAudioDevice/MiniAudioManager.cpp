@@ -477,13 +477,15 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	else if (bytesPerSample == 2) maFmt = ma_format_s16;
 	else if (bytesPerSample == 4) maFmt = ma_format_f32;
 
-	// Create audio buffer from decoded PCM (copies data into internal storage)
+	// Create audio buffer from decoded PCM
+	// IMPORTANT: use init_copy (not init) which copies data into internal storage.
+	// init() only references external data which would be freed when pcmData goes out of scope.
 	ma_audio_buffer *audioBuffer = (ma_audio_buffer *)malloc(sizeof(ma_audio_buffer));
 	ma_audio_buffer_config abConfig = ma_audio_buffer_config_init(maFmt, channels,
 		pcmData.size() / ma_get_bytes_per_frame(maFmt, channels),
 		pcmData.data(), NULL);
 
-	ma_result result = ma_audio_buffer_init(&abConfig, audioBuffer);
+	ma_result result = ma_audio_buffer_init_copy(&abConfig, audioBuffer);
 	if (result != MA_SUCCESS) {
 		DEBUG_LOG(("Failed to create audio buffer: %d\n", result));
 		delete ffmpegFile;
@@ -491,6 +493,9 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 		releasePlayingAudio(audio);
 		return;
 	}
+
+	// Set sample rate on the buffer ref (config doesn't have it)
+	audioBuffer->ref.sampleRate = sampleRate;
 
 	ma_sound *sound = (ma_sound *)malloc(sizeof(ma_sound));
 	result = ma_sound_init_from_data_source(&m_engine, audioBuffer,
