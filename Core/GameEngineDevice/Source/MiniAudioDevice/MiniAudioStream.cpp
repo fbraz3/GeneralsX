@@ -65,21 +65,13 @@ bool MiniAudioStream::isPlaying()
 void MiniAudioStream::update()
 {
     // Wait until enough audio data has accumulated before creating sound.
-    // The video player calls play() early (after first video frame) but
-    // we accumulate data in bufferData() as more frames arrive.
-    // Once we have enough data (or data stops growing), create the sound.
     if (!m_playing || !m_initialized || m_sound != NULL) return;
 
-    // Check if data has grown significantly since last check
-    // or if enough time has passed (data stopped growing)
-    static int updateCount = 0;
-    updateCount++;
-
     size_t currentSize = m_buffer.size();
-    // Create sound when we have at least some data and it hasn't grown for a few frames
-    if (currentSize > 0 && (currentSize == m_lastBufferSize || updateCount > 30)) {
+    // Create sound when buffer stops growing (all data received)
+    // or after we have some data and enough frames have passed
+    if (currentSize > 0 && (currentSize == m_lastBufferSize || currentSize > 1024*1024)) {
         rebuildSound();
-        updateCount = 0;
     }
     m_lastBufferSize = currentSize;
 }

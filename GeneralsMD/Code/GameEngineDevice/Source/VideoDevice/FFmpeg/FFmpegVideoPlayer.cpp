@@ -595,8 +595,8 @@ void FFmpegVideoStream::update( void )
 #endif
 
 #ifdef SAGE_USE_MINIAUDIO
-    // miniaudio handles internal buffer management automatically.
-    // No manual update needed unlike OpenAL.
+    MiniAudioStream* audioStream = (MiniAudioStream*)TheAudio->getHandleForBink();
+    audioStream->update();
 #endif
 	//BinkWait( m_handle );
 }
