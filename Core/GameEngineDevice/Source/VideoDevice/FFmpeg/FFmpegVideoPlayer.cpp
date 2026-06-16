@@ -49,6 +49,9 @@ extern "C" {
 #ifdef SAGE_USE_OPENAL
 #include "OpenALAudioDevice/OpenALAudioManager.h"
 #include "OpenALAudioDevice/OpenALAudioStream.h"
+#elif defined(SAGE_USE_MINIAUDIO)
+#include "MiniAudioDevice/MiniAudioManager.h"
+#include "MiniAudioDevice/MiniAudioStream.h"
 #endif
 
 #include <chrono>
@@ -315,6 +318,9 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 	// Release the audio handle if it's already in use
 	OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
 	audioStream->reset();
+#elif defined(SAGE_USE_MINIAUDIO)
+	MiniAudioStream* audioStream = (MiniAudioStream*)TheAudio->getHandleForBink();
+	audioStream->reset();
 #endif
 
 	// Decode until we have our first video frame
@@ -325,6 +331,9 @@ FFmpegVideoStream::FFmpegVideoStream(FFmpegFile* file)
 	// Start audio playback
 	// GeneralsX @bugfix fbraz3 23/04/2026 Ensure video stream starts with audible gain even after prior source reuse.
 	// Issue: https://github.com/fbraz3/GeneralsX/issues/38
+	audioStream->setVolume(1.0f);
+	audioStream->play();
+#elif defined(SAGE_USE_MINIAUDIO)
 	audioStream->setVolume(1.0f);
 	audioStream->play();
 #endif
@@ -348,6 +357,13 @@ FFmpegVideoStream::~FFmpegVideoStream()
 		if (audioStream)
 			audioStream->reset();
 	}
+#elif defined(SAGE_USE_MINIAUDIO)
+	if (TheAudio)
+	{
+		MiniAudioStream* audioStream = (MiniAudioStream*)TheAudio->getHandleForBink();
+		if (audioStream)
+			audioStream->reset();
+	}
 #endif
 	av_freep(&m_audioBuffer);
 	av_frame_free(&m_frame);
@@ -363,9 +379,13 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 		videoStream->m_frame = av_frame_clone(frame);
 		videoStream->m_gotFrame = true;
 	}
-#ifdef SAGE_USE_OPENAL
+#if defined(SAGE_USE_OPENAL) || defined(SAGE_USE_MINIAUDIO)
 	else if (stream_type == AVMEDIA_TYPE_AUDIO) {
+#ifdef SAGE_USE_OPENAL
 		OpenALAudioStream* audioStream = (OpenALAudioStream*)TheAudio->getHandleForBink();
+#elif defined(SAGE_USE_MINIAUDIO)
+		MiniAudioStream* audioStream = (MiniAudioStream*)TheAudio->getHandleForBink();
+#endif
 		AVSampleFormat sampleFmt = static_cast<AVSampleFormat>(frame->format);
 		const int bytesPerSample = av_get_bytes_per_sample(sampleFmt);
 		const int frameSize = av_samples_get_buffer_size(nullptr, frame->ch_layout.nb_channels, frame->nb_samples, sampleFmt, 1);
@@ -436,9 +456,18 @@ void FFmpegVideoStream::onFrame(AVFrame *frame, int stream_idx, int stream_type,
 			frameData = videoStream->m_audioBuffer;
 		}
 
+#ifdef SAGE_USE_OPENAL
 		ALenum format = OpenALAudioManager::getALFormat(frame->ch_layout.nb_channels, outputBitsPerSample);
 		audioStream->bufferData(frameData, outputFrameSize, format, frame->sample_rate);
 		audioStream->update();
+#elif defined(SAGE_USE_MINIAUDIO)
+		ma_format format = ma_format_unknown;
+		if (outputBitsPerSample == 8) format = ma_format_u8;
+		else if (outputBitsPerSample == 16) format = ma_format_s16;
+		else if (outputBitsPerSample == 32) format = ma_format_f32;
+		audioStream->bufferData(frameData, outputFrameSize, format, frame->sample_rate, frame->ch_layout.nb_channels);
+		audioStream->update();
+#endif
 	}
 #endif
 }
@@ -459,6 +488,12 @@ void FFmpegVideoStream::update()
 	if (!audioStream->isPlaying()) {
 		audioStream->play();
 	}
+#elif defined(SAGE_USE_MINIAUDIO)
+	MiniAudioStream* audioStream = (MiniAudioStream*)TheAudio->getHandleForBink();
+	if (!audioStream->isPlaying()) {
+		audioStream->play();
+	}
+	audioStream->update();
 #endif
 	//BinkWait( m_handle );
 }
