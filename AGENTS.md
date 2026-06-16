@@ -3,14 +3,6 @@
 ## What I Am
 GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
-## Must-Load Context
-Before starting work, read:
-- `.github/copilot-instructions.md` – quick reference
-- `.github/instructions/generalsx.instructions.md` – full architecture
-- `.github/instructions/git-commit.instructions.md` – commit standards
-- `.github/instructions/docs.instructions.md` – documentation workflow
-- `docs/DEV_BLOG/YYYY-MM-DIARY.md` – current development notes
-
 ## Key Entry Points
 - `GeneralsMD/Code/Main/WinMain.cpp`
 - `Generals/Code/Main/WinMain.cpp`
@@ -121,18 +113,36 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 
 ## Important Commands
 ```bash
-# Linux deployment
-./scripts/build/linux/deploy-linux-zh.sh
-./scripts/build/linux/run-linux-zh.sh -win
+# Linux configure script
+./scripts/build/linux/docker-configure-linux.sh linux64-deploy
 
-# macOS workflow
-./scripts/build/macos/build-macos-zh.sh
-./scripts/build/macos/deploy-macos-zh.sh
-./scripts/build/macos/run-macos-zh.sh -win
+# Linux build scripts
+./scripts/build/linux/docker-build-linux-generals.sh #build Generals base game
+./scripts/build/linux/docker-build-linux-zh.sh # build Generals Zero Hour
 
-# VS Code tasks recommended
-# Linux: [Linux] Configure (Docker), [Linux] Build GeneralsXZH, [Linux] Run GeneralsXZH
-# macOS: [macOS] Configure, [macOS] Build GeneralsXZH, [macOS] Run GeneralsXZH
+# Linux deployment scripts
+./scripts/build/linux/deploy-linux.sh # deploy Generals base game
+./scripts/build/linux/deploy-linux-zh.sh # deploy Generals Zero Hour
+
+# Linux flatpak bundle scripts
+./scripts/build/linux/build-linux-flatpak.sh linux64-deploy Generals # build Generals base game flatpak bundle
+./scripts/build/linux/build-linux-flatpak.sh linux64-deploy GeneralsMD # build Generals Zero Hour flatpak bundle
+
+# macOS configure command
+cmake --preset macos-vulkan # configure macOS build
+
+# macOS build scripts
+./scripts/build/macos/build-macos-zh.sh # build Generals Zero Hour
+./scripts/build/macos/build-macos-generals.sh # build Generals base game
+
+# macOS deploy scripts
+./scripts/build/macos/deploy-macos-generals.sh # deploy Generals base game
+./scripts/build/macos/deploy-macos-zh.sh # deploy Generals Zero Hour
+
+# macOS create app bundles
+./scripts/build/macos/bundle-macos-generals.sh # create Generals Mac app bundle
+./scripts/build/macos/bundle-macos-zh.sh # create Generals Zero Hour Mac app bundle
+
 ```
 
 ## Branching & Sync
@@ -216,7 +226,7 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 
 ## Instruction Context Loading
 
-`AGENTS.md` is the source of truth. The `.github/instructions/` files are scoped VS Code hints — they load only when the file path matches.
+The `.github/instructions/` files are scoped VS Code hints — they load only when the file path matches.
 
 | Instruction File | applyTo | Purpose |
 |---|---|---|
