@@ -1756,7 +1756,7 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 					m_W3DShadowTextureManager->addTexture( st );
 					st->setTexture(w3dTexture);
 				}
-				shadowType=SHADOW_DECAL;
+				shadowType=(ShadowType)(shadowInfo->m_type | SHADOW_DECAL);
 				allowSunDirection=shadowInfo->m_type & SHADOW_DIRECTIONAL_PROJECTION;
 				decalSizeX=shadowInfo->m_sizeX;
 				decalSizeY=shadowInfo->m_sizeY;
@@ -1791,7 +1791,7 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 					if (st==nullptr)
 						return nullptr;	//could not create the shadow texture
 				}
-				shadowType=SHADOW_PROJECTION;
+				shadowType=(ShadowType)(shadowInfo->m_type | SHADOW_PROJECTION);
 		}
 	}
 	else
@@ -2106,8 +2106,9 @@ void W3DProjectedShadow::init()
 
 	DEBUG_ASSERTCRASH(m_shadowProjector == nullptr, ("Init of existing shadow projector"));
 
-	if (m_type == SHADOW_PROJECTION)
+	if (m_type & SHADOW_PROJECTION)
 	{
+		float	minx,maxx;
 		m_shadowProjector = NEW_REF(TexProjectClass,());
 		m_shadowProjector->Set_Intensity(0.4f,true);
 		m_shadowProjector->Set_Texture(m_shadowTexture[0]->getTexture());
@@ -2157,7 +2158,7 @@ void W3DProjectedShadow::updateTexture(Vector3 &lightPos)
 		m_shadowTexture[0]->updateBounds(TheW3DShadowManager->getLightPosWorld(0),m_robj);	//update local shadow bounds
 	}
 	else
-	if (m_type == SHADOW_DECAL)
+	if (m_type & SHADOW_DECAL)
 	{	//decal shadows use artist supplied textures.  We just need to tweak the uv coordinates to match
 		//the light direction.
 		Vector3 objPos=m_robj->Get_Position();
