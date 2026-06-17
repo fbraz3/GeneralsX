@@ -33,7 +33,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 6. **Retail compatibility** – Original replays and mods must work
 7. **Determinism** – Rendering/audio changes must not affect gameplay logic
 8. **No band-aids** – Fix underlying issues, not symptoms
-9. **Update dev blog** – `docs/DEV_BLOG/YYYY-MM-DIARY.md` before committing
+9. **Update dev blog** – Update `docs/DEV_BLOG/YYYY-MM-DIARY.md` before committing (see [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) for details)
 10. **Reference repos** – Study patterns, don't copy-paste
 
 ## Reference Repositories
@@ -43,27 +43,64 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 
 ## Build Commands
 
-### Docker (recommended on Linux host)
-```bash
-# Linux build
-./scripts/build/linux/docker-configure-linux.sh linux64-deploy
-./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy
+### Linux (Docker-based)
+Docker is the recommended build method on Linux hosts to ensure all toolchain requirements are met.
 
-# Optional: Windows via MinGW cross-build
-./scripts/build/linux/docker-build-mingw-zh.sh mingw-w64-i686
-```
+*   **Configure Build**:
+    ```bash
+    ./scripts/build/linux/docker-configure-linux.sh linux64-deploy
+    ```
+*   **Build Zero Hour**:
+    ```bash
+    ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy
+    ```
+*   **Build Generals (Base Game)**:
+    ```bash
+    ./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy
+    ```
+*   **Flatpak Bundle Packaging**:
+    ```bash
+    ./scripts/build/linux/build-linux-flatpak.sh linux64-deploy Generals    # Base game
+    ./scripts/build/linux/build-linux-flatpak.sh linux64-deploy GeneralsMD  # Zero Hour
+    ```
+*   **Optional MinGW Windows Cross-build**:
+    ```bash
+    ./scripts/build/linux/docker-build-mingw-zh.sh mingw-w64-i686
+    ```
 
 ### Native Linux
-```bash
-cmake --preset linux64-deploy
-cmake --build build/linux64-deploy --target z_generals
-```
+*   **Configure & Build via CMake**:
+    ```bash
+    cmake --preset linux64-deploy
+    cmake --build build/linux64-deploy --target z_generals
+    ```
+*   **Deploy**:
+    ```bash
+    ./scripts/build/linux/deploy-linux.sh     # Generals base game
+    ./scripts/build/linux/deploy-linux-zh.sh  # Generals Zero Hour
+    ```
 
 ### Native macOS
-```bash
-cmake --preset macos-vulkan
-cmake --build build/macos-vulkan --target z_generals
-```
+*   **Configure Build**:
+    ```bash
+    cmake --preset macos-vulkan
+    ```
+*   **Build via Scripts**:
+    ```bash
+    ./scripts/build/macos/build-macos-generals.sh  # Generals base game
+    ./scripts/build/macos/build-macos-zh.sh        # Generals Zero Hour
+    ```
+    *(Alternatively, build via CMake: `cmake --build build/macos-vulkan --target z_generals`)*
+*   **Deploy**:
+    ```bash
+    ./scripts/build/macos/deploy-macos-generals.sh  # Generals base game
+    ./scripts/build/macos/deploy-macos-zh.sh        # Generals Zero Hour
+    ```
+*   **App Bundle Packaging**:
+    ```bash
+    ./scripts/build/macos/bundle-macos-generals.sh  # Generals Mac app bundle
+    ./scripts/build/macos/bundle-macos-zh.sh        # Generals Zero Hour Mac app bundle
+    ```
 
 ## Target Priority
 1. **GeneralsXZH** (Zero Hour) – Primary target, most feature-complete
@@ -111,39 +148,7 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
   ./build/linux64-deploy/GeneralsMD/GeneralsXZH 2>&1 | tee logs/gdb.log
 ```
 
-## Important Commands
-```bash
-# Linux configure script
-./scripts/build/linux/docker-configure-linux.sh linux64-deploy
 
-# Linux build scripts
-./scripts/build/linux/docker-build-linux-generals.sh #build Generals base game
-./scripts/build/linux/docker-build-linux-zh.sh # build Generals Zero Hour
-
-# Linux deployment scripts
-./scripts/build/linux/deploy-linux.sh # deploy Generals base game
-./scripts/build/linux/deploy-linux-zh.sh # deploy Generals Zero Hour
-
-# Linux flatpak bundle scripts
-./scripts/build/linux/build-linux-flatpak.sh linux64-deploy Generals # build Generals base game flatpak bundle
-./scripts/build/linux/build-linux-flatpak.sh linux64-deploy GeneralsMD # build Generals Zero Hour flatpak bundle
-
-# macOS configure command
-cmake --preset macos-vulkan # configure macOS build
-
-# macOS build scripts
-./scripts/build/macos/build-macos-zh.sh # build Generals Zero Hour
-./scripts/build/macos/build-macos-generals.sh # build Generals base game
-
-# macOS deploy scripts
-./scripts/build/macos/deploy-macos-generals.sh # deploy Generals base game
-./scripts/build/macos/deploy-macos-zh.sh # deploy Generals Zero Hour
-
-# macOS create app bundles
-./scripts/build/macos/bundle-macos-generals.sh # create Generals Mac app bundle
-./scripts/build/macos/bundle-macos-zh.sh # create Generals Zero Hour Mac app bundle
-
-```
 
 ## Branching & Sync
 ### TheSuperHackers upstream sync
@@ -228,15 +233,18 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 
 The `.github/instructions/` files are scoped VS Code hints — they load only when the file path matches.
 
+You MUST load the files below to your context when the file/dir you are working on matches the applyTo column pattern.
+
+The `**` at applyTo means all files, you MUST load it everytime.
+
 | Instruction File | applyTo | Purpose |
 |---|---|---|
-| `generalsx.instructions.md` | `**` | Stub → points to AGENTS.md |
-| `git-commit.instructions.md` | `**` | Commit/PR message standards |
-| `cpp-conventions.instructions.md` | `**/*.{cpp,h,hpp,c}` | Code style, annotations, platform isolation |
-| `build.instructions.md` | `cmake/**,CMakeLists.txt,CMakePresets.json` | Build presets, DXVK source of truth |
-| `platform-linux.instructions.md` | `scripts/build/linux/**` | Linux build notes |
-| `platform-macos.instructions.md` | `scripts/build/macos/**,references/fbraz3-dxvk/**` | macOS/DXVK build notes |
-| `docs.instructions.md` | `**/*.md` | Documentation structure and workflow |
-| `scripts.instructions.md` | `scripts/**` | Script organization and naming |
+| [.github/instructions/git-commit.instructions.md](.github/instructions/git-commit.instructions.md) | `**` | Commit/PR message standards |
+| [.github/instructions/cpp-conventions.instructions.md](.github/instructions/cpp-conventions.instructions.md) | `**/*.{cpp,h,hpp,c}` | Code style, annotations, platform isolation |
+| [.github/instructions/build.instructions.md](.github/instructions/build.instructions.md) | `cmake/**,CMakeLists.txt,CMakePresets.json` | Build presets, DXVK source of truth |
+| [.github/instructions/platform-linux.instructions.md](.github/instructions/platform-linux.instructions.md) | `scripts/build/linux/**` | Linux build notes |
+| [.github/instructions/platform-macos.instructions.md](.github/instructions/platform-macos.instructions.md) | `scripts/build/macos/**,references/fbraz3-dxvk/**` | macOS/DXVK build notes |
+| [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) | `**/*.md` | Documentation structure and workflow |
+| [.github/instructions/scripts.instructions.md](.github/instructions/scripts.instructions.md) | `scripts/**` | Script organization and naming |
 
 Update this table when instruction files are added, removed, or renamed.
