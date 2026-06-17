@@ -117,6 +117,7 @@ Bool LookAtTranslator::canScrollAtScreenEdge() const
 	if (!TheMouse->isCursorCaptured())
 		return false;
 
+#ifdef _WIN32
 	if (TheDisplay->getWindowed())
 	{
 		if ((m_screenEdgeScrollMode & ScreenEdgeScrollMode_EnabledInWindowedApp) == 0)
@@ -127,6 +128,7 @@ Bool LookAtTranslator::canScrollAtScreenEdge() const
 		if ((m_screenEdgeScrollMode & ScreenEdgeScrollMode_EnabledInFullscreenApp) == 0)
 			return false;
 	}
+#endif
 
 	return true;
 }
@@ -261,8 +263,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			m_anchor = msg->getArgument( 0 )->pixel;
 			m_currentPos = msg->getArgument( 0 )->pixel;
 
-			// disable mouse scrolling in alternate mouse mode, per Harvard 7/15/03
-			if (!TheGlobalData->m_useAlternateMouse && !TheInGameUI->isSelecting() && !m_isScrolling)
+			if (!TheInGameUI->isSelecting() && !m_isScrolling)
 			{
 				setScrolling(SCROLL_RMB);
 			}
