@@ -30,11 +30,11 @@
 
 #include "SDL3GameEngine.h"
 #include "Common/GameAudio.h"
-#ifdef SAGE_USE_OPENAL
-#include "OpenALAudioDevice/OpenALAudioManager.h"
-#endif
+// GeneralsX @build Mr. Meeseeks 16/06/2026 Make audio headers mutually exclusive to avoid redefinition conflicts
 #ifdef SAGE_USE_MINIAUDIO
 #include "MiniAudioDevice/MiniAudioManager.h"
+#elif defined(SAGE_USE_OPENAL)
+#include "OpenALAudioDevice/OpenALAudioManager.h"
 #endif
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
