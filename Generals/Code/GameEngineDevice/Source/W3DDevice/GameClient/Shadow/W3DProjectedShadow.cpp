@@ -692,17 +692,18 @@ void W3DProjectedShadowManager::flushDecals(W3DShadowTexture *texture, ShadowTyp
 	DX8Wrapper::Set_Texture(0,texture->getTexture());
 
 //	DX8Wrapper::Set_Shader(ShaderClass::_PresetOpaqueShader);	//good for debugging, draws without alpha
-	switch (type)
+	// GeneralsX @bugfix Meeseeks 17/06/2026 Support combined decal flags by replacing strict switch with bitwise checks.
+	if (type & SHADOW_ALPHA_DECAL)
 	{
-		case SHADOW_DECAL:
-			DX8Wrapper::Set_Shader(ShaderClass::_PresetMultiplicativeShader);
-			break;
-		case SHADOW_ALPHA_DECAL:
-			DX8Wrapper::Set_Shader(ShaderClass::_PresetAlphaShader);
-			break;
-		case SHADOW_ADDITIVE_DECAL:
-			DX8Wrapper::Set_Shader(ShaderClass::_PresetAdditiveShader);
-			break;
+		DX8Wrapper::Set_Shader(ShaderClass::_PresetAlphaShader);
+	}
+	else if (type & SHADOW_ADDITIVE_DECAL)
+	{
+		DX8Wrapper::Set_Shader(ShaderClass::_PresetAdditiveShader);
+	}
+	else if (type & SHADOW_DECAL)
+	{
+		DX8Wrapper::Set_Shader(ShaderClass::_PresetMultiplicativeShader);
 	}
 
 //	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF,0x60);
@@ -1376,7 +1377,8 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 						aaBox.Translate(shadow->m_robj->Get_Position());	//translate bounding box to world space.
 				}
 
-				if (shadow->m_type == SHADOW_PROJECTION)
+				// GeneralsX @bugfix Meeseeks 17/06/2026 Support combined projection flags by checking bits.
+				if (shadow->m_type & SHADOW_PROJECTION)
 				{
 					//build inverse camera/view transforms needed for projection
 					shadow->updateProjectionParameters(rinfo.Camera.Get_Transform());
@@ -2058,18 +2060,14 @@ void W3DProjectedShadowManager::removeAllShadows()
 
 void W3DProjectedShadowManager::updateShadowNumbers(ShadowType shadowType, Int addNum)
 {
-	switch (shadowType)
+	// GeneralsX @bugfix Meeseeks 17/06/2026 Support combined shadow flags by checking bits.
+	if (shadowType & (SHADOW_DECAL | SHADOW_ALPHA_DECAL | SHADOW_ADDITIVE_DECAL))
 	{
-		case SHADOW_DECAL:
-		case SHADOW_ALPHA_DECAL:
-		case SHADOW_ADDITIVE_DECAL:
-			m_numDecalShadows += addNum;
-			break;
-		case SHADOW_PROJECTION:
-			m_numProjectionShadows += addNum;
-			break;
-		default:
-			break;
+		m_numDecalShadows += addNum;
+	}
+	else if (shadowType & SHADOW_PROJECTION)
+	{
+		m_numProjectionShadows += addNum;
 	}
 }
 
@@ -2127,7 +2125,8 @@ void W3DProjectedShadow::updateTexture(Vector3 &lightPos)
 	//light is too far.
 	///@todo: See why infinite light sources don't project shadows correctly.
 
-	if (m_type == SHADOW_PROJECTION)
+	// GeneralsX @bugfix Meeseeks 17/06/2026 Support combined projection flags by checking bits.
+	if (m_type & SHADOW_PROJECTION)
 	{	//projected shadows use custom runtime generated textures based on object geometry
 		Vector3 objPos=m_robj->Get_Position();
 		if (objPos == Vector3(0,0,0))
