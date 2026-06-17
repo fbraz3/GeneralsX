@@ -37,27 +37,29 @@ This report summarizes the visual bugs affecting infantry rendering (black silho
 
 ---
 
-## 4. Current State
-*   **Branch**: `issue-88-fog-of-war-terrain` (working tree is clean, all changes committed).
-*   **Build & Deploy**: Recompiles successfully under `macos-vulkan` preset and deploys binaries to the run folder.
-*   **Verification**: GLA Worker has been verified to render fully textured and lit (no black torso/head).
+## 4. Black Square Shadows ("Mancha Preta") Fix
+*   **Problem**: In the base game, the shadows of buildings rendered as solid black squares (mancha preta). Additionally, infantry standing in these regions or casting their own decal shadows appeared completely black, stripped of dynamic lighting.
+*   **Root Cause**: 
+    *   The base game's `W3DProjectedShadow.cpp` contained a bug where shadow flags were destructively overwritten instead of bitwise-combined.
+    *   Specifically, `shadowType = SHADOW_DECAL;` destroyed the `SHADOW_ALPHA_DECAL` flag that was passed from the building's shadow descriptor.
+    *   This caused the alpha decal shadows to fall back to `_PresetMultiplicativeShader` (which multiplies the ground by the black RGB channels of the mask) instead of using `_PresetAlphaShader`.
+*   **Solution**: Backported the Zero Hour bitmask handling logic.
+    *   **File Modified**: `Generals/Code/GameEngineDevice/Source/W3DDevice/GameClient/Shadow/W3DProjectedShadow.cpp`
+    *   **Changes**: Replaced assignment operators (`=`, `==`) with bitwise OR (`|`) and bitwise AND (`&`) when computing `shadowType` and verifying capabilities (e.g. `m_type & SHADOW_DECAL`).
 
 ---
 
-## 5. Follow-Up Session (2026-06-17) — Audit & ZH Parity
-
-### Completed Actions
-1.  **Audit of other FVF paths in `dx8renderer.cpp`**: All live (non-reference) diffuse write paths were audited. Only two paths exist in [`dx8renderer.cpp`](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/Core/Libraries/Source/WWVegas/WW3D2/dx8renderer.cpp):
-    *   `DX8RigidFVFCategoryContainer::Add_Mesh` (line 1039-1044) — already uses `0xFFFFFFFF` fallback (correct, not our change).
-    *   `DX8SkinFVFCategoryContainer::Render` (line 1368) — **fixed to `0xFFFFFFFF`** in the previous session.
-    *   `BaseHeightMap.cpp` uses `diffuse=0` intentionally for shoreline alpha-only render passes (`D3DRS_COLORWRITEENABLE_ALPHA`), not mesh-texture multiplication. **No fix needed.**
-2.  **ZH `initFromMesh` SKIN guard**: Audited Zero Hour's [`W3DVolumetricShadow.cpp`](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/Shadow/W3DVolumetricShadow.cpp) and found `initFromMesh` was missing the SKIN early-return that `initFromHLOD` already had. Added the matching guard so that standalone skinned `MeshClass` objects cannot enter the CPU shadow pipeline.
-3.  **GameEngine.cpp double-present fix**: Committed the pending fix that removed a redundant `TheDisplay->step()/draw()` call in the Generals base game main loop, restoring correct 30 FPS cap.
-
-### Current State
-*   **Branch**: `issue-88-fog-of-war-terrain` (all changes committed, working tree clean).
-*   All three infantry shadow fixes are in place and audited.
-*   Zero Hour and Generals base game are at feature parity for shadow volume skin handling.
+## 5. Current State & Recent Fixes
+*   **Branch**: `issue-88-fog-of-war-terrain`
+*   **Recent Fixes Implemented**:
+    1.  **Infantry Light Clamping**: Clamped infantry ambient and diffuse lighting scales to `(1.0f, 1.0f, 1.0f)` using `Vector3::Cap_Absolute_To` in [W3DScene.cpp](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/Generals/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DScene.cpp). This prevents Vulkan/DXVK shader overflows that rendered infantry pitch black.
+    2.  **Decal Batch Initialization Fix**: Corrected initialization of `lastShadowDecalTexture` and `lastShadowType` in [W3DProjectedShadow.cpp](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/Generals/Code/GameEngineDevice/Source/W3DDevice/GameClient/Shadow/W3DProjectedShadow.cpp) loops from `m_shadowList`/`m_decalList` to the current `shadow`'s texture and type. This prevents decal batches from flushing with invalid states when disabled or non-decal shadows are at the head of the list.
+    3.  **Dynamic Projected Shadows**: Integrated `SHADOW_DYNAMIC_PROJECTION` flags in `addShadow` to ensure animated caster shadow textures are correctly refreshed per frame.
+    4.  **Decal Mask in Shadow Caster**: Updated the shadow type check in `addShadow` to accept `SHADOW_ALPHA_DECAL` and `SHADOW_ADDITIVE_DECAL` as valid decal shadows (via mask check `SHADOW_DECAL | SHADOW_ALPHA_DECAL | SHADOW_ADDITIVE_DECAL`), ensuring building alpha decal shadows are properly created.
+*   **Build & Deploy**: The `GeneralsX` base game was successfully rebuilt and deployed to the `GeneralsX/Generals` folder.
+*   **Follow-Up Verification**:
+    *   **@felipebraz**: Please launch the base game and verify if building shadows are rendering with proper alpha transparency (not black squares) and if infantry units render normally with correct lighting and textures. 
+    *   You can launch it by running `cd ~/GeneralsX/Generals && ./run.sh -win`.
 
 ---
 

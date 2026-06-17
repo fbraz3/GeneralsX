@@ -1334,9 +1334,9 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 				if (shadow->m_type & SHADOW_DECAL)
 				{
 					if (lastShadowDecalTexture == nullptr)
-						lastShadowDecalTexture=m_shadowList->m_shadowTexture[0];
+						lastShadowDecalTexture=shadow->m_shadowTexture[0];
 					if (lastShadowType == SHADOW_NONE)
-						lastShadowType = m_shadowList->m_type;
+						lastShadowType = shadow->m_type;
 
 					if (shadow->m_shadowTexture[0] != lastShadowDecalTexture ||
 						shadow->m_type != lastShadowType)
@@ -1447,9 +1447,9 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 			if (shadow->m_isEnabled && !shadow->m_isInvisibleEnabled)
 			{
 				if (lastShadowDecalTexture == nullptr)
-					lastShadowDecalTexture=m_decalList->m_shadowTexture[0];
+					lastShadowDecalTexture=shadow->m_shadowTexture[0];
 				if (lastShadowType == SHADOW_NONE)
-					lastShadowType = m_decalList->m_type;
+					lastShadowType = shadow->m_type;
 
 				if (shadow->m_shadowTexture[0] != lastShadowDecalTexture ||
 					shadow->m_type != lastShadowType)
@@ -1722,8 +1722,8 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 	if (shadowInfo)
 	{
 		//determine what kind of shadow is needed
-		// GeneralsX @bugfix Copilot 11/05/2026 Accept combined decal flags via bitmask checks.
-		if (shadowInfo->m_type & SHADOW_DECAL)
+		// GeneralsX @bugfix Mr. Meeseeks 17/06/2026 Accept combined decal/alpha/additive flags via bitmask checks.
+		if (shadowInfo->m_type & (SHADOW_DECAL | SHADOW_ALPHA_DECAL | SHADOW_ADDITIVE_DECAL))
 		{		//simple decal using the premade texture specified.
 				//can be always perpendicular to model's z-axis or projected
 				//onto world geometry.
@@ -1859,6 +1859,11 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 	shadow->m_decalOffsetV= decalOffsetY;
 
 	shadow->m_flags	= allowSunDirection;
+	if ((shadowType & SHADOW_DYNAMIC_PROJECTION) || (shadowInfo && shadowInfo->allowUpdates))
+	{
+		// GeneralsX @bugfix Copilot 11/05/2026 Keep projected shadow texture in sync for animated casters without root translation.
+		shadow->m_flags |= SHADOW_DYNAMIC_PROJECTION;
+	}
 
 	shadow->init();
 
