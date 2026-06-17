@@ -913,13 +913,10 @@ void GameEngine::execute()
 
 			TheFramePacer->update();
 
-			// GeneralsX @build BenderAI 18/02/2026 - Call display step and draw every frame
-			// This was missing, causing only magenta screen (no UI rendering)
-			if (TheDisplay != nullptr)
-			{
-				TheDisplay->step();
-				TheDisplay->draw();
-			}
+			// GeneralsX @bugfix MrMeeseeks 17/06/2026 Remove double-present call to fix uncapped FPS and game running too fast (matches Zero Hour / GeneralsMD)
+			// NOTE: TheDisplay->draw() is called via TheGameClient->UPDATE() above.
+			// GameClient::update() dispatches TheDisplay->DRAW() each frame.
+			// Do NOT add an extra draw() call here - it would double-present per frame.
 		}
 
 #ifdef PERF_TIMERS
