@@ -44,7 +44,24 @@ This report summarizes the visual bugs affecting infantry rendering (black silho
 
 ---
 
-## 5. Next Steps for a New Session
+## 5. Follow-Up Session (2026-06-17) — Audit & ZH Parity
+
+### Completed Actions
+1.  **Audit of other FVF paths in `dx8renderer.cpp`**: All live (non-reference) diffuse write paths were audited. Only two paths exist in [`dx8renderer.cpp`](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/Core/Libraries/Source/WWVegas/WW3D2/dx8renderer.cpp):
+    *   `DX8RigidFVFCategoryContainer::Add_Mesh` (line 1039-1044) — already uses `0xFFFFFFFF` fallback (correct, not our change).
+    *   `DX8SkinFVFCategoryContainer::Render` (line 1368) — **fixed to `0xFFFFFFFF`** in the previous session.
+    *   `BaseHeightMap.cpp` uses `diffuse=0` intentionally for shoreline alpha-only render passes (`D3DRS_COLORWRITEENABLE_ALPHA`), not mesh-texture multiplication. **No fix needed.**
+2.  **ZH `initFromMesh` SKIN guard**: Audited Zero Hour's [`W3DVolumetricShadow.cpp`](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/Shadow/W3DVolumetricShadow.cpp) and found `initFromMesh` was missing the SKIN early-return that `initFromHLOD` already had. Added the matching guard so that standalone skinned `MeshClass` objects cannot enter the CPU shadow pipeline.
+3.  **GameEngine.cpp double-present fix**: Committed the pending fix that removed a redundant `TheDisplay->step()/draw()` call in the Generals base game main loop, restoring correct 30 FPS cap.
+
+### Current State
+*   **Branch**: `issue-88-fog-of-war-terrain` (all changes committed, working tree clean).
+*   All three infantry shadow fixes are in place and audited.
+*   Zero Hour and Generals base game are at feature parity for shadow volume skin handling.
+
+---
+
+## 6. Smoke Test Checklist
 When starting a new session with an empty context, perform the following validation:
 
 1.  **Smoke Test Infantry**:
@@ -54,5 +71,6 @@ When starting a new session with an empty context, perform the following validat
         ```
     *   Spawn various GLA, USA, and China infantry units (Workers, Rebels, Rangers, Red Guards).
     *   Verify that they render with correct lighting, textures, and default team color overlays on all sub-meshes (torso, limbs, weapons) without any black segments.
-2.  **Audit other FVF paths**:
-    *   Verify if other renderer classes (such as decals, particle emitters, or custom shader categories in [dx8renderer.cpp](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/Core/Libraries/Source/WWVegas/WW3D2/dx8renderer.cpp)) also fallback to `0` instead of `0xFFFFFFFF` when diffuse colors are null.
+2.  **Smoke Test ZH Infantry** (same units in GeneralsMD):
+    *   Launch Zero Hour on macOS.
+    *   Verify infantry renders correctly — shadow volumes should not corrupt stencil state for any skinned mesh.
