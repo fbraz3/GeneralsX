@@ -757,7 +757,13 @@ void SDL3Mouse::translateWheelEvent(const SDL_MouseWheelEvent& event, MouseIO *r
 
 	// SDL3 wheel: positive = up/away, negative = down/toward user
 	// Multiply by MOUSE_WHEEL_DELTA (120) to match Windows behavior
-	result->wheelPos = (Int)(event.y * MOUSE_WHEEL_DELTA);
+	// GeneralsX @bugfix msmesoft 17/06/2026 macOS "natural scrolling" makes SDL
+	// flag the wheel values as SDL_MOUSEWHEEL_FLIPPED; invert them so the in-game
+	// scroll direction matches the Windows convention regardless of the OS setting.
+	float wheelY = event.y;
+	if (event.direction == SDL_MOUSEWHEEL_FLIPPED)
+		wheelY = -wheelY;
+	result->wheelPos = (Int)(wheelY * MOUSE_WHEEL_DELTA);
 
 	result->leftState = MBS_None;
 	result->rightState = MBS_None;
