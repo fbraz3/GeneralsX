@@ -263,7 +263,9 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			m_anchor = msg->getArgument( 0 )->pixel;
 			m_currentPos = msg->getArgument( 0 )->pixel;
 
-			if (!TheInGameUI->isSelecting() && !m_isScrolling)
+			const Bool userWantsRMBScroll = !TheGlobalData->m_useAlternateMouse || TheGlobalData->m_useRightMouseScrollWithAlternateMouse;
+
+			if (userWantsRMBScroll && !TheInGameUI->isSelecting() && !m_isScrolling)
 			{
 				setScrolling(SCROLL_RMB);
 			}
@@ -613,6 +615,18 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 #endif // #if defined(RTS_DEBUG)
 
 		// ------------------------------------------------------------------------
+#if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
+		case GameMessage::MSG_CHEAT_DESHROUD:
+		{
+			if (!TheGameLogic->isInMultiplayerGame())
+			{
+				ThePartitionManager->revealMapForPlayerPermanently( ThePlayerList->getLocalPlayer()->getPlayerIndex() );
+			}
+			break;
+		}
+#endif // #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
+
+		// ------------------------------------------------------------------------
 #if defined(RTS_DEBUG)
 		case GameMessage::MSG_META_DEMO_ENSHROUD:
 		{
@@ -627,7 +641,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 #if defined(RTS_DEBUG)
 		case GameMessage::MSG_META_DEMO_BEGIN_ADJUST_FOV:
 		{
-			DEBUG_ASSERTCRASH(!m_isChangingFOV, ("hmm, mismatched m_isChangingFOV"));
+			//DEBUG_ASSERTCRASH(!m_isChangingFOV, ("hmm, mismatched m_isChangingFOV"));
 			m_isChangingFOV = true;
 			m_anchor = m_currentPos;
 			disp = DESTROY_MESSAGE;
@@ -639,7 +653,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 #if defined(RTS_DEBUG)
 		case GameMessage::MSG_META_DEMO_END_ADJUST_FOV:
 		{
-			DEBUG_ASSERTCRASH(m_isChangingFOV, ("hmm, mismatched m_isChangingFOV"));
+		//	DEBUG_ASSERTCRASH(m_isChangingFOV, ("hmm, mismatched m_isChangingFOV"));
 			m_isChangingFOV = false;
 			disp = DESTROY_MESSAGE;
 			break;
