@@ -1048,12 +1048,8 @@ GlobalData::GlobalData()
 	m_keyboardCameraRotateSpeed = 0.1f;
 
 	m_useAlternateMouse = FALSE;
-#if RTS_GENERALS
-	// disable mouse scrolling in alternate mouse mode, per Harvard 7/15/03
-	m_useRightMouseScrollWithAlternateMouse = FALSE;
-#else
+	// GeneralsX @bugfix Meeseeks 18/06/2026 Default to TRUE to allow right-click drag scrolling under alternate controls by default
 	m_useRightMouseScrollWithAlternateMouse = TRUE;
-#endif
 	m_clientRetaliationModeEnabled = TRUE; //On by default.
 	m_doubleClickAttackMove = FALSE;
 
