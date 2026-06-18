@@ -30,11 +30,11 @@
 
 #include "SDL3GameEngine.h"
 #include "Common/GameAudio.h"
-#ifdef SAGE_USE_OPENAL
-#include "OpenALAudioDevice/OpenALAudioManager.h"
-#endif
+// GeneralsX @build Mr. Meeseeks 16/06/2026 Make audio headers mutually exclusive to avoid redefinition conflicts
 #ifdef SAGE_USE_MINIAUDIO
 #include "MiniAudioDevice/MiniAudioManager.h"
+#elif defined(SAGE_USE_OPENAL)
+#include "OpenALAudioDevice/OpenALAudioManager.h"
 #endif
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
@@ -279,6 +279,10 @@ void SDL3GameEngine::pollSDL3Events(void)
 
 			case SDL_EVENT_WINDOW_FOCUS_GAINED:
 				m_IsActive = true;
+				if (TheMouse) {
+					TheMouse->regainFocus();
+					TheMouse->refreshCursorCapture();
+				}
 				break;
 
 			case SDL_EVENT_WINDOW_FOCUS_LOST:
@@ -287,6 +291,21 @@ void SDL3GameEngine::pollSDL3Events(void)
 					SDL_StopTextInput(m_SDLWindow);
 					m_IsTextInputActive = false;
 					m_TextInputFocusWindow = nullptr;
+				}
+				if (TheMouse) {
+					TheMouse->loseFocus();
+				}
+				break;
+
+			case SDL_EVENT_WINDOW_MOUSE_ENTER:
+				if (TheMouse) {
+					TheMouse->onCursorMovedInside();
+				}
+				break;
+
+			case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+				if (TheMouse) {
+					TheMouse->onCursorMovedOutside();
 				}
 				break;
 

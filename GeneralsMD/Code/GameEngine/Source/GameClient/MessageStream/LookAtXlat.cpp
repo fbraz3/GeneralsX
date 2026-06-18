@@ -117,6 +117,7 @@ Bool LookAtTranslator::canScrollAtScreenEdge() const
 	if (!TheMouse->isCursorCaptured())
 		return false;
 
+#ifdef _WIN32
 	if (TheDisplay->getWindowed())
 	{
 		if ((m_screenEdgeScrollMode & ScreenEdgeScrollMode_EnabledInWindowedApp) == 0)
@@ -127,6 +128,7 @@ Bool LookAtTranslator::canScrollAtScreenEdge() const
 		if ((m_screenEdgeScrollMode & ScreenEdgeScrollMode_EnabledInFullscreenApp) == 0)
 			return false;
 	}
+#endif
 
 	return true;
 }
