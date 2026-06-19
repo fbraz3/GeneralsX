@@ -161,7 +161,7 @@ All scripts are integrated into VS Code tasks (Cmd+Shift+P → "Tasks: Run Task"
 ```
 
 **Expected issues** (first build):
-- Missing headers (SDL3, OpenAL, DXVK)
+- Missing headers (SDL3, MiniAudio, DXVK)
 - Undefined symbols
 - Linking errors
 
@@ -235,7 +235,7 @@ rm -rf build/linux64-deploy
 
 ## Phase 1 Status
 
-**Current**: Building Phase 1 (DXVK + SDL3 + OpenAL)
+**Current**: Building Phase 1 (DXVK + SDL3 + MiniAudio)
 **Status**: 70% complete (code written, NOT yet compiled)
 **Next**: First Docker build test
 

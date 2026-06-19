@@ -2903,6 +2903,15 @@ void OpenALAudioManager::playStream(AudioEventRTS* event, OpenALAudioStream* str
 		//alSourcei(stream->getSource(), AL_LOOPING, AL_TRUE);
 	}
 
+	// GeneralsX @bugfix Mr. Meeseeks 19/06/2026 - Initialize stream volume
+	Real desiredVolume = event->getVolume() * event->getVolumeShift();
+	if (event->getAudioEventInfo() && event->getAudioEventInfo()->m_soundType == AT_Music) {
+		alSourcef(stream->getSource(), AL_GAIN, m_musicVolume * desiredVolume);
+	}
+	else {
+		alSourcef(stream->getSource(), AL_GAIN, m_speechVolume * desiredVolume);
+	}
+
 	stream->play();
 	if (event->getAudioEventInfo()->m_soundType == AT_Music) {
 		// Need to stop/fade out the old music here.
@@ -2917,6 +2926,8 @@ ALuint OpenALAudioManager::playSample(AudioEventRTS* event, PlayingAudio* audio)
 	if (bufferHandle) {
 		alSourcei(audio->m_source, AL_SOURCE_RELATIVE, AL_TRUE);
 		alSourcei(audio->m_source, AL_BUFFER, (ALuint)(uintptr_t)bufferHandle);
+		// GeneralsX @bugfix Mr. Meeseeks 19/06/2026 - Initialize sample volume
+		adjustPlayingVolume(audio);
 		alSourcePlay(audio->m_source);
 	}
 
@@ -2973,6 +2984,9 @@ ALuint OpenALAudioManager::playSample3D(AudioEventRTS* event, PlayingAudio* samp
 			}
 			alSourcei(source, AL_BUFFER, handle);
 			DEBUG_LOG(("Playing 3D sample '%s' at %f, %f, %f\n", event->getEventName().str(), x, y, z));
+
+			// GeneralsX @bugfix Mr. Meeseeks 19/06/2026 - Initialize 3D sample volume
+			adjustPlayingVolume(sample3D);
 
 			// Start playback
 			alSourcePlay(source);

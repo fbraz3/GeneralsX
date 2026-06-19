@@ -6,7 +6,7 @@ applyTo: 'scripts/build/macos/**,references/fbraz3-dxvk/**'
 
 - SDL3 for windowing/input.
 - DXVK + MoltenVK: DX8 → Vulkan → Metal chain.
-- OpenAL for audio.
+- MiniAudio for audio.
 - Target: **ARM64 (Apple Silicon)**, macOS 15.0+.
 - Universal binary (arm64 + x86_64) planned.
 
