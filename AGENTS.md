@@ -186,6 +186,12 @@ git merge thesuperhackers/main
 4. Never drop working docs directly under `docs/` root
 
 ## GitHub CLI Examples
+
+> [!IMPORTANT]
+> When running `gh` commands within the agent sandbox environment, if `GITHUB_TOKEN=github_pat_antigravitydummytoken` is present, it will override local credentials and cause `HTTP 401: Bad credentials`. Unset the dummy token by prepending `env -u GITHUB_TOKEN -u GH_TOKEN` to your `gh` commands.
+> 
+> Example: `env -u GITHUB_TOKEN -u GH_TOKEN gh pr create ...`
+
 **Create issues:**
 ```bash
 gh issue create \
