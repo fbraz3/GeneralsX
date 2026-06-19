@@ -465,14 +465,8 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 	}
 	}
 
-	// Set initial volume based on sound type
-	Real initialVolume = event->getVolume();
-	if (info->m_soundType == AT_Music)            initialVolume *= m_musicVolume;
-	else if (info->m_soundType == AT_Streaming)   initialVolume *= m_speechVolume;
-	else if (event->isPositionalAudio())          initialVolume *= m_sound3DVolume;
-	else                                          initialVolume *= m_soundVolume;
-
-	ma_sound_set_volume(sound, initialVolume);
+	// GeneralsX @bugfix Mr. Meeseeks 19/06/2026 - Initialize volume using adjustPlayingVolume
+	adjustPlayingVolume(audio);
 
 	result = ma_sound_start(sound);
 	if (result != MA_SUCCESS) {
@@ -1353,10 +1347,8 @@ Bool MiniAudioManager::startNextLoop(PlayingAudio *looping)
 		NULL, looping->m_sound);
 
 	if (result == MA_SUCCESS) {
-		Real loopVolume = looping->m_audioEventRTS->getVolume();
-		if (looping->m_type == PAT_Sample)         loopVolume *= m_soundVolume;
-		else if (looping->m_type == PAT_3DSample)  loopVolume *= m_sound3DVolume;
-		ma_sound_set_volume(looping->m_sound, loopVolume);
+		// GeneralsX @bugfix Mr. Meeseeks 19/06/2026 - Initialize loop volume using adjustPlayingVolume
+		adjustPlayingVolume(looping);
 		ma_sound_start(looping->m_sound);
 		return true;
 	}
