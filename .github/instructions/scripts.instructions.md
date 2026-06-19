@@ -199,7 +199,7 @@ When adding or moving scripts:
 - **Deprecated (wrappers)** - `cpp/`, `clang-tidy-plugin/`, `run-clang-tidy.py`
 
 ### Pending (Future)
-- **build/windows/** - Modern Windows toolchain (VS2022 + SDL3 + DXVK + OpenAL)
+- **build/windows/** - Modern Windows toolchain (VS2022 + SDL3 + DXVK + MiniAudio)
 
 ## When to Create a New Subdirectory
 

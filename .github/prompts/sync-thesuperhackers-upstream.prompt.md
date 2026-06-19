@@ -14,7 +14,7 @@ Perform a full upstream sync from the `thesuperhackers` remote into this reposit
 `TheSuperHackers` and `GeneralsX` have different goals and this must drive every merge decision:
 
 - `TheSuperHackers` focuses on bug fixes, stability, optimizations, and merging the `Generals` and `GeneralsMD` codebases while preserving compatibility with the original Windows binaries.
-- `GeneralsX` focuses on making the game truly cross-platform with a modern stack based on SDL3 + DXVK + OpenAL + FFmpeg, without prioritizing original binary compatibility.
+- `GeneralsX` focuses on making the game truly cross-platform with a modern stack based on SDL3 + DXVK + MiniAudio + FFmpeg, without prioritizing original binary compatibility.
 
 The repository is significantly behind upstream `TheSuperHackers`. The purpose of this sync is to import useful upstream improvements without regressing or dismantling the already functional cross-platform architecture in `GeneralsX`.
 
@@ -49,14 +49,14 @@ Expect many conflicts because the projects intentionally diverged. Every conflic
 - Do not use blanket conflict strategies for large areas of the tree.
 - Do not sacrifice the cross-platform architecture of `GeneralsX` just to make the merge easy.
 - Do not blindly keep either side. Reconcile changes so that useful `TheSuperHackers` bug fixes, stability work, and optimizations are preserved whenever they do not break the `GeneralsX` platform strategy.
-- Preserve the functional cross-platform stack already established in `GeneralsX`: SDL3 for platform/windowing/input, DXVK for graphics, OpenAL for audio, and FFmpeg where applicable.
+- Preserve the functional cross-platform stack already established in `GeneralsX`: SDL3 for platform/windowing/input, DXVK for graphics, MiniAudio for audio, and FFmpeg where applicable.
 - Preserve platform isolation. Do not allow platform-specific code to leak into gameplay logic.
 - Keep legacy compatibility paths only where they are still intentionally maintained by this repository, but do not let original-binary compatibility override the `GeneralsX` cross-platform objective.
 - Treat INI parser changes as high risk on macOS: upstream numeric parsing optimizations may require platform-specific compatibility handling for Apple deployment targets.
 - **Never replace our CI/CD infrastructure with upstream versions.** Our `.github/workflows/`, `.github/ISSUE_TEMPLATE/`, `.github/copilot-instructions.md` and all CI configuration must be kept intact. Reject any upstream additions or modifications to these paths.
 - Review conflicts with extra care in these areas:
   - build system and presets
-  - SDL3, DXVK, OpenAL, FFmpeg, and platform abstraction layers
+  - SDL3, DXVK, MiniAudio, FFmpeg, and platform abstraction layers
   - INI parsing and file load order logic
   - shared engine code under `Core/`
   - `Generals/` and `GeneralsMD/` code that may have been unified or refactored upstream

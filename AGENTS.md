@@ -1,7 +1,7 @@
 # GeneralsX: Instructions for AI Coding Agents
 
 ## What I Am
-GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
+GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + MiniAudio + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
 ## Key Entry Points
 - `GeneralsMD/Code/Main/WinMain.cpp`
@@ -18,7 +18,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 |---------|---------------------|------------------------------|
 | Graphics| DXVK                | DirectX 8 (d3d8.dll)         |
 | Windowing| SDL3              | Win32 API                    |
-| Audio   | OpenAL              | Miles Sound System           |
+| Audio   | MiniAudio           | Miles Sound System           |
 | Video   | FFmpeg              | Bink Video (intro/videos)    |
 | Platform| SDL3 + libc         | Win32 POSIX calls            |
 
@@ -28,7 +28,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 1. **Single codebase** – Linux and macOS build from same source
 2. **SDL3 everywhere** – No native platform calls in game code
 3. **DXVK everywhere** – DX8 → Vulkan translation on all platforms
-4. **OpenAL everywhere** – Cross-platform audio stack
+4. **MiniAudio everywhere** – Cross-platform audio stack
 5. **64-bit native** – x86_64 only (32-bit via VC6 upstream)
 6. **Retail compatibility** – Original replays and mods must work
 7. **Determinism** – Rendering/audio changes must not affect gameplay logic
@@ -108,7 +108,7 @@ Docker is the recommended build method on Linux hosts to ensure all toolchain re
 
 ## Backport Rules
 **Backport to Generals when:**
-- Change is platform/backend code (SDL3, DXVK, OpenAL)
+- Change is platform/backend code (SDL3, DXVK, MiniAudio)
 - Change is in shared Core libraries
 - Change is low-risk and clearly applicable
 

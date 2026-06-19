@@ -8,7 +8,7 @@ applyTo: 'cmake/**,CMakeLists.txt,CMakePresets.json'
 - **`vc6`** — Visual Studio 6 (C++98), 32-bit, DirectX 8 + Miles
 - **`win32`** — MSVC 2022 (C++20), experimental upstream path
 
-### Cross-Platform (SDL3 + DXVK + OpenAL) — Active Targets
+### Cross-Platform (SDL3 + DXVK + MiniAudio) — Active Targets
 - **`linux64-deploy`** — GCC/Clang x86_64, Release — **PRIMARY LINUX**
 - **`linux64-testing`** — Linux debug variant
 - **`macos-vulkan`** — macOS ARM64, RelWithDebInfo — **PRIMARY MACOS**

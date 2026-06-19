@@ -4,7 +4,7 @@ applyTo: '**/*.{cpp,h,hpp,c}'
 
 ## Code Quality & Maintainability
 
-- **Scope discipline**: Focus on cross-platform port (SDL3, DXVK, OpenAL). Avoid unrelated refactors.
+- **Scope discipline**: Focus on cross-platform port (SDL3, DXVK, MiniAudio). Avoid unrelated refactors.
 - **Root cause**: Fix underlying issues, not symptoms. No lazy workarounds.
 - **Isolation**: Platform-specific code stays in platform layers (`Core/GameEngineDevice/`, `Core/Libraries/Source/Platform/`)
 - **Fallback paths**: Keep legacy Windows paths (DX8, Miles) intact behind `#ifdef` guards for VC6 baseline.
