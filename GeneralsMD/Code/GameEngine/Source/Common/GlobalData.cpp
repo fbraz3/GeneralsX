@@ -647,9 +647,10 @@ GlobalData::GlobalData()
 	m_useTreeSway = TRUE;
 	m_useDrawModuleLOD = FALSE;
 	m_useHeatEffects = TRUE;
-	m_useFpsLimit = FALSE;
+	// GeneralsX @tweak felipebraz 20/06/2026 Default render FPS limit to 60 FPS instead of uncapped/0.
+	m_useFpsLimit = TRUE;
 	m_dumpAssetUsage = FALSE;
-	m_framesPerSecondLimit = 0;
+	m_framesPerSecondLimit = 60;
 	m_chipSetType = 0;
 	m_headless = FALSE;
 	m_checkForUpdates = TRUE;

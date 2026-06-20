@@ -439,6 +439,9 @@ void GameEngine::init()
 					"  KeyboardScrollSpeedFactor = 1.0\n"
 					"  ; ~5% more terrain drawn at max zoom to fix terrain pop-in.\n"
 					"  TerrainDrawDistanceScale = 1.05\n"
+					// GeneralsX @tweak felipebraz 20/06/2026 Default render FPS limit to 60 FPS in SagePatch.ini
+					"  UseFPSLimit = Yes\n"
+					"  FramesPerSecondLimit = 60\n"
 					"End\n"
 				);
 				fclose(f);
@@ -447,6 +450,35 @@ void GameEngine::init()
 
 		if (TheLocalFileSystem->doesFileExist(sagePatchPath.str()))
 		{
+			// Check and migrate existing SagePatch.ini for 60 FPS
+			FILE *f = fopen(sagePatchPath.str(), "rb");
+			if (f)
+			{
+				fseek(f, 0, SEEK_END);
+				long size = ftell(f);
+				fseek(f, 0, SEEK_SET);
+				char *buffer = new char[size + 1];
+				fread(buffer, 1, size, f);
+				buffer[size] = 0;
+				fclose(f);
+
+				if (!strstr(buffer, "FramesPerSecondLimit"))
+				{
+					char *endPos = strstr(buffer, "End");
+					if (endPos != nullptr)
+					{
+						*endPos = '\0';
+						FILE *fw = fopen(sagePatchPath.str(), "wb");
+						if (fw)
+						{
+							fprintf(fw, "%s  ; Migrated 60 FPS defaults\n  UseFPSLimit = Yes\n  FramesPerSecondLimit = 60\nEnd\n", buffer);
+							fclose(fw);
+						}
+					}
+				}
+				delete[] buffer;
+			}
+
 			ini.load(sagePatchPath, INI_LOAD_OVERWRITE, nullptr);
 		}
 	}
