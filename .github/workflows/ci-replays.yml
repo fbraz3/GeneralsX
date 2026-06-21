@@ -1,0 +1,64 @@
+name: CI Replays
+
+on:
+  workflow_run:
+    workflows: ["GeneralsX CI"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  replay-test-linux:
+    name: Replay Tests (linux)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/replay-tests.yml
+    with:
+      platform: linux-flatpak
+      game-artifact: linux-flatpak-generalsxzh-linux64-deploy
+      run-id: ${{ github.event.workflow_run.id }}
+    secrets:
+      ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
+
+  replay-test-macos:
+    name: Replay Tests (macos)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/replay-tests.yml
+    with:
+      platform: macos
+      game-artifact: macos-generalsxzh-app
+      run-id: ${{ github.event.workflow_run.id }}
+    secrets:
+      ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
+
+  update-pr-status:
+    name: Update PR Status
+    runs-on: ubuntu-latest
+    needs: [replay-test-linux, replay-test-macos]
+    if: always() && github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Report Status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "${{ needs.replay-test-linux.result }}" == "success" ] && [ "${{ needs.replay-test-macos.result }}" == "success" ]; then
+            STATE="success"
+            DESC="Replay tests passed"
+          else
+            STATE="failure"
+            DESC="Replay tests failed"
+          fi
+          
+          # Report the final status back to the original commit.
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/$REPO/statuses/$SHA \
+            -f state=$STATE \
+            -f target_url="https://github.com/$REPO/actions/runs/${{ github.run_id }}" \
+            -f description="$DESC" \
+            -f context="CI / Replay Tests"
