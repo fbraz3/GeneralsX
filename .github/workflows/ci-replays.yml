@@ -15,7 +15,10 @@ jobs:
   check-artifacts:
     name: Check Triggering Run Artifacts
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.fork == true
     outputs:
       has-artifacts: ${{ steps.check.outputs.has-artifacts }}
     steps:
@@ -67,7 +70,11 @@ jobs:
     name: Update PR Status
     runs-on: ubuntu-latest
     needs: [check-artifacts, replay-test-linux, replay-test-macos]
-    if: always() && github.event.workflow_run.conclusion == 'success'
+    if: |
+      always() &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.fork == true
     steps:
       - name: Report Status
         env:
