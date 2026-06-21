@@ -92,9 +92,7 @@ jobs:
   replay-test-linux:
     name: Replay Tests (linux)
     needs: [build-linux-flatpak]
-    if: |
-      needs.build-linux-flatpak.result == 'success' &&
-      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
+    if: needs.build-linux-flatpak.result == 'success'
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: linux-flatpak
@@ -105,9 +103,7 @@ jobs:
   replay-test-macos:
     name: Replay Tests (macos)
     needs: [build-macos]
-    if: |
-      needs.build-macos.result == 'success' &&
-      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
+    if: needs.build-macos.result == 'success'
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: macos

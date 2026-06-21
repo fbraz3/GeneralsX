@@ -147,31 +147,42 @@ jobs:
       # -----------------------------------------------------------------------
       # 4. Check out and extract game assets (password-protected 7z, uses LFS)
       # -----------------------------------------------------------------------
+      - name: Cache Game Assets
+        id: cache-assets
+        uses: actions/cache@v5
+        with:
+          path: /tmp/cached-assets
+          key: game-assets-cache-v1
+
       - name: Checkout game assets repo
+        if: steps.cache-assets.outputs.cache-hit != 'true'
         uses: actions/checkout@v6
         with:
           repository: fbraz3/generalsx-test-files
           path: ci-assets-repo
           lfs: true
 
-      - name: Extract game assets (Linux)
+      - name: Extract game assets to cache (only on cache miss)
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/cached-assets
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"/tmp/cached-assets" -y
+
+      - name: Install game assets (Linux)
         if: inputs.platform == 'linux'
         run: |
-          # Assets go alongside the binary (flat layout matching local deploy)
-          echo "Extracting generalszh.7z into: $GAME_DIR"
-          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
+          echo "Copying game assets from cache into: $GAME_DIR"
+          cp -r /tmp/cached-assets/. "$GAME_DIR/"
           echo "Big files found:"
-          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
+          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found)"
 
-      - name: Extract game assets (macOS)
+      - name: Install game assets (macOS)
         if: inputs.platform == 'macos'
         run: |
-          # Assets go into the bin/ dir alongside the binary.
-          # CNC_GENERALS_ZH_PATH env var points the game to this directory.
-          echo "Extracting generalszh.7z into: $GAME_DIR"
-          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
+          echo "Copying game assets from cache into: $GAME_DIR"
+          cp -r /tmp/cached-assets/. "$GAME_DIR/"
           echo "Big files found:"
-          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
+          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found)"
 
       # -----------------------------------------------------------------------
       # 5. Check out replay repo and install maps + platform-specific replays
@@ -210,14 +221,13 @@ jobs:
 
           echo "USER_DATA=$USER_DATA" >> $GITHUB_ENV
 
-      - name: Extract game assets (Linux Flatpak)
+      - name: Install game assets (Linux Flatpak)
         if: inputs.platform == 'linux-flatpak'
         run: |
-          # For Flatpak replay tests assets must be in xdg-data path visible to sandbox.
-          echo "Extracting generalszh.7z into: $USER_DATA"
-          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$USER_DATA" -y
+          echo "Copying game assets from cache into: $USER_DATA"
+          cp -r /tmp/cached-assets/. "$USER_DATA/"
           echo "Big files found:"
-          ls "$USER_DATA/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
+          ls "$USER_DATA/"*.big 2>/dev/null | head -10 || echo "(none found)"
 
       - name: Set up user data directories (macOS)
         if: inputs.platform == 'macos'
