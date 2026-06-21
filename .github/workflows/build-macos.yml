@@ -74,7 +74,7 @@ jobs:
           xcode-select -p || (echo "❌ Xcode command-line tools not installed"; exit 1)
           
           # Build tools
-          brew install cmake ninja meson pkg-config
+          brew install cmake ninja meson pkg-config ccache
 
           # Autotools (required by vcpkg when building packages like gperf from source)
           brew install autoconf autoconf-archive automake libtool
@@ -121,7 +121,15 @@ jobs:
 
           echo "Build tools installed"
 
+      - name: Cache Vulkan SDK
+        id: cache-vulkan
+        uses: actions/cache@v5
+        with:
+          path: ~/VulkanSDK
+          key: vulkan-sdk-macos-1.4.341.1
+
       - name: Install Vulkan SDK
+        if: steps.cache-vulkan.outputs.cache-hit != 'true'
         run: |
           echo "Installing Vulkan SDK (required for DXVK + MoltenVK)..."
           
@@ -263,24 +271,35 @@ jobs:
               fi
             fi
           fi
+
+      - name: Set Vulkan SDK Environment Variable
+        run: |
+          VULKAN_SDK=""
           
-          # Set environment variables for downstream steps
+          # 1. Try LunarG installer location
+          if [ -d "$HOME/VulkanSDK/1.4.341.1/macOS" ]; then
+            VULKAN_SDK="$HOME/VulkanSDK/1.4.341.1/macOS"
+          fi
+          
+          # 2. Try generic search in ~/VulkanSDK
           if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
-            # Last resort: search for any installed SDK, prefer macOS subdir
             for candidate in $(find $HOME/VulkanSDK -maxdepth 2 -type d -name "macOS" 2>/dev/null); do
               VULKAN_SDK="$candidate"
               break
             done
           fi
-
-          # Normalize: if VULKAN_SDK points to version root (has macOS subdir), use macOS subdir
-          if [ -d "$VULKAN_SDK/macOS" ] && [ -f "$VULKAN_SDK/macOS/lib/libvulkan.dylib" ]; then
-            VULKAN_SDK="$VULKAN_SDK/macOS"
-            echo "Normalized VULKAN_SDK to platform subdirectory"
+          
+          # 3. Try Homebrew fallback path
+          if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
+            VULKAN_SDK="$(brew --prefix vulkan-sdk 2>/dev/null)/macOS"
+            if [ ! -d "$VULKAN_SDK" ]; then
+              VULKAN_SDK="/usr/local/Caskroom/vulkan-sdk/latest/VulkanSDK"
+            fi
           fi
           
+          # 4. Fallback default
           if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
-            echo "⚠️ Vulkan SDK not found in standard locations; using default path (system Vulkan may be used)"
+            echo "⚠️ Vulkan SDK not found in standard locations; using default path"
             VULKAN_SDK="$HOME/VulkanSDK"
           fi
           
@@ -293,8 +312,16 @@ jobs:
           else
             echo "⚠️ MoltenVK not found at $VULKAN_SDK/lib/libMoltenVK.dylib"
             echo "Checking for alternate locations..."
-            find "$(dirname $VULKAN_SDK)" -name "libMoltenVK*" 2>/dev/null | head -5 || echo "(none found)"
+            find "$(dirname $VULKAN_SDK 2>/dev/null || echo $HOME)" -name "libMoltenVK*" 2>/dev/null | head -5 || echo "(none found)"
           fi
+
+      - name: Cache ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/Library/Caches/ccache
+          key: ccache-macos-${{ matrix.game.id }}-${{ inputs.preset }}-${{ github.sha }}
+          restore-keys: |
+            ccache-macos-${{ matrix.game.id }}-${{ inputs.preset }}-
 
       - name: Configure CMake (macOS)
         env:
@@ -303,6 +330,8 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: arm64-osx
           CC: clang
           CXX: clang++
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
         run: |
           mkdir -p logs
           echo "VULKAN_SDK=$VULKAN_SDK"

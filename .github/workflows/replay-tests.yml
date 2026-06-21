@@ -56,12 +56,19 @@ jobs:
           # lavapipe: software Vulkan renderer (no GPU required in CI)
           sudo apt-get install -y -qq p7zip-full mesa-vulkan-drivers libvulkan1
 
+      - name: Cache Flatpak Runtime
+        if: inputs.platform == 'linux-flatpak'
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/flatpak/runtime
+          key: flatpak-runtime-25.08-v1
+
       - name: Install system dependencies (Linux Flatpak)
         if: inputs.platform == 'linux-flatpak'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq p7zip-full flatpak
-
+          
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak --user install -y flathub org.freedesktop.Platform//25.08
 
