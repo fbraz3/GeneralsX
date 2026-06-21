@@ -9,11 +9,40 @@ on:
 permissions:
   contents: read
   statuses: write
+  actions: read
 
 jobs:
+  check-artifacts:
+    name: Check Triggering Run Artifacts
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      has-artifacts: ${{ steps.check.outputs.has-artifacts }}
+    steps:
+      - name: Check Artifacts
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Query GitHub API for artifacts in the triggering run
+          ARTIFACTS=$(gh api /repos/$REPO/actions/runs/$RUN_ID/artifacts --jq '.artifacts[].name' 2>/dev/null || true)
+          echo "Found artifacts:"
+          echo "$ARTIFACTS"
+          
+          if echo "$ARTIFACTS" | grep -q "linux-flatpak-generalsxzh"; then
+            echo "has-artifacts=true" >> $GITHUB_OUTPUT
+            echo "Artifacts found. Replay tests will run."
+          else
+            echo "has-artifacts=false" >> $GITHUB_OUTPUT
+            echo "No game build artifacts found. Replay tests will be skipped."
+          fi
+
   replay-test-linux:
     name: Replay Tests (linux)
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: check-artifacts
+    if: ${{ github.event.workflow_run.conclusion == 'success' && needs.check-artifacts.outputs.has-artifacts == 'true' }}
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: linux-flatpak
@@ -24,7 +53,8 @@ jobs:
 
   replay-test-macos:
     name: Replay Tests (macos)
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: check-artifacts
+    if: ${{ github.event.workflow_run.conclusion == 'success' && needs.check-artifacts.outputs.has-artifacts == 'true' }}
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: macos
@@ -36,7 +66,7 @@ jobs:
   update-pr-status:
     name: Update PR Status
     runs-on: ubuntu-latest
-    needs: [replay-test-linux, replay-test-macos]
+    needs: [check-artifacts, replay-test-linux, replay-test-macos]
     if: always() && github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Report Status
@@ -45,7 +75,10 @@ jobs:
           SHA: ${{ github.event.workflow_run.head_sha }}
           REPO: ${{ github.repository }}
         run: |
-          if [ "${{ needs.replay-test-linux.result }}" == "success" ] && [ "${{ needs.replay-test-macos.result }}" == "success" ]; then
+          if [ "${{ needs.check-artifacts.outputs.has-artifacts }}" != "true" ]; then
+            STATE="success"
+            DESC="Replay tests skipped (no builds)"
+          elif [ "${{ needs.replay-test-linux.result }}" == "success" ] && [ "${{ needs.replay-test-macos.result }}" == "success" ]; then
             STATE="success"
             DESC="Replay tests passed"
           else
