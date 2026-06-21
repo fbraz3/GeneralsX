@@ -89,9 +89,6 @@ jobs:
       preset: macos-vulkan
     secrets: inherit
 
-  # GeneralsX @build BenderAI 18/05/2026 Deterministic replay tests run after Flatpak build on Linux and app build on macOS.
-  # Each job downloads the built artifact, extracts game assets (ASSETS_KEY secret) and
-  # platform replays from fbraz3/GeneralsXReplays, then runs headless replay simulations.
   replay-test-linux:
     name: Replay Tests (linux)
     needs: [build-linux-flatpak]
