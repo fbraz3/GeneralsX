@@ -18,6 +18,10 @@ on:
         required: true
         type: string
         description: "Name of the built game artifact to download (from build workflow)"
+      run-id:
+        required: false
+        type: string
+        description: "Optional workflow run ID to download artifacts from"
     secrets:
       ASSETS_KEY:
         required: true
@@ -39,6 +43,8 @@ jobs:
         with:
           name: ${{ inputs.game-artifact }}
           path: /tmp/game-artifact
+          run-id: ${{ inputs.run-id || github.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # -----------------------------------------------------------------------
       # 2. Platform-specific system dependencies

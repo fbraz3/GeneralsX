@@ -89,35 +89,10 @@ jobs:
       preset: macos-vulkan
     secrets: inherit
 
-  # GeneralsX @build BenderAI 18/05/2026 Deterministic replay tests run after Flatpak build on Linux and app build on macOS.
-  # Each job downloads the built artifact, extracts game assets (ASSETS_KEY secret) and
-  # platform replays from fbraz3/GeneralsXReplays, then runs headless replay simulations.
-  replay-test-linux:
-    name: Replay Tests (linux)
-    needs: [build-linux-flatpak]
-    if: needs.build-linux-flatpak.result == 'success'
-    uses: ./.github/workflows/replay-tests.yml
-    with:
-      platform: linux-flatpak
-      game-artifact: linux-flatpak-generalsxzh-linux64-deploy
-    secrets:
-      ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
-
-  replay-test-macos:
-    name: Replay Tests (macos)
-    needs: [build-macos]
-    if: needs.build-macos.result == 'success'
-    uses: ./.github/workflows/replay-tests.yml
-    with:
-      platform: macos
-      game-artifact: macos-generalsxzh-app
-    secrets:
-      ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
-
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [build-linux-flatpak, build-macos, replay-test-linux, replay-test-macos]
+    needs: [build-linux-flatpak, build-macos]
     if: always()
     steps:
       - name: Generate Summary
@@ -128,17 +103,10 @@ jobs:
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Replay Tests | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Linux ZH replays | ${{ needs.replay-test-linux.result == 'success' && '✅ Pass' || needs.replay-test-linux.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-linux.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| macOS ZH replays | ${{ needs.replay-test-macos.result == 'success' && '✅ Pass' || needs.replay-test-macos.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
 
-      - name: Fail if Any Build or Replay Test Failed
+      - name: Fail if Any Build Failed
         if: |
           needs.build-linux-flatpak.result == 'failure' ||
-          needs.build-macos.result == 'failure' ||
-          needs.replay-test-linux.result == 'failure' ||
-          needs.replay-test-macos.result == 'failure'
+          needs.build-macos.result == 'failure'
         run: exit 1
 
