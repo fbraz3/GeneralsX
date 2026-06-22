@@ -216,22 +216,27 @@ static WWINLINE float ASinTrig(float x)
 // Must dispatch to deterministic Sqrt when enabled
 // Origin wrappers: replace bare CRT math calls in GameLogic.
 // Each wrapper preserves the exact type (float vs double) of the vanilla CRT call.
-// Note: double overloads narrow to float before calling GameMath (gm_*f).
-// GameMath only provides float-precision functions. All call sites pass float-width
-// values, so the narrowing is lossless in practice.
 #if USE_DETERMINISTIC_MATH
-	static WWINLINE double		SqrtOrigin(double x) { return (double)gm_sqrtf((float)x); }
+	static WWINLINE double		SqrtOrigin(double x) { return gm_sqrt(x); }
 	static WWINLINE float		SqrtfOrigin(float x) { return gm_sqrtf(x); }
-	static WWINLINE double		Atan2Origin(double y, double x) { return (double)gm_atan2f((float)y, (float)x); }
+	static WWINLINE double		Atan2Origin(double y, double x) { return gm_atan2(y, x); }
+	static WWINLINE double		PowOrigin(double x, double y) { return gm_pow(x, y); }
 #else
 	static WWINLINE double		SqrtOrigin(double x) { return sqrt(x); }
 	static WWINLINE float		SqrtfOrigin(float x) { return sqrtf(x); }
 	static WWINLINE double		Atan2Origin(double y, double x) { return atan2(y, x); }
+	static WWINLINE double		PowOrigin(double x, double y) { return pow(x, y); }
 #endif
 static WWINLINE float		Sign(float val);
+#if USE_DETERMINISTIC_MATH
+static WWINLINE float		Ceil(float val) { return gm_ceilf(val); }
+static WWINLINE float		Floor(float val) { return gm_floorf(val); }
+static WWINLINE float		Round(float val) { return gm_floorf(val + 0.5f); }
+#else
 static WWINLINE float		Ceil(float val) { return ceilf(val); }
 static WWINLINE float		Floor(float val) { return floorf(val); }
 static WWINLINE float		Round(float val) { return floorf(val + 0.5f); }
+#endif
 static WWINLINE bool			Fast_Is_Float_Positive(const float & val);
 static WWINLINE bool			Is_Power_Of_2(const unsigned int val);
 
@@ -455,7 +460,12 @@ WWINLINE long WWMath::Float_To_Long(double f)
 // Cos
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
+#if defined(USE_DETERMINISTIC_MATH)
+WWINLINE float WWMath::Cos(float val)
+{
+	return gm_cosf(val);
+}
+#elif defined(_MSC_VER) && defined(_M_IX86)
 WWINLINE float WWMath::Cos(float val)
 {
 	float retval;
@@ -477,7 +487,12 @@ WWINLINE float WWMath::Cos(float val)
 // Sin
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
+#if defined(USE_DETERMINISTIC_MATH)
+WWINLINE float WWMath::Sin(float val)
+{
+	return gm_sinf(val);
+}
+#elif defined(_MSC_VER) && defined(_M_IX86)
 WWINLINE float WWMath::Sin(float val)
 {
 	float retval;
@@ -623,7 +638,11 @@ WWINLINE float WWMath::Fast_Acos(float val)
 
 WWINLINE float WWMath::Acos(float val)
 {
+#ifdef USE_DETERMINISTIC_MATH
+	return gm_acosf(val);
+#else
 	return (float)acos(val);
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -660,14 +679,23 @@ WWINLINE float WWMath::Fast_Asin(float val)
 
 WWINLINE float WWMath::Asin(float val)
 {
+#ifdef USE_DETERMINISTIC_MATH
+	return gm_asinf(val);
+#else
 	return (float)asin(val);
+#endif
 }
 
 // ----------------------------------------------------------------------------
 // Sqrt
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
+#if defined(USE_DETERMINISTIC_MATH)
+WWINLINE float WWMath::Sqrt(float val)
+{
+	return gm_sqrtf(val);
+}
+#elif defined(_MSC_VER) && defined(_M_IX86)
 WWINLINE float WWMath::Sqrt(float val)
 {
 	float retval;
@@ -715,7 +743,12 @@ WWINLINE int WWMath::Float_To_Int_Floor (const float& f)
 // Inverse square root
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
+#if defined(USE_DETERMINISTIC_MATH)
+WWINLINE float WWMath::Inv_Sqrt(float val)
+{
+	return 1.0f / gm_sqrtf(val);
+}
+#elif defined(_MSC_VER) && defined(_M_IX86)
 WWINLINE float WWMath::Inv_Sqrt(float a)
 {
 	float retval;
