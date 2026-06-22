@@ -41,6 +41,14 @@
 #include <float.h>
 #include <assert.h>
 
+// Include GameMath headers when deterministic math is enabled
+// Use __has_include because wwmath.h is transitively included by targets that may not link gamemath.
+// Must be outside class WWMath to prevent injecting global symbols into the class.
+#if defined(__has_include) && __has_include("gmath.h")
+#include "gmath.h"
+#define USE_DETERMINISTIC_MATH (1)
+#endif
+
 /*
 ** Some global constants.
 */
@@ -139,19 +147,10 @@ static WWINLINE float Asin(float val);
 // Upstream reference: Okladnoj, PR #2670
 // https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
 
-// Include GameMath headers when deterministic math is enabled
-// Note: GameMath integration is pending. This header will be populated when
-// GameMath submodule or library is available. For now, wrappers fallback to CRT.
-#ifdef USE_DETERMINISTIC_MATH
-// TODO: Uncomment when GameMath library is integrated as submodule
-// #include "GameMath/deterministic_math.h"
-#endif
-
 static WWINLINE float		Atan(float x) 
 { 
 #ifdef USE_DETERMINISTIC_MATH
-	// TODO: return GameMath::Atan(x);
-	return static_cast<float>(atan(x)); 
+	return gm_atanf(x); 
 #else
 	return static_cast<float>(atan(x)); 
 #endif
@@ -160,8 +159,7 @@ static WWINLINE float		Atan(float x)
 static WWINLINE float		Atan2(float y, float x) 
 { 
 #ifdef USE_DETERMINISTIC_MATH
-	// TODO: return GameMath::Atan2(y, x);
-	return static_cast<float>(atan2(y, x)); 
+	return gm_atan2f(y, x); 
 #else
 	return static_cast<float>(atan2(y, x)); 
 #endif
@@ -172,28 +170,25 @@ static WWINLINE float		Atan2(float y, float x)
 static WWINLINE float SinTrig(float x) 
 { 
 #ifdef USE_DETERMINISTIC_MATH
-	// TODO: return GameMath::Sin(x);
-	return Sin(x); 
+	return gm_sinf(x); 
 #else
-	return Sin(x); 
+	return sinf(x); 
 #endif
 }
 
 static WWINLINE float CosTrig(float x) 
 { 
 #ifdef USE_DETERMINISTIC_MATH
-	// TODO: return GameMath::Cos(x);
-	return Cos(x); 
+	return gm_cosf(x); 
 #else
-	return Cos(x); 
+	return cosf(x); 
 #endif
 }
 
 static WWINLINE float TanTrig(float x) 
 { 
 #ifdef USE_DETERMINISTIC_MATH
-	// TODO: return GameMath::Tan(x);
-	return tanf(x); 
+	return gm_tanf(x); 
 #else
 	return tanf(x); 
 #endif
@@ -202,34 +197,37 @@ static WWINLINE float TanTrig(float x)
 static WWINLINE float ACosTrig(float x) 
 { 
 #ifdef USE_DETERMINISTIC_MATH
-	// TODO: return GameMath::Acos(x);
-	return Acos(x); 
+	return gm_acosf(x); 
 #else
-	return Acos(x); 
+	return acosf(x); 
 #endif
 }
 
 static WWINLINE float ASinTrig(float x) 
 { 
 #ifdef USE_DETERMINISTIC_MATH
-	// TODO: return GameMath::Asin(x);
-	return Asin(x); 
+	return gm_asinf(x); 
 #else
-	return Asin(x); 
+	return asinf(x); 
 #endif
 }
 
 // Phase 4: Origin sqrt gateway for geometry (Coord2D/Coord3D length calculations)
 // Must dispatch to deterministic Sqrt when enabled
-static WWINLINE double SqrtOrigin(double x) 
-{ 
-#ifdef USE_DETERMINISTIC_MATH
-	// TODO: return GameMath::Sqrt(x);
-	return sqrt(x); 
+// Origin wrappers: replace bare CRT math calls in GameLogic.
+// Each wrapper preserves the exact type (float vs double) of the vanilla CRT call.
+// Note: double overloads narrow to float before calling GameMath (gm_*f).
+// GameMath only provides float-precision functions. All call sites pass float-width
+// values, so the narrowing is lossless in practice.
+#if USE_DETERMINISTIC_MATH
+	static WWINLINE double		SqrtOrigin(double x) { return (double)gm_sqrtf((float)x); }
+	static WWINLINE float		SqrtfOrigin(float x) { return gm_sqrtf(x); }
+	static WWINLINE double		Atan2Origin(double y, double x) { return (double)gm_atan2f((float)y, (float)x); }
 #else
-	return sqrt(x); 
+	static WWINLINE double		SqrtOrigin(double x) { return sqrt(x); }
+	static WWINLINE float		SqrtfOrigin(float x) { return sqrtf(x); }
+	static WWINLINE double		Atan2Origin(double y, double x) { return atan2(y, x); }
 #endif
-}
 static WWINLINE float		Sign(float val);
 static WWINLINE float		Ceil(float val) { return ceilf(val); }
 static WWINLINE float		Floor(float val) { return floorf(val); }
