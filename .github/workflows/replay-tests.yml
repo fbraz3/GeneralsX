@@ -161,13 +161,41 @@ jobs:
           path: /tmp/cached-assets
           key: game-assets-cache-v1
 
-      - name: Checkout game assets repo
+#      - name: Checkout game assets repo
+#        if: steps.cache-assets.outputs.cache-hit != 'true'
+#        uses: actions/checkout@v7
+#        with:
+#          repository: fbraz3/generalsx-test-files
+#          path: ci-assets-repo
+#          lfs: true
+
+      - name: Clone game assets repo (GitLab with GitHub fallback)
         if: steps.cache-assets.outputs.cache-hit != 'true'
-        uses: actions/checkout@v6
-        with:
-          repository: fbraz3/generalsx-test-files
-          path: ci-assets-repo
-          lfs: true
+        run: |
+          clone_success=true
+          git clone https://gitlab.com/fbraz3/generalsx-test-files.git ci-assets-repo || clone_success=false
+          if [ "$clone_success" = true ]; then
+            cd ci-assets-repo
+            git lfs install
+            if git lfs pull; then
+              echo "Successfully cloned and pulled LFS from GitLab."
+            else
+              echo "GitLab LFS pull failed. Falling back to GitHub..."
+              cd ..
+              rm -rf ci-assets-repo
+              clone_success=false
+            fi
+          else
+            echo "GitLab clone failed. Cleaning up and falling back to GitHub..."
+            rm -rf ci-assets-repo
+          fi
+          if [ "$clone_success" = false ]; then
+            git clone https://github.com/fbraz3/generalsx-test-files.git ci-assets-repo
+            cd ci-assets-repo
+            git lfs install
+            git lfs pull
+          fi
+
 
       - name: Extract game assets to cache (only on cache miss)
         if: steps.cache-assets.outputs.cache-hit != 'true'
