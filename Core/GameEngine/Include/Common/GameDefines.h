@@ -79,12 +79,13 @@
 #define PRESERVE_UNRELIABLE_FIRESTORMS (0) // The fix for this unfavorable behavior was approved by the Game Design Committee.
 #endif
 
+// GeneralsX @tweak fbraz3 24/06/2026 Disable legacy retail compatibility modes to prevent RNG leaks and improve engine stability.
 #ifndef PRESERVE_RETAIL_SCRIPTED_CAMERA
-#define PRESERVE_RETAIL_SCRIPTED_CAMERA (1) // Retain scripted camera behavior present in retail Generals 1.08 and Zero Hour 1.04
+#define PRESERVE_RETAIL_SCRIPTED_CAMERA (0) // Retain scripted camera behavior present in retail Generals 1.08 and Zero Hour 1.04
 #endif
 
 #ifndef RETAIL_COMPATIBLE_CRC
-#define RETAIL_COMPATIBLE_CRC (1) // Game is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
+#define RETAIL_COMPATIBLE_CRC (0) // Game is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
 
 #ifndef RETAIL_COMPATIBLE_XFER_SAVE
@@ -93,12 +94,12 @@
 
 // This is here to easily toggle between the retail compatible with fixed pathfinding fallback and pure fixed pathfinding mode
 #ifndef RETAIL_COMPATIBLE_PATHFINDING
-#define RETAIL_COMPATIBLE_PATHFINDING (1)
+#define RETAIL_COMPATIBLE_PATHFINDING (0)
 #endif
 
 // This is here to easily toggle between the retail compatible pathfinding memory allocation and the new static allocated data mode
 #ifndef RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION
-#define RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION (1)
+#define RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION (0)
 #endif
 
 #ifndef RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM
@@ -107,7 +108,7 @@
 
 // Disable non retail fixes in the networking, such as putting more data per UDP packet
 #ifndef RETAIL_COMPATIBLE_NETWORKING
-#define RETAIL_COMPATIBLE_NETWORKING (1)
+#define RETAIL_COMPATIBLE_NETWORKING (0)
 #endif
 
 // This is essentially synonymous for RETAIL_COMPATIBLE_CRC. There is a lot wrong with AIGroup, such as use-after-free, double-free, leaks,
@@ -115,7 +116,7 @@
 // but put them behind this macro.
 
 #ifndef RETAIL_COMPATIBLE_AIGROUP
-#define RETAIL_COMPATIBLE_AIGROUP (1) // AIGroup logic is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
+#define RETAIL_COMPATIBLE_AIGROUP (0) // AIGroup logic is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
 
 #ifndef ENABLE_GAMETEXT_SUBSTITUTES
