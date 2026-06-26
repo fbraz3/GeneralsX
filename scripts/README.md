@@ -173,7 +173,7 @@ Scripts support customization:
 
 ```bash
 # Custom Docker image base
-export DOCKER_IMAGE="ubuntu:24.04"
+export DOCKER_IMAGE="ubuntu:26.04"
 ./scripts/build/linux/docker-build-linux-zh.sh
 
 # Flatpak PoC: inject newer libxcb/X11 libs from an external directory

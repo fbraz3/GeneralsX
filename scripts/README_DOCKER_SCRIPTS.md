@@ -183,7 +183,7 @@ Scripts support environment variables:
 
 ```bash
 # Custom Docker image
-export DOCKER_IMAGE="ubuntu:24.04"
+export DOCKER_IMAGE="ubuntu:26.04"
 ./scripts/docker-build-linux-zh.sh
 
 # Custom log directory
