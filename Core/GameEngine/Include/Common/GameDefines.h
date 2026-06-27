@@ -81,11 +81,11 @@
 
 // GeneralsX @tweak fbraz3 24/06/2026 Disable legacy retail compatibility modes to prevent RNG leaks and improve engine stability.
 #ifndef PRESERVE_RETAIL_SCRIPTED_CAMERA
-#define PRESERVE_RETAIL_SCRIPTED_CAMERA (0) // Retain scripted camera behavior present in retail Generals 1.08 and Zero Hour 1.04
+#define PRESERVE_RETAIL_SCRIPTED_CAMERA (1) // Retain scripted camera behavior present in retail Generals 1.08 and Zero Hour 1.04
 #endif
 
 #ifndef RETAIL_COMPATIBLE_CRC
-#define RETAIL_COMPATIBLE_CRC (0) // Game is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
+#define RETAIL_COMPATIBLE_CRC (1) // Game is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
 
 #ifndef RETAIL_COMPATIBLE_XFER_SAVE
@@ -94,12 +94,12 @@
 
 // This is here to easily toggle between the retail compatible with fixed pathfinding fallback and pure fixed pathfinding mode
 #ifndef RETAIL_COMPATIBLE_PATHFINDING
-#define RETAIL_COMPATIBLE_PATHFINDING (0)
+#define RETAIL_COMPATIBLE_PATHFINDING (1)
 #endif
 
 // This is here to easily toggle between the retail compatible pathfinding memory allocation and the new static allocated data mode
 #ifndef RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION
-#define RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION (0)
+#define RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION (1)
 #endif
 
 #ifndef RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM
@@ -116,7 +116,7 @@
 // but put them behind this macro.
 
 #ifndef RETAIL_COMPATIBLE_AIGROUP
-#define RETAIL_COMPATIBLE_AIGROUP (0) // AIGroup logic is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
+#define RETAIL_COMPATIBLE_AIGROUP (1) // AIGroup logic is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
 
 #ifndef ENABLE_GAMETEXT_SUBSTITUTES
@@ -175,5 +175,5 @@
 
 #define MIN_DISPLAY_BIT_DEPTH       16
 #define DEFAULT_DISPLAY_BIT_DEPTH   32
-#define DEFAULT_DISPLAY_WIDTH      800 // The standard resolution this game was designed for
-#define DEFAULT_DISPLAY_HEIGHT     600 // The standard resolution this game was designed for
+#define DEFAULT_DISPLAY_WIDTH      1024 // The standard resolution this game was designed for
+#define DEFAULT_DISPLAY_HEIGHT     768 // The standard resolution this game was designed for
