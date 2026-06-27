@@ -60,7 +60,7 @@
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/TerrainLogic.h"
 
-#include "Common/File.h"
+#include "Common/file.h"
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
 
 extern "C" {
