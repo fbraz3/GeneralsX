@@ -455,11 +455,11 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 			if (pos) {
 				ma_sound_set_position(sound, pos->x, pos->y, pos->z);
 			}
-			m_sound->notifyOf3DSampleStart();
+
 		}
 		else {
 			audio->m_type = PAT_Sample;
-			m_sound->notifyOf2DSampleStart();
+
 		}
 		break;
 	}
@@ -583,10 +583,10 @@ void MiniAudioManager::releasePlayingAudio(PlayingAudio *release)
 
 	if (releaseInfo && releaseInfo->m_soundType == AT_SoundEffect && release->m_sound) {
 		if (release->m_type == PAT_Sample) {
-			m_sound->notifyOf2DSampleCompletion();
+
 		}
 		else if (release->m_type == PAT_3DSample) {
-			m_sound->notifyOf3DSampleCompletion();
+
 		}
 		// PAT_Stream and PAT_INVALID don't notify
 	}
@@ -1566,4 +1566,18 @@ static ma_result vfsFileSeek(ma_vfs *pVFS, ma_vfs_file file, ma_int64 offset, ma
 
 	handle->file->seek((Int)offset, seekType);
 	return MA_SUCCESS;
+}
+
+//-------------------------------------------------------------------------------------------------
+UnsignedInt MiniAudioManager::getNumAvailable2DSamples() const
+{
+	// Returning 0 for now as it's primarily used for debugging stats
+	return 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+UnsignedInt MiniAudioManager::getNumAvailable3DSamples() const
+{
+	// Returning 0 for now as it's primarily used for debugging stats
+	return 0;
 }
