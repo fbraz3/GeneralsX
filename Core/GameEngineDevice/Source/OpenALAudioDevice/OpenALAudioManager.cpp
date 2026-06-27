@@ -900,7 +900,7 @@ void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 
 			if (source) {
 				audio->m_bufferHandle = playSample3D(event, audio);
-				m_sound->notifyOf3DSampleStart();
+
 			}
 
 			if (!audio->m_bufferHandle)
@@ -960,7 +960,7 @@ void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 
 			if (source) {
 				audio->m_bufferHandle = playSample(event, audio);
-				m_sound->notifyOf2DSampleStart();
+
 			}
 
 			if (!audio->m_bufferHandle) {
@@ -1193,12 +1193,12 @@ void OpenALAudioManager::releasePlayingAudio(PlayingAudio* release)
 	if (releaseInfo && releaseInfo->m_soundType == AT_SoundEffect) {
 		if (release->m_type == PAT_Sample) {
 			if (release->m_source) {
-				m_sound->notifyOf2DSampleCompletion();
+
 			}
 		}
 		else {
 			if (release->m_source) {
-				m_sound->notifyOf3DSampleCompletion();
+
 			}
 		}
 	}
@@ -3211,3 +3211,15 @@ void OpenALAudioManager::dumpAllAssetsUsed()
 	logfile = NULL;
 }
 #endif
+
+//-------------------------------------------------------------------------------------------------
+UnsignedInt OpenALAudioManager::getNumAvailable2DSamples() const
+{
+	return 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+UnsignedInt OpenALAudioManager::getNumAvailable3DSamples() const
+{
+	return 0;
+}
