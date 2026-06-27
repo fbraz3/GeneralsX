@@ -159,23 +159,24 @@ jobs:
         uses: actions/cache@v5
         with:
           path: /tmp/cached-assets
-          key: game-assets-cache-v1
-
-#      - name: Checkout game assets repo
-#        if: steps.cache-assets.outputs.cache-hit != 'true'
-#        uses: actions/checkout@v7
-#        with:
-#          repository: fbraz3/generalsx-test-files
-#          path: ci-assets-repo
-#          lfs: true
+          key: game-assets-cache-v2
 
       - name: Clone game assets repo (GitLab with GitHub fallback)
         if: steps.cache-assets.outputs.cache-hit != 'true'
         run: |
+          # GeneralsX @build fbraz3 24/06/2026 Support checking out current branch if present in assets/replays repo.
+          TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
           clone_success=true
           git clone https://gitlab.com/fbraz3/generalsx-test-files.git ci-assets-repo || clone_success=false
           if [ "$clone_success" = true ]; then
             cd ci-assets-repo
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
+                echo "Branch $TARGET_BRANCH exists on GitLab. Checking out..."
+                git fetch origin "$TARGET_BRANCH"
+                git checkout "$TARGET_BRANCH"
+              fi
+            fi
             git lfs install
             if git lfs pull; then
               echo "Successfully cloned and pulled LFS from GitLab."
@@ -192,6 +193,13 @@ jobs:
           if [ "$clone_success" = false ]; then
             git clone https://github.com/fbraz3/generalsx-test-files.git ci-assets-repo
             cd ci-assets-repo
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
+                echo "Branch $TARGET_BRANCH exists on GitHub. Checking out..."
+                git fetch origin "$TARGET_BRANCH"
+                git checkout "$TARGET_BRANCH"
+              fi
+            fi
             git lfs install
             git lfs pull
           fi
@@ -223,11 +231,46 @@ jobs:
       # 5. Check out replay repo and install maps + platform-specific replays
       #    Repo structure: GeneralsXZH/Maps/<MapFolder>/  GeneralsXZH/Replays/<platform>_*.rep
       # -----------------------------------------------------------------------
-      - name: Checkout replay files repo
-        uses: actions/checkout@v6
+      - name: Cache Replay Files
+        id: cache-replays
+        uses: actions/cache@v5
         with:
-          repository: fbraz3/GeneralsXReplays
           path: ci-replays-repo
+          key: replay-files-cache-v1
+
+      - name: Clone replay files repo (GitLab with GitHub fallback)
+        if: steps.cache-replays.outputs.cache-hit != 'true'
+        run: |
+          # GeneralsX @build fbraz3 24/06/2026 Clone replays from GitLab with GitHub fallback and support checking out current branch.
+          TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
+          clone_success=true
+          git clone https://gitlab.com/fbraz3/generalsx-replays.git ci-replays-repo || clone_success=false
+          if [ "$clone_success" = true ]; then
+            cd ci-replays-repo
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
+                echo "Branch $TARGET_BRANCH exists on GitLab. Checking out..."
+                git fetch origin "$TARGET_BRANCH"
+                git checkout "$TARGET_BRANCH"
+              fi
+            fi
+            echo "Successfully cloned replays from GitLab."
+          else
+            echo "GitLab clone failed. Cleaning up and falling back to GitHub..."
+            rm -rf ci-replays-repo
+          fi
+          if [ "$clone_success" = false ]; then
+            git clone https://github.com/fbraz3/GeneralsXReplays.git ci-replays-repo
+            cd ci-replays-repo
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
+                echo "Branch $TARGET_BRANCH exists on GitHub. Checking out..."
+                git fetch origin "$TARGET_BRANCH"
+                git checkout "$TARGET_BRANCH"
+              fi
+            fi
+            echo "Successfully cloned replays from GitHub."
+          fi
 
       - name: Set up user data directories (Linux)
         if: inputs.platform == 'linux' || inputs.platform == 'linux-flatpak'
