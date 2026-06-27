@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -450,9 +450,11 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 				{
 					Coord3D position;
 
-					TheTacticalView->screenToTerrain( &pixel, &position );
-					mouseoverMessage = TheMessageStream->appendMessage( GameMessage::MSG_MOUSEOVER_LOCATION_HINT );
-					mouseoverMessage->appendLocationArgument( position );
+					if( TheTacticalView->screenToTerrain( &pixel, &position ) )
+					{
+						mouseoverMessage = TheMessageStream->appendMessage( GameMessage::MSG_MOUSEOVER_LOCATION_HINT );
+						mouseoverMessage->appendLocationArgument( position );
+					}
 				}
 			}
 

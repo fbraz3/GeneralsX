@@ -49,6 +49,7 @@
 #include "statistics.h"
 #include <wwprofile.h>
 #include <algorithm>
+#include <list>
 
 
 bool SortingRendererClass::_EnableTriangleDraw=true;
@@ -150,7 +151,7 @@ void Sort(TempIndexStruct *begin, TempIndexStruct *end)
 
 // ----------------------------------------------------------------------------
 
-class SortingNodeStruct : public DLNodeClass<SortingNodeStruct>
+class SortingNodeStruct
 {
 	W3DMPO_CODE(SortingNodeStruct)
 
@@ -166,20 +167,19 @@ public:
 	unsigned short vertex_count;			// Number of vertices used in vb
 };
 
-static DLListClass<SortingNodeStruct> sorted_list;
-static DLListClass<SortingNodeStruct> clean_list;
+typedef std::list<SortingNodeStruct*> SortingNodeStructList;
+static SortingNodeStructList sorted_list;
+static SortingNodeStructList clean_list;
 static unsigned total_sorting_vertices;
 
 static SortingNodeStruct* Get_Sorting_Struct()
 {
-
-	SortingNodeStruct* state=clean_list.Head();
-	if (state) {
-		state->Remove();
+	if (!clean_list.empty()) {
+		SortingNodeStruct* state = clean_list.front();
+		clean_list.pop_front();
 		return state;
 	}
-	state=W3DNEW SortingNodeStruct();
-	return state;
+	return W3DNEW SortingNodeStruct();
 }
 
 // ----------------------------------------------------------------------------
@@ -242,10 +242,6 @@ void SortingRendererClass::Insert_Triangles(
 	state->min_vertex_index=min_vertex_index;
 	state->vertex_count=vertex_count;
 
-	SortingVertexBufferClass* vertex_buffer=static_cast<SortingVertexBufferClass*>(state->sorting_state.vertex_buffers[0]);
-	WWASSERT(vertex_buffer);
-	WWASSERT(state->vertex_count<=vertex_buffer->Get_Vertex_Count());
-
 	D3DXMATRIX mtx=(D3DXMATRIX&)state->sorting_state.world*(D3DXMATRIX&)state->sorting_state.view;
 	D3DXVECTOR3 vec=(D3DXVECTOR3&)state->bounding_sphere.Center;
 	D3DXVECTOR4 transformed_vec;
@@ -255,23 +251,13 @@ void SortingRendererClass::Insert_Triangles(
 		&mtx);
 	state->transformed_center=Vector3(transformed_vec[0],transformed_vec[1],transformed_vec[2]);
 
-
-	/// @todo lorenzen sez use a bucket sort here... and stop copying so much data so many times
-
-	SortingNodeStruct* node=sorted_list.Head();
-	while (node) {
-		if (state->transformed_center.Z>node->transformed_center.Z) {
-			if (sorted_list.Head()==sorted_list.Tail())
-				sorted_list.Add_Head(state);
-			else
-				state->Insert_Before(node);
-			break;
-		}
-		node=node->Succ();
-	}
-	if (!node) sorted_list.Add_Tail(state);
+	Insert_To_Sorted_List(state);
 
 #ifdef WWDEBUG
+	SortingVertexBufferClass* vertex_buffer=static_cast<SortingVertexBufferClass*>(state->sorting_state.vertex_buffers[0]);
+	WWASSERT(vertex_buffer);
+	WWASSERT(state->vertex_count<=vertex_buffer->Get_Vertex_Count());
+
 	unsigned short* indices=nullptr;
 	SortingIndexBufferClass* index_buffer=static_cast<SortingIndexBufferClass*>(state->sorting_state.index_buffer);
 	WWASSERT(index_buffer);
@@ -332,6 +318,23 @@ static unsigned overlapping_polygon_count;
 static unsigned overlapping_vertex_count;
 static const unsigned MAX_OVERLAPPING_NODES=4096;
 static SortingNodeStruct* overlapping_nodes[MAX_OVERLAPPING_NODES];
+
+// ----------------------------------------------------------------------------
+
+void SortingRendererClass::Insert_To_Sorted_List(SortingNodeStruct *state)
+{
+	/// @todo lorenzen sez use a bucket sort here... and stop copying so much data so many times
+
+	for (SortingNodeStructList::iterator node = sorted_list.begin(); node != sorted_list.end(); ++node)
+	{
+		if (state->transformed_center.Z > (*node)->transformed_center.Z) {
+			sorted_list.insert(node, state);
+			return;
+		}
+	}
+
+	sorted_list.push_back(state);
+}
 
 // ----------------------------------------------------------------------------
 
@@ -577,7 +580,7 @@ void SortingRendererClass::Flush_Sorting_Pool()
 	for (unsigned node_id=0;node_id<overlapping_node_count;++node_id) {
 		SortingNodeStruct* state=overlapping_nodes[node_id];
 		Release_Refs(state);
-		clean_list.Add_Head(state);
+		clean_list.push_front(state);
 	}
 	overlapping_node_count=0;
 	overlapping_polygon_count=0;
@@ -597,8 +600,9 @@ void SortingRendererClass::Flush()
 	DX8Wrapper::Get_Transform(D3DTS_VIEW,old_view);
 	DX8Wrapper::Get_Transform(D3DTS_WORLD,old_world);
 
-	while (SortingNodeStruct* state=sorted_list.Head()) {
-		state->Remove();
+	while (!sorted_list.empty()) {
+		SortingNodeStruct* state = sorted_list.front();
+		sorted_list.pop_front();
 
 		if ((state->sorting_state.index_buffer_type==BUFFER_TYPE_SORTING || state->sorting_state.index_buffer_type==BUFFER_TYPE_DYNAMIC_SORTING) &&
 			(state->sorting_state.vertex_buffer_types[0]==BUFFER_TYPE_SORTING || state->sorting_state.vertex_buffer_types[0]==BUFFER_TYPE_DYNAMIC_SORTING)) {
@@ -609,7 +613,7 @@ void SortingRendererClass::Flush()
 			DX8Wrapper::Draw_Triangles(state->start_index,state->polygon_count,state->min_vertex_index,state->vertex_count);
 			DX8Wrapper::Release_Render_State();
 			Release_Refs(state);
-			clean_list.Add_Head(state);
+			clean_list.push_front(state);
 		}
 	}
 
@@ -635,98 +639,23 @@ void SortingRendererClass::Flush()
 
 void SortingRendererClass::Deinit()
 {
-	SortingNodeStruct *head = nullptr;
-
 	//
 	//	Flush the sorted list
 	//
-	while ((head = sorted_list.Head ()) != nullptr) {
-		sorted_list.Remove_Head ();
-		delete head;
+	while (!sorted_list.empty()) {
+		delete sorted_list.front();
+		sorted_list.pop_front();
 	}
 
 	//
 	//	Flush the clean list
 	//
-	while ((head = clean_list.Head ()) != nullptr) {
-		clean_list.Remove_Head ();
-		delete head;
+	while (!clean_list.empty()) {
+		delete clean_list.front();
+		clean_list.pop_front();
 	}
 
 	delete[] temp_index_array;
 	temp_index_array=nullptr;
 	temp_index_array_count=0;
-}
-
-
-// ----------------------------------------------------------------------------
-//
-// Insert a VolumeParticle triangle into the sorting system.
-//
-// ----------------------------------------------------------------------------
-
-void SortingRendererClass::Insert_VolumeParticle(
-	const SphereClass& bounding_sphere,
-	unsigned short start_index,
-	unsigned short polygon_count,
-	unsigned short min_vertex_index,
-	unsigned short vertex_count,
-	unsigned short layerCount)
-{
-	if (!WW3D::Is_Sorting_Enabled()) {
-		DX8Wrapper::Draw_Triangles(start_index,polygon_count,min_vertex_index,vertex_count);
-		return;
-	}
-
-	//FOR VOLUME_PARTICLE LOGIC:
-	// WE MUST MULTIPLY THE VERTCOUNT AND POLYCOUNT BY THE VOLUME_PARTICLE DEPTH
-	DX8_RECORD_SORTING_RENDER( polygon_count * layerCount,vertex_count * layerCount);//THIS IS VOLUME_PARTICLE SPECIFIC
-
-	SortingNodeStruct* state=Get_Sorting_Struct();
-	DX8Wrapper::Get_Render_State(state->sorting_state);
-
-	WWASSERT(
-		((state->sorting_state.index_buffer_type==BUFFER_TYPE_SORTING || state->sorting_state.index_buffer_type==BUFFER_TYPE_DYNAMIC_SORTING) &&
-		(state->sorting_state.vertex_buffer_types[0]==BUFFER_TYPE_SORTING || state->sorting_state.vertex_buffer_types[0]==BUFFER_TYPE_DYNAMIC_SORTING)));
-
-	state->bounding_sphere=bounding_sphere;
-	state->start_index=start_index;
-	state->min_vertex_index=min_vertex_index;
-	state->polygon_count=polygon_count * layerCount;//THIS IS VOLUME_PARTICLE SPECIFIC
-	state->vertex_count=vertex_count * layerCount;//THIS IS VOLUME_PARTICLE SPECIFIC
-
-	SortingVertexBufferClass* vertex_buffer=static_cast<SortingVertexBufferClass*>(state->sorting_state.vertex_buffers[0]);
-	WWASSERT(vertex_buffer);
-	WWASSERT(state->vertex_count<=vertex_buffer->Get_Vertex_Count());
-
-	// Transform the center point to view space for sorting
-
-	D3DXMATRIX mtx=(D3DXMATRIX&)state->sorting_state.world*(D3DXMATRIX&)state->sorting_state.view;
-	D3DXVECTOR3 vec=(D3DXVECTOR3&)state->bounding_sphere.Center;
-	D3DXVECTOR4 transformed_vec;
-	D3DXVec3Transform(
-		&transformed_vec,
-		&vec,
-		&mtx);
-	state->transformed_center=Vector3(transformed_vec[0],transformed_vec[1],transformed_vec[2]);
-
-
-	// BUT WHAT IS THE DEAL WITH THE VERTCOUNT AND POLYCOUNT BEING N BUT TRANSFORMED CENTER COUNT == 1
-
-	//THE TRANSFORMED CENTER[2] IS THE ZBUFFER DEPTH
-
-	/// @todo lorenzen sez use a bucket sort here... and stop copying so much data so many times
-
-	SortingNodeStruct* node=sorted_list.Head();
-	while (node) {
-		if (state->transformed_center.Z>node->transformed_center.Z) {
-			if (sorted_list.Head()==sorted_list.Tail())
-				sorted_list.Add_Head(state);
-			else
-				state->Insert_Before(node);
-			break;
-		}
-		node=node->Succ();
-	}
-	if (!node) sorted_list.Add_Tail(state);
 }
