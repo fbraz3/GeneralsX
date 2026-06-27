@@ -455,11 +455,11 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 			if (pos) {
 				ma_sound_set_position(sound, pos->x, pos->y, pos->z);
 			}
-			m_sound->notifyOf3DSampleStart();
+
 		}
 		else {
 			audio->m_type = PAT_Sample;
-			m_sound->notifyOf2DSampleStart();
+
 		}
 		break;
 	}
@@ -583,10 +583,10 @@ void MiniAudioManager::releasePlayingAudio(PlayingAudio *release)
 
 	if (releaseInfo && releaseInfo->m_soundType == AT_SoundEffect && release->m_sound) {
 		if (release->m_type == PAT_Sample) {
-			m_sound->notifyOf2DSampleCompletion();
+
 		}
 		else if (release->m_type == PAT_3DSample) {
-			m_sound->notifyOf3DSampleCompletion();
+
 		}
 		// PAT_Stream and PAT_INVALID don't notify
 	}
@@ -1566,4 +1566,22 @@ static ma_result vfsFileSeek(ma_vfs *pVFS, ma_vfs_file file, ma_int64 offset, ma
 
 	handle->file->seek((Int)offset, seekType);
 	return MA_SUCCESS;
+}
+
+//-------------------------------------------------------------------------------------------------
+UnsignedInt MiniAudioManager::getNumAvailable2DSamples() const
+{
+	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	UnsignedInt max2D = getAudioSettings()->m_sampleCount2D;
+	UnsignedInt playing = (UnsignedInt)m_playingSounds.size();
+	return (max2D > playing) ? (max2D - playing) : 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+UnsignedInt MiniAudioManager::getNumAvailable3DSamples() const
+{
+	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	UnsignedInt max3D = getAudioSettings()->m_sampleCount3D;
+	UnsignedInt playing = (UnsignedInt)m_playingSounds.size();
+	return (max3D > playing) ? (max3D - playing) : 0;
 }

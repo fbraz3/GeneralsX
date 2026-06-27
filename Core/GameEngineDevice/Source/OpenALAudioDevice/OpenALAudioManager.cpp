@@ -900,7 +900,7 @@ void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 
 			if (source) {
 				audio->m_bufferHandle = playSample3D(event, audio);
-				m_sound->notifyOf3DSampleStart();
+
 			}
 
 			if (!audio->m_bufferHandle)
@@ -960,7 +960,7 @@ void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 
 			if (source) {
 				audio->m_bufferHandle = playSample(event, audio);
-				m_sound->notifyOf2DSampleStart();
+
 			}
 
 			if (!audio->m_bufferHandle) {
@@ -1193,12 +1193,12 @@ void OpenALAudioManager::releasePlayingAudio(PlayingAudio* release)
 	if (releaseInfo && releaseInfo->m_soundType == AT_SoundEffect) {
 		if (release->m_type == PAT_Sample) {
 			if (release->m_source) {
-				m_sound->notifyOf2DSampleCompletion();
+
 			}
 		}
 		else {
 			if (release->m_source) {
-				m_sound->notifyOf3DSampleCompletion();
+
 			}
 		}
 	}
@@ -3211,3 +3211,19 @@ void OpenALAudioManager::dumpAllAssetsUsed()
 	logfile = NULL;
 }
 #endif
+
+//-------------------------------------------------------------------------------------------------
+UnsignedInt OpenALAudioManager::getNumAvailable2DSamples() const
+{
+	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	UnsignedInt playing = (UnsignedInt)m_playingSounds.size();
+	return (m_num2DSamples > playing) ? (m_num2DSamples - playing) : 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+UnsignedInt OpenALAudioManager::getNumAvailable3DSamples() const
+{
+	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	UnsignedInt playing = (UnsignedInt)m_playing3DSounds.size();
+	return (m_num3DSamples > playing) ? (m_num3DSamples - playing) : 0;
+}
