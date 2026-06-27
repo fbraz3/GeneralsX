@@ -1571,13 +1571,17 @@ static ma_result vfsFileSeek(ma_vfs *pVFS, ma_vfs_file file, ma_int64 offset, ma
 //-------------------------------------------------------------------------------------------------
 UnsignedInt MiniAudioManager::getNumAvailable2DSamples() const
 {
-	// Returning 0 for now as it's primarily used for debugging stats
-	return 0;
+	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	UnsignedInt max2D = getAudioSettings()->m_sampleCount2D;
+	UnsignedInt playing = (UnsignedInt)m_playingSounds.size();
+	return (max2D > playing) ? (max2D - playing) : 0;
 }
 
 //-------------------------------------------------------------------------------------------------
 UnsignedInt MiniAudioManager::getNumAvailable3DSamples() const
 {
-	// Returning 0 for now as it's primarily used for debugging stats
-	return 0;
+	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	UnsignedInt max3D = getAudioSettings()->m_sampleCount3D;
+	UnsignedInt playing = (UnsignedInt)m_playingSounds.size();
+	return (max3D > playing) ? (max3D - playing) : 0;
 }

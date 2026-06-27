@@ -3215,11 +3215,15 @@ void OpenALAudioManager::dumpAllAssetsUsed()
 //-------------------------------------------------------------------------------------------------
 UnsignedInt OpenALAudioManager::getNumAvailable2DSamples() const
 {
-	return 0;
+	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	UnsignedInt playing = (UnsignedInt)m_playingSounds.size();
+	return (m_num2DSamples > playing) ? (m_num2DSamples - playing) : 0;
 }
 
 //-------------------------------------------------------------------------------------------------
 UnsignedInt OpenALAudioManager::getNumAvailable3DSamples() const
 {
-	return 0;
+	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	UnsignedInt playing = (UnsignedInt)m_playing3DSounds.size();
+	return (m_num3DSamples > playing) ? (m_num3DSamples - playing) : 0;
 }
