@@ -230,7 +230,7 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - `GeneralsMD/`: Zero Hour.
 - `Generals/`: base game.
 - `Core/`: shared libraries.
-- `references/`: thesuperhackers-main, fbraz3-dxvk (active); archive/ (historical).
+- `references/`: old-refs/thesuperhackers-main, fbraz3-dxvk (active); old-refs/ (historical).
 - `docs/WORKDIR/`: current work docs.
 - `docs/HOWTO/`: user-facing step-by-step tutorials (SagePatch config, etc.)
 - `logs/`: build/run/debug logs.

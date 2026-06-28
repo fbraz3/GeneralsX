@@ -2747,7 +2747,7 @@ void GameLogic::processCommandList( CommandList *list )
 						DEBUG_CRASH(("CRC mismatch!"));
 						// GeneralsX @build GitHubCopilot 12/04/2026 Surface validator/validated CRC divergence before mismatch UI triggers.
 						fprintf(stderr, "[LAN86] CRC mismatch frame=%u validatorPlayer=%d validator=%08X validatedPlayer=%d validated=%08X\n",
-							m_frame, m_cachedCRCs.begin()->first, validatorCRC, crcIt->first, validatedCRC);
+							m_frame, m_cachedCRCs.begin()->first, referenceCRC, it->first, crc);
 						sawCRCMismatch = TRUE;
 					}
 				}
