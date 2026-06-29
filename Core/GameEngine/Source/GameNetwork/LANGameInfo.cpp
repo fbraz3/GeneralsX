@@ -229,9 +229,9 @@ void LANDisplayGameList( GameWindow *gameListbox, LANGameInfo *gameList )
 			GadgetListBoxSetItemData(gameListbox, (void *)gameList, addedIndex, 0 );
 			++gameCount;
 			// GeneralsX @build GitHubCopilot 12/04/2026 Trace rendered LAN lobby rows to catch announce-vs-UI mismatches.
-			fprintf(stderr, "[LAN86] lobby render row=%d host=%d.%d.%d.%d hostName=%ls gameName=%ls inProgress=%d direct=%d\n",
+			/* 			fprintf(stderr, "[LAN86] lobby render row=%d host=%d.%d.%d.%d hostName=%ls gameName=%ls inProgress=%d direct=%d\n",
 				addedIndex, PRINTF_IP_AS_4_INTS(gameList->getHostIP()), gameList->getPlayerName(0).str(), gameList->getName().str(),
-				gameList->isGameInProgress(), gameList->getIsDirectConnect());
+				gameList->isGameInProgress(), gameList->getIsDirectConnect()); */
 
 			if (selectedPtr == gameList)
 				indexToSelect = addedIndex;
@@ -245,8 +245,8 @@ void LANDisplayGameList( GameWindow *gameListbox, LANGameInfo *gameList )
 			HideGameInfoWindow(TRUE);
 
 		// GeneralsX @build GitHubCopilot 12/04/2026 Surface final LAN lobby row count after each refresh.
-		fprintf(stderr, "[LAN86] lobby render complete count=%d selectedIndex=%d restoredIndex=%d\n",
-			gameCount, selectedIndex, indexToSelect);
+		/* 		fprintf(stderr, "[LAN86] lobby render complete count=%d selectedIndex=%d restoredIndex=%d\n",
+			gameCount, selectedIndex, indexToSelect); */
 	}
 }
 

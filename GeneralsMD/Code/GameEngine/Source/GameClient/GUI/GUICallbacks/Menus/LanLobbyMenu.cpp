@@ -427,16 +427,16 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 
 	for (EnumeratedIP *candidate = IPlist; candidate != nullptr; candidate = candidate->getNext())
 	{
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit enumerated candidate %d.%d.%d.%d\n",
-			PRINTF_IP_AS_4_INTS(candidate->getIP()));
+		/* 		fprintf(stderr, "[LAN86] LanLobbyMenuInit enumerated candidate %d.%d.%d.%d\n",
+			PRINTF_IP_AS_4_INTS(candidate->getIP())); */
 		if (candidate->getIP() == IP)
 		{
 			foundPreferredIP = TRUE;
 			break;
 		}
 	}
-	fprintf(stderr, "[LAN86] LanLobbyMenuInit preferredLANIP=%d.%d.%d.%d globalDefaultIP=%d.%d.%d.%d foundPreferred=%d\n",
-		PRINTF_IP_AS_4_INTS(preferredLANIP), PRINTF_IP_AS_4_INTS(TheGlobalData->m_defaultIP), foundPreferredIP);
+	/* 	fprintf(stderr, "[LAN86] LanLobbyMenuInit preferredLANIP=%d.%d.%d.%d globalDefaultIP=%d.%d.%d.%d foundPreferred=%d\n",
+		PRINTF_IP_AS_4_INTS(preferredLANIP), PRINTF_IP_AS_4_INTS(TheGlobalData->m_defaultIP), foundPreferredIP); */
 
 	if (IP != 0 && foundPreferredIP)
 	{
@@ -464,14 +464,14 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 		// GeneralsX @build GitHubCopilot 11/04/2026 Log auto-selected LAN IP to diagnose cross-platform discovery failures.
 		DEBUG_LOG(("LanLobbyMenuInit - auto-selected LAN IP %d.%d.%d.%d from enumeration",
 			PRINTF_IP_AS_4_INTS(IP)));
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit fallback IP %d.%d.%d.%d preferred=%d.%d.%d.%d found=%d\n",
-			PRINTF_IP_AS_4_INTS(IP), PRINTF_IP_AS_4_INTS(preferredLANIP), foundPreferredIP);
+		/* 		fprintf(stderr, "[LAN86] LanLobbyMenuInit fallback IP %d.%d.%d.%d preferred=%d.%d.%d.%d found=%d\n",
+			PRINTF_IP_AS_4_INTS(IP), PRINTF_IP_AS_4_INTS(preferredLANIP), foundPreferredIP); */
 	}
 
 	if (foundPreferredIP)
 	{
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit preferred IP source=%ls ip=%d.%d.%d.%d\n",
-			IPSource, PRINTF_IP_AS_4_INTS(IP));
+		/* 		fprintf(stderr, "[LAN86] LanLobbyMenuInit preferred IP source=%ls ip=%d.%d.%d.%d\n",
+			IPSource, PRINTF_IP_AS_4_INTS(IP)); */
 	}
 #if defined(RTS_DEBUG)
 	UnicodeString str;
@@ -483,18 +483,18 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 	TheLAN->init();
 	// GeneralsX @build GitHubCopilot 11/04/2026 Log LAN bind attempt from lobby startup path.
 	DEBUG_LOG(("LanLobbyMenuInit - calling SetLocalIP(%d.%d.%d.%d)", PRINTF_IP_AS_4_INTS(IP)));
-	fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP begin %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
+	/* 	fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP begin %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP)); */
 	if (TheLAN->SetLocalIP(IP) == FALSE) {
 		LANSocketErrorDetected = TRUE;
 		// GeneralsX @build GitHubCopilot 11/04/2026 Explicit failure breadcrumb for LAN socket initialization.
 		DEBUG_LOG(("LanLobbyMenuInit - SetLocalIP failed for %d.%d.%d.%d", PRINTF_IP_AS_4_INTS(IP)));
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP failed %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
+		/* 		fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP failed %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP)); */
 	}
 	else
 	{
 		// GeneralsX @build GitHubCopilot 11/04/2026 Explicit success breadcrumb for LAN socket initialization.
 		DEBUG_LOG(("LanLobbyMenuInit - SetLocalIP succeeded for %d.%d.%d.%d", PRINTF_IP_AS_4_INTS(IP)));
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP ok %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
+		/* 		fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP ok %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP)); */
 	}
 
 	//Initialize the gadgets on the window
@@ -515,7 +515,7 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 	TheLAN->RequestSetName(defaultName);
 	// GeneralsX @build GitHubCopilot 11/04/2026 Trace initial LAN discovery request from menu bootstrap.
 	DEBUG_LOG(("LanLobbyMenuInit - issuing initial RequestLocations() from LAN lobby"));
-	fprintf(stderr, "[LAN86] LanLobbyMenuInit RequestLocations initial\n");
+	/* 	fprintf(stderr, "[LAN86] LanLobbyMenuInit RequestLocations initial\n"); */
 	TheLAN->RequestLocations();
 
 	/*

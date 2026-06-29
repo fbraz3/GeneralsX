@@ -167,9 +167,9 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
 	DEBUG_LOG(("UDP::Bind - socket() failed for %d.%d.%d.%d:%d err=%d",
     (ipHostOrder >> 24) & 0xFF, (ipHostOrder >> 16) & 0xFF, (ipHostOrder >> 8) & 0xFF, ipHostOrder & 0xFF,
     portHostOrder, m_lastError));
-  fprintf(stderr, "[LAN86] UDP::Bind socket failed %d.%d.%d.%d:%d err=%d\n",
+  /*   fprintf(stderr, "[LAN86] UDP::Bind socket failed %d.%d.%d.%d:%d err=%d\n",
     (ipHostOrder >> 24) & 0xFF, (ipHostOrder >> 16) & 0xFF, (ipHostOrder >> 8) & 0xFF, ipHostOrder & 0xFF,
-    portHostOrder, m_lastError);
+    portHostOrder, m_lastError); */
     return(UNKNOWN);
   }
 
@@ -186,9 +186,9 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
 	DEBUG_LOG(("UDP::Bind - bind() failed for %d.%d.%d.%d:%d err=%d",
     (ipHostOrder >> 24) & 0xFF, (ipHostOrder >> 16) & 0xFF, (ipHostOrder >> 8) & 0xFF, ipHostOrder & 0xFF,
     portHostOrder, m_lastError));
-  fprintf(stderr, "[LAN86] UDP::Bind bind failed %d.%d.%d.%d:%d err=%d\n",
+  /*   fprintf(stderr, "[LAN86] UDP::Bind bind failed %d.%d.%d.%d:%d err=%d\n",
     (ipHostOrder >> 24) & 0xFF, (ipHostOrder >> 16) & 0xFF, (ipHostOrder >> 8) & 0xFF, ipHostOrder & 0xFF,
-    portHostOrder, m_lastError);
+    portHostOrder, m_lastError); */
     status=GetStatus();
     //CERR("Bind failure (" << status << ") IP " << IP << " PORT " << Port )
     return(status);
@@ -266,9 +266,9 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
     DEBUG_LOG(("UDP::Write - sendto failed dst=%d.%d.%d.%d:%d len=%d err=%d",
       (IP >> 24) & 0xFF, (IP >> 16) & 0xFF, (IP >> 8) & 0xFF, IP & 0xFF,
       port, len, m_lastError));
-    fprintf(stderr, "[LAN86] UDP::Write sendto failed dst=%d.%d.%d.%d:%d len=%d err=%d\n",
+    /*     fprintf(stderr, "[LAN86] UDP::Write sendto failed dst=%d.%d.%d.%d:%d len=%d err=%d\n",
       (IP >> 24) & 0xFF, (IP >> 16) & 0xFF, (IP >> 8) & 0xFF, IP & 0xFF,
-      port, len, m_lastError);
+      port, len, m_lastError); */
 #ifdef DEBUG_LOGGING
 		static Int errCount = 0;
 #endif
@@ -296,7 +296,7 @@ Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 				m_lastError = WSAGetLastError();
         // GeneralsX @build GitHubCopilot 11/04/2026 Capture UDP receive failure details for LAN diagnostics.
         DEBUG_LOG(("UDP::Read - recvfrom failed len=%d err=%d", len, m_lastError));
-        fprintf(stderr, "[LAN86] UDP::Read recvfrom failed len=%d err=%d\n", len, m_lastError);
+        /*         fprintf(stderr, "[LAN86] UDP::Read recvfrom failed len=%d err=%d\n", len, m_lastError); */
 #ifdef DEBUG_LOGGING
 				static Int errCount = 0;
 #endif
@@ -319,7 +319,7 @@ Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 				m_lastError = WSAGetLastError();
         // GeneralsX @build GitHubCopilot 11/04/2026 Capture UDP receive failure details for LAN diagnostics.
         DEBUG_LOG(("UDP::Read - recvfrom failed len=%d err=%d", len, m_lastError));
-        fprintf(stderr, "[LAN86] UDP::Read recvfrom failed len=%d err=%d\n", len, m_lastError);
+        /*         fprintf(stderr, "[LAN86] UDP::Read recvfrom failed len=%d err=%d\n", len, m_lastError); */
 #ifdef DEBUG_LOGGING
 				static Int errCount = 0;
 #endif
