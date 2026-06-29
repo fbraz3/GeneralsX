@@ -48,12 +48,12 @@ These are the authoritative sources for understanding original game behavior and
 
 References under the `references/` folder:
 
- **`references/jmarshall-win64-modern/`** - Windows 64-bit modernization with comprehensive fixes - Game base (Generals) Only
+ **`references/old-refs/jmarshall-win64-modern/`** - Windows 64-bit modernization with comprehensive fixes - Game base (Generals) Only
   - **Primary use**: Cross-platform compatibility solutions, INI parser fixes, memory management
   - **Key success**: Provided the breakthrough End token parsing solution (Phase 22.7-22.8)
   - **Coverage**: Full Windows 64-bit port with modern toolchain compatibility
 
-- **`references/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration
+- **`references/old-refs/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration
   - **Primary use**: Graphics layer solutions (DirectX→Vulkan via DXVK), Linux compatibility
   - **Focus areas**: OpenGL/Vulkan rendering, graphics pipeline modernization
   - **Coverage**: Complete Linux port with advanced graphics compatibility
