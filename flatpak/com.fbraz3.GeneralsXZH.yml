@@ -110,18 +110,17 @@ modules:
 
         # SagePatch (optional QoL: F11 screenshot, Scroll Lock cursor lock,
         # Ctrl+PgUp/Dn brightness, Ctrl+1..5 window snap). Loaded via LD_PRELOAD
-        # only if the .so is present in /app/lib. Default DXVK_HUD to "fps" when
-        # SagePatch is active so casual users see a frame counter.
+        # only if the .so is present in /app/lib.
         if [[ -f /app/lib/libsage_patch.so && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
           if [[ -n "${LD_PRELOAD:-}" ]]; then
             export LD_PRELOAD="/app/lib/libsage_patch.so:${LD_PRELOAD}"
           else
             export LD_PRELOAD="/app/lib/libsage_patch.so"
           fi
-          export DXVK_HUD="${DXVK_HUD:-fps}"
-        else
-          export DXVK_HUD="${DXVK_HUD:-0}"
         fi
+        
+        # DXVK HUD is disabled by default because Generals has a native FPS counter.
+        export DXVK_HUD="${DXVK_HUD:-0}"
 
         # Keep Vulkan ICD selection to the runtime/driver defaults unless user explicitly overrides.
 

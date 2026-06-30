@@ -287,12 +287,12 @@ jobs:
             ls -la "$MAPS_DIR/"
           fi
 
-          # Install platform-specific replays
-          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/linux_*.rep 2>/dev/null | wc -l)
+          # Install all replays
+          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/*.rep 2>/dev/null | wc -l)
           if [ "$REPLAY_COUNT" -eq 0 ]; then
-            echo "WARNING: No linux_*.rep files found in replay repo"
+            echo "WARNING: No .rep files found in replay repo"
           else
-            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/linux_*.rep "$REPLAYS_DIR/"
+            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/*.rep "$REPLAYS_DIR/"
             echo "Replays installed ($REPLAY_COUNT files):"
             ls -la "$REPLAYS_DIR/"
           fi
@@ -322,12 +322,12 @@ jobs:
             ls -la "$MAPS_DIR/"
           fi
 
-          # Install platform-specific replays
-          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/macos_*.rep 2>/dev/null | wc -l)
+          # Install all replays
+          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/*.rep 2>/dev/null | wc -l)
           if [ "$REPLAY_COUNT" -eq 0 ]; then
-            echo "WARNING: No macos_*.rep files found in replay repo"
+            echo "WARNING: No .rep files found in replay repo"
           else
-            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/macos_*.rep "$REPLAYS_DIR/"
+            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/*.rep "$REPLAYS_DIR/"
             echo "Replays installed ($REPLAY_COUNT files):"
             ls -la "$REPLAYS_DIR/"
           fi

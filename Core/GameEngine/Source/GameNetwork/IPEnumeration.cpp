@@ -116,6 +116,13 @@ EnumeratedIP * IPEnumeration::getAddresses()
 			// GeneralsX @bugfix BenderAI 31/03/2026 Use ntohl to convert from network byte order before extracting octets;
 			// reading s_addr byte-by-byte on little-endian platforms reverses the IPv4 octets.
 			const UnsignedInt hostAddr = ntohl(addr->sin_addr.s_addr);
+			// GeneralsX @build GitHubCopilot 11/04/2026 Log POSIX interface candidates used for LAN IP selection.
+			DEBUG_LOG(("IPEnumeration::getAddresses - interface=%s flags=0x%X ip=%d.%d.%d.%d",
+				(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags,
+				PRINTF_IP_AS_4_INTS(hostAddr)));
+			/* 			fprintf(stderr, "[LAN86] iface=%s flags=0x%X ip=%d.%d.%d.%d\n",
+				(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags,
+				PRINTF_IP_AS_4_INTS(hostAddr)); */
 			addNewIP(
 				(UnsignedByte)((hostAddr >> 24) & 0xFF),
 				(UnsignedByte)((hostAddr >> 16) & 0xFF),
@@ -181,6 +188,7 @@ void IPEnumeration::addNewIP( UnsignedByte a, UnsignedByte b, UnsignedByte c, Un
 	{
 		if (current->getIP() == ip)
 		{
+			/* 			fprintf(stderr, "[LAN86] addNewIP duplicate-skip %d.%d.%d.%d\n", (int)a, (int)b, (int)c, (int)d); */
 			return;
 		}
 	}
@@ -194,6 +202,7 @@ void IPEnumeration::addNewIP( UnsignedByte a, UnsignedByte b, UnsignedByte c, Un
 	newIP->setIP(ip);
 
 	DEBUG_LOG(("IP: 0x%8.8X (%s)", ip, str.str()));
+	/* 	fprintf(stderr, "[LAN86] addNewIP accepted %s numeric=0x%8.8X\n", str.str(), ip); */
 
 	// Add the IP to the list in ascending order
 	if (!m_IPlist)

@@ -2,7 +2,7 @@
 
 **Status**: Complete  
 **Goal**: Diagnose magenta screen (0xFF00FF) on main menu — menu text renders but no 3D terrain/objects appear  
-**Scope**: 8 investigation areas comparing `references/fighter19-dxvk-port/` (working Linux build) with our codebase  
+**Scope**: 8 investigation areas comparing `references/old-refs/fighter19-dxvk-port/` (working Linux build) with our codebase  
 
 ---
 

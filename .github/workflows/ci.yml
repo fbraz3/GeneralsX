@@ -138,4 +138,3 @@ jobs:
           needs.replay-test-linux.result == 'failure' ||
           needs.replay-test-macos.result == 'failure'
         run: exit 1
-
