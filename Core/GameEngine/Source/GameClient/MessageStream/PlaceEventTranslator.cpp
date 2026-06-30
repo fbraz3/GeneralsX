@@ -339,7 +339,7 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 				Int x, y;
 				x = mouse.x - start.x;
 				y = mouse.y - start.y;
-				if( sqrt( (x * x) + (y * y) ) >= PLACEMENT_DRAG_THRESHOLD_DIST )
+				if( WWMath::SqrtOrigin( (x * x) + (y * y) ) >= PLACEMENT_DRAG_THRESHOLD_DIST )
 				{
 
 					TheInGameUI->setPlacementEnd(&mouse);

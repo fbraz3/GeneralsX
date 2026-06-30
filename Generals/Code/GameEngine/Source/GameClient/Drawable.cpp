@@ -1433,7 +1433,7 @@ void Drawable::calcPhysicsXformHoverOrWings( const Locomotor *locomotor, Physics
 			const Real TINY_DZ = 0.001f;
 			if (fabs(vel->z) > TINY_DZ)
 			{
-				Real pitch = atan2(vel->z, sqrt(sqr(vel->x)+sqr(vel->y)));
+				Real pitch = WWMath::Atan2Origin(vel->z, WWMath::SqrtOrigin(sqr(vel->x)+sqr(vel->y)));
 				m_locoInfo->m_pitch -= Z_VEL_PITCH_COEFF * pitch;
 			}
 		}
@@ -1544,7 +1544,7 @@ void Drawable::calcPhysicsXformTreads( const Locomotor *locomotor, PhysicsXformI
 		maxCenterDist *= OVERLAP_SHRINK_FACTOR;
 		if (centerDistSqr < sqr(maxCenterDist))
 		{
-			Real centerDist = sqrtf(centerDistSqr);
+			Real centerDist = WWMath::SqrtfOrigin(centerDistSqr);
 			Real amount = 1.0f - centerDist/maxCenterDist;
 			if (amount < 0.0f)
 				amount = 0.0f;
