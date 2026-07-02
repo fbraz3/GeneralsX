@@ -1052,7 +1052,10 @@ Bool MiniAudioManager::isPlayingLowerPriority(AudioEventRTS *event) const
 	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
 		if (!(*it)->m_audioEventRTS) continue;
 		const AudioEventInfo *info = (*it)->m_audioEventRTS->getAudioEventInfo();
-		if (info && info->m_priority < priority) return true;
+		if (info && info->m_priority < priority) {
+			event->setHandleToKill((*it)->m_audioEventRTS->getPlayingHandle());
+			return true;
+		}
 	}
 	return false;
 }
@@ -1573,15 +1576,25 @@ UnsignedInt MiniAudioManager::getNumAvailable2DSamples() const
 {
 	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
 	UnsignedInt max2D = getAudioSettings()->m_sampleCount2D;
-	UnsignedInt playing = (UnsignedInt)m_playingSounds.size();
+	UnsignedInt playing = 0;
+	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
+		if ((*it) && (*it)->m_type == PAT_Sample) {
+			playing++;
+		}
+	}
 	return (max2D > playing) ? (max2D - playing) : 0;
 }
 
 //-------------------------------------------------------------------------------------------------
 UnsignedInt MiniAudioManager::getNumAvailable3DSamples() const
 {
-	// GeneralsX @bugfix Mr. Meeseeks 27/06/2026 Fix available samples calculation to prevent voicelines culling
+	// GeneralsX @bugfix Mr. Meeseeks 01/07/2026 Fix available samples calculation to only count 3D samples
 	UnsignedInt max3D = getAudioSettings()->m_sampleCount3D;
-	UnsignedInt playing = (UnsignedInt)m_playingSounds.size();
+	UnsignedInt playing = 0;
+	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
+		if ((*it) && (*it)->m_type == PAT_3DSample) {
+			playing++;
+		}
+	}
 	return (max3D > playing) ? (max3D - playing) : 0;
 }
