@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
 
 		// Create SDL3 window with Vulkan support
 		fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
-		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
+		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
 		TheSDL3Window = SDL_CreateWindow(
 			"Command & Conquer Generals: Zero Hour",
 			1024, 768,  // Default resolution
