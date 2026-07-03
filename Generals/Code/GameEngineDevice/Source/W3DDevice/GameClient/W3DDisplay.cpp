@@ -516,8 +516,9 @@ static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, 
 		SDL_DisplayID displayId = SDL_GetDisplayForWindow(TheSDL3Window);
 		const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayId);
 		if (mode) {
-			if (!SDL_SetWindowFullscreenMode(TheSDL3Window, mode)) {
-				fprintf(stderr, "WARNING: SDL_SetWindowFullscreenMode(native) failed: %s\n", SDL_GetError());
+			// GeneralsX @bugfix MrMeeseeks 02/07/2026 Pass nullptr to request Desktop Fullscreen (Spaces) instead of Exclusive mode.
+			if (!SDL_SetWindowFullscreenMode(TheSDL3Window, nullptr)) {
+				fprintf(stderr, "WARNING: SDL_SetWindowFullscreenMode(nullptr) failed: %s\n", SDL_GetError());
 			}
 		}
 		else {
