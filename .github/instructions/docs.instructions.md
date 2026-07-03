@@ -10,18 +10,18 @@ applyTo: '**/*.md'
 - Don't add documentation files directly in the root `docs/` folder
 - The root folder `/` should only contain project-level files (README.md, LICENSE, etc.)
 - **Active Work**: Place in `docs/WORKDIR/` with appropriate subdirectory (phases, planning, reports, support, audit, lessons)
-- **Development Diary**: Update `docs/DEV_BLOG/YYYY-MM-DIARY.md` with daily entries
+- **Worklog**: Update `docs/WORKLOG/YYYY-MM-DIARY.md` with daily entries
   - Create new file each month (YYYY-MM-DIARY.md)
   - Order entries newest to oldest (recent at top after Overview section)
   - Keep entries informal and concise
 - **Reference & Historical**: Place in `docs/ETC/` (older reference materials, archived analysis)
 - **Phase Checklist Updates**: At the end of each session working on a phase, update the corresponding `docs/WORKDIR/phases/PHASEXX_*.md` file to mark completed tasks with `[x]`
 
-**Key Rule**: DEV_BLOG is for diary only. Active work goes to WORKDIR. Reference/historical materials go to ETC.
+**Key Rule**: WORKLOG is for the automated diary only. Active work goes to WORKDIR. Reference/historical materials go to ETC.
 
 ## Documentation Updates
 
-- **Dev diary** (`docs/DEV_BLOG/YYYY-MM-DIARY.md`): Informal session notes, newest first
+- **Worklog** (`docs/WORKLOG/YYYY-MM-DIARY.md`): Informal session notes, newest first
 - **Session reports** (`docs/WORKDIR/reports/PHASEXX_SESSIONX_*.md`): Formal summary after significant progress
 - **Phase planning** (`docs/WORKDIR/phases/PHASEXX_*.md`): Update `[x]` checklist at session end
 - **Technical discoveries**: Place in `docs/WORKDIR/support/` (e.g., `CRITICAL_VFS_DISCOVERY.md`)
@@ -96,8 +96,8 @@ applyTo: '**/*.md'
 **Main File**: `LESSONS_LEARNED.md` - Central repository for all lessons
 **Content**: Phase-specific learnings, technical insights, process improvements
 
-### `docs/DEV_BLOG/` - Development Diary ONLY
-**Purpose**: Chronological development diary entries
+### `docs/WORKLOG/` - Worklog ONLY
+**Purpose**: Chronological worklog entries
 - YYYY-MM-DIARY.md - Monthly diary (ONE file per month)
   - YYYY is the current year
   - MM is the current month
@@ -105,7 +105,7 @@ applyTo: '**/*.md'
   - Entries newest to oldest (most recent at top, after Overview)
   - Informal, daily/session notes
   - Short summaries of work done
-- `docs/DEV_BLOG/README.md` - Index of available diaries and overview of diary purpose with details on structure and usage
+- `docs/WORKLOG/README.md` - Index of available diaries and overview of diary purpose with details on structure and usage
 
 **Only this goes here**: Diary entries and README
 
