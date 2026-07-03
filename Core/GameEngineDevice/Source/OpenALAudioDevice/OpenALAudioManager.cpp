@@ -2136,7 +2136,7 @@ Bool OpenALAudioManager::isPlayingLowerPriority(AudioEventRTS* event) const
 			if (!(*it)->m_audioEventRTS) continue; // GeneralsX @bugfix BenderAI 11/03/2026
 			const AudioEventInfo* info = (*it)->m_audioEventRTS->getAudioEventInfo();
 			if (info && info->m_priority < priority) {
-				//event->setHandleToKill((*it)->m_audioEventRTS->getPlayingHandle());
+				event->setHandleToKill((*it)->m_audioEventRTS->getPlayingHandle());
 				return true;
 			}
 		}
@@ -2147,7 +2147,7 @@ Bool OpenALAudioManager::isPlayingLowerPriority(AudioEventRTS* event) const
 			if (!(*it)->m_audioEventRTS) continue; // GeneralsX @bugfix BenderAI 11/03/2026
 			const AudioEventInfo* info = (*it)->m_audioEventRTS->getAudioEventInfo();
 			if (info && info->m_priority < priority) {
-				//event->setHandleToKill((*it)->m_audioEventRTS->getPlayingHandle());
+				event->setHandleToKill((*it)->m_audioEventRTS->getPlayingHandle());
 				return true;
 			}
 		}

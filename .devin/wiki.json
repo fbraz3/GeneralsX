@@ -13,7 +13,7 @@
       "author": "GeneralsX Team"
     },
     {
-      "content": "Platform release status: Linux (active release — DXVK graphics working, OpenAL audio working), macOS ARM64 (active release — DXVK + MoltenVK + SDL3 + OpenAL), Windows MinGW-w64 (backlog — tracked in issue #29). Documentation structure: docs/DEV_BLOG/ (monthly diaries, newest-first), docs/WORKDIR/planning/ (strategic documents), docs/WORKDIR/lessons/ (lessons learned), docs/WORKDIR/reports/ (session reports), docs/WORKDIR/support/ (technical discoveries), docs/WORKDIR/audit/ (audit records). Every user-facing code change needs a GeneralsX annotation comment: // GeneralsX @keyword author DD/MM/YYYY Description.",
+      "content": "Platform release status: Linux (active release — DXVK graphics working, OpenAL audio working), macOS ARM64 (active release — DXVK + MoltenVK + SDL3 + OpenAL), Windows MinGW-w64 (backlog — tracked in issue #29). Documentation structure: docs/WORKLOG/ (monthly diaries, newest-first), docs/WORKDIR/planning/ (strategic documents), docs/WORKDIR/lessons/ (lessons learned), docs/WORKDIR/reports/ (session reports), docs/WORKDIR/support/ (technical discoveries), docs/WORKDIR/audit/ (audit records). Every user-facing code change needs a GeneralsX annotation comment: // GeneralsX @keyword author DD/MM/YYYY Description.",
       "author": "GeneralsX Team"
     },
     {
@@ -114,12 +114,12 @@
     },
     {
       "title": "Development Workflow",
-      "purpose": "Document the day-to-day development process: upstream merge from TheSuperHackers, code annotation convention (// GeneralsX @keyword author DD/MM/YYYY Description), documentation update requirement before commits (DEV_BLOG diary), lessons-learned workflow in docs/WORKDIR/lessons/, and VS Code tasks.",
+      "purpose": "Document the day-to-day development process: upstream merge from TheSuperHackers, code annotation convention (// GeneralsX @keyword author DD/MM/YYYY Description), documentation update requirement before commits (WORKLOG diary), lessons-learned workflow in docs/WORKDIR/lessons/, and VS Code tasks.",
       "parent": null
     },
     {
       "title": "Documentation Structure",
-      "purpose": "Document docs/ layout: DEV_BLOG/ (monthly diaries, newest-first format), WORKDIR/planning/ (strategic documents and roadmaps), WORKDIR/reports/ (session reports), WORKDIR/support/ (technical discoveries), WORKDIR/audit/ (audit and verification), WORKDIR/lessons/ (lessons learned for future sessions), ETC/ (reference/historical materials), KNOWN_ISSUES/. Active work goes to WORKDIR/; diary-only entries go to DEV_BLOG/; issues are tracked in GitHub, not markdown files.",
+      "purpose": "Document docs/ layout: WORKLOG/ (monthly diaries, newest-first format), WORKDIR/planning/ (strategic documents and roadmaps), WORKDIR/reports/ (session reports), WORKDIR/support/ (technical discoveries), WORKDIR/audit/ (audit and verification), WORKDIR/lessons/ (lessons learned for future sessions), ETC/ (reference/historical materials), KNOWN_ISSUES/. Active work goes to WORKDIR/; diary-only entries go to WORKLOG/; issues are tracked in GitHub, not markdown files.",
       "parent": "Development Workflow"
     }
   ]

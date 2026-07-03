@@ -40,7 +40,7 @@ Must be one of:
 - Name of affected code, file, directory, or logical component
 - Can span multiple scopes if needed (omit scope in that case)
 - Use lowercase with dashes (kebab-case)
-- Examples: `graphics`, `audio-miniaudio`, `cmake-presets`, `dxvk-macos`
+- Examples: `graphics`, `audio-openal`, `cmake-presets`, `dxvk-macos`
 
 ### Description/Subject
 
