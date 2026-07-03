@@ -6,8 +6,6 @@
 
 GeneralsX delivers **Linux and macOS** builds of **Command & Conquer: Generals and Zero Hour** through a single modern codebase.
 
-> Note: This project is not related to any mods with similar names and does not aim to extend or modify gameplay.
-
 ## How to download
 
 For **official releases and instructions**, visit:
@@ -17,6 +15,19 @@ For **official releases and instructions**, visit:
 * [Fighter19 Releases](https://github.com/Fighter19/CnC_Generals_Zero_Hour/releases) - Original Linux-focused Zero Hour reference releases
 
 > See our [Tutorial Docs](docs/HOWTO/README.md) for step-by-step guides.
+
+## 💖 Support This Project
+
+The optional sponsorship link exists to help cover the maintenance costs specific to GeneralsX: Linux/macOS integration, project-specific adaptation work, testing infrastructure, packaging, tooling, release work, and documentation.
+
+- **[Sponsor on GitHub](https://github.com/sponsors/fbraz3)**
+
+Your support specifically helps with:
+
+- **Integration, Adaptation and Enhancements** - Merging reference work, resolving incompatibilities, and carrying project-specific fixes needed for supported platforms
+- **Testing Infrastructure** - Validation across Linux and macOS, plus exploratory work needed to keep future platform paths viable
+- **Packaging & Releases** - AppImage, Flatpak, macOS bundles, CI pipeline
+- **Documentation & Maintenance** - Build guides, installation instructions, developer resources, and ongoing repository upkeep
 
 ## Where does the GeneralsX name come from?
 
@@ -32,13 +43,11 @@ GeneralsX exists to turn upstream preservation and porting work into a practical
 Its main goals are:
 
 - Preserve retail gameplay behavior while modernizing the platform layer.
-- Maintain a **single codebase** with Linux and macOS as the active targets, while keeping a future Windows path possible.
+- Maintain a **single codebase** with Linux and macOS as the active targets. Both Zero Hour and the Generals base game are stable and functional; bugfixes and improvements must be applied to both, while keeping a future Windows path possible.
 - Carry the adaptation work needed to make the stack function in practice across supported platforms, including repository-specific fixes when upstream constraints leave gaps.
 - Deliver reproducible builds, packaging, and release workflows that make the port usable beyond local development setups.
 - Replace the original Windows-only DirectX 8 / Miles stack with portable open-source equivalents where appropriate.
 - Keep upstream lineage clear by distinguishing foundational work from the integration, packaging, and platform support specific to GeneralsX.
-
-To stay up to date on project status, visit our [Dev Blog](docs/DEV_BLOG/).
 
 ## How does this project relate to other community projects?
 
@@ -51,24 +60,6 @@ GeneralsX builds on complementary community efforts with different roles.
 While GeneralsX builds on important community work, this project also includes substantial original effort in integration, adaptation, platform-specific fixes, enhancements, testing, packaging, and ongoing maintenance.
 
 Because these projects serve different but complementary goals, not every change belongs in the same place. Improvements aligned with upstream stability or core maintenance priorities should be contributed back to TheSuperHackers, while GeneralsX keeps changes specific to cross-platform delivery, packaging, and platform integration.
-
-## 💖 Support This Project
-
-The optional sponsorship link exists to help cover the maintenance costs specific to GeneralsX: Linux/macOS integration, project-specific adaptation work, testing infrastructure, packaging, tooling, release work, and documentation.
-
-- **[Sponsor on GitHub](https://github.com/sponsors/fbraz3)**
-
-Your support specifically helps with:
-
-- **Integration, Adaptation and Enhancements** - Merging reference work, resolving incompatibilities, and carrying project-specific fixes needed for supported platforms
-- **Testing Infrastructure** - Validation across Linux and macOS, plus exploratory work needed to keep future platform paths viable
-- **Packaging & Releases** - AppImage, Flatpak, macOS bundles, CI pipeline
-- **Documentation & Maintenance** - Build guides, installation instructions, developer resources, and ongoing repository upkeep
-
-Please also consider supporting the upstream community efforts that made this possible:
-
-- [TheSuperHackers/GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode)
-- [Fighter19/CnC_Generals_Zero_Hour](https://github.com/Fighter19/CnC_Generals_Zero_Hour)
 
 ##  Building from Source
 
@@ -85,8 +76,7 @@ For documented limitations and known bugs, check the [issues page](https://githu
 
 1. Check [current issues](https://github.com/fbraz3/GeneralsX/issues) and [GitHub discussions](https://github.com/fbraz3/GeneralsX/discussions)
 2. Read platform-specific build guides ([Windows](docs/ETC/), [macOS](docs/BUILD/MACOS.md), [Linux](docs/BUILD/LINUX.md))
-3. Follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
-4. Submit issues or pull requests with detailed information
+3. Submit issues or pull requests with detailed information
 
 ## 🙏 Special Thanks
 

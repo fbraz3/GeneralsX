@@ -1,7 +1,7 @@
 # GeneralsX: Instructions for AI Coding Agents
 
 ## What I Am
-GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + MiniAudio + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
+GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
 ## Key Entry Points
 - `GeneralsMD/Code/Main/WinMain.cpp`
@@ -18,7 +18,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 |---------|---------------------|------------------------------|
 | Graphics| DXVK                | DirectX 8 (d3d8.dll)         |
 | Windowing| SDL3              | Win32 API                    |
-| Audio   | MiniAudio           | Miles Sound System           |
+| Audio   | OpenAL (MiniAudio WIP)| Miles Sound System           |
 | Video   | FFmpeg              | Bink Video (intro/videos)    |
 | Platform| SDL3 + libc         | Win32 POSIX calls            |
 
@@ -28,13 +28,14 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 1. **Single codebase** – Linux and macOS build from same source
 2. **SDL3 everywhere** – No native platform calls in game code
 3. **DXVK everywhere** – DX8 → Vulkan translation on all platforms
-4. **MiniAudio everywhere** – Cross-platform audio stack
+4. **OpenAL default (MiniAudio WIP)** – Cross-platform audio stack. Audio fixes must prioritize OpenAL but be backported to MiniAudio.
 5. **64-bit native** – x86_64 only (32-bit via VC6 upstream)
 6. **Retail compatibility** – Original replays and mods must work
 7. **Determinism** – Rendering/audio changes must not affect gameplay logic
 8. **No band-aids** – Fix underlying issues, not symptoms
-9. **Update dev blog** – Update `docs/DEV_BLOG/YYYY-MM-DIARY.md` before committing (see [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) for details)
+9. **Update worklog** – Update `docs/WORKLOG/YYYY-MM-DIARY.md` before committing (see [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) for details)
 10. **Reference repos** – Study patterns, don't copy-paste
+11. **Backport to Generals** – Bugfixes and improvements must be backported to the Generals base game.
 
 ## Reference Repositories
 - **fighter19-dxvk-port** – Primary graphics/platform reference (DXVK + SDL3 on Linux)
@@ -104,11 +105,11 @@ Docker is the recommended build method on Linux hosts to ensure all toolchain re
 
 ## Target Priority
 1. **GeneralsXZH** (Zero Hour) – Primary target, most feature-complete
-2. **GeneralsX** (Base game) – Backport only when changes are clearly shared
+2. **GeneralsX** (Base game) – Stable and functional. Bugfixes and improvements must be backported.
 
 ## Backport Rules
 **Backport to Generals when:**
-- Change is platform/backend code (SDL3, DXVK, MiniAudio)
+- Change is platform/backend code (SDL3, DXVK, OpenAL/MiniAudio) or a general bugfix/improvement
 - Change is in shared Core libraries
 - Change is low-risk and clearly applicable
 
@@ -180,7 +181,7 @@ git merge thesuperhackers/main
 - Primary labels: `[Linux]`, `[macOS]`, `[Linux] Pipeline: Build + Deploy + Run ZH`
 
 ## Docs Workflow
-1. Monthly diary in `docs/DEV_BLOG/YYYY-MM-DIARY.md` (YYYY=year, MM=month only, e.g., `2026-05-DIARY.md`)
+1. Monthly diary in `docs/WORKLOG/YYYY-MM-DIARY.md` (YYYY=year, MM=month only, e.g., `2026-05-DIARY.md`)
 2. Active work notes in `docs/WORKDIR/` (phases/planning/reports/support/audit/lessons)
 3. Step-by-step tutorials in `docs/HOWTO/` (user-facing guides for common tasks)
 4. Never drop working docs directly under `docs/` root
