@@ -63,6 +63,8 @@
 
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/TerrainLogic.h"
+// GeneralsX @bugfix fbraz3 24/06/2026 Save and restore FPU precision mode when calling audio manager entrypoints.
+#include "GameLogic/FPUControl.h"
 
 #include "Common/file.h"
 
@@ -126,6 +128,7 @@ OpenALAudioManager::~OpenALAudioManager()
 #if defined(_DEBUG) || defined(_INTERNAL)
 AudioHandle OpenALAudioManager::addAudioEvent(const AudioEventRTS* eventToAdd)
 {
+	ScopedFPUGuard fpuGuard;
 	if (TheGlobalData->m_preloadReport) {
 		if (!eventToAdd->getEventName().isEmpty()) {
 			m_allEventsLoaded.insert(eventToAdd->getEventName());
@@ -490,6 +493,7 @@ ALenum OpenALAudioManager::getALFormat(uint8_t channels, uint8_t bitsPerSample)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::init()
 {
+	ScopedFPUGuard fpuGuard;
 	AudioManager::init();
 #ifdef INTENSE_DEBUG
 	DEBUG_LOG(("Sound has temporarily been disabled in debug builds only. jkmcd\n"));
@@ -528,6 +532,7 @@ void OpenALAudioManager::reset()
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::update()
 {
+	ScopedFPUGuard fpuGuard;
 	AudioManager::update();
 	setDeviceListenerPosition();
 	processRequestList();

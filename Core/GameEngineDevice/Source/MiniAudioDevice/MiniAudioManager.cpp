@@ -59,6 +59,8 @@
 
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/TerrainLogic.h"
+// GeneralsX @bugfix fbraz3 24/06/2026 Save and restore FPU precision mode when calling audio manager entrypoints.
+#include "GameLogic/FPUControl.h"
 
 #include "Common/file.h"
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
@@ -108,6 +110,7 @@ MiniAudioManager::~MiniAudioManager()
 #if defined(_DEBUG) || defined(_INTERNAL)
 AudioHandle MiniAudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 {
+	ScopedFPUGuard fpuGuard;
 	if (TheGlobalData->m_preloadReport) {
 		if (!eventToAdd->getEventName().isEmpty()) {
 			m_allEventsLoaded.insert(eventToAdd->getEventName());
@@ -176,6 +179,7 @@ void MiniAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FILE
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::init()
 {
+	ScopedFPUGuard fpuGuard;
 	AudioManager::init();
 #ifdef INTENSE_DEBUG
 	return;
@@ -204,6 +208,7 @@ void MiniAudioManager::reset()
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::update()
 {
+	ScopedFPUGuard fpuGuard;
 	AudioManager::update();
 	setDeviceListenerPosition();
 	processRequestList();
