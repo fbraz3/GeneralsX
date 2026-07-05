@@ -1321,6 +1321,11 @@ void TextureLoadTaskClass::Apply_Missing_Texture()
 		return;
 	}
 
+#ifndef _WIN32
+	// DIAG: log which textures fall back to the magenta placeholder
+	fprintf(stderr, "[TEX_MISSING] '%s'\n", static_cast<const char*>(Texture->Get_Full_Path()));
+#endif
+
 	D3DTexture = MissingTexture::_Get_Missing_Texture();
 	if (D3DTexture == nullptr)
 	{
