@@ -156,6 +156,10 @@ public:
 	*/
 	PlayerMaskType getPlayersWithRelationship( Int srcPlayerIndex, UnsignedInt allowedRelationships );
 
+	void resolveSlotIndices();
+	void setSlotIndex(Int playerIndex, Byte slotIndex);
+	Byte getSlotIndex(Int playerIndex) const;
+
 protected:
 
 	// snapshot methods
@@ -168,6 +172,7 @@ private:
 	Player				*m_local;
 	Int						m_playerCount;
 	Player				*m_players[MAX_PLAYER_COUNT];
+	Byte					m_slotIndices[MAX_PLAYER_COUNT];
 
 };
 
