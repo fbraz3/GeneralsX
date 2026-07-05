@@ -2730,7 +2730,21 @@ void GameLogic::processCommandList( CommandList *list )
 				{
 					// TheSuperHackers @bugfix Caball009 14/06/2026 Check if player is still connected,
 					// to avoid spurious mismatches at low CRC intervals, e.g. every frame.
-					if (!TheNetwork->isPlayerConnected(it->first))
+					// GeneralsX @bugfix felipebraz 05/07/2026 Map PlayerIndex to SlotIndex since isPlayerConnected expects a SlotIndex.
+					Player *player = ThePlayerList->getNthPlayer(it->first);
+					Int slotIndex = -1;
+					if (player)
+					{
+						for (Int i=0; i<MAX_SLOTS; ++i)
+						{
+							if (player->getPlayerType() == PLAYER_HUMAN && TheNetwork->getPlayerName(i) == player->getPlayerDisplayName())
+							{
+								slotIndex = i;
+								break;
+							}
+						}
+					}
+					if (slotIndex >= 0 && !TheNetwork->isPlayerConnected(slotIndex))
 						continue;
 
 					const UnsignedInt crc = it->second;
