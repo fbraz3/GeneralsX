@@ -60,7 +60,6 @@
 #include "GameLogic/SidesList.h"
 #include "GameNetwork/NetworkDefs.h"
 #include "GameNetwork/GameInfo.h"
-#include "GameNetwork/GameSlot.h"
 
 
 //-----------------------------------------------------------------------------
