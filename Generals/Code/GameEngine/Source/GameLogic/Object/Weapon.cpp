@@ -870,7 +870,7 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		}
 		else
 		{
-			targetPos.set( victimPos );
+			targetPos.set( *victimPos );
 		}
 		Real reAngle = getWeaponRecoilAmount();
 		Real reDir = reAngle != 0.0f ? (WWMath::Atan2Origin(victimPos->y - sourcePos->y, victimPos->x - sourcePos->x)) : 0.0f;

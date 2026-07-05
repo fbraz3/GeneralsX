@@ -296,7 +296,54 @@ struct Coord2D
 
 	Real toAngle() const;  ///< turn 2D vector into angle (where angle 0 is down the +x axis)
 
+	void add( const Coord2D &a )
+	{
+		x += a.x;
+		y += a.y;
+	}
+
+	void sub( const Coord2D &a )
+	{
+		x -= a.x;
+		y -= a.y;
+	}
+
+	void operator+=( const Coord2D &a )
+	{
+		add(a);
+	}
+
+	void operator-=( const Coord2D &a )
+	{
+		sub(a);
+	}
+
+	void set( const Coord2D &a )
+	{
+		x = a.x;
+		y = a.y;
+	}
+
+	void set( Real ax, Real ay )
+	{
+		x = ax;
+		y = ay;
+	}
 };
+
+inline Coord2D operator+( const Coord2D &a, const Coord2D &b )
+{
+	Coord2D c = a;
+	c.add(b);
+	return c;
+}
+
+inline Coord2D operator-( const Coord2D &a, const Coord2D &b )
+{
+	Coord2D c = a;
+	c.sub(b);
+	return c;
+}
 
 inline Real Coord2D::toAngle() const
 {
@@ -374,7 +421,56 @@ struct ICoord2D
 	}
 
 	Int length() const { return (Int)Sqrt( (double)(x*x + y*y) ); }
+	Int lengthSqr() const { return x*x + y*y; }
+
+	void add( const ICoord2D &a )
+	{
+		x += a.x;
+		y += a.y;
+	}
+
+	void sub( const ICoord2D &a )
+	{
+		x -= a.x;
+		y -= a.y;
+	}
+
+	void operator+=( const ICoord2D &a )
+	{
+		add(a);
+	}
+
+	void operator-=( const ICoord2D &a )
+	{
+		sub(a);
+	}
+
+	void set( const ICoord2D &a )
+	{
+		x = a.x;
+		y = a.y;
+	}
+
+	void set( Int ax, Int ay )
+	{
+		x = ax;
+		y = ay;
+	}
 };
+
+inline ICoord2D operator+( const ICoord2D &a, const ICoord2D &b )
+{
+	ICoord2D c = a;
+	c.add(b);
+	return c;
+}
+
+inline ICoord2D operator-( const ICoord2D &a, const ICoord2D &b )
+{
+	ICoord2D c = a;
+	c.sub(b);
+	return c;
+}
 
 struct Region2D
 {
@@ -436,11 +532,11 @@ struct Coord3D
 		}
 	}
 
-	static void crossProduct( const Coord3D *a, const Coord3D *b, Coord3D *r )
+	static void crossProduct( const Coord3D &a, const Coord3D &b, Coord3D &r )
 	{
-		r->x = (a->y * b->z - a->z * b->y);
-		r->y = (a->z * b->x - a->x * b->z);
-		r->z = (a->x * b->y - a->y * b->x);
+		r.x = (a.y * b.z - a.z * b.y);
+		r.y = (a.z * b.x - a.x * b.z);
+		r.z = (a.x * b.y - a.y * b.x);
 	}
 
 	void zero()
@@ -455,25 +551,35 @@ struct Coord3D
 		return x == value && y == value && z == value;
 	}
 
-	void add( const Coord3D *a )
+	void add( const Coord3D &a )
 	{
-		x += a->x;
-		y += a->y;
-		z += a->z;
+		x += a.x;
+		y += a.y;
+		z += a.z;
 	}
 
-	void sub( const Coord3D *a )
+	void sub( const Coord3D &a )
 	{
-		x -= a->x;
-		y -= a->y;
-		z -= a->z;
+		x -= a.x;
+		y -= a.y;
+		z -= a.z;
 	}
 
-	void set( const Coord3D *a )
+	void operator+=( const Coord3D &a )
 	{
-		x = a->x;
-		y = a->y;
-		z = a->z;
+		add(a);
+	}
+
+	void operator-=( const Coord3D &a )
+	{
+		sub(a);
+	}
+
+	void set( const Coord3D &a )
+	{
+		x = a.x;
+		y = a.y;
+		z = a.z;
 	}
 
 	void set( Real ax, Real ay, Real az )
@@ -505,11 +611,26 @@ struct Coord3D
 	}
 };
 
+inline Coord3D operator+( const Coord3D &a, const Coord3D &b )
+{
+	Coord3D c = a;
+	c.add(b);
+	return c;
+}
+
+inline Coord3D operator-( const Coord3D &a, const Coord3D &b )
+{
+	Coord3D c = a;
+	c.sub(b);
+	return c;
+}
+
 struct ICoord3D
 {
 	Int x, y, z;
 
 	Int length() const { return (Int)Sqrt( (double)(x*x + y*y + z*z) ); }
+	Int lengthSqr() const { return x*x + y*y + z*z; }
 
 	void zero()
 	{
@@ -522,7 +643,59 @@ struct ICoord3D
 	{
 		return x == value && y == value && z == value;
 	}
+
+	void add( const ICoord3D &a )
+	{
+		x += a.x;
+		y += a.y;
+		z += a.z;
+	}
+
+	void sub( const ICoord3D &a )
+	{
+		x -= a.x;
+		y -= a.y;
+		z -= a.z;
+	}
+
+	void operator+=( const ICoord3D &a )
+	{
+		add(a);
+	}
+
+	void operator-=( const ICoord3D &a )
+	{
+		sub(a);
+	}
+
+	void set( const ICoord3D &a )
+	{
+		x = a.x;
+		y = a.y;
+		z = a.z;
+	}
+
+	void set( Int ax, Int ay, Int az )
+	{
+		x = ax;
+		y = ay;
+		z = az;
+	}
 };
+
+inline ICoord3D operator+( const ICoord3D &a, const ICoord3D &b )
+{
+	ICoord3D c = a;
+	c.add(b);
+	return c;
+}
+
+inline ICoord3D operator-( const ICoord3D &a, const ICoord3D &b )
+{
+	ICoord3D c = a;
+	c.sub(b);
+	return c;
+}
 
 // For alternative see AABoxClass
 struct Region3D
@@ -590,17 +763,17 @@ struct Region3D
 		}
 	}
 
-	Bool isInRegionNoZ( const Coord3D *query ) const
+	Bool isInRegionNoZ( const Coord3D &query ) const
 	{
-		return (lo.x < query->x) && (query->x < hi.x) &&
-					 (lo.y < query->y) && (query->y < hi.y);
+		return (lo.x < query.x) && (query.x < hi.x) &&
+					 (lo.y < query.y) && (query.y < hi.y);
 	}
 
-	Bool isInRegion( const Coord3D *query ) const
+	Bool isInRegion( const Coord3D &query ) const
 	{
-		return (lo.x < query->x) && (query->x < hi.x) &&
-					 (lo.y < query->y) && (query->y < hi.y) &&
-					 (lo.z < query->z) && (query->z < hi.z);
+		return (lo.x < query.x) && (query.x < hi.x) &&
+					 (lo.y < query.y) && (query.y < hi.y) &&
+					 (lo.z < query.z) && (query.z < hi.z);
 	}
 };
 
