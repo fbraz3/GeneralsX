@@ -521,6 +521,9 @@ Byte PlayerList::getSlotIndex(Int playerIndex) const
 
 void PlayerList::resolveSlotIndices()
 {
+	if (!TheGameInfo)
+		return;
+
 	AsciiString playerName;
 
 	for (Int i = 0; i < MAX_SLOTS; ++i)
