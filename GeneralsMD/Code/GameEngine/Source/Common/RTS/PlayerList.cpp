@@ -60,7 +60,7 @@
 #include "GameLogic/SidesList.h"
 #include "GameNetwork/NetworkDefs.h"
 #include "GameNetwork/GameInfo.h"
-
+#include <algorithm>
 
 //-----------------------------------------------------------------------------
 /*extern*/ PlayerList *ThePlayerList = nullptr;
@@ -73,7 +73,6 @@ PlayerList::PlayerList() :
 	for (Int i = 0; i < MAX_PLAYER_COUNT; i++)
 	{
 		m_players[ i ] = NEW Player( i );
-		m_slotIndices[ i ] = -1;
 	}
 	init();
 }
@@ -256,6 +255,8 @@ void PlayerList::init()
 
 	for (int i = 1; i < MAX_PLAYER_COUNT; i++)
 		m_players[i]->init(nullptr);
+
+	std::fill(m_slotIndices, m_slotIndices + MAX_PLAYER_COUNT, -1);
 
 	// call setLocalPlayer so that becomingLocalPlayer() gets called appropriately
 	setLocalPlayer(m_players[0]);
@@ -499,9 +500,10 @@ void PlayerList::xfer( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 void PlayerList::loadPostProcess()
 {
-
+    std::fill(m_slotIndices, m_slotIndices + ARRAY_SIZE(m_slotIndices), 255);
 }
 
+//-----------------------------------------------------------------------------
 void PlayerList::setSlotIndex(Int playerIndex, Byte slotIndex)
 {
 	if (playerIndex >= 0 && playerIndex < ARRAY_SIZE(m_slotIndices))
@@ -510,6 +512,7 @@ void PlayerList::setSlotIndex(Int playerIndex, Byte slotIndex)
 	}
 }
 
+//-----------------------------------------------------------------------------
 Byte PlayerList::getSlotIndex(Int playerIndex) const
 {
 	if (playerIndex >= 0 && playerIndex < ARRAY_SIZE(m_slotIndices))
@@ -520,6 +523,7 @@ Byte PlayerList::getSlotIndex(Int playerIndex) const
 	return -1;
 }
 
+//-----------------------------------------------------------------------------
 void PlayerList::resolveSlotIndices()
 {
 	if (!TheGameInfo)

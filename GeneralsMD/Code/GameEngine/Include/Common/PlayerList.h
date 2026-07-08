@@ -156,8 +156,6 @@ public:
 	*/
 	PlayerMaskType getPlayersWithRelationship( Int srcPlayerIndex, UnsignedInt allowedRelationships );
 
-	void resolveSlotIndices();
-	void setSlotIndex(Int playerIndex, Byte slotIndex);
 	Byte getSlotIndex(Int playerIndex) const;
 
 protected:
@@ -168,6 +166,8 @@ protected:
 	virtual void loadPostProcess() override;
 
 private:
+	void resolveSlotIndices();
+	void setSlotIndex(Int playerIndex, Byte slotIndex);
 
 	Player				*m_local;
 	Int						m_playerCount;
