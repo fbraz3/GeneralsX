@@ -1099,7 +1099,10 @@ GameMessageDisposition SelectionTranslator::onRawMouseRightButtonUp(MAYBE_UNUSED
 	const Coord3D cameraPos = TheTacticalView->getPosition();
 
 	// right click behavior (not right drag)
-	if (TheMouse->isClick(m_rightMouseDownAnchor, anchor, m_rightMouseDownCameraPos, cameraPos, m_rightMouseDownTimeMs, timeMs))
+	if (TheMouse->isClick(
+		m_rightMouseDownTimeMs, timeMs,
+		m_rightMouseDownAnchor, anchor,
+		m_rightMouseDownCameraPos, cameraPos))
 	{
 		//Added support to cancel the GUI command without deselecting the unit(s) involved
 		//when you right click.
