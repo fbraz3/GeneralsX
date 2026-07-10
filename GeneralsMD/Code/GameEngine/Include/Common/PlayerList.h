@@ -156,6 +156,8 @@ public:
 	*/
 	PlayerMaskType getPlayersWithRelationship( Int srcPlayerIndex, UnsignedInt allowedRelationships );
 
+	Byte getSlotIndex(Int playerIndex) const;
+
 protected:
 
 	// snapshot methods
@@ -164,10 +166,13 @@ protected:
 	virtual void loadPostProcess() override;
 
 private:
+	void resolveSlotIndices();
+	void setSlotIndex(Int playerIndex, Byte slotIndex);
 
 	Player				*m_local;
 	Int						m_playerCount;
 	Player				*m_players[MAX_PLAYER_COUNT];
+	Byte					m_slotIndices[MAX_PLAYER_COUNT];
 
 };
 

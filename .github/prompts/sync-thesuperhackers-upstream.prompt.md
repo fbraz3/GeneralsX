@@ -62,8 +62,8 @@ Expect many conflicts because the projects intentionally diverged. Every conflic
   - `Generals/` and `GeneralsMD/` code that may have been unified or refactored upstream
   - launch paths, renderer setup, audio wiring, and asset/runtime integration
 - If a conflict involves a removal or downgrade of an existing cross-platform capability, treat that as a high-risk decision and justify it explicitly before accepting it.
+- **Deterministic Math:** Ensure native math functions introduced by upstream merges are replaced with their deterministic `WWMath` equivalents (e.g. `WWMath::Ceil`, `WWMath::SqrtOrigin`) as documented in `AGENTS.md`. Do not revert to native non-deterministic math functions.
 - Prefer root-cause conflict resolution over temporary hacks, disabled code paths, or quick stubs.
-
 ## Validation Requirements
 
 It is imperative that configure and build workflows still work after the merge. At minimum, validate the relevant project tasks and report the outcome clearly.

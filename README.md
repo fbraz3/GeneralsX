@@ -16,6 +16,12 @@ For **official releases and instructions**, visit:
 
 > See our [Tutorial Docs](docs/HOWTO/README.md) for step-by-step guides.
 
+### Community Ports based on GeneralsX
+
+* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [@ammaarreshi](https://github.com/ammaarreshi)
+* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [@fadi-labib](https://github.com/fadi-labib)
+* [GeneralsXWeb](https://github.com/meerzulee/GeneralsXWeb) - Web port by [@meerzulee](https://github.com/meerzulee)
+
 ## 💖 Support This Project
 
 The optional sponsorship link exists to help cover the maintenance costs specific to GeneralsX: Linux/macOS integration, project-specific adaptation work, testing infrastructure, packaging, tooling, release work, and documentation.

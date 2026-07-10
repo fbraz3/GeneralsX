@@ -1047,7 +1047,7 @@ TextureLoadTaskClass::TextureLoadTaskClass()
 	Format			(WW3D_FORMAT_UNKNOWN),
 	Width				(0),
 	Height			(0),
-	MipLevelCount	(0),
+	MipLevelCount	(MIP_LEVELS_ALL),
 	Reduction		(0),
 	Type				(TASK_NONE),
 	Priority			(PRIORITY_LOW),
@@ -1479,6 +1479,9 @@ static void Validate_Reduction(const TextureBaseClass* texture, unsigned& reduct
 	}
 }
 
+// Will not present textures smaller than 4 pixels wide or high.
+static constexpr const unsigned MinTextureDim = 4u;
+static constexpr const unsigned MinTextureDepth = 1u;
 
 // If the size doesn't match, try and see if texture reduction would help...
 // (mainly for cases where loaded texture is larger than hardware limit)
@@ -1488,8 +1491,8 @@ static void Apply_Dim_Reduction(unsigned& width, unsigned& height, unsigned& red
 
 	for (unsigned r = reduction; r < mip_count; ++r)
 	{
-		unsigned w = max(width >> r, 4u);
-		unsigned h = max(height >> r, 4u);
+		unsigned w = max(width >> r, MinTextureDim);
+		unsigned h = max(height >> r, MinTextureDim);
 		unsigned tmp_w = w;
 		unsigned tmp_h = h;
 
@@ -1511,9 +1514,9 @@ static void Apply_Dim_Reduction_With_Depth(unsigned& width, unsigned& height, un
 {
 	for (unsigned r = reduction; r < mip_count; ++r)
 	{
-		unsigned w = max(width >> r, 4u);
-		unsigned h = max(height >> r, 4u);
-		unsigned d = max(depth >> r, 1u);
+		unsigned w = max(width >> r, MinTextureDim);
+		unsigned h = max(height >> r, MinTextureDim);
+		unsigned d = max(depth >> r, MinTextureDepth);
 		unsigned tmp_w = w;
 		unsigned tmp_h = h;
 		unsigned tmp_d = d;
@@ -1532,37 +1535,32 @@ static void Apply_Dim_Reduction_With_Depth(unsigned& width, unsigned& height, un
 }
 
 
-static void Apply_Mip_Reduction(unsigned& mip_level_count, unsigned Reduction, unsigned width, unsigned height, unsigned mip_count)
+static void Apply_Mip_Reduction(unsigned& mip_level_count, unsigned reduction, unsigned width, unsigned height, unsigned mip_count)
 {
 	// If texture wants all mip levels, take as many as the file contains (not necessarily all)
 	// Otherwise take as many mip levels as the texture wants, not to exceed the count in file...
-	if (mip_level_count == 0)
+	if (mip_level_count == MIP_LEVELS_ALL)
 	{
-		mip_level_count = mip_count-Reduction;
-
-		// Sanity check to make sure something gets loaded.
-		if (mip_level_count < 1)
-			mip_level_count = 1;
+		mip_level_count = mip_count;
 	}
 	else
 	{
 		if (mip_level_count > mip_count)
 			mip_level_count = mip_count;
-
-		// Reduce requested number by those removed.
-		mip_level_count -= Reduction; 
 	}
+
+	// Reduce requested number by those removed.
+	WWASSERT(reduction < mip_level_count);
+	mip_level_count -= reduction;
 
 	// Once more, verify that the mip level count is correct (in case it was changed here it might not
 	// match the size...well actually it doesn't have to match but it can't be bigger than the size)
 	unsigned int max_mip_level_count = 1;
-	unsigned int w = 4;
-	unsigned int h = 4;
+	unsigned int dim = MinTextureDim;
 
-	while (w < width && h < height)
+	while (dim < width && dim < height)
 	{
-		w += w;
-		h += h;
+		dim <<= 1;
 		max_mip_level_count++;
 	}
 
@@ -1602,26 +1600,21 @@ bool TextureLoadTaskClass::Begin_Compressed_Load()
 		return false;
 	}
 
-	// Destination size will be the next power of two square from the larger width and height...
-	Width = orig_width;
-	Height = orig_height;
-	TextureLoader::Validate_Texture_Size(Width, Height, orig_depth);
-
 	Format = Get_Valid_Texture_Format(orig_format, Texture->Is_Compression_Allowed());
 
 	Reduction = orig_reduction;
 	Validate_Reduction(Texture, Reduction, orig_mip_count);
 
-	unsigned reduced_width = orig_width;
-	unsigned reduced_height = orig_height;
-	Apply_Dim_Reduction(reduced_width, reduced_height, Reduction, orig_mip_count);
+	Width = orig_width;
+	Height = orig_height;
+	Apply_Dim_Reduction(Width, Height, Reduction, orig_mip_count);
 
 	Apply_Mip_Reduction(MipLevelCount, Reduction, Width, Height, orig_mip_count);
 
 	D3DTexture	= DX8Wrapper::_Create_DX8_Texture
 	(
-		reduced_width,
-		reduced_height,
+		Width,
+		Height,
 		Format,
 		(MipCountType)MipLevelCount,
 #ifdef USE_MANAGED_TEXTURES
@@ -1778,15 +1771,13 @@ bool TextureLoadTaskClass::Load_Compressed_Mipmap()
 	}
 
 	// regular 2d texture
-	unsigned int width	= Get_Width();
-	unsigned int height	= Get_Height();
-
-	width >>= Reduction;
-	height >>= Reduction;
+	unsigned int width = Get_Width();
+	unsigned int height = Get_Height();
 
 	for (unsigned int level = 0; level < Get_Mip_Level_Count(); ++level)
 	{
-		WWASSERT(width && height);
+		WWASSERT(width >= MinTextureDim && height >= MinTextureDim);
+
 		dds_file.Copy_Level_To_Surface
 		(
 			level,
@@ -1798,8 +1789,8 @@ bool TextureLoadTaskClass::Load_Compressed_Mipmap()
 			HSVShift
 		);
 
-		width		>>= 1;
-		height	>>= 1;
+		width >>= 1;
+		height >>= 1;
 	}
 
 	return true;
@@ -2177,26 +2168,21 @@ bool CubeTextureLoadTaskClass::Begin_Compressed_Load()
 		return false;
 	}
 
-	// Destination size will be the next power of two square from the larger width and height...
-	Width = orig_width;
-	Height = orig_height;
-	TextureLoader::Validate_Texture_Size(Width, Height, orig_depth);
-
 	Format = Get_Valid_Texture_Format(orig_format, Texture->Is_Compression_Allowed());
 
 	Reduction = orig_reduction;
 	Validate_Reduction(Texture, Reduction, orig_mip_count);
 
-	unsigned reduced_width = orig_width;
-	unsigned reduced_height = orig_height;
-	Apply_Dim_Reduction(reduced_width, reduced_height, Reduction, orig_mip_count);
+	Width = orig_width;
+	Height = orig_height;
+	Apply_Dim_Reduction(Width, Height, Reduction, orig_mip_count);
 
 	Apply_Mip_Reduction(MipLevelCount, Reduction, Width, Height, orig_mip_count);
 
 	D3DTexture	= DX8Wrapper::_Create_DX8_Cube_Texture
 	(
-		reduced_width,
-		reduced_height,
+		Width,
+		Height,
 		Format,
 		(MipCountType)MipLevelCount,
 #ifdef USE_MANAGED_TEXTURES
@@ -2294,12 +2280,9 @@ bool CubeTextureLoadTaskClass::Load_Compressed_Mipmap()
 		unsigned int width = Get_Width();
 		unsigned int height = Get_Height();
 
-		width >>= Reduction;
-		height >>= Reduction;
-
 		for (unsigned int level=0; level<Get_Mip_Level_Count(); level++)
 		{
-			WWASSERT(width && height);
+			WWASSERT(width >= MinTextureDim && height >= MinTextureDim);
 
 			// get cube map surface
 			dds_file.Copy_CubeMap_Level_To_Surface
@@ -2314,8 +2297,8 @@ bool CubeTextureLoadTaskClass::Load_Compressed_Mipmap()
 				HSVShift
 			);
 
-			width>>=1;
-			height>>=1;
+			width >>= 1;
+			height >>= 1;
 		}
 	}
 
@@ -2491,29 +2474,23 @@ bool VolumeTextureLoadTaskClass::Begin_Compressed_Load()
 		return false;
 	}
 
-	// Destination size will be the next power of two square from the larger width and height...
-	Width = orig_width;
-	Height = orig_height;
-	Depth = orig_depth;
-	TextureLoader::Validate_Texture_Size(Width, Height, Depth);
-
 	Format = Get_Valid_Texture_Format(orig_format, Texture->Is_Compression_Allowed());
 
 	Reduction = orig_reduction;
 	Validate_Reduction(Texture, Reduction, orig_mip_count);
 
-	unsigned reduced_width = orig_width;
-	unsigned reduced_height = orig_height;
-	unsigned reduced_depth = orig_depth;
-	Apply_Dim_Reduction_With_Depth(reduced_width, reduced_height, reduced_depth, Reduction, orig_mip_count);
+	Width = orig_width;
+	Height = orig_height;
+	Depth = orig_depth;
+	Apply_Dim_Reduction_With_Depth(Width, Height, Depth, Reduction, orig_mip_count);
 
 	Apply_Mip_Reduction(MipLevelCount, Reduction, Width, Height, orig_mip_count);
 
 	D3DTexture	= DX8Wrapper::_Create_DX8_Volume_Texture
 	(
-		reduced_width,
-		reduced_height,
-		reduced_depth,
+		Width,
+		Height,
+		Depth,
 		Format,
 		(MipCountType)MipLevelCount,
 #ifdef USE_MANAGED_TEXTURES
@@ -2609,19 +2586,13 @@ bool VolumeTextureLoadTaskClass::Load_Compressed_Mipmap()
 	}
 
 	// load volume
-	unsigned int depth=dds_file.Get_Depth(0);
-	unsigned int width=Get_Width();
-	unsigned int height=Get_Height();
-
-	depth >>= Reduction;
-	width >>= Reduction;
-	height >>= Reduction;
+	unsigned int width = Get_Width();
+	unsigned int height = Get_Height();
+	unsigned int depth = Depth;
 
 	for (unsigned int level=0; level<Get_Mip_Level_Count(); level++)
 	{
-		if (width<4) width=4;
-		if (height<4) height=4;
-		if (depth<1) depth=1;
+		WWASSERT(width >= MinTextureDim && height >= MinTextureDim && depth >= MinTextureDepth);
 
 		// get volume
 		dds_file.Copy_Volume_Level_To_Surface
@@ -2637,9 +2608,9 @@ bool VolumeTextureLoadTaskClass::Load_Compressed_Mipmap()
 			HSVShift
 		);
 
-		width>>=1;
-		height>>=1;
-		depth>>=1;
+		width >>= 1;
+		height >>= 1;
+		depth = max(depth >> 1, MinTextureDepth);
 	}
 
 	return true;
