@@ -947,28 +947,25 @@ Real AudioManager::getAudioLengthMS( const AudioEventRTS *event )
 //-------------------------------------------------------------------------------------------------
 Bool AudioManager::isMusicAlreadyLoaded() const
 {
-	const AudioEventInfo *musicToLoad = nullptr;
+	// GeneralsX @bugfix felipebraz 10/07/2026 Fix game crash on Linux when some music files are missing by checking until a valid one is found
 	AudioEventInfoHash::const_iterator it;
 	for (it = m_allAudioEventInfo.begin(); it != m_allAudioEventInfo.end(); ++it) {
 		if (it->second) {
 			const AudioEventInfo *aet = it->second;
 			if (aet->m_soundType == AT_Music) {
-				musicToLoad = aet;
+				AudioEventRTS aud;
+				aud.setAudioEventInfo(aet);
+				aud.generateFilename();
+				
+				AsciiString astr = aud.getFilename();
+				if (TheFileSystem->doesFileExist(astr.str())) {
+					return TRUE;
+				}
 			}
 		}
 	}
-
-	if (!musicToLoad) {
-		return FALSE;
-	}
-
-	AudioEventRTS aud;
-	aud.setAudioEventInfo(musicToLoad);
-	aud.generateFilename();
-
-	AsciiString astr = aud.getFilename();
-
-	return (TheFileSystem->doesFileExist(astr.str()));
+	
+	return FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------
