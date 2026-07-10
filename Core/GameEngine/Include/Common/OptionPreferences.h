@@ -134,4 +134,5 @@ public:
 	Real getMinCameraHeight() const;
 	Real getCameraPitch() const;
 	Real getTerrainDrawDistanceScale() const;
+	Real getGameWindowTransitionSpeedMultiplier() const;
 };
