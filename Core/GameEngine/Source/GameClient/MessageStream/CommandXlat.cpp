@@ -1445,13 +1445,11 @@ GameMessage::Type CommandTranslator::createEnterMessage( Drawable *enter,
 CommandTranslator::CommandTranslator() :
 	m_objective(0),
 	m_teamExists(false),
-	m_mouseRightDown(0),
-	m_mouseRightUp(0)
+	m_rightMouseDownTimeMs(0),
+	m_rightMouseUpTimeMs(0)
 {
-	m_mouseRightDragAnchor.x = 0;
-	m_mouseRightDragAnchor.y = 0;
-	m_mouseRightDragLift.x = 0;
-	m_mouseRightDragLift.y = 0;
+	m_rightMouseDownAnchor.zero();
+	m_rightMouseUpAnchor.zero();
 }
 
 //====================================================================================
@@ -3871,8 +3869,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			// There are two ways in which we can ignore this as a deselect:
 			// 1) 2-D position on screen
 			// 2) Time has exceeded the time which we allow for this to be a click.
-			m_mouseRightDragAnchor = msg->getArgument( 0 )->pixel;
-			m_mouseRightDown = (UnsignedInt) msg->getArgument( 2 )->integer;
+			m_rightMouseDownAnchor = msg->getArgument( 0 )->pixel;
+			m_rightMouseDownTimeMs = (UnsignedInt) msg->getArgument( 2 )->integer;
 
 			break;
 		}
@@ -3881,14 +3879,16 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_UP:
 		{
 			// register this event for determining if the click was fast or short enough not to be a drag
-			m_mouseRightDragLift = msg->getArgument( 0 )->pixel;
-			m_mouseRightUp = (UnsignedInt) msg->getArgument( 2 )->integer;
+			m_rightMouseUpAnchor = msg->getArgument( 0 )->pixel;
+			m_rightMouseUpTimeMs = (UnsignedInt) msg->getArgument( 2 )->integer;
 
 			//Kris: July 7, 2003. Added this code to deselect build placement mode when right clicked. This fixes
 			//a bug where you couldn't cancel the sneak attack mode via right click. This only happened when you
 			//didn't have anything selected which is possible via the shortcut bar. Normally, it would get deselected
 			//via the deselect drawable code.
-			if( TheMouse->isClick(&m_mouseRightDragAnchor, &m_mouseRightDragLift, m_mouseRightDown, m_mouseRightUp) )
+			if( TheMouse->isClick(
+				m_rightMouseDownTimeMs, m_rightMouseUpTimeMs,
+				m_rightMouseDownAnchor, m_rightMouseUpAnchor) )
 			{
 				TheInGameUI->placeBuildAvailable( nullptr, nullptr );
 			}
@@ -3922,7 +3922,9 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		{
 			// right click is only actioned here if we're in alternate mouse mode
 			if (TheGlobalData->m_useAlternateMouse
-				&& TheMouse->isClick(&m_mouseRightDragAnchor, &m_mouseRightDragLift, m_mouseRightDown, m_mouseRightUp))
+				&& TheMouse->isClick(
+					m_rightMouseDownTimeMs, m_rightMouseUpTimeMs,
+					m_rightMouseDownAnchor, m_rightMouseUpAnchor))
 			{
 				// NOTE: RIGHT_CLICK is not transmitted if AREA_SELECTION or DRAWABLE_PICKED occurs.
 				// If we see this msg, no object was clicked on, therefore clicked on ground.

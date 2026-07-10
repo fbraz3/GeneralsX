@@ -158,8 +158,6 @@ class SortingNodeStruct
 public:
 	RenderStateStruct sorting_state;
 
-	SphereClass bounding_sphere;
-
 	Vector3 transformed_center;
 	unsigned short start_index;			// First index used in the ib
 	unsigned short polygon_count;			// Polygon count to process (3 indices = one polygon)
@@ -169,6 +167,7 @@ public:
 
 typedef std::list<SortingNodeStruct*> SortingNodeStructList;
 static SortingNodeStructList sorted_list;
+static SortingNodeStructList unsorted_list;
 static SortingNodeStructList clean_list;
 static unsigned total_sorting_vertices;
 
@@ -236,22 +235,30 @@ void SortingRendererClass::Insert_Triangles(
 		(state->sorting_state.vertex_buffer_types[0]==BUFFER_TYPE_SORTING || state->sorting_state.vertex_buffer_types[0]==BUFFER_TYPE_DYNAMIC_SORTING)));
 
 
-	state->bounding_sphere=bounding_sphere;
 	state->start_index=start_index;
 	state->polygon_count=polygon_count;
 	state->min_vertex_index=min_vertex_index;
 	state->vertex_count=vertex_count;
 
-	D3DXMATRIX mtx=(D3DXMATRIX&)state->sorting_state.world*(D3DXMATRIX&)state->sorting_state.view;
-	D3DXVECTOR3 vec=(D3DXVECTOR3&)state->bounding_sphere.Center;
-	D3DXVECTOR4 transformed_vec;
-	D3DXVec3Transform(
-		&transformed_vec,
-		&vec,
-		&mtx);
-	state->transformed_center=Vector3(transformed_vec[0],transformed_vec[1],transformed_vec[2]);
+	if (bounding_sphere.Radius <= 0.0)
+	{
+		// TheSuperHackers @perf stephanmeesters 04/07/2026 Nodes without bounding information do not require sorting.
+		state->transformed_center = Vector3(0.0f, 0.0f, 0.0f);
+		unsorted_list.push_back(state);
+	}
+	else
+	{
+		D3DXMATRIX mtx=(D3DXMATRIX&)state->sorting_state.world*(D3DXMATRIX&)state->sorting_state.view;
+		D3DXVECTOR3 vec=(D3DXVECTOR3&)bounding_sphere.Center;
+		D3DXVECTOR4 transformed_vec;
+		D3DXVec3Transform(
+			&transformed_vec,
+			&vec,
+			&mtx);
+		state->transformed_center=Vector3(transformed_vec[0],transformed_vec[1],transformed_vec[2]);
 
-	Insert_To_Sorted_List(state);
+		Insert_To_Sorted_List(state);
+	}
 
 #ifdef WWDEBUG
 	SortingVertexBufferClass* vertex_buffer=static_cast<SortingVertexBufferClass*>(state->sorting_state.vertex_buffers[0]);
@@ -600,6 +607,14 @@ void SortingRendererClass::Flush()
 	DX8Wrapper::Get_Transform(D3DTS_VIEW,old_view);
 	DX8Wrapper::Get_Transform(D3DTS_WORLD,old_world);
 
+	// TheSuperHackers @perf stephanmeesters 04/07/2026
+	// Splice nodes that have no bounding information (Z=0.0) at the correct location into the sorted list.
+	SortingNodeStructList::iterator node = sorted_list.begin();
+	while (node != sorted_list.end() && (*node)->transformed_center.Z > 0.0f) {
+		++node;
+	}
+	sorted_list.splice(node, unsorted_list);
+
 	while (!sorted_list.empty()) {
 		SortingNodeStruct* state = sorted_list.front();
 		sorted_list.pop_front();
@@ -645,6 +660,14 @@ void SortingRendererClass::Deinit()
 	while (!sorted_list.empty()) {
 		delete sorted_list.front();
 		sorted_list.pop_front();
+	}
+
+	//
+	//	Flush the unsorted list
+	//
+	while (!unsorted_list.empty()) {
+		delete unsorted_list.front();
+		unsorted_list.pop_front();
 	}
 
 	//
