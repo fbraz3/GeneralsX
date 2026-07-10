@@ -849,7 +849,7 @@ void GameEngine::update()
 		}	// end VERIFY_CRC block
 
 		// TheSuperHackers @info Ignores frozen time because the script engine needs updating in the logic update regardless.
-		if (canUpdateGameLogic(FramePacer::IgnoreFrozenTime))
+		if (canUpdateGameLogic())
 		{
 			TheGameLogic->UPDATE();
 
