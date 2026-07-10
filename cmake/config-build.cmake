@@ -28,7 +28,9 @@ option(SAGE_USE_MOLTENVK "Use MoltenVK for Vulkan on macOS (Phase 5 macOS port)"
 # SagePatch — optional QoL features for casual play (screenshot, cursor lock,
 # brightness, camera/scroll INI overrides). Compiles to a separate shared lib
 # that is loaded via DYLD_INSERT_LIBRARIES (macOS) / LD_PRELOAD (Linux) at runtime.
-option(RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS/Linux, requires SDL3)" ON)
+if(NOT DEFINED CACHE{RTS_BUILD_OPTION_SAGE_PATCH})
+    set(RTS_BUILD_OPTION_SAGE_PATCH "${SAGE_USE_SDL3}" CACHE BOOL "Build SagePatch QoL extras (macOS/Linux, requires SDL3)")
+endif()
 
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
