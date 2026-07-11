@@ -116,8 +116,9 @@ EnumeratedIP * IPEnumeration::getAddresses()
 			// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore point-to-point and non-broadcast interfaces.
 			if ((ifa->ifa_flags & IFF_BROADCAST) == 0 || (ifa->ifa_flags & IFF_POINTOPOINT) != 0)
 			{
-				DEBUG_LOG(("IPEnumeration::getAddresses - skipping non-broadcast or p2p interface=%s",
-					(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>"));
+				fprintf(stderr, "[LAN86] IPEnumeration::getAddresses - skipping non-broadcast or p2p interface=%s flags=0x%X\n",
+					(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags);
+				fflush(stderr);
 				continue;
 			}
 
@@ -132,7 +133,8 @@ EnumeratedIP * IPEnumeration::getAddresses()
 					strncmp(name, "llw", 3) == 0 ||
 					strncmp(name, "utun", 4) == 0)
 				{
-					DEBUG_LOG(("IPEnumeration::getAddresses - skipping virtual interface=%s", name));
+					fprintf(stderr, "[LAN86] IPEnumeration::getAddresses - skipping virtual interface=%s\n", name);
+					fflush(stderr);
 					continue;
 				}
 			}
@@ -142,9 +144,10 @@ EnumeratedIP * IPEnumeration::getAddresses()
 			// reading s_addr byte-by-byte on little-endian platforms reverses the IPv4 octets.
 			const UnsignedInt hostAddr = ntohl(addr->sin_addr.s_addr);
 			// GeneralsX @build GitHubCopilot 11/04/2026 Log POSIX interface candidates used for LAN IP selection.
-			DEBUG_LOG(("IPEnumeration::getAddresses - interface=%s flags=0x%X ip=%d.%d.%d.%d accepted",
+			fprintf(stderr, "[LAN86] IPEnumeration::getAddresses - interface=%s flags=0x%X ip=%d.%d.%d.%d accepted\n",
 				(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags,
-				PRINTF_IP_AS_4_INTS(hostAddr)));
+				PRINTF_IP_AS_4_INTS(hostAddr));
+			fflush(stderr);
 			/* 			fprintf(stderr, "[LAN86] iface=%s flags=0x%X ip=%d.%d.%d.%d\n",
 				(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags,
 				PRINTF_IP_AS_4_INTS(hostAddr)); */
