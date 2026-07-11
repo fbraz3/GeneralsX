@@ -690,6 +690,12 @@ Bool GameEngine::canUpdateNetworkGameLogic()
 Bool GameEngine::canUpdateRegularGameLogic(UnsignedInt logicTimeQueryFlags)
 {
 	const Int logicTimeScaleFps = TheFramePacer->getActualLogicTimeScaleFps(logicTimeQueryFlags);
+
+	if (logicTimeScaleFps <= 0)
+	{
+		return false;
+	}
+
 	const Int maxRenderFps = TheFramePacer->getActualFramesPerSecondLimit();
 
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
