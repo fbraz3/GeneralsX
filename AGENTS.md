@@ -182,6 +182,16 @@ git merge thesuperhackers/main
 - **Attribution**: Add upstream PR references with author and GitHub URL
 - **English only**: All code, comments, documentation
 - **No lazy code**: No empty stubs, empty catch blocks, or commented-out code
+- **Console Debug Logging**: For diagnostic/troubleshooting logs that must remain visible in release/non-debug builds (since `DEBUG_LOG` is disabled and compiled out in release builds), use `fprintf(stderr, ...)` paired with `fflush(stderr)` instead of `DEBUG_LOG` to output directly to the console.
+  - ✗ *Wrong (compiled out in release builds)*:
+    ```cpp
+    DEBUG_LOG(("LanLobbyMenuInit - SetLocalIP ok %d.%d.%d.%d", PRINTF_IP_AS_4_INTS(IP)));
+    ```
+  - ✓ *Right (will print to console in release/testing environments)*:
+    ```cpp
+    fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP ok %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
+    fflush(stderr);
+    ```
 
 ## GitHub PR/Issue Formatting
 - Use `--body-file` with real Markdown file instead of `--body`
