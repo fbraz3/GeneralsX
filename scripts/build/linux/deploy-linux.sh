@@ -109,20 +109,19 @@ copy_ldd_deps() {
 }
 
 # GeneralsX @build GitHubCopilot 17/05/2026 Deploy FFmpeg runtime libs transitively so runtime does not depend on host SONAME layout.
+# GeneralsX @tweak Antigravity 09/07/2026 Support multiple host architectures and paths (Fedora/Red Hat, Arch, Debian/Ubuntu)
 echo "  Copying FFmpeg runtime libraries..."
 shopt -s nullglob
-ffmpeg_roots=(
-    "${FFMPEG_LIB_DIR}"/libavcodec.so*
-    "${FFMPEG_LIB_DIR}"/libavformat.so*
-    "${FFMPEG_LIB_DIR}"/libavutil.so*
-    "${FFMPEG_LIB_DIR}"/libswresample.so*
-    "${FFMPEG_LIB_DIR}"/libswscale.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavcodec.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavformat.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavutil.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libswresample.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libswscale.so*
-)
+ffmpeg_roots=()
+for dir in "${FFMPEG_LIB_DIR}" "${FFMPEG_DEP_LIB_DIR}" "/usr/lib64" "/lib64" "/usr/lib" "/lib"; do
+    ffmpeg_roots+=(
+        "${dir}"/libavcodec.so*
+        "${dir}"/libavformat.so*
+        "${dir}"/libavutil.so*
+        "${dir}"/libswresample.so*
+        "${dir}"/libswscale.so*
+    )
+done
 shopt -u nullglob
 for ffmpeg_root in "${ffmpeg_roots[@]}"; do
     cp -a "${ffmpeg_root}" "${RUNTIME_DIR}/" 2>/dev/null || true

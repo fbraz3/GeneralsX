@@ -97,7 +97,7 @@ sudo dnf install gcc-c++ cmake ninja-build git
 sudo dnf install vulkan-loader vulkan-tools mesa-vulkan-drivers
 
 # Install SDL3 dependencies
-sudo dnf install SDL3-devel
+sudo dnf install SDL3-devel SDL3_image-devel
 
 # Install additional dependencies
 sudo dnf install mesa-libGL-devel mesa-libGLU-devel alsa-lib-devel

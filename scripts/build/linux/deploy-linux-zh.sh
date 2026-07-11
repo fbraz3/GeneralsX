@@ -56,25 +56,16 @@ if [[ ! -d "${DXVK_LIB_DIR}" ]]; then
     exit 1
 fi
 
-# Check if SDL3 libraries exist
+# Check if SDL3 libraries exist (optional if using system SDL3)
 if [[ ! -d "${SDL3_LIB_DIR}" ]]; then
-    echo "ERROR: SDL3 libraries not found at ${SDL3_LIB_DIR}"
-    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
-    exit 1
+    echo "INFO: SDL3 build directory not found, assuming system SDL3 is used"
 fi
 
 if [[ ! -d "${SDL3_IMAGE_LIB_DIR}" ]]; then
-    echo "ERROR: SDL3_image libraries not found at ${SDL3_IMAGE_LIB_DIR}"
-    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
-    exit 1
+    echo "INFO: SDL3_image build directory not found, assuming system SDL3_image is used"
 fi
 
-# Check if GameSpy library exists
-if [[ ! -f "${GAMESPY_LIB}" ]]; then
-    echo "ERROR: GameSpy library not found at ${GAMESPY_LIB}"
-    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
-    exit 1
-fi
+# GameSpy check removed (it is static and built into the binary)
 
 # Create runtime directory if needed
 mkdir -p "${RUNTIME_DIR}"
@@ -90,13 +81,20 @@ cp -v "${DXVK_LIB_DIR}"/libdxvk_d3d8.so* "${RUNTIME_DIR}/"
 cp -v "${DXVK_LIB_DIR}"/libdxvk_d3d9.so* "${RUNTIME_DIR}/" 2>/dev/null || true
 
 # Copy SDL3 and SDL3_image libraries (for cursor loading and window management)
-echo "  Copying SDL3 libraries..."
-cp -v "${SDL3_LIB_DIR}"/libSDL3.so* "${RUNTIME_DIR}/"
-cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
+if compgen -G "${SDL3_LIB_DIR}/libSDL3.so*" > /dev/null; then
+    echo "  Copying SDL3 libraries..."
+    cp -v "${SDL3_LIB_DIR}"/libSDL3.so* "${RUNTIME_DIR}/"
+fi
+if compgen -G "${SDL3_IMAGE_LIB_DIR}/libSDL3_image.so*" > /dev/null; then
+    echo "  Copying SDL3_image libraries..."
+    cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
+fi
 
-# Copy GameSpy library (for online multiplayer)
-echo "  Copying GameSpy library..."
-cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
+# Copy GameSpy library (only if built as shared)
+if [[ -f "${GAMESPY_LIB}" ]]; then
+    echo "  Copying GameSpy library..."
+    cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
+fi
 
 copy_ldd_deps() {
     local root="$1"
@@ -125,20 +123,19 @@ copy_ldd_deps() {
 }
 
 # GeneralsX @build GitHubCopilot 17/05/2026 Deploy FFmpeg runtime libs transitively so runtime does not depend on host SONAME layout.
+# GeneralsX @tweak Antigravity 09/07/2026 Support multiple host architectures and paths (Fedora/Red Hat, Arch, Debian/Ubuntu)
 echo "  Copying FFmpeg runtime libraries..."
 shopt -s nullglob
-ffmpeg_roots=(
-    "${FFMPEG_LIB_DIR}"/libavcodec.so*
-    "${FFMPEG_LIB_DIR}"/libavformat.so*
-    "${FFMPEG_LIB_DIR}"/libavutil.so*
-    "${FFMPEG_LIB_DIR}"/libswresample.so*
-    "${FFMPEG_LIB_DIR}"/libswscale.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavcodec.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavformat.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavutil.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libswresample.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libswscale.so*
-)
+ffmpeg_roots=()
+for dir in "${FFMPEG_LIB_DIR}" "${FFMPEG_DEP_LIB_DIR}" "/usr/lib64" "/lib64" "/usr/lib" "/lib"; do
+    ffmpeg_roots+=(
+        "${dir}"/libavcodec.so*
+        "${dir}"/libavformat.so*
+        "${dir}"/libavutil.so*
+        "${dir}"/libswresample.so*
+        "${dir}"/libswscale.so*
+    )
+done
 shopt -u nullglob
 for ffmpeg_root in "${ffmpeg_roots[@]}"; do
     cp -a "${ffmpeg_root}" "${RUNTIME_DIR}/" 2>/dev/null || true

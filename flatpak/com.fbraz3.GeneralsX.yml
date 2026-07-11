@@ -78,9 +78,9 @@ modules:
       - install -d /app/lib
       - cp -a /run/build/generalsx/dxvk-src/lib/libdxvk_d3d8.so* /app/lib/
       - cp -a /run/build/generalsx/dxvk-src/lib/libdxvk_d3d9.so* /app/lib/
-      - cp -a build-flatpak/_deps/sdl3-build/libSDL3.so* /app/lib/
-      - cp -a build-flatpak/_deps/sdl3_image-build/libSDL3_image.so* /app/lib/
-      - cp -a build-flatpak/_deps/openal_soft-build/libopenal.so* /app/lib/
+      - if [ -d build-flatpak/_deps/sdl3-build ]; then cp -a build-flatpak/_deps/sdl3-build/libSDL3.so* /app/lib/; fi
+      - if [ -d build-flatpak/_deps/sdl3_image-build ]; then cp -a build-flatpak/_deps/sdl3_image-build/libSDL3_image.so* /app/lib/; fi
+      - if [ -d build-flatpak/_deps/openal_soft-build ]; then cp -a build-flatpak/_deps/openal_soft-build/libopenal.so* /app/lib/; fi
       - find build-flatpak -name "libgamespy.so*" -type f -exec cp -a {} /app/lib/ \;
       # SagePatch (optional QoL, gated by RTS_BUILD_OPTION_SAGE_PATCH at build).
       - if [ -f build-flatpak/Patches/SagePatch/libsage_patch.so ]; then cp -a build-flatpak/Patches/SagePatch/libsage_patch.so /app/lib/; fi
