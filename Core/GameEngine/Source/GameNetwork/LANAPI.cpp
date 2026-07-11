@@ -176,7 +176,12 @@ void LANAPI::init()
 	m_gameStartTime = 0;
 	m_gameStartSeconds = 0;
 	m_transport->reset();
+#ifdef _WIN32
 	m_transport->init(m_localIP, lobbyPort);
+#else
+	// GeneralsX @feature Mr. Meesseeks 11/07/2026 Bind to INADDR_ANY on POSIX to reliably receive broadcasts across interfaces.
+	m_transport->init(INADDR_ANY, lobbyPort);
+#endif
 	m_transport->allowBroadcasts(true);
 
 	m_pendingAction = ACT_NONE;

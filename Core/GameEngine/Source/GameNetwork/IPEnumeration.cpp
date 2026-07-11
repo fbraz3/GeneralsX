@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <ifaddrs.h>
 #include <net/if.h>
+#include <string.h>
 #endif
 
 IPEnumeration::IPEnumeration()
@@ -112,12 +113,36 @@ EnumeratedIP * IPEnumeration::getAddresses()
 				continue;
 			}
 
+			// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore point-to-point and non-broadcast interfaces.
+			if ((ifa->ifa_flags & IFF_BROADCAST) == 0 || (ifa->ifa_flags & IFF_POINTOPOINT) != 0)
+			{
+				DEBUG_LOG(("IPEnumeration::getAddresses - skipping non-broadcast or p2p interface=%s",
+					(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>"));
+				continue;
+			}
+
+			// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore known virtual interfaces (Docker, VPN, Apple AWDL)
+			if (ifa->ifa_name != nullptr)
+			{
+				const char *name = ifa->ifa_name;
+				if (strncmp(name, "docker", 6) == 0 ||
+					strncmp(name, "veth", 4) == 0 ||
+					strncmp(name, "virbr", 5) == 0 ||
+					strncmp(name, "awdl", 4) == 0 ||
+					strncmp(name, "llw", 3) == 0 ||
+					strncmp(name, "utun", 4) == 0)
+				{
+					DEBUG_LOG(("IPEnumeration::getAddresses - skipping virtual interface=%s", name));
+					continue;
+				}
+			}
+
 			const sockaddr_in *addr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr);
 			// GeneralsX @bugfix BenderAI 31/03/2026 Use ntohl to convert from network byte order before extracting octets;
 			// reading s_addr byte-by-byte on little-endian platforms reverses the IPv4 octets.
 			const UnsignedInt hostAddr = ntohl(addr->sin_addr.s_addr);
 			// GeneralsX @build GitHubCopilot 11/04/2026 Log POSIX interface candidates used for LAN IP selection.
-			DEBUG_LOG(("IPEnumeration::getAddresses - interface=%s flags=0x%X ip=%d.%d.%d.%d",
+			DEBUG_LOG(("IPEnumeration::getAddresses - interface=%s flags=0x%X ip=%d.%d.%d.%d accepted",
 				(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags,
 				PRINTF_IP_AS_4_INTS(hostAddr)));
 			/* 			fprintf(stderr, "[LAN86] iface=%s flags=0x%X ip=%d.%d.%d.%d\n",

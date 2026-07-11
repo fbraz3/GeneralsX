@@ -85,8 +85,12 @@ Bool Transport::init( AsciiString ip, UnsignedShort port )
 
 Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 {
-	// GeneralsX @build GitHubCopilot 11/04/2026 Trace UDP transport bind inputs for LAN troubleshooting.
-	DEBUG_LOG(("Transport::init - requested bind %d.%d.%d.%d:%d", PRINTF_IP_AS_4_INTS(ip), port));
+	// GeneralsX @build Mr. Meesseeks 11/07/2026 Trace UDP transport bind inputs for LAN troubleshooting.
+	if (ip == 0) {
+		DEBUG_LOG(("Transport::init - requested bind INADDR_ANY (0.0.0.0):%d", port));
+	} else {
+		DEBUG_LOG(("Transport::init - requested bind %d.%d.%d.%d:%d", PRINTF_IP_AS_4_INTS(ip), port));
+	}
 	/* 	fprintf(stderr, "[LAN86] Transport::init bind request %d.%d.%d.%d:%d\n", PRINTF_IP_AS_4_INTS(ip), port); */
 
 	// ----- Initialize Winsock -----
@@ -128,8 +132,12 @@ Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 		return false;
 	}
 
-	// GeneralsX @build GitHubCopilot 11/04/2026 Confirm successful UDP bind endpoint for LAN diagnostics.
-	DEBUG_LOG(("Transport::init - bind success %d.%d.%d.%d:%d", PRINTF_IP_AS_4_INTS(ip), port));
+	// GeneralsX @build Mr. Meesseeks 11/07/2026 Confirm successful UDP bind endpoint for LAN diagnostics.
+	if (ip == 0) {
+		DEBUG_LOG(("Transport::init - bind success INADDR_ANY (0.0.0.0):%d", port));
+	} else {
+		DEBUG_LOG(("Transport::init - bind success %d.%d.%d.%d:%d", PRINTF_IP_AS_4_INTS(ip), port));
+	}
 	/* 	fprintf(stderr, "[LAN86] Transport::init bind success %d.%d.%d.%d:%d\n", PRINTF_IP_AS_4_INTS(ip), port); */
 
 	// ------- Clear buffers --------
