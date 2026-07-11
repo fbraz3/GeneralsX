@@ -8,8 +8,13 @@
 # This avoids vcpkg issues with libsystemd and complex dependencies
 
 if(SAGE_USE_SDL3)
-    find_package(SDL3 3.4.0 QUIET)
-    find_package(SDL3_image 3.4.0 QUIET)
+    set(SDL3_FOUND FALSE)
+    set(SDL3_image_FOUND FALSE)
+    
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_package(SDL3 3.4.0 QUIET)
+        find_package(SDL3_image 3.4.0 QUIET)
+    endif()
 
     if(SDL3_FOUND AND SDL3_image_FOUND)
         message(STATUS "✓ Found system SDL3 and SDL3_image packages. Using them.")

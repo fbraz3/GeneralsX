@@ -25,7 +25,13 @@
 # Reference: jmarshall OpenAL implementation uses <AL/al.h> throughout.
 
 if(SAGE_USE_OPENAL)
-    find_package(OpenAL QUIET)
+    set(OPENAL_FOUND FALSE)
+    set(OpenAL_FOUND FALSE)
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_package(OpenAL QUIET)
+    endif()
+
     if(OPENAL_FOUND OR OpenAL_FOUND)
         message(STATUS "✓ Found system OpenAL. Using it.")
     else()

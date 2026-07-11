@@ -8,7 +8,12 @@
 # Reference: https://github.com/feliwir/CnC_Generals_Zero_Hour (MiniAudio backend by Stephan Vedder)
 
 if(SAGE_USE_MINIAUDIO)
-    find_path(MINIAUDIO_INCLUDE_DIR miniaudio.h)
+    set(MINIAUDIO_INCLUDE_DIR FALSE)
+    
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_path(MINIAUDIO_INCLUDE_DIR miniaudio.h)
+    endif()
+
     if(MINIAUDIO_INCLUDE_DIR)
         message(STATUS "✓ Found system miniaudio header at ${MINIAUDIO_INCLUDE_DIR}")
         add_library(miniaudio_lib INTERFACE)
