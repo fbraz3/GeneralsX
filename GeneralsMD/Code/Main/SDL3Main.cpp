@@ -303,6 +303,13 @@ int main(int argc, char* argv[])
 		// Create SDL3 window with Vulkan support
 		fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
 		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
+#ifdef __APPLE__
+		// GeneralsX @bugfix macOS HiDPI: request a native-resolution (Retina) Metal drawable so the
+		// DXVK swapchain renders at physical pixels instead of being upscaled by the compositor.
+		// Requires NSHighResolutionCapable=true in the app bundle, the DXVK SDL3 WSI querying pixels
+		// (SDL_GetWindowSizeInPixels), and the density-aware pillarbox/mouse mapping in DX8Wrapper.
+		windowFlags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
+#endif
 		TheSDL3Window = SDL_CreateWindow(
 			"Command & Conquer Generals: Zero Hour",
 			1024, 768,  // Default resolution

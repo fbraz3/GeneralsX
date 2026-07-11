@@ -169,6 +169,17 @@ bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
 				density = 1.0f;
 			}
 		}
+	} else {
+		// GeneralsX @bugfix macOS HiDPI: the backbuffer size came from the present
+		// parameters (in physical pixels), so the density query above was skipped and
+		// s_pixelDensity would wrongly stay 1.0. Fetch it explicitly so Pillarbox_Get_Rect
+		// can convert the viewport rect back to logical points - SDL delivers mouse
+		// coordinates in points, so without this, clicks land at the wrong position.
+		int pointsW = 0, pointsH = 0;
+		float queriedDensity = 1.0f;
+		if (GetWindowSize(pointsW, pointsH, queriedDensity) && queriedDensity > 0.0f) {
+			density = queriedDensity;
+		}
 	}
 
 	// No pillarbox needed if backbuffer matches game resolution
