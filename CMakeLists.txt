@@ -25,6 +25,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include(FeatureSummary)
 include(CMakeDependentOption)
 
+option(RTS_BUILD_TESTS "Build unit tests" OFF)
+option(RTS_BUILD_COVERAGE "Build with coverage instrumentation" OFF)
+
 # We don't support in tree builds, so help people make the right choice.
 if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(FATAL_ERROR "Building in-source is not supported! Create a build dir and remove ${CMAKE_SOURCE_DIR}/CMakeCache.txt")
@@ -32,6 +35,16 @@ endif()
 
 # Top level project, doesn't really affect anything.
 project(genzh LANGUAGES C CXX)
+
+if(RTS_BUILD_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" OR CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Coverage instrumentation ENABLED")
+        add_compile_options(--coverage)
+        add_link_options(--coverage)
+    else()
+        message(WARNING "Coverage requested but compiler is ${CMAKE_CXX_COMPILER_ID}, not GCC/Clang")
+    endif()
+endif()
 
 # GeneralsX @build BenderAI 10/02/2026
 # Linux port: Make CompatLib headers globally accessible so Core libraries (WWLib, WWMath, etc.)
@@ -138,6 +151,13 @@ endif()
 # declare the dependency below.
 if(RTS_BUILD_OPTION_SAGE_PATCH)
     add_subdirectory(Patches/SagePatch)
+endif()
+
+# GeneralsX @feature AI 11/07/2026 Add unit tests
+if(RTS_BUILD_TESTS)
+    enable_testing()
+    include(cmake/gtest.cmake)
+    add_subdirectory(Tests)
 endif()
 
 # Add main build targets

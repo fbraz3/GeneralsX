@@ -370,6 +370,25 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "[Test] Run Unit Tests",
+			"type": "shell",
+			"command": "./scripts/qa/test/run-tests.sh",
+			"isBackground": false,
+			"group": "test",
+			"icon": {
+				"color": "terminal.ansiCyan",
+				"id": "beaker"
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true,
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "[Linux] Run GeneralsX",
 			"type": "shell",
 			"command": "./scripts/build/linux/run-linux.sh -win",
