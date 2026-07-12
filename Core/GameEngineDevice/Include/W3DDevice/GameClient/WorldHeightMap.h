@@ -332,8 +332,12 @@ public:  // modify height value
 		if ((ndx>=0) && (ndx<m_dataSize) && m_data) m_data[ndx]=height;
 	};
 public: // Read tile utilities. jba [7/9/2003]
-	static Bool readTiles(InputStream *pStrm, TileData **tiles, Int numRows);
-	static Int countTiles(InputStream *pStrm, Bool *halfTile=nullptr);
+	// GeneralsX @feature mrkinglollipop 11/07/2026 Adds expectedTileCount/pIsLegacyGrid so the caller's
+	// INI-declared tile count can disambiguate legacy 64px-grid TGAs from native
+	// TILE_PIXEL_EXTENT (256px)-grid TGAs; isLegacyGrid must be forwarded from
+	// countTiles' result into readTiles so both use the same interpretation of the file.
+	static Bool readTiles(InputStream *pStrm, TileData **tiles, Int numRows, Bool isLegacyGrid=false);
+	static Int countTiles(InputStream *pStrm, Bool *halfTile=nullptr, Int expectedTileCount=0, Bool *pIsLegacyGrid=nullptr);
 
 protected:
 	void setCliffState(Int xIndex, Int yIndex, Bool state);

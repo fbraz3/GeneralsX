@@ -43,12 +43,17 @@ TileData::TileData()
 
 }
 
-#define TILE_PIXEL_EXTENT_MIP1 32
-#define TILE_PIXEL_EXTENT_MIP2 16
-#define TILE_PIXEL_EXTENT_MIP3 8
-#define TILE_PIXEL_EXTENT_MIP4 4
-#define TILE_PIXEL_EXTENT_MIP5 2
-#define TILE_PIXEL_EXTENT_MIP6 1
+// GeneralsX @feature mrkinglollipop 11/07/2026 Bumps this local mip-extent copy to match TileData.h's
+// 8-level chain (128/64/32/16/8/4/2/1); shadows the header's #defines (as it did
+// before this change) -- kept in sync manually.
+#define TILE_PIXEL_EXTENT_MIP1 128
+#define TILE_PIXEL_EXTENT_MIP2 64
+#define TILE_PIXEL_EXTENT_MIP3 32
+#define TILE_PIXEL_EXTENT_MIP4 16
+#define TILE_PIXEL_EXTENT_MIP5 8
+#define TILE_PIXEL_EXTENT_MIP6 4
+#define TILE_PIXEL_EXTENT_MIP7 2
+#define TILE_PIXEL_EXTENT_MIP8 1
 
 Bool TileData::hasRGBDataForWidth(Int width)
 {
@@ -59,29 +64,40 @@ Bool TileData::hasRGBDataForWidth(Int width)
 	if (width == TILE_PIXEL_EXTENT_MIP4) return(true);
 	if (width == TILE_PIXEL_EXTENT_MIP5) return(true);
 	if (width == TILE_PIXEL_EXTENT_MIP6) return(true);
+	if (width == TILE_PIXEL_EXTENT_MIP7) return(true);
+	if (width == TILE_PIXEL_EXTENT_MIP8) return(true);
 	return(false);
 }
 
 UnsignedByte * TileData::getRGBDataForWidth(Int width)
 {
 	// default
-	if (width == TILE_PIXEL_EXTENT_MIP1) return(m_tileDataMip32);
-	if (width == TILE_PIXEL_EXTENT_MIP2) return(m_tileDataMip16);
-	if (width == TILE_PIXEL_EXTENT_MIP3) return(m_tileDataMip8);
-	if (width == TILE_PIXEL_EXTENT_MIP4) return(m_tileDataMip4);
-	if (width == TILE_PIXEL_EXTENT_MIP5) return(m_tileDataMip2);
-	if (width == TILE_PIXEL_EXTENT_MIP6) return(m_tileDataMip1);
+	if (width == TILE_PIXEL_EXTENT_MIP1) return(m_tileDataMip128);
+	if (width == TILE_PIXEL_EXTENT_MIP2) return(m_tileDataMip64);
+	if (width == TILE_PIXEL_EXTENT_MIP3) return(m_tileDataMip32);
+	if (width == TILE_PIXEL_EXTENT_MIP4) return(m_tileDataMip16);
+	if (width == TILE_PIXEL_EXTENT_MIP5) return(m_tileDataMip8);
+	if (width == TILE_PIXEL_EXTENT_MIP6) return(m_tileDataMip4);
+	if (width == TILE_PIXEL_EXTENT_MIP7) return(m_tileDataMip2);
+	if (width == TILE_PIXEL_EXTENT_MIP8) return(m_tileDataMip1);
 	return(m_tileData);
 }
 
 void TileData::updateMips()
 {
-	doMip(m_tileData, TILE_PIXEL_EXTENT, m_tileDataMip32);
-	doMip(m_tileDataMip32, TILE_PIXEL_EXTENT_MIP1, m_tileDataMip16);
-	doMip(m_tileDataMip16, TILE_PIXEL_EXTENT_MIP2, m_tileDataMip8);
-	doMip(m_tileDataMip8, TILE_PIXEL_EXTENT_MIP3, m_tileDataMip4);
-	doMip(m_tileDataMip4, TILE_PIXEL_EXTENT_MIP4, m_tileDataMip2);
-	doMip(m_tileDataMip2, TILE_PIXEL_EXTENT_MIP5, m_tileDataMip1);
+	// GeneralsX @build mrkinglollipop 11/07/2026 Chains each mip level to exactly half the width of its
+	// parent, so doMip's hiRow/2 addressing stays correct all the way down to 1x1.
+	// A naive bump of TILE_PIXEL_EXTENT without adding the 128/64 levels would make
+	// the first doMip() call write a 128x128 result into the old 32x32
+	// m_tileDataMip32 buffer -- a heap/member buffer overflow. Do not collapse levels.
+	doMip(m_tileData, TILE_PIXEL_EXTENT, m_tileDataMip128);
+	doMip(m_tileDataMip128, TILE_PIXEL_EXTENT_MIP1, m_tileDataMip64);
+	doMip(m_tileDataMip64, TILE_PIXEL_EXTENT_MIP2, m_tileDataMip32);
+	doMip(m_tileDataMip32, TILE_PIXEL_EXTENT_MIP3, m_tileDataMip16);
+	doMip(m_tileDataMip16, TILE_PIXEL_EXTENT_MIP4, m_tileDataMip8);
+	doMip(m_tileDataMip8, TILE_PIXEL_EXTENT_MIP5, m_tileDataMip4);
+	doMip(m_tileDataMip4, TILE_PIXEL_EXTENT_MIP6, m_tileDataMip2);
+	doMip(m_tileDataMip2, TILE_PIXEL_EXTENT_MIP7, m_tileDataMip1);
 }
 
 

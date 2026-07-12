@@ -45,17 +45,25 @@ typedef struct {
 
 #define INVERTED_MASK	0x1		//AND this with TBlendTileInfo.inverted to get actual inverted state
 #define FLIPPED_MASK	0x2		//AND this with TBlendTileInfo.inverted to get forced flip state (for horizontal/vertical flips).
-#define TILE_PIXEL_EXTENT 64
+// GeneralsX @feature mrkinglollipop 11/07/2026 Bumps base tile resolution 64->256 (4x per axis, 16x pixels).
+// The mip chain grows from 6 fixed levels (32/16/8/4/2/1) to 8 chained levels
+// (128/64/32/16/8/4/2/1) so doMip() still halves exactly once per level down to 1x1.
+// LEGACY_TILE_PIXEL_EXTENT (see WorldHeightMap.cpp) is the pre-patch 64px grid cell
+// size that unmodified base/custom-map TGAs are still packed in; the loader detects
+// and nearest-neighbor upscales those on read so they keep working unmodified.
+#define TILE_PIXEL_EXTENT 256
 #define TILE_BYTES_PER_PIXEL 4
 #define DATA_LEN_BYTES TILE_PIXEL_EXTENT*TILE_PIXEL_EXTENT*TILE_BYTES_PER_PIXEL
 #define DATA_LEN_PIXELS TILE_PIXEL_EXTENT*TILE_PIXEL_EXTENT
-#define TILE_PIXEL_EXTENT_MIP1 32
-#define TILE_PIXEL_EXTENT_MIP2 16
-#define TILE_PIXEL_EXTENT_MIP3 8
-#define TILE_PIXEL_EXTENT_MIP4 4
-#define TILE_PIXEL_EXTENT_MIP5 2
-#define TILE_PIXEL_EXTENT_MIP6 1
-#define TEXTURE_WIDTH 2048 // was 1024 jba
+#define TILE_PIXEL_EXTENT_MIP1 128
+#define TILE_PIXEL_EXTENT_MIP2 64
+#define TILE_PIXEL_EXTENT_MIP3 32
+#define TILE_PIXEL_EXTENT_MIP4 16
+#define TILE_PIXEL_EXTENT_MIP5 8
+#define TILE_PIXEL_EXTENT_MIP6 4
+#define TILE_PIXEL_EXTENT_MIP7 2
+#define TILE_PIXEL_EXTENT_MIP8 1
+#define TEXTURE_WIDTH 8192 // GeneralsX @feature mrkinglollipop 11/07/2026 Bumps atlas TEXTURE_WIDTH 2048->8192 (was 2048). MoltenVK/Metal cap is 16384.
 
 /** This class holds the bitmap data from the .tga texture files.  It is used to
 create the D3D texture in the game and 3d windows, and to create DIB data for the
@@ -68,13 +76,15 @@ protected:
 	// Also, first byte is lower left pixel, not upper left pixel.
 	// so 0,0 is lower left, not upper left.
 	UnsignedByte m_tileData[DATA_LEN_BYTES];
-	/// Mipped down copies of the tile data.
-	UnsignedByte m_tileDataMip32[TILE_PIXEL_EXTENT_MIP1*TILE_PIXEL_EXTENT_MIP1*TILE_BYTES_PER_PIXEL];
-	UnsignedByte m_tileDataMip16[TILE_PIXEL_EXTENT_MIP2*TILE_PIXEL_EXTENT_MIP2*TILE_BYTES_PER_PIXEL];
-	UnsignedByte m_tileDataMip8[TILE_PIXEL_EXTENT_MIP3*TILE_PIXEL_EXTENT_MIP3*TILE_BYTES_PER_PIXEL];
-	UnsignedByte m_tileDataMip4[TILE_PIXEL_EXTENT_MIP4*TILE_PIXEL_EXTENT_MIP4*TILE_BYTES_PER_PIXEL];
-	UnsignedByte m_tileDataMip2[TILE_PIXEL_EXTENT_MIP5*TILE_PIXEL_EXTENT_MIP5*TILE_BYTES_PER_PIXEL];
-	UnsignedByte m_tileDataMip1[TILE_PIXEL_EXTENT_MIP6*TILE_PIXEL_EXTENT_MIP6*TILE_BYTES_PER_PIXEL];
+	/// Mipped down copies of the tile data. 8-level chain: 128/64/32/16/8/4/2/1.
+	UnsignedByte m_tileDataMip128[TILE_PIXEL_EXTENT_MIP1*TILE_PIXEL_EXTENT_MIP1*TILE_BYTES_PER_PIXEL];
+	UnsignedByte m_tileDataMip64[TILE_PIXEL_EXTENT_MIP2*TILE_PIXEL_EXTENT_MIP2*TILE_BYTES_PER_PIXEL];
+	UnsignedByte m_tileDataMip32[TILE_PIXEL_EXTENT_MIP3*TILE_PIXEL_EXTENT_MIP3*TILE_BYTES_PER_PIXEL];
+	UnsignedByte m_tileDataMip16[TILE_PIXEL_EXTENT_MIP4*TILE_PIXEL_EXTENT_MIP4*TILE_BYTES_PER_PIXEL];
+	UnsignedByte m_tileDataMip8[TILE_PIXEL_EXTENT_MIP5*TILE_PIXEL_EXTENT_MIP5*TILE_BYTES_PER_PIXEL];
+	UnsignedByte m_tileDataMip4[TILE_PIXEL_EXTENT_MIP6*TILE_PIXEL_EXTENT_MIP6*TILE_BYTES_PER_PIXEL];
+	UnsignedByte m_tileDataMip2[TILE_PIXEL_EXTENT_MIP7*TILE_PIXEL_EXTENT_MIP7*TILE_BYTES_PER_PIXEL];
+	UnsignedByte m_tileDataMip1[TILE_PIXEL_EXTENT_MIP8*TILE_PIXEL_EXTENT_MIP8*TILE_BYTES_PER_PIXEL];
 
 public:
 	ICoord2D	m_tileLocationInTexture;
