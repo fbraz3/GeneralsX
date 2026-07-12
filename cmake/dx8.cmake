@@ -75,12 +75,6 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   set(DXVK_D3D8_LIB  "${DXVK_BUILD_DIR}/src/d3d8/libdxvk_d3d8.0.dylib")
   set(DXVK_D3D9_LIB  "${DXVK_BUILD_DIR}/src/d3d9/libdxvk_d3d9.0.dylib")
 
-  # GeneralsX @bugfix macOS HiDPI: the pinned upstream DXVK sizes the SDL3 swapchain in
-  # logical points; on Retina that renders the game in a corner. This patch switches the
-  # WSI getWindowSize() to SDL_GetWindowSizeInPixels. Applied idempotently to the fetched
-  # source below until the change lands in the pinned fbraz3/dxvk ref.
-  set(DXVK_HIDPI_PATCH "${CMAKE_SOURCE_DIR}/cmake/patches/dxvk-macos-hidpi-wsi.patch")
-
   # Detect Vulkan SDK location for Meson configuration.
   # VULKAN_SDK must point to the platform subdir (e.g. ~/VulkanSDK/1.4.x/macOS)
   # where lib/libvulkan.dylib and lib/libMoltenVK.dylib live.
@@ -142,7 +136,8 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     )
   else()
     # GeneralsX @build copilot 01/04/2026 Pin remote DXVK to immutable commit produced by fix/macos-size_t-cstddef.
-    set(DXVK_REMOTE_REF 46a3bc018bcae408d49d3c500e4e536a11f6789a)
+    # GeneralsX @build 12/07/2026 Bumped to the merged commit that includes the macOS HiDPI WSI fix upstream.
+    set(DXVK_REMOTE_REF 1132d306e36c932fb4d062bce7c5602c45913ac8)
     ExternalProject_Add(dxvk_macos_build
       # GeneralsX @build BenderAI 08/04/2026 Consume pre-patched source from pinned fork commit.
       GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
@@ -151,8 +146,6 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
       GIT_SHALLOW       FALSE
       SOURCE_DIR        ${DXVK_SOURCE_DIR}
       BINARY_DIR        ${DXVK_BUILD_DIR}
-      # Apply the HiDPI WSI patch idempotently (reverse-check skips if already applied).
-      PATCH_COMMAND     sh -c "git apply --reverse --check '${DXVK_HIDPI_PATCH}' 2>/dev/null || git apply '${DXVK_HIDPI_PATCH}'"
       CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CC=clang CXX=clang++ "CFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "CXXFLAGS=-arch ${DXVK_HOST_ARCH} -mcpu=apple-m1" "LDFLAGS=-arch ${DXVK_HOST_ARCH}" ${VULKAN_SDK_ENV_VAR} ${MESON_EXECUTABLE} setup ${DXVK_BUILD_DIR} ${DXVK_SOURCE_DIR} --native-file ${CMAKE_SOURCE_DIR}/cmake/meson-arm64-native.ini -Ddxvk_native_wsi=sdl3 --buildtype=release --reconfigure
       BUILD_COMMAND     ${NINJA_EXECUTABLE} -C ${DXVK_BUILD_DIR} src/d3d9/libdxvk_d3d9.0.dylib src/d3d8/libdxvk_d3d8.0.dylib
       INSTALL_COMMAND   ""
