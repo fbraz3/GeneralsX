@@ -131,6 +131,11 @@ modules:
           export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
         fi
 
+        # GeneralsX @bugfix felipebraz 12/07/2026 Default CNC_GENERALS_PATH to ~/GeneralsX/Generals if empty (Issue #205)
+        if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
+          export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+        fi
+
         if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
           for candidate in \
             "${HOME}/GeneralsX/GeneralsZH" \

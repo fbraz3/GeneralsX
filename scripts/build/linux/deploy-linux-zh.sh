@@ -202,6 +202,11 @@ if [[ -f "${SCRIPT_DIR}/libsage_patch.so" && "${SAGE_PATCH_DISABLED:-0}" != "1" 
     fi
 fi
 
+# GeneralsX @bugfix felipebraz 12/07/2026 Default CNC_GENERALS_PATH to ~/GeneralsX/Generals if empty (Issue #205)
+if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
+    export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+fi
+
 # GeneralsX @feature felipebraz 25/02/2026 Auto-detect base Generals install path
 # Set CNC_GENERALS_INSTALLPATH if not already set and ../Generals/ exists
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; then
