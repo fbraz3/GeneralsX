@@ -426,26 +426,26 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 
 	for (EnumeratedIP *candidate = IPlist; candidate != nullptr; candidate = candidate->getNext())
 	{
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit enumerated candidate %d.%d.%d.%d\n",
+		/* fprintf(stderr, "[LAN86] LanLobbyMenuInit enumerated candidate %d.%d.%d.%d\n",
 			PRINTF_IP_AS_4_INTS(candidate->getIP()));
-		fflush(stderr);
+		fflush(stderr); */
 		if (candidate->getIP() == IP)
 		{
 			foundPreferredIP = TRUE;
 			break;
 		}
 	}
-	fprintf(stderr, "[LAN86] LanLobbyMenuInit preferredLANIP=%d.%d.%d.%d globalDefaultIP=%d.%d.%d.%d foundPreferred=%d\n",
+	/* fprintf(stderr, "[LAN86] LanLobbyMenuInit preferredLANIP=%d.%d.%d.%d globalDefaultIP=%d.%d.%d.%d foundPreferred=%d\n",
 		PRINTF_IP_AS_4_INTS(preferredLANIP), PRINTF_IP_AS_4_INTS(TheGlobalData->m_defaultIP), foundPreferredIP);
-	fflush(stderr);
+	fflush(stderr); */
 
 	if (IP != 0 && foundPreferredIP)
 	{
 		IPSource = (preferredLANIP == IP) ? L"Options LAN IP" : L"Global default LAN IP";
 		// GeneralsX @build GitHubCopilot 12/04/2026 Make LAN lobby explicitly honor configured LAN IP preference when it is still valid.
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit - using preferred LAN IP %d.%d.%d.%d from %ls\n",
+		/* fprintf(stderr, "[LAN86] LanLobbyMenuInit - using preferred LAN IP %d.%d.%d.%d from %ls\n",
 			PRINTF_IP_AS_4_INTS(IP), IPSource);
-		fflush(stderr);
+		fflush(stderr); */
 	}
 	else
 	{
@@ -464,18 +464,18 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 		IPSource = L"Enumerated LAN IP fallback";
 		IP = IPlist->getIP();
 		// GeneralsX @build GitHubCopilot 11/04/2026 Log auto-selected LAN IP to diagnose cross-platform discovery failures.
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit - auto-selected LAN IP %d.%d.%d.%d from enumeration\n",
+		/* fprintf(stderr, "[LAN86] LanLobbyMenuInit - auto-selected LAN IP %d.%d.%d.%d from enumeration\n",
 			PRINTF_IP_AS_4_INTS(IP));
 		fprintf(stderr, "[LAN86] LanLobbyMenuInit fallback IP %d.%d.%d.%d preferred=%d.%d.%d.%d found=%d\n",
 			PRINTF_IP_AS_4_INTS(IP), PRINTF_IP_AS_4_INTS(preferredLANIP), foundPreferredIP);
-		fflush(stderr);
+		fflush(stderr); */
 	}
 
 	if (foundPreferredIP)
 	{
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit preferred IP source=%ls ip=%d.%d.%d.%d\n",
+		/* fprintf(stderr, "[LAN86] LanLobbyMenuInit preferred IP source=%ls ip=%d.%d.%d.%d\n",
 			IPSource, PRINTF_IP_AS_4_INTS(IP));
-		fflush(stderr);
+		fflush(stderr); */
 	}
 #if defined(RTS_DEBUG)
 	UnicodeString str;
@@ -486,19 +486,19 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 	// TheLAN->init() sets us to be in a LAN menu screen automatically.
 	TheLAN->init();
 	// GeneralsX @build GitHubCopilot 11/04/2026 Log LAN bind attempt from lobby startup path.
-	fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP begin %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
-	fflush(stderr);
+	/* fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP begin %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
+	fflush(stderr); */
 	if (TheLAN->SetLocalIP(IP) == FALSE) {
 		LANSocketErrorDetected = TRUE;
 		// GeneralsX @build GitHubCopilot 11/04/2026 Explicit failure breadcrumb for LAN socket initialization.
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP failed %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
-		fflush(stderr);
+		/* fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP failed %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
+		fflush(stderr); */
 	}
 	else
 	{
 		// GeneralsX @build GitHubCopilot 11/04/2026 Explicit success breadcrumb for LAN socket initialization.
-		fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP ok %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
-		fflush(stderr);
+		/* fprintf(stderr, "[LAN86] LanLobbyMenuInit SetLocalIP ok %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(IP));
+		fflush(stderr); */
 	}
 
 	//Initialize the gadgets on the window
@@ -518,8 +518,8 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 	defaultName.truncateTo(g_lanPlayerNameLength);
 	TheLAN->RequestSetName(defaultName);
 	// GeneralsX @build GitHubCopilot 11/04/2026 Trace initial LAN discovery request from menu bootstrap.
-	fprintf(stderr, "[LAN86] LanLobbyMenuInit RequestLocations initial\n");
-	fflush(stderr);
+	/* fprintf(stderr, "[LAN86] LanLobbyMenuInit RequestLocations initial\n");
+	fflush(stderr); */
 	TheLAN->RequestLocations();
 
 	/*

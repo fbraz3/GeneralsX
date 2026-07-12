@@ -296,9 +296,9 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 					// GeneralsX @build GitHubCopilot 11/04/2026 Instrument direct-connect fan-out sends.
 					Bool queued = m_transport->queueSend(slot->getIP(), lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
 					sentAny = TRUE;
-					fprintf(stderr, "[LAN86] send directed-fanout type=%s dst=%d.%d.%d.%d:%d queued=%d\n",
+					/* 					fprintf(stderr, "[LAN86] send directed-fanout type=%s dst=%d.%d.%d.%d:%d queued=%d\n",
 						GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(slot->getIP()), lobbyPort, queued);
-					fflush(stderr);
+					fflush(stderr); */
 				}
 			}
 		}
@@ -306,9 +306,9 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 		if (!sentAny)
 		{
 			Bool queued = m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
-			fprintf(stderr, "[LAN86] send directed-fanout-fallback-broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+			/* 			fprintf(stderr, "[LAN86] send directed-fanout-fallback-broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
 				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
-			fflush(stderr);
+			fflush(stderr); */
 		}
 	}
 	else
@@ -323,17 +323,17 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 			UnsignedInt dst = subnetBroadcasts[i];
 			Bool queued = m_transport->queueSend(dst, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
 			sentAny = TRUE;
-			fprintf(stderr, "[LAN86] send subnet-broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+			/* 			fprintf(stderr, "[LAN86] send subnet-broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
 				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(dst), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
-			fflush(stderr);
+			fflush(stderr); */
 		}
 #endif
 		if (!sentAny)
 		{
 			Bool queued = m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
-			fprintf(stderr, "[LAN86] send broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+			/* 			fprintf(stderr, "[LAN86] send broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
 				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
-			fflush(stderr);
+			fflush(stderr); */
 		}
 	}
 }
@@ -471,9 +471,9 @@ void LANAPI::update()
 	if ((m_transport->update() == FALSE) && (LANSocketErrorDetected == FALSE)) {
 		if (m_isInLANMenu == TRUE) {
 			LANSocketErrorDetected = TRUE;
-			fprintf(stderr, "[LAN86] LANAPI::update transport update failed while in LAN menu local=%d.%d.%d.%d\n",
+			/* 			fprintf(stderr, "[LAN86] LANAPI::update transport update failed while in LAN menu local=%d.%d.%d.%d\n",
 				PRINTF_IP_AS_4_INTS(m_localIP));
-			fflush(stderr);
+			fflush(stderr); */
 		}
 	}
 
@@ -487,20 +487,20 @@ void LANAPI::update()
 			UnsignedInt senderIP = m_transport->m_inBuffer[i].addr;
 			if (senderIP == m_localIP)
 			{
-				fprintf(stderr, "[LAN86] recv self-echo type=%u (%s) from %d.%d.%d.%d ignored\n",
+				/* 				fprintf(stderr, "[LAN86] recv self-echo type=%u (%s) from %d.%d.%d.%d ignored\n",
 					((LANMessage *)(m_transport->m_inBuffer[i].data))->messageType,
 					GetMessageTypeString(((LANMessage *)(m_transport->m_inBuffer[i].data))->messageType).str(),
 					PRINTF_IP_AS_4_INTS(senderIP));
-				fflush(stderr);
+				fflush(stderr); */
 				m_transport->m_inBuffer[i].length = 0;
 				continue;
 			}
 
 			LANMessage *msg = (LANMessage *)(m_transport->m_inBuffer[i].data);
-			fprintf(stderr, "[LAN86] recv type=%s (%u) len=%d from %d.%d.%d.%d local=%d.%d.%d.%d\n",
+			/* 			fprintf(stderr, "[LAN86] recv type=%s (%u) len=%d from %d.%d.%d.%d local=%d.%d.%d.%d\n",
 				GetMessageTypeString(msg->messageType).str(), msg->messageType, m_transport->m_inBuffer[i].length,
 				PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(m_localIP));
-			fflush(stderr);
+			fflush(stderr); */
 			//DEBUG_LOG(("LAN message type %s from %ls (%s@%s)", GetMessageTypeString(msg->messageType).str(),
 			//	msg->name, msg->userName, msg->hostName));
 			switch (msg->messageType)
@@ -779,9 +779,9 @@ void LANAPI::RequestLocations()
 	msg.messageType = LANMessage::MSG_REQUEST_LOCATIONS;
 	fillInLANMessage( &msg );
 	// GeneralsX @build GitHubCopilot 11/04/2026 Trace LAN discovery probes emitted by this client.
-	fprintf(stderr, "[LAN86] RequestLocations local=%d.%d.%d.%d broadcast=%d.%d.%d.%d port=%d\n",
+	/* 	fprintf(stderr, "[LAN86] RequestLocations local=%d.%d.%d.%d broadcast=%d.%d.%d.%d port=%d\n",
 		PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort);
-	fflush(stderr);
+	fflush(stderr); */
 	sendMessage(&msg);
 }
 
@@ -1448,9 +1448,9 @@ Bool LANAPI::SetLocalIP( UnsignedInt localIP )
 	UnsignedInt oldIP = m_localIP;
 	m_localIP = localIP;
 	// GeneralsX @build GitHubCopilot 11/04/2026 Trace LAN socket rebind lifecycle for issue #86 diagnostics.
-	fprintf(stderr, "[LAN86] SetLocalIP rebind from %d.%d.%d.%d to %d.%d.%d.%d:%d\n",
+	/* 	fprintf(stderr, "[LAN86] SetLocalIP rebind from %d.%d.%d.%d to %d.%d.%d.%d:%d\n",
 		PRINTF_IP_AS_4_INTS(oldIP), PRINTF_IP_AS_4_INTS(m_localIP), lobbyPort);
-	fflush(stderr);
+	fflush(stderr); */
 
 	m_transport->reset();
 #ifdef _WIN32
@@ -1460,9 +1460,9 @@ Bool LANAPI::SetLocalIP( UnsignedInt localIP )
 	retval = m_transport->init(INADDR_ANY, lobbyPort);
 #endif
 	Bool broadcastsEnabled = m_transport->allowBroadcasts(true);
-	fprintf(stderr, "[LAN86] SetLocalIP result init=%d allowBroadcasts=%d local=%d.%d.%d.%d:%d\n",
+	/* 	fprintf(stderr, "[LAN86] SetLocalIP result init=%d allowBroadcasts=%d local=%d.%d.%d.%d:%d\n",
 		retval, broadcastsEnabled, PRINTF_IP_AS_4_INTS(m_localIP), lobbyPort);
-	fflush(stderr);
+	fflush(stderr); */
 
 	return retval;
 }
