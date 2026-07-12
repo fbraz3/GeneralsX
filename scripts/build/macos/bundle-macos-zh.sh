@@ -403,7 +403,10 @@ fi
 
 # GeneralsX @bugfix BenderAI 01/04/2026 Select default Zero Hour asset path by .big presence, with GeneralsMD fallback.
 # Default asset paths matching the standard macOS deploy layout (allow user override)
-export CNC_GENERALS_PATH="${CNC_GENERALS_PATH:-${HOME}/GeneralsX/Generals}"
+# GeneralsX @bugfix felipebraz 12/07/2026 Default CNC_GENERALS_PATH to ~/GeneralsX/Generals if empty (Issue #205)
+if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
+    export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+fi
 if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]]; then
     if [[ -d "${HOME}/GeneralsX/GeneralsZH" && -n "$(compgen -G "${HOME}/GeneralsX/GeneralsZH/*.big" 2>/dev/null)" ]]; then
         export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsZH"

@@ -216,6 +216,11 @@ if [[ -f "\${SCRIPT_DIR}/fontconfig/fonts.conf" ]]; then
     export FONTCONFIG_PATH="\${SCRIPT_DIR}/fontconfig"
 fi
 
+# GeneralsX @bugfix felipebraz 12/07/2026 Default CNC_GENERALS_PATH to ~/GeneralsX/Generals if empty (Issue #205)
+if [[ -z "\${CNC_GENERALS_PATH:-}" ]]; then
+    export CNC_GENERALS_PATH="\${HOME}/GeneralsX/Generals"
+fi
+
 # Auto-detect base Generals install path
 if [[ -z "\${CNC_GENERALS_INSTALLPATH:-}" && -d "\${SCRIPT_DIR}/../Generals" ]]; then
     export CNC_GENERALS_INSTALLPATH="\${SCRIPT_DIR}/../Generals/"
