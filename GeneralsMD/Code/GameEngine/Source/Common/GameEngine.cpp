@@ -1012,7 +1012,8 @@ void GameEngine::update()
 		}
 
 		// TheSuperHackers @info Ignores frozen time because the script engine needs updating in the logic update regardless.
-		if (canUpdateGameLogic())
+		// GeneralsX @fix Halt game logic completely if the game is paused (isGameHalted), preventing background units/animation ticks while paused.
+		if (canUpdateGameLogic() && !TheFramePacer->isGameHalted())
 		{
 			TheGameLogic->UPDATE();
 
