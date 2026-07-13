@@ -94,6 +94,13 @@ BUILDER_ARGS=(
     --install-deps-from=flathub
 )
 
+if [[ -n "${GENERALS_GIT_OVERRIDE_TAG:-}" ]]; then
+    BUILDER_ARGS+=(--env=GENERALS_GIT_OVERRIDE_TAG="${GENERALS_GIT_OVERRIDE_TAG}")
+fi
+if [[ -n "${GENERALS_GIT_OVERRIDE_TSTAMP:-}" ]]; then
+    BUILDER_ARGS+=(--env=GENERALS_GIT_OVERRIDE_TSTAMP="${GENERALS_GIT_OVERRIDE_TSTAMP}")
+fi
+
 if [[ "${GENERALSX_FLATPAK_USE_CCACHE}" == "1" ]]; then
     BUILDER_ARGS+=(--ccache)
     echo "[$(ts)] flatpak-builder ccache enabled (GENERALSX_FLATPAK_USE_CCACHE=1)."
