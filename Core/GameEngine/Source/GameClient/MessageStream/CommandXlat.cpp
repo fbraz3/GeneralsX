@@ -2588,9 +2588,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 						// create a new group.
 						GameMessage *teamMsg = TheMessageStream->appendMessage( GameMessage::MSG_CREATE_SELECTED_GROUP );
 
-						//New group or add to group? Passed in value is true if we are creating a new group.
+						//New group so pass in value true
 						teamMsg->appendBooleanArgument( TRUE );
-
 						teamMsg->appendObjectIDArgument( newDrawable->getObject()->getID() );
 
 						// select the unit
@@ -2700,16 +2699,15 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 					{
 						//deselect other units
 						TheInGameUI->deselectAllDrawables();
-						// select the unit
 
 						// create a new group.
 						GameMessage *teamMsg = TheMessageStream->appendMessage( GameMessage::MSG_CREATE_SELECTED_GROUP );
 
-						//New group or add to group? Passed in value is true if we are creating a new group.
+						//New group so pass in value true
 						teamMsg->appendBooleanArgument( TRUE );
-
 						teamMsg->appendObjectIDArgument( newDrawable->getObject()->getID() );
 
+						// select the unit
 						TheInGameUI->selectDrawable( newDrawable );
 
 						// center on the unit
@@ -2814,13 +2812,14 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 						//deselect other units
 						TheInGameUI->deselectAllDrawables();
 
-						// select the unit
 						// create a new group.
 						GameMessage *teamMsg = TheMessageStream->appendMessage( GameMessage::MSG_CREATE_SELECTED_GROUP );
 
 						//New group so pass in value true
 						teamMsg->appendBooleanArgument( TRUE );
 						teamMsg->appendObjectIDArgument( newDrawable->getObject()->getID() );
+
+						// select the unit
 						TheInGameUI->selectDrawable( newDrawable );
 
 						// center on the unit
@@ -2928,16 +2927,15 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 					{
 						//deselect other units
 						TheInGameUI->deselectAllDrawables();
-						// select the unit
 
 						// create a new group.
 						GameMessage *teamMsg = TheMessageStream->appendMessage( GameMessage::MSG_CREATE_SELECTED_GROUP );
 
-						//New group so passed in value true
+						//New group so pass in value true
 						teamMsg->appendBooleanArgument( TRUE );
-
 						teamMsg->appendObjectIDArgument( newDrawable->getObject()->getID() );
 
+						// select the unit
 						TheInGameUI->selectDrawable( newDrawable );
 
 						// center on the unit
@@ -2980,6 +2978,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			if ( heroDraw == nullptr )
 				break;
 
+			//deselect other units
 			TheInGameUI->deselectAllDrawables();
 
 			// create a new group.
@@ -2988,6 +2987,8 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			//New group so pass in value true
 			teamMsg->appendBooleanArgument( TRUE );
 			teamMsg->appendObjectIDArgument( hero->getID() );
+
+			// select the unit
 			TheInGameUI->selectDrawable( heroDraw );
 
 			// center on the unit
