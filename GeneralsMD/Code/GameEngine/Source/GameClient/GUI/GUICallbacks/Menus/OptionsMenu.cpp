@@ -921,12 +921,18 @@ static void DestroyOptionsLayout() {
 
 static void showAdvancedOptions()
 {
-	WinAdvancedDisplay->winHide(FALSE);
+	if (WinAdvancedDisplay)
+	{
+		WinAdvancedDisplay->winHide(FALSE);
+	}
 }
 
 static void acceptAdvancedOptions()
 {
-	WinAdvancedDisplay->winHide(TRUE);
+	if (WinAdvancedDisplay)
+	{
+		WinAdvancedDisplay->winHide(TRUE);
+	}
 }
 
 static void cancelAdvancedOptions()
@@ -934,7 +940,10 @@ static void cancelAdvancedOptions()
 	//restore the detail selection back to initial state
 	GadgetComboBoxSetSelectedPos(comboBoxDetail, (Int)TheGameLODManager->getStaticLODLevel());
 
-	WinAdvancedDisplay->winHide(TRUE);
+	if (WinAdvancedDisplay)
+	{
+		WinAdvancedDisplay->winHide(TRUE);
+	}
 }
 
 // TheSuperHackers @tweak Now prints additional version information in the version label.
@@ -1076,7 +1085,10 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	sliderParticleCapID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ParticleCapSlider" );
   sliderParticleCap = TheWindowManager->winGetWindowFromId( nullptr, sliderParticleCapID );
 
-	WinAdvancedDisplay->winHide(TRUE);
+	if (WinAdvancedDisplay)
+	{
+		WinAdvancedDisplay->winHide(TRUE);
+	}
 
 	Color color =  GameMakeColor(255,255,255,255);
 
