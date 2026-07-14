@@ -914,7 +914,7 @@ void GameEngine::resetSubsystems()
 }
 
 /// -----------------------------------------------------------------------------------------------
-Bool GameEngine::canUpdateGameLogic()
+Bool GameEngine::canUpdateGameLogic(UnsignedInt logicTimeQueryFlags)
 {
 	// This updates the paused game status of the game logic.
 	TheGameLogic->preUpdate();
@@ -928,7 +928,7 @@ Bool GameEngine::canUpdateGameLogic()
 	}
 	else
 	{
-		return canUpdateRegularGameLogic();
+		return canUpdateRegularGameLogic(logicTimeQueryFlags);
 	}
 }
 
@@ -949,10 +949,16 @@ Bool GameEngine::canUpdateNetworkGameLogic()
 }
 
 /// -----------------------------------------------------------------------------------------------
-Bool GameEngine::canUpdateRegularGameLogic()
+Bool GameEngine::canUpdateRegularGameLogic(UnsignedInt logicTimeQueryFlags)
 {
+	const Int logicTimeScaleFps = TheFramePacer->getActualLogicTimeScaleFps(logicTimeQueryFlags);
+
+	if (logicTimeScaleFps <= 0)
+	{
+		return false;
+	}
+
 	const Bool enabled = TheFramePacer->isLogicTimeScaleEnabled();
-	const Int logicTimeScaleFps = TheFramePacer->getLogicTimeScaleFps();
 	const Int maxRenderFps = TheFramePacer->getFramesPerSecondLimit();
 
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
@@ -1012,8 +1018,7 @@ void GameEngine::update()
 		}
 
 		// TheSuperHackers @info Ignores frozen time because the script engine needs updating in the logic update regardless.
-		// GeneralsX @fix Halt game logic completely if the game is paused (isGameHalted), preventing background units/animation ticks while paused.
-		if (canUpdateGameLogic() && !TheFramePacer->isGameHalted())
+		if (canUpdateGameLogic(FramePacer::IgnoreFrozenTime))
 		{
 			TheGameLogic->UPDATE();
 
