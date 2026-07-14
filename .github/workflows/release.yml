@@ -7,19 +7,15 @@ on:
         description: "Release version tag (e.g., GeneralsX-Beta-3)"
         required: true
         type: string
-      additional_notes:
-        description: "Additional notes (optional markdown)"
-        required: false
-        type: string
       release_mode:
         description: "Release mode"
         required: false
         type: choice
         options:
-          - New Release
           - Draft
+          - New Release
           - Dry Run
-        default: New Release
+        default: Draft
 
 concurrency:
   group: release-${{ github.workflow }}-${{ inputs.release_version }}
@@ -285,48 +281,12 @@ jobs:
           echo "pr_lines_file=$PR_LINES_FILE" >> "$GITHUB_OUTPUT"
           echo "pr_data_file=$PR_DATA_FILE" >> "$GITHUB_OUTPUT"
 
-      - name: Detect new contributors from PR authors
-        id: new_contributors
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          LATEST_TAG_DATE: ${{ steps.latest.outputs.latest_tag_date }}
-        run: |
-          CONTRIBUTORS_FILE=$(mktemp)
-          PR_DATA_FILE="${{ steps.changelog.outputs.pr_data_file }}"
-
-          if [ ! -s "$PR_DATA_FILE" ]; then
-            echo "contributors_file=$CONTRIBUTORS_FILE" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          awk -F'|' '{print $3"|"$4}' "$PR_DATA_FILE" | sort -u | while IFS='|' read -r AUTHOR LOGIN_PR_URL; do
-            [ -z "$AUTHOR" ] && continue
-
-            if [ -z "$LATEST_TAG_DATE" ]; then
-              echo "* @${AUTHOR} made their first contribution in ${LOGIN_PR_URL}" >> "$CONTRIBUTORS_FILE"
-              continue
-            fi
-
-            PREV_COUNT=$(gh api "search/issues" \
-              -f q="repo:${REPO} is:pr is:merged author:${AUTHOR} merged:<${LATEST_TAG_DATE}" \
-              --jq '.total_count' 2>/dev/null || echo "0")
-
-            if [ "$PREV_COUNT" = "0" ]; then
-              echo "* @${AUTHOR} made their first contribution in ${LOGIN_PR_URL}" >> "$CONTRIBUTORS_FILE"
-            fi
-          done
-
-          echo "contributors_file=$CONTRIBUTORS_FILE" >> "$GITHUB_OUTPUT"
-
       - name: Build release notes markdown
         id: notes
         env:
-          ADDITIONAL_NOTES: ${{ inputs.additional_notes }}
           LATEST_TAG: ${{ steps.latest.outputs.latest_tag }}
           CURRENT_TAG: ${{ inputs.release_version }}
           PR_LINES_FILE: ${{ steps.changelog.outputs.pr_lines_file }}
-          CONTRIBUTORS_FILE: ${{ steps.new_contributors.outputs.contributors_file }}
         run: |
           NOTES_FILE="release-assets/${{ inputs.release_version }}-notes.md"
           NOTES_TXT_FILE="release-assets/${{ inputs.release_version }}-notes.txt"
@@ -335,32 +295,27 @@ jobs:
           {
             echo "> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate."
             echo ""
+            if [ "${{ inputs.release_mode }}" = "Draft" ]; then
+              echo "# What's New"
+              echo ""
+              echo "*add-here manual release notes*"
+              echo ""
+            fi
             echo "# Getting Started"
             echo ""
             echo "**Install the engine:** Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md) to set up GeneralsX on your platform."
             echo ""
-            echo "**Don't have the game files?** Steam does not offer a macOS or Linux download for this title. See [Getting the Game Files](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/GETTING_THE_GAME_FILES.md) for step-by-step instructions (copy from Windows, CrossOver trial, or SteamCMD)."
+            echo "## Community Ports based on GeneralsX"
             echo ""
-
-            if [ -n "$ADDITIONAL_NOTES" ]; then
-              echo "## Additional Notes"
-              echo ""
-              echo "$ADDITIONAL_NOTES"
-              echo ""
-            fi
-
-            echo "## What's Changed"
+            echo "If you like GeneralsX, please also take a look into these projects"
             echo ""
+            echo "* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [ammaarreshi](https://github.com/ammaarreshi)"
+            echo "* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [fadi-labib](https://github.com/fadi-labib)"
+            echo "* [GeneralsXWeb](https://github.com/meerzulee/GeneralsXWeb) - Web port by [meerzulee](https://github.com/meerzulee)"
+            echo ""
+            echo "## Changelog"
             cat "$PR_LINES_FILE"
             echo ""
-
-            if [ -s "$CONTRIBUTORS_FILE" ]; then
-              echo "## New Contributors"
-              echo ""
-              cat "$CONTRIBUTORS_FILE"
-              echo ""
-            fi
-
             if [ -n "$LATEST_TAG" ]; then
               echo "**Full Changelog**: https://github.com/fbraz3/GeneralsX/compare/${LATEST_TAG}...${CURRENT_TAG}"
             fi
