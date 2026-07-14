@@ -94,6 +94,15 @@ BUILDER_ARGS=(
     --install-deps-from=flathub
 )
 
+if [[ -n "${GENERALS_GIT_OVERRIDE_TAG:-}" ]] || [[ -n "${GENERALS_GIT_OVERRIDE_TSTAMP:-}" ]]; then
+    cat > "${PROJECT_ROOT}/.git-override.cmake" <<EOF
+set(GENERALS_GIT_OVERRIDE_TAG "${GENERALS_GIT_OVERRIDE_TAG:-}")
+set(GENERALS_GIT_OVERRIDE_TSTAMP "${GENERALS_GIT_OVERRIDE_TSTAMP:-0}")
+EOF
+else
+    rm -f "${PROJECT_ROOT}/.git-override.cmake"
+fi
+
 if [[ "${GENERALSX_FLATPAK_USE_CCACHE}" == "1" ]]; then
     BUILDER_ARGS+=(--ccache)
     echo "[$(ts)] flatpak-builder ccache enabled (GENERALSX_FLATPAK_USE_CCACHE=1)."

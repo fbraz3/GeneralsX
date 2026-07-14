@@ -209,20 +209,28 @@ static int SDLCALL threadFunc(void* /*userData*/)
     }
     else
     {
-        const bool hasCommitTimestamp = GitCommitTimeStamp > 0;
-        char publishedAt[64] = {0};
-        if (hasCommitTimestamp && extractPublishedAt(responseBody, publishedAt, sizeof(publishedAt)))
+        // First check if the tag matches exactly. If it does, we are definitely on the latest version.
+        if (GitTag[0] != '\0' && strcmp(latestTag, GitTag) == 0)
         {
-            time_t remoteTime = parseISO8601(publishedAt);
-            // Signal update only when the remote release was published strictly
-            // AFTER the commit this binary was built from.
-            if (remoteTime != (time_t)-1 && remoteTime > GitCommitTimeStamp)
-                hasUpdate = true;
+            hasUpdate = false;
         }
-        else if (GitTag[0] != '\0')
+        else
         {
-            // No usable published_at comparison; fall back to tag string comparison.
-            hasUpdate = (strcmp(latestTag, GitTag) != 0);
+            const bool hasCommitTimestamp = GitCommitTimeStamp > 0;
+            char publishedAt[64] = {0};
+            if (hasCommitTimestamp && extractPublishedAt(responseBody, publishedAt, sizeof(publishedAt)))
+            {
+                time_t remoteTime = parseISO8601(publishedAt);
+                // Signal update only when the remote release was published strictly
+                // AFTER the commit this binary was built from.
+                if (remoteTime != (time_t)-1 && remoteTime > GitCommitTimeStamp)
+                    hasUpdate = true;
+            }
+            else if (GitTag[0] != '\0')
+            {
+                // No usable published_at comparison; fall back to tag string comparison.
+                hasUpdate = (strcmp(latestTag, GitTag) != 0);
+            }
         }
     }
 
