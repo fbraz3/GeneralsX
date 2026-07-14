@@ -1285,59 +1285,6 @@ void DX8SkinFVFCategoryContainer::Log(bool only_visible)
 
 // ----------------------------------------------------------------------------
 
-#include <fstream>
-#include <iostream>
-
-void LogSkinRender(DX8TextureCategoryClass* category, int pass) {
-	static std::ofstream logfile("/Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/logs/skin_render.log", std::ios::app);
-	if (logfile.is_open()) {
-		logfile << "--- Skin Render Pass " << pass << " ---\n";
-		VertexMaterialClass *vmaterial = const_cast<VertexMaterialClass*>(category->Peek_Material());
-		if (vmaterial) {
-			logfile << "  Material Name: " << (vmaterial->Get_Name() ? vmaterial->Get_Name() : "null") << "\n";
-			Vector3 amb, diff, emiss;
-			vmaterial->Get_Ambient(&amb);
-			vmaterial->Get_Diffuse(&diff);
-			vmaterial->Get_Emissive(&emiss);
-			logfile << "    Ambient: (" << amb.X << ", " << amb.Y << ", " << amb.Z << ")\n";
-			logfile << "    Diffuse: (" << diff.X << ", " << diff.Y << ", " << diff.Z << ")\n";
-			logfile << "    Emissive: (" << emiss.X << ", " << emiss.Y << ", " << emiss.Z << ")\n";
-			logfile << "    UseLighting: " << vmaterial->Get_Lighting() << "\n";
-			logfile << "    DiffuseSrc: " << vmaterial->Get_Diffuse_Color_Source() << "\n";
-			logfile << "    AmbientSrc: " << vmaterial->Get_Ambient_Color_Source() << "\n";
-		} else {
-			logfile << "  Material: null\n";
-		}
-		ShaderClass theShader = category->Get_Shader();
-		logfile << "  Shader bits: " << std::hex << theShader.Get_Bits() << std::dec << "\n";
-		logfile << "    Texturing: " << theShader.Get_Texturing() << "\n";
-		logfile << "    PrimaryGradient: " << theShader.Get_Primary_Gradient() << "\n";
-		logfile << "    SrcBlend: " << theShader.Get_Src_Blend_Func() << "\n";
-		logfile << "    DstBlend: " << theShader.Get_Dst_Blend_Func() << "\n";
-		TextureClass* tex0 = category->Peek_Texture(0);
-		logfile << "  Texture 0: " << (tex0 ? tex0->Get_Texture_Name().str() : "null") << "\n";
-		TextureClass* tex1 = category->Peek_Texture(1);
-		logfile << "  Texture 1: " << (tex1 ? tex1->Get_Texture_Name().str() : "null") << "\n";
-		
-		PolyRenderTaskClass * prt = category->render_task_head;
-		if (prt) {
-			MeshClass * mesh = prt->Peek_Mesh();
-			logfile << "  First Mesh in category: " << (mesh ? mesh->Get_Name() : "null") << "\n";
-			if (mesh && mesh->Peek_Model()) {
-				int vc = mesh->Peek_Model()->Get_Vertex_Count();
-				logfile << "    Vertex Count: " << vc << "\n";
-				const Vector3* normals = mesh->Peek_Model()->Get_Vertex_Normal_Array();
-				if (normals) {
-					logfile << "    First normal: (" << normals[0].X << ", " << normals[0].Y << ", " << normals[0].Z << ")\n";
-				} else {
-					logfile << "    Normals: null\n";
-				}
-			}
-		}
-		logfile << "\n";
-	}
-}
-
 void DX8SkinFVFCategoryContainer::Render()
 {
 	SNAPSHOT_SAY(("DX8SkinFVFCategoryContainer::Render()"));
@@ -1474,7 +1421,6 @@ void DX8SkinFVFCategoryContainer::Render()
 
 			TextureCategoryListIterator it(&visible_texture_category_list[pass]);
 			while (!it.Is_Done()) {
-				LogSkinRender(it.Peek_Obj(), pass);
 				it.Peek_Obj()->Render();
 				it.Next();
 			}
