@@ -47,6 +47,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Cache brew packages
         id: cache-brew
