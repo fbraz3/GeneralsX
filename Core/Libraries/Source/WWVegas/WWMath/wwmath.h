@@ -218,14 +218,20 @@ static WWINLINE float ASinTrig(float x)
 // Each wrapper preserves the exact type (float vs double) of the vanilla CRT call.
 #if USE_DETERMINISTIC_MATH
 	static WWINLINE double		SqrtOrigin(double x) { return gm_sqrt(x); }
+	static WWINLINE float		SqrtOrigin(float x) { return gm_sqrtf(x); }
 	static WWINLINE float		SqrtfOrigin(float x) { return gm_sqrtf(x); }
 	static WWINLINE double		Atan2Origin(double y, double x) { return gm_atan2(y, x); }
+	static WWINLINE float		Atan2Origin(float y, float x) { return gm_atan2f(y, x); }
 	static WWINLINE double		PowOrigin(double x, double y) { return gm_pow(x, y); }
+	static WWINLINE float		PowOrigin(float x, float y) { return gm_powf(x, y); }
 #else
 	static WWINLINE double		SqrtOrigin(double x) { return sqrt(x); }
+	static WWINLINE float		SqrtOrigin(float x) { return sqrtf(x); }
 	static WWINLINE float		SqrtfOrigin(float x) { return sqrtf(x); }
 	static WWINLINE double		Atan2Origin(double y, double x) { return atan2(y, x); }
+	static WWINLINE float		Atan2Origin(float y, float x) { return atan2f(y, x); }
 	static WWINLINE double		PowOrigin(double x, double y) { return pow(x, y); }
+	static WWINLINE float		PowOrigin(float x, float y) { return powf(x, y); }
 #endif
 static WWINLINE float		Sign(float val);
 #if USE_DETERMINISTIC_MATH
