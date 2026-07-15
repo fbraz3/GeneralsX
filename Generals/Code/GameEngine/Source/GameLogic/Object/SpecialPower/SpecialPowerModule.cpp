@@ -96,11 +96,10 @@ SpecialPowerModule::SpecialPowerModule( Thing *thing, const ModuleData *moduleDa
 									: BehaviorModule( thing, moduleData )
 {
 
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @bugfix felipebraz 15/07/2026 Always initialize to 0.
+	// Disabling RETAIL_COMPATIBLE_CRC previously forced this to 0xFFFFFFFF, which caused unpaused
+	// targetless special powers (like Spy Satellite and Battle Plans) to never become ready.
 	m_availableOnFrame = 0;
-#else
-	m_availableOnFrame = 0xFFFFFFFF;
-#endif
 	m_pausedCount = 0;
 	m_pausedOnFrame = 0;
 	m_pausedPercent = 0.0f;
