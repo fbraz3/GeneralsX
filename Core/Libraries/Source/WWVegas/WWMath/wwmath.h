@@ -220,7 +220,7 @@ static WWINLINE float ASinTrig(float x)
 	static WWINLINE double		SqrtOrigin(double x) { return gm_sqrt(x); }
 	static WWINLINE float		SqrtOrigin(float x) { return gm_sqrtf(x); }
 	static WWINLINE float		SqrtfOrigin(float x) { return gm_sqrtf(x); }
-	static WWINLINE double		Atan2Origin(double y, double x) { return gm_atan2(y, x); }
+	static WWINLINE double		Atan2Origin(double y, double x) { return (double)gm_atan2f((float)y, (float)x); }
 	static WWINLINE float		Atan2Origin(float y, float x) { return gm_atan2f(y, x); }
 	static WWINLINE double		PowOrigin(double x, double y) { return gm_pow(x, y); }
 	static WWINLINE float		PowOrigin(float x, float y) { return gm_powf(x, y); }
@@ -245,6 +245,9 @@ static WWINLINE float		Round(float val) { return floorf(val + 0.5f); }
 #endif
 static WWINLINE bool			Fast_Is_Float_Positive(const float & val);
 static WWINLINE bool			Is_Power_Of_2(const unsigned int val);
+
+static WWINLINE float			Div_FixNaN(float dividend, float divisor, float fallback = 0.0f);
+static WWINLINE double			Div_FixNaN(double dividend, double divisor, double fallback = 0.0);
 
 static float		Random_Float();
 
@@ -817,4 +820,22 @@ WWINLINE float WWMath::Inv_Sqrt(float val)
 WWINLINE float WWMath::Normalize_Angle(float angle)
 {
 	return angle - (WWMATH_TWO_PI * Floor((angle + WWMATH_PI) / WWMATH_TWO_PI));
+}
+
+WWINLINE float WWMath::Div_FixNaN(float dividend, float divisor, float fallback)
+{
+#if USE_DETERMINISTIC_MATH
+	return (divisor == 0.0f) ? fallback : dividend / divisor;
+#else
+	return dividend / divisor;
+#endif
+}
+
+WWINLINE double WWMath::Div_FixNaN(double dividend, double divisor, double fallback)
+{
+#if USE_DETERMINISTIC_MATH
+	return (double) ((divisor == 0.0) ? (float) fallback : (float) dividend / (float) divisor);
+#else
+	return dividend / divisor;
+#endif
 }

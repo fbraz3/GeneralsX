@@ -627,7 +627,7 @@ void AISkirmishPlayer::buildAIBaseDefenseStructure(const AsciiString &thingName,
 
 		Real structureRadius = tTemplate->getTemplateGeometryInfo().getBoundingCircleRadius();
 		Real baseCircumference = 2*PI*m_baseRadius;
-		Real angleOffset = 2*PI*(structureRadius*4/baseCircumference);
+		Real angleOffset = 2*PI*WWMath::Div_FixNaN(structureRadius*4, baseCircumference, 0.0f);
 
 		Int selector;
 		Real angle;

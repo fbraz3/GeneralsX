@@ -180,12 +180,8 @@ Int SlowDeathBehavior::getProbabilityModifier( const DamageInfo *damageInfo ) co
 	// eg ( 200 hp max, had 10 left, took 50 damage, 40 overkill, (40/200) * 100 = 20 overkill %)
 	Int overkillDamage = damageInfo->out.m_actualDamageDealt - damageInfo->out.m_actualDamageClipped;
 	Real maxHealth = (Real)getObject()->getBodyModule()->getMaxHealth();
-	Real overkillPercent = 0.0f;
-	if (maxHealth > 0.0f)
-	{
-		overkillPercent = (Real)overkillDamage / maxHealth;
-	}
-	Int overkillModifier = overkillPercent * getSlowDeathBehaviorModuleData()->m_modifierBonusPerOverkillPercent;
+	Real overkillPercent = WWMath::Div_FixNaN((float)overkillDamage, maxHealth, 0.0f);
+	Int overkillModifier = (Int)(overkillPercent * getSlowDeathBehaviorModuleData()->m_modifierBonusPerOverkillPercent);
 
 	return max( getSlowDeathBehaviorModuleData()->m_probabilityModifier + overkillModifier, 1 );
 }
