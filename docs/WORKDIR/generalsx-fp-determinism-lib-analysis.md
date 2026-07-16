@@ -130,7 +130,7 @@ does not already provide, with worse integration.
 
 ---
 
-## Verdict
+## Verdict  
 
 | Question | Answer |
 |---|---|
