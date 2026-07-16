@@ -217,12 +217,12 @@ static WWINLINE float ASinTrig(float x)
 // Origin wrappers: replace bare CRT math calls in GameLogic.
 // Each wrapper preserves the exact type (float vs double) of the vanilla CRT call.
 #if USE_DETERMINISTIC_MATH
-	static WWINLINE double		SqrtOrigin(double x) { return gm_sqrt(x); }
+	static WWINLINE double		SqrtOrigin(double x) { return (double)gm_sqrtf((float)x); }
 	static WWINLINE float		SqrtOrigin(float x) { return gm_sqrtf(x); }
 	static WWINLINE float		SqrtfOrigin(float x) { return gm_sqrtf(x); }
 	static WWINLINE double		Atan2Origin(double y, double x) { return (double)gm_atan2f((float)y, (float)x); }
 	static WWINLINE float		Atan2Origin(float y, float x) { return gm_atan2f(y, x); }
-	static WWINLINE double		PowOrigin(double x, double y) { return gm_pow(x, y); }
+	static WWINLINE double		PowOrigin(double x, double y) { return (double)gm_powf((float)x, (float)y); }
 	static WWINLINE float		PowOrigin(float x, float y) { return gm_powf(x, y); }
 #else
 	static WWINLINE double		SqrtOrigin(double x) { return sqrt(x); }

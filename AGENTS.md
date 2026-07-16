@@ -48,6 +48,8 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
     - `ceil` / `ceilf` -> `WWMath::Ceil`
     - `floor` / `floorf` -> `WWMath::Floor`
     - `pow` -> `WWMath::PowOrigin`
+13. **NaN/Inf Integer Casting** – ARM64 casts `(Int)NaN` to `0`, while x86 casts it to `INT_MIN`. Any division by potentially zero (e.g. `val / maxHealth`) whose result might be cast to an integer or affect simulation flow MUST be guarded (`if (maxHealth > 0)`) or use `WWMath::Div_FixNaN` to avoid immediate CRC desyncs.
+14. **Double-Precision Isolation** – Do not allow implicit `double` promotion in transcendental/power math evaluations (e.g. `gm_sqrt`, `gm_pow`, `gm_atan`). x87 (24-bit mantissa) and NEON (53-bit mantissa) diverge by 1-ULP on double-precision. Ensure all `WWMath` wrappers explicitly accept/return `float` or internally downcast `double` to `float` prior to `gm_*f` execution to guarantee cross-platform bit-identical outputs.
 
 ## Reference Repositories
 - **fighter19-dxvk-port** – Primary graphics/platform reference (DXVK + SDL3 on Linux)
