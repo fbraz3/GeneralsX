@@ -3763,6 +3763,9 @@ void GameLogic::update()
 	USE_PERF_TIMER(GameLogic_update)
 	PROFILER_SECTION_COLOR(0x4CAF50);
 
+	// GeneralsX @bugfix fbraz3 16/07/2026 Lock FPU state before every simulation frame
+	ScopedFPUGuard fpuGuard;
+
 	LatchRestore<Bool> inUpdateLatch(m_isInUpdate, TRUE);
 #ifdef DO_UNIT_TIMINGS
 	unitTimings();

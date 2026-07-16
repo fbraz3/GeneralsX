@@ -209,6 +209,7 @@ void MiniAudioManager::reset()
 void MiniAudioManager::update()
 {
 	ScopedFPUGuard fpuGuard;
+
 	AudioManager::update();
 	setDeviceListenerPosition();
 	processRequestList();
