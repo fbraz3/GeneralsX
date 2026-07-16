@@ -33,6 +33,10 @@
 #include "Common/Xfer.h"
 #include "Common/XferCRC.h"
 
+#if DEEP_CRC_TO_MEMORY
+#include <vector>
+#endif
+
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Snapshot;
 
@@ -55,9 +59,18 @@ public:
 	virtual void xferAsciiString( AsciiString *asciiStringData ) override;  ///< xfer ascii string (need our own)
 	virtual void xferUnicodeString( UnicodeString *unicodeStringData ) override;	///< xfer unicode string (need our own);
 
+#if DEEP_CRC_TO_MEMORY
+	virtual void xferLogString(const AsciiString& str) override;
+	void changeXferMode(XferMode xferMode);
+#endif
+
 protected:
 
 	virtual void xferImplementation( void *data, Int dataSize ) override;
 
+#if DEEP_CRC_TO_MEMORY
+	std::vector<UnsignedByte>* m_buffer;									///< pointer to buffer
+	size_t m_bufferIndex;																	///< current index in buffer
+#endif
 	FILE * m_fileFP;																			///< pointer to file
 };

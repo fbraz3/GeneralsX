@@ -7,14 +7,17 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-REPLAY_FILE=$1
-LOG_DIR="logs/sync_harness"
+CURRENT_DIR="$(pwd)"
+
+REPLAY_FILE="$1"
+LOG_DIR="${CURRENT_DIR}/logs/sync_harness"
 mkdir -p "$LOG_DIR"
 
 echo "Running determinism harness on replay: $REPLAY_FILE"
 
 # Run the game in a controlled, quickstart mode to force replay playback
 # and generate SyncCrash or crc logs.
+cd ~/GeneralsX/GeneralsZH && \
 ./run.sh -win -xres 800 -yres 600 -quickstart -replay "$REPLAY_FILE" 2>&1 | tee "$LOG_DIR/harness_run.log"
 
 echo "Harness run complete. Check $LOG_DIR and the generated SyncCrash files."

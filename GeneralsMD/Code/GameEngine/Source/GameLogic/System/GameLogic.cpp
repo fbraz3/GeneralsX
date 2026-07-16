@@ -284,7 +284,11 @@ GameLogic::GameLogic()
 		m_progressCompleteTimeout[i] = 0;
 	}
 
-	m_shouldValidateCRCs = FALSE;
+	m_shouldValidateCRCs = 0;
+
+#if DEEP_CRC_TO_MEMORY
+	m_crcBufferIndex = 0;
+#endif
 
 	m_startNewGame = FALSE;
 
@@ -2688,7 +2692,7 @@ void GameLogic::processDestroyList()
 void GameLogic::processCommandList( CommandList *list )
 {
 	m_cachedCRCs.clear();
-	m_shouldValidateCRCs = FALSE;
+	m_shouldValidateCRCs = 0;
 
 	GameMessage* msg;
 
@@ -2700,7 +2704,7 @@ void GameLogic::processCommandList( CommandList *list )
 		logicMessageDispatcher( msg, nullptr );
 	}
 
-	if (m_shouldValidateCRCs && !TheNetwork->sawCRCMismatch())
+	if (m_shouldValidateCRCs == 1 && !TheNetwork->sawCRCMismatch())
 	{
 		Bool sawCRCMismatch = FALSE;
 		Int numPlayers = 0;
@@ -2760,6 +2764,73 @@ void GameLogic::processCommandList( CommandList *list )
 			// GeneralsX @build GitHubCopilot 12/04/2026 Dump frame CRC set to stderr so Linux/macOS logs can be compared directly.
 			/* 			fprintf(stderr, "[LAN86] CRC mismatch summary frame=%u cached=%zu players=%d\n",
 				m_frame, m_cachedCRCs.size(), numPlayers); */
+#if DEEP_CRC_TO_MEMORY
+			UnsignedInt flagPlayersConnected = 0;
+			UnsignedInt flagCRCs = 0;
+
+			for (Int i = 0; i < MAX_SLOTS; ++i)
+			{
+				if (TheNetwork->isPlayerConnected(i))
+				{
+					flagPlayersConnected |= (1U << i);
+				}
+			}
+
+			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			{
+				flagCRCs |= (1U << (crcIt->first - 2)); // neutral and civilian players take the first two slots
+			}
+
+			UnicodeString strMismatchDetails;
+			strMismatchDetails.format(L"GameLogic frame %d, latest frame %d\nHad %d CRCs from %d players; Flags %d, %d\nMismatched Players:\n",
+				TheGameLogic->getFrame(),
+				TheGameLogic->getFrame() - TheNetwork->getRunAhead() - 1,
+				m_cachedCRCs.size(),
+				numPlayers,
+				flagPlayersConnected,
+				flagCRCs);
+
+			std::map<UnsignedInt, int> mapCRCOccurences;
+			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			{
+				std::map<UnsignedInt, int>::iterator occurIt = mapCRCOccurences.find(crcIt->second);
+				if (occurIt != mapCRCOccurences.end())
+				{
+					++occurIt->second;
+				}
+				else
+				{
+					mapCRCOccurences[crcIt->second] = 1;
+				}
+			}
+
+			int biggestCRCCount = -1;
+			UnsignedInt biggestCRC = ~0u;
+
+			for (std::map<UnsignedInt, int>::iterator crcIter = mapCRCOccurences.begin(); crcIter != mapCRCOccurences.end(); ++crcIter)
+			{
+				if (crcIter->second > biggestCRCCount)
+				{
+					biggestCRC = crcIter->first;
+					biggestCRCCount = crcIter->second;
+				}
+			}
+
+			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			{
+				if (crcIt->second != biggestCRC)
+				{
+					Player* player = ThePlayerList->getNthPlayer(crcIt->first);
+					UnicodeString strPlayerInfo;
+					strPlayerInfo.format(L"player %d (%ls) = %X [MISMATCH]\n", crcIt->first, player ? player->getPlayerDisplayName().str() : L"<NONE>", crcIt->second);
+
+					strMismatchDetails.concat(strPlayerInfo);
+				}
+			}
+
+			TheGameLogic->writeCRCBuffersToDisk(TheGameLogic->getFrame() - TheNetwork->getRunAhead() - 1);
+			TheNetwork->setSawCRCMismatch(strMismatchDetails);
+#else
 			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
 			{
 				Player *player = ThePlayerList->getNthPlayer(crcIt->first);
@@ -2776,6 +2847,7 @@ void GameLogic::processCommandList( CommandList *list )
 			}
 #endif // DEBUG_LOGGING
 			TheNetwork->setSawCRCMismatch();
+#endif
 		}
 	}
 
@@ -5513,3 +5585,82 @@ void GameLogic::loadPostProcess()
 	remakeSleepyUpdate();
 
 }
+
+#if DEEP_CRC_TO_MEMORY
+std::vector<UnsignedByte>& GameLogic::getCRCBuffer()
+{
+	return m_crcWriteBuffer;
+}
+
+void GameLogic::storeCRCBuffer(size_t size)
+{
+	std::vector<UnsignedByte>& vec = m_crcBuffers[m_crcBufferIndex++ % ARRAY_SIZE(m_crcBuffers)];
+
+	vec.clear();
+	vec.insert(vec.begin(), m_crcWriteBuffer.begin(), m_crcWriteBuffer.begin() + size);
+}
+
+void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
+{
+	AsciiString str;
+	// GeneralsX: Generate OS/Arch header
+	AsciiString headerStr;
+#if defined(__APPLE__) && defined(__aarch64__)
+	headerStr = "GeneralsX: macOS ARM64\n";
+#elif defined(__APPLE__) && defined(__x86_64__)
+	headerStr = "GeneralsX: macOS x86_64\n";
+#elif defined(__linux__) && defined(__x86_64__)
+	headerStr = "GeneralsX: Linux x86_64\n";
+#elif defined(__linux__) && defined(__aarch64__)
+	headerStr = "GeneralsX: Linux ARM64\n";
+#else
+	headerStr = "GeneralsX: Unknown OS/Arch\n";
+#endif
+
+	// Format filename as deep_crc_YYYY-MM-DD-HH-MM-SS.bin inside user data logs dir
+	time_t t = time(nullptr);
+	struct tm *tm_info = localtime(&t);
+	char timebuf[32];
+	strftime(timebuf, 32, "%Y-%m-%d-%H-%M-%S", tm_info);
+
+	// TheGlobalData->getPath_UserData() gives standard document path
+	// Let's create logs dir if not exists (in cross-platform way, handled by file system)
+	str.format("%slogs/deep_crc_%s_f%u.bin", TheGlobalData->getPath_UserData().str(), timebuf, frame);
+
+	FILE* fp = fopen(str.str(), "wb");
+	if (fp)
+	{
+		constexpr const char version[] = "[ DEEP CRC DATA (VERSION 1.0.0) ]\n";
+
+		if (fwrite(&version[0], ARRAY_SIZE(version) - 1, 1, fp) != 1)
+		{
+			fclose(fp);
+			return;
+		}
+
+		if (fwrite(headerStr.str(), headerStr.getLength(), 1, fp) != 1)
+		{
+			fclose(fp);
+			return;
+		}
+
+		size_t oldest = (m_crcBufferIndex >= ARRAY_SIZE(m_crcBuffers)) ? m_crcBufferIndex % ARRAY_SIZE(m_crcBuffers) : 0;
+		for (size_t i = 0; i < ARRAY_SIZE(m_crcBuffers); ++i)
+		{
+			size_t readIndex = (oldest + i) % ARRAY_SIZE(m_crcBuffers);
+			const std::vector<UnsignedByte>& vec = m_crcBuffers[readIndex];
+
+			if (vec.size() > 0)
+			{
+				if (fwrite(vec.data(), vec.size(), 1, fp) != 1)
+				{
+					fclose(fp);
+					return;
+				}
+			}
+		}
+
+		fclose(fp);
+	}
+}
+#endif
