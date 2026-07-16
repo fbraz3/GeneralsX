@@ -36,7 +36,11 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 9. **Update worklog** – Update `docs/WORKLOG/YYYY-MM-DIARY.md` before committing (see [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) for details)
 10. **Reference repos** – Study patterns, don't copy-paste
 11. **Backport to Generals** – Bugfixes and improvements must be backported to the Generals base game.
-12. **Deterministic Math** – The native math functions were replaced by deterministic multi-platform WWMath equivalents to maintain determinism. This pattern must be preserved. When syncing upstream, replace these functions:
+
+## Cross-Platform Determinism (Mac vs Linux)
+To guarantee cross-play between macOS ARM64 and Linux x86_64 without SyncCrash desyncs, you must obey the following rules:
+
+1. **Deterministic Math** – The native math functions were replaced by deterministic multi-platform WWMath equivalents to maintain determinism. This pattern must be preserved. When syncing upstream, replace these functions:
     - `sqrt` / `sqrtf` -> `WWMath::SqrtOrigin` / `WWMath::SqrtfOrigin` or `WWMath::Sqrt`
     - `sin` / `sinf` -> `WWMath::SinTrig` or `WWMath::Sin`
     - `cos` / `cosf` -> `WWMath::CosTrig` or `WWMath::Cos`
@@ -48,8 +52,10 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
     - `ceil` / `ceilf` -> `WWMath::Ceil`
     - `floor` / `floorf` -> `WWMath::Floor`
     - `pow` -> `WWMath::PowOrigin`
-13. **NaN/Inf Integer Casting** – ARM64 casts `(Int)NaN` to `0`, while x86 casts it to `INT_MIN`. Any division by potentially zero (e.g. `val / maxHealth`) whose result might be cast to an integer or affect simulation flow MUST be guarded (`if (maxHealth > 0)`) or use `WWMath::Div_FixNaN` to avoid immediate CRC desyncs.
-14. **Double-Precision Isolation** – Do not allow implicit `double` promotion in transcendental/power math evaluations (e.g. `gm_sqrt`, `gm_pow`, `gm_atan`). x87 (24-bit mantissa) and NEON (53-bit mantissa) diverge by 1-ULP on double-precision. Ensure all `WWMath` wrappers explicitly accept/return `float` or internally downcast `double` to `float` prior to `gm_*f` execution to guarantee cross-platform bit-identical outputs.
+2. **NaN/Inf Integer Casting** – ARM64 casts `(Int)NaN` to `0`, while x86 casts it to `INT_MIN`. Any division by potentially zero (e.g. `val / maxHealth`) whose result might be cast to an integer or affect simulation flow MUST be guarded (`if (maxHealth > 0)`) or use `WWMath::Div_FixNaN` to avoid immediate CRC desyncs.
+3. **Double-Precision Isolation** – Do not allow implicit `double` promotion in transcendental/power math evaluations (e.g. `gm_sqrt`, `gm_pow`, `gm_atan`). x87 (24-bit mantissa) and NEON (53-bit mantissa) diverge by 1-ULP on double-precision. Ensure all `WWMath` wrappers explicitly accept/return `float` or internally downcast `double` to `float` prior to `gm_*f` execution to guarantee cross-platform bit-identical outputs.
+4. **FPU Environment State Leaks** – Audio drivers (OpenAL/MiniAudio) and OS callbacks aggressively alter hardware FPU registers (e.g., Flush-To-Zero, Rounding mode) for DSP performance. If this state leaks into the main thread, the simulation math diverges. **Always inject `ScopedFPUGuard`** at the boundaries of `GameLogic::update()`, audio thread callbacks, and mouse-picking logic (e.g., `View::pickDrawable()`).
+5. **FMA Contraction** – Fused Multiply-Add combines instructions with infinite intermediate precision, yielding different results on ARM64 vs x86_64. We strictly enforce `-ffp-contract=off` globally (and `/fp:precise` for MSVC). Never bypass this with `-ffast-math` or `/fp:fast`.
 
 ## Reference Repositories
 - **fighter19-dxvk-port** – Primary graphics/platform reference (DXVK + SDL3 on Linux)
