@@ -68,6 +68,7 @@
 #include "GameLogic/AI.h"			///< For AI debug (yes, I'm cheating for now)
 #include "GameLogic/AIPathfind.h"			///< For AI debug (yes, I'm cheating for now)
 #include "GameLogic/ExperienceTracker.h"
+#include "GameLogic/FPUControl.h"							///< GeneralsX @bugfix costin-alupului 10/07/2026 setFPMode() to guard screen->world pick math against audio-thread FP env leaks
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/BodyModule.h"
@@ -2520,6 +2521,9 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 	if( screen == nullptr )
 		return nullptr;
 
+	// GeneralsX @bugfix costin-alupului 10/07/2026 Re-assert FP mode before the pick ray math (see screenToTerrain).
+	setFPMode();
+
 	// don't pick a drawable if there is a window under the cursor
 	GameWindow *window = nullptr;
 	if (TheWindowManager)
@@ -2574,6 +2578,14 @@ Bool W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 {
 	if( screen == nullptr || world == nullptr || TheTerrainRenderObject == nullptr )
 		return false;
+
+	// GeneralsX @bugfix costin-alupului 10/07/2026 The screen->world ray/intersection math below
+	// relies on a consistent FP rounding/environment (same reason GameLogic::update() calls
+	// setFPMode()). On macOS/ARM the audio backend thread can leave the FP environment in a state
+	// that skews the fast float->int coordinate conversion, causing clicks to resolve to the wrong
+	// world tile (move/build fail unless the camera is moved/zoomed to force a recompute). Re-assert
+	// the engine's FP mode here so picks are correct regardless of audio-thread activity.
+	setFPMode();
 
 	if (m_cameraHasMovedSinceRequest) {
 		m_locationRequests.clear();
