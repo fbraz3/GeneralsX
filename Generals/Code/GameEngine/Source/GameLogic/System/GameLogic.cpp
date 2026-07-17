@@ -43,7 +43,13 @@
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
+#include "Common/GameLOD.h"
 #include "Common/GameState.h"
+
+#if DEEP_CRC_TO_MEMORY
+#include <sys/utsname.h>
+#include <SDL3/SDL.h>
+#endif
 #include "Common/GameUtility.h"
 #include "Common/INI.h"
 #include "Common/LatchRestore.h"
@@ -276,6 +282,13 @@ GameLogic::GameLogic()
 
 #if DEEP_CRC_TO_MEMORY
 	m_crcBufferIndex = 0;
+
+	m_crcWriteBuffer.resize(1024 * 1024 * 8);
+
+	for (size_t i = 0; i < ARRAY_SIZE(m_crcBuffers); ++i)
+	{
+		m_crcBuffers[i].resize(1024 * 1024);
+	}
 #endif
 
 	m_startNewGame = FALSE;
@@ -3714,7 +3727,13 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 
 	XferCRC *xferCRC;
 	AsciiString marker;
-	if (deepCRCFileName.isNotEmpty())
+#if DEEP_CRC_TO_MEMORY
+	const Bool forceDeepCRC = TRUE;
+#else
+	const Bool forceDeepCRC = FALSE;
+#endif
+
+	if (forceDeepCRC || deepCRCFileName.isNotEmpty())
 	{
 		xferCRC = NEW XferDeepCRC;
 		xferCRC->open(deepCRCFileName.str());
@@ -3816,9 +3835,43 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 		TheGameState->friend_xferSaveDataForCRC(xferCRC, SNAPSHOT_DEEPCRC_LOGICONLY);
 	}
 
-	xferCRC->close();
+	const UnsignedInt theCRC = xferCRC->getCRC();
 
-	UnsignedInt theCRC = xferCRC->getCRC();
+#if DEEP_CRC_TO_MEMORY
+	AsciiString tmp;
+	tmp.format("[ frame %d: %8.8X, logical seeds: %8.8X ]", m_frame, theCRC, GetGameLogicRandomSeed());
+
+	xferCRC->xferLogString(tmp);
+
+	for (Int j = 0; j < ThePlayerList->getPlayerCount(); ++j)
+	{
+		if (Player* player = ThePlayerList->getNthPlayer(j))
+		{
+			tmp.format("[ Player (%d) money: %d, energy: %d | %d ]",
+				j, player->getMoney()->countMoney(), player->getEnergy()->getProduction(), player->getEnergy()->getConsumption());
+
+			xferCRC->xferLogString(tmp);
+		}
+	}
+
+	for (obj = m_objList; obj; obj=obj->getNextObject())
+	{
+		XferCRC tmpXfer;
+		tmpXfer.open("");
+		tmpXfer.xferUser(const_cast<Matrix3D*>(obj->getTransformMatrix()), sizeof(Matrix3D));
+		tmpXfer.close();
+
+		const UnsignedInt mtxCRC = tmpXfer.getCRC();
+
+		tmp.format("[ CRC of object: %d (%s), player: %d, team: %d, health: %f, pos: %f %f %f, mtx: %8.8X ]",
+			obj->getID(), obj->getTemplate()->getName().str(), obj->getControllingPlayer()->getPlayerIndex(), (obj->getTeam() ? obj->getTeam()->getID() : TEAM_ID_INVALID),
+			obj->getBodyModule()->getHealth(), obj->getPosition()->x, obj->getPosition()->y, obj->getPosition()->z, mtxCRC);
+
+		xferCRC->xferLogString(tmp);
+	}
+#endif
+
+	xferCRC->close();
 
 	delete xferCRC;
 	xferCRC = nullptr;
@@ -5003,17 +5056,14 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 	AsciiString str;
 	// GeneralsX: Generate OS/Arch header
 	AsciiString headerStr;
-#if defined(__APPLE__) && defined(__aarch64__)
-	headerStr = "GeneralsX: macOS ARM64\n";
-#elif defined(__APPLE__) && defined(__x86_64__)
-	headerStr = "GeneralsX: macOS x86_64\n";
-#elif defined(__linux__) && defined(__x86_64__)
-	headerStr = "GeneralsX: Linux x86_64\n";
-#elif defined(__linux__) && defined(__aarch64__)
-	headerStr = "GeneralsX: Linux ARM64\n";
-#else
-	headerStr = "GeneralsX: Unknown OS/Arch\n";
-#endif
+	struct utsname sysInfo;
+	if (uname(&sysInfo) == 0) {
+		headerStr.format("GeneralsX: %s %s (%s)\nArch: %s\nCPU Cores: %d\nRAM: %d MB\n\n",
+						 sysInfo.sysname, sysInfo.release, sysInfo.version, sysInfo.machine,
+						 SDL_GetNumLogicalCPUCores(), SDL_GetSystemRAM());
+	} else {
+		headerStr = "GeneralsX: Unknown OS/Arch\n\n";
+	}
 
 	// Format filename as deep_crc_YYYY-MM-DD-HH-MM-SS.bin inside user data logs dir
 	time_t t = time(nullptr);
