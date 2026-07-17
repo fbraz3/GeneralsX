@@ -5023,7 +5023,11 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 
 	// TheGlobalData->getPath_UserData() gives standard document path
 	// Let's create logs dir if not exists (in cross-platform way, handled by file system)
-	str.format("%slogs/deep_crc_%s_f%u.bin", TheGlobalData->getPath_UserData().str(), timebuf, frame);
+	AsciiString logDir;
+	logDir.format("%slogs", TheGlobalData->getPath_UserData().str());
+	TheFileSystem->createDirectory(logDir);
+
+	str.format("%s/deep_crc_%s_f%u.bin", logDir.str(), timebuf, frame);
 
 	FILE* fp = fopen(str.str(), "wb");
 	if (fp)
