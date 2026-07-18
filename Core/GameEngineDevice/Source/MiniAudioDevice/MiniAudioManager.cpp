@@ -203,6 +203,19 @@ void MiniAudioManager::reset()
 
 	AudioManager::reset();
 	stopAllAudioImmediately();
+	// GeneralsX @bugfix coolswood 18/07/2026 Restart sound groups in reset() to fix silent audio after loadGame.
+	// stopAllAudioImmediately() releases individual PlayingAudio entries but does not touch the four
+	// ma_sound_group nodes. If a prior pauseAudio() had stopped them (e.g. via the ESC menu used to pick
+	// "Load"), they remain stopped across loadGame(). New sounds attach to the stopped groups via
+	// ma_sound_init_from_data_source() and are then silently reaped by processPlayingList() because
+	// ma_sound_is_playing() returns false — the user observes "no sound until ESC toggled", since the
+	// pause/unpause cycle finally calls resumeAudio() -> ma_sound_group_start(). Restart the groups here
+	// so audio works immediately after a save load. Guarded by the per-type *On flags: if the device
+	// never opened (openDevice bailed out), the groups were never ma_sound_group_init'd, so touching
+	// them would be unsafe.
+	if (m_soundOn || m_sound3DOn || m_speechOn || m_musicOn) {
+		resumeAudio(AudioAffect_All);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
