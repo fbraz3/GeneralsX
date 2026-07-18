@@ -2061,6 +2061,10 @@ void ReverseSoundTransition::skip()
 
 void PushButtonImageDrawThree(GameWindow *window, Int alpha )
 {
+	if (window == nullptr)
+		return;
+	if (BitIsSet(window->winGetStatus(), WIN_STATUS_DESTROYED))
+		return;
 	WinInstanceData *instData = window->winGetInstanceData();
 	const Image *leftImage, *rightImage, *centerImage;
 	ICoord2D origin, size, start, end;
