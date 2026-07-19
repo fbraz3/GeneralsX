@@ -544,6 +544,8 @@ void OpenALAudioManager::update()
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::stopAudio(AudioAffect which)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	// All we really need to do is:
 	// 1) Remove the EOS callback.
 	// 2) Stop the sample, (so that when we later unload it, bad stuff doesn't happen)
@@ -599,6 +601,8 @@ void OpenALAudioManager::stopAudio(AudioAffect which)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::pauseAudio(AudioAffect which)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio*>::iterator it;
 
 	PlayingAudio* playing = NULL;
@@ -665,6 +669,8 @@ void OpenALAudioManager::pauseAudio(AudioAffect which)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::resumeAudio(AudioAffect which)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio*>::iterator it;
 
 	PlayingAudio* playing = NULL;
@@ -996,6 +1002,8 @@ void OpenALAudioManager::playAudioEvent(AudioEventRTS* event)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::stopAudioEvent(AudioHandle handle)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 #ifdef INTENSIVE_AUDIO_DEBUG
 	DEBUG_LOG(("OPENAL (%d) - Processing stop request: %d\n", TheGameLogic->getFrame(), handle));
 #endif
@@ -1073,6 +1081,8 @@ void OpenALAudioManager::stopAudioEvent(AudioHandle handle)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::killAudioEventImmediately(AudioHandle audioEvent)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	//First look for it in the request list.
 	std::list<AudioRequest*>::iterator ait;
 	for (ait = m_audioRequests.begin(); ait != m_audioRequests.end(); ait++)
@@ -1144,6 +1154,8 @@ void OpenALAudioManager::killAudioEventImmediately(AudioHandle audioEvent)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::pauseAudioEvent(AudioHandle handle)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	// pause audio
 }
 
@@ -1219,6 +1231,8 @@ void OpenALAudioManager::releasePlayingAudio(PlayingAudio* release)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::stopAllAudioImmediately(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio*>::iterator it;
 	PlayingAudio* playing;
 
@@ -1275,6 +1289,8 @@ void OpenALAudioManager::stopAllAudioImmediately(void)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::freeAllOpenALHandles(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	// First, we need to ensure that we don't have any sample handles open. To that end, we must stop
 	// all of our currently playing audio.
 	stopAllAudioImmediately();
@@ -1341,6 +1357,8 @@ void OpenALAudioManager::adjustPlayingVolume(PlayingAudio* audio)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::stopAllSpeech(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio*>::iterator it;
 	PlayingAudio* playing;
 	for (it = m_playingStreams.begin(); it != m_playingStreams.end(); ) {
@@ -1561,6 +1579,8 @@ void OpenALAudioManager::openDevice(void)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::closeDevice(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	unselectProvider();
 	alcMakeContextCurrent(nullptr);
 
@@ -1614,6 +1634,8 @@ Bool OpenALAudioManager::isCurrentlyPlaying(AudioHandle handle)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, UnsignedInt flags)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	PlayingAudio* playing = findPlayingAudioFrom(audioCompleted, flags);
 	if (!playing) {
 		DEBUG_CRASH(("Audio has completed playing, but we can't seem to find it. - jkmcd"));
@@ -1749,6 +1771,8 @@ UnsignedInt OpenALAudioManager::getProviderIndex(AsciiString providerName) const
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::selectProvider(UnsignedInt providerNdx)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	if (!isOn(AudioAffect_Sound3D))
 	{
 		return;
@@ -1849,6 +1873,8 @@ void OpenALAudioManager::selectProvider(UnsignedInt providerNdx)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::unselectProvider(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	if (!(isOn(AudioAffect_Sound3D) && isValidProvider())) {
 		return;
 	}
@@ -2159,6 +2185,8 @@ Bool OpenALAudioManager::isPlayingLowerPriority(AudioEventRTS* event) const
 //-------------------------------------------------------------------------------------------------
 Bool OpenALAudioManager::killLowestPrioritySoundImmediately(AudioEventRTS* event)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	//Actually, we want to kill the LOWEST PRIORITY SOUND, not the first "lower" priority
 	//sound we find, because it could easily be 
 	AudioEventRTS* lowestPriorityEvent = findLowestPrioritySound(event);
@@ -2211,6 +2239,8 @@ Bool OpenALAudioManager::killLowestPrioritySoundImmediately(AudioEventRTS* event
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::adjustVolumeOfPlayingAudio(AsciiString eventName, Real newVolume)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio*>::iterator it;
 
 	PlayingAudio* playing = NULL;
@@ -2249,6 +2279,8 @@ void OpenALAudioManager::adjustVolumeOfPlayingAudio(AsciiString eventName, Real 
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::removePlayingAudio(AsciiString eventName)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio*>::iterator it;
 
 	PlayingAudio* playing = NULL;
@@ -2298,6 +2330,8 @@ void OpenALAudioManager::removePlayingAudio(AsciiString eventName)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::removeAllDisabledAudio()
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio*>::iterator it;
 
 	PlayingAudio* playing = NULL;
@@ -2746,6 +2780,8 @@ void OpenALAudioManager::setSpeakerSurround(Bool surround)
 //-------------------------------------------------------------------------------------------------
 Real OpenALAudioManager::getFileLengthMS(AsciiString strToLoad) const
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	if (strToLoad.isEmpty()) {
 		return 0.0f;
 	}
@@ -2763,6 +2799,8 @@ Real OpenALAudioManager::getFileLengthMS(AsciiString strToLoad) const
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::closeAnySamplesUsingFile(const void* fileToClose)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	ALuint bufferHandle = (ALuint)(uintptr_t)fileToClose;
 	if (!bufferHandle) {
 		return;
@@ -3110,6 +3148,8 @@ void OpenALAudioManager::releaseHandleForBink(void)
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::friend_forcePlayAudioEventRTS(const AudioEventRTS* eventToPlay)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	if (!eventToPlay->getAudioEventInfo()) {
 		getInfoForAudioEvent(eventToPlay);
 		if (!eventToPlay->getAudioEventInfo()) {

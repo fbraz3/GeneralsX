@@ -220,6 +220,8 @@ void MiniAudioManager::update()
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::stopAudio(AudioAffect which)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	if (BitIsSet(which, AudioAffect_Sound))
 		ma_sound_group_stop(&m_soundGroup);
 	if (BitIsSet(which, AudioAffect_Sound3D))
@@ -233,6 +235,8 @@ void MiniAudioManager::stopAudio(AudioAffect which)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::pauseAudio(AudioAffect which)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	if (BitIsSet(which, AudioAffect_Sound))
 		ma_sound_group_stop(&m_soundGroup);
 	if (BitIsSet(which, AudioAffect_Sound3D))
@@ -246,6 +250,8 @@ void MiniAudioManager::pauseAudio(AudioAffect which)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::resumeAudio(AudioAffect which)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	if (BitIsSet(which, AudioAffect_Sound))
 		ma_sound_group_start(&m_soundGroup);
 	if (BitIsSet(which, AudioAffect_Sound3D))
@@ -486,6 +492,8 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::stopAudioEvent(AudioHandle handle)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio *>::iterator it;
 
 	// Handle special music stop commands
@@ -521,6 +529,8 @@ void MiniAudioManager::stopAudioEvent(AudioHandle handle)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::killAudioEventImmediately(AudioHandle audioEvent)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	// First look for it in the request list.
 	std::list<AudioRequest *>::iterator ait;
 	for (ait = m_audioRequests.begin(); ait != m_audioRequests.end(); ait++)
@@ -551,6 +561,8 @@ void MiniAudioManager::killAudioEventImmediately(AudioHandle audioEvent)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::pauseAudioEvent(AudioHandle handle)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	// TODO: implement individual sound pause
 }
 
@@ -607,6 +619,8 @@ void MiniAudioManager::releasePlayingAudio(PlayingAudio *release)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::stopAllAudioImmediately(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio *>::iterator it;
 	PlayingAudio *playing;
 
@@ -632,6 +646,8 @@ void MiniAudioManager::stopAllAudioImmediately(void)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::freeAllMiniAudioHandles(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	ma_engine_stop(&m_engine);
 }
 
@@ -659,6 +675,8 @@ void MiniAudioManager::adjustPlayingVolume(PlayingAudio *audio)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::stopAllSpeech(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	std::list<PlayingAudio *>::iterator it;
 	for (it = m_playingSounds.begin(); it != m_playingSounds.end(); ) {
 		PlayingAudio *playing = (*it);
@@ -825,6 +843,8 @@ void MiniAudioManager::openDevice(void)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::closeDevice(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	// Stop all audio first to prevent use-after-free in audio callbacks
 	stopAllAudioImmediately();
 
@@ -857,6 +877,8 @@ Bool MiniAudioManager::isCurrentlyPlaying(AudioHandle handle)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, UnsignedInt flags)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	PlayingAudio *playing = findPlayingAudioFrom(audioCompleted, flags);
 	if (!playing) return;
 	if (!playing->m_audioEventRTS || !playing->m_audioEventRTS->getAudioEventInfo()) return;
@@ -1068,6 +1090,8 @@ Bool MiniAudioManager::isPlayingLowerPriority(AudioEventRTS *event) const
 //-------------------------------------------------------------------------------------------------
 Bool MiniAudioManager::killLowestPrioritySoundImmediately(AudioEventRTS *event)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	AudioEventRTS *lowestPriorityEvent = findLowestPrioritySound(event);
 	if (!lowestPriorityEvent) return FALSE;
 
@@ -1086,6 +1110,8 @@ Bool MiniAudioManager::killLowestPrioritySoundImmediately(AudioEventRTS *event)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::adjustVolumeOfPlayingAudio(AsciiString eventName, Real newVolume)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
 		PlayingAudio *playing = *it;
 		if (playing && playing->m_audioEventRTS && playing->m_audioEventRTS->getEventName() == eventName) {
@@ -1098,6 +1124,8 @@ void MiniAudioManager::adjustVolumeOfPlayingAudio(AsciiString eventName, Real ne
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::removePlayingAudio(AsciiString eventName)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ) {
 		PlayingAudio *playing = *it;
 		if (playing && playing->m_audioEventRTS && playing->m_audioEventRTS->getEventName() == eventName) {
@@ -1111,6 +1139,8 @@ void MiniAudioManager::removePlayingAudio(AsciiString eventName)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::removeAllDisabledAudio(void)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ) {
 		PlayingAudio *playing = *it;
 		if (playing && playing->m_audioEventRTS && playing->m_audioEventRTS->getVolume() == 0.0f) {
@@ -1266,6 +1296,8 @@ void MiniAudioManager::setSpeakerSurround(Bool surround)
 //-------------------------------------------------------------------------------------------------
 Real MiniAudioManager::getFileLengthMS(AsciiString strToLoad) const
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	if (strToLoad.isEmpty()) return 0.0f;
 
 	static ma_vfs_callbacks vfs = {};
@@ -1299,6 +1331,8 @@ Real MiniAudioManager::getFileLengthMS(AsciiString strToLoad) const
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::closeAnySamplesUsingFile(const void *fileToClose)
 {
+	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+	ScopedFPUGuard fpuGuard;
 	// miniaudio manages file lifecycle internally after decoding
 }
 
