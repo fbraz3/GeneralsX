@@ -62,7 +62,7 @@ Expect many conflicts because the projects intentionally diverged. Every conflic
   - `Generals/` and `GeneralsMD/` code that may have been unified or refactored upstream
   - launch paths, renderer setup, audio wiring, and asset/runtime integration
 - If a conflict involves a removal or downgrade of an existing cross-platform capability, treat that as a high-risk decision and justify it explicitly before accepting it.
-- **Deterministic Math:** Ensure native math functions introduced by upstream merges are replaced with their deterministic `WWMath` equivalents (e.g. `WWMath::Ceil`, `WWMath::SqrtOrigin`) as documented in `AGENTS.md`. Do not revert to native non-deterministic math functions.
+- **Cross-Platform Determinism:** Upstream code is not written with cross-platform determinism in mind. You MUST actively watch out for non-deterministic code (like native `libm` math functions, NaN casting, FMA usage, or FPU state leaks) introduced by the sync and fix it, applying our `WWMath` wrappers and `ScopedFPUGuard` as dictated by `AGENTS.md`. Do not revert our deterministic fixes.
 - Prefer root-cause conflict resolution over temporary hacks, disabled code paths, or quick stubs.
 ## Validation Requirements
 
