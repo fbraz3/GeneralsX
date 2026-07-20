@@ -708,7 +708,8 @@ WWINLINE void Vector3::Scale(const Vector3 & scale)
  *=============================================================================================*/
 WWINLINE void Vector3::Rotate_X(float angle)
 {
-	Rotate_X(sinf(angle),cosf(angle));
+	// GeneralsX @bugfix Mr. Meeseeks 17/07/2026 Use deterministic WWMath trigonometric functions
+	Rotate_X(WWMath::Sin(angle),WWMath::Cos(angle));
 }
 
 
@@ -748,7 +749,7 @@ WWINLINE void Vector3::Rotate_X(float s_angle,float c_angle)
  *=============================================================================================*/
 WWINLINE void Vector3::Rotate_Y(float angle)
 {
-	Rotate_Y(sinf(angle),cosf(angle));
+	Rotate_Y(WWMath::Sin(angle),WWMath::Cos(angle));
 }
 
 
@@ -788,7 +789,7 @@ WWINLINE void Vector3::Rotate_Y(float s_angle,float c_angle)
  *=============================================================================================*/
 WWINLINE void Vector3::Rotate_Z(float angle)
 {
-	Rotate_Z(sinf(angle),cosf(angle));
+	Rotate_Z(WWMath::Sin(angle),WWMath::Cos(angle));
 }
 
 

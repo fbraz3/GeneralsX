@@ -139,6 +139,10 @@
 #define USE_BUFFERED_IO (1)
 #endif
 
+#if (!defined(DEEP_CRC_TO_MEMORY) && !defined(DEBUG_CRC))
+#define DEEP_CRC_TO_MEMORY 0
+#endif
+
 // Enable cache for local file existence. Reduces amount of disk accesses for better performance,
 // but decreases file existence correctness and runtime stability, if a cached file is deleted on runtime.
 #ifndef ENABLE_FILESYSTEM_EXISTENCE_CACHE

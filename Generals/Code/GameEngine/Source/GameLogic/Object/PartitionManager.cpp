@@ -3195,22 +3195,20 @@ Int PartitionManager::calcMinRadius(const ICoord2D& cur)
 		so it really shouldn't matter... (I hope)
 	*/
 
-	double minDistSqr = 1e12;				// double, not real
+	Real minDistSqr = 1e12f;
 	for (int i = 0; i < 4; ++i)
 	{
 		for (int j = 0; j < 4; ++j)
 		{
-			// double, not real
-			double dx = centerPos[i].x - otherPos[j].x;
-			double dy = centerPos[i].y - otherPos[j].y;
-			double curDistSqr = dx*dx + dy*dy;
+			Real dx = centerPos[i].x - otherPos[j].x;
+			Real dy = centerPos[i].y - otherPos[j].y;
+			Real curDistSqr = dx*dx + dy*dy;
 			if (minDistSqr > curDistSqr)
 				minDistSqr = curDistSqr;
 		}
 	}
 
-	// double, not real
-	double dist = WWMath::SqrtfOrigin(minDistSqr);
+	Real dist = WWMath::SqrtfOrigin(minDistSqr);
 	Int minRadius = REAL_TO_INT_CEIL( dist / m_cellSize );
 
 	return minRadius;
@@ -3225,10 +3223,9 @@ void PartitionManager::calcRadiusVec()
 	Int cx = getCellCountX();
 	Int cy = getCellCountY();
 
-	// double, not real
-	double dx = (double)cx * (double)cellSize;
-	double dy = (double)cy * (double)cellSize;
-	double maxPossibleDist = WWMath::SqrtOrigin(dx*dx + dy*dy);
+	Real dx = (Real)cx * (Real)cellSize;
+	Real dy = (Real)cy * (Real)cellSize;
+	Real maxPossibleDist = WWMath::SqrtfOrigin(dx*dx + dy*dy);
 
 	m_maxGcoRadius = REAL_TO_INT_CEIL(maxPossibleDist / cellSize);
 

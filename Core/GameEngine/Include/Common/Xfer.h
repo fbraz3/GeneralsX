@@ -178,6 +178,11 @@ public:
 	virtual void xferMatrix3D( Matrix3D* mtx );
 	virtual void xferMapName( AsciiString *mapNameData );
 
+#if DEEP_CRC_TO_MEMORY
+	virtual void xferLogString(const AsciiString& str) {}
+#endif
+
+
 protected:
 
 	// this is the actual xfer implementation that each derived class should implement

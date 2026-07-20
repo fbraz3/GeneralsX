@@ -34,6 +34,7 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
+#include "GameLogic/FPUControl.h"
 #include <windows.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
@@ -2513,6 +2514,7 @@ Int W3DView::iterateDrawablesInRegion( IRegion2D *screenRegion,
 //-------------------------------------------------------------------------------------------------
 Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickType pickType )
 {
+	ScopedFPUGuard fpuGuard;
 	RenderObjClass *renderObj = nullptr;
 	Drawable *draw = nullptr;
 	DrawableInfo *drawInfo = nullptr;

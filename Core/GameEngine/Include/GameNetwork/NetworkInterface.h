@@ -104,7 +104,11 @@ public:
 	virtual void attachTransport(Transport *transport) = 0;
 	virtual void initTransport() = 0;
 	virtual Bool sawCRCMismatch() = 0;
+#if DEEP_CRC_TO_MEMORY
+	virtual void setSawCRCMismatch(const UnicodeString& strMismatchDetails) = 0;
+#else
 	virtual void setSawCRCMismatch() = 0;
+#endif
 
 	virtual Bool isPlayerConnected(Int playerID) = 0;
 

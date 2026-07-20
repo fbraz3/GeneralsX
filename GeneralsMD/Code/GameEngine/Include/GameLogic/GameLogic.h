@@ -392,7 +392,16 @@ private:
 	UnsignedInt	m_CRC;																			///< Cache of previous CRC value
 	typedef std::map<Int, UnsignedInt> CachedCRCMap;
 	CachedCRCMap m_cachedCRCs;															///< CRCs we've seen this frame
-	Bool m_shouldValidateCRCs;															///< Should we validate CRCs this frame?
+	Int m_shouldValidateCRCs;															///< Should we validate CRCs this frame?
+#if DEEP_CRC_TO_MEMORY
+	std::vector<UnsignedByte> m_crcWriteBuffer;
+	std::vector<UnsignedByte> m_crcBuffers[64];
+	size_t m_crcBufferIndex;
+public:
+	std::vector<UnsignedByte>& getCRCBuffer();
+	void storeCRCBuffer(size_t size);
+	void writeCRCBuffersToDisk(UnsignedInt frame) const;
+#endif
 	//-----------------------------------------------------------------------------------------------
 	//Bool m_loadingScene;
 	Bool m_loadingMap;

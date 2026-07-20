@@ -71,9 +71,9 @@ void BezFwdIterator::start()
 	D3DXVECTOR4 pz(mBezSeg.m_controlPoints[0].z, mBezSeg.m_controlPoints[1].z, mBezSeg.m_controlPoints[2].z, mBezSeg.m_controlPoints[3].z);
 
 	D3DXVECTOR4 cVec[3];
-	D3DXVec4Transform(&cVec[0], &px, &BezierSegment::s_bezBasisMatrix);
-	D3DXVec4Transform(&cVec[1], &py, &BezierSegment::s_bezBasisMatrix);
-	D3DXVec4Transform(&cVec[2], &pz, &BezierSegment::s_bezBasisMatrix);
+	BezierMath::D3DXVec4Transform(&cVec[0], &px, &BezierSegment::s_bezBasisMatrix);
+	BezierMath::D3DXVec4Transform(&cVec[1], &py, &BezierSegment::s_bezBasisMatrix);
+	BezierMath::D3DXVec4Transform(&cVec[2], &pz, &BezierSegment::s_bezBasisMatrix);
 #else // SAGE_USE_GLM
 	glm::vec4 px(mBezSeg.m_controlPoints[0].x, mBezSeg.m_controlPoints[1].x, mBezSeg.m_controlPoints[2].x, mBezSeg.m_controlPoints[3].x);
 	glm::vec4 py(mBezSeg.m_controlPoints[0].y, mBezSeg.m_controlPoints[1].y, mBezSeg.m_controlPoints[2].y, mBezSeg.m_controlPoints[3].y);

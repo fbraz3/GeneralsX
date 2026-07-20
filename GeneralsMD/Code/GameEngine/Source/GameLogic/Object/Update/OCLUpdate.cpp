@@ -262,7 +262,12 @@ Real OCLUpdate::getCountdownPercent() const
 {
 	UnsignedInt now = TheGameLogic->getFrame();
 
-	return 1.0f - (( m_nextCreationFrame - now ) / (float)( m_nextCreationFrame - m_timerStartedFrame ));
+	UnsignedInt totalTime = m_nextCreationFrame - m_timerStartedFrame;
+	if (totalTime > 0)
+	{
+		return 1.0f - (( m_nextCreationFrame - now ) / (float)totalTime);
+	}
+	return 1.0f;
 }
 
 // ------------------------------------------------------------------------------------------------
