@@ -86,6 +86,7 @@ endif()
 include(cmake/config.cmake)
 include(cmake/gamespy.cmake)
 include(cmake/lzhl.cmake)
+include(cmake/stb.cmake)
 
 # GeneralsX @bugfix fbraz 10/03/2026 Include openal.cmake here (before Core subdirectory)
 # so OpenAL::OpenAL target is available when Core/GameEngineDevice/CMakeLists.txt processes.

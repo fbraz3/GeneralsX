@@ -40,8 +40,8 @@
 #include "../WWLib/osdep.h"  // TheSuperHackers @build 08/02/2026 Fix include path
 #endif
 
-#include "always.h"
-#include "Vector.h"
+#include "WWLib/always.h"
+#include "WWLib/Vector.h"
 
 class RefCountClass;
 

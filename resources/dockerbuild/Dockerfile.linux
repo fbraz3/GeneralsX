@@ -18,6 +18,7 @@ RUN apt-get update -qq && \
         build-essential \
         cmake \
         ninja-build \
+        nasm \
         git \
         curl \
         ca-certificates \

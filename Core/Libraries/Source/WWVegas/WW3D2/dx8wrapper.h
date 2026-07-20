@@ -41,25 +41,25 @@
 
 #pragma once
 
-#include "always.h"
+#include "WWLib/always.h"
 #include "dllist.h"
 // GeneralsX @build BenderAI 10/02/2026
 // Use angle brackets (not quotes) to skip local d3d8.h stub and get DXVK headers
 // DXVK's d3d8.h includes d3d8types.h internally - no manual includes needed
 #include <d3d8.h>
-#include "matrix4.h"
+#include "WWMath/matrix4.h"
 #include "statistics.h"
-#include "wwstring.h"
-#include "lightenvironment.h"
-#include "shader.h"
-#include "vector4.h"
-#include "cpudetect.h"
+#include "WWLib/wwstring.h"
+#include "WW3D2/lightenvironment.h"
+#include "WW3D2/shader.h"
+#include "WWMath/vector4.h"
+#include "WWLib/cpudetect.h"
 #include "dx8caps.h"
 
 #include "texture.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
-#include "vertmaterial.h"
+#include "WW3D2/vertmaterial.h"
 
 /*
 ** Registry value names

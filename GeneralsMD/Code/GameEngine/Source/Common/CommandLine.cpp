@@ -419,7 +419,6 @@ Int parseHeadless(char *args[], int num)
 {
 	TheWritableGlobalData->m_headless = TRUE;
 	TheWritableGlobalData->m_playIntro = FALSE;
-	TheWritableGlobalData->m_afterIntro = TRUE;
 	TheWritableGlobalData->m_playSizzle = FALSE;
 
 	// TheSuperHackers @fix bobtista 03/02/2026 Set DX8Wrapper_IsWindowed to false in headless
@@ -444,7 +443,6 @@ Int parseReplay(char *args[], int num)
 		TheWritableGlobalData->m_simulateReplays.push_back(filename);
 
 		TheWritableGlobalData->m_playIntro = FALSE;
-		TheWritableGlobalData->m_afterIntro = TRUE;
 		TheWritableGlobalData->m_playSizzle = FALSE;
 		TheWritableGlobalData->m_shellMapOn = FALSE;
 
@@ -797,7 +795,6 @@ Int parseNoShaders(char *args[], int)
 Int parseNoLogo(char *args[], int)
 {
 	TheWritableGlobalData->m_playIntro = FALSE;
-	TheWritableGlobalData->m_afterIntro = TRUE;
 	TheWritableGlobalData->m_playSizzle = FALSE;
 
 	return 1;

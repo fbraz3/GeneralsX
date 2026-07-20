@@ -22,6 +22,8 @@
         "name": "curl",
         "platform": "!windows",
         "features": ["ssl"]
-      }
+      },
+      "ffmpeg",
+      "stb"
     ]
   }
