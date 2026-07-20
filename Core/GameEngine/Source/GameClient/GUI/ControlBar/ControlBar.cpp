@@ -3516,8 +3516,11 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 				}
 			}
 
-			DEBUG_ASSERTCRASH(m_specialPowerShortcutButtons[ currentButton ] != nullptr, ("m_specialPowerShortcutButtons[%d] is null", currentButton));
-			DEBUG_ASSERTCRASH(m_specialPowerShortcutButtonParents[ currentButton ] != nullptr, ("m_specialPowerShortcutButtonParents[%d] is null", currentButton));
+			if( m_specialPowerShortcutButtons[ currentButton ] == nullptr
+					|| m_specialPowerShortcutButtonParents[ currentButton ] == nullptr )
+			{
+				continue;
+			}
 
 			// make sure the window is not hidden
 			m_specialPowerShortcutButtons[ currentButton ]->winHide( FALSE );
@@ -3551,6 +3554,8 @@ Bool ControlBar::hasAnyShortcutSelection() const
 		const CommandButton *command;
 
 		win = m_specialPowerShortcutButtons[ i ];
+		if( win == nullptr )
+			continue;
 		if( win->winIsHidden() == TRUE )
 			continue;
 
@@ -3628,6 +3633,8 @@ void ControlBar::updateSpecialPowerShortcut()
 		const CommandButton *command;
 		// get the window
 		win = m_specialPowerShortcutButtons[ i ];
+		if( win == nullptr )
+			continue;
 
 		if( win->winIsHidden() == TRUE )
 			continue;
@@ -3720,6 +3727,8 @@ void ControlBar::drawSpecialPowerShortcutMultiplierText()
 		const CommandButton *command;
 		// get the window
 		win = m_specialPowerShortcutButtons[ i ];
+		if( win == nullptr )
+			continue;
 
 		if( win->winIsHidden() == TRUE )
 			continue;
@@ -3772,7 +3781,7 @@ void ControlBar::animateSpecialPowerShortcut( Bool isOn )
 	Bool dontAnimate = TRUE;
 	for( Int i = 0; i < m_currentlyUsedSpecialPowersButtons; ++i )
 	{
-		if (m_specialPowerShortcutButtons[i]->winGetUserData())
+		if (m_specialPowerShortcutButtons[i] && m_specialPowerShortcutButtons[i]->winGetUserData())
 		{
 			dontAnimate = FALSE;
 			break;
@@ -3800,7 +3809,7 @@ void ControlBar::showSpecialPowerShortcut()
 	Bool dontAnimate = TRUE;
 	for( Int i = 0; i < m_currentlyUsedSpecialPowersButtons; ++i )
 	{
-		if (m_specialPowerShortcutButtons[i]->winGetUserData())
+		if (m_specialPowerShortcutButtons[i] && m_specialPowerShortcutButtons[i]->winGetUserData())
 		{
 			dontAnimate = FALSE;
 			break;
