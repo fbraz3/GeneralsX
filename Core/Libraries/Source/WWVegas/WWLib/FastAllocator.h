@@ -37,7 +37,7 @@
 // Include files
 //
 #include "always.h"
-#include "wwdebug.h"
+#include "WWDebug/wwdebug.h"
 #include "mutex.h"
 
 // GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - macOS malloc.h compatibility

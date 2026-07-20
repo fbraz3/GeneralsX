@@ -47,8 +47,8 @@
 
 class ProfileFastCS
 {
-  ProfileFastCS(const ProfileFastCS&) CPP_11(= delete);
-  ProfileFastCS& operator=(const ProfileFastCS&) CPP_11(= delete);
+  ProfileFastCS(const ProfileFastCS&) FUNCTION_DELETE;
+  ProfileFastCS& operator=(const ProfileFastCS&) FUNCTION_DELETE;
 
 #ifdef _WIN32
 	static HANDLE testEvent;
@@ -118,8 +118,8 @@ public:
 
 	class Lock
 	{
-    Lock(const Lock&) CPP_11(= delete);
-	Lock& operator=(const Lock&) CPP_11(= delete);
+    Lock(const Lock&) FUNCTION_DELETE;
+	Lock& operator=(const Lock&) FUNCTION_DELETE;
 
 		ProfileFastCS& CriticalSection;
 

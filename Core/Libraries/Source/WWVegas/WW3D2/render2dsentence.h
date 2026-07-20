@@ -36,12 +36,12 @@
 
 #pragma once
 
-#include "always.h"
-#include "render2d.h"
-#include "Vector.h"
-#include "vector2i.h"
-#include "wwstring.h"
-#include "win.h"
+#include "WWLib/always.h"
+#include "WW3D2/render2d.h"
+#include "WWLib/Vector.h"
+#include "WWMath/vector2i.h"
+#include "WWLib/wwstring.h"
+#include "WWLib/win.h"
 
 // GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Linux text rendering (Phase 1.5)
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)

@@ -36,7 +36,7 @@
 
 #pragma once
 
-#include "always.h"
+#include "WWLib/always.h"
 
 // TheSuperHackers @build 09/02/2026 Conditionally include Miles (Windows only)
 // GeneralsX @feature fbraz 11/06/2026 Also use MilesStub when MiniAudio is enabled
@@ -48,10 +48,10 @@
 #include "MilesStub.h"
 #endif
 
-#include "Vector.h"
+#include "WWLib/Vector.h"
 #include "SoundBuffer.h"
 #include "AudioEvents.h"
-#include "wwstring.h"
+#include "WWLib/wwstring.h"
 
 /////////////////////////////////////////////////////////////////////////////////
 // Forward declaration

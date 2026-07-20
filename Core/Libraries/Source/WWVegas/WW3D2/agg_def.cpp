@@ -36,12 +36,12 @@
 #include "agg_def.h"
 #include "htree.h"
 #include "w3derr.h"
-#include "chunkio.h"
-#include "wwdebug.h"
-#include "assetmgr.h"
+#include "WWLib/chunkio.h"
+#include "WWDebug/wwdebug.h"
+#include "WW3D2/assetmgr.h"
 #include "matinfo.h"
 #include "texture.h"
-#include "wwstring.h"
+#include "WWLib/wwstring.h"
 
 // GeneralsX @build BenderAI 10/02/2026 - guard Windows headers
 #ifdef _WIN32

@@ -37,6 +37,56 @@ class GameMessageArgument;
 class NetCommandRef;
 
 //-----------------------------------------------------------------------------
+class NetCommandDataChunk
+{
+	NetCommandDataChunk(const NetCommandDataChunk&) FUNCTION_DELETE;
+	void operator=(const NetCommandDataChunk&) FUNCTION_DELETE;
+
+public:
+	NetCommandDataChunk(UnsignedByte *data, UnsignedInt size)
+		: m_data(data)
+		, m_size(size)
+	{}
+
+	NetCommandDataChunk(UnsignedInt size)
+		: m_data(NEW UnsignedByte[size])
+		, m_size(size)
+	{}
+
+	~NetCommandDataChunk()
+	{
+		delete[] m_data;
+	}
+
+	const UnsignedByte *data() const
+	{
+		return m_data;
+	}
+
+	UnsignedByte *data()
+	{
+		return m_data;
+	}
+
+	UnsignedInt size() const
+	{
+		return m_size;
+	}
+
+	UnsignedByte *release()
+	{
+		UnsignedByte *ret = m_data;
+		m_data = nullptr;
+		m_size = 0;
+		return ret;
+	}
+
+private:
+	UnsignedByte *m_data;
+	UnsignedInt m_size;
+};
+
+//-----------------------------------------------------------------------------
 class NetCommandMsg : public MemoryPoolObject
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(NetCommandMsg, "NetCommandMsg")

@@ -50,6 +50,8 @@
 // TODO: Implement _splitpath for Linux (currently no-op)
 #define _splitpath(a,b,c,d,e) (void)0
 #endif
+#include <errno.h>
+#include "WWLib/WWCommon.h"
 //#include "wlib/wstring.h"
 
 #include "DownloadDebug.h"
