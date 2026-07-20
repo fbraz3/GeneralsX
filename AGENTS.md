@@ -206,7 +206,7 @@ git merge thesuperhackers/main
 
 ## Git Commit Standards
 - **Conventional Commits**: Format must be `<type>(optional scope): <description>`. (e.g. `fix(audio): restart sound groups in reset`)
-- **DO NOT use `@`**: The commit `type` field must never contain an `@` symbol (e.g. `GeneralsX @bugfix` is for inline code annotations only, **not** commit messages).
+- **DO NOT use `@`**: The commit message (both title and body) must never contain an `@` symbol. The `// GeneralsX @keyword` format is strictly for inline code annotations in C++ files. Do not append these signatures to commit messages.
 - **Imperative mood**: Use "add", "fix", "change" (not "added" or "fixes").
 - **Read the Docs**: For full details, valid types, and PR standards, you **MUST** read `.github/instructions/git-commit.instructions.md`.
 
