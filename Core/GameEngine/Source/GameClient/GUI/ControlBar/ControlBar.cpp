@@ -3852,8 +3852,14 @@ GameFont *ControlBar::overrideTooltipGadgetFont( GameWindow *win )
 	if( TheGlobalLanguageData && TheGlobalLanguageData->m_unicodeFontName.isNotEmpty() )
 		fontName = TheGlobalLanguageData->m_unicodeFontName;
 
-	// Get the font from the font library (12pt, not bold)
-	GameFont *newFont = TheFontLibrary->getFont( fontName, 12, FALSE );
+	// Scale the font size for high resolutions (Issue #183)
+	int baseSize = 12;
+	float scaleY = TheDisplay ? ((float)TheDisplay->getHeight() / 600.0f) : 1.0f;
+	int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY * 0.70f) : baseSize;
+	if (scaledSize < baseSize) scaledSize = baseSize;
+
+	// Get the font from the font library (scaled size, not bold)
+	GameFont *newFont = TheFontLibrary->getFont( fontName, scaledSize, FALSE );
 	if( !newFont )
 		return nullptr;
 

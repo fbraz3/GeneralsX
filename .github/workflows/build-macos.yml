@@ -65,6 +65,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
           echo "Installing macOS build dependencies..."
           
           # Update Homebrew to ensure fresh formulas
