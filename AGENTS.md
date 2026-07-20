@@ -206,6 +206,12 @@ git merge thesuperhackers/main
 - Use `--body-file` with real Markdown file instead of `--body`
 - Avoid literal `\n` sequences; prefer actual newlines in multi-line strings
 
+## Git Commit Standards
+- **Conventional Commits**: Format must be `<type>(optional scope): <description>`. (e.g. `fix(audio): restart sound groups in reset`)
+- **DO NOT use `@`**: The commit `type` field must never contain an `@` symbol (e.g. `GeneralsX @bugfix` is for inline code annotations only, **not** commit messages).
+- **Imperative mood**: Use "add", "fix", "change" (not "added" or "fixes").
+- **Read the Docs**: For full details, valid types, and PR standards, you **MUST** read `.github/instructions/git-commit.instructions.md`.
+
 ## VS Code Tasks
 - Prefer task-first execution for build/test/debug
 - Logs captured to `logs/` directory
