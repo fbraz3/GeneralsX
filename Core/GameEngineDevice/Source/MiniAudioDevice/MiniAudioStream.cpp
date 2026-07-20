@@ -22,6 +22,8 @@
 
 #include "MiniAudioDevice/MiniAudioStream.h"
 #include "Lib/BaseType.h"
+// GeneralsX @bugfix meerzulee 19/07/2026 ScopedFPUGuard for FP env guards on audio entry points (see #215)
+#include "GameLogic/FPUControl.h"
 #include <cstring>
 
 static ma_result MiniAudioStream_read(ma_data_source* pDataSource, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead)
@@ -71,6 +73,8 @@ MiniAudioStream::~MiniAudioStream()
 
 bool MiniAudioStream::bufferData(uint8_t *data, size_t data_size, ma_format format, int samplerate, int channels)
 {
+    // GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+    ScopedFPUGuard fpuGuard;
     if (data_size == 0) return false;
 
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -94,6 +98,8 @@ bool MiniAudioStream::isPlaying()
 
 void MiniAudioStream::update()
 {
+    // GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+    ScopedFPUGuard fpuGuard;
     bool shouldCreate = false;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -109,6 +115,8 @@ void MiniAudioStream::update()
 
 void MiniAudioStream::reset()
 {
+    // GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+    ScopedFPUGuard fpuGuard;
     if (m_sound) {
         ma_sound_stop(m_sound);
         ma_sound_uninit(m_sound);
@@ -129,6 +137,8 @@ void MiniAudioStream::reset()
 
 void MiniAudioStream::play()
 {
+    // GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+    ScopedFPUGuard fpuGuard;
     std::lock_guard<std::mutex> lock(m_mutex);
     m_playing = true;
     if (m_sound) ma_sound_start(m_sound);
@@ -163,18 +173,24 @@ void MiniAudioStream::createSound()
 
 void MiniAudioStream::pause()
 {
+    // GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+    ScopedFPUGuard fpuGuard;
     m_playing = false;
     if (m_sound) ma_sound_stop(m_sound);
 }
 
 void MiniAudioStream::stop()
 {
+    // GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+    ScopedFPUGuard fpuGuard;
     pause();
     reset();
 }
 
 void MiniAudioStream::setVolume(float vol)
 {
+    // GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
+    ScopedFPUGuard fpuGuard;
     if (m_sound) ma_sound_set_volume(m_sound, vol);
 }
 
