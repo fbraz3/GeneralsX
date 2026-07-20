@@ -5065,16 +5065,16 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 		headerStr = "GeneralsX: Unknown OS/Arch\n\n";
 	}
 
-	// Format filename as deep_crc_YYYY-MM-DD-HH-MM-SS.bin inside user data logs dir
+	// Format filename as deep_crc_YYYY-MM-DD-HH-MM-SS.bin inside user data Debug dir
 	time_t t = time(nullptr);
 	struct tm *tm_info = localtime(&t);
 	char timebuf[32];
 	strftime(timebuf, 32, "%Y-%m-%d-%H-%M-%S", tm_info);
 
 	// TheGlobalData->getPath_UserData() gives standard document path
-	// Let's create logs dir if not exists (in cross-platform way, handled by file system)
+	// Let's create Debug dir if not exists (in cross-platform way, handled by file system)
 	AsciiString logDir;
-	logDir.format("%slogs", TheGlobalData->getPath_UserData().str());
+	logDir.format("%sDebug", TheGlobalData->getPath_UserData().str());
 	TheFileSystem->createDirectory(logDir);
 
 	str.format("%s/deep_crc_%s_f%u.bin", logDir.str(), timebuf, frame);
