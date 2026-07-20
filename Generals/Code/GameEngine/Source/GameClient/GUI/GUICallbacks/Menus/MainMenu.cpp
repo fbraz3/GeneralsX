@@ -435,7 +435,8 @@ static void initLabelVersion()
 				// GeneralsX @tweak BenderAI 31/03/2026 Keep fallback watermark subtle and aligned to bottom-left target placement.
 				int baseSize = 12;
 				float scaleY = TheDisplay ? ((float)TheDisplay->getHeight() / 600.0f) : 1.0f;
-				int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY) : baseSize;
+				int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY * 0.70f) : baseSize;
+				if (scaledSize < baseSize) scaledSize = baseSize;
 				fallbackCreditLabel->winSetFont(TheWindowManager->winFindFont("Arial", scaledSize, FALSE));
 				fallbackCreditLabel->winSetEnabledTextColors(GameMakeColor(255, 220, 60, 255), GameMakeColor(0, 0, 0, 0));
 				GadgetStaticTextSetText(fallbackCreditLabel, creditText);
@@ -857,7 +858,8 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 			{
 				int baseSize = 10;
 				float scaleY = TheDisplay ? ((float)TheDisplay->getHeight() / 600.0f) : 1.0f;
-				int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY) : baseSize;
+				int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY * 0.70f) : baseSize;
+				if (scaledSize < baseSize) scaledSize = baseSize;
 				GameFont* font = TheWindowManager->winFindFont("Arial", scaledSize, FALSE);
 				if (font)
 					updateNotifyButton->winSetFont(font);
