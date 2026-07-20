@@ -2041,7 +2041,7 @@ AGAIN:
 				// draw the user interface
 				TheInGameUI->DRAW();
 
-				TheGameClient->DRAW();
+				// end of video example code
 
 				// draw the mouse
 				if( TheMouse )

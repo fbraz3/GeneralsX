@@ -698,14 +698,6 @@ void GameClient::update()
 	}
 }
 
-void GameClient::draw()
-{
-	if (m_intro != nullptr)
-	{
-		m_intro->draw();
-	}
-}
-
 void GameClient::step()
 {
 	TheDisplay->step();
