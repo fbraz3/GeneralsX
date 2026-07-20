@@ -28,7 +28,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 1. **Single codebase** – Linux and macOS build from same source
 2. **SDL3 everywhere** – No native platform calls in game code
 3. **DXVK everywhere** – DX8 → Vulkan translation on all platforms
-4. **OpenAL default (MiniAudio WIP)** – Cross-platform audio stack. Audio fixes must prioritize OpenAL but be backported to MiniAudio.
+4. **OpenAL / MiniAudio Parity** – Cross-platform audio stack. Implementations and bug fixes in one MUST be replicated in the other to maintain strict feature parity.
 5. **64-bit native** – x86_64 only (32-bit via VC6 upstream)
 6. **Retail compatibility** – Original replays and mods must work
 7. **Determinism** – Rendering/audio changes must not affect gameplay logic
@@ -169,8 +169,6 @@ cd ~/GeneralsX/GeneralsMD
 mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all bt" \
   ./build/linux64-deploy/GeneralsMD/GeneralsXZH 2>&1 | tee logs/gdb.log
 ```
-
-
 
 ## Branching & Sync
 ### TheSuperHackers upstream sync
