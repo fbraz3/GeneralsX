@@ -68,7 +68,7 @@
 #include "GameLogic/AI.h"			///< For AI debug (yes, I'm cheating for now)
 #include "GameLogic/AIPathfind.h"			///< For AI debug (yes, I'm cheating for now)
 #include "GameLogic/ExperienceTracker.h"
-#include "GameLogic/FPUControl.h"							///< GeneralsX @bugfix costin-alupului 10/07/2026 setFPMode() to guard screen->world pick math against audio-thread FP env leaks
+#include "GameLogic/FPUControl.h"							///< GeneralsX @bugfix costin-alupului 20/07/2026 setFPMode() so screen->world pick math runs under the engine's expected FP mode
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/BodyModule.h"
@@ -647,6 +647,13 @@ Bool W3DView::isWithinCameraHeightConstraints() const
 //-------------------------------------------------------------------------------------------------
 void W3DView::getPickRay(const ICoord2D *screen, Vector3 *rayStart, Vector3 *rayEnd)
 {
+	// GeneralsX @bugfix costin-alupului 20/07/2026 The projection/unproject math below relies on the
+	// engine's FP mode (the same mode GameLogic::update() re-asserts each frame for its fast
+	// float->int conversions). On macOS/ARM this can otherwise be left in an unexpected state, making
+	// picks resolve to the wrong world position. Re-assert it here so every caller of getPickRay()
+	// (screenToTerrain, pickDrawable, screenToWorldAtZ, ...) gets a correct ray. (#215, #222)
+	setFPMode();
+
 	Real logX;
 	Real logY;
 	Real screenX = screen->x - m_originX;
@@ -2521,9 +2528,6 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 	if( screen == nullptr )
 		return nullptr;
 
-	// GeneralsX @bugfix costin-alupului 10/07/2026 Re-assert FP mode before the pick ray math (see screenToTerrain).
-	setFPMode();
-
 	// don't pick a drawable if there is a window under the cursor
 	GameWindow *window = nullptr;
 	if (TheWindowManager)
@@ -2578,14 +2582,6 @@ Bool W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 {
 	if( screen == nullptr || world == nullptr || TheTerrainRenderObject == nullptr )
 		return false;
-
-	// GeneralsX @bugfix costin-alupului 10/07/2026 The screen->world ray/intersection math below
-	// relies on a consistent FP rounding/environment (same reason GameLogic::update() calls
-	// setFPMode()). On macOS/ARM the audio backend thread can leave the FP environment in a state
-	// that skews the fast float->int coordinate conversion, causing clicks to resolve to the wrong
-	// world tile (move/build fail unless the camera is moved/zoomed to force a recompute). Re-assert
-	// the engine's FP mode here so picks are correct regardless of audio-thread activity.
-	setFPMode();
 
 	if (m_cameraHasMovedSinceRequest) {
 		m_locationRequests.clear();
