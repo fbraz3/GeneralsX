@@ -255,7 +255,7 @@ void LANAPI::OnGameStart()
 		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 		msg->appendIntegerArgument(GAME_LAN);
 
-		TheWritableGlobalData->m_useFpsLimit = false;
+		// TheWritableGlobalData->m_useFpsLimit = false; // GeneralsX @bugfix fbraz3 21/07/2026 Keep FPS limiter active in multiplayer to avoid rendering at uncapped 500+ FPS
 
 		// Set the seeds
 		InitRandom( m_currentGame->getSeed() );
