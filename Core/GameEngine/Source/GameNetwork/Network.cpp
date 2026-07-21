@@ -726,7 +726,6 @@ void Network::update()
 // 2. Call ConnectionManager->update;
 // 3. Check to see if all the commands for the next frame are there.
 //
-	m_isStalling = FALSE;
 
 #if defined(RTS_DEBUG)
 	if (m_networkOn == FALSE) {
