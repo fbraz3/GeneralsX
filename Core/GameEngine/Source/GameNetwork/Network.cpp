@@ -117,6 +117,7 @@ public:
 	virtual void setDynamicBufferSize(UnsignedInt size) override { m_dynamicBufferSize = size; }
 	virtual UnsignedInt getDynamicBufferSize() override { return m_dynamicBufferSize; }
 	virtual UnsignedInt getBufferedFramesAvailable() override;
+	virtual void consumeFrameData(UnsignedInt logicFrame) override;
 
 	virtual UnsignedInt getFrameRate() override { return m_frameRate; }
 	virtual UnsignedInt getPacketArrivalCushion() override;								///< Returns the smallest packet arrival cushion since this was last called.
@@ -198,7 +199,6 @@ protected:
 	void processRunAheadCommand(NetRunAheadCommandMsg *msg);			///< Do what needs to be done when we get a new run ahead command.
 	void processDestroyPlayerCommand(NetDestroyPlayerCommandMsg *msg);	///< Do what needs to be done when we need to destroy a player.
 	void endOfGameCheck();																				///< Checks to see if its ok to leave this game.  If it is, send the apropriate command to the game logic.
-	Bool timeForNewFrame();
 
 	ConnectionManager *m_conMgr;																	///< The connection manager object
 
@@ -218,7 +218,6 @@ protected:
 
 	int64_t m_nextFrameTime;														///< When did we execute the last frame?  For slugging the GameLogic...
 
-	Bool m_frameDataReady;																		///< Is the frame data for the next frame ready to be executed by TheGameLogic?
 	Bool m_isStalling;
 
 	// CRC info
@@ -278,8 +277,8 @@ NetworkInterface *NetworkInterface::createNetwork()
 Network::Network()
 {
 	m_checkCRCsThisFrame = FALSE;
-	m_didSelfSlug = FALSE;
-	m_frameDataReady = FALSE;
+	m_perfCountFreq = 0;
+
 	m_isStalling = FALSE;
 	m_sawCRCMismatch = FALSE;
 	m_conMgr = nullptr;
@@ -342,8 +341,7 @@ void Network::init()
 	m_runAhead = min(max(30, MIN_RUNAHEAD), MAX_FRAMES_AHEAD/2); ///< @todo: don't hard-code the run-ahead.
 	m_frameRate = 30;
 	m_lastExecutionFrame = m_runAhead - 1; // subtract 1 since we're starting on frame 0
-	m_lastFrameCompleted = m_runAhead - 1; // subtract 1 since we're starting on frame 0
-	m_frameDataReady = FALSE;
+	m_lastFrameCompleted = m_runAhead - 1; // subtract 1 since were starting on frame 0
 	m_isStalling = FALSE;
 	m_didSelfSlug = FALSE;
 	m_dynamicBufferSize = 5; // Default value, will be adjustable later
@@ -642,6 +640,12 @@ void Network::RelayCommandsToCommandList(UnsignedInt frame) {
 	deleteInstance(netcmdlist);
 }
 
+void Network::consumeFrameData(UnsignedInt logicFrame) {
+	if (!m_isStalling) {
+		RelayCommandsToCommandList(logicFrame);
+	}
+}
+
 /**
  * This is where network commands that need to be executed on the same frame should be executed.
  */
@@ -721,9 +725,7 @@ void Network::update()
 // 1. Take Commands off TheCommandList, hand them off to the ConnectionManager.
 // 2. Call ConnectionManager->update;
 // 3. Check to see if all the commands for the next frame are there.
-// 4. If all commands are there, put that frame's commands on TheCommandList.
 //
-	m_frameDataReady = FALSE;
 	m_isStalling = FALSE;
 
 #if defined(RTS_DEBUG)
@@ -768,10 +770,6 @@ void Network::update()
 
 	if (!m_isStalling) {
 		m_conMgr->handleAllCommandsReady();
-		if (timeForNewFrame()) { // This needs to come after any other pre-frame execution checks as this changes the timing variables.
-			RelayCommandsToCommandList(TheGameLogic->getFrame());	// Put the commands for the next frame on TheCommandList.
-			m_frameDataReady = TRUE; // Tell the GameEngine to run the commands for the new frame.
-		}
 	}
 }
 
@@ -808,63 +806,8 @@ void Network::endOfGameCheck() {
 #endif
 	}
 }
-
-Bool Network::timeForNewFrame() {
-	// GeneralsX @bugfix GitHubCopilot 27/04/2026 Keep network frame pacing in nanoseconds on Linux
-	int64_t curTime;
-	#ifdef _WIN32
-	QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
-	#else
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	curTime = static_cast<int64_t>(ts.tv_sec) * 1000000000 + ts.tv_nsec;
-	#endif
-	int64_t frameDelay = m_perfCountFreq / m_frameRate;
-
-	/*
-	 * If we're pushing up against the edge of our run ahead, we should slow the framerate down a bit
-	 * to avoid being frozen by spikes in network lag.  This will happen if another user's computer is
-	 * running too far behind us, so we need to slow down to let them catch up.
-	 */
-	if (m_conMgr != nullptr) {
-		Real cushion = m_conMgr->getMinimumCushion();
-		Real runAheadPercentage = m_runAhead * (TheGlobalData->m_networkRunAheadSlack / (Real)100.0); // If we are at least 50% into our slack, we need to slow down.
-		if (cushion < runAheadPercentage) {
-			int64_t oldFrameDelay = frameDelay;
-			frameDelay += oldFrameDelay / 10; // temporarily decrease the frame rate by 20%.
-//			DEBUG_LOG(("Average cushion = %f, run ahead percentage = %f.  Adjusting frameDelay from %I64d to %I64d", cushion, runAheadPercentage, oldFrameDelay, frameDelay));
-			m_didSelfSlug = TRUE;
-//		} else {
-//			DEBUG_LOG(("Average cushion = %f, run ahead percentage = %f", cushion, runAheadPercentage));
-		}
-	}
-
-	// Check to see if we can run another frame.
-	if (curTime >= m_nextFrameTime) {
-//		DEBUG_LOG(("Allowing a new frame, frameDelay = %I64d, curTime - m_nextFrameTime = %I64d", frameDelay, curTime - m_nextFrameTime));
-
-//		if (m_nextFrameTime + frameDelay < curTime) {
-		if ((m_nextFrameTime + (2 * frameDelay)) < curTime) {
-			// If we get too far behind on our framerate we need to reset the nextFrameTime thing.
-			m_nextFrameTime = curTime;
-//			DEBUG_LOG(("Initializing m_nextFrameTime to %I64d", m_nextFrameTime));
-		} else {
-			// Set the soonest possible starting time for the next frame.
-			m_nextFrameTime += frameDelay;
-//			DEBUG_LOG(("m_nextFrameTime = %I64d", m_nextFrameTime));
-		}
-
-		return TRUE;
-	}
-//	DEBUG_LOG(("Slowing down frame rate. frame rate = %d, frame delay = %I64d, curTime - m_nextFrameTime = %I64d", m_frameRate, frameDelay, curTime - m_nextFrameTime));
-	return FALSE;
-}
-
-/**
- * Returns true if the game commands for the next frame have been put on the command list.
- */
 Bool Network::isFrameDataReady() {
-	return (m_frameDataReady || (m_localStatus == NETLOCALSTATUS_LEFT));
+	return (!m_isStalling || (m_localStatus == NETLOCALSTATUS_LEFT));
 }
 
 Bool Network::isStalling()
