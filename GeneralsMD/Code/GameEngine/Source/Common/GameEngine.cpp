@@ -1046,11 +1046,6 @@ void GameEngine::update()
 		// TheSuperHackers @info Ignores frozen time because the script engine needs updating in the logic update regardless.
 		if (canUpdateGameLogic(FramePacer::IgnoreFrozenTime))
 		{
-			if (TheNetwork != nullptr)
-			{
-				TheNetwork->consumeFrameData(TheGameLogic->getFrame());
-			}
-
 			TheGameLogic->UPDATE();
 
 			if (!TheFramePacer->isTimeFrozen())

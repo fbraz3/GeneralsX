@@ -69,7 +69,6 @@ public:
 	virtual void setDynamicBufferSize(UnsignedInt size) = 0;
 	virtual UnsignedInt getDynamicBufferSize() = 0;
 	virtual UnsignedInt getBufferedFramesAvailable() = 0;
-	virtual void consumeFrameData(UnsignedInt logicFrame) = 0;
 
 	virtual UnsignedInt getFrameRate() = 0;												///< Get the current allowed frame rate.
 	virtual UnsignedInt getPacketArrivalCushion() = 0;						///< Get the smallest packet arrival cushion since this was last called.
