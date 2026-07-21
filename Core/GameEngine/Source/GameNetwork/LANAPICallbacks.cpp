@@ -255,7 +255,7 @@ void LANAPI::OnGameStart()
 		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 		msg->appendIntegerArgument(GAME_LAN);
 
-		// TheWritableGlobalData->m_useFpsLimit = false; // GeneralsX @bugfix <date> Removed frame limiter override
+		TheWritableGlobalData->m_useFpsLimit = false;
 
 		// Set the seeds
 		InitRandom( m_currentGame->getSeed() );

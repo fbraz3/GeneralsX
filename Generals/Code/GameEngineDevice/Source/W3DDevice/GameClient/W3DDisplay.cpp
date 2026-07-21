@@ -1241,11 +1241,8 @@ void W3DDisplay::gatherDebugStats()
 		}
 #endif
 
-		if (TheNetwork != nullptr) {
-			UnicodeString bufStr;
-			bufStr.format(L" (Buf: %d)", TheNetwork->getBufferedFramesAvailable());
-			unibuffer.concat(bufStr);
-		}
+		fpsString.format( L"FPS: %.2f", fps);
+		m_benchmarkDisplayString->setText( fpsString );
 
 		Int polyPerFrame = Debug_Statistics::Get_DX8_Polygons();
 

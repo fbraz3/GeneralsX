@@ -113,11 +113,6 @@ public:
 
 	virtual void setLocalAddress(UnsignedInt ip, UnsignedInt port) override;
 	virtual UnsignedInt getRunAhead() override { return m_runAhead; }
-
-	virtual void setDynamicBufferSize(UnsignedInt size) override { m_dynamicBufferSize = size; }
-	virtual UnsignedInt getDynamicBufferSize() override { return m_dynamicBufferSize; }
-	virtual UnsignedInt getBufferedFramesAvailable() override;
-
 	virtual UnsignedInt getFrameRate() override { return m_frameRate; }
 	virtual UnsignedInt getPacketArrivalCushion() override;								///< Returns the smallest packet arrival cushion since this was last called.
 	virtual Bool isFrameDataReady() override;
@@ -213,8 +208,6 @@ protected:
 	Bool m_didSelfSlug;
 	// GeneralsX @bugfix BenderAI 13/02/2026 Use int64_t instead of __int64 (C99 standard, fighter19 pattern)
 	int64_t m_perfCountFreq;														///< The frequency of the performance counter.
-
-	UnsignedInt m_dynamicBufferSize;
 
 	int64_t m_nextFrameTime;														///< When did we execute the last frame?  For slugging the GameLogic...
 
@@ -346,7 +339,6 @@ void Network::init()
 	m_frameDataReady = FALSE;
 	m_isStalling = FALSE;
 	m_didSelfSlug = FALSE;
-	m_dynamicBufferSize = 5; // Default value, will be adjustable later
 
 	m_localStatus = NETLOCALSTATUS_PREGAME;
 
@@ -597,16 +589,6 @@ Bool Network::AllCommandsReady(UnsignedInt frame) {
 	return m_conMgr->allCommandsReady(frame);// && m_conMgr->allCRCsReady(frame);
 }
 
-UnsignedInt Network::getBufferedFramesAvailable() {
-	UnsignedInt currentFrame = TheGameLogic->getFrame();
-	UnsignedInt readyCount = 0;
-	// Limit the search so we don't loop forever if network is somehow way ahead
-	while(AllCommandsReady(currentFrame + readyCount) && readyCount < 100) {
-		readyCount++;
-	}
-	return readyCount;
-}
-
 /**
  * Take commands from the connection manager and put them on TheCommandList.
  * The commands need to be put on in the same order across all clients.
@@ -748,30 +730,25 @@ void Network::update()
 		endOfGameCheck();
 	}
 
-	UnsignedInt buffered = getBufferedFramesAvailable();
-	UnsignedInt actualTargetBuffer = m_dynamicBufferSize;
-	
-	// GeneralsX @feature fbraz3 16/07/2026 Clamp target buffer by RunAhead so we don't stall permanently
-	if (actualTargetBuffer > m_runAhead) {
-		actualTargetBuffer = m_runAhead;
-	}
-
-	if (m_isStalling) {
-		if (buffered >= actualTargetBuffer) {
-			m_isStalling = FALSE;
-		}
-	} else {
-		if (buffered == 0) {
-			m_isStalling = TRUE;
-		}
-	}
-
-	if (!m_isStalling) {
+	if (AllCommandsReady(TheGameLogic->getFrame())) { // If all the commands are ready for the next frame...
 		m_conMgr->handleAllCommandsReady();
+//		DEBUG_LOG(("Network::update - frame %d is ready", TheGameLogic->getFrame()));
 		if (timeForNewFrame()) { // This needs to come after any other pre-frame execution checks as this changes the timing variables.
 			RelayCommandsToCommandList(TheGameLogic->getFrame());	// Put the commands for the next frame on TheCommandList.
 			m_frameDataReady = TRUE; // Tell the GameEngine to run the commands for the new frame.
 		}
+	}
+	else {
+		// GeneralsX @bugfix GitHubCopilot 27/04/2026 Keep stall check in nanoseconds on Linux
+		int64_t curTime;
+		#ifdef _WIN32
+		QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
+		#else
+		struct timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		curTime = static_cast<int64_t>(ts.tv_sec) * 1000000000 + ts.tv_nsec;
+		#endif
+		m_isStalling = curTime >= m_nextFrameTime;
 	}
 }
 

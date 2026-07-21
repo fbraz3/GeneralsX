@@ -768,44 +768,12 @@ Bool GameEngine::canUpdateNetworkGameLogic()
 {
 	DEBUG_ASSERTCRASH(TheNetwork != nullptr, ("TheNetwork is null"));
 
-	// Accumulate real time to keep pace with the renderer, just like regular game logic
-	const Int logicTimeScaleFps = TheFramePacer->getActualLogicTimeScaleFps(0);
-	if (logicTimeScaleFps > 0 && logicTimeScaleFps != RenderFpsPreset::UncappedFpsValue)
-	{
-		m_logicTimeAccumulator += TheFramePacer->getUpdateTime();
-	}
-
 	if (TheNetwork->isFrameDataReady())
 	{
 		// Important: The Network is definitely no longer stalling.
 		TheFramePacer->setGameHalted(false);
 
-		if (logicTimeScaleFps <= 0)
-		{
-			return false; // Game logic is halted/frozen.
-		}
-
-		if (logicTimeScaleFps == RenderFpsPreset::UncappedFpsValue)
-		{
-			return true; // Game logic steps map exactly 1-to-1 with the render frames.
-		}
-
-		const Real logicTimeStepSeconds = TheFramePacer->getLogicTimeStepSeconds(0);
-		if (m_logicTimeAccumulator >= logicTimeStepSeconds)
-		{
-			m_logicTimeAccumulator -= logicTimeStepSeconds;
-			return true;
-		}
-	}
-	else
-	{
-		// Network is stalling. Cap the accumulated time so that when the network catches up,
-		// the game logic only speeds up for a brief period (1 second cap) to consume the buffer.
-		const Real maxAccumulatedTime = 1.0f;
-		if (m_logicTimeAccumulator > maxAccumulatedTime)
-		{
-			m_logicTimeAccumulator = maxAccumulatedTime;
-		}
+		return true;
 	}
 
 	return false;
