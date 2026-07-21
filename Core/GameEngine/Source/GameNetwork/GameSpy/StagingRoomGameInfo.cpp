@@ -857,7 +857,7 @@ void GameSpyStagingRoom::launchGame()
 	GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 	msg->appendIntegerArgument(GAME_INTERNET);
 
-	TheWritableGlobalData->m_useFpsLimit = false;
+	// TheWritableGlobalData->m_useFpsLimit = false; // GeneralsX @bugfix <date> Removed frame limiter override
 
 	// Set the seeds
 	InitRandom( getSeed() );

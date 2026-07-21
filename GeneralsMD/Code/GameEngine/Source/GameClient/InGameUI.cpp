@@ -6141,12 +6141,12 @@ void InGameUI::updateRenderFpsString()
 
 void InGameUI::drawNetworkLatency(Int &x, Int &y)
 {
-	const UnsignedInt networkLatencyFrames = TheNetwork->getRunAhead();
+	const UnsignedInt networkLatencyFrames = TheNetwork->getBufferedFramesAvailable();
 
 	if (networkLatencyFrames != m_lastNetworkLatencyFrames)
 	{
 		UnicodeString latencyStr;
-		latencyStr.format(L"%u", networkLatencyFrames);
+		latencyStr.format(L"(Buf: %u) ", networkLatencyFrames);
 		m_networkLatencyString->setText(latencyStr);
 		m_lastNetworkLatencyFrames = networkLatencyFrames;
 	}

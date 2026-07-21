@@ -64,6 +64,12 @@ public:
 	virtual void parseUserList( const GameInfo *game ) = 0;						///< Parse a userlist, creating connections
 	virtual void startGame() = 0;																	///< Sets the network game frame counter to -1
 	virtual UnsignedInt getRunAhead() = 0;												///< Get the current RunAhead value
+	
+	// GeneralsX @feature fbraz3 dynamic network buffer decoupling
+	virtual void setDynamicBufferSize(UnsignedInt size) = 0;
+	virtual UnsignedInt getDynamicBufferSize() = 0;
+	virtual UnsignedInt getBufferedFramesAvailable() = 0;
+
 	virtual UnsignedInt getFrameRate() = 0;												///< Get the current allowed frame rate.
 	virtual UnsignedInt getPacketArrivalCushion() = 0;						///< Get the smallest packet arrival cushion since this was last called.
 

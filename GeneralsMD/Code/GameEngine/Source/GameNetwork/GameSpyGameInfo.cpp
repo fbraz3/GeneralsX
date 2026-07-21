@@ -560,8 +560,6 @@ void GameSpyLaunchGame()
 		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 		msg->appendIntegerArgument(GAME_INTERNET);
 
-		TheGlobalData->m_useFpsLimit = false;
-
 		// Set the random seed
 		InitGameLogicRandom( TheGameSpyGame->getSeed() );
 		DEBUG_LOG(("InitGameLogicRandom( %d )", TheGameSpyGame->getSeed()));
