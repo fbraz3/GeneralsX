@@ -2226,7 +2226,15 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	if( loadingSaveGame == FALSE )
 		ThePlayerList->newMap();
 
-	if ( isChallengeCampaign )
+	// GeneralsX @bugfix coolswood 22/07/2026 Fix fog-of-war after save/load in Generals Challenge.
+	// The challenge-mode relationship setup must not run when loading a save game: the
+	// player relationships were already serialized into the save via CHUNK_Players (which
+	// loads before CHUNK_GameLogic). Running this block on load overwrites the restored
+	// ALLY relationships (e.g. between the human player slot and their chosen general) with
+	// fresh ENEMIES derived from the map's "ThePlayer" placeholder. That causes every
+	// structure of the local general to stop revealing shroud for the human player, so the
+	// player's own base becomes covered by fog of war within ~30 frames of loading.
+	if( loadingSaveGame == FALSE && isChallengeCampaign )
 	{
 		// Establish local player relationships with other teams as
 		// they're set up for "ThePlayer" in challenge mode map.
