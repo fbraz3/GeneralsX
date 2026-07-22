@@ -27,7 +27,7 @@
 
 #ifndef _WIN32
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameCommon.h" // Adicionado para corrigir ODR violation (traz DUMP_PERF_STATS)
 
 // GeneralsX @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
 #include "SDL3Device/GameClient/SDL3Mouse.h"
