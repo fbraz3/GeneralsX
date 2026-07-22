@@ -857,7 +857,7 @@ void GameSpyStagingRoom::launchGame()
 	GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 	msg->appendIntegerArgument(GAME_INTERNET);
 
-	TheWritableGlobalData->m_useFpsLimit = false;
+	// TheWritableGlobalData->m_useFpsLimit = false; // GeneralsX @bugfix fbraz3 21/07/2026 Keep FPS limiter active in multiplayer to avoid rendering at uncapped 500+ FPS
 
 	// Set the seeds
 	InitRandom( getSeed() );

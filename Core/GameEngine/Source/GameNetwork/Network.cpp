@@ -113,6 +113,7 @@ public:
 
 	virtual void setLocalAddress(UnsignedInt ip, UnsignedInt port) override;
 	virtual UnsignedInt getRunAhead() override { return m_runAhead; }
+	virtual UnsignedInt getBufferedFramesAvailable() override;
 	virtual UnsignedInt getFrameRate() override { return m_frameRate; }
 	virtual UnsignedInt getPacketArrivalCushion() override;								///< Returns the smallest packet arrival cushion since this was last called.
 	virtual Bool isFrameDataReady() override;
@@ -587,6 +588,16 @@ Bool Network::AllCommandsReady(UnsignedInt frame) {
 	}
 
 	return m_conMgr->allCommandsReady(frame);// && m_conMgr->allCRCsReady(frame);
+}
+
+UnsignedInt Network::getBufferedFramesAvailable() {
+	UnsignedInt currentFrame = TheGameLogic->getFrame();
+	UnsignedInt readyCount = 0;
+	// Limit the search so we don't loop forever if network is somehow way ahead
+	while(AllCommandsReady(currentFrame + readyCount) && readyCount < 100) {
+		readyCount++;
+	}
+	return readyCount;
 }
 
 /**

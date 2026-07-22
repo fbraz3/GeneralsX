@@ -560,7 +560,7 @@ void GameSpyLaunchGame()
 		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 		msg->appendIntegerArgument(GAME_INTERNET);
 
-		TheGlobalData->m_useFpsLimit = false;
+		// TheGlobalData->m_useFpsLimit = false; // GeneralsX @bugfix fbraz3 21/07/2026 Keep FPS limiter active in multiplayer to avoid rendering at uncapped 500+ FPS
 
 		// Set the random seed
 		InitGameLogicRandom( TheGameSpyGame->getSeed() );

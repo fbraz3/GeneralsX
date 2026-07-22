@@ -1241,7 +1241,11 @@ void W3DDisplay::gatherDebugStats()
 		}
 #endif
 
-		fpsString.format( L"FPS: %.2f", fps);
+		if (TheNetwork != nullptr) {
+			fpsString.format( L"FPS: %.2f (Buf: %d)", fps, TheNetwork->getBufferedFramesAvailable() );
+		} else {
+			fpsString.format( L"FPS: %.2f", fps);
+		}
 		m_benchmarkDisplayString->setText( fpsString );
 
 		Int polyPerFrame = Debug_Statistics::Get_DX8_Polygons();
