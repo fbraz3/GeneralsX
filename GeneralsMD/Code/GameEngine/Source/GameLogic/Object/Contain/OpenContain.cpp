@@ -1587,7 +1587,9 @@ void OpenContain::processDamageToContained(Real percentDamage)
 		if( !object->isEffectivelyDead() && killContained )
 			object->kill(); // in case we are carrying flame proof troops we have been asked to kill
 
-		if ( object->isEffectivelyDead() )
+		// TheSuperHackers @bugfix mreza0100 23/07/2026 A destroyed occupant cannot remove itself
+		// while the contain list is temporarily detached. Do not restore a pending dangling pointer.
+		if ( object->isEffectivelyDead() || object->isDestroyed() )
 		{
 			onRemoving( object );
 			object->onRemovedFrom( getObject() );
