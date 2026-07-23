@@ -76,9 +76,6 @@ Generals/logs/
 # vcpkg artifacts (generated dependencies)
 /vcpkg_installed/
 
-# External reference repositories (large, don't commit)
-# references/
-
 # Release bundles
 GeneralsX-macos-*.zip
 GeneralsXZH-macos-*.zip

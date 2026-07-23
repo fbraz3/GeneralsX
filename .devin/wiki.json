@@ -5,7 +5,7 @@
       "author": "GeneralsX Team"
     },
     {
-      "content": "Three reference repositories guide the port: (1) TheSuperHackers (upstream Windows baseline, stable VC6 builds), (2) fighter19's DXVK port (references/old-refs/fighter19-dxvk-port/ — primary graphics/platform reference, fully functional on Linux), (3) jmarshall's modern port (references/old-refs/jmarshall-win64-modern/ — primary audio/OpenAL reference, Generals-only). Platform-specific code must be isolated to Core/GameEngineDevice/ and Core/Libraries/Source/Platform/. Never put platform-specific code inside gameplay logic (GameLogic/). SDL3 is the unified platform layer — no native POSIX, Win32, or Cocoa calls in game code.",
+      "content": "Platform-specific code must be isolated to Core/GameEngineDevice/ and Core/Libraries/Source/Platform/. Never put platform-specific code inside gameplay logic (GameLogic/). SDL3 is the unified platform layer — no native POSIX, Win32, or Cocoa calls in game code.",
       "author": "GeneralsX Team"
     },
     {
@@ -24,12 +24,12 @@
   "pages": [
     {
       "title": "Project Overview",
-      "purpose": "High-level overview of GeneralsX: goals, scope, strategy, platform targets, and relationship between the three reference repositories (TheSuperHackers, fighter19, jmarshall). Cover non-negotiable constraints (retail compatibility, platform isolation, single codebase). Linux and macOS are active releases; Windows MinGW-w64 is in the backlog (issue #29).",
+      "purpose": "High-level overview of GeneralsX: goals, scope, strategy, platform targets,. Cover non-negotiable constraints (retail compatibility, platform isolation, single codebase). Linux and macOS are active releases; Windows MinGW-w64 is in the backlog (issue #29).",
       "parent": null
     },
     {
       "title": "Repository Structure",
-      "purpose": "Document the top-level directory layout: GeneralsMD/ (Zero Hour, primary), Generals/ (base game, secondary), Core/ (shared engine), Dependencies/ (external SDKs), references/ (fighter19, jmarshall, thesuperhackers, fbraz3-dxvk, generals-online-client), cmake/ (modular CMake scripts), scripts/ (organized build/env/qa/tooling), resources/ (Docker, DXVK runtime, git info, Visual Studio assets), flatpak/ (Flatpak manifests and metadata), assets/, docs/, build/. Explain what belongs in each folder and the platform isolation rules.",
+      "purpose": "Document the top-level directory layout: GeneralsMD/ (Zero Hour, primary), Generals/ (base game, secondary), Core/ (shared engine), Dependencies/ (external SDKs), references/ (fbraz3-dxvk), cmake/ (modular CMake scripts), scripts/ (organized build/env/qa/tooling), resources/ (Docker, DXVK runtime, git info, Visual Studio assets), flatpak/ (Flatpak manifests and metadata), assets/, docs/, build/. Explain what belongs in each folder and the platform isolation rules.",
       "parent": "Project Overview"
     },
     {
@@ -49,12 +49,12 @@
     },
     {
       "title": "Rendering Device Layer",
-      "purpose": "Document Core/GameEngineDevice/: current DirectX8 implementation, entry points, device initialization, and how the W3D renderer is structured. This is the primary integration point for DXVK. Reference fighter19's changes in references/old-refs/fighter19-dxvk-port/GeneralsMD/Code/GameEngineDevice/ as the porting target.",
+      "purpose": "Document Core/GameEngineDevice/: current DirectX8 implementation, entry points, device initialization, and how the W3D renderer is structured. This is the primary integration point for DXVK.",
       "parent": "Core Engine Architecture"
     },
     {
       "title": "Audio System",
-      "purpose": "Document the current Miles Sound System integration: where it initializes, how it interfaces with the game engine (Core/GameEngine/Audio/). Document jmarshall's OpenAL implementation in references/old-refs/jmarshall-win64-modern/Code/Audio/ as the cross-platform replacement target. Highlight Zero Hour-specific audio hooks that differ from base Generals.",
+      "purpose": "Document the current Miles Sound System integration: where it initializes, how it interfaces with the game engine (Core/GameEngine/Audio/). Document the OpenAL implementation as the cross-platform replacement target. Highlight Zero Hour-specific audio hooks that differ from base Generals.",
       "parent": "Core Engine Architecture"
     },
     {
@@ -64,12 +64,12 @@
     },
     {
       "title": "Cross-Platform Port Strategy",
-      "purpose": "Document the cross-platform port approach targeting Linux, macOS, and Windows under a single codebase: SDL3 (windowing/input), DXVK (DirectX 8→Vulkan on all platforms), OpenAL (audio), 64-bit native. Cover the feature-branch merge strategy, the unified technology stack, DXVK fork source-of-truth policy (references/fbraz3-dxvk, branch generalsx-macos-v2.6), CompatLib pre-guards in windows_compat.h, and reference repositories (fighter19 for graphics, jmarshall for audio).",
+      "purpose": "Document the cross-platform port approach targeting Linux, macOS, and Windows under a single codebase: SDL3 (windowing/input), DXVK (DirectX 8→Vulkan on all platforms), OpenAL (audio), 64-bit native. Cover the feature-branch merge strategy, the unified technology stack, DXVK fork source-of-truth policy (references/fbraz3-dxvk, branch generalsx-macos-v2.6), CompatLib pre-guards in windows_compat.h.",
       "parent": null
     },
     {
       "title": "DXVK Integration",
-      "purpose": "Document the DXVK DirectX8→Vulkan integration (cross-platform): DXVK source-of-truth policy (fork branch generalsx-macos-v2.6 in references/fbraz3-dxvk, consumed via CMake FetchContent tracking the remote branch), pre-guard compatibility shims in GeneralsMD/Code/CompatLib/Include/windows_compat.h, SDL3 windowing hooks, and the device wrapper pattern from fighter19's reference. DXVK works on Linux (native Vulkan), macOS (via MoltenVK), and Windows (native Vulkan). Cover cmake/dx8.cmake, SAGE_DXVK_USE_LOCAL_FORK flag, and the rule to never patch build/_deps/ directly.",
+      "purpose": "Document the DXVK DirectX8→Vulkan integration (cross-platform): DXVK source-of-truth policy (fork branch generalsx-macos-v2.6 in references/fbraz3-dxvk, consumed via CMake FetchContent tracking the remote branch), pre-guard compatibility shims in GeneralsMD/Code/CompatLib/Include/windows_compat.h, SDL3 windowing hooks. DXVK works on Linux (native Vulkan), macOS (via MoltenVK), and Windows (native Vulkan). Cover cmake/dx8.cmake, SAGE_DXVK_USE_LOCAL_FORK flag, and the rule to never patch build/_deps/ directly.",
       "parent": "Cross-Platform Port Strategy"
     },
     {
@@ -94,7 +94,7 @@
     },
     {
       "title": "Reference Repositories",
-      "purpose": "Document the reference repositories under references/: fighter19-dxvk-port/ (DXVK/SDL3, full ZH coverage, primary graphics/platform reference), jmarshall-win64-modern/ (OpenAL/Win64, Generals-only, primary audio reference), thesuperhackers-main/ (upstream Windows baseline for sync), fbraz3-dxvk/ (DXVK fork source of truth, branch generalsx-macos-v2.6), generals-online-client/ (GeneralsOnline multiplayer client, far-future compatibility target). Explain what to use each reference for and adaptation notes for cross-platform work.",
+      "purpose": "Document the reference repositories under references/: fbraz3-dxvk/ (DXVK fork source of truth, branch generalsx-macos-v2.6). Explain what to use each reference for and adaptation notes for cross-platform work.",
       "parent": "Cross-Platform Port Strategy"
     },
     {
