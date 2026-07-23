@@ -1101,6 +1101,12 @@ void GameEngine::execute()
 				}
 			}
 
+			// TheFramePacer->update() sleeps here to hold the render FPS cap (RenderFpsPreset /
+			// GlobalData::m_framesPerSecondLimit). Because input is serviced once per iteration of
+			// this loop (SDL poll + GameClient::UPDATE message processing, above), this pacing wait
+			// also throttles the input sampling rate. A low FPS cap therefore makes the mouse feel
+			// laggy (hard to click moving units) even though the fixed 30 Hz simulation is unchanged.
+			// See RenderFpsPreset::s_fpsValues in FrameRateLimit.cpp for the full explanation.
 			TheFramePacer->update();
 
 			// NOTE: TheDisplay->draw() is called via TheGameClient->UPDATE() above.
