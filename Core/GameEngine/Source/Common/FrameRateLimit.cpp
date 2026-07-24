@@ -125,9 +125,22 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 }
 
 
+// GeneralsX @doc These are the selectable RENDER frame-rate cap presets (the "FPS Limit"
+// option in the UI). This cap is NOT the simulation speed: game logic always advances at a
+// fixed LOGICFRAMES_PER_SECOND (30 Hz) regardless of the value chosen here. See FrameRateLimit::wait().
+//
+// IMPORTANT for input responsiveness: the main loop services input (SDL poll ->
+// GameClient::UPDATE message processing) exactly ONCE PER RENDER FRAME, and FramePacer::update()
+// then sleeps to hold this cap. Consequently the render FPS cap also sets how often the mouse is
+// sampled: a low cap (e.g. 30) makes mouse selection/dragging feel laggy and can make fast-moving
+// units hard to click, because input is only polled ~cap times/second -- while the simulation
+// still runs at 30 Hz either way. A higher cap (60/120/...) does not speed up the game; it only
+// makes input more responsive. (Root cause of a long "mouse input is delayed" investigation.)
 const UnsignedInt RenderFpsPreset::s_fpsValues[] = {
 	30, 50, 56, 60, 65, 70, 72, 75, 80, 85, 90, 100, 110, 120, 144, 240, 480, UncappedFpsValue };
 
+// The lowest selectable cap (30) must not drop below the logic rate, or input/render would starve
+// the fixed-rate simulation.
 static_assert(LOGICFRAMES_PER_SECOND <= 30, "Min FPS values need to be revisited!");
 
 UnsignedInt RenderFpsPreset::getNextFpsValue(UnsignedInt value)
