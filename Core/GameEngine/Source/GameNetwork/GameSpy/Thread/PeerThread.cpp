@@ -507,6 +507,8 @@ enum CallbackType
 
 void connectCallbackWrapper( PEER peer, PEERBool success, int failureReason, void *param )
 {
+	fprintf(stderr, "[PeerThread] connectCallbackWrapper executado: success=%d, failureReason=%d\n", success, failureReason);
+	fflush(stderr);
 #ifdef SERVER_DEBUGGING
 	DEBUG_LOG(("In connectCallbackWrapper()"));
 	CheckServers(peer);
@@ -1325,7 +1327,12 @@ void PeerThreadClass::Thread_Function()
 
 	// Set the title.
 	/////////////////
-	if(!peerSetTitle( peer , gameName, secretKey, gameName, secretKey, GetRegistryVersion(), 30, PEERTrue, pingRooms, crossPingRooms))
+	fprintf(stderr, "[PeerThread] Chamando peerSetTitle (GameName: %s)...\n", gameName);
+	fflush(stderr);
+	PEERBool titleRes = peerSetTitle( peer , gameName, secretKey, gameName, secretKey, GetRegistryVersion(), 30, PEERTrue, pingRooms, crossPingRooms);
+	fprintf(stderr, "[PeerThread] peerSetTitle retornou: %d (1 = Sucesso)\n", titleRes);
+	fflush(stderr);
+	if(!titleRes)
 	{
 		DEBUG_CRASH(("Error setting title"));
 		peerShutdown( peer );
@@ -1376,7 +1383,12 @@ void PeerThreadClass::Thread_Function()
 				m_profileID = incomingRequest.login.profileID;
 				m_password = incomingRequest.password;
 				m_email = incomingRequest.email;
-				peerConnect( peer, incomingRequest.nick.c_str(), incomingRequest.login.profileID, nickErrorCallbackWrapper, connectCallbackWrapper, this, PEERTrue );
+				fprintf(stderr, "[PeerThread] Chamando peerConnect (Nick: %s, ProfileID: %d, Target Host: peerchat." GSI_DOMAIN_NAME ":6667)...\n",
+					incomingRequest.nick.c_str(), incomingRequest.login.profileID);
+				fflush(stderr);
+				PEERBool connRet = peerConnect( peer, incomingRequest.nick.c_str(), incomingRequest.login.profileID, nickErrorCallbackWrapper, connectCallbackWrapper, this, PEERTrue );
+				fprintf(stderr, "[PeerThread] peerConnect retornou: %d (1 = Sucesso/Agendado)\n", connRet);
+				fflush(stderr);
 #ifdef SERVER_DEBUGGING
 				DEBUG_LOG(("After peerConnect()"));
 				CheckServers(peer);
@@ -2219,6 +2231,8 @@ static void listGroupRoomsCallback(PEER peer, PEERBool success,
 														int maxWaiting, int numGames,
 														int numPlaying, void * param)
 {
+	fprintf(stderr, "[PeerThread] listGroupRoomsCallback executado: success=%d, groupID=%d, name=%s\n", success, groupID, name ? name : "nullptr");
+	fflush(stderr);
 	DEBUG_LOG(("listGroupRoomsCallback, success=%d, server=%X, groupID=%d", success, server, groupID));
 #ifdef SERVER_DEBUGGING
 	CheckServers(peer);
@@ -2259,9 +2273,13 @@ static void listGroupRoomsCallback(PEER peer, PEERBool success,
 
 void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 {
+	fprintf(stderr, "[PeerThread] PeerThreadClass::connectCallback executado: success=%d\n", success);
+	fflush(stderr);
 	PeerResponse resp;
 	if(!success)
 	{
+		fprintf(stderr, "[PeerThread] connectCallback FALHOU (success=false). Enviando DISCONNECT_COULDNOTCONNECT...\n");
+		fflush(stderr);
 		//updateBuddyStatus( BUDDY_OFFLINE );
 		resp.peerResponseType = PeerResponse::PEERRESPONSE_DISCONNECT;
 		resp.discon.reason = DISCONNECT_COULDNOTCONNECT;
@@ -2278,6 +2296,8 @@ void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 	resp.nick = m_loginName;
 	GetLocalChatConnectionAddress("peerchat." GSI_DOMAIN_NAME, 6667, localIP);
 	chatSetLocalIP(localIP);
+	fprintf(stderr, "[PeerThread] GetLocalChatConnectionAddress (peerchat." GSI_DOMAIN_NAME ") retornou IP: %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(ntohl(localIP)));
+	fflush(stderr);
 	resp.player.internalIP = ntohl(localIP);
 	resp.player.externalIP = ntohl(peerGetLocalIP(peer));
 	TheGameSpyPeerMessageQueue->addResponse(resp);
@@ -2290,11 +2310,15 @@ void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 	psReq.password = m_password;
 	TheGameSpyPSMessageQueue->addRequest(psReq);
 
+	fprintf(stderr, "[PeerThread] Iniciando peerListGroupRooms (blocking=PEERTrue)...\n");
+	fflush(stderr);
 #ifdef SERVER_DEBUGGING
 	DEBUG_LOG(("Before peerListGroupRooms()"));
 	CheckServers(peer);
 #endif // SERVER_DEBUGGING
 	peerListGroupRooms( peer, nullptr, listGroupRoomsCallback, this, PEERTrue );
+	fprintf(stderr, "[PeerThread] peerListGroupRooms finalizado.\n");
+	fflush(stderr);
 #ifdef SERVER_DEBUGGING
 	DEBUG_LOG(("After peerListGroupRooms()"));
 	CheckServers(peer);
