@@ -48,27 +48,6 @@ These are the authoritative sources for understanding original game behavior and
 
 References under the `references/` folder:
 
- **`references/old-refs/jmarshall-win64-modern/`** - Windows 64-bit modernization with comprehensive fixes - Game base (Generals) Only
-  - **Primary use**: Cross-platform compatibility solutions, INI parser fixes, memory management
-  - **Key success**: Provided the breakthrough End token parsing solution (Phase 22.7-22.8)
-  - **Coverage**: Full Windows 64-bit port with modern toolchain compatibility
-
-- **`references/old-refs/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration
-  - **Primary use**: Graphics layer solutions (DirectX→Vulkan via DXVK), Linux compatibility
-  - **Focus areas**: OpenGL/Vulkan rendering, graphics pipeline modernization
-  - **Coverage**: Complete Linux port with advanced graphics compatibility
-
-- **`references/dsalzner-linux-attempt/`** - Linux port attempt with POSIX compatibility
-  - **Primary use**: Win32→POSIX API translations, Linux-specific fixes
-  - **Focus areas**: System calls, file handling, threading compatibility
-  - **Coverage**: Partial Linux port focusing on core system compatibility
-
-- **`references/dxgldotorg-dxgl/`** - DirectDraw/Direct3D7 to OpenGL compatibility layer
-  - **Primary use**: DirectX→OpenGL wrapper techniques, mock interface patterns, graphics compatibility
-  - **Focus areas**: DirectX API stubbing, OpenGL rendering pipeline, device capability emulation
-  - **Coverage**: Complete DirectDraw/D3D7 wrapper with mature OpenGL backend
-  - **Note**: While focused on D3D7, provides excellent patterns for DirectX8 compatibility layer development
-
 - **`docs/Vulkan/`** - Local Vulkan SDK documentation for reference
   - **Primary use**: Vulkan API reference, best practices, platform-specific notes
   - **Coverage**: Complete Vulkan SDK docs for macOS, Windows, Linux

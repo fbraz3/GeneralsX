@@ -1,19 +1,4 @@
-[submodule "references/fighter19-dxvk-port"]
-	path = references/old-refs/fighter19-dxvk-port
-	url = https://github.com/Fighter19/CnC_Generals_Zero_Hour.git
-[submodule "references/jmarshall-win64-modern"]
-	path = references/old-refs/jmarshall-win64-modern
-	url = https://github.com/jmarshall2323/CnC_Generals_Zero_Hour.git
-[submodule "references/thesuperhackers-main"]
-	path = references/old-refs/thesuperhackers-main
-	url = https://github.com/TheSuperHackers/GeneralsGameCode.git
-[submodule "references/generals-online-client"]
-	path = references/generals-online-client
-	url = https://github.com/GeneralsOnlineDevelopmentTeam/GameClient.git
 [submodule "references/fbraz3-dxvk"]
 	path = references/fbraz3-dxvk
 	url = https://github.com/fbraz3/dxvk.git
 	branch = generalsx-macos-v2.6
-[submodule "GeneralsReplays"]
-	path = GeneralsReplays
-	url = git@github.com:fbraz3/GeneralsXReplays.git
