@@ -2,3 +2,6 @@
 	path = references/fbraz3-dxvk
 	url = https://github.com/fbraz3/dxvk.git
 	branch = generalsx-macos-v2.6
+[submodule "references/GamespySDK"]
+	path = references/GamespySDK
+	url = git@github.com:fbraz3/GamespySDK.git

@@ -609,6 +609,8 @@ void SetUpGameSpy( const char *motdBuffer, const char *configBuffer )
 	dir.format("%sGeneralsOnline\\Ladders", TheGlobalData->getPath_UserData().str());
 	CreateDirectory(dir.str(), nullptr);
 
+	fprintf(stderr, "[WOL] SetUpGameSpy chamando startThread...\n");
+	fflush(stderr);
 	TheGameSpyBuddyMessageQueue = GameSpyBuddyMessageQueueInterface::createNewMessageQueue();
 	TheGameSpyBuddyMessageQueue->startThread();
 

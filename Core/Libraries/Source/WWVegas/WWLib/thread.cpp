@@ -31,6 +31,9 @@
 #else
 // GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - GetCurrentThreadIdAsInt for non-Windows
 #include "thread_compat.h"
+#include <pthread.h>
+#include <unistd.h>
+#include <sched.h>
 #endif
 
 ThreadClass::ThreadClass(const char *thread_name, ExceptionHandlerType exception_handler) : handle(0), running(false), thread_priority(0)
@@ -92,53 +95,91 @@ void __cdecl ThreadClass::Internal_Thread_Function(void* params)
 	tc->ThreadID = 0;
 }
 
+// GeneralsX @feature fbraz3 25/07/2026 Implement ThreadClass for Unix/macOS using pthreads
+#ifdef _UNIX
+static void* pthread_thread_entry(void* params)
+{
+	ThreadClass::Internal_Thread_Function(params);
+	return nullptr;
+}
+#endif
+
 void ThreadClass::Execute()
 {
-	WWASSERT(!handle);	// Only one thread at a time!
-	#ifdef _UNIX
-		// assert(0);
-		return;
-	#else
-		handle=_beginthread(&Internal_Thread_Function,0,this);
-		SetThreadPriority((HANDLE)handle,THREAD_PRIORITY_NORMAL+thread_priority);
-		WWDEBUG_SAY(("ThreadClass::Execute: Started thread %s, thread ID is %X", ThreadName, handle));
-	#endif
+	WWASSERT(!handle);
+#ifdef _UNIX
+	// GeneralsX @feature fbraz3 25/07/2026 Enable background threads on Unix/macOS via pthreads
+	pthread_t thread_id;
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	int result = pthread_create(&thread_id, &attr, pthread_thread_entry, this);
+	pthread_attr_destroy(&attr);
+	if (result == 0) {
+		handle = (unsigned long)(uintptr_t)thread_id;
+		fprintf(stderr, "[ThreadClass] Execute: Started thread '%s' (handle=0x%lx)\n", ThreadName, handle);
+		fflush(stderr);
+	} else {
+		fprintf(stderr, "[ThreadClass] Execute: FAILED to start thread '%s' (error=%d)\n", ThreadName, result);
+		fflush(stderr);
+	}
+#else
+	handle=_beginthread(&Internal_Thread_Function,0,this);
+	SetThreadPriority((HANDLE)handle,THREAD_PRIORITY_NORMAL+thread_priority);
+	WWDEBUG_SAY(("ThreadClass::Execute: Started thread %s, thread ID is %X", ThreadName, handle));
+#endif
 }
 
 void ThreadClass::Set_Priority(int priority)
 {
-	#ifdef _UNIX
-		// assert(0);
-		return;
-	#else
-		thread_priority=priority;
-		if (handle) SetThreadPriority((HANDLE)handle,THREAD_PRIORITY_NORMAL+thread_priority);
-	#endif
+#ifdef _UNIX
+	thread_priority=priority;
+	// GeneralsX @tweak fbraz3 25/07/2026 Priority setting is a no-op on Unix (requires root for realtime)
+#else
+	thread_priority=priority;
+	if (handle) SetThreadPriority((HANDLE)handle,THREAD_PRIORITY_NORMAL+thread_priority);
+#endif
 }
 
 void ThreadClass::Stop(unsigned ms)
 {
-	#ifdef _UNIX
-		// assert(0);
-		return;
-	#else
-		running=false;
-		unsigned time=TIMEGETTIME();
-		while (handle) {
-			if ((TIMEGETTIME()-time)>ms) {
-				int res=TerminateThread((HANDLE)handle,0);
-				res;	// just to silence compiler warnings
-				WWASSERT(res);	// Thread still not killed!
-				handle=0;
-			}
-			Sleep(0);
+#ifdef _UNIX
+	// GeneralsX @feature fbraz3 25/07/2026 Stop thread on Unix by clearing running flag and waiting
+	running=false;
+	unsigned time=TIMEGETTIME();
+	while (handle) {
+		if ((TIMEGETTIME()-time)>ms) {
+			// Thread didn't stop in time. Since the thread is detached, we can't join it.
+			// Just clear the handle so we don't deadlock.
+			fprintf(stderr, "[ThreadClass] Stop: Thread '%s' did not stop within %u ms, forcing handle clear\n", ThreadName, ms);
+			fflush(stderr);
+			handle=0;
+			break;
 		}
-	#endif
+		usleep(1000); // 1ms
+	}
+#else
+	running=false;
+	unsigned time=TIMEGETTIME();
+	while (handle) {
+		if ((TIMEGETTIME()-time)>ms) {
+			int res=TerminateThread((HANDLE)handle,0);
+			res;	// just to silence compiler warnings
+			WWASSERT(res);	// Thread still not killed!
+			handle=0;
+		}
+		Sleep(0);
+	}
+#endif
 }
 
 void ThreadClass::Sleep_Ms(unsigned ms)
 {
+#ifdef _UNIX
+	usleep(ms * 1000);
+#else
 	Sleep(ms);
+#endif
 }
 
 #ifndef _UNIX
@@ -147,23 +188,24 @@ HANDLE test_event = ::CreateEvent (nullptr, FALSE, FALSE, "");
 
 void ThreadClass::Switch_Thread()
 {
-	#ifdef _UNIX
-		return;
-	#else
-		//	::SwitchToThread ();
-		::WaitForSingleObject (test_event, 1);
-		//	Sleep(1);	// Note! Parameter can not be 0 (or the thread switch doesn't occur)
-	#endif
+#ifdef _UNIX
+	// GeneralsX @feature fbraz3 25/07/2026 Yield thread on Unix
+	sched_yield();
+#else
+	//	::SwitchToThread ();
+	::WaitForSingleObject (test_event, 1);
+	//	Sleep(1);	// Note! Parameter can not be 0 (or the thread switch doesn't occur)
+#endif
 }
 
 // Return calling thread's unique thread id
 unsigned ThreadClass::_Get_Current_Thread_ID()
 {
-	#ifdef _UNIX
-		return 0;
-	#else
-		return GetCurrentThreadId();
-	#endif
+#ifdef _UNIX
+	return GetCurrentThreadIdAsInt();
+#else
+	return GetCurrentThreadId();
+#endif
 }
 
 bool ThreadClass::Is_Running()

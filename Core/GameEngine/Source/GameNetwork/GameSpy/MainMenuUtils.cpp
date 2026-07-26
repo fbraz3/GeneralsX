@@ -691,9 +691,9 @@ static GHTTPBool numPlayersOnlineCallback( GHTTPRequest request, GHTTPResult res
 void CheckOverallStats()
 {
 #if RTS_GENERALS
-	const char *const url = "http://gamestats.gamespy.com/ccgenerals/display.html";
+	const char *const url = "http://gamestats." GSI_DOMAIN_NAME "/ccgenerals/display.html";
 #elif RTS_ZEROHOUR
-	const char *const url = "http://gamestats.gamespy.com/ccgenzh/display.html";
+	const char *const url = "http://gamestats." GSI_DOMAIN_NAME "/ccgenzh/display.html";
 #endif
 	ghttpGet(url, GHTTPFalse, overallStatsCallback, nullptr);
 }
@@ -821,27 +821,11 @@ void StopAsyncDNSCheck()
 
 void StartPatchCheck()
 {
-	checkingForPatchBeforeGameSpy = TRUE;
+	checkingForPatchBeforeGameSpy = FALSE;
 	cantConnectBeforeOnline = FALSE;
 	timeThroughOnline++;
 	checksLeftBeforeOnline = 0;
-
-	onlineCancelWindow = MessageBoxCancel(TheGameText->fetch("GUI:CheckingForPatches"),
-		TheGameText->fetch("GUI:CheckingForPatches"), CancelPatchCheckCallbackAndReopenDropdown);
-
-	s_asyncDNSLookupInProgress = TRUE;
-	Char hostname[] = "servserv.generals.ea.com";
-	Int ret = asyncGethostbyname(hostname);
-	switch(ret)
-	{
-	case LOOKUP_FAILED:
-		cantConnectBeforeOnline = TRUE;
-		startOnline();
-		break;
-	case LOOKUP_SUCCEEDED:
-		reallyStartPatchCheck();
-		break;
-	}
+	startOnline();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

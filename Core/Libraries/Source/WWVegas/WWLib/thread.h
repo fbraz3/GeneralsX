@@ -90,7 +90,10 @@ protected:
 	ExceptionHandlerType ExceptionHandler;
 
 private:
-	static void __cdecl Internal_Thread_Function(void*);
 	volatile unsigned long handle;
 	int thread_priority;
+
+public:
+	// GeneralsX @feature fbraz3 25/07/2026 Made public so pthread entry wrapper in thread.cpp can call it
+	static void __cdecl Internal_Thread_Function(void*);
 };

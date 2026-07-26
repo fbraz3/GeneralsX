@@ -41,6 +41,8 @@ char GameSpyProfilePassword[64];
 void GPRecvBuddyMessageCallback(GPConnection * pconnection, GPRecvBuddyMessageArg * arg, void * param)
 {
 	DEBUG_LOG(("GPRecvBuddyMessageCallback: message from %d is %s", arg->profile, arg->message));
+	fprintf(stderr, "[GameSpyGP] GPRecvBuddyMessageCallback: message from %d is %s\n", arg->profile, arg->message);
+	fflush(stderr);
 
 	//gpGetInfo(pconn, arg->profile, GP_DONT_CHECK_CACHE, GP_BLOCKING, (GPCallback)Whois, nullptr);
 	//printf("MESSAGE (%d): %s: %s\n", msgCount,whois, arg->message);
@@ -48,12 +50,16 @@ void GPRecvBuddyMessageCallback(GPConnection * pconnection, GPRecvBuddyMessageAr
 
 static void buddyTryReconnect()
 {
+	fprintf(stderr, "[GameSpyGP] buddyTryReconnect() called\n");
+	fflush(stderr);
 	TheGameSpyChat->reconnectProfile();
 }
 
 void GPErrorCallback(GPConnection * pconnection, GPErrorArg * arg, void * param)
 {
 	DEBUG_LOG(("GPErrorCallback"));
+	fprintf(stderr, "[GameSpyGP] GPErrorCallback result=%d errorCode=%d\n", arg->result, arg->errorCode);
+	fflush(stderr);
 
 	AsciiString errorCodeString;
 	AsciiString resultString;

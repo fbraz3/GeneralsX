@@ -961,7 +961,7 @@ void JoinRoomCallback(PEER peer, PEERBool success, PEERJoinResult result, RoomTy
 					uHostName.translate(hostName.str() + 1); // go past the 'H'
 					slot->setState(SLOT_PLAYER, uHostName);
 					UnsignedInt localIP = peerGetLocalIP(TheGameSpyChat->getPeer());
-					GetLocalChatConnectionAddress("peerchat.gamespy.com", 6667, localIP);
+					GetLocalChatConnectionAddress("peerchat." GSI_DOMAIN_NAME, 6667, localIP);
 					localIP = ntohl(localIP); // The IP returned from GetLocalChatConnectionAddress is in network byte order.
 					options.format("IP=%d", localIP);
 					peerUTMPlayer(TheGameSpyChat->getPeer(), hostName.str(), "REQ/", options.str(), PEERFalse);
@@ -1023,7 +1023,7 @@ void createRoomCallback(PEER peer, PEERBool success, PEERJoinResult result, Room
 		UnsignedInt localIP = peerGetLocalIP(TheGameSpyChat->getPeer());
 		DEBUG_LOG(("createRoomCallback - peerGetLocalIP returned %d.%d.%d.%d as the local IP",
 								localIP >> 24, (localIP >> 16) & 0xff, (localIP >> 8) & 0xff, localIP & 0xff));
-//		GetLocalChatConnectionAddress("peerchat.gamespy.com", 6667, localIP);
+//		GetLocalChatConnectionAddress("peerchat." GSI_DOMAIN_NAME, 6667, localIP);
 //		DEBUG_LOG(("createRoomCallback - GetLocalChatConnectionAddress returned %d.%d.%d.%d as the local IP",
 //								localIP >> 24, (localIP >> 16) & 0xff, (localIP >> 8) & 0xff, localIP & 0xff));
 		localIP = ntohl(localIP); // The IP returned from GetLocalChatConnectionAddress is in network byte order.

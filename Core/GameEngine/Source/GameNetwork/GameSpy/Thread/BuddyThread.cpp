@@ -164,6 +164,9 @@ GameSpyBuddyMessageQueue::~GameSpyBuddyMessageQueue()
 
 void GameSpyBuddyMessageQueue::startThread()
 {
+	fprintf(stderr, "[WOL] GameSpyBuddyMessageQueue::startThread() called!\n");
+	fflush(stderr);
+
 	if (!m_thread)
 	{
 		m_thread = NEW BuddyThreadClass;
@@ -257,6 +260,8 @@ GPProfile GameSpyBuddyMessageQueue::getLocalProfileID()
 
 void BuddyThreadClass::Thread_Function()
 {
+	fprintf(stderr, "[WOL] BuddyThread Iniciada!\n");
+	fflush(stderr);
 	try {
 	GPConnection gpCon;
 	GPConnection *con = &gpCon;
@@ -289,9 +294,20 @@ void BuddyThreadClass::Thread_Function()
 				m_nick = incomingRequest.arg.login.nick;
 				m_email = incomingRequest.arg.login.email;
 				m_pass = incomingRequest.arg.login.password;
-				m_isConnected = (gpConnect( con, incomingRequest.arg.login.nick, incomingRequest.arg.login.email,
-					incomingRequest.arg.login.password, (incomingRequest.arg.login.hasFirewall)?GP_FIREWALL:GP_NO_FIREWALL,
-					GP_BLOCKING, callbackWrapper, (void *)CALLBACK_CONNECT ) == GP_NO_ERROR);
+				m_isNewAccount = FALSE;
+				
+				m_isConnected = false;
+				fprintf(stderr, "[WOL] BuddyThread recebendo LOGIN. Chamando gpConnect...\n");
+				fflush(stderr);
+
+				// TheSuperHackers @tweak OmniBlade API was updated since Generals release to require uniquenick which is the same as nick.
+				GPResult res = gpConnect( con, m_nick.c_str(), m_email.c_str(), m_pass.c_str(), (incomingRequest.arg.login.hasFirewall)?GP_FIREWALL:GP_NO_FIREWALL,
+					GP_BLOCKING, callbackWrapper, (void *)CALLBACK_CONNECT );
+				
+				fprintf(stderr, "[WOL] gpConnect (Host: gp." GSI_DOMAIN_NAME ") retornou erro: %d (0=Sem Erro, 1=Memoria, 2=Param, 3=Rede, 4=Servidor)\n", res);
+				fflush(stderr);
+
+				m_isConnected = (res == GP_NO_ERROR);
 				m_isConnecting = false;
 				break;
 
@@ -325,9 +341,15 @@ void BuddyThreadClass::Thread_Function()
 					m_pass = incomingRequest.arg.login.password;
 					m_isNewAccount = TRUE;
 					// TheSuperHackers @tweak OmniBlade API was updated since Generals release to require uniquenick which is the same as nick and cdkey is an empty string here.
-					m_isConnected = (gpConnectNewUser( con, incomingRequest.arg.login.nick, incomingRequest.arg.login.nick, incomingRequest.arg.login.email,
+					m_isConnected = false; // default
+					fprintf(stderr, "[WOL] BuddyThread recebendo LOGINNEW. Chamando gpConnectNewUser...\n");
+					fflush(stderr);
+					GPResult res = gpConnectNewUser( con, incomingRequest.arg.login.nick, incomingRequest.arg.login.nick, incomingRequest.arg.login.email,
 						incomingRequest.arg.login.password, "", (incomingRequest.arg.login.hasFirewall)?GP_FIREWALL:GP_NO_FIREWALL,
-						GP_BLOCKING, callbackWrapper, (void *)CALLBACK_CONNECT ) == GP_NO_ERROR);
+						GP_BLOCKING, callbackWrapper, (void *)CALLBACK_CONNECT );
+					fprintf(stderr, "[WOL] gpConnectNewUser (Host: gp." GSI_DOMAIN_NAME ") retornou erro: %d (0=Sem Erro, 1=Memoria, 2=Param, 3=Rede, 4=Servidor)\n", res);
+					fflush(stderr);
+					m_isConnected = (res == GP_NO_ERROR);
 					if (m_isNewAccount) // if we didn't re-login
 					{
 						gpSetInfoMask( con, GP_MASK_NONE ); // don't share info

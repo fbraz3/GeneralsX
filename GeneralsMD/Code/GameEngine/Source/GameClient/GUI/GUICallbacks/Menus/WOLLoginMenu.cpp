@@ -123,9 +123,10 @@ static AsciiString obfuscate( AsciiString in )
 		if (!*c2)
 			c2 = xorWord;
 		if (*c != *c2)
-			*c = *c++ ^ *c2++;
-		else
-			c++, c2++;
+			*c = *c ^ *c2;
+		
+		c++;
+		c2++;
 	}
 	AsciiString out = buf;
 	delete[] buf;
@@ -1269,7 +1270,8 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 							//TheGameSpyInfo->setLocalProfileID( resp.player.profileID );
 							TheGameSpyInfo->setLocalEmail( email );
 							TheGameSpyInfo->setLocalPassword( password );
-							DEBUG_LOG(("before create: TheGameSpyInfo->stuff(%s/%s/%s)", TheGameSpyInfo->getLocalBaseName().str(), TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalPassword().str()));
+							fprintf(stderr, "[WOL] Criando conta e logando no GameSpy (Host: gp." GSI_DOMAIN_NAME ") com Email=%s Nick=%s\n", TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalBaseName().str());
+							fflush(stderr);
 
 							TheGameSpyBuddyMessageQueue->addRequest( req );
 							if(checkBoxRememberPassword && GadgetCheckBoxIsChecked(checkBoxRememberPassword))
@@ -1358,7 +1360,8 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 							//TheGameSpyInfo->setLocalProfileID( resp.player.profileID );
 							TheGameSpyInfo->setLocalEmail( email );
 							TheGameSpyInfo->setLocalPassword( password );
-							DEBUG_LOG(("before login: TheGameSpyInfo->stuff(%s/%s/%s)", TheGameSpyInfo->getLocalBaseName().str(), TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalPassword().str()));
+							fprintf(stderr, "[WOL] Iniciando login no GameSpy (Host: gp." GSI_DOMAIN_NAME ") com Email=%s Nick=%s\n", TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalBaseName().str());
+							fflush(stderr);
 
 							TheGameSpyBuddyMessageQueue->addRequest( req );
 							if(checkBoxRememberPassword && GadgetCheckBoxIsChecked(checkBoxRememberPassword))

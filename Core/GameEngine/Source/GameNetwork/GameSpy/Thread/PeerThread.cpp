@@ -1192,6 +1192,12 @@ void PeerThreadClass::Thread_Function()
 
 	peer = peerInitialize( &callbacks );
 	DEBUG_ASSERTCRASH( peer != nullptr, ("null peer!") );
+	if (!peer)
+	{
+		fprintf(stderr, "[WOL] PeerThread: peerInitialize failed (peer is null)\n");
+		fflush(stderr);
+		return;
+	}
 	m_isConnected = m_isConnecting = false;
 
 	qr2_register_key(EXECRC_KEY, EXECRC_STR);
@@ -2269,7 +2275,7 @@ void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 	resp.peerResponseType = PeerResponse::PEERRESPONSE_LOGIN;
 	resp.player.profileID = m_profileID;
 	resp.nick = m_loginName;
-	GetLocalChatConnectionAddress("peerchat.gamespy.com", 6667, localIP);
+	GetLocalChatConnectionAddress("peerchat." GSI_DOMAIN_NAME, 6667, localIP);
 	chatSetLocalIP(localIP);
 	resp.player.internalIP = ntohl(localIP);
 	resp.player.externalIP = ntohl(peerGetLocalIP(peer));
