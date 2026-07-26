@@ -1089,9 +1089,10 @@ static void AuthenticateCDKeyCallback
 #endif // SERVER_DEBUGGING
 }
 
+// GeneralsX @bugfix fbraz3 26/07/2026 Allow CD-Key auth fallback when registry key is missing for custom/emulated servers
 static SerialAuthResult doCDKeyAuthentication( PEER peer )
 {
-	SerialAuthResult retval = SERIAL_NONEXISTENT;
+	SerialAuthResult retval = SERIAL_OK; // Default to SERIAL_OK for custom/emulated servers or non-Windows builds
 	if (!peer)
 		return retval;
 
@@ -1113,7 +1114,7 @@ static SerialAuthResult doCDKeyAuthentication( PEER peer )
 	{
 		PSRequest req;
 		req.requestType = PSRequest::PSREQUEST_READCDKEYSTATS;
-		req.cdkey = s.str();
+		req.cdkey = s.isNotEmpty() ? s.str() : "0000000000000000";
 		TheGameSpyPSMessageQueue->addRequest(req);
 	}
 
