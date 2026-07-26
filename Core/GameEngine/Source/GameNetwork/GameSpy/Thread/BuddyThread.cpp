@@ -290,25 +290,27 @@ void BuddyThreadClass::Thread_Function()
 			switch (incomingRequest.buddyRequestType)
 			{
 			case BuddyRequest::BUDDYREQUEST_LOGIN:
-				m_isConnecting = true;
-				m_nick = incomingRequest.arg.login.nick;
-				m_email = incomingRequest.arg.login.email;
-				m_pass = incomingRequest.arg.login.password;
-				m_isNewAccount = FALSE;
-				
-				m_isConnected = false;
-				fprintf(stderr, "[WOL] BuddyThread recebendo LOGIN. Chamando gpConnect...\n");
-				fflush(stderr);
+				{
+					m_isConnecting = true;
+					m_nick = incomingRequest.arg.login.nick;
+					m_email = incomingRequest.arg.login.email;
+					m_pass = incomingRequest.arg.login.password;
+					m_isNewAccount = FALSE;
+					
+					m_isConnected = false;
+					fprintf(stderr, "[WOL] BuddyThread recebendo LOGIN. Chamando gpConnect...\n");
+					fflush(stderr);
 
-				// TheSuperHackers @tweak OmniBlade API was updated since Generals release to require uniquenick which is the same as nick.
-				GPResult res = gpConnect( con, m_nick.c_str(), m_email.c_str(), m_pass.c_str(), (incomingRequest.arg.login.hasFirewall)?GP_FIREWALL:GP_NO_FIREWALL,
-					GP_BLOCKING, callbackWrapper, (void *)CALLBACK_CONNECT );
-				
-				fprintf(stderr, "[WOL] gpConnect (Host: gp." GSI_DOMAIN_NAME ") retornou erro: %d (0=Sem Erro, 1=Memoria, 2=Param, 3=Rede, 4=Servidor)\n", res);
-				fflush(stderr);
+					// TheSuperHackers @tweak OmniBlade API was updated since Generals release to require uniquenick which is the same as nick.
+					GPResult res = gpConnect( con, m_nick.c_str(), m_email.c_str(), m_pass.c_str(), (incomingRequest.arg.login.hasFirewall)?GP_FIREWALL:GP_NO_FIREWALL,
+						GP_BLOCKING, callbackWrapper, (void *)CALLBACK_CONNECT );
+					
+					fprintf(stderr, "[WOL] gpConnect (Host: gp." GSI_DOMAIN_NAME ") retornou erro: %d (0=Sem Erro, 1=Memoria, 2=Param, 3=Rede, 4=Servidor)\n", res);
+					fflush(stderr);
 
-				m_isConnected = (res == GP_NO_ERROR);
-				m_isConnecting = false;
+					m_isConnected = (res == GP_NO_ERROR);
+					m_isConnecting = false;
+				}
 				break;
 
 			case BuddyRequest::BUDDYREQUEST_RELOGIN:
