@@ -1327,7 +1327,7 @@ void PeerThreadClass::Thread_Function()
 	/////////////////
 	fprintf(stderr, "[PeerThread] Chamando peerSetTitle (GameName: %s)...\n", gameName);
 	fflush(stderr);
-	PEERBool titleRes = peerSetTitle( peer , gameName, secretKey, gameName, secretKey, GetRegistryVersion(), 30, PEERTrue, pingRooms, crossPingRooms);
+	PEERBool titleRes = peerSetTitle( peer , gameName, secretKey, gameName, secretKey, 0x10000, 30, PEERTrue, pingRooms, crossPingRooms);
 	fprintf(stderr, "[PeerThread] peerSetTitle retornou: %d (1 = Sucesso)\n", titleRes);
 	fflush(stderr);
 	if(!titleRes)
@@ -1338,6 +1338,8 @@ void PeerThreadClass::Thread_Function()
 		return;
 	}
 
+	fprintf(stderr, "[PeerThread] Enumerating IPs for chatSetLocalIP...\n");
+	fflush(stderr);
 	OptionPreferences pref;
 	UnsignedInt preferredIP = INADDR_ANY;
 	UnsignedInt selectedIP = pref.getOnlineIPAddress();
@@ -1356,6 +1358,8 @@ void PeerThreadClass::Thread_Function()
 		IPlist = IPlist->getNext();
 	}
 	chatSetLocalIP(preferredIP);
+	fprintf(stderr, "[PeerThread] chatSetLocalIP done, preferredIP=%8.8X\n", preferredIP);
+	fflush(stderr);
 
 	UnsignedInt preferredQRPort = 0;
 	AsciiString selectedQRPort = pref["GameSpyQRPort"];
@@ -1364,12 +1368,17 @@ void PeerThreadClass::Thread_Function()
 		preferredQRPort = atoi(selectedQRPort.str());
 	}
 
+	fprintf(stderr, "[PeerThread] Entrando no while loop de requests (running=%d, queue=%p)...\n", running, TheGameSpyPeerMessageQueue);
+	fflush(stderr);
+
 	PeerRequest incomingRequest;
 	while ( running && TheGameSpyPeerMessageQueue )
 	{
 		// deal with requests
 		if (TheGameSpyPeerMessageQueue && TheGameSpyPeerMessageQueue->getRequest(incomingRequest))
 		{
+			fprintf(stderr, "[PeerThread] Request recebido na fila! Tipo=%d\n", incomingRequest.peerRequestType);
+			fflush(stderr);
 			DEBUG_LOG(("TheGameSpyPeerMessageQueue->getRequest() got request of type %d", incomingRequest.peerRequestType));
 			switch (incomingRequest.peerRequestType)
 			{

@@ -163,12 +163,17 @@ EnumeratedIP * IPEnumeration::getAddresses()
 		{
 			return m_IPlist;
 		}
+		// GeneralsX @bugfix: On POSIX/macOS, fallback to 127.0.0.1 if no external interface found instead of calling blocking gethostbyname
+		addNewIP(127, 0, 0, 1);
+		return m_IPlist;
 	}
 	else
 	{
 		DEBUG_LOG(("Failed call to getifaddrs; errno returned %d", errno));
+		addNewIP(127, 0, 0, 1);
+		return m_IPlist;
 	}
-#endif
+#else
 
 	// get the local machine's host name
 	char hostname[256];
@@ -207,6 +212,7 @@ EnumeratedIP * IPEnumeration::getAddresses()
 	}
 
 	return m_IPlist;
+#endif
 }
 
 void IPEnumeration::addNewIP( UnsignedByte a, UnsignedByte b, UnsignedByte c, UnsignedByte d )
