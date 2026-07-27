@@ -2258,7 +2258,12 @@ static void listGroupRoomsCallback(PEER peer, PEERBool success,
 	}
 	else
 	{
-		DEBUG_LOG(("Failure!"));
+		fprintf(stderr, "[PeerThread] listGroupRoomsCallback concluida (success=false). Enfileirando PEERRESPONSE_GROUPROOM (id=0)...\n");
+		fflush(stderr);
+		PeerResponse resp;
+		resp.peerResponseType = PeerResponse::PEERRESPONSE_GROUPROOM;
+		resp.groupRoom.id = 0;
+		TheGameSpyPeerMessageQueue->addResponse(resp);
 	}
 }
 
@@ -2286,7 +2291,7 @@ void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 	resp.player.profileID = m_profileID;
 	resp.nick = m_loginName;
 	UnsignedInt localIP = INADDR_ANY;
-	if (!GetLocalChatConnectionAddress("peerchat." GSI_DOMAIN_NAME, 6667, localIP))
+	if (peer)
 	{
 		localIP = peerGetPrivateIP(peer);
 	}
@@ -2294,7 +2299,9 @@ void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 	fprintf(stderr, "[PeerThread] Chat connection localIP: %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(ntohl(localIP)));
 	fflush(stderr);
 	resp.player.internalIP = ntohl(localIP);
-	resp.player.externalIP = ntohl(peerGetLocalIP(peer));
+	resp.player.externalIP = peer ? ntohl(peerGetLocalIP(peer)) : 0;
+	fprintf(stderr, "[PeerThread] Enfileirando PEERRESPONSE_LOGIN para a UI (ProfileID=%d, Nick=%s)...\n", resp.player.profileID, resp.nick.c_str());
+	fflush(stderr);
 	TheGameSpyPeerMessageQueue->addResponse(resp);
 
 	PSRequest psReq;
@@ -2405,8 +2412,7 @@ void roomMessageCallback(PEER peer, RoomType roomType, const char * nick, const 
 	resp.text = MultiByteToWideCharSingleLine(message);
 	resp.message.isPrivate = FALSE;
 	resp.message.isAction = (messageType == ActionMessage);
-	TheGameSpyPeerMessageQueue->addResponse(resp);
-	DEBUG_LOG(("Saw text [%hs] (%ls) %d chars Orig was %s (%d chars)", nick, resp.text.c_str(), resp.text.length(), message, strlen(message)));
+	DEBUG_LOG(("Saw text [%s] %zu chars Orig was %s (%zu chars)", nick, resp.text.length(), message, strlen(message)));
 
 	UnsignedInt IP;
 	peerGetPlayerInfoNoWait(peer, nick, &IP, &resp.message.profileID);
@@ -2851,7 +2857,7 @@ static void listingGamesCallback(PEER peer, PEERBool success, const char * name,
 	DEBUG_ASSERTCRASH(name || msg==PEER_CLEAR || msg==PEER_COMPLETE, ("Game has no name!"));
 	if (!t || !success || (!name && (msg == PEER_ADD || msg == PEER_UPDATE)))
 	{
-		DEBUG_LOG(("Bailing from listingGamesCallback() - success=%d, name=%X, server=%X, msg=%X", success, name, server, msg));
+		DEBUG_LOG(("Bailing from listingGamesCallback() - success=%d, name=%s, server=%p, msg=%d", success, name ? name : "null", (void*)server, msg));
 		return;
 	}
 	if (!name)
@@ -2969,20 +2975,20 @@ static void listingGamesCallback(PEER peer, PEERBool success, const char * name,
 		{
 			if (SBServerHasBasicKeys(server))
 			{
-				DEBUG_LOG(("Server %x does not have basic keys", server));
+				DEBUG_LOG(("Server %p does not have basic keys", (void*)server));
 				return;
 			}
 			else
 			{
-				DEBUG_LOG(("Server %x has basic keys, yet has no info", server));
+				DEBUG_LOG(("Server %p has basic keys, yet has no info", (void*)server));
 			}
 			if (msg == PEER_UPDATE)
 			{
 				PeerRequest req;
 				req.peerRequestType = PeerRequest::PEERREQUEST_GETEXTENDEDSTAGINGROOMINFO;
 				req.stagingRoom.id = t->findServer( server );
-				DEBUG_LOG(("Add/update a 0/0 server %X (%d, %s) - requesting full update to see if that helps.",
-					server, resp.stagingRoom.id, gameName.str()));
+				DEBUG_LOG(("Add/update a 0/0 server %p (%d, %s) - requesting full update to see if that helps.",
+					(void*)server, resp.stagingRoom.id, gameName.str()));
 				TheGameSpyPeerMessageQueue->addRequest(req);
 			}
 			return; // don't actually try to list it.
@@ -2997,7 +3003,7 @@ static void listingGamesCallback(PEER peer, PEERBool success, const char * name,
 		case PEER_ADD:
 		case PEER_UPDATE:
 			resp.stagingRoom.id = t->findServer( server );
-			DEBUG_LOG(("Add/update on server %X (%d, %s)", server, resp.stagingRoom.id, gameName.str()));
+			DEBUG_LOG(("Add/update on server %p (%d, %s)", (void*)server, resp.stagingRoom.id, gameName.str()));
 			resp.stagingServerName = MultiByteToWideCharSingleLine( gameName.str() );
 			DEBUG_LOG(("Server had basic=%d, full=%d", SBServerHasBasicKeys(server), SBServerHasFullKeys(server)));
 #ifdef DEBUG_LOGGING
@@ -3005,7 +3011,7 @@ static void listingGamesCallback(PEER peer, PEERBool success, const char * name,
 #endif
 			break;
 		case PEER_REMOVE:
-			DEBUG_LOG(("Removing server %X (%d)", server, resp.stagingRoom.id));
+			DEBUG_LOG(("Removing server %p (%d)", (void*)server, resp.stagingRoom.id));
 			resp.stagingRoom.id = t->removeServerFromMap( server );
 			break;
 	}
