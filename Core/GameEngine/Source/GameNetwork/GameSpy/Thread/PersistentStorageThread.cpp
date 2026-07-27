@@ -641,7 +641,7 @@ Bool PSThreadClass::tryLogin( Int id, std::string nick, std::string password, st
 
 static void getPersistentDataCallback(int localid, int profileid, persisttype_t type, int index, int success, time_t modified, char *data, int len, void *instance)
 {
-	DEBUG_LOG(("Data get callback: localid: %d profileid: %d success: %d len: %d data: %s",localid, profileid, success, len, data));
+	DEBUG_LOG(("Data get callback: localid: %d profileid: %d success: %d len: %d data: %s",localid, profileid, success, len, data ? data : "(null)"));
 	PSThreadClass *t = (PSThreadClass *)instance;
 	if (!t)
 		return;
