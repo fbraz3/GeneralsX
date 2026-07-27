@@ -1338,35 +1338,11 @@ void PeerThreadClass::Thread_Function()
 		return;
 	}
 
-	fprintf(stderr, "[PeerThread] Enumerating IPs for chatSetLocalIP...\n");
-	fflush(stderr);
-	OptionPreferences pref;
-	UnsignedInt preferredIP = INADDR_ANY;
-	UnsignedInt selectedIP = pref.getOnlineIPAddress();
-	DEBUG_LOG(("Looking for IP %X", selectedIP));
-	IPEnumeration IPs;
-	EnumeratedIP *IPlist = IPs.getAddresses();
-	while (IPlist)
-	{
-		DEBUG_LOG(("Looking at IP %s", IPlist->getIPstring().str()));
-		if (selectedIP == IPlist->getIP())
-		{
-			preferredIP = IPlist->getIP();
-			DEBUG_LOG(("Connecting to GameSpy chat server via IP address %8.8X", preferredIP));
-			break;
-		}
-		IPlist = IPlist->getNext();
-	}
-	chatSetLocalIP(preferredIP);
-	fprintf(stderr, "[PeerThread] chatSetLocalIP done, preferredIP=%8.8X\n", preferredIP);
+	chatSetLocalIP(INADDR_ANY);
+	fprintf(stderr, "[PeerThread] chatSetLocalIP done (INADDR_ANY)\n");
 	fflush(stderr);
 
 	UnsignedInt preferredQRPort = 0;
-	AsciiString selectedQRPort = pref["GameSpyQRPort"];
-	if (selectedQRPort.isNotEmpty())
-	{
-		preferredQRPort = atoi(selectedQRPort.str());
-	}
 
 	fprintf(stderr, "[PeerThread] Entrando no while loop de requests (running=%d, queue=%p)...\n", running, TheGameSpyPeerMessageQueue);
 	fflush(stderr);
