@@ -377,15 +377,31 @@ static void updateOverallStats()
 	if( s_totalWinPercent <= 0 )
 		s_totalWinPercent = 1;  //prevent divide by zero
 
-	std::map<AsciiString,float>::iterator it;
-	for( it = s_winStats.begin();  it != s_winStats.end();  ++it )
+	for( int i = 0; i < ThePlayerTemplateStore->getPlayerTemplateCount(); i++)
 	{
-		int percent = REAL_TO_INT(100.0f * (it->second / s_totalWinPercent));
+		const PlayerTemplate* pTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(i);
+		if( !pTemplate->isPlayableSide() || pTemplate->getSide().compare("Boss") == 0 )
+			continue;
+
+		AsciiString side = pTemplate->getSide();
+		if( side == "America" )
+			side = "USA";
+
+		float percentVal = 0.0f;
+		std::map<AsciiString,float>::iterator it = s_winStats.find(side);
+		if (it != s_winStats.end() && s_totalWinPercent > 0)
+		{
+			percentVal = it->second / s_totalWinPercent;
+		}
+
+		int percent = REAL_TO_INT(100.0f * percentVal);
 		percStr.format( TheGameText->fetch("GUI:WinPercent"), percent );
-		wndName.format( "WOLWelcomeMenu.wnd:Percent%s", it->first.str() );
+		wndName.format( "WOLWelcomeMenu.wnd:Percent%s", side.str() );
 		pWin = TheWindowManager->winGetWindowFromId( nullptr, NAMEKEY(wndName) );
-		GadgetCheckBoxSetText( pWin, percStr );
-//x		DEBUG_LOG(("Initialized win percent: %s -> %s %f=%s", wndName.str(), it->first.str(), it->second, percStr.str() ));
+		if (pWin)
+		{
+			GadgetCheckBoxSetText( pWin, percStr );
+		}
 	}
 }
 
