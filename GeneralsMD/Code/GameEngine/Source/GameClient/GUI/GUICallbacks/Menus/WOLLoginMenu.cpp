@@ -832,7 +832,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		}
 
 		PeerResponse resp;
-		if (!loggedInOK && TheGameSpyPeerMessageQueue->getResponse( resp ))
+		while (!loggedInOK && TheGameSpyPeerMessageQueue->getResponse( resp ))
 		{
 			fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu PeerResponse tipo %d\n", resp.peerResponseType);
 			fflush(stderr);
@@ -863,11 +863,11 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 					TheGameSpyInfo->loadSavedIgnoreList();
 					TheGameSpyInfo->setLocalIPs(resp.player.internalIP, resp.player.externalIP);
 					TheGameSpyInfo->readAdditionalDisconnects();
-					//TheGameSpyInfo->setLocalEmail( resp.player.email );
-					//TheGameSpyInfo->setLocalPassword( resp)
 
 					GameSpyMiscPreferences miscPref;
 					TheGameSpyInfo->setMaxMessagesPerUpdate(miscPref.getMaxMessagesPerUpdate());
+
+					checkLogin();
 				}
 				break;
 			case PeerResponse::PEERRESPONSE_DISCONNECT:
