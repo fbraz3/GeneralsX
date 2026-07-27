@@ -763,13 +763,13 @@ void WOLLoginMenuShutdown( WindowLayout *layout, void *userData )
 }
 
 
-// this is used to check if we've got all the pings
+// GeneralsX @bugfix fbraz3 26/07/2026 Allow login completion if ThePinger is null or pings finished
 static void checkLogin()
 {
-	if (loggedInOK && ThePinger && !ThePinger->arePingsInProgress())
+	if (loggedInOK && (!ThePinger || !ThePinger->arePingsInProgress()))
 	{
 		// save off our ping string, and end those threads
-		AsciiString pingStr = ThePinger->getPingString( 1000 );
+		AsciiString pingStr = ThePinger ? ThePinger->getPingString( 1000 ) : AsciiString::TheEmptyString;
 		DEBUG_LOG(("Ping string is %s", pingStr.str()));
 		TheGameSpyInfo->setPingString(pingStr);
 		//delete ThePinger;
