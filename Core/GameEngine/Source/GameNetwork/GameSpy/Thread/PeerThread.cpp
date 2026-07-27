@@ -2293,14 +2293,14 @@ void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 	psReq.password = m_password;
 	TheGameSpyPSMessageQueue->addRequest(psReq);
 
-	fprintf(stderr, "[PeerThread] Iniciando peerListGroupRooms (blocking=PEERTrue)...\n");
+	fprintf(stderr, "[PeerThread] Iniciando peerListGroupRooms (blocking=PEERFalse)...\n");
 	fflush(stderr);
 #ifdef SERVER_DEBUGGING
 	DEBUG_LOG(("Before peerListGroupRooms()"));
 	CheckServers(peer);
 #endif // SERVER_DEBUGGING
-	peerListGroupRooms( peer, nullptr, listGroupRoomsCallback, this, PEERTrue );
-	fprintf(stderr, "[PeerThread] peerListGroupRooms finalizado.\n");
+	peerListGroupRooms( peer, nullptr, listGroupRoomsCallback, this, PEERFalse );
+	fprintf(stderr, "[PeerThread] peerListGroupRooms enfileirado (non-blocking).\n");
 	fflush(stderr);
 #ifdef SERVER_DEBUGGING
 	DEBUG_LOG(("After peerListGroupRooms()"));

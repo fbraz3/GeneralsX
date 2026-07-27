@@ -823,6 +823,8 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		PeerResponse resp;
 		if (!loggedInOK && TheGameSpyPeerMessageQueue->getResponse( resp ))
 		{
+			fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu PeerResponse tipo %d\n", resp.peerResponseType);
+			fflush(stderr);
 			switch (resp.peerResponseType)
 			{
 			case PeerResponse::PEERRESPONSE_GROUPROOM:
@@ -841,6 +843,8 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 			case PeerResponse::PEERRESPONSE_LOGIN:
 				{
 					loggedInOK = true;
+					fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu PEERRESPONSE_LOGIN! loggedInOK = true! Chamando checkLogin...\n");
+					fflush(stderr);
 
 					// fetch our player info
 					TheGameSpyInfo->setLocalName( resp.nick.c_str() );
