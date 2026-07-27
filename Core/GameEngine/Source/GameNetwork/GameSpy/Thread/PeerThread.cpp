@@ -1767,9 +1767,7 @@ void PeerThreadClass::Thread_Function()
 		}
 
 		// update the network
-		PEERBool isConnected = PEERTrue;
-		isConnected = peerIsConnected( peer );
-		if ( isConnected == PEERTrue )
+		if ( peer )
 		{
 			if (qr2Sock != INVALID_SOCKET)
 			{
