@@ -858,6 +858,8 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 			case PeerResponse::PEERRESPONSE_DISCONNECT:
 				{
 					loginAttemptTime = 0;
+					fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu PEERRESPONSE_DISCONNECT com reason=%d. Teardown & Setup GameSpy...\n", resp.discon.reason);
+					fflush(stderr);
 					UnicodeString title, body;
 					AsciiString disconMunkee;
 					disconMunkee.format("GUI:GSDisconReason%d", resp.discon.reason);
@@ -884,6 +886,8 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 	{
 		// timed out a login attempt, so say so
 		loginAttemptTime = 0;
+		fprintf(stderr, "[WOL] WOLLoginMenuUpdate TIMEOUT no login (10s estourado). Teardown & Setup GameSpy...\n");
+		fflush(stderr);
 		UnicodeString title, body;
 		AsciiString disconMunkee;
 		disconMunkee.format("GUI:GSDisconReason4");	// ("could not connect to server")

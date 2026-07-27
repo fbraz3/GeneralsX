@@ -550,6 +550,8 @@ void BuddyThreadClass::messageCallback( GPConnection *con, GPRecvBuddyMessageArg
 
 void BuddyThreadClass::connectCallback( GPConnection *con, GPConnectResponseArg *arg )
 {
+	fprintf(stderr, "[WOL] BuddyThreadClass::connectCallback chamado: arg->result=%d, profile=%d, m_lastErrorCode=0x%X\n", arg->result, arg->profile, m_lastErrorCode);
+	fflush(stderr);
 	BuddyResponse loginResponse;
 	if (arg->result == GP_NO_ERROR)
 	{
