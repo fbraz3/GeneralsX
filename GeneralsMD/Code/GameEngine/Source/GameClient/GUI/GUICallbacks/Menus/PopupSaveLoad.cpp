@@ -398,7 +398,8 @@ static void doLoadGame()
 		return;
 
 	// when loading a game we also close the quit/esc menu for the user when in-game
-	if( TheShell->isShellActive() == FALSE )
+	// GeneralsX @bugfix fbraz 22/07/2026 Use isPopup to correctly identify if the load menu was invoked from the in-game popup menu or the main menu shell. TheShell->isShellActive() might have already been mutated to FALSE by a prior call to closeSaveMenu().
+	if( isPopup )
 	{
 		destroyQuitMenu();
 //		ToggleQuitMenu();
