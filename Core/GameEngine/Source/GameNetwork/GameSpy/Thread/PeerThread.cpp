@@ -615,8 +615,14 @@ void GameSpyPeerMessageQueue::addResponse( const PeerResponse& resp )
 
 	MutexClass::LockClass m(m_responseMutex);
 	if (m.Failed())
+	{
+		fprintf(stderr, "[GameSpyQueue] addResponse FALHOU no mutex lock! Tipo=%d\n", resp.peerResponseType);
+		fflush(stderr);
 		return;
+	}
 
+	fprintf(stderr, "[GameSpyQueue] addResponse sucesso! Tipo=%d, tamanho da fila=%zu\n", resp.peerResponseType, m_responses.size() + 1);
+	fflush(stderr);
 	m_responses.push(resp);
 }
 
@@ -631,6 +637,8 @@ Bool GameSpyPeerMessageQueue::getResponse( PeerResponse& resp )
 		return false;
 	resp = m_responses.front();
 	m_responses.pop();
+	fprintf(stderr, "[GameSpyQueue] getResponse retornou resposta Tipo=%d! Restantes=%zu\n", resp.peerResponseType, m_responses.size());
+	fflush(stderr);
 	return true;
 }
 
@@ -2277,9 +2285,13 @@ void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 	resp.peerResponseType = PeerResponse::PEERRESPONSE_LOGIN;
 	resp.player.profileID = m_profileID;
 	resp.nick = m_loginName;
-	GetLocalChatConnectionAddress("peerchat." GSI_DOMAIN_NAME, 6667, localIP);
+	UnsignedInt localIP = INADDR_ANY;
+	if (!GetLocalChatConnectionAddress("peerchat." GSI_DOMAIN_NAME, 6667, localIP))
+	{
+		localIP = peerGetPrivateIP(peer);
+	}
 	chatSetLocalIP(localIP);
-	fprintf(stderr, "[PeerThread] GetLocalChatConnectionAddress (peerchat." GSI_DOMAIN_NAME ") retornou IP: %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(ntohl(localIP)));
+	fprintf(stderr, "[PeerThread] Chat connection localIP: %d.%d.%d.%d\n", PRINTF_IP_AS_4_INTS(ntohl(localIP)));
 	fflush(stderr);
 	resp.player.internalIP = ntohl(localIP);
 	resp.player.externalIP = ntohl(peerGetLocalIP(peer));
