@@ -47,6 +47,12 @@
 
 #include "Common/MiniLog.h"
 
+#define LOG_ARGS(...) __VA_ARGS__
+#ifdef DEBUG_LOG
+#undef DEBUG_LOG
+#endif
+#define DEBUG_LOG(args) do { fprintf(stderr, "[GameSpyLog] "); fprintf(stderr, LOG_ARGS args); fprintf(stderr, "\n"); fflush(stderr); } while(0)
+
 
 // enable this for trying to track down why SBServers are losing their keyvals  -MDC 2/20/2003
 #undef SERVER_DEBUGGING

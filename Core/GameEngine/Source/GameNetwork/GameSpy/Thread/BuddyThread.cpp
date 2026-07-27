@@ -39,6 +39,12 @@
 #include "WWLib/mutex.h"
 #include "WWLib/thread.h"
 
+#define LOG_ARGS(...) __VA_ARGS__
+#ifdef DEBUG_LOG
+#undef DEBUG_LOG
+#endif
+#define DEBUG_LOG(args) do { fprintf(stderr, "[GameSpyLog] "); fprintf(stderr, LOG_ARGS args); fprintf(stderr, "\n"); fflush(stderr); } while(0)
+
 
 //-------------------------------------------------------------------------
 
