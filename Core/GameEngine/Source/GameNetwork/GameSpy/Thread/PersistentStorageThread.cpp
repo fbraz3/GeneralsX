@@ -660,14 +660,9 @@ static void getPersistentDataCallback(int localid, int profileid, persisttype_t 
 	{
 		resp.responseType = PSResponse::PSRESPONSE_COULDNOTCONNECT;
 		resp.player.id = profileid;
-		TheGameSpyPSMessageQueue->addResponse(resp);
-		if (!t->getOpCount() && !t->sawLocalPlayerData())
+		if (TheGameSpyPSMessageQueue)
 		{
-			// we haven't gotten stats for ourselves - try again
-			PSRequest req;
-			req.requestType = PSRequest::PSREQUEST_READPLAYERSTATS;
-			req.player.id = MESSAGE_QUEUE->getLocalPlayerID();
-			TheGameSpyPSMessageQueue->addRequest(req);
+			TheGameSpyPSMessageQueue->addResponse(resp);
 		}
 		return;
 	}

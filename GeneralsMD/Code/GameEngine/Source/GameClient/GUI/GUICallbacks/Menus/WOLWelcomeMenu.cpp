@@ -541,7 +541,7 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	// Set Keyboard to Main Parent
 	TheWindowManager->winSetFocus( parentWOLWelcome );
 
-	enableControls( TheGameSpyInfo->gotGroupRoomList() );
+	enableControls( TRUE );
 	TheShell->showShellMap(TRUE);
 
 	updateNumPlayersOnline();
