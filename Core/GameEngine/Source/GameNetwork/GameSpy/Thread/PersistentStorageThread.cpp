@@ -658,6 +658,12 @@ static void getPersistentDataCallback(int localid, int profileid, persisttype_t 
 
 	if (!success)
 	{
+		if (data && strstr(data, "Connection Lost"))
+		{
+			DEBUG_LOG(("getPersistentDataCallback - connection closed, ignoring synthetic Connection Lost"));
+			return;
+		}
+
 		resp.responseType = PSResponse::PSRESPONSE_COULDNOTCONNECT;
 		resp.player.id = profileid;
 		if (TheGameSpyPSMessageQueue)
