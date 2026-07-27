@@ -1386,8 +1386,8 @@ void PeerThreadClass::Thread_Function()
 				fprintf(stderr, "[PeerThread] Chamando peerConnect (Nick: %s, ProfileID: %d, Target Host: peerchat." GSI_DOMAIN_NAME ":6667)...\n",
 					incomingRequest.nick.c_str(), incomingRequest.login.profileID);
 				fflush(stderr);
-				PEERBool connRet = peerConnect( peer, incomingRequest.nick.c_str(), incomingRequest.login.profileID, nickErrorCallbackWrapper, connectCallbackWrapper, this, PEERTrue );
-				fprintf(stderr, "[PeerThread] peerConnect retornou: %d (1 = Sucesso/Agendado)\n", connRet);
+				peerConnect( peer, incomingRequest.nick.c_str(), incomingRequest.login.profileID, nickErrorCallbackWrapper, connectCallbackWrapper, this, PEERTrue );
+				fprintf(stderr, "[PeerThread] peerConnect chamado (aguardando connectCallbackWrapper)...\n");
 				fflush(stderr);
 #ifdef SERVER_DEBUGGING
 				DEBUG_LOG(("After peerConnect()"));
