@@ -1365,10 +1365,10 @@ void PeerThreadClass::Thread_Function()
 	}
 
 	PeerRequest incomingRequest;
-	while ( running )
+	while ( running && TheGameSpyPeerMessageQueue )
 	{
 		// deal with requests
-		if (TheGameSpyPeerMessageQueue->getRequest(incomingRequest))
+		if (TheGameSpyPeerMessageQueue && TheGameSpyPeerMessageQueue->getRequest(incomingRequest))
 		{
 			DEBUG_LOG(("TheGameSpyPeerMessageQueue->getRequest() got request of type %d", incomingRequest.peerRequestType));
 			switch (incomingRequest.peerRequestType)

@@ -260,10 +260,10 @@ void PingThreadClass::Thread_Function()
 	WORD wVersionRequested = MAKEWORD(1, 1);
 	WSAStartup( wVersionRequested, &wsaData );
 
-	while ( running )
+	while ( running && ThePinger )
 	{
 		// deal with requests
-		if (ThePinger->getRequest(req))
+		if (ThePinger && ThePinger->getRequest(req))
 		{
 			// resolve the hostname
 			const char *hostnameBuffer = req.hostname.c_str();
@@ -318,7 +318,8 @@ void PingThreadClass::Thread_Function()
 			resp.hostname = req.hostname;
 			resp.avgPing = totalPing;
 			resp.repetitions = goodReps;
-			ThePinger->addResponse(resp);
+			if (ThePinger)
+				ThePinger->addResponse(resp);
 		}
 
 		// end our timeslice

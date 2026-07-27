@@ -288,10 +288,10 @@ void BuddyThreadClass::Thread_Function()
 	std::string lastStatusString;
 
 	BuddyRequest incomingRequest;
-	while ( running )
+	while ( running && TheGameSpyBuddyMessageQueue )
 	{
 		// deal with requests
-		if (TheGameSpyBuddyMessageQueue->getRequest(incomingRequest))
+		if (TheGameSpyBuddyMessageQueue && TheGameSpyBuddyMessageQueue->getRequest(incomingRequest))
 		{
 			switch (incomingRequest.buddyRequestType)
 			{
