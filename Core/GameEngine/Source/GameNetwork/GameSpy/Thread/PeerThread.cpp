@@ -765,14 +765,11 @@ static void QRServerKeyCallback
 	if (!t->isHosting())
 		t->stopHostingAlready(peer);
 
-#ifdef DEBUG_LOGGING
+#undef ADD
+#undef ADDINT
 	AsciiString val;
 #define ADD(x) { qr2_buffer_add(buffer, x); val = x; }
 #define ADDINT(x) { qr2_buffer_add_int(buffer, x); val.format("%d",x); }
-#else
-#define ADD(x) { qr2_buffer_add(buffer, x); }
-#define ADDINT(x) { qr2_buffer_add_int(buffer, x); }
-#endif
 
 	switch(key)
 	{
@@ -859,14 +856,9 @@ static void QRPlayerKeyCallback
 
 #undef ADD
 #undef ADDINT
-#ifdef DEBUG_LOGGING
 	AsciiString val;
 #define ADD(x) { qr2_buffer_add(buffer, x); val = x; }
 #define ADDINT(x) { qr2_buffer_add_int(buffer, x); val.format("%d",x); }
-#else
-#define ADD(x) { qr2_buffer_add(buffer, x); }
-#define ADDINT(x) { qr2_buffer_add_int(buffer, x); }
-#endif
 
 	switch(key)
 	{
