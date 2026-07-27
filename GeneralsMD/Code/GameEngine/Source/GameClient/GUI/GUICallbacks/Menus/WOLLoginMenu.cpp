@@ -766,10 +766,12 @@ void WOLLoginMenuShutdown( WindowLayout *layout, void *userData )
 // GeneralsX @bugfix fbraz3 26/07/2026 Allow login completion if ThePinger is null or pings finished
 static void checkLogin()
 {
-	if (loggedInOK && (!ThePinger || !ThePinger->arePingsInProgress()))
+	if (loggedInOK)
 	{
+		fprintf(stderr, "[WOL] checkLogin() executando transicao para WOLWelcomeMenu! Login concluido com sucesso!\n");
+		fflush(stderr);
 		// save off our ping string, and end those threads
-		AsciiString pingStr = ThePinger ? ThePinger->getPingString( 1000 ) : AsciiString::TheEmptyString;
+		AsciiString pingStr = (ThePinger && !ThePinger->arePingsInProgress()) ? ThePinger->getPingString( 1000 ) : AsciiString::TheEmptyString;
 		DEBUG_LOG(("Ping string is %s", pingStr.str()));
 		TheGameSpyInfo->setPingString(pingStr);
 		//delete ThePinger;
@@ -811,6 +813,15 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 	// We'll only be successful if we've requested to
 	if(isShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
 		shutdownComplete(layout);
+
+	static UnsignedInt lastLogTime = 0;
+	if (timeGetTime() - lastLogTime > 2000)
+	{
+		lastLogTime = timeGetTime();
+		fprintf(stderr, "[WOL] WOLLoginMenuUpdate tick: isAnimFinished=%d, buttonPushed=%d, loginAttemptTime=%u\n",
+			TheShell ? TheShell->isAnimFinished() : -1, buttonPushed, loginAttemptTime);
+		fflush(stderr);
+	}
 
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
 	{
