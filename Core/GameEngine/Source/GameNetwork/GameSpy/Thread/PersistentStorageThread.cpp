@@ -601,7 +601,7 @@ Bool PSThreadClass::tryConnect()
 static void persAuthCallback(int localid, int profileid, int authenticated, char *errmsg, void *instance)
 {
 	PSThreadClass *t = (PSThreadClass *)instance;
-	DEBUG_LOG(("Auth callback: localid: %d profileid: %d auth: %d err: %s",localid, profileid, authenticated, errmsg));
+	DEBUG_LOG(("Auth callback: localid: %d profileid: %d auth: %d err: %s",localid, profileid, authenticated, errmsg ? errmsg : "(null)"));
 	if (t)
 		t->persAuthCallback(authenticated != 0);
 }
