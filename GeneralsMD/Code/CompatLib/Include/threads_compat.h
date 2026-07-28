@@ -74,11 +74,10 @@ inline void EnterCriticalSection(CRITICAL_SECTION *cs) {
 // Leave a critical section (unlock)
 inline void LeaveCriticalSection(CRITICAL_SECTION *cs) {
     cs->ref_count--;
-    
     if (cs->ref_count == 0) {
         cs->owner = 0;
-        pthread_mutex_unlock(&cs->mutex);
     }
+    pthread_mutex_unlock(&cs->mutex);
 }
 
 #ifdef __cplusplus

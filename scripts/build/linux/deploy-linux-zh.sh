@@ -266,7 +266,8 @@ fi
 cd "${SCRIPT_DIR}"
 
 # Run game with all arguments
-exec "./GeneralsXZH" "$@"
+"./GeneralsXZH" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 EOF
 chmod +x "${RUNTIME_DIR}/run.sh"
 

@@ -315,7 +315,8 @@ if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
     export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
 fi
 
-exec "${APPDIR}/usr/bin/GeneralsXZH" "$@"
+"${APPDIR}/usr/bin/GeneralsXZH" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 EOF
 chmod +x "${APPDIR}/AppRun"
 

@@ -8,7 +8,7 @@ endif()
 
 add_compile_definitions(GSI_DOMAIN_NAME="${GAMESPY_SERVER_NAME}")
 
-option(SAGE_GAMESPY_USE_LOCAL_FORK "Use local GamespySDK in references/GamespySDK" TRUE)
+option(SAGE_GAMESPY_USE_LOCAL_FORK "Use local GamespySDK in references/GamespySDK" ON)
 
 if(SAGE_GAMESPY_USE_LOCAL_FORK AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/references/GamespySDK/CMakeLists.txt")
     message(STATUS "GamespySDK: Using local repository in references/GamespySDK")

@@ -123,7 +123,8 @@ if [[ -f "${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
     export VK_DRIVER_FILES="${SCRIPT_DIR}/MoltenVK_icd.json"
 fi
 
-exec "${SCRIPT_DIR}/GeneralsX" "$@"
+"${SCRIPT_DIR}/GeneralsX" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 WRAPPER
 chmod +x "${RUNTIME_DIR}/run.sh"
 

@@ -230,7 +230,8 @@ if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
     echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
 fi
 
-exec "${SCRIPT_DIR}/GeneralsX" "$@"
+"${SCRIPT_DIR}/GeneralsX" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 WRAPPER
 chmod +x "${BUNDLE_DIR}/run.sh"
 

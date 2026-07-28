@@ -1100,18 +1100,27 @@ static void AuthenticateCDKeyCallback
 // GeneralsX @bugfix fbraz3 26/07/2026 Allow CD-Key auth fallback when registry key is missing for custom/emulated servers
 static SerialAuthResult doCDKeyAuthentication( PEER peer )
 {
+    fprintf(stderr, "[PeerThread] Entering doCDKeyAuthentication...\n");
+    fflush(stderr);
 	SerialAuthResult retval = SERIAL_OK; // Default to SERIAL_OK for custom/emulated servers or non-Windows builds
-	if (!peer)
+	if (!peer) {
+        fprintf(stderr, "[PeerThread] doCDKeyAuthentication: peer is NULL!\n");
+        fflush(stderr);
 		return retval;
+    }
 
 	AsciiString s;
 	if (GetStringFromRegistry("\\ergc", "", s) && s.isNotEmpty())
 	{
+        fprintf(stderr, "[PeerThread] doCDKeyAuthentication: CDKey found: %s\n", s.str());
+        fflush(stderr);
 #ifdef SERVER_DEBUGGING
 		DEBUG_LOG(("Before peerAuthenticateCDKey()"));
 		CheckServers(peer);
 #endif // SERVER_DEBUGGING
 		peerAuthenticateCDKey(peer, s.str(), AuthenticateCDKeyCallback, &retval, PEERTrue);
+        fprintf(stderr, "[PeerThread] doCDKeyAuthentication: peerAuthenticateCDKey returned!\n");
+        fflush(stderr);
 #ifdef SERVER_DEBUGGING
 		DEBUG_LOG(("After peerAuthenticateCDKey()"));
 		CheckServers(peer);
@@ -1125,6 +1134,12 @@ static SerialAuthResult doCDKeyAuthentication( PEER peer )
 		req.cdkey = s.isNotEmpty() ? s.str() : "0000000000000000";
 		TheGameSpyPSMessageQueue->addRequest(req);
 	}
+    else {
+        fprintf(stderr, "[PeerThread] doCDKeyAuthentication: No CDKey found, skipping.\n");
+        fflush(stderr);
+    }
+    fprintf(stderr, "[PeerThread] Exiting doCDKeyAuthentication.\n");
+    fflush(stderr);
 
 	return retval;
 }
@@ -1387,6 +1402,8 @@ void PeerThreadClass::Thread_Function()
 				if (m_isConnected)
 				{
 					SerialAuthResult ret = doCDKeyAuthentication( peer );
+                    fprintf(stderr, "[PeerThread] Returned from doCDKeyAuthentication with result %d\n", ret);
+                    fflush(stderr);
 					if (ret != SERIAL_OK)
 					{
 						m_isConnecting = m_isConnected = false;
@@ -1774,6 +1791,11 @@ void PeerThreadClass::Thread_Function()
 				// check hosting activity
 				checkQR2Queries( peer, qr2Sock );
 			}
+			static int peerThinkCount = 0;
+			// if (peerThinkCount % 30 == 1) {
+			//     fprintf(stderr, "[PeerThread] chamando peerThink (count=%d)...\n", peerThinkCount);
+			//     fflush(stderr);
+			// }
 			peerThink( peer );
 		}
 
