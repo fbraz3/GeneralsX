@@ -437,7 +437,7 @@ void updateBuddyInfo()
 				AsciiString s;
 				// 3/20/03 srj -- display literal room name to allow custom unispy DB entries
 				s.format("%s", gIt->second.m_name.str());
-				roomName = UnicodeString(s.str());
+				roomName.translate(s);
 			}
 			formatStr.format(TheGameText->fetch(marker), roomName.str());
 		}

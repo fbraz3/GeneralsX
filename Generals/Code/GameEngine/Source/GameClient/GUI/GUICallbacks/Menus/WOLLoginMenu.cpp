@@ -123,9 +123,10 @@ static AsciiString obfuscate( AsciiString in )
 		if (!*c2)
 			c2 = xorWord;
 		if (*c != *c2)
-			*c = *c++ ^ *c2++;
-		else
-			c++, c2++;
+			*c = *c ^ *c2;
+		
+		c++;
+		c2++;
 	}
 	AsciiString out = buf;
 	delete[] buf;
@@ -811,6 +812,15 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 	if(isShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
 		shutdownComplete(layout);
 
+	static UnsignedInt lastLogTime = 0;
+	if (timeGetTime() - lastLogTime > 2000)
+	{
+		lastLogTime = timeGetTime();
+		fprintf(stderr, "[WOL] WOLLoginMenuUpdate tick: isAnimFinished=%d, buttonPushed=%d, loginAttemptTime=%u\n",
+			TheShell ? TheShell->isAnimFinished() : -1, buttonPushed, loginAttemptTime);
+		fflush(stderr);
+	}
+
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
 	{
 		PingResponse pingResp;
@@ -832,7 +842,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 				title = TheGameText->fetch( "GUI:GSErrorTitle" );
 				if (buddyResp.arg.error.errorString[0] != '\0')
 				{
-					body = AsciiString(buddyResp.arg.error.errorString);
+					body.translate(AsciiString(buddyResp.arg.error.errorString));
 				}
 				else
 				{
@@ -873,6 +883,8 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 			case PeerResponse::PEERRESPONSE_LOGIN:
 				{
 					loggedInOK = true;
+					fprintf(stderr, "[WOL] WOLLoginMenuUpdate received PEERRESPONSE_LOGIN! loggedInOK = true! Calling checkLogin...\n");
+					fflush(stderr);
 
 					// fetch our player info
 					TheGameSpyInfo->setLocalName( resp.nick.c_str() );
@@ -880,16 +892,18 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 					TheGameSpyInfo->loadSavedIgnoreList();
 					TheGameSpyInfo->setLocalIPs(resp.player.internalIP, resp.player.externalIP);
 					TheGameSpyInfo->readAdditionalDisconnects();
-					//TheGameSpyInfo->setLocalEmail( resp.player.email );
-					//TheGameSpyInfo->setLocalPassword( resp)
 
 					GameSpyMiscPreferences miscPref;
 					TheGameSpyInfo->setMaxMessagesPerUpdate(miscPref.getMaxMessagesPerUpdate());
+
+					checkLogin();
 				}
 				break;
 			case PeerResponse::PEERRESPONSE_DISCONNECT:
 				{
 					loginAttemptTime = 0;
+					fprintf(stderr, "[WOL] WOLLoginMenuUpdate received PEERRESPONSE_DISCONNECT with reason=%d. Teardown & Setup GameSpy...\n", resp.discon.reason);
+					fflush(stderr);
 					UnicodeString title, body;
 					AsciiString disconMunkee;
 					disconMunkee.format("GUI:GSDisconReason%d", resp.discon.reason);
@@ -916,6 +930,8 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 	{
 		// timed out a login attempt, so say so
 		loginAttemptTime = 0;
+		fprintf(stderr, "[WOL] WOLLoginMenuUpdate TIMEOUT no login (10s estourado). Teardown & Setup GameSpy...\n");
+		fflush(stderr);
 		UnicodeString title, body;
 		AsciiString disconMunkee;
 		disconMunkee.format("GUI:GSDisconReason4");	// ("could not connect to server")
@@ -1302,7 +1318,8 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 							//TheGameSpyInfo->setLocalProfileID( resp.player.profileID );
 							TheGameSpyInfo->setLocalEmail( email );
 							TheGameSpyInfo->setLocalPassword( password );
-							DEBUG_LOG(("before create: TheGameSpyInfo->stuff(%s/%s/%s)", TheGameSpyInfo->getLocalBaseName().str(), TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalPassword().str()));
+							fprintf(stderr, "[WOL] Criando conta e logando no GameSpy (Host: gp." GSI_DOMAIN_NAME ") com Email=%s Nick=%s\n", TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalBaseName().str());
+							fflush(stderr);
 
 							TheGameSpyBuddyMessageQueue->addRequest( req );
 							if(checkBoxRememberPassword && GadgetCheckBoxIsChecked(checkBoxRememberPassword))
@@ -1391,7 +1408,8 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 							//TheGameSpyInfo->setLocalProfileID( resp.player.profileID );
 							TheGameSpyInfo->setLocalEmail( email );
 							TheGameSpyInfo->setLocalPassword( password );
-							DEBUG_LOG(("before login: TheGameSpyInfo->stuff(%s/%s/%s)", TheGameSpyInfo->getLocalBaseName().str(), TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalPassword().str()));
+							fprintf(stderr, "[WOL] Starting GameSpy login with Email=%s Nick=%s\n", TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalBaseName().str());
+							fflush(stderr);
 
 							TheGameSpyBuddyMessageQueue->addRequest( req );
 							if(checkBoxRememberPassword && GadgetCheckBoxIsChecked(checkBoxRememberPassword))

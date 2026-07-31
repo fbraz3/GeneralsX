@@ -59,14 +59,17 @@ static const char *getRegistryIniRoot(HKEY root)
 // GeneralsX @feature GitHubCopilot 29/03/2026 Route low-level non-Windows registry reads through registry.ini.
 Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
 {
-	std::string storedValue;
-	if (!RegistryIni::ReadString(getRegistryIniRoot(root), path.str(), key.str(), storedValue))
-	{
-		return FALSE;
+#if defined(_UNIX)
+	std::string stdVal;
+	if (RegistryIni::ReadString(getRegistryIniRoot(root), path.str(), key.str(), stdVal)) {
+		val = stdVal.c_str();
+		return TRUE;
 	}
-
-	val = storedValue.c_str();
-	return TRUE;
+	return FALSE;
+#else
+	// Stub for Windows
+	return FALSE;
+#endif
 }
 
 Bool getUnsignedIntFromRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt& val)

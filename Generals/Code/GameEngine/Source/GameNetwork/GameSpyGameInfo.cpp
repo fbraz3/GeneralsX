@@ -575,6 +575,8 @@ void GameSpyLaunchGame()
 
 void GameSpyGameInfo::init()
 {
+	fprintf(stderr, "[GameSpyGameInfo] init() called\n");
+	fflush(stderr);
 	GameInfo::init();
 
 	m_hasBeenQueried = false;
