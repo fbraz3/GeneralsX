@@ -150,9 +150,10 @@ void ThreadClass::Stop(unsigned ms)
 	while (handle) {
 		if ((TIMEGETTIME()-time)>ms) {
 			// Thread didn't stop in time. Since the thread is detached, we can't join it.
-			// Just clear the handle so we don't deadlock.
-			fprintf(stderr, "[ThreadClass] Stop: Thread '%s' did not stop within %u ms, forcing handle clear\n", ThreadName, ms);
+			// Force cancel the thread so we don't crash from Use-After-Free.
+			fprintf(stderr, "[ThreadClass] Stop: Thread '%s' did not stop within %u ms, forcing CANCEL\n", ThreadName, ms);
 			fflush(stderr);
+			pthread_cancel((pthread_t)handle);
 			handle=0;
 			break;
 		}

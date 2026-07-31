@@ -831,6 +831,39 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 			checkLogin();
 		}
 
+		BuddyResponse buddyResp;
+		while (!loggedInOK && TheGameSpyBuddyMessageQueue->getResponse( buddyResp ))
+		{
+			if (buddyResp.buddyResponseType == BuddyResponse::BUDDYRESPONSE_DISCONNECT)
+			{
+				loginAttemptTime = 0;
+				fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu BUDDYRESPONSE_DISCONNECT com erro=%d (%s)\n", buddyResp.arg.error.errorCode, buddyResp.arg.error.errorString);
+				fflush(stderr);
+
+				UnicodeString title, body;
+				title = TheGameText->fetch( "GUI:GSErrorTitle" );
+				if (buddyResp.arg.error.errorString[0] != '\0')
+				{
+					body = AsciiString(buddyResp.arg.error.errorString);
+				}
+				else
+				{
+					AsciiString disconMunkee;
+					disconMunkee.format("GUI:GSDisconReason4");
+					body = TheGameText->fetch( disconMunkee );
+				}
+				GSMessageBoxOk( title, body );
+				EnableLoginControls( TRUE );
+
+				DEBUG_LOG(("Tearing down GameSpy from WOLLoginMenuUpdate(BUDDYRESPONSE_DISCONNECT)"));
+				TearDownGameSpy();
+				
+				AsciiString motd = TheGameSpyInfo->getMOTD();
+				AsciiString config = TheGameSpyInfo->getConfig();
+				SetUpGameSpy( motd.str(), config.str() );
+			}
+		}
+
 		PeerResponse resp;
 		while (!loggedInOK && TheGameSpyPeerMessageQueue->getResponse( resp ))
 		{
