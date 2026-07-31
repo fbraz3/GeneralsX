@@ -604,8 +604,25 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 		}
 	}
 
+	static UnsignedInt lastWOLWelcomeTick = 0;
+	UnsignedInt nowTick = timeGetTime();
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
 	{
+		if (nowTick - lastWOLWelcomeTick > 1000)
+		{
+			lastWOLWelcomeTick = nowTick;
+			fprintf(stderr, "[WOL] WOLWelcomeMenuUpdate tick: isAnimFinished=%d, buttonPushed=%d, gotGroupRoomList=%d\n",
+				TheShell ? TheShell->isAnimFinished() : 0, buttonPushed,
+				TheGameSpyInfo ? TheGameSpyInfo->gotGroupRoomList() : 0);
+			fflush(stderr);
+			
+			// Defensive UI state fix: ensure controls are enabled if we have the room list
+			if (TheGameSpyInfo && TheGameSpyInfo->gotGroupRoomList() && buttonQuickMatch && !BitIsSet(buttonQuickMatch->winGetStatus(), WIN_STATUS_ENABLED))
+			{
+				enableControls(TRUE);
+			}
+		}
+
 		HandleBuddyResponses();
 		HandlePersistentStorageResponses();
 

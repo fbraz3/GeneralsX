@@ -439,8 +439,9 @@ void updateBuddyInfo()
 			if (gIt != TheGameSpyInfo->getGroupRoomList()->end())
 			{
 				AsciiString s;
-				s.format("GUI:%s", gIt->second.m_name.str());
-				roomName = TheGameText->fetch(s);
+				// 3/20/03 srj -- display literal room name to allow custom unispy DB entries
+				s.format("%s", gIt->second.m_name.str());
+				roomName.translate(s);
 			}
 			formatStr.format(TheGameText->fetch(marker), roomName.str());
 		}

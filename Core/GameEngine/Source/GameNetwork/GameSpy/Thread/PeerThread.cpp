@@ -513,7 +513,7 @@ enum CallbackType
 
 void connectCallbackWrapper( PEER peer, PEERBool success, int failureReason, void *param )
 {
-	fprintf(stderr, "[PeerThread] connectCallbackWrapper executado: success=%d, failureReason=%d\n", success, failureReason);
+	fprintf(stderr, "[PeerThread] connectCallbackWrapper executed: success=%d, failureReason=%d\n", success, failureReason);
 	fflush(stderr);
 #ifdef SERVER_DEBUGGING
 	DEBUG_LOG(("In connectCallbackWrapper()"));
@@ -621,7 +621,7 @@ void GameSpyPeerMessageQueue::addResponse( const PeerResponse& resp )
 		return;
 	}
 
-	fprintf(stderr, "[GameSpyQueue] addResponse sucesso! Tipo=%d, tamanho da fila=%zu\n", resp.peerResponseType, m_responses.size() + 1);
+	fprintf(stderr, "[GameSpyQueue] addResponse success! Type=%d, queue size=%zu\n", resp.peerResponseType, m_responses.size() + 1);
 	fflush(stderr);
 	m_responses.push(resp);
 }
@@ -637,7 +637,7 @@ Bool GameSpyPeerMessageQueue::getResponse( PeerResponse& resp )
 		return false;
 	resp = m_responses.front();
 	m_responses.pop();
-	fprintf(stderr, "[GameSpyQueue] getResponse retornou resposta Tipo=%d! Restantes=%zu\n", resp.peerResponseType, m_responses.size());
+	fprintf(stderr, "[GameSpyQueue] getResponse returned response Type=%d! Remaining=%zu\n", resp.peerResponseType, m_responses.size());
 	fflush(stderr);
 	return true;
 }
@@ -1348,7 +1348,7 @@ void PeerThreadClass::Thread_Function()
 
 	// Set the title.
 	/////////////////
-	fprintf(stderr, "[PeerThread] Chamando peerSetTitle (GameName: %s)...\n", gameName);
+	fprintf(stderr, "[PeerThread] Calling peerSetTitle (GameName: %s)...\n", gameName);
 	fflush(stderr);
 	PEERBool titleRes = peerSetTitle( peer , gameName, secretKey, gameName, secretKey, 0x10000, 30, PEERTrue, pingRooms, crossPingRooms);
 	fprintf(stderr, "[PeerThread] peerSetTitle retornou: %d (1 = Sucesso)\n", titleRes);
@@ -1376,7 +1376,7 @@ void PeerThreadClass::Thread_Function()
 		// deal with requests
 		if (TheGameSpyPeerMessageQueue && TheGameSpyPeerMessageQueue->getRequest(incomingRequest))
 		{
-			fprintf(stderr, "[PeerThread] Request recebido na fila! Tipo=%d\n", incomingRequest.peerRequestType);
+			fprintf(stderr, "[PeerThread] Request received in queue! Type=%d\n", incomingRequest.peerRequestType);
 			fflush(stderr);
 			DEBUG_LOG(("TheGameSpyPeerMessageQueue->getRequest() got request of type %d", incomingRequest.peerRequestType));
 			switch (incomingRequest.peerRequestType)
@@ -1389,11 +1389,11 @@ void PeerThreadClass::Thread_Function()
 				m_profileID = incomingRequest.login.profileID;
 				m_password = incomingRequest.password;
 				m_email = incomingRequest.email;
-				fprintf(stderr, "[PeerThread] Chamando peerConnect (Nick: %s, ProfileID: %d, Target Host: peerchat." GSI_DOMAIN_NAME ":6667)...\n",
+				fprintf(stderr, "[PeerThread] Calling peerConnect (Nick: %s, ProfileID: %d)...\n",
 					incomingRequest.nick.c_str(), incomingRequest.login.profileID);
 				fflush(stderr);
 				peerConnect( peer, incomingRequest.nick.c_str(), incomingRequest.login.profileID, nickErrorCallbackWrapper, connectCallbackWrapper, this, PEERTrue );
-				fprintf(stderr, "[PeerThread] peerConnect chamado (aguardando connectCallbackWrapper)...\n");
+				fprintf(stderr, "[PeerThread] peerConnect called (waiting for connectCallbackWrapper)...\n");
 				fflush(stderr);
 #ifdef SERVER_DEBUGGING
 				DEBUG_LOG(("After peerConnect()"));
@@ -1793,7 +1793,7 @@ void PeerThreadClass::Thread_Function()
 			}
 			static int peerThinkCount = 0;
 			// if (peerThinkCount % 30 == 1) {
-			//     fprintf(stderr, "[PeerThread] chamando peerThink (count=%d)...\n", peerThinkCount);
+			//     fprintf(stderr, "[PeerThread] calling peerThink (count=%d)...\n", peerThinkCount);
 			//     fflush(stderr);
 			// }
 			peerThink( peer );
@@ -2242,7 +2242,7 @@ static void listGroupRoomsCallback(PEER peer, PEERBool success,
 														int maxWaiting, int numGames,
 														int numPlaying, void * param)
 {
-	fprintf(stderr, "[PeerThread] listGroupRoomsCallback executado: success=%d, groupID=%d, name=%s\n", success, groupID, name ? name : "nullptr");
+	fprintf(stderr, "[PeerThread] listGroupRoomsCallback executed: success=%d, groupID=%d, name=%s\n", success, groupID, name ? name : "nullptr");
 	fflush(stderr);
 	DEBUG_LOG(("listGroupRoomsCallback, success=%d, server=%X, groupID=%d", success, server, groupID));
 #ifdef SERVER_DEBUGGING
@@ -2289,7 +2289,7 @@ static void listGroupRoomsCallback(PEER peer, PEERBool success,
 
 void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 {
-	fprintf(stderr, "[PeerThread] PeerThreadClass::connectCallback executado: success=%d\n", success);
+	fprintf(stderr, "[PeerThread] PeerThreadClass::connectCallback executed: success=%d\n", success);
 	fflush(stderr);
 	PeerResponse resp;
 	if(!success)
@@ -2332,7 +2332,7 @@ void PeerThreadClass::connectCallback( PEER peer, PEERBool success )
 	psReq.password = m_password;
 	TheGameSpyPSMessageQueue->addRequest(psReq);
 
-	fprintf(stderr, "[PeerThread] Iniciando peerListGroupRooms (blocking=PEERFalse)...\n");
+	fprintf(stderr, "[PeerThread] Starting peerListGroupRooms (blocking=PEERFalse)...\n");
 	fflush(stderr);
 #ifdef SERVER_DEBUGGING
 	DEBUG_LOG(("Before peerListGroupRooms()"));

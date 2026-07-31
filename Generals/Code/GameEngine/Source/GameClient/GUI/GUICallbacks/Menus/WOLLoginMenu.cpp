@@ -825,7 +825,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 			if (buddyResp.buddyResponseType == BuddyResponse::BUDDYRESPONSE_DISCONNECT)
 			{
 				loginAttemptTime = 0;
-				fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu BUDDYRESPONSE_DISCONNECT com erro=%d (%s)\n", buddyResp.arg.error.errorCode, buddyResp.arg.error.errorString);
+				fprintf(stderr, "[WOL] WOLLoginMenuUpdate received BUDDYRESPONSE_DISCONNECT with error=%d (%s)\n", buddyResp.arg.error.errorCode, buddyResp.arg.error.errorString);
 				fflush(stderr);
 
 				UnicodeString title, body;

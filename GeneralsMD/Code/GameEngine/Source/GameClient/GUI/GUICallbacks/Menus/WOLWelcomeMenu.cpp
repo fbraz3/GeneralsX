@@ -175,10 +175,14 @@ void updateLocalPlayerScores(AsciiString name, const WOL::Ladder *ladder, const 
 
 static void enableControls( Bool state )
 {
+	if (parentWOLWelcome)
+		parentWOLWelcome->winEnable(state);
 	if (buttonQuickMatch)
 		buttonQuickMatch->winEnable(state);
 	if (buttonLobby)
 		buttonLobby->winEnable(state);
+	if (buttonBuddies)
+		buttonBuddies->winEnable(state);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -646,6 +650,12 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 			TheShell ? TheShell->isAnimFinished() : 0, buttonPushed,
 			TheGameSpyInfo ? TheGameSpyInfo->gotGroupRoomList() : 0);
 		fflush(stderr);
+		
+		// Defensive UI state fix: ensure controls are enabled if we have the room list
+		if (TheGameSpyInfo && TheGameSpyInfo->gotGroupRoomList() && buttonQuickMatch && !BitIsSet(buttonQuickMatch->winGetStatus(), WIN_STATUS_ENABLED))
+		{
+			enableControls(TRUE);
+		}
 	}
 
 	if (!buttonPushed && TheGameSpyPeerMessageQueue)
@@ -662,7 +672,7 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 			{
 			case PeerResponse::PEERRESPONSE_GROUPROOM:
 				{
-					fprintf(stderr, "[WOL] WOLWelcomeMenuUpdate recebeu PEERRESPONSE_GROUPROOM (id=%d, name=%s)\n", resp.groupRoom.id, resp.groupRoomName.c_str());
+					fprintf(stderr, "[WOL] WOLWelcomeMenuUpdate received PEERRESPONSE_GROUPROOM (id=%d, name=%s)\n", resp.groupRoom.id, resp.groupRoomName.c_str());
 					fflush(stderr);
 					GameSpyGroupRoom room;
 					room.m_groupID = resp.groupRoom.id;
@@ -675,7 +685,7 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 					TheGameSpyInfo->addGroupRoom( room );
 					if (room.m_groupID == 0)
 					{
-						fprintf(stderr, "[WOL] WOLWelcomeMenuUpdate room.m_groupID == 0! Executando enableControls(TRUE)...\n");
+						fprintf(stderr, "[WOL] WOLWelcomeMenuUpdate room.m_groupID == 0! Executing enableControls(TRUE)...\n");
 						fflush(stderr);
 						enableControls( TRUE );
 					}

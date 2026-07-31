@@ -1827,6 +1827,10 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 				else if ( controlID == buttonBackID )
 				{
 					buttonPushed = true;
+					PeerRequest req;
+					req.peerRequestType = PeerRequest::PEERREQUEST_STOPQUICKMATCH;
+					TheGameSpyPeerMessageQueue->addRequest(req);
+
 					TheGameSpyInfo->leaveGroupRoom();
 					nextScreen = "Menus/WOLWelcomeMenu.wnd";
 					TheShell->pop();

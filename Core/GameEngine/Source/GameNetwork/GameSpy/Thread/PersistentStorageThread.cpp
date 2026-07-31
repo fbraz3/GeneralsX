@@ -882,7 +882,7 @@ void PSThreadClass::Thread_Function()
 						MESSAGE_QUEUE->setEmail(req.email);
 						MESSAGE_QUEUE->setNick(req.nick);
 						MESSAGE_QUEUE->setPassword(req.password);
-						DEBUG_LOG(("Setting email/nick/password = %s/%s/%s", req.email.c_str(), req.nick.c_str(), req.password.c_str()));
+						DEBUG_LOG(("Setting email/nick/password = %s/%s/********", req.email.c_str(), req.nick.c_str()));
 					}
 					DEBUG_LOG(("Processing PSRequest::PSREQUEST_READPLAYERSTATS"));
 					if (tryConnect())

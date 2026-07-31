@@ -768,7 +768,7 @@ static void checkLogin()
 {
 	if (loggedInOK)
 	{
-		fprintf(stderr, "[WOL] checkLogin() executando transicao para WOLWelcomeMenu! Login concluido com sucesso!\n");
+		fprintf(stderr, "[WOL] checkLogin() transitioning to WOLWelcomeMenu! Login successful!\n");
 		fflush(stderr);
 		// save off our ping string, and end those threads
 		AsciiString pingStr = (ThePinger && !ThePinger->arePingsInProgress()) ? ThePinger->getPingString( 1000 ) : AsciiString::TheEmptyString;
@@ -837,14 +837,14 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 			if (buddyResp.buddyResponseType == BuddyResponse::BUDDYRESPONSE_DISCONNECT)
 			{
 				loginAttemptTime = 0;
-				fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu BUDDYRESPONSE_DISCONNECT com erro=%d (%s)\n", buddyResp.arg.error.errorCode, buddyResp.arg.error.errorString);
+				fprintf(stderr, "[WOL] WOLLoginMenuUpdate received BUDDYRESPONSE_DISCONNECT with error=%d (%s)\n", buddyResp.arg.error.errorCode, buddyResp.arg.error.errorString);
 				fflush(stderr);
 
 				UnicodeString title, body;
 				title = TheGameText->fetch( "GUI:GSErrorTitle" );
 				if (buddyResp.arg.error.errorString[0] != '\0')
 				{
-					body = AsciiString(buddyResp.arg.error.errorString);
+					body.translate(AsciiString(buddyResp.arg.error.errorString));
 				}
 				else
 				{
@@ -867,7 +867,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		PeerResponse resp;
 		while (!loggedInOK && TheGameSpyPeerMessageQueue->getResponse( resp ))
 		{
-			fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu PeerResponse tipo %d\n", resp.peerResponseType);
+			fprintf(stderr, "[WOL] WOLLoginMenuUpdate received PeerResponse type %d\n", resp.peerResponseType);
 			fflush(stderr);
 			switch (resp.peerResponseType)
 			{
@@ -887,7 +887,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 			case PeerResponse::PEERRESPONSE_LOGIN:
 				{
 					loggedInOK = true;
-					fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu PEERRESPONSE_LOGIN! loggedInOK = true! Chamando checkLogin...\n");
+					fprintf(stderr, "[WOL] WOLLoginMenuUpdate received PEERRESPONSE_LOGIN! loggedInOK = true! Calling checkLogin...\n");
 					fflush(stderr);
 
 					// fetch our player info
@@ -906,7 +906,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 			case PeerResponse::PEERRESPONSE_DISCONNECT:
 				{
 					loginAttemptTime = 0;
-					fprintf(stderr, "[WOL] WOLLoginMenuUpdate recebeu PEERRESPONSE_DISCONNECT com reason=%d. Teardown & Setup GameSpy...\n", resp.discon.reason);
+					fprintf(stderr, "[WOL] WOLLoginMenuUpdate received PEERRESPONSE_DISCONNECT with reason=%d. Teardown & Setup GameSpy...\n", resp.discon.reason);
 					fflush(stderr);
 					UnicodeString title, body;
 					AsciiString disconMunkee;
@@ -1412,7 +1412,7 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 							//TheGameSpyInfo->setLocalProfileID( resp.player.profileID );
 							TheGameSpyInfo->setLocalEmail( email );
 							TheGameSpyInfo->setLocalPassword( password );
-							fprintf(stderr, "[WOL] Iniciando login no GameSpy (Host: gp." GSI_DOMAIN_NAME ") com Email=%s Nick=%s\n", TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalBaseName().str());
+							fprintf(stderr, "[WOL] Starting GameSpy login with Email=%s Nick=%s\n", TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalBaseName().str());
 							fflush(stderr);
 
 							TheGameSpyBuddyMessageQueue->addRequest( req );

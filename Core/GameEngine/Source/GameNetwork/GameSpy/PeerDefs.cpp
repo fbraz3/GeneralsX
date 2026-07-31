@@ -286,59 +286,11 @@ void GameSpyInfo::addGroupRoom( GameSpyGroupRoom room )
 	if (room.m_groupID == 0)
 	{
 		m_gotGroupRoomList = TRUE;
-
-		GroupRoomMap::iterator iter;
-
-		// figure out how many good strings we've got
-		std::vector<UnicodeString> names;
-		Int numRooms = 0;
-		for (iter = getGroupRoomList()->begin(); iter != getGroupRoomList()->end(); ++iter)
-		{
-			GameSpyGroupRoom room = iter->second;
-			if (room.m_groupID != TheGameSpyConfig->getQMChannel())
-			{
-				++numRooms;
-
-				AsciiString groupLabel;
-				groupLabel.format("GUI:%s", room.m_name.str());
-
-				Bool exists = FALSE;
-				UnicodeString groupName = TheGameText->fetch(groupLabel, &exists);
-				if (exists)
-				{
-					names.push_back(groupName);
-				}
-			}
-		}
-
-		if (!names.empty() && names.size() != numRooms)
-		{
-			// didn't get all names.  fix up
-			Int nameIndex = 0;
-			Int timesThrough = 1; // start with USA Lobby 1
-			for (iter = TheGameSpyInfo->getGroupRoomList()->begin(); iter != TheGameSpyInfo->getGroupRoomList()->end(); ++iter)
-			{
-				GameSpyGroupRoom room = iter->second;
-				if (room.m_groupID != TheGameSpyConfig->getQMChannel())
-				{
-					room.m_translatedName.format(L"%ls %d", names[nameIndex].str(), timesThrough);
-					nameIndex = (nameIndex+1)%names.size();
-					m_groupRooms[room.m_groupID] = room;
-					if (!nameIndex)
-					{
-						// we've looped through the name list already.  increment the timesThrough counter
-						++timesThrough;
-					}
-				}
-			}
-		}
 	}
 	else
 	{
 		DEBUG_LOG(("Adding group room %d (%s)", room.m_groupID, room.m_name.str()));
-		AsciiString groupLabel;
-		groupLabel.format("GUI:%s", room.m_name.str());
-		room.m_translatedName = TheGameText->fetch(groupLabel);
+		room.m_translatedName.translate(room.m_name);
 		m_groupRooms[room.m_groupID] = room;
 		if ( stricmp("quickmatch", room.m_name.str()) == 0 )
 		{
@@ -609,7 +561,7 @@ void SetUpGameSpy( const char *motdBuffer, const char *configBuffer )
 	dir.format("%sGeneralsOnline\\Ladders", TheGlobalData->getPath_UserData().str());
 	CreateDirectory(dir.str(), nullptr);
 
-	fprintf(stderr, "[WOL] SetUpGameSpy chamando startThread...\n");
+	fprintf(stderr, "[WOL] SetUpGameSpy calling startThread...\n");
 	fflush(stderr);
 	TheGameSpyBuddyMessageQueue = GameSpyBuddyMessageQueueInterface::createNewMessageQueue();
 	TheGameSpyBuddyMessageQueue->startThread();
