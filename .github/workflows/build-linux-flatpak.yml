@@ -1,5 +1,7 @@
 name: Build Linux Flatpak
 
+env:
+  GAMESPY_SERVER_NAME: ${{ secrets.GAMESPY_SERVER_NAME }}
 permissions:
   contents: read
 

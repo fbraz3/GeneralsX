@@ -92,6 +92,7 @@ BUILDER_ARGS=(
     --state-dir="${FLATPAK_STATE_DIR}"
     --repo="${FLATPAK_REPO_DIR}"
     --install-deps-from=flathub
+    --env=GAMESPY_SERVER_NAME="${GAMESPY_SERVER_NAME:-}"
 )
 
 if [[ -n "${GENERALS_GIT_OVERRIDE_TAG:-}" ]] || [[ -n "${GENERALS_GIT_OVERRIDE_TSTAMP:-}" ]]; then
