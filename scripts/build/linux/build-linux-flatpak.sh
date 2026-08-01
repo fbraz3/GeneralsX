@@ -92,8 +92,13 @@ BUILDER_ARGS=(
     --state-dir="${FLATPAK_STATE_DIR}"
     --repo="${FLATPAK_REPO_DIR}"
     --install-deps-from=flathub
-    --env=GAMESPY_SERVER_NAME="${GAMESPY_SERVER_NAME:-}"
 )
+
+if [[ -n "${GAMESPY_SERVER_NAME:-}" ]]; then
+    echo "${GAMESPY_SERVER_NAME}" > "${PROJECT_ROOT}/.gamespy-server-name"
+else
+    rm -f "${PROJECT_ROOT}/.gamespy-server-name"
+fi
 
 if [[ -n "${GENERALS_GIT_OVERRIDE_TAG:-}" ]] || [[ -n "${GENERALS_GIT_OVERRIDE_TSTAMP:-}" ]]; then
     cat > "${PROJECT_ROOT}/.git-override.cmake" <<EOF
