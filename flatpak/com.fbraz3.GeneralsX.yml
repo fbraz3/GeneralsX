@@ -181,7 +181,7 @@ modules:
         strip-components: 1
       - type: git
         url: https://github.com/fbraz3/GamespySDK.git
-        commit: 89c255fa51373e303c430dce5f56e5c917d86e4e
+        branch: master
         dest: gamespy-src
       - type: git
         url: https://github.com/TheSuperHackers/lzhl-1.0

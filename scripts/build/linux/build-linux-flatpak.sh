@@ -22,7 +22,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 FLATPAK_DIR="${PROJECT_ROOT}/flatpak"
 FLATPAK_BUILD_DIR="${PROJECT_ROOT}/build/flatpak-builddir"
 FLATPAK_REPO_DIR="${PROJECT_ROOT}/build/flatpak-repo"
-FLATPAK_STATE_DIR="${PROJECT_ROOT}/.flatpak-builder"
+FLATPAK_STATE_DIR="${PROJECT_ROOT}/build/.flatpak-builder"
 RUNTIME_REPO_URL="${RUNTIME_REPO_URL:-https://flathub.org/repo/flathub.flatpakrepo}"
 # GeneralsX @build GitHubCopilot 13/04/2026 Optional hard purge for troubleshooting (drops flatpak-builder cache + workdirs).
 GENERALSX_FLATPAK_PURGE_CACHE="${GENERALSX_FLATPAK_PURGE_CACHE:-0}"
@@ -89,6 +89,7 @@ BUILDER_ARGS=(
     --verbose
     --user
     --force-clean
+    --disable-rofiles-fuse
     --state-dir="${FLATPAK_STATE_DIR}"
     --repo="${FLATPAK_REPO_DIR}"
     --install-deps-from=flathub
