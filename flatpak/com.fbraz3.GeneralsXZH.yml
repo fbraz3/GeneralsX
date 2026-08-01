@@ -188,8 +188,8 @@ modules:
         dest: dxvk-src
         strip-components: 1
       - type: git
-        url: https://github.com/TheAssemblyArmada/GamespySDK.git
-        commit: 07e3d15c500415abc281efb74322ab6d9c857eb8
+        url: https://github.com/fbraz3/GamespySDK.git
+        commit: 89c255fa51373e303c430dce5f56e5c917d86e4e
         dest: gamespy-src
       - type: git
         url: https://github.com/TheSuperHackers/lzhl-1.0
