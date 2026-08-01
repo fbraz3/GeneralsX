@@ -37,6 +37,7 @@ docker run --rm \
     --user "${HOST_UID}:${HOST_GID}" \
     -e HOME=/tmp/generalsx-home \
     -e XDG_CACHE_HOME=/tmp/generalsx-cache \
+    -e GAMESPY_SERVER_NAME="${GAMESPY_SERVER_NAME:-}" \
     -v "$PWD:/work" \
     -w /work \
     "$DOCKER_IMAGE" \
