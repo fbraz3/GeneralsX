@@ -31,6 +31,10 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _UNIX
+#include <cxxabi.h>
+#endif
+
 #include "Common/UserPreferences.h"
 #include "Common/PlayerTemplate.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
@@ -1079,8 +1083,12 @@ void PSThreadClass::Thread_Function()
 
 	if (IsStatsConnected())
 		CloseStatsConnection();
+#ifdef _UNIX
+	} catch ( abi::__forced_unwind& ) {
+		throw;
+#endif
 	} catch ( ... ) {
-		DEBUG_CRASH(("Exception in storage thread!"));
+		DEBUG_CRASH(("Exception in persistent storage thread!"));
 	}
 }
 

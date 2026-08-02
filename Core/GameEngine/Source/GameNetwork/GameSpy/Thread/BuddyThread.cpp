@@ -31,6 +31,10 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _UNIX
+#include <cxxabi.h>
+#endif
+
 #include "GameNetwork/GameSpy/BuddyThread.h"
 #include "GameNetwork/GameSpy/PeerThread.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
@@ -415,6 +419,10 @@ void BuddyThreadClass::Thread_Function()
 	}
 
 	gpDestroy( con );
+#ifdef _UNIX
+	} catch ( abi::__forced_unwind& ) {
+		throw;
+#endif
 	} catch ( ... ) {
 		DEBUG_CRASH(("Exception in buddy thread!"));
 	}
