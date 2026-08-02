@@ -29,7 +29,9 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #ifdef _UNIX
+#if defined(_UNIX) && !defined(__APPLE__)
 #include <cxxabi.h>
+#endif
 #endif
 
 #ifdef _WIN32
@@ -331,7 +333,7 @@ void PingThreadClass::Thread_Function()
 	}
 
 	WSACleanup();
-#ifdef _UNIX
+#if defined(_UNIX) && !defined(__APPLE__)
 	} catch ( abi::__forced_unwind& ) {
 		throw;
 #endif

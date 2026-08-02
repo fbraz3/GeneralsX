@@ -28,7 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#ifdef _UNIX
+#if defined(_UNIX) && !defined(__APPLE__)
 #include <cxxabi.h>
 #endif
 
@@ -275,7 +275,7 @@ void GameResultsThreadClass::Thread_Function()
 	}
 
 	WSACleanup();
-#ifdef _UNIX
+#if defined(_UNIX) && !defined(__APPLE__)
 	} catch ( abi::__forced_unwind& ) {
 		throw;
 #endif

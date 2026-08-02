@@ -31,7 +31,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#ifdef _UNIX
+#if defined(_UNIX) && !defined(__APPLE__)
 #include <cxxabi.h>
 #endif
 
@@ -1810,7 +1810,7 @@ void PeerThreadClass::Thread_Function()
 	DEBUG_LOG(("voluntarily ending peer thread %d", running));
 	peerShutdown( peer );
 
-#ifdef _UNIX
+#if defined(_UNIX) && !defined(__APPLE__)
 	} catch ( abi::__forced_unwind& ) {
 		throw;
 #endif
