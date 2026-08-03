@@ -8,20 +8,71 @@
 #include <sstream>
 #include <filesystem>
 #include <cstdlib>
+#include <algorithm>
 
 #ifndef NGMP_DEFAULT_HOST
-#define NGMP_DEFAULT_HOST "192.168.1.120"
+#define NGMP_DEFAULT_HOST "localhost"
 #endif
 
 #ifndef NGMP_DEFAULT_PORT
 #define NGMP_DEFAULT_PORT "9001"
 #endif
 
+#ifndef NGMP_DEFAULT_SSL_PORT
+#define NGMP_DEFAULT_SSL_PORT "9000"
+#endif
+
 namespace NGMP {
 
+bool IsSSLEnabled() {
+    // 1. Check runtime environment variable NGMP_USE_SSL / NGMP_SSL
+    const char* envSSL = std::getenv("NGMP_USE_SSL");
+    if (!envSSL) {
+        envSSL = std::getenv("NGMP_SSL");
+    }
+    if (envSSL && *envSSL) {
+        std::string val = envSSL;
+        std::transform(val.begin(), val.end(), val.begin(), ::tolower);
+        if (val == "1" || val == "true" || val == "yes" || val == "on") {
+            return true;
+        }
+    }
+
+#if defined(NGMP_USE_SSL) && NGMP_USE_SSL
+    return true;
+#else
+    return false;
+#endif
+}
+
+std::string GetServerHTTPPort() {
+    const char* envPort = std::getenv("NGMP_HTTP_PORT");
+    if (!envPort || !*envPort) {
+        envPort = std::getenv("NGMP_SERVER_PORT");
+    }
+    if (envPort && *envPort) {
+        return std::string(envPort);
+    }
+    return NGMP_DEFAULT_PORT;
+}
+
+std::string GetServerSSLPort() {
+    const char* envPort = std::getenv("NGMP_SSL_PORT");
+    if (!envPort || !*envPort) {
+        envPort = std::getenv("NGMP_HTTPS_PORT");
+    }
+    if (envPort && *envPort) {
+        return std::string(envPort);
+    }
+    return NGMP_DEFAULT_SSL_PORT;
+}
+
 static std::string GetResolvedHost() {
-    // 1. Check runtime environment variable NGMP_SERVER_HOST
+    // 1. Check runtime environment variables (NGMP_SERVER_HOST or NGMP_DEFAULT_HOST)
     const char* envHost = std::getenv("NGMP_SERVER_HOST");
+    if (!envHost || !*envHost) {
+        envHost = std::getenv("NGMP_DEFAULT_HOST");
+    }
     if (envHost && *envHost) {
         return std::string(envHost);
     }
@@ -41,14 +92,6 @@ static std::string GetResolvedHost() {
 
     // 3. Fallback to CMake build-time definition
     return NGMP_DEFAULT_HOST;
-}
-
-static std::string GetResolvedPort() {
-    const char* envPort = std::getenv("NGMP_SERVER_PORT");
-    if (envPort && *envPort) {
-        return std::string(envPort);
-    }
-    return NGMP_DEFAULT_PORT;
 }
 
 uint32_t GetTicks() {
@@ -100,14 +143,18 @@ std::string LoadAuthToken() {
 
 std::string GetServerWSEndpoint() {
     std::string host = GetResolvedHost();
-    std::string port = GetResolvedPort();
-    return "ws://" + host + ":" + port + "/ws";
+    if (IsSSLEnabled()) {
+        return "wss://" + host + ":" + GetServerSSLPort() + "/ws";
+    }
+    return "ws://" + host + ":" + GetServerHTTPPort() + "/ws";
 }
 
 std::string GetServerRESTEndpoint() {
     std::string host = GetResolvedHost();
-    std::string port = GetResolvedPort();
-    return "http://" + host + ":" + port + "/api";
+    if (IsSSLEnabled()) {
+        return "https://" + host + ":" + GetServerSSLPort() + "/api";
+    }
+    return "http://" + host + ":" + GetServerHTTPPort() + "/api";
 }
 
 } // namespace NGMP
