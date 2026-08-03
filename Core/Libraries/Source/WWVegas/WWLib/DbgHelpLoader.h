@@ -26,7 +26,7 @@
 #endif
 #include <set>
 #ifdef RTS_ENABLE_CRASHDUMP
-#include <WWLib/DbgHelpLoader_minidump.h>
+#include "DbgHelpLoader_minidump.h"
 #endif
 
 #include "mutex.h"

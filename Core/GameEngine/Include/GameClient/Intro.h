@@ -35,6 +35,7 @@ public:
 
 	void update();
 
+	Bool skipCurrentIntroStage();
 	Bool isDone() const { return m_currentState == IntroState_Done; }
 
 private:
