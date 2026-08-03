@@ -23,5 +23,28 @@ if(SAGE_USE_NGMP)
     target_link_libraries(core_config INTERFACE ${CURL_LIBRARIES})
     target_include_directories(core_config INTERFACE ${CURL_INCLUDE_DIRS})
 
+    # NGMP Server Host & Port configuration (File > Environment > Default)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/.ngmp-server-host")
+        file(READ "${CMAKE_SOURCE_DIR}/.ngmp-server-host" NGMP_SERVER_HOST)
+        string(STRIP "${NGMP_SERVER_HOST}" NGMP_SERVER_HOST)
+        set(NGMP_SERVER_HOST "${NGMP_SERVER_HOST}" CACHE STRING "NGMP Server Host" FORCE)
+    elseif(DEFINED ENV{NGMP_SERVER_HOST})
+        set(NGMP_SERVER_HOST "$ENV{NGMP_SERVER_HOST}" CACHE STRING "NGMP Server Host" FORCE)
+    else()
+        set(NGMP_SERVER_HOST "192.168.1.120" CACHE STRING "NGMP Server Host")
+    endif()
+
+    if(DEFINED ENV{NGMP_SERVER_PORT})
+        set(NGMP_SERVER_PORT "$ENV{NGMP_SERVER_PORT}" CACHE STRING "NGMP Server Port" FORCE)
+    else()
+        set(NGMP_SERVER_PORT "9001" CACHE STRING "NGMP Server Port")
+    endif()
+
+    target_compile_definitions(core_config INTERFACE
+        NGMP_DEFAULT_HOST="${NGMP_SERVER_HOST}"
+        NGMP_DEFAULT_PORT="${NGMP_SERVER_PORT}"
+    )
+
+    message(STATUS "NGMP: Server target configured to ${NGMP_SERVER_HOST}:${NGMP_SERVER_PORT}")
     message(STATUS "NGMP: nlohmann_json and libcurl configured successfully")
 endif()

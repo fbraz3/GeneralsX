@@ -9,10 +9,47 @@
 #include <filesystem>
 #include <cstdlib>
 
+#ifndef NGMP_DEFAULT_HOST
+#define NGMP_DEFAULT_HOST "192.168.1.120"
+#endif
+
+#ifndef NGMP_DEFAULT_PORT
+#define NGMP_DEFAULT_PORT "9001"
+#endif
+
 namespace NGMP {
 
-static const char* DEFAULT_WS_ENDPOINT = "ws://192.168.1.120:9001/ws";
-static const char* DEFAULT_REST_ENDPOINT = "http://192.168.1.120:9001/api";
+static std::string GetResolvedHost() {
+    // 1. Check runtime environment variable NGMP_SERVER_HOST
+    const char* envHost = std::getenv("NGMP_SERVER_HOST");
+    if (envHost && *envHost) {
+        return std::string(envHost);
+    }
+
+    // 2. Check local file .ngmp-server-host in working directory
+    std::ifstream file(".ngmp-server-host");
+    if (file.is_open()) {
+        std::string line;
+        if (std::getline(file, line) && !line.empty()) {
+            size_t first = line.find_first_not_of(" \t\r\n");
+            size_t last = line.find_last_not_of(" \t\r\n");
+            if (first != std::string::npos && last != std::string::npos) {
+                return line.substr(first, (last - first + 1));
+            }
+        }
+    }
+
+    // 3. Fallback to CMake build-time definition
+    return NGMP_DEFAULT_HOST;
+}
+
+static std::string GetResolvedPort() {
+    const char* envPort = std::getenv("NGMP_SERVER_PORT");
+    if (envPort && *envPort) {
+        return std::string(envPort);
+    }
+    return NGMP_DEFAULT_PORT;
+}
 
 uint32_t GetTicks() {
     auto now = std::chrono::steady_clock::now();
@@ -62,11 +99,15 @@ std::string LoadAuthToken() {
 }
 
 std::string GetServerWSEndpoint() {
-    return DEFAULT_WS_ENDPOINT;
+    std::string host = GetResolvedHost();
+    std::string port = GetResolvedPort();
+    return "ws://" + host + ":" + port + "/ws";
 }
 
 std::string GetServerRESTEndpoint() {
-    return DEFAULT_REST_ENDPOINT;
+    std::string host = GetResolvedHost();
+    std::string port = GetResolvedPort();
+    return "http://" + host + ":" + port + "/api";
 }
 
 } // namespace NGMP
