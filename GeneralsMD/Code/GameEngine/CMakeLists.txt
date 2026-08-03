@@ -1111,6 +1111,12 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
 #    Source/GameNetwork/GameSpyOverlay.cpp
     Source/GameNetwork/GUIUtil.cpp
+    Include/GameNetwork/GeneralsOnline/OnlineServices_Manager.h
+    Include/GameNetwork/GeneralsOnline/NGMP_Helpers.h
+    Source/GameNetwork/GeneralsOnline/OnlineServices_Init.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_Auth.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_Manager.cpp
+    Source/GameNetwork/GeneralsOnline/NGMP_Helpers.cpp
 #    Source/GameNetwork/IPEnumeration.cpp
 #    Source/GameNetwork/LANAPI.cpp
 #    Source/GameNetwork/LANAPICallbacks.cpp

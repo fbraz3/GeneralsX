@@ -136,6 +136,15 @@ if(SAGE_UPDATE_CHECK)
     message(STATUS "In-game update checker enabled")
 endif()
 
+# GeneralsX @feature GeneralsOnline NGMP protocol option
+option(SAGE_USE_NGMP "Use NGMP (GeneralsOnline) multiplayer protocol" ON)
+add_feature_info(NGMPProtocol SAGE_USE_NGMP "Using NGMP multiplayer protocol (GeneralsOnline)")
+
+if(SAGE_USE_NGMP)
+    target_compile_definitions(core_config INTERFACE SAGE_USE_NGMP)
+    message(STATUS "NGMP (GeneralsOnline) multiplayer protocol enabled")
+endif()
+
 if(SAGE_USE_GLM)
     target_compile_definitions(core_config INTERFACE SAGE_USE_GLM)
     message(STATUS "GLM math library enabled (DirectX 8 replacement)")

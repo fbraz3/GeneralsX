@@ -102,6 +102,9 @@ include(cmake/miniaudio.cmake)
 # curl.cmake is self-guarded with if(SAGE_UPDATE_CHECK), so always safe to include.
 include(cmake/curl.cmake)
 
+# GeneralsX @feature GeneralsOnline NGMP protocol dependency setup
+include(cmake/ngmp.cmake)
+
 # GeneralsX @feature fbraz 03/05/2026 Phase 4: Deterministic math library integration
 # gamemath.cmake integrates fdlibm-based GameMath for cross-platform replay validation.
 # Upstream reference: Okladnoj, PR #2670
