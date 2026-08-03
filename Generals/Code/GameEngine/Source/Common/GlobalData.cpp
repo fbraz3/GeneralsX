@@ -1284,6 +1284,11 @@ UnsignedInt GlobalData::generateExeCRC()
 	exeCRC.set(GENERALS_108_CD_EXE_CRC);
 	DEBUG_LOG(("Fake EXE CRC is 0x%8.8X", exeCRC.get()));
 
+#elif defined(_UNIX)
+	// On Unix, reading the entire binary for CRC is prohibitively slow
+	// and breaks cross-platform play (Mac vs Linux). 
+	// Instead, use version-based CRC which is fast and sufficient.
+	// Only compute CRC from version number below.
 #else
 	{
 		Char buffer[ _MAX_PATH ];
@@ -1397,7 +1402,7 @@ AsciiString GlobalData::BuildUserDataPathFromIni()
 
 	userDataDir = myDocumentsDirectory;
 
-#elif defined(__APPLE__)
+#elif defined(_UNIX)
 	// GeneralsX @feature Bender 01/04/2026 macOS user data directory
 	// Uses ~/Library/Application Support as standard macOS location
 	{

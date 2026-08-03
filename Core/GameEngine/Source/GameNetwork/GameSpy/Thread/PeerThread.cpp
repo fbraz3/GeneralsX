@@ -2444,6 +2444,7 @@ void roomMessageCallback(PEER peer, RoomType roomType, const char * nick, const 
 
 	UnsignedInt IP;
 	peerGetPlayerInfoNoWait(peer, nick, &IP, &resp.message.profileID);
+	TheGameSpyPeerMessageQueue->addResponse(resp);
 
 	PeerThreadClass *t = (PeerThreadClass *)param;
 	DEBUG_ASSERTCRASH(t, ("No Peer thread!"));

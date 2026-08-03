@@ -934,7 +934,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 	{
 		// timed out a login attempt, so say so
 		loginAttemptTime = 0;
-		fprintf(stderr, "[WOL] WOLLoginMenuUpdate TIMEOUT no login (10s estourado). Teardown & Setup GameSpy...\n");
+		fprintf(stderr, "[WOL] WOLLoginMenuUpdate TIMEOUT logging in (10s elapsed). Teardown & Setup GameSpy...\n");
 		fflush(stderr);
 		UnicodeString title, body;
 		AsciiString disconMunkee;
@@ -1322,7 +1322,7 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 							//TheGameSpyInfo->setLocalProfileID( resp.player.profileID );
 							TheGameSpyInfo->setLocalEmail( email );
 							TheGameSpyInfo->setLocalPassword( password );
-							fprintf(stderr, "[WOL] Criando conta e logando no GameSpy (Host: gp." GSI_DOMAIN_NAME ") com Email=%s Nick=%s\n", TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalBaseName().str());
+							fprintf(stderr, "[WOL] Creating account and logging in to GameSpy with Email=%s Nick=%s\n", TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalBaseName().str());
 							fflush(stderr);
 
 							TheGameSpyBuddyMessageQueue->addRequest( req );

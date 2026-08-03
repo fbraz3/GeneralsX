@@ -21,3 +21,9 @@ This document contains rules and patterns for the multiplayer subsystem (WOL/Gam
 ## 5. Subsystem Synchronization
 - Both `Generals` and `GeneralsMD` share the same core GameSpy logic (`Core/GameEngine/Source/GameNetwork/`). UI logic is somewhat duplicated between the two games (`GameClient/GUI/GUICallbacks/Menus/`). 
 - When fixing network or lobby UI bugs in Zero Hour (`GeneralsMD`), you **MUST** port those same fixes to the Base Game (`Generals`) to keep parity.
+
+## 6. Cross-Platform Nuances
+- **Thread Cancellation (macOS vs Linux)**: The network threads (`PeerThread`, etc.) use `pthread_cancel`. On Linux (GNU `libstdc++`), this relies on `abi::__forced_unwind`. macOS (`libc++`) does NOT have this type. Guard catch blocks with `#if defined(_UNIX) && !defined(__APPLE__)` to prevent compile errors.
+- **Socket Polling (EWOULDBLOCK)**: The original GameSpy SDK was built for Windows and often checked `rcode <= 0` to assume a disconnect. On UNIX, non-blocking sockets can return `-1` with `EWOULDBLOCK` (or `EAGAIN`). You must check `gsiSocketIsError()` and `GOAGetLastError()` to avoid silent chat disconnects.
+- **CRC Verification**: Cross-platform play requires CRCs to match. Because macOS uses Mach-O and Linux uses ELF binaries, reading the executable for CRC generation will always result in a mismatch. We bypass executable reading on UNIX (`#elif defined(_UNIX)`) and rely solely on version numbering and script checksums to ensure cross-play determinism.
+- **Main Thread Message Queuing**: GameSpy SDK network callbacks (e.g., `roomMessageCallback`) execute on the network thread. They MUST explicitly add their payload to the main thread's queue (e.g., `TheGameSpyPeerMessageQueue->addResponse(resp)`) otherwise the GUI will silently ignore the network event (breaking chat, auto-refresh, etc).

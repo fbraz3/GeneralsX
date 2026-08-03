@@ -142,10 +142,12 @@ for ffmpeg_root in "${ffmpeg_roots[@]}"; do
     copy_ldd_deps "${ffmpeg_root}"
 done
 
-if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
-    echo "ERROR: Missing required runtime library: libavcodec.so*"
-    echo "Install FFmpeg runtime/dev packages (e.g. libavcodec-dev) and rebuild/deploy"
-    exit 1
+if ldd "${BINARY_SRC}" | grep -q "libavcodec.so"; then
+    if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
+        echo "ERROR: Missing required runtime library: libavcodec.so*"
+        echo "Install FFmpeg runtime/dev packages (e.g. libavcodec-dev) and rebuild/deploy"
+        exit 1
+    fi
 fi
 
 # Set RPATH so executable finds libraries in same directory
