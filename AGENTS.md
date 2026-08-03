@@ -288,5 +288,6 @@ The `**` at applyTo means all files, you MUST load it everytime.
 | [.github/instructions/platform-macos.instructions.md](.github/instructions/platform-macos.instructions.md) | `scripts/build/macos/**,references/fbraz3-dxvk/**` | macOS/DXVK build notes |
 | [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) | `**/*.md` | Documentation structure and workflow |
 | [.github/instructions/scripts.instructions.md](.github/instructions/scripts.instructions.md) | `scripts/**` | Script organization and naming |
+| [.github/instructions/ngmp.instructions.md](.github/instructions/ngmp.instructions.md) | `**/GeneralsOnline/**,**/NextGenMP/**` | NGMP cross-platform multiplayer integration guidelines |
 
 Update this table when instruction files are added, removed, or renamed.
