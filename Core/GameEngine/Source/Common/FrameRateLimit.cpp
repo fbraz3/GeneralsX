@@ -124,6 +124,13 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 #endif
 }
 
+void FrameRateLimit::reset()
+{
+	LARGE_INTEGER tick;
+	QueryPerformanceCounter(&tick);
+	m_start = tick.QuadPart;
+}
+
 
 // GeneralsX @doc These are the selectable RENDER frame-rate cap presets (the "FPS Limit"
 // option in the UI). This cap is NOT the simulation speed: game logic always advances at a

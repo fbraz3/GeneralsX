@@ -1009,6 +1009,7 @@ void InGameUI::PlayerInfoList::init(const AsciiString &fontName, Int pointSize, 
 
 	labels[LabelType_Team]->setText(TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:PlayerInfoListLabelTeam", L"T"));
 	labels[LabelType_Money]->setText(TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:PlayerInfoListLabelMoney", L"$"));
+	labels[LabelType_MoneyPerMinute]->setText(TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:PlayerInfoListLabelMoneyPerMinute", L"+"));
 	labels[LabelType_Rank]->setText(TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:PlayerInfoListLabelRank", L"*"));
 	labels[LabelType_Xp]->setText(TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:PlayerInfoListLabelXp", L"XP"));
 }
@@ -6274,6 +6275,7 @@ void InGameUI::drawPlayerInfoList()
 	Int maxValueWidths[PlayerInfoList::LabelType_Count] = {0};
 	Color rowColors[MAX_PLAYER_COUNT] = {0};
 	Int nameValueWidth[MAX_PLAYER_COUNT] = {0};
+	const Bool showMoneyPerMinute = TheGlobalData->m_showMoneyPerMinute;
 	Int column;
 
 	for (Int slotIndex = 0; slotIndex < MAX_SLOTS && rowCount < MAX_PLAYER_COUNT; ++slotIndex)
@@ -6288,18 +6290,30 @@ void InGameUI::drawPlayerInfoList()
 
 		const Int row = rowCount++;
 		const UnsignedInt teamValue = (slot && slot->getTeamNumber() >= 0) ? static_cast<UnsignedInt>(slot->getTeamNumber() + 1) : 0;
-		const UnsignedInt moneyValue = player->getMoney()->countMoney();
+		const Money *money = player->getMoney();
+		const UnsignedInt moneyValue = money->countMoney();
+		const UnsignedInt moneyPerMinuteValue = money->getCashPerMinute();
 		const UnsignedInt rankValue = static_cast<UnsignedInt>(player->getRankLevel());
 		const UnsignedInt xpValue = static_cast<UnsignedInt>(player->getSkillPoints());
 		const UnicodeString nameValue = player->getPlayerDisplayName();
 
-		const UnsignedInt currentValues[] = {teamValue, moneyValue, rankValue, xpValue};
+		const UnsignedInt currentValues[] = {teamValue, moneyValue, moneyPerMinuteValue, rankValue, xpValue};
 		for (column = 0; column < ARRAY_SIZE(currentValues); ++column)
 		{
 			UnsignedInt &lastValue = m_playerInfoList.lastValues.values[column][row];
 			if (lastValue != currentValues[column])
 			{
-				playerInfoListValue.format(L"%u", currentValues[column]);
+				if (column == PlayerInfoList::ValueType_MoneyPerMinute)
+				{
+					if (!showMoneyPerMinute)
+						continue;
+
+					playerInfoListValue = formatIncomeValue(currentValues[column]);
+				}
+				else
+				{
+					playerInfoListValue.format(L"%u", currentValues[column]);
+				}
 				m_playerInfoList.values[column][row]->setText(playerInfoListValue);
 				lastValue = currentValues[column];
 			}
@@ -6326,6 +6340,9 @@ void InGameUI::drawPlayerInfoList()
 	Int labelX = baseX;
 	for (column = 0; column < PlayerInfoList::LabelType_Count; ++column)
 	{
+		if (column == PlayerInfoList::LabelType_MoneyPerMinute && !showMoneyPerMinute)
+			continue;
+
 		labelWidths[column] = m_playerInfoList.labels[column]->getWidth();
 		columnLabelX[column] = labelX;
 		labelX += labelWidths[column] + maxValueWidths[column] + columnGap;
@@ -6338,6 +6355,9 @@ void InGameUI::drawPlayerInfoList()
 
 		for (column = 0; column < PlayerInfoList::LabelType_Count; ++column)
 		{
+			if (column == PlayerInfoList::LabelType_MoneyPerMinute && !showMoneyPerMinute)
+				continue;
+
 			m_playerInfoList.labels[column]->draw(columnLabelX[column], drawY, m_playerInfoListLabelColor, m_playerInfoListDropColor);
 			m_playerInfoList.values[column][row]->draw(columnLabelX[column] + labelWidths[column], drawY, m_playerInfoListValueColor, m_playerInfoListDropColor);
 		}

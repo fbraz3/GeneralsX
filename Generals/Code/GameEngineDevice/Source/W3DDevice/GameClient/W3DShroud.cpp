@@ -28,15 +28,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "Lib/BaseType.h"
-#include "camera.h"
-#include "simplevec.h"
-#include "dx8wrapper.h"
+#include "WW3D2/camera.h"
+#include "WWLib/simplevec.h"
+#include "WW3D2/dx8wrapper.h"
 #include "Common/MapObject.h"
 #include "Common/PerfTimer.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/W3DPoly.h"
 #include "W3DDevice/GameClient/W3DShaderManager.h"
-#include "assetmgr.h"
+#include "WW3D2/assetmgr.h"
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "WW3D2/textureloader.h"
 #include "Common/GlobalData.h"
@@ -266,7 +266,7 @@ W3DShroudLevel W3DShroud::getShroudLevel(Int x, Int y)
 	if (!m_pSrcTexture || !m_srcTextureData || x < 0 || y < 0)
 		return 0;
 
-	if (x < m_numCellsX && y < m_numCellsY)
+	if (x >= 0 && y >= 0 && x < m_numCellsX && y < m_numCellsY)
 	{
 		UnsignedShort pixel=*(UnsignedShort *)((Byte *)m_srcTextureData + x*2 + y*m_srcTexturePitch);
 

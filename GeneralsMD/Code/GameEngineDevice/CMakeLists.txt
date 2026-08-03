@@ -160,7 +160,7 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/W3DGameClient.cpp
     Source/W3DDevice/GameClient/W3DInGameUI.cpp
 #    Source/W3DDevice/GameClient/W3DMouse.cpp
-    Source/W3DDevice/GameClient/W3DParticleSys.cpp
+#    Source/W3DDevice/GameClient/W3DParticleSys.cpp
     Source/W3DDevice/GameClient/W3DPoly.cpp
 #    Source/W3DDevice/GameClient/W3DPropBuffer.cpp
     Source/W3DDevice/GameClient/W3DRoadBuffer.cpp
@@ -232,8 +232,8 @@ target_precompile_headers(z_gameenginedevice PRIVATE
     [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
     [["Common/STLTypedefs.h"]]
     [["Common/SubsystemInterface.h"]]
-    [["INI.h"]]
-    [["WWCommon.h"]]
+    [["WWLib/INI.h"]]
+    [["WWLib/WWCommon.h"]]
     [["PchCompat.h"]] # TheSuperHackers @build 08/02/2026 Platform-safe windows.h wrapper
 )
 

@@ -35,8 +35,8 @@
 #ifndef _WIN32
 #include <filesystem>
 #endif
-#include "ww3d.h"
-#include "texturefilter.h"
+#include "WW3D2/ww3d.h"
+#include "WW3D2/texturefilter.h"
 
 #include "Common/GlobalData.h"
 
@@ -949,7 +949,6 @@ GlobalData::GlobalData()
 //	m_languageFilterPref = false;
 	m_languageFilterPref = true;
 	m_firewallBehavior = FirewallHelperClass::FIREWALL_TYPE_UNKNOWN;
-	m_firewallSendDelay = FALSE;
 	m_firewallPortOverride = 0;
 	m_firewallPortAllocationDelta = 0;
 	m_loadScreenDemo = FALSE;
@@ -1019,7 +1018,6 @@ GlobalData::GlobalData()
 	m_shellMapOn =TRUE;
 	m_playIntro = TRUE;
 	m_playSizzle = TRUE;
-	m_allowExitOutOfMovies = FALSE;
 	m_loadScreenRender = FALSE;
 
 	m_keyboardDefaultScrollFactor = m_keyboardScrollFactor = 0.5f;
@@ -1215,7 +1213,6 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_drawScrollAnchor = optionPref.getDrawScrollAnchor();
 	TheWritableGlobalData->m_moveScrollAnchor = optionPref.getMoveScrollAnchor();
 	TheWritableGlobalData->m_defaultIP = optionPref.getLANIPAddress();
-	TheWritableGlobalData->m_firewallSendDelay = optionPref.getSendDelay();
 	TheWritableGlobalData->m_firewallBehavior = optionPref.getFirewallBehavior();
 	TheWritableGlobalData->m_firewallPortAllocationDelta = optionPref.getFirewallPortAllocationDelta();
 	TheWritableGlobalData->m_firewallPortOverride = optionPref.getFirewallPortOverride();

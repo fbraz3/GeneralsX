@@ -478,8 +478,7 @@ void LANAPI::update()
 	}
 
 	// Handle any new messages
-	int i;
-	for (i=0; i<MAX_MESSAGES && !LANbuttonPushed; ++i)
+	for (size_t i = 0; i < ARRAY_SIZE(m_transport->m_inBuffer) && !LANbuttonPushed; ++i)
 	{
 		if (m_transport->m_inBuffer[i].length > 0)
 		{
@@ -579,6 +578,10 @@ void LANAPI::update()
 
 			// Mark it as read
 			m_transport->m_inBuffer[i].length = 0;
+		}
+		else
+		{
+			break;
 		}
 	}
 	if(LANbuttonPushed)
