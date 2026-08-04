@@ -42,11 +42,28 @@ if(SAGE_USE_NGMP)
         set(NGMP_SERVER_PORT "9001" CACHE STRING "NGMP Server Port")
     endif()
 
+    if(DEFINED ENV{NGMP_USE_SSL})
+        if("$ENV{NGMP_USE_SSL}" MATCHES "^(1|ON|YES|TRUE|Y|on|yes|true|y)$")
+            option(NGMP_USE_SSL "Enable SSL for NGMP protocol" ON)
+        else()
+            option(NGMP_USE_SSL "Enable SSL for NGMP protocol" OFF)
+        endif()
+    else()
+        option(NGMP_USE_SSL "Enable SSL for NGMP protocol" OFF)
+    endif()
+
     target_compile_definitions(core_config INTERFACE
         NGMP_DEFAULT_HOST="${NGMP_SERVER_HOST}"
         NGMP_DEFAULT_PORT="${NGMP_SERVER_PORT}"
     )
 
-    message(STATUS "NGMP: Server target configured to ${NGMP_SERVER_HOST}:${NGMP_SERVER_PORT}")
+    if(NGMP_USE_SSL)
+        target_compile_definitions(core_config INTERFACE NGMP_USE_SSL=1)
+        message(STATUS "NGMP: Server target configured to wss://${NGMP_SERVER_HOST}:${NGMP_SERVER_PORT}")
+    else()
+        target_compile_definitions(core_config INTERFACE NGMP_USE_SSL=0)
+        message(STATUS "NGMP: Server target configured to ws://${NGMP_SERVER_HOST}:${NGMP_SERVER_PORT}")
+    endif()
+
     message(STATUS "NGMP: nlohmann_json and libcurl configured successfully")
 endif()
