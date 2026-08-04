@@ -65,6 +65,12 @@
 #include "GameNetwork/GameSpy/ThreadUtils.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 
+#include "GameNetwork/RankPointValue.h"
+
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
+
 #include "GameNetwork/GameSpyOverlay.h"
 
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
@@ -806,6 +812,19 @@ static void checkLogin()
 //-------------------------------------------------------------------------------------------------
 void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 {
+#if defined(SAGE_USE_NGMP)
+	if (NGMP_OnlineServicesManager::getInstance().isLoggedIn())
+	{
+		if (!buttonPushed)
+		{
+			buttonPushed = true;
+			loginAttemptTime = 0;
+			nextScreen = "Menus/WOLWelcomeMenu.wnd";
+			TheShell->pop();
+		}
+		return;
+	}
+#endif
 
 	// We'll only be successful if we've requested to
 	if(isShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
@@ -879,6 +898,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		checkLogin();
 	}
 
+#if !defined(SAGE_USE_NGMP)
 	if (TheGameSpyInfo && !buttonPushed && loginAttemptTime && (loginAttemptTime + loginTimeoutInMS < timeGetTime()))
 	{
 		// timed out a login attempt, so say so
@@ -898,6 +918,9 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		TearDownGameSpy();
 		SetUpGameSpy( motd.str(), config.str() );
 	}
+#else
+	loginAttemptTime = 0;
+#endif
 
 }
 
@@ -1346,6 +1369,10 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 
 						if ( !email.isEmpty() && !login.isEmpty() && !password.isEmpty() )
 						{
+#if defined(SAGE_USE_NGMP)
+							NGMP_OnlineServicesManager::getInstance().loginAsync(login.str(), password.str());
+							loginAttemptTime = 0;
+#else
 							loginAttemptTime = timeGetTime();
 							BuddyRequest req;
 							req.buddyRequestType = BuddyRequest::BUDDYREQUEST_LOGIN;
@@ -1361,6 +1388,7 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 							DEBUG_LOG(("before login: TheGameSpyInfo->stuff(%s/%s/%s)", TheGameSpyInfo->getLocalBaseName().str(), TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalPassword().str()));
 
 							TheGameSpyBuddyMessageQueue->addRequest( req );
+#endif
 							if(checkBoxRememberPassword && GadgetCheckBoxIsChecked(checkBoxRememberPassword))
 							{
 								(*loginPref)["lastName"] = login;
