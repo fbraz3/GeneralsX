@@ -27,12 +27,6 @@ std::string LoadAuthToken();
 // Returns true if SSL (HTTPS/WSS) is enabled
 bool IsSSLEnabled();
 
-// Returns default insecure port (9001)
-std::string GetServerHTTPPort();
-
-// Returns default secure SSL port (9000)
-std::string GetServerSSLPort();
-
 // Returns default server WS endpoint URL
 std::string GetServerWSEndpoint();
 

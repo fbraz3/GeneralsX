@@ -70,6 +70,10 @@
 #include "GameNetwork/GameSpy/LobbyUtils.h"
 #include "GameNetwork/RankPointValue.h"
 
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
+
 void refreshGameList( Bool forceRefresh = FALSE );
 void refreshPlayerList( Bool forceRefresh = FALSE );
 
@@ -722,6 +726,11 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	if(win)
 		win->winHide(TRUE);
 	DontShowMainMenu = TRUE;
+
+#if defined(SAGE_USE_NGMP)
+	// GeneralsX @feature GeneralsOnline Kick off async lobby list refresh on menu init
+	NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
+#endif
 
 }
 

@@ -16,7 +16,22 @@ bool NGMP_OnlineServicesManager::init() {
     // Auto load token if stored locally
     std::string savedToken = NGMP::LoadAuthToken();
     if (!savedToken.empty()) {
-        loginWithToken(savedToken);
+        if (loginWithToken(savedToken)) {
+            // Connect chat WebSocket using the restored session token
+            m_chatSession = std::make_unique<NGMP::NGMPChatSession>();
+            m_chatSession->setMessageCallback([this](const std::string& room, const std::string& sender, const std::string& msg) {
+                NGMPEvent ev;
+                ev.type = NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED;
+                ev.payload = "[" + room + "] " + sender + ": " + msg;
+                postEvent(ev);
+            });
+            bool connected = m_chatSession->connect(NGMP::GetServerWSEndpoint(), savedToken);
+            if (connected) {
+                NGMPEvent ev;
+                ev.type = NGMPEvent::EVENT_CHAT_CONNECTED;
+                postEvent(ev);
+            }
+        }
     }
 
     m_initialized = true;
@@ -30,6 +45,23 @@ void NGMP_OnlineServicesManager::shutdown() {
 
     fprintf(stderr, "[NGMP] Shutting down NGMP Online Services\n");
     fflush(stderr);
+
+    // Disconnect chat first
+    if (m_chatSession) {
+        m_chatSession->disconnect();
+        m_chatSession.reset();
+        NGMPEvent ev;
+        ev.type = NGMPEvent::EVENT_CHAT_DISCONNECTED;
+        postEvent(ev);
+    }
+
+    // Join any in-flight threads before state is destroyed
+    if (m_loginThread.joinable()) {
+        m_loginThread.join();
+    }
+    if (m_lobbyThread.joinable()) {
+        m_lobbyThread.join();
+    }
 
     logout();
     m_initialized = false;

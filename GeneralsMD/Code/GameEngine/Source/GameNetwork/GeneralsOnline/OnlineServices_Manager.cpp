@@ -3,24 +3,13 @@
 
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include <cstdio>
+#include <thread>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
-
-namespace {
-    struct CurlResponse {
-        std::string text;
-    };
-
-    size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
-        size_t totalSize = size * nmemb;
-        CurlResponse* resp = static_cast<CurlResponse*>(userp);
-        resp->text.append(static_cast<char*>(contents), totalSize);
-        return totalSize;
-    }
-}
 
 NGMP_OnlineServicesManager& NGMP_OnlineServicesManager::getInstance() {
     static NGMP_OnlineServicesManager instance;
@@ -61,6 +50,12 @@ void NGMP_OnlineServicesManager::update() {
             case NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED:
                 fprintf(stderr, "[NGMP-MainThread] Event: Chat msg: %s\n", ev.payload.c_str());
                 break;
+            case NGMPEvent::EVENT_CHAT_CONNECTED:
+                fprintf(stderr, "[NGMP-MainThread] Event: Chat connected\n");
+                break;
+            case NGMPEvent::EVENT_CHAT_DISCONNECTED:
+                fprintf(stderr, "[NGMP-MainThread] Event: Chat disconnected\n");
+                break;
             default:
                 break;
         }
@@ -68,56 +63,83 @@ void NGMP_OnlineServicesManager::update() {
     }
 }
 
-void NGMP_OnlineServicesManager::requestLobbyList() {
-    CURL* curl = curl_easy_init();
-    if (!curl) {
+void NGMP_OnlineServicesManager::requestLobbyListAsync() {
+    if (m_lobbyRequestInFlight.exchange(true)) {
+        fprintf(stderr, "[NGMP] Lobby request already in flight, ignoring duplicate\n");
+        fflush(stderr);
         return;
     }
 
-    std::string url = NGMP::GetServerRESTEndpoint() + "/lobbies";
-    CurlResponse response;
+    if (m_lobbyThread.joinable()) {
+        m_lobbyThread.join();
+    }
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+    m_lobbyThread = std::thread([this]() {
+        CURL* curl = curl_easy_init();
+        if (!curl) {
+            m_lobbyRequestInFlight = false;
+            return;
+        }
 
-    CURLcode res = curl_easy_perform(curl);
-    long httpCode = 0;
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
-    curl_easy_cleanup(curl);
+        std::string url = NGMP::GetServerRESTEndpoint() + "/lobbies";
+        NGMP::Internal::CurlResponse response;
 
-    if (res == CURLE_OK && httpCode == 200) {
-        try {
-            auto jsonList = json::parse(response.text);
-            m_lobbies.clear();
-            if (jsonList.is_array()) {
-                for (const auto& item : jsonList) {
-                    NGMPLobby lobby;
-                    lobby.id = item.value("id", "");
-                    lobby.name = item.value("name", "Custom Lobby");
-                    lobby.mapName = item.value("mapName", "Tournament Desert");
-                    lobby.currentPlayers = item.value("currentPlayers", 1);
-                    lobby.maxPlayers = item.value("maxPlayers", 8);
-                    m_lobbies.push_back(lobby);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+
+        CURLcode res = curl_easy_perform(curl);
+        long httpCode = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        curl_easy_cleanup(curl);
+
+        if (res == CURLE_OK && httpCode == 200) {
+            try {
+                auto jsonList = json::parse(response.text);
+                std::vector<NGMPLobby> lobbies;
+                if (jsonList.is_array()) {
+                    for (const auto& item : jsonList) {
+                        NGMPLobby lobby;
+                        lobby.id = item.value("id", "");
+                        lobby.name = item.value("name", "Custom Lobby");
+                        lobby.mapName = item.value("mapName", "Tournament Desert");
+                        lobby.currentPlayers = item.value("currentPlayers", 1);
+                        lobby.maxPlayers = item.value("maxPlayers", 8);
+                        lobbies.push_back(lobby);
+                    }
                 }
-            }
 
-            NGMPEvent ev;
-            ev.type = NGMPEvent::EVENT_LOBBY_LIST_UPDATED;
-            postEvent(ev);
-        } catch (const std::exception& e) {
-            fprintf(stderr, "[NGMP] Lobby JSON parse exception: %s\n", e.what());
+                // Swap into member under the event mutex for safe handoff
+                {
+                    std::lock_guard<std::mutex> lock(m_eventMutex);
+                    m_lobbies = std::move(lobbies);
+                }
+
+                NGMPEvent ev;
+                ev.type = NGMPEvent::EVENT_LOBBY_LIST_UPDATED;
+                postEvent(ev);
+            } catch (const std::exception& e) {
+                fprintf(stderr, "[NGMP] Lobby JSON parse exception: %s\n", e.what());
+                fflush(stderr);
+            }
+        } else {
+            fprintf(stderr, "[NGMP] Lobby request failed (curl=%d, http=%ld)\n", res, httpCode);
             fflush(stderr);
         }
-    }
+
+        m_lobbyRequestInFlight = false;
+    });
 }
 
 bool NGMP_OnlineServicesManager::sendChatMessage(const std::string& room, const std::string& message) {
     if (!m_isLoggedIn) {
         return false;
     }
-    fprintf(stderr, "[NGMP] Sending chat message in room '%s': %s\n", room.c_str(), message.c_str());
+    if (m_chatSession) {
+        return m_chatSession->sendMessage(room, message);
+    }
+    fprintf(stderr, "[NGMP] sendChatMessage called but no active chat session\n");
     fflush(stderr);
-    return true;
+    return false;
 }
