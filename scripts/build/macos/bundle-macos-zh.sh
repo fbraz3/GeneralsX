@@ -442,7 +442,8 @@ if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     # defaults in the user data directory on first run.
 fi
 
-exec "${BIN_DIR}/GeneralsXZH" "$@"
+"${BIN_DIR}/GeneralsXZH" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 WRAPPER
 chmod +x "${MACOS_DIR}/run.sh"
 

@@ -28,6 +28,10 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#if defined(_UNIX) && !defined(__APPLE__)
+#include <cxxabi.h>
+#endif
+
 #ifdef _WIN32
 #include <winsock.h>	// This one has to be here. Prevents collisions with windsock2.h
 #else
@@ -326,6 +330,10 @@ void PingThreadClass::Thread_Function()
 	}
 
 	WSACleanup();
+#if defined(_UNIX) && !defined(__APPLE__)
+	} catch ( abi::__forced_unwind& ) {
+		throw;
+#endif
 	} catch ( ... ) {
 		DEBUG_CRASH(("Exception in ping thread!"));
 	}
