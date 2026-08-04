@@ -1047,6 +1047,7 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 				break;
 			case PeerResponse::PEERRESPONSE_DISCONNECT:
 				{
+#if !defined(SAGE_USE_NGMP)
 					sawImportantMessage = TRUE;
 					UnicodeString title, body;
 					AsciiString disconMunkee;
@@ -1057,6 +1058,7 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 					GSMessageBoxOk( title, body );
 					TheGameSpyInfo->reset();
 					TheShell->pop();
+#endif
 				}
 				break;
 			case PeerResponse::PEERRESPONSE_CREATESTAGINGROOM:

@@ -673,6 +673,7 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 				break;
 			case PeerResponse::PEERRESPONSE_DISCONNECT:
 				{
+#if !defined(SAGE_USE_NGMP)
 					sawImportantMessage = TRUE;
 					UnicodeString title, body;
 					AsciiString disconMunkee;
@@ -682,6 +683,7 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 					GameSpyCloseAllOverlays();
 					GSMessageBoxOk( title, body );
 					TheShell->pop();
+#endif
 				}
 				break;
 			}
