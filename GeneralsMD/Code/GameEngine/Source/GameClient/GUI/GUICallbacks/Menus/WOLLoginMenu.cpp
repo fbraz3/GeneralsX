@@ -816,7 +816,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 	// Pump the NGMP event queue each frame so worker-thread events (e.g. EVENT_AUTH_SUCCESS)
 	// are delivered while we are in the shell menu. The normal GameEngine::update() path that
 	// pumps NGMP only runs during gameplay (inside VERIFY_CRC), not during shell menus.
-	NGMP_OnlineServicesManager::getInstance().pollEvents();
+	auto events = NGMP_OnlineServicesManager::getInstance().pollEvents();
 
 	if (NGMP_OnlineServicesManager::getInstance().isLoggedIn())
 	{
@@ -829,12 +829,24 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		}
 		return;
 	}
+
+	// Process any other NGMP events
+	for (const auto& ev : events) {
+		if (ev.type == NGMPEvent::EVENT_AUTH_FAILURE) {
+			loginAttemptTime = 0;
+			EnableLoginControls(TRUE);
+			GSMessageBoxOk(TheGameText->fetch("GUI:ConnectionErrorTitle"), TheGameText->fetch("GUI:ConnectionError"));
+			fprintf(stderr, "[NGMP] Showing connection error to user: %s\n", ev.payload.c_str());
+			fflush(stderr);
+		}
+	}
 #endif
 
 	// We'll only be successful if we've requested to
 	if(isShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
 		shutdownComplete(layout);
 
+#if !defined(SAGE_USE_NGMP)
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
 	{
 		PingResponse pingResp;
@@ -902,6 +914,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 
 		checkLogin();
 	}
+#endif
 
 #if !defined(SAGE_USE_NGMP)
 	if (TheGameSpyInfo && !buttonPushed && loginAttemptTime && (loginAttemptTime + loginTimeoutInMS < timeGetTime()))

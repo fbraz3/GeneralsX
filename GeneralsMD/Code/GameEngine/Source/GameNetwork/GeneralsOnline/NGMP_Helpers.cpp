@@ -21,6 +21,11 @@
 namespace NGMP {
 
 bool IsSSLEnabled() {
+    const char* envSSL = std::getenv("NGMP_USE_SSL");
+    if (envSSL) {
+        std::string s(envSSL);
+        return s == "ON" || s == "1" || s == "true" || s == "TRUE";
+    }
 #if defined(NGMP_USE_SSL) && NGMP_USE_SSL
     return true;
 #else
@@ -78,17 +83,27 @@ std::string LoadAuthToken() {
 }
 
 std::string GetServerWSEndpoint() {
+    const char* envHost = std::getenv("NGMP_DEFAULT_HOST");
+    const char* envPort = std::getenv("NGMP_SERVER_PORT");
+    std::string host = envHost ? envHost : NGMP_DEFAULT_HOST;
+    std::string port = envPort ? envPort : NGMP_DEFAULT_PORT;
+
     if (IsSSLEnabled()) {
-        return "wss://" + std::string(NGMP_DEFAULT_HOST) + ":" + std::string(NGMP_DEFAULT_PORT) + "/ws";
+        return "wss://" + host + ":" + port + "/ws";
     }
-    return "ws://" + std::string(NGMP_DEFAULT_HOST) + ":" + std::string(NGMP_DEFAULT_PORT) + "/ws";
+    return "ws://" + host + ":" + port + "/ws";
 }
 
 std::string GetServerRESTEndpoint() {
+    const char* envHost = std::getenv("NGMP_DEFAULT_HOST");
+    const char* envPort = std::getenv("NGMP_SERVER_PORT");
+    std::string host = envHost ? envHost : NGMP_DEFAULT_HOST;
+    std::string port = envPort ? envPort : NGMP_DEFAULT_PORT;
+
     if (IsSSLEnabled()) {
-        return "https://" + std::string(NGMP_DEFAULT_HOST) + ":" + std::string(NGMP_DEFAULT_PORT) + "/api";
+        return "https://" + host + ":" + port + "/api";
     }
-    return "http://" + std::string(NGMP_DEFAULT_HOST) + ":" + std::string(NGMP_DEFAULT_PORT) + "/api";
+    return "http://" + host + ":" + port + "/api";
 }
 
 } // namespace NGMP
