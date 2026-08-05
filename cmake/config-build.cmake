@@ -142,7 +142,31 @@ add_feature_info(NGMPProtocol SAGE_USE_NGMP "Using NGMP multiplayer protocol (Ge
 
 if(SAGE_USE_NGMP)
     target_compile_definitions(core_config INTERFACE SAGE_USE_NGMP)
-    message(STATUS "NGMP (GeneralsOnline) multiplayer protocol enabled")
+    
+    set(NGMP_DEFAULT_HOST $ENV{NGMP_DEFAULT_HOST} CACHE STRING "NGMP default host")
+    if(NOT NGMP_DEFAULT_HOST)
+        set(NGMP_DEFAULT_HOST "localhost")
+    endif()
+
+    set(NGMP_SERVER_PORT $ENV{NGMP_SERVER_PORT} CACHE STRING "NGMP server port")
+    if(NOT NGMP_SERVER_PORT)
+        set(NGMP_SERVER_PORT "9001")
+    endif()
+
+    set(NGMP_USE_SSL $ENV{NGMP_USE_SSL} CACHE STRING "NGMP use SSL")
+    if(NOT NGMP_USE_SSL)
+        set(NGMP_USE_SSL "OFF")
+    endif()
+
+    target_compile_definitions(core_config INTERFACE 
+        NGMP_DEFAULT_HOST="${NGMP_DEFAULT_HOST}"
+        NGMP_DEFAULT_PORT="${NGMP_SERVER_PORT}"
+    )
+    if(NGMP_USE_SSL STREQUAL "ON" OR NGMP_USE_SSL STREQUAL "1" OR NGMP_USE_SSL STREQUAL "TRUE")
+        target_compile_definitions(core_config INTERFACE NGMP_USE_SSL=1)
+    endif()
+
+    message(STATUS "NGMP (GeneralsOnline) multiplayer protocol enabled [Host: ${NGMP_DEFAULT_HOST}:${NGMP_SERVER_PORT}]")
 endif()
 
 if(SAGE_USE_GLM)
