@@ -941,6 +941,22 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 		raiseMessageBoxes = false;
 	}
 
+#if defined(SAGE_USE_NGMP)
+	// Process NGMP Events
+	auto events = NGMP_OnlineServicesManager::getInstance().pollEvents();
+	for (const auto& ev : events) {
+		if (ev.type == NGMPEvent::EVENT_LOBBY_LIST_UPDATED) {
+			RefreshNGMPGameListBoxes(NGMP_OnlineServicesManager::getInstance().getLobbies());
+		}
+		else if (ev.type == NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED) {
+			AsciiString msg(ev.payload.c_str());
+			UnicodeString uMsg;
+			uMsg.translate(msg);
+			TheGameSpyInfo->addText(uMsg, GameSpyColor[GSCOLOR_DEFAULT], nullptr);
+		}
+	}
+#endif
+
 	if (TheShell->isAnimFinished() && TheTransitionHandler->isFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
 	{
 		HandleBuddyResponses();
@@ -1873,7 +1889,13 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					// Send the message
 					if (!handleLobbySlashCommands(txtInput))
 					{
+#if defined(SAGE_USE_NGMP)
+						AsciiString msg;
+						msg.translate(txtInput);
+						NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", msg.str());
+#else
 						TheGameSpyInfo->sendChat( txtInput, false, listboxLobbyPlayers );
+#endif
 					}
 				}
 				break;

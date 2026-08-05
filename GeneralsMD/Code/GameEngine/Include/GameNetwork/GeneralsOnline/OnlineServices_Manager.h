@@ -42,7 +42,7 @@ public:
     static NGMP_OnlineServicesManager& getInstance();
 
     bool init();
-    void update(); // Main thread UI tick dispatch
+    std::vector<NGMPEvent> pollEvents(); // Main thread UI tick dispatch
     void shutdown();
 
     // Async login — result delivered via EVENT_AUTH_SUCCESS / EVENT_AUTH_FAILURE

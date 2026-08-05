@@ -61,6 +61,10 @@
 #include "GameNetwork/GameSpy/PersistentStorageDefs.h"
 #include "GameNetwork/GameSpy/GSConfig.h"
 
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
+
 #include "Common/STLTypedefs.h"
 
 
@@ -864,6 +868,48 @@ void RefreshGameListBoxes()
 	{
 		RefreshGameInfoListBox( main, info );
 	}
+}
+
+void RefreshNGMPGameListBoxes(const std::vector<struct NGMPLobby>& lobbies)
+{
+	GameWindow *win = GetGameListBox();
+	if (!win)
+		return;
+
+	// clear it out
+	GadgetListBoxReset(win);
+
+	Color gameColor = GameSpyColor[GSCOLOR_GAME];
+
+	for (const auto& lobby : lobbies)
+	{
+		AsciiString asciiName(lobby.name.c_str());
+		UnicodeString uName;
+		uName.translate(asciiName);
+
+		Int index = GadgetListBoxAddEntryText(win, uName, gameColor, -1, COLUMN_NAME);
+		// Assuming we can use a hash or fake id for the listbox user data since we don't have integer IDs
+		// Let's just put 0 for now since NGMP lobbies use string IDs (but the UI expects an Int). 
+		// A cleaner solution later would be to map string IDs to integer handles.
+		GadgetListBoxSetItemData(win, reinterpret_cast<void*>(std::uintptr_t(1)), index);
+
+		AsciiString asciiMap(lobby.mapName.c_str());
+		UnicodeString uMap;
+		uMap.translate(asciiMap);
+
+		GadgetListBoxAddEntryText(win, uMap, gameColor, index, COLUMN_MAP);
+
+		// Ladder info usually goes here, but we can just leave it blank for now
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, COLUMN_LADDER);
+
+		UnicodeString playersStr;
+		playersStr.format(L"%d/%d", lobby.currentPlayers, lobby.maxPlayers);
+		GadgetListBoxAddEntryText(win, playersStr, gameColor, index, COLUMN_NUMPLAYERS);
+
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, COLUMN_PASSWORD); // No password for now
+	}
+
+	// Update game info list box if we had one
 }
 
 void ToggleGameListType()

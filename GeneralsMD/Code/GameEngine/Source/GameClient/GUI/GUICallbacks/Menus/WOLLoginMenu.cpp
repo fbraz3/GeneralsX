@@ -816,7 +816,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 	// Pump the NGMP event queue each frame so worker-thread events (e.g. EVENT_AUTH_SUCCESS)
 	// are delivered while we are in the shell menu. The normal GameEngine::update() path that
 	// pumps NGMP only runs during gameplay (inside VERIFY_CRC), not during shell menus.
-	NGMP_OnlineServicesManager::getInstance().update();
+	NGMP_OnlineServicesManager::getInstance().pollEvents();
 
 	if (NGMP_OnlineServicesManager::getInstance().isLoggedIn())
 	{

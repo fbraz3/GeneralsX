@@ -4,6 +4,7 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
+#include "GameNetwork/GeneralsOnline/NGMPChatSession.h"
 #include <cstdio>
 #include <thread>
 #include <curl/curl.h>
@@ -26,13 +27,14 @@ void NGMP_OnlineServicesManager::postEvent(const NGMPEvent& event) {
     m_eventQueue.push(event);
 }
 
-void NGMP_OnlineServicesManager::update() {
+std::vector<NGMPEvent> NGMP_OnlineServicesManager::pollEvents() {
     std::queue<NGMPEvent> pendingEvents;
     {
         std::lock_guard<std::mutex> lock(m_eventMutex);
         std::swap(pendingEvents, m_eventQueue);
     }
 
+    std::vector<NGMPEvent> events;
     while (!pendingEvents.empty()) {
         NGMPEvent ev = pendingEvents.front();
         pendingEvents.pop();
@@ -40,6 +42,11 @@ void NGMP_OnlineServicesManager::update() {
         switch (ev.type) {
             case NGMPEvent::EVENT_AUTH_SUCCESS:
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Success\n");
+                m_isLoggedIn = true;
+                if (!m_chatSession) {
+                    m_chatSession.reset(new NGMP::NGMPChatSession());
+                }
+                m_chatSession->connect(NGMP::GetServerWSEndpoint() + "/chat", m_authToken);
                 break;
             case NGMPEvent::EVENT_AUTH_FAILURE:
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Failure: %s\n", ev.payload.c_str());
@@ -59,8 +66,9 @@ void NGMP_OnlineServicesManager::update() {
             default:
                 break;
         }
-        fflush(stderr);
+        events.push_back(ev);
     }
+    return events;
 }
 
 void NGMP_OnlineServicesManager::requestLobbyListAsync() {
