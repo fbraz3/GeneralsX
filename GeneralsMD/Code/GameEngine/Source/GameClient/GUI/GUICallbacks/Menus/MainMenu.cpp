@@ -82,6 +82,10 @@
 #include <SDL3/SDL.h>
 #endif
 
+// GeneralsX @feature GeneralsOnline NGMP browser-based login
+#ifdef SAGE_USE_NGMP
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
@@ -1545,7 +1549,10 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
 
 #if defined(SAGE_USE_NGMP)
-				TheShell->push( "Menus/GameSpyLoginProfile.wnd" );
+				// GeneralsX @feature GeneralsOnline - Browser gamecode login flow
+				// No in-game login form; the NGMP manager opens the browser and polls.
+				NGMP_OnlineServicesManager::getInstance().init();
+				NGMP_OnlineServicesManager::getInstance().beginBrowserLogin();
 #else
 				StartPatchCheck();
 #endif

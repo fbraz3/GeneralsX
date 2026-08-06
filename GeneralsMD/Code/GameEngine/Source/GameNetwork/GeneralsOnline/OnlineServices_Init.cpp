@@ -10,28 +10,16 @@ bool NGMP_OnlineServicesManager::init() {
         return true;
     }
 
-    fprintf(stderr, "[NGMP] Initializing NGMP Online Services (Endpoint: %s)\n", NGMP::GetServerWSEndpoint().c_str());
+    fprintf(stderr, "[NGMP] Initializing NGMP Online Services (server: %s)\n",
+            NGMP::GetServerRESTEndpoint().c_str());
     fflush(stderr);
 
-    // Auto load token if stored locally
-    std::string savedToken = NGMP::LoadAuthToken();
-    if (!savedToken.empty()) {
-        if (loginWithToken(savedToken)) {
-            // Connect chat WebSocket using the restored session token
-            m_chatSession = std::make_unique<NGMP::NGMPChatSession>();
-            m_chatSession->setMessageCallback([this](const std::string& room, const std::string& sender, const std::string& msg) {
-                NGMPEvent ev;
-                ev.type = NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED;
-                ev.payload = "[" + room + "] " + sender + ": " + msg;
-                postEvent(ev);
-            });
-            bool connected = m_chatSession->connect(NGMP::GetServerWSEndpoint(), savedToken);
-            if (connected) {
-                NGMPEvent ev;
-                ev.type = NGMPEvent::EVENT_CHAT_CONNECTED;
-                postEvent(ev);
-            }
-        }
+    // Auto-login if we have a saved refresh token
+    std::string savedRefreshToken = NGMP::LoadRefreshToken();
+    if (!savedRefreshToken.empty()) {
+        fprintf(stderr, "[NGMP] Found saved refresh token, attempting silent re-login\n");
+        fflush(stderr);
+        loginWithRefreshToken(savedRefreshToken);
     }
 
     m_initialized = true;
@@ -46,6 +34,13 @@ void NGMP_OnlineServicesManager::shutdown() {
     fprintf(stderr, "[NGMP] Shutting down NGMP Online Services\n");
     fflush(stderr);
 
+    // Stop any in-flight browser login poll
+    m_pollThreadRunning   = false;
+    m_waitingBrowserLogin = false;
+    if (m_pollThread.joinable()) {
+        m_pollThread.join();
+    }
+
     // Disconnect chat first
     if (m_chatSession) {
         m_chatSession->disconnect();
@@ -55,10 +50,6 @@ void NGMP_OnlineServicesManager::shutdown() {
         postEvent(ev);
     }
 
-    // Join any in-flight threads before state is destroyed
-    if (m_loginThread.joinable()) {
-        m_loginThread.join();
-    }
     if (m_lobbyThread.joinable()) {
         m_lobbyThread.join();
     }

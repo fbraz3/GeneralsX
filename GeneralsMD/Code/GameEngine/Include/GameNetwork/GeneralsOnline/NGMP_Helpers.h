@@ -24,14 +24,29 @@ bool SaveAuthToken(const std::string& token);
 // Loads authentication token from local user storage
 std::string LoadAuthToken();
 
+// Saves refresh token to local user storage
+bool SaveRefreshToken(const std::string& token);
+
+// Loads refresh token from local user storage
+std::string LoadRefreshToken();
+
 // Returns true if SSL (HTTPS/WSS) is enabled
 bool IsSSLEnabled();
 
 // Returns default server WS endpoint URL
 std::string GetServerWSEndpoint();
 
-// Returns default server REST endpoint URL
+// Returns default server REST endpoint URL (e.g. http://host:port)
 std::string GetServerRESTEndpoint();
+
+// Returns a full named API endpoint URL (e.g. /env/dev/contract/1/CheckLogin)
+std::string GetAPIEndpoint(const char* szEndpoint);
+
+// Returns the browser login URL for a given gamecode
+std::string GetBrowserLoginURL(const std::string& gamecode);
+
+// Generates a random 32-char alphanumeric gamecode
+std::string GenerateGamecode();
 
 } // namespace NGMP
 

@@ -12,12 +12,14 @@
 #include <memory>
 #include <thread>
 #include <atomic>
+#include <chrono>
 
 struct NGMPEvent {
     enum Type {
         EVENT_NONE,
         EVENT_AUTH_SUCCESS,
         EVENT_AUTH_FAILURE,
+        EVENT_AUTH_CANCELLED,
         EVENT_LOBBY_LIST_UPDATED,
         EVENT_CHAT_MESSAGE_RECEIVED,
         EVENT_CHAT_CONNECTED,
@@ -45,9 +47,15 @@ public:
     std::vector<NGMPEvent> pollEvents(); // Main thread UI tick dispatch
     void shutdown();
 
-    // Async login — result delivered via EVENT_AUTH_SUCCESS / EVENT_AUTH_FAILURE
-    void loginAsync(const std::string& username, const std::string& password);
-    bool loginWithToken(const std::string& token);
+    // Browser-based gamecode login flow (macOS/Linux: uses SDL_OpenURL)
+    void beginBrowserLogin();
+    void cancelBrowserLogin();
+    // Call from main-thread update loop while waiting for browser login
+    void tickBrowserLogin();
+
+    // Token-based silent re-login
+    void loginWithRefreshToken(const std::string& refreshToken);
+
     void logout();
 
     // Async lobby fetch — result delivered via EVENT_LOBBY_LIST_UPDATED
@@ -76,9 +84,12 @@ private:
     std::string m_authToken;
     std::vector<NGMPLobby> m_lobbies;
 
-    // Async login state
-    std::atomic<bool> m_loginInFlight = false;
-    std::thread m_loginThread;
+    // Browser-based login state
+    std::atomic<bool> m_waitingBrowserLogin = false;
+    std::string m_gamecode;
+    std::chrono::steady_clock::time_point m_lastPollTime;
+    std::thread m_pollThread;
+    std::atomic<bool> m_pollThreadRunning = false;
 
     // Async lobby request state
     std::atomic<bool> m_lobbyRequestInFlight = false;
