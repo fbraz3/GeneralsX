@@ -1390,7 +1390,10 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 						if ( !email.isEmpty() && !login.isEmpty() && !password.isEmpty() )
 						{
 #if defined(SAGE_USE_NGMP)
-							NGMP_OnlineServicesManager::getInstance().loginAsync(login.str(), password.str());
+							// GeneralsX @feature GeneralsOnline
+							// Login is handled via browser gamecode flow launched from MainMenu.
+							// This WOL login form is not used in NGMP builds.
+							(void)login; (void)password; (void)email;
 							loginAttemptTime = 0;
 #else
 							loginAttemptTime = timeGetTime();

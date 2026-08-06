@@ -28,10 +28,6 @@
 #define NGMP_CONTRACT_VERSION "1"
 #endif
 
-#ifndef NGMP_CLIENT_ID
-#define NGMP_CLIENT_ID "GeneralsXZH"
-#endif
-
 namespace NGMP {
 
 bool IsSSLEnabled() {

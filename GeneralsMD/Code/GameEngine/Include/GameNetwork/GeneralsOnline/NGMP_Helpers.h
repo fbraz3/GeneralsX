@@ -9,6 +9,11 @@
 
 namespace NGMP {
 
+// Default client identifier sent to the server during CheckLogin
+#ifndef NGMP_CLIENT_ID
+#define NGMP_CLIENT_ID "GeneralsXZH"
+#endif
+
 // Returns time in milliseconds since application start using SDL3/chrono primitives
 uint32_t GetTicks();
 
