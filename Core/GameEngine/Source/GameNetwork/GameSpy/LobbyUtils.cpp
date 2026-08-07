@@ -881,17 +881,15 @@ void RefreshNGMPGameListBoxes(const std::vector<struct NGMPLobby>& lobbies)
 
 	Color gameColor = GameSpyColor[GSCOLOR_GAME];
 
-	for (const auto& lobby : lobbies)
+	for (size_t i = 0; i < lobbies.size(); ++i)
 	{
+		const auto& lobby = lobbies[i];
 		AsciiString asciiName(lobby.name.c_str());
 		UnicodeString uName;
 		uName.translate(asciiName);
 
 		Int index = GadgetListBoxAddEntryText(win, uName, gameColor, -1, COLUMN_NAME);
-		// Assuming we can use a hash or fake id for the listbox user data since we don't have integer IDs
-		// Let's just put 0 for now since NGMP lobbies use string IDs (but the UI expects an Int). 
-		// A cleaner solution later would be to map string IDs to integer handles.
-		GadgetListBoxSetItemData(win, reinterpret_cast<void*>(std::uintptr_t(1)), index);
+		GadgetListBoxSetItemData(win, reinterpret_cast<void*>(static_cast<std::uintptr_t>(i + 1)), index);
 
 		AsciiString asciiMap(lobby.mapName.c_str());
 		UnicodeString uMap;

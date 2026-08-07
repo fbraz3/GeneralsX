@@ -71,6 +71,9 @@
 #include "GameNetwork/GameSpy/LadderDefs.h"
 #include "Common/CustomMatchPreferences.h"
 #include "Common/LadderPreferences.h"
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
 
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -614,5 +617,13 @@ void createGame()
 	TheGameSpyGame->setLadderPort(req.stagingRoomCreation.ladPort);
 	req.hostPingStr = TheGameSpyInfo->getPingString().str();
 
+#if defined(SAGE_USE_NGMP)
+	AsciiString aName;
+	aName.translate(gameName);
+	int maxPlayers = 8;
+	if (limitArmies) { maxPlayers = 4; } // Legacy fallback logic, not critical
+	NGMP_OnlineServicesManager::getInstance().createLobbyAsync(aName.str(), "Tournament Desert", passwd.str(), maxPlayers);
+#else
 	TheGameSpyPeerMessageQueue->addRequest(req);
+#endif
 }

@@ -39,6 +39,8 @@
 #include "Common/PlayerTemplate.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/WindowLayout.h"
+#include "GameClient/LanguageFilter.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GameText.h"
 #include "GameClient/InGameUI.h"
@@ -1026,6 +1028,31 @@ void WOLQuickMatchMenuUpdate( WindowLayout * layout, void *userData)
 		raiseMessageBoxes = false;
 	}
 
+#if defined(SAGE_USE_NGMP)
+	// Process NGMP Events
+	auto events = NGMP_OnlineServicesManager::getInstance().pollEvents();
+	for (const auto& ev : events) {
+		if (ev.type == NGMPEvent::EVENT_PLAYLISTS_UPDATED) {
+			const auto& playlists = NGMP_OnlineServicesManager::getInstance().getPlaylists();
+			GadgetComboBoxReset(comboBoxNumPlayers);
+			for (const auto& pl : playlists) {
+				UnicodeString s;
+				s.format(L"%hs", pl.Name.c_str());
+				GadgetComboBoxAddEntry(comboBoxNumPlayers, s, GameSpyColor[GSCOLOR_DEFAULT]);
+			}
+			if (!playlists.empty()) {
+				GadgetComboBoxSetSelectedPos(comboBoxNumPlayers, 0);
+				QuickMatchPreferences pref;
+				populateQuickMatchMapSelectListbox(pref);
+				UpdateStartButton();
+			}
+		} else if (ev.type == NGMPEvent::EVENT_WEBSOCKET_MESSAGE) {
+			// For match found, start game, matchmaking error, etc.
+			// TODO: Implement parsing for these events in Phase 3.
+		}
+	}
+#endif
+
 	/// @todo: MDC handle disconnects in-game the same way as Custom Match!
 
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
@@ -1610,6 +1637,14 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 
 				if ( controlID == buttonStopID )
 				{
+#if defined(SAGE_USE_NGMP)
+					NGMP_OnlineServicesManager::getInstance().cancelMatchmakingAsync();
+					buttonWiden->winEnable(FALSE);
+					buttonStart->winHide(FALSE);
+					buttonStop->winHide(TRUE);
+					enableOptionsGadgets(TRUE);
+					buttonBack->winEnable(TRUE);
+#else
 					PeerRequest req;
 					req.peerRequestType = PeerRequest::PEERREQUEST_STOPQUICKMATCH;
 					TheGameSpyPeerMessageQueue->addRequest(req);
@@ -1618,6 +1653,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					buttonStop->winHide( TRUE );
 					enableOptionsGadgets(TRUE);
 					TheGameSpyInfo->addText(TheGameText->fetch("GUI:QMAborted"), GameSpyColor[GSCOLOR_DEFAULT], quickmatchTextWindow);
+#endif
 				}
 				else if ( controlID == buttonOptionsID )
 				{
@@ -1644,6 +1680,24 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 				}
 				else if ( controlID == buttonStartID )
 				{
+#if defined(SAGE_USE_NGMP)
+					std::vector<int> selectedMaps;
+					Int selected = -1;
+					GadgetComboBoxGetSelectedPos(comboBoxNumPlayers, &selected);
+					if (selected >= 0) {
+						const auto& playlists = NGMP_OnlineServicesManager::getInstance().getPlaylists();
+						if (selected < (Int)playlists.size()) {
+							NGMP_OnlineServicesManager::getInstance().startMatchmakingAsync(playlists[selected].PlaylistID, selectedMaps);
+							
+							buttonWiden->winEnable(TRUE);
+							buttonStart->winHide(TRUE);
+							buttonStop->winHide(FALSE);
+							buttonStop->winEnable(TRUE);
+							enableOptionsGadgets(FALSE);
+							buttonBack->winEnable(FALSE);
+						}
+					}
+#else
 					PeerRequest req;
 					req.peerRequestType = PeerRequest::PEERREQUEST_STARTQUICKMATCH;
 					req.qmMaps.clear();
@@ -1819,6 +1873,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 						ladPref.addRecentLadder( p );
 						ladPref.write();
 					}
+#endif
 				}
 				else if ( controlID == buttonBuddiesID )
 				{

@@ -669,6 +669,7 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	// Show Menu
 	layout->hide( FALSE );
 
+#ifndef SAGE_USE_NGMP
 	// if we're not in a room, this will join the best available one
 	if (!TheGameSpyInfo->getCurrentGroupRoom())
 	{
@@ -688,14 +689,17 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	{
 		DEBUG_LOG(("WOLLobbyMenuInit() - not joining group room because we're already in one"));
 	}
+#endif
 
 	GrabWindowInfo();
 
+#ifndef SAGE_USE_NGMP
 	TheGameSpyInfo->clearStagingRoomList();
 	PeerRequest req;
 	req.peerRequestType = PeerRequest::PEERREQUEST_STARTGAMELIST;
 	req.gameList.restrictGameList = TheGameSpyConfig->restrictGamesToLobby();
 	TheGameSpyPeerMessageQueue->addRequest(req);
+#endif
 
 	// animate controls
 //	TheShell->registerWithAnimateManager(parent, WIN_ANIMATION_SLIDE_TOP, TRUE);
@@ -729,6 +733,7 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 
 #if defined(SAGE_USE_NGMP)
 	// GeneralsX @feature GeneralsOnline Kick off async lobby list refresh on menu init
+	NGMP_OnlineServicesManager::getInstance().changeNetworkRoom(0);
 	NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
 #endif
 
@@ -881,17 +886,16 @@ void refreshGameList( Bool forceRefresh )
 
 	if (forceRefresh || ((gameListRefreshTime == 0) || ((gameListRefreshTime + refreshInterval) <= timeGetTime())))
 	{
+#if defined(SAGE_USE_NGMP)
+		NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
+		gameListRefreshTime = timeGetTime();
+#else
 		if (TheGameSpyInfo->hasStagingRoomListChanged())
 		{
-			//DEBUG_LOG(("################### refreshing game list"));
-			//DEBUG_LOG(("gameRefreshTime=%d, refreshInterval=%d, now=%d", gameListRefreshTime, refreshInterval, timeGetTime()));
 			RefreshGameListBoxes();
 			gameListRefreshTime = timeGetTime();
-		} else {
-			//DEBUG_LOG(("-"));
 		}
-	} else {
-		//DEBUG_LOG(("gameListRefreshTime: %d refreshInterval: %d", gameListRefreshTime, refreshInterval));
+#endif
 	}
 }
 //-------------------------------------------------------------------------------------------------
@@ -953,6 +957,23 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 			UnicodeString uMsg;
 			uMsg.translate(msg);
 			TheGameSpyInfo->addText(uMsg, GameSpyColor[GSCOLOR_DEFAULT], nullptr);
+		}
+		else if (ev.type == NGMPEvent::EVENT_PLAYERS_UPDATED) {
+			TheGameSpyInfo->getPlayerInfoMap()->clear();
+			for (const auto& player : NGMP_OnlineServicesManager::getInstance().getLobbyPlayers()) {
+				PlayerInfo info;
+				info.m_name = player.name.c_str();
+				info.m_profileID = static_cast<Int>(player.id);
+				info.m_flags = player.isAdmin ? PEER_FLAG_OP : 0;
+				TheGameSpyInfo->getPlayerInfoMap()->insert(std::make_pair(info.m_name, info));
+			}
+			refreshPlayerList(TRUE);
+		}
+		else if (ev.type == NGMPEvent::EVENT_LOBBY_JOINED || ev.type == NGMPEvent::EVENT_LOBBY_CREATED) {
+			SetLobbyAttemptHostJoin(FALSE);
+			buttonPushed = true;
+			nextScreen = "Menus/GameSpyGameOptionsMenu.wnd";
+			TheShell->pop();
 		}
 	}
 #endif
@@ -1584,10 +1605,25 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					GadgetListBoxGetSelected(GetGameListBox(), &selected);
 					if (selected >= 0)
 					{
-						// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 						Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(GetGameListBox(), selected)));
 						if (selectedID > 0)
 						{
+#if defined(SAGE_USE_NGMP)
+							const auto& lobbies = NGMP_OnlineServicesManager::getInstance().getLobbies();
+							size_t index = selectedID - 1;
+							if (index < lobbies.size())
+							{
+								const auto& lobby = lobbies[index];
+								UnicodeString uName;
+								AsciiString aName(lobby.name.c_str());
+								uName.translate(aName);
+								TheGameSpyGame->setGameName(uName);
+								
+								// No password support for now in NGMP UI
+								NGMP_OnlineServicesManager::getInstance().joinLobbyAsync(lobby.id, "");
+								SetLobbyAttemptHostJoin( TRUE );
+							}
+#else
 							StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();
 							StagingRoomMap::iterator srmIt = srm->find(selectedID);
 							if (srmIt != srm->end())
@@ -1644,6 +1680,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 									TheGameSpyPeerMessageQueue->addRequest(req);
 								}
 							}
+#endif
 						}
 						else
 						{

@@ -623,6 +623,9 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 
 	fprintf(stderr, "[WOLWelcomeMenuInit] enableControls()...\n");
 	fflush(stderr);
+#if defined(SAGE_USE_NGMP)
+	enableControls( NGMP_OnlineServicesManager::getInstance().isLoggedIn() );
+#else
 	if (TheGameSpyInfo) {
 		enableControls( TheGameSpyInfo->gotGroupRoomList() );
 	} else {
@@ -630,6 +633,7 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 		fflush(stderr);
 		enableControls( false );
 	}
+#endif
 
 	fprintf(stderr, "[WOLWelcomeMenuInit] showShellMap()...\n");
 	fflush(stderr);
@@ -975,8 +979,14 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 				{
 					//TheGameSpyChat->clearGroupRoomList();
 					//peerListGroupRooms(TheGameSpyChat->getPeer(), ListGroupRoomsCallback, nullptr, PEERTrue);
+#if defined(SAGE_USE_NGMP)
+					buttonPushed = TRUE;
+					nextScreen = "Menus/WOLCustomLobby.wnd";
+					TheShell->pop();
+#else
 					TheGameSpyInfo->joinBestGroupRoom();
 					enableControls( FALSE );
+#endif
 
 
 					/*

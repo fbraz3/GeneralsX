@@ -1,20 +1,20 @@
 // GeneralsX @feature GeneralsOnline NGMP Chat WebSocket implementation
 // Persistent WS connection using libcurl WebSocket (>= 7.86.0) for bidirectional chat.
 
-#include "GameNetwork/GeneralsOnline/NGMPChatSession.h"
+#include "GameNetwork/GeneralsOnline/NGMPWebSocket.h"
 #include <cstdio>
 #include <cstring>
-#include <nlohmann/json.hpp>
+#include "GameNetwork/GeneralsOnline/NGMP_json.h"
 
 using json = nlohmann::json;
 
 namespace NGMP {
 
-NGMPChatSession::~NGMPChatSession() {
+NGMPWebSocket::~NGMPWebSocket() {
     disconnect();
 }
 
-bool NGMPChatSession::connect(const std::string& wsUrl, const std::string& authToken) {
+bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authToken) {
     if (m_running.load()) {
         return true; // Already connected
     }
@@ -58,11 +58,11 @@ bool NGMPChatSession::connect(const std::string& wsUrl, const std::string& authT
     fflush(stderr);
 
     m_running = true;
-    m_recvThread = std::thread(&NGMPChatSession::receiveLoop, this);
+    m_recvThread = std::thread(&NGMPWebSocket::receiveLoop, this);
     return true;
 }
 
-void NGMPChatSession::disconnect() {
+void NGMPWebSocket::disconnect() {
     m_running = false;
     if (m_recvThread.joinable()) {
         m_recvThread.join();
@@ -75,33 +75,36 @@ void NGMPChatSession::disconnect() {
     fflush(stderr);
 }
 
-bool NGMPChatSession::sendMessage(const std::string& room, const std::string& message) {
+bool NGMPWebSocket::sendPayload(const std::string& payload) {
     if (!m_running.load() || !m_curl) {
         return false;
     }
 
-    json payload = {
-        {"type", "chat"},
-        {"room", room},
-        {"message", message}
-    };
-    std::string frame = payload.dump();
-
     size_t sent = 0;
-    CURLcode res = curl_ws_send(m_curl, frame.c_str(), frame.size(), &sent, 0, CURLWS_TEXT);
+    CURLcode res = curl_ws_send(m_curl, payload.c_str(), payload.size(), &sent, 0, CURLWS_TEXT);
     if (res != CURLE_OK) {
-        fprintf(stderr, "[NGMP-Chat] Failed to send WS message: %s\n", curl_easy_strerror(res));
+        fprintf(stderr, "[NGMP-WebSocket] Failed to send WS payload: %s\n", curl_easy_strerror(res));
         fflush(stderr);
         return false;
     }
     return true;
 }
 
-void NGMPChatSession::receiveLoop() {
+void NGMPWebSocket::receiveLoop() {
     char buffer[4096];
     const struct curl_ws_frame* meta = nullptr;
 
+    auto lastPingTime = std::chrono::steady_clock::now();
+
     while (m_running.load()) {
+        auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::seconds>(now - lastPingTime).count() >= 10) {
+            lastPingTime = now;
+            std::string pingPayload = "{\"msg_id\":8}";
+            size_t sent = 0;
+            curl_ws_send(m_curl, pingPayload.c_str(), pingPayload.size(), &sent, 0, CURLWS_TEXT);
+        }
+
         size_t received = 0;
         CURLcode res = curl_ws_recv(m_curl, buffer, sizeof(buffer) - 1, &received, &meta);
 
@@ -120,18 +123,8 @@ void NGMPChatSession::receiveLoop() {
 
         if (received > 0) {
             buffer[received] = '\0';
-            try {
-                auto msg = json::parse(buffer);
-                std::string type = msg.value("type", "");
-                if (type == "chat" && m_messageCallback) {
-                    std::string room    = msg.value("room", "");
-                    std::string sender  = msg.value("sender", "");
-                    std::string content = msg.value("message", "");
-                    m_messageCallback(room, sender, content);
-                }
-            } catch (const std::exception& e) {
-                fprintf(stderr, "[NGMP-Chat] JSON parse error in WS frame: %s\n", e.what());
-                fflush(stderr);
+            if (m_messageCallback) {
+                m_messageCallback(std::string(buffer));
             }
         }
     }

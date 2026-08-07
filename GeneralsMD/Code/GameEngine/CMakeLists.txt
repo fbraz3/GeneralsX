@@ -1113,12 +1113,12 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/GUIUtil.cpp
     Include/GameNetwork/GeneralsOnline/OnlineServices_Manager.h
     Include/GameNetwork/GeneralsOnline/NGMP_Helpers.h
-    Include/GameNetwork/GeneralsOnline/NGMPChatSession.h
+    Include/GameNetwork/GeneralsOnline/NGMPWebSocket.h
     Include/GameNetwork/GeneralsOnline/ngmp_curl_utils.h
     Source/GameNetwork/GeneralsOnline/OnlineServices_Init.cpp
     Source/GameNetwork/GeneralsOnline/OnlineServices_Auth.cpp
     Source/GameNetwork/GeneralsOnline/OnlineServices_Manager.cpp
-    Source/GameNetwork/GeneralsOnline/OnlineServices_Chat.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_WebSocket.cpp
     Source/GameNetwork/GeneralsOnline/NGMP_Helpers.cpp
 #    Source/GameNetwork/IPEnumeration.cpp
 #    Source/GameNetwork/LANAPI.cpp

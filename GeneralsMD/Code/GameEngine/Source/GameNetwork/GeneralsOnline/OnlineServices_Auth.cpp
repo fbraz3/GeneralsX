@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <thread>
 #include <chrono>
-#include <nlohmann/json.hpp>
+#include "GameNetwork/GeneralsOnline/NGMP_json.h"
 
 using json = nlohmann::json;
 
