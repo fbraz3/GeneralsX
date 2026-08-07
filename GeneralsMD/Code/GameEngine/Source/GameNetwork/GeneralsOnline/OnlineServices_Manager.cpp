@@ -46,7 +46,7 @@ std::vector<NGMPEvent> NGMP_OnlineServicesManager::pollEvents() {
                 if (!m_chatSession) {
                     m_chatSession.reset(new NGMP::NGMPChatSession());
                 }
-                m_chatSession->connect(NGMP::GetServerWSEndpoint() + "/chat", m_authToken);
+                m_chatSession->connect(m_wsUri, m_authToken);
                 break;
             case NGMPEvent::EVENT_AUTH_FAILURE:
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Failure: %s\n", ev.payload.c_str());
@@ -138,6 +138,15 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
 
         m_lobbyRequestInFlight = false;
     });
+}
+
+bool NGMP_OnlineServicesManager::hasGlobalStats() const {
+    return m_hasGlobalStats;
+}
+
+GlobalStats NGMP_OnlineServicesManager::getGlobalStats() const {
+    std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(m_statsMutex));
+    return m_globalStats;
 }
 
 bool NGMP_OnlineServicesManager::sendChatMessage(const std::string& room, const std::string& message) {

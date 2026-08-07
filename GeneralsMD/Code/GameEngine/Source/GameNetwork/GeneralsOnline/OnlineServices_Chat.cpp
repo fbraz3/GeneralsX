@@ -34,6 +34,9 @@ bool NGMPChatSession::connect(const std::string& wsUrl, const std::string& authT
 
     curl_easy_setopt(m_curl, CURLOPT_URL, wsUrl.c_str());
     curl_easy_setopt(m_curl, CURLOPT_CONNECT_ONLY, 2L); // WebSocket mode
+    curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
     if (headers) {
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
     }

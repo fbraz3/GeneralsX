@@ -1256,7 +1256,9 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 				if ( controlID == buttonBackID )
 				{
 					buttonPushed = true;
+#ifndef SAGE_USE_NGMP
 					TearDownGameSpy();
+#endif
 					TheShell->pop();
 				}
 #ifdef ALLOW_NON_PROFILED_LOGIN

@@ -51,8 +51,15 @@
 #include "GameNetwork/GameSpy/BuddyDefs.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
 #include "GameNetwork/GameSpy/LobbyUtils.h"
-#include "GameNetwork/GameSpy/PersistentStorageDefs.h"
+#include "GameNetwork/GameSpy/BuddyThread.h"
+#include "GameNetwork/GameSpy/PeerThread.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
+
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
+
+#include "GameNetwork/GameSpy/PersistentStorageDefs.h"
 #include "GameNetwork/GameSpy/ThreadUtils.h"
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -790,8 +797,13 @@ void WOLBuddyOverlayShutdown( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 void WOLBuddyOverlayUpdate( WindowLayout * layout, void *userData)
 {
+#if defined(SAGE_USE_NGMP)
+	if (!NGMP_OnlineServicesManager::getInstance().isLoggedIn())
+		GameSpyCloseOverlay(GSOVERLAY_BUDDY);
+#else
 	if (!TheGameSpyBuddyMessageQueue || !TheGameSpyBuddyMessageQueue->isConnected())
 		GameSpyCloseOverlay(GSOVERLAY_BUDDY);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------

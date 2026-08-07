@@ -3,6 +3,7 @@
 
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GameSpy/PeerDefs.h"
 #include <cstdio>
 
 bool NGMP_OnlineServicesManager::init() {
@@ -13,6 +14,9 @@ bool NGMP_OnlineServicesManager::init() {
     fprintf(stderr, "[NGMP] Initializing NGMP Online Services (server: %s)\n",
             NGMP::GetServerRESTEndpoint().c_str());
     fflush(stderr);
+
+    // Initialize GameSpy stubs to prevent legacy UI crashes (e.g. WOLWelcomeMenu)
+    SetUpGameSpy("", "");
 
     // Auto-login if we have a saved refresh token
     std::string savedRefreshToken = NGMP::LoadRefreshToken();

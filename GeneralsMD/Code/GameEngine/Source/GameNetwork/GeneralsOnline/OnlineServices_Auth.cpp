@@ -33,7 +33,9 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
         return;
     }
 
-    m_gamecode = NGMP::GenerateGamecode();
+    //commented by debug purposes
+    //m_gamecode = NGMP::GenerateGamecode();
+    m_gamecode = "ILOVECODE";
     std::string loginURL = NGMP::GetBrowserLoginURL(m_gamecode);
 
     fprintf(stderr, "[NGMP] beginBrowserLogin: gamecode=%s url=%s\n",
@@ -41,10 +43,10 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
     fflush(stderr);
 
     // Open the browser so the user can authenticate
-    if (!SDL_OpenURL(loginURL.c_str())) {
-        fprintf(stderr, "[NGMP] SDL_OpenURL failed: %s\n", SDL_GetError());
-        fflush(stderr);
-    }
+    // if (!SDL_OpenURL(loginURL.c_str())) {
+    //     fprintf(stderr, "[NGMP] SDL_OpenURL failed: %s\n", SDL_GetError());
+    //     fflush(stderr);
+    // }
 
     // Start background polling thread
     m_pollThreadRunning = true;
@@ -130,10 +132,12 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                     std::string sessionToken  = respJson.value("session_token",  "");
                     std::string refreshToken  = respJson.value("refresh_token",  "");
                     std::string displayName   = respJson.value("display_name",   "");
+                    std::string wsUri         = respJson.value("ws_uri",         "");
                     int64_t     userId        = respJson.value("user_id",        int64_t(-1));
 
                     m_authToken  = sessionToken;
                     m_username   = displayName;
+                    m_wsUri      = wsUri;
                     m_isLoggedIn = true;
 
                     NGMP::SaveAuthToken(sessionToken);
@@ -217,3 +221,210 @@ void NGMP_OnlineServicesManager::logout() {
     m_isLoggedIn = false;
     NGMP::SaveAuthToken("");
 }
+
+void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
+    if (m_statsRequestInFlight.exchange(true)) {
+        return;
+    }
+
+    if (m_statsThread.joinable()) {
+        m_statsThread.join();
+    }
+
+    m_statsThread = std::thread([this]() {
+        std::string url = NGMP::GetAPIEndpoint("GlobalStats");
+
+        CURL* curl = curl_easy_init();
+        if (!curl) {
+            fprintf(stderr, "[NGMP] curl_easy_init failed for GlobalStats\n");
+            fflush(stderr);
+            m_statsRequestInFlight = false;
+            return;
+        }
+
+        NGMP::Internal::CurlResponse response;
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        if (!m_authToken.empty()) {
+            std::string authHeader = "Authorization: Bearer " + m_authToken;
+            headers = curl_slist_append(headers, authHeader.c_str());
+        }
+
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+        CURLcode res = curl_easy_perform(curl);
+        long httpCode = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        if (res == CURLE_OK && httpCode == 200) {
+            try {
+                auto jsonResponse = json::parse(response.text);
+                auto globalStatsJson = jsonResponse.value("globalstats", json::object());
+
+                std::vector<int> wins;
+                if (globalStatsJson.contains("wins") && globalStatsJson["wins"].is_array()) {
+                    wins = globalStatsJson["wins"].get<std::vector<int>>();
+                }
+                
+                std::vector<int> matches;
+                if (globalStatsJson.contains("matches") && globalStatsJson["matches"].is_array()) {
+                    matches = globalStatsJson["matches"].get<std::vector<int>>();
+                }
+
+                {
+                    std::lock_guard<std::mutex> lock(m_statsMutex);
+                    m_globalStats.wins = wins;
+                    m_globalStats.matches = matches;
+                    m_hasGlobalStats = true;
+                }
+
+                NGMPEvent ev;
+                ev.type = NGMPEvent::EVENT_GLOBAL_STATS_RECEIVED;
+                postEvent(ev);
+                
+                fprintf(stderr, "[NGMP] GlobalStats fetched successfully (wins:%zu matches:%zu)\n", wins.size(), matches.size());
+                fflush(stderr);
+            } catch (const std::exception& e) {
+                fprintf(stderr, "[NGMP] GlobalStats JSON parse error: %s\n", e.what());
+                fflush(stderr);
+            }
+        } else {
+            fprintf(stderr, "[NGMP] GlobalStats request failed (curl=%d, http=%ld)\n", res, httpCode);
+            fflush(stderr);
+        }
+
+        m_statsRequestInFlight = false;
+    });
+}
+
+bool NGMP_OnlineServicesManager::getCachedPlayerStats(int64_t userID, PSPlayerStats& outStats) const {
+    std::lock_guard<std::mutex> lock(m_playerStatsMutex);
+    auto it = m_cachedPlayerStats.find(userID);
+    if (it != m_cachedPlayerStats.end()) {
+        outStats = it->second;
+        return true;
+    }
+    return false;
+}
+
+void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
+    std::thread([this, userID]() {
+        std::string url = NGMP::GetAPIEndpoint("PlayerStats") + "/" + std::to_string(userID);
+
+        CURL* curl = curl_easy_init();
+        if (!curl) {
+            fprintf(stderr, "[NGMP] curl_easy_init failed for PlayerStats\n");
+            fflush(stderr);
+            return;
+        }
+
+        NGMP::Internal::CurlResponse response;
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        if (!m_authToken.empty()) {
+            std::string authHeader = "Authorization: Bearer " + m_authToken;
+            headers = curl_slist_append(headers, authHeader.c_str());
+        }
+
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+        CURLcode res = curl_easy_perform(curl);
+        long httpCode = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        if (res == CURLE_OK && httpCode == 200) {
+            try {
+                auto jsonObject = json::parse(response.text);
+                auto jsonObjectRoot = jsonObject["stats"];
+
+                PSPlayerStats stats;
+                jsonObjectRoot["userID"].get_to(stats.id);
+
+                #define PROCESS_JSON_PER_GENERAL_RESULT(name) { int i = 0; for (const auto& iter : jsonObjectRoot[#name]) { iter.get_to(stats.name[i++]); } }
+                PROCESS_JSON_PER_GENERAL_RESULT(wins);
+                PROCESS_JSON_PER_GENERAL_RESULT(losses);
+                PROCESS_JSON_PER_GENERAL_RESULT(games);
+                PROCESS_JSON_PER_GENERAL_RESULT(duration);
+                PROCESS_JSON_PER_GENERAL_RESULT(unitsKilled);
+                PROCESS_JSON_PER_GENERAL_RESULT(unitsLost);
+                PROCESS_JSON_PER_GENERAL_RESULT(unitsBuilt);
+                PROCESS_JSON_PER_GENERAL_RESULT(buildingsKilled);
+                PROCESS_JSON_PER_GENERAL_RESULT(buildingsLost);
+                PROCESS_JSON_PER_GENERAL_RESULT(buildingsBuilt);
+                PROCESS_JSON_PER_GENERAL_RESULT(earnings);
+                PROCESS_JSON_PER_GENERAL_RESULT(techCaptured);
+                PROCESS_JSON_PER_GENERAL_RESULT(discons);
+                PROCESS_JSON_PER_GENERAL_RESULT(desyncs);
+                PROCESS_JSON_PER_GENERAL_RESULT(surrenders);
+                PROCESS_JSON_PER_GENERAL_RESULT(gamesOf2p);
+                PROCESS_JSON_PER_GENERAL_RESULT(gamesOf3p);
+                PROCESS_JSON_PER_GENERAL_RESULT(gamesOf4p);
+                PROCESS_JSON_PER_GENERAL_RESULT(gamesOf5p);
+                PROCESS_JSON_PER_GENERAL_RESULT(gamesOf6p);
+                PROCESS_JSON_PER_GENERAL_RESULT(gamesOf7p);
+                PROCESS_JSON_PER_GENERAL_RESULT(gamesOf8p);
+                PROCESS_JSON_PER_GENERAL_RESULT(customGames);
+                PROCESS_JSON_PER_GENERAL_RESULT(QMGames);
+
+                #define PROCESS_JSON_STANDARD_RESULT(name) jsonObjectRoot[#name].get_to(stats.name)
+                PROCESS_JSON_STANDARD_RESULT(locale);
+                PROCESS_JSON_STANDARD_RESULT(gamesAsRandom);
+                PROCESS_JSON_STANDARD_RESULT(options);
+                PROCESS_JSON_STANDARD_RESULT(systemSpec);
+                PROCESS_JSON_STANDARD_RESULT(lastFPS);
+                PROCESS_JSON_STANDARD_RESULT(lastGeneral);
+                PROCESS_JSON_STANDARD_RESULT(gamesInRowWithLastGeneral);
+                PROCESS_JSON_STANDARD_RESULT(challengeMedals);
+                PROCESS_JSON_STANDARD_RESULT(battleHonors);
+                PROCESS_JSON_STANDARD_RESULT(QMwinsInARow);
+                PROCESS_JSON_STANDARD_RESULT(maxQMwinsInARow);
+                PROCESS_JSON_STANDARD_RESULT(winsInARow);
+                PROCESS_JSON_STANDARD_RESULT(maxWinsInARow);
+                PROCESS_JSON_STANDARD_RESULT(lossesInARow);
+                PROCESS_JSON_STANDARD_RESULT(maxLossesInARow);
+                PROCESS_JSON_STANDARD_RESULT(disconsInARow);
+                PROCESS_JSON_STANDARD_RESULT(maxDisconsInARow);
+                PROCESS_JSON_STANDARD_RESULT(desyncsInARow);
+                PROCESS_JSON_STANDARD_RESULT(maxDesyncsInARow);
+                PROCESS_JSON_STANDARD_RESULT(builtParticleCannon);
+                PROCESS_JSON_STANDARD_RESULT(builtNuke);
+                PROCESS_JSON_STANDARD_RESULT(builtSCUD);
+                PROCESS_JSON_STANDARD_RESULT(lastLadderPort);
+                PROCESS_JSON_STANDARD_RESULT(lastLadderHost);
+
+                {
+                    std::lock_guard<std::mutex> lock(m_playerStatsMutex);
+                    m_cachedPlayerStats[userID] = stats;
+                }
+
+                NGMPEvent ev;
+                ev.type = NGMPEvent::EVENT_PLAYER_STATS_RECEIVED;
+                postEvent(ev);
+                
+                fprintf(stderr, "[NGMP] PlayerStats fetched successfully for userID=%lld\n", (long long)userID);
+                fflush(stderr);
+            } catch (const std::exception& e) {
+                fprintf(stderr, "[NGMP] PlayerStats JSON parse error: %s\n", e.what());
+                fflush(stderr);
+            }
+        } else {
+            fprintf(stderr, "[NGMP] PlayerStats request failed (curl=%d, http=%ld)\n", res, httpCode);
+            fflush(stderr);
+        }
+    }).detach();
+}
+

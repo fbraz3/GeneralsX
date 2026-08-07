@@ -5,6 +5,8 @@
 #define ONLINE_SERVICES_MANAGER_H
 
 #include "GameNetwork/GeneralsOnline/NGMPChatSession.h"
+#include "Common/GameDefines.h"
+#include "GameNetwork/GameSpy/PersistentStorageThread.h"
 #include <string>
 #include <vector>
 #include <queue>
@@ -13,6 +15,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <unordered_map>
 
 struct NGMPEvent {
     enum Type {
@@ -24,7 +27,9 @@ struct NGMPEvent {
         EVENT_CHAT_MESSAGE_RECEIVED,
         EVENT_CHAT_CONNECTED,
         EVENT_CHAT_DISCONNECTED,
-        EVENT_DISCONNECTED
+        EVENT_DISCONNECTED,
+        EVENT_GLOBAL_STATS_RECEIVED,
+        EVENT_PLAYER_STATS_RECEIVED
     };
 
     Type type = EVENT_NONE;
@@ -37,6 +42,11 @@ struct NGMPLobby {
     std::string mapName;
     int currentPlayers = 0;
     int maxPlayers = 8;
+};
+
+struct GlobalStats {
+    std::vector<int> wins;
+    std::vector<int> matches;
 };
 
 class NGMP_OnlineServicesManager {
@@ -61,6 +71,14 @@ public:
     // Async lobby fetch — result delivered via EVENT_LOBBY_LIST_UPDATED
     void requestLobbyListAsync();
 
+    // Async stats fetch
+    void requestGlobalStatsAsync();
+    bool hasGlobalStats() const;
+    GlobalStats getGlobalStats() const;
+
+    void requestPlayerStatsAsync(int64_t userID);
+    bool getCachedPlayerStats(int64_t userID, PSPlayerStats& outStats) const;
+
     bool sendChatMessage(const std::string& room, const std::string& message);
 
     bool isLoggedIn() const { return m_isLoggedIn; }
@@ -82,6 +100,7 @@ private:
     bool m_isLoggedIn = false;
     std::string m_username;
     std::string m_authToken;
+    std::string m_wsUri;
     std::vector<NGMPLobby> m_lobbies;
 
     // Browser-based login state
@@ -94,6 +113,16 @@ private:
     // Async lobby request state
     std::atomic<bool> m_lobbyRequestInFlight = false;
     std::thread m_lobbyThread;
+
+    // Async stats state
+    std::atomic<bool> m_hasGlobalStats = false;
+    std::atomic<bool> m_statsRequestInFlight = false;
+    std::mutex m_statsMutex;
+    GlobalStats m_globalStats;
+    std::thread m_statsThread;
+
+    mutable std::mutex m_playerStatsMutex;
+    std::unordered_map<int64_t, PSPlayerStats> m_cachedPlayerStats;
 
     // Chat WebSocket session
     std::unique_ptr<NGMP::NGMPChatSession> m_chatSession;

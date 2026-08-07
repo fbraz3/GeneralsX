@@ -68,10 +68,31 @@
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
 
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
+
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static Bool isShuttingDown = FALSE;
 static Bool buttonPushed = FALSE;
 static const char *nextScreen = nullptr;
+static bool statsRendered = false; // GeneralsX @feature Track if NGMP global stats were rendered
+
+static std::unordered_map<int, std::string> g_mapServiceIndexToPlayerTemplateString =
+{
+	{ 0, "USA" },
+	{ 1, "China" },
+	{ 2, "GLA" },
+	{ 3, "AmericaSuperWeaponGeneral" },
+	{ 4, "AmericaLaserGeneral" },
+	{ 5, "AmericaAirForceGeneral" },
+	{ 6, "ChinaTankGeneral" },
+	{ 7, "ChinaInfantryGeneral" },
+	{ 8, "ChinaNukeGeneral" },
+	{ 9, "GLAToxinGeneral" },
+	{ 10, "GLADemolitionGeneral" },
+	{ 11, "GLAStealthGeneral" }
+};
 
 // window ids ------------------------------------------------------------------------------
 static NameKeyType parentWOLWelcomeID = NAMEKEY_INVALID;
@@ -370,6 +391,58 @@ void HandleOverallStats( const char* szHTTPStats, unsigned len )
 //called only from WOLWelcomeMenuInit to set %win stats
 static void updateOverallStats()
 {
+#if defined(SAGE_USE_NGMP)
+	if (!NGMP_OnlineServicesManager::getInstance().hasGlobalStats()) {
+		return;
+	}
+
+	GlobalStats stats = NGMP_OnlineServicesManager::getInstance().getGlobalStats();
+
+	int totalWins = 0;
+	int totalGames = 0;
+	s_totalWinPercent = 0.f;
+
+	for (size_t i = 0; i < stats.matches.size(); ++i)
+	{
+		totalWins += stats.wins[i];
+		totalGames += stats.matches[i];
+	}
+
+	if (totalGames <= 0)
+		totalGames = 1;  //prevent divide by zero
+
+	s_totalWinPercent = ((float)totalWins / (float)totalGames);
+
+	if (s_totalWinPercent <= 0)
+		s_totalWinPercent = 1;  //prevent divide by zero
+
+	UnicodeString percStr;
+	AsciiString wndName;
+	GameWindow* pWin;
+
+	for (size_t i = 0; i < stats.matches.size(); ++i)
+	{
+		int wins = stats.wins[i];
+		int matches = stats.matches[i];
+
+		if (matches == 0)
+			matches = 1;
+
+		float fThisPercent = ((float)wins / (float)matches);
+
+		std::string teamName = "";
+		if (g_mapServiceIndexToPlayerTemplateString.contains(i)) {
+			teamName = g_mapServiceIndexToPlayerTemplateString[i];
+		}
+
+		percStr.format(L"%d%%", (int)(100.f*fThisPercent));
+		wndName.format("WOLWelcomeMenu.wnd:Percent%s", teamName.c_str());
+		pWin = TheWindowManager->winGetWindowFromId(NULL, NAMEKEY(wndName));
+		if (pWin) {
+			GadgetCheckBoxSetText(pWin, percStr);
+		}
+	}
+#else
 	UnicodeString percStr;
 	AsciiString wndName;
 	GameWindow* pWin;
@@ -387,6 +460,7 @@ static void updateOverallStats()
 		GadgetCheckBoxSetText( pWin, percStr );
 //x		DEBUG_LOG(("Initialized win percent: %s -> %s %f=%s", wndName.str(), it->first.str(), it->second, percStr.str() ));
 	}
+#endif
 }
 
 
@@ -415,6 +489,8 @@ static Bool raiseMessageBoxes = FALSE;
 //-------------------------------------------------------------------------------------------------
 void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 {
+	fprintf(stderr, "[WOLWelcomeMenuInit] Starting...\n");
+	fflush(stderr);
 	nextScreen = nullptr;
 	buttonPushed = FALSE;
 	isShuttingDown = FALSE;
@@ -422,6 +498,8 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	welcomeLayout = layout;
 
 	//TheWOL->reset();
+	fprintf(stderr, "[WOLWelcomeMenuInit] Getting window IDs...\n");
+	fflush(stderr);
 
 	parentWOLWelcomeID = TheNameKeyGenerator->nameToKey( "WOLWelcomeMenu.wnd:WOLWelcomeMenuParent" );
 	buttonBackID = TheNameKeyGenerator->nameToKey( "WOLWelcomeMenu.wnd:ButtonBack" );
@@ -464,6 +542,8 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	}
 
 	GameWindow *staticTextTitle = TheWindowManager->winGetWindowFromId(parentWOLWelcome, NAMEKEY("WOLWelcomeMenu.wnd:StaticTextTitle"));
+	fprintf(stderr, "[WOLWelcomeMenuInit] Setting texts...\n");
+	fflush(stderr);
 	if (staticTextTitle && TheGameSpyInfo)
 	{
 		UnicodeString title;
@@ -541,13 +621,39 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	// Set Keyboard to Main Parent
 	TheWindowManager->winSetFocus( parentWOLWelcome );
 
-	enableControls( TheGameSpyInfo->gotGroupRoomList() );
+	fprintf(stderr, "[WOLWelcomeMenuInit] enableControls()...\n");
+	fflush(stderr);
+	if (TheGameSpyInfo) {
+		enableControls( TheGameSpyInfo->gotGroupRoomList() );
+	} else {
+		fprintf(stderr, "[WOLWelcomeMenuInit] WARNING: TheGameSpyInfo is null!\n");
+		fflush(stderr);
+		enableControls( false );
+	}
+
+	fprintf(stderr, "[WOLWelcomeMenuInit] showShellMap()...\n");
+	fflush(stderr);
 	TheShell->showShellMap(TRUE);
 
+	fprintf(stderr, "[WOLWelcomeMenuInit] updateNumPlayersOnline()...\n");
+	fflush(stderr);
 	updateNumPlayersOnline();
+	
+	fprintf(stderr, "[WOLWelcomeMenuInit] updateOverallStats()...\n");
+	fflush(stderr);
+#if defined(SAGE_USE_NGMP)
+	statsRendered = false; // reset for this menu instance
+	NGMP_OnlineServicesManager::getInstance().requestGlobalStatsAsync();
+#else
 	updateOverallStats();
+#endif
 
+	fprintf(stderr, "[WOLWelcomeMenuInit] UpdateLocalPlayerStats()...\n");
+	fflush(stderr);
 	UpdateLocalPlayerStats();
+
+	fprintf(stderr, "[WOLWelcomeMenuInit] Setting up preferences...\n");
+	fflush(stderr);
 
 	GameSpyMiscPreferences cPref;
 	if (cPref.getLocale() < LOC_MIN || cPref.getLocale() > LOC_MAX)
@@ -558,6 +664,8 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	raiseMessageBoxes = TRUE;
 	TheTransitionHandler->setGroup("WOLWelcomeMenuFade");
 
+	fprintf(stderr, "[WOLWelcomeMenuInit] Done.\n");
+	fflush(stderr);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -620,6 +728,14 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 			TheFirewallHelper = nullptr;
 		}
 	}
+
+#if defined(SAGE_USE_NGMP)
+	// Render global stats dynamically once received
+	if (!statsRendered && NGMP_OnlineServicesManager::getInstance().hasGlobalStats()) {
+		updateOverallStats();
+		statsRendered = true;
+	}
+#endif
 
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
 	{
@@ -794,7 +910,9 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 					TheGameSpyBuddyMessageQueue->addRequest( breq );
 
 					DEBUG_LOG(("Tearing down GameSpy from WOLWelcomeMenuSystem(GBM_SELECTED)"));
+#ifndef SAGE_USE_NGMP
 					TearDownGameSpy();
+#endif
 
 					/*
 					if (TheGameSpyChat->getPeer())
@@ -839,8 +957,19 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 				}
 				else if (controlID == buttonMyInfoID )
 				{
+#if defined(SAGE_USE_NGMP)
+					if (NGMP_OnlineServicesManager::getInstance().isLoggedIn())
+					{
+						// NGMP doesn't support SetLookAtPlayer with 64-bit ID natively without a cast, so we just pass 1 for now 
+						// or the auth ID. SetLookAtPlayer takes Int (32-bit). We'll cast it safely or assume it's small enough.
+						// The reference repo casts the string to UnicodeString.
+						SetLookAtPlayer(1, NGMP_OnlineServicesManager::getInstance().getUsername().c_str());
+						GameSpyToggleOverlay(GSOVERLAY_PLAYERINFO);
+					}
+#else
 					SetLookAtPlayer(TheGameSpyInfo->getLocalProfileID(), TheGameSpyInfo->getLocalName());
 					GameSpyToggleOverlay(GSOVERLAY_PLAYERINFO);
+#endif
 				}
 				else if (controlID == buttonLobbyID)
 				{

@@ -32,3 +32,8 @@ These instructions govern the Next-Gen Multiplayer (NGMP) client protocol integr
 
 6. **Cross-Platform Math & Endianness**:
    - Ensure network packet data serialization handles network byte order (`htons`/`ntohs`, `htonl`/`ntohl`) explicitly to support cross-play between x86_64 Linux and ARM64 macOS.
+
+7. **Reference repositories**:
+   - There are two reference repositories for NGMP, take a look on these to understand the protocol and implementation details:
+     1. `references/GameClient`: The client-side implementation.
+     2. `references/GameServer`: The server-side implementation.

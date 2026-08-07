@@ -57,6 +57,13 @@
 #include "GameNetwork/GameSpy/BuddyThread.h"
 #include "GameNetwork/GameSpy/GSConfig.h"
 #include "GameNetwork/GameSpy/LobbyUtils.h"
+#include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#include "GameNetwork/GameSpy/PeerThread.h"
+#include "GameNetwork/RankPointValue.h"
+
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
 
 #include "WWDownload/Registry.h"
 
@@ -807,6 +814,11 @@ static GameWindow* findWindow(GameWindow *parent, AsciiString baseWindow, AsciiS
 	return res;
 }
 
+#if defined(SAGE_USE_NGMP)
+static bool g_waitingForPlayerStats = false;
+static int64_t g_waitingPlayerStatsID = 0;
+#endif
+
 void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 {
 	Int lookupID = TheGameSpyInfo->getLocalProfileID();
@@ -817,6 +829,24 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 			return;
 	}
 
+#if defined(SAGE_USE_NGMP)
+	PSPlayerStats stats;
+	// When using NGMP, we use the auth token ID for local user, but since the persona ID isn't easily accessible 
+	// from lookAtPlayerID in a non-hacked way yet, we'll try to just fetch "1" for the current session or lookupID.
+	// We'll use 1 for now if lookupID == localProfileID.
+	int64_t ngmpUserID = 1;
+	Bool weHaveStats = NGMP_OnlineServicesManager::getInstance().getCachedPlayerStats(ngmpUserID, stats);
+	if (!weHaveStats && !g_waitingForPlayerStats)
+	{
+		g_waitingForPlayerStats = true;
+		g_waitingPlayerStatsID = ngmpUserID;
+		NGMP_OnlineServicesManager::getInstance().requestPlayerStatsAsync(ngmpUserID);
+	}
+	else if (weHaveStats)
+	{
+		g_waitingForPlayerStats = false;
+	}
+#else
 	PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(lookupID);
 
 	Bool weHaveStats = (stats.id != 0);
@@ -828,6 +858,7 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 
 		weHaveStats = TRUE;
 	}
+#endif
 
 	Int currentRank = 0;
 	Int rankPoints = CalculateRank(stats);
@@ -1359,6 +1390,19 @@ void GameSpyPlayerInfoOverlayShutdown( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 void GameSpyPlayerInfoOverlayUpdate( WindowLayout * layout, void *userData)
 {
+#if defined(SAGE_USE_NGMP)
+	if (g_waitingForPlayerStats)
+	{
+		PSPlayerStats dummy;
+		if (NGMP_OnlineServicesManager::getInstance().getCachedPlayerStats(g_waitingPlayerStatsID, dummy))
+		{
+			// Stats arrived! Re-populate
+			g_waitingForPlayerStats = false;
+			PopulatePlayerInfoWindows("PopupPlayerInfo.wnd");
+		}
+	}
+#endif
+
 	if (raiseMessageBox)
 		RaiseGSMessageBox();
 	raiseMessageBox = false;
