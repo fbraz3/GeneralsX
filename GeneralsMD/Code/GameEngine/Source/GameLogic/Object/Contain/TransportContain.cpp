@@ -582,7 +582,10 @@ Bool TransportContain::isSpecificRiderFreeToExit(Object* specificObject)
 	// TheSuperHackers @bugfix Stubbjax 02/03/2026 If our parent container is held, then we
 	// are not free to exit.
 	DEBUG_ASSERTCRASH(specificObject->getContainedBy(), ("rider must be contained"));
-	if (specificObject->getContainedBy()->isDisabledByType(DISABLED_HELD))
+	// GeneralsX @bugfix mhb8898 08/08/2026 Null check the rider's container before dereferencing it,
+	// because the rider can reach here without a container and DEBUG_ASSERTCRASH is compiled out of release builds. (#247)
+	const Object* riderContainer = specificObject->getContainedBy();
+	if (riderContainer != nullptr && riderContainer->isDisabledByType(DISABLED_HELD))
 		return FALSE;
 #endif
 
