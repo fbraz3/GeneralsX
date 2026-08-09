@@ -83,6 +83,7 @@ public:
 	UnicodeString getUnicodeProductAuthor() const; ///< Is decorated with localized string
 	UnicodeString getUnicodeProductString() const; ///< Returns a string that contains product title, version and other, if specified. Is decorated with localized string
 	UnicodeString getUnicodeProductVersionHashString() const; ///< Returns a string that contains the product string, game version and hashes. Is decorated with localized string
+	UnicodeString getUnicodeProjectWatermark() const; ///< Returns the project watermark with the git tag if present
 
 	Bool showFullVersion() const { return m_showFullVersion; }
 	void setShowFullVersion( Bool val ) { m_showFullVersion = val; }
