@@ -10,6 +10,11 @@ on:
         required: false
         type: string
         default: linux64-deploy
+      checkout_ref:
+        required: false
+        type: string
+        default: ""
+        description: "Git ref to checkout (branch, tag, or SHA). Leaves empty for default."
   workflow_dispatch:
     inputs:
       preset:
@@ -45,6 +50,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
           fetch-depth: 0
           fetch-tags: true
 

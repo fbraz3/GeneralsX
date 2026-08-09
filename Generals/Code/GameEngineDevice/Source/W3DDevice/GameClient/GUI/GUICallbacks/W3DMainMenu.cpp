@@ -73,6 +73,7 @@
 #include "W3DDevice/GameClient/W3DGadget.h"
 
 #include "GameClient/GUICallbacks.h"
+#include "Common/version.h"
 
 // forward declaration for credit draw added by GeneralsX
 extern void W3DGeneralsXCreditDraw( GameWindow *window, WinInstanceData *instData );
@@ -421,7 +422,11 @@ void W3DGeneralsXCreditDraw( GameWindow *window, WinInstanceData *instData )
 		return;
 
 	UnicodeString ucredit;
-	ucredit.translate("GeneralsX - Multiplatform C&C Generals");
+	if (TheVersion) {
+		ucredit = TheVersion->getUnicodeProjectWatermark();
+	} else {
+		ucredit.translate("GeneralsX - Multiplatform C&C Generals");
+	}
 	instData->setText(ucredit);
 
 	DisplayString *dString = instData->getTextDisplayString();

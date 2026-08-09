@@ -69,12 +69,14 @@ jobs:
     uses: ./.github/workflows/build-linux-flatpak.yml
     with:
       preset: linux64-deploy
+      checkout_ref: refs/tags/${{ inputs.release_version }}
 
   build-macos:
     needs: [create-tag]
     uses: ./.github/workflows/build-macos.yml
     with:
       preset: macos-vulkan
+      checkout_ref: refs/tags/${{ inputs.release_version }}
 
   # GeneralsX @build BenderAI 21/04/2026 Roll back the pushed tag when anything
   # downstream of create-tag fails, so a re-run with the same version is possible.
