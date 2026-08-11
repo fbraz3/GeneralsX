@@ -298,9 +298,9 @@ void UpdateChecker::start()
     {
         const bool hasTag = (GitTag[0] != '\0');
         const bool hasCommitTimestamp = (GitCommitTimeStamp > 0);
-        if (GitUncommittedChanges || (!hasTag && !hasCommitTimestamp))
+        if (!hasTag && !hasCommitTimestamp)
         {
-            fprintf(stderr, "[UpdateChecker] start() aborted. GitUncommittedChanges=%d, hasTag=%d, hasCommitTimestamp=%d\n", (int)GitUncommittedChanges, (int)hasTag, (int)hasCommitTimestamp);
+            fprintf(stderr, "[UpdateChecker] start() aborted. hasTag=%d, hasCommitTimestamp=%d\n", (int)hasTag, (int)hasCommitTimestamp);
             fflush(stderr);
             return;
         }
