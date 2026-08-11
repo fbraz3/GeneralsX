@@ -4227,6 +4227,8 @@ void InGameUI::createReplayControl()
 // ------------------------------------------------------------------------------------------------
 void InGameUI::playMovie( const AsciiString& movieName )
 {
+	if (TheGlobalData->m_headless)
+		return;
 
 	stopMovie();
 
@@ -4282,6 +4284,8 @@ VideoBuffer* InGameUI::videoBuffer()
 // ------------------------------------------------------------------------------------------------
 void InGameUI::playCameoMovie( const AsciiString& movieName )
 {
+	if (TheGlobalData->m_headless)
+		return;
 
 	stopCameoMovie();
 
