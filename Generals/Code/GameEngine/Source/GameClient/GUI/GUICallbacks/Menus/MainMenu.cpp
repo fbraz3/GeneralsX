@@ -419,7 +419,7 @@ static void initLabelVersion()
 			instData.m_style = GWS_STATIC_TEXT | GWS_MOUSE_TRACK;
 			instData.m_textLabelString = "GeneralsXCreditLabel";
 
-			const Int width = 560;
+			const Int width = TheDisplay->getWidth() - 16;
 			const Int height = 28;
 			const Int x = 8;
 			const Int y = TheDisplay->getHeight() - height - 8;
