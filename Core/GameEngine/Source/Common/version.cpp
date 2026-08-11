@@ -459,12 +459,11 @@ UnicodeString Version::getUnicodeProjectWatermark() const
 	char finalCredit[256];
 	if (GitTag && GitTag[0] != '\0')
 	{
-		const char* prefix = "generalsx-";
 		const char* tagBase = GitTag;
 
-		if (strncmp(tagBase, prefix, strlen(prefix)) == 0)
+		if (strncmp(tagBase, "generalsx-", 10) == 0 || strncmp(tagBase, "GeneralsX-", 10) == 0)
 		{
-			tagBase += strlen(prefix);
+			tagBase += 10;
 		}
 
 		char formattedTag[128];
