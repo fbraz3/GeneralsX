@@ -554,6 +554,38 @@ static void SDL3_EnsureNativeFullscreen(SDL_Window* window)
 	SDL_RaiseWindow(window);
 }
 
+// GeneralsX @bugfix Claude 11/08/2026 Re-center the window after a resolution change. SDL keeps the
+// window's top-left anchor across SDL_SetWindowSize(), so growing from the 1024x768 bootstrap size to
+// the configured resolution expanded the window down and to the right, pushing it partly off-screen.
+// Center on the window's current display, clamped to the usable bounds so it stays clear of the macOS
+// menu bar / Linux panels.
+//
+// width/height MUST be logical points, not physical pixels — SDL_GetDisplayUsableBounds() reports
+// logical coordinates, so mixing units here places the window by a factor of the display density.
+static void SDL3_CenterWindowOnCurrentDisplay(SDL_Window* window, Int width, Int height)
+{
+	if (!window) return;
+
+	const SDL_DisplayID displayId = SDL_GetDisplayForWindow(window);
+	SDL_Rect usable{};
+	if (displayId == 0 || !SDL_GetDisplayUsableBounds(displayId, &usable)) {
+		fprintf(stderr, "WARNING: cannot resolve usable bounds for window display: %s\n", SDL_GetError());
+		return;
+	}
+
+	Int x = usable.x + (usable.w - width) / 2;
+	Int y = usable.y + (usable.h - height) / 2;
+
+	// A window larger than the usable area must still anchor to that area's top-left corner, otherwise
+	// the title bar ends up off-screen and the user cannot drag the window back into view.
+	if (x < usable.x) x = usable.x;
+	if (y < usable.y) y = usable.y;
+
+	if (!SDL_SetWindowPosition(window, x, y)) {
+		fprintf(stderr, "WARNING: SDL_SetWindowPosition(%d,%d) failed: %s\n", x, y, SDL_GetError());
+	}
+}
+
 // GeneralsX @bugfix GitHub Copilot 27/04/2026 Apply SDL3 window sizing/fullscreen only after the final render resolution is known.
 static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, Int renderHeight)
 {
@@ -578,9 +610,35 @@ static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, 
 		}
 	}
 	else {
-		if (!SDL_SetWindowSize(TheSDL3Window, renderWidth, renderHeight)) {
-			fprintf(stderr, "WARNING: SDL_SetWindowSize(%d,%d) failed: %s\n", renderWidth, renderHeight, SDL_GetError());
+		// GeneralsX @bugfix Claude 11/08/2026 Convert the render resolution to logical points before
+		// sizing the window. renderWidth/Height are PHYSICAL pixels — buildFilteredResolutions() clamps
+		// against SDL3_GetNativeDisplaySize(), which returns mode->w * pixel_density — but
+		// SDL_SetWindowSize() takes LOGICAL points. On a 2x Retina display that made the window twice as
+		// wide as intended (a 3840px render size produced a 7680px-wide window), which spilled across
+		// onto the adjacent monitor and dragged the whole window there, since SDL resolves a window's
+		// display by its center point.
+		//
+		// Derive the ratio from the window itself rather than the display's pixel_density: the drawable
+		// is only scaled when the window carries SDL_WINDOW_HIGH_PIXEL_DENSITY (set on macOS only), so
+		// this correctly collapses to 1.0 elsewhere and leaves non-HiDPI platforms untouched.
+		Int logicalWidth = renderWidth;
+		Int logicalHeight = renderHeight;
+		{
+			int logW = 0, logH = 0, pixW = 0, pixH = 0;
+			SDL_GetWindowSize(TheSDL3Window, &logW, &logH);
+			SDL_GetWindowSizeInPixels(TheSDL3Window, &pixW, &pixH);
+			if (logW > 0 && logH > 0 && pixW > 0 && pixH > 0) {
+				const Real scaleX = (Real)pixW / (Real)logW;
+				const Real scaleY = (Real)pixH / (Real)logH;
+				if (scaleX > 0.0f) logicalWidth = (Int)(renderWidth / scaleX);
+				if (scaleY > 0.0f) logicalHeight = (Int)(renderHeight / scaleY);
+			}
 		}
+
+		if (!SDL_SetWindowSize(TheSDL3Window, logicalWidth, logicalHeight)) {
+			fprintf(stderr, "WARNING: SDL_SetWindowSize(%d,%d) failed: %s\n", logicalWidth, logicalHeight, SDL_GetError());
+		}
+		SDL3_CenterWindowOnCurrentDisplay(TheSDL3Window, logicalWidth, logicalHeight);
 	}
 
 	if (!windowed) {

@@ -322,6 +322,25 @@ int main(int argc, char* argv[])
 				return 1;
 			}
 
+			// GeneralsX @bugfix Claude 11/08/2026 Multi-monitor: SDL_CreateWindow() takes no position and
+			// resolves to SDL_WINDOWPOS_UNDEFINED, which SDL maps to display index 0 of its own enumeration
+			// order — not necessarily the OS primary display. On multi-monitor setups the game could open on
+			// a secondary monitor, and fullscreen then inherited that same wrong display. Pin the initial
+			// placement to the primary display while the window is still hidden, so there is no visible jump.
+			{
+				const SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
+				if (primaryDisplay != 0) {
+					const int centered = SDL_WINDOWPOS_CENTERED_DISPLAY(primaryDisplay);
+					if (!SDL_SetWindowPosition(TheSDL3Window, centered, centered)) {
+						// Wayland refuses programmatic positioning and lets the compositor place the window.
+						// Not fatal — the game is still usable, it just lands wherever the compositor decides.
+						fprintf(stderr, "WARNING: SDL_SetWindowPosition(primary display) failed: %s\n", SDL_GetError());
+					}
+				} else {
+					fprintf(stderr, "WARNING: SDL_GetPrimaryDisplay failed: %s\n", SDL_GetError());
+				}
+			}
+
 			// Store window handle globally (cast SDL_Window* to HWND for compatibility)
 			ApplicationHWnd = (HWND)TheSDL3Window;
 			fprintf(stderr, "INFO: SDL3 window created successfully\n");
