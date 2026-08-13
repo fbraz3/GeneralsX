@@ -1019,7 +1019,7 @@ void GameEngine::update()
 			}
 
 #ifdef SAGE_USE_NGMP
-			NGMP_OnlineServicesManager::getInstance().pollEvents();
+			NGMP_OnlineServicesManager::getInstance().update();
 #endif
 		}
 

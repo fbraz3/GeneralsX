@@ -95,6 +95,8 @@ public:
 
     bool init();
     std::vector<NGMPEvent> pollEvents(); // Main thread UI tick dispatch
+    void update(); // Main thread internal state tick
+
     void shutdown();
 
     // Browser-based gamecode login flow (macOS/Linux: uses SDL_OpenURL)
@@ -185,6 +187,7 @@ private:
 
     mutable std::mutex m_eventMutex;
     std::queue<NGMPEvent> m_eventQueue;
+    std::queue<NGMPEvent> m_uiEventQueue;
 };
 
 #endif // ONLINE_SERVICES_MANAGER_H

@@ -27,14 +27,14 @@ void NGMP_OnlineServicesManager::postEvent(const NGMPEvent& event) {
     m_eventQueue.push(event);
 }
 
-std::vector<NGMPEvent> NGMP_OnlineServicesManager::pollEvents() {
+void NGMP_OnlineServicesManager::update() {
     std::queue<NGMPEvent> pendingEvents;
     {
         std::lock_guard<std::mutex> lock(m_eventMutex);
         std::swap(pendingEvents, m_eventQueue);
     }
 
-    std::vector<NGMPEvent> events;
+    std::vector<NGMPEvent> uiEvents;
     while (!pendingEvents.empty()) {
         NGMPEvent ev = pendingEvents.front();
         pendingEvents.pop();
@@ -84,7 +84,7 @@ std::vector<NGMPEvent> NGMP_OnlineServicesManager::pollEvents() {
                                 NGMPEvent chatEv;
                                 chatEv.type = NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED;
                                 chatEv.payload = msgText;
-                                events.push_back(chatEv);
+                                uiEvents.push_back(chatEv);
                             } 
                             else if (msgId == 4) { // NETWORK_ROOM_MEMBER_LIST_UPDATE
                                 if (jsonMsg.contains("members") && jsonMsg["members"].is_array()) {
@@ -102,7 +102,7 @@ std::vector<NGMPEvent> NGMP_OnlineServicesManager::pollEvents() {
                                     }
                                     NGMPEvent playersEv;
                                     playersEv.type = NGMPEvent::EVENT_PLAYERS_UPDATED;
-                                    events.push_back(playersEv);
+                                    uiEvents.push_back(playersEv);
                                 }
                             }
                             else if (msgId == 7) { // NETWORK_ROOM_LOBBY_LIST_UPDATE
@@ -118,8 +118,26 @@ std::vector<NGMPEvent> NGMP_OnlineServicesManager::pollEvents() {
                 break;
         }
         if (ev.type != NGMPEvent::EVENT_WEBSOCKET_MESSAGE) {
-            events.push_back(ev);
+            uiEvents.push_back(ev);
         }
+    }
+    
+    if (!uiEvents.empty()) {
+        std::lock_guard<std::mutex> lock(m_eventMutex);
+        for (const auto& ev : uiEvents) {
+            m_uiEventQueue.push(ev);
+        }
+    }
+}
+
+std::vector<NGMPEvent> NGMP_OnlineServicesManager::pollEvents() {
+    update();
+    
+    std::vector<NGMPEvent> events;
+    std::lock_guard<std::mutex> lock(m_eventMutex);
+    while (!m_uiEventQueue.empty()) {
+        events.push_back(m_uiEventQueue.front());
+        m_uiEventQueue.pop();
     }
     return events;
 }
@@ -168,14 +186,16 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
 
         if (res == CURLE_OK && httpCode == 200) {
             try {
+                fprintf(stderr, "[NGMP-DEBUG] Lobbies JSON: %s\n", response.text.c_str());
+                fflush(stderr);
                 auto jsonList = json::parse(response.text);
                 std::vector<NGMPLobby> lobbies;
                 if (jsonList.contains("lobbies") && jsonList["lobbies"].is_array()) {
                     for (const auto& item : jsonList["lobbies"]) {
                         NGMPLobby lobby;
                         lobby.id = item.value("lobbyID", 0LL);
-                        lobby.name = item.value("name", "Custom Lobby");
-                        lobby.mapName = item.value("map_name", "Tournament Desert");
+                        lobby.name = item.contains("Name") ? item.value("Name", "Custom Lobby") : item.value("name", "Custom Lobby");
+                        lobby.mapName = item.contains("MapName") ? item.value("MapName", "Tournament Desert") : item.value("map_name", "Tournament Desert");
                         lobby.currentPlayers = item.value("current_players", 1);
                         lobby.maxPlayers = item.value("max_players", 8);
                         lobby.hasPassword = item.value("has_password", false);
@@ -224,15 +244,13 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
             {"track_stats", false},
             {"starting_cash", 10000},
             {"passworded", !password.empty()},
+            {"password", password},
             {"allow_observers", true},
             {"max_cam_height", 300},
             {"exe_crc", 0},
             {"ini_crc", 0},
             {"anticheat_id", 0}
         };
-        if (!password.empty()) {
-            payload["password"] = password;
-        }
         std::string payloadStr = payload.dump();
 
         struct curl_slist* headers = nullptr;
@@ -255,13 +273,13 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
-        if (res == CURLE_OK && httpCode == 200) {
+        if (res == CURLE_OK && (httpCode == 200 || httpCode == 201)) {
             requestLobbyListAsync();
             NGMPEvent ev;
             ev.type = NGMPEvent::EVENT_LOBBY_CREATED;
             postEvent(ev);
         } else {
-            fprintf(stderr, "[NGMP] Create lobby failed (curl=%d, http=%ld)\n", res, httpCode);
+            fprintf(stderr, "[NGMP] Create lobby failed (curl=%d, http=%ld, resp=%s)\n", res, httpCode, response.text.c_str());
             fflush(stderr);
         }
     }).detach();
@@ -278,11 +296,9 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
         json payload = {
             {"preferred_port", 0},
             {"anticheat_id", 0},
-            {"has_map", true}
+            {"has_map", true},
+            {"password", password}
         };
-        if (!password.empty()) {
-            payload["password"] = password;
-        }
         std::string payloadStr = payload.dump();
 
         struct curl_slist* headers = nullptr;
@@ -305,13 +321,13 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
-        if (res == CURLE_OK && httpCode == 200) {
+        if (res == CURLE_OK && (httpCode == 200 || httpCode == 201)) {
             requestLobbyListAsync();
             NGMPEvent ev;
             ev.type = NGMPEvent::EVENT_LOBBY_JOINED;
             postEvent(ev);
         } else {
-            fprintf(stderr, "[NGMP] Join lobby failed (curl=%d, http=%ld)\n", res, httpCode);
+            fprintf(stderr, "[NGMP] Join lobby failed (curl=%d, http=%ld, resp=%s)\n", res, httpCode, response.text.c_str());
             fflush(stderr);
         }
     }).detach();
@@ -510,13 +526,20 @@ bool NGMP_OnlineServicesManager::sendChatMessage(const std::string& room, const 
 
 void NGMP_OnlineServicesManager::changeNetworkRoom(int16_t roomID) {
     if (!m_isLoggedIn) {
+        fprintf(stderr, "[NGMP] changeNetworkRoom(%d) ignored: not logged in\n", roomID);
+        fflush(stderr);
         return;
     }
-    if (m_chatSession) {
+    if (m_chatSession && m_chatSession->isConnected()) {
+        fprintf(stderr, "[NGMP] changeNetworkRoom(%d): sending msg_id=3 (room=%d)\n", roomID, roomID);
+        fflush(stderr);
         nlohmann::json payload = {
             {"msg_id", 3}, // NETWORK_ROOM_CHANGE_ROOM
             {"room", roomID}
         };
         m_chatSession->sendPayload(payload.dump());
+    } else {
+        fprintf(stderr, "[NGMP] changeNetworkRoom(%d): WS chat session not active or not connected\n", roomID);
+        fflush(stderr);
     }
 }
