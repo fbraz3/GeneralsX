@@ -1366,6 +1366,16 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 	//The dialog needs to react differently depending on whether it's the host or not.
 	TheMapCache->updateCache();
 	GameSpyStagingRoom *game = TheGameSpyInfo->getCurrentStagingRoom();
+	// GeneralsX @bugfix fbraz3 12/08/2026 Defensive null-check: getCurrentStagingRoom() returns nullptr
+	// if m_isHosting and m_joinedStagingRoom are both false (state was never set or was reset).
+	// This can happen if markAsStagingRoomHost/Joiner wasn't called before the shell transition.
+	if (!game) {
+		fprintf(stderr, "[NGMP] WOLGameSetupMenuInit: getCurrentStagingRoom() returned nullptr! "
+			"m_isHosting/m_joinedStagingRoom not set. Popping back to lobby.\n");
+		fflush(stderr);
+		TheShell->popImmediate();
+		return;
+	}
 	GameSpyGameSlot *hostSlot = game->getGameSpySlot(0);
 	hostSlot->setAccept();
 	if (TheGameSpyInfo->amIHost())

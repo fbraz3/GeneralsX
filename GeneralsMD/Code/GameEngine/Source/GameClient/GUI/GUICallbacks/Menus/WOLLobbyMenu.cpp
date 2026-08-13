@@ -94,6 +94,9 @@ static time_t gameListRefreshTime = 0;
 static const time_t gameListRefreshInterval = 10000;
 static time_t playerListRefreshTime = 0;
 static const time_t playerListRefreshInterval = 5000;
+#if defined(SAGE_USE_NGMP)
+static Bool ngmpRoomConfirmed = FALSE; // Blocks lobby refresh until server confirms room 0 (msg_id:4)
+#endif
 
 void setUnignoreText( WindowLayout *layout, AsciiString nick, GPProfile id);
 static void doSliderTrack(GameWindow *control, Int val);
@@ -699,6 +702,9 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	req.peerRequestType = PeerRequest::PEERREQUEST_STARTGAMELIST;
 	req.gameList.restrictGameList = TheGameSpyConfig->restrictGamesToLobby();
 	TheGameSpyPeerMessageQueue->addRequest(req);
+#else
+	// In NGMP, we always join room 0 for the main custom lobby
+	NGMP_OnlineServicesManager::getInstance().changeNetworkRoom(0);
 #endif
 
 	// animate controls
@@ -732,9 +738,9 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	DontShowMainMenu = TRUE;
 
 #if defined(SAGE_USE_NGMP)
-	// GeneralsX @feature GeneralsOnline Kick off async lobby list refresh on menu init
+	// GeneralsX @feature GeneralsOnline Enter global lobby room 0; block lobby refresh until server confirms room change
+	ngmpRoomConfirmed = FALSE;
 	NGMP_OnlineServicesManager::getInstance().changeNetworkRoom(0);
-	NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
 #endif
 
 }
@@ -887,13 +893,18 @@ void refreshGameList( Bool forceRefresh )
 	if (forceRefresh || ((gameListRefreshTime == 0) || ((gameListRefreshTime + refreshInterval) <= timeGetTime())))
 	{
 #if defined(SAGE_USE_NGMP)
-		NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
-		gameListRefreshTime = timeGetTime();
+		// GeneralsX @bugfix GeneralsOnline Do not request lobby list until the server has confirmed we are in room 0
+		if (ngmpRoomConfirmed || forceRefresh)
+		{
+			NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
+			gameListRefreshTime = timeGetTime();
+		}
 #else
 		if (TheGameSpyInfo->hasStagingRoomListChanged())
 		{
 			RefreshGameListBoxes();
 			gameListRefreshTime = timeGetTime();
+		} else {
 		}
 #endif
 	}
@@ -968,11 +979,32 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 				TheGameSpyInfo->getPlayerInfoMap()->insert(std::make_pair(info.m_name, info));
 			}
 			refreshPlayerList(TRUE);
+			// Server confirmed room change: unlock lobby refresh and fetch immediately
+			if (!ngmpRoomConfirmed) {
+				ngmpRoomConfirmed = TRUE;
+				NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
+			}
 		}
 		else if (ev.type == NGMPEvent::EVENT_LOBBY_JOINED || ev.type == NGMPEvent::EVENT_LOBBY_CREATED) {
 			SetLobbyAttemptHostJoin(FALSE);
 			buttonPushed = true;
 			nextScreen = "Menus/GameSpyGameOptionsMenu.wnd";
+			// GeneralsX @bugfix fbraz3 12/08/2026 Initialize staging room state BEFORE TheShell->pop().
+			// pop() may trigger WOLLobbyMenuShutdown with popImmediate=TRUE (because buttonPushed=true),
+			// which synchronously calls shutdownComplete -> TheShell->push -> WOLGameSetupMenuInit.
+			// If markAsStagingRoomHost/Joiner were called AFTER pop(), getCurrentStagingRoom() would
+			// return nullptr in WOLGameSetupMenuInit, causing a SIGSEGV at game->getSlot(0).
+			if (ev.type == NGMPEvent::EVENT_LOBBY_CREATED) {
+				fprintf(stderr, "[NGMP] EVENT_LOBBY_CREATED: marking as staging room host before shell pop\n");
+				fflush(stderr);
+				TheGameSpyInfo->markAsStagingRoomHost();
+				TheGameSpyInfo->setGameOptions();
+			} else {
+				fprintf(stderr, "[NGMP] EVENT_LOBBY_JOINED: marking as staging room joiner before shell pop\n");
+				fflush(stderr);
+				// Initialize the joined staging room so getCurrentStagingRoom() doesn't return nullptr
+				TheGameSpyInfo->markAsStagingRoomJoiner(0);
+			}
 			TheShell->pop();
 		}
 	}
