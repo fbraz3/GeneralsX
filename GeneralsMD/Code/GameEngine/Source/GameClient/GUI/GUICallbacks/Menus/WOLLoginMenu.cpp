@@ -824,6 +824,13 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 	{
 		if (!buttonPushed)
 		{
+			// GeneralsX @feature fbraz3 12/08/2026 Populate GameSpyInfo with NGMP identity so player slots and chat work
+			std::string username = NGMP_OnlineServicesManager::getInstance().getUsername();
+			int64_t userId = NGMP_OnlineServicesManager::getInstance().getUserId();
+			AsciiString aName(username.c_str());
+			TheGameSpyInfo->setLocalName(aName);
+			TheGameSpyInfo->setLocalProfileID(static_cast<Int>(userId));
+
 			buttonPushed = true;
 			loginAttemptTime = 0;
 			nextScreen = "Menus/WOLWelcomeMenu.wnd";

@@ -137,6 +137,7 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
 
                     m_authToken  = sessionToken;
                     m_username   = displayName;
+                    m_userId     = userId;
                     m_wsUri      = wsUri;
                     m_isLoggedIn = true;
 

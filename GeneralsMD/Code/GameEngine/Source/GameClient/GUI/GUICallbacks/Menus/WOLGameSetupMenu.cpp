@@ -65,6 +65,7 @@
 #include "GameNetwork/NAT.h"
 #include "GameNetwork/GUIUtil.h"
 #include "GameNetwork/GameSpy/GSConfig.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
 
 void WOLDisplaySlotList();
 
@@ -1519,6 +1520,10 @@ static void shutdownComplete( WindowLayout *layout )
 
 	if (nextScreen != nullptr)
 	{
+#if defined(SAGE_USE_NGMP)
+		NGMP_OnlineServicesManager::getInstance().changeNetworkRoom(0);
+		TheShell->push(nextScreen);
+#else
 		if (!TheGameSpyPeerMessageQueue || !TheGameSpyPeerMessageQueue->isConnected())
 		{
 			DEBUG_LOG(("GameSetup shutdownComplete() - skipping push because we're disconnected"));
@@ -1527,6 +1532,7 @@ static void shutdownComplete( WindowLayout *layout )
 		{
 			TheShell->push(nextScreen);
 		}
+#endif
 	}
 
 	/*

@@ -135,6 +135,7 @@ public:
     bool isLoggedIn() const { return m_isLoggedIn; }
     std::string getAuthToken() const { return m_authToken; }
     std::string getUsername() const { return m_username; }
+    int64_t getUserId() const { return m_userId; }
     const std::vector<NGMPLobby>& getLobbies() const { return m_lobbies; }
     const std::vector<NGMPLobbyPlayer>& getLobbyPlayers() const { return m_lobbyPlayers; }
 
@@ -151,6 +152,7 @@ private:
     bool m_initialized = false;
     bool m_isLoggedIn = false;
     std::string m_username;
+    int64_t m_userId = 0;
     std::string m_authToken;
     std::string m_wsUri;
     std::vector<NGMPLobby> m_lobbies;
