@@ -15,6 +15,7 @@
 #include <thread>
 #include <atomic>
 #include <functional>
+#include <mutex>
 
 #pragma pop_macro("max")
 #pragma pop_macro("min")
@@ -91,6 +92,7 @@ private:
     std::thread m_recvThread;
     std::atomic<bool> m_running = false;
     GenericMessageCallback m_messageCallback;
+    mutable std::mutex m_sendMutex;
 };
 
 } // namespace NGMP

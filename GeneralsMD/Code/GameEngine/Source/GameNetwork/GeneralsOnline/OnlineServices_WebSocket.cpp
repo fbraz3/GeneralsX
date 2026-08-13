@@ -64,6 +64,11 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
 
 void NGMPWebSocket::disconnect() {
     m_running = false;
+    if (m_curl) {
+        std::lock_guard<std::mutex> lock(m_sendMutex);
+        size_t sent = 0;
+        curl_ws_send(m_curl, "", 0, &sent, 0, CURLWS_CLOSE);
+    }
     if (m_recvThread.joinable()) {
         m_recvThread.join();
     }
@@ -77,16 +82,21 @@ void NGMPWebSocket::disconnect() {
 
 bool NGMPWebSocket::sendPayload(const std::string& payload) {
     if (!m_running.load() || !m_curl) {
-        return false;
-    }
-
-    size_t sent = 0;
-    CURLcode res = curl_ws_send(m_curl, payload.c_str(), payload.size(), &sent, 0, CURLWS_TEXT);
-    if (res != CURLE_OK) {
-        fprintf(stderr, "[NGMP-WebSocket] Failed to send WS payload: %s\n", curl_easy_strerror(res));
+        fprintf(stderr, "[NGMP-WebSocket] Cannot send payload, WS not running or null curl (running=%d)\n", m_running.load());
         fflush(stderr);
         return false;
     }
+
+    std::lock_guard<std::mutex> lock(m_sendMutex);
+    size_t sent = 0;
+    CURLcode res = curl_ws_send(m_curl, payload.c_str(), payload.size(), &sent, 0, CURLWS_TEXT);
+    if (res != CURLE_OK) {
+        fprintf(stderr, "[NGMP-WebSocket] Failed to send WS payload (%s): %s\n", payload.c_str(), curl_easy_strerror(res));
+        fflush(stderr);
+        return false;
+    }
+    fprintf(stderr, "[NGMP-WebSocket] Sent WS payload: %s\n", payload.c_str());
+    fflush(stderr);
     return true;
 }
 
@@ -100,8 +110,9 @@ void NGMPWebSocket::receiveLoop() {
         auto now = std::chrono::steady_clock::now();
         if (std::chrono::duration_cast<std::chrono::seconds>(now - lastPingTime).count() >= 10) {
             lastPingTime = now;
-            std::string pingPayload = "{\"msg_id\":8}";
+            std::string pingPayload = "{\"msg_id\":14}"; // EWebSocketMessageID::PING = 14
             size_t sent = 0;
+            std::lock_guard<std::mutex> lock(m_sendMutex);
             curl_ws_send(m_curl, pingPayload.c_str(), pingPayload.size(), &sent, 0, CURLWS_TEXT);
         }
 
