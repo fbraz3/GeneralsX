@@ -117,7 +117,13 @@ void NGMPWebSocket::receiveLoop() {
         }
 
         size_t received = 0;
-        CURLcode res = curl_ws_recv(m_curl, buffer, sizeof(buffer) - 1, &received, &meta);
+        CURLcode res;
+        
+        {
+            std::lock_guard<std::mutex> lock(m_sendMutex);
+            if (!m_curl) break; // In case we disconnected
+            res = curl_ws_recv(m_curl, buffer, sizeof(buffer) - 1, &received, &meta);
+        }
 
         if (res == CURLE_AGAIN) {
             // No data ready — yield briefly to avoid busy-spinning
