@@ -103,6 +103,16 @@ else
     rm -f "${PROJECT_ROOT}/.git-override.cmake"
 fi
 
+if [[ -n "${NGMP_DEFAULT_HOST:-}" ]] || [[ -n "${NGMP_SERVER_HOST:-}" ]] || [[ -n "${NGMP_SERVER_PORT:-}" ]] || [[ -n "${NGMP_USE_SSL:-}" ]]; then
+    cat > "${PROJECT_ROOT}/.ngmp-config.cmake" <<EOF
+set(NGMP_SERVER_HOST "${NGMP_SERVER_HOST:-${NGMP_DEFAULT_HOST:-localhost}}")
+set(NGMP_SERVER_PORT "${NGMP_SERVER_PORT:-9001}")
+set(NGMP_USE_SSL "${NGMP_USE_SSL:-OFF}")
+EOF
+else
+    rm -f "${PROJECT_ROOT}/.ngmp-config.cmake"
+fi
+
 if [[ "${GENERALSX_FLATPAK_USE_CCACHE}" == "1" ]]; then
     BUILDER_ARGS+=(--ccache)
     echo "[$(ts)] flatpak-builder ccache enabled (GENERALSX_FLATPAK_USE_CCACHE=1)."

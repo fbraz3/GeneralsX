@@ -18,14 +18,6 @@ bool NGMP_OnlineServicesManager::init() {
     // Initialize GameSpy stubs to prevent legacy UI crashes (e.g. WOLWelcomeMenu)
     SetUpGameSpy("", "");
 
-    // Auto-login if we have a saved refresh token
-    std::string savedRefreshToken = NGMP::LoadRefreshToken();
-    if (!savedRefreshToken.empty()) {
-        fprintf(stderr, "[NGMP] Found saved refresh token, attempting silent re-login\n");
-        fflush(stderr);
-        loginWithRefreshToken(savedRefreshToken);
-    }
-
     m_initialized = true;
     return true;
 }
