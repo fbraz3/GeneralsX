@@ -1064,6 +1064,12 @@ void WOLDisplaySlotList()
 			{
 				// set up my own ping...
 				slot->setPingString(TheGameSpyInfo->getPingString());
+#if defined(SAGE_USE_NGMP)
+				// References: GameClient hides the ping window for local player
+				if (genericPingWindow[i])
+					genericPingWindow[i]->winHide(TRUE);
+				continue;
+#endif
 			}
 
 			if (genericPingWindow[i])
@@ -1341,11 +1347,15 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 		// after the game.  So, we pop the menu and go back to the lobby.  Whee!
 		DEBUG_LOG(("WOLGameSetupMenuInit() - game was in progress, so pop immediate back to lobby"));
 		TheShell->popImmediate();
+#if defined(SAGE_USE_NGMP)
+		TheShell->push("Menus/WOLCustomLobby.wnd", TRUE);
+#else
 		if (TheGameSpyPeerMessageQueue && TheGameSpyPeerMessageQueue->isConnected())
 		{
 			DEBUG_LOG(("We're still connected, so pushing back on the lobby"));
 			TheShell->push("Menus/WOLCustomLobby.wnd", TRUE);
 		}
+#endif
 		return;
 	}
 	TheGameSpyInfo->setCurrentGroupRoom(0);

@@ -5,6 +5,7 @@
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GeneralsOnline/NGMPWebSocket.h"
+#include "GameNetwork/GameSpy/PeerDefs.h"
 #include <cstdio>
 #include <thread>
 #include <curl/curl.h>
@@ -41,8 +42,12 @@ void NGMP_OnlineServicesManager::update() {
 
         switch (ev.type) {
             case NGMPEvent::EVENT_AUTH_SUCCESS:
-                fprintf(stderr, "[NGMP-MainThread] Event: Auth Success\n");
+                fprintf(stderr, "[NGMP-MainThread] Event: Auth Success (user=%s id=%lld)\n", m_username.c_str(), (long long)m_userId);
                 m_isLoggedIn = true;
+                if (TheGameSpyInfo) {
+                    TheGameSpyInfo->setLocalName(AsciiString(m_username.c_str()));
+                    TheGameSpyInfo->setLocalProfileID(static_cast<Int>(m_userId));
+                }
                 if (!m_chatSession) {
                     m_chatSession.reset(new NGMP::NGMPWebSocket());
                     m_chatSession->setMessageCallback([this](const std::string& rawJson) {

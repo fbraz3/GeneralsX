@@ -876,6 +876,12 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 		if (buttonPushed) {
 			buttonPushed = FALSE; 
 			dontAllowTransitions = FALSE;
+			std::string username = NGMP_OnlineServicesManager::getInstance().getUsername();
+			int64_t userId = NGMP_OnlineServicesManager::getInstance().getUserId();
+			if (TheGameSpyInfo) {
+				TheGameSpyInfo->setLocalName(AsciiString(username.c_str()));
+				TheGameSpyInfo->setLocalProfileID(static_cast<Int>(userId));
+			}
 			TheShell->push("Menus/WOLWelcomeMenu.wnd");
 		}
 	}
