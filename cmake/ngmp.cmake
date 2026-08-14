@@ -3,7 +3,7 @@
 
 if(SAGE_USE_NGMP)
     find_package(nlohmann_json QUIET)
-    if(NOT nlohmann_json_FOUND)
+    if(NOT nlohmann_json_FOUND AND NOT FETCHCONTENT_FULLY_DISCONNECTED)
         include(FetchContent)
         FetchContent_Declare(
             json

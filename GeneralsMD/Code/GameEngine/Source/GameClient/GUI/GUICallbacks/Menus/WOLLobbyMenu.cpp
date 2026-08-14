@@ -960,6 +960,46 @@ void refreshPlayerList( Bool forceRefresh )
 				playerListRefreshTime = timeGetTime();
 		}
 }
+#if defined(SAGE_USE_NGMP)
+static void RefreshNGMPGameListBoxes(const std::vector<NGMPLobby>& lobbies)
+{
+	GameWindow *win = GetGameListBox();
+	if (!win)
+		return;
+
+	// clear it out
+	GadgetListBoxReset(win);
+
+	Color gameColor = GameSpyColor[GSCOLOR_GAME];
+
+	for (size_t i = 0; i < lobbies.size(); ++i)
+	{
+		const auto& lobby = lobbies[i];
+		AsciiString asciiName(lobby.name.c_str());
+		UnicodeString uName;
+		uName.translate(asciiName);
+
+		Int index = GadgetListBoxAddEntryText(win, uName, gameColor, -1, 0); // COLUMN_NAME
+		GadgetListBoxSetItemData(win, reinterpret_cast<void*>(static_cast<std::uintptr_t>(i + 1)), index);
+
+		AsciiString asciiMap(lobby.mapName.c_str());
+		UnicodeString uMap;
+		uMap.translate(asciiMap);
+
+		GadgetListBoxAddEntryText(win, uMap, gameColor, index, 1); // COLUMN_MAP
+
+		// Ladder info usually goes here, but we can just leave it blank for now
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, 2); // COLUMN_LADDER
+
+		UnicodeString playersStr;
+		playersStr.format(L"%d/%d", lobby.currentPlayers, lobby.maxPlayers);
+		GadgetListBoxAddEntryText(win, playersStr, gameColor, index, 3); // COLUMN_NUMPLAYERS
+
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, 4); // COLUMN_PASSWORD
+	}
+}
+#endif
+
 //-------------------------------------------------------------------------------------------------
 /** WOL Lobby Menu update method */
 //-------------------------------------------------------------------------------------------------

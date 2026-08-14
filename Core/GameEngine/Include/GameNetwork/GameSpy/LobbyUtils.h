@@ -38,7 +38,6 @@ void GrabWindowInfo();
 void ReleaseWindowInfo();
 void RefreshGameInfoListBox( GameWindow *mainWin, GameWindow *win );
 void RefreshGameListBoxes();
-void RefreshNGMPGameListBoxes(const std::vector<struct NGMPLobby>& lobbies);
 void ToggleGameListType();
 
 void playerTemplateComboBoxTooltip(GameWindow *wndComboBox, WinInstanceData *instData, UnsignedInt mouse);
