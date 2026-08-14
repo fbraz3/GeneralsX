@@ -441,62 +441,98 @@ static Int insertPlayerInListbox(const PlayerInfo& info, Color color)
 
 	Int currentRank = info.m_rankPoints;
 	Int currentSide = info.m_side;
-	/* since PersistentStorage updates now update PlayerInfo, we don't need this.
-	if (info.m_profileID)
+
+	Int w = 10;
+	if (listboxLobbyPlayers)
 	{
-		PSPlayerStats psStats = TheGameSpyPSMessageQueue->findPlayerStatsByID(info.m_profileID);
-		if (psStats.id)
-		{
-			currentRank = CalculateRank(psStats);
-
-			PerGeneralMap::iterator it;
-			Int numGames = 0;
-			for(it = psStats.games.begin(); it != psStats.games.end(); ++it)
-			{
-				if(it->second >= numGames)
-				{
-					numGames = it->second;
-					currentSide = it->first;
-				}
-			}
-			if(numGames == 0 || psStats.gamesAsRandom >= numGames )
-			{
-				currentSide = 0;
-			}
-		}
+		Int colW = GadgetListBoxGetColumnWidth(listboxLobbyPlayers, 0);
+		if (colW > 0)
+			w = colW;
 	}
-	*/
-
-	Bool isPreorder = TheGameSpyInfo->didPlayerPreorder(info.m_profileID);
-
-	const Image *preorderImg = TheMappedImageCollection->findImageByName("OfficersClubsmall");
-	Int w = (preorderImg)?preorderImg->getImageWidth():10;
-	//Int h = (preorderImg)?preorderImg->getImageHeight():10;
-	w = min(GadgetListBoxGetColumnWidth(listboxLobbyPlayers, 0), w);
 	Int h = w;
-	if (!isPreorder)
-		preorderImg = nullptr;
 
 	const Image *rankImg = LookupSmallRankImage(currentSide, currentRank);
 
-#if 0  //Officer's Club (preorder image) no longer used in Zero Hour
-	Int index = GadgetListBoxAddEntryImage(listboxLobbyPlayers, preorderImg, -1, 0, w, h);
-	GadgetListBoxAddEntryImage(listboxLobbyPlayers, rankImg, index, 1, w, h);
-	GadgetListBoxAddEntryText(listboxLobbyPlayers, uStr, color, index, 2);
-#else
 	Int index = GadgetListBoxAddEntryImage(listboxLobbyPlayers, rankImg, -1, 0, w, h);
 	GadgetListBoxAddEntryText(listboxLobbyPlayers, uStr, color, index, 1);
-#endif
+	GadgetListBoxSetItemData(listboxLobbyPlayers, (void*)(intptr_t)info.m_profileID, index);
 	return index;
 }
 
 
 void PopulateLobbyPlayerListbox()
 {
-
 	if (!listboxLobbyPlayers)
 		return;
 
+#if defined(SAGE_USE_NGMP)
+	// GeneralsX @feature GeneralsOnline Populate player roster in custom lobby
+	Int maxSelectedItems = GadgetListBoxGetNumEntries(listboxLobbyPlayers);
+	Int *selectedIndices = nullptr;
+	GadgetListBoxGetSelected(listboxLobbyPlayers, (Int *)(&selectedIndices));
+	std::set<AsciiString> selectedNames;
+	UnicodeString uStr;
+	Int numSelected = 0;
+	for (Int i = 0; i < maxSelectedItems; ++i)
+	{
+		if (!selectedIndices || selectedIndices[i] < 0)
+			break;
+		++numSelected;
+		AsciiString selectedName;
+		uStr = GadgetListBoxGetText(listboxLobbyPlayers, selectedIndices[i], COLUMN_PLAYERNAME);
+		selectedName.translate(uStr);
+		selectedNames.insert(selectedName);
+	}
+
+	Int previousTopIndex = GadgetListBoxGetTopVisibleEntry(listboxLobbyPlayers);
+	GadgetListBoxReset(listboxLobbyPlayers);
+
+	std::set<Int> indicesToSelect;
+	auto lobbyPlayers = NGMP_OnlineServicesManager::getInstance().getLobbyPlayers();
+
+	// Fallback: If roster from server is not populated yet, show local authenticated user
+	if (lobbyPlayers.empty()) {
+		AsciiString localName = TheGameSpyInfo ? TheGameSpyInfo->getLocalName() : AsciiString::TheEmptyString;
+		if (!localName.isEmpty()) {
+			NGMPLobbyPlayer lp;
+			lp.id = TheGameSpyInfo->getLocalProfileID();
+			lp.name = localName.str();
+			lp.isAdmin = false;
+			lobbyPlayers.push_back(lp);
+		}
+	}
+
+	for (const auto& p : lobbyPlayers)
+	{
+		PlayerInfo info;
+		info.m_name = p.name.c_str();
+		info.m_profileID = static_cast<Int>(p.id);
+		info.m_flags = p.isAdmin ? PEER_FLAG_OP : 0;
+		Color color = p.isAdmin ? GameSpyColor[GSCOLOR_PLAYER_OWNER] : GameSpyColor[GSCOLOR_PLAYER_NORMAL];
+		Int index = insertPlayerInListbox(info, color);
+
+		if (selectedNames.find(info.m_name) != selectedNames.end())
+		{
+			indicesToSelect.insert(index);
+		}
+	}
+
+	if (!indicesToSelect.empty())
+	{
+		const size_t count = indicesToSelect.size();
+		size_t index = 0;
+		Int *newIndices = NEW Int[count];
+		for (auto idx : indicesToSelect)
+		{
+			newIndices[index++] = idx;
+		}
+		GadgetListBoxSetSelected(listboxLobbyPlayers, newIndices, count);
+		delete[] newIndices;
+	}
+
+	GadgetListBoxSetTopVisibleEntry(listboxLobbyPlayers, previousTopIndex);
+	return;
+#else
 	// Display players
 	PlayerInfoMap *players = TheGameSpyInfo->getPlayerInfoMap();
 	PlayerInfoMap::iterator it;
@@ -537,7 +573,7 @@ void PopulateLobbyPlayerListbox()
 		for (it = players->begin(); it != players->end(); ++it)
 		{
 			PlayerInfo info = it->second;
-			if (info.m_flags & PEER_FLAG_OP || TheGameSpyConfig->isPlayerVIP(info.m_profileID))
+			if (info.m_flags & PEER_FLAG_OP || (TheGameSpyConfig && TheGameSpyConfig->isPlayerVIP(info.m_profileID)))
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_OWNER]);
 
@@ -555,7 +591,7 @@ void PopulateLobbyPlayerListbox()
 		{
 			PlayerInfo info = it->second;
 			bIt = buddies->find(info.m_profileID);
-			if ( !(info.m_flags & PEER_FLAG_OP || TheGameSpyConfig->isPlayerVIP(info.m_profileID)) && bIt != buddies->end() )
+			if ( !(info.m_flags & PEER_FLAG_OP || (TheGameSpyConfig && TheGameSpyConfig->isPlayerVIP(info.m_profileID))) && bIt != buddies->end() )
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_BUDDY]);
 
@@ -573,7 +609,7 @@ void PopulateLobbyPlayerListbox()
 		{
 			PlayerInfo info = it->second;
 			bIt = buddies->find(info.m_profileID);
-			if ( !(info.m_flags & PEER_FLAG_OP || TheGameSpyConfig->isPlayerVIP(info.m_profileID)) && bIt == buddies->end() )
+			if ( !(info.m_flags & PEER_FLAG_OP || (TheGameSpyConfig && TheGameSpyConfig->isPlayerVIP(info.m_profileID))) && bIt == buddies->end() )
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
 
@@ -612,7 +648,7 @@ void PopulateLobbyPlayerListbox()
 		// restore top visible entry
 		GadgetListBoxSetTopVisibleEntry(listboxLobbyPlayers, previousTopIndex);
 	}
-
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -741,6 +777,7 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	// GeneralsX @feature GeneralsOnline Enter global lobby room 0; block lobby refresh until server confirms room change
 	ngmpRoomConfirmed = FALSE;
 	NGMP_OnlineServicesManager::getInstance().changeNetworkRoom(0);
+	PopulateLobbyPlayerListbox();
 #endif
 
 }
@@ -967,7 +1004,12 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 			AsciiString msg(ev.payload.c_str());
 			UnicodeString uMsg;
 			uMsg.translate(msg);
-			TheGameSpyInfo->addText(uMsg, GameSpyColor[GSCOLOR_DEFAULT], nullptr);
+			if (listboxLobbyChat) {
+				Int index = GadgetListBoxAddEntryText(listboxLobbyChat, uMsg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+				GadgetListBoxSetItemData(listboxLobbyChat, (void*)-1, index);
+			} else {
+				TheGameSpyInfo->addText(uMsg, GameSpyColor[GSCOLOR_DEFAULT], nullptr);
+			}
 		}
 		else if (ev.type == NGMPEvent::EVENT_PLAYERS_UPDATED) {
 			TheGameSpyInfo->getPlayerInfoMap()->clear();
@@ -1742,7 +1784,16 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					if (!txtInput.isEmpty())
 					{
 						// Send the message
+#if defined(SAGE_USE_NGMP)
+						if (!handleLobbySlashCommands(txtInput))
+						{
+							AsciiString msg;
+							msg.translate(txtInput);
+							NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", msg.str());
+						}
+#else
 						TheGameSpyInfo->sendChat( txtInput, FALSE, listboxLobbyPlayers ); // 'emote' button now just sends text
+#endif
 					}
 				}
 

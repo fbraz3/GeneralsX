@@ -34,6 +34,8 @@
 #include "gamespy/peer/peer.h"
 
 #include "Common/GameEngine.h"
+#include "Common/AudioEventRTS.h"
+#include "Common/GameAudio.h"
 #include "Common/GameSpyMiscPreferences.h"
 #include "Common/CustomMatchPreferences.h"
 #include "Common/GlobalData.h"
@@ -109,6 +111,7 @@ static GameWindow *staticTextHighscoreRank = nullptr;
 static GameWindow *staticTextHighscorePoints = nullptr;
 
 static UnicodeString gServerName;
+static Bool s_welcomeAudioPlayed = FALSE;
 void updateServerDisplay(UnicodeString serverName)
 {
 	if (staticTextServerName)
@@ -196,6 +199,10 @@ static void shutdownComplete( WindowLayout *layout )
 	if (nextScreen != nullptr)
 	{
 		TheShell->push(nextScreen);
+	}
+	else
+	{
+		s_welcomeAudioPlayed = FALSE;
 	}
 
 	nextScreen = nullptr;
@@ -541,6 +548,13 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	raiseMessageBoxes = TRUE;
 	TheTransitionHandler->setGroup("WOLWelcomeMenuFade");
 
+	// GeneralsX @feature Play classic "Welcome to Generals Online" voice line once per login session
+	if (!s_welcomeAudioPlayed && !GameSpyIsOverlayOpen(GSOVERLAY_LOCALESELECT) && TheAudio)
+	{
+		AudioEventRTS welcomeSound("WelcomeToGeneralsOnline");
+		TheAudio->addAudioEvent(&welcomeSound);
+		s_welcomeAudioPlayed = TRUE;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -602,6 +616,14 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 			delete TheFirewallHelper;
 			TheFirewallHelper = nullptr;
 		}
+	}
+
+	// GeneralsX @feature Play classic "Welcome to Generals Online" once locale overlay is closed
+	if (!isShuttingDown && !buttonPushed && !s_welcomeAudioPlayed && !GameSpyIsOverlayOpen(GSOVERLAY_LOCALESELECT) && TheAudio)
+	{
+		AudioEventRTS welcomeSound("WelcomeToGeneralsOnline");
+		TheAudio->addAudioEvent(&welcomeSound);
+		s_welcomeAudioPlayed = TRUE;
 	}
 
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)

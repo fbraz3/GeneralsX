@@ -77,6 +77,8 @@ void NGMP_OnlineServicesManager::update() {
             case NGMPEvent::EVENT_WEBSOCKET_MESSAGE:
                 {
                     try {
+                        fprintf(stderr, "[NGMP] EVENT_WEBSOCKET_MESSAGE raw: %s\n", ev.payload.c_str());
+                        fflush(stderr);
                         auto jsonMsg = nlohmann::json::parse(ev.payload);
                         if (jsonMsg.contains("msg_id") && jsonMsg["msg_id"].is_number_integer()) {
                             int msgId = jsonMsg["msg_id"].get<int>();
@@ -96,15 +98,41 @@ void NGMP_OnlineServicesManager::update() {
                                     std::vector<NGMPLobbyPlayer> updatedPlayers;
                                     for (const auto& member : jsonMsg["members"]) {
                                         NGMPLobbyPlayer player;
-                                        player.id = member.value("UserID", 0LL);
-                                        player.name = member.value("Name", "");
-                                        player.isAdmin = member.value("IsAdmin", false);
+                                        if (member.contains("UserID") && !member["UserID"].is_null()) {
+                                            if (member["UserID"].is_number()) player.id = member["UserID"].get<int64_t>();
+                                            else if (member["UserID"].is_string()) player.id = std::stoll(member["UserID"].get<std::string>());
+                                        } else if (member.contains("user_id") && !member["user_id"].is_null()) {
+                                            if (member["user_id"].is_number()) player.id = member["user_id"].get<int64_t>();
+                                            else if (member["user_id"].is_string()) player.id = std::stoll(member["user_id"].get<std::string>());
+                                        }
+
+                                        if (member.contains("Name") && member["Name"].is_string()) {
+                                            player.name = member["Name"].get<std::string>();
+                                        } else if (member.contains("name") && member["name"].is_string()) {
+                                            player.name = member["name"].get<std::string>();
+                                        } else if (member.contains("display_name") && member["display_name"].is_string()) {
+                                            player.name = member["display_name"].get<std::string>();
+                                        } else if (member.contains("DisplayName") && member["DisplayName"].is_string()) {
+                                            player.name = member["DisplayName"].get<std::string>();
+                                        }
+
+                                        if (member.contains("IsAdmin") && member["IsAdmin"].is_boolean()) {
+                                            player.isAdmin = member["IsAdmin"].get<bool>();
+                                        } else if (member.contains("is_admin") && member["is_admin"].is_boolean()) {
+                                            player.isAdmin = member["is_admin"].get<bool>();
+                                        }
                                         updatedPlayers.push_back(player);
                                     }
                                     {
                                         std::lock_guard<std::mutex> lock(m_eventMutex);
                                         m_lobbyPlayers = std::move(updatedPlayers);
                                     }
+                                    fprintf(stderr, "[NGMP] Updated lobby player roster (%zu players)\n", m_lobbyPlayers.size());
+                                    for (const auto& p : m_lobbyPlayers) {
+                                        fprintf(stderr, "  [LobbyPlayer] id=%lld, name='%s', isAdmin=%d\n", (long long)p.id, p.name.c_str(), p.isAdmin);
+                                    }
+                                    fflush(stderr);
+
                                     NGMPEvent playersEv;
                                     playersEv.type = NGMPEvent::EVENT_PLAYERS_UPDATED;
                                     uiEvents.push_back(playersEv);
@@ -114,8 +142,12 @@ void NGMP_OnlineServicesManager::update() {
                                 requestLobbyListAsync();
                             }
                         }
+                    } catch (const std::exception& e) {
+                        fprintf(stderr, "[NGMP] Failed to parse WS message (%s): %s\n", e.what(), ev.payload.c_str());
+                        fflush(stderr);
                     } catch (...) {
                         fprintf(stderr, "[NGMP] Failed to parse WS message: %s\n", ev.payload.c_str());
+                        fflush(stderr);
                     }
                 }
                 break;
@@ -513,15 +545,19 @@ GlobalStats NGMP_OnlineServicesManager::getGlobalStats() const {
 
 bool NGMP_OnlineServicesManager::sendChatMessage(const std::string& room, const std::string& message) {
     if (!m_isLoggedIn) {
+        fprintf(stderr, "[NGMP] sendChatMessage ignored: not logged in\n");
+        fflush(stderr);
         return false;
     }
-    if (m_chatSession) {
-        // Build the chat message payload
+    if (m_chatSession && m_chatSession->isConnected()) {
+        // Build the chat message payload for NETWORK_ROOM_CHAT_FROM_CLIENT (msg_id: 1)
         nlohmann::json payload = {
             {"msg_id", 1},
-            {"action", "chat"},
+            {"action", false},
             {"message", message}
         };
+        fprintf(stderr, "[NGMP] sendChatMessage: sending '%s'\n", message.c_str());
+        fflush(stderr);
         return m_chatSession->sendPayload(payload.dump());
     }
     fprintf(stderr, "[NGMP] sendChatMessage called but no active chat session\n");
