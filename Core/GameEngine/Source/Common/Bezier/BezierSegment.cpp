@@ -128,11 +128,11 @@ void BezierSegment::evaluateBezSegmentAtT(Real tValue, Coord3D *outResult) const
 	glm::vec4 yCoords(m_controlPoints[0].y, m_controlPoints[1].y, m_controlPoints[2].y, m_controlPoints[3].y);
 	glm::vec4 zCoords(m_controlPoints[0].z, m_controlPoints[1].z, m_controlPoints[2].z, m_controlPoints[3].z);
 
-	glm::vec4 tResult = BezierSegment::s_bezBasisMatrix * tVec;
+	glm::vec4 tResult = BezierMath::GLMVec4Transform(tVec, BezierSegment::s_bezBasisMatrix);
 	
-	outResult->x = glm::dot(xCoords, tResult);
-	outResult->y = glm::dot(yCoords, tResult);
-	outResult->z = glm::dot(zCoords, tResult);
+	outResult->x = BezierMath::GLMVec4Dot(xCoords, tResult);
+	outResult->y = BezierMath::GLMVec4Dot(yCoords, tResult);
+	outResult->z = BezierMath::GLMVec4Dot(zCoords, tResult);
 #endif
 }
 
