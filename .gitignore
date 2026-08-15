@@ -90,3 +90,4 @@ flatpak/*.flatpak
 #tmp and log files on root folder
 logs_*.zip
 *.log
+/cmake/ngmp_env.cmake
