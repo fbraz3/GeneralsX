@@ -100,9 +100,11 @@ bool NGMPWebSocket::sendPayload(const std::string& payload) {
     return true;
 }
 
+// GeneralsX @bugfix fbraz3 15/08/2026 Accumulate fragmented WebSocket frames matching references/GameClient
 void NGMPWebSocket::receiveLoop() {
-    char buffer[4096];
+    char buffer[8192 * 4];
     const struct curl_ws_frame* meta = nullptr;
+    std::vector<char> partialBuffer;
 
     auto lastPingTime = std::chrono::steady_clock::now();
 
@@ -139,9 +141,36 @@ void NGMPWebSocket::receiveLoop() {
         }
 
         if (received > 0) {
-            buffer[received] = '\0';
-            if (m_messageCallback) {
-                m_messageCallback(std::string(buffer));
+            if (meta != nullptr) {
+                if (meta->flags & CURLWS_PONG) {
+                    // PONG frame received, connection alive
+                    continue;
+                }
+
+                static constexpr size_t MAX_WS_PARTIAL_SIZE = 2 * 1024 * 1024; // 2 MB
+                if (partialBuffer.size() + received > MAX_WS_PARTIAL_SIZE) {
+                    fprintf(stderr, "[NGMP-Chat] Partial buffer overflow, discarding message\n");
+                    fflush(stderr);
+                    partialBuffer.clear();
+                    continue;
+                }
+
+                size_t oldSize = partialBuffer.size();
+                partialBuffer.resize(oldSize + received);
+                std::memcpy(partialBuffer.data() + oldSize, buffer, received);
+
+                bool bMessageComplete = !(meta->flags & CURLWS_CONT) && (meta->bytesleft == 0);
+                if (bMessageComplete) {
+                    std::string completeMsg(partialBuffer.data(), partialBuffer.size());
+                    partialBuffer.clear();
+                    if (m_messageCallback) {
+                        m_messageCallback(completeMsg);
+                    }
+                }
+            } else {
+                if (m_messageCallback) {
+                    m_messageCallback(std::string(buffer, received));
+                }
             }
         }
     }

@@ -227,15 +227,49 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
                 fflush(stderr);
                 auto jsonList = json::parse(response.text);
                 std::vector<NGMPLobby> lobbies;
+                // GeneralsX @bugfix fbraz3 15/08/2026 Parse PascalCase and camelCase lobby fields from server
                 if (jsonList.contains("lobbies") && jsonList["lobbies"].is_array()) {
                     for (const auto& item : jsonList["lobbies"]) {
                         NGMPLobby lobby;
-                        lobby.id = item.value("lobbyID", 0LL);
-                        lobby.name = item.contains("Name") ? item.value("Name", "Custom Lobby") : item.value("name", "Custom Lobby");
-                        lobby.mapName = item.contains("MapName") ? item.value("MapName", "Tournament Desert") : item.value("map_name", "Tournament Desert");
-                        lobby.currentPlayers = item.value("current_players", 1);
-                        lobby.maxPlayers = item.value("max_players", 8);
-                        lobby.hasPassword = item.value("has_password", false);
+                        if (item.contains("LobbyID") && !item["LobbyID"].is_null()) {
+                            lobby.id = item["LobbyID"].is_number() ? item["LobbyID"].get<int64_t>() : std::stoll(item["LobbyID"].get<std::string>());
+                        } else if (item.contains("lobbyID") && !item["lobbyID"].is_null()) {
+                            lobby.id = item["lobbyID"].is_number() ? item["lobbyID"].get<int64_t>() : std::stoll(item["lobbyID"].get<std::string>());
+                        } else if (item.contains("lobby_id") && !item["lobby_id"].is_null()) {
+                            lobby.id = item["lobby_id"].is_number() ? item["lobby_id"].get<int64_t>() : std::stoll(item["lobby_id"].get<std::string>());
+                        }
+
+                        if (item.contains("Name") && item["Name"].is_string()) {
+                            lobby.name = item["Name"].get<std::string>();
+                        } else if (item.contains("name") && item["name"].is_string()) {
+                            lobby.name = item["name"].get<std::string>();
+                        }
+
+                        if (item.contains("MapName") && item["MapName"].is_string()) {
+                            lobby.mapName = item["MapName"].get<std::string>();
+                        } else if (item.contains("map_name") && item["map_name"].is_string()) {
+                            lobby.mapName = item["map_name"].get<std::string>();
+                        }
+
+                        if (item.contains("NumCurrentPlayers") && item["NumCurrentPlayers"].is_number()) {
+                            lobby.currentPlayers = item["NumCurrentPlayers"].get<int>();
+                        } else if (item.contains("current_players") && item["current_players"].is_number()) {
+                            lobby.currentPlayers = item["current_players"].get<int>();
+                        }
+
+                        if (item.contains("MaxPlayers") && item["MaxPlayers"].is_number()) {
+                            lobby.maxPlayers = item["MaxPlayers"].get<int>();
+                        } else if (item.contains("max_players") && item["max_players"].is_number()) {
+                            lobby.maxPlayers = item["max_players"].get<int>();
+                        }
+
+                        if (item.contains("IsPassworded") && item["IsPassworded"].is_boolean()) {
+                            lobby.hasPassword = item["IsPassworded"].get<bool>();
+                        } else if (item.contains("is_passworded") && item["is_passworded"].is_boolean()) {
+                            lobby.hasPassword = item["is_passworded"].get<bool>();
+                        } else if (item.contains("has_password") && item["has_password"].is_boolean()) {
+                            lobby.hasPassword = item["has_password"].get<bool>();
+                        }
                         lobbies.push_back(lobby);
                     }
                 }

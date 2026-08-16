@@ -95,7 +95,6 @@ static const time_t gameListRefreshInterval = 10000;
 static time_t playerListRefreshTime = 0;
 static const time_t playerListRefreshInterval = 5000;
 #if defined(SAGE_USE_NGMP)
-static Bool ngmpRoomConfirmed = FALSE; // Blocks lobby refresh until server confirms room 0 (msg_id:4)
 #endif
 
 void setUnignoreText( WindowLayout *layout, AsciiString nick, GPProfile id);
@@ -774,9 +773,9 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	DontShowMainMenu = TRUE;
 
 #if defined(SAGE_USE_NGMP)
-	// GeneralsX @feature GeneralsOnline Enter global lobby room 0; block lobby refresh until server confirms room change
-	ngmpRoomConfirmed = FALSE;
+	// GeneralsX @feature GeneralsOnline Enter global lobby room 0 and fetch initial lobby list
 	NGMP_OnlineServicesManager::getInstance().changeNetworkRoom(0);
+	NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
 	PopulateLobbyPlayerListbox();
 #endif
 
@@ -930,12 +929,9 @@ void refreshGameList( Bool forceRefresh )
 	if (forceRefresh || ((gameListRefreshTime == 0) || ((gameListRefreshTime + refreshInterval) <= timeGetTime())))
 	{
 #if defined(SAGE_USE_NGMP)
-		// GeneralsX @bugfix GeneralsOnline Do not request lobby list until the server has confirmed we are in room 0
-		if (ngmpRoomConfirmed || forceRefresh)
-		{
-			NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
-			gameListRefreshTime = timeGetTime();
-		}
+		// GeneralsX @feature GeneralsOnline Periodic async fetch of lobbies from server
+		NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
+		gameListRefreshTime = timeGetTime();
 #else
 		if (TheGameSpyInfo->hasStagingRoomListChanged())
 		{
@@ -980,7 +976,8 @@ static void RefreshNGMPGameListBoxes(const std::vector<NGMPLobby>& lobbies)
 		uName.translate(asciiName);
 
 		Int index = GadgetListBoxAddEntryText(win, uName, gameColor, -1, 0); // COLUMN_NAME
-		GadgetListBoxSetItemData(win, reinterpret_cast<void*>(static_cast<std::uintptr_t>(i + 1)), index);
+		// GeneralsX @bugfix fbraz3 15/08/2026 Set ItemData to actual lobby.id for joining
+		GadgetListBoxSetItemData(win, reinterpret_cast<void*>(static_cast<std::uintptr_t>(lobby.id)), index);
 
 		AsciiString asciiMap(lobby.mapName.c_str());
 		UnicodeString uMap;
@@ -1061,11 +1058,6 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 				TheGameSpyInfo->getPlayerInfoMap()->insert(std::make_pair(info.m_name, info));
 			}
 			refreshPlayerList(TRUE);
-			// Server confirmed room change: unlock lobby refresh and fetch immediately
-			if (!ngmpRoomConfirmed) {
-				ngmpRoomConfirmed = TRUE;
-				NGMP_OnlineServicesManager::getInstance().requestLobbyListAsync();
-			}
 		}
 		else if (ev.type == NGMPEvent::EVENT_LOBBY_JOINED || ev.type == NGMPEvent::EVENT_LOBBY_CREATED) {
 			SetLobbyAttemptHostJoin(FALSE);
@@ -1724,17 +1716,22 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 						{
 #if defined(SAGE_USE_NGMP)
 							const auto& lobbies = NGMP_OnlineServicesManager::getInstance().getLobbies();
-							size_t index = selectedID - 1;
-							if (index < lobbies.size())
+							const NGMPLobby* targetLobby = nullptr;
+							for (const auto& l : lobbies) {
+								if (l.id == static_cast<int64_t>(selectedID)) {
+									targetLobby = &l;
+									break;
+								}
+							}
+							if (targetLobby != nullptr)
 							{
-								const auto& lobby = lobbies[index];
 								UnicodeString uName;
-								AsciiString aName(lobby.name.c_str());
+								AsciiString aName(targetLobby->name.c_str());
 								uName.translate(aName);
 								TheGameSpyGame->setGameName(uName);
 								
 								// No password support for now in NGMP UI
-								NGMP_OnlineServicesManager::getInstance().joinLobbyAsync(lobby.id, "");
+								NGMP_OnlineServicesManager::getInstance().joinLobbyAsync(targetLobby->id, "");
 								SetLobbyAttemptHostJoin( TRUE );
 							}
 #else
