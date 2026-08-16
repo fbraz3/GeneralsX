@@ -22,9 +22,16 @@
 #include <atomic>
 #include <chrono>
 #include <unordered_map>
+#include <type_traits>
 
 #pragma pop_macro("max")
 #pragma pop_macro("min")
+
+class NGMP_OnlineServices_AuthInterface;
+class NGMP_OnlineServices_LobbyInterface;
+class NGMP_OnlineServices_RoomsInterface;
+class NGMP_OnlineServices_StatsInterface;
+class NGMP_OnlineServices_SocialInterface;
 
 struct NGMPEvent {
     enum Type {
@@ -51,18 +58,20 @@ struct NGMPEvent {
 };
 
 struct NGMPLobby {
-    int64_t id;
+    int64_t id = -1;
     std::string name;
     std::string mapName;
-    int maxPlayers;
-    int currentPlayers;
-    bool hasPassword;
+    std::string mapPath;
+    bool isOfficial = true;
+    int maxPlayers = 8;
+    int currentPlayers = 0;
+    bool hasPassword = false;
 };
 
 struct NGMPLobbyPlayer {
-    int64_t id;
+    int64_t id = -1;
     std::string name;
-    bool isAdmin;
+    bool isAdmin = false;
 };
 
 struct GlobalStats {
@@ -89,9 +98,45 @@ struct PlaylistEntry {
     std::vector<PlaylistMapEntry> Maps;
 };
 
+class WebSocket {
+public:
+    void SendData_ChangeName(UnicodeString& strNewName);
+    void SendData_RoomChatMessage(UnicodeString& msg, bool bIsAction);
+    void SendData_FriendMessage(UnicodeString& msg, int64_t target_user_id);
+    void SendData_LobbyChatMessage(UnicodeString& msg, bool bIsAction, bool bIsAnnouncement, bool bShowAnnouncementToHost);
+    void SendData_JoinNetworkRoom(int roomID);
+    void SendData_LeaveNetworkRoom();
+    void SendData_MarkReady(bool bReady);
+    void SendData_StartGame();
+    void SendData_CountdownStarted();
+};
+
 class NGMP_OnlineServicesManager {
 public:
     static NGMP_OnlineServicesManager& getInstance();
+    static NGMP_OnlineServicesManager* GetInstance() { return &getInstance(); }
+
+    template<typename T>
+    static T* GetInterface()
+    {
+        NGMP_OnlineServicesManager& mgr = getInstance();
+        if constexpr (std::is_same_v<T, NGMP_OnlineServices_AuthInterface>)
+            return mgr.m_pAuthInterface;
+        else if constexpr (std::is_same_v<T, NGMP_OnlineServices_LobbyInterface>)
+            return mgr.m_pLobbyInterface;
+        else if constexpr (std::is_same_v<T, NGMP_OnlineServices_RoomsInterface>)
+            return mgr.m_pRoomInterface;
+        else if constexpr (std::is_same_v<T, NGMP_OnlineServices_StatsInterface>)
+            return mgr.m_pStatsInterface;
+        else if constexpr (std::is_same_v<T, NGMP_OnlineServices_SocialInterface>)
+            return mgr.m_pSocialInterface;
+        return nullptr;
+    }
+
+    static std::shared_ptr<WebSocket> GetWebSocket()
+    {
+        return getInstance().m_pWebSocketWrapper;
+    }
 
     bool init();
     std::vector<NGMPEvent> pollEvents(); // Main thread UI tick dispatch
@@ -102,7 +147,6 @@ public:
     // Browser-based gamecode login flow (macOS/Linux: uses SDL_OpenURL)
     void beginBrowserLogin();
     void cancelBrowserLogin();
-    // Call from main-thread update loop while waiting for browser login
     void tickBrowserLogin();
 
     // Token-based silent re-login
@@ -161,6 +205,13 @@ public:
 
     // Internal thread-safe event poster (called from worker threads)
     void postEvent(const NGMPEvent& event);
+
+    NGMP_OnlineServices_AuthInterface* m_pAuthInterface = nullptr;
+    NGMP_OnlineServices_LobbyInterface* m_pLobbyInterface = nullptr;
+    NGMP_OnlineServices_RoomsInterface* m_pRoomInterface = nullptr;
+    NGMP_OnlineServices_StatsInterface* m_pStatsInterface = nullptr;
+    NGMP_OnlineServices_SocialInterface* m_pSocialInterface = nullptr;
+    std::shared_ptr<WebSocket> m_pWebSocketWrapper;
 
 private:
     NGMP_OnlineServicesManager();

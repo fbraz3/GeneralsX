@@ -177,3 +177,82 @@ void NGMPWebSocket::receiveLoop() {
 }
 
 } // namespace NGMP
+
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+
+void WebSocket::SendData_ChangeName(UnicodeString& strNewName)
+{
+    AsciiString aName;
+    aName.translate(strNewName);
+    json payload;
+    payload["msg_id"] = (int)NGMP::EWebSocketMessageID::PLAYER_NAME_CHANGE;
+    payload["display_name"] = aName.str();
+    NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", payload.dump());
+}
+
+void WebSocket::SendData_RoomChatMessage(UnicodeString& msg, bool bIsAction)
+{
+    AsciiString aMsg;
+    aMsg.translate(msg);
+    json payload;
+    payload["msg_id"] = (int)NGMP::EWebSocketMessageID::NETWORK_ROOM_CHAT_FROM_CLIENT;
+    payload["room"] = 0;
+    payload["message"] = aMsg.str();
+    payload["is_action"] = bIsAction;
+    NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", payload.dump());
+}
+
+void WebSocket::SendData_FriendMessage(UnicodeString& msg, int64_t target_user_id)
+{
+    AsciiString aMsg;
+    aMsg.translate(msg);
+    json payload;
+    payload["msg_id"] = (int)NGMP::EWebSocketMessageID::SOCIAL_FRIEND_CHAT_MESSAGE_CLIENT_TO_SERVER;
+    payload["target_user_id"] = target_user_id;
+    payload["message"] = aMsg.str();
+    NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", payload.dump());
+}
+
+void WebSocket::SendData_LobbyChatMessage(UnicodeString& msg, bool bIsAction, bool bIsAnnouncement, bool bShowAnnouncementToHost)
+{
+    AsciiString aMsg;
+    aMsg.translate(msg);
+    json payload;
+    payload["msg_id"] = (int)NGMP::EWebSocketMessageID::LOBBY_ROOM_CHAT_FROM_CLIENT;
+    payload["message"] = aMsg.str();
+    payload["is_action"] = bIsAction;
+    payload["is_announcement"] = bIsAnnouncement;
+    NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", payload.dump());
+}
+
+void WebSocket::SendData_JoinNetworkRoom(int roomID)
+{
+    NGMP_OnlineServicesManager::getInstance().changeNetworkRoom((int16_t)roomID);
+}
+
+void WebSocket::SendData_LeaveNetworkRoom()
+{
+    NGMP_OnlineServicesManager::getInstance().changeNetworkRoom(-1);
+}
+
+void WebSocket::SendData_MarkReady(bool bReady)
+{
+    json payload;
+    payload["msg_id"] = (int)NGMP::EWebSocketMessageID::NETWORK_ROOM_MARK_READY;
+    payload["ready"] = bReady;
+    NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", payload.dump());
+}
+
+void WebSocket::SendData_StartGame()
+{
+    json payload;
+    payload["msg_id"] = (int)NGMP::EWebSocketMessageID::START_GAME;
+    NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", payload.dump());
+}
+
+void WebSocket::SendData_CountdownStarted()
+{
+    json payload;
+    payload["msg_id"] = (int)NGMP::EWebSocketMessageID::START_GAME_COUNTDOWN_STARTED;
+    NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", payload.dump());
+}

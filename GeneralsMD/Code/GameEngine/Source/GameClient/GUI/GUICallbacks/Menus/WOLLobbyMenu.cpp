@@ -174,6 +174,25 @@ Bool handleLobbySlashCommands(UnicodeString uText)
 		TheGameSpyInfo->sendChat(UnicodeString(uText.str()+4), TRUE, listboxLobbyPlayers);
 		return TRUE; // was a slash command
 	}
+	else if ((token == "name" && uText.getLength() > 6) || (token == "nick" && uText.getLength() > 6))
+	{
+		UnicodeString newName(uText.str() + 6); // skip the /name or nick
+
+		if (newName.getLength() < 3 || newName.getLength() > 16)
+		{
+			GadgetListBoxAddEntryText(listboxLobbyChat, UnicodeString(L"Your new name must be between 3 and 16 characters."), GameMakeColor(255, 0, 0, 255), -1, -1);
+		}
+		else
+		{
+			std::shared_ptr<WebSocket> pWS = NGMP_OnlineServicesManager::GetWebSocket();
+			if (pWS != nullptr)
+			{
+				pWS->SendData_ChangeName(newName);
+			}
+		}
+		
+		return TRUE; // was a slash command
+	}
 	else if (token == "refresh")
 	{
 		// Added 2/19/03 added the game refresh

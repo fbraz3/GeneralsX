@@ -3,6 +3,7 @@
 // Mirrors GeneralsOnline reference: references/GameClient/GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/OnlineServices_Auth.cpp
 
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Auth.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include <SDL3/SDL.h>
@@ -428,4 +429,45 @@ void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
         }
     }).detach();
 }
+
+NGMP_OnlineServices_AuthInterface::NGMP_OnlineServices_AuthInterface()
+{
+}
+
+std::string NGMP_OnlineServices_AuthInterface::GetDisplayName()
+{
+    return NGMP_OnlineServicesManager::getInstance().getUsername();
+}
+
+std::wstring NGMP_OnlineServices_AuthInterface::GetDisplayNameW()
+{
+    std::string name = GetDisplayName();
+    return std::wstring(name.begin(), name.end());
+}
+
+int64_t NGMP_OnlineServices_AuthInterface::GetUserID() const
+{
+    return NGMP_OnlineServicesManager::getInstance().getUserId();
+}
+
+std::string NGMP_OnlineServices_AuthInterface::GetAuthToken() const
+{
+    return NGMP_OnlineServicesManager::getInstance().getAuthToken();
+}
+
+bool NGMP_OnlineServices_AuthInterface::IsLoggedIn() const
+{
+    return NGMP_OnlineServicesManager::getInstance().isLoggedIn();
+}
+
+void NGMP_OnlineServices_AuthInterface::BeginLogin()
+{
+    NGMP_OnlineServicesManager::getInstance().beginBrowserLogin();
+}
+
+void NGMP_OnlineServices_AuthInterface::LogoutOfMyAccount()
+{
+    NGMP_OnlineServicesManager::getInstance().logout();
+}
+
 
