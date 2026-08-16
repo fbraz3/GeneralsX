@@ -6,6 +6,9 @@
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GeneralsOnline/NGMPWebSocket.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#include "GameNetwork/GameSpy/StagingRoomGameInfo.h"
+#include "GameClient/MapUtil.h"
+#include "Common/Money.h"
 #include <cstdio>
 #include <thread>
 #include <curl/curl.h>
@@ -138,8 +141,27 @@ void NGMP_OnlineServicesManager::update() {
                                     uiEvents.push_back(playersEv);
                                 }
                             }
+                            else if (msgId == 6) { // LOBBY_CURRENT_LOBBY_UPDATE
+                                fprintf(stderr, "[NGMP] WS msg_id=6 (LOBBY_CURRENT_LOBBY_UPDATE), refreshing lobby %lld\n", (long long)m_currentLobbyId);
+                                fflush(stderr);
+                                if (m_currentLobbyId >= 0) {
+                                    requestLobbyDetailsAsync(m_currentLobbyId);
+                                }
+                            }
                             else if (msgId == 7) { // NETWORK_ROOM_LOBBY_LIST_UPDATE
                                 requestLobbyListAsync();
+                            }
+                            else if (msgId == 11) { // LOBBY_CHAT_FROM_SERVER
+                                std::string msgText = "";
+                                if (jsonMsg.contains("message") && jsonMsg["message"].is_string()) {
+                                    msgText = jsonMsg["message"].get<std::string>();
+                                } else if (jsonMsg.contains("Message") && jsonMsg["Message"].is_string()) {
+                                    msgText = jsonMsg["Message"].get<std::string>();
+                                }
+                                NGMPEvent chatEv;
+                                chatEv.type = NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED;
+                                chatEv.payload = msgText;
+                                uiEvents.push_back(chatEv);
                             }
                         }
                     } catch (const std::exception& e) {
@@ -345,6 +367,22 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
         curl_easy_cleanup(curl);
 
         if (res == CURLE_OK && (httpCode == 200 || httpCode == 201)) {
+            int64_t createdLobbyId = -1;
+            try {
+                auto jsonResp = json::parse(response.text);
+                if (jsonResp.contains("lobby_id")) {
+                    createdLobbyId = jsonResp["lobby_id"].get<int64_t>();
+                } else if (jsonResp.contains("LobbyID")) {
+                    createdLobbyId = jsonResp["LobbyID"].get<int64_t>();
+                }
+            } catch (...) {}
+
+            m_currentLobbyId = createdLobbyId;
+            m_isLobbyOwner = true;
+
+            if (createdLobbyId >= 0) {
+                requestLobbyDetailsAsync(createdLobbyId);
+            }
             requestLobbyListAsync();
             NGMPEvent ev;
             ev.type = NGMPEvent::EVENT_LOBBY_CREATED;
@@ -357,6 +395,9 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
 }
 
 void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::string& password) {
+    m_currentLobbyId = lobbyId;
+    m_isLobbyOwner = false;
+
     std::thread([this, lobbyId, password]() {
         CURL* curl = curl_easy_init();
         if (!curl) return;
@@ -393,6 +434,7 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
         curl_easy_cleanup(curl);
 
         if (res == CURLE_OK && (httpCode == 200 || httpCode == 201)) {
+            requestLobbyDetailsAsync(lobbyId);
             requestLobbyListAsync();
             NGMPEvent ev;
             ev.type = NGMPEvent::EVENT_LOBBY_JOINED;
@@ -401,6 +443,294 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
             fprintf(stderr, "[NGMP] Join lobby failed (curl=%d, http=%ld, resp=%s)\n", res, httpCode, response.text.c_str());
             fflush(stderr);
         }
+    }).detach();
+}
+
+void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
+    int64_t targetId = (lobbyId >= 0) ? lobbyId : m_currentLobbyId;
+    if (targetId < 0) return;
+
+    std::thread([this, targetId]() {
+        CURL* curl = curl_easy_init();
+        if (!curl) return;
+
+        std::string url = NGMP::GetAPIEndpoint(("Lobby/" + std::to_string(targetId)).c_str());
+        NGMP::Internal::CurlResponse response;
+
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        std::string authHeader = "Authorization: Bearer " + m_authToken;
+        headers = curl_slist_append(headers, authHeader.c_str());
+
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+        CURLcode res = curl_easy_perform(curl);
+        long httpCode = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        if (res == CURLE_OK && httpCode == 200) {
+            try {
+                auto jsonRoot = json::parse(response.text);
+                auto lobbyIter = jsonRoot.contains("lobby") ? jsonRoot["lobby"] : (jsonRoot.contains("Lobby") ? jsonRoot["Lobby"] : jsonRoot);
+
+                int64_t ownerId = lobbyIter.value("Owner", lobbyIter.value("owner", int64_t(-1)));
+                std::string mapName = lobbyIter.value("MapName", lobbyIter.value("map_name", ""));
+                std::string mapPath = lobbyIter.value("MapPath", lobbyIter.value("map_path", ""));
+                int startingCash = lobbyIter.value("StartingCash", lobbyIter.value("starting_cash", 10000));
+                bool limitSuperweapons = lobbyIter.value("IsLimitSuperweapons", lobbyIter.value("is_limit_superweapons", false));
+                bool allowObservers = lobbyIter.value("AllowObservers", lobbyIter.value("allow_observers", true));
+
+                m_currentLobbyId = targetId;
+                m_isLobbyOwner = (ownerId == m_userId);
+
+                if (TheGameSpyInfo) {
+                    GameSpyStagingRoom* stagingRoom = TheGameSpyInfo->getCurrentStagingRoom();
+                    if (stagingRoom) {
+                        // Map setup
+                        if (TheMapCache) {
+                            TheMapCache->updateCache();
+                            AsciiString asciiMapPath(mapPath.c_str());
+                            const MapMetaData* md = TheMapCache->findMap(asciiMapPath);
+                            if (!md && !mapName.empty()) {
+                                md = TheMapCache->findMap(AsciiString(mapName.c_str()));
+                            }
+                            if (md) {
+                                stagingRoom->setMap(md->m_fileName);
+                                stagingRoom->setMapCRC(md->m_CRC);
+                                stagingRoom->setMapSize(md->m_filesize);
+                            } else if (!mapName.empty()) {
+                                stagingRoom->setMap(AsciiString(mapName.c_str()));
+                            }
+                        }
+
+                        Money startingCashMoney;
+                        startingCashMoney.deposit(UnsignedInt(startingCash), FALSE, FALSE);
+                        stagingRoom->setStartingCash(startingCashMoney);
+                        stagingRoom->setSuperweaponRestriction(limitSuperweapons ? 1 : 0);
+                        stagingRoom->setAllowObservers(allowObservers);
+
+                        // Reset all slots first
+                        for (int i = 0; i < MAX_SLOTS; ++i) {
+                            GameSpyGameSlot* slot = stagingRoom->getGameSpySlot(i);
+                            if (slot) {
+                                slot->setState(SLOT_OPEN);
+                            }
+                        }
+
+                        // Populate members
+                        auto membersIter = lobbyIter.contains("Members") ? lobbyIter["Members"] : (lobbyIter.contains("members") ? lobbyIter["members"] : json::array());
+                        if (membersIter.is_array()) {
+                            for (const auto& member : membersIter) {
+                                int slotIdx = member.value("SlotIndex", member.value("slot_index", -1));
+                                int slotState = member.value("SlotState", member.value("slot_state", 0));
+                                std::string dispName = member.value("DisplayName", member.value("display_name", ""));
+                                int side = member.value("Side", member.value("side", -1));
+                                int color = member.value("Color", member.value("color", -1));
+                                int team = member.value("Team", member.value("team", -1));
+                                int startPos = member.value("StartingPosition", member.value("starting_position", -1));
+                                bool hasMap = member.value("HasMap", member.value("has_map", true));
+                                bool isReady = member.value("IsReady", member.value("is_ready", false));
+
+                                if (slotIdx >= 0 && slotIdx < MAX_SLOTS) {
+                                    GameSpyGameSlot* slot = stagingRoom->getGameSpySlot(slotIdx);
+                                    if (slot) {
+                                        UnicodeString uName;
+                                        uName.translate(dispName.c_str());
+                                        slot->setState(static_cast<SlotState>(slotState), uName);
+                                        slot->setPlayerTemplate((side >= 0) ? side : PLAYERTEMPLATE_RANDOM);
+                                        slot->setColor((color >= 0) ? color : 0);
+                                        slot->setTeamNumber((team >= 0) ? team : 0);
+                                        slot->setStartPos(startPos);
+                                        slot->setMapAvailability(hasMap ? TRUE : FALSE);
+                                        if (isReady) {
+                                            slot->setAccept();
+                                        } else {
+                                            slot->unAccept();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                fprintf(stderr, "[NGMP] Synchronized staging room with Lobby %lld (map=%s, cash=%d, superweapons=%d, isOwner=%d)\n",
+                    (long long)targetId, mapName.c_str(), startingCash, limitSuperweapons, m_isLobbyOwner ? 1 : 0);
+                fflush(stderr);
+
+                NGMPEvent ev;
+                ev.type = NGMPEvent::EVENT_PLAYERS_UPDATED;
+                postEvent(ev);
+
+            } catch (const std::exception& e) {
+                fprintf(stderr, "[NGMP] Failed to parse Lobby details (%s): %s\n", e.what(), response.text.c_str());
+                fflush(stderr);
+            }
+        } else {
+            fprintf(stderr, "[NGMP] GET Lobby %lld failed (curl=%d, http=%ld)\n", (long long)targetId, res, httpCode);
+            fflush(stderr);
+        }
+    }).detach();
+}
+
+static void sendLobbyPostUpdate(const std::string& authToken, int64_t lobbyId, const json& payload) {
+    if (lobbyId < 0 || authToken.empty()) return;
+
+    std::thread([authToken, lobbyId, payload]() {
+        CURL* curl = curl_easy_init();
+        if (!curl) return;
+
+        std::string url = NGMP::GetAPIEndpoint(("Lobby/" + std::to_string(lobbyId)).c_str());
+        std::string payloadStr = payload.dump();
+        NGMP::Internal::CurlResponse response;
+
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        std::string authHeader = "Authorization: Bearer " + authToken;
+        headers = curl_slist_append(headers, authHeader.c_str());
+
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+
+        CURLcode res = curl_easy_perform(curl);
+        long httpCode = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        if (res != CURLE_OK || (httpCode != 200 && httpCode != 204)) {
+            fprintf(stderr, "[NGMP] Lobby POST update failed (field=%d, curl=%d, http=%ld, resp=%s)\n",
+                payload.value("field", -1), res, httpCode, response.text.c_str());
+            fflush(stderr);
+        }
+    }).detach();
+}
+
+void NGMP_OnlineServicesManager::updateLobbyMap(const std::string& mapName, const std::string& mapPath, bool isOfficial, int maxPlayers) {
+    json payload = {
+        {"field", 0}, // LOBBY_MAP
+        {"map", mapName},
+        {"map_path", mapPath},
+        {"map_official", isOfficial},
+        {"max_players", maxPlayers}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyStartingCash(int startingCash) {
+    json payload = {
+        {"field", 5}, // LOBBY_STARTING_CASH
+        {"startingcash", startingCash}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyLimitSuperweapons(bool limit) {
+    json payload = {
+        {"field", 6}, // LOBBY_LIMIT_SUPERWEAPONS
+        {"limit_superweapons", limit}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyMySide(int side, int startPos) {
+    json payload = {
+        {"field", 1}, // MY_SIDE
+        {"side", side},
+        {"start_pos", startPos}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyMyColor(int color) {
+    json payload = {
+        {"field", 2}, // MY_COLOR
+        {"color", color}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyMyStartPos(int startPos) {
+    json payload = {
+        {"field", 3}, // MY_START_POS
+        {"startpos", startPos}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyMyTeam(int team) {
+    json payload = {
+        {"field", 4}, // MY_TEAM
+        {"team", team}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbySlotState(int slotIndex, int slotState) {
+    json payload = {
+        {"field", 12}, // HOST_ACTION_SET_SLOT_STATE
+        {"slot_index", slotIndex},
+        {"slot_state", slotState}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyHasMap(bool hasMap) {
+    json payload = {
+        {"field", 8}, // LOCAL_PLAYER_HAS_MAP
+        {"has_map", hasMap}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyForceStart() {
+    json payload = {
+        {"field", 7} // HOST_ACTION_FORCE_START
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyLeave(int64_t lobbyId) {
+    int64_t targetId = (lobbyId >= 0) ? lobbyId : m_currentLobbyId;
+    if (targetId < 0 || m_authToken.empty()) return;
+
+    std::thread([this, targetId]() {
+        CURL* curl = curl_easy_init();
+        if (!curl) return;
+
+        std::string url = NGMP::GetAPIEndpoint(("Lobby/" + std::to_string(targetId)).c_str());
+        NGMP::Internal::CurlResponse response;
+
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        std::string authHeader = "Authorization: Bearer " + m_authToken;
+        headers = curl_slist_append(headers, authHeader.c_str());
+
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+
+        CURLcode res = curl_easy_perform(curl);
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        m_currentLobbyId = -1;
+        m_isLobbyOwner = false;
     }).detach();
 }
 

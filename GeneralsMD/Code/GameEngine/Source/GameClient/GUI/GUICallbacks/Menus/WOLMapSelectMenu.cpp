@@ -40,9 +40,13 @@
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetListBox.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#include "GameNetwork/GameSpy/StagingRoomGameInfo.h"
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameClient/MapUtil.h"
 #include "GameNetwork/GUIUtil.h"
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +128,6 @@ static void showGameSpyGameOptionsUnderlyingGUIElements( Bool show )
 //-------------------------------------------------------------------------------------------------
 void WOLMapSelectMenuInit( WindowLayout *layout, void *userData )
 {
-
 	// set keyboard focus to main parent
 	NameKeyType parentID = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:WOLMapSelectMenuParent" );
 	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
@@ -136,14 +139,25 @@ void WOLMapSelectMenuInit( WindowLayout *layout, void *userData )
 	winMapPreviewID = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:WinMapPreview" );
 	winMapPreview = TheWindowManager->winGetWindowFromId(parent, winMapPreviewID);
 
-	const MapMetaData *mmd = TheMapCache->findMap(TheGameSpyGame->getMap());
-	if (mmd)
-	{
-		usesSystemMapDir = mmd->m_isOfficial;
+	AsciiString curMap;
+	if (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom()) {
+		curMap = TheGameSpyInfo->getCurrentStagingRoom()->getMap();
+	}
+	if (curMap.isEmpty()) {
+		curMap = getDefaultMap(TRUE);
+	}
+
+	if (TheMapCache) {
+		TheMapCache->updateCache();
+		const MapMetaData *mmd = TheMapCache->findMap(curMap);
+		if (mmd)
+		{
+			usesSystemMapDir = mmd->m_isOfficial;
+		}
 	}
 
 	//if stats are enabled, only official maps can be used
-	if( TheGameSpyInfo->getCurrentStagingRoom()->getUseStats() )
+	if( TheGameSpyInfo->getCurrentStagingRoom() && TheGameSpyInfo->getCurrentStagingRoom()->getUseStats() )
 		usesSystemMapDir = true;
 
 	buttonBack = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:ButtonBack" );
@@ -155,15 +169,22 @@ void WOLMapSelectMenuInit( WindowLayout *layout, void *userData )
 
 	GameWindow *radioButtonSystemMaps = TheWindowManager->winGetWindowFromId( parent, radioButtonSystemMapsID );
 	GameWindow *radioButtonUserMaps = TheWindowManager->winGetWindowFromId( parent, radioButtonUserMapsID );
-	if( TheGameSpyInfo->getCurrentStagingRoom()->getUseStats() )
+	if( TheGameSpyInfo->getCurrentStagingRoom() && TheGameSpyInfo->getCurrentStagingRoom()->getUseStats() )
 	{	//disable unofficial maps if stats are being recorded
-		GadgetRadioSetSelection( radioButtonSystemMaps, FALSE );
+		GadgetRadioSetSelection( radioButtonSystemMaps, TRUE );
+		GadgetRadioSetSelection( radioButtonUserMaps, FALSE );
 		radioButtonUserMaps->winEnable( FALSE );
 	}
 	else if (usesSystemMapDir)
-		GadgetRadioSetSelection( radioButtonSystemMaps, FALSE );
-	else
+	{
+		GadgetRadioSetSelection( radioButtonSystemMaps, TRUE );
 		GadgetRadioSetSelection( radioButtonUserMaps, FALSE );
+	}
+	else
+	{
+		GadgetRadioSetSelection( radioButtonSystemMaps, FALSE );
+		GadgetRadioSetSelection( radioButtonUserMaps, TRUE );
+	}
 
 	AsciiString tmpString;
 	for (Int i = 0; i < MAX_SLOTS; i++)
@@ -186,7 +207,7 @@ void WOLMapSelectMenuInit( WindowLayout *layout, void *userData )
 	{
 		if (TheMapCache)
 			TheMapCache->updateCache();
-		populateMapListbox( mapList, usesSystemMapDir, TRUE, TheGameSpyGame->getMap() );
+		populateMapListbox( mapList, usesSystemMapDir, TRUE, curMap );
 	}
 
 }
@@ -401,7 +422,12 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 			{
 				if (TheMapCache)
 					TheMapCache->updateCache();
-				populateMapListbox( mapList, TRUE, TRUE, TheGameSpyGame->getMap() );
+				AsciiString mapName;
+				if (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom())
+					mapName = TheGameSpyInfo->getCurrentStagingRoom()->getMap();
+				if (mapName.isEmpty())
+					mapName = getDefaultMap(TRUE);
+				populateMapListbox( mapList, TRUE, TRUE, mapName );
 				CustomMatchPreferences pref;
 				pref.setUsesSystemMapDir(TRUE);
 				pref.write();
@@ -410,7 +436,12 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 			{
 				if (TheMapCache)
 					TheMapCache->updateCache();
-				populateMapListbox( mapList, FALSE, TRUE, TheGameSpyGame->getMap() );
+				AsciiString mapName;
+				if (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom())
+					mapName = TheGameSpyInfo->getCurrentStagingRoom()->getMap();
+				if (mapName.isEmpty())
+					mapName = getDefaultMap(TRUE);
+				populateMapListbox( mapList, FALSE, TRUE, mapName );
 				CustomMatchPreferences pref;
 				pref.setUsesSystemMapDir(FALSE);
 				pref.write();
@@ -429,7 +460,6 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					// get text of the map to load
 					map = GadgetListBoxGetText( winMapWindow, selected, 0 );
 
-
 					// set the map name in the global data map name
 					AsciiString asciiMap;
 					const char *mapFname = (const char *)GadgetListBoxGetItemData( winMapWindow, selected );
@@ -438,20 +468,38 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 						asciiMap = mapFname;
 					else
 						asciiMap.translate( map );
-					TheGameSpyGame->setMap(asciiMap);
-					asciiMap.toLower();
-					std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(asciiMap);
-					if (it != TheMapCache->end())
-					{
-						TheGameSpyGame->getGameSpySlot(0)->setMapAvailability(TRUE);
-						TheGameSpyGame->setMapCRC( it->second.m_CRC );
-						TheGameSpyGame->setMapSize( it->second.m_filesize );
-					}
 
-					TheGameSpyGame->adjustSlotsForMap(); // BGC- adjust the slots for the new map.
-					TheGameSpyGame->resetAccepted();
-					TheGameSpyGame->resetStartSpots();
-					TheGameSpyInfo->setGameOptions();
+					GameSpyStagingRoom *stagingRoom = TheGameSpyInfo ? TheGameSpyInfo->getCurrentStagingRoom() : nullptr;
+					if (stagingRoom)
+					{
+						stagingRoom->setMap(asciiMap);
+						asciiMap.toLower();
+						std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(asciiMap);
+						int newMaxPlayers = 8;
+						std::string strMapName = asciiMap.str();
+						bool bOfficialMap = true;
+						if (it != TheMapCache->end())
+						{
+							stagingRoom->getGameSpySlot(0)->setMapAvailability(TRUE);
+							stagingRoom->setMapCRC( it->second.m_CRC );
+							stagingRoom->setMapSize( it->second.m_filesize );
+							newMaxPlayers = it->second.m_numPlayers;
+							UnicodeString uDisp = it->second.m_displayName;
+							AsciiString aDisp;
+							aDisp.translate(uDisp);
+							strMapName = aDisp.str();
+							bOfficialMap = it->second.m_isOfficial;
+						}
+
+						stagingRoom->adjustSlotsForMap(); // BGC- adjust the slots for the new map.
+						stagingRoom->resetAccepted();
+						stagingRoom->resetStartSpots();
+						TheGameSpyInfo->setGameOptions();
+
+#if defined(SAGE_USE_NGMP)
+						NGMP_OnlineServicesManager::getInstance().updateLobbyMap(strMapName, asciiMap.str(), bOfficialMap, newMaxPlayers);
+#endif
+					}
 
 					WOLDisplaySlotList();
 					WOLDisplayGameOptions();

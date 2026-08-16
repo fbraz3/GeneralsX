@@ -558,6 +558,10 @@ static void handleColorSelection(int index)
 
 		slot->setColor(color);
 
+#if defined(SAGE_USE_NGMP)
+		NGMP_OnlineServicesManager::getInstance().updateLobbyMyColor(color);
+#endif
+
 		if (TheGameSpyInfo->amIHost())
 		{
 			// send around a new slotlist
@@ -618,6 +622,9 @@ static void handlePlayerTemplateSelection(int index)
 			slot->setStartPos(-1);
 		}
 
+#if defined(SAGE_USE_NGMP)
+		NGMP_OnlineServicesManager::getInstance().updateLobbyMySide(playerTemplate, slot->getStartPos());
+#endif
 
 		if (TheGameSpyInfo->amIHost())
 		{
@@ -679,6 +686,10 @@ static void handleStartPositionSelection(Int player, int startPos)
 		}
 		slot->setStartPos(startPos);
 
+#if defined(SAGE_USE_NGMP)
+		NGMP_OnlineServicesManager::getInstance().updateLobbyMyStartPos(startPos);
+#endif
+
 		if (myGame->amIHost())
 		{
 			// send around a new slotlist
@@ -728,6 +739,10 @@ static void handleTeamSelection(int index)
 
 		slot->setTeamNumber(team);
 
+#if defined(SAGE_USE_NGMP)
+		NGMP_OnlineServicesManager::getInstance().updateLobbyMyTeam(team);
+#endif
+
 		if (TheGameSpyInfo->amIHost())
 		{
 			// send around a new slotlist
@@ -768,6 +783,10 @@ static void handleStartingCashSelection()
     myGame->setStartingCash( startingCash );
     myGame->resetAccepted();
 
+#if defined(SAGE_USE_NGMP)
+    NGMP_OnlineServicesManager::getInstance().updateLobbyStartingCash(startingCash.countMoney());
+#endif
+
     if (myGame->amIHost())
     {
       // send around the new data
@@ -794,6 +813,10 @@ static void handleLimitSuperweaponsClick()
       myGame->setSuperweaponRestriction( 0 );
     }
     myGame->resetAccepted();
+
+#if defined(SAGE_USE_NGMP)
+    NGMP_OnlineServicesManager::getInstance().updateLobbyLimitSuperweapons(GadgetCheckBoxIsChecked(checkBoxLimitSuperweapons));
+#endif
 
     if (myGame->amIHost())
     {
@@ -1389,6 +1412,11 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 	}
 	GameSpyGameSlot *hostSlot = game->getGameSpySlot(0);
 	hostSlot->setAccept();
+
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServicesManager::getInstance().requestLobbyDetailsAsync();
+#endif
+
 	if (TheGameSpyInfo->amIHost())
 	{
 		OptionPreferences natPref;
@@ -1425,14 +1453,20 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 			slot->setState( SLOT_OPEN );
 		}
 
-		AsciiString lowerMap = customPref.getPreferredMap();
-		lowerMap.toLower();
-		std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-		if (it != TheMapCache->end())
+		AsciiString mapToFind = game->getMap();
+		if (mapToFind.isEmpty()) {
+			mapToFind = customPref.getPreferredMap();
+		}
+		if (mapToFind.isEmpty()) {
+			mapToFind = getDefaultMap(TRUE);
+		}
+		const MapMetaData *md = TheMapCache->findMap(mapToFind);
+		if (md)
 		{
 			hostSlot->setMapAvailability(TRUE);
-			game->setMapCRC( it->second.m_CRC );
-			game->setMapSize( it->second.m_filesize );
+			game->setMap(md->m_fileName);
+			game->setMapCRC( md->m_CRC );
+			game->setMapSize( md->m_filesize );
 
 			game->adjustSlotsForMap(); // BGC- adjust the slots for the new map.
 		}
@@ -1615,6 +1649,21 @@ static void fillPlayerInfo(const PeerResponse *resp, PlayerInfo *info)
 //-------------------------------------------------------------------------------------------------
 void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 {
+#if defined(SAGE_USE_NGMP)
+	std::vector<NGMPEvent> ngmpEvents = NGMP_OnlineServicesManager::getInstance().pollEvents();
+	for (const auto& ev : ngmpEvents) {
+		if (ev.type == NGMPEvent::EVENT_PLAYERS_UPDATED) {
+			WOLDisplaySlotList();
+			WOLDisplayGameOptions();
+		}
+		else if (ev.type == NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED) {
+			UnicodeString uMsg;
+			uMsg.translate(ev.payload.c_str());
+			GadgetListBoxAddEntryText(listboxGameSetupChat, uMsg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+		}
+	}
+#endif
+
 	// We'll only be successful if we've requested to
 	if(isShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
 	{
@@ -2679,6 +2728,9 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 								  myGame->getSlot(i)->setState(SlotState(pos));
 								  myGame->resetAccepted();
 								  TheGameSpyInfo->setGameOptions();
+#if defined(SAGE_USE_NGMP)
+								  NGMP_OnlineServicesManager::getInstance().updateLobbySlotState(i, pos);
+#endif
 								  WOLDisplaySlotList();
 								  //TheLAN->OnPlayerLeave(name);
 							  }
@@ -2691,6 +2743,9 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 								  if (wasAI ^ isAI)
 									  PopulatePlayerTemplateComboBox(i, comboBoxPlayerTemplate, myGame, wasAI && myGame->getAllowObservers());
 								  TheGameSpyInfo->setGameOptions();
+#if defined(SAGE_USE_NGMP)
+								  NGMP_OnlineServicesManager::getInstance().updateLobbySlotState(i, pos);
+#endif
 								  WOLDisplaySlotList();
 							  }
 						  }
@@ -2722,6 +2777,9 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 					TheGameSpyInfo->getCurrentStagingRoom()->reset();
 					//peerLeaveRoom(TheGameSpyChat->getPeer(), StagingRoom, nullptr);
 					TheGameSpyInfo->leaveStagingRoom();
+#if defined(SAGE_USE_NGMP)
+					NGMP_OnlineServicesManager::getInstance().updateLobbyLeave();
+#endif
 					buttonPushed = true;
 					nextScreen = "Menus/WOLCustomLobby.wnd";
 					TheShell->pop();

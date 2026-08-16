@@ -115,6 +115,26 @@ public:
     void createLobbyAsync(const std::string& name, const std::string& mapName, const std::string& password, int maxPlayers);
     void joinLobbyAsync(int64_t lobbyId, const std::string& password);
 
+    // Staging room / lobby details synchronization
+    int64_t getCurrentLobbyId() const { return m_currentLobbyId; }
+    void setCurrentLobbyId(int64_t id) { m_currentLobbyId = id; }
+    bool isLobbyOwner() const { return m_isLobbyOwner; }
+
+    void requestLobbyDetailsAsync(int64_t lobbyId = -1);
+
+    // Staging room modification methods (matching ELobbyUpdateField)
+    void updateLobbyMap(const std::string& mapName, const std::string& mapPath, bool isOfficial, int maxPlayers);
+    void updateLobbyStartingCash(int startingCash);
+    void updateLobbyLimitSuperweapons(bool limit);
+    void updateLobbyMySide(int side, int startPos);
+    void updateLobbyMyColor(int color);
+    void updateLobbyMyTeam(int team);
+    void updateLobbyMyStartPos(int startPos);
+    void updateLobbySlotState(int slotIndex, int slotState);
+    void updateLobbyHasMap(bool hasMap);
+    void updateLobbyForceStart();
+    void updateLobbyLeave(int64_t lobbyId = -1);
+
     // Async playlists fetch
     void requestPlaylistsAsync();
     const std::vector<PlaylistEntry>& getPlaylists() const { return m_playlists; }
@@ -157,6 +177,10 @@ private:
     std::string m_wsUri;
     std::vector<NGMPLobby> m_lobbies;
     std::vector<NGMPLobbyPlayer> m_lobbyPlayers;
+
+    // Staging room state
+    int64_t m_currentLobbyId = -1;
+    bool m_isLobbyOwner = false;
 
     // Browser-based login state
     std::atomic<bool> m_waitingBrowserLogin = false;
