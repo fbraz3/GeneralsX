@@ -73,9 +73,9 @@ void BezFwdIterator::start()
 	glm::vec4 pz(mBezSeg.m_controlPoints[0].z, mBezSeg.m_controlPoints[1].z, mBezSeg.m_controlPoints[2].z, mBezSeg.m_controlPoints[3].z);
 
 	glm::vec4 cVec[3];
-	cVec[0] = BezierSegment::s_bezBasisMatrix * px;
-	cVec[1] = BezierSegment::s_bezBasisMatrix * py;
-	cVec[2] = BezierSegment::s_bezBasisMatrix * pz;
+	cVec[0] = BezierMath::GLMVec4Transform(px, BezierSegment::s_bezBasisMatrix);
+	cVec[1] = BezierMath::GLMVec4Transform(py, BezierSegment::s_bezBasisMatrix);
+	cVec[2] = BezierMath::GLMVec4Transform(pz, BezierSegment::s_bezBasisMatrix);
 #endif
 
 	mCurrPoint = mBezSeg.m_controlPoints[0];
@@ -129,4 +129,3 @@ void BezFwdIterator::next()
 
 	++mStep;
 }
-
