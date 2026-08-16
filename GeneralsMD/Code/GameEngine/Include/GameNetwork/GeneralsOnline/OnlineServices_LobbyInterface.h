@@ -153,6 +153,8 @@ public:
 
 	bool IsHost();
 	bool IsInLobby() const { return m_CurrentLobby.lobbyID != -1; }
+	uint64_t GetCurrentMatchID() const { return m_CurrentLobby.match_id; }
+	void SetJoinability(ELobbyJoinability joinability) {}
 
 	int64_t GetCurrentLobbyOwnerID() const { return m_CurrentLobby.owner; }
 

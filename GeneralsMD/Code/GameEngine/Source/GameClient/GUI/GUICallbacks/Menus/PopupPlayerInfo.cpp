@@ -63,6 +63,8 @@
 
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Auth.h"
+#include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #endif
 
 #include "WWDownload/Registry.h"
@@ -1332,6 +1334,25 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 	PopulatePlayerInfoWindows("PopupPlayerInfo.wnd");
 
 	// we're on the myinfo screen
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	int64_t myUserID = (pAuthInterface != nullptr) ? pAuthInterface->GetUserID() : 0;
+	if(lookAtPlayerID == myUserID || lookAtPlayerID == 1)
+	{
+		buttonSetLocale->winHide(TRUE);
+		buttonDeleteAccount->winHide(FALSE);
+		buttonDeleteAccount->winSetText(UnicodeString(L"LOGOUT"));
+		checkBoxAsianFont->winHide(TRUE);
+		checkBoxNonAsianFont->winHide(TRUE);
+	}
+	else
+	{
+		buttonSetLocale->winHide(TRUE);
+		buttonDeleteAccount->winHide(TRUE);
+		checkBoxAsianFont->winHide(TRUE);
+		checkBoxNonAsianFont->winHide(TRUE);
+	}
+#else
 	if(lookAtPlayerID == TheGameSpyInfo->getLocalProfileID())
 	{
 		//buttonbuttonOptions->winHide(FALSE);
@@ -1348,6 +1369,7 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 		checkBoxAsianFont->winHide(TRUE);
 		checkBoxNonAsianFont->winHide(TRUE);
 	}
+#endif
 
 	// set the asian check boxes
 	CustomMatchPreferences pref;
@@ -1520,7 +1542,11 @@ WindowMsgHandledType GameSpyPlayerInfoOverlaySystem( GameWindow *window, Unsigne
 				{
 					RefreshGameListBoxes();
 					GameSpyCloseOverlay( GSOVERLAY_PLAYERINFO );
+#if defined(SAGE_USE_NGMP)
+					MessageBoxYesNo(UnicodeString(L"Log Out"), UnicodeString(L"Are you sure you want to log out?"), messageBoxYes, nullptr);
+#else
 					MessageBoxYesNo(TheGameText->fetch("GUI:DeleteAccount"), TheGameText->fetch("GUI:AreYouSureDeleteAccount"),messageBoxYes, nullptr);
+#endif
 				}
 				else if (controlID == checkBoxAsianFontID)
 				{
@@ -1573,9 +1599,18 @@ WindowMsgHandledType GameSpyPlayerInfoOverlaySystem( GameWindow *window, Unsigne
 
 static void messageBoxYes()
 {
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	if (pAuthInterface != nullptr)
+	{
+		pAuthInterface->LogoutOfMyAccount();
+	}
+	RefreshGameListBoxes();
+	GameSpyCloseOverlay(GSOVERLAY_PLAYERINFO);
+#else
 	BuddyRequest breq;
 	breq.buddyRequestType = BuddyRequest::BUDDYREQUEST_DELETEACCT;
 	TheGameSpyBuddyMessageQueue->addRequest( breq );
 	TheGameSpyInfo->setLocalProfileID(0);
-
+#endif
 }

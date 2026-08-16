@@ -101,6 +101,17 @@
 #include "GameClient/InGameUI.h"
 #include "GameClient/ChallengeGenerals.h"
 
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#include <SDL3/SDL.h>
+#include <cinttypes>
+extern NGMPGame* TheNGMPGame;
+#endif
+
 
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -594,6 +605,23 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 							startNextCampaignGame();
 						}
 					}
+					else if (screenType == SCORESCREEN_INTERNET)
+					{
+#if defined(SAGE_USE_NGMP)
+						NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+						if (pLobbyInterface != nullptr)
+						{
+							uint64_t currentMatchID = pLobbyInterface->GetCurrentMatchID();
+
+							if (currentMatchID != 0)
+							{
+								AsciiString strMatchURL;
+								strMatchURL.format("https://www.playgenerals.online/viewmatch?match=%" PRIu64, currentMatchID);
+								SDL_OpenURL(strMatchURL.str());
+							}
+						}
+#endif
+					}
 				}
 			}
 			else if ( controlID == buttonBuddiesID )
@@ -1081,13 +1109,66 @@ void initInternetMultiPlayer()
 	if(staticTextGameSaved)
 		staticTextGameSaved->winHide(TRUE);
 	if (buttonContinue)
+#if defined(SAGE_USE_NGMP)
+		buttonContinue->winHide(FALSE);
+#else
 		buttonContinue->winHide(TRUE);
+#endif
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
 	if (buttonEmote)
 		buttonEmote->winHide(TRUE);
 	if (listboxChatWindowScoreScreen)
 		listboxChatWindowScoreScreen->winHide(FALSE);
+
+#if defined(SAGE_USE_NGMP)
+	// attempt to register our outcome
+	NGMP_OnlineServices_StatsInterface* pStatsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_StatsInterface>();
+	if (pStatsInterface != nullptr)
+	{
+		Player* localPlayer = ThePlayerList->getLocalPlayer();
+
+		if (localPlayer != nullptr && TheNGMPGame)
+		{
+			if (!TheNGMPGame->HasCommittedOutcome())
+			{
+				TheNGMPGame->SetHasCommittedOutcome();
+				pStatsInterface->CommitMyOutcome(localPlayer->getScoreKeeper(), TheVictoryConditions->isLocalAlliedVictory());
+			}
+		}
+	}
+
+	// Leave the lobby / populate match info
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (pLobbyInterface != nullptr)
+	{
+		if (pLobbyInterface->IsInLobby())
+		{
+			LobbyEntry& lobby = pLobbyInterface->GetCurrentLobby();
+
+			UnicodeString strMatchID;
+			strMatchID.format(L"\nMatch ID: %" PRIu64, lobby.match_id);
+
+			UnicodeString strMatchURL;
+
+			if (lobby.match_id == 0)
+			{
+				buttonContinue->winHide(TRUE);
+				GadgetListBoxAddEntryText(listboxAcademyWindowScoreScreen, UnicodeString(L"\nMatch data is not available online because the match had AI present OR less than 2 human players."), GameSpyColor[GSCOLOR_DEFAULT], -1);
+			}
+			else
+			{
+				buttonContinue->winHide(FALSE);
+				strMatchURL.format(L"\nView match data, participants, replays, anti-cheat data: https://www.playgenerals.online/viewmatch?match=%" PRIu64, lobby.match_id);
+
+				buttonContinue->winSetText(UnicodeString(L"VIEW MATCH ONLINE"));
+
+				GadgetListBoxAddEntryText(listboxAcademyWindowScoreScreen, strMatchID, GameSpyColor[GSCOLOR_DEFAULT], -1);
+				GadgetListBoxAddEntryText(listboxAcademyWindowScoreScreen, strMatchURL, GameSpyColor[GSCOLOR_DEFAULT], -1);
+			}
+		}
+	}
+#endif
 
 	//Provide academy advice in internet games.
 	if( listboxAcademyWindowScoreScreen )
@@ -1667,17 +1748,31 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 	if ( screenType == SCORESCREEN_INTERNET )
 	{
 		DEBUG_LOG(("populatePlayerInfo() - SCORESCREEN_INTERNET"));
+#if defined(SAGE_USE_NGMP)
+		if (TheNGMPGame && !TheNGMPGame->getUseStats()
+			&& !TheNGMPGame->isQMGame())  //QuickMatch games always record stats
+			return;	//the host has requested not to record stats for this game.
+#else
 		if (TheGameSpyGame && !TheGameSpyGame->getUseStats()
 		 && !TheGameSpyGame->isQMGame() )  //QuickMatch games always record stats
 			return;	//the host has requested not to record stats for this game.
 
 		Int localID = TheGameSpyInfo->getLocalProfileID();
 		if (localID)
+#endif
 		{
-			Int localSlotNum = TheGameSpyGame->getLocalSlotNum();
+#if defined(SAGE_USE_NGMP)
+			Int localSlotNum = TheNGMPGame ? TheNGMPGame->getLocalSlotNum() : -1;
+#else
+			Int localSlotNum = TheGameSpyGame ? TheGameSpyGame->getLocalSlotNum() : -1;
+#endif
 			if (player->isLocalPlayer())
 			{
-				GameSpyGameSlot *localSlot = TheGameSpyGame->getGameSpySlot(localSlotNum);
+#if defined(SAGE_USE_NGMP)
+				GameSlot *localSlot = TheNGMPGame ? TheNGMPGame->getGameSpySlot(localSlotNum) : nullptr;
+#else
+				GameSpyGameSlot *localSlot = TheGameSpyGame ? TheGameSpyGame->getGameSpySlot(localSlotNum) : nullptr;
+#endif
 				if (localSlot)
 				{
 					if (TheVictoryConditions->amIObserver())
@@ -1687,6 +1782,13 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						return;
 					}
 
+#if defined(SAGE_USE_NGMP)
+					NGMP_OnlineServices_StatsInterface* pStatsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_StatsInterface>();
+					if (pStatsInterface != nullptr)
+					{
+						// Tracked via CommitMyOutcome
+					}
+#else
 					PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(localID);
 
 					UnsignedInt latestHumanInGame = 0;
@@ -2044,6 +2146,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 					GameSpyMiscPreferences mPref;
 					mPref.setCachedStats(GameSpyPSMessageQueueInterface::formatPlayerKVPairs(stats).c_str());
 					mPref.write();
+#endif
 				}
 			}
 		}

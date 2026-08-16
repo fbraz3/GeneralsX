@@ -57,6 +57,8 @@
 
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+extern NGMPGame* TheNGMPGame;
 #endif
 
 #include "GameNetwork/GameSpy/PersistentStorageDefs.h"
@@ -105,7 +107,11 @@ void insertChat( BuddyMessage msg );
 static GameWindow *rcMenu = nullptr;
 static WindowLayout *noticeLayout = nullptr;
 static UnsignedInt noticeExpires = 0;
-enum { NOTIFICATION_EXPIRES = 3000 };
+#if defined(SAGE_USE_NGMP)
+	enum { NOTIFICATION_EXPIRES = 5000 };
+#else
+	enum { NOTIFICATION_EXPIRES = 3000 };
+#endif
 
 void setUnignoreText( WindowLayout *layout, AsciiString nick, GPProfile id);
 void refreshIgnoreList();
@@ -284,6 +290,25 @@ WindowMsgHandledType BuddyControlSystem( GameWindow *window, UnsignedInt msg,
 						break;
 
 					DEBUG_LOG(("Trying to send a buddy message to %d.", selectedProfile));
+#if defined(SAGE_USE_NGMP)
+					if (TheNGMPGame && TheNGMPGame->isGameInProgress() &&
+						!ThePlayerList->getLocalPlayer()->isPlayerActive())
+					{
+						for (Int i=0; i<MAX_SLOTS; ++i)
+						{
+							NGMPGameSlot* slot = TheNGMPGame->getGameSpySlot(i);
+							if (slot && slot->isOccupied() && slot->getProfileID() == selectedProfile)
+							{
+								if (buddyControls.listboxChat)
+								{
+									GadgetListBoxAddEntryText( buddyControls.listboxChat, TheGameText->fetch("Buddy:CantTalkToIngameBuddy"),
+										GameSpyColor[GSCOLOR_DEFAULT], -1, -1 );
+								}
+								return MSG_HANDLED;
+							}
+						}
+					}
+#else
 					if (TheGameSpyGame && TheGameSpyGame->isInGame() && TheGameSpyGame->isGameInProgress() &&
 						!ThePlayerList->getLocalPlayer()->isPlayerActive())
 					{
@@ -303,6 +328,7 @@ WindowMsgHandledType BuddyControlSystem( GameWindow *window, UnsignedInt msg,
 							}
 						}
 					}
+#endif
 
 					// read the user's input and clear the entry box
 					UnicodeString txtInput;
