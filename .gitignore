@@ -89,5 +89,6 @@ flatpak/*.flatpak
 
 #tmp and log files on root folder
 logs_*.zip
-*.logreferences/GameClient/
+*.log
+references/GameClient/
 references/GameServer/
