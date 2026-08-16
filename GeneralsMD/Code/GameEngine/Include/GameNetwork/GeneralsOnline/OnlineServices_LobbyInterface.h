@@ -10,7 +10,6 @@
 #include <cstdint>
 
 class NGMPGame;
-extern NGMPGame* TheNGMPGame;
 
 struct LobbyMemberEntry : public NetworkMemberBase
 {

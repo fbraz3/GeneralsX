@@ -68,8 +68,6 @@ static NameKeyType buttonMapStartPositionID[MAX_SLOTS] = { NAMEKEY_INVALID,NAMEK
 static GameWindow *winMapWindow = nullptr;
 
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
-#include "GameNetwork/GeneralsOnline/NGMPGame.h"
-extern NGMPGame* TheNGMPGame;
 
 static void NullifyControls(void)
 {
