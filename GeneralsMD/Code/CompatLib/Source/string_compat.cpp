@@ -1,16 +1,44 @@
 #include "string_compat.h"
 
-#include <sstream>
-#include <streambuf>
-#include <ostream>
+#include <cctype>
+#include <cwchar>
+#include <string>
 
 char* itoa(int value, char* str, int base)
 {
-  // Create stringbuf from str
-  std::stringbuf buf;
-  buf.pubsetbuf(str, 33);
-  std::ostream os(&buf);
-  os << value << '\0';
+  if (base < 2 || base > 36)
+  {
+    str[0] = '\0';
+    return str;
+  }
+
+  static const char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const bool is_negative = value < 0 && base == 10;
+  unsigned int magnitude = static_cast<unsigned int>(value);
+  if (is_negative)
+  {
+    magnitude = 0U - magnitude;
+  }
+
+  char* output = str;
+  do
+  {
+    *output++ = digits[magnitude % static_cast<unsigned int>(base)];
+    magnitude /= static_cast<unsigned int>(base);
+  } while (magnitude != 0);
+
+  if (is_negative)
+  {
+    *output++ = '-';
+  }
+  *output = '\0';
+
+  for (char* left = str, *right = output - 1; left < right; ++left, --right)
+  {
+    const char temp = *left;
+    *left = *right;
+    *right = temp;
+  }
   return str;
 }
 
