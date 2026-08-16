@@ -292,8 +292,13 @@ void MiniAudioManager::stopAllAmbientsBy(Drawable *draw)
 }
 
 //-------------------------------------------------------------------------------------------------
-void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
+void MiniAudioManager::playAudioEvent(AudioRequest *req)
 {
+	AudioEventRTS *event = req->m_pendingEvent.Peek();
+	if (!event) {
+		return;
+	}
+
 	const AudioEventInfo *info = event->getAudioEventInfo();
 	if (!info) {
 		return;
@@ -307,7 +312,7 @@ void MiniAudioManager::playAudioEvent(AudioEventRTS *event)
 
 	AudioHandle handleToKill = event->getHandleToKill();
 	PlayingAudio *audio = allocatePlayingAudio();
-	audio->m_audioEventRTS = event;
+	audio->m_audioEventRTS = req->m_pendingEvent;
 
 	// Kill existing sound if handleToKill is set
 	if (handleToKill) {
@@ -623,11 +628,6 @@ void MiniAudioManager::releasePlayingAudio(PlayingAudio *release)
 	}
 
 	releaseMiniAudioHandles(release);
-
-	if (release->m_cleanupAudioEventRTS && release->m_audioEventRTS) {
-		delete release->m_audioEventRTS;
-		release->m_audioEventRTS = nullptr;
-	}
 	delete release;
 }
 
@@ -1069,7 +1069,7 @@ AudioEventRTS *MiniAudioManager::findLowestPrioritySound(AudioEventRTS *event)
 	AudioPriority lowestPriority = AP_LOWEST;
 
 	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
-		AudioEventRTS *itEvent = (*it)->m_audioEventRTS;
+		AudioEventRTS *itEvent = (*it)->m_audioEventRTS.Peek();
 		if (!itEvent) continue;
 		const AudioEventInfo *itInfo = itEvent->getAudioEventInfo();
 		if (!itInfo) continue;
@@ -1113,7 +1113,7 @@ Bool MiniAudioManager::killLowestPrioritySoundImmediately(AudioEventRTS *event)
 	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
 		PlayingAudio *playing = (*it);
 		if (!playing) continue;
-		if (playing->m_audioEventRTS && playing->m_audioEventRTS == lowestPriorityEvent) {
+		if (playing->m_audioEventRTS && playing->m_audioEventRTS.Peek() == lowestPriorityEvent) {
 			releasePlayingAudio(playing);
 			m_playingSounds.erase(it);
 			return TRUE;
@@ -1218,7 +1218,7 @@ void MiniAudioManager::processPlayingList(void)
 
 		// Update 3D position for positional sounds
 		if (playing->m_type == PAT_3DSample && playing->m_audioEventRTS) {
-			const Coord3D *pos = getCurrentPositionFromEvent(playing->m_audioEventRTS);
+			const Coord3D *pos = getCurrentPositionFromEvent(playing->m_audioEventRTS.Peek());
 			if (pos && playing->m_sound) {
 				ma_sound_set_position(playing->m_sound, pos->x, pos->y, pos->z);
 			}
@@ -1249,7 +1249,7 @@ void MiniAudioManager::processFadingList(void)
 		}
 
 		++playing->m_framesFaded;
-		Real volume = getEffectiveVolume(playing->m_audioEventRTS);
+		Real volume = getEffectiveVolume(playing->m_audioEventRTS.Peek());
 		volume *= (1.0f - 1.0f * playing->m_framesFaded / getAudioSettings()->m_fadeAudioFrames);
 
 		if (playing->m_sound)
@@ -1380,11 +1380,10 @@ Bool MiniAudioManager::startNextLoop(PlayingAudio *looping)
 	looping->m_audioEventRTS->generateFilename();
 
 	if (looping->m_audioEventRTS->getDelay() > MSEC_PER_LOGICFRAME_REAL) {
-		looping->m_cleanupAudioEventRTS = false;
 		looping->m_requestStop = true;
 
 		AudioRequest *req = allocateAudioRequest();
-		req->m_pendingEvent.Assign_No_Add_Ref(newInstance(DynamicAudioEventRTS)(*looping->m_audioEventRTS));
+		req->m_pendingEvent = looping->m_audioEventRTS;
 		req->m_requiresCheckForSample = true;
 		appendAudioRequest(req);
 		return true;
@@ -1473,7 +1472,7 @@ void MiniAudioManager::processRequest(AudioRequest *req)
 {
 	switch (req->m_request)
 	{
-	case AR_Play:   playAudioEvent(req->m_pendingEvent.Peek()); break;
+	case AR_Play:   playAudioEvent(req); break;
 	case AR_Pause:  pauseAudioEvent(req->m_handleToInteractOn); break;
 	case AR_Stop:   stopAudioEvent(req->m_handleToInteractOn); break;
 	}
@@ -1499,18 +1498,20 @@ void MiniAudioManager::friend_forcePlayAudioEventRTS(const AudioEventRTS *eventT
 	case AT_Streaming: if (!isOn(AudioAffect_Speech)) return; break;
 	}
 
-	AudioEventRTS *event = NEW AudioEventRTS(*eventToPlay);
-	event->generateFilename();
-	event->generatePlayInfo();
+	AudioRequest *req = allocateAudioRequest();
+	req->m_pendingEvent.Assign_No_Add_Ref(newInstance(DynamicAudioEventRTS)(*eventToPlay));
+	req->m_pendingEvent->generateFilename();
+	req->m_pendingEvent->generatePlayInfo();
 
 	for (auto it = m_adjustedVolumes.begin(); it != m_adjustedVolumes.end(); ++it) {
-		if (it->first == event->getEventName()) {
-			event->setVolume(it->second);
+		if (it->first == req->m_pendingEvent->getEventName()) {
+			req->m_pendingEvent->setVolume(it->second);
 			break;
 		}
 	}
 
-	playAudioEvent(event);
+	playAudioEvent(req);
+	releaseAudioRequest(req);
 }
 
 #if defined(_DEBUG) || defined(_INTERNAL)

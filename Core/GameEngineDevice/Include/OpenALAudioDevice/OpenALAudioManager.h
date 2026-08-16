@@ -21,11 +21,13 @@
 // Author: Stephan Vedder, March 2025
 #pragma once
 #include "Common/AsciiString.h"
+#include "Common/AudioEventRTS.h"
 #include "Common/GameAudio.h"
 #include <AL/al.h>
 #include <AL/alc.h>
 
 class AudioEventRTS;
+class DynamicAudioEventRTS;
 
 enum
 {
@@ -180,7 +182,7 @@ protected:
 	void initSamplePools(void);
 	void processRequest(AudioRequest *req);
 
-	void playAudioEvent(AudioEventRTS *event);
+	void playAudioEvent(AudioRequest *req);
 	void stopAudioEvent(AudioHandle handle);
 	void pauseAudioEvent(AudioHandle handle);
 
