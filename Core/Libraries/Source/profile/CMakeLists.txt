@@ -34,3 +34,7 @@ target_link_libraries(core_profile_legacy PRIVATE
     core_wwcommon
     corei_always
 )
+
+if(WIN32)
+    target_link_libraries(core_profile_legacy PRIVATE core_debug)
+endif()

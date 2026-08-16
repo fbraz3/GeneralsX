@@ -48,6 +48,7 @@
 #include "Common/GameCommon.h"
 #include "Common/NameKeyGenerator.h"
 #include "Common/Snapshot.h"
+#include "GameNetwork/NetworkDefs.h"
 
 class DataChunkInput;
 struct DataChunkInfo;
@@ -158,6 +159,7 @@ public:
 	PlayerMaskType getPlayersWithRelationship( Int srcPlayerIndex, UnsignedInt allowedRelationships );
 
 	Int getSlotIndex(Int playerIndex) const;
+	Player *getPlayerFromSlotIndex(Int slotIndex) const;
 
 protected:
 
@@ -165,6 +167,8 @@ protected:
 	virtual void crc( Xfer *xfer ) override;
 	virtual void xfer( Xfer *xfer ) override;
 	virtual void loadPostProcess() override;
+
+	Int getPlayerIndexFromSlotIndex(Int slotIndex) const;
 
 private:
 	void assignSlotIndices(const GameInfo& gameInfo);
@@ -174,6 +178,7 @@ private:
 	Int						m_playerCount;
 	Player				*m_players[MAX_PLAYER_COUNT];
 	Int						m_slotIndices[MAX_PLAYER_COUNT];
+	Int						m_slotToPlayerIndices[MAX_SLOTS];
 
 };
 

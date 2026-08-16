@@ -1221,8 +1221,9 @@ void OpenALAudioManager::releasePlayingAudio(PlayingAudio* release)
 	}
 	releaseOpenALHandles(release);	// forces stop of this audio
 	closeBuffer(release->m_bufferHandle);
-	if (release->m_cleanupAudioEventRTS) {
-		releaseAudioEventRTS(release->m_audioEventRTS);
+	if (release->m_cleanupAudioEventRTS && release->m_audioEventRTS) {
+		delete release->m_audioEventRTS;
+		release->m_audioEventRTS = nullptr;
 	}
 	delete release;
 	release = NULL;
@@ -1623,7 +1624,7 @@ Bool OpenALAudioManager::isCurrentlyPlaying(AudioHandle handle)
 	AudioRequest* req = NULL;
 	for (ait = m_audioRequests.begin(); ait != m_audioRequests.end(); ++ait) {
 		req = *ait;
-		if (req && req->m_usePendingEvent && req->m_pendingEvent->getPlayingHandle() == handle) {
+		if (req && req->m_pendingEvent && req->m_pendingEvent->getPlayingHandle() == handle) {
 			return true;
 		}
 	}
@@ -1982,7 +1983,7 @@ Bool OpenALAudioManager::doesViolateLimit(AudioEventRTS* event) const
 		if (req == NULL) {
 			continue;
 		}
-		if (req->m_usePendingEvent)
+		if (req->m_pendingEvent)
 		{
 			if (req->m_pendingEvent->getEventName() == event->getEventName())
 			{
@@ -2685,7 +2686,7 @@ void OpenALAudioManager::processStoppedList(void)
 //-------------------------------------------------------------------------------------------------
 Bool OpenALAudioManager::shouldProcessRequestThisFrame(AudioRequest* req) const
 {
-	if (!req->m_usePendingEvent) {
+	if (!req->m_pendingEvent) {
 		return true;
 	}
 
@@ -2699,7 +2700,7 @@ Bool OpenALAudioManager::shouldProcessRequestThisFrame(AudioRequest* req) const
 //-------------------------------------------------------------------------------------------------
 void OpenALAudioManager::adjustRequest(AudioRequest* req)
 {
-	if (!req->m_usePendingEvent) {
+	if (!req->m_pendingEvent) {
 		return;
 	}
 
@@ -2710,14 +2711,14 @@ void OpenALAudioManager::adjustRequest(AudioRequest* req)
 //-------------------------------------------------------------------------------------------------
 Bool OpenALAudioManager::checkForSample(AudioRequest* req)
 {
-	if (!req->m_usePendingEvent) {
+	if (!req->m_pendingEvent) {
 		return true;
 	}
 
 	if (req->m_pendingEvent->getAudioEventInfo() == NULL)
 	{
 		// Fill in event info
-		getInfoForAudioEvent(req->m_pendingEvent);
+		getInfoForAudioEvent(req->m_pendingEvent.Peek());
 	}
 
 	if (req->m_pendingEvent->getAudioEventInfo()->m_type != AT_SoundEffect)
@@ -2725,7 +2726,7 @@ Bool OpenALAudioManager::checkForSample(AudioRequest* req)
 		return true;
 	}
 
-	return m_sound->canPlayNow(req->m_pendingEvent);
+	return m_sound->canPlayNow(req->m_pendingEvent.Peek());
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2919,8 +2920,8 @@ Bool OpenALAudioManager::startNextLoop(PlayingAudio* looping)
 			looping->m_cleanupAudioEventRTS = false;
 			looping->m_requestStop = true;
 
-			AudioRequest* req = allocateAudioRequest(true);
-			req->m_pendingEvent = looping->m_audioEventRTS;
+			AudioRequest* req = allocateAudioRequest();
+			req->m_pendingEvent.Assign_No_Add_Ref(newInstance(DynamicAudioEventRTS)(*looping->m_audioEventRTS));
 			req->m_requiresCheckForSample = true;
 			appendAudioRequest(req);
 			return true;
@@ -3109,7 +3110,7 @@ void OpenALAudioManager::processRequest(AudioRequest* req)
 	{
 	case AR_Play:
 	{
-		playAudioEvent(req->m_pendingEvent);
+		playAudioEvent(req->m_pendingEvent.Peek());
 		break;
 	}
 	case AR_Pause:

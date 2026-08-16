@@ -624,8 +624,9 @@ void MiniAudioManager::releasePlayingAudio(PlayingAudio *release)
 
 	releaseMiniAudioHandles(release);
 
-	if (release->m_cleanupAudioEventRTS) {
-		releaseAudioEventRTS(release->m_audioEventRTS);
+	if (release->m_cleanupAudioEventRTS && release->m_audioEventRTS) {
+		delete release->m_audioEventRTS;
+		release->m_audioEventRTS = nullptr;
 	}
 	delete release;
 }
@@ -759,7 +760,7 @@ Bool MiniAudioManager::hasMusicTrackCompleted(const AsciiString &trackName, Int 
 AsciiString MiniAudioManager::getMusicTrackName(void) const
 {
 	for (auto ait = m_audioRequests.begin(); ait != m_audioRequests.end(); ++ait) {
-		if ((*ait)->m_request != AR_Play || !(*ait)->m_usePendingEvent) continue;
+		if ((*ait)->m_request != AR_Play || !(*ait)->m_pendingEvent) continue;
 		if ((*ait)->m_pendingEvent->getAudioEventInfo()->m_soundType == AT_Music)
 			return (*ait)->m_pendingEvent->getEventName();
 	}
@@ -882,7 +883,7 @@ Bool MiniAudioManager::isCurrentlyPlaying(AudioHandle handle)
 	}
 	for (auto ait = m_audioRequests.begin(); ait != m_audioRequests.end(); ++ait) {
 		AudioRequest *req = *ait;
-		if (req && req->m_usePendingEvent && req->m_pendingEvent->getPlayingHandle() == handle)
+		if (req && req->m_pendingEvent && req->m_pendingEvent->getPlayingHandle() == handle)
 			return true;
 	}
 	return false;
@@ -1009,7 +1010,7 @@ Bool MiniAudioManager::doesViolateLimit(AudioEventRTS *event) const
 	}
 	for (auto arIt = m_audioRequests.begin(); arIt != m_audioRequests.end(); ++arIt) {
 		AudioRequest *req = (*arIt);
-		if (req && req->m_usePendingEvent &&
+		if (req && req->m_pendingEvent &&
 			req->m_pendingEvent->getEventName() == event->getEventName()) {
 			totalRequestCount++;
 			totalCount++;
@@ -1271,7 +1272,7 @@ void MiniAudioManager::processStoppedList(void)
 //-------------------------------------------------------------------------------------------------
 Bool MiniAudioManager::shouldProcessRequestThisFrame(AudioRequest *req) const
 {
-	if (!req->m_usePendingEvent) return true;
+	if (!req->m_pendingEvent) return true;
 	if (req->m_pendingEvent->getDelay() < MSEC_PER_LOGICFRAME_REAL) return true;
 	return false;
 }
@@ -1279,7 +1280,7 @@ Bool MiniAudioManager::shouldProcessRequestThisFrame(AudioRequest *req) const
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::adjustRequest(AudioRequest *req)
 {
-	if (!req->m_usePendingEvent) return;
+	if (!req->m_pendingEvent) return;
 	req->m_pendingEvent->decrementDelay(MSEC_PER_LOGICFRAME_REAL);
 	req->m_requiresCheckForSample = true;
 }
@@ -1287,12 +1288,12 @@ void MiniAudioManager::adjustRequest(AudioRequest *req)
 //-------------------------------------------------------------------------------------------------
 Bool MiniAudioManager::checkForSample(AudioRequest *req)
 {
-	if (!req->m_usePendingEvent) return true;
+	if (!req->m_pendingEvent) return true;
 	if (req->m_pendingEvent->getAudioEventInfo() == NULL)
-		getInfoForAudioEvent(req->m_pendingEvent);
+		getInfoForAudioEvent(req->m_pendingEvent.Peek());
 	if (req->m_pendingEvent->getAudioEventInfo()->m_type != AT_SoundEffect)
 		return true;
-	return m_sound->canPlayNow(req->m_pendingEvent);
+	return m_sound->canPlayNow(req->m_pendingEvent.Peek());
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1382,8 +1383,8 @@ Bool MiniAudioManager::startNextLoop(PlayingAudio *looping)
 		looping->m_cleanupAudioEventRTS = false;
 		looping->m_requestStop = true;
 
-		AudioRequest *req = allocateAudioRequest(true);
-		req->m_pendingEvent = looping->m_audioEventRTS;
+		AudioRequest *req = allocateAudioRequest();
+		req->m_pendingEvent.Assign_No_Add_Ref(newInstance(DynamicAudioEventRTS)(*looping->m_audioEventRTS));
 		req->m_requiresCheckForSample = true;
 		appendAudioRequest(req);
 		return true;
@@ -1472,7 +1473,7 @@ void MiniAudioManager::processRequest(AudioRequest *req)
 {
 	switch (req->m_request)
 	{
-	case AR_Play:   playAudioEvent(req->m_pendingEvent); break;
+	case AR_Play:   playAudioEvent(req->m_pendingEvent.Peek()); break;
 	case AR_Pause:  pauseAudioEvent(req->m_handleToInteractOn); break;
 	case AR_Stop:   stopAudioEvent(req->m_handleToInteractOn); break;
 	}
