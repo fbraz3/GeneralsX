@@ -8,10 +8,12 @@
 #include "Common/GameDefines.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 
-#pragma push_macro("min")
-#pragma push_macro("max")
+#if defined(min)
 #undef min
+#endif
+#if defined(max)
 #undef max
+#endif
 
 #include <string>
 #include <vector>
@@ -23,9 +25,6 @@
 #include <chrono>
 #include <unordered_map>
 #include <type_traits>
-
-#pragma pop_macro("max")
-#pragma pop_macro("min")
 
 class NGMP_OnlineServices_AuthInterface;
 class NGMP_OnlineServices_LobbyInterface;

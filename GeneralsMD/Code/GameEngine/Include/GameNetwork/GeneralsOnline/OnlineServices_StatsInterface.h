@@ -1,10 +1,17 @@
 // GeneralsX @feature GeneralsOnline StatsInterface header
 #pragma once
 
-#include "GameNetwork/GameSpy/PersistentStorageThread.h"
-#include "GameNetwork/RankPointValue.h"
 #include <functional>
 #include <cstdint>
+#include "GameNetwork/RankPointValue.h"
+#include "GameNetwork/GameSpy/PersistentStorageThread.h"
+
+#if defined(min)
+#undef min
+#endif
+#if defined(max)
+#undef max
+#endif
 
 enum class EStatsRequestPolicy
 {
