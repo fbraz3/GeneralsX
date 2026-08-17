@@ -5634,3 +5634,8 @@ void Object::leaveGroup()
 	}
 }
 
+//-------------------------------------------------------------------------------------------------
+Real Object::getCarrierDeckHeight() const
+{
+	return 0.0f;
+}

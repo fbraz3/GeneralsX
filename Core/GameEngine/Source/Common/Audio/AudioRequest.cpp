@@ -30,5 +30,4 @@
 
 AudioRequest::~AudioRequest()
 {
-
 }

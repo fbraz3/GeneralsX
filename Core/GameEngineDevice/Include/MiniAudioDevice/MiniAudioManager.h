@@ -25,10 +25,9 @@
 #pragma once
 
 #include "Common/AsciiString.h"
+#include "Common/AudioEventRTS.h"
 #include "Common/GameAudio.h"
 #include <miniaudio.h>
-
-class AudioEventRTS;
 
 enum { MAXPROVIDERS = 64 };
 
@@ -45,9 +44,8 @@ struct PlayingAudio
 	ma_sound* m_sound;
 	ma_audio_buffer* m_audioBuffer;
 	PlayingAudioType m_type;
-	AudioEventRTS* m_audioEventRTS;
+	RefCountPtr<DynamicAudioEventRTS> m_audioEventRTS;
 	Bool m_requestStop;
-	Bool m_cleanupAudioEventRTS;
 	Int m_framesFaded;
 
 	PlayingAudio() :
@@ -56,7 +54,6 @@ struct PlayingAudio
 		m_type(PAT_INVALID),
 		m_audioEventRTS(NULL),
 		m_requestStop(false),
-		m_cleanupAudioEventRTS(true),
 		m_framesFaded(0)
 	{ }
 };
@@ -178,7 +175,7 @@ protected:
 	void initSamplePools(void);
 	void processRequest(AudioRequest *req);
 
-	void playAudioEvent(AudioEventRTS *event);
+	void playAudioEvent(AudioRequest *req);
 	void stopAudioEvent(AudioHandle handle);
 	void pauseAudioEvent(AudioHandle handle);
 

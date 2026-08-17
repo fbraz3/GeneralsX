@@ -86,6 +86,7 @@ jobs:
 
       - name: Build Flatpak Bundle
         run: |
+          set -o pipefail
           mkdir -p logs
           ./scripts/build/linux/build-linux-flatpak.sh "${{ inputs.preset }}" "${{ matrix.game.value }}" 2>&1 | tee "logs/build_flatpak_${{ matrix.game.log_suffix }}.log"
 
