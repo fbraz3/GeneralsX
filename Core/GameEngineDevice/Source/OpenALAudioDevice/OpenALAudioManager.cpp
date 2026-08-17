@@ -1674,7 +1674,7 @@ void OpenALAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, Uns
 	if (playing->m_audioEventRTS->getNextPlayPortion() != PP_Done) {
 		if (playing->m_type == PAT_Sample) {
 			closeBuffer(playing->m_bufferHandle);	// close it so as not to leak it.
-			playing->m_bufferHandle = playSample(playing->m_audioEventRTS, playing);
+			playing->m_bufferHandle = playSample(playing->m_audioEventRTS.Peek(), playing);
 
 			// If we don't have a file now, then we should drop to the stopped status so that 
 			// We correctly close this handle.
@@ -1684,7 +1684,7 @@ void OpenALAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, Uns
 		}
 		else if (playing->m_type == PAT_3DSample) {
 			closeBuffer(playing->m_bufferHandle);	// close it so as not to leak it.
-			playing->m_bufferHandle = playSample3D(playing->m_audioEventRTS, playing);
+			playing->m_bufferHandle = playSample3D(playing->m_audioEventRTS.Peek(), playing);
 
 			// If we don't have a file now, then we should drop to the stopped status so that 
 			// We correctly close this handle.
@@ -1698,7 +1698,7 @@ void OpenALAudioManager::notifyOfAudioCompletion(UnsignedInt audioCompleted, Uns
 		// GeneralsX @bugfix BenderAI 11/03/2026 - guard against null audioEventRTS/info
 		const AudioEventInfo* info = (playing->m_audioEventRTS ? playing->m_audioEventRTS->getAudioEventInfo() : nullptr);
 		if (info && info->m_soundType == AT_Music) {
-			playStream(playing->m_audioEventRTS, playing->m_stream);
+			playStream(playing->m_audioEventRTS.Peek(), playing->m_stream);
 
 			return;
 		}
@@ -2099,7 +2099,7 @@ AudioEventRTS* OpenALAudioManager::findLowestPrioritySound(AudioEventRTS* event)
 		//3D
 		for (it = m_playing3DSounds.begin(); it != m_playing3DSounds.end(); ++it)
 		{
-			AudioEventRTS* itEvent = (*it)->m_audioEventRTS;
+			AudioEventRTS* itEvent = (*it)->m_audioEventRTS.Peek();
 			if (!itEvent) continue; // GeneralsX @bugfix BenderAI 11/03/2026
 			const AudioEventInfo* itInfo = itEvent->getAudioEventInfo();
 			if (!itInfo) continue;
@@ -2123,7 +2123,7 @@ AudioEventRTS* OpenALAudioManager::findLowestPrioritySound(AudioEventRTS* event)
 		//2D
 		for (it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it)
 		{
-			AudioEventRTS* itEvent = (*it)->m_audioEventRTS;
+			AudioEventRTS* itEvent = (*it)->m_audioEventRTS.Peek();
 			if (!itEvent) continue; // GeneralsX @bugfix BenderAI 11/03/2026
 			const AudioEventInfo* itInfo = itEvent->getAudioEventInfo();
 			if (!itInfo) continue;
@@ -2484,7 +2484,7 @@ void OpenALAudioManager::processPlayingList(void)
 				adjustPlayingVolume(playing);
 			}
 
-			const Coord3D* pos = getCurrentPositionFromEvent(playing->m_audioEventRTS);
+			const Coord3D* pos = getCurrentPositionFromEvent(playing->m_audioEventRTS.Peek());
 			if (pos)
 			{
 				if (playing->m_audioEventRTS->isDead())
@@ -2926,10 +2926,10 @@ Bool OpenALAudioManager::startNextLoop(PlayingAudio* looping)
 		}
 
 		if (looping->m_type == PAT_3DSample) {
-			looping->m_bufferHandle = playSample3D(looping->m_audioEventRTS, looping);
+			looping->m_bufferHandle = playSample3D(looping->m_audioEventRTS.Peek(), looping);
 		}
 		else {
-			looping->m_bufferHandle = playSample(looping->m_audioEventRTS, looping);
+			looping->m_bufferHandle = playSample(looping->m_audioEventRTS.Peek(), looping);
 		}
 
 		return looping->m_bufferHandle != 0;
