@@ -193,6 +193,7 @@ public:
     bool getCachedPlayerStats(int64_t userID, PSPlayerStats& outStats) const;
 
     bool sendChatMessage(const std::string& room, const std::string& message);
+    bool sendRawWebSocketPayload(const std::string& rawPayload);
     void changeNetworkRoom(int16_t roomID);
 
     bool isLoggedIn() const { return m_isLoggedIn; }

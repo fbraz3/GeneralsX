@@ -172,9 +172,11 @@ AsciiString NGMP_OnlineServices_LobbyInterface::GetCurrentLobbyMapPath()
 
 void NGMP_OnlineServices_LobbyInterface::SendChatMessageToCurrentLobby(UnicodeString& strChatMsgUnicode, bool bIsAction)
 {
-	AsciiString msg;
-	msg.translate(strChatMsgUnicode);
-	NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", msg.str());
+	std::shared_ptr<WebSocket> pWS = NGMP_OnlineServicesManager::GetWebSocket();
+	if (pWS != nullptr)
+	{
+		pWS->SendData_LobbyChatMessage(strChatMsgUnicode, bIsAction, false, false);
+	}
 }
 
 NGMPGame* NGMP_OnlineServices_LobbyInterface::GetCurrentGame()

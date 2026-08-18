@@ -462,6 +462,10 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					{
 						TheNGMPGame->setMap(asciiMap);
 					}
+					if (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom())
+					{
+						TheGameSpyInfo->getCurrentStagingRoom()->setMap(asciiMap);
+					}
 					asciiMap.toLower();
 					std::map<AsciiString, MapMetaData>::iterator it = TheMapCache ? TheMapCache->find(asciiMap) : std::map<AsciiString, MapMetaData>::iterator();
 					if (TheMapCache && it != TheMapCache->end())
@@ -471,6 +475,12 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 							TheNGMPGame->getGameSpySlot(0)->setMapAvailability(TRUE);
 							TheNGMPGame->setMapCRC( it->second.m_CRC );
 							TheNGMPGame->setMapSize( it->second.m_filesize );
+						}
+						if (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom())
+						{
+							TheGameSpyInfo->getCurrentStagingRoom()->getGameSpySlot(0)->setMapAvailability(TRUE);
+							TheGameSpyInfo->getCurrentStagingRoom()->setMapCRC( it->second.m_CRC );
+							TheGameSpyInfo->getCurrentStagingRoom()->setMapSize( it->second.m_filesize );
 						}
 
 						newMaxPlayers = it->second.m_numPlayers;
@@ -484,6 +494,12 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 						TheNGMPGame->resetAccepted();
 						TheNGMPGame->resetStartSpots();
 					}
+					if (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom())
+					{
+						TheGameSpyInfo->getCurrentStagingRoom()->adjustSlotsForMap();
+						TheGameSpyInfo->getCurrentStagingRoom()->resetAccepted();
+						TheGameSpyInfo->getCurrentStagingRoom()->resetStartSpots();
+					}
 
 					WOLDisplaySlotList();
 					WOLDisplayGameOptions();
@@ -492,7 +508,8 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 					if (pLobbyInterface != nullptr)
 					{
-						pLobbyInterface->UpdateCurrentLobby_Map(strMapName, TheNGMPGame ? TheNGMPGame->getMap() : asciiMap, bOfficialMap, newMaxPlayers);
+						AsciiString mapPathToSend = (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom()) ? TheGameSpyInfo->getCurrentStagingRoom()->getMap() : (TheNGMPGame ? TheNGMPGame->getMap() : asciiMap);
+						pLobbyInterface->UpdateCurrentLobby_Map(strMapName, mapPathToSend, bOfficialMap, newMaxPlayers);
 					}
 
 					if (WOLMapSelectLayout)

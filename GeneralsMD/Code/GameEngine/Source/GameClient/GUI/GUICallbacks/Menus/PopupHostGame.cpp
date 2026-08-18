@@ -650,7 +650,8 @@ void createGame()
 
 	pLobbyInterface->CreateLobby(gameName, mapDisplayName, mapPath, isOfficial, numPlayers, limitArmies, useStats, TheGlobalData->m_defaultStartingCash.countMoney(), passwd.isNotEmpty(), std::string(passwd.str()), bAllowObservers);
 
-	GSMessageBoxOk(TheGameText->fetch("GUI:CreatingLobby"), TheGameText->fetch("GUI:LobbyCreationInProgress"), nullptr);
+	// GeneralsX @bugfix fbraz3 17/08/2026 Use GSMessageBoxCancel with literal strings for non-blocking dismissible lobby creation popup
+	GSMessageBoxCancel(UnicodeString(L"Creating Lobby"), UnicodeString(L"Lobby Creation is in progress..."), nullptr);
 
 	return;
 #else

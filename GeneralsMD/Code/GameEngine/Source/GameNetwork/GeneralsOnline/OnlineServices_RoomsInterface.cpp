@@ -48,9 +48,11 @@ NetworkRoomMember* NGMP_OnlineServices_RoomsInterface::GetRoomMemberFromID(int64
 
 void NGMP_OnlineServices_RoomsInterface::SendChatMessageToCurrentRoom(UnicodeString& strChatMsg, bool bIsAction)
 {
-	AsciiString msg;
-	msg.translate(strChatMsg);
-	NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", msg.str());
+	std::shared_ptr<WebSocket> pWS = NGMP_OnlineServicesManager::GetWebSocket();
+	if (pWS != nullptr)
+	{
+		pWS->SendData_RoomChatMessage(strChatMsg, bIsAction);
+	}
 }
 
 void NGMP_OnlineServices_RoomsInterface::OnRosterUpdated(const std::unordered_map<uint64_t, NetworkRoomMember>& mapMembers)

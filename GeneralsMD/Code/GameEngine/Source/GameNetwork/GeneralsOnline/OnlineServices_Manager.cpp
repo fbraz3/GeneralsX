@@ -929,6 +929,22 @@ bool NGMP_OnlineServicesManager::sendChatMessage(const std::string& room, const 
     return false;
 }
 
+bool NGMP_OnlineServicesManager::sendRawWebSocketPayload(const std::string& rawPayload) {
+    if (!m_isLoggedIn) {
+        fprintf(stderr, "[NGMP] sendRawWebSocketPayload ignored: not logged in\n");
+        fflush(stderr);
+        return false;
+    }
+    if (m_chatSession && m_chatSession->isConnected()) {
+        fprintf(stderr, "[NGMP] sendRawWebSocketPayload: sending '%s'\n", rawPayload.c_str());
+        fflush(stderr);
+        return m_chatSession->sendPayload(rawPayload);
+    }
+    fprintf(stderr, "[NGMP] sendRawWebSocketPayload called but no active chat session\n");
+    fflush(stderr);
+    return false;
+}
+
 void NGMP_OnlineServicesManager::changeNetworkRoom(int16_t roomID) {
     if (!m_isLoggedIn) {
         fprintf(stderr, "[NGMP] changeNetworkRoom(%d) ignored: not logged in\n", roomID);
