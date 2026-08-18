@@ -29,7 +29,6 @@
 #pragma once
 
 #include "Lib/BaseType.h"
-#include "WWLib/ref_ptr.h"
 
 #include "Common/Geometry.h"
 #include "Common/Snapshot.h"
@@ -262,6 +261,7 @@ public:
 
 	void onCollide( Object *other, const Coord3D *loc, const Coord3D *normal );
 
+	Real getCarrierDeckHeight() const;
 	// access to modules
 	//-----------------------------------------------------------------------------
 

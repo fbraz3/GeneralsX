@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -45,6 +45,11 @@
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/GameInfo.h"
 #include "GameNetwork/NetworkInterface.h"
+
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+extern NGMPGame* TheNGMPGame;
+#endif
 
 static GameWindow *chatWindow = nullptr;
 static GameWindow *chatTextEntry = nullptr;
@@ -199,7 +204,11 @@ void ToggleInGameChat( Bool immediate )
 	if (TheGameLogic->isInReplayGame())
 		return;
 
+#if defined(SAGE_USE_NGMP)
+	if (TheNGMPGame == nullptr)
+#else
 	if (!TheGameInfo->isMultiPlayer() && TheGlobalData->m_netMinPlayers)
+#endif
 		return;
 
 	if (chatWindow)
@@ -217,13 +226,11 @@ void ToggleInGameChat( Bool immediate )
 				if (!msg.isEmpty() && !handleInGameSlashCommands(msg))
 				{
 					const Player *localPlayer = ThePlayerList->getLocalPlayer();
-					AsciiString playerName;
 					Int playerMask = 0;
 
 					for (Int i=0; i<MAX_SLOTS; ++i)
 					{
-						playerName.format("player%d", i);
-						const Player *player = ThePlayerList->findPlayerWithNameKey( TheNameKeyGenerator->nameToKey( playerName ) );
+						const Player *player = ThePlayerList->getPlayerFromSlotIndex(i);
 						if (player && localPlayer)
 						{
 							switch (inGameChatType)

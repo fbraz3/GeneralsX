@@ -1000,8 +1000,8 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 	return optionsString;
 }
 
-// GeneralsX @feature fbraz 05/05/2026 Support special characters in map names via percent encoding.
-// This allows map names with brackets, spaces, and other chars commonly used by C&C community mapmakers.
+// GeneralsX @feature fbraz 05/05/2026 Support reserved characters in map names via percent encoding.
+// GeneralsX @bugfix arazmj 14/08/2026 Keep spaces literal for network compatibility with TheSuperHackers builds.
 static AsciiString percentEncodeMapName(const AsciiString& mapName)
 {
 	// Characters that MUST be encoded in replay header field values:
@@ -1010,7 +1010,6 @@ static AsciiString percentEncodeMapName(const AsciiString& mapName)
 	// ] (0x5D) - INI section marker  
 	// ; (0x3B) - field separator in replay header
 	// = (0x3D) - key-value separator in replay header
-	// Space (0x20) - for safety with paths
 	AsciiString result;
 	const char* src = mapName.str();
 	
@@ -1022,7 +1021,6 @@ static AsciiString percentEncodeMapName(const AsciiString& mapName)
 			case ']':  result.concat("%5D"); break;
 			case ';':  result.concat("%3B"); break;
 			case '=':  result.concat("%3D"); break;
-			case ' ':  result.concat("%20"); break;
 			default:   result.concat(src[i]); break;
 		}
 	}
@@ -1753,5 +1751,4 @@ void SkirmishGameInfo::xfer( Xfer *xfer )
 void SkirmishGameInfo::loadPostProcess()
 {
 }
-
 

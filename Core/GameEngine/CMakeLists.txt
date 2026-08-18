@@ -154,7 +154,7 @@ set(GAMEENGINE_SRC
     Include/GameClient/ControlBarScheme.h
     Include/GameClient/Credits.h
     Include/GameClient/DebugDisplay.h
-#    Include/GameClient/Diplomacy.h
+    Include/GameClient/Diplomacy.h
 #    Include/GameClient/DisconnectMenu.h
     Include/GameClient/Display.h
     Include/GameClient/DisplayString.h
@@ -162,9 +162,9 @@ set(GAMEENGINE_SRC
 #    Include/GameClient/Drawable.h
 #    Include/GameClient/DrawableInfo.h
     Include/GameClient/DrawGroupInfo.h
-#    Include/GameClient/EstablishConnectionsMenu.h
+    Include/GameClient/EstablishConnectionsMenu.h
 #    Include/GameClient/Eva.h
-#    Include/GameClient/ExtendedMessageBox.h
+    Include/GameClient/ExtendedMessageBox.h
 #    Include/GameClient/FontDesc.h
     Include/GameClient/FXList.h
     Include/GameClient/Gadget.h
@@ -205,7 +205,7 @@ set(GAMEENGINE_SRC
     Include/GameClient/LoadScreen.h
     Include/GameClient/LookAtXlat.h
     Include/GameClient/MapUtil.h
-#    Include/GameClient/MessageBox.h
+    Include/GameClient/MessageBox.h
     Include/GameClient/MetaEvent.h
     Include/GameClient/Module/AnimatedParticleSysBoneClientUpdate.h
     Include/GameClient/Module/BeaconClientUpdate.h
@@ -220,9 +220,9 @@ set(GAMEENGINE_SRC
     Include/GameClient/SelectionInfo.h
     Include/GameClient/SelectionXlat.h
 #    Include/GameClient/Shadow.h
-#    Include/GameClient/Shell.h
-#    Include/GameClient/ShellHooks.h
-#    Include/GameClient/ShellMenuScheme.h
+    Include/GameClient/Shell.h
+    Include/GameClient/ShellHooks.h
+    Include/GameClient/ShellMenuScheme.h
     Include/GameClient/Smudge.h
     Include/GameClient/Snow.h
     Include/GameClient/Statistics.h
@@ -725,7 +725,7 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/ControlBar/ControlBarStructureInventory.cpp
     Source/GameClient/GUI/ControlBar/ControlBarUnderConstruction.cpp
 #    Source/GameClient/GUI/DisconnectMenu/DisconnectMenu.cpp
-#    Source/GameClient/GUI/EstablishConnectionsMenu/EstablishConnectionsMenu.cpp
+    Source/GameClient/GUI/EstablishConnectionsMenu/EstablishConnectionsMenu.cpp
     Source/GameClient/GUI/Gadget/GadgetCheckBox.cpp
     Source/GameClient/GUI/Gadget/GadgetComboBox.cpp
     Source/GameClient/GUI/Gadget/GadgetHorizontalSlider.cpp
@@ -746,12 +746,12 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/GUI/GameWindowTransitionsStyles.cpp
     Source/GameClient/GUI/GUICallbacks/ControlBarCallback.cpp
     Source/GameClient/GUI/GUICallbacks/ControlBarPopupDescription.cpp
-#    Source/GameClient/GUI/GUICallbacks/Diplomacy.cpp
-#    Source/GameClient/GUI/GUICallbacks/ExtendedMessageBox.cpp
-#    Source/GameClient/GUI/GUICallbacks/GeneralsExpPoints.cpp
-#    Source/GameClient/GUI/GUICallbacks/IMECandidate.cpp
-#    Source/GameClient/GUI/GUICallbacks/InGameChat.cpp
-#    Source/GameClient/GUI/GUICallbacks/InGamePopupMessage.cpp
+    Source/GameClient/GUI/GUICallbacks/Diplomacy.cpp
+    Source/GameClient/GUI/GUICallbacks/ExtendedMessageBox.cpp
+    Source/GameClient/GUI/GUICallbacks/GeneralsExpPoints.cpp
+    Source/GameClient/GUI/GUICallbacks/IMECandidate.cpp
+    Source/GameClient/GUI/GUICallbacks/InGameChat.cpp
+    Source/GameClient/GUI/GUICallbacks/InGamePopupMessage.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/ChallengeMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/CreditsMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/DifficultySelect.cpp
@@ -793,14 +793,14 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/GUI/GUICallbacks/Menus/WOLQuickMatchMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/WOLStatusMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/WOLWelcomeMenu.cpp
-#    Source/GameClient/GUI/GUICallbacks/MessageBox.cpp
-#    Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
+    Source/GameClient/GUI/GUICallbacks/MessageBox.cpp
+    Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
     Source/GameClient/GUI/HeaderTemplate.cpp
     Source/GameClient/GUI/IMEManager.cpp
     Source/GameClient/GUI/LoadScreen.cpp
     Source/GameClient/GUI/ProcessAnimateWindow.cpp
-#    Source/GameClient/GUI/Shell/Shell.cpp
-#    Source/GameClient/GUI/Shell/ShellMenuScheme.cpp
+    Source/GameClient/GUI/Shell/Shell.cpp
+    Source/GameClient/GUI/Shell/ShellMenuScheme.cpp
     Source/GameClient/GUI/WindowLayout.cpp
     Source/GameClient/GUI/WindowVideoManager.cpp
     Source/GameClient/GUI/WinInstanceData.cpp
@@ -1179,6 +1179,7 @@ target_include_directories(corei_gameengine_private INTERFACE
 
 target_link_libraries(corei_gameengine_private INTERFACE
     corei_always
+    core_profile_legacy
 )
 
 target_compile_definitions(corei_gameengine_private INTERFACE

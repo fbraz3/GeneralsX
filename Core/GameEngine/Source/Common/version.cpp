@@ -32,6 +32,8 @@
 #include "Common/version.h"
 
 #include "gitinfo.h"
+#include <ctype.h>
+#include <stdio.h>
 
 Version *TheVersion = nullptr;	///< The Version singleton
 
@@ -450,4 +452,35 @@ UnicodeString Version::buildUnicodeGitCommitTime()
 	tm* time = gmtime(&GitCommitTimeStamp);
 	wcsftime(buf, len+1, L"%Y-%m-%d %H:%M:%S", time);
 	return str;
+}
+
+UnicodeString Version::getUnicodeProjectWatermark() const
+{
+	char finalCredit[256];
+	char versionSuffix[128] = "";
+
+	if (GitTag && GitTag[0] != '\0')
+	{
+		const char* tagBase = GitTag;
+		if (strncmp(tagBase, "generalsx-", 10) == 0 || strncmp(tagBase, "GeneralsX-", 10) == 0)
+		{
+			tagBase += 10;
+		}
+
+		char formattedTag[128];
+		strncpy(formattedTag, tagBase, sizeof(formattedTag) - 1);
+		formattedTag[sizeof(formattedTag) - 1] = '\0';
+		if (formattedTag[0] != '\0')
+		{
+			formattedTag[0] = toupper((unsigned char)formattedTag[0]);
+		}
+
+		snprintf(versionSuffix, sizeof(versionSuffix), " - %s", formattedTag);
+	}
+
+	snprintf(finalCredit, sizeof(finalCredit), "GeneralsX - Cross Platform C&C Generals%s", versionSuffix);
+
+	UnicodeString watermark;
+	watermark.translate(finalCredit);
+	return watermark;
 }

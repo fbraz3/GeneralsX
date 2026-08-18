@@ -412,6 +412,10 @@ def main():
     #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/Win32Device/GameClient/Win32DIMouse.cpp", Game.CORE, "GameEngineDevice/Source/Win32Device/GameClient/Win32DIMouse.cpp")
     #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp", Game.CORE, "GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp")
 
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/Win32Device/Common/Win32GameEngine.h", Game.CORE, "GameEngineDevice/Include/Win32Device/Common/Win32GameEngine.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/Win32Device/Common/Win32GameEngine.cpp", Game.CORE, "GameEngineDevice/Source/Win32Device/Common/Win32GameEngine.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp", Game.CORE, "GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp")
+
     #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/GameFont.h", Game.CORE, "GameEngine/Include/GameClient/GameFont.h")
     #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/GameWindow.h", Game.CORE, "GameEngine/Include/GameClient/GameWindow.h")
     #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/GameWindowGlobal.h", Game.CORE, "GameEngine/Include/GameClient/GameWindowGlobal.h")
@@ -650,6 +654,46 @@ def main():
 
     #unify_file(Game.ZEROHOUR, "GameEngine/Include/Precompiled/PreRTS.h", Game.CORE, "GameEngine/Include/Precompiled/PreRTS.h")
     #unify_file(Game.ZEROHOUR, "GameEngine/Source/Precompiled/PreRTS.cpp", Game.CORE, "GameEngine/Source/Precompiled/PreRTS.cpp")
+
+    #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/Diplomacy.h", Game.CORE, "GameEngine/Include/GameClient/Diplomacy.h")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/GUICallbacks/Diplomacy.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/GUICallbacks/Diplomacy.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/ExtendedMessageBox.h", Game.CORE, "GameEngine/Include/GameClient/ExtendedMessageBox.h")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/GUICallbacks/ExtendedMessageBox.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/GUICallbacks/ExtendedMessageBox.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/GUICallbacks/GeneralsExpPoints.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/GUICallbacks/GeneralsExpPoints.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/GUICallbacks/IMECandidate.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/GUICallbacks/IMECandidate.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/GUICallbacks/InGameChat.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/GUICallbacks/InGameChat.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/GUICallbacks/InGamePopupMessage.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/GUICallbacks/InGamePopupMessage.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/MessageBox.h", Game.CORE, "GameEngine/Include/GameClient/MessageBox.h")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/GUICallbacks/MessageBox.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/GUICallbacks/MessageBox.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp")
+    
+    #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/EstablishConnectionsMenu.h", Game.CORE, "GameEngine/Include/GameClient/EstablishConnectionsMenu.h")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/EstablishConnectionsMenu/EstablishConnectionsMenu.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/EstablishConnectionsMenu/EstablishConnectionsMenu.cpp")
+
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/W3DDevice/GameClient/W3DGUICallbacks.h", Game.CORE, "GameEngineDevice/Include/W3DDevice/GameClient/W3DGUICallbacks.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMainMenu.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMainMenu.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMOTD.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMOTD.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/W3DDevice/GameClient/W3DGameFont.h", Game.CORE, "GameEngineDevice/Include/W3DDevice/GameClient/W3DGameFont.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/W3DGameFont.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/W3DGameFont.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/W3DDevice/GameClient/W3DGameWindow.h", Game.CORE, "GameEngineDevice/Include/W3DDevice/GameClient/W3DGameWindow.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/W3DGameWindow.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/W3DGameWindow.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/W3DDevice/GameClient/W3DGameWindowManager.h", Game.CORE, "GameEngineDevice/Include/W3DDevice/GameClient/W3DGameWindowManager.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/W3DGameWindowManager.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/GameClient/GUI/W3DGameWindowManager.cpp")
+
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/W3DDevice/Common/W3DFunctionLexicon.h", Game.CORE, "GameEngineDevice/Include/W3DDevice/Common/W3DFunctionLexicon.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/W3DDevice/Common/W3DModuleFactory.h", Game.CORE, "GameEngineDevice/Include/W3DDevice/Common/W3DModuleFactory.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/Common/Thing/W3DModuleFactory.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/Common/Thing/W3DModuleFactory.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/W3DDevice/Common/W3DThingFactory.h", Game.CORE, "GameEngineDevice/Include/W3DDevice/Common/W3DThingFactory.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/Common/Thing/W3DThingFactory.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/Common/Thing/W3DThingFactory.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Include/W3DDevice/Common/W3DConvert.h", Game.CORE, "GameEngineDevice/Include/W3DDevice/Common/W3DConvert.h")
+    #unify_file(Game.ZEROHOUR, "GameEngineDevice/Source/W3DDevice/Common/W3DConvert.cpp", Game.CORE, "GameEngineDevice/Source/W3DDevice/Common/W3DConvert.cpp")
+
+    #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/Shell.h", Game.CORE, "GameEngine/Include/GameClient/Shell.h")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/Shell/Shell.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/Shell/Shell.cpp")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/ShellHooks.h", Game.CORE, "GameEngine/Include/GameClient/ShellHooks.h")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Include/GameClient/ShellMenuScheme.h", Game.CORE, "GameEngine/Include/GameClient/ShellMenuScheme.h")
+    #unify_file(Game.ZEROHOUR, "GameEngine/Source/GameClient/GUI/Shell/ShellMenuScheme.cpp", Game.CORE, "GameEngine/Source/GameClient/GUI/Shell/ShellMenuScheme.cpp")
 
     return
 

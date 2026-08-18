@@ -182,6 +182,9 @@ static int SDLCALL threadFunc(void* /*userData*/)
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
 
+    fprintf(stderr, "[UpdateChecker] curl_easy_perform returned %d. Response length=%zu\n", (int)res, responseBody.length());
+    fflush(stderr);
+
     if (res != CURLE_OK)
     {
         // Network error: fail silently
@@ -192,9 +195,14 @@ static int SDLCALL threadFunc(void* /*userData*/)
     char latestTag[128] = {0};
     if (!extractTagName(responseBody, latestTag, sizeof(latestTag)))
     {
+        fprintf(stderr, "[UpdateChecker] Failed to extract tag_name from response. Response Body (truncated):\n%.256s\n", responseBody.c_str());
+        fflush(stderr);
         SDL_SetAtomicInt(&s_done, 1);
         return 0;
     }
+    
+    fprintf(stderr, "[UpdateChecker] Extracted remote latestTag='%s'\n", latestTag);
+    fflush(stderr);
 
     // Compare publication date of the remote release against the local build's
     // commit timestamp. Date comparison is tag-format-agnostic: it works for
@@ -206,6 +214,8 @@ static int SDLCALL threadFunc(void* /*userData*/)
     if (forceCheck)
     {
         hasUpdate = latestTag[0] != '\0';
+        fprintf(stderr, "[UpdateChecker] forceCheck is true. hasUpdate=%d\n", (int)hasUpdate);
+        fflush(stderr);
     }
     else
     {
@@ -213,6 +223,8 @@ static int SDLCALL threadFunc(void* /*userData*/)
         if (GitTag[0] != '\0' && strcmp(latestTag, GitTag) == 0)
         {
             hasUpdate = false;
+            fprintf(stderr, "[UpdateChecker] Local tag matches remote tag precisely ('%s'). No update.\n", GitTag);
+            fflush(stderr);
         }
         else
         {
@@ -221,15 +233,34 @@ static int SDLCALL threadFunc(void* /*userData*/)
             if (hasCommitTimestamp && extractPublishedAt(responseBody, publishedAt, sizeof(publishedAt)))
             {
                 time_t remoteTime = parseISO8601(publishedAt);
+                fprintf(stderr, "[UpdateChecker] Extracted published_at='%s' (parsed %lld). Local commit time=%lld\n", publishedAt, (long long)remoteTime, (long long)GitCommitTimeStamp);
+                fflush(stderr);
+                
                 // Signal update only when the remote release was published strictly
                 // AFTER the commit this binary was built from.
                 if (remoteTime != (time_t)-1 && remoteTime > GitCommitTimeStamp)
+                {
                     hasUpdate = true;
+                    fprintf(stderr, "[UpdateChecker] Remote release is newer based on timestamp!\n");
+                    fflush(stderr);
+                }
+                else
+                {
+                    fprintf(stderr, "[UpdateChecker] Remote release is NOT newer based on timestamp.\n");
+                    fflush(stderr);
+                }
             }
             else if (GitTag[0] != '\0')
             {
                 // No usable published_at comparison; fall back to tag string comparison.
                 hasUpdate = (strcmp(latestTag, GitTag) != 0);
+                fprintf(stderr, "[UpdateChecker] No valid published_at found or no local timestamp. Falling back to tag string diff. hasUpdate=%d\n", (int)hasUpdate);
+                fflush(stderr);
+            }
+            else
+            {
+                fprintf(stderr, "[UpdateChecker] No local tag and no usable timestamp. Cannot determine update reliably. Assuming hasUpdate=false\n");
+                fflush(stderr);
             }
         }
     }
@@ -259,17 +290,29 @@ void UpdateChecker::start()
     // some packaged CI contexts even when the binary is a real release artifact).
     // Set env var GENERALS_FORCE_UPDATE_CHECK=1 to bypass release guards (for testing).
     const bool forceCheck = SDL_getenv("GENERALS_FORCE_UPDATE_CHECK") != nullptr;
+    
+    fprintf(stderr, "[UpdateChecker] start() called. GitTag='%s', GitCommitTimeStamp=%lld, GitUncommittedChanges=%d, forceCheck=%d\n", GitTag, (long long)GitCommitTimeStamp, (int)GitUncommittedChanges, (int)forceCheck);
+    fflush(stderr);
+    
     if (!forceCheck)
     {
         const bool hasTag = (GitTag[0] != '\0');
         const bool hasCommitTimestamp = (GitCommitTimeStamp > 0);
-        if (GitUncommittedChanges || (!hasTag && !hasCommitTimestamp))
+        if (!hasTag && !hasCommitTimestamp)
+        {
+            fprintf(stderr, "[UpdateChecker] start() aborted. hasTag=%d, hasCommitTimestamp=%d\n", (int)hasTag, (int)hasCommitTimestamp);
+            fflush(stderr);
             return;
+        }
     }
 
     // Respect the user opt-out setting
     if (TheGlobalData && !TheGlobalData->m_checkForUpdates)
+    {
+        fprintf(stderr, "[UpdateChecker] start() aborted. User opted out of updates in settings.\n");
+        fflush(stderr);
         return;
+    }
 
     SDL_SetAtomicInt(&s_done, 0);
     SDL_SetAtomicInt(&s_hasUpdate, 0);
@@ -280,6 +323,9 @@ void UpdateChecker::start()
     // cleanup on exit and there is no safe single-owner shutdown hook here.
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
+    fprintf(stderr, "[UpdateChecker] Launching background thread to check %s\n", UpdateChecker::getReleasesUrl());
+    fflush(stderr);
+    
     s_thread = SDL_CreateThread(threadFunc, "UpdateChecker", nullptr);
     if (!s_thread)
     {

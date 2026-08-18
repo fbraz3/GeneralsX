@@ -63,7 +63,49 @@
 #include "GameLogic/Module/DeliverPayloadAIUpdate.h"
 #include "GameLogic/Module/HackInternetAIUpdate.h"
 #include "GameLogic/Module/HordeUpdate.h"
+#include "GameLogic/Module/BehaviorModule.h"
 #include "GameLogic/Object.h"
+
+// GeneralsX @bugfix GitHubCopilot 15/08/2026 Allow same-player tunnel and cave networks to exit through another endpoint.
+static Bool isCaveContainer(const Object *obj)
+{
+	if (!obj)
+		return FALSE;
+
+	for (BehaviorModule **module = obj->getBehaviorModules(); *module; ++module)
+	{
+		if ((*module)->getCaveInterface() != nullptr)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static Bool isSharedNetworkExitContainer(const Object *fromContainer, const Object *toContainer)
+{
+	if (!fromContainer || !toContainer)
+		return FALSE;
+
+	const ContainModuleInterface *fromContain = fromContainer->getContain();
+	const ContainModuleInterface *toContain = toContainer->getContain();
+	if (!fromContain || !toContain)
+		return FALSE;
+
+	const Player *fromPlayer = fromContainer->getControllingPlayer();
+	const Player *toPlayer = toContainer->getControllingPlayer();
+	if (!fromPlayer || fromPlayer != toPlayer)
+		return FALSE;
+
+	const ContainedItemsList *fromItems = fromContain->getContainedItemsList();
+	const ContainedItemsList *toItems = toContain->getContainedItemsList();
+	if (!fromItems || fromItems != toItems)
+		return FALSE;
+
+	if (fromContain->isTunnelContain() && toContain->isTunnelContain())
+		return TRUE;
+
+	return isCaveContainer(fromContainer) && isCaveContainer(toContainer);
+}
 #include "GameLogic/PartitionManager.h"
 #include "GameLogic/PolygonTrigger.h"
 #include "GameLogic/ScriptEngine.h"
@@ -3668,10 +3710,25 @@ void AIUpdateInterface::privateExit( Object *objectToExit, CommandSourceType cmd
 	if (!objectToExit)
 	{
 		objectToExit = us->getContainedBy();
-	}
 
-	if (!objectToExit)
-		return;
+		if (!objectToExit)
+			return;
+	}
+	else
+	{
+		// TheSuperHackers @bugfix Caball009 10/08/2026 Don't process invalid exit commands,
+		// because an object should not attempt to exit something it's not contained by.
+#if !RETAIL_COMPATIBLE_CRC
+		if (us->getContainedBy() != objectToExit)
+		{
+			const Player *unitPlayer = us->getControllingPlayer();
+			const Player *exitPlayer = objectToExit ? objectToExit->getControllingPlayer() : nullptr;
+			if (!unitPlayer || unitPlayer != exitPlayer
+				|| !isSharedNetworkExitContainer(us->getContainedBy(), objectToExit))
+				return;
+		}
+#endif
+	}
 
 	// we must go thru this state (rather than calling exitObjectViaDoor directly!),
 	// because a few containers might need to delay to allow

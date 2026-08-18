@@ -2401,11 +2401,17 @@ bool GameLogic::onLogicCrc(MAYBE_UNUSED GameMessage *msg)
 	Player *msgPlayer = getMessagePlayer(msg);
 	if (TheNetwork)
 	{
-		// GeneralsX @bugfix felipebraz 05/07/2026 Use pre-computed slot index to avoid string comparisons
-		Int slotIndex = ThePlayerList->getSlotIndex(msgPlayer->getPlayerIndex());
-
-		if (slotIndex < 0 || !TheNetwork->isPlayerConnected(slotIndex))
+		if (msgPlayer->getPlayerType() != PLAYER_HUMAN)
+		{
 			return false;
+		}
+
+		// GeneralsX @bugfix felipebraz 05/07/2026 Use pre-computed slot index to avoid string comparisons
+		const Int slotIndex = ThePlayerList->getSlotIndex(msgPlayer->getPlayerIndex());
+		if (slotIndex < 0 || !TheNetwork->isPlayerConnected(slotIndex))
+		{
+			return false;
+		}
 
 		if (msgPlayer->isLocalPlayer())
 		{

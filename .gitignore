@@ -91,3 +91,5 @@ flatpak/*.flatpak
 logs_*.zip
 *.log
 /cmake/ngmp_env.cmake
+references/GameClient/
+references/GameServer/

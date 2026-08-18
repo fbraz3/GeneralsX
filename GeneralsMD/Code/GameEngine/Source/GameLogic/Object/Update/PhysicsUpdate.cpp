@@ -256,8 +256,6 @@ void PhysicsBehavior::onObjectCreated()
 //-------------------------------------------------------------------------------------------------
 PhysicsBehavior::~PhysicsBehavior()
 {
-	deleteInstance(m_bounceSound);
-	m_bounceSound = nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -599,14 +597,13 @@ void PhysicsBehavior::setBounceSound(const AudioEventRTS* bounceSound)
 	if (bounceSound)
 	{
 		if (m_bounceSound == nullptr)
-			m_bounceSound = newInstance(DynamicAudioEventRTS);
+			m_bounceSound.Assign_No_Add_Ref(newInstance(DynamicAudioEventRTS));
 
-		m_bounceSound->m_event = *bounceSound;
+		*m_bounceSound = *bounceSound;
 	}
 	else
 	{
-		deleteInstance(m_bounceSound);
-		m_bounceSound = nullptr;
+		m_bounceSound.Clear();
 	}
 }
 
@@ -1114,7 +1111,7 @@ void PhysicsBehavior::doBounceSound(const Coord3D& prevPos)
 	const Real NORMAL_MASS	= 50.0f;
 
 	// get the per-unit sound for the collision which was stuffed in on Object creation.
-	AudioEventRTS collisionSound = m_bounceSound->m_event;
+	AudioEventRTS collisionSound = *m_bounceSound.Peek();
 
 //Real vel = fabs(getVelocity()->z);
 // can't use velocity, because it's already been updated this frame, and will be zero... (srj)
