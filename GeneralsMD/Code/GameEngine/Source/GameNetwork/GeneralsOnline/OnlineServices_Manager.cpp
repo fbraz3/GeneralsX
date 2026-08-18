@@ -5,6 +5,7 @@
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GeneralsOnline/NGMPWebSocket.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/StagingRoomGameInfo.h"
 #include "GameClient/MapUtil.h"
@@ -575,55 +576,95 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                                 slot->setState(SLOT_OPEN);
                             }
                         }
+                    }
+                }
 
-                        // Populate members
-                        auto membersIter = lobbyIter.contains("Members") ? lobbyIter["Members"] : (lobbyIter.contains("members") ? lobbyIter["members"] : json::array());
-                        if (membersIter.is_array()) {
-                            for (const auto& member : membersIter) {
-                                int64_t memberUserId = member.value("UserID", member.value("user_id", int64_t(-1)));
-                                int slotIdx = member.value("SlotIndex", member.value("slot_index", -1));
-                                int slotState = member.value("SlotState", member.value("slot_state", 0));
-                                std::string dispName = member.value("DisplayName", member.value("display_name", ""));
-                                int side = member.value("Side", member.value("side", -1));
-                                int color = member.value("Color", member.value("color", -1));
-                                int team = member.value("Team", member.value("team", -1));
-                                int startPos = member.value("StartingPosition", member.value("starting_position", -1));
-                                bool hasMap = member.value("HasMap", member.value("has_map", true));
-                                bool isReady = member.value("IsReady", member.value("is_ready", false));
+                std::vector<LobbyMemberEntry> lobbyMembers;
 
-                                if (memberUserId == m_userId && slotIdx >= 0) {
-                                    localSlotIndex = slotIdx;
-                                }
+                // Populate members
+                auto membersIter = lobbyIter.contains("Members") ? lobbyIter["Members"] : (lobbyIter.contains("members") ? lobbyIter["members"] : json::array());
+                if (membersIter.is_array()) {
+                    for (const auto& member : membersIter) {
+                        int64_t memberUserId = member.value("UserID", member.value("user_id", int64_t(-1)));
+                        int slotIdx = member.value("SlotIndex", member.value("slot_index", -1));
+                        int slotState = member.value("SlotState", member.value("slot_state", 0));
+                        std::string dispName = member.value("DisplayName", member.value("display_name", ""));
+                        int side = member.value("Side", member.value("side", -1));
+                        int color = member.value("Color", member.value("color", -1));
+                        int team = member.value("Team", member.value("team", -1));
+                        int startPos = member.value("StartingPosition", member.value("starting_position", -1));
+                        bool hasMap = member.value("HasMap", member.value("has_map", true));
+                        bool isReady = member.value("IsReady", member.value("is_ready", false));
 
-                                if (memberUserId > 0 && !dispName.empty()) {
-                                    NGMPLobbyPlayer lp;
-                                    lp.id = memberUserId;
-                                    lp.name = dispName;
-                                    lp.isAdmin = (memberUserId == ownerId);
-                                    updatedLobbyPlayers.push_back(lp);
-                                }
+                        if (memberUserId == m_userId && slotIdx >= 0) {
+                            localSlotIndex = slotIdx;
+                        }
 
-                                if (slotIdx >= 0 && slotIdx < MAX_SLOTS) {
-                                    GameSpyGameSlot* slot = stagingRoom->getGameSpySlot(slotIdx);
-                                    if (slot) {
-                                        UnicodeString uName;
-                                        uName.translate(dispName.c_str());
-                                        slot->setState(static_cast<SlotState>(slotState), uName);
-                                        slot->setPlayerTemplate((side >= 0) ? side : PLAYERTEMPLATE_RANDOM);
-                                        slot->setColor((color >= 0) ? color : 0);
-                                        slot->setTeamNumber((team >= 0) ? team : 0);
-                                        slot->setStartPos(startPos);
-                                        slot->setMapAvailability(hasMap ? TRUE : FALSE);
-                                        if (isReady) {
-                                            slot->setAccept();
-                                        } else {
-                                            slot->unAccept();
-                                        }
+                        if (memberUserId > 0 && !dispName.empty()) {
+                            NGMPLobbyPlayer lp;
+                            lp.id = memberUserId;
+                            lp.name = dispName;
+                            lp.isAdmin = (memberUserId == ownerId);
+                            updatedLobbyPlayers.push_back(lp);
+                        }
+
+                        LobbyMemberEntry lme;
+                        lme.user_id = memberUserId;
+                        lme.display_name = dispName;
+                        lme.side = side;
+                        lme.color = color;
+                        lme.team = team;
+                        lme.startpos = startPos;
+                        lme.has_map = hasMap;
+                        lme.m_bIsReady = isReady;
+                        lme.m_SlotState = static_cast<uint16_t>(slotState);
+                        lme.m_SlotIndex = (slotIdx >= 0) ? static_cast<uint16_t>(slotIdx) : static_cast<uint16_t>(9999);
+                        lobbyMembers.push_back(lme);
+
+                        if (TheGameSpyInfo) {
+                            GameSpyStagingRoom* stagingRoom = TheGameSpyInfo->getCurrentStagingRoom();
+                            if (stagingRoom && slotIdx >= 0 && slotIdx < MAX_SLOTS) {
+                                GameSpyGameSlot* slot = stagingRoom->getGameSpySlot(slotIdx);
+                                if (slot) {
+                                    UnicodeString uName;
+                                    uName.translate(dispName.c_str());
+                                    slot->setState(static_cast<SlotState>(slotState), uName);
+                                    slot->setPlayerTemplate((side >= 0) ? side : PLAYERTEMPLATE_RANDOM);
+                                    slot->setColor((color >= 0) ? color : 0);
+                                    slot->setTeamNumber((team >= 0) ? team : 0);
+                                    slot->setStartPos(startPos);
+                                    slot->setMapAvailability(hasMap ? TRUE : FALSE);
+                                    if (isReady) {
+                                        slot->setAccept();
+                                    } else {
+                                        slot->unAccept();
                                     }
                                 }
                             }
                         }
                     }
+                }
+
+                // Update NGMP LobbyInterface current lobby cache
+                NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+                if (pLobbyInterface) {
+                    LobbyEntry& curLobby = pLobbyInterface->GetCurrentLobby();
+                    curLobby.lobbyID = targetId;
+                    curLobby.owner = ownerId;
+                    curLobby.name = lobbyIter.value("Name", lobbyIter.value("name", ""));
+                    curLobby.map_name = mapName;
+                    curLobby.map_path = mapPath;
+                    curLobby.map_official = lobbyIter.value("IsMapOfficial", lobbyIter.value("is_map_official", true));
+                    curLobby.starting_cash = startingCash;
+                    curLobby.limit_superweapons = limitSuperweapons;
+                    curLobby.track_stats = lobbyIter.value("IsTrackingStats", lobbyIter.value("is_tracking_stats", true));
+                    curLobby.allow_observers = allowObservers;
+                    curLobby.rng_seed = lobbyIter.value("RNGSeed", lobbyIter.value("rng_seed", 0));
+                    curLobby.exe_crc = lobbyIter.value("ExeCRC", lobbyIter.value("exe_crc", 0));
+                    curLobby.ini_crc = lobbyIter.value("IniCRC", lobbyIter.value("ini_crc", 0));
+                    curLobby.max_players = lobbyIter.value("MaxPlayers", lobbyIter.value("max_players", 8));
+                    curLobby.current_players = lobbyIter.value("NumCurrentPlayers", lobbyIter.value("num_current_players", 1));
+                    curLobby.members = std::move(lobbyMembers);
                 }
 
                 // Update roster for lobby sidebar

@@ -193,15 +193,16 @@ void WOLMapSelectMenuInit( WindowLayout *layout, void *userData )
 	NameKeyType mapListID = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:ListboxMap" );
 	mapList = TheWindowManager->winGetWindowFromId( parent, mapListID );
 
-#if defined(GENERALS_ONLINE)
-	if (mapList && TheMapCache)
-		GadgetListBoxSetListLength(mapList, TheMapCache->size());
-#endif
-	
 	if( mapList )
 	{
 		if (TheMapCache)
+		{
 			TheMapCache->updateCache();
+			if (TheMapCache->size() > 0)
+			{
+				GadgetListBoxSetListLength(mapList, TheMapCache->size());
+			}
+		}
 		populateMapListbox( mapList, usesSystemMapDir, TRUE, TheNGMPGame ? TheNGMPGame->getMap() : getDefaultMap(TRUE) );
 	}
 
@@ -415,7 +416,13 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 			else if ( controlID == radioButtonSystemMapsID )
 			{
 				if (TheMapCache)
+				{
 					TheMapCache->updateCache();
+					if (TheMapCache->size() > 0)
+					{
+						GadgetListBoxSetListLength(mapList, TheMapCache->size());
+					}
+				}
 				populateMapListbox( mapList, TRUE, TRUE, TheNGMPGame ? TheNGMPGame->getMap() : getDefaultMap(TRUE) );
 				CustomMatchPreferences pref;
 				pref.setUsesSystemMapDir(TRUE);
@@ -424,7 +431,13 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 			else if ( controlID == radioButtonUserMapsID )
 			{
 				if (TheMapCache)
+				{
 					TheMapCache->updateCache();
+					if (TheMapCache->size() > 0)
+					{
+						GadgetListBoxSetListLength(mapList, TheMapCache->size());
+					}
+				}
 				populateMapListbox( mapList, FALSE, TRUE, TheNGMPGame ? TheNGMPGame->getMap() : getDefaultMap(TRUE) );
 				CustomMatchPreferences pref;
 				pref.setUsesSystemMapDir(FALSE);

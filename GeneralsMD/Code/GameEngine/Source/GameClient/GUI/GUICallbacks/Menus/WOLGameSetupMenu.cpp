@@ -1732,6 +1732,9 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 	std::vector<NGMPEvent> ngmpEvents = NGMP_OnlineServicesManager::getInstance().pollEvents();
 	for (const auto& ev : ngmpEvents) {
 		if (ev.type == NGMPEvent::EVENT_PLAYERS_UPDATED) {
+			if (TheNGMPGame) {
+				TheNGMPGame->UpdateSlotsFromCurrentLobby();
+			}
 			WOLDisplaySlotList();
 			WOLDisplayGameOptions();
 		}
