@@ -1735,6 +1735,11 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 			WOLDisplaySlotList();
 			WOLDisplayGameOptions();
 		}
+		else if (ev.type == NGMPEvent::EVENT_LOBBY_LEFT) {
+			buttonPushed = true;
+			PopBackToLobby();
+			return;
+		}
 		else if (ev.type == NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED) {
 			UnicodeString uMsg;
 			uMsg.translate(ev.payload.c_str());

@@ -318,27 +318,35 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
     });
 }
 
-void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const std::string& mapName, const std::string& password, int maxPlayers) {
-    std::thread([this, name, mapName, password, maxPlayers]() {
+void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const std::string& mapName, const std::string& mapPath, bool isOfficial, int maxPlayers, bool vanillaTeamsOnly, bool trackStats, uint32_t startingCash, bool isPassworded, const std::string& password, bool allowObservers) {
+    std::thread([this, name, mapName, mapPath, isOfficial, maxPlayers, vanillaTeamsOnly, trackStats, startingCash, isPassworded, password, allowObservers]() {
         CURL* curl = curl_easy_init();
         if (!curl) return;
 
         std::string url = NGMP::GetAPIEndpoint("Lobbies");
         NGMP::Internal::CurlResponse response;
 
+        // Sanitize map path so server's FixMapPathForGame does not duplicate folder prefixes
+        std::string sanitizedMapPath = mapPath;
+        const char* lastSlash = strrchr(sanitizedMapPath.c_str(), '/');
+        if (!lastSlash) lastSlash = strrchr(sanitizedMapPath.c_str(), '\\');
+        if (lastSlash) {
+            sanitizedMapPath = lastSlash + 1;
+        }
+
         json payload = {
             {"name", name},
             {"map_name", mapName},
-            {"map_path", mapName}, // Fallback for map path
-            {"map_official", true},
+            {"map_path", sanitizedMapPath},
+            {"map_official", isOfficial},
             {"max_players", maxPlayers},
             {"preferred_port", 0},
-            {"vanilla_teams", false},
-            {"track_stats", false},
-            {"starting_cash", 10000},
-            {"passworded", !password.empty()},
+            {"vanilla_teams", vanillaTeamsOnly},
+            {"track_stats", trackStats},
+            {"starting_cash", startingCash},
+            {"passworded", isPassworded || !password.empty()},
             {"password", password},
-            {"allow_observers", true},
+            {"allow_observers", allowObservers},
             {"max_cam_height", 300},
             {"exe_crc", 0},
             {"ini_crc", 0},
@@ -490,17 +498,61 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                 m_currentLobbyId = targetId;
                 m_isLobbyOwner = (ownerId == m_userId);
 
+                int localSlotIndex = -1;
+                std::vector<NGMPLobbyPlayer> updatedLobbyPlayers;
+
                 if (TheGameSpyInfo) {
                     GameSpyStagingRoom* stagingRoom = TheGameSpyInfo->getCurrentStagingRoom();
                     if (stagingRoom) {
-                        // Map setup
+                        // Map setup - robust resolution across platforms
                         if (TheMapCache) {
                             TheMapCache->updateCache();
-                            AsciiString asciiMapPath(mapPath.c_str());
-                            const MapMetaData* md = TheMapCache->findMap(asciiMapPath);
+
+                            // 1. Direct query with path and name
+                            const MapMetaData* md = TheMapCache->findMap(AsciiString(mapPath.c_str()));
                             if (!md && !mapName.empty()) {
                                 md = TheMapCache->findMap(AsciiString(mapName.c_str()));
                             }
+
+                            // 2. Normalized slashes
+                            if (!md) {
+                                std::string normPath = mapPath;
+                                std::replace(normPath.begin(), normPath.end(), '\\', '/');
+                                md = TheMapCache->findMap(AsciiString(normPath.c_str()));
+                            }
+                            if (!md && !mapName.empty()) {
+                                std::string normName = mapName;
+                                std::replace(normName.begin(), normName.end(), '\\', '/');
+                                md = TheMapCache->findMap(AsciiString(normName.c_str()));
+                            }
+
+                            // 3. Fallback: match by leaf filename or display name
+                            if (!md) {
+                                std::string leafName = mapPath;
+                                const char* pSlash = strrchr(leafName.c_str(), '/');
+                                if (!pSlash) pSlash = strrchr(leafName.c_str(), '\\');
+                                if (pSlash) leafName = pSlash + 1;
+
+                                UnicodeString uMapName;
+                                uMapName.translate(mapName.c_str());
+
+                                for (auto it = TheMapCache->begin(); it != TheMapCache->end(); ++it) {
+                                    const MapMetaData& m = it->second;
+                                    if (!mapName.empty() && m.m_displayName.compareNoCase(uMapName) == 0) {
+                                        md = &m;
+                                        break;
+                                    }
+                                    if (!leafName.empty()) {
+                                        const char* cacheLeaf = strrchr(m.m_fileName.str(), '/');
+                                        if (!cacheLeaf) cacheLeaf = strrchr(m.m_fileName.str(), '\\');
+                                        if (cacheLeaf && stricmp(cacheLeaf + 1, leafName.c_str()) == 0) {
+                                            md = &m;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
                             if (md) {
                                 stagingRoom->setMap(md->m_fileName);
                                 stagingRoom->setMapCRC(md->m_CRC);
@@ -528,6 +580,7 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                         auto membersIter = lobbyIter.contains("Members") ? lobbyIter["Members"] : (lobbyIter.contains("members") ? lobbyIter["members"] : json::array());
                         if (membersIter.is_array()) {
                             for (const auto& member : membersIter) {
+                                int64_t memberUserId = member.value("UserID", member.value("user_id", int64_t(-1)));
                                 int slotIdx = member.value("SlotIndex", member.value("slot_index", -1));
                                 int slotState = member.value("SlotState", member.value("slot_state", 0));
                                 std::string dispName = member.value("DisplayName", member.value("display_name", ""));
@@ -537,6 +590,18 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                                 int startPos = member.value("StartingPosition", member.value("starting_position", -1));
                                 bool hasMap = member.value("HasMap", member.value("has_map", true));
                                 bool isReady = member.value("IsReady", member.value("is_ready", false));
+
+                                if (memberUserId == m_userId && slotIdx >= 0) {
+                                    localSlotIndex = slotIdx;
+                                }
+
+                                if (memberUserId > 0 && !dispName.empty()) {
+                                    NGMPLobbyPlayer lp;
+                                    lp.id = memberUserId;
+                                    lp.name = dispName;
+                                    lp.isAdmin = (memberUserId == ownerId);
+                                    updatedLobbyPlayers.push_back(lp);
+                                }
 
                                 if (slotIdx >= 0 && slotIdx < MAX_SLOTS) {
                                     GameSpyGameSlot* slot = stagingRoom->getGameSpySlot(slotIdx);
@@ -561,8 +626,26 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                     }
                 }
 
-                fprintf(stderr, "[NGMP] Synchronized staging room with Lobby %lld (map=%s, cash=%d, superweapons=%d, isOwner=%d)\n",
-                    (long long)targetId, mapName.c_str(), startingCash, limitSuperweapons, m_isLobbyOwner ? 1 : 0);
+                // Update roster for lobby sidebar
+                if (!updatedLobbyPlayers.empty()) {
+                    std::lock_guard<std::mutex> lock(m_eventMutex);
+                    m_lobbyPlayers = std::move(updatedLobbyPlayers);
+                }
+
+                // If guest is no longer part of the lobby members list, trigger lobby exit
+                if (!m_isLobbyOwner && localSlotIndex < 0 && m_currentLobbyId == targetId) {
+                    fprintf(stderr, "[NGMP] Local player %lld no longer in lobby %lld members roster\n",
+                        (long long)m_userId, (long long)targetId);
+                    fflush(stderr);
+                    m_currentLobbyId = -1;
+                    NGMPEvent leftEv;
+                    leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
+                    postEvent(leftEv);
+                    return;
+                }
+
+                fprintf(stderr, "[NGMP] Synchronized staging room with Lobby %lld (map=%s, cash=%d, superweapons=%d, isOwner=%d, localSlot=%d)\n",
+                    (long long)targetId, mapName.c_str(), startingCash, limitSuperweapons, m_isLobbyOwner ? 1 : 0, localSlotIndex);
                 fflush(stderr);
 
                 NGMPEvent ev;
@@ -576,6 +659,13 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
         } else {
             fprintf(stderr, "[NGMP] GET Lobby %lld failed (curl=%d, http=%ld)\n", (long long)targetId, res, httpCode);
             fflush(stderr);
+            if (!m_isLobbyOwner && (httpCode == 404 || httpCode == 400 || httpCode == 410)) {
+                // Lobby was closed / host left
+                m_currentLobbyId = -1;
+                NGMPEvent leftEv;
+                leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
+                postEvent(leftEv);
+            }
         }
     }).detach();
 }
@@ -619,10 +709,17 @@ static void sendLobbyPostUpdate(const std::string& authToken, int64_t lobbyId, c
 }
 
 void NGMP_OnlineServicesManager::updateLobbyMap(const std::string& mapName, const std::string& mapPath, bool isOfficial, int maxPlayers) {
+    std::string sanitizedMapPath = mapPath;
+    const char* lastSlash = strrchr(sanitizedMapPath.c_str(), '/');
+    if (!lastSlash) lastSlash = strrchr(sanitizedMapPath.c_str(), '\\');
+    if (lastSlash) {
+        sanitizedMapPath = lastSlash + 1;
+    }
+
     json payload = {
         {"field", 0}, // LOBBY_MAP
         {"map", mapName},
-        {"map_path", mapPath},
+        {"map_path", sanitizedMapPath},
         {"map_official", isOfficial},
         {"max_players", maxPlayers}
     };

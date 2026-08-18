@@ -3,6 +3,7 @@
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GameSpy/PeerDefs.h"
 #include "Common/GlobalData.h"
 
 NGMP_OnlineServices_LobbyInterface::NGMP_OnlineServices_LobbyInterface()
@@ -129,14 +130,48 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_SetSlotState(uint16_
 
 void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_ForceReady()
 {
-	NGMP_OnlineServicesManager::getInstance().updateLobbyForceStart();
+	std::shared_ptr<WebSocket> pWS = NGMP_OnlineServicesManager::GetWebSocket();
+	if (pWS != nullptr)
+	{
+		if (IsHost())
+		{
+			pWS->SendData_MarkReady(true);
+			NGMP_OnlineServicesManager::getInstance().updateLobbyForceStart();
+		}
+		else
+		{
+			GameSpyStagingRoom* room = TheGameSpyInfo ? TheGameSpyInfo->getCurrentStagingRoom() : nullptr;
+			GameSlot* pLocalSlot = room ? room->getSlot(room->getLocalSlotNum()) : nullptr;
+			if (pLocalSlot != nullptr)
+			{
+				pWS->SendData_MarkReady(pLocalSlot->isAccepted());
+			}
+			else
+			{
+				pWS->SendData_MarkReady(true);
+			}
+		}
+	}
 }
 
 void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName, UnicodeString strInitialMapName, AsciiString strInitialMapPath, bool bIsOfficial, int initialMaxSize, bool bVanillaTeamsOnly, bool bTrackStats, uint32_t startingCash, bool bPassworded, std::string strPassword, bool bAllowObservers)
 {
 	AsciiString aName;
 	aName.translate(strLobbyName);
-	NGMP_OnlineServicesManager::getInstance().createLobbyAsync(aName.str(), strInitialMapPath.str(), strPassword, initialMaxSize);
+	AsciiString aMapName;
+	aMapName.translate(strInitialMapName);
+
+	// Sanitize map path: strip directory paths to just filename if needed
+	AsciiString sanitizedMapPath = strInitialMapPath;
+	const char* lastSlash = strrchr(sanitizedMapPath.str(), '/');
+	if (!lastSlash) lastSlash = strrchr(sanitizedMapPath.str(), '\\');
+	if (lastSlash) {
+		sanitizedMapPath = lastSlash + 1;
+	}
+
+	NGMP_OnlineServicesManager::getInstance().createLobbyAsync(
+		aName.str(), aMapName.str(), sanitizedMapPath.str(), bIsOfficial, initialMaxSize,
+		bVanillaTeamsOnly, bTrackStats, startingCash, bPassworded, strPassword, bAllowObservers);
 }
 
 void NGMP_OnlineServices_LobbyInterface::JoinLobby(LobbyEntry lobby, std::string strPassword)

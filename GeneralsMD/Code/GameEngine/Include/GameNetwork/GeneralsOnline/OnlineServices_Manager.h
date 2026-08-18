@@ -49,6 +49,7 @@ struct NGMPEvent {
         EVENT_PLAYLISTS_UPDATED,
         EVENT_LOBBY_JOINED,
         EVENT_LOBBY_CREATED,
+        EVENT_LOBBY_LEFT,
         EVENT_PLAYERS_UPDATED
     };
 
@@ -155,7 +156,7 @@ public:
 
     // Async lobby fetch — result delivered via EVENT_LOBBY_LIST_UPDATED
     void requestLobbyListAsync();
-    void createLobbyAsync(const std::string& name, const std::string& mapName, const std::string& password, int maxPlayers);
+    void createLobbyAsync(const std::string& name, const std::string& mapName, const std::string& mapPath, bool isOfficial = true, int maxPlayers = 8, bool vanillaTeamsOnly = false, bool trackStats = false, uint32_t startingCash = 10000, bool isPassworded = false, const std::string& password = "", bool allowObservers = true);
     void joinLobbyAsync(int64_t lobbyId, const std::string& password);
 
     // Staging room / lobby details synchronization
