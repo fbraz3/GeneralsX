@@ -307,19 +307,6 @@ jobs:
           echo "Big files found:"
           ls "$USER_DATA/"*.big 2>/dev/null | head -10 || echo "(none found)"
 
-      - name: Prepare cross-platform game asset cache
-        if: inputs.platform == 'linux-flatpak'
-        run: |
-          mkdir -p "$GITHUB_WORKSPACE/.ci-assets"
-          cp -r /tmp/cached-assets/. "$GITHUB_WORKSPACE/.ci-assets/"
-
-      - name: Save cross-platform game asset cache
-        if: inputs.platform == 'linux-flatpak'
-        uses: actions/cache/save@v5
-        with:
-          path: .ci-assets
-          key: game-assets-cross-os-v2
-          enableCrossOsArchive: true
 
       - name: Set up user data directories (macOS)
         if: inputs.platform == 'macos'

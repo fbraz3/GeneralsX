@@ -14,6 +14,10 @@ on:
         required: false
         type: string
         description: "Optional workflow run ID to download artifacts from"
+    secrets:
+      ASSETS_KEY:
+        required: false
+        description: "Password for generalszh.7z in the test-files repo"
 
 jobs:
   replay-test-zh:
@@ -34,26 +38,81 @@ jobs:
         shell: pwsh
         run: |
           $gameDir = Join-Path $env:RUNNER_TEMP "game-artifact"
-          foreach ($name in @("generalszh.exe", "zlib1.dll", "binkw32.dll", "mss32.dll")) {
+          foreach ($name in @("GeneralsXZH.exe", "zlib1.dll", "binkw32.dll", "mss32.dll")) {
             if (!(Test-Path (Join-Path $gameDir $name))) {
               throw "Required runtime file not found: $name"
             }
           }
           "GAME_DIR=$gameDir" >> $env:GITHUB_ENV
-          "GAME_BIN=$(Join-Path $gameDir 'generalszh.exe')" >> $env:GITHUB_ENV
+          "GAME_BIN=$(Join-Path $gameDir 'GeneralsXZH.exe')" >> $env:GITHUB_ENV
 
-      - name: Restore cross-platform game assets
-        uses: actions/cache/restore@v5
+      - name: Cache Game Assets (Windows)
+        id: cache-assets
+        uses: actions/cache@v5
         with:
-          path: .ci-assets
-          key: game-assets-cross-os-v2
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
+          path: ci-cached-assets
+          key: game-assets-cache-windows-v1
+
+      - name: Clone game assets repo (GitLab with GitHub fallback)
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $targetBranch = if ($env:GITHUB_HEAD_REF) { $env:GITHUB_HEAD_REF } else { $env:GITHUB_REF_NAME }
+          $repoDir = Join-Path $env:RUNNER_TEMP "ci-assets-repo"
+          $cloneSucceeded = $false
+
+          foreach ($url in @(
+            "https://gitlab.com/fbraz3/generalsx-test-files.git",
+            "https://github.com/fbraz3/generalsx-test-files.git"
+          )) {
+            Remove-Item $repoDir -Recurse -Force -ErrorAction SilentlyContinue
+            git clone $url $repoDir
+            if ($LASTEXITCODE -ne 0) {
+              continue
+            }
+
+            Push-Location $repoDir
+            if ($targetBranch -and $targetBranch -ne "main") {
+              $remoteBranch = git ls-remote --heads origin $targetBranch
+              if ($remoteBranch) {
+                git fetch origin $targetBranch
+                git checkout $targetBranch
+              }
+            }
+            git lfs install
+            git lfs pull
+            $lfsExit = $LASTEXITCODE
+            Pop-Location
+
+            if ($lfsExit -eq 0) {
+              $cloneSucceeded = $true
+              break
+            }
+          }
+
+          if (!$cloneSucceeded) {
+            throw "Unable to download game assets repo or LFS files"
+          }
+
+      - name: Extract game assets to cache (only on cache miss)
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force "ci-cached-assets" | Out-Null
+          $archive = Join-Path $env:RUNNER_TEMP "ci-assets-repo\generalszh.7z"
+          $key = "${{ secrets.ASSETS_KEY }}"
+          if (!$key) {
+            throw "ASSETS_KEY secret is required on cache miss to extract assets"
+          }
+          & 7z x "-p$key" "$archive" "-oci-cached-assets" -y
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to extract game assets archive"
+          }
 
       - name: Install game assets
         shell: pwsh
         run: |
-          $assetCache = Join-Path $env:GITHUB_WORKSPACE ".ci-assets"
+          $assetCache = Join-Path $env:GITHUB_WORKSPACE "ci-cached-assets"
           Copy-Item (Join-Path $assetCache "*") $env:GAME_DIR -Recurse -Force
           if (!(Get-ChildItem $env:GAME_DIR -Filter "*.big")) {
             throw "No BIG files were installed"

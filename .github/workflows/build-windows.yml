@@ -45,10 +45,10 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force artifacts | Out-Null
           New-Item -ItemType Directory -Force ci-artifacts | Out-Null
-          Copy-Item build/win32-vcpkg/GeneralsMD/Release/generalszh.exe artifacts/
-          Copy-Item build/win32-vcpkg/GeneralsMD/Release/generalszh.pdb artifacts/
+          Copy-Item build/win32-vcpkg/GeneralsMD/Release/GeneralsXZH.exe artifacts/
+          Copy-Item build/win32-vcpkg/GeneralsMD/Release/GeneralsXZH.pdb artifacts/
           Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll artifacts/
-          Copy-Item build/win32-vcpkg/GeneralsMD/Release/generalszh.exe ci-artifacts/
+          Copy-Item build/win32-vcpkg/GeneralsMD/Release/GeneralsXZH.exe ci-artifacts/
           Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll ci-artifacts/
 
           foreach ($name in @("binkw32.dll", "mss32.dll")) {

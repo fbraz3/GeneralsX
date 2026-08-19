@@ -127,6 +127,8 @@ jobs:
     uses: ./.github/workflows/replay-tests-windows.yml
     with:
       game-artifact: generalsxzh-windows-x86-replay-test-only
+    secrets:
+      ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
   ci-summary:
     name: CI Summary

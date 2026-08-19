@@ -179,7 +179,7 @@ check_build() {
         exit 1
     fi
 
-    if [ ! -f "$BUILD_DIR/GeneralsMD/generalszh.exe" ]; then
+    if [ ! -f "$BUILD_DIR/GeneralsMD/GeneralsXZH.exe" ] && [ ! -f "$BUILD_DIR/GeneralsMD/generalszh.exe" ]; then
         print_error "Built executables not found"
         echo ""
         echo "Please build the project first:"
@@ -226,11 +226,19 @@ install_game() {
 
     if [ "$game_type" == "zh" ]; then
         build_game_dir="$BUILD_DIR/GeneralsMD"
-        exe_name="generalszh.exe"
+        if [ -f "$build_game_dir/GeneralsXZH.exe" ]; then
+            exe_name="GeneralsXZH.exe"
+        else
+            exe_name="generalszh.exe"
+        fi
         tools_prefix="ZH"
     else
         build_game_dir="$BUILD_DIR/Generals"
-        exe_name="generalsv.exe"
+        if [ -f "$build_game_dir/GeneralsX.exe" ]; then
+            exe_name="GeneralsX.exe"
+        else
+            exe_name="generalsv.exe"
+        fi
         tools_prefix="V"
     fi
 

@@ -2,12 +2,8 @@ add_executable(g_generals WIN32)
 
 # Use a binary name that doesn't conflict with original game.
 # GeneralsX @build BenderAI 15/02/2026 Linux branding update
-if("${CMAKE_SYSTEM}" MATCHES "Windows")
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME "generalsv${RTS_BUILD_OUTPUT_SUFFIX}")
-else()
-    # GeneralsX @build BenderAI 15/02/2026 Linux branding update
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME GeneralsX)
-endif()
+# GeneralsX @build fbraz3 19/08/2026 Standardize executable name across all platforms
+set_target_properties(g_generals PROPERTIES OUTPUT_NAME GeneralsX)
 
 # GeneralsX @build BenderAI 10/03/2026 Windows-specific libraries
 if(WIN32)
