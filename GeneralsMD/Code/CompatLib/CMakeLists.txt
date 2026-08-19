@@ -42,9 +42,9 @@ target_include_directories(d3dx8 PUBLIC
 # Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
 
-else()
-# Linux only: Create empty d3dx8 stub library to satisfy d3d8lib linkage
-# macOS and Win64 both build real d3dx8 STATIC above; Linux can use the stub for now
+elseif(UNIX)
+# Unix only: Create empty d3dx8 stub library to satisfy d3d8lib linkage.
+# Win32 uses the native d3dx8 library supplied by min-dx8-sdk.
 add_library(d3dx8 INTERFACE)
 target_link_libraries(d3dx8 INTERFACE d3d8lib)
 endif()

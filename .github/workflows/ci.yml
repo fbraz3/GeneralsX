@@ -43,6 +43,7 @@ jobs:
               - 'CMakeLists.txt'
               - 'CMakePresets.json'
               - '.github/workflows/build-*.yml'
+              - '.github/workflows/replay-tests*.yml'
               - '.github/workflows/ci.yml'
             base-should-build:
               - 'Generals/**'
@@ -52,6 +53,7 @@ jobs:
               - 'CMakeLists.txt'
               - 'CMakePresets.json'
               - '.github/workflows/build-*.yml'
+              - '.github/workflows/replay-tests*.yml'
               - '.github/workflows/ci.yml'
 
       - name: Build Trigger Summary
@@ -89,6 +91,13 @@ jobs:
       preset: macos-vulkan
     secrets: inherit
 
+  build-windows:
+    name: Build Windows
+    needs: detect-changes
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/build-windows.yml
+    secrets: inherit
+
   replay-test-linux:
     name: Replay Tests (linux)
     needs: [build-linux-flatpak]
@@ -111,10 +120,18 @@ jobs:
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
+  replay-test-windows:
+    name: Replay Tests (windows)
+    needs: [build-windows]
+    if: needs.build-windows.result == 'success'
+    uses: ./.github/workflows/replay-tests-windows.yml
+    with:
+      game-artifact: generalsxzh-windows-x86-replay-test-only
+
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [build-linux-flatpak, build-macos, replay-test-linux, replay-test-macos]
+    needs: [build-linux-flatpak, build-macos, build-windows, replay-test-linux, replay-test-macos, replay-test-windows]
     if: always()
     steps:
       - name: Generate Summary
@@ -125,16 +142,20 @@ jobs:
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows (x86) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'skipped' && '⏭️ Skipped' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Replay Tests | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|--------------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Linux ZH replays | ${{ needs.replay-test-linux.result == 'success' && '✅ Pass' || needs.replay-test-linux.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-linux.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS ZH replays | ${{ needs.replay-test-macos.result == 'success' && '✅ Pass' || needs.replay-test-macos.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows ZH replays (Linux + macOS captures) | ${{ needs.replay-test-windows.result == 'success' && '✅ Pass' || needs.replay-test-windows.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if Any Build or Replay Test Failed
         if: |
           needs.build-linux-flatpak.result == 'failure' ||
           needs.build-macos.result == 'failure' ||
+          needs.build-windows.result == 'failure' ||
           needs.replay-test-linux.result == 'failure' ||
-          needs.replay-test-macos.result == 'failure'
+          needs.replay-test-macos.result == 'failure' ||
+          needs.replay-test-windows.result == 'failure'
         run: exit 1

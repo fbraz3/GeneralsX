@@ -52,7 +52,9 @@
 
 #include "dx8wrapper.h"
 // GeneralsX @build BenderAI 10/02/2026 - Need LoadLibrary/GetProcAddress/FreeLibrary for dynamic loading
+#ifndef _WIN32
 #include "module_compat.h"
+#endif
 // GeneralsX @build felipebraz 16/02/2026 - Need dlerror() for dlopen() error reporting on Linux
 #ifndef _WIN32
 #include <dlfcn.h>
