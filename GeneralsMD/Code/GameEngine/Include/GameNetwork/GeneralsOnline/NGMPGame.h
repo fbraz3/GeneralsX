@@ -147,7 +147,7 @@ public:
 	virtual void resetAccepted(void);
 	virtual void startGame(Int gameID);
 	void launchGame(void);
-	virtual Int getLocalSlotNum(void) const;
+	virtual Int getLocalSlotNum(void) const override;
 
 	inline void setGameName(UnicodeString name) { m_gameName = name; }
 	inline UnicodeString getGameName(void) const { return m_gameName; }

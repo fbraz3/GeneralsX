@@ -502,82 +502,6 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                 int localSlotIndex = -1;
                 std::vector<NGMPLobbyPlayer> updatedLobbyPlayers;
 
-                if (TheGameSpyInfo) {
-                    GameSpyStagingRoom* stagingRoom = TheGameSpyInfo->getCurrentStagingRoom();
-                    if (stagingRoom) {
-                        // Map setup - robust resolution across platforms
-                        if (TheMapCache) {
-                            TheMapCache->updateCache();
-
-                            // 1. Direct query with path and name
-                            const MapMetaData* md = TheMapCache->findMap(AsciiString(mapPath.c_str()));
-                            if (!md && !mapName.empty()) {
-                                md = TheMapCache->findMap(AsciiString(mapName.c_str()));
-                            }
-
-                            // 2. Normalized slashes
-                            if (!md) {
-                                std::string normPath = mapPath;
-                                std::replace(normPath.begin(), normPath.end(), '\\', '/');
-                                md = TheMapCache->findMap(AsciiString(normPath.c_str()));
-                            }
-                            if (!md && !mapName.empty()) {
-                                std::string normName = mapName;
-                                std::replace(normName.begin(), normName.end(), '\\', '/');
-                                md = TheMapCache->findMap(AsciiString(normName.c_str()));
-                            }
-
-                            // 3. Fallback: match by leaf filename or display name
-                            if (!md) {
-                                std::string leafName = mapPath;
-                                const char* pSlash = strrchr(leafName.c_str(), '/');
-                                if (!pSlash) pSlash = strrchr(leafName.c_str(), '\\');
-                                if (pSlash) leafName = pSlash + 1;
-
-                                UnicodeString uMapName;
-                                uMapName.translate(mapName.c_str());
-
-                                for (auto it = TheMapCache->begin(); it != TheMapCache->end(); ++it) {
-                                    const MapMetaData& m = it->second;
-                                    if (!mapName.empty() && m.m_displayName.compareNoCase(uMapName) == 0) {
-                                        md = &m;
-                                        break;
-                                    }
-                                    if (!leafName.empty()) {
-                                        const char* cacheLeaf = strrchr(m.m_fileName.str(), '/');
-                                        if (!cacheLeaf) cacheLeaf = strrchr(m.m_fileName.str(), '\\');
-                                        if (cacheLeaf && stricmp(cacheLeaf + 1, leafName.c_str()) == 0) {
-                                            md = &m;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (md) {
-                                stagingRoom->setMap(md->m_fileName);
-                                stagingRoom->setMapCRC(md->m_CRC);
-                                stagingRoom->setMapSize(md->m_filesize);
-                            } else if (!mapName.empty()) {
-                                stagingRoom->setMap(AsciiString(mapName.c_str()));
-                            }
-                        }
-
-                        Money startingCashMoney;
-                        startingCashMoney.deposit(UnsignedInt(startingCash), FALSE, FALSE);
-                        stagingRoom->setStartingCash(startingCashMoney);
-                        stagingRoom->setSuperweaponRestriction(limitSuperweapons ? 1 : 0);
-                        stagingRoom->setAllowObservers(allowObservers);
-
-                        // Reset all slots first
-                        for (int i = 0; i < MAX_SLOTS; ++i) {
-                            GameSpyGameSlot* slot = stagingRoom->getGameSpySlot(i);
-                            if (slot) {
-                                slot->setState(SLOT_OPEN);
-                            }
-                        }
-                    }
-                }
 
                 std::vector<LobbyMemberEntry> lobbyMembers;
 
@@ -621,27 +545,6 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                         lme.m_SlotIndex = (slotIdx >= 0) ? static_cast<uint16_t>(slotIdx) : static_cast<uint16_t>(9999);
                         lobbyMembers.push_back(lme);
 
-                        if (TheGameSpyInfo) {
-                            GameSpyStagingRoom* stagingRoom = TheGameSpyInfo->getCurrentStagingRoom();
-                            if (stagingRoom && slotIdx >= 0 && slotIdx < MAX_SLOTS) {
-                                GameSpyGameSlot* slot = stagingRoom->getGameSpySlot(slotIdx);
-                                if (slot) {
-                                    UnicodeString uName;
-                                    uName.translate(dispName.c_str());
-                                    slot->setState(static_cast<SlotState>(slotState), uName);
-                                    slot->setPlayerTemplate((side >= 0) ? side : PLAYERTEMPLATE_RANDOM);
-                                    slot->setColor((color >= 0) ? color : 0);
-                                    slot->setTeamNumber((team >= 0) ? team : 0);
-                                    slot->setStartPos(startPos);
-                                    slot->setMapAvailability(hasMap ? TRUE : FALSE);
-                                    if (isReady) {
-                                        slot->setAccept();
-                                    } else {
-                                        slot->unAccept();
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
 

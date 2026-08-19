@@ -1493,6 +1493,13 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 	hostSlot->setAccept();
 
 #if defined(SAGE_USE_NGMP)
+	if (TheNGMPGame) {
+		NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+		if (pLobbyInterface) {
+			TheNGMPGame->SyncWithLobby(pLobbyInterface->GetCurrentLobby());
+		}
+		TheNGMPGame->UpdateSlotsFromCurrentLobby();
+	}
 	NGMP_OnlineServicesManager::getInstance().requestLobbyDetailsAsync();
 #endif
 
@@ -1733,6 +1740,10 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 	for (const auto& ev : ngmpEvents) {
 		if (ev.type == NGMPEvent::EVENT_PLAYERS_UPDATED) {
 			if (TheNGMPGame) {
+				NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+				if (pLobbyInterface) {
+					TheNGMPGame->SyncWithLobby(pLobbyInterface->GetCurrentLobby());
+				}
 				TheNGMPGame->UpdateSlotsFromCurrentLobby();
 			}
 			WOLDisplaySlotList();
