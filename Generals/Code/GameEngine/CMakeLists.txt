@@ -1079,6 +1079,17 @@ target_sources(g_gameengine PRIVATE ${GAMEENGINE_SRC})
 target_include_directories(g_gameengine PUBLIC
     Include
 )
+if(UNIX)
+    target_include_directories(g_gameengine PUBLIC ../CompatLib/Include)
+endif()
+
+# Ensure DXVK headers are available when building on Linux
+if(NOT SAGE_USE_DX8 AND dxvk_SOURCE_DIR)
+    target_include_directories(g_gameengine PUBLIC
+        ${dxvk_SOURCE_DIR}/usr/include
+        ${dxvk_SOURCE_DIR}/usr/include/dxvk
+    )
+endif()
 
 target_include_directories(g_gameengine PRIVATE
     Include/Precompiled
@@ -1092,6 +1103,7 @@ target_link_libraries(g_gameengine PRIVATE
 target_link_libraries(g_gameengine PUBLIC
     corei_gameengine_public
     g_wwvegas
+    d3d8lib  # Ensure DirectX8 headers available (Windows SDK or DXVK)
 )
 
 target_precompile_headers(g_gameengine PRIVATE

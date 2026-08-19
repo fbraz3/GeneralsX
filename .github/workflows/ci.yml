@@ -94,7 +94,7 @@ jobs:
   build-windows:
     name: Build Windows
     needs: detect-changes
-    if: needs.detect-changes.outputs.zh-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-windows.yml
     secrets: inherit
 
