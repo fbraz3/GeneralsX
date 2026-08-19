@@ -156,7 +156,8 @@ void WOLMapSelectMenuInit( WindowLayout *layout, void *userData )
 	listboxMap = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:ListboxMap" );
 	radioButtonSystemMapsID = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:RadioButtonSystemMaps" );
 	radioButtonUserMapsID = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:RadioButtonUserMaps" );
-	winMapWindow = TheWindowManager->winGetWindowFromId( parent, listboxMap );
+	mapList = TheWindowManager->winGetWindowFromId( parent, listboxMap );
+	winMapWindow = mapList;
 
 #if !defined(GENERALS_ONLINE_ALLOW_ALL_SETTINGS_FOR_STATS_MATCHES)
 	GameWindow* radioButtonSystemMaps = TheWindowManager->winGetWindowFromId(parent, radioButtonSystemMapsID);
@@ -188,10 +189,6 @@ void WOLMapSelectMenuInit( WindowLayout *layout, void *userData )
 
 	raiseMessageBoxes = TRUE;
 	showGameSpyGameOptionsUnderlyingGUIElements( FALSE );
-
-	// get the listbox window
-	NameKeyType mapListID = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:ListboxMap" );
-	mapList = TheWindowManager->winGetWindowFromId( parent, mapListID );
 
 	if( mapList )
 	{
