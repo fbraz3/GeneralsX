@@ -23,7 +23,6 @@
         "platform": "!windows",
         "features": ["ssl"]
       },
-      "ffmpeg",
       "stb"
     ]
   }

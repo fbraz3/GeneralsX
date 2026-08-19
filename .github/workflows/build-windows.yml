@@ -6,45 +6,76 @@ permissions:
 
 on:
   workflow_call:
-    inputs:
-      game:
-        required: true
-        type: string
-        description: "Game to build (GeneralsMD, Generals)"
-      preset:
-        required: false
-        type: string
-        default: "windows64-deploy"
-        description: "CMake preset for Windows"
   workflow_dispatch:
-    inputs:
-      game:
-        type: choice
-        description: "Game to build"
-        options:
-          - GeneralsMD
-          - Generals
-        default: GeneralsMD
-      preset:
-        type: choice
-        description: "CMake preset for Windows"
-        options:
-          - windows64-deploy
-        default: windows64-deploy
 
 jobs:
   build-windows:
-    name: ${{ inputs.game }}@${{ inputs.preset }}
-    runs-on: windows-latest
-    timeout-minutes: 5
+    name: GeneralsMD x86
+    runs-on: windows-2022
+    timeout-minutes: 45
 
     steps:
-      - name: Not Yet Implemented
-        shell: bash
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure MSVC x86
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+
+      - name: Configure
+        shell: pwsh
         run: |
-          echo "Windows build (SDL3 + DXVK + OpenAL 64-bit) is not yet implemented."
-          echo "See docs/WORKDIR/phases/ for the Windows roadmap."
-          echo ""
-          echo "To run the real build, switch to the branch that has Windows support"
-          echo "and re-run this workflow from that branch."
-          exit 0
+          $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT
+          cmake --preset win32-vcpkg `
+            -DRTS_BUILD_GENERALS=OFF `
+            -DRTS_BUILD_ZEROHOUR=ON `
+            -DRTS_BUILD_CORE_TOOLS=OFF `
+            -DRTS_BUILD_ZEROHOUR_TOOLS=OFF `
+            -DRTS_BUILD_OPTION_SAGE_PATCH=OFF `
+            -DSAGE_USE_DX8=ON `
+            -DSAGE_USE_DETERMINISTIC_MATH=ON
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build --preset win32-vcpkg
+
+      - name: Collect runtime
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          New-Item -ItemType Directory -Force ci-artifacts | Out-Null
+          Copy-Item build/win32-vcpkg/GeneralsMD/Release/generalszh.exe artifacts/
+          Copy-Item build/win32-vcpkg/GeneralsMD/Release/generalszh.pdb artifacts/
+          Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll artifacts/
+          Copy-Item build/win32-vcpkg/GeneralsMD/Release/generalszh.exe ci-artifacts/
+          Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll ci-artifacts/
+
+          foreach ($name in @("binkw32.dll", "mss32.dll")) {
+            $stub = Get-ChildItem build/win32-vcpkg -Filter $name -Recurse |
+              Select-Object -First 1
+            if ($null -eq $stub) {
+              throw "Required CI stub not found: $name"
+            }
+            Copy-Item $stub.FullName ci-artifacts/
+          }
+
+          @"
+          Copy these files into an existing licensed Zero Hour installation.
+          Keep the installation's original binkw32.dll and mss32.dll; the build-time
+          stub DLLs do not provide retail video or audio playback.
+          "@ | Set-Content artifacts/INSTALL.txt
+
+      - name: Upload runtime
+        uses: actions/upload-artifact@v7
+        with:
+          name: generalsxzh-windows-x86
+          path: artifacts
+          retention-days: 7
+
+      - name: Upload replay-test runtime
+        uses: actions/upload-artifact@v7
+        with:
+          name: generalsxzh-windows-x86-replay-test-only
+          path: ci-artifacts
+          retention-days: 1

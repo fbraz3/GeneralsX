@@ -1155,8 +1155,10 @@ target_sources(z_gameengine PRIVATE ${GAMEENGINE_SRC})
 
 target_include_directories(z_gameengine PUBLIC
     Include
-    ../CompatLib/Include  # Needed for d3dx8math.h in PCH
 )
+if(UNIX)
+    target_include_directories(z_gameengine PUBLIC ../CompatLib/Include)
+endif()
 
 # Ensure DXVK headers are available when building on Linux
 if(NOT SAGE_USE_DX8 AND dxvk_SOURCE_DIR)
