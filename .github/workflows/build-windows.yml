@@ -6,6 +6,12 @@ permissions:
 
 on:
   workflow_call:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
+        default: ""
+        description: "Git ref to checkout (branch, tag, or SHA). Leaves empty for default."
   workflow_dispatch:
 
 jobs:
@@ -40,7 +46,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Configure MSVC x86
         uses: ilammy/msvc-dev-cmd@v1
