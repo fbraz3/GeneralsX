@@ -31,6 +31,14 @@
 #include "Common/Registry.h"
 #include "WWLib/registryini.h"
 
+#include <ctype.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+
+#ifndef S_ISDIR
+#define S_ISDIR(mode) (((mode) & S_IFDIR) == S_IFDIR)
+#endif
+
 // GeneralsX @build felipebraz 11/02/2026 Phase 1.5 - Linux port
 // Windows Registry types not available on Linux - define stub types
 #ifdef _UNIX
@@ -39,11 +47,124 @@ typedef void* HKEY;  // Stub type for Linux (unused but needed for compilation)
 #define HKEY_LOCAL_MACHINE  ((HKEY)(uintptr_t)0x80000002)
 #define HKEY_CURRENT_USER   ((HKEY)(uintptr_t)0x80000001)
 #endif
-#include <ctype.h>   // toupper
-#include <stdlib.h>  // getenv
-#include <sys/stat.h> // stat
 #include <unistd.h>  // getcwd
 #endif
+
+// GeneralsX @bugfix GitHubCopilot 16/03/2026 Detect language BIGs in configured asset roots, not only CWD.
+static Bool doesLanguageBigExist(const char* rootPath, const char* bigFile)
+{
+	struct stat st;
+	char lowerBigFile[256] = { 0 };
+
+	for (int i = 0; bigFile[i] != '\0' && i < static_cast<int>(sizeof(lowerBigFile) - 1); ++i) {
+		lowerBigFile[i] = static_cast<char>(tolower(static_cast<unsigned char>(bigFile[i])));
+	}
+
+	if (rootPath == nullptr || rootPath[0] == '\0') {
+		if (stat(bigFile, &st) == 0 || stat(lowerBigFile, &st) == 0) {
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	AsciiString fullPath = rootPath;
+	const Int len = fullPath.getLength();
+	if (len > 0) {
+		const char lastChar = fullPath.getCharAt(len - 1);
+		if (lastChar != '/' && lastChar != '\\') {
+			fullPath.concat('/');
+		}
+	}
+	fullPath.concat(bigFile);
+
+	if (stat(fullPath.str(), &st) == 0) {
+		return TRUE;
+	}
+
+	AsciiString lowerPath = rootPath;
+	const Int lowerLen = lowerPath.getLength();
+	if (lowerLen > 0) {
+		const char lastChar = lowerPath.getCharAt(lowerLen - 1);
+		if (lastChar != '/' && lastChar != '\\') {
+			lowerPath.concat('/');
+		}
+	}
+	lowerPath.concat(lowerBigFile);
+
+	return stat(lowerPath.str(), &st) == 0;
+}
+
+// GeneralsX @feature felipebraz 18/02/2026 Auto-detect base Generals install path
+// Steam ZH standalone puts base Generals assets in ./ZH_Generals/ (subdir).
+// Dev split install puts them in ../Generals/ (sibling dir).
+// Check both in priority order.
+static Bool tryRelativeGeneralsPath(AsciiString& val)
+{
+	struct stat st;
+
+	// Steam standalone ZH: base Generals assets live in ZH_Generals/ subdirectory
+	const char *steamPath = "ZH_Generals/";
+	if (stat(steamPath, &st) == 0 && S_ISDIR(st.st_mode))
+	{
+		val = steamPath;
+		DEBUG_LOG(("tryRelativeGeneralsPath - found base Generals at %s (Steam standalone)", steamPath));
+		return TRUE;
+	}
+
+	// Dev split install: Generals and ZH installed side-by-side under same parent
+	const char *devPath = "../Generals/";
+	if (stat(devPath, &st) == 0 && S_ISDIR(st.st_mode))
+	{
+		val = devPath;
+		DEBUG_LOG(("tryRelativeGeneralsPath - found base Generals at %s (dev layout)", devPath));
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+// GeneralsX @feature felipebraz 20/08/2026 Cross-platform auto-detect game language from BIG files
+// When registry has no Language key (e.g. Steam on Windows, Linux, macOS),
+// detect the language by checking which language-specific BIG file is present.
+// Precedence mirrors the original installer language selection.
+static Bool tryAutoDetectLanguage(AsciiString& val)
+{
+	// Each entry: BIG file to probe → language string the game expects
+	const struct { const char *bigFile; const char *language; } candidates[] = {
+		{ "BrazilianZH.big", "brazilian" },
+		{ "EnglishZH.big",   "english"   },
+		{ "GermanZH.big",    "german"    },
+		{ "FrenchZH.big",    "french"    },
+		{ "SpanishZH.big",   "spanish"   },
+		{ "ChineseZH.big",   "chinese"   },
+		{ "KoreanZH.big",    "korean"    },
+		{ "PolishZH.big",    "polish"    },
+		{ nullptr,           nullptr     }
+	};
+
+	const char* searchRoots[] = {
+		getenv("CNC_GENERALS_ZH_PATH"),
+		getenv("CNC_GENERALS_PATH"),
+		getenv("CNC_ZH_INSTALLPATH"),
+		nullptr
+	};
+
+	for (int i = 0; candidates[i].bigFile != nullptr; ++i)
+	{
+		for (int rootIndex = 0; rootIndex < static_cast<int>(ARRAY_SIZE(searchRoots)); ++rootIndex) {
+			if (doesLanguageBigExist(searchRoots[rootIndex], candidates[i].bigFile)) {
+				val = candidates[i].language;
+				DEBUG_LOG(("tryAutoDetectLanguage - detected language '%s' from %s (root=%s)",
+						candidates[i].language,
+						candidates[i].bigFile,
+						searchRoots[rootIndex] != nullptr ? searchRoots[rootIndex] : "<cwd>"));
+				return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
+}
 
 // GeneralsX @build felipebraz 11/02/2026 Phase 1.5 - Linux port
 // Windows Registry API not available on Linux.
@@ -124,122 +245,6 @@ static Bool getEnvVar(const char *prefix, AsciiString key, AsciiString& val)
 	return FALSE;
 }
 
-// GeneralsX @bugfix GitHubCopilot 16/03/2026 Detect language BIGs in configured asset roots, not only CWD.
-static Bool doesLanguageBigExist(const char* rootPath, const char* bigFile)
-{
-	struct stat st;
-	char lowerBigFile[256] = { 0 };
-
-	for (int i = 0; bigFile[i] != '\0' && i < static_cast<int>(sizeof(lowerBigFile) - 1); ++i) {
-		lowerBigFile[i] = static_cast<char>(tolower(static_cast<unsigned char>(bigFile[i])));
-	}
-
-	if (rootPath == nullptr || rootPath[0] == '\0') {
-		if (stat(bigFile, &st) == 0 || stat(lowerBigFile, &st) == 0) {
-			return TRUE;
-		}
-		return FALSE;
-	}
-
-	AsciiString fullPath = rootPath;
-	const Int len = fullPath.getLength();
-	if (len > 0) {
-		const char lastChar = fullPath.getCharAt(len - 1);
-		if (lastChar != '/' && lastChar != '\\') {
-			fullPath.concat('/');
-		}
-	}
-	fullPath.concat(bigFile);
-
-	if (stat(fullPath.str(), &st) == 0) {
-		return TRUE;
-	}
-
-	AsciiString lowerPath = rootPath;
-	const Int lowerLen = lowerPath.getLength();
-	if (lowerLen > 0) {
-		const char lastChar = lowerPath.getCharAt(lowerLen - 1);
-		if (lastChar != '/' && lastChar != '\\') {
-			lowerPath.concat('/');
-		}
-	}
-	lowerPath.concat(lowerBigFile);
-
-	return stat(lowerPath.str(), &st) == 0;
-}
-
-// GeneralsX @feature felipebraz 18/02/2026 Auto-detect base Generals install path
-// Steam ZH standalone puts base Generals assets in ./ZH_Generals/ (subdir).
-// Dev split install puts them in ../Generals/ (sibling dir).
-// Check both in priority order.
-static Bool tryRelativeGeneralsPath(AsciiString& val)
-{
-	struct stat st;
-
-	// Steam standalone ZH: base Generals assets live in ZH_Generals/ subdirectory
-	const char *steamPath = "ZH_Generals/";
-	if (stat(steamPath, &st) == 0 && S_ISDIR(st.st_mode))
-	{
-		val = steamPath;
-		DEBUG_LOG(("tryRelativeGeneralsPath - found base Generals at %s (Steam standalone)", steamPath));
-		return TRUE;
-	}
-
-	// Dev split install: Generals and ZH installed side-by-side under same parent
-	const char *devPath = "../Generals/";
-	if (stat(devPath, &st) == 0 && S_ISDIR(st.st_mode))
-	{
-		val = devPath;
-		DEBUG_LOG(("tryRelativeGeneralsPath - found base Generals at %s (dev layout)", devPath));
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-// GeneralsX @feature felipebraz 18/02/2026 Auto-detect game language from BIG files
-// On Linux there is no Windows registry. Detect the language by checking which
-// language-specific BIG file is present in the working directory.
-// Precedence mirrors the Windows installer language selection.
-static Bool tryAutoDetectLanguage(AsciiString& val)
-{
-	// Each entry: BIG file to probe → language string the game expects
-	const struct { const char *bigFile; const char *language; } candidates[] = {
-		{ "BrazilianZH.big", "brazilian" },
-		{ "EnglishZH.big",   "english"   },
-		{ "GermanZH.big",    "german"    },
-		{ "FrenchZH.big",    "french"    },
-		{ "SpanishZH.big",   "spanish"   },
-		{ "ChineseZH.big",   "chinese"   },
-		{ "KoreanZH.big",    "korean"    },
-		{ "PolishZH.big",    "polish"    },
-		{ nullptr,           nullptr     }
-	};
-
-	const char* searchRoots[] = {
-		getenv("CNC_GENERALS_ZH_PATH"),
-		getenv("CNC_GENERALS_PATH"),
-		getenv("CNC_ZH_INSTALLPATH"),
-		nullptr
-	};
-
-	for (int i = 0; candidates[i].bigFile != nullptr; ++i)
-	{
-		for (int rootIndex = 0; rootIndex < static_cast<int>(ARRAY_SIZE(searchRoots)); ++rootIndex) {
-			if (doesLanguageBigExist(searchRoots[rootIndex], candidates[i].bigFile)) {
-				val = candidates[i].language;
-				DEBUG_LOG(("tryAutoDetectLanguage - detected language '%s' from %s (root=%s)",
-						candidates[i].language,
-						candidates[i].bigFile,
-						searchRoots[rootIndex] != nullptr ? searchRoots[rootIndex] : "<cwd>"));
-				return TRUE;
-			}
-		}
-	}
-
-	return FALSE;
-}
-
 Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val)
 {
 	// Try environment variable first: CNC_GENERALS_INSTALLPATH, etc.
@@ -262,6 +267,12 @@ Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiStrin
 	if (key == "InstallPath")
 	{
 		if (tryRelativeGeneralsPath(val))
+			return TRUE;
+	}
+
+	if (key == "Language")
+	{
+		if (tryAutoDetectLanguage(val))
 			return TRUE;
 	}
 
@@ -405,7 +416,26 @@ Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiStrin
 		return TRUE;
 	}
 
-	return getStringFromRegistry(HKEY_LOCAL_MACHINE, fullPath.str(), key.str(), val);
+	if (getStringFromRegistry(HKEY_LOCAL_MACHINE, fullPath.str(), key.str(), val))
+	{
+		return TRUE;
+	}
+
+	// Fallback: auto-detect base Generals path for InstallPath key
+	if (key == "InstallPath")
+	{
+		if (tryRelativeGeneralsPath(val))
+			return TRUE;
+	}
+
+	// GeneralsX @feature felipebraz 20/08/2026 Auto-detect language from BIG files on Windows when registry key is absent
+	if (key == "Language")
+	{
+		if (tryAutoDetectLanguage(val))
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
@@ -423,7 +453,19 @@ Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 		return TRUE;
 	}
 
-	return getStringFromRegistry(HKEY_LOCAL_MACHINE, fullPath.str(), key.str(), val);
+	if (getStringFromRegistry(HKEY_LOCAL_MACHINE, fullPath.str(), key.str(), val))
+	{
+		return TRUE;
+	}
+
+	// GeneralsX @feature felipebraz 20/08/2026 Auto-detect language from BIG files on Windows when registry key is absent
+	if (key == "Language")
+	{
+		if (tryAutoDetectLanguage(val))
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val)
@@ -446,7 +488,7 @@ Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& 
 
 #endif // _UNIX
 
-// Cross-platform functions - call registry/env-var functions above
+// GeneralsX @feature felipebraz 20/08/2026 Cross-platform language retrieval with BIG autodetect fallback
 AsciiString GetRegistryLanguage()
 {
 	static Bool cached = FALSE;
@@ -458,7 +500,16 @@ AsciiString GetRegistryLanguage()
 		cached = TRUE;
 	}
 
-	GetStringFromRegistry("", "Language", val);
+	if (GetStringFromRegistry("", "Language", val))
+	{
+		return val;
+	}
+
+	if (tryAutoDetectLanguage(val))
+	{
+		return val;
+	}
+
 	return val;
 }
 
@@ -482,3 +533,4 @@ UnsignedInt GetRegistryMapPackVersion()
 	GetUnsignedIntFromRegistry("", "MapPackVersion", val);
 	return val;
 }
+
