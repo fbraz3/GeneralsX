@@ -18,16 +18,15 @@
 
    Each Linux distribution packages Flatpak differently, so rely on the upstream instructions for installing the Flatpak tool itself.
 
-2. Download the Linux Flatpak release asset (`GeneralsXZH-linux-flatpak.zip` for Zero Hour, `GeneralsX-linux-flatpak.zip` for the base game) and extract it. Each zip contains a single `.flatpak` bundle at the root of the archive.
+2. Download the Linux Flatpak release asset (`Linux-GeneralsXZH.flatpak` for Zero Hour, `Linux-GeneralsX.flatpak` for the base game).
 
 3. Install the Flatpak bundle:
 
    ```bash
-   unzip GeneralsXZH-linux-flatpak.zip
-   flatpak --user install -y ./GeneralsXZH-linux64-deploy.flatpak
+   flatpak --user install -y ./Linux-GeneralsXZH.flatpak
    ```
 
-   For the base game, use `GeneralsX-linux-flatpak.zip` and install `./GeneralsX-linux64-deploy.flatpak`.
+   For the base game, install `./Linux-GeneralsX.flatpak`.
 
 4. Launch the game with Flatpak:
 
@@ -59,12 +58,19 @@
 
 ## macOS
 
-1. Download the macOS `.zip` file from this release.
-2. Extract the `.zip` and copy the app bundle into your `Applications` folder.
+1. Download the macOS release asset (`macOS-GeneralsXZH.tar.zip` for Zero Hour, `macOS-GeneralsX.tar.zip` for the base game).
+2. Extract the archive and copy the app bundle into your `Applications` folder.
 3. Make sure your game assets are placed in the following locations:
    - `$HOME/GeneralsX/Generals` for Generals
    - `$HOME/GeneralsX/GeneralsZH` for Zero Hour
 4. Because the app is not code-signed, macOS Gatekeeper will initially block it. After the first launch attempt, go to **System Settings -> Privacy & Security** and allow the application to run.
+
+## Windows
+
+1. Download the Windows release asset (`Windows-GeneralsXZH.zip` for Zero Hour, `Windows-GeneralsX.zip` for the base game).
+2. Extract the archive contents directly into your existing licensed game installation directory (e.g. Steam or EA App install directory).
+3. Keep the original installation's `binkw32.dll` and `mss32.dll`.
+4. Launch `GeneralsXZH.exe` or `GeneralsX.exe`.
 
 ## Requirements
 

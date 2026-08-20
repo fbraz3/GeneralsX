@@ -18,10 +18,12 @@ This workflow runs Linux and macOS builds for Zero Hour and Generals base, colle
 2. Runs macOS builds for Zero Hour and Generals base (`macos-vulkan`).
 3. Downloads generated bundle artifacts from all platform/game jobs.
 4. Produces release assets:
-   - `linux-generalsx-linux64-bundle.zip`
-   - `linux-generalsxzh-linux64-bundle.zip`
-   - `macos-generalsx-app.tar.zip`
-   - `macos-generalsxzh-app.tar.zip`
+   - `Linux-GeneralsX.flatpak`
+   - `Linux-GeneralsXZH.flatpak`
+   - `macOS-GeneralsX.tar.zip`
+   - `macOS-GeneralsXZH.tar.zip`
+   - `Windows-GeneralsX.zip`
+   - `Windows-GeneralsXZH.zip`
 5. Generates release notes with fixed header text plus:
    - `## Additional Notes` (only if provided)
    - `## What's Changed`
