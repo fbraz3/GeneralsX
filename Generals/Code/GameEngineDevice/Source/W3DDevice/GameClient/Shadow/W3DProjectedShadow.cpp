@@ -2111,7 +2111,6 @@ void W3DProjectedShadow::init()
 
 	if (m_type & SHADOW_PROJECTION)
 	{
-		float	minx,maxx;
 		m_shadowProjector = NEW_REF(TexProjectClass,());
 		m_shadowProjector->Set_Intensity(0.4f,true);
 		m_shadowProjector->Set_Texture(m_shadowTexture[0]->getTexture());

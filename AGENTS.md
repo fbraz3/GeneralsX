@@ -151,6 +151,7 @@ Docker is the recommended build method on Linux hosts to ensure all toolchain re
 - **SDL3 from source**: Fetched via CMake FetchContent. No system package needed.
 - **Manual memory**: Always delete/delete[]. Use STLPort for VC6 legacy builds.
 - **Debug options break replays**: Use `RTS_BUILD_OPTION_DEBUG=OFF` for replay tests.
+- **Windows executable icons (.ico)**: Windows builds embed `Generals/Code/Main/Generals.ico` and `GeneralsMD/Code/Main/Generals.ico` via `RTS.RC`. If source PNG icon assets (`assets/generalsx_icon.png` or `assets/generalsx-zh_icon.png`) are updated, regenerate the multi-resolution `.ico` files (sizes 16, 24, 32, 48, 64, 128, 256) to keep Windows executables in sync.
 
 ## Testing & Validation
 ### Smoke test

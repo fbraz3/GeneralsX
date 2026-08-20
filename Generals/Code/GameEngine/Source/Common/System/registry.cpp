@@ -29,7 +29,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Registry.h"
-#include "registryini.h"
+#include "WWLib/registryini.h"
 
 // TheSuperHackers @build felipebraz 11/02/2026 Phase 1.5 - Linux port
 // Windows Registry types not available on Linux - define stub types
