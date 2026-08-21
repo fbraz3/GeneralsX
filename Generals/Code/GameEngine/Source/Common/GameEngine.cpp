@@ -412,6 +412,8 @@ void GameEngine::init()
 
 	// GeneralsX @feature felipebraz 08/06/2026 Auto-create SagePatch.ini in user data dir with defaults.
 	{
+		static const char *const USER_GAME_DATA_INI_PATH = "Data\\INI\\GameData.ini";
+
 		AsciiString sagePatchPath = TheWritableGlobalData->getPath_UserData();
 		sagePatchPath.concat("SagePatch.ini");
 
@@ -424,8 +426,9 @@ void GameEngine::init()
 					"; -----------------------------------------------------------------------------\n"
 					"; SagePatch - Casual QoL overrides for GeneralsX\n"
 					";\n"
-					"; Loaded by the engine after the BIG-archived Data/INI/GameData.ini, so values\n"
-					"; here override (not append to) the originals.\n"
+					"; Loaded by the engine after the BIG-archived Data/INI/GameData.ini, so values here\n"
+					"; override (not append to) the originals. A loose Data/INI/GameData.ini that you author\n"
+					"; yourself is applied after this file and therefore still wins over it.\n"
 					"; -----------------------------------------------------------------------------\n"
 					"\n"
 					"GameData\n"
@@ -437,7 +440,7 @@ void GameEngine::init()
 					"  EnforceMaxCameraHeight = No\n"
 					"  ; Keyboard scroll - vanilla 0.5 is sluggish, double it.\n"
 					"  KeyboardScrollSpeedFactor = 1.0\n"
-					"  ; ~5% more terrain drawn at max zoom to fix terrain pop-in.\n"
+					"  ; ~5%% more terrain drawn at max zoom to fix terrain pop-in.\n"
 					"  TerrainDrawDistanceScale = 1.05\n"
 					// GeneralsX @tweak felipebraz 20/06/2026 Default render FPS limit to 60 FPS in SagePatch.ini
 					"  UseFPSLimit = Yes\n"
@@ -480,6 +483,15 @@ void GameEngine::init()
 			}
 
 			ini.load(sagePatchPath, INI_LOAD_OVERWRITE, nullptr);
+
+			// GeneralsX @bugfix kumait 13/08/2026 SagePatch defaults must not clobber a user-authored
+			// Data/INI/GameData.ini. That loose file shadows the BIG-archived one when the engine loads
+			// GameData above, so replaying it here restores user precedence over SagePatch. Installs
+			// without a loose GameData.ini are unaffected, and the archived original is never reloaded.
+			if (TheLocalFileSystem->doesFileExist(USER_GAME_DATA_INI_PATH))
+			{
+				ini.load(USER_GAME_DATA_INI_PATH, INI_LOAD_OVERWRITE, nullptr);
+			}
 		}
 	}
 
