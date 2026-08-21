@@ -52,6 +52,9 @@ void Delay(uint32_t ms) {
 std::string GetStoragePath() {
     std::string baseDir;
     const char* home = std::getenv("HOME");
+    if (!home) {
+        home = std::getenv("USERPROFILE");
+    }
     if (home) {
         baseDir = std::string(home) + "/.generals_online/";
     } else {

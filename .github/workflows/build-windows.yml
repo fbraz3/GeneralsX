@@ -82,9 +82,12 @@ jobs:
           New-Item -ItemType Directory -Force ci-artifacts | Out-Null
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} artifacts/
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.pdb }} artifacts/
-          Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll artifacts/
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} ci-artifacts/
-          Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll ci-artifacts/
+
+          Get-ChildItem -Path build/win32-vcpkg/vcpkg_installed/x86-windows/bin/*.dll -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item $_.FullName artifacts/
+            Copy-Item $_.FullName ci-artifacts/
+          }
 
           foreach ($name in @("binkw32.dll", "mss32.dll")) {
             $stub = Get-ChildItem build/win32-vcpkg -Filter $name -Recurse |
