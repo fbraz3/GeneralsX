@@ -767,8 +767,18 @@ void NGMP_OnlineServicesManager::updateLobbyLeave(int64_t lobbyId) {
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
 
         CURLcode res = curl_easy_perform(curl);
+        long httpCode = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
+
+        if (res == CURLE_OK && (httpCode == 200 || httpCode == 204)) {
+            fprintf(stderr, "[NGMP] Lobby deleted successfully\n");
+            fflush(stderr);
+        } else {
+            fprintf(stderr, "[NGMP] Delete lobby request failed (curl=%d, http=%ld)\n", res, httpCode);
+            fflush(stderr);
+        }
 
         m_currentLobbyId = -1;
         m_isLobbyOwner = false;
