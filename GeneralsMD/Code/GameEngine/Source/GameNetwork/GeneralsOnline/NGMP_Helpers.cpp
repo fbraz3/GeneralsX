@@ -12,6 +12,16 @@
 #include <random>
 #include <format>
 
+#if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#include <shellapi.h>
+#else
+#include <SDL3/SDL.h>
+#endif
+
 #ifndef NGMP_DEFAULT_HOST
 #define NGMP_DEFAULT_HOST "localhost"
 #endif
@@ -151,6 +161,17 @@ std::string GenerateGamecode() {
         result += charset[distribution(generator)];
     }
     return result;
+}
+
+void OpenURL(const std::string& url) {
+    if (url.empty()) {
+        return;
+    }
+#if defined(_WIN32)
+    ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+#else
+    SDL_OpenURL(url.c_str());
+#endif
 }
 
 } // namespace NGMP

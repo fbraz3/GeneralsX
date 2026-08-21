@@ -107,7 +107,7 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
-#include <SDL3/SDL.h>
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include <cinttypes>
 extern NGMPGame* TheNGMPGame;
 #endif
@@ -617,7 +617,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 							{
 								AsciiString strMatchURL;
 								strMatchURL.format("https://www.playgenerals.online/viewmatch?match=%" PRIu64, currentMatchID);
-								SDL_OpenURL(strMatchURL.str());
+								NGMP::OpenURL(strMatchURL.str());
 							}
 						}
 #endif

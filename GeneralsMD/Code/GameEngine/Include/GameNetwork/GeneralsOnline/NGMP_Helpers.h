@@ -53,6 +53,9 @@ std::string GetBrowserLoginURL(const std::string& gamecode);
 // Generates a random 32-char alphanumeric gamecode
 std::string GenerateGamecode();
 
+// Opens a URL in the default browser (cross-platform: ShellExecute on Windows, SDL_OpenURL on Linux/macOS)
+void OpenURL(const std::string& url);
+
 } // namespace NGMP
 
 #endif // NGMP_HELPERS_H

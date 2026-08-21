@@ -6,7 +6,6 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_Auth.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
-#include <SDL3/SDL.h>
 #include <cstdio>
 #include <thread>
 #include <chrono>
