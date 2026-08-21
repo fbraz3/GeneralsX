@@ -1159,3 +1159,14 @@ void updateTGAtoDDS()
 
 	system(CONVERT_EXEC1);
 }
+
+// If we're using the Wide character version of MessageBox, then there's no additional
+// processing necessary. Please note that this is a sleazy way to get this information,
+// but pending a better one, this'll have to do.
+// TheSuperHackers @build fighter19 11/02/2026 MessageBox detection (Windows-only)
+#ifdef _WIN32
+extern const Bool TheSystemIsUnicode = (((void*) (::MessageBox)) == ((void*) (::MessageBoxW)));
+#else
+extern const Bool TheSystemIsUnicode = true;  // Linux: Always Unicode (UTF-8)
+#endif
+

@@ -46,7 +46,7 @@
 #include "Common/GameLOD.h"
 #include "Common/GameState.h"
 
-#if DEEP_CRC_TO_MEMORY
+#if DEEP_CRC_TO_MEMORY && !defined(_WIN32)
 #include <sys/utsname.h>
 #include <SDL3/SDL.h>
 #endif
@@ -5654,6 +5654,9 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 	AsciiString str;
 	// GeneralsX: Generate OS/Arch header
 	AsciiString headerStr;
+#ifdef _WIN32
+	headerStr = "GeneralsX: Windows x86\n\n";
+#else
 	struct utsname sysInfo;
 	if (uname(&sysInfo) == 0) {
 		headerStr.format("GeneralsX: %s %s (%s)\nArch: %s\nCPU Cores: %d\nRAM: %d MB\n\n",
@@ -5662,6 +5665,7 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 	} else {
 		headerStr = "GeneralsX: Unknown OS/Arch\n\n";
 	}
+#endif
 
 	// Format filename as deep_crc_YYYY-MM-DD-HH-MM-SS.bin inside user data Debug dir
 	time_t t = time(nullptr);

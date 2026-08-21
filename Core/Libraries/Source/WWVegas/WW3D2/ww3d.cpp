@@ -82,7 +82,7 @@
 
 
 #include "ww3d.h"
-#include "win.h"  // GeneralsX @build fbraz 10/02/2026 - For MMRESULT/timeBeginPeriod/BITMAP structures
+#include "WWLib/win.h"  // GeneralsX @build fbraz 10/02/2026 - For MMRESULT/timeBeginPeriod/BITMAP structures
 #include "rinfo.h"
 #include "assetmgr.h"
 #include "boxrobj.h"

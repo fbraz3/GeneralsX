@@ -23,7 +23,6 @@
         "platform": "!windows",
         "features": ["ssl", "websockets"]
       },
-      "ffmpeg",
       "stb"
     ]
   }

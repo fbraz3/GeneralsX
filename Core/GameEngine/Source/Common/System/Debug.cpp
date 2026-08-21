@@ -863,7 +863,9 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 	// Windows: Native MessageBox dialogs
 	// Linux: Console output (crash dialogs would need SDL_ShowSimpleMessageBox)
 	#ifdef _WIN32
-	if (!DX8Wrapper_IsWindowed) {
+	extern const Bool TheSystemIsUnicode;
+
+		if (!DX8Wrapper_IsWindowed) {
 		if (ApplicationHWnd) {
 			ShowWindow(ApplicationHWnd, SW_HIDE);
 		}

@@ -7,11 +7,8 @@
 // Our types take precedence via PCH (PreRTS.h includes windows_compat.h early).
 
 #ifdef _WIN32
-// Windows: use real Windows.h from SDK (will be found in system paths first)
-// This header is only reached if no SDK windows.h exists
-#include "windows_compat.h"
+#include <windows.h>
 #else
-// Linux: Our compatibility layer only (NO DXVK headers here!)
-// DXVK's windows_base.h will be included by d3d8.h when needed
+// Linux/macOS: Our compatibility layer only (prevents DXVK unknwn.h redefinition)
 #include "windows_compat.h"
 #endif

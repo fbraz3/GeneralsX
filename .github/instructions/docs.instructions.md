@@ -12,6 +12,7 @@ applyTo: '**/*.md'
 - **Active Work**: Place in `docs/WORKDIR/` with appropriate subdirectory (phases, planning, reports, support, audit, lessons)
 - **Worklog**: Update `docs/WORKLOG/YYYY-MM-DIARY.md` with daily entries
   - Create new file each month (YYYY-MM-DIARY.md)
+  - Include an AI-generated content disclosure note at the top of each monthly diary
   - Order entries newest to oldest (recent at top after Overview section)
   - Keep entries informal and concise
 - **Reference & Historical**: Place in `docs/ETC/` (older reference materials, archived analysis)
@@ -21,7 +22,7 @@ applyTo: '**/*.md'
 
 ## Documentation Updates
 
-- **Worklog** (`docs/WORKLOG/YYYY-MM-DIARY.md`): Informal session notes, newest first
+- **Worklog** (`docs/WORKLOG/YYYY-MM-DIARY.md`): Informal session notes, newest first (with AI disclosure note at the top)
 - **Session reports** (`docs/WORKDIR/reports/PHASEXX_SESSIONX_*.md`): Formal summary after significant progress
 - **Phase planning** (`docs/WORKDIR/phases/PHASEXX_*.md`): Update `[x]` checklist at session end
 - **Technical discoveries**: Place in `docs/WORKDIR/support/` (e.g., `CRITICAL_VFS_DISCOVERY.md`)
@@ -102,7 +103,14 @@ applyTo: '**/*.md'
   - YYYY is the current year
   - MM is the current month
   - DIARY is a fixed literal
-  - Entries newest to oldest (most recent at top, after Overview)
+  - **MANDATORY**: Every monthly diary MUST start with this exact AI-generated content disclosure note at the very top:
+    ```markdown
+    # <Month> <Year>
+
+    > [!NOTE]
+    > **AI-Generated Content Disclosure**: This worklog is automatically generated and maintained by AI coding agents to document daily progress, debugging sessions, and technical decisions.
+    ```
+  - Entries newest to oldest (most recent at top, after Disclosure)
   - Informal, daily/session notes
   - Short summaries of work done
 - `docs/WORKLOG/README.md` - Index of available diaries and overview of diary purpose with details on structure and usage

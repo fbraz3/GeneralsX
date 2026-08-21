@@ -33,7 +33,7 @@
 #include <cstdint>
 
 // GeneralsX @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
-#ifndef _INT64_TYPES_DEFINED
+#if !defined(_MSC_VER) && !defined(_INT64_TYPES_DEFINED)
 	#define _INT64_TYPES_DEFINED
 	typedef int64_t __int64;
 #endif

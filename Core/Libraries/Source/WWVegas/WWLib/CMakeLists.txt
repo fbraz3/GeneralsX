@@ -185,7 +185,7 @@ target_precompile_headers(core_wwlib PRIVATE
     [["WWLib/win.h"]]
     [["WWLib/WWCommon.h"]]
     [["WWLib/wwstring.h"]]
-    [["PchCompat.h"]] # TheSuperHackers @build 08/02/2026 Platform-safe windows.h wrapper
+    [["WWLib/PchCompat.h"]] # TheSuperHackers @build 08/02/2026 Platform-safe windows.h wrapper
 )
 
 target_link_libraries(core_wwlib PRIVATE

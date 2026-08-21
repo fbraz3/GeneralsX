@@ -78,6 +78,12 @@ jobs:
       preset: macos-vulkan
       checkout_ref: refs/tags/${{ inputs.release_version }}
 
+  build-windows:
+    needs: [create-tag]
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      checkout_ref: refs/tags/${{ inputs.release_version }}
+
   # GeneralsX @build BenderAI 21/04/2026 Roll back the pushed tag when anything
   # downstream of create-tag fails, so a re-run with the same version is possible.
   # Uses always() so this job runs even when upstream jobs are skipped/failed.
@@ -90,9 +96,10 @@ jobs:
       needs.create-tag.result == 'success' &&
       (
         needs.build-linux-flatpak.result == 'failure' ||
-        needs.build-macos.result == 'failure'
+        needs.build-macos.result == 'failure' ||
+        needs.build-windows.result == 'failure'
       )
-    needs: [create-tag, build-linux-flatpak, build-macos]
+    needs: [create-tag, build-linux-flatpak, build-macos, build-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -113,7 +120,7 @@ jobs:
 
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [build-linux-flatpak, build-macos]
+    needs: [build-linux-flatpak, build-macos, build-windows]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -178,6 +185,18 @@ jobs:
           name: macos-generalsx-app
           path: artifacts/macos-generals
 
+      - name: Download Windows Zero Hour artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: generalsxzh-windows-x86
+          path: artifacts/windows-zh
+
+      - name: Download Windows Generals artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: generalsx-windows-x86
+          path: artifacts/windows-generals
+
       - name: Normalize bundle files for release assets
         id: assets
         env:
@@ -207,12 +226,26 @@ jobs:
           fi
 
           cp "$MAC_TAR" release-assets/GeneralsXZH-macos-arm64.app.tar
-          zip -j release-assets/macos-generalsxzh-app.tar.zip release-assets/GeneralsXZH-macos-arm64.app.tar
+          zip -j release-assets/macOS-GeneralsXZH.tar.zip release-assets/GeneralsXZH-macos-arm64.app.tar
 
           MAC_GENERALS_TAR=$(find artifacts/macos-generals -name "*.tar" | head -1)
           if [ -z "$MAC_GENERALS_TAR" ] || [ ! -f "$MAC_GENERALS_TAR" ]; then
             echo "ERROR: macOS Generals app tar not found in artifacts/macos-generals"
             find artifacts/macos-generals -maxdepth 3 -type f || true
+            exit 1
+          fi
+
+          WIN_ZH_EXE=$(find artifacts/windows-zh -name "GeneralsXZH.exe" | head -1)
+          if [ -z "$WIN_ZH_EXE" ] || [ ! -f "$WIN_ZH_EXE" ]; then
+            echo "ERROR: Windows Zero Hour executable not found in artifacts/windows-zh"
+            find artifacts/windows-zh -maxdepth 3 -type f || true
+            exit 1
+          fi
+
+          WIN_GENERALS_EXE=$(find artifacts/windows-generals -name "GeneralsX.exe" | head -1)
+          if [ -z "$WIN_GENERALS_EXE" ] || [ ! -f "$WIN_GENERALS_EXE" ]; then
+            echo "ERROR: Windows Generals executable not found in artifacts/windows-generals"
+            find artifacts/windows-generals -maxdepth 3 -type f || true
             exit 1
           fi
 
@@ -222,20 +255,27 @@ jobs:
             echo "linux_asset=" >> "$GITHUB_OUTPUT"
             echo "macos_generals_asset=" >> "$GITHUB_OUTPUT"
             echo "macos_asset=" >> "$GITHUB_OUTPUT"
+            echo "windows_generals_asset=" >> "$GITHUB_OUTPUT"
+            echo "windows_asset=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           # GeneralsX @build GitHubCopilot 14/04/2026 Linux release now ships native Flatpak bundles instead of zip wrappers.
-          cp "$LINUX_ZH_FLATPAK" release-assets/GeneralsXZH-linux.flatpak
-          cp "$LINUX_GENERALS_FLATPAK" release-assets/GeneralsX-linux.flatpak
+          cp "$LINUX_ZH_FLATPAK" release-assets/Linux-GeneralsXZH.flatpak
+          cp "$LINUX_GENERALS_FLATPAK" release-assets/Linux-GeneralsX.flatpak
 
           cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
-          zip -j release-assets/macos-generalsx-app.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
+          zip -j release-assets/macOS-GeneralsX.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
 
-          echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/GeneralsX-linux.flatpak" >> "$GITHUB_OUTPUT"
-          echo "linux_asset=$GITHUB_WORKSPACE/release-assets/GeneralsXZH-linux.flatpak" >> "$GITHUB_OUTPUT"
-          echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsx-app.tar.zip" >> "$GITHUB_OUTPUT"
-          echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macos-generalsxzh-app.tar.zip" >> "$GITHUB_OUTPUT"
+          (cd artifacts/windows-zh && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" .)
+          (cd artifacts/windows-generals && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" .)
+
+          echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsX.flatpak" >> "$GITHUB_OUTPUT"
+          echo "linux_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsXZH.flatpak" >> "$GITHUB_OUTPUT"
+          echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.tar.zip" >> "$GITHUB_OUTPUT"
+          echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.tar.zip" >> "$GITHUB_OUTPUT"
+          echo "windows_generals_asset=$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" >> "$GITHUB_OUTPUT"
+          echo "windows_asset=$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" >> "$GITHUB_OUTPUT"
 
       - name: Build changelog from local PRs only
         id: changelog
@@ -354,7 +394,9 @@ jobs:
             "${{ steps.assets.outputs.linux_generals_asset }}" \
             "${{ steps.assets.outputs.linux_asset }}" \
             "${{ steps.assets.outputs.macos_generals_asset }}" \
-            "${{ steps.assets.outputs.macos_asset }}"
+            "${{ steps.assets.outputs.macos_asset }}" \
+            "${{ steps.assets.outputs.windows_generals_asset }}" \
+            "${{ steps.assets.outputs.windows_asset }}"
 
       - name: Summary
         run: |
@@ -362,10 +404,12 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Tag: ${{ inputs.release_version }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Mode: ${{ inputs.release_mode }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset (Generals): GeneralsX-linux.flatpak" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Linux asset: GeneralsXZH-linux.flatpak" >> "$GITHUB_STEP_SUMMARY"
-          echo "- macOS asset (Generals): macos-generalsx-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
-          echo "- macOS asset: macos-generalsxzh-app.tar.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset (Generals): Linux-GeneralsX.flatpak" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Linux asset: Linux-GeneralsXZH.flatpak" >> "$GITHUB_STEP_SUMMARY"
+          echo "- macOS asset (Generals): macOS-GeneralsX.tar.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- macOS asset: macOS-GeneralsXZH.tar.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Windows asset (Generals): Windows-GeneralsX.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Windows asset: Windows-GeneralsXZH.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "${{ inputs.release_mode }}" = "Dry Run" ]; then

@@ -1,0 +1,290 @@
+name: Windows Replay Tests
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      game-artifact:
+        required: true
+        type: string
+        description: "Name of the Windows game artifact to download"
+      run-id:
+        required: false
+        type: string
+        description: "Optional workflow run ID to download artifacts from"
+    secrets:
+      ASSETS_KEY:
+        required: false
+        description: "Password for generalszh.7z in the test-files repo"
+
+jobs:
+  replay-test-zh:
+    name: ZH Replay Tests (windows)
+    runs-on: windows-2022
+    timeout-minutes: 45
+
+    steps:
+      - name: Download game artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.game-artifact }}
+          path: ${{ runner.temp }}/game-artifact
+          run-id: ${{ inputs.run-id || github.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Locate game runtime
+        shell: pwsh
+        run: |
+          $gameDir = Join-Path $env:RUNNER_TEMP "game-artifact"
+          foreach ($name in @("GeneralsXZH.exe", "zlib1.dll", "binkw32.dll", "mss32.dll")) {
+            if (!(Test-Path (Join-Path $gameDir $name))) {
+              throw "Required runtime file not found: $name"
+            }
+          }
+          "GAME_DIR=$gameDir" >> $env:GITHUB_ENV
+          "GAME_BIN=$(Join-Path $gameDir 'GeneralsXZH.exe')" >> $env:GITHUB_ENV
+
+      - name: Cache Game Assets (Windows)
+        id: cache-assets
+        uses: actions/cache@v5
+        with:
+          path: ci-cached-assets
+          key: game-assets-cache-windows-v1
+
+      - name: Clone game assets repo (GitLab with GitHub fallback)
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $targetBranch = if ($env:GITHUB_HEAD_REF) { $env:GITHUB_HEAD_REF } else { $env:GITHUB_REF_NAME }
+          $repoDir = Join-Path $env:RUNNER_TEMP "ci-assets-repo"
+          $cloneSucceeded = $false
+
+          foreach ($url in @(
+            "https://gitlab.com/fbraz3/generalsx-test-files.git",
+            "https://github.com/fbraz3/generalsx-test-files.git"
+          )) {
+            Remove-Item $repoDir -Recurse -Force -ErrorAction SilentlyContinue
+            git clone $url $repoDir
+            if ($LASTEXITCODE -ne 0) {
+              continue
+            }
+
+            Push-Location $repoDir
+            if ($targetBranch -and $targetBranch -ne "main") {
+              $remoteBranch = git ls-remote --heads origin $targetBranch
+              if ($remoteBranch) {
+                git fetch origin $targetBranch
+                git checkout $targetBranch
+              }
+            }
+            git lfs install
+            git lfs pull
+            $lfsExit = $LASTEXITCODE
+            Pop-Location
+
+            if ($lfsExit -eq 0) {
+              $cloneSucceeded = $true
+              break
+            }
+          }
+
+          if (!$cloneSucceeded) {
+            throw "Unable to download game assets repo or LFS files"
+          }
+
+      - name: Extract game assets to cache (only on cache miss)
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force "ci-cached-assets" | Out-Null
+          $archive = Join-Path $env:RUNNER_TEMP "ci-assets-repo\generalszh.7z"
+          $key = "${{ secrets.ASSETS_KEY }}"
+          if (!$key) {
+            throw "ASSETS_KEY secret is required on cache miss to extract assets"
+          }
+          & 7z x "-p$key" "$archive" "-oci-cached-assets" -y
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to extract game assets archive"
+          }
+
+      - name: Install game assets
+        shell: pwsh
+        run: |
+          $assetCache = Join-Path $env:GITHUB_WORKSPACE "ci-cached-assets"
+          Copy-Item (Join-Path $assetCache "*") $env:GAME_DIR -Recurse -Force
+          if (!(Get-ChildItem $env:GAME_DIR -Filter "*.big")) {
+            throw "No BIG files were installed"
+          }
+
+          $languageCandidates = [ordered]@{
+            "BrazilianZH.big" = "brazilian"
+            "EnglishZH.big" = "english"
+            "GermanZH.big" = "german"
+            "FrenchZH.big" = "french"
+            "SpanishZH.big" = "spanish"
+            "ChineseZH.big" = "chinese"
+            "KoreanZH.big" = "korean"
+            "PolishZH.big" = "polish"
+          }
+          $language = $null
+          foreach ($candidate in $languageCandidates.GetEnumerator()) {
+            if (Test-Path (Join-Path $env:GAME_DIR $candidate.Key)) {
+              $language = $candidate.Value
+              break
+            }
+          }
+          if (!$language) {
+            throw "No supported language BIG file was installed"
+          }
+
+          $registryPath = "HKCU\SOFTWARE\Electronic Arts\EA Games\Command and Conquer Generals Zero Hour"
+          & reg.exe ADD $registryPath /v Language /t REG_SZ /d $language /f /reg:32
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to configure the Zero Hour language registry value"
+          }
+          & reg.exe ADD $registryPath /v InstallPath /t REG_SZ /d $env:GAME_DIR /f /reg:32
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to configure the Zero Hour installation registry value"
+          }
+          Write-Host "Configured Zero Hour language: $language"
+
+      - name: Download replay files
+        shell: pwsh
+        run: |
+          $targetBranch = if ($env:GITHUB_HEAD_REF) { $env:GITHUB_HEAD_REF } else { $env:GITHUB_REF_NAME }
+          $repoDir = Join-Path $env:RUNNER_TEMP "ci-replays-repo"
+          $cloneSucceeded = $false
+
+          foreach ($url in @(
+            "https://gitlab.com/fbraz3/generalsx-replays.git",
+            "https://github.com/fbraz3/GeneralsXReplays.git"
+          )) {
+            Remove-Item $repoDir -Recurse -Force -ErrorAction SilentlyContinue
+            git clone $url $repoDir
+            if ($LASTEXITCODE -ne 0) {
+              continue
+            }
+
+            Push-Location $repoDir
+            if ($targetBranch -and $targetBranch -ne "main") {
+              $remoteBranch = git ls-remote --heads origin $targetBranch
+              if ($remoteBranch) {
+                git fetch origin $targetBranch
+                git checkout $targetBranch
+              }
+            }
+            Pop-Location
+            $cloneSucceeded = $true
+            break
+          }
+
+          if (!$cloneSucceeded) {
+            throw "Unable to download replay files"
+          }
+
+          $documents = [Environment]::GetFolderPath("MyDocuments")
+          $userData = Join-Path $documents "Command and Conquer Generals Zero Hour Data"
+          $mapsDir = Join-Path $userData "Maps"
+          $replaysDir = Join-Path $userData "Replays"
+          New-Item -ItemType Directory -Force $mapsDir, $replaysDir | Out-Null
+
+          $sourceMaps = Join-Path $repoDir "GeneralsXZH\Maps"
+          if (Test-Path $sourceMaps) {
+            Copy-Item (Join-Path $sourceMaps "*") $mapsDir -Recurse -Force
+          }
+
+          $sourceReplays = Join-Path $repoDir "GeneralsXZH\Replays"
+          Copy-Item (Join-Path $sourceReplays "*.rep") $replaysDir -Force
+
+          $replays = Get-ChildItem $replaysDir -Filter "*.rep"
+          if (!($replays.Name -match "^linux_")) {
+            throw "Linux replay captures were not found"
+          }
+          if (!($replays.Name -match "^macos_")) {
+            throw "macOS replay captures were not found"
+          }
+
+          "REPLAYS_DIR=$replaysDir" >> $env:GITHUB_ENV
+
+      - name: Run Linux and macOS replay captures
+        shell: pwsh
+        run: |
+          $passed = 0
+          $failed = 0
+          $replays = Get-ChildItem $env:REPLAYS_DIR -Filter "*.rep" | Sort-Object Name
+
+          "### Replay Test Results (windows)" >> $env:GITHUB_STEP_SUMMARY
+          "" >> $env:GITHUB_STEP_SUMMARY
+          "| Replay | Source | Result | Details |" >> $env:GITHUB_STEP_SUMMARY
+          "|--------|--------|--------|---------|" >> $env:GITHUB_STEP_SUMMARY
+
+          foreach ($replay in $replays) {
+            Write-Host "=== $($replay.Name) ==="
+            $stdout = Join-Path $env:RUNNER_TEMP "$($replay.BaseName)-stdout.log"
+            $stderr = Join-Path $env:RUNNER_TEMP "$($replay.BaseName)-stderr.log"
+            $arguments = "-headless -replay `"$($replay.FullName)`""
+            $process = Start-Process `
+              -FilePath $env:GAME_BIN `
+              -ArgumentList $arguments `
+              -WorkingDirectory $env:GAME_DIR `
+              -RedirectStandardOutput $stdout `
+              -RedirectStandardError $stderr `
+              -PassThru
+
+            $timedOut = !$process.WaitForExit(180000)
+            if ($timedOut) {
+              Stop-Process -Id $process.Id -Force
+              $exitCode = "timeout"
+            } else {
+              $process.WaitForExit()
+              $exitCode = $process.ExitCode
+            }
+
+            $stdoutOutput = @()
+            $stderrOutput = @()
+            if (Test-Path $stdout) { $stdoutOutput += Get-Content $stdout }
+            if (Test-Path $stderr) { $stderrOutput += Get-Content $stderr }
+
+            # Print the final simulation summary after verbose diagnostics so completion is visible at the end of the log.
+            $output = @()
+            $output += $stderrOutput
+            $output += $stdoutOutput
+            $output | ForEach-Object { Write-Host $_ }
+
+            $source = if ($replay.Name.StartsWith("linux_")) { "Linux" } elseif ($replay.Name.StartsWith("macos_")) { "macOS" } else { "other" }
+            $completionLines = @($stdoutOutput |
+              Select-String -Pattern '^Elapsed Time: \d{2}:\d{2} Game Time: (\d{2}:\d{2})/\1$')
+            $completed = $completionLines.Count -gt 0
+            if (!$timedOut -and $exitCode -eq 0 -and $completed) {
+              $passed++
+              $completion = $completionLines[-1].Line
+              Write-Host "Replay completed: $($replay.Name) - $completion"
+              "| ``$($replay.Name)`` | $source | PASS | exit 0; $completion |" >> $env:GITHUB_STEP_SUMMARY
+            } else {
+              $failed++
+              if (!$completed) {
+                $detail = "missing completed Game Time marker"
+              } else {
+                $detail = ($output |
+                  Select-String -Pattern "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay" |
+                  Select-Object -Last 3).Line -join " "
+              }
+              if (!$detail) {
+                $detail = "no filtered diagnostics"
+              }
+              $detail = $detail.Replace("|", "/")
+              "| ``$($replay.Name)`` | $source | FAIL | exit ${exitCode}: $detail |" >> $env:GITHUB_STEP_SUMMARY
+            }
+          }
+
+          "" >> $env:GITHUB_STEP_SUMMARY
+          "**Results: $passed passed, $failed failed**" >> $env:GITHUB_STEP_SUMMARY
+
+          if ($failed -gt 0) {
+            throw "$failed replay(s) failed on Windows"
+          }
+          if (($passed + $failed) -eq 0) {
+            throw "No replay files were found to test"
+          }

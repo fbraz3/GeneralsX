@@ -145,6 +145,9 @@ protected:
 
 	AsciiString readAsciiString();										///< Read the next string from m_file using ascii characters.
 	UnicodeString readUnicodeString();								///< Read the next string from m_file using unicode characters.
+	Int readReplayWideChar();											///< Read a replay wide character using the detected on-disk width.
+	void writeReplayUnicodeString(const UnicodeString& value);
+	void writeReplayWideChar(WideChar value);
 	void readNextFrame();															///< Read the next frame number to execute a command on.
 	void appendNextCommand();													///< Read the next GameMessage and append it to TheCommandList.
 	void writeArgument(GameMessageArgumentDataType type, const GameMessageArgumentType arg);
@@ -164,6 +167,7 @@ protected:
 	RecorderModeType m_mode;
 	AsciiString m_currentReplayFilename;							///< valid during playback only
 	UnsignedInt m_playbackFrameCount;
+	UnsignedInt m_replayWideCharBytes;
 
 	ReplayGameInfo m_gameInfo;
 	Bool m_wasDesync;
