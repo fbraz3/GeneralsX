@@ -1,0 +1,196 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+enable_free_tier: true
+
+tone_instructions: >-
+  Be direct, technical, and constructive. Focus strictly on C++ game engine architecture,
+  cross-platform determinism (macOS ARM64 vs Linux x86_64), platform layer isolation (SDL3/DXVK),
+  audio parity (OpenAL/MiniAudio), performance, memory safety, and compliance with project conventions.
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: false
+  high_level_summary_placeholder: "@coderabbitai summary"
+  auto_title_placeholder: "@coderabbitai"
+  auto_title_instructions: >-
+    Follow Conventional Commits format strictly: `<type>(<optional scope>): <description>`.
+    Valid types: feat, fix, docs, refactor, test, chore, build, ci, perf, style.
+    Use imperative, present tense ("add", "fix", "change"). Do not capitalize the first letter of description.
+    Do not end with a period.
+    CRITICAL: Never include the '@' symbol in commit or PR titles (e.g., use 'refactor(graphics): ...' NOT '@refactor(graphics): ...').
+  review_status: true
+  review_details: false
+  collapse_walkthrough: true
+  changed_files_summary: true
+  sequence_diagrams: true
+  estimate_code_review_effort: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: true
+  auto_apply_labels: false
+  poem: false
+  enable_prompt_for_ai_agents: true
+
+  path_filters:
+    - "!build/**"
+    - "!logs/**"
+    - "!tmp/**"
+    - "!references/**"
+    - "!Dependencies/**"
+    - "!assets/**"
+    - "!resources/**"
+    - "!*.zip"
+    - "!*.bin"
+    - "!*.ico"
+    - "!*.png"
+    - "!*.diff"
+    - "!.memory/**"
+    - "!.codegraph/**"
+
+  path_instructions:
+    - path: "**/*.{cpp,h,hpp,c}"
+      instructions: >-
+        Review C++ code with strict adherence to GeneralsX engine guidelines:
+        1. Platform Isolation: Platform-specific code must stay in platform layers (`Core/GameEngineDevice/`,
+           `Core/Libraries/Source/Platform/`). No direct Win32 (HWND, Win32 APIs), Cocoa, or raw POSIX syscalls
+           (`pthread_*`, `open()`) in game logic (`Generals/`, `GeneralsMD/`, `Core/GameEngine/`). Use SDL3 abstractions.
+        2. Cross-Platform Determinism (macOS ARM64 vs Linux x86_64 cross-play):
+           - Use deterministic `WWMath` wrappers (`WWMath::Sqrt`, `WWMath::Sin`, `WWMath::Cos`, `WWMath::TanTrig`,
+             `WWMath::Acos`, `WWMath::Asin`, `WWMath::Atan`, `WWMath::Atan2`, `WWMath::Ceil`, `WWMath::Floor`, `WWMath::PowOrigin`)
+             instead of standard CRT math functions.
+           - Prevent NaN/Inf division before casting to integer (e.g. `WWMath::Div_FixNaN` or explicit `if (max > 0)` checks)
+             to avoid ARM64 (`0`) vs x86 (`INT_MIN`) conversion discrepancies.
+           - Avoid double-precision evaluation where float precision is required to prevent x87/NEON 1-ULP divergence.
+           - Ensure `ScopedFPUGuard` is present at boundaries of simulation updates (`GameLogic::update()`), audio thread callbacks,
+             and mouse picking.
+        3. Legacy VC6 Compatibility: Keep legacy Windows DirectX 8 and Miles Sound paths intact behind `#ifdef` guards.
+        4. Code Annotation: User-facing code modifications should include `// GeneralsX @keyword author DD/MM/YYYY Description`
+           above the change (`@bugfix`, `@feature`, `@performance`, `@refactor`, `@tweak`, `@build`). Upstream PR references should note
+           `// Upstream reference: <author>, PR #<id> <URL>`.
+        5. Console Debug Logging: For diagnostic logging that must remain in release builds, use `fprintf(stderr, ...)` paired
+           with `fflush(stderr)` instead of `DEBUG_LOG` (which is compiled out in release builds).
+        6. Memory Safety: Ensure correct memory allocation/deallocation pairs (`new`/`delete`, `new[]`/`delete[]`) and avoid leaks.
+
+    - path: "Core/GameEngineDevice/{Source,Include}/{OpenAL,MiniAudio}/**"
+      instructions: >-
+        OpenAL / MiniAudio Parity: Cross-platform audio stack requires strict feature parity.
+        Any bugfix, enhancement, or behavioral fix applied to OpenAL must be mirrored in MiniAudio (and vice versa).
+
+    - path: "{**/CMakeLists.txt,cmake/**,CMakePresets.json}"
+      instructions: >-
+        CMake & Build System:
+        - Single codebase for Linux and macOS.
+        - Ensure `-ffp-contract=off` is enforced to prevent FMA contraction differences across architectures.
+        - SDL3 is fetched from source via FetchContent.
+        - DXVK is used for DirectX 8 to Vulkan translation on Linux and macOS.
+
+    - path: "scripts/**/*.sh"
+      instructions: >-
+        Shell Scripts:
+        - Use proper POSIX/bash standards, safe variable quoting, and error handling (`set -euo pipefail` where applicable).
+        - Verify paths and toolchain requirements.
+
+    - path: "{docs/**/*.md,*.md}"
+      instructions: >-
+        Documentation:
+        - Must be written in English.
+        - Do not place documentation files directly under the `docs/` root (use `docs/WORKDIR/`, `docs/WORKLOG/`, `docs/HOWTO/`, `docs/ETC/`).
+        - Monthly diary updates in `docs/WORKLOG/YYYY-MM-DIARY.md` must include the standard AI-generated content disclosure note at the top.
+
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 5
+    ignore_title_keywords:
+      - "WIP"
+      - "[WIP]"
+      - "draft"
+      - "[DRAFT]"
+
+  finishing_touches:
+    docstrings:
+      enabled: true
+    unit_tests:
+      enabled: true
+    simplify:
+      enabled: false
+    autofix:
+      enabled: true
+    fix_ci:
+      enabled: true
+    resolve_merge_conflict:
+      enabled: true
+
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+    title:
+      mode: "warning"
+      requirements: "PR title must follow Conventional Commits: <type>(<optional scope>): <description>. Valid types: feat, fix, docs, refactor, test, chore, build, ci, perf, style. Never use '@' symbol in the title."
+    description:
+      mode: "warning"
+    issue_assessment:
+      mode: "warning"
+    custom_checks:
+      - name: "Platform Isolation"
+        mode: "warning"
+        instructions: "Verify that no platform-specific APIs (Win32, Cocoa, raw POSIX) leak into game logic (Generals/, GeneralsMD/, Core/GameEngine/). Platform code must reside in Core/GameEngineDevice/ or platform libraries."
+      - name: "Cross-Platform Determinism"
+        mode: "error"
+        instructions: "Verify that simulation/game logic math uses WWMath deterministic functions (WWMath::Sqrt, WWMath::Sin, WWMath::Cos, WWMath::Atan2, WWMath::PowOrigin, etc.) and divisions are protected against NaN/Inf before integer casts."
+      - name: "OpenAL / MiniAudio Parity"
+        mode: "warning"
+        instructions: "Verify if audio modifications in OpenAL are mirrored in MiniAudio to maintain backend parity."
+      - name: "Conventional Commit Standards"
+        mode: "error"
+        instructions: "Verify that commit messages follow Conventional Commits format and do NOT contain '@' symbol."
+
+  tools:
+    clang:
+      enabled: true
+    cppcheck:
+      enabled: true
+    shellcheck:
+      enabled: true
+    markdownlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    actionlint:
+      enabled: true
+    zizmor:
+      enabled: true
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    github-checks:
+      enabled: true
+    ruff:
+      enabled: true
+
+chat:
+  art: false
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+    file_patterns:
+      - "AGENTS.md"
+      - ".github/instructions/**/*.md"
+      - "CONTRIBUTING.md"
+  learnings:
+    scope: "local"
+  issues:
+    scope: "local"
+  pull_requests:
+    scope: "local"
