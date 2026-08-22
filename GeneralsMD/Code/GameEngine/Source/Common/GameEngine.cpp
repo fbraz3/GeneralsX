@@ -283,6 +283,10 @@ GameEngine::~GameEngine()
 
 	TheGameResultsQueue->endThreads();
 
+#ifdef SAGE_USE_NGMP
+	NGMP_OnlineServicesManager::getInstance().shutdown();
+#endif
+
 	// TheSuperHackers @fix helmutbuhler 03/06/2025
 	// Reset all subsystems before deletion to prevent crashing due to cross dependencies.
 	reset();
@@ -693,7 +697,10 @@ void GameEngine::init()
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), nullptr);
 
 #ifdef SAGE_USE_NGMP
-		NGMP_OnlineServicesManager::getInstance().init();
+		if (!TheGlobalData->m_headless)
+		{
+			NGMP_OnlineServicesManager::getInstance().init();
+		}
 #endif
 
 
@@ -1019,7 +1026,10 @@ void GameEngine::update()
 			}
 
 #ifdef SAGE_USE_NGMP
-			NGMP_OnlineServicesManager::getInstance().update();
+			if (!TheGlobalData->m_headless)
+			{
+				NGMP_OnlineServicesManager::getInstance().update();
+			}
 #endif
 		}
 

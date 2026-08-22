@@ -30,7 +30,9 @@ bool NGMP_OnlineServicesManager::init() {
     }
 
     // Initialize GameSpy stubs to prevent legacy UI crashes (e.g. WOLWelcomeMenu)
-    SetUpGameSpy("", "");
+    if (!TheGameSpyInfo) {
+        TheGameSpyInfo = GameSpyInfoInterface::createNewGameSpyInfoInterface();
+    }
 
     m_initialized = true;
     return true;

@@ -84,7 +84,8 @@ jobs:
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.pdb }} artifacts/
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} ci-artifacts/
 
-          Get-ChildItem -Path build/win32-vcpkg/vcpkg_installed/x86-windows/bin/*.dll -ErrorAction SilentlyContinue | ForEach-Object {
+          Get-ChildItem -Path @("vcpkg_installed/x86-windows/bin/*.dll", "build/win32-vcpkg/vcpkg_installed/x86-windows/bin/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Collecting vcpkg DLL: $($_.FullName)"
             Copy-Item $_.FullName artifacts/
             Copy-Item $_.FullName ci-artifacts/
           }
