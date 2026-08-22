@@ -4,9 +4,9 @@ early_access: false
 enable_free_tier: true
 
 tone_instructions: >-
-  Be direct, technical, and constructive. Focus strictly on C++ game engine architecture,
-  cross-platform determinism (macOS ARM64 vs Linux x86_64), platform layer isolation (SDL3/DXVK),
-  audio parity (OpenAL/MiniAudio), performance, memory safety, and compliance with project conventions.
+  Be direct, technical, and constructive. Focus on C++ engine architecture,
+  cross-platform determinism (macOS/Linux), platform isolation (SDL3/DXVK),
+  audio parity (OpenAL/MiniAudio), performance, memory safety, and project conventions.
 
 reviews:
   profile: "chill"
@@ -31,8 +31,8 @@ reviews:
   related_issues: true
   related_prs: true
   suggested_labels: true
-  auto_apply_labels: false
-  poem: false
+  auto_apply_labels: true
+  poem: true
   enable_prompt_for_ai_agents: true
 
   path_filters:
@@ -149,6 +149,11 @@ reviews:
       - name: "Conventional Commit Standards"
         mode: "error"
         instructions: "Verify that commit messages follow Conventional Commits format and do NOT contain '@' symbol."
+      - name: "Single Commit / Squash Policy"
+        mode: "warning"
+        instructions: >-
+          Verify that PR commits are squashed by the author into a single cohesive commit prior to merging (do not rely on GitHub UI squash).
+          Exception: Upstream sync PRs from thesuperhackers MUST preserve individual commits to maintain original contributor attribution.
 
   tools:
     clang:
