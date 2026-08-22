@@ -31,7 +31,7 @@ reviews:
   related_issues: true
   related_prs: true
   suggested_labels: true
-  auto_apply_labels: false
+  auto_apply_labels: true
   poem: true
   enable_prompt_for_ai_agents: true
 
