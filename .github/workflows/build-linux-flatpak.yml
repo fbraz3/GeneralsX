@@ -85,10 +85,15 @@ jobs:
             flatpak-builder-${{ runner.os }}-${{ inputs.preset }}-
 
       - name: Build Flatpak Bundle
+        env:
+          NGMP_DEFAULT_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
+          NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
         run: |
           set -o pipefail
           mkdir -p logs
-          ./scripts/build/linux/build-linux-flatpak.sh "${{ inputs.preset }}" "${{ matrix.game.value }}" 2>&1 | tee "logs/build_flatpak_${{ matrix.game.log_suffix }}.log"
+          bash ./scripts/build/linux/build-linux-flatpak.sh "${{ inputs.preset }}" "${{ matrix.game.value }}" 2>&1 | tee "logs/build_flatpak_${{ matrix.game.log_suffix }}.log"
 
       - name: Locate generated Flatpak bundle
         id: bundle

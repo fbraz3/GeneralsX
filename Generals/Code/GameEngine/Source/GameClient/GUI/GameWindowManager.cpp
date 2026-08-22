@@ -103,8 +103,7 @@ void GameWindowManager::processDestroyList()
 		if( m_keyboardFocus == doDestroy )
 			winSetFocus( nullptr );
 
-		if( (m_modalHead != nullptr) && (doDestroy == m_modalHead->window) )
-			winUnsetModal( m_modalHead->window );
+		winUnsetModal( doDestroy );
 
 		if( m_currMouseRgn == doDestroy )
 			m_currMouseRgn = nullptr;
@@ -549,9 +548,8 @@ void GameWindowManager::windowHiding( GameWindow *window )
 	if( m_keyboardFocus == window )
 		m_keyboardFocus = nullptr;
 
-	// if this is the modal head, unset it
-	if( m_modalHead && m_modalHead->window == window )
-		winUnsetModal( window );
+	// if this window is in the modal stack, unset it
+	winUnsetModal( window );
 
 	// if this is the captor, it shall no longer be
 	if( m_mouseCaptor == window )
@@ -1422,8 +1420,7 @@ Int GameWindowManager::winDestroy( GameWindow *window )
 	if( m_keyboardFocus == window )
 		winSetFocus( nullptr );
 
-	if( (m_modalHead != nullptr) && (window == m_modalHead->window) )
-		winUnsetModal( m_modalHead->window );
+	winUnsetModal( window );
 
 	if( m_currMouseRgn == window )
 		m_currMouseRgn = nullptr;
@@ -1524,35 +1521,35 @@ Int GameWindowManager::winSetModal( GameWindow *window )
 
 }
 
-//-------------------------------------------------------------------------------------------------
-/** pops window off of the modal stack.  If this window is not the top
-	* of the modal stack an error will occur. */
-//-------------------------------------------------------------------------------------------------
+// GeneralsX @bugfix fbraz3 17/08/2026 Remove window from anywhere in modal stack to prevent corrupted dangling pointers when sub-modals close
 Int GameWindowManager::winUnsetModal( GameWindow *window )
 {
-	ModalWindow *next;
-
 	if( window == nullptr )
 		return WIN_ERR_INVALID_WINDOW;
 
-	// verify entry is at top of list
-	if( (m_modalHead == nullptr) || (m_modalHead->window != window) )
+	ModalWindow *curr = m_modalHead;
+	ModalWindow *prev = nullptr;
+
+	while (curr != nullptr)
 	{
-
-		// return error if not
-		DEBUG_LOG(( "WinUnsetModal: Invalid window attempting to unset modal (%d)",
-								window->winGetWindowId() ));
-		return WIN_ERR_GENERAL_FAILURE;
-
+		if (curr->window == window)
+		{
+			if (prev == nullptr)
+			{
+				m_modalHead = curr->next;
+			}
+			else
+			{
+				prev->next = curr->next;
+			}
+			deleteInstance(curr);
+			return WIN_ERR_OK;
+		}
+		prev = curr;
+		curr = curr->next;
 	}
 
-	// remove from top of list
-	next = m_modalHead->next;
-	deleteInstance(m_modalHead);
-	m_modalHead = next;
-
 	return WIN_ERR_OK;
-
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -51,6 +51,13 @@
 #include "GameClient/ChallengeGenerals.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 
+#if defined(SAGE_USE_NGMP) && __has_include("GameNetwork/GeneralsOnline/OnlineServices_Manager.h")
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Auth.h"
+#include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#define HAVE_NGMP_PREFS 1
+#endif
+
 
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -242,7 +249,12 @@ void UserPreferences::setAsciiString(AsciiString key, AsciiString val)
 QuickMatchPreferences::QuickMatchPreferences()
 {
 	AsciiString userPrefFilename;
-	Int localProfile = TheGameSpyInfo->getLocalProfileID();
+#if defined(HAVE_NGMP_PREFS)
+	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	Int localProfile = pAuthInterface != nullptr ? (Int)pAuthInterface->GetUserID() : 0;
+#else
+	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
+#endif
 	userPrefFilename.format("GeneralsOnline\\QMPref%d.ini", localProfile);
 	load(userPrefFilename);
 }
@@ -427,7 +439,12 @@ Int QuickMatchPreferences::getSide()
 CustomMatchPreferences::CustomMatchPreferences()
 {
 	AsciiString userPrefFilename;
-	Int localProfile = TheGameSpyInfo->getLocalProfileID();
+#if defined(HAVE_NGMP_PREFS)
+	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	Int localProfile = pAuthInterface != nullptr ? (Int)pAuthInterface->GetUserID() : 0;
+#else
+	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
+#endif
 	userPrefFilename.format("GeneralsOnline\\CustomPref%d.ini", localProfile);
 	load(userPrefFilename);
 }
@@ -776,7 +793,12 @@ void CustomMatchPreferences::setUseStats( Bool useStats )
 GameSpyMiscPreferences::GameSpyMiscPreferences()
 {
 	AsciiString userPrefFilename;
-	Int localProfile = TheGameSpyInfo->getLocalProfileID();
+#if defined(HAVE_NGMP_PREFS)
+	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	Int localProfile = pAuthInterface != nullptr ? (Int)pAuthInterface->GetUserID() : 0;
+#else
+	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
+#endif
 	userPrefFilename.format("GeneralsOnline\\GSMiscPref%d.ini", localProfile);
 	load(userPrefFilename);
 }

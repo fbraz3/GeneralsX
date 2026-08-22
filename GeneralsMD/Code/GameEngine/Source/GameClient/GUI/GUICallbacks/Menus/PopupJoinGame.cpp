@@ -64,6 +64,13 @@
 #include "GameNetwork/GameSpyOverlay.h"
 
 
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
+#include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#include "GameNetwork/GeneralsOnline/NGMP_types.h"
+#endif
+
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -99,11 +106,25 @@ void PopupJoinGameInit( WindowLayout *layout, void *userData )
 
 	buttonCancelID = NAMEKEY("PopupJoinGame.wnd:ButtonCancel");
 
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (pLobbyInterface == nullptr)
+	{
+		DEBUG_LOG(("NGMP_OnlineServices_LobbyInterface is not initialized!"));
+		return;
+	}
+
+	LobbyEntry lobbyTryingToJoin = pLobbyInterface->GetLobbyTryingToJoin();
+	UnicodeString lobbyName;
+	lobbyName.translate(AsciiString(lobbyTryingToJoin.name.c_str()));
+	GadgetStaticTextSetText(staticTextGameName, lobbyName);
+#else
 	GameSpyStagingRoom *ourRoom = TheGameSpyInfo->findStagingRoomByID(TheGameSpyInfo->getCurrentStagingRoomID());
 	if (ourRoom)
 		GadgetStaticTextSetText(staticTextGameName, ourRoom->getGameName());
+#endif
 
-	TheWindowManager->winSetFocus( parentPopup );
+	TheWindowManager->winSetFocus( textEntryGamePassword );
 	TheWindowManager->winSetModal( parentPopup );
 
 }
@@ -243,6 +264,30 @@ WindowMsgHandledType PopupJoinGameSystem( GameWindow *window, UnsignedInt msg, W
 
 static void joinGame( AsciiString password )
 {
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (pLobbyInterface == nullptr)
+	{
+		DEBUG_LOG(("NGMP_OnlineServices_LobbyInterface is not initialized!"));
+		GameSpyCloseOverlay(GSOVERLAY_GAMEPASSWORD);
+		SetLobbyAttemptHostJoin(FALSE);
+		parentPopup = nullptr;
+		return;
+	}
+
+	LobbyEntry lobbyTryingToJoin = pLobbyInterface->GetLobbyTryingToJoin();
+
+	if (lobbyTryingToJoin.lobbyID == -1)
+	{
+		GameSpyCloseOverlay(GSOVERLAY_GAMEPASSWORD);
+		SetLobbyAttemptHostJoin(FALSE);
+		parentPopup = nullptr;
+		return;
+	}
+
+	pLobbyInterface->JoinLobby(lobbyTryingToJoin, password.str());
+	DEBUG_LOG(("Attempting to join game %d(%s) with password [%s]\n", lobbyTryingToJoin.lobbyID, lobbyTryingToJoin.name.c_str(), password.str()));
+#else
 	GameSpyStagingRoom *ourRoom = TheGameSpyInfo->findStagingRoomByID(TheGameSpyInfo->getCurrentStagingRoomID());
 	if (!ourRoom)
 	{
@@ -258,6 +303,8 @@ static void joinGame( AsciiString password )
 	req.password = password.str();
 	TheGameSpyPeerMessageQueue->addRequest(req);
 	DEBUG_LOG(("Attempting to join game %d(%ls) with password [%s]", ourRoom->getID(), ourRoom->getGameName().str(), password.str()));
+#endif
+
 	GameSpyCloseOverlay(GSOVERLAY_GAMEPASSWORD);
 	parentPopup = nullptr;
 }

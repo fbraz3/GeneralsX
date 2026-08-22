@@ -82,6 +82,10 @@
 #include <SDL3/SDL.h>
 #endif
 
+// GeneralsX @feature GeneralsOnline NGMP browser-based login
+#ifdef SAGE_USE_NGMP
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
@@ -653,7 +657,9 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	if (TheGameSpyPeerMessageQueue && !TheGameSpyPeerMessageQueue->isConnected())
 	{
 		DEBUG_LOG(("Tearing down GameSpy from MainMenuInit()"));
+#ifndef SAGE_USE_NGMP
 		TearDownGameSpy();
+#endif
 	}
 	if (TheMapCache)
 		TheMapCache->updateCache();
@@ -868,6 +874,22 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 	}
 	if(DontShowMainMenu && justEntered)
 		justEntered = FALSE;
+
+#if defined(SAGE_USE_NGMP)
+	if (NGMP_OnlineServicesManager::getInstance().isLoggedIn()) {
+		if (buttonPushed) {
+			buttonPushed = FALSE; 
+			dontAllowTransitions = FALSE;
+			std::string username = NGMP_OnlineServicesManager::getInstance().getUsername();
+			int64_t userId = NGMP_OnlineServicesManager::getInstance().getUserId();
+			if (TheGameSpyInfo) {
+				TheGameSpyInfo->setLocalName(AsciiString(username.c_str()));
+				TheGameSpyInfo->setLocalProfileID(static_cast<Int>(userId));
+			}
+			TheShell->push("Menus/WOLWelcomeMenu.wnd");
+		}
+	}
+#endif
 
 	// GeneralsX @feature BenderAI 21/04/2026 Poll background update check; create dynamic button when update found
 #ifdef SAGE_UPDATE_CHECK
@@ -1137,7 +1159,9 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 		{
 			ghttpCleanup();
 			DEBUG_LOG(("Tearing down GameSpy from MainMenuSystem(GWM_DESTROY)"));
+#ifndef SAGE_USE_NGMP
 			TearDownGameSpy();
+#endif
 			StopAsyncDNSCheck(); // kill off the async DNS check thread in case it is still running
 			break;
 
@@ -1548,7 +1572,16 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				dropDownWindows[DROPDOWN_MULTIPLAYER]->winHide(FALSE);
 				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
 
+#if defined(SAGE_USE_NGMP)
+				// GeneralsX @feature GeneralsOnline - Browser gamecode login flow
+				// No in-game login form; the NGMP manager opens the browser and polls.
+				NGMP_OnlineServicesManager::getInstance().init();
+				if (!NGMP_OnlineServicesManager::getInstance().isLoggedIn()) {
+					NGMP_OnlineServicesManager::getInstance().beginBrowserLogin();
+				}
+#else
 				StartPatchCheck();
+#endif
 //				localAnimateWindowManager->reverseAnimateWindow();
 				dropDown = DROPDOWN_NONE;
 
