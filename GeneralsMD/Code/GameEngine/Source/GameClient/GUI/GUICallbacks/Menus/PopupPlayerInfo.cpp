@@ -865,9 +865,12 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 	Int currentRank = 0;
 	Int rankPoints = CalculateRank(stats);
 	Int i = 0;
-	while( rankPoints >= TheRankPointValues->m_ranks[i + 1])
-		++i;
-	currentRank = i;
+	if (TheRankPointValues)
+	{
+		while (i + 1 < MAX_RANKS && rankPoints >= TheRankPointValues->m_ranks[i + 1])
+			++i;
+		currentRank = i;
+	}
 
 	PerGeneralMap::iterator it;
 	Int numWins = 0;
@@ -1046,7 +1049,15 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 		}
 		else
 		{
-			GadgetProgressBarSetProgress(win, 100 * INT_TO_REAL(rankPoints - TheRankPointValues->m_ranks[currentRank])/( TheRankPointValues->m_ranks[currentRank + 1] - TheRankPointValues->m_ranks[currentRank]));
+			Int diff = TheRankPointValues->m_ranks[currentRank + 1] - TheRankPointValues->m_ranks[currentRank];
+			if (diff > 0)
+			{
+				GadgetProgressBarSetProgress(win, 100 * INT_TO_REAL(rankPoints - TheRankPointValues->m_ranks[currentRank]) / INT_TO_REAL(diff));
+			}
+			else
+			{
+				GadgetProgressBarSetProgress(win, 100);
+			}
 		}
 	}
 

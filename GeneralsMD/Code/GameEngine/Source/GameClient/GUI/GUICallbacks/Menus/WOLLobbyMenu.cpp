@@ -546,9 +546,12 @@ static void playerTooltip(GameWindow *window,
 
 	Int rank = 0;
 	Int i = 0;
-	while( info->m_rankPoints >= TheRankPointValues->m_ranks[i + 1])
-		++i;
-	rank = i;
+	if (TheRankPointValues)
+	{
+		while (i + 1 < MAX_RANKS && info->m_rankPoints >= TheRankPointValues->m_ranks[i + 1])
+			++i;
+		rank = i;
+	}
 	AsciiString sideName = "GUI:RandomSide";
 	if (info->m_side > 0)
 	{
@@ -648,9 +651,12 @@ const Image* LookupSmallRankImage(Int side, Int rankPoints)
 
 	Int rank = 0;
 	Int i = 0;
-	while( rankPoints >= TheRankPointValues->m_ranks[i + 1])
-		++i;
-	rank = i;
+	if (TheRankPointValues)
+	{
+		while (i + 1 < MAX_RANKS && rankPoints >= TheRankPointValues->m_ranks[i + 1])
+			++i;
+		rank = i;
+	}
 
 	if (rank < 0 || rank >= 10)
 		return nullptr;

@@ -6,6 +6,9 @@
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#include "GameNetwork/GameSpy/LadderDefs.h"
+#include "GameNetwork/GameSpy/GSConfig.h"
+#include "GameNetwork/RankPointValue.h"
 #include <cstdio>
 
 bool NGMP_OnlineServicesManager::init() {
@@ -29,9 +32,18 @@ bool NGMP_OnlineServicesManager::init() {
         TheNGMPGame = new NGMPGame();
     }
 
-    // Initialize GameSpy stubs to prevent legacy UI crashes (e.g. WOLWelcomeMenu)
+    // Initialize GameSpy and UI singletons to prevent legacy UI crashes (e.g. WOLWelcomeMenu, PopupPlayerInfo, WOLLobbyMenu)
+    if (!TheGameSpyConfig) {
+        TheGameSpyConfig = GameSpyConfigInterface::create("");
+    }
     if (!TheGameSpyInfo) {
         TheGameSpyInfo = GameSpyInfoInterface::createNewGameSpyInfoInterface();
+    }
+    if (!TheRankPointValues) {
+        TheRankPointValues = new RankPoints();
+    }
+    if (!TheLadderList) {
+        TheLadderList = new LadderList();
     }
 
     m_initialized = true;
@@ -89,6 +101,26 @@ void NGMP_OnlineServicesManager::shutdown() {
     m_pSocialInterface = nullptr;
 
     m_pWebSocketWrapper.reset();
+
+    if (TheRankPointValues) {
+        delete TheRankPointValues;
+        TheRankPointValues = nullptr;
+    }
+
+    if (TheLadderList) {
+        delete TheLadderList;
+        TheLadderList = nullptr;
+    }
+
+    if (TheGameSpyConfig) {
+        delete TheGameSpyConfig;
+        TheGameSpyConfig = nullptr;
+    }
+
+    if (TheGameSpyInfo) {
+        delete TheGameSpyInfo;
+        TheGameSpyInfo = nullptr;
+    }
 
     m_initialized = false;
 }
