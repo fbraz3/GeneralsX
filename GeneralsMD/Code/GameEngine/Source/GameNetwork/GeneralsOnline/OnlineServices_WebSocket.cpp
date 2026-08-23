@@ -34,6 +34,7 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
 
     curl_easy_setopt(m_curl, CURLOPT_URL, wsUrl.c_str());
     curl_easy_setopt(m_curl, CURLOPT_CONNECT_ONLY, 2L); // WebSocket mode
+    curl_easy_setopt(m_curl, CURLOPT_CONNECTTIMEOUT, 5L);
     curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
@@ -64,30 +65,41 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
 
 void NGMPWebSocket::disconnect() {
     m_running = false;
-    if (m_curl) {
+    {
         std::lock_guard<std::mutex> lock(m_sendMutex);
-        size_t sent = 0;
-        curl_ws_send(m_curl, "", 0, &sent, 0, CURLWS_CLOSE);
+        if (m_curl) {
+            size_t sent = 0;
+            curl_ws_send(m_curl, "", 0, &sent, 0, CURLWS_CLOSE);
+        }
     }
     if (m_recvThread.joinable()) {
         m_recvThread.join();
     }
-    if (m_curl) {
-        curl_easy_cleanup(m_curl);
-        m_curl = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(m_sendMutex);
+        if (m_curl) {
+            curl_easy_cleanup(m_curl);
+            m_curl = nullptr;
+        }
     }
     fprintf(stderr, "[NGMP-Chat] WebSocket disconnected\n");
     fflush(stderr);
 }
 
 bool NGMPWebSocket::sendPayload(const std::string& payload) {
-    if (!m_running.load() || !m_curl) {
-        fprintf(stderr, "[NGMP-WebSocket] Cannot send payload, WS not running or null curl (running=%d)\n", m_running.load());
+    if (!m_running.load()) {
+        fprintf(stderr, "[NGMP-WebSocket] Cannot send payload, WS not running (running=%d)\n", m_running.load());
         fflush(stderr);
         return false;
     }
 
     std::lock_guard<std::mutex> lock(m_sendMutex);
+    if (!m_curl) {
+        fprintf(stderr, "[NGMP-WebSocket] Cannot send payload, null curl handle\n");
+        fflush(stderr);
+        return false;
+    }
+
     size_t sent = 0;
     CURLcode res = curl_ws_send(m_curl, payload.c_str(), payload.size(), &sent, 0, CURLWS_TEXT);
     if (res != CURLE_OK) {

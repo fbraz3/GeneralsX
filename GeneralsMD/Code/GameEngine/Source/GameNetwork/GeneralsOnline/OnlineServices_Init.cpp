@@ -137,6 +137,14 @@ void NGMP_OnlineServicesManager::shutdown() {
         m_lobbyThread.join();
     }
 
+    if (m_statsThread.joinable()) {
+        m_statsThread.join();
+    }
+
+    if (m_playlistsThread.joinable()) {
+        m_playlistsThread.join();
+    }
+
     logout();
 
     if (TheNGMPGame) {

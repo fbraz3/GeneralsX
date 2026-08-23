@@ -353,9 +353,18 @@ void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
                 auto jsonObjectRoot = jsonObject["stats"];
 
                 PSPlayerStats stats;
-                jsonObjectRoot["userID"].get_to(stats.id);
+                if (jsonObjectRoot.contains("userID") && !jsonObjectRoot["userID"].is_null()) {
+                    jsonObjectRoot["userID"].get_to(stats.id);
+                }
 
-                #define PROCESS_JSON_PER_GENERAL_RESULT(name) { int i = 0; for (const auto& iter : jsonObjectRoot[#name]) { iter.get_to(stats.name[i++]); } }
+                #define PROCESS_JSON_PER_GENERAL_RESULT(name) \
+                    if (jsonObjectRoot.contains(#name) && jsonObjectRoot[#name].is_array()) { \
+                        int i = 0; \
+                        for (const auto& iter : jsonObjectRoot[#name]) { \
+                            iter.get_to(stats.name[i++]); \
+                        } \
+                    }
+
                 PROCESS_JSON_PER_GENERAL_RESULT(wins);
                 PROCESS_JSON_PER_GENERAL_RESULT(losses);
                 PROCESS_JSON_PER_GENERAL_RESULT(games);
@@ -381,7 +390,11 @@ void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
                 PROCESS_JSON_PER_GENERAL_RESULT(customGames);
                 PROCESS_JSON_PER_GENERAL_RESULT(QMGames);
 
-                #define PROCESS_JSON_STANDARD_RESULT(name) jsonObjectRoot[#name].get_to(stats.name)
+                #define PROCESS_JSON_STANDARD_RESULT(name) \
+                    if (jsonObjectRoot.contains(#name) && !jsonObjectRoot[#name].is_null()) { \
+                        jsonObjectRoot[#name].get_to(stats.name); \
+                    }
+
                 PROCESS_JSON_STANDARD_RESULT(locale);
                 PROCESS_JSON_STANDARD_RESULT(gamesAsRandom);
                 PROCESS_JSON_STANDARD_RESULT(options);
@@ -406,6 +419,9 @@ void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
                 PROCESS_JSON_STANDARD_RESULT(builtSCUD);
                 PROCESS_JSON_STANDARD_RESULT(lastLadderPort);
                 PROCESS_JSON_STANDARD_RESULT(lastLadderHost);
+
+                #undef PROCESS_JSON_PER_GENERAL_RESULT
+                #undef PROCESS_JSON_STANDARD_RESULT
 
                 {
                     std::lock_guard<std::mutex> lock(m_playerStatsMutex);

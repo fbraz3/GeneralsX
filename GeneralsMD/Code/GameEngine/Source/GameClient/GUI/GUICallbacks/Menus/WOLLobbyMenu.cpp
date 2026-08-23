@@ -351,7 +351,8 @@ static void playerTooltip(GameWindow *window,
 		{
 			if (roomMember != nullptr)
 			{
-				pStatsInterface->findPlayerStatsByID(roomMember->user_id, [=](bool bSuccess, PSPlayerStats stats)
+				int64_t targetUserID = roomMember->user_id;
+				pStatsInterface->findPlayerStatsByID(targetUserID, [=](bool bSuccess, PSPlayerStats stats)
 					{
 						if (!bSuccess)
 						{
@@ -360,13 +361,13 @@ static void playerTooltip(GameWindow *window,
 						else
 						{
 							UnicodeString tooltip = UnicodeString::TheEmptyString;
-							if (roomMember->user_id == pAuthInterface->GetUserID())
+							if (targetUserID == pAuthInterface->GetUserID())
 							{
 								tooltip.format(TheGameText->fetch("TOOLTIP:LocalPlayer"), uName.str());
 							}
 							else
 							{
-								bool bIsFriend = pSocialInterface->IsUserFriend(roomMember->user_id);
+								bool bIsFriend = pSocialInterface->IsUserFriend(targetUserID);
 								if (bIsFriend)
 								{
 									tooltip.format(TheGameText->fetch("TOOLTIP:BuddyPlayer"), uName.str());
@@ -377,7 +378,7 @@ static void playerTooltip(GameWindow *window,
 								}
 							}
 
-							bool bIgnored = pSocialInterface->IsUserIgnored(roomMember->user_id);
+							bool bIgnored = pSocialInterface->IsUserIgnored(targetUserID);
 							if (bIgnored)
 							{
 								tooltip.concat(TheGameText->fetch("TOOLTIP:IgnoredModifier"));
@@ -455,7 +456,7 @@ static void playerTooltip(GameWindow *window,
 								if (localMember != nullptr && localMember->m_bIsAdmin)
 								{
 									UnicodeString idLine;
-									idLine.format(L"\n\nUser ID: %lld", roomMember->user_id);
+									idLine.format(L"\n\nUser ID: %lld", (long long)targetUserID);
 									tooltip.concat(idLine);
 								}
 							}
@@ -2160,81 +2161,11 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 				Int controlID = control->winGetWindowId();
 				if( controlID == comboLobbyGroupRoomsID )
 				{
-					int rowSelected = -1;
-					GadgetComboBoxGetSelectedPos(control, &rowSelected);
-
-					DEBUG_LOG(("Row selected = %d", rowSelected));
-#if defined(SAGE_USE_NGMP)
-					// GeneralsX @feature fbraz3 16/08/2026 Room join via NGMP RoomsInterface (G5 fix)
-					if (rowSelected >= 0)
-					{
-						Int groupID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboLobbyGroupRooms, rowSelected)));
-						NGMP_OnlineServices_RoomsInterface* pRoomsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_RoomsInterface>();
-						if (pRoomsInterface != nullptr && groupID != pRoomsInterface->GetCurrentRoomID())
-						{
-							pRoomsInterface->JoinRoom(groupID,
-								[=]()
-								{
-									// Attempting to join - nothing to show yet
-								},
-								[=]()
-								{
-									GadgetListBoxReset(listboxLobbyChat);
-
-									NGMP_OnlineServices_RoomsInterface* pRI = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_RoomsInterface>();
-									if (pRI != nullptr)
-									{
-										const auto& rooms = pRI->GetGroupRooms();
-										for (const auto& rm : rooms)
-										{
-											if (rm.GetRoomID() == groupID)
-											{
-												UnicodeString msg;
-												msg.format(TheGameText->fetch("GUI:LobbyJoined"), rm.GetRoomDisplayName().str());
-												GadgetListBoxAddEntryText(listboxLobbyChat, msg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
-												break;
-											}
-										}
-									}
-
-									// Refresh player list, game list, and room combobox
-									refreshPlayerList(TRUE);
-									RefreshGameListBoxes();
-									populateGroupRoomListbox(comboLobbyGroupRooms);
-								});
-						}
-
-						// Also update game mode filter for the selected row
-						Int pos = -1;
-						GadgetComboBoxGetSelectedPos(comboLobbyGroupRooms, &pos);
-						if (pos >= 0)
-							theLobbyFilter = static_cast<LobbyGameModeFilter>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboLobbyGroupRooms, pos)));
-						RefreshGameListBoxes();
-					}
-#else
-					if (rowSelected >= 0)
-					{
-						Int groupID;
-						// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-						groupID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboLobbyGroupRooms, rowSelected)));
-						DEBUG_LOG(("ItemData was %d, current Group Room is %d", groupID, TheGameSpyInfo->getCurrentGroupRoom()));
-						if (groupID && groupID != TheGameSpyInfo->getCurrentGroupRoom())
-						{
-							TheGameSpyInfo->leaveGroupRoom();
-							TheGameSpyInfo->joinGroupRoom(groupID);
-
-							if (TheGameSpyConfig->restrictGamesToLobby())
-							{
-								TheGameSpyInfo->clearStagingRoomList();
-								RefreshGameListBoxes();
-								PeerRequest req;
-								req.peerRequestType = PeerRequest::PEERREQUEST_STARTGAMELIST;
-								req.gameList.restrictGameList = TRUE;
-								TheGameSpyPeerMessageQueue->addRequest(req);
-							}
-						}
-					}
-#endif
+					Int pos = -1;
+					GadgetComboBoxGetSelectedPos(comboLobbyGroupRooms, &pos);
+					if (pos >= 0)
+						theLobbyFilter = static_cast<LobbyGameModeFilter>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboLobbyGroupRooms, pos)));
+					RefreshGameListBoxes();
 				}
 			}
 			break;
@@ -2268,14 +2199,14 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 			{
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
+				RightClickStruct* rc = (RightClickStruct*)mData2;
+				WindowLayout* rcLayout = nullptr;
+				GameWindow* rcMenu = nullptr;
 
-					if( controlID == listboxLobbyPlayersID )
+				if (controlID == listboxLobbyPlayersID)
 				{
 #if defined(SAGE_USE_NGMP)
 					// GeneralsX @feature fbraz3 16/08/2026 NGMP right-click context menu on player list (G4 fix)
-					RightClickStruct* rc = (RightClickStruct*)mData2;
-					WindowLayout* rcLayout = nullptr;
-					GameWindow* rcMenu;
 					if (rc->pos < 0)
 					{
 						GadgetListBoxSetSelected(control, -1);
@@ -2333,8 +2264,6 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 							TheWindowManager->winSetLoneWindow(rcMenu);
 						}
 					}
-					break;
-				}
 #else
 					// Legacy GameSpy right-click menu
 					GPProfile profileID = 0;
@@ -2387,12 +2316,10 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					rcData->m_itemType = (isBuddy)?ITEM_BUDDY:ITEM_NONBUDDY;
 					rcMenu->winSetUserData((void *)rcData);
 					TheWindowManager->winSetLoneWindow(rcMenu);
+#endif
 				}
 				else if( controlID == GetGameListBoxID() )
 				{
-					RightClickStruct *rc = (RightClickStruct *)mData2;
-					WindowLayout *rcLayout = nullptr;
-					GameWindow *rcMenu;
 					if(rc->pos < 0)
 					{
 						GadgetListBoxSetSelected(control, -1);
@@ -2431,7 +2358,6 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 						}
 					}
 				}
-#endif
 				break;
 			}
 

@@ -548,32 +548,33 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                     }
                 }
 
-                // Update NGMP LobbyInterface current lobby cache
-                NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-                if (pLobbyInterface) {
-                    LobbyEntry& curLobby = pLobbyInterface->GetCurrentLobby();
-                    curLobby.lobbyID = targetId;
-                    curLobby.owner = ownerId;
-                    curLobby.name = lobbyIter.value("Name", lobbyIter.value("name", ""));
-                    curLobby.map_name = mapName;
-                    curLobby.map_path = mapPath;
-                    curLobby.map_official = lobbyIter.value("IsMapOfficial", lobbyIter.value("is_map_official", true));
-                    curLobby.starting_cash = startingCash;
-                    curLobby.limit_superweapons = limitSuperweapons;
-                    curLobby.track_stats = lobbyIter.value("IsTrackingStats", lobbyIter.value("is_tracking_stats", true));
-                    curLobby.allow_observers = allowObservers;
-                    curLobby.rng_seed = lobbyIter.value("RNGSeed", lobbyIter.value("rng_seed", 0));
-                    curLobby.exe_crc = lobbyIter.value("ExeCRC", lobbyIter.value("exe_crc", 0));
-                    curLobby.ini_crc = lobbyIter.value("IniCRC", lobbyIter.value("ini_crc", 0));
-                    curLobby.max_players = lobbyIter.value("MaxPlayers", lobbyIter.value("max_players", 8));
-                    curLobby.current_players = lobbyIter.value("NumCurrentPlayers", lobbyIter.value("num_current_players", 1));
-                    curLobby.members = std::move(lobbyMembers);
-                }
-
-                // Update roster for lobby sidebar
-                if (!updatedLobbyPlayers.empty()) {
+                // Update NGMP LobbyInterface current lobby cache and roster under mutex
+                {
                     std::lock_guard<std::mutex> lock(m_eventMutex);
-                    m_lobbyPlayers = std::move(updatedLobbyPlayers);
+                    NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+                    if (pLobbyInterface) {
+                        LobbyEntry& curLobby = pLobbyInterface->GetCurrentLobby();
+                        curLobby.lobbyID = targetId;
+                        curLobby.owner = ownerId;
+                        curLobby.name = lobbyIter.value("Name", lobbyIter.value("name", ""));
+                        curLobby.map_name = mapName;
+                        curLobby.map_path = mapPath;
+                        curLobby.map_official = lobbyIter.value("IsMapOfficial", lobbyIter.value("is_map_official", true));
+                        curLobby.starting_cash = startingCash;
+                        curLobby.limit_superweapons = limitSuperweapons;
+                        curLobby.track_stats = lobbyIter.value("IsTrackingStats", lobbyIter.value("is_tracking_stats", true));
+                        curLobby.allow_observers = allowObservers;
+                        curLobby.rng_seed = lobbyIter.value("RNGSeed", lobbyIter.value("rng_seed", 0));
+                        curLobby.exe_crc = lobbyIter.value("ExeCRC", lobbyIter.value("exe_crc", 0));
+                        curLobby.ini_crc = lobbyIter.value("IniCRC", lobbyIter.value("ini_crc", 0));
+                        curLobby.max_players = lobbyIter.value("MaxPlayers", lobbyIter.value("max_players", 8));
+                        curLobby.current_players = lobbyIter.value("NumCurrentPlayers", lobbyIter.value("num_current_players", 1));
+                        curLobby.members = std::move(lobbyMembers);
+                    }
+
+                    if (!updatedLobbyPlayers.empty()) {
+                        m_lobbyPlayers = std::move(updatedLobbyPlayers);
+                    }
                 }
 
                 // If guest is no longer part of the lobby members list, trigger lobby exit
