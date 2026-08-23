@@ -159,6 +159,11 @@ jobs:
           echo "✅ vcpkg ready at: /opt/vcpkg"
 
       - name: Configure CMake (Linux)
+        env:
+          NGMP_DEFAULT_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
+          NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
         run: |
           mkdir -p logs
           cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_linux.log
