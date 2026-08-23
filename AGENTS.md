@@ -36,6 +36,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 9. **Update worklog** – Update `docs/WORKLOG/YYYY-MM-DIARY.md` before committing (see [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) for details)
 10. **Reference repos** – Study patterns, don't copy-paste
 11. **Backport to Generals** – Bugfixes and improvements must be backported to the Generals base game.
+12. **NGMP over GameSpy** – The legacy GameSpy online backend is being discontinued. NGMP (`GeneralsOnline`) is the sole online multiplayer target. Singleplayer, Skirmish (vs AI), and LAN multiplayer must remain fully functional. GameSpy online compatibility is explicitly NOT required and must NOT block NGMP work. See [ngmp.instructions.md](.github/instructions/ngmp.instructions.md) for the full compatibility policy.
 
 ## Cross-Platform Determinism (Mac vs Linux)
 To guarantee cross-play between macOS ARM64 and Linux x86_64 without SyncCrash desyncs, you must obey the following rules:

@@ -6,6 +6,27 @@ applyTo: '**/GeneralsOnline/**,**/NextGenMP/**'
 
 These instructions govern the Next-Gen Multiplayer (NGMP) client protocol integration into **GeneralsX**. All changes in `GeneralsOnline` and `NextGenMP` components must adhere strictly to these guidelines.
 
+> [!IMPORTANT]
+> **GameSpy Online is being discontinued.** NGMP is the sole multiplayer backend going forward. Compatibility with the legacy GameSpy online flow is **NOT a goal** and must NOT block NGMP development. If making NGMP work requires changing or breaking legacy GameSpy online code paths, that is acceptable and expected. Only the following non-online modes must remain fully functional: **Singleplayer campaigns**, **Skirmish vs AI**, and **LAN multiplayer**.
+
+---
+
+## GameSpy Compatibility Policy
+
+| Mode | Required to keep working | Notes |
+|---|---|---|
+| Singleplayer / Campaign | ✅ Yes | Must not regress |
+| Skirmish (vs AI, offline) | ✅ Yes | Must not regress |
+| LAN Multiplayer | ✅ Yes | Must not regress |
+| GameSpy Online (WOL) | ❌ No | Being discontinued; may be broken by NGMP changes |
+| GameSpy P2P auth/serial | ❌ No | Superseded by NGMP auth |
+
+When a piece of legacy UI code is in the critical path for NGMP but also serves the legacy GameSpy online flow:
+- **Modify it** to work correctly with NGMP, even if that removes or changes the GameSpy online behavior.
+- If a function or callback is **only** called in the GameSpy online context (never touched in singleplayer, skirmish, or LAN), it may be stubbed out, simplified, or removed to unblock NGMP work.
+- Prefer **replacing** legacy `TheGameSpy*` queue calls with equivalent NGMP interface calls rather than maintaining both paths in parallel.
+- Dummy/blackhole implementations (like dummy message queues) are a **last resort** workaround — prefer proper NGMP replacements whenever feasible.
+
 ---
 
 ## Golden Constraints
