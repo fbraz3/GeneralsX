@@ -9,7 +9,57 @@
 #include "GameNetwork/GameSpy/LadderDefs.h"
 #include "GameNetwork/GameSpy/GSConfig.h"
 #include "GameNetwork/RankPointValue.h"
+#include "GameNetwork/GameSpy/BuddyThread.h"
+#include "GameNetwork/GameSpy/PeerThread.h"
+#include "GameNetwork/GameSpy/PersistentStorageThread.h"
 #include <cstdio>
+
+// GeneralsX @bugfix fbraz3 23/08/2026 Prevent legacy UI callbacks from crashing when trying to send GameSpy requests by providing dummy message queues
+// Dummy implementations to prevent legacy UI callbacks from crashing when trying to send GameSpy requests
+class DummyGameSpyBuddyMessageQueue : public GameSpyBuddyMessageQueueInterface {
+public:
+    void startThread() override {}
+    void endThread() override {}
+    Bool isThreadRunning() override { return FALSE; }
+    Bool isConnected() override { return FALSE; }
+    Bool isConnecting() override { return FALSE; }
+    void addRequest(const BuddyRequest&) override {}
+    Bool getRequest(BuddyRequest&) override { return FALSE; }
+    void addResponse(const BuddyResponse&) override {}
+    Bool getResponse(BuddyResponse&) override { return FALSE; }
+    GPProfile getLocalProfileID() override { return 0; }
+};
+
+class DummyGameSpyPeerMessageQueue : public GameSpyPeerMessageQueueInterface {
+public:
+    void startThread() override {}
+    void endThread() override {}
+    Bool isThreadRunning() override { return FALSE; }
+    Bool isConnected() override { return FALSE; }
+    Bool isConnecting() override { return FALSE; }
+    void addRequest(const PeerRequest&) override {}
+    Bool getRequest(PeerRequest&) override { return FALSE; }
+    void addResponse(const PeerResponse&) override {}
+    Bool getResponse(PeerResponse&) override { return FALSE; }
+    SerialAuthResult getSerialAuthResult() override { return SERIAL_OK; }
+};
+
+class DummyGameSpyPSMessageQueue : public GameSpyPSMessageQueueInterface {
+public:
+    void startThread() override {}
+    void endThread() override {}
+    Bool isThreadRunning() override { return FALSE; }
+    void addRequest(const PSRequest&) override {}
+    Bool getRequest(PSRequest&) override { return FALSE; }
+    void addResponse(const PSResponse&) override {}
+    Bool getResponse(PSResponse&) override { return FALSE; }
+    PSPlayerStats findPlayerStatsByID(Int profileID) override {
+        PSPlayerStats s;
+        s.id = profileID;
+        return s;
+    }
+    void trackPlayerStats(PSPlayerStats) override {}
+};
 
 bool NGMP_OnlineServicesManager::init() {
     if (m_initialized) {
@@ -44,6 +94,15 @@ bool NGMP_OnlineServicesManager::init() {
     }
     if (!TheLadderList) {
         TheLadderList = new LadderList();
+    }
+    if (!TheGameSpyBuddyMessageQueue) {
+        TheGameSpyBuddyMessageQueue = new DummyGameSpyBuddyMessageQueue();
+    }
+    if (!TheGameSpyPeerMessageQueue) {
+        TheGameSpyPeerMessageQueue = new DummyGameSpyPeerMessageQueue();
+    }
+    if (!TheGameSpyPSMessageQueue) {
+        TheGameSpyPSMessageQueue = new DummyGameSpyPSMessageQueue();
     }
 
     m_initialized = true;
