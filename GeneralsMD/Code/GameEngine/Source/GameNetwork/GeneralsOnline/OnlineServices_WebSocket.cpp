@@ -208,7 +208,6 @@ void WebSocket::SendData_RoomChatMessage(UnicodeString& msg, bool bIsAction)
     aMsg.translate(msg);
     json payload;
     payload["msg_id"] = (int)NGMP::EWebSocketMessageID::NETWORK_ROOM_CHAT_FROM_CLIENT;
-    payload["room"] = 0;
     payload["message"] = aMsg.str();
     payload["action"] = bIsAction;
     NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump());

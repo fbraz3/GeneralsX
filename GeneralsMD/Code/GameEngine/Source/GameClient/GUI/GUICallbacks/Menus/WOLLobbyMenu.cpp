@@ -1116,6 +1116,13 @@ void WOLLobbyMenuShutdown( WindowLayout *layout, void *userData )
 		pLobbyInterface->DeregisterForRosterNeedsRefreshCallback();
 		pLobbyInterface->DeregisterForSearchForLobbiesCallback();
 	}
+	// GeneralsX @bugfix fbraz3 23/08/2026 Deregister RoomsInterface callbacks on lobby shutdown
+	NGMP_OnlineServices_RoomsInterface* pRoomsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_RoomsInterface>();
+	if (pRoomsInterface != nullptr)
+	{
+		pRoomsInterface->DeregisterForChatCallback();
+		pRoomsInterface->DeregisterForRosterNeedsRefreshCallback();
+	}
 
 	CustomMatchPreferences pref;
 //	GameWindow *slider = TheWindowManager->winGetWindowFromId(parent, sliderChatAdjustID);
@@ -1148,7 +1155,7 @@ void WOLLobbyMenuShutdown( WindowLayout *layout, void *userData )
 	isShuttingDown = true;
 
 	// if we are shutting down for an immediate pop, skip the animations
-	Bool popImmediate = *(Bool *)userData;
+	Bool popImmediate = userData ? *(Bool *)userData : TRUE;
 	if( popImmediate )
 	{
 
@@ -1373,6 +1380,10 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 				TheGameSpyInfo->getPlayerInfoMap()->insert(std::make_pair(info.m_name, info));
 			}
 			refreshPlayerList(TRUE);
+		}
+		else if (ev.type == NGMPEvent::EVENT_LOBBY_JOIN_FAILED || ev.type == NGMPEvent::EVENT_LOBBY_CREATE_FAILED) {
+			SetLobbyAttemptHostJoin(FALSE);
+			GSMessageBoxOk(TheGameText->fetch("GUI:Error"), TheGameText->fetch("GUI:JoinFailedDefault"), nullptr);
 		}
 		else if (ev.type == NGMPEvent::EVENT_LOBBY_JOINED || ev.type == NGMPEvent::EVENT_LOBBY_CREATED) {
 			SetLobbyAttemptHostJoin(FALSE);
@@ -2027,7 +2038,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					if (selected >= 0)
 					{
 						Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(GetGameListBox(), selected)));
-						if (selectedID > 0)
+						if (selectedID >= 0)
 						{
 #if defined(SAGE_USE_NGMP)
 							const auto& lobbies = NGMP_OnlineServicesManager::getInstance().getLobbies();
@@ -2045,9 +2056,25 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 								uName.translate(aName);
 								TheGameSpyGame->setGameName(uName);
 								
-								// No password support for now in NGMP UI
-								NGMP_OnlineServicesManager::getInstance().joinLobbyAsync(targetLobby->id, "");
-								SetLobbyAttemptHostJoin( TRUE );
+								if (targetLobby->hasPassword)
+								{
+									NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+									if (pLobbyInterface != nullptr)
+									{
+										LobbyEntry entry;
+										entry.lobbyID = targetLobby->id;
+										entry.name = targetLobby->name;
+										entry.map_name = targetLobby->mapName;
+										pLobbyInterface->SetLobbyTryingToJoin(entry);
+									}
+									SetLobbyAttemptHostJoin( TRUE );
+									GameSpyOpenOverlay(GSOVERLAY_GAMEPASSWORD);
+								}
+								else
+								{
+									NGMP_OnlineServicesManager::getInstance().joinLobbyAsync(targetLobby->id, "");
+									SetLobbyAttemptHostJoin( TRUE );
+								}
 							}
 #else
 							StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();
@@ -2139,9 +2166,14 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 #if defined(SAGE_USE_NGMP)
 						if (!handleLobbySlashCommands(txtInput))
 						{
-							AsciiString msg;
-							msg.translate(txtInput);
-							NGMP_OnlineServicesManager::getInstance().sendChatMessage("lobby", msg.str());
+							// GeneralsX @feature fbraz3 23/08/2026 Use RoomsInterface SendChatMessageToCurrentRoom with slowmode and local echo
+							if (!LobbyChatSlowmodeAllowsSend())
+								break;
+							NGMP_OnlineServices_RoomsInterface* pRoomsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_RoomsInterface>();
+							if (pRoomsInterface != nullptr)
+							{
+								pRoomsInterface->SendChatMessageToCurrentRoom(txtInput, false);
+							}
 						}
 #else
 						TheGameSpyInfo->sendChat( txtInput, FALSE, listboxLobbyPlayers ); // 'emote' button now just sends text
@@ -2394,7 +2426,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					if (!handleLobbySlashCommands(txtInput))
 					{
 #if defined(SAGE_USE_NGMP)
-						// GeneralsX @feature fbraz3 16/08/2026 Chat slowmode check before sending (G1 fix)
+						// GeneralsX @feature fbraz3 23/08/2026 Chat slowmode and local echo for room chat
 						if (!LobbyChatSlowmodeAllowsSend())
 							break;
 						NGMP_OnlineServices_RoomsInterface* pChatRoomsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_RoomsInterface>();

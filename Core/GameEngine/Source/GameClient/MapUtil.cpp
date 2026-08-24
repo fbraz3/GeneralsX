@@ -1119,11 +1119,53 @@ Bool isOfficialMap( AsciiString mapName )
 
 const MapMetaData *MapCache::findMap(AsciiString mapName)
 {
-	mapName.toLower();
-	MapCache::iterator it = find(mapName);
-	if (it == end())
+	if (mapName.isEmpty())
 		return nullptr;
-	return &(it->second);
+
+	AsciiString lower = mapName;
+	lower.toLower();
+	MapCache::iterator it = find(lower);
+	if (it != end())
+		return &(it->second);
+
+	// Try normalized slashes (both '/' and '\\')
+	std::string sSlash = lower.str();
+	for (char &c : sSlash) {
+		if (c == '\\') c = '/';
+	}
+	it = find(AsciiString(sSlash.c_str()));
+	if (it != end())
+		return &(it->second);
+
+	std::string sBackslash = lower.str();
+	for (char &c : sBackslash) {
+		if (c == '/') c = '\\';
+	}
+	it = find(AsciiString(sBackslash.c_str()));
+	if (it != end())
+		return &(it->second);
+
+	// Fallback 1: match by display name or filename ending with mapName
+	for (it = begin(); it != end(); ++it)
+	{
+		AsciiString asciiDisplay;
+		asciiDisplay.translate(it->second.m_displayName);
+		asciiDisplay.toLower();
+		if (asciiDisplay == lower)
+			return &(it->second);
+
+		AsciiString key = it->first;
+		key.toLower();
+		if (key.endsWith(lower) || lower.endsWith(key))
+			return &(it->second);
+
+		AsciiString fn = it->second.m_fileName;
+		fn.toLower();
+		if (!fn.isEmpty() && (fn.endsWith(lower) || lower.endsWith(fn)))
+			return &(it->second);
+	}
+
+	return nullptr;
 }
 
 // ------------------------------------------------------------------------------------------------

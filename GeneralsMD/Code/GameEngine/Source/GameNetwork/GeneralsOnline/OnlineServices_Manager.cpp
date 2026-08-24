@@ -6,6 +6,7 @@
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GeneralsOnline/NGMPWebSocket.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/StagingRoomGameInfo.h"
 #include "GameClient/MapUtil.h"
@@ -87,17 +88,8 @@ void NGMP_OnlineServicesManager::update() {
                         if (jsonMsg.contains("msg_id") && jsonMsg["msg_id"].is_number_integer()) {
                             int msgId = jsonMsg["msg_id"].get<int>();
                             
-                            if (msgId == 2) { // NETWORK_ROOM_CHAT_FROM_SERVER
-                                std::string msgText = "";
-                                if (jsonMsg.contains("message") && jsonMsg["message"].is_string()) {
-                                    msgText = jsonMsg["message"].get<std::string>();
-                                }
-                                NGMPEvent chatEv;
-                                chatEv.type = NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED;
-                                chatEv.payload = msgText;
-                                uiEvents.push_back(chatEv);
-                            } 
-                            else if (msgId == 4) { // NETWORK_ROOM_MEMBER_LIST_UPDATE
+                            // GeneralsX @refactor fbraz3 23/08/2026 Process WebSocket events into UI event queue for main-thread dispatch
+                            if (msgId == 4) { // NETWORK_ROOM_MEMBER_LIST_UPDATE
                                 if (jsonMsg.contains("members") && jsonMsg["members"].is_array()) {
                                     std::vector<NGMPLobbyPlayer> updatedPlayers;
                                     for (const auto& member : jsonMsg["members"]) {
@@ -142,6 +134,19 @@ void NGMP_OnlineServicesManager::update() {
                                     uiEvents.push_back(playersEv);
                                 }
                             }
+                            else if (msgId == 2) { // NETWORK_ROOM_CHAT_FROM_SERVER
+                                std::string msgText = "";
+                                if (jsonMsg.contains("message") && jsonMsg["message"].is_string()) {
+                                    msgText = jsonMsg["message"].get<std::string>();
+                                }
+                                fprintf(stderr, "[NGMP] Room Chat received: '%s'\n", msgText.c_str());
+                                fflush(stderr);
+
+                                NGMPEvent chatEv;
+                                chatEv.type = NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED;
+                                chatEv.payload = msgText;
+                                uiEvents.push_back(chatEv);
+                            }
                             else if (msgId == 6) { // LOBBY_CURRENT_LOBBY_UPDATE
                                 fprintf(stderr, "[NGMP] WS msg_id=6 (LOBBY_CURRENT_LOBBY_UPDATE), refreshing lobby %lld\n", (long long)m_currentLobbyId);
                                 fflush(stderr);
@@ -151,6 +156,9 @@ void NGMP_OnlineServicesManager::update() {
                             }
                             else if (msgId == 7) { // NETWORK_ROOM_LOBBY_LIST_UPDATE
                                 requestLobbyListAsync();
+                                if (m_currentLobbyId >= 0 && !m_isLobbyOwner) {
+                                    requestLobbyDetailsAsync(m_currentLobbyId);
+                                }
                             }
                             else if (msgId == 11) { // LOBBY_CHAT_FROM_SERVER
                                 std::string msgText = "";
@@ -159,10 +167,32 @@ void NGMP_OnlineServicesManager::update() {
                                 } else if (jsonMsg.contains("Message") && jsonMsg["Message"].is_string()) {
                                     msgText = jsonMsg["Message"].get<std::string>();
                                 }
+                                fprintf(stderr, "[NGMP] Lobby Chat received: '%s'\n", msgText.c_str());
+                                fflush(stderr);
+
                                 NGMPEvent chatEv;
                                 chatEv.type = NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED;
                                 chatEv.payload = msgText;
                                 uiEvents.push_back(chatEv);
+                            }
+                            else if (msgId == 18) { // NETWORK_CONNECTION_DISCONNECT_PLAYER
+                                int64_t disconnectedUserId = -1;
+                                if (jsonMsg.contains("user_id") && jsonMsg["user_id"].is_number()) {
+                                    disconnectedUserId = jsonMsg["user_id"].get<int64_t>();
+                                }
+                                fprintf(stderr, "[NGMP] WS msg_id=18 (NETWORK_CONNECTION_DISCONNECT_PLAYER): user %lld disconnected (host=%lld, me=%lld)\n",
+                                    (long long)disconnectedUserId, (long long)m_hostUserId, (long long)m_userId);
+                                fflush(stderr);
+
+                                if (disconnectedUserId == m_hostUserId || (!m_isLobbyOwner && disconnectedUserId > 0 && disconnectedUserId != m_userId)) {
+                                    fprintf(stderr, "[NGMP] Host %lld disconnected, leaving staging room\n", (long long)disconnectedUserId);
+                                    fflush(stderr);
+                                    m_currentLobbyId = -1;
+                                    m_hostUserId = -1;
+                                    NGMPEvent leftEv;
+                                    leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
+                                    uiEvents.push_back(leftEv);
+                                }
                             }
                         }
                     } catch (const std::exception& e) {
@@ -300,7 +330,26 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
                 // Swap into member under the event mutex for safe handoff
                 {
                     std::lock_guard<std::mutex> lock(m_eventMutex);
-                    m_lobbies = std::move(lobbies);
+                    m_lobbies = lobbies;
+                }
+
+                // If guest is in a lobby, verify that the lobby still exists in the active lobbies list
+                if (m_currentLobbyId >= 0 && !m_isLobbyOwner) {
+                    bool currentLobbyExists = false;
+                    for (const auto& l : lobbies) {
+                        if (l.id == m_currentLobbyId) {
+                            currentLobbyExists = true;
+                            break;
+                        }
+                    }
+                    if (!currentLobbyExists) {
+                        fprintf(stderr, "[NGMP] Current lobby %lld was closed/deleted by host. Leaving lobby.\n", (long long)m_currentLobbyId);
+                        fflush(stderr);
+                        m_currentLobbyId = -1;
+                        NGMPEvent leftEv;
+                        leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
+                        postEvent(leftEv);
+                    }
                 }
 
                 NGMPEvent ev;
@@ -387,6 +436,7 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
             } catch (...) {}
 
             m_currentLobbyId = createdLobbyId;
+            m_hostUserId = m_userId;
             m_isLobbyOwner = true;
 
             if (createdLobbyId >= 0) {
@@ -399,12 +449,16 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
         } else {
             fprintf(stderr, "[NGMP] Create lobby failed (curl=%d, http=%ld, resp=%s)\n", res, httpCode, response.text.c_str());
             fflush(stderr);
+            NGMPEvent ev;
+            ev.type = NGMPEvent::EVENT_LOBBY_CREATE_FAILED;
+            postEvent(ev);
         }
     }).detach();
 }
 
 void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::string& password) {
     m_currentLobbyId = lobbyId;
+    m_hostUserId = -1;
     m_isLobbyOwner = false;
 
     std::thread([this, lobbyId, password]() {
@@ -417,9 +471,11 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
         json payload = {
             {"preferred_port", 0},
             {"anticheat_id", 0},
-            {"has_map", true},
-            {"password", password}
+            {"has_map", true}
         };
+        if (!password.empty()) {
+            payload["password"] = password;
+        }
         std::string payloadStr = payload.dump();
 
         struct curl_slist* headers = nullptr;
@@ -451,6 +507,9 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
         } else {
             fprintf(stderr, "[NGMP] Join lobby failed (curl=%d, http=%ld, resp=%s)\n", res, httpCode, response.text.c_str());
             fflush(stderr);
+            NGMPEvent ev;
+            ev.type = NGMPEvent::EVENT_LOBBY_JOIN_FAILED;
+            postEvent(ev);
         }
     }).detach();
 }
@@ -496,8 +555,23 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                 bool limitSuperweapons = lobbyIter.value("IsLimitSuperweapons", lobbyIter.value("is_limit_superweapons", false));
                 bool allowObservers = lobbyIter.value("AllowObservers", lobbyIter.value("allow_observers", true));
 
+                // If host changed / migrated while guest was in staging room, trigger lobby left
+                if (m_hostUserId > 0 && ownerId != m_hostUserId && !m_isLobbyOwner) {
+                    fprintf(stderr, "[NGMP] Host %lld left (owner became %lld), leaving lobby\n", (long long)m_hostUserId, (long long)ownerId);
+                    fflush(stderr);
+                    m_currentLobbyId = -1;
+                    m_hostUserId = -1;
+                    NGMPEvent leftEv;
+                    leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
+                    postEvent(leftEv);
+                    return;
+                }
+
                 m_currentLobbyId = targetId;
                 m_isLobbyOwner = (ownerId == m_userId);
+                if (m_hostUserId <= 0) {
+                    m_hostUserId = ownerId;
+                }
 
                 int localSlotIndex = -1;
                 std::vector<NGMPLobbyPlayer> updatedLobbyPlayers;
@@ -966,7 +1040,6 @@ bool NGMP_OnlineServicesManager::sendChatMessage(const std::string& room, const 
         return false;
     }
     if (m_chatSession && m_chatSession->isConnected()) {
-        // Build the chat message payload for NETWORK_ROOM_CHAT_FROM_CLIENT (msg_id: 1)
         nlohmann::json payload = {
             {"msg_id", 1},
             {"action", false},

@@ -24,6 +24,7 @@ public:
 	void setFavoriteSide(Int val) { m_favoriteSide = val; }
 
 	void setPingString(UnicodeString pingStr) { m_pingStr = pingStr; }
+	void setPingString(AsciiString pingStr) { m_pingStr.translate(pingStr); }
 	inline UnicodeString getPingString(void) const { return m_pingStr; }
 	inline Int getPingAsInt(void) const { return m_pingInt; }
 

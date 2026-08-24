@@ -7,4 +7,4 @@
 	url = https://github.com/GeneralsOnlineDevelopmentTeam/GameClient.git
 [submodule "references/GameServer"]
 	path = references/GameServer
-	url = https://github.com/GeneralsOnlineDevelopmentTeam/Services.git
+	url = https://github.com/fbraz3/GeneralsOnlineGameServer.git

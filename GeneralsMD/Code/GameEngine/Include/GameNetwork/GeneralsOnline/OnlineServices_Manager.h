@@ -48,7 +48,9 @@ struct NGMPEvent {
         EVENT_WEBSOCKET_MESSAGE,
         EVENT_PLAYLISTS_UPDATED,
         EVENT_LOBBY_JOINED,
+        EVENT_LOBBY_JOIN_FAILED,
         EVENT_LOBBY_CREATED,
+        EVENT_LOBBY_CREATE_FAILED,
         EVENT_LOBBY_LEFT,
         EVENT_PLAYERS_UPDATED
     };
@@ -232,6 +234,7 @@ private:
 
     // Staging room state
     int64_t m_currentLobbyId = -1;
+    int64_t m_hostUserId = -1;
     bool m_isLobbyOwner = false;
 
     // Browser-based login state
