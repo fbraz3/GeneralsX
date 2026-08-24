@@ -911,6 +911,9 @@ Try improving the fit to vertical surfaces like cliffs.
 		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLORARG1, D3DTA_TEXTURE );	//stage 1 texture
 		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLORARG2, D3DTA_CURRENT );	//previous stage texture
 		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+		// GeneralsX @bugfix Copilot 24/08/2026 Keep shoreline alpha independent of stale texture-stage state.
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAARG2, D3DTA_CURRENT );
 		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
 
 		//Shroud shader uses z-compare of EQUAL which wouldn't work on water because it doesn't
@@ -940,6 +943,9 @@ Try improving the fit to vertical surfaces like cliffs.
 	{	//we used the shroud shader, so reset it.
 		DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_EQUAL);
 		W3DShaderManager::resetShader(W3DShaderManager::ST_SHROUD_TEXTURE);
+		// GeneralsX @bugfix Copilot 26/08/2026 Restore the single-pass shader's stage-1 defaults.
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLOROP, D3DTOP_DISABLE );
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAOP, D3DTOP_DISABLE );
 	}
 }
 
