@@ -782,8 +782,12 @@ void WW3D::Set_Anisotropy_Level(int level)
 	level = clamp((int)TextureFilterClass::TEXTURE_FILTER_ANISOTROPIC_2X, level, (int)TextureFilterClass::TEXTURE_FILTER_ANISOTROPIC_16X);
 	level = highestBit(level);
 
-	AnisotropyLevel = level;
-	TextureFilterClass::_Set_Max_Anisotropy((TextureFilterClass::AnisotropicFilterMode)AnisotropyLevel);
+	// GeneralsX @bugfix Copilot 24/08/2026 Track the safe effective anisotropy without changing the saved request.
+	AnisotropyLevel = TextureFilterClass::_Set_Max_Anisotropy(level);
+	if (AnisotropyLevel != level)
+		WWDEBUG_SAY(("Requested anisotropy level %u is unsupported; using %u",
+			(unsigned)level,
+			(unsigned)AnisotropyLevel));
 }
 
 /***********************************************************************************************

@@ -313,7 +313,8 @@ WW3DFormat Get_Valid_Texture_Format(WW3DFormat format, bool is_compression_allow
 		!current_caps->Support_DXTC() ||
 		!is_compression_allowed) {
 		switch (format) {
-		case WW3D_FORMAT_DXT1: format=WW3D_FORMAT_R8G8B8; break;
+		// GeneralsX @bugfix Copilot 24/08/2026 Preserve DXT1 one-bit alpha when compressed textures require an uncompressed fallback.
+		case WW3D_FORMAT_DXT1: format=WW3D_FORMAT_A8R8G8B8; break;
 		case WW3D_FORMAT_DXT2:
 		case WW3D_FORMAT_DXT3:
 		case WW3D_FORMAT_DXT4:
