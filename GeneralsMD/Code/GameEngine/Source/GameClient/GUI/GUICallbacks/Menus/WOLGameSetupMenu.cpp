@@ -1240,7 +1240,14 @@ void InitWOLGameGadgets()
 	// GeneralsX @bugfix fbraz3 17/08/2026 Clear any pending modal message box upon entering match setup
 	ClearGSMessageBoxes();
 
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	GameInfo *theGameInfo = TheNGMPGame ? (GameInfo*)TheNGMPGame : (pLobbyInterface ? (GameInfo*)pLobbyInterface->GetCurrentGame() : nullptr);
+	bool bIsHost = TheNGMPGame ? TheNGMPGame->amIHost() : (pLobbyInterface ? pLobbyInterface->IsHost() : false);
+#else
 	GameSpyStagingRoom *theGameInfo = TheGameSpyInfo->getCurrentStagingRoom();
+	bool bIsHost = TheGameSpyInfo ? TheGameSpyInfo->amIHost() : false;
+#endif
 	pingImages[0] = TheMappedImageCollection->findImageByName("Ping03");
 	pingImages[1] = TheMappedImageCollection->findImageByName("Ping02");
 	pingImages[2] = TheMappedImageCollection->findImageByName("Ping01");
@@ -1288,7 +1295,9 @@ void InitWOLGameGadgets()
   DEBUG_ASSERTCRASH(windowMap, ("Could not find the GameSpyGameOptionsMenu.wnd:CheckBoxLimitArmies" ));
 
   // Limit Armies can ONLY be set in the Host Game window (PopupHostGame.wnd)
-  checkBoxLimitArmies->winEnable( false );
+  // It is NOT a real setting in GameSpyGameOptionsMenu.wnd
+  if (checkBoxLimitArmies)
+	checkBoxLimitArmies->winEnable(FALSE);
   // Ditto use stats
   checkBoxUseStats->winEnable( false );
   Int isUsingStats = TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom() ? TheGameSpyInfo->getCurrentStagingRoom()->getUseStats() : 0;
@@ -1296,8 +1305,6 @@ void InitWOLGameGadgets()
   checkBoxUseStats->winSetTooltip( TheGameText->fetch( isUsingStats ? "TOOLTIP:UseStatsOn" : "TOOLTIP:UseStatsOff" ) );
 
 #if defined(SAGE_USE_NGMP)
-  NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-  bool bIsHost = (pLobbyInterface != nullptr && pLobbyInterface->IsHost());
   if (!bIsHost)
 #else
   if ( !TheGameSpyGame->amIHost() )
@@ -1356,7 +1363,7 @@ void InitWOLGameGadgets()
 		staticTextPlayerID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		staticTextPlayer[i] = TheWindowManager->winGetWindowFromId( parentWOLGameSetup, staticTextPlayerID[i] );
 		staticTextPlayer[i]->winSetTooltipFunc(playerTooltip);
-		if (TheGameSpyInfo->amIHost())
+		if (bIsHost)
 			staticTextPlayer[i]->winHide(TRUE);
 
 		if(theGameInfo->getLocalSlotNum() != i)
@@ -1367,6 +1374,15 @@ void InitWOLGameGadgets()
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:MediumAI"),GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:HardAI"),GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
 			GadgetComboBoxSetSelectedPos(comboBoxPlayer[i],0);
+		}
+		else
+		{
+			GameSlot* slot = theGameInfo->getSlot(i);
+			if (slot)
+			{
+				GadgetComboBoxAddEntry(comboBoxPlayer[i], slot->getName(), GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+				GadgetComboBoxSetSelectedPos(comboBoxPlayer[i], 0);
+			}
 		}
 
 		tmpString.format("GameSpyGameOptionsMenu.wnd:ComboBoxColor%d", i);
@@ -1380,7 +1396,8 @@ void InitWOLGameGadgets()
 		comboBoxPlayerTemplateID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		comboBoxPlayerTemplate[i] = TheWindowManager->winGetWindowFromId( parentWOLGameSetup, comboBoxPlayerTemplateID[i] );
 		DEBUG_ASSERTCRASH(comboBoxPlayerTemplate[i], ("Could not find the comboBoxPlayerTemplate[%d]",i ));
-		PopulatePlayerTemplateComboBox(i, comboBoxPlayerTemplate, theGameInfo, theGameInfo->getAllowObservers() );
+		Bool allowObs = TheNGMPGame ? TheNGMPGame->getAllowObservers() : (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom() ? TheGameSpyInfo->getCurrentStagingRoom()->getAllowObservers() : TRUE);
+		PopulatePlayerTemplateComboBox(i, comboBoxPlayerTemplate, theGameInfo, allowObs );
 
 		// add tooltips to the player template combobox and listbox
 		comboBoxPlayerTemplate[i]->winSetTooltipFunc(playerTemplateComboBoxTooltip);
@@ -1864,6 +1881,32 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 				if (comboBoxStartingCash) comboBoxStartingCash->winEnable(TRUE);
 				if (checkBoxLimitSuperweapons) checkBoxLimitSuperweapons->winEnable(TRUE);
 				initialAcceptEnable = TRUE;
+
+				// GeneralsX @bugfix fbraz3 25/08/2026 Hide static text overlay and re-populate comboBoxPlayer for the new host
+				for (Int i = 0; i < MAX_SLOTS; ++i) {
+					if (staticTextPlayer[i])
+						staticTextPlayer[i]->winHide(TRUE);
+
+					if (comboBoxPlayer[i]) {
+						GadgetComboBoxReset(comboBoxPlayer[i]);
+						if (TheNGMPGame && TheNGMPGame->getLocalSlotNum() != i) {
+							GadgetComboBoxAddEntry(comboBoxPlayer[i], TheGameText->fetch("GUI:Open"), GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+							GadgetComboBoxAddEntry(comboBoxPlayer[i], TheGameText->fetch("GUI:Closed"), GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+							GadgetComboBoxAddEntry(comboBoxPlayer[i], TheGameText->fetch("GUI:EasyAI"), GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+							GadgetComboBoxAddEntry(comboBoxPlayer[i], TheGameText->fetch("GUI:MediumAI"), GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+							GadgetComboBoxAddEntry(comboBoxPlayer[i], TheGameText->fetch("GUI:HardAI"), GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+							GadgetComboBoxSetSelectedPos(comboBoxPlayer[i], 0);
+							comboBoxPlayer[i]->winEnable(TRUE);
+						} else if (TheNGMPGame) {
+							NGMPGameSlot* slot = TheNGMPGame->getGameSpySlot(i);
+							if (slot) {
+								GadgetComboBoxAddEntry(comboBoxPlayer[i], slot->getName(), GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+								GadgetComboBoxSetSelectedPos(comboBoxPlayer[i], 0);
+							}
+							comboBoxPlayer[i]->winEnable(FALSE);
+						}
+					}
+				}
 
 				GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"The previous host has left the lobby. You are now the host."), GameMakeColor(255, 255, 255, 255), -1, -1);
 			} else {

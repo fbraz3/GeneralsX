@@ -465,13 +465,12 @@ void UpdateSlotList( GameInfo *myGame, GameWindow *comboPlayer[],
 				// GeneralsX @refactor fbraz3 25/08/2026 Support host migration and AI slot names
 				GadgetComboBoxSetText(comboPlayer[i], slot->getName());
 			}
-/*
-			if (myGame->getLocalSlotNum() == i && i!=0)
+			if (myGame->getLocalSlotNum() == i)
 			{
 				if (comboPlayer[i])
-					comboPlayer[i]->winEnable( TRUE );
+					comboPlayer[i]->winEnable( FALSE );
 			}
-			else*/ if (!myGame->amIHost())
+			else if (!myGame->amIHost())
 			{
 				if (comboPlayer[i])
 					comboPlayer[i]->winEnable( FALSE );
