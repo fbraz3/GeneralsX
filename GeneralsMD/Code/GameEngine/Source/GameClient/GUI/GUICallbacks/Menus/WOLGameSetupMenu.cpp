@@ -1828,6 +1828,29 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 			WOLDisplaySlotList();
 			WOLDisplayGameOptions();
 		}
+		else if (ev.type == NGMPEvent::EVENT_HOST_MIGRATED) {
+			bool bIsHost = (ev.payload == "1");
+			if (bIsHost) {
+				if (buttonStart) {
+					buttonStart->winSetText(TheGameText->fetch("GUI:Start"));
+					buttonStart->winEnable(TRUE);
+				}
+				if (buttonSelectMap) buttonSelectMap->winEnable(TRUE);
+				if (comboBoxStartingCash) comboBoxStartingCash->winEnable(TRUE);
+				if (checkBoxLimitSuperweapons) checkBoxLimitSuperweapons->winEnable(TRUE);
+				initialAcceptEnable = TRUE;
+
+				GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"The previous host has left the lobby. You are now the host."), GameMakeColor(255, 255, 255, 255), -1, -1);
+			} else {
+				GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"The previous host has left the lobby. A new host has been selected."), GameMakeColor(255, 255, 255, 255), -1, -1);
+			}
+			if (buttonBack) buttonBack->winEnable(TRUE);
+			if (TheNGMPGame) {
+				TheNGMPGame->UpdateSlotsFromCurrentLobby();
+			}
+			WOLDisplaySlotList();
+			WOLDisplayGameOptions();
+		}
 		else if (ev.type == NGMPEvent::EVENT_LOBBY_LEFT) {
 			buttonPushed = true;
 			PopBackToLobby();

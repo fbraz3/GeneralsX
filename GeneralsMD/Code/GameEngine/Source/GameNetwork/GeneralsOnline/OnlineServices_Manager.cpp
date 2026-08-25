@@ -184,18 +184,8 @@ void NGMP_OnlineServicesManager::update() {
                                     (long long)disconnectedUserId, (long long)m_hostUserId, (long long)m_userId);
                                 fflush(stderr);
 
-                                if (disconnectedUserId == m_hostUserId || (!m_isLobbyOwner && disconnectedUserId > 0 && disconnectedUserId != m_userId)) {
-                                    fprintf(stderr, "[NGMP] Host %lld disconnected, leaving staging room\n", (long long)disconnectedUserId);
-                                    fflush(stderr);
-                                    int64_t leavingLobbyId = m_currentLobbyId;
-                                    m_currentLobbyId = -1;
-                                    m_hostUserId = -1;
-                                    if (leavingLobbyId >= 0) {
-                                        updateLobbyLeave(leavingLobbyId);
-                                    }
-                                    NGMPEvent leftEv;
-                                    leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
-                                    uiEvents.push_back(leftEv);
+                                if (m_currentLobbyId >= 0) {
+                                    requestLobbyDetailsAsync(m_currentLobbyId);
                                 }
                             }
                         }
@@ -564,27 +554,10 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                 bool limitSuperweapons = lobbyIter.value("IsLimitSuperweapons", lobbyIter.value("is_limit_superweapons", false));
                 bool allowObservers = lobbyIter.value("AllowObservers", lobbyIter.value("allow_observers", true));
 
-                // If host changed / migrated while guest was in staging room, trigger lobby left
-                if (m_hostUserId > 0 && ownerId != m_hostUserId && !m_isLobbyOwner) {
-                    fprintf(stderr, "[NGMP] Host %lld left (owner became %lld), leaving lobby\n", (long long)m_hostUserId, (long long)ownerId);
-                    fflush(stderr);
-                    int64_t leavingLobbyId = m_currentLobbyId;
-                    m_currentLobbyId = -1;
-                    m_hostUserId = -1;
-                    if (leavingLobbyId >= 0) {
-                        updateLobbyLeave(leavingLobbyId);
-                    }
-                    NGMPEvent leftEv;
-                    leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
-                    postEvent(leftEv);
-                    return;
-                }
-
+                bool bHostMigrated = (m_hostUserId > 0 && ownerId != m_hostUserId);
+                m_hostUserId = ownerId;
                 m_currentLobbyId = targetId;
                 m_isLobbyOwner = (ownerId == m_userId);
-                if (m_hostUserId <= 0) {
-                    m_hostUserId = ownerId;
-                }
 
                 int localSlotIndex = -1;
                 std::vector<NGMPLobbyPlayer> updatedLobbyPlayers;
@@ -679,6 +652,15 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                 fprintf(stderr, "[NGMP] Synchronized staging room with Lobby %lld (map=%s, cash=%d, superweapons=%d, isOwner=%d, localSlot=%d)\n",
                     (long long)targetId, mapName.c_str(), startingCash, limitSuperweapons, m_isLobbyOwner ? 1 : 0, localSlotIndex);
                 fflush(stderr);
+
+                if (bHostMigrated) {
+                    fprintf(stderr, "[NGMP] Host migrated! New owner is %lld (amIHost=%d)\n", (long long)ownerId, m_isLobbyOwner ? 1 : 0);
+                    fflush(stderr);
+                    NGMPEvent migrateEv;
+                    migrateEv.type = NGMPEvent::EVENT_HOST_MIGRATED;
+                    migrateEv.payload = m_isLobbyOwner ? "1" : "0";
+                    postEvent(migrateEv);
+                }
 
                 NGMPEvent ev;
                 ev.type = NGMPEvent::EVENT_PLAYERS_UPDATED;

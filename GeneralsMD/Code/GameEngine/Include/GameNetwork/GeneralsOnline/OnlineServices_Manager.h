@@ -52,6 +52,7 @@ struct NGMPEvent {
         EVENT_LOBBY_CREATED,
         EVENT_LOBBY_CREATE_FAILED,
         EVENT_LOBBY_LEFT,
+        EVENT_HOST_MIGRATED,
         EVENT_PLAYERS_UPDATED
     };
 
