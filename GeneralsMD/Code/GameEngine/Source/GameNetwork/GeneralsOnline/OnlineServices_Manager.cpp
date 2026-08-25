@@ -327,30 +327,6 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
                     m_lobbies = lobbies;
                 }
 
-                // If guest is in a lobby, verify that the lobby still exists in the active lobbies list
-                if (m_currentLobbyId >= 0 && !m_isLobbyOwner) {
-                    bool currentLobbyExists = false;
-                    for (const auto& l : lobbies) {
-                        if (l.id == m_currentLobbyId) {
-                            currentLobbyExists = true;
-                            break;
-                        }
-                    }
-                    if (!currentLobbyExists) {
-                        fprintf(stderr, "[NGMP] Current lobby %lld was closed/deleted by host. Leaving lobby.\n", (long long)m_currentLobbyId);
-                        fflush(stderr);
-                        int64_t leavingLobbyId = m_currentLobbyId;
-                        m_currentLobbyId = -1;
-                        m_hostUserId = -1;
-                        if (leavingLobbyId >= 0) {
-                            updateLobbyLeave(leavingLobbyId);
-                        }
-                        NGMPEvent leftEv;
-                        leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
-                        postEvent(leftEv);
-                    }
-                }
-
                 NGMPEvent ev;
                 ev.type = NGMPEvent::EVENT_LOBBY_LIST_UPDATED;
                 postEvent(ev);

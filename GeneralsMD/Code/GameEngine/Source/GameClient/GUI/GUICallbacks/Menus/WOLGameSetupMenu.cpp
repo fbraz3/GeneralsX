@@ -1825,6 +1825,17 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 				}
 				TheNGMPGame->UpdateSlotsFromCurrentLobby();
 			}
+			NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+			if (pLobbyInterface && pLobbyInterface->IsHost()) {
+				if (buttonStart) {
+					buttonStart->winSetText(TheGameText->fetch("GUI:Start"));
+					buttonStart->winEnable(TRUE);
+				}
+				if (buttonSelectMap) buttonSelectMap->winEnable(TRUE);
+				if (comboBoxStartingCash) comboBoxStartingCash->winEnable(TRUE);
+				if (checkBoxLimitSuperweapons) checkBoxLimitSuperweapons->winEnable(TRUE);
+				initialAcceptEnable = TRUE;
+			}
 			WOLDisplaySlotList();
 			WOLDisplayGameOptions();
 		}
