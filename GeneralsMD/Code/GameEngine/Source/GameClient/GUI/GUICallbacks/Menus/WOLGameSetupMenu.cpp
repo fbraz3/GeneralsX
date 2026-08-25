@@ -554,7 +554,12 @@ static void handleColorSelection(int index)
 	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	color = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	GameInfo *myGame = TheNGMPGame ? (GameInfo*)TheNGMPGame : (pLobbyInterface ? (GameInfo*)pLobbyInterface->GetCurrentGame() : (GameInfo*)TheGameSpyInfo->getCurrentStagingRoom());
+#else
 	GameInfo *myGame = TheGameSpyInfo->getCurrentStagingRoom();
+#endif
 
 	if (myGame)
 	{
@@ -584,24 +589,23 @@ static void handleColorSelection(int index)
 		slot->setColor(color);
 
 #if defined(SAGE_USE_NGMP)
-		NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 		if (pLobbyInterface != nullptr)
 		{
-			if (slot->isPlayer(TheGameSpyInfo->getLocalName()))
+			if (index == myGame->getLocalSlotNum() || (slot->isHuman() && !myGame->amIHost()))
 			{
 				pLobbyInterface->UpdateCurrentLobby_MyColor(color);
 			}
-			else if (slot->isAI())
+			else if (slot->isAI() || (myGame->amIHost() && slot->isAI()))
 			{
 				pLobbyInterface->UpdateCurrentLobby_AIColor(index, color);
 			}
 		}
 #endif
 
-		if (TheGameSpyInfo->amIHost())
+		if (myGame->amIHost())
 		{
 			// send around a new slotlist
-			TheGameSpyInfo->setGameOptions();
+			if (TheGameSpyInfo) TheGameSpyInfo->setGameOptions();
 			WOLDisplaySlotList();
 		}
 		else
@@ -632,7 +636,13 @@ static void handlePlayerTemplateSelection(int index)
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
 	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	playerTemplate = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	GameInfo *myGame = TheNGMPGame ? (GameInfo*)TheNGMPGame : (pLobbyInterface ? (GameInfo*)pLobbyInterface->GetCurrentGame() : (GameInfo*)TheGameSpyInfo->getCurrentStagingRoom());
+#else
 	GameInfo *myGame = TheGameSpyInfo->getCurrentStagingRoom();
+#endif
 
 	if (myGame)
 	{
@@ -659,25 +669,24 @@ static void handlePlayerTemplateSelection(int index)
 		}
 
 #if defined(SAGE_USE_NGMP)
-		NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 		if (pLobbyInterface != nullptr)
 		{
-			if (slot->isPlayer(TheGameSpyInfo->getLocalName()))
+			if (index == myGame->getLocalSlotNum() || (slot->isHuman() && !myGame->amIHost()))
 			{
 				pLobbyInterface->UpdateCurrentLobby_MySide(playerTemplate, slot->getStartPos());
 			}
-			else if (slot->isAI())
+			else if (slot->isAI() || (myGame->amIHost() && slot->isAI()))
 			{
 				pLobbyInterface->UpdateCurrentLobby_AISide(index, playerTemplate, slot->getStartPos());
 			}
 		}
 #endif
 
-		if (TheGameSpyInfo->amIHost())
+		if (myGame->amIHost())
 		{
 			// send around a new slotlist
 			myGame->resetAccepted();
-			TheGameSpyInfo->setGameOptions();
+			if (TheGameSpyInfo) TheGameSpyInfo->setGameOptions();
 			WOLDisplaySlotList();
 		}
 		else
@@ -789,7 +798,13 @@ static void handleTeamSelection(int index)
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
 	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	team = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	GameInfo *myGame = TheNGMPGame ? (GameInfo*)TheNGMPGame : (pLobbyInterface ? (GameInfo*)pLobbyInterface->GetCurrentGame() : (GameInfo*)TheGameSpyInfo->getCurrentStagingRoom());
+#else
 	GameInfo *myGame = TheGameSpyInfo->getCurrentStagingRoom();
+#endif
 
 	if (myGame)
 	{
@@ -800,25 +815,24 @@ static void handleTeamSelection(int index)
 		slot->setTeamNumber(team);
 
 #if defined(SAGE_USE_NGMP)
-		NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 		if (pLobbyInterface != nullptr)
 		{
-			if (slot->isPlayer(TheGameSpyInfo->getLocalName()))
+			if (index == myGame->getLocalSlotNum() || (slot->isHuman() && !myGame->amIHost()))
 			{
 				pLobbyInterface->UpdateCurrentLobby_MyTeam(team);
 			}
-			else if (slot->isAI())
+			else if (slot->isAI() || (myGame->amIHost() && slot->isAI()))
 			{
 				pLobbyInterface->UpdateCurrentLobby_AITeam(index, team);
 			}
 		}
 #endif
 
-		if (TheGameSpyInfo->amIHost())
+		if (myGame->amIHost())
 		{
 			// send around a new slotlist
 			myGame->resetAccepted();
-			TheGameSpyInfo->setGameOptions();
+			if (TheGameSpyInfo) TheGameSpyInfo->setGameOptions();
 			WOLDisplaySlotList();
 		}
 		else
@@ -2946,7 +2960,14 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
         }
         else
         {
+#if defined(SAGE_USE_NGMP)
+				  NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+				  GameInfo *myGame = TheNGMPGame ? (GameInfo*)TheNGMPGame : (pLobbyInterface ? (GameInfo*)pLobbyInterface->GetCurrentGame() : (GameInfo*)TheGameSpyInfo->getCurrentStagingRoom());
+				  Bool isHost = myGame ? myGame->amIHost() : false;
+#else
 				  GameSpyStagingRoom *myGame = TheGameSpyInfo->getCurrentStagingRoom();
+				  Bool isHost = TheGameSpyInfo ? TheGameSpyInfo->amIHost() : false;
+#endif
 				  for (Int i = 0; i < MAX_SLOTS; i++)
 				  {
 					  if (controlID == comboBoxColorID[i])
@@ -2961,8 +2982,10 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 					  {
 						  handleTeamSelection(i);
 					  }
-					  else if( controlID == comboBoxPlayerID[i] && TheGameSpyInfo->amIHost() )
+					  else if( controlID == comboBoxPlayerID[i] && isHost )
 					  {
+						  if (!myGame)
+							  break;
 						  // We don't have anything that'll happen if we click on ourselves
 						  if(i == myGame->getLocalSlotNum())
 						   break;
@@ -2986,9 +3009,8 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 								  UnicodeString name = myGame->getSlot(i)->getName();
 								  myGame->getSlot(i)->setState(SlotState(pos));
 								  myGame->resetAccepted();
-								  TheGameSpyInfo->setGameOptions();
+								  if (TheGameSpyInfo) TheGameSpyInfo->setGameOptions();
 #if defined(SAGE_USE_NGMP)
-								  NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 								  if (pLobbyInterface != nullptr)
 								  {
 									  pLobbyInterface->UpdateCurrentLobby_KickUser(0, name);
@@ -3005,10 +3027,12 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 								  Bool isAI = (myGame->getSlot(i)->isAI());
 								  myGame->resetAccepted();
 								  if (wasAI ^ isAI)
-									  PopulatePlayerTemplateComboBox(i, comboBoxPlayerTemplate, myGame, wasAI && myGame->getAllowObservers());
-								  TheGameSpyInfo->setGameOptions();
+								  {
+									  Bool allowObs = TheNGMPGame ? TheNGMPGame->getAllowObservers() : (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom() ? TheGameSpyInfo->getCurrentStagingRoom()->getAllowObservers() : TRUE);
+									  PopulatePlayerTemplateComboBox(i, comboBoxPlayerTemplate, myGame, wasAI && allowObs);
+								  }
+								  if (TheGameSpyInfo) TheGameSpyInfo->setGameOptions();
 #if defined(SAGE_USE_NGMP)
-								  NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 								  if (pLobbyInterface != nullptr)
 								  {
 									  pLobbyInterface->UpdateCurrentLobby_SetSlotState(i, pos);

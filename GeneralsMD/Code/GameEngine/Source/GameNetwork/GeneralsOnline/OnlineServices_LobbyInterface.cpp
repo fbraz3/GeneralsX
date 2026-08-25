@@ -67,12 +67,12 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_MyTeam(int team)
 
 void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_AIColor(int slot, int color)
 {
-	// Slot update for AI
 	if (TheNGMPGame)
 	{
 		NGMPGameSlot* pSlot = TheNGMPGame->getGameSpySlot(slot);
 		if (pSlot) pSlot->setColor(color);
 	}
+	NGMP_OnlineServicesManager::getInstance().updateLobbyAIColor(slot, color);
 }
 
 void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_AISide(int slot, int side, int updatedStartPos)
@@ -86,6 +86,7 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_AISide(int slot, int
 			if (updatedStartPos >= 0) pSlot->setStartPos(updatedStartPos);
 		}
 	}
+	NGMP_OnlineServicesManager::getInstance().updateLobbyAISide(slot, side, updatedStartPos);
 }
 
 void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_AITeam(int slot, int team)
@@ -95,6 +96,7 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_AITeam(int slot, int
 		NGMPGameSlot* pSlot = TheNGMPGame->getGameSpySlot(slot);
 		if (pSlot) pSlot->setTeamNumber(team);
 	}
+	NGMP_OnlineServicesManager::getInstance().updateLobbyAITeam(slot, team);
 }
 
 void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_AIStartPos(int slot, int startpos)
@@ -104,6 +106,7 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_AIStartPos(int slot,
 		NGMPGameSlot* pSlot = TheNGMPGame->getGameSpySlot(slot);
 		if (pSlot) pSlot->setStartPos(startpos);
 	}
+	NGMP_OnlineServicesManager::getInstance().updateLobbyAIStartPos(slot, startpos);
 }
 
 void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_KickUser(int64_t userID, UnicodeString name)
@@ -226,6 +229,11 @@ bool NGMP_OnlineServices_LobbyInterface::IsHost()
 
 LobbyMemberEntry NGMP_OnlineServices_LobbyInterface::GetRoomMemberFromIndex(int index)
 {
+	for (const auto& member : m_CurrentLobby.members)
+	{
+		if (member.m_SlotIndex == index)
+			return member;
+	}
 	if (index >= 0 && index < (int)m_CurrentLobby.members.size())
 	{
 		return m_CurrentLobby.members[index];

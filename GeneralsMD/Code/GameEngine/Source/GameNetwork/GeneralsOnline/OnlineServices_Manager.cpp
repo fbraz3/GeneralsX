@@ -774,6 +774,43 @@ void NGMP_OnlineServicesManager::updateLobbySlotState(int slotIndex, int slotSta
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
 
+void NGMP_OnlineServicesManager::updateLobbyAISide(int slot, int side, int startPos) {
+    json payload = {
+        {"field", 13}, // AI_SIDE
+        {"slot", slot},
+        {"side", side},
+        {"start_pos", startPos}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyAIColor(int slot, int color) {
+    json payload = {
+        {"field", 14}, // AI_COLOR
+        {"slot", slot},
+        {"color", color}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyAITeam(int slot, int team) {
+    json payload = {
+        {"field", 15}, // AI_TEAM
+        {"slot", slot},
+        {"team", team}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
+void NGMP_OnlineServicesManager::updateLobbyAIStartPos(int slot, int startPos) {
+    json payload = {
+        {"field", 16}, // AI_START_POS
+        {"slot", slot},
+        {"startpos", startPos}
+    };
+    sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
+}
+
 void NGMP_OnlineServicesManager::updateLobbyHasMap(bool hasMap) {
     json payload = {
         {"field", 8}, // LOCAL_PLAYER_HAS_MAP

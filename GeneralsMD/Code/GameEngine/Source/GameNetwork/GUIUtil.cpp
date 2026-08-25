@@ -460,6 +460,9 @@ void UpdateSlotList( GameInfo *myGame, GameWindow *comboPlayer[],
 				GadgetComboBoxSetSelectedPos(comboPlayer[i], slot->getState(), TRUE);
         if( buttonAccept &&  buttonAccept[i] )
 				  buttonAccept[i]->winHide(TRUE);
+
+				// GeneralsX @refactor fbraz3 25/08/2026 Support host migration and AI slot names
+				GadgetComboBoxSetText(comboPlayer[i], slot->getName());
 			}
 /*
 			if (myGame->getLocalSlotNum() == i && i!=0)
@@ -471,6 +474,11 @@ void UpdateSlotList( GameInfo *myGame, GameWindow *comboPlayer[],
 			{
 				if (comboPlayer[i])
 					comboPlayer[i]->winEnable( FALSE );
+			}
+			else
+			{
+				if (comboPlayer[i])
+					comboPlayer[i]->winEnable( TRUE );
 			}
 			//if( i == myGame->getLocalSlotNum())
       if((comboColor[i] != nullptr) && BitIsSet(comboColor[i]->winGetStatus(), WIN_STATUS_ENABLED))

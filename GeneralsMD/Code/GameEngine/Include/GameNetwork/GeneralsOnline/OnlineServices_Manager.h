@@ -178,6 +178,10 @@ public:
     void updateLobbyMyTeam(int team);
     void updateLobbyMyStartPos(int startPos);
     void updateLobbySlotState(int slotIndex, int slotState);
+    void updateLobbyAISide(int slot, int side, int startPos = -1);
+    void updateLobbyAIColor(int slot, int color);
+    void updateLobbyAITeam(int slot, int team);
+    void updateLobbyAIStartPos(int slot, int startPos);
     void updateLobbyHasMap(bool hasMap);
     void updateLobbyForceStart();
     void updateLobbyLeave(int64_t lobbyId = -1);
