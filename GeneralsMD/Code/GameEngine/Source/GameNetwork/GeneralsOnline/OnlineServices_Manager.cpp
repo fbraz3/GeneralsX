@@ -187,8 +187,12 @@ void NGMP_OnlineServicesManager::update() {
                                 if (disconnectedUserId == m_hostUserId || (!m_isLobbyOwner && disconnectedUserId > 0 && disconnectedUserId != m_userId)) {
                                     fprintf(stderr, "[NGMP] Host %lld disconnected, leaving staging room\n", (long long)disconnectedUserId);
                                     fflush(stderr);
+                                    int64_t leavingLobbyId = m_currentLobbyId;
                                     m_currentLobbyId = -1;
                                     m_hostUserId = -1;
+                                    if (leavingLobbyId >= 0) {
+                                        updateLobbyLeave(leavingLobbyId);
+                                    }
                                     NGMPEvent leftEv;
                                     leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
                                     uiEvents.push_back(leftEv);
@@ -345,7 +349,12 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
                     if (!currentLobbyExists) {
                         fprintf(stderr, "[NGMP] Current lobby %lld was closed/deleted by host. Leaving lobby.\n", (long long)m_currentLobbyId);
                         fflush(stderr);
+                        int64_t leavingLobbyId = m_currentLobbyId;
                         m_currentLobbyId = -1;
+                        m_hostUserId = -1;
+                        if (leavingLobbyId >= 0) {
+                            updateLobbyLeave(leavingLobbyId);
+                        }
                         NGMPEvent leftEv;
                         leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
                         postEvent(leftEv);
@@ -559,8 +568,12 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                 if (m_hostUserId > 0 && ownerId != m_hostUserId && !m_isLobbyOwner) {
                     fprintf(stderr, "[NGMP] Host %lld left (owner became %lld), leaving lobby\n", (long long)m_hostUserId, (long long)ownerId);
                     fflush(stderr);
+                    int64_t leavingLobbyId = m_currentLobbyId;
                     m_currentLobbyId = -1;
                     m_hostUserId = -1;
+                    if (leavingLobbyId >= 0) {
+                        updateLobbyLeave(leavingLobbyId);
+                    }
                     NGMPEvent leftEv;
                     leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
                     postEvent(leftEv);
