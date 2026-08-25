@@ -184,7 +184,17 @@ void NGMP_OnlineServicesManager::update() {
                                     (long long)disconnectedUserId, (long long)m_hostUserId, (long long)m_userId);
                                 fflush(stderr);
 
-                                if (m_currentLobbyId >= 0) {
+                                // If the host disconnected and we are a guest in the staging room, exit the lobby immediately
+                                if (!m_isLobbyOwner && disconnectedUserId == m_hostUserId && m_currentLobbyId >= 0) {
+                                    fprintf(stderr, "[NGMP] Host %lld left the lobby, exiting staging room to custom matches list\n", (long long)disconnectedUserId);
+                                    fflush(stderr);
+                                    m_currentLobbyId = -1;
+                                    m_isLobbyOwner = false;
+                                    m_hostUserId = -1;
+                                    NGMPEvent leftEv;
+                                    leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
+                                    uiEvents.push_back(leftEv);
+                                } else if (m_currentLobbyId >= 0) {
                                     requestLobbyDetailsAsync(m_currentLobbyId);
                                 }
                             }
@@ -629,13 +639,17 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                     (long long)targetId, mapName.c_str(), startingCash, limitSuperweapons, m_isLobbyOwner ? 1 : 0, localSlotIndex);
                 fflush(stderr);
 
-                if (bHostMigrated) {
-                    fprintf(stderr, "[NGMP] Host migrated! New owner is %lld (amIHost=%d)\n", (long long)ownerId, m_isLobbyOwner ? 1 : 0);
+                if (bHostMigrated || (!m_isLobbyOwner && m_hostUserId != -1 && ownerId != m_hostUserId)) {
+                    fprintf(stderr, "[NGMP] Host left the lobby (previous host=%lld, current owner=%lld), disbanding staging room\n",
+                        (long long)m_hostUserId, (long long)ownerId);
                     fflush(stderr);
-                    NGMPEvent migrateEv;
-                    migrateEv.type = NGMPEvent::EVENT_HOST_MIGRATED;
-                    migrateEv.payload = m_isLobbyOwner ? "1" : "0";
-                    postEvent(migrateEv);
+                    m_currentLobbyId = -1;
+                    m_isLobbyOwner = false;
+                    m_hostUserId = -1;
+                    NGMPEvent leftEv;
+                    leftEv.type = NGMPEvent::EVENT_LOBBY_LEFT;
+                    postEvent(leftEv);
+                    return;
                 }
 
                 NGMPEvent ev;
