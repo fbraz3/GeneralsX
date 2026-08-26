@@ -143,6 +143,12 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsX" 2>/dev/null || {
     echo "    Libraries will need LD_LIBRARY_PATH or manual RPATH setting"
 }
 
+echo "  Deploying fonts..."
+mkdir -p "${RUNTIME_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/" 2>/dev/null || true
+fi
+
 # Copy run wrapper script
 echo "  Copying run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << 'EOF'

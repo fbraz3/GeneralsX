@@ -1306,15 +1306,31 @@ static void RefreshNGMPGameListBoxes(const std::vector<NGMPLobby>& lobbies)
 		uMap.translate(asciiMap);
 
 		GadgetListBoxAddEntryText(win, uMap, gameColor, index, 1); // COLUMN_MAP
-
-		// Ladder info usually goes here, but we can just leave it blank for now
 		GadgetListBoxAddEntryText(win, L" ", gameColor, index, 2); // COLUMN_LADDER
 
 		UnicodeString playersStr;
 		playersStr.format(L"%d/%d", lobby.currentPlayers, lobby.maxPlayers);
 		GadgetListBoxAddEntryText(win, playersStr, gameColor, index, 3); // COLUMN_NUMPLAYERS
 
-		GadgetListBoxAddEntryText(win, L" ", gameColor, index, 4); // COLUMN_PASSWORD
+		if (lobby.hasPassword)
+		{
+			const Image* img = TheMappedImageCollection ? TheMappedImageCollection->findImageByName("Password") : nullptr;
+			Int width = 10, height = 10;
+			if (img)
+			{
+				width = img->getImageWidth();
+				height = img->getImageHeight();
+			}
+			GadgetListBoxAddEntryImage(win, img, index, 4, width, height); // COLUMN_PASSWORD
+		}
+		else
+		{
+			GadgetListBoxAddEntryText(win, L" ", gameColor, index, 4); // COLUMN_PASSWORD
+		}
+
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, 5); // COLUMN_OBSERVER
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, 6); // COLUMN_USE_STATS
+		GadgetListBoxAddEntryText(win, L" ", gameColor, index, 7); // COLUMN_PING
 	}
 }
 #endif

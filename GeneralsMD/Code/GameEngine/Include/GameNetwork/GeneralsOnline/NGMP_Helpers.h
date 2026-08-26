@@ -9,9 +9,16 @@
 
 namespace NGMP {
 
-// Default client identifier sent to the server during CheckLogin
 #ifndef NGMP_CLIENT_ID
+#if defined(__APPLE__)
+#define NGMP_CLIENT_ID "generalsx_macos"
+#elif defined(__linux__)
+#define NGMP_CLIENT_ID "generalsx_linux"
+#elif defined(_WIN32)
+#define NGMP_CLIENT_ID "generalsx_windows"
+#else
 #define NGMP_CLIENT_ID "gen_online_30hz"
+#endif
 #endif
 
 // Returns time in milliseconds since application start using SDL3/chrono primitives

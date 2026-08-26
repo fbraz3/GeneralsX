@@ -106,6 +106,22 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found; DXVK will use defaults."
 fi
 
+echo "  Deploying Fontconfig config & fonts..."
+mkdir -p "${RUNTIME_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/" 2>/dev/null || true
+fi
+
+FONTCONFIG_ETC_DIR="${BUILD_DIR}/vcpkg_installed/arm64-osx/etc/fonts"
+if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
+    mkdir -p "${RUNTIME_DIR}/fontconfig"
+    cp -v "${FONTCONFIG_ETC_DIR}/fonts.conf" "${RUNTIME_DIR}/fontconfig/fonts.conf"
+    rm -rf "${RUNTIME_DIR}/fontconfig/conf.d"
+    if [[ -d "${FONTCONFIG_ETC_DIR}/conf.d" ]]; then
+        cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RUNTIME_DIR}/fontconfig/conf.d"
+    fi
+fi
+
 echo "  Writing run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << 'WRAPPER'
 #!/bin/bash

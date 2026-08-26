@@ -1921,6 +1921,7 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 		}
 		else if (ev.type == NGMPEvent::EVENT_LOBBY_LEFT) {
 			buttonPushed = true;
+			GSMessageBoxOk(TheGameText->fetch("GUI:HostLeftTitle"), TheGameText->fetch("GUI:HostLeft"));
 			PopBackToLobby();
 			return;
 		}

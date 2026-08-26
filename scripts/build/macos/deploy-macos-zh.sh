@@ -158,7 +158,12 @@ fi
 
 # GeneralsX @bugfix Copilot 24/03/2026 Deploy Fontconfig config into runtime dir so FreeType/Fontconfig can resolve fonts on macOS.
 # GeneralsX @bugfix BenderAI 24/03/2026 Guard Fontconfig conf.d copy so missing directory does not abort deploy under set -e.
-echo "  Deploying Fontconfig config..."
+echo "  Deploying Fontconfig config & fonts..."
+mkdir -p "${RUNTIME_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/" 2>/dev/null || true
+fi
+
 if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
     mkdir -p "${RUNTIME_DIR}/fontconfig"
     cp -v "${FONTCONFIG_ETC_DIR}/fonts.conf" "${RUNTIME_DIR}/fontconfig/fonts.conf"

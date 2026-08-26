@@ -385,7 +385,7 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
             {"max_cam_height", 300},
             {"exe_crc", 0},
             {"ini_crc", 0},
-            {"anticheat_id", 0}
+            {"anticheat_id", -1}
         };
         std::string payloadStr = payload.dump();
 
@@ -455,7 +455,7 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
 
         json payload = {
             {"preferred_port", 0},
-            {"anticheat_id", 0},
+            {"anticheat_id", -1},
             {"has_map", true}
         };
         if (!password.empty()) {
