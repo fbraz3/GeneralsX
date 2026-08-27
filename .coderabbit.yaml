@@ -20,7 +20,8 @@ reviews:
     Valid types: feat, fix, docs, refactor, test, chore, build, ci, perf, style.
     Use imperative, present tense ("add", "fix", "change"). Do not capitalize the first letter of description.
     Do not end with a period.
-    CRITICAL: Never include the '@' symbol in commit or PR titles (e.g., use 'refactor(graphics): ...' NOT '@refactor(graphics): ...').
+    CRITICAL:
+      - Never include the '@' symbol in PR titles (e.g., use 'refactor(graphics): ...' NOT '@refactor(graphics): ...').
   review_status: true
   review_details: false
   collapse_walkthrough: true
@@ -148,7 +149,9 @@ reviews:
         instructions: "Verify if audio modifications in OpenAL are mirrored in MiniAudio to maintain backend parity."
       - name: "Conventional Commit Standards"
         mode: "error"
-        instructions: "Verify that commit messages follow Conventional Commits format and do NOT contain '@' symbol."
+        instructions: >-
+          Verify that commit subjects/titles follow Conventional Commits format and do NOT contain '@' anywhere in the subject/title (e.g. no '@feat:' or '@refactor:').
+          The '@' symbol IS allowed in commit bodies/footers for emails, mentions, and 'Co-authored-by' trailers.
       - name: "Single Commit / Squash Policy"
         mode: "warning"
         instructions: >-
