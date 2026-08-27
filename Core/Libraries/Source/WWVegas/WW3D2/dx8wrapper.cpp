@@ -106,6 +106,58 @@ const D3DMULTISAMPLE_TYPE DEFAULT_MSAA = D3DMULTISAMPLE_NONE;
 
 static D3DPRESENT_PARAMETERS _PresentParameters;
 
+// GeneralsX @bugfix Copilot 24/08/2026 Fall back through supported MSAA sample counts instead of disabling AA immediately.
+static D3DMULTISAMPLE_TYPE Normalize_MSAA_Mode(D3DMULTISAMPLE_TYPE mode)
+{
+	if (mode >= D3DMULTISAMPLE_8_SAMPLES)
+		return D3DMULTISAMPLE_8_SAMPLES;
+	if (mode >= D3DMULTISAMPLE_4_SAMPLES)
+		return D3DMULTISAMPLE_4_SAMPLES;
+	if (mode >= D3DMULTISAMPLE_2_SAMPLES)
+		return D3DMULTISAMPLE_2_SAMPLES;
+
+	return D3DMULTISAMPLE_NONE;
+}
+
+static D3DMULTISAMPLE_TYPE Get_Lower_MSAA_Mode(D3DMULTISAMPLE_TYPE mode)
+{
+	switch (mode)
+	{
+	case D3DMULTISAMPLE_8_SAMPLES:
+		return D3DMULTISAMPLE_4_SAMPLES;
+	case D3DMULTISAMPLE_4_SAMPLES:
+		return D3DMULTISAMPLE_2_SAMPLES;
+	case D3DMULTISAMPLE_2_SAMPLES:
+	default:
+		return D3DMULTISAMPLE_NONE;
+	}
+}
+
+static bool Is_MSAA_Mode_Supported(
+	IDirect3D8 *direct3D,
+	unsigned adapter,
+	D3DFORMAT backBufferFormat,
+	D3DFORMAT depthStencilFormat,
+	BOOL windowed,
+	D3DMULTISAMPLE_TYPE mode)
+{
+	if (mode == D3DMULTISAMPLE_NONE)
+		return true;
+
+	return SUCCEEDED(direct3D->CheckDeviceMultiSampleType(
+		adapter,
+		D3DDEVTYPE_HAL,
+		backBufferFormat,
+		windowed,
+		mode)) &&
+		SUCCEEDED(direct3D->CheckDeviceMultiSampleType(
+			adapter,
+			D3DDEVTYPE_HAL,
+			depthStencilFormat,
+			windowed,
+			mode));
+}
+
 // --- Pillarbox: render game to offscreen RT, blit centered onto backbuffer ---
 // GeneralsX @feature xxorza 15/04/2026 Unified pillarbox for fullscreen and windowed
 DX8Wrapper::DisplaySizeFunc DX8Wrapper::s_getNativeDisplaySize = nullptr;
@@ -1414,28 +1466,24 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	** Check the devices support for the requested MSAA mode then setup the multi sample type
 	*/
 	if (MultiSampleAntiAliasing > D3DMULTISAMPLE_NONE) {
+		const D3DMULTISAMPLE_TYPE requestedMode = MultiSampleAntiAliasing;
+		MultiSampleAntiAliasing = Normalize_MSAA_Mode(MultiSampleAntiAliasing);
 
-		HRESULT hrBack = D3DInterface->CheckDeviceMultiSampleType(
+		while (!Is_MSAA_Mode_Supported(
+			D3DInterface,
 			CurRenderDevice,
-			D3DDEVTYPE_HAL,
 			_PresentParameters.BackBufferFormat,
-			IsWindowed,
-			MultiSampleAntiAliasing
-		);
-
-		HRESULT hrDepth = D3DInterface->CheckDeviceMultiSampleType(
-			CurRenderDevice,
-			D3DDEVTYPE_HAL,
 			_PresentParameters.AutoDepthStencilFormat,
 			IsWindowed,
-			MultiSampleAntiAliasing
-		);
+			MultiSampleAntiAliasing))
+		{
+			MultiSampleAntiAliasing = Get_Lower_MSAA_Mode(MultiSampleAntiAliasing);
+		}
 
-		if (FAILED(hrBack) || FAILED(hrDepth)) {
-			// IF we fail then disable MSAA entirely.
-			// External code needs to retrieve the configured MSAA mode after device creation
-			WWDEBUG_SAY(("Requested MSAA Mode Not Supported"));
-			MultiSampleAntiAliasing = D3DMULTISAMPLE_NONE;
+		if (MultiSampleAntiAliasing != requestedMode) {
+			WWDEBUG_SAY(("Requested MSAA mode %u is unsupported; using %u",
+				(unsigned)requestedMode,
+				(unsigned)MultiSampleAntiAliasing));
 		}
 	}
 

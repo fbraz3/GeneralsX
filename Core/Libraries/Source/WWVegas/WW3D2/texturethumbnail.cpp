@@ -42,6 +42,43 @@ static void Create_Hash_Name(StringClass& name, const StringClass& thumb_name)
 	_strlwr(name.Peek_Buffer());
 }
 
+static bool Is_DDS_Thumbnail_Format_Supported(WW3DFormat format)
+{
+	return format==WW3D_FORMAT_DXT1 || format==WW3D_FORMAT_DXT5;
+}
+
+// GeneralsX @bugfix Copilot 24/08/2026 Downsample sparse DDS levels directly into bounded thumbnail storage.
+static void Copy_Scaled_DDS_Thumbnail(
+	const DDSFileClass& dds_file,
+	unsigned level,
+	unsigned width,
+	unsigned height,
+	unsigned char* bitmap)
+{
+	const unsigned source_width=dds_file.Get_Width(level);
+	const unsigned source_height=dds_file.Get_Height(level);
+	unsigned block[16]={0};
+
+	for (unsigned y=0;y<height;++y) {
+		const unsigned source_y=y*source_height/height;
+		for (unsigned x=0;x<width;++x) {
+			const unsigned source_x=x*source_width/width;
+			dds_file.Get_4x4_Block(
+				(unsigned char*)block,
+				sizeof(unsigned)*4,
+				WW3D_FORMAT_A8R8G8B8,
+				level,
+				source_x&~3u,
+				source_y&~3u);
+			const unsigned color=block[(source_y&3u)*4+(source_x&3u)];
+			BitmapHandlerClass::Write_B8G8R8A8(
+				bitmap+(y*width+x)*2,
+				WW3D_FORMAT_A4R4G4B4,
+				color);
+		}
+	}
+}
+
 	/*	file_auto_ptr my_tga_file(_TheFileFactory,filename);
 	if (my_tga_file->Is_Available()) {
 		my_tga_file->Open();
@@ -118,7 +155,10 @@ ThumbnailClass::ThumbnailClass(ThumbnailManagerClass* manager, const StringClass
 
 	// First, try loading image from a DDS file
 	DDSFileClass dds_file(filename,reduction_factor);
-	if (dds_file.Is_Available() && dds_file.Load()) {
+	// GeneralsX @bugfix Copilot 24/08/2026 Reject DDS formats without a complete block decoder so the TGA fallback remains initialized.
+	if (dds_file.Is_Available() &&
+		Is_DDS_Thumbnail_Format_Supported(dds_file.Get_Format()) &&
+		dds_file.Load()) {
 		DateTime=dds_file.Get_Date_Time();
 
 		int len=Name.Get_Length();
@@ -128,27 +168,39 @@ ThumbnailClass::ThumbnailClass(ThumbnailManagerClass* manager, const StringClass
 		Name[len-1]='s';
 
 		unsigned level=0;
-		while (dds_file.Get_Width(level)>32 || dds_file.Get_Height(level)>32) {
-			if (level>=dds_file.Get_Mip_Level_Count()) break;
+		const unsigned mip_level_count=dds_file.Get_Mip_Level_Count();
+		// GeneralsX @bugfix Copilot 24/08/2026 Check bounds before selecting the smallest authored thumbnail mip.
+		while (level+1<mip_level_count &&
+			(dds_file.Get_Width(level)>32 || dds_file.Get_Height(level)>32)) {
 			level++;
 		}
 
 		OriginalTextureWidth=dds_file.Get_Full_Width();
 		OriginalTextureHeight=dds_file.Get_Full_Height();
 		OriginalTextureFormat=dds_file.Get_Format();
-		OriginalTextureMipLevelCount=dds_file.Get_Mip_Level_Count();
-		Width=dds_file.Get_Width(0);
-		Height=dds_file.Get_Height(0);
+		// GeneralsX @bugfix Copilot 24/08/2026 Keep authored DDS mip metadata independent of thumbnail reduction.
+		OriginalTextureMipLevelCount=dds_file.Get_Full_Mip_Level_Count();
+		Width=dds_file.Get_Width(level);
+		Height=dds_file.Get_Height(level);
+		while (Width>32 || Height>32) {
+			Width=max(Width>>1,1u);
+			Height=max(Height>>1,1u);
+		}
 		Bitmap=W3DNEWARRAY unsigned char[Width*Height*2];
 		Allocated=true;
-		dds_file.Copy_Level_To_Surface(
-			0,			// Level
-			WW3D_FORMAT_A4R4G4B4,
-			Width,
-			Height,
-			Bitmap,
-			Width*2,
-			Vector3(0.0f,0.0f,0.0f));// We don't want to HSV-shift here
+		if (Width==dds_file.Get_Width(level) && Height==dds_file.Get_Height(level)) {
+			dds_file.Copy_Level_To_Surface(
+				level,
+				WW3D_FORMAT_A4R4G4B4,
+				Width,
+				Height,
+				Bitmap,
+				Width*2,
+				Vector3(0.0f,0.0f,0.0f));// We don't want to HSV-shift here
+		}
+		else {
+			Copy_Scaled_DDS_Thumbnail(dds_file,level,Width,Height,Bitmap);
+		}
 	}
 	// If DDS file can't be used try loading from TGA
 	else {
@@ -176,7 +228,8 @@ ThumbnailClass::ThumbnailClass(ThumbnailManagerClass* manager, const StringClass
 		OriginalTextureMipLevelCount=1;
 		unsigned iw=1;
 		unsigned ih=1;
-		while (iw<OriginalTextureWidth && ih<OriginalTextureHeight) {
+		// GeneralsX @bugfix Copilot 24/08/2026 Count rectangular TGA mip tails until both axes reach their power-of-two extent.
+		while (iw<OriginalTextureWidth || ih<OriginalTextureHeight) {
 			iw+=iw;
 			ih+=ih;
 			OriginalTextureMipLevelCount++;
