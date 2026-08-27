@@ -40,7 +40,34 @@
 
 #define USUAL_TOLERANCE 1.0f
 
-#ifndef SAGE_USE_GLM
+#ifdef SAGE_USE_GLM
+// GeneralsX @bugfix Copilot 15/08/2026 Match D3DX operation ordering for deterministic Bezier trajectories.
+class BezierMath
+{
+public:
+	static glm::vec4 GLMVec4Transform(const glm::vec4& v, const glm::mat4& m)
+	{
+#if USE_DETERMINISTIC_MATH
+		return glm::vec4(
+			((v.x * m[0][0] + v.y * m[1][0]) + v.z * m[2][0]) + v.w * m[3][0],
+			((v.x * m[0][1] + v.y * m[1][1]) + v.z * m[2][1]) + v.w * m[3][1],
+			((v.x * m[0][2] + v.y * m[1][2]) + v.z * m[2][2]) + v.w * m[3][2],
+			((v.x * m[0][3] + v.y * m[1][3]) + v.z * m[2][3]) + v.w * m[3][3]);
+#else
+		return m * v;
+#endif
+	}
+
+	static float GLMVec4Dot(const glm::vec4& a, const glm::vec4& b)
+	{
+#if USE_DETERMINISTIC_MATH
+		return ((a.x * b.x + a.y * b.y) + a.z * b.z) + a.w * b.w;
+#else
+		return glm::dot(a, b);
+#endif
+	}
+};
+#else
 class BezierMath
 {
 public:
