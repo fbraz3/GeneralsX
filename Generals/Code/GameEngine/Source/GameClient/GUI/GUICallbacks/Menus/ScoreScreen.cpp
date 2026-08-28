@@ -174,14 +174,20 @@ void populateSideInfo( UnicodeString side,ScoreGather *sg, Int pos, Color color)
 
 void startNextCampaignGame()
 {
-	TheShell->popImmediate();
-	TheShell->hideShell();
+	// GeneralsX @bugfix arazmj 27/08/2026 Queue the next campaign mission before tearing down the score screen.
 	TheWritableGlobalData->m_pendingFile = TheCampaignManager->getCurrentMap();
-	// send a message to the logic for a new game
+
+	// Shell teardown can initialize an uncovered menu and queue GAME_SHELL, so queue the campaign first.
 	GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 	msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
 	msg->appendIntegerArgument(TheCampaignManager->getGameDifficulty());
 	msg->appendIntegerArgument(TheCampaignManager->getRankPoints());
+
+	TheShell->popImmediate();
+	TheShell->hideShell();
+
+	// An uncovered menu can also replace the pending file with the shell map during teardown.
+	TheWritableGlobalData->m_pendingFile = TheCampaignManager->getCurrentMap();
 
 	InitRandom(0);
 }
