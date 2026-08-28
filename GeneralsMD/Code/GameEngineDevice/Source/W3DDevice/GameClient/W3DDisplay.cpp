@@ -1024,7 +1024,6 @@ void W3DDisplay::init()
 		WW3D::Enable_Static_Sort_Lists(true);
 		WW3D::Set_Thumbnail_Enabled(false);
 		WW3D::Set_Screen_UV_Bias( TRUE );  ///< this makes text look good :)
-		WW3D::Set_Texture_Bitdepth(32);
 
 		fprintf(stderr, "[DEBUG-WIN] W3DDisplay::init() - TheGlobalData->m_windowed=%d\n", (int)TheGlobalData->m_windowed);
 		setWindowed( TheGlobalData->m_windowed );
@@ -1113,6 +1112,7 @@ void W3DDisplay::init()
 			DEBUG_CRASH( ("Unable to set render device") );
 			return;
 		}
+		WW3D::Set_Texture_Bitdepth(getBitDepth());
 
 		#ifdef SAGE_USE_SDL3
 		SDL3_ApplyWindowModeForRenderConfig(getWindowed(), getWidth(), getHeight());

@@ -1041,6 +1041,7 @@ void W3DDisplay::init()
 			DEBUG_CRASH( ("Unable to set render device") );
 			return;
 		}
+		WW3D::Set_Texture_Bitdepth(getBitDepth());
 
 		#ifdef SAGE_USE_SDL3
 		SDL3_ApplyWindowModeForRenderConfig(getWindowed(), getWidth(), getHeight());
