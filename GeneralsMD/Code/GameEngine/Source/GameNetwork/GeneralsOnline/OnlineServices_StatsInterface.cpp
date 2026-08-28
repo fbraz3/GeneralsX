@@ -2,12 +2,12 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GeneralsOnline/NGMP_json.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "Common/ScoreKeeper.h"
 #include <cinttypes>
 #include <thread>
 #include <curl/curl.h>
-#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
