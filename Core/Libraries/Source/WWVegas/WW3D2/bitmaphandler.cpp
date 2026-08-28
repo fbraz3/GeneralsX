@@ -68,6 +68,37 @@ void BitmapHandlerClass::Copy_Image_Generate_Mipmap(
 		dest_pitch/=4;
 		src_pitch/=4;
 		mip_pitch/=4;
+		// GeneralsX @bugfix Copilot 24/08/2026 Box-filter one-dimensional mip tails instead of leaving rectangular texture levels uninitialized.
+		if (width==1) {
+			for (unsigned y=0;y<height/2;++y) {
+				unsigned* dest_ptr=(unsigned*)dest_surface+y*2*dest_pitch;
+				unsigned* src_ptr=(unsigned*)src_surface+y*2*src_pitch;
+				unsigned* mip_ptr=(unsigned*)mip_surface+y*mip_pitch;
+				unsigned col0=src_ptr[0];
+				unsigned col1=src_ptr[src_pitch];
+				dest_ptr[0]=col0;
+				dest_ptr[dest_pitch]=col1;
+				unsigned combined=Combine_A8R8G8B8(col0,col0,col1,col1);
+				if (has_hsv_shift) Recolor(combined,hsv_shift);
+				mip_ptr[0]=combined;
+			}
+			return;
+		}
+		if (height==1) {
+			unsigned* dest_ptr=(unsigned*)dest_surface;
+			unsigned* src_ptr=(unsigned*)src_surface;
+			unsigned* mip_ptr=(unsigned*)mip_surface;
+			for (unsigned x=0;x<width/2;++x) {
+				unsigned col0=*src_ptr++;
+				unsigned col1=*src_ptr++;
+				*dest_ptr++=col0;
+				*dest_ptr++=col1;
+				unsigned combined=Combine_A8R8G8B8(col0,col1,col0,col1);
+				if (has_hsv_shift) Recolor(combined,hsv_shift);
+				*mip_ptr++=combined;
+			}
+			return;
+		}
 		for (unsigned y=0;y<height/2;++y) {
 			unsigned* dest_ptr=(unsigned*)dest_surface;
 			dest_ptr+=2*y*dest_pitch;
@@ -103,6 +134,42 @@ void BitmapHandlerClass::Copy_Image_Generate_Mipmap(
 	WWASSERT(src_format!=WW3D_FORMAT_P8);		// This function doesn't support paletted formats
 	unsigned src_bpp=Get_Bytes_Per_Pixel(src_format);
 	unsigned dest_bpp=Get_Bytes_Per_Pixel(dest_format);
+
+	// GeneralsX @bugfix Copilot 24/08/2026 Preserve format conversion and box filtering for one-dimensional mip tails.
+	if (width==1) {
+		for (unsigned y=0;y<height/2;++y) {
+			unsigned char* dest_ptr=dest_surface+y*2*dest_pitch;
+			unsigned char* src_ptr=src_surface+y*2*src_pitch;
+			unsigned char* mip_ptr=mip_surface+y*mip_pitch;
+			unsigned col0;
+			unsigned col1;
+			Read_B8G8R8A8(col0,src_ptr,src_format,nullptr,0);
+			Read_B8G8R8A8(col1,src_ptr+src_pitch,src_format,nullptr,0);
+			Write_B8G8R8A8(dest_ptr,dest_format,col0);
+			Write_B8G8R8A8(dest_ptr+dest_pitch,dest_format,col1);
+			unsigned combined=Combine_A8R8G8B8(col0,col0,col1,col1);
+			if (has_hsv_shift) Recolor(combined,hsv_shift);
+			Write_B8G8R8A8(mip_ptr,dest_format,combined);
+		}
+		return;
+	}
+	if (height==1) {
+		unsigned char* dest_ptr=dest_surface;
+		unsigned char* src_ptr=src_surface;
+		unsigned char* mip_ptr=mip_surface;
+		for (unsigned x=0;x<width/2;++x,dest_ptr+=dest_bpp*2,src_ptr+=src_bpp*2,mip_ptr+=dest_bpp) {
+			unsigned col0;
+			unsigned col1;
+			Read_B8G8R8A8(col0,src_ptr,src_format,nullptr,0);
+			Read_B8G8R8A8(col1,src_ptr+src_bpp,src_format,nullptr,0);
+			Write_B8G8R8A8(dest_ptr,dest_format,col0);
+			Write_B8G8R8A8(dest_ptr+dest_bpp,dest_format,col1);
+			unsigned combined=Combine_A8R8G8B8(col0,col1,col0,col1);
+			if (has_hsv_shift) Recolor(combined,hsv_shift);
+			Write_B8G8R8A8(mip_ptr,dest_format,combined);
+		}
+		return;
+	}
 
 	for (unsigned y=0;y<height/2;++y) {
 		unsigned char* dest_ptr=dest_surface+2*y*dest_pitch;
@@ -264,9 +331,44 @@ void BitmapHandlerClass::Copy_Image(
 			// Generate the next mip level while copying the current surface?
 			if (generate_mip_level) {
 				if (dest_surface_width==1) {
-					unsigned b8g8r8a8=*(unsigned*)src_surface;
-					if (has_hsv_shift) Recolor(b8g8r8a8,hsv_shift);
-					*(unsigned*)dest_surface=b8g8r8a8;
+					unsigned* dest_ptr=(unsigned*)dest_surface;
+					unsigned* src_ptr=(unsigned*)src_surface;
+					if (dest_surface_height==1) {
+						unsigned b8g8r8a8=*src_ptr;
+						if (has_hsv_shift) Recolor(b8g8r8a8,hsv_shift);
+						*dest_ptr=b8g8r8a8;
+					}
+					else {
+						// GeneralsX @bugfix Copilot 24/08/2026 Generate vertical one-dimensional mip tails with the same box filter as two-dimensional levels.
+						for (unsigned y=0;y<dest_surface_height/2;++y) {
+							unsigned col0=src_ptr[y*2*src_surface_pitch];
+							unsigned col1=src_ptr[(y*2+1)*src_surface_pitch];
+							if (has_hsv_shift) {
+								Recolor(col0,hsv_shift);
+								Recolor(col1,hsv_shift);
+							}
+							dest_ptr[y*2*dest_surface_pitch]=col0;
+							dest_ptr[(y*2+1)*dest_surface_pitch]=col1;
+							src_ptr[y*src_surface_pitch]=Combine_A8R8G8B8(col0,col0,col1,col1);
+						}
+					}
+				}
+				else if (dest_surface_height==1) {
+					// GeneralsX @bugfix Copilot 24/08/2026 Generate horizontal one-dimensional mip tails with the same box filter as two-dimensional levels.
+					unsigned* dest_ptr=(unsigned*)dest_surface;
+					unsigned* src_ptr=(unsigned*)src_surface;
+					unsigned* mip_ptr=(unsigned*)src_surface;
+					for (unsigned x=0;x<dest_surface_width/2;++x) {
+						unsigned col0=*src_ptr++;
+						unsigned col1=*src_ptr++;
+						if (has_hsv_shift) {
+							Recolor(col0,hsv_shift);
+							Recolor(col1,hsv_shift);
+						}
+						*dest_ptr++=col0;
+						*dest_ptr++=col1;
+						*mip_ptr++=Combine_A8R8G8B8(col0,col1,col0,col1);
+					}
 				}
 				else {
 					for (unsigned y=0;y<dest_surface_height/2;++y) {
@@ -359,14 +461,50 @@ void BitmapHandlerClass::Copy_Image(
 		if (generate_mip_level) {
 			WWASSERT(src_surface_format!=WW3D_FORMAT_P8);	// Paletted textures can't be mipmapped
 			if (dest_surface_width==1) {
+				if (dest_surface_height==1) {
+					unsigned b8g8r8a8;
+					Read_B8G8R8A8(b8g8r8a8,src_surface,src_surface_format,src_palette,src_palette_bpp);
+					if (has_hsv_shift) Recolor(b8g8r8a8,hsv_shift);
+					Write_B8G8R8A8(dest_surface,dest_surface_format,b8g8r8a8);
+				}
+				else {
+					// GeneralsX @bugfix Copilot 24/08/2026 Generate converted vertical one-dimensional mip tails without skipping their pixels.
+					for (unsigned y=0;y<dest_surface_height/2;++y) {
+						unsigned char* dest_ptr=dest_surface+y*2*dest_surface_pitch;
+						unsigned char* src_ptr=src_surface+y*2*src_surface_pitch;
+						unsigned char* mip_ptr=src_surface+y*src_surface_pitch;
+						unsigned col0;
+						unsigned col1;
+						Read_B8G8R8A8(col0,src_ptr,src_surface_format,src_palette,src_palette_bpp);
+						Read_B8G8R8A8(col1,src_ptr+src_surface_pitch,src_surface_format,src_palette,src_palette_bpp);
+						if (has_hsv_shift) {
+							Recolor(col0,hsv_shift);
+							Recolor(col1,hsv_shift);
+						}
+						Write_B8G8R8A8(dest_ptr,dest_surface_format,col0);
+						Write_B8G8R8A8(dest_ptr+dest_surface_pitch,dest_surface_format,col1);
+						Write_B8G8R8A8(mip_ptr,src_surface_format,Combine_A8R8G8B8(col0,col0,col1,col1));
+					}
+				}
+			}
+			else if (dest_surface_height==1) {
+				// GeneralsX @bugfix Copilot 24/08/2026 Generate converted horizontal one-dimensional mip tails without skipping their pixels.
 				unsigned char* dest_ptr=dest_surface;
 				unsigned char* src_ptr=src_surface;
-				unsigned b8g8r8a8;
-				Read_B8G8R8A8(b8g8r8a8,src_ptr,src_surface_format,src_palette,src_palette_bpp);
-				if (has_hsv_shift) {
-					Recolor(b8g8r8a8,hsv_shift);
+				unsigned char* mip_ptr=src_surface;
+				for (unsigned x=0;x<dest_surface_width/2;x++,dest_ptr+=dest_bpp*2,src_ptr+=src_bpp*2,mip_ptr+=src_bpp) {
+					unsigned col0;
+					unsigned col1;
+					Read_B8G8R8A8(col0,src_ptr,src_surface_format,src_palette,src_palette_bpp);
+					Read_B8G8R8A8(col1,src_ptr+src_bpp,src_surface_format,src_palette,src_palette_bpp);
+					if (has_hsv_shift) {
+						Recolor(col0,hsv_shift);
+						Recolor(col1,hsv_shift);
+					}
+					Write_B8G8R8A8(dest_ptr,dest_surface_format,col0);
+					Write_B8G8R8A8(dest_ptr+dest_bpp,dest_surface_format,col1);
+					Write_B8G8R8A8(mip_ptr,src_surface_format,Combine_A8R8G8B8(col0,col1,col0,col1));
 				}
-				Write_B8G8R8A8(dest_ptr,dest_surface_format,b8g8r8a8);
 			}
 			else {
 				for (unsigned y=0;y<dest_surface_height/2;++y) {

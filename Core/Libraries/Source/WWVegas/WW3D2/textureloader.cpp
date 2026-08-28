@@ -508,10 +508,12 @@ IDirect3DTexture8* TextureLoader::Load_Thumbnail(const StringClass& filename, co
 		hsv=Vector3(0.0f,0.0f,0.0f);	// Only do the shift for the first level, as the mipmaps are based on it.
 
 		src_format=dest_format;
-		src_surface=(unsigned char*)locked_rects[level].pBits;
-		src_pitch=locked_rects[level].Pitch;
-		width>>=1;
-		height>>=1;
+		// GeneralsX @bugfix Copilot 24/08/2026 Build each thumbnail mip from the preceding box-filter result.
+		src_surface=(unsigned char*)locked_rects[level+1].pBits;
+		src_pitch=locked_rects[level+1].Pitch;
+		// GeneralsX @bugfix Copilot 24/08/2026 Keep rectangular mip dimensions at one texel while generating the remaining axis.
+		width=max(width>>1,1u);
+		height=max(height>>1,1u);
 	}
 
 	// Unlock all surfaces
@@ -1385,6 +1387,21 @@ static unsigned Get_Requested_Reduction(unsigned width, unsigned height, unsigne
 	return curReduction;
 }
 
+// GeneralsX @bugfix Copilot 24/08/2026 Count complete rectangular mip chains until both axes reach one texel.
+static unsigned Get_Full_Mip_Level_Count(unsigned width, unsigned height)
+{
+	unsigned mipCount=1;
+	unsigned mipWidth=1;
+	unsigned mipHeight=1;
+	while (mipWidth<width || mipHeight<height)
+	{
+		mipWidth<<=1;
+		mipHeight<<=1;
+		mipCount++;
+	}
+	return mipCount;
+}
+
 
 static bool	Get_Texture_Information
 (
@@ -1430,9 +1447,7 @@ static bool	Get_Texture_Information
 		Get_WW3D_Format(dest_format,format,bpp,targa);
 
 		// Figure out how many mip levels this texture will occupy
-		mip_count = 0;
-		for (int i=targa.Header.Width, j=targa.Header.Height; i > 0 && j > 0; i>>=1, j>>=1)
-				mip_count++;
+		mip_count=Get_Full_Mip_Level_Count(targa.Header.Width,targa.Header.Height);
 
 		// Destination size will be the next power of two square from the larger width and height...
 		w = targa.Header.Width;
@@ -1556,14 +1571,7 @@ static void Apply_Mip_Reduction(unsigned& mip_level_count, unsigned reduction, u
 
 	// Once more, verify that the mip level count is correct (in case it was changed here it might not
 	// match the size...well actually it doesn't have to match but it can't be bigger than the size)
-	unsigned int max_mip_level_count = 1;
-	unsigned int dim = MinTextureDim;
-
-	while (dim < width && dim < height)
-	{
-		dim <<= 1;
-		max_mip_level_count++;
-	}
+	unsigned int max_mip_level_count=Get_Full_Mip_Level_Count(width,height);
 
 	if (mip_level_count > max_mip_level_count)
 		mip_level_count = max_mip_level_count;
@@ -1897,10 +1905,10 @@ bool TextureLoadTaskClass::Load_Uncompressed_Mipmap()
 			true,
 			hsv_shift);
 
-			width			>>= 1;
-			height		>>= 1;
-			src_width	>>= 1;
-			src_height	>>= 1;
+			width=max(width>>1,1u);
+			height=max(height>>1,1u);
+			src_width=max(src_width>>1,1u);
+			src_height=max(src_height>>1,1u);
 		}
 		delete [] destination_surface;
 	}
@@ -1924,14 +1932,15 @@ bool TextureLoadTaskClass::Load_Uncompressed_Mipmap()
 			hsv_shift);
 		hsv_shift=Vector3(0.0f,0.0f,0.0f);
 
-		width			>>= 1;
-		height		>>= 1;
-		src_width	>>= 1;
-		src_height	>>= 1;
-
-		if (!width || !height || !src_width || !src_height) {
+		if (width==1 && height==1) {
 			break;
 		}
+
+		// GeneralsX @bugfix Copilot 24/08/2026 Continue generated rectangular mip chains along their remaining non-unit axis.
+		width=max(width>>1,1u);
+		height=max(height>>1,1u);
+		src_width=max(src_width>>1,1u);
+		src_height=max(src_height>>1,1u);
 	}
 
 	delete[] converted_surface;

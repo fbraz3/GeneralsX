@@ -214,6 +214,11 @@ public:
 	unsigned long Get_Date_Time() const { return DateTime; }
 
 	unsigned Get_Mip_Level_Count() const { return MipLevels; }
+	// GeneralsX @bugfix Copilot 24/08/2026 Report the usable authored chain independently of thumbnail reduction.
+	unsigned Get_Full_Mip_Level_Count() const {
+		unsigned count=SurfaceDesc.MipMapCount ? SurfaceDesc.MipMapCount : 1;
+		return count>2 ? count-2 : 1;
+	}
 	const unsigned char* Get_Memory_Pointer(unsigned level) const;
 	unsigned Get_Level_Size(unsigned level) const;
 	WW3DFormat Get_Format() const { return Format; }
