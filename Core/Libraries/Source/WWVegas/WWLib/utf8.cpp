@@ -19,6 +19,8 @@
 #include "always.h"
 #include "utf8.h"
 
+// GeneralsX @feature bobtista 28/08/2026 Import portable UTF-8 conversion and validation.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/2528
 // wchar_t is a 16-bit UTF-16 code unit on Windows and a 32-bit UTF-32 codepoint on most other
 // platforms. WCHAR_MAX lets us distinguish the two at compile time so the surrogate-pair paths
 // are excluded entirely (not just constant-folded) where wchar_t is wide enough to hold a codepoint.

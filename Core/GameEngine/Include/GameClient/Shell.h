@@ -161,6 +161,8 @@ protected:
 
 	void construct();
 	void deconstruct();
+	// GeneralsX @bugfix CryoTheRenegade 28/08/2026 Import teardown-safe shell stack destruction.
+	// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3158
 	void destroyScreenStack();													///< tear down all screens without initializing uncovered layouts
 
 	void linkScreen( WindowLayout *screen );								///< link screen to list

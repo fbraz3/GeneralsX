@@ -21,6 +21,8 @@
 #include <stddef.h>
 #include <wchar.h>
 
+// GeneralsX @feature bobtista 28/08/2026 Import the portable UTF-8 conversion API.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/2528
 // UTF-8 <-> wide-character transcoding, hand-rolled per RFC 3629, using no platform text APIs.
 // The wide side is wchar_t, whose width is platform-dependent: on Windows it is a 16-bit UTF-16
 // code unit (astral codepoints use surrogate pairs); on most other platforms it is a 32-bit

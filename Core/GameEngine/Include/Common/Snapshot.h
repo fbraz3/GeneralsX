@@ -51,6 +51,8 @@ public:
 	Snapshot();
 	~Snapshot();
 
+	// GeneralsX @refactor bobtista 28/08/2026 Import optional snapshot exclusion from save data.
+	// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3000
 	// Snapshots can disable xfer to be excluded from save game data,
 	// for example dummy implementations in headless mode.
 	virtual Bool isXferEnabled() const { return TRUE; }

@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <cmath>
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
 #include "Common/Player.h"
@@ -293,7 +294,7 @@ static void debugDrawBlastCircle( const Coord3D *center, Real radius, Real tileW
 {
 	extern void addIcon(const Coord3D *pos, Real width, Int frameDuration, RGBColor color);
 
-	if( radius <= 0.0f )
+	if( !std::isfinite( radius ) || radius <= 0.0f || !std::isfinite( tileWidth ) || tileWidth <= 0.0f )
 		return;
 
 	// space the icons roughly one tile apart along the circumference, within sane bounds
@@ -301,8 +302,10 @@ static void debugDrawBlastCircle( const Coord3D *center, Real radius, Real tileW
 	// GeneralsX @bugfix arazmj 27/08/2026 Keep debug blast visualization deterministic across platforms.
 	// Upstream reference: xezon, PR #3160
 	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/3160
-	Int segments = (Int)WWMath::Ceil( (2.0f * PI * radius) / tileWidth * 0.5f );
-	segments = clamp(1, segments, 256);
+	Real segmentCount = WWMath::Ceil( (2.0f * PI * radius) / tileWidth * 0.5f );
+	if( !std::isfinite( segmentCount ) )
+		segmentCount = 256.0f;
+	Int segments = (Int)clamp( 1.0f, segmentCount, 256.0f );
 
 	for( Int i = 0; i < segments; ++i )
 	{

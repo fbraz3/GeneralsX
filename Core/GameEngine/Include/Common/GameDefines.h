@@ -87,6 +87,8 @@
 #define PRESERVE_RETAIL_SCRIPTED_CAMERA (0) // Retain scripted camera behavior present in retail Generals 1.08 and Zero Hour 1.04
 #endif
 
+// GeneralsX @refactor stm 28/08/2026 Import the retail-particle compatibility switch.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3172
 #ifndef PRESERVE_RETAIL_PARTICLES
 #define PRESERVE_RETAIL_PARTICLES (1) // Preserve original look of particles present in retail Generals 1.08 and Zero Hour 1.04
 #endif

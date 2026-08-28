@@ -1041,7 +1041,9 @@ void W3DDisplay::init()
 			DEBUG_CRASH( ("Unable to set render device") );
 			return;
 		}
-		WW3D::Set_Texture_Bitdepth(getBitDepth());
+		// GeneralsX @bugfix Jaredl-Dev 28/08/2026 Import display-based texture depth and normalize it for WW3D.
+		// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3181
+		WW3D::Set_Texture_Bitdepth(getBitDepth() == 16 ? 16 : 32);
 
 		#ifdef SAGE_USE_SDL3
 		SDL3_ApplyWindowModeForRenderConfig(getWindowed(), getWidth(), getHeight());

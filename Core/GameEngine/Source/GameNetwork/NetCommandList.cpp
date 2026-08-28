@@ -127,7 +127,8 @@ static bool isCommandIdNewer(UnsignedShort newVal, UnsignedShort oldVal)
 #if RETAIL_COMPATIBLE_NETWORKING
 	return newVal > oldVal;
 #else
-	// TheSuperHackers @bugfix Caball009 14/06/2026 Ensure messages are sorted
+	// GeneralsX @bugfix Caball009 28/08/2026 Import overflow-safe network command ordering from upstream PR #3052.
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/3052
 	// chronologically by including a command id overflow check.
 	const UnsignedShort diff = newVal - oldVal;
 	return diff != 0 && diff < 0x8000;
@@ -191,7 +192,8 @@ NetCommandRef * NetCommandList::addMessage(NetCommandMsg *cmdMsg) {
 		NetCommandMsg* lastCommand = m_lastMessageInserted->getCommand();
 		NetCommandRef* nextCommandRef = m_lastMessageInserted->getNext();
 
-		// TheSuperHackers @bugfix CryoTheRenegade 03/08/2026 Keep both cached
+		// GeneralsX @bugfix CryoTheRenegade 28/08/2026 Import the corrected cached insertion boundaries.
+		// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3052
 		// insertion boundaries consistent with the full scan's polymorphic sort key.
 		bool canInsertAfterLast = isCommandNewerInSamePlayerGroup(command, lastCommand);
 

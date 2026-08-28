@@ -32,7 +32,8 @@
 
 //-------------------------------------------------------------------------
 
-// TheSuperHackers @refactor bobtista 02/04/2026 Use WWLib UTF-8 functions instead of raw Win32 API calls
+// GeneralsX @refactor bobtista 28/08/2026 Import portable WWLib UTF-8 conversion for GameSpy threads.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/2528
 std::wstring MultiByteToWideCharSingleLine( const char *orig )
 {
 	const size_t srcLen = strlen(orig);
@@ -91,4 +92,3 @@ std::string WideCharStringToMultiByte( const WideChar *orig )
 }
 
 //-------------------------------------------------------------------------
-

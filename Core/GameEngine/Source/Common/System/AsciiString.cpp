@@ -308,7 +308,8 @@ char*  AsciiString::getBufferForRead(Int len)
 void AsciiString::translate(const UnicodeString& stringSrc)
 {
 	validate();
-	// TheSuperHackers @fix bobtista 02/04/2026 Implement UTF-8 conversion replacing 7-bit ASCII only implementation
+	// GeneralsX @feature bobtista 28/08/2026 Import UTF-8 conversion in place of the 7-bit-only implementation.
+	// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/2528
 	const WideChar* src = stringSrc.str();
 	const size_t srcLen = wcslen(src);
 	const size_t dstLen = Wide_To_Utf8_Len(src, srcLen);

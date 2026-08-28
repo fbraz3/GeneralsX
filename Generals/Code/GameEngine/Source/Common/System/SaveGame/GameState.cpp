@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
+#include <cstdio>
 #ifndef _WIN32
 #include <filesystem>
 #include "socket_compat.h"
@@ -764,6 +765,8 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 // ------------------------------------------------------------------------------------------------
 /** Load the save game requested on startup, after the shell has been initialized */
 // ------------------------------------------------------------------------------------------------
+// GeneralsX @feature bobtista 28/08/2026 Import queued save loading and release-visible failure diagnostics.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3001
 void GameState::loadQueuedSaveGame()
 {
 	AvailableGameInfo gameInfo;
@@ -776,7 +779,8 @@ void GameState::loadQueuedSaveGame()
 	// getSaveGameInfoFromFile throws when the file is missing, so check before reading it
 	if( doesSaveGameExist( gameInfo.filename ) == FALSE )
 	{
-		DEBUG_LOG(("Save game '%s' was not found", gameInfo.filename.str()));
+		std::fprintf(stderr, "Save game '%s' was not found\n", gameInfo.filename.str());
+		std::fflush(stderr);
 		TheGameEngine->setQuitting( TRUE );
 		return;
 	}
@@ -789,7 +793,8 @@ void GameState::loadQueuedSaveGame()
 	}
 	catch( ... )
 	{
-		DEBUG_LOG(("Save game '%s' could not be read", gameInfo.filename.str()));
+		std::fprintf(stderr, "Save game '%s' could not be read\n", gameInfo.filename.str());
+		std::fflush(stderr);
 		TheGameEngine->setQuitting( TRUE );
 		return;
 	}
@@ -799,7 +804,8 @@ void GameState::loadQueuedSaveGame()
 
 	if( loadGame( gameInfo ) != SC_OK )
 	{
-		DEBUG_LOG(("Failed to load save game '%s'", gameInfo.filename.str()));
+		std::fprintf(stderr, "Failed to load save game '%s'\n", gameInfo.filename.str());
+		std::fflush(stderr);
 		if( TheGameLogic->isInGame() )
 			TheGameLogic->clearGameData( FALSE );
 		TheGameEngine->reset();

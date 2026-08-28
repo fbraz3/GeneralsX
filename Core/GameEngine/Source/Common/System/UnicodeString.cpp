@@ -370,7 +370,8 @@ WideChar* UnicodeString::getBufferForRead(Int len)
 void UnicodeString::translate(const AsciiString& stringSrc)
 {
 	validate();
-	// TheSuperHackers @fix bobtista 02/04/2026 Convert UTF-8 to wide, replacing the 7-bit ASCII only
+	// GeneralsX @feature bobtista 28/08/2026 Import UTF-8-to-wide conversion from upstream PR #2528.
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/2528
 	// implementation. Data that is not valid UTF-8 (e.g. legacy CP1252) falls back to a 1:1 byte cast
 	// to preserve the original characters instead of producing replacement characters.
 	const char* src = stringSrc.str();

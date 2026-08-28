@@ -20,5 +20,7 @@
 
 #include "Common/GameState.h"
 
+// GeneralsX @refactor bobtista 28/08/2026 Import decoupled save/load result presentation.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3000
 void presentSaveResult( const SaveResult &result );
 void presentLoadResult( SaveCode result, const AsciiString &filename );
