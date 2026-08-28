@@ -94,6 +94,92 @@ const Image* ControlBar::m_rankVeteranIcon	= nullptr;
 const Image* ControlBar::m_rankEliteIcon		= nullptr;
 const Image* ControlBar::m_rankHeroicIcon		= nullptr;
 
+// GeneralsX @bugfix arazmj 24/08/2026 Preserve command card aspect ratios on widescreen displays.
+static void centerWindowsWithUniformHorizontalScale(GameWindow **windows, Int count, GameWindow *parent)
+{
+	if (!TheDisplay || !parent || !windows || count <= 0)
+		return;
+
+	const Real xScale = (Real)TheDisplay->getWidth() / DEFAULT_DISPLAY_WIDTH;
+	const Real yScale = (Real)TheDisplay->getHeight() / DEFAULT_DISPLAY_HEIGHT;
+	if (xScale <= yScale)
+		return;
+
+	const Real uniformHorizontalScale = yScale / xScale;
+	Real minScreenX = 1000000.0f;
+	Real maxScreenX = 0.0f;
+	for (Int i = 0; i < count; ++i)
+	{
+		if (!windows[i])
+			continue;
+
+		Int screenX, screenY, width, height;
+		windows[i]->winGetScreenPosition(&screenX, &screenY);
+		windows[i]->winGetSize(&width, &height);
+		minScreenX = MIN(minScreenX, (Real)screenX);
+		maxScreenX = MAX(maxScreenX, (Real)(screenX + width));
+	}
+
+	if (maxScreenX <= minScreenX)
+		return;
+
+	ICoord2D parentSize;
+	parent->winGetSize(&parentSize.x, &parentSize.y);
+	Int parentScreenX, parentScreenY;
+	parent->winGetScreenPosition(&parentScreenX, &parentScreenY);
+	const Real groupWidth = (maxScreenX - minScreenX) * uniformHorizontalScale;
+	const Real groupLeft = parentScreenX + ((Real)parentSize.x - groupWidth) * 0.5f;
+
+	for (Int i = 0; i < count; ++i)
+	{
+		if (!windows[i])
+			continue;
+
+		Int screenX, screenY, width, height;
+		windows[i]->winGetScreenPosition(&screenX, &screenY);
+		windows[i]->winGetSize(&width, &height);
+		Int localX, localY;
+		windows[i]->winGetPosition(&localX, &localY);
+		Int windowParentScreenX = 0;
+		Int windowParentScreenY = 0;
+		GameWindow *windowParent = windows[i]->winGetParent();
+		if (windowParent)
+			windowParent->winGetScreenPosition(&windowParentScreenX, &windowParentScreenY);
+		const Int scaledScreenX =
+			(Int)(groupLeft + ((Real)screenX - minScreenX) * uniformHorizontalScale + 0.5f);
+		const Int scaledX = scaledScreenX - windowParentScreenX;
+		const Int scaledWidth = MAX(1, (Int)((Real)width * uniformHorizontalScale + 0.5f));
+		windows[i]->winSetPosition(scaledX, localY);
+		windows[i]->winSetSize(scaledWidth, height);
+	}
+}
+
+static void scaleWindowContentsWithUniformHorizontalScale(GameWindow **windows, Int count)
+{
+	if (!TheDisplay || !windows || count <= 0)
+		return;
+
+	const Real xScale = (Real)TheDisplay->getWidth() / DEFAULT_DISPLAY_WIDTH;
+	const Real yScale = (Real)TheDisplay->getHeight() / DEFAULT_DISPLAY_HEIGHT;
+	if (xScale <= yScale)
+		return;
+
+	const Real uniformHorizontalScale = yScale / xScale;
+	for (Int i = 0; i < count; ++i)
+	{
+		if (!windows[i])
+			continue;
+
+		Int x, y, width, height;
+		windows[i]->winGetPosition(&x, &y);
+		windows[i]->winGetSize(&width, &height);
+		const Int scaledX = (Int)((Real)x * uniformHorizontalScale + 0.5f);
+		const Int scaledWidth = MAX(1, (Int)((Real)width * uniformHorizontalScale + 0.5f));
+		windows[i]->winSetPosition(scaledX, y);
+		windows[i]->winSetSize(scaledWidth, height);
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandButton //////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1203,6 +1289,34 @@ void ControlBar::init()
 				TheWindowManager->winGetWindowFromId( m_rightHUDWindow, id );
 			m_rightHUDUpgradeCameos[ i ]->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
 		}
+
+		// GeneralsX @bugfix arazmj 24/08/2026 Apply aspect-correct geometry to control-bar card controls.
+		centerWindowsWithUniformHorizontalScale(
+			m_commandWindows,
+			MAX_COMMANDS_PER_SET,
+			m_contextParent[ CP_COMMAND ]);
+
+		GameWindow *rightHUDContent[MAX_RIGHT_HUD_UPGRADE_CAMEOS + 1];
+		rightHUDContent[0] = m_rightHUDCameoWindow;
+		for (i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; ++i)
+			rightHUDContent[i + 1] = m_rightHUDUpgradeCameos[i];
+		centerWindowsWithUniformHorizontalScale(
+			rightHUDContent,
+			MAX_RIGHT_HUD_UPGRADE_CAMEOS + 1,
+			m_rightHUDUnitSelectParent);
+
+		GameWindow *buildQueueWindows[MAX_BUILD_QUEUE_BUTTONS];
+		for (i = 0; i < MAX_BUILD_QUEUE_BUTTONS; ++i)
+		{
+			windowName.format("ControlBar.wnd:ButtonQueue%02d", i + 1);
+			id = TheNameKeyGenerator->nameToKey(windowName.str());
+			buildQueueWindows[i] =
+				TheWindowManager->winGetWindowFromId(m_contextParent[ CP_BUILD_QUEUE ], id);
+		}
+		centerWindowsWithUniformHorizontalScale(
+			buildQueueWindows,
+			MAX_BUILD_QUEUE_BUTTONS,
+			m_contextParent[ CP_BUILD_QUEUE ]);
 
 //		m_transitionHandler = NEW GameWindowTransitionsHandler;
 //		m_transitionHandler->load();
@@ -3308,6 +3422,15 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 				TheWindowManager->winGetWindowFromId( m_specialPowerShortcutParent, id );
 		}
 	}
+
+	// GeneralsX @bugfix arazmj 24/08/2026 Keep shortcut card backgrounds, hit regions, and overlays aspect-correct.
+	centerWindowsWithUniformHorizontalScale(
+		m_specialPowerShortcutButtonParents,
+		m_currentlyUsedSpecialPowersButtons,
+		m_specialPowerShortcutParent);
+	scaleWindowContentsWithUniformHorizontalScale(
+		m_specialPowerShortcutButtons,
+		m_currentlyUsedSpecialPowersButtons);
 
 }
 

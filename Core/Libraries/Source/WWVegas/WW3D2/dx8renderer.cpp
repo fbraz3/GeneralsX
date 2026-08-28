@@ -1361,12 +1361,12 @@ void DX8SkinFVFCategoryContainer::Render()
 					verts[v].nx=(*norm)[0];
 					verts[v].ny=(*norm)[1];
 					verts[v].nz=(*norm)[2];
-					// Force diffuse to white (0xFFFFFFFF) because Base Game infantry 
-					// often have black vertex colors baked into their W3D files
-					// which causes them to render completely black in DXVK when D3DTA_DIFFUSE is used.
-					verts[v].diffuse=0xFFFFFFFF;
+					// GeneralsX @bugfix Copilot 24/08/2026 Preserve authored skin colors and use white only when no color array exists.
 					if (diffuse) {
-						diffuse++; // Advance the pointer if it exists, to keep it in sync if needed (though we only use it here)
+						verts[v].diffuse=*diffuse++;
+					}
+					else {
+						verts[v].diffuse=0xFFFFFFFF;
 					}
 
 					if (uv0) {
@@ -1406,16 +1406,6 @@ void DX8SkinFVFCategoryContainer::Render()
 		DX8Wrapper::Set_Index_Buffer(index_buffer,0);
 
 		//Flush the meshes which fit in the vertex buffer, applying all texture variations
-		// GeneralsX @bugfix fbraz3 19/06/2026 Force COLOR1 diffuse source and disable D3D lighting for skins.
-		// Skinned mesh verts have diffuse=0xFFFFFFFF baked in (see vertex fill loop above).
-		// With D3DRS_LIGHTING=TRUE and D3DMCS_MATERIAL, DXVK's lighting equation produces black
-		// when no LightEnvironment is set. Forcing COLOR1 makes D3DTA_DIFFUSE=vertex.diffuse=white,
-		// so MODULATE(texture, white)=texture - matching original VC6/D3D8 behavior.
-		DX8Wrapper::Apply_Render_State_Changes();
-		DX8Wrapper::Set_DX8_Render_State(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
-		DX8Wrapper::Set_DX8_Render_State(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
-		DX8Wrapper::Set_DX8_Render_State(D3DRS_LIGHTING, FALSE);
-
 		for (unsigned pass=0;pass<passes;++pass) {
 			SNAPSHOT_SAY(("Pass: %d",pass));
 
@@ -1425,10 +1415,6 @@ void DX8SkinFVFCategoryContainer::Render()
 				it.Next();
 			}
 		}
-
-		// Restore render states to defaults after skin render
-		DX8Wrapper::Set_DX8_Render_State(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
-		DX8Wrapper::Set_DX8_Render_State(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
 
 		Render_Procedural_Material_Passes();
 	}
@@ -2294,7 +2280,6 @@ void DX8MeshRendererClass::Invalidate( bool shutdown)
 
 	texture_category_container_lists_rigid.Delete_All();
 }
-
 
 
 
