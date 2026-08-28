@@ -53,6 +53,7 @@ struct NGMPEvent {
         EVENT_LOBBY_CREATE_FAILED,
         EVENT_LOBBY_LEFT,
         EVENT_HOST_MIGRATED,
+        EVENT_GAME_START, // GeneralsX @feature fbraz3 27/08/2026 START_GAME broadcast
         EVENT_PLAYERS_UPDATED
     };
 

@@ -175,6 +175,15 @@ void NGMP_OnlineServicesManager::update() {
                                 chatEv.payload = msgText;
                                 uiEvents.push_back(chatEv);
                             }
+                            else if (msgId == 13) { // START_GAME
+                                // GeneralsX @feature fbraz3 27/08/2026 Dispatch START_GAME to UI thread for simultaneous launch
+                                fprintf(stderr, "[NGMP] WS msg_id=13 (START_GAME): received, dispatching game start event\n");
+                                fflush(stderr);
+
+                                NGMPEvent startEv;
+                                startEv.type = NGMPEvent::EVENT_GAME_START;
+                                uiEvents.push_back(startEv);
+                            }
                             else if (msgId == 18) { // NETWORK_CONNECTION_DISCONNECT_PLAYER
                                 int64_t disconnectedUserId = -1;
                                 if (jsonMsg.contains("user_id") && jsonMsg["user_id"].is_number()) {

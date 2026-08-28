@@ -925,6 +925,28 @@ static void handleLimitSuperweaponsClick()
 
 static void StartPressed()
 {
+#if defined(SAGE_USE_NGMP)
+	if (TheNGMPGame)
+	{
+		// GeneralsX @feature fbraz3 27/08/2026 NGMP simultaneous game start: host broadcasts START_GAME and launches locally
+		std::shared_ptr<WebSocket> pWS = NGMP_OnlineServicesManager::GetWebSocket();
+		if (pWS != nullptr)
+		{
+			pWS->SendData_StartGame();
+			fprintf(stderr, "[NGMP] Host sent START_GAME broadcast (msg_id=13)\n");
+			fflush(stderr);
+		}
+
+		if (buttonBack) buttonBack->winEnable(FALSE);
+		GameWindow* buttonBuddy = TheWindowManager->winGetWindowFromId(
+			nullptr, NAMEKEY("GameSpyGameOptionsMenu.wnd:ButtonCommunicator"));
+		if (buttonBuddy) buttonBuddy->winEnable(FALSE);
+		GameSpyCloseOverlay(GSOVERLAY_BUDDY);
+
+		TheNGMPGame->startGame(0);
+		return;
+	}
+#endif
 	Bool isReady = TRUE;
 	Bool allHaveMap = TRUE;
 	Int playerCount = 0;
@@ -1929,6 +1951,35 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 			UnicodeString uMsg;
 			uMsg.translate(ev.payload.c_str());
 			GadgetListBoxAddEntryText(listboxGameSetupChat, uMsg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+		}
+		else if (ev.type == NGMPEvent::EVENT_GAME_START) {
+			// GeneralsX @feature fbraz3 27/08/2026 Simultaneous game start broadcast received
+			if (TheNGMPGame && TheNGMPGame->isGameInProgress()) {
+				fprintf(stderr, "[NGMP] EVENT_GAME_START: game already in progress, ignoring duplicate event\n");
+				fflush(stderr);
+				continue;
+			}
+
+			NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+			NGMPGame* myGame = pLobbyInterface ? pLobbyInterface->GetCurrentGame() : nullptr;
+
+			if (!TheNGMPGame || !myGame) {
+				fprintf(stderr, "[NGMP] EVENT_GAME_START: TheNGMPGame or myGame is null, cannot launch\n");
+				fflush(stderr);
+				continue;
+			}
+
+			fprintf(stderr, "[NGMP] Received START_GAME, launching game\n");
+			fflush(stderr);
+
+			if (buttonBack) buttonBack->winEnable(FALSE);
+			GameWindow* buttonBuddy = TheWindowManager->winGetWindowFromId(
+				nullptr, NAMEKEY("GameSpyGameOptionsMenu.wnd:ButtonCommunicator"));
+			if (buttonBuddy) buttonBuddy->winEnable(FALSE);
+			GameSpyCloseOverlay(GSOVERLAY_BUDDY);
+
+			*TheNGMPGame = *myGame;
+			TheNGMPGame->startGame(0);
 		}
 	}
 #endif
@@ -3167,15 +3218,28 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 				else if ( controlID == buttonStartID )
 				{
 					savePlayerInfo();
-					if (TheGameSpyInfo->amIHost())
-					{
 #if defined(SAGE_USE_NGMP)
-						NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+					NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+					bool isHost = TheNGMPGame ? TheNGMPGame->amIHost() : (pLobbyInterface ? pLobbyInterface->IsHost() : false);
+					if (isHost)
+					{
 						if (pLobbyInterface != nullptr)
 						{
 							pLobbyInterface->UpdateCurrentLobby_ForceReady();
 						}
-#endif
+						StartPressed();
+					}
+					else
+					{
+						if (pLobbyInterface != nullptr)
+						{
+							pLobbyInterface->UpdateCurrentLobby_ForceReady();
+						}
+						WOLDisplaySlotList();
+					}
+#else
+					if (TheGameSpyInfo->amIHost())
+					{
 						StartPressed();
 					}
 					else
@@ -3186,13 +3250,6 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 						{
 							localSlot->setAccept();
 						}
-#if defined(SAGE_USE_NGMP)
-						NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-						if (pLobbyInterface != nullptr)
-						{
-							pLobbyInterface->UpdateCurrentLobby_ForceReady();
-						}
-#endif
 						UnicodeString hostName = TheGameSpyInfo->getCurrentStagingRoom()->getSlot(0)->getName();
 						AsciiString asciiName;
 						asciiName.translate(hostName);
@@ -3206,6 +3263,7 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 						//peerSetReady( PEER, PEERTrue );
 						WOLDisplaySlotList();
 					}
+#endif
 				}
         else if ( controlID == checkBoxLimitSuperweaponsID )
         {
