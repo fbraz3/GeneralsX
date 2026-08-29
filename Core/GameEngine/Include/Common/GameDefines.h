@@ -149,8 +149,9 @@
 #define USE_BUFFERED_IO (1)
 #endif
 
+// GeneralsX @feature Meeseeks 28/08/2026 Enable deep CRC memory buffer logging by default across all platforms including Windows
 #if (!defined(DEEP_CRC_TO_MEMORY) && !defined(DEBUG_CRC))
-#define DEEP_CRC_TO_MEMORY 0
+#define DEEP_CRC_TO_MEMORY 1
 #endif
 
 // Enable cache for local file existence. Reduces amount of disk accesses for better performance,
