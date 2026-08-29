@@ -314,6 +314,14 @@ void W3DSmudgeManager::render(RenderInfoClass &rinfo)
 	if (!testHardwareSupport())
 		return;
 
+	// TheSuperHackers @performance stephanmeesters 14/08/2026 Early return when we have no smudge sets
+	// or if the global smudge set is the only set and contains no smudges.
+	if (m_usedSmudgeSetList.empty() || (m_usedSmudgeSetList.size() == 1 && m_usedSmudgeSetList.front()->getUsedSmudgeCount() == 0))
+	{
+		m_smudgeCountLastFrame = 0;
+		return;
+	}
+
 	SurfaceClass *backBuffer = DX8Wrapper::_Get_DX8_Back_Buffer();
 
 	if (!backBuffer)
@@ -365,11 +373,8 @@ void W3DSmudgeManager::render(RenderInfoClass &rinfo)
 	SmudgeSetDeque::iterator setIt=m_usedSmudgeSetList.begin();	//first set that didn't fit into render batch.
 	Int count = 0;
 
-	if (setIt != m_usedSmudgeSetList.end())
-	{
-		//there are possibly some smudges to render, so make sure background particles have finished drawing.
-		SortingRendererClass::Flush();	//draw sorted translucent polys like particles.
-	}
+	// make sure background particles have finished drawing.
+	SortingRendererClass::Flush();	//draw sorted translucent polys like particles.
 
 	for(; setIt != m_usedSmudgeSetList.end(); ++setIt)
 	{

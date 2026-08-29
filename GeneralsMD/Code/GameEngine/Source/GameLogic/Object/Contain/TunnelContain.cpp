@@ -285,6 +285,20 @@ void TunnelContain::onSelling()
 }
 
 //-------------------------------------------------------------------------------------------------
+// GeneralsX @bugfix Okladnoj 28/08/2026 Import shared tunnel-network passenger lookup from upstream PR #3136.
+// https://github.com/TheSuperHackers/GeneralsGameCode/pull/3136
+// A whole network shares one passenger list, so a passenger is contained by
+// the endpoint it entered and not by the one that was ordered to unload.
+Bool TunnelContain::isContained( const Object *obj ) const
+{
+	if (OpenContain::isContained(obj))
+		return TRUE;
+
+	const ContainedItemsList *items = getContainedItemsList();
+	return items != nullptr && std::find(items->begin(), items->end(), obj) != items->end();
+}
+
+//-------------------------------------------------------------------------------------------------
 Bool TunnelContain::isValidContainerFor(const Object* obj, Bool checkCapacity) const
 {
 	Player *owningPlayer = getObject()->getControllingPlayer();
