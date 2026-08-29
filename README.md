@@ -6,6 +6,9 @@
 
 GeneralsX delivers **Linux and macOS** builds of **Command & Conquer: Generals and Zero Hour** through a single modern codebase.
 
+> [!TIP]
+> Visit the [GeneralsX project website](https://www.amirrazmjou.com/GeneralsX-Website/) for downloads, documentation, community links, and an overview of the cross-platform engine.
+
 ## How to download
 
 For **official releases and instructions**, visit:
