@@ -3124,7 +3124,9 @@ Bool Object::isSelectable() const
 	if ( m_isSelectable )
     if ( !testStatus(OBJECT_STATUS_UNSELECTABLE) )
 		  if ( !isEffectivelyDead() )
-				//if ( !getTemplate()->isKindOf(KINDOF_DRONE) )//Most drones are unselectable from being slaved, but the SpyDrone needs help
+#if !RETAIL_COMPATIBLE_CRC
+				if ( !getTemplate()->isKindOf(KINDOF_NO_SELECT) )
+#endif
 					return TRUE;
 
   return FALSE;

@@ -528,8 +528,6 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 	Int archiveFileSize = 0;
 	Int numLittleFiles = 0;
 
-	ArchiveFile *archiveFile = NEW StdBIGFile(filename, AsciiString::TheEmptyString);
-
 	DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - opening BIG file %s", filename));
 
 	if (fp == nullptr) {
@@ -571,6 +569,7 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 	fp->seek(0x10, File::START);
 	// read in each directory listing.
 	ArchivedFileInfo *fileInfo = NEW ArchivedFileInfo;
+	ArchiveFile *archiveFile = NEW StdBIGFile(filename, AsciiString::TheEmptyString);
 
 	for (Int i = 0; i < numLittleFiles; ++i) {
 		Int filesize = 0;

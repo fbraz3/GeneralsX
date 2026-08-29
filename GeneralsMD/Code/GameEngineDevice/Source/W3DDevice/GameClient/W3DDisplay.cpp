@@ -1024,7 +1024,6 @@ void W3DDisplay::init()
 		WW3D::Enable_Static_Sort_Lists(true);
 		WW3D::Set_Thumbnail_Enabled(false);
 		WW3D::Set_Screen_UV_Bias( TRUE );  ///< this makes text look good :)
-		WW3D::Set_Texture_Bitdepth(32);
 
 		fprintf(stderr, "[DEBUG-WIN] W3DDisplay::init() - TheGlobalData->m_windowed=%d\n", (int)TheGlobalData->m_windowed);
 		setWindowed( TheGlobalData->m_windowed );
@@ -1113,6 +1112,9 @@ void W3DDisplay::init()
 			DEBUG_CRASH( ("Unable to set render device") );
 			return;
 		}
+		// GeneralsX @bugfix Jaredl-Dev 28/08/2026 Import display-based texture depth and normalize it for WW3D.
+		// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3181
+		WW3D::Set_Texture_Bitdepth(getBitDepth() == 16 ? 16 : 32);
 
 		#ifdef SAGE_USE_SDL3
 		SDL3_ApplyWindowModeForRenderConfig(getWindowed(), getWidth(), getHeight());
