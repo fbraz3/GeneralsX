@@ -7,21 +7,24 @@ def parse_crc_bin(filepath):
     with open(filepath, 'rb') as f:
         data = f.read()
 
-    # Read OS header if present (null terminated string followed by 4 byte length)
-    header_len = 0
-    os_info = ""
-    # Look for the first 0x00 which terminates the OS string
-    null_idx = data.find(b'\x00')
-    if null_idx != -1 and null_idx < 128:
-        os_info = data[:null_idx].decode('utf-8', errors='ignore')
-        header_len = null_idx + 1
-
     print(f"--- Desync Dump: {os.path.basename(filepath)} ---")
-    if os_info:
-        print(f"OS/Arch: {os_info}")
+
+    # Read text header if present (ends with double newline or start of binary frame marker)
+    if data.startswith(b"[ DEEP CRC DATA"):
+        header_end = data.find(b"\n\n")
+        if header_end != -1:
+            header_text = data[:header_end].decode('utf-8', errors='ignore').strip()
+            print(f"{header_text}\n")
+    else:
+        # Fallback for null-terminated legacy headers
+        null_idx = data.find(b'\x00')
+        if null_idx != -1 and null_idx < 128:
+            os_info = data[:null_idx].decode('utf-8', errors='ignore')
+            if os_info:
+                print(f"OS/Arch: {os_info}\n")
     
-    # Locate "MARKER:Objects\x00"
-    marker = b"MARKER:Objects\x00"
+    # Locate "MARKER:Objects"
+    marker = b"MARKER:Objects"
     marker_pos = data.find(marker)
     
     if marker_pos == -1:
@@ -29,10 +32,10 @@ def parse_crc_bin(filepath):
         return
 
     objects_data = data[marker_pos + len(marker):]
-    print(f"\nFound MARKER:Objects at offset {marker_pos}")
+    print(f"Found MARKER:Objects at offset {marker_pos}")
     print(f"Objects data size: {len(objects_data)} bytes")
 
-    # Read first object (Assuming it caused the desync)
+    # Read first parsed object in buffer after MARKER:Objects
     # The format is:
     # xferVersion (4 bytes, little endian uint32)
     # objectID (4 bytes, little endian uint32)
