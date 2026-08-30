@@ -7,6 +7,7 @@ import {
   decodeUdpFrame,
   encodeUdpFrame,
   ipForSlot,
+  ipToDisplayString,
   slotForIp,
   type WebRtcUdpBridgeOptions,
 } from "../../src/net/webrtc-udp-bridge.js";
@@ -50,9 +51,19 @@ describe("encodeUdpFrame / decodeUdpFrame (framing)", () => {
     expect(decoded?.payload).toEqual(payload);
   });
 
+  it("uses the exact 4-byte wire header: srcPort u16 LE at 0, destPort u16 LE at 2, payload at 4", () => {
+    const payload = new Uint8Array([0xaa, 0xbb]);
+    const frame = encodeUdpFrame(0x1234, 0x5678, payload);
+    expect(frame.byteLength).toBe(4 + payload.byteLength);
+    const view = new DataView(frame.buffer);
+    expect(view.getUint16(0, true)).toBe(0x1234);
+    expect(view.getUint16(2, true)).toBe(0x5678);
+    expect(frame.slice(4)).toEqual(payload);
+  });
+
   it("supports an empty payload", () => {
     const frame = encodeUdpFrame(1, 2, new Uint8Array());
-    expect(frame.byteLength).toBe(8);
+    expect(frame.byteLength).toBe(4);
     expect(decodeUdpFrame(frame.buffer)?.payload).toEqual(new Uint8Array());
   });
 
@@ -62,20 +73,30 @@ describe("encodeUdpFrame / decodeUdpFrame (framing)", () => {
     expect(() => encodeUdpFrame(1.5, 100, new Uint8Array())).toThrow(UdpBridgeError);
   });
 
-  it("rejects an oversized payload", () => {
+  it("rejects an oversized payload on encode", () => {
     expect(() => encodeUdpFrame(1, 2, new Uint8Array(64 * 1024))).toThrow(UdpBridgeError);
   });
 
-  it("returns null (never throws) for frames shorter than the 8-byte header", () => {
+  it("returns null (never throws) for frames shorter than the 4-byte header", () => {
     expect(decodeUdpFrame(new Uint8Array([1, 2, 3]).buffer)).toBeNull();
     expect(decodeUdpFrame(new Uint8Array(0).buffer)).toBeNull();
+  });
+
+  it("returns null (drops) for an oversized incoming payload instead of throwing", () => {
+    const oversized = new Uint8Array(4 + 64 * 1024);
+    expect(decodeUdpFrame(oversized.buffer)).toBeNull();
   });
 });
 
 describe("ipForSlot / slotForIp (addressing)", () => {
-  it("maps slot 0 to 10.0.0.1", () => {
-    expect(ipForSlot(0)).toBe("10.0.0.1");
-    expect(slotForIp("10.0.0.1")).toBe(0);
+  it("maps slot 0 to the host-order uint32 for 10.0.0.1", () => {
+    expect(ipForSlot(0)).toBe(0x0a000001);
+    expect(slotForIp(0x0a000001)).toBe(0);
+  });
+
+  it("formats a numeric address as dotted-quad for display only", () => {
+    expect(ipToDisplayString(ipForSlot(0))).toBe("10.0.0.1");
+    expect(ipToDisplayString(BROADCAST_IP)).toBe("255.255.255.255");
   });
 
   it("round-trips across the full room capacity range", () => {
@@ -84,11 +105,12 @@ describe("ipForSlot / slotForIp (addressing)", () => {
     }
   });
 
-  it("rejects malformed addresses, addresses outside the subnet, and the broadcast address", () => {
-    expect(slotForIp("not-an-ip")).toBeNull();
-    expect(slotForIp("192.168.0.1")).toBeNull();
-    expect(slotForIp("10.0.1.1")).toBeNull();
+  it("rejects addresses outside the subnet, the network address, and the broadcast address", () => {
+    expect(slotForIp(0xc0a80001)).toBeNull(); // 192.168.0.1
+    expect(slotForIp(0x0a000101)).toBeNull(); // 10.0.1.1 (different third octet)
+    expect(slotForIp(0x0a000000)).toBeNull(); // 10.0.0.0 (network address, last octet 0)
     expect(slotForIp(BROADCAST_IP)).toBeNull();
+    expect(slotForIp(UNASSIGNED_IP)).toBeNull();
   });
 });
 
@@ -102,12 +124,15 @@ describe("WebRtcUdpBridge peer lifecycle", () => {
     expect(bridge.status().peers.map((p) => p.slot)).toEqual([1]);
   });
 
-  it("only the lower slot of a pair eagerly creates the DataChannel", async () => {
+  it("only the lower slot of a pair eagerly creates the DataChannel, with the exact engine-compatible label and options", async () => {
     const lower = makeBridge();
     lower.signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
     lower.signaling.emit("roster", ROSTER_TWO_PLAYERS);
     await flush();
     expect(lower.peerConnections[0]?.createdChannels).toHaveLength(1);
+    const channel = lower.peerConnections[0]!.createdChannels[0]!;
+    expect(channel.label).toBe("generalsx-udp");
+    expect(channel.options).toEqual({ ordered: false, maxRetransmits: 5 });
 
     const higher = makeBridge();
     higher.signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
@@ -245,7 +270,7 @@ describe("WebRtcUdpBridge send/recv", () => {
     return { bridge, signaling, peerConnections };
   }
 
-  it("delivers a unicast datagram to the destination peer's channel only", async () => {
+  it("delivers a unicast datagram to the destination peer's channel only, returning the peer count reached", async () => {
     const { bridge, peerConnections } = connectTwoPeers();
     await flush();
     peerConnections[0]!.createdChannels[0]!.open();
@@ -253,33 +278,33 @@ describe("WebRtcUdpBridge send/recv", () => {
     bridge.bind(7000);
     const sent = bridge.send(ipForSlot(1), 7000, 6000, new Uint8Array([9, 9, 9]));
 
-    expect(sent).toBe(true);
+    expect(sent).toBe(1);
     expect(peerConnections[0]?.createdChannels[0]?.sent).toHaveLength(1);
     expect(peerConnections[1]?.createdChannels[0]?.sent ?? []).toHaveLength(0);
   });
 
-  it("delivers a broadcast datagram to every peer with an open channel", () => {
+  it("delivers a broadcast datagram (0xffffffff) to every peer with an open channel", () => {
     const { bridge, peerConnections } = connectTwoPeers();
     peerConnections[0]!.createdChannels[0]!.open();
     peerConnections[1]!.createdChannels[0]!.open();
 
     const sent = bridge.send(BROADCAST_IP, 7000, 6000, new Uint8Array([1]));
 
-    expect(sent).toBe(true);
+    expect(sent).toBe(2);
     expect(peerConnections[0]?.createdChannels[0]?.sent).toHaveLength(1);
     expect(peerConnections[1]?.createdChannels[0]?.sent).toHaveLength(1);
   });
 
-  it("returns false (does not throw) when sending to a peer with no open channel", () => {
+  it("returns 0 (does not throw) when sending to a peer with no open channel", () => {
     const { bridge, peerConnections } = connectTwoPeers();
     // Both channels are left in "connecting" state (never opened).
-    expect(bridge.send(ipForSlot(1), 7000, 6000, new Uint8Array([1]))).toBe(false);
+    expect(bridge.send(ipForSlot(1), 7000, 6000, new Uint8Array([1]))).toBe(0);
     expect(peerConnections[0]?.createdChannels[0]?.sent).toHaveLength(0);
   });
 
-  it("returns false when sending to a slot that is not currently connected", () => {
+  it("returns 0 when sending to a slot that is not currently connected", () => {
     const { bridge } = connectTwoPeers();
-    expect(bridge.send(ipForSlot(5), 7000, 6000, new Uint8Array([1]))).toBe(false);
+    expect(bridge.send(ipForSlot(5), 7000, 6000, new Uint8Array([1]))).toBe(0);
   });
 
   it("drops an outgoing datagram under DataChannel send-buffer backpressure", async () => {
@@ -293,17 +318,25 @@ describe("WebRtcUdpBridge send/recv", () => {
 
     const sent = bridge.send(ipForSlot(1), 7000, 6000, new Uint8Array([1, 2, 3]));
 
-    expect(sent).toBe(false);
+    expect(sent).toBe(0);
     expect(channel.sent).toHaveLength(0);
   });
 
   it("throws explicit errors for invalid ports, addresses, and payload types", () => {
     const { bridge } = makeBridge();
-    expect(() => bridge.send("10.0.0.2", -1, 100, new Uint8Array())).toThrow(UdpBridgeError);
-    expect(() => bridge.send("10.0.0.2", 100, 70000, new Uint8Array())).toThrow(UdpBridgeError);
-    expect(() => bridge.send("not-an-ip", 100, 100, new Uint8Array())).toThrow(UdpBridgeError);
-    expect(() => bridge.send("10.0.0.2", 100, 100, "nope" as unknown as Uint8Array<ArrayBuffer>)).toThrow(UdpBridgeError);
+    expect(() => bridge.send(ipForSlot(2), -1, 100, new Uint8Array())).toThrow(UdpBridgeError);
+    expect(() => bridge.send(ipForSlot(2), 100, 70000, new Uint8Array())).toThrow(UdpBridgeError);
+    expect(() => bridge.send(0xc0a80002, 100, 100, new Uint8Array())).toThrow(UdpBridgeError); // 192.168.0.2, wrong subnet
+    expect(() => bridge.send(ipForSlot(2), 100, 100, "nope" as unknown as Uint8Array<ArrayBuffer>)).toThrow(UdpBridgeError);
     expect(() => bridge.bind(70000)).toThrow(UdpBridgeError);
+  });
+
+  it("bind() returns the caller's numeric local IP (0 before joining a room)", () => {
+    const { bridge, signaling } = makeBridge();
+    expect(bridge.bind(7000)).toBe(UNASSIGNED_IP);
+
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    expect(bridge.bind(7001)).toBe(ipForSlot(1));
   });
 
   it("throws when recv() is called on a port that was never bound", () => {
@@ -311,7 +344,7 @@ describe("WebRtcUdpBridge send/recv", () => {
     expect(() => bridge.recv(1234)).toThrow(UdpBridgeError);
   });
 
-  it("queues an incoming datagram for recv(), addressed by the sender's synthetic IP", async () => {
+  it("queues an incoming datagram for recv(), addressed by the sender's numeric synthetic IP", async () => {
     const { bridge, peerConnections } = connectTwoPeers();
     await flush();
     bridge.bind(9000);
@@ -320,7 +353,7 @@ describe("WebRtcUdpBridge send/recv", () => {
     channel.simulateMessage(encodeUdpFrame(1111, 9000, new Uint8Array([7, 8])).buffer);
 
     const datagram = bridge.recv(9000);
-    expect(datagram).toEqual({ data: new Uint8Array([7, 8]), srcIP: ipForSlot(1), srcPort: 1111 });
+    expect(datagram).toEqual({ data: new Uint8Array([7, 8]), ip: ipForSlot(1), port: 1111 });
     expect(bridge.recv(9000)).toBeNull();
   });
 
@@ -332,6 +365,30 @@ describe("WebRtcUdpBridge send/recv", () => {
 
     channel.simulateMessage(new Uint8Array([1, 2, 3]).buffer);
 
+    expect(bridge.recv(9000)).toBeNull();
+  });
+
+  it("drops an oversized incoming frame instead of queueing it", async () => {
+    const { bridge, peerConnections } = connectTwoPeers();
+    await flush();
+    bridge.bind(9000);
+    const channel = peerConnections[0]!.createdChannels[0]!;
+
+    const oversized = new Uint8Array(4 + 64 * 1024);
+    new DataView(oversized.buffer).setUint16(2, 9000, true);
+    channel.simulateMessage(oversized.buffer);
+
+    expect(bridge.recv(9000)).toBeNull();
+  });
+
+  it("drops a non-ArrayBuffer message (e.g. a Blob or string) instead of throwing", async () => {
+    const { bridge, peerConnections } = connectTwoPeers();
+    await flush();
+    bridge.bind(9000);
+    const channel = peerConnections[0]!.createdChannels[0]!;
+
+    expect(() => channel.simulateMessage("not-a-frame" as unknown as ArrayBuffer)).not.toThrow();
+    expect(() => channel.simulateMessage({} as unknown as ArrayBuffer)).not.toThrow();
     expect(bridge.recv(9000)).toBeNull();
   });
 
@@ -355,9 +412,9 @@ describe("WebRtcUdpBridge send/recv", () => {
       channel.simulateMessage(encodeUdpFrame(srcPort, 9000, new Uint8Array([srcPort])).buffer);
     }
 
-    expect(bridge.recv(9000)?.srcPort).toBe(3);
-    expect(bridge.recv(9000)?.srcPort).toBe(4);
-    expect(bridge.recv(9000)?.srcPort).toBe(5);
+    expect(bridge.recv(9000)?.port).toBe(3);
+    expect(bridge.recv(9000)?.port).toBe(4);
+    expect(bridge.recv(9000)?.port).toBe(5);
     expect(bridge.recv(9000)).toBeNull();
   });
 
@@ -382,14 +439,28 @@ describe("WebRtcUdpBridge addressing / status", () => {
     expect(bridge.status()).toMatchObject({ roomId: null, localSlot: null, hostIP: null, peers: [] });
   });
 
-  it("reports the assigned local and host addresses after joining", () => {
+  it("reports the assigned local and host addresses after joining, as host-order uint32 values", () => {
     const { bridge, signaling } = makeBridge();
     signaling.emit("welcome", welcome(2, [...ROSTER_TWO_PLAYERS, { slot: 2, name: "me", isHost: false }]));
 
-    expect(bridge.localIP()).toBe("10.0.0.3");
-    expect(bridge.hostIP()).toBe("10.0.0.1");
+    expect(bridge.localIP()).toBe(ipForSlot(2));
+    expect(bridge.hostIP()).toBe(ipForSlot(0));
     expect(bridge.status().roomId).toBe("ABCD");
     expect(bridge.status().localSlot).toBe(2);
+    expect(bridge.status().localIP).toBe("10.0.0.3");
+    expect(bridge.status().hostIP).toBe("10.0.0.1");
+  });
+
+  it("hostIP() excludes the local slot even when the local player is host, falling back to the sole other peer", () => {
+    const { bridge, signaling } = makeBridge();
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY)); // self only, no other peer yet
+    expect(bridge.hostIP()).toBe(UNASSIGNED_IP);
+
+    signaling.emit("roster", ROSTER_TWO_PLAYERS); // self (host) + exactly one other peer
+    expect(bridge.hostIP()).toBe(ipForSlot(1));
+
+    signaling.emit("roster", ROSTER_THREE_PLAYERS); // self (host) + two other peers: ambiguous
+    expect(bridge.hostIP()).toBe(UNASSIGNED_IP);
   });
 
   it("status() reflects bound ports and per-peer connection/channel state", async () => {

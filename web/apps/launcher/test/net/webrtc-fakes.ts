@@ -75,7 +75,10 @@ export class FakeDataChannel {
   onmessage: ((event: { data: unknown }) => void) | null = null;
   readonly sent: Uint8Array[] = [];
 
-  constructor(readonly label: string) {}
+  constructor(
+    readonly label: string,
+    readonly options: RTCDataChannelInit | undefined = undefined,
+  ) {}
 
   send(data: Uint8Array): void {
     if (this.readyState !== "open") {
@@ -126,8 +129,8 @@ export class FakePeerConnection {
 
   constructor(readonly config: unknown) {}
 
-  createDataChannel(label: string): FakeDataChannel {
-    const channel = new FakeDataChannel(label);
+  createDataChannel(label: string, options?: RTCDataChannelInit): FakeDataChannel {
+    const channel = new FakeDataChannel(label, options);
     this.createdChannels.push(channel);
     // Real browsers fire `negotiationneeded` asynchronously after a
     // DataChannel is created; mirror that so tests can await a microtask

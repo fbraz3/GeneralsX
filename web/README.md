@@ -162,23 +162,41 @@ sockets) can run unmodified in the browser. `main.ts` constructs a
 UI plus the `iceServers` returned by `/turn-credentials`, and publishes it
 as `window.GeneralsXUdp` *before* any (future) engine module instantiation.
 
+The bridge mirrors the wire format and ABI of the engine repository's
+development-harness reference implementation
+(`wasm/webrtc_udp.js`) bit-for-bit, so either transport talks to the
+native engine module unmodified. **Every address is a host-order
+`uint32`, never a string** — `bind()`/`localIP()`/`hostIP()` return
+numbers (`0` means "unassigned"), `send()` takes a numeric `destIP` and
+returns the integer count of peers the datagram was handed to a
+DataChannel for, and `recv()` resolves `{ ip, port, data }` (matching the
+field names the engine's Emscripten glue reads directly off the packet
+object). Display-only strings (dotted-quad IPs) are confined to
+`status()`, which the launcher UI reads for its room panel.
+
 - **Addressing** — every stable room slot (0..capacity-1) maps to a
-  synthetic IPv4 address `10.0.0.(slot+1)`; `10.0.0.255` is a reserved
-  broadcast address that fans a `send()` out to every connected peer.
-- **Framing** — each DataChannel message is an 8-byte header (4-byte
-  little-endian source port, 4-byte little-endian destination port)
-  followed by the raw payload. Anything shorter than the header is
-  dropped as malformed, never queued.
+  synthetic IPv4 address `10.0.0.(slot+1)`, encoded as `uint32`; the
+  reserved broadcast address is `0xffffffff` (not `10.0.0.255`), which
+  fans a `send()` out to every connected peer.
+- **Framing** — each DataChannel message is a 4-byte header (2-byte
+  little-endian source port, 2-byte little-endian destination port)
+  followed by the raw payload. Anything shorter than the header, or with
+  an oversized payload, is dropped as malformed, never queued; incoming
+  messages are also validated to be an `ArrayBuffer` (not a `Blob` or
+  `string`) before being parsed.
 - **Negotiation** — "perfect negotiation" with a deterministic
   polite/impolite role per peer pair (the lower slot is always impolite,
-  creates the DataChannel, and wins glare; the higher slot is polite and
-  yields), so either side can (re)negotiate without a signaling-layer lock.
-  Works with both direct/STUN and TURN-relayed ICE candidates.
-- **Reliability** — DataChannels are `{ ordered: false, maxRetransmits: 0
+  creates the `generalsx-udp` DataChannel, and wins glare; the higher
+  slot is polite and yields), so either side can (re)negotiate without a
+  signaling-layer lock. Works with both direct/STUN and TURN-relayed ICE
+  candidates.
+- **Reliability** — DataChannels are `{ ordered: false, maxRetransmits: 5
   }`: GeneralsX's own engine netcode already implements application-level
-  reliability (acks/resends) on top of UDP, so the transport stays as
-  close to fire-and-forget semantics as WebRTC allows instead of stacking
-  a second, redundant retry/ordering layer on top.
+  reliability (acks/resends) on top of UDP, so the transport stays close
+  to fire-and-forget semantics — with a small bounded retransmit count
+  rather than unlimited, so a lossy link cannot grow the send buffer
+  without bound — instead of stacking a second, redundant retry/ordering
+  layer on top.
 - **Safety bounds** — each bound port's inbox evicts its oldest queued
   datagram once it hits `maxInboxPacketsPerPort` (default 256), and
   outgoing sends are dropped (not queued or blocked) once a channel's
@@ -186,7 +204,7 @@ as `window.GeneralsXUdp` *before* any (future) engine module instantiation.
   mirroring how a real UDP socket drops under congestion.
 - **Explicit errors** — invalid ports/addresses/payload types and using an
   unbound port throw a typed `UdpBridgeError`; network-level conditions
-  (unknown/disconnected peer, backpressure) instead return `false`/`null`,
+  (unknown/disconnected peer, backpressure) instead return `0`/`null`,
   matching best-effort UDP semantics.
 - Peer connections are torn down cleanly on roster departure, an explicit
   `peer-left` signal, or the signaling socket closing.

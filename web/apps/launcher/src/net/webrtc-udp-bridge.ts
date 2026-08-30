@@ -4,35 +4,46 @@
  * Emulates a small UDP-like transport over WebRTC unordered DataChannels so
  * the existing GeneralsX engine networking code (written for real UDP
  * sockets) can run unmodified in the browser. The public surface matches
- * exactly what the engine expects at `window.GeneralsXUdp`: bind/send/recv/
- * close plus localIP/hostIP/joinRoom/status (see `GeneralsXUdpApi`).
+ * exactly what the engine expects at `window.GeneralsXUdp` — see
+ * `GeneralsXUdpApi` and the development-harness reference implementation at
+ * `wasm/webrtc_udp.js` in the engine repository, which this bridge mirrors
+ * bit-for-bit at the wire/ABI level so either transport can talk to the
+ * native engine module unmodified: all addresses and the destination
+ * argument to `send()` are host-order `uint32` values (0 means
+ * "unassigned"), and `bind()`/`send()` return numbers, not booleans.
  *
  * Addressing: every room slot (0..capacity-1, see
  * `@generalsx-web/shared/protocol` and the worker's `room-logic.ts`) is
- * mapped to a stable synthetic IPv4 address `10.0.0.(slot+1)` for the
- * lifetime of that peer's room membership. `10.0.0.255` (`BROADCAST_IP`) is
- * a reserved broadcast address that fans a `send()` out to every currently
- * connected peer with an open channel, mirroring a LAN broadcast.
+ * mapped to a stable synthetic IPv4 address `10.0.0.(slot+1)`, encoded as a
+ * host-order `uint32` (see {@link ipForSlot}), for the lifetime of that
+ * peer's room membership. `0xffffffff` (`BROADCAST_IP`) is a reserved
+ * broadcast address that fans a `send()` out to every currently connected
+ * peer with an open channel, mirroring a LAN broadcast; `send()` returns
+ * the number of peers the datagram was actually handed to a DataChannel
+ * for (0 for an unreachable/unknown/congested target).
  *
  * Framing: every DataChannel message is a UDP-alike datagram: a fixed
- * 8-byte header (4-byte little-endian source port, 4-byte little-endian
+ * 4-byte header (2-byte little-endian source port, 2-byte little-endian
  * destination port) followed by the raw payload bytes. Anything shorter
- * than the header is treated as malformed and dropped.
+ * than the header, or with an oversized payload, is treated as malformed
+ * and dropped.
  *
  * Negotiation: uses the "perfect negotiation" pattern (symmetric offer/
  * answer with glare handled by a deterministic polite/impolite role per
  * peer pair) so either side may (re)negotiate without a signaling-layer
  * lock. For any pair of peers the lower room slot always creates the
- * DataChannel and is "impolite" (wins glare, its offer is never ignored);
- * the higher slot listens via `ondatachannel` and is "polite" (yields to
- * the peer's incoming offer on collision). Exactly one DataChannel exists
- * per peer pair.
+ * DataChannel (labeled `generalsx-udp`) and is "impolite" (wins glare, its
+ * offer is never ignored); the higher slot listens via `ondatachannel` and
+ * is "polite" (yields to the peer's incoming offer on collision). Exactly
+ * one DataChannel exists per peer pair.
  *
  * Reliability: DataChannels are created `{ ordered: false, maxRetransmits:
- * 0 }`. GeneralsX's own engine netcode already implements application-level
- * reliability (acks/resends) on top of raw UDP, so the transport here stays
- * as close to fire-and-forget UDP semantics as WebRTC allows instead of
- * adding a second, redundant retry/ordering layer.
+ * 5 }` — unordered so a stalled retransmit never head-of-line-blocks newer
+ * datagrams, with a small bounded retransmit count (rather than unlimited)
+ * so a lossy link cannot grow the send buffer without bound. GeneralsX's
+ * own engine netcode already implements application-level reliability
+ * (acks/resends) on top of raw UDP, so this stays close to fire-and-forget
+ * UDP semantics instead of adding a second, redundant retry/ordering layer.
  */
 import type { RosterEntry, ServerMessage, SlotId } from "@generalsx-web/shared/protocol";
 import type { SignalingClient } from "./signaling-client.js";
@@ -46,39 +57,51 @@ export type SignalingClientLike = Pick<
   "on" | "off" | "connect" | "sendOffer" | "sendAnswer" | "sendIceCandidate" | "leave" | "close"
 >;
 
-const SUBNET_PREFIX = "10.0.0.";
-/** Reserved broadcast address for the bridge's synthetic `10.0.0.0/24` subnet. */
-export const BROADCAST_IP = "10.0.0.255";
+/** Base of the bridge's synthetic `10.0.0.0/24` subnet, as a host-order `uint32`. */
+const SUBNET_BASE = (10 << 24) >>> 0;
+/** Reserved broadcast address for the bridge's synthetic subnet: a
+ * host-order `uint32`, matching the native/C++ `INADDR_BROADCAST` value
+ * (`0xffffffff`) rather than a string, per the engine ABI. */
+export const BROADCAST_IP = 0xffffffff;
 /** Sentinel address returned when no slot (local or host) is known yet. */
-export const UNASSIGNED_IP = "0.0.0.0";
+export const UNASSIGNED_IP = 0;
 
-const IPV4_RE = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-const FRAME_HEADER_BYTES = 8;
+const FRAME_HEADER_BYTES = 4;
 /** Comfortably under typical WebRTC DataChannel message-size limits. */
 const MAX_PAYLOAD_BYTES = 16 * 1024;
 const DEFAULT_MAX_INBOX_PACKETS_PER_PORT = 256;
 const DEFAULT_MAX_BUFFERED_AMOUNT_BYTES = 64 * 1024;
-/** Unordered + the smallest possible retransmit bound: see the module doc
+/** Exact label the engine's DataChannel transport expects; see
+ * `wasm/webrtc_udp.js` in the engine repository. */
+const DATA_CHANNEL_LABEL = "generalsx-udp";
+/** Unordered + a small bounded retransmit count: see the module doc
  * comment's "Reliability" section above. */
-const DATA_CHANNEL_MAX_RETRANSMITS = 0;
+const DATA_CHANNEL_MAX_RETRANSMITS = 5;
 
-/** Maps a stable room slot to its synthetic IPv4 address. */
-export function ipForSlot(slot: SlotId): string {
-  return `${SUBNET_PREFIX}${slot + 1}`;
+/** Maps a stable room slot to its synthetic IPv4 address, as a host-order
+ * `uint32` (e.g. slot 0 -> `0x0A000001`, i.e. `10.0.0.1`). */
+export function ipForSlot(slot: SlotId): number {
+  return (SUBNET_BASE | ((slot + 1) & 0xff)) >>> 0;
 }
 
 /** Inverse of {@link ipForSlot}. Returns `null` for anything that is not a
  * well-formed address inside the bridge's `10.0.0.1`-`10.0.0.254` range
  * (this deliberately excludes `BROADCAST_IP`, which callers must check for
  * explicitly since it addresses every peer rather than exactly one). */
-export function slotForIp(ip: string): SlotId | null {
-  const match = IPV4_RE.exec(ip);
-  if (!match) return null;
-  const [, a, b, c, d] = match;
-  if (`${a}.${b}.${c}` !== "10.0.0") return null;
-  const lastOctet = Number(d);
-  if (!Number.isInteger(lastOctet) || lastOctet < 1 || lastOctet > 254) return null;
+export function slotForIp(ip: number): SlotId | null {
+  const value = ip >>> 0;
+  if (((value & 0xffffff00) >>> 0) !== SUBNET_BASE) return null;
+  const lastOctet = value & 0xff;
+  if (lastOctet < 1 || lastOctet > 254) return null;
   return lastOctet - 1;
+}
+
+/** Formats a host-order `uint32` address as dotted-quad, for display in
+ * {@link UdpBridgeStatus} only — the engine-facing API always uses the
+ * numeric form. */
+export function ipToDisplayString(ip: number): string {
+  const value = ip >>> 0;
+  return [(value >>> 24) & 0xff, (value >>> 16) & 0xff, (value >>> 8) & 0xff, value & 0xff].join(".");
 }
 
 export type UdpBridgeErrorCode =
@@ -114,7 +137,7 @@ export interface DecodedUdpFrame {
   readonly payload: Uint8Array<ArrayBuffer>;
 }
 
-/** Encodes a UDP-alike frame: 4-byte LE source port, 4-byte LE destination
+/** Encodes a UDP-alike frame: 2-byte LE source port, 2-byte LE destination
  * port, then the raw payload. Throws {@link UdpBridgeError} for out-of-range
  * ports or an oversized payload — both are programming errors, never a
  * network condition. */
@@ -126,34 +149,39 @@ export function encodeUdpFrame(srcPort: number, destPort: number, payload: Uint8
   }
   const frame = new Uint8Array(FRAME_HEADER_BYTES + payload.byteLength);
   const view = new DataView(frame.buffer);
-  view.setUint32(0, srcPort, true);
-  view.setUint32(4, destPort, true);
+  view.setUint16(0, srcPort, true);
+  view.setUint16(2, destPort, true);
   frame.set(payload, FRAME_HEADER_BYTES);
   return frame;
 }
 
 /** Decodes a UDP-alike frame. Returns `null` (rather than throwing) for any
- * buffer shorter than the fixed 8-byte header: malformed frames arrive from
- * the network — a buggy or hostile peer — not from a local programming
- * mistake, so callers should simply drop them. */
+ * buffer shorter than the fixed 4-byte header, or whose payload exceeds
+ * {@link MAX_PAYLOAD_BYTES}: malformed or hostile-oversized frames arrive
+ * from the network — a buggy or malicious peer — not from a local
+ * programming mistake, so callers should simply drop them. */
 export function decodeUdpFrame(data: ArrayBuffer): DecodedUdpFrame | null {
   if (data.byteLength < FRAME_HEADER_BYTES) return null;
+  if (data.byteLength - FRAME_HEADER_BYTES > MAX_PAYLOAD_BYTES) return null;
   const view = new DataView(data);
-  const srcPort = view.getUint32(0, true);
-  const destPort = view.getUint32(4, true);
+  const srcPort = view.getUint16(0, true);
+  const destPort = view.getUint16(2, true);
   const payload = new Uint8Array(data.slice(FRAME_HEADER_BYTES));
   return { srcPort, destPort, payload };
 }
 
-/** A single received datagram, mirroring what a real `recvfrom()` returns. */
+/** A single received datagram, mirroring what a real `recvfrom()` returns.
+ * Field names/types match the engine ABI exactly: the Emscripten glue reads
+ * `pkt.ip` / `pkt.port` / `pkt.data` directly off this object. */
 export interface UdpDatagram {
+  readonly ip: number;
+  readonly port: number;
   readonly data: Uint8Array<ArrayBuffer>;
-  readonly srcIP: string;
-  readonly srcPort: number;
 }
 
 export interface UdpPeerStatus {
   readonly slot: SlotId;
+  /** Dotted-quad, for display only; see {@link ipToDisplayString}. */
   readonly ip: string;
   readonly connectionState: RTCPeerConnectionState;
   readonly channelState: RTCDataChannelState | "none";
@@ -164,20 +192,30 @@ export interface UdpPeerStatus {
 export interface UdpBridgeStatus {
   readonly roomId: string | null;
   readonly localSlot: SlotId | null;
+  /** Dotted-quad, for display only; see {@link ipToDisplayString}. */
   readonly localIP: string;
+  /** Dotted-quad, for display only; `null` when no host is known. */
   readonly hostIP: string | null;
   readonly boundPorts: readonly number[];
   readonly peers: readonly UdpPeerStatus[];
 }
 
-/** The exact surface the engine expects at `window.GeneralsXUdp`. */
+/** The exact surface the engine expects at `window.GeneralsXUdp`. Every
+ * address (`destIP` and the two return values) is a host-order `uint32`,
+ * matching `wasm/webrtc_udp.js` and the native transport plan — never a
+ * string. */
 export interface GeneralsXUdpApi {
-  bind(port: number): void;
-  send(destIP: string, destPort: number, srcPort: number, data: Uint8Array<ArrayBuffer>): boolean;
+  /** Registers `port` for `recv()` and returns the caller's own numeric
+   * local IP (0 if not yet assigned a room slot). */
+  bind(port: number): number;
+  /** Returns the number of peers the datagram was actually handed to an
+   * open DataChannel for (0 for broadcast-with-no-peers, an unknown
+   * target, or a congested/closed channel). */
+  send(destIP: number, destPort: number, srcPort: number, data: Uint8Array<ArrayBuffer>): number;
   recv(port: number): UdpDatagram | null;
   close(port: number): void;
-  localIP(): string;
-  hostIP(): string;
+  localIP(): number;
+  hostIP(): number;
   joinRoom(code: string, options?: { name?: string; capacity?: number }): void;
   status(): UdpBridgeStatus;
 }
@@ -217,7 +255,7 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
 
   private roomId: string | null = null;
   private localSlot: SlotId | null = null;
-  private hostSlot: SlotId | null = null;
+  private roster: readonly RosterEntry[] = [];
 
   constructor(options: WebRtcUdpBridgeOptions) {
     this.signaling = options.signaling;
@@ -236,9 +274,10 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
 
   // ---- GeneralsXUdpApi -----------------------------------------------
 
-  bind(port: number): void {
+  bind(port: number): number {
     assertValidPort(port, "port");
     if (!this.inboxes.has(port)) this.inboxes.set(port, []);
+    return this.localIP();
   }
 
   close(port: number): void {
@@ -253,40 +292,41 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     return inbox.shift() ?? null;
   }
 
-  send(destIP: string, destPort: number, srcPort: number, data: Uint8Array<ArrayBuffer>): boolean {
+  send(destIP: number, destPort: number, srcPort: number, data: Uint8Array<ArrayBuffer>): number {
     assertValidPort(destPort, "destPort");
     assertValidPort(srcPort, "srcPort");
     if (!(data instanceof Uint8Array)) {
       throw new UdpBridgeError("data must be a Uint8Array", "INVALID_PAYLOAD");
     }
     const frame = encodeUdpFrame(srcPort, destPort, data);
+    const normalizedDestIP = destIP >>> 0;
 
-    if (destIP === BROADCAST_IP) {
-      let sentToAny = false;
+    if (normalizedDestIP === BROADCAST_IP) {
+      let sentCount = 0;
       for (const peer of this.peers.values()) {
-        if (this.sendFrameToPeer(peer, frame)) sentToAny = true;
+        if (this.sendFrameToPeer(peer, frame)) sentCount += 1;
       }
-      return sentToAny;
+      return sentCount;
     }
 
-    const targetSlot = slotForIp(destIP);
+    const targetSlot = slotForIp(normalizedDestIP);
     if (targetSlot === null) {
-      throw new UdpBridgeError(`"${destIP}" is not a valid GeneralsX room address`, "INVALID_ADDRESS");
+      throw new UdpBridgeError(`0x${normalizedDestIP.toString(16)} is not a valid GeneralsX room address`, "INVALID_ADDRESS");
     }
     const peer = this.peers.get(targetSlot);
     // No route to that peer (never connected, or already left the room):
     // a real UDP socket has no way to signal this either, so it is a
-    // silent drop rather than a thrown error.
-    if (!peer) return false;
-    return this.sendFrameToPeer(peer, frame);
+    // silent drop (0 peers reached) rather than a thrown error.
+    if (!peer) return 0;
+    return this.sendFrameToPeer(peer, frame) ? 1 : 0;
   }
 
-  localIP(): string {
+  localIP(): number {
     return this.localSlot === null ? UNASSIGNED_IP : ipForSlot(this.localSlot);
   }
 
-  hostIP(): string {
-    return this.hostSlot === null ? UNASSIGNED_IP : ipForSlot(this.hostSlot);
+  hostIP(): number {
+    return this.resolveHostIP();
   }
 
   joinRoom(code: string, options: { name?: string; capacity?: number } = {}): void {
@@ -298,15 +338,16 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   }
 
   status(): UdpBridgeStatus {
+    const hostIP = this.resolveHostIP();
     return {
       roomId: this.roomId,
       localSlot: this.localSlot,
-      localIP: this.localIP(),
-      hostIP: this.hostSlot === null ? null : ipForSlot(this.hostSlot),
+      localIP: ipToDisplayString(this.localIP()),
+      hostIP: hostIP === UNASSIGNED_IP ? null : ipToDisplayString(hostIP),
       boundPorts: [...this.inboxes.keys()],
       peers: [...this.peers.values()].map((peer) => ({
         slot: peer.slot,
-        ip: ipForSlot(peer.slot),
+        ip: ipToDisplayString(ipForSlot(peer.slot)),
         connectionState: peer.pc.connectionState,
         channelState: peer.channel?.readyState ?? "none",
         polite: peer.polite,
@@ -330,7 +371,7 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     this.peers.clear();
     this.roomId = null;
     this.localSlot = null;
-    this.hostSlot = null;
+    this.roster = [];
   }
 
   // ---- Signaling event handlers ---------------------------------------
@@ -367,8 +408,7 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   };
 
   private syncRoster(roster: readonly RosterEntry[]): void {
-    const hostEntry = roster.find((entry) => entry.isHost);
-    this.hostSlot = hostEntry ? hostEntry.slot : null;
+    this.roster = roster;
 
     const rosterSlots = new Set(roster.map((entry) => entry.slot));
     for (const [slot, peer] of this.peers) {
@@ -383,6 +423,22 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
         this.createPeer(entry.slot);
       }
     }
+  }
+
+  /** Resolves the host's numeric address, excluding the local slot even if
+   * the local player is the host (there is never a peer connection to
+   * one's own client, so that case is reported as unassigned). Falls back
+   * to treating the sole other roster entry as the host in a two-player
+   * room even if its `isHost` flag has not propagated yet, matching
+   * `wasm/webrtc_udp.js`. */
+  private resolveHostIP(): number {
+    if (this.localSlot === null) return UNASSIGNED_IP;
+    let host = this.roster.find((entry) => entry.isHost && entry.slot !== this.localSlot);
+    if (!host) {
+      const others = this.roster.filter((entry) => entry.slot !== this.localSlot);
+      if (others.length === 1) host = others[0];
+    }
+    return host ? ipForSlot(host.slot) : UNASSIGNED_IP;
   }
 
   private createPeer(slot: SlotId): PeerRecord {
@@ -408,7 +464,7 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     if (!polite) {
       // The lower-numbered slot always owns channel creation, so exactly
       // one DataChannel is ever created per peer pair.
-      const channel = pc.createDataChannel("udp", {
+      const channel = pc.createDataChannel(DATA_CHANNEL_LABEL, {
         ordered: false,
         maxRetransmits: DATA_CHANNEL_MAX_RETRANSMITS,
       });
@@ -432,8 +488,8 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   private attachDataChannel(peer: PeerRecord, channel: RTCDataChannel): void {
     channel.binaryType = "arraybuffer";
     peer.channel = channel;
-    channel.onmessage = (event: MessageEvent) => {
-      this.handleIncomingFrame(peer.slot, event.data as ArrayBuffer);
+    channel.onmessage = (event: MessageEvent<unknown>) => {
+      this.handleIncomingFrame(peer.slot, event.data);
     };
     channel.onclose = () => {
       if (peer.channel === channel) peer.channel = null;
@@ -467,11 +523,21 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     }
   }
 
-  private handleIncomingFrame(fromSlot: SlotId, rawData: ArrayBuffer): void {
+  /** `channel.binaryType` is always set to `"arraybuffer"` in
+   * {@link attachDataChannel}, so `event.data` should always already be an
+   * `ArrayBuffer` — but browsers are not required to honor that for every
+   * code path (and a non-conforming or malicious remote peer's payload
+   * reaches this handler unauthenticated), so the type is still validated
+   * defensively here rather than assumed. */
+  private handleIncomingFrame(fromSlot: SlotId, rawData: unknown): void {
+    if (!(rawData instanceof ArrayBuffer)) {
+      console.warn(`[GeneralsXUdp] dropped non-ArrayBuffer message from slot ${fromSlot} (typeof ${typeof rawData})`);
+      return;
+    }
     const decoded = decodeUdpFrame(rawData);
     if (!decoded) {
       console.warn(
-        `[GeneralsXUdp] dropped malformed frame from slot ${fromSlot} (${rawData.byteLength} bytes, need >= ${FRAME_HEADER_BYTES})`,
+        `[GeneralsXUdp] dropped malformed or oversized frame from slot ${fromSlot} (${rawData.byteLength} bytes)`,
       );
       return;
     }
@@ -483,7 +549,7 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     if (inbox.length >= this.maxInboxPacketsPerPort) {
       inbox.shift(); // evict the oldest queued datagram to bound memory growth
     }
-    inbox.push({ data: decoded.payload, srcIP: ipForSlot(fromSlot), srcPort: decoded.srcPort });
+    inbox.push({ ip: ipForSlot(fromSlot), port: decoded.srcPort, data: decoded.payload });
   }
 
   private sendFrameToPeer(peer: PeerRecord, frame: Uint8Array<ArrayBuffer>): boolean {
