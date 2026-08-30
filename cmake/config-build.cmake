@@ -15,6 +15,8 @@ option(RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch" ON
 option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS)" OFF)
 option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux/macOS)" OFF)
 option(SAGE_USE_MINIAUDIO "Use MiniAudio for audio backend (Linux/macOS)" OFF)
+# GeneralsX @build Copilot 30/08/2026 Keep native WebRTC dependency opt-in at build time and runtime.
+option(SAGE_USE_NATIVE_WEBRTC "Build the libdatachannel WebRTC UDP transport (macOS/Linux)" OFF)
 
 # GeneralsX @feature BenderAI 21/04/2026 In-game update checker via GitHub Releases API (SDL3+libcurl builds only)
 # Default ON when SDL3 is enabled, but only if the user has not explicitly set SAGE_UPDATE_CHECK.
@@ -48,6 +50,7 @@ add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg sup
 add_feature_info(DeepCRC RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch")
 add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux)")
 add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Linux)")
+add_feature_info(NativeWebRTC SAGE_USE_NATIVE_WEBRTC "Building the optional native WebRTC UDP transport")
 add_feature_info(UpdateCheck SAGE_UPDATE_CHECK "In-game update check via GitHub Releases API")
 add_feature_info(SagePatch RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS)")
 

@@ -28,6 +28,10 @@
 #include "GameNetwork/networkutil.h"
 #include "GameClient/ClientInstance.h"
 
+#ifdef SAGE_NATIVE_WEBRTC
+#include "NativeWebRTCTransport.h"
+#endif
+
 #ifndef _WIN32
 #include <errno.h>
 #include <ifaddrs.h>
@@ -62,6 +66,31 @@ EnumeratedIP * IPEnumeration::getAddresses()
 {
 	if (m_IPlist)
 		return m_IPlist;
+
+#ifdef SAGE_NATIVE_WEBRTC
+	// GeneralsX @feature Copilot 30/08/2026 In explicit WebRTC mode expose only
+	// the room-assigned synthetic address, never an unroutable host interface.
+	auto &webRTC = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
+	webRTC.ConfigureFromProcess();
+	if (webRTC.IsEnabled())
+	{
+		const UnsignedInt address = webRTC.WaitForLocalAddress(10000);
+		if (address != 0)
+		{
+			addNewIP(
+				static_cast<UnsignedByte>((address >> 24) & 0xFF),
+				static_cast<UnsignedByte>((address >> 16) & 0xFF),
+				static_cast<UnsignedByte>((address >> 8) & 0xFF),
+				static_cast<UnsignedByte>(address & 0xFF));
+		}
+		else
+		{
+			fprintf(stderr, "[NativeWebRTC] no synthetic address is available: %s\n", webRTC.LastError().c_str());
+			fflush(stderr);
+		}
+		return m_IPlist;
+	}
+#endif
 
 	if (!m_isWinsockInitialized)
 	{
@@ -287,5 +316,4 @@ AsciiString IPEnumeration::getMachineName()
 
 	return AsciiString(hostname);
 }
-
 

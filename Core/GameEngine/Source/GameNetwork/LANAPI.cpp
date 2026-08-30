@@ -38,6 +38,10 @@
 #include "Common/UserPreferences.h"
 #include "GameLogic/GameLogic.h"
 
+#ifdef SAGE_NATIVE_WEBRTC
+#include "NativeWebRTCTransport.h"
+#endif
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>  // EM_ASM_INT for the synthetic-IP hook (see webrtc_udp.js)
 #endif
@@ -55,6 +59,15 @@ AsciiString GetMessageTypeString(UnsignedInt type);
 // GeneralsX @feature GitHubCopilot 12/04/2026 Discover per-interface IPv4 subnet broadcast addresses for LAN discovery on POSIX.
 static Int GatherSubnetBroadcastAddrs(UnsignedInt localIP, UnsignedInt *outAddrs, Int maxAddrs)
 {
+#ifdef SAGE_NATIVE_WEBRTC
+	// GeneralsX @feature Copilot 30/08/2026 Let the WebRTC bridge fan out the
+	// global broadcast instead of emitting unroutable interface broadcasts.
+	auto &webRTC = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
+	if (webRTC.IsEnabled())
+	{
+		return 0;
+	}
+#endif
 	if (outAddrs == nullptr || maxAddrs <= 0)
 	{
 		return 0;
@@ -1464,6 +1477,22 @@ Bool LANAPI::SetLocalIP( UnsignedInt localIP )
 			return (typeof window !== 'undefined' && window.GeneralsXUdp) ? (window.GeneralsXUdp.localIP() >>> 0) : 0;
 		});
 		if (synth) localIP = synth;
+	}
+#endif
+#ifdef SAGE_NATIVE_WEBRTC
+	// GeneralsX @feature Copilot 30/08/2026 Announce the stable room slot
+	// address when the native WebRTC UDP transport is explicitly enabled.
+	{
+		auto &webRTC = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
+		webRTC.ConfigureFromProcess();
+		if (webRTC.IsEnabled())
+		{
+			const UnsignedInt synth = webRTC.WaitForLocalAddress(10000);
+			if (synth != 0)
+			{
+				localIP = synth;
+			}
+		}
 	}
 #endif
 	Bool retval = TRUE;

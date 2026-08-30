@@ -55,6 +55,13 @@
 
 #define DEFAULT_PROTOCOL 0
 
+#ifdef SAGE_NATIVE_WEBRTC
+namespace GeneralsX::NativeWebRTC
+{
+class NativeWebRTCTransport;
+}
+#endif
+
 //#include "wlib/wstypes.h"
 //#include "wlib/wtime.h"
 
@@ -66,6 +73,10 @@ class UDP
   UnsignedInt       myIP;
   UnsignedShort       myPort;
   struct       sockaddr_in  addr;
+#ifdef SAGE_NATIVE_WEBRTC
+  // GeneralsX @feature Copilot 30/08/2026 Track whether this socket is routed through native WebRTC.
+  Bool      m_useNativeWebRTC;
+#endif
 
  public:
   // These defines specify a system independent way to

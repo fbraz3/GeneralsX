@@ -1205,6 +1205,13 @@ target_link_libraries(corei_gameengine_public INTERFACE
     stlport
 )
 
+# GeneralsX @build Copilot 30/08/2026 Expose the native WebRTC platform service
+# to the shared UDP wrapper only in explicit native WebRTC builds.
+if(SAGE_USE_NATIVE_WEBRTC)
+    target_link_libraries(corei_gameengine_public INTERFACE core_native_webrtc)
+    target_compile_definitions(corei_gameengine_public INTERFACE SAGE_NATIVE_WEBRTC)
+endif()
+
 # ReactOS ATL for MinGW-w64 only (MSVC uses native ATL)
 if(MINGW)
     target_link_libraries(corei_gameengine_public INTERFACE reactos_atl)

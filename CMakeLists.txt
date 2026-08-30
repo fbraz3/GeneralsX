@@ -33,6 +33,8 @@ endif()
 # Top level project, doesn't really affect anything.
 project(genzh LANGUAGES C CXX)
 
+include(CTest)
+
 # GeneralsX @build BenderAI 10/02/2026
 # Linux port: Make CompatLib headers globally accessible so Core libraries (WWLib, WWMath, etc.)
 # can access platform compatibility types when building for non-Windows platforms
@@ -106,6 +108,9 @@ include(cmake/miniaudio.cmake)
 # GeneralsX @feature BenderAI 21/04/2026 libcurl for in-game update checker (SAGE_UPDATE_CHECK builds)
 # curl.cmake is self-guarded with if(SAGE_UPDATE_CHECK), so always safe to include.
 include(cmake/curl.cmake)
+
+# GeneralsX @build Copilot 30/08/2026 Fetch native WebRTC dependencies only when requested.
+include(cmake/native-webrtc.cmake)
 
 # GeneralsX @feature fbraz 03/05/2026 Phase 4: Deterministic math library integration
 # gamemath.cmake integrates fdlibm-based GameMath for cross-platform replay validation.

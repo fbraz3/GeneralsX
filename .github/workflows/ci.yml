@@ -18,6 +18,37 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  native-webrtc-tests:
+    name: Native WebRTC transport (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # GeneralsX @build Copilot 30/08/2026 Compile libdatachannel integration and protocol tests on Linux.
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Install native WebRTC dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            build-essential cmake ninja-build git ca-certificates \
+            libcurl4-openssl-dev libssl-dev
+
+      - name: Configure native WebRTC transport
+        run: |
+          cmake \
+            -S Core/Libraries/Source/Platform/NativeWebRTC \
+            -B build/native-webrtc-linux \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_TESTING=ON
+
+      - name: Build and test native WebRTC transport
+        run: |
+          cmake --build build/native-webrtc-linux \
+            --target core_native_webrtc core_native_webrtc_tests
+          ctest --test-dir build/native-webrtc-linux --output-on-failure
+
   detect-changes:
     name: Detect File Changes
     runs-on: ubuntu-latest
@@ -133,7 +164,7 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [build-linux-flatpak, build-macos, build-windows, replay-test-linux, replay-test-macos, replay-test-windows]
+    needs: [native-webrtc-tests, build-linux-flatpak, build-macos, build-windows, replay-test-linux, replay-test-macos, replay-test-windows]
     if: always()
     steps:
       - name: Generate Summary
@@ -142,6 +173,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Native WebRTC (Linux) | ${{ needs.native-webrtc-tests.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Windows (x86) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'skipped' && '⏭️ Skipped' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
@@ -154,6 +186,7 @@ jobs:
 
       - name: Fail if Any Build or Replay Test Failed
         if: |
+          needs.native-webrtc-tests.result == 'failure' ||
           needs.build-linux-flatpak.result == 'failure' ||
           needs.build-macos.result == 'failure' ||
           needs.build-windows.result == 'failure' ||

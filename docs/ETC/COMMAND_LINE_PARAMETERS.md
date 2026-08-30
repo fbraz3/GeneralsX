@@ -33,6 +33,30 @@ Common command line parameters for `GeneralsX` (Generals) and `GeneralsXZH` (Zer
 | `-replay <file>` | Play a replay file | `./GeneralsXZH -replay match.rep` |
 | `-jobs <count>` | Number of parallel replay jobs | `./GeneralsXZH -jobs 4 -replay *.rep` |
 | `-headless` | Run without graphics (replay testing) | `./GeneralsXZH -headless -replay *.rep` |
+| `-webrtc` | Enables the native macOS/Linux WebRTC UDP transport. Native UDP remains the default. Requires a build configured with `-DSAGE_USE_NATIVE_WEBRTC=ON`. | `./GeneralsXZH -webrtc -webrtc-room LAN1` |
+| `-webrtc-signaling <url>` | Sets the Cloudflare-compatible signaling origin. | `-webrtc-signaling https://signaling.generalsx.org` |
+| `-webrtc-room <code>` | Joins a 4-10 character uppercase alphanumeric room. | `-webrtc-room R7K2QX` |
+| `-webrtc-name <name>` | Sets the signaling roster name (1-24 safe characters). | `-webrtc-name "Native Player"` |
+| `-webrtc-capacity <2-8>` | Sets room capacity when creating a room. | `-webrtc-capacity 4` |
+| `-webrtc-no-turn` | Disables the `/turn-credentials` request and uses direct ICE only. | `./GeneralsXZH -webrtc -webrtc-no-turn` |
+
+### Native WebRTC environment options
+
+The equivalent environment variables are `GENERALSX_WEBRTC=1`,
+`GENERALSX_WEBRTC_SIGNALING_URL`, `GENERALSX_WEBRTC_ROOM`,
+`GENERALSX_WEBRTC_PLAYER_NAME`, `GENERALSX_WEBRTC_CAPACITY`, and
+`GENERALSX_WEBRTC_DISABLE_TURN=1`.
+
+By default, the client retrieves short-lived TURN credentials from the
+signaling origin's `/turn-credentials` endpoint. Long-lived Cloudflare TURN
+keys remain Worker secrets and are never accepted by the game. Operators may
+provide a short-lived RTC `iceServers` array through
+`GENERALSX_WEBRTC_ICE_SERVERS_JSON`; do not place credentials in command-line
+arguments, configuration files, or source control.
+
+The room assigns each connection a stable slot and the synthetic address
+`10.0.0.(slot+1)`. The game continues to use its normal LAN and lockstep
+protocols above the WebRTC-backed UDP abstraction.
 
 ## Common Combinations
 
@@ -92,5 +116,5 @@ grep -n "SKIRMISH_DIAG\|ScoreScreen\|SkirmishGameOptionsMenu" ~/Projects/General
 ## Source Code Reference
 
 Command line parsing is implemented in:
-- `Core/GameEngine/Source/gameclient.cpp` - Client-side parameters
+- `Core/GameEngine/Source/Common/CommandLine.cpp` - Shared parameters
 - `GeneralsMD/Code/Main/WinMain.cpp` - Entry point and initial parsing

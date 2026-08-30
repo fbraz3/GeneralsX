@@ -33,7 +33,13 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/GameEngine.h"
 //#include "GameNetwork/NetworkInterface.h"
+#include "GameNetwork/NetworkDefs.h"
 #include "GameNetwork/udp.h"
+
+#ifdef SAGE_NATIVE_WEBRTC
+#include "NativeWebRTCProtocol.h"
+#include "NativeWebRTCTransport.h"
+#endif
 
 #if defined(_WIN32) && defined(_MSC_VER)
 typedef int socklen_t;
@@ -172,6 +178,13 @@ AsciiString GetWSAErrorString( Int error )
 UDP::UDP()
 {
   fd=0;
+  myIP=0;
+  myPort=0;
+  m_lastError=0;
+#ifdef SAGE_NATIVE_WEBRTC
+  // GeneralsX @feature Copilot 30/08/2026 Preserve native UDP unless runtime WebRTC is explicitly enabled.
+  m_useNativeWebRTC=FALSE;
+#endif
 }
 
 UDP::~UDP()
@@ -180,6 +193,13 @@ UDP::~UDP()
 	if (fd)
 		generalsx_udp_close(myPort);
 #else
+#ifdef SAGE_NATIVE_WEBRTC
+	if (m_useNativeWebRTC)
+	{
+		GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance().Unbind(myPort);
+	}
+	else
+#endif
 	if (fd)
 		closesocket(fd);
 #endif
@@ -228,6 +248,34 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
   fd = Port ? (Int)Port : 1;  // non-zero marker: "bound"
   return(OK);
 #else
+#ifdef SAGE_NATIVE_WEBRTC
+  // GeneralsX @feature Copilot 30/08/2026 Route this socket through the native
+  // room bridge only after an explicit CLI/environment opt-in.
+  auto &webRTC = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
+  webRTC.ConfigureFromProcess();
+  if (webRTC.IsEnabled())
+  {
+    if (webRTC.HasFailed())
+    {
+      m_lastError = EADDRNOTAVAIL;
+      return(ADDRNOTAVAIL);
+    }
+    const UnsignedShort assignedPort = webRTC.Bind(Port);
+    if (assignedPort == 0)
+    {
+      m_lastError = EADDRNOTAVAIL;
+      return(ADDRNOTAVAIL);
+    }
+    m_useNativeWebRTC = TRUE;
+    myPort = assignedPort;
+    myIP = webRTC.LocalAddress();
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(myPort);
+    addr.sin_addr.s_addr = htonl(myIP);
+    fd = 1;
+    return(OK);
+  }
+#endif
   int retval;
   int status;
   UnsignedInt ipHostOrder = IP;
@@ -290,6 +338,18 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
 
 Int UDP::getLocalAddr(UnsignedInt &ip, UnsignedShort &port)
 {
+#ifdef SAGE_NATIVE_WEBRTC
+  // GeneralsX @feature Copilot 30/08/2026 Refresh the asynchronously assigned synthetic address.
+  if (m_useNativeWebRTC)
+  {
+    const UnsignedInt address =
+      GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance().LocalAddress();
+    if (address != 0)
+    {
+      myIP = address;
+    }
+  }
+#endif
   ip=myIP;
   port=myPort;
   return(OK);
@@ -339,6 +399,22 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
   generalsx_udp_send(IP, port, myPort, msg, (int)len);
   return((Int)len);
 #else
+#ifdef SAGE_NATIVE_WEBRTC
+  // GeneralsX @feature Copilot 30/08/2026 Preserve lossy UDP send semantics
+  // while the bridge safely drops closed or backpressured DataChannels.
+  if (m_useNativeWebRTC)
+  {
+    auto &webRTC = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
+    if (webRTC.HasFailed())
+    {
+      m_lastError = EADDRNOTAVAIL;
+      return(-1);
+    }
+    webRTC.Send(
+      IP, port, myPort, msg, static_cast<std::size_t>(len));
+    return(static_cast<Int>(len));
+  }
+#endif
   Int retval;
   struct sockaddr_in to;
 
@@ -392,6 +468,27 @@ Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
   }
   return(n);
 #else
+#ifdef SAGE_NATIVE_WEBRTC
+  // GeneralsX @feature Copilot 30/08/2026 Drain the mutex-protected main-thread inbox.
+  if (m_useNativeWebRTC)
+  {
+    GeneralsX::NativeWebRTC::ReceivedDatagram received;
+    const Int result = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance().Receive(
+      myPort, msg, static_cast<std::size_t>(len), &received);
+    if (result < 0)
+    {
+      m_lastError = EADDRNOTAVAIL;
+      return(-1);
+    }
+    if (result > 0 && from != nullptr)
+    {
+      from->sin_family = AF_INET;
+      from->sin_addr.s_addr = htonl(received.sourceAddress);
+      from->sin_port = htons(received.sourcePort);
+    }
+    return(result);
+  }
+#endif
   Int retval;
   // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
   socklen_t alen=sizeof(sockaddr_in);
@@ -517,6 +614,9 @@ UDP::sockStat UDP::GetStatus()
     #endif
     case EBADF:
       return BADF;
+    // GeneralsX @feature Copilot 30/08/2026 Surface terminal WebRTC signaling failures to Transport.
+    case EADDRNOTAVAIL:
+      return ADDRNOTAVAIL;
     default:
       return UNKNOWN;
   }
@@ -617,6 +717,11 @@ int UDP::Wait(Int sec,Int usec,fd_set &givenSet,fd_set &returnSet)
 
 Int UDP::SetInputBuffer(UnsignedInt bytes)
 {
+#ifdef SAGE_NATIVE_WEBRTC
+   // GeneralsX @feature Copilot 30/08/2026 Native WebRTC uses a fixed bounded userspace inbox.
+   if (m_useNativeWebRTC)
+     return TRUE;
+#endif
    int retval,arg=bytes;
 
    retval=setsockopt(fd,SOL_SOCKET,SO_RCVBUF,
@@ -631,6 +736,11 @@ Int UDP::SetInputBuffer(UnsignedInt bytes)
 
 Int UDP::SetOutputBuffer(UnsignedInt bytes)
 {
+#ifdef SAGE_NATIVE_WEBRTC
+   // GeneralsX @feature Copilot 30/08/2026 Native WebRTC enforces its own DataChannel backpressure cap.
+   if (m_useNativeWebRTC)
+     return TRUE;
+#endif
    int retval,arg=bytes;
 
    retval=setsockopt(fd,SOL_SOCKET,SO_SNDBUF,
@@ -645,6 +755,11 @@ Int UDP::SetOutputBuffer(UnsignedInt bytes)
 
 int UDP::GetInputBuffer()
 {
+#ifdef SAGE_NATIVE_WEBRTC
+   // GeneralsX @feature Copilot 30/08/2026 Report the fixed packet-capacity approximation.
+   if (m_useNativeWebRTC)
+     return static_cast<int>(GeneralsX::NativeWebRTC::MAX_INBOX_PACKETS * MAX_NETWORK_MESSAGE_LEN);
+#endif
    int retval,arg=0;
    // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
    socklen_t len=sizeof(int);
@@ -657,6 +772,11 @@ int UDP::GetInputBuffer()
 
 int UDP::GetOutputBuffer()
 {
+#ifdef SAGE_NATIVE_WEBRTC
+   // GeneralsX @feature Copilot 30/08/2026 Report the bridge's hard buffered-byte threshold.
+   if (m_useNativeWebRTC)
+     return static_cast<int>(GeneralsX::NativeWebRTC::MAX_BUFFERED_BYTES);
+#endif
    int retval,arg=0;
    // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
    socklen_t len=sizeof(int);
@@ -671,6 +791,10 @@ Int UDP::AllowBroadcasts(Bool status)
 #ifdef __EMSCRIPTEN__
 	return TRUE;  // broadcast == fan-out to the room; always available
 #else
+#ifdef SAGE_NATIVE_WEBRTC
+	if (m_useNativeWebRTC)
+		return TRUE;
+#endif
 	int retval;
 	BOOL val = status;
 	retval = setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (char *)&val, sizeof(BOOL));
