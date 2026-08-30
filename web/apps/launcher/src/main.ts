@@ -9,10 +9,15 @@ import { openAssetStorage, requestPersistentStorage } from "./assets/storage.js"
 import { AssetStorageQuotaError, AssetIntegrityError, AssetCancelledError } from "./assets/errors.js";
 import type { AssetVfs } from "./assets/vfs.js";
 import { launchEmscriptenEngine } from "./engine/emscripten-loader.js";
-import { createGameCanvas } from "./ui/canvas.js";
+import { createGameCanvas, lockGameCanvasSize } from "./ui/canvas.js";
 import { createLoadingOverlay } from "./ui/loading.js";
 import { createErrorOverlay } from "./ui/error.js";
-import { createSettingsPanel } from "./ui/settings.js";
+import {
+  createSettingsPanel,
+  DEFAULT_SETTINGS,
+  generateBrowserPlayerName,
+  normalizePlayerName,
+} from "./ui/settings.js";
 import { createRoomPanel, generateRoomId, type RoomPanel } from "./ui/room.js";
 import { SignalingClient } from "./net/signaling-client.js";
 import { WebRtcUdpBridge, type JoinIssue } from "./net/webrtc-udp-bridge.js";
@@ -64,10 +69,17 @@ async function startEngineBoot(): Promise<void> {
   const canvas = createGameCanvas(app);
   const loading = createLoadingOverlay(app);
   const error = createErrorOverlay(app);
-  const settings = createSettingsPanel(app, () => {
-    /* Settings changes are applied to the engine once it is embedded; this
-     * scaffold only persists them in memory via the panel's own state. */
-  });
+  const defaultPlayerName = generateBrowserPlayerName();
+  window.GENERALSX_PLAYER_NAME = defaultPlayerName;
+  const settings = createSettingsPanel(
+    app,
+    (updated) => {
+      window.GENERALSX_PLAYER_NAME = normalizePlayerName(updated.playerName) || defaultPlayerName;
+    },
+    { ...DEFAULT_SETTINGS, playerName: defaultPlayerName },
+  );
+  const currentPlayerName = (): string =>
+    normalizePlayerName(settings.getSettings().playerName) || defaultPlayerName;
 
   // `roomRef.value` is assigned after the manifest-backed bridge exists;
   // `onJoinIssue` only fires later in response to a room-panel action.
@@ -119,11 +131,11 @@ async function startEngineBoot(): Promise<void> {
     {
       onCreateRoom(capacity) {
         room.setWarning(null);
-        udpBridge.joinRoom(generateRoomId(), { capacity });
+        udpBridge.joinRoom(generateRoomId(), { capacity, name: currentPlayerName() });
       },
       onJoinRoom(roomId) {
         room.setWarning(null);
-        udpBridge.joinRoom(roomId);
+        udpBridge.joinRoom(roomId, { name: currentPlayerName() });
       },
       onLeaveRoom() {
         udpBridge.leaveRoom();
@@ -175,11 +187,15 @@ async function startEngineBoot(): Promise<void> {
   }
 
   try {
+    lockGameCanvasSize(canvas);
+    loading.setProgress(0);
     const engine = await launchEmscriptenEngine({
       assets: mountedAssets,
       canvas,
       settings: settings.getSettings(),
       onStatus: (status) => loading.setStatus(status),
+      onStageProgress: (completedBytes, totalBytes) =>
+        loading.setProgress(completedBytes / Math.max(1, totalBytes)),
       onLog: (text) => globalThis.console.log(`[GeneralsX] ${text}`),
     });
     engine.generalsxAudio?.bindUserGesture(canvas);

@@ -1,6 +1,8 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from "vitest";
-import { createGameCanvas } from "../../src/ui/canvas.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createGameCanvas, lockGameCanvasSize } from "../../src/ui/canvas.js";
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe("createGameCanvas", () => {
   it("mounts exactly one canvas element into the container", () => {
@@ -21,5 +23,23 @@ describe("createGameCanvas", () => {
     // must clamp to a minimum of 1 rather than producing a 0x0 backing store.
     expect(canvas.width).toBeGreaterThanOrEqual(1);
     expect(canvas.height).toBeGreaterThanOrEqual(1);
+  });
+
+  it("stops backing-store reallocations once the engine starts", () => {
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe(): void {}
+        disconnect(): void {
+          disconnect();
+        }
+      },
+    );
+    const canvas = createGameCanvas(document.createElement("div"));
+
+    lockGameCanvasSize(canvas);
+
+    expect(disconnect).toHaveBeenCalledOnce();
   });
 });

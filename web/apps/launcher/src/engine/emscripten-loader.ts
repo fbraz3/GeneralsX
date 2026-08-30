@@ -62,6 +62,7 @@ export interface LaunchEngineOptions {
   readonly udpReady?: Promise<unknown>;
   readonly host?: EngineScriptHost;
   readonly onStatus?: (status: string) => void;
+  readonly onStageProgress?: (completedBytes: number, totalBytes: number) => void;
   readonly onLog?: (text: string) => void;
 }
 
@@ -109,6 +110,7 @@ async function stageStreamingAsset(
   fs: EmscriptenFileSystem,
   entry: VfsEntry,
   onStatus: (status: string) => void,
+  onBytesStaged: (bytes: number) => void,
 ): Promise<void> {
   fs.mkdirTree(parentPath(entry.target));
   const stream = fs.open(entry.target, "w+");
@@ -126,6 +128,7 @@ async function stageStreamingAsset(
       if (written !== chunk.byteLength) {
         throw new EngineBootError(`short write while staging "${entry.path}"`);
       }
+      onBytesStaged(written);
       onStatus(`Mounting ${entry.path} (${Math.round(((offset + written) / entry.sizeBytes) * 100)}%)`);
     }
   } finally {
@@ -139,6 +142,7 @@ export async function stageEngineAssets(
   settings: LauncherSettings,
   canvas: HTMLCanvasElement,
   onStatus: (status: string) => void = () => undefined,
+  onProgress: (completedBytes: number, totalBytes: number) => void = () => undefined,
 ): Promise<void> {
   runtime.ENV.CNC_GENERALS_ZH_PATH = "/game";
   runtime.ENV.CNC_GENERALS_PATH = "/game-base";
@@ -156,10 +160,17 @@ export async function stageEngineAssets(
   );
 
   const runtimeEntries = source.list().filter((entry) => !ENGINE_ROLES.has(entry.role));
+  const totalBytes = runtimeEntries.reduce((total, entry) => total + entry.sizeBytes, 0);
+  let completedBytes = 0;
+  const reportBytes = (bytes: number): void => {
+    completedBytes += bytes;
+    onProgress(completedBytes, totalBytes);
+  };
+  onProgress(0, totalBytes);
   for (const entry of runtimeEntries) {
     onStatus(`Mounting ${entry.path}`);
     if (entry.streaming) {
-      await stageStreamingAsset(source, fs, entry, onStatus);
+      await stageStreamingAsset(source, fs, entry, onStatus, reportBytes);
     } else {
       const bytes = await source.readAll(entry.target);
       if (bytes.byteLength !== entry.sizeBytes) {
@@ -169,6 +180,7 @@ export async function stageEngineAssets(
       }
       fs.mkdirTree(parentPath(entry.target));
       fs.writeFile(entry.target, bytes, { canOwn: true });
+      reportBytes(bytes.byteLength);
     }
   }
   source.clearCache();
@@ -269,7 +281,14 @@ export async function launchEmscriptenEngine(
           rejectRuntime(error);
           return;
         }
-        void stageEngineAssets(options.assets, runtime, options.settings, options.canvas, onStatus)
+        void stageEngineAssets(
+          options.assets,
+          runtime,
+          options.settings,
+          options.canvas,
+          onStatus,
+          options.onStageProgress,
+        )
           .then(() => runtime.removeRunDependency(dependency))
           .catch((error: unknown) => {
             const bootError =

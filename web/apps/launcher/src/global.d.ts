@@ -11,6 +11,8 @@ declare global {
   interface Window {
     GeneralsXUdp?: GeneralsXUdpApi;
     Module?: EmscriptenModuleConfig;
+    GENERALSX_PLAYER_NAME?: string;
+    GENERALSX_AUTO_MODE?: "host" | "join";
   }
 }
 

@@ -1,6 +1,21 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest";
-import { createSettingsPanel, DEFAULT_SETTINGS } from "../../src/ui/settings.js";
+import {
+  createSettingsPanel,
+  DEFAULT_SETTINGS,
+  generateBrowserPlayerName,
+  normalizePlayerName,
+} from "../../src/ui/settings.js";
+
+describe("browser player names", () => {
+  it("generates a LAN-safe per-page default", () => {
+    expect(generateBrowserPlayerName(() => "ab12-cdef")).toBe("Player-AB12");
+  });
+
+  it("removes protocol delimiters and enforces the LAN packet limit", () => {
+    expect(normalizePlayerName("  Véry!/Long:Name;Here  ")).toBe("VryLongNameH");
+  });
+});
 
 describe("createSettingsPanel", () => {
   it("mounts hidden and pre-fills inputs from the initial settings", () => {
@@ -32,11 +47,12 @@ describe("createSettingsPanel", () => {
     const panel = createSettingsPanel(document.createElement("div"), onChange);
     const nameInput = panel.element.querySelector('input[type="text"]') as HTMLInputElement;
 
-    nameInput.value = "Camilla";
+    nameInput.value = "Camilla,Prime";
     nameInput.dispatchEvent(new Event("change"));
 
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ playerName: "Camilla" }));
-    expect(panel.getSettings().playerName).toBe("Camilla");
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ playerName: "CamillaPrime" }));
+    expect(panel.getSettings().playerName).toBe("CamillaPrime");
+    expect(nameInput.value).toBe("CamillaPrime");
   });
 
   it("changing the graphics quality select updates getSettings", () => {

@@ -1,6 +1,8 @@
+const resizeObservers = new WeakMap<HTMLCanvasElement, ResizeObserver>();
+
 /** Creates and mounts the WebGL/WebGPU render target canvas used by the
- * Emscripten engine module. Sizing follows the container via ResizeObserver
- * so the canvas always matches its CSS box in device pixels. */
+ * Emscripten engine module. Sizing follows the container until the engine
+ * claims the backing store. */
 export function createGameCanvas(container: HTMLElement): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   // d8web creates its WebGL2 context against the Emscripten-standard
@@ -16,8 +18,17 @@ export function createGameCanvas(container: HTMLElement): HTMLCanvasElement {
   };
 
   const observer = new ResizeObserver(resize);
+  resizeObservers.set(canvas, observer);
   observer.observe(canvas);
   resize();
 
   return canvas;
+}
+
+/** Keeps the engine's fixed-size backbuffer stable while CSS scales the
+ * canvas to later viewport changes. Reallocating the backing store after
+ * WebGL startup breaks rendering and pointer coordinates. */
+export function lockGameCanvasSize(canvas: HTMLCanvasElement): void {
+  resizeObservers.get(canvas)?.disconnect();
+  resizeObservers.delete(canvas);
 }

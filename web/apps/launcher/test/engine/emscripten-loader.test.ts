@@ -145,8 +145,16 @@ describe("stageEngineAssets", () => {
     const fs = new FakeFileSystem();
     const runtime = fakeRuntime(fs);
     const canvas = { width: 1024, height: 768 } as HTMLCanvasElement;
+    const progress: Array<[number, number]> = [];
 
-    await stageEngineAssets(assets, runtime, SETTINGS, canvas);
+    await stageEngineAssets(
+      assets,
+      runtime,
+      SETTINGS,
+      canvas,
+      undefined,
+      (completed, total) => progress.push([completed, total]),
+    );
 
     expect(runtime.ENV).toMatchObject({
       CNC_GENERALS_ZH_PATH: "/game",
@@ -162,6 +170,8 @@ describe("stageEngineAssets", () => {
       { target: "/game/INIZH.big", offset: 0, length: 4 * 1024 * 1024 },
       { target: "/game/INIZH.big", offset: 4 * 1024 * 1024, length: 1024 * 1024 },
     ]);
+    expect(progress[0]).toEqual([0, archiveBytes.length + scriptBytes.length]);
+    expect(progress.at(-1)).toEqual([archiveBytes.length + scriptBytes.length, archiveBytes.length + scriptBytes.length]);
     expect(assets.cleared).toBe(true);
   });
 

@@ -1,14 +1,30 @@
+import { PLAYER_NAME_RE } from "@generalsx-web/shared/protocol";
+
 export interface LauncherSettings {
   readonly volume: number; // 0..1
   readonly graphicsQuality: "low" | "medium" | "high";
   readonly playerName: string;
 }
 
+const MAX_LAN_PLAYER_NAME_LENGTH = 12;
+
 export const DEFAULT_SETTINGS: LauncherSettings = {
   volume: 0.8,
   graphicsQuality: "medium",
   playerName: "",
 };
+
+export function normalizePlayerName(value: string): string {
+  const validCharacters = [...value].filter((character) => PLAYER_NAME_RE.test(character));
+  return validCharacters.join("").trim().slice(0, MAX_LAN_PLAYER_NAME_LENGTH);
+}
+
+export function generateBrowserPlayerName(
+  randomId: () => string = () => crypto.randomUUID(),
+): string {
+  const suffix = randomId().replace(/[^A-Fa-f0-9]/g, "").slice(0, 4).toUpperCase().padEnd(4, "0");
+  return `Player-${suffix}`;
+}
 
 export interface SettingsPanel {
   readonly element: HTMLElement;
@@ -62,10 +78,11 @@ export function createSettingsPanel(
 
   const emit = (): void => {
     settings = {
-      playerName: nameInput.value,
+      playerName: normalizePlayerName(nameInput.value),
       volume: Number(volumeInput.value),
       graphicsQuality: qualitySelect.value as LauncherSettings["graphicsQuality"],
     };
+    nameInput.value = settings.playerName;
     onChange(settings);
   };
 
