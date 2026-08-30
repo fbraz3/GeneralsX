@@ -35,7 +35,7 @@ body {
   background: #000;
 }
 
-.gx-overlay {
+.gx-overlay:not([hidden]) {
   position: absolute;
   inset: 0;
   display: flex;

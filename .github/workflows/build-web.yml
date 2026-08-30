@@ -1,0 +1,176 @@
+name: Build Web
+
+# GeneralsX @build Copilot 30/08/2026 CI gate for the web/ npm workspace
+# (browser launcher shell + Cloudflare signaling worker). Covers lint,
+# typecheck, unit tests, and build across all workspaces, plus a
+# fixture-based Playwright browser smoke test for the launcher that never
+# fetches, embeds, or proxies retail game assets (see
+# web/apps/launcher/e2e/fixtures.ts). This workflow validates the browser
+# port's own JS/TS surface only — it does NOT exercise the compiled
+# WebAssembly engine module (see build-wasm.yml) and does NOT claim any
+# browser-to-native or live TURN relay coverage (see the turn-credentials-
+# smoke job below, which is explicitly staged/secret-gated and skipped
+# unless the required secrets are configured).
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
+        default: ""
+        description: "Git ref to checkout (branch, tag, or SHA). Leave empty for default."
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  web-gate:
+    name: web-lint-typecheck-test-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Lint
+        working-directory: web
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: web
+        run: npm run typecheck
+
+      - name: Unit Tests
+        working-directory: web
+        run: npm run test
+
+      - name: Build
+        working-directory: web
+        run: npm run build
+
+  browser-smoke:
+    name: web-browser-smoke-e2e
+    needs: web-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v5
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}
+
+      - name: Install Playwright Chromium
+        working-directory: web
+        # GeneralsX @build Copilot 30/08/2026 --with-deps installs the OS-level
+        # shared libraries Chromium needs on a bare ubuntu-latest runner; skip
+        # the (slow) browser download itself when the cache already has it.
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            npx playwright install-deps chromium
+          else
+            npx playwright install --with-deps chromium
+          fi
+
+      - name: Browser Smoke Test (fixture-based, no retail assets)
+        working-directory: web/apps/launcher
+        run: npm run test:e2e
+
+      - name: Upload Playwright Report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: web/apps/launcher/playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # GeneralsX @build Copilot 30/08/2026 Explicitly staged and secret-gated:
+  # this job proves the Cloudflare Worker's live TURN credential issuance
+  # endpoint (fetchTurnCredentials) still round-trips against the real
+  # Cloudflare Calls TURN API. It intentionally does NOT run on public pull
+  # requests (no access to repository secrets) and it intentionally does
+  # NOT exercise browser-to-native WebRTC connectivity end-to-end — that
+  # capability is not implemented in this repository yet and must not be
+  # claimed as covered by this job or by CI in general.
+  turn-credentials-smoke:
+    name: turn-credentials-smoke (staged, secret-gated)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: turn-smoke
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Check Required Secrets
+        id: secret-check
+        run: |
+          if [ -n "${{ secrets.TURN_KEY_ID }}" ] && [ -n "${{ secrets.TURN_KEY_API_TOKEN }}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::TURN_KEY_ID/TURN_KEY_API_TOKEN are not configured for this environment; skipping the live TURN credential smoke test. This job never runs on public pull requests and does not gate the main CI pipeline."
+          fi
+
+      - name: Live TURN Credential Issuance Smoke Test
+        if: steps.secret-check.outputs.configured == 'true'
+        working-directory: web/apps/worker
+        env:
+          TURN_KEY_ID: ${{ secrets.TURN_KEY_ID }}
+          TURN_KEY_API_TOKEN: ${{ secrets.TURN_KEY_API_TOKEN }}
+        # GeneralsX @build Copilot 30/08/2026 Runs only this one live test file;
+        # it is otherwise skipped (via it.skipIf) in the regular `npm run test`
+        # gate whenever these secrets are absent, e.g. on every pull request.
+        run: npx vitest run test/turn/turn-credentials.live.test.ts

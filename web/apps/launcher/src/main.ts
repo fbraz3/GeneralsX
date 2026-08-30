@@ -57,6 +57,10 @@ async function startEngineBoot(): Promise<void> {
   activeBoot = bootAbort;
 
   const app = requireElement("app");
+  // Retry (see the error overlay's onRetry callback below) re-invokes this
+  // whole function; without clearing first, each retry would append a
+  // second full set of canvas/overlay/panel elements on top of the first.
+  app.replaceChildren();
   createGameCanvas(app);
   const loading = createLoadingOverlay(app);
   const error = createErrorOverlay(app);

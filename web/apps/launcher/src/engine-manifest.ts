@@ -11,7 +11,11 @@ export type ManifestLoadResult =
 
 export async function loadEngineManifest(
   manifestUrl: string,
-  fetchImpl: typeof fetch = fetch,
+  // Bound rather than a bare reference: real browsers brand-check `fetch`'s
+  // `this` value, so an unbound reference throws "Illegal invocation" the
+  // moment it's invoked through a detached local variable (as it always is
+  // here, via the `fetchImpl` parameter).
+  fetchImpl: typeof fetch = fetch.bind(globalThis),
 ): Promise<ManifestLoadResult> {
   let response: Response;
   try {

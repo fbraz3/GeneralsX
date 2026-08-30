@@ -5,3 +5,7 @@ dist/
 coverage/
 .DS_Store
 *.log
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

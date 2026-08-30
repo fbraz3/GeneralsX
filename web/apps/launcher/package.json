@@ -6,7 +6,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "dev": "vite",
+    "preview": "vite preview --port 4173 --strictPort",
     "build": "vite build && node scripts/write-headers.ts",
     "build:manifest": "node scripts/build-asset-manifest.ts"
   },
@@ -14,7 +16,9 @@
     "@generalsx-web/shared": "0.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "@types/node": "26.4.0",
+    "happy-dom": "20.12.0",
     "typescript": "6.0.3",
     "vite": "8.2.2",
     "vitest": "4.1.11"

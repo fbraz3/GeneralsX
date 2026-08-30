@@ -1,0 +1,144 @@
+name: Build WebAssembly
+
+# GeneralsX @build Copilot 30/08/2026 Emscripten configure/build gate for the
+# experimental browser port (Zero Hour only, see cmake/wasm-deps.cmake and
+# CMakePresets.json's emscripten-webgl2 preset). This never fetches or ships
+# retail game data; it only compiles the engine to WebAssembly. Deterministic
+# cross-platform math (see AGENTS.md) is verified explicitly below rather
+# than merely assumed from the preset defaults.
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  workflow_call:
+    inputs:
+      preset:
+        required: false
+        type: string
+        default: "emscripten-webgl2"
+        description: "CMake preset for the WebAssembly build"
+      emsdk-version:
+        required: false
+        type: string
+        default: "6.0.8"
+        description: "Emscripten SDK version (matches the locally validated toolchain)"
+      checkout_ref:
+        required: false
+        type: string
+        default: ""
+        description: "Git ref to checkout (branch, tag, or SHA). Leaves empty for default."
+  workflow_dispatch:
+    inputs:
+      preset:
+        type: choice
+        description: "CMake preset for the WebAssembly build"
+        options:
+          - emscripten-webgl2
+        default: emscripten-webgl2
+      emsdk-version:
+        type: string
+        description: "Emscripten SDK version"
+        default: "6.0.8"
+
+jobs:
+  build-wasm:
+    name: generalsxzh-wasm@${{ inputs.preset }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Install Build Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends ninja-build ccache
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v16
+        with:
+          version: ${{ inputs.emsdk-version }}
+          actions-cache-folder: emsdk-cache
+
+      - name: Cache ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ccache
+          key: ccache-wasm-${{ inputs.preset }}-${{ github.sha }}
+          restore-keys: |
+            ccache-wasm-${{ inputs.preset }}-
+
+      - name: Cache CMake FetchContent sources
+        uses: actions/cache@v5
+        with:
+          path: build/${{ inputs.preset }}/_deps
+          # GeneralsX @build Copilot 30/08/2026 wasm-deps.cmake, gamemath.cmake, and CMakeLists.txt
+          # pin every FetchContent GIT_TAG/URL_HASH used by this preset (glm, gli, gamemath, d8web/dvijoke);
+          # hashing them keeps the cache in sync whenever a pinned dependency version changes.
+          key: wasm-deps-${{ runner.os }}-${{ hashFiles('cmake/wasm-deps.cmake', 'cmake/gamemath.cmake', 'CMakeLists.txt', 'CMakePresets.json') }}
+          restore-keys: |
+            wasm-deps-${{ runner.os }}-
+
+      - name: Verify Emscripten toolchain
+        run: |
+          emcc --version
+          em++ --version
+
+      - name: Configure CMake (Emscripten)
+        run: |
+          mkdir -p logs
+          emcmake cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_wasm.log
+
+      - name: Verify deterministic math configuration
+        # GeneralsX @build Copilot 30/08/2026 Fail loudly rather than silently building with
+        # platform-native (non-deterministic) math or FMA-contracted float ops. See AGENTS.md
+        # "Cross-Platform Determinism" — SAGE_USE_DETERMINISTIC_MATH and -ffp-contract=off are
+        # both required for cross-platform replay/CRC parity with the native Linux/macOS builds.
+        run: python3 scripts/qa/verify-wasm-deterministic-math.py build/${{ inputs.preset }}
+
+      - name: Build GeneralsXZH (WebAssembly)
+        env:
+          CCACHE_DIR: /home/runner/.cache/ccache
+        run: |
+          mkdir -p logs
+          cmake --build build/${{ inputs.preset }} --target z_generals 2>&1 | tee logs/build_wasm.log
+
+      - name: Verify Build Artifacts
+        run: |
+          JS_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.js"
+          WASM_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.wasm"
+          for f in "$JS_OUT" "$WASM_OUT"; do
+            if [ -f "$f" ]; then
+              echo "✅ Built: $f"
+              ls -lh "$f"
+            else
+              echo "❌ Missing expected build output: $f"
+              exit 1
+            fi
+          done
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-logs-wasm-${{ inputs.preset }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload WebAssembly Artifacts
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-generalsxzh-${{ inputs.preset }}
+          path: |
+            build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.js
+            build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.wasm
+          retention-days: 7
+          if-no-files-found: error
