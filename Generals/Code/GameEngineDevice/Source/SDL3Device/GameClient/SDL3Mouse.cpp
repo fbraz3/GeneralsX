@@ -601,10 +601,23 @@ void SDL3Mouse::capture(void)
 	}
 
 	// SDL3: Capture mouse to window
-	SDL_CaptureMouse(true);
+	const bool captured = SDL_CaptureMouse(true);
 
 	// SDL3: Grab mouse (confine to window)
-	SDL_SetWindowMouseGrab(m_Window, true);
+	const bool grabbed = SDL_SetWindowMouseGrab(m_Window, true);
+
+	// GeneralsX @bugfix Copilot 30/08/2026 SDL3's Emscripten video backend never assigns
+	// mouse->CaptureMouse and comments out device->SetWindowMouseGrab, so both calls above
+	// are silent no-ops in every browser (SDL_CaptureMouse() returns false via
+	// SDL_Unsupported()). Without checking the return values, the browser build used to mark
+	// the cursor captured regardless, so isCursorCaptured() lied to
+	// LookAtTranslator::canScrollAtScreenEdge() and enabled screen-edge scrolling even though
+	// nothing actually confines the pointer to the canvas. Only report capture success when at
+	// least one underlying SDL call actually took effect; native Linux/macOS builds are
+	// unaffected because their SDL3 video backends implement both calls for real.
+	if (!captured && !grabbed) {
+		return;
+	}
 
 	m_IsCaptured = true;
 
