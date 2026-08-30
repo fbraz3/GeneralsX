@@ -406,6 +406,7 @@ private:
 	{
 		std::shared_ptr<rtc::PeerConnection> connection;
 		std::shared_ptr<rtc::DataChannel> channel;
+		bool ignoreOffer = false;
 	};
 
 	void Run(std::uint64_t generation)
@@ -617,6 +618,28 @@ private:
 					EnsurePeer(message->from, generation, iceServers);
 				if (connection != nullptr)
 				{
+					int localSlot = -1;
+					{
+						std::lock_guard lock(m_stateMutex);
+						localSlot = m_localSlot;
+					}
+					const bool ignoreOffer =
+						message->type == ServerMessageType::Offer &&
+						!IsPolitePeer(localSlot, message->from) &&
+						connection->signalingState() != rtc::PeerConnection::SignalingState::Stable;
+					{
+						std::lock_guard lock(m_peersMutex);
+						const auto peer = m_peers.find(message->from);
+						if (peer != m_peers.end())
+						{
+							peer->second.ignoreOffer = ignoreOffer;
+						}
+					}
+					if (ignoreOffer)
+					{
+						LogError("ignored a colliding offer from peer " + std::to_string(message->from));
+						break;
+					}
 					try
 					{
 						connection->setRemoteDescription(rtc::Description(
@@ -636,6 +659,14 @@ private:
 					EnsurePeer(message->from, generation, iceServers);
 				if (connection != nullptr)
 				{
+					{
+						std::lock_guard lock(m_peersMutex);
+						const auto peer = m_peers.find(message->from);
+						if (peer != m_peers.end() && peer->second.ignoreOffer)
+						{
+							break;
+						}
+					}
 					try
 					{
 						connection->addRemoteCandidate(rtc::Candidate(message->candidate, message->mid));
@@ -786,12 +817,12 @@ private:
 			}
 		}
 
-		if (localSlot > slot)
+		if (ShouldCreateDataChannel(localSlot, slot))
 		{
 			rtc::DataChannelInit init;
 			init.reliability.unordered = true;
 			init.reliability.maxRetransmits = MAX_RETRANSMITS;
-			BindDataChannel(slot, connection->createDataChannel("generalsx-udp", init), generation);
+			BindDataChannel(slot, connection->createDataChannel(UDP_DATA_CHANNEL_LABEL, init), generation);
 		}
 		return connection;
 	}
@@ -801,7 +832,7 @@ private:
 		const std::shared_ptr<rtc::DataChannel> &channel,
 		std::uint64_t generation)
 	{
-		if (channel == nullptr || channel->label() != "generalsx-udp")
+		if (channel == nullptr || channel->label() != UDP_DATA_CHANNEL_LABEL)
 		{
 			if (channel != nullptr)
 			{

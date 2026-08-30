@@ -96,6 +96,7 @@ void TestRuntimeConfig()
 
 void TestAddressing()
 {
+	CHECK(BROADCAST_ADDRESS == 0xFFFFFFFFU);
 	CHECK(SlotToSyntheticAddress(0) == 0x0A000001U);
 	CHECK(SlotToSyntheticAddress(7) == 0x0A000008U);
 	CHECK(SlotToSyntheticAddress(-1) == 0);
@@ -103,6 +104,18 @@ void TestAddressing()
 	CHECK(SyntheticAddressToSlot(0x0A000008U) == 7);
 	CHECK(!SyntheticAddressToSlot(0xC0A80101U));
 	CHECK(!SyntheticAddressToSlot(0x0A000000U));
+}
+
+void TestNegotiationContract()
+{
+	CHECK(std::string(UDP_DATA_CHANNEL_LABEL) == "generalsx-udp");
+	CHECK(MAX_RETRANSMITS == 5);
+	CHECK(ShouldCreateDataChannel(0, 1));
+	CHECK(!ShouldCreateDataChannel(1, 0));
+	CHECK(!ShouldCreateDataChannel(1, 1));
+	CHECK(!IsPolitePeer(0, 1));
+	CHECK(IsPolitePeer(1, 0));
+	CHECK(!IsPolitePeer(1, 1));
 }
 
 void TestFramingAndInbox()
@@ -249,6 +262,7 @@ int main()
 {
 	TestRuntimeConfig();
 	TestAddressing();
+	TestNegotiationContract();
 	TestFramingAndInbox();
 	TestSignalingProtocol();
 	TestLifecycle();

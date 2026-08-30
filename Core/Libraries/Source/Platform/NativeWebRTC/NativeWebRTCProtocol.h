@@ -32,6 +32,7 @@ constexpr std::size_t MAX_SDP_LENGTH = 12 * 1024;
 constexpr std::size_t MAX_INBOX_PACKETS = 1024;
 constexpr std::size_t MAX_BUFFERED_BYTES = 1024 * 1024;
 constexpr unsigned int MAX_RETRANSMITS = 5;
+inline constexpr char UDP_DATA_CHANNEL_LABEL[] = "generalsx-udp";
 constexpr int MIN_ROOM_CAPACITY = 2;
 constexpr int MAX_ROOM_CAPACITY = 8;
 
@@ -55,6 +56,8 @@ std::string BuildTurnCredentialsUrl(const RuntimeConfig &config);
 
 std::uint32_t SlotToSyntheticAddress(int slot);
 std::optional<int> SyntheticAddressToSlot(std::uint32_t address);
+bool ShouldCreateDataChannel(int localSlot, int remoteSlot);
+bool IsPolitePeer(int localSlot, int remoteSlot);
 
 struct DecodedUdpFrame
 {

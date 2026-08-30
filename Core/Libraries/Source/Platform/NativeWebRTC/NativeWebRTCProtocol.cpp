@@ -441,6 +441,16 @@ std::optional<int> SyntheticAddressToSlot(std::uint32_t address)
 	return static_cast<int>(lastOctet - 1);
 }
 
+bool ShouldCreateDataChannel(int localSlot, int remoteSlot)
+{
+	return localSlot >= 0 && remoteSlot >= 0 && localSlot < remoteSlot;
+}
+
+bool IsPolitePeer(int localSlot, int remoteSlot)
+{
+	return localSlot >= 0 && remoteSlot >= 0 && localSlot > remoteSlot;
+}
+
 std::vector<std::uint8_t> EncodeUdpFrame(
 	std::uint16_t sourcePort,
 	std::uint16_t destinationPort,

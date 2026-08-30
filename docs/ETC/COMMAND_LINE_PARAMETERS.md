@@ -56,7 +56,9 @@ arguments, configuration files, or source control.
 
 The room assigns each connection a stable slot and the synthetic address
 `10.0.0.(slot+1)`. The game continues to use its normal LAN and lockstep
-protocols above the WebRTC-backed UDP abstraction.
+protocols above the WebRTC-backed UDP abstraction. For each peer pair, the
+lower slot creates the `generalsx-udp` channel and is the impolite negotiation
+peer; the higher slot listens for that channel and is polite.
 
 ## Common Combinations
 
