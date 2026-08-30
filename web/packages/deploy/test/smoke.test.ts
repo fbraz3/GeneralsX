@@ -247,6 +247,16 @@ describe("runSmokeChecks", () => {
     expect(report.passed).toBe(true);
   });
 
+  it("can skip asset delivery while retaining the configured CSP policy", async () => {
+    const { doFetch, calls } = stubFetch(healthyRoutes());
+    const report = await run({ ...OPTIONS, checkAssetOrigin: false }, doFetch);
+    expect(resultFor(report, "launcher-security-headers").outcome).toBe("pass");
+    expect(resultFor(report, "worker-security-headers").outcome).toBe("pass");
+    expect(resultFor(report, "asset-origin-delivery").outcome).toBe("skip");
+    expect(calls.some((call) => call.includes(PRODUCTION_TARGET.assetOrigin))).toBe(false);
+    expect(report.passed).toBe(true);
+  });
+
   it("passes when TURN credentials are refused without a room admission token", async () => {
     const { doFetch } = stubFetch(healthyRoutes());
     const report = await run(OPTIONS, doFetch);

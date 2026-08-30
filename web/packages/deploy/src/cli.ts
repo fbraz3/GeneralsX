@@ -71,7 +71,7 @@ function parseArgs(argv: readonly string[]): ParsedArgs | null {
         overrides.assetProbePath = next();
         break;
       case "--no-assets":
-        overrides.assetOrigin = undefined;
+        overrides.checkAssetOrigin = false;
         break;
       case "--release":
         overrides.expectReleaseId = next();
@@ -104,7 +104,9 @@ const { options, retryPolicy } = parsed;
 
 console.log(`launcher   ${options.launcherOrigin}`);
 console.log(`signaling  ${options.signalingOrigin}`);
-console.log(`assets     ${options.assetOrigin ?? "(skipped)"}`);
+console.log(
+  `assets     ${options.checkAssetOrigin === false ? "(skipped)" : (options.assetOrigin ?? "(not configured)")}`,
+);
 console.log(
   retryPolicy.attempts > 1
     ? `retry      up to ${retryPolicy.attempts} attempts per origin, ${retryPolicy.totalBudgetMs / 1000}s total budget`

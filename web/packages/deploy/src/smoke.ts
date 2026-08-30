@@ -33,9 +33,11 @@ import { PRODUCTION_TARGET, type DeploymentTarget } from "./targets.ts";
 export interface SmokeOptions {
   readonly launcherOrigin: string;
   readonly signalingOrigin: string;
-  /** Omit to skip the asset-origin delivery checks (e.g. before an authorized
-   * asset revision has been published). */
+  /** Omit when the deployment has no configured asset origin. */
   readonly assetOrigin?: string | undefined;
+  /** Disable only the delivery probe while retaining the configured asset
+   * origin in the expected CSP (e.g. before assets have been published). */
+  readonly checkAssetOrigin?: boolean | undefined;
   /** Object probed on the asset origin. Must already exist there. */
   readonly assetProbePath?: string | undefined;
   /** Assert the deployment reports this commit SHA — the rollback check. */
@@ -347,6 +349,7 @@ async function checkTurnAuthorization(
  */
 async function checkAssetOrigin(options: SmokeOptions, doFetch: FetchLike): Promise<SmokeResult> {
   const name = "asset-origin-delivery";
+  if (options.checkAssetOrigin === false) return skip(name, "asset-origin delivery check disabled");
   const assetOrigin = options.assetOrigin;
   if (!assetOrigin) return skip(name, "no asset origin configured");
   return guard(name, async () => {
