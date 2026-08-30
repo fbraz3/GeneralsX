@@ -97,8 +97,8 @@ npm run dev -w @generalsx-web/worker     # wrangler dev on :8787
 - `scripts/build-asset-manifest.ts` — operator-side CLI
   (`npm run build:manifest -w @generalsx-web/launcher`) that streams a local,
   legally obtained install directory, hashes every file, infers its role,
-  imports the CMake-generated lockstep profile,   and prints a schema v3
-  manifest. It never copies asset bytes anywhere.
+  verifies the staged engine JS/wasm against CMake's post-link metadata, and
+  prints a schema v3 manifest. It never copies asset bytes anywhere.
 - `wrangler.toml` — documents the Cloudflare Pages build settings and
   custom-domain wiring for `play.generalsx.org` (Pages projects are
   typically configured via the dashboard or `wrangler pages deploy`; this
@@ -144,6 +144,11 @@ has exactly one `engine-js` and one `engine-wasm`, at most one
 not), absolute mount targets, traversal-free relative paths, strong-only
 ETags, a positive-integer compatibility profile, per-asset sizes in
 `1 B … 8 GiB`, and a total under 32 GiB.
+
+The operator CLI does not accept that profile independently. It requires
+CMake's post-link engine metadata, checks its content/math profile against the
+authoritative version matrix, and verifies its JS/wasm SHA-256 identities
+against the exact engine assets being placed in the manifest.
 
 ### Download and verification
 

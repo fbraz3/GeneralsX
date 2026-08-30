@@ -54,14 +54,17 @@ npm run build:manifest -w @generalsx-web/launcher -- \
   --engine-version 2026.08.30-a1b2c3d \
   --assets-revision 7 \
   --base-url https://assets.example.org/zh/r7 \
-  --compatibility /path/to/build/emscripten-webgl2/GeneralsMD/GeneralsXZH.compatibility.json \
+  --engine-metadata /path/to/build/emscripten-webgl2/GeneralsMD/GeneralsXZH.engine-metadata.json \
   --out /path/to/staging/manifest.json
 ```
 
-`--compatibility` is required and must point to the JSON emitted beside the
-chosen CMake engine target. It binds room admission to the actual
-Generals/Zero Hour target and to whether that build used deterministic
-GameMath; do not hand-author or reuse it across engine builds.
+`--engine-metadata` is required and must point to the post-link JSON emitted
+beside the chosen CMake WebAssembly target. It records the canonical
+Generals/Zero Hour and deterministic-math profile plus SHA-256 identities for
+the exact JS/wasm outputs. The manifest builder verifies both staged engine
+digests before copying the profile into the manifest. Missing metadata,
+standalone profile JSON, noncanonical profiles, or metadata from another build
+fail closed.
 
 The tool streams every file through an incremental SHA-256 (constant
 memory), records its exact size, assigns a role and a mount entry, and

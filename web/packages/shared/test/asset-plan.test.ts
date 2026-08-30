@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildManifest, inferAssetRole, type SourceFile } from "../src/asset-plan.js";
+import type { EngineBuildMetadata } from "../src/engine-metadata.js";
 import { validateManifest } from "../src/manifest.js";
 import { compatibilityFor } from "../src/protocol.js";
 
@@ -25,7 +26,16 @@ const STAGING: readonly SourceFile[] = [
 
 const OPTIONS = {
   engineVersion: "2026.08.30-a1b2c3d",
-  compatibility: compatibilityFor("zero-hour", true),
+  engineMetadata: {
+    schemaVersion: 1,
+    content: "zero-hour",
+    deterministicMath: true,
+    compatibility: compatibilityFor("zero-hour", true),
+    artifacts: {
+      "engine-js": { fileName: "GeneralsXZH.js", sha256: "a".repeat(64) },
+      "engine-wasm": { fileName: "GeneralsXZH.wasm", sha256: "b".repeat(64) },
+    },
+  } satisfies EngineBuildMetadata,
   assetsRevision: 4,
   assetBaseUrl: "https://assets.generalsx.org",
 };
@@ -123,6 +133,32 @@ describe("buildManifest", () => {
     const forward = buildManifest(STAGING, OPTIONS).manifest;
     const reversed = buildManifest([...STAGING].reverse(), OPTIONS).manifest;
     expect(JSON.stringify(reversed)).toBe(JSON.stringify(forward));
+  });
+
+  it("rejects a noncanonical profile before producing a manifest", () => {
+    const wrongProfile: EngineBuildMetadata = {
+      ...OPTIONS.engineMetadata,
+      compatibility: compatibilityFor("generals", true),
+    };
+    expect(() => buildManifest(STAGING, { ...OPTIONS, engineMetadata: wrongProfile })).toThrow(
+      /does not match zero-hour/,
+    );
+  });
+
+  it("rejects metadata bound to a different staged engine artifact", () => {
+    const wrongArtifact: EngineBuildMetadata = {
+      ...OPTIONS.engineMetadata,
+      artifacts: {
+        ...OPTIONS.engineMetadata.artifacts,
+        "engine-wasm": {
+          ...OPTIONS.engineMetadata.artifacts["engine-wasm"],
+          sha256: "9".repeat(64),
+        },
+      },
+    };
+    expect(() => buildManifest(STAGING, { ...OPTIONS, engineMetadata: wrongArtifact })).toThrow(
+      /engine-wasm.*does not match/,
+    );
   });
 
   it("surfaces validation errors instead of throwing", () => {

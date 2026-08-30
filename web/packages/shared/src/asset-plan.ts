@@ -16,7 +16,12 @@ import {
   type ManifestAsset,
   type ManifestValidationError,
 } from "./manifest.ts";
-import type { CompatibilityVersion } from "./protocol.ts";
+import {
+  parseEngineBuildMetadata,
+  verifyEngineBuildMetadata,
+  type EngineBuildMetadata,
+  type StagedEngineArtifact,
+} from "./engine-metadata.ts";
 
 /** One file discovered under the operator's staging directory. */
 export interface SourceFile {
@@ -32,7 +37,7 @@ export interface SourceFile {
 
 export interface ManifestPlanOptions {
   readonly engineVersion: string;
-  readonly compatibility: CompatibilityVersion;
+  readonly engineMetadata: EngineBuildMetadata;
   readonly assetsRevision: number;
   readonly assetBaseUrl: string;
   /** Optional override for tooling/tests. Production should use the
@@ -128,9 +133,9 @@ function defaultMountTarget(file: SourceFile, role: AssetRole, index: number): s
 }
 
 /**
- * Builds a manifest from a staging listing and validates it. The result is
- * always returned (even when invalid) so callers can print every problem at
- * once instead of failing on the first bad entry.
+ * Builds a manifest from a staging listing and validates it. Invalid asset
+ * layouts are returned as validation errors; invalid or mismatched engine
+ * metadata throws because no manifest may be produced from it.
  */
 export function buildManifest(
   files: readonly SourceFile[],
@@ -173,10 +178,27 @@ export function buildManifest(
     });
   }
 
+  const stagedEngineArtifacts: StagedEngineArtifact[] = [];
+  for (const role of ["engine-js", "engine-wasm"] as const) {
+    for (const file of byRole.get(role) ?? []) {
+      stagedEngineArtifacts.push({
+        role,
+        relativePath: file.relativePath,
+        sha256: file.sha256,
+      });
+    }
+  }
+  const metadata = parseEngineBuildMetadata(options.engineMetadata);
+  const compatibility =
+    stagedEngineArtifacts.filter((artifact) => artifact.role === "engine-js").length === 1 &&
+    stagedEngineArtifacts.filter((artifact) => artifact.role === "engine-wasm").length === 1
+      ? verifyEngineBuildMetadata(metadata, stagedEngineArtifacts)
+      : metadata.compatibility;
+
   const manifest: EngineManifest = {
     schemaVersion: 3,
     engineVersion: options.engineVersion,
-    compatibility: options.compatibility,
+    compatibility,
     assetsRevision: options.assetsRevision,
     assetBaseUrl: options.assetBaseUrl,
     assets,

@@ -7,6 +7,10 @@ set_target_properties(g_generals PROPERTIES OUTPUT_NAME GeneralsX)
 generalsx_generate_compatibility_artifacts(
     "${CMAKE_BINARY_DIR}/Generals/GeneralsX"
     GENERALS)
+generalsx_bind_wasm_engine_metadata(
+    g_generals
+    "${CMAKE_BINARY_DIR}/Generals/GeneralsX"
+    GENERALS)
 
 # GeneralsX @build BenderAI 10/03/2026 Windows-specific libraries
 if(WIN32)

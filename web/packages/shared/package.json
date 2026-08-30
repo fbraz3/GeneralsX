@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./asset-plan": "./src/asset-plan.ts",
+    "./engine-metadata": "./src/engine-metadata.ts",
     "./manifest": "./src/manifest.ts",
     "./protocol": "./src/protocol.ts",
     "./security-headers": "./src/security-headers.ts",

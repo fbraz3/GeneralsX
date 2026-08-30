@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "content": "@GENERALSX_COMPAT_CONTENT@",
+  "deterministicMath": @GENERALSX_COMPAT_DETERMINISTIC_MATH@,
+  "compatibility": {
+    "engine": @GENERALSX_COMPAT_ENGINE@,
+    "protocol": @GENERALSX_COMPAT_PROTOCOL_VALUE@,
+    "determinism": @GENERALSX_COMPAT_DETERMINISM@
+  },
+  "artifacts": {
+    "engine-js": {
+      "fileName": "@GENERALSX_ENGINE_JS_FILE_NAME@",
+      "sha256": "@GENERALSX_ENGINE_JS_SHA256@"
+    },
+    "engine-wasm": {
+      "fileName": "@GENERALSX_ENGINE_WASM_FILE_NAME@",
+      "sha256": "@GENERALSX_ENGINE_WASM_SHA256@"
+    }
+  }
+}

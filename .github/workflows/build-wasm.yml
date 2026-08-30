@@ -115,8 +115,8 @@ jobs:
           JS_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.js"
           WASM_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.wasm"
           COMPAT_JS_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.compatibility.js"
-          COMPAT_JSON_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.compatibility.json"
-          for f in "$JS_OUT" "$WASM_OUT" "$COMPAT_JS_OUT" "$COMPAT_JSON_OUT"; do
+          ENGINE_METADATA_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.engine-metadata.json"
+          for f in "$JS_OUT" "$WASM_OUT" "$COMPAT_JS_OUT" "$ENGINE_METADATA_OUT"; do
             if [ -f "$f" ]; then
               echo "✅ Built: $f"
               ls -lh "$f"
@@ -125,6 +125,31 @@ jobs:
               exit 1
             fi
           done
+          python3 - "$JS_OUT" "$WASM_OUT" "$ENGINE_METADATA_OUT" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          js_path, wasm_path, metadata_path = map(pathlib.Path, sys.argv[1:])
+          metadata = json.loads(metadata_path.read_text())
+          versions = json.loads(
+              pathlib.Path("web/packages/shared/src/lockstep-compatibility.json").read_text()
+          )
+          expected = {
+              "engine": versions["engine"]["zeroHour"],
+              "protocol": versions["protocol"],
+              "determinism": versions["determinism"]["gameMath"],
+          }
+          assert metadata["content"] == "zero-hour"
+          assert metadata["deterministicMath"] is True
+          assert metadata["compatibility"] == expected
+          for role, path in (("engine-js", js_path), ("engine-wasm", wasm_path)):
+              identity = metadata["artifacts"][role]
+              assert identity["fileName"] == path.name
+              with path.open("rb") as artifact:
+                  assert identity["sha256"] == hashlib.file_digest(artifact, "sha256").hexdigest()
+          PY
 
       - name: Upload Build Logs
         if: always()
@@ -143,6 +168,6 @@ jobs:
             build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.js
             build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.wasm
             build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.compatibility.js
-            build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.compatibility.json
+            build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.engine-metadata.json
           retention-days: 7
           if-no-files-found: error

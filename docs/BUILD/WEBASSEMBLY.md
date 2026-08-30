@@ -31,12 +31,15 @@ The generated browser artifacts are:
 build/emscripten-webgl2/GeneralsMD/GeneralsXZH.js
 build/emscripten-webgl2/GeneralsMD/GeneralsXZH.wasm
 build/emscripten-webgl2/GeneralsMD/GeneralsXZH.compatibility.js
-build/emscripten-webgl2/GeneralsMD/GeneralsXZH.compatibility.json
+build/emscripten-webgl2/GeneralsMD/GeneralsXZH.engine-metadata.json
 ```
 
-The generated compatibility files identify the selected game target and
-deterministic-math configuration. Stage the JavaScript file with
-`wasm/boot.html`, and pass the JSON file to the asset-manifest builder.
+The compatibility script identifies the selected game target and
+deterministic-math configuration for the raw browser harness. The engine
+metadata is generated after linking and binds the same canonical profile to
+the SHA-256 identities of the exact JavaScript and wasm outputs. Pass that
+metadata file to the asset-manifest builder; it rejects standalone profile
+JSON and engine metadata from another build.
 
 The build downloads a pinned revision of d8web automatically. It does not
 require DXVK, Vulkan, vcpkg, or a sibling source checkout.
@@ -44,7 +47,7 @@ require DXVK, Vulkan, vcpkg, or a sibling source checkout.
 ## Game data
 
 Retail game assets are never stored in this repository or normal CI
-artifacts. The launcher under `web/` consumes a schema-v2 manifest, verifies
+artifacts. The launcher under `web/` consumes a schema-v3 manifest, verifies
 downloads while streaming them into OPFS, and stages the authorized files at
 the paths required by the engine. See
 [`WEB_ASSET_PIPELINE.md`](../HOWTO/WEB_ASSET_PIPELINE.md).
