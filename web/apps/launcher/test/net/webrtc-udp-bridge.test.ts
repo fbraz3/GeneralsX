@@ -9,6 +9,7 @@ import {
   ipForSlot,
   ipToDisplayString,
   slotForIp,
+  type JoinIssue,
   type WebRtcUdpBridgeOptions,
 } from "../../src/net/webrtc-udp-bridge.js";
 import { FakePeerConnection, FakeSignalingClient, flush } from "./webrtc-fakes.js";
@@ -18,7 +19,6 @@ function makeBridge(overrides: Partial<WebRtcUdpBridgeOptions> = {}) {
   const peerConnections: FakePeerConnection[] = [];
   const bridge = new WebRtcUdpBridge({
     signaling: signaling.asSignalingClientLike(),
-    iceServers: [],
     createPeerConnection: (config) => {
       const pc = new FakePeerConnection(config);
       peerConnections.push(pc);
@@ -478,15 +478,17 @@ describe("WebRtcUdpBridge addressing / status", () => {
 });
 
 describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
-  it("joinRoom() forwards the room code and options to the signaling client", () => {
+  it("joinRoom() forwards the room code and options to the signaling client", async () => {
     const { bridge, signaling } = makeBridge();
     bridge.joinRoom("R7K2QX", { capacity: 6 });
+    await flush();
     expect(signaling.connectCalls).toEqual([{ roomId: "R7K2QX", options: { capacity: 6 } }]);
   });
 
-  it("joinRoom() falls back to the configured player name when none is given", () => {
+  it("joinRoom() falls back to the configured player name when none is given", async () => {
     const { bridge, signaling } = makeBridge({ playerName: "Ada" });
     bridge.joinRoom("R7K2QX");
+    await flush();
     expect(signaling.connectCalls[0]?.options).toEqual({ name: "Ada" });
   });
 
@@ -500,5 +502,136 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     expect(signaling.leaveCalled).toBe(true);
     expect(peerConnections[0]?.connectionState).toBe("closed");
     expect(bridge.status()).toMatchObject({ roomId: null, localSlot: null, peers: [] });
+  });
+
+  it("never calls fetchIceServers when no turnWorkerBaseUrl is configured (e.g. a single-player boot that never joins a room)", async () => {
+    let fetchCallCount = 0;
+    const { bridge, signaling } = makeBridge({
+      fetchIceServers: async () => {
+        fetchCallCount += 1;
+        return { iceServers: [], ttlSeconds: 600 };
+      },
+    });
+
+    bridge.joinRoom("R7K2QX");
+    await flush();
+
+    expect(fetchCallCount).toBe(0);
+    expect(signaling.connectCalls).toHaveLength(1);
+  });
+
+  it("fetches fresh TURN credentials on joinRoom() and uses them for subsequently created peer connections", async () => {
+    const iceServers = [{ urls: "turn:turn.example.com", username: "u", credential: "c" }];
+    let fetchCallCount = 0;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: async (base) => {
+        fetchCallCount += 1;
+        expect(base).toBe("https://signaling.example.com");
+        return { iceServers, ttlSeconds: 600 };
+      },
+    });
+
+    bridge.joinRoom("R7K2QX");
+    await flush();
+    expect(fetchCallCount).toBe(1);
+    expect(signaling.connectCalls).toHaveLength(1);
+
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
+    signaling.emit("roster", ROSTER_TWO_PLAYERS);
+
+    expect(peerConnections[0]?.config).toEqual({ iceServers });
+  });
+
+  it("falls back to direct/STUN-only ICE and reports a turn-unavailable issue when the TURN fetch fails", async () => {
+    const issues: JoinIssue[] = [];
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: async () => {
+        throw new Error("HTTP 503");
+      },
+      onJoinIssue: (issue) => issues.push(issue),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    await flush();
+
+    expect(issues).toEqual([{ kind: "turn-unavailable", message: expect.stringContaining("HTTP 503") }]);
+    // TURN failure is never fatal: the join still proceeds.
+    expect(signaling.connectCalls).toHaveLength(1);
+
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
+    signaling.emit("roster", ROSTER_TWO_PLAYERS);
+    expect(peerConnections[0]?.config).toEqual({ iceServers: [] });
+  });
+
+  it("reports a join-failed issue when the signaling socket closes before the room join completes", async () => {
+    const issues: JoinIssue[] = [];
+    const { bridge, signaling } = makeBridge({ onJoinIssue: (issue) => issues.push(issue) });
+
+    bridge.joinRoom("R7K2QX");
+    await flush();
+    expect(signaling.connectCalls).toHaveLength(1);
+
+    signaling.emit("close");
+
+    expect(issues).toEqual([{ kind: "join-failed", message: expect.stringContaining("closed") }]);
+  });
+
+  it("does not report a join-failed issue for an ordinary disconnect after the room was already joined", async () => {
+    const issues: JoinIssue[] = [];
+    const { bridge, signaling } = makeBridge({ onJoinIssue: (issue) => issues.push(issue) });
+
+    bridge.joinRoom("R7K2QX");
+    await flush();
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
+
+    signaling.emit("close");
+
+    expect(issues).toEqual([]);
+    expect(bridge.status()).toMatchObject({ roomId: null, localSlot: null });
+  });
+
+  it("a slower, superseded joinRoom() call never connects after being overtaken by a newer one", async () => {
+    let resolveFirstFetch: (() => void) | undefined;
+    let fetchCallCount = 0;
+    const { bridge, signaling } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: async () => {
+        fetchCallCount += 1;
+        if (fetchCallCount === 1) {
+          await new Promise<void>((resolve) => {
+            resolveFirstFetch = resolve;
+          });
+        }
+        return { iceServers: [], ttlSeconds: 600 };
+      },
+    });
+
+    bridge.joinRoom("AAAA");
+    bridge.joinRoom("BBBB");
+    await flush(); // lets the second (fast) fetch resolve and connect()
+    resolveFirstFetch?.(); // now let the first (slow, superseded) fetch resolve too
+    await flush();
+
+    expect(signaling.connectCalls).toEqual([{ roomId: "BBBB", options: {} }]);
+  });
+
+  it("leaveRoom() invalidates an in-flight joinRoom() so its connect() never fires", async () => {
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const { bridge, signaling } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    bridge.leaveRoom();
+    resolveFetch?.({ iceServers: [], ttlSeconds: 600 });
+    await flush();
+
+    expect(signaling.connectCalls).toEqual([]);
   });
 });

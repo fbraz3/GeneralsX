@@ -34,7 +34,11 @@ export class SignalingClient {
     close: new Set(),
   };
 
-  constructor(private readonly workerBaseUrl: string) {}
+  constructor(
+    private readonly workerBaseUrl: string,
+    /** Injectable for tests; defaults to the real `WebSocket` constructor. */
+    private readonly createSocket: (url: string) => WebSocket = (url) => new WebSocket(url),
+  ) {}
 
   on<K extends EventName>(event: K, handler: SignalingClientEvents[K]): void {
     this.listeners[event].add(handler);
@@ -50,30 +54,49 @@ export class SignalingClient {
     }
   }
 
-  /** Opens the WebSocket and sends the initial `join` request. */
+  /**
+   * Opens the WebSocket and sends the initial `join` request.
+   *
+   * Always supersedes any socket already owned by this client first: a
+   * caller invoking `connect()` again (a rejoin, or a switch to a
+   * different room) while a previous connection is still open or
+   * connecting must never end up with two live sockets — and therefore
+   * two live `join`ed room memberships — for the same client. The
+   * superseded socket's listeners are detached before it is closed, so
+   * its (possibly asynchronous) close event can never fire a stale
+   * `close` emission after this newer connection has already started
+   * emitting its own events.
+   */
   connect(roomId: string, options: { name?: string; capacity?: number } = {}): void {
+    this.disconnectSocket();
+
     const url = new URL("/room", this.workerBaseUrl);
     url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
     url.searchParams.set("roomId", roomId);
     if (options.capacity !== undefined) url.searchParams.set("capacity", String(options.capacity));
 
-    const socket = new WebSocket(url.toString());
+    const socket = this.createSocket(url.toString());
     this.socket = socket;
 
-    socket.addEventListener("open", () => {
+    socket.onopen = () => {
       this.sendMessage({
         type: "join",
         roomId,
         ...(options.name !== undefined ? { name: options.name } : {}),
         ...(options.capacity !== undefined ? { capacity: options.capacity } : {}),
       });
-    });
-    socket.addEventListener("message", (event: MessageEvent) => {
+    };
+    socket.onmessage = (event: MessageEvent) => {
       this.handleServerMessage(typeof event.data === "string" ? event.data : "");
-    });
-    socket.addEventListener("close", (event: CloseEvent) => {
+    };
+    socket.onclose = (event: CloseEvent) => {
+      // This is always the *current* socket's own close (superseding
+      // connections detach this handler before closing a stale socket —
+      // see `disconnectSocket()`), so it is safe to clear `this.socket`
+      // and emit unconditionally.
+      this.socket = null;
       this.emit("close", event);
-    });
+    };
   }
 
   private handleServerMessage(raw: string): void {
@@ -130,14 +153,35 @@ export class SignalingClient {
     this.sendMessage({ type: "ice", to, payload });
   }
 
+  /** Sends a `leave` request (if the socket is open) and then always
+   * closes the socket locally, so this client instance can safely be
+   * reused for a subsequent `connect()` (rejoin) without any leftover
+   * socket/listener state from the room just left. */
   leave(): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.sendMessage({ type: "leave" });
     }
+    this.disconnectSocket();
   }
 
   close(): void {
-    this.socket?.close();
+    this.disconnectSocket();
+  }
+
+  /** Detaches the current socket's listeners and closes it, without
+   * emitting a `close` event — used both when a new `connect()`
+   * supersedes a still-open prior connection and when `leave()`/`close()`
+   * intentionally tear the connection down, so callers never observe a
+   * spurious `close` for a socket they themselves discarded. */
+  private disconnectSocket(): void {
+    const socket = this.socket;
+    if (!socket) return;
     this.socket = null;
+    socket.onopen = null;
+    socket.onmessage = null;
+    socket.onclose = null;
+    if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+      socket.close();
+    }
   }
 }

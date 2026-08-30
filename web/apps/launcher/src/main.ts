@@ -12,10 +12,9 @@ import { createGameCanvas } from "./ui/canvas.js";
 import { createLoadingOverlay } from "./ui/loading.js";
 import { createErrorOverlay } from "./ui/error.js";
 import { createSettingsPanel } from "./ui/settings.js";
-import { createRoomPanel, generateRoomId } from "./ui/room.js";
+import { createRoomPanel, generateRoomId, type RoomPanel } from "./ui/room.js";
 import { SignalingClient } from "./net/signaling-client.js";
-import { fetchIceServers } from "./net/turn-client.js";
-import { WebRtcUdpBridge } from "./net/webrtc-udp-bridge.js";
+import { WebRtcUdpBridge, type JoinIssue } from "./net/webrtc-udp-bridge.js";
 import "./style.css";
 
 function requireElement(id: string): HTMLElement {
@@ -35,19 +34,35 @@ async function startEngineBoot(): Promise<void> {
   });
   const signaling = new SignalingClient(LAUNCHER_CONFIG.signalingWorkerUrl);
 
-  // TURN credentials are best-effort: a failed fetch should not block the
-  // launcher from booting, it just leaves the bridge with whatever ICE
-  // servers were supplied (falling back to direct/host or STUN-only
-  // candidates rather than also relaying through Cloudflare Realtime TURN).
-  let iceServers: RTCIceServer[] = [];
-  try {
-    const turnCredentials = await fetchIceServers(LAUNCHER_CONFIG.signalingWorkerUrl);
-    iceServers = turnCredentials.iceServers;
-  } catch (err) {
-    console.warn("[GeneralsXUdp] failed to fetch TURN credentials; continuing without them:", err);
+  // `roomRef.value` is assigned just below, once the bridge (which the
+  // room panel's callbacks need) exists; `onJoinIssue` only ever fires
+  // later, in response to a `joinRoom()` triggered by a room-panel
+  // button, by which time it is always already assigned.
+  const roomRef: { value: RoomPanel | null } = { value: null };
+  function handleJoinIssue(issue: JoinIssue): void {
+    if (issue.kind === "turn-unavailable") {
+      // Non-fatal: TURN relay is unavailable, but direct/STUN-only ICE
+      // may still work. Never fall back silently — always show a visible
+      // warning instead of just logging.
+      roomRef.value?.setWarning(`Warning: ${issue.message}`);
+    } else {
+      // Recoverable without a full relaunch: dismiss the blocking overlay
+      // so the player can retry from the room panel.
+      error.show(issue.message, () => error.hide());
+    }
   }
 
-  const udpBridge = new WebRtcUdpBridge({ signaling, iceServers });
+  // TURN credentials are fetched by the bridge itself, fresh on every
+  // `joinRoom()` call — never once here at launcher startup, where the
+  // short (~10 minute) credential TTL could expire long before a match
+  // actually starts. A launcher session that never creates/joins a room
+  // (e.g. a future single-player/offline path) therefore never calls
+  // TURN at all.
+  const udpBridge = new WebRtcUdpBridge({
+    signaling,
+    turnWorkerBaseUrl: LAUNCHER_CONFIG.signalingWorkerUrl,
+    onJoinIssue: handleJoinIssue,
+  });
   // Published before any (future) engine module instantiation, per the
   // integration contract documented in `net/webrtc-udp-bridge.ts`.
   window.GeneralsXUdp = udpBridge;
@@ -56,18 +71,22 @@ async function startEngineBoot(): Promise<void> {
     app,
     {
       onCreateRoom(capacity) {
+        room.setWarning(null);
         udpBridge.joinRoom(generateRoomId(), { capacity });
       },
       onJoinRoom(roomId) {
+        room.setWarning(null);
         udpBridge.joinRoom(roomId);
       },
       onLeaveRoom() {
         udpBridge.leaveRoom();
+        room.setWarning(null);
         room.showLobbyState();
       },
     },
     LAUNCHER_CONFIG.defaultRoomCapacity,
   );
+  roomRef.value = room;
   signaling.on("welcome", (welcome) => {
     room.showJoinedState(welcome.roomId);
     room.setStatus(`Connected as slot ${welcome.slot} of ${welcome.capacity}`);

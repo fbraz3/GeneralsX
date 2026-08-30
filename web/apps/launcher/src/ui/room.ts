@@ -10,6 +10,10 @@ export interface RoomPanel {
   readonly element: HTMLElement;
   setRoster(roster: readonly RosterEntry[]): void;
   setStatus(text: string): void;
+  /** Shows (or, passing `null`, hides) a non-blocking warning banner —
+   * e.g. "continuing without TURN relay" — that does not prevent the
+   * player from proceeding, unlike the launcher's blocking error overlay. */
+  setWarning(text: string | null): void;
   showJoinedState(roomId: string): void;
   showLobbyState(): void;
 }
@@ -27,6 +31,11 @@ export function generateRoomId(): string {
 export function createRoomPanel(container: HTMLElement, callbacks: RoomPanelCallbacks, defaultCapacity: number): RoomPanel {
   const element = document.createElement("section");
   element.className = "gx-panel gx-room-panel";
+
+  const warning = document.createElement("p");
+  warning.className = "gx-room-warning";
+  warning.setAttribute("role", "status");
+  warning.hidden = true;
 
   const lobby = document.createElement("div");
   lobby.className = "gx-room-lobby";
@@ -82,7 +91,7 @@ export function createRoomPanel(container: HTMLElement, callbacks: RoomPanelCall
 
   active.append(roomCodeDisplay, rosterList, status, leaveButton);
 
-  element.append(lobby, active);
+  element.append(warning, lobby, active);
   container.appendChild(element);
 
   createButton.addEventListener("click", () => {
@@ -117,6 +126,10 @@ export function createRoomPanel(container: HTMLElement, callbacks: RoomPanelCall
     },
     setStatus(text: string) {
       status.textContent = text;
+    },
+    setWarning(text: string | null) {
+      warning.textContent = text ?? "";
+      warning.hidden = text === null;
     },
     showJoinedState(roomId: string) {
       lobby.hidden = true;

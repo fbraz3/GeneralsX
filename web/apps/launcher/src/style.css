@@ -5,6 +5,7 @@
   --gx-accent: #4da3ff;
   --gx-text: #e6e9ef;
   --gx-error: #ff5c5c;
+  --gx-warning: #ffb545;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -108,6 +109,12 @@ body {
 .gx-field-error {
   color: var(--gx-error);
   font-size: 0.85rem;
+}
+
+.gx-room-warning {
+  color: var(--gx-warning);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
 }
 
 .gx-roster-list {

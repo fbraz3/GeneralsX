@@ -84,9 +84,10 @@ npm run dev -w @generalsx-web/worker     # wrangler dev on :8787
   attach the base-game and Zero Hour audio BIG files after engine boot.
   The bridge resumes interrupted WebAudio contexts and requests MiniAudio
   device recovery after browser lifecycle or output-device changes.
-- `src/net/` — `SignalingClient` (WebSocket wrapper for the room protocol),
-  `fetchIceServers` (calls the Worker's `/turn-credentials`), and
-  `WebRtcUdpBridge` (see below).
+- `src/net/` — `SignalingClient` (WebSocket wrapper for the room protocol;
+  see **Room join lifecycle** below for its connect/leave guarantees),
+  `fetchIceServers` (calls the Worker's `/turn-credentials`; invoked by
+  the bridge itself, per join), and `WebRtcUdpBridge` (see below).
 - `scripts/write-headers.ts` — post-build step that renders
   `dist/_headers` (Cloudflare Pages header file) from the same
   `renderPagesHeadersFile` policy the Worker uses, so COOP/COEP/CORP/CSP
@@ -159,8 +160,9 @@ Emulates a small UDP-like transport over WebRTC unordered DataChannels, so
 the existing GeneralsX engine networking code (written for real UDP
 sockets) can run unmodified in the browser. `main.ts` constructs a
 `WebRtcUdpBridge` from the same `SignalingClient` instance used by the room
-UI plus the `iceServers` returned by `/turn-credentials`, and publishes it
-as `window.GeneralsXUdp` *before* any (future) engine module instantiation.
+UI, plus the signaling Worker's base URL (for on-demand TURN credential
+fetches — see **Room join lifecycle** below), and publishes it as
+`window.GeneralsXUdp` *before* any (future) engine module instantiation.
 
 The bridge mirrors the wire format and ABI of the engine repository's
 development-harness reference implementation
@@ -208,6 +210,39 @@ object). Display-only strings (dotted-quad IPs) are confined to
   matching best-effort UDP semantics.
 - Peer connections are torn down cleanly on roster departure, an explicit
   `peer-left` signal, or the signaling socket closing.
+
+### Room join lifecycle
+
+`joinRoom()`/`leaveRoom()` (used both by the engine ABI and the launcher's
+room panel) and `SignalingClient.connect()`/`leave()` are all designed so
+that a rejoin, a room switch, or a rapid double-click can never leave a
+duplicate room membership or stale connection behind:
+
+- `SignalingClient.connect()` always supersedes any socket it already
+  owns first — the old socket's listeners are detached before it is
+  closed, so its (possibly asynchronous) close event can never fire
+  after the new connection has already started emitting its own events.
+  `leave()` sends a `leave` request (if still open) and then always
+  closes the socket locally, so the same `SignalingClient` instance can
+  safely be reused for a later `connect()` (rejoin).
+- `WebRtcUdpBridge.joinRoom()` tears down any existing peers/room state
+  immediately, then fetches TURN credentials **fresh for this join**
+  (never once at launcher startup, where the ~10-minute credential TTL
+  could expire long before a match starts) before ever opening the
+  signaling connection — so peer connections are always created with
+  credentials that were just issued. A bridge instance constructed
+  without a `turnWorkerBaseUrl` (e.g. a future single-player/offline boot
+  path that never joins a room) never calls TURN at all.
+  A generation counter guards every step of this sequence, so a slower,
+  superseded `joinRoom()`/`leaveRoom()` call can never race ahead of a
+  newer one and resurrect torn-down state.
+- TURN fetch failures are **non-fatal**: the bridge falls back to
+  direct/STUN-only ICE and reports it via the `onJoinIssue` callback
+  (`{ kind: "turn-unavailable" }`) so the launcher can show a **visible
+  warning** in the room panel — direct-ICE fallback is explicit, never
+  silent. A signaling socket closing before a room join ever completes is
+  reported as `{ kind: "join-failed" }`, which the launcher routes to its
+  blocking error overlay.
 
 ## Not included in this scaffold
 
