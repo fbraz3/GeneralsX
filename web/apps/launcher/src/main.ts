@@ -14,6 +14,8 @@ import { createErrorOverlay } from "./ui/error.js";
 import { createSettingsPanel } from "./ui/settings.js";
 import { createRoomPanel, generateRoomId } from "./ui/room.js";
 import { SignalingClient } from "./net/signaling-client.js";
+import { fetchIceServers } from "./net/turn-client.js";
+import { WebRtcUdpBridge } from "./net/webrtc-udp-bridge.js";
 import "./style.css";
 
 function requireElement(id: string): HTMLElement {
@@ -32,17 +34,35 @@ async function startEngineBoot(): Promise<void> {
      * scaffold only persists them in memory via the panel's own state. */
   });
   const signaling = new SignalingClient(LAUNCHER_CONFIG.signalingWorkerUrl);
+
+  // TURN credentials are best-effort: a failed fetch should not block the
+  // launcher from booting, it just leaves the bridge with whatever ICE
+  // servers were supplied (falling back to direct/host or STUN-only
+  // candidates rather than also relaying through Cloudflare Realtime TURN).
+  let iceServers: RTCIceServer[] = [];
+  try {
+    const turnCredentials = await fetchIceServers(LAUNCHER_CONFIG.signalingWorkerUrl);
+    iceServers = turnCredentials.iceServers;
+  } catch (err) {
+    console.warn("[GeneralsXUdp] failed to fetch TURN credentials; continuing without them:", err);
+  }
+
+  const udpBridge = new WebRtcUdpBridge({ signaling, iceServers });
+  // Published before any (future) engine module instantiation, per the
+  // integration contract documented in `net/webrtc-udp-bridge.ts`.
+  window.GeneralsXUdp = udpBridge;
+
   const room = createRoomPanel(
     app,
     {
       onCreateRoom(capacity) {
-        signaling.connect(generateRoomId(), { capacity });
+        udpBridge.joinRoom(generateRoomId(), { capacity });
       },
       onJoinRoom(roomId) {
-        signaling.connect(roomId);
+        udpBridge.joinRoom(roomId);
       },
       onLeaveRoom() {
-        signaling.leave();
+        udpBridge.leaveRoom();
         room.showLobbyState();
       },
     },

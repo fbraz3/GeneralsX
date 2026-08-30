@@ -84,8 +84,9 @@ npm run dev -w @generalsx-web/worker     # wrangler dev on :8787
   attach the base-game and Zero Hour audio BIG files after engine boot.
   The bridge resumes interrupted WebAudio contexts and requests MiniAudio
   device recovery after browser lifecycle or output-device changes.
-- `src/net/` — `SignalingClient` (WebSocket wrapper for the room protocol)
-  and `fetchIceServers` (calls the Worker's `/turn-credentials`).
+- `src/net/` — `SignalingClient` (WebSocket wrapper for the room protocol),
+  `fetchIceServers` (calls the Worker's `/turn-credentials`), and
+  `WebRtcUdpBridge` (see below).
 - `scripts/write-headers.ts` — post-build step that renders
   `dist/_headers` (Cloudflare Pages header file) from the same
   `renderPagesHeadersFile` policy the Worker uses, so COOP/COEP/CORP/CSP
@@ -152,9 +153,49 @@ Defined in `packages/shared/src/protocol.ts`:
   slot bounds, SDP length) before it is trusted; invalid input yields a
   typed `error` message instead of a crash or silent drop.
 
+## WebRTC UDP bridge (`apps/launcher/src/net/webrtc-udp-bridge.ts`)
+
+Emulates a small UDP-like transport over WebRTC unordered DataChannels, so
+the existing GeneralsX engine networking code (written for real UDP
+sockets) can run unmodified in the browser. `main.ts` constructs a
+`WebRtcUdpBridge` from the same `SignalingClient` instance used by the room
+UI plus the `iceServers` returned by `/turn-credentials`, and publishes it
+as `window.GeneralsXUdp` *before* any (future) engine module instantiation.
+
+- **Addressing** — every stable room slot (0..capacity-1) maps to a
+  synthetic IPv4 address `10.0.0.(slot+1)`; `10.0.0.255` is a reserved
+  broadcast address that fans a `send()` out to every connected peer.
+- **Framing** — each DataChannel message is an 8-byte header (4-byte
+  little-endian source port, 4-byte little-endian destination port)
+  followed by the raw payload. Anything shorter than the header is
+  dropped as malformed, never queued.
+- **Negotiation** — "perfect negotiation" with a deterministic
+  polite/impolite role per peer pair (the lower slot is always impolite,
+  creates the DataChannel, and wins glare; the higher slot is polite and
+  yields), so either side can (re)negotiate without a signaling-layer lock.
+  Works with both direct/STUN and TURN-relayed ICE candidates.
+- **Reliability** — DataChannels are `{ ordered: false, maxRetransmits: 0
+  }`: GeneralsX's own engine netcode already implements application-level
+  reliability (acks/resends) on top of UDP, so the transport stays as
+  close to fire-and-forget semantics as WebRTC allows instead of stacking
+  a second, redundant retry/ordering layer on top.
+- **Safety bounds** — each bound port's inbox evicts its oldest queued
+  datagram once it hits `maxInboxPacketsPerPort` (default 256), and
+  outgoing sends are dropped (not queued or blocked) once a channel's
+  `bufferedAmount` exceeds `maxBufferedAmountBytes` (default 64 KiB),
+  mirroring how a real UDP socket drops under congestion.
+- **Explicit errors** — invalid ports/addresses/payload types and using an
+  unbound port throw a typed `UdpBridgeError`; network-level conditions
+  (unknown/disconnected peer, backpressure) instead return `false`/`null`,
+  matching best-effort UDP semantics.
+- Peer connections are torn down cleanly on roster departure, an explicit
+  `peer-left` signal, or the signaling socket closing.
+
 ## Not included in this scaffold
 
-- Instantiating the actual Emscripten/WebAssembly engine module.
+- Instantiating the actual Emscripten/WebAssembly engine module. The
+  bridge is published at `window.GeneralsXUdp` in anticipation of that
+  integration, but nothing yet calls into it from engine code.
 - Any retail game asset, engine binary, or asset-hosting deployment.
 - Live deployment of the Worker or Pages project (this tree is
   infrastructure-only; no `wrangler deploy` / `wrangler pages deploy`
