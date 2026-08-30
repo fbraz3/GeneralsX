@@ -147,9 +147,11 @@ static Bool normalizeWidePrintfFormatForPosix(const WideChar *src, WideChar *dst
 			}
 		}
 
+		Int modStart = -1;
 		if (src[tokenPos] == L'h' || src[tokenPos] == L'l')
 		{
 			hasLengthModifier = TRUE;
+			modStart = tokenPos;
 			tokenPos++;
 			if (src[tokenPos] == L'h' || src[tokenPos] == L'l')
 				tokenPos++;
@@ -157,6 +159,7 @@ static Bool normalizeWidePrintfFormatForPosix(const WideChar *src, WideChar *dst
 		else if (src[tokenPos] == L'j' || src[tokenPos] == L'z' || src[tokenPos] == L't' || src[tokenPos] == L'L')
 		{
 			hasLengthModifier = TRUE;
+			modStart = tokenPos;
 			tokenPos++;
 		}
 
@@ -164,8 +167,18 @@ static Bool normalizeWidePrintfFormatForPosix(const WideChar *src, WideChar *dst
 		if (conversion == 0)
 			return FALSE;
 
+		// GeneralsX @bugfix meerzulee 10/07/2026 MSVC's '%hs' (narrow string in a wide
+		// format) does not exist in POSIX wide printf — musl mangles it into a
+		// single garbage glyph (rendered as a tofu box in every UI string built
+		// with %hs, e.g. the Disconnection Menu). POSIX plain '%s' in a wide
+		// format already means narrow string, so drop the 'h'.
+		const Bool narrowStr = (conversion == L's' && modStart >= 0 &&
+		                        (tokenPos - modStart) == 1 && src[modStart] == L'h');
+
 		for (Int i = tokenStart; i < tokenPos; ++i)
 		{
+			if (narrowStr && i == modStart)
+				continue; // strip the 'h'
 			if (dstPos >= dstCapacity - 1)
 				return FALSE;
 			dst[dstPos++] = src[i];
@@ -180,9 +193,10 @@ static Bool normalizeWidePrintfFormatForPosix(const WideChar *src, WideChar *dst
 		}
 		else if (!hasLengthModifier && conversion == L'S')
 		{
-			if (dstPos >= dstCapacity - 2)
+			// MSVC '%S' in a wide format = narrow string = POSIX plain '%s'
+			// (the old '%hs' rewrite fed musl the same unsupported spelling).
+			if (dstPos >= dstCapacity - 1)
 				return FALSE;
-			dst[dstPos++] = L'h';
 			dst[dstPos++] = L's';
 		}
 		else

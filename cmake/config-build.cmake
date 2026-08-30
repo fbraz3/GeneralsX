@@ -93,7 +93,7 @@ if(UNIX)
     target_compile_definitions(core_config INTERFACE _UNIX)
     # Ubuntu 24.04+ and macOS have strlcpy/strlcat/wcslcpy/wcslcat in libc
     # GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Added guards for glibc 2.38+
-    # Igroteka @build 05/07/2026 Emscripten/musl: has strlcpy/strlcat but NOT the
+    # GeneralsX @build 05/07/2026 Emscripten/musl has strlcpy/strlcat but not the
     # wide variants; wcslcpy/wcslcat come from WWLib stringex.h templates instead.
     if(EMSCRIPTEN)
         target_compile_definitions(core_config INTERFACE HAVE_STRLCPY HAVE_STRLCAT)

@@ -177,6 +177,37 @@ void UpdateRemoteIPList()
 	prefs.write();
 }
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+// In the browser the "Remote IP" combo box is a ROOM CODE (there are no routable
+// IPs; WebRTC does NAT traversal). Host joins that signaling room and creates the game
+// in it; a friend types the same code under Join. Empty/same code = no-op.
+static void generalsx_join_room_from_combo(GameWindow *combo)
+{
+	UnicodeString uni = GadgetComboBoxGetText(combo);
+	AsciiString code;
+	code.translate(uni);
+	code.trim();
+	EM_ASM({
+		if (typeof window !== 'undefined' && window.GeneralsXUdp) {
+			var c = UTF8ToString($0);
+			if (c) window.GeneralsXUdp.joinRoom(c);
+		}
+	}, code.str());
+}
+
+// Autopilot mode from the launch URL: 0 none, 1 host (?host=1), 2 join (?autojoin=1).
+static int generalsx_autopilot_mode()
+{
+	return EM_ASM_INT({
+		if (typeof window === 'undefined') return 0;
+		if (window.GENERALSX_AUTO_MODE === 'host') return 1;
+		if (window.GENERALSX_AUTO_MODE === 'join') return 2;
+		return 0;
+	});
+}
+#endif
+
 void HostDirectConnectGame()
 {
 	// Init LAN API Singleton
@@ -185,6 +216,12 @@ void HostDirectConnectGame()
 	{
 		TheLAN = NEW LANAPI();
 	}
+
+#ifdef __EMSCRIPTEN__
+	// Host in the room named by the code field.
+	generalsx_join_room_from_combo(comboboxRemoteIP);
+	TheLAN->SetLocalIP(TheLAN->GetLocalIP());  // refresh announced IP after any room change
+#endif
 
 	UnsignedInt localIP = TheLAN->GetLocalIP();
 	UnicodeString localIPString;
@@ -212,6 +249,27 @@ void JoinDirectConnectGame()
 	}
 
 	UnsignedInt ipaddress = 0;
+
+#ifdef __EMSCRIPTEN__
+	// The field is a room CODE. Join that signaling room, then direct-connect to the
+	// room's host (its synthetic IP). If the host isn't known yet (a fresh room
+	// switch, ~1s to connect), ipaddress is 0 -> RequestGameJoinDirectConnect
+	// returns GAME_GONE; the user clicks Join again once connected.
+	{
+		UnicodeString uni = GadgetComboBoxGetText(comboboxRemoteIP);
+		AsciiString code;
+		code.translate(uni);
+		code.trim();
+		ipaddress = (UnsignedInt) EM_ASM_INT({
+			if (typeof window === 'undefined' || !window.GeneralsXUdp) return 0;
+			var c = UTF8ToString($0);
+			if (c) window.GeneralsXUdp.joinRoom(c);
+			return (window.GeneralsXUdp.hostIP() >>> 0);
+		}, code.str());
+		DEBUG_LOG(("JoinDirectConnectGame - room=%s hostIP=%d.%d.%d.%d",
+			code.str(), PRINTF_IP_AS_4_INTS(ipaddress)));
+	}
+#else
 	UnicodeString ipunistring = GadgetComboBoxGetText(comboboxRemoteIP);
 	AsciiString asciientry;
 	asciientry.translate(ipunistring);
@@ -227,6 +285,7 @@ void JoinDirectConnectGame()
 
 	ipaddress = (ip1 << 24) + (ip2 << 16) + (ip3 << 8) + ip4;
 //	ipaddress = htonl(ipaddress);
+#endif
 
 	UnicodeString name;
 	name = GadgetTextEntryGetText(editPlayerName);
@@ -393,6 +452,42 @@ void NetworkDirectConnectShutdown( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 void NetworkDirectConnectUpdate( WindowLayout * layout, void *userData)
 {
+#ifdef __EMSCRIPTEN__
+	// Autopilot: launched with ?host=1 / ?autojoin=1, drive host/join with no clicks.
+	// Both peers are already in the signaling room from ?room= at boot, so Host/Join act
+	// on the current room. Host fires once; joiner retries every ~2s until the host's
+	// game is found (RequestGameJoinDirectConnect no-ops while a join is pending, and
+	// once joined we leave this screen so Update — and the retries — stop).
+	if (!isShuttingDown)
+	{
+		int mode = generalsx_autopilot_mode();
+		static Bool s_hostFired = FALSE;
+		static Int s_joinTick = 0;
+		if (mode == 1)
+		{
+			if (!s_hostFired) { s_hostFired = TRUE; HostDirectConnectGame(); }
+		}
+		else if (mode == 2)
+		{
+			// Players wait for the host: only attempt a join once a host peer is
+			// present in the room (hostIP() != 0). Then retry every ~1.5s until the
+			// host's game responds (RequestGameJoinDirectConnect no-ops while a join
+			// is pending; once we join we leave this screen so retries stop).
+			if ((s_joinTick++ % 45) == 0)
+			{
+				int hostPresent = EM_ASM_INT({
+					return (typeof window !== 'undefined' && window.GeneralsXUdp &&
+					        window.GeneralsXUdp.hostIP()) ? 1 : 0;
+				});
+				if (hostPresent)
+					JoinDirectConnectGame();
+				else
+					DEBUG_LOG(("autopilot: waiting for host in room..."));
+			}
+		}
+	}
+#endif
+
 	// We'll only be successful if we've requested to
 	if(isShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
 		shutdownComplete(layout);

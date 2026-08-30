@@ -1,4 +1,4 @@
-/* Igroteka wasm - minimal fontconfig stub.
+/* GeneralsX wasm - minimal fontconfig stub.
  * The browser has no system font database; every query resolves to a font file
  * bundled into the Emscripten filesystem. Covers exactly the API surface
  * render2dsentence.cpp uses - extend if a new caller appears. */

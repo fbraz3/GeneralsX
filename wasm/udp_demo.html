@@ -1,0 +1,57 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>webrtc_udp bridge echo test</title>
+<style>
+  body { font: 13px/1.5 ui-monospace, monospace; max-width: 620px; margin: 2rem auto; }
+  button, input { font: inherit; padding: 4px 8px; }
+  #log { background: #111; color: #6f6; padding: 8px; height: 300px; overflow: auto; white-space: pre-wrap; }
+</style>
+<h3>webrtc_udp bridge — UDP-over-DataChannel echo</h3>
+<p>Open in two tabs (same room). One <b>broadcasts</b> a datagram on port 8086; the
+other's <code>recv(8086)</code> drains it and logs the sender's synthetic IP.
+Exercises exactly what the engine's UDP shim will call.</p>
+<div>
+  room <input id="room" value="UDP1" size="10" />
+  <button id="go">Connect + bind 8086</button>
+  <button id="bcast" disabled>Broadcast test packet</button>
+</div>
+<div id="log"></div>
+<script>
+  var logEl = document.getElementById("log");
+  window.__udplog = function (m) { logEl.textContent += m + "\n"; logEl.scrollTop = logEl.scrollHeight; };
+  var log = window.__udplog;
+  var ipStr = function (n) { return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join("."); };
+
+  document.getElementById("go").onclick = function () {
+    this.disabled = true;
+    window.GENERALSX_WEBRTC_ENABLED = true;
+    window.GENERALSX_SIGNALING_URL =
+      new URLSearchParams(location.search).get("signaling") || "https://signaling.generalsx.org";
+    window.GENERALSX_ROOM = document.getElementById("room").value.toUpperCase();
+    window.GENERALSX_PLAYER_NAME = "udp-" + Math.floor(Math.random() * 1000);
+    var s = document.createElement("script");
+    s.src = "webrtc_udp.js";
+    s.onload = function () {
+      window.GENERALSX_UDP_READY.then(function () {
+        var myIP = window.GeneralsXUdp.bind(8086);
+        log("bound 8086, myIP=" + ipStr(myIP));
+        document.getElementById("bcast").disabled = false;
+        // Drain loop — mirrors the engine's per-tick UDP::Read.
+        setInterval(function () {
+          var pkt;
+          while ((pkt = window.GeneralsXUdp.recv(8086)) !== null) {
+            log("RECV from " + ipStr(pkt.ip) + ":" + pkt.port +
+                " (" + pkt.data.length + "B): " + new TextDecoder().decode(pkt.data));
+          }
+        }, 150);
+      });
+    };
+    document.body.appendChild(s);
+  };
+
+  document.getElementById("bcast").onclick = function () {
+    var payload = new TextEncoder().encode("hello-udp-" + Math.floor(Math.random() * 1000));
+    var n = window.GeneralsXUdp.send(0xffffffff, 8086, 8086, payload); // broadcast, dest 8086, src 8086
+    log("SENT broadcast to " + n + " peer(s): " + new TextDecoder().decode(payload));
+  };
+</script>

@@ -29,7 +29,7 @@ if(SAGE_USE_DX8)
   message(STATUS "Using DirectX 8 SDK (Windows native)")
 
 elseif(EMSCRIPTEN)
-  # Igroteka @build 05/07/2026 - WASM browser port
+  # GeneralsX @build meerzulee 05/07/2026 WebAssembly browser port
   # Fetch the DXVK native tarball for its d3d8/windows compat HEADERS only.
   # The prebuilt .so binaries are unused; the D3D8 implementation on wasm is
   # d8web (D3D8 to WebGL2 translation layer, linked by the game target).

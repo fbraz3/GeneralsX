@@ -93,9 +93,46 @@ Bool LANPreferences::loadFromIniFile()
 	return load("Network.ini");
 }
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+// Autopilot mode from the launch URL: 0 none, 1 host (?host=1), 2 join (?autojoin=1).
+static int generalsx_autopilot_mode()
+{
+	return EM_ASM_INT({
+		if (typeof window === 'undefined') return 0;
+		if (window.GENERALSX_AUTO_MODE === 'host') return 1;
+		if (window.GENERALSX_AUTO_MODE === 'join') return 2;
+		return 0;
+	});
+}
+#endif
+
 UnicodeString LANPreferences::getUserName()
 {
 	UnicodeString ret;
+
+#ifdef __EMSCRIPTEN__
+	// Each browser window gets a distinct LAN name from window.GENERALSX_PLAYER_NAME (random
+	// per tab — see boot.html ?player=). Without this both tabs fall through to
+	// the same machine-name default and collide as one player in the lobby.
+	{
+		char buf[64];
+		int n = EM_ASM_INT({
+			var s = (typeof window !== 'undefined' && window.GENERALSX_PLAYER_NAME) ? String(window.GENERALSX_PLAYER_NAME) : '';
+			if (!s) return 0;
+			var b = new TextEncoder().encode(s.slice(0, 62));
+			HEAPU8.set(b, $0);
+			HEAPU8[$0 + b.length] = 0;
+			return b.length;
+		}, buf);
+		if (n > 0)
+		{
+			AsciiString a(buf);
+			ret.translate(a);
+			return ret;
+		}
+	}
+#endif
 
 	LANPreferences::const_iterator it = find("UserName");
 	if (it != end())
@@ -664,6 +701,40 @@ void LanLobbyMenuUpdate( WindowLayout * layout, void *userData)
 
 	if (TheShell->isAnimFinished() && !LANbuttonPushed && TheLAN)
 		TheLAN->update();
+
+#ifdef __EMSCRIPTEN__
+	// Autopilot: host auto-creates a game; joiner waits for the host's game to be
+	// discovered (broadcast over the WebRTC shim) then auto-joins it. Fires only
+	// once the lobby is live.
+	if (TheShell->isAnimFinished() && !LANbuttonPushed && TheLAN)
+	{
+		int mode = generalsx_autopilot_mode();
+		static Bool s_hostFired = FALSE;
+		static Bool s_joinFired = FALSE;
+		static Int s_joinTick = 0;
+		if (mode == 1)
+		{
+			if (!s_hostFired) { s_hostFired = TRUE; TheLAN->RequestGameCreate(L"", FALSE); }
+		}
+		else if (mode == 2)
+		{
+			// Keep polling (host's game arrives async over the shim) until we find
+			// it, then RequestGameJoin exactly ONCE. Re-joining an already-joined
+			// game makes the engine reject us with "Duplicate name already in game".
+			if (!s_joinFired && (s_joinTick++ % 45) == 0)
+			{
+				LANGameInfo *theGame = TheLAN->LookupGameByListOffset(0);
+				if (theGame)
+				{
+					TheLAN->RequestGameJoin(theGame);
+					s_joinFired = TRUE;
+				}
+				else
+					DEBUG_LOG(("autopilot: waiting for host's game in LAN lobby..."));
+			}
+		}
+	}
+#endif
 
 	if (LANSocketErrorDetected == TRUE) {
 		LANSocketErrorDetected = FALSE;

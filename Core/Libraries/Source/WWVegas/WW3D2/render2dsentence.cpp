@@ -1838,6 +1838,13 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//
 	FT_UInt glyph_index = FT_Get_Char_Index( FTFace, ch );
 
+	// GeneralsX @bugfix meerzulee 10/07/2026 A character absent from the font maps to glyph 0 (.notdef),
+	// whose advance is often ~0.75em (Liberation Sans) — an unrenderable char
+	// in a user-typed player name rendered as a jarring wide gap. Draw missing
+	// chars as a modest BLANK (sane width, nothing blitted) rather than the wide
+	// .notdef box, which is also a "tofu" square we don't want.
+	bool missing_glyph = ( glyph_index == 0 && ch != 0 );
+
 	//
 	//	Load the glyph (without rendering yet)
 	//
@@ -1877,6 +1884,12 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	}
 	char_width += PixelOverlap + x_pos;
 
+	// Missing char: ignore the .notdef advance/box and reserve ~0.4em of blank.
+	if ( missing_glyph ) {
+		char_width = (CharHeight * 2) / 5;
+		if ( char_width < 2 ) char_width = 2;
+	}
+
 	//
 	//	Get a pointer to the buffer for this character (allocates if needed)
 	//
@@ -1900,7 +1913,7 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//
 	//	Copy FreeType bitmap to our buffer (convert 8-bit gray → 16-bit format)
 	//
-	for ( unsigned int row = 0; row < glyph->bitmap.rows; row++ ) {
+	for ( unsigned int row = 0; row < glyph->bitmap.rows && !missing_glyph; row++ ) {
 		//
 		//	GeneralsXWeb @bugfix: clamp to the cell — FreeType rounding can make
 		//	descender glyphs one row taller than CharHeight, and the overflow

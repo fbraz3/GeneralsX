@@ -665,7 +665,7 @@ GlobalData::GlobalData()
 	m_bilinearTerrainTex = FALSE;
 	m_trilinearTerrainTex = FALSE;
 #ifdef __EMSCRIPTEN__
-	// Igroteka wasm: the single-pass terrain blend path is an Nvidia-specific
+	// GeneralsX wasm: the single-pass terrain blend path is an Nvidia-specific
 	// 4-texture-stage backdoor (see AlphaTerrainTextureClass::Apply); d8web
 	// implements 2 stages. Multipass uses the standard 2-stage pipeline.
 	m_multiPassTerrain = TRUE;

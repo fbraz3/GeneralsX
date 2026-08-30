@@ -100,6 +100,11 @@ add_link_options(
     "-sEXIT_RUNTIME=0"
 )
 
+# NOTE: the loading-screen yield needs stack-switching. JSPI is not available
+# in every target browser and ASYNCIFY conflicts with wasm exceptions, so the
+# initial browser build keeps loading synchronous until it is moved to an
+# explicit asynchronous state machine.
+
 # ---- d8web: D3D8 to WebGL2 translation layer + engine bridge ----
 # GeneralsX @build Copilot 30/08/2026 Pin the renderer instead of requiring a
 # sibling checkout so local and CI builds consume the same implementation.

@@ -639,7 +639,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	if (!lite) {
 		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO/DYLIB loading (Phase 5: macOS)
 #ifdef __EMSCRIPTEN__
-		// Igroteka @build 06/07/2026 wasm: no dynamic linking in the browser. The
+		// GeneralsX @build meerzulee 06/07/2026 wasm: no dynamic linking in the browser. The
 		// d8web bridge (D3D8→WebGL2) is statically linked; use its factory directly
 		// (declared at file scope above).
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - using statically linked d8web bridge\n");

@@ -89,6 +89,9 @@
 #include "GameClient/LoadScreen.h"
 #include "GameClient/MapUtil.h"
 #include "GameClient/Mouse.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>  // emscripten_sleep — yield the multiplayer load barrier
+#endif
 #include "GameClient/ParticleSys.h"
 #include "GameClient/TerrainVisual.h"
 #include "GameClient/View.h"
@@ -1257,6 +1260,76 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 			}
 
+#ifdef __EMSCRIPTEN__
+			// GeneralsX @bugfix meerzulee 09/07/2026 Exactly one browser paint happens between this tick
+			// (flag set, return) and the next tick's fully-synchronous map load
+			// (update() -> startNewGame). Tell the page NOW so it can raise a
+			// loading overlay in that paint; only compositor-driven CSS
+			// (transform/opacity) keeps animating once the load blocks the
+			// main thread. Fires for every mode incl. LAN/multiplayer.
+			// The payload mirrors the game's own load screen: map + per-slot
+			// name/faction/color (JSON; strings escaped, non-ASCII folded).
+			{
+				AsciiString payload;
+				payload.concat("{");
+				if (TheGameInfo)
+				{
+					payload.concat("\"map\":\"");
+					for (const char *c = TheGameInfo->getMap().str(); *c; ++c)
+					{
+						if (*c == '"' || *c == '\\') payload.concat('\\');
+						payload.concat((*c >= 0x20 && *c < 0x7f) ? *c : '?');
+					}
+					payload.concat("\",\"players\":[");
+					Bool firstSlot = TRUE;
+					for (Int s = 0; s < MAX_SLOTS; ++s)
+					{
+						GameSlot *slot = TheGameInfo->getSlot(s);
+						if (!slot || !slot->isOccupied())
+							continue;
+						if (!firstSlot) payload.concat(",");
+						firstSlot = FALSE;
+						payload.concat("{\"name\":\"");
+						UnicodeString uname = slot->getName();
+						for (const WideChar *w = uname.str(); *w; ++w)
+						{
+							char c = (*w >= 0x20 && *w < 0x7f) ? (char)*w : '?';
+							if (c == '"' || c == '\\') payload.concat('\\');
+							payload.concat(c);
+						}
+						payload.concat("\",\"faction\":\"");
+						Int pt = slot->getPlayerTemplate();
+						if (pt == PLAYERTEMPLATE_OBSERVER)
+							payload.concat("Observer");
+						else if (pt < 0 || pt >= ThePlayerTemplateStore->getPlayerTemplateCount())
+							payload.concat("Random");
+						else
+						{
+							UnicodeString disp = ThePlayerTemplateStore->getNthPlayerTemplate(pt)->getDisplayName();
+							for (const WideChar *w = disp.str(); *w; ++w)
+							{
+								char c = (*w >= 0x20 && *w < 0x7f) ? (char)*w : '?';
+								if (c == '"' || c == '\\') payload.concat('\\');
+								payload.concat(c);
+							}
+						}
+						payload.concat("\",\"human\":");
+						payload.concat(slot->isHuman() ? "true" : "false");
+						payload.concat(",\"color\":");
+						AsciiString colorStr;
+						colorStr.format("%d", slot->getColor());
+						payload.concat(colorStr);
+						payload.concat("}");
+					}
+					payload.concat("]");
+				}
+				payload.concat("}");
+				EM_ASM({
+					if (typeof Module !== 'undefined' && Module.onMatchLoadBegin)
+						Module.onMatchLoadBegin(UTF8ToString($0));
+				}, payload.str());
+			}
+#endif
 			m_startNewGame = TRUE;
 			return;
 
@@ -2306,6 +2379,11 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	{
 		updateLoadProgress(101); // keep greater then 100
 		testTimeOut();
+#ifdef __EMSCRIPTEN__
+		// Multiplayer load barrier: pump the network so the peer's "load complete"
+		// is received (harmless in single-player, where this loop doesn't run).
+		if (TheNetwork) TheNetwork->liteupdate();
+#endif
 		Sleep(100);
 	}
 
@@ -2342,6 +2420,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			deleteLoadScreen();
 
 	}
+
+#ifdef __EMSCRIPTEN__
+	// GeneralsX @bugfix meerzulee 09/07/2026 The synchronous load (and the MP wait-for-peers barrier above)
+	// is over — the page can fade its loading overlay. Unconditional: fires for
+	// every game mode, with or without an engine load screen.
+	EM_ASM({ if (typeof Module !== 'undefined' && Module.onMatchLoadEnd) Module.onMatchLoadEnd(); });
+#endif
 
 	#ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);

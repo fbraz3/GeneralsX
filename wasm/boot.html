@@ -43,6 +43,43 @@
       log('REJECTION: ' + e.reason + '\n' + (e.reason && e.reason.stack ? e.reason.stack : ''));
     });
 
+    // WebRTC multiplayer: route the UDP-over-DataChannel bridge's logs into this
+    // panel and configure which signaling room to join. Two windows on the same room
+    // (?room=foo) discover each other in the in-game LAN lobby.
+    //   boot.html?room=duel&player=alice
+    window.__udplog = function(m) { log(m); };
+    (function() {
+      var p = new URLSearchParams(location.search);
+      window.GENERALSX_WEBRTC_ENABLED = p.has('room');
+      window.GENERALSX_SIGNALING_URL = p.get('signaling') || 'https://signaling.generalsx.org';
+      window.GENERALSX_ROOM = (p.get('room') || 'LAN1').toUpperCase();
+      window.GENERALSX_PLAYER_NAME = p.get('player') || ('gx-' + Math.floor(Math.random() * 1e4));
+      window.GENERALSX_AUTO_MODE = p.get('host') ? 'host' : (p.get('autojoin') ? 'join' : '');
+      if (window.GENERALSX_WEBRTC_ENABLED) {
+        log('[webrtc] room=' + window.GENERALSX_ROOM + ' name=' + window.GENERALSX_PLAYER_NAME +
+            (window.GENERALSX_AUTO_MODE ? ' auto=' + window.GENERALSX_AUTO_MODE : ''));
+      }
+    })();
+
+    // Room + connection HUD (top-right). Shows the room code so players don't get
+    // confused, and doubles as the "is the host alive/connectable" helper.
+    (function() {
+      var hud = document.createElement('div');
+      hud.id = 'generalsXRoomHud';
+      hud.style.cssText = 'position:fixed;top:6px;right:10px;z-index:20;' +
+        'background:rgba(16,18,26,.82);color:#9fe;padding:5px 11px;' +
+        'border:1px solid #2a3a4a;border-radius:5px;font:12px/1.5 ui-monospace,monospace;' +
+        'pointer-events:none;white-space:nowrap;';
+      document.body.appendChild(hud);
+      setInterval(function() {
+        if (!window.GeneralsXUdp) return;
+        var s = window.GeneralsXUdp.status();
+        hud.textContent = 'ROOM ' + s.room + '  ·  you ' + s.myIP +
+          '  ·  players ' + s.peers +
+          '  ·  host ' + (s.isHost ? 'you' : (s.hostAlive ? 'live' : 'waiting…'));
+      }, 500);
+    })();
+
     var Module = {
       canvas: document.getElementById('canvas'),
       // Cache-bust the .wasm fetch — a stale cached build after a rebuild is
@@ -71,10 +108,11 @@
         FS.mkdirTree(userDir);
         var shadows = (new URLSearchParams(location.search).get('shadows') === 'on') ? 'yes' : 'no';
         FS.writeFile(userDir + '/Options.ini',
+          'StaticGameLOD = Low\n' +
           'UseShadowVolumes = ' + shadows + '\n' +
           'UseShadowDecals = ' + shadows + '\n' +
           'Resolution = 1024 768\n');
-        log('[prefs] shadows=' + shadows);
+        log('[prefs] detail=Low shadows=' + shadows);
         addRunDependency('gamedata');
         // name → path in the wasm FS; the fontconfig stub resolves every font
         // query to /fonts/default.ttf, so a real TTF must be staged there.
@@ -121,6 +159,23 @@
       }]
     };
   </script>
-  <script src="GeneralsXZH.js"></script>
+  <script src="webrtc_udp.js"></script>
+  <script>
+    // Cache-bust the engine glue too (locateFile already busts the .wasm). A
+    // stale cached GeneralsXZH.js against a fresh .wasm mismatches the EM_ASM
+    // ASM_CONSTS table -> "ASM_CONSTS[emAsmAddr] is not a function".
+    function loadEngine() {
+      var s = document.createElement('script');
+      s.src = 'GeneralsXZH.js?v=' + Date.now();
+      document.body.appendChild(s);
+    }
+    if (window.GENERALSX_UDP_READY) {
+      window.GENERALSX_UDP_READY.then(loadEngine).catch(function(error) {
+        log('[webrtc] startup failed: ' + error.message);
+      });
+    } else {
+      loadEngine();
+    }
+  </script>
 </body>
 </html>

@@ -29,6 +29,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>  // EM_ASM — lobby-reached marker for the page splash
+#endif
+
 
 #include "Common/PlayerTemplate.h"
 #include "Common/GameEngine.h"
@@ -922,6 +926,13 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 	TheWindowManager->winSetFocus( parentLanGameOptions );
 
 	s_isIniting = FALSE;
+
+#ifdef __EMSCRIPTEN__
+	// GeneralsX @feature meerzulee 10/07/2026 The party autopilot has landed in the Game Options lobby -
+	// tell the page so it can drop the boot splash it kept up through the
+	// menu walk (host and guests both pass through here).
+	EM_ASM({ if (typeof Module !== 'undefined' && Module.onLobbyReached) Module.onLobbyReached(); });
+#endif
 
 	if (TheLAN->AmIHost())
 	{

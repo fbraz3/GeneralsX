@@ -1405,7 +1405,17 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 
 		// See if we already have the missing string
 		UnicodeString missingString;
+#ifdef __EMSCRIPTEN__
+		// musl has no MSVC '%hs' (narrow string in wide printf) — the format
+		// below produced a single garbage glyph, which FreeType rendered as a
+		// tofu box wherever a .wnd placeholder label (e.g. "Static Text") had
+		// no CSF entry (seen on the Disconnection Menu). Player-facing builds
+		// render missing labels as EMPTY instead; the miss is still logged.
+		printf("[gametext] missing label: %s\n", label);
+		missingString = UnicodeString::TheEmptyString;
+#else
 		missingString.format(L"MISSING: '%hs'", label);
+#endif
 
 		NoString *noString = m_noStringList;
 

@@ -357,7 +357,7 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 	}
 
 #ifndef RTS_HAS_FFMPEG
-	// Igroteka wasm: no FFmpeg — decode with miniaudio's built-in decoders
+	// GeneralsX wasm: no FFmpeg - decode with miniaudio's built-in decoders
 	// (dr_wav/dr_mp3) from an in-memory copy of the file. Decoding from
 	// memory rather than through the VFS sidesteps the MP3-via-VFS hang the
 	// FFmpeg path was added to avoid.

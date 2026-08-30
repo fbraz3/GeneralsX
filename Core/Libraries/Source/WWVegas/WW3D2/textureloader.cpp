@@ -879,7 +879,7 @@ void TextureLoader::Update(void (*network_callback)())
 	}
 
 #ifdef __EMSCRIPTEN__
-	// Igroteka wasm: the background loader thread never runs (no threads), so
+	// GeneralsX wasm: the background loader thread never runs (no threads), so
 	// tasks pushed to the background queue would sit there forever and their
 	// textures would stay at the missing-texture placeholder. Drain the queue
 	// synchronously here, doing exactly what LoaderThreadClass::Thread_Function

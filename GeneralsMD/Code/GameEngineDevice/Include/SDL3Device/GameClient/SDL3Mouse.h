@@ -31,7 +31,7 @@
 
 // SYSTEM INCLUDES
 #include <SDL3/SDL.h>
-// Igroteka @build 05/07/2026 wasm: SDL3_image not built; .ico cursor decode disabled
+// GeneralsX @build meerzulee 05/07/2026 wasm: SDL3_image not built
 #ifndef __EMSCRIPTEN__
 #include <SDL3_image/SDL_image.h>
 #endif

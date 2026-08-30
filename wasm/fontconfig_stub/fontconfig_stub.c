@@ -1,4 +1,4 @@
-/* Igroteka wasm - fontconfig stub implementation.
+/* GeneralsX wasm - fontconfig stub implementation.
  * Every font query resolves to the single font bundled at /fonts/default.ttf
  * in the Emscripten virtual filesystem (packaged at build time). */
 #include <fontconfig/fontconfig.h>

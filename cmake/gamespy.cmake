@@ -9,7 +9,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(gamespy)
 
-# Igroteka @build 05/07/2026 - Emscripten: GameSpy's platform detection knows
+# GeneralsX @build meerzulee 05/07/2026 Emscripten: GameSpy's platform detection knows
 # __linux__/__APPLE__ but not Emscripten. Its Linux/POSIX paths compile cleanly
 # against musl headers. PUBLIC so engine translation units including GameSpy
 # headers (GameNetwork) agree on the platform view; the only engine _UNIX guards
@@ -19,13 +19,13 @@ if(EMSCRIPTEN AND TARGET gamespy)
     target_compile_definitions(gamespy PUBLIC _LINUX _UNIX)
     # ...and directory-recursive for GameSpy's own module targets (gschat, gsqr2,
     # ...), which are PRIVATE deps of gamespy and don't inherit its PUBLIC defs.
-    function(igroteka_gs_defs_recursive dir)
+    function(generalsx_gs_defs_recursive dir)
         # __linux__ too: gsplatformsocket.c dispatches on the raw compiler macro.
         set_property(DIRECTORY ${dir} APPEND PROPERTY COMPILE_DEFINITIONS _LINUX _UNIX __linux__)
         get_property(_subs DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
         foreach(_s ${_subs})
-            igroteka_gs_defs_recursive(${_s})
+            generalsx_gs_defs_recursive(${_s})
         endforeach()
     endfunction()
-    igroteka_gs_defs_recursive(${gamespy_SOURCE_DIR})
+    generalsx_gs_defs_recursive(${gamespy_SOURCE_DIR})
 endif()

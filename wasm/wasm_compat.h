@@ -1,4 +1,4 @@
-/* Igroteka wasm - force-included libc gap shim (via -include in wasm-deps.cmake).
+/* GeneralsX wasm - force-included libc gap shim (via -include in wasm-deps.cmake).
  * musl lacks the BSD wcslcpy/wcslcat that macOS provides natively and several
  * engine translation units call without including WWLib's stringex.h. */
 #ifndef IGROTEKA_WASM_COMPAT_H

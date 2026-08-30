@@ -38,7 +38,15 @@ Connection::Connection() {
 	m_transport = nullptr;
 	m_user = nullptr;
 	m_netCommandList = nullptr;
+#ifdef __EMSCRIPTEN__
+	// GeneralsX @bugfix meerzulee 10/07/2026 2000ms was dial-up-era tuning. The disconnect stall detector
+	// fires after 5000ms without a completed frame (DisconnectManager), so a
+	// lost FRAMEINFO got at most 2 retries before the Disconnection Menu.
+	// 300ms fits ~16 retries in that window on modern connections.
+	m_retryTime = 300;
+#else
 	m_retryTime = 2000; // set retry time to 2 seconds.
+#endif
 	m_lastTimeSent = 0;
 	m_frameGrouping = 1;
 	m_isQuitting = false;

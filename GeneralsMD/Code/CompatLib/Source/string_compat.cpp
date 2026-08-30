@@ -47,8 +47,19 @@ int _vsnwprintf(wchar_t* buffer, size_t count, const wchar_t* format, va_list ar
 {
   std::wstring format_fixup(format);
 
+  // GeneralsX @bugfix meerzulee 10/07/2026 MSVC '%hs' (narrow string in a wide format)
+  // doesn't exist in musl's vswprintf — rewrite to plain '%s' (POSIX wide
+  // printf's %s already means narrow) BEFORE the %s->%ls pass below would
+  // otherwise leave it as the unsupported '%hs'.
+  size_t pos = format_fixup.find(L"%hs", 0);
+  while (pos != std::wstring::npos)
+  {
+    format_fixup.replace(pos, 3, L"%\x01s"); // placeholder so %s pass skips it
+    pos = format_fixup.find(L"%hs", pos);
+  }
+
   // Replace all %s with %ls
-  size_t pos = format_fixup.find(L"%s", 0);
+  pos = format_fixup.find(L"%s", 0);
   while (pos != std::wstring::npos)
   {
     format_fixup.replace(pos, 2, L"%ls");
@@ -65,6 +76,13 @@ int _vsnwprintf(wchar_t* buffer, size_t count, const wchar_t* format, va_list ar
     pos = format_fixup.find(L"%S", pos);
   }
 
+  // resolve the %hs placeholders to plain narrow %s
+  pos = format_fixup.find(L"%\x01s", 0);
+  while (pos != std::wstring::npos)
+  {
+    format_fixup.replace(pos, 3, L"%s");
+    pos = format_fixup.find(L"%\x01s", pos);
+  }
 
   return vswprintf(buffer, count, format_fixup.c_str(), args);
 }

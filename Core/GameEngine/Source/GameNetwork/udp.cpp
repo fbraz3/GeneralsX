@@ -39,6 +39,58 @@
 typedef int socklen_t;
 #endif
 
+// GeneralsX @feature meerzulee 09/07/2026 Bridge browser UDP semantics over
+// WebRTC DataChannels without changing the engine's packet or lockstep layers.
+// Upstream reference: meerzulee/GeneralsXWeb, commit 0d11b34a6
+// https://github.com/meerzulee/GeneralsXWeb/commit/0d11b34a6
+// On wasm there are no OS sockets; the engine's datagram traffic (LAN discovery
+// and in-game lockstep both funnel through this class) is bridged to
+// window.GeneralsXUdp, which routes datagrams over
+// per-peer DataChannels. Each peer has a synthetic IP (10.0.0.N); broadcast fans
+// out to the room. Everything above this class (Transport CRC/XOR/queues, the
+// lockstep barrier, CRC desync) is unchanged.
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+// Bridge to window.GeneralsXUdp via EM_ASM inline JavaScript.
+// EM_JS named imports and --js-library entries get dropped by the static-library
+// link (emcc's import scan misses references inside libz_gameengine.a); EM_ASM
+// rides the always-present asm_const path, so it survives. Copy at the boundary
+// (HEAPU8.slice) — never hand a subarray across, memory growth invalidates it.
+static unsigned int generalsx_udp_bind(unsigned short port) {
+  return (unsigned int) EM_ASM_INT({
+    return (typeof window !== 'undefined' && window.GeneralsXUdp) ? (window.GeneralsXUdp.bind($0) >>> 0) : 0;
+  }, port);
+}
+static int generalsx_udp_send(unsigned int destIP, unsigned short destPort, unsigned short srcPort,
+                              const unsigned char* ptr, int len) {
+  return EM_ASM_INT({
+    if (typeof window === 'undefined' || !window.GeneralsXUdp) return 0;
+    return window.GeneralsXUdp.send($0 >>> 0, $1, $2, HEAPU8.slice($3, $3 + $4));
+  }, destIP, destPort, srcPort, ptr, len);
+}
+static int generalsx_udp_recv(unsigned short port, unsigned char* ptr, int maxlen,
+                              unsigned int* ipOut, unsigned short* portOut) {
+  return EM_ASM_INT({
+    if (typeof window === 'undefined' || !window.GeneralsXUdp) return 0;
+    var pkt = window.GeneralsXUdp.recv($0);
+    if (!pkt) return 0;
+    var n = Math.min(pkt.data.length, $2);
+    HEAPU8.set(pkt.data.subarray(0, n), $1);
+    HEAPU32[$3 >>> 2] = pkt.ip >>> 0;
+    HEAPU16[$4 >>> 1] = pkt.port & 0xffff;
+    return n;
+  }, port, ptr, maxlen, ipOut, portOut);
+}
+static unsigned int generalsx_udp_local_ip(void) {
+  return (unsigned int) EM_ASM_INT({
+    return (typeof window !== 'undefined' && window.GeneralsXUdp) ? (window.GeneralsXUdp.localIP() >>> 0) : 0;
+  });
+}
+static void generalsx_udp_close(unsigned short port) {
+  EM_ASM({ if (typeof window !== 'undefined' && window.GeneralsXUdp) window.GeneralsXUdp.close($0); }, port);
+}
+#endif // __EMSCRIPTEN__
+
 //-------------------------------------------------------------------------
 
 #ifdef DEBUG_LOGGING
@@ -124,12 +176,24 @@ UDP::UDP()
 
 UDP::~UDP()
 {
+#ifdef __EMSCRIPTEN__
+	if (fd)
+		generalsx_udp_close(myPort);
+#else
 	if (fd)
 		closesocket(fd);
+#endif
 }
 
 Int UDP::Bind(const char *Host,UnsignedShort port)
 {
+#ifdef __EMSCRIPTEN__
+  // No blocking DNS on wasm. Numeric host → parse; otherwise bind to "any"
+  // (the bridge assigns our synthetic IP regardless of the bound address).
+  if (Host && isdigit((unsigned char)Host[0]))
+    return ( Bind( ntohl(inet_addr(Host)), port) );
+  return ( Bind( (UnsignedInt)0, port) );
+#else
   struct hostent *hostStruct;
   struct in_addr *hostNode;
 
@@ -141,12 +205,29 @@ Int UDP::Bind(const char *Host,UnsignedShort port)
     return (0);
   hostNode = (struct in_addr *) hostStruct->h_addr;
   return ( Bind(ntohl(hostNode->s_addr),port) );
+#endif // __EMSCRIPTEN__
 }
 
 // You must call bind, implicit binding is for sissies
 //   Well... you can get implicit binding if you pass 0 for either arg
 Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
 {
+#ifdef __EMSCRIPTEN__
+  // Optimistic non-blocking bind: succeed instantly (the WebRTC channels connect
+  // asynchronously — Read returns empty until they open, sends queue/drop). No
+  // OS socket, so no 1000ms busy-wait bind loop above us in Transport::init.
+  myPort = Port;
+  generalsx_udp_bind(Port);
+  // Report our synthetic IP as the bound local address so getLocalAddr() and any
+  // self-address the engine announces are routable back to us.
+  UnsignedInt synth = generalsx_udp_local_ip();
+  myIP = synth ? synth : IP;
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(Port);
+  addr.sin_addr.s_addr = htonl(myIP);
+  fd = Port ? (Int)Port : 1;  // non-zero marker: "bound"
+  return(OK);
+#else
   int retval;
   int status;
   UnsignedInt ipHostOrder = IP;
@@ -204,6 +285,7 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
     fprintf(stderr,"Couldn't set nonblocking mode!\n");
 
   return(OK);
+#endif // __EMSCRIPTEN__
 }
 
 Int UDP::getLocalAddr(UnsignedInt &ip, UnsignedShort &port)
@@ -217,7 +299,9 @@ Int UDP::getLocalAddr(UnsignedInt &ip, UnsignedShort &port)
 // private function
 Int UDP::SetBlocking(Int block)
 {
-  #ifdef _WIN32
+  #ifdef __EMSCRIPTEN__
+   return(OK);  // the bridge is always non-blocking (Read drains an inbox)
+  #elif defined(_WIN32)
    unsigned long flag=1;
    if (block)
      flag=0;
@@ -245,11 +329,18 @@ Int UDP::SetBlocking(Int block)
 
 Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedShort port)
 {
-  Int retval;
-  struct sockaddr_in to;
-
   // This happens frequently
   if ((IP==0)||(port==0)) return(ADDRNOTAVAIL);
+
+#ifdef __EMSCRIPTEN__
+  // IP/port are host order here (native path htonl's them for sendto). Broadcast
+  // (0xFFFFFFFF) fans out to all peers. Fire-and-forget: report len like a lossy
+  // UDP send whether or not a channel was open (drops are silent, as on real UDP).
+  generalsx_udp_send(IP, port, myPort, msg, (int)len);
+  return((Int)len);
+#else
+  Int retval;
+  struct sockaddr_in to;
 
 #ifdef _UNIX
   errno=0;
@@ -279,10 +370,28 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
 	}
 
   return(retval);
+#endif // __EMSCRIPTEN__
 }
 
 Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 {
+#ifdef __EMSCRIPTEN__
+  // Non-blocking drain of one datagram from this port's inbox. Empty == 0
+  // (the WOULDBLOCK convention the callers expect). The bridge reports the
+  // sender's synthetic IP/port, which we hand back as a network-order sockaddr_in
+  // exactly as recvfrom would — Transport's (addr,port) demux is unchanged.
+  unsigned int srcIP = 0;
+  unsigned short srcPort = 0;
+  Int n = generalsx_udp_recv(myPort, msg, (Int)len, &srcIP, &srcPort);
+  if (n <= 0) return(0);
+  if (from != nullptr)
+  {
+    from->sin_family = AF_INET;
+    from->sin_addr.s_addr = htonl(srcIP);
+    from->sin_port = htons(srcPort);
+  }
+  return(n);
+#else
   Int retval;
   // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
   socklen_t alen=sizeof(sockaddr_in);
@@ -334,6 +443,7 @@ Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 		}
   }
   return(retval);
+#endif // __EMSCRIPTEN__
 }
 
 
@@ -558,6 +668,9 @@ int UDP::GetOutputBuffer()
 
 Int UDP::AllowBroadcasts(Bool status)
 {
+#ifdef __EMSCRIPTEN__
+	return TRUE;  // broadcast == fan-out to the room; always available
+#else
 	int retval;
 	BOOL val = status;
 	retval = setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (char *)&val, sizeof(BOOL));
@@ -565,4 +678,5 @@ Int UDP::AllowBroadcasts(Bool status)
 		return TRUE;
 	else
 		return FALSE;
+#endif // __EMSCRIPTEN__
 }
