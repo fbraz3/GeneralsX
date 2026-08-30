@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { CURRENT_COMPATIBILITY } from "@generalsx-web/shared/protocol";
+import { compatibilityFor } from "@generalsx-web/shared/protocol";
 import {
   buildRoster,
   createRoomState,
@@ -12,7 +12,9 @@ import {
   type RoomState,
 } from "../../src/durable-objects/room-logic.js";
 
-function request(name: string, connectionId: string, compatibility = CURRENT_COMPATIBILITY) {
+const TEST_COMPATIBILITY = compatibilityFor("zero-hour", true);
+
+function request(name: string, connectionId: string, compatibility = TEST_COMPATIBILITY) {
   return { name, connectionId, compatibility };
 }
 
@@ -112,9 +114,9 @@ describe("room lifecycle", () => {
   it("rejects mismatched engine, protocol, or determinism versions before assigning a slot", () => {
     expect(joinRoom(room, request("Alice", "c1"))).toEqual({ ok: true, value: 0 });
     for (const compatibility of [
-      { ...CURRENT_COMPATIBILITY, engine: 2 },
-      { ...CURRENT_COMPATIBILITY, protocol: 2 },
-      { ...CURRENT_COMPATIBILITY, determinism: 2 },
+      { ...TEST_COMPATIBILITY, engine: TEST_COMPATIBILITY.engine + 100 },
+      { ...TEST_COMPATIBILITY, protocol: TEST_COMPATIBILITY.protocol + 100 },
+      { ...TEST_COMPATIBILITY, determinism: TEST_COMPATIBILITY.determinism + 100 },
     ]) {
       expect(joinRoom(room, request("Bob", `c-${compatibility.engine}${compatibility.protocol}${compatibility.determinism}`, compatibility))).toEqual({
         ok: false,

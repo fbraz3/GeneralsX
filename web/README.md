@@ -97,7 +97,8 @@ npm run dev -w @generalsx-web/worker     # wrangler dev on :8787
 - `scripts/build-asset-manifest.ts` — operator-side CLI
   (`npm run build:manifest -w @generalsx-web/launcher`) that streams a local,
   legally obtained install directory, hashes every file, infers its role,
-  and prints a schema v2 manifest. It never copies asset bytes anywhere.
+  imports the CMake-generated lockstep profile,   and prints a schema v3
+  manifest. It never copies asset bytes anywhere.
 - `wrangler.toml` — documents the Cloudflare Pages build settings and
   custom-domain wiring for `play.generalsx.org` (Pages projects are
   typically configured via the dashboard or `wrangler pages deploy`; this
@@ -109,14 +110,15 @@ The launcher never ships assets; it downloads what an authorized origin
 serves and verifies every byte. Full operator guide:
 [`docs/HOWTO/WEB_ASSET_PIPELINE.md`](../docs/HOWTO/WEB_ASSET_PIPELINE.md).
 
-### Manifest (schema v2)
+### Manifest (schema v3)
 
 `packages/shared/src/manifest.ts` defines and validates the document:
 
 ```jsonc
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "engineVersion": "zh-wasm-2026.08.30",
+  "compatibility": { "engine": 2, "protocol": 2, "determinism": 2 },
   "assetsRevision": 7,                        // bumped on every republish
   "assetBaseUrl": "https://assets.example.org/zh/r7",
   "assets": [
@@ -140,7 +142,8 @@ has exactly one `engine-js` and one `engine-wasm`, at most one
 `mount.order`, expansion orders strictly above every base order,
 `streaming` matching the role (BIG archives stream, everything else does
 not), absolute mount targets, traversal-free relative paths, strong-only
-ETags, per-asset sizes in `1 B … 8 GiB`, and a total under 32 GiB.
+ETags, a positive-integer compatibility profile, per-asset sizes in
+`1 B … 8 GiB`, and a total under 32 GiB.
 
 ### Download and verification
 
@@ -252,7 +255,10 @@ Defined in `packages/shared/src/protocol.ts`:
   engine, network-protocol, and determinism compatibility versions. The first
   occupant establishes the room profile; mismatched profiles are rejected
   with `INCOMPATIBLE_CLIENT` before slot assignment and lockstep, while a
-  missing or malformed profile is an `INVALID_MESSAGE`.
+  missing or malformed profile is an `INVALID_MESSAGE`. Native CMake targets
+  and browser manifests derive these values from the same authoritative JSON;
+  Generals/Zero Hour and GameMath/platform-math builds therefore cannot share
+  a lockstep room.
 - `offer` / `answer` / `ice` → relayed only to the addressed slot (`to`),
   never broadcast; the server rewrites the sender field to `from` so
   clients cannot spoof their slot.

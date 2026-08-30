@@ -20,6 +20,8 @@
 namespace GeneralsX::NativeWebRTC
 {
 
+struct CompatibilityProfile;
+
 struct ReceivedDatagram
 {
 	std::uint32_t sourceAddress = 0;
@@ -35,7 +37,7 @@ public:
 	NativeWebRTCTransport(const NativeWebRTCTransport &) = delete;
 	NativeWebRTCTransport &operator=(const NativeWebRTCTransport &) = delete;
 
-	void ConfigureFromProcess();
+	void ConfigureFromProcess(CompatibilityProfile compatibility);
 	bool IsEnabled() const;
 	bool HasFailed() const;
 	std::string LastError() const;

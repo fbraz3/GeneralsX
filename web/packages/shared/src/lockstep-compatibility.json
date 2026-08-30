@@ -1,0 +1,11 @@
+{
+  "engine": {
+    "generals": 1,
+    "zeroHour": 2
+  },
+  "protocol": 2,
+  "determinism": {
+    "platformMath": 1,
+    "gameMath": 2
+  }
+}

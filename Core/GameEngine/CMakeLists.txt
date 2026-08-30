@@ -1209,7 +1209,10 @@ target_link_libraries(corei_gameengine_public INTERFACE
 # to the shared UDP wrapper only in explicit native WebRTC builds.
 if(SAGE_USE_NATIVE_WEBRTC)
     target_link_libraries(corei_gameengine_public INTERFACE core_native_webrtc)
-    target_compile_definitions(corei_gameengine_public INTERFACE SAGE_NATIVE_WEBRTC)
+    target_compile_definitions(corei_gameengine_public INTERFACE
+        SAGE_NATIVE_WEBRTC
+        GENERALSX_DETERMINISTIC_MATH_ENABLED=$<BOOL:${SAGE_USE_DETERMINISTIC_MATH}>
+    )
 endif()
 
 # ReactOS ATL for MinGW-w64 only (MSVC uses native ATL)

@@ -252,7 +252,7 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
   // GeneralsX @feature Copilot 30/08/2026 Route this socket through the native
   // room bridge only after an explicit CLI/environment opt-in.
   auto &webRTC = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
-  webRTC.ConfigureFromProcess();
+  webRTC.ConfigureFromProcess(GeneralsX::NativeWebRTC::CurrentBuildCompatibilityProfile());
   if (webRTC.IsEnabled())
   {
     if (webRTC.HasFailed())

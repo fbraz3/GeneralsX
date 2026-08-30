@@ -7,6 +7,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     include(CTest)
     include(FetchContent)
     find_package(CURL REQUIRED)
+    option(SAGE_USE_DETERMINISTIC_MATH "Identify the probe as a deterministic GameMath build" ON)
 
     set(NO_MEDIA ON CACHE BOOL "Disable libdatachannel media support" FORCE)
     set(NO_EXAMPLES ON CACHE BOOL "Disable libdatachannel examples" FORCE)
@@ -34,6 +35,10 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
+if(NOT DEFINED GENERALSX_COMPAT_PROTOCOL)
+    include("${CMAKE_CURRENT_LIST_DIR}/../../../../../cmake/lockstep-compatibility.cmake")
+endif()
+
 add_library(core_native_webrtc STATIC
     NativeWebRTCProtocol.cpp
     NativeWebRTCProtocol.h
@@ -43,6 +48,14 @@ add_library(core_native_webrtc STATIC
 
 target_include_directories(core_native_webrtc PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_definitions(core_native_webrtc PUBLIC
+    GENERALSX_COMPAT_ENGINE_GENERALS=${GENERALSX_COMPAT_ENGINE_GENERALS}
+    GENERALSX_COMPAT_ENGINE_ZERO_HOUR=${GENERALSX_COMPAT_ENGINE_ZERO_HOUR}
+    GENERALSX_COMPAT_PROTOCOL=${GENERALSX_COMPAT_PROTOCOL}
+    GENERALSX_COMPAT_DETERMINISM_PLATFORM_MATH=${GENERALSX_COMPAT_DETERMINISM_PLATFORM_MATH}
+    GENERALSX_COMPAT_DETERMINISM_GAME_MATH=${GENERALSX_COMPAT_DETERMINISM_GAME_MATH}
 )
 
 target_link_libraries(core_native_webrtc

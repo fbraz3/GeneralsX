@@ -31,9 +31,11 @@ scripts/qa/smoke/native-browser-webrtc-interop.sh \
 
 This runs the real native and browser WebRTC implementations through a local
 Worker, exchanges the canonical four-byte UDP header in both directions, and
-verifies that a mismatched compatibility handshake is rejected before
-lockstep. Set `TURN_KEY_ID` and `TURN_KEY_API_TOKEN` and use `turn` instead of
-`direct` for relay-only validation.
+verifies that actual Generals-vs-Zero-Hour and deterministic-vs-platform-math
+profile mismatches are rejected before lockstep. The browser profile is read
+from the CMake-generated JSON used by the native probe. Set `TURN_KEY_ID` and
+`TURN_KEY_API_TOKEN` and use `turn` instead of `direct` for relay-only
+validation.
 
 With an authorized engine-asset harness and local Worker already running, the
 two-browser lobby/match probe is:

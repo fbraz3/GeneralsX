@@ -17,6 +17,7 @@
  *  - the manifest document itself is the only mutable object.
  */
 import type { Sha256Hex } from "./sha256.js";
+import { isCompatibilityVersion, type CompatibilityVersion } from "./protocol.ts";
 
 export type { Sha256Hex };
 
@@ -115,9 +116,11 @@ export interface ManifestAsset {
 /** Immutable engine + asset manifest consumed by the launcher shell. */
 export interface EngineManifest {
   /** Manifest schema version, bumped on breaking changes. */
-  readonly schemaVersion: 2;
+  readonly schemaVersion: 3;
   /** Human-readable engine build identifier (e.g. git short SHA or tag). */
   readonly engineVersion: string;
+  /** CMake-generated lockstep identity for this exact engine/content/math build. */
+  readonly compatibility: CompatibilityVersion;
   /**
    * Monotonically increasing revision of the *asset set*. Together with
    * `engineVersion` it forms the immutable local storage root, so publishing
@@ -248,14 +251,21 @@ export function validateManifest(input: unknown): ManifestValidationResult {
     return { valid: false, errors: [{ path: "$", message: "manifest must be a JSON object" }] };
   }
 
-  if (input.schemaVersion !== 2) {
-    errors.push({ path: "schemaVersion", message: "must equal 2" });
+  if (input.schemaVersion !== 3) {
+    errors.push({ path: "schemaVersion", message: "must equal 3" });
   }
 
   if (typeof input.engineVersion !== "string" || !VERSION_RE.test(input.engineVersion)) {
     errors.push({
       path: "engineVersion",
       message: "must be a short identifier matching [A-Za-z0-9][A-Za-z0-9._-]{0,63}",
+    });
+  }
+
+  if (!isCompatibilityVersion(input.compatibility)) {
+    errors.push({
+      path: "compatibility",
+      message: "must contain positive integer engine, protocol, and determinism versions",
     });
   }
 

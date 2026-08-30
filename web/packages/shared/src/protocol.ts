@@ -3,6 +3,7 @@
  * Cloudflare Worker / Durable Object room backend. Every message is plain
  * JSON so it can be validated without trusting the sender.
  */
+import compatibilityVersions from "./lockstep-compatibility.json" with { type: "json" };
 
 /** Maximum number of stable player slots any room may be configured with. */
 export const MAX_ROOM_CAPACITY = 8;
@@ -21,21 +22,32 @@ export const MAX_SDP_LENGTH = 12 * 1024;
 
 export type SlotId = number;
 
-/** Lockstep compatibility identity. Keep this synchronized with the native
- * protocol constants and the browser wasm bridge. Bump the individual
- * integer whenever that compatibility surface changes; peers must match all
- * three values before the Worker assigns a room slot. */
+/** Lockstep compatibility identity. The version values are sourced from
+ * `lockstep-compatibility.json`, which CMake also consumes for native and
+ * generated browser-engine metadata. */
 export interface CompatibilityVersion {
   readonly engine: number;
   readonly protocol: number;
   readonly determinism: number;
 }
 
-export const CURRENT_COMPATIBILITY: CompatibilityVersion = Object.freeze({
-  engine: 1,
-  protocol: 1,
-  determinism: 1,
-});
+export type GameContentIdentity = "generals" | "zero-hour";
+
+export function compatibilityFor(
+  content: GameContentIdentity,
+  deterministicMath: boolean,
+): CompatibilityVersion {
+  return Object.freeze({
+    engine:
+      content === "zero-hour"
+        ? compatibilityVersions.engine.zeroHour
+        : compatibilityVersions.engine.generals,
+    protocol: compatibilityVersions.protocol,
+    determinism: deterministicMath
+      ? compatibilityVersions.determinism.gameMath
+      : compatibilityVersions.determinism.platformMath,
+  });
+}
 
 export interface ClientJoinMessage {
   readonly type: "join";

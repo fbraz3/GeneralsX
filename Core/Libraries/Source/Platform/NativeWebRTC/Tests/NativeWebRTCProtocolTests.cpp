@@ -44,11 +44,16 @@ void Check(bool condition, const char *expression, int line)
 
 void TestRuntimeConfig()
 {
-	const RuntimeConfig defaults = ParseRuntimeConfig({ "GeneralsXZH" }, {});
+	constexpr CompatibilityProfile zeroHourGameMath =
+		MakeCompatibilityProfile(GameContentIdentity::ZeroHour, true);
+	const RuntimeConfig defaults = ParseRuntimeConfig({ "GeneralsXZH" }, {}, zeroHourGameMath);
 	CHECK(!defaults.enabled);
 	CHECK(defaults.roomId == "LAN1");
 	CHECK(defaults.capacity == 4);
 	CHECK(!defaults.forceRelay);
+	CHECK(defaults.compatibility.engine == GENERALSX_COMPAT_ENGINE_ZERO_HOUR);
+	CHECK(defaults.compatibility.protocol == GENERALSX_COMPAT_PROTOCOL);
+	CHECK(defaults.compatibility.determinism == GENERALSX_COMPAT_DETERMINISM_GAME_MATH);
 
 	const RuntimeConfig environment = ParseRuntimeConfig(
 		{ "GeneralsXZH" },
@@ -60,7 +65,8 @@ void TestRuntimeConfig()
 			{ "GENERALSX_WEBRTC_CAPACITY", "8" },
 			{ "GENERALSX_WEBRTC_DISABLE_TURN", "1" },
 			{ "GENERALSX_WEBRTC_FORCE_RELAY", "true" },
-		});
+		},
+		zeroHourGameMath);
 	CHECK(environment.enabled);
 	CHECK(environment.roomId == "AB12");
 	CHECK(environment.playerName == "Native Player");
@@ -81,7 +87,8 @@ void TestRuntimeConfig()
 			"--webrtc-no-turn",
 			"--webrtc-force-relay",
 		},
-		{});
+		{},
+		zeroHourGameMath);
 	CHECK(cli.enabled);
 	CHECK(cli.roomId == "ROOM7");
 	CHECK(cli.playerName == "CLI Player");
@@ -96,6 +103,9 @@ void TestRuntimeConfig()
 	CHECK(!ValidateRuntimeConfig(invalid, &error));
 	invalid = cli;
 	invalid.signalingUrl = "https://user:secret@signal.example";
+	CHECK(!ValidateRuntimeConfig(invalid, &error));
+	invalid = cli;
+	invalid.compatibility = {};
 	CHECK(!ValidateRuntimeConfig(invalid, &error));
 }
 
@@ -121,6 +131,16 @@ void TestNegotiationContract()
 	CHECK(!IsPolitePeer(0, 1));
 	CHECK(IsPolitePeer(1, 0));
 	CHECK(!IsPolitePeer(1, 1));
+
+	constexpr CompatibilityProfile generalsGameMath =
+		MakeCompatibilityProfile(GameContentIdentity::Generals, true);
+	constexpr CompatibilityProfile zeroHourGameMath =
+		MakeCompatibilityProfile(GameContentIdentity::ZeroHour, true);
+	constexpr CompatibilityProfile zeroHourPlatformMath =
+		MakeCompatibilityProfile(GameContentIdentity::ZeroHour, false);
+	CHECK(generalsGameMath.engine != zeroHourGameMath.engine);
+	CHECK(generalsGameMath.protocol == zeroHourGameMath.protocol);
+	CHECK(zeroHourGameMath.determinism != zeroHourPlatformMath.determinism);
 }
 
 void TestFramingAndInbox()
@@ -168,15 +188,16 @@ void TestSignalingProtocol()
 	config.roomId = "ROOM7";
 	config.playerName = "Native";
 	config.capacity = 4;
+	config.compatibility = MakeCompatibilityProfile(GameContentIdentity::ZeroHour, true);
 
 	const Json join = Json::parse(BuildJoinMessage(config));
 	CHECK(join["type"] == "join");
 	CHECK(join["roomId"] == "ROOM7");
 	CHECK(join["name"] == "Native");
 	CHECK(join["capacity"] == 4);
-	CHECK(join["compatibility"]["engine"] == ENGINE_COMPATIBILITY_VERSION);
-	CHECK(join["compatibility"]["protocol"] == NETWORK_PROTOCOL_VERSION);
-	CHECK(join["compatibility"]["determinism"] == DETERMINISM_VERSION);
+	CHECK(join["compatibility"]["engine"] == GENERALSX_COMPAT_ENGINE_ZERO_HOUR);
+	CHECK(join["compatibility"]["protocol"] == GENERALSX_COMPAT_PROTOCOL);
+	CHECK(join["compatibility"]["determinism"] == GENERALSX_COMPAT_DETERMINISM_GAME_MATH);
 
 	const std::string welcome = R"({
 		"type":"welcome",

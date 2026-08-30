@@ -114,7 +114,9 @@ jobs:
         run: |
           JS_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.js"
           WASM_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.wasm"
-          for f in "$JS_OUT" "$WASM_OUT"; do
+          COMPAT_JS_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.compatibility.js"
+          COMPAT_JSON_OUT="build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.compatibility.json"
+          for f in "$JS_OUT" "$WASM_OUT" "$COMPAT_JS_OUT" "$COMPAT_JSON_OUT"; do
             if [ -f "$f" ]; then
               echo "✅ Built: $f"
               ls -lh "$f"
@@ -140,5 +142,7 @@ jobs:
           path: |
             build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.js
             build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.wasm
+            build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.compatibility.js
+            build/${{ inputs.preset }}/GeneralsMD/GeneralsXZH.compatibility.json
           retention-days: 7
           if-no-files-found: error

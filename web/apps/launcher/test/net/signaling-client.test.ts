@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CURRENT_COMPATIBILITY } from "@generalsx-web/shared/protocol";
+import { compatibilityFor } from "@generalsx-web/shared/protocol";
 import { SignalingClient } from "../../src/net/signaling-client.js";
 import { FakeWebSocket } from "./fake-websocket.js";
+
+const TEST_COMPATIBILITY = compatibilityFor("zero-hour", true);
 
 /** Boots a `SignalingClient` whose sockets are `FakeWebSocket`s, capturing
  * every socket created so tests can inspect/drive them directly. */
 function makeClient() {
   const sockets: FakeWebSocket[] = [];
-  const client = new SignalingClient("https://signaling.example.com", (url) => {
+  const client = new SignalingClient("https://signaling.example.com", TEST_COMPATIBILITY, (url) => {
     const socket = new FakeWebSocket(url);
     sockets.push(socket);
     return socket as unknown as WebSocket;
@@ -29,7 +31,7 @@ describe("SignalingClient connection lifecycle", () => {
         roomId: "ABCD",
         name: "Ada",
         capacity: 4,
-        compatibility: CURRENT_COMPATIBILITY,
+        compatibility: TEST_COMPATIBILITY,
       }),
     ]);
   });
@@ -52,7 +54,7 @@ describe("SignalingClient connection lifecycle", () => {
     expect(sockets).toHaveLength(2);
     sockets[1]!.open();
     expect(sockets[1]!.sent).toEqual([
-      JSON.stringify({ type: "join", roomId: "WXYZ", compatibility: CURRENT_COMPATIBILITY }),
+      JSON.stringify({ type: "join", roomId: "WXYZ", compatibility: TEST_COMPATIBILITY }),
     ]);
   });
 
@@ -93,7 +95,7 @@ describe("SignalingClient connection lifecycle", () => {
     client.leave();
 
     expect(sockets[0]!.sent).toEqual([
-      JSON.stringify({ type: "join", roomId: "ABCD", compatibility: CURRENT_COMPATIBILITY }),
+      JSON.stringify({ type: "join", roomId: "ABCD", compatibility: TEST_COMPATIBILITY }),
       JSON.stringify({ type: "leave" }),
     ]);
     expect(sockets[0]!.closeCallCount).toBe(1);
@@ -121,7 +123,7 @@ describe("SignalingClient connection lifecycle", () => {
     expect(sockets).toHaveLength(2);
     sockets[1]!.open();
     expect(sockets[1]!.sent).toEqual([
-      JSON.stringify({ type: "join", roomId: "ABCD", compatibility: CURRENT_COMPATIBILITY }),
+      JSON.stringify({ type: "join", roomId: "ABCD", compatibility: TEST_COMPATIBILITY }),
     ]);
   });
 

@@ -10,6 +10,7 @@
  */
 import { createHash } from "node:crypto";
 import type { EngineManifest } from "@generalsx-web/shared/manifest";
+import { compatibilityFor } from "@generalsx-web/shared/protocol";
 
 export const ASSET_ORIGIN = "https://assets.generalsx.org";
 export const SIGNALING_ORIGIN = "https://signaling.generalsx.org";
@@ -61,8 +62,9 @@ export const FIXTURE_ASSETS: readonly FixtureAsset[] = [
 /** A valid manifest referencing only the synthetic fixture assets above. */
 export function buildFixtureManifest(): EngineManifest {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     engineVersion: "browser-smoke-fixture",
+    compatibility: compatibilityFor("zero-hour", true),
     assetsRevision: 1,
     assetBaseUrl: ASSET_ORIGIN,
     assets: FIXTURE_ASSETS.map((asset, index) => {

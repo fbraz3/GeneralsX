@@ -29,6 +29,7 @@
 #include "GameClient/ClientInstance.h"
 
 #ifdef SAGE_NATIVE_WEBRTC
+#include "NativeWebRTCProtocol.h"
 #include "NativeWebRTCTransport.h"
 #endif
 
@@ -71,7 +72,7 @@ EnumeratedIP * IPEnumeration::getAddresses()
 	// GeneralsX @feature Copilot 30/08/2026 In explicit WebRTC mode expose only
 	// the room-assigned synthetic address, never an unroutable host interface.
 	auto &webRTC = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
-	webRTC.ConfigureFromProcess();
+	webRTC.ConfigureFromProcess(GeneralsX::NativeWebRTC::CurrentBuildCompatibilityProfile());
 	if (webRTC.IsEnabled())
 	{
 		const UnsignedInt address = webRTC.WaitForLocalAddress(10000);
@@ -316,4 +317,3 @@ AsciiString IPEnumeration::getMachineName()
 
 	return AsciiString(hostname);
 }
-

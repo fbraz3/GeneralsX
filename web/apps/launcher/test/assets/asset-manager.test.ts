@@ -50,8 +50,9 @@ function assetFor(
 
 function manifestFor(assets: readonly ManifestAsset[], overrides: Partial<EngineManifest> = {}): EngineManifest {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     engineVersion: "test-build",
+    compatibility: { engine: 2, protocol: 2, determinism: 2 },
     assetsRevision: 1,
     assetBaseUrl: "https://assets.generalsx.org",
     assets,

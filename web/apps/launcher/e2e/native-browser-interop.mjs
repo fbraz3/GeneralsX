@@ -1,8 +1,35 @@
 import { chromium } from "playwright";
 
-const [mode = "direct", room = "TEST1", staticOrigin = "http://127.0.0.1:8765", signalingOrigin = "http://127.0.0.1:8787"] =
-  process.argv.slice(2);
+const [
+  mode = "direct",
+  room = "TEST1",
+  staticOrigin = "http://127.0.0.1:8765",
+  signalingOrigin = "http://127.0.0.1:8787",
+  engine = "",
+  protocol = "",
+  determinism = "",
+  contentMismatchEngine = "",
+  determinismMismatchVersion = "",
+] = process.argv.slice(2);
 if (mode !== "direct" && mode !== "turn") throw new Error(`unsupported mode: ${mode}`);
+const compatibility = {
+  engine: Number(engine),
+  protocol: Number(protocol),
+  determinism: Number(determinism),
+};
+if (Object.values(compatibility).some((value) => !Number.isInteger(value) || value <= 0)) {
+  throw new Error("CMake-generated engine, protocol, and determinism compatibility values are required");
+}
+if (
+  !Number.isInteger(Number(contentMismatchEngine)) ||
+  Number(contentMismatchEngine) <= 0 ||
+  Number(contentMismatchEngine) === compatibility.engine ||
+  !Number.isInteger(Number(determinismMismatchVersion)) ||
+  Number(determinismMismatchVersion) <= 0 ||
+  Number(determinismMismatchVersion) === compatibility.determinism
+) {
+  throw new Error("distinct content and determinism mismatch versions are required");
+}
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage();
@@ -15,6 +42,9 @@ try {
   url.searchParams.set("mode", mode);
   url.searchParams.set("room", room);
   url.searchParams.set("signaling", signalingOrigin);
+  url.searchParams.set("engine", String(compatibility.engine));
+  url.searchParams.set("protocol", String(compatibility.protocol));
+  url.searchParams.set("determinism", String(compatibility.determinism));
   await page.goto(url.toString());
   await page.waitForFunction(
     () => window.__interop?.status === "passed" || window.__interop?.status === "failed",
@@ -33,8 +63,8 @@ try {
   if (mode === "turn" && !usesRelay) throw new Error(`TURN mode selected non-relay candidates: ${JSON.stringify(result.candidates)}`);
   if (mode === "direct" && usesRelay) throw new Error(`direct mode unexpectedly selected TURN: ${JSON.stringify(result.candidates)}`);
 
-  const mismatchCode = await page.evaluate(
-    ({ signalingOrigin, room }) =>
+  const rejectProfile = (mismatchedCompatibility) => page.evaluate(
+    ({ signalingOrigin, room, mismatchedCompatibility }) =>
       new Promise((resolve, reject) => {
         const url = new URL("/room", signalingOrigin);
         url.protocol = "ws:";
@@ -49,7 +79,7 @@ try {
               roomId: room,
               name: "mismatched-browser",
               capacity: 2,
-              compatibility: { engine: 999, protocol: 1, determinism: 1 },
+              compatibility: mismatchedCompatibility,
             }),
           );
         };
@@ -65,10 +95,20 @@ try {
           reject(new Error("mismatch WebSocket failed before returning an error"));
         };
       }),
-    { signalingOrigin, room },
+    { signalingOrigin, room, mismatchedCompatibility },
   );
-  if (mismatchCode !== "INCOMPATIBLE_CLIENT") {
-    throw new Error(`expected INCOMPATIBLE_CLIENT, received ${String(mismatchCode)}`);
+  const contentMismatchCode = await rejectProfile({
+    ...compatibility,
+    engine: Number(contentMismatchEngine),
+  });
+  const determinismMismatchCode = await rejectProfile({
+    ...compatibility,
+    determinism: Number(determinismMismatchVersion),
+  });
+  if (contentMismatchCode !== "INCOMPATIBLE_CLIENT" || determinismMismatchCode !== "INCOMPATIBLE_CLIENT") {
+    throw new Error(
+      `expected content/math INCOMPATIBLE_CLIENT, received ${String(contentMismatchCode)}/${String(determinismMismatchCode)}`,
+    );
   }
 
   process.stdout.write(
@@ -76,7 +116,9 @@ try {
       mode,
       status: "passed",
       candidates: result.candidates,
-      mismatchCode,
+      compatibility,
+      contentMismatchCode,
+      determinismMismatchCode,
       browserToNativeHeader: result.interop.browserToNativeHeader,
       nativeToBrowserHeader: result.interop.nativeToBrowserHeader,
     })}\n`,

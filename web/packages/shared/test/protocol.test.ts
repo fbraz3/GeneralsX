@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  CURRENT_COMPATIBILITY,
+  compatibilityFor,
   MAX_MESSAGE_BYTES,
   MAX_ROOM_CAPACITY,
   MIN_ROOM_CAPACITY,
@@ -8,11 +8,18 @@ import {
   validateClientMessage,
 } from "../src/protocol.js";
 
+const TEST_COMPATIBILITY = compatibilityFor("zero-hour", true);
+
 function join(overrides: Record<string, unknown> = {}) {
-  return { type: "join", roomId: "AB12", compatibility: CURRENT_COMPATIBILITY, ...overrides };
+  return { type: "join", roomId: "AB12", compatibility: TEST_COMPATIBILITY, ...overrides };
 }
 
 describe("validateClientMessage: join", () => {
+  it("derives different profiles for game content and math configuration", () => {
+    expect(compatibilityFor("generals", true)).not.toEqual(TEST_COMPATIBILITY);
+    expect(compatibilityFor("zero-hour", false)).not.toEqual(TEST_COMPATIBILITY);
+  });
+
   it("accepts a minimal valid join", () => {
     const result = validateClientMessage(join());
     expect(result.valid).toBe(true);

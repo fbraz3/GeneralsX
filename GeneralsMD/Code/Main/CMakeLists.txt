@@ -4,6 +4,9 @@ add_executable(z_generals WIN32)
 # GeneralsX @build BenderAI 15/02/2026 Linux branding update
 # GeneralsX @build fbraz3 19/08/2026 Standardize executable name across all platforms
 set_target_properties(z_generals PROPERTIES OUTPUT_NAME GeneralsXZH)
+generalsx_generate_compatibility_artifacts(
+    "${CMAKE_BINARY_DIR}/GeneralsMD/GeneralsXZH"
+    ZERO_HOUR)
 
 # GeneralsX @build BenderAI 13/02/2026 Windows-specific libraries
 if(WIN32)

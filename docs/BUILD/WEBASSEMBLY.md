@@ -30,7 +30,13 @@ The generated browser artifacts are:
 ```text
 build/emscripten-webgl2/GeneralsMD/GeneralsXZH.js
 build/emscripten-webgl2/GeneralsMD/GeneralsXZH.wasm
+build/emscripten-webgl2/GeneralsMD/GeneralsXZH.compatibility.js
+build/emscripten-webgl2/GeneralsMD/GeneralsXZH.compatibility.json
 ```
+
+The generated compatibility files identify the selected game target and
+deterministic-math configuration. Stage the JavaScript file with
+`wasm/boot.html`, and pass the JSON file to the asset-manifest builder.
 
 The build downloads a pinned revision of d8web automatically. It does not
 require DXVK, Vulkan, vcpkg, or a sibling source checkout.

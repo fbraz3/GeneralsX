@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { sha256Hex } from "@generalsx-web/shared/sha256";
+import { compatibilityFor } from "@generalsx-web/shared/protocol";
 import { loadEngineManifest } from "../src/engine-manifest.js";
 
 const digest = (seed: string): string => sha256Hex(new TextEncoder().encode(seed));
 
 const validManifest = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   engineVersion: "test-build",
+  compatibility: compatibilityFor("zero-hour", true),
   assetsRevision: 1,
   assetBaseUrl: "https://assets.generalsx.org",
   assets: [

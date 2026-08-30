@@ -35,10 +35,42 @@ constexpr unsigned int MAX_RETRANSMITS = 5;
 inline constexpr char UDP_DATA_CHANNEL_LABEL[] = "generalsx-udp";
 constexpr int MIN_ROOM_CAPACITY = 2;
 constexpr int MAX_ROOM_CAPACITY = 8;
-// Keep synchronized with CURRENT_COMPATIBILITY and the browser wasm bridge.
-constexpr int ENGINE_COMPATIBILITY_VERSION = 1;
-constexpr int NETWORK_PROTOCOL_VERSION = 1;
-constexpr int DETERMINISM_VERSION = 1;
+
+struct CompatibilityProfile
+{
+	int engine = 0;
+	int protocol = 0;
+	int determinism = 0;
+};
+
+enum class GameContentIdentity
+{
+	Generals,
+	ZeroHour,
+};
+
+constexpr CompatibilityProfile MakeCompatibilityProfile(GameContentIdentity content, bool deterministicMath)
+{
+	return {
+		content == GameContentIdentity::ZeroHour ? GENERALSX_COMPAT_ENGINE_ZERO_HOUR
+												: GENERALSX_COMPAT_ENGINE_GENERALS,
+		GENERALSX_COMPAT_PROTOCOL,
+		deterministicMath ? GENERALSX_COMPAT_DETERMINISM_GAME_MATH
+						  : GENERALSX_COMPAT_DETERMINISM_PLATFORM_MATH,
+	};
+}
+
+#if defined(RTS_ZEROHOUR) || defined(RTS_GENERALS)
+constexpr CompatibilityProfile CurrentBuildCompatibilityProfile()
+{
+#ifdef RTS_ZEROHOUR
+	constexpr GameContentIdentity content = GameContentIdentity::ZeroHour;
+#else
+	constexpr GameContentIdentity content = GameContentIdentity::Generals;
+#endif
+	return MakeCompatibilityProfile(content, GENERALSX_DETERMINISTIC_MATH_ENABLED != 0);
+}
+#endif
 
 struct RuntimeConfig
 {
@@ -50,11 +82,13 @@ struct RuntimeConfig
 	std::string playerName = "native";
 	int capacity = 4;
 	std::string iceServersJson;
+	CompatibilityProfile compatibility;
 };
 
 RuntimeConfig ParseRuntimeConfig(
 	const std::vector<std::string> &arguments,
-	const std::unordered_map<std::string, std::string> &environment);
+	const std::unordered_map<std::string, std::string> &environment,
+	CompatibilityProfile compatibility);
 bool ValidateRuntimeConfig(const RuntimeConfig &config, std::string *error);
 std::string BuildRoomWebSocketUrl(const RuntimeConfig &config);
 std::string BuildTurnCredentialsUrl(const RuntimeConfig &config);

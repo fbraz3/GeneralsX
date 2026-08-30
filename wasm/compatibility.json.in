@@ -1,0 +1,5 @@
+{
+  "engine": @GENERALSX_COMPAT_ENGINE@,
+  "protocol": @GENERALSX_COMPAT_PROTOCOL_VALUE@,
+  "determinism": @GENERALSX_COMPAT_DETERMINISM@
+}

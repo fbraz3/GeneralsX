@@ -11,7 +11,13 @@
   var BROADCAST = 0xffffffff;
   var MAX_INBOX_PACKETS = 1024;
   var MAX_BUFFERED_BYTES = 1024 * 1024;
-  var COMPATIBILITY = Object.freeze({ engine: 1, protocol: 1, determinism: 1 });
+  var COMPATIBILITY = window.GENERALSX_COMPATIBILITY;
+  if (!COMPATIBILITY ||
+      !Number.isInteger(COMPATIBILITY.engine) || COMPATIBILITY.engine <= 0 ||
+      !Number.isInteger(COMPATIBILITY.protocol) || COMPATIBILITY.protocol <= 0 ||
+      !Number.isInteger(COMPATIBILITY.determinism) || COMPATIBILITY.determinism <= 0) {
+    throw new Error("GENERALSX_COMPATIBILITY must be provided by the engine build");
+  }
 
   function slotIP(slot) {
     return ((10 << 24) | ((slot + 1) & 255)) >>> 0;

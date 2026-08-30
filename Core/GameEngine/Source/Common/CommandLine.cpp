@@ -43,6 +43,7 @@
 #include "WWLib/trim.h"
 
 #ifdef SAGE_NATIVE_WEBRTC
+#include "NativeWebRTCProtocol.h"
 #include "NativeWebRTCTransport.h"
 #endif
 
@@ -1493,7 +1494,8 @@ void CommandLine::parseCommandLineForStartup()
 #ifdef SAGE_NATIVE_WEBRTC
 	// GeneralsX @feature Copilot 30/08/2026 Start signaling early when an
 	// explicit native WebRTC command-line flag or environment toggle is present.
-	GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance().ConfigureFromProcess();
+	GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance().ConfigureFromProcess(
+		GeneralsX::NativeWebRTC::CurrentBuildCompatibilityProfile());
 #endif
 }
 

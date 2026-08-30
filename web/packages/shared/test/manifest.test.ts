@@ -14,6 +14,7 @@ import {
   type EngineManifest,
   type ManifestAsset,
 } from "../src/manifest.js";
+import { compatibilityFor } from "../src/protocol.js";
 
 function asset(overrides: Partial<ManifestAsset> = {}): ManifestAsset {
   const base: ManifestAsset = {
@@ -28,8 +29,9 @@ function asset(overrides: Partial<ManifestAsset> = {}): ManifestAsset {
 
 function validManifest(): EngineManifest {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     engineVersion: "726e1f97c",
+    compatibility: compatibilityFor("zero-hour", true),
     assetsRevision: 3,
     assetBaseUrl: "https://assets.generalsx.org",
     assets: [
@@ -106,6 +108,13 @@ describe("validateManifest", () => {
   it("rejects an unsafe engine version", () => {
     expect(errorPaths({ ...validManifest(), engineVersion: "../etc" })).toContain("engineVersion");
     expect(errorPaths({ ...validManifest(), engineVersion: "" })).toContain("engineVersion");
+  });
+
+  it("requires a valid generated compatibility profile", () => {
+    expect(errorPaths({ ...validManifest(), compatibility: undefined })).toContain("compatibility");
+    expect(
+      errorPaths({ ...validManifest(), compatibility: { engine: 2, protocol: 2, determinism: 0 } }),
+    ).toContain("compatibility");
   });
 
   it("rejects an unsafe asset base URL", () => {

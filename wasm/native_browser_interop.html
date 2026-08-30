@@ -15,6 +15,11 @@
   window.GENERALSX_ROOM = params.get("room") || "TEST1";
   window.GENERALSX_PLAYER_NAME = "playwright-browser";
   window.GENERALSX_ICE_TRANSPORT_POLICY = params.get("mode") === "turn" ? "relay" : "all";
+  window.GENERALSX_COMPATIBILITY = Object.freeze({
+    engine: Number(params.get("engine")),
+    protocol: Number(params.get("protocol")),
+    determinism: Number(params.get("determinism"))
+  });
 </script>
 <script src="webrtc_udp.js"></script>
 <script>

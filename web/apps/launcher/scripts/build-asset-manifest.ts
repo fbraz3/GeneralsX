@@ -13,6 +13,7 @@
  *     --engine-version 2026.08.30-a1b2c3d \
  *     --assets-revision 7 \
  *     --base-url https://assets.generalsx.org \
+ *     --compatibility /path/to/GeneralsXZH.compatibility.json \
  *     [--mount-prefix /generalsx] [--out manifest.json]
  *
  * Expected staging layout (see `inferAssetRole`):
@@ -21,10 +22,11 @@
  *   scripts/*.ini|*.scb     fonts/*.ttf
  */
 import { createReadStream } from "node:fs";
-import { readdir, stat, writeFile } from "node:fs/promises";
+import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
 import { argv, exit, stdout } from "node:process";
 import { buildManifest, type SourceFile } from "@generalsx-web/shared/asset-plan";
+import { isCompatibilityVersion } from "@generalsx-web/shared/protocol";
 import { Sha256Stream } from "@generalsx-web/shared/sha256";
 
 interface CliOptions {
@@ -32,6 +34,7 @@ interface CliOptions {
   engineVersion: string;
   assetsRevision: number;
   baseUrl: string;
+  compatibility: string;
   mountPrefix?: string;
   out?: string;
 }
@@ -63,6 +66,7 @@ function parseArgs(args: readonly string[]): CliOptions {
     engineVersion: required("engine-version"),
     assetsRevision: revision,
     baseUrl: required("base-url"),
+    compatibility: required("compatibility"),
   };
   const mountPrefix = values.get("mount-prefix");
   if (mountPrefix !== undefined) options.mountPrefix = mountPrefix;
@@ -92,6 +96,10 @@ async function* walk(root: string, current = root): AsyncGenerator<string> {
 async function main(): Promise<void> {
   const options = parseArgs(argv.slice(2));
   const files: SourceFile[] = [];
+  const compatibility: unknown = JSON.parse(await readFile(options.compatibility, "utf8"));
+  if (!isCompatibilityVersion(compatibility)) {
+    throw new Error("--compatibility must reference CMake-generated compatibility JSON");
+  }
 
   for await (const absolute of walk(options.source)) {
     const relativePath = relative(options.source, absolute).split(sep).join("/");
@@ -105,6 +113,7 @@ async function main(): Promise<void> {
 
   const plan = buildManifest(files, {
     engineVersion: options.engineVersion,
+    compatibility,
     assetsRevision: options.assetsRevision,
     assetBaseUrl: options.baseUrl,
     ...(options.mountPrefix === undefined ? {} : { mountPrefix: options.mountPrefix }),

@@ -68,12 +68,9 @@ async function startEngineBoot(): Promise<void> {
     /* Settings changes are applied to the engine once it is embedded; this
      * scaffold only persists them in memory via the panel's own state. */
   });
-  const signaling = new SignalingClient(LAUNCHER_CONFIG.signalingWorkerUrl);
 
-  // `roomRef.value` is assigned just below, once the bridge (which the
-  // room panel's callbacks need) exists; `onJoinIssue` only ever fires
-  // later, in response to a `joinRoom()` triggered by a room-panel
-  // button, by which time it is always already assigned.
+  // `roomRef.value` is assigned after the manifest-backed bridge exists;
+  // `onJoinIssue` only fires later in response to a room-panel action.
   const roomRef: { value: RoomPanel | null } = { value: null };
   function handleJoinIssue(issue: JoinIssue): void {
     if (issue.kind !== "join-failed") {
@@ -88,6 +85,19 @@ async function startEngineBoot(): Promise<void> {
     }
   }
 
+  loading.show();
+  loading.setStatus("Fetching engine manifest…");
+  const manifestResult = await loadEngineManifest(LAUNCHER_CONFIG.manifestUrl);
+  if (!manifestResult.ok) {
+    loading.hide();
+    error.show(manifestResult.reason, () => void startEngineBoot());
+    return;
+  }
+
+  const signaling = new SignalingClient(
+    LAUNCHER_CONFIG.signalingWorkerUrl,
+    manifestResult.manifest.compatibility,
+  );
   // TURN credentials are fetched by the bridge itself, fresh on every
   // `joinRoom()` call — never once here at launcher startup, where the
   // short (~10 minute) credential TTL could expire long before a match
@@ -130,15 +140,6 @@ async function startEngineBoot(): Promise<void> {
   });
   signaling.on("roster", (roster) => room.setRoster(roster));
   signaling.on("error", (err) => error.show(err.message));
-
-  loading.show();
-  loading.setStatus("Fetching engine manifest…");
-  const manifestResult = await loadEngineManifest(LAUNCHER_CONFIG.manifestUrl);
-  if (!manifestResult.ok) {
-    loading.hide();
-    error.show(manifestResult.reason, () => void startEngineBoot());
-    return;
-  }
 
   const assetManager = new AssetManager(manifestResult.manifest, {
     storage: await openAssetStorage(),

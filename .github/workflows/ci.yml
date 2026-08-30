@@ -41,12 +41,15 @@ jobs:
             -B build/native-webrtc-linux \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DBUILD_TESTING=ON
+            -DBUILD_TESTING=ON \
+            -DSAGE_USE_DETERMINISTIC_MATH=ON
 
       - name: Build and test native WebRTC transport
         run: |
           cmake --build build/native-webrtc-linux \
-            --target core_native_webrtc core_native_webrtc_tests
+            --target core_native_webrtc core_native_webrtc_tests \
+              core_native_webrtc_profile_generals_game_math \
+              core_native_webrtc_profile_zero_hour_platform_math
           ctest --test-dir build/native-webrtc-linux --output-on-failure
 
   native-webrtc-browser-interop:
@@ -81,12 +84,15 @@ jobs:
             -B build/native-webrtc-browser \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DBUILD_TESTING=ON
+            -DBUILD_TESTING=ON \
+            -DSAGE_USE_DETERMINISTIC_MATH=ON
 
       - name: Build native WebRTC probe
         run: |
           cmake --build build/native-webrtc-browser \
-            --target core_native_webrtc_tests core_native_webrtc_integration_probe
+            --target core_native_webrtc_tests core_native_webrtc_integration_probe \
+              core_native_webrtc_profile_generals_game_math \
+              core_native_webrtc_profile_zero_hour_platform_math
           ctest --test-dir build/native-webrtc-browser --output-on-failure
 
       - name: Direct ICE browser/native exchange
@@ -150,9 +156,12 @@ jobs:
             -B build/native-webrtc-browser \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DBUILD_TESTING=ON
+            -DBUILD_TESTING=ON \
+            -DSAGE_USE_DETERMINISTIC_MATH=ON
           cmake --build build/native-webrtc-browser \
-            --target core_native_webrtc_tests core_native_webrtc_integration_probe
+            --target core_native_webrtc_tests core_native_webrtc_integration_probe \
+              core_native_webrtc_profile_generals_game_math \
+              core_native_webrtc_profile_zero_hour_platform_math
 
       - name: Relay-only browser/native exchange
         if: steps.secret-check.outputs.configured == 'true'

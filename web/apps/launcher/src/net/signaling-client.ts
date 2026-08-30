@@ -4,8 +4,8 @@
  * listener map rather than pulling in a full event-emitter dependency.
  */
 import {
-  CURRENT_COMPATIBILITY,
   validateClientMessage,
+  type CompatibilityVersion,
   type ClientMessage,
   type RosterEntry,
   type ServerErrorMessage,
@@ -37,6 +37,7 @@ export class SignalingClient {
 
   constructor(
     private readonly workerBaseUrl: string,
+    private readonly compatibility: CompatibilityVersion,
     /** Injectable for tests; defaults to the real `WebSocket` constructor. */
     private readonly createSocket: (url: string) => WebSocket = (url) => new WebSocket(url),
   ) {}
@@ -85,7 +86,7 @@ export class SignalingClient {
         roomId,
         ...(options.name !== undefined ? { name: options.name } : {}),
         ...(options.capacity !== undefined ? { capacity: options.capacity } : {}),
-        compatibility: CURRENT_COMPATIBILITY,
+        compatibility: this.compatibility,
       });
     };
     socket.onmessage = (event: MessageEvent) => {

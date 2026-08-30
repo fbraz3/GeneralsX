@@ -16,6 +16,7 @@ Exercises exactly what the engine's UDP shim will call.</p>
   <button id="bcast" disabled>Broadcast test packet</button>
 </div>
 <div id="log"></div>
+<script src="GeneralsXZH.compatibility.js"></script>
 <script>
   var logEl = document.getElementById("log");
   window.__udplog = function (m) { logEl.textContent += m + "\n"; logEl.scrollTop = logEl.scrollHeight; };

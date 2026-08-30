@@ -16,6 +16,7 @@ import {
   type ManifestAsset,
   type ManifestValidationError,
 } from "./manifest.ts";
+import type { CompatibilityVersion } from "./protocol.ts";
 
 /** One file discovered under the operator's staging directory. */
 export interface SourceFile {
@@ -31,6 +32,7 @@ export interface SourceFile {
 
 export interface ManifestPlanOptions {
   readonly engineVersion: string;
+  readonly compatibility: CompatibilityVersion;
   readonly assetsRevision: number;
   readonly assetBaseUrl: string;
   /** Optional override for tooling/tests. Production should use the
@@ -172,8 +174,9 @@ export function buildManifest(
   }
 
   const manifest: EngineManifest = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     engineVersion: options.engineVersion,
+    compatibility: options.compatibility,
     assetsRevision: options.assetsRevision,
     assetBaseUrl: options.assetBaseUrl,
     assets,

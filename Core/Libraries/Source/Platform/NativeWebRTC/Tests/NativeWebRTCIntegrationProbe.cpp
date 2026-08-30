@@ -8,6 +8,7 @@
 **	(at your option) any later version.
 */
 
+#include "NativeWebRTCProtocol.h"
 #include "NativeWebRTCTransport.h"
 
 #include <array>
@@ -60,7 +61,7 @@ int main(int argc, char **argv)
 	__argv = argv;
 
 	auto &transport = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
-	transport.ConfigureFromProcess();
+	transport.ConfigureFromProcess(GeneralsX::NativeWebRTC::CurrentBuildCompatibilityProfile());
 	if (!transport.IsEnabled())
 	{
 		std::cerr << "native WebRTC integration probe requires -webrtc\n";

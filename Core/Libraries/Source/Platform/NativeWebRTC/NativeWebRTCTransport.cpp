@@ -217,7 +217,7 @@ public:
 		Stop();
 	}
 
-	void ConfigureFromProcess()
+	void ConfigureFromProcess(CompatibilityProfile compatibility)
 	{
 		std::lock_guard lock(m_stateMutex);
 		if (m_configured)
@@ -225,7 +225,7 @@ public:
 			return;
 		}
 		m_configured = true;
-		m_config = ParseRuntimeConfig(ReadProcessArguments(), ReadProcessEnvironment());
+		m_config = ParseRuntimeConfig(ReadProcessArguments(), ReadProcessEnvironment(), compatibility);
 		const std::uint64_t generation = m_lifecycle.Start(m_config.enabled);
 		if (!m_config.enabled)
 		{
@@ -1153,9 +1153,9 @@ NativeWebRTCTransport::NativeWebRTCTransport()
 
 NativeWebRTCTransport::~NativeWebRTCTransport() = default;
 
-void NativeWebRTCTransport::ConfigureFromProcess()
+void NativeWebRTCTransport::ConfigureFromProcess(CompatibilityProfile compatibility)
 {
-	m_impl->ConfigureFromProcess();
+	m_impl->ConfigureFromProcess(compatibility);
 }
 
 bool NativeWebRTCTransport::IsEnabled() const

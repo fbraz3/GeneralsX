@@ -39,6 +39,7 @@
 #include "GameLogic/GameLogic.h"
 
 #ifdef SAGE_NATIVE_WEBRTC
+#include "NativeWebRTCProtocol.h"
 #include "NativeWebRTCTransport.h"
 #endif
 
@@ -1484,7 +1485,7 @@ Bool LANAPI::SetLocalIP( UnsignedInt localIP )
 	// address when the native WebRTC UDP transport is explicitly enabled.
 	{
 		auto &webRTC = GeneralsX::NativeWebRTC::NativeWebRTCTransport::Instance();
-		webRTC.ConfigureFromProcess();
+		webRTC.ConfigureFromProcess(GeneralsX::NativeWebRTC::CurrentBuildCompatibilityProfile());
 		if (webRTC.IsEnabled())
 		{
 			const UnsignedInt synth = webRTC.WaitForLocalAddress(10000);

@@ -45,6 +45,33 @@ if [[ -z "${PROBE}" ]]; then
   echo "ERROR: build core_native_webrtc_integration_probe in ${BUILD_DIR} first" >&2
   exit 4
 fi
+PROFILE="${BUILD_DIR}/GeneralsXZH.compatibility.json"
+if [[ ! -f "${PROFILE}" ]]; then
+  echo "ERROR: missing CMake-generated compatibility profile ${PROFILE}" >&2
+  exit 4
+fi
+read -r ENGINE_COMPAT PROTOCOL_COMPAT DETERMINISM_COMPAT CONTENT_MISMATCH DETERMINISM_MISMATCH < <(
+  python3 - "${PROFILE}" "${ROOT}/web/packages/shared/src/lockstep-compatibility.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    current = json.load(stream)
+with open(sys.argv[2], encoding="utf-8") as stream:
+    versions = json.load(stream)
+print(
+    current["engine"],
+    current["protocol"],
+    current["determinism"],
+    versions["engine"]["generals"]
+        if current["engine"] == versions["engine"]["zeroHour"]
+        else versions["engine"]["zeroHour"],
+    versions["determinism"]["platformMath"]
+        if current["determinism"] == versions["determinism"]["gameMath"]
+        else versions["determinism"]["gameMath"],
+)
+PY
+)
 
 ROOM="N$(printf '%06X' "$$")"
 STATIC_PID=""
@@ -125,6 +152,8 @@ NATIVE_PID=$!
 env -u TURN_KEY_ID -u TURN_KEY_API_TOKEN \
   node "${ROOT}/web/apps/launcher/e2e/native-browser-interop.mjs" \
   "${MODE}" "${ROOM}" "http://127.0.0.1:${STATIC_PORT}" "http://127.0.0.1:${SIGNALING_PORT}" \
+  "${ENGINE_COMPAT}" "${PROTOCOL_COMPAT}" "${DETERMINISM_COMPAT}" \
+  "${CONTENT_MISMATCH}" "${DETERMINISM_MISMATCH}" \
   | tee "${LOG_DIR}/browser.log"
 
 wait "${NATIVE_PID}"

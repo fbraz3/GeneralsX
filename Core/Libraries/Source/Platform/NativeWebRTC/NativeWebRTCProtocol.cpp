@@ -272,9 +272,11 @@ bool IsValidSlot(int slot)
 
 RuntimeConfig ParseRuntimeConfig(
 	const std::vector<std::string> &arguments,
-	const std::unordered_map<std::string, std::string> &environment)
+	const std::unordered_map<std::string, std::string> &environment,
+	CompatibilityProfile compatibility)
 {
 	RuntimeConfig config;
+	config.compatibility = compatibility;
 	if (const auto value = EnvironmentValue(environment, "GENERALSX_WEBRTC"))
 	{
 		config.enabled = IsTruthy(*value);
@@ -369,6 +371,15 @@ bool ValidateRuntimeConfig(const RuntimeConfig &config, std::string *error)
 	}
 	if (!OriginForUrl(config.signalingUrl, error))
 	{
+		return false;
+	}
+	if (config.compatibility.engine <= 0 || config.compatibility.protocol <= 0
+		|| config.compatibility.determinism <= 0)
+	{
+		if (error != nullptr)
+		{
+			*error = "lockstep compatibility profile is not configured";
+		}
 		return false;
 	}
 	if (!std::regex_match(config.roomId, ROOM_ID_PATTERN))
@@ -768,9 +779,9 @@ std::string BuildJoinMessage(const RuntimeConfig &config)
 		{ "name", config.playerName },
 		{ "capacity", config.capacity },
 		{ "compatibility", {
-			{ "engine", ENGINE_COMPATIBILITY_VERSION },
-			{ "protocol", NETWORK_PROTOCOL_VERSION },
-			{ "determinism", DETERMINISM_VERSION },
+			{ "engine", config.compatibility.engine },
+			{ "protocol", config.compatibility.protocol },
+			{ "determinism", config.compatibility.determinism },
 		} },
 	}).dump();
 }

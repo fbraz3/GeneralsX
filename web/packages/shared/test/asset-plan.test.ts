@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildManifest, inferAssetRole, type SourceFile } from "../src/asset-plan.js";
 import { validateManifest } from "../src/manifest.js";
+import { compatibilityFor } from "../src/protocol.js";
 
 function file(relativePath: string, overrides: Partial<SourceFile> = {}): SourceFile {
   return {
@@ -24,6 +25,7 @@ const STAGING: readonly SourceFile[] = [
 
 const OPTIONS = {
   engineVersion: "2026.08.30-a1b2c3d",
+  compatibility: compatibilityFor("zero-hour", true),
   assetsRevision: 4,
   assetBaseUrl: "https://assets.generalsx.org",
 };
@@ -52,7 +54,7 @@ describe("buildManifest", () => {
     const plan = buildManifest(STAGING, OPTIONS);
     expect(plan.errors).toEqual([]);
     expect(validateManifest(plan.manifest).valid).toBe(true);
-    expect(plan.manifest.schemaVersion).toBe(2);
+    expect(plan.manifest.schemaVersion).toBe(3);
     expect(plan.manifest.assetsRevision).toBe(4);
   });
 
