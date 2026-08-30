@@ -1,7 +1,10 @@
 # Cloudflare Pages configuration for the static launcher shell
-# (play.generalsx.org). Pages projects are normally configured via the
-# dashboard or `wrangler pages deploy`, but keeping a config here documents
-# the expected build settings and custom domain wiring for operators.
+# (play.generalsx.org).
+#
+# Pages projects are configured through the Pages API rather than a Worker
+# binding config, so this file documents the expected build settings and
+# custom-domain wiring. The authoritative, executable version of everything
+# below is `../../packages/deploy/scripts/deploy-pages.sh`.
 name = "generalsx-launcher"
 compatibility_date = "2026-08-01"
 pages_build_output_dir = "dist"
@@ -12,19 +15,32 @@ pages_build_output_dir = "dist"
 #   Output directory: dist
 #   Root directory:   web/apps/launcher
 #
-# Security headers (COOP/COEP/CORP/CSP) are written into `dist/_headers` by
-# `scripts/write-headers.ts` as part of `npm run build`, from the same
-# policy module the signaling Worker uses (`@generalsx-web/shared`).
+# `npm run build` also writes two deployment artifacts into `dist/`:
+#   * `_headers`    — COOP/COEP/CORP/CSP/HSTS/Permissions-Policy plus the
+#                     cache rules (`/assets/*` immutable for a year,
+#                     `/index.html` no-cache, `/health.json` no-store),
+#                     rendered by `scripts/write-headers.ts` from the same
+#                     policy module the signaling Worker uses
+#                     (`@generalsx-web/shared`).
+#   * `health.json` — service, status, release id (the commit SHA passed as
+#                     `GENERALSX_RELEASE_ID`) and build time, written by
+#                     `scripts/write-health.ts`. This is what makes an
+#                     immutable Pages rollback verifiable from outside.
 
-# --- Custom domain notes -----------------------------------------------
-# Production routing is expected to look like:
+# --- Deployment and rollback -------------------------------------------
+# Production routing:
 #   play.generalsx.org       -> this Pages project
 #   signaling.generalsx.org  -> apps/worker (see its wrangler.toml)
-# Attach the custom domain via the dashboard (Workers & Pages > this
-# project > Custom domains) or:
-#   wrangler pages deployment tail generalsx-launcher
-#   wrangler pages project create generalsx-launcher --production-branch main
-# then bind `play.generalsx.org` to the project in the dashboard's Custom
-# Domains tab. No R2 or Durable Object bindings are required for this
-# static project; asset delivery is handled by a separately authorized
-# origin referenced from the engine manifest, never by this project.
+#   assets.generalsx.org     -> R2 bucket (authorized assets, operator-published)
+#
+# Deploy (idempotent: creates the project and attaches the custom domain on
+# the first run, converges on every later run):
+#   ../../packages/deploy/scripts/deploy-pages.sh
+#
+# Roll back to a previous immutable deployment:
+#   ../../packages/deploy/scripts/rollback.sh list
+#   ../../packages/deploy/scripts/rollback.sh pages <deployment-id>
+#
+# No R2 or Durable Object bindings are required for this static project;
+# asset delivery is handled by a separately authorized origin referenced from
+# the engine manifest, never by this project.

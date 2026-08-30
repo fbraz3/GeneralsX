@@ -5,6 +5,7 @@ import {
   isAllowedOrigin,
   type SecurityHeadersOptions,
 } from "@generalsx-web/shared/security-headers";
+import { buildLivenessReport, buildReadinessReport } from "./health.js";
 import { fetchTurnCredentials, type TurnCredentialsEnv } from "./turn/turn-credentials.js";
 
 export { RoomDurableObject } from "./durable-objects/room-do.js";
@@ -13,6 +14,9 @@ export interface WorkerEnv extends TurnCredentialsEnv {
   readonly ALLOWED_ORIGINS: string;
   readonly SIGNALING_ORIGIN: string;
   readonly ASSET_ORIGIN: string;
+  /** Non-secret commit SHA of the deployed version, injected by the deploy
+   * script (`--var RELEASE_ID:<sha>`) so rollbacks are verifiable. */
+  readonly RELEASE_ID?: string;
   readonly ROOM_DO: DurableObjectNamespace;
 }
 
@@ -66,6 +70,31 @@ function handleRoomSocket(request: Request, env: WorkerEnv): Promise<Response> {
   return stub.fetch(request);
 }
 
+/** Health endpoints are unauthenticated but disclose no secret value and are
+ * never cached, so an uptime monitor or a post-deploy smoke test always sees
+ * the version that is actually serving traffic. */
+function jsonProbeResponse(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+}
+
+function handleLiveness(request: Request, env: WorkerEnv): Response {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return new Response("method not allowed", { status: 405 });
+  }
+  return jsonProbeResponse(buildLivenessReport(env), 200);
+}
+
+function handleReadiness(request: Request, env: WorkerEnv): Response {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return new Response("method not allowed", { status: 405 });
+  }
+  const report = buildReadinessReport(env);
+  return jsonProbeResponse(report, report.ready ? 200 : 503);
+}
+
 export default {
   async fetch(request: Request, env: WorkerEnv): Promise<Response> {
     const url = new URL(request.url);
@@ -82,6 +111,14 @@ export default {
         return new Response("origin not allowed", { status: 403 });
       }
       return handleRoomSocket(request, env);
+    }
+
+    if (url.pathname === "/healthz") {
+      return withHeaders(handleLiveness(request, env), securityHeaders);
+    }
+
+    if (url.pathname === "/readyz") {
+      return withHeaders(handleReadiness(request, env), securityHeaders);
     }
 
     if (url.pathname === "/turn-credentials") {

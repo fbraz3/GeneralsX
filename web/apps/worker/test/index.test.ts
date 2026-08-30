@@ -97,3 +97,60 @@ describe("worker fetch: /room", () => {
     expect(roomDoGet).not.toHaveBeenCalled();
   });
 });
+
+describe("worker fetch: health endpoints", () => {
+  it("serves liveness without consulting any dependency", async () => {
+    const response = await worker.fetch(
+      new Request("https://api.generalsx.org/healthz"),
+      makeEnvWithoutTurnSecrets(),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(response.headers.get("Content-Security-Policy")).toBeTruthy();
+    await expect(response.json()).resolves.toMatchObject({
+      service: "generalsx-signaling",
+      status: "ok",
+    });
+  });
+
+  it("serves readiness as 200 when ready, reporting the release id", async () => {
+    const response = await worker.fetch(
+      new Request("https://api.generalsx.org/readyz"),
+      makeEnv({ RELEASE_ID: "deadbeef" }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    await expect(response.json()).resolves.toMatchObject({
+      ready: true,
+      status: "ok",
+      releaseId: "deadbeef",
+    });
+  });
+
+  it("serves readiness as 503 when a required binding is missing", async () => {
+    const response = await worker.fetch(
+      new Request("https://api.generalsx.org/readyz"),
+      makeEnv({ ROOM_DO: undefined as unknown as WorkerEnv["ROOM_DO"] }),
+    );
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ ready: false, status: "failed" });
+  });
+
+  it("rejects non GET/HEAD methods on both probes", async () => {
+    for (const path of ["/healthz", "/readyz"]) {
+      const response = await worker.fetch(
+        new Request(`https://api.generalsx.org${path}`, { method: "POST" }),
+        makeEnv(),
+      );
+      expect(response.status).toBe(405);
+    }
+  });
+
+  it("never echoes a TURN secret in a probe body", async () => {
+    const response = await worker.fetch(
+      new Request("https://api.generalsx.org/readyz"),
+      makeEnv({ TURN_KEY_ID: "key-123", TURN_KEY_API_TOKEN: "top-secret" }),
+    );
+    await expect(response.text()).resolves.not.toContain("top-secret");
+  });
+});

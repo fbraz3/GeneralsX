@@ -7,6 +7,19 @@ name = "generalsx-signaling"
 main = "src/index.ts"
 compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
+# Fail the deploy instead of silently publishing over a version someone else
+# uploaded from another machine or CI run.
+keep_vars = false
+
+# --- Custom domain -------------------------------------------------------
+# Declared here (not attached by hand in the dashboard) so `wrangler deploy` is
+# idempotent: it creates the custom domain and its proxied DNS record on first
+# deploy and is a no-op afterwards. Keep the WebSocket signaling origin on its
+# own subdomain, separate from the Pages domain, so the launcher's CSP
+# `connect-src` allowlist stays narrow.
+[[routes]]
+pattern = "signaling.generalsx.org"
+custom_domain = true
 
 # --- Durable Objects: one instance per room, keyed by room id -------------
 [[durable_objects.bindings]]
@@ -46,22 +59,35 @@ new_sqlite_classes = ["RoomDurableObject"]
 ALLOWED_ORIGINS = "https://play.generalsx.org"
 SIGNALING_ORIGIN = "https://signaling.generalsx.org"
 ASSET_ORIGIN = "https://assets.generalsx.org"
+# Overwritten at deploy time with the commit SHA
+# (`wrangler deploy --var RELEASE_ID:<sha>`, see
+# ../../packages/deploy/scripts/deploy-worker.sh). `/healthz` and `/readyz`
+# echo it back, so an operator can prove which immutable version is live after
+# a `wrangler rollback`.
+RELEASE_ID = "unknown"
 
 # --- Secrets (set out of band, never committed) ---------------------------
 # wrangler secret put TURN_KEY_ID
 # wrangler secret put TURN_KEY_API_TOKEN
+# Absent secrets are non-fatal: `/readyz` reports `degraded` and peers fall
+# back to direct/STUN ICE, which the launcher surfaces as a visible warning.
+
+# --- Health endpoints ------------------------------------------------------
+#   GET https://signaling.generalsx.org/healthz  -> 200 liveness (no deps)
+#   GET https://signaling.generalsx.org/readyz   -> 200 ready / 503 not ready
+# Neither discloses a secret value; both send `Cache-Control: no-store`.
 
 # --- Custom domain notes ---------------------------------------------------
-# Production routing is expected to look like:
+# Production routing:
 #   play.generalsx.org        -> Cloudflare Pages project (apps/launcher)
-#   signaling.generalsx.org   -> this Worker (custom domain or route)
-# Attach a custom domain with:
-#   wrangler deploy --dry-run   # verify config first
-#   wrangler domains add signaling.generalsx.org
-# or configure a route in the dashboard: Workers & Pages > this worker >
-# Triggers > Custom Domains. Do not reuse the Pages domain for the Worker;
-# keep the WebSocket signaling origin on its own subdomain so the launcher's
-# CSP `connect-src` allowlist stays narrow.
+#   signaling.generalsx.org   -> this Worker (see [[routes]] above)
+#   assets.generalsx.org      -> R2 bucket custom domain (authorized assets)
+# Verify before publishing, then deploy and smoke test:
+#   npm run build -w @generalsx-web/worker          # wrangler deploy --dry-run
+#   packages/deploy/scripts/deploy-worker.sh
+#   npm run smoke -w @generalsx-web/deploy
+# Roll back to a previous immutable version with:
+#   packages/deploy/scripts/rollback.sh worker <version-id>
 
 [dev]
 port = 8787

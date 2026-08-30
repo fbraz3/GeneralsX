@@ -9,15 +9,21 @@
  */
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { renderPagesHeadersFile } from "@generalsx-web/shared/security-headers";
+import {
+  renderPagesCacheRules,
+  renderPagesHeadersFile,
+} from "@generalsx-web/shared/security-headers";
 
 const outPath = fileURLToPath(new URL("../dist/_headers", import.meta.url));
 
-const body = renderPagesHeadersFile({
-  allowedOrigins: ["https://play.generalsx.org"],
-  signalingOrigins: ["https://signaling.generalsx.org"],
-  assetOrigins: ["https://assets.generalsx.org"],
-});
+const body =
+  renderPagesHeadersFile({
+    allowedOrigins: ["https://play.generalsx.org"],
+    signalingOrigins: ["https://signaling.generalsx.org"],
+    assetOrigins: ["https://assets.generalsx.org"],
+  }) +
+  "\n" +
+  renderPagesCacheRules();
 
 await writeFile(outPath, body, "utf8");
 // eslint-disable-next-line no-console -- CLI build script output, not app code

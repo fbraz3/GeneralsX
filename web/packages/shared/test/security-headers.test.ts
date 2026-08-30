@@ -3,6 +3,7 @@ import {
   buildCorsHeaders,
   buildSecurityHeaders,
   isAllowedOrigin,
+  renderPagesCacheRules,
   renderPagesHeadersFile,
   type SecurityHeadersOptions,
 } from "../src/security-headers.js";
@@ -26,6 +27,18 @@ describe("buildSecurityHeaders", () => {
     expect(headers["X-Content-Type-Options"]).toBe("nosniff");
     expect(headers["X-Frame-Options"]).toBe("DENY");
     expect(headers["Referrer-Policy"]).toBe("strict-origin-when-cross-origin");
+  });
+
+  it("pins HTTPS for two years including subdomains, without preload", () => {
+    expect(headers["Strict-Transport-Security"]).toBe("max-age=63072000; includeSubDomains");
+    expect(headers["Strict-Transport-Security"]).not.toContain("preload");
+  });
+
+  it("denies the powerful features the launcher never uses", () => {
+    const policy = headers["Permissions-Policy"] ?? "";
+    for (const feature of ["camera", "microphone", "geolocation", "payment", "usb"]) {
+      expect(policy).toContain(`${feature}=()`);
+    }
   });
 
   it("builds a CSP that allows the WebSocket signaling origin over wss://", () => {
@@ -84,5 +97,29 @@ describe("renderPagesHeadersFile", () => {
     const body = renderPagesHeadersFile(options, ["/", "/engine/*"]);
     expect(body).toContain("/\n");
     expect(body).toContain("/engine/*\n");
+  });
+});
+
+describe("renderPagesCacheRules", () => {
+  const body = renderPagesCacheRules();
+
+  it("caches content-hashed build output immutably for a year", () => {
+    expect(body).toContain("/assets/*");
+    expect(body).toContain("  Cache-Control: public, max-age=31536000, immutable");
+  });
+
+  it("keeps the entry point revalidated so a rollback is visible immediately", () => {
+    expect(body).toContain("/index.html");
+    expect(body).toContain("  Cache-Control: no-cache");
+  });
+
+  it("never caches the health document", () => {
+    expect(body).toContain("/health.json");
+    expect(body).toContain("  Cache-Control: no-store");
+  });
+
+  it("does not restate the security headers (Pages applies every matching rule)", () => {
+    expect(body).not.toContain("Cross-Origin-Opener-Policy");
+    expect(body.endsWith("\n")).toBe(true);
   });
 });

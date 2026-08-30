@@ -9,7 +9,7 @@
     "test:e2e": "playwright test",
     "dev": "vite",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
-    "build": "vite build && node scripts/write-headers.ts",
+    "build": "vite build && node scripts/write-headers.ts && node scripts/write-health.ts",
     "build:manifest": "node scripts/build-asset-manifest.ts"
   },
   "dependencies": {

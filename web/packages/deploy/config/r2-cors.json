@@ -1,0 +1,13 @@
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": ["https://play.generalsx.org"],
+        "methods": ["GET", "HEAD"],
+        "headers": ["range", "if-range", "if-match", "if-none-match", "content-type"]
+      },
+      "exposeHeaders": ["etag", "content-range", "content-length", "accept-ranges"],
+      "maxAgeSeconds": 3600
+    }
+  ]
+}

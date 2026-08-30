@@ -23,6 +23,14 @@ const BASE_SECURITY_HEADERS: Readonly<Record<string, string>> = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "X-Frame-Options": "DENY",
+  // Two years, subdomains included. `preload` is intentionally omitted: it is
+  // an irreversible commitment for the whole apex and must be an explicit
+  // operator decision, not a side effect of deploying this project.
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+  // The launcher needs none of these powerful features. WebRTC DataChannels
+  // (the only networking surface) require no camera/microphone permission.
+  "Permissions-Policy":
+    "accelerometer=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()",
 };
 
 function buildCsp(options: SecurityHeadersOptions): string {
@@ -104,11 +112,34 @@ export function renderPagesHeadersFile(
   paths: readonly string[] = ["/*"],
 ): string {
   const headers = buildSecurityHeaders(options);
-  return paths
-    .map((path) => {
-      const lines = Object.entries(headers).map(([name, value]) => `  ${name}: ${value}`);
-      return [path, ...lines].join("\n");
-    })
-    .join("\n\n")
-    .concat("\n");
+  return paths.map((path) => renderHeaderRule(path, headers)).join("\n\n").concat("\n");
+}
+
+/** One `_headers` section: a path pattern and the headers applied to it. */
+export interface PagesHeaderRule {
+  readonly path: string;
+  readonly headers: Readonly<Record<string, string>>;
+}
+
+/** Immutable caching for content-addressed build output (Vite emits
+ * `assets/<name>-<hash>.<ext>`), and revalidation for the entry points so an
+ * immutable rollback becomes visible without waiting out a cache TTL. */
+export const PAGES_CACHE_RULES: readonly PagesHeaderRule[] = [
+  { path: "/assets/*", headers: { "Cache-Control": "public, max-age=31536000, immutable" } },
+  { path: "/index.html", headers: { "Cache-Control": "no-cache" } },
+  { path: "/health.json", headers: { "Cache-Control": "no-store" } },
+];
+
+/**
+ * Renders additional `_headers` sections. Cloudflare Pages applies *every*
+ * matching rule, so these compose with the site-wide security rule emitted by
+ * `renderPagesHeadersFile` instead of restating it per path.
+ */
+export function renderPagesCacheRules(rules: readonly PagesHeaderRule[] = PAGES_CACHE_RULES): string {
+  return rules.map((rule) => renderHeaderRule(rule.path, rule.headers)).join("\n\n").concat("\n");
+}
+
+function renderHeaderRule(path: string, headers: Readonly<Record<string, string>>): string {
+  const lines = Object.entries(headers).map(([name, value]) => `  ${name}: ${value}`);
+  return [path, ...lines].join("\n");
 }

@@ -9,3 +9,11 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+
+# Deployment credentials are provided through the environment, never a file.
+# These patterns exist so a local convenience file can never be committed.
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+*.pem

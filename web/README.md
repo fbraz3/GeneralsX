@@ -18,8 +18,11 @@ byte belongs in this repository.
 
 ```
 web/
-├── packages/shared/     Protocol, manifest, and security-header types/logic
-│                        shared by the launcher and the Worker.
+├── packages/
+│   ├── shared/          Protocol, manifest, and security-header types/logic
+│   │                    shared by the launcher and the Worker.
+│   └── deploy/          Idempotent Cloudflare provisioning/deploy scripts and
+│                        post-deploy smoke tests.
 └── apps/
     ├── launcher/        Static Vite/TypeScript site for Cloudflare Pages.
     └── worker/          Cloudflare Worker + Durable Object for signaling
@@ -55,6 +58,8 @@ npm run lint        # ESLint across every workspace
 npm run typecheck   # tsc --noEmit in every workspace
 npm run test        # Vitest in every workspace
 npm run build       # Vite build (launcher) + wrangler dry-run bundle (worker)
+
+npm run smoke -w @generalsx-web/deploy   # post-deploy smoke tests
 ```
 
 Per-package dev servers:
@@ -224,13 +229,17 @@ allow the launcher origin to read `ETag`, `Content-Range`, and
   secrets. The long-lived API token is only ever sent in the
   `Authorization` header to `rtc.live.cloudflare.com`; only the resulting
   short-lived `iceServers` payload is returned to the client.
+- `src/health.ts` — pure liveness/readiness reporting (see
+  [Health and readiness](#health-and-readiness) below).
 - `src/index.ts` — routes `/room` (WebSocket upgrade to the Durable
-  Object), `/turn-credentials`, and applies COOP/COEP/CORP/CSP/CORS headers
-  (via `@generalsx-web/shared/security-headers`) to every response.
-- `wrangler.toml` — Durable Object binding + SQLite migration, non-secret
-  `vars` (allowed/signaling/asset origins), a commented-out R2 binding
-  placeholder for a *future* authorized asset-delivery worker, and
-  custom-domain notes for `signaling.generalsx.org`.
+  Object), `/turn-credentials`, `/healthz`, `/readyz`, and applies
+  COOP/COEP/CORP/CSP/CORS headers (via
+  `@generalsx-web/shared/security-headers`) to every response.
+- `wrangler.toml` — Durable Object binding + SQLite migration, the
+  `signaling.generalsx.org` custom-domain route, non-secret `vars`
+  (allowed/signaling/asset origins plus the deploy-time `RELEASE_ID`), and a
+  commented-out R2 binding placeholder for a *future* authorized
+  asset-delivery worker.
 
 ### Secrets (never committed)
 
@@ -239,14 +248,37 @@ wrangler secret put TURN_KEY_ID
 wrangler secret put TURN_KEY_API_TOKEN
 ```
 
+## Health and readiness
+
+| Endpoint | Meaning |
+|---|---|
+| `GET /healthz` (Worker) | Liveness. Dependency-free, so a TURN outage never makes a healthy Worker look dead. |
+| `GET /readyz` (Worker) | Readiness: 200 when it can serve signaling, 503 otherwise, with a per-check breakdown (`room-durable-object`, `allowed-origins`, `signaling-origin`, `asset-origin`, `turn-credentials`, `release-id`). |
+| `GET /health.json` (launcher) | Static build metadata written by `apps/launcher/scripts/write-health.ts`. |
+
+Missing TURN secrets are reported as `degraded`, not `failed`: the launcher
+documents and visibly warns about direct/STUN fallback, so the deployment is
+still ready. All three responses send `Cache-Control: no-store` and report the
+deployed `releaseId`, which is what makes a rollback verifiable. **No secret
+value ever appears in a probe payload** — secret-backed checks report
+`configured` / `missing` only.
+
 ## Security headers
 
 `packages/shared/src/security-headers.ts` is the single source of truth for
-COOP/COEP/CORP/CSP/CORS, consumed by:
+COOP/COEP/CORP/CSP/CORS, HSTS, and `Permissions-Policy`, consumed by:
 
-- the Worker, for every dynamic response (`apps/worker/src/index.ts`), and
+- the Worker, for every dynamic response (`apps/worker/src/index.ts`),
 - the static launcher build, via the generated `dist/_headers` file
-  (`apps/launcher/scripts/write-headers.ts`).
+  (`apps/launcher/scripts/write-headers.ts`), which also emits the cache
+  rules (`/assets/*` immutable for a year, `/index.html` `no-cache`,
+  `/health.json` `no-store`), and
+- the deployment smoke tests, which compare a live origin's headers against
+  the same module that produced them, so drift cannot pass unnoticed.
+
+`Strict-Transport-Security` is two years with `includeSubDomains` and
+deliberately without `preload` — preloading the apex is an irreversible
+operator decision, not a side effect of deploying this project.
 
 CORS only reflects an `Origin` that exactly matches the configured
 allowlist (`ALLOWED_ORIGINS` var) — no wildcards, no suffix matching.
@@ -398,13 +430,43 @@ to avoid a second whole-archive JavaScript buffer. The wasm build therefore
 retains its 4 GiB memory ceiling. Replacing MEMFS residency entirely requires
 a worker-hosted synchronous OPFS backend and is a later optimization.
 
+## Deployment
+
+Provisioning and deployment live in `packages/deploy`; its
+[README](packages/deploy/README.md) is the operator runbook (credentials,
+secrets, DNS, immutable rollback, smoke tests).
+
+```bash
+GENERALSX_DRY_RUN=1 packages/deploy/scripts/deploy.sh   # validate, upload nothing
+packages/deploy/scripts/deploy.sh                       # provision + deploy + smoke
+packages/deploy/scripts/rollback.sh list                # rollback candidates
+```
+
+Production topology:
+
+| Surface | Origin | Resource |
+|---|---|---|
+| Launcher shell | `play.generalsx.org` | Pages project `generalsx-launcher` |
+| Room signaling + TURN | `signaling.generalsx.org` | Worker `generalsx-signaling` + Durable Objects |
+| Authorized assets | `assets.generalsx.org` | R2 bucket `generalsx-web-assets` |
+
+Every deploy stamps the commit SHA into both surfaces (`RELEASE_ID` on the
+Worker, `health.json` on the launcher) and uploads a new immutable Worker
+Version / Pages deployment, so `rollback.sh` re-points traffic at bytes that
+already ran in production and the smoke suite can *prove* which release is
+live. CI equivalent: `.github/workflows/deploy-web.yml` (manual dispatch,
+`web-production` environment, credential-gated, dry run by default).
+
 ## Not included
 
 - Instantiating the actual Emscripten/WebAssembly engine module. The
   bridge is published at `window.GeneralsXUdp` in anticipation of that
   integration, but nothing yet calls into it from engine code.
-- Any retail game asset, published engine binary, or asset-hosting deployment.
-- Live deployment of the Worker or Pages project (this tree is
-  infrastructure-only; no `wrangler deploy` / `wrangler pages deploy`
-  without a real Cloudflare account, secrets, and domain provisioning
-  performed out of band by an operator).
+- Any retail game asset or published engine binary. `provision-r2.sh`
+  creates and configures the bucket; it never uploads an object. Publishing
+  an authorized revision is an operator step performed out of band from a
+  legally obtained install.
+- A live `play.generalsx.org` deployment. The scripts above are complete and
+  dry-run verified, but no deployment has been performed from this tree: it
+  requires a Cloudflare account authorized for the `generalsx.org` zone, the
+  TURN secrets, and an operator-published asset revision.

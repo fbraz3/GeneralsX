@@ -103,6 +103,19 @@ existing key. `web/apps/worker/wrangler.toml` carries a commented-out
 `ASSETS_BUCKET` binding for a separately authorized delivery worker — the
 signaling Worker itself never serves assets.
 
+The bucket and its delivery configuration are provisioned (idempotently) by
+`web/packages/deploy/scripts/provision-r2.sh`, which creates
+`generalsx-web-assets`, applies the CORS policy in
+`web/packages/deploy/config/r2-cors.json`, and connects
+`assets.generalsx.org`. **That script never uploads an object** — publishing
+your own authorized revision is this step, performed by you. Once a revision
+is published, verify the origin honours the whole contract with:
+
+```bash
+cd web
+npm run smoke -w @generalsx-web/deploy -- --asset-path /<revision>/<some-object>
+```
+
 Point the launcher at the manifest with the
 `VITE_GENERALSX_MANIFEST_URL` build variable and at the room/TURN Worker
 with `VITE_GENERALSX_SIGNALING_URL`

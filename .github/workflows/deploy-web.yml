@@ -1,0 +1,117 @@
+name: Deploy Web
+
+# GeneralsX @build Copilot 30/08/2026 Manual, environment-gated production
+# deployment of the browser prototype's web surfaces:
+#   play.generalsx.org       -> Cloudflare Pages project (web/apps/launcher)
+#   signaling.generalsx.org  -> Cloudflare Worker + Durable Objects (web/apps/worker)
+#   assets.generalsx.org     -> R2 bucket (created/configured only; this
+#                               workflow never uploads a game asset)
+#
+# This workflow NEVER runs on push or pull_request: it is workflow_dispatch
+# only and bound to the `web-production` environment, so deployment credentials
+# are unavailable to forks and to public pull requests. It also refuses to run
+# unless the repository gates in build-web.yml pass first.
+#
+# Retail game assets and engine binaries are never uploaded here. The R2 step
+# only creates the bucket and applies its CORS policy; publishing an authorized
+# asset revision is an operator action performed out of band from a legally
+# obtained installation (docs/HOWTO/WEB_ASSET_PIPELINE.md).
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Validate config and artifacts without uploading anything"
+        type: boolean
+        required: false
+        default: true
+      require_turn:
+        description: "Fail the smoke tests if live TURN credentials cannot be issued"
+        type: boolean
+        required: false
+        default: false
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  gates:
+    name: web-gates
+    uses: ./.github/workflows/build-web.yml
+
+  deploy:
+    name: deploy-production
+    needs: gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: web-production
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: web
+        run: npm ci
+
+      # GeneralsX @build Copilot 30/08/2026 Without credentials the job stops
+      # at the dry run instead of failing: the deployment is then genuinely
+      # blocked on operator provisioning, not on a broken pipeline.
+      - name: Check Deployment Credentials
+        id: credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "${CLOUDFLARE_API_TOKEN}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::CLOUDFLARE_API_TOKEN/CLOUDFLARE_ACCOUNT_ID are not configured for the web-production environment; running the dry run only."
+          fi
+
+      - name: Dry Run (no upload)
+        working-directory: web
+        env:
+          GENERALSX_DRY_RUN: "1"
+          GENERALSX_RELEASE_ID: ${{ github.sha }}
+        run: packages/deploy/scripts/deploy.sh
+
+      - name: Deploy
+        if: inputs.dry_run == false && steps.credentials.outputs.configured == 'true'
+        working-directory: web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          GENERALSX_RELEASE_ID: ${{ github.sha }}
+        run: packages/deploy/scripts/deploy.sh
+
+      # GeneralsX @build Copilot 30/08/2026 Re-run independently of deploy.sh so
+      # a failed smoke test is reported as its own red step, with the release
+      # pinned to this commit — the rollback signal for an operator.
+      - name: Post-Deploy Smoke Tests
+        if: inputs.dry_run == false && steps.credentials.outputs.configured == 'true'
+        working-directory: web
+        run: |
+          npm run smoke -w @generalsx-web/deploy -- \
+            --release "${{ github.sha }}" \
+            ${{ inputs.require_turn && '--require-turn' || '' }}
+
+      - name: Rollback Instructions
+        if: failure() && inputs.dry_run == false
+        run: |
+          echo "::error::Deployment or smoke tests failed. Roll back with:"
+          echo "  cd web && packages/deploy/scripts/rollback.sh list"
+          echo "  packages/deploy/scripts/rollback.sh worker <version-id>"
+          echo "  packages/deploy/scripts/rollback.sh pages <deployment-id>"

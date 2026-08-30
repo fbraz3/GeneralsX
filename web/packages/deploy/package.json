@@ -1,0 +1,25 @@
+{
+  "name": "@generalsx-web/deploy",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Idempotent Cloudflare deployment scripts and post-deploy smoke tests for play.generalsx.org",
+  "exports": {
+    ".": "./src/index.ts",
+    "./smoke": "./src/smoke.ts",
+    "./targets": "./src/targets.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "smoke": "node src/cli.ts"
+  },
+  "dependencies": {
+    "@generalsx-web/shared": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.0",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
+  }
+}
