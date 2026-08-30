@@ -14,7 +14,7 @@ import type { AssetFileStore } from "./storage.js";
 
 /** One mounted file, in engine mount order. */
 export interface VfsEntry {
-  /** Absolute in-engine path, e.g. `/generalsx/base/INI.big`. */
+  /** Absolute in-engine path, e.g. `/game-base/INI.big`. */
   readonly target: string;
   /** Manifest object key the bytes came from. */
   readonly path: string;

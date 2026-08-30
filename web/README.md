@@ -78,13 +78,12 @@ npm run dev -w @generalsx-web/worker     # wrangler dev on :8787
   (`storage.ts`), bounded-memory virtual file system (`vfs.ts`), and the
   typed error surface (`errors.ts`).
 - `src/ui/` — canvas, loading overlay, error overlay, settings panel, and
-  room create/join panel, wired together in `src/main.ts`. Instantiating the
-  actual Emscripten engine module is out of scope for this scaffold; the
-  seam is `startEngineBoot()` in `src/main.ts`.
+  room create/join panel, wired together in `src/main.ts`.
+- `src/engine/emscripten-loader.ts` — launches the verified engine JS/wasm,
+  stages manifest-mounted files into Emscripten's filesystem in bounded
+  chunks, applies preferences, and reports startup failures to the launcher.
 - The generated Emscripten module exposes `Module.generalsxAudio`. Launcher
-  integration should call `bindUserGesture(canvas)` or invoke `unlock()`
-  directly from a click/pointer handler, then use `mountArchives()` to
-  attach the base-game and Zero Hour audio BIG files after engine boot.
+  integration calls `bindUserGesture(canvas)` after runtime initialization.
   The bridge resumes interrupted WebAudio contexts and requests MiniAudio
   device recovery after browser lifecycle or output-device changes.
 - `src/net/` — `SignalingClient` (WebSocket wrapper for the room protocol;
@@ -127,7 +126,7 @@ serves and verifies every byte. Full operator guide:
       "sizeBytes": 41582592,
       "sha256": "…64 lowercase hex chars…",
       "etag": "\"a1b2c3\"",                   // strong ETag, optional
-      "mount": { "target": "/generalsx/engine/generalsx.wasm",
+      "mount": { "target": "/engine/generalsx.wasm",
                  "order": 1, "streaming": false }
     }
   ]
@@ -267,7 +266,7 @@ sockets) can run unmodified in the browser. `main.ts` constructs a
 `WebRtcUdpBridge` from the same `SignalingClient` instance used by the room
 UI, plus the signaling Worker's base URL (for on-demand TURN credential
 fetches — see **Room join lifecycle** below), and publishes it as
-`window.GeneralsXUdp` *before* any (future) engine module instantiation.
+`window.GeneralsXUdp` before engine module instantiation.
 
 The bridge mirrors the wire format and ABI of the engine repository's
 development-harness reference implementation
@@ -336,7 +335,7 @@ duplicate room membership or stale connection behind:
   could expire long before a match starts) before ever opening the
   signaling connection — so peer connections are always created with
   credentials that were just issued. A bridge instance constructed
-  without a `turnWorkerBaseUrl` (e.g. a future single-player/offline boot
+  without a `turnWorkerBaseUrl` (e.g. a single-player/offline boot
   path that never joins a room) never calls TURN at all.
   A generation counter guards every step of this sequence, so a slower,
   superseded `joinRoom()`/`leaveRoom()` call can never race ahead of a
@@ -349,12 +348,22 @@ duplicate room membership or stale connection behind:
   reported as `{ kind: "join-failed" }`, which the launcher routes to its
   blocking error overlay.
 
-## Not included in this scaffold
+## Runtime staging
+
+Verified files remain in OPFS between sessions. Engine JS and wasm are
+executed from verified Blob URLs. The current legacy Emscripten filesystem
+API is synchronous, so BIG archives must still be copied from OPFS into
+MEMFS before `main()` runs; the loader performs that copy in 4 MiB chunks
+to avoid a second whole-archive JavaScript buffer. The wasm build therefore
+retains its 4 GiB memory ceiling. Replacing MEMFS residency entirely requires
+a worker-hosted synchronous OPFS backend and is a later optimization.
+
+## Not included
 
 - Instantiating the actual Emscripten/WebAssembly engine module. The
   bridge is published at `window.GeneralsXUdp` in anticipation of that
   integration, but nothing yet calls into it from engine code.
-- Any retail game asset, engine binary, or asset-hosting deployment.
+- Any retail game asset, published engine binary, or asset-hosting deployment.
 - Live deployment of the Worker or Pages project (this tree is
   infrastructure-only; no `wrangler deploy` / `wrangler pages deploy`
   without a real Cloudflare account, secrets, and domain provisioning

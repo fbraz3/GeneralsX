@@ -6,22 +6,17 @@
  * hardcoded manifest/asset origin (`https://assets.generalsx.org`, see
  * `src/config.ts`) is intercepted by Playwright and fulfilled with the
  * synthetic bytes from `./fixtures.ts`. This exercises the real,
- * currently-implemented browser code path — manifest fetch + validation,
- * integrity-checked asset download, and the loading/error overlay adapters
- * — inside an actual browser engine (Cache Storage API, `crypto.subtle`,
- * real DOM), which is exactly what jsdom/happy-dom-based unit tests cannot
- * do.
- *
- * Instantiating the actual Emscripten/WebAssembly engine module remains out
- * of scope (see `web/README.md`); this test only covers the launcher shell.
+ * browser code path — manifest validation, OPFS streaming, integrity checks,
+ * engine filesystem staging, classic Emscripten script startup, and UI
+ * adapters — inside an actual browser with only synthetic fixture bytes.
  */
 import { expect, test, type Route } from "@playwright/test";
 import { ASSET_ORIGIN, FIXTURE_ASSETS, buildFixtureManifest, buildTamperedFixtureManifest } from "./fixtures.js";
 
 async function fulfillFixtureAssets(route: Route): Promise<void> {
   const url = new URL(route.request().url());
-  const fileName = url.pathname.replace(/^\//, "");
-  const asset = FIXTURE_ASSETS.find((a) => a.path === fileName);
+  const objectPath = url.pathname.replace(/^\//, "");
+  const asset = FIXTURE_ASSETS.find((a) => a.path === objectPath);
   if (!asset) {
     await route.fulfill({ status: 404, body: "not found" });
     return;
@@ -31,10 +26,10 @@ async function fulfillFixtureAssets(route: Route): Promise<void> {
 
 test.describe("launcher browser boot (fixture assets only)", () => {
   test("loads the engine manifest, downloads fixture assets, and clears the loading overlay", async ({ page }) => {
+    await page.route(`${ASSET_ORIGIN}/**`, fulfillFixtureAssets);
     await page.route(`${ASSET_ORIGIN}/manifest.json`, async (route) => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(buildFixtureManifest()) });
     });
-    await page.route(`${ASSET_ORIGIN}/fixture-asset-*.bin`, fulfillFixtureAssets);
 
     await page.goto("/");
 
@@ -48,6 +43,7 @@ test.describe("launcher browser boot (fixture assets only)", () => {
 
   test("shows the error overlay with a working retry when an asset fails its integrity check", async ({ page }) => {
     let manifestRequests = 0;
+    await page.route(`${ASSET_ORIGIN}/**`, fulfillFixtureAssets);
     await page.route(`${ASSET_ORIGIN}/manifest.json`, async (route) => {
       manifestRequests += 1;
       // First load: tampered digest (triggers AssetIntegrityError). Retry:
@@ -56,13 +52,11 @@ test.describe("launcher browser boot (fixture assets only)", () => {
       const manifest = manifestRequests === 1 ? buildTamperedFixtureManifest() : buildFixtureManifest();
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(manifest) });
     });
-    await page.route(`${ASSET_ORIGIN}/fixture-asset-*.bin`, fulfillFixtureAssets);
-
     await page.goto("/");
 
     const errorOverlay = page.locator(".gx-error-overlay");
     await expect(errorOverlay).toBeVisible();
-    await expect(errorOverlay.locator(".gx-error-message")).toContainText("integrity verification");
+    await expect(errorOverlay.locator(".gx-error-message")).toContainText("failed verification");
 
     await errorOverlay.locator("button").click();
 

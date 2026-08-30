@@ -19,7 +19,7 @@ your licensed install + wasm engine build
         ▼
    manifest.json  ──────────────►  authorized origin (R2 / S3 / static host)
         │                                   ▲
-        │  VITE_MANIFEST_URL                │  HTTPS + Range + strong ETag
+        │  VITE_GENERALSX_MANIFEST_URL      │  HTTPS + Range + strong ETag
         ▼                                   │
    launcher ── AssetManager ── streams, verifies, stores in OPFS ── AssetVfs ── engine
 ```
@@ -36,7 +36,7 @@ staging/
 │   └── generalsxzh.data      # optional preload bundle  (role: engine-data)
 ├── base/*.big                # base game archives       (role: big-base)
 ├── expansion/*.big           # expansion archives       (role: big-expansion)
-├── scripts/*.ini             # loose scripts/config     (role: script)
+├── scripts/*.ini|*.scb       # loose scripts/config     (role: script)
 └── fonts/*.ttf|*.otf         # fonts                    (role: font)
 ```
 
@@ -54,7 +54,6 @@ npm run build:manifest -w @generalsx-web/launcher -- \
   --engine-version 2026.08.30-a1b2c3d \
   --assets-revision 7 \
   --base-url https://assets.example.org/zh/r7 \
-  --mount-prefix /generalsx \
   --out /path/to/staging/manifest.json
 ```
 
@@ -62,6 +61,11 @@ The tool streams every file through an incremental SHA-256 (constant
 memory), records its exact size, assigns a role and a mount entry, and
 validates the result before writing it. It never copies or uploads asset
 bytes.
+
+By default, roles map to the paths consumed by the engine: base archives to
+`/game-base`, expansion archives to `/game`, loose scripts to
+`/game/Data/Scripts`, the first font to `/fonts/default.ttf`, and engine
+artifacts to `/engine`.
 
 **Bump `--assets-revision` on every republish.** It is part of the local
 storage root (`${engineVersion}-r${assetsRevision}`), so a bump makes
@@ -90,8 +94,10 @@ existing key. `web/apps/worker/wrangler.toml` carries a commented-out
 `ASSETS_BUCKET` binding for a separately authorized delivery worker — the
 signaling Worker itself never serves assets.
 
-Point the launcher at the manifest with the `VITE_MANIFEST_URL` build
-variable (`web/apps/launcher/src/config.ts`).
+Point the launcher at the manifest with the
+`VITE_GENERALSX_MANIFEST_URL` build variable and at the room/TURN Worker
+with `VITE_GENERALSX_SIGNALING_URL`
+(`web/apps/launcher/src/config.ts`).
 
 ## 4. What the client does
 

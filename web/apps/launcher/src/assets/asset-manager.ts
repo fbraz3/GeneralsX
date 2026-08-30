@@ -221,13 +221,34 @@ export class AssetManager {
         signal: controller.signal,
         ...(options.onProgress ? { onProgress: options.onProgress } : {}),
       };
+      const uniqueAssets: ManifestAsset[] = [];
+      const duplicateAssets: ManifestAsset[] = [];
+      const sizesByKey = new Map<string, number>();
+      for (const asset of this.manifest.assets) {
+        const key = assetCacheKey(asset);
+        const existingSize = sizesByKey.get(key);
+        if (existingSize === undefined) {
+          sizesByKey.set(key, asset.sizeBytes);
+          uniqueAssets.push(asset);
+        } else if (existingSize === asset.sizeBytes) {
+          duplicateAssets.push(asset);
+        } else {
+          throw new AssetDownloadError(
+            asset.path,
+            "assets with the same digest declared different byte sizes",
+          );
+        }
+      }
       await this.runBounded(
-        this.manifest.assets,
+        uniqueAssets,
         async (asset) => {
           await this.downloadAsset(asset, perAsset);
         },
         controller,
       );
+      for (const asset of duplicateAssets) {
+        this.report(asset, asset.sizeBytes, "cache", options.onProgress);
+      }
     } finally {
       options.signal?.removeEventListener("abort", abortOuter);
     }

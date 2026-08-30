@@ -36,6 +36,7 @@ describe("inferAssetRole", () => {
     expect(inferAssetRole("base/INI.big")).toBe("big-base");
     expect(inferAssetRole("expansion/INIZH.big")).toBe("big-expansion");
     expect(inferAssetRole("scripts/Default.ini")).toBe("script");
+    expect(inferAssetRole("scripts/SkirmishScripts.scb")).toBe("script");
     expect(inferAssetRole("fonts/Generals.TTF")).toBe("font");
   });
 
@@ -68,6 +69,16 @@ describe("buildManifest", () => {
     expect(byPath.get("expansion/INIZH.big")?.mount.streaming).toBe(true);
     expect(byPath.get("scripts/Default.ini")?.mount.streaming).toBe(false);
     expect(byPath.get("engine/generalsxzh.wasm")?.mount.streaming).toBe(false);
+  });
+
+  it("maps roles to the filesystem paths consumed by the engine", () => {
+    const { manifest } = buildManifest(STAGING, OPTIONS);
+    const byPath = new Map(manifest.assets.map((asset) => [asset.path, asset.mount.target]));
+    expect(byPath.get("engine/generalsxzh.js")).toBe("/engine/generalsxzh.js");
+    expect(byPath.get("base/INI.big")).toBe("/game-base/INI.big");
+    expect(byPath.get("expansion/INIZH.big")).toBe("/game/INIZH.big");
+    expect(byPath.get("scripts/Default.ini")).toBe("/game/Data/Scripts/Default.ini");
+    expect(byPath.get("fonts/Generals.ttf")).toBe("/fonts/default.ttf");
   });
 
   it("mounts every asset beneath the configured prefix", () => {

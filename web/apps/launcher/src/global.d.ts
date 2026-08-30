@@ -5,10 +5,12 @@
  * instead of real UDP; see `net/webrtc-udp-bridge.ts`.
  */
 import type { GeneralsXUdpApi } from "./net/webrtc-udp-bridge.js";
+import type { EmscriptenModuleConfig } from "./engine/emscripten-loader.js";
 
 declare global {
   interface Window {
     GeneralsXUdp?: GeneralsXUdpApi;
+    Module?: EmscriptenModuleConfig;
   }
 }
 

@@ -32,6 +32,7 @@ describe("buildSecurityHeaders", () => {
     const csp = headers["Content-Security-Policy"];
     expect(csp).toBeDefined();
     expect(csp).toContain("wss://signaling.generalsx.org");
+    expect(csp).toContain("https://signaling.generalsx.org");
     expect(csp).toContain("https://assets.generalsx.org");
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("object-src 'none'");
@@ -40,7 +41,7 @@ describe("buildSecurityHeaders", () => {
 
   it("allows wasm-unsafe-eval for the Emscripten engine only in script-src", () => {
     const csp = headers["Content-Security-Policy"] ?? "";
-    expect(csp).toContain("script-src 'self' 'wasm-unsafe-eval'");
+    expect(csp).toContain("script-src 'self' blob: 'wasm-unsafe-eval'");
   });
 });
 

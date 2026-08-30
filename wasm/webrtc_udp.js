@@ -319,9 +319,12 @@
     this.pc.onicecandidate = function (event) {
       if (event.candidate) udp._signalCandidate(slot, event.candidate);
     };
-    this.pc.onnegotiationneeded = function () {
+    var negotiate = function () {
+      if (self.makingOffer || self.pc.signalingState !== "stable") return;
       self.makingOffer = true;
-      self.pc.setLocalDescription().then(function () {
+      self.pc.createOffer().then(function(offer) {
+        return self.pc.setLocalDescription(offer);
+      }).then(function () {
         udp._signalDescription(slot, self.pc.localDescription);
       }).catch(function (error) {
         udp.log("negotiation failed: " + error);
@@ -329,6 +332,7 @@
         self.makingOffer = false;
       });
     };
+    this.pc.onnegotiationneeded = negotiate;
     this.pc.ondatachannel = function (event) { self._bind(event.channel); };
     this.pc.onconnectionstatechange = function () {
       if (self.pc.connectionState === "connected") udp.log("peer " + slot + " connected");
@@ -338,6 +342,9 @@
         ordered: false,
         maxRetransmits: 5,
       }));
+      // Safari/WebKit can omit negotiationneeded for a newly-created channel.
+      // The guard above keeps this explicit fallback idempotent elsewhere.
+      Promise.resolve().then(negotiate);
     }
   }
 

@@ -28,12 +28,14 @@ const BASE_SECURITY_HEADERS: Readonly<Record<string, string>> = {
 function buildCsp(options: SecurityHeadersOptions): string {
   const connectSrc = [
     "'self'",
+    "blob:",
+    ...(options.signalingOrigins ?? []),
     ...(options.signalingOrigins ?? []).map((origin) => toWebSocketOrigin(origin)),
     ...(options.assetOrigins ?? []),
   ];
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
-    "script-src": ["'self'", "'wasm-unsafe-eval'"],
+    "script-src": ["'self'", "blob:", "'wasm-unsafe-eval'"],
     "style-src": ["'self'"],
     "img-src": ["'self'", "data:"],
     "font-src": ["'self'"],

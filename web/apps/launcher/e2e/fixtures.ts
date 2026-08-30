@@ -29,24 +29,62 @@ function makeFixtureAsset(path: string, content: string): FixtureAsset {
   return { path, bytes, sha256: sha256Hex(bytes) };
 }
 
-/** A couple of tiny synthetic "assets" — arbitrary bytes, not game data. */
+const FAKE_ENGINE_SCRIPT = `
+globalThis.ENV = {};
+globalThis.FS = {
+  mkdirTree() {},
+  writeFile() {},
+  open() { return {}; },
+  allocate() {},
+  write(_stream, _data, _offset, length) { return length; },
+  close() {}
+};
+let dependencies = 0;
+globalThis.addRunDependency = () => { dependencies += 1; };
+globalThis.removeRunDependency = () => {
+  dependencies -= 1;
+  if (dependencies === 0) queueMicrotask(() => Module.onRuntimeInitialized());
+};
+globalThis.abort = (reason) => { throw new Error(reason); };
+Module.preRun.forEach((callback) => callback());
+if (dependencies === 0) queueMicrotask(() => Module.onRuntimeInitialized());
+`;
+
+/** Tiny synthetic engine and game-data fixtures — arbitrary bytes, not game data. */
 export const FIXTURE_ASSETS: readonly FixtureAsset[] = [
-  makeFixtureAsset("fixture-asset-a.bin", "generalsx-browser-smoke-fixture-a"),
-  makeFixtureAsset("fixture-asset-b.bin", "generalsx-browser-smoke-fixture-b"),
+  makeFixtureAsset("engine/GeneralsXZH.js", FAKE_ENGINE_SCRIPT),
+  makeFixtureAsset("engine/GeneralsXZH.wasm", "synthetic-wasm-placeholder"),
+  makeFixtureAsset("base/Fixture.big", "synthetic-base-archive"),
+  makeFixtureAsset("scripts/Scripts.ini", "synthetic-script-fixture"),
 ];
 
 /** A valid manifest referencing only the synthetic fixture assets above. */
 export function buildFixtureManifest(): EngineManifest {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     engineVersion: "browser-smoke-fixture",
+    assetsRevision: 1,
     assetBaseUrl: ASSET_ORIGIN,
-    engineEntry: "engine.js",
-    assets: FIXTURE_ASSETS.map((asset) => ({
-      path: asset.path,
-      sizeBytes: asset.bytes.byteLength,
-      sha256: asset.sha256,
-    })),
+    assets: FIXTURE_ASSETS.map((asset, index) => {
+      const role =
+        index === 0 ? "engine-js" : index === 1 ? "engine-wasm" : index === 2 ? "big-base" : "script";
+      return {
+        path: asset.path,
+        role,
+        sizeBytes: asset.bytes.byteLength,
+        sha256: asset.sha256,
+        mount: {
+          target:
+            index < 2
+              ? `/${asset.path}`
+              : index === 2
+                ? "/game-base/Fixture.big"
+                : "/game/Data/Scripts/Scripts.ini",
+          order: index * 1000,
+          streaming: role === "big-base",
+        },
+      };
+    }),
   };
 }
 

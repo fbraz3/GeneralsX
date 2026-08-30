@@ -176,16 +176,22 @@ describe("WebRtcUdpBridge peer lifecycle", () => {
     expect(bridge.status().peers).toHaveLength(0);
   });
 
-  it("resets all peers and room state when the signaling socket closes", () => {
-    const { bridge, signaling, peerConnections } = makeBridge();
+  it("keeps established peer channels alive when the signaling socket closes", () => {
+    const issues: JoinIssue[] = [];
+    const { bridge, signaling, peerConnections } = makeBridge({
+      onJoinIssue: (issue) => issues.push(issue),
+    });
     signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
     signaling.emit("roster", ROSTER_THREE_PLAYERS);
     expect(bridge.status().peers).toHaveLength(2);
 
     signaling.emit("close", new CloseEvent("close"));
 
-    expect(peerConnections.every((pc) => pc.connectionState === "closed")).toBe(true);
-    expect(bridge.status()).toMatchObject({ roomId: null, localSlot: null, peers: [] });
+    expect(peerConnections.every((pc) => pc.connectionState !== "closed")).toBe(true);
+    expect(bridge.status()).toMatchObject({ roomId: "ABCD", localSlot: 0 });
+    expect(issues).toEqual([
+      { kind: "signaling-unavailable", message: expect.stringContaining("current peer links remain active") },
+    ]);
   });
 });
 
@@ -482,7 +488,33 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     const { bridge, signaling } = makeBridge();
     bridge.joinRoom("R7K2QX", { capacity: 6 });
     await flush();
+    expect(signaling.closeCalled).toBe(true);
     expect(signaling.connectCalls).toEqual([{ roomId: "R7K2QX", options: { capacity: 6 } }]);
+  });
+
+  it("ignores stale roster and signal events before the new room welcome", async () => {
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        return { iceServers: [], ttlSeconds: 600 };
+      },
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("roster", ROSTER_TWO_PLAYERS);
+    signaling.emit("signal", 1, "offer", { type: "offer", sdp: "stale" });
+    await flush();
+
+    expect(peerConnections).toHaveLength(0);
+  });
+
+  it("dispose closes signaling and unregisters every listener", () => {
+    const { bridge, signaling } = makeBridge();
+    bridge.dispose();
+
+    expect(signaling.closeCalled).toBe(true);
+    expect([...signaling.listeners.values()].every((listeners) => listeners.size === 0)).toBe(true);
   });
 
   it("joinRoom() falls back to the configured player name when none is given", async () => {
@@ -578,7 +610,7 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     expect(issues).toEqual([{ kind: "join-failed", message: expect.stringContaining("closed") }]);
   });
 
-  it("does not report a join-failed issue for an ordinary disconnect after the room was already joined", async () => {
+  it("reports a non-fatal signaling warning after the room was already joined", async () => {
     const issues: JoinIssue[] = [];
     const { bridge, signaling } = makeBridge({ onJoinIssue: (issue) => issues.push(issue) });
 
@@ -588,8 +620,10 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
 
     signaling.emit("close");
 
-    expect(issues).toEqual([]);
-    expect(bridge.status()).toMatchObject({ roomId: null, localSlot: null });
+    expect(issues).toEqual([
+      { kind: "signaling-unavailable", message: expect.stringContaining("current peer links remain active") },
+    ]);
+    expect(bridge.status()).toMatchObject({ roomId: "ABCD", localSlot: 0 });
   });
 
   it("a slower, superseded joinRoom() call never connects after being overtaken by a newer one", async () => {

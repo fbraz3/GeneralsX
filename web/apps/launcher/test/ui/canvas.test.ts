@@ -8,7 +8,7 @@ describe("createGameCanvas", () => {
     const canvas = createGameCanvas(container);
 
     expect(canvas.tagName).toBe("CANVAS");
-    expect(canvas.id).toBe("game-canvas");
+    expect(canvas.id).toBe("canvas");
     expect(container.querySelectorAll("canvas")).toHaveLength(1);
     expect(container.contains(canvas)).toBe(true);
   });

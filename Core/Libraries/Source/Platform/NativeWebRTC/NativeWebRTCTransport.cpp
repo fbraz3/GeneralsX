@@ -546,11 +546,27 @@ private:
 			case EventType::WebSocketClosed:
 				if (!IsStopping())
 				{
-					Fail(generation, "signaling socket closed");
+					if (CanContinueWithoutSignaling())
+					{
+						Log("signaling socket closed after peers connected; keeping DataChannels alive");
+						CloseWebSocket();
+					}
+					else
+					{
+						Fail(generation, "signaling socket closed");
+					}
 				}
 				break;
 			case EventType::WebSocketError:
-				Fail(generation, event.first.empty() ? "signaling socket failed" : event.first);
+				if (CanContinueWithoutSignaling())
+				{
+					Log("signaling socket failed after peers connected; keeping DataChannels alive");
+					CloseWebSocket();
+				}
+				else
+				{
+					Fail(generation, event.first.empty() ? "signaling socket failed" : event.first);
+				}
 				break;
 			case EventType::LocalDescription:
 				SendSignaling(BuildDescriptionMessage(event.slot, event.first, event.second), generation);
@@ -966,7 +982,10 @@ private:
 	{
 		if (m_webSocket == nullptr || !m_webSocket->isOpen())
 		{
-			Fail(generation, "failed to send signaling message");
+			if (!CanContinueWithoutSignaling())
+			{
+				Fail(generation, "failed to send signaling message");
+			}
 			return;
 		}
 		try
@@ -975,7 +994,10 @@ private:
 		}
 		catch (const std::exception &error)
 		{
-			Fail(generation, error.what());
+			if (!CanContinueWithoutSignaling())
+			{
+				Fail(generation, error.what());
+			}
 		}
 	}
 
@@ -1038,6 +1060,13 @@ private:
 		std::lock_guard lock(m_stateMutex);
 		return m_lifecycle.State() == LifecycleState::Stopping ||
 			m_lifecycle.State() == LifecycleState::Stopped;
+	}
+
+	bool CanContinueWithoutSignaling() const
+	{
+		std::lock_guard lock(m_stateMutex);
+		const LifecycleState state = m_lifecycle.State();
+		return state == LifecycleState::Connected;
 	}
 
 	void Enqueue(Event event)

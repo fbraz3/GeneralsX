@@ -228,7 +228,7 @@ export interface GeneralsXUdpApi {
  * fallback — but must still be shown as a visible warning rather than
  * silently degrading connectivity. */
 export interface JoinIssue {
-  readonly kind: "join-failed" | "turn-unavailable";
+  readonly kind: "join-failed" | "turn-unavailable" | "signaling-unavailable";
   readonly message: string;
 }
 
@@ -396,6 +396,7 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
    */
   joinRoom(code: string, options: { name?: string; capacity?: number } = {}): void {
     const generation = ++this.connectionGeneration;
+    this.signaling.close();
     this.resetState();
 
     const name = options.name ?? this.playerName;
@@ -439,6 +440,18 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     this.connectionGeneration += 1;
     this.signaling.leave();
     this.resetState();
+  }
+
+  /** Releases signaling listeners and every transport resource. */
+  dispose(): void {
+    this.connectionGeneration += 1;
+    this.signaling.close();
+    this.resetState();
+    this.signaling.off("welcome", this.handleWelcome);
+    this.signaling.off("roster", this.handleRoster);
+    this.signaling.off("signal", this.handleSignal);
+    this.signaling.off("peerLeft", this.handlePeerLeft);
+    this.signaling.off("close", this.handleSignalingClose);
   }
 
   private resetState(): void {
@@ -489,10 +502,12 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   };
 
   private readonly handleRoster = (roster: readonly RosterEntry[]): void => {
+    if (this.localSlot === null) return;
     this.syncRoster(roster);
   };
 
   private readonly handlePeerLeft = (slot: SlotId): void => {
+    if (this.localSlot === null) return;
     // Redundant with the roster diff in `syncRoster` (a `peer-left` message
     // and the next `roster` broadcast both arrive from the same departure),
     // but `teardownPeer`/`Map.delete` are idempotent, so handling both event
@@ -509,16 +524,22 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     // disconnect after a room was already joined resets state silently,
     // matching the previous behavior.
     const failedJoin = this.joinPending;
-    this.resetState();
     if (failedJoin) {
+      this.resetState();
       this.onJoinIssue?.({
         kind: "join-failed",
         message: "signaling connection closed before the room join completed",
+      });
+    } else if (this.localSlot !== null) {
+      this.onJoinIssue?.({
+        kind: "signaling-unavailable",
+        message: "signaling disconnected; current peer links remain active, but new players cannot join",
       });
     }
   };
 
   private readonly handleSignal = (from: SlotId, type: "offer" | "answer" | "ice", payload: unknown): void => {
+    if (this.localSlot === null) return;
     this.processSignal(from, type, payload).catch((err: unknown) => {
       console.warn(`[GeneralsXUdp] failed to process ${type} from slot ${from}:`, err);
     });
@@ -586,12 +607,20 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
         maxRetransmits: DATA_CHANNEL_MAX_RETRANSMITS,
       });
       this.attachDataChannel(peer, channel);
+      // Safari/WebKit can omit `negotiationneeded` for a newly-created
+      // DataChannel. Queue an explicit, idempotent offer as a fallback.
+      queueMicrotask(() => {
+        void this.negotiate(peer).catch((err: unknown) => {
+          console.warn(`[GeneralsXUdp] negotiation failed for slot ${slot}:`, err);
+        });
+      });
     }
 
     return peer;
   }
 
   private async negotiate(peer: PeerRecord): Promise<void> {
+    if (peer.makingOffer || peer.pc.signalingState !== "stable") return;
     try {
       peer.makingOffer = true;
       const offer = await peer.pc.createOffer();

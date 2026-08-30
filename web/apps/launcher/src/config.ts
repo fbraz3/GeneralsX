@@ -19,7 +19,9 @@ export interface LauncherConfig {
 }
 
 export const LAUNCHER_CONFIG: LauncherConfig = Object.freeze({
-  manifestUrl: "https://assets.generalsx.org/manifest.json",
-  signalingWorkerUrl: "https://signaling.generalsx.org",
+  manifestUrl:
+    import.meta.env.VITE_GENERALSX_MANIFEST_URL ?? "https://assets.generalsx.org/manifest.json",
+  signalingWorkerUrl:
+    import.meta.env.VITE_GENERALSX_SIGNALING_URL ?? "https://signaling.generalsx.org",
   defaultRoomCapacity: 4,
 });

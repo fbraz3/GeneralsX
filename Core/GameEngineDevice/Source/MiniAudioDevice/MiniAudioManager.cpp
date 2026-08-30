@@ -272,6 +272,14 @@ void MiniAudioManager::update()
 #endif
 	AudioManager::update();
 	if (!m_engineInitialized) {
+		// GeneralsX @bugfix Copilot 30/08/2026 Release requests while a browser
+		// audio device is unavailable so the fixed wasm heap cannot grow forever.
+		for (AudioRequest *request : m_audioRequests) {
+			if (request != NULL) {
+				deleteInstance(request);
+			}
+		}
+		m_audioRequests.clear();
 		return;
 	}
 	setDeviceListenerPosition();
@@ -858,6 +866,7 @@ AsciiString MiniAudioManager::prevMusicTrack(void)
 //-------------------------------------------------------------------------------------------------
 Bool MiniAudioManager::isMusicPlaying(void) const
 {
+	if (!m_soundGroupsInitialized) return FALSE;
 	return ma_sound_group_is_playing(&m_musicGroup) == MA_TRUE;
 }
 
@@ -1108,7 +1117,7 @@ void MiniAudioManager::serviceBrowserDeviceRecovery(void)
 		return;
 	}
 
-	Bool restartMusic = isMusicPlaying();
+	Bool restartMusic = m_soundGroupsInitialized && isMusicPlaying();
 	fprintf(stderr, "AUDIO: rebuilding WebAudio device after interruption\n");
 	closeDevice();
 	openDevice();

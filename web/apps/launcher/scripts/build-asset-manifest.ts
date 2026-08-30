@@ -18,7 +18,7 @@
  * Expected staging layout (see `inferAssetRole`):
  *   engine/generalsxzh.js, engine/generalsxzh.wasm, engine/generalsxzh.data
  *   base/*.big        expansion/*.big
- *   scripts/*.ini     fonts/*.ttf
+ *   scripts/*.ini|*.scb     fonts/*.ttf
  */
 import { createReadStream } from "node:fs";
 import { readdir, stat, writeFile } from "node:fs/promises";

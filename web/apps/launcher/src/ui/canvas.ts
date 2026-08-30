@@ -3,7 +3,9 @@
  * so the canvas always matches its CSS box in device pixels. */
 export function createGameCanvas(container: HTMLElement): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
-  canvas.id = "game-canvas";
+  // d8web creates its WebGL2 context against the Emscripten-standard
+  // `#canvas` selector.
+  canvas.id = "canvas";
   canvas.className = "gx-canvas";
   container.appendChild(canvas);
 

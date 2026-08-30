@@ -83,6 +83,7 @@ function servedFrom(manifest: EngineManifest, patches: Record<string, Partial<Se
     "engine/engine.wasm": ENGINE_WASM,
     "base/INI.big": BASE_BIG,
     "expansion/INIZH.big": EXPANSION_BIG,
+    "scripts/engine-copy.ini": ENGINE_JS,
   };
   const files: Record<string, ServedFile> = {};
   for (const asset of manifest.assets) {
@@ -605,6 +606,24 @@ describe("AssetManager storage pressure", () => {
 });
 
 describe("AssetManager.ensureAssets", () => {
+  it("downloads one content-addressed file for assets with identical bytes", async () => {
+    const base = fullManifest();
+    const duplicate = assetFor("scripts/engine-copy.ini", ENGINE_JS, "script", 300);
+    const manifest = manifestFor([...base.assets, duplicate]);
+    const server = servedFrom(manifest);
+    const progress: number[] = [];
+
+    const vfs = await managerFor(manifest, server).ensureAssets({
+      onProgress: (event) => progress.push(event.overallLoadedBytes),
+    });
+
+    expect(server.requests).toHaveLength(4);
+    expect(vfs.list()).toHaveLength(5);
+    expect(progress.at(-1)).toBe(
+      manifest.assets.reduce((total, asset) => total + asset.sizeBytes, 0),
+    );
+  });
+
   it("downloads every asset and mounts them in manifest order", async () => {
     const manifest = fullManifest();
     const server = servedFrom(manifest);
