@@ -5,8 +5,10 @@
  * tested without a Workers runtime.
  */
 import {
+  compatibilityMatches,
   MAX_ROOM_CAPACITY,
   MIN_ROOM_CAPACITY,
+  type CompatibilityVersion,
   type RosterEntry,
   type ServerErrorCode,
   type SlotId,
@@ -24,6 +26,7 @@ export interface RoomState {
   readonly roomId: string;
   readonly capacity: number;
   readonly slots: Map<SlotId, SlotInfo>;
+  compatibility: CompatibilityVersion | null;
 }
 
 export type RoomResult<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: ServerErrorCode };
@@ -37,7 +40,7 @@ export function normalizeCapacity(requested: number | undefined): number {
 }
 
 export function createRoomState(roomId: string, capacity: number | undefined): RoomState {
-  return { roomId, capacity: normalizeCapacity(capacity), slots: new Map() };
+  return { roomId, capacity: normalizeCapacity(capacity), slots: new Map(), compatibility: null };
 }
 
 /** Returns the lowest-numbered free slot, or `null` when the room is full.
@@ -54,14 +57,19 @@ export function findFreeSlot(state: RoomState): SlotId | null {
 export interface JoinRequest {
   readonly name: string;
   readonly connectionId: string;
+  readonly compatibility: CompatibilityVersion;
 }
 
 /** Assigns a stable slot to a new connection, or returns `ROOM_FULL`. */
 export function joinRoom(state: RoomState, request: JoinRequest): RoomResult<SlotId> {
+  if (state.compatibility !== null && !compatibilityMatches(state.compatibility, request.compatibility)) {
+    return { ok: false, error: "INCOMPATIBLE_CLIENT" };
+  }
   const slot = findFreeSlot(state);
   if (slot === null) {
     return { ok: false, error: "ROOM_FULL" };
   }
+  state.compatibility ??= request.compatibility;
   const isHost = state.slots.size === 0;
   state.slots.set(slot, { name: request.name, isHost, connectionId: request.connectionId });
   return { ok: true, value: slot };
@@ -72,6 +80,7 @@ export function joinRoom(state: RoomState, request: JoinRequest): RoomResult<Slo
  * signal paths). */
 export function leaveRoom(state: RoomState, slot: SlotId): void {
   state.slots.delete(slot);
+  if (state.slots.size === 0) state.compatibility = null;
 }
 
 export function isRoomEmpty(state: RoomState): boolean {

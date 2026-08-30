@@ -122,14 +122,21 @@ export class RoomDurableObject implements DurableObject {
         });
         return;
       }
-      const joinResult = joinRoom(this.room, { name: message.name ?? "Player", connectionId });
+      const joinResult = joinRoom(this.room, {
+        name: message.name ?? "Player",
+        connectionId,
+        compatibility: message.compatibility,
+      });
       if (!joinResult.ok) {
+        const incompatible = joinResult.error === "INCOMPATIBLE_CLIENT";
         this.sendError(connection.socket, {
           type: "error",
           code: joinResult.error,
-          message: "room is full",
+          message: incompatible
+            ? "engine, network protocol, or determinism version does not match this room"
+            : "room is full",
         });
-        connection.socket.close(1013, "room full");
+        connection.socket.close(incompatible ? 1008 : 1013, incompatible ? "incompatible client" : "room full");
         return;
       }
       connection.slot = joinResult.value;

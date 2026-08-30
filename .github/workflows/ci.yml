@@ -49,6 +49,127 @@ jobs:
             --target core_native_webrtc core_native_webrtc_tests
           ctest --test-dir build/native-webrtc-linux --output-on-failure
 
+  native-webrtc-browser-interop:
+    name: Native/browser WebRTC interop (macOS)
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      # GeneralsX @build Copilot 30/08/2026 Exercise the real macOS
+      # libdatachannel transport against Chromium through a local Worker.
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: web
+        run: npx playwright install chromium
+
+      - name: Configure native WebRTC probe
+        run: |
+          cmake \
+            -S Core/Libraries/Source/Platform/NativeWebRTC \
+            -B build/native-webrtc-browser \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_TESTING=ON
+
+      - name: Build native WebRTC probe
+        run: |
+          cmake --build build/native-webrtc-browser \
+            --target core_native_webrtc_tests core_native_webrtc_integration_probe
+          ctest --test-dir build/native-webrtc-browser --output-on-failure
+
+      - name: Direct ICE browser/native exchange
+        run: scripts/qa/smoke/native-browser-webrtc-interop.sh direct build/native-webrtc-browser
+
+      - name: Upload interop logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-browser-webrtc-interop
+          path: logs/wasm-determinism/native-browser-direct/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  native-webrtc-turn-interop:
+    name: Native/browser TURN interop (secret-gated)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-15
+    timeout-minutes: 30
+    environment: turn-smoke
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Check required TURN secrets
+        id: secret-check
+        env:
+          TURN_KEY_ID: ${{ secrets.TURN_KEY_ID }}
+          TURN_KEY_API_TOKEN: ${{ secrets.TURN_KEY_API_TOKEN }}
+        run: |
+          if [ -n "$TURN_KEY_ID" ] && [ -n "$TURN_KEY_API_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::TURN secrets are absent; skipping the relay-only native/browser interoperability probe."
+          fi
+
+      - name: Setup Node
+        if: steps.secret-check.outputs.configured == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        if: steps.secret-check.outputs.configured == 'true'
+        working-directory: web
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        if: steps.secret-check.outputs.configured == 'true'
+        working-directory: web
+        run: npx playwright install chromium
+
+      - name: Configure and build native WebRTC probe
+        if: steps.secret-check.outputs.configured == 'true'
+        run: |
+          cmake \
+            -S Core/Libraries/Source/Platform/NativeWebRTC \
+            -B build/native-webrtc-browser \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_TESTING=ON
+          cmake --build build/native-webrtc-browser \
+            --target core_native_webrtc_tests core_native_webrtc_integration_probe
+
+      - name: Relay-only browser/native exchange
+        if: steps.secret-check.outputs.configured == 'true'
+        env:
+          TURN_KEY_ID: ${{ secrets.TURN_KEY_ID }}
+          TURN_KEY_API_TOKEN: ${{ secrets.TURN_KEY_API_TOKEN }}
+        run: scripts/qa/smoke/native-browser-webrtc-interop.sh turn build/native-webrtc-browser
+
+      - name: Upload TURN interop logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-browser-turn-interop
+          path: logs/wasm-determinism/native-browser-turn/
+          retention-days: 7
+          if-no-files-found: ignore
+
   detect-changes:
     name: Detect File Changes
     runs-on: ubuntu-latest
@@ -205,7 +326,7 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [native-webrtc-tests, build-linux-flatpak, build-macos, build-windows, build-wasm, build-web, replay-test-linux, replay-test-macos, replay-test-windows]
+    needs: [native-webrtc-tests, native-webrtc-browser-interop, build-linux-flatpak, build-macos, build-windows, build-wasm, build-web, replay-test-linux, replay-test-macos, replay-test-windows]
     if: always()
     steps:
       - name: Generate Summary
@@ -215,6 +336,7 @@ jobs:
           echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Native WebRTC (Linux) | ${{ needs.native-webrtc-tests.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Native/browser WebRTC direct ICE (macOS) | ${{ needs.native-webrtc-browser-interop.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Windows (x86) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'skipped' && '⏭️ Skipped' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
@@ -227,14 +349,14 @@ jobs:
           echo "| macOS ZH replays | ${{ needs.replay-test-macos.result == 'success' && '✅ Pass' || needs.replay-test-macos.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Windows ZH replays (Linux + macOS captures) | ${{ needs.replay-test-windows.result == 'success' && '✅ Pass' || needs.replay-test-windows.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> ℹ️ WebAssembly/Web coverage validates the browser launcher shell and the Emscripten" >> $GITHUB_STEP_SUMMARY
-          echo "> engine build only. Browser-to-native connectivity and live TURN relay are **not**" >> $GITHUB_STEP_SUMMARY
-          echo "> covered by this pipeline; see the staged, secret-gated \`turn-credentials-smoke\`" >> $GITHUB_STEP_SUMMARY
-          echo "> job in build-web.yml (workflow_dispatch only)." >> $GITHUB_STEP_SUMMARY
+          echo "> ℹ️ The macOS direct-ICE job exchanges real UDP-framed DataChannel traffic" >> $GITHUB_STEP_SUMMARY
+          echo "> between libdatachannel and Chromium. Live TURN relay remains workflow-dispatch-only" >> $GITHUB_STEP_SUMMARY
+          echo "> and secret-gated by the \`turn-smoke\` environment." >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if Any Build or Replay Test Failed
         if: |
           needs.native-webrtc-tests.result == 'failure' ||
+          needs.native-webrtc-browser-interop.result == 'failure' ||
           needs.build-linux-flatpak.result == 'failure' ||
           needs.build-macos.result == 'failure' ||
           needs.build-windows.result == 'failure' ||

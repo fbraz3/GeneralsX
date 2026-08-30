@@ -35,11 +35,16 @@ constexpr unsigned int MAX_RETRANSMITS = 5;
 inline constexpr char UDP_DATA_CHANNEL_LABEL[] = "generalsx-udp";
 constexpr int MIN_ROOM_CAPACITY = 2;
 constexpr int MAX_ROOM_CAPACITY = 8;
+// Keep synchronized with CURRENT_COMPATIBILITY and the browser wasm bridge.
+constexpr int ENGINE_COMPATIBILITY_VERSION = 1;
+constexpr int NETWORK_PROTOCOL_VERSION = 1;
+constexpr int DETERMINISM_VERSION = 1;
 
 struct RuntimeConfig
 {
 	bool enabled = false;
 	bool fetchTurnCredentials = true;
+	bool forceRelay = false;
 	std::string signalingUrl = "https://signaling.generalsx.org";
 	std::string roomId = "LAN1";
 	std::string playerName = "native";

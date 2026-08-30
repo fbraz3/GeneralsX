@@ -62,6 +62,7 @@ Utilities for large-scale code refactoring and fixes:
 - `docker-smoke-test-zh.sh` - Quick startup validation (expects crash, checks init output)
 - `run-bundled-game.sh` - Test bundled binary after deployment
 - `collect-flatpak-vulkan-wsi-report.sh` - Collect reproducible Flatpak Vulkan/XCB diagnostics for upstream runtime issues
+- `native-browser-webrtc-interop.sh` - Exchange canonical UDP frames between the native libdatachannel transport and a Playwright browser through a local Worker; supports direct and secret-gated TURN modes
 
 ### `legacy/` - Deprecated & Compatibility
 

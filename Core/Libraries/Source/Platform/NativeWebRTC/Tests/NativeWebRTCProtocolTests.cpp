@@ -48,6 +48,7 @@ void TestRuntimeConfig()
 	CHECK(!defaults.enabled);
 	CHECK(defaults.roomId == "LAN1");
 	CHECK(defaults.capacity == 4);
+	CHECK(!defaults.forceRelay);
 
 	const RuntimeConfig environment = ParseRuntimeConfig(
 		{ "GeneralsXZH" },
@@ -58,12 +59,14 @@ void TestRuntimeConfig()
 			{ "GENERALSX_WEBRTC_PLAYER_NAME", "Native Player" },
 			{ "GENERALSX_WEBRTC_CAPACITY", "8" },
 			{ "GENERALSX_WEBRTC_DISABLE_TURN", "1" },
+			{ "GENERALSX_WEBRTC_FORCE_RELAY", "true" },
 		});
 	CHECK(environment.enabled);
 	CHECK(environment.roomId == "AB12");
 	CHECK(environment.playerName == "Native Player");
 	CHECK(environment.capacity == 8);
 	CHECK(!environment.fetchTurnCredentials);
+	CHECK(environment.forceRelay);
 	CHECK(BuildRoomWebSocketUrl(environment) == "ws://127.0.0.1:8787/room?roomId=AB12&capacity=8");
 	CHECK(BuildTurnCredentialsUrl(environment) == "http://127.0.0.1:8787/turn-credentials");
 
@@ -76,6 +79,7 @@ void TestRuntimeConfig()
 			"--webrtc-capacity", "6",
 			"--webrtc-signaling", "https://signal.example",
 			"--webrtc-no-turn",
+			"--webrtc-force-relay",
 		},
 		{});
 	CHECK(cli.enabled);
@@ -83,6 +87,7 @@ void TestRuntimeConfig()
 	CHECK(cli.playerName == "CLI Player");
 	CHECK(cli.capacity == 6);
 	CHECK(!cli.fetchTurnCredentials);
+	CHECK(cli.forceRelay);
 	CHECK(BuildRoomWebSocketUrl(cli) == "wss://signal.example/room?roomId=ROOM7&capacity=6");
 
 	std::string error;
@@ -169,6 +174,9 @@ void TestSignalingProtocol()
 	CHECK(join["roomId"] == "ROOM7");
 	CHECK(join["name"] == "Native");
 	CHECK(join["capacity"] == 4);
+	CHECK(join["compatibility"]["engine"] == ENGINE_COMPATIBILITY_VERSION);
+	CHECK(join["compatibility"]["protocol"] == NETWORK_PROTOCOL_VERSION);
+	CHECK(join["compatibility"]["determinism"] == DETERMINISM_VERSION);
 
 	const std::string welcome = R"({
 		"type":"welcome",

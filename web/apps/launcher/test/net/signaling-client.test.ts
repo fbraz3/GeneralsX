@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { CURRENT_COMPATIBILITY } from "@generalsx-web/shared/protocol";
 import { SignalingClient } from "../../src/net/signaling-client.js";
 import { FakeWebSocket } from "./fake-websocket.js";
 
@@ -22,7 +23,15 @@ describe("SignalingClient connection lifecycle", () => {
     expect(sockets).toHaveLength(1);
     expect(sockets[0]!.sent).toEqual([]);
     sockets[0]!.open();
-    expect(sockets[0]!.sent).toEqual([JSON.stringify({ type: "join", roomId: "ABCD", name: "Ada", capacity: 4 })]);
+    expect(sockets[0]!.sent).toEqual([
+      JSON.stringify({
+        type: "join",
+        roomId: "ABCD",
+        name: "Ada",
+        capacity: 4,
+        compatibility: CURRENT_COMPATIBILITY,
+      }),
+    ]);
   });
 
   it("connect() called again while the previous socket is still open supersedes it: exactly one socket is ever left live", () => {
@@ -42,7 +51,9 @@ describe("SignalingClient connection lifecycle", () => {
     // Exactly one new, distinct socket now exists for the new room.
     expect(sockets).toHaveLength(2);
     sockets[1]!.open();
-    expect(sockets[1]!.sent).toEqual([JSON.stringify({ type: "join", roomId: "WXYZ" })]);
+    expect(sockets[1]!.sent).toEqual([
+      JSON.stringify({ type: "join", roomId: "WXYZ", compatibility: CURRENT_COMPATIBILITY }),
+    ]);
   });
 
   it("a superseded socket's later close event never reaches the client (no duplicate room membership fallout)", async () => {
@@ -82,7 +93,7 @@ describe("SignalingClient connection lifecycle", () => {
     client.leave();
 
     expect(sockets[0]!.sent).toEqual([
-      JSON.stringify({ type: "join", roomId: "ABCD" }),
+      JSON.stringify({ type: "join", roomId: "ABCD", compatibility: CURRENT_COMPATIBILITY }),
       JSON.stringify({ type: "leave" }),
     ]);
     expect(sockets[0]!.closeCallCount).toBe(1);
@@ -109,7 +120,9 @@ describe("SignalingClient connection lifecycle", () => {
 
     expect(sockets).toHaveLength(2);
     sockets[1]!.open();
-    expect(sockets[1]!.sent).toEqual([JSON.stringify({ type: "join", roomId: "ABCD" })]);
+    expect(sockets[1]!.sent).toEqual([
+      JSON.stringify({ type: "join", roomId: "ABCD", compatibility: CURRENT_COMPATIBILITY }),
+    ]);
   });
 
   it("leave() never emits a close event for the socket it closes itself", async () => {

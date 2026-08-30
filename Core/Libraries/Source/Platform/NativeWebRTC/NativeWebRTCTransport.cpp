@@ -77,6 +77,7 @@ std::unordered_map<std::string, std::string> ReadProcessEnvironment()
 		"GENERALSX_WEBRTC_PLAYER_NAME",
 		"GENERALSX_WEBRTC_CAPACITY",
 		"GENERALSX_WEBRTC_DISABLE_TURN",
+		"GENERALSX_WEBRTC_FORCE_RELAY",
 		"GENERALSX_WEBRTC_ICE_SERVERS_JSON",
 	};
 
@@ -774,6 +775,8 @@ private:
 
 		rtc::Configuration configuration;
 		configuration.iceServers = iceServers;
+		configuration.iceTransportPolicy =
+			m_config.forceRelay ? rtc::TransportPolicy::Relay : rtc::TransportPolicy::All;
 		configuration.maxMessageSize = 64 * 1024;
 		auto connection = std::make_shared<rtc::PeerConnection>(configuration);
 		std::weak_ptr<Impl> weakSelf = shared_from_this();

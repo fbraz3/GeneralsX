@@ -21,12 +21,29 @@ export const MAX_SDP_LENGTH = 12 * 1024;
 
 export type SlotId = number;
 
+/** Lockstep compatibility identity. Keep this synchronized with the native
+ * protocol constants and the browser wasm bridge. Bump the individual
+ * integer whenever that compatibility surface changes; peers must match all
+ * three values before the Worker assigns a room slot. */
+export interface CompatibilityVersion {
+  readonly engine: number;
+  readonly protocol: number;
+  readonly determinism: number;
+}
+
+export const CURRENT_COMPATIBILITY: CompatibilityVersion = Object.freeze({
+  engine: 1,
+  protocol: 1,
+  determinism: 1,
+});
+
 export interface ClientJoinMessage {
   readonly type: "join";
   readonly roomId: string;
   readonly name?: string;
   /** Only honored when the room does not exist yet. */
   readonly capacity?: number;
+  readonly compatibility: CompatibilityVersion;
 }
 
 export interface ClientSignalMessage {
@@ -78,6 +95,7 @@ export type ServerErrorCode =
   | "UNKNOWN_TARGET_SLOT"
   | "NOT_JOINED"
   | "ALREADY_JOINED"
+  | "INCOMPATIBLE_CLIENT"
   | "RATE_LIMITED";
 
 export interface ServerErrorMessage {
@@ -101,6 +119,25 @@ export interface MessageValidationResult<T> {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function isCompatibilityVersion(value: unknown): value is CompatibilityVersion {
+  if (!isPlainObject(value)) return false;
+  return (
+    typeof value.engine === "number" &&
+    Number.isInteger(value.engine) &&
+    value.engine > 0 &&
+    typeof value.protocol === "number" &&
+    Number.isInteger(value.protocol) &&
+    value.protocol > 0 &&
+    typeof value.determinism === "number" &&
+    Number.isInteger(value.determinism) &&
+    value.determinism > 0
+  );
+}
+
+export function compatibilityMatches(left: CompatibilityVersion, right: CompatibilityVersion): boolean {
+  return left.engine === right.engine && left.protocol === right.protocol && left.determinism === right.determinism;
 }
 
 /**
@@ -152,11 +189,15 @@ export function validateClientMessage(input: unknown): MessageValidationResult<C
           error: `join.capacity must be an integer between ${MIN_ROOM_CAPACITY} and ${MAX_ROOM_CAPACITY}`,
         };
       }
+      if (!isCompatibilityVersion(input.compatibility)) {
+        return { valid: false, error: "join.compatibility is missing or malformed" };
+      }
       const message: ClientJoinMessage = {
         type: "join",
         roomId: input.roomId,
         ...(input.name !== undefined ? { name: input.name as string } : {}),
         ...(input.capacity !== undefined ? { capacity: input.capacity as number } : {}),
+        compatibility: input.compatibility,
       };
       return { valid: true, message };
     }

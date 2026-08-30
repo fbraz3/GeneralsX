@@ -4,6 +4,7 @@
  * listener map rather than pulling in a full event-emitter dependency.
  */
 import {
+  CURRENT_COMPATIBILITY,
   validateClientMessage,
   type ClientMessage,
   type RosterEntry,
@@ -84,6 +85,7 @@ export class SignalingClient {
         roomId,
         ...(options.name !== undefined ? { name: options.name } : {}),
         ...(options.capacity !== undefined ? { capacity: options.capacity } : {}),
+        compatibility: CURRENT_COMPATIBILITY,
       });
     };
     socket.onmessage = (event: MessageEvent) => {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  CURRENT_COMPATIBILITY,
   MAX_MESSAGE_BYTES,
   MAX_ROOM_CAPACITY,
   MIN_ROOM_CAPACITY,
@@ -7,42 +8,47 @@ import {
   validateClientMessage,
 } from "../src/protocol.js";
 
+function join(overrides: Record<string, unknown> = {}) {
+  return { type: "join", roomId: "AB12", compatibility: CURRENT_COMPATIBILITY, ...overrides };
+}
+
 describe("validateClientMessage: join", () => {
   it("accepts a minimal valid join", () => {
-    const result = validateClientMessage({ type: "join", roomId: "AB12" });
+    const result = validateClientMessage(join());
     expect(result.valid).toBe(true);
-    expect(result.message).toEqual({ type: "join", roomId: "AB12" });
+    expect(result.message).toEqual(join());
   });
 
   it("accepts join with name and capacity", () => {
-    const result = validateClientMessage({
-      type: "join",
-      roomId: "AB12",
+    const result = validateClientMessage(join({
       name: "Player One",
       capacity: 4,
-    });
+    }));
     expect(result.valid).toBe(true);
   });
 
   it("rejects malformed room ids", () => {
     for (const roomId of ["", "ab", "toolongroomid1234", "has space", "lower"]) {
-      expect(validateClientMessage({ type: "join", roomId }).valid).toBe(false);
+      expect(validateClientMessage(join({ roomId })).valid).toBe(false);
     }
   });
 
   it("rejects malformed player names", () => {
-    const result = validateClientMessage({ type: "join", roomId: "AB12", name: "<script>" });
+    const result = validateClientMessage(join({ name: "<script>" }));
     expect(result.valid).toBe(false);
   });
 
   it("rejects capacity outside the allowed bounds", () => {
-    expect(validateClientMessage({ type: "join", roomId: "AB12", capacity: MIN_ROOM_CAPACITY - 1 }).valid).toBe(
+    expect(validateClientMessage(join({ capacity: MIN_ROOM_CAPACITY - 1 })).valid).toBe(false);
+    expect(validateClientMessage(join({ capacity: MAX_ROOM_CAPACITY + 1 })).valid).toBe(false);
+    expect(validateClientMessage(join({ capacity: 3.5 })).valid).toBe(false);
+  });
+
+  it("requires positive integer compatibility versions", () => {
+    expect(validateClientMessage({ type: "join", roomId: "AB12" }).valid).toBe(false);
+    expect(validateClientMessage(join({ compatibility: { engine: 1, protocol: 1, determinism: 0 } })).valid).toBe(
       false,
     );
-    expect(validateClientMessage({ type: "join", roomId: "AB12", capacity: MAX_ROOM_CAPACITY + 1 }).valid).toBe(
-      false,
-    );
-    expect(validateClientMessage({ type: "join", roomId: "AB12", capacity: 3.5 }).valid).toBe(false);
   });
 });
 

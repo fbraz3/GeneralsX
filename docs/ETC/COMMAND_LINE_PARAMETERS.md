@@ -39,13 +39,15 @@ Common command line parameters for `GeneralsX` (Generals) and `GeneralsXZH` (Zer
 | `-webrtc-name <name>` | Sets the signaling roster name (1-24 safe characters). | `-webrtc-name "Native Player"` |
 | `-webrtc-capacity <2-8>` | Sets room capacity when creating a room. | `-webrtc-capacity 4` |
 | `-webrtc-no-turn` | Disables the `/turn-credentials` request and uses direct ICE only. | `./GeneralsXZH -webrtc -webrtc-no-turn` |
+| `-webrtc-force-relay` | Requires TURN-relayed ICE candidates. Intended for secret-gated interoperability validation; the connection fails if TURN is unavailable. | `./GeneralsXZH -webrtc -webrtc-force-relay` |
 
 ### Native WebRTC environment options
 
 The equivalent environment variables are `GENERALSX_WEBRTC=1`,
 `GENERALSX_WEBRTC_SIGNALING_URL`, `GENERALSX_WEBRTC_ROOM`,
 `GENERALSX_WEBRTC_PLAYER_NAME`, `GENERALSX_WEBRTC_CAPACITY`, and
-`GENERALSX_WEBRTC_DISABLE_TURN=1`.
+`GENERALSX_WEBRTC_DISABLE_TURN=1`. Relay-only validation uses
+`GENERALSX_WEBRTC_FORCE_RELAY=1`.
 
 By default, the client retrieves short-lived TURN credentials from the
 signaling origin's `/turn-credentials` endpoint. Long-lived Cloudflare TURN
@@ -59,6 +61,11 @@ The room assigns each connection a stable slot and the synthetic address
 protocols above the WebRTC-backed UDP abstraction. For each peer pair, the
 lower slot creates the `generalsx-udp` channel and is the impolite negotiation
 peer; the higher slot listens for that channel and is polite.
+
+Before assigning a room slot, the signaling Worker also compares the engine,
+network-protocol, and determinism compatibility versions supplied by every
+peer. Missing or mismatched versions are rejected before a DataChannel can
+carry lockstep packets.
 
 ## Common Combinations
 

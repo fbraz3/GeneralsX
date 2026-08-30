@@ -248,7 +248,11 @@ allowlist (`ALLOWED_ORIGINS` var) — no wildcards, no suffix matching.
 Defined in `packages/shared/src/protocol.ts`:
 
 - `join` → server replies `welcome` (assigned slot, capacity, roster) and
-  broadcasts `roster` to existing peers.
+  broadcasts `roster` to existing peers. Every join includes explicit
+  engine, network-protocol, and determinism compatibility versions. The first
+  occupant establishes the room profile; mismatched profiles are rejected
+  with `INCOMPATIBLE_CLIENT` before slot assignment and lockstep, while a
+  missing or malformed profile is an `INVALID_MESSAGE`.
 - `offer` / `answer` / `ice` → relayed only to the addressed slot (`to`),
   never broadcast; the server rewrites the sender field to `from` so
   clients cannot spoof their slot.
@@ -314,6 +318,31 @@ object). Display-only strings (dotted-quad IPs) are confined to
   matching best-effort UDP semantics.
 - Peer connections are torn down cleanly on roster departure, an explicit
   `peer-left` signal, or the signaling socket closing.
+
+### Native/browser interoperability probe
+
+Build `core_native_webrtc_integration_probe`, install the `web/` dependencies,
+and run:
+
+```bash
+scripts/qa/smoke/native-browser-webrtc-interop.sh direct build/macos-webrtc-determinism
+```
+
+The probe starts a local Worker and static server, joins a real
+libdatachannel peer to a Playwright Chromium peer, and verifies both
+directions of the exact four-byte little-endian UDP header. It also attempts a
+mismatched join and requires `INCOMPATIBLE_CLIENT`.
+
+Relay-only validation is deliberately secret-gated:
+
+```bash
+TURN_KEY_ID=... TURN_KEY_API_TOKEN=... \
+  scripts/qa/smoke/native-browser-webrtc-interop.sh turn build/macos-webrtc-determinism
+```
+
+TURN mode sets relay-only ICE policy on both peers and fails unless the
+selected connection exposes relay candidates. Long-lived credentials are
+written only to a permission-restricted, automatically removed local env file.
 
 ### Room join lifecycle
 

@@ -37,3 +37,14 @@ else()
 endif()
 target_compile_features(core_native_webrtc_tests PRIVATE cxx_std_20)
 add_test(NAME core_native_webrtc_tests COMMAND core_native_webrtc_tests)
+
+if(TARGET core_native_webrtc)
+    # GeneralsX @build Copilot 30/08/2026 Build an opt-in real-network probe
+    # used by the Playwright/native interoperability harness.
+    add_executable(core_native_webrtc_integration_probe NativeWebRTCIntegrationProbe.cpp)
+    target_include_directories(core_native_webrtc_integration_probe PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
+    )
+    target_link_libraries(core_native_webrtc_integration_probe PRIVATE core_native_webrtc)
+    target_compile_features(core_native_webrtc_integration_probe PRIVATE cxx_std_20)
+endif()

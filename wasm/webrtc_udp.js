@@ -11,6 +11,7 @@
   var BROADCAST = 0xffffffff;
   var MAX_INBOX_PACKETS = 1024;
   var MAX_BUFFERED_BYTES = 1024 * 1024;
+  var COMPATIBILITY = Object.freeze({ engine: 1, protocol: 1, determinism: 1 });
 
   function slotIP(slot) {
     return ((10 << 24) | ((slot + 1) & 255)) >>> 0;
@@ -97,6 +98,7 @@
             roomId: self.room,
             name: self.name,
             capacity: self.capacity,
+            compatibility: COMPATIBILITY,
           });
         };
         ws.onmessage = function (event) {
@@ -314,7 +316,10 @@
     this.makingOffer = false;
     this.ignoreOffer = false;
     this.polite = udp.slot > slot;
-    this.pc = new RTCPeerConnection({ iceServers: udp.iceServers });
+    this.pc = new RTCPeerConnection({
+      iceServers: udp.iceServers,
+      iceTransportPolicy: window.GENERALSX_ICE_TRANSPORT_POLICY === "relay" ? "relay" : "all",
+    });
 
     this.pc.onicecandidate = function (event) {
       if (event.candidate) udp._signalCandidate(slot, event.candidate);

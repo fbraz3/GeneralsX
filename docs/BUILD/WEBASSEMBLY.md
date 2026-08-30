@@ -53,5 +53,7 @@ the paths required by the engine. See
   Archives therefore remain subject to the wasm32 4 GiB memory ceiling.
 - WebGL2 rendering and user-gesture WebAudio startup work in the launcher.
 - Browser and opt-in native WebRTC transports are implemented, but a
-  cross-platform release still requires real-match soak and determinism
-  validation plus deployed signaling/TURN infrastructure.
+  cross-platform release still requires a completed real match and extended
+  determinism soak with signaling remaining connected. The local direct-ICE
+  browser/native transport probe is automated; relay-only coverage remains
+  secret-gated by Cloudflare TURN credentials.

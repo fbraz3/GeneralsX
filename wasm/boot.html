@@ -66,6 +66,7 @@
       window.GENERALSX_ROOM = (p.get('room') || 'LAN1').toUpperCase();
       window.GENERALSX_PLAYER_NAME = p.get('player') || ('gx-' + Math.floor(Math.random() * 1e4));
       window.GENERALSX_AUTO_MODE = p.get('host') ? 'host' : (p.get('autojoin') ? 'join' : '');
+      window.GENERALSX_ICE_TRANSPORT_POLICY = p.get('icePolicy') === 'relay' ? 'relay' : 'all';
       if (window.GENERALSX_WEBRTC_ENABLED) {
         log('[webrtc] room=' + window.GENERALSX_ROOM + ' name=' + window.GENERALSX_PLAYER_NAME +
             (window.GENERALSX_AUTO_MODE ? ' auto=' + window.GENERALSX_AUTO_MODE : ''));

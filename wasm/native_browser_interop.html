@@ -1,0 +1,103 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>GeneralsX native/browser WebRTC interoperability probe</title>
+<pre id="log"></pre>
+<script>
+  window.__interop = { status: "starting", logs: [] };
+  window.__udplog = function (message) {
+    window.__interop.logs.push(message);
+    document.getElementById("log").textContent += message + "\n";
+  };
+
+  var params = new URLSearchParams(location.search);
+  window.GENERALSX_WEBRTC_ENABLED = true;
+  window.GENERALSX_SIGNALING_URL = params.get("signaling") || "http://127.0.0.1:8787";
+  window.GENERALSX_ROOM = params.get("room") || "TEST1";
+  window.GENERALSX_PLAYER_NAME = "playwright-browser";
+  window.GENERALSX_ICE_TRANSPORT_POLICY = params.get("mode") === "turn" ? "relay" : "all";
+</script>
+<script src="webrtc_udp.js"></script>
+<script>
+  (async function () {
+    var browserPort = 40000;
+    var nativePort = 40001;
+    var browserPayload = new Uint8Array([0x42, 0x52, 0x57, 0x53]);
+    var nativePayload = new Uint8Array([0x4e, 0x41, 0x54, 0x56]);
+    async function selectedCandidates(pc) {
+      var stats = await pc.getStats();
+      var pair;
+      stats.forEach(function (report) {
+        if (!pair && report.type === "transport" && report.selectedCandidatePairId) {
+          pair = stats.get(report.selectedCandidatePairId);
+        }
+      });
+      if (!pair) {
+        stats.forEach(function (report) {
+          if (!pair && report.type === "candidate-pair" &&
+              (report.selected || (report.nominated && report.state === "succeeded"))) {
+            pair = report;
+          }
+        });
+      }
+      var local = pair && pair.localCandidateId ? stats.get(pair.localCandidateId) : null;
+      var remote = pair && pair.remoteCandidateId ? stats.get(pair.remoteCandidateId) : null;
+      var localTypes = [];
+      var remoteTypes = [];
+      stats.forEach(function (report) {
+        if (report.type === "local-candidate" && report.candidateType) localTypes.push(report.candidateType);
+        if (report.type === "remote-candidate" && report.candidateType) remoteTypes.push(report.candidateType);
+      });
+      return {
+        local: local ? local.candidateType : null,
+        remote: remote ? remote.candidateType : null,
+        protocol: local ? local.protocol : (remote ? remote.protocol : null),
+        localTypes: Array.from(new Set(localTypes)),
+        remoteTypes: Array.from(new Set(remoteTypes)),
+      };
+    }
+    try {
+      await window.GENERALSX_UDP_READY;
+      window.GeneralsXUdp.bind(browserPort);
+
+      var deadline = Date.now() + 30000;
+      var peer = null;
+      while (Date.now() < deadline) {
+        peer = Array.from(window.GeneralsXUdp.peers.values()).find(function (candidate) {
+          return candidate.isOpen();
+        }) || null;
+        if (peer) break;
+        await new Promise(function (resolve) { setTimeout(resolve, 50); });
+      }
+      if (!peer) throw new Error("timed out waiting for the native DataChannel");
+
+      var nativeIP = ((10 << 24) | ((peer.slot + 1) & 255)) >>> 0;
+      var candidates = await selectedCandidates(peer.pc);
+      deadline = Date.now() + 20000;
+      while (Date.now() < deadline) {
+        window.GeneralsXUdp.send(nativeIP, nativePort, browserPort, browserPayload);
+        var packet = window.GeneralsXUdp.recv(browserPort);
+        if (packet) {
+          if (packet.port !== nativePort ||
+              packet.data.length !== nativePayload.length ||
+              !packet.data.every(function (value, index) { return value === nativePayload[index]; })) {
+            throw new Error("native reply did not match the expected source port and payload");
+          }
+          window.__interop = {
+            status: "passed",
+            logs: window.__interop.logs,
+            peerSlot: peer.slot,
+            candidates: candidates,
+            browserToNativeHeader: [0x40, 0x9c, 0x41, 0x9c],
+            nativeToBrowserHeader: [0x41, 0x9c, 0x40, 0x9c],
+          };
+          return;
+        }
+        await new Promise(function (resolve) { setTimeout(resolve, 100); });
+      }
+      throw new Error("timed out waiting for the native reply");
+    } catch (error) {
+      window.__interop.status = "failed";
+      window.__interop.error = error && error.stack ? error.stack : String(error);
+    }
+  })();
+</script>

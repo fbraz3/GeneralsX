@@ -302,6 +302,10 @@ RuntimeConfig ParseRuntimeConfig(
 	{
 		config.fetchTurnCredentials = !IsTruthy(*value);
 	}
+	if (const auto value = EnvironmentValue(environment, "GENERALSX_WEBRTC_FORCE_RELAY"))
+	{
+		config.forceRelay = IsTruthy(*value);
+	}
 	if (const auto value = EnvironmentValue(environment, "GENERALSX_WEBRTC_ICE_SERVERS_JSON"))
 	{
 		config.iceServersJson = *value;
@@ -317,6 +321,10 @@ RuntimeConfig ParseRuntimeConfig(
 		else if (option == "-webrtc-no-turn")
 		{
 			config.fetchTurnCredentials = false;
+		}
+		else if (option == "-webrtc-force-relay")
+		{
+			config.forceRelay = true;
 		}
 		else if (index + 1 < arguments.size())
 		{
@@ -759,6 +767,11 @@ std::string BuildJoinMessage(const RuntimeConfig &config)
 		{ "roomId", config.roomId },
 		{ "name", config.playerName },
 		{ "capacity", config.capacity },
+		{ "compatibility", {
+			{ "engine", ENGINE_COMPATIBILITY_VERSION },
+			{ "protocol", NETWORK_PROTOCOL_VERSION },
+			{ "determinism", DETERMINISM_VERSION },
+		} },
 	}).dump();
 }
 
