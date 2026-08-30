@@ -1284,7 +1284,8 @@ void MultiPlayerLoadScreen::init( GameInfo *game )
 	m_mapPreview = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "MultiplayerLoadScreen.wnd:WinMapPreview"));
 	GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 	const PlayerTemplate* pt;
-	if (lSlot->getPlayerTemplate() >= 0)
+	// GeneralsX @bugfix fbraz3 30/08/2026 Guard against null lSlot when getLocalSlotNum() returns -1
+	if (lSlot != nullptr && lSlot->getPlayerTemplate() >= 0)
 		pt = ThePlayerTemplateStore->getNthPlayerTemplate(lSlot->getPlayerTemplate());
 	else
 		pt = ThePlayerTemplateStore->findPlayerTemplate( TheNameKeyGenerator->nameToKey("FactionObserver") );
@@ -1549,7 +1550,8 @@ void GameSpyLoadScreen::init( GameInfo *game )
 	DEBUG_LOG(("NumPlayers %d", TheNetwork->getNumPlayers()));
 GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 	const PlayerTemplate* pt;
-	if (lSlot->getPlayerTemplate() >= 0)
+	// GeneralsX @bugfix fbraz3 30/08/2026 Guard against null lSlot when getLocalSlotNum() returns -1
+	if (lSlot != nullptr && lSlot->getPlayerTemplate() >= 0)
 		pt = ThePlayerTemplateStore->getNthPlayerTemplate(lSlot->getPlayerTemplate());
 	else
 		pt = ThePlayerTemplateStore->findPlayerTemplate( TheNameKeyGenerator->nameToKey("FactionObserver") );

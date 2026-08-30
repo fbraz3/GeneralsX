@@ -1,7 +1,5 @@
-// GeneralsX @feature GeneralsOnline NGMP Manager implementation
-// Lifecycle management, event queue processing, and lobby REST requests.
-
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NetworkMesh.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GeneralsOnline/NGMPWebSocket.h"
@@ -21,6 +19,10 @@ using json = nlohmann::json;
 NGMP_OnlineServicesManager& NGMP_OnlineServicesManager::getInstance() {
     static NGMP_OnlineServicesManager instance;
     return instance;
+}
+
+NetworkMesh* NGMP_OnlineServicesManager::GetNetworkMesh() {
+    return getInstance().getNetworkMesh();
 }
 
 NGMP_OnlineServicesManager::NGMP_OnlineServicesManager() = default;
@@ -184,6 +186,25 @@ void NGMP_OnlineServicesManager::update() {
                                 startEv.type = NGMPEvent::EVENT_GAME_START;
                                 uiEvents.push_back(startEv);
                             }
+                            else if (msgId == 17) { // START_SIGNALLING
+                                if (m_pNetworkMesh) {
+                                    int64_t targetUserId = -1;
+                                    uint16_t preferredPort = 0;
+                                    if (jsonMsg.contains("target_user_id") && jsonMsg["target_user_id"].is_number()) {
+                                        targetUserId = jsonMsg["target_user_id"].get<int64_t>();
+                                    } else if (jsonMsg.contains("user_id") && jsonMsg["user_id"].is_number()) {
+                                        targetUserId = jsonMsg["user_id"].get<int64_t>();
+                                    }
+                                    if (jsonMsg.contains("preferred_port") && jsonMsg["preferred_port"].is_number()) {
+                                        preferredPort = jsonMsg["preferred_port"].get<uint16_t>();
+                                    }
+                                    if (targetUserId != -1) {
+                                        fprintf(stderr, "[NGMP] START_SIGNALLING for target_user_id=%lld port=%u\n", (long long)targetUserId, preferredPort);
+                                        fflush(stderr);
+                                        m_pNetworkMesh->StartConnectionSignalling("", targetUserId, preferredPort);
+                                    }
+                                }
+                            }
                             else if (msgId == 18) { // NETWORK_CONNECTION_DISCONNECT_PLAYER
                                 int64_t disconnectedUserId = -1;
                                 if (jsonMsg.contains("user_id") && jsonMsg["user_id"].is_number()) {
@@ -230,6 +251,13 @@ void NGMP_OnlineServicesManager::update() {
         for (const auto& ev : uiEvents) {
             m_uiEventQueue.push(ev);
         }
+    }
+
+    if (!m_pNetworkMesh && m_isLoggedIn) {
+        m_pNetworkMesh = std::make_unique<NetworkMesh>();
+    }
+    if (m_pNetworkMesh) {
+        m_pNetworkMesh->Tick();
     }
 }
 

@@ -1,6 +1,6 @@
-// GeneralsX @feature GeneralsOnline NGMPGame implementation
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#include "GameNetwork/GeneralsOnline/NextGenTransport.h"
 #include "GameLogic/VictoryConditions.h"
 #include "Common/PlayerList.h"
 #include "Common/Player.h"
@@ -263,10 +263,32 @@ Int NGMPGame::getLocalSlotNum(void) const
 
 void NGMPGame::startGame(Int gameID)
 {
-	DEBUG_LOG(("NGMPGame::startGame - game id = %d\n", gameID));
+	// GeneralsX @bugfix fbraz3 30/08/2026 Sync slots from lobby before launching to
+	//   ensure m_inGame is set and slot userIDs are populated for getLocalSlotNum()
+	fprintf(stderr, "[NGMP] NGMPGame::startGame - synchronizing slots from lobby before launch (gameID=%d)\n", gameID);
+	fflush(stderr);
+
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface =
+		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (pLobbyInterface != nullptr)
+	{
+		LobbyEntry& currentLobby = pLobbyInterface->GetCurrentLobby();
+		SyncWithLobby(currentLobby);
+		UpdateSlotsFromCurrentLobby();
+	}
+
+	// Ensure m_inGame is set (may be false on Guest if enterGame() was never called)
+	if (!m_inGame)
+	{
+		fprintf(stderr, "[NGMP] NGMPGame::startGame - m_inGame was false, calling enterGame()\n");
+		fflush(stderr);
+		enterGame();
+	}
+
 	UnsignedInt localIP = 1337;
 	setLocalIP(localIP);
 
+	DEBUG_LOG(("NGMPGame::startGame - game id = %d\n", gameID));
 	launchGame();
 }
 
@@ -292,7 +314,9 @@ void NGMPGame::launchGame(void)
 	TheNetwork = NetworkInterface::createNetwork();
 	TheNetwork->init();
 	TheNetwork->setLocalAddress(getLocalIP(), 8888);
-	TheNetwork->initTransport();
+	NextGenTransport* pTransport = new NextGenTransport;
+	pTransport->init(getLocalIP(), 8888);
+	TheNetwork->attachTransport(pTransport);
 	TheNetwork->parseUserList(this);
 
 	if (TheGameLogic->isInGame()) {

@@ -31,6 +31,7 @@ class NGMP_OnlineServices_LobbyInterface;
 class NGMP_OnlineServices_RoomsInterface;
 class NGMP_OnlineServices_StatsInterface;
 class NGMP_OnlineServices_SocialInterface;
+class NetworkMesh;
 
 struct NGMPEvent {
     enum Type {
@@ -212,6 +213,9 @@ public:
     const std::vector<NGMPLobby>& getLobbies() const { return m_lobbies; }
     const std::vector<NGMPLobbyPlayer>& getLobbyPlayers() const { return m_lobbyPlayers; }
 
+    static NetworkMesh* GetNetworkMesh();
+    NetworkMesh* getNetworkMesh() { return m_pNetworkMesh.get(); }
+
     // Internal thread-safe event poster (called from worker threads)
     void postEvent(const NGMPEvent& event);
 
@@ -228,6 +232,8 @@ private:
 
     NGMP_OnlineServicesManager(const NGMP_OnlineServicesManager&) = delete;
     NGMP_OnlineServicesManager& operator=(const NGMP_OnlineServicesManager&) = delete;
+
+    std::unique_ptr<NetworkMesh> m_pNetworkMesh;
 
     bool m_initialized = false;
     bool m_isLoggedIn = false;

@@ -928,22 +928,154 @@ static void StartPressed()
 #if defined(SAGE_USE_NGMP)
 	if (TheNGMPGame)
 	{
-		// GeneralsX @feature fbraz3 27/08/2026 NGMP simultaneous game start: host broadcasts START_GAME and launches locally
-		std::shared_ptr<WebSocket> pWS = NGMP_OnlineServicesManager::GetWebSocket();
-		if (pWS != nullptr)
+		// GeneralsX @feature fbraz3 30/08/2026 Validate readiness and start NGMP game
+		NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+		if (pLobbyInterface == nullptr)
+			return;
+
+		LobbyEntry& curLobby = pLobbyInterface->GetCurrentLobby();
+		TheNGMPGame->SyncWithLobby(curLobby);
+		TheNGMPGame->UpdateSlotsFromCurrentLobby();
+
+		Bool isReady = TRUE;
+		Bool allHaveMap = TRUE;
+		Int playerCount = 0;
+		Int humanCount = 0;
+
+		UnicodeString mapDisplayName;
+		const MapMetaData *mapData = TheMapCache ? TheMapCache->findMap(TheNGMPGame->getMap()) : nullptr;
+		Bool willTransfer = TRUE;
+		if (mapData)
 		{
-			pWS->SendData_StartGame();
-			fprintf(stderr, "[NGMP] Host sent START_GAME broadcast (msg_id=13)\n");
-			fflush(stderr);
+			mapDisplayName.format(L"%ls", mapData->m_displayName.str());
+			willTransfer = !mapData->m_isOfficial;
+		}
+		else
+		{
+			mapDisplayName.format(L"%hs", TheNGMPGame->getMap().str());
+			willTransfer = WouldMapTransfer(TheNGMPGame->getMap());
 		}
 
-		if (buttonBack) buttonBack->winEnable(FALSE);
-		GameWindow* buttonBuddy = TheWindowManager->winGetWindowFromId(
-			nullptr, NAMEKEY("GameSpyGameOptionsMenu.wnd:ButtonCommunicator"));
-		if (buttonBuddy) buttonBuddy->winEnable(FALSE);
-		GameSpyCloseOverlay(GSOVERLAY_BUDDY);
+		for (int i = 0; i < MAX_SLOTS; i++)
+		{
+			GameSlot *slot = TheNGMPGame->getSlot(i);
+			if (!slot)
+				continue;
 
-		TheNGMPGame->startGame(0);
+			if (slot->isHuman())
+			{
+				if (!slot->isAccepted())
+				{
+					isReady = FALSE;
+					if (!slot->hasMap() && !willTransfer)
+					{
+						UnicodeString msg;
+						msg.format(TheGameText->fetch("GUI:PlayerNoMap"), slot->getName().str(), mapDisplayName.str());
+						GadgetListBoxAddEntryText(listboxGameSetupChat, msg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+						allHaveMap = FALSE;
+					}
+				}
+				humanCount++;
+			}
+			if (slot->isOccupied() && slot->getPlayerTemplate() != PLAYERTEMPLATE_OBSERVER)
+			{
+				playerCount++;
+			}
+		}
+
+		// Check for too many players
+		const MapMetaData *md = TheMapCache ? TheMapCache->findMap(TheNGMPGame->getMap()) : nullptr;
+		if (md && md->m_numPlayers < playerCount)
+		{
+			if (TheNGMPGame->amIHost())
+			{
+				UnicodeString text;
+				text.format(TheGameText->fetch("LAN:TooManyPlayers"), (md) ? md->m_numPlayers : 0);
+				GadgetListBoxAddEntryText(listboxGameSetupChat, text, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+			}
+			return;
+		}
+
+		// Check for human players requirement
+		if (TheGlobalData->m_netMinPlayers && !humanCount)
+		{
+			if (TheNGMPGame->amIHost())
+			{
+				UnicodeString text = TheGameText->fetch("GUI:NeedHumanPlayers");
+				GadgetListBoxAddEntryText(listboxGameSetupChat, text, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+			}
+			return;
+		}
+
+		// Check for too few players
+		if (playerCount < TheGlobalData->m_netMinPlayers)
+		{
+			if (TheNGMPGame->amIHost())
+			{
+				UnicodeString text;
+				text.format(TheGameText->fetch("LAN:NeedMorePlayers"), playerCount);
+				GadgetListBoxAddEntryText(listboxGameSetupChat, text, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+			}
+			return;
+		}
+
+		// Check for too few teams
+		int numRandom = 0;
+		std::set<Int> teams;
+		for (int i = 0; i < MAX_SLOTS; ++i)
+		{
+			GameSlot *slot = TheNGMPGame->getSlot(i);
+			if (slot && slot->isOccupied() && slot->getPlayerTemplate() != PLAYERTEMPLATE_OBSERVER)
+			{
+				if (slot->getTeamNumber() >= 0)
+				{
+					teams.insert(slot->getTeamNumber());
+				}
+				else
+				{
+					++numRandom;
+				}
+			}
+		}
+		if (numRandom + (int)teams.size() < TheGlobalData->m_netMinPlayers)
+		{
+			if (TheNGMPGame->amIHost())
+			{
+				UnicodeString text;
+				text.format(TheGameText->fetch("LAN:NeedMoreTeams"));
+				GadgetListBoxAddEntryText(listboxGameSetupChat, text, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+			}
+			return;
+		}
+
+		if (isReady)
+		{
+			// All players have accepted: broadcast START_GAME and launch match
+			std::shared_ptr<WebSocket> pWS = NGMP_OnlineServicesManager::GetWebSocket();
+			if (pWS != nullptr)
+			{
+				pWS->SendData_StartGame();
+				fprintf(stderr, "[NGMP] Host sent START_GAME broadcast (msg_id=13)\n");
+				fflush(stderr);
+			}
+
+			if (buttonBack) buttonBack->winEnable(FALSE);
+			GameWindow* buttonBuddy = TheWindowManager->winGetWindowFromId(
+				nullptr, NAMEKEY("GameSpyGameOptionsMenu.wnd:ButtonCommunicator"));
+			if (buttonBuddy) buttonBuddy->winEnable(FALSE);
+			GameSpyCloseOverlay(GSOVERLAY_BUDDY);
+
+			TheNGMPGame->startGame(0);
+		}
+		else if (allHaveMap)
+		{
+			// Not everyone is ready: inform the chat
+			UnicodeString notifText = TheGameText->fetch("GUI:NotifiedStartIntent");
+			GadgetListBoxAddEntryText(listboxGameSetupChat, notifText, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+
+			// Send lobby chat message so all guests see the host is ready to start
+			pLobbyInterface->SendChatMessageToCurrentLobby(notifText, false);
+		}
 		return;
 	}
 #endif
@@ -1953,23 +2085,29 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 			GadgetListBoxAddEntryText(listboxGameSetupChat, uMsg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
 		}
 		else if (ev.type == NGMPEvent::EVENT_GAME_START) {
-			// GeneralsX @feature fbraz3 27/08/2026 Simultaneous game start broadcast received
-			if (TheNGMPGame && TheNGMPGame->isGameInProgress()) {
+			// GeneralsX @bugfix fbraz3 30/08/2026 Fix start game: remove self-assignment,
+			//   skip host echo, sync slots from lobby before launch
+			if (!TheNGMPGame) {
+				fprintf(stderr, "[NGMP] EVENT_GAME_START: TheNGMPGame is null, cannot launch\n");
+				fflush(stderr);
+				continue;
+			}
+
+			// Host already called startGame() directly in StartPressed(); ignore the echo
+			if (TheNGMPGame->amIHost()) {
+				fprintf(stderr, "[NGMP] EVENT_GAME_START: ignoring echo (we are host)\n");
+				fflush(stderr);
+				continue;
+			}
+
+			// Duplicate guard for guests (shouldn't happen, but defensive)
+			if (TheNGMPGame->isGameInProgress()) {
 				fprintf(stderr, "[NGMP] EVENT_GAME_START: game already in progress, ignoring duplicate event\n");
 				fflush(stderr);
 				continue;
 			}
 
-			NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-			NGMPGame* myGame = pLobbyInterface ? pLobbyInterface->GetCurrentGame() : nullptr;
-
-			if (!TheNGMPGame || !myGame) {
-				fprintf(stderr, "[NGMP] EVENT_GAME_START: TheNGMPGame or myGame is null, cannot launch\n");
-				fflush(stderr);
-				continue;
-			}
-
-			fprintf(stderr, "[NGMP] Received START_GAME, launching game\n");
+			fprintf(stderr, "[NGMP] Received START_GAME (guest), launching game\n");
 			fflush(stderr);
 
 			if (buttonBack) buttonBack->winEnable(FALSE);
@@ -1978,7 +2116,6 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 			if (buttonBuddy) buttonBuddy->winEnable(FALSE);
 			GameSpyCloseOverlay(GSOVERLAY_BUDDY);
 
-			*TheNGMPGame = *myGame;
 			TheNGMPGame->startGame(0);
 		}
 	}
@@ -3231,6 +3368,14 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 					}
 					else
 					{
+						if (TheNGMPGame)
+						{
+							GameSlot *localSlot = TheNGMPGame->getSlot(TheNGMPGame->getLocalSlotNum());
+							if (localSlot)
+							{
+								localSlot->setAccept();
+							}
+						}
 						if (pLobbyInterface != nullptr)
 						{
 							pLobbyInterface->UpdateCurrentLobby_ForceReady();

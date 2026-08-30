@@ -82,6 +82,12 @@ cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
+# Copy GameNetworkingSockets library (for NGMP P2P multiplayer)
+if compgen -G "${BUILD_DIR}/bin/libGameNetworkingSockets.so*" > /dev/null || compgen -G "${BUILD_DIR}/lib/libGameNetworkingSockets.so*" > /dev/null; then
+    echo "  Copying GameNetworkingSockets library..."
+    cp -v "${BUILD_DIR}"/bin/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || cp -v "${BUILD_DIR}"/lib/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || true
+fi
+
 copy_ldd_deps() {
     local root="$1"
     [[ -e "${root}" ]] || return 0

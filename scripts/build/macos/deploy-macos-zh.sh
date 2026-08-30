@@ -81,6 +81,11 @@ ln -sf libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/libSDL3_image.dylib" 2>/dev/nul
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
+echo "  Copying GameNetworkingSockets library..."
+if [[ -f "${BUILD_DIR}/bin/libGameNetworkingSockets.dylib" ]]; then
+    cp -v "${BUILD_DIR}/bin/libGameNetworkingSockets.dylib" "${RUNTIME_DIR}/"
+fi
+
 echo "  Copying DXVK libraries (d3d9 + d3d8)..."
 # d3d8 links against d3d9 via @rpath — both must be present in the runtime dir
 if [[ ! -f "${DXVK_D3D9_LIB}" || ! -f "${DXVK_D3D8_LIB}" ]]; then

@@ -137,7 +137,11 @@ if(SAGE_UPDATE_CHECK)
 endif()
 
 # GeneralsX @feature GeneralsOnline NGMP protocol option
-option(SAGE_USE_NGMP "Use NGMP (GeneralsOnline) multiplayer protocol" ON)
+if(IS_VS6_BUILD)
+    option(SAGE_USE_NGMP "Use NGMP (GeneralsOnline) multiplayer protocol" OFF)
+else()
+    option(SAGE_USE_NGMP "Use NGMP (GeneralsOnline) multiplayer protocol" ON)
+endif()
 add_feature_info(NGMPProtocol SAGE_USE_NGMP "Using NGMP multiplayer protocol (GeneralsOnline)")
 
 if(SAGE_USE_NGMP)
