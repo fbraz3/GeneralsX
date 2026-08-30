@@ -425,8 +425,15 @@ duplicate room membership or stale connection behind:
   direct/STUN-only ICE and reports it via the `onJoinIssue` callback
   (`{ kind: "turn-unavailable" }`) so the launcher can show a **visible
   warning** in the room panel — direct-ICE fallback is explicit, never
-  silent. A signaling socket closing before a room join ever completes is
-  reported as `{ kind: "join-failed" }`, which the launcher routes to its
+  silent. That includes a request that never answers at all: the credential
+  request carries a hard deadline (8s, covering the response body as well as
+  its headers) and the bridge keeps a one-second backstop of its own, so an
+  injected or misbehaving client cannot leave the join gate closed. On
+  timeout the request is aborted, the gate opens, the buffered roster and
+  signals are applied against the fallback ICE servers, and credentials that
+  arrive afterwards are discarded rather than applied to peers already built
+  without them. A signaling socket closing before a room join ever completes
+  is reported as `{ kind: "join-failed" }`, which the launcher routes to its
   blocking error overlay.
 
 ### TURN authorization

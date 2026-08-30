@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   BROADCAST_IP,
   UdpBridgeError,
@@ -948,5 +948,212 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     expect(signaling.leaveCalled).toBe(true);
     expect(peerConnections).toHaveLength(0);
     expect(bridge.status()).toMatchObject({ roomId: null, localSlot: null, peers: [] });
+  });
+});
+
+describe("WebRtcUdpBridge TURN credential deadline", () => {
+  // Every test here models the failure the deadline exists for: a request
+  // that neither resolves nor rejects. Without a bound, the join gate
+  // (`iceServersReady`) never opens, so the roster is never applied, no peer
+  // is ever created, and the documented direct/STUN fallback — which only
+  // runs on a *settled* failure — is never reached.
+  const REQUEST_TIMEOUT_MS = 5_000;
+  const FALLBACK_ICE = [{ urls: "stun:stun.example.com" }];
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** `flush()` waits on a real `setTimeout(0)`, which fake timers freeze. */
+  async function flushFake(): Promise<void> {
+    await vi.advanceTimersByTimeAsync(0);
+    await Promise.resolve();
+    await Promise.resolve();
+  }
+
+  /** Past both the request deadline and the bridge's backstop. */
+  async function passDeadline(): Promise<void> {
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS * 2);
+    await flushFake();
+  }
+
+  function makeHungBridge(overrides: Partial<WebRtcUdpBridgeOptions> = {}) {
+    const issues: JoinIssue[] = [];
+    const requests: { signal: AbortSignal | undefined; timeoutMs: number | undefined }[] = [];
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const harness = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fallbackIceServers: FALLBACK_ICE,
+      turnCredentialsTimeoutMs: REQUEST_TIMEOUT_MS,
+      onJoinIssue: (issue) => issues.push(issue),
+      // Deliberately ignores the signal: an implementation that honours it
+      // would prove the client's deadline, not the bridge's backstop.
+      fetchIceServers: (_base, _token, options) => {
+        requests.push({ signal: options?.signal ?? undefined, timeoutMs: options?.timeoutMs });
+        return new Promise((resolve) => {
+          resolveFetch = resolve;
+        });
+      },
+      ...overrides,
+    });
+    return { ...harness, issues, requests, resolve: (value: RTCIceServer[]) => resolveFetch?.({ iceServers: value, ttlSeconds: 600 }) };
+  }
+
+  it("gives up on a credential request that never settles and joins with the fallback ICE servers", async () => {
+    const { bridge, signaling, peerConnections, issues } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_TWO_PLAYERS));
+    await flushFake();
+    expect(peerConnections).toHaveLength(0);
+    expect(issues).toEqual([]);
+
+    await passDeadline();
+
+    expect(peerConnections).toHaveLength(1);
+    expect(peerConnections[0]?.config).toEqual({ iceServers: FALLBACK_ICE });
+    expect(bridge.status().peers.map((peer) => peer.slot)).toEqual([1]);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.kind).toBe("turn-unavailable");
+    expect(issues[0]?.message).toContain("direct/STUN-only ICE");
+    expect(issues[0]?.message).toContain("no response within");
+  });
+
+  it("aborts the hung request instead of leaving it running", async () => {
+    const { bridge, signaling, requests } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_TWO_PLAYERS));
+    await flushFake();
+    expect(requests[0]?.signal?.aborted).toBe(false);
+
+    await passDeadline();
+    expect(requests[0]?.signal?.aborted).toBe(true);
+  });
+
+  it("asks the request for a shorter deadline than its own backstop, so the request reports the precise reason", async () => {
+    const { bridge, signaling, requests, issues } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_TWO_PLAYERS));
+    await flushFake();
+    expect(requests[0]?.timeoutMs).toBe(REQUEST_TIMEOUT_MS);
+
+    // The request's own deadline has passed; a real client would already have
+    // aborted and rejected. This stub does not, so the backstop is still
+    // pending and the bridge is still waiting.
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS);
+    await flushFake();
+    expect(issues).toEqual([]);
+
+    await passDeadline();
+    expect(issues).toHaveLength(1);
+  });
+
+  it("replays signals buffered behind a hung fetch in arrival order once it times out", async () => {
+    const { bridge, signaling, peerConnections } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    signaling.emit("signal", 0, "offer", { type: "offer", sdp: "early-offer" });
+    signaling.emit("signal", 0, "ice", { candidate: "early-candidate" });
+    await flushFake();
+    expect(peerConnections).toHaveLength(0);
+
+    await passDeadline();
+
+    expect(peerConnections).toHaveLength(1);
+    expect(peerConnections[0]?.config).toEqual({ iceServers: FALLBACK_ICE });
+    expect(peerConnections[0]?.remoteDescription).toEqual({ type: "offer", sdp: "early-offer" });
+    expect(peerConnections[0]?.addedIceCandidates).toEqual([{ candidate: "early-candidate" }]);
+    expect(signaling.sentAnswers).toHaveLength(1);
+  });
+
+  it("still drops a signal buffered before its sender left when the fetch times out rather than fails", async () => {
+    const { bridge, signaling, peerConnections } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    signaling.emit("signal", 0, "offer", { type: "offer", sdp: "early-offer" });
+    signaling.emit("peerLeft", 0);
+    await flushFake();
+
+    await passDeadline();
+
+    expect(peerConnections).toHaveLength(0);
+    expect(bridge.status().peers).toEqual([]);
+    expect(signaling.sentAnswers).toHaveLength(0);
+  });
+
+  it("keeps a seat the roster refilled while the fetch was hung", async () => {
+    const { bridge, signaling, peerConnections } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    signaling.emit("peerLeft", 0);
+    signaling.emit("roster", [
+      { slot: 0, name: "replacement", isHost: true },
+      { slot: 1, name: "guest", isHost: false },
+    ]);
+    await flushFake();
+
+    await passDeadline();
+
+    expect(peerConnections).toHaveLength(1);
+    expect(bridge.status().peers.map((peer) => peer.slot)).toEqual([0]);
+  });
+
+  it("ignores credentials that arrive after it gave up, so peers and configuration cannot diverge", async () => {
+    const { bridge, signaling, peerConnections, issues, resolve } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_TWO_PLAYERS));
+    await passDeadline();
+    expect(peerConnections[0]?.config).toEqual({ iceServers: FALLBACK_ICE });
+
+    resolve([{ urls: "turn:late.example.com" }]);
+    await flushFake();
+    // A peer created afterwards must use the same configuration as the peers
+    // already connected, not credentials nothing else is using.
+    signaling.emit("roster", ROSTER_THREE_PLAYERS);
+    await flushFake();
+
+    expect(peerConnections).toHaveLength(2);
+    expect(peerConnections[1]?.config).toEqual({ iceServers: FALLBACK_ICE });
+    expect(issues).toHaveLength(1);
+  });
+
+  it("aborts an in-flight credential request when the player leaves the room", async () => {
+    const { bridge, signaling, requests } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_TWO_PLAYERS));
+    await flushFake();
+
+    bridge.leaveRoom();
+    expect(requests[0]?.signal?.aborted).toBe(true);
+
+    await passDeadline();
+    expect(bridge.status()).toMatchObject({ roomId: null, localSlot: null, peers: [] });
+  });
+
+  it("reports no TURN issue at all when the request settles before the deadline", async () => {
+    const iceServers = [{ urls: "turn:turn.example.com", username: "u", credential: "c" }];
+    const { bridge, signaling, peerConnections, issues, resolve } = makeHungBridge();
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_TWO_PLAYERS));
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS - 1);
+    resolve(iceServers);
+    await flushFake();
+
+    expect(peerConnections[0]?.config).toEqual({ iceServers });
+
+    await passDeadline();
+    expect(issues).toEqual([]);
   });
 });

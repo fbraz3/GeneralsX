@@ -47,7 +47,12 @@
  */
 import type { RosterEntry, ServerMessage, SlotId } from "@generalsx-web/shared/protocol";
 import type { SignalingClient } from "./signaling-client.js";
-import { fetchIceServers as fetchIceServersDefault, type TurnCredentialsResponse } from "./turn-client.js";
+import {
+  DEFAULT_TURN_REQUEST_TIMEOUT_MS,
+  fetchIceServers as fetchIceServersDefault,
+  type TurnCredentialsResponse,
+  type TurnRequestOptions,
+} from "./turn-client.js";
 
 /** The subset of `SignalingClient`'s public API the bridge depends on.
  * Declared via `Pick` so it can never drift from the real class, while
@@ -70,6 +75,19 @@ export const UNASSIGNED_IP = 0;
 const FRAME_HEADER_BYTES = 4;
 /** Comfortably under typical WebRTC DataChannel message-size limits. */
 const MAX_PAYLOAD_BYTES = 16 * 1024;
+/**
+ * How long the bridge waits *past* the deadline it gave the credential
+ * request before giving up on its own.
+ *
+ * The request aborts itself first and reports precisely why, which is the
+ * outcome players and logs should normally see. This backstop exists because
+ * the gate it protects — roster application, peer creation, and every queued
+ * inbound signal — is the bridge's own state, so the documented "a TURN
+ * failure is non-fatal" fallback must not depend on an injected dependency
+ * honouring its `AbortSignal`.
+ */
+const TURN_GATE_GRACE_MS = 1_000;
+
 const DEFAULT_MAX_INBOX_PACKETS_PER_PORT = 256;
 const DEFAULT_MAX_BUFFERED_AMOUNT_BYTES = 64 * 1024;
 /** Exact label the engine's DataChannel transport expects; see
@@ -259,15 +277,31 @@ export interface WebRtcUdpBridgeOptions {
    * Defaults to `[]`. */
   readonly fallbackIceServers?: readonly RTCIceServer[];
   /** Injectable for tests; defaults to the real `fetchIceServers` from
-   * `./turn-client.js`. */
+   * `./turn-client.js`. Receives an `AbortSignal` that fires when the bridge
+   * stops waiting (its deadline, a superseded join, or leaving the room); an
+   * implementation that ignores it delays nothing but its own cleanup, since
+   * the bridge stops waiting either way. */
   readonly fetchIceServers?: (
     workerBaseUrl: string,
     admissionToken: string,
+    options?: TurnRequestOptions,
   ) => Promise<TurnCredentialsResponse>;
+  /** Deadline handed to the credential request, after which the bridge gives
+   * up and falls back to direct/STUN-only ICE. Defaults to
+   * `DEFAULT_TURN_REQUEST_TIMEOUT_MS`; the bridge's own backstop is this plus
+   * {@link TURN_GATE_GRACE_MS}. */
+  readonly turnCredentialsTimeoutMs?: number;
   /** Notified of join-lifecycle problems the launcher UI should surface;
    * see {@link JoinIssue}. */
   readonly onJoinIssue?: (issue: JoinIssue) => void;
 }
+
+/** Result of the TURN credential step, including "we stopped waiting" as a
+ * first-class outcome rather than an exception. */
+type TurnOutcome =
+  | { readonly kind: "credentials"; readonly credentials: TurnCredentialsResponse }
+  | { readonly kind: "failed"; readonly error: unknown }
+  | { readonly kind: "timeout" };
 
 interface PeerRecord {
   readonly slot: SlotId;
@@ -289,7 +323,9 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   private readonly fetchIceServersImpl: (
     workerBaseUrl: string,
     admissionToken: string,
+    options?: TurnRequestOptions,
   ) => Promise<TurnCredentialsResponse>;
+  private readonly turnRequestTimeoutMs: number;
   private readonly onJoinIssue: ((issue: JoinIssue) => void) | undefined;
   private readonly createPeerConnectionImpl: (config: RTCConfiguration) => RTCPeerConnection;
   private readonly maxInboxPacketsPerPort: number;
@@ -320,6 +356,9 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
    * relay-capable. */
   private iceServersReady: Promise<void> = Promise.resolve();
   private releaseIceServersReady: () => void = () => {};
+  /** Aborts the in-flight TURN credential request, so leaving a room or
+   * starting a new join does not leave one running. */
+  private turnFetchAbort: AbortController | null = null;
   /** Roster received before the TURN fetch settled, replayed once it has. */
   private pendingRoster: readonly RosterEntry[] | null = null;
   /** Serializes inbound signal handling behind {@link iceServersReady} while
@@ -338,6 +377,7 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     this.iceServers = this.fallbackIceServers;
     this.turnWorkerBaseUrl = options.turnWorkerBaseUrl;
     this.fetchIceServersImpl = options.fetchIceServers ?? fetchIceServersDefault;
+    this.turnRequestTimeoutMs = options.turnCredentialsTimeoutMs ?? DEFAULT_TURN_REQUEST_TIMEOUT_MS;
     this.onJoinIssue = options.onJoinIssue;
     this.createPeerConnectionImpl = options.createPeerConnection ?? ((config) => new RTCPeerConnection(config));
     this.maxInboxPacketsPerPort = options.maxInboxPacketsPerPort ?? DEFAULT_MAX_INBOX_PACKETS_PER_PORT;
@@ -498,9 +538,22 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     this.pendingRoster = null;
     this.departedSlots.clear();
     this.joinPending = false;
+    // Leaving or re-joining makes this join's credentials worthless, so stop
+    // paying for the request; the generation check already made its result
+    // inert. Cleared by `refreshIceServers`'s own `finally`.
+    this.turnFetchAbort?.abort();
     // Never leave a queued signal or a caller awaiting a gate that will now
     // never open; generation checks keep the released work inert.
     this.releaseIceServersReady();
+  }
+
+  /** Reports the non-fatal TURN fallback exactly once per outcome, in the one
+   * wording the launcher's room panel is documented to surface. */
+  private reportTurnUnavailable(detail: string): void {
+    this.onJoinIssue?.({
+      kind: "turn-unavailable",
+      message: `TURN credentials unavailable; continuing with direct/STUN-only ICE (${detail})`,
+    });
   }
 
   /**
@@ -514,6 +567,21 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
    * direct/STUN-only ICE and reports a `turn-unavailable` {@link JoinIssue}
    * so the launcher shows a visible warning instead of silently degrading
    * connectivity.
+   *
+   * **Always settles within a bounded time** — the request's own deadline,
+   * or {@link TURN_GATE_GRACE_MS} later if it ignores it. The whole join
+   * waits on this: the roster is held back, no peer connection is built, and
+   * every inbound signal is queued behind it. A request that hangs rather
+   * than failing would therefore strand the player in a room they can never
+   * play in *and* never reach the fallback above — the failure mode the
+   * fallback exists for. Giving up is treated exactly like any other TURN
+   * failure, and the in-flight request is aborted rather than left running.
+   *
+   * A response that arrives after the deadline is discarded. Peers have by
+   * then been created with the fallback configuration, and `RTCConfiguration`
+   * is not re-read by an existing connection, so adopting late credentials
+   * would only desynchronise this bridge's idea of ICE from the connections
+   * actually using it.
    */
   private async refreshIceServers(generation: number, admissionToken: string | undefined): Promise<void> {
     this.iceServers = this.fallbackIceServers;
@@ -526,18 +594,45 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
       });
       return;
     }
+
+    const abort = new AbortController();
+    this.turnFetchAbort = abort;
+    const requestTimeoutMs = this.turnRequestTimeoutMs;
+    const gateTimeoutMs = requestTimeoutMs + TURN_GATE_GRACE_MS;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const credentials = await this.fetchIceServersImpl(this.turnWorkerBaseUrl, admissionToken);
-      if (generation !== this.connectionGeneration) return; // superseded
-      this.iceServers = credentials.iceServers;
-    } catch (err) {
-      if (generation !== this.connectionGeneration) return; // superseded
-      this.onJoinIssue?.({
-        kind: "turn-unavailable",
-        message: `TURN credentials unavailable; continuing with direct/STUN-only ICE (${
-          err instanceof Error ? err.message : String(err)
-        })`,
+      const settled = this.fetchIceServersImpl(this.turnWorkerBaseUrl, admissionToken, {
+        signal: abort.signal,
+        timeoutMs: requestTimeoutMs,
+      }).then(
+        (credentials): TurnOutcome => ({ kind: "credentials", credentials }),
+        (error: unknown): TurnOutcome => ({ kind: "failed", error }),
+      );
+      const expired = new Promise<TurnOutcome>((resolve) => {
+        timer = setTimeout(() => {
+          resolve({ kind: "timeout" });
+        }, gateTimeoutMs);
       });
+
+      const outcome = await Promise.race([settled, expired]);
+      if (generation !== this.connectionGeneration) return; // superseded
+      if (outcome.kind === "credentials") {
+        this.iceServers = outcome.credentials.iceServers;
+        return;
+      }
+      if (outcome.kind === "timeout") {
+        // Nothing downstream waits on this, but a socket left open would keep
+        // consuming a connection slot for as long as the peer holds it.
+        abort.abort();
+        this.reportTurnUnavailable(`no response within ${gateTimeoutMs}ms`);
+        return;
+      }
+      this.reportTurnUnavailable(
+        outcome.error instanceof Error ? outcome.error.message : String(outcome.error),
+      );
+    } finally {
+      clearTimeout(timer);
+      if (this.turnFetchAbort === abort) this.turnFetchAbort = null;
     }
   }
 
