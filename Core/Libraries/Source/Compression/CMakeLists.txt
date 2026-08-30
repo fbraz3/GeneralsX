@@ -38,12 +38,20 @@ target_link_libraries(core_compression PUBLIC
     liblzhl
 )
 
-find_package(ZLIB)
-if (ZLIB_FOUND)
-    # Adds zlib from vcpkg
-    target_link_libraries(core_compression PUBLIC ZLIB::ZLIB)
+if(EMSCRIPTEN)
+    # GeneralsX @build Copilot 30/08/2026 Use Emscripten's zlib port because
+    # FreeType already links it and wasm-ld rejects the bundled duplicate.
+    add_library(emscripten_zlib INTERFACE)
+    target_link_options(emscripten_zlib INTERFACE "-sUSE_ZLIB=1")
+    target_link_libraries(core_compression PUBLIC emscripten_zlib)
 else()
-    # Adds zlib from github repository
-    include(${CMAKE_SOURCE_DIR}/cmake/zlib.cmake)
-    target_link_libraries(core_compression PUBLIC libzlib)
+    find_package(ZLIB)
+    if (ZLIB_FOUND)
+        # Adds zlib from vcpkg
+        target_link_libraries(core_compression PUBLIC ZLIB::ZLIB)
+    else()
+        # Adds zlib from github repository
+        include(${CMAKE_SOURCE_DIR}/cmake/zlib.cmake)
+        target_link_libraries(core_compression PUBLIC libzlib)
+    endif()
 endif()

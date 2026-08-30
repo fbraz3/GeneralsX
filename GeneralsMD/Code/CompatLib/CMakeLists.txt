@@ -23,12 +23,18 @@ if(NOT SAGE_USE_GLM)
     message(FATAL_ERROR "GLM is required for d3dx8 compatibility layer")
 endif()
 
-find_package(glm CONFIG REQUIRED)
+# Igroteka @build 05/07/2026 wasm provides glm::glm via cmake/wasm-deps.cmake
+if(NOT TARGET glm::glm)
+    find_package(glm CONFIG REQUIRED)
+endif()
 target_link_libraries(d3dx8 PUBLIC glm::glm)
 
 # GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang - only link on Windows
 if(NOT APPLE)
-    find_package(gli CONFIG REQUIRED)
+    # Igroteka @build 05/07/2026 wasm provides gli via cmake/wasm-deps.cmake
+    if(NOT TARGET gli)
+        find_package(gli CONFIG REQUIRED)
+    endif()
     target_link_libraries(d3dx8 PUBLIC gli)
 endif()
 

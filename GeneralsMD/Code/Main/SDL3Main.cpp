@@ -246,7 +246,11 @@ int main(int argc, char* argv[])
 	fprintf(stderr, " SDL3 + DXVK Build\n");
 	fprintf(stderr, "=================================================\n\n");
 
+	// GeneralsX @bugfix Copilot 30/08/2026 Do not catch Emscripten's internal
+	// main-loop unwind signal or run native shutdown while the browser loop lives.
+#ifndef __EMSCRIPTEN__
 	try {
+#endif
 		// Initialize critical sections (required by game engine)
 		TheAsciiStringCriticalSection = &critSec1;
 		TheUnicodeStringCriticalSection = &critSec2;
@@ -294,14 +298,23 @@ int main(int argc, char* argv[])
 		FilterPipeWireOpenAL();
 
 		// Load Vulkan library for DXVK DirectX8→Vulkan translation
+		// GeneralsX @build meerzulee 06/07/2026 Skip Vulkan in browsers because
+		// d8web renders through WebGL2 on the canvas.
+		// Upstream reference: meerzulee/GeneralsXWeb, commit 4fe8edcc7
+		// https://github.com/meerzulee/GeneralsXWeb/commit/4fe8edcc7
+#ifndef __EMSCRIPTEN__
 		fprintf(stderr, "INFO: Loading Vulkan library...\n");
 		if (!SDL_Vulkan_LoadLibrary(nullptr)) {
 			fprintf(stderr, "WARNING: Failed to load Vulkan: %s\n", SDL_GetError());
 			fprintf(stderr, "WARNING: Continuing without Vulkan (may use software rendering)\n");
 		}
+#endif
 
 		// Create SDL3 window with Vulkan support
 		fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
+#ifdef __EMSCRIPTEN__
+		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;  // wasm: plain window over #canvas, no Vulkan
+#else
 		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
 #ifdef __APPLE__
 		// GeneralsX @bugfix macOS HiDPI: request a native-resolution (Retina) Metal drawable so the
@@ -309,6 +322,7 @@ int main(int argc, char* argv[])
 		// Requires NSHighResolutionCapable=true in the app bundle, the DXVK SDL3 WSI querying pixels
 		// (SDL_GetWindowSizeInPixels), and the density-aware pillarbox/mouse mapping in DX8Wrapper.
 		windowFlags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
+#endif
 #endif
 		TheSDL3Window = SDL_CreateWindow(
 			"Command & Conquer Generals: Zero Hour",
@@ -351,6 +365,7 @@ int main(int argc, char* argv[])
 
 		fprintf(stderr, "INFO: GameMain() returned with code %d\n", exitcode);
 
+#ifndef __EMSCRIPTEN__
 	} catch (const std::exception& e) {
 		fprintf(stderr, "FATAL: Unhandled exception in main(): %s\n", e.what());
 		exitcode = 1;
@@ -358,6 +373,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "FATAL: Unknown exception in main()\n");
 		exitcode = 1;
 	}
+#endif
 
 	// Cleanup SDL3 resources
 	if (TheSDL3Window) {

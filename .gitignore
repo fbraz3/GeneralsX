@@ -93,3 +93,4 @@ logs_*.zip
 *.log
 references/GameClient/
 references/GameServer/
+.gstack/

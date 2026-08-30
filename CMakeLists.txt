@@ -52,6 +52,11 @@ include(cmake/debug_strip.cmake)
 
 include(FetchContent)
 
+# GeneralsX @build meerzulee 05/07/2026 Load browser dependencies only for Emscripten.
+# Upstream reference: meerzulee/GeneralsXWeb, commit e44c34794
+# https://github.com/meerzulee/GeneralsXWeb/commit/e44c34794
+include(cmake/wasm-deps.cmake)
+
 # MinGW-w64 specific configuration
 if(MINGW)
     include(cmake/mingw.cmake)

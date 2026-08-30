@@ -483,6 +483,10 @@ static DynamicVectorClass<RenderDeviceDescClass>	_RenderDeviceDescriptionTable;
 
 typedef IDirect3D8* (WINAPI *Direct3DCreate8Type) (UINT SDKVersion);
 Direct3DCreate8Type	Direct3DCreate8Ptr = nullptr;
+#ifdef __EMSCRIPTEN__
+// Igroteka wasm: statically linked d8web bridge factory (wasm/d8web_bridge)
+extern "C" IDirect3D8* WINAPI Igroteka_Direct3DCreate8(UINT SDKVersion);
+#endif
 HINSTANCE D3D8Lib = nullptr;
 
 DX8_CleanupHook	 *DX8Wrapper::m_pCleanupHook=nullptr;
@@ -634,7 +638,14 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 
 	if (!lite) {
 		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO/DYLIB loading (Phase 5: macOS)
-#ifdef _WIN32
+#ifdef __EMSCRIPTEN__
+		// Igroteka @build 06/07/2026 wasm: no dynamic linking in the browser. The
+		// d8web bridge (D3D8→WebGL2) is statically linked; use its factory directly
+		// (declared at file scope above).
+		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - using statically linked d8web bridge\n");
+		D3D8Lib = (HMODULE)1;  // sentinel: never dereferenced, only null-checked/freed
+		Direct3DCreate8Ptr = Igroteka_Direct3DCreate8;
+#elif defined(_WIN32)
 		D3D8Lib = LoadLibrary("D3D8.DLL");
 #elif defined(__APPLE__)
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.dylib (macOS)...\n");
@@ -659,8 +670,10 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 			return false;	// Return false at this point if init failed
 		}
 
+#ifndef __EMSCRIPTEN__
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Getting Direct3DCreate8 function pointer...\n");
 		Direct3DCreate8Ptr = (Direct3DCreate8Type) GetProcAddress(D3D8Lib, "Direct3DCreate8");
+#endif
 		if (Direct3DCreate8Ptr == nullptr) {
 			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to get Direct3DCreate8 function\n");
 			return false;
@@ -725,7 +738,9 @@ void DX8Wrapper::Shutdown()
 	}
 
 	if (D3D8Lib) {
-		FreeLibrary(D3D8Lib);
+#ifndef __EMSCRIPTEN__
+		FreeLibrary(D3D8Lib);  // wasm: D3D8Lib is a sentinel, nothing was dlopen'd
+#endif
 		D3D8Lib = nullptr;
 	}
 

@@ -72,6 +72,7 @@ Because these projects serve different but complementary goals, not every change
 
 - [ Linux Build Guide](docs/BUILD/LINUX.md)
 - [ macOS Build Guide](docs/BUILD/MACOS.md)
+- [ WebAssembly Build Guide](docs/BUILD/WEBASSEMBLY.md) (experimental)
 
 ###  Known Issues & Limitations
 

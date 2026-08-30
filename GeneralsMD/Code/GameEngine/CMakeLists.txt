@@ -1177,6 +1177,12 @@ target_link_libraries(z_gameengine PRIVATE
     zi_always
 )
 
+if(SAGE_USE_SDL3)
+    # GeneralsX @build Copilot 30/08/2026 Provide SDL platform telemetry used
+    # by deep CRC logging to the game-engine target on all SDL platforms.
+    target_link_libraries(z_gameengine PRIVATE sdl3lib)
+endif()
+
 # UpdateChecker is now in Core/GameEngine (shared between Generals and GeneralsMD).
 
 target_link_libraries(z_gameengine PUBLIC

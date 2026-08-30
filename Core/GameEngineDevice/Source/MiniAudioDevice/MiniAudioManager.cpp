@@ -63,11 +63,15 @@
 #include "GameLogic/FPUControl.h"
 
 #include "Common/file.h"
+#ifdef RTS_HAS_FFMPEG
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
+#endif
 
+#ifdef RTS_HAS_FFMPEG
 extern "C" {
 #include <libavcodec/avcodec.h>
 }
+#endif
 
 #ifdef _INTERNAL
 //#pragma optimize("", off)
@@ -349,6 +353,13 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 		break;
 	}
 
+#ifndef RTS_HAS_FFMPEG
+	// Igroteka @build 05/07/2026 wasm: no FFmpeg yet — audio decode disabled,
+	// sounds are skipped gracefully. Revisit with an FFmpeg-wasm or stb_vorbis path.
+	DEBUG_LOG(("MiniAudio: FFmpeg disabled, skipping: %s\n", fileToPlay.str()));
+	releasePlayingAudio(audio);
+	return;
+#else
 	// Use FFmpeg to decode the file into PCM, then feed to miniaudio.
 	// This avoids miniaudio's built-in decoders which hang on MP3 via VFS.
 	File *file = TheFileSystem->openFile(fileToPlay.str());
@@ -506,6 +517,7 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 	}
 
 	m_playingSounds.push_back(audio);
+#endif // RTS_HAS_FFMPEG
 }
 
 //-------------------------------------------------------------------------------------------------

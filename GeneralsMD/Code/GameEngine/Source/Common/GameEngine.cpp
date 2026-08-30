@@ -631,8 +631,11 @@ void GameEngine::init()
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 		initSubsystem(TheAudio,"TheAudio", createAudioManager(TheGlobalData->m_headless), nullptr);
+#ifndef __EMSCRIPTEN__
+		// (retail CD-presence heuristic — on wasm music archives are optional)
 		if (!TheAudio->isMusicAlreadyLoaded())
 			setQuitting(TRUE);
+#endif
 
 #if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
 		TheNameKeyGenerator->syncNameKeyID();
@@ -1043,8 +1046,49 @@ extern HWND ApplicationHWnd;
 /** -----------------------------------------------------------------------------------------------
  * The "main loop" of the game engine. It will not return until the game exits.
  */
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+// Igroteka @build 06/07/2026 wasm: the browser owns the event loop. Each
+// requestAnimationFrame tick runs one engine frame; a synchronous while-loop
+// would freeze the tab. Mirrors the essentials of the native loop body below.
+static void igrotekaFrameTick(void* arg)
+{
+	GameEngine* engine = static_cast<GameEngine*>(arg);
+	if (engine->getQuitting())
+	{
+		fprintf(stderr, "INFO: igrotekaFrameTick - quitting, cancelling main loop\n");
+		emscripten_cancel_main_loop();
+		return;
+	}
+	try
+	{
+		engine->update();
+	}
+	catch (INIException e)
+	{
+		fprintf(stderr, "FATAL: INIException in GameEngine::update: %s\n",
+		        e.mFailureMessage ? e.mFailureMessage : "(no message)");
+		engine->setQuitting(TRUE);
+	}
+	catch (...)
+	{
+		fprintf(stderr, "FATAL: uncaught exception in GameEngine::update\n");
+		engine->setQuitting(TRUE);
+	}
+	if (TheFramePacer)
+		TheFramePacer->update();
+}
+#endif
+
 void GameEngine::execute()
 {
+#ifdef __EMSCRIPTEN__
+	// Hands control to the browser; ticks run via requestAnimationFrame.
+	// simulate_infinite_loop=1 unwinds out of main() without returning.
+	emscripten_set_main_loop_arg(igrotekaFrameTick, this, 0, 1);
+	return;
+#endif
+
 #if defined(RTS_DEBUG)
 	DWORD startTime = timeGetTime() / 1000;
 #endif

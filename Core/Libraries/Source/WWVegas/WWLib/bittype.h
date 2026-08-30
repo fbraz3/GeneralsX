@@ -48,7 +48,7 @@ typedef signed short	sint16;
 
 // TheSuperHackers @build 10/02/2026 BenderAI  
 // uint32/sint32: Use fixed-width types on 64-bit platforms (long is 64-bit on Linux/macOS x64)
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
     typedef uint32_t uint32;
     typedef int32_t  sint32;
 #else
@@ -75,7 +75,7 @@ typedef double				float64;
 
 // TheSuperHackers @build 09/02/2025 Bender
 // Win32 types: use uint32_t on Linux 64-bit to match DXVK, unsigned long on Windows 32-bit
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
     // Linux/macOS: long is 64-bit on x86_64, use uint32_t to match Win32 behavior
     typedef uint32_t DWORD;
     typedef uint32_t ULONG;

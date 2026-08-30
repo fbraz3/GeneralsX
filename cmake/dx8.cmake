@@ -28,6 +28,20 @@ if(SAGE_USE_DX8)
   FetchContent_MakeAvailable(dx8)
   message(STATUS "Using DirectX 8 SDK (Windows native)")
 
+elseif(EMSCRIPTEN)
+  # Igroteka @build 05/07/2026 - WASM browser port
+  # Fetch the DXVK native tarball for its d3d8/windows compat HEADERS only.
+  # The prebuilt .so binaries are unused; the D3D8 implementation on wasm is
+  # d8web (D3D8 to WebGL2 translation layer, linked by the game target).
+  FetchContent_Declare(
+    dxvk
+    URL        https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-native-2.6-steamrt-sniper.tar.gz
+  )
+  FetchContent_MakeAvailable(dxvk)
+  set(DXVK_INCLUDE_DIR "${dxvk_SOURCE_DIR}/include/native" CACHE PATH "DXVK native headers")
+  message(STATUS "Using DXVK headers for wasm (implementation: d8web)")
+  message(STATUS "DXVK source directory: ${dxvk_SOURCE_DIR}")
+
 elseif(APPLE AND SAGE_USE_MOLTENVK)
   # macOS: Build DXVK 2.6 from source using Meson + MoltenVK
   # GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port (Session 61)

@@ -1100,6 +1100,12 @@ target_link_libraries(g_gameengine PRIVATE
     gi_always
 )
 
+if(SAGE_USE_SDL3)
+    # GeneralsX @build Copilot 30/08/2026 Provide SDL platform telemetry used
+    # by deep CRC logging to the game-engine target on all SDL platforms.
+    target_link_libraries(g_gameengine PRIVATE sdl3lib)
+endif()
+
 target_link_libraries(g_gameengine PUBLIC
     corei_gameengine_public
     g_wwvegas
