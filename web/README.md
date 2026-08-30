@@ -78,6 +78,12 @@ npm run dev -w @generalsx-web/worker     # wrangler dev on :8787
   room create/join panel, wired together in `src/main.ts`. Instantiating the
   actual Emscripten engine module is out of scope for this scaffold; the
   seam is `startEngineBoot()` in `src/main.ts`.
+- The generated Emscripten module exposes `Module.generalsxAudio`. Launcher
+  integration should call `bindUserGesture(canvas)` or invoke `unlock()`
+  directly from a click/pointer handler, then use `mountArchives()` to
+  attach the base-game and Zero Hour audio BIG files after engine boot.
+  The bridge resumes interrupted WebAudio contexts and requests MiniAudio
+  device recovery after browser lifecycle or output-device changes.
 - `src/net/` — `SignalingClient` (WebSocket wrapper for the room protocol)
   and `fetchIceServers` (calls the Worker's `/turn-credentials`).
 - `scripts/write-headers.ts` — post-build step that renders

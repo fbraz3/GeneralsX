@@ -66,6 +66,10 @@
 
 #include <vector>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #ifdef RTS_HAS_FFMPEG
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
 #endif
@@ -90,15 +94,48 @@ static ma_result vfsFileRead(ma_vfs *pVFS, ma_vfs_file file, void *pBuffer, size
 static ma_result vfsFileTell(ma_vfs *pVFS, ma_vfs_file file, ma_int64 *pCursor);
 static ma_result vfsFileSeek(ma_vfs *pVFS, ma_vfs_file file, ma_int64 offset, ma_seek_origin origin);
 
+#ifdef __EMSCRIPTEN__
+// GeneralsX @feature Copilot 30/08/2026 Defer WebAudio recovery notifications to the game thread.
+// Upstream references: meerzulee/GeneralsXWeb commits d10226a87, a34e2b088,
+// 19ff0d706, 0f50bbad0, ea3434263, b4d487cca, 2b2f3b636, and 4e5e16abf.
+static void miniAudioDeviceNotification(const ma_device_notification *notification)
+{
+	if (notification == NULL || TheAudio == NULL) {
+		return;
+	}
+
+	switch (notification->type) {
+	case ma_device_notification_type_stopped:
+	case ma_device_notification_type_rerouted:
+	case ma_device_notification_type_interruption_ended:
+		static_cast<MiniAudioManager *>(TheAudio)->requestBrowserDeviceRecovery();
+		break;
+	default:
+		break;
+	}
+}
+#endif
+
 //-------------------------------------------------------------------------------------------------
 MiniAudioManager::MiniAudioManager() :
+	m_playbackDevices(NULL),
 	m_playbackDeviceCount(0),
 	m_selectedPlaybackDevice(PROVIDER_ERROR),
 	m_selectedSpeakerType(0),
 	m_lastSelectedPlaybackDevice(PROVIDER_ERROR),
 	m_binkHandle(NULL),
 	m_pref3DProvider(AsciiString::TheEmptyString),
-	m_prefSpeaker(AsciiString::TheEmptyString)
+	m_prefSpeaker(AsciiString::TheEmptyString),
+	m_resourceManagerInitialized(false),
+	m_logInitialized(false),
+	m_contextInitialized(false),
+	m_engineInitialized(false),
+	m_soundGroupsInitialized(false)
+#ifdef __EMSCRIPTEN__
+	, m_browserDeviceRecoveryRequested(false),
+	m_browserDeviceRebuildRequested(false),
+	m_browserDeviceClosing(false)
+#endif
 {
 }
 
@@ -230,7 +267,13 @@ void MiniAudioManager::update()
 {
 	ScopedFPUGuard fpuGuard;
 
+#ifdef __EMSCRIPTEN__
+	serviceBrowserDeviceRecovery();
+#endif
 	AudioManager::update();
+	if (!m_engineInitialized) {
+		return;
+	}
 	setDeviceListenerPosition();
 	processRequestList();
 	processPlayingList();
@@ -243,6 +286,7 @@ void MiniAudioManager::stopAudio(AudioAffect which)
 {
 	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
 	ScopedFPUGuard fpuGuard;
+	if (!m_soundGroupsInitialized) return;
 	if (BitIsSet(which, AudioAffect_Sound))
 		ma_sound_group_stop(&m_soundGroup);
 	if (BitIsSet(which, AudioAffect_Sound3D))
@@ -258,6 +302,7 @@ void MiniAudioManager::pauseAudio(AudioAffect which)
 {
 	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
 	ScopedFPUGuard fpuGuard;
+	if (!m_soundGroupsInitialized) return;
 	if (BitIsSet(which, AudioAffect_Sound))
 		ma_sound_group_stop(&m_soundGroup);
 	if (BitIsSet(which, AudioAffect_Sound3D))
@@ -273,6 +318,7 @@ void MiniAudioManager::resumeAudio(AudioAffect which)
 {
 	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
 	ScopedFPUGuard fpuGuard;
+	if (!m_soundGroupsInitialized) return;
 	if (BitIsSet(which, AudioAffect_Sound))
 		ma_sound_group_start(&m_soundGroup);
 	if (BitIsSet(which, AudioAffect_Sound3D))
@@ -301,6 +347,11 @@ void MiniAudioManager::stopAllAmbientsBy(Drawable *draw)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::playAudioEvent(AudioRequest *req)
 {
+	// GeneralsX @bugfix Copilot 30/08/2026 Do not touch MiniAudio objects while browser device recovery is rebuilding them.
+	if (!m_engineInitialized) {
+		return;
+	}
+
 	AudioEventRTS *event = req->m_pendingEvent.Peek();
 	if (!event) {
 		return;
@@ -840,6 +891,10 @@ void MiniAudioManager::openDevice(void)
 	if (!TheGlobalData->m_audioOn) {
 		return;
 	}
+	// GeneralsX @bugfix Copilot 30/08/2026 Safely unwind partial initialization before opening or recovering a device.
+	if (m_resourceManagerInitialized || m_logInitialized || m_contextInitialized || m_engineInitialized) {
+		closeDevice();
+	}
 
 	ma_result result;
 	ma_resource_manager_config resourceManagerConfig;
@@ -867,16 +922,23 @@ void MiniAudioManager::openDevice(void)
 	result = ma_resource_manager_init(&resourceManagerConfig, &m_resourceManager);
 	if (result != MA_SUCCESS) {
 		fprintf(stderr, "AUDIO: MiniAudio resource manager init failed: %d\n", result);
+#ifndef __EMSCRIPTEN__
 		setOn(false, AudioAffect_All);
+#endif
 		return;
 	}
+	m_resourceManagerInitialized = true;
 
 	result = ma_log_init(NULL, &m_log);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("MiniAudio: Failed to initialize log: %d\n", result));
+		fprintf(stderr, "AUDIO: MiniAudio log init failed: %d\n", result);
+		closeDevice();
+#ifndef __EMSCRIPTEN__
 		setOn(false, AudioAffect_All);
+#endif
 		return;
 	}
+	m_logInitialized = true;
 
 	auto on_log = [](void *pUserData, ma_uint32 logLevel, const char *message) {
 		DEBUG_LOG(("miniaudio [%s]: %s", ma_log_level_to_string(logLevel), message));
@@ -889,32 +951,48 @@ void MiniAudioManager::openDevice(void)
 	result = ma_context_init(NULL, 0, &contextConfig, &m_context);
 	if (result != MA_SUCCESS) {
 		fprintf(stderr, "AUDIO: MiniAudio context init failed: %d\n", result);
+		closeDevice();
+#ifndef __EMSCRIPTEN__
 		setOn(false, AudioAffect_All);
+#endif
 		return;
 	}
+	m_contextInitialized = true;
 
 	result = ma_context_get_devices(&m_context, &m_playbackDevices, &m_playbackDeviceCount, NULL, NULL);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("MiniAudio: Failed to enumerate devices: %d\n", result));
-		ma_context_uninit(&m_context);
+		fprintf(stderr, "AUDIO: MiniAudio device enumeration failed: %d\n", result);
+		closeDevice();
+#ifndef __EMSCRIPTEN__
 		setOn(false, AudioAffect_All);
+#endif
 		return;
 	}
 
 	engineConfig = ma_engine_config_init();
 	engineConfig.pResourceManager = &m_resourceManager;
+#ifdef __EMSCRIPTEN__
+	// GeneralsX @bugfix Copilot 30/08/2026 Reuse the enumerated WebAudio context and observe device interruptions.
+	engineConfig.pContext = &m_context;
+	engineConfig.notificationCallback = miniAudioDeviceNotification;
+#endif
 
 	result = ma_engine_init(&engineConfig, &m_engine);
 	if (result != MA_SUCCESS) {
 		fprintf(stderr, "AUDIO: MiniAudio engine init failed: %d\n", result);
+		closeDevice();
+#ifndef __EMSCRIPTEN__
 		setOn(false, AudioAffect_All);
+#endif
 		return;
 	}
+	m_engineInitialized = true;
 
 	ma_sound_group_init(&m_engine, 0, NULL, &m_musicGroup);
 	ma_sound_group_init(&m_engine, 0, NULL, &m_soundGroup);
 	ma_sound_group_init(&m_engine, 0, NULL, &m_sound3DGroup);
 	ma_sound_group_init(&m_engine, 0, NULL, &m_speechGroup);
+	m_soundGroupsInitialized = true;
 
 	fprintf(stderr, "AUDIO: MiniAudio backend loaded - version %s, device: %s, playback devices: %d\n",
 		ma_version_string(),
@@ -929,18 +1007,141 @@ void MiniAudioManager::closeDevice(void)
 {
 	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
 	ScopedFPUGuard fpuGuard;
+	// GeneralsX @bugfix Copilot 30/08/2026 Uninitialize only MiniAudio objects that completed initialization.
+#ifdef __EMSCRIPTEN__
+	m_browserDeviceClosing.store(true);
+#endif
 	// Stop all audio first to prevent use-after-free in audio callbacks
 	stopAllAudioImmediately();
 
-	ma_sound_group_uninit(&m_speechGroup);
-	ma_sound_group_uninit(&m_sound3DGroup);
-	ma_sound_group_uninit(&m_soundGroup);
-	ma_sound_group_uninit(&m_musicGroup);
-	ma_engine_uninit(&m_engine);
-	ma_resource_manager_uninit(&m_resourceManager);
-	ma_context_uninit(&m_context);
-	ma_log_uninit(&m_log);
+	if (m_soundGroupsInitialized) {
+		ma_sound_group_uninit(&m_speechGroup);
+		ma_sound_group_uninit(&m_sound3DGroup);
+		ma_sound_group_uninit(&m_soundGroup);
+		ma_sound_group_uninit(&m_musicGroup);
+		m_soundGroupsInitialized = false;
+	}
+	if (m_engineInitialized) {
+		ma_engine_uninit(&m_engine);
+		m_engineInitialized = false;
+	}
+	if (m_contextInitialized) {
+		ma_context_uninit(&m_context);
+		m_contextInitialized = false;
+		m_playbackDevices = NULL;
+		m_playbackDeviceCount = 0;
+	}
+	if (m_logInitialized) {
+		ma_log_uninit(&m_log);
+		m_logInitialized = false;
+	}
+	if (m_resourceManagerInitialized) {
+		ma_resource_manager_uninit(&m_resourceManager);
+		m_resourceManagerInitialized = false;
+	}
+#ifdef __EMSCRIPTEN__
+	m_browserDeviceClosing.store(false);
+#endif
 }
+
+#ifdef __EMSCRIPTEN__
+//-------------------------------------------------------------------------------------------------
+Bool MiniAudioManager::resumeBrowserDevice(void)
+{
+	ScopedFPUGuard fpuGuard;
+	if (!m_engineInitialized) {
+		return false;
+	}
+
+	ma_result result = ma_engine_start(&m_engine);
+	if (result == MA_SUCCESS) {
+		return true;
+	}
+
+	fprintf(stderr, "AUDIO: WebAudio device resume failed: %d\n", result);
+	requestBrowserDeviceRecovery(true);
+	return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+void MiniAudioManager::requestBrowserDeviceRecovery(Bool rebuildDevice)
+{
+	if (!m_browserDeviceClosing.load()) {
+		m_browserDeviceRecoveryRequested.store(true);
+		if (rebuildDevice) {
+			m_browserDeviceRebuildRequested.store(true);
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+Int MiniAudioManager::getBrowserDeviceState(void) const
+{
+	if (!m_engineInitialized) {
+		return 0;
+	}
+
+	const ma_device *device = ma_engine_get_device(const_cast<ma_engine *>(&m_engine));
+	if (device == NULL) {
+		return 0;
+	}
+
+	ma_device_state state = ma_device_get_state(device);
+	if (state == ma_device_state_started) {
+		return 2;
+	}
+	if (state == ma_device_state_stopped) {
+		return 1;
+	}
+	return 3;
+}
+
+//-------------------------------------------------------------------------------------------------
+void MiniAudioManager::serviceBrowserDeviceRecovery(void)
+{
+	if (!m_browserDeviceRecoveryRequested.exchange(false)) {
+		return;
+	}
+
+	Bool rebuildDevice = m_browserDeviceRebuildRequested.exchange(false);
+	if (!rebuildDevice && m_engineInitialized && ma_engine_start(&m_engine) == MA_SUCCESS) {
+		return;
+	}
+
+	Bool restartMusic = isMusicPlaying();
+	fprintf(stderr, "AUDIO: rebuilding WebAudio device after interruption\n");
+	closeDevice();
+	openDevice();
+	if (m_engineInitialized && restartMusic && !isMusicPlaying()) {
+		nextMusicTrack();
+	}
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE int generalsx_audio_resume_device(void)
+{
+	if (TheAudio == NULL) {
+		return 0;
+	}
+	return static_cast<MiniAudioManager *>(TheAudio)->resumeBrowserDevice() ? 1 : 0;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE int generalsx_audio_recover_device(void)
+{
+	if (TheAudio == NULL) {
+		return 0;
+	}
+	static_cast<MiniAudioManager *>(TheAudio)->requestBrowserDeviceRecovery(true);
+	return 1;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE int generalsx_audio_device_state(void)
+{
+	if (TheAudio == NULL) {
+		return 0;
+	}
+	return static_cast<MiniAudioManager *>(TheAudio)->getBrowserDeviceState();
+}
+#endif
 
 //-------------------------------------------------------------------------------------------------
 Bool MiniAudioManager::isCurrentlyPlaying(AudioHandle handle)

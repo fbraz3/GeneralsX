@@ -8,6 +8,7 @@
                  font: 12px/1.45 ui-monospace, monospace; }
     #status { position: sticky; top: 0; background: #1a1c26; padding: 8px 12px;
               border-bottom: 1px solid #2a2d3a; font-weight: 600; z-index: 2; }
+    #enable-audio { margin-left: 12px; }
     #stage { display: flex; justify-content: center; padding: 10px; background: #000; }
     canvas { width: 1024px; height: 768px; background: #000; border: 1px solid #2a2d3a; }
     #log { height: 260px; overflow-y: auto; padding: 10px 12px; white-space: pre-wrap;
@@ -15,11 +16,14 @@
   </style>
 </head>
 <body>
-  <div id="status">GeneralsX: fetching game data…</div>
+  <div id="status">GeneralsX: fetching game data…
+    <button id="enable-audio" type="button" disabled>Enable audio</button>
+  </div>
   <div id="stage"><canvas id="canvas" width="1024" height="768" oncontextmenu="event.preventDefault()"></canvas></div>
   <div id="log"></div>
   <script>
     var statusEl = document.getElementById('status');
+    var audioButton = document.getElementById('enable-audio');
     var logEl = document.getElementById('log');
     var lineCount = 0;
     var pinned = true;
@@ -41,6 +45,13 @@
     });
     window.addEventListener('unhandledrejection', function(e) {
       log('REJECTION: ' + e.reason + '\n' + (e.reason && e.reason.stack ? e.reason.stack : ''));
+    });
+    audioButton.addEventListener('click', function() {
+      if (!Module.generalsxAudio) return;
+      Module.generalsxAudio.unlock().then(function(state) {
+        audioButton.textContent = state.running ? 'Audio enabled' : 'Retry audio';
+        log('[audio] ' + JSON.stringify(state));
+      });
     });
 
     // WebRTC multiplayer: route the UDP-over-DataChannel bridge's logs into this
@@ -95,6 +106,27 @@
       print: log,
       printErr: log,
       onAbort: function(w) { log('ABORT: ' + w); },
+      onRuntimeInitialized: function() {
+        audioButton.disabled = false;
+        // Audio archives are intentionally outside the boot dependency: the
+        // menu can start while these large files download. Worker-hosted
+        // launchers mount Blobs directly; the main-thread fallback transfers
+        // each fetched buffer into MEMFS without an additional copy.
+        Module.generalsxAudio.mountArchives({
+          zeroHour: [
+            { name: 'AudioZH.big', url: '/gamedata/AudioZH.big' },
+            { name: 'AudioEnglishZH.big', url: '/gamedata/AudioEnglishZH.big' }
+          ],
+          generals: [
+            { name: 'Audio.big', url: '/gamedata/base-Audio.big' },
+            { name: 'AudioEnglish.big', url: '/gamedata/base-AudioEnglish.big' }
+          ]
+        }).then(function() {
+          log('[audio] archives mounted');
+        }).catch(function(error) {
+          log('[audio stage failed] ' + error);
+        });
+      },
       preRun: [function() {
         ENV.CNC_GENERALS_ZH_PATH = '/game';
         ENV.CNC_GENERALS_PATH = '/game-base';  // base-game archives (ZH mounts first, wins conflicts)
@@ -148,7 +180,7 @@
             if (!r.ok) throw new Error(name + ': HTTP ' + r.status);
             return r.arrayBuffer();
           }).then(function(buf) {
-            FS.writeFile(dest, new Uint8Array(buf));
+            FS.writeFile(dest, new Uint8Array(buf), { canOwn: true });
             log('[staged] ' + name + ' → ' + dest + ' (' + (buf.byteLength / 1048576).toFixed(1) + ' MB)');
             if (++done === files.length) removeRunDependency('gamedata');
           }).catch(function(err) {

@@ -27,6 +27,7 @@
 #include "Common/AsciiString.h"
 #include "Common/AudioEventRTS.h"
 #include "Common/GameAudio.h"
+#include <atomic>
 #include <miniaudio.h>
 
 enum { MAXPROVIDERS = 64 };
@@ -116,6 +117,13 @@ public:
 
 	virtual void friend_forcePlayAudioEventRTS(const AudioEventRTS *eventToPlay);
 
+#ifdef __EMSCRIPTEN__
+	// GeneralsX @feature Copilot 30/08/2026 Expose browser device lifecycle controls to the launcher bridge.
+	Bool resumeBrowserDevice(void);
+	void requestBrowserDeviceRecovery(Bool rebuildDevice = false);
+	Int getBrowserDeviceState(void) const;
+#endif
+
 	virtual UnsignedInt getNum2DSamples(void) const;
 	virtual UnsignedInt getNum3DSamples(void) const;
 	virtual UnsignedInt getNumStreams(void) const;
@@ -190,6 +198,10 @@ protected:
 
 	void stopAllSpeech(void);
 
+#ifdef __EMSCRIPTEN__
+	void serviceBrowserDeviceRecovery(void);
+#endif
+
 protected:
 	ma_device_info* m_playbackDevices;
 	ma_uint32 m_playbackDeviceCount;
@@ -208,6 +220,16 @@ protected:
 	ma_sound_group m_soundGroup;
 	ma_sound_group m_sound3DGroup;
 	ma_sound_group m_speechGroup;
+	Bool m_resourceManagerInitialized;
+	Bool m_logInitialized;
+	Bool m_contextInitialized;
+	Bool m_engineInitialized;
+	Bool m_soundGroupsInitialized;
+#ifdef __EMSCRIPTEN__
+	std::atomic_bool m_browserDeviceRecoveryRequested;
+	std::atomic_bool m_browserDeviceRebuildRequested;
+	std::atomic_bool m_browserDeviceClosing;
+#endif
 
 	// Currently Playing stuff. Useful if we have to preempt it.
 	// This should rarely if ever happen, as we mirror this in Sounds, and attempt to

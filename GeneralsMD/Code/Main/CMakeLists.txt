@@ -108,4 +108,11 @@ if(EMSCRIPTEN)
     target_include_directories(d8web_bridge PRIVATE
         ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WWLib)
     target_link_libraries(z_generals PRIVATE d8web_bridge d8web)
+
+    # GeneralsX @build Copilot 30/08/2026 Publish the launcher audio bridge and optional zero-copy worker archive mounts.
+    # Upstream reference: meerzulee/GeneralsXWeb audio recovery series.
+    target_link_options(z_generals PRIVATE
+        "SHELL:--pre-js ${CMAKE_SOURCE_DIR}/wasm/browser_audio.js"
+        "-lworkerfs.js"
+    )
 endif()
