@@ -13,9 +13,15 @@ compatibility_flags = ["nodejs_compat"]
 # surviving as undeclared configuration. Secrets are a separate store and are
 # never deleted by a deploy, so TURN_KEY_ID / TURN_KEY_API_TOKEN persist.
 #
-# This says nothing about concurrent deploys. Refusing to publish over a
-# version someone else uploaded is what `wrangler deploy --strict` does, and
-# deploy-worker.sh always passes it.
+# This is about var *ownership* and says nothing about concurrent deploys.
+# Neither does `wrangler deploy --strict`, which deploy-worker.sh also passes:
+# strict mode refuses an upload when the live Worker's *settings* have drifted
+# from this file (a dashboard edit), not when another operator is publishing a
+# different script version at the same moment. There is no compare-and-swap on
+# the deployed version in the Wrangler API. deploy-worker.sh narrows that
+# window with an explicit precondition (GENERALSX_EXPECTED_RELEASE_ID) and CI
+# serializes the workflow, but two operators deploying by hand at the same time
+# is still last-write-wins — see packages/deploy/README.md.
 keep_vars = false
 
 # --- Custom domain -------------------------------------------------------
@@ -33,9 +39,24 @@ custom_domain = true
 name = "ROOM_DO"
 class_name = "RoomDurableObject"
 
+# --- Durable Objects: one global TURN issuance ceiling ---------------------
+# Deliberately a singleton (`idFromName("turn-edge-quota-v1")`). Room ids are
+# attacker-chosen and rooms are free to create, so a room-keyed limit only
+# bounds what one room costs. This object counts what an attacker cannot
+# re-key — the edge-supplied client address, plus a deployment-wide ceiling —
+# and every /turn-credentials request passes through it before any room is
+# consulted. It holds no storage; see src/durable-objects/turn-quota-do.ts.
+[[durable_objects.bindings]]
+name = "TURN_QUOTA_DO"
+class_name = "TurnQuotaDurableObject"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["RoomDurableObject"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["TurnQuotaDurableObject"]
 
 # --- R2: placeholder binding for authorized asset delivery ----------------
 # The signaling worker itself never serves retail assets, and no asset bytes

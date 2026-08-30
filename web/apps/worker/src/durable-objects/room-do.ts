@@ -10,6 +10,11 @@
  * sitting in this seat right now?" and enforce a rate limit that cannot be
  * bypassed by spreading requests across Worker isolates or colos. See
  * `../room/admission.ts` for the token design.
+ *
+ * Its authority stops at its own room. Because creating a room is free, the
+ * room-keyed limits here cannot bound what one *client* costs across many
+ * rooms; the room-independent ceiling in `../turn/edge-quota.ts` does that,
+ * and both are enforced on every credential request.
  */
 /// <reference types="@cloudflare/workers-types" />
 import {
@@ -21,11 +26,14 @@ import {
 import {
   ADMISSION_TOKEN_TTL_SECONDS,
   createAdmissionId,
-  createRoomKeyBytes,
-  importRoomKey,
   signAdmissionToken,
   verifyAdmissionToken,
 } from "../room/admission.js";
+import {
+  destroyRoomAdmissionKey,
+  ensureRoomAdmissionKey,
+  loadRoomAdmissionKey,
+} from "../room/admission-key-store.js";
 import { TURN_GRANT_PATH, type TurnGrantResult } from "../room/turn-grant.js";
 import {
   consumeTurnGrant,
@@ -36,6 +44,7 @@ import {
 import {
   buildRoster,
   createRoomState,
+  isRoomEmpty,
   isSlotHeldBy,
   joinRoom,
   leaveRoom,
@@ -48,8 +57,9 @@ interface Connection {
   slot: number | null;
 }
 
-/** Durable Object storage key holding this room's raw HMAC key bytes. */
-const ROOM_KEY_STORAGE_KEY = "turn-admission-key-v1";
+/** Shared refusal for every "this room holds nobody" case, so a caller cannot
+ * distinguish an unknown room from an empty one. */
+const NO_ACTIVE_MEMBERS = "room has no active members; join the room before requesting TURN credentials";
 
 export interface RoomDurableObjectEnv {
   readonly ALLOWED_ORIGINS?: string;
@@ -59,8 +69,9 @@ export class RoomDurableObject implements DurableObject {
   private room: RoomState | null = null;
   private readonly connections = new Set<Connection>();
   private nextConnectionId = 0;
-  /** Per-room HMAC key for admission tokens. Loaded once in the constructor,
-   * imported non-extractable, and never logged or sent anywhere. */
+  /** Per-room HMAC key for admission tokens: non-extractable, never logged,
+   * never sent anywhere. Null until this room has actually admitted someone
+   * (see {@link mintAdmission}) and again once it empties. */
   private admissionKey: CryptoKey | null = null;
   private turnLimiter: TurnGrantLimiterState | null = null;
 
@@ -68,19 +79,36 @@ export class RoomDurableObject implements DurableObject {
     private readonly state: DurableObjectState,
     private readonly env: RoomDurableObjectEnv,
   ) {
-    // Load (or create exactly once) this room's admission signing key before
-    // any request is dispatched, so a token can never be minted or verified
-    // against a half-initialized key.
+    // Load — never create — the admission key before any request is
+    // dispatched, so a token is never minted or verified against a
+    // half-initialized key. Creating one here instead would mean any
+    // attacker-chosen room id, including one peeked out of a forged token,
+    // could force a durable storage write for a room that does not exist.
     void this.state.blockConcurrencyWhile(async () => {
-      const stored = await this.state.storage.get<ArrayBuffer | Uint8Array>(ROOM_KEY_STORAGE_KEY);
-      let keyBytes: Uint8Array;
-      if (stored) {
-        keyBytes = stored instanceof Uint8Array ? stored : new Uint8Array(stored);
-      } else {
-        keyBytes = createRoomKeyBytes();
-        await this.state.storage.put(ROOM_KEY_STORAGE_KEY, keyBytes);
-      }
-      this.admissionKey = await importRoomKey(keyBytes);
+      this.admissionKey = await loadRoomAdmissionKey(this.state.storage);
+    });
+  }
+
+  /**
+   * Erases this room's persistent footprint once no seat is occupied.
+   *
+   * Run under `blockConcurrencyWhile` so it cannot interleave with a join
+   * that is concurrently creating a key: an empty room must never be left
+   * holding a signing key, and a live room must never lose one.
+   *
+   * Dropping the rate-limiter state with it is safe *because* the room is
+   * empty — no admission token can still be valid, so the only way to spend
+   * the fresh allowance is to join again, and that path is metered by the
+   * room-independent per-address ceiling in `../turn/edge-quota.ts`.
+   */
+  private collectIfEmpty(): void {
+    if (!this.room || !isRoomEmpty(this.room)) return;
+    void this.state.blockConcurrencyWhile(async () => {
+      if (this.room && !isRoomEmpty(this.room)) return;
+      this.admissionKey = null;
+      this.turnLimiter = null;
+      if (this.connections.size === 0) this.room = null;
+      await destroyRoomAdmissionKey(this.state.storage);
     });
   }
 
@@ -144,9 +172,12 @@ export class RoomDurableObject implements DurableObject {
     if (request.method !== "POST") {
       return decided({ ok: false, code: "UNAUTHORIZED", detail: "turn grant requires POST" });
     }
+    // No key means this room has never admitted anyone, or has emptied since.
+    // Either way there is no seat to authorize, and — critically — a key is
+    // *not* created here: the request is unauthenticated.
     const key = this.admissionKey;
     if (!key) {
-      return decided({ ok: false, code: "UNAUTHORIZED", detail: "room admission key is unavailable" });
+      return decided({ ok: false, code: "UNAUTHORIZED", detail: NO_ACTIVE_MEMBERS });
     }
 
     let token = "";
@@ -161,12 +192,8 @@ export class RoomDurableObject implements DurableObject {
     }
 
     const room = this.room;
-    if (!room) {
-      return decided({
-        ok: false,
-        code: "UNAUTHORIZED",
-        detail: "room has no active members; join the room before requesting TURN credentials",
-      });
+    if (!room || isRoomEmpty(room)) {
+      return decided({ ok: false, code: "UNAUTHORIZED", detail: NO_ACTIVE_MEMBERS });
     }
 
     const verification = await verifyAdmissionToken(token, key, { expectedRoomId: room.roomId });
@@ -223,9 +250,11 @@ export class RoomDurableObject implements DurableObject {
    * warning rather than being denied the match entirely.
    */
   private async mintAdmission(roomId: string, slot: number, admissionId: string): Promise<string | null> {
-    const key = this.admissionKey;
-    if (!key) return null;
     try {
+      // First accepted join in this room creates the key. Reaching here means
+      // the seat is already held, so the write is attributable to a real
+      // member rather than to an arbitrary Durable Object id.
+      const key = (this.admissionKey ??= await ensureRoomAdmissionKey(this.state.storage));
       return await signAdmissionToken(key, {
         roomId,
         slot,
@@ -292,8 +321,12 @@ export class RoomDurableObject implements DurableObject {
       const admission = await this.mintAdmission(this.room.roomId, joinResult.value, admissionId);
       // The connection may have dropped while the token was being signed;
       // `handleDisconnect` has then already freed the slot and broadcast the
-      // roster, so there is nothing left to send.
-      if (!this.connections.has(connection)) return;
+      // roster, so there is nothing left to send. Re-run collection because
+      // minting may have re-created a key for a room that emptied meanwhile.
+      if (!this.connections.has(connection)) {
+        this.collectIfEmpty();
+        return;
+      }
       this.send(connection.socket, {
         type: "welcome",
         roomId: this.room.roomId,
@@ -320,6 +353,7 @@ export class RoomDurableObject implements DurableObject {
       connection.slot = null;
       this.broadcastRoster();
       connection.socket.close(1000, "left room");
+      this.collectIfEmpty();
       return;
     }
 
@@ -354,5 +388,6 @@ export class RoomDurableObject implements DurableObject {
       }
       this.broadcastRoster();
     }
+    this.collectIfEmpty();
   }
 }

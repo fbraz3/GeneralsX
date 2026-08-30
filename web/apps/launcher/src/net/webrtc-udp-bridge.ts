@@ -326,6 +326,11 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
    * preserving arrival order (an `offer` must still be applied before the
    * ICE candidates that follow it). */
   private signalChain: Promise<void> = Promise.resolve();
+  /** Slots whose occupant has left and whose seat the roster has not since
+   * refilled. Recorded the instant the departure is observed, so a signal
+   * that was buffered *before* the departure cannot resurrect the peer when
+   * it is finally dequeued — see {@link handlePeerLeft}. */
+  private readonly departedSlots = new Set<SlotId>();
 
   constructor(options: WebRtcUdpBridgeOptions) {
     this.signaling = options.signaling;
@@ -491,6 +496,7 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     this.localSlot = null;
     this.roster = [];
     this.pendingRoster = null;
+    this.departedSlots.clear();
     this.joinPending = false;
     // Never leave a queued signal or a caller awaiting a gate that will now
     // never open; generation checks keep the released work inert.
@@ -580,17 +586,45 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     this.syncRoster(roster);
   };
 
+  /**
+   * A peer left the room.
+   *
+   * The departure is recorded **synchronously**, before any peer teardown,
+   * because signals are queued behind this join's TURN fetch while a
+   * departure is not. Without the record, this sequence would silently
+   * resurrect the peer: a peer offers, the offer is buffered because our
+   * credentials have not arrived, the peer then leaves, and the buffered
+   * offer is finally dequeued and creates a connection to somebody who is no
+   * longer in the room. `processSignal` consults {@link departedSlots}, so
+   * the buffered signal is dropped instead.
+   *
+   * Recording the departure is deliberately preferred over queueing the
+   * teardown behind the same gate: queueing would still build the peer
+   * connection and answer the offer first, and a teardown dequeued after the
+   * seat had been refilled would tear down the *new* occupant's connection.
+   *
+   * Redundant with the roster diff in `syncRoster` (a `peer-left` message and
+   * the next `roster` broadcast both arrive from the same departure), but
+   * `teardownPeer`/`Map.delete` are idempotent, so either order is safe.
+   */
   private readonly handlePeerLeft = (slot: SlotId): void => {
     if (this.localSlot === null) return;
-    // Redundant with the roster diff in `syncRoster` (a `peer-left` message
-    // and the next `roster` broadcast both arrive from the same departure),
-    // but `teardownPeer`/`Map.delete` are idempotent, so handling both event
-    // orders is always safe.
+    this.departedSlots.add(slot);
+    // A roster held back for the TURN fetch is a snapshot from *before* this
+    // departure. Leaving the departed slot in it would resurrect the peer the
+    // moment the snapshot is applied, undoing the record above.
+    if (this.pendingRoster !== null) {
+      this.pendingRoster = this.pendingRoster.filter((entry) => entry.slot !== slot);
+    }
+    this.removePeer(slot);
+  };
+
+  private removePeer(slot: SlotId): void {
     const peer = this.peers.get(slot);
     if (!peer) return;
     this.teardownPeer(peer);
     this.peers.delete(slot);
-  };
+  }
 
   private readonly handleSignalingClose = (): void => {
     // Only a socket that closes *before* ever reaching `welcome` for the
@@ -639,12 +673,18 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     this.roster = roster;
 
     const rosterSlots = new Set(roster.map((entry) => entry.slot));
-    for (const [slot, peer] of this.peers) {
+    for (const slot of [...this.peers.keys()]) {
       if (slot !== this.localSlot && !rosterSlots.has(slot)) {
-        this.teardownPeer(peer);
-        this.peers.delete(slot);
+        // The roster is authoritative about who is present, so a slot it
+        // omits counts as a departure even without a `peer-left` message —
+        // and must block a buffered signal just the same.
+        this.departedSlots.add(slot);
+        this.removePeer(slot);
       }
     }
+    // A seat the roster lists is occupied again, so signals from it are
+    // legitimate even if its previous occupant left.
+    for (const slot of rosterSlots) this.departedSlots.delete(slot);
     for (const entry of roster) {
       if (entry.slot === this.localSlot) continue;
       if (!this.peers.has(entry.slot)) {
@@ -733,6 +773,9 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   }
 
   private async processSignal(from: SlotId, type: "offer" | "answer" | "ice", payload: unknown): Promise<void> {
+    // This signal may have been buffered before its sender left the room.
+    // Creating a peer for a departed slot here is what would resurrect them.
+    if (this.departedSlots.has(from)) return;
     const peer = this.peers.get(from) ?? this.createPeer(from);
 
     if (type === "ice") {

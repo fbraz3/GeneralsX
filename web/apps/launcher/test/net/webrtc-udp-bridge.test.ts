@@ -711,6 +711,111 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     expect(signaling.sentAnswers).toHaveLength(1);
   });
 
+  it("drops a signal buffered before its sender left, so a departed peer is never recreated", async () => {
+    // The hazard the buffering introduces: signals wait for TURN, departures
+    // do not, so a naive implementation dequeues the offer afterwards and
+    // builds a connection to somebody who has already gone.
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    signaling.emit("signal", 0, "offer", { type: "offer", sdp: "early-offer" });
+    signaling.emit("peerLeft", 0);
+    signaling.emit("roster", [{ slot: 1, name: "guest", isHost: true }]);
+    await flush();
+
+    resolveFetch?.({ iceServers: [], ttlSeconds: 600 });
+    await flush();
+
+    expect(peerConnections).toHaveLength(0);
+    expect(bridge.status().peers).toEqual([]);
+    expect(signaling.sentAnswers).toHaveLength(0);
+  });
+
+  it("drops every buffered signal from a departed peer, including trailing candidates", async () => {
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    signaling.emit("signal", 0, "offer", { type: "offer", sdp: "early-offer" });
+    signaling.emit("peerLeft", 0);
+    signaling.emit("signal", 0, "ice", { candidate: "late-candidate" });
+    await flush();
+
+    resolveFetch?.({ iceServers: [], ttlSeconds: 600 });
+    await flush();
+    expect(peerConnections).toHaveLength(0);
+  });
+
+  it("still connects a peer whose seat the roster refills after the departure", async () => {
+    // The departure record must not become a permanent ban on the slot: a new
+    // player taking seat 0 is a legitimate peer.
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    signaling.emit("peerLeft", 0);
+    signaling.emit("roster", [
+      { slot: 0, name: "replacement", isHost: true },
+      { slot: 1, name: "guest", isHost: false },
+    ]);
+    resolveFetch?.({ iceServers: [], ttlSeconds: 600 });
+    await flush();
+
+    signaling.emit("signal", 0, "offer", { type: "offer", sdp: "new-offer" });
+    await flush();
+
+    expect(bridge.status().peers.map((peer) => peer.slot)).toEqual([0]);
+    expect(peerConnections[0]?.remoteDescription).toEqual({ type: "offer", sdp: "new-offer" });
+  });
+
+  it("does not recreate a peer the roster dropped, even without a peer-left message", async () => {
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    resolveFetch?.({ iceServers: [], ttlSeconds: 600 });
+    await flush();
+    expect(peerConnections).toHaveLength(1);
+
+    // The roster is authoritative: slot 0 is gone even though no explicit
+    // peer-left arrived.
+    signaling.emit("roster", [{ slot: 1, name: "guest", isHost: true }]);
+    signaling.emit("signal", 0, "ice", { candidate: "stale" });
+    await flush();
+
+    expect(bridge.status().peers).toEqual([]);
+    expect(peerConnections).toHaveLength(1);
+  });
+
   it("falls back to direct/STUN-only ICE and reports a turn-unavailable issue when the TURN fetch fails", async () => {
     const issues: JoinIssue[] = [];
     const { bridge, signaling, peerConnections } = makeBridge({

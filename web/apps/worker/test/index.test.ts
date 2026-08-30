@@ -7,6 +7,12 @@ import {
   ADMISSION_TOKEN_TTL_SECONDS,
 } from "../src/room/admission.js";
 import { TURN_GRANT_PATH, type TurnGrantResult } from "../src/room/turn-grant.js";
+import { TRUSTED_CLIENT_IP_HEADER } from "../src/turn/client-identity.js";
+import {
+  TURN_EDGE_QUOTA_PATH,
+  TURN_EDGE_QUOTA_SINGLETON,
+  type TurnEdgeDecision,
+} from "../src/turn/edge-quota.js";
 
 /** A structurally valid admission token. It is signed with a throwaway key
  * that no room holds, so it is only ever *routable* — every authorization
@@ -42,6 +48,29 @@ function makeRoomDo(result: TurnGrantResult | Error = { ok: true, roomId: "ABCD"
   return { binding, routedTo, grantPaths, fetchStub };
 }
 
+/** Builds a TURN_QUOTA_DO binding whose singleton answers with `decision`,
+ * recording the identity the Worker attributed each request to. */
+function makeQuotaDo(decision: TurnEdgeDecision | Error = { allowed: true, retryAfterSeconds: 0, scope: null }) {
+  const seenClients: { key: string; identified: boolean }[] = [];
+  const names: string[] = [];
+  const paths: string[] = [];
+  const fetchStub = vi.fn(async (request: Request) => {
+    paths.push(new URL(request.url).pathname);
+    if (decision instanceof Error) throw decision;
+    const body = (await request.json()) as { client: { key: string; identified: boolean } };
+    seenClients.push(body.client);
+    return new Response(JSON.stringify(decision), { status: 200 });
+  });
+  const binding = {
+    idFromName: vi.fn((name: string) => {
+      names.push(name);
+      return name;
+    }),
+    get: vi.fn(() => ({ fetch: fetchStub })),
+  } as unknown as WorkerEnv["TURN_QUOTA_DO"];
+  return { binding, seenClients, names, paths, fetchStub };
+}
+
 function makeEnv(overrides: Partial<WorkerEnv> = {}): WorkerEnv {
   return {
     ALLOWED_ORIGINS: "https://play.generalsx.org",
@@ -50,19 +79,23 @@ function makeEnv(overrides: Partial<WorkerEnv> = {}): WorkerEnv {
     TURN_KEY_ID: "key-123",
     TURN_KEY_API_TOKEN: "secret",
     ROOM_DO: makeRoomDo().binding,
+    TURN_QUOTA_DO: makeQuotaDo().binding,
     ...overrides,
   };
 }
 
 async function requestTurnCredentials(
   env: WorkerEnv,
-  init: { token?: string | undefined; method?: string } = {},
+  init: { token?: string | undefined; method?: string; clientIp?: string } = {},
 ): Promise<Response> {
   const token = init.token === undefined ? await makeRoutableToken() : init.token;
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (init.clientIp) headers[TRUSTED_CLIENT_IP_HEADER] = init.clientIp;
   return worker.fetch(
     new Request("https://api.generalsx.org/turn-credentials", {
       ...(init.method ? { method: init.method } : {}),
-      ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+      ...(Object.keys(headers).length > 0 ? { headers } : {}),
     }),
     env,
   );
@@ -125,6 +158,72 @@ describe("worker fetch: /turn-credentials authorization", () => {
     await expect(response.json()).resolves.toMatchObject({ code: "UNAUTHORIZED" });
     // The room is never consulted for a request that carries no capability.
     expect(roomDo.fetchStub).not.toHaveBeenCalled();
+  });
+
+  it("charges the room-independent quota before consulting any room", async () => {
+    const roomDo = makeRoomDo();
+    const quotaDo = makeQuotaDo();
+    await requestTurnCredentials(makeEnv({ ROOM_DO: roomDo.binding, TURN_QUOTA_DO: quotaDo.binding }));
+    expect(quotaDo.fetchStub).toHaveBeenCalledOnce();
+    expect(quotaDo.paths).toEqual([TURN_EDGE_QUOTA_PATH]);
+    // One instance, always: a sharded ceiling is not a ceiling.
+    expect(quotaDo.names).toEqual([TURN_EDGE_QUOTA_SINGLETON]);
+  });
+
+  it("attributes the quota to the edge-supplied address, not a forgeable header", async () => {
+    const quotaDo = makeQuotaDo();
+    await worker.fetch(
+      new Request("https://api.generalsx.org/turn-credentials", {
+        headers: {
+          Authorization: `Bearer ${await makeRoutableToken()}`,
+          [TRUSTED_CLIENT_IP_HEADER]: "203.0.113.7",
+          "X-Forwarded-For": "198.51.100.9",
+        },
+      }),
+      makeEnv({ TURN_QUOTA_DO: quotaDo.binding }),
+    );
+    expect(quotaDo.seenClients).toEqual([{ key: "203.0.113.7", identified: true }]);
+  });
+
+  it("refuses over the global ceiling before the room is consulted, so room rotation cannot bypass it", async () => {
+    // An attacker who creates a fresh room per request satisfies every
+    // room-keyed check. Only a quota they cannot re-key bounds them.
+    const roomDo = makeRoomDo();
+    const quotaDo = makeQuotaDo({ allowed: false, retryAfterSeconds: 7, scope: "client" });
+    const response = await requestTurnCredentials(
+      makeEnv({ ROOM_DO: roomDo.binding, TURN_QUOTA_DO: quotaDo.binding }),
+      { clientIp: "203.0.113.7" },
+    );
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("7");
+    await expect(response.json()).resolves.toMatchObject({ code: "RATE_LIMITED" });
+    expect(roomDo.fetchStub).not.toHaveBeenCalled();
+  });
+
+  it("never answers with Retry-After: 0, which would invite a busy loop", async () => {
+    const quotaDo = makeQuotaDo({ allowed: false, retryAfterSeconds: 0, scope: "global" });
+    const response = await requestTurnCredentials(makeEnv({ TURN_QUOTA_DO: quotaDo.binding }));
+    expect(response.headers.get("Retry-After")).toBe("1");
+  });
+
+  it("fails closed when the quota limiter is unreachable", async () => {
+    // A limiter that opens when knocked over is not a limiter: taking it down
+    // would be the cheapest way to mint unlimited credentials.
+    const roomDo = makeRoomDo();
+    const quotaDo = makeQuotaDo(new Error("quota object unreachable"));
+    const response = await requestTurnCredentials(
+      makeEnv({ ROOM_DO: roomDo.binding, TURN_QUOTA_DO: quotaDo.binding }),
+    );
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ code: "RATE_LIMITED" });
+    expect(roomDo.fetchStub).not.toHaveBeenCalled();
+  });
+
+  it("still enforces room and seat authorization once the quota allows the request", async () => {
+    const roomDo = makeRoomDo({ ok: false, code: "UNAUTHORIZED", detail: "this admission no longer holds a slot" });
+    const response = await requestTurnCredentials(makeEnv({ ROOM_DO: roomDo.binding }));
+    expect(response.status).toBe(401);
+    expect(roomDo.fetchStub).toHaveBeenCalledOnce();
   });
 
   it("does not treat an allowed Origin as authorization", async () => {

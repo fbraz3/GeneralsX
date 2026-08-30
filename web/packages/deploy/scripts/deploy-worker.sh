@@ -28,10 +28,43 @@ fi
 
 require_wrangler_auth
 
-# --strict refuses the upload when the live Worker has changes this deploy did
-# not produce (someone else's version, or a dashboard edit), instead of
-# silently overwriting them. Without it, two operators deploying concurrently
-# would each clobber the other and only notice from /readyz afterwards.
+# --- Concurrency precondition ---------------------------------------------
+# Wrangler has no compare-and-swap on the deployed script version: `wrangler
+# deploy` is last-write-wins, and `--strict` does not change that (it refuses
+# an upload when the live Worker's *settings* have drifted from wrangler.toml,
+# e.g. a dashboard edit — a different problem).
+#
+# So the closest available guard is an explicit precondition on what is live
+# right now. Set GENERALSX_EXPECTED_RELEASE_ID to the SHA you believe you are
+# replacing and the deploy aborts if the live version is anything else, which
+# is what catches "somebody deployed while I was building". It narrows the
+# race to the seconds between this check and the upload; it does not close it.
+# CI serializes the workflow instead (see .github/workflows/deploy-web.yml),
+# which is the only real mutual exclusion available here.
+EXPECTED_RELEASE="${GENERALSX_EXPECTED_RELEASE_ID:-}"
+if [ -n "${EXPECTED_RELEASE}" ]; then
+  log "Checking the live version matches the expected precondition"
+  if ! command -v curl >/dev/null 2>&1; then
+    die "GENERALSX_EXPECTED_RELEASE_ID requires curl to read ${GENERALSX_SIGNALING_ORIGIN}/readyz"
+  fi
+  live_body="$(curl -fsS --max-time 10 "${GENERALSX_SIGNALING_ORIGIN}/readyz" || true)"
+  if [ -z "${live_body}" ]; then
+    die "cannot read ${GENERALSX_SIGNALING_ORIGIN}/readyz to verify GENERALSX_EXPECTED_RELEASE_ID; refusing to deploy blind"
+  fi
+  if ! printf '%s' "${live_body}" | grep -q "${EXPECTED_RELEASE}"; then
+    warn "the live Worker is not the version you expected to replace."
+    warn "expected releaseId: ${EXPECTED_RELEASE}"
+    warn "someone else has deployed since you started. Re-check and retry with:"
+    warn "  curl -fsS ${GENERALSX_SIGNALING_ORIGIN}/readyz"
+    die "deploy aborted by GENERALSX_EXPECTED_RELEASE_ID precondition"
+  fi
+  ok "live version matches ${EXPECTED_RELEASE:0:12}"
+fi
+
+# --strict refuses the upload when the live Worker's settings have drifted
+# from this repository's wrangler.toml — a dashboard edit that a deploy would
+# otherwise silently discard. It is configuration drift protection, not
+# deploy-concurrency protection; see the precondition above for that.
 log "Deploying ${GENERALSX_WORKER_NAME} at ${SHORT_RELEASE}"
 wrangler deploy \
   --strict \

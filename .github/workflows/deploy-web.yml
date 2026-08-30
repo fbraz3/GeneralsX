@@ -28,11 +28,22 @@ on:
         type: boolean
         required: false
         default: true
-      require_turn:
-        description: "Fail the smoke tests if live TURN credentials cannot be issued"
-        type: boolean
+      expected_release_id:
+        description: "Abort unless this commit SHA is the version currently live (concurrency precondition)"
+        type: string
         required: false
-        default: false
+        default: ""
+
+# GeneralsX @build Copilot 30/08/2026 One production deploy at a time. Wrangler
+# offers no compare-and-swap on the deployed version, so two overlapping runs
+# would be last-write-wins with no error. `cancel-in-progress: false` because a
+# deploy that has already uploaded must be allowed to finish its smoke tests —
+# cancelling mid-run would leave an unverified version live. This serializes
+# *this workflow* only; a deploy run by hand from a workstation is outside it
+# (see web/packages/deploy/README.md).
+concurrency:
+  group: deploy-web-production
+  cancel-in-progress: false
 
 env:
   NODE_VERSION: "22"
@@ -95,6 +106,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           GENERALSX_RELEASE_ID: ${{ github.sha }}
+          GENERALSX_EXPECTED_RELEASE_ID: ${{ inputs.expected_release_id }}
         run: packages/deploy/scripts/deploy.sh
 
       # GeneralsX @build Copilot 30/08/2026 Re-run independently of deploy.sh so
@@ -103,10 +115,7 @@ jobs:
       - name: Post-Deploy Smoke Tests
         if: inputs.dry_run == false && steps.credentials.outputs.configured == 'true'
         working-directory: web
-        run: |
-          npm run smoke -w @generalsx-web/deploy -- \
-            --release "${{ github.sha }}" \
-            ${{ inputs.require_turn && '--require-turn' || '' }}
+        run: npm run smoke -w @generalsx-web/deploy -- --release "${{ github.sha }}"
 
       - name: Rollback Instructions
         if: failure() && inputs.dry_run == false

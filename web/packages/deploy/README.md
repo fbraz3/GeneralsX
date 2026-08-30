@@ -73,17 +73,43 @@ Individual steps can also be run on their own:
 
 ### Worker deploy safety
 
-`--strict` makes `wrangler deploy` refuse the upload when the live Worker
-carries changes this deploy did not produce — another operator's version, or a
-dashboard edit. Without it two concurrent deploys silently clobber each other
-and the loser only finds out from `/readyz`.
+Three separate things, often confused with each other:
 
-`keep_vars = false` in `apps/worker/wrangler.toml` is a separate, orthogonal
-decision: that file is the single source of truth for the Worker's non-secret
-vars, so a deploy replaces the live var set wholesale and any var added by
-hand in the dashboard is intentionally removed. It does **not** guard against
-concurrent deploys. Secrets live in a different store and are never deleted by
-a deploy, so `TURN_KEY_ID` / `TURN_KEY_API_TOKEN` survive.
+**`--strict`** makes `wrangler deploy` refuse the upload when the live
+Worker's *settings* have drifted from `apps/worker/wrangler.toml` — typically
+a change somebody made in the dashboard that this deploy would otherwise
+discard without saying so. It is configuration-drift protection.
+
+**`keep_vars = false`** declares var *ownership*: `wrangler.toml` is the
+single source of truth for the Worker's non-secret vars, so a deploy replaces
+the live var set wholesale and any var added by hand in the dashboard is
+intentionally removed. Secrets live in a different store and are never deleted
+by a deploy, so `TURN_KEY_ID` / `TURN_KEY_API_TOKEN` survive.
+
+**Neither prevents two deploys from racing.** The Wrangler API has no
+compare-and-swap on the deployed script version: `wrangler deploy` is
+last-write-wins, and the loser gets no error at all. What is available:
+
+| Control | Covers | Does not cover |
+| --- | --- | --- |
+| `concurrency: deploy-web-production` in `.github/workflows/deploy-web.yml` | Two runs of the deploy workflow | Anything run outside that workflow |
+| `GENERALSX_EXPECTED_RELEASE_ID=<sha>` | The live version changed while you were preparing this deploy | The seconds between the check and the upload |
+
+```bash
+# Refuse to deploy unless <sha> is what is live right now.
+GENERALSX_EXPECTED_RELEASE_ID=<sha> packages/deploy/scripts/deploy.sh
+```
+
+The precondition reads `signaling.generalsx.org/readyz` and aborts on a
+mismatch; if it cannot read `/readyz` at all it aborts rather than deploying
+blind. It is a guard, not a lock.
+
+**Residual limit:** two operators deploying by hand at the same moment is
+still last-write-wins, and the window between the precondition check and the
+upload cannot be closed from the client side. Treat the CI workflow as the
+only serialized path, use `GENERALSX_EXPECTED_RELEASE_ID` for manual deploys,
+and confirm with `curl -fsS https://signaling.generalsx.org/readyz` afterwards
+that the release id is the one you intended.
 
 ## DNS
 
@@ -143,7 +169,7 @@ propagation-shaped failures — transport errors (DNS/TCP/TLS) and the statuses
 | Flag | Default | Meaning |
 | --- | --- | --- |
 | `--retry-attempts <n>` | `6` | Attempts per origin, including the first |
-| `--retry-budget <sec>` | `120` | Total seconds the run may spend waiting |
+| `--retry-budget <sec>` | `120` | Total seconds the run may spend retrying |
 | `--no-retry` | off | Fail on the first propagation-shaped error |
 
 Retrying happens inside the fetch, never around a check's assertions, so a
@@ -154,6 +180,15 @@ again, and an origin that exhausts its attempts fails every later check
 immediately. Giving up reports the origin, attempt count, elapsed time, and
 the underlying failure, so "still propagating" is distinguishable from
 "misconfigured" without re-running anything.
+
+The budget covers time spent *inside* requests, not just time spent sleeping
+between them, and every request carries an abort deadline (15s, clamped to
+whatever is left of the budget when it is a retry). A half-open connection to
+a brand-new DNS record hangs rather than erroring, so a budget that counted
+only sleeps would let one such request stall a deploy indefinitely. A whole
+run is bounded by `requests x 15s + retry budget`; a first probe keeps its
+full deadline even after the retry budget is gone, so a healthy origin is
+never aborted because an unrelated one was unreachable.
 
 `deploy-worker.sh` polls `/readyz` for the deployed release id with the same
 bounded strategy (`GENERALSX_READY_ATTEMPTS`, `GENERALSX_READY_BUDGET`,

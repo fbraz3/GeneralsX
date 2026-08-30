@@ -327,6 +327,9 @@ describe("propagation retry", () => {
     return {
       waits,
       now: () => current,
+      advance: (ms: number) => {
+        current += ms;
+      },
       sleep: (ms: number) => {
         waits.push(ms);
         current += ms;
@@ -476,10 +479,153 @@ describe("propagation retry", () => {
 
   it("respects a caller-supplied budget shorter than the backoff schedule", async () => {
     const clock = fakeClock();
-    const policy: RetryPolicy = { attempts: 10, initialDelayMs: 4_000, maxDelayMs: 4_000, totalBudgetMs: 5_000 };
+    const policy: RetryPolicy = {
+      attempts: 10,
+      initialDelayMs: 4_000,
+      maxDelayMs: 4_000,
+      totalBudgetMs: 5_000,
+      attemptTimeoutMs: 15_000,
+    };
     const doFetch: FetchLike = () => Promise.reject(new Error("ENOTFOUND"));
     await runSmokeChecks(OPTIONS, { fetchImpl: doFetch, retryPolicy: policy, ...clock });
     expect(clock.waits.reduce((sum, wait) => sum + wait, 0)).toBe(5_000);
+  });
+});
+
+describe("propagation deadline", () => {
+  function fakeClock() {
+    const waits: number[] = [];
+    let current = 0;
+    return {
+      waits,
+      now: () => current,
+      advance: (ms: number) => {
+        current += ms;
+      },
+      sleep: (ms: number) => {
+        waits.push(ms);
+        current += ms;
+        return Promise.resolve();
+      },
+    };
+  }
+
+  /** Records the abort deadline each request was given, without ever firing
+   * it, so the arithmetic can be asserted independently of real timers. */
+  function recordDeadlines() {
+    const deadlines: number[] = [];
+    return {
+      deadlines,
+      createTimeoutSignal: (ms: number): AbortSignal => {
+        deadlines.push(ms);
+        return new AbortController().signal;
+      },
+    };
+  }
+
+  it("gives every request an abort deadline, so a hung socket cannot outlive the run", async () => {
+    const clock = fakeClock();
+    const timeouts = recordDeadlines();
+    const { doFetch } = stubFetch(healthyRoutes());
+    await runSmokeChecks(OPTIONS, { fetchImpl: doFetch, ...clock, ...timeouts });
+    expect(timeouts.deadlines.length).toBeGreaterThan(0);
+    for (const deadline of timeouts.deadlines) {
+      expect(deadline).toBeGreaterThan(0);
+      expect(deadline).toBeLessThanOrEqual(DEFAULT_RETRY_POLICY.attemptTimeoutMs);
+    }
+  });
+
+  it("passes the abort signal through to the underlying fetch", async () => {
+    const signals: (AbortSignal | null | undefined)[] = [];
+    const base = stubFetch(healthyRoutes());
+    const doFetch: FetchLike = (input, init) => {
+      signals.push(init?.signal);
+      return base.doFetch(input, init);
+    };
+    await runSmokeChecks(OPTIONS, { fetchImpl: doFetch, ...fakeClock() });
+    expect(signals.length).toBeGreaterThan(0);
+    expect(signals.every((signal) => signal instanceof AbortSignal)).toBe(true);
+  });
+
+  it("charges time spent inside a hanging request to the shared budget", async () => {
+    const clock = fakeClock();
+    // Each request consumes a quarter of the budget before failing, so the
+    // schedule runs out of budget far sooner than out of attempts.
+    const perRequestMs = DEFAULT_RETRY_POLICY.totalBudgetMs / 4;
+    const doFetch: FetchLike = () => {
+      clock.advance(perRequestMs);
+      return Promise.reject(new Error("ETIMEDOUT"));
+    };
+    await runSmokeChecks(OPTIONS, { fetchImpl: doFetch, ...clock });
+    const slept = clock.waits.reduce((sum, wait) => sum + wait, 0);
+    // A budget that only counted sleeps would have allowed the full
+    // (attempts - 1) backoff schedule for every origin.
+    expect(slept).toBeLessThan(DEFAULT_RETRY_POLICY.totalBudgetMs);
+    expect(clock.waits.length).toBeLessThanOrEqual(DEFAULT_RETRY_POLICY.attempts - 1);
+  });
+
+  it("shrinks a request deadline to what is left of the budget", async () => {
+    const clock = fakeClock();
+    const timeouts = recordDeadlines();
+    const policy: RetryPolicy = {
+      attempts: 4,
+      initialDelayMs: 1_000,
+      maxDelayMs: 1_000,
+      totalBudgetMs: 2_500,
+      attemptTimeoutMs: 15_000,
+    };
+    const doFetch: FetchLike = () => Promise.reject(new Error("ENOTFOUND"));
+    await runSmokeChecks(OPTIONS, { fetchImpl: doFetch, retryPolicy: policy, ...clock, ...timeouts });
+    // A retry never gets longer than what is left of the budget.
+    expect(timeouts.deadlines[0]).toBe(2_500);
+    expect(timeouts.deadlines[1]).toBe(1_500);
+    // But a later origin's *first* probe keeps the full request deadline: a
+    // healthy origin must not be aborted because an unrelated one exhausted
+    // the retry budget.
+    expect(timeouts.deadlines).toContain(policy.attemptTimeoutMs);
+  });
+
+  it("reports an aborted request as an actionable timeout rather than a bare AbortError", async () => {
+    const doFetch: FetchLike = () => Promise.reject(Object.assign(new Error("aborted"), { name: "TimeoutError" }));
+    const report = await runSmokeChecks(OPTIONS, {
+      fetchImpl: doFetch,
+      retryPolicy: NO_RETRY_POLICY,
+      ...fakeClock(),
+    });
+    const detail = resultFor(report, "launcher-reachable").detail;
+    expect(detail).toContain("request aborted after");
+    expect(detail).toContain("propagation may still be in progress");
+  });
+
+  it("aborts a genuinely hung request with real timers", async () => {
+    // Exercises the production AbortSignal.timeout path, not an injected fake.
+    const policy: RetryPolicy = {
+      attempts: 1,
+      initialDelayMs: 0,
+      maxDelayMs: 0,
+      totalBudgetMs: 0,
+      attemptTimeoutMs: 10,
+    };
+    const doFetch: FetchLike = (_input, init) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+        });
+      });
+    const report = await runSmokeChecks(OPTIONS, { fetchImpl: doFetch, retryPolicy: policy });
+    expect(report.passed).toBe(false);
+    expect(resultFor(report, "launcher-reachable").detail).toContain("request aborted after 10ms");
+  });
+
+  it("keeps a deadline on an origin already known to be reachable", async () => {
+    const clock = fakeClock();
+    const timeouts = recordDeadlines();
+    const { doFetch } = stubFetch(healthyRoutes());
+    await runSmokeChecks(OPTIONS, { fetchImpl: doFetch, ...clock, ...timeouts });
+    // Four checks probe the launcher origin; "reachable" must not mean
+    // "unbounded", so every one of them still carries a deadline.
+    expect(timeouts.deadlines).not.toContain(0);
+    expect(timeouts.deadlines).toContain(DEFAULT_RETRY_POLICY.attemptTimeoutMs);
   });
 });
 

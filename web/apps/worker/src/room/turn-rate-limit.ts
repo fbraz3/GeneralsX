@@ -15,7 +15,21 @@
  * two concurrent requests cannot both read a stale bucket and both be
  * allowed. A limiter living in the stateless Worker would be per-isolate and
  * therefore trivially bypassed by spreading requests across colos.
+ *
+ * These limits are keyed by room, and creating a room is free, so they bound
+ * what one *room* costs and nothing more: a client that rotates through fresh
+ * rooms gets a fresh allowance each time. The room-independent ceiling that
+ * closes that hole lives in `../turn/edge-quota.ts`; the two are complementary
+ * and both are enforced.
  */
+import {
+  bucketRetryAfterSeconds,
+  createBucket,
+  isBucketFull,
+  refillBucket,
+  type BucketSpec,
+  type TokenBucket,
+} from "../limits/token-bucket.js";
 
 /** Credential grants a single seat may burst before refill gates it. */
 export const TURN_GRANT_SLOT_BURST = 5;
@@ -26,16 +40,18 @@ export const TURN_GRANT_ROOM_BURST = 20;
 /** Sustained whole-room refill interval. */
 export const TURN_GRANT_ROOM_REFILL_MS = 15_000;
 
-interface Bucket {
-  /** Fractional tokens remaining. */
-  tokens: number;
-  /** Timestamp the token count is accurate as of. */
-  updatedAtMs: number;
-}
+const SLOT_SPEC: BucketSpec = Object.freeze({
+  burst: TURN_GRANT_SLOT_BURST,
+  refillMs: TURN_GRANT_SLOT_REFILL_MS,
+});
+const ROOM_SPEC: BucketSpec = Object.freeze({
+  burst: TURN_GRANT_ROOM_BURST,
+  refillMs: TURN_GRANT_ROOM_REFILL_MS,
+});
 
 export interface TurnGrantLimiterState {
-  readonly room: Bucket;
-  readonly perSlot: Map<number, Bucket>;
+  readonly room: TokenBucket;
+  readonly perSlot: Map<number, TokenBucket>;
 }
 
 export interface TurnGrantDecision {
@@ -49,23 +65,7 @@ export interface TurnGrantDecision {
 }
 
 export function createTurnGrantLimiter(nowMs: number): TurnGrantLimiterState {
-  return {
-    room: { tokens: TURN_GRANT_ROOM_BURST, updatedAtMs: nowMs },
-    perSlot: new Map(),
-  };
-}
-
-function refill(bucket: Bucket, nowMs: number, burst: number, refillMs: number): void {
-  // A clock that appears to move backwards (retries, host clock skew) must
-  // never *add* tokens, so elapsed time is floored at zero.
-  const elapsed = Math.max(0, nowMs - bucket.updatedAtMs);
-  bucket.tokens = Math.min(burst, bucket.tokens + elapsed / refillMs);
-  bucket.updatedAtMs = nowMs;
-}
-
-function retryAfterSeconds(bucket: Bucket, refillMs: number): number {
-  const missing = Math.max(0, 1 - bucket.tokens);
-  return Math.max(1, Math.ceil((missing * refillMs) / 1000));
+  return { room: createBucket(ROOM_SPEC, nowMs), perSlot: new Map() };
 }
 
 /**
@@ -82,24 +82,24 @@ export function consumeTurnGrant(
 ): TurnGrantDecision {
   let slotBucket = state.perSlot.get(slot);
   if (!slotBucket) {
-    slotBucket = { tokens: TURN_GRANT_SLOT_BURST, updatedAtMs: nowMs };
+    slotBucket = createBucket(SLOT_SPEC, nowMs);
     state.perSlot.set(slot, slotBucket);
   }
 
-  refill(slotBucket, nowMs, TURN_GRANT_SLOT_BURST, TURN_GRANT_SLOT_REFILL_MS);
-  refill(state.room, nowMs, TURN_GRANT_ROOM_BURST, TURN_GRANT_ROOM_REFILL_MS);
+  refillBucket(slotBucket, SLOT_SPEC, nowMs);
+  refillBucket(state.room, ROOM_SPEC, nowMs);
 
   if (slotBucket.tokens < 1) {
     return {
       allowed: false,
-      retryAfterSeconds: retryAfterSeconds(slotBucket, TURN_GRANT_SLOT_REFILL_MS),
+      retryAfterSeconds: bucketRetryAfterSeconds(slotBucket, SLOT_SPEC),
       scope: "slot",
     };
   }
   if (state.room.tokens < 1) {
     return {
       allowed: false,
-      retryAfterSeconds: retryAfterSeconds(state.room, TURN_GRANT_ROOM_REFILL_MS),
+      retryAfterSeconds: bucketRetryAfterSeconds(state.room, ROOM_SPEC),
       scope: "room",
     };
   }
@@ -118,7 +118,7 @@ export function consumeTurnGrant(
  * keeps the map from growing without bound over a long-lived room's churn. */
 export function pruneTurnGrantSlots(state: TurnGrantLimiterState, nowMs: number): void {
   for (const [slot, bucket] of state.perSlot) {
-    refill(bucket, nowMs, TURN_GRANT_SLOT_BURST, TURN_GRANT_SLOT_REFILL_MS);
-    if (bucket.tokens >= TURN_GRANT_SLOT_BURST) state.perSlot.delete(slot);
+    refillBucket(bucket, SLOT_SPEC, nowMs);
+    if (isBucketFull(bucket, SLOT_SPEC)) state.perSlot.delete(slot);
   }
 }

@@ -8,9 +8,18 @@ import {
 import { buildLivenessReport, buildReadinessReport } from "./health.js";
 import { extractBearerToken, peekAdmissionRoomId } from "./room/admission.js";
 import { statusForDenial, TURN_GRANT_URL, type TurnGrantResult } from "./room/turn-grant.js";
+import { resolveClientIdentity } from "./turn/client-identity.js";
+import {
+  describeTurnEdgeScope,
+  TURN_EDGE_QUOTA_SINGLETON,
+  TURN_EDGE_QUOTA_URL,
+  type TurnEdgeDecision,
+  type TurnEdgeQuotaRequestBody,
+} from "./turn/edge-quota.js";
 import { fetchTurnCredentials, type TurnCredentialsEnv } from "./turn/turn-credentials.js";
 
 export { RoomDurableObject } from "./durable-objects/room-do.js";
+export { TurnQuotaDurableObject } from "./durable-objects/turn-quota-do.js";
 
 export interface WorkerEnv extends TurnCredentialsEnv {
   readonly ALLOWED_ORIGINS: string;
@@ -20,6 +29,8 @@ export interface WorkerEnv extends TurnCredentialsEnv {
    * script (`--var RELEASE_ID:<sha>`) so rollbacks are verifiable. */
   readonly RELEASE_ID?: string;
   readonly ROOM_DO: DurableObjectNamespace;
+  /** Singleton namespace holding the room-independent TURN issuance ceiling. */
+  readonly TURN_QUOTA_DO: DurableObjectNamespace;
 }
 
 function parseOriginList(value: string | undefined): string[] {
@@ -41,6 +52,33 @@ function withHeaders(response: Response, extra: Record<string, string>): Respons
   const headers = new Headers(response.headers);
   for (const [name, value] of Object.entries(extra)) headers.set(name, value);
   return new Response(response.body, { status: response.status, headers });
+}
+
+/**
+ * Charges one TURN credential issuance against the room-independent ceiling.
+ *
+ * Consulted *before* the room, and charged for the attempt rather than for
+ * the success. Rooms are free to create, so an attacker who rotates rooms
+ * satisfies every room-keyed check; the only quotas they cannot escape are
+ * the ones keyed by their address and by the deployment as a whole. Charging
+ * attempts also means a flood of forged tokens is metered, and — because this
+ * runs first — cannot spin up a Durable Object per fabricated room id.
+ *
+ * The identity comes solely from `CF-Connecting-IP`, which the edge rewrites;
+ * no client-supplied header is consulted (see `./turn/client-identity.ts`).
+ */
+async function consumeEdgeQuota(request: Request, env: WorkerEnv): Promise<TurnEdgeDecision> {
+  const body: TurnEdgeQuotaRequestBody = { client: resolveClientIdentity(request) };
+  const stub = env.TURN_QUOTA_DO.get(env.TURN_QUOTA_DO.idFromName(TURN_EDGE_QUOTA_SINGLETON));
+  const response = await stub.fetch(
+    new Request(TURN_EDGE_QUOTA_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+  );
+  if (!response.ok) throw new Error("turn quota is unavailable");
+  return (await response.json()) as TurnEdgeDecision;
 }
 
 /**
@@ -74,6 +112,17 @@ async function authorizeTurnGrant(token: string, env: WorkerEnv): Promise<TurnGr
  * Issues short-lived TURN credentials to a client that proves, with a room
  * admission token, that it currently holds a seat in a room.
  *
+ * Two independent limits guard this endpoint, because neither is sufficient
+ * alone:
+ *
+ *  1. The **room-independent ceiling** (`consumeEdgeQuota`), keyed by the
+ *     edge-supplied client address and by the deployment as a whole. Rooms
+ *     are free to create, so a client that rotates through fresh rooms
+ *     legitimately passes every room-keyed check; only a quota it cannot
+ *     re-key bounds what it costs.
+ *  2. The **room/seat authorization** (`authorizeTurnGrant`), which proves
+ *     the caller is a current member of a real room and meters that room.
+ *
  * The token — not the `Origin` header — is the authorization. CORS is a
  * browser-enforced read restriction and is trivially absent outside a
  * browser, so it can only ever be defense in depth here; without a
@@ -99,6 +148,25 @@ async function handleTurnCredentials(request: Request, env: WorkerEnv): Promise<
       "a room admission token is required; join a room and present its token as 'Authorization: Bearer <token>'",
       { "WWW-Authenticate": 'Bearer realm="generalsx-room"' },
     );
+  }
+
+  let edge: TurnEdgeDecision;
+  try {
+    edge = await consumeEdgeQuota(request, env);
+  } catch {
+    // Fail closed. A limiter that opens when it is unreachable is not a
+    // limiter — knocking it over would be the cheapest way to mint unlimited
+    // credentials. Denying is also the milder failure for players: the
+    // launcher treats missing TURN as non-fatal and falls back to
+    // direct/STUN ICE with a visible warning.
+    return jsonError(503, "RATE_LIMITED", "the TURN credential rate limiter is unavailable", {
+      "Retry-After": "5",
+    });
+  }
+  if (!edge.allowed) {
+    return jsonError(429, "RATE_LIMITED", describeTurnEdgeScope(edge.scope), {
+      "Retry-After": String(Math.max(1, edge.retryAfterSeconds)),
+    });
   }
 
   let grant: TurnGrantResult;

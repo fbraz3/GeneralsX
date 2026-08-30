@@ -412,7 +412,10 @@ duplicate room membership or stale connection behind:
   peer is never pinned to placeholder ICE servers. Roster and signal
   messages that arrive during the fetch are buffered and replayed in
   arrival order, so an offer can never be answered before the peer it
-  belongs to exists. A bridge constructed without a `turnWorkerBaseUrl`
+  belongs to exists. A departure observed during that window is recorded
+  immediately and drops any signal already buffered from that peer, so a
+  player who leaves mid-fetch is never resurrected by their own stale
+  offer. A bridge constructed without a `turnWorkerBaseUrl`
   (e.g. a single-player/offline boot path that never joins a room)
   never calls TURN at all and applies the roster synchronously.
   A generation counter guards every step of this sequence, so a slower,
@@ -453,6 +456,66 @@ restriction a *browser* applies to reading a response; curl, a script, and any
 server ignore it, and `Origin` is trivially forged outside a browser. The
 smoke suite asserts exactly this: it presents an allowed `Origin` with no
 token, and with a forged token, and requires a 401 both times.
+
+#### Why the room limit is not enough
+
+Room ids are chosen by clients and creating a room is free. A client that
+makes a fresh room, joins it, and asks for credentials passes every check
+above and gets a **fresh room allowance every time** — room rotation bypasses
+any room-keyed quota, however strict.
+
+So a second, independent limiter sits in front, in its own singleton Durable
+Object (`TURN_QUOTA_DO`, one instance for the whole deployment). It counts
+what an attacker cannot re-key:
+
+| Bucket | Limit | Purpose |
+| --- | --- | --- |
+| Per client address | 30 burst, 1 per 10s | Bounds one address across all rooms |
+| Unidentified callers | 5 burst, 1 per 10s | Requests that did not come through the edge share one small bucket |
+| Deployment-wide | 600 burst, 1 per second | The actual protection for the TURN bill |
+| Tracked addresses | 4 096 | Refuses unknown clients rather than growing without bound |
+
+The address comes **only** from `CF-Connecting-IP`, which Cloudflare's edge
+sets and overwrites on every request it forwards. `X-Forwarded-For`,
+`X-Real-IP`, `True-Client-IP`, and `Forwarded` are client-controlled and are
+never read: honouring one would let an attacker mint a fresh bucket per
+request just by varying a header. IPv6 is bucketed by /64, because a single
+customer is routinely delegated a whole prefix and rotating within it would
+otherwise be free.
+
+This limiter is consulted **before** the room, and is charged for the
+*attempt* rather than the success. That means a flood of forged tokens is
+metered too, and cannot spin up a Durable Object per fabricated room id. If
+the limiter is unreachable the request is **denied**, not allowed: a limiter
+that opens when knocked over is not a limiter, and a missing TURN credential
+is already non-fatal (the launcher falls back to direct/STUN ICE with a
+visible warning).
+
+Room state is created lazily to match: a room's signing key is written only
+once a join has been **accepted**, and is deleted when the last member
+leaves. Instantiating a Durable Object for an arbitrary — or forged — room id
+therefore leaves nothing behind.
+
+#### Production edge rules (operator action)
+
+Everything above runs *inside* the Worker, so an attacker still pays for a
+Worker invocation per request. Cloudflare rate limiting and WAF run before
+that, and are worth configuring once the zone exists:
+
+- **Rate limiting rule** on `signaling.generalsx.org/turn-credentials`:
+  characteristic *IP*, e.g. 60 requests / 1 minute, action *Block* for
+  10 minutes. Set above the per-address bucket so the Worker limiter, which
+  can give a precise `Retry-After`, is what legitimate clients meet first.
+- **Rate limiting rule** on `/room` (the WebSocket upgrade), characteristic
+  *IP*, to bound room *creation* rather than credential issuance.
+- **WAF rule** to challenge or block requests to `/turn-credentials` that
+  carry no `Authorization` header — those can never succeed, so serving them
+  is pure cost.
+- Managed **Bot Fight Mode** on the zone.
+
+These are defense in depth and belong to the zone, not to this repository, so
+they are not created by `packages/deploy/scripts/`. The Worker is correct
+without them.
 
 ## Runtime staging
 
