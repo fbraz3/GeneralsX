@@ -313,7 +313,7 @@
     this.rtt = null;
     this.makingOffer = false;
     this.ignoreOffer = false;
-    this.polite = udp.slot < slot;
+    this.polite = udp.slot > slot;
     this.pc = new RTCPeerConnection({ iceServers: udp.iceServers });
 
     this.pc.onicecandidate = function (event) {
@@ -333,7 +333,7 @@
     this.pc.onconnectionstatechange = function () {
       if (self.pc.connectionState === "connected") udp.log("peer " + slot + " connected");
     };
-    if (udp.slot > slot) {
+    if (udp.slot < slot) {
       this._bind(this.pc.createDataChannel("generalsx-udp", {
         ordered: false,
         maxRetransmits: 5,
