@@ -1,0 +1,53 @@
+# Cloudflare Worker configuration for the GeneralsX room-signaling backend.
+#
+# This backend is independent of the retail game engine/assets: it only
+# relays WebRTC signaling messages between players and issues short-lived
+# TURN credentials. No game data is stored or proxied here.
+name = "generalsx-signaling"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+# --- Durable Objects: one instance per room, keyed by room id -------------
+[[durable_objects.bindings]]
+name = "ROOM_DO"
+class_name = "RoomDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RoomDurableObject"]
+
+# --- R2: placeholder binding for future authorized asset delivery ---------
+# The signaling worker itself never serves retail assets. This binding is
+# scaffolding for a *future*, separately authorized asset-delivery worker
+# (see apps/launcher's AssetManager, which currently expects assets to come
+# from `assetBaseUrl` in the manifest, not from this Worker). Uncomment and
+# point at a real bucket name once an authorized asset pipeline exists.
+# [[r2_buckets]]
+# binding = "ASSETS_BUCKET"
+# bucket_name = "generalsx-web-assets"
+
+# --- Environment variables (non-secret) -----------------------------------
+[vars]
+ALLOWED_ORIGINS = "https://play.generalsx.org"
+SIGNALING_ORIGIN = "https://signaling.generalsx.org"
+ASSET_ORIGIN = "https://assets.generalsx.org"
+
+# --- Secrets (set out of band, never committed) ---------------------------
+# wrangler secret put TURN_KEY_ID
+# wrangler secret put TURN_KEY_API_TOKEN
+
+# --- Custom domain notes ---------------------------------------------------
+# Production routing is expected to look like:
+#   play.generalsx.org        -> Cloudflare Pages project (apps/launcher)
+#   signaling.generalsx.org   -> this Worker (custom domain or route)
+# Attach a custom domain with:
+#   wrangler deploy --dry-run   # verify config first
+#   wrangler domains add signaling.generalsx.org
+# or configure a route in the dashboard: Workers & Pages > this worker >
+# Triggers > Custom Domains. Do not reuse the Pages domain for the Worker;
+# keep the WebSocket signaling origin on its own subdomain so the launcher's
+# CSP `connect-src` allowlist stays narrow.
+
+[dev]
+port = 8787

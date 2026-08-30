@@ -1,0 +1,21 @@
+{
+  "name": "@generalsx-web/worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "@generalsx-web/shared": "0.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260830.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11",
+    "wrangler": "4.127.1"
+  }
+}

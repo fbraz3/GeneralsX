@@ -1,0 +1,30 @@
+# Cloudflare Pages configuration for the static launcher shell
+# (play.generalsx.org). Pages projects are normally configured via the
+# dashboard or `wrangler pages deploy`, but keeping a config here documents
+# the expected build settings and custom domain wiring for operators.
+name = "generalsx-launcher"
+compatibility_date = "2026-08-01"
+pages_build_output_dir = "dist"
+
+# --- Build ------------------------------------------------------------
+# Framework preset: none (static Vite build)
+#   Build command:   npm run build
+#   Output directory: dist
+#   Root directory:   web/apps/launcher
+#
+# Security headers (COOP/COEP/CORP/CSP) are written into `dist/_headers` by
+# `scripts/write-headers.ts` as part of `npm run build`, from the same
+# policy module the signaling Worker uses (`@generalsx-web/shared`).
+
+# --- Custom domain notes -----------------------------------------------
+# Production routing is expected to look like:
+#   play.generalsx.org       -> this Pages project
+#   signaling.generalsx.org  -> apps/worker (see its wrangler.toml)
+# Attach the custom domain via the dashboard (Workers & Pages > this
+# project > Custom domains) or:
+#   wrangler pages deployment tail generalsx-launcher
+#   wrangler pages project create generalsx-launcher --production-branch main
+# then bind `play.generalsx.org` to the project in the dashboard's Custom
+# Domains tab. No R2 or Durable Object bindings are required for this
+# static project; asset delivery is handled by a separately authorized
+# origin referenced from the engine manifest, never by this project.

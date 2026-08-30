@@ -1,0 +1,117 @@
+:root {
+  color-scheme: dark;
+  --gx-bg: #0b0d10;
+  --gx-panel-bg: #14171c;
+  --gx-accent: #4da3ff;
+  --gx-text: #e6e9ef;
+  --gx-error: #ff5c5c;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--gx-bg);
+  color: var(--gx-text);
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.gx-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+}
+
+.gx-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(11, 13, 16, 0.9);
+  text-align: center;
+  padding: 2rem;
+}
+
+.gx-progress-track {
+  width: min(320px, 80vw);
+  height: 8px;
+  border-radius: 4px;
+  background: #23272e;
+  overflow: hidden;
+}
+
+.gx-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--gx-accent);
+  transition: width 150ms ease-out;
+}
+
+.gx-error-message {
+  color: var(--gx-error);
+  max-width: 480px;
+}
+
+.gx-panel {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--gx-panel-bg);
+  border: 1px solid #23272e;
+  border-radius: 8px;
+  padding: 1rem;
+  min-width: 240px;
+}
+
+.gx-settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gx-room-panel {
+  top: 1rem;
+  left: 1rem;
+  right: auto;
+}
+
+.gx-button {
+  background: #23272e;
+  color: var(--gx-text);
+  border: 1px solid #2f353d;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.gx-button-primary {
+  background: var(--gx-accent);
+  color: #06121f;
+  border-color: var(--gx-accent);
+}
+
+.gx-field-error {
+  color: var(--gx-error);
+  font-size: 0.85rem;
+}
+
+.gx-roster-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@generalsx-web/launcher",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "dev": "vite",
+    "build": "vite build && node scripts/write-headers.ts"
+  },
+  "dependencies": {
+    "@generalsx-web/shared": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.0",
+    "typescript": "6.0.3",
+    "vite": "8.2.2",
+    "vitest": "4.1.11"
+  }
+}
