@@ -46,9 +46,14 @@
 #include "Common/GameLOD.h"
 #include "Common/GameState.h"
 
-#if DEEP_CRC_TO_MEMORY && !defined(_WIN32)
+// GeneralsX @feature Meeseeks 28/08/2026 Deep CRC platform headers for system telemetry
+#if DEEP_CRC_TO_MEMORY
+#if defined(_WIN32)
+#include <windows.h>
+#else
 #include <sys/utsname.h>
 #include <SDL3/SDL.h>
+#endif
 #endif
 #include "Common/GameUtility.h"
 #include "Common/INI.h"
@@ -5652,10 +5657,30 @@ void GameLogic::storeCRCBuffer(size_t size)
 void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 {
 	AsciiString str;
-	// GeneralsX: Generate OS/Arch header
+	// GeneralsX @feature Meeseeks 28/08/2026 Generate OS/Arch header with Windows support
 	AsciiString headerStr;
 #ifdef _WIN32
-	headerStr = "GeneralsX: Windows x86\n\n";
+	SYSTEM_INFO sysInfo;
+	typedef VOID (WINAPI *PFN_GetNativeSystemInfo)(LPSYSTEM_INFO);
+	HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
+	PFN_GetNativeSystemInfo pGetNativeSystemInfo = kernel32 ? (PFN_GetNativeSystemInfo)GetProcAddress(kernel32, "GetNativeSystemInfo") : nullptr;
+	if (pGetNativeSystemInfo)
+	{
+		pGetNativeSystemInfo(&sysInfo);
+	}
+	else
+	{
+		GetSystemInfo(&sysInfo);
+	}
+
+	MEMORYSTATUSEX memStatus;
+	memStatus.dwLength = sizeof(memStatus);
+	BOOL memOk = GlobalMemoryStatusEx(&memStatus);
+	int totalRamMB = memOk ? (int)(memStatus.ullTotalPhys / (1024 * 1024)) : 0;
+	const char* archName = (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) ? "x86_64" :
+	                       (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_ARM64) ? "arm64" : "x86";
+	headerStr.format("GeneralsX: Windows\nArch: %s\nCPU Cores: %u\nRAM: %d MB\n\n",
+	                 archName, (unsigned int)sysInfo.dwNumberOfProcessors, totalRamMB);
 #else
 	struct utsname sysInfo;
 	if (uname(&sysInfo) == 0) {
@@ -5667,7 +5692,7 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 	}
 #endif
 
-	// Format filename as deep_crc_YYYY-MM-DD-HH-MM-SS.bin inside user data Debug dir
+	// Format filename as deep_crc_YYYY-MM-DD-HH-MM-SS_f<frame>.bin inside user data Debug dir
 	time_t t = time(nullptr);
 	struct tm *tm_info = localtime(&t);
 	char timebuf[32];
@@ -5679,7 +5704,11 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 	logDir.format("%sDebug", TheGlobalData->getPath_UserData().str());
 	TheFileSystem->createDirectory(logDir);
 
+#ifdef _WIN32
+	str.format("%s\\deep_crc_%s_f%u.bin", logDir.str(), timebuf, frame);
+#else
 	str.format("%s/deep_crc_%s_f%u.bin", logDir.str(), timebuf, frame);
+#endif
 
 	FILE* fp = fopen(str.str(), "wb");
 	if (fp)
@@ -5698,6 +5727,8 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 			return;
 		}
 
+		// GeneralsX @tweak Meeseeks 28/08/2026 Count and report actual serialized non-empty frames written
+		size_t framesWritten = 0;
 		size_t oldest = (m_crcBufferIndex >= ARRAY_SIZE(m_crcBuffers)) ? m_crcBufferIndex % ARRAY_SIZE(m_crcBuffers) : 0;
 		for (size_t i = 0; i < ARRAY_SIZE(m_crcBuffers); ++i)
 		{
@@ -5711,10 +5742,25 @@ void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
 					fclose(fp);
 					return;
 				}
+				++framesWritten;
 			}
 		}
 
-		fclose(fp);
+		if (fclose(fp) == 0)
+		{
+			fprintf(stderr, "[DeepCRC] Desync detected! Wrote %zu frames of state telemetry to %s\n", framesWritten, str.str());
+			fflush(stderr);
+		}
+		else
+		{
+			fprintf(stderr, "[DeepCRC] Failed to flush and close %s\n", str.str());
+			fflush(stderr);
+		}
+	}
+	else
+	{
+		fprintf(stderr, "[DeepCRC] Failed to open %s for writing desync memory dump\n", str.str());
+		fflush(stderr);
 	}
 }
 #endif

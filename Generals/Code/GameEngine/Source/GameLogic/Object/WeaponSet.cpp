@@ -231,6 +231,10 @@ void WeaponSet::xfer( Xfer *xfer )
 			if (tt == nullptr)
 				throw INI_INVALID_DATA;
 
+			// GeneralsX @bugfix bobtista 28/08/2026 Import final-override lookup parity for loaded weapon sets.
+			// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/2160
+			tt = static_cast<const ThingTemplate*>(tt->getFinalOverride());
+
 			m_curWeaponTemplateSet = tt->findWeaponTemplateSet(wsFlags);
 			if (m_curWeaponTemplateSet == nullptr)
 				throw INI_INVALID_DATA;
@@ -1113,4 +1117,3 @@ Bool WeaponSet::isSharedReloadTime() const
 		return m_curWeaponTemplateSet->isSharedReloadTime();
 	return false;
 }
-

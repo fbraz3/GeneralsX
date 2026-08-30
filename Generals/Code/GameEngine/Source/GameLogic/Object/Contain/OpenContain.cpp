@@ -368,6 +368,13 @@ void OpenContain::addToContain( Object *rider )
 }
 
 //-------------------------------------------------------------------------------------------------
+// GeneralsX @bugfix Stubbjax 28/08/2026 Import authoritative containment checks for selection.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3125
+Bool OpenContain::isContained( const Object *obj ) const
+{
+	return obj->getContainedBy() == getObject();
+}
+
 //-------------------------------------------------------------------------------------------------
 void OpenContain::addToContainList( Object *rider )
 {

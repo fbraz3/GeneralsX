@@ -23,11 +23,21 @@ While these solutions allow cross-platform matches (e.g. macOS vs Linux) to run 
 
 If you experience a SyncCrash, the game automatically dumps a "Deep CRC" memory snapshot containing the last 64 frames of state data right before the divergence occurred.
 
-These binary files are saved in the game's `Debug` folder. You will find files named `deep_crc_YYYY-MM-DD-HH-MM-SS.bin`.
+These binary files are saved in the game's `Debug` folder. You will find files named `deep_crc_YYYY-MM-DD-HH-MM-SS_f<frame>.bin` (or `deep_crc_*.bin`).
 
 **Where to find the logs:**
-* **macOS:** `~/Library/Application Support/GeneralsX/GeneralsZH/Debug/`
-* **Linux (Native/Flatpak):** `~/.local/share/GeneralsX/GeneralsZH/Debug/` *(or inside your Flatpak app data folder)*
+
+### Windows
+* **Zero Hour:** `%USERPROFILE%\Documents\Command and Conquer Generals Zero Hour Data\Debug\`
+* **Generals (Base Game):** `%USERPROFILE%\Documents\Command and Conquer Generals Data\Debug\`
+
+### macOS
+* **Zero Hour:** `~/Library/Application Support/GeneralsX/GeneralsZH/Debug/`
+* **Generals (Base Game):** `~/Library/Application Support/GeneralsX/Generals/Debug/`
+
+### Linux (Native / Flatpak)
+* **Zero Hour:** `~/.local/share/GeneralsX/GeneralsZH/Debug/` *(or `~/.var/app/io.github.fbraz3.GeneralsZH/data/GeneralsX/GeneralsZH/Debug/` for Flatpak)*
+* **Generals (Base Game):** `~/.local/share/GeneralsX/Generals/Debug/` *(or `~/.var/app/io.github.fbraz3.Generals/data/GeneralsX/Generals/Debug/` for Flatpak)*
 
 ## 4. Analyzing the Logs
 
@@ -35,12 +45,17 @@ To figure out exactly *what* went out of sync, we need to compare the `deep_crc`
 
 We provide a Python script in the repository to parse these binary dumps into human-readable data:
 
+### Linux / macOS:
 ```bash
-# Run the python script and pass the path to the crash dumps
 ./scripts/qa/parse_deep_crc.py /path/to/player1_deep_crc.bin /path/to/player2_deep_crc.bin
 ```
 
-The script will output the OS/Architecture of the machine, the exact Object ID that first caused the CRC mismatch, and the internal state (like the Transform Matrix) of that object.
+### Windows (PowerShell / Command Prompt):
+```powershell
+python scripts\qa\parse_deep_crc.py "C:\path\to\player1_deep_crc.bin" "C:\path\to\player2_deep_crc.bin"
+```
+
+The script will output the OS/Architecture/Hardware info of each machine, the exact Object ID that first caused the CRC mismatch, and the internal state (like the Transform Matrix) of that object.
 
 > [!IMPORTANT]
 > A single log file is not enough! A desync is a *disagreement* between two or more computers. You must gather the `.bin` files from **both** the host and the client(s) for the same match to see where the numbers diverged.

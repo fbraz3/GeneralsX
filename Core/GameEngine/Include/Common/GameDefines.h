@@ -86,6 +86,12 @@
 #define PRESERVE_RETAIL_SCRIPTED_CAMERA (0) // Retain scripted camera behavior present in retail Generals 1.08 and Zero Hour 1.04
 #endif
 
+// GeneralsX @refactor stm 28/08/2026 Import the retail-particle compatibility switch.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3172
+#ifndef PRESERVE_RETAIL_PARTICLES
+#define PRESERVE_RETAIL_PARTICLES (1) // Preserve original look of particles present in retail Generals 1.08 and Zero Hour 1.04
+#endif
+
 #ifndef RETAIL_COMPATIBLE_CRC
 #define RETAIL_COMPATIBLE_CRC (0) // Game is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
@@ -142,8 +148,9 @@
 #define USE_BUFFERED_IO (1)
 #endif
 
+// GeneralsX @feature Meeseeks 28/08/2026 Enable deep CRC memory buffer logging by default across all platforms including Windows
 #if (!defined(DEEP_CRC_TO_MEMORY) && !defined(DEBUG_CRC))
-#define DEEP_CRC_TO_MEMORY 0
+#define DEEP_CRC_TO_MEMORY 1
 #endif
 
 // Enable cache for local file existence. Reduces amount of disk accesses for better performance,
