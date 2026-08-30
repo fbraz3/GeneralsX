@@ -63,7 +63,14 @@ typedef struct {
 #define TILE_PIXEL_EXTENT_MIP6 4
 #define TILE_PIXEL_EXTENT_MIP7 2
 #define TILE_PIXEL_EXTENT_MIP8 1
+// GeneralsX @bugfix Copilot 30/08/2026 Keep browser terrain atlases within d8web's 4096px texture cap while retaining 256px source tiles.
+#ifdef __EMSCRIPTEN__
+#define TERRAIN_ATLAS_TILE_PIXEL_EXTENT TILE_PIXEL_EXTENT_MIP1
+#define TEXTURE_WIDTH 4096
+#else
+#define TERRAIN_ATLAS_TILE_PIXEL_EXTENT TILE_PIXEL_EXTENT
 #define TEXTURE_WIDTH 8192 // GeneralsX @feature mrkinglollipop 11/07/2026 Bumps atlas TEXTURE_WIDTH 2048->8192 (was 2048). MoltenVK/Metal cap is 16384.
+#endif
 
 /** This class holds the bitmap data from the .tga texture files.  It is used to
 create the D3D texture in the game and 3d windows, and to create DIB data for the

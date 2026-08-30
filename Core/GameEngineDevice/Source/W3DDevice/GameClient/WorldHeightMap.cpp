@@ -1529,7 +1529,7 @@ Int WorldHeightMap::updateTileTexturePositions(Int *edgeHeight)
 {
 	Int i, j;
 	Int maxHeight = 0;
-	const Int tilesPerRow = TEXTURE_WIDTH/(TILE_PIXEL_EXTENT+TILE_OFFSET);
+	const Int tilesPerRow = TEXTURE_WIDTH/(TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
 
 	Bool availableGrid[tilesPerRow][tilesPerRow];
 	Int row, column;
@@ -1578,11 +1578,11 @@ Int WorldHeightMap::updateTileTexturePositions(Int *edgeHeight)
 				continue;
 			}
 
-			Int xOrigin = TILE_OFFSET/2 + column*(TILE_PIXEL_EXTENT+TILE_OFFSET);
-			Int yOrigin = TILE_OFFSET/2 + row*(TILE_PIXEL_EXTENT+TILE_OFFSET);
+			Int xOrigin = TILE_OFFSET/2 + column*(TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
+			Int yOrigin = TILE_OFFSET/2 + row*(TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
 			m_textureClasses[texClass].positionInTexture.x = xOrigin;
 			m_textureClasses[texClass].positionInTexture.y = yOrigin;
-			Int classHeight = yOrigin + width*TILE_PIXEL_EXTENT+ TILE_OFFSET/2;
+			Int classHeight = yOrigin + width*TERRAIN_ATLAS_TILE_PIXEL_EXTENT+ TILE_OFFSET/2;
 			if (maxHeight < classHeight) maxHeight = classHeight;
 
 			for (i=0; i<width; i++) {
@@ -1591,8 +1591,8 @@ Int WorldHeightMap::updateTileTexturePositions(Int *edgeHeight)
 					Int baseNdx = m_textureClasses[texClass].firstTile + i + j*width;
 					// In case we are just checking for room...
 					if (m_sourceTiles[baseNdx] == nullptr) continue;
-					Int x = xOrigin + i*TILE_PIXEL_EXTENT;
-					Int y = yOrigin + (width-j-1)*TILE_PIXEL_EXTENT;
+					Int x = xOrigin + i*TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
+					Int y = yOrigin + (width-j-1)*TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
 					m_sourceTiles[baseNdx]->m_tileLocationInTexture.x = x;
 					m_sourceTiles[baseNdx]->m_tileLocationInTexture.y = y;
 				}
@@ -1642,11 +1642,11 @@ Int WorldHeightMap::updateTileTexturePositions(Int *edgeHeight)
 			continue;
 		}
 
-		Int xOrigin = TILE_OFFSET/2 + column*(TILE_PIXEL_EXTENT+TILE_OFFSET);
-		Int yOrigin = TILE_OFFSET/2 + row*(TILE_PIXEL_EXTENT+TILE_OFFSET);
+		Int xOrigin = TILE_OFFSET/2 + column*(TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
+		Int yOrigin = TILE_OFFSET/2 + row*(TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
 		m_edgeTextureClasses[texClass].positionInTexture.x = xOrigin;
 		m_edgeTextureClasses[texClass].positionInTexture.y = yOrigin;
-		Int classHeight = yOrigin + width*TILE_PIXEL_EXTENT+ TILE_OFFSET/2;
+		Int classHeight = yOrigin + width*TERRAIN_ATLAS_TILE_PIXEL_EXTENT+ TILE_OFFSET/2;
 		if (maxEdgeHeight < classHeight) maxEdgeHeight = classHeight;
 
 		for (i=0; i<width; i++) {
@@ -1655,8 +1655,8 @@ Int WorldHeightMap::updateTileTexturePositions(Int *edgeHeight)
 				Int baseNdx = m_edgeTextureClasses[texClass].firstTile + i + j*width;
 				// In case we are just checking for room...
 				if (m_edgeTiles[baseNdx] == nullptr) continue;
-				Int x = xOrigin + i*TILE_PIXEL_EXTENT;
-				Int y = yOrigin + (width-j-1)*TILE_PIXEL_EXTENT;
+				Int x = xOrigin + i*TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
+				Int y = yOrigin + (width-j-1)*TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
 				// Use negative offsets to differentiate between tiles & edges.
 				m_edgeTiles[baseNdx]->m_tileLocationInTexture.x = x;
 				m_edgeTiles[baseNdx]->m_tileLocationInTexture.y = y;
@@ -1680,18 +1680,18 @@ void WorldHeightMap::getUVForNdx(Int tileNdx, float *minU, float *minV, float *m
 	ICoord2D pos = m_sourceTiles[baseNdx]->m_tileLocationInTexture;
 	*minU = pos.x;
 	*minV = pos.y;
-	*maxU = *minU+TILE_PIXEL_EXTENT;
-	*maxV = *minV+TILE_PIXEL_EXTENT;
+	*maxU = *minU+TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
+	*maxV = *minV+TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
 #ifdef EVAL_TILING_MODES
 	if (m_tileMode == TILE_8x8) {
-		*maxU = *minU+TILE_PIXEL_EXTENT/2.0f;
-		*maxV = *minV+TILE_PIXEL_EXTENT/2.0f;
+		*maxU = *minU+TERRAIN_ATLAS_TILE_PIXEL_EXTENT/2.0f;
+		*maxV = *minV+TERRAIN_ATLAS_TILE_PIXEL_EXTENT/2.0f;
 	} else if (m_tileMode == TILE_6x6) {
-		*maxU = *minU+2.0f*TILE_PIXEL_EXTENT/3.0f;
-		*maxV = *minV+2.0f*TILE_PIXEL_EXTENT/3.0f;
+		*maxU = *minU+2.0f*TERRAIN_ATLAS_TILE_PIXEL_EXTENT/3.0f;
+		*maxV = *minV+2.0f*TERRAIN_ATLAS_TILE_PIXEL_EXTENT/3.0f;
 	} else {
-		*maxU = *minU+TILE_PIXEL_EXTENT;
-		*maxV = *minV+TILE_PIXEL_EXTENT;
+		*maxU = *minU+TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
+		*maxV = *minV+TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
 	}
 #endif
 	*minU/=TEXTURE_WIDTH;
@@ -1723,8 +1723,8 @@ void WorldHeightMap::getUVForBlend(Int edgeClass, Region2D *range)
 	Int width = m_edgeTextureClasses[edgeClass].width;
 	range->lo.x = (Real)pos.x/TEXTURE_WIDTH;
 	range->lo.y = (Real)pos.y/m_alphaEdgeHeight;
-	range->hi.x = ((Real)pos.x + width*TILE_PIXEL_EXTENT)/TEXTURE_WIDTH;
-	range->hi.y = ((Real)pos.y + width*TILE_PIXEL_EXTENT)/m_alphaEdgeHeight;
+	range->hi.x = ((Real)pos.x + width*TERRAIN_ATLAS_TILE_PIXEL_EXTENT)/TEXTURE_WIDTH;
+	range->hi.y = ((Real)pos.y + width*TERRAIN_ATLAS_TILE_PIXEL_EXTENT)/m_alphaEdgeHeight;
 }
 
 /// Get whether something is cliff indexed with the offset that HeightMapRenderObjClass uses built in.
@@ -1783,7 +1783,7 @@ Bool WorldHeightMap::getUVForTileIndex(Int ndx, Short tileNdx, float U[4], float
 {
 	Real nU, nV, xU, xV;
 	nU=nV=xU=xV = 0.0f;
-	Int tilesPerRow = TEXTURE_WIDTH/(2*TILE_PIXEL_EXTENT+TILE_OFFSET);
+	Int tilesPerRow = TEXTURE_WIDTH/(2*TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
 	tilesPerRow *= 4;
 
 	if ((ndx<m_dataSize) && m_tileNdxes) {
@@ -1811,7 +1811,7 @@ Bool WorldHeightMap::getUVForTileIndex(Int ndx, Short tileNdx, float U[4], float
 			}
 			if (tilesMatch) {
 				Real minU = m_textureClasses[i].positionInTexture.x;
-				Real maxV = m_textureClasses[i].positionInTexture.y + m_textureClasses[i].width*TILE_PIXEL_EXTENT;
+				Real maxV = m_textureClasses[i].positionInTexture.y + m_textureClasses[i].width*TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
 				minU/=TEXTURE_WIDTH;
 				maxV/=m_terrainTexHeight;
 				Real vFactor = TEXTURE_WIDTH/m_terrainTexHeight;
@@ -1843,7 +1843,7 @@ Bool WorldHeightMap::getUVForTileIndex(Int ndx, Short tileNdx, float U[4], float
 
 		Real nU, nV, xU, xV;
 		nU=nV=xU=xV = 0.0f;
-		Int tilesPerRow = TEXTURE_WIDTH/(2*TILE_PIXEL_EXTENT+TILE_OFFSET);
+		Int tilesPerRow = TEXTURE_WIDTH/(2*TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
 		tilesPerRow *= 4;
 
 
@@ -1904,8 +1904,8 @@ Bool WorldHeightMap::getUVForTileIndex(Int ndx, Short tileNdx, float U[4], float
 			Real nUb, nVb, xUb, xVb;
 			nUb = m_textureClasses[texClass].positionInTexture.x;
 			nVb = m_textureClasses[texClass].positionInTexture.y;
-			xUb = nUb+m_textureClasses[texClass].width*TILE_PIXEL_EXTENT;
-			xVb = nVb+m_textureClasses[texClass].width*TILE_PIXEL_EXTENT;
+			xUb = nUb+m_textureClasses[texClass].width*TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
+			xVb = nVb+m_textureClasses[texClass].width*TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
 			nUb/=TEXTURE_WIDTH;
 			nVb/=m_terrainTexHeight;
 			xUb/=TEXTURE_WIDTH;
@@ -2638,4 +2638,3 @@ Bool  WorldHeightMap::getRawTileData(Short tileNdx, Int width,
 	}
 	return(false);
 }
-

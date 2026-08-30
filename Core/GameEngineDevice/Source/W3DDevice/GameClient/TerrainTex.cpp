@@ -115,8 +115,8 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 
 	DX8_ErrorCode(surface_level->LockRect(&locked_rect, nullptr, 0));
 
-	Int tilePixelExtent = TILE_PIXEL_EXTENT;
-	Int tilesPerRow = surface_desc.Width/(2*TILE_PIXEL_EXTENT+TILE_OFFSET);
+	Int tilePixelExtent = TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
+	Int tilesPerRow = surface_desc.Width/(2*TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
 	tilesPerRow *= 2;
 //	Int numRows = surface_desc.Height/(tilePixelExtent+TILE_OFFSET);
 #ifdef RTS_DEBUG
@@ -164,7 +164,7 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 			Int width = htMap->m_textureClasses[texClass].width;
 			ICoord2D origin = htMap->m_textureClasses[texClass].positionInTexture;
 			if (origin.x<=0) continue;
-			width *= TILE_PIXEL_EXTENT;
+			width *= TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
 			// Duplicate 4 columns of pixels before and after.
 			Int j;
 			for (j=0; j<width; j++) {
@@ -235,8 +235,8 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 
 	DX8_ErrorCode(surface_level->LockRect(&locked_rect, nullptr, 0));
 
-	Int tilePixelExtent = TILE_PIXEL_EXTENT;
-	Int tilesPerRow = surface_desc.Width/(2*TILE_PIXEL_EXTENT+TILE_OFFSET);
+	Int tilePixelExtent = TERRAIN_ATLAS_TILE_PIXEL_EXTENT;
+	Int tilesPerRow = surface_desc.Width/(2*TERRAIN_ATLAS_TILE_PIXEL_EXTENT+TILE_OFFSET);
 	tilesPerRow *= 2;
 	Int numRows = surface_desc.Height/(tilePixelExtent+TILE_OFFSET);
 #ifdef RTS_DEBUG
@@ -784,7 +784,7 @@ int AlphaEdgeTextureClass::update(WorldHeightMap *htMap)
 	DX8_ErrorCode(surface_level->LockRect(&locked_rect, nullptr, 0));
 	DX8_ErrorCode(surface_level->GetDesc(&surface_desc));
 
-	Int tilePixelExtent = TILE_PIXEL_EXTENT; // blend tiles are 1/4 tiles.
+	Int tilePixelExtent = TERRAIN_ATLAS_TILE_PIXEL_EXTENT; // blend tiles are 1/4 tiles.
 //	Int tilesPerRow = surface_desc.Width / (tilePixelExtent+8);
 
 //	Int numRows = surface_desc.Height/(tilePixelExtent+8);
@@ -1144,5 +1144,4 @@ void ScorchTextureClass::Apply(unsigned int stage)
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
 }
-
 
