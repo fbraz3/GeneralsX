@@ -63,6 +63,9 @@
 #include "GameLogic/FPUControl.h"
 
 #include "Common/file.h"
+
+#include <vector>
+
 #ifdef RTS_HAS_FFMPEG
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
 #endif
@@ -354,11 +357,56 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 	}
 
 #ifndef RTS_HAS_FFMPEG
-	// Igroteka @build 05/07/2026 wasm: no FFmpeg yet — audio decode disabled,
-	// sounds are skipped gracefully. Revisit with an FFmpeg-wasm or stb_vorbis path.
-	DEBUG_LOG(("MiniAudio: FFmpeg disabled, skipping: %s\n", fileToPlay.str()));
-	releasePlayingAudio(audio);
-	return;
+	// Igroteka wasm: no FFmpeg — decode with miniaudio's built-in decoders
+	// (dr_wav/dr_mp3) from an in-memory copy of the file. Decoding from
+	// memory rather than through the VFS sidesteps the MP3-via-VFS hang the
+	// FFmpeg path was added to avoid.
+	// Events with no resolved filename are normal (unresolved localized or
+	// positional variants) — skip them without the console spam.
+	if (fileToPlay.isEmpty()) {
+		releasePlayingAudio(audio);
+		return;
+	}
+	File *file = TheFileSystem->openFile(fileToPlay.str());
+	if (!file) {
+		fprintf(stderr, "AUDIO: failed to open '%s'\n", fileToPlay.str());
+		releasePlayingAudio(audio);
+		return;
+	}
+	Int fileSize = file->size();
+	std::vector<uint8_t> fileData(fileSize > 0 ? fileSize : 0);
+	Int bytesRead = fileSize > 0 ? file->read(fileData.data(), fileSize) : 0;
+	file->close();
+	if (bytesRead <= 0) {
+		fprintf(stderr, "AUDIO: empty read for '%s'\n", fileToPlay.str());
+		releasePlayingAudio(audio);
+		return;
+	}
+
+	ma_uint64 frameCount = 0;
+	void *pcmFrames = NULL;
+	ma_decoder_config decCfg = ma_decoder_config_init(ma_format_s16, 0, 0);
+	ma_result result = ma_decode_memory(fileData.data(), (size_t)bytesRead, &decCfg, &frameCount, &pcmFrames);
+	if (result != MA_SUCCESS || frameCount == 0 || pcmFrames == NULL) {
+		fprintf(stderr, "AUDIO: decode failed (%d) for '%s'\n", result, fileToPlay.str());
+		releasePlayingAudio(audio);
+		return;
+	}
+
+	// Same ownership contract as the FFmpeg path below: init_copy owns a
+	// copy, the decode allocation is freed here.
+	ma_audio_buffer *audioBuffer = (ma_audio_buffer *)malloc(sizeof(ma_audio_buffer));
+	ma_audio_buffer_config abConfig = ma_audio_buffer_config_init(decCfg.format, decCfg.channels,
+		frameCount, pcmFrames, NULL);
+	result = ma_audio_buffer_init_copy(&abConfig, audioBuffer);
+	ma_free(pcmFrames, NULL);
+	if (result != MA_SUCCESS) {
+		fprintf(stderr, "AUDIO: buffer init failed (%d) for '%s'\n", result, fileToPlay.str());
+		free(audioBuffer);
+		releasePlayingAudio(audio);
+		return;
+	}
+	audioBuffer->ref.sampleRate = decCfg.sampleRate;
 #else
 	// Use FFmpeg to decode the file into PCM, then feed to miniaudio.
 	// This avoids miniaudio's built-in decoders which hang on MP3 via VFS.
@@ -449,6 +497,7 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 		return;
 	}
 	audioBuffer->ref.sampleRate = sampleRate;
+#endif // RTS_HAS_FFMPEG
 
 	ma_sound *sound = (ma_sound *)malloc(sizeof(ma_sound));
 	result = ma_sound_init_from_data_source(&m_engine, audioBuffer, flags, groupToUse, sound);
@@ -517,7 +566,6 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 	}
 
 	m_playingSounds.push_back(audio);
-#endif // RTS_HAS_FFMPEG
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -807,9 +855,18 @@ void MiniAudioManager::openDevice(void)
 
 	resourceManagerConfig = ma_resource_manager_config_init();
 	resourceManagerConfig.pVFS = (ma_vfs *)&vfs;
+#ifdef __EMSCRIPTEN__
+	// The wasm build has no pthreads: the default config spawns a job thread
+	// and ma_resource_manager_init fails outright when ma_thread_create
+	// returns EAGAIN, so the whole device silently never opens. Every load
+	// in this manager is synchronous (no MA_SOUND_FLAG_ASYNC), so a
+	// threadless resource manager needs no manual job pumping.
+	resourceManagerConfig.jobThreadCount = 0;
+	resourceManagerConfig.flags |= MA_RESOURCE_MANAGER_FLAG_NO_THREADING;
+#endif
 	result = ma_resource_manager_init(&resourceManagerConfig, &m_resourceManager);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("MiniAudio: Failed to initialize resource manager: %d\n", result));
+		fprintf(stderr, "AUDIO: MiniAudio resource manager init failed: %d\n", result);
 		setOn(false, AudioAffect_All);
 		return;
 	}
@@ -831,7 +888,7 @@ void MiniAudioManager::openDevice(void)
 
 	result = ma_context_init(NULL, 0, &contextConfig, &m_context);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("MiniAudio: Failed to initialize context: %d\n", result));
+		fprintf(stderr, "AUDIO: MiniAudio context init failed: %d\n", result);
 		setOn(false, AudioAffect_All);
 		return;
 	}
@@ -849,7 +906,7 @@ void MiniAudioManager::openDevice(void)
 
 	result = ma_engine_init(&engineConfig, &m_engine);
 	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("MiniAudio: Failed to initialize engine: %d\n", result));
+		fprintf(stderr, "AUDIO: MiniAudio engine init failed: %d\n", result);
 		setOn(false, AudioAffect_All);
 		return;
 	}

@@ -1048,16 +1048,19 @@ extern HWND ApplicationHWnd;
  */
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-// Igroteka @build 06/07/2026 wasm: the browser owns the event loop. Each
+// GeneralsX @build meerzulee 06/07/2026 The browser owns the event loop. Each
 // requestAnimationFrame tick runs one engine frame; a synchronous while-loop
 // would freeze the tab. Mirrors the essentials of the native loop body below.
-static void igrotekaFrameTick(void* arg)
+static void generalsXFrameTick(void* arg)
 {
 	GameEngine* engine = static_cast<GameEngine*>(arg);
 	if (engine->getQuitting())
 	{
-		fprintf(stderr, "INFO: igrotekaFrameTick - quitting, cancelling main loop\n");
+		fprintf(stderr, "INFO: generalsXFrameTick - quitting, cancelling main loop\n");
 		emscripten_cancel_main_loop();
+		// EXIT GAME never unwinds to a process exit here (EXIT_RUNTIME=0, RAF
+		// loop just stops) — notify the page so it can return to the desktop.
+		EM_ASM({ if (Module.onGameExit) Module.onGameExit(); });
 		return;
 	}
 	try
@@ -1085,7 +1088,7 @@ void GameEngine::execute()
 #ifdef __EMSCRIPTEN__
 	// Hands control to the browser; ticks run via requestAnimationFrame.
 	// simulate_infinite_loop=1 unwinds out of main() without returning.
-	emscripten_set_main_loop_arg(igrotekaFrameTick, this, 0, 1);
+	emscripten_set_main_loop_arg(generalsXFrameTick, this, 0, 1);
 	return;
 #endif
 

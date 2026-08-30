@@ -878,6 +878,26 @@ void TextureLoader::Update(void (*network_callback)())
 		return;
 	}
 
+#ifdef __EMSCRIPTEN__
+	// Igroteka wasm: the background loader thread never runs (no threads), so
+	// tasks pushed to the background queue would sit there forever and their
+	// textures would stay at the missing-texture placeholder. Drain the queue
+	// synchronously here, doing exactly what LoaderThreadClass::Thread_Function
+	// does: load mip levels, then hand the task back to the foreground queue.
+	// Done before taking the foreground lock to respect the lock-order rule.
+	while (!_BackgroundQueue.Is_Empty()) {
+		TextureLoadTaskClass* bg_task = nullptr;
+		{
+			FastCriticalSectionClass::LockClass bg_lock(_BackgroundCriticalSection);
+			bg_task = _BackgroundQueue.Pop_Front();
+		}
+		if (bg_task) {
+			bg_task->Load();
+			_ForegroundQueue.Push_Back(bg_task);
+		}
+	}
+#endif
+
 	// grab foreground lock to prevent any other thread from
 	// modifying texture tasks.
 	FastCriticalSectionClass::LockClass lock(_ForegroundCriticalSection);
@@ -1234,6 +1254,10 @@ bool TextureLoadTaskClass::Begin_Load()
 
 	// if not loaded, abort.
 	if (!loaded) {
+#ifdef __EMSCRIPTEN__
+		fprintf(stderr, "[TEX_BEGIN_FAIL] %s (compression_allowed=%d)\n",
+		        Texture->Get_Full_Path().str(), int(Texture->Is_Compression_Allowed()));
+#endif
 		return false;
 	}
 
@@ -1334,6 +1358,9 @@ void TextureLoadTaskClass::Apply_Missing_Texture()
 	{
 		return;
 	}
+#ifdef __EMSCRIPTEN__
+	fprintf(stderr, "[TEX_MISSING] %s\n", Texture->Get_Full_Path().str());
+#endif
 	Apply(true);
 }
 

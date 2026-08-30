@@ -103,6 +103,12 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 	DX8_ErrorCode(Peek_D3D_Texture()->GetSurfaceLevel(0, &surface_level));
 	DX8_ErrorCode(surface_level->GetDesc(&surface_desc));
 	if (surface_desc.Width < TEXTURE_WIDTH) {
+#ifdef __EMSCRIPTEN__
+		// Silent unpopulated-atlas path: the caller keeps using the texture even
+		// though no tile was ever written — every tile in it samples black.
+		fprintf(stderr, "[ATLAS_SKIP] terrain atlas %ux%u < TEXTURE_WIDTH %u — LEFT UNPOPULATED\n",
+		        surface_desc.Width, surface_desc.Height, (unsigned)TEXTURE_WIDTH);
+#endif
 		surface_level->Release();
 		return 0;
 	}

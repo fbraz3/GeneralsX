@@ -33,7 +33,13 @@ static inline MMRESULT timeEndPeriod(int) { return TIMERR_NOERROR; }
 inline unsigned int timeGetTime()
 {
   struct timespec ts;
+#ifdef __EMSCRIPTEN__
+  // Emscripten's clock_gettime rejects CLOCK_BOOTTIME (EINVAL) and leaves ts
+  // untouched — time would appear frozen (breaks fog-of-war interpolation).
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+#else
   clock_gettime(CLOCK_BOOTTIME, &ts);
+#endif
   return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 inline unsigned int GetTickCount()

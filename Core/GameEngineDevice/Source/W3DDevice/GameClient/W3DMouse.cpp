@@ -29,6 +29,19 @@
 
 
 #include "Common/GameMemory.h"
+
+// GeneralsX @performance meerzulee 06/07/2026 Gate high-volume browser traces.
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+static bool igTraceEnabled() {
+    static const bool on = EM_ASM_INT({
+        return (typeof window !== 'undefined' && window.GENERALSX_WASM_TRACE) ? 1 : 0;
+    }) != 0;
+    return on;
+}
+#else
+static bool igTraceEnabled() { return true; }
+#endif
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/rendobj.h"
 #include "WW3D2/hanim.h"

@@ -484,8 +484,8 @@ static DynamicVectorClass<RenderDeviceDescClass>	_RenderDeviceDescriptionTable;
 typedef IDirect3D8* (WINAPI *Direct3DCreate8Type) (UINT SDKVersion);
 Direct3DCreate8Type	Direct3DCreate8Ptr = nullptr;
 #ifdef __EMSCRIPTEN__
-// Igroteka wasm: statically linked d8web bridge factory (wasm/d8web_bridge)
-extern "C" IDirect3D8* WINAPI Igroteka_Direct3DCreate8(UINT SDKVersion);
+// GeneralsX @build meerzulee 06/07/2026 Use the statically linked d8web bridge.
+extern "C" IDirect3D8* WINAPI GeneralsX_Direct3DCreate8(UINT SDKVersion);
 #endif
 HINSTANCE D3D8Lib = nullptr;
 
@@ -644,7 +644,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 		// (declared at file scope above).
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - using statically linked d8web bridge\n");
 		D3D8Lib = (HMODULE)1;  // sentinel: never dereferenced, only null-checked/freed
-		Direct3DCreate8Ptr = Igroteka_Direct3DCreate8;
+		Direct3DCreate8Ptr = GeneralsX_Direct3DCreate8;
 #elif defined(_WIN32)
 		D3D8Lib = LoadLibrary("D3D8.DLL");
 #elif defined(__APPLE__)

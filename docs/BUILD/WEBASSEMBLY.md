@@ -44,6 +44,8 @@ development. Building the engine alone does not provide game data.
 ## Current limitations
 
 - Zero Hour is the only configured game target.
-- The browser launcher and persistent asset cache are not yet included.
+- `wasm/boot.html` is a development harness and requires manually staged,
+  legally obtained game archives.
+- A persistent asset cache is not yet connected to the engine filesystem.
 - Rendering support is incomplete and remains experimental.
-- Browser audio and multiplayer are not yet release-ready.
+- Browser audio is experimental and multiplayer is not yet release-ready.

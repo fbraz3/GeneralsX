@@ -53,6 +53,43 @@
 #define DXVK_WSI_SDL3 1
 #include <wsi/native_wsi.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#include "Common/ArchiveFileSystem.h"
+#include "Common/FileSystem.h"
+#include "Common/GameAudio.h"
+
+// Debug probe: bit 0 = an AudioZH.big sample is visible, bit 1 = an
+// INIZH.big control file is visible. Call: Module._generalsx_audio_probe()
+extern "C" EMSCRIPTEN_KEEPALIVE int generalsx_audio_probe(void)
+{
+	if (TheFileSystem == NULL) return -1;
+	int r = 0;
+	if (TheFileSystem->doesFileExist("Data\\Audio\\Sounds\\addnwi1a.wav")) r |= 1;
+	if (TheFileSystem->doesFileExist("Data\\INI\\GameData.ini")) r |= 2;
+	return r;
+}
+
+// GeneralsX @performance meerzulee 06/07/2026 Stage large audio archives in the
+// background while the engine boots, then calls this to mount them. Returns
+// 0 (retry later) until the archive file system exists. Mount order mirrors
+// boot: ZH audio first, base-game second, no overwrite — first wins.
+extern "C" EMSCRIPTEN_KEEPALIVE int generalsx_mount_audio(void)
+{
+	if (TheArchiveFileSystem == NULL)
+		return 0;
+	Bool zh = TheArchiveFileSystem->loadBigFilesFromDirectory("/game-audio", "*.big");
+	Bool base = TheArchiveFileSystem->loadBigFilesFromDirectory("/game-base-audio", "*.big");
+	fprintf(stderr, "AUDIO: late audio archives mounted (zh=%d base=%d)\n", (int)zh, (int)base);
+	// A fast boot reaches the menu before the audio exists, so the shell's
+	// music event fired into missing files and won't retry on its own —
+	// kick the track list back to life once the archives are here.
+	if (TheAudio != NULL && !TheAudio->isMusicPlaying())
+		TheAudio->nextMusicTrack();
+	return 1;
+}
+#endif
+
 // CRITICAL SECTIONS (Linux needs these too)
 static CriticalSection critSec1;
 static CriticalSection critSec2;
@@ -313,7 +350,13 @@ int main(int argc, char* argv[])
 		// Create SDL3 window with Vulkan support
 		fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
 #ifdef __EMSCRIPTEN__
-		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;  // wasm: plain window over #canvas, no Vulkan
+		// wasm: plain window over #canvas, no Vulkan. NOT resizable: with
+		// SDL_WINDOW_RESIZABLE, SDL3's emscripten backend syncs the canvas
+		// backing store to its CSS size on any page resize (rotation,
+		// fullscreen), while the engine keeps rendering its fixed-resolution
+		// viewport — the picture comes out cropped/offset. The page scales
+		// the fixed-size canvas with CSS instead.
+		Uint32 windowFlags = 0;
 #else
 		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
 #ifdef __APPLE__

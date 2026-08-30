@@ -296,9 +296,9 @@ void W3DGadgetTextEntryDraw( GameWindow *window, WinInstanceData *instData )
 	width = size.x - (2 * startOffset);
 	start.x = origin.x + startOffset;  // offset a little bit into the entry
 	if( BitIsSet( window->winGetStatus(), WIN_STATUS_ONE_LINE ) )
-		start.y = size.y / 2 - fontHeight / 2;
+		start.y = origin.y + (size.y - fontHeight) / 2;  // GeneralsXWeb @bugfix: was missing origin.y
 	else
-		start.y = origin.y + startOffset;  // offset a little bit into the entry
+		start.y = origin.y + max( startOffset, (size.y - fontHeight) / 2 );  // GeneralsXWeb: center vertically
 
 	// draw the edit text
 	drawTextEntryText( window, instData, textColor, textBorder, compositeColor, compositeBorder,
@@ -450,9 +450,9 @@ void W3DGadgetTextEntryImageDraw( GameWindow *window, WinInstanceData *instData 
 	width = size.x - (2 * startOffset);
 	start.x = origin.x + startOffset;  // offset a little bit into the entry
 		if( BitIsSet( window->winGetStatus(), WIN_STATUS_ONE_LINE ) )
-		start.y = size.y / 2 - fontHeight / 2;
+		start.y = origin.y + (size.y - fontHeight) / 2;  // GeneralsXWeb @bugfix: was missing origin.y
 	else
-		start.y = origin.y + startOffset;  // offset a little bit into the entry
+		start.y = origin.y + max( startOffset, (size.y - fontHeight) / 2 );  // GeneralsXWeb: center vertically
 
 	// draw the edit text
 	drawTextEntryText( window, instData, textColor, textBorder, compositeColor, compositeBorder,

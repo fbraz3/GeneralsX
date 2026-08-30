@@ -733,6 +733,14 @@ void W3DShroud::interpolateFogLevels(RECT *rect)
 
 	UnsignedInt timeDiff=timeGetTime()-prevTime;
 
+#ifdef __EMSCRIPTEN__
+	static int logCount = 0;
+	if (logCount < 5) {
+		fprintf(stderr, "[SHROUD] interpolate tick: now=%u diff=%u\n", timeGetTime(), timeDiff);
+		logCount++;
+	}
+#endif
+
 	if (!timeDiff)
 		return;	//no time has elapsed
 

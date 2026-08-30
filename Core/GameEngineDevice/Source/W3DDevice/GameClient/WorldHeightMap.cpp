@@ -991,6 +991,9 @@ void WorldHeightMap::readTexClass(TXTextureClass *texClass, TileData **tileData)
 	char texturePath[ _MAX_PATH ];
 	if (terrain==nullptr)
 	{
+#ifdef __EMSCRIPTEN__
+		fprintf(stderr, "[TILE_FAIL] no TerrainType for tex class '%s'\n", texClass->name.str());
+#endif
 #ifdef LOAD_TEST_ASSETS
 		theFile = TheFileSystem->openFile( texClass->name.str(), File::READ|File::BINARY);
 #endif
@@ -999,6 +1002,10 @@ void WorldHeightMap::readTexClass(TXTextureClass *texClass, TileData **tileData)
 	{
 		snprintf( texturePath, ARRAY_SIZE(texturePath), "%s%s", TERRAIN_TGA_DIR_PATH, terrain->getTexture().str() );
 		theFile = TheFileSystem->openFile( texturePath, File::READ|File::BINARY);
+#ifdef __EMSCRIPTEN__
+		if (theFile == nullptr)
+			fprintf(stderr, "[TILE_FAIL] cannot open '%s' (class '%s')\n", texturePath, texClass->name.str());
+#endif
 	}
 
 	if (theFile != nullptr) {
@@ -1007,6 +1014,12 @@ void WorldHeightMap::readTexClass(TXTextureClass *texClass, TileData **tileData)
 		Bool isLegacyGrid = false;
 		Int numTiles = WorldHeightMap::countTiles(pStr, nullptr, texClass->numTiles, &isLegacyGrid);
 		theFile->seek(0, File::START);
+#ifdef __EMSCRIPTEN__
+		if (numTiles < texClass->numTiles)
+			fprintf(stderr, "[TILE_SHORT] '%s' (%s): counted %d tiles, class expects %d — SKIPPED\n",
+			        texClass->name.str(), terrain ? terrain->getTexture().str() : "?",
+			        numTiles, texClass->numTiles);
+#endif
 		if (numTiles >= texClass->numTiles) {
 			numTiles = texClass->numTiles;
 			Int width;

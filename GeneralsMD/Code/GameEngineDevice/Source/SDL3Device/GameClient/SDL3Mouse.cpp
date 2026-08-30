@@ -174,6 +174,98 @@ SDL3Mouse::~SDL3Mouse(void)
 	// fprintf(stderr, "DEBUG: SDL3Mouse::~SDL3Mouse() destroyed\n");
 }
 
+#ifdef __EMSCRIPTEN__
+/**
+ * GeneralsXWeb: decode one classic .CUR/.ICO frame (BMP-in-ICO: header,
+ * optional palette, bottom-up XOR pixels, 1bpp AND mask) into an RGBA
+ * surface. SDL3_image is not part of the wasm build, so the IMG_LoadTyped_IO
+ * path used on desktop is unavailable — without this every cursor load
+ * failed and the browser kept its default pointer.
+ */
+static SDL_Surface* decodeCurFrame(const Uint8* buf, size_t len)
+{
+	if (len < 6 + 16 + 40) return NULL;
+	const Uint16 count = buf[4] | (buf[5] << 8);
+	if (count < 1) return NULL;
+	// ICONDIRENTRY: for .cur the planes/bpp slots hold the hotspot
+	const Uint8* e = buf + 6;
+	const int hotX = e[4] | (e[5] << 8);
+	const int hotY = e[6] | (e[7] << 8);
+	const Uint32 off = e[12] | (e[13] << 8) | (e[14] << 16) | ((Uint32)e[15] << 24);
+	// GeneralsX @bugfix Copilot 30/08/2026 Validate cursor offsets before
+	// pointer arithmetic so malformed frames cannot wrap outside the buffer.
+	const size_t dibOffset = (size_t)off;
+	if (dibOffset < 22 || dibOffset > len || len - dibOffset < 40) return NULL;
+
+	const Uint8* bih = buf + dibOffset;
+	const Uint32 biSize = bih[0] | (bih[1] << 8) | (bih[2] << 16) | ((Uint32)bih[3] << 24);
+	const Sint32  w      = (Sint32)(bih[4] | (bih[5] << 8) | (bih[6] << 16) | ((Uint32)bih[7] << 24));
+	const Sint32  h2     = (Sint32)(bih[8] | (bih[9] << 8) | (bih[10] << 16) | ((Uint32)bih[11] << 24));
+	const Uint16 bpp    = bih[14] | (bih[15] << 8);
+	Uint32 clrUsed      = bih[32] | (bih[33] << 8) | (bih[34] << 16) | ((Uint32)bih[35] << 24);
+	const Sint32 h = h2 / 2;  // height counts XOR + AND blocks
+	if (biSize < 40 || (size_t)biSize > len - dibOffset) return NULL;
+	if (w <= 0 || h2 <= 0 || (h2 & 1) != 0 || h <= 0 || w > 256 || h > 256) return NULL;
+	if (bpp != 1 && bpp != 4 && bpp != 8 && bpp != 24 && bpp != 32) return NULL;
+
+	Uint32 palN = (bpp <= 8) ? (clrUsed ? clrUsed : (1u << bpp)) : 0;
+	if (bpp <= 8 && palN > (1u << bpp)) return NULL;
+
+	const size_t xorStride = ((size_t)w * bpp + 31) / 32 * 4;
+	const size_t andStride = ((size_t)w + 31) / 32 * 4;
+	const size_t paletteBytes = (size_t)palN * 4;
+	const size_t xorBytes = xorStride * (size_t)h;
+	const size_t andBytes = andStride * (size_t)h;
+	size_t dataOffset = dibOffset + (size_t)biSize;
+	if (paletteBytes > len - dataOffset) return NULL;
+	const Uint8* pal = buf + dataOffset;
+	dataOffset += paletteBytes;
+	if (xorBytes > len - dataOffset) return NULL;
+	const Uint8* xorData = buf + dataOffset;
+	dataOffset += xorBytes;
+	if (andBytes > len - dataOffset) return NULL;
+	const Uint8* andData = buf + dataOffset;
+
+	SDL_Surface* s = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
+	if (!s) return NULL;
+	Uint8* out = (Uint8*)s->pixels;
+	for (Sint32 y = 0; y < h; y++) {
+		const Uint8* xrow = xorData + xorStride * (h - 1 - y);  // bottom-up
+		const Uint8* arow = andData + andStride * (h - 1 - y);
+		Uint8* orow = out + (size_t)s->pitch * y;
+		for (Sint32 x = 0; x < w; x++) {
+			Uint8 r = 0, g = 0, b = 0, a = 255;
+			switch (bpp) {
+				case 1: { Uint32 i = (xrow[x >> 3] >> (7 - (x & 7))) & 1;
+					if (i >= palN) { SDL_DestroySurface(s); return NULL; }
+					b = pal[i*4]; g = pal[i*4+1]; r = pal[i*4+2]; break; }
+				case 4: { Uint32 i = (x & 1) ? (xrow[x >> 1] & 0xF) : (xrow[x >> 1] >> 4);
+					if (i >= palN) { SDL_DestroySurface(s); return NULL; }
+					b = pal[i*4]; g = pal[i*4+1]; r = pal[i*4+2]; break; }
+				case 8: { Uint32 i = xrow[x];
+					if (i >= palN) { SDL_DestroySurface(s); return NULL; }
+					b = pal[i*4]; g = pal[i*4+1]; r = pal[i*4+2]; break; }
+				case 24: b = xrow[x*3]; g = xrow[x*3+1]; r = xrow[x*3+2]; break;
+				case 32: b = xrow[x*4]; g = xrow[x*4+1]; r = xrow[x*4+2]; a = xrow[x*4+3]; break;
+			}
+			if (bpp != 32 || a == 0) {
+				// AND mask: set bit = transparent (32bpp files with a real
+				// alpha channel already carry it; many still zero alpha and
+				// rely on the mask, hence the a==0 re-check)
+				const bool masked = (arow[x >> 3] >> (7 - (x & 7))) & 1;
+				a = masked ? 0 : 255;
+				if (bpp == 32 && !masked && xrow[x*4+3] != 0) a = xrow[x*4+3];
+			}
+			orow[x*4] = r; orow[x*4+1] = g; orow[x*4+2] = b; orow[x*4+3] = a;
+		}
+	}
+	SDL_PropertiesID props = SDL_GetSurfaceProperties(s);
+	SDL_SetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, hotX);
+	SDL_SetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, hotY);
+	return s;
+}
+#endif // __EMSCRIPTEN__
+
 /**
  * Load cursor from ANI file (fighter19 pattern with RIFF parsing)
  * GeneralsX @bugfix BenderAI 22/02/2026 Port fighter19 cursor loading
@@ -251,8 +343,11 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 					const void *frame_buffer = getChunkData(frame);
 					SDL_IOStream *io_stream = SDL_IOFromConstMem(frame_buffer, frame->size);
 					#ifdef __EMSCRIPTEN__
+					// GeneralsXWeb: SDL3_image is not linked into the wasm
+					// build — decode the classic CUR frame by hand instead.
 					SDL_CloseIO(io_stream);
-					SDL_Surface *surface = cursor->m_frameSurfaces[frame_index] = NULL;
+					SDL_Surface *surface = cursor->m_frameSurfaces[frame_index] =
+						decodeCurFrame((const Uint8*)frame_buffer, frame->size);
 #else
 					SDL_Surface *surface = cursor->m_frameSurfaces[frame_index] = IMG_LoadTyped_IO(io_stream, true, "ico");
 #endif
@@ -297,7 +392,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 				const int clamped_rate = (cursor->m_frameRate > 0) ? cursor->m_frameRate : 4;
 				const Uint32 frame_duration_ms = (Uint32)((clamped_rate * 1000) / 60);
 				SDL_CursorFrameInfo frame_infos[MAX_2D_CURSOR_ANIM_FRAMES];
-				#ifdef __linux__
+				#if defined(__linux__) || defined(__EMSCRIPTEN__)
 				SDL_Surface *first_surface = cursor->m_frameSurfaces[0];
 				#endif
 
@@ -307,7 +402,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 					frame_infos[i].duration = frame_duration_ms;
 				}
 
-				#ifdef __linux__
+				#if defined(__linux__) || defined(__EMSCRIPTEN__)
 				if (first_surface)
 				{
 					if (hot_spot_x < 0) hot_spot_x = 0;
@@ -322,7 +417,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 				if (!cursor->m_cursor)
 				{
 					DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: SDL_CreateAnimatedCursor failed [%s]", SDL_GetError()));
-					#ifdef __linux__
+					#if defined(__linux__) || defined(__EMSCRIPTEN__)
 					// GeneralsX @bugfix BenderAI 11/05/2026 Fallback to static cursor when ANI animation fails.
 					if (first_surface)
 					{
@@ -439,8 +534,11 @@ void SDL3Mouse::update(void)
  */
 void SDL3Mouse::initCursorResources(void)
 {
+	std::fprintf(stderr, "[cursor] initCursorResources: %d cursor slots\n", (int)NUM_MOUSE_CURSORS);
+	int loaded = 0, failed = 0, empty = 0;
 	for (Int cursor=FIRST_CURSOR; cursor<NUM_MOUSE_CURSORS; cursor++)
 	{
+		if (m_cursorInfo[cursor].textureName.isEmpty()) empty++;
 		for (Int direction=0; direction<m_cursorInfo[cursor].numDirections; direction++)
 		{	if (!cursorResources[cursor][direction] && !m_cursorInfo[cursor].textureName.isEmpty())
 			{	//this cursor has never been loaded before.
@@ -452,10 +550,13 @@ void SDL3Mouse::initCursorResources(void)
 					sprintf(resourcePath,"Data/Cursors/%s.ani",m_cursorInfo[cursor].textureName.str());
 
 				cursorResources[cursor][direction]=loadCursorFromFile(resourcePath);
+				if (cursorResources[cursor][direction]) loaded++;
+				else { failed++; std::fprintf(stderr, "[cursor] FAILED: %s\n", resourcePath); }
 				DEBUG_ASSERTCRASH(cursorResources[cursor][direction], ("MissingCursor %s\n",resourcePath));
 			}
 		}
 	}
+	std::fprintf(stderr, "[cursor] initCursorResources done: loaded=%d failed=%d emptyName=%d\n", loaded, failed, empty);
 }
 
 /**

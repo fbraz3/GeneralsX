@@ -35,6 +35,19 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "render2dsentence.h"
+
+// GeneralsX @performance meerzulee 06/07/2026 Gate high-volume browser traces.
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+static bool igTraceEnabled() {
+    static const bool on = EM_ASM_INT({
+        return (typeof window !== 'undefined' && window.GENERALSX_WASM_TRACE) ? 1 : 0;
+    }) != 0;
+    return on;
+}
+#else
+static bool igTraceEnabled() { return true; }
+#endif
 #include "surfaceclass.h"
 #include "texture.h"
 #include "WWDebug/wwprofile.h"
@@ -1704,11 +1717,17 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 bool
 FontCharsClass::Create_Freetype_Font (const char *font_name)
 {
+#ifdef __EMSCRIPTEN__
+	if (igTraceEnabled()) fprintf(stderr, "[FONT] Create_Freetype_Font '%s' size=%d\n", font_name, PointSize);
+#endif
 	//
 	//	Initialize FreeType library
 	//
 	FT_Error error = FT_Init_FreeType( &FTLibrary );
 	if ( error != 0 ) {
+#ifdef __EMSCRIPTEN__
+		if (igTraceEnabled()) fprintf(stderr, "[FONT] FT_Init_FreeType failed err=%d\n", (int)error);
+#endif
 		return false;
 	}
 
@@ -1732,6 +1751,9 @@ FontCharsClass::Create_Freetype_Font (const char *font_name)
 	//
 	const char *font_path = Locate_Font_FontConfig( font_name );
 	if ( font_path == nullptr ) {
+#ifdef __EMSCRIPTEN__
+		if (igTraceEnabled()) fprintf(stderr, "[FONT] fontconfig found no match for '%s'\n", font_name);
+#endif
 		FT_Done_FreeType( FTLibrary );
 		FTLibrary = nullptr;
 		return false;
@@ -1742,6 +1764,9 @@ FontCharsClass::Create_Freetype_Font (const char *font_name)
 	//
 	error = FT_New_Face( FTLibrary, font_path, 0, &FTFace );
 	if ( error != 0 ) {
+#ifdef __EMSCRIPTEN__
+		if (igTraceEnabled()) fprintf(stderr, "[FONT] FT_New_Face('%s') failed err=%d\n", font_path, (int)error);
+#endif
 		FT_Done_FreeType( FTLibrary );
 		FTLibrary = nullptr;
 		return false;
@@ -1752,12 +1777,18 @@ FontCharsClass::Create_Freetype_Font (const char *font_name)
 	//
 	error = FT_Set_Pixel_Sizes( FTFace, 0, font_height );
 	if ( error != 0 ) {
+#ifdef __EMSCRIPTEN__
+		if (igTraceEnabled()) fprintf(stderr, "[FONT] FT_Set_Pixel_Sizes(%d) failed err=%d\n", font_height, (int)error);
+#endif
 		FT_Done_Face( FTFace );
 		FT_Done_FreeType( FTLibrary );
 		FTFace = nullptr;
 		FTLibrary = nullptr;
 		return false;
 	}
+#ifdef __EMSCRIPTEN__
+	if (igTraceEnabled()) fprintf(stderr, "[FONT] loaded '%s' -> %s px=%d\n", font_name, font_path, font_height);
+#endif
 
 	//
 	//	Calculate font metrics (Wine-compatible, same as fighter19)
@@ -1870,10 +1901,22 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//	Copy FreeType bitmap to our buffer (convert 8-bit gray → 16-bit format)
 	//
 	for ( unsigned int row = 0; row < glyph->bitmap.rows; row++ ) {
+		//
+		//	GeneralsXWeb @bugfix: clamp to the cell — FreeType rounding can make
+		//	descender glyphs one row taller than CharHeight, and the overflow
+		//	row lands in the NEXT cached glyph's buffer (visible as a stray bar
+		//	above whatever character happens to be stored after this one).
+		//
+		if ( (int)(y_offset + row) >= (int)CharHeight ) {
+			break;
+		}
 		int src_index = row * glyph->bitmap.pitch;
 		int dst_index = (y_offset + row) * char_width;
 
 		for ( unsigned int col = 0; col < glyph->bitmap.width; col++ ) {
+			if ( x_offset + (int)col >= (int)char_width ) {
+				break;
+			}
 			//
 			//	Get 8-bit grayscale pixel
 			//

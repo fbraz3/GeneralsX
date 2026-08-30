@@ -82,12 +82,20 @@ add_link_options("-fwasm-exceptions")
 # Link-time: binaryen's -O3 post-link passes SIGABRT on this binary when wasm
 # exceptions are enabled; -O1 + stripped DWARF avoids the crashing pass (compile
 # optimization stays -O3).
-add_link_options("-O1" "-g0")
+# --profiling-funcs keeps the wasm name section (~1MB): browser stack traces
+# name the C++ frame instead of "wasm-function[12345]" — the Safari
+# quit-crash hunt needed exactly that.
+add_link_options("-O1" "-g0" "--profiling-funcs")
 add_link_options(
     "-sALLOW_MEMORY_GROWTH=1"
     "-sGROWABLE_ARRAYBUFFERS=0"
     "-sINITIAL_MEMORY=536870912"
-    "-sMAXIMUM_MEMORY=2147483648"
+    # 4GB (the wasm32 ceiling): the staged game files live in the wasm heap
+    # via MEMFS — ~1.9GB with audio — plus engine pools plus a loaded
+    # mission overran the old 2GB cap. Failed growth -> null malloc ->
+    # out-of-bounds writes (Safari trapped on quit-to-menu; Chrome likely
+    # corrupted silently).
+    "-sMAXIMUM_MEMORY=4294967296"
     "-sSTACK_SIZE=8388608"
     "-sEXIT_RUNTIME=0"
 )
