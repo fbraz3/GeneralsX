@@ -13,7 +13,17 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 usage() {
-  sed -n '3,8p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  cat <<'USAGE'
+Roll back to a previous immutable release.
+
+  rollback.sh list                  Show rollback candidates for both surfaces
+  rollback.sh worker [version-id]   Roll the Worker back (previous version by default)
+  rollback.sh pages <deployment-id> Roll the Pages project back to a deployment
+
+Nothing is rebuilt: both surfaces keep every uploaded version/deployment
+immutably, so a rollback re-points traffic at bytes that were already
+verified in production.
+USAGE
   exit "${1:-1}"
 }
 
