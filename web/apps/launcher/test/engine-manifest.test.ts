@@ -1,12 +1,37 @@
 import { describe, expect, it, vi } from "vitest";
+import { sha256Hex } from "@generalsx-web/shared/sha256";
 import { loadEngineManifest } from "../src/engine-manifest.js";
 
+const digest = (seed: string): string => sha256Hex(new TextEncoder().encode(seed));
+
 const validManifest = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   engineVersion: "test-build",
+  assetsRevision: 1,
   assetBaseUrl: "https://assets.generalsx.org",
-  engineEntry: "engine.js",
-  assets: [],
+  assets: [
+    {
+      path: "engine/engine.js",
+      role: "engine-js",
+      sizeBytes: 128,
+      sha256: digest("engine.js"),
+      mount: { target: "/generalsx/engine/engine.js", order: 0, streaming: false },
+    },
+    {
+      path: "engine/engine.wasm",
+      role: "engine-wasm",
+      sizeBytes: 4096,
+      sha256: digest("engine.wasm"),
+      mount: { target: "/generalsx/engine/engine.wasm", order: 1, streaming: false },
+    },
+    {
+      path: "base/INI.big",
+      role: "big-base",
+      sizeBytes: 2048,
+      sha256: digest("INI.big"),
+      mount: { target: "/generalsx/base/INI.big", order: 100, streaming: true },
+    },
+  ],
 };
 
 describe("loadEngineManifest", () => {

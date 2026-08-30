@@ -7,9 +7,11 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./asset-plan": "./src/asset-plan.ts",
     "./manifest": "./src/manifest.ts",
     "./protocol": "./src/protocol.ts",
-    "./security-headers": "./src/security-headers.ts"
+    "./security-headers": "./src/security-headers.ts",
+    "./sha256": "./src/sha256.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

@@ -1,0 +1,158 @@
+/**
+ * Operator-side helpers that turn a listing of *locally licensed* game files
+ * into an {@link EngineManifest}.
+ *
+ * This module is pure: it takes file names, sizes, and digests that the
+ * operator computed on their own machine and produces manifest JSON. It never
+ * reads, embeds, or transports asset bytes, and nothing here is used by the
+ * launcher at runtime.
+ */
+import {
+  ASSET_ROLES,
+  isStreamingRole,
+  validateManifest,
+  type AssetRole,
+  type EngineManifest,
+  type ManifestAsset,
+  type ManifestValidationError,
+} from "./manifest.ts";
+
+/** One file discovered under the operator's staging directory. */
+export interface SourceFile {
+  /** POSIX-style path relative to the staging root, e.g. `base/INI.big`. */
+  readonly relativePath: string;
+  readonly sizeBytes: number;
+  readonly sha256: string;
+  /** Strong ETag reported by the object store after upload, if known. */
+  readonly etag?: string;
+  /** Explicit role override when the path convention is not enough. */
+  readonly role?: AssetRole;
+}
+
+export interface ManifestPlanOptions {
+  readonly engineVersion: string;
+  readonly assetsRevision: number;
+  readonly assetBaseUrl: string;
+  /** Absolute in-engine directory every asset is mounted under. */
+  readonly mountPrefix?: string;
+}
+
+export interface ManifestPlanResult {
+  readonly manifest: EngineManifest;
+  readonly errors: readonly ManifestValidationError[];
+  /** Files whose role could not be inferred; they are left out of the
+   * manifest so the operator can classify them explicitly. */
+  readonly unclassified: readonly string[];
+}
+
+const DEFAULT_MOUNT_PREFIX = "/generalsx";
+
+/** First mount order allocated to each role group. */
+const ROLE_ORDER_BASE: Readonly<Record<AssetRole, number>> = {
+  "engine-js": 0,
+  "engine-wasm": 1_000,
+  "engine-data": 2_000,
+  "big-base": 3_000,
+  "big-expansion": 4_000,
+  script: 5_000,
+  font: 6_000,
+};
+
+const SCRIPT_EXTENSIONS = new Set([".ini", ".lua", ".str", ".csf", ".xml", ".txt"]);
+const FONT_EXTENSIONS = new Set([".ttf", ".otf", ".woff2", ".fnt"]);
+
+function extensionOf(relativePath: string): string {
+  const name = relativePath.slice(relativePath.lastIndexOf("/") + 1).toLowerCase();
+  const dot = name.lastIndexOf(".");
+  return dot < 0 ? "" : name.slice(dot);
+}
+
+/**
+ * Infers an asset role from the staging-directory convention:
+ *
+ * ```
+ * engine/<name>.js|.wasm|.data   engine module produced by the wasm build
+ * base/<name>.big                base-game archive
+ * expansion/<name>.big           Zero Hour archive (overlays base)
+ * scripts/<name>.ini|.lua|...    loose script data
+ * fonts/<name>.ttf|.otf|...      loose font
+ * ```
+ *
+ * Returns `undefined` when the convention does not apply, in which case the
+ * operator must set {@link SourceFile.role} explicitly.
+ */
+export function inferAssetRole(relativePath: string): AssetRole | undefined {
+  const normalized = relativePath.replace(/^\.\//, "");
+  const [top] = normalized.split("/");
+  const extension = extensionOf(normalized);
+
+  if (extension === ".js" || extension === ".mjs") return "engine-js";
+  if (extension === ".wasm") return "engine-wasm";
+  if (extension === ".data") return "engine-data";
+  if (extension === ".big") {
+    if (top === "base") return "big-base";
+    if (top === "expansion") return "big-expansion";
+    return undefined;
+  }
+  if (SCRIPT_EXTENSIONS.has(extension)) return "script";
+  if (FONT_EXTENSIONS.has(extension)) return "font";
+  return undefined;
+}
+
+function compareFiles(a: SourceFile, b: SourceFile): number {
+  return a.relativePath < b.relativePath ? -1 : a.relativePath > b.relativePath ? 1 : 0;
+}
+
+/**
+ * Builds a manifest from a staging listing and validates it. The result is
+ * always returned (even when invalid) so callers can print every problem at
+ * once instead of failing on the first bad entry.
+ */
+export function buildManifest(
+  files: readonly SourceFile[],
+  options: ManifestPlanOptions,
+): ManifestPlanResult {
+  const mountPrefix = (options.mountPrefix ?? DEFAULT_MOUNT_PREFIX).replace(/\/+$/, "");
+  const unclassified: string[] = [];
+  const byRole = new Map<AssetRole, SourceFile[]>();
+
+  for (const file of [...files].sort(compareFiles)) {
+    const role = file.role ?? inferAssetRole(file.relativePath);
+    if (role === undefined) {
+      unclassified.push(file.relativePath);
+      continue;
+    }
+    const bucket = byRole.get(role);
+    if (bucket) bucket.push(file);
+    else byRole.set(role, [file]);
+  }
+
+  const assets: ManifestAsset[] = [];
+  for (const role of ASSET_ROLES) {
+    const bucket = byRole.get(role) ?? [];
+    bucket.forEach((file, index) => {
+      const base: ManifestAsset = {
+        path: file.relativePath,
+        role,
+        sizeBytes: file.sizeBytes,
+        sha256: file.sha256,
+        mount: {
+          target: `${mountPrefix}/${file.relativePath}`,
+          order: ROLE_ORDER_BASE[role] + index,
+          streaming: isStreamingRole(role),
+        },
+      };
+      assets.push(file.etag === undefined ? base : { ...base, etag: file.etag });
+    });
+  }
+
+  const manifest: EngineManifest = {
+    schemaVersion: 2,
+    engineVersion: options.engineVersion,
+    assetsRevision: options.assetsRevision,
+    assetBaseUrl: options.assetBaseUrl,
+    assets,
+  };
+
+  return { manifest, errors: validateManifest(manifest).errors, unclassified };
+}

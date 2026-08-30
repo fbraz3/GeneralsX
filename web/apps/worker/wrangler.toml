@@ -17,12 +17,26 @@ class_name = "RoomDurableObject"
 tag = "v1"
 new_sqlite_classes = ["RoomDurableObject"]
 
-# --- R2: placeholder binding for future authorized asset delivery ---------
-# The signaling worker itself never serves retail assets. This binding is
-# scaffolding for a *future*, separately authorized asset-delivery worker
-# (see apps/launcher's AssetManager, which currently expects assets to come
-# from `assetBaseUrl` in the manifest, not from this Worker). Uncomment and
-# point at a real bucket name once an authorized asset pipeline exists.
+# --- R2: placeholder binding for authorized asset delivery ----------------
+# The signaling worker itself never serves retail assets, and no asset bytes
+# or manifests live in this repository. This binding is scaffolding for a
+# *separately authorized* asset-delivery worker: the launcher's AssetManager
+# downloads assets from `assetBaseUrl` in the manifest, never from this
+# Worker.
+#
+# Whatever fronts the bucket must satisfy the launcher's delivery contract:
+#   * `Accept-Ranges: bytes` and honest 206/416 handling — downloads are
+#     streamed and resumed with `Range` + `If-Range`.
+#   * Strong `ETag`s only (a `W/"…"` weak validator disables resume and is
+#     rejected by manifest validation).
+#   * `Cache-Control: public, max-age=31536000, immutable` — object keys are
+#     content-addressed and manifests carry an `assetsRevision`, so a URL's
+#     bytes never change.
+#   * CORS for the launcher origin exposing `ETag`, `Content-Range`, and
+#     `Content-Length` (`Access-Control-Expose-Headers`).
+# R2 objects are immutable per key and emit strong ETags and range support by
+# default; publish each revision under its own key prefix. Uncomment and
+# point at a real bucket name once an authorized asset pipeline is deployed.
 # [[r2_buckets]]
 # binding = "ASSETS_BUCKET"
 # bucket_name = "generalsx-web-assets"

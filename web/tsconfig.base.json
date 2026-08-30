@@ -3,6 +3,10 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    // Node 26 runs the operator scripts as TypeScript directly and will not
+    // resolve a ".js" specifier to a ".ts" file, so shared sources spell the
+    // real extension.
+    "allowImportingTsExtensions": true,
     "lib": ["ES2022"],
     "strict": true,
     "noUncheckedIndexedAccess": true,

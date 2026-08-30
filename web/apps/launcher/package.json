@@ -7,7 +7,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "dev": "vite",
-    "build": "vite build && node scripts/write-headers.ts"
+    "build": "vite build && node scripts/write-headers.ts",
+    "build:manifest": "node scripts/build-asset-manifest.ts"
   },
   "dependencies": {
     "@generalsx-web/shared": "0.1.0"

@@ -7,7 +7,10 @@
  */
 import { LAUNCHER_CONFIG } from "./config.js";
 import { loadEngineManifest } from "./engine-manifest.js";
-import { AssetManager, CacheStorageAssetStore } from "./assets/asset-manager.js";
+import { AssetManager } from "./assets/asset-manager.js";
+import { openAssetStorage, requestPersistentStorage } from "./assets/storage.js";
+import { AssetStorageQuotaError, AssetIntegrityError, AssetCancelledError } from "./assets/errors.js";
+import type { AssetVfs } from "./assets/vfs.js";
 import { createGameCanvas } from "./ui/canvas.js";
 import { createLoadingOverlay } from "./ui/loading.js";
 import { createErrorOverlay } from "./ui/error.js";
@@ -23,7 +26,36 @@ function requireElement(id: string): HTMLElement {
   return element;
 }
 
+/** Turns a typed asset failure into an actionable message for the player. */
+function describeAssetFailure(error: unknown): string {
+  if (error instanceof AssetStorageQuotaError) {
+    return "Not enough browser storage to install the game data. Free up disk space or clear site data, then retry.";
+  }
+  if (error instanceof AssetIntegrityError) {
+    return `Game data failed verification (${error.path}). The download was discarded; retry to fetch a clean copy.`;
+  }
+  if (error instanceof AssetCancelledError) {
+    return "Loading was cancelled.";
+  }
+  return error instanceof Error ? error.message : "asset download failed";
+}
+
+let activeBoot: AbortController | undefined;
+let mountedAssets: AssetVfs | undefined;
+
+/** Verified, mounted asset tree. This is the seam the Emscripten module will
+ * read archives through once engine instantiation lands. */
+export function mountedAssetVfs(): AssetVfs | undefined {
+  return mountedAssets;
+}
+
 async function startEngineBoot(): Promise<void> {
+  // A retry must cancel the downloads the previous attempt left in flight;
+  // partial files stay on disk and the next attempt resumes them.
+  activeBoot?.abort();
+  const bootAbort = new AbortController();
+  activeBoot = bootAbort;
+
   const app = requireElement("app");
   createGameCanvas(app);
   const loading = createLoadingOverlay(app);
@@ -104,17 +136,35 @@ async function startEngineBoot(): Promise<void> {
   }
 
   const assetManager = new AssetManager(manifestResult.manifest, {
-    cache: new CacheStorageAssetStore(`generalsx-assets-${manifestResult.manifest.engineVersion}`),
+    storage: await openAssetStorage(),
   });
+  // Persistent storage keeps multi-gigabyte archives from being evicted
+  // between sessions; a refusal is not fatal, it only means slower reboots.
+  await requestPersistentStorage();
 
   try {
-    await assetManager.downloadAll((progress) => {
-      loading.setStatus(`Downloading ${progress.path}…`);
-      loading.setProgress(progress.loadedBytes / Math.max(1, progress.totalBytes));
+    loading.setStatus("Verifying game data…");
+    const vfs = await assetManager.ensureAssets({
+      signal: bootAbort.signal,
+      onProgress(progress) {
+        loading.setStatus(
+          progress.source === "cache"
+            ? `Verified ${progress.path}`
+            : `Downloading ${progress.path}…`,
+        );
+        loading.setProgress(progress.overallLoadedBytes / Math.max(1, progress.overallTotalBytes));
+      },
     });
+    if (activeBoot !== bootAbort) {
+      loading.hide();
+      return;
+    }
+    mountedAssets = vfs;
   } catch (err) {
     loading.hide();
-    error.show(err instanceof Error ? err.message : "asset download failed", () => void startEngineBoot());
+    // A superseded attempt must not paint over the overlay the newer one owns.
+    if (activeBoot !== bootAbort) return;
+    error.show(describeAssetFailure(err), () => void startEngineBoot());
     return;
   }
 
