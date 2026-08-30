@@ -246,11 +246,12 @@ export interface WebRtcUdpBridgeOptions {
    * Base URL of the signaling Worker exposing `/turn-credentials`. Short-
    * lived TURN credentials are fetched fresh on *every* `joinRoom()` call
    * (never once at launcher startup, where the ~10-minute credential TTL
-   * could easily expire before a match actually starts) and refreshed
-   * before any peer connection is created for that room. Omit this option
-   * entirely for a bridge instance that must never call TURN at all (for
-   * example a single-player/offline boot path that never joins a room) —
-   * `joinRoom()` then always uses {@link WebRtcUdpBridgeOptions.fallbackIceServers}.
+   * could easily expire before a match actually starts), immediately after
+   * the room join is accepted and before any peer connection is created for
+   * that room. Omit this option entirely for a bridge instance that must
+   * never call TURN at all (for example a single-player/offline boot path
+   * that never joins a room) — the bridge then always uses
+   * {@link WebRtcUdpBridgeOptions.fallbackIceServers}.
    */
   readonly turnWorkerBaseUrl?: string;
   /** ICE servers used until the first TURN fetch resolves, and whenever
@@ -259,7 +260,10 @@ export interface WebRtcUdpBridgeOptions {
   readonly fallbackIceServers?: readonly RTCIceServer[];
   /** Injectable for tests; defaults to the real `fetchIceServers` from
    * `./turn-client.js`. */
-  readonly fetchIceServers?: (workerBaseUrl: string) => Promise<TurnCredentialsResponse>;
+  readonly fetchIceServers?: (
+    workerBaseUrl: string,
+    admissionToken: string,
+  ) => Promise<TurnCredentialsResponse>;
   /** Notified of join-lifecycle problems the launcher UI should surface;
    * see {@link JoinIssue}. */
   readonly onJoinIssue?: (issue: JoinIssue) => void;
@@ -282,7 +286,10 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   private iceServers: readonly RTCIceServer[];
   private readonly fallbackIceServers: readonly RTCIceServer[];
   private readonly turnWorkerBaseUrl: string | undefined;
-  private readonly fetchIceServersImpl: (workerBaseUrl: string) => Promise<TurnCredentialsResponse>;
+  private readonly fetchIceServersImpl: (
+    workerBaseUrl: string,
+    admissionToken: string,
+  ) => Promise<TurnCredentialsResponse>;
   private readonly onJoinIssue: ((issue: JoinIssue) => void) | undefined;
   private readonly createPeerConnectionImpl: (config: RTCConfiguration) => RTCPeerConnection;
   private readonly maxInboxPacketsPerPort: number;
@@ -297,15 +304,28 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   private roster: readonly RosterEntry[] = [];
 
   /** Bumped on every `joinRoom()`/`leaveRoom()` call. Any async work
-   * (TURN fetch, the eventual `signaling.connect()`) started by an
-   * earlier call checks this before acting, so a slow, superseded join
-   * can never resurrect stale state or race ahead of a newer one. */
+   * (the TURN fetch, a queued inbound signal) started by an earlier call
+   * checks this before acting, so a slow, superseded join can never
+   * resurrect stale state or race ahead of a newer one. */
   private connectionGeneration = 0;
   /** True from the moment `signaling.connect()` is called for the
    * current generation until either a `welcome` arrives or the socket
    * closes; used to tell a genuine join failure (closed before welcome)
    * apart from an ordinary disconnect after a room was already joined. */
   private joinPending = false;
+  /** Resolves once the current join's TURN fetch has settled (successfully
+   * or not) and {@link iceServers} is final for this room. Peer creation and
+   * inbound signal handling wait on it, so no peer connection is ever built
+   * with placeholder ICE servers that a moment later would have been
+   * relay-capable. */
+  private iceServersReady: Promise<void> = Promise.resolve();
+  private releaseIceServersReady: () => void = () => {};
+  /** Roster received before the TURN fetch settled, replayed once it has. */
+  private pendingRoster: readonly RosterEntry[] | null = null;
+  /** Serializes inbound signal handling behind {@link iceServersReady} while
+   * preserving arrival order (an `offer` must still be applied before the
+   * ICE candidates that follow it). */
+  private signalChain: Promise<void> = Promise.resolve();
 
   constructor(options: WebRtcUdpBridgeOptions) {
     this.signaling = options.signaling;
@@ -386,18 +406,29 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
   /**
    * Joins (or switches to) room `code`. Always starts from a clean slate:
    * any peers/room state from a previous room are torn down immediately,
-   * a fresh TURN-credentials fetch is kicked off for *this* join (never
-   * reusing possibly-stale credentials from an earlier join or from
-   * launcher startup), and only once that settles does it open the
-   * signaling connection. A generation counter guards every step so a
-   * slow, superseded join (an earlier `joinRoom()`/`leaveRoom()` call)
-   * can never race ahead of a newer one and leave a duplicate room
-   * membership or resurrect torn-down peers.
+   * and the signaling connection is opened right away.
+   *
+   * Ordering: the room join happens **first**, and TURN credentials are
+   * fetched only once the server has admitted this client and issued a room
+   * admission token (see `handleWelcome`). `/turn-credentials` is authorized
+   * by that token, so there is nothing to fetch before joining — and this
+   * also means a player who never joins a room never costs a TURN
+   * allocation. Peer connections are held back until the fetch settles, so
+   * no peer is ever built with placeholder ICE servers.
+   *
+   * A generation counter guards every step so a slow, superseded join (an
+   * earlier `joinRoom()`/`leaveRoom()` call) can never race ahead of a newer
+   * one and leave a duplicate room membership or resurrect torn-down peers.
    */
   joinRoom(code: string, options: { name?: string; capacity?: number } = {}): void {
-    const generation = ++this.connectionGeneration;
+    this.connectionGeneration += 1;
     this.signaling.close();
     this.resetState();
+
+    this.signalChain = Promise.resolve();
+    this.iceServersReady = new Promise<void>((resolve) => {
+      this.releaseIceServersReady = resolve;
+    });
 
     const name = options.name ?? this.playerName;
     const connectOptions = {
@@ -405,11 +436,8 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
       ...(options.capacity !== undefined ? { capacity: options.capacity } : {}),
     };
 
-    void this.refreshIceServers(generation).then(() => {
-      if (generation !== this.connectionGeneration) return; // superseded
-      this.joinPending = true;
-      this.signaling.connect(code, connectOptions);
-    });
+    this.joinPending = true;
+    this.signaling.connect(code, connectOptions);
   }
 
   status(): UdpBridgeStatus {
@@ -462,23 +490,38 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     this.roomId = null;
     this.localSlot = null;
     this.roster = [];
+    this.pendingRoster = null;
     this.joinPending = false;
+    // Never leave a queued signal or a caller awaiting a gate that will now
+    // never open; generation checks keep the released work inert.
+    this.releaseIceServersReady();
   }
 
-  /** (Re)fetches TURN credentials for `generation`, always resetting to
+  /**
+   * Fetches this join's TURN credentials, always resetting to
    * `fallbackIceServers` first so a previous join's credentials can never
-   * linger into a new one. Never calls TURN at all when
-   * `turnWorkerBaseUrl` was not configured (e.g. a bridge instance used
-   * only for single-player/offline boot, which never joins a room in the
-   * first place). A fetch failure is non-fatal: it falls back to direct/
-   * STUN-only ICE and reports a `turn-unavailable` {@link JoinIssue} so
-   * the launcher can show a visible warning instead of silently
-   * degrading connectivity. */
-  private async refreshIceServers(generation: number): Promise<void> {
+   * linger into a new one.
+   *
+   * Never calls TURN at all when `turnWorkerBaseUrl` was not configured (a
+   * bridge used only for single-player/offline boot) or when the server
+   * issued no admission token. A failure is non-fatal: it falls back to
+   * direct/STUN-only ICE and reports a `turn-unavailable` {@link JoinIssue}
+   * so the launcher shows a visible warning instead of silently degrading
+   * connectivity.
+   */
+  private async refreshIceServers(generation: number, admissionToken: string | undefined): Promise<void> {
     this.iceServers = this.fallbackIceServers;
     if (!this.turnWorkerBaseUrl) return;
+    if (!admissionToken) {
+      this.onJoinIssue?.({
+        kind: "turn-unavailable",
+        message:
+          "the room issued no admission token, so TURN relay could not be requested; continuing with direct/STUN-only ICE",
+      });
+      return;
+    }
     try {
-      const credentials = await this.fetchIceServersImpl(this.turnWorkerBaseUrl);
+      const credentials = await this.fetchIceServersImpl(this.turnWorkerBaseUrl, admissionToken);
       if (generation !== this.connectionGeneration) return; // superseded
       this.iceServers = credentials.iceServers;
     } catch (err) {
@@ -494,15 +537,46 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
 
   // ---- Signaling event handlers ---------------------------------------
 
+  /**
+   * The room accepted this client. Records the seat, then uses the room
+   * admission token that came with it to fetch TURN credentials before any
+   * peer connection is created. The roster is deliberately not applied until
+   * that fetch settles — applying it immediately would create peers pinned to
+   * the placeholder ICE servers.
+   */
   private readonly handleWelcome = (welcome: Extract<ServerMessage, { type: "welcome" }>): void => {
     this.joinPending = false;
     this.roomId = welcome.roomId;
     this.localSlot = welcome.slot;
-    this.syncRoster(welcome.roster);
+
+    if (!this.turnWorkerBaseUrl) {
+      // This bridge never requests TURN, so the ICE configuration is already
+      // final and there is nothing to wait for.
+      this.iceServers = this.fallbackIceServers;
+      this.releaseIceServersReady();
+      this.syncRoster(welcome.roster);
+      return;
+    }
+
+    this.pendingRoster = welcome.roster;
+    const generation = this.connectionGeneration;
+    void this.refreshIceServers(generation, welcome.admission).then(() => {
+      if (generation !== this.connectionGeneration) return; // superseded
+      this.releaseIceServersReady();
+      const roster = this.pendingRoster;
+      this.pendingRoster = null;
+      if (roster) this.syncRoster(roster);
+    });
   };
 
   private readonly handleRoster = (roster: readonly RosterEntry[]): void => {
     if (this.localSlot === null) return;
+    // Still waiting on this join's TURN credentials: remember the newest
+    // roster and apply it once the ICE configuration is final.
+    if (this.pendingRoster !== null) {
+      this.pendingRoster = roster;
+      return;
+    }
     this.syncRoster(roster);
   };
 
@@ -538,11 +612,27 @@ export class WebRtcUdpBridge implements GeneralsXUdpApi {
     }
   };
 
+  /**
+   * Queues an inbound signal behind this join's TURN fetch.
+   *
+   * A peer that is already in the room sees our arrival and can offer before
+   * our own credentials have arrived; answering immediately would build that
+   * peer connection with placeholder ICE servers. Signals are chained rather
+   * than dispatched concurrently so arrival order is preserved — an `offer`
+   * must still be applied before the ICE candidates that follow it.
+   */
   private readonly handleSignal = (from: SlotId, type: "offer" | "answer" | "ice", payload: unknown): void => {
     if (this.localSlot === null) return;
-    this.processSignal(from, type, payload).catch((err: unknown) => {
-      console.warn(`[GeneralsXUdp] failed to process ${type} from slot ${from}:`, err);
-    });
+    const generation = this.connectionGeneration;
+    this.signalChain = this.signalChain
+      .then(() => this.iceServersReady)
+      .then(() => {
+        if (generation !== this.connectionGeneration) return undefined; // superseded
+        return this.processSignal(from, type, payload);
+      })
+      .catch((err: unknown) => {
+        console.warn(`[GeneralsXUdp] failed to process ${type} from slot ${from}:`, err);
+      });
   };
 
   private syncRoster(roster: readonly RosterEntry[]): void {

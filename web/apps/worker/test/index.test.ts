@@ -1,5 +1,46 @@
 import { describe, expect, it, vi } from "vitest";
 import worker, { type WorkerEnv } from "../src/index.js";
+import {
+  createRoomKeyBytes,
+  importRoomKey,
+  signAdmissionToken,
+  ADMISSION_TOKEN_TTL_SECONDS,
+} from "../src/room/admission.js";
+import { TURN_GRANT_PATH, type TurnGrantResult } from "../src/room/turn-grant.js";
+
+/** A structurally valid admission token. It is signed with a throwaway key
+ * that no room holds, so it is only ever *routable* — every authorization
+ * decision in these tests comes from the stubbed Durable Object, exactly as
+ * it does in production. */
+async function makeRoutableToken(roomId = "ABCD"): Promise<string> {
+  const key = await importRoomKey(createRoomKeyBytes());
+  return signAdmissionToken(key, {
+    roomId,
+    slot: 0,
+    admissionId: "seat-nonce",
+    exp: Math.floor(Date.now() / 1000) + ADMISSION_TOKEN_TTL_SECONDS,
+  });
+}
+
+/** Builds a ROOM_DO binding whose stub answers the internal turn-grant call
+ * with `result`, recording which room id the Worker routed to. */
+function makeRoomDo(result: TurnGrantResult | Error = { ok: true, roomId: "ABCD", slot: 0 }) {
+  const routedTo: string[] = [];
+  const grantPaths: string[] = [];
+  const fetchStub = vi.fn(async (request: Request) => {
+    grantPaths.push(new URL(request.url).pathname);
+    if (result instanceof Error) throw result;
+    return new Response(JSON.stringify(result), { status: 200 });
+  });
+  const binding = {
+    idFromName: vi.fn((name: string) => {
+      routedTo.push(name);
+      return name;
+    }),
+    get: vi.fn(() => ({ fetch: fetchStub })),
+  } as unknown as WorkerEnv["ROOM_DO"];
+  return { binding, routedTo, grantPaths, fetchStub };
+}
 
 function makeEnv(overrides: Partial<WorkerEnv> = {}): WorkerEnv {
   return {
@@ -8,12 +49,23 @@ function makeEnv(overrides: Partial<WorkerEnv> = {}): WorkerEnv {
     ASSET_ORIGIN: "https://assets.generalsx.org",
     TURN_KEY_ID: "key-123",
     TURN_KEY_API_TOKEN: "secret",
-    ROOM_DO: {
-      idFromName: vi.fn(),
-      get: vi.fn(),
-    } as unknown as WorkerEnv["ROOM_DO"],
+    ROOM_DO: makeRoomDo().binding,
     ...overrides,
   };
+}
+
+async function requestTurnCredentials(
+  env: WorkerEnv,
+  init: { token?: string | undefined; method?: string } = {},
+): Promise<Response> {
+  const token = init.token === undefined ? await makeRoutableToken() : init.token;
+  return worker.fetch(
+    new Request("https://api.generalsx.org/turn-credentials", {
+      ...(init.method ? { method: init.method } : {}),
+      ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+    }),
+    env,
+  );
 }
 
 function makeEnvWithoutTurnSecrets(): WorkerEnv {
@@ -59,22 +111,110 @@ describe("worker fetch: security headers", () => {
   });
 });
 
-describe("worker fetch: /turn-credentials", () => {
+describe("worker fetch: /turn-credentials authorization", () => {
   it("rejects non GET/POST methods", async () => {
-    const response = await worker.fetch(
-      new Request("https://api.generalsx.org/turn-credentials", { method: "DELETE" }),
-      makeEnv(),
-    );
+    const response = await requestTurnCredentials(makeEnv(), { method: "DELETE" });
     expect(response.status).toBe(405);
   });
 
-  it("returns 500 when TURN secrets are not configured", async () => {
+  it("refuses to issue credentials without a room admission token", async () => {
+    const roomDo = makeRoomDo();
+    const response = await requestTurnCredentials(makeEnv({ ROOM_DO: roomDo.binding }), { token: "" });
+    expect(response.status).toBe(401);
+    expect(response.headers.get("WWW-Authenticate")).toContain("Bearer");
+    await expect(response.json()).resolves.toMatchObject({ code: "UNAUTHORIZED" });
+    // The room is never consulted for a request that carries no capability.
+    expect(roomDo.fetchStub).not.toHaveBeenCalled();
+  });
+
+  it("does not treat an allowed Origin as authorization", async () => {
+    // CORS is a browser read restriction, not an authorization mechanism:
+    // presenting the launcher's own origin must still get nothing.
     const response = await worker.fetch(
-      new Request("https://api.generalsx.org/turn-credentials"),
-      makeEnvWithoutTurnSecrets(),
+      new Request("https://api.generalsx.org/turn-credentials", {
+        headers: { Origin: "https://play.generalsx.org" },
+      }),
+      makeEnv(),
     );
+    expect(response.status).toBe(401);
+  });
+
+  it("rejects a malformed token before touching a Durable Object", async () => {
+    const roomDo = makeRoomDo();
+    const response = await requestTurnCredentials(makeEnv({ ROOM_DO: roomDo.binding }), {
+      token: "not-a-real-token",
+    });
+    expect(response.status).toBe(401);
+    expect(roomDo.fetchStub).not.toHaveBeenCalled();
+  });
+
+  it("routes the grant to the room named in the token, over the internal path only", async () => {
+    const roomDo = makeRoomDo({ ok: true, roomId: "R7K2QX", slot: 2 });
+    const token = await makeRoutableToken("R7K2QX");
+    await requestTurnCredentials(makeEnv({ ROOM_DO: roomDo.binding }), { token });
+    expect(roomDo.routedTo).toEqual(["R7K2QX"]);
+    expect(roomDo.grantPaths).toEqual([TURN_GRANT_PATH]);
+  });
+
+  it("surfaces a room's refusal as 401 without issuing credentials", async () => {
+    const roomDo = makeRoomDo({
+      ok: false,
+      code: "UNAUTHORIZED",
+      detail: "this admission no longer holds a slot in the room",
+    });
+    const response = await requestTurnCredentials(makeEnv({ ROOM_DO: roomDo.binding }));
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "UNAUTHORIZED",
+      error: "this admission no longer holds a slot in the room",
+    });
+  });
+
+  it("surfaces a rate-limited grant as 429 with Retry-After", async () => {
+    const roomDo = makeRoomDo({
+      ok: false,
+      code: "RATE_LIMITED",
+      detail: "too many TURN credential requests for this slot",
+      retryAfterSeconds: 42,
+    });
+    const response = await requestTurnCredentials(makeEnv({ ROOM_DO: roomDo.binding }));
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("42");
+    await expect(response.json()).resolves.toMatchObject({ code: "RATE_LIMITED" });
+  });
+
+  it("fails closed when the room cannot be reached", async () => {
+    const roomDo = makeRoomDo(new Error("durable object unreachable"));
+    const response = await requestTurnCredentials(makeEnv({ ROOM_DO: roomDo.binding }));
+    expect(response.status).toBe(503);
+  });
+
+  it("returns 500 when TURN secrets are not configured, only after authorizing", async () => {
+    const roomDo = makeRoomDo();
+    const env = { ...makeEnvWithoutTurnSecrets(), ROOM_DO: roomDo.binding };
+    const response = await requestTurnCredentials(env);
     expect(response.status).toBe(500);
     expect(response.headers.get("Content-Security-Policy")).toBeTruthy();
+    expect(roomDo.fetchStub).toHaveBeenCalledOnce();
+  });
+
+  it("never caches an issued credential", async () => {
+    const roomDo = makeRoomDo();
+    const env = makeEnv({
+      ROOM_DO: roomDo.binding,
+      TURN_KEY_ID: "key-123",
+      TURN_KEY_API_TOKEN: "secret",
+    });
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ iceServers: [{ urls: "turn:example" }] }), { status: 200 }),
+    );
+    try {
+      const response = await requestTurnCredentials(env);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe("no-store");
+    } finally {
+      fetchSpy.mockRestore();
+    }
   });
 });
 

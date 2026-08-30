@@ -88,6 +88,12 @@ export function isAllowedOrigin(
  * Builds CORS response headers for a given request origin. Returns an empty
  * object (no CORS headers) when the origin is not on the allowlist, which
  * causes browsers to block the cross-origin read.
+ *
+ * CORS is a browser-enforced *read* restriction, not an authorization
+ * mechanism: it is not applied by non-browser clients and `Origin` is
+ * forgeable outside a browser. Endpoints that hand out anything valuable must
+ * carry their own server-issued credential — see the room admission token on
+ * `/turn-credentials` — and treat these headers purely as defense in depth.
  */
 export function buildCorsHeaders(
   requestOrigin: string | null | undefined,
@@ -97,7 +103,9 @@ export function buildCorsHeaders(
   return {
     "Access-Control-Allow-Origin": requestOrigin as string,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    // `Authorization` carries the room admission token the launcher presents
+    // to `/turn-credentials`; without it the browser blocks the preflight.
+    "Access-Control-Allow-Headers": "Authorization, Content-Type",
     "Access-Control-Max-Age": "600",
     Vary: "Origin",
   };

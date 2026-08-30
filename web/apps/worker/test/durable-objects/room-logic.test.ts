@@ -5,17 +5,23 @@ import {
   createRoomState,
   findFreeSlot,
   isRoomEmpty,
+  isSlotHeldBy,
   joinRoom,
   leaveRoom,
   normalizeCapacity,
   resolveSlot,
+  type JoinRequest,
   type RoomState,
 } from "../../src/durable-objects/room-logic.js";
 
 const TEST_COMPATIBILITY = compatibilityFor("zero-hour", true);
 
-function request(name: string, connectionId: string, compatibility = TEST_COMPATIBILITY) {
-  return { name, connectionId, compatibility };
+/** Every join carries both a compatibility profile and a per-seat admission
+ * nonce (see `SlotInfo.admissionId`). Default to the matching profile and
+ * derive a deterministic nonce from the connection id so these tests stay
+ * readable while still exercising the real signature. */
+function seat(name: string, connectionId: string, compatibility = TEST_COMPATIBILITY): JoinRequest {
+  return { name, connectionId, compatibility, admissionId: `adm-${connectionId}` };
 }
 
 describe("normalizeCapacity", () => {
@@ -42,47 +48,47 @@ describe("room lifecycle", () => {
   });
 
   it("assigns stable, lowest-first slots", () => {
-    const first = joinRoom(room, request("Alice", "c1"));
-    const second = joinRoom(room, request("Bob", "c2"));
+    const first = joinRoom(room, seat("Alice", "c1"));
+    const second = joinRoom(room, seat("Bob", "c2"));
     expect(first).toEqual({ ok: true, value: 0 });
     expect(second).toEqual({ ok: true, value: 1 });
   });
 
   it("marks only the first joiner as host", () => {
-    joinRoom(room, request("Alice", "c1"));
-    joinRoom(room, request("Bob", "c2"));
+    joinRoom(room, seat("Alice", "c1"));
+    joinRoom(room, seat("Bob", "c2"));
     const roster = buildRoster(room);
     expect(roster.find((r) => r.slot === 0)?.isHost).toBe(true);
     expect(roster.find((r) => r.slot === 1)?.isHost).toBe(false);
   });
 
   it("rejects joins once capacity is reached", () => {
-    joinRoom(room, request("Alice", "c1"));
-    joinRoom(room, request("Bob", "c2"));
-    const third = joinRoom(room, request("Carol", "c3"));
+    joinRoom(room, seat("Alice", "c1"));
+    joinRoom(room, seat("Bob", "c2"));
+    const third = joinRoom(room, seat("Carol", "c3"));
     expect(third).toEqual({ ok: false, error: "ROOM_FULL" });
   });
 
   it("frees a slot on leave and reassigns it to the next joiner", () => {
-    joinRoom(room, request("Alice", "c1"));
-    joinRoom(room, request("Bob", "c2"));
+    joinRoom(room, seat("Alice", "c1"));
+    joinRoom(room, seat("Bob", "c2"));
     leaveRoom(room, 0);
     expect(findFreeSlot(room)).toBe(0);
-    const rejoin = joinRoom(room, request("Carol", "c3"));
+    const rejoin = joinRoom(room, seat("Carol", "c3"));
     expect(rejoin).toEqual({ ok: true, value: 0 });
   });
 
   it("keeps the existing host when a non-host occupant leaves", () => {
-    joinRoom(room, request("Alice", "c1")); // host, slot 0
-    joinRoom(room, request("Bob", "c2")); // slot 1
+    joinRoom(room, seat("Alice", "c1")); // host, slot 0
+    joinRoom(room, seat("Bob", "c2")); // slot 1
     leaveRoom(room, 1);
     expect(resolveSlot(room, 0)?.isHost).toBe(true);
   });
 
   it("promotes the next joiner to host once the room has been fully vacated", () => {
-    joinRoom(room, request("Alice", "c1"));
+    joinRoom(room, seat("Alice", "c1"));
     leaveRoom(room, 0);
-    joinRoom(room, request("Bob", "c2"));
+    joinRoom(room, seat("Bob", "c2"));
     // Host status is derived from "first occupant of an empty room", so once
     // everyone leaves, the next joiner becomes host. Promoting an existing
     // non-host occupant to host on a departure is a higher-layer policy.
@@ -95,7 +101,7 @@ describe("room lifecycle", () => {
   });
 
   it("buildRoster returns entries sorted by slot", () => {
-    joinRoom(room, request("Bob", "c2"));
+    joinRoom(room, seat("Bob", "c2"));
     const roster = buildRoster(room);
     expect(roster.map((r) => r.slot)).toEqual([0]);
   });
@@ -107,18 +113,18 @@ describe("room lifecycle", () => {
 
   it("isRoomEmpty reflects occupancy", () => {
     expect(isRoomEmpty(room)).toBe(true);
-    joinRoom(room, request("Alice", "c1"));
+    joinRoom(room, seat("Alice", "c1"));
     expect(isRoomEmpty(room)).toBe(false);
   });
 
   it("rejects mismatched engine, protocol, or determinism versions before assigning a slot", () => {
-    expect(joinRoom(room, request("Alice", "c1"))).toEqual({ ok: true, value: 0 });
+    expect(joinRoom(room, seat("Alice", "c1"))).toEqual({ ok: true, value: 0 });
     for (const compatibility of [
       { ...TEST_COMPATIBILITY, engine: TEST_COMPATIBILITY.engine + 100 },
       { ...TEST_COMPATIBILITY, protocol: TEST_COMPATIBILITY.protocol + 100 },
       { ...TEST_COMPATIBILITY, determinism: TEST_COMPATIBILITY.determinism + 100 },
     ]) {
-      expect(joinRoom(room, request("Bob", `c-${compatibility.engine}${compatibility.protocol}${compatibility.determinism}`, compatibility))).toEqual({
+      expect(joinRoom(room, seat("Bob", `c-${compatibility.engine}${compatibility.protocol}${compatibility.determinism}`, compatibility))).toEqual({
         ok: false,
         error: "INCOMPATIBLE_CLIENT",
       });
@@ -127,11 +133,49 @@ describe("room lifecycle", () => {
   });
 
   it("accepts a new compatibility profile after the room becomes empty", () => {
-    joinRoom(room, request("Alice", "c1"));
+    joinRoom(room, seat("Alice", "c1"));
     leaveRoom(room, 0);
-    expect(joinRoom(room, request("Bob", "c2", { engine: 2, protocol: 3, determinism: 4 }))).toEqual({
+    expect(joinRoom(room, seat("Bob", "c2", { engine: 2, protocol: 3, determinism: 4 }))).toEqual({
       ok: true,
       value: 0,
     });
+  });
+});
+
+describe("isSlotHeldBy", () => {
+  let room: RoomState;
+
+  beforeEach(() => {
+    room = createRoomState("ABCD", 2);
+  });
+
+  it("recognizes the admission currently occupying a slot", () => {
+    joinRoom(room, seat("Alice", "c1"));
+    expect(isSlotHeldBy(room, 0, "adm-c1")).toBe(true);
+  });
+
+  it("rejects an empty slot", () => {
+    expect(isSlotHeldBy(room, 0, "adm-c1")).toBe(false);
+  });
+
+  it("rejects an admission for a slot the holder does not occupy", () => {
+    joinRoom(room, seat("Alice", "c1"));
+    joinRoom(room, seat("Bob", "c2"));
+    expect(isSlotHeldBy(room, 1, "adm-c1")).toBe(false);
+  });
+
+  it("revokes an admission as soon as its holder leaves", () => {
+    joinRoom(room, seat("Alice", "c1"));
+    expect(isSlotHeldBy(room, 0, "adm-c1")).toBe(true);
+    leaveRoom(room, 0);
+    expect(isSlotHeldBy(room, 0, "adm-c1")).toBe(false);
+  });
+
+  it("does not let a departed player's token authorize the seat's new occupant", () => {
+    joinRoom(room, seat("Alice", "c1"));
+    leaveRoom(room, 0);
+    joinRoom(room, seat("Mallory", "c9"));
+    expect(isSlotHeldBy(room, 0, "adm-c1")).toBe(false);
+    expect(isSlotHeldBy(room, 0, "adm-c9")).toBe(true);
   });
 });

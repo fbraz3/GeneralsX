@@ -29,8 +29,25 @@ function makeBridge(overrides: Partial<WebRtcUdpBridgeOptions> = {}) {
   return { bridge, signaling, peerConnections };
 }
 
-function welcome(slot: number, roster: { slot: number; name: string; isHost: boolean }[], capacity = 4) {
-  return { type: "welcome" as const, roomId: "ABCD", slot, capacity, roster };
+/** The server issues a room admission token with every welcome; it is opaque
+ * to the client and is only ever forwarded to `/turn-credentials`. */
+const ADMISSION_TOKEN = "gxa1.test-admission-token";
+
+function welcome(
+  slot: number,
+  roster: { slot: number; name: string; isHost: boolean }[],
+  capacity = 4,
+  /** `null` models a server that issued no admission token at all. */
+  admission: string | null = ADMISSION_TOKEN,
+) {
+  return {
+    type: "welcome" as const,
+    roomId: "ABCD",
+    slot,
+    capacity,
+    roster,
+    ...(admission !== null ? { admission } : {}),
+  };
 }
 
 const ROSTER_HOST_ONLY = [{ slot: 0, name: "host", isHost: true }];
@@ -509,6 +526,28 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     expect(peerConnections).toHaveLength(0);
   });
 
+  it("joins the room before requesting TURN, since credentials require a room admission token", async () => {
+    const order: string[] = [];
+    const { bridge, signaling } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: async () => {
+        order.push("turn");
+        return { iceServers: [], ttlSeconds: 600 };
+      },
+    });
+    signaling.onConnect = () => order.push("connect");
+
+    bridge.joinRoom("R7K2QX");
+    await flush();
+    // The join must not wait on TURN: an authorized credential cannot exist
+    // before the room has admitted this client.
+    expect(order).toEqual(["connect"]);
+
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
+    await flush();
+    expect(order).toEqual(["connect", "turn"]);
+  });
+
   it("dispose closes signaling and unregisters every listener", () => {
     const { bridge, signaling } = makeBridge();
     bridge.dispose();
@@ -546,33 +585,130 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     });
 
     bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
     await flush();
 
     expect(fetchCallCount).toBe(0);
     expect(signaling.connectCalls).toHaveLength(1);
   });
 
-  it("fetches fresh TURN credentials on joinRoom() and uses them for subsequently created peer connections", async () => {
+  it("presents the room admission token from the welcome and uses the issued credentials for new peers", async () => {
     const iceServers = [{ urls: "turn:turn.example.com", username: "u", credential: "c" }];
-    let fetchCallCount = 0;
+    const calls: { base: string; token: string }[] = [];
     const { bridge, signaling, peerConnections } = makeBridge({
       turnWorkerBaseUrl: "https://signaling.example.com",
-      fetchIceServers: async (base) => {
-        fetchCallCount += 1;
-        expect(base).toBe("https://signaling.example.com");
+      fetchIceServers: async (base, token) => {
+        calls.push({ base, token });
         return { iceServers, ttlSeconds: 600 };
       },
     });
 
     bridge.joinRoom("R7K2QX");
     await flush();
-    expect(fetchCallCount).toBe(1);
+    expect(calls).toHaveLength(0);
     expect(signaling.connectCalls).toHaveLength(1);
 
     signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
     signaling.emit("roster", ROSTER_TWO_PLAYERS);
+    await flush();
+
+    expect(calls).toEqual([{ base: "https://signaling.example.com", token: ADMISSION_TOKEN }]);
+    expect(peerConnections[0]?.config).toEqual({ iceServers });
+  });
+
+  it("fetches fresh credentials for every join rather than reusing an earlier room's", async () => {
+    const tokens: string[] = [];
+    const { bridge, signaling } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: async (_base, token) => {
+        tokens.push(token);
+        return { iceServers: [], ttlSeconds: 600 };
+      },
+    });
+
+    bridge.joinRoom("AAAA");
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY, 4, "token-room-a"));
+    await flush();
+    bridge.joinRoom("BBBB");
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY, 4, "token-room-b"));
+    await flush();
+
+    expect(tokens).toEqual(["token-room-a", "token-room-b"]);
+  });
+
+  it("creates no peer connection until the TURN fetch settles, so none is pinned to placeholder ICE servers", async () => {
+    const iceServers = [{ urls: "turn:turn.example.com", username: "u", credential: "c" }];
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
+    signaling.emit("roster", ROSTER_TWO_PLAYERS);
+    await flush();
+    expect(peerConnections).toHaveLength(0);
+
+    resolveFetch?.({ iceServers, ttlSeconds: 600 });
+    await flush();
+    expect(peerConnections).toHaveLength(1);
+    expect(peerConnections[0]?.config).toEqual({ iceServers });
+  });
+
+  it("applies only the newest roster once the TURN fetch settles", async () => {
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
+    signaling.emit("roster", ROSTER_THREE_PLAYERS);
+    signaling.emit("roster", ROSTER_TWO_PLAYERS); // the third player left again
+    resolveFetch?.({ iceServers: [], ttlSeconds: 600 });
+    await flush();
+
+    // Only the surviving peer is ever created; the transient third player
+    // never gets a connection that would have to be torn down.
+    expect(peerConnections).toHaveLength(1);
+    expect(bridge.status().peers.map((peer) => peer.slot)).toEqual([1]);
+  });
+
+  it("defers an inbound offer that arrives before the TURN fetch settles, preserving signal order", async () => {
+    let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(1, ROSTER_TWO_PLAYERS));
+    // A peer already in the room offers immediately, before our credentials
+    // have arrived.
+    signaling.emit("signal", 0, "offer", { type: "offer", sdp: "early-offer" });
+    signaling.emit("signal", 0, "ice", { candidate: "early-candidate" });
+    await flush();
+    expect(peerConnections).toHaveLength(0);
+
+    const iceServers = [{ urls: "turn:turn.example.com", username: "u", credential: "c" }];
+    resolveFetch?.({ iceServers, ttlSeconds: 600 });
+    await flush();
 
     expect(peerConnections[0]?.config).toEqual({ iceServers });
+    expect(peerConnections[0]?.remoteDescription).toEqual({ type: "offer", sdp: "early-offer" });
+    expect(peerConnections[0]?.addedIceCandidates).toEqual([{ candidate: "early-candidate" }]);
+    expect(signaling.sentAnswers).toHaveLength(1);
   });
 
   it("falls back to direct/STUN-only ICE and reports a turn-unavailable issue when the TURN fetch fails", async () => {
@@ -587,13 +723,42 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
 
     bridge.joinRoom("R7K2QX");
     await flush();
-
-    expect(issues).toEqual([{ kind: "turn-unavailable", message: expect.stringContaining("HTTP 503") }]);
-    // TURN failure is never fatal: the join still proceeds.
+    // TURN failure is never fatal, and cannot even be observed before the
+    // join succeeds: the join always comes first.
+    expect(issues).toEqual([]);
     expect(signaling.connectCalls).toHaveLength(1);
 
     signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
     signaling.emit("roster", ROSTER_TWO_PLAYERS);
+    await flush();
+
+    expect(issues).toEqual([{ kind: "turn-unavailable", message: expect.stringContaining("HTTP 503") }]);
+    expect(peerConnections[0]?.config).toEqual({ iceServers: [] });
+  });
+
+  it("warns and stays in the room when the server issues no admission token", async () => {
+    const issues: JoinIssue[] = [];
+    let fetchCallCount = 0;
+    const { bridge, signaling, peerConnections } = makeBridge({
+      turnWorkerBaseUrl: "https://signaling.example.com",
+      fetchIceServers: async () => {
+        fetchCallCount += 1;
+        return { iceServers: [], ttlSeconds: 600 };
+      },
+      onJoinIssue: (issue) => issues.push(issue),
+    });
+
+    bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY, 4, null));
+    signaling.emit("roster", ROSTER_TWO_PLAYERS);
+    await flush();
+
+    // No token means nothing to authorize with, so TURN is never called at all.
+    expect(fetchCallCount).toBe(0);
+    expect(issues).toEqual([
+      { kind: "turn-unavailable", message: expect.stringContaining("no admission token") },
+    ]);
+    expect(bridge.status()).toMatchObject({ roomId: "ABCD", localSlot: 0 });
     expect(peerConnections[0]?.config).toEqual({ iceServers: [] });
   });
 
@@ -626,34 +791,41 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     expect(bridge.status()).toMatchObject({ roomId: "ABCD", localSlot: 0 });
   });
 
-  it("a slower, superseded joinRoom() call never connects after being overtaken by a newer one", async () => {
-    let resolveFirstFetch: (() => void) | undefined;
+  it("a superseded join's TURN credentials never reach the room that replaced it", async () => {
+    const staleIceServers = [{ urls: "turn:stale.example.com" }];
+    const freshIceServers = [{ urls: "turn:fresh.example.com" }];
+    let resolveFirstFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
     let fetchCallCount = 0;
-    const { bridge, signaling } = makeBridge({
+    const { bridge, signaling, peerConnections } = makeBridge({
       turnWorkerBaseUrl: "https://signaling.example.com",
       fetchIceServers: async () => {
         fetchCallCount += 1;
         if (fetchCallCount === 1) {
-          await new Promise<void>((resolve) => {
+          return new Promise((resolve) => {
             resolveFirstFetch = resolve;
           });
         }
-        return { iceServers: [], ttlSeconds: 600 };
+        return { iceServers: freshIceServers, ttlSeconds: 600 };
       },
     });
 
     bridge.joinRoom("AAAA");
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
     bridge.joinRoom("BBBB");
-    await flush(); // lets the second (fast) fetch resolve and connect()
-    resolveFirstFetch?.(); // now let the first (slow, superseded) fetch resolve too
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
+    await flush();
+    resolveFirstFetch?.({ iceServers: staleIceServers, ttlSeconds: 600 });
     await flush();
 
-    expect(signaling.connectCalls).toEqual([{ roomId: "BBBB", options: {} }]);
+    signaling.emit("roster", ROSTER_TWO_PLAYERS);
+    await flush();
+    expect(signaling.connectCalls.map((call) => call.roomId)).toEqual(["AAAA", "BBBB"]);
+    expect(peerConnections[0]?.config).toEqual({ iceServers: freshIceServers });
   });
 
-  it("leaveRoom() invalidates an in-flight joinRoom() so its connect() never fires", async () => {
+  it("leaveRoom() invalidates an in-flight TURN fetch so no peer is ever created for it", async () => {
     let resolveFetch: ((value: { iceServers: RTCIceServer[]; ttlSeconds: number }) => void) | undefined;
-    const { bridge, signaling } = makeBridge({
+    const { bridge, signaling, peerConnections } = makeBridge({
       turnWorkerBaseUrl: "https://signaling.example.com",
       fetchIceServers: () =>
         new Promise((resolve) => {
@@ -662,10 +834,14 @@ describe("WebRtcUdpBridge joinRoom / leaveRoom", () => {
     });
 
     bridge.joinRoom("R7K2QX");
+    signaling.emit("welcome", welcome(0, ROSTER_HOST_ONLY));
+    signaling.emit("roster", ROSTER_TWO_PLAYERS);
     bridge.leaveRoom();
     resolveFetch?.({ iceServers: [], ttlSeconds: 600 });
     await flush();
 
-    expect(signaling.connectCalls).toEqual([]);
+    expect(signaling.leaveCalled).toBe(true);
+    expect(peerConnections).toHaveLength(0);
+    expect(bridge.status()).toMatchObject({ roomId: null, localSlot: null, peers: [] });
   });
 });

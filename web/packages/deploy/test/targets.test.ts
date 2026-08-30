@@ -48,4 +48,22 @@ describe("deployment scripts", () => {
       }
     }
   });
+
+  it("deploys the worker with --strict so a concurrent deploy cannot be clobbered", () => {
+    const body = readFileSync(fileURLToPath(new URL("../scripts/deploy-worker.sh", import.meta.url)), "utf8");
+    // The real upload must be strict. The preceding `--dry-run` deliberately
+    // is not: it uploads nothing, so there is no remote state to conflict with.
+    const upload = body.slice(body.indexOf("Deploying ${GENERALSX_WORKER_NAME}"));
+    expect(upload).toMatch(/wrangler deploy \\\n\s*--strict/);
+  });
+
+  it("bounds the post-deploy readiness poll so a propagation delay cannot hang a deploy", () => {
+    const body = readFileSync(fileURLToPath(new URL("../scripts/deploy-worker.sh", import.meta.url)), "utf8");
+    expect(body).toContain("GENERALSX_READY_ATTEMPTS");
+    expect(body).toContain("GENERALSX_READY_BUDGET");
+    // Both an attempt cap and a wall-clock budget must terminate the loop.
+    expect(body).toMatch(/attempt.*-le.*max_attempts/);
+    expect(body).toMatch(/waited.*-ge.*budget/);
+    expect(body).toContain("--max-time 10");
+  });
 });

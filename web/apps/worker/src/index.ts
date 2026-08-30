@@ -6,6 +6,8 @@ import {
   type SecurityHeadersOptions,
 } from "@generalsx-web/shared/security-headers";
 import { buildLivenessReport, buildReadinessReport } from "./health.js";
+import { extractBearerToken, peekAdmissionRoomId } from "./room/admission.js";
+import { statusForDenial, TURN_GRANT_URL, type TurnGrantResult } from "./room/turn-grant.js";
 import { fetchTurnCredentials, type TurnCredentialsEnv } from "./turn/turn-credentials.js";
 
 export { RoomDurableObject } from "./durable-objects/room-do.js";
@@ -41,24 +43,88 @@ function withHeaders(response: Response, extra: Record<string, string>): Respons
   return new Response(response.body, { status: response.status, headers });
 }
 
+/**
+ * Asks the room that issued `token` whether it still authorizes a TURN
+ * credential grant, and whether this seat is within its rate limit.
+ *
+ * The unverified room id in the token only chooses *which* Durable Object is
+ * consulted; that object then verifies the signature with its own per-room
+ * key, so a forged room id simply routes to a room that will reject it.
+ */
+async function authorizeTurnGrant(token: string, env: WorkerEnv): Promise<TurnGrantResult> {
+  const roomId = peekAdmissionRoomId(token);
+  if (roomId === null) {
+    return { ok: false, code: "UNAUTHORIZED", detail: "malformed room admission token" };
+  }
+  const stub = env.ROOM_DO.get(env.ROOM_DO.idFromName(roomId));
+  const response = await stub.fetch(
+    new Request(TURN_GRANT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    }),
+  );
+  if (!response.ok) {
+    return { ok: false, code: "UNAUTHORIZED", detail: "room authorization is unavailable" };
+  }
+  return (await response.json()) as TurnGrantResult;
+}
+
+/**
+ * Issues short-lived TURN credentials to a client that proves, with a room
+ * admission token, that it currently holds a seat in a room.
+ *
+ * The token — not the `Origin` header — is the authorization. CORS is a
+ * browser-enforced read restriction and is trivially absent outside a
+ * browser, so it can only ever be defense in depth here; without a
+ * server-issued capability this endpoint would be an open TURN relay that
+ * anyone could bill to this account.
+ */
 async function handleTurnCredentials(request: Request, env: WorkerEnv): Promise<Response> {
   if (request.method !== "GET" && request.method !== "POST") {
     return new Response("method not allowed", { status: 405 });
   }
+
+  const jsonError = (status: number, code: string, message: string, extra: Record<string, string> = {}): Response =>
+    new Response(JSON.stringify({ error: message, code }), {
+      status,
+      headers: { "Content-Type": "application/json", ...extra },
+    });
+
+  const token = extractBearerToken(request.headers.get("Authorization"));
+  if (!token) {
+    return jsonError(
+      401,
+      "UNAUTHORIZED",
+      "a room admission token is required; join a room and present its token as 'Authorization: Bearer <token>'",
+      { "WWW-Authenticate": 'Bearer realm="generalsx-room"' },
+    );
+  }
+
+  let grant: TurnGrantResult;
+  try {
+    grant = await authorizeTurnGrant(token, env);
+  } catch {
+    return jsonError(503, "UNAUTHORIZED", "room authorization is unavailable");
+  }
+  if (!grant.ok) {
+    const retryAfter = grant.retryAfterSeconds;
+    return jsonError(statusForDenial(grant.code), grant.code, grant.detail, {
+      ...(retryAfter !== undefined ? { "Retry-After": String(retryAfter) } : {}),
+    });
+  }
+
   const url = new URL(request.url);
   const ttlParam = url.searchParams.get("ttl");
   const outcome = await fetchTurnCredentials(env, {
     ...(ttlParam ? { ttlSeconds: Number(ttlParam) } : {}),
   });
   if (!outcome.ok) {
-    return new Response(JSON.stringify({ error: outcome.message }), {
-      status: outcome.status,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonError(outcome.status, "TURN_UNAVAILABLE", outcome.message);
   }
   return new Response(JSON.stringify({ iceServers: outcome.iceServers, ttlSeconds: outcome.ttlSeconds }), {
     status: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 

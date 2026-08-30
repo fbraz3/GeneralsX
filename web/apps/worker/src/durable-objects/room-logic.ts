@@ -20,6 +20,11 @@ export interface SlotInfo {
   /** Opaque id correlating this slot with its transport-level connection
    * (e.g. a WebSocket instance identity), never exposed to clients. */
   readonly connectionId: string;
+  /** Random per-seat nonce embedded in this seat's TURN admission token.
+   * Rotated on every join, so a token minted for a previous occupant stops
+   * authorizing anything the moment the seat is vacated or retaken. Only
+   * ever sent to the client that owns the seat, inside its own token. */
+  readonly admissionId: string;
 }
 
 export interface RoomState {
@@ -58,6 +63,8 @@ export interface JoinRequest {
   readonly name: string;
   readonly connectionId: string;
   readonly compatibility: CompatibilityVersion;
+  /** Per-seat nonce for this admission; see {@link SlotInfo.admissionId}. */
+  readonly admissionId: string;
 }
 
 /** Assigns a stable slot to a new connection, or returns `ROOM_FULL`. */
@@ -71,8 +78,28 @@ export function joinRoom(state: RoomState, request: JoinRequest): RoomResult<Slo
   }
   state.compatibility ??= request.compatibility;
   const isHost = state.slots.size === 0;
-  state.slots.set(slot, { name: request.name, isHost, connectionId: request.connectionId });
+  state.slots.set(slot, {
+    name: request.name,
+    isHost,
+    connectionId: request.connectionId,
+    admissionId: request.admissionId,
+  });
   return { ok: true, value: slot };
+}
+
+/**
+ * Reports whether `slot` is *currently* held by the seat that
+ * `admissionId` was minted for.
+ *
+ * This is what makes a TURN admission token a capability rather than a
+ * bearer password: the token only authorizes anything while its holder is
+ * still sitting in the seat it was issued for. Leaving the room, being
+ * disconnected, or having the seat taken by someone else all revoke it
+ * immediately, with no revocation list to maintain.
+ */
+export function isSlotHeldBy(state: RoomState, slot: SlotId, admissionId: string): boolean {
+  const info = state.slots.get(slot);
+  return info !== undefined && info.admissionId === admissionId;
 }
 
 /** Removes a slot's occupant, freeing it for a future joiner. No-op if the

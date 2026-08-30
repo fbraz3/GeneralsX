@@ -402,13 +402,19 @@ duplicate room membership or stale connection behind:
   closes the socket locally, so the same `SignalingClient` instance can
   safely be reused for a later `connect()` (rejoin).
 - `WebRtcUdpBridge.joinRoom()` tears down any existing peers/room state
-  immediately, then fetches TURN credentials **fresh for this join**
-  (never once at launcher startup, where the ~10-minute credential TTL
-  could expire long before a match starts) before ever opening the
-  signaling connection — so peer connections are always created with
-  credentials that were just issued. A bridge instance constructed
-  without a `turnWorkerBaseUrl` (e.g. a single-player/offline boot
-  path that never joins a room) never calls TURN at all.
+  immediately, then **joins first and fetches TURN second**. TURN
+  credentials are minted per room and require the admission token the
+  room hands out in its `welcome` (see *TURN authorization* below), so
+  joining has to happen first; the bridge then fetches credentials
+  **fresh for this join** (never once at launcher startup, where the
+  ~10-minute credential TTL could expire long before a match starts).
+  No `RTCPeerConnection` is constructed until that fetch settles, so a
+  peer is never pinned to placeholder ICE servers. Roster and signal
+  messages that arrive during the fetch are buffered and replayed in
+  arrival order, so an offer can never be answered before the peer it
+  belongs to exists. A bridge constructed without a `turnWorkerBaseUrl`
+  (e.g. a single-player/offline boot path that never joins a room)
+  never calls TURN at all and applies the roster synchronously.
   A generation counter guards every step of this sequence, so a slower,
   superseded `joinRoom()`/`leaveRoom()` call can never race ahead of a
   newer one and resurrect torn-down state.
@@ -419,6 +425,34 @@ duplicate room membership or stale connection behind:
   silent. A signaling socket closing before a room join ever completes is
   reported as `{ kind: "join-failed" }`, which the launcher routes to its
   blocking error overlay.
+
+### TURN authorization
+
+TURN relays cost real bandwidth, so credentials must not be mintable by
+anyone who can reach the Worker. `GET /turn-credentials` therefore requires
+`Authorization: Bearer <admission token>`.
+
+The token is a **capability scoped to one seat in one room**, minted by that
+room's Durable Object when a player joins and returned in the `welcome`
+message. It is an HMAC-SHA-256 over `{roomId, slot, admissionId, exp}`,
+signed with a 32-byte key that the room generates in its own Durable Object
+storage on first use — so a token minted for one room can never validate
+against another, and no operator-managed shared secret exists to leak.
+`admissionId` is a fresh nonce recorded on the seat, which means leaving,
+disconnecting, or being replaced revokes the token immediately with no
+revocation list to maintain.
+
+Requests are authorized *inside* the Durable Object, in this order:
+signature → is this seat still held by this `admissionId`? → rate limit. The
+Durable Object is the single authority for its room, so a dual token bucket
+there (per seat and per room) cannot be bypassed by spreading requests across
+Worker isolates or colos. A denial returns 401, or 429 with `Retry-After`.
+
+CORS is deliberately **not** part of this. `Access-Control-Allow-Origin` is a
+restriction a *browser* applies to reading a response; curl, a script, and any
+server ignore it, and `Origin` is trivially forged outside a browser. The
+smoke suite asserts exactly this: it presents an allowed `Origin` with no
+token, and with a forged token, and requires a 401 both times.
 
 ## Runtime staging
 

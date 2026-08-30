@@ -18,6 +18,9 @@ export class FakeSignalingClient {
   readonly sentIce: { to: number; payload: unknown }[] = [];
   leaveCalled = false;
   closeCalled = false;
+  /** Invoked on every `connect()`, so a test can assert the *ordering* of the
+   * join relative to other async work (e.g. the TURN credential fetch). */
+  onConnect: ((roomId: string) => void) | null = null;
 
   on(event: string, handler: Handler): void {
     if (!this.listeners.has(event)) this.listeners.set(event, new Set());
@@ -30,6 +33,7 @@ export class FakeSignalingClient {
 
   connect(roomId: string, options?: { name?: string; capacity?: number }): void {
     this.connectCalls.push({ roomId, options });
+    this.onConnect?.(roomId);
   }
 
   sendOffer(to: number, payload: unknown): void {

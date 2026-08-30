@@ -83,6 +83,13 @@ describe("buildCorsHeaders", () => {
     expect(buildCorsHeaders("https://evil.example", options)).toEqual({});
     expect(buildCorsHeaders(null, options)).toEqual({});
   });
+
+  it("allows the Authorization header, which carries the room admission token", () => {
+    // Without this the browser blocks the preflight for `/turn-credentials`,
+    // and the launcher can never present its capability.
+    const headers = buildCorsHeaders("https://play.generalsx.org", options);
+    expect(headers["Access-Control-Allow-Headers"]).toContain("Authorization");
+  });
 });
 
 describe("renderPagesHeadersFile", () => {

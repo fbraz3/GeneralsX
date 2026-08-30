@@ -7,8 +7,15 @@ name = "generalsx-signaling"
 main = "src/index.ts"
 compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
-# Fail the deploy instead of silently publishing over a version someone else
-# uploaded from another machine or CI run.
+# This file is the single source of truth for the Worker's non-secret vars, so
+# a deploy replaces the live var set wholesale. Anything added by hand in the
+# dashboard is intentionally removed on the next deploy rather than silently
+# surviving as undeclared configuration. Secrets are a separate store and are
+# never deleted by a deploy, so TURN_KEY_ID / TURN_KEY_API_TOKEN persist.
+#
+# This says nothing about concurrent deploys. Refusing to publish over a
+# version someone else uploaded is what `wrangler deploy --strict` does, and
+# deploy-worker.sh always passes it.
 keep_vars = false
 
 # --- Custom domain -------------------------------------------------------

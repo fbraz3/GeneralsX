@@ -82,6 +82,16 @@ export interface ServerWelcomeMessage {
   readonly slot: SlotId;
   readonly capacity: number;
   readonly roster: readonly RosterEntry[];
+  /**
+   * Short-lived, opaque room admission token authorizing this client to mint
+   * TURN credentials for the seat it was just given.
+   *
+   * The client must treat it as opaque: only the issuing room can interpret
+   * or validate it. Present it as `Authorization: Bearer <token>` on
+   * `/turn-credentials`. Absent when the server could not mint one, in which
+   * case the client falls back to direct/STUN-only ICE.
+   */
+  readonly admission?: string;
 }
 
 export interface ServerRosterMessage {
@@ -108,6 +118,7 @@ export type ServerErrorCode =
   | "NOT_JOINED"
   | "ALREADY_JOINED"
   | "INCOMPATIBLE_CLIENT"
+  | "UNAUTHORIZED"
   | "RATE_LIMITED";
 
 export interface ServerErrorMessage {

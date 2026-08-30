@@ -11,12 +11,23 @@
  *  - Expected security headers are derived from `@generalsx-web/shared`, the
  *    same module that *produces* them, so a policy change can never pass the
  *    smoke test by accident.
- *  - No check sends or logs a credential. The optional TURN check asserts the
- *    response *shape* only and never prints the issued credential material.
+ *  - No check sends, requests, or logs a credential. The TURN check asserts
+ *    that credentials are *refused* without a room admission token, so it
+ *    never causes one to be issued.
  *  - No check downloads a retail asset: the asset-origin probe requests a
  *    single byte (`Range: bytes=0-0`) purely to verify delivery semantics.
+ *  - Probes retry propagation-shaped failures with bounded backoff (see
+ *    `retry.ts`), so a just-attached custom domain is not reported as broken
+ *    while its DNS record and certificate are still rolling out.
  */
 import { buildSecurityHeaders } from "@generalsx-web/shared/security-headers";
+import {
+  createRetryingFetch,
+  DEFAULT_RETRY_POLICY,
+  PropagationTimeoutError,
+  type RetryDeps,
+  type RetryPolicy,
+} from "./retry.ts";
 import { PRODUCTION_TARGET, type DeploymentTarget } from "./targets.ts";
 
 export interface SmokeOptions {
@@ -27,8 +38,6 @@ export interface SmokeOptions {
   readonly assetOrigin?: string | undefined;
   /** Object probed on the asset origin. Must already exist there. */
   readonly assetProbePath?: string | undefined;
-  /** Fail (instead of skip) when TURN credentials are not issuable. */
-  readonly requireTurn?: boolean | undefined;
   /** Assert the deployment reports this commit SHA — the rollback check. */
   readonly expectReleaseId?: string | undefined;
 }
@@ -47,6 +56,16 @@ export interface SmokeReport {
 }
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
+
+/** Injectable seams. `fetchImpl` keeps the suite unit testable offline;
+ * `sleep`/`now` let the retry tests run instantly instead of waiting out a
+ * real backoff schedule. */
+export interface SmokeDeps extends RetryDeps {
+  readonly fetchImpl?: FetchLike | undefined;
+  /** Defaults to {@link DEFAULT_RETRY_POLICY}; pass `NO_RETRY_POLICY` to
+   * probe a deployment already known to be live. */
+  readonly retryPolicy?: RetryPolicy | undefined;
+}
 
 const DEFAULT_ASSET_PROBE_PATH = "/manifest.json";
 const DISALLOWED_ORIGIN = "https://disallowed.invalid";
@@ -80,11 +99,16 @@ function trimOrigin(origin: string): string {
 }
 
 /** Runs `body`, converting a transport error into a failed check rather than a
- * thrown exception, so one unreachable origin cannot hide the other results. */
+ * thrown exception, so one unreachable origin cannot hide the other results.
+ *
+ * A `PropagationTimeoutError` already carries the operator-facing summary
+ * (origin, attempts, elapsed, underlying failure), so it is reported verbatim
+ * rather than being re-wrapped into something less specific. */
 async function guard(name: string, body: () => Promise<SmokeResult>): Promise<SmokeResult> {
   try {
     return await body();
   } catch (error) {
+    if (error instanceof PropagationTimeoutError) return fail(name, error.message);
     return fail(name, `request failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
@@ -274,26 +298,45 @@ async function checkWorkerCorsAllowlist(
   });
 }
 
-async function checkTurnCredentials(
+/**
+ * Verifies TURN credentials are not publicly mintable.
+ *
+ * This is the one check that must run against the *deployed* Worker rather
+ * than a unit test, because it is the only place that proves the live route
+ * — not just the handler — refuses an anonymous caller. It deliberately
+ * sends an allowed `Origin`: CORS is a browser-side read restriction that
+ * curl and any server ignore, so a deployment that relied on it would pass a
+ * browser test and still hand credentials to anyone. Presenting the allowed
+ * origin and *still* being refused is the assertion that matters.
+ *
+ * No credential is ever sent or issued here, so this check is safe to run
+ * against production on every deploy.
+ */
+async function checkTurnAuthorization(
   options: SmokeOptions,
   doFetch: FetchLike,
 ): Promise<SmokeResult> {
-  const name = "worker-turn-credentials";
-  if (!options.requireTurn) {
-    return skip(name, "not requested (pass --require-turn to issue a live credential)");
-  }
+  const name = "worker-turn-authorization";
   return guard(name, async () => {
-    const response = await doFetch(`${trimOrigin(options.signalingOrigin)}/turn-credentials`, {
-      headers: { Origin: options.launcherOrigin },
+    const url = `${trimOrigin(options.signalingOrigin)}/turn-credentials`;
+    const anonymous = await doFetch(url, { headers: { Origin: options.launcherOrigin } });
+    if (anonymous.status !== 401) {
+      return fail(
+        name,
+        `an unauthenticated request from an allowed origin got ${anonymous.status}, expected 401 — ` +
+          "TURN credentials must require a room admission token",
+      );
+    }
+    if (!anonymous.headers.get("WWW-Authenticate")) {
+      return fail(name, "401 response omitted WWW-Authenticate");
+    }
+    const forged = await doFetch(url, {
+      headers: { Origin: options.launcherOrigin, Authorization: "Bearer gxa1.not.a.real.token" },
     });
-    if (response.status !== 200) return fail(name, `expected 200, got ${response.status}`);
-    const body = (await response.json()) as { iceServers?: unknown; ttlSeconds?: unknown };
-    // Shape only: issued credential material is never inspected or printed.
-    const hasIceServers = Array.isArray(body.iceServers)
-      ? body.iceServers.length > 0
-      : typeof body.iceServers === "object" && body.iceServers !== null;
-    if (!hasIceServers) return fail(name, "response carried no iceServers");
-    return pass(name, `issued short-lived credentials (ttl ${String(body.ttlSeconds)}s)`);
+    if (forged.status !== 401) {
+      return fail(name, `a forged admission token got ${forged.status}, expected 401`);
+    }
+    return pass(name, "credentials require a valid room admission token (anonymous and forged both refused)");
   });
 }
 
@@ -337,9 +380,10 @@ async function checkAssetOrigin(options: SmokeOptions, doFetch: FetchLike): Prom
 /** Runs every check and reports the aggregate result. */
 export async function runSmokeChecks(
   options: SmokeOptions,
-  fetchImpl?: FetchLike,
+  deps: SmokeDeps = {},
 ): Promise<SmokeReport> {
-  const doFetch: FetchLike = fetchImpl ?? ((input, init) => fetch(input, init));
+  const baseFetch: FetchLike = deps.fetchImpl ?? ((input, init) => fetch(input, init));
+  const doFetch = createRetryingFetch(baseFetch, deps.retryPolicy ?? DEFAULT_RETRY_POLICY, deps);
   const results: SmokeResult[] = [];
   for (const check of [
     checkLauncherReachable,
@@ -350,7 +394,7 @@ export async function runSmokeChecks(
     checkWorkerReadiness,
     checkWorkerSecurityHeaders,
     checkWorkerCorsAllowlist,
-    checkTurnCredentials,
+    checkTurnAuthorization,
     checkAssetOrigin,
   ]) {
     results.push(await check(options, doFetch));
