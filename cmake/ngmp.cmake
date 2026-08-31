@@ -74,13 +74,13 @@ if(SAGE_USE_NGMP)
         FetchContent_Declare(
             GameNetworkingSockets
             GIT_REPOSITORY https://github.com/ValveSoftware/GameNetworkingSockets.git
-            GIT_TAG v1.4.1
+            GIT_TAG v1.6.0
             GIT_SHALLOW TRUE
             GIT_SUBMODULES ""
         )
         FetchContent_MakeAvailable(GameNetworkingSockets)
         if(TARGET GameNetworkingSockets)
-            set_target_properties(GameNetworkingSockets PROPERTIES CXX_STANDARD 17)
+            set_target_properties(GameNetworkingSockets PROPERTIES CXX_STANDARD 20)
             if(_PROTOBUF_BREW_PREFIX)
                 target_include_directories(GameNetworkingSockets BEFORE PUBLIC "${_PROTOBUF_BREW_PREFIX}/include")
                 if(_ABSEIL_BREW_PREFIX)
@@ -93,7 +93,7 @@ if(SAGE_USE_NGMP)
             endif()
         endif()
         if(TARGET GameNetworkingSockets_s)
-            set_target_properties(GameNetworkingSockets_s PROPERTIES CXX_STANDARD 17)
+            set_target_properties(GameNetworkingSockets_s PROPERTIES CXX_STANDARD 20)
             if(_PROTOBUF_BREW_PREFIX)
                 target_include_directories(GameNetworkingSockets_s BEFORE PUBLIC "${_PROTOBUF_BREW_PREFIX}/include")
                 if(_ABSEIL_BREW_PREFIX)
