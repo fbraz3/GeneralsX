@@ -97,6 +97,9 @@ jobs:
           
           # Freetype + Fontconfig (required by font rendering)
           brew install freetype fontconfig
+
+          # Protobuf & OpenSSL (required by GameNetworkingSockets / NGMP P2P transport)
+          brew install protobuf openssl@3
           
           # NOTE: GLM is intentionally NOT installed via Homebrew.
           # It is fetched via CMake FetchContent in cmake/glm.cmake (tag 1.0.3).

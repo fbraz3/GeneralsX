@@ -11,9 +11,21 @@
 #include <functional>
 #include <cstdint>
 
+#if defined(SAGE_USE_GAMENETWORKINGSOCKETS)
 #include <steam/steamnetworkingsockets.h>
 #include <steam/steamnetworkingcustomsignaling.h>
 #include <steam/isteamnetworkingutils.h>
+#else
+typedef uint32_t HSteamNetConnection;
+const HSteamNetConnection k_HSteamNetConnection_Invalid = 0;
+typedef uint32_t HSteamListenSocket;
+const HSteamListenSocket k_HSteamListenSocket_Invalid = 0;
+struct SteamNetworkingMessage_t { void* m_pData; uint32_t m_cbSize; void Release() {} const void* GetData() const { return m_pData; } };
+struct SteamNetworkingIdentity { void Clear() {} const char* GetGenericString() const { return ""; } };
+struct SteamNetConnectionInfo_t { char m_szConnectionDescription[128]; struct { bool IsIPv4() const { return true; } } m_addrRemote; };
+typedef char SteamNetworkingErrMsg[1024];
+class ISteamNetworkingConnectionSignaling { public: virtual ~ISteamNetworkingConnectionSignaling() {} virtual void Release() {} };
+#endif
 
 #include "GameNetwork/GeneralsOnline/PluginInterfaces.h"
 #include "Common/AsciiString.h"

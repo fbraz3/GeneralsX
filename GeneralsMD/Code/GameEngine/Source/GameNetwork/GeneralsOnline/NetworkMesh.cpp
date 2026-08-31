@@ -7,15 +7,19 @@
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/ConnectionManager.h"
 
+#if defined(SAGE_USE_GAMENETWORKINGSOCKETS)
 #include <steam/steamnetworkingsockets.h>
 #include <steam/isteamnetworkingsockets.h>
 #include <steam/isteamnetworkingutils.h>
 #include <steam/steamnetworkingcustomsignaling.h>
+#endif
 
 #include <atomic>
 #include <deque>
 #include <cstring>
 #include <cstdio>
+
+#if defined(SAGE_USE_GAMENETWORKINGSOCKETS)
 
 static std::atomic<bool> g_bNetworkMeshDestroying = false;
 static std::mutex g_pendingDeletionMutex;
@@ -527,3 +531,139 @@ int PlayerConnection::ComputeConnectionScore()
 void PlayerConnection::LiteUpdateForAC()
 {
 }
+
+#else // !defined(SAGE_USE_GAMENETWORKINGSOCKETS)
+
+NetworkMesh::NetworkMesh()
+{
+}
+
+void NetworkMesh::Flush()
+{
+}
+
+void NetworkMesh::RegisterConnectivity(int64_t)
+{
+}
+
+void NetworkMesh::UpdateConnectivity(PlayerConnection*)
+{
+}
+
+int NetworkMesh::SendGamePacket(void*, uint32_t, int64_t)
+{
+	return -1;
+}
+
+void NetworkMesh::SendACPacket(uint32_t, const void*, uint32_t)
+{
+}
+
+void NetworkMesh::StartConnectionSignalling(const char*, int64_t, uint16_t)
+{
+}
+
+void NetworkMesh::DisconnectUser(int64_t)
+{
+}
+
+void NetworkMesh::Disconnect()
+{
+	m_mapConnections.clear();
+}
+
+void NetworkMesh::Tick()
+{
+}
+
+PlayerConnection::PlayerConnection(int64_t userID, HSteamNetConnection hSteamConnection)
+	: m_userID(userID)
+	, m_hSteamConnection(hSteamConnection)
+	, m_ConnectionType(EConnectionType::BuiltIn_ValveSockets)
+{
+}
+
+PlayerConnection::PlayerConnection(int64_t userID, const char* szMiddlewareID)
+	: m_userID(userID)
+	, m_strMiddlewareID(szMiddlewareID ? szMiddlewareID : "")
+	, m_ConnectionType(EConnectionType::MiddlewarePluginGeneric)
+{
+}
+
+int PlayerConnection::SendGamePacket(void*, uint32_t)
+{
+	return -1;
+}
+
+void PlayerConnection::SendACPacket(const void*, uint32_t)
+{
+}
+
+void PlayerConnection::UpdateLatencyHistogram()
+{
+}
+
+void PlayerConnection::Close()
+{
+	m_State = EConnectionState::NOT_CONNECTED;
+}
+
+bool PlayerConnection::IsIPV4()
+{
+	return true;
+}
+
+int PlayerConnection::Recv(SteamNetworkingMessage_t**)
+{
+	return 0;
+}
+
+std::string PlayerConnection::GetStats()
+{
+	return "(p2p mesh disabled)";
+}
+
+std::string PlayerConnection::GetConnectionType()
+{
+	return "(fallback)";
+}
+
+void PlayerConnection::UpdateState(EConnectionState newState, NetworkMesh* pOwningMesh)
+{
+	m_State = newState;
+	if (pOwningMesh && pOwningMesh->m_cbOnConnected != nullptr)
+	{
+		pOwningMesh->m_cbOnConnected(m_userID, L"Player", this);
+	}
+}
+
+void PlayerConnection::SetDisconnected(bool, NetworkMesh* pOwningMesh, bool)
+{
+	UpdateState(EConnectionState::CONNECTION_DISCONNECTED, pOwningMesh);
+}
+
+int PlayerConnection::GetLatency()
+{
+	return -1;
+}
+
+int PlayerConnection::GetJitter()
+{
+	return 0;
+}
+
+float PlayerConnection::GetConnectionQuality()
+{
+	return 1.0f;
+}
+
+int PlayerConnection::ComputeConnectionScore()
+{
+	return 100;
+}
+
+void PlayerConnection::LiteUpdateForAC()
+{
+}
+
+#endif // defined(SAGE_USE_GAMENETWORKINGSOCKETS)
