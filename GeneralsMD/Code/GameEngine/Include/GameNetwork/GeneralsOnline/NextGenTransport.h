@@ -5,8 +5,6 @@
 #include "GameNetwork/NetworkDefs.h"
 #include "GameNetwork/Transport.h"
 #include "GameNetwork/GeneralsOnline/PluginInterfaces.h"
-#include <steam/steamnetworkingsockets.h>
-#include <steam/isteamnetworkingmessages.h>
 
 // Struct to track retry state for outgoing packets
 struct OutgoingPacketState
