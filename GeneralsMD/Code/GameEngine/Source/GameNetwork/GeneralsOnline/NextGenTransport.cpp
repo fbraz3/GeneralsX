@@ -105,7 +105,16 @@ Bool NextGenTransport::doRecv(void)
 				continue;
 
 			const uint32_t numBytesWithHeader = msg->m_cbSize;
-			if (numBytesWithHeader < sizeof(TransportMessageHeader))
+			// Packets have 1 byte for channel prefix + TransportMessageHeader + payload
+			if (numBytesWithHeader < (1 + sizeof(TransportMessageHeader)))
+			{
+				msg->Release();
+				continue;
+			}
+
+			const uint8_t* rawData = static_cast<const uint8_t*>(msg->GetData());
+			uint8_t channel = rawData[0];
+			if (channel != 0) // 0 == ENetworkChannels::Game / NETWORK_CHANNEL_GAME
 			{
 				msg->Release();
 				continue;
@@ -114,15 +123,16 @@ Bool NextGenTransport::doRecv(void)
 			TransportMessage incomingMessage{};
 			std::memset(&incomingMessage, 0, sizeof(incomingMessage));
 
-			std::memcpy(&incomingMessage.header, msg->GetData(), sizeof(TransportMessageHeader));
+			const uint8_t* pGameData = rawData + 1;
+			std::memcpy(&incomingMessage.header, pGameData, sizeof(TransportMessageHeader));
 
-			const uint32_t payloadLen = numBytesWithHeader - static_cast<uint32_t>(sizeof(TransportMessageHeader));
+			const uint32_t payloadLen = numBytesWithHeader - 1 - static_cast<uint32_t>(sizeof(TransportMessageHeader));
 			const size_t dstCap = sizeof(incomingMessage.data);
 			const size_t toCopy = (payloadLen <= dstCap) ? payloadLen : dstCap;
 
 			if (payloadLen > 0)
 			{
-				std::memcpy(incomingMessage.data, static_cast<const unsigned char*>(msg->GetData()) + sizeof(TransportMessageHeader), toCopy);
+				std::memcpy(incomingMessage.data, pGameData + sizeof(TransportMessageHeader), toCopy);
 				incomingMessage.length = static_cast<Int>(toCopy);
 			}
 
@@ -130,9 +140,25 @@ Bool NextGenTransport::doRecv(void)
 
 			if (!isGeneralsPacket(&incomingMessage))
 			{
+				fprintf(stderr, "[NGMP-TRANSPORT] Dropping invalid generals packet: magic=0x%X (expected 0x%X), crc=0x%X, len=%d\n",
+					incomingMessage.header.magic, GENERALS_MAGIC_NUMBER, incomingMessage.header.crc, incomingMessage.length);
+				fflush(stderr);
 				m_unknownPackets[m_statisticsSlot]++;
 				m_unknownBytes[m_statisticsSlot] += numBytesWithHeader;
 				continue;
+			}
+
+			if (TheNGMPGame != nullptr)
+			{
+				for (int s = 0; s < MAX_SLOTS; ++s)
+				{
+					NGMPGameSlot* sSlot = TheNGMPGame->getGameSpySlot(s);
+					if (sSlot && sSlot->m_userID == kvPair.first)
+					{
+						incomingMessage.addr = static_cast<UnsignedInt>(s);
+						break;
+					}
+				}
 			}
 
 			m_incomingPackets[m_statisticsSlot]++;
@@ -150,6 +176,8 @@ Bool NextGenTransport::doRecv(void)
 
 				std::memset(&m_inBuffer[i], 0, sizeof(m_inBuffer[i]));
 				m_inBuffer[i].header = incomingMessage.header;
+				m_inBuffer[i].addr = incomingMessage.addr;
+				m_inBuffer[i].port = incomingMessage.port;
 				if (payloadLen > 0)
 				{
 					std::memcpy(m_inBuffer[i].data, incomingMessage.data, toCopy);
@@ -184,8 +212,25 @@ Bool NextGenTransport::doSend(void)
 			return FALSE;
 		}
 
-		NGMPGameSlot* pSlot = static_cast<NGMPGameSlot*>(TheNGMPGame->getSlot(m_outBuffer[i].addr));
-		if (pSlot != nullptr)
+		NGMPGameSlot* pSlot = nullptr;
+		if (m_outBuffer[i].addr < MAX_SLOTS)
+		{
+			pSlot = static_cast<NGMPGameSlot*>(TheNGMPGame->getSlot(m_outBuffer[i].addr));
+		}
+		else
+		{
+			for (int s = 0; s < MAX_SLOTS; ++s)
+			{
+				NGMPGameSlot* sSlot = static_cast<NGMPGameSlot*>(TheNGMPGame->getSlot(s));
+				if (sSlot && (sSlot->getIP() == m_outBuffer[i].addr || sSlot->m_userID == m_outBuffer[i].addr))
+				{
+					pSlot = sSlot;
+					break;
+				}
+			}
+		}
+
+		if (pSlot != nullptr && pSlot->m_userID > 0)
 		{
 			const uint32_t totalLen = static_cast<uint32_t>(m_outBuffer[i].length) + sizeof(TransportMessageHeader);
 			if (totalLen > (sizeof(TransportMessageHeader) + MAX_PACKET_SIZE))

@@ -7,6 +7,8 @@
 #include <string>
 #include <cstdint>
 
+#include "Common/UnicodeString.h"
+
 namespace NGMP {
 
 #ifndef NGMP_CLIENT_ID
@@ -63,6 +65,11 @@ std::string GenerateGamecode();
 // Opens a URL in the default browser (cross-platform: ShellExecute on Windows, SDL_OpenURL on Linux/macOS)
 void OpenURL(const std::string& url);
 
+// UTF-8 conversion helpers for UnicodeString
+std::string UnicodeToUTF8(const UnicodeString& ustr);
+UnicodeString UTF8ToUnicode(const std::string& utf8Str);
+
 } // namespace NGMP
 
 #endif // NGMP_HELPERS_H
+

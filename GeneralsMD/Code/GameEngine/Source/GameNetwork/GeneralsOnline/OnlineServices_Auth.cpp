@@ -77,7 +77,7 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                 { "reserved_1",  "" },
                 { "reserved_2",  "" }
             };
-            std::string requestBody = requestJson.dump();
+            std::string requestBody = requestJson.dump(-1, ' ', false, json::error_handler_t::replace);
 
             CURL* curl = curl_easy_init();
             if (!curl) {

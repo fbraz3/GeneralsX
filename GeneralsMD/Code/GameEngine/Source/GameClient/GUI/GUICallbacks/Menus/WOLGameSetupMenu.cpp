@@ -610,6 +610,9 @@ static void handleColorSelection(int index)
 		}
 		else
 		{
+#if defined(SAGE_USE_NGMP)
+			WOLDisplaySlotList();
+#else
 			// request the color from the host
 			if (!slot->isPlayer(TheGameSpyInfo->getLocalName()))
 				return;
@@ -625,6 +628,7 @@ static void handleColorSelection(int index)
 			req.nick = hostName.str();
 			req.options = options.str();
 			TheGameSpyPeerMessageQueue->addRequest(req);
+#endif
 		}
 	}
 }
@@ -691,6 +695,9 @@ static void handlePlayerTemplateSelection(int index)
 		}
 		else
 		{
+#if defined(SAGE_USE_NGMP)
+			WOLDisplaySlotList();
+#else
 			// request the playerTemplate from the host
 			if (AreSlotListUpdatesEnabled())
 			{
@@ -707,6 +714,7 @@ static void handlePlayerTemplateSelection(int index)
 				req.options = options.str();
 				TheGameSpyPeerMessageQueue->addRequest(req);
 			}
+#endif
 		}
 	}
 }
@@ -837,6 +845,9 @@ static void handleTeamSelection(int index)
 		}
 		else
 		{
+#if defined(SAGE_USE_NGMP)
+			WOLDisplaySlotList();
+#else
 			// request the team from the host
 			AsciiString options;
 			options.format("Team=%d", team);
@@ -849,6 +860,7 @@ static void handleTeamSelection(int index)
 			req.nick = hostName.str();
 			req.options = options.str();
 			TheGameSpyPeerMessageQueue->addRequest(req);
+#endif
 		}
 	}
 }
@@ -1724,6 +1736,11 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 			if (listboxGameSetupChat)
 				GadgetListBoxAddEntryText(listboxGameSetupChat, strMessage, color, -1, -1);
 		});
+		pLobbyInterface->RegisterForCannotConnectCallback([]() {
+			GSMessageBoxOk(TheGameText->fetch("GUI:Error"), TheGameText->fetch("GUI:CannotConnectDirectly"));
+			void PopBackToLobby(void);
+			PopBackToLobby();
+		});
 		if (TheNGMPGame) {
 			TheNGMPGame->SyncWithLobby(pLobbyInterface->GetCurrentLobby());
 			TheNGMPGame->UpdateSlotsFromCurrentLobby();
@@ -1945,6 +1962,7 @@ void WOLGameSetupMenuShutdown( WindowLayout *layout, void *userData )
 	if (pLobbyInterface != nullptr)
 	{
 		pLobbyInterface->DeregisterForChatCallback();
+		pLobbyInterface->DeregisterForCannotConnectCallback();
 	}
 #endif
 
@@ -3360,10 +3378,6 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 					bool isHost = TheNGMPGame ? TheNGMPGame->amIHost() : (pLobbyInterface ? pLobbyInterface->IsHost() : false);
 					if (isHost)
 					{
-						if (pLobbyInterface != nullptr)
-						{
-							pLobbyInterface->UpdateCurrentLobby_ForceReady();
-						}
 						StartPressed();
 					}
 					else
@@ -3458,6 +3472,7 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 									nextPlayer = getFirstSelectablePlayer(game);
 								handleStartPositionSelection(nextPlayer, i);
 							}
+							WOLDisplaySlotList();
 						}
 					}
 				}
@@ -3500,6 +3515,7 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 							{
 								// it's one of my type.  Remove it.
 								handleStartPositionSelection(playerIdxInPos, -1);
+								WOLDisplaySlotList();
 							}
 						}
 					}

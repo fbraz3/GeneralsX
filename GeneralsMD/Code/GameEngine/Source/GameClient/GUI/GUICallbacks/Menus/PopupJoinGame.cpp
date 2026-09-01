@@ -72,6 +72,7 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #include "GameNetwork/GeneralsOnline/NGMP_types.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #endif
 
 //-----------------------------------------------------------------------------
@@ -143,8 +144,7 @@ void PopupJoinGameInit( WindowLayout *layout, void *userData )
 	}
 
 	LobbyEntry lobbyTryingToJoin = pLobbyInterface->GetLobbyTryingToJoin();
-	UnicodeString lobbyName;
-	lobbyName.translate(AsciiString(lobbyTryingToJoin.name.c_str()));
+	UnicodeString lobbyName = NGMP::UTF8ToUnicode(lobbyTryingToJoin.name);
 	GadgetStaticTextSetText(staticTextGameName, lobbyName);
 #else
 	GameSpyStagingRoom *ourRoom = TheGameSpyInfo->findStagingRoomByID(TheGameSpyInfo->getCurrentStagingRoomID());

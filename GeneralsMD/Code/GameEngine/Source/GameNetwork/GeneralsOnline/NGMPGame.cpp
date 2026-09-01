@@ -1,5 +1,6 @@
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/NextGenTransport.h"
 #include "GameLogic/VictoryConditions.h"
 #include "Common/PlayerList.h"
@@ -43,7 +44,7 @@ NGMPGame::NGMPGame()
 	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 	if (pLobbyInterface != nullptr)
 	{
-		setMap(pLobbyInterface->GetCurrentLobbyMapPath());
+		SyncWithLobby(pLobbyInterface->GetCurrentLobby());
 		UpdateSlotsFromCurrentLobby();
 	}
 }
@@ -60,31 +61,21 @@ NGMPGame::~NGMPGame()
 
 void NGMPGame::SyncWithLobby(LobbyEntry& lobby)
 {
-	AsciiString asciiMapOfficial(lobby.map_path.c_str());
-	std::string correctedMapPath = std::string(TheGlobalData->getPath_UserData().str()) + lobby.map_path;
-	AsciiString asciiMapCustom(correctedMapPath.c_str());
-	asciiMapOfficial.toLower();
-	asciiMapCustom.toLower();
-
 	if (TheMapCache)
 	{
 		TheMapCache->updateCache();
-		std::map<AsciiString, MapMetaData>::iterator itOfficial = TheMapCache->find(asciiMapOfficial);
-		std::map<AsciiString, MapMetaData>::iterator itCustom = TheMapCache->find(asciiMapCustom);
-
-		if (itOfficial != TheMapCache->end())
+		const MapMetaData *pMap = TheMapCache->findMap(lobby.map_path.c_str());
+		if (!pMap && !lobby.map_name.empty())
 		{
-			getGameSpySlot(0)->setMapAvailability(TRUE);
-			setMapCRC(itOfficial->second.m_CRC);
-			setMapSize(itOfficial->second.m_filesize);
-			setMap(asciiMapOfficial);
+			pMap = TheMapCache->findMap(lobby.map_name.c_str());
 		}
-		else if (itCustom != TheMapCache->end())
+
+		if (pMap)
 		{
 			getGameSpySlot(0)->setMapAvailability(TRUE);
-			setMapCRC(itCustom->second.m_CRC);
-			setMapSize(itCustom->second.m_filesize);
-			setMap(asciiMapCustom);
+			setMapCRC(pMap->m_CRC);
+			setMapSize(pMap->m_filesize);
+			setMap(pMap->m_fileName.isNotEmpty() ? pMap->m_fileName : AsciiString(lobby.map_path.c_str()));
 		}
 		else
 		{
@@ -105,8 +96,7 @@ void NGMPGame::SyncWithLobby(LobbyEntry& lobby)
 	setExeCRC(lobby.exe_crc);
 	setIniCRC(lobby.ini_crc);
 
-	UnicodeString lobbyName;
-	lobbyName.translate(AsciiString(lobby.name.c_str()));
+	UnicodeString lobbyName = NGMP::UTF8ToUnicode(lobby.name);
 	setGameName(lobbyName);
 
 	Money startingCash;
@@ -156,14 +146,14 @@ void NGMPGame::UpdateSlotsFromCurrentLobby()
 				continue;
 			}
 
-			UnicodeString uName;
-			uName.translate(AsciiString(pLobbyMember.display_name.c_str()));
+			UnicodeString uName = NGMP::UTF8ToUnicode(pLobbyMember.display_name);
 			slot->setState((SlotState)pLobbyMember.m_SlotState, uName, pLobbyMember.m_SlotIndex);
 
 			slot->setColor(pLobbyMember.color);
 			slot->setTeamNumber(pLobbyMember.team);
 			slot->setStartPos(pLobbyMember.startpos);
 			slot->setPlayerTemplate(playerTemplate);
+			slot->setIP(pLobbyMember.m_SlotIndex);
 
 			if (!bIsAI)
 			{

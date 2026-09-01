@@ -151,6 +151,10 @@ public:
 	void RegisterForChatCallback(std::function<void(UnicodeString strMessage, Color color)> cb) { m_OnChatCallback = cb; }
 	void DeregisterForChatCallback() { m_OnChatCallback = nullptr; }
 
+	std::function<void()> m_OnCannotConnectToLobbyCallback = nullptr;
+	void RegisterForCannotConnectCallback(std::function<void()> cb) { m_OnCannotConnectToLobbyCallback = cb; }
+	void DeregisterForCannotConnectCallback() { m_OnCannotConnectToLobbyCallback = nullptr; }
+
 	bool IsHost();
 	bool IsInLobby() const { return m_CurrentLobby.lobbyID != -1; }
 	uint64_t GetCurrentMatchID() const { return m_CurrentLobby.match_id; }

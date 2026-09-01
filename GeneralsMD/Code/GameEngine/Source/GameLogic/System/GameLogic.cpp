@@ -127,6 +127,9 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#endif
 
 #include <rts/profile.h>
 
@@ -1289,6 +1292,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			DEBUG_LOG(("Starting network game"));
 			TheGameInfo = TheLAN->GetMyGame();
 		}
+#if defined(SAGE_USE_NGMP)
+		else if (TheNGMPGame)
+		{
+			DEBUG_LOG(("Starting NGMP game"));
+			TheGameInfo = TheNGMPGame;
+		}
+#endif
 		else
 		{
 			DEBUG_LOG(("Starting gamespy game"));

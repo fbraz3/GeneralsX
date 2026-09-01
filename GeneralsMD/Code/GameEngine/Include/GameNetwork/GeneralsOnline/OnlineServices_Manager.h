@@ -114,6 +114,7 @@ public:
     void SendData_MarkReady(bool bReady);
     void SendData_StartGame();
     void SendData_CountdownStarted();
+    void SendData_RequestSignalling(int64_t target_user_id);
 };
 
 class NGMP_OnlineServicesManager {

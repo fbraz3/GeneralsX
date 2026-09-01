@@ -73,7 +73,18 @@ void NGMP_OnlineServicesManager::update() {
                 fprintf(stderr, "[NGMP-MainThread] Event: Lobby list updated (%zu lobbies)\n", m_lobbies.size());
                 break;
             case NGMPEvent::EVENT_CHAT_MESSAGE_RECEIVED:
-                fprintf(stderr, "[NGMP-MainThread] Event: Chat msg: %s\n", ev.payload.c_str());
+                {
+                    fprintf(stderr, "[NGMP-MainThread] Event: Chat msg: %s\n", ev.payload.c_str());
+                    UnicodeString uMsg = NGMP::UTF8ToUnicode(ev.payload);
+                    NGMP_OnlineServices_LobbyInterface* pLobby = GetInterface<NGMP_OnlineServices_LobbyInterface>();
+                    if (pLobby) {
+                        pLobby->InvokeChatCallback(uMsg, GameSpyColor[GSCOLOR_DEFAULT]);
+                    }
+                    NGMP_OnlineServices_RoomsInterface* pRooms = GetInterface<NGMP_OnlineServices_RoomsInterface>();
+                    if (pRooms) {
+                        pRooms->InvokeChatCallback(uMsg, GameSpyColor[GSCOLOR_DEFAULT]);
+                    }
+                }
                 break;
             case NGMPEvent::EVENT_CHAT_CONNECTED:
                 fprintf(stderr, "[NGMP-MainThread] Event: Chat connected\n");
@@ -185,6 +196,33 @@ void NGMP_OnlineServicesManager::update() {
                                 NGMPEvent startEv;
                                 startEv.type = NGMPEvent::EVENT_GAME_START;
                                 uiEvents.push_back(startEv);
+                            }
+                            else if (msgId == 12 || msgId == 16) { // NETWORK_SIGNAL
+                                if (m_pNetworkMesh) {
+                                    std::vector<uint8_t> signalBytes;
+                                    if (jsonMsg.contains("signal")) {
+                                        const auto& sig = jsonMsg["signal"];
+                                        if (sig.is_binary()) {
+                                            const auto& bin = sig.get_binary();
+                                            signalBytes.assign(bin.begin(), bin.end());
+                                        } else if (sig.is_object() && sig.contains("bytes") && sig["bytes"].is_array()) {
+                                            for (const auto& b : sig["bytes"]) {
+                                                if (b.is_number()) signalBytes.push_back(b.get<uint8_t>());
+                                            }
+                                        } else if (sig.is_array()) {
+                                            for (const auto& b : sig) {
+                                                if (b.is_number()) signalBytes.push_back(b.get<uint8_t>());
+                                            }
+                                        }
+                                    } else if (jsonMsg.contains("payload") && jsonMsg["payload"].is_array()) {
+                                        for (const auto& b : jsonMsg["payload"]) {
+                                            if (b.is_number()) signalBytes.push_back(b.get<uint8_t>());
+                                        }
+                                    }
+                                    if (!signalBytes.empty()) {
+                                        m_pNetworkMesh->PushIncomingSignal(signalBytes);
+                                    }
+                                }
                             }
                             else if (msgId == 17) { // START_SIGNALLING
                                 if (m_pNetworkMesh) {
@@ -424,7 +462,7 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
             {"ini_crc", 0},
             {"anticheat_id", -1}
         };
-        std::string payloadStr = payload.dump();
+        std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
 
         struct curl_slist* headers = nullptr;
         headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -498,7 +536,7 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
         if (!password.empty()) {
             payload["password"] = password;
         }
-        std::string payloadStr = payload.dump();
+        std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
 
         struct curl_slist* headers = nullptr;
         headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -599,7 +637,7 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                         int side = member.value("Side", member.value("side", -1));
                         int color = member.value("Color", member.value("color", -1));
                         int team = member.value("Team", member.value("team", -1));
-                        int startPos = member.value("StartingPosition", member.value("starting_position", -1));
+                        int startPos = member.value("StartingPosition", member.value("starting_position", member.value("start_pos", member.value("startpos", member.value("StartPos", -1)))));
                         bool hasMap = member.value("HasMap", member.value("has_map", true));
                         bool isReady = member.value("IsReady", member.value("is_ready", false));
 
@@ -638,6 +676,7 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                     if (pLobbyInterface) {
                         LobbyEntry& curLobby = pLobbyInterface->GetCurrentLobby();
                         curLobby.lobbyID = targetId;
+                        curLobby.match_id = lobbyIter.value("MatchID", lobbyIter.value("match_id", uint64_t(0)));
                         curLobby.owner = ownerId;
                         curLobby.name = lobbyIter.value("Name", lobbyIter.value("name", ""));
                         curLobby.map_name = mapName;
@@ -719,7 +758,7 @@ static void sendLobbyPostUpdate(const std::string& authToken, int64_t lobbyId, c
         if (!curl) return;
 
         std::string url = NGMP::GetAPIEndpoint(("Lobby/" + std::to_string(lobbyId)).c_str());
-        std::string payloadStr = payload.dump();
+        std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
         NGMP::Internal::CurlResponse response;
 
         struct curl_slist* headers = nullptr;
@@ -770,24 +809,24 @@ void NGMP_OnlineServicesManager::updateLobbyMap(const std::string& mapName, cons
 void NGMP_OnlineServicesManager::updateLobbyStartingCash(int startingCash) {
     json payload = {
         {"field", 5}, // LOBBY_STARTING_CASH
-        {"startingcash", startingCash}
+        {"startingcash", (uint32_t)startingCash}
     };
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
 
-void NGMP_OnlineServicesManager::updateLobbyLimitSuperweapons(bool limit) {
+void NGMP_OnlineServicesManager::updateLobbyLimitSuperweapons(bool limitSuperweapons) {
     json payload = {
         {"field", 6}, // LOBBY_LIMIT_SUPERWEAPONS
-        {"limit_superweapons", limit}
+        {"limit_superweapons", limitSuperweapons}
     };
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
 
-void NGMP_OnlineServicesManager::updateLobbyMySide(int side, int startPos) {
+void NGMP_OnlineServicesManager::updateLobbyMySide(int side, int updatedStartPos) {
     json payload = {
         {"field", 1}, // MY_SIDE
         {"side", side},
-        {"start_pos", startPos}
+        {"start_pos", updatedStartPos >= 0 ? updatedStartPos : 0}
     };
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
@@ -825,39 +864,39 @@ void NGMP_OnlineServicesManager::updateLobbySlotState(int slotIndex, int slotSta
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
 
-void NGMP_OnlineServicesManager::updateLobbyAISide(int slot, int side, int startPos) {
+void NGMP_OnlineServicesManager::updateLobbyAISide(int slotIndex, int side, int updatedStartPos) {
     json payload = {
         {"field", 13}, // AI_SIDE
-        {"slot", slot},
+        {"slot", slotIndex},
         {"side", side},
-        {"start_pos", startPos}
+        {"start_pos", updatedStartPos >= 0 ? updatedStartPos : 0}
     };
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
 
-void NGMP_OnlineServicesManager::updateLobbyAIColor(int slot, int color) {
+void NGMP_OnlineServicesManager::updateLobbyAIColor(int slotIndex, int color) {
     json payload = {
         {"field", 14}, // AI_COLOR
-        {"slot", slot},
+        {"slot", slotIndex},
         {"color", color}
     };
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
 
-void NGMP_OnlineServicesManager::updateLobbyAITeam(int slot, int team) {
+void NGMP_OnlineServicesManager::updateLobbyAITeam(int slotIndex, int team) {
     json payload = {
         {"field", 15}, // AI_TEAM
-        {"slot", slot},
+        {"slot", slotIndex},
         {"team", team}
     };
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
 
-void NGMP_OnlineServicesManager::updateLobbyAIStartPos(int slot, int startPos) {
+void NGMP_OnlineServicesManager::updateLobbyAIStartPos(int slotIndex, int startPos) {
     json payload = {
         {"field", 16}, // AI_START_POS
-        {"slot", slot},
-        {"startpos", startPos}
+        {"slot", slotIndex},
+        {"start_pos", startPos}
     };
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
@@ -906,11 +945,8 @@ void NGMP_OnlineServicesManager::updateLobbyLeave(int64_t lobbyId) {
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
-        if (res == CURLE_OK && (httpCode == 200 || httpCode == 204)) {
-            fprintf(stderr, "[NGMP] Lobby deleted successfully\n");
-            fflush(stderr);
-        } else {
-            fprintf(stderr, "[NGMP] Delete lobby request failed (curl=%d, http=%ld)\n", res, httpCode);
+        if (res != CURLE_OK || (httpCode != 200 && httpCode != 204)) {
+            fprintf(stderr, "[NGMP] Delete lobby failed (curl=%d, http=%ld, resp=%s)\n", res, httpCode, response.text.c_str());
             fflush(stderr);
         }
 
@@ -1013,7 +1049,7 @@ void NGMP_OnlineServicesManager::startMatchmakingAsync(uint16_t playlistID, cons
         // payload["ini_crc"] = TheGlobalData->m_iniCRC;
         // payload["anticheat_id"] = "";
 
-        std::string payloadStr = payload.dump();
+        std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
         std::string url = NGMP::GetAPIEndpoint("matchmaking");
         NGMP::Internal::CurlResponse response;
 
@@ -1106,7 +1142,7 @@ bool NGMP_OnlineServicesManager::sendChatMessage(const std::string& room, const 
         };
         fprintf(stderr, "[NGMP] sendChatMessage: sending '%s'\n", message.c_str());
         fflush(stderr);
-        return m_chatSession->sendPayload(payload.dump());
+        return m_chatSession->sendPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
     }
     fprintf(stderr, "[NGMP] sendChatMessage called but no active chat session\n");
     fflush(stderr);
@@ -1142,7 +1178,7 @@ void NGMP_OnlineServicesManager::changeNetworkRoom(int16_t roomID) {
             {"msg_id", 3}, // NETWORK_ROOM_CHANGE_ROOM
             {"room", roomID}
         };
-        m_chatSession->sendPayload(payload.dump());
+        m_chatSession->sendPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
     } else {
         fprintf(stderr, "[NGMP] changeNetworkRoom(%d): WS chat session not active or not connected\n", roomID);
         fflush(stderr);

@@ -89,7 +89,7 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		{"side", resolvedSide},
 		{"desynced", false}
 	};
-	std::string payloadStr = payload.dump();
+	std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
 	std::string url = NGMP::GetAPIEndpoint("Lobby/Outcome");
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 

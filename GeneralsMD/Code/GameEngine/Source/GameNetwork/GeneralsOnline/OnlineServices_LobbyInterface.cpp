@@ -159,10 +159,8 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobby_ForceReady()
 
 void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName, UnicodeString strInitialMapName, AsciiString strInitialMapPath, bool bIsOfficial, int initialMaxSize, bool bVanillaTeamsOnly, bool bTrackStats, uint32_t startingCash, bool bPassworded, std::string strPassword, bool bAllowObservers)
 {
-	AsciiString aName;
-	aName.translate(strLobbyName);
-	AsciiString aMapName;
-	aMapName.translate(strInitialMapName);
+	std::string aName = NGMP::UnicodeToUTF8(strLobbyName);
+	std::string aMapName = NGMP::UnicodeToUTF8(strInitialMapName);
 
 	// Sanitize map path: strip directory paths to just filename if needed
 	AsciiString sanitizedMapPath = strInitialMapPath;
@@ -173,7 +171,7 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 	}
 
 	NGMP_OnlineServicesManager::getInstance().createLobbyAsync(
-		aName.str(), aMapName.str(), sanitizedMapPath.str(), bIsOfficial, initialMaxSize,
+		aName, aMapName, sanitizedMapPath.str(), bIsOfficial, initialMaxSize,
 		bVanillaTeamsOnly, bTrackStats, startingCash, bPassworded, strPassword, bAllowObservers);
 }
 
@@ -191,17 +189,14 @@ void NGMP_OnlineServices_LobbyInterface::LeaveCurrentLobby()
 
 UnicodeString NGMP_OnlineServices_LobbyInterface::GetCurrentLobbyDisplayName()
 {
-	UnicodeString name;
-	name.translate(AsciiString(m_CurrentLobby.name.c_str()));
-	return name;
+	return NGMP::UTF8ToUnicode(m_CurrentLobby.name);
 }
 
 UnicodeString NGMP_OnlineServices_LobbyInterface::GetCurrentLobbyMapDisplayName()
 {
-	UnicodeString name;
-	name.translate(AsciiString(m_CurrentLobby.map_name.c_str()));
-	return name;
+	return NGMP::UTF8ToUnicode(m_CurrentLobby.map_name);
 }
+
 
 AsciiString NGMP_OnlineServices_LobbyInterface::GetCurrentLobbyMapPath()
 {

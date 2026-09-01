@@ -2,7 +2,10 @@
 // Cross-platform OS abstraction using pure C++20 standard library.
 
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "Common/UnicodeString.h"
+#include "WWLib/utf8.h"
 #include <chrono>
+
 #include <thread>
 #include <fstream>
 #include <sstream>
@@ -163,6 +166,35 @@ std::string GenerateGamecode() {
     return result;
 }
 
+std::string UnicodeToUTF8(const UnicodeString& ustr) {
+    if (ustr.isEmpty()) {
+        return std::string();
+    }
+    size_t len = static_cast<size_t>(ustr.getLength());
+    size_t utf8Len = ::Wide_To_Utf8_Len(reinterpret_cast<const wchar_t*>(ustr.str()), len);
+    if (utf8Len == 0 || utf8Len == UTF8_INVALID) {
+        return std::string();
+    }
+    std::string result(utf8Len, '\0');
+    ::Wide_To_Utf8(&result[0], utf8Len + 1, reinterpret_cast<const wchar_t*>(ustr.str()), len);
+    return result;
+}
+
+UnicodeString UTF8ToUnicode(const std::string& utf8Str) {
+    if (utf8Str.empty()) {
+        return UnicodeString();
+    }
+    size_t wideLen = ::Utf8_To_Wide_Len(utf8Str.c_str(), utf8Str.length());
+    if (wideLen == 0 || wideLen == UTF8_INVALID) {
+        UnicodeString u;
+        u.translate(AsciiString(utf8Str.c_str()));
+        return u;
+    }
+    std::vector<wchar_t> wideBuf(wideLen + 1, L'\0');
+    ::Utf8_To_Wide(&wideBuf[0], wideLen + 1, utf8Str.c_str(), utf8Str.length());
+    return UnicodeString(reinterpret_cast<const WideChar*>(&wideBuf[0]));
+}
+
 void OpenURL(const std::string& url) {
     if (url.empty()) {
         return;
@@ -175,3 +207,4 @@ void OpenURL(const std::string& url) {
 }
 
 } // namespace NGMP
+

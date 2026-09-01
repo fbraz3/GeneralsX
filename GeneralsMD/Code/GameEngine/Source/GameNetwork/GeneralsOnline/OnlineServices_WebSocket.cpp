@@ -191,50 +191,47 @@ void NGMPWebSocket::receiveLoop() {
 } // namespace NGMP
 
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 
 void WebSocket::SendData_ChangeName(UnicodeString& strNewName)
 {
-    AsciiString aName;
-    aName.translate(strNewName);
+    std::string utf8Name = NGMP::UnicodeToUTF8(strNewName);
     json payload;
     payload["msg_id"] = (int)NGMP::EWebSocketMessageID::PLAYER_NAME_CHANGE;
-    payload["display_name"] = aName.str();
-    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump());
+    payload["display_name"] = utf8Name;
+    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
 }
 
 void WebSocket::SendData_RoomChatMessage(UnicodeString& msg, bool bIsAction)
 {
-    AsciiString aMsg;
-    aMsg.translate(msg);
+    std::string utf8Msg = NGMP::UnicodeToUTF8(msg);
     json payload;
     payload["msg_id"] = (int)NGMP::EWebSocketMessageID::NETWORK_ROOM_CHAT_FROM_CLIENT;
-    payload["message"] = aMsg.str();
+    payload["message"] = utf8Msg;
     payload["action"] = bIsAction;
-    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump());
+    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
 }
 
 void WebSocket::SendData_FriendMessage(UnicodeString& msg, int64_t target_user_id)
 {
-    AsciiString aMsg;
-    aMsg.translate(msg);
+    std::string utf8Msg = NGMP::UnicodeToUTF8(msg);
     json payload;
     payload["msg_id"] = (int)NGMP::EWebSocketMessageID::SOCIAL_FRIEND_CHAT_MESSAGE_CLIENT_TO_SERVER;
     payload["target_user_id"] = target_user_id;
-    payload["message"] = aMsg.str();
-    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump());
+    payload["message"] = utf8Msg;
+    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
 }
 
 void WebSocket::SendData_LobbyChatMessage(UnicodeString& msg, bool bIsAction, bool bIsAnnouncement, bool bShowAnnouncementToHost)
 {
-    AsciiString aMsg;
-    aMsg.translate(msg);
+    std::string utf8Msg = NGMP::UnicodeToUTF8(msg);
     json payload;
     payload["msg_id"] = (int)NGMP::EWebSocketMessageID::LOBBY_ROOM_CHAT_FROM_CLIENT;
-    payload["message"] = aMsg.str();
+    payload["message"] = utf8Msg;
     payload["action"] = bIsAction;
     payload["announcement"] = bIsAnnouncement;
     payload["show_announcement_to_host"] = bShowAnnouncementToHost;
-    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump());
+    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
 }
 
 void WebSocket::SendData_JoinNetworkRoom(int roomID)
@@ -252,19 +249,29 @@ void WebSocket::SendData_MarkReady(bool bReady)
     json payload;
     payload["msg_id"] = (int)NGMP::EWebSocketMessageID::NETWORK_ROOM_MARK_READY;
     payload["ready"] = bReady;
-    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump());
+    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
 }
 
 void WebSocket::SendData_StartGame()
 {
     json payload;
     payload["msg_id"] = (int)NGMP::EWebSocketMessageID::START_GAME;
-    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump());
+    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
 }
 
 void WebSocket::SendData_CountdownStarted()
 {
     json payload;
     payload["msg_id"] = (int)NGMP::EWebSocketMessageID::START_GAME_COUNTDOWN_STARTED;
-    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump());
+    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
 }
+
+void WebSocket::SendData_RequestSignalling(int64_t target_user_id)
+{
+    json payload;
+    payload["msg_id"] = (int)NGMP::EWebSocketMessageID::NETWORK_CONNECTION_CLIENT_REQUEST_SIGNALLING;
+    payload["target_user_id"] = target_user_id;
+    NGMP_OnlineServicesManager::getInstance().sendRawWebSocketPayload(payload.dump(-1, ' ', false, json::error_handler_t::replace));
+}
+
+

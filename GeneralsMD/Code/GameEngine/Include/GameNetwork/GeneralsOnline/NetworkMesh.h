@@ -36,6 +36,7 @@ class ISignalingClient
 public:
 	virtual ~ISignalingClient() = default;
 	virtual ISteamNetworkingConnectionSignaling* CreateSignalingForConnection(const SteamNetworkingIdentity& identityPeer, SteamNetworkingErrMsg& errMsg) = 0;
+	virtual void PushIncomingSignal(const std::vector<uint8_t>& signalPayload) = 0;
 	virtual void Poll() = 0;
 	virtual void Release() = 0;
 };
@@ -184,6 +185,7 @@ public:
 	void SendACPacket(uint32_t userID, const void* pData, uint32_t dataLen);
 
 	void StartConnectionSignalling(const char* szMiddlewareID, int64_t remoteUserID, uint16_t preferredPort);
+	void PushIncomingSignal(const std::vector<uint8_t>& signalPayload);
 	void DisconnectUser(int64_t remoteUserID);
 	void Disconnect();
 

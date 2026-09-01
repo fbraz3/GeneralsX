@@ -442,7 +442,7 @@ static void updateOverallStats()
 			teamName = g_mapServiceIndexToPlayerTemplateString[i];
 		}
 
-		percStr.format(L"%d%%", (int)(100.f*fThisPercent));
+		percStr.format(L"%d%% (%d/%d)", (int)(100.f*fThisPercent), stats.wins[i], stats.matches[i]);
 		wndName.format("WOLWelcomeMenu.wnd:Percent%s", teamName.c_str());
 		pWin = TheWindowManager->winGetWindowFromId(NULL, NAMEKEY(wndName));
 		if (pWin) {
