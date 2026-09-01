@@ -999,6 +999,12 @@ void NGMP_OnlineServicesManager::updateLobbyLeave(int64_t lobbyId) {
 }
 
 void NGMP_OnlineServicesManager::requestPlaylistsAsync() {
+    if (m_authToken.empty()) {
+        fprintf(stderr, "[NGMP] Cannot request playlists: not authenticated\n");
+        fflush(stderr);
+        return;
+    }
+
     if (m_playlistsRequestInFlight.exchange(true)) {
         fprintf(stderr, "[NGMP] Playlists request already in flight, ignoring duplicate\n");
         fflush(stderr);
@@ -1019,7 +1025,12 @@ void NGMP_OnlineServicesManager::requestPlaylistsAsync() {
         std::string url = NGMP::GetAPIEndpoint("matchmaking/playlists");
         NGMP::Internal::CurlResponse response;
 
+        struct curl_slist* headers = nullptr;
+        std::string authHeader = "Authorization: Bearer " + m_authToken;
+        headers = curl_slist_append(headers, authHeader.c_str());
+
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
@@ -1027,36 +1038,78 @@ void NGMP_OnlineServicesManager::requestPlaylistsAsync() {
         CURLcode res = curl_easy_perform(curl);
         long httpCode = 0;
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
         if (res == CURLE_OK && httpCode == 200) {
             try {
-                auto jsonList = json::parse(response.text);
+                auto jsonObject = json::parse(response.text);
                 std::vector<PlaylistEntry> playlists;
-                if (jsonList.is_array()) {
-                    for (const auto& item : jsonList) {
-                        PlaylistEntry entry;
-                        entry.PlaylistID = item.value("playlistID", -1);
-                        entry.Name = item.value("name", "Unknown Playlist");
-                        entry.MinPlayers = item.value("minPlayers", 2);
-                        entry.DesiredPlayers = item.value("desiredPlayers", 2);
-                        entry.MinSelectedMaps = item.value("minSelectedMaps", 1);
-                        entry.AllowTeams = item.value("allowTeams", false);
-                        entry.TeamSize = item.value("teamSize", -1);
-                        entry.AllowArmySelection = item.value("allowArmySelection", true);
-                        entry.GracePeriodAtMinPlayersMSec = item.value("gracePeriodAtMinPlayersMSec", 0);
-                        
-                        auto mapsArr = item.value("maps", json::array());
-                        for (const auto& mapItem : mapsArr) {
+                
+                auto parseItem = [](const json& item) -> PlaylistEntry {
+                    PlaylistEntry entry;
+                    if (item.contains("PlaylistID")) entry.PlaylistID = item["PlaylistID"].get<uint16_t>();
+                    else entry.PlaylistID = item.value("playlistID", -1);
+
+                    if (item.contains("Name")) entry.Name = item["Name"].get<std::string>();
+                    else entry.Name = item.value("name", "Unknown Playlist");
+
+                    if (item.contains("MinPlayers")) entry.MinPlayers = item["MinPlayers"].get<int>();
+                    else entry.MinPlayers = item.value("minPlayers", 2);
+
+                    if (item.contains("DesiredPlayers")) entry.DesiredPlayers = item["DesiredPlayers"].get<int>();
+                    else entry.DesiredPlayers = item.value("desiredPlayers", 2);
+
+                    if (item.contains("MinSelectedMaps")) entry.MinSelectedMaps = item["MinSelectedMaps"].get<int>();
+                    else entry.MinSelectedMaps = item.value("minSelectedMaps", 1);
+
+                    if (item.contains("AllowTeams")) entry.AllowTeams = item["AllowTeams"].get<bool>();
+                    else entry.AllowTeams = item.value("allowTeams", false);
+
+                    if (item.contains("TeamSize")) entry.TeamSize = item["TeamSize"].get<int>();
+                    else entry.TeamSize = item.value("teamSize", -1);
+
+                    if (item.contains("AllowArmySelection")) entry.AllowArmySelection = item["AllowArmySelection"].get<bool>();
+                    else entry.AllowArmySelection = item.value("allowArmySelection", true);
+
+                    if (item.contains("GracePeriodAtMinPlayersMSec")) entry.GracePeriodAtMinPlayersMSec = item["GracePeriodAtMinPlayersMSec"].get<uint16_t>();
+                    else entry.GracePeriodAtMinPlayersMSec = item.value("gracePeriodAtMinPlayersMSec", 0);
+
+                    const auto& mapsNode = item.contains("Maps") ? item["Maps"] : (item.contains("maps") ? item["maps"] : json());
+                    if (mapsNode.is_array()) {
+                        for (const auto& mapItem : mapsNode) {
                             PlaylistMapEntry mapEntry;
-                            mapEntry.Name = mapItem.value("name", "");
-                            mapEntry.Path = mapItem.value("path", "");
-                            mapEntry.Custom = mapItem.value("custom", false);
+                            if (mapItem.contains("Name")) mapEntry.Name = mapItem["Name"].get<std::string>();
+                            else mapEntry.Name = mapItem.value("name", "");
+
+                            if (mapItem.contains("Path")) mapEntry.Path = mapItem["Path"].get<std::string>();
+                            else mapEntry.Path = mapItem.value("path", "");
+
+                            if (mapItem.contains("Custom")) mapEntry.Custom = mapItem["Custom"].get<bool>();
+                            else mapEntry.Custom = mapItem.value("custom", false);
+
                             entry.Maps.push_back(mapEntry);
                         }
-                        playlists.push_back(entry);
+                    }
+                    return entry;
+                };
+
+                if (jsonObject.is_object() && jsonObject.contains("playlists")) {
+                    for (const auto& item : jsonObject["playlists"]) {
+                        playlists.push_back(parseItem(item));
+                    }
+                } else if (jsonObject.is_array()) {
+                    for (const auto& item : jsonObject) {
+                        playlists.push_back(parseItem(item));
                     }
                 }
+
+                fprintf(stderr, "[NGMP] Playlists fetched successfully: %zu playlists loaded\n", playlists.size());
+                for (const auto& pl : playlists) {
+                    fprintf(stderr, "  [Playlist] ID=%u Name='%s' Maps=%zu MinMaps=%d\n",
+                        pl.PlaylistID, pl.Name.c_str(), pl.Maps.size(), pl.MinSelectedMaps);
+                }
+                fflush(stderr);
 
                 // Swap into member under the event mutex for safe handoff
                 {

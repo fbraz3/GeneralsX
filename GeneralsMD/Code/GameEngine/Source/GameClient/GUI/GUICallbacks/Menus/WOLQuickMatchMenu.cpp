@@ -565,6 +565,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 {
 #if defined(SAGE_USE_NGMP)
 	std::list<AsciiString> maps;
+	std::list<AsciiString> mapDisplayNames;
 	Int numPlayers = 0;
 	Int playlistIndex = -1;
 	GadgetComboBoxGetSelectedPos(comboBoxNumPlayers, &playlistIndex);
@@ -587,6 +588,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 			}
 			mapPath.toLower();
 			maps.push_back(mapPath);
+			mapDisplayNames.push_back(mapEntry.Name.empty() ? mapEntry.Path.c_str() : mapEntry.Name.c_str());
 		}
 	}
 	else
@@ -596,28 +598,33 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 	}
 
 	GadgetListBoxReset(listboxMapSelect);
+	auto itName = mapDisplayNames.begin();
 	for (std::list<AsciiString>::const_iterator it = maps.begin(); it != maps.end(); ++it)
 	{
 		AsciiString theMap = *it;
+		AsciiString fallbackName = (itName != mapDisplayNames.end()) ? *itName++ : theMap;
 		const MapMetaData *md = TheMapCache->findMap(theMap);
-		if (md)
-		{
-			UnicodeString displayName;
-			displayName = md->m_displayName;
-			Bool isSelected = pref.isMapSelected(theMap);
-			Int width = 10;
-			Int height = 10;
-			const Image *img = (isSelected)?selectedImage:unselectedImage;
-			if ( img )
-			{
-				width = min(GadgetListBoxGetColumnWidth(listboxMapSelect, 0), img->getImageWidth());
-				height = width;
-			}
-			Int index = GadgetListBoxAddEntryImage(listboxMapSelect, img, -1, 0, height, width);
-			GadgetListBoxAddEntryText(listboxMapSelect, displayName, GameSpyColor[(isSelected)?GSCOLOR_MAP_SELECTED:GSCOLOR_MAP_UNSELECTED], index, 1);
-			GadgetListBoxSetItemData(listboxMapSelect, (void *)(intptr_t)isSelected, index);
-			GadgetListBoxSetItemData(listboxMapSelect, (void *)md, index, 1);
+		if (!md) {
+			md = TheMapCache->findMap(fallbackName);
 		}
+
+		UnicodeString displayName;
+		if (md) displayName = md->m_displayName;
+		else displayName.format(L"%hs", fallbackName.str());
+
+		Bool isSelected = pref.isMapSelected(theMap);
+		Int width = 10;
+		Int height = 10;
+		const Image *img = (isSelected)?selectedImage:unselectedImage;
+		if ( img )
+		{
+			width = min(GadgetListBoxGetColumnWidth(listboxMapSelect, 0), img->getImageWidth());
+			height = width;
+		}
+		Int index = GadgetListBoxAddEntryImage(listboxMapSelect, img, -1, 0, height, width);
+		GadgetListBoxAddEntryText(listboxMapSelect, displayName, GameSpyColor[(isSelected)?GSCOLOR_MAP_SELECTED:GSCOLOR_MAP_UNSELECTED], index, 1);
+		GadgetListBoxSetItemData(listboxMapSelect, (void *)(intptr_t)isSelected, index);
+		GadgetListBoxSetItemData(listboxMapSelect, (void *)md, index, 1);
 	}
 #else
 	std::list<AsciiString> maps = TheGameSpyConfig->getQMMaps();
