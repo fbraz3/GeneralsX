@@ -9,6 +9,7 @@
 #include "GameNetwork/GameSpy/StagingRoomGameInfo.h"
 #include "GameClient/MapUtil.h"
 #include "Common/Money.h"
+#include "Common/GlobalData.h"
 #include <cstdio>
 #include <thread>
 #include <curl/curl.h>
@@ -265,6 +266,48 @@ void NGMP_OnlineServicesManager::update() {
                                 } else if (m_currentLobbyId >= 0) {
                                     requestLobbyDetailsAsync(m_currentLobbyId);
                                 }
+                            }
+                            else if (msgId == 20) { // MATCHMAKING_ACTION_JOIN_PREARRANGED_LOBBY
+                                int64_t lobbyId = -1;
+                                if (jsonMsg.contains("lobby_id") && jsonMsg["lobby_id"].is_number()) {
+                                    lobbyId = jsonMsg["lobby_id"].get<int64_t>();
+                                } else if (jsonMsg.contains("lobbyID") && jsonMsg["lobbyID"].is_number()) {
+                                    lobbyId = jsonMsg["lobbyID"].get<int64_t>();
+                                }
+                                fprintf(stderr, "[NGMP] WS msg_id=20 (MATCHMAKING_ACTION_JOIN_PREARRANGED_LOBBY): joining lobby %lld\n", (long long)lobbyId);
+                                fflush(stderr);
+
+                                NGMPEvent matchFoundEv;
+                                matchFoundEv.type = NGMPEvent::EVENT_MATCHMAKING_MATCH_FOUND;
+                                matchFoundEv.payload = std::to_string(lobbyId);
+                                uiEvents.push_back(matchFoundEv);
+
+                                if (lobbyId >= 0) {
+                                    joinLobbyAsync(lobbyId, "");
+                                }
+                            }
+                            else if (msgId == 21) { // MATCHMAKING_ACTION_START_GAME
+                                fprintf(stderr, "[NGMP] WS msg_id=21 (MATCHMAKING_ACTION_START_GAME): starting matchmaking game\n");
+                                fflush(stderr);
+
+                                NGMPEvent startEv;
+                                startEv.type = NGMPEvent::EVENT_GAME_START;
+                                uiEvents.push_back(startEv);
+                            }
+                            else if (msgId == 22) { // MATCHMAKING_MESSAGE
+                                std::string msgText = "";
+                                if (jsonMsg.contains("message") && jsonMsg["message"].is_string()) {
+                                    msgText = jsonMsg["message"].get<std::string>();
+                                } else if (jsonMsg.contains("Message") && jsonMsg["Message"].is_string()) {
+                                    msgText = jsonMsg["Message"].get<std::string>();
+                                }
+                                fprintf(stderr, "[NGMP] WS msg_id=22 (MATCHMAKING_MESSAGE): '%s'\n", msgText.c_str());
+                                fflush(stderr);
+
+                                NGMPEvent mmMsgEv;
+                                mmMsgEv.type = NGMPEvent::EVENT_MATCHMAKING_MESSAGE;
+                                mmMsgEv.payload = msgText;
+                                uiEvents.push_back(mmMsgEv);
                             }
                         }
                     } catch (const std::exception& e) {
@@ -1045,9 +1088,9 @@ void NGMP_OnlineServicesManager::startMatchmakingAsync(uint16_t playlistID, cons
         json payload;
         payload["playlist"] = playlistID;
         payload["maps"] = selectedMapIndexes;
-        // payload["exe_crc"] = TheGlobalData->m_exeCRC;
-        // payload["ini_crc"] = TheGlobalData->m_iniCRC;
-        // payload["anticheat_id"] = "";
+        payload["exe_crc"] = TheGlobalData ? TheGlobalData->m_exeCRC : 0;
+        payload["ini_crc"] = TheGlobalData ? TheGlobalData->m_iniCRC : 0;
+        payload["anticheat_id"] = 0;
 
         std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
         std::string url = NGMP::GetAPIEndpoint("matchmaking");
@@ -1073,7 +1116,7 @@ void NGMP_OnlineServicesManager::startMatchmakingAsync(uint16_t playlistID, cons
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
-        if (res == CURLE_OK && httpCode == 201) {
+        if (res == CURLE_OK && (httpCode == 200 || httpCode == 201)) {
             fprintf(stderr, "[NGMP] Matchmaking started successfully\n");
             fflush(stderr);
         } else {
@@ -1114,6 +1157,43 @@ void NGMP_OnlineServicesManager::cancelMatchmakingAsync() {
             fflush(stderr);
         } else {
             fprintf(stderr, "[NGMP] Failed to cancel matchmaking (curl=%d, http=%ld)\n", res, httpCode);
+            fflush(stderr);
+        }
+    }).detach();
+}
+
+void NGMP_OnlineServicesManager::widenMatchmakingAsync() {
+    std::thread([this]() {
+        CURL* curl = curl_easy_init();
+        if (!curl) return;
+
+        std::string url = NGMP::GetAPIEndpoint("matchmaking/widen");
+        NGMP::Internal::CurlResponse response;
+
+        struct curl_slist* headers = nullptr;
+        std::string authHeader = "Authorization: Bearer " + m_authToken;
+        headers = curl_slist_append(headers, authHeader.c_str());
+
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+
+        CURLcode res = curl_easy_perform(curl);
+        long httpCode = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        if (res == CURLE_OK && httpCode == 200) {
+            fprintf(stderr, "[NGMP] Matchmaking widen search triggered successfully\n");
+            fflush(stderr);
+        } else {
+            fprintf(stderr, "[NGMP] Failed to widen matchmaking search (curl=%d, http=%ld)\n", res, httpCode);
             fflush(stderr);
         }
     }).detach();

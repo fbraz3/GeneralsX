@@ -55,7 +55,9 @@ struct NGMPEvent {
         EVENT_LOBBY_LEFT,
         EVENT_HOST_MIGRATED,
         EVENT_GAME_START, // GeneralsX @feature fbraz3 27/08/2026 START_GAME broadcast
-        EVENT_PLAYERS_UPDATED
+        EVENT_PLAYERS_UPDATED,
+        EVENT_MATCHMAKING_MATCH_FOUND,
+        EVENT_MATCHMAKING_MESSAGE
     };
 
     Type type = EVENT_NONE;
@@ -194,6 +196,7 @@ public:
     const std::vector<PlaylistEntry>& getPlaylists() const { return m_playlists; }
     void startMatchmakingAsync(uint16_t playlistID, const std::vector<int>& selectedMapIndexes);
     void cancelMatchmakingAsync();
+    void widenMatchmakingAsync();
 
     // Async stats fetch
     void requestGlobalStatsAsync();
