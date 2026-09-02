@@ -1164,7 +1164,7 @@ void WOLQuickMatchMenuUpdate( WindowLayout * layout, void *userData)
 				buttonBack->winEnable(TRUE);
 			}
 		} else if (ev.type == NGMPEvent::EVENT_MATCHMAKING_MATCH_FOUND) {
-			buttonBack->winEnable(FALSE);
+			buttonBack->winEnable(TRUE);
 			buttonStop->winEnable(FALSE);
 			buttonWiden->winEnable(FALSE);
 			if (TheAudio) {

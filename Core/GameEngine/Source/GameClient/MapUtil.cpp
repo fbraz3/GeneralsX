@@ -480,6 +480,28 @@ void MapCache::updateCache()
 		m_doLoadStandardMapCacheINI = TRUE;
 	}
 
+#if !defined(_WIN32)
+	// On macOS/Linux, also scan user Documents directory if it exists and differs from userMapDir
+	const char* homeDir = getenv("HOME");
+	if (homeDir)
+	{
+		std::vector<std::string> docMapDirs = {
+			std::string(homeDir) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
+			std::string(homeDir) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps",
+			std::string(homeDir) + "/Library/CloudStorage/OneDrive-Pessoal/Documents/Command and Conquer Generals Zero Hour Data/Maps"
+		};
+		for (const auto& dmd : docMapDirs)
+		{
+			std::error_code ec;
+			if (std::filesystem::exists(dmd, ec) && std::filesystem::is_directory(dmd, ec))
+			{
+				AsciiString docMaps(dmd.c_str());
+				loadMapsFromDisk(docMaps, FALSE);
+			}
+		}
+	}
+#endif
+
 	// Load standard maps from map cache last.
 	// This overwrites matching user maps to prevent munkees getting rowdy :)
 	if (m_doLoadStandardMapCacheINI)
@@ -1189,6 +1211,53 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 			return &(it->second);
 		}
 	}
+
+#if !defined(_WIN32)
+	// Fallback 2: Check standard custom map folders on POSIX if not in cache
+	const char* home = getenv("HOME");
+	if (home && !baseQuery.empty())
+	{
+		std::vector<std::string> searchDirs = {
+			std::string(home) + "/Library/Application Support/GeneralsX/GeneralsZH/Maps",
+			std::string(home) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
+			std::string(home) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps",
+			std::string(home) + "/Library/CloudStorage/OneDrive-Pessoal/Documents/Command and Conquer Generals Zero Hour Data/Maps"
+		};
+
+		for (const auto& sdir : searchDirs)
+		{
+			std::error_code ec;
+			if (!std::filesystem::exists(sdir, ec)) continue;
+
+			for (const auto& entry : std::filesystem::recursive_directory_iterator(sdir, std::filesystem::directory_options::skip_permission_denied, ec))
+			{
+				if (ec) break;
+				if (entry.is_regular_file(ec) && entry.path().extension() == ".map")
+				{
+					std::string candidateStem = entry.path().stem().string();
+					std::string normCandidateStem = normalizePath(candidateStem);
+					if (normCandidateStem == baseQuery)
+					{
+						FileInfo fileInfo;
+						AsciiString fullPath(entry.path().string().c_str());
+						AsciiString fullPathLower = fullPath;
+						fullPathLower.toLower();
+						if (TheFileSystem->getFileInfo(fullPath, &fileInfo))
+						{
+							AsciiString mapDir(sdir.c_str());
+							addMap(mapDir, fullPath, fullPathLower, fileInfo, FALSE);
+							MapCache::iterator foundIt = find(fullPathLower);
+							if (foundIt != end()) return &(foundIt->second);
+							for (MapCache::iterator fit = begin(); fit != end(); ++fit) {
+								if (fit->second.m_fileName == fullPath) return &(fit->second);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+#endif
 
 	return nullptr;
 }
