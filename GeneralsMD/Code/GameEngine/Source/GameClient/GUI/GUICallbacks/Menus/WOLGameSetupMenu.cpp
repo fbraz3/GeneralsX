@@ -1954,7 +1954,8 @@ static void shutdownComplete( WindowLayout *layout )
 //-------------------------------------------------------------------------------------------------
 void WOLGameSetupMenuShutdown( WindowLayout *layout, void *userData )
 {
-	TheGameSpyInfo->unregisterTextWindow(listboxGameSetupChat);
+	if (TheGameSpyInfo && listboxGameSetupChat)
+		TheGameSpyInfo->unregisterTextWindow(listboxGameSetupChat);
 
 #if defined(SAGE_USE_NGMP)
 	// GeneralsX @bugfix fbraz3 23/08/2026 Deregister staging room chat callback on shutdown

@@ -1141,13 +1141,17 @@ void WOLLobbyMenuShutdown( WindowLayout *layout, void *userData )
 	pref.write();
 
 	ReleaseWindowInfo();
-
-	TheGameSpyInfo->unregisterTextWindow(listboxLobbyChat);
+ 
+	if (TheGameSpyInfo && listboxLobbyChat)
+		TheGameSpyInfo->unregisterTextWindow(listboxLobbyChat);
 
 	//TheGameSpyChat->stopListingGames();
-	PeerRequest req;
-	req.peerRequestType = PeerRequest::PEERREQUEST_STOPGAMELIST;
-	TheGameSpyPeerMessageQueue->addRequest(req);
+	if (TheGameSpyPeerMessageQueue)
+	{
+		PeerRequest req;
+		req.peerRequestType = PeerRequest::PEERREQUEST_STOPGAMELIST;
+		TheGameSpyPeerMessageQueue->addRequest(req);
+	}
 
 	listboxLobbyChat = nullptr;
 	listboxLobbyPlayers = nullptr;

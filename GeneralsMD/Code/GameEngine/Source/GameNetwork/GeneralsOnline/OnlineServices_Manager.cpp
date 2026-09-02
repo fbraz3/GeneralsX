@@ -573,7 +573,7 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
 
         json payload = {
             {"preferred_port", 0},
-            {"anticheat_id", -1},
+            {"anticheat_id", 0},
             {"has_map", true}
         };
         if (!password.empty()) {
@@ -1169,8 +1169,8 @@ void NGMP_OnlineServicesManager::startMatchmakingAsync(uint16_t playlistID, cons
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
-        if (res == CURLE_OK && (httpCode == 200 || httpCode == 201)) {
-            fprintf(stderr, "[NGMP] Matchmaking started successfully\n");
+        if (res == CURLE_OK && (httpCode == 200 || httpCode == 201 || httpCode == 204)) {
+            fprintf(stderr, "[NGMP] Matchmaking request accepted (http=%ld)\n", httpCode);
             fflush(stderr);
         } else {
             fprintf(stderr, "[NGMP] Failed to start matchmaking (curl=%d, http=%ld)\n", res, httpCode);

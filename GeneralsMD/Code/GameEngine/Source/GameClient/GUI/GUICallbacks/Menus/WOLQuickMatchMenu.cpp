@@ -1008,9 +1008,20 @@ static void shutdownComplete( WindowLayout *layout )
 //-------------------------------------------------------------------------------------------------
 void WOLQuickMatchMenuShutdown( WindowLayout *layout, void *userData )
 {
-	TheGameSpyInfo->unregisterTextWindow(quickmatchTextWindow);
+#if defined(SAGE_USE_NGMP)
+	if (TheGameSpyInfo && quickmatchTextWindow)
+	{
+		TheGameSpyInfo->unregisterTextWindow(quickmatchTextWindow);
+	}
+	NGMP_OnlineServicesManager::getInstance().cancelMatchmakingAsync();
+#else
+	if (TheGameSpyInfo && quickmatchTextWindow)
+	{
+		TheGameSpyInfo->unregisterTextWindow(quickmatchTextWindow);
+	}
+#endif
 
-	if (!TheGameEngine->getQuitting())
+	if (TheGameEngine && !TheGameEngine->getQuitting())
 		saveQuickMatchOptions();
 
 	parentWOLQuickMatch = nullptr;
@@ -1021,19 +1032,29 @@ void WOLQuickMatchMenuShutdown( WindowLayout *layout, void *userData )
 	isShuttingDown = true;
 
 	// if we are shutting down for an immediate pop, skip the animations
-	Bool popImmediate = *(Bool *)userData;
-	if( popImmediate )
+	if (userData != nullptr)
 	{
-
+		Bool popImmediate = *(Bool *)userData;
+		if( popImmediate )
+		{
+			shutdownComplete( layout );
+			return;
+		}
+	}
+	else
+	{
 		shutdownComplete( layout );
 		return;
-
 	}
 
-	TheShell->reverseAnimatewindow();
-	TheTransitionHandler->reverse("WOLQuickMatchMenuFade");
+	if (TheShell)
+		TheShell->reverseAnimatewindow();
+	if (TheTransitionHandler)
+		TheTransitionHandler->reverse("WOLQuickMatchMenuFade");
 
+#if !defined(SAGE_USE_NGMP)
 	RaiseGSMessageBox();
+#endif
 }
 
 
