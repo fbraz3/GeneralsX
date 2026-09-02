@@ -57,6 +57,7 @@
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #define HAVE_NGMP_PREFS 1
 #endif
+#include <filesystem>
 
 
 //-----------------------------------------------------------------------------
@@ -127,8 +128,18 @@ Bool UserPreferences::load(AsciiString fname)
 //	if (strstr(fname.str(), "\\"))
 //		throw INI_INVALID_DATA;	// must be a leaf name
 
+	AsciiString normalizedFname = fname;
+#ifndef _WIN32
+	// Normalize backslashes to forward slashes on POSIX
+	char *p = normalizedFname.getBufferForRead(normalizedFname.getLength() + 1);
+	for (Int i = 0; i < normalizedFname.getLength(); ++i)
+	{
+		if (p[i] == '\\') p[i] = '/';
+	}
+#endif
+
 	m_filename = TheGlobalData->getPath_UserData();
-	m_filename.concat(fname);
+	m_filename.concat(normalizedFname);
 
 	FILE *fp = fopen(m_filename.str(), "r");
 	if (fp)
@@ -161,6 +172,16 @@ Bool UserPreferences::write()
 {
 	if (m_filename.isEmpty())
 		return false;
+
+#ifndef _WIN32
+	std::filesystem::path filePath(m_filename.str());
+	std::filesystem::path parentDir = filePath.parent_path();
+	if (!parentDir.empty())
+	{
+		std::error_code ec;
+		std::filesystem::create_directories(parentDir, ec);
+	}
+#endif
 
 	FILE *fp = fopen(m_filename.str(), "w");
 	if (fp)
@@ -255,7 +276,7 @@ QuickMatchPreferences::QuickMatchPreferences()
 #else
 	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
 #endif
-	userPrefFilename.format("GeneralsOnline\\QMPref%d.ini", localProfile);
+	userPrefFilename.format("GeneralsOnline/QMPref%d.ini", localProfile);
 	load(userPrefFilename);
 }
 
@@ -445,7 +466,7 @@ CustomMatchPreferences::CustomMatchPreferences()
 #else
 	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
 #endif
-	userPrefFilename.format("GeneralsOnline\\CustomPref%d.ini", localProfile);
+	userPrefFilename.format("GeneralsOnline/CustomPref%d.ini", localProfile);
 	load(userPrefFilename);
 }
 
@@ -799,7 +820,7 @@ GameSpyMiscPreferences::GameSpyMiscPreferences()
 #else
 	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
 #endif
-	userPrefFilename.format("GeneralsOnline\\GSMiscPref%d.ini", localProfile);
+	userPrefFilename.format("GeneralsOnline/GSMiscPref%d.ini", localProfile);
 	load(userPrefFilename);
 }
 
@@ -846,7 +867,7 @@ IgnorePreferences::IgnorePreferences()
 	AsciiString userPrefFilename;
 //	if(!TheGameSpyInfo)
 	Int localProfile = TheGameSpyInfo->getLocalProfileID();
-	userPrefFilename.format("GeneralsOnline\\IgnorePref%d.ini", localProfile);
+	userPrefFilename.format("GeneralsOnline/IgnorePref%d.ini", localProfile);
 	load(userPrefFilename);
 }
 
@@ -902,7 +923,7 @@ Bool LadderPreferences::loadProfile( Int profileID )
 	clear();
 	m_ladders.clear();
 	AsciiString userPrefFilename;
-	userPrefFilename.format("GeneralsOnline\\Ladders%d.ini", profileID);
+	userPrefFilename.format("GeneralsOnline/Ladders%d.ini", profileID);
 	Bool success = load(userPrefFilename);
 	if (!success)
 		return success;
