@@ -131,14 +131,22 @@ Bool UserPreferences::load(AsciiString fname)
 	AsciiString normalizedFname = fname;
 #ifndef _WIN32
 	// Normalize backslashes to forward slashes on POSIX
-	char *p = normalizedFname.getBufferForRead(normalizedFname.getLength() + 1);
-	for (Int i = 0; i < normalizedFname.getLength(); ++i)
+	if (!fname.isEmpty())
 	{
-		if (p[i] == '\\') p[i] = '/';
+		std::string s = fname.str();
+		for (char &c : s)
+		{
+			if (c == '\\') c = '/';
+		}
+		normalizedFname = s.c_str();
 	}
 #endif
 
 	m_filename = TheGlobalData->getPath_UserData();
+	if (!m_filename.endsWith("/") && !m_filename.endsWith("\\") && !normalizedFname.startsWith("/") && !normalizedFname.startsWith("\\"))
+	{
+		m_filename.concat('/');
+	}
 	m_filename.concat(normalizedFname);
 
 	FILE *fp = fopen(m_filename.str(), "r");
