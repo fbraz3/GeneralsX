@@ -1122,47 +1122,72 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 	if (mapName.isEmpty())
 		return nullptr;
 
-	AsciiString lower = mapName;
-	lower.toLower();
-	MapCache::iterator it = find(lower);
-	if (it != end())
-		return &(it->second);
+	auto normalizePath = [](const std::string& input) -> std::string {
+		std::string s = input;
+		std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+		for (char &c : s) {
+			if (c == '\\') c = '/';
+		}
+		while (s.length() > 1 && s.back() == '/') s.pop_back();
+		return s;
+	};
 
-	// Try normalized slashes (both '/' and '\\')
-	std::string sSlash = lower.str();
-	for (char &c : sSlash) {
-		if (c == '\\') c = '/';
-	}
-	it = find(AsciiString(sSlash.c_str()));
-	if (it != end())
-		return &(it->second);
+	auto extractBaseLeaf = [](const std::string& normalized) -> std::string {
+		size_t lastSlash = normalized.find_last_of('/');
+		std::string base = (lastSlash != std::string::npos) ? normalized.substr(lastSlash + 1) : normalized;
+		if (base.length() > 4 && base.substr(base.length() - 4) == ".map") {
+			base = base.substr(0, base.length() - 4);
+		}
+		return base;
+	};
 
-	std::string sBackslash = lower.str();
-	for (char &c : sBackslash) {
-		if (c == '/') c = '\\';
-	}
-	it = find(AsciiString(sBackslash.c_str()));
-	if (it != end())
-		return &(it->second);
+	std::string normQuery = normalizePath(mapName.str());
+	std::string baseQuery = extractBaseLeaf(normQuery);
 
-	// Fallback 1: match by display name or filename ending with mapName
+	// Direct lookup with exact key or normalized keys
+	MapCache::iterator it = find(mapName);
+	if (it != end()) return &(it->second);
+
+	it = find(AsciiString(normQuery.c_str()));
+	if (it != end()) return &(it->second);
+
+	std::string normBackslash = normQuery;
+	for (char &c : normBackslash) { if (c == '/') c = '\\'; }
+	it = find(AsciiString(normBackslash.c_str()));
+	if (it != end()) return &(it->second);
+
+	// Comprehensive iterate fallback matching
 	for (it = begin(); it != end(); ++it)
 	{
 		AsciiString asciiDisplay;
 		asciiDisplay.translate(it->second.m_displayName);
-		asciiDisplay.toLower();
-		if (asciiDisplay == lower)
+		std::string normDisplay = normalizePath(asciiDisplay.str());
+		if (normDisplay == normQuery || (!baseQuery.empty() && normDisplay == baseQuery))
 			return &(it->second);
 
-		AsciiString key = it->first;
-		key.toLower();
-		if (key.endsWith(lower) || lower.endsWith(key))
+		std::string normKey = normalizePath(it->first.str());
+		std::string baseKey = extractBaseLeaf(normKey);
+		if (normKey == normQuery ||
+			(!normQuery.empty() && normKey.length() >= normQuery.length() && normKey.rfind(normQuery) == (normKey.length() - normQuery.length())) ||
+			(!normKey.empty() && normQuery.length() >= normKey.length() && normQuery.rfind(normKey) == (normQuery.length() - normKey.length())))
+		{
 			return &(it->second);
+		}
 
-		AsciiString fn = it->second.m_fileName;
-		fn.toLower();
-		if (!fn.isEmpty() && (fn.endsWith(lower) || lower.endsWith(fn)))
+		std::string normFn = normalizePath(it->second.m_fileName.str());
+		std::string baseFn = extractBaseLeaf(normFn);
+		if (!normFn.empty() && (
+			normFn == normQuery ||
+			(!normQuery.empty() && normFn.length() >= normQuery.length() && normFn.rfind(normQuery) == (normFn.length() - normQuery.length())) ||
+			(!normFn.empty() && normQuery.length() >= normFn.length() && normQuery.rfind(normFn) == (normQuery.length() - normFn.length()))))
+		{
 			return &(it->second);
+		}
+
+		if (!baseQuery.empty() && (baseKey == baseQuery || baseFn == baseQuery))
+		{
+			return &(it->second);
+		}
 	}
 
 	return nullptr;
