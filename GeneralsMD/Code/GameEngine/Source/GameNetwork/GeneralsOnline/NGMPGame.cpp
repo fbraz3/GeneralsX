@@ -313,11 +313,17 @@ void NGMPGame::launchGame(void)
 		TheGameLogic->clearGameData();
 	}
 
-	Bool filesOk = DoAnyMapTransfers(this);
-
 	TheMapCache->updateCache();
-	if (!filesOk || TheMapCache->findMap(getMap()) == NULL)
+	const MapMetaData *pMap = TheMapCache->findMap(getMap());
+	if (!pMap && !getMap().isEmpty())
 	{
+		pMap = TheMapCache->findMap(GetFileFromPath(getMap()));
+	}
+
+	if (pMap == NULL)
+	{
+		fprintf(stderr, "[NGMP] launchGame: Map '%s' not found locally\n", getMap().str());
+		fflush(stderr);
 		if (TheNetwork != NULL) {
 			delete TheNetwork;
 			TheNetwork = NULL;
@@ -327,6 +333,12 @@ void NGMPGame::launchGame(void)
 		void PopBackToLobby(void);
 		PopBackToLobby();
 		return;
+	}
+	else
+	{
+		setMap(pMap->m_fileName.isNotEmpty() ? pMap->m_fileName : getMap());
+		fprintf(stderr, "[NGMP] launchGame: Map verified successfully: '%s'\n", getMap().str());
+		fflush(stderr);
 	}
 
 	if (TheTacticalView)

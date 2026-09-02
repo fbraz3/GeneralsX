@@ -1148,6 +1148,21 @@ void WOLQuickMatchMenuUpdate( WindowLayout * layout, void *userData)
 			UnicodeString uMsg = NGMP::UTF8ToUnicode(ev.payload);
 			Int idx = GadgetListBoxAddEntryText(quickmatchTextWindow, uMsg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
 			GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, idx);
+
+			std::string lowerMsg = ev.payload;
+			std::transform(lowerMsg.begin(), lowerMsg.end(), lowerMsg.begin(), ::tolower);
+			if (lowerMsg.find("removed") != std::string::npos ||
+				lowerMsg.find("again") != std::string::npos ||
+				lowerMsg.find("cancel") != std::string::npos ||
+				lowerMsg.find("fail") != std::string::npos ||
+				lowerMsg.find("could not") != std::string::npos) {
+				buttonWiden->winEnable(FALSE);
+				buttonStart->winHide(FALSE);
+				buttonStart->winEnable(TRUE);
+				buttonStop->winHide(TRUE);
+				enableOptionsGadgets(TRUE);
+				buttonBack->winEnable(TRUE);
+			}
 		} else if (ev.type == NGMPEvent::EVENT_MATCHMAKING_MATCH_FOUND) {
 			buttonBack->winEnable(FALSE);
 			buttonStop->winEnable(FALSE);
@@ -1851,7 +1866,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 							buttonStop->winHide(FALSE);
 							buttonStop->winEnable(TRUE);
 							enableOptionsGadgets(FALSE);
-							buttonBack->winEnable(FALSE);
+							buttonBack->winEnable(TRUE);
 
 							UnicodeString startMsg;
 							startMsg.format(L"Searching for %hs match...", pl.Name.c_str());
@@ -2044,7 +2059,11 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 				else if ( controlID == buttonBackID )
 				{
 					buttonPushed = true;
+#if defined(SAGE_USE_NGMP)
+					NGMP_OnlineServicesManager::getInstance().cancelMatchmakingAsync();
+#else
 					TheGameSpyInfo->leaveGroupRoom();
+#endif
 					nextScreen = "Menus/WOLWelcomeMenu.wnd";
 					TheShell->pop();
 				}
