@@ -1134,9 +1134,9 @@ void initInternetMultiPlayer()
 
 		if (localPlayer != nullptr && TheNGMPGame)
 		{
-			if (!TheNGMPGame->HasCommittedOutcome())
+			if (!TheNGMPGame->HasCommittedOutcome() && !TheNGMPGame->IsCommittingOutcome())
 			{
-				TheNGMPGame->SetHasCommittedOutcome();
+				TheNGMPGame->SetCommittingOutcome(true);
 				pStatsInterface->CommitMyOutcome(localPlayer->getScoreKeeper(), TheVictoryConditions->isLocalAlliedVictory());
 			}
 		}

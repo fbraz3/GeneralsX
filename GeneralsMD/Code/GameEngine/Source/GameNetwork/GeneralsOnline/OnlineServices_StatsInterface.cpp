@@ -4,6 +4,7 @@
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/NGMP_json.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "Common/ScoreKeeper.h"
 #include <cinttypes>
 #include <thread>
@@ -28,7 +29,7 @@ void NGMP_OnlineServices_StatsInterface::findPlayerStatsByID(int64_t userID, std
 
 	if (policy == EStatsRequestPolicy::CACHED_ONLY)
 	{
-		if (callback) callback(cached, stats);
+		if (callback) callback(false, stats);
 		return;
 	}
 
@@ -41,13 +42,23 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 {
 	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 	if (pLobbyInterface == nullptr)
+	{
+		if (TheNGMPGame)
+		{
+			TheNGMPGame->SetCommittingOutcome(false);
+		}
 		return;
+	}
 
 	uint64_t currentMatchID = pLobbyInterface->GetCurrentMatchID();
 	if (currentMatchID == 0)
 	{
 		fprintf(stderr, "[NGMP] CommitMyOutcome: matchID=0, skipping (AI game or no active match)\n");
 		fflush(stderr);
+		if (TheNGMPGame)
+		{
+			TheNGMPGame->SetCommittingOutcome(false);
+		}
 		return;
 	}
 
@@ -98,6 +109,9 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		if (!curl) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: failed to initialize curl\n");
 			fflush(stderr);
+			if (TheNGMPGame) {
+				TheNGMPGame->SetCommittingOutcome(false);
+			}
 			return;
 		}
 
@@ -124,8 +138,14 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 
 		if (res == CURLE_OK && httpCode == 200) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: server accepted outcome (HTTP 200)\n");
+			if (TheNGMPGame) {
+				TheNGMPGame->SetHasCommittedOutcome(true);
+			}
 		} else {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
+			if (TheNGMPGame) {
+				TheNGMPGame->SetCommittingOutcome(false);
+			}
 		}
 		fflush(stderr);
 	}).detach();

@@ -599,7 +599,8 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 
 	GadgetListBoxReset(listboxMapSelect);
 	auto itName = mapDisplayNames.begin();
-	for (std::list<AsciiString>::const_iterator it = maps.begin(); it != maps.end(); ++it)
+	int originalMapIndex = 0;
+	for (std::list<AsciiString>::const_iterator it = maps.begin(); it != maps.end(); ++it, ++originalMapIndex)
 	{
 		AsciiString theMap = *it;
 		AsciiString fallbackName = (itName != mapDisplayNames.end()) ? *itName++ : theMap;
@@ -608,9 +609,11 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 			md = TheMapCache->findMap(fallbackName);
 		}
 
-		UnicodeString displayName;
-		if (md) displayName = md->m_displayName;
-		else displayName.format(L"%hs", fallbackName.str());
+		if (!md) {
+			continue; // Do not offer playlist maps that are not available locally
+		}
+
+		UnicodeString displayName = md->m_displayName;
 
 		Bool isSelected = pref.isMapSelected(theMap);
 		Int width = 10;
@@ -624,7 +627,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 		Int index = GadgetListBoxAddEntryImage(listboxMapSelect, img, -1, 0, height, width);
 		GadgetListBoxAddEntryText(listboxMapSelect, displayName, GameSpyColor[(isSelected)?GSCOLOR_MAP_SELECTED:GSCOLOR_MAP_UNSELECTED], index, 1);
 		GadgetListBoxSetItemData(listboxMapSelect, (void *)(intptr_t)isSelected, index);
-		GadgetListBoxSetItemData(listboxMapSelect, (void *)md, index, 1);
+		GadgetListBoxSetItemData(listboxMapSelect, (void *)(intptr_t)originalMapIndex, index, 1);
 	}
 #else
 	std::list<AsciiString> maps = TheGameSpyConfig->getQMMaps();
@@ -1179,16 +1182,17 @@ void WOLQuickMatchMenuUpdate( WindowLayout * layout, void *userData)
 			fprintf(stderr, "[QUICKMATCH] EVENT_GAME_START received!\n");
 			fflush(stderr);
 			if (TheNGMPGame) {
+				NGMP_OnlineServices_LobbyInterface* pLobby = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+				NGMPGame* myGame = pLobby ? pLobby->GetCurrentGame() : nullptr;
+				if (pLobby && myGame && myGame->isInGame()) {
+					*TheNGMPGame = *myGame;
+					TheNGMPGame->cleanUpSlotPointers();
+				}
 				for (int i = 0; i < MAX_SLOTS; i++) {
 					GameSlot* slot = TheNGMPGame->getSlot(i);
 					if (slot) {
 						slot->setMapAvailability(TRUE);
 					}
-				}
-				NGMP_OnlineServices_LobbyInterface* pLobby = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-				NGMPGame* myGame = pLobby ? pLobby->GetCurrentGame() : nullptr;
-				if (pLobby && myGame && myGame->isInGame()) {
-					*TheNGMPGame = *myGame;
 				}
 				TheNGMPGame->startGame(0);
 			}
@@ -1847,7 +1851,8 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 							for (Int i = 0; i < numMaps; ++i) {
 								bool bMapSelected = (bool)(intptr_t)GadgetListBoxGetItemData(listboxMapSelect, i, 0);
 								if (bMapSelected) {
-									selectedMaps.push_back(i);
+									int originalMapIdx = (int)(intptr_t)GadgetListBoxGetItemData(listboxMapSelect, i, 1);
+									selectedMaps.push_back(originalMapIdx);
 								}
 							}
 

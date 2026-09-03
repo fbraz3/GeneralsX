@@ -652,7 +652,9 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 #if defined(SAGE_USE_NGMP)
 	if (TheGameSpyInfo && TheGameSpyInfo->getMOTD().isEmpty())
 	{
-		NGMP::FetchMOTD();
+		std::thread([]() {
+			NGMP::FetchMOTD();
+		}).detach();
 	}
 #endif
 	updateNumPlayersOnline();

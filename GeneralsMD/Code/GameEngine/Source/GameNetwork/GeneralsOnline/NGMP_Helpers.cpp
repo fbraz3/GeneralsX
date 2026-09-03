@@ -32,6 +32,7 @@
 #endif
 #include <windows.h>
 #include <shellapi.h>
+#include <wincrypt.h>
 #else
 #include <SDL3/SDL.h>
 #endif
@@ -237,6 +238,8 @@ void FetchMOTD() {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 3L);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3L);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
 
@@ -271,12 +274,36 @@ std::string GetMatchViewURL(uint64_t matchId) {
 }
 
 std::string GenerateGamecode() {
-    std::random_device rd;
-    std::mt19937_64 gen(rd());
-    std::uniform_int_distribution<uint64_t> dis;
+    uint64_t part1 = 0;
+    uint64_t part2 = 0;
 
-    uint64_t part1 = dis(gen);
-    uint64_t part2 = dis(gen);
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+    arc4random_buf(&part1, sizeof(part1));
+    arc4random_buf(&part2, sizeof(part2));
+#elif defined(_WIN32)
+    HCRYPTPROV hProv = 0;
+    if (CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
+        CryptGenRandom(hProv, sizeof(part1), reinterpret_cast<BYTE*>(&part1));
+        CryptGenRandom(hProv, sizeof(part2), reinterpret_cast<BYTE*>(&part2));
+        CryptReleaseContext(hProv, 0);
+    } else {
+        std::random_device rd;
+        std::mt19937_64 gen(rd());
+        part1 = gen();
+        part2 = gen();
+    }
+#else
+    std::ifstream urandom("/dev/urandom", std::ios::binary);
+    if (urandom) {
+        urandom.read(reinterpret_cast<char*>(&part1), sizeof(part1));
+        urandom.read(reinterpret_cast<char*>(&part2), sizeof(part2));
+    } else {
+        std::random_device rd;
+        std::mt19937_64 gen(rd());
+        part1 = gen();
+        part2 = gen();
+    }
+#endif
 
     // Set version to 4 (UUIDv4): time_hi_and_version [bits 12-15] = 0100b
     part1 = (part1 & 0xFFFFFFFFFFFF0FFFULL) | 0x0000000000004000ULL;

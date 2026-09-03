@@ -1575,14 +1575,9 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 			{
 				if(dontAllowTransitions)
 					break;
-				dontAllowTransitions = TRUE;
-				buttonPushed = TRUE;
-				dropDownWindows[DROPDOWN_MULTIPLAYER]->winHide(FALSE);
-				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
 
-#if defined(SAGE_USE_NGMP)
+#if defined(SAGE_USE_NGMP) && defined(SAGE_UPDATE_CHECK)
 				// GeneralsX @feature GeneralsOnline - In production mode, require latest game version
-#if defined(SAGE_UPDATE_CHECK)
 				if (!NGMP::IsDevelopment() && UpdateChecker::hasUpdate()) {
 					UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
 					const char* tag = UpdateChecker::getLatestTag();
@@ -1598,12 +1593,16 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 							NGMP::OpenURL(url);
 						}
 					});
-					buttonPushed = FALSE;
-					dontAllowTransitions = FALSE;
-					dropDown = DROPDOWN_NONE;
 					break;
 				}
 #endif
+
+				dontAllowTransitions = TRUE;
+				buttonPushed = TRUE;
+				dropDownWindows[DROPDOWN_MULTIPLAYER]->winHide(FALSE);
+				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
+
+#if defined(SAGE_USE_NGMP)
 				// GeneralsX @feature GeneralsOnline - Browser gamecode login flow
 				// No in-game login form; the NGMP manager opens the browser and polls.
 				NGMP_OnlineServicesManager::getInstance().init();

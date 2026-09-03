@@ -57,7 +57,9 @@
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #define HAVE_NGMP_PREFS 1
 #endif
+#ifndef _WIN32
 #include <filesystem>
+#endif
 
 
 //-----------------------------------------------------------------------------

@@ -2217,7 +2217,11 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					GadgetComboBoxGetSelectedPos(comboLobbyGroupRooms, &pos);
 					if (pos >= 0)
 						theLobbyFilter = static_cast<LobbyGameModeFilter>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboLobbyGroupRooms, pos)));
+#if defined(SAGE_USE_NGMP)
+					RefreshNGMPGameListBoxes(NGMP_OnlineServicesManager::getInstance().getLobbies());
+#else
 					RefreshGameListBoxes();
+#endif
 				}
 			}
 			break;

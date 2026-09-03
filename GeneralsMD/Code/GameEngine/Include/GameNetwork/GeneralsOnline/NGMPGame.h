@@ -67,6 +67,7 @@ private:
 	Int m_reportedNumObservers;
 
 	bool m_bHasCommittedOutcome = false;
+	bool m_bCommittingOutcome = false;
 	std::chrono::system_clock::time_point matchStartTime;
 
 	bool m_bCountdownStarted = false;
@@ -79,7 +80,9 @@ public:
 	virtual void reset(void);
 
 	bool HasCommittedOutcome() const { return m_bHasCommittedOutcome; }
-	void SetHasCommittedOutcome() { m_bHasCommittedOutcome = true; }
+	bool IsCommittingOutcome() const { return m_bCommittingOutcome; }
+	void SetCommittingOutcome(bool committing) { m_bCommittingOutcome = committing; }
+	void SetHasCommittedOutcome(bool committed = true) { m_bHasCommittedOutcome = committed; m_bCommittingOutcome = false; }
 
 	void StartCountdown();
 	void StopCountdown()

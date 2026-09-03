@@ -30,6 +30,12 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include <cstdint>
+#include <set>
+
+#if !defined(_WIN32)
+#include <filesystem>
+static std::set<std::string> s_failedMapLookups;
+#endif
 
 #include "Common/crc.h"
 #include "Common/FileSystem.h"
@@ -481,14 +487,14 @@ void MapCache::updateCache()
 	}
 
 #if !defined(_WIN32)
+	s_failedMapLookups.clear();
 	// On macOS/Linux, also scan user Documents directory if it exists and differs from userMapDir
 	const char* homeDir = getenv("HOME");
 	if (homeDir)
 	{
 		std::vector<std::string> docMapDirs = {
 			std::string(homeDir) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
-			std::string(homeDir) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps",
-			std::string(homeDir) + "/Library/CloudStorage/OneDrive-Pessoal/Documents/Command and Conquer Generals Zero Hour Data/Maps"
+			std::string(homeDir) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps"
 		};
 		for (const auto& dmd : docMapDirs)
 		{
@@ -1215,13 +1221,12 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 #if !defined(_WIN32)
 	// Fallback 2: Check standard custom map folders on POSIX if not in cache
 	const char* home = getenv("HOME");
-	if (home && !baseQuery.empty())
+	if (home && !baseQuery.empty() && s_failedMapLookups.find(baseQuery) == s_failedMapLookups.end())
 	{
 		std::vector<std::string> searchDirs = {
 			std::string(home) + "/Library/Application Support/GeneralsX/GeneralsZH/Maps",
 			std::string(home) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
-			std::string(home) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps",
-			std::string(home) + "/Library/CloudStorage/OneDrive-Pessoal/Documents/Command and Conquer Generals Zero Hour Data/Maps"
+			std::string(home) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps"
 		};
 
 		for (const auto& sdir : searchDirs)
@@ -1256,6 +1261,8 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 				}
 			}
 		}
+
+		s_failedMapLookups.insert(baseQuery);
 	}
 #endif
 

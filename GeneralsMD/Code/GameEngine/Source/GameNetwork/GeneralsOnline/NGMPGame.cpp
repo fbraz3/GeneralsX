@@ -372,6 +372,8 @@ void NGMPGame::launchGame(void)
 
 void NGMPGame::reset(void)
 {
+	m_bHasCommittedOutcome = false;
+	m_bCommittingOutcome = false;
 	GameInfo::reset();
 }
 

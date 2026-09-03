@@ -92,9 +92,12 @@ public:
 	) override
 	{
 		int64_t user_id = -1;
-		try {
-			user_id = std::stoll(identityPeer.GetGenericString());
-		} catch (...) {}
+		const char* peerIdStr = identityPeer.GetGenericString();
+		if (peerIdStr) {
+			try {
+				user_id = std::stoll(peerIdStr);
+			} catch (...) {}
+		}
 		return new ConnectionSignaling(this, user_id);
 	}
 
@@ -315,7 +318,8 @@ void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t
 			fprintf(stderr, "[STEAM NETWORKING][%s] Considering Accepting incoming connection\n", pInfo->m_info.m_szConnectionDescription);
 			fflush(stderr);
 
-			if (connectionID != -1)
+			const char* remoteGenericStr = pInfo->m_info.m_identityRemote.GetGenericString();
+			if (connections.count(connectionID))
 			{
 				PlayerConnection& plrConnection = connections[connectionID];
 				plrConnection.UpdateState(EConnectionState::CONNECTING_DIRECT, pMesh);
@@ -324,9 +328,12 @@ void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t
 			else
 			{
 				int64_t remoteUserID = -1;
-				try {
-					remoteUserID = std::stoll(pInfo->m_info.m_identityRemote.GetGenericString());
-				} catch (...) {}
+				if (remoteGenericStr)
+				{
+					try {
+						remoteUserID = std::stoll(remoteGenericStr);
+					} catch (...) {}
+				}
 
 				if (remoteUserID > 0)
 				{
@@ -339,12 +346,12 @@ void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t
 
 			NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 			bool bPlayerIsInLobby = false;
-			if (pLobbyInterface != nullptr)
+			if (pLobbyInterface != nullptr && remoteGenericStr != nullptr)
 			{
 				auto& currentLobby = pLobbyInterface->GetCurrentLobby();
 				for (const auto& member : currentLobby.members)
 				{
-					if (std::to_string(member.user_id) == pInfo->m_info.m_identityRemote.GetGenericString())
+					if (std::to_string(member.user_id) == remoteGenericStr)
 					{
 						bPlayerIsInLobby = true;
 						break;
@@ -355,14 +362,14 @@ void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t
 			if (bPlayerIsInLobby)
 			{
 				fprintf(stderr, "[STEAM NETWORKING][%s] Accepting - Player (%s) is in lobby\n",
-					pInfo->m_info.m_szConnectionDescription, pInfo->m_info.m_identityRemote.GetGenericString());
+					pInfo->m_info.m_szConnectionDescription, remoteGenericStr ? remoteGenericStr : "unknown");
 				fflush(stderr);
 				SteamNetworkingSockets()->AcceptConnection(pInfo->m_hConn);
 			}
 			else
 			{
 				fprintf(stderr, "[STEAM NETWORKING][%s] Rejecting - Player (%s) is not in lobby\n",
-					pInfo->m_info.m_szConnectionDescription, pInfo->m_info.m_identityRemote.GetGenericString());
+					pInfo->m_info.m_szConnectionDescription, remoteGenericStr ? remoteGenericStr : "unknown");
 				fflush(stderr);
 				SteamNetworkingSockets()->CloseConnection(pInfo->m_hConn, 1000, "Player is not in lobby (Rejected)", false);
 			}

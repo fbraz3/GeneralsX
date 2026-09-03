@@ -148,6 +148,7 @@ Bool NextGenTransport::doRecv(void)
 				continue;
 			}
 
+			bool bSlotFound = false;
 			if (TheNGMPGame != nullptr)
 			{
 				for (int s = 0; s < MAX_SLOTS; ++s)
@@ -156,9 +157,15 @@ Bool NextGenTransport::doRecv(void)
 					if (sSlot && sSlot->m_userID == kvPair.first)
 					{
 						incomingMessage.addr = static_cast<UnsignedInt>(s);
+						bSlotFound = true;
 						break;
 					}
 				}
+			}
+
+			if (!bSlotFound)
+			{
+				continue;
 			}
 
 			m_incomingPackets[m_statisticsSlot]++;

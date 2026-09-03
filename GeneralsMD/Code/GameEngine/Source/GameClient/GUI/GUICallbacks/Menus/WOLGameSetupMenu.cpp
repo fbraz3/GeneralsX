@@ -320,7 +320,9 @@ void WOLPositionStartSpots()
 	} else {
 		DEBUG_ASSERTCRASH(win != nullptr, ("no map preview window"));
 #if defined(SAGE_USE_NGMP)
-		positionStartSpots( TheNGMPGame, buttonMapStartPosition, win);
+		if (TheNGMPGame) {
+			positionStartSpots( TheNGMPGame, buttonMapStartPosition, win);
+		}
 #else
 		positionStartSpots( TheGameSpyInfo->getCurrentStagingRoom(), buttonMapStartPosition, win);
 #endif

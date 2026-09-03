@@ -568,10 +568,6 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
 }
 
 void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::string& password) {
-    m_currentLobbyId = lobbyId;
-    m_hostUserId = -1;
-    m_isLobbyOwner = false;
-
     std::thread([this, lobbyId, password]() {
         CURL* curl = curl_easy_init();
         if (!curl) return;
@@ -610,6 +606,9 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
         curl_easy_cleanup(curl);
 
         if (res == CURLE_OK && (httpCode == 200 || httpCode == 201)) {
+            m_currentLobbyId = lobbyId;
+            m_hostUserId = -1;
+            m_isLobbyOwner = false;
             requestLobbyDetailsAsync(lobbyId);
             requestLobbyListAsync();
             NGMPEvent ev;
@@ -766,9 +765,14 @@ void NGMP_OnlineServicesManager::requestLobbyDetailsAsync(int64_t lobbyId) {
                     (long long)targetId, mapName.c_str(), startingCash, limitSuperweapons, m_isLobbyOwner ? 1 : 0, localSlotIndex);
                 fflush(stderr);
 
-                if (bHostMigrated || (!m_isLobbyOwner && m_hostUserId != -1 && ownerId != m_hostUserId)) {
-                    fprintf(stderr, "[NGMP] Host left the lobby (previous host=%lld, current owner=%lld), disbanding staging room\n",
-                        (long long)m_hostUserId, (long long)ownerId);
+                if (bHostMigrated) {
+                    fprintf(stderr, "[NGMP] Host migrated to new owner %lld (previous host=%lld)\n",
+                        (long long)ownerId, (long long)m_hostUserId);
+                    fflush(stderr);
+                }
+
+                if (ownerId <= 0) {
+                    fprintf(stderr, "[NGMP] Lobby %lld has no valid owner, disbanding staging room\n", (long long)targetId);
                     fflush(stderr);
                     m_currentLobbyId = -1;
                     m_isLobbyOwner = false;
@@ -920,7 +924,7 @@ void NGMP_OnlineServicesManager::updateLobbyAISide(int slotIndex, int side, int 
         {"field", 13}, // AI_SIDE
         {"slot", slotIndex},
         {"side", side},
-        {"start_pos", updatedStartPos >= 0 ? updatedStartPos : 0}
+        {"start_pos", updatedStartPos}
     };
     sendLobbyPostUpdate(m_authToken, m_currentLobbyId, payload);
 }
