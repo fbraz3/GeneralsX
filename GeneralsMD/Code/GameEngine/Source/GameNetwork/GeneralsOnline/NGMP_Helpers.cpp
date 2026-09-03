@@ -1,14 +1,8 @@
 // GeneralsX @feature GeneralsOnline NGMP Helpers implementation
 // Cross-platform OS abstraction using pure C++20 standard library.
 
-#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
-#include "GameNetwork/GameSpy/PeerDefs.h"
-#include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
-#include "Common/UnicodeString.h"
-#include "WWLib/utf8.h"
 #include <chrono>
 #include <cstdio>
-
 #include <thread>
 #include <fstream>
 #include <sstream>
@@ -17,6 +11,20 @@
 #include <algorithm>
 #include <random>
 #include <format>
+#include <string>
+
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GameSpy/PeerDefs.h"
+#include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
+#include "Common/UnicodeString.h"
+#include "WWLib/utf8.h"
 
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
@@ -275,14 +283,12 @@ std::string GenerateGamecode() {
     // Set variant to RFC 4122 (10xx): clk_seq_hi_res [bits 6-7] = 10b
     part2 = (part2 & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
 
-    char buf[37];
-    std::snprintf(buf, sizeof(buf), "%08x-%04x-%04x-%04x-%012llx",
+    return std::format("{:08x}-{:04x}-{:04x}-{:04x}-{:012x}",
         static_cast<uint32_t>(part1 >> 32),
         static_cast<uint16_t>((part1 >> 16) & 0xFFFF),
         static_cast<uint16_t>(part1 & 0xFFFF),
         static_cast<uint16_t>(part2 >> 48),
-        static_cast<unsigned long long>(part2 & 0xFFFFFFFFFFFFULL));
-    return std::string(buf);
+        static_cast<uint64_t>(part2 & 0xFFFFFFFFFFFFULL));
 }
 
 std::string UnicodeToUTF8(const UnicodeString& ustr) {
