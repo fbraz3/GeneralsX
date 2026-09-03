@@ -305,7 +305,7 @@ static void updateNumPlayersOnline()
 			{
 				aLine = aLine.str()+1;
 			}
-			else if (aLine.startsWith("\\") && aLine.getLength() > 9)
+			else if (aLine.startsWith("\\") && aLine.getLength() >= 9)
 			{
 				// take out the hex value from strings starting as "\ffffffffText"
 				UnsignedByte a, r, g, b;
