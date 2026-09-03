@@ -193,6 +193,11 @@ if(SAGE_USE_NGMP)
     elseif(NOT DEFINED NGMP_WEB_PORTAL_URL)
         set(NGMP_WEB_PORTAL_URL "" CACHE STRING "NGMP Web Portal URL")
     endif()
+    if(DEFINED ENV{NGMP_MOTD_URL} AND NOT "$ENV{NGMP_MOTD_URL}" STREQUAL "")
+        set(NGMP_MOTD_URL "$ENV{NGMP_MOTD_URL}" CACHE STRING "NGMP MOTD URL" FORCE)
+    elseif(NOT DEFINED NGMP_MOTD_URL)
+        set(NGMP_MOTD_URL "" CACHE STRING "NGMP MOTD URL")
+    endif()
 
     target_compile_definitions(core_config INTERFACE
         NGMP_DEFAULT_HOST="${NGMP_SERVER_HOST}"
@@ -202,6 +207,11 @@ if(SAGE_USE_NGMP)
     if(NOT "${NGMP_WEB_PORTAL_URL}" STREQUAL "")
         target_compile_definitions(core_config INTERFACE NGMP_WEB_PORTAL_URL="${NGMP_WEB_PORTAL_URL}")
         message(STATUS "NGMP: Web portal URL configured to ${NGMP_WEB_PORTAL_URL}")
+    endif()
+
+    if(NOT "${NGMP_MOTD_URL}" STREQUAL "")
+        target_compile_definitions(core_config INTERFACE NGMP_MOTD_URL="${NGMP_MOTD_URL}")
+        message(STATUS "NGMP: MOTD URL configured to ${NGMP_MOTD_URL}")
     endif()
 
     if(NGMP_USE_SSL)

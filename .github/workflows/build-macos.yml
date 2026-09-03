@@ -347,6 +347,8 @@ jobs:
           NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
           NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
           NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
+          NGMP_WEB_PORTAL_URL: ${{ secrets.NGMP_WEB_PORTAL_URL }}
+          NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
           mkdir -p logs
           echo "VULKAN_SDK=$VULKAN_SDK"

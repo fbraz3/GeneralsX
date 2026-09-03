@@ -205,6 +205,12 @@ std::string GetMOTDURL() {
     if (envUrl && envUrl[0] != '\0') {
         return std::string(envUrl);
     }
+#if defined(NGMP_MOTD_URL)
+    std::string compileUrl = NGMP_MOTD_URL;
+    if (!compileUrl.empty()) {
+        return compileUrl;
+    }
+#endif
     return GetWebPortalURL() + "/motd.txt";
 }
 
