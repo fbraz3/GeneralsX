@@ -85,6 +85,8 @@
 // GeneralsX @feature GeneralsOnline NGMP browser-based login
 #ifdef SAGE_USE_NGMP
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GameSpyOverlay.h"
 #endif
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -1573,6 +1575,29 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
 
 #if defined(SAGE_USE_NGMP)
+				// GeneralsX @feature GeneralsOnline - In production mode, require latest game version
+#if defined(SAGE_UPDATE_CHECK)
+				if (!NGMP::IsDevelopment() && UpdateChecker::hasUpdate()) {
+					UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
+					const char* tag = UpdateChecker::getLatestTag();
+					if (tag && tag[0] != '\0') {
+						char buf[256];
+						snprintf(buf, sizeof(buf), "A newer version of GeneralsX (%s) is available. You must update before playing online.", tag);
+						msg = NGMP::UTF8ToUnicode(buf);
+					}
+					ClearGSMessageBoxes();
+					GSMessageBoxOk(UnicodeString(L"Update Required"), msg, []() {
+						const char* url = UpdateChecker::getReleasesUrl();
+						if (url) {
+							NGMP::OpenURL(url);
+						}
+					});
+					buttonPushed = FALSE;
+					dontAllowTransitions = FALSE;
+					dropDown = DROPDOWN_NONE;
+					break;
+				}
+#endif
 				// GeneralsX @feature GeneralsOnline - Browser gamecode login flow
 				// No in-game login form; the NGMP manager opens the browser and polls.
 				NGMP_OnlineServicesManager::getInstance().init();

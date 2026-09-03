@@ -616,9 +616,8 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 
 							if (currentMatchID != 0)
 							{
-								AsciiString strMatchURL;
-								strMatchURL.format("https://www.playgenerals.online/viewmatch?match=%" PRIu64, currentMatchID);
-								NGMP::OpenURL(strMatchURL.str());
+								std::string strMatchURL = NGMP::GetMatchViewURL(currentMatchID);
+								NGMP::OpenURL(strMatchURL);
 							}
 						}
 #endif
@@ -1164,7 +1163,9 @@ void initInternetMultiPlayer()
 			else
 			{
 				buttonContinue->winHide(FALSE);
-				strMatchURL.format(L"\nView match data, participants, replays, anti-cheat data: https://www.playgenerals.online/viewmatch?match=%" PRIu64, lobby.match_id);
+				std::string matchUrl = NGMP::GetMatchViewURL(lobby.match_id);
+				strMatchURL = UnicodeString(L"\nView match data, participants, replays, anti-cheat data: ");
+				strMatchURL.concat(NGMP::UTF8ToUnicode(matchUrl));
 
 				buttonContinue->winSetText(UnicodeString(L"VIEW MATCH ONLINE"));
 

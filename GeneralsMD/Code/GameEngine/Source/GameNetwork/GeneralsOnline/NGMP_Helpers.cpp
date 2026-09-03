@@ -2,9 +2,12 @@
 // Cross-platform OS abstraction using pure C++20 standard library.
 
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GameSpy/PeerDefs.h"
+#include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "Common/UnicodeString.h"
 #include "WWLib/utf8.h"
 #include <chrono>
+#include <cstdio>
 
 #include <thread>
 #include <fstream>
@@ -126,44 +129,154 @@ std::string LoadRefreshToken() {
     return token;
 }
 
-std::string GetServerWSEndpoint() {
-    if (IsSSLEnabled()) {
-        return "wss://" + std::string(NGMP_DEFAULT_HOST) + ":" + std::string(NGMP_DEFAULT_PORT) + "/ws";
+bool IsDevelopment() {
+    std::string host = NGMP_DEFAULT_HOST;
+    if (host == "localhost" || host == "127.0.0.1" ||
+        host.rfind("192.168.", 0) == 0 ||
+        host.rfind("10.", 0) == 0 ||
+        host.rfind("172.16.", 0) == 0 ||
+        host.rfind("172.17.", 0) == 0 ||
+        host.rfind("172.18.", 0) == 0 ||
+        host.rfind("172.19.", 0) == 0 ||
+        host.rfind("172.20.", 0) == 0 ||
+        host.rfind("172.21.", 0) == 0 ||
+        host.rfind("172.22.", 0) == 0 ||
+        host.rfind("172.23.", 0) == 0 ||
+        host.rfind("172.24.", 0) == 0 ||
+        host.rfind("172.25.", 0) == 0 ||
+        host.rfind("172.26.", 0) == 0 ||
+        host.rfind("172.27.", 0) == 0 ||
+        host.rfind("172.28.", 0) == 0 ||
+        host.rfind("172.29.", 0) == 0 ||
+        host.rfind("172.30.", 0) == 0 ||
+        host.rfind("172.31.", 0) == 0) {
+        return true;
     }
-    return "ws://" + std::string(NGMP_DEFAULT_HOST) + ":" + std::string(NGMP_DEFAULT_PORT) + "/ws";
+    return false;
+}
+
+std::string GetServerEnv() {
+    return IsDevelopment() ? "dev" : "live";
+}
+
+std::string GetServerWSEndpoint() {
+    std::string port = NGMP_DEFAULT_PORT;
+    if (IsSSLEnabled()) {
+        if (port == "443" || port.empty()) {
+            return "wss://" + std::string(NGMP_DEFAULT_HOST) + "/ws";
+        }
+        return "wss://" + std::string(NGMP_DEFAULT_HOST) + ":" + port + "/ws";
+    }
+    if (port == "80" || port.empty()) {
+        return "ws://" + std::string(NGMP_DEFAULT_HOST) + "/ws";
+    }
+    return "ws://" + std::string(NGMP_DEFAULT_HOST) + ":" + port + "/ws";
 }
 
 std::string GetServerRESTEndpoint() {
+    std::string port = NGMP_DEFAULT_PORT;
     if (IsSSLEnabled()) {
-        return "https://" + std::string(NGMP_DEFAULT_HOST) + ":" + std::string(NGMP_DEFAULT_PORT);
+        if (port == "443" || port.empty()) {
+            return "https://" + std::string(NGMP_DEFAULT_HOST);
+        }
+        return "https://" + std::string(NGMP_DEFAULT_HOST) + ":" + port;
     }
-    return "http://" + std::string(NGMP_DEFAULT_HOST) + ":" + std::string(NGMP_DEFAULT_PORT);
+    if (port == "80" || port.empty()) {
+        return "http://" + std::string(NGMP_DEFAULT_HOST);
+    }
+    return "http://" + std::string(NGMP_DEFAULT_HOST) + ":" + port;
+}
+
+std::string GetWebPortalURL() {
+#if defined(NGMP_WEB_PORTAL_URL)
+    std::string portalUrl = NGMP_WEB_PORTAL_URL;
+    while (!portalUrl.empty() && portalUrl.back() == '/') {
+        portalUrl.pop_back();
+    }
+    if (!portalUrl.empty()) {
+        return portalUrl;
+    }
+#endif
+    return GetServerRESTEndpoint();
+}
+
+std::string GetMOTDURL() {
+    const char* envUrl = getenv("NGMP_MOTD_URL");
+    if (envUrl && envUrl[0] != '\0') {
+        return std::string(envUrl);
+    }
+    return GetWebPortalURL() + "/motd.txt";
+}
+
+void FetchMOTD() {
+    std::string url = GetMOTDURL();
+    fprintf(stderr, "[NGMP] Fetching MOTD from %s...\n", url.c_str());
+    fflush(stderr);
+
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        return;
+    }
+
+    NGMP::Internal::CurlResponse resp;
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 3L);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
+
+    CURLcode res = curl_easy_perform(curl);
+    long httpCode = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+    curl_easy_cleanup(curl);
+
+    if (res == CURLE_OK && httpCode == 200 && !resp.text.empty()) {
+        fprintf(stderr, "[NGMP] MOTD fetched successfully (%zu bytes)\n", resp.text.size());
+        fflush(stderr);
+        if (TheGameSpyInfo) {
+            TheGameSpyInfo->setMOTD(AsciiString(resp.text.c_str()));
+        }
+    } else {
+        fprintf(stderr, "[NGMP] Failed to fetch MOTD (curl=%d, http=%ld)\n", res, httpCode);
+        fflush(stderr);
+    }
 }
 
 std::string GetAPIEndpoint(const char* szEndpoint) {
-    return std::format("{}/env/" NGMP_SERVER_ENV "/contract/" NGMP_CONTRACT_VERSION "/{}",
-        GetServerRESTEndpoint(), szEndpoint);
+    return std::format("{}/env/{}/contract/" NGMP_CONTRACT_VERSION "/{}",
+        GetServerRESTEndpoint(), GetServerEnv(), szEndpoint);
 }
 
 std::string GetBrowserLoginURL(const std::string& gamecode) {
-    // Use the web portal on the server for browser-based OAuth login
-    return std::format("{}/login/?gamecode={}", GetServerRESTEndpoint(), gamecode);
+    return std::format("{}/login/?gamecode={}", GetWebPortalURL(), gamecode);
+}
+
+std::string GetMatchViewURL(uint64_t matchId) {
+    return std::format("{}/viewmatch?match={}", GetWebPortalURL(), matchId);
 }
 
 std::string GenerateGamecode() {
-    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const size_t max_index = sizeof(charset) - 2; // -2: skip null terminator
+    std::random_device rd;
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<uint64_t> dis;
 
-    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::mt19937 generator(static_cast<unsigned long>(seed));
-    std::uniform_int_distribution<size_t> distribution(0, max_index);
+    uint64_t part1 = dis(gen);
+    uint64_t part2 = dis(gen);
 
-    std::string result;
-    result.reserve(32);
-    for (int i = 0; i < 32; ++i) {
-        result += charset[distribution(generator)];
-    }
-    return result;
+    // Set version to 4 (UUIDv4): time_hi_and_version [bits 12-15] = 0100b
+    part1 = (part1 & 0xFFFFFFFFFFFF0FFFULL) | 0x0000000000004000ULL;
+    // Set variant to RFC 4122 (10xx): clk_seq_hi_res [bits 6-7] = 10b
+    part2 = (part2 & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
+
+    char buf[37];
+    std::snprintf(buf, sizeof(buf), "%08x-%04x-%04x-%04x-%012llx",
+        static_cast<uint32_t>(part1 >> 32),
+        static_cast<uint16_t>((part1 >> 16) & 0xFFFF),
+        static_cast<uint16_t>(part1 & 0xFFFF),
+        static_cast<uint16_t>(part2 >> 48),
+        static_cast<unsigned long long>(part2 & 0xFFFFFFFFFFFFULL));
+    return std::string(buf);
 }
 
 std::string UnicodeToUTF8(const UnicodeString& ustr) {

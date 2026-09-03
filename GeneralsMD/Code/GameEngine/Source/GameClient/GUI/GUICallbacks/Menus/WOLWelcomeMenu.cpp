@@ -72,6 +72,7 @@
 
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #endif
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -648,6 +649,12 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 
 	fprintf(stderr, "[WOLWelcomeMenuInit] updateNumPlayersOnline()...\n");
 	fflush(stderr);
+#if defined(SAGE_USE_NGMP)
+	if (TheGameSpyInfo && TheGameSpyInfo->getMOTD().isEmpty())
+	{
+		NGMP::FetchMOTD();
+	}
+#endif
 	updateNumPlayersOnline();
 	
 	fprintf(stderr, "[WOLWelcomeMenuInit] updateOverallStats()...\n");

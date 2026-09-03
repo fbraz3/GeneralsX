@@ -53,13 +53,31 @@ std::string GetServerWSEndpoint();
 // Returns default server REST endpoint URL (e.g. http://host:port)
 std::string GetServerRESTEndpoint();
 
-// Returns a full named API endpoint URL (e.g. /env/dev/contract/1/CheckLogin)
+// Returns true if running in a local development environment (localhost, 192.168.*, 10.*)
+bool IsDevelopment();
+
+// Returns server environment name ("dev" or "live") based on IsDevelopment()
+std::string GetServerEnv();
+
+// Returns web portal URL for OAuth login and web features (or defaults to GetServerRESTEndpoint())
+std::string GetWebPortalURL();
+
+// Returns the MOTD URL (from NGMP_MOTD_URL env or default ${GetWebPortalURL()}/motd.txt)
+std::string GetMOTDURL();
+
+// Fetches the MOTD from GetMOTDURL() and sets it into TheGameSpyInfo
+void FetchMOTD();
+
+// Returns a full named API endpoint URL (e.g. /env/{env}/contract/1/CheckLogin)
 std::string GetAPIEndpoint(const char* szEndpoint);
 
 // Returns the browser login URL for a given gamecode
 std::string GetBrowserLoginURL(const std::string& gamecode);
 
-// Generates a random 32-char alphanumeric gamecode
+// Returns the match viewer URL for a given match ID
+std::string GetMatchViewURL(uint64_t matchId);
+
+// Generates a UUIDv4 gamecode
 std::string GenerateGamecode();
 
 // Opens a URL in the default browser (cross-platform: ShellExecute on Windows, SDL_OpenURL on Linux/macOS)

@@ -6,6 +6,7 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_Auth.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
+#include "GameNetwork/GameSpyOverlay.h"
 #include <cstdio>
 #include <thread>
 #include <chrono>
@@ -33,20 +34,29 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
         return;
     }
 
-    //commented by debug purposes
-    //m_gamecode = NGMP::GenerateGamecode();
-    m_gamecode = "ILOVECODE";
-    std::string loginURL = NGMP::GetBrowserLoginURL(m_gamecode);
+    if (NGMP::IsDevelopment()) {
+        m_gamecode = "ILOVECODE";
+        fprintf(stderr, "[NGMP] Development mode detected: using bypass gamecode ILOVECODE\n");
+        fflush(stderr);
+    } else {
+        m_gamecode = NGMP::GenerateGamecode();
+        std::string loginURL = NGMP::GetBrowserLoginURL(m_gamecode);
 
-    fprintf(stderr, "[NGMP] beginBrowserLogin: gamecode=%s url=%s\n",
-            m_gamecode.c_str(), loginURL.c_str());
-    fflush(stderr);
+        fprintf(stderr, "[NGMP] Production mode: generated UUID gamecode=%s url=%s\n",
+                m_gamecode.c_str(), loginURL.c_str());
+        fflush(stderr);
 
-    // Open the browser so the user can authenticate
-    // if (!SDL_OpenURL(loginURL.c_str())) {
-    //     fprintf(stderr, "[NGMP] SDL_OpenURL failed: %s\n", SDL_GetError());
-    //     fflush(stderr);
-    // }
+        // Open the browser so the user can authenticate
+        NGMP::OpenURL(loginURL);
+
+        // Show cancellable dialog in game
+        ClearGSMessageBoxes();
+        GSMessageBoxCancel(UnicodeString(L"Generals Online Login"),
+                           UnicodeString(L"Please continue authentication in your web browser..."),
+                           []() {
+                               NGMP_OnlineServicesManager::getInstance().cancelBrowserLogin();
+                           });
+    }
 
     // Start background polling thread
     m_pollThreadRunning = true;
@@ -151,6 +161,9 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                             displayName.c_str(), (long long)userId);
                     fflush(stderr);
 
+                    // Fetch latest MOTD from the web portal in background
+                    NGMP::FetchMOTD();
+
                     NGMPEvent ev;
                     ev.type    = NGMPEvent::EVENT_AUTH_SUCCESS;
                     ev.payload = sessionToken;
@@ -197,6 +210,8 @@ void NGMP_OnlineServicesManager::cancelBrowserLogin() {
     if (m_pollThread.joinable()) {
         m_pollThread.join();
     }
+
+    ClearGSMessageBoxes();
 
     NGMPEvent ev;
     ev.type = NGMPEvent::EVENT_AUTH_CANCELLED;

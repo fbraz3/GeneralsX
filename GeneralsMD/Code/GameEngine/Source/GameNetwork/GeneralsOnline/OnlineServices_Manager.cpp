@@ -7,6 +7,7 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/StagingRoomGameInfo.h"
+#include "GameNetwork/GameSpyOverlay.h"
 #include "GameClient/MapUtil.h"
 #include "Common/Money.h"
 #include "Common/GlobalData.h"
@@ -51,6 +52,7 @@ void NGMP_OnlineServicesManager::update() {
         switch (ev.type) {
             case NGMPEvent::EVENT_AUTH_SUCCESS:
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Success (user=%s id=%lld)\n", m_username.c_str(), (long long)m_userId);
+                ClearGSMessageBoxes();
                 m_isLoggedIn = true;
                 if (TheGameSpyInfo) {
                     TheGameSpyInfo->setLocalName(AsciiString(m_username.c_str()));
@@ -69,6 +71,12 @@ void NGMP_OnlineServicesManager::update() {
                 break;
             case NGMPEvent::EVENT_AUTH_FAILURE:
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Failure: %s\n", ev.payload.c_str());
+                ClearGSMessageBoxes();
+                GSMessageBoxOk(UnicodeString(L"Login Failed"), UnicodeString(L"Authentication failed or timed out. Please try again."), nullptr);
+                break;
+            case NGMPEvent::EVENT_AUTH_CANCELLED:
+                fprintf(stderr, "[NGMP-MainThread] Event: Auth Cancelled\n");
+                ClearGSMessageBoxes();
                 break;
             case NGMPEvent::EVENT_LOBBY_LIST_UPDATED:
                 fprintf(stderr, "[NGMP-MainThread] Event: Lobby list updated (%zu lobbies)\n", m_lobbies.size());

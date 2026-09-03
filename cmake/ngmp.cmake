@@ -188,11 +188,21 @@ if(SAGE_USE_NGMP)
     elseif(NOT DEFINED NGMP_USE_SSL)
         option(NGMP_USE_SSL "Enable SSL for NGMP protocol" OFF)
     endif()
+    if(DEFINED ENV{NGMP_WEB_PORTAL_URL} AND NOT "$ENV{NGMP_WEB_PORTAL_URL}" STREQUAL "")
+        set(NGMP_WEB_PORTAL_URL "$ENV{NGMP_WEB_PORTAL_URL}" CACHE STRING "NGMP Web Portal URL" FORCE)
+    elseif(NOT DEFINED NGMP_WEB_PORTAL_URL)
+        set(NGMP_WEB_PORTAL_URL "" CACHE STRING "NGMP Web Portal URL")
+    endif()
 
     target_compile_definitions(core_config INTERFACE
         NGMP_DEFAULT_HOST="${NGMP_SERVER_HOST}"
         NGMP_DEFAULT_PORT="${NGMP_SERVER_PORT}"
     )
+
+    if(NOT "${NGMP_WEB_PORTAL_URL}" STREQUAL "")
+        target_compile_definitions(core_config INTERFACE NGMP_WEB_PORTAL_URL="${NGMP_WEB_PORTAL_URL}")
+        message(STATUS "NGMP: Web portal URL configured to ${NGMP_WEB_PORTAL_URL}")
+    endif()
 
     if(NGMP_USE_SSL)
         target_compile_definitions(core_config INTERFACE NGMP_USE_SSL=1)
