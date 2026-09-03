@@ -890,6 +890,12 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 			}
 			TheShell->push("Menus/WOLWelcomeMenu.wnd");
 		}
+	} else if (!NGMP_OnlineServicesManager::getInstance().isWaitingBrowserLogin()) {
+		// Reset lock if browser login is no longer in progress (cancelled or failed)
+		if (buttonPushed && dropDown == DROPDOWN_NONE) {
+			buttonPushed = FALSE;
+			dontAllowTransitions = FALSE;
+		}
 	}
 #endif
 

@@ -156,6 +156,7 @@ public:
     void beginBrowserLogin();
     void cancelBrowserLogin();
     void tickBrowserLogin();
+    bool isWaitingBrowserLogin() const { return m_waitingBrowserLogin.load(); }
 
     // Token-based silent re-login
     void loginWithRefreshToken(const std::string& refreshToken);

@@ -22,6 +22,50 @@ enum class ELoginPollResult : int {
     LOGIN_FAILED  =  2
 };
 
+static std::string RequestLoginCodeFromServer() {
+    std::string url = NGMP::GetAPIEndpoint("LoginCode");
+    fprintf(stderr, "[NGMP] Requesting official LoginCode from %s...\n", url.c_str());
+    fflush(stderr);
+
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        return "";
+    }
+
+    NGMP::Internal::CurlResponse response;
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
+
+    CURLcode res = curl_easy_perform(curl);
+    long httpCode = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+    curl_easy_cleanup(curl);
+
+    if (res == CURLE_OK && httpCode == 200 && !response.text.empty()) {
+        try {
+            auto j = json::parse(response.text);
+            if (j.value("success", false)) {
+                std::string code = j.value("login_code", "");
+                if (!code.empty()) {
+                    fprintf(stderr, "[NGMP] Successfully registered LoginCode on server: %s\n", code.c_str());
+                    fflush(stderr);
+                    return code;
+                }
+            }
+        } catch (...) {
+            fprintf(stderr, "[NGMP] Failed to parse LoginCode JSON response\n");
+            fflush(stderr);
+        }
+    } else {
+        fprintf(stderr, "[NGMP] RequestLoginCode failed (curl=%d, http=%ld)\n", res, httpCode);
+        fflush(stderr);
+    }
+    return "";
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // beginBrowserLogin
 // Generates a gamecode, opens the web portal in the system browser (SDL_OpenURL),
@@ -39,10 +83,22 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
         fprintf(stderr, "[NGMP] Development mode detected: using bypass gamecode ILOVECODE\n");
         fflush(stderr);
     } else {
-        m_gamecode = NGMP::GenerateGamecode();
+        std::string serverCode = RequestLoginCodeFromServer();
+        if (serverCode.empty()) {
+            fprintf(stderr, "[NGMP] Error: failed to obtain LoginCode from server\n");
+            fflush(stderr);
+            m_waitingBrowserLogin = false;
+            ClearGSMessageBoxes();
+            GSMessageBoxOk(UnicodeString(L"Connection Error"),
+                           UnicodeString(L"Could not connect to Generals Online server. Please check your network connection."),
+                           nullptr);
+            return;
+        }
+
+        m_gamecode = serverCode;
         std::string loginURL = NGMP::GetBrowserLoginURL(m_gamecode);
 
-        fprintf(stderr, "[NGMP] Production mode: generated UUID gamecode=%s url=%s\n",
+        fprintf(stderr, "[NGMP] Production mode: using server gamecode=%s url=%s\n",
                 m_gamecode.c_str(), loginURL.c_str());
         fflush(stderr);
 
