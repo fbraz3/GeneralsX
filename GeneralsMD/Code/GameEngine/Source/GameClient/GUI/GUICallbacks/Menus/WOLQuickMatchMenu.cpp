@@ -137,6 +137,9 @@ static Bool raiseMessageBoxes = false;
 static Bool isInInit = FALSE;
 static const Image *selectedImage = nullptr;
 static const Image *unselectedImage = nullptr;
+#if defined(SAGE_USE_NGMP)
+static std::vector<int> s_qmRowToPlaylistMapIndex;
+#endif
 
 static bool isPopulatingLadderBox = false;
 static Int maxPingEntries = 0;
@@ -598,6 +601,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 	}
 
 	GadgetListBoxReset(listboxMapSelect);
+	s_qmRowToPlaylistMapIndex.clear();
 	auto itName = mapDisplayNames.begin();
 	int originalMapIndex = 0;
 	for (std::list<AsciiString>::const_iterator it = maps.begin(); it != maps.end(); ++it, ++originalMapIndex)
@@ -627,7 +631,8 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 		Int index = GadgetListBoxAddEntryImage(listboxMapSelect, img, -1, 0, height, width);
 		GadgetListBoxAddEntryText(listboxMapSelect, displayName, GameSpyColor[(isSelected)?GSCOLOR_MAP_SELECTED:GSCOLOR_MAP_UNSELECTED], index, 1);
 		GadgetListBoxSetItemData(listboxMapSelect, (void *)(intptr_t)isSelected, index);
-		GadgetListBoxSetItemData(listboxMapSelect, (void *)(intptr_t)originalMapIndex, index, 1);
+		GadgetListBoxSetItemData(listboxMapSelect, (void *)md, index, 1);
+		s_qmRowToPlaylistMapIndex.push_back(originalMapIndex);
 	}
 #else
 	std::list<AsciiString> maps = TheGameSpyConfig->getQMMaps();
@@ -1184,17 +1189,17 @@ void WOLQuickMatchMenuUpdate( WindowLayout * layout, void *userData)
 			if (TheNGMPGame) {
 				NGMP_OnlineServices_LobbyInterface* pLobby = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 				NGMPGame* myGame = pLobby ? pLobby->GetCurrentGame() : nullptr;
-				if (pLobby && myGame && myGame->isInGame()) {
+				if (pLobby && myGame) {
 					*TheNGMPGame = *myGame;
 					TheNGMPGame->cleanUpSlotPointers();
-				}
-				for (int i = 0; i < MAX_SLOTS; i++) {
-					GameSlot* slot = TheNGMPGame->getSlot(i);
-					if (slot) {
-						slot->setMapAvailability(TRUE);
+					for (int i = 0; i < MAX_SLOTS; i++) {
+						GameSlot* slot = TheNGMPGame->getSlot(i);
+						if (slot) {
+							slot->setMapAvailability(TRUE);
+						}
 					}
+					TheNGMPGame->startGame(0);
 				}
-				TheNGMPGame->startGame(0);
 			}
 		}
 	}
@@ -1850,9 +1855,8 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 							Int numMaps = GadgetListBoxGetNumEntries(listboxMapSelect);
 							for (Int i = 0; i < numMaps; ++i) {
 								bool bMapSelected = (bool)(intptr_t)GadgetListBoxGetItemData(listboxMapSelect, i, 0);
-								if (bMapSelected) {
-									int originalMapIdx = (int)(intptr_t)GadgetListBoxGetItemData(listboxMapSelect, i, 1);
-									selectedMaps.push_back(originalMapIdx);
+								if (bMapSelected && i < (Int)s_qmRowToPlaylistMapIndex.size()) {
+									selectedMaps.push_back(s_qmRowToPlaylistMapIndex[i]);
 								}
 							}
 

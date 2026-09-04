@@ -57,7 +57,9 @@ struct NGMPEvent {
         EVENT_GAME_START, // GeneralsX @feature fbraz3 27/08/2026 START_GAME broadcast
         EVENT_PLAYERS_UPDATED,
         EVENT_MATCHMAKING_MATCH_FOUND,
-        EVENT_MATCHMAKING_MESSAGE
+        EVENT_MATCHMAKING_MESSAGE,
+        EVENT_MOTD_FETCHED,
+        EVENT_OUTCOME_COMMITTED
     };
 
     Type type = EVENT_NONE;

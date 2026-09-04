@@ -488,6 +488,7 @@ void MapCache::updateCache()
 
 #if !defined(_WIN32)
 	s_failedMapLookups.clear();
+	// GeneralsX @feature fbraz3 03/09/2026 Check user Documents directory for Zero Hour custom maps
 	// On macOS/Linux, also scan user Documents directory if it exists and differs from userMapDir
 	const char* homeDir = getenv("HOME");
 	if (homeDir)

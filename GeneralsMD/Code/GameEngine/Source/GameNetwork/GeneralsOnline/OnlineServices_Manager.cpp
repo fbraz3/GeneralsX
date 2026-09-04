@@ -1,4 +1,5 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/NetworkMesh.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
@@ -100,6 +101,20 @@ void NGMP_OnlineServicesManager::update() {
                 break;
             case NGMPEvent::EVENT_CHAT_DISCONNECTED:
                 fprintf(stderr, "[NGMP-MainThread] Event: Chat disconnected\n");
+                break;
+            case NGMPEvent::EVENT_MOTD_FETCHED:
+                if (TheGameSpyInfo) {
+                    TheGameSpyInfo->setMOTD(AsciiString(ev.payload.c_str()));
+                }
+                break;
+            case NGMPEvent::EVENT_OUTCOME_COMMITTED:
+                if (TheNGMPGame) {
+                    if (ev.payload == "1") {
+                        TheNGMPGame->SetHasCommittedOutcome(true);
+                    } else {
+                        TheNGMPGame->SetCommittingOutcome(false);
+                    }
+                }
                 break;
             case NGMPEvent::EVENT_WEBSOCKET_MESSAGE:
                 {

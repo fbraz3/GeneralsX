@@ -21,6 +21,7 @@
 #endif
 
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "Common/UnicodeString.h"
@@ -223,13 +224,21 @@ std::string GetMOTDURL() {
     return GetWebPortalURL() + "/motd.txt";
 }
 
+static std::atomic<bool> s_bFetchingMOTD = false;
+
 void FetchMOTD() {
+    bool expected = false;
+    if (!s_bFetchingMOTD.compare_exchange_strong(expected, true)) {
+        return; // Request already in-flight, coalesce
+    }
+
     std::string url = GetMOTDURL();
     fprintf(stderr, "[NGMP] Fetching MOTD from %s...\n", url.c_str());
     fflush(stderr);
 
     CURL* curl = curl_easy_init();
     if (!curl) {
+        s_bFetchingMOTD = false;
         return;
     }
 
@@ -251,13 +260,16 @@ void FetchMOTD() {
     if (res == CURLE_OK && httpCode == 200 && !resp.text.empty()) {
         fprintf(stderr, "[NGMP] MOTD fetched successfully (%zu bytes)\n", resp.text.size());
         fflush(stderr);
-        if (TheGameSpyInfo) {
-            TheGameSpyInfo->setMOTD(AsciiString(resp.text.c_str()));
-        }
+        NGMPEvent ev;
+        ev.type = NGMPEvent::EVENT_MOTD_FETCHED;
+        ev.payload = resp.text;
+        NGMP_OnlineServicesManager::getInstance().postEvent(ev);
     } else {
         fprintf(stderr, "[NGMP] Failed to fetch MOTD (curl=%d, http=%ld)\n", res, httpCode);
         fflush(stderr);
     }
+
+    s_bFetchingMOTD = false;
 }
 
 std::string GetAPIEndpoint(const char* szEndpoint) {
@@ -277,33 +289,37 @@ std::string GenerateGamecode() {
     uint64_t part1 = 0;
     uint64_t part2 = 0;
 
+    bool bSuccess = false;
+
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
     arc4random_buf(&part1, sizeof(part1));
     arc4random_buf(&part2, sizeof(part2));
+    bSuccess = true;
 #elif defined(_WIN32)
     HCRYPTPROV hProv = 0;
     if (CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
-        CryptGenRandom(hProv, sizeof(part1), reinterpret_cast<BYTE*>(&part1));
-        CryptGenRandom(hProv, sizeof(part2), reinterpret_cast<BYTE*>(&part2));
+        BOOL ok1 = CryptGenRandom(hProv, sizeof(part1), reinterpret_cast<BYTE*>(&part1));
+        BOOL ok2 = CryptGenRandom(hProv, sizeof(part2), reinterpret_cast<BYTE*>(&part2));
         CryptReleaseContext(hProv, 0);
-    } else {
-        std::random_device rd;
-        std::mt19937_64 gen(rd());
-        part1 = gen();
-        part2 = gen();
+        bSuccess = (ok1 && ok2);
     }
 #else
     std::ifstream urandom("/dev/urandom", std::ios::binary);
     if (urandom) {
         urandom.read(reinterpret_cast<char*>(&part1), sizeof(part1));
+        bool ok1 = (urandom.gcount() == sizeof(part1));
         urandom.read(reinterpret_cast<char*>(&part2), sizeof(part2));
-    } else {
+        bool ok2 = (urandom.gcount() == sizeof(part2));
+        bSuccess = (ok1 && ok2);
+    }
+#endif
+
+    if (!bSuccess) {
         std::random_device rd;
         std::mt19937_64 gen(rd());
         part1 = gen();
         part2 = gen();
     }
-#endif
 
     // Set version to 4 (UUIDv4): time_hi_and_version [bits 12-15] = 0100b
     part1 = (part1 & 0xFFFFFFFFFFFF0FFFULL) | 0x0000000000004000ULL;

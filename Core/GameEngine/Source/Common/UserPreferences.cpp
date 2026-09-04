@@ -184,6 +184,7 @@ Bool UserPreferences::write()
 		return false;
 
 #ifndef _WIN32
+	// GeneralsX @feature fbraz3 03/09/2026 Ensure parent directory exists before writing preferences
 	std::filesystem::path filePath(m_filename.str());
 	std::filesystem::path parentDir = filePath.parent_path();
 	if (!parentDir.empty())

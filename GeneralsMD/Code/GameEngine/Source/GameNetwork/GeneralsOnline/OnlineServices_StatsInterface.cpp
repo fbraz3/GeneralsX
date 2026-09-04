@@ -109,9 +109,10 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		if (!curl) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: failed to initialize curl\n");
 			fflush(stderr);
-			if (TheNGMPGame) {
-				TheNGMPGame->SetCommittingOutcome(false);
-			}
+			NGMPEvent ev;
+			ev.type = NGMPEvent::EVENT_OUTCOME_COMMITTED;
+			ev.payload = "0";
+			NGMP_OnlineServicesManager::getInstance().postEvent(ev);
 			return;
 		}
 
@@ -136,17 +137,16 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
 
+		NGMPEvent ev;
+		ev.type = NGMPEvent::EVENT_OUTCOME_COMMITTED;
 		if (res == CURLE_OK && httpCode == 200) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: server accepted outcome (HTTP 200)\n");
-			if (TheNGMPGame) {
-				TheNGMPGame->SetHasCommittedOutcome(true);
-			}
+			ev.payload = "1";
 		} else {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
-			if (TheNGMPGame) {
-				TheNGMPGame->SetCommittingOutcome(false);
-			}
+			ev.payload = "0";
 		}
 		fflush(stderr);
+		NGMP_OnlineServicesManager::getInstance().postEvent(ev);
 	}).detach();
 }
