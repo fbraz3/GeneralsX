@@ -80,6 +80,7 @@ static Bool isShuttingDown = FALSE;
 static Bool buttonPushed = FALSE;
 static const char *nextScreen = nullptr;
 static bool statsRendered = false; // GeneralsX @feature Track if NGMP global stats were rendered
+static bool motdRendered = false;  // GeneralsX @feature Track if NGMP MOTD was rendered
 
 static std::unordered_map<int, std::string> g_mapServiceIndexToPlayerTemplateString =
 {
@@ -662,6 +663,7 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	fprintf(stderr, "[WOLWelcomeMenuInit] updateOverallStats()...\n");
 	fflush(stderr);
 #if defined(SAGE_USE_NGMP)
+	motdRendered = (TheGameSpyInfo && !TheGameSpyInfo->getMOTD().isEmpty());
 	statsRendered = false; // reset for this menu instance
 	NGMP_OnlineServicesManager::getInstance().requestGlobalStatsAsync();
 #else
@@ -758,11 +760,10 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 	}
 
 #if defined(SAGE_USE_NGMP)
-	auto ngmpEvents = NGMP_OnlineServicesManager::getInstance().pollEvents();
-	for (const auto& ev : ngmpEvents) {
-		if (ev.type == NGMPEvent::EVENT_MOTD_FETCHED) {
-			updateNumPlayersOnline();
-		}
+	// Render MOTD dynamically once received
+	if (!motdRendered && TheGameSpyInfo && !TheGameSpyInfo->getMOTD().isEmpty()) {
+		updateNumPlayersOnline();
+		motdRendered = true;
 	}
 
 	// Render global stats dynamically once received

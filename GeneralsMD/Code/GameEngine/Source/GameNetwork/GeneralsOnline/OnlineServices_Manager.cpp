@@ -345,7 +345,7 @@ void NGMP_OnlineServicesManager::update() {
             default:
                 break;
         }
-        if (ev.type != NGMPEvent::EVENT_WEBSOCKET_MESSAGE) {
+        if (ev.type != NGMPEvent::EVENT_WEBSOCKET_MESSAGE && ev.type != NGMPEvent::EVENT_MOTD_FETCHED) {
             uiEvents.push_back(ev);
         }
     }
