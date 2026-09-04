@@ -226,6 +226,7 @@ std::string GetMOTDURL() {
 
 static std::atomic<bool> s_bFetchingMOTD = false;
 
+// GeneralsX @feature fbraz3 03/09/2026 Fetch dynamic MOTD from web portal
 void FetchMOTD() {
     bool expected = false;
     if (!s_bFetchingMOTD.compare_exchange_strong(expected, true)) {
@@ -285,6 +286,7 @@ std::string GetMatchViewURL(uint64_t matchId) {
     return std::format("{}/viewmatch?match={}", GetWebPortalURL(), matchId);
 }
 
+// GeneralsX @bugfix fbraz3 03/09/2026 Generate UUIDv4 fallback gamecode using OS entropy with CSPRNG validation
 std::string GenerateGamecode() {
     uint64_t part1 = 0;
     uint64_t part2 = 0;

@@ -758,6 +758,13 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 	}
 
 #if defined(SAGE_USE_NGMP)
+	auto ngmpEvents = NGMP_OnlineServicesManager::getInstance().pollEvents();
+	for (const auto& ev : ngmpEvents) {
+		if (ev.type == NGMPEvent::EVENT_MOTD_FETCHED) {
+			updateNumPlayersOnline();
+		}
+	}
+
 	// Render global stats dynamically once received
 	if (!statsRendered && NGMP_OnlineServicesManager::getInstance().hasGlobalStats()) {
 		updateOverallStats();
