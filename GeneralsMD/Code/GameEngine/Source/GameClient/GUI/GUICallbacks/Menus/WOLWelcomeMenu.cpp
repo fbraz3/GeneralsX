@@ -73,6 +73,11 @@
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#elif defined(_WIN32)
+#include <windows.h>
+#include <shellapi.h>
+#else
+#include <SDL3/SDL.h>
 #endif
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +86,66 @@ static Bool buttonPushed = FALSE;
 static const char *nextScreen = nullptr;
 static bool statsRendered = false; // GeneralsX @feature Track if NGMP global stats were rendered
 static bool motdRendered = false;  // GeneralsX @feature Track if NGMP MOTD was rendered
+
+// GeneralsX @feature fbraz3 03/09/2026 Map MOTD listbox rows to clickable URLs
+static std::map<Int, std::string> s_motdRowUrls;
+
+static void OpenBrowserURL(const std::string& url)
+{
+#if defined(SAGE_USE_NGMP)
+	NGMP::OpenURL(url);
+#elif defined(_WIN32)
+	ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+#else
+	SDL_OpenURL(url.c_str());
+#endif
+}
+
+// GeneralsX @feature fbraz3 03/09/2026 Parse raw URLs or Markdown links [text](url) from MOTD line
+static std::string ExtractURLFromLine(std::string& inOutText)
+{
+	// Check for Markdown link: [display text](http://... or https://...)
+	size_t openBracket = inOutText.find('[');
+	size_t closeBracket = (openBracket != std::string::npos) ? inOutText.find(']', openBracket + 1) : std::string::npos;
+	if (openBracket != std::string::npos && closeBracket != std::string::npos &&
+		closeBracket + 1 < inOutText.length() && inOutText[closeBracket + 1] == '(')
+	{
+		size_t openParen = closeBracket + 1;
+		size_t closeParen = inOutText.find(')', openParen + 1);
+		if (closeParen != std::string::npos)
+		{
+			std::string url = inOutText.substr(openParen + 1, closeParen - openParen - 1);
+			if (url.rfind("http://", 0) == 0 || url.rfind("https://", 0) == 0)
+			{
+				std::string displayText = inOutText.substr(openBracket + 1, closeBracket - openBracket - 1);
+				inOutText = inOutText.substr(0, openBracket) + displayText + inOutText.substr(closeParen + 1);
+				return url;
+			}
+		}
+	}
+
+	// Check for raw URL: http:// or https://
+	size_t pos = inOutText.find("http://");
+	if (pos == std::string::npos)
+		pos = inOutText.find("https://");
+	if (pos == std::string::npos)
+		return "";
+
+	size_t end = pos;
+	while (end < inOutText.length() && !std::isspace(static_cast<unsigned char>(inOutText[end])) &&
+		   inOutText[end] != '"' && inOutText[end] != '\'' && inOutText[end] != '<' && inOutText[end] != '>' &&
+		   inOutText[end] != '`')
+	{
+		end++;
+	}
+	while (end > pos && (inOutText[end - 1] == '.' || inOutText[end - 1] == ',' ||
+						 inOutText[end - 1] == ')' || inOutText[end - 1] == ']' ||
+						 inOutText[end - 1] == ';'))
+	{
+		end--;
+	}
+	return inOutText.substr(pos, end - pos);
+}
 
 static std::unordered_map<int, std::string> g_mapServiceIndexToPlayerTemplateString =
 {
@@ -263,6 +328,7 @@ static void updateNumPlayersOnline()
 
 	if (listboxInfo && TheGameSpyInfo)
 	{
+		s_motdRowUrls.clear();
 		GadgetListBoxReset(listboxInfo);
 		AsciiString aLine;
 		UnicodeString line;
@@ -302,6 +368,7 @@ static void updateNumPlayersOnline()
 			}
 
 			Color c = GameSpyColor[GSCOLOR_MOTD];
+			bool hasCustomColor = false;
 			if (aLine.startsWith("\\\\"))
 			{
 				aLine = aLine.str()+1;
@@ -317,10 +384,28 @@ static void updateNumPlayersOnline()
 				c = GameMakeColor(r, g, b, a);
 				DEBUG_LOG(("MOTD line '%s' has color %X", aLine.str(), c));
 				aLine = aLine.str() + 9;
+				hasCustomColor = true;
 			}
+
+			// GeneralsX @feature fbraz3 03/09/2026 Detect clickable URL or Markdown link in MOTD
+			std::string rawLine(aLine.str());
+			std::string detectedUrl = ExtractURLFromLine(rawLine);
+			if (!detectedUrl.empty())
+			{
+				if (!hasCustomColor)
+				{
+					c = GameMakeColor(100, 180, 255, 255); // Link highlight blue
+				}
+				aLine = rawLine.c_str();
+			}
+
 			line = UnicodeString(MultiByteToWideCharSingleLine(aLine.str()).c_str());
 
-			GadgetListBoxAddEntryText(listboxInfo, line, c, -1, -1);
+			Int row = GadgetListBoxAddEntryText(listboxInfo, line, c, -1, -1);
+			if (!detectedUrl.empty() && row >= 0)
+			{
+				s_motdRowUrls[row] = detectedUrl;
+			}
 		}
 	}
 }
@@ -704,6 +789,7 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 void WOLWelcomeMenuShutdown( WindowLayout *layout, void *userData )
 {
 	listboxInfo = nullptr;
+	s_motdRowUrls.clear();
 
 	delete TheFirewallHelper;
 	TheFirewallHelper = nullptr;
@@ -931,6 +1017,27 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 					*(Bool *)mData2 = TRUE;
 
 				return MSG_HANDLED;
+			}
+
+		// GeneralsX @feature fbraz3 03/09/2026 Open MOTD link in system browser on row click
+		case GLM_SELECTED:
+			{
+				GameWindow *control = (GameWindow *)mData1;
+				Int controlID = control ? control->winGetWindowId() : NAMEKEY_INVALID;
+				Int selected = (Int)mData2;
+
+				if (controlID == listboxInfoID && selected >= 0)
+				{
+					auto it = s_motdRowUrls.find(selected);
+					if (it != s_motdRowUrls.end() && !it->second.empty())
+					{
+						fprintf(stderr, "[WOLWelcomeMenu] Opening MOTD URL: %s\n", it->second.c_str());
+						fflush(stderr);
+						OpenBrowserURL(it->second);
+						GadgetListBoxSetSelected(listboxInfo, -1);
+					}
+				}
+				break;
 			}
 
 		case GBM_SELECTED:
