@@ -201,14 +201,16 @@ void MissileLauncherBuildingUpdate::switchToState(DoorStateType dst)
 //-------------------------------------------------------------------------------------------------
 Bool MissileLauncherBuildingUpdate::initiateIntentToDoSpecialPower( const SpecialPowerTemplate *specialPowerTemplate, const Object *targetObj, const Coord3D *targetPos, const Waypoint *way, UnsignedInt commandOptions )
 {
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Mauller 29/06/2025 prevent a game crash when told to launch before ready to do so
+	// TheSuperHackers @bugfix Mauller 29/06/2025 prevent a game crash when told to launch before ready to do so.
+	// Note: RETAIL_COMPATIBLE_CRC is hardcoded to 0 (GameDefines.h), so the guard was compiled out and the
+	// crash still occurs in release builds. The null check must be unconditional.
 	if (!m_specialPowerModule) {
 		Object* us = getObject();
-		us->getSpecialPowerModule(specialPowerTemplate)->setReadyFrame(0xFFFFFFFF);
+		SpecialPowerModuleInterface* spm = us->getSpecialPowerModule(specialPowerTemplate);
+		if (spm)
+			spm->setReadyFrame(0xFFFFFFFF);
 		return FALSE;
 	}
-#endif
 
 	if( m_specialPowerModule->getSpecialPowerTemplate() != specialPowerTemplate )
 	{
