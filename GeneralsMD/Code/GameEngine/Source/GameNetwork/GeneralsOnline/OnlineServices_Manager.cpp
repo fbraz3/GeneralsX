@@ -350,6 +350,9 @@ void NGMP_OnlineServicesManager::update() {
 
     if (!m_pNetworkMesh && m_isLoggedIn) {
         m_pNetworkMesh = std::make_unique<NetworkMesh>();
+        if (!m_turnUsername.empty() && !m_turnToken.empty()) {
+            m_pNetworkMesh->SetTURNCredentials(m_turnUsername, m_turnToken);
+        }
     }
     if (m_pNetworkMesh) {
         m_pNetworkMesh->Tick();
@@ -549,6 +552,7 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
 
         if (res == CURLE_OK && (httpCode == 200 || httpCode == 201)) {
             int64_t createdLobbyId = -1;
+            std::string turnUsername, turnToken;
             try {
                 auto jsonResp = json::parse(response.text);
                 if (jsonResp.contains("lobby_id")) {
@@ -556,11 +560,23 @@ void NGMP_OnlineServicesManager::createLobbyAsync(const std::string& name, const
                 } else if (jsonResp.contains("LobbyID")) {
                     createdLobbyId = jsonResp["LobbyID"].get<int64_t>();
                 }
+                if (jsonResp.contains("turn_username") && jsonResp["turn_username"].is_string()) {
+                    turnUsername = jsonResp["turn_username"].get<std::string>();
+                }
+                if (jsonResp.contains("turn_token") && jsonResp["turn_token"].is_string()) {
+                    turnToken = jsonResp["turn_token"].get<std::string>();
+                }
             } catch (...) {}
 
             m_currentLobbyId = createdLobbyId;
             m_hostUserId = m_userId;
             m_isLobbyOwner = true;
+            m_turnUsername = turnUsername;
+            m_turnToken = turnToken;
+
+            if (m_pNetworkMesh && !turnUsername.empty() && !turnToken.empty()) {
+                m_pNetworkMesh->SetTURNCredentials(turnUsername, turnToken);
+            }
 
             if (createdLobbyId >= 0) {
                 requestLobbyDetailsAsync(createdLobbyId);
@@ -632,6 +648,25 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
             m_currentLobbyId = lobbyId;
             m_hostUserId = -1;
             m_isLobbyOwner = false;
+
+            std::string turnUsername, turnToken;
+            try {
+                auto jsonResp = json::parse(response.text);
+                if (jsonResp.contains("turn_username") && jsonResp["turn_username"].is_string()) {
+                    turnUsername = jsonResp["turn_username"].get<std::string>();
+                }
+                if (jsonResp.contains("turn_token") && jsonResp["turn_token"].is_string()) {
+                    turnToken = jsonResp["turn_token"].get<std::string>();
+                }
+            } catch (...) {}
+
+            m_turnUsername = turnUsername;
+            m_turnToken = turnToken;
+
+            if (m_pNetworkMesh && !turnUsername.empty() && !turnToken.empty()) {
+                m_pNetworkMesh->SetTURNCredentials(turnUsername, turnToken);
+            }
+
             requestLobbyDetailsAsync(lobbyId);
             requestLobbyListAsync();
             NGMPEvent ev;

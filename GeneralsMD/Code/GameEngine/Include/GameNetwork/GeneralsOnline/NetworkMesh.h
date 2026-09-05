@@ -186,6 +186,7 @@ public:
 
 	void StartConnectionSignalling(const char* szMiddlewareID, int64_t remoteUserID, uint16_t preferredPort);
 	void PushIncomingSignal(const std::vector<uint8_t>& signalPayload);
+	void SetTURNCredentials(const std::string& username, const std::string& token);
 	void DisconnectUser(int64_t remoteUserID);
 	void Disconnect();
 

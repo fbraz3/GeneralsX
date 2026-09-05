@@ -52,6 +52,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Checkout GameClient submodule for ValveNetworkingSockets
+        shell: pwsh
+        run: |
+          git submodule update --init --depth 1 references/GameClient
+
       - name: Configure MSVC x86
         uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -93,6 +98,12 @@ jobs:
 
           Get-ChildItem -Path @("vcpkg_installed/x86-windows/bin/*.dll", "build/win32-vcpkg/vcpkg_installed/x86-windows/bin/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
             Write-Host "Collecting vcpkg DLL: $($_.FullName)"
+            Copy-Item $_.FullName artifacts/
+            Copy-Item $_.FullName ci-artifacts/
+          }
+
+          Get-ChildItem -Path @("references/GameClient/GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets/*.dll", "GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Collecting GNS DLL: $($_.FullName)"
             Copy-Item $_.FullName artifacts/
             Copy-Item $_.FullName ci-artifacts/
           }

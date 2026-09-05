@@ -139,6 +139,36 @@ if(SAGE_USE_NGMP)
     elseif(TARGET GameNetworkingSockets_s)
         target_link_libraries(core_config INTERFACE GameNetworkingSockets_s)
         target_compile_definitions(core_config INTERFACE SAGE_USE_GAMENETWORKINGSOCKETS=1)
+    elseif(WIN32 AND MSVC)
+        set(_VNS_DIR "")
+        set(_VNS_INC "")
+        if(EXISTS "${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets/GameNetworkingSockets.lib")
+            set(_VNS_DIR "${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets")
+            set(_VNS_INC "${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Include/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets")
+        elseif(EXISTS "${CMAKE_SOURCE_DIR}/references/GameClient/GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets/GameNetworkingSockets.lib")
+            set(_VNS_DIR "${CMAKE_SOURCE_DIR}/references/GameClient/GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets")
+            set(_VNS_INC "${CMAKE_SOURCE_DIR}/references/GameClient/GeneralsMD/Code/GameEngine/Include/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets")
+        endif()
+
+        if(_VNS_DIR)
+            message(STATUS "[NGMP] Found prebuilt ValveNetworkingSockets for Windows MSVC: ${_VNS_DIR}")
+            target_include_directories(core_config INTERFACE "${_VNS_INC}")
+            target_link_directories(core_config INTERFACE "${_VNS_DIR}")
+            target_link_libraries(core_config INTERFACE
+                "${_VNS_DIR}/GameNetworkingSockets.lib"
+                "${_VNS_DIR}/abseil_dll.lib"
+                "${_VNS_DIR}/libcrypto.lib"
+                "${_VNS_DIR}/libprotobuf.lib"
+                "${_VNS_DIR}/libssl.lib"
+                "${_VNS_DIR}/steamwebrtc.lib"
+                "${_VNS_DIR}/webrtc-lite.lib"
+                ws2_32 crypt32 bcrypt iphlpapi
+            )
+            target_compile_definitions(core_config INTERFACE SAGE_USE_GAMENETWORKINGSOCKETS=1)
+            set(SAGE_VALVE_NETWORKING_SOCKETS_DIR "${_VNS_DIR}" CACHE PATH "Path to prebuilt ValveNetworkingSockets DLLs" FORCE)
+        else()
+            message(WARNING "[NGMP] ValveNetworkingSockets prebuilt libraries not found for Windows MSVC! Run 'git submodule update --init references/GameClient' to enable P2P multiplayer.")
+        endif()
     endif()
 
     if(DEFINED gamenetworkingsockets_SOURCE_DIR)

@@ -257,6 +257,8 @@ private:
     int64_t m_currentLobbyId = -1;
     int64_t m_hostUserId = -1;
     bool m_isLobbyOwner = false;
+    std::string m_turnUsername;
+    std::string m_turnToken;
 
     // Browser-based login state
     std::atomic<bool> m_waitingBrowserLogin = false;
