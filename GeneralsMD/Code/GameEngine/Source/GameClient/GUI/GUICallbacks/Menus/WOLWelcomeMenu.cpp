@@ -34,6 +34,8 @@
 #include "gamespy/peer/peer.h"
 
 #include "Common/GameEngine.h"
+#include "Common/AudioEventRTS.h"
+#include "Common/GameAudio.h"
 #include "Common/GameSpyMiscPreferences.h"
 #include "Common/CustomMatchPreferences.h"
 #include "Common/GlobalData.h"
@@ -68,10 +70,98 @@
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
 
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#elif defined(_WIN32)
+#include <windows.h>
+#include <shellapi.h>
+#else
+#include <SDL3/SDL.h>
+#endif
+
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static Bool isShuttingDown = FALSE;
 static Bool buttonPushed = FALSE;
 static const char *nextScreen = nullptr;
+static bool statsRendered = false; // GeneralsX @feature Track if NGMP global stats were rendered
+static bool motdRendered = false;  // GeneralsX @feature Track if NGMP MOTD was rendered
+
+// GeneralsX @feature fbraz3 03/09/2026 Map MOTD listbox rows to clickable URLs
+static std::map<Int, std::string> s_motdRowUrls;
+
+static void OpenBrowserURL(const std::string& url)
+{
+#if defined(SAGE_USE_NGMP)
+	NGMP::OpenURL(url);
+#elif defined(_WIN32)
+	ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+#else
+	SDL_OpenURL(url.c_str());
+#endif
+}
+
+// GeneralsX @feature fbraz3 03/09/2026 Parse raw URLs or Markdown links [text](url) from MOTD line
+static std::string ExtractURLFromLine(std::string& inOutText)
+{
+	// Check for Markdown link: [display text](http://... or https://...)
+	size_t openBracket = inOutText.find('[');
+	size_t closeBracket = (openBracket != std::string::npos) ? inOutText.find(']', openBracket + 1) : std::string::npos;
+	if (openBracket != std::string::npos && closeBracket != std::string::npos &&
+		closeBracket + 1 < inOutText.length() && inOutText[closeBracket + 1] == '(')
+	{
+		size_t openParen = closeBracket + 1;
+		size_t closeParen = inOutText.find(')', openParen + 1);
+		if (closeParen != std::string::npos)
+		{
+			std::string url = inOutText.substr(openParen + 1, closeParen - openParen - 1);
+			if (url.rfind("http://", 0) == 0 || url.rfind("https://", 0) == 0)
+			{
+				std::string displayText = inOutText.substr(openBracket + 1, closeBracket - openBracket - 1);
+				inOutText = inOutText.substr(0, openBracket) + displayText + inOutText.substr(closeParen + 1);
+				return url;
+			}
+		}
+	}
+
+	// Check for raw URL: http:// or https://
+	size_t pos = inOutText.find("http://");
+	if (pos == std::string::npos)
+		pos = inOutText.find("https://");
+	if (pos == std::string::npos)
+		return "";
+
+	size_t end = pos;
+	while (end < inOutText.length() && !std::isspace(static_cast<unsigned char>(inOutText[end])) &&
+		   inOutText[end] != '"' && inOutText[end] != '\'' && inOutText[end] != '<' && inOutText[end] != '>' &&
+		   inOutText[end] != '`')
+	{
+		end++;
+	}
+	while (end > pos && (inOutText[end - 1] == '.' || inOutText[end - 1] == ',' ||
+						 inOutText[end - 1] == ')' || inOutText[end - 1] == ']' ||
+						 inOutText[end - 1] == ';'))
+	{
+		end--;
+	}
+	return inOutText.substr(pos, end - pos);
+}
+
+static std::unordered_map<int, std::string> g_mapServiceIndexToPlayerTemplateString =
+{
+	{ 0, "USA" },
+	{ 1, "China" },
+	{ 2, "GLA" },
+	{ 3, "AmericaSuperWeaponGeneral" },
+	{ 4, "AmericaLaserGeneral" },
+	{ 5, "AmericaAirForceGeneral" },
+	{ 6, "ChinaTankGeneral" },
+	{ 7, "ChinaInfantryGeneral" },
+	{ 8, "ChinaNukeGeneral" },
+	{ 9, "GLAToxinGeneral" },
+	{ 10, "GLADemolitionGeneral" },
+	{ 11, "GLAStealthGeneral" }
+};
 
 // window ids ------------------------------------------------------------------------------
 static NameKeyType parentWOLWelcomeID = NAMEKEY_INVALID;
@@ -111,6 +201,7 @@ static GameWindow *staticTextHighscoreRank = nullptr;
 static GameWindow *staticTextHighscorePoints = nullptr;
 
 static UnicodeString gServerName;
+static Bool s_welcomeAudioPlayed = FALSE;
 void updateServerDisplay(UnicodeString serverName)
 {
 	if (staticTextServerName)
@@ -199,6 +290,10 @@ static void shutdownComplete( WindowLayout *layout )
 	{
 		TheShell->push(nextScreen);
 	}
+	else
+	{
+		s_welcomeAudioPlayed = FALSE;
+	}
 
 	nextScreen = nullptr;
 
@@ -233,6 +328,7 @@ static void updateNumPlayersOnline()
 
 	if (listboxInfo && TheGameSpyInfo)
 	{
+		s_motdRowUrls.clear();
 		GadgetListBoxReset(listboxInfo);
 		AsciiString aLine;
 		UnicodeString line;
@@ -272,11 +368,12 @@ static void updateNumPlayersOnline()
 			}
 
 			Color c = GameSpyColor[GSCOLOR_MOTD];
+			bool hasCustomColor = false;
 			if (aLine.startsWith("\\\\"))
 			{
 				aLine = aLine.str()+1;
 			}
-			else if (aLine.startsWith("\\") && aLine.getLength() > 9)
+			else if (aLine.startsWith("\\") && aLine.getLength() >= 9)
 			{
 				// take out the hex value from strings starting as "\ffffffffText"
 				UnsignedByte a, r, g, b;
@@ -287,10 +384,28 @@ static void updateNumPlayersOnline()
 				c = GameMakeColor(r, g, b, a);
 				DEBUG_LOG(("MOTD line '%s' has color %X", aLine.str(), c));
 				aLine = aLine.str() + 9;
+				hasCustomColor = true;
 			}
+
+			// GeneralsX @feature fbraz3 03/09/2026 Detect clickable URL or Markdown link in MOTD
+			std::string rawLine(aLine.str());
+			std::string detectedUrl = ExtractURLFromLine(rawLine);
+			if (!detectedUrl.empty())
+			{
+				if (!hasCustomColor)
+				{
+					c = GameMakeColor(100, 180, 255, 255); // Link highlight blue
+				}
+				aLine = rawLine.c_str();
+			}
+
 			line = UnicodeString(MultiByteToWideCharSingleLine(aLine.str()).c_str());
 
-			GadgetListBoxAddEntryText(listboxInfo, line, c, -1, -1);
+			Int row = GadgetListBoxAddEntryText(listboxInfo, line, c, -1, -1);
+			if (!detectedUrl.empty() && row >= 0)
+			{
+				s_motdRowUrls[row] = detectedUrl;
+			}
 		}
 	}
 }
@@ -358,7 +473,7 @@ void HandleOverallStats( const char* szHTTPStats, unsigned len )
 		//      we want win% = team's wins / total # games played by all teams
 		const char* pTotal = FindNextNumber(pSide);
 		const char* pWins = FindNextNumber(pTotal);
-		float percent = atof(pWins) / max(1,atof(pTotal));  //max prevents divide by zero
+		float percent = atof(pWins) / std::max(1.0, atof(pTotal));  //max prevents divide by zero
 		s_totalWinPercent += percent;
 
 		s_winStats.insert(std::make_pair( side, percent ));
@@ -370,6 +485,58 @@ void HandleOverallStats( const char* szHTTPStats, unsigned len )
 //called only from WOLWelcomeMenuInit to set %win stats
 static void updateOverallStats()
 {
+#if defined(SAGE_USE_NGMP)
+	if (!NGMP_OnlineServicesManager::getInstance().hasGlobalStats()) {
+		return;
+	}
+
+	GlobalStats stats = NGMP_OnlineServicesManager::getInstance().getGlobalStats();
+
+	int totalWins = 0;
+	int totalGames = 0;
+	s_totalWinPercent = 0.f;
+
+	for (size_t i = 0; i < stats.matches.size(); ++i)
+	{
+		totalWins += stats.wins[i];
+		totalGames += stats.matches[i];
+	}
+
+	if (totalGames <= 0)
+		totalGames = 1;  //prevent divide by zero
+
+	s_totalWinPercent = ((float)totalWins / (float)totalGames);
+
+	if (s_totalWinPercent <= 0)
+		s_totalWinPercent = 1;  //prevent divide by zero
+
+	UnicodeString percStr;
+	AsciiString wndName;
+	GameWindow* pWin;
+
+	for (size_t i = 0; i < stats.matches.size(); ++i)
+	{
+		int wins = stats.wins[i];
+		int matches = stats.matches[i];
+
+		if (matches == 0)
+			matches = 1;
+
+		float fThisPercent = ((float)wins / (float)matches);
+
+		std::string teamName = "";
+		if (g_mapServiceIndexToPlayerTemplateString.contains(i)) {
+			teamName = g_mapServiceIndexToPlayerTemplateString[i];
+		}
+
+		percStr.format(L"%d%% (%d/%d)", (int)(100.f*fThisPercent), stats.wins[i], stats.matches[i]);
+		wndName.format("WOLWelcomeMenu.wnd:Percent%s", teamName.c_str());
+		pWin = TheWindowManager->winGetWindowFromId(NULL, NAMEKEY(wndName));
+		if (pWin) {
+			GadgetCheckBoxSetText(pWin, percStr);
+		}
+	}
+#else
 	UnicodeString percStr;
 	AsciiString wndName;
 	GameWindow* pWin;
@@ -387,6 +554,7 @@ static void updateOverallStats()
 		GadgetCheckBoxSetText( pWin, percStr );
 //x		DEBUG_LOG(("Initialized win percent: %s -> %s %f=%s", wndName.str(), it->first.str(), it->second, percStr.str() ));
 	}
+#endif
 }
 
 
@@ -415,6 +583,8 @@ static Bool raiseMessageBoxes = FALSE;
 //-------------------------------------------------------------------------------------------------
 void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 {
+	fprintf(stderr, "[WOLWelcomeMenuInit] Starting...\n");
+	fflush(stderr);
 	nextScreen = nullptr;
 	buttonPushed = FALSE;
 	isShuttingDown = FALSE;
@@ -422,6 +592,8 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	welcomeLayout = layout;
 
 	//TheWOL->reset();
+	fprintf(stderr, "[WOLWelcomeMenuInit] Getting window IDs...\n");
+	fflush(stderr);
 
 	parentWOLWelcomeID = TheNameKeyGenerator->nameToKey( "WOLWelcomeMenu.wnd:WOLWelcomeMenuParent" );
 	buttonBackID = TheNameKeyGenerator->nameToKey( "WOLWelcomeMenu.wnd:ButtonBack" );
@@ -464,6 +636,8 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	}
 
 	GameWindow *staticTextTitle = TheWindowManager->winGetWindowFromId(parentWOLWelcome, NAMEKEY("WOLWelcomeMenu.wnd:StaticTextTitle"));
+	fprintf(stderr, "[WOLWelcomeMenuInit] Setting texts...\n");
+	fflush(stderr);
 	if (staticTextTitle && TheGameSpyInfo)
 	{
 		UnicodeString title;
@@ -541,13 +715,52 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	// Set Keyboard to Main Parent
 	TheWindowManager->winSetFocus( parentWOLWelcome );
 
-	enableControls( TheGameSpyInfo->gotGroupRoomList() );
+	fprintf(stderr, "[WOLWelcomeMenuInit] enableControls()...\n");
+	fflush(stderr);
+#if defined(SAGE_USE_NGMP)
+	enableControls( NGMP_OnlineServicesManager::getInstance().isLoggedIn() );
+#else
+	if (TheGameSpyInfo) {
+		enableControls( TheGameSpyInfo->gotGroupRoomList() );
+	} else {
+		fprintf(stderr, "[WOLWelcomeMenuInit] WARNING: TheGameSpyInfo is null!\n");
+		fflush(stderr);
+		enableControls( false );
+	}
+#endif
+
+	fprintf(stderr, "[WOLWelcomeMenuInit] showShellMap()...\n");
+	fflush(stderr);
 	TheShell->showShellMap(TRUE);
 
+	fprintf(stderr, "[WOLWelcomeMenuInit] updateNumPlayersOnline()...\n");
+	fflush(stderr);
+#if defined(SAGE_USE_NGMP)
+	if (TheGameSpyInfo && TheGameSpyInfo->getMOTD().isEmpty())
+	{
+		std::thread([]() {
+			NGMP::FetchMOTD();
+		}).detach();
+	}
+#endif
 	updateNumPlayersOnline();
+	
+	fprintf(stderr, "[WOLWelcomeMenuInit] updateOverallStats()...\n");
+	fflush(stderr);
+#if defined(SAGE_USE_NGMP)
+	motdRendered = (TheGameSpyInfo && !TheGameSpyInfo->getMOTD().isEmpty());
+	statsRendered = false; // reset for this menu instance
+	NGMP_OnlineServicesManager::getInstance().requestGlobalStatsAsync();
+#else
 	updateOverallStats();
+#endif
 
+	fprintf(stderr, "[WOLWelcomeMenuInit] UpdateLocalPlayerStats()...\n");
+	fflush(stderr);
 	UpdateLocalPlayerStats();
+
+	fprintf(stderr, "[WOLWelcomeMenuInit] Setting up preferences...\n");
+	fflush(stderr);
 
 	GameSpyMiscPreferences cPref;
 	if (cPref.getLocale() < LOC_MIN || cPref.getLocale() > LOC_MAX)
@@ -558,6 +771,16 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 	raiseMessageBoxes = TRUE;
 	TheTransitionHandler->setGroup("WOLWelcomeMenuFade");
 
+	// GeneralsX @feature Play classic "Welcome to Generals Online" voice line once per login session
+	if (!s_welcomeAudioPlayed && !GameSpyIsOverlayOpen(GSOVERLAY_LOCALESELECT) && TheAudio)
+	{
+		AudioEventRTS welcomeSound("WelcomeToGeneralsOnline");
+		TheAudio->addAudioEvent(&welcomeSound);
+		s_welcomeAudioPlayed = TRUE;
+	}
+
+	fprintf(stderr, "[WOLWelcomeMenuInit] Done.\n");
+	fflush(stderr);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -566,6 +789,7 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 void WOLWelcomeMenuShutdown( WindowLayout *layout, void *userData )
 {
 	listboxInfo = nullptr;
+	s_motdRowUrls.clear();
 
 	delete TheFirewallHelper;
 	TheFirewallHelper = nullptr;
@@ -621,6 +845,28 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 		}
 	}
 
+#if defined(SAGE_USE_NGMP)
+	// Render MOTD dynamically once received
+	if (!motdRendered && TheGameSpyInfo && !TheGameSpyInfo->getMOTD().isEmpty()) {
+		updateNumPlayersOnline();
+		motdRendered = true;
+	}
+
+	// Render global stats dynamically once received
+	if (!statsRendered && NGMP_OnlineServicesManager::getInstance().hasGlobalStats()) {
+		updateOverallStats();
+		statsRendered = true;
+	}
+#endif
+
+	// GeneralsX @feature Play classic "Welcome to Generals Online" once locale overlay is closed
+	if (!isShuttingDown && !buttonPushed && !s_welcomeAudioPlayed && !GameSpyIsOverlayOpen(GSOVERLAY_LOCALESELECT) && TheAudio)
+	{
+		AudioEventRTS welcomeSound("WelcomeToGeneralsOnline");
+		TheAudio->addAudioEvent(&welcomeSound);
+		s_welcomeAudioPlayed = TRUE;
+	}
+
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
 	{
 		HandleBuddyResponses();
@@ -673,6 +919,7 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 				break;
 			case PeerResponse::PEERRESPONSE_DISCONNECT:
 				{
+#if !defined(SAGE_USE_NGMP)
 					sawImportantMessage = TRUE;
 					UnicodeString title, body;
 					AsciiString disconMunkee;
@@ -682,6 +929,7 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 					GameSpyCloseAllOverlays();
 					GSMessageBoxOk( title, body );
 					TheShell->pop();
+#endif
 				}
 				break;
 			}
@@ -771,6 +1019,27 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 				return MSG_HANDLED;
 			}
 
+		// GeneralsX @feature fbraz3 03/09/2026 Open MOTD link in system browser on row click
+		case GLM_SELECTED:
+			{
+				GameWindow *control = (GameWindow *)mData1;
+				Int controlID = control ? control->winGetWindowId() : NAMEKEY_INVALID;
+				Int selected = (Int)mData2;
+
+				if (controlID == listboxInfoID && selected >= 0)
+				{
+					auto it = s_motdRowUrls.find(selected);
+					if (it != s_motdRowUrls.end() && !it->second.empty())
+					{
+						fprintf(stderr, "[WOLWelcomeMenu] Opening MOTD URL: %s\n", it->second.c_str());
+						fflush(stderr);
+						OpenBrowserURL(it->second);
+						GadgetListBoxSetSelected(listboxInfo, -1);
+					}
+				}
+				break;
+			}
+
 		case GBM_SELECTED:
 			{
 				if (buttonPushed)
@@ -792,7 +1061,9 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 					TheGameSpyBuddyMessageQueue->addRequest( breq );
 
 					DEBUG_LOG(("Tearing down GameSpy from WOLWelcomeMenuSystem(GBM_SELECTED)"));
+#ifndef SAGE_USE_NGMP
 					TearDownGameSpy();
+#endif
 
 					/*
 					if (TheGameSpyChat->getPeer())
@@ -837,15 +1108,32 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 				}
 				else if (controlID == buttonMyInfoID )
 				{
+#if defined(SAGE_USE_NGMP)
+					if (NGMP_OnlineServicesManager::getInstance().isLoggedIn())
+					{
+						// NGMP doesn't support SetLookAtPlayer with 64-bit ID natively without a cast, so we just pass 1 for now 
+						// or the auth ID. SetLookAtPlayer takes Int (32-bit). We'll cast it safely or assume it's small enough.
+						// The reference repo casts the string to UnicodeString.
+						SetLookAtPlayer(1, NGMP_OnlineServicesManager::getInstance().getUsername().c_str());
+						GameSpyToggleOverlay(GSOVERLAY_PLAYERINFO);
+					}
+#else
 					SetLookAtPlayer(TheGameSpyInfo->getLocalProfileID(), TheGameSpyInfo->getLocalName());
 					GameSpyToggleOverlay(GSOVERLAY_PLAYERINFO);
+#endif
 				}
 				else if (controlID == buttonLobbyID)
 				{
 					//TheGameSpyChat->clearGroupRoomList();
 					//peerListGroupRooms(TheGameSpyChat->getPeer(), ListGroupRoomsCallback, nullptr, PEERTrue);
+#if defined(SAGE_USE_NGMP)
+					buttonPushed = TRUE;
+					nextScreen = "Menus/WOLCustomLobby.wnd";
+					TheShell->pop();
+#else
 					TheGameSpyInfo->joinBestGroupRoom();
 					enableControls( FALSE );
+#endif
 
 
 					/*

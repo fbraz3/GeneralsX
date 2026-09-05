@@ -103,6 +103,33 @@ else
     rm -f "${PROJECT_ROOT}/.git-override.cmake"
 fi
 
+if [[ -n "${NGMP_DEFAULT_HOST:-}" ]] || [[ -n "${NGMP_SERVER_HOST:-}" ]] || [[ -n "${NGMP_SERVER_PORT:-}" ]] || [[ -n "${NGMP_USE_SSL:-}" ]] || [[ -n "${NGMP_WEB_PORTAL_URL:-}" ]] || [[ -n "${NGMP_MOTD_URL:-}" ]]; then
+    HOST_VAL="${NGMP_SERVER_HOST:-${NGMP_DEFAULT_HOST:-localhost}}"
+    PORT_VAL="${NGMP_SERVER_PORT:-9001}"
+    SSL_VAL="${NGMP_USE_SSL:-OFF}"
+    PORTAL_VAL="${NGMP_WEB_PORTAL_URL:-}"
+    MOTD_VAL="${NGMP_MOTD_URL:-}"
+    cat > "${PROJECT_ROOT}/cmake/ngmp_env.cmake" <<EOF
+set(NGMP_SERVER_HOST "${HOST_VAL}" CACHE STRING "NGMP Server Host" FORCE)
+set(NGMP_DEFAULT_HOST "${HOST_VAL}" CACHE STRING "NGMP Server Host" FORCE)
+set(NGMP_SERVER_PORT "${PORT_VAL}" CACHE STRING "NGMP Server Port" FORCE)
+set(NGMP_USE_SSL "${SSL_VAL}" CACHE STRING "NGMP Use SSL" FORCE)
+set(NGMP_WEB_PORTAL_URL "${PORTAL_VAL}" CACHE STRING "NGMP Web Portal URL" FORCE)
+set(NGMP_MOTD_URL "${MOTD_VAL}" CACHE STRING "NGMP MOTD URL" FORCE)
+EOF
+    cat > "${PROJECT_ROOT}/.ngmp-config.cmake" <<EOF
+set(NGMP_SERVER_HOST "${HOST_VAL}" CACHE STRING "NGMP Server Host" FORCE)
+set(NGMP_DEFAULT_HOST "${HOST_VAL}" CACHE STRING "NGMP Server Host" FORCE)
+set(NGMP_SERVER_PORT "${PORT_VAL}" CACHE STRING "NGMP Server Port" FORCE)
+set(NGMP_USE_SSL "${SSL_VAL}" CACHE STRING "NGMP Use SSL" FORCE)
+set(NGMP_WEB_PORTAL_URL "${PORTAL_VAL}" CACHE STRING "NGMP Web Portal URL" FORCE)
+set(NGMP_MOTD_URL "${MOTD_VAL}" CACHE STRING "NGMP MOTD URL" FORCE)
+EOF
+    echo "[$(ts)] Configured NGMP server: ${HOST_VAL}:${PORT_VAL} (SSL: ${SSL_VAL}, WebPortal: ${PORTAL_VAL}, MOTD: ${MOTD_VAL})"
+else
+    rm -f "${PROJECT_ROOT}/cmake/ngmp_env.cmake" "${PROJECT_ROOT}/.ngmp-config.cmake"
+fi
+
 if [[ "${GENERALSX_FLATPAK_USE_CCACHE}" == "1" ]]; then
     BUILDER_ARGS+=(--ccache)
     echo "[$(ts)] flatpak-builder ccache enabled (GENERALSX_FLATPAK_USE_CCACHE=1)."

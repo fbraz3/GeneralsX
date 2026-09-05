@@ -30,6 +30,12 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include <cstdint>
+#include <set>
+
+#if !defined(_WIN32)
+#include <filesystem>
+static std::set<std::string> s_failedMapLookups;
+#endif
 
 #include "Common/crc.h"
 #include "Common/FileSystem.h"
@@ -479,6 +485,29 @@ void MapCache::updateCache()
 		writeCacheINI(userMapDir);
 		m_doLoadStandardMapCacheINI = TRUE;
 	}
+
+#if !defined(_WIN32)
+	s_failedMapLookups.clear();
+	// GeneralsX @feature fbraz3 03/09/2026 Check user Documents directory for Zero Hour custom maps
+	// On macOS/Linux, also scan user Documents directory if it exists and differs from userMapDir
+	const char* homeDir = getenv("HOME");
+	if (homeDir)
+	{
+		std::vector<std::string> docMapDirs = {
+			std::string(homeDir) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
+			std::string(homeDir) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps"
+		};
+		for (const auto& dmd : docMapDirs)
+		{
+			std::error_code ec;
+			if (std::filesystem::exists(dmd, ec) && std::filesystem::is_directory(dmd, ec))
+			{
+				AsciiString docMaps(dmd.c_str());
+				loadMapsFromDisk(docMaps, FALSE);
+			}
+		}
+	}
+#endif
 
 	// Load standard maps from map cache last.
 	// This overwrites matching user maps to prevent munkees getting rowdy :)
@@ -1119,11 +1148,126 @@ Bool isOfficialMap( AsciiString mapName )
 
 const MapMetaData *MapCache::findMap(AsciiString mapName)
 {
-	mapName.toLower();
-	MapCache::iterator it = find(mapName);
-	if (it == end())
+	if (mapName.isEmpty())
 		return nullptr;
-	return &(it->second);
+
+	auto normalizePath = [](const std::string& input) -> std::string {
+		std::string s = input;
+		std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+		for (char &c : s) {
+			if (c == '\\') c = '/';
+		}
+		while (s.length() > 1 && s.back() == '/') s.pop_back();
+		return s;
+	};
+
+	auto extractBaseLeaf = [](const std::string& normalized) -> std::string {
+		size_t lastSlash = normalized.find_last_of('/');
+		std::string base = (lastSlash != std::string::npos) ? normalized.substr(lastSlash + 1) : normalized;
+		if (base.length() > 4 && base.substr(base.length() - 4) == ".map") {
+			base = base.substr(0, base.length() - 4);
+		}
+		return base;
+	};
+
+	std::string normQuery = normalizePath(mapName.str());
+	std::string baseQuery = extractBaseLeaf(normQuery);
+
+	// Direct lookup with exact key or normalized keys
+	MapCache::iterator it = find(mapName);
+	if (it != end()) return &(it->second);
+
+	it = find(AsciiString(normQuery.c_str()));
+	if (it != end()) return &(it->second);
+
+	std::string normBackslash = normQuery;
+	for (char &c : normBackslash) { if (c == '/') c = '\\'; }
+	it = find(AsciiString(normBackslash.c_str()));
+	if (it != end()) return &(it->second);
+
+	// Comprehensive iterate fallback matching
+	for (it = begin(); it != end(); ++it)
+	{
+		AsciiString asciiDisplay;
+		asciiDisplay.translate(it->second.m_displayName);
+		std::string normDisplay = normalizePath(asciiDisplay.str());
+		if (normDisplay == normQuery || (!baseQuery.empty() && normDisplay == baseQuery))
+			return &(it->second);
+
+		std::string normKey = normalizePath(it->first.str());
+		std::string baseKey = extractBaseLeaf(normKey);
+		if (normKey == normQuery ||
+			(!normQuery.empty() && normKey.length() >= normQuery.length() && normKey.rfind(normQuery) == (normKey.length() - normQuery.length())) ||
+			(!normKey.empty() && normQuery.length() >= normKey.length() && normQuery.rfind(normKey) == (normQuery.length() - normKey.length())))
+		{
+			return &(it->second);
+		}
+
+		std::string normFn = normalizePath(it->second.m_fileName.str());
+		std::string baseFn = extractBaseLeaf(normFn);
+		if (!normFn.empty() && (
+			normFn == normQuery ||
+			(!normQuery.empty() && normFn.length() >= normQuery.length() && normFn.rfind(normQuery) == (normFn.length() - normQuery.length())) ||
+			(!normFn.empty() && normQuery.length() >= normFn.length() && normQuery.rfind(normFn) == (normQuery.length() - normFn.length()))))
+		{
+			return &(it->second);
+		}
+
+		if (!baseQuery.empty() && (baseKey == baseQuery || baseFn == baseQuery))
+		{
+			return &(it->second);
+		}
+	}
+
+#if !defined(_WIN32)
+	// Fallback 2: Check standard custom map folders on POSIX if not in cache
+	const char* home = getenv("HOME");
+	if (home && !baseQuery.empty() && s_failedMapLookups.find(baseQuery) == s_failedMapLookups.end())
+	{
+		std::vector<std::string> searchDirs = {
+			std::string(home) + "/Library/Application Support/GeneralsX/GeneralsZH/Maps",
+			std::string(home) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
+			std::string(home) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps"
+		};
+
+		for (const auto& sdir : searchDirs)
+		{
+			std::error_code ec;
+			if (!std::filesystem::exists(sdir, ec)) continue;
+
+			for (const auto& entry : std::filesystem::recursive_directory_iterator(sdir, std::filesystem::directory_options::skip_permission_denied, ec))
+			{
+				if (ec) break;
+				if (entry.is_regular_file(ec) && entry.path().extension() == ".map")
+				{
+					std::string candidateStem = entry.path().stem().string();
+					std::string normCandidateStem = normalizePath(candidateStem);
+					if (normCandidateStem == baseQuery)
+					{
+						FileInfo fileInfo;
+						AsciiString fullPath(entry.path().string().c_str());
+						AsciiString fullPathLower = fullPath;
+						fullPathLower.toLower();
+						if (TheFileSystem->getFileInfo(fullPath, &fileInfo))
+						{
+							AsciiString mapDir(sdir.c_str());
+							addMap(mapDir, fullPath, fullPathLower, fileInfo, FALSE);
+							MapCache::iterator foundIt = find(fullPathLower);
+							if (foundIt != end()) return &(foundIt->second);
+							for (MapCache::iterator fit = begin(); fit != end(); ++fit) {
+								if (fit->second.m_fileName == fullPath) return &(fit->second);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		s_failedMapLookups.insert(baseQuery);
+	}
+#endif
+
+	return nullptr;
 }
 
 // ------------------------------------------------------------------------------------------------

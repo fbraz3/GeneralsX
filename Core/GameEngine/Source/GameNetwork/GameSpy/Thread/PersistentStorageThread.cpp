@@ -678,7 +678,7 @@ static void getPersistentDataCallback(int localid, int profileid, persisttype_t 
 		// check if we have discons we should update on the server
 		UserPreferences pref;
 		AsciiString userPrefFilename;
-		userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", MESSAGE_QUEUE->getLocalPlayerID());
+		userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", MESSAGE_QUEUE->getLocalPlayerID());
 		DEBUG_LOG(("using the file %s", userPrefFilename.str()));
 		pref.load(userPrefFilename);
 		Int addedInDesyncs2 = pref.getInt("0", 0);
@@ -758,7 +758,7 @@ static void setPersistentDataCallback(int localid, int profileid, persisttype_t 
 	{
 		UserPreferences pref;
 		AsciiString userPrefFilename;
-		userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", profileid);
+		userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", profileid);
 		DEBUG_LOG(("setPersistentDataCallback - writing stats to file %s", userPrefFilename.str()));
 		pref.load(userPrefFilename);
 		pref.clear();
@@ -910,7 +910,7 @@ void PSThreadClass::Thread_Function()
 					DEBUG_LOG(("Processing PSRequest::PSREQUEST_UPDATEPLAYERSTATS"));
 					UserPreferences pref;
 					AsciiString userPrefFilename;
-					userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", MESSAGE_QUEUE->getLocalPlayerID());
+					userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", MESSAGE_QUEUE->getLocalPlayerID());
 					DEBUG_LOG(("using the file %s", userPrefFilename.str()));
 					pref.load(userPrefFilename);
 					Int addedInDesyncs2 = pref.getInt("0", 0);

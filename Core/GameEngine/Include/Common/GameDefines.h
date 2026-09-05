@@ -17,7 +17,6 @@
 */
 
 #pragma once
-
 #include "WWLib/WWDefines.h"
 
 // Note: Retail compatibility must not be broken before this project officially does.

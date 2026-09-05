@@ -59,6 +59,13 @@ jobs:
 
       - name: Configure
         shell: pwsh
+        env:
+          NGMP_DEFAULT_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
+          NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
+          NGMP_WEB_PORTAL_URL: ${{ secrets.NGMP_WEB_PORTAL_URL }}
+          NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
           $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT
           cmake --preset win32-vcpkg `
@@ -82,9 +89,13 @@ jobs:
           New-Item -ItemType Directory -Force ci-artifacts | Out-Null
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} artifacts/
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.pdb }} artifacts/
-          Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll artifacts/
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} ci-artifacts/
-          Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll ci-artifacts/
+
+          Get-ChildItem -Path @("vcpkg_installed/x86-windows/bin/*.dll", "build/win32-vcpkg/vcpkg_installed/x86-windows/bin/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Collecting vcpkg DLL: $($_.FullName)"
+            Copy-Item $_.FullName artifacts/
+            Copy-Item $_.FullName ci-artifacts/
+          }
 
           foreach ($name in @("binkw32.dll", "mss32.dll")) {
             $stub = Get-ChildItem build/win32-vcpkg -Filter $name -Recurse |

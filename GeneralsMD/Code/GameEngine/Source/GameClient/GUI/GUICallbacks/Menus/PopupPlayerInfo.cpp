@@ -57,6 +57,15 @@
 #include "GameNetwork/GameSpy/BuddyThread.h"
 #include "GameNetwork/GameSpy/GSConfig.h"
 #include "GameNetwork/GameSpy/LobbyUtils.h"
+#include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#include "GameNetwork/GameSpy/PeerThread.h"
+#include "GameNetwork/RankPointValue.h"
+
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Auth.h"
+#include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#endif
 
 #include "WWDownload/Registry.h"
 
@@ -143,7 +152,7 @@ static Int getTotalDisconnectsFromFile(Int playerID)
 
 	UserPreferences pref;
 	AsciiString userPrefFilename;
-	userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", playerID);
+	userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", playerID);
 	DEBUG_LOG(("getTotalDisconnectsFromFile - reading stats from file %s", userPrefFilename.str()));
 	pref.load(userPrefFilename);
 
@@ -211,7 +220,7 @@ void GetAdditionalDisconnectsFromUserFile(PSPlayerStats *stats)
 
 	UserPreferences pref;
 	AsciiString userPrefFilename;
-	userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", stats->id);
+	userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", stats->id);
 	DEBUG_LOG(("GetAdditionalDisconnectsFromUserFile - reading stats from file %s", userPrefFilename.str()));
 	pref.load(userPrefFilename);
 
@@ -807,6 +816,11 @@ static GameWindow* findWindow(GameWindow *parent, AsciiString baseWindow, AsciiS
 	return res;
 }
 
+#if defined(SAGE_USE_NGMP)
+static bool g_waitingForPlayerStats = false;
+static int64_t g_waitingPlayerStatsID = 0;
+#endif
+
 void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 {
 	Int lookupID = TheGameSpyInfo->getLocalProfileID();
@@ -817,6 +831,24 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 			return;
 	}
 
+#if defined(SAGE_USE_NGMP)
+	PSPlayerStats stats;
+	// When using NGMP, we use the auth token ID for local user, but since the persona ID isn't easily accessible 
+	// from lookAtPlayerID in a non-hacked way yet, we'll try to just fetch "1" for the current session or lookupID.
+	// We'll use 1 for now if lookupID == localProfileID.
+	int64_t ngmpUserID = 1;
+	Bool weHaveStats = NGMP_OnlineServicesManager::getInstance().getCachedPlayerStats(ngmpUserID, stats);
+	if (!weHaveStats && !g_waitingForPlayerStats)
+	{
+		g_waitingForPlayerStats = true;
+		g_waitingPlayerStatsID = ngmpUserID;
+		NGMP_OnlineServicesManager::getInstance().requestPlayerStatsAsync(ngmpUserID);
+	}
+	else if (weHaveStats)
+	{
+		g_waitingForPlayerStats = false;
+	}
+#else
 	PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(lookupID);
 
 	Bool weHaveStats = (stats.id != 0);
@@ -828,13 +860,17 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 
 		weHaveStats = TRUE;
 	}
+#endif
 
 	Int currentRank = 0;
 	Int rankPoints = CalculateRank(stats);
 	Int i = 0;
-	while( rankPoints >= TheRankPointValues->m_ranks[i + 1])
-		++i;
-	currentRank = i;
+	if (TheRankPointValues)
+	{
+		while (i + 1 < MAX_RANKS && rankPoints >= TheRankPointValues->m_ranks[i + 1])
+			++i;
+		currentRank = i;
+	}
 
 	PerGeneralMap::iterator it;
 	Int numWins = 0;
@@ -1013,7 +1049,15 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 		}
 		else
 		{
-			GadgetProgressBarSetProgress(win, 100 * INT_TO_REAL(rankPoints - TheRankPointValues->m_ranks[currentRank])/( TheRankPointValues->m_ranks[currentRank + 1] - TheRankPointValues->m_ranks[currentRank]));
+			Int diff = TheRankPointValues->m_ranks[currentRank + 1] - TheRankPointValues->m_ranks[currentRank];
+			if (diff > 0)
+			{
+				GadgetProgressBarSetProgress(win, 100 * INT_TO_REAL(rankPoints - TheRankPointValues->m_ranks[currentRank]) / INT_TO_REAL(diff));
+			}
+			else
+			{
+				GadgetProgressBarSetProgress(win, 100);
+			}
 		}
 	}
 
@@ -1301,6 +1345,25 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 	PopulatePlayerInfoWindows("PopupPlayerInfo.wnd");
 
 	// we're on the myinfo screen
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	int64_t myUserID = (pAuthInterface != nullptr) ? pAuthInterface->GetUserID() : 0;
+	if(lookAtPlayerID == myUserID || lookAtPlayerID == 1)
+	{
+		buttonSetLocale->winHide(TRUE);
+		buttonDeleteAccount->winHide(FALSE);
+		buttonDeleteAccount->winSetText(UnicodeString(L"LOGOUT"));
+		checkBoxAsianFont->winHide(TRUE);
+		checkBoxNonAsianFont->winHide(TRUE);
+	}
+	else
+	{
+		buttonSetLocale->winHide(TRUE);
+		buttonDeleteAccount->winHide(TRUE);
+		checkBoxAsianFont->winHide(TRUE);
+		checkBoxNonAsianFont->winHide(TRUE);
+	}
+#else
 	if(lookAtPlayerID == TheGameSpyInfo->getLocalProfileID())
 	{
 		//buttonbuttonOptions->winHide(FALSE);
@@ -1317,6 +1380,7 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 		checkBoxAsianFont->winHide(TRUE);
 		checkBoxNonAsianFont->winHide(TRUE);
 	}
+#endif
 
 	// set the asian check boxes
 	CustomMatchPreferences pref;
@@ -1359,6 +1423,19 @@ void GameSpyPlayerInfoOverlayShutdown( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 void GameSpyPlayerInfoOverlayUpdate( WindowLayout * layout, void *userData)
 {
+#if defined(SAGE_USE_NGMP)
+	if (g_waitingForPlayerStats)
+	{
+		PSPlayerStats dummy;
+		if (NGMP_OnlineServicesManager::getInstance().getCachedPlayerStats(g_waitingPlayerStatsID, dummy))
+		{
+			// Stats arrived! Re-populate
+			g_waitingForPlayerStats = false;
+			PopulatePlayerInfoWindows("PopupPlayerInfo.wnd");
+		}
+	}
+#endif
+
 	if (raiseMessageBox)
 		RaiseGSMessageBox();
 	raiseMessageBox = false;
@@ -1476,7 +1553,11 @@ WindowMsgHandledType GameSpyPlayerInfoOverlaySystem( GameWindow *window, Unsigne
 				{
 					RefreshGameListBoxes();
 					GameSpyCloseOverlay( GSOVERLAY_PLAYERINFO );
+#if defined(SAGE_USE_NGMP)
+					MessageBoxYesNo(UnicodeString(L"Log Out"), UnicodeString(L"Are you sure you want to log out?"), messageBoxYes, nullptr);
+#else
 					MessageBoxYesNo(TheGameText->fetch("GUI:DeleteAccount"), TheGameText->fetch("GUI:AreYouSureDeleteAccount"),messageBoxYes, nullptr);
+#endif
 				}
 				else if (controlID == checkBoxAsianFontID)
 				{
@@ -1529,9 +1610,18 @@ WindowMsgHandledType GameSpyPlayerInfoOverlaySystem( GameWindow *window, Unsigne
 
 static void messageBoxYes()
 {
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	if (pAuthInterface != nullptr)
+	{
+		pAuthInterface->LogoutOfMyAccount();
+	}
+	RefreshGameListBoxes();
+	GameSpyCloseOverlay(GSOVERLAY_PLAYERINFO);
+#else
 	BuddyRequest breq;
 	breq.buddyRequestType = BuddyRequest::BUDDYREQUEST_DELETEACCT;
 	TheGameSpyBuddyMessageQueue->addRequest( breq );
 	TheGameSpyInfo->setLocalProfileID(0);
-
+#endif
 }

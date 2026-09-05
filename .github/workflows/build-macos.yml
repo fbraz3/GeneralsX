@@ -97,6 +97,9 @@ jobs:
           
           # Freetype + Fontconfig (required by font rendering)
           brew install freetype fontconfig
+
+          # Protobuf, Abseil & OpenSSL (required by GameNetworkingSockets / NGMP P2P transport)
+          brew install protobuf abseil openssl@3
           
           # NOTE: GLM is intentionally NOT installed via Homebrew.
           # It is fetched via CMake FetchContent in cmake/glm.cmake (tag 1.0.3).
@@ -340,6 +343,12 @@ jobs:
           CXX: clang++
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          NGMP_DEFAULT_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
+          NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
+          NGMP_WEB_PORTAL_URL: ${{ secrets.NGMP_WEB_PORTAL_URL }}
+          NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
           mkdir -p logs
           echo "VULKAN_SDK=$VULKAN_SDK"

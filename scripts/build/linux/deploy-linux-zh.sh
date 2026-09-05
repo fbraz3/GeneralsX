@@ -96,6 +96,12 @@ if [[ -f "${GAMESPY_LIB}" ]]; then
     cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 fi
 
+# Copy GameNetworkingSockets library (for NGMP P2P multiplayer)
+if compgen -G "${BUILD_DIR}/bin/libGameNetworkingSockets.so*" > /dev/null || compgen -G "${BUILD_DIR}/lib/libGameNetworkingSockets.so*" > /dev/null; then
+    echo "  Copying GameNetworkingSockets library..."
+    cp -v "${BUILD_DIR}"/bin/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || cp -v "${BUILD_DIR}"/lib/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || true
+fi
+
 copy_ldd_deps() {
     local root="$1"
     [[ -e "${root}" ]] || return 0
@@ -172,6 +178,12 @@ EXTRAS_WND_SRC="${PROJECT_ROOT}/GeneralsZH/Data/Window/Menus/ExtrasMenu.wnd"
 if [[ -f "${EXTRAS_WND_SRC}" ]]; then
     mkdir -p "${RUNTIME_DIR}/Window/Menus"
     cp -v "${EXTRAS_WND_SRC}" "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd"
+fi
+
+echo "  Deploying fonts..."
+mkdir -p "${RUNTIME_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/" 2>/dev/null || true
 fi
 
 # Copy run wrapper script

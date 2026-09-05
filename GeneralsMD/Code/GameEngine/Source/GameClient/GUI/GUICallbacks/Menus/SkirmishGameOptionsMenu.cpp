@@ -675,10 +675,8 @@ void positionAdditionalImages( MapMetaData *mmd, GameWindow *mapWindow, Bool for
 
 void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPositions[], GameWindow *mapWindow)
 {
-	AsciiString lowerMap = mapName;
-	lowerMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	if (it == TheMapCache->end())
+	const MapMetaData *pMmd = TheMapCache ? TheMapCache->findMap(mapName) : nullptr;
+	if (pMmd == nullptr)
 	{
 		mapWindow->winSetUserData(nullptr);
 
@@ -706,11 +704,15 @@ void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPosition
 	}
 	else
 	{
-		MapMetaData mmd = it->second;
+		MapMetaData mmd = *pMmd;
+		AsciiString targetMapFile = mmd.m_fileName.isEmpty() ? mapName : mmd.m_fileName;
 
-		Image *image = getMapPreviewImage(mapName);
+		Image *image = getMapPreviewImage(targetMapFile);
+		if (!image) {
+			image = getMapPreviewImage(mapName);
+		}
 		if (mapWindow != nullptr) {
-			mapWindow->winSetUserData((void *)TheMapCache->findMap(mapName));
+			mapWindow->winSetUserData((void *)pMmd);
 			if(image)
 			{
 				mapWindow->winSetStatus(WIN_STATUS_IMAGE);
@@ -787,10 +789,8 @@ void positionStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[]
 
 void updateMapStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[], Bool onLoadScreen )
 {
-	AsciiString lowerMap = myGame->getMap();
-	lowerMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	if (it == TheMapCache->end())
+	const MapMetaData *pMmd = TheMapCache ? TheMapCache->findMap(myGame->getMap()) : nullptr;
+	if (pMmd == nullptr)
 	{
 		for (Int i = 0; i < MAX_SLOTS; ++i)
     {
@@ -801,7 +801,7 @@ void updateMapStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[
     }
 		return;
 	}
-	MapMetaData mmd = it->second;
+	MapMetaData mmd = *pMmd;
 
 	Int i = 0;
 	for(; i < MAX_SLOTS; ++i)
