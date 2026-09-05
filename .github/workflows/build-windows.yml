@@ -52,10 +52,12 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Checkout GameClient submodule for ValveNetworkingSockets
+      - name: Checkout ValveNetworkingSockets from GameClient
         shell: pwsh
         run: |
-          git submodule update --init --depth 1 references/GameClient
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/GeneralsOnlineDevelopmentTeam/GameClient.git references/GameClient
+          cd references/GameClient
+          git sparse-checkout set GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets GeneralsMD/Code/GameEngine/Include/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets
 
       - name: Configure MSVC x86
         uses: ilammy/msvc-dev-cmd@v1
