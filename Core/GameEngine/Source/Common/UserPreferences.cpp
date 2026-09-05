@@ -57,7 +57,7 @@
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #define HAVE_NGMP_PREFS 1
 #endif
-#ifndef _WIN32
+#if !defined(_MSC_VER) || (_MSC_VER >= 1914)
 #include <filesystem>
 #endif
 
