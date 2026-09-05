@@ -75,6 +75,7 @@ struct NGMPLobby {
     int maxPlayers = 8;
     int currentPlayers = 0;
     bool hasPassword = false;
+    int anticheatID = -1;
 };
 
 struct NGMPLobbyPlayer {
@@ -164,6 +165,7 @@ public:
     void loginWithRefreshToken(const std::string& refreshToken);
 
     void logout();
+    bool ensureWebSocketConnected();
 
     // Async lobby fetch — result delivered via EVENT_LOBBY_LIST_UPDATED
     void requestLobbyListAsync();

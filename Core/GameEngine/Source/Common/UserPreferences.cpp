@@ -183,7 +183,7 @@ Bool UserPreferences::write()
 	if (m_filename.isEmpty())
 		return false;
 
-#ifndef _WIN32
+#if !defined(_MSC_VER) || (_MSC_VER >= 1914)
 	// GeneralsX @feature fbraz3 03/09/2026 Ensure parent directory exists before writing preferences
 	std::filesystem::path filePath(m_filename.str());
 	std::filesystem::path parentDir = filePath.parent_path();

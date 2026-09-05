@@ -1748,6 +1748,7 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 			TheNGMPGame->UpdateSlotsFromCurrentLobby();
 		}
 	}
+	NGMP_OnlineServicesManager::getInstance().ensureWebSocketConnected();
 	NGMP_OnlineServicesManager::getInstance().requestLobbyDetailsAsync();
 #endif
 

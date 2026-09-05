@@ -242,7 +242,8 @@ fi
 # every loose INI / asset and only sees what is bundled inside the BIG files.
 cd "\${SCRIPT_DIR}"
 
-"./GeneralsXZH" "\$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+LOG_FILE="\${SCRIPT_DIR}/game.log"
+"./GeneralsXZH" "\$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion" | tee "\${LOG_FILE}"
 exit \${PIPESTATUS[0]}
 WRAPPER
 chmod +x "${RUNTIME_DIR}/run.sh"

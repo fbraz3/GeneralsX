@@ -59,16 +59,7 @@ void NGMP_OnlineServicesManager::update() {
                     TheGameSpyInfo->setLocalName(AsciiString(m_username.c_str()));
                     TheGameSpyInfo->setLocalProfileID(static_cast<Int>(m_userId));
                 }
-                if (!m_chatSession) {
-                    m_chatSession.reset(new NGMP::NGMPWebSocket());
-                    m_chatSession->setMessageCallback([this](const std::string& rawJson) {
-                        NGMPEvent ev;
-                        ev.type = NGMPEvent::EVENT_WEBSOCKET_MESSAGE;
-                        ev.payload = rawJson;
-                        postEvent(ev);
-                    });
-                }
-                m_chatSession->connect(m_wsUri, m_authToken);
+                ensureWebSocketConnected();
                 break;
             case NGMPEvent::EVENT_AUTH_FAILURE:
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Failure: %s\n", ev.payload.c_str());
@@ -468,6 +459,12 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
                         } else if (item.contains("has_password") && item["has_password"].is_boolean()) {
                             lobby.hasPassword = item["has_password"].get<bool>();
                         }
+
+                        if (item.contains("AnticheatID") && item["AnticheatID"].is_number()) {
+                            lobby.anticheatID = item["AnticheatID"].get<int>();
+                        } else if (item.contains("anticheat_id") && item["anticheat_id"].is_number()) {
+                            lobby.anticheatID = item["anticheat_id"].get<int>();
+                        }
                         lobbies.push_back(lobby);
                     }
                 }
@@ -590,9 +587,20 @@ void NGMP_OnlineServicesManager::joinLobbyAsync(int64_t lobbyId, const std::stri
         std::string url = NGMP::GetAPIEndpoint(("Lobby/" + std::to_string(lobbyId)).c_str());
         NGMP::Internal::CurlResponse response;
 
+        int targetAnticheatId = -1;
+        {
+            std::lock_guard<std::mutex> lock(m_eventMutex);
+            for (const auto& l : m_lobbies) {
+                if (l.id == lobbyId) {
+                    targetAnticheatId = l.anticheatID;
+                    break;
+                }
+            }
+        }
+
         json payload = {
             {"preferred_port", 0},
-            {"anticheat_id", 0},
+            {"anticheat_id", targetAnticheatId},
             {"has_map", true}
         };
         if (!password.empty()) {
@@ -1170,7 +1178,7 @@ void NGMP_OnlineServicesManager::startMatchmakingAsync(uint16_t playlistID, cons
         payload["maps"] = selectedMapIndexes;
         payload["exe_crc"] = TheGlobalData ? TheGlobalData->m_exeCRC : 0;
         payload["ini_crc"] = TheGlobalData ? TheGlobalData->m_iniCRC : 0;
-        payload["anticheat_id"] = 0;
+        payload["anticheat_id"] = -1;
 
         std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
         std::string url = NGMP::GetAPIEndpoint("matchmaking");
@@ -1309,20 +1317,45 @@ bool NGMP_OnlineServicesManager::sendChatMessage(const std::string& room, const 
     return false;
 }
 
+bool NGMP_OnlineServicesManager::ensureWebSocketConnected() {
+    if (!m_isLoggedIn || m_wsUri.empty() || m_authToken.empty()) {
+        return false;
+    }
+    if (m_chatSession && m_chatSession->isConnected()) {
+        return true;
+    }
+    if (!m_chatSession) {
+        m_chatSession.reset(new NGMP::NGMPWebSocket());
+        m_chatSession->setMessageCallback([this](const std::string& rawJson) {
+            NGMPEvent ev;
+            ev.type = NGMPEvent::EVENT_WEBSOCKET_MESSAGE;
+            ev.payload = rawJson;
+            postEvent(ev);
+        });
+    }
+    fprintf(stderr, "[NGMP] Connecting WebSocket session to %s...\n", m_wsUri.c_str());
+    fflush(stderr);
+    return m_chatSession->connect(m_wsUri, m_authToken);
+}
+
 bool NGMP_OnlineServicesManager::sendRawWebSocketPayload(const std::string& rawPayload) {
     if (!m_isLoggedIn) {
         fprintf(stderr, "[NGMP] sendRawWebSocketPayload ignored: not logged in\n");
         fflush(stderr);
         return false;
     }
-    if (m_chatSession && m_chatSession->isConnected()) {
-        fprintf(stderr, "[NGMP] sendRawWebSocketPayload: sending '%s'\n", rawPayload.c_str());
+    if (!m_chatSession || !m_chatSession->isConnected()) {
+        fprintf(stderr, "[NGMP-WebSocket] WS disconnected, attempting reconnect before sending payload...\n");
         fflush(stderr);
-        return m_chatSession->sendPayload(rawPayload);
+        if (!ensureWebSocketConnected()) {
+            fprintf(stderr, "[NGMP-WebSocket] Cannot send payload, WS reconnect failed\n");
+            fflush(stderr);
+            return false;
+        }
     }
-    fprintf(stderr, "[NGMP] sendRawWebSocketPayload called but no active chat session\n");
+    fprintf(stderr, "[NGMP] sendRawWebSocketPayload: sending '%s'\n", rawPayload.c_str());
     fflush(stderr);
-    return false;
+    return m_chatSession->sendPayload(rawPayload);
 }
 
 void NGMP_OnlineServicesManager::changeNetworkRoom(int16_t roomID) {
@@ -1330,6 +1363,9 @@ void NGMP_OnlineServicesManager::changeNetworkRoom(int16_t roomID) {
         fprintf(stderr, "[NGMP] changeNetworkRoom(%d) ignored: not logged in\n", roomID);
         fflush(stderr);
         return;
+    }
+    if (!m_chatSession || !m_chatSession->isConnected()) {
+        ensureWebSocketConnected();
     }
     if (m_chatSession && m_chatSession->isConnected()) {
         fprintf(stderr, "[NGMP] changeNetworkRoom(%d): sending msg_id=3 (room=%d)\n", roomID, roomID);

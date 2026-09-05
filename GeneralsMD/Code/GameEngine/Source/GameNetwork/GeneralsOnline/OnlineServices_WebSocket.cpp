@@ -2,6 +2,7 @@
 // Persistent WS connection using libcurl WebSocket (>= 7.86.0) for bidirectional chat.
 
 #include "GameNetwork/GeneralsOnline/NGMPWebSocket.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include <cstdio>
 #include <cstring>
 #include "GameNetwork/GeneralsOnline/NGMP_json.h"
@@ -19,6 +20,9 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
         return true; // Already connected
     }
 
+    // Ensure any previous session or thread is cleanly stopped before reconnecting
+    disconnect();
+
     m_curl = curl_easy_init();
     if (!m_curl) {
         fprintf(stderr, "[NGMP-Chat] Failed to initialize libcurl for WebSocket\n");
@@ -32,15 +36,20 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
         headers = curl_slist_append(headers, authHeader.c_str());
     }
 
+    bool isDev = NGMP::IsDevelopment();
     curl_easy_setopt(m_curl, CURLOPT_URL, wsUrl.c_str());
     curl_easy_setopt(m_curl, CURLOPT_CONNECT_ONLY, 2L); // WebSocket mode
     curl_easy_setopt(m_curl, CURLOPT_CONNECTTIMEOUT, 5L);
-    curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, isDev ? 0L : 1L);
+    // GeneralsX @bugfix fbraz3 05/09/2026 Enable SNI via CURLOPT_SSL_VERIFYHOST=2 to prevent handshake rejection on Cloudflare edge (macOS SecureTransport)
+    curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 2L);
     curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
     if (headers) {
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
     }
+
+    fprintf(stderr, "[NGMP-Chat] Connecting to WebSocket: %s (dev=%d)...\n", wsUrl.c_str(), isDev);
+    fflush(stderr);
 
     CURLcode res = curl_easy_perform(m_curl);
     if (headers) {
@@ -48,7 +57,10 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
     }
 
     if (res != CURLE_OK) {
-        fprintf(stderr, "[NGMP-Chat] WebSocket connect failed: %s\n", curl_easy_strerror(res));
+        long httpCode = 0;
+        curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        fprintf(stderr, "[NGMP-Chat] WebSocket connect failed: %s (curl code %d, HTTP %ld)\n",
+                curl_easy_strerror(res), res, httpCode);
         fflush(stderr);
         curl_easy_cleanup(m_curl);
         m_curl = nullptr;
