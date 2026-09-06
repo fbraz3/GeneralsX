@@ -152,6 +152,7 @@ public:
     bool init();
     std::vector<NGMPEvent> pollEvents(); // Main thread UI tick dispatch
     void update(); // Main thread internal state tick
+    void Tick() { update(); }
 
     void shutdown();
 

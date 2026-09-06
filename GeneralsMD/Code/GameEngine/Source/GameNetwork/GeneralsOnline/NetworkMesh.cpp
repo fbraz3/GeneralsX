@@ -44,6 +44,8 @@ public:
 		{
 			std::vector<uint8_t> vecPayload(cbMsg);
 			std::memcpy(vecPayload.data(), pMsg, cbMsg);
+			fprintf(stderr, "[STEAM NETWORKING] SendSignal to user %lld (size=%d)\n", (long long)m_targetUserID, cbMsg);
+			fflush(stderr);
 			m_pOwner->Send(m_targetUserID, vecPayload);
 			return true;
 		}
@@ -201,6 +203,12 @@ static void CleanupPendingConnSignalingDeletions()
 	{
 		delete static_cast<CSignalingClient::ConnectionSignaling*>(pObj);
 	}
+}
+
+static void SteamNetworkingSocketsDebugOutput(ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
+{
+	fprintf(stderr, "[STEAM SOCKETS][%d] %s\n", (int)eType, pszMsg);
+	fflush(stderr);
 }
 
 // GeneralsX @bugfix fbraz3 31/08/2026 Full SteamNetworkingSockets connection lifecycle and signalling retries
@@ -450,6 +458,9 @@ NetworkMesh::NetworkMesh()
 	// GeneralsX @feature fbraz3 05/09/2026 Configure STUN servers and enable full ICE transport
 	if (SteamNetworkingUtils())
 	{
+		SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, SteamNetworkingSocketsDebugOutput);
+		SteamNetworkingUtils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_LogLevel_P2PRendezvous, k_ESteamNetworkingSocketsDebugOutputType_Debug);
+
 		const char* stunList = "stun:stun.cloudflare.com:3478,stun:stun.cloudflare.com:53,stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302";
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, stunList);
 		SteamNetworkingUtils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_P2P_Transport_ICE_Enable, k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_All);

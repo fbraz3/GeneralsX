@@ -54,6 +54,13 @@ void NextGenTransport::reset(void)
 
 Bool NextGenTransport::update(void)
 {
+	NetworkMesh* pMesh = NGMP_OnlineServicesManager::GetNetworkMesh();
+	if (pMesh)
+	{
+		// GeneralsX @bugfix fbraz3 06/09/2026 Tick NetworkMesh on every transport update to advance ICE/signaling
+		pMesh->Tick();
+	}
+
 	Bool retval = TRUE;
 	if (doRecv() == FALSE)
 	{
