@@ -253,7 +253,7 @@ jobs:
             $output += $stdoutOutput
             $output | ForEach-Object { Write-Host $_ }
             if ($exitCode -ne 0 -and $output.Count -eq 0) {
-              $hexCode = "0x" + ([uint32]$exitCode).ToString("X8")
+              $hexCode = "0x" + ([int64]$exitCode -band 0xFFFFFFFF).ToString("X8")
               Write-Host "Process exited with code $exitCode ($hexCode) and produced no output"
             }
 

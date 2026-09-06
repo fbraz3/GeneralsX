@@ -110,20 +110,29 @@ jobs:
             Copy-Item $_.FullName ci-artifacts/
           }
 
-          # The prebuilt GNS x86 libraries (abseil_dll.dll, libcrypto-3.dll, libssl-3.dll) require the MSVC Debug CRT (msvcp140d.dll, vcruntime140d.dll, ucrtbased.dll).
-          Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC" -Recurse -Filter "*140*d.dll" -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -match "debug_nonredist\\x86" } | ForEach-Object {
-              Write-Host "Collecting Debug CRT DLL: $($_.FullName)"
-              Copy-Item $_.FullName artifacts/
-              Copy-Item $_.FullName ci-artifacts/
-            }
+          # The prebuilt GNS x86 libraries require the desktop MSVC Debug CRT (msvcp140d.dll, vcruntime140d.dll, ucrtbased.dll).
+          # Specifically avoid OneCore variants which cause STATUS_HEAP_CORRUPTION (0xC0000374) in desktop Win32 apps.
+          $vcDebugDir = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC" -Directory -Recurse |
+            Where-Object { $_.FullName -match "Microsoft\.VC143\.DebugCRT$" -and $_.FullName -notmatch "onecore" } |
+            Select-Object -First 1
 
-          Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10" -Recurse -Filter "ucrtbased.dll" -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -match "\\x86\\" } | Select-Object -First 1 | ForEach-Object {
-              Write-Host "Collecting Debug UCRT DLL: $($_.FullName)"
+          if ($vcDebugDir) {
+            Get-ChildItem -Path (Join-Path $vcDebugDir.FullName "*.dll") | ForEach-Object {
+              Write-Host "Collecting Desktop Debug CRT DLL: $($_.FullName)"
               Copy-Item $_.FullName artifacts/
               Copy-Item $_.FullName ci-artifacts/
             }
+          }
+
+          $ucrt = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10" -Recurse -Filter "ucrtbased.dll" -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match "\\x86\\" -and $_.FullName -notmatch "onecore" } |
+            Sort-Object FullName -Descending | Select-Object -First 1
+
+          if ($ucrt) {
+            Write-Host "Collecting Desktop Debug UCRT DLL: $($ucrt.FullName)"
+            Copy-Item $ucrt.FullName artifacts/
+            Copy-Item $ucrt.FullName ci-artifacts/
+          }
 
           foreach ($name in @("binkw32.dll", "mss32.dll")) {
             $stub = Get-ChildItem build/win32-vcpkg -Filter $name -Recurse |

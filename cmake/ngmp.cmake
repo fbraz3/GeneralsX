@@ -162,7 +162,10 @@ if(SAGE_USE_NGMP)
                 "${_VNS_DIR}/libssl.lib"
                 "${_VNS_DIR}/steamwebrtc.lib"
                 "${_VNS_DIR}/webrtc-lite.lib"
-                ws2_32 crypt32 bcrypt iphlpapi
+                ws2_32 crypt32 bcrypt iphlpapi delayimp
+            )
+            target_link_options(core_config INTERFACE
+                "/DELAYLOAD:GameNetworkingSockets.dll"
             )
             target_compile_definitions(core_config INTERFACE SAGE_USE_GAMENETWORKINGSOCKETS=1)
             set(SAGE_VALVE_NETWORKING_SOCKETS_DIR "${_VNS_DIR}" CACHE PATH "Path to prebuilt ValveNetworkingSockets DLLs" FORCE)
