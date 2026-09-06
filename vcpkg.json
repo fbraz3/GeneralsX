@@ -22,6 +22,11 @@
         "name": "curl",
         "features": ["ssl", "websockets"]
       },
+      {
+        "name": "gamenetworkingsockets",
+        "features": ["ice"],
+        "platform": "windows"
+      },
       "stb"
     ]
   }

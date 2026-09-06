@@ -104,10 +104,13 @@ jobs:
             Copy-Item $_.FullName ci-artifacts/
           }
 
-          Get-ChildItem -Path @("references/GameClient/GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets/*.dll", "GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
-            Write-Host "Collecting GNS DLL: $($_.FullName)"
-            Copy-Item $_.FullName artifacts/
-            Copy-Item $_.FullName ci-artifacts/
+          # Only collect legacy prebuilt GNS DLLs if vcpkg did not provide GameNetworkingSockets.dll
+          if (-not (Test-Path "artifacts/GameNetworkingSockets.dll")) {
+            Get-ChildItem -Path @("references/GameClient/GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets/*.dll", "GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/Vendor/ValveNetworkingSockets/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host "Collecting GNS DLL: $($_.FullName)"
+              Copy-Item $_.FullName artifacts/
+              Copy-Item $_.FullName ci-artifacts/
+            }
           }
 
           # The prebuilt GNS x86 libraries require the desktop MSVC Debug CRT (msvcp140d.dll, vcruntime140d.dll, ucrtbased.dll).

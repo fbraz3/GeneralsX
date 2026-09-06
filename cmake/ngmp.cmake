@@ -13,7 +13,10 @@ if(SAGE_USE_NGMP)
     endif()
 
     find_package(CURL REQUIRED)
-    find_package(GameNetworkingSockets QUIET)
+    find_package(GameNetworkingSockets CONFIG QUIET)
+    if(NOT GameNetworkingSockets_FOUND)
+        find_package(GameNetworkingSockets QUIET)
+    endif()
 
     set(_PROTOBUF_BREW_PREFIX "")
     set(_ABSEIL_BREW_PREFIX "")
