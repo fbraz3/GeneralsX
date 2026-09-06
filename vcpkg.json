@@ -24,7 +24,6 @@
       },
       {
         "name": "gamenetworkingsockets",
-        "features": ["ice"],
         "platform": "windows"
       },
       "stb"
