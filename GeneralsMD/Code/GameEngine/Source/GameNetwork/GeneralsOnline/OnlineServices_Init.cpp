@@ -67,7 +67,7 @@ bool NGMP_OnlineServicesManager::init() {
     }
 
     fprintf(stderr, "[NGMP] Initializing NGMP Online Services (server: %s)\n",
-            NGMP::GetServerRESTEndpoint().c_str());
+            NGMP::SanitizeURL(NGMP::GetServerRESTEndpoint()).c_str());
     fflush(stderr);
 
     // Initialize sub-interfaces

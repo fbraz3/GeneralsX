@@ -43,12 +43,12 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
     curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, isDev ? 0L : 1L);
     // GeneralsX @bugfix fbraz3 05/09/2026 Enable SNI via CURLOPT_SSL_VERIFYHOST=2 to prevent handshake rejection on Cloudflare edge (macOS SecureTransport)
     curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 2L);
-    curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(m_curl, CURLOPT_VERBOSE, isDev ? 1L : 0L);
     if (headers) {
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
     }
 
-    fprintf(stderr, "[NGMP-Chat] Connecting to WebSocket: %s (dev=%d)...\n", wsUrl.c_str(), isDev);
+    fprintf(stderr, "[NGMP-Chat] Connecting to WebSocket: %s (dev=%d)...\n", NGMP::SanitizeURL(wsUrl).c_str(), isDev);
     fflush(stderr);
 
     CURLcode res = curl_easy_perform(m_curl);
@@ -67,7 +67,7 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
         return false;
     }
 
-    fprintf(stderr, "[NGMP-Chat] WebSocket connected to %s\n", wsUrl.c_str());
+    fprintf(stderr, "[NGMP-Chat] WebSocket connected to %s\n", NGMP::SanitizeURL(wsUrl).c_str());
     fflush(stderr);
 
     m_running = true;

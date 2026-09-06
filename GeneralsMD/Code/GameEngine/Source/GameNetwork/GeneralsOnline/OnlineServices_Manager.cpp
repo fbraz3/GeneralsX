@@ -402,10 +402,12 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, NGMP::IsDevelopment() ? 1L : 0L);
 
-        fprintf(stderr, "[NGMP-DEBUG] requestLobbyListAsync sending Token: %s\n", m_authToken.c_str());
-        fflush(stderr);
+        if (NGMP::IsDevelopment()) {
+            fprintf(stderr, "[NGMP-DEBUG] requestLobbyListAsync sending Token: %s\n", m_authToken.c_str());
+            fflush(stderr);
+        }
 
         CURLcode res = curl_easy_perform(curl);
         long httpCode = 0;
@@ -415,8 +417,10 @@ void NGMP_OnlineServicesManager::requestLobbyListAsync() {
 
         if (res == CURLE_OK && httpCode == 200) {
             try {
-                fprintf(stderr, "[NGMP-DEBUG] Lobbies JSON: %s\n", response.text.c_str());
-                fflush(stderr);
+                if (NGMP::IsDevelopment()) {
+                    fprintf(stderr, "[NGMP-DEBUG] Lobbies JSON: %s\n", response.text.c_str());
+                    fflush(stderr);
+                }
                 auto jsonList = json::parse(response.text);
                 std::vector<NGMPLobby> lobbies;
                 // GeneralsX @bugfix fbraz3 15/08/2026 Parse PascalCase and camelCase lobby fields from server

@@ -24,7 +24,7 @@ enum class ELoginPollResult : int {
 
 static std::string RequestLoginCodeFromServer() {
     std::string url = NGMP::GetAPIEndpoint("LoginCode");
-    fprintf(stderr, "[NGMP] Requesting official LoginCode from %s...\n", url.c_str());
+    fprintf(stderr, "[NGMP] Requesting official LoginCode from %s...\n", NGMP::SanitizeURL(url).c_str());
     fflush(stderr);
 
     CURL* curl = curl_easy_init();
@@ -98,8 +98,8 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
         m_gamecode = serverCode;
         std::string loginURL = NGMP::GetBrowserLoginURL(m_gamecode);
 
-        fprintf(stderr, "[NGMP] Production mode: using server gamecode=%s url=%s\n",
-                m_gamecode.c_str(), loginURL.c_str());
+        fprintf(stderr, "[NGMP] Authentication started in browser: gamecode=%s url=%s\n",
+                m_gamecode.c_str(), NGMP::SanitizeURL(loginURL).c_str());
         fflush(stderr);
 
         // Open the browser so the user can authenticate
@@ -176,7 +176,11 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                 continue;
             }
 
-            fprintf(stderr, "[NGMP] CheckLogin response (%ld): %s\n", httpCode, response.text.c_str());
+            if (NGMP::IsDevelopment()) {
+                fprintf(stderr, "[NGMP] CheckLogin response (%ld): %s\n", httpCode, response.text.c_str());
+            } else {
+                fprintf(stderr, "[NGMP] CheckLogin response (%ld)\n", httpCode);
+            }
             fflush(stderr);
 
             try {

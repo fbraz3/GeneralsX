@@ -169,6 +169,23 @@ std::string GetServerEnv() {
     return IsDevelopment() ? "dev" : "live";
 }
 
+std::string SanitizeURL(const std::string& url) {
+    if (IsDevelopment()) {
+        return url;
+    }
+    size_t schemePos = url.find("://");
+    if (schemePos != std::string::npos) {
+        size_t hostStart = schemePos + 3;
+        size_t hostEnd = url.find('/', hostStart);
+        if (hostEnd != std::string::npos) {
+            return url.substr(0, hostStart) + "****" + url.substr(hostEnd);
+        } else {
+            return url.substr(0, hostStart) + "****";
+        }
+    }
+    return "****";
+}
+
 std::string GetServerWSEndpoint() {
     std::string port = NGMP_DEFAULT_PORT;
     if (IsSSLEnabled()) {
@@ -234,7 +251,7 @@ void FetchMOTD() {
     }
 
     std::string url = GetMOTDURL();
-    fprintf(stderr, "[NGMP] Fetching MOTD from %s...\n", url.c_str());
+    fprintf(stderr, "[NGMP] Fetching MOTD from %s...\n", SanitizeURL(url).c_str());
     fflush(stderr);
 
     CURL* curl = curl_easy_init();

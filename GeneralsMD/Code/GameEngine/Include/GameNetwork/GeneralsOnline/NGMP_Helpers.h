@@ -59,6 +59,9 @@ bool IsDevelopment();
 // Returns server environment name ("dev" or "live") based on IsDevelopment()
 std::string GetServerEnv();
 
+// Returns sanitized URL with hostname masked by '****' in production environments
+std::string SanitizeURL(const std::string& url);
+
 // Returns web portal URL for OAuth login and web features (or defaults to GetServerRESTEndpoint())
 std::string GetWebPortalURL();
 
