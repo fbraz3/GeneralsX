@@ -111,14 +111,26 @@ jobs:
           }
 
           # The prebuilt GNS x86 libraries require the desktop MSVC Debug CRT (msvcp140d.dll, vcruntime140d.dll, ucrtbased.dll).
-          # Specifically avoid OneCore variants which cause STATUS_HEAP_CORRUPTION (0xC0000374) in desktop Win32 apps.
+          # Specifically filter for x86 and avoid OneCore or arm64 variants which cause STATUS_HEAP_CORRUPTION (0xC0000374).
           $vcDebugDir = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC" -Directory -Recurse |
-            Where-Object { $_.FullName -match "Microsoft\.VC143\.DebugCRT$" -and $_.FullName -notmatch "onecore" } |
+            Where-Object { $_.FullName -match "\\x86\\" -and $_.FullName -match "Microsoft\.VC143\.DebugCRT$" -and $_.FullName -notmatch "onecore" } |
             Select-Object -First 1
 
           if ($vcDebugDir) {
             Get-ChildItem -Path (Join-Path $vcDebugDir.FullName "*.dll") | ForEach-Object {
               Write-Host "Collecting Desktop Debug CRT DLL: $($_.FullName)"
+              Copy-Item $_.FullName artifacts/
+              Copy-Item $_.FullName ci-artifacts/
+            }
+          }
+
+          $vcReleaseDir = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC" -Directory -Recurse |
+            Where-Object { $_.FullName -match "\\x86\\" -and $_.FullName -match "Microsoft\.VC143\.CRT$" -and $_.FullName -notmatch "onecore" } |
+            Select-Object -First 1
+
+          if ($vcReleaseDir) {
+            Get-ChildItem -Path (Join-Path $vcReleaseDir.FullName "*.dll") | ForEach-Object {
+              Write-Host "Collecting Desktop Release CRT DLL: $($_.FullName)"
               Copy-Item $_.FullName artifacts/
               Copy-Item $_.FullName ci-artifacts/
             }
