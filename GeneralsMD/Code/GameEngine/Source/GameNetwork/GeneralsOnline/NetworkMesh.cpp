@@ -479,9 +479,12 @@ NetworkMesh::NetworkMesh()
 		SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, SteamNetworkingSocketsDebugOutput);
 		SteamNetworkingUtils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_LogLevel_P2PRendezvous, k_ESteamNetworkingSocketsDebugOutputType_Debug);
 
-		// GeneralsX @bugfix fbraz3 06/09/2026 Use clean STUN server list with proper stun: prefix
-		const char* stunList = "stun:stun.cloudflare.com:3478,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302";
-		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, stunList);
+		// GeneralsX @bugfix fbraz3 07/09/2026 Disable STUN and TURN server lists.
+		// When systems have virtual or unroutable network interfaces (such as VPN/Tailscale/IPv6 utun),
+		// GNS STUNRequestCallback_ServerReflexiveKeepAlive loops indefinitely cycling through STUN servers
+		// with SetNextThinkTimeASAP, running 10,001 iterations and starving the service thread.
+		// Disabling STUN allows clean discovery of local host candidates for direct LAN/P2P connection.
+		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, "");
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_ServerList, "");
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_UserList, "");
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_PassList, "");
@@ -646,12 +649,8 @@ void NetworkMesh::SetTURNCredentials(const std::string& username, const std::str
 
 	if (SteamNetworkingUtils())
 	{
-		// GeneralsX @bugfix fbraz3 06/09/2026 Use clean STUN server list without port 53 and without invalid syntax
-		const char* stunList = "stun:stun.cloudflare.com:3478,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302";
-		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, stunList);
-
-		// GeneralsX @bugfix fbraz3 07/09/2026 Disable TURN relay completely until dedicated coturn server is configured.
-		// Non-standard UDP TURN endpoints cause GNS thinker loop runaway and service thread starvation.
+		// GeneralsX @bugfix fbraz3 07/09/2026 Disable STUN and TURN server lists to prevent thinker starvation.
+		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, "");
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_ServerList, "");
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_UserList, "");
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_PassList, "");
