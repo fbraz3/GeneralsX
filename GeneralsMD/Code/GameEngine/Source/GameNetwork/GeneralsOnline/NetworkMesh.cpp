@@ -482,6 +482,9 @@ NetworkMesh::NetworkMesh()
 		// GeneralsX @bugfix fbraz3 06/09/2026 Use clean STUN server list with proper stun: prefix
 		const char* stunList = "stun:stun.cloudflare.com:3478,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302";
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, stunList);
+		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_ServerList, "");
+		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_UserList, "");
+		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_PassList, "");
 		int iceFlags = k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_Private | k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_Public;
 		SteamNetworkingUtils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_P2P_Transport_ICE_Enable, iceFlags);
 	}
@@ -647,19 +650,13 @@ void NetworkMesh::SetTURNCredentials(const std::string& username, const std::str
 		const char* stunList = "stun:stun.cloudflare.com:3478,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302";
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, stunList);
 
-		int iceFlags = k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_Private | k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_Public;
-		if (!username.empty() && !token.empty() && username != "fake")
-		{
-			// Note: Avoid query string in hostname (e.g. ?transport=udp) which causes getaddrinfo failure in GNS
-			const char* turnList = "turn:turn.cloudflare.com:3478";
-			m_strTurnUsernameString = username;
-			m_strTurnTokenString = token;
+		// GeneralsX @bugfix fbraz3 07/09/2026 Disable TURN relay completely until dedicated coturn server is configured.
+		// Non-standard UDP TURN endpoints cause GNS thinker loop runaway and service thread starvation.
+		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_ServerList, "");
+		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_UserList, "");
+		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_PassList, "");
 
-			SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_ServerList, turnList);
-			SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_UserList, m_strTurnUsernameString.c_str());
-			SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_PassList, m_strTurnTokenString.c_str());
-			iceFlags |= k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_Relay;
-		}
+		int iceFlags = k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_Private | k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_Public;
 
 		SteamNetworkingUtils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_P2P_Transport_ICE_Enable, iceFlags);
 
