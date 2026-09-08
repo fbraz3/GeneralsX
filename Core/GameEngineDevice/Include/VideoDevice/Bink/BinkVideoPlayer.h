@@ -105,11 +105,6 @@ class BinkVideoStream : public VideoStream
 
 class BinkVideoPlayer : public VideoPlayer
 {
-
-	protected:
-
-		VideoStreamInterface* createStream( HBINK handle );
-
 	public:
 
 		// subsytem requirements
@@ -131,7 +126,16 @@ class BinkVideoPlayer : public VideoPlayer
 		virtual VideoStreamInterface*	load( AsciiString movieTitle ) override;	///< Load video file in to memory for playback
 
 		virtual void notifyVideoPlayerOfNewProvider( Bool nowHasValid ) override;
+		virtual void setVolume( Real volume ) override;
 		virtual void initializeBinkWithMiles();
+
+	protected:
+
+		VideoStreamInterface* createStream( HBINK handle );
+
+	private:
+
+		static Int	calculateMovieAudioVolume( Real volume );
 };
 
 
