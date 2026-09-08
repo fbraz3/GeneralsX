@@ -168,6 +168,10 @@ if(WIN32)
         MPU.h
         rcfile.cpp
         rcfile.h
+        registry.cpp
+        registry.h
+        Usp10Loader.cpp
+        Usp10Loader.h
         verchk.cpp
         verchk.h
         WWCOMUtil.cpp

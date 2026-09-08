@@ -104,29 +104,29 @@ class IMEManager : public IMEManagerInterface
 	public:
 
 		IMEManager();
-		~IMEManager();
+		~IMEManager() override;
 
-		virtual void					init();
-		virtual void					reset();
-		virtual void					update();
+		virtual void					init() override;
+		virtual void					reset() override;
+		virtual void					update() override;
 
-		virtual void					attach( GameWindow *window );		///< attach IME to specified window
-		virtual void					detach();								///< detach IME from current window
-		virtual void					enable();									///< Enable IME
-		virtual void					disable();								///< Disable IME
-		virtual Bool					isEnabled();							///< Is IME enabled
-		virtual Bool					isAttachedTo( GameWindow *window );	///< Is the manager attached toa window
-		virtual GameWindow*		getWindow();							///< Returns the window we are currently attached to
-		virtual Bool					isComposing();						///< Manager is currently composing new input string
-		virtual void					getCompositionString( UnicodeString &string ); ///< Return the current composition string
-		virtual Int						getCompositionCursorPosition();			///< Returns the composition cursor position
-		virtual Int						getIndexBase();						///< Get index base for candidate list
+		virtual void					attach( GameWindow *window ) override;		///< attach IME to specified window
+		virtual void					detach() override;								///< detach IME from current window
+		virtual void					enable() override;									///< Enable IME
+		virtual void					disable() override;								///< Disable IME
+		virtual Bool					isEnabled() override;							///< Is IME enabled
+		virtual Bool					isAttachedTo( GameWindow *window ) override;	///< Is the manager attached toa window
+		virtual GameWindow*		getWindow() override;							///< Returns the window we are currently attached to
+		virtual Bool					isComposing() override;						///< Manager is currently composing new input string
+		virtual void					getCompositionString( UnicodeString &string ) override; ///< Return the current composition string
+		virtual Int						getCompositionCursorPosition() override;			///< Returns the composition cursor position
+		virtual Int						getIndexBase() override;						///< Get index base for candidate list
 
-		virtual Int						getCandidateCount();						///< Returns the total number of candidates
-		virtual const UnicodeString* getCandidate( Int index );	///< Returns the candidate string
-		virtual Int						getSelectedCandidateIndex();		///< Returns the indexed of the currently selected candidate
-		virtual Int						getCandidatePageSize();					///< Returns the page size for the candidates list
-		virtual Int						getCandidatePageStart();				///< Returns the index of the first visibel candidate
+		virtual Int						getCandidateCount() override;						///< Returns the total number of candidates
+		virtual const UnicodeString* getCandidate( Int index ) override;	///< Returns the candidate string
+		virtual Int						getSelectedCandidateIndex() override;		///< Returns the indexed of the currently selected candidate
+		virtual Int						getCandidatePageSize() override;					///< Returns the page size for the candidates list
+		virtual Int						getCandidatePageStart() override;				///< Returns the index of the first visibel candidate
 
 
 
@@ -134,8 +134,8 @@ class IMEManager : public IMEManagerInterface
 		virtual Bool serviceIMEMessage(	void *windowsHandle,
 												UnsignedInt message,
 												Int wParam,
-												Int lParam );
-		virtual Int result();														///< result return value of last serviced IME message
+												Int lParam ) override;
+		virtual Int result() override;														///< result return value of last serviced IME message
 
 	protected:
 
