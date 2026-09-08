@@ -1227,8 +1227,14 @@ void MiniAudioManager::processPlayingList(void)
 		++it;
 	}
 
-	if (m_volumeHasChanged)
+	if (m_volumeHasChanged) {
 		m_volumeHasChanged = false;
+
+		// GeneralsX @bugfix Push speech volume changes because movie audio bypasses the audio mixer
+		if (TheVideoPlayer) {
+			TheVideoPlayer->setVolume(getVolume(AudioAffect_Speech));
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1351,25 +1357,6 @@ void MiniAudioManager::closeAnySamplesUsingFile(const void *fileToClose)
 	// miniaudio manages file lifecycle internally after decoding
 }
 
-//-------------------------------------------------------------------------------------------------
-Bool MiniAudioManager::has3DSensitiveStreamsPlaying(void) const
-{
-	if (m_playingSounds.empty()) return FALSE;
-
-	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
-		const PlayingAudio *playing = (*it);
-		if (!playing || !playing->m_audioEventRTS) continue;
-
-		if (playing->m_type != PAT_Stream) continue;
-
-		const AudioEventInfo *info = playing->m_audioEventRTS->getAudioEventInfo();
-		if (!info) continue;
-
-		if (info->m_soundType != AT_Music) return TRUE;
-		if (playing->m_audioEventRTS->getEventName().startsWith("Game_") == FALSE) return TRUE;
-	}
-	return FALSE;
-}
 
 //-------------------------------------------------------------------------------------------------
 Bool MiniAudioManager::startNextLoop(PlayingAudio *looping)

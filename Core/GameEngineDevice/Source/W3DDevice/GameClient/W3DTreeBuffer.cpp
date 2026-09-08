@@ -299,7 +299,7 @@ void W3DTreeBuffer::cull(const CameraClass * camera)
 	Int curTree;
 
 	// Calculate the vector direction that the camera is looking at.
-	Matrix3D camera_matrix = camera->Get_Transform();
+	const Matrix3D &camera_matrix = camera->Get_Transform();
 	float zmod = -1;
 	float x = zmod * camera_matrix[0][2] ;
 	float y = zmod * camera_matrix[1][2] ;
@@ -1281,7 +1281,7 @@ Int W3DTreeBuffer::addTreeType(const W3DTreeDrawModuleData *data)
 	if (robj->Class_ID() == RenderObjClass::CLASSID_HLOD) {
 		RenderObjClass *hlod = robj;
 		robj = hlod->Get_Sub_Object(0);
-		const Matrix3D xfm = robj->Get_Bone_Transform(0);
+		const Matrix3D& xfm = robj->Get_Bone_Transform(0);
 		xfm.Get_Translation(&offset);
 		REF_PTR_RELEASE(hlod);
 	}
@@ -1297,7 +1297,6 @@ Int W3DTreeBuffer::addTreeType(const W3DTreeDrawModuleData *data)
 	Int numVertex = m_treeTypes[m_numTreeTypes].m_mesh->Peek_Model()->Get_Vertex_Count();
 	Vector3 *pVert = m_treeTypes[m_numTreeTypes].m_mesh->Peek_Model()->Get_Vertex_Array();
 
-	const Matrix3D xfm = m_treeTypes[m_numTreeTypes].m_mesh->Get_Transform();
 	SphereClass bounds(pVert, numVertex);
 	bounds.Center += offset;
 	m_treeTypes[m_numTreeTypes].m_bounds = bounds;

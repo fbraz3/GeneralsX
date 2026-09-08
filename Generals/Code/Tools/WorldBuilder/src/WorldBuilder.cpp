@@ -370,7 +370,7 @@ BOOL CWorldBuilderApp::InitInstance()
 	if (!TheAudio->isMusicAlreadyLoaded())
 		return FALSE;
 
-	initSubsystem(TheVideoPlayer, (VideoPlayerInterface*)(new VideoPlayer()));
+	initSubsystem(TheVideoPlayer, (VideoPlayerInterface*)(new NullVideoPlayer()));
 	initSubsystem(TheModuleFactory, (ModuleFactory*)(new W3DModuleFactory()));
 	initSubsystem(TheSidesList, new SidesList());
 	initSubsystem(TheCaveSystem, new CaveSystem());

@@ -53,6 +53,7 @@
 #include "GameClient/GameClient.h"
 #include "GameClient/GameText.h"
 #include "GameClient/MapUtil.h"
+#include "GameClient/MessageBox.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/ParticleSys.h"
 #include "GameClient/TerrainVisual.h"
@@ -62,6 +63,7 @@
 #include "GameLogic/ScriptEngine.h"
 #include "GameLogic/SidesList.h"
 #include "GameLogic/TerrainLogic.h"
+#include "Lib/PathUtil.h"
 
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
@@ -677,8 +679,7 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 	//
 	TheGameStateMap->clearScratchPadMaps();
 
-	// construct path to file
-	AsciiString filepath = getFilePathInSaveDirectory(gameInfo.filename);
+	AsciiString filepath = getSaveGamePathForRead(gameInfo.filename);
 
 	// open the save file
 	XferLoad xferLoad;
@@ -761,6 +762,15 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 
 }
 
+//-------------------------------------------------------------------------------------------------
+static void showQueuedSaveGameLoadFailure( void )
+{
+	UnicodeString title = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SaveGameLoadFailedTitle", L"CANNOT LOAD SAVE");
+	UnicodeString body = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SaveGameLoadFailed", L"The saved game file could not be opened or is invalid.");
+
+	MessageBoxOk(title, body, nullptr);
+}
+
 // ------------------------------------------------------------------------------------------------
 /** Load the save game requested on startup, after the shell has been initialized */
 // ------------------------------------------------------------------------------------------------
@@ -775,26 +785,32 @@ void GameState::loadQueuedSaveGame()
 
 	TheWritableGlobalData->m_loadSaveGame.clear();
 
+	if( gameInfo.filename.endsWithNoCase( SAVE_GAME_EXTENSION ) == FALSE )
+	{
+		DEBUG_LOG(("Save game '%s' is not a save game file", gameInfo.filename.str()));
+		showQueuedSaveGameLoadFailure();
+		return;
+	}
+
 	// getSaveGameInfoFromFile throws when the file is missing, so check before reading it
 	if( doesSaveGameExist( gameInfo.filename ) == FALSE )
 	{
 		std::fprintf(stderr, "Save game '%s' was not found\n", gameInfo.filename.str());
 		std::fflush(stderr);
-		TheGameEngine->setQuitting( TRUE );
+		showQueuedSaveGameLoadFailure();
 		return;
 	}
 
 	// getSaveGameInfoFromFile throws on a malformed file instead of returning a SaveCode
 	try
 	{
-		AsciiString filepath = getFilePathInSaveDirectory( gameInfo.filename );
-		getSaveGameInfoFromFile( filepath, &gameInfo.saveGameInfo );
+		getSaveGameInfoFromFile( gameInfo.filename, &gameInfo.saveGameInfo );
 	}
 	catch( ... )
 	{
 		std::fprintf(stderr, "Save game '%s' could not be read\n", gameInfo.filename.str());
 		std::fflush(stderr);
-		TheGameEngine->setQuitting( TRUE );
+		showQueuedSaveGameLoadFailure();
 		return;
 	}
 
@@ -831,6 +847,17 @@ AsciiString GameState::getFilePathInSaveDirectory(const AsciiString& leaf) const
 	AsciiString tmp = getSaveDirectory();
 	tmp.concat(leaf);
 	return tmp;
+}
+
+//-------------------------------------------------------------------------------------------------
+AsciiString GameState::getSaveGamePathForRead(const AsciiString& filenameOrPath) const
+{
+	if (isAbsolutePath(filenameOrPath.str()))
+	{
+		return filenameOrPath;
+	}
+
+	return getFilePathInSaveDirectory(filenameOrPath);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -999,8 +1026,7 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 Bool GameState::doesSaveGameExist( AsciiString filename )
 {
 
-	// construct full path to file
-	AsciiString filepath = getFilePathInSaveDirectory(filename);
+	AsciiString filepath = getSaveGamePathForRead(filename);
 
 	// open file
 	XferLoad xfer;
@@ -1043,6 +1069,8 @@ void GameState::getSaveGameInfoFromFile( AsciiString filename, SaveGameInfo *sav
 		return;
 
 	}
+
+	filename = getSaveGamePathForRead( filename );
 
 	// open file for partial loading
 	XferLoad xferLoad;
