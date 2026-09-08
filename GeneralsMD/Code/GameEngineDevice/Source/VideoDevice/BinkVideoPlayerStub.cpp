@@ -93,4 +93,9 @@ void BinkVideoPlayer::initializeBinkWithMiles(void)
 	fprintf(stderr, "DEBUG: BinkVideoPlayer::initializeBinkWithMiles() - Linux stub\n");
 }
 
+void BinkVideoPlayer::setVolume(Real volume)
+{
+	// Stub: video volume not supported on Linux stub
+}
+
 #endif // !_WIN32
