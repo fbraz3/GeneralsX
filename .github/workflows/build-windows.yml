@@ -62,7 +62,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: vcpkg-bincache-${{ runner.os }}-x86-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          key: vcpkg-bincache-${{ runner.os }}-x86-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**') }}
           restore-keys: |
             vcpkg-bincache-${{ runner.os }}-x86-
 
@@ -73,7 +73,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
           "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> $env:GITHUB_ENV
           "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> $env:GITHUB_ENV
-          "VCPKG_OVERLAY_TRIPLETS=${{ github.workspace }}/triplets" >> $env:GITHUB_ENV
+          "VCPKG_OVERLAY_TRIPLETS=${{ github.workspace }}/cmake/triplets" >> $env:GITHUB_ENV
+          "VCPKG_OVERLAY_PORTS=${{ github.workspace }}/cmake/ports" >> $env:GITHUB_ENV
           "VCPKG_INSTALL_OPTIONS=--x-abi-tools-use-exact-versions" >> $env:GITHUB_ENV
 
       - name: Configure
@@ -88,6 +89,7 @@ jobs:
         run: |
           $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT
           cmake --preset win32-vcpkg `
+            -DVCPKG_OVERLAY_PORTS="${{ github.workspace }}/cmake/ports" `
             -DRTS_BUILD_GENERALS=${{ matrix.game.build_generals }} `
             -DRTS_BUILD_ZEROHOUR=${{ matrix.game.build_zh }} `
             -DRTS_BUILD_CORE_TOOLS=OFF `
@@ -102,7 +104,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-x86-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json')) }}
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-x86-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**')) }}
 
       - name: Build
         shell: pwsh
