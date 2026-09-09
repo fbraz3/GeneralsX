@@ -73,9 +73,6 @@
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
-#elif defined(_WIN32)
-#include <windows.h>
-#include <shellapi.h>
 #else
 #include <SDL3/SDL.h>
 #endif

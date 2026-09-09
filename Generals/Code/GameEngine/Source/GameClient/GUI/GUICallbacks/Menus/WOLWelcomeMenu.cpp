@@ -68,12 +68,7 @@
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
 
-#if defined(_WIN32)
-#include <windows.h>
-#include <shellapi.h>
-#else
 #include <SDL3/SDL.h>
-#endif
 
 #include <map>
 #include <string>
