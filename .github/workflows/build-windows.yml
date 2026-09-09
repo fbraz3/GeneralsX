@@ -102,7 +102,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.primary-key || format('vcpkg-bincache-{0}-x86-{1}', runner.os, hashFiles('vcpkg.json')) }}
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-x86-{1}', runner.os, hashFiles('vcpkg.json')) }}
 
       - name: Build
         shell: pwsh

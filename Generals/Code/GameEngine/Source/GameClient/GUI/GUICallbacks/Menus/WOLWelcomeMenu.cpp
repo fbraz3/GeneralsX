@@ -86,13 +86,10 @@ static const char *nextScreen = nullptr;
 // GeneralsX @feature fbraz3 03/09/2026 Map MOTD listbox rows to clickable URLs
 static std::map<Int, std::string> s_motdRowUrls;
 
+// GeneralsX @refactor fbraz3 08/09/2026 Use SDL_OpenURL for platform-abstracted URL opening
 static void OpenBrowserURL(const std::string& url)
 {
-#if defined(_WIN32)
-	ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-#else
 	SDL_OpenURL(url.c_str());
-#endif
 }
 
 // GeneralsX @feature fbraz3 03/09/2026 Parse raw URLs or Markdown links [text](url) from MOTD line

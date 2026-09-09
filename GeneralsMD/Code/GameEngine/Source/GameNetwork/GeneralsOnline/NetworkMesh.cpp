@@ -345,31 +345,6 @@ void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t
 			fflush(stderr);
 
 			const char* remoteGenericStr = pInfo->m_info.m_identityRemote.GetGenericString();
-			if (connections.count(connectionID))
-			{
-				PlayerConnection& plrConnection = connections[connectionID];
-				plrConnection.UpdateState(EConnectionState::CONNECTING_DIRECT, pMesh);
-				plrConnection.m_hSteamConnection = pInfo->m_hConn;
-			}
-			else
-			{
-				int64_t remoteUserID = -1;
-				if (remoteGenericStr)
-				{
-					try {
-						remoteUserID = std::stoll(remoteGenericStr);
-					} catch (...) {}
-				}
-
-				if (remoteUserID > 0)
-				{
-					PlayerConnection newConn(remoteUserID, pInfo->m_hConn);
-					newConn.UpdateState(EConnectionState::CONNECTING_DIRECT, pMesh);
-					connections[remoteUserID] = newConn;
-					connectionID = remoteUserID;
-				}
-			}
-
 			NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 			bool bPlayerIsInLobby = false;
 			if (pLobbyInterface != nullptr && remoteGenericStr != nullptr)
@@ -385,14 +360,34 @@ void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t
 				}
 			}
 
-			bool bAllowedPeer = bPlayerIsInLobby;
-			if (!bAllowedPeer && connectionID > 0 && connections.count(connectionID))
+			// GeneralsX @security fbraz3 08/09/2026 Authorize incoming connections strictly by authenticated lobby membership
+			if (bPlayerIsInLobby)
 			{
-				bAllowedPeer = true;
-			}
+				if (connections.count(connectionID))
+				{
+					PlayerConnection& plrConnection = connections[connectionID];
+					plrConnection.UpdateState(EConnectionState::CONNECTING_DIRECT, pMesh);
+					plrConnection.m_hSteamConnection = pInfo->m_hConn;
+				}
+				else
+				{
+					int64_t remoteUserID = -1;
+					if (remoteGenericStr)
+					{
+						try {
+							remoteUserID = std::stoll(remoteGenericStr);
+						} catch (...) {}
+					}
 
-			if (bAllowedPeer)
-			{
+					if (remoteUserID > 0)
+					{
+						PlayerConnection newConn(remoteUserID, pInfo->m_hConn);
+						newConn.UpdateState(EConnectionState::CONNECTING_DIRECT, pMesh);
+						connections[remoteUserID] = newConn;
+						connectionID = remoteUserID;
+					}
+				}
+
 				fprintf(stderr, "[STEAM NETWORKING][%s] Accepting - Player (%s) is authorized (inLobby=%d)\n",
 					pInfo->m_info.m_szConnectionDescription, remoteGenericStr ? remoteGenericStr : "unknown", (int)bPlayerIsInLobby);
 				fflush(stderr);

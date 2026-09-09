@@ -90,12 +90,11 @@ static bool motdRendered = false;  // GeneralsX @feature Track if NGMP MOTD was 
 // GeneralsX @feature fbraz3 03/09/2026 Map MOTD listbox rows to clickable URLs
 static std::map<Int, std::string> s_motdRowUrls;
 
+// GeneralsX @refactor fbraz3 08/09/2026 Use SDL_OpenURL for platform-abstracted URL opening
 static void OpenBrowserURL(const std::string& url)
 {
 #if defined(SAGE_USE_NGMP)
 	NGMP::OpenURL(url);
-#elif defined(_WIN32)
-	ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
 #else
 	SDL_OpenURL(url.c_str());
 #endif
