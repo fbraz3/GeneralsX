@@ -471,14 +471,14 @@ Bool SpecialPowerModule::initiateIntentToDoSpecialPower( const Object *targetObj
 		}
 	}
 
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info we need to leave early if we are in the MissileLauncherBuildingUpdate crash fix codepath
+	// GeneralsX @bugfix Copilot 06/09/2026 Stop a rejected missile-launcher intent before recording or triggering it.
+	// Upstream reference: Mauller, PR #1218
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/1218
 	if (m_availableOnFrame == 0xFFFFFFFF)
 	{
 		DEBUG_ASSERTCRASH(!valid, ("Using MissileLauncherBuildingUpdate escape path when valid is set to true"));
 		return false;
 	}
-#endif
 
 	getObject()->getControllingPlayer()->getAcademyStats()->recordSpecialPowerUsed( getSpecialPowerModuleData()->m_specialPowerTemplate );
 
@@ -741,11 +741,9 @@ void SpecialPowerModule::doSpecialPowerAtLocation( const Coord3D *loc, Real angl
 	//will then start processing each frame.
 	initiateIntentToDoSpecialPower( nullptr, loc, nullptr, commandOptions );
 
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info we need to leave early if we are in the MissileLauncherBuildingUpdate crash fix codepath
+	// GeneralsX @bugfix Copilot 06/09/2026 Do not trigger a location power after its update module rejected the intent.
 	if (m_availableOnFrame == 0xFFFFFFFF)
 		return;
-#endif
 
 	//Only trigger the special power immediately if the updatemodule doesn't start the attack.
 	//An example of a case that wouldn't trigger immediately is for a unit that needs to
