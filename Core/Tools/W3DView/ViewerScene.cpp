@@ -53,10 +53,10 @@
 class ViewerSceneIterator : public SceneIterator
 {
 public:
-	virtual void					First();
-	virtual void					Next();
-	virtual bool					Is_Done();
-	virtual RenderObjClass *	Current_Item();
+	virtual void					First() override;
+	virtual void					Next() override;
+	virtual bool					Is_Done() override;
+	virtual RenderObjClass *	Current_Item() override;
 
 protected:
 

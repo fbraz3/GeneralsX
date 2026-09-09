@@ -2205,12 +2205,9 @@ if (pMapObj->isSelected()) {
 			Bool isTree = false;
 
 			Vector3 vec(loc.x, loc.y, loc.z);
-			Matrix3D tm(Transform);
 			Matrix3x3 rot(true);
 			rot.Rotate_Z(pMapObj->getAngle());
-
-			tm.Set_Translation(vec);
-			tm.Set_Rotation(rot);
+			Matrix3D tm(rot, vec);
 			int polyCount = NUM_TRI;
 			if (!pMapObj->isSelected()) {
 				polyCount -= NUM_ARROW_TRI+NUM_SELECT_TRI;
@@ -2265,7 +2262,7 @@ if (pMapObj->isSelected()) {
 					count++;
 
 					Vector3 vec(loc.x, loc.y, loc.z);
-					Matrix3D tm(Transform);
+					Matrix3D tm = Transform;
 					tm.Set_Translation(vec);
 
 					int polyCount = NUM_TRI;
@@ -2277,8 +2274,7 @@ if (pMapObj->isSelected()) {
 					DX8Wrapper::Set_Transform(D3DTS_WORLD,tm);
 					DX8Wrapper::Draw_Triangles(	0,polyCount, 0,	(m_numTriangles*3));
 				}
-				Matrix3D tmReset(Transform);
-				DX8Wrapper::Set_Transform(D3DTS_WORLD,tmReset);
+				DX8Wrapper::Set_Transform(D3DTS_WORLD,Transform);
 				DX8Wrapper::Set_Vertex_Buffer(m_vertexBufferTile1);
 				updatePolygonVB(pTrig, polySelected, polySelected && PolygonTool::isSelectedOpen());
  				DX8Wrapper::Set_Vertex_Buffer(m_vertexFeedback);
@@ -2318,12 +2314,9 @@ if (pMapObj->isSelected()) {
 			count++;
 // ok to here.
 			Vector3 vec(loc.x, loc.y, loc.z);
-			Matrix3D tmXX(Transform);
 			Matrix3x3 rot(true);
 			rot.Rotate_Z(pBuild->getAngle());
-
-			tmXX.Set_Translation(vec);
-			tmXX.Set_Rotation(rot);
+			Matrix3D tmXX(rot, vec);
 			int polyCountA = NUM_TRI;
 			if (!pBuild->isSelected()) {
 				polyCountA -= NUM_ARROW_TRI+NUM_SELECT_TRI;
@@ -2339,8 +2332,7 @@ if (pMapObj->isSelected()) {
 
 	DX8Wrapper::Set_Index_Buffer(m_indexBuffer,0);
  	DX8Wrapper::Set_Vertex_Buffer(m_vertexBufferWater);
-	Matrix3D tmReset(Transform);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,tmReset);
+	DX8Wrapper::Set_Transform(D3DTS_WORLD,Transform);
 
 	if (m_drawWaypoints) {
 		updateWaypointVB();

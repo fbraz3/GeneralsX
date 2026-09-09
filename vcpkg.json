@@ -1,31 +1,37 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-    "builtin-baseline": "533a5fda5c0646d1771345fb572e759283444d5f",
-    "dependencies": [
-      "zlib",
-      "glm",
-      "gli",
-      {
-        "name": "freetype",
-        "platform": "!windows"
-      },
-      {
-        "name": "fontconfig",
-        "platform": "!windows"
-      },
-      {
-        "name": "openal-soft",
-        "platform": "!windows",
-        "features": []
-      },
-      {
-        "name": "curl",
-        "features": ["ssl", "websockets"]
-      },
-      {
-        "name": "gamenetworkingsockets",
-        "platform": "windows"
-      },
-      "stb"
-    ]
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "builtin-baseline": "533a5fda5c0646d1771345fb572e759283444d5f",
+  "dependencies": [
+    "zlib",
+    "glm",
+    "gli",
+    {
+      "name": "freetype",
+      "platform": "!windows"
+    },
+    {
+      "name": "fontconfig",
+      "platform": "!windows"
+    },
+    {
+      "name": "openal-soft",
+      "platform": "!windows",
+      "features": []
+    },
+    {
+      "name": "curl",
+      "features": ["ssl", "websockets"]
+    },
+    {
+      "name": "gamenetworkingsockets",
+      "platform": "windows"
+    },
+    "stb"
+  ],
+  "features": {
+    "ffmpeg": {
+      "description": "Use FFmpeg instead of Bink for video rendering",
+      "dependencies": [ "ffmpeg" ]
+    }
   }
+}
