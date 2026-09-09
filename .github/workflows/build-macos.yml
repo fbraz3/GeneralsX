@@ -69,6 +69,22 @@ jobs:
         with:
           vcpkgGitCommitId: 'ffc071e0c08432c60c9b64f00334c0227667931b'
 
+      - name: Restore vcpkg binary cache
+        id: vcpkg_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-bincache-${{ runner.os }}-arm64-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          restore-keys: |
+            vcpkg-bincache-${{ runner.os }}-arm64-
+
+      - name: Configure vcpkg cache directory
+        run: |
+          cacheDir="${{ github.workspace }}/vcpkg-bincache"
+          mkdir -p "$cacheDir"
+          echo "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> "$GITHUB_ENV"
+          echo "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> "$GITHUB_ENV"
+
       - name: Install Dependencies
         run: |
           export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
@@ -348,6 +364,13 @@ jobs:
           cmake --preset ${{ inputs.preset }} 2>&1 | tee logs/configure_macos.log
           CONFIG_STATUS=${PIPESTATUS[0]}
           if [ $CONFIG_STATUS -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
+
+      - name: Save vcpkg binary cache
+        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-arm64-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json')) }}
 
       - name: Build ${{ matrix.game.value }}
         run: |

@@ -57,6 +57,25 @@ jobs:
         with:
           arch: x86
 
+      - name: Restore vcpkg binary cache
+        id: vcpkg_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-bincache-${{ runner.os }}-x86-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          restore-keys: |
+            vcpkg-bincache-${{ runner.os }}-x86-
+
+      - name: Configure vcpkg cache directory
+        shell: pwsh
+        run: |
+          $cacheDir = "${{ github.workspace }}/vcpkg-bincache"
+          New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
+          "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> $env:GITHUB_ENV
+          "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> $env:GITHUB_ENV
+          "VCPKG_OVERLAY_TRIPLETS=${{ github.workspace }}/triplets" >> $env:GITHUB_ENV
+          "VCPKG_INSTALL_OPTIONS=--x-abi-tools-use-exact-versions" >> $env:GITHUB_ENV
+
       - name: Configure
         shell: pwsh
         run: |
@@ -70,6 +89,13 @@ jobs:
             -DRTS_BUILD_OPTION_SAGE_PATCH=OFF `
             -DSAGE_USE_DX8=ON `
             -DSAGE_USE_DETERMINISTIC_MATH=ON
+
+      - name: Save vcpkg binary cache
+        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-x86-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json')) }}
 
       - name: Build
         shell: pwsh
