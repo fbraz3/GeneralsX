@@ -468,13 +468,13 @@ NetworkMesh::NetworkMesh()
 	opt.SetInt32(k_ESteamNetworkingConfig_SymmetricConnect, 1);
 	m_hListenSock = SteamNetworkingSockets()->CreateListenSocketP2P(localPort, 1, &opt);
 
-	// GeneralsX @feature fbraz3 08/09/2026 Configure STUN server list and initial ICE flags matching reference client
+	// GeneralsX @feature fbraz3 08/09/2026 Configure Cloudflare Calls STUN server list and initial ICE flags
 	if (SteamNetworkingUtils())
 	{
 		SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, SteamNetworkingSocketsDebugOutput);
 		SteamNetworkingUtils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_LogLevel_P2PRendezvous, k_ESteamNetworkingSocketsDebugOutputType_Debug);
 
-		const char* stunList = "stun:stun.playgenerals.online:53,stun:stun.playgenerals.online:3478,stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302,stun3.l.google.com:19302,stun4.l.google.com:19302";
+		const char* stunList = "stun:stun.cloudflare.com:3478,stun:stun.cloudflare.com:53,stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302";
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, stunList);
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_ServerList, "");
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_UserList, "");
@@ -631,7 +631,7 @@ void NetworkMesh::PushIncomingSignal(const std::vector<uint8_t>& signalPayload)
 	}
 }
 
-// GeneralsX @feature fbraz3 08/09/2026 Configure dynamic TURN credentials for playgenerals.online relay and STUN
+// GeneralsX @feature fbraz3 08/09/2026 Configure dynamic TURN credentials for Cloudflare Calls relay and STUN
 void NetworkMesh::SetTURNCredentials(const std::string& username, const std::string& token)
 {
 	m_strTurnUsername = username;
@@ -639,7 +639,7 @@ void NetworkMesh::SetTURNCredentials(const std::string& username, const std::str
 
 	if (SteamNetworkingUtils())
 	{
-		const char* stunList = "stun:stun.playgenerals.online:53,stun:stun.playgenerals.online:3478,stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302,stun3.l.google.com:19302,stun4.l.google.com:19302";
+		const char* stunList = "stun:stun.cloudflare.com:3478,stun:stun.cloudflare.com:53,stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302";
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_STUN_ServerList, stunList);
 
 		if (username.empty() || token.empty() || username == "fake")
@@ -658,8 +658,8 @@ void NetworkMesh::SetTURNCredentials(const std::string& username, const std::str
 			return;
 		}
 
-		// PlayGenerals.online coturn relay endpoints (UDP on ports 53 and 3478)
-		const char* turnList = "turn:turn.playgenerals.online:53?transport=udp,turn:turn.playgenerals.online:3478?transport=udp";
+		// Cloudflare Calls TURN relay over UDP (ports 3478 and 53)
+		const char* turnList = "turn:turn.cloudflare.com:3478?transport=udp,turn:turn.cloudflare.com:53?transport=udp";
 
 		m_strTurnUsernameString = username + "," + username;
 		m_strTurnTokenString = token + "," + token;
