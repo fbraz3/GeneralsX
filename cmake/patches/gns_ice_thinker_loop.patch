@@ -1,0 +1,74 @@
+diff --git a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
+index de4b490..b26df9e 100644
+--- a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
++++ b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
+@@ -956,7 +956,10 @@ void CSteamNetworkingSocketsSTUNRequest::Think( SteamNetworkingMicroseconds usec
+         }
+ 
+         // Immediate failure to send is actually very common, e.g. unroutable between two different private subnets.
++        // Schedule backoff before retrying so unroutable / virtual interfaces do not spin-lock the thinker queue.
+         m_usecLastSentTime = 0;
++        SetNextThinkTime( usecNow + usecInterval );
++        return;
+     }
+     else
+     {
+@@ -2298,8 +2301,10 @@ void CSteamNetworkingICESession::STUNRequestCallback_ServerReflexiveKeepAlive( c
+     if ( m_vecSTUNServers.empty() )
+         return;
+ 
+-    const int nSTUNServerIdx = std::max( 0, index_of( m_vecSTUNServers, info.m_pRequest->m_remoteAddr ) );
+-    const int nNextSTUNServerIdx = ( nSTUNServerIdx + 1 ) % len( m_vecSTUNServers );
++    const int nSTUNServerIdx = index_of( m_vecSTUNServers, info.m_pRequest->m_remoteAddr );
++    const int nNextSTUNServerIdx = nSTUNServerIdx + 1;
++    if ( nSTUNServerIdx < 0 || nNextSTUNServerIdx >= len( m_vecSTUNServers ) )
++        return;
+     pIntf->QueueBindRequest( m_vecSTUNServers[ nNextSTUNServerIdx ], &CSteamNetworkingICESession::STUNRequestCallback_ServerReflexiveKeepAlive, m_nEncoding );
+ }
+ 
+diff --git a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp
+index d7dd408..915d304 100644
+--- a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp
++++ b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp
+@@ -3979,6 +3979,7 @@ bool ResolveHostname( const char* pszHostname, CUtlVector< SteamNetworkingIPAddr
+ 	}
+ 
+ 	char szHostnameBuffer[256];
++	char szPortBuffer[32];
+ 	const char* pszPortStr = V_strchr( (char*)pszHostname, ':' );
+ 	if ( pszPortStr != nullptr )
+ 	{
+@@ -3989,6 +3990,33 @@ bool ResolveHostname( const char* pszHostname, CUtlVector< SteamNetworkingIPAddr
+ 		szHostnameBuffer[ nChars ] = '\0';
+ 		pszPortStr = pszPortStr + 1;
+ 		pszHostname = szHostnameBuffer;
++
++		// Strip query parameters if present (e.g. ?transport=udp in TURN URIs)
++		const char* pszQuery = V_strchr( (char*)pszPortStr, '?' );
++		if ( pszQuery != nullptr )
++		{
++			const int nPortChars = ( pszQuery - pszPortStr );
++			if ( nPortChars < (int)sizeof( szPortBuffer ) )
++			{
++				V_memcpy( szPortBuffer, pszPortStr, nPortChars );
++				szPortBuffer[ nPortChars ] = '\0';
++				pszPortStr = szPortBuffer;
++			}
++		}
++	}
++	else
++	{
++		const char* pszQuery = V_strchr( (char*)pszHostname, '?' );
++		if ( pszQuery != nullptr )
++		{
++			const int nHostChars = ( pszQuery - pszHostname );
++			if ( nHostChars < (int)sizeof( szHostnameBuffer ) )
++			{
++				V_memcpy( szHostnameBuffer, pszHostname, nHostChars );
++				szHostnameBuffer[ nHostChars ] = '\0';
++				pszHostname = szHostnameBuffer;
++			}
++		}
+ 	}
+ 
+ 	addrinfo hints;

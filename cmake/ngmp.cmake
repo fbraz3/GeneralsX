@@ -87,6 +87,7 @@ if(SAGE_USE_NGMP)
             GIT_TAG v1.6.0
             GIT_SHALLOW TRUE
             GIT_SUBMODULES ""
+            PATCH_COMMAND git apply --ignore-whitespace "${CMAKE_CURRENT_LIST_DIR}/patches/gns_ice_thinker_loop.patch" || true
         )
         FetchContent_MakeAvailable(GameNetworkingSockets)
         if(TARGET GameNetworkingSockets)
