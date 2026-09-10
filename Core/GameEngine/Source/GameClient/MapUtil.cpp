@@ -887,7 +887,8 @@ static Bool addMapToMapListbox(
 		}
 
 		// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Grow the listbox instead of truncating the custom map list when it fills up.
-		if (index == lbData.numLength - 1)
+		// >= instead of == guards against future refactors that add entries in batches or non-sequential order.
+		if (index >= lbData.numLength - 1)
 		{
 			const Int newLength = lbData.numLength * 2;
 			GadgetListBoxSetListLength( lbData.listbox, newLength );
