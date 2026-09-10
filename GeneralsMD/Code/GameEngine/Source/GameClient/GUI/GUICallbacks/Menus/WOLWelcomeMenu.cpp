@@ -1115,10 +1115,7 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 #if defined(SAGE_USE_NGMP)
 					if (NGMP_OnlineServicesManager::getInstance().isLoggedIn())
 					{
-						// NGMP doesn't support SetLookAtPlayer with 64-bit ID natively without a cast, so we just pass 1 for now 
-						// or the auth ID. SetLookAtPlayer takes Int (32-bit). We'll cast it safely or assume it's small enough.
-						// The reference repo casts the string to UnicodeString.
-						SetLookAtPlayer(1, NGMP_OnlineServicesManager::getInstance().getUsername().c_str());
+						SetLookAtPlayer((Int)NGMP_OnlineServicesManager::getInstance().getUserId(), NGMP_OnlineServicesManager::getInstance().getUsername().c_str());
 						GameSpyToggleOverlay(GSOVERLAY_PLAYERINFO);
 					}
 #else

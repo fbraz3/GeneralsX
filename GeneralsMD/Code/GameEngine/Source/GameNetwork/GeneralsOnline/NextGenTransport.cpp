@@ -97,6 +97,7 @@ Bool NextGenTransport::doRecv(void)
 		return FALSE;
 	}
 
+	std::lock_guard<std::recursive_mutex> lock(pMesh->GetConnectionsMutex());
 	auto& connections = pMesh->GetAllConnections();
 	for (auto& kvPair : connections)
 	{

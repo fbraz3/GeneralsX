@@ -206,8 +206,11 @@ public:
 		return m_mapConnections;
 	}
 
+	std::recursive_mutex& GetConnectionsMutex() const { return m_mapConnectionsMutex; }
+
 	PlayerConnection* GetConnectionForUser(int64_t user_id)
 	{
+		std::lock_guard<std::recursive_mutex> lock(m_mapConnectionsMutex);
 		auto it = m_mapConnections.find(user_id);
 		if (it != m_mapConnections.end())
 		{
@@ -219,6 +222,7 @@ public:
 private:
 	std::map<int64_t, PlayerConnection> m_mapConnections;
 	mutable std::recursive_mutex m_mapConnectionsMutex;
+	mutable std::recursive_mutex m_tickMutex;
 
 	ISignalingClient* m_pSignaling = nullptr;
 	HSteamListenSocket m_hListenSock = k_HSteamListenSocket_Invalid;

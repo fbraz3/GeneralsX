@@ -354,20 +354,25 @@ void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
                     matches = globalStatsJson["matches"].get<std::vector<int>>();
                 }
 
-                {
-                    std::lock_guard<std::mutex> lock(m_statsMutex);
-                    m_globalStats.wins = wins;
-                    m_globalStats.matches = matches;
-                    m_hasGlobalStats = true;
-                    m_globalStatsVersion++;
-                }
+                if (wins.size() == matches.size()) {
+                    {
+                        std::lock_guard<std::mutex> lock(m_statsMutex);
+                        m_globalStats.wins = wins;
+                        m_globalStats.matches = matches;
+                        m_hasGlobalStats = true;
+                        m_globalStatsVersion++;
+                    }
 
-                NGMPEvent ev;
-                ev.type = NGMPEvent::EVENT_GLOBAL_STATS_RECEIVED;
-                postEvent(ev);
-                
-                fprintf(stderr, "[NGMP] GlobalStats fetched successfully (wins:%zu matches:%zu)\n", wins.size(), matches.size());
-                fflush(stderr);
+                    NGMPEvent ev;
+                    ev.type = NGMPEvent::EVENT_GLOBAL_STATS_RECEIVED;
+                    postEvent(ev);
+                    
+                    fprintf(stderr, "[NGMP] GlobalStats fetched successfully (wins:%zu matches:%zu)\n", wins.size(), matches.size());
+                    fflush(stderr);
+                } else {
+                    fprintf(stderr, "[NGMP] GlobalStats mismatched cardinality: wins:%zu matches:%zu\n", wins.size(), matches.size());
+                    fflush(stderr);
+                }
             } catch (const std::exception& e) {
                 fprintf(stderr, "[NGMP] GlobalStats JSON parse error: %s\n", e.what());
                 fflush(stderr);

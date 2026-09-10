@@ -245,6 +245,8 @@ void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t
 		return;
 	}
 
+	std::lock_guard<std::recursive_mutex> lock(pMesh->GetConnectionsMutex());
+
 	int64_t connectionID = -1;
 	std::map<int64_t, PlayerConnection>& connections = pMesh->GetAllConnections();
 	for (auto& kvPair : connections)
@@ -714,6 +716,7 @@ void NetworkMesh::Disconnect()
 
 void NetworkMesh::Tick()
 {
+	std::lock_guard<std::recursive_mutex> tickLock(m_tickMutex);
 	if (m_pSignaling)
 	{
 		m_pSignaling->Poll();

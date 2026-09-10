@@ -1,5 +1,5 @@
 diff --git a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
-index de4b490..dac6117 100644
+index de4b490..6fdf126 100644
 --- a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
 +++ b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
 @@ -956,7 +956,10 @@ void CSteamNetworkingSocketsSTUNRequest::Think( SteamNetworkingMicroseconds usec
@@ -87,24 +87,28 @@ index de4b490..dac6117 100644
      if ( nSTUNServerIdx < 0 || nNextSTUNServerIdx >= len( m_vecSTUNServers ) )
      {
          // Exhausted all STUN servers.  Mark failed so Think_DiscoverServerReflexiveCandidates
-@@ -2294,12 +2319,18 @@ void CSteamNetworkingICESession::STUNRequestCallback_ServerReflexiveKeepAlive( c
+@@ -2294,12 +2319,23 @@ void CSteamNetworkingICESession::STUNRequestCallback_ServerReflexiveKeepAlive( c
          return;
      }
  
 -    // Timed out -- try the next STUN server (cycling through the list).
-+    // Timed out -- try the next STUN server matching this interface's address family.
++    // Timed out -- try the next STUN server matching this interface's address family (cycling through the list).
      if ( m_vecSTUNServers.empty() )
          return;
  
--    const int nSTUNServerIdx = std::max( 0, index_of( m_vecSTUNServers, info.m_pRequest->m_remoteAddr ) );
+     const int nSTUNServerIdx = std::max( 0, index_of( m_vecSTUNServers, info.m_pRequest->m_remoteAddr ) );
 -    const int nNextSTUNServerIdx = ( nSTUNServerIdx + 1 ) % len( m_vecSTUNServers );
-+    const int nSTUNServerIdx = index_of( m_vecSTUNServers, info.m_pRequest->m_remoteAddr );
-+    int nNextSTUNServerIdx = nSTUNServerIdx + 1;
-+    while ( nNextSTUNServerIdx < len( m_vecSTUNServers ) && m_vecSTUNServers[nNextSTUNServerIdx].GetType() != pIntf->m_boundAddr.GetType() )
++    int nNextSTUNServerIdx = -1;
++    for ( int i = 1; i <= len( m_vecSTUNServers ); ++i )
 +    {
-+        ++nNextSTUNServerIdx;
++        int candIdx = ( nSTUNServerIdx + i ) % len( m_vecSTUNServers );
++        if ( m_vecSTUNServers[ candIdx ].GetType() == pIntf->m_boundAddr.GetType() )
++        {
++            nNextSTUNServerIdx = candIdx;
++            break;
++        }
 +    }
-+    if ( nSTUNServerIdx < 0 || nNextSTUNServerIdx >= len( m_vecSTUNServers ) )
++    if ( nNextSTUNServerIdx < 0 )
 +        return;
      pIntf->QueueBindRequest( m_vecSTUNServers[ nNextSTUNServerIdx ], &CSteamNetworkingICESession::STUNRequestCallback_ServerReflexiveKeepAlive, m_nEncoding );
  }
