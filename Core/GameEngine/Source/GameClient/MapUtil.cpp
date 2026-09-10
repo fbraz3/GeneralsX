@@ -886,10 +886,20 @@ static Bool addMapToMapListbox(
 			GadgetListBoxSetItemData( lbData.listbox, reinterpret_cast<void*>(std::uintptr_t(imageItemData)), index, 1 );
 		}
 
-		// TheSuperHackers @performance Now stops processing when the list is full.
-		if (index == lbData.numLength - 1)
+		// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Grow the listbox instead of truncating the custom map list when it fills up.
+		// >= instead of == guards against future refactors that add entries in batches or non-sequential order.
+		if (index >= lbData.numLength - 1)
 		{
-			return false;
+			const Int newLength = lbData.numLength * 2;
+			GadgetListBoxSetListLength( lbData.listbox, newLength );
+
+			// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Bail out if the resize failed (e.g. allocation failure) instead of assuming growth succeeded.
+			if (GadgetListBoxGetListLength( lbData.listbox ) != newLength)
+			{
+				return false;
+			}
+
+			lbData.numLength = newLength;
 		}
 	}
 
