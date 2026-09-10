@@ -35,6 +35,36 @@ modules:
         url: https://github.com/g-truc/gli.git
         branch: master
 
+  - name: protobuf
+    buildsystem: cmake-ninja
+    config-opts:
+      - -Dprotobuf_BUILD_TESTS=OFF
+      - -Dprotobuf_BUILD_SHARED_LIBS=ON
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_CXX_STANDARD=17
+    sources:
+      - type: git
+        url: https://github.com/protocolbuffers/protobuf.git
+        tag: v25.3
+        submodules: true
+
+  - name: gamenetworkingsockets
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_TESTS=OFF
+      - -DBUILD_EXAMPLES=OFF
+      - -DBUILD_TOOLS=OFF
+      - -DENABLE_ICE=ON
+      - -DUSE_CRYPTO=OpenSSL
+      - -DBUILD_SHARED_LIB=ON
+      - -DBUILD_STATIC_LIB=OFF
+    sources:
+      - type: git
+        url: https://github.com/ValveSoftware/GameNetworkingSockets.git
+        tag: v1.6.0
+      - type: patch
+        path: ../cmake/patches/gns_ice_thinker_loop.patch
+
   - name: generalsxzh
     buildsystem: simple
     build-commands:

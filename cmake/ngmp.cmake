@@ -178,6 +178,10 @@ if(SAGE_USE_NGMP)
         endif()
     endif()
 
+    if(NOT TARGET GameNetworkingSockets AND NOT TARGET GameNetworkingSockets::GameNetworkingSockets AND NOT TARGET GameNetworkingSockets_s AND NOT (WIN32 AND MSVC AND _VNS_DIR))
+        message(WARNING "[NGMP WARNING] GameNetworkingSockets target was NOT configured! SAGE_USE_GAMENETWORKINGSOCKETS will be disabled and P2P multiplayer will not work!")
+    endif()
+
     if(DEFINED gamenetworkingsockets_SOURCE_DIR)
         target_include_directories(core_config INTERFACE ${gamenetworkingsockets_SOURCE_DIR}/include)
     endif()

@@ -24,7 +24,7 @@
     },
     {
       "name": "gamenetworkingsockets",
-      "platform": "windows"
+      "platform": "!osx"
     },
     "stb"
   ],

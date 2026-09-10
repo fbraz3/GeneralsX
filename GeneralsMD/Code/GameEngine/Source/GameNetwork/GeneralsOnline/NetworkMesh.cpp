@@ -927,6 +927,8 @@ void PlayerConnection::LiteUpdateForAC()
 
 NetworkMesh::NetworkMesh()
 {
+	fprintf(stderr, "[NGMP ERROR] NetworkMesh constructed without SAGE_USE_GAMENETWORKINGSOCKETS! P2P multiplayer will NOT work!\n");
+	fflush(stderr);
 }
 
 void NetworkMesh::Flush()
@@ -950,8 +952,11 @@ void NetworkMesh::SendACPacket(uint32_t, const void*, uint32_t)
 {
 }
 
-void NetworkMesh::StartConnectionSignalling(const char*, int64_t, uint16_t)
+void NetworkMesh::StartConnectionSignalling(const char*, int64_t remoteUserID, uint16_t preferredPort)
 {
+	fprintf(stderr, "[NGMP ERROR] StartConnectionSignalling called for target_user_id=%lld port=%u, but SAGE_USE_GAMENETWORKINGSOCKETS is disabled!\n",
+		(long long)remoteUserID, preferredPort);
+	fflush(stderr);
 }
 
 void NetworkMesh::DisconnectUser(int64_t)
@@ -965,6 +970,8 @@ void NetworkMesh::Disconnect()
 
 void NetworkMesh::PushIncomingSignal(const std::vector<uint8_t>&)
 {
+	fprintf(stderr, "[NGMP ERROR] PushIncomingSignal received signal bytes, but SAGE_USE_GAMENETWORKINGSOCKETS is disabled!\n");
+	fflush(stderr);
 }
 
 void NetworkMesh::SetTURNCredentials(const std::string&, const std::string&)
