@@ -359,6 +359,7 @@ void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
                     m_globalStats.wins = wins;
                     m_globalStats.matches = matches;
                     m_hasGlobalStats = true;
+                    m_globalStatsVersion++;
                 }
 
                 NGMPEvent ev;

@@ -84,6 +84,7 @@
 static Bool isShuttingDown = FALSE;
 static Bool buttonPushed = FALSE;
 static const char *nextScreen = nullptr;
+static uint32_t s_lastRenderedStatsVersion = 0; // GeneralsX @feature Track version of NGMP global stats rendered
 static bool statsRendered = false; // GeneralsX @feature Track if NGMP global stats were rendered
 static bool motdRendered = false;  // GeneralsX @feature Track if NGMP MOTD was rendered
 
@@ -853,10 +854,12 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 		motdRendered = true;
 	}
 
-	// Render global stats dynamically once received
-	if (!statsRendered && NGMP_OnlineServicesManager::getInstance().hasGlobalStats()) {
+	// GeneralsX @feature Re-render global stats dynamically whenever new stats are fetched from server
+	uint32_t currentStatsVersion = NGMP_OnlineServicesManager::getInstance().getGlobalStatsVersion();
+	if (NGMP_OnlineServicesManager::getInstance().hasGlobalStats() && (!statsRendered || s_lastRenderedStatsVersion != currentStatsVersion)) {
 		updateOverallStats();
 		statsRendered = true;
+		s_lastRenderedStatsVersion = currentStatsVersion;
 	}
 #endif
 

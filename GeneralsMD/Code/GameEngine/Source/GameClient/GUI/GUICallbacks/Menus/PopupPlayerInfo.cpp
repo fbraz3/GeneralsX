@@ -833,10 +833,17 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 
 #if defined(SAGE_USE_NGMP)
 	PSPlayerStats stats;
-	// When using NGMP, we use the auth token ID for local user, but since the persona ID isn't easily accessible 
-	// from lookAtPlayerID in a non-hacked way yet, we'll try to just fetch "1" for the current session or lookupID.
-	// We'll use 1 for now if lookupID == localProfileID.
-	int64_t ngmpUserID = 1;
+	// GeneralsX @bugfix Use real authenticated NGMP user ID instead of hardcoded 1
+	int64_t ngmpUserID = NGMP_OnlineServicesManager::getInstance().getUserId();
+	if (parentWindowName == "PopupPlayerInfo.wnd" && lookAtPlayerID > 0 && lookAtPlayerID != TheGameSpyInfo->getLocalProfileID())
+	{
+		ngmpUserID = lookAtPlayerID;
+	}
+	if (ngmpUserID <= 0)
+	{
+		ngmpUserID = 1; // Fallback if not logged in or invalid ID
+	}
+
 	Bool weHaveStats = NGMP_OnlineServicesManager::getInstance().getCachedPlayerStats(ngmpUserID, stats);
 	if (!weHaveStats && !g_waitingForPlayerStats)
 	{

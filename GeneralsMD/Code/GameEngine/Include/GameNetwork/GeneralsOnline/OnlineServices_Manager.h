@@ -207,6 +207,7 @@ public:
     // Async stats fetch
     void requestGlobalStatsAsync();
     bool hasGlobalStats() const;
+    uint32_t getGlobalStatsVersion() const { return m_globalStatsVersion; }
     GlobalStats getGlobalStats() const;
 
     void requestPlayerStatsAsync(int64_t userID);
@@ -279,6 +280,7 @@ private:
 
     // Async stats state
     std::atomic<bool> m_hasGlobalStats = false;
+    std::atomic<uint32_t> m_globalStatsVersion = 0; // GeneralsX @feature Increment on each global stats fetch
     std::atomic<bool> m_statsRequestInFlight = false;
     std::mutex m_statsMutex;
     GlobalStats m_globalStats;
