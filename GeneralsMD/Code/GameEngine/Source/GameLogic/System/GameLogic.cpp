@@ -129,6 +129,8 @@
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NetworkMesh.h"
 #endif
 
 #include <rts/profile.h>
@@ -1389,6 +1391,18 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			TheMouse->setVisibility(FALSE);
 			m_loadScreen->init(TheGameInfo);
 
+#if defined(SAGE_USE_NGMP)
+			// GeneralsX @feature fbraz3 09/09/2026 Keep ICE signaling alive during long map loading
+			if (TheNGMPGame)
+			{
+				NetworkMesh* pMesh = NGMP_OnlineServicesManager::GetNetworkMesh();
+				if (pMesh)
+				{
+					pMesh->StartLoadingKeepalive();
+				}
+			}
+#endif
+
 			updateLoadProgress( LOAD_PROGRESS_START );
 		}
 	}
@@ -2349,6 +2363,17 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		//
 		if( loadingSaveGame == FALSE )
 */
+#if defined(SAGE_USE_NGMP)
+			// GeneralsX @feature fbraz3 09/09/2026 Stop background ICE keepalive now that loading completed
+			if (TheNGMPGame)
+			{
+				NetworkMesh* pMesh = NGMP_OnlineServicesManager::GetNetworkMesh();
+				if (pMesh)
+				{
+					pMesh->StopLoadingKeepalive();
+				}
+			}
+#endif
 			deleteLoadScreen();
 
 	}

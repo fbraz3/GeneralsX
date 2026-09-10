@@ -658,11 +658,17 @@ void NetworkMesh::SetTURNCredentials(const std::string& username, const std::str
 			return;
 		}
 
-		// Cloudflare Calls TURN relay over UDP (ports 3478 and 53)
-		const char* turnList = "turn:turn.cloudflare.com:3478?transport=udp,turn:turn.cloudflare.com:53?transport=udp";
+		// Cloudflare Calls TURN relay: UDP (3478, 53), TCP (3478, 80) and TLS (443)
+		// GeneralsX @feature fbraz3 09/09/2026 Add TCP/TLS fallback to survive strict/symmetric NAT
+		const char* turnList =
+			"turn:turn.cloudflare.com:3478?transport=udp,"
+			"turn:turn.cloudflare.com:53?transport=udp,"
+			"turn:turn.cloudflare.com:3478?transport=tcp,"
+			"turn:turn.cloudflare.com:80?transport=tcp,"
+			"turns:turn.cloudflare.com:443?transport=tcp";
 
-		m_strTurnUsernameString = username + "," + username;
-		m_strTurnTokenString = token + "," + token;
+		m_strTurnUsernameString = username + "," + username + "," + username + "," + username + "," + username;
+		m_strTurnTokenString = token + "," + token + "," + token + "," + token + "," + token;
 
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_ServerList, turnList);
 		SteamNetworkingUtils()->SetGlobalConfigValueString(k_ESteamNetworkingConfig_P2P_TURN_UserList, m_strTurnUsernameString.c_str());
@@ -690,6 +696,8 @@ void NetworkMesh::DisconnectUser(int64_t remoteUserID)
 
 void NetworkMesh::Disconnect()
 {
+	StopLoadingKeepalive();
+
 	std::lock_guard<std::recursive_mutex> lock(m_mapConnectionsMutex);
 	for (auto& kvPair : m_mapConnections)
 	{
@@ -717,6 +725,39 @@ void NetworkMesh::Tick()
 	if (m_pSignaling)
 	{
 		m_pSignaling->Poll();
+	}
+}
+
+// GeneralsX @feature fbraz3 09/09/2026 Background ICE keepalive thread during loading screens
+void NetworkMesh::StartLoadingKeepalive()
+{
+	if (m_bKeepaliveRunning.load())
+	{
+		return;
+	}
+	m_bLoadingActive.store(true);
+	m_bKeepaliveRunning.store(true);
+	m_keepaliveThread = std::thread([this]()
+	{
+		fprintf(stderr, "[STEAM NETWORKING] ICE keepalive thread started (loading protection)\n");
+		fflush(stderr);
+		while (m_bLoadingActive.load())
+		{
+			Tick();
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
+		m_bKeepaliveRunning.store(false);
+		fprintf(stderr, "[STEAM NETWORKING] ICE keepalive thread stopped\n");
+		fflush(stderr);
+	});
+}
+
+void NetworkMesh::StopLoadingKeepalive()
+{
+	m_bLoadingActive.store(false);
+	if (m_keepaliveThread.joinable())
+	{
+		m_keepaliveThread.join();
 	}
 }
 
@@ -931,6 +972,14 @@ void NetworkMesh::SetTURNCredentials(const std::string&, const std::string&)
 }
 
 void NetworkMesh::Tick()
+{
+}
+
+void NetworkMesh::StartLoadingKeepalive()
+{
+}
+
+void NetworkMesh::StopLoadingKeepalive()
 {
 }
 

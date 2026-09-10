@@ -10,6 +10,8 @@
 #include <string>
 #include <functional>
 #include <cstdint>
+#include <thread>
+#include <atomic>
 
 #if defined(SAGE_USE_GAMENETWORKINGSOCKETS)
 #include <steam/steamnetworkingsockets.h>
@@ -130,6 +132,7 @@ public:
 	NetworkMesh();
 	~NetworkMesh()
 	{
+		StopLoadingKeepalive();
 		Disconnect();
 		if (m_pSignaling != nullptr)
 		{
@@ -192,6 +195,10 @@ public:
 
 	void Tick();
 
+	// GeneralsX @feature fbraz3 09/09/2026 Background keepalive thread during loading screens
+	void StartLoadingKeepalive();
+	void StopLoadingKeepalive();
+
 	HSteamListenSocket GetListenSocketHandle() const { return m_hListenSock; }
 
 	std::map<int64_t, PlayerConnection>& GetAllConnections()
@@ -216,6 +223,10 @@ private:
 	ISignalingClient* m_pSignaling = nullptr;
 	HSteamListenSocket m_hListenSock = k_HSteamListenSocket_Invalid;
 	bool m_bDisconnected = false;
+
+	std::thread m_keepaliveThread;
+	std::atomic<bool> m_bKeepaliveRunning{ false };
+	std::atomic<bool> m_bLoadingActive{ false };
 
 	std::string m_strTurnUsername;
 	std::string m_strTurnToken;
