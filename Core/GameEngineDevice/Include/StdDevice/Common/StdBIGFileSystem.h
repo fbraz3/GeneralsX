@@ -50,6 +50,13 @@ public:
 	virtual void closeAllFiles() override;															///< Close all files associated with ArchiveFiles
 
 	virtual Bool loadBigFilesFromDirectory(AsciiString dir, AsciiString fileMask, Bool overwrite = FALSE) override;
+
+	// GeneralsX @bugfix UnicodeApocalypse 11/09/2026 allowPatchPrecedence=FALSE for fallback asset
+	// roots so their Patch*.big can't outrank content already loaded from the primary root.
+	Bool loadBigFilesFromDirectory(AsciiString dir, AsciiString fileMask, Bool overwrite, Bool allowPatchPrecedence);
 protected:
+	// GeneralsX @bugfix UnicodeApocalypse 11/09/2026 Opens one BIG file and merges it into the directory tree.
+	// Returns TRUE if opened and added.
+	Bool loadOneArchiveFile(const AsciiString& archivePath, Bool overwrite);
 
 };
