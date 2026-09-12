@@ -193,6 +193,8 @@ public:
 	virtual Bool isTunnelContain() const override { return FALSE; }
 	virtual Bool isSpecialZeroSlotContainer() const override { return false; }
 	virtual Bool isImmuneToClearBuildingAttacks() const override { return true; }
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Default: not an Overlord-style container.
+	virtual Bool isSpecialOverlordStyleContainer() const override { return false; }
 
 	/**
 		this is used for containers that must do something to allow people to enter or exit...

@@ -61,6 +61,8 @@ public:
 	virtual Bool isGarrisonable() const override;	///< can this unit be Garrisoned? (ick)
 	virtual Bool isHealContain() const override { return false; } ///< true when container only contains units while healing (not a transport!)
 	virtual Bool isImmuneToClearBuildingAttacks() const override { return true; }
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 The Overlord is a special-style container.
+	virtual Bool isSpecialOverlordStyleContainer() const override { return TRUE; }
 
 	virtual void onDie( const DamageInfo *damageInfo ) override;  ///< the die callback
 	virtual void onDelete() override;	///< Last possible moment cleanup
@@ -75,8 +77,12 @@ public:
 	virtual void redeployOccupants() override;
 	virtual Bool isSpecificRiderFreeToExit(Object* obj) override;
 	virtual void exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor) override;
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Redirects exit queries to the loaded portable.
+	virtual ExitInterface* getContainExitInterface() override;
 
 	virtual Bool isValidContainerFor(const Object* obj, Bool checkCapacity) const override;
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Redirects containment checks to the loaded portable.
+	virtual Bool isContained( const Object *obj ) const override;
 	virtual void addToContain( Object *obj ) override;				///< add 'obj' to contain list
 	virtual void addToContainList( Object *obj ) override;		///< The part of AddToContain that inheritors can override (Can't do whole thing because of all the private stuff involved)
 	virtual void removeFromContain( Object *obj, Bool exposeStealthUnits = FALSE ) override;	///< remove 'obj' from contain list
