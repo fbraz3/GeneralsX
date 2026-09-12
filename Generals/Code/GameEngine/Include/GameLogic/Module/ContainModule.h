@@ -85,6 +85,8 @@ public:
 	virtual Bool isHealContain() const = 0;
 	virtual Bool isTunnelContain() const = 0;
 	virtual Bool isImmuneToClearBuildingAttacks() const = 0;
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Ported from GeneralsMD for Overlord-style nested containers.
+	virtual Bool isSpecialOverlordStyleContainer() const = 0;
 
 
 	///< if my object gets selected, then my visible passengers should, too
