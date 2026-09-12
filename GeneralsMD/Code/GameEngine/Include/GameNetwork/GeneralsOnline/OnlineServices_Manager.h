@@ -39,6 +39,7 @@ struct NGMPEvent {
         EVENT_AUTH_SUCCESS,
         EVENT_AUTH_FAILURE,
         EVENT_AUTH_CANCELLED,
+        EVENT_AUTH_FALLBACK_BROWSER,
         EVENT_LOBBY_LIST_UPDATED,
         EVENT_CHAT_MESSAGE_RECEIVED,
         EVENT_CHAT_CONNECTED,
@@ -155,6 +156,9 @@ public:
     void Tick() { update(); }
 
     void shutdown();
+
+    // Main entry point for login (tries silent refresh token first, falls back to browser)
+    void beginLogin();
 
     // Browser-based gamecode login flow (macOS/Linux: uses SDL_OpenURL)
     void beginBrowserLogin();

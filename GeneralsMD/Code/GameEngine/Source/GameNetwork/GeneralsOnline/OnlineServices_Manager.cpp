@@ -70,6 +70,10 @@ void NGMP_OnlineServicesManager::update() {
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Cancelled\n");
                 ClearGSMessageBoxes();
                 break;
+            case NGMPEvent::EVENT_AUTH_FALLBACK_BROWSER:
+                fprintf(stderr, "[NGMP-MainThread] Event: Auth Fallback to Browser\n");
+                beginBrowserLogin();
+                break;
             case NGMPEvent::EVENT_LOBBY_LIST_UPDATED:
                 fprintf(stderr, "[NGMP-MainThread] Event: Lobby list updated (%zu lobbies)\n", m_lobbies.size());
                 break;

@@ -7,6 +7,7 @@
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GameSpyOverlay.h"
+#include "Common/GlobalData.h"
 #include <cstdio>
 #include <thread>
 #include <chrono>
@@ -279,16 +280,167 @@ void NGMP_OnlineServicesManager::cancelBrowserLogin() {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+// beginLogin — main entry point: tries silent refresh token first, falls back
+// to browser OAuth flow if no saved token or if token is expired/invalid.
+// ──────────────────────────────────────────────────────────────────────────────
+void NGMP_OnlineServicesManager::beginLogin() {
+    std::string refreshToken = NGMP::LoadRefreshToken();
+    if (!refreshToken.empty() && !NGMP::IsDevelopment()) {
+        loginWithRefreshToken(refreshToken);
+    } else {
+        beginBrowserLogin();
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // loginWithRefreshToken — silent token re-login (no browser required)
 // ──────────────────────────────────────────────────────────────────────────────
 void NGMP_OnlineServicesManager::loginWithRefreshToken(const std::string& refreshToken) {
     if (refreshToken.empty()) return;
 
-    // TODO: implement POST /LoginWithToken with the refresh token for silent re-auth.
-    // For now, treat a non-empty saved refresh token as requiring a fresh browser login.
-    fprintf(stderr, "[NGMP] Saved refresh token found but silent re-login not yet implemented; starting browser flow\n");
-    fflush(stderr);
-    beginBrowserLogin();
+    if (m_waitingBrowserLogin.exchange(true)) {
+        fprintf(stderr, "[NGMP] Login already in progress\n");
+        fflush(stderr);
+        return;
+    }
+
+    ClearGSMessageBoxes();
+    GSMessageBoxCancel(UnicodeString(L"Generals Online Login"),
+                       UnicodeString(L"Logging in with saved session..."),
+                       []() {
+                           NGMP_OnlineServicesManager::getInstance().cancelBrowserLogin();
+                       });
+
+    m_pollThreadRunning = true;
+    if (m_pollThread.joinable()) {
+        m_pollThread.join();
+    }
+
+    m_pollThread = std::thread([this, refreshToken]() {
+        std::string url = NGMP::GetAPIEndpoint("LoginWithToken");
+        fprintf(stderr, "[NGMP] Attempting silent login with refresh token at %s...\n", NGMP::SanitizeURL(url).c_str());
+        fflush(stderr);
+
+        json requestJson = {
+            { "reserved_0", "" },
+            { "reserved_1", "" },
+            { "reserved_2", "" },
+            { "exe_crc", TheGlobalData ? TheGlobalData->m_exeCRC : 0 },
+            { "ini_crc", TheGlobalData ? TheGlobalData->m_iniCRC : 0 }
+        };
+        std::string requestBody = requestJson.dump(-1, ' ', false, json::error_handler_t::replace);
+
+        CURL* curl = curl_easy_init();
+        long httpCode = 0;
+        NGMP::Internal::CurlResponse response;
+
+        if (curl) {
+            struct curl_slist* headers = nullptr;
+            headers = curl_slist_append(headers, "Content-Type: application/json");
+            std::string authHeader = "Authorization: Bearer " + refreshToken;
+            headers = curl_slist_append(headers, authHeader.c_str());
+
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, requestBody.c_str());
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 6L);
+            curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 4L);
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
+            curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
+
+            CURLcode res = curl_easy_perform(curl);
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+            curl_slist_free_all(headers);
+            curl_easy_cleanup(curl);
+
+            // If user clicked cancel while request was in-flight, abort cleanly
+            if (!m_waitingBrowserLogin || !m_pollThreadRunning) {
+                fprintf(stderr, "[NGMP] Silent login aborted (cancelled by user)\n");
+                fflush(stderr);
+                return;
+            }
+
+            if (res == CURLE_OK && httpCode == 200 && !response.text.empty()) {
+                try {
+                    auto jsonObject = json::parse(response.text);
+                    int pollResult = jsonObject.value("result", 0);
+                    std::string sessionToken = jsonObject.value("session_token", "");
+                    std::string newRefreshToken = jsonObject.value("refresh_token", "");
+                    int64_t userId = jsonObject.value("user_id", (int64_t)0);
+                    std::string displayName = jsonObject.value("display_name", "");
+                    std::string wsUri = jsonObject.value("ws_uri", "");
+
+                    // 1 == LoginSuccess (EPendingLoginState::LoginSuccess)
+                    if (pollResult == 1 && !sessionToken.empty()) {
+                        m_authToken  = sessionToken;
+                        m_username   = displayName;
+                        m_userId     = userId;
+                        m_wsUri      = wsUri;
+                        m_isLoggedIn = true;
+
+                        NGMP::SaveAuthToken(sessionToken);
+                        if (!newRefreshToken.empty()) {
+                            NGMP::SaveRefreshToken(newRefreshToken);
+                        }
+
+                        m_waitingBrowserLogin = false;
+                        m_pollThreadRunning   = false;
+
+                        fprintf(stderr, "[NGMP] Silent login successful! user=%s id=%lld\n",
+                                displayName.c_str(), (long long)userId);
+                        fflush(stderr);
+
+                        NGMP::FetchMOTD();
+
+                        NGMPEvent ev;
+                        ev.type    = NGMPEvent::EVENT_AUTH_SUCCESS;
+                        ev.payload = sessionToken;
+                        postEvent(ev);
+                        return;
+                    }
+                } catch (const std::exception& e) {
+                    fprintf(stderr, "[NGMP] LoginWithToken JSON parse error: %s\n", e.what());
+                    fflush(stderr);
+                }
+            } else if (httpCode == 423) {
+                fprintf(stderr, "[NGMP] Account is banned\n");
+                fflush(stderr);
+                m_waitingBrowserLogin = false;
+                m_pollThreadRunning   = false;
+                NGMP::SaveRefreshToken("");
+                ClearGSMessageBoxes();
+                GSMessageBoxOk(UnicodeString(L"Account Banned"),
+                               UnicodeString(L"You are banned. You can file an appeal in Discord."),
+                               nullptr);
+                NGMPEvent ev;
+                ev.type    = NGMPEvent::EVENT_AUTH_FAILURE;
+                ev.payload = "Account Banned";
+                postEvent(ev);
+                return;
+            }
+        }
+
+        // Check if cancelled by user while request was in-flight
+        if (!m_waitingBrowserLogin || !m_pollThreadRunning) {
+            fprintf(stderr, "[NGMP] Silent login aborted (cancelled by user)\n");
+            fflush(stderr);
+            return;
+        }
+
+        // Token expired, invalid or server rejected: clear bad token and fall back to browser OAuth flow
+        fprintf(stderr, "[NGMP] Saved refresh token rejected or expired (HTTP %ld); falling back to browser login\n", httpCode);
+        fflush(stderr);
+        NGMP::SaveRefreshToken("");
+
+        m_waitingBrowserLogin = false;
+        m_pollThreadRunning   = false;
+
+        NGMPEvent ev;
+        ev.type = NGMPEvent::EVENT_AUTH_FALLBACK_BROWSER;
+        postEvent(ev);
+    });
 }
 
 void NGMP_OnlineServicesManager::logout() {
@@ -296,6 +448,7 @@ void NGMP_OnlineServicesManager::logout() {
     m_username.clear();
     m_isLoggedIn = false;
     NGMP::SaveAuthToken("");
+    NGMP::SaveRefreshToken("");
 }
 
 void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
@@ -558,7 +711,7 @@ bool NGMP_OnlineServices_AuthInterface::IsLoggedIn() const
 
 void NGMP_OnlineServices_AuthInterface::BeginLogin()
 {
-    NGMP_OnlineServicesManager::getInstance().beginBrowserLogin();
+    NGMP_OnlineServicesManager::getInstance().beginLogin();
 }
 
 void NGMP_OnlineServices_AuthInterface::LogoutOfMyAccount()

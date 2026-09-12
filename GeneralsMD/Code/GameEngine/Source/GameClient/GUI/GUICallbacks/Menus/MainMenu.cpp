@@ -1612,11 +1612,10 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
 
 #if defined(SAGE_USE_NGMP)
-				// GeneralsX @feature GeneralsOnline - Browser gamecode login flow
-				// No in-game login form; the NGMP manager opens the browser and polls.
+				// GeneralsX @feature GeneralsOnline - Silent refresh token login with browser fallback
 				NGMP_OnlineServicesManager::getInstance().init();
 				if (!NGMP_OnlineServicesManager::getInstance().isLoggedIn()) {
-					NGMP_OnlineServicesManager::getInstance().beginBrowserLogin();
+					NGMP_OnlineServicesManager::getInstance().beginLogin();
 				}
 #else
 				StartPatchCheck();
