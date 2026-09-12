@@ -891,10 +891,19 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 			TheShell->push("Menus/WOLWelcomeMenu.wnd");
 		}
 	} else if (!NGMP_OnlineServicesManager::getInstance().isWaitingBrowserLogin()) {
-		// Reset lock if browser login is no longer in progress (cancelled or failed)
+		// GeneralsX @bugfix fbraz3 12/09/2026 Restore main menu UI if browser login was cancelled or failed
 		if (buttonPushed && dropDown == DROPDOWN_NONE) {
-			buttonPushed = FALSE;
+			for (Int i = 0; i < DROPDOWN_COUNT; ++i) {
+				if (dropDownWindows[i]) {
+					dropDownWindows[i]->winHide(i != DROPDOWN_MAIN);
+				}
+			}
+			TheTransitionHandler->remove("MainMenuMultiPlayerMenuTransitionToNext");
+			HandleCanceledDownload(TRUE);
 			dontAllowTransitions = FALSE;
+			if (parentMainMenu) {
+				TheWindowManager->winSetFocus(parentMainMenu);
+			}
 		}
 	}
 #endif
