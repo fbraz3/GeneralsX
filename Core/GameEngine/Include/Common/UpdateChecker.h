@@ -50,6 +50,15 @@ public:
     // Returns false if still in progress or no update found.
     static bool poll(const char** outLatestTag);
 
+    // Returns true if background update check is finished
+    static bool isDone();
+
+    // Returns true if a newer version is available
+    static bool hasUpdate();
+
+    // Returns latest tag string or empty
+    static const char* getLatestTag();
+
     // GitHub repository used for the API query.
     static const char* getReleasesUrl();
 };

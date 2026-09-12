@@ -1400,9 +1400,11 @@ AsciiString GlobalData::BuildUserDataPathFromIni()
 	{
 		const char* home = getenv("HOME");
 		if (home) {
-			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "Generals" / "";
+			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "Generals";
 			std::filesystem::create_directories(path);
 			userDataDir = path.string().c_str();
+			if (!userDataDir.endsWith("/"))
+				userDataDir.concat('/');
 		} else {
 			userDataDir = "./";
 		}
@@ -1424,9 +1426,11 @@ AsciiString GlobalData::BuildUserDataPathFromIni()
 			path = ".";
 		}
 
-		path = path / "GeneralsX" / "Generals" / "";
+		path = path / "GeneralsX" / "Generals";
 		std::filesystem::create_directories(path);
 		userDataDir = path.string().c_str();
+		if (!userDataDir.endsWith("/"))
+			userDataDir.concat('/');
 	}
 #endif
 

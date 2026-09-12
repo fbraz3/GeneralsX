@@ -35,6 +35,8 @@ RUN apt-get update -qq && \
         libtool \
         libltdl-dev \
         libopenal-dev \
+        libprotobuf-dev \
+        protobuf-compiler \
         libasound2-dev \
         libpulse-dev \
         libaudio-dev \

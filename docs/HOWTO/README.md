@@ -11,6 +11,7 @@ Step-by-step guides for common tasks in GeneralsX.
 | [SagePatch Configuration](SAGEPATCH_CONFIGURATION.md) | Configure camera height, scroll speed, terrain draw distance, and other QoL settings |
 | [Russian Localization](RUSSIAN_LOCALIZATION.md) | Apply Russian language patch (EN + RU instructions) |
 | [Investigating SyncCrashes](INVESTIGATING_DESYNCS.md) | How to extract and analyze Deep CRC memory buffers to debug network desyncs |
+| [Investigating Linux Crashes](INVESTIGATING_LINUX_CRASHES.md) | How to troubleshoot Flatpak silent exits, capture terminal logs, and debug with GDB |
 
 ## Contributing
 

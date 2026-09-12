@@ -1111,6 +1111,18 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
 #    Source/GameNetwork/GameSpyOverlay.cpp
     Source/GameNetwork/GUIUtil.cpp
+    Include/GameNetwork/GeneralsOnline/OnlineServices_Manager.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_Auth.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_SocialInterface.h
+    Include/GameNetwork/GeneralsOnline/NGMP_types.h
+    Include/GameNetwork/GeneralsOnline/NGMP_interfaces.h
+    Include/GameNetwork/GeneralsOnline/NGMPGame.h
+    Include/GameNetwork/GeneralsOnline/NGMP_Helpers.h
+    Include/GameNetwork/GeneralsOnline/NGMPWebSocket.h
+    Include/GameNetwork/GeneralsOnline/ngmp_curl_utils.h
 #    Source/GameNetwork/IPEnumeration.cpp
 #    Source/GameNetwork/LANAPI.cpp
 #    Source/GameNetwork/LANAPICallbacks.cpp
@@ -1148,6 +1160,22 @@ else()
     )
 endif()
 
+if(SAGE_USE_NGMP)
+    list(APPEND GAMEENGINE_SRC
+        Source/GameNetwork/GeneralsOnline/OnlineServices_Init.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_Auth.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_Manager.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_WebSocket.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_SocialInterface.cpp
+        Source/GameNetwork/GeneralsOnline/NGMPGame.cpp
+        Source/GameNetwork/GeneralsOnline/NGMP_Helpers.cpp
+        Source/GameNetwork/GeneralsOnline/NetworkMesh.cpp
+        Source/GameNetwork/GeneralsOnline/NextGenTransport.cpp
+    )
+endif()
 
 add_library(z_gameengine STATIC)
 

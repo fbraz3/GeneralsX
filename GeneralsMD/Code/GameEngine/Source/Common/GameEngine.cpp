@@ -88,6 +88,10 @@
 #include "GameClient/ClientInstance.h"
 #include "GameClient/FXList.h"
 #include "GameClient/GameClient.h"
+
+#ifdef SAGE_USE_NGMP
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
 #include "GameClient/Keyboard.h"
 #include "GameClient/Shell.h"
 #include "GameClient/GameText.h"
@@ -278,6 +282,10 @@ GameEngine::~GameEngine()
 //	TheShell = nullptr;
 
 	TheGameResultsQueue->endThreads();
+
+#ifdef SAGE_USE_NGMP
+	NGMP_OnlineServicesManager::getInstance().shutdown();
+#endif
 
 	// TheSuperHackers @fix helmutbuhler 03/06/2025
 	// Reset all subsystems before deletion to prevent crashing due to cross dependencies.
@@ -700,6 +708,13 @@ void GameEngine::init()
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), nullptr);
 
+#ifdef SAGE_USE_NGMP
+		if (!TheGlobalData->m_headless)
+		{
+			NGMP_OnlineServicesManager::getInstance().init();
+		}
+#endif
+
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -1021,6 +1036,13 @@ void GameEngine::update()
 			{
 				TheNetwork->UPDATE();
 			}
+
+#ifdef SAGE_USE_NGMP
+			if (!TheGlobalData->m_headless)
+			{
+				NGMP_OnlineServicesManager::getInstance().update();
+			}
+#endif
 		}
 
 		// TheSuperHackers @info Ignores frozen time because the script engine needs updating in the logic update regardless.

@@ -1361,7 +1361,11 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	GameWindow *parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 	TheWindowManager->winSetFocus( parent );
 
-	if( (TheGameLogic->isInGame() && TheGameLogic->getGameMode() != GAME_SHELL) || TheGameSpyInfo )
+	// GeneralsX @bugfix fbraz3 12/09/2026 Only disable controls when actually in-game or in an online staging room
+	Bool inGame = (TheGameLogic->isInGame() && TheGameLogic->getGameMode() != GAME_SHELL);
+	Bool inOnlineStaging = (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom() != nullptr);
+
+	if( inGame || inOnlineStaging )
 	{
 		// disable controls that you can't change the options for in game
 		comboBoxLANIP->winEnable(FALSE);

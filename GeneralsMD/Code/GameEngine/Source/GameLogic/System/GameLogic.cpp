@@ -127,6 +127,11 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NetworkMesh.h"
+#endif
 
 #include <rts/profile.h>
 
@@ -1289,6 +1294,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			DEBUG_LOG(("Starting network game"));
 			TheGameInfo = TheLAN->GetMyGame();
 		}
+#if defined(SAGE_USE_NGMP)
+		else if (TheNGMPGame)
+		{
+			DEBUG_LOG(("Starting NGMP game"));
+			TheGameInfo = TheNGMPGame;
+		}
+#endif
 		else
 		{
 			DEBUG_LOG(("Starting gamespy game"));
@@ -1378,6 +1390,18 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		{
 			TheMouse->setVisibility(FALSE);
 			m_loadScreen->init(TheGameInfo);
+
+#if defined(SAGE_USE_NGMP)
+			// GeneralsX @feature fbraz3 09/09/2026 Keep ICE signaling alive during long map loading
+			if (TheNGMPGame)
+			{
+				NetworkMesh* pMesh = NGMP_OnlineServicesManager::GetNetworkMesh();
+				if (pMesh)
+				{
+					pMesh->StartLoadingKeepalive();
+				}
+			}
+#endif
 
 			updateLoadProgress( LOAD_PROGRESS_START );
 		}
@@ -2339,6 +2363,17 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		//
 		if( loadingSaveGame == FALSE )
 */
+#if defined(SAGE_USE_NGMP)
+			// GeneralsX @feature fbraz3 09/09/2026 Stop background ICE keepalive now that loading completed
+			if (TheNGMPGame)
+			{
+				NetworkMesh* pMesh = NGMP_OnlineServicesManager::GetNetworkMesh();
+				if (pMesh)
+				{
+					pMesh->StopLoadingKeepalive();
+				}
+			}
+#endif
 			deleteLoadScreen();
 
 	}
@@ -2578,7 +2613,7 @@ void GameLogic::loadMapINI( AsciiString mapName )
 
 
 	char fullFledgeFilename[_MAX_PATH];
-	snprintf(fullFledgeFilename, ARRAY_SIZE(fullFledgeFilename), "%s\\map.ini", filename);
+	snprintf(fullFledgeFilename, ARRAY_SIZE(fullFledgeFilename), "%s/map.ini", filename);
 	if (TheFileSystem->doesFileExist(fullFledgeFilename)) {
 		DEBUG_LOG(("Loading map.ini"));
 		INI ini;
@@ -2588,7 +2623,7 @@ void GameLogic::loadMapINI( AsciiString mapName )
 	// TheSuperHackers @todo Implement ini load directory for map folder.
 	// Requires adjustments in map transfer.
 
-	snprintf(fullFledgeFilename, ARRAY_SIZE(fullFledgeFilename), "%s\\solo.ini", filename);
+	snprintf(fullFledgeFilename, ARRAY_SIZE(fullFledgeFilename), "%s/solo.ini", filename);
 	if (TheFileSystem->doesFileExist(fullFledgeFilename)) {
 		DEBUG_LOG(("Loading solo.ini"));
 		INI ini;

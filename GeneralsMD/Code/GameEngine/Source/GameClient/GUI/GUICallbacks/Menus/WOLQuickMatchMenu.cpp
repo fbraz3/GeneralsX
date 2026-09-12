@@ -39,6 +39,12 @@
 #include "Common/PlayerTemplate.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/WindowLayout.h"
+#include "GameClient/LanguageFilter.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "Common/GlobalData.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GameText.h"
 #include "GameClient/InGameUI.h"
@@ -131,6 +137,9 @@ static Bool raiseMessageBoxes = false;
 static Bool isInInit = FALSE;
 static const Image *selectedImage = nullptr;
 static const Image *unselectedImage = nullptr;
+#if defined(SAGE_USE_NGMP)
+static std::vector<int> s_qmRowToPlaylistMapIndex;
+#endif
 
 static bool isPopulatingLadderBox = false;
 static Int maxPingEntries = 0;
@@ -557,6 +566,75 @@ void PopulateQMLadderComboBox()
 
 static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 {
+#if defined(SAGE_USE_NGMP)
+	std::list<AsciiString> maps;
+	std::list<AsciiString> mapDisplayNames;
+	Int numPlayers = 0;
+	Int playlistIndex = -1;
+	GadgetComboBoxGetSelectedPos(comboBoxNumPlayers, &playlistIndex);
+
+	const auto& playlists = NGMP_OnlineServicesManager::getInstance().getPlaylists();
+	if (playlistIndex >= 0 && playlistIndex < (Int)playlists.size())
+	{
+		const PlaylistEntry& plEntry = playlists[playlistIndex];
+		numPlayers = plEntry.MinPlayers;
+		for (const PlaylistMapEntry& mapEntry : plEntry.Maps)
+		{
+			AsciiString mapPath;
+			if (mapEntry.Custom)
+			{
+				mapPath.format("%smaps\\%s\\%s.map", TheGlobalData->getPath_UserData().str(), mapEntry.Path.c_str(), mapEntry.Path.c_str());
+			}
+			else
+			{
+				mapPath.format("maps\\%s\\%s.map", mapEntry.Path.c_str(), mapEntry.Path.c_str());
+			}
+			mapPath.toLower();
+			maps.push_back(mapPath);
+			mapDisplayNames.push_back(mapEntry.Name.empty() ? mapEntry.Path.c_str() : mapEntry.Name.c_str());
+		}
+	}
+	else
+	{
+		maps = TheGameSpyConfig->getQMMaps();
+		numPlayers = 2;
+	}
+
+	GadgetListBoxReset(listboxMapSelect);
+	s_qmRowToPlaylistMapIndex.clear();
+	auto itName = mapDisplayNames.begin();
+	int originalMapIndex = 0;
+	for (std::list<AsciiString>::const_iterator it = maps.begin(); it != maps.end(); ++it, ++originalMapIndex)
+	{
+		AsciiString theMap = *it;
+		AsciiString fallbackName = (itName != mapDisplayNames.end()) ? *itName++ : theMap;
+		const MapMetaData *md = TheMapCache->findMap(theMap);
+		if (!md) {
+			md = TheMapCache->findMap(fallbackName);
+		}
+
+		if (!md) {
+			continue; // Do not offer playlist maps that are not available locally
+		}
+
+		UnicodeString displayName = md->m_displayName;
+
+		Bool isSelected = pref.isMapSelected(theMap);
+		Int width = 10;
+		Int height = 10;
+		const Image *img = (isSelected)?selectedImage:unselectedImage;
+		if ( img )
+		{
+			width = min(GadgetListBoxGetColumnWidth(listboxMapSelect, 0), img->getImageWidth());
+			height = width;
+		}
+		Int index = GadgetListBoxAddEntryImage(listboxMapSelect, img, -1, 0, height, width);
+		GadgetListBoxAddEntryText(listboxMapSelect, displayName, GameSpyColor[(isSelected)?GSCOLOR_MAP_SELECTED:GSCOLOR_MAP_UNSELECTED], index, 1);
+		GadgetListBoxSetItemData(listboxMapSelect, (void *)(intptr_t)isSelected, index);
+		GadgetListBoxSetItemData(listboxMapSelect, (void *)md, index, 1);
+		s_qmRowToPlaylistMapIndex.push_back(originalMapIndex);
+	}
+#else
 	std::list<AsciiString> maps = TheGameSpyConfig->getQMMaps();
 
 	// enable/disable box based on ladder status
@@ -610,6 +688,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 			GadgetListBoxSetItemData(listboxMapSelect, (void *)md, index, 1);
 		}
 	}
+#endif
 }
 
 static void saveQuickMatchOptions()
@@ -889,11 +968,19 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 	populateQMSideComboBox(pref.getSide(), getLadderInfo());
 
 	PopulateQMLadderComboBox();
-	TheShell->showShellMap(TRUE);
-	TheGameSpyGame->reset();
-
-	GadgetListBoxReset(listboxMapSelect);
-	populateQuickMatchMapSelectListbox(pref);
+#if defined(SAGE_USE_NGMP)
+	NGMP_OnlineServicesManager::getInstance().requestPlaylistsAsync();
+	const auto& cachedPlaylists = NGMP_OnlineServicesManager::getInstance().getPlaylists();
+	if (!cachedPlaylists.empty()) {
+		GadgetComboBoxReset(comboBoxNumPlayers);
+		for (const auto& pl : cachedPlaylists) {
+			UnicodeString plName;
+			plName.format(L"%hs", pl.Name.c_str());
+			GadgetComboBoxAddEntry(comboBoxNumPlayers, plName, GameSpyColor[GSCOLOR_DEFAULT]);
+		}
+		GadgetComboBoxSetSelectedPos(comboBoxNumPlayers, 0);
+	}
+#endif
 
 	UpdateLocalPlayerStats();
 	UpdateStartButton();
@@ -929,9 +1016,20 @@ static void shutdownComplete( WindowLayout *layout )
 //-------------------------------------------------------------------------------------------------
 void WOLQuickMatchMenuShutdown( WindowLayout *layout, void *userData )
 {
-	TheGameSpyInfo->unregisterTextWindow(quickmatchTextWindow);
+#if defined(SAGE_USE_NGMP)
+	if (TheGameSpyInfo && quickmatchTextWindow)
+	{
+		TheGameSpyInfo->unregisterTextWindow(quickmatchTextWindow);
+	}
+	NGMP_OnlineServicesManager::getInstance().cancelMatchmakingAsync();
+#else
+	if (TheGameSpyInfo && quickmatchTextWindow)
+	{
+		TheGameSpyInfo->unregisterTextWindow(quickmatchTextWindow);
+	}
+#endif
 
-	if (!TheGameEngine->getQuitting())
+	if (TheGameEngine && !TheGameEngine->getQuitting())
 		saveQuickMatchOptions();
 
 	parentWOLQuickMatch = nullptr;
@@ -942,19 +1040,29 @@ void WOLQuickMatchMenuShutdown( WindowLayout *layout, void *userData )
 	isShuttingDown = true;
 
 	// if we are shutting down for an immediate pop, skip the animations
-	Bool popImmediate = *(Bool *)userData;
-	if( popImmediate )
+	if (userData != nullptr)
 	{
-
+		Bool popImmediate = *(Bool *)userData;
+		if( popImmediate )
+		{
+			shutdownComplete( layout );
+			return;
+		}
+	}
+	else
+	{
 		shutdownComplete( layout );
 		return;
-
 	}
 
-	TheShell->reverseAnimatewindow();
-	TheTransitionHandler->reverse("WOLQuickMatchMenuFade");
+	if (TheShell)
+		TheShell->reverseAnimatewindow();
+	if (TheTransitionHandler)
+		TheTransitionHandler->reverse("WOLQuickMatchMenuFade");
 
+#if !defined(SAGE_USE_NGMP)
 	RaiseGSMessageBox();
+#endif
 }
 
 
@@ -1025,6 +1133,77 @@ void WOLQuickMatchMenuUpdate( WindowLayout * layout, void *userData)
 		RaiseGSMessageBox();
 		raiseMessageBoxes = false;
 	}
+
+#if defined(SAGE_USE_NGMP)
+	// Process NGMP Events
+	auto events = NGMP_OnlineServicesManager::getInstance().pollEvents();
+	for (const auto& ev : events) {
+		if (ev.type == NGMPEvent::EVENT_PLAYLISTS_UPDATED) {
+			const auto& playlists = NGMP_OnlineServicesManager::getInstance().getPlaylists();
+			GadgetComboBoxReset(comboBoxNumPlayers);
+			for (const auto& pl : playlists) {
+				UnicodeString s;
+				s.format(L"%hs", pl.Name.c_str());
+				GadgetComboBoxAddEntry(comboBoxNumPlayers, s, GameSpyColor[GSCOLOR_DEFAULT]);
+			}
+			if (!playlists.empty()) {
+				GadgetComboBoxSetSelectedPos(comboBoxNumPlayers, 0);
+				QuickMatchPreferences pref;
+				populateQuickMatchMapSelectListbox(pref);
+				UpdateStartButton();
+			}
+		} else if (ev.type == NGMPEvent::EVENT_MATCHMAKING_MESSAGE) {
+			UnicodeString uMsg = NGMP::UTF8ToUnicode(ev.payload);
+			Int idx = GadgetListBoxAddEntryText(quickmatchTextWindow, uMsg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+			GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, idx);
+
+			std::string lowerMsg = ev.payload;
+			std::transform(lowerMsg.begin(), lowerMsg.end(), lowerMsg.begin(), ::tolower);
+			if (lowerMsg.find("removed") != std::string::npos ||
+				lowerMsg.find("again") != std::string::npos ||
+				lowerMsg.find("cancel") != std::string::npos ||
+				lowerMsg.find("fail") != std::string::npos ||
+				lowerMsg.find("could not") != std::string::npos) {
+				buttonWiden->winEnable(FALSE);
+				buttonStart->winHide(FALSE);
+				buttonStart->winEnable(TRUE);
+				buttonStop->winHide(TRUE);
+				enableOptionsGadgets(TRUE);
+				buttonBack->winEnable(TRUE);
+			}
+		} else if (ev.type == NGMPEvent::EVENT_MATCHMAKING_MATCH_FOUND) {
+			buttonBack->winEnable(TRUE);
+			buttonStop->winEnable(FALSE);
+			buttonWiden->winEnable(FALSE);
+			if (TheAudio) {
+				AudioEventRTS evt("GUICommunicatorOpen");
+				TheAudio->addAudioEvent(&evt);
+			}
+			UnicodeString uMsg;
+			uMsg.format(L"Match found! Joining lobby %hs...", ev.payload.c_str());
+			Int idx = GadgetListBoxAddEntryText(quickmatchTextWindow, uMsg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+			GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, idx);
+		} else if (ev.type == NGMPEvent::EVENT_GAME_START) {
+			fprintf(stderr, "[QUICKMATCH] EVENT_GAME_START received!\n");
+			fflush(stderr);
+			if (TheNGMPGame) {
+				NGMP_OnlineServices_LobbyInterface* pLobby = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+				NGMPGame* myGame = pLobby ? pLobby->GetCurrentGame() : nullptr;
+				if (pLobby && myGame) {
+					*TheNGMPGame = *myGame;
+					TheNGMPGame->cleanUpSlotPointers();
+					for (int i = 0; i < MAX_SLOTS; i++) {
+						GameSlot* slot = TheNGMPGame->getSlot(i);
+						if (slot) {
+							slot->setMapAvailability(TRUE);
+						}
+					}
+					TheNGMPGame->startGame(0);
+				}
+			}
+		}
+	}
+#endif
 
 	/// @todo: MDC handle disconnects in-game the same way as Custom Match!
 
@@ -1610,6 +1789,18 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 
 				if ( controlID == buttonStopID )
 				{
+#if defined(SAGE_USE_NGMP)
+					NGMP_OnlineServicesManager::getInstance().cancelMatchmakingAsync();
+					buttonWiden->winEnable(FALSE);
+					buttonStart->winHide(FALSE);
+					buttonStart->winEnable(TRUE);
+					buttonStop->winHide(TRUE);
+					enableOptionsGadgets(TRUE);
+					buttonBack->winEnable(TRUE);
+					UnicodeString msg(L"Matchmaking cancelled.");
+					Int idx = GadgetListBoxAddEntryText(quickmatchTextWindow, msg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+					GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, idx);
+#else
 					PeerRequest req;
 					req.peerRequestType = PeerRequest::PEERREQUEST_STOPQUICKMATCH;
 					TheGameSpyPeerMessageQueue->addRequest(req);
@@ -1618,6 +1809,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					buttonStop->winHide( TRUE );
 					enableOptionsGadgets(TRUE);
 					TheGameSpyInfo->addText(TheGameText->fetch("GUI:QMAborted"), GameSpyColor[GSCOLOR_DEFAULT], quickmatchTextWindow);
+#endif
 				}
 				else if ( controlID == buttonOptionsID )
 				{
@@ -1637,13 +1829,61 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 				}
 				else if ( controlID == buttonWidenID )
 				{
+#if defined(SAGE_USE_NGMP)
+					NGMP_OnlineServicesManager::getInstance().widenMatchmakingAsync();
+					buttonWiden->winEnable( FALSE );
+					UnicodeString msg(L"Widening matchmaking search...");
+					Int idx = GadgetListBoxAddEntryText(quickmatchTextWindow, msg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+					GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, idx);
+#else
 					PeerRequest req;
 					req.peerRequestType = PeerRequest::PEERREQUEST_WIDENQUICKMATCHSEARCH;
 					TheGameSpyPeerMessageQueue->addRequest(req);
 					buttonWiden->winEnable( FALSE );
+#endif
 				}
 				else if ( controlID == buttonStartID )
 				{
+#if defined(SAGE_USE_NGMP)
+					std::vector<int> selectedMaps;
+					Int selected = -1;
+					GadgetComboBoxGetSelectedPos(comboBoxNumPlayers, &selected);
+					if (selected >= 0) {
+						const auto& playlists = NGMP_OnlineServicesManager::getInstance().getPlaylists();
+						if (selected < (Int)playlists.size()) {
+							const auto& pl = playlists[selected];
+							Int numMaps = GadgetListBoxGetNumEntries(listboxMapSelect);
+							for (Int i = 0; i < numMaps; ++i) {
+								bool bMapSelected = (bool)(intptr_t)GadgetListBoxGetItemData(listboxMapSelect, i, 0);
+								if (bMapSelected && i < (Int)s_qmRowToPlaylistMapIndex.size()) {
+									selectedMaps.push_back(s_qmRowToPlaylistMapIndex[i]);
+								}
+							}
+
+							if ((int)selectedMaps.size() < pl.MinSelectedMaps) {
+								UnicodeString msg;
+								msg.format(L"You must select at least %d maps.", pl.MinSelectedMaps);
+								Int idx = GadgetListBoxAddEntryText(quickmatchTextWindow, msg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+								GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, idx);
+								break;
+							}
+
+							NGMP_OnlineServicesManager::getInstance().startMatchmakingAsync(pl.PlaylistID, selectedMaps);
+							
+							buttonWiden->winEnable(TRUE);
+							buttonStart->winHide(TRUE);
+							buttonStop->winHide(FALSE);
+							buttonStop->winEnable(TRUE);
+							enableOptionsGadgets(FALSE);
+							buttonBack->winEnable(TRUE);
+
+							UnicodeString startMsg;
+							startMsg.format(L"Searching for %hs match...", pl.Name.c_str());
+							Int idx = GadgetListBoxAddEntryText(quickmatchTextWindow, startMsg, GameSpyColor[GSCOLOR_DEFAULT], -1, -1);
+							GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, idx);
+						}
+					}
+#else
 					PeerRequest req;
 					req.peerRequestType = PeerRequest::PEERREQUEST_STARTQUICKMATCH;
 					req.qmMaps.clear();
@@ -1819,6 +2059,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 						ladPref.addRecentLadder( p );
 						ladPref.write();
 					}
+#endif
 				}
 				else if ( controlID == buttonBuddiesID )
 				{
@@ -1827,7 +2068,11 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 				else if ( controlID == buttonBackID )
 				{
 					buttonPushed = true;
+#if defined(SAGE_USE_NGMP)
+					NGMP_OnlineServicesManager::getInstance().cancelMatchmakingAsync();
+#else
 					TheGameSpyInfo->leaveGroupRoom();
+#endif
 					nextScreen = "Menus/WOLWelcomeMenu.wnd";
 					TheShell->pop();
 				}

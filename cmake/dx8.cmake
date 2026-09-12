@@ -137,7 +137,8 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   else()
     # GeneralsX @build copilot 01/04/2026 Pin remote DXVK to immutable commit produced by fix/macos-size_t-cstddef.
     # GeneralsX @build 12/07/2026 Bumped to the merged commit that includes the macOS HiDPI WSI fix upstream.
-    set(DXVK_REMOTE_REF 1132d306e36c932fb4d062bce7c5602c45913ac8)
+    # GeneralsX @build BenderAI 11/09/2026 Bump DXVK commit to fix libc++ try_key_extraction on modern macOS
+    set(DXVK_REMOTE_REF f66da559fd48cd55ddfebca38ed0f708c0f76a24)
     ExternalProject_Add(dxvk_macos_build
       # GeneralsX @build BenderAI 08/04/2026 Consume pre-patched source from pinned fork commit.
       GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git

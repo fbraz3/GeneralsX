@@ -378,7 +378,7 @@ static GHTTPBool configCallback( GHTTPRequest request, GHTTPResult result,
 	configBuffer[bufferLen-1] = 0;
 
 	AsciiString fname;
-	fname.format("%sGeneralsOnline\\Config.txt", TheGlobalData->getPath_UserData().str());
+	fname.format("%sGeneralsOnline/Config.txt", TheGlobalData->getPath_UserData().str());
 	FILE *fp = fopen(fname.str(), "wb");
 	if (fp)
 	{
@@ -433,7 +433,7 @@ static GHTTPBool configHeadCallback( GHTTPRequest request, GHTTPResult result,
 				Int serverLen = atoi(val.str());
 				Int fileLen = 0;
 				AsciiString fname;
-				fname.format("%sGeneralsOnline\\Config.txt", TheGlobalData->getPath_UserData().str());
+				fname.format("%sGeneralsOnline/Config.txt", TheGlobalData->getPath_UserData().str());
 				FILE *fp = fopen(fname.str(), "rb");
 				if (fp)
 				{
@@ -457,7 +457,7 @@ static GHTTPBool configHeadCallback( GHTTPRequest request, GHTTPResult result,
 					configBuffer = nullptr;
 
 					AsciiString fname;
-					fname.format("%sGeneralsOnline\\Config.txt", TheGlobalData->getPath_UserData().str());
+					fname.format("%sGeneralsOnline/Config.txt", TheGlobalData->getPath_UserData().str());
 					FILE *fp = fopen(fname.str(), "rb");
 					if (fp)
 					{

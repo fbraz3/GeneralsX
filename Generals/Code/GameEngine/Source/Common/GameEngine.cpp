@@ -1037,7 +1037,7 @@ void GameEngine::checkAbnormalQuitting()
 
 		UserPreferences pref;
 		AsciiString userPrefFilename;
-		userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", stats.id);
+		userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", stats.id);
 		DEBUG_LOG(("using the file %s", userPrefFilename.str()));
 		pref.load(userPrefFilename);
 
