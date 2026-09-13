@@ -3,10 +3,6 @@ name: Release Pipeline
 on:
   workflow_dispatch:
     inputs:
-      release_version:
-        description: "Release version tag (e.g., GeneralsX-Beta-3)"
-        required: true
-        type: string
       release_mode:
         description: "Release mode"
         required: false
@@ -18,7 +14,7 @@ on:
         default: Draft
 
 concurrency:
-  group: release-${{ github.workflow }}-${{ inputs.release_version }}
+  group: release-${{ github.workflow }}
   cancel-in-progress: false
 
 permissions:
@@ -32,6 +28,8 @@ jobs:
   # The tag creation step is guarded at step level: no tag is pushed on dry_run.
   create-tag:
     runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.version.outputs.version }}
     steps:
       # GeneralsX @build GitHubCopilot 08/05/2026 Use Node 24 compatible GitHub Actions major versions to remove runner deprecation warnings.
       - name: Checkout repository
@@ -40,21 +38,17 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Validate version input
+      - name: Calculate release version
+        id: version
         run: |
-          VERSION="${{ inputs.release_version }}"
-          if [ -z "$VERSION" ]; then
-            echo "ERROR: release_version is required"
-            exit 1
-          fi
-          echo "Release version: $VERSION"
+          ./scripts/tooling/release/calculate_next_version.sh
 
       - name: Create and push git tag
         if: inputs.release_mode != 'Dry Run'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ inputs.release_version }}"
+          VERSION="${{ steps.version.outputs.version }}"
           if git show-ref --tags --verify --quiet "refs/tags/$VERSION"; then
             echo "ERROR: Tag $VERSION already exists"
             exit 1
@@ -69,20 +63,20 @@ jobs:
     uses: ./.github/workflows/build-linux-flatpak.yml
     with:
       preset: linux64-deploy
-      checkout_ref: refs/tags/${{ inputs.release_version }}
+      checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
 
   build-macos:
     needs: [create-tag]
     uses: ./.github/workflows/build-macos.yml
     with:
       preset: macos-vulkan
-      checkout_ref: refs/tags/${{ inputs.release_version }}
+      checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
 
   build-windows:
     needs: [create-tag]
     uses: ./.github/workflows/build-windows.yml
     with:
-      checkout_ref: refs/tags/${{ inputs.release_version }}
+      checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
 
   # GeneralsX @build BenderAI 21/04/2026 Roll back the pushed tag when anything
   # downstream of create-tag fails, so a re-run with the same version is possible.
@@ -112,7 +106,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ inputs.release_version }}"
+          VERSION="${{ needs.create-tag.outputs.release_version }}"
           echo "Pipeline failed after tag was pushed. Deleting orphaned tag: $VERSION"
           git push origin --delete "refs/tags/$VERSION" \
             && echo "Tag $VERSION deleted from remote." \
@@ -120,7 +114,7 @@ jobs:
 
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [build-linux-flatpak, build-macos, build-windows]
+    needs: [create-tag, build-linux-flatpak, build-macos, build-windows]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -130,10 +124,10 @@ jobs:
 
       - name: Validate release inputs
         run: |
-          VERSION="${{ inputs.release_version }}"
+          VERSION="${{ needs.create-tag.outputs.release_version }}"
           RELEASE_MODE="${{ inputs.release_mode }}"
           if [ -z "$VERSION" ]; then
-            echo "ERROR: release_version is required"
+            echo "ERROR: release_version could not be determined"
             exit 1
           fi
           echo "Release version: $VERSION"
@@ -147,9 +141,9 @@ jobs:
       - name: Detect latest release tag
         id: latest
         run: |
-          CURRENT_TAG="${{ inputs.release_version }}"
-          # GeneralsX @bugfix GitHubCopilot 21/04/2026 Exclude the in-flight release tag so changelog compares against the previous published release.
-          LATEST_TAG=$(git tag -l "GeneralsX*" --sort=-version:refname --merged HEAD | grep -Fxv "$CURRENT_TAG" | head -1)
+          CURRENT_TAG="${{ needs.create-tag.outputs.release_version }}"
+          # GeneralsX @bugfix BenderAI 13/09/2026 Find previous release across SemVer and legacy GeneralsX- tags, sorted by creation date.
+          LATEST_TAG=$(git tag --merged HEAD --sort=-creatordate | grep -E '^([0-9]+\.[0-9]+\.[0-9]+|v[0-9]+\.[0-9]+\.[0-9]+|GeneralsX-)' | grep -Fxv "$CURRENT_TAG" | head -1)
           if [ -z "$LATEST_TAG" ]; then
             echo "latest_tag=" >> "$GITHUB_OUTPUT"
             echo "latest_tag_date=" >> "$GITHUB_OUTPUT"
@@ -327,15 +321,16 @@ jobs:
         id: notes
         env:
           LATEST_TAG: ${{ steps.latest.outputs.latest_tag }}
-          CURRENT_TAG: ${{ inputs.release_version }}
+          CURRENT_TAG: ${{ needs.create-tag.outputs.release_version }}
           PR_LINES_FILE: ${{ steps.changelog.outputs.pr_lines_file }}
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
         run: |
-          NOTES_FILE="release-assets/${{ inputs.release_version }}-notes.md"
-          NOTES_TXT_FILE="release-assets/${{ inputs.release_version }}-notes.txt"
+          NOTES_FILE="release-assets/${VERSION}-notes.md"
+          NOTES_TXT_FILE="release-assets/${VERSION}-notes.txt"
           mkdir -p release-assets
 
           {
-            echo "> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate."
+            echo "> If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate."
             echo ""
             if [ "${{ inputs.release_mode }}" = "Draft" ]; then
               echo "# What's New"
@@ -372,14 +367,15 @@ jobs:
         if: success() && inputs.release_mode == 'Dry Run'
         uses: actions/upload-artifact@v7
         with:
-          name: release-preview-${{ inputs.release_version }}
-          path: release-assets/${{ inputs.release_version }}-notes.txt
+          name: release-preview-${{ needs.create-tag.outputs.release_version }}
+          path: release-assets/${{ needs.create-tag.outputs.release_version }}-notes.txt
           retention-days: 30
 
       - name: Create GitHub release and upload assets
         if: success() && inputs.release_mode != 'Dry Run'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
         run: |
           DRAFT_FLAG=""
 
@@ -387,9 +383,9 @@ jobs:
             DRAFT_FLAG="--draft"
           fi
 
-          gh release create "${{ inputs.release_version }}" \
+          gh release create "$VERSION" \
             $DRAFT_FLAG \
-            --title "GeneralsX - ${{ inputs.release_version }}" \
+            --title "GeneralsX - $VERSION" \
             --notes-file "${{ steps.notes.outputs.notes_file }}" \
             "${{ steps.assets.outputs.linux_generals_asset }}" \
             "${{ steps.assets.outputs.linux_asset }}" \
@@ -399,10 +395,12 @@ jobs:
             "${{ steps.assets.outputs.windows_asset }}"
 
       - name: Summary
+        env:
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
         run: |
           echo "## Release Pipeline Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Tag: ${{ inputs.release_version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag: $VERSION" >> "$GITHUB_STEP_SUMMARY"
           echo "- Mode: ${{ inputs.release_mode }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Linux asset (Generals): Linux-GeneralsX.flatpak" >> "$GITHUB_STEP_SUMMARY"
           echo "- Linux asset: Linux-GeneralsXZH.flatpak" >> "$GITHUB_STEP_SUMMARY"

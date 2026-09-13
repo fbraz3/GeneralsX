@@ -454,6 +454,7 @@ UnicodeString Version::buildUnicodeGitCommitTime()
 	return str;
 }
 
+// GeneralsX @tweak FelipeBraz 13/09/2026 Support SemVer release tags and legacy tags in project watermark
 UnicodeString Version::getUnicodeProjectWatermark() const
 {
 	char finalCredit[256];
@@ -470,7 +471,13 @@ UnicodeString Version::getUnicodeProjectWatermark() const
 		char formattedTag[128];
 		strncpy(formattedTag, tagBase, sizeof(formattedTag) - 1);
 		formattedTag[sizeof(formattedTag) - 1] = '\0';
-		if (formattedTag[0] != '\0')
+
+		// Preserve lowercase 'v' prefix if SemVer format like v1.0.0, or capitalize words like Beta-XX
+		if ((formattedTag[0] == 'v' || formattedTag[0] == 'V') && isdigit((unsigned char)formattedTag[1]))
+		{
+			formattedTag[0] = 'v';
+		}
+		else if (formattedTag[0] != '\0' && !isdigit((unsigned char)formattedTag[0]))
 		{
 			formattedTag[0] = toupper((unsigned char)formattedTag[0]);
 		}
