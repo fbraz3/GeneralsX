@@ -102,9 +102,19 @@ jobs:
         if: inputs.platform == 'macos'
         run: |
           mkdir -p /tmp/game-bundle
+          ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
           TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
-          echo "Extracting: $TAR_FILE"
-          tar -xf "$TAR_FILE" -C /tmp/game-bundle
+          if [ -n "$ZIP_FILE" ]; then
+            echo "Extracting zip: $ZIP_FILE"
+            unzip -q "$ZIP_FILE" -d /tmp/game-bundle
+          elif [ -n "$TAR_FILE" ]; then
+            echo "Extracting tar: $TAR_FILE"
+            tar -xf "$TAR_FILE" -C /tmp/game-bundle
+          else
+            echo "ERROR: Neither .zip nor .tar bundle found in /tmp/game-artifact"
+            find /tmp/game-artifact -maxdepth 3 -print
+            exit 1
+          fi
 
           # Resolve app layout directly to avoid path inference mistakes.
           APP_DIR=$(find /tmp/game-bundle -type d -name "*.app" | head -1)

@@ -22,8 +22,8 @@ This workflow runs Linux, macOS, and Windows builds for Zero Hour and Generals b
 7. Produces release assets:
    - `Linux-GeneralsX.flatpak`
    - `Linux-GeneralsXZH.flatpak`
-   - `macOS-GeneralsX.tar.zip`
-   - `macOS-GeneralsXZH.tar.zip`
+   - `macOS-GeneralsX.zip`
+   - `macOS-GeneralsXZH.zip`
    - `Windows-GeneralsX.zip`
    - `Windows-GeneralsXZH.zip`
 8. Generates release notes with install instructions, community ports, and local PR changelog.

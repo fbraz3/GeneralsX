@@ -212,19 +212,16 @@ jobs:
             exit 1
           fi
 
-          MAC_TAR=$(find artifacts/macos -name "*.tar" | head -1)
-          if [ -z "$MAC_TAR" ] || [ ! -f "$MAC_TAR" ]; then
-            echo "ERROR: macOS app tar not found in artifacts/macos"
+          MAC_BUNDLE=$(find artifacts/macos \( -name "*.zip" -o -name "*.tar" \) | head -1)
+          if [ -z "$MAC_BUNDLE" ] || [ ! -f "$MAC_BUNDLE" ]; then
+            echo "ERROR: macOS app bundle not found in artifacts/macos"
             find artifacts/macos -maxdepth 3 -type f || true
             exit 1
           fi
 
-          cp "$MAC_TAR" release-assets/GeneralsXZH-macos-arm64.app.tar
-          zip -j release-assets/macOS-GeneralsXZH.tar.zip release-assets/GeneralsXZH-macos-arm64.app.tar
-
-          MAC_GENERALS_TAR=$(find artifacts/macos-generals -name "*.tar" | head -1)
-          if [ -z "$MAC_GENERALS_TAR" ] || [ ! -f "$MAC_GENERALS_TAR" ]; then
-            echo "ERROR: macOS Generals app tar not found in artifacts/macos-generals"
+          MAC_GENERALS_BUNDLE=$(find artifacts/macos-generals \( -name "*.zip" -o -name "*.tar" \) | head -1)
+          if [ -z "$MAC_GENERALS_BUNDLE" ] || [ ! -f "$MAC_GENERALS_BUNDLE" ]; then
+            echo "ERROR: macOS Generals app bundle not found in artifacts/macos-generals"
             find artifacts/macos-generals -maxdepth 3 -type f || true
             exit 1
           fi
@@ -258,16 +255,32 @@ jobs:
           cp "$LINUX_ZH_FLATPAK" release-assets/Linux-GeneralsXZH.flatpak
           cp "$LINUX_GENERALS_FLATPAK" release-assets/Linux-GeneralsX.flatpak
 
-          cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
-          zip -j release-assets/macOS-GeneralsX.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
+          # Package macOS releases as clean .zip files containing the .app bundle (and helper runner)
+          if [[ "$MAC_BUNDLE" == *.tar ]]; then
+            TEMP_EXTRACT_ZH=$(mktemp -d)
+            tar -xf "$MAC_BUNDLE" -C "$TEMP_EXTRACT_ZH"
+            (cd "$TEMP_EXTRACT_ZH" && zip -y -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.zip" .)
+            rm -rf "$TEMP_EXTRACT_ZH"
+          else
+            cp "$MAC_BUNDLE" release-assets/macOS-GeneralsXZH.zip
+          fi
+
+          if [[ "$MAC_GENERALS_BUNDLE" == *.tar ]]; then
+            TEMP_EXTRACT_GEN=$(mktemp -d)
+            tar -xf "$MAC_GENERALS_BUNDLE" -C "$TEMP_EXTRACT_GEN"
+            (cd "$TEMP_EXTRACT_GEN" && zip -y -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.zip" .)
+            rm -rf "$TEMP_EXTRACT_GEN"
+          else
+            cp "$MAC_GENERALS_BUNDLE" release-assets/macOS-GeneralsX.zip
+          fi
 
           (cd artifacts/windows-zh && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" .)
           (cd artifacts/windows-generals && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" .)
 
           echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsX.flatpak" >> "$GITHUB_OUTPUT"
           echo "linux_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsXZH.flatpak" >> "$GITHUB_OUTPUT"
-          echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.tar.zip" >> "$GITHUB_OUTPUT"
-          echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.tar.zip" >> "$GITHUB_OUTPUT"
+          echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.zip" >> "$GITHUB_OUTPUT"
+          echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.zip" >> "$GITHUB_OUTPUT"
           echo "windows_generals_asset=$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" >> "$GITHUB_OUTPUT"
           echo "windows_asset=$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" >> "$GITHUB_OUTPUT"
 
@@ -404,8 +417,8 @@ jobs:
           echo "- Mode: ${{ inputs.release_mode }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Linux asset (Generals): Linux-GeneralsX.flatpak" >> "$GITHUB_STEP_SUMMARY"
           echo "- Linux asset: Linux-GeneralsXZH.flatpak" >> "$GITHUB_STEP_SUMMARY"
-          echo "- macOS asset (Generals): macOS-GeneralsX.tar.zip" >> "$GITHUB_STEP_SUMMARY"
-          echo "- macOS asset: macOS-GeneralsXZH.tar.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- macOS asset (Generals): macOS-GeneralsX.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- macOS asset: macOS-GeneralsXZH.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- Windows asset (Generals): Windows-GeneralsX.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- Windows asset: Windows-GeneralsXZH.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"

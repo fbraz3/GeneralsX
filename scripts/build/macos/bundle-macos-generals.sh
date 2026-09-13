@@ -419,7 +419,7 @@ chmod +x "${STAGE_DIR}/run.sh"
 echo ""
 echo "Creating ${OUTPUT_ZIP}..."
 rm -f "${OUTPUT_ZIP}"
-(cd "${STAGE_DIR}" && zip -r "${OUTPUT_ZIP}" "${APP_DIR_NAME}" run.sh)
+(cd "${STAGE_DIR}" && zip -y -r "${OUTPUT_ZIP}" "${APP_DIR_NAME}" run.sh)
 
 echo ""
 echo "Bundle complete: ${OUTPUT_ZIP}"

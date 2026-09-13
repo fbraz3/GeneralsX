@@ -58,7 +58,7 @@
 
 ## macOS
 
-1. Download the macOS release asset (`macOS-GeneralsXZH.tar.zip` for Zero Hour, `macOS-GeneralsX.tar.zip` for the base game).
+1. Download the macOS release asset (`macOS-GeneralsXZH.zip` for Zero Hour, `macOS-GeneralsX.zip` for the base game).
 2. Extract the archive and copy the app bundle into your `Applications` folder.
 3. Make sure your game assets are placed in the following locations:
    - `$HOME/GeneralsX/Generals` for Generals
