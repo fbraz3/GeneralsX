@@ -41,14 +41,14 @@ if [ -z "$RAW_BASE" ]; then
   exit 1
 fi
 
-# Extract MAJOR and MINOR components
-MAJOR="$(echo "$RAW_BASE" | cut -d'.' -f1)"
-MINOR="$(echo "$RAW_BASE" | cut -d'.' -f2)"
-
-if ! [[ "$MAJOR" =~ ^[0-9]+$ ]] || ! [[ "$MINOR" =~ ^[0-9]+$ ]]; then
+if ! [[ "$RAW_BASE" =~ ^[0-9]+\.[0-9]+$ ]]; then
   echo "ERROR: Invalid base version format in '$VERSION_FILE': '$RAW_BASE'. Expected format 'MAJOR.MINOR' (e.g. 1.0)" >&2
   exit 1
 fi
+
+# Extract MAJOR and MINOR components
+MAJOR="$(echo "$RAW_BASE" | cut -d'.' -f1)"
+MINOR="$(echo "$RAW_BASE" | cut -d'.' -f2)"
 
 # Query existing git tags (matching 1.0.X, v1.0.X, or GeneralsX-1.0.X)
 EXISTING_PATCHES="$(git tag -l 2>/dev/null | sed -nE "s/^(GeneralsX-|v)?${MAJOR}\.${MINOR}\.([0-9]+)$/\2/p" | sort -n || true)"

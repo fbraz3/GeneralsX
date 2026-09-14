@@ -77,17 +77,27 @@ assert_equals "Whitespace handling for 2.0" "2.0.0" "$OUTPUT7"
 # Test 8: GITHUB_OUTPUT writing
 GH_OUT_FILE="${TEST_DIR}/github_output.txt"
 touch "$GH_OUT_FILE"
-GITHUB_OUTPUT="$GH_OUT_FILE" "$CALCULATE_SCRIPT" "${REPO1}/base-version.txt" >/dev/null
+(cd "$REPO1" && GITHUB_OUTPUT="$GH_OUT_FILE" "$CALCULATE_SCRIPT" "${REPO1}/base-version.txt" >/dev/null)
 WRITTEN_CONTENT="$(cat "$GH_OUT_FILE")"
 assert_equals "GITHUB_OUTPUT contains key-value" "version=2.0.0" "$WRITTEN_CONTENT"
 
 # Test 9: Invalid version format error handling
 echo "invalid_version" > "${REPO1}/base-version.txt"
-if cd "$REPO1" && "$CALCULATE_SCRIPT" >/dev/null 2>&1; then
+if (cd "$REPO1" && "$CALCULATE_SCRIPT" >/dev/null 2>&1); then
   echo "  [FAIL] Invalid format should fail" >&2
   fail_count=$((fail_count + 1))
 else
   echo "  [PASS] Invalid format failed as expected"
+  pass_count=$((pass_count + 1))
+fi
+
+# Test 10: 3-part version in base-version.txt should fail (only MAJOR.MINOR allowed)
+echo "1.0.0" > "${REPO1}/base-version.txt"
+if (cd "$REPO1" && "$CALCULATE_SCRIPT" >/dev/null 2>&1); then
+  echo "  [FAIL] 3-part base version '1.0.0' should fail" >&2
+  fail_count=$((fail_count + 1))
+else
+  echo "  [PASS] 3-part base version rejected as expected"
   pass_count=$((pass_count + 1))
 fi
 
