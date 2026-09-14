@@ -219,7 +219,7 @@ git merge thesuperhackers/main
 ## Docs Workflow
 1. Monthly diary in `docs/WORKLOG/YYYY-MM-DIARY.md` (YYYY=year, MM=month only, e.g., `2026-05-DIARY.md`), always including the standard AI-generated content disclosure note at the top
 2. Active work notes in `docs/WORKDIR/` (phases/planning/reports/support/audit/lessons)
-3. Step-by-step tutorials in `docs/HOWTO/` (user-facing guides for common tasks)
+3. User guides & tutorials reside in the GitHub Wiki (with temporary redirection stubs in `docs/HOWTO/`)
 4. Never drop working docs directly under `docs/` root
 
 ## GitHub CLI Examples
@@ -269,7 +269,7 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - `Core/`: shared libraries.
 - `references/`: fbraz3-dxvk
 - `docs/WORKDIR/`: current work docs.
-- `docs/HOWTO/`: user-facing step-by-step tutorials (SagePatch config, etc.)
+- `docs/HOWTO/`: redirection stubs pointing to the GitHub Wiki (user tutorials, SagePatch config, etc.)
 - `logs/`: build/run/debug logs.
 
 ## Instruction Context Loading

@@ -347,7 +347,7 @@ jobs:
             echo ""
             echo "# Getting Started"
             echo ""
-            echo "Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md) to set up GeneralsX on your platform."
+            echo "Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform."
             echo ""
             echo "## Community Ports based on GeneralsX"
             echo ""

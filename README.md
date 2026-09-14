@@ -14,7 +14,7 @@ For **official releases and instructions**, visit:
 * [TheSuperHackers Releases](https://github.com/TheSuperHackers/GeneralsGameCode/releases) - Windows
 * [Fighter19 Releases](https://github.com/Fighter19/CnC_Generals_Zero_Hour/releases) - Original Linux-focused Zero Hour reference releases
 
-> See our [Tutorial Docs](docs/HOWTO/README.md) for step-by-step guides.
+> See our [Project Wiki](https://github.com/fbraz3/GeneralsX/wiki) for installation guides and step-by-step tutorials.
 
 ### Community Ports based on GeneralsX
 
@@ -69,8 +69,8 @@ Because these projects serve different but complementary goals, not every change
 
 ##  Building from Source
 
-- [ Linux Build Guide](docs/BUILD/LINUX.md)
-- [ macOS Build Guide](docs/BUILD/MACOS.md)
+- [ Linux Build Guide](https://github.com/fbraz3/GeneralsX/wiki/Building-on-Linux)
+- [ macOS Build Guide](https://github.com/fbraz3/GeneralsX/wiki/Building-on-macOS)
 
 ###  Known Issues & Limitations
 
@@ -81,7 +81,7 @@ For documented limitations and known bugs, check the [issues page](https://githu
 ## 🤝 How to Contribute
 
 1. Check [current issues](https://github.com/fbraz3/GeneralsX/issues) and [GitHub discussions](https://github.com/fbraz3/GeneralsX/discussions)
-2. Read platform-specific build guides ([Windows](docs/ETC/), [macOS](docs/BUILD/MACOS.md), [Linux](docs/BUILD/LINUX.md))
+2. Read platform-specific build guides on the wiki ([macOS](https://github.com/fbraz3/GeneralsX/wiki/Building-on-macOS), [Linux](https://github.com/fbraz3/GeneralsX/wiki/Building-on-Linux))
 3. Submit issues or pull requests with detailed information
 
 ## 🙏 Special Thanks

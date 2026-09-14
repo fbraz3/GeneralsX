@@ -40,7 +40,7 @@ If you run into any problems, please [open an issue](https://github.com/fbraz3/G
 
 # Getting Started
 
-Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md) to set up GeneralsX on your platform.
+Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform.
 ```
 
 ## Recommended Usage
