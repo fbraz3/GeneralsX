@@ -415,11 +415,12 @@ exec "${SCRIPT_DIR}/GeneralsX.app/Contents/MacOS/run.sh" "$@"
 RUNNER
 chmod +x "${STAGE_DIR}/run.sh"
 
-# Create zip
+# Create zip containing only the .app bundle directly at the root
+# GeneralsX @bugfix Meeseeks 14/09/2026 Package .app directly at zip root to prevent nested folders on extract.
 echo ""
 echo "Creating ${OUTPUT_ZIP}..."
 rm -f "${OUTPUT_ZIP}"
-(cd "${STAGE_DIR}" && zip -y -r "${OUTPUT_ZIP}" "${APP_DIR_NAME}" run.sh)
+(cd "${STAGE_DIR}" && zip -y -r "${OUTPUT_ZIP}" "${APP_DIR_NAME}")
 
 echo ""
 echo "Bundle complete: ${OUTPUT_ZIP}"
@@ -428,7 +429,7 @@ unzip -l "${OUTPUT_ZIP}" | sed '1,3d;$d'
 echo ""
 echo "To use locally:"
 echo "  1) unzip ${OUTPUT_ZIP}"
-echo "  2) run: ./run.sh -win"
+echo "  2) run: ./${APP_DIR_NAME}/Contents/MacOS/run.sh -win"
 echo "  3) or open: open ${APP_DIR_NAME}"
 echo ""
 echo "Runtime env defaults inside app launcher:"

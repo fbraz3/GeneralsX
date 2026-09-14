@@ -212,17 +212,52 @@ jobs:
             exit 1
           fi
 
-          MAC_BUNDLE=$(find artifacts/macos \( -name "*.zip" -o -name "*.tar" \) | head -1)
-          if [ -z "$MAC_BUNDLE" ] || [ ! -f "$MAC_BUNDLE" ]; then
-            echo "ERROR: macOS app bundle not found in artifacts/macos"
-            find artifacts/macos -maxdepth 3 -type f || true
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Locate macOS .app directly from artifact or unpack archive if packaged as zip/tar.
+          MAC_ZH_APP=$(find artifacts/macos -type d -name "GeneralsXZH.app" | head -1)
+          if [ -z "$MAC_ZH_APP" ]; then
+            MAC_ZH_APP=$(find artifacts/macos -type d -name "*.app" | head -1)
+          fi
+
+          if [ -z "$MAC_ZH_APP" ]; then
+            MAC_ZH_ARCHIVE=$(find artifacts/macos -type f \( -name "*.zip" -o -name "*.tar" \) | head -1)
+            if [ -n "$MAC_ZH_ARCHIVE" ]; then
+              TEMP_EXTRACT_ZH=$(mktemp -d)
+              if [[ "$MAC_ZH_ARCHIVE" == *.tar ]]; then
+                tar -xf "$MAC_ZH_ARCHIVE" -C "$TEMP_EXTRACT_ZH"
+              else
+                unzip -q "$MAC_ZH_ARCHIVE" -d "$TEMP_EXTRACT_ZH"
+              fi
+              MAC_ZH_APP=$(find "$TEMP_EXTRACT_ZH" -type d -name "*.app" | head -1)
+            fi
+          fi
+
+          if [ -z "$MAC_ZH_APP" ] || [ ! -d "$MAC_ZH_APP" ]; then
+            echo "ERROR: macOS Zero Hour .app bundle not found in artifacts/macos"
+            find artifacts/macos -maxdepth 4 || true
             exit 1
           fi
 
-          MAC_GENERALS_BUNDLE=$(find artifacts/macos-generals \( -name "*.zip" -o -name "*.tar" \) | head -1)
-          if [ -z "$MAC_GENERALS_BUNDLE" ] || [ ! -f "$MAC_GENERALS_BUNDLE" ]; then
+          MAC_GEN_APP=$(find artifacts/macos-generals -type d -name "GeneralsX.app" | head -1)
+          if [ -z "$MAC_GEN_APP" ]; then
+            MAC_GEN_APP=$(find artifacts/macos-generals -type d -name "*.app" | head -1)
+          fi
+
+          if [ -z "$MAC_GEN_APP" ]; then
+            MAC_GEN_ARCHIVE=$(find artifacts/macos-generals -type f \( -name "*.zip" -o -name "*.tar" \) | head -1)
+            if [ -n "$MAC_GEN_ARCHIVE" ]; then
+              TEMP_EXTRACT_GEN=$(mktemp -d)
+              if [[ "$MAC_GEN_ARCHIVE" == *.tar ]]; then
+                tar -xf "$MAC_GEN_ARCHIVE" -C "$TEMP_EXTRACT_GEN"
+              else
+                unzip -q "$MAC_GEN_ARCHIVE" -d "$TEMP_EXTRACT_GEN"
+              fi
+              MAC_GEN_APP=$(find "$TEMP_EXTRACT_GEN" -type d -name "*.app" | head -1)
+            fi
+          fi
+
+          if [ -z "$MAC_GEN_APP" ] || [ ! -d "$MAC_GEN_APP" ]; then
             echo "ERROR: macOS Generals app bundle not found in artifacts/macos-generals"
-            find artifacts/macos-generals -maxdepth 3 -type f || true
+            find artifacts/macos-generals -maxdepth 4 || true
             exit 1
           fi
 
@@ -255,24 +290,12 @@ jobs:
           cp "$LINUX_ZH_FLATPAK" release-assets/Linux-GeneralsXZH.flatpak
           cp "$LINUX_GENERALS_FLATPAK" release-assets/Linux-GeneralsX.flatpak
 
-          # Package macOS releases as clean .zip files containing the .app bundle (and helper runner)
-          if [[ "$MAC_BUNDLE" == *.tar ]]; then
-            TEMP_EXTRACT_ZH=$(mktemp -d)
-            tar -xf "$MAC_BUNDLE" -C "$TEMP_EXTRACT_ZH"
-            (cd "$TEMP_EXTRACT_ZH" && zip -y -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.zip" .)
-            rm -rf "$TEMP_EXTRACT_ZH"
-          else
-            cp "$MAC_BUNDLE" release-assets/macOS-GeneralsXZH.zip
-          fi
+          # Package macOS releases as clean .zip files containing the .app bundle directly at the root
+          echo "Packaging macOS Zero Hour release asset..."
+          (cd "$(dirname "$MAC_ZH_APP")" && zip -y -q -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.zip" "$(basename "$MAC_ZH_APP")")
 
-          if [[ "$MAC_GENERALS_BUNDLE" == *.tar ]]; then
-            TEMP_EXTRACT_GEN=$(mktemp -d)
-            tar -xf "$MAC_GENERALS_BUNDLE" -C "$TEMP_EXTRACT_GEN"
-            (cd "$TEMP_EXTRACT_GEN" && zip -y -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.zip" .)
-            rm -rf "$TEMP_EXTRACT_GEN"
-          else
-            cp "$MAC_GENERALS_BUNDLE" release-assets/macOS-GeneralsX.zip
-          fi
+          echo "Packaging macOS Generals base game release asset..."
+          (cd "$(dirname "$MAC_GEN_APP")" && zip -y -q -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.zip" "$(basename "$MAC_GEN_APP")")
 
           (cd artifacts/windows-zh && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" .)
           (cd artifacts/windows-generals && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" .)

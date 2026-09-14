@@ -102,25 +102,28 @@ jobs:
         if: inputs.platform == 'macos'
         run: |
           mkdir -p /tmp/game-bundle
-          ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
-          TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
-          if [ -n "$ZIP_FILE" ]; then
-            echo "Extracting zip: $ZIP_FILE"
-            unzip -q "$ZIP_FILE" -d /tmp/game-bundle
-          elif [ -n "$TAR_FILE" ]; then
-            echo "Extracting tar: $TAR_FILE"
-            tar -xf "$TAR_FILE" -C /tmp/game-bundle
-          else
-            echo "ERROR: Neither .zip nor .tar bundle found in /tmp/game-artifact"
-            find /tmp/game-artifact -maxdepth 3 -print
-            exit 1
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Check for existing .app bundle directly before checking archive files.
+          APP_DIR=$(find /tmp/game-artifact -type d -name "*.app" | head -1)
+          if [ -z "$APP_DIR" ]; then
+            ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
+            TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
+            if [ -n "$ZIP_FILE" ]; then
+              echo "Extracting zip: $ZIP_FILE"
+              unzip -q "$ZIP_FILE" -d /tmp/game-bundle
+            elif [ -n "$TAR_FILE" ]; then
+              echo "Extracting tar: $TAR_FILE"
+              tar -xf "$TAR_FILE" -C /tmp/game-bundle
+            else
+              echo "ERROR: Neither .app bundle, .zip nor .tar found in /tmp/game-artifact"
+              find /tmp/game-artifact -maxdepth 3 -print
+              exit 1
+            fi
+            APP_DIR=$(find /tmp/game-bundle -type d -name "*.app" | head -1)
           fi
 
-          # Resolve app layout directly to avoid path inference mistakes.
-          APP_DIR=$(find /tmp/game-bundle -type d -name "*.app" | head -1)
           if [ -z "$APP_DIR" ]; then
             echo "ERROR: .app bundle not found after extraction"
-            find /tmp/game-bundle -maxdepth 4 -print
+            find /tmp/game-bundle /tmp/game-artifact -maxdepth 4 -print || true
             exit 1
           fi
 
