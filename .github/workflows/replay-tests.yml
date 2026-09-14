@@ -102,8 +102,14 @@ jobs:
         if: inputs.platform == 'macos'
         run: |
           mkdir -p /tmp/game-bundle
-          # GeneralsX @bugfix Meeseeks 14/09/2026 Check for existing .app bundle directly before checking archive files.
-          APP_DIR=$(find /tmp/game-artifact -type d -name "*.app" | head -1)
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Check for existing .app bundle or Contents directory directly before checking archive files.
+          if [ -d "/tmp/game-artifact/Contents" ]; then
+            echo "Detected .app bundle directly at /tmp/game-artifact"
+            APP_DIR="/tmp/game-artifact"
+          else
+            APP_DIR=$(find /tmp/game-artifact -maxdepth 2 -type d -name "*.app" | head -1)
+          fi
+
           if [ -z "$APP_DIR" ]; then
             ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
             TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
@@ -118,7 +124,12 @@ jobs:
               find /tmp/game-artifact -maxdepth 3 -print
               exit 1
             fi
-            APP_DIR=$(find /tmp/game-bundle -type d -name "*.app" | head -1)
+
+            if [ -d "/tmp/game-bundle/Contents" ]; then
+              APP_DIR="/tmp/game-bundle"
+            else
+              APP_DIR=$(find /tmp/game-bundle -maxdepth 2 -type d -name "*.app" | head -1)
+            fi
           fi
 
           if [ -z "$APP_DIR" ]; then

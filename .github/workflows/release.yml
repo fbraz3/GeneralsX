@@ -218,6 +218,12 @@ jobs:
             MAC_ZH_APP=$(find artifacts/macos -type d -name "*.app" | head -1)
           fi
 
+          if [ -z "$MAC_ZH_APP" ] && [ -d "artifacts/macos/Contents" ]; then
+            mkdir -p /tmp/macos-fixed-zh/GeneralsXZH.app
+            cp -a artifacts/macos/* /tmp/macos-fixed-zh/GeneralsXZH.app/
+            MAC_ZH_APP="/tmp/macos-fixed-zh/GeneralsXZH.app"
+          fi
+
           if [ -z "$MAC_ZH_APP" ]; then
             MAC_ZH_ARCHIVE=$(find artifacts/macos -type f \( -name "*.zip" -o -name "*.tar" \) | head -1)
             if [ -n "$MAC_ZH_ARCHIVE" ]; then
@@ -228,6 +234,11 @@ jobs:
                 unzip -q "$MAC_ZH_ARCHIVE" -d "$TEMP_EXTRACT_ZH"
               fi
               MAC_ZH_APP=$(find "$TEMP_EXTRACT_ZH" -type d -name "*.app" | head -1)
+              if [ -z "$MAC_ZH_APP" ] && [ -d "$TEMP_EXTRACT_ZH/Contents" ]; then
+                mkdir -p /tmp/macos-fixed-zh/GeneralsXZH.app
+                cp -a "$TEMP_EXTRACT_ZH"/* /tmp/macos-fixed-zh/GeneralsXZH.app/
+                MAC_ZH_APP="/tmp/macos-fixed-zh/GeneralsXZH.app"
+              fi
             fi
           fi
 
@@ -242,6 +253,12 @@ jobs:
             MAC_GEN_APP=$(find artifacts/macos-generals -type d -name "*.app" | head -1)
           fi
 
+          if [ -z "$MAC_GEN_APP" ] && [ -d "artifacts/macos-generals/Contents" ]; then
+            mkdir -p /tmp/macos-fixed-gen/GeneralsX.app
+            cp -a artifacts/macos-generals/* /tmp/macos-fixed-gen/GeneralsX.app/
+            MAC_GEN_APP="/tmp/macos-fixed-gen/GeneralsX.app"
+          fi
+
           if [ -z "$MAC_GEN_APP" ]; then
             MAC_GEN_ARCHIVE=$(find artifacts/macos-generals -type f \( -name "*.zip" -o -name "*.tar" \) | head -1)
             if [ -n "$MAC_GEN_ARCHIVE" ]; then
@@ -252,6 +269,11 @@ jobs:
                 unzip -q "$MAC_GEN_ARCHIVE" -d "$TEMP_EXTRACT_GEN"
               fi
               MAC_GEN_APP=$(find "$TEMP_EXTRACT_GEN" -type d -name "*.app" | head -1)
+              if [ -z "$MAC_GEN_APP" ] && [ -d "$TEMP_EXTRACT_GEN/Contents" ]; then
+                mkdir -p /tmp/macos-fixed-gen/GeneralsX.app
+                cp -a "$TEMP_EXTRACT_GEN"/* /tmp/macos-fixed-gen/GeneralsX.app/
+                MAC_GEN_APP="/tmp/macos-fixed-gen/GeneralsX.app"
+              fi
             fi
           fi
 

@@ -476,6 +476,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: macos-${{ matrix.game.id }}-app
-          path: /tmp/macos-artifact-${{ matrix.game.id }}/${{ matrix.game.output }}.app
+          path: /tmp/macos-artifact-${{ matrix.game.id }}
           retention-days: 7
           if-no-files-found: error
