@@ -1836,13 +1836,19 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//
 	//	Calculate character width (advance + overlap)
 	//
-	unsigned int char_width = glyph->advance.x >> 6;
+	int char_width = static_cast<int>(glyph->advance.x >> 6);
 
 	//
 	//	Sometimes bitmap is wider than advancement (fix it)
 	//
-	if ( char_width < glyph->bitmap.width + glyph->bitmap_left ) {
-		char_width = glyph->bitmap.width + glyph->bitmap_left;
+	// GeneralsX @bugfix fbraz3 12/09/2026 bitmap_left is signed and negative for combining marks
+	// (e.g. U+0303); the old unsigned add wrapped to ~4 billion and corrupted the buffer index below.
+	int bitmap_extent = static_cast<int>(glyph->bitmap.width) + glyph->bitmap_left;
+	if ( char_width < bitmap_extent ) {
+		char_width = bitmap_extent;
+	}
+	if ( char_width < 0 ) {
+		char_width = 0;
 	}
 	char_width += PixelOverlap + x_pos;
 
@@ -1869,11 +1875,15 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//
 	//	Copy FreeType bitmap to our buffer (convert 8-bit gray → 16-bit format)
 	//
+	// GeneralsX @bugfix fbraz3 13/09/2026 Clip columns so a wide glyph with negative bitmap_left
+	// (combining marks) never writes past this character's slot into the next one.
+	const int skip_cols = (glyph->bitmap_left < 0) ? -glyph->bitmap_left : 0;
+	const int max_cols = char_width - x_offset;
 	for ( unsigned int row = 0; row < glyph->bitmap.rows; row++ ) {
 		int src_index = row * glyph->bitmap.pitch;
 		int dst_index = (y_offset + row) * char_width;
 
-		for ( unsigned int col = 0; col < glyph->bitmap.width; col++ ) {
+		for ( int col = skip_cols; col < static_cast<int>(glyph->bitmap.width) && (col - skip_cols) < max_cols; col++ ) {
 			//
 			//	Get 8-bit grayscale pixel
 			//
@@ -1889,7 +1899,7 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 			//	SAME FORMAT AS GDI IMPLEMENTATION
 			//
 			uint8 alpha_value = (pixel_value >> 4) & 0xF;
-			curr_buffer_p[dst_index + x_offset + col] = pixel_color | (alpha_value << 12);
+			curr_buffer_p[dst_index + x_offset + (col - skip_cols)] = pixel_color | (alpha_value << 12);
 		}
 	}
 

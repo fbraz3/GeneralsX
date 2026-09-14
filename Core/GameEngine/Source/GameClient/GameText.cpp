@@ -170,6 +170,10 @@ class GameTextManager : public GameTextInterface
 		StringInfo			*m_fallbackStringInfo;
 		StringLookUp		*m_fallbackStringLUT;
 		Int						m_fallbackTextCount;
+		// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Overlay strings shipped by the official retail patch (Data\Patch.str) that the base CSF never got updated with.
+		StringInfo			*m_patchStringInfo;
+		StringLookUp		*m_patchStringLUT;
+		Int						m_patchTextCount;
 		Bool						m_initialized;
 #if defined(RTS_DEBUG)
 		Bool						m_jabberWockie;
@@ -196,13 +200,19 @@ class GameTextManager : public GameTextInterface
 		Bool						getStringCount( const Char *filename, Int& textCount );
 		Bool						getCSFInfo ( const Char *filename, Int& textCount, LanguageID& language, FileInstance instance = 0 );
 		Bool						parseCSF(  const Char *filename, StringInfo *stringInfo, Int textCount, Int& maxLabelLen, FileInstance instance = 0 );
-		Bool						parseStringFile( const char *filename );
+		Bool						parseStringFile( const char *filename, StringInfo *outStringInfo = nullptr, Int *outTextCount = nullptr );
 		Bool						parseMapStringFile( const char *filename );
 		Bool						readLine( char *buffer, Int max, File *file );
 		Char						readChar( File *file );
 };
 
 static int __cdecl			compareLUT ( const void *,  const void*);
+
+// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Builds a sorted StringLookUp[] over a StringInfo[].
+static StringLookUp*		buildSortedLUT( StringInfo *info, Int count );
+
+// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 True if a sorted StringLookUp[] has an exact-match label.
+static Bool						lutContainsLabel( StringLookUp *lut, Int count, const AsciiString &label );
 //----------------------------------------------------------------------------
 //         Private Data
 //----------------------------------------------------------------------------
@@ -253,6 +263,9 @@ GameTextManager::GameTextManager()
 	m_fallbackStringInfo(nullptr),
 	m_fallbackStringLUT(nullptr),
 	m_fallbackTextCount(0),
+	m_patchStringInfo(nullptr),
+	m_patchStringLUT(nullptr),
+	m_patchTextCount(0),
 	m_initialized(FALSE),
 	m_noStringList(nullptr),
 #if defined(RTS_DEBUG)
@@ -433,6 +446,42 @@ void GameTextManager::init()
 		m_language = originalLanguage;
 	}
 
+	// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Merge data/patch.str, the retail patch's plain-text
+	// string overlay (e.g. Custom Missions, v1.05) that never got folded into generals.csf. Missing on
+	// unpatched installs, and expected to be absent then.
+	{
+		const Char *PATCH_STR_FILE = "data/patch.str";
+
+		// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 getStringCount() pads by 500; actualPatchCount below is the real check.
+		Int patchCount = 0;
+		if ( getStringCount( PATCH_STR_FILE, patchCount ) )
+		{
+			m_patchStringInfo = NEW StringInfo[patchCount];
+
+			if ( m_patchStringInfo != nullptr )
+			{
+				Int actualPatchCount = 0;
+				if ( parseStringFile( PATCH_STR_FILE, m_patchStringInfo, &actualPatchCount ) && actualPatchCount > 0 )
+				{
+					m_patchTextCount = actualPatchCount;
+					m_patchStringLUT = buildSortedLUT( m_patchStringInfo, m_patchTextCount );
+
+					if ( m_patchStringLUT == nullptr )
+					{
+						delete [] m_patchStringInfo;
+						m_patchStringInfo = nullptr;
+						m_patchTextCount = 0;
+					}
+				}
+				else
+				{
+					delete [] m_patchStringInfo;
+					m_patchStringInfo = nullptr;
+				}
+			}
+		}
+	}
+
 }
 
 //============================================================================
@@ -454,8 +503,15 @@ void GameTextManager::deinit()
 	delete [] m_fallbackStringLUT;
 	m_fallbackStringLUT = nullptr;
 
+	delete [] m_patchStringInfo;
+	m_patchStringInfo = nullptr;
+
+	delete [] m_patchStringLUT;
+	m_patchStringLUT = nullptr;
+
 	m_textCount = 0;
 	m_fallbackTextCount = 0;
+	m_patchTextCount = 0;
 
 	NoString *noString = m_noStringList;
 
@@ -1129,8 +1185,11 @@ quit:
 // GameTextManager::parseStringFile
 //============================================================================
 
-Bool GameTextManager::parseStringFile( const char *filename )
+Bool GameTextManager::parseStringFile( const char *filename, StringInfo *outStringInfo, Int *outTextCount )
 {
+	// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Allow parsing into a caller-supplied array (e.g. the Data\Patch.str overlay) instead of always writing to m_stringInfo.
+	StringInfo *dest = outStringInfo ? outStringInfo : m_stringInfo;
+
 	Int listCount = 0;
 	Int ok = TRUE;
 
@@ -1158,13 +1217,13 @@ Bool GameTextManager::parseStringFile( const char *filename )
 
 		for ( Int i = 0; i < listCount; i++ )
 		{
-			if ( stricmp ( m_stringInfo[i].label.str(), m_buffer ) == 0)
+			if ( stricmp ( dest[i].label.str(), m_buffer ) == 0)
 			{
 				DEBUG_CRASH ( ("String label '%s' multiply defined!", m_buffer ));
 			}
 		}
 
-		m_stringInfo[listCount].label = m_buffer;
+		dest[listCount].label = m_buffer;
 		len = strlen ( m_buffer );
 
 
@@ -1196,7 +1255,7 @@ Bool GameTextManager::parseStringFile( const char *filename )
 				if ( readString )
 				{
 					// only one string per label allows
-						DEBUG_CRASH ( ("String label '%s' has more than one string defined!", m_stringInfo[listCount].label.str()));
+						DEBUG_CRASH ( ("String label '%s' has more than one string defined!", dest[listCount].label.str()));
 				}
 				else
 				{
@@ -1204,8 +1263,8 @@ Bool GameTextManager::parseStringFile( const char *filename )
 					translateCopy( m_tbuffer, m_buffer2 );
 					stripSpaces ( m_tbuffer );
 
-					m_stringInfo[listCount].text = m_tbuffer ;
-					m_stringInfo[listCount].speech = m_buffer3;
+					dest[listCount].text = m_tbuffer ;
+					dest[listCount].speech = m_buffer3;
 					readString = TRUE;
 				}
 			}
@@ -1219,6 +1278,11 @@ Bool GameTextManager::parseStringFile( const char *filename )
 	}
 
 quit:
+
+	if ( outTextCount )
+	{
+		*outTextCount = listCount;
+	}
 
 	file->close();
 	file = nullptr;
@@ -1383,7 +1447,21 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 	key.info = nullptr;
 	key.label = &lb;
 
-	lookUp = (StringLookUp *) bsearch( &key, (void*) m_stringLUT, m_textCount, sizeof(StringLookUp), compareLUT );
+	// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Data\Patch.str is an override patch: it must win over the base
+	// CSF for any key it redefines, not just fill in keys the CSF is missing. Check it before the base table.
+	if ( m_patchStringLUT && m_patchTextCount )
+	{
+		lookUp = (StringLookUp *) bsearch( &key, (void*) m_patchStringLUT, m_patchTextCount, sizeof(StringLookUp), compareLUT );
+	}
+	else
+	{
+		lookUp = nullptr;
+	}
+
+	if ( lookUp == nullptr )
+	{
+		lookUp = (StringLookUp *) bsearch( &key, (void*) m_stringLUT, m_textCount, sizeof(StringLookUp), compareLUT );
+	}
 
 	if ( lookUp == nullptr && m_mapStringLUT && m_mapTextCount )
 	{
@@ -1520,6 +1598,10 @@ AsciiStringVec& GameTextManager::getStringsWithLabelPrefix(AsciiString label)
 	if (m_stringLUT) {
 		for (int i = 0; i < m_textCount; ++i) {
 			if (strstr(m_stringLUT[i].label->str(), label.str()) == m_stringLUT[i].label->str()) {
+				// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Skip labels the patch overrides; the patch loop below adds them instead, so each label is returned once.
+				if (lutContainsLabel(m_patchStringLUT, m_patchTextCount, *m_stringLUT[i].label)) {
+					continue;
+				}
 				m_asciiStringVec.push_back(*m_stringLUT[i].label);
 			}
 		}
@@ -1528,6 +1610,14 @@ AsciiStringVec& GameTextManager::getStringsWithLabelPrefix(AsciiString label)
 		for (int i = 0; i < m_mapTextCount; ++i) {
 			if (strstr(m_mapStringLUT[i].label->str(), label.str()) == m_mapStringLUT[i].label->str()) {
 				m_asciiStringVec.push_back(*m_mapStringLUT[i].label);
+			}
+		}
+	}
+	// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Include patch-only labels so consumers like WorldBuilder can discover them.
+	if (m_patchStringLUT) {
+		for (int i = 0; i < m_patchTextCount; ++i) {
+			if (strstr(m_patchStringLUT[i].label->str(), label.str()) == m_patchStringLUT[i].label->str()) {
+				m_asciiStringVec.push_back(*m_patchStringLUT[i].label);
 			}
 		}
 	}
@@ -1586,4 +1676,52 @@ static int __cdecl compareLUT ( const void *i1,  const void*i2)
 	StringLookUp *lut2 = (StringLookUp*) i2;
 
 	return stricmp( lut1->label->str(), lut2->label->str());
+}
+
+//============================================================================
+// buildSortedLUT
+//============================================================================
+
+static StringLookUp* buildSortedLUT( StringInfo *info, Int count )
+{
+	if ( count <= 0 )
+	{
+		return nullptr;
+	}
+
+	StringLookUp *lut = NEW StringLookUp[count];
+
+	if ( lut == nullptr )
+	{
+		return nullptr;
+	}
+
+	for ( Int i = 0; i < count; i++ )
+	{
+		lut[i].info = &info[i];
+		lut[i].label = &info[i].label;
+	}
+
+	qsort( lut, count, sizeof(StringLookUp), compareLUT );
+
+	return lut;
+}
+
+//============================================================================
+// lutContainsLabel
+//============================================================================
+
+static Bool lutContainsLabel( StringLookUp *lut, Int count, const AsciiString &label )
+{
+	if ( !lut || count <= 0 )
+	{
+		return FALSE;
+	}
+
+	StringLookUp key;
+	AsciiString lb = label;
+	key.info = nullptr;
+	key.label = &lb;
+
+	return bsearch( &key, (void*) lut, count, sizeof(StringLookUp), compareLUT ) != nullptr;
 }

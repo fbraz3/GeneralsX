@@ -4,23 +4,6 @@ Historical documents from GeneralsX development, organized by category.
 
 ## Directory Structure
 
-### reports/
-Session reports and progress summaries from early development phases (sessions 10-37).
-
-**Archived**: 2026-05-29
-
-### sessions/
-Session handoff documents (sessions 19-23) used during Phase 1-2 transitions.
-
-**Archived**: 2026-05-29
-
-### planning/upstream-syncs/
-Historical TheSuperHackers upstream sync plans (March-May 2026).
-
-Most recent sync plans remain in `../planning/` for active reference.
-
-**Archived**: 2026-05-29
-
 ### phase0-analysis/
 Initial analysis and planning documents from Phase 0 (early 2026):
 - Fighter19 port analysis
@@ -30,17 +13,14 @@ Initial analysis and planning documents from Phase 0 (early 2026):
 - Renderer architecture
 - Risk assessment
 
-**Archived**: 2026-05-29
+### planning/
+Historical phase planning and architecture strategy documents.
 
 ### spikes/
-Completed technical spikes and proof-of-concept documents:
+Architectural technical spikes and proof-of-concept evaluations:
 - Audio backend evaluation (SDL3 vs OpenAL)
-- Flatpak/AppImage experiments
-- Session-specific bug fixes and discoveries
-- Terrain shader investigations
-- SDL3 deep analysis
-
-**Archived**: 2026-05-29
+- SDL3 deep analysis and future migration
+- Proprietary tech elimination reference chart
 
 ## Note
 

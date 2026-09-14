@@ -581,9 +581,12 @@ Bool TransportContain::isSpecificRiderFreeToExit(Object* specificObject)
 #if !RETAIL_COMPATIBLE_CRC
 	// TheSuperHackers @bugfix Stubbjax/bobtista 01/08/2026 If our container is itself contained,
 	// then we are not free to exit.
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Except for special Overlord-style containers (e.g. Battle Bunker).
 	if (me->isContained())
 	{
-		return FALSE;
+		const ContainModuleInterface* outerContain = me->getContainedBy()->getContain();
+		if (outerContain == nullptr || !outerContain->isSpecialOverlordStyleContainer())
+			return FALSE;
 	}
 #endif
 
