@@ -343,17 +343,11 @@ jobs:
           mkdir -p release-assets
 
           {
-            echo "> If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate."
+            echo "If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate."
             echo ""
-            if [ "${{ inputs.release_mode }}" = "Draft" ]; then
-              echo "# What's New"
-              echo ""
-              echo "*add-here manual release notes*"
-              echo ""
-            fi
             echo "# Getting Started"
             echo ""
-            echo "**Install the engine:** Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md) to set up GeneralsX on your platform."
+            echo "Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md) to set up GeneralsX on your platform."
             echo ""
             echo "## Community Ports based on GeneralsX"
             echo ""
@@ -362,7 +356,14 @@ jobs:
             echo "* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [ammaarreshi](https://github.com/ammaarreshi)"
             echo "* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [fadi-labib](https://github.com/fadi-labib)"
             echo "* [GeneralsXWeb](https://github.com/meerzulee/GeneralsXWeb) - Web port by [meerzulee](https://github.com/meerzulee)"
+            echo "* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - WebAssembly Browser port by [ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)"
             echo ""
+            if [ "${{ inputs.release_mode }}" = "Draft" ]; then
+              echo "# What's New"
+              echo ""
+              echo "*add-here manual release notes*"
+              echo ""
+            fi
             echo "## Changelog"
             cat "$PR_LINES_FILE"
             echo ""

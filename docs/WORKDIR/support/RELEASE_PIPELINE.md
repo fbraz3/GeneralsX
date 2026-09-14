@@ -36,7 +36,7 @@ This workflow runs Linux, macOS, and Windows builds for Zero Hour and Generals b
 Fixed block:
 
 ```markdown
-> If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
+If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
 
 # Getting Started
 

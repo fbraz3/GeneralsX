@@ -63,7 +63,20 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
 Organize the release notes following the official GeneralsX template:
 
 ```markdown
-> If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
+If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
+
+# Getting Started
+
+Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md) to set up GeneralsX on your platform.
+
+## Community Ports based on GeneralsX
+
+If you like GeneralsX, please also take a look into these projects
+
+* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [ammaarreshi](https://github.com/ammaarreshi)
+* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [fadi-labib](https://github.com/fadi-labib)
+* [GeneralsXWeb](https://github.com/meerzulee/GeneralsXWeb) - Web port by [meerzulee](https://github.com/meerzulee)
+* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - WebAssembly Browser port by [ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)
 
 # What's New
 
@@ -84,19 +97,6 @@ Organize the release notes following the official GeneralsX template:
 
 ### 🧠 Gameplay & Engine Fixes (Upstream Sync)
 - ...
-
-# Getting Started
-
-Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md) to set up GeneralsX on your platform.
-
-## Community Ports based on GeneralsX
-
-If you like GeneralsX, please also take a look into these projects
-
-* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [ammaarreshi](https://github.com/ammaarreshi)
-* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [fadi-labib](https://github.com/fadi-labib)
-* [GeneralsXWeb](https://github.com/meerzulee/GeneralsXWeb) - Web port by [meerzulee](https://github.com/meerzulee)
-* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - WebAssembly Browser port by [ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)
 
 ## Changelog
 - <commit/pr list>
