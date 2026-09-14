@@ -70,6 +70,7 @@ void NGMP_OnlineServicesManager::update() {
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Cancelled\n");
                 ClearGSMessageBoxes();
                 break;
+            // GeneralsX @feature fbraz3 12/09/2026 Dispatch fallback to browser login on silent auth failure
             case NGMPEvent::EVENT_AUTH_FALLBACK_BROWSER:
                 fprintf(stderr, "[NGMP-MainThread] Event: Auth Fallback to Browser\n");
                 beginBrowserLogin();

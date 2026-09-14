@@ -834,6 +834,7 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 #if defined(SAGE_USE_NGMP)
 	PSPlayerStats stats;
 	int64_t ngmpUserID = NGMP_OnlineServicesManager::getInstance().getUserId();
+	// GeneralsX @feature fbraz3 08/09/2026 Identify local player by username or GameSpy profile ID in NGMP mode
 	bool isLocalPlayer = (lookAtPlayerName == NGMP_OnlineServicesManager::getInstance().getUsername()) ||
 	                     (lookAtPlayerID == TheGameSpyInfo->getLocalProfileID()) ||
 	                     (lookAtPlayerID == (Int)ngmpUserID);

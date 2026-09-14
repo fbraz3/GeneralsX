@@ -283,6 +283,7 @@ void NGMP_OnlineServicesManager::cancelBrowserLogin() {
 // beginLogin — main entry point: tries silent refresh token first, falls back
 // to browser OAuth flow if no saved token or if token is expired/invalid.
 // ──────────────────────────────────────────────────────────────────────────────
+// GeneralsX @feature fbraz3 12/09/2026 Entry point for authentication, prioritizing persistent session token
 void NGMP_OnlineServicesManager::beginLogin() {
     std::string refreshToken = NGMP::LoadRefreshToken();
     if (!refreshToken.empty() && !NGMP::IsDevelopment()) {
@@ -318,6 +319,21 @@ void NGMP_OnlineServicesManager::loginWithRefreshToken(const std::string& refres
 
     m_pollThread = std::thread([this, refreshToken]() {
         std::string url = NGMP::GetAPIEndpoint("LoginWithToken");
+
+        // GeneralsX @bugfix fbraz3 14/09/2026 Guard against cleartext token transmission over unencrypted remote HTTP (CWE-319)
+        bool isHttps = (url.rfind("https://", 0) == 0);
+        bool isSafeLoopback = (url.rfind("http://localhost", 0) == 0 || url.rfind("http://127.0.0.1", 0) == 0);
+        if (!isHttps && !isSafeLoopback) {
+            fprintf(stderr, "[NGMP] Security check: refusing to transmit refresh token over cleartext HTTP to remote host (%s)\n", NGMP::SanitizeURL(url).c_str());
+            fflush(stderr);
+            m_waitingBrowserLogin = false;
+            m_pollThreadRunning   = false;
+            NGMPEvent ev;
+            ev.type = NGMPEvent::EVENT_AUTH_FALLBACK_BROWSER;
+            postEvent(ev);
+            return;
+        }
+
         fprintf(stderr, "[NGMP] Attempting silent login with refresh token at %s...\n", NGMP::SanitizeURL(url).c_str());
         fflush(stderr);
 

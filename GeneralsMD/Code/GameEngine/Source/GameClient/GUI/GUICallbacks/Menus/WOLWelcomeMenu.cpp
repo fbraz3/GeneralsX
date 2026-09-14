@@ -1115,6 +1115,7 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 #if defined(SAGE_USE_NGMP)
 					if (NGMP_OnlineServicesManager::getInstance().isLoggedIn())
 					{
+						// GeneralsX @feature fbraz3 08/09/2026 Route My Info directly to logged-in NGMP profile
 						SetLookAtPlayer((Int)NGMP_OnlineServicesManager::getInstance().getUserId(), NGMP_OnlineServicesManager::getInstance().getUsername().c_str());
 						GameSpyToggleOverlay(GSOVERLAY_PLAYERINFO);
 					}

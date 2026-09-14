@@ -39,6 +39,7 @@ struct NGMPEvent {
         EVENT_AUTH_SUCCESS,
         EVENT_AUTH_FAILURE,
         EVENT_AUTH_CANCELLED,
+        // GeneralsX @feature fbraz3 12/09/2026 Fallback event to initiate browser OAuth when silent token refresh fails
         EVENT_AUTH_FALLBACK_BROWSER,
         EVENT_LOBBY_LIST_UPDATED,
         EVENT_CHAT_MESSAGE_RECEIVED,
@@ -157,7 +158,7 @@ public:
 
     void shutdown();
 
-    // Main entry point for login (tries silent refresh token first, falls back to browser)
+    // GeneralsX @feature fbraz3 12/09/2026 Initiate online login flow with persistent token or browser OAuth fallback
     void beginLogin();
 
     // Browser-based gamecode login flow (macOS/Linux: uses SDL_OpenURL)
