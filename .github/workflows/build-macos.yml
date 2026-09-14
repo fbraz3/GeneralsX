@@ -451,17 +451,16 @@ jobs:
           rm -rf "${ARTIFACT_DIR}"
           mkdir -p "${ARTIFACT_DIR}"
 
-          # GeneralsX @bugfix Meeseeks 14/09/2026 Extract app bundle so upload-artifact uploads the .app directory directly, preventing nested zips.
-          unzip -q "${OUTPUT_ZIP}" -d "${ARTIFACT_DIR}"
-
-          if [ ! -d "${ARTIFACT_DIR}/${APP_NAME}" ]; then
-            echo "❌ App bundle not found after extracting ${OUTPUT_ZIP}: ${ARTIFACT_DIR}/${APP_NAME}"
-            find "${ARTIFACT_DIR}" -maxdepth 2 -print
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Verify zip contains .app bundle directly at root and stage for artifact upload.
+          if ! unzip -l "${OUTPUT_ZIP}" | grep -q "${APP_NAME}/"; then
+            echo "❌ App bundle not found in ${OUTPUT_ZIP}"
+            unzip -l "${OUTPUT_ZIP}"
             exit 1
           fi
 
-          echo "✅ Prepared app bundle artifact: ${ARTIFACT_DIR}/${APP_NAME}"
-          du -sh "${ARTIFACT_DIR}/${APP_NAME}"
+          cp "${OUTPUT_ZIP}" "${ARTIFACT_DIR}/${OUTPUT_ZIP}"
+          echo "✅ Archive ready: ${ARTIFACT_DIR}/${OUTPUT_ZIP}"
+          du -sh "${ARTIFACT_DIR}/${OUTPUT_ZIP}"
 
       - name: Upload Build Logs
         if: always()
@@ -476,6 +475,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: macos-${{ matrix.game.id }}-app
-          path: /tmp/macos-artifact-${{ matrix.game.id }}
+          path: /tmp/macos-artifact-${{ matrix.game.id }}/*.zip
           retention-days: 7
           if-no-files-found: error

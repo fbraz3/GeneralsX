@@ -102,29 +102,28 @@ jobs:
         if: inputs.platform == 'macos'
         run: |
           mkdir -p /tmp/game-bundle
-          # GeneralsX @bugfix Meeseeks 14/09/2026 Check for existing .app bundle or Contents directory directly before checking archive files.
-          if [ -d "/tmp/game-artifact/Contents" ]; then
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Extract zip/tar bundle first to preserve symlinks and executable bits.
+          ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
+          TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
+          if [ -n "$ZIP_FILE" ]; then
+            echo "Extracting zip: $ZIP_FILE"
+            unzip -q "$ZIP_FILE" -d /tmp/game-bundle
+          elif [ -n "$TAR_FILE" ]; then
+            echo "Extracting tar: $TAR_FILE"
+            tar -xf "$TAR_FILE" -C /tmp/game-bundle
+          elif [ -d "/tmp/game-artifact/Contents" ]; then
             echo "Detected .app bundle directly at /tmp/game-artifact"
             APP_DIR="/tmp/game-artifact"
           else
             APP_DIR=$(find /tmp/game-artifact -maxdepth 2 -type d -name "*.app" | head -1)
-          fi
-
-          if [ -z "$APP_DIR" ]; then
-            ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
-            TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
-            if [ -n "$ZIP_FILE" ]; then
-              echo "Extracting zip: $ZIP_FILE"
-              unzip -q "$ZIP_FILE" -d /tmp/game-bundle
-            elif [ -n "$TAR_FILE" ]; then
-              echo "Extracting tar: $TAR_FILE"
-              tar -xf "$TAR_FILE" -C /tmp/game-bundle
-            else
-              echo "ERROR: Neither .app bundle, .zip nor .tar found in /tmp/game-artifact"
+            if [ -z "$APP_DIR" ]; then
+              echo "ERROR: Neither .zip, .tar nor .app bundle found in /tmp/game-artifact"
               find /tmp/game-artifact -maxdepth 3 -print
               exit 1
             fi
+          fi
 
+          if [ -z "$APP_DIR" ]; then
             if [ -d "/tmp/game-bundle/Contents" ]; then
               APP_DIR="/tmp/game-bundle"
             else
