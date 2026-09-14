@@ -87,7 +87,7 @@ Organize the release notes following the official GeneralsX template:
 
 # Getting Started
 
-Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md) to set up GeneralsX on your platform.
+Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform.
 
 ## Community Ports based on GeneralsX
 

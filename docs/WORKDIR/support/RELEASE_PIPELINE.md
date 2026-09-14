@@ -47,7 +47,7 @@ Fixed block:
 
 # Install Instructions
 
-https://github.com/fbraz3/GeneralsX/blob/main/docs/HOWTO/INSTALLATION.md
+https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX
 ```
 
 What's changed format:
