@@ -303,7 +303,7 @@ public:
 
 See also:
 - [SESSION_38_BUILD_SUCCESS.md](../WORKDIR/support/SESSION_38_BUILD_SUCCESS.md) - Phase 1 technical details
-- [SIDEQUEST_CD_REMOVAL.md](../WORKDIR/reports/SIDEQUEST_CD_REMOVAL.md) - Portable gameplay context
+- `SIDEQUEST_CD_REMOVAL` - Portable gameplay context
 - `references/old-refs/jmarshall-win64-modern/Code/Audio/` - Detailed OpenAL implementation
 - `docs/DEV_BLOG/2026-02-DIARY.md` - Session history
 

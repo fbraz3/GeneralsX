@@ -71,7 +71,7 @@ Configured tasks for Docker-based builds (no toolchain installs needed!):
 | `docs/DEV_BLOG/2026-02-DIARY.md` | Development diary template |
 | `docs/WORKDIR/phases/PHASE00_ANALYSIS_PLANNING.md` | Phase 0 progress tracking |
 | `docs/ETC/COMMAND_LINE_PARAMETERS.md` | Game launch parameters |
-| `docs/NEXT_STEPS.md` | You are here - what to do next |
+| `NEXT_STEPS` (Archived) | Historical next steps reference |
 
 ---
 
