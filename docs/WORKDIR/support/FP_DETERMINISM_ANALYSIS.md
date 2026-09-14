@@ -68,7 +68,7 @@ Only cause **#3** is one where a different library is even relevant - and only *
 | FP-env / denormal management | No | No | Yes (`streflop_init()`, FTZ/DAZ, x87 squasher) |
 | Deterministic RNG included | No | No | Yes (Mersenne Twister) |
 | Software FPU (bit-identical on *all* archs) | No | No (relies on IEEE754 hardware) | Yes (SoftFloat mode) |
-| License | Sun permissive / BSD-2 | LGPL-2.1 |
+| License | Sun permissive | BSD-2-Clause | LGPL-2.1 |
 | GPLv3 compatible (GeneralsX is GPLv3) | Yes | Yes | Yes (LGPL->GPLv3 is fine) |
 | Modern-platform port state | Atari-focused | Clean CMake, cross-platform | Needs Spring-style porting for MSVC x64 / ARM |
 | Provenance fit | Low (Atari) | **Highest** - by Gun1Blade, core **Thyme** dev; Thyme reimplements *this exact SAGE/Generals engine* | High (Spring RTS ships it across the same OS set) |

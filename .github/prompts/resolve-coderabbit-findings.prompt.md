@@ -80,16 +80,12 @@ env -u GITHUB_TOKEN -u GH_TOKEN gh api repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"
    *(or the relevant host preset, e.g. `linux64-deploy`)*
 2. Run quick runtime smoke or relevant unit tests if applicable.
 
-### Step 6: Commit & 1-Commit Policy Enforcement
-*(Note: If this PR is an upstream sync PR matching `thesuperhackers-sync-*`, SKIP squashing to preserve individual contributor commits).*
-1. If this is a standard feature/bugfix PR, ensure the branch adheres to the 1-commit policy:
+### Step 6: Commit Changes
+1. Commit fixes using Conventional Commits format (`<type>(scope): <description>`) and ensure no `@` in the commit subject:
    ```bash
-   git fetch origin main
-   git rebase origin/main
-   # If multiple commits exist ahead of origin/main, squash into 1 commit:
-   git reset --soft origin/main
+   git add <modified_files>
    git commit -m "<type>(scope): <description>"
-   git push --force-with-lease origin HEAD
+   git push origin HEAD
    ```
 
 ### Step 7: Check CI Status
