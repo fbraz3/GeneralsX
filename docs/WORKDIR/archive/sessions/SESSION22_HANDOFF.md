@@ -388,7 +388,7 @@ grep "SAGE_USE_FREETYPE" build.log | grep "c++"
 
 1. **Pull latest code**:
    ```bash
-   cd /Users/felipebraz/PhpstormProjects/pessoal/generals-linux
+   cd ~/GeneralsX
    git pull origin linux-attempt
    ```
 

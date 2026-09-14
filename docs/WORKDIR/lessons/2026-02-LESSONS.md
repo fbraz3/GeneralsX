@@ -15,7 +15,7 @@
 **Root Cause**: Session 72 changed `macos-vulkan` preset from `inherits: "default-vcpkg"` to `inherits: "default"`
 to fix a `$env{VCPKG_ROOT}` resolution failure. But this removed the vcpkg CMake toolchain entirely. All
 packages in `vcpkg.json` (gli, glm, zlib, freetype, fontconfig) stopped being provided.
-Locally, `VCPKG_ROOT=/Users/felipebraz/vcpkg` was set in the shell — hid the problem for weeks.
+Locally, `VCPKG_ROOT=$HOME/vcpkg` was set in the shell — hid the problem for weeks.
 
 **Correct Approach (✅ RIGHT)**:
 1. Keep `inherits: "default-vcpkg"` in the preset — it sets `CMAKE_TOOLCHAIN_FILE`

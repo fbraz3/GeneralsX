@@ -46,7 +46,7 @@ void StdBIGFileSystem::init() {
 
 ### 2. No BIG Files in Workspace
 ```bash
-$ find /home/felipe/Projects/GeneralsX -name "*.big" 2>/dev/null
+$ find ~/GeneralsX -name "*.big" 2>/dev/null
 # Empty result - no .big files exist in project
 ```
 
@@ -108,7 +108,7 @@ ln -s /path/to/game/data/*.big .
 ```bash
 # Run Docker with game data mounted:
 docker run -it -v /path/to/game/data:/work/gamedata \
-  -v /home/felipe/Projects/GeneralsX:/work \
+  -v $(pwd):/work \
   ubuntu:22.04 bash
 
 # Then in Docker:

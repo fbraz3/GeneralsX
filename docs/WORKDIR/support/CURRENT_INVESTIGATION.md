@@ -225,7 +225,7 @@ Debug traces confirmed:
 - **Deadlock mystery**: Program hangs synchronously; likely requires advanced debugging (GDB stack trace) to identify
 
 ## Notes for Next Session
-- **Binary location**: `/home/felipe/Projects/GeneralsX/build/linux64-deploy/GeneralsMD/GeneralsXZH`
+- **Binary location**: `./build/linux64-deploy/GeneralsMD/GeneralsXZH`
 - **Build command**: `./scripts/docker-build-linux-zh.sh linux64-deploy`
 - **Run command**: `timeout 30s ./build/linux64-deploy/GeneralsMD/GeneralsXZH -win 2>&1`
 - **Debug markers** now in code at:

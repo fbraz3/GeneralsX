@@ -262,7 +262,7 @@ M  docs/DEV_BLOG/2026-02-DIARY.md
 
 ```bash
 # 1. Navigate to project
-cd /Users/felipebraz/PhpstormProjects/pessoal/generals-linux
+cd ~/GeneralsX
 
 # 2. Check current branch
 git branch  # Should show: * linux-attempt

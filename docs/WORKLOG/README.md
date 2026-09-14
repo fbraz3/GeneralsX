@@ -8,10 +8,10 @@ This directory contains chronological monthly development diaries recording tech
 ## Monthly Diaries
 
 - [September 2026](2026-09-DIARY.md)
-- [August 2026](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/docs/WORKLOG/2026-08-DIARY.md)
-- [July 2026](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/docs/WORKLOG/2026-07-DIARY.md)
-- [June 2026](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/docs/WORKLOG/2026-06-DIARY.md)
-- [May 2026](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/docs/WORKLOG/2026-05-DIARY.md)
-- [April 2026](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/docs/WORKLOG/2026-04-DIARY.md)
-- [March 2026](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/docs/WORKLOG/2026-03-DIARY.md)
-- [February 2026](file:///Users/felipebraz/PhpstormProjects/pessoal/GeneralsX/docs/WORKLOG/2026-02-DIARY.md)
+- [August 2026](2026-08-DIARY.md)
+- [July 2026](2026-07-DIARY.md)
+- [June 2026](2026-06-DIARY.md)
+- [May 2026](2026-05-DIARY.md)
+- [April 2026](2026-04-DIARY.md)
+- [March 2026](2026-03-DIARY.md)
+- [February 2026](2026-02-DIARY.md)
