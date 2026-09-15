@@ -465,14 +465,28 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ needs.create-tag.outputs.release_version }}"
-          # Verify that a release was not already created before deleting the tag
-          if gh release view "$VERSION" >/dev/null 2>&1; then
+
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Distinguish confirmed 404 from query failures before authorizing tag deletion.
+          HTTP_STATUS=$(gh api --include "repos/${{ github.repository }}/releases/tags/$VERSION" 2>&1 | head -1 | awk '{print $2}')
+          if [ "$HTTP_STATUS" = "200" ]; then
             echo "Release $VERSION already exists on GitHub; skipping tag deletion."
             exit 0
+          elif [ "$HTTP_STATUS" != "404" ]; then
+            echo "ERROR: Failed to query release status for $VERSION (HTTP $HTTP_STATUS). Refusing to delete tag." >&2
+            exit 1
           fi
 
           echo "Pipeline failed or cancelled before release completion. Deleting orphaned tag: $VERSION"
-          git push origin --delete "refs/tags/$VERSION" \
-            && echo "Tag $VERSION deleted from remote." \
-            || echo "Tag $VERSION not found on remote, nothing to delete."
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1; then
+            git push origin --delete "refs/tags/$VERSION"
+            echo "Tag $VERSION deleted from remote."
+          else
+            STATUS=$?
+            if [ "$STATUS" -eq 2 ]; then
+              echo "Tag $VERSION not found on remote, nothing to delete."
+            else
+              echo "ERROR: Could not check remote tag $VERSION (git ls-remote exited with $STATUS)." >&2
+              exit "$STATUS"
+            fi
+          fi
 
