@@ -45,6 +45,7 @@ jobs:
           path: /tmp/game-artifact
           run-id: ${{ inputs.run-id || github.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-decompress: true
 
       # -----------------------------------------------------------------------
       # 2. Platform-specific system dependencies
@@ -152,6 +153,10 @@ jobs:
             find "$APP_RESOURCES" -maxdepth 4 -type f -name "GeneralsXZH" -print
             exit 1
           fi
+
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Ensure execution permissions on macOS binaries
+          chmod +x "$GAME_BIN" || true
+          chmod -R +x "$GAME_DIR" || true
 
           echo "GAME_BIN=$GAME_BIN" >> $GITHUB_ENV
           echo "GAME_DIR=$GAME_DIR" >> $GITHUB_ENV
