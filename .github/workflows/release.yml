@@ -124,14 +124,14 @@ jobs:
       - name: Download Linux Zero Hour Flatpak artifact
         uses: actions/download-artifact@v8
         with:
-          name: GeneralsXZH-linux64-deploy.flatpak
+          name: GeneralsXZH-linux-x86_64.flatpak
           path: artifacts/linux-flatpak-zh
           skip-decompress: true
 
       - name: Download Linux Generals Flatpak artifact
         uses: actions/download-artifact@v8
         with:
-          name: GeneralsX-linux64-deploy.flatpak
+          name: GeneralsX-linux-x86_64.flatpak
           path: artifacts/linux-flatpak-generals
           skip-decompress: true
 
@@ -152,14 +152,16 @@ jobs:
       - name: Download Windows Zero Hour artifact
         uses: actions/download-artifact@v8
         with:
-          name: generalsxzh-windows-x86
+          name: GeneralsXZH-windows-x86.zip
           path: artifacts/windows-zh
+          skip-decompress: true
 
       - name: Download Windows Generals artifact
         uses: actions/download-artifact@v8
         with:
-          name: generalsx-windows-x86
+          name: GeneralsX-windows-x86.zip
           path: artifacts/windows-generals
+          skip-decompress: true
 
       - name: Normalize bundle files for release assets
         id: assets
@@ -231,18 +233,24 @@ jobs:
             fi
           fi
 
-          WIN_ZH_EXE=$(find artifacts/windows-zh -name "GeneralsXZH.exe" | head -1)
-          if [ -z "$WIN_ZH_EXE" ] || [ ! -f "$WIN_ZH_EXE" ]; then
-            echo "ERROR: Windows Zero Hour executable not found in artifacts/windows-zh"
-            find artifacts/windows-zh -maxdepth 3 -type f || true
-            exit 1
+          WIN_ZH_ZIP=$(find artifacts/windows-zh -type f -name "*.zip" | head -1)
+          if [ -z "$WIN_ZH_ZIP" ]; then
+            WIN_ZH_EXE=$(find artifacts/windows-zh -name "GeneralsXZH.exe" | head -1)
+            if [ -z "$WIN_ZH_EXE" ] || [ ! -f "$WIN_ZH_EXE" ]; then
+              echo "ERROR: Windows Zero Hour executable or zip not found in artifacts/windows-zh"
+              find artifacts/windows-zh -maxdepth 3 -type f || true
+              exit 1
+            fi
           fi
 
-          WIN_GENERALS_EXE=$(find artifacts/windows-generals -name "GeneralsX.exe" | head -1)
-          if [ -z "$WIN_GENERALS_EXE" ] || [ ! -f "$WIN_GENERALS_EXE" ]; then
-            echo "ERROR: Windows Generals executable not found in artifacts/windows-generals"
-            find artifacts/windows-generals -maxdepth 3 -type f || true
-            exit 1
+          WIN_GEN_ZIP=$(find artifacts/windows-generals -type f -name "*.zip" | head -1)
+          if [ -z "$WIN_GEN_ZIP" ]; then
+            WIN_GENERALS_EXE=$(find artifacts/windows-generals -name "GeneralsX.exe" | head -1)
+            if [ -z "$WIN_GENERALS_EXE" ] || [ ! -f "$WIN_GENERALS_EXE" ]; then
+              echo "ERROR: Windows Generals executable or zip not found in artifacts/windows-generals"
+              find artifacts/windows-generals -maxdepth 3 -type f || true
+              exit 1
+            fi
           fi
 
           if [ "$RELEASE_MODE" = "Dry Run" ]; then
@@ -277,8 +285,19 @@ jobs:
             (cd "$(dirname "$MAC_GEN_APP")" && zip -y -q -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.zip" "$(basename "$MAC_GEN_APP")")
           fi
 
-          (cd artifacts/windows-zh && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" .)
-          (cd artifacts/windows-generals && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" .)
+          if [ -n "$WIN_ZH_ZIP" ]; then
+            echo "Using pre-built Windows Zero Hour release asset..."
+            cp "$WIN_ZH_ZIP" release-assets/Windows-GeneralsXZH.zip
+          else
+            (cd artifacts/windows-zh && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" .)
+          fi
+
+          if [ -n "$WIN_GEN_ZIP" ]; then
+            echo "Using pre-built Windows Generals base game release asset..."
+            cp "$WIN_GEN_ZIP" release-assets/Windows-GeneralsX.zip
+          else
+            (cd artifacts/windows-generals && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" .)
+          fi
 
           echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsX.flatpak" >> "$GITHUB_OUTPUT"
           echo "linux_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsXZH.flatpak" >> "$GITHUB_OUTPUT"

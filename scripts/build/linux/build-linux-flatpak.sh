@@ -33,12 +33,12 @@ case "${GAME}" in
     GeneralsMD)
         MANIFEST="${FLATPAK_DIR}/com.fbraz3.GeneralsXZH.yml"
         APP_ID="com.fbraz3.GeneralsXZH"
-        OUTPUT_BUNDLE="${PROJECT_ROOT}/build/GeneralsXZH-${PRESET}.flatpak"
+        OUTPUT_BUNDLE="${PROJECT_ROOT}/build/GeneralsXZH-linux-x86_64.flatpak"
         ;;
     Generals)
         MANIFEST="${FLATPAK_DIR}/com.fbraz3.GeneralsX.yml"
         APP_ID="com.fbraz3.GeneralsX"
-        OUTPUT_BUNDLE="${PROJECT_ROOT}/build/GeneralsX-${PRESET}.flatpak"
+        OUTPUT_BUNDLE="${PROJECT_ROOT}/build/GeneralsX-linux-x86_64.flatpak"
         ;;
     *)
         echo "ERROR: Unsupported game '${GAME}'. Use GeneralsMD or Generals." >&2

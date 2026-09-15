@@ -31,8 +31,8 @@ jobs:
             pdb: GeneralsXZH.pdb
             build_zh: "ON"
             build_generals: "OFF"
-            artifact_name: generalsxzh-windows-x86
-            ci_artifact_name: generalsxzh-windows-x86-replay-test-only
+            artifact_name: GeneralsXZH-windows-x86.zip
+            ci_artifact_name: GeneralsXZH-windows-x86-replay-test-only.zip
           - id: generalsx
             name: Generals Base
             target: g_generals
@@ -41,8 +41,8 @@ jobs:
             pdb: GeneralsX.pdb
             build_zh: "OFF"
             build_generals: "ON"
-            artifact_name: generalsx-windows-x86
-            ci_artifact_name: generalsx-windows-x86-ci-only
+            artifact_name: GeneralsX-windows-x86.zip
+            ci_artifact_name: GeneralsX-windows-x86-ci-only.zip
 
     steps:
       - name: Checkout
@@ -126,17 +126,21 @@ jobs:
           Keep the installation's original binkw32.dll and mss32.dll; the build-time
           stub DLLs do not provide retail video or audio playback.
           "@ | Set-Content artifacts/INSTALL.txt
+          Compress-Archive -Path artifacts/* -DestinationPath "${{ matrix.game.artifact_name }}"
+          Compress-Archive -Path ci-artifacts/* -DestinationPath "${{ matrix.game.ci_artifact_name }}"
 
       - name: Upload runtime
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.game.artifact_name }}
-          path: artifacts
+          path: ${{ matrix.game.artifact_name }}
+          archive: false
           retention-days: 7
 
       - name: Upload replay-test runtime
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.game.ci_artifact_name }}
-          path: ci-artifacts
+          path: ${{ matrix.game.ci_artifact_name }}
+          archive: false
           retention-days: 1

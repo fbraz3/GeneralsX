@@ -93,7 +93,7 @@ jobs:
       - name: Locate generated Flatpak bundle
         id: bundle
         run: |
-          EXPECTED="build/${{ matrix.game.output }}-${{ inputs.preset }}.flatpak"
+          EXPECTED="build/${{ matrix.game.output }}-linux-x86_64.flatpak"
 
           if [ -f "${EXPECTED}" ]; then
             echo "path=${EXPECTED}" >> "$GITHUB_OUTPUT"
@@ -129,7 +129,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.game.output }}-${{ inputs.preset }}.flatpak
+          name: ${{ matrix.game.output }}-linux-x86_64.flatpak
           path: ${{ steps.bundle.outputs.path }}
           archive: false
           retention-days: 7
