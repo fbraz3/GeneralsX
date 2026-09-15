@@ -116,7 +116,7 @@ jobs:
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: macos
-      game-artifact: macos-generalsxzh-app
+      game-artifact: GeneralsXZH-macos-arm64.zip
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 

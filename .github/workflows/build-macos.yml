@@ -474,7 +474,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v7
         with:
-          name: macos-${{ matrix.game.id }}-app
-          path: /tmp/macos-artifact-${{ matrix.game.id }}/*.zip
+          name: ${{ matrix.game.output }}-macos-arm64.zip
+          path: /tmp/macos-artifact-${{ matrix.game.id }}/${{ matrix.game.output }}-macos-arm64.zip
+          archive: false
           retention-days: 7
           if-no-files-found: error

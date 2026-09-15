@@ -136,13 +136,13 @@ jobs:
       - name: Download macOS bundle artifact
         uses: actions/download-artifact@v8
         with:
-          name: macos-generalsxzh-app
+          name: GeneralsXZH-macos-arm64.zip
           path: artifacts/macos
 
       - name: Download macOS Generals bundle artifact
         uses: actions/download-artifact@v8
         with:
-          name: macos-generalsx-app
+          name: GeneralsX-macos-arm64.zip
           path: artifacts/macos-generals
 
       - name: Download Windows Zero Hour artifact
