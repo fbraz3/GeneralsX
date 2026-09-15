@@ -105,7 +105,7 @@ jobs:
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: linux-flatpak
-      game-artifact: GeneralsXZH-linux-x86_64.flatpak
+      game-artifact: linux-x86_64-GeneralsXZH.flatpak
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
@@ -116,7 +116,7 @@ jobs:
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: macos
-      game-artifact: GeneralsXZH-macos-arm64.zip
+      game-artifact: macos-arm64-GeneralsXZH.zip
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
@@ -126,7 +126,7 @@ jobs:
     if: needs.build-windows.result == 'success'
     uses: ./.github/workflows/replay-tests-windows.yml
     with:
-      game-artifact: GeneralsXZH-windows-x86-replay-test-only.zip
+      game-artifact: windows-x86-GeneralsXZH-replay-test-only.zip
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 

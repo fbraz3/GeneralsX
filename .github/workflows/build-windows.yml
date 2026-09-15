@@ -31,8 +31,8 @@ jobs:
             pdb: GeneralsXZH.pdb
             build_zh: "ON"
             build_generals: "OFF"
-            artifact_name: GeneralsXZH-windows-x86.zip
-            ci_artifact_name: GeneralsXZH-windows-x86-replay-test-only.zip
+            artifact_name: windows-x86-GeneralsXZH.zip
+            ci_artifact_name: windows-x86-GeneralsXZH-replay-test-only.zip
           - id: generalsx
             name: Generals Base
             target: g_generals
@@ -41,8 +41,8 @@ jobs:
             pdb: GeneralsX.pdb
             build_zh: "OFF"
             build_generals: "ON"
-            artifact_name: GeneralsX-windows-x86.zip
-            ci_artifact_name: GeneralsX-windows-x86-ci-only.zip
+            artifact_name: windows-x86-GeneralsX.zip
+            ci_artifact_name: windows-x86-GeneralsX-ci-only.zip
 
     steps:
       - name: Checkout

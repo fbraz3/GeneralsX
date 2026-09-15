@@ -124,42 +124,42 @@ jobs:
       - name: Download Linux Zero Hour Flatpak artifact
         uses: actions/download-artifact@v8
         with:
-          name: GeneralsXZH-linux-x86_64.flatpak
+          name: linux-x86_64-GeneralsXZH.flatpak
           path: artifacts/linux-flatpak-zh
           skip-decompress: true
 
       - name: Download Linux Generals Flatpak artifact
         uses: actions/download-artifact@v8
         with:
-          name: GeneralsX-linux-x86_64.flatpak
+          name: linux-x86_64-GeneralsX.flatpak
           path: artifacts/linux-flatpak-generals
           skip-decompress: true
 
       - name: Download macOS bundle artifact
         uses: actions/download-artifact@v8
         with:
-          name: GeneralsXZH-macos-arm64.zip
+          name: macos-arm64-GeneralsXZH.zip
           path: artifacts/macos
           skip-decompress: true
 
       - name: Download macOS Generals bundle artifact
         uses: actions/download-artifact@v8
         with:
-          name: GeneralsX-macos-arm64.zip
+          name: macos-arm64-GeneralsX.zip
           path: artifacts/macos-generals
           skip-decompress: true
 
       - name: Download Windows Zero Hour artifact
         uses: actions/download-artifact@v8
         with:
-          name: GeneralsXZH-windows-x86.zip
+          name: windows-x86-GeneralsXZH.zip
           path: artifacts/windows-zh
           skip-decompress: true
 
       - name: Download Windows Generals artifact
         uses: actions/download-artifact@v8
         with:
-          name: GeneralsX-windows-x86.zip
+          name: windows-x86-GeneralsX.zip
           path: artifacts/windows-generals
           skip-decompress: true
 

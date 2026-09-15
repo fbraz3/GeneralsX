@@ -19,7 +19,7 @@ DXVK_D3D8_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d8/libdxvk_d3d8.0
 DXVK_D3D9_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d9/libdxvk_d3d9.0.dylib"
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
-OUTPUT_ZIP="${PROJECT_ROOT}/GeneralsXZH-macos-arm64.zip"
+OUTPUT_ZIP="${PROJECT_ROOT}/macos-arm64-GeneralsXZH.zip"
 
 DXVK_D3D8_LIB="${DXVK_D3D8_LIB_INSTALL}"
 DXVK_D3D9_LIB="${DXVK_D3D9_LIB_INSTALL}"

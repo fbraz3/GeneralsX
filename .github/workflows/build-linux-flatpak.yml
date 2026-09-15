@@ -93,7 +93,7 @@ jobs:
       - name: Locate generated Flatpak bundle
         id: bundle
         run: |
-          EXPECTED="build/${{ matrix.game.output }}-linux-x86_64.flatpak"
+          EXPECTED="build/linux-x86_64-${{ matrix.game.output }}.flatpak"
 
           if [ -f "${EXPECTED}" ]; then
             echo "path=${EXPECTED}" >> "$GITHUB_OUTPUT"
@@ -102,7 +102,7 @@ jobs:
           fi
 
           # GeneralsX @bugfix Meeseeks 14/09/2026 Resolve Flatpak path dynamically and normalize to canonical expected filename.
-          CANDIDATE=$(find build -maxdepth 2 -type f -name "${{ matrix.game.output }}*.flatpak" | head -1)
+          CANDIDATE=$(find build -maxdepth 2 -type f -name "*${{ matrix.game.output }}*.flatpak" | head -1)
           if [ -z "${CANDIDATE}" ] || [ ! -f "${CANDIDATE}" ]; then
             echo "ERROR: Flatpak bundle not found for ${{ matrix.game.id }}"
             find build -maxdepth 3 -type f -name "*.flatpak" || true
@@ -129,7 +129,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.game.output }}-linux-x86_64.flatpak
+          name: linux-x86_64-${{ matrix.game.output }}.flatpak
           path: ${{ steps.bundle.outputs.path }}
           archive: false
           retention-days: 7
