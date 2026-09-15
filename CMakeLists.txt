@@ -63,12 +63,6 @@ if(MINGW)
     include(cmake/widl.cmake)
 endif()
 
-# Find/Add build dependencies and stubs shared by all projects
-if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-    include(cmake/miles.cmake)
-    include(cmake/bink.cmake)
-endif()
-
 # Always include DX8 headers (needed for both Windows and Linux builds)
 # On Windows: min-dx8-sdk headers
 # On Linux: DXVK headers (for D3D8→Vulkan translation)
@@ -128,6 +122,9 @@ if (IS_VS6_BUILD)
     include_directories(Dependencies/Utility)
     add_compile_options(/FIUtility/CppMacros.h)
 endif()
+
+add_subdirectory(Dependencies/Bink)
+add_subdirectory(Dependencies/Miles)
 
 add_subdirectory(resources)
 

@@ -37,6 +37,7 @@
 #include "Common/ActionManager.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
+#include "Common/Recorder.h"
 #include "Common/GameUtility.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
@@ -550,6 +551,10 @@ void GameClient::update()
 			if (TheGlobalData->m_loadSaveGame.isNotEmpty())
 			{
 				TheGameState->loadQueuedSaveGame();
+			}
+			else if (TheGlobalData->m_loadReplayGame.isNotEmpty())
+			{
+				TheRecorder->loadQueuedReplay();
 			}
 		}
 	}
