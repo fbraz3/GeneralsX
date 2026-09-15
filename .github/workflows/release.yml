@@ -124,13 +124,13 @@ jobs:
       - name: Download Linux Zero Hour Flatpak artifact
         uses: actions/download-artifact@v8
         with:
-          name: linux-flatpak-generalsxzh-linux64-deploy
+          name: GeneralsXZH-linux64-deploy.flatpak
           path: artifacts/linux-flatpak-zh
 
       - name: Download Linux Generals Flatpak artifact
         uses: actions/download-artifact@v8
         with:
-          name: linux-flatpak-generalsx-linux64-deploy
+          name: GeneralsX-linux64-deploy.flatpak
           path: artifacts/linux-flatpak-generals
 
       - name: Download macOS bundle artifact

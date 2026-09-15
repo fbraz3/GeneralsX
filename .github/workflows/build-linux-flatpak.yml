@@ -124,7 +124,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v7
         with:
-          name: linux-flatpak-${{ matrix.game.id }}-${{ inputs.preset }}
+          name: ${{ matrix.game.output }}-${{ inputs.preset }}.flatpak
           path: ${{ steps.bundle.outputs.path }}
+          archive: false
           retention-days: 7
           if-no-files-found: error

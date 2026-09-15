@@ -105,7 +105,7 @@ jobs:
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: linux-flatpak
-      game-artifact: linux-flatpak-generalsxzh-linux64-deploy
+      game-artifact: GeneralsXZH-linux64-deploy.flatpak
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
