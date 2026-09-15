@@ -62,7 +62,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: vcpkg-bincache-${{ runner.os }}-x86-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          key: vcpkg-bincache-${{ runner.os }}-x86-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**') }}
           restore-keys: |
             vcpkg-bincache-${{ runner.os }}-x86-
 
@@ -73,14 +73,23 @@ jobs:
           New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
           "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> $env:GITHUB_ENV
           "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> $env:GITHUB_ENV
-          "VCPKG_OVERLAY_TRIPLETS=${{ github.workspace }}/triplets" >> $env:GITHUB_ENV
+          "VCPKG_OVERLAY_TRIPLETS=${{ github.workspace }}/cmake/triplets" >> $env:GITHUB_ENV
+          "VCPKG_OVERLAY_PORTS=${{ github.workspace }}/cmake/ports" >> $env:GITHUB_ENV
           "VCPKG_INSTALL_OPTIONS=--x-abi-tools-use-exact-versions" >> $env:GITHUB_ENV
 
       - name: Configure
         shell: pwsh
+        env:
+          NGMP_DEFAULT_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
+          NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
+          NGMP_WEB_PORTAL_URL: ${{ secrets.NGMP_WEB_PORTAL_URL }}
+          NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
           $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT
           cmake --preset win32-vcpkg `
+            -DVCPKG_OVERLAY_PORTS="${{ github.workspace }}/cmake/ports" `
             -DRTS_BUILD_GENERALS=${{ matrix.game.build_generals }} `
             -DRTS_BUILD_ZEROHOUR=${{ matrix.game.build_zh }} `
             -DRTS_BUILD_CORE_TOOLS=OFF `
@@ -95,7 +104,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-x86-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json')) }}
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-x86-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**')) }}
 
       - name: Build
         shell: pwsh
@@ -108,9 +117,26 @@ jobs:
           New-Item -ItemType Directory -Force ci-artifacts | Out-Null
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} artifacts/
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.pdb }} artifacts/
-          Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll artifacts/
           Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} ci-artifacts/
-          Copy-Item build/win32-vcpkg/vcpkg_installed/x86-windows/bin/zlib1.dll ci-artifacts/
+
+          Get-ChildItem -Path @("vcpkg_installed/x86-windows/bin/*.dll", "build/win32-vcpkg/vcpkg_installed/x86-windows/bin/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Collecting vcpkg DLL: $($_.FullName)"
+            Copy-Item $_.FullName artifacts/
+            Copy-Item $_.FullName ci-artifacts/
+          }
+
+          # Collect Desktop Release CRT DLLs (msvcp140.dll, vcruntime140.dll, etc.)
+          $vcReleaseDir = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC" -Directory -Recurse |
+            Where-Object { $_.FullName -match "\\x86\\" -and $_.FullName -match "Microsoft\.VC143\.CRT$" -and $_.FullName -notmatch "onecore" } |
+            Select-Object -First 1
+
+          if ($vcReleaseDir) {
+            Get-ChildItem -Path (Join-Path $vcReleaseDir.FullName "*.dll") | ForEach-Object {
+              Write-Host "Collecting Desktop Release CRT DLL: $($_.FullName)"
+              Copy-Item $_.FullName artifacts/
+              Copy-Item $_.FullName ci-artifacts/
+            }
+          }
 
           foreach ($name in @("binkw32.dll", "mss32.dll")) {
             $stub = Get-ChildItem build/win32-vcpkg -Filter $name -Recurse |

@@ -13,8 +13,8 @@ Perform a full upstream sync from the `thesuperhackers` remote into this reposit
 
 `TheSuperHackers` and `GeneralsX` have different goals and this must drive every merge decision:
 
-- `TheSuperHackers` focuses on bug fixes, stability, optimizations, and merging the `Generals` and `GeneralsMD` codebases while preserving compatibility with the original Windows binaries.
-- `GeneralsX` focuses on making the game truly cross-platform with a modern stack based on SDL3 + DXVK + MiniAudio + FFmpeg, without prioritizing original binary compatibility.
+- `TheSuperHackers` focuses on bug fixes, stability, optimizations, and merging the `Generals` and `GeneralsMD` codebases while preserving compatibility with original Windows binaries and the legacy GameSpy online stack.
+- `GeneralsX` focuses on making the game truly cross-platform with a modern stack based on SDL3 + DXVK + MiniAudio + FFmpeg, replacing the discontinued GameSpy online service with Next-Gen Multiplayer Protocol (NGMP / GeneralsOnline) via WebSocket, REST, and GameNetworkingSockets (ICE/STUN/TURN).
 
 The repository is significantly behind upstream `TheSuperHackers`. The purpose of this sync is to import useful upstream improvements without regressing or dismantling the already functional cross-platform architecture in `GeneralsX`.
 
@@ -54,9 +54,15 @@ Expect many conflicts because the projects intentionally diverged. Every conflic
 - Keep legacy compatibility paths only where they are still intentionally maintained by this repository, but do not let original-binary compatibility override the `GeneralsX` cross-platform objective.
 - Treat INI parser changes as high risk on macOS: upstream numeric parsing optimizations may require platform-specific compatibility handling for Apple deployment targets.
 - **Never replace our CI/CD infrastructure with upstream versions.** Our `.github/workflows/`, `.github/ISSUE_TEMPLATE/`, `.github/copilot-instructions.md` and all CI configuration must be kept intact. Reject any upstream additions or modifications to these paths.
+- **NGMP (GeneralsOnline) Preservation:**
+  - Upstream has zero knowledge of NGMP and actively maintains or refactors legacy GameSpy/Peer networking. Any conflict touching files under `GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/`, `Core/GameEngine/Source/GameNetwork/GeneralsOnline/`, `cmake/ngmp.cmake`, or code blocks guarded by `#if defined(SAGE_USE_NGMP)` MUST preserve the `GeneralsX` NGMP implementation.
+  - In shared multiplayer UI screens (`WOL*.cpp`, `MainMenu.cpp`), upstream changes that restore legacy `TheGameSpyInfo` calls or obsolete GameSpy queues must be reconciled so that `NGMP_OnlineServicesManager`, `OnlineServices_LobbyInterface`, `TheNGMPGame`, and thread-safe UI event dispatching (`NGMPEvent`) remain fully functional.
+  - Loading screen ticking (`GameSpyLoadScreen.cpp`, `MapTransferLoadScreen.cpp`) via `NGMP_OnlineServicesManager::update()` and transport ticking in `NextGenTransport.cpp` must be retained to prevent GameNetworkingSockets (GNS/ICE) thread starvation and connection timeouts.
+  - GameSpy online compatibility is explicitly deprecated and must NOT override or compromise NGMP. Singleplayer, Skirmish vs AI, and LAN multiplayer must remain functional. Review `.github/instructions/ngmp.instructions.md` and `tmp/ngmp_context.md` for architectural context and constraints before resolving networking conflicts.
 - Review conflicts with extra care in these areas:
   - build system and presets
   - SDL3, DXVK, MiniAudio, FFmpeg, and platform abstraction layers
+  - NGMP (GeneralsOnline) subsystem, GameNetworkingSockets (GNS/ICE) transport, and shared WOL menus
   - INI parsing and file load order logic
   - shared engine code under `Core/`
   - `Generals/` and `GeneralsMD/` code that may have been unified or refactored upstream
@@ -102,6 +108,7 @@ The final response must include a checklist covering at least:
 - main menu
 - skirmish gameplay
 - campaign flow
+- NGMP online multiplayer (login, lobby roster, staging room sync, and P2P ICE match start)
 - audio playback
 - video playback
 - renderer stability

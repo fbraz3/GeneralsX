@@ -96,9 +96,9 @@ typedef float FLOAT;
 // 64-bit types now defined in bittype.h (_int64, __int64, _uint64, __uint64)
 // Removed duplicate definitions to avoid conflicts
 // typedef int64_t _int64;   // REMOVED - use bittype.h
-// typedef uint64_t _uint64; // REMOVED - use bittype.h
-typedef int64_t int64;
-typedef uint64_t uint64;
+// GeneralsX @bugfix fbraz3 10/09/2026 Match Valve steamtypes.h declaration (long long) to prevent GCC conflicting typedef on Linux
+typedef long long int64;
+typedef unsigned long long uint64;
 
 typedef int32_t *LPARAM;
 typedef size_t WPARAM;

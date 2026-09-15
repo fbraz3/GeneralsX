@@ -64,6 +64,7 @@ jobs:
     with:
       preset: linux64-deploy
       checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
+    secrets: inherit
 
   build-macos:
     needs: [create-tag]
@@ -71,12 +72,14 @@ jobs:
     with:
       preset: macos-vulkan
       checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
+    secrets: inherit
 
   build-windows:
     needs: [create-tag]
     uses: ./.github/workflows/build-windows.yml
     with:
       checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
+    secrets: inherit
 
   prepare-release:
     runs-on: ubuntu-latest

@@ -151,24 +151,18 @@ WindowMsgHandledType GadgetTextEntryInput( GameWindow *window, UnsignedInt msg,
 
 			switch( mData1 )
 			{
-				/*
 				// --------------------------------------------------------------------
 				case KEY_KPENTER:
 				case KEY_ENTER:
 					// Done with this edit
 					if( BitIsSet( mData2, KEY_STATE_DOWN ) )
 					{
-						if( e->receivedUnichar == FALSE )
-						{
-							TheWindowManager->winSendSystemMsg( window->winGetOwner(),
-																									GEM_EDIT_DONE,
-																									(WindowMsgData)window,
-																									0 );
-						}
+						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
+																								GEM_EDIT_DONE,
+																								(WindowMsgData)window,
+																								0 );
 					}
-
-					break;
-				 */
+					return MSG_HANDLED;
 				// --------------------------------------------------------------------
 				// Don't process these keys
 				case KEY_ESC:

@@ -34,6 +34,11 @@ echo "Building GeneralsXZH (macOS, preset: ${PRESET})..."
 
 # ── Prerequisite checks ──────────────────────────────────────────────────────
 
+# GeneralsX @build BenderAI 11/09/2026 Prioritize native Apple Silicon Homebrew path
+if [[ "$(uname -m)" == "arm64" && -d "/opt/homebrew/bin" ]]; then
+    export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:${PATH}"
+fi
+
 check_tool() {
     local tool="$1" hint="$2"
     if ! command -v "$tool" &>/dev/null; then

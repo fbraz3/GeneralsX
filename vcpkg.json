@@ -20,8 +20,11 @@
     },
     {
       "name": "curl",
-      "platform": "!windows",
-      "features": ["ssl"]
+      "features": ["ssl", "websockets"]
+    },
+    {
+      "name": "gamenetworkingsockets",
+      "platform": "!osx"
     },
     "stb"
   ],
