@@ -45,6 +45,7 @@ jobs:
           path: /tmp/game-artifact
           run-id: ${{ inputs.run-id || github.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-decompress: true
 
       # -----------------------------------------------------------------------
       # 2. Platform-specific system dependencies
@@ -102,15 +103,38 @@ jobs:
         if: inputs.platform == 'macos'
         run: |
           mkdir -p /tmp/game-bundle
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Extract zip/tar bundle first to preserve symlinks and executable bits.
+          ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
           TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
-          echo "Extracting: $TAR_FILE"
-          tar -xf "$TAR_FILE" -C /tmp/game-bundle
+          if [ -n "$ZIP_FILE" ]; then
+            echo "Extracting zip: $ZIP_FILE"
+            unzip -q "$ZIP_FILE" -d /tmp/game-bundle
+          elif [ -n "$TAR_FILE" ]; then
+            echo "Extracting tar: $TAR_FILE"
+            tar -xf "$TAR_FILE" -C /tmp/game-bundle
+          elif [ -d "/tmp/game-artifact/Contents" ]; then
+            echo "Detected .app bundle directly at /tmp/game-artifact"
+            APP_DIR="/tmp/game-artifact"
+          else
+            APP_DIR=$(find /tmp/game-artifact -maxdepth 2 -type d -name "*.app" | head -1)
+            if [ -z "$APP_DIR" ]; then
+              echo "ERROR: Neither .zip, .tar nor .app bundle found in /tmp/game-artifact"
+              find /tmp/game-artifact -maxdepth 3 -print
+              exit 1
+            fi
+          fi
 
-          # Resolve app layout directly to avoid path inference mistakes.
-          APP_DIR=$(find /tmp/game-bundle -type d -name "*.app" | head -1)
+          if [ -z "$APP_DIR" ]; then
+            if [ -d "/tmp/game-bundle/Contents" ]; then
+              APP_DIR="/tmp/game-bundle"
+            else
+              APP_DIR=$(find /tmp/game-bundle -maxdepth 2 -type d -name "*.app" | head -1)
+            fi
+          fi
+
           if [ -z "$APP_DIR" ]; then
             echo "ERROR: .app bundle not found after extraction"
-            find /tmp/game-bundle -maxdepth 4 -print
+            find /tmp/game-bundle /tmp/game-artifact -maxdepth 4 -print || true
             exit 1
           fi
 
@@ -129,6 +153,10 @@ jobs:
             find "$APP_RESOURCES" -maxdepth 4 -type f -name "GeneralsXZH" -print
             exit 1
           fi
+
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Ensure execution permissions on macOS binaries
+          chmod +x "$GAME_BIN" || true
+          chmod -R +x "$GAME_DIR" || true
 
           echo "GAME_BIN=$GAME_BIN" >> $GITHUB_ENV
           echo "GAME_DIR=$GAME_DIR" >> $GITHUB_ENV

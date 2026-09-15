@@ -1,79 +1,52 @@
 # Release Pipeline
 
-This workflow runs Linux and macOS builds for Zero Hour and Generals base, collects bundles, generates release notes from local pull requests, and optionally creates a GitHub release.
+This workflow runs Linux, macOS, and Windows builds for Zero Hour and Generals base, collects bundles, generates release notes from local pull requests, and creates a GitHub release with automated Semantic Versioning (SemVer).
 
 ## Inputs
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
-| `release_version` | string | — | Target tag/version (for example: `GeneralsX-Beta-3`) |
-| `additional_notes` | string | empty | Optional extra notes section |
-| `create_release` | boolean | false | When true, creates a GitHub release and uploads assets |
-| `is_prerelease` | boolean | false | When true, marks the release as pre-release |
-| `dry_run` | boolean | false | Forces no release creation; only generates notes and artifacts |
+| `release_mode` | choice | `Draft` | Release mode: `Draft`, `New Release`, or `Dry Run` |
+
+> [!NOTE]
+> The release version is **not** prompted manually. It is automatically computed by `scripts/tooling/release/calculate_next_version.sh` using `base-version.txt` and existing git tags (e.g. `1.0` -> `1.0.0`, `1.0.1`, etc.).
 
 ## Behavior
 
-1. Runs Linux builds for Zero Hour and Generals base (`linux64-deploy`).
-2. Runs macOS builds for Zero Hour and Generals base (`macos-vulkan`).
-3. Downloads generated bundle artifacts from all platform/game jobs.
-4. Produces release assets:
+1. Resolves the next release version from `base-version.txt` and existing repository tags via `scripts/tooling/release/calculate_next_version.sh`.
+2. Creates and pushes the git tag before starting builds (skipped on `Dry Run`).
+3. Runs Linux Flatpak builds for Zero Hour and Generals base (`linux64-deploy`).
+4. Runs macOS app bundle builds for Zero Hour and Generals base (`macos-vulkan`).
+5. Runs Windows executable builds for Zero Hour and Generals base.
+6. Downloads generated bundle artifacts from all platform/game jobs.
+7. Produces release assets:
    - `Linux-GeneralsX.flatpak`
    - `Linux-GeneralsXZH.flatpak`
-   - `macOS-GeneralsX.tar.zip`
-   - `macOS-GeneralsXZH.tar.zip`
+   - `macOS-GeneralsX.zip`
+   - `macOS-GeneralsXZH.zip`
    - `Windows-GeneralsX.zip`
    - `Windows-GeneralsXZH.zip`
-5. Generates release notes with fixed header text plus:
-   - `## Additional Notes` (only if provided)
-   - `## What's Changed`
-   - `## New Contributors` (when applicable)
-   - `**Full Changelog**` (when a previous tag exists)
-6. Uses only pull requests associated with commits in `fbraz3/GeneralsX` (ignores upstream TheSuperHackers PRs).
-7. If `dry_run=true` or `create_release=false`, uploads preview artifacts instead of creating a release.
-8. Creates GitHub release only when `create_release=true` and `dry_run=false`.
-
-Dry-run preview policy:
-- Generates only one small preview file: `${release_version}-notes.txt`.
-- Does not generate normalized zip assets for preview upload.
-- Still validates build/download steps and notes generation logic.
+8. Generates release notes with install instructions, community ports, and local PR changelog.
+9. If `release_mode=Dry Run`, uploads a preview artifact `${version}-notes.txt` and avoids pushing tags or creating releases.
+10. If `release_mode=Draft` (default), creates a draft GitHub release with attached assets so it can be reviewed and polished via `.github/prompts/prepare-release-draft.prompt.md`.
+11. If `release_mode=New Release`, publishes the GitHub release immediately.
 
 ## Notes Format
 
 Fixed block:
 
 ```markdown
-> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
+If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
 
-# Install Instructions
+# Getting Started
 
-https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX
-```
-
-What's changed format:
-
-```markdown
-## What's Changed
-
-- $COMMIT_TITLE by @$AUTHOR in $PULL_REQUEST_URL
-```
-
-New contributors format:
-
-```markdown
-## New Contributors
-
-* @$USERNAME made their first contribution in $PULL_REQUEST_URL
-```
-
-Full changelog format:
-
-```markdown
-**Full Changelog**: https://github.com/fbraz3/GeneralsX/compare/$LAST_TAG...$CURRENT_TAG
+Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform.
 ```
 
 ## Recommended Usage
 
-1. First run with `create_release=false` to validate output artifacts.
-2. Review generated markdown and zip files from workflow artifacts.
-3. Run again with `create_release=true` (and optionally `is_prerelease=true`) to publish.
+1. Ensure `base-version.txt` contains the desired `MAJOR.MINOR` target (e.g., `1.0`).
+2. Trigger the `Release Pipeline` workflow with default mode (`Draft`).
+3. Once the workflow completes, use the `prepare-release-draft` custom prompt to polish the draft's highlights and release announcement.
+4. Review and publish the draft in GitHub Releases.
+

@@ -435,7 +435,7 @@ jobs:
             ./scripts/build/macos/bundle-macos-generals.sh 2>&1 | tee logs/bundle_${{ matrix.game.log_suffix }}_macos.log
           fi
           BUNDLE_STATUS=${PIPESTATUS[0]}
-          OUTPUT_ZIP="${{ matrix.game.output }}-macos-arm64.zip"
+          OUTPUT_ZIP="macos-arm64-${{ matrix.game.output }}.zip"
           if [ $BUNDLE_STATUS -eq 0 ]; then
             echo "✅ Bundle completed successfully"
             if [ -f "${OUTPUT_ZIP}" ]; then
@@ -454,27 +454,22 @@ jobs:
       - name: Prepare .app Artifact
         if: success()
         run: |
-          OUTPUT_ZIP="${{ matrix.game.output }}-macos-arm64.zip"
+          OUTPUT_ZIP="macos-arm64-${{ matrix.game.output }}.zip"
           APP_NAME="${{ matrix.game.output }}.app"
           ARTIFACT_DIR="/tmp/macos-artifact-${{ matrix.game.id }}"
           rm -rf "${ARTIFACT_DIR}"
           mkdir -p "${ARTIFACT_DIR}"
 
-          unzip -q "${OUTPUT_ZIP}" -d "${ARTIFACT_DIR}"
-
-          if [ ! -d "${ARTIFACT_DIR}/${APP_NAME}" ]; then
-            echo "❌ App bundle not found after extracting ${OUTPUT_ZIP}: ${ARTIFACT_DIR}/${APP_NAME}"
-            find "${ARTIFACT_DIR}" -maxdepth 2 -print
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Verify zip contains .app bundle directly at root and stage for artifact upload.
+          if ! unzip -l "${OUTPUT_ZIP}" | grep -q "${APP_NAME}/"; then
+            echo "❌ App bundle not found in ${OUTPUT_ZIP}"
+            unzip -l "${OUTPUT_ZIP}"
             exit 1
           fi
 
-          echo "✅ Prepared app bundle artifact: ${ARTIFACT_DIR}/${APP_NAME}"
-          du -sh "${ARTIFACT_DIR}/${APP_NAME}"
-
-          # GeneralsX @build fbraz3 27/03/2026 Archive .app as tar (no compression) to preserve symlinks and executable bits.
-          BUNDLE_TAR="${ARTIFACT_DIR}/${APP_NAME%.app}.tar"
-          tar -C "${ARTIFACT_DIR}" -cf "${BUNDLE_TAR}" "${APP_NAME}"
-          echo "✅ Archive ready: ${BUNDLE_TAR}"
+          cp "${OUTPUT_ZIP}" "${ARTIFACT_DIR}/${OUTPUT_ZIP}"
+          echo "✅ Archive ready: ${ARTIFACT_DIR}/${OUTPUT_ZIP}"
+          du -sh "${ARTIFACT_DIR}/${OUTPUT_ZIP}"
 
       - name: Upload Build Logs
         if: always()
@@ -488,7 +483,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v7
         with:
-          name: macos-${{ matrix.game.id }}-app
-          path: /tmp/macos-artifact-${{ matrix.game.id }}/*.tar
+          name: macos-arm64-${{ matrix.game.output }}.zip
+          path: /tmp/macos-artifact-${{ matrix.game.id }}/macos-arm64-${{ matrix.game.output }}.zip
+          archive: false
           retention-days: 7
-          if-no-files-found: warn
+          if-no-files-found: error

@@ -3,10 +3,6 @@ name: Release Pipeline
 on:
   workflow_dispatch:
     inputs:
-      release_version:
-        description: "Release version tag (e.g., GeneralsX-Beta-3)"
-        required: true
-        type: string
       release_mode:
         description: "Release mode"
         required: false
@@ -18,7 +14,7 @@ on:
         default: Draft
 
 concurrency:
-  group: release-${{ github.workflow }}-${{ inputs.release_version }}
+  group: release-${{ github.workflow }}
   cancel-in-progress: false
 
 permissions:
@@ -32,6 +28,8 @@ jobs:
   # The tag creation step is guarded at step level: no tag is pushed on dry_run.
   create-tag:
     runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.version.outputs.version }}
     steps:
       # GeneralsX @build GitHubCopilot 08/05/2026 Use Node 24 compatible GitHub Actions major versions to remove runner deprecation warnings.
       - name: Checkout repository
@@ -40,21 +38,17 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Validate version input
+      - name: Calculate release version
+        id: version
         run: |
-          VERSION="${{ inputs.release_version }}"
-          if [ -z "$VERSION" ]; then
-            echo "ERROR: release_version is required"
-            exit 1
-          fi
-          echo "Release version: $VERSION"
+          ./scripts/tooling/release/calculate_next_version.sh
 
       - name: Create and push git tag
         if: inputs.release_mode != 'Dry Run'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ inputs.release_version }}"
+          VERSION="${{ steps.version.outputs.version }}"
           if git show-ref --tags --verify --quiet "refs/tags/$VERSION"; then
             echo "ERROR: Tag $VERSION already exists"
             exit 1
@@ -69,7 +63,7 @@ jobs:
     uses: ./.github/workflows/build-linux-flatpak.yml
     with:
       preset: linux64-deploy
-      checkout_ref: refs/tags/${{ inputs.release_version }}
+      checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
     secrets: inherit
 
   build-macos:
@@ -77,53 +71,19 @@ jobs:
     uses: ./.github/workflows/build-macos.yml
     with:
       preset: macos-vulkan
-      checkout_ref: refs/tags/${{ inputs.release_version }}
+      checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
     secrets: inherit
 
   build-windows:
     needs: [create-tag]
     uses: ./.github/workflows/build-windows.yml
     with:
-      checkout_ref: refs/tags/${{ inputs.release_version }}
+      checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
     secrets: inherit
-
-  # GeneralsX @build BenderAI 21/04/2026 Roll back the pushed tag when anything
-  # downstream of create-tag fails, so a re-run with the same version is possible.
-  # Uses always() so this job runs even when upstream jobs are skipped/failed.
-  # prepare-release is intentionally excluded from needs: if a build fails,
-  # prepare-release is skipped (not failed), which would prevent cleanup from running.
-  cleanup-tag-on-failure:
-    if: >
-      always() &&
-      inputs.release_mode != 'Dry Run' &&
-      needs.create-tag.result == 'success' &&
-      (
-        needs.build-linux-flatpak.result == 'failure' ||
-        needs.build-macos.result == 'failure' ||
-        needs.build-windows.result == 'failure'
-      )
-    needs: [create-tag, build-linux-flatpak, build-macos, build-windows]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-
-      - name: Delete orphaned tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${{ inputs.release_version }}"
-          echo "Pipeline failed after tag was pushed. Deleting orphaned tag: $VERSION"
-          git push origin --delete "refs/tags/$VERSION" \
-            && echo "Tag $VERSION deleted from remote." \
-            || echo "Tag $VERSION not found on remote, nothing to delete."
 
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [build-linux-flatpak, build-macos, build-windows]
+    needs: [create-tag, build-linux-flatpak, build-macos, build-windows]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -133,10 +93,10 @@ jobs:
 
       - name: Validate release inputs
         run: |
-          VERSION="${{ inputs.release_version }}"
+          VERSION="${{ needs.create-tag.outputs.release_version }}"
           RELEASE_MODE="${{ inputs.release_mode }}"
           if [ -z "$VERSION" ]; then
-            echo "ERROR: release_version is required"
+            echo "ERROR: release_version could not be determined"
             exit 1
           fi
           echo "Release version: $VERSION"
@@ -150,9 +110,9 @@ jobs:
       - name: Detect latest release tag
         id: latest
         run: |
-          CURRENT_TAG="${{ inputs.release_version }}"
-          # GeneralsX @bugfix GitHubCopilot 21/04/2026 Exclude the in-flight release tag so changelog compares against the previous published release.
-          LATEST_TAG=$(git tag -l "GeneralsX*" --sort=-version:refname --merged HEAD | grep -Fxv "$CURRENT_TAG" | head -1)
+          CURRENT_TAG="${{ needs.create-tag.outputs.release_version }}"
+          # GeneralsX @bugfix BenderAI 13/09/2026 Find previous release across SemVer and legacy GeneralsX- tags, sorted by creation date.
+          LATEST_TAG=$(git tag --merged HEAD --sort=-creatordate | grep -E '^([0-9]+\.[0-9]+\.[0-9]+|v[0-9]+\.[0-9]+\.[0-9]+|GeneralsX-)' | grep -Fxv "$CURRENT_TAG" | head -1)
           if [ -z "$LATEST_TAG" ]; then
             echo "latest_tag=" >> "$GITHUB_OUTPUT"
             echo "latest_tag_date=" >> "$GITHUB_OUTPUT"
@@ -167,38 +127,44 @@ jobs:
       - name: Download Linux Zero Hour Flatpak artifact
         uses: actions/download-artifact@v8
         with:
-          name: linux-flatpak-generalsxzh-linux64-deploy
+          name: linux-x86_64-GeneralsXZH.flatpak
           path: artifacts/linux-flatpak-zh
+          skip-decompress: true
 
       - name: Download Linux Generals Flatpak artifact
         uses: actions/download-artifact@v8
         with:
-          name: linux-flatpak-generalsx-linux64-deploy
+          name: linux-x86_64-GeneralsX.flatpak
           path: artifacts/linux-flatpak-generals
+          skip-decompress: true
 
       - name: Download macOS bundle artifact
         uses: actions/download-artifact@v8
         with:
-          name: macos-generalsxzh-app
+          name: macos-arm64-GeneralsXZH.zip
           path: artifacts/macos
+          skip-decompress: true
 
       - name: Download macOS Generals bundle artifact
         uses: actions/download-artifact@v8
         with:
-          name: macos-generalsx-app
+          name: macos-arm64-GeneralsX.zip
           path: artifacts/macos-generals
+          skip-decompress: true
 
       - name: Download Windows Zero Hour artifact
         uses: actions/download-artifact@v8
         with:
-          name: generalsxzh-windows-x86
+          name: windows-x86-GeneralsXZH.zip
           path: artifacts/windows-zh
+          skip-decompress: true
 
       - name: Download Windows Generals artifact
         uses: actions/download-artifact@v8
         with:
-          name: generalsx-windows-x86
+          name: windows-x86-GeneralsX.zip
           path: artifacts/windows-generals
+          skip-decompress: true
 
       - name: Normalize bundle files for release assets
         id: assets
@@ -221,35 +187,73 @@ jobs:
             exit 1
           fi
 
-          MAC_TAR=$(find artifacts/macos -name "*.tar" | head -1)
-          if [ -z "$MAC_TAR" ] || [ ! -f "$MAC_TAR" ]; then
-            echo "ERROR: macOS app tar not found in artifacts/macos"
-            find artifacts/macos -maxdepth 3 -type f || true
-            exit 1
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Locate macOS bundles; prefer pre-built zip from bundle script to preserve symlinks/modes.
+          MAC_ZH_ZIP=$(find artifacts/macos -type f -name "*.zip" | head -1)
+          if [ -z "$MAC_ZH_ZIP" ]; then
+            MAC_ZH_APP=$(find artifacts/macos -type d -name "GeneralsXZH.app" | head -1)
+            [ -z "$MAC_ZH_APP" ] && MAC_ZH_APP=$(find artifacts/macos -type d -name "*.app" | head -1)
+            if [ -z "$MAC_ZH_APP" ] && [ -d "artifacts/macos/Contents" ]; then
+              mkdir -p /tmp/macos-fixed-zh/GeneralsXZH.app
+              cp -a artifacts/macos/* /tmp/macos-fixed-zh/GeneralsXZH.app/
+              MAC_ZH_APP="/tmp/macos-fixed-zh/GeneralsXZH.app"
+            fi
+            if [ -z "$MAC_ZH_APP" ]; then
+              MAC_ZH_TAR=$(find artifacts/macos -type f -name "*.tar" | head -1)
+              if [ -n "$MAC_ZH_TAR" ]; then
+                TEMP_EXTRACT_ZH=$(mktemp -d)
+                tar -xf "$MAC_ZH_TAR" -C "$TEMP_EXTRACT_ZH"
+                MAC_ZH_APP=$(find "$TEMP_EXTRACT_ZH" -type d -name "*.app" | head -1)
+              fi
+            fi
+            if [ -z "$MAC_ZH_APP" ] || [ ! -d "$MAC_ZH_APP" ]; then
+              echo "ERROR: macOS Zero Hour bundle not found in artifacts/macos"
+              find artifacts/macos -maxdepth 4 || true
+              exit 1
+            fi
           fi
 
-          cp "$MAC_TAR" release-assets/GeneralsXZH-macos-arm64.app.tar
-          zip -j release-assets/macOS-GeneralsXZH.tar.zip release-assets/GeneralsXZH-macos-arm64.app.tar
-
-          MAC_GENERALS_TAR=$(find artifacts/macos-generals -name "*.tar" | head -1)
-          if [ -z "$MAC_GENERALS_TAR" ] || [ ! -f "$MAC_GENERALS_TAR" ]; then
-            echo "ERROR: macOS Generals app tar not found in artifacts/macos-generals"
-            find artifacts/macos-generals -maxdepth 3 -type f || true
-            exit 1
+          MAC_GEN_ZIP=$(find artifacts/macos-generals -type f -name "*.zip" | head -1)
+          if [ -z "$MAC_GEN_ZIP" ]; then
+            MAC_GEN_APP=$(find artifacts/macos-generals -type d -name "GeneralsX.app" | head -1)
+            [ -z "$MAC_GEN_APP" ] && MAC_GEN_APP=$(find artifacts/macos-generals -type d -name "*.app" | head -1)
+            if [ -z "$MAC_GEN_APP" ] && [ -d "artifacts/macos-generals/Contents" ]; then
+              mkdir -p /tmp/macos-fixed-gen/GeneralsX.app
+              cp -a artifacts/macos-generals/* /tmp/macos-fixed-gen/GeneralsX.app/
+              MAC_GEN_APP="/tmp/macos-fixed-gen/GeneralsX.app"
+            fi
+            if [ -z "$MAC_GEN_APP" ]; then
+              MAC_GEN_TAR=$(find artifacts/macos-generals -type f -name "*.tar" | head -1)
+              if [ -n "$MAC_GEN_TAR" ]; then
+                TEMP_EXTRACT_GEN=$(mktemp -d)
+                tar -xf "$MAC_GEN_TAR" -C "$TEMP_EXTRACT_GEN"
+                MAC_GEN_APP=$(find "$TEMP_EXTRACT_GEN" -type d -name "*.app" | head -1)
+              fi
+            fi
+            if [ -z "$MAC_GEN_APP" ] || [ ! -d "$MAC_GEN_APP" ]; then
+              echo "ERROR: macOS Generals app bundle not found in artifacts/macos-generals"
+              find artifacts/macos-generals -maxdepth 4 || true
+              exit 1
+            fi
           fi
 
-          WIN_ZH_EXE=$(find artifacts/windows-zh -name "GeneralsXZH.exe" | head -1)
-          if [ -z "$WIN_ZH_EXE" ] || [ ! -f "$WIN_ZH_EXE" ]; then
-            echo "ERROR: Windows Zero Hour executable not found in artifacts/windows-zh"
-            find artifacts/windows-zh -maxdepth 3 -type f || true
-            exit 1
+          WIN_ZH_ZIP=$(find artifacts/windows-zh -type f -name "*.zip" | head -1)
+          if [ -z "$WIN_ZH_ZIP" ]; then
+            WIN_ZH_EXE=$(find artifacts/windows-zh -name "GeneralsXZH.exe" | head -1)
+            if [ -z "$WIN_ZH_EXE" ] || [ ! -f "$WIN_ZH_EXE" ]; then
+              echo "ERROR: Windows Zero Hour executable or zip not found in artifacts/windows-zh"
+              find artifacts/windows-zh -maxdepth 3 -type f || true
+              exit 1
+            fi
           fi
 
-          WIN_GENERALS_EXE=$(find artifacts/windows-generals -name "GeneralsX.exe" | head -1)
-          if [ -z "$WIN_GENERALS_EXE" ] || [ ! -f "$WIN_GENERALS_EXE" ]; then
-            echo "ERROR: Windows Generals executable not found in artifacts/windows-generals"
-            find artifacts/windows-generals -maxdepth 3 -type f || true
-            exit 1
+          WIN_GEN_ZIP=$(find artifacts/windows-generals -type f -name "*.zip" | head -1)
+          if [ -z "$WIN_GEN_ZIP" ]; then
+            WIN_GENERALS_EXE=$(find artifacts/windows-generals -name "GeneralsX.exe" | head -1)
+            if [ -z "$WIN_GENERALS_EXE" ] || [ ! -f "$WIN_GENERALS_EXE" ]; then
+              echo "ERROR: Windows Generals executable or zip not found in artifacts/windows-generals"
+              find artifacts/windows-generals -maxdepth 3 -type f || true
+              exit 1
+            fi
           fi
 
           if [ "$RELEASE_MODE" = "Dry Run" ]; then
@@ -267,16 +271,41 @@ jobs:
           cp "$LINUX_ZH_FLATPAK" release-assets/Linux-GeneralsXZH.flatpak
           cp "$LINUX_GENERALS_FLATPAK" release-assets/Linux-GeneralsX.flatpak
 
-          cp "$MAC_GENERALS_TAR" release-assets/GeneralsX-macos-arm64.app.tar
-          zip -j release-assets/macOS-GeneralsX.tar.zip release-assets/GeneralsX-macos-arm64.app.tar
+          # Package macOS releases as clean .zip files containing the .app bundle directly at the root
+          if [ -n "$MAC_ZH_ZIP" ]; then
+            echo "Using pre-built macOS Zero Hour release asset..."
+            cp "$MAC_ZH_ZIP" release-assets/macOS-GeneralsXZH.zip
+          else
+            echo "Packaging macOS Zero Hour release asset from .app bundle..."
+            (cd "$(dirname "$MAC_ZH_APP")" && zip -y -q -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.zip" "$(basename "$MAC_ZH_APP")")
+          fi
 
-          (cd artifacts/windows-zh && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" .)
-          (cd artifacts/windows-generals && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" .)
+          if [ -n "$MAC_GEN_ZIP" ]; then
+            echo "Using pre-built macOS Generals base game release asset..."
+            cp "$MAC_GEN_ZIP" release-assets/macOS-GeneralsX.zip
+          else
+            echo "Packaging macOS Generals base game release asset from .app bundle..."
+            (cd "$(dirname "$MAC_GEN_APP")" && zip -y -q -r "$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.zip" "$(basename "$MAC_GEN_APP")")
+          fi
+
+          if [ -n "$WIN_ZH_ZIP" ]; then
+            echo "Using pre-built Windows Zero Hour release asset..."
+            cp "$WIN_ZH_ZIP" release-assets/Windows-GeneralsXZH.zip
+          else
+            (cd artifacts/windows-zh && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" .)
+          fi
+
+          if [ -n "$WIN_GEN_ZIP" ]; then
+            echo "Using pre-built Windows Generals base game release asset..."
+            cp "$WIN_GEN_ZIP" release-assets/Windows-GeneralsX.zip
+          else
+            (cd artifacts/windows-generals && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" .)
+          fi
 
           echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsX.flatpak" >> "$GITHUB_OUTPUT"
           echo "linux_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsXZH.flatpak" >> "$GITHUB_OUTPUT"
-          echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.tar.zip" >> "$GITHUB_OUTPUT"
-          echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.tar.zip" >> "$GITHUB_OUTPUT"
+          echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.zip" >> "$GITHUB_OUTPUT"
+          echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.zip" >> "$GITHUB_OUTPUT"
           echo "windows_generals_asset=$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" >> "$GITHUB_OUTPUT"
           echo "windows_asset=$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" >> "$GITHUB_OUTPUT"
 
@@ -330,25 +359,20 @@ jobs:
         id: notes
         env:
           LATEST_TAG: ${{ steps.latest.outputs.latest_tag }}
-          CURRENT_TAG: ${{ inputs.release_version }}
+          CURRENT_TAG: ${{ needs.create-tag.outputs.release_version }}
           PR_LINES_FILE: ${{ steps.changelog.outputs.pr_lines_file }}
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
         run: |
-          NOTES_FILE="release-assets/${{ inputs.release_version }}-notes.md"
-          NOTES_TXT_FILE="release-assets/${{ inputs.release_version }}-notes.txt"
+          NOTES_FILE="release-assets/${VERSION}-notes.md"
+          NOTES_TXT_FILE="release-assets/${VERSION}-notes.txt"
           mkdir -p release-assets
 
           {
-            echo "> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate."
+            echo "If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate."
             echo ""
-            if [ "${{ inputs.release_mode }}" = "Draft" ]; then
-              echo "# What's New"
-              echo ""
-              echo "*add-here manual release notes*"
-              echo ""
-            fi
             echo "# Getting Started"
             echo ""
-            echo "**Install the engine:** Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform."
+            echo "Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform."
             echo ""
             echo "## Community Ports based on GeneralsX"
             echo ""
@@ -356,8 +380,14 @@ jobs:
             echo ""
             echo "* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [ammaarreshi](https://github.com/ammaarreshi)"
             echo "* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [fadi-labib](https://github.com/fadi-labib)"
-            echo "* [GeneralsXWeb](https://github.com/meerzulee/GeneralsXWeb) - Web port by [meerzulee](https://github.com/meerzulee)"
+            echo "* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - WebAssembly Browser port by [ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)"
             echo ""
+            if [ "${{ inputs.release_mode }}" = "Draft" ]; then
+              echo "# What's New"
+              echo ""
+              echo "*add-here manual release notes*"
+              echo ""
+            fi
             echo "## Changelog"
             cat "$PR_LINES_FILE"
             echo ""
@@ -375,14 +405,15 @@ jobs:
         if: success() && inputs.release_mode == 'Dry Run'
         uses: actions/upload-artifact@v7
         with:
-          name: release-preview-${{ inputs.release_version }}
-          path: release-assets/${{ inputs.release_version }}-notes.txt
+          name: release-preview-${{ needs.create-tag.outputs.release_version }}
+          path: release-assets/${{ needs.create-tag.outputs.release_version }}-notes.txt
           retention-days: 30
 
       - name: Create GitHub release and upload assets
         if: success() && inputs.release_mode != 'Dry Run'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
         run: |
           DRAFT_FLAG=""
 
@@ -390,9 +421,9 @@ jobs:
             DRAFT_FLAG="--draft"
           fi
 
-          gh release create "${{ inputs.release_version }}" \
+          gh release create "$VERSION" \
             $DRAFT_FLAG \
-            --title "GeneralsX - ${{ inputs.release_version }}" \
+            --title "GeneralsX - $VERSION" \
             --notes-file "${{ steps.notes.outputs.notes_file }}" \
             "${{ steps.assets.outputs.linux_generals_asset }}" \
             "${{ steps.assets.outputs.linux_asset }}" \
@@ -402,15 +433,17 @@ jobs:
             "${{ steps.assets.outputs.windows_asset }}"
 
       - name: Summary
+        env:
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
         run: |
           echo "## Release Pipeline Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Tag: ${{ inputs.release_version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag: $VERSION" >> "$GITHUB_STEP_SUMMARY"
           echo "- Mode: ${{ inputs.release_mode }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Linux asset (Generals): Linux-GeneralsX.flatpak" >> "$GITHUB_STEP_SUMMARY"
           echo "- Linux asset: Linux-GeneralsXZH.flatpak" >> "$GITHUB_STEP_SUMMARY"
-          echo "- macOS asset (Generals): macOS-GeneralsX.tar.zip" >> "$GITHUB_STEP_SUMMARY"
-          echo "- macOS asset: macOS-GeneralsXZH.tar.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- macOS asset (Generals): macOS-GeneralsX.zip" >> "$GITHUB_STEP_SUMMARY"
+          echo "- macOS asset: macOS-GeneralsXZH.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- Windows asset (Generals): Windows-GeneralsX.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- Windows asset: Windows-GeneralsXZH.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -422,3 +455,60 @@ jobs:
           else
             echo "Release created and assets attached." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+  # GeneralsX @build Meeseeks 14/09/2026 Roll back the pushed tag when anything downstream of create-tag fails or is cancelled,
+  # including prepare-release, preventing orphaned tags from advancing SemVer on subsequent pipeline runs.
+  cleanup-tag-on-failure:
+    if: >
+      always() &&
+      inputs.release_mode != 'Dry Run' &&
+      needs.create-tag.result == 'success' &&
+      (
+        needs.build-linux-flatpak.result == 'failure' ||
+        needs.build-linux-flatpak.result == 'cancelled' ||
+        needs.build-macos.result == 'failure' ||
+        needs.build-macos.result == 'cancelled' ||
+        needs.build-windows.result == 'failure' ||
+        needs.build-windows.result == 'cancelled' ||
+        needs.prepare-release.result == 'failure' ||
+        needs.prepare-release.result == 'cancelled'
+      )
+    needs: [create-tag, build-linux-flatpak, build-macos, build-windows, prepare-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Delete orphaned tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.create-tag.outputs.release_version }}"
+
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Distinguish confirmed 404 from query failures before authorizing tag deletion.
+          HTTP_STATUS=$(gh api --include "repos/${{ github.repository }}/releases/tags/$VERSION" 2>&1 | head -1 | awk '{print $2}')
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "Release $VERSION already exists on GitHub; skipping tag deletion."
+            exit 0
+          elif [ "$HTTP_STATUS" != "404" ]; then
+            echo "ERROR: Failed to query release status for $VERSION (HTTP $HTTP_STATUS). Refusing to delete tag." >&2
+            exit 1
+          fi
+
+          echo "Pipeline failed or cancelled before release completion. Deleting orphaned tag: $VERSION"
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1; then
+            git push origin --delete "refs/tags/$VERSION"
+            echo "Tag $VERSION deleted from remote."
+          else
+            STATUS=$?
+            if [ "$STATUS" -eq 2 ]; then
+              echo "Tag $VERSION not found on remote, nothing to delete."
+            else
+              echo "ERROR: Could not check remote tag $VERSION (git ls-remote exited with $STATUS)." >&2
+              exit "$STATUS"
+            fi
+          fi
+

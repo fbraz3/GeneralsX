@@ -33,12 +33,12 @@ case "${GAME}" in
     GeneralsMD)
         MANIFEST="${FLATPAK_DIR}/com.fbraz3.GeneralsXZH.yml"
         APP_ID="com.fbraz3.GeneralsXZH"
-        OUTPUT_BUNDLE="${PROJECT_ROOT}/build/GeneralsXZH-${PRESET}.flatpak"
+        OUTPUT_BUNDLE="${PROJECT_ROOT}/build/linux-x86_64-GeneralsXZH.flatpak"
         ;;
     Generals)
         MANIFEST="${FLATPAK_DIR}/com.fbraz3.GeneralsX.yml"
         APP_ID="com.fbraz3.GeneralsX"
-        OUTPUT_BUNDLE="${PROJECT_ROOT}/build/GeneralsX-${PRESET}.flatpak"
+        OUTPUT_BUNDLE="${PROJECT_ROOT}/build/linux-x86_64-GeneralsX.flatpak"
         ;;
     *)
         echo "ERROR: Unsupported game '${GAME}'. Use GeneralsMD or Generals." >&2
@@ -117,17 +117,9 @@ set(NGMP_USE_SSL "${SSL_VAL}" CACHE STRING "NGMP Use SSL" FORCE)
 set(NGMP_WEB_PORTAL_URL "${PORTAL_VAL}" CACHE STRING "NGMP Web Portal URL" FORCE)
 set(NGMP_MOTD_URL "${MOTD_VAL}" CACHE STRING "NGMP MOTD URL" FORCE)
 EOF
-    cat > "${PROJECT_ROOT}/.ngmp-config.cmake" <<EOF
-set(NGMP_SERVER_HOST "${HOST_VAL}" CACHE STRING "NGMP Server Host" FORCE)
-set(NGMP_DEFAULT_HOST "${HOST_VAL}" CACHE STRING "NGMP Server Host" FORCE)
-set(NGMP_SERVER_PORT "${PORT_VAL}" CACHE STRING "NGMP Server Port" FORCE)
-set(NGMP_USE_SSL "${SSL_VAL}" CACHE STRING "NGMP Use SSL" FORCE)
-set(NGMP_WEB_PORTAL_URL "${PORTAL_VAL}" CACHE STRING "NGMP Web Portal URL" FORCE)
-set(NGMP_MOTD_URL "${MOTD_VAL}" CACHE STRING "NGMP MOTD URL" FORCE)
-EOF
     echo "[$(ts)] Configured NGMP server: ${HOST_VAL}:${PORT_VAL} (SSL: ${SSL_VAL}, WebPortal: ${PORTAL_VAL}, MOTD: ${MOTD_VAL})"
 else
-    rm -f "${PROJECT_ROOT}/cmake/ngmp_env.cmake" "${PROJECT_ROOT}/.ngmp-config.cmake"
+    rm -f "${PROJECT_ROOT}/cmake/ngmp_env.cmake"
 fi
 
 if [[ "${GENERALSX_FLATPAK_USE_CCACHE}" == "1" ]]; then

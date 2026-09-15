@@ -1,7 +1,7 @@
 ---
 name: prepare-release-draft
 description: Inspect changes since the previous release, generate rich and structured release notes, incorporate custom highlights, and update the GitHub release draft without publishing.
-argument-hint: Release tag or draft name, and optional custom highlights/announcements (e.g. "GeneralsX-Beta-18" or "GeneralsX-Beta-18 - highlight new multiplayer fixes and welcome @user")
+argument-hint: Release tag or draft name, and optional custom highlights/announcements (e.g. "1.0.0" or "1.0.0 - highlight new stable release and welcome @user")
 ---
 
 # Prepare & Polish GitHub Release Draft
@@ -28,9 +28,9 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
    ```bash
    env -u GITHUB_TOKEN -u GH_TOKEN gh release list --json tagName,name,isDraft,isLatest
    ```
-3. If a target tag or draft name was provided (e.g., `GeneralsX-Beta-18`), resolve it to its exact `tagName`. Otherwise, select the first entry where `isDraft` is `true`.
+3. If a target tag or draft name was provided (e.g., `1.0.0`), resolve it to its exact `tagName`. Otherwise, select the first entry where `isDraft` is `true`.
 4. Validate that the target release exists and has `isDraft: true`. If `isDraft` is `false` or the release does not exist, abort immediately to protect published releases.
-5. Identify the previous published release tag (e.g., `GeneralsX-Beta-17`) to determine the diff range.
+5. Identify the previous published release tag (e.g., `1.0.0` or `GeneralsX-Beta-19`) to determine the diff range.
 6. Assign the resolved tags to shell variables for safe interpolation:
    ```bash
    TARGET_TAG="<RESOLVED_TARGET_TAG>"
@@ -63,7 +63,19 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
 Organize the release notes following the official GeneralsX template:
 
 ```markdown
-> This is a **beta** release. Some bugs are still expected. If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
+If you run into any problems, please [open an issue](https://github.com/fbraz3/GeneralsX/issues) so we can investigate.
+
+# Getting Started
+
+Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform.
+
+## Community Ports based on GeneralsX
+
+If you like GeneralsX, please also take a look into these projects
+
+* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [ammaarreshi](https://github.com/ammaarreshi)
+* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [fadi-labib](https://github.com/fadi-labib)
+* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - WebAssembly Browser port by [ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)
 
 # What's New
 
@@ -84,20 +96,6 @@ Organize the release notes following the official GeneralsX template:
 
 ### 🧠 Gameplay & Engine Fixes (Upstream Sync)
 - ...
-
-# Getting Started
-
-Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform.
-
-## Community Ports based on GeneralsX
-
-If you like GeneralsX, please also take a look into these projects
-
-* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [ammaarreshi](https://github.com/ammaarreshi)
-* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [fadi-labib](https://github.com/fadi-labib)
-* [GeneralsXWeb](https://github.com/meerzulee/GeneralsXWeb) - Web port by [meerzulee](https://github.com/meerzulee)
-* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - WebAssembly Browser port by [ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)
-
 ## Changelog
 - <commit/pr list>
 
@@ -111,7 +109,7 @@ If you like GeneralsX, please also take a look into these projects
    ```
 2. Update the release notes and title via `gh release edit`:
    ```bash
-   env -u GITHUB_TOKEN -u GH_TOKEN gh release edit "$TARGET_TAG" --draft --title "GeneralsX <Beta X>" --notes-file "$NOTES_FILE"
+   env -u GITHUB_TOKEN -u GH_TOKEN gh release edit "$TARGET_TAG" --draft --title "GeneralsX - $TARGET_TAG" --notes-file "$NOTES_FILE"
    ```
 3. Verify that the release is still in draft state:
    ```bash
