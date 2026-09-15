@@ -141,16 +141,15 @@ jobs:
           foreach ($name in @("binkw32.dll", "mss32.dll")) {
             $stub = Get-ChildItem build/win32-vcpkg -Filter $name -Recurse |
               Select-Object -First 1
-            if ($null -eq $stub) {
-              throw "Required CI stub not found: $name"
+            if ($stub) {
+              Copy-Item $stub.FullName ci-artifacts/
             }
-            Copy-Item $stub.FullName ci-artifacts/
           }
 
           @"
           Copy these files into an existing licensed ${{ matrix.game.name }} installation.
-          Keep the installation's original binkw32.dll and mss32.dll; the build-time
-          stub DLLs do not provide retail video or audio playback.
+          Keep the installation's original binkw32.dll and mss32.dll; video and audio
+          are loaded dynamically if present.
           "@ | Set-Content artifacts/INSTALL.txt
           Compress-Archive -Path artifacts/* -DestinationPath "${{ matrix.game.artifact_name }}"
           Compress-Archive -Path ci-artifacts/* -DestinationPath "${{ matrix.game.ci_artifact_name }}"
