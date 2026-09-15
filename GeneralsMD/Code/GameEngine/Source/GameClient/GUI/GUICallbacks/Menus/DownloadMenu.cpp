@@ -127,10 +127,33 @@ public:
 	virtual HRESULT OnProgressUpdate( Int bytesread, Int totalsize, Int timetaken, Int timeleft ) override;
 	virtual HRESULT OnStatusUpdate( Int status ) override;
 	virtual HRESULT downloadFile( AsciiString server, AsciiString username, AsciiString password, AsciiString file, AsciiString localfile, AsciiString regkey, Bool tryResume ) override;
+	virtual HRESULT SetFileName(AsciiString file);
 
 private:
 	Bool m_shouldQuitOnSuccess;
 };
+
+HRESULT DownloadManagerMunkee::SetFileName(AsciiString file)
+{
+	if (staticTextFile)
+	{
+		AsciiString bob = file;
+
+		// just get the filename, not the pathname
+		const char* tmp = bob.reverseFind('/');
+		if (tmp)
+			bob = tmp + 1;
+		tmp = bob.reverseFind('\\');
+		if (tmp)
+			bob = tmp + 1;
+
+		UnicodeString fileString;
+		fileString.translate(bob);
+		GadgetStaticTextSetText(staticTextFile, fileString);
+	}
+
+	return S_OK;
+}
 
 HRESULT DownloadManagerMunkee::downloadFile( AsciiString server, AsciiString username, AsciiString password, AsciiString file, AsciiString localfile, AsciiString regkey, Bool tryResume )
 {

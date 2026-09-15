@@ -30,6 +30,13 @@
 
 #include "gamespy/gstats/gpersist.h"
 
+#if defined(min)
+#undef min
+#endif
+#if defined(max)
+#undef max
+#endif
+
 #define MAX_BUDDY_CHAT_LEN 128
 
 typedef std::map<Int, UnsignedInt> PerGeneralMap;

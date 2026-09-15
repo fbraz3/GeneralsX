@@ -137,6 +137,14 @@ void GSMessageBoxYesNo(UnicodeString title, UnicodeString message, GameWinMsgBox
 	cancelFunc = newNoFunc;
 }
 
+// GeneralsX @feature fbraz3 17/08/2026 Add GSMessageBoxCancel support for NGMP asynchronous lobby creation
+void GSMessageBoxCancel(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc newCancelFunc)
+{
+	ClearGSMessageBoxes();
+	messageBoxWindow = MessageBoxCancel(title, message, messageBoxCancel);
+	cancelFunc = newCancelFunc;
+}
+
 /**
 	* If the screen transitions underneath the dialog box, we
 	* need to raise it to keep it visible.
@@ -194,6 +202,7 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 {
 	if (overlay == GSOVERLAY_BUDDY)
 	{
+#if !defined(SAGE_USE_NGMP)
 		if (!TheGameSpyBuddyMessageQueue->isConnected())
 		{
 			// not connected - is it because we were disconnected?
@@ -209,6 +218,7 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 			}
 			return;
 		}
+#endif
 		AudioEventRTS buttonClick("GUICommunicatorOpen");
 
 		if( TheAudio )

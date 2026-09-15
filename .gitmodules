@@ -2,3 +2,9 @@
 	path = references/fbraz3-dxvk
 	url = https://github.com/fbraz3/dxvk.git
 	branch = generalsx-macos-v2.6
+[submodule "references/GameClient"]
+	path = references/GameClient
+	url = https://github.com/GeneralsOnlineDevelopmentTeam/GameClient.git
+[submodule "references/GameServer"]
+	path = references/GameServer
+	url = https://github.com/fbraz3/GeneralsOnlineGameServer.git
