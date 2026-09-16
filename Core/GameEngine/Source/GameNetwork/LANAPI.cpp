@@ -74,6 +74,13 @@ static Int GatherSubnetBroadcastAddrs(UnsignedInt localIP, UnsignedInt *outAddrs
 			continue;
 		}
 
+		// GeneralsX @bugfix BenderAI 16/09/2026 Skip interfaces without an active carrier so LAN discovery
+		// broadcasts are not sent to idle Docker/VM bridges.
+		if ((ifa->ifa_flags & IFF_RUNNING) == 0)
+		{
+			continue;
+		}
+
 		const sockaddr_in *addr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr);
 		const UnsignedInt hostAddr = ntohl(addr->sin_addr.s_addr);
 		if (localIP != 0 && hostAddr != localIP)
