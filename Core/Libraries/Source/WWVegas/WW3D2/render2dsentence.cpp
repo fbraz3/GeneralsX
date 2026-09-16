@@ -1194,7 +1194,7 @@ FontCharsClass::FontCharsClass () :
 FontCharsClass::~FontCharsClass ()
 {
 	while ( BufferList.Count() ) {
-		delete BufferList[0];
+		delete [] BufferList[0].Buffer;
 		BufferList.Delete(0);
 	}
 
@@ -1324,6 +1324,43 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Update_Current_Buffer
+//
+////////////////////////////////////////////////////////////////////////////////////
+void
+FontCharsClass::Update_Current_Buffer (int char_width)
+{
+	const int char_len = char_width * CharHeight;
+
+	//
+	//	Check to see if we need to allocate a new buffer
+	//
+	bool needs_new_buffer = (BufferList.Count () == 0);
+	if (needs_new_buffer == false) {
+
+		//
+		//	Would we extend past this buffer?
+		//
+		if ( (CurrPixelOffset + char_len) > BufferList[BufferList.Count () - 1].Length ) {
+			needs_new_buffer = true;
+		}
+	}
+
+	//
+	//	Do we need to create a new surface?
+	//
+	if (needs_new_buffer)
+	{
+		// TheSuperHackers @fix arcticdolphin 07/09/2026 Length may exceed CHAR_BUFFER_LEN to fit this glyph.
+		const int length = max( (int)CHAR_BUFFER_LEN, char_len );
+		BufferList.Add( FontCharsBuffer( length, W3DNEWARRAY uint16[length] ) );
+		CurrPixelOffset = 0;
+	}
+}
+
+
 #ifdef _WIN32
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1358,7 +1395,7 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 	//	Get a pointer to the surface that this character should use
 	//
 	Update_Current_Buffer( char_size.cx );
-	uint16* curr_buffer_p = BufferList[BufferList.Count () - 1]->Buffer;
+	uint16* curr_buffer_p = BufferList[BufferList.Count () - 1].Buffer;
 	curr_buffer_p += CurrPixelOffset;
 
 	//
@@ -1432,7 +1469,7 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 	FontCharsClassCharDataStruct *char_data	= W3DNEW FontCharsClassCharDataStruct;
 	char_data->Value				= ch;
 	char_data->Width				= char_size.cx;
-	char_data->Buffer				= BufferList[BufferList.Count () - 1]->Buffer + CurrPixelOffset;
+	char_data->Buffer				= BufferList[BufferList.Count () - 1].Buffer + CurrPixelOffset;
 
 	//
 	//	Insert this character into our array
@@ -1454,9 +1491,6 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 	return char_data;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////
-//
 //	Create_GDI_Font
 //
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1598,41 +1632,7 @@ FontCharsClass::Free_GDI_Font ()
 
 #endif // _WIN32
 
-////////////////////////////////////////////////////////////////////////////////////
-//
-//	Update_Current_Buffer (Platform-independent text buffer management)
-//
-// GeneralsX @build fbraz 11/02/2026 - Used by both Windows GDI and Linux FreeType
-////////////////////////////////////////////////////////////////////////////////////
-void
-FontCharsClass::Update_Current_Buffer (int char_width)
-{
-	//
-	//	Check to see if we need to allocate a new buffer
-	//
-	bool needs_new_buffer = (BufferList.Count () == 0);
-	if (needs_new_buffer == false) {
 
-		//
-		//	Would we extend past this buffer?
-		//
-		if ( (CurrPixelOffset + (char_width * CharHeight)) > CHAR_BUFFER_LEN ) {
-			needs_new_buffer = true;
-		}
-	}
-
-	//
-	//	Do we need to create a new surface?
-	//
-	if (needs_new_buffer)
-	{
-		FontCharsBuffer* new_buffer = W3DNEW FontCharsBuffer;
-		BufferList.Add( new_buffer );
-		CurrPixelOffset = 0;
-	}
-
-	return ;
-}
 
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
 
@@ -1856,7 +1856,7 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//	Get a pointer to the buffer for this character (allocates if needed)
 	//
 	Update_Current_Buffer( char_width );
-	uint16 *curr_buffer_p = BufferList[BufferList.Count() - 1]->Buffer;
+	uint16 *curr_buffer_p = BufferList[BufferList.Count() - 1].Buffer;
 	curr_buffer_p += CurrPixelOffset;
 
 	//
@@ -1909,7 +1909,7 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	FontCharsClassCharDataStruct *char_data = W3DNEW FontCharsClassCharDataStruct;
 	char_data->Value = ch;
 	char_data->Width = (short)char_width;
-	char_data->Buffer = BufferList[BufferList.Count() - 1]->Buffer + CurrPixelOffset;
+	char_data->Buffer = BufferList[BufferList.Count() - 1].Buffer + CurrPixelOffset;
 
 	//
 	//	Insert into character array (ASCII or Unicode)

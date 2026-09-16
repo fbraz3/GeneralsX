@@ -178,11 +178,12 @@ modules:
         fi
 
         cd "${CNC_GENERALS_INSTALLPATH}"
+        export CNC_GENERALS_PATH="${CNC_GENERALS_INSTALLPATH}"
 
         # SagePatch INI override: the engine now auto-creates SagePatch.ini with
         # defaults in the user data directory on first run.
 
-        /app/bin/GeneralsX "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+        /app/bin/GeneralsX -setCwd "${CNC_GENERALS_INSTALLPATH}" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
         exit ${PIPESTATUS[0]}
         EOF
       - chmod +x /app/bin/run.sh

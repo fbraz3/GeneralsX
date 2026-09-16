@@ -38,7 +38,7 @@ jobs:
         shell: pwsh
         run: |
           $gameDir = Join-Path $env:RUNNER_TEMP "game-artifact"
-          foreach ($name in @("GeneralsXZH.exe", "zlib1.dll", "binkw32.dll", "mss32.dll")) {
+          foreach ($name in @("GeneralsXZH.exe", "zlib1.dll")) {
             if (!(Test-Path (Join-Path $gameDir $name))) {
               throw "Required runtime file not found: $name"
             }

@@ -52,6 +52,7 @@
 #include "Common/GameMemory.h"
 #include "Common/GlobalData.h"
 #include "Common/Registry.h"
+#include "BinkLoader.h"
 
 #ifdef _WIN32
 // ============================================================================
@@ -135,6 +136,12 @@ void	BinkVideoPlayer::init()
 	// Need to load the stuff from the ini file.
 	VideoPlayer::init();
 
+	// Load Bink on runtime instead of importing it into the executable.
+	if (!BinkLoader::load())
+	{
+		DEBUG_LOG(("Failed to load binkw32.dll (error %d). Videos will not play.", BinkLoader::getLastError()));
+	}
+
 	initializeBinkWithMiles();
 }
 
@@ -146,6 +153,7 @@ void BinkVideoPlayer::deinit()
 {
 	TheAudio->releaseHandleForBink();
 	VideoPlayer::deinit();
+	BinkLoader::unload();
 }
 
 //============================================================================

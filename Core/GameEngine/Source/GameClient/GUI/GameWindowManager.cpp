@@ -98,23 +98,12 @@ void GameWindowManager::processDestroyList()
 
 		next = doDestroy->m_next;
 
-		// Check to see if this window is "special"
-		if( m_mouseCaptor == doDestroy )
-			winRelease( doDestroy );
-
-		if( m_keyboardFocus == doDestroy )
-			winSetFocus( nullptr );
-
-		winUnsetModal( doDestroy );
-
-		if( m_currMouseRgn == doDestroy )
-			m_currMouseRgn = nullptr;
-
-		if( m_grabWindow == doDestroy )
-			m_grabWindow = nullptr;
-
 		// send the destroy message to the window we're about to kill
 		winSendSystemMsg( doDestroy, GWM_DESTROY, 0, 0 );
+
+		DEBUG_ASSERTCRASH( m_mouseCaptor != doDestroy && m_keyboardFocus != doDestroy
+			&& m_currMouseRgn != doDestroy && m_grabWindow != doDestroy,
+			("processDestroyList: manager still points at a window being destroyed") );
 
 		DEBUG_ASSERTCRASH(doDestroy->winGetUserData() == nullptr, ("Win user data is expected to be deleted now"));
 
@@ -1509,6 +1498,24 @@ Int GameWindowManager::winSetModal( GameWindow *window )
 		DEBUG_LOG(( "WinSetModal: Non Root window attempted to go modal." ));
 		return WIN_ERR_INVALID_PARAMETER;			// return error if not
 	}
+
+	// TheSuperHackers @bugfix arcticdolphin 08/09/2026 If already modal, move to the top instead of duplicating.
+	ModalWindow *previous = nullptr;
+	for( ModalWindow *existing = m_modalHead; existing != nullptr; previous = existing, existing = existing->next )
+	{
+		if( existing->window != window )
+			continue;
+
+		if( previous != nullptr )
+		{
+			previous->next = existing->next;
+			existing->next = m_modalHead;
+			m_modalHead = existing;
+		}
+
+		return WIN_ERR_OK;
+	}
+
 	// Allocate new Modal Window Entry
 	modal = newInstance(ModalWindow);
 	if( modal == nullptr )
@@ -1526,35 +1533,38 @@ Int GameWindowManager::winSetModal( GameWindow *window )
 
 }
 
+//-------------------------------------------------------------------------------------------------
+/** takes the window off the modal stack from anywhere in the stack */
+//-------------------------------------------------------------------------------------------------
 // GeneralsX @bugfix fbraz3 17/08/2026 Remove window from anywhere in modal stack to prevent corrupted dangling pointers when sub-modals close
+// TheSuperHackers @bugfix arcticdolphin 07/09/2026 Remove the window from anywhere in the modal stack, not just the top, so a destroyed window cannot leave a dangling entry behind.
 Int GameWindowManager::winUnsetModal( GameWindow *window )
 {
 	if( window == nullptr )
 		return WIN_ERR_INVALID_WINDOW;
 
-	ModalWindow *curr = m_modalHead;
-	ModalWindow *prev = nullptr;
+	ModalWindow *previous = nullptr;
+	ModalWindow *modal = m_modalHead;
 
-	while (curr != nullptr)
+	while( modal != nullptr )
 	{
-		if (curr->window == window)
+		if( modal->window == window )
 		{
-			if (prev == nullptr)
-			{
-				m_modalHead = curr->next;
-			}
+			if( previous != nullptr )
+				previous->next = modal->next;
 			else
-			{
-				prev->next = curr->next;
-			}
-			deleteInstance(curr);
+				m_modalHead = modal->next;
+
+			deleteInstance(modal);
 			return WIN_ERR_OK;
 		}
-		prev = curr;
-		curr = curr->next;
+
+		previous = modal;
+		modal = modal->next;
 	}
 
-	return WIN_ERR_OK;
+	return WIN_ERR_GENERAL_FAILURE;
+
 }
 
 //-------------------------------------------------------------------------------------------------

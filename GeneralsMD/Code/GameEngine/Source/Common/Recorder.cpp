@@ -32,6 +32,8 @@
 #include "Common/GlobalData.h"
 #include "Common/GameEngine.h"
 #include "GameClient/ClientInstance.h"
+#include "GameClient/MapUtil.h"
+#include "GameClient/MessageBox.h"
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/InGameUI.h"
@@ -47,37 +49,8 @@
 #include "Common/CRCDebug.h"
 #include "Common/OptionPreferences.h"
 #include "Common/version.h"
+#include "Lib/PathUtil.h"
 
-// TheSuperHackers @build fighter19 11/02/2026 POSIX CopyFile implementation for Linux
-#ifndef _WIN32
-#include <fstream>
-#include <sys/stat.h>
-
-static inline bool CopyFile(const char* source, const char* dest, bool failIfExists)
-{
-	if (failIfExists) {
-		struct stat buffer;
-		if (stat(dest, &buffer) == 0) {
-			// File exists
-			return false;
-		}
-	}
-
-	std::ifstream src(source, std::ios::binary);
-	if (!src) {
-		return false;
-	}
-
-	std::ofstream dst(dest, std::ios::binary);
-	if (!dst) {
-		return false;
-	}
-
-	dst << src.rdbuf();
-
-	return src.good() && dst.good();
-}
-#endif
 
 constexpr const char s_genrep[] = "GENREP";
 constexpr const UnsignedInt replayBufferBytes = 8192;
@@ -842,45 +815,17 @@ void RecorderClass::writeArgument(GameMessageArgumentDataType type, const GameMe
  * Read in a replay header, for (1) populating a replay listbox or (2) starting playback.  In
  * case (2), set FILE *m_file.
  */
-Bool RecorderClass::readReplayHeader(ReplayHeader& header)
+Bool RecorderClass::readReplayHeader(ReplayHeader& header, const AsciiString& filename, Bool forPlayback)
 {
-	AsciiString filepath;
-	const char* replayFilename = header.filename.str();
-	const size_t replayFilenameLen = replayFilename != nullptr ? strlen(replayFilename) : 0;
-	const bool isUnixAbsolute = replayFilenameLen >= 1 && replayFilename[0] == '/';
-	const bool isWindowsDriveAbsolute = replayFilenameLen >= 3
-		&& ((replayFilename[0] >= 'A' && replayFilename[0] <= 'Z') || (replayFilename[0] >= 'a' && replayFilename[0] <= 'z'))
-		&& replayFilename[1] == ':'
-		&& (replayFilename[2] == '\\' || replayFilename[2] == '/');
-	const bool isUncAbsolute = replayFilenameLen >= 2 && replayFilename[0] == '\\' && replayFilename[1] == '\\';
-
-	// GeneralsX @bugfix BenderAI 13/04/2026 Accept absolute replay paths passed via -replay instead of forcing ReplayDir prefix.
-	// GeneralsX @bugfix BenderAI 20/02/2026 Distinguish between CWD-relative paths (with directories, like "GeneralsReplays/...") and replay-dir relative (bare filenames like "replay.rep").
-	const bool containsDirectorySeparator = strchr(replayFilename, '/') != NULL || strchr(replayFilename, '\\') != NULL;
-
-	if (isUnixAbsolute || isWindowsDriveAbsolute || isUncAbsolute)
-	{
-		filepath = header.filename;
-	}
-	else if (containsDirectorySeparator)
-	{
-		// Path from CLI with directory structure (e.g., "GeneralsReplays/ZH/...") - relative to CWD where binary runs
-		filepath = header.filename;
-	}
-	else
-	{
-		// Bare filename (e.g., "!Golden Replay #1.rep") - resolve from replay directory
-		filepath = getReplayDir();
-		filepath.concat(header.filename.str());
-	}
+	header.filename = getReplayPathForRead(filename);
 
 	// TheSuperHackers @performance More buffered data reduces disk overhead and will improve fast forward playback
-	const UnsignedInt buffersize = header.forPlayback ? replayBufferBytes : File::BUFFERSIZE;
-	m_file = TheFileSystem->openFile(filepath.str(), File::READ | File::BINARY, buffersize);
+	const UnsignedInt buffersize = forPlayback ? replayBufferBytes : File::BUFFERSIZE;
+	m_file = TheFileSystem->openFile(header.filename.str(), File::READ | File::BINARY, buffersize);
 
 	if (m_file == nullptr)
 	{
-		DEBUG_LOG(("Can't open %s (%s)", filepath.str(), header.filename.str()));
+		DEBUG_LOG(("Can't open %s (%s)", header.filename.str(), filename.str()));
 		return FALSE;
 	}
 
@@ -963,7 +908,7 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 		m_gameInfo.setLocalIP(localIP);
 	}
 
-	if (!header.forPlayback)
+	if (!forPlayback)
 	{
 		m_gameInfo.endGame();
 		m_gameInfo.reset();
@@ -1160,9 +1105,7 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 Bool RecorderClass::replayMatchesGameVersion(AsciiString filename)
 {
 	ReplayHeader header;
-	header.forPlayback = TRUE;
-	header.filename = filename;
-	if ( readReplayHeader( header ) )
+	if ( readReplayHeader( header, filename, TRUE ) )
 	{
 		return replayMatchesGameVersion( header );
 	}
@@ -1183,6 +1126,61 @@ Bool RecorderClass::replayMatchesGameVersion(const ReplayHeader& header)
 	return true;
 }
 
+static void showQueuedReplayLoadFailure()
+{
+	UnicodeString title = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ReplayLoadFailedTitle", L"REPLAY CANNOT BE LOADED");
+	UnicodeString body = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ReplayLoadFailed", L"The replay file could not be opened or is invalid.");
+
+	MessageBoxOk(title, body, nullptr);
+}
+
+static void showQueuedReplayMapNotFound()
+{
+	UnicodeString title = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ReplayMapNotFoundTitle", L"MAP NOT FOUND");
+	UnicodeString body = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ReplayMapNotFound", L"This replay cannot be loaded because the map was not found on this device.");
+
+	MessageBoxOk(title, body, nullptr);
+}
+
+/**
+ * Play the replay requested on startup, after the shell has been initialized
+ */
+void RecorderClass::loadQueuedReplay()
+{
+	const AsciiString filename = TheGlobalData->m_loadReplayGame;
+	TheWritableGlobalData->m_loadReplayGame.clear();
+
+	ReplayHeader header;
+	if (!readReplayHeader(header, filename, FALSE))
+	{
+		DEBUG_LOG(("Replay '%s' could not be read", filename.str()));
+		showQueuedReplayLoadFailure();
+		return;
+	}
+
+	// A replay whose map is missing starts a game that cannot load, so reject it here instead
+	ReplayGameInfo gameInfo;
+	if (!ParseAsciiStringToGameInfo(&gameInfo, header.gameOptions))
+	{
+		DEBUG_LOG(("Replay '%s' contains invalid game options", filename.str()));
+		showQueuedReplayLoadFailure();
+		return;
+	}
+
+	if (TheMapCache == nullptr || TheMapCache->findMap(gameInfo.getMap()) == nullptr)
+	{
+		DEBUG_LOG(("Replay '%s' requires unavailable map '%s'", filename.str(), gameInfo.getMap().str()));
+		showQueuedReplayMapNotFound();
+		return;
+	}
+
+	if (!playbackFile(filename))
+	{
+		DEBUG_LOG(("Failed to play replay '%s'", filename.str()));
+		showQueuedReplayLoadFailure();
+	}
+}
+
 /**
  * Start playback of the file. Return true or false depending on if the file is
  * a valid replay file or not.
@@ -1198,9 +1196,7 @@ Bool RecorderClass::playbackFile(AsciiString filename)
 	}
 
 	ReplayHeader header;
-	header.forPlayback = TRUE;
-	header.filename = filename;
-	Bool success = readReplayHeader( header );
+	Bool success = readReplayHeader( header, filename, TRUE );
 	if (!success)
 	{
 		return FALSE;
@@ -1699,6 +1695,27 @@ AsciiString RecorderClass::getReplayDir()
 #else
 	tmp.concat("Replays/");
 #endif
+	return tmp;
+}
+
+/**
+ * returns the path to open for a replay filename in the replay directory or an absolute replay path.
+ */
+AsciiString RecorderClass::getReplayPathForRead(const AsciiString& filenameOrPath)
+{
+	if (isAbsolutePath(filenameOrPath.str()))
+	{
+		return filenameOrPath;
+	}
+
+	// GeneralsX @bugfix BenderAI 20/02/2026 Distinguish between CWD-relative paths (with directories) and bare filenames
+	if (strchr(filenameOrPath.str(), '/') != nullptr || strchr(filenameOrPath.str(), '\\') != nullptr)
+	{
+		return filenameOrPath;
+	}
+
+	AsciiString tmp = getReplayDir();
+	tmp.concat(filenameOrPath);
 	return tmp;
 }
 

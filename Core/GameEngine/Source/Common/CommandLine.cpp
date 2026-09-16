@@ -34,13 +34,12 @@
 #include "Common/CommandLine.h"
 #include "Common/CRCDebug.h"
 #include "Common/LocalFileSystem.h"
-#include "Common/Recorder.h"
 #include "Common/version.h"
+#include "Common/WorkingDirectory.h"
 #include "GameClient/ClientInstance.h"
 #include "GameClient/TerrainVisual.h" // for TERRAIN_LOD_MIN definition
 #include "GameClient/GameText.h"
 #include "GameNetwork/NetworkDefs.h"
-#include "WWLib/trim.h"
 
 
 
@@ -432,13 +431,7 @@ Int parseReplay(char *args[], int num)
 {
 	if (num > 1)
 	{
-		AsciiString filename = args[1];
-		if (!filename.endsWithNoCase(RecorderClass::getReplayExtention()))
-		{
-			printf("Invalid replay name \"%s\"\n", filename.str());
-			exit(1);
-		}
-		TheWritableGlobalData->m_simulateReplays.push_back(filename);
+		TheWritableGlobalData->m_simulateReplays.push_back(args[1]);
 
 		TheWritableGlobalData->m_playIntro = FALSE;
 		TheWritableGlobalData->m_playSizzle = FALSE;
@@ -463,6 +456,24 @@ Int parseJobs(char *args[], int num)
 			printf("Invalid number of jobs: %d\n", TheGlobalData->m_simulateReplayJobs);
 			exit(1);
 		}
+		return 2;
+	}
+	return 1;
+}
+
+Int parseUseCwd(char *[], int)
+{
+	// -useCwd restores the startup working directory.
+	rts::WorkingDirectory::setStartupWorkingDirectory();
+	return 1;
+}
+
+Int parseSetCwd(char *args[], int num)
+{
+	// -setCwd <path> overrides the working directory.
+	if (num > 1)
+	{
+		rts::WorkingDirectory::setCustomWorkingDirectory(args[1]);
 		return 2;
 	}
 	return 1;
@@ -729,6 +740,20 @@ Int parseLoadSave(char *args[], int num)
 	if (num > 1)
 	{
 		TheWritableGlobalData->m_loadSaveGame = args[1];
+		TheWritableGlobalData->m_shellMapOn = FALSE;
+		TheWritableGlobalData->m_playIntro = FALSE;
+		TheWritableGlobalData->m_playSizzle = FALSE;
+
+		return 2;
+	}
+	return 1;
+}
+
+Int parseLoadReplay(char *args[], int num)
+{
+	if (num > 1)
+	{
+		TheWritableGlobalData->m_loadReplayGame = args[1];
 		TheWritableGlobalData->m_shellMapOn = FALSE;
 		TheWritableGlobalData->m_playIntro = FALSE;
 		TheWritableGlobalData->m_playSizzle = FALSE;
@@ -1171,6 +1196,12 @@ static CommandLineParam paramsForStartup[] =
 	// (If you have 4 cores, call it with -jobs 4)
 	// If you do not call this, all replays will be simulated in sequence in the same process.
 	{ "-jobs", parseJobs },
+
+	// TheSuperHackers @feature CryoTheRenegade 14/08/2026
+	// Use the current working directory as provided by the OS, or an explicit path.
+	// The last successful selection wins; otherwise use the executable directory.
+	{ "-setCwd", parseSetCwd },
+	{ "-useCwd", parseUseCwd },
 };
 
 // These Params are parsed during Engine Init before INI data is loaded
@@ -1192,6 +1223,9 @@ static CommandLineParam paramsForEngineInit[] =
 
 	// TheSuperHackers @feature bobtista 22/07/2026 Load a save game file from the command line.
 	{ "-loadsave", parseLoadSave },
+
+	// TheSuperHackers @feature bobtista 08/08/2026 Play a replay file from the command line.
+	{ "-loadreplay", parseLoadReplay },
 
 	// TheSuperHackers @feature xezon 03/08/2025 Force full viewport for 'Control Bar Pro' Addons like GenTool did it.
 	{ "-forcefullviewport", parseFullViewport },
@@ -1343,132 +1377,73 @@ static CommandLineParam paramsForEngineInit[] =
 
 };
 
-char *nextParam(char *newSource, const char *seps)
+static void parseCommandLine(const CommandLineParam* params, int numParams, BoolVector &parsedArguments)
 {
-	static char *source = nullptr;
-	if (newSource)
-	{
-		source = newSource;
-	}
-	if (!source)
-	{
-		return nullptr;
-	}
-
-	// find first separator
-	char *first = source;//strpbrk(source, seps);
-	if (first)
-	{
-		// go past separator
-		char *firstSep = strpbrk(first, seps);
-		char firstChar[2] = {0,0};
-		if (firstSep == first)
-		{
-			firstChar[0] = *first;
-			while (*first == firstChar[0]) first++;
-		}
-
-		// find end
-		char *end;
-		if (firstChar[0])
-			end = strpbrk(first, firstChar);
-		else
-			end = strpbrk(first, seps);
-
-		// trim string & save next start pos
-		if (end)
-		{
-			source = end+1;
-			*end = 0;
-
-			if (!*source)
-				source = nullptr;
-		}
-		else
-		{
-			source = nullptr;
-		}
-
-		if (first && !*first)
-			first = nullptr;
-	}
-
-	return first;
-}
-
-static void parseCommandLine(const CommandLineParam* params, int numParams)
-{
-	std::vector<char*> argv;
-
-#ifdef _WIN32
-	std::string cmdLine = GetCommandLineA();
-	char *token = nextParam(&cmdLine[0], "\" ");
-	while (token != nullptr)
-	{
-		argv.push_back(strtrim(token));
-		token = nextParam(nullptr, "\" ");
-	}
-#else
-	// GeneralsX @bugfix BenderAI 19/02/2026 - Include argv[0] (program name) to match the Windows
-	// GetCommandLineA() behavior where the exe path appears at argv[0]. The parsing loop starts at
-	// arg=1, so without argv[0] as a placeholder all real flags end up at argv[0] and are skipped.
-	extern char **__argv;
+	// Startup parsing can run from static constructors, before WinMain.
+#ifndef _WIN32
 	extern int __argc;
-	for (int i = 0; i < __argc; i++)
-	{
-		argv.push_back(__argv[i]);
-	}
+	extern char **__argv;
 #endif
-	int argc = argv.size();
+	int argc = __argc;
+	char **argv = __argv;
+	if (argc > 0)
+	{
+		// Skip the first argument which is the executable file name.
+		argc -= 1;
+		argv += 1;
+	}
 
-	int arg = 1;
+	// Preserve arguments recorded by the earlier parsing phase.
+	parsedArguments.resize(argc, FALSE);
 
 #ifdef DEBUG_LOGGING
 	DEBUG_LOG(("Command-line args:"));
 	int debugFlags = DebugGetFlags();
 	DebugSetFlags(debugFlags & ~DEBUG_FLAG_PREPEND_TIME); // turn off timestamps
-	for (arg=1; arg<argc; arg++)
+	for (int debugArg = 0; debugArg < argc; ++debugArg)
 	{
-		DEBUG_LOG((" %s", argv[arg]));
+		DEBUG_LOG((" %s", argv[debugArg]));
 	}
 	DEBUG_LOG_RAW(("\n"));
 	DebugSetFlags(debugFlags); // turn timestamps back on iff they were on before
-	arg = 1;
 #endif // DEBUG_LOGGING
 
-	// To parse command-line parameters, we loop through a table holding arguments
-	// and functions to handle them.  Comparisons can be case-(in)sensitive, and
-	// can check the entire string (for testing the presence of a flag) or check
-	// just the start (for a key=val argument).  The handling function can also
-	// look at the next argument(s), to accommodate multi-arg parameters, e.g. "-p 1234".
-	while (arg<argc)
+	// Match complete option names without case sensitivity. Each handler returns
+	// the number of arguments consumed, including the option itself.
+	for (int parsedArgCount, arg = 0; arg < argc; arg += parsedArgCount)
 	{
-		// Look at arg #i
-		Bool found = false;
+		parsedArgCount = 1;
+		// Skip when already parsed by another pass.
+		if (parsedArguments[arg])
+			continue;
+
 		// GeneralsX @bugfix Copilot 17/05/2026 Accept GNU-style "--flag" aliases for existing "-flag" command line options.
 		const char *normalizedArg = argv[arg];
 		if (normalizedArg != nullptr && normalizedArg[0] == '-' && normalizedArg[1] == '-')
 		{
 			normalizedArg += 1;
 		}
-		for (int param=0; !found && param<numParams; ++param)
+
+		for (int param = 0; param < numParams; ++param)
 		{
-			int len = strlen(params[param].name);
-			int len2 = strlen(normalizedArg);
-			if (len2 != len)
+			if (stricmp(normalizedArg, params[param].name) != 0)
 				continue;
-			if (strnicmp(normalizedArg, params[param].name, len) == 0)
-			{
-				arg += params[param].func(&argv[0]+arg, argc-arg);
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-		{
-			arg++;
+
+			parsedArgCount = params[param].func(argv + arg, argc - arg);
+			for (int i = 0; i < parsedArgCount && arg + i < argc; ++i)
+				parsedArguments[arg + i] = TRUE;
+			break;
 		}
 	}
+}
+
+bool CommandLine::wasCommandLineArgumentParsed(int argIndex)
+{
+	if (TheGlobalData == nullptr)
+		return false;
+
+	const BoolVector &parsedArguments = TheGlobalData->m_commandLineData.m_parsedArguments;
+	return argIndex >= 0 && argIndex < static_cast<int>(parsedArguments.size()) && parsedArguments[argIndex];
 }
 
 void createGlobalData()
@@ -1487,7 +1462,15 @@ void CommandLine::parseCommandLineForStartup()
 		return;
 	TheWritableGlobalData->m_commandLineData.m_hasParsedCommandLineForStartup = true;
 
-	parseCommandLine(paramsForStartup, ARRAY_SIZE(paramsForStartup));
+	parseCommandLine(paramsForStartup, ARRAY_SIZE(paramsForStartup),
+		TheWritableGlobalData->m_commandLineData.m_parsedArguments);
+
+	// GeneralsX @bugfix fbraz 15/09/2026 Restrict default executable working directory fallback to Windows
+	// On POSIX/Linux/Flatpak, binaries reside in system paths (/app/bin) while game assets reside in CWD/data dirs.
+#ifdef _WIN32
+	if (!rts::WorkingDirectory::hasSetWorkingDirectory())
+		rts::WorkingDirectory::setExecutableWorkingDirectory();
+#endif
 }
 
 void CommandLine::parseCommandLineForEngineInit()
@@ -1500,5 +1483,6 @@ void CommandLine::parseCommandLineForEngineInit()
 		("parseCommandLineForEngineInit is expected to be called once only\n"));
 	TheWritableGlobalData->m_commandLineData.m_hasParsedCommandLineForEngineInit = true;
 
-	parseCommandLine(paramsForEngineInit, ARRAY_SIZE(paramsForEngineInit));
+	parseCommandLine(paramsForEngineInit, ARRAY_SIZE(paramsForEngineInit),
+		TheWritableGlobalData->m_commandLineData.m_parsedArguments);
 }

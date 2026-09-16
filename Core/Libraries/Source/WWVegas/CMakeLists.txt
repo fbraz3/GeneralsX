@@ -9,15 +9,9 @@ target_compile_definitions(core_wwcommon INTERFACE
 # GeneralsX @build BenderAI 13/02/2026 d3d8lib is INTERFACE (headers only) - safe for all
 target_link_libraries(core_wwcommon INTERFACE
     d3d8lib     # INTERFACE target: provides DXVK/DirectX types (DWORD, BOOL, etc.)
+    milesloader
     stlport
 )
-
-# GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
-if(WIN32)
-    target_link_libraries(core_wwcommon INTERFACE
-        milesstub
-    )
-endif()
 
 target_include_directories(core_wwcommon INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}

@@ -5,15 +5,9 @@ add_library(z_wwcommon INTERFACE)
 target_link_libraries(z_wwcommon INTERFACE
     core_wwcommon
     d3d8lib     # INTERFACE target: provides DXVK/DirectX types (DWORD, BOOL, etc.)
+    milesloader
     stlport
 )
-
-# GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
-if(WIN32)
-    target_link_libraries(z_wwcommon INTERFACE
-        milesstub
-    )
-endif()
 
 target_include_directories(z_wwcommon INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
