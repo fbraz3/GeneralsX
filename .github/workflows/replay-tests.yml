@@ -219,7 +219,7 @@ jobs:
             rm -rf ci-assets-repo
           fi
           if [ "$clone_success" = false ]; then
-            git clone https://github.com/fbraz3/generalsx-test-files.git ci-assets-repo
+            git clone https://github.com/generalsx-project/generalsx-test-files.git ci-assets-repo
             cd ci-assets-repo
             if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
               if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
@@ -288,7 +288,7 @@ jobs:
             rm -rf ci-replays-repo
           fi
           if [ "$clone_success" = false ]; then
-            git clone https://github.com/fbraz3/GeneralsXReplays.git ci-replays-repo
+            git clone https://github.com/generalsx-project/GeneralsXReplays.git ci-replays-repo
             cd ci-replays-repo
             if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
               if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
