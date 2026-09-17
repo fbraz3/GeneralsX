@@ -33,6 +33,31 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <string.h>
+
+// GeneralsX @bugfix BenderAI 16/09/2026 Detect Docker user-defined bridges, which are named
+// "br-" followed by a 12 character hexadecimal network id (e.g. br-ffd9ee17a8f4). These carry
+// private RFC1918 addresses that must never be offered as the local LAN/online address.
+static bool IsDockerUserBridgeName(const char *name)
+{
+	if (name == nullptr || strncmp(name, "br-", 3) != 0)
+	{
+		return false;
+	}
+
+	const char *suffix = name + 3;
+	int digits = 0;
+	for (; suffix[digits] != '\0'; ++digits)
+	{
+		const char c = suffix[digits];
+		const bool isHex = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+		if (!isHex)
+		{
+			return false;
+		}
+	}
+
+	return digits == 12;
+}
 #endif
 
 IPEnumeration::IPEnumeration()
@@ -113,6 +138,14 @@ EnumeratedIP * IPEnumeration::getAddresses()
 				continue;
 			}
 
+			// GeneralsX @bugfix BenderAI 16/09/2026 Require an active carrier (IFF_RUNNING). Idle Docker/VM
+			// bridges stay administratively UP without a link, and were being offered as the local address,
+			// which broke LAN discovery and online hosting behind an unreachable 172.x.y.z bridge IP.
+			if ((ifa->ifa_flags & IFF_RUNNING) == 0)
+			{
+				continue;
+			}
+
 			// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore point-to-point and non-broadcast interfaces.
 			if ((ifa->ifa_flags & IFF_BROADCAST) == 0 || (ifa->ifa_flags & IFF_POINTOPOINT) != 0)
 			{
@@ -131,7 +164,8 @@ EnumeratedIP * IPEnumeration::getAddresses()
 					strncmp(name, "virbr", 5) == 0 ||
 					strncmp(name, "awdl", 4) == 0 ||
 					strncmp(name, "llw", 3) == 0 ||
-					strncmp(name, "utun", 4) == 0)
+					strncmp(name, "utun", 4) == 0 ||
+					IsDockerUserBridgeName(name))
 				{
 					/* 					fprintf(stderr, "[LAN86] IPEnumeration::getAddresses - skipping virtual interface=%s\n", name);
 					fflush(stderr); */
