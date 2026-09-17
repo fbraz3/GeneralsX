@@ -68,7 +68,7 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     set(DXVK_SOURCE_DIR "${DXVK_LOCAL_FORK_DIR}")
     message(STATUS "DXVK macOS build: using local fork source at ${DXVK_SOURCE_DIR}")
   else()
-    set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src-fbraz3")
+    set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src-generalsx")
     message(STATUS "DXVK macOS build: using GitHub source clone at ${DXVK_SOURCE_DIR}")
   endif()
   set(DXVK_BUILD_DIR  "${CMAKE_BINARY_DIR}/_deps/dxvk-build-macos")
@@ -141,7 +141,8 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
     set(DXVK_REMOTE_REF f66da559fd48cd55ddfebca38ed0f708c0f76a24)
     ExternalProject_Add(dxvk_macos_build
       # GeneralsX @build BenderAI 08/04/2026 Consume pre-patched source from pinned fork commit.
-      GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
+      # GeneralsX @build 17/09/2026 Migrate DXVK remote repository to generalsx-project org.
+      GIT_REPOSITORY    https://github.com/generalsx-project/dxvk.git
       GIT_TAG           ${DXVK_REMOTE_REF}
       # GeneralsX @build copilot 01/04/2026 Keep pinned commit fetch reliable across clean CI builds.
       GIT_SHALLOW       FALSE
