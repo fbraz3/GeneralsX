@@ -1,6 +1,6 @@
 [submodule "references/fbraz3-dxvk"]
 	path = references/fbraz3-dxvk
-	url = https://github.com/fbraz3/dxvk.git
+	url = https://github.com/generalsx-project/dxvk.git
 	branch = generalsx-macos-v2.6
 [submodule "references/GameClient"]
 	path = references/GameClient
