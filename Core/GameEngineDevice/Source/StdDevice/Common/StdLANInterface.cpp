@@ -61,6 +61,56 @@ static bool IsDockerUserBridgeName(const char *name)
 
 	return digits == 12;
 }
+// GeneralsX @refactor Mr. Meesseeks 17/09/2026 Common interface suitability predicate for address enumeration and broadcast discovery.
+static bool IsUsableInterface(const struct ifaddrs *ifa)
+{
+	if (ifa == nullptr || ifa->ifa_addr == nullptr)
+	{
+		return false;
+	}
+
+	if (ifa->ifa_addr->sa_family != AF_INET)
+	{
+		return false;
+	}
+
+	if ((ifa->ifa_flags & IFF_UP) == 0 || (ifa->ifa_flags & IFF_LOOPBACK) != 0)
+	{
+		return false;
+	}
+
+	// GeneralsX @bugfix BenderAI 16/09/2026 Require an active carrier (IFF_RUNNING). Idle Docker/VM
+	// bridges stay administratively UP without a link, and were being offered as the local address,
+	// which broke LAN discovery and online hosting behind an unreachable 172.x.y.z bridge IP.
+	if ((ifa->ifa_flags & IFF_RUNNING) == 0)
+	{
+		return false;
+	}
+
+	// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore point-to-point and non-broadcast interfaces.
+	if ((ifa->ifa_flags & IFF_BROADCAST) == 0 || (ifa->ifa_flags & IFF_POINTOPOINT) != 0)
+	{
+		return false;
+	}
+
+	// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore known virtual interfaces (Docker, VPN, Apple AWDL)
+	if (ifa->ifa_name != nullptr)
+	{
+		const char *name = ifa->ifa_name;
+		if (strncmp(name, "docker", 6) == 0 ||
+			strncmp(name, "veth", 4) == 0 ||
+			strncmp(name, "virbr", 5) == 0 ||
+			strncmp(name, "awdl", 4) == 0 ||
+			strncmp(name, "llw", 3) == 0 ||
+			strncmp(name, "utun", 4) == 0 ||
+			IsDockerUserBridgeName(name))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
 #endif
 
 // GeneralsX @feature Mr. Meesseeks 17/09/2026 Enumerate local active IPv4 interface addresses on POSIX.
@@ -82,49 +132,9 @@ Int StdLANInterface::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 	Int count = 0;
 	for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
 	{
-		if (ifa->ifa_addr == nullptr)
+		if (!IsUsableInterface(ifa))
 		{
 			continue;
-		}
-
-		if (ifa->ifa_addr->sa_family != AF_INET)
-		{
-			continue;
-		}
-
-		if ((ifa->ifa_flags & IFF_UP) == 0 || (ifa->ifa_flags & IFF_LOOPBACK) != 0)
-		{
-			continue;
-		}
-
-		// GeneralsX @bugfix BenderAI 16/09/2026 Require an active carrier (IFF_RUNNING). Idle Docker/VM
-		// bridges stay administratively UP without a link, and were being offered as the local address,
-		// which broke LAN discovery and online hosting behind an unreachable 172.x.y.z bridge IP.
-		if ((ifa->ifa_flags & IFF_RUNNING) == 0)
-		{
-			continue;
-		}
-
-		// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore point-to-point and non-broadcast interfaces.
-		if ((ifa->ifa_flags & IFF_BROADCAST) == 0 || (ifa->ifa_flags & IFF_POINTOPOINT) != 0)
-		{
-			continue;
-		}
-
-		// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore known virtual interfaces (Docker, VPN, Apple AWDL)
-		if (ifa->ifa_name != nullptr)
-		{
-			const char *name = ifa->ifa_name;
-			if (strncmp(name, "docker", 6) == 0 ||
-				strncmp(name, "veth", 4) == 0 ||
-				strncmp(name, "virbr", 5) == 0 ||
-				strncmp(name, "awdl", 4) == 0 ||
-				strncmp(name, "llw", 3) == 0 ||
-				strncmp(name, "utun", 4) == 0 ||
-				IsDockerUserBridgeName(name))
-			{
-				continue;
-			}
 		}
 
 		const sockaddr_in *addr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr);
@@ -173,18 +183,7 @@ Int StdLANInterface::getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedIn
 
 	for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
 	{
-		if (ifa->ifa_addr == nullptr || ifa->ifa_addr->sa_family != AF_INET)
-		{
-			continue;
-		}
-		if ((ifa->ifa_flags & IFF_UP) == 0 || (ifa->ifa_flags & IFF_LOOPBACK) != 0)
-		{
-			continue;
-		}
-
-		// GeneralsX @bugfix BenderAI 16/09/2026 Skip interfaces without an active carrier so LAN discovery
-		// broadcasts are not sent to idle Docker/VM bridges.
-		if ((ifa->ifa_flags & IFF_RUNNING) == 0)
+		if (!IsUsableInterface(ifa))
 		{
 			continue;
 		}
