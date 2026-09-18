@@ -28,37 +28,7 @@
 #include "GameNetwork/networkutil.h"
 #include "GameClient/ClientInstance.h"
 
-#ifndef _WIN32
-#include <errno.h>
-#include <ifaddrs.h>
-#include <net/if.h>
-#include <string.h>
-
-// GeneralsX @bugfix BenderAI 16/09/2026 Detect Docker user-defined bridges, which are named
-// "br-" followed by a 12 character hexadecimal network id (e.g. br-ffd9ee17a8f4). These carry
-// private RFC1918 addresses that must never be offered as the local LAN/online address.
-static bool IsDockerUserBridgeName(const char *name)
-{
-	if (name == nullptr || strncmp(name, "br-", 3) != 0)
-	{
-		return false;
-	}
-
-	const char *suffix = name + 3;
-	int digits = 0;
-	for (; suffix[digits] != '\0'; ++digits)
-	{
-		const char c = suffix[digits];
-		const bool isHex = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-		if (!isHex)
-		{
-			return false;
-		}
-	}
-
-	return digits == 12;
-}
-#endif
+#include "GameNetwork/LANInterfaceDevice.h"
 
 IPEnumeration::IPEnumeration()
 {
@@ -116,93 +86,23 @@ EnumeratedIP * IPEnumeration::getAddresses()
 			(UnsignedByte)(id));
 	}
 
-#ifndef _WIN32
-	// GeneralsX @bugfix BenderAI 31/03/2026 Enumerate active IPv4 interfaces on non-Windows (POSIX) platforms instead of hostname resolution.
-	struct ifaddrs *ifaddr = nullptr;
-	if (getifaddrs(&ifaddr) == 0)
+	// GeneralsX @refactor Mr. Meesseeks 17/09/2026 Enumerate local IPv4 interfaces via LANInterfaceDevice platform abstraction.
+	UnsignedInt addrs[16];
+	Int count = LANInterfaceDevice::getLocalHostAddresses(addrs, ARRAY_SIZE(addrs));
+	for (Int i = 0; i < count; ++i)
 	{
-		for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
-		{
-			if (ifa->ifa_addr == nullptr)
-			{
-				continue;
-			}
-
-			if (ifa->ifa_addr->sa_family != AF_INET)
-			{
-				continue;
-			}
-
-			if ((ifa->ifa_flags & IFF_UP) == 0 || (ifa->ifa_flags & IFF_LOOPBACK) != 0)
-			{
-				continue;
-			}
-
-			// GeneralsX @bugfix BenderAI 16/09/2026 Require an active carrier (IFF_RUNNING). Idle Docker/VM
-			// bridges stay administratively UP without a link, and were being offered as the local address,
-			// which broke LAN discovery and online hosting behind an unreachable 172.x.y.z bridge IP.
-			if ((ifa->ifa_flags & IFF_RUNNING) == 0)
-			{
-				continue;
-			}
-
-			// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore point-to-point and non-broadcast interfaces.
-			if ((ifa->ifa_flags & IFF_BROADCAST) == 0 || (ifa->ifa_flags & IFF_POINTOPOINT) != 0)
-			{
-				/* 				fprintf(stderr, "[LAN86] IPEnumeration::getAddresses - skipping non-broadcast or p2p interface=%s flags=0x%X\n",
-					(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags);
-				fflush(stderr); */
-				continue;
-			}
-
-			// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore known virtual interfaces (Docker, VPN, Apple AWDL)
-			if (ifa->ifa_name != nullptr)
-			{
-				const char *name = ifa->ifa_name;
-				if (strncmp(name, "docker", 6) == 0 ||
-					strncmp(name, "veth", 4) == 0 ||
-					strncmp(name, "virbr", 5) == 0 ||
-					strncmp(name, "awdl", 4) == 0 ||
-					strncmp(name, "llw", 3) == 0 ||
-					strncmp(name, "utun", 4) == 0 ||
-					IsDockerUserBridgeName(name))
-				{
-					/* 					fprintf(stderr, "[LAN86] IPEnumeration::getAddresses - skipping virtual interface=%s\n", name);
-					fflush(stderr); */
-					continue;
-				}
-			}
-
-			const sockaddr_in *addr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr);
-			// GeneralsX @bugfix BenderAI 31/03/2026 Use ntohl to convert from network byte order before extracting octets;
-			// reading s_addr byte-by-byte on little-endian platforms reverses the IPv4 octets.
-			const UnsignedInt hostAddr = ntohl(addr->sin_addr.s_addr);
-			// GeneralsX @build GitHubCopilot 11/04/2026 Log POSIX interface candidates used for LAN IP selection.
-			/* 			fprintf(stderr, "[LAN86] IPEnumeration::getAddresses - interface=%s flags=0x%X ip=%d.%d.%d.%d accepted\n",
-				(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags,
-				PRINTF_IP_AS_4_INTS(hostAddr));
-			fflush(stderr); */
-			/* 			fprintf(stderr, "[LAN86] iface=%s flags=0x%X ip=%d.%d.%d.%d\n",
-				(ifa->ifa_name != nullptr) ? ifa->ifa_name : "<unknown>", ifa->ifa_flags,
-				PRINTF_IP_AS_4_INTS(hostAddr)); */
-			addNewIP(
-				(UnsignedByte)((hostAddr >> 24) & 0xFF),
-				(UnsignedByte)((hostAddr >> 16) & 0xFF),
-				(UnsignedByte)((hostAddr >> 8) & 0xFF),
-				(UnsignedByte)(hostAddr & 0xFF));
-		}
-		freeifaddrs(ifaddr);
-
-		if (m_IPlist)
-		{
-			return m_IPlist;
-		}
+		const UnsignedInt hostAddr = addrs[i];
+		addNewIP(
+			(UnsignedByte)((hostAddr >> 24) & 0xFF),
+			(UnsignedByte)((hostAddr >> 16) & 0xFF),
+			(UnsignedByte)((hostAddr >> 8) & 0xFF),
+			(UnsignedByte)(hostAddr & 0xFF));
 	}
-	else
+
+	if (m_IPlist)
 	{
-		DEBUG_LOG(("Failed call to getifaddrs; errno returned %d", errno));
+		return m_IPlist;
 	}
-#endif
 
 	// get the local machine's host name
 	char hostname[256];

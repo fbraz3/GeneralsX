@@ -541,6 +541,7 @@ set(GAMEENGINE_SRC
     Include/GameNetwork/LANAPI.h
     Include/GameNetwork/LANAPICallbacks.h
     Include/GameNetwork/LANGameInfo.h
+    Include/GameNetwork/LANInterfaceDevice.h
     Include/GameNetwork/LANPlayer.h
     Include/GameNetwork/NAT.h
     Include/GameNetwork/NetCommandList.h
