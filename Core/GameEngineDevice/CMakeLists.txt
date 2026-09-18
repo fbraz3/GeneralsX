@@ -198,14 +198,22 @@ if(WIN32)
     list(APPEND GAMEENGINEDEVICE_SRC
         Include/MilesAudioDevice/MilesAudioManager.h
         Include/VideoDevice/Bink/BinkVideoPlayer.h
+        Include/Win32Device/Common/Win32LANInterface.h
         Include/Win32Device/Common/Win32LocalFile.h
         Include/Win32Device/Common/Win32LocalFileSystem.h
         Source/MilesAudioDevice/MilesAudioManager.cpp
         Source/VideoDevice/Bink/BinkVideoPlayer.cpp
+        Source/Win32Device/Common/Win32LANInterface.cpp
         Source/Win32Device/Common/Win32LocalFile.cpp
         Source/Win32Device/Common/Win32LocalFileSystem.cpp
 #        Source/Win32Device/Common/Win32OSDisplay.cpp
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+    )
+else()
+    # GeneralsX @refactor Mr. Meesseeks 17/09/2026 POSIX network interface implementation
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Include/StdDevice/Common/StdLANInterface.h
+        Source/StdDevice/Common/StdLANInterface.cpp
     )
 endif()
 
