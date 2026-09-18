@@ -60,4 +60,7 @@ public:
 
   Money getStartingCash() const;
   void setStartingCash( const Money &startingCash );
+
+  // GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+  Int getSkirmishTickRate() const;
 };

@@ -295,6 +295,9 @@ void GameLogic::clearGameData( Bool showScoreScreen )
 
 	TheGameEngine->reset();
 	setGameMode(GAME_NONE);
+	// GeneralsX @feature felipebraz 17/09/2026 Reset simulation tick rate and FPS cap to global defaults (#281)
+	TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
+	TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 //	m_background->bringForward();
 //	if(shellGame)
 
@@ -895,6 +898,30 @@ bool GameLogic::onNewGame(MAYBE_UNUSED GameMessage *msg)
 		DEBUG_LOG(("Setting max FPS limit to %d FPS", maxFPS));
 		TheFramePacer->setFramesPerSecondLimit(maxFPS);
 		TheWritableGlobalData->m_useFpsLimit = true;
+	}
+
+	// GeneralsX @feature felipebraz 17/09/2026 Apply configured Skirmish simulation tick rate (#281)
+	if (gameMode == GAME_SKIRMISH)
+	{
+		Int tickRate = TheGlobalData->m_skirmishTickRate;
+		if (tickRate <= 0)
+			tickRate = LOGICFRAMES_PER_SECOND;
+
+		TheFramePacer->setLogicTimeScaleFps(tickRate);
+		TheFramePacer->enableLogicTimeScale(TRUE);
+
+		// Ensure render FPS limit is at least equal to logic tick rate so simulation is not starved
+		if (TheFramePacer->getFramesPerSecondLimit() < tickRate)
+		{
+			TheFramePacer->setFramesPerSecondLimit(tickRate);
+		}
+
+		fprintf(stderr, "[SKIRMISH] Simulation tick rate configured: %d Hz (base: %d Hz)\n", tickRate, LOGICFRAMES_PER_SECOND);
+		fflush(stderr);
+	}
+	else
+	{
+		TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
 	}
 
 	// prepare for new game
