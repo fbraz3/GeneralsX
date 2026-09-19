@@ -980,10 +980,16 @@ void W3DMainMenuInit( WindowLayout *layout, void *userData )
 	NameKeyType buttonGLAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLA" );
 	NameKeyType buttonChinaID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChina" );
 	NameKeyType skirmishID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonSkirmish" );
+	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button drop shadow
+	NameKeyType customMissionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCustomMission" );
 	NameKeyType onlineID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOnline" );
 	NameKeyType networkID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonNetwork" );
 
 	GameWindow *button = TheWindowManager->winGetWindowFromId( parent, skirmishID );
+	if (button)
+		button->winSetDrawFunc(W3DMainMenuButtonDropShadowDraw);
+	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button drop shadow
+	button = TheWindowManager->winGetWindowFromId( parent, customMissionID );
 	if (button)
 		button->winSetDrawFunc(W3DMainMenuButtonDropShadowDraw);
 	button = TheWindowManager->winGetWindowFromId( parent, onlineID );

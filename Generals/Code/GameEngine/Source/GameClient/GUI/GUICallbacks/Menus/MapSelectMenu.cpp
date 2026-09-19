@@ -160,7 +160,8 @@ void MapSelectMenuInit( WindowLayout *layout, void *userData )
 	layout->hide( FALSE );
 
 	OptionPreferences pref;
-	Bool usesSystemMapDir = pref.usesSystemMapDir();
+	// GeneralsX @tweak Steam parity: Custom Mission menu only lists user-created custom missions, never internal campaign maps
+	Bool usesSystemMapDir = FALSE;
 
 	// get the listbox window
 	NameKeyType mapListID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ListboxMap" );
