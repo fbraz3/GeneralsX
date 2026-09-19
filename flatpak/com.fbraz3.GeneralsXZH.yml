@@ -157,7 +157,13 @@ modules:
 
         # GeneralsX @bugfix felipebraz 19/09/2026 Warn if host NVIDIA GPU is present but Flatpak GL extension is missing (Issue #292)
         if [[ -e /dev/nvidiactl || -e /dev/nvidia0 ]]; then
-          if ! find /usr/lib* /usr/share/vulkan/icd.d /etc/vulkan/icd.d -name "*nvidia*.json" 2>/dev/null | grep -q .; then
+          icd_roots=()
+          for root in /usr/lib* /usr/share/vulkan/icd.d /etc/vulkan/icd.d; do
+            if [[ -d "$root" ]]; then
+              icd_roots+=("$root")
+            fi
+          done
+          if (( ${#icd_roots[@]} == 0 )) || [[ -z "$(find "${icd_roots[@]}" -name "*nvidia*.json" -print -quit 2>/dev/null)" ]]; then
             echo "WARNING: NVIDIA GPU detected on host, but matching org.freedesktop.Platform.GL.nvidia extension was not found inside the Flatpak sandbox." >&2
             echo "WARNING: If startup aborts or crashes in Vulkan initialization, run 'flatpak update' on your host to install the required driver extension." >&2
           fi
