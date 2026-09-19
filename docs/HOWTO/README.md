@@ -13,3 +13,4 @@
 > - [Fixing Magenta Textures](https://github.com/fbraz3/GeneralsX/wiki/Fixing-Magenta-Textures-in-Zero-Hour)
 > - [macOS Crash Diagnostics](https://github.com/fbraz3/GeneralsX/wiki/How-to-Capture-&-Report-macOS-Crashes)
 > - [Linux Crash Diagnostics](https://github.com/fbraz3/GeneralsX/wiki/How-to-Capture-&-Report-Linux-Crashes)
+> - [How to Install & Play Custom Missions](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-&-Play-Custom-Missions)

@@ -108,6 +108,8 @@ void DoCompressTest();
 // window ids -------------------------------------------------------------------------------------
 static NameKeyType mainMenuID = NAMEKEY_INVALID;
 static NameKeyType skirmishID = NAMEKEY_INVALID;
+// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+static NameKeyType buttonCustomMissionID = NAMEKEY_INVALID;
 static NameKeyType onlineID = NAMEKEY_INVALID;
 static NameKeyType networkID = NAMEKEY_INVALID;
 static NameKeyType optionsID = NAMEKEY_INVALID;
@@ -145,6 +147,8 @@ static GameWindow *parentMainMenu = nullptr;
 static GameWindow *buttonSinglePlayer = nullptr;
 static GameWindow *buttonMultiPlayer = nullptr;
 static GameWindow *buttonSkirmish = nullptr;
+// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+static GameWindow *buttonCustomMission = nullptr;
 static GameWindow *buttonOnline = nullptr;
 static GameWindow *buttonNetwork = nullptr;
 static GameWindow *buttonOptions = nullptr;
@@ -472,6 +476,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	mainMenuID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MainMenuParent" );
 //	campaignID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCampaign" );
 	skirmishID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonSkirmish" );
+	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+	buttonCustomMissionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCustomMission" );
 	onlineID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOnline" );
 	networkID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonNetwork" );
 	optionsID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOptions" );
@@ -510,6 +516,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonSinglePlayer = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonSinglePlayerID );
 	buttonMultiPlayer = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonMultiPlayerID );
 	buttonSkirmish = TheWindowManager->winGetWindowFromId( parentMainMenu, skirmishID );
+	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+	buttonCustomMission = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonCustomMissionID );
 	buttonOnline = TheWindowManager->winGetWindowFromId( parentMainMenu, onlineID );
 	buttonNetwork = TheWindowManager->winGetWindowFromId( parentMainMenu, networkID );
 	buttonOptions = TheWindowManager->winGetWindowFromId( parentMainMenu, optionsID );
@@ -1454,6 +1462,24 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackSkirmish");
 				TheShell->push( "Menus/SkirmishGameOptionsMenu.wnd" );
 				TheScriptEngine->signalUIInteract(TheShellHookNames[SHELL_SCRIPT_HOOK_MAIN_MENU_SKIRMISH_SELECTED]);
+			}
+			// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+			else if( controlID == buttonCustomMissionID )
+			{
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				buttonPushed = TRUE;
+				campaignSelected = TRUE;
+				if (dropDownWindows[DROPDOWN_SINGLE])
+					dropDownWindows[DROPDOWN_SINGLE]->winHide(FALSE);
+				TheTransitionHandler->remove("MainMenuFactionSkirmish");
+
+				if (TheTransitionHandler && TheTransitionHandler->hasGroup("MainMenuSinglePlayerMenuBackCustomMission"))
+					TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackCustomMission");
+				else if (TheTransitionHandler)
+					TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackSkirmish");
+
+				TheShell->push( "Menus/MapSelectMenu.wnd" );
 			}
 			else if( controlID == onlineID )
 			{
