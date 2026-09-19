@@ -160,7 +160,7 @@ void MapSelectMenuInit( WindowLayout *layout, void *userData )
 	layout->hide( FALSE );
 
 	OptionPreferences pref;
-	// GeneralsX @tweak Steam parity: Custom Mission menu only lists user-created custom missions, never internal campaign maps
+	// GeneralsX @tweak fbraz3 18/09/2026 Steam parity: Custom Mission menu only lists user-created custom missions, never internal campaign maps
 	Bool usesSystemMapDir = FALSE;
 
 	// get the listbox window
