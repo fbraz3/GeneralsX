@@ -622,6 +622,13 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 		fileInfo->m_filename.toLower();
 		buffer[filenameIndex + 1] = 0;
 
+		// GeneralsX @bugfix felipebraz 16/09/2026 Skip dummy/wildcard entries (e.g. Data\* in retail PatchZH.big)
+		if (fileInfo->m_filename.isEmpty() ||
+			fileInfo->m_filename.find('*') != nullptr ||
+			fileInfo->m_filename.find('?') != nullptr) {
+			continue;
+		}
+
 		AsciiString path;
 		path = buffer;
 
