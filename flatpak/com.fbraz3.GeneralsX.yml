@@ -154,6 +154,14 @@ modules:
 
         # Keep Vulkan ICD selection to the runtime/driver defaults unless user explicitly overrides.
 
+        # GeneralsX @bugfix felipebraz 19/09/2026 Warn if host NVIDIA GPU is present but Flatpak GL extension is missing (Issue #292)
+        if [[ -e /dev/nvidiactl || -e /dev/nvidia0 ]]; then
+          if ! find /usr/lib* /usr/share/vulkan/icd.d /etc/vulkan/icd.d -name "*nvidia*.json" 2>/dev/null | grep -q .; then
+            echo "WARNING: NVIDIA GPU detected on host, but matching org.freedesktop.Platform.GL.nvidia extension was not found inside the Flatpak sandbox." >&2
+            echo "WARNING: If startup aborts or crashes in Vulkan initialization, run 'flatpak update' on your host to install the required driver extension." >&2
+          fi
+        fi
+
         if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
           export ALSOFT_DISABLE_CPU_EXTS="all"
         fi
