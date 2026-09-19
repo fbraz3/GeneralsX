@@ -98,6 +98,9 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "UseFPSLimit",							INI::parseBool,				nullptr,			offsetof( GlobalData, m_useFpsLimit ) },
 	{ "DumpAssetUsage",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_dumpAssetUsage ) },
 	{ "FramesPerSecondLimit",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_framesPerSecondLimit ) },
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	{ "SkirmishTickRate",					INI::parseInt,				nullptr,			offsetof( GlobalData, m_skirmishTickRate ) },
+	{ "TickRate",									INI::parseInt,				nullptr,			offsetof( GlobalData, m_skirmishTickRate ) },
 	{ "ChipsetType",							INI::parseInt,				nullptr,			offsetof( GlobalData, m_chipSetType ) },
 	{ "MaxShellScreens",					INI::parseInt,				nullptr,			offsetof( GlobalData, m_maxShellScreens ) },
 	{ "UseCloudMap",							INI::parseBool,				nullptr,			offsetof( GlobalData, m_useCloudMap ) },
@@ -652,6 +655,8 @@ GlobalData::GlobalData()
 	m_useFpsLimit = TRUE;
 	m_dumpAssetUsage = FALSE;
 	m_framesPerSecondLimit = 60;
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	m_skirmishTickRate = LOGICFRAMES_PER_SECOND;
 	m_chipSetType = 0;
 	m_headless = FALSE;
 	m_checkForUpdates = TRUE;
@@ -1243,6 +1248,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_playerInfoListFontSize = optionPref.getPlayerInfoListFontSize();
 	TheWritableGlobalData->m_showMoneyPerMinute = optionPref.getShowMoneyPerMinute();
 	TheWritableGlobalData->m_gameWindowTransitionSpeedMultiplier = optionPref.getGameWindowTransitionSpeedMultiplier();
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	TheWritableGlobalData->m_skirmishTickRate = optionPref.getSkirmishTickRate();
 
 	TheWritableGlobalData->m_antiAliasLevel = optionPref.getAntiAliasing();
 	TheWritableGlobalData->m_textureFilteringMode = optionPref.getTextureFilterMode();

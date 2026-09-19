@@ -39,6 +39,7 @@
 #include "Common/RandomValue.h"
 #include "Common/SkirmishBattleHonors.h"
 #include "Common/SkirmishPreferences.h"
+#include "Common/OptionPreferences.h"
 #include "GameLogic/GameLogic.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/ClientInstance.h"
@@ -330,6 +331,31 @@ void SkirmishPreferences::setStartingCash( const Money & startingCash )
   (*this)[startingCashKey] = option;
 }
 
+// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+Int SkirmishPreferences::getSkirmishTickRate() const
+{
+	SkirmishPreferences::const_iterator it = find("TickRate");
+	if (it == end())
+	{
+		it = find("GameSpeed");
+	}
+	if (it == end())
+	{
+		it = find("SkirmishTickRate");
+	}
+	if (it != end())
+	{
+		Int rate = atoi(it->second.str());
+		if (rate > 0)
+		{
+			return clamp(5, rate, 120);
+		}
+	}
+
+	OptionPreferences optionPref;
+	return optionPref.getSkirmishTickRate();
+}
+
 
 
 Bool SkirmishPreferences::write()
@@ -419,6 +445,10 @@ void reallyDoStart()
 	// GeneralsX @tweak felipebraz 20/06/2026 Clamp FPS limit from skirmish game speed slider to 30..120
 	if (maxFPS < 30)
 		maxFPS = 30;
+
+	// GeneralsX @feature felipebraz 17/09/2026 Read configured Skirmish simulation tick rate (#281)
+	SkirmishPreferences prefs;
+	TheWritableGlobalData->m_skirmishTickRate = prefs.getSkirmishTickRate();
 
   TheWritableGlobalData->m_mapName = TheSkirmishGameInfo->getMap();
   TheSkirmishGameInfo->startGame(0);

@@ -195,6 +195,12 @@ Int FramePacer::getActualLogicTimeScaleFps(LogicTimeQueryFlags flags) const
 		return TheNetwork->getFrameRate();
 	}
 
+	// GeneralsX @feature felipebraz 17/09/2026 Ensure LAN/Online multiplayer always uses standard logic rate (#281)
+	if (TheGameLogic != nullptr && TheGameLogic->isInMultiplayerGame())
+	{
+		return LOGICFRAMES_PER_SECOND;
+	}
+
 	if (isLogicTimeScaleEnabled())
 	{
 		return getLogicTimeScaleFps();

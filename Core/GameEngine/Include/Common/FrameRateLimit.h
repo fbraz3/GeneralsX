@@ -64,11 +64,8 @@ class LogicTimeScaleFpsPreset
 public:
 	enum CPP_11(: UnsignedInt)
 	{
-#if RTS_DEBUG
+		// GeneralsX @tweak felipebraz 17/09/2026 Allow lowering simulation tick rate down to 5 Hz in all builds (#281)
 		MinFpsValue = 5,
-#else
-		MinFpsValue = LOGICFRAMES_PER_SECOND,
-#endif
 		StepFpsValue = 5,
 	};
 

@@ -135,4 +135,6 @@ public:
 	Real getCameraPitch() const;
 	Real getTerrainDrawDistanceScale() const;
 	Real getGameWindowTransitionSpeedMultiplier() const;
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	Int getSkirmishTickRate() const;
 };

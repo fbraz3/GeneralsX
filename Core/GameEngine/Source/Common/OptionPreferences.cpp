@@ -954,3 +954,30 @@ Real OptionPreferences::getGameWindowTransitionSpeedMultiplier() const
 	Real speed = (Real) atof(it->second.str());
 	return clamp(1.0f, speed, 1000.0f);
 }
+
+// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+Int OptionPreferences::getSkirmishTickRate() const
+{
+	OptionPreferences::const_iterator it = find("TickRate");
+	if (it == end())
+	{
+		it = find("GameSpeed");
+	}
+	if (it == end())
+	{
+		it = find("SkirmishTickRate");
+	}
+	if (it == end())
+	{
+		return LOGICFRAMES_PER_SECOND;
+	}
+
+	Int rate = atoi(it->second.str());
+	if (rate <= 0)
+	{
+		return LOGICFRAMES_PER_SECOND;
+	}
+
+	return clamp(5, rate, 120);
+}
+
