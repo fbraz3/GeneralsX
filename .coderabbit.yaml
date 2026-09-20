@@ -88,7 +88,7 @@ reviews:
         - Strict platform isolation: no Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager). Use SDL3/POSIX abstractions.
         - Thread safety: network callbacks must post events to a thread-safe queue consumed on the main thread during Shell::update(); never touch UI directly from background/network threads.
         - REST endpoints must use NGMP::GetAPIEndpoint(...) for environment/contract routing and include 'Authorization: Bearer <token>'.
-        - WebSocket messaging must use integer msg_id routing (not string action names), explicit room registration (msg_id: 3) for lobby visibility, and periodic ping heartbeats (msg_id: 8).
+        - WebSocket messaging must use integer msg_id routing (not string action names), explicit room registration ({"msg_id": 3, "room": 0}) for lobby visibility, and periodic ping heartbeats ({"msg_id": 8}) at least every 10 seconds.
         - Retain loading screen and transport ticking (NGMP_OnlineServicesManager::update()) to prevent GameNetworkingSockets (GNS/ICE) thread starvation.
         - Handle explicit network byte order (htons/ntohs, htonl/ntohl) for ARM64/x86_64 cross-play.
 
@@ -181,9 +181,10 @@ reviews:
              TheNGMPGame, and thread-safe UI event queues (NGMPEvent) must be preserved; network callbacks must never mutate UI controls directly from background threads.
           3. Ticking & Transport: Ticking via NGMP_OnlineServicesManager::update() during loading screens (GameSpyLoadScreen.cpp, MapTransferLoadScreen.cpp)
              and transport ticking (NextGenTransport.cpp) must not be bypassed or removed, avoiding GameNetworkingSockets (GNS/ICE) starvation or timeouts.
-          4. Protocol Conventions: WebSocket messages must use integer msg_id routing (not strings), room registration (msg_id: 3) for lobby updates,
-             and ping heartbeats (msg_id: 8). REST calls must use NGMP::GetAPIEndpoint(...) with contract/environment prefix and 'Authorization: Bearer <token>'.
-          5. Platform Isolation & Portability: No Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager). Use SDL3/POSIX and explicit network byte order (htons/htonl).
+          4. Protocol Conventions: WebSocket messages must use integer msg_id routing (not strings), explicit room registration ({"msg_id": 3, "room": 0})
+             for lobby updates, and ping heartbeats ({"msg_id": 8}) at least every 10 seconds. REST calls must use NGMP::GetAPIEndpoint(...)
+             with contract/environment prefix and 'Authorization: Bearer <token>'.
+          5. Platform Isolation & Portability: No Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager). Use SDL3/POSIX and explicit network byte order (htons/ntohs, htonl/ntohl).
 
   tools:
     clang:
