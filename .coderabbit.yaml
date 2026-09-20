@@ -81,6 +81,17 @@ reviews:
         OpenAL / MiniAudio Parity: Cross-platform audio stack requires strict feature parity.
         Any bugfix, enhancement, or behavioral fix applied to OpenAL must be mirrored in MiniAudio (and vice versa).
 
+    - path: "{**/GeneralsOnline/**,**/NextGenMP/**,cmake/ngmp.cmake}"
+      instructions: >-
+        NGMP (GeneralsOnline) Subsystem:
+        - Preserve NGMP cross-platform multiplayer implementation. GameSpy online is deprecated and must not override NGMP.
+        - Strict platform isolation: no Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager). Use SDL3/POSIX abstractions.
+        - Thread safety: network callbacks must post events to a thread-safe queue consumed on the main thread during Shell::update(); never touch UI directly from background/network threads.
+        - REST endpoints must use NGMP::GetAPIEndpoint(...) for environment/contract routing and include 'Authorization: Bearer <token>'.
+        - WebSocket messaging must use integer msg_id routing (not string action names), explicit room registration ({"msg_id": 3, "room": 0}) for lobby visibility, and periodic ping heartbeats ({"msg_id": 8}) at least every 10 seconds.
+        - Retain loading screen and transport ticking (NGMP_OnlineServicesManager::update()) to prevent GameNetworkingSockets (GNS/ICE) thread starvation.
+        - Handle explicit network byte order (htons/ntohs, htonl/ntohl) for ARM64/x86_64 cross-play.
+
     - path: "{**/CMakeLists.txt,cmake/**,CMakePresets.json}"
       instructions: >-
         CMake & Build System:
@@ -160,6 +171,20 @@ reviews:
           Verify that no personal hardcoded machine paths (such as '/Users/...', '/home/...', or developer home directories),
           private environment variables, internal URLs, or local workspace paths are introduced in code, documentation,
           or configuration files. Portable relative paths or standard environment variables ($HOME, ~, etc.) must be used instead.
+      - name: "NGMP Protocol Integrity"
+        mode: "warning"
+        instructions: >-
+          Verify that Next-Gen Multiplayer (NGMP / GeneralsOnline) protocol and architecture are preserved without regressions:
+          1. NGMP Preservation: Changes must not degrade or replace the NGMP implementation (under GeneralsOnline/, NextGenMP/, cmake/ngmp.cmake,
+             or #if defined(SAGE_USE_NGMP) blocks) with legacy GameSpy code. GameSpy online is deprecated; singleplayer, skirmish vs AI, and LAN multiplayer must remain functional.
+          2. UI Thread Safety: In shared multiplayer UI (WOL*.cpp, MainMenu.cpp), NGMP_OnlineServicesManager, OnlineServices_LobbyInterface,
+             TheNGMPGame, and thread-safe UI event queues (NGMPEvent) must be preserved; network callbacks must never mutate UI controls directly from background threads.
+          3. Ticking & Transport: Ticking via NGMP_OnlineServicesManager::update() during loading screens (GameSpyLoadScreen.cpp, MapTransferLoadScreen.cpp)
+             and transport ticking (NextGenTransport.cpp) must not be bypassed or removed, avoiding GameNetworkingSockets (GNS/ICE) starvation or timeouts.
+          4. Protocol Conventions: WebSocket messages must use integer msg_id routing (not strings), explicit room registration ({"msg_id": 3, "room": 0})
+             for lobby updates, and ping heartbeats ({"msg_id": 8}) at least every 10 seconds. REST calls must use NGMP::GetAPIEndpoint(...)
+             with contract/environment prefix and 'Authorization: Bearer <token>'.
+          5. Platform Isolation & Portability: No Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager). Use SDL3/POSIX and explicit network byte order (htons/ntohs, htonl/ntohl).
 
   tools:
     clang:
