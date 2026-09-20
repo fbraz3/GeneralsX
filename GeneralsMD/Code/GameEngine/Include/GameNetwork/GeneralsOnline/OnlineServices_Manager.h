@@ -170,6 +170,9 @@ public:
     // Token-based silent re-login
     void loginWithRefreshToken(const std::string& refreshToken);
 
+    // GeneralsX @feature fbraz3 19/09/2026 Silent synchronous token refresh using saved refresh token
+    bool refreshSessionTokenSync();
+
     void logout();
     bool ensureWebSocketConnected();
 

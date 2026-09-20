@@ -854,10 +854,11 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 		motdRendered = true;
 	}
 
-	// GeneralsX @feature Re-render global stats dynamically whenever new stats are fetched from server
+	// GeneralsX @feature Re-render global stats and online players dynamically whenever new stats are fetched from server
 	uint32_t currentStatsVersion = NGMP_OnlineServicesManager::getInstance().getGlobalStatsVersion();
 	if (NGMP_OnlineServicesManager::getInstance().hasGlobalStats() && (!statsRendered || s_lastRenderedStatsVersion != currentStatsVersion)) {
 		updateOverallStats();
+		updateNumPlayersOnline();
 		statsRendered = true;
 		s_lastRenderedStatsVersion = currentStatsVersion;
 	}

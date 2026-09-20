@@ -7,6 +7,7 @@
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GameSpyOverlay.h"
+#include "GameNetwork/GameSpy/MainMenuUtils.h"
 #include "Common/GlobalData.h"
 #include <cstdio>
 #include <thread>
@@ -467,6 +468,86 @@ void NGMP_OnlineServicesManager::logout() {
     NGMP::SaveRefreshToken("");
 }
 
+// GeneralsX @feature fbraz3 19/09/2026 Silent synchronous token refresh using saved refresh token
+bool NGMP_OnlineServicesManager::refreshSessionTokenSync() {
+    std::string refreshToken = NGMP::LoadRefreshToken();
+    if (refreshToken.empty()) {
+        return false;
+    }
+
+    std::string url = NGMP::GetAPIEndpoint("LoginWithToken");
+    bool isHttps = (url.rfind("https://", 0) == 0);
+    bool isSafeLoopback = (url.rfind("http://localhost", 0) == 0 || url.rfind("http://127.0.0.1", 0) == 0);
+    if (!isHttps && !isSafeLoopback) {
+        fprintf(stderr, "[NGMP] Security check: refusing to transmit refresh token over cleartext HTTP (%s)\n", NGMP::SanitizeURL(url).c_str());
+        fflush(stderr);
+        return false;
+    }
+
+    fprintf(stderr, "[NGMP] Silently refreshing session token via %s...\n", NGMP::SanitizeURL(url).c_str());
+    fflush(stderr);
+
+    json requestJson = {
+        { "reserved_0", "" },
+        { "reserved_1", "" },
+        { "reserved_2", "" },
+        { "exe_crc", TheGlobalData ? TheGlobalData->m_exeCRC : 0 },
+        { "ini_crc", TheGlobalData ? TheGlobalData->m_iniCRC : 0 }
+    };
+    std::string requestBody = requestJson.dump(-1, ' ', false, json::error_handler_t::replace);
+
+    CURL* curl = curl_easy_init();
+    if (!curl) return false;
+
+    struct curl_slist* headers = nullptr;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    std::string authHeader = "Authorization: Bearer " + refreshToken;
+    headers = curl_slist_append(headers, authHeader.c_str());
+
+    NGMP::Internal::CurlResponse response;
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, requestBody.c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 8L);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 4L);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
+
+    CURLcode res = curl_easy_perform(curl);
+    long httpCode = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    if (res == CURLE_OK && httpCode == 200 && !response.text.empty()) {
+        try {
+            auto jsonObject = json::parse(response.text);
+            int pollResult = jsonObject.value("result", 0);
+            std::string sessionToken = jsonObject.value("session_token", "");
+            std::string newRefreshToken = jsonObject.value("refresh_token", "");
+            if (pollResult == 1 && !sessionToken.empty()) {
+                m_authToken = sessionToken;
+                NGMP::SaveAuthToken(sessionToken);
+                if (!newRefreshToken.empty()) {
+                    NGMP::SaveRefreshToken(newRefreshToken);
+                }
+                fprintf(stderr, "[NGMP] Session token silently refreshed successfully!\n");
+                fflush(stderr);
+                return true;
+            }
+        } catch (const std::exception& e) {
+            fprintf(stderr, "[NGMP] refreshSessionTokenSync JSON parse error: %s\n", e.what());
+            fflush(stderr);
+        }
+    } else {
+        fprintf(stderr, "[NGMP] refreshSessionTokenSync failed (res=%d http=%ld)\n", res, httpCode);
+        fflush(stderr);
+    }
+    return false;
+}
+
 void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
     if (m_statsRequestInFlight.exchange(true)) {
         return;
@@ -479,38 +560,59 @@ void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
     m_statsThread = std::thread([this]() {
         std::string url = NGMP::GetAPIEndpoint("GlobalStats");
 
-        CURL* curl = curl_easy_init();
-        if (!curl) {
-            fprintf(stderr, "[NGMP] curl_easy_init failed for GlobalStats\n");
-            fflush(stderr);
-            m_statsRequestInFlight = false;
-            return;
-        }
+        auto fetchStats = [this, &url](std::string& responseText, long& httpCode) -> CURLcode {
+            CURL* curl = curl_easy_init();
+            if (!curl) return CURLE_FAILED_INIT;
 
-        NGMP::Internal::CurlResponse response;
-        struct curl_slist* headers = nullptr;
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        if (!m_authToken.empty()) {
-            std::string authHeader = "Authorization: Bearer " + m_authToken;
-            headers = curl_slist_append(headers, authHeader.c_str());
-        }
+            NGMP::Internal::CurlResponse response;
+            struct curl_slist* headers = nullptr;
+            headers = curl_slist_append(headers, "Content-Type: application/json");
+            if (!m_authToken.empty()) {
+                std::string authHeader = "Authorization: Bearer " + m_authToken;
+                headers = curl_slist_append(headers, authHeader.c_str());
+            }
 
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
 
-        CURLcode res = curl_easy_perform(curl);
+            CURLcode res = curl_easy_perform(curl);
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+            curl_slist_free_all(headers);
+            curl_easy_cleanup(curl);
+
+            if (res == CURLE_OK) {
+                responseText = std::move(response.text);
+            }
+            return res;
+        };
+
+        std::string responseText;
         long httpCode = 0;
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        CURLcode res = fetchStats(responseText, httpCode);
 
-        curl_slist_free_all(headers);
-        curl_easy_cleanup(curl);
+        // GeneralsX @bugfix fbraz3 19/09/2026 Retry once if session token expired (HTTP 401)
+        if (httpCode == 401) {
+            fprintf(stderr, "[NGMP] GlobalStats returned 401 Unauthorized, attempting silent session refresh...\n");
+            fflush(stderr);
+            if (refreshSessionTokenSync()) {
+                res = fetchStats(responseText, httpCode);
+            }
+        }
 
         if (res == CURLE_OK && httpCode == 200) {
             try {
-                auto jsonResponse = json::parse(response.text);
+                auto jsonResponse = json::parse(responseText);
+
+                // GeneralsX @feature fbraz3 19/09/2026 Bind online player count to GUI
+                if (jsonResponse.contains("online_players") && jsonResponse["online_players"].is_number()) {
+                    int onlinePlayers = jsonResponse["online_players"].get<int>();
+                    HandleNumPlayersOnline(onlinePlayers);
+                }
+
                 auto globalStatsJson = jsonResponse.value("globalstats", json::object());
 
                 std::vector<int> wins;
@@ -569,37 +671,52 @@ void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
     std::thread([this, userID]() {
         std::string url = NGMP::GetAPIEndpoint("PlayerStats") + "/" + std::to_string(userID);
 
-        CURL* curl = curl_easy_init();
-        if (!curl) {
-            fprintf(stderr, "[NGMP] curl_easy_init failed for PlayerStats\n");
-            fflush(stderr);
-            return;
-        }
+        auto fetchPlayerStats = [this, &url](std::string& responseText, long& httpCode) -> CURLcode {
+            CURL* curl = curl_easy_init();
+            if (!curl) return CURLE_FAILED_INIT;
 
-        NGMP::Internal::CurlResponse response;
-        struct curl_slist* headers = nullptr;
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        if (!m_authToken.empty()) {
-            std::string authHeader = "Authorization: Bearer " + m_authToken;
-            headers = curl_slist_append(headers, authHeader.c_str());
-        }
+            NGMP::Internal::CurlResponse response;
+            struct curl_slist* headers = nullptr;
+            headers = curl_slist_append(headers, "Content-Type: application/json");
+            if (!m_authToken.empty()) {
+                std::string authHeader = "Authorization: Bearer " + m_authToken;
+                headers = curl_slist_append(headers, authHeader.c_str());
+            }
 
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
 
-        CURLcode res = curl_easy_perform(curl);
+            CURLcode res = curl_easy_perform(curl);
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+            curl_slist_free_all(headers);
+            curl_easy_cleanup(curl);
+
+            if (res == CURLE_OK) {
+                responseText = std::move(response.text);
+            }
+            return res;
+        };
+
+        std::string responseText;
         long httpCode = 0;
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        CURLcode res = fetchPlayerStats(responseText, httpCode);
 
-        curl_slist_free_all(headers);
-        curl_easy_cleanup(curl);
+        // GeneralsX @bugfix fbraz3 19/09/2026 Retry once if session token expired (HTTP 401)
+        if (httpCode == 401) {
+            fprintf(stderr, "[NGMP] PlayerStats returned 401 Unauthorized, attempting silent session refresh...\n");
+            fflush(stderr);
+            if (refreshSessionTokenSync()) {
+                res = fetchPlayerStats(responseText, httpCode);
+            }
+        }
 
         if (res == CURLE_OK && httpCode == 200) {
             try {
-                auto jsonObject = json::parse(response.text);
+                auto jsonObject = json::parse(responseText);
                 auto jsonObjectRoot = jsonObject["stats"];
 
                 PSPlayerStats stats;
