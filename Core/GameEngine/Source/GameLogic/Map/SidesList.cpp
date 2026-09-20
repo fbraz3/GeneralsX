@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -429,13 +429,23 @@ static AsciiString static_readPlayerNames[MAX_PLAYER_COUNT];
 *	Input: DataChunkInput
 *
 */
+#define K_PLAYERS_NAMES_FOR_SCRIPTS_VERSION_1 1
+#define K_PLAYERS_NAMES_FOR_SCRIPTS_VERSION_2 2 // Added in Zero Hour
+
 static Bool ParsePlayersDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
 {
+	Int readDicts = 0;
+	if (info->version >= K_PLAYERS_NAMES_FOR_SCRIPTS_VERSION_2) {
+		readDicts = file.readInt();
+	}
 	Int numNames = file.readInt();
 	Int i;
 	for (i=0; i<numNames; i++) {
 		if (i>=MAX_PLAYER_COUNT) break;
 		static_readPlayerNames[i] = file.readAsciiString();
+		if (readDicts) {
+			Dict sideDict = file.readDict();
+		}
 	}
 	DEBUG_ASSERTCRASH(file.atEndOfChunk(), ("Unexpected data left over."));
 	return true;
@@ -509,21 +519,38 @@ void SidesList::prepareForMP_or_Skirmish()
 	if (!gotScripts) {
 		// GeneralsX @bugfix Copilot 22/03/2026 Load default skirmish scripts relative to the configured asset root.
 		AsciiString path = "Data\\Scripts\\SkirmishScripts.scb";
+#ifdef ALLOW_DEBUG_UTILS
+		// GeneralsX @bugfix Copilot 22/03/2026 Emit runtime diagnostics for SkirmishScripts loading on Linux.
+		fprintf(stderr, "[SKIRMISH_DIAG] SidesList::prepareForMP_or_Skirmish gotScripts=false path='%s'\n", path.str());
+		fflush(stderr);
+#endif
 		DEBUG_LOG(("Skirmish map using standard scripts"));
 		m_skirmishTeamrec.clear();
 		CachedFileInputStream theInputStream;
 		if (theInputStream.open(path)) {
+#ifdef ALLOW_DEBUG_UTILS
+				fprintf(stderr, "[SKIRMISH_DIAG] Opened SkirmishScripts.scb successfully\n");
+				fflush(stderr);
+#endif
 				ChunkInputStream *pStrm = &theInputStream;
 				DataChunkInput file( pStrm );
 				file.registerParser( "PlayerScriptsList", AsciiString::TheEmptyString, ScriptList::ParseScriptsDataChunk );
 				file.registerParser( "ScriptsPlayers", AsciiString::TheEmptyString, ParsePlayersDataChunk );
 				file.registerParser( "ScriptTeams", AsciiString::TheEmptyString, ParseTeamsDataChunk );
 				if (!file.parse(this)) {
+#ifdef ALLOW_DEBUG_UTILS
+					fprintf(stderr, "[SKIRMISH_DIAG] ERROR parsing SkirmishScripts.scb\n");
+					fflush(stderr);
+#endif
 					DEBUG_LOG(("ERROR - Unable to read in skirmish scripts."));
 					return;
 				}
 				ScriptList *scripts[MAX_PLAYER_COUNT];
 				Int count = ScriptList::getReadScripts(scripts);
+#ifdef ALLOW_DEBUG_UTILS
+				fprintf(stderr, "[SKIRMISH_DIAG] Parsed SkirmishScripts.scb scriptCount=%d\n", count);
+				fflush(stderr);
+#endif
 				Int i;
 				for (i=0; i<count; i++) {
 					Int curSide = -1;
@@ -549,6 +576,11 @@ void SidesList::prepareForMP_or_Skirmish()
 				for (i=0; i<MAX_PLAYER_COUNT; i++) {
 					static_readPlayerNames[i].clear();
 				}
+		} else {
+#ifdef ALLOW_DEBUG_UTILS
+			fprintf(stderr, "[SKIRMISH_DIAG] FAILED to open SkirmishScripts.scb path='%s'\n", path.str());
+			fflush(stderr);
+#endif
 		}
 
 
@@ -1122,7 +1154,7 @@ void TeamsInfoRec::addTeam(const Dict* d)
 		TEAM_ALLOC_CHUNK = 8	///< how many teams to alloc at a time
 	};
 
-	DEBUG_ASSERTCRASH(m_numTeams < 1024, ("hmm, seems like an awful lot of teams..."));
+	DEBUG_ASSERTCRASH(m_numTeams < 2048, ("%d teams have been allocated (so far). This seems excessive.", m_numTeams ));
 	if (m_numTeams >= m_numTeamsAllocated)
 	{
 		// pool[]ify
