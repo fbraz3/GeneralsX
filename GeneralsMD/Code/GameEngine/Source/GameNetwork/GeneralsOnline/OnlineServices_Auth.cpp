@@ -499,8 +499,16 @@ bool NGMP_OnlineServicesManager::refreshSessionTokenSync(uint32_t knownVersion) 
         std::string authority = (pathStart == std::string::npos) ? url.substr(hostStart) : url.substr(hostStart, pathStart - hostStart);
         // Reject userinfo (e.g. user:pass@host or localhost@evil.example)
         if (authority.find('@') == std::string::npos) {
-            size_t portPos = authority.find(':');
-            std::string host = (portPos == std::string::npos) ? authority : authority.substr(0, portPos);
+            std::string host;
+            if (!authority.empty() && authority.front() == '[') {
+                size_t closeBracket = authority.find(']');
+                if (closeBracket != std::string::npos) {
+                    host = authority.substr(0, closeBracket + 1);
+                }
+            } else {
+                size_t portPos = authority.find(':');
+                host = (portPos == std::string::npos) ? authority : authority.substr(0, portPos);
+            }
             if (host == "localhost" || host == "127.0.0.1" || host == "[::1]") {
                 isSafeLoopback = true;
             }
