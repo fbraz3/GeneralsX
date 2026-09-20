@@ -31,8 +31,8 @@ if(SAGE_USE_DX8)
 elseif(APPLE AND SAGE_USE_MOLTENVK)
   # macOS: Build DXVK 2.6 from source using Meson + MoltenVK
   # GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port (Session 61)
-  find_program(MESON_EXECUTABLE meson HINTS /usr/local/bin /opt/homebrew/bin)
-  find_program(NINJA_EXECUTABLE ninja HINTS /usr/local/bin /opt/homebrew/bin)
+  find_program(MESON_EXECUTABLE meson HINTS /opt/homebrew/bin /usr/local/bin)
+  find_program(NINJA_EXECUTABLE ninja HINTS /opt/homebrew/bin /usr/local/bin)
 
   if(NOT MESON_EXECUTABLE)
     message(FATAL_ERROR "DXVK macOS build requires meson: brew install meson")

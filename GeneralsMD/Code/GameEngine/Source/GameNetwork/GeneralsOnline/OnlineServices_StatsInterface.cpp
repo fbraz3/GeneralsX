@@ -103,8 +103,9 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 	std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
 	std::string url = NGMP::GetAPIEndpoint("Lobby/Outcome");
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
 
-	std::thread([url, payloadStr, authToken]() {
+	std::thread([url, payloadStr, authToken, tokenVersion]() {
 		CURL* curl = curl_easy_init();
 		if (!curl) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: failed to initialize curl\n");
@@ -136,6 +137,36 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
+
+		// GeneralsX @bugfix fbraz3 19/09/2026 Retry outcome post if token expired during long match (HTTP 401)
+		if (httpCode == 401) {
+			fprintf(stderr, "[NGMP] CommitMyOutcome: 401 Unauthorized (session expired mid-game), refreshing token...\n");
+			fflush(stderr);
+			if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
+				std::string freshToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+				curl = curl_easy_init();
+				if (curl) {
+					headers = nullptr;
+					headers = curl_slist_append(headers, "Content-Type: application/json");
+					if (!freshToken.empty()) {
+						std::string authHeader = "Authorization: Bearer " + freshToken;
+						headers = curl_slist_append(headers, authHeader.c_str());
+					}
+					response.text.clear();
+					curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+					curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
+					curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+					curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+					curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+					res = curl_easy_perform(curl);
+					curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+					curl_slist_free_all(headers);
+					curl_easy_cleanup(curl);
+				}
+			}
+		}
 
 		NGMPEvent ev;
 		ev.type = NGMPEvent::EVENT_OUTCOME_COMMITTED;

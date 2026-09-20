@@ -415,8 +415,14 @@ static void updateNumPlayersOnline()
 void HandleNumPlayersOnline( Int numPlayersOnline )
 {
 	lastNumPlayersOnline = numPlayersOnline;
+#if !defined(SAGE_USE_NGMP)
 	if (lastNumPlayersOnline < 1)
 		lastNumPlayersOnline = 1;
+#else
+	// GeneralsX @tweak fbraz3 20/09/2026 Allow 0 players online for NGMP statistics
+	if (lastNumPlayersOnline < 0)
+		lastNumPlayersOnline = 0;
+#endif
 	updateNumPlayersOnline();
 }
 
@@ -854,10 +860,12 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 		motdRendered = true;
 	}
 
-	// GeneralsX @feature Re-render global stats dynamically whenever new stats are fetched from server
+	// GeneralsX @feature fbraz3 19/09/2026 Re-render global stats and online players dynamically whenever new stats are fetched from server
 	uint32_t currentStatsVersion = NGMP_OnlineServicesManager::getInstance().getGlobalStatsVersion();
 	if (NGMP_OnlineServicesManager::getInstance().hasGlobalStats() && (!statsRendered || s_lastRenderedStatsVersion != currentStatsVersion)) {
+		HandleNumPlayersOnline(NGMP_OnlineServicesManager::getInstance().getOnlinePlayersCount());
 		updateOverallStats();
+		updateNumPlayersOnline();
 		statsRendered = true;
 		s_lastRenderedStatsVersion = currentStatsVersion;
 	}
