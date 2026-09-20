@@ -2756,6 +2756,11 @@ void ControlBar::showRallyPoint(const Coord3D* loc)
 
 		marker = TheThingFactory->newDrawable(ttn);
 		DEBUG_ASSERTCRASH(marker, ("showRallyPoint: Unable to create rally point drawable"));
+		// GeneralsX @bugfix BenderAI 20/09/2026 Guard against null marker in release builds
+		if (!marker)
+		{
+			return;
+		}
 		marker->setDrawableStatus(DRAWABLE_STATUS_NO_SAVE);
 		m_rallyPointDrawableID = marker->getID();
 	}
