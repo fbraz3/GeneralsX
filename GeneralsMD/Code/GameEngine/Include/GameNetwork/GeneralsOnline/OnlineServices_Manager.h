@@ -171,7 +171,9 @@ public:
     void loginWithRefreshToken(const std::string& refreshToken);
 
     // GeneralsX @feature fbraz3 19/09/2026 Silent synchronous token refresh using saved refresh token
-    bool refreshSessionTokenSync();
+    bool refreshSessionTokenSync(uint32_t knownVersion = 0);
+    uint32_t getAuthTokenVersion() const { return m_authTokenVersion.load(); }
+    int getOnlinePlayersCount() const { return m_onlinePlayersCount.load(); }
 
     void logout();
     bool ensureWebSocketConnected();
@@ -225,10 +227,22 @@ public:
     bool sendRawWebSocketPayload(const std::string& rawPayload);
     void changeNetworkRoom(int16_t roomID);
 
-    bool isLoggedIn() const { return m_isLoggedIn; }
-    std::string getAuthToken() const { return m_authToken; }
-    std::string getUsername() const { return m_username; }
-    int64_t getUserId() const { return m_userId; }
+    bool isLoggedIn() const {
+        std::lock_guard<std::mutex> lock(m_authMutex);
+        return m_isLoggedIn;
+    }
+    std::string getAuthToken() const {
+        std::lock_guard<std::mutex> lock(m_authMutex);
+        return m_authToken;
+    }
+    std::string getUsername() const {
+        std::lock_guard<std::mutex> lock(m_authMutex);
+        return m_username;
+    }
+    int64_t getUserId() const {
+        std::lock_guard<std::mutex> lock(m_authMutex);
+        return m_userId;
+    }
     const std::vector<NGMPLobby>& getLobbies() const { return m_lobbies; }
     const std::vector<NGMPLobbyPlayer>& getLobbyPlayers() const { return m_lobbyPlayers; }
 
@@ -253,6 +267,12 @@ private:
     NGMP_OnlineServicesManager& operator=(const NGMP_OnlineServicesManager&) = delete;
 
     std::unique_ptr<NetworkMesh> m_pNetworkMesh;
+
+    // GeneralsX @feature fbraz3 19/09/2026 Auth synchronization & single-flight refresh guards
+    mutable std::mutex m_authMutex;
+    std::mutex m_refreshMutex;
+    std::atomic<uint32_t> m_authTokenVersion{0};
+    std::atomic<int> m_onlinePlayersCount{0};
 
     bool m_initialized = false;
     bool m_isLoggedIn = false;

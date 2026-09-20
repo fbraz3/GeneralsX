@@ -7,7 +7,6 @@
 #include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GameSpyOverlay.h"
-#include "GameNetwork/GameSpy/MainMenuUtils.h"
 #include "Common/GlobalData.h"
 #include <cstdio>
 #include <thread>
@@ -207,11 +206,15 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                     std::string wsUri         = respJson.value("ws_uri",         "");
                     int64_t     userId        = respJson.value("user_id",        int64_t(-1));
 
-                    m_authToken  = sessionToken;
-                    m_username   = displayName;
-                    m_userId     = userId;
-                    m_wsUri      = wsUri;
-                    m_isLoggedIn = true;
+                    {
+                        std::lock_guard<std::mutex> lock(m_authMutex);
+                        m_authToken  = sessionToken;
+                        m_username   = displayName;
+                        m_userId     = userId;
+                        m_wsUri      = wsUri;
+                        m_isLoggedIn = true;
+                    }
+                    m_authTokenVersion++;
 
                     NGMP::SaveAuthToken(sessionToken);
                     NGMP::SaveRefreshToken(refreshToken);
@@ -389,13 +392,16 @@ void NGMP_OnlineServicesManager::loginWithRefreshToken(const std::string& refres
                     std::string displayName = jsonObject.value("display_name", "");
                     std::string wsUri = jsonObject.value("ws_uri", "");
 
-                    // 1 == LoginSuccess (EPendingLoginState::LoginSuccess)
                     if (pollResult == 1 && !sessionToken.empty()) {
-                        m_authToken  = sessionToken;
-                        m_username   = displayName;
-                        m_userId     = userId;
-                        m_wsUri      = wsUri;
-                        m_isLoggedIn = true;
+                        {
+                            std::lock_guard<std::mutex> lock(m_authMutex);
+                            m_authToken  = sessionToken;
+                            m_username   = displayName;
+                            m_userId     = userId;
+                            m_wsUri      = wsUri;
+                            m_isLoggedIn = true;
+                        }
+                        m_authTokenVersion++;
 
                         NGMP::SaveAuthToken(sessionToken);
                         if (!newRefreshToken.empty()) {
@@ -461,15 +467,24 @@ void NGMP_OnlineServicesManager::loginWithRefreshToken(const std::string& refres
 }
 
 void NGMP_OnlineServicesManager::logout() {
-    m_authToken.clear();
-    m_username.clear();
-    m_isLoggedIn = false;
+    {
+        std::lock_guard<std::mutex> lock(m_authMutex);
+        m_authToken.clear();
+        m_username.clear();
+        m_isLoggedIn = false;
+    }
+    m_authTokenVersion++;
     NGMP::SaveAuthToken("");
     NGMP::SaveRefreshToken("");
 }
 
 // GeneralsX @feature fbraz3 19/09/2026 Silent synchronous token refresh using saved refresh token
-bool NGMP_OnlineServicesManager::refreshSessionTokenSync() {
+bool NGMP_OnlineServicesManager::refreshSessionTokenSync(uint32_t knownVersion) {
+    std::lock_guard<std::mutex> refreshLock(m_refreshMutex);
+    if (knownVersion != 0 && m_authTokenVersion.load() > knownVersion) {
+        // Another thread already refreshed the session token
+        return true;
+    }
     std::string refreshToken = NGMP::LoadRefreshToken();
     if (refreshToken.empty()) {
         return false;
@@ -528,7 +543,11 @@ bool NGMP_OnlineServicesManager::refreshSessionTokenSync() {
             std::string sessionToken = jsonObject.value("session_token", "");
             std::string newRefreshToken = jsonObject.value("refresh_token", "");
             if (pollResult == 1 && !sessionToken.empty()) {
-                m_authToken = sessionToken;
+                {
+                    std::lock_guard<std::mutex> lock(m_authMutex);
+                    m_authToken = sessionToken;
+                }
+                m_authTokenVersion++;
                 NGMP::SaveAuthToken(sessionToken);
                 if (!newRefreshToken.empty()) {
                     NGMP::SaveRefreshToken(newRefreshToken);
@@ -567,8 +586,9 @@ void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
             NGMP::Internal::CurlResponse response;
             struct curl_slist* headers = nullptr;
             headers = curl_slist_append(headers, "Content-Type: application/json");
-            if (!m_authToken.empty()) {
-                std::string authHeader = "Authorization: Bearer " + m_authToken;
+            std::string token = getAuthToken();
+            if (!token.empty()) {
+                std::string authHeader = "Authorization: Bearer " + token;
                 headers = curl_slist_append(headers, authHeader.c_str());
             }
 
@@ -590,6 +610,7 @@ void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
             return res;
         };
 
+        uint32_t tokenVersion = getAuthTokenVersion();
         std::string responseText;
         long httpCode = 0;
         CURLcode res = fetchStats(responseText, httpCode);
@@ -598,7 +619,7 @@ void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
         if (httpCode == 401) {
             fprintf(stderr, "[NGMP] GlobalStats returned 401 Unauthorized, attempting silent session refresh...\n");
             fflush(stderr);
-            if (refreshSessionTokenSync()) {
+            if (refreshSessionTokenSync(tokenVersion)) {
                 res = fetchStats(responseText, httpCode);
             }
         }
@@ -607,10 +628,10 @@ void NGMP_OnlineServicesManager::requestGlobalStatsAsync() {
             try {
                 auto jsonResponse = json::parse(responseText);
 
-                // GeneralsX @feature fbraz3 19/09/2026 Bind online player count to GUI
+                // GeneralsX @feature fbraz3 19/09/2026 Store online player count in synchronized state (main thread applies to GUI)
                 if (jsonResponse.contains("online_players") && jsonResponse["online_players"].is_number()) {
                     int onlinePlayers = jsonResponse["online_players"].get<int>();
-                    HandleNumPlayersOnline(onlinePlayers);
+                    m_onlinePlayersCount.store(onlinePlayers);
                 }
 
                 auto globalStatsJson = jsonResponse.value("globalstats", json::object());
@@ -678,8 +699,9 @@ void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
             NGMP::Internal::CurlResponse response;
             struct curl_slist* headers = nullptr;
             headers = curl_slist_append(headers, "Content-Type: application/json");
-            if (!m_authToken.empty()) {
-                std::string authHeader = "Authorization: Bearer " + m_authToken;
+            std::string token = getAuthToken();
+            if (!token.empty()) {
+                std::string authHeader = "Authorization: Bearer " + token;
                 headers = curl_slist_append(headers, authHeader.c_str());
             }
 
@@ -701,6 +723,7 @@ void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
             return res;
         };
 
+        uint32_t tokenVersion = getAuthTokenVersion();
         std::string responseText;
         long httpCode = 0;
         CURLcode res = fetchPlayerStats(responseText, httpCode);
@@ -709,7 +732,7 @@ void NGMP_OnlineServicesManager::requestPlayerStatsAsync(int64_t userID) {
         if (httpCode == 401) {
             fprintf(stderr, "[NGMP] PlayerStats returned 401 Unauthorized, attempting silent session refresh...\n");
             fflush(stderr);
-            if (refreshSessionTokenSync()) {
+            if (refreshSessionTokenSync(tokenVersion)) {
                 res = fetchPlayerStats(responseText, httpCode);
             }
         }

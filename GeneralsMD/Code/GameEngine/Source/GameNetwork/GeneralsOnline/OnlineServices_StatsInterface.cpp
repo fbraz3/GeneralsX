@@ -103,8 +103,9 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 	std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
 	std::string url = NGMP::GetAPIEndpoint("Lobby/Outcome");
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
 
-	std::thread([url, payloadStr, authToken]() {
+	std::thread([url, payloadStr, authToken, tokenVersion]() {
 		CURL* curl = curl_easy_init();
 		if (!curl) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: failed to initialize curl\n");
@@ -141,7 +142,7 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		if (httpCode == 401) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: 401 Unauthorized (session expired mid-game), refreshing token...\n");
 			fflush(stderr);
-			if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync()) {
+			if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
 				std::string freshToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 				curl = curl_easy_init();
 				if (curl) {

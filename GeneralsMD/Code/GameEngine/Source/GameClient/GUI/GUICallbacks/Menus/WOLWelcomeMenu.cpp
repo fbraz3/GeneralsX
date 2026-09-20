@@ -857,6 +857,7 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 	// GeneralsX @feature Re-render global stats and online players dynamically whenever new stats are fetched from server
 	uint32_t currentStatsVersion = NGMP_OnlineServicesManager::getInstance().getGlobalStatsVersion();
 	if (NGMP_OnlineServicesManager::getInstance().hasGlobalStats() && (!statsRendered || s_lastRenderedStatsVersion != currentStatsVersion)) {
+		HandleNumPlayersOnline(NGMP_OnlineServicesManager::getInstance().getOnlinePlayersCount());
 		updateOverallStats();
 		updateNumPlayersOnline();
 		statsRendered = true;
