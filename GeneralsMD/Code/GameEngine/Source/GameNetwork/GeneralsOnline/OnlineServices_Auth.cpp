@@ -492,7 +492,20 @@ bool NGMP_OnlineServicesManager::refreshSessionTokenSync(uint32_t knownVersion) 
 
     std::string url = NGMP::GetAPIEndpoint("LoginWithToken");
     bool isHttps = (url.rfind("https://", 0) == 0);
-    bool isSafeLoopback = (url.rfind("http://localhost", 0) == 0 || url.rfind("http://127.0.0.1", 0) == 0);
+    bool isSafeLoopback = false;
+    if (url.rfind("http://", 0) == 0) {
+        size_t hostStart = 7;
+        size_t pathStart = url.find_first_of("/?", hostStart);
+        std::string authority = (pathStart == std::string::npos) ? url.substr(hostStart) : url.substr(hostStart, pathStart - hostStart);
+        // Reject userinfo (e.g. user:pass@host or localhost@evil.example)
+        if (authority.find('@') == std::string::npos) {
+            size_t portPos = authority.find(':');
+            std::string host = (portPos == std::string::npos) ? authority : authority.substr(0, portPos);
+            if (host == "localhost" || host == "127.0.0.1" || host == "[::1]") {
+                isSafeLoopback = true;
+            }
+        }
+    }
     if (!isHttps && !isSafeLoopback) {
         fprintf(stderr, "[NGMP] Security check: refusing to transmit refresh token over cleartext HTTP (%s)\n", NGMP::SanitizeURL(url).c_str());
         fflush(stderr);
