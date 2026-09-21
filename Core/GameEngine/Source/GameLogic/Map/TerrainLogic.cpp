@@ -2833,14 +2833,18 @@ void TerrainLogic::flattenTerrain(Object *obj)
 // ------------------------------------------------------------------------------------------------
 void TerrainLogic::createCraterInTerrain(Object *obj)
 {
-	if (obj->getGeometryInfo().getIsSmall())
+	if (!obj || obj->getGeometryInfo().getIsSmall())
 		return;
 
 	const Coord3D *pos = obj->getPosition();
-  Real radius = obj->getGeometryInfo().getMajorRadius();
+	if (!pos)
+		return;
 
-  if ( radius <= 0.0f )
-    return; // sanity
+	Real radius = obj->getGeometryInfo().getMajorRadius();
+
+	// GeneralsX @bugfix BenderAI 20/09/2026 Guard against non-finite coords or invalid radius before floor conversion
+	if (radius <= 0.0f || !std::isfinite(radius) || !std::isfinite(pos->x) || !std::isfinite(pos->y))
+		return; // sanity
 
   ICoord2D iMin, iMax;
   iMin.x = REAL_TO_INT_FLOOR( ( pos->x - radius ) / MAP_XY_FACTOR );
