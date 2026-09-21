@@ -442,6 +442,9 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 					try {
 						(*parse)( this );
 
+					// GeneralsX @bugfix Copilot 20/09/2026 Preserve the innermost INI field diagnostic.
+					} catch (const INIException&) {
+						throw;
 					} catch (...) {
 						DEBUG_CRASH(("Error parsing block '%s' in INI file '%s'", token, m_filename.str()) );
 						char buff[1024];
@@ -1585,6 +1588,9 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 
 						(*parse)( this, what, (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData );
 
+						// GeneralsX @bugfix Copilot 20/09/2026 Do not replace nested field errors with an enclosing module.
+						} catch (const INIException&) {
+							throw;
 						} catch (...) {
 							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
 																 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
@@ -1683,6 +1689,11 @@ Type scanType(std::string_view token)
 
                 if (ec != std::errc{})
                 {
+                        // GeneralsX @bugfix Copilot 20/09/2026 Keep numeric conversion failures visible in release builds.
+                        fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
+                                static_cast<int>(token.size()), token.data(),
+                                ec == std::errc::result_out_of_range ? "out of range" : "invalid number");
+                        fflush(stderr);
                         throw INI_INVALID_DATA;
                 }
 
@@ -1696,6 +1707,11 @@ Type scanType(std::string_view token)
 
 	if (ec != std::errc{})
 	{
+		// GeneralsX @bugfix Copilot 20/09/2026 Identify overflowing mod values without changing their interpretation.
+		fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
+			static_cast<int>(token.size()), token.data(),
+			ec == std::errc::result_out_of_range ? "out of range" : "invalid number");
+		fflush(stderr);
 		throw INI_INVALID_DATA;
 	}
 
