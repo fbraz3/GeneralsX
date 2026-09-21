@@ -2833,7 +2833,7 @@ void TerrainLogic::flattenTerrain(Object *obj)
 // ------------------------------------------------------------------------------------------------
 void TerrainLogic::createCraterInTerrain(Object *obj)
 {
-	if (!obj || obj->getGeometryInfo().getIsSmall())
+	if (!obj || obj->getGeometryInfo().getIsSmall() || !TheTerrainVisual)
 		return;
 
 	const Coord3D *pos = obj->getPosition();
@@ -2842,42 +2842,54 @@ void TerrainLogic::createCraterInTerrain(Object *obj)
 
 	Real radius = obj->getGeometryInfo().getMajorRadius();
 
-	// GeneralsX @bugfix BenderAI 20/09/2026 Guard against non-finite coords or invalid radius before floor conversion
+	// GeneralsX @bugfix BenderAI 20/09/2026 Guard against non-finite coords or invalid radius
 	if (radius <= 0.0f || !std::isfinite(radius) || !std::isfinite(pos->x) || !std::isfinite(pos->y))
 		return; // sanity
 
-  ICoord2D iMin, iMax;
-  iMin.x = REAL_TO_INT_FLOOR( ( pos->x - radius ) / MAP_XY_FACTOR );
-  iMin.y = REAL_TO_INT_FLOOR( ( pos->y - radius ) / MAP_XY_FACTOR );
-  iMax.x = REAL_TO_INT_FLOOR( ( pos->x + radius ) / MAP_XY_FACTOR );
-	iMax.y = REAL_TO_INT_FLOOR( ( pos->y + radius ) / MAP_XY_FACTOR );
+	Region3D mapExtent;
+	getExtent(&mapExtent);
 
-  Real deltaX, deltaY;
+	if (mapExtent.hi.x <= mapExtent.lo.x || mapExtent.hi.y <= mapExtent.lo.y)
+		return;
 
-	for (Int i = iMin.x; i <= iMax.x; i++ )
-  {
-		for ( Int j=0; j <= iMax.y; j++ )
-    {
-			deltaX = ( i * MAP_XY_FACTOR ) - pos->x;
-			deltaY = ( j * MAP_XY_FACTOR ) - pos->y;
+	// Clamp floating-point bounds to valid map extent before floor conversion
+	const Real minX = MAX(mapExtent.lo.x, pos->x - radius);
+	const Real maxX = MIN(mapExtent.hi.x, pos->x + radius);
+	const Real minY = MAX(mapExtent.lo.y, pos->y - radius);
+	const Real maxY = MIN(mapExtent.hi.y, pos->y + radius);
 
-      Real distance = WWMath::SqrtOrigin( sqr( deltaX ) + sqr( deltaY ) );
+	if (minX > maxX || minY > maxY)
+		return;
 
-			if ( distance < radius ) //inside circle
-      {
+	ICoord2D iMin, iMax;
+	iMin.x = REAL_TO_INT_FLOOR(minX / MAP_XY_FACTOR);
+	iMin.y = REAL_TO_INT_FLOOR(minY / MAP_XY_FACTOR);
+	iMax.x = REAL_TO_INT_FLOOR(maxX / MAP_XY_FACTOR);
+	iMax.y = REAL_TO_INT_FLOOR(maxY / MAP_XY_FACTOR);
+
+	Real deltaX, deltaY;
+
+	for (Int i = iMin.x; i <= iMax.x; i++)
+	{
+		for (Int j = iMin.y; j <= iMax.y; j++)
+		{
+			deltaX = (i * MAP_XY_FACTOR) - pos->x;
+			deltaY = (j * MAP_XY_FACTOR) - pos->y;
+
+			Real distance = WWMath::SqrtOrigin(sqr(deltaX) + sqr(deltaY));
+
+			if (distance < radius) // inside circle
+			{
 				ICoord2D gridPos;
 				gridPos.x = i;
 				gridPos.y = j;
 
-
-        Real displacementAmount = radius * (1.0f - distance / radius );
-
-        Int targetHeight = MAX( 1, TheTerrainVisual->getRawMapHeight( &gridPos ) - displacementAmount );
-
-				TheTerrainVisual->setRawMapHeight( &gridPos, targetHeight );
+				Real displacementAmount = radius * (1.0f - distance / radius);
+				Int targetHeight = MAX(1, TheTerrainVisual->getRawMapHeight(&gridPos) - displacementAmount);
+				TheTerrainVisual->setRawMapHeight(&gridPos, targetHeight);
 			}
-    }
-  }
+		}
+	}
 
 }
 
