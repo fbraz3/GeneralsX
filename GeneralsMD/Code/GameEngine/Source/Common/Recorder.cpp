@@ -1059,7 +1059,10 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 			//
 			// TheSuperHackers @tweak helmutbuhler 03/04/2025
 			// More than 20 years later, but finally fixed and re-enabled!
-			TheInGameUI->message("GUI:CRCMismatch");
+			// GeneralsX @bugfix Copilot 20/09/2026 Replay CRC failures are not live multiplayer connection failures.
+			TheInGameUI->messageNoFormat(TheGameText->FETCH_OR_SUBSTITUTE(
+				"GUI:ReplayCRCMismatch",
+				L"This replay is out of sync with the recorded game. Playback may no longer match the original."));
 
 			// TheSuperHackers @info helmutbuhler 03/04/2025
 			// Note: We subtract the queue size from the frame number. This way we calculate the correct frame
