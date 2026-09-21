@@ -181,6 +181,11 @@ modules:
           export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
         fi
 
+        # GeneralsX @bugfix felipebraz 16/09/2026 Honor user-supplied CNC_GENERALS_ZH_PATH if provided (Issue #305)
+        if [[ -n "${CNC_GENERALS_ZH_PATH:-}" && -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
+          export CNC_GENERALS_INSTALLPATH="${CNC_GENERALS_ZH_PATH}"
+        fi
+
         if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
           for candidate in \
             "${HOME}/GeneralsX/GeneralsZH" \
@@ -200,7 +205,9 @@ modules:
         fi
 
         cd "${CNC_GENERALS_INSTALLPATH}"
-        export CNC_GENERALS_ZH_PATH="${CNC_GENERALS_INSTALLPATH}"
+        if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]]; then
+          export CNC_GENERALS_ZH_PATH="${CNC_GENERALS_INSTALLPATH}"
+        fi
 
         # SagePatch INI override: the engine now auto-creates SagePatch.ini with
         # defaults in the user data directory on first run.

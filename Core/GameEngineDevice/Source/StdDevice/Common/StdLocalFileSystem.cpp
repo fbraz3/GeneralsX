@@ -281,10 +281,15 @@ Bool StdLocalFileSystem::doesFileExist(const Char *filename) const
 void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList & filenameList, Bool searchSubdirectories) const
 {
 
+	// GeneralsX @bugfix felipebraz 16/09/2026 Ensure directory separator between original and current path
 	AsciiString asciisearch;
 	asciisearch = originalDirectory;
+	if (asciisearch.isNotEmpty() && currentDirectory.isNotEmpty() && !asciisearch.endsWith("/") && !asciisearch.endsWith("\\")) {
+		asciisearch.concat('/');
+	}
 	asciisearch.concat(currentDirectory);
 	auto searchExt = std::filesystem::path(searchName.str()).extension();
+	std::string searchExtStr = searchExt.string();
 	if (asciisearch.isEmpty()) {
 		asciisearch = ".";
 	}
@@ -310,7 +315,14 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 
 	while (!done)	{
 		std::string filenameStr = iter->path().filename().string();
-		if (!iter->is_directory() && iter->path().extension() == searchExt &&
+		std::string fileExtStr = iter->path().extension().string();
+		// GeneralsX @bugfix felipebraz 16/09/2026 Case-insensitive extension comparison for Linux (e.g. .BIG vs .big)
+#ifdef _WIN32
+		const Bool extMatches = (_stricmp(fileExtStr.c_str(), searchExtStr.c_str()) == 0);
+#else
+		const Bool extMatches = (strcasecmp(fileExtStr.c_str(), searchExtStr.c_str()) == 0);
+#endif
+		if (!iter->is_directory() && extMatches &&
 			(strcmp(filenameStr.c_str(), ".") != 0 && strcmp(filenameStr.c_str(), "..") != 0)) {
 			// if we haven't already, add this filename to the list.
 			// a stl set should only allow one copy of each filename
@@ -339,7 +351,13 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 			std::string filenameStr = iter->path().filename().string();
 			if(iter->is_directory() &&
 				(strcmp(filenameStr.c_str(), ".") != 0 && strcmp(filenameStr.c_str(), "..") != 0)) {
-				AsciiString tempsearchstr(filenameStr.c_str());
+				// GeneralsX @bugfix felipebraz 16/09/2026 Maintain cumulative relative path for subdirectory traversal
+				AsciiString tempsearchstr = currentDirectory;
+				if (tempsearchstr.isNotEmpty() && !tempsearchstr.endsWith("/") && !tempsearchstr.endsWith("\\")) {
+					tempsearchstr.concat('/');
+				}
+				tempsearchstr.concat(filenameStr.c_str());
+				tempsearchstr.concat('/');
 
 				// recursively add files in subdirectories if required.
 				getFileListInDirectory(tempsearchstr, originalDirectory, searchName, filenameList, searchSubdirectories);
