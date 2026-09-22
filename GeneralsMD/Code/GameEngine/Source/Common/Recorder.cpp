@@ -416,6 +416,7 @@ void RecorderClass::updatePlayback() {
  * reaching the end of the playback file.
  */
 void RecorderClass::stopPlayback() {
+	// GeneralsX @bugfix fbraz3 22/09/2026 Reset playback frame state and mode on termination (#315, #325)
 	m_nextFrame = -1;
 	m_mode = RECORDERMODETYPE_NONE;
 	if (m_file != nullptr) {
@@ -1697,6 +1698,7 @@ RecorderClass::CullBadCommandsResult RecorderClass::cullBadCommands() {
 		{
 			result.hasClearGameDataMessage = true;
 		}
+		// GeneralsX @bugfix fbraz3 22/09/2026 Track pending MSG_NEW_GAME to defer frame 0 replay commands (#315, #325)
 		else if (msg->getType() == GameMessage::MSG_NEW_GAME)
 		{
 			result.hasNewGameMessage = true;
