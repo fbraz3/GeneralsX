@@ -178,8 +178,9 @@ protected:
 
 	struct CullBadCommandsResult
 	{
-		CullBadCommandsResult() : hasClearGameDataMessage(false) {}
+		CullBadCommandsResult() : hasClearGameDataMessage(false), hasNewGameMessage(false) {}
 		Bool hasClearGameDataMessage;
+		Bool hasNewGameMessage;
 	};
 
 	CullBadCommandsResult cullBadCommands(); ///< prevent the user from giving mouse commands that he shouldn't be able to do during playback.
