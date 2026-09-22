@@ -375,6 +375,12 @@ void RecorderClass::update() {
  * Do the update for the next frame of this playback.
  */
 void RecorderClass::updatePlayback() {
+	// GeneralsX @bugfix fbraz3 22/09/2026 Prevent queuing replay playback commands before the map has finished loading (#315)
+	if (!TheGameLogic || !TheGameLogic->isInReplayGame() || TheGameLogic->isLoadingMap() || TheGameLogic->isClearingGameData())
+	{
+		return;
+	}
+
 	// Remove any bad commands that have been inserted by the local user that shouldn't be
 	// executed during playback.
 	CullBadCommandsResult result = cullBadCommands();
@@ -1076,6 +1082,13 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 
 			// Print Mismatch in case we are simulating replays from console.
 			printf("CRC Mismatch in Frame %d\n", mismatchFrame);
+			// GeneralsX @bugfix fbraz 05/05/2026 Print detailed mismatch info for headless replay diagnostics; distinguishes game-state desync from map-not-found failures.
+			fprintf(stderr, "[GeneralsX] REPLAY_CRC_MISMATCH frame=%u inGame=0x%08X replay=0x%08X\n",
+				mismatchFrame, playbackCRC, newCRC);
+			fprintf(stderr, "[GeneralsX] This replay is incompatible with the current map/game-code state.\n");
+#if DEEP_CRC_TO_MEMORY
+			TheGameLogic->writeCRCBuffersToDisk(mismatchFrame);
+#endif
 
 			// TheSuperHackers @tweak Pause the game on mismatch.
 			// But not when a window with focus is opened, because that can make resuming difficult.
