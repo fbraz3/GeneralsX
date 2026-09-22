@@ -1086,6 +1086,7 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 			fprintf(stderr, "[GeneralsX] REPLAY_CRC_MISMATCH frame=%u inGame=0x%08X replay=0x%08X\n",
 				mismatchFrame, playbackCRC, newCRC);
 			fprintf(stderr, "[GeneralsX] This replay is incompatible with the current map/game-code state.\n");
+			fflush(stderr);
 #if DEEP_CRC_TO_MEMORY
 			TheGameLogic->writeCRCBuffersToDisk(mismatchFrame);
 #endif
