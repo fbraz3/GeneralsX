@@ -67,35 +67,55 @@ If you run into any problems, please [open an issue](https://github.com/fbraz3/G
 
 # Getting Started
 
-Follow the [Installation Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) to set up GeneralsX on your platform.
+GeneralsX lets you play **Command & Conquer: Generals** and **Zero Hour** natively on modern systems with cross-platform online multiplayer.
 
-## Community Ports based on GeneralsX
+### 📦 Which file should I download?
+* **macOS (Apple Silicon)**: Download `macOS-GeneralsXZH.zip` (Zero Hour) or `macOS-GeneralsX.zip` (Generals).
+* **Linux**: Download `Linux-GeneralsXZH.flatpak` (Zero Hour) or `Linux-GeneralsX.flatpak` (Generals).
+* **Windows**: Download `Windows-GeneralsXZH.zip` (Zero Hour) or `Windows-GeneralsX.zip` (Generals).
 
-If you like GeneralsX, please also take a look into these projects
+👉 Follow the [Installation & Setup Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) on our Wiki to set up your original game data files.
 
-* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [ammaarreshi](https://github.com/ammaarreshi)
-* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [fadi-labib](https://github.com/fadi-labib)
-* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - WebAssembly Browser port by [ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)
+### 🌐 Cross-Platform Multiplayer
+Zero Hour includes built-in online lobbies via **GeneralsOnline (NGMP)**. Players on macOS, Linux, and Windows can host, join, and play together without GameSpy, Hamachi, or third-party VLAN tools.
+
+---
 
 # What's New
 
 ### 🌟 <Custom Highlight / Announcement> (Only if requested or applicable)
 ...
 
-### 🎯 Cross-Platform Multiplayer & Determinism
+### 🌐 Cross-Platform Multiplayer & Networking
 - Feature / Fix description ([#PR](https://github.com/fbraz3/GeneralsX/pull/PR) by [@author](https://github.com/author)).
 
-### 🎨 Graphics & Rendering Polish
+### 🎯 Engine, Gameplay & Determinism
 - ...
 
 ### 🖥️ UI & Quality of Life
 - ...
 
-### 🔊 Audio Engine (OpenAL & MiniAudio) (If applicable)
+### 🎨 Graphics & Visuals (DXVK / Vulkan)
 - ...
 
-### 🧠 Gameplay & Engine Fixes (Upstream Sync)
+### 🔊 Audio & Video Subsystems (MiniAudio / OpenAL / FFmpeg)
 - ...
+
+### 🚀 Platform, Packaging & CI (macOS, Linux, Windows)
+- ...
+
+---
+
+## 📱 Ecosystem & Community Ports
+
+If you enjoy GeneralsX, check out these community ports powered by the engine:
+
+* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [@ammaarreshi](https://github.com/ammaarreshi)
+* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [@fadi-labib](https://github.com/fadi-labib)
+* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - Browser port by [@ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)
+
+---
+
 ## Changelog
 - <commit/pr list>
 
