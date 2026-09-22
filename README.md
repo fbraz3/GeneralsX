@@ -22,7 +22,7 @@
 ## ✨ Highlights
 
 - 🌐 **Cross-Play Online Multiplayer**: Native online matchmaking and lobbies powered by **GeneralsOnline (NGMP)**. Play seamlessly across **macOS, Linux, and Windows** without GameSpy, Hamachi, or VLAN tools.
-- 💻 **Native Modern Performance**: Runs natively on **macOS** (Apple Silicon M-series & Intel), **Linux** (x86_64), and **Windows**. No legacy 32-bit baggage.
+- 💻 **Native Modern Performance**: Runs natively on **macOS** (Apple Silicon), **Linux** (x86_64), and **Windows**. No legacy 32-bit baggage.
 - 🌋 **Modern Graphics**: Replaces the ancient DirectX 8 backend with Vulkan translation via DXVK for smooth performance on modern monitors and GPUs.
 - 🔊 **Updated Audio & Video**: Crystal-clear cross-platform audio (OpenAL / MiniAudio) and full video cinematics support via FFmpeg.
 - 🎯 **100% Retail Compatibility**: Full support for original singleplayer campaigns, Skirmish vs AI, replays, and community mods.
@@ -60,7 +60,7 @@ The flexibility and modern foundation of GeneralsX have enabled several communit
 GeneralsX uses CMake with predefined presets for supported platforms:
 
 ```bash
-# macOS (Apple Silicon / Intel)
+# macOS (Apple Silicon)
 cmake --preset macos-vulkan
 cmake --build build/macos-vulkan --target z_generals
 
