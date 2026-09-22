@@ -39,11 +39,33 @@ private:
 	GameSlot m_ReplaySlot[MAX_SLOTS];
 
 public:
-	ReplayGameInfo()
+	ReplayGameInfo() : m_localSlotNum(-1)
 	{
 		for (Int i = 0; i< MAX_SLOTS; ++i)
 			setSlotPointer(i, &m_ReplaySlot[i]);
 	}
+
+	virtual void reset() override
+	{
+		GameInfo::reset();
+		m_localSlotNum = -1;
+	}
+
+	virtual Int getLocalSlotNum() const override
+	{
+		DEBUG_ASSERTCRASH(isInGame(), ("Looking for local game slot while not in game"));
+		if (!isInGame())
+		{
+			return -1;
+		}
+
+		return m_localSlotNum;
+	}
+
+	void setLocalSlotNum(Int slotNum) { m_localSlotNum = slotNum; }
+
+private:
+	Int m_localSlotNum;
 };
 
 enum RecorderModeType CPP_11(: Int) {

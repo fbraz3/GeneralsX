@@ -2748,14 +2748,23 @@ void ControlBar::showRallyPoint(const Coord3D* loc)
 	// create a rally point drawable if necessary
 	if (m_rallyPointDrawableID == INVALID_DRAWABLE_ID)
 	{
+		// Upstream reference: CryoTheRenegade, PR #3304 https://github.com/TheSuperHackers/GeneralsGameCode/pull/3304
+		// GeneralsX @bugfix CryoTheRenegade 18/09/2026 Handle a missing RallyPointMarker template
 		const ThingTemplate* ttn = TheThingFactory->findTemplate("RallyPointMarker");
+		if (!ttn)
+		{
+			return;
+		}
+
 		marker = TheThingFactory->newDrawable(ttn);
 		DEBUG_ASSERTCRASH(marker, ("showRallyPoint: Unable to create rally point drawable"));
-		if (marker)
+		// GeneralsX @bugfix BenderAI 20/09/2026 Guard against null marker in release builds
+		if (!marker)
 		{
-			marker->setDrawableStatus(DRAWABLE_STATUS_NO_SAVE);
-			m_rallyPointDrawableID = marker->getID();
+			return;
 		}
+		marker->setDrawableStatus(DRAWABLE_STATUS_NO_SAVE);
+		m_rallyPointDrawableID = marker->getID();
 	}
 	else
 		marker = TheGameClient->findDrawableByID(m_rallyPointDrawableID);

@@ -97,17 +97,20 @@ void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 		{
 			if (m_currentGame->getIP(0) == m_localIP)
 			{
-				LANMessage reply;
-				fillInLANMessage( &reply );
-				reply.messageType = LANMessage::MSG_GAME_ANNOUNCE;
 				AsciiString gameOpts = GenerateGameOptionsString();
-				strlcpy(reply.GameInfo.options, gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
-				// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
-				CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
-				reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
-				reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
+				if (!gameOpts.isEmpty())
+				{
+					LANMessage reply;
+					fillInLANMessage( &reply );
+					reply.messageType = LANMessage::MSG_GAME_ANNOUNCE;
+					strlcpy(reply.GameInfo.options, gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
+					// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+					CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
+					reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
+					reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
 
-				sendMessage(&reply);
+					sendMessage(&reply);
+				}
 			}
 			else
 			{
@@ -252,11 +255,16 @@ void LANAPI::handleRequestGameInfo( LANMessage *msg, UnsignedInt senderIP )
 	{
 		if (m_currentGame->getIP(0) == m_localIP || (m_currentGame->isGameInProgress() && TheNetwork && TheNetwork->isPacketRouter())) // if we're in game we should reply if we're the packet router
 		{
+			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
+			if (gameOpts.isEmpty())
+			{
+				return;
+			}
+
 			LANMessage reply;
 			fillInLANMessage( &reply );
 			reply.messageType = LANMessage::MSG_GAME_ANNOUNCE;
 
-			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
 			strlcpy(reply.GameInfo.options,gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
 			// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 			CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
