@@ -295,6 +295,11 @@ void GameLogic::clearGameData( Bool showScoreScreen )
 
 	TheGameEngine->reset();
 	setGameMode(GAME_NONE);
+	// GeneralsX @bugfix fbraz3 22/09/2026 Ensure replay playback is terminated when match data is cleared (#315)
+	if (TheRecorder && TheRecorder->isPlaybackMode())
+	{
+		TheRecorder->stopPlayback();
+	}
 	// GeneralsX @feature felipebraz 17/09/2026 Reset simulation tick rate and FPS cap to global defaults (#281)
 	TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
 	TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);

@@ -376,15 +376,16 @@ void RecorderClass::update() {
  * Do the update for the next frame of this playback.
  */
 void RecorderClass::updatePlayback() {
+
 	// Remove any bad commands that have been inserted by the local user that shouldn't be
 	// executed during playback.
 	CullBadCommandsResult result = cullBadCommands();
 
-	if (result.hasClearGameDataMessage) {
-		// TheSuperHackers @bugfix Stop appending more commands if the replay playback is about to end.
-		// Previously this would be able to append more commands, which could have unintended consequences,
-		// such as crashing the game when a MSG_PLACE_BEACON is appended after MSG_CLEAR_GAME_DATA.
-		// MSG_CLEAR_GAME_DATA is supposed to be processed later this frame, which will then stop this playback.
+	// GeneralsX @bugfix fbraz3 22/09/2026 Defer queuing frame 0 replay commands while MSG_NEW_GAME is pending (#315).
+	// When playback starts, MSG_NEW_GAME sits in TheCommandList. Appending frame 0 commands behind it causes
+	// them to execute in processCommandList before the map script engine updates, which corrupts initial AIGroup IDs.
+	// Also stop appending more commands if MSG_CLEAR_GAME_DATA is pending at match completion.
+	if (result.hasClearGameDataMessage || result.hasNewGameMessage) {
 		return;
 	}
 
@@ -415,6 +416,9 @@ void RecorderClass::updatePlayback() {
  * reaching the end of the playback file.
  */
 void RecorderClass::stopPlayback() {
+	// GeneralsX @bugfix fbraz3 22/09/2026 Reset playback frame state and mode on termination (#315, #325)
+	m_nextFrame = -1;
+	m_mode = RECORDERMODETYPE_NONE;
 	if (m_file != nullptr) {
 		m_file->close();
 		m_file = nullptr;
@@ -1049,9 +1053,17 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 	if (isLocalPlayer)
 	{
 		UnsignedInt playbackCRC = m_crcInfo->readCRC();
-		//DEBUG_LOG(("RecorderClass::handleCRCMessage() - Comparing CRCs of InGame:%8.8X Replay:%8.8X Frame:%d from Player %d",
-		//	playbackCRC, newCRC, TheGameLogic->getFrame()-m_crcInfo->GetQueueSize()-1, playerIndex));
-		if (TheGameLogic->getFrame() > 0 && newCRC != playbackCRC && !m_crcInfo->sawCRCMismatch())
+		// TheSuperHackers @info helmutbuhler 03/04/2025
+		// Note: We subtract the queue size from the frame number. This way we calculate the correct frame
+		// the mismatch first happened in case the NetCRCInterval is set to 1 during the game.
+		const UnsignedInt mismatchFrame = (TheGameLogic->getFrame() > m_crcInfo->GetQueueSize())
+			? (TheGameLogic->getFrame() - m_crcInfo->GetQueueSize() - 1)
+			: 0;
+
+		// GeneralsX @bugfix fbraz3 22/09/2026 Require mismatchFrame > 0 to report desync (#315).
+		// Frame 0 CRC compares uninitialized pre-simulation state where subtle mode differences
+		// (e.g. GAME_SKIRMISH vs GAME_REPLAY AIGroup allocation order) cause false positive mismatches.
+		if (mismatchFrame > 0 && newCRC != playbackCRC && !m_crcInfo->sawCRCMismatch())
 		{
 			//Kris: Patch 1.01 November 10, 2003 (integrated changes from Matt Campbell)
 			// Since we don't seem to have any *visible* desyncs when replaying games, but get this warning
@@ -1066,11 +1078,6 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 				"GUI:ReplayCRCMismatch",
 				L"This replay is out of sync with the recorded game. Playback may no longer match the original."));
 
-			// TheSuperHackers @info helmutbuhler 03/04/2025
-			// Note: We subtract the queue size from the frame number. This way we calculate the correct frame
-			// the mismatch first happened in case the NetCRCInterval is set to 1 during the game.
-			const UnsignedInt mismatchFrame = TheGameLogic->getFrame() - m_crcInfo->GetQueueSize() - 1;
-
 			// Now also prints a UI message for it.
 			const UnicodeString mismatchDetailsStr = TheGameText->FETCH_OR_SUBSTITUTE("GUI:CRCMismatchDetails", L"InGame:%8.8X Replay:%8.8X Frame:%d");
 			TheInGameUI->message(mismatchDetailsStr, playbackCRC, newCRC, mismatchFrame);
@@ -1084,6 +1091,10 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 			fprintf(stderr, "[GeneralsX] REPLAY_CRC_MISMATCH frame=%u inGame=0x%08X replay=0x%08X\n",
 				mismatchFrame, playbackCRC, newCRC);
 			fprintf(stderr, "[GeneralsX] This replay is incompatible with the current map/game-code state.\n");
+			fflush(stderr);
+#if DEEP_CRC_TO_MEMORY
+			TheGameLogic->writeCRCBuffersToDisk(mismatchFrame);
+#endif
 
 			// TheSuperHackers @tweak Pause the game on mismatch.
 			// But not when a window with focus is opened, because that can make resuming difficult.
@@ -1686,6 +1697,11 @@ RecorderClass::CullBadCommandsResult RecorderClass::cullBadCommands() {
 		else if (msg->getType() == GameMessage::MSG_CLEAR_GAME_DATA)
 		{
 			result.hasClearGameDataMessage = true;
+		}
+		// GeneralsX @bugfix fbraz3 22/09/2026 Track pending MSG_NEW_GAME to defer frame 0 replay commands (#315, #325)
+		else if (msg->getType() == GameMessage::MSG_NEW_GAME)
+		{
+			result.hasNewGameMessage = true;
 		}
 
 		msg = next;
