@@ -74,7 +74,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: vcpkg-bincache-${{ runner.os }}-arm64-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json') }}
+          key: vcpkg-bincache-${{ runner.os }}-arm64-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**') }}
           restore-keys: |
             vcpkg-bincache-${{ runner.os }}-arm64-
 
@@ -379,7 +379,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-arm64-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json')) }}
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-arm64-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
 
       - name: Build ${{ matrix.game.value }}
         run: |
