@@ -61,8 +61,17 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
 
   include(ExternalProject)
   # GeneralsX @build BenderAI 13/03/2026 Add explicit source mode to keep remote branch updates deterministic by default.
-  set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/references/fbraz3-dxvk")
-  option(SAGE_DXVK_USE_LOCAL_FORK "Build DXVK from local references/fbraz3-dxvk checkout" OFF)
+  # GeneralsX @build fbraz 25/09/2026 Default local DXVK fork to workspace generalsx-dxvk repository.
+  if(NOT DEFINED DXVK_LOCAL_FORK_DIR)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/../generalsx-dxvk/.git")
+      set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/../generalsx-dxvk")
+    elseif(EXISTS "${CMAKE_SOURCE_DIR}/references/fbraz3-dxvk/.git")
+      set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/references/fbraz3-dxvk")
+    else()
+      set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/../generalsx-dxvk")
+    endif()
+  endif()
+  option(SAGE_DXVK_USE_LOCAL_FORK "Build DXVK from local generalsx-dxvk checkout" OFF)
 
   if(SAGE_DXVK_USE_LOCAL_FORK AND EXISTS "${DXVK_LOCAL_FORK_DIR}/.git")
     set(DXVK_SOURCE_DIR "${DXVK_LOCAL_FORK_DIR}")

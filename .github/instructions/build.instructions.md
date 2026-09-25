@@ -37,7 +37,7 @@ cmake --build build/mingw-w64-i686 --target z_generals
 
 ## DXVK Source of Truth (macOS)
 
-- DXVK fixes must live in `references/fbraz3-dxvk` and be pushed to the fork branch `generalsx-macos-v2.6`.
+- DXVK fixes must live in `generalsx-dxvk` and be pushed to the fork branch `generalsx-macos-v2.6`.
 - macOS build tracks that branch via CMake FetchContent (`UPDATE_DISCONNECTED FALSE`).
 - Local mode: `-DSAGE_DXVK_USE_LOCAL_FORK=ON` (disables update/fetch).
 

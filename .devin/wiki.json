@@ -21,7 +21,7 @@
       "author": "GeneralsX Team"
     },
     {
-      "content": "Build system uses CMake with presets defined in CMakePresets.json. Active release targets are 'linux64-deploy' and 'macos-vulkan'. Windows modern support is tracked under 'mingw-w64-i686' (Docker cross-compilation) and issue #29. DXVK source of truth is the fork branch generalsx-macos-v2.6 in references/fbraz3-dxvk. Scripts are structured under scripts/build/, scripts/qa/, scripts/env/, and scripts/tooling/.",
+      "content": "Build system uses CMake with presets defined in CMakePresets.json. Active release targets are 'linux64-deploy' and 'macos-vulkan'. Windows modern support is tracked under 'mingw-w64-i686' (Docker cross-compilation) and issue #29. DXVK source of truth is the fork branch generalsx-macos-v2.6 in generalsx-dxvk. Scripts are structured under scripts/build/, scripts/qa/, scripts/env/, and scripts/tooling/.",
       "author": "GeneralsX Team"
     }
   ],
@@ -33,7 +33,7 @@
     },
     {
       "title": "Repository Structure",
-      "purpose": "Document the top-level directory layout: GeneralsMD/ (Zero Hour, primary), Generals/ (base game, secondary), Core/ (shared engine), cmake/ (modular build scripts), scripts/ (build, QA, tooling), references/ (fbraz3-dxvk, GameClient, GameServer), resources/, flatpak/, assets/, and docs/.",
+      "purpose": "Document the top-level directory layout: GeneralsMD/ (Zero Hour, primary), Generals/ (base game, secondary), Core/ (shared engine), cmake/ (modular build scripts), scripts/ (build, QA, tooling), references/ (GameClient, GameServer), resources/, flatpak/, assets/, and docs/.",
       "parent": "Project Overview"
     },
     {
@@ -58,7 +58,7 @@
     },
     {
       "title": "Rendering & DXVK Integration",
-      "purpose": "Document the W3D rendering engine and DXVK DirectX 8 to Vulkan translation layer across Linux, macOS (via MoltenVK to Metal), and Windows. Explain the fork source-of-truth policy in references/fbraz3-dxvk (branch generalsx-macos-v2.6) and FetchContent build mechanics.",
+      "purpose": "Document the W3D rendering engine and DXVK DirectX 8 to Vulkan translation layer across Linux, macOS (via MoltenVK to Metal), and Windows. Explain the fork source-of-truth policy in generalsx-dxvk (branch generalsx-macos-v2.6) and FetchContent build mechanics.",
       "parent": "Core Engine Architecture"
     },
     {
@@ -103,7 +103,7 @@
     },
     {
       "title": "Reference Repositories",
-      "purpose": "Document internal and external reference codebases: local references in references/ (fbraz3-dxvk, GameClient, GameServer) and upstream/historical references (TheSuperHackers upstream baseline, fighter19-dxvk-port for DXVK/SDL3, jmarshall-win64-modern for OpenAL/Win64).",
+      "purpose": "Document internal and external reference codebases: local references in references/ (GameClient, GameServer) and upstream/historical references (TheSuperHackers upstream baseline, fighter19-dxvk-port for DXVK/SDL3, jmarshall-win64-modern for OpenAL/Win64).",
       "parent": "Cross-Platform Port Strategy"
     },
     {

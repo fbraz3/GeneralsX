@@ -34,7 +34,7 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 - **Case-sensitive filesystem**: Include paths must match exact case. Use `scripts/tooling/cpp/maintenance/fixIncludesCase.sh`.
 - **DXVK requires Vulkan**: `vulkan-tools`, `mesa-vulkan-drivers`, or proprietary GPU drivers.
 - **SDL3**: fetched via CMake FetchContent — no system package needed.
-- **DXVK source policy**: fixes go in `references/fbraz3-dxvk`, never in `build/_deps/...`.
+- **DXVK source policy**: fixes go in `generalsx-dxvk`, never in `build/_deps/...`.
 - **CompatLib**: `GeneralsMD/Code/CompatLib/` provides Win32 API compatibility shims (`windows_compat.h`).
 - **No native POSIX calls**: use SDL3 abstractions for timers, threads, file I/O. No raw `pthread_*`, `open()`.
 - **`-logToCon`**: only available in debug builds (`RTS_BUILD_OPTION_DEBUG=ON`).

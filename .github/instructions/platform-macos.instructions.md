@@ -1,5 +1,5 @@
 ---
-applyTo: 'scripts/build/macos/**,references/fbraz3-dxvk/**'
+applyTo: 'scripts/build/macos/**'
 ---
 
 ## macOS Architecture
@@ -14,7 +14,7 @@ applyTo: 'scripts/build/macos/**,references/fbraz3-dxvk/**'
 
 - DXVK is built via Meson as ExternalProject — must pass `-arch arm64` via `cmake/meson-arm64-native.ini` to avoid Rosetta2 confusion.
 - DXVK source of truth: fork branch `generalsx-macos-v2.6`; CMake tracks remote by default.
-- Local fork mode: `-DSAGE_DXVK_USE_LOCAL_FORK=ON` (disables update/fetch, uses `references/fbraz3-dxvk`).
+- Local fork mode: `-DSAGE_DXVK_USE_LOCAL_FORK=ON` (disables update/fetch, uses workspace `../generalsx-dxvk` repository).
 - Vulkan SDK **must** be from LunarG — provides MoltenVK ICD JSON. Not from Homebrew.
 - Vulkan SDK path: `~/VulkanSDK/<version>/macOS/` — must contain `libvulkan.dylib` and `libMoltenVK.dylib`.
 
@@ -35,4 +35,4 @@ brew install cmake ninja meson
 - **Rosetta2 + Meson**: always use `cmake/meson-arm64-native.ini` to force `-arch arm64`.
 - **SDL3**: fetched via CMake FetchContent — no system package needed.
 - **No Cocoa/Metal calls in game code**: all platform access through SDL3 + DXVK layers.
-- **DXVK fixes**: commit/push to `references/fbraz3-dxvk` first; never edit `build/_deps/...`.
+- **DXVK fixes**: commit/push to `generalsx-dxvk` repository first; never edit `build/_deps/...`.
