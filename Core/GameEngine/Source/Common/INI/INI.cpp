@@ -60,7 +60,7 @@
 #include "GameLogic/ScriptEngine.h"
 #include "GameLogic/Weapon.h"
 
-#if __cplusplus >= 201611L && !defined(__APPLE__)
+#if __cplusplus >= 201611L
 #define USE_STD_FROM_CHARS_PARSING 1
 #else
 #define USE_STD_FROM_CHARS_PARSING 0
@@ -69,6 +69,7 @@
 #if USE_STD_FROM_CHARS_PARSING
 #include <charconv>
 #include <cstdlib>
+#include <limits>
 #include <string_view>
 #include <type_traits>
 #endif
@@ -1689,10 +1690,22 @@ Type scanType(std::string_view token)
 
                 if (ec != std::errc{})
                 {
+                        if (ec == std::errc::result_out_of_range)
+                        {
+                                fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+                                        static_cast<int>(token.size()), token.data());
+                                fflush(stderr);
+                                if (!token.empty() && token[0] == '-')
+                                {
+                                        return -std::numeric_limits<Type>::max();
+                                }
+                                return std::numeric_limits<Type>::max();
+                        }
+
                         // GeneralsX @bugfix Copilot 20/09/2026 Keep numeric conversion failures visible in release builds.
                         fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
                                 static_cast<int>(token.size()), token.data(),
-                                ec == std::errc::result_out_of_range ? "out of range" : "invalid number");
+                                "invalid number");
                         fflush(stderr);
                         throw INI_INVALID_DATA;
                 }
@@ -1700,22 +1713,71 @@ Type scanType(std::string_view token)
                 return result;
                 #endif
         }
+        else
+        {
+		// TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
+		std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
+		const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
 
-        // TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
-	std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
-	const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+		if (ec != std::errc{})
+		{
+			if (ec == std::errc::result_out_of_range)
+			{
+				// GeneralsX @bugfix fbraz 25/09/2026 Saturate overflowing integers to field limits to match retail behavior for mods (#297).
+				fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+					static_cast<int>(token.size()), token.data());
+				fflush(stderr);
 
-	if (ec != std::errc{})
-	{
-		// GeneralsX @bugfix Copilot 20/09/2026 Identify overflowing mod values without changing their interpretation.
-		fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
-			static_cast<int>(token.size()), token.data(),
-			ec == std::errc::result_out_of_range ? "out of range" : "invalid number");
-		fflush(stderr);
-		throw INI_INVALID_DATA;
-	}
+				if (!token.empty() && token[0] == '-')
+				{
+					return std::numeric_limits<Type>::min();
+				}
+				return std::numeric_limits<Type>::max();
+			}
 
-	return static_cast<Type>(result);
+			// GeneralsX @bugfix Copilot 20/09/2026 Keep numeric conversion failures visible in release builds.
+			fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
+				static_cast<int>(token.size()), token.data(),
+				"invalid number");
+			fflush(stderr);
+			throw INI_INVALID_DATA;
+		}
+
+		if constexpr (std::is_unsigned_v<Type>)
+		{
+			// For unsigned integers, negative values like -1 are sentinels (~0U) and should wrap via static_cast.
+			// Positive values exceeding Type's range saturate to max.
+			if (result > static_cast<Int64>(std::numeric_limits<Type>::max()))
+			{
+				// GeneralsX @bugfix fbraz 25/09/2026 Saturate overflowing integers to field limits to match retail behavior for mods (#297).
+				fprintf(stderr, "[INI] Numeric token '%.*s' exceeds max value, saturating to limit\n",
+					static_cast<int>(token.size()), token.data());
+				fflush(stderr);
+				return std::numeric_limits<Type>::max();
+			}
+		}
+		else if constexpr (std::is_signed_v<Type>)
+		{
+			if (result > static_cast<Int64>(std::numeric_limits<Type>::max()))
+			{
+				// GeneralsX @bugfix fbraz 25/09/2026 Saturate overflowing integers to field limits to match retail behavior for mods (#297).
+				fprintf(stderr, "[INI] Numeric token '%.*s' exceeds max value, saturating to limit\n",
+					static_cast<int>(token.size()), token.data());
+				fflush(stderr);
+				return std::numeric_limits<Type>::max();
+			}
+			if (result < static_cast<Int64>(std::numeric_limits<Type>::min()))
+			{
+				// GeneralsX @bugfix fbraz 25/09/2026 Saturate overflowing integers to field limits to match retail behavior for mods (#297).
+				fprintf(stderr, "[INI] Numeric token '%.*s' exceeds min value, saturating to limit\n",
+					static_cast<int>(token.size()), token.data());
+				fflush(stderr);
+				return std::numeric_limits<Type>::min();
+			}
+		}
+
+		return static_cast<Type>(result);
+        }
 }
 
 #endif
