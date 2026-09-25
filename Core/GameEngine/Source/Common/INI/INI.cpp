@@ -1683,6 +1683,22 @@ Type scanType(std::string_view token)
                         throw INI_INVALID_DATA;
                 }
 
+                const double maxValue = static_cast<double>(std::numeric_limits<Type>::max());
+                if (result > maxValue)
+                {
+                        fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+                                static_cast<int>(token.size()), token.data());
+                        fflush(stderr);
+                        return std::numeric_limits<Type>::max();
+                }
+                if (result < -maxValue)
+                {
+                        fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+                                static_cast<int>(token.size()), token.data());
+                        fflush(stderr);
+                        return -std::numeric_limits<Type>::max();
+                }
+
                 return static_cast<Type>(result);
                 #else
                 Type result{};
@@ -1692,6 +1708,18 @@ Type scanType(std::string_view token)
                 {
                         if (ec == std::errc::result_out_of_range)
                         {
+                                const std::string tokenString(token);
+                                char *end = nullptr;
+                                const double widened = std::strtod(tokenString.c_str(), &end);
+                                const double maxValue =
+                                        static_cast<double>(std::numeric_limits<Type>::max());
+
+                                if (end != tokenString.c_str() &&
+                                    widened >= -maxValue && widened <= maxValue)
+                                {
+                                        return static_cast<Type>(widened);
+                                }
+
                                 fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
                                         static_cast<int>(token.size()), token.data());
                                 fflush(stderr);
