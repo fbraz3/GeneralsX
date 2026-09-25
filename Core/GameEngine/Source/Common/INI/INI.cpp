@@ -67,7 +67,9 @@
 #endif
 
 #if USE_STD_FROM_CHARS_PARSING
+#include <cerrno>
 #include <charconv>
+#include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <string_view>
@@ -1676,9 +1678,15 @@ Type scanType(std::string_view token)
                 #if defined(__APPLE__)
                 const std::string tokenString(token);
                 char *end = nullptr;
+                errno = 0;
                 const double result = std::strtod(tokenString.c_str(), &end);
 
                 if (end == tokenString.c_str())
+                {
+                        throw INI_INVALID_DATA;
+                }
+
+                if (!std::isfinite(result) && errno != ERANGE)
                 {
                         throw INI_INVALID_DATA;
                 }
@@ -1710,9 +1718,16 @@ Type scanType(std::string_view token)
                         {
                                 const std::string tokenString(token);
                                 char *end = nullptr;
+                                errno = 0;
                                 const double widened = std::strtod(tokenString.c_str(), &end);
                                 const double maxValue =
                                         static_cast<double>(std::numeric_limits<Type>::max());
+
+                                if (end != tokenString.c_str() &&
+                                    !std::isfinite(widened) && errno != ERANGE)
+                                {
+                                        throw INI_INVALID_DATA;
+                                }
 
                                 if (end != tokenString.c_str() &&
                                     widened >= -maxValue && widened <= maxValue)
@@ -1735,6 +1750,11 @@ Type scanType(std::string_view token)
                                 static_cast<int>(token.size()), token.data(),
                                 "invalid number");
                         fflush(stderr);
+                        throw INI_INVALID_DATA;
+                }
+
+                if (!std::isfinite(result))
+                {
                         throw INI_INVALID_DATA;
                 }
 
