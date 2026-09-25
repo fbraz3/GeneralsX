@@ -9,7 +9,7 @@
       "author": "GeneralsX Team"
     },
     {
-      "content": "Multiplayer strategy: The legacy GameSpy online backend is discontinued and superseded by Next-Gen Multiplayer (NGMP / GeneralsOnline). Singleplayer campaigns, Skirmish (vs AI), and LAN multiplayer must remain fully functional. GameSpy online compatibility is not required and must not block NGMP development. Active client integration lives under GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/ with protocol references in references/GameClient and references/GameServer.",
+      "content": "Multiplayer strategy: The legacy GameSpy online backend is discontinued and superseded by Next-Gen Multiplayer (NGMP / GeneralsOnline). Singleplayer campaigns, Skirmish (vs AI), and LAN multiplayer must remain fully functional. GameSpy online compatibility is not required and must not block NGMP development. Active client integration lives under GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/ with protocol references in ../references/GameClient and ../references/GameServer.",
       "author": "GeneralsX Team"
     },
     {
@@ -33,7 +33,7 @@
     },
     {
       "title": "Repository Structure",
-      "purpose": "Document the top-level directory layout: GeneralsMD/ (Zero Hour, primary), Generals/ (base game, secondary), Core/ (shared engine), cmake/ (modular build scripts), scripts/ (build, QA, tooling), references/ (GameClient, GameServer), resources/, flatpak/, assets/, and docs/.",
+      "purpose": "Document the top-level directory layout: GeneralsMD/ (Zero Hour, primary), Generals/ (base game, secondary), Core/ (shared engine), cmake/ (modular build scripts), scripts/ (build, QA, tooling), workspace references (../references/: GameClient, GameServer), resources/, flatpak/, assets/, and docs/.",
       "parent": "Project Overview"
     },
     {
@@ -73,7 +73,7 @@
     },
     {
       "title": "Next-Gen Multiplayer (NGMP / GeneralsOnline)",
-      "purpose": "Document the Next-Gen Multiplayer (NGMP / GeneralsOnline) client integration under GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/. Explain REST API conventions (/env/dev/contract/1/ prefix, Bearer token auth), WebSocket routing via integer msg_id, room registration, P2P network synchronization, and reference implementations (references/GameClient, references/GameServer).",
+      "purpose": "Document the Next-Gen Multiplayer (NGMP / GeneralsOnline) client integration under GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/. Explain REST API conventions (/env/dev/contract/1/ prefix, Bearer token auth), WebSocket routing via integer msg_id, room registration, P2P network synchronization, and reference implementations (../references/GameClient, ../references/GameServer).",
       "parent": "Core Engine Architecture"
     },
     {
@@ -103,7 +103,7 @@
     },
     {
       "title": "Reference Repositories",
-      "purpose": "Document internal and external reference codebases: local references in references/ (GameClient, GameServer) and upstream/historical references (TheSuperHackers upstream baseline, fighter19-dxvk-port for DXVK/SDL3, jmarshall-win64-modern for OpenAL/Win64).",
+      "purpose": "Document internal and external reference codebases: workspace references in ../references/ (GameClient, GameServer) and upstream/historical references (TheSuperHackers upstream baseline, fighter19-dxvk-port for DXVK/SDL3, jmarshall-win64-modern for OpenAL/Win64).",
       "parent": "Cross-Platform Port Strategy"
     },
     {
