@@ -268,7 +268,7 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - `GeneralsMD/`: Zero Hour.
 - `Generals/`: base game.
 - `Core/`: shared libraries.
-- `references/`: fbraz3-dxvk
+- `references/`: workspace reference directory (`../references/` with GameClient, GameServer).
 - `docs/WORKDIR/`: current work docs.
 - `docs/HOWTO/`: redirection stubs pointing to the GitHub Wiki (user tutorials, SagePatch config, etc.)
 - `logs/`: build/run/debug logs.
@@ -287,7 +287,7 @@ The `**` at applyTo means all files, you MUST load it everytime.
 | [.github/instructions/cpp-conventions.instructions.md](.github/instructions/cpp-conventions.instructions.md) | `**/*.{cpp,h,hpp,c}` | Code style, annotations, platform isolation |
 | [.github/instructions/build.instructions.md](.github/instructions/build.instructions.md) | `cmake/**,CMakeLists.txt,CMakePresets.json` | Build presets, DXVK source of truth |
 | [.github/instructions/platform-linux.instructions.md](.github/instructions/platform-linux.instructions.md) | `scripts/build/linux/**` | Linux build notes |
-| [.github/instructions/platform-macos.instructions.md](.github/instructions/platform-macos.instructions.md) | `scripts/build/macos/**,references/fbraz3-dxvk/**` | macOS/DXVK build notes |
+| [.github/instructions/platform-macos.instructions.md](.github/instructions/platform-macos.instructions.md) | `scripts/build/macos/**` | macOS/DXVK build notes |
 | [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) | `**/*.md` | Documentation structure and workflow |
 | [.github/instructions/scripts.instructions.md](.github/instructions/scripts.instructions.md) | `scripts/**` | Script organization and naming |
 | [.github/instructions/ngmp.instructions.md](.github/instructions/ngmp.instructions.md) | `**/GeneralsOnline/**,**/NextGenMP/**` | NGMP cross-platform multiplayer integration guidelines |

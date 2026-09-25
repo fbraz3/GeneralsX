@@ -55,9 +55,9 @@ When a piece of legacy UI code is in the critical path for NGMP but also serves 
    - Ensure network packet data serialization handles network byte order (`htons`/`ntohs`, `htonl`/`ntohl`) explicitly to support cross-play between x86_64 Linux and ARM64 macOS.
 
 7. **Reference repositories**:
-   - There are two reference repositories for NGMP, take a look on these to understand the protocol and implementation details:
-     1. `references/GameClient`: The client-side implementation.
-     2. `references/GameServer`: The server-side implementation.
+   - There are two reference repositories for NGMP located at workspace `../references/`, take a look on these to understand the protocol and implementation details:
+     1. `../references/GameClient`: The client-side implementation.
+     2. `../references/GameServer`: The server-side implementation.
 
 8. **REST API & Routing Conventions (Lessons Learned)**:
    - **Environment/Contract Prefix**: The C# Kestrel backend strictly requires environment and contract version routing. Do **NOT** use `GetServerRESTEndpoint()` directly to build URLs. Always use `NGMP::GetAPIEndpoint("EndpointName")` (e.g. `NGMP::GetAPIEndpoint("Lobbies")`), which appends the required `/env/dev/contract/1/` prefix automatically.
