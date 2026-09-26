@@ -44,10 +44,16 @@
 #include "WWLib/win.h"
 
 // GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Linux text rendering (Phase 1.5)
+// GeneralsX @feature felipebraz 26/09/2026 Guard fontconfig header for platforms without fontconfig (e.g. iOS)
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
     #include <ft2build.h>
     #include FT_FREETYPE_H
-    #include <fontconfig/fontconfig.h>
+    #if defined(__APPLE__)
+        #include <TargetConditionals.h>
+    #endif
+    #if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+        #include <fontconfig/fontconfig.h>
+    #endif
 #endif
 
 /*
