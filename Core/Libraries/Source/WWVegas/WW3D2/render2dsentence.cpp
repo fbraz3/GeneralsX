@@ -1644,7 +1644,7 @@ FontCharsClass::Free_GDI_Font ()
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
 #endif
-#include "Platform/PlatformPaths.h"
+#include "PlatformPaths.h"
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
