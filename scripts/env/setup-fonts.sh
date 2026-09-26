@@ -19,12 +19,12 @@ trap 'rm -rf "${TMP}"' EXIT
 
 mkdir -p "${DEST}"
 
-if [[ -f "${DEST}/arial.ttf" && -f "${DEST}/arialbold.ttf" && -f "${DEST}/couriernew.ttf" && -f "${DEST}/timesnewroman.ttf" && -f "${DEST}/fa-brands-400.ttf" ]]; then
-    echo "==> Fonts already present at ${DEST}"
+if [[ -f "${DEST}/arial.ttf" && -f "${DEST}/arialbold.ttf" && -f "${DEST}/couriernew.ttf" && -f "${DEST}/timesnewroman.ttf" && -f "${DEST}/fa-brands-400.ttf" && -f "${DEST}/LICENSE.liberation" && -f "${DEST}/LICENSE.fontawesome" ]]; then
+    echo "==> Fonts and licenses already present at ${DEST}"
     exit 0
 fi
 
-if [[ ! -f "${DEST}/arial.ttf" || ! -f "${DEST}/arialbold.ttf" || ! -f "${DEST}/couriernew.ttf" || ! -f "${DEST}/timesnewroman.ttf" ]]; then
+if [[ ! -f "${DEST}/arial.ttf" || ! -f "${DEST}/arialbold.ttf" || ! -f "${DEST}/couriernew.ttf" || ! -f "${DEST}/timesnewroman.ttf" || ! -f "${DEST}/LICENSE.liberation" ]]; then
     echo "==> Downloading Liberation fonts ${LIB_VERSION}"
     if ! curl -fL -o "${TMP}/liberation.tar.gz" \
         "https://github.com/liberationfonts/liberation-fonts/files/7261482/liberation-fonts-ttf-${LIB_VERSION}.tar.gz" &&
@@ -50,6 +50,10 @@ if [[ ! -f "${DEST}/fa-brands-400.ttf" ]]; then
     echo "==> Downloading Font Awesome Brands font"
     curl -fL -o "${DEST}/fa-brands-400.ttf" \
         "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/webfonts/fa-brands-400.ttf"
+fi
+
+if [[ ! -f "${DEST}/LICENSE.fontawesome" ]]; then
+    echo "==> Downloading Font Awesome license"
     curl -fL -o "${DEST}/LICENSE.fontawesome" \
         "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/LICENSE.txt"
 fi
