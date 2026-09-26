@@ -366,6 +366,7 @@ mkdir -p "${RESOURCES_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
     echo "  + Bundled fonts"
     cp "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RESOURCES_DIR}/fonts/" 2>/dev/null || true
+    cp "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RESOURCES_DIR}/fonts/" 2>/dev/null || true
 fi
 
 # App launcher wrapper

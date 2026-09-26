@@ -163,7 +163,6 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 			"Arial Unicode MS",
 			"Arial Unicode",
 			"DejaVu Sans",
-			"Liberation Sans",
 			nullptr
 		};
 		for (int i = 0; kFullCoverageFonts[i]; i++) {

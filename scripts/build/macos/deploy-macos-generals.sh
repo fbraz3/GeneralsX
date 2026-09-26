@@ -115,6 +115,7 @@ echo "  Deploying Fontconfig config & fonts..."
 mkdir -p "${RUNTIME_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
     cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/" 2>/dev/null || true
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RUNTIME_DIR}/fonts/" 2>/dev/null || true
 fi
 
 FONTCONFIG_ETC_DIR="${BUILD_DIR}/vcpkg_installed/arm64-osx/etc/fonts"
