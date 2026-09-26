@@ -3,6 +3,7 @@ add_library(corei_gameengine_include INTERFACE)
 add_library(corei_libraries_include INTERFACE)
 add_library(corei_libraries_source_wwvegas INTERFACE)
 add_library(corei_main INTERFACE)
+add_library(corei_platform INTERFACE)
 add_library(corei_always INTERFACE)
 add_library(corei_always_no_pch INTERFACE) # Use this for Shared Libs with MFC AFX
 
@@ -16,6 +17,7 @@ endif()
 target_include_directories(corei_gameengine_include INTERFACE "GameEngine/Include")
 target_include_directories(corei_libraries_include INTERFACE "Libraries/Include")
 target_include_directories(corei_libraries_source_wwvegas INTERFACE "Libraries/Source/WWVegas")
+target_include_directories(corei_platform INTERFACE "Libraries/Source")
 target_include_directories(corei_main INTERFACE "Main")
 
 target_sources(corei_libraries_include PRIVATE
@@ -30,12 +32,14 @@ target_link_libraries(corei_always INTERFACE
     core_profile_tracy
     core_utility
     corei_libraries_include
+    corei_platform
     resources
 )
 target_link_libraries(corei_always_no_pch INTERFACE
     core_config
     core_utility_no_pch
     corei_libraries_include
+    corei_platform
     resources
 )
 

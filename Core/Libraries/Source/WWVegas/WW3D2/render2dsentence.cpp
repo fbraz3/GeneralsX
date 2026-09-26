@@ -1643,12 +1643,8 @@ FontCharsClass::Free_GDI_Font ()
 #include <cstring>
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
-#include <mach-o/dyld.h>
-#include <limits.h>
 #endif
-#ifndef PATH_MAX
-#define PATH_MAX 1024
-#endif
+#include "Platform/PlatformPaths.h"
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
@@ -1766,26 +1762,16 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 	}
 
 #if defined(__APPLE__)
-	// GeneralsX @bugfix felipebraz 26/09/2026 Resolve macOS app bundle Contents/Resources/fonts dynamically
-	char macos_res_fonts[PATH_MAX] = {0};
-	char macos_bin_fonts[PATH_MAX] = {0};
-	char raw_exec_path[PATH_MAX] = {0};
-	uint32_t buf_size = sizeof(raw_exec_path);
-	if ( _NSGetExecutablePath( raw_exec_path, &buf_size ) == 0 ) {
-		char real_exec_path[PATH_MAX] = {0};
-		if ( realpath( raw_exec_path, real_exec_path ) != nullptr ) {
-			char *last_slash = strrchr( real_exec_path, '/' );
-			if ( last_slash != nullptr ) {
-				*last_slash = '\0';
-				snprintf( macos_res_fonts, sizeof(macos_res_fonts), "%s/../Resources/fonts", real_exec_path );
-				if ( access( macos_res_fonts, R_OK ) == 0 && search_dir_count < 24 ) {
-					search_dirs[search_dir_count++] = macos_res_fonts;
-				}
-				snprintf( macos_bin_fonts, sizeof(macos_bin_fonts), "%s/../fonts", real_exec_path );
-				if ( access( macos_bin_fonts, R_OK ) == 0 && search_dir_count < 24 ) {
-					search_dirs[search_dir_count++] = macos_bin_fonts;
-				}
-			}
+	// GeneralsX @bugfix felipebraz 26/09/2026 Resolve macOS app bundle Contents/Resources/fonts via platform layer
+	char macos_res_fonts[512] = {0};
+	char macos_bin_fonts[512] = {0};
+	if ( Platform::GetMacOSBundleFontDirectories( macos_res_fonts, sizeof(macos_res_fonts),
+	                                              macos_bin_fonts, sizeof(macos_bin_fonts) ) ) {
+		if ( access( macos_res_fonts, R_OK ) == 0 && search_dir_count < 24 ) {
+			search_dirs[search_dir_count++] = macos_res_fonts;
+		}
+		if ( access( macos_bin_fonts, R_OK ) == 0 && search_dir_count < 24 ) {
+			search_dirs[search_dir_count++] = macos_bin_fonts;
 		}
 	}
 #endif
