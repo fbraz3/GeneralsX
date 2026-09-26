@@ -366,7 +366,7 @@ mkdir -p "${RESOURCES_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
     echo "  + Bundled fonts"
     cp "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RESOURCES_DIR}/fonts/"
-    cp "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RESOURCES_DIR}/fonts/"
+    cp "${PROJECT_ROOT}/assets/fonts"/LICENSE* "${RESOURCES_DIR}/fonts/"
 else
     echo "ERROR: ${PROJECT_ROOT}/assets/fonts directory not found - cannot bundle fonts" >&2
     exit 1

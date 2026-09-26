@@ -107,7 +107,7 @@ modules:
       - install -Dm644 flatpak/generalsx-zh_icon_512.png /app/share/icons/hicolor/512x512/apps/com.fbraz3.GeneralsXZH.png
       - install -Dm644 resources/dxvk/dxvk.conf /app/share/generalsxzh/dxvk.conf
       - install -d /app/share/fonts
-      - if [ -d assets/fonts ]; then cp assets/fonts/*.ttf assets/fonts/LICENSE.liberation /app/share/fonts/; fi
+      - if [ -d assets/fonts ]; then cp assets/fonts/*.ttf assets/fonts/LICENSE* /app/share/fonts/; fi
       - install -d /app/lib
       - cp -a /run/build/generalsxzh/dxvk-src/lib/libdxvk_d3d8.so* /app/lib/
       - cp -a /run/build/generalsxzh/dxvk-src/lib/libdxvk_d3d9.so* /app/lib/
