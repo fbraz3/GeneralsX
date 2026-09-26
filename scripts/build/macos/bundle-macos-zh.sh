@@ -442,6 +442,11 @@ if [[ -f "${RESOURCES_DIR}/fontconfig/fonts.conf" ]]; then
     export FONTCONFIG_PATH="${RESOURCES_DIR}/fontconfig"
 fi
 
+# GeneralsX @bugfix felipebraz 26/09/2026 Export GX_BUNDLE_FONTS so engine resolves staged fonts when CWD changes to asset root.
+if [[ -d "${RESOURCES_DIR}/fonts" ]]; then
+    export GX_BUNDLE_FONTS="${RESOURCES_DIR}/fonts"
+fi
+
 # Run from the detected Zero Hour asset root when available.
 if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     cd "${CNC_GENERALS_ZH_PATH}"

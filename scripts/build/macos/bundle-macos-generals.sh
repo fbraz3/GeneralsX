@@ -397,6 +397,11 @@ if [[ -f "${RESOURCES_DIR}/dxvk.conf" ]]; then
     export DXVK_CONFIG_FILE="${RESOURCES_DIR}/dxvk.conf"
 fi
 
+# GeneralsX @bugfix felipebraz 26/09/2026 Export GX_BUNDLE_FONTS so engine resolves staged fonts when CWD changes to asset root.
+if [[ -d "${RESOURCES_DIR}/fonts" ]]; then
+    export GX_BUNDLE_FONTS="${RESOURCES_DIR}/fonts"
+fi
+
 # Run from the detected Generals asset root when available.
 if [[ -d "${CNC_GENERALS_PATH}" ]]; then
     cd "${CNC_GENERALS_PATH}"
