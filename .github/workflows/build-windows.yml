@@ -124,6 +124,13 @@ jobs:
             Copy-Item $_.FullName ci-artifacts/
           }
 
+          if (Test-Path "assets/fonts") {
+            New-Item -ItemType Directory -Force artifacts/fonts | Out-Null
+            Copy-Item assets/fonts/* artifacts/fonts/
+            New-Item -ItemType Directory -Force ci-artifacts/fonts | Out-Null
+            Copy-Item assets/fonts/* ci-artifacts/fonts/
+          }
+
           # Collect Desktop Release CRT DLLs (msvcp140.dll, vcruntime140.dll, etc.)
           $vcReleaseDir = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC" -Directory -Recurse |
             Where-Object { $_.FullName -match "\\x86\\" -and $_.FullName -match "Microsoft\.VC143\.CRT$" -and $_.FullName -notmatch "onecore" } |

@@ -343,6 +343,17 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail on macOS"
 fi
 
+# GeneralsX @feature felipebraz 26/09/2026 Bundle universal fonts into application resources.
+mkdir -p "${RESOURCES_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    echo "  + Bundled fonts"
+    cp "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RESOURCES_DIR}/fonts/"
+    cp "${PROJECT_ROOT}/assets/fonts"/LICENSE* "${RESOURCES_DIR}/fonts/"
+else
+    echo "ERROR: ${PROJECT_ROOT}/assets/fonts directory not found - cannot bundle fonts" >&2
+    exit 1
+fi
+
 # App launcher wrapper
 echo "  + App launcher"
 cat > "${MACOS_DIR}/run.sh" << 'WRAPPER'
@@ -387,6 +398,11 @@ fi
 
 if [[ -f "${RESOURCES_DIR}/dxvk.conf" ]]; then
     export DXVK_CONFIG_FILE="${RESOURCES_DIR}/dxvk.conf"
+fi
+
+# GeneralsX @bugfix felipebraz 26/09/2026 Export GX_BUNDLE_FONTS so engine resolves staged fonts when CWD changes to asset root.
+if [[ -d "${RESOURCES_DIR}/fonts" ]]; then
+    export GX_BUNDLE_FONTS="${RESOURCES_DIR}/fonts"
 fi
 
 # Run from the detected Generals asset root when available.

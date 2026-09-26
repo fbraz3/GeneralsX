@@ -1636,62 +1636,264 @@ FontCharsClass::Free_GDI_Font ()
 
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
 
+#include <unistd.h>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
+#include "PlatformPaths.h"
+
 ////////////////////////////////////////////////////////////////////////////////////
 //
 //	Locate_Font_FontConfig
 //
-// TheSuperHackers @feature FreeType port 10/02/2026 Locate system font using Fontconfig
+// GeneralsX @feature felipebraz 26/09/2026 Universal multi-tiered font resolution:
+// Tier 1: Probe local/bundled fonts/ directory (app bundle, game root, cwd)
+// Tier 2: System Fontconfig match (desktop Linux/macOS)
+// Tier 3: Guaranteed fallback to bundled Arial (Liberation Sans)
 ////////////////////////////////////////////////////////////////////////////////////
 const char *
 FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 {
-	//
-	//	Initialize Fontconfig library
-	//
-	FcConfig *config = FcInitLoadConfigAndFonts();
-	if ( config == nullptr ) {
+	if ( font_name == nullptr || font_name[0] == '\0' ) {
 		return nullptr;
 	}
 
 	//
-	//	Create a pattern for the requested font
+	// Normalize font name (lowercase, strip spaces, hyphens, and underscores)
 	//
-	FcPattern *pattern = FcNameParse( (const FcChar8*)font_name );
-	if ( pattern == nullptr ) {
-		FcConfigDestroy( config );
-		return nullptr;
-	}
-
-	//
-	//	Configure the pattern
-	//
-	FcConfigSubstitute( config, pattern, FcMatchPattern );
-	FcDefaultSubstitute( pattern );
-
-	//
-	//	Find the best match
-	//
-	FcResult result = FcResultNoMatch;
-	FcPattern *font = FcFontMatch( config, pattern, &result );
-
-	const char *font_path = nullptr;
-	if ( font != nullptr && result == FcResultMatch ) {
-		//
-		//	Extract the font file path
-		//
-		FcChar8 *file_path = nullptr;
-		if ( FcPatternGetString( font, FC_FILE, 0, &file_path ) == FcResultMatch ) {
-			FreetypeFontPath = (const char*)file_path;
-			font_path = FreetypeFontPath;
+	char normalized[128];
+	int n = 0;
+	for ( const char *p = font_name; *p != '\0' && n < (int)sizeof(normalized) - 1; ++p ) {
+		if ( *p == ' ' || *p == '-' || *p == '_' ) {
+			continue;
 		}
+		normalized[n++] = (char)tolower( (unsigned char)*p );
+	}
+	normalized[n] = '\0';
 
-		FcPatternDestroy( font );
+	// Map "generals" to "arial"
+	if ( strcmp( normalized, "generals" ) == 0 ) {
+		strncpy( normalized, "arial", sizeof(normalized) - 1 );
+		normalized[sizeof(normalized) - 1] = '\0';
 	}
 
-	FcPatternDestroy( pattern );
-	FcConfigDestroy( config );
+	//
+	// Prepare candidate names based on requested font and bold status
+	//
+	bool is_bold = this->IsBold || (strstr( font_name, "Bold" ) != nullptr) || (strstr( font_name, "bold" ) != nullptr);
 
-	return font_path;
+	const char *candidates[12];
+	int candidate_count = 0;
+
+	char bold_candidate[140];
+	if ( is_bold && !strstr( normalized, "bold" ) ) {
+		snprintf( bold_candidate, sizeof(bold_candidate), "%sbold", normalized );
+		candidates[candidate_count++] = bold_candidate;
+	}
+
+	candidates[candidate_count++] = normalized;
+
+	// Add common Liberation and standard aliases (exact normalized matches)
+	// GeneralsX @bugfix felipebraz 26/09/2026 Use exact alias checks to prevent matching wide-coverage fonts like Arial Unicode MS
+	bool is_arial = (strcmp( normalized, "arial" ) == 0 ||
+					 strcmp( normalized, "arialbold" ) == 0 ||
+					 strcmp( normalized, "generals" ) == 0 ||
+					 strcmp( normalized, "generalsbold" ) == 0 ||
+					 strcmp( normalized, "liberationsans" ) == 0 ||
+					 strcmp( normalized, "liberationsansbold" ) == 0);
+
+	bool is_times = (strcmp( normalized, "times" ) == 0 ||
+					 strcmp( normalized, "timesbold" ) == 0 ||
+					 strcmp( normalized, "timesnewroman" ) == 0 ||
+					 strcmp( normalized, "timesnewromanbold" ) == 0 ||
+					 strcmp( normalized, "liberationserif" ) == 0 ||
+					 strcmp( normalized, "liberationserifbold" ) == 0);
+
+	bool is_courier = (strcmp( normalized, "courier" ) == 0 ||
+					   strcmp( normalized, "courierbold" ) == 0 ||
+					   strcmp( normalized, "couriernew" ) == 0 ||
+					   strcmp( normalized, "couriernewbold" ) == 0 ||
+					   strcmp( normalized, "liberationmono" ) == 0 ||
+					   strcmp( normalized, "liberationmonobold" ) == 0);
+
+	if ( is_arial ) {
+		if ( is_bold ) {
+			candidates[candidate_count++] = "LiberationSans-Bold";
+			candidates[candidate_count++] = "liberationsans-bold";
+		}
+		candidates[candidate_count++] = "LiberationSans-Regular";
+		candidates[candidate_count++] = "liberationsans-regular";
+		candidates[candidate_count++] = "LiberationSans";
+	} else if ( is_times ) {
+		if ( is_bold ) {
+			candidates[candidate_count++] = "LiberationSerif-Bold";
+			candidates[candidate_count++] = "liberationserif-bold";
+		}
+		candidates[candidate_count++] = "LiberationSerif-Regular";
+		candidates[candidate_count++] = "liberationserif-regular";
+		candidates[candidate_count++] = "LiberationSerif";
+	} else if ( is_courier ) {
+		if ( is_bold ) {
+			candidates[candidate_count++] = "LiberationMono-Bold";
+			candidates[candidate_count++] = "liberationmono-bold";
+		}
+		candidates[candidate_count++] = "LiberationMono-Regular";
+		candidates[candidate_count++] = "liberationmono-regular";
+		candidates[candidate_count++] = "LiberationMono";
+	}
+
+	static const char *extensions[] = { ".ttf", ".otf", ".ttc" };
+
+	//
+	// Search directories for bundled/staged fonts
+	//
+	const char *search_dirs[24];
+	int search_dir_count = 0;
+
+	char env_bundle_fonts[512] = {0};
+	const char *gx_bundle_fonts = getenv( "GX_BUNDLE_FONTS" );
+	if ( gx_bundle_fonts && gx_bundle_fonts[0] != '\0' ) {
+		snprintf( env_bundle_fonts, sizeof(env_bundle_fonts), "%s", gx_bundle_fonts );
+		search_dirs[search_dir_count++] = env_bundle_fonts;
+	}
+
+#if defined(__APPLE__)
+	// GeneralsX @bugfix felipebraz 26/09/2026 Resolve macOS app bundle Contents/Resources/fonts via platform layer
+	char macos_res_fonts[512] = {0};
+	char macos_bin_fonts[512] = {0};
+	if ( Platform::GetMacOSBundleFontDirectories( macos_res_fonts, sizeof(macos_res_fonts),
+	                                              macos_bin_fonts, sizeof(macos_bin_fonts) ) ) {
+		if ( access( macos_res_fonts, R_OK ) == 0 && search_dir_count < 24 ) {
+			search_dirs[search_dir_count++] = macos_res_fonts;
+		}
+		if ( access( macos_bin_fonts, R_OK ) == 0 && search_dir_count < 24 ) {
+			search_dirs[search_dir_count++] = macos_bin_fonts;
+		}
+	}
+#endif
+
+	search_dirs[search_dir_count++] = "fonts";
+	search_dirs[search_dir_count++] = "./fonts";
+	search_dirs[search_dir_count++] = "../Resources/fonts";
+	search_dirs[search_dir_count++] = "Resources/fonts";
+	search_dirs[search_dir_count++] = "assets/fonts";
+
+	char env_zh_fonts[512] = {0};
+	const char *zh_path = getenv( "CNC_GENERALS_ZH_PATH" );
+	if ( zh_path && zh_path[0] != '\0' && search_dir_count < 24 ) {
+		snprintf( env_zh_fonts, sizeof(env_zh_fonts), "%s/fonts", zh_path );
+		search_dirs[search_dir_count++] = env_zh_fonts;
+	}
+
+	char env_gen_fonts[512] = {0};
+	const char *gen_path = getenv( "CNC_GENERALS_PATH" );
+	if ( gen_path && gen_path[0] != '\0' && search_dir_count < 24 ) {
+		snprintf( env_gen_fonts, sizeof(env_gen_fonts), "%s/fonts", gen_path );
+		search_dirs[search_dir_count++] = env_gen_fonts;
+	}
+
+	char home_zh_fonts[512] = {0};
+	char home_gen_fonts[512] = {0};
+	const char *home_path = getenv( "HOME" );
+	if ( home_path && home_path[0] != '\0' ) {
+		if ( search_dir_count < 24 ) {
+			snprintf( home_zh_fonts, sizeof(home_zh_fonts), "%s/GeneralsX/GeneralsZH/fonts", home_path );
+			search_dirs[search_dir_count++] = home_zh_fonts;
+		}
+		if ( search_dir_count < 24 ) {
+			snprintf( home_gen_fonts, sizeof(home_gen_fonts), "%s/GeneralsX/Generals/fonts", home_path );
+			search_dirs[search_dir_count++] = home_gen_fonts;
+		}
+	}
+
+	if ( search_dir_count < 24 ) {
+		search_dirs[search_dir_count++] = "/app/share/fonts";
+	}
+	if ( search_dir_count < 24 ) {
+		search_dirs[search_dir_count++] = "/usr/share/fonts/truetype/liberation";
+	}
+
+	//
+	// Tier 1: Probe local candidate font files
+	//
+	char candidate_path[512];
+	for ( int d = 0; d < search_dir_count; ++d ) {
+		for ( int c = 0; c < candidate_count; ++c ) {
+			for ( size_t e = 0; e < sizeof(extensions) / sizeof(extensions[0]); ++e ) {
+				snprintf( candidate_path, sizeof(candidate_path), "%s/%s%s",
+					search_dirs[d], candidates[c], extensions[e] );
+				if ( access( candidate_path, R_OK ) == 0 ) {
+					FreetypeFontPath = candidate_path;
+					return FreetypeFontPath;
+				}
+			}
+		}
+	}
+
+	//
+	// Tier 2: System Fontconfig match (desktop Linux/macOS)
+	//
+#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+	FcConfig *config = FcInitLoadConfigAndFonts();
+	if ( config != nullptr ) {
+		FcPattern *pattern = FcNameParse( (const FcChar8*)font_name );
+		if ( pattern != nullptr ) {
+			FcConfigSubstitute( config, pattern, FcMatchPattern );
+			FcDefaultSubstitute( pattern );
+
+			FcResult result = FcResultNoMatch;
+			FcPattern *font = FcFontMatch( config, pattern, &result );
+			if ( font != nullptr && result == FcResultMatch ) {
+				FcChar8 *file_path = nullptr;
+				if ( FcPatternGetString( font, FC_FILE, 0, &file_path ) == FcResultMatch && file_path != nullptr ) {
+					if ( access( (const char*)file_path, R_OK ) == 0 ) {
+						FreetypeFontPath = (const char*)file_path;
+						FcPatternDestroy( font );
+						FcPatternDestroy( pattern );
+						FcConfigDestroy( config );
+						return FreetypeFontPath;
+					}
+				}
+				FcPatternDestroy( font );
+			}
+			FcPatternDestroy( pattern );
+		}
+		FcConfigDestroy( config );
+	}
+#endif
+
+	//
+	// Tier 3: Universal fallback to bundled Arial/Liberation font for recognized core UI fonts
+	// GeneralsX @bugfix felipebraz 26/09/2026 Guard Tier 3 so unresolved Unicode/CJK fonts return nullptr and allow caller fallback delegation
+	//
+	if ( is_arial || is_times || is_courier ) {
+		static const char *fallback_names[] = {
+			"arialbold.ttf",
+			"arial.ttf",
+			"LiberationSans-Bold.ttf",
+			"LiberationSans-Regular.ttf"
+		};
+		int fallback_start = is_bold ? 0 : 1;
+		for ( int d = 0; d < search_dir_count; ++d ) {
+			for ( size_t f = fallback_start; f < sizeof(fallback_names) / sizeof(fallback_names[0]); ++f ) {
+				snprintf( candidate_path, sizeof(candidate_path), "%s/%s", search_dirs[d], fallback_names[f] );
+				if ( access( candidate_path, R_OK ) == 0 ) {
+					fprintf( stderr, "[Font] Note: Font '%s' not found; falling back to bundled '%s'\n", font_name, candidate_path );
+					fflush( stderr );
+					FreetypeFontPath = candidate_path;
+					return FreetypeFontPath;
+				}
+			}
+		}
+	}
+
+	fprintf( stderr, "[Font] WARNING: Unable to resolve font '%s' (all tiers exhausted)\n", font_name );
+	fflush( stderr );
+	return nullptr;
 }
 
 
