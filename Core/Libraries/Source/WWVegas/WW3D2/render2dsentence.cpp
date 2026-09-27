@@ -1371,7 +1371,16 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 bool
 FontCharsClass::Has_Glyph (WCHAR ch) const
 {
-#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+#if defined(_WIN32)
+	if ( MemDC == nullptr ) {
+		return false;
+	}
+	WORD glyph_index = 0;
+	if ( ::GetGlyphIndicesW( MemDC, &ch, 1, &glyph_index, GGI_MARK_NONEXISTING_GLYPHS ) == GDI_ERROR ) {
+		return false;
+	}
+	return glyph_index != 0xFFFF;
+#elif defined(SAGE_USE_FREETYPE)
 	if ( FTFace == nullptr ) {
 		return false;
 	}

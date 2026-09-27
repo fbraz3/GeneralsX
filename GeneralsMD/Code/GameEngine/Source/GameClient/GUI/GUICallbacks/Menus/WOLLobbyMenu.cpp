@@ -319,6 +319,8 @@ void SetLobbyAttemptHostJoin(Bool start)
 
 // Tooltips -------------------------------------------------------------------------------
 
+static UnicodeString FormatPlayerNameWithOSIcon(const AsciiString& rawName);
+
 static void playerTooltip(GameWindow *window,
 													WinInstanceData *instData,
 													UnsignedInt mouse)
@@ -489,6 +491,18 @@ static void playerTooltip(GameWindow *window,
 		for (PlayerInfoMap::iterator pIt = playerMap->begin(); pIt != playerMap->end(); ++pIt)
 		{
 			if (pIt->second.m_profileID == profileID)
+			{
+				info = &(pIt->second);
+				break;
+			}
+		}
+	}
+	if (info == nullptr)
+	{
+		// GeneralsX @bugfix felipebraz 27/09/2026 Match against formatted name for profile-ID-zero players with OS tags
+		for (PlayerInfoMap::iterator pIt = playerMap->begin(); pIt != playerMap->end(); ++pIt)
+		{
+			if (FormatPlayerNameWithOSIcon(pIt->second.m_name).compare(uName) == 0)
 			{
 				info = &(pIt->second);
 				break;
@@ -2424,12 +2438,46 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					}
 #else
 					// Legacy GameSpy right-click menu
-					GPProfile profileID = 0;
+					// GeneralsX @bugfix felipebraz 27/09/2026 Resolve profile ID and raw player name consistently in right click menu
+					GPProfile profileID = static_cast<GPProfile>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(control, rc->pos, 0)));
+					UnicodeString uRowText = GadgetListBoxGetText(control, rc->pos, COLUMN_PLAYERNAME);
 					AsciiString aName;
-					aName.translate(GadgetListBoxGetText(control, rc->pos, COLUMN_PLAYERNAME));
-					PlayerInfoMap::iterator it = TheGameSpyInfo->getPlayerInfoMap()->find(aName);
-					if (it != TheGameSpyInfo->getPlayerInfoMap()->end())
-						profileID = it->second.m_profileID;
+					PlayerInfoMap *rcPlayerMap = TheGameSpyInfo ? TheGameSpyInfo->getPlayerInfoMap() : nullptr;
+					PlayerInfo *rcInfo = nullptr;
+					if (rcPlayerMap != nullptr)
+					{
+						if (profileID != 0)
+						{
+							for (PlayerInfoMap::iterator pIt = rcPlayerMap->begin(); pIt != rcPlayerMap->end(); ++pIt)
+							{
+								if (pIt->second.m_profileID == profileID)
+								{
+									rcInfo = &(pIt->second);
+									break;
+								}
+							}
+						}
+						if (rcInfo == nullptr)
+						{
+							for (PlayerInfoMap::iterator pIt = rcPlayerMap->begin(); pIt != rcPlayerMap->end(); ++pIt)
+							{
+								if (FormatPlayerNameWithOSIcon(pIt->second.m_name).compare(uRowText) == 0)
+								{
+									rcInfo = &(pIt->second);
+									profileID = rcInfo->m_profileID;
+									break;
+								}
+							}
+						}
+					}
+					if (rcInfo != nullptr)
+					{
+						aName = rcInfo->m_name;
+					}
+					else
+					{
+						aName.translate(uRowText);
+					}
 
 					Bool isBuddy = FALSE;
 					if (profileID <= 0)
