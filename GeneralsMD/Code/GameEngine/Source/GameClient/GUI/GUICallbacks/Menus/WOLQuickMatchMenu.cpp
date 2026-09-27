@@ -87,9 +87,7 @@ static Bool s_inQM = FALSE;
 #include <map>
 #include <string>
 #include <cwchar>
-#if !defined(SAGE_USE_NGMP) && defined(SAGE_USE_SDL3)
-#include <SDL3/SDL.h>
-#endif
+#include "PlatformBrowser.h"
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 // window ids ------------------------------------------------------------------------------
@@ -152,14 +150,10 @@ static std::vector<int> s_qmRowToPlaylistMapIndex;
 static const uintptr_t QM_MAP_PACK_LINK_MAGIC = 0x4D415053; // 'MAPS'
 static std::map<Int, std::string> s_qmRowUrls;
 
-// GeneralsX @feature fbraz3 27/09/2026 Open URL in default browser
+// GeneralsX @feature fbraz3 27/09/2026 Open URL in default browser via platform layer
 static void OpenBrowserURL(const std::string& url)
 {
-#if defined(SAGE_USE_NGMP)
-	NGMP::OpenURL(url);
-#elif defined(SAGE_USE_SDL3)
-	SDL_OpenURL(url.c_str());
-#endif
+	Platform::OpenBrowserURL(url.c_str());
 }
 
 static bool isPopulatingLadderBox = false;
@@ -937,22 +931,28 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r0);
 
 		Int r1 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"More info and download at the link below:"), textColor, -1, -1);
-#if defined(SAGE_USE_NGMP) || defined(SAGE_USE_SDL3)
-		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(uintptr_t)QM_MAP_PACK_LINK_MAGIC, r1);
-		if (r1 >= 0)
-			s_qmRowUrls[r1] = wikiUrl;
-#else
-		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r1);
-#endif
+		if (Platform::CanOpenBrowser())
+		{
+			GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(uintptr_t)QM_MAP_PACK_LINK_MAGIC, r1);
+			if (r1 >= 0)
+				s_qmRowUrls[r1] = wikiUrl;
+		}
+		else
+		{
+			GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r1);
+		}
 
 		Int r2 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"https://generalsx.org/maps"), linkColor, -1, -1);
-#if defined(SAGE_USE_NGMP) || defined(SAGE_USE_SDL3)
-		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(uintptr_t)QM_MAP_PACK_LINK_MAGIC, r2);
-		if (r2 >= 0)
-			s_qmRowUrls[r2] = wikiUrl;
-#else
-		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r2);
-#endif
+		if (Platform::CanOpenBrowser())
+		{
+			GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(uintptr_t)QM_MAP_PACK_LINK_MAGIC, r2);
+			if (r2 >= 0)
+				s_qmRowUrls[r2] = wikiUrl;
+		}
+		else
+		{
+			GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r2);
+		}
 
 		Int r3 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L" "), textColor, -1, -1);
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r3);

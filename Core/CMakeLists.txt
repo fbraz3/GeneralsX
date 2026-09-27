@@ -18,6 +18,9 @@ target_include_directories(corei_gameengine_include INTERFACE "GameEngine/Includ
 target_include_directories(corei_libraries_include INTERFACE "Libraries/Include")
 target_include_directories(corei_libraries_source_wwvegas INTERFACE "Libraries/Source/WWVegas")
 target_include_directories(corei_platform INTERFACE "Libraries/Source/Platform")
+if(SAGE_USE_SDL3)
+    target_link_libraries(corei_platform INTERFACE SDL3::SDL3)
+endif()
 target_include_directories(corei_main INTERFACE "Main")
 
 target_sources(corei_libraries_include PRIVATE

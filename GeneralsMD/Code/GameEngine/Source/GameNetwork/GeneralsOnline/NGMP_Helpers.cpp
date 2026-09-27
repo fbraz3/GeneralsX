@@ -27,12 +27,13 @@
 #include "Common/UnicodeString.h"
 #include "WWLib/utf8.h"
 
+#include "PlatformBrowser.h"
+
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
-#include <shellapi.h>
 #include <wincrypt.h>
 #else
 #include <SDL3/SDL.h>
@@ -386,11 +387,7 @@ void OpenURL(const std::string& url) {
     if (url.empty()) {
         return;
     }
-#if defined(_WIN32)
-    ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-#else
-    SDL_OpenURL(url.c_str());
-#endif
+    Platform::OpenBrowserURL(url.c_str());
 }
 
 } // namespace NGMP
