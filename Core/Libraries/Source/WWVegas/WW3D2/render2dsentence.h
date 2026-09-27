@@ -99,6 +99,8 @@ public:
 
 	// TR: Hack for unicode font support
 	FontCharsClass					*AlternateUnicodeFont;
+	// GeneralsX @feature felipebraz 26/09/2026 Fallback font for brand/symbolic glyphs (Font Awesome)
+	FontCharsClass					*AlternateBrandFont;
 
 
 	bool	Initialize_GDI_Font( const char *font_name, int point_size, bool is_bold );
@@ -112,6 +114,8 @@ public:
 	int Get_Extra_Overlap() {return PixelOverlap;}
 
 	void	Blit_Char( WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, int y );
+	// GeneralsX @feature felipebraz 27/09/2026 Test if font contains a valid glyph mapping
+	bool	Has_Glyph( WCHAR ch ) const;
 
 private:
 

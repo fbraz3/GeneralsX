@@ -109,6 +109,32 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 
 	return nullptr;
 }
+
+// GeneralsX @feature felipebraz 26/09/2026 Load Font Awesome Brands as dedicated brand icon fallback font
+FontCharsClass *LoadBrandFallbackFont(Int size, Bool bold, const char *base_name)
+{
+	static const char *kBrandFonts[] = {
+		"fa-brands-400",
+		"Font Awesome 6 Brands",
+		nullptr
+	};
+
+	for (int i = 0; kBrandFonts[i]; ++i) {
+		if (base_name != nullptr && strcmp(kBrandFonts[i], base_name) == 0)
+			continue;
+
+		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(kBrandFonts[i], size, bold);
+		if (font != nullptr) {
+			// GeneralsX @bugfix felipebraz 27/09/2026 Ensure font has the required OS brand glyphs (Apple, Windows, Linux)
+			if (font->Has_Glyph(0xF179) && font->Has_Glyph(0xF17A) && font->Has_Glyph(0xF17C)) {
+				return font;
+			}
+			font->Release_Ref();
+		}
+	}
+
+	return nullptr;
+}
 }
 
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -163,6 +189,8 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 			"Arial Unicode MS",
 			"Arial Unicode",
 			"DejaVu Sans",
+			"fa-brands-400",
+			"Font Awesome 6 Brands",
 			nullptr
 		};
 		for (int i = 0; kFullCoverageFonts[i]; i++) {
@@ -173,6 +201,12 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 		}
 		if (!skipFallback) {
 			fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
+		}
+
+		// GeneralsX @feature felipebraz 26/09/2026 Provide brand glyph fallback for UI fonts
+		bool isBrandFont = (name != nullptr && (strcmp(name, "fa-brands-400") == 0 || strcmp(name, "Font Awesome 6 Brands") == 0));
+		if (!isBrandFont) {
+			fontChar->AlternateBrandFont = LoadBrandFallbackFont(size, bold, name);
 		}
 	}
 
@@ -189,6 +223,8 @@ void W3DFontLibrary::releaseFontData( GameFont *font )
 	// the W3D asset manager which is all taken for of us
 	if (font && font->fontData)
 	{
+		if(((FontCharsClass *)(font->fontData))->AlternateBrandFont)
+			((FontCharsClass *)(font->fontData))->AlternateBrandFont->Release_Ref();
 		if(((FontCharsClass *)(font->fontData))->AlternateUnicodeFont)
 			((FontCharsClass *)(font->fontData))->AlternateUnicodeFont->Release_Ref();
 		((FontCharsClass *)(font->fontData))->Release_Ref();
