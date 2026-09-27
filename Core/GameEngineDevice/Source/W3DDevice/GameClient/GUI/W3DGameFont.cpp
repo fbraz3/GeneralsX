@@ -72,9 +72,12 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 	// then known-good Unicode fonts. We iterate all candidates and pick the first that loads AND has a
 	// different family from the base font. This avoids returning a font that lacks Cyrillic coverage
 	// (e.g., Arial on macOS) when a better universal font like "Arial Unicode MS" is available.
+	// GeneralsX @feature felipebraz 26/09/2026 Include Liberation Sans in Unicode fallback candidate list
 	static const char *kFallbackUnicodeFonts[] = {
 		"Arial Unicode MS",
 		"Arial Unicode",
+		"Liberation Sans",
+		"Liberation Serif",
 		"Arial",
 		"Helvetica Neue",
 		"Helvetica",

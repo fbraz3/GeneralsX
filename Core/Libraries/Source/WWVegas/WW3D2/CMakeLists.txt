@@ -277,6 +277,7 @@ target_link_libraries(corei_ww3d2 INTERFACE
     core_browserengine
     core_wwlib
     core_wwmath
+    corei_platform
     $<$<PLATFORM_ID:Linux>:Freetype::Freetype>
     $<$<PLATFORM_ID:Darwin>:Freetype::Freetype>
     $<$<PLATFORM_ID:Linux>:Fontconfig::Fontconfig>
