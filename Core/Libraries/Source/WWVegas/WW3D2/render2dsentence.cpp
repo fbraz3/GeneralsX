@@ -1636,7 +1636,6 @@ FontCharsClass::Free_GDI_Font ()
 
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
 
-#include <unistd.h>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -1746,92 +1745,14 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 		candidates[candidate_count++] = "LiberationMono";
 	}
 
-	static const char *extensions[] = { ".ttf", ".otf", ".ttc" };
-
 	//
-	// Search directories for bundled/staged fonts
+	// Tier 1: Probe local candidate font files via platform abstraction
+	// GeneralsX @refactor felipebraz 26/09/2026 Encapsulate font probing in platform layer
 	//
-	const char *search_dirs[24];
-	int search_dir_count = 0;
-
-	char env_bundle_fonts[512] = {0};
-	const char *gx_bundle_fonts = getenv( "GX_BUNDLE_FONTS" );
-	if ( gx_bundle_fonts && gx_bundle_fonts[0] != '\0' ) {
-		snprintf( env_bundle_fonts, sizeof(env_bundle_fonts), "%s", gx_bundle_fonts );
-		search_dirs[search_dir_count++] = env_bundle_fonts;
-	}
-
-#if defined(__APPLE__)
-	// GeneralsX @bugfix felipebraz 26/09/2026 Resolve macOS app bundle Contents/Resources/fonts via platform layer
-	char macos_res_fonts[512] = {0};
-	char macos_bin_fonts[512] = {0};
-	if ( Platform::GetMacOSBundleFontDirectories( macos_res_fonts, sizeof(macos_res_fonts),
-	                                              macos_bin_fonts, sizeof(macos_bin_fonts) ) ) {
-		if ( access( macos_res_fonts, R_OK ) == 0 && search_dir_count < 24 ) {
-			search_dirs[search_dir_count++] = macos_res_fonts;
-		}
-		if ( access( macos_bin_fonts, R_OK ) == 0 && search_dir_count < 24 ) {
-			search_dirs[search_dir_count++] = macos_bin_fonts;
-		}
-	}
-#endif
-
-	search_dirs[search_dir_count++] = "fonts";
-	search_dirs[search_dir_count++] = "./fonts";
-	search_dirs[search_dir_count++] = "../Resources/fonts";
-	search_dirs[search_dir_count++] = "Resources/fonts";
-	search_dirs[search_dir_count++] = "assets/fonts";
-
-	char env_zh_fonts[512] = {0};
-	const char *zh_path = getenv( "CNC_GENERALS_ZH_PATH" );
-	if ( zh_path && zh_path[0] != '\0' && search_dir_count < 24 ) {
-		snprintf( env_zh_fonts, sizeof(env_zh_fonts), "%s/fonts", zh_path );
-		search_dirs[search_dir_count++] = env_zh_fonts;
-	}
-
-	char env_gen_fonts[512] = {0};
-	const char *gen_path = getenv( "CNC_GENERALS_PATH" );
-	if ( gen_path && gen_path[0] != '\0' && search_dir_count < 24 ) {
-		snprintf( env_gen_fonts, sizeof(env_gen_fonts), "%s/fonts", gen_path );
-		search_dirs[search_dir_count++] = env_gen_fonts;
-	}
-
-	char home_zh_fonts[512] = {0};
-	char home_gen_fonts[512] = {0};
-	const char *home_path = getenv( "HOME" );
-	if ( home_path && home_path[0] != '\0' ) {
-		if ( search_dir_count < 24 ) {
-			snprintf( home_zh_fonts, sizeof(home_zh_fonts), "%s/GeneralsX/GeneralsZH/fonts", home_path );
-			search_dirs[search_dir_count++] = home_zh_fonts;
-		}
-		if ( search_dir_count < 24 ) {
-			snprintf( home_gen_fonts, sizeof(home_gen_fonts), "%s/GeneralsX/Generals/fonts", home_path );
-			search_dirs[search_dir_count++] = home_gen_fonts;
-		}
-	}
-
-	if ( search_dir_count < 24 ) {
-		search_dirs[search_dir_count++] = "/app/share/fonts";
-	}
-	if ( search_dir_count < 24 ) {
-		search_dirs[search_dir_count++] = "/usr/share/fonts/truetype/liberation";
-	}
-
-	//
-	// Tier 1: Probe local candidate font files
-	//
-	char candidate_path[512];
-	for ( int d = 0; d < search_dir_count; ++d ) {
-		for ( int c = 0; c < candidate_count; ++c ) {
-			for ( size_t e = 0; e < sizeof(extensions) / sizeof(extensions[0]); ++e ) {
-				snprintf( candidate_path, sizeof(candidate_path), "%s/%s%s",
-					search_dirs[d], candidates[c], extensions[e] );
-				if ( access( candidate_path, R_OK ) == 0 ) {
-					FreetypeFontPath = candidate_path;
-					return FreetypeFontPath;
-				}
-			}
-		}
+	char candidate_path[1024];
+	if ( Platform::FindLocalFontFile( candidates, candidate_count, candidate_path, sizeof(candidate_path) ) ) {
+		FreetypeFontPath = candidate_path;
+		return FreetypeFontPath;
 	}
 
 	//
@@ -1850,7 +1771,7 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 			if ( font != nullptr && result == FcResultMatch ) {
 				FcChar8 *file_path = nullptr;
 				if ( FcPatternGetString( font, FC_FILE, 0, &file_path ) == FcResultMatch && file_path != nullptr ) {
-					if ( access( (const char*)file_path, R_OK ) == 0 ) {
+					if ( Platform::IsFileReadable( (const char*)file_path ) ) {
 						FreetypeFontPath = (const char*)file_path;
 						FcPatternDestroy( font );
 						FcPatternDestroy( pattern );
@@ -1871,23 +1792,23 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 	// GeneralsX @bugfix felipebraz 26/09/2026 Guard Tier 3 so unresolved Unicode/CJK fonts return nullptr and allow caller fallback delegation
 	//
 	if ( is_arial || is_times || is_courier ) {
-		static const char *fallback_names[] = {
+		static const char *fallback_names_bold[] = {
 			"arialbold.ttf",
 			"arial.ttf",
 			"LiberationSans-Bold.ttf",
 			"LiberationSans-Regular.ttf"
 		};
-		int fallback_start = is_bold ? 0 : 1;
-		for ( int d = 0; d < search_dir_count; ++d ) {
-			for ( size_t f = fallback_start; f < sizeof(fallback_names) / sizeof(fallback_names[0]); ++f ) {
-				snprintf( candidate_path, sizeof(candidate_path), "%s/%s", search_dirs[d], fallback_names[f] );
-				if ( access( candidate_path, R_OK ) == 0 ) {
-					fprintf( stderr, "[Font] Note: Font '%s' not found; falling back to bundled '%s'\n", font_name, candidate_path );
-					fflush( stderr );
-					FreetypeFontPath = candidate_path;
-					return FreetypeFontPath;
-				}
-			}
+		static const char *fallback_names_reg[] = {
+			"arial.ttf",
+			"LiberationSans-Regular.ttf"
+		};
+		const char *const *fnames = is_bold ? fallback_names_bold : fallback_names_reg;
+		int fcount = is_bold ? 4 : 2;
+		if ( Platform::FindLocalFontFile( fnames, fcount, candidate_path, sizeof(candidate_path) ) ) {
+			fprintf( stderr, "[Font] Note: Font '%s' not found; falling back to bundled '%s'\n", font_name, candidate_path );
+			fflush( stderr );
+			FreetypeFontPath = candidate_path;
+			return FreetypeFontPath;
 		}
 	}
 
