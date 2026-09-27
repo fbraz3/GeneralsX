@@ -34,12 +34,27 @@ sha256_verify() {
 
 mkdir -p "${DEST}"
 
-if [[ -f "${DEST}/arial.ttf" && -f "${DEST}/arialbold.ttf" && -f "${DEST}/couriernew.ttf" && -f "${DEST}/timesnewroman.ttf" && -f "${DEST}/fa-brands-400.ttf" && -f "${DEST}/LICENSE.liberation" && -f "${DEST}/LICENSE.fontawesome" ]]; then
-    echo "==> Fonts and licenses already present at ${DEST}"
+is_valid_fa() {
+    [[ -f "${DEST}/fa-brands-400.ttf" ]] && \
+    [[ -f "${DEST}/LICENSE.fontawesome" ]] && \
+    sha256_verify "${FA_SHA256}" "${DEST}/fa-brands-400.ttf" >/dev/null 2>&1 && \
+    sha256_verify "${FA_LIC_SHA256}" "${DEST}/LICENSE.fontawesome" >/dev/null 2>&1
+}
+
+is_valid_liberation() {
+    [[ -f "${DEST}/arial.ttf" ]] && \
+    [[ -f "${DEST}/arialbold.ttf" ]] && \
+    [[ -f "${DEST}/couriernew.ttf" ]] && \
+    [[ -f "${DEST}/timesnewroman.ttf" ]] && \
+    [[ -f "${DEST}/LICENSE.liberation" ]]
+}
+
+if is_valid_liberation && is_valid_fa; then
+    echo "==> Fonts and licenses already present and verified at ${DEST}"
     exit 0
 fi
 
-if [[ ! -f "${DEST}/arial.ttf" || ! -f "${DEST}/arialbold.ttf" || ! -f "${DEST}/couriernew.ttf" || ! -f "${DEST}/timesnewroman.ttf" || ! -f "${DEST}/LICENSE.liberation" ]]; then
+if ! is_valid_liberation; then
     echo "==> Downloading Liberation fonts ${LIB_VERSION}"
     if ! curl -fL -o "${TMP}/liberation.tar.gz" \
         "https://github.com/liberationfonts/liberation-fonts/files/7261482/liberation-fonts-ttf-${LIB_VERSION}.tar.gz" &&
@@ -61,7 +76,7 @@ if [[ ! -f "${DEST}/arial.ttf" || ! -f "${DEST}/arialbold.ttf" || ! -f "${DEST}/
     cp "${SRC}/LICENSE"                      "${DEST}/LICENSE.liberation"
 fi
 
-if [[ ! -f "${DEST}/fa-brands-400.ttf" || ! -f "${DEST}/LICENSE.fontawesome" ]]; then
+if ! is_valid_fa; then
     if [[ -f "${PROJECT_ROOT}/assets/fonts/fa-brands-400.ttf" && -f "${PROJECT_ROOT}/assets/fonts/LICENSE.fontawesome" ]]; then
         echo "==> Staging Font Awesome assets from repository assets/"
         cp "${PROJECT_ROOT}/assets/fonts/fa-brands-400.ttf" "${TMP}/fa-brands-400.ttf"
