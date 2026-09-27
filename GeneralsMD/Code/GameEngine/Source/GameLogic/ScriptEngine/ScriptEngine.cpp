@@ -7604,7 +7604,8 @@ Bool ScriptEngine::evaluateConditions( Script *pScript, Team *thisTeam, Player *
 			}
 			pCondition = pCondition->getNext();
 		}
-		if (andTerm) { // The outer list is OR'ed - so any true inner means we are true.
+		if (andTerm) {
+			// The outer list is OR'ed - so any true inner means we are true.
 			testValue = true;
 			break;
 		}
@@ -7788,6 +7789,13 @@ void ScriptEngine::removeAllSequentialScripts(Object *obj)
 		}
 		if (seqScript->m_objectID == id) {
 			it = cleanupSequentialScript(it, TRUE);
+
+#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+			// TheSuperHackers @info Preserve the original (bugged) traversal behavior by skipping the next element, if any.
+			if (it != m_sequentialScripts.end()) {
+				++it;
+			}
+#endif
 		}
     else
 		  ++it;
@@ -8032,7 +8040,8 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts()
 						itAdvanced = true;
 					}
 
-					if (itAdvanced) {	// check to make sure they aren't dead.
+					if (itAdvanced) {
+						// check to make sure they aren't dead.
 						if (obj && obj->isEffectivelyDead()) {
 							it = cleanupSequentialScript(it, true);
 							continue;
@@ -10197,7 +10206,8 @@ static void _reloadParticleSystemFromINI( AsciiString particleSystemName )
 			iniFile->nextLine(linebuff, INI_MAX_CHARS_PER_LINE);
 		}
 
-		{	// copy it to a temp file
+		{
+			// copy it to a temp file
 			if (iniFile->eof()) {
 				throw 0;
 			}

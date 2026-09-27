@@ -731,7 +731,8 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 				//First remove the composition characters
 				m_composing = FALSE;
 				while (m_compositionCharsDisplayed > 0)
-				{	//if cursor has moved since start of composition, we need to move it back using backspace message
+				{
+					//if cursor has moved since start of composition, we need to move it back using backspace message
 					TheWindowManager->winSendInputMsg( m_window, GWM_CHAR, KEY_BACKSPACE, KEY_STATE_DOWN);
 					m_compositionCharsDisplayed--;
 				}
@@ -787,7 +788,8 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 						m_composing = FALSE; // reset this flag before calling GWM_IME_CHAR
 
 						while (m_compositionCharsDisplayed > 0)
-						{	//if cursor has moved since start of composition, we need to move it back using backspace message
+						{
+							//if cursor has moved since start of composition, we need to move it back using backspace message
 							TheWindowManager->winSendInputMsg( m_window, GWM_CHAR, KEY_BACKSPACE, KEY_STATE_DOWN);
 							m_compositionCharsDisplayed--;
 						}
@@ -804,13 +806,15 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 				}
 				else
 				if (lParam & CS_INSERTCHAR && lParam & CS_NOMOVECARET)
-				{	//we are supposed to display the composition character without moving the cursor. (it's a candidate).
+				{
+					//we are supposed to display the composition character without moving the cursor. (it's a candidate).
 					if (m_window)
 					{
 						m_composing = FALSE; // reset this flag before calling GWM_IME_CHAR
 
 						while (m_compositionCharsDisplayed > 0)
-						{	//if cursor has moved since start of composition, we need to move it back using backspace message
+						{
+							//if cursor has moved since start of composition, we need to move it back using backspace message
 							TheWindowManager->winSendInputMsg( m_window, GWM_CHAR, KEY_BACKSPACE, KEY_STATE_DOWN);
 							m_compositionCharsDisplayed--;
 						}
@@ -828,13 +832,15 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 				}
 				else
 				if (lParam & GCS_COMPSTR)
-				{	//we are supposed to display the composition character without moving the cursor. (it's a candidate).
+				{
+					//we are supposed to display the composition character without moving the cursor. (it's a candidate).
 					if (m_window)
 					{
 						m_composing = FALSE; // reset this flag before calling GWM_IME_CHAR
 
 						while (m_compositionCharsDisplayed > 0)
-						{	//if cursor has moved since start of composition, we need to move it back using backspace message
+						{
+							//if cursor has moved since start of composition, we need to move it back using backspace message
 							TheWindowManager->winSendInputMsg( m_window, GWM_CHAR, KEY_BACKSPACE, KEY_STATE_DOWN);
 							m_compositionCharsDisplayed--;
 						}
@@ -953,7 +959,8 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 					case IMN_SETCOMPOSITIONFONT:     //This message is sent when the font of the input context is updated.
 					case IMN_SETCOMPOSITIONWINDOW:   //This message is sent when the style or position of the composition window is updated.
 					case IMN_PRIVATE:                //This message is for your own use, it seems.
-*/				default:
+*/
+				default:
 						m_result =  1;
 						return TRUE;
 				}

@@ -115,16 +115,21 @@ if (IS_VS6_BUILD)
     # If there is a desire to make this work, then a fixed max sdk needs to be created.
     add_subdirectory(Dependencies/MaxSDK)
 endif()
+
+add_subdirectory(Dependencies/Precompiled)
 add_subdirectory(Dependencies/Utility)
-
-# To be removed when abandoning VC6
-if (IS_VS6_BUILD)
-    include_directories(Dependencies/Utility)
-    add_compile_options(/FIUtility/CppMacros.h)
-endif()
-
 add_subdirectory(Dependencies/Bink)
 add_subdirectory(Dependencies/Miles)
+if (WIN32)
+    add_subdirectory(Dependencies/DbgHelp)
+    add_subdirectory(Dependencies/Usp10)
+else()
+    add_library(dbghelploader INTERFACE)
+    target_include_directories(dbghelploader INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/DbgHelp)
+    target_sources(dbghelploader INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/DbgHelp/DbgHelpGuard.cpp)
+    add_library(usp10loader INTERFACE)
+    target_include_directories(usp10loader INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Usp10)
+endif()
 
 add_subdirectory(resources)
 

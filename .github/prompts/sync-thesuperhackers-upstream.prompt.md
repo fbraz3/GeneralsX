@@ -34,17 +34,23 @@ The repository is significantly behind upstream `TheSuperHackers`. The purpose o
   - Split the plan into sections if necessary to cover different subsystems or types of conflicts (for example: build system conflicts, platform abstraction conflicts, gameplay code conflicts, etc.).
 8. Load the plan into working memory and execute it step by step, documenting the outcome of each major decision and conflict resolution in detail.
 9. Ensure no unresolved merge markers remain anywhere in the tree before validation (`<<<<<<<`, `=======`, `>>>>>>>`).
-10. Ensure the repository remains buildable and configurable after conflict resolution.
-11. Validate runtime smoke for both products on validated platforms: `GeneralsXZH` and `GeneralsX` should at minimum enter and exit the main loop cleanly.
-12. Remove generated runtime/build artifacts from the working tree before commit (for example local shader/DXVK caches).
-13. Commit the final merge result.
-14. Push the branch `thesuperhackers-sync-MM-DD-YYYY` to origin.
+10. Audit for duplicate files: Run a check across `Core/` and `Generals/`/`GeneralsMD/` to ensure files moved to `Core/` were not left duplicated in the game-specific directories. Remove orphaned duplicates using `git rm`.
+11. Ensure the repository remains buildable and configurable after conflict resolution.
+12. Validate runtime smoke for both products on validated platforms: `GeneralsXZH` and `GeneralsX` should at minimum enter and exit the main loop cleanly.
+13. Remove generated runtime/build artifacts from the working tree before commit (for example local shader/DXVK caches).
+14. Commit the final merge result.
+15. Push the branch `thesuperhackers-sync-MM-DD-YYYY` to origin.
 
 ## Critical Merge Instructions
 
 Expect many conflicts because the projects intentionally diverged. Every conflict must be analyzed individually and in detail.
 
 - Expect many files moved from `Generals/` and `GeneralsMD/` into a unified `Core/` directory. 
+- **CRITICAL - Prevent Duplicate Files from Core Unification:**
+  - Upstream actively unifies files from `Generals/` and `GeneralsMD/` into `Core/` (e.g., `ThingTemplate`, `W3DDisplay`, map triggers/terrain logic).
+  - When git generates modify/delete (`UD` or `DU`) conflicts for files moved to `Core/`, NEVER leave duplicate files behind in `Generals/` or `GeneralsMD/`.
+  - Always ensure all `GeneralsX` cross-platform improvements (SDL3 windowing, DXVK rendering, 64-bit integer casts, `WWMath` determinism) are ported into the unified `Core/` version.
+  - Perform an explicit double-check (e.g., comparing file basenames between `Core/` and `Generals/`/`GeneralsMD/`) and remove obsolete duplicate files with `git rm`.
 - **IMPORTANT:** never ever assume that all conflicts in those areas should be resolved by keeping the `TheSuperHackers` version or the `GeneralsX` version, analyze each conflict carefully and find the real resolution.
 - Do not use blanket conflict strategies for large areas of the tree.
 - Do not sacrifice the cross-platform architecture of `GeneralsX` just to make the merge easy.
@@ -104,6 +110,7 @@ The final response must include a checklist covering at least:
 
 - configure on all supported platforms
 - build on all supported platforms
+- double-check that no duplicate files remain between `Core/` and `Generals/` or `GeneralsMD/`
 - game launch
 - main menu
 - skirmish gameplay

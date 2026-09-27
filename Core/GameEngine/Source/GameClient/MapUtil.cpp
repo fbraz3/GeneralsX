@@ -1448,7 +1448,8 @@ Image *getMapPreviewImage( AsciiString mapName )
 		ChunkInputStream *pStrm = &theInputStream;
 		pStrm->absoluteSeek(0);
 		DataChunkInput file( pStrm );
-		if (file.isValidFileType()) {	// Backwards compatible files aren't valid data chunk files.
+		if (file.isValidFileType()) {
+			// Backwards compatible files aren't valid data chunk files.
 			// Read the waypoints.
 			file.registerParser( "MapPreview", AsciiString::TheEmptyString, parseMapPreviewChunk );
 			if (!file.parse(nullptr)) {

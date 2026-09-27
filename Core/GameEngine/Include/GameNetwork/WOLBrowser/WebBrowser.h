@@ -51,7 +51,6 @@
 #include "EABrowserDispatch/BrowserDispatch.h"
 #include "FEBDispatch.h"
 #endif
-#include <Lib/BaseType.h>
 
 class GameWindow;
 

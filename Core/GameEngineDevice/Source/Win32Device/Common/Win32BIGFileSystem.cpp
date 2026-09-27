@@ -584,8 +584,7 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 	// seek to the beginning of the directory listing.
 	fp->seek(0x10, File::START);
 	// read in each directory listing.
-	ArchivedFileInfo *fileInfo = NEW ArchivedFileInfo;
-	// TheSuperHackers @fix Mauller 23/04/2025 Create new file handle when necessary to prevent memory leak
+	ArchivedFileInfo fileInfo;
 	ArchiveFile *archiveFile = NEW Win32BIGFile(filename, AsciiString::TheEmptyString);
 
 	for (Int i = 0; i < numLittleFiles; ++i) {
@@ -597,9 +596,9 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 		filesize = betoh(filesize);
 		fileOffset = betoh(fileOffset);
 
-		fileInfo->m_archiveFilename = archiveFileName;
-		fileInfo->m_offset = fileOffset;
-		fileInfo->m_size = filesize;
+		fileInfo.m_archiveFilename = archiveFileName;
+		fileInfo.m_offset = fileOffset;
+		fileInfo.m_size = filesize;
 
 		// read in the path name of the file.
 		Int pathIndex = -1;
@@ -613,14 +612,14 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 			--filenameIndex;
 		}
 
-		fileInfo->m_filename = (char *)(buffer + filenameIndex + 1);
-		fileInfo->m_filename.toLower();
+		fileInfo.m_filename = (char *)(buffer + filenameIndex + 1);
+		fileInfo.m_filename.toLower();
 		buffer[filenameIndex + 1] = 0;
 
 		// GeneralsX @bugfix felipebraz 16/09/2026 Skip dummy/wildcard entries (e.g. Data\* in retail PatchZH.big)
-		if (fileInfo->m_filename.isEmpty() ||
-			fileInfo->m_filename.find('*') != nullptr ||
-			fileInfo->m_filename.find('?') != nullptr) {
+		if (fileInfo.m_filename.isEmpty() ||
+			fileInfo.m_filename.find('*') != nullptr ||
+			fileInfo.m_filename.find('?') != nullptr) {
 			continue;
 		}
 
@@ -629,16 +628,13 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 
 		AsciiString debugpath;
 		debugpath = path;
-		debugpath.concat(fileInfo->m_filename);
+		debugpath.concat(fileInfo.m_filename);
 //		DEBUG_LOG(("Win32BIGFileSystem::openArchiveFile - adding file %s to archive file %s, file number %d", debugpath.str(), fileInfo->m_archiveFilename.str(), i));
 
-		archiveFile->addFile(path, fileInfo);
+		archiveFile->addFile(path, &fileInfo);
 	}
 
 	archiveFile->attachFile(fp);
-
-	delete fileInfo;
-	fileInfo = nullptr;
 
 	// leave fp open as the archive file will be using it.
 

@@ -523,10 +523,10 @@ static void checkSampleBuildLocation( const Coord3D *samplePoint, void *userData
 	// too close to edge of map?
 	if (TheGlobalData->m_MinDistFromEdgeOfMapForBuild > 0.0f)
 	{
-		if (samplePoint->x < sampleData->mapRegion.lo.x + TheGlobalData->m_MinDistFromEdgeOfMapForBuild
-				|| samplePoint->x > sampleData->mapRegion.hi.x - TheGlobalData->m_MinDistFromEdgeOfMapForBuild
-				|| samplePoint->y < sampleData->mapRegion.lo.y + TheGlobalData->m_MinDistFromEdgeOfMapForBuild
-				|| samplePoint->y > sampleData->mapRegion.hi.y - TheGlobalData->m_MinDistFromEdgeOfMapForBuild)
+		if (samplePoint->x < sampleData->mapRegion.lo.x + TheGlobalData->m_MinDistFromEdgeOfMapForBuild ||
+				samplePoint->x > sampleData->mapRegion.hi.x - TheGlobalData->m_MinDistFromEdgeOfMapForBuild ||
+				samplePoint->y < sampleData->mapRegion.lo.y + TheGlobalData->m_MinDistFromEdgeOfMapForBuild ||
+				samplePoint->y > sampleData->mapRegion.hi.y - TheGlobalData->m_MinDistFromEdgeOfMapForBuild)
 		{
 			sampleData->terrainRestricted = TRUE;
 		}
@@ -1022,7 +1022,7 @@ void BuildAssistant::addBibs(const Coord3D *worldPos,
 																	const ThingTemplate *build  )
 {
 
-	Real range = build->friend_getVisionRange();
+	Real range = build->friend_calcVisionRange();
 	range += 3*build->getTemplateGeometryInfo().getMajorRadius();
 
 	PartitionFilterAcceptByKindOf f1(MAKE_KINDOF_MASK(KINDOF_STRUCTURE), KINDOFMASK_NONE);

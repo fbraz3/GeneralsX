@@ -126,7 +126,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/Thing.h
 #    Include/Common/ThingFactory.h
 #    Include/Common/ThingSort.h
-#    Include/Common/ThingTemplate.h
+    Include/Common/ThingTemplate.h
 #    Include/Common/TunnelTracker.h
     Include/Common/UnicodeString.h
 #    Include/Common/UnitTimings.h
@@ -255,6 +255,7 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/FiringTracker.h
 #    Include/GameLogic/FPUControl.h
 #    Include/GameLogic/GameLogic.h
+    Include/GameLogic/GameMode.h
 #    Include/GameLogic/GhostObject.h
 #    Include/GameLogic/Locomotor.h
 #    Include/GameLogic/LocomotorSet.h
@@ -486,6 +487,14 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/ObjectIter.h
 #    Include/GameLogic/ObjectScriptStatusBits.h
 #    Include/GameLogic/ObjectTypes.h
+     Include/GameLogic/Pathfinder/Path.h
+     Include/GameLogic/Pathfinder/PathfindCell.h
+     Include/GameLogic/Pathfinder/PathfindCellInfo.h
+     Include/GameLogic/Pathfinder/PathfindCellList.h
+     Include/GameLogic/Pathfinder/PathfindLayer.h
+     Include/GameLogic/Pathfinder/PathfindZoneManager.h
+     Include/GameLogic/Pathfinder/PathNode.h
+     Include/GameLogic/Pathfinder/ZoneBlock.h
 #    Include/GameLogic/PartitionManager.h
     Include/GameLogic/PolygonTrigger.h
 #    Include/GameLogic/Powers.h
@@ -691,7 +700,7 @@ set(GAMEENGINE_SRC
 #    Source/Common/Thing/ModuleFactory.cpp
 #    Source/Common/Thing/Thing.cpp
 #    Source/Common/Thing/ThingFactory.cpp
-#    Source/Common/Thing/ThingTemplate.cpp
+    Source/Common/Thing/ThingTemplate.cpp
     Source/Common/UserPreferences.cpp
     Source/Common/version.cpp
     Source/Common/WorkerProcess.cpp
@@ -1202,6 +1211,7 @@ target_include_directories(corei_gameengine_public INTERFACE
 target_link_libraries(corei_gameengine_public INTERFACE
     core_compression
     core_browserdispatch
+    dbghelploader
     #core_wwvegas
     corei_platform
     d3d8lib

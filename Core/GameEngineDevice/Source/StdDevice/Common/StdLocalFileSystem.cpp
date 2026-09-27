@@ -200,7 +200,7 @@ File * StdLocalFileSystem::openFile(const Char *filename, Int access, size_t buf
 	//USE_PERF_TIMER(StdLocalFileSystem_openFile)
 
 	// sanity check
-	if (strlen(filename) <= 0) {
+	if (*filename == '\0') {
 		return nullptr;
 	}
 
@@ -280,7 +280,6 @@ Bool StdLocalFileSystem::doesFileExist(const Char *filename) const
 
 void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList & filenameList, Bool searchSubdirectories) const
 {
-
 	// GeneralsX @bugfix felipebraz 16/09/2026 Ensure directory separator between original and current path
 	AsciiString asciisearch;
 	asciisearch = originalDirectory;
@@ -301,19 +300,17 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 	std::replace(fixedDirectory.begin(), fixedDirectory.end(), '\\', '/');
 #endif
 
-	Bool done = FALSE;
 	std::error_code ec;
 
 	auto iter = std::filesystem::directory_iterator(fixedDirectory.c_str(), ec);
-	// The default iterator constructor creates an end iterator
-	done = iter == std::filesystem::directory_iterator();
 
 	if (ec) {
 		DEBUG_LOG(("StdLocalFileSystem::getFileListInDirectory - Error opening directory %s", fixedDirectory.c_str()));
 		return;
 	}
 
-	while (!done)	{
+	// The default iterator constructor creates an end iterator
+	for (; iter != std::filesystem::directory_iterator(); ++iter)	{
 		std::string filenameStr = iter->path().filename().string();
 		std::string fileExtStr = iter->path().extension().string();
 		// GeneralsX @bugfix felipebraz 16/09/2026 Case-insensitive extension comparison for Linux (e.g. .BIG vs .big)
@@ -331,9 +328,6 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 				filenameList.insert(newFilename);
 			}
 		}
-
-		iter++;
-		done = iter == std::filesystem::directory_iterator();
 	}
 
 	if (searchSubdirectories) {
@@ -345,9 +339,7 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 		}
 
 		// The default iterator constructor creates an end iterator
-		done = iter == std::filesystem::directory_iterator();
-
-		while (!done) {
+		for (; iter != std::filesystem::directory_iterator(); ++iter) {
 			std::string filenameStr = iter->path().filename().string();
 			if(iter->is_directory() &&
 				(strcmp(filenameStr.c_str(), ".") != 0 && strcmp(filenameStr.c_str(), "..") != 0)) {
@@ -362,9 +354,6 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 				// recursively add files in subdirectories if required.
 				getFileListInDirectory(tempsearchstr, originalDirectory, searchName, filenameList, searchSubdirectories);
 			}
-
-			iter++;
-			done = iter == std::filesystem::directory_iterator();
 		}
 	}
 }
@@ -373,7 +362,7 @@ Bool StdLocalFileSystem::getFileInfo(const AsciiString& filename, FileInfo *file
 {
 	std::filesystem::path path = fixFilenameFromWindowsPath(filename.str(), 0);
 
-	if(path.empty()) {
+	if (path.empty()) {
 		return FALSE;
 	}
 
