@@ -872,14 +872,22 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r0);
 
 		Int r1 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"More info and download at the link below:"), textColor, -1, -1);
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(uintptr_t)QM_MAP_PACK_LINK_MAGIC, r1);
 		if (r1 >= 0)
 			s_qmRowUrls[r1] = wikiUrl;
+#else
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r1);
+#endif
 
 		Int r2 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"https://generalsx.org/maps"), linkColor, -1, -1);
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(uintptr_t)QM_MAP_PACK_LINK_MAGIC, r2);
 		if (r2 >= 0)
 			s_qmRowUrls[r2] = wikiUrl;
+#else
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r2);
+#endif
 
 		Int r3 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L" "), textColor, -1, -1);
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r3);
