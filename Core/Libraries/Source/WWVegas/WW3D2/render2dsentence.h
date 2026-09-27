@@ -99,6 +99,8 @@ public:
 
 	// TR: Hack for unicode font support
 	FontCharsClass					*AlternateUnicodeFont;
+	// GeneralsX @feature felipebraz 26/09/2026 Fallback font for brand/symbolic glyphs (Font Awesome)
+	FontCharsClass					*AlternateBrandFont;
 
 
 	bool	Initialize_GDI_Font( const char *font_name, int point_size, bool is_bold );

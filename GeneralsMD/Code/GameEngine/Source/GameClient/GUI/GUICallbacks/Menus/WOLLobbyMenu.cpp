@@ -694,10 +694,61 @@ const Image* LookupSmallRankImage(Int side, Int rankPoints)
 	return img;
 }
 
+// GeneralsX @feature felipebraz 26/09/2026 Format player display name with Font Awesome OS brand icon
+static UnicodeString FormatPlayerNameWithOSIcon(const AsciiString& rawName)
+{
+	UnicodeString uName;
+	AsciiString cleanName = rawName;
+	WideChar osIcon = 0;
+
+	if (cleanName.endsWithNoCase(" [MAC]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 6);
+		osIcon = 0xF179; // fa-apple
+	}
+	else if (cleanName.endsWithNoCase(" [WIN]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 6);
+		osIcon = 0xF17A; // fa-windows
+	}
+	else if (cleanName.endsWithNoCase(" [LNX]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 6);
+		osIcon = 0xF17C; // fa-linux
+	}
+	else if (cleanName.endsWithNoCase("[MAC]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 5);
+		osIcon = 0xF179;
+	}
+	else if (cleanName.endsWithNoCase("[WIN]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 5);
+		osIcon = 0xF17A;
+	}
+	else if (cleanName.endsWithNoCase("[LNX]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 5);
+		osIcon = 0xF17C;
+	}
+
+	uName.translate(cleanName);
+
+	if (osIcon != 0)
+	{
+		WideChar iconBuf[3];
+		iconBuf[0] = ' ';
+		iconBuf[1] = osIcon;
+		iconBuf[2] = 0;
+		uName.concat(iconBuf);
+	}
+
+	return uName;
+}
+
 static Int insertPlayerInListbox(const PlayerInfo& info, Color color)
 {
-	UnicodeString uStr;
-	uStr.translate(info.m_name);
+	UnicodeString uStr = FormatPlayerNameWithOSIcon(info.m_name);
 
 	Int currentRank = info.m_rankPoints;
 	Int currentSide = info.m_side;
@@ -730,6 +781,7 @@ void PopulateLobbyPlayerListbox()
 	Int maxSelectedItems = GadgetListBoxGetNumEntries(listboxLobbyPlayers);
 	Int *selectedIndices = nullptr;
 	GadgetListBoxGetSelected(listboxLobbyPlayers, (Int *)(&selectedIndices));
+	std::set<Int> selectedProfileIDs;
 	std::set<AsciiString> selectedNames;
 	UnicodeString uStr;
 	Int numSelected = 0;
@@ -738,6 +790,11 @@ void PopulateLobbyPlayerListbox()
 		if (!selectedIndices || selectedIndices[i] < 0)
 			break;
 		++numSelected;
+		Int profileID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLobbyPlayers, selectedIndices[i], 0)));
+		if (profileID != 0)
+		{
+			selectedProfileIDs.insert(profileID);
+		}
 		AsciiString selectedName;
 		uStr = GadgetListBoxGetText(listboxLobbyPlayers, selectedIndices[i], COLUMN_PLAYERNAME);
 		selectedName.translate(uStr);
@@ -771,7 +828,8 @@ void PopulateLobbyPlayerListbox()
 		Color color = p.isAdmin ? GameSpyColor[GSCOLOR_PLAYER_OWNER] : GameSpyColor[GSCOLOR_PLAYER_NORMAL];
 		Int index = insertPlayerInListbox(info, color);
 
-		if (selectedNames.find(info.m_name) != selectedNames.end())
+		if ((info.m_profileID != 0 && selectedProfileIDs.find(info.m_profileID) != selectedProfileIDs.end()) ||
+		    selectedNames.find(info.m_name) != selectedNames.end())
 		{
 			indicesToSelect.insert(index);
 		}

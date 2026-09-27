@@ -1182,6 +1182,7 @@ FontCharsClass::FontCharsClass () :
 	IsBold (false)
 {
 	AlternateUnicodeFont = nullptr;
+	AlternateBrandFont = nullptr;
 	::memset( ASCIICharArray, 0, sizeof (ASCIICharArray) );
 }
 
@@ -1225,6 +1226,11 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 	{
 		retval = ASCIICharArray[normalized_char];
 	}
+	// GeneralsX @feature felipebraz 26/09/2026 Route Private Use Area (Font Awesome Brand icons) to brand font
+	else if ( normalized_char >= 0xE000 && normalized_char <= 0xF8FF && AlternateBrandFont && this != AlternateBrandFont )
+	{
+		return AlternateBrandFont->Get_Char_Data( glyph );
+	}
  	else if ( AlternateUnicodeFont && this != AlternateUnicodeFont )
 	{
 		return AlternateUnicodeFont->Get_Char_Data( glyph );
@@ -1260,6 +1266,16 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 int
 FontCharsClass::Get_Char_Width (WCHAR ch)
 {
+	const uint16 normalized_char = static_cast<uint16>(ch);
+	const WCHAR glyph = static_cast<WCHAR>(normalized_char);
+
+	if ( normalized_char >= 0xE000 && normalized_char <= 0xF8FF && AlternateBrandFont && this != AlternateBrandFont ) {
+		return AlternateBrandFont->Get_Char_Width( glyph );
+	}
+	if ( normalized_char >= 256 && AlternateUnicodeFont && this != AlternateUnicodeFont ) {
+		return AlternateUnicodeFont->Get_Char_Width( glyph );
+	}
+
 	const FontCharsClassCharDataStruct	* data = Get_Char_Data( ch );
 	if ( data != nullptr ) {
 		return data->Width;
@@ -1277,6 +1293,16 @@ FontCharsClass::Get_Char_Width (WCHAR ch)
 int
 FontCharsClass::Get_Char_Spacing (WCHAR ch)
 {
+	const uint16 normalized_char = static_cast<uint16>(ch);
+	const WCHAR glyph = static_cast<WCHAR>(normalized_char);
+
+	if ( normalized_char >= 0xE000 && normalized_char <= 0xF8FF && AlternateBrandFont && this != AlternateBrandFont ) {
+		return AlternateBrandFont->Get_Char_Spacing( glyph );
+	}
+	if ( normalized_char >= 256 && AlternateUnicodeFont && this != AlternateUnicodeFont ) {
+		return AlternateUnicodeFont->Get_Char_Spacing( glyph );
+	}
+
 	const FontCharsClassCharDataStruct	* data = Get_Char_Data( ch );
 	if ( data != nullptr ) {
 		if ( data->Width != 0 ) {
@@ -1296,6 +1322,18 @@ FontCharsClass::Get_Char_Spacing (WCHAR ch)
 void
 FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, int y)
 {
+	const uint16 normalized_char = static_cast<uint16>(ch);
+	const WCHAR glyph = static_cast<WCHAR>(normalized_char);
+
+	if ( normalized_char >= 0xE000 && normalized_char <= 0xF8FF && AlternateBrandFont && this != AlternateBrandFont ) {
+		AlternateBrandFont->Blit_Char( glyph, dest_ptr, dest_stride, x, y );
+		return;
+	}
+	if ( normalized_char >= 256 && AlternateUnicodeFont && this != AlternateUnicodeFont ) {
+		AlternateUnicodeFont->Blit_Char( glyph, dest_ptr, dest_stride, x, y );
+		return;
+	}
+
 	const FontCharsClassCharDataStruct	* data = Get_Char_Data( ch );
 	if ( data != nullptr && data->Width != 0 ) {
 
@@ -1719,6 +1757,13 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 					   strcmp( normalized, "liberationmono" ) == 0 ||
 					   strcmp( normalized, "liberationmonobold" ) == 0);
 
+	// GeneralsX @feature felipebraz 26/09/2026 Font Awesome 6 Brands font resolution
+	bool is_fa_brands = (strcmp( normalized, "fontawesome6brands" ) == 0 ||
+	                     strcmp( normalized, "fontawesomebrands" ) == 0 ||
+	                     strcmp( normalized, "fabrands400" ) == 0 ||
+	                     strcmp( normalized, "fabrands" ) == 0 ||
+	                     strcmp( normalized, "fontawesome" ) == 0);
+
 	if ( is_arial ) {
 		if ( is_bold ) {
 			candidates[candidate_count++] = "LiberationSans-Bold";
@@ -1743,6 +1788,11 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 		candidates[candidate_count++] = "LiberationMono-Regular";
 		candidates[candidate_count++] = "liberationmono-regular";
 		candidates[candidate_count++] = "LiberationMono";
+	} else if ( is_fa_brands ) {
+		candidates[candidate_count++] = "fa-brands-400";
+		candidates[candidate_count++] = "fa-brands-400.ttf";
+		candidates[candidate_count++] = "FontAwesome6Brands-Regular";
+		candidates[candidate_count++] = "Font Awesome 6 Brands";
 	}
 
 	//
@@ -2003,6 +2053,10 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	const int skip_cols = (glyph->bitmap_left < 0) ? -glyph->bitmap_left : 0;
 	const int max_cols = char_width - x_offset;
 	for ( unsigned int row = 0; row < glyph->bitmap.rows; row++ ) {
+		// GeneralsX @bugfix felipebraz 26/09/2026 Guard row write bounds against CharHeight
+		if ( (y_offset + static_cast<int>(row)) >= CharHeight ) {
+			break;
+		}
 		int src_index = row * glyph->bitmap.pitch;
 		int dst_index = (y_offset + row) * char_width;
 
