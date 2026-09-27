@@ -36,7 +36,7 @@ inline bool OpenBrowserURL(const char *url)
 		return false;
 	}
 #if defined(SAGE_USE_SDL3)
-	return (SDL_OpenURL(url) == 0);
+	return SDL_OpenURL(url);
 #elif defined(_WIN32)
 	HINSTANCE hInst = ShellExecuteA(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
 	return (reinterpret_cast<intptr_t>(hInst) > 32);
