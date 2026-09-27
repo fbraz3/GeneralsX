@@ -77,6 +77,15 @@ static Bool s_inQM = FALSE;
 #define PERF_LOG(x)
 #endif // DEBUG_LOGGING
 
+#include <map>
+#include <string>
+#if defined(_WIN32)
+#include <windows.h>
+#include <shellapi.h>
+#else
+#include <SDL3/SDL.h>
+#endif
+
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 // window ids ------------------------------------------------------------------------------
 static NameKeyType parentWOLQuickMatchID = NAMEKEY_INVALID;
@@ -137,6 +146,19 @@ static Int maxPoints= 100;
 static Int minPoints = 0;
 
 static const LadderInfo * getLadderInfo();
+
+// GeneralsX @feature fbraz3 27/09/2026 Map QuickMatch listbox rows to clickable URLs
+static std::map<Int, std::string> s_qmRowUrls;
+
+// GeneralsX @feature fbraz3 27/09/2026 Open URL in default browser
+static void OpenBrowserURL(const std::string& url)
+{
+#if defined(_WIN32)
+	ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+#else
+	SDL_OpenURL(url.c_str());
+#endif
+}
 
 
 // [SKB: Jul 01 2003 @ 7:7pm] :
@@ -839,6 +861,36 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 	buttonStop->winHide( TRUE );
 	buttonStart->winHide( FALSE );
 	GadgetListBoxReset(quickmatchTextWindow);
+
+	// GeneralsX @feature fbraz3 27/09/2026 Display QuickMatch Map Pack notice and clickable wiki guide link
+	s_qmRowUrls.clear();
+	if (quickmatchTextWindow)
+	{
+		const std::string wikiUrl = "https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-Ranked-&-Multiplayer-Maps";
+		Color headerColor = GameMakeColor(255, 200, 80, 255);  // Warm Gold/Amber
+		Color textColor   = GameSpyColor[GSCOLOR_DEFAULT];      // Standard text color
+		Color linkColor   = GameMakeColor(100, 180, 255, 255);  // Bright Link Blue
+
+		Int r0 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"Notice: QuickMatch requires the official Map Pack."), headerColor, -1, -1);
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r0);
+
+		Int r1 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"Please install the maps to find and play matches."), textColor, -1, -1);
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r1);
+
+		Int r2 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"Click here to download the Map Pack & setup guide:"), linkColor, -1, -1);
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r2);
+		if (r2 >= 0)
+			s_qmRowUrls[r2] = wikiUrl;
+
+		Int r3 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-Ranked-&-Multiplayer-Maps"), linkColor, -1, -1);
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r3);
+		if (r3 >= 0)
+			s_qmRowUrls[r3] = wikiUrl;
+
+		Int r4 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L" "), textColor, -1, -1);
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r4);
+	}
+
 	enableOptionsGadgets(TRUE);
 
 	// Show Menu
@@ -954,6 +1006,7 @@ void WOLQuickMatchMenuShutdown( WindowLayout *layout, void *userData )
 	buttonBack = nullptr;
 	quickmatchTextWindow = nullptr;
 	selectedImage = unselectedImage = nullptr;
+	s_qmRowUrls.clear();
 
 	isShuttingDown = true;
 
@@ -1807,6 +1860,18 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					}
 					if (selected >= 0)
 						GadgetListBoxSetSelected(control, -1);
+				}
+				// GeneralsX @feature fbraz3 27/09/2026 Open QuickMatch map pack wiki guide on listbox row click
+				else if ( controlID == listboxQuickMatchID && selected >= 0 )
+				{
+					auto it = s_qmRowUrls.find(selected);
+					if (it != s_qmRowUrls.end() && !it->second.empty())
+					{
+						fprintf(stderr, "[WOLQuickMatchMenu] Opening Map Pack URL: %s\n", it->second.c_str());
+						fflush(stderr);
+						OpenBrowserURL(it->second);
+						GadgetListBoxSetSelected(control, -1);
+					}
 				}
 				UpdateStartButton();
 				break;
