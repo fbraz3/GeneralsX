@@ -114,6 +114,8 @@ public:
 	int Get_Extra_Overlap() {return PixelOverlap;}
 
 	void	Blit_Char( WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, int y );
+	// GeneralsX @feature felipebraz 27/09/2026 Test if font contains a valid glyph mapping
+	bool	Has_Glyph( WCHAR ch ) const;
 
 private:
 

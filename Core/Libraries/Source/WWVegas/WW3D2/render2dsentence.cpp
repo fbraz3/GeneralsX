@@ -1364,6 +1364,26 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
+//	Has_Glyph
+//
+// GeneralsX @feature felipebraz 27/09/2026 Test if font contains a valid glyph mapping
+////////////////////////////////////////////////////////////////////////////////////
+bool
+FontCharsClass::Has_Glyph (WCHAR ch) const
+{
+#if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+	if ( FTFace == nullptr ) {
+		return false;
+	}
+	return FT_Get_Char_Index( FTFace, ch ) != 0;
+#else
+	return false;
+#endif
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
 //	Update_Current_Buffer
 //
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1819,14 +1839,31 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 			FcResult result = FcResultNoMatch;
 			FcPattern *font = FcFontMatch( config, pattern, &result );
 			if ( font != nullptr && result == FcResultMatch ) {
-				FcChar8 *file_path = nullptr;
-				if ( FcPatternGetString( font, FC_FILE, 0, &file_path ) == FcResultMatch && file_path != nullptr ) {
-					if ( Platform::IsFileReadable( (const char*)file_path ) ) {
-						FreetypeFontPath = (const char*)file_path;
-						FcPatternDestroy( font );
-						FcPatternDestroy( pattern );
-						FcConfigDestroy( config );
-						return FreetypeFontPath;
+				// GeneralsX @bugfix felipebraz 27/09/2026 Guard brand queries against generic sans fallbacks from FcFontMatch
+				bool match_valid = true;
+				if ( is_fa_brands ) {
+					FcChar8 *family = nullptr;
+					if ( FcPatternGetString( font, FC_FAMILY, 0, &family ) == FcResultMatch && family != nullptr ) {
+						if ( strstr( (const char*)family, "Font Awesome" ) == nullptr &&
+							 strstr( (const char*)family, "FontAwesome" ) == nullptr &&
+							 strstr( (const char*)family, "Brands" ) == nullptr ) {
+							match_valid = false;
+						}
+					} else {
+						match_valid = false;
+					}
+				}
+
+				if ( match_valid ) {
+					FcChar8 *file_path = nullptr;
+					if ( FcPatternGetString( font, FC_FILE, 0, &file_path ) == FcResultMatch && file_path != nullptr ) {
+						if ( Platform::IsFileReadable( (const char*)file_path ) ) {
+							FreetypeFontPath = (const char*)file_path;
+							FcPatternDestroy( font );
+							FcPatternDestroy( pattern );
+							FcConfigDestroy( config );
+							return FreetypeFontPath;
+						}
 					}
 				}
 				FcPatternDestroy( font );

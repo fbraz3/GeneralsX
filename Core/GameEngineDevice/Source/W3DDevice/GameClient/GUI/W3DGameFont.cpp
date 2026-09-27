@@ -125,7 +125,11 @@ FontCharsClass *LoadBrandFallbackFont(Int size, Bool bold, const char *base_name
 
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(kBrandFonts[i], size, bold);
 		if (font != nullptr) {
-			return font;
+			// GeneralsX @bugfix felipebraz 27/09/2026 Ensure font has the required OS brand glyphs (Apple, Windows, Linux)
+			if (font->Has_Glyph(0xF179) && font->Has_Glyph(0xF17A) && font->Has_Glyph(0xF17C)) {
+				return font;
+			}
+			font->Release_Ref();
 		}
 	}
 

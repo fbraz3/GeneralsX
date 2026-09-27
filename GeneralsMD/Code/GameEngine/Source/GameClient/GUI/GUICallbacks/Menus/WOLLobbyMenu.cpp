@@ -474,16 +474,44 @@ static void playerTooltip(GameWindow *window,
 	}
 #endif
 
-	AsciiString aName;
-	aName.translate(uName);
-
-	PlayerInfoMap::iterator it = TheGameSpyInfo->getPlayerInfoMap()->find(aName);
-	if (it == TheGameSpyInfo->getPlayerInfoMap()->end())
+	// GeneralsX @bugfix felipebraz 27/09/2026 Resolve non-NGMP player tooltip by profile ID first, then fallback to name
+	PlayerInfoMap *playerMap = TheGameSpyInfo ? TheGameSpyInfo->getPlayerInfoMap() : nullptr;
+	if (!playerMap)
 	{
 		TheMouse->setCursorTooltip(UnicodeString::TheEmptyString);
 		return;
 	}
-	PlayerInfo *info = &(it->second);
+
+	PlayerInfo *info = nullptr;
+	Int profileID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(window, row, 0)));
+	if (profileID != 0)
+	{
+		for (PlayerInfoMap::iterator pIt = playerMap->begin(); pIt != playerMap->end(); ++pIt)
+		{
+			if (pIt->second.m_profileID == profileID)
+			{
+				info = &(pIt->second);
+				break;
+			}
+		}
+	}
+	if (info == nullptr)
+	{
+		AsciiString aName;
+		aName.translate(uName);
+		PlayerInfoMap::iterator it = playerMap->find(aName);
+		if (it != playerMap->end())
+		{
+			info = &(it->second);
+		}
+	}
+
+	if (info == nullptr)
+	{
+		TheMouse->setCursorTooltip(UnicodeString::TheEmptyString);
+		return;
+	}
+
 	Bool isLocalPlayer = (TheGameSpyInfo->getLocalName().compareNoCase(info->m_name) == 0);
 
 	if (col == 0)
@@ -828,8 +856,12 @@ void PopulateLobbyPlayerListbox()
 		Color color = p.isAdmin ? GameSpyColor[GSCOLOR_PLAYER_OWNER] : GameSpyColor[GSCOLOR_PLAYER_NORMAL];
 		Int index = insertPlayerInListbox(info, color);
 
+		AsciiString formattedName;
+		formattedName.translate(FormatPlayerNameWithOSIcon(info.m_name));
+
 		if ((info.m_profileID != 0 && selectedProfileIDs.find(info.m_profileID) != selectedProfileIDs.end()) ||
-		    selectedNames.find(info.m_name) != selectedNames.end())
+		    selectedNames.find(info.m_name) != selectedNames.end() ||
+		    selectedNames.find(formattedName) != selectedNames.end())
 		{
 			indicesToSelect.insert(index);
 		}
@@ -862,8 +894,8 @@ void PopulateLobbyPlayerListbox()
 		Int maxSelectedItems = GadgetListBoxGetNumEntries(listboxLobbyPlayers);
 		Int *selectedIndices;
 		GadgetListBoxGetSelected(listboxLobbyPlayers, (Int *)(&selectedIndices));
+		std::set<Int> selectedProfileIDs;
 		std::set<AsciiString> selectedNames;
-		std::set<AsciiString>::const_iterator selIt;
 		std::set<Int> indicesToSelect;
 		UnicodeString uStr;
 		Int numSelected = 0;
@@ -875,6 +907,11 @@ void PopulateLobbyPlayerListbox()
 				break;
 			}
 			++numSelected;
+			Int profileID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLobbyPlayers, selectedIndices[i], 0)));
+			if (profileID != 0)
+			{
+				selectedProfileIDs.insert(profileID);
+			}
 			AsciiString selectedName;
 			uStr = GadgetListBoxGetText(listboxLobbyPlayers, selectedIndices[i], COLUMN_PLAYERNAME);
 			selectedName.translate(uStr);
@@ -887,6 +924,16 @@ void PopulateLobbyPlayerListbox()
 
 		GadgetListBoxReset(listboxLobbyPlayers);
 
+		auto shouldSelect = [&](const PlayerInfo& pInfo) -> bool {
+			if (pInfo.m_profileID != 0 && selectedProfileIDs.find(pInfo.m_profileID) != selectedProfileIDs.end())
+				return true;
+			if (selectedNames.find(pInfo.m_name) != selectedNames.end())
+				return true;
+			AsciiString formattedName;
+			formattedName.translate(FormatPlayerNameWithOSIcon(pInfo.m_name));
+			return selectedNames.find(formattedName) != selectedNames.end();
+		};
+
 		// Ops
 		for (it = players->begin(); it != players->end(); ++it)
 		{
@@ -895,8 +942,7 @@ void PopulateLobbyPlayerListbox()
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_OWNER]);
 
-				selIt = selectedNames.find(info.m_name);
-				if (selIt != selectedNames.end())
+				if (shouldSelect(info))
 				{
 					DEBUG_LOG(("Marking index %d (%s) to re-select", index, info.m_name.str()));
 					indicesToSelect.insert(index);
@@ -913,8 +959,7 @@ void PopulateLobbyPlayerListbox()
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_BUDDY]);
 
-				selIt = selectedNames.find(info.m_name);
-				if (selIt != selectedNames.end())
+				if (shouldSelect(info))
 				{
 					DEBUG_LOG(("Marking index %d (%s) to re-select", index, info.m_name.str()));
 					indicesToSelect.insert(index);
@@ -931,8 +976,7 @@ void PopulateLobbyPlayerListbox()
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
 
-				selIt = selectedNames.find(info.m_name);
-				if (selIt != selectedNames.end())
+				if (shouldSelect(info))
 				{
 					DEBUG_LOG(("Marking index %d (%s) to re-select", index, info.m_name.str()));
 					indicesToSelect.insert(index);
