@@ -10,6 +10,18 @@
 
 #include "d3dx8math.h"
 
+#if defined(__has_include) && __has_include("gmath.h")
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmacro-redefined"
+#endif
+#include "gmath.h"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#define USE_DETERMINISTIC_MATH (1)
+#endif
+
 #include <cmath>
 #include <glm/glm.hpp>
 
@@ -150,8 +162,13 @@ D3DXMATRIX *WINAPI D3DXMatrixTranspose(D3DXMATRIX *pOut, CONST D3DXMATRIX *pM)
 D3DXMATRIX *WINAPI D3DXMatrixRotationZ(D3DXMATRIX *pOut, FLOAT Angle)
 {
 	if (!pOut) return nullptr;
+#if defined(USE_DETERMINISTIC_MATH)
+	FLOAT fSin = gm_sinf(Angle);
+	FLOAT fCos = gm_cosf(Angle);
+#else
 	FLOAT fSin = sinf(Angle);
 	FLOAT fCos = cosf(Angle);
+#endif
 
 	pOut->m[0][0] = fCos;  pOut->m[0][1] = fSin; pOut->m[0][2] = 0.0f; pOut->m[0][3] = 0.0f;
 	pOut->m[1][0] = -fSin; pOut->m[1][1] = fCos; pOut->m[1][2] = 0.0f; pOut->m[1][3] = 0.0f;
