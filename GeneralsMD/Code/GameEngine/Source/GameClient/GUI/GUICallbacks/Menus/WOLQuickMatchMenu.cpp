@@ -939,21 +939,18 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		Int r0 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"Notice: QuickMatch requires the official Map Pack."), headerColor, -1, -1);
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r0);
 
-		Int r1 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"Please install the maps to find and play matches."), textColor, -1, -1);
+		Int r1 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"More info and download at the link below:"), textColor, -1, -1);
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r1);
+		if (r1 >= 0)
+			s_qmRowUrls[r1] = wikiUrl;
 
-		Int r2 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"Click here to download the Map Pack & setup guide:"), linkColor, -1, -1);
+		Int r2 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-Ranked-&-Multiplayer-Maps"), linkColor, -1, -1);
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r2);
 		if (r2 >= 0)
 			s_qmRowUrls[r2] = wikiUrl;
 
-		Int r3 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-Ranked-&-Multiplayer-Maps"), linkColor, -1, -1);
+		Int r3 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L" "), textColor, -1, -1);
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r3);
-		if (r3 >= 0)
-			s_qmRowUrls[r3] = wikiUrl;
-
-		Int r4 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L" "), textColor, -1, -1);
-		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r4);
 	}
 
 	enableOptionsGadgets(TRUE);
