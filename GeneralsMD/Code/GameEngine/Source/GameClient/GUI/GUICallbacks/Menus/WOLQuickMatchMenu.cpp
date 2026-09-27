@@ -931,7 +931,7 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 	s_qmRowUrls.clear();
 	if (quickmatchTextWindow)
 	{
-		const std::string wikiUrl = "https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-Ranked-&-Multiplayer-Maps";
+		const std::string wikiUrl = "https://generalsx.org/maps";
 		Color headerColor = GameMakeColor(255, 200, 80, 255);  // Warm Gold/Amber
 		Color textColor   = GameSpyColor[GSCOLOR_DEFAULT];      // Standard text color
 		Color linkColor   = GameMakeColor(100, 180, 255, 255);  // Bright Link Blue
@@ -944,7 +944,7 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		if (r1 >= 0)
 			s_qmRowUrls[r1] = wikiUrl;
 
-		Int r2 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-Ranked-&-Multiplayer-Maps"), linkColor, -1, -1);
+		Int r2 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"https://generalsx.org/maps"), linkColor, -1, -1);
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r2);
 		if (r2 >= 0)
 			s_qmRowUrls[r2] = wikiUrl;
