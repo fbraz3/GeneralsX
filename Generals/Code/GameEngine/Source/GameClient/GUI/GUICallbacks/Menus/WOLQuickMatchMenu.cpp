@@ -79,10 +79,8 @@ static Bool s_inQM = FALSE;
 
 #include <map>
 #include <string>
-#if defined(_WIN32)
-#include <windows.h>
-#include <shellapi.h>
-#else
+#include <cwchar>
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 #include <SDL3/SDL.h>
 #endif
 
@@ -148,14 +146,13 @@ static Int minPoints = 0;
 static const LadderInfo * getLadderInfo();
 
 // GeneralsX @feature fbraz3 27/09/2026 Map QuickMatch listbox rows to clickable URLs
+static const uintptr_t QM_MAP_PACK_LINK_MAGIC = 0x4D415053; // 'MAPS'
 static std::map<Int, std::string> s_qmRowUrls;
 
 // GeneralsX @feature fbraz3 27/09/2026 Open URL in default browser
 static void OpenBrowserURL(const std::string& url)
 {
-#if defined(_WIN32)
-	ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-#else
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 	SDL_OpenURL(url.c_str());
 #endif
 }
@@ -875,12 +872,12 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r0);
 
 		Int r1 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"More info and download at the link below:"), textColor, -1, -1);
-		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r1);
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(uintptr_t)QM_MAP_PACK_LINK_MAGIC, r1);
 		if (r1 >= 0)
 			s_qmRowUrls[r1] = wikiUrl;
 
 		Int r2 = GadgetListBoxAddEntryText(quickmatchTextWindow, UnicodeString(L"https://generalsx.org/maps"), linkColor, -1, -1);
-		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(intptr_t)-1, r2);
+		GadgetListBoxSetItemData(quickmatchTextWindow, (void*)(uintptr_t)QM_MAP_PACK_LINK_MAGIC, r2);
 		if (r2 >= 0)
 			s_qmRowUrls[r2] = wikiUrl;
 
@@ -1861,14 +1858,22 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 				// GeneralsX @feature fbraz3 27/09/2026 Open QuickMatch map pack wiki guide on listbox row click
 				else if ( controlID == listboxQuickMatchID && selected >= 0 )
 				{
-					auto it = s_qmRowUrls.find(selected);
-					if (it != s_qmRowUrls.end() && !it->second.empty())
+					void *itemData = GadgetListBoxGetItemData(control, selected);
+					if (reinterpret_cast<uintptr_t>(itemData) == QM_MAP_PACK_LINK_MAGIC)
 					{
-						fprintf(stderr, "[WOLQuickMatchMenu] Opening Map Pack URL: %s\n", it->second.c_str());
-						fflush(stderr);
-						OpenBrowserURL(it->second);
-						GadgetListBoxSetSelected(control, -1);
+						auto it = s_qmRowUrls.find(selected);
+						if (it != s_qmRowUrls.end() && !it->second.empty())
+						{
+							UnicodeString rowText = GadgetListBoxGetText(control, selected, 0);
+							if (rowText.str() && (wcsstr(rowText.str(), L"generalsx.org") || wcsstr(rowText.str(), L"download") || wcsstr(rowText.str(), L"Map Pack")))
+							{
+								fprintf(stderr, "[WOLQuickMatchMenu] Opening Map Pack URL: %s\n", it->second.c_str());
+								fflush(stderr);
+								OpenBrowserURL(it->second);
+							}
+						}
 					}
+					GadgetListBoxSetSelected(control, -1);
 				}
 				UpdateStartButton();
 				break;
