@@ -415,6 +415,7 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "CameraAdjustSpeed",					INI::parseReal,				nullptr,			offsetof( GlobalData, m_cameraAdjustSpeed ) },
 	{ "EnforceMaxCameraHeight",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_enforceMaxCameraHeight ) },
 	{ "KeyboardScrollSpeedFactor",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_keyboardScrollFactor ) },
+	{ "MouseScrollSpeedFactor",		INI::parseReal,				nullptr,			offsetof( GlobalData, m_mouseScrollFactor ) },
 	{ "KeyboardDefaultScrollSpeedFactor",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_keyboardDefaultScrollFactor ) },
 	{ "KeyboardCameraRotateSpeed", INI::parseReal, nullptr, offsetof( GlobalData, m_keyboardCameraRotateSpeed ) },
 	{ "MovementPenaltyDamageState",	INI::parseIndexList,	TheBodyDamageTypeNames,	 offsetof( GlobalData, m_movementPenaltyDamageState ) },
@@ -1027,7 +1028,7 @@ GlobalData::GlobalData()
 	m_playSizzle = TRUE;
 	m_loadScreenRender = FALSE;
 
-	m_keyboardDefaultScrollFactor = m_keyboardScrollFactor = 0.5f;
+	m_keyboardDefaultScrollFactor = m_keyboardScrollFactor = m_mouseScrollFactor = 0.5f;
 	m_drawScrollAnchor = FALSE;
 	m_moveScrollAnchor = FALSE;
 	m_scrollAmountCutoff = 10.0f;
