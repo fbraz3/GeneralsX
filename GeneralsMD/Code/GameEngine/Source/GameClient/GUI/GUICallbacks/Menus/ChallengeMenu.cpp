@@ -34,6 +34,7 @@
 #include "Common/GameEngine.h"
 //#include "Common/GameLOD.h"
 #include "Common/GameState.h"
+#include "Common/GlobalData.h"
 #include "Common/PlayerTemplate.h"
 #include "Common/RandomValue.h"
 #include "Common/Recorder.h"
@@ -682,9 +683,10 @@ WindowMsgHandledType ChallengeMenuSystem( GameWindow *window, UnsignedInt msg, W
 				msg->appendIntegerArgument(TheCampaignManager->getRankPoints());
 
 
-        // Added so that, even though a ChallengeGame is really a SkirmishGame in SinglePlayerGame's clothing,
-        // GameEngine will still apply the default "FRAME CAP" as it does during "Solo Missions."
-        msg->appendIntegerArgument(LOGICFRAMES_PER_SECOND);	// FPS limit
+				// GeneralsX @bugfix felipebraz 27/09/2026 Use configurable render FPS limit (default 60 FPS) instead of legacy 30 FPS in General's Challenge
+				// Retail Zero Hour hardcoded LOGICFRAMES_PER_SECOND (30) to mimic the retail solo frame cap.
+				// GeneralsX decouples simulation logic from render FPS, standardizing the render cap to TheGlobalData->m_framesPerSecondLimit.
+				msg->appendIntegerArgument(TheGlobalData->m_framesPerSecondLimit);	// FPS limit
 
 				InitRandom(0);
 			}
