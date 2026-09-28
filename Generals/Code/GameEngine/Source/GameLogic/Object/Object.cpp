@@ -255,8 +255,8 @@ Object::Object( const ThingTemplate *tt, const ObjectStatusMaskType &objectStatu
 
 	m_constructionPercent = CONSTRUCTION_COMPLETE;  // complete by default
 
-	m_visionRange = tt->friend_getVisionRange();
-	m_shroudClearingRange = tt->friend_getShroudClearingRange();
+	m_visionRange = tt->friend_calcVisionRange();
+	m_shroudClearingRange = tt->friend_calcShroudClearingRange();
 	if( m_shroudClearingRange == -1.0f )
 		m_shroudClearingRange = m_visionRange;// Backwards compatible, and perfectly logical default to assign
 	m_shroudRange = 0.0f;
@@ -291,9 +291,9 @@ Object::Object( const ThingTemplate *tt, const ObjectStatusMaskType &objectStatu
 	m_smcHelper = newInstance(ObjectSMCHelper)(this, &smcModuleData);
 	*curB++ = m_smcHelper;
 
-	if (TheAI != nullptr
-			&& TheAI->getAiData()->m_enableRepulsors
-			&& isKindOf(KINDOF_CAN_BE_REPULSED))
+	if (TheAI != nullptr &&
+			TheAI->getAiData()->m_enableRepulsors &&
+			isKindOf(KINDOF_CAN_BE_REPULSED))
 	{
 		// if we can ever be a temporary-repulsor, make a repulsor helper. (srj)
 		static const NameKeyType repulsorHelperModuleDataTagNameKey = NAMEKEY( "ModuleTag_RepulsorHelper" );
@@ -1761,7 +1761,8 @@ ObjectID Object::getSoleHealingBenefactor() const
 }
 
 Bool Object::attemptHealingFromSoleBenefactor ( Real amount, const Object* source, UnsignedInt duration )
-{///< for the non-stacking healers like ambulance and propaganda
+{
+	///< for the non-stacking healers like ambulance and propaganda
 
 	if( ! source ) // sanity
 		return FALSE;
@@ -2778,11 +2779,11 @@ void Object::setSelectable(Bool selectable)
 //-------------------------------------------------------------------------------------------------
 Bool Object::isSelectable() const
 {
-	return getTemplate()->isKindOf(KINDOF_ALWAYS_SELECTABLE)
-				|| (m_isSelectable
-						&& !testStatus(OBJECT_STATUS_UNSELECTABLE)
-						&& !isEffectivelyDead()
-						&& !getTemplate()->isKindOf(KINDOF_NO_SELECT)
+	return getTemplate()->isKindOf(KINDOF_ALWAYS_SELECTABLE) ||
+				(m_isSelectable &&
+						!testStatus(OBJECT_STATUS_UNSELECTABLE) &&
+						!isEffectivelyDead() &&
+						!getTemplate()->isKindOf(KINDOF_NO_SELECT)
 						);
 }
 
@@ -2881,10 +2882,10 @@ void Object::onVeterancyLevelChanged( VeterancyLevel oldLevel, VeterancyLevel ne
 			break;
 	}
 
-	Bool doAnimation = provideFeedback
-		&& newLevel > oldLevel
-		&& !isKindOf(KINDOF_IGNORED_IN_GUI)
-		&& isLogicallyVisible();
+	Bool doAnimation = provideFeedback &&
+		newLevel > oldLevel &&
+		!isKindOf(KINDOF_IGNORED_IN_GUI) &&
+		isLogicallyVisible();
 
 	if (doAnimation)
 		createVeterancyLevelFX(oldLevel, newLevel);
@@ -3375,9 +3376,11 @@ void Object::friend_adjustPowerForPlayer( Bool incoming )
 //-------------------------------------------------------------------------------------------------
 void Object::onDisabledEdge(Bool becomingDisabled)
 {
+#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 	// rip through the behavior modules and call the onDisabledEdge for any modules that care
 	for( BehaviorModule **module = m_behaviors; *module; ++module )
 		(*module)->onDisabledEdge( becomingDisabled );
+#endif
 
 	Player* controller = getControllingPlayer();
 	// can be called during game teardown, thus controller can be null
@@ -4167,6 +4170,7 @@ void Object::onDie( DamageInfo *damageInfo )
 	handlePartitionCellMaintenance();
 	if(m_team)
 		m_team->notifyTeamOfObjectDeath();
+#if RTS_GENERALS && RETAIL_COMPATIBLE_DATA
 	// Play death sound here.
 
 	AudioEventRTS deathSound = *getTemplate()->getSoundDie();
@@ -4188,6 +4192,7 @@ void Object::onDie( DamageInfo *damageInfo )
 	PlayerIndex index = getControllingPlayer() ? getControllingPlayer()->getPlayerIndex() : 0;
 	deathSound.setPlayerIndex( index );
 	TheAudio->addAudioEvent(&deathSound);
+#endif
 
 	if (isLocallyViewed() && !selfInflicted) // wasLocallyViewed? :-)
 	{
@@ -4464,9 +4469,9 @@ void Object::look()
 		// I removed the check for objects under construction by request of designers since
 		// they want constructing objects to have a reduced sight range now. -MW
 		// dead or blind things don't reveal shroud
-		if( ( ! isDestroyed() )// Some things get Destroyed directly without hitting Death.
-				&& ( ! isEffectivelyDead() )
-				&& ( getShroudClearingRange() > 0.0f )
+		if( ( ! isDestroyed() ) &&// Some things get Destroyed directly without hitting Death.
+				( ! isEffectivelyDead() ) &&
+				( getShroudClearingRange() > 0.0f )
 			)
 		{
 			PlayerMaskType lookingMask = 0;
@@ -5367,10 +5372,10 @@ Bool Object::canProduceUpgrade( const UpgradeTemplate *upgrade )
  	for( Int buttonIndex = 0; buttonIndex < MAX_COMMANDS_PER_SET; buttonIndex++ )
  	{
  		const CommandButton *button = set->getCommandButton(buttonIndex);
- 		if( button
-				&&  ( (button->getCommandType() == GUI_COMMAND_PLAYER_UPGRADE)  ||  (button->getCommandType() == GUI_COMMAND_OBJECT_UPGRADE) ) // Or else a button that requires an upgrade will appear the same as a button that gives an upgrade
-				&&  button->getUpgradeTemplate()
-				&&  (button->getUpgradeTemplate() == upgrade)
+ 		if( button &&
+				( (button->getCommandType() == GUI_COMMAND_PLAYER_UPGRADE)  ||  (button->getCommandType() == GUI_COMMAND_OBJECT_UPGRADE) ) && // Or else a button that requires an upgrade will appear the same as a button that gives an upgrade
+				button->getUpgradeTemplate() &&
+				(button->getUpgradeTemplate() == upgrade)
 				)
  			return TRUE; // getUpgradeTemplate only returns something if it is actually an upgrade
  	}
@@ -5573,11 +5578,7 @@ void Object::enterGroup( AIGroup *group )
 	// if we are in another group, remove ourselves from it first
 	leaveGroup();
 
-#if RETAIL_COMPATIBLE_AIGROUP
 	m_group = group;
-#else
-	m_group.Assign_Add_Ref(group);
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------

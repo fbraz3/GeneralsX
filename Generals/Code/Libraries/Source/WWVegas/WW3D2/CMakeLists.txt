@@ -244,10 +244,10 @@ target_compile_definitions(g_ww3d2 PRIVATE
 # GeneralsX @build Copilot 11/05/2026 Keep PCH only on Windows to avoid non-Windows header-order instability in CompatLib/DXVK builds.
 if(WIN32)
     target_precompile_headers(g_ww3d2 PRIVATE
-        [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+        [["Precompiled/BasePrecomp.h"]] # Must be first
         [["dx8wrapper.h"]]
         [["WWLib/always.h"]]
-        [["WWLib/STLUtils.h"]]
+        [["Utility/STLUtils.h"]]
         [["WWLib/win.h"]]
         [["WWLib/WWCommon.h"]]
         [["WWLib/wwstring.h"]]

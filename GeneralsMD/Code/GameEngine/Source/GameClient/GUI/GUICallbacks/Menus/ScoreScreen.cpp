@@ -865,8 +865,8 @@ void finishSinglePlayerInit()
 {
 	if(TheCampaignManager->isVictorious())
 	{
-		if (TheCampaignManager->getCurrentCampaign()
-		 && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+		if (TheCampaignManager->getCurrentCampaign() &&
+		 TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
 		{
 			// display challenge style win/loss
 			AsciiString name = TheCampaignManager->getCurrentMission()->m_generalName;
@@ -982,8 +982,8 @@ void finishSinglePlayerInit()
 	}
 	else
 	{
-		if (TheCampaignManager->getCurrentCampaign()
-		 && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+		if (TheCampaignManager->getCurrentCampaign() &&
+		 TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
 		{
 			// display challenge style win/loss
 			AsciiString name = TheCampaignManager->getCurrentMission()->m_generalName;
@@ -1039,8 +1039,8 @@ void finishSinglePlayerInit()
 //		buttonRehost->winHide(TRUE);
 
 	// need to do this here
-	if ( TheCampaignManager->getCurrentCampaign()
-	 && !TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+	if ( TheCampaignManager->getCurrentCampaign() &&
+	 !TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
 		TheTransitionHandler->setGroup("ScoreScreenShow");
 }
 
@@ -1759,8 +1759,8 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 			&& !TheNGMPGame->isQMGame())  //QuickMatch games always record stats
 			return;	//the host has requested not to record stats for this game.
 #else
-		if (TheGameSpyGame && !TheGameSpyGame->getUseStats()
-		 && !TheGameSpyGame->isQMGame() )  //QuickMatch games always record stats
+		if (TheGameSpyGame && !TheGameSpyGame->getUseStats() &&
+		 !TheGameSpyGame->isQMGame() )  //QuickMatch games always record stats
 			return;	//the host has requested not to record stats for this game.
 
 		Int localID = TheGameSpyInfo->getLocalProfileID();

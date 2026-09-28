@@ -188,6 +188,7 @@ protected:
 	void SendCommandsToConnectionManager();												///< Send the new commands to the ConnectionManager
 	Bool AllCommandsReady(UnsignedInt frame);											///< Do we have all the commands for the given frame?
 	void RelayCommandsToCommandList(UnsignedInt frame);						///< Put the commands for the given frame onto TheCommandList.
+	static Bool isMessageTypeWithinNetworkRange(GameMessage::Type type);
 	Bool isTransferCommand(GameMessage *msg);											///< Is this a command that needs to be transfered to the other clients?
 	Bool processCommand(GameMessage *msg);												///< Whatever needs to be done as a result of this command, do it now.
 	void processFrameSynchronizedNetCommand(NetCommandRef *msg);	///< If there is a network command that needs to be executed at the same frame number on all clients, it happens here.
@@ -464,11 +465,15 @@ void Network::attachTransport(Transport *transport) {
 	}
 }
 
+Bool Network::isMessageTypeWithinNetworkRange(GameMessage::Type type) {
+	return type > GameMessage::MSG_BEGIN_NETWORK_MESSAGES && type < GameMessage::MSG_END_NETWORK_MESSAGES;
+}
+
 /**
  * Does this command need to be transfered to the other game clients?
  */
 Bool Network::isTransferCommand(GameMessage *msg) {
-	if ((msg != nullptr) && ((msg->getType() > GameMessage::MSG_BEGIN_NETWORK_MESSAGES) && (msg->getType() < GameMessage::MSG_END_NETWORK_MESSAGES))) {
+	if ((msg != nullptr) && isMessageTypeWithinNetworkRange(msg->getType())) {
 		return TRUE;
 	}
 	return FALSE;
@@ -482,7 +487,8 @@ void Network::GetCommandsFromCommandList() {
 	GameMessage *next = nullptr;
 	while (msg != nullptr) {
 		next = msg->next();
-		if (isTransferCommand(msg)) { // Is this something we should be sending to the other players?
+		if (isMessageTypeWithinNetworkRange(msg->getType())) {
+			// Is this something we should be sending to the other players?
 			if (m_localStatus == NETLOCALSTATUS_INGAME) {
 				m_conMgr->sendLocalGameMessage(msg, getExecutionFrame());
 			}
@@ -735,14 +741,17 @@ void Network::update()
 
 	liteupdate();
 
-	if (m_localStatus == NETLOCALSTATUS_LEFT) {// || (m_localStatus == NETLOCALSTATUS_LEAVING)) {
+	if (m_localStatus == NETLOCALSTATUS_LEFT) {
+		// || (m_localStatus == NETLOCALSTATUS_LEAVING)) {
 		endOfGameCheck();
 	}
 
-	if (AllCommandsReady(TheGameLogic->getFrame())) { // If all the commands are ready for the next frame...
+	if (AllCommandsReady(TheGameLogic->getFrame())) {
+		// If all the commands are ready for the next frame...
 		m_conMgr->handleAllCommandsReady();
 //		DEBUG_LOG(("Network::update - frame %d is ready", TheGameLogic->getFrame()));
-		if (timeForNewFrame()) { // This needs to come after any other pre-frame execution checks as this changes the timing variables.
+		if (timeForNewFrame()) {
+			// This needs to come after any other pre-frame execution checks as this changes the timing variables.
 			RelayCommandsToCommandList(TheGameLogic->getFrame());	// Put the commands for the next frame on TheCommandList.
 			m_frameDataReady = TRUE; // Tell the GameEngine to run the commands for the new frame.
 		}

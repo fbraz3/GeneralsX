@@ -41,6 +41,7 @@ FramePacer::FramePacer()
 	m_maxFPS = BaseFps;
 	m_logicTimeScaleFPS = LOGICFRAMES_PER_SECOND;
 	m_updateTime = 1.0f / (Real)BaseFps; // initialized to something to avoid division by zero on first use
+	m_logicFramePhase = 1.0f;
 	m_enableFpsLimit = FALSE;
 	// GeneralsX @tweak felipebraz 20/06/2026 Enable logic time scale by default to decouple gameplay tick rate from render FPS
 	m_enableLogicTimeScale = TRUE;
@@ -59,16 +60,33 @@ FramePacer::~FramePacer()
 
 void FramePacer::update()
 {
-	// TheSuperHackers @bugfix xezon 05/08/2025 Re-implements the frame rate limiter
-	// with higher resolution counters to cap the frame rate more accurately to the desired limit.
-	const UnsignedInt maxFps = getActualFramesPerSecondLimit();// allowFpsLimit ? getFramesPerSecondLimit() : RenderFpsPreset::UncappedFpsValue;
+	// Uses a high resolution counter to cap the frame rate more accurately to the desired limit than retail did.
+	const UnsignedInt maxFps = getActualFramesPerSecondLimit();
 	m_updateTime = m_frameRateLimit.wait(maxFps);
+
+	if (TheGameLogic != nullptr)
+	{
+		// Set or advance the logic frame phase by the render step that the next update will draw.
+		// It is capped at a whole logic frame, because the render steps in between can add up to more than one.
+		// Consumers are expected to interpolate towards the next logic frame and not extrapolate past it.
+		const Real timeScale = getActualLogicTimeScaleOverFpsRatio();
+
+		if (TheGameLogic->hasUpdated())
+		{
+			m_logicFramePhase = timeScale;
+		}
+		else
+		{
+			m_logicFramePhase = min(1.0f, m_logicFramePhase + timeScale);
+		}
+	}
 }
 
 void FramePacer::reset()
 {
 	m_frameRateLimit.reset();
 	m_updateTime = 1.0f / (Real)getActualFramesPerSecondLimit();
+	m_logicFramePhase = 1.0f;
 }
 
 void FramePacer::setFramesPerSecondLimit( Int fps )
@@ -217,8 +235,7 @@ Real FramePacer::getActualLogicTimeScaleRatio(LogicTimeQueryFlags flags) const
 
 Real FramePacer::getActualLogicTimeScaleOverFpsRatio(LogicTimeQueryFlags flags) const
 {
-	// TheSuperHackers @info Clamps ratio to min 1, because the logic
-	// frame rate is currently capped by the render frame rate.
+	// Clamps ratio to min 1, because the logic frame rate is currently capped by the render frame rate.
 	return min(1.0f, (Real)getActualLogicTimeScaleFps(flags) / getUpdateFps());
 }
 
@@ -230,4 +247,9 @@ Real FramePacer::getLogicTimeStepSeconds(LogicTimeQueryFlags flags) const
 Real FramePacer::getLogicTimeStepMilliseconds(LogicTimeQueryFlags flags) const
 {
 	return MSEC_PER_LOGICFRAME_REAL * getActualLogicTimeScaleOverFpsRatio(flags);
+}
+
+Real FramePacer::getLogicFramePhase() const
+{
+	return m_logicFramePhase;
 }

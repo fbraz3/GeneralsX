@@ -194,7 +194,7 @@ INI::INI()
 }
 
 //-------------------------------------------------------------------------------------------------
-UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadType, Xfer *pXfer, Bool subdirs )
+UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadType, Xfer *pXfer, LoadFlags loadFlags )
 {
 	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
 	fprintf(stderr, "[INI] loadFileDirectory('%s') START\n", fileDirName.str());
@@ -232,12 +232,13 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 	// Load any additional ini files from a "filename" directory and its subdirectories.
 	fprintf(stderr, "[INI] loadFileDirectory - calling loadDirectory('%s') START\n", iniDir.str());
 	fflush(stderr);
-	filesRead += loadDirectory(iniDir, loadType, pXfer, subdirs);
+	filesRead += loadDirectory(iniDir, loadType, pXfer, loadFlags & ~LoadFlags_ExpectFileFound);
 	fprintf(stderr, "[INI] loadFileDirectory - calling loadDirectory('%s') END\n", iniDir.str());
 	fflush(stderr);
 
 	// Expect to open and load at least one file.
-	if (filesRead == 0)
+	const Bool expectFileFound = (loadFlags & LoadFlags_ExpectFileFound) != 0;
+	if (expectFileFound && filesRead == 0)
 	{
 		fprintf(stderr, "[INI] ERROR: No files read from directory '%s'\n", fileDirName.str());
 		fflush(stderr);
@@ -254,7 +255,7 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 	* If we are to load subdirectories, we will load them *after* we load all the
 	* files in the current directory */
 //-------------------------------------------------------------------------------------------------
-UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer *pXfer, Bool subdirs )
+UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer *pXfer, LoadFlags loadFlags )
 {
 	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
 	fprintf(stderr, "[INI] loadDirectory('%s') START\n", dirName.str());
@@ -270,6 +271,7 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 		throw INI_INVALID_DIRECTORY;
 	}
 
+	const Bool subdirs = (loadFlags & LoadFlags_SearchSubDirs) != 0;
 	FilenameList filenameList;
 	dirName.concat('\\');
 	TheFileSystem->getFileListInDirectory(dirName, "*.ini", filenameList, subdirs);
@@ -298,6 +300,13 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 			filesRead += load( *it, loadType, pXfer );
 		}
 		++it;
+	}
+
+	// Expect to open and load at least one file.
+	const Bool expectFileFound = (loadFlags & LoadFlags_ExpectFileFound) != 0;
+	if (expectFileFound && filesRead == 0)
+	{
+		throw INI_CANT_OPEN_FILE;
 	}
 
 	return filesRead;
@@ -874,7 +883,8 @@ AsciiString INI::getNextAsciiString()
 				result.set(buff);
 			} else {
 				Int len = strlen(buff);
-				if (len && buff[len-1] == '"') { // strip off trailing quote jba. [2/12/2003]
+				if (len && buff[len-1] == '"') {
+					// strip off trailing quote jba. [2/12/2003]
 					buff[len-1] = 0;
 				}
 				result.set(buff);
@@ -2092,13 +2102,13 @@ void INI::parseDamageTypeFlags(INI* ini, void* /*instance*/, void* store, const 
 		}
 		if (token[0] == '+')
 		{
-			DamageType dt = (DamageType)DamageTypeFlags::getSingleBitFromName(token+1);
+			DamageType dt = (DamageType)scanIndexList(token+1, DamageTypeFlags::getBitNames());
 			flags = setDamageTypeFlag(flags, dt);
 			continue;
 		}
 		if (token[0] == '-')
 		{
-			DamageType dt = (DamageType)DamageTypeFlags::getSingleBitFromName(token+1);
+			DamageType dt = (DamageType)scanIndexList(token+1, DamageTypeFlags::getBitNames());
 			flags = clearDamageTypeFlag(flags, dt);
 			continue;
 		}

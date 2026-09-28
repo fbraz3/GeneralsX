@@ -1690,7 +1690,8 @@ void WorldHeightMap::getUVForNdx(Int tileNdx, float *minU, float *minV, float *m
 	// So get the proper quadrant of the tile.
 	Real midX = (*minU+*maxU)/2;
 	Real midY = (*minV+*maxV)/2;
-	if (tileNdx&2) {		// y's are flipped.
+	if (tileNdx&2) {
+		// y's are flipped.
 		*maxV = midY;
 	} else {
 		*minV = midY;
@@ -1913,7 +1914,8 @@ Bool WorldHeightMap::getUVForTileIndex(Int ndx, Short tileNdx, float U[4], float
 				}
 			}
 
-			if (below==1 || above>below) { //(avgH > minH + (2*deltaH+2)/3)
+			if (below==1 || above>below) {
+				//(avgH > minH + (2*deltaH+2)/3)
 				// we got one low guy.
 				if (h0==minH) {
 					V[0] = nV+deltaV/divisor;
@@ -1930,7 +1932,8 @@ Bool WorldHeightMap::getUVForTileIndex(Int ndx, Short tileNdx, float U[4], float
 				V[0] = xV; V[1] = xV; V[2] = nV; V[3] = nV;
 				return false;
 #endif
-			}	else if (above==1 || below>above) { //(avgH < minH + (deltaH+1)/3)
+			}	else if (above==1 || below>above) {
+				//(avgH < minH + (deltaH+1)/3)
 				// we got one high guy
 				if (h0==maxH) {
 					V[0] = nV+deltaV/divisor;

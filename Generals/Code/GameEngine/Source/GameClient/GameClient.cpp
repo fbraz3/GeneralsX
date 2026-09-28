@@ -33,6 +33,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/ActionManager.h"
+#include "Common/FramePacer.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/Recorder.h"
@@ -604,9 +605,11 @@ void GameClient::update()
 
 
 		// call the update for all client drawables
+		const Real timeScale = TheFramePacer->getActualLogicTimeScaleOverFpsRatio();
 		Drawable* draw = firstDrawable();
 		while (draw)
-		{	// update() could free the Drawable, so go ahead and grab 'next'
+		{
+			// update() could free the Drawable, so go ahead and grab 'next'
 			Drawable* next = draw->getNextDrawable();
 #if ENABLE_CONFIGURABLE_SHROUD
 			if (TheGlobalData->m_shroudOn)
@@ -651,7 +654,7 @@ void GameClient::update()
 					draw->setFullyObscuredByShroud(ss >= OBJECTSHROUD_FOGGED);
 				}
 			}
-			draw->updateDrawable();
+			draw->updateDrawable(timeScale);
 			draw = next;
 		}
 	}
@@ -664,15 +667,6 @@ void GameClient::update()
 	}
 #endif
 
-	// update all particle systems
-	if( !freezeTime )
-	{
-		// update particle systems
-		TheParticleSystemManager->setLocalPlayerIndex(localPlayerIndex);
-		TheParticleSystemManager->update();
-
-	}
-
 	// update the terrain visuals
 	{
 		TheTerrainVisual->UPDATE();
@@ -681,6 +675,15 @@ void GameClient::update()
 	// update display
 	{
 		TheDisplay->UPDATE();
+	}
+
+	// update all particle systems
+	// TheSuperHackers @info The particle update follows the display update, because that
+	// moves bone-attached particle systems to the current client bone transforms of their drawables.
+	if( !freezeTime && TheGameLogic->hasUpdated() )
+	{
+		TheParticleSystemManager->setLocalPlayerIndex(localPlayerIndex);
+		TheParticleSystemManager->UPDATE();
 	}
 
 	{

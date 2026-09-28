@@ -152,14 +152,14 @@ static bool isCommandNewer(const NetCommandMsg* newCommand, const NetCommandMsg*
 
 static bool isCommandFromSamePlayerGroup(const NetCommandMsg* firstCommand, const NetCommandMsg* secondCommand)
 {
-	return firstCommand->getNetCommandType() == secondCommand->getNetCommandType()
-		&& firstCommand->getPlayerID() == secondCommand->getPlayerID();
+	return firstCommand->getNetCommandType() == secondCommand->getNetCommandType() &&
+		firstCommand->getPlayerID() == secondCommand->getPlayerID();
 }
 
 static bool isCommandNewerInSamePlayerGroup(const NetCommandMsg* newCommand, const NetCommandMsg* oldCommand)
 {
-	return isCommandFromSamePlayerGroup(newCommand, oldCommand)
-		&& isCommandIdNewer(newCommand->getSortNumber(), oldCommand->getSortNumber());
+	return isCommandFromSamePlayerGroup(newCommand, oldCommand) &&
+		isCommandIdNewer(newCommand->getSortNumber(), oldCommand->getSortNumber());
 }
 
 /**
@@ -325,8 +325,8 @@ NetCommandRef * NetCommandList::addMessage(NetCommandMsg *cmdMsg) {
 	}
 
 	// Find the position within the player's section based on the sort number.
-	while (tempmsg != nullptr
-		&& isCommandNewerInSamePlayerGroup(msg->getCommand(), tempmsg->getCommand()))
+	while (tempmsg != nullptr &&
+		isCommandNewerInSamePlayerGroup(msg->getCommand(), tempmsg->getCommand()))
 	{
 		tempmsg = tempmsg->getNext();
 	}

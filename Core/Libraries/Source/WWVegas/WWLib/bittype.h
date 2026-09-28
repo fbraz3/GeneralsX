@@ -61,7 +61,7 @@ typedef signed int      sint;
     typedef unsigned __int64 __uint64;
     typedef unsigned __int64 _uint64;
 #endif
-// Note: Linux GCC/Clang use int64_t typedefs from debug_debug.h or profile_f unclevel.h
+// Note: Linux GCC/Clang use int64_t typedefs from debug_debug.h or profile_funclevel.h
 
 typedef float				float32;
 typedef double				float64;
@@ -85,10 +85,3 @@ typedef unsigned short	USHORT;
 typedef const char *		LPCSTR;
 typedef int             INT;
 typedef unsigned int    UINT;
-
-#if defined(_MSC_VER) && _MSC_VER < 1300
-#ifndef _WCHAR_T_DEFINED
-typedef unsigned short wchar_t;
-#define _WCHAR_T_DEFINED
-#endif
-#endif
