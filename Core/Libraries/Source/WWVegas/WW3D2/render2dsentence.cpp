@@ -1587,24 +1587,23 @@ FontCharsClass::Create_GDI_Font (const char *font_name)
 		strcmp(font_name, "Font Awesome 6 Brands Regular") == 0 ||
 		strcmp(font_name, "FontAwesome6Brands-Regular") == 0 ||
 		strstr(font_name, "fa-brands") != nullptr ||
-		strstr(font_name, "Font Awesome") != nullptr ||
-		strstr(font_name, "FontAwesome") != nullptr));
+		strstr(font_name, "Font Awesome 6 Brands") != nullptr ||
+		strstr(font_name, "FontAwesome6Brands") != nullptr ||
+		strstr(font_name, "Font Awesome Brands") != nullptr ||
+		strstr(font_name, "FontAwesomeBrands") != nullptr));
 
 	static bool s_brandFontRegistered = false;
 	if (is_fa_brands && !s_brandFontRegistered) {
-		const char *candidates[] = {
-			"fa-brands-400.ttf",
-			"fa-brands-400",
-			"FontAwesome6Brands-Regular.ttf",
-			"FontAwesome6Brands-Regular",
-			"Font Awesome 6 Brands"
+		const wchar_t *candidatesW[] = {
+			L"fa-brands-400.ttf",
+			L"fa-brands-400",
+			L"FontAwesome6Brands-Regular.ttf",
+			L"FontAwesome6Brands-Regular",
+			L"Font Awesome 6 Brands"
 		};
-		char font_path[1024] = {0};
-		if (Platform::FindLocalFontFile(candidates, 5, font_path, sizeof(font_path))) {
-			for (char *p = font_path; *p; ++p) {
-				if (*p == '/') *p = '\\';
-			}
-			int added = ::AddFontResourceExA(font_path, FR_PRIVATE, 0);
+		wchar_t font_pathW[MAX_PATH * 2] = {0};
+		if (Platform::FindLocalFontFileW(candidatesW, 5, font_pathW, sizeof(font_pathW)/sizeof(wchar_t))) {
+			int added = ::AddFontResourceExW(font_pathW, FR_PRIVATE, 0);
 			if (added > 0) {
 				s_brandFontRegistered = true;
 			}

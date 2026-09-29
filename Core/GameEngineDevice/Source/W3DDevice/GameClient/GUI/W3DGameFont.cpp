@@ -193,21 +193,21 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	// should not get an AlternateUnicodeFont set, otherwise Get_Char_Data enters infinite
 	// recursion: e.g. Arial → Arial Unicode MS → Arial → ...
 	{
-		bool skipFallback = false;
+		// GeneralsX @bugfix felipebraz 29/09/2026 Brand font aliases must skip Unicode fallback to preserve native glyph lookup
+		bool skipFallback = IsBrandFontName(name);
 		// Skip fallback for fonts that already have full Unicode coverage themselves
 		static const char *kFullCoverageFonts[] = {
 			"Arial Unicode MS",
 			"Arial Unicode",
 			"DejaVu Sans",
-			"fa-brands-400",
-			"Font Awesome 6 Brands Regular",
-			"Font Awesome 6 Brands",
 			nullptr
 		};
-		for (int i = 0; kFullCoverageFonts[i]; i++) {
-			if (strcmp(name, kFullCoverageFonts[i]) == 0) {
-				skipFallback = true;
-				break;
+		if (!skipFallback) {
+			for (int i = 0; kFullCoverageFonts[i]; i++) {
+				if (strcmp(name, kFullCoverageFonts[i]) == 0) {
+					skipFallback = true;
+					break;
+				}
 			}
 		}
 		if (!skipFallback) {

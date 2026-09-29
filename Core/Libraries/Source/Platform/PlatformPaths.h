@@ -29,6 +29,7 @@
 
 #if defined(_WIN32)
 #include <io.h>
+#include <wchar.h>
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -55,6 +56,16 @@ inline bool IsFileReadable(const char *path)
 	return ( access( path, R_OK ) == 0 );
 #endif
 }
+
+#if defined(_WIN32)
+inline bool IsFileReadableW(const wchar_t *path)
+{
+	if ( !path || path[0] == L'\0' ) {
+		return false;
+	}
+	return ( _waccess( path, 4 ) == 0 );
+}
+#endif
 
 inline bool GetMacOSBundleFontDirectories(char *resFonts, size_t resFontsSize,
                                           char *binFonts, size_t binFontsSize)
@@ -216,5 +227,75 @@ inline bool FindLocalFontFile(const char *const *candidates, int candidateCount,
 
 	return false;
 }
+
+#if defined(_WIN32)
+// GeneralsX @bugfix felipebraz 29/09/2026 Wide-character font file resolution for Windows Unicode paths
+inline bool FindLocalFontFileW(const wchar_t *const *candidates, int candidateCount,
+                              wchar_t *outPath, size_t outPathSize)
+{
+	if ( !candidates || candidateCount <= 0 || !outPath || outPathSize == 0 ) {
+		return false;
+	}
+
+	const wchar_t *searchDirs[24];
+	int searchDirCount = 0;
+
+	wchar_t winExeFonts[MAX_PATH] = {0};
+	wchar_t winExeAssetsFonts[MAX_PATH] = {0};
+	wchar_t winExeDir[MAX_PATH] = {0};
+	if ( GetModuleFileNameW( NULL, winExeDir, MAX_PATH ) > 0 ) {
+		wchar_t *lastBackslash = wcsrchr( winExeDir, L'\\' );
+		wchar_t *lastSlash = wcsrchr( winExeDir, L'/' );
+		wchar_t *sep = (lastBackslash > lastSlash) ? lastBackslash : lastSlash;
+		if ( sep != nullptr ) {
+			*sep = L'\0';
+			swprintf( winExeFonts, sizeof(winExeFonts)/sizeof(wchar_t), L"%ls\\fonts", winExeDir );
+			swprintf( winExeAssetsFonts, sizeof(winExeAssetsFonts)/sizeof(wchar_t), L"%ls\\assets\\fonts", winExeDir );
+			if ( searchDirCount < 24 ) {
+				searchDirs[searchDirCount++] = winExeFonts;
+			}
+			if ( searchDirCount < 24 ) {
+				searchDirs[searchDirCount++] = winExeAssetsFonts;
+			}
+		}
+	}
+
+	if ( searchDirCount < 24 ) searchDirs[searchDirCount++] = L"fonts";
+	if ( searchDirCount < 24 ) searchDirs[searchDirCount++] = L"./fonts";
+	if ( searchDirCount < 24 ) searchDirs[searchDirCount++] = L"../Resources/fonts";
+	if ( searchDirCount < 24 ) searchDirs[searchDirCount++] = L"Resources/fonts";
+	if ( searchDirCount < 24 ) searchDirs[searchDirCount++] = L"assets/fonts";
+
+	static const wchar_t *extensions[] = { L".ttf", L".otf", L".ttc" };
+	wchar_t candidatePath[MAX_PATH * 2];
+
+	for ( int d = 0; d < searchDirCount; ++d ) {
+		for ( int c = 0; c < candidateCount; ++c ) {
+			const wchar_t *cand = candidates[c];
+			if ( !cand || cand[0] == L'\0' ) {
+				continue;
+			}
+			if ( wcsrchr( cand, L'.' ) != nullptr ) {
+				swprintf( candidatePath, sizeof(candidatePath)/sizeof(wchar_t), L"%ls\\%ls", searchDirs[d], cand );
+				if ( IsFileReadableW( candidatePath ) ) {
+					swprintf( outPath, outPathSize, L"%ls", candidatePath );
+					return true;
+				}
+			} else {
+				for ( size_t e = 0; e < sizeof(extensions) / sizeof(extensions[0]); ++e ) {
+					swprintf( candidatePath, sizeof(candidatePath)/sizeof(wchar_t), L"%ls\\%ls%ls",
+					          searchDirs[d], cand, extensions[e] );
+					if ( IsFileReadableW( candidatePath ) ) {
+						swprintf( outPath, outPathSize, L"%ls", candidatePath );
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+#endif
 
 } // namespace Platform
