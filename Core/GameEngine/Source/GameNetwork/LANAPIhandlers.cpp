@@ -337,13 +337,9 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 		return; // Not us.  Ignore it.
 	}
 
-	// If the client joined through a secondary local interface (e.g. Ethernet while m_localIP was Wi-Fi),
-	// align our active local IP to match the real interface the client connected on.
-	// Only assign to m_localIP if gameIP matches a real active local network adapter (excluding loopback).
-	if (msg->GameToJoin.gameIP != m_localIP && LANInterfaceDevice::isRealLocalInterfaceAddress(msg->GameToJoin.gameIP))
-	{
-		m_localIP = msg->GameToJoin.gameIP;
-	}
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Use target game IP for join replies without mutating m_localIP on the host.
+	// Keeping m_localIP consistent with slot 0 ensures host-role checks and game announcements remain intact.
+	UnsignedInt replyGameIP = msg->GameToJoin.gameIP;
 
 	LANMessage reply;
 	fillInLANMessage( &reply );
@@ -353,7 +349,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 		{
 			reply.messageType = LANMessage::MSG_JOIN_DENY;
 			reply.GameNotJoined.reason = LANAPIInterface::RET_GAME_STARTED;
-			reply.GameNotJoined.gameIP = m_localIP;
+			reply.GameNotJoined.gameIP = replyGameIP;
 			reply.GameNotJoined.playerIP = senderIP;
 			/* 			fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=game-started responseIP=%d.%d.%d.%d\n",
 				PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(responseIP)); */
@@ -378,7 +374,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					msg->GameToJoin.exeCRC, TheGlobalData->m_exeCRC));
 				reply.messageType = LANMessage::MSG_JOIN_DENY;
 				reply.GameNotJoined.reason = LANAPIInterface::RET_CRC_MISMATCH;
-				reply.GameNotJoined.gameIP = m_localIP;
+				reply.GameNotJoined.gameIP = replyGameIP;
 				reply.GameNotJoined.playerIP = senderIP;
 				canJoin = false;
 			}
@@ -415,7 +411,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 						// serials match!  kick the punk!
 						reply.messageType = LANMessage::MSG_JOIN_DENY;
 						reply.GameNotJoined.reason = LANAPIInterface::RET_SERIAL_DUPE;
-						reply.GameNotJoined.gameIP = m_localIP;
+						reply.GameNotJoined.gameIP = replyGameIP;
 						reply.GameNotJoined.playerIP = senderIP;
 						canJoin = false;
 
@@ -437,7 +433,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					// Just deny with a duplicate name reason, for backwards compatibility with retail
 					reply.messageType = LANMessage::MSG_JOIN_DENY;
 					reply.GameNotJoined.reason = LANAPIInterface::RET_DUPLICATE_NAME;
-					reply.GameNotJoined.gameIP = m_localIP;
+					reply.GameNotJoined.gameIP = replyGameIP;
 					reply.GameNotJoined.playerIP = senderIP;
 					canJoin = false;
 					/* 					fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=invalid-name responseIP=%d.%d.%d.%d\n",
@@ -457,7 +453,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					// just deny duplicates
 					reply.messageType = LANMessage::MSG_JOIN_DENY;
 					reply.GameNotJoined.reason = LANAPIInterface::RET_DUPLICATE_NAME;
-					reply.GameNotJoined.gameIP = m_localIP;
+					reply.GameNotJoined.gameIP = replyGameIP;
 					reply.GameNotJoined.playerIP = senderIP;
 					canJoin = false;
 					/* 					fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=duplicate-name responseIP=%d.%d.%d.%d\n",
@@ -478,7 +474,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 					CopyWcharToWindowsWideChar(reply.GameJoined.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameJoined.gameName) - 1);
 					reply.GameJoined.slotPosition = player;
-					reply.GameJoined.gameIP = m_localIP;
+					reply.GameJoined.gameIP = replyGameIP;
 					reply.GameJoined.playerIP = senderIP;
 
 					LANGameSlot newSlot;
