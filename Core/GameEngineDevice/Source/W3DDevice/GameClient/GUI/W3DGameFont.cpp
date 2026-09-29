@@ -111,11 +111,21 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 }
 
 // GeneralsX @feature felipebraz 26/09/2026 Load Font Awesome Brands as dedicated brand icon fallback font
+static inline bool IsBrandFontName(const char *name)
+{
+	if (name == nullptr) return false;
+	return (strcmp(name, "fa-brands-400") == 0 ||
+	        strcmp(name, "Font Awesome 6 Brands Regular") == 0 ||
+	        strcmp(name, "Font Awesome 6 Brands") == 0 ||
+	        strcmp(name, "FontAwesome6Brands-Regular") == 0);
+}
+
 FontCharsClass *LoadBrandFallbackFont(Int size, Bool bold, const char *base_name)
 {
 	static const char *kBrandFonts[] = {
-		"fa-brands-400",
+		"Font Awesome 6 Brands Regular",
 		"Font Awesome 6 Brands",
+		"fa-brands-400",
 		nullptr
 	};
 
@@ -183,20 +193,21 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	// should not get an AlternateUnicodeFont set, otherwise Get_Char_Data enters infinite
 	// recursion: e.g. Arial → Arial Unicode MS → Arial → ...
 	{
-		bool skipFallback = false;
+		// GeneralsX @bugfix felipebraz 29/09/2026 Brand font aliases must skip Unicode fallback to preserve native glyph lookup
+		bool skipFallback = IsBrandFontName(name);
 		// Skip fallback for fonts that already have full Unicode coverage themselves
 		static const char *kFullCoverageFonts[] = {
 			"Arial Unicode MS",
 			"Arial Unicode",
 			"DejaVu Sans",
-			"fa-brands-400",
-			"Font Awesome 6 Brands",
 			nullptr
 		};
-		for (int i = 0; kFullCoverageFonts[i]; i++) {
-			if (strcmp(name, kFullCoverageFonts[i]) == 0) {
-				skipFallback = true;
-				break;
+		if (!skipFallback) {
+			for (int i = 0; kFullCoverageFonts[i]; i++) {
+				if (strcmp(name, kFullCoverageFonts[i]) == 0) {
+					skipFallback = true;
+					break;
+				}
 			}
 		}
 		if (!skipFallback) {
@@ -204,7 +215,7 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 		}
 
 		// GeneralsX @feature felipebraz 26/09/2026 Provide brand glyph fallback for UI fonts
-		bool isBrandFont = (name != nullptr && (strcmp(name, "fa-brands-400") == 0 || strcmp(name, "Font Awesome 6 Brands") == 0));
+		bool isBrandFont = IsBrandFontName(name);
 		if (!isBrandFont) {
 			fontChar->AlternateBrandFont = LoadBrandFallbackFont(size, bold, name);
 		}
