@@ -38,6 +38,7 @@
 #include "Common/UserPreferences.h"
 #include "GameNetwork/LANAPI.h"
 #include "GameNetwork/LANAPICallbacks.h"
+#include "GameNetwork/LANInterfaceDevice.h"
 #include "GameClient/MapUtil.h"
 
 // GeneralsX @build BenderAI 13/02/2026 WideCharWindows conversion helpers (fighter19 pattern)
@@ -93,29 +94,26 @@ void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 	else
 	{
 		// In game - are we a game host?
-		if (m_currentGame)
+		if (m_currentGame && AmIHost())
 		{
-			if (m_currentGame->getIP(0) == m_localIP)
+			AsciiString gameOpts = GenerateGameOptionsString();
+			if (!gameOpts.isEmpty())
 			{
-				AsciiString gameOpts = GenerateGameOptionsString();
-				if (!gameOpts.isEmpty())
-				{
-					LANMessage reply;
-					fillInLANMessage( &reply );
-					reply.messageType = LANMessage::MSG_GAME_ANNOUNCE;
-					strlcpy(reply.GameInfo.options, gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
-					// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
-					CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
-					reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
-					reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
+				LANMessage reply;
+				fillInLANMessage( &reply );
+				reply.messageType = LANMessage::MSG_GAME_ANNOUNCE;
+				strlcpy(reply.GameInfo.options, gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
+				// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
+				CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
+				reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
+				reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
 
-					sendMessage(&reply);
-				}
+				sendMessage(&reply);
 			}
-			else
-			{
-				// We're a joiner
-			}
+		}
+		else
+		{
+			// We're a joiner
 		}
 	}
 	// Add the player to the lobby player list
@@ -147,7 +145,8 @@ void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
 	/* 	fprintf(stderr, "[LAN86] handleGameAnnounce sender=%d.%d.%d.%d game=%ls inProgress=%d direct=%d\n",
 		PRINTF_IP_AS_4_INTS(senderIP), GetWindowsWideCharAsWchar(msg->GameInfo.gameName),
 		msg->GameInfo.inProgress, msg->GameInfo.isDirectConnect); */
-	if (senderIP == m_localIP)
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Ignore self-announcements from any active local interface on multi-homed hosts.
+	if (senderIP == m_localIP || LANInterfaceDevice::isLocalHostAddress(senderIP))
 	{
 		return; // Don't try to update own info
 	}
@@ -330,15 +329,24 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameToJoin.gameIP), PRINTF_IP_AS_4_INTS(m_localIP),
 		m_pendingAction, m_inLobby); */
 
-	if (msg->GameToJoin.gameIP != m_localIP)
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Accept join requests targeted at either m_localIP or any local interface IP.
+	if (msg->GameToJoin.gameIP != m_localIP && !LANInterfaceDevice::isLocalHostAddress(msg->GameToJoin.gameIP))
 	{
 		/* 		fprintf(stderr, "[LAN86] handleRequestJoin ignored sender=%d.%d.%d.%d reason=wrong-game-ip\n",
 			PRINTF_IP_AS_4_INTS(senderIP)); */
 		return; // Not us.  Ignore it.
 	}
+
+	// If the client joined through a secondary local interface (e.g. Ethernet while m_localIP was Wi-Fi),
+	// align our active local IP to match the interface the client connected on.
+	if (msg->GameToJoin.gameIP != m_localIP && LANInterfaceDevice::isLocalHostAddress(msg->GameToJoin.gameIP))
+	{
+		m_localIP = msg->GameToJoin.gameIP;
+	}
+
 	LANMessage reply;
 	fillInLANMessage( &reply );
-	if (!m_inLobby && m_currentGame && m_currentGame->getIP(0) == m_localIP)
+	if (!m_inLobby && m_currentGame && AmIHost())
 	{
 		if (m_currentGame->isGameInProgress())
 		{
@@ -524,10 +532,18 @@ void LANAPI::handleJoinAccept( LANMessage *msg, UnsignedInt senderIP )
 	/* 	fprintf(stderr, "[LAN86] handleJoinAccept sender=%d.%d.%d.%d playerIP=%d.%d.%d.%d localIP=%d.%d.%d.%d pending=%d slot=%d game=%ls\n",
 		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameJoined.playerIP), PRINTF_IP_AS_4_INTS(m_localIP),
 		m_pendingAction, msg->GameJoined.slotPosition, GetWindowsWideCharAsWchar(msg->GameJoined.gameName)); */
-	if (msg->GameJoined.playerIP == m_localIP) // Is it for us?
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Accept join response if playerIP matches m_localIP or any local interface IP.
+	if (msg->GameJoined.playerIP == m_localIP || LANInterfaceDevice::isLocalHostAddress(msg->GameJoined.playerIP)) // Is it for us?
 	{
 		if (m_pendingAction == ACT_JOIN) // Are we trying to join?
 		{
+			// If host responded using a different local interface IP (e.g. Ethernet while m_localIP was Wi-Fi),
+			// align our active local IP with the interface the host accepted us on.
+			if (m_localIP != msg->GameJoined.playerIP && LANInterfaceDevice::isLocalHostAddress(msg->GameJoined.playerIP))
+			{
+				SetLocalIP(msg->GameJoined.playerIP);
+			}
+
 			// GeneralsX @bugfix BenderAI 13/02/2026 Wrap WideCharWindows with GetWindowsWideCharAsWchar (fighter19 pattern)
 			m_currentGame = LookupGame(UnicodeString(GetWindowsWideCharAsWchar(msg->GameJoined.gameName)));
 
@@ -583,7 +599,8 @@ void LANAPI::handleJoinDeny( LANMessage *msg, UnsignedInt senderIP )
 	/* 	fprintf(stderr, "[LAN86] handleJoinDeny sender=%d.%d.%d.%d playerIP=%d.%d.%d.%d localIP=%d.%d.%d.%d pending=%d reason=%d game=%ls\n",
 		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameJoined.playerIP), PRINTF_IP_AS_4_INTS(m_localIP),
 		m_pendingAction, msg->GameNotJoined.reason, GetWindowsWideCharAsWchar(msg->GameNotJoined.gameName)); */
-	if (msg->GameJoined.playerIP == m_localIP) // Is it for us?
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Accept join deny if playerIP matches m_localIP or any local interface IP.
+	if (msg->GameJoined.playerIP == m_localIP || LANInterfaceDevice::isLocalHostAddress(msg->GameJoined.playerIP)) // Is it for us?
 	{
 		if (m_pendingAction == ACT_JOIN) // Are we trying to join?
 		{

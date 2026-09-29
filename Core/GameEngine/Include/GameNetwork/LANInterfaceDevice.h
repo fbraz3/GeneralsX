@@ -48,4 +48,7 @@ public:
 	 * Returns the count of broadcast addresses populated.
 	 */
 	static Int getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedInt *outAddrs, Int maxAddrs);
+
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Test if an IPv4 address belongs to any active local interface on this machine.
+	static Bool isLocalHostAddress(UnsignedInt ip);
 };

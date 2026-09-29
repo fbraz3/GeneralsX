@@ -244,9 +244,20 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 	else
 	{
 		// GeneralsX @feature GitHubCopilot 12/04/2026 Send discovery/control broadcast packets to interface subnet broadcast addresses before global broadcast.
+		// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Fan out discovery broadcasts (locations/announcements) to ALL active subnets
+		// so games can be discovered regardless of which interface (Ethernet or Wi-Fi) is selected.
+		UnsignedInt broadcastFilterIP = m_localIP;
+		if (msg != nullptr && (
+			msg->messageType == LANMessage::MSG_REQUEST_LOCATIONS
+			|| msg->messageType == LANMessage::MSG_GAME_ANNOUNCE
+			|| msg->messageType == LANMessage::MSG_LOBBY_ANNOUNCE))
+		{
+			broadcastFilterIP = 0; // Gather broadcast addrs for all active subnets
+		}
+
 		Bool sentAny = FALSE;
 		UnsignedInt subnetBroadcasts[8];
-		Int subnetCount = LANInterfaceDevice::getSubnetBroadcastAddresses(m_localIP, subnetBroadcasts, ARRAY_SIZE(subnetBroadcasts));
+		Int subnetCount = LANInterfaceDevice::getSubnetBroadcastAddresses(broadcastFilterIP, subnetBroadcasts, ARRAY_SIZE(subnetBroadcasts));
 		for (Int i = 0; i < subnetCount; ++i)
 		{
 			UnsignedInt dst = subnetBroadcasts[i];
@@ -414,7 +425,9 @@ void LANAPI::update()
 		{
 			// Process the new message
 			UnsignedInt senderIP = m_transport->m_inBuffer[i].addr;
-			if (senderIP == m_localIP)
+			// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Ignore self-echo from any active local interface on multi-homed hosts
+			// (prevents creating duplicate local ghost players and 'Duplicate name already in game' errors).
+			if (senderIP == m_localIP || LANInterfaceDevice::isLocalHostAddress(senderIP))
 			{
 				/* 				fprintf(stderr, "[LAN86] recv self-echo type=%u (%s) from %d.%d.%d.%d ignored\n",
 					((LANMessage *)(m_transport->m_inBuffer[i].data))->messageType,
@@ -1412,9 +1425,10 @@ void LANAPI::SetLocalIP( AsciiString localIP )
 	SetLocalIP(resolvedIP);
 }
 
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Recognize local host if slot 0 IP matches either m_localIP or any local interface.
 Bool LANAPI::AmIHost()
 {
-	return m_currentGame && m_currentGame->getIP(0) == m_localIP;
+	return m_currentGame && (m_currentGame->getIP(0) == m_localIP || LANInterfaceDevice::isLocalHostAddress(m_currentGame->getIP(0)));
 }
 
 void LANAPI::setIsActive(Bool isActive) {
