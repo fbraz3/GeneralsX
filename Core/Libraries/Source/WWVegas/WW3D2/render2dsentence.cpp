@@ -1852,11 +1852,15 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 
 	// GeneralsX @feature felipebraz 26/09/2026 Font Awesome 6 Brands font resolution
 	bool is_fa_brands = (strcmp( normalized, "fontawesome6brands" ) == 0 ||
+	                     strcmp( normalized, "fontawesome6brands.ttf" ) == 0 ||
 	                     strcmp( normalized, "fontawesome6brandsregular" ) == 0 ||
+	                     strcmp( normalized, "fontawesome6brandsregular.ttf" ) == 0 ||
 	                     strcmp( normalized, "fontawesomebrands" ) == 0 ||
+	                     strcmp( normalized, "fontawesomebrands.ttf" ) == 0 ||
 	                     strcmp( normalized, "fabrands400" ) == 0 ||
+	                     strcmp( normalized, "fabrands400.ttf" ) == 0 ||
 	                     strcmp( normalized, "fabrands" ) == 0 ||
-	                     strcmp( normalized, "fontawesome" ) == 0);
+	                     strcmp( normalized, "fabrands.ttf" ) == 0);
 
 	if ( is_arial ) {
 		if ( is_bold ) {
