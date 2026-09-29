@@ -40,6 +40,7 @@
 #include "WWDebug/wwprofile.h"
 #include "WWDebug/wwmemlog.h"
 #include "dx8wrapper.h"
+#include "PlatformPaths.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1458,6 +1459,10 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 	SIZE char_size = { 0 };
 	::GetTextExtentPoint32W( MemDC, &ch, 1, &char_size );
 	char_size.cx += PixelOverlap + xOrigin;
+
+	// GeneralsX @bugfix felipebraz 29/09/2026 Clamp to bitmap dimensions to prevent out-of-bounds reads
+	if (char_size.cx > width) char_size.cx = width;
+	if (char_size.cy > height) char_size.cy = height;
 	//
 	//	Get a pointer to the surface that this character should use
 	//
@@ -1573,6 +1578,44 @@ FontCharsClass::Create_GDI_Font (const char *font_name)
 		doingGenerals = true;
 	}
 
+#if defined(_WIN32)
+	// GeneralsX @bugfix felipebraz 29/09/2026 Register and resolve Font Awesome Brands for Windows GDI
+	bool is_fa_brands = (font_name != nullptr && (
+		strcmp(font_name, "fa-brands-400") == 0 ||
+		strcmp(font_name, "fa-brands-400.ttf") == 0 ||
+		strcmp(font_name, "Font Awesome 6 Brands") == 0 ||
+		strcmp(font_name, "Font Awesome 6 Brands Regular") == 0 ||
+		strcmp(font_name, "FontAwesome6Brands-Regular") == 0 ||
+		strstr(font_name, "fa-brands") != nullptr ||
+		strstr(font_name, "Font Awesome") != nullptr ||
+		strstr(font_name, "FontAwesome") != nullptr));
+
+	static bool s_brandFontRegistered = false;
+	if (is_fa_brands && !s_brandFontRegistered) {
+		const char *candidates[] = {
+			"fa-brands-400.ttf",
+			"fa-brands-400",
+			"FontAwesome6Brands-Regular.ttf",
+			"FontAwesome6Brands-Regular",
+			"Font Awesome 6 Brands"
+		};
+		char font_path[1024] = {0};
+		if (Platform::FindLocalFontFile(candidates, 5, font_path, sizeof(font_path))) {
+			for (char *p = font_path; *p; ++p) {
+				if (*p == '/') *p = '\\';
+			}
+			int added = ::AddFontResourceExA(font_path, FR_PRIVATE, 0);
+			if (added > 0) {
+				s_brandFontRegistered = true;
+			}
+		}
+	}
+
+	if (is_fa_brands) {
+		font_name = "Font Awesome 6 Brands Regular";
+	}
+#endif
+
 	//
 	//	Calculate the height of the font in logical units
 	//
@@ -1641,6 +1684,29 @@ FontCharsClass::Create_GDI_Font (const char *font_name)
 	//
 	OldGDIBitmap	= (HBITMAP)::SelectObject (MemDC, GDIBitmap);
 	OldGDIFont		= (HFONT)::SelectObject (MemDC, GDIFont);
+#if defined(_WIN32)
+	if (is_fa_brands && MemDC != nullptr) {
+		WORD glyph_idx = 0;
+		WCHAR test_ch = 0xF17A; // fa-windows
+		if (::GetGlyphIndicesW(MemDC, &test_ch, 1, &glyph_idx, GGI_MARK_NONEXISTING_GLYPHS) == GDI_ERROR || glyph_idx == 0xFFFF) {
+			// If "Font Awesome 6 Brands Regular" didn't match, try "Font Awesome 6 Brands"
+			HFONT altFont = ::CreateFont(font_height, fontWidth, 0, 0, bold, italic,
+			                             FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+			                             CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
+			                             VARIABLE_PITCH, "Font Awesome 6 Brands");
+			if (altFont != nullptr) {
+				::SelectObject(MemDC, altFont);
+				if (::GetGlyphIndicesW(MemDC, &test_ch, 1, &glyph_idx, GGI_MARK_NONEXISTING_GLYPHS) != GDI_ERROR && glyph_idx != 0xFFFF) {
+					::DeleteObject(GDIFont);
+					GDIFont = altFont;
+				} else {
+					::SelectObject(MemDC, GDIFont);
+					::DeleteObject(altFont);
+				}
+			}
+		}
+	}
+#endif
 	::SetBkColor (MemDC, RGB (0, 0, 0));
 	::SetTextColor (MemDC, RGB (255, 255, 255));
 
@@ -1710,7 +1776,6 @@ FontCharsClass::Free_GDI_Font ()
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
 #endif
-#include "PlatformPaths.h"
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
@@ -1788,6 +1853,7 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 
 	// GeneralsX @feature felipebraz 26/09/2026 Font Awesome 6 Brands font resolution
 	bool is_fa_brands = (strcmp( normalized, "fontawesome6brands" ) == 0 ||
+	                     strcmp( normalized, "fontawesome6brandsregular" ) == 0 ||
 	                     strcmp( normalized, "fontawesomebrands" ) == 0 ||
 	                     strcmp( normalized, "fabrands400" ) == 0 ||
 	                     strcmp( normalized, "fabrands" ) == 0 ||
@@ -1822,6 +1888,7 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 		candidates[candidate_count++] = "fa-brands-400.ttf";
 		candidates[candidate_count++] = "FontAwesome6Brands-Regular";
 		candidates[candidate_count++] = "Font Awesome 6 Brands";
+		candidates[candidate_count++] = "Font Awesome 6 Brands Regular";
 	}
 
 	//

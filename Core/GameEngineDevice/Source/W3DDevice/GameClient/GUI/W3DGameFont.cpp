@@ -111,11 +111,21 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 }
 
 // GeneralsX @feature felipebraz 26/09/2026 Load Font Awesome Brands as dedicated brand icon fallback font
+static inline bool IsBrandFontName(const char *name)
+{
+	if (name == nullptr) return false;
+	return (strcmp(name, "fa-brands-400") == 0 ||
+	        strcmp(name, "Font Awesome 6 Brands Regular") == 0 ||
+	        strcmp(name, "Font Awesome 6 Brands") == 0 ||
+	        strcmp(name, "FontAwesome6Brands-Regular") == 0);
+}
+
 FontCharsClass *LoadBrandFallbackFont(Int size, Bool bold, const char *base_name)
 {
 	static const char *kBrandFonts[] = {
-		"fa-brands-400",
+		"Font Awesome 6 Brands Regular",
 		"Font Awesome 6 Brands",
+		"fa-brands-400",
 		nullptr
 	};
 
@@ -190,6 +200,7 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 			"Arial Unicode",
 			"DejaVu Sans",
 			"fa-brands-400",
+			"Font Awesome 6 Brands Regular",
 			"Font Awesome 6 Brands",
 			nullptr
 		};
@@ -204,7 +215,7 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 		}
 
 		// GeneralsX @feature felipebraz 26/09/2026 Provide brand glyph fallback for UI fonts
-		bool isBrandFont = (name != nullptr && (strcmp(name, "fa-brands-400") == 0 || strcmp(name, "Font Awesome 6 Brands") == 0));
+		bool isBrandFont = IsBrandFontName(name);
 		if (!isBrandFont) {
 			fontChar->AlternateBrandFont = LoadBrandFallbackFont(size, bold, name);
 		}

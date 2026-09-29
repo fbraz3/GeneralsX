@@ -29,6 +29,10 @@
 
 #if defined(_WIN32)
 #include <io.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
 #else
 #include <unistd.h>
 #include <limits.h>
@@ -116,6 +120,27 @@ inline bool FindLocalFontFile(const char *const *candidates, int candidateCount,
 		}
 		if ( IsFileReadable( macosBinFonts ) && searchDirCount < 24 ) {
 			searchDirs[searchDirCount++] = macosBinFonts;
+		}
+	}
+#elif defined(_WIN32)
+	// GeneralsX @bugfix felipebraz 29/09/2026 Probe fonts directory relative to Windows executable
+	char winExeFonts[MAX_PATH] = {0};
+	char winExeAssetsFonts[MAX_PATH] = {0};
+	char winExeDir[MAX_PATH] = {0};
+	if ( GetModuleFileNameA( NULL, winExeDir, MAX_PATH ) > 0 ) {
+		char *lastBackslash = strrchr( winExeDir, '\\' );
+		char *lastSlash = strrchr( winExeDir, '/' );
+		char *sep = (lastBackslash > lastSlash) ? lastBackslash : lastSlash;
+		if ( sep != nullptr ) {
+			*sep = '\0';
+			snprintf( winExeFonts, sizeof(winExeFonts), "%s\\fonts", winExeDir );
+			snprintf( winExeAssetsFonts, sizeof(winExeAssetsFonts), "%s\\assets\\fonts", winExeDir );
+			if ( searchDirCount < 24 ) {
+				searchDirs[searchDirCount++] = winExeFonts;
+			}
+			if ( searchDirCount < 24 ) {
+				searchDirs[searchDirCount++] = winExeAssetsFonts;
+			}
 		}
 	}
 #endif
