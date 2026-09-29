@@ -808,7 +808,7 @@ void LANAPI::RequestGameLeave()
 	sendMessage(&msg);
 	m_transport->update();  // Send immediately, before OnPlayerLeave below resets everything.
 
-	if (m_currentGame && m_currentGame->getIP(0) == m_localIP)
+	if (AmIHost())
 	{
 		// Exit out immediately if we're hosting
 		OnPlayerLeave(m_name);
@@ -828,7 +828,7 @@ void LANAPI::RequestGameAnnounce()
 	// In game - are we a game host?
 	if (m_currentGame && !(m_currentGame->getIsDirectConnect()))
 	{
-		if (m_currentGame->getIP(0) == m_localIP || (m_currentGame->isGameInProgress() && TheNetwork && TheNetwork->isPacketRouter())) // if we're in game we should reply if we're the packet router
+		if (AmIHost() || (m_currentGame->isGameInProgress() && TheNetwork && TheNetwork->isPacketRouter())) // if we're in game we should reply if we're the packet router
 		{
 			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
 			if (gameOpts.isEmpty())
@@ -925,7 +925,7 @@ void LANAPI::RequestChat( UnicodeString message, ChatType format )
 
 void LANAPI::RequestGameStart()
 {
-	if (m_inLobby || !m_currentGame || m_currentGame->getIP(0) != m_localIP)
+	if (m_inLobby || !AmIHost())
 		return;
 
 	LANMessage msg;
@@ -945,7 +945,7 @@ void LANAPI::ResetGameStartTimer()
 
 void LANAPI::RequestGameStartTimer( Int seconds )
 {
-	if (m_inLobby || !m_currentGame || m_currentGame->getIP(0) != m_localIP)
+	if (m_inLobby || !AmIHost())
 		return;
 
 	UnsignedInt now = timeGetTime();
