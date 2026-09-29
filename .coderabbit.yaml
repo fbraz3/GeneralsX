@@ -85,7 +85,7 @@ reviews:
       instructions: >-
         NGMP (GeneralsOnline) Subsystem:
         - Preserve NGMP cross-platform multiplayer implementation. GameSpy online is deprecated and must not override NGMP.
-        - Strict platform isolation: no Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager). Use SDL3/POSIX abstractions.
+        - Strict platform isolation: no Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager) inside NGMP networking sources (GeneralsOnline/, NextGenMP/). Platform layer code (Core/GameEngineDevice/, Core/Libraries/Source/Platform/) handling OS-level font or file paths is distinct from NGMP networking and must not be flagged here. Use SDL3/POSIX abstractions in NGMP.
         - Thread safety: network callbacks must post events to a thread-safe queue consumed on the main thread during Shell::update(); never touch UI directly from background/network threads.
         - REST endpoints must use NGMP::GetAPIEndpoint(...) for environment/contract routing and include 'Authorization: Bearer <token>'.
         - WebSocket messaging must use integer msg_id routing (not string action names), explicit room registration ({"msg_id": 3, "room": 0}) for lobby visibility, and periodic ping heartbeats ({"msg_id": 8}) at least every 10 seconds.
@@ -184,7 +184,7 @@ reviews:
           4. Protocol Conventions: WebSocket messages must use integer msg_id routing (not strings), explicit room registration ({"msg_id": 3, "room": 0})
              for lobby updates, and ping heartbeats ({"msg_id": 8}) at least every 10 seconds. REST calls must use NGMP::GetAPIEndpoint(...)
              with contract/environment prefix and 'Authorization: Bearer <token>'.
-          5. Platform Isolation & Portability: No Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager). Use SDL3/POSIX and explicit network byte order (htons/ntohs, htonl/ntohl).
+          5. Platform Isolation & Portability: No Win32 networking APIs (<windows.h>, <winsock2.h>, Win32 Credential Manager) in NGMP networking implementation files (GeneralsOnline/, NextGenMP/). Note that platform-layer files (e.g. Core/Libraries/Source/Platform/PlatformPaths.h) or build scripts (cmake/ngmp.cmake) using Win32 OS APIs for filesystem/font discovery or CMake OpenSSL lookup are not NGMP networking code and must not trigger this check. Use SDL3/POSIX and explicit network byte order (htons/ntohs, htonl/ntohl) in NGMP code.
 
   tools:
     clang:

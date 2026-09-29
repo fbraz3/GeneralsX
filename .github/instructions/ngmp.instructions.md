@@ -31,8 +31,8 @@ When a piece of legacy UI code is in the critical path for NGMP but also serves 
 
 ## Golden Constraints
 
-1. **Strict Prohibition of `<windows.h>` & Win32 APIs**:
-   - Never include `<windows.h>`, `<winsock2.h>`, `<ws2tcpip.h>`, `<wincred.h>`, or `<shellapi.h>` in NGMP sources.
+1. **Strict Prohibition of `<windows.h>` & Win32 APIs in NGMP Sources**:
+   - Never include `<windows.h>`, `<winsock2.h>`, `<ws2tcpip.h>`, `<wincred.h>`, or `<shellapi.h>` in NGMP networking sources (`GeneralsOnline/`, `NextGenMP/`). General platform abstraction layers (`Core/Libraries/Source/Platform/`) implementing OS-specific filesystem/font resolution remain separate and must not be confused with NGMP networking sources.
    - Use standard C++ (`<chrono>`, `<thread>`, `<mutex>`), POSIX networking (`<sys/socket.h>`, `<netinet/in.h>`, `<arpa/inet.h>`), or SDL3 primitives (`SDL_GetTicks()`, `SDL_Delay()`, `SDL_GetPrefPath()`).
 
 2. **Platform Layer Isolation**:
