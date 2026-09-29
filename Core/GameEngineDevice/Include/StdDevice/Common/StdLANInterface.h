@@ -38,4 +38,6 @@ public:
 	static Int getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedInt *outAddrs, Int maxAddrs);
 	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Check if IP matches any local active interface on POSIX.
 	static Bool isLocalHostAddress(UnsignedInt ip);
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Check if IP matches a real active local network adapter (excluding loopback).
+	static Bool isRealLocalInterfaceAddress(UnsignedInt ip);
 };

@@ -51,4 +51,7 @@ public:
 
 	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Test if an IPv4 address belongs to any active local interface on this machine.
 	static Bool isLocalHostAddress(UnsignedInt ip);
+
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Test if an IPv4 address belongs to a real active local network adapter (excluding loopback).
+	static Bool isRealLocalInterfaceAddress(UnsignedInt ip);
 };

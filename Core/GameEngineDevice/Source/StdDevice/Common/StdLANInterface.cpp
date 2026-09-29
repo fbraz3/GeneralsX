@@ -195,18 +195,12 @@ Int StdLANInterface::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 #endif
 }
 
-// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Test if an IPv4 address belongs to any active local interface on this machine.
-Bool StdLANInterface::isLocalHostAddress(UnsignedInt ip)
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Test if an IPv4 address belongs to a real active local network adapter (excluding loopback).
+Bool StdLANInterface::isRealLocalInterfaceAddress(UnsignedInt ip)
 {
-	if (ip == 0)
+	if (ip == 0 || (ip >> 24) == 127)
 	{
 		return FALSE;
-	}
-
-	// 127.0.0.0/8 loopback range
-	if ((ip >> 24) == 127)
-	{
-		return TRUE;
 	}
 
 #ifndef _WIN32
@@ -222,6 +216,23 @@ Bool StdLANInterface::isLocalHostAddress(UnsignedInt ip)
 #endif
 
 	return FALSE;
+}
+
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Test if an IPv4 address belongs to any active local interface on this machine.
+Bool StdLANInterface::isLocalHostAddress(UnsignedInt ip)
+{
+	if (ip == 0)
+	{
+		return FALSE;
+	}
+
+	// 127.0.0.0/8 loopback range
+	if ((ip >> 24) == 127)
+	{
+		return TRUE;
+	}
+
+	return isRealLocalInterfaceAddress(ip);
 }
 
 // GeneralsX @feature Mr. Meesseeks 17/09/2026 Discover per-interface IPv4 subnet broadcast addresses for LAN discovery on POSIX.
@@ -309,4 +320,10 @@ Int LANInterfaceDevice::getSubnetBroadcastAddresses(UnsignedInt localIP, Unsigne
 Bool LANInterfaceDevice::isLocalHostAddress(UnsignedInt ip)
 {
 	return StdLANInterface::isLocalHostAddress(ip);
+}
+
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Bridge isRealLocalInterfaceAddress to StdLANInterface on POSIX.
+Bool LANInterfaceDevice::isRealLocalInterfaceAddress(UnsignedInt ip)
+{
+	return StdLANInterface::isRealLocalInterfaceAddress(ip);
 }

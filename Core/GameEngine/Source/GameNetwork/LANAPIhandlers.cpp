@@ -338,8 +338,9 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 	}
 
 	// If the client joined through a secondary local interface (e.g. Ethernet while m_localIP was Wi-Fi),
-	// align our active local IP to match the interface the client connected on.
-	if (msg->GameToJoin.gameIP != m_localIP && LANInterfaceDevice::isLocalHostAddress(msg->GameToJoin.gameIP))
+	// align our active local IP to match the real interface the client connected on.
+	// Only assign to m_localIP if gameIP matches a real active local network adapter (excluding loopback).
+	if (msg->GameToJoin.gameIP != m_localIP && LANInterfaceDevice::isRealLocalInterfaceAddress(msg->GameToJoin.gameIP))
 	{
 		m_localIP = msg->GameToJoin.gameIP;
 	}
@@ -538,10 +539,12 @@ void LANAPI::handleJoinAccept( LANMessage *msg, UnsignedInt senderIP )
 		if (m_pendingAction == ACT_JOIN) // Are we trying to join?
 		{
 			// If host responded using a different local interface IP (e.g. Ethernet while m_localIP was Wi-Fi),
-			// align our active local IP with the interface the host accepted us on.
-			if (m_localIP != msg->GameJoined.playerIP && LANInterfaceDevice::isLocalHostAddress(msg->GameJoined.playerIP))
+			// align our active local IP with the real interface the host accepted us on.
+			// Note: We assign m_localIP directly instead of calling SetLocalIP() to avoid resetting
+			// transport buffers while LANAPI::update() is processing incoming packets.
+			if (m_localIP != msg->GameJoined.playerIP && LANInterfaceDevice::isRealLocalInterfaceAddress(msg->GameJoined.playerIP))
 			{
-				SetLocalIP(msg->GameJoined.playerIP);
+				m_localIP = msg->GameJoined.playerIP;
 			}
 
 			// GeneralsX @bugfix BenderAI 13/02/2026 Wrap WideCharWindows with GetWindowsWideCharAsWchar (fighter19 pattern)
