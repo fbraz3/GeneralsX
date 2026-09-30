@@ -77,7 +77,23 @@ if(SAGE_USE_SDL3)
                 get_filename_component(_CXX_PARENT "${_CXX_DIR}" DIRECTORY)
                 list(APPEND _MINGW_CANDIDATE_PREFIXES "${_CXX_PARENT}")
             endif()
-            list(APPEND _MINGW_CANDIDATE_PREFIXES "C:/msys64/mingw64" "D:/a/_temp/setup-msys2/msys64/mingw64")
+            list(APPEND _MINGW_CANDIDATE_PREFIXES
+                "${CMAKE_SOURCE_DIR}/msys64/mingw64"
+                "C:/msys64/mingw64"
+                "D:/a/_temp/setup-msys2/msys64/mingw64"
+                "D:/a/_temp/setup-msys2/mingw64"
+            )
+            if(DEFINED ENV{GITHUB_WORKSPACE} AND EXISTS "$ENV{GITHUB_WORKSPACE}/msys64/mingw64")
+                list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{GITHUB_WORKSPACE}/msys64/mingw64")
+            endif()
+            if(DEFINED ENV{RUNNER_TEMP})
+                if(EXISTS "$ENV{RUNNER_TEMP}/setup-msys2/msys64/mingw64")
+                    list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{RUNNER_TEMP}/setup-msys2/msys64/mingw64")
+                endif()
+                if(EXISTS "$ENV{RUNNER_TEMP}/setup-msys2/mingw64")
+                    list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{RUNNER_TEMP}/setup-msys2/mingw64")
+                endif()
+            endif()
 
             # Check candidate prefixes directly
             foreach(_prefix IN LISTS _MINGW_CANDIDATE_PREFIXES)
@@ -139,7 +155,7 @@ if(SAGE_USE_SDL3)
                 find_path(PNG_PNG_INCLUDE_DIR NAMES png.h PATHS ${_MINGW_CANDIDATE_PREFIXES} PATH_SUFFIXES include include/libpng16 libpng16)
             endif()
             if(NOT PNG_LIBRARY)
-                find_library(PNG_LIBRARY NAMES png16 libpng16 png libpng PATHS ${_MINGW_CANDIDATE_PREFIXES} PATH_SUFFIXES lib)
+                find_library(PNG_LIBRARY NAMES libpng16.dll.a libpng.dll.a png16.dll png.dll png16 libpng16 png libpng PATHS ${_MINGW_CANDIDATE_PREFIXES} PATH_SUFFIXES lib)
             endif()
 
             if(NOT PNG_PNG_INCLUDE_DIR OR NOT PNG_LIBRARY)

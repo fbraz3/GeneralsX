@@ -52,7 +52,8 @@ jobs:
       - name: Setup MSYS2 MinGW64
         uses: msys2/setup-msys2@v2
         with:
-          location: 'C:\msys64'
+          msystem: MINGW64
+          path-type: inherit
           update: false
           install: >-
             base-devel
@@ -105,6 +106,14 @@ jobs:
         run: |
           ./scripts/build/windows/configure-windows64.ps1
 
+      - name: Save vcpkg binary cache
+        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v2-{0}-x64-windows-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
+
       - name: Build ${{ matrix.game.target }}
         shell: pwsh
         run: |
@@ -136,13 +145,6 @@ jobs:
             }
           }
           Write-Host "All required DLLs successfully verified in bundle."
-
-      - name: Save vcpkg binary cache
-        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v2-{0}-x64-windows-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
 
       - name: Upload Build Logs
         if: always()

@@ -31,8 +31,9 @@
 include(FindPackageHandleStandardArgs)
 
  # GeneralsX @bugfix GitHub Copilot 25/05/2026 Include swscale by default and prefer pkg-config-provided paths for arm64 FFmpeg.
+ # GeneralsX @bugfix fbraz3 30/09/2026 Include SWRESAMPLE for libavcodec audio resampling support.
 if(NOT FFmpeg_FIND_COMPONENTS)
-    set(FFmpeg_FIND_COMPONENTS AVFORMAT AVCODEC AVUTIL SWSCALE)
+    set(FFmpeg_FIND_COMPONENTS AVFORMAT AVCODEC AVUTIL SWSCALE SWRESAMPLE)
 endif()
 
 #
@@ -158,6 +159,26 @@ endforeach()
 find_library(_FFmpeg_HAVE_LIBZ NAMES z)
 if(_FFmpeg_HAVE_LIBZ)
     set(FFMPEG_LIBRARIES ${FFMPEG_LIBRARIES} ${_FFmpeg_HAVE_LIBZ})
+endif()
+
+# GeneralsX @bugfix fbraz3 30/09/2026 On macOS/Apple, libavcodec links against VideoToolbox, CoreMedia, CoreVideo, and AudioToolbox frameworks.
+if(APPLE)
+    find_library(_FFmpeg_FW_VT VideoToolbox)
+    find_library(_FFmpeg_FW_CM CoreMedia)
+    find_library(_FFmpeg_FW_CV CoreVideo)
+    find_library(_FFmpeg_FW_AT AudioToolbox)
+    if(_FFmpeg_FW_VT)
+        list(APPEND FFMPEG_LIBRARIES ${_FFmpeg_FW_VT})
+    endif()
+    if(_FFmpeg_FW_CM)
+        list(APPEND FFMPEG_LIBRARIES ${_FFmpeg_FW_CM})
+    endif()
+    if(_FFmpeg_FW_CV)
+        list(APPEND FFMPEG_LIBRARIES ${_FFmpeg_FW_CV})
+    endif()
+    if(_FFmpeg_FW_AT)
+        list(APPEND FFMPEG_LIBRARIES ${_FFmpeg_FW_AT})
+    endif()
 endif()
 
 # Build the include path and library list with duplicates removed.
