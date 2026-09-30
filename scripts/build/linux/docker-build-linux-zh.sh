@@ -5,12 +5,12 @@
 set -euo pipefail
 
 PRESET="${1:-linux64-deploy}"
-LOG_FILE="logs/build_zh_${PRESET}_docker.log"
-DOCKER_IMAGE="generalsx/linux-builder:latest"
-CONTAINER_NAME="generalsx-build-zh-${PRESET}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 cd "$PROJECT_ROOT"
+LOG_FILE="logs/build_zh_${PRESET}_docker.log"
+DOCKER_IMAGE="generalsx/linux-builder:latest"
+CONTAINER_NAME="generalsx-build-zh-${PRESET}"
 
 # GeneralsX @build BenderAI 24/03/2026 Preserve host file ownership for bind mounts and vcpkg cache.
 HOST_UID="$(id -u)"
@@ -63,7 +63,7 @@ docker run --rm \
         fi
         echo \"🛠  Using \$PROC parallel jobs for building...\"
 
-        # GeneralsX @bugfix BenderAI 02/08/2026 Reuse cached vcpkg executable instead of deleting it from the host-owned bind mount.
+        # GeneralsX @build Gabriel Petry 30/09/2026 Reuse or bootstrap the host-cached vcpkg executable.
         if [ ! -x /opt/vcpkg/vcpkg ]; then
             echo '📦 Bootstrapping vcpkg (first time, will be cached in Docker volume)...'
             if [ -f /opt/vcpkg/bootstrap-vcpkg.sh ]; then

@@ -382,6 +382,7 @@ public:
 	Bool m_loadScreenRender;						///< flag to disallow rendering of almost everything during a loadscreen
 
 	Real m_keyboardScrollFactor;			///< Factor applied to game scrolling speed via keyboard scrolling
+	// GeneralsX @feature Gabriel Petry 30/09/2026 Add configurable mouse scrolling speed.
 	Real m_mouseScrollFactor;				///< Factor applied to game scrolling speed via mouse scrolling
 	Real m_keyboardDefaultScrollFactor;			///< Factor applied to game scrolling speed via keyboard scrolling
 	Bool m_drawScrollAnchor;					///< Set that the scroll anchor should be enabled
