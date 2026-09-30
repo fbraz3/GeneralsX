@@ -9,7 +9,15 @@ $projectRoot = Resolve-Path (Join-Path $scriptDir "..\..\..")
 Set-Location $projectRoot
 
 # GeneralsX @bugfix GitHub Copilot 20/05/2026 Ensure MinGW/MSYS2 toolchain binaries are available in PATH for runtime DLL discovery consistency.
-$env:PATH = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:PATH
+$msysDir = if ($env:MSYS2_PATH -and (Test-Path $env:MSYS2_PATH)) { $env:MSYS2_PATH }
+           elseif (Test-Path "C:\msys64\mingw64") { "C:\msys64" }
+           elseif ($env:RUNNER_TEMP -and (Test-Path (Join-Path $env:RUNNER_TEMP "setup-msys2\msys64\mingw64"))) { Join-Path $env:RUNNER_TEMP "setup-msys2\msys64" }
+           elseif ($env:MINGW_PREFIX -and (Test-Path $env:MINGW_PREFIX)) { Split-Path -Parent $env:MINGW_PREFIX }
+           else { "" }
+if ($msysDir) {
+    $env:PATH = "$msysDir\mingw64\bin;$msysDir\usr\bin;" + $env:PATH
+    $env:MINGW_PREFIX = "$msysDir\mingw64"
+}
 
 $buildDir = "build/windows64-deploy"
 $exeSrc = Join-Path $buildDir "GeneralsMD/GeneralsXZH.exe"
@@ -48,8 +56,11 @@ foreach ($sdlDll in $sdlDlls) {
     Copy-Item $sdlDll.FullName $bundleDir -Force
 }
 
-# Copy MinGW and system runtime DLLs required on clean target environments
-$mingwBin = if (Test-Path "C:\msys64\mingw64\bin") {
+$mingwBin = if ($env:MINGW_PREFIX -and (Test-Path (Join-Path $env:MINGW_PREFIX "bin"))) {
+    Join-Path $env:MINGW_PREFIX "bin"
+} elseif ($msysDir -and (Test-Path "$msysDir\mingw64\bin")) {
+    "$msysDir\mingw64\bin"
+} elseif (Test-Path "C:\msys64\mingw64\bin") {
     "C:\msys64\mingw64\bin"
 } elseif (Get-Command x86_64-w64-mingw32-g++.exe -ErrorAction SilentlyContinue) {
     Split-Path (Get-Command x86_64-w64-mingw32-g++.exe).Source

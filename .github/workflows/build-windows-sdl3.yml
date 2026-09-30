@@ -52,7 +52,8 @@ jobs:
       - name: Setup MSYS2 MinGW64
         uses: msys2/setup-msys2@v2
         with:
-          update: true
+          location: 'C:\msys64'
+          update: false
           install: >-
             base-devel
             mingw-w64-x86_64-toolchain
@@ -61,6 +62,43 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-libpng
             mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-ccache
+
+      - name: Restore vcpkg binary cache
+        id: vcpkg_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-bincache-v2-${{ runner.os }}-x64-windows-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**') }}
+          restore-keys: |
+            vcpkg-bincache-v2-${{ runner.os }}-x64-windows-
+
+      - name: Configure vcpkg cache directory
+        shell: pwsh
+        run: |
+          $cacheDir = "${{ github.workspace }}/vcpkg-bincache"
+          New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
+          "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> $env:GITHUB_ENV
+          "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> $env:GITHUB_ENV
+
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/.ccache
+          key: ccache-windows-sdl3-${{ matrix.game.id }}-${{ github.sha }}
+          restore-keys: |
+            ccache-windows-sdl3-${{ matrix.game.id }}-
+            ccache-windows-sdl3-
+
+      - name: Configure ccache environment
+        shell: pwsh
+        run: |
+          $ccacheDir = Join-Path $HOME ".ccache"
+          New-Item -ItemType Directory -Force -Path $ccacheDir | Out-Null
+          "CCACHE_DIR=$ccacheDir" >> $env:GITHUB_ENV
+          "CMAKE_C_COMPILER_LAUNCHER=ccache" >> $env:GITHUB_ENV
+          "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $env:GITHUB_ENV
 
       - name: Configure CMake (${{ inputs.preset || 'windows64-deploy' }})
         shell: pwsh
@@ -98,6 +136,13 @@ jobs:
             }
           }
           Write-Host "All required DLLs successfully verified in bundle."
+
+      - name: Save vcpkg binary cache
+        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v2-{0}-x64-windows-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
 
       - name: Upload Build Logs
         if: always()
