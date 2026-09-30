@@ -80,19 +80,21 @@ if(SAGE_USE_SDL3)
             list(APPEND _MINGW_CANDIDATE_PREFIXES
                 "${CMAKE_SOURCE_DIR}/msys64/mingw64"
                 "C:/msys64/mingw64"
-                "D:/a/_temp/setup-msys2/msys64/mingw64"
-                "D:/a/_temp/setup-msys2/mingw64"
+                "D:/msys64/mingw64"
+                "C:/mingw64"
+                "D:/a/_temp/msys2/mingw64"
+                "D:/a/_temp/msys64/mingw64"
             )
             if(DEFINED ENV{GITHUB_WORKSPACE} AND EXISTS "$ENV{GITHUB_WORKSPACE}/msys64/mingw64")
                 list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{GITHUB_WORKSPACE}/msys64/mingw64")
             endif()
             if(DEFINED ENV{RUNNER_TEMP})
-                if(EXISTS "$ENV{RUNNER_TEMP}/setup-msys2/msys64/mingw64")
-                    list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{RUNNER_TEMP}/setup-msys2/msys64/mingw64")
-                endif()
-                if(EXISTS "$ENV{RUNNER_TEMP}/setup-msys2/mingw64")
-                    list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{RUNNER_TEMP}/setup-msys2/mingw64")
-                endif()
+                list(APPEND _MINGW_CANDIDATE_PREFIXES
+                    "$ENV{RUNNER_TEMP}/msys2/mingw64"
+                    "$ENV{RUNNER_TEMP}/msys64/mingw64"
+                    "$ENV{RUNNER_TEMP}/setup-msys2/msys64/mingw64"
+                    "$ENV{RUNNER_TEMP}/setup-msys2/mingw64"
+                )
             endif()
 
             # Check candidate prefixes directly

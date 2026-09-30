@@ -5,15 +5,17 @@
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
-# GeneralsX @bugfix GitHub Copilot 21/05/2026 Resolve MinGW tools to absolute paths so native Windows builds can find ar/ranlib/windres and GCC preprocessors.
-if(DEFINED ENV{MSYSTEM_PREFIX} AND NOT "$ENV{MSYSTEM_PREFIX}" STREQUAL "")
-	set(_MINGW_X64_BIN_HINTS "$ENV{MSYSTEM_PREFIX}/bin")
-else()
-	set(_MINGW_X64_BIN_HINTS
-		"C:/msys64/mingw64/bin"
-		"C:/msys64/ucrt64/bin"
-	)
+set(_MINGW_X64_BIN_HINTS "")
+if(DEFINED ENV{MINGW_PREFIX} AND NOT "$ENV{MINGW_PREFIX}" STREQUAL "")
+	list(APPEND _MINGW_X64_BIN_HINTS "$ENV{MINGW_PREFIX}/bin")
 endif()
+if(DEFINED ENV{MSYSTEM_PREFIX} AND NOT "$ENV{MSYSTEM_PREFIX}" STREQUAL "")
+	list(APPEND _MINGW_X64_BIN_HINTS "$ENV{MSYSTEM_PREFIX}/bin")
+endif()
+list(APPEND _MINGW_X64_BIN_HINTS
+	"C:/msys64/mingw64/bin"
+	"C:/msys64/ucrt64/bin"
+)
 
 find_program(MINGW64_GCC NAMES x86_64-w64-mingw32-gcc gcc HINTS ${_MINGW_X64_BIN_HINTS})
 find_program(MINGW64_GXX NAMES x86_64-w64-mingw32-g++ g++ HINTS ${_MINGW_X64_BIN_HINTS})
@@ -58,7 +60,9 @@ if(MINGW64_GCC AND NOT CMAKE_RC_FLAGS_INIT MATCHES "--preprocessor")
 endif()
 
 # Target environment
-if(DEFINED ENV{MSYSTEM_PREFIX} AND NOT "$ENV{MSYSTEM_PREFIX}" STREQUAL "")
+if(DEFINED ENV{MINGW_PREFIX} AND NOT "$ENV{MINGW_PREFIX}" STREQUAL "")
+	set(CMAKE_FIND_ROOT_PATH "$ENV{MINGW_PREFIX}")
+elseif(DEFINED ENV{MSYSTEM_PREFIX} AND NOT "$ENV{MSYSTEM_PREFIX}" STREQUAL "")
 	set(CMAKE_FIND_ROOT_PATH "$ENV{MSYSTEM_PREFIX}")
 else()
 	set(CMAKE_FIND_ROOT_PATH /usr/x86_64-w64-mingw32)

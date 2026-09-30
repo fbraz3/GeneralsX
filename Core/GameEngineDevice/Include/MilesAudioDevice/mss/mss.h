@@ -77,6 +77,10 @@ typedef void *LPWAVEFORMAT;
 extern "C" {
 #endif
 
+typedef unsigned long U32;
+typedef long S32;
+typedef float F32;
+
 typedef struct h3DPOBJECT
 {
     unsigned int junk;

@@ -65,6 +65,13 @@ jobs:
             mingw-w64-x86_64-zlib
             mingw-w64-x86_64-ccache
 
+      - name: Export MinGW Environment
+        shell: msys2 {0}
+        run: |
+          echo "MINGW_PREFIX=${MINGW_PREFIX}" >> "$GITHUB_ENV"
+          echo "MSYSTEM_PREFIX=${MSYSTEM_PREFIX}" >> "$GITHUB_ENV"
+          echo "${MINGW_PREFIX}/bin" >> "$GITHUB_PATH"
+
       - name: Restore vcpkg binary cache
         id: vcpkg_cache
         uses: actions/cache/restore@v4
@@ -81,6 +88,19 @@ jobs:
           New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
           "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> $env:GITHUB_ENV
           "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> $env:GITHUB_ENV
+
+      - name: Install vcpkg dependencies
+        shell: pwsh
+        run: |
+          ./scripts/build/windows/configure-windows64.ps1 -InstallDependenciesOnly
+
+      - name: Save vcpkg binary cache
+        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v2-{0}-x64-windows-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
 
       - name: Restore ccache
         id: ccache
@@ -105,14 +125,6 @@ jobs:
         shell: pwsh
         run: |
           ./scripts/build/windows/configure-windows64.ps1
-
-      - name: Save vcpkg binary cache
-        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' }}
-        continue-on-error: true
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v2-{0}-x64-windows-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
 
       - name: Build ${{ matrix.game.target }}
         shell: pwsh
