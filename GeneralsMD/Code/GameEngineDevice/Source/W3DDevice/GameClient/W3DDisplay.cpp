@@ -42,7 +42,9 @@ static void drawFramerateBar();
 #include <io.h>
 #else
 #include <unistd.h> // access() for file existence checks
-#include <SDL3/SDL.h> // For SDL_ShowWindow() on Linux
+#endif
+#if defined(SAGE_USE_SDL3)
+#include <SDL3/SDL.h> // For SDL_ShowWindow()
 #endif
 #include <time.h>
 #include <vector>
@@ -951,7 +953,8 @@ void W3DDisplay::init()
 		}
 
 		// GeneralsX @bugfix felipebraz 16/02/2026 Show window after DirectX8/DXVK initialized
-		#ifndef _WIN32
+		// GeneralsX @feature fbraz3 29/09/2026 Support SDL3 window visibility across all platforms
+		#if defined(SAGE_USE_SDL3)
 		extern SDL_Window* TheSDL3Window;
 		if (TheSDL3Window) {
 			fprintf(stderr, "DEBUG: Showing SDL3 window after WW3D init...\n");

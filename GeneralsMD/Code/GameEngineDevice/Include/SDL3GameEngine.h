@@ -28,7 +28,8 @@
 
 #pragma once
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz3 29/09/2026 Support SDL3 backend on Windows, Linux, and macOS
+#if defined(SAGE_USE_SDL3)
 
 #include "Common/GameEngine.h"
 #include "Common/LocalFileSystem.h"
@@ -101,6 +102,12 @@ public:
 
 	// SDL3 specific
 	virtual SDL_Window* getSDLWindow(void) const { return m_SDLWindow; }
+#if defined(_WIN32)
+	virtual void *getOSDisplay(void) override;
+	virtual void *getOSInstance(void) override;
+#else
+	virtual void *getOSDisplay(void) override { return (void*)m_SDLWindow; }
+#endif
 
 protected:
 	SDL_Window*		m_SDLWindow;
@@ -122,4 +129,4 @@ protected:
 	void handleWindowEvent(const SDL_WindowEvent& event);
 };
 
-#endif // !_WIN32
+#endif // SAGE_USE_SDL3

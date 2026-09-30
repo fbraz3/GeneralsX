@@ -27,7 +27,8 @@
 
 #pragma once
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz3 29/09/2026 Support SDL3 backend on Windows, Linux, and macOS
+#if defined(SAGE_USE_SDL3)
 
 // SYSTEM INCLUDES
 #include <SDL3/SDL.h>
@@ -82,4 +83,4 @@ private:
 	UnsignedInt m_nextGetIndex;   // Read position
 };
 
-#endif // !_WIN32
+#endif // SAGE_USE_SDL3

@@ -203,20 +203,22 @@ if(WIN32)
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     )
 
-    # GeneralsX @bugfix GitHub Copilot 20/05/2026 WinMain still depends on Win32Mouse event buffering in Windows64 builds.
-    list(APPEND GAMEENGINEDEVICE_SRC
-        Include/Win32Device/GameClient/Win32DIKeyboard.h
-        Include/Win32Device/GameClient/Win32Mouse.h
-        Source/Win32Device/GameClient/Win32DIKeyboardStub.cpp
-        Source/Win32Device/GameClient/Win32Mouse.cpp
-    )
-
-    # GeneralsX @build GitHub Copilot 18/05/2026 Keep legacy Win32GameEngine isolated on modern Windows64 path.
-    if(NOT RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
+    # GeneralsX @build fbraz3 29/09/2026 Isolate legacy Win32 input devices when SDL3 backend is enabled
+    if(NOT SAGE_USE_SDL3)
         list(APPEND GAMEENGINEDEVICE_SRC
-            Include/Win32Device/Common/Win32GameEngine.h
-            Source/Win32Device/Common/Win32GameEngine.cpp
+            Include/Win32Device/GameClient/Win32DIKeyboard.h
+            Include/Win32Device/GameClient/Win32Mouse.h
+            Source/Win32Device/GameClient/Win32DIKeyboardStub.cpp
+            Source/Win32Device/GameClient/Win32Mouse.cpp
         )
+
+        # GeneralsX @build GitHub Copilot 18/05/2026 Keep legacy Win32GameEngine isolated on modern Windows64 path.
+        if(NOT RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
+            list(APPEND GAMEENGINEDEVICE_SRC
+                Include/Win32Device/Common/Win32GameEngine.h
+                Source/Win32Device/Common/Win32GameEngine.cpp
+            )
+        endif()
     endif()
 endif()
 
@@ -266,6 +268,11 @@ if(WIN32)
     if(TARGET milesstub)
         target_link_libraries(corei_gameenginedevice_public INTERFACE milesstub)
     endif()
+endif()
+
+# GeneralsX @build fbraz3 29/09/2026 Propagate SDL3 interface library to game engine device
+if(SAGE_USE_SDL3)
+    target_link_libraries(corei_gameenginedevice_public INTERFACE sdl3lib)
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux

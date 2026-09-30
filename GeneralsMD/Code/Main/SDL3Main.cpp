@@ -19,24 +19,40 @@
 /*
 ** SDL3Main.cpp
 **
-** Entry point for Linux builds using SDL3 windowing and DXVK graphics.
+** Entry point for Linux, macOS, and Windows builds using SDL3 windowing and DXVK graphics.
 **
 ** TheSuperHackers @feature CnC_Generals_Linux 07/02/2026
-** Entry point replaces WinMain() for Linux builds.
+** Entry point replaces WinMain() for SDL3 builds.
 ** Instantiates SDL3GameEngine and calls GameMain().
+**
+** GeneralsX @feature fbraz3 29/09/2026
+** Extended SDL3Main to support Windows (MinGW/SDL3/DXVK), extracting native HWND
+** and providing cross-platform environment, instance handle, and exit abstractions.
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz3 29/09/2026 Support SDL3 backend on Windows, Linux, and macOS
+#if defined(SAGE_USE_SDL3)
 
 // SYSTEM INCLUDES
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_vulkan.h>
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
 #include <cstdio>
+
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <process.h>
+#else
 #include <unistd.h>   // _exit()
+#endif
+
+#if defined(__linux__)
 #include <glob.h>     // glob() for Vulkan ICD discovery
+#endif
 
 // USER INCLUDES (match WinMain.cpp pattern)
 #include "Lib/BaseType.h"
@@ -49,11 +65,13 @@
 #include "Common/version.h"  // GeneralsX @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
 #include "SDL3GameEngine.h"
 
-// DXVK WSI
+// DXVK WSI (Linux/macOS native WSI)
+#if !defined(_WIN32)
 #define DXVK_WSI_SDL3 1
 #include <wsi/native_wsi.h>
+#endif
 
-// CRITICAL SECTIONS (Linux needs these too)
+// CRITICAL SECTIONS
 static CriticalSection critSec1;
 static CriticalSection critSec2;
 static CriticalSection critSec3;
@@ -62,16 +80,20 @@ static CriticalSection critSec5;
 
 // GLOBAL COMMAND LINE ARGUMENTS
 // TheSuperHackers @build felipebraz 13/02/2026
-// Store argc/argv from main() for use by CommandLine.cpp parseCommandLine() on Linux
-// Windows provides these automatically; Linux needs explicit globals
+// Store argc/argv from main() for use by CommandLine.cpp parseCommandLine()
 int __argc = 0;          ///< global argument count
 char** __argv = nullptr; ///< global argument vector
 
 // GLOBAL WINDOW HANDLE
 // TheSuperHackers @build felipebraz 13/02/2026
-// ApplicationHWnd is declared extern in GeneralsMD/Code/Main/WinMain.h
-// On Linux, we cast SDL_Window* to HWND type for compatibility
+// ApplicationHWnd is declared extern in WinMain.h
+// On Windows: real Win32 HWND extracted from SDL_Window via SDL_PROP_WINDOW_WIN32_HWND_POINTER
+// On Linux/macOS: cast SDL_Window* to HWND type for compatibility
 HWND ApplicationHWnd = nullptr;  ///< our application window handle
+
+#if defined(_WIN32)
+HINSTANCE ApplicationHInstance = nullptr;
+#endif
 
 // GLOBAL SDL3 WINDOW
 // GeneralsX @feature felipebraz 16/02/2026
@@ -89,6 +111,17 @@ const Char *g_strFile = "data/Generals.str";     ///< STR file path
 // Extern declarations (from GameMain.cpp)
 extern Int GameMain();
 
+#if defined(_WIN32)
+// GeneralsX @feature fbraz3 29/09/2026 Cross-platform environment variable helper
+static inline int setenv(const char *name, const char *value, int overwrite)
+{
+	if (!overwrite && GetEnvironmentVariableA(name, nullptr, 0) > 0) {
+		return 0;
+	}
+	return SetEnvironmentVariableA(name, value) ? 0 : -1;
+}
+#endif
+
 /**
  * FilterSoftwareVulkanICDs
  *
@@ -105,6 +138,7 @@ extern Int GameMain();
  *
  * GeneralsX @bugfix BenderAI 06/03/2026
  */
+#if defined(__linux__)
 static void FilterSoftwareVulkanICDs()
 {
 	if (getenv("VK_DRIVER_FILES") || getenv("VK_ICD_FILENAMES")) {
@@ -159,6 +193,9 @@ static void FilterSoftwareVulkanICDs()
 		fprintf(stderr, "WARNING: If startup crashes in libvulkan_lvp.so, set VK_DRIVER_FILES manually\n");
 	}
 }
+#else
+static void FilterSoftwareVulkanICDs() {}
+#endif
 
 /**
  * FilterPipeWireOpenAL
@@ -167,33 +204,13 @@ static void FilterSoftwareVulkanICDs()
  *
  * Workaround for openal-soft PipeWire backend crash: alcOpenDevice() segfaults
  * inside the PipeWire backend while opening the default playback device.
- * The crash occurs in PipeWire's stream/context internals and is unrecoverable
- * from userspace. Excluding PipeWire via ALSOFT_DRIVERS causes openal-soft to
- * fall back to the PulseAudio backend, which works correctly on PipeWire systems
- * via the PulseAudio compatibility layer.
- *
- * NOTE: openal-soft reads ALSOFT_DRIVERS from a static global constructor when
- * libopenal.so is loaded by the dynamic linker, which is before main() runs.
- * This function is therefore only effective for builds that use lazy
- * initialization. The authoritative fix is in the launch scripts (run-linux-zh.sh
- * etc.), which set ALSOFT_DRIVERS before the binary starts.
- *
- * Only applied when ALSOFT_DRIVERS is not already set by the user.
  *
  * GeneralsX @bugfix 09/03/2026
  */
 static void FilterPipeWireOpenAL()
 {
-	// GeneralsX @bugfix Copilot 24/03/2026 PipeWire/OpenAL workaround is Linux-only; keep macOS CoreAudio backend selection untouched.
+	// GeneralsX @bugfix Copilot 24/03/2026 PipeWire/OpenAL workaround is Linux-only; keep macOS and Windows driver selection untouched.
 	#if defined(__linux__)
-	// Crash: alcOpenDevice() hits 'movaps %xmm1,0x26260(%rbx)' — SSE movaps requires
-	// 16-byte alignment; a misaligned ALCdevice struct faults regardless of backend.
-	// Disabling CPU extensions forces openal-soft to use scalar code that has no
-	// alignment requirements. Also exclude pipewire which has its own crash at
-	// device-open time on PipeWire 1.4.x.
-	// NOTE: these env vars are authoritative only when set before the binary loads
-	// (openal-soft reads them from a static constructor). The launch scripts set them
-	// first; this is a best-effort fallback for lazy-init builds.
 	if (!getenv("ALSOFT_DISABLE_CPU_EXTS")) {
 		setenv("ALSOFT_DISABLE_CPU_EXTS", "all", 1);
 		fprintf(stderr, "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)\n");
@@ -210,14 +227,14 @@ static void FilterPipeWireOpenAL()
 /**
  * CreateGameEngine
  *
- * Factory function for SDL3GameEngine on Linux.
+ * Factory function for SDL3GameEngine.
  * Called by GameMain() to instantiate platform-specific engine.
  *
  * @return SDL3GameEngine instance
  */
 GameEngine *CreateGameEngine(void)
 {
-	fprintf(stderr, "INFO: CreateGameEngine() - Creating SDL3GameEngine for Linux\n");
+	fprintf(stderr, "INFO: CreateGameEngine() - Creating SDL3GameEngine\n");
 	SDL3GameEngine *engine = NEW SDL3GameEngine();
 	return engine;
 }
@@ -225,7 +242,7 @@ GameEngine *CreateGameEngine(void)
 /**
  * main
  *
- * Linux entry point (replaces WinMain on Windows).
+ * Cross-platform entry point using SDL3.
  * Initializes subsystems and calls GameMain().
  *
  * @param argc Command line argument count
@@ -241,8 +258,18 @@ int main(int argc, char* argv[])
 	__argc = argc;
 	__argv = argv;
 
+#if defined(_WIN32)
+	ApplicationHInstance = GetModuleHandle(nullptr);
+#endif
+
 	fprintf(stderr, "=================================================\n");
+#if defined(_WIN32)
+	fprintf(stderr, " Command & Conquer Generals: Zero Hour (Windows)\n");
+#elif defined(__APPLE__)
+	fprintf(stderr, " Command & Conquer Generals: Zero Hour (macOS)\n");
+#else
 	fprintf(stderr, " Command & Conquer Generals: Zero Hour (Linux)\n");
+#endif
 	fprintf(stderr, " SDL3 + DXVK Build\n");
 	fprintf(stderr, "=================================================\n\n");
 
@@ -263,9 +290,6 @@ int main(int argc, char* argv[])
 		TheVersion = NEW Version;
 
 		// Parse command line (CommandLine class handles argc/argv internally)
-		// TheSuperHackers @build felipebraz 10/02/2026 Phase 1.5
-		// Store argc/argv for CommandLine parser to access via _NSGetArgc/_NSGetArgv or /proc/self/cmdline
-		// For now, let CommandLine::parseCommandLineForStartup() handle this
 		CommandLine::parseCommandLineForStartup();
 
 		// GeneralsX @bugfix Copilot 17/05/2026 Skip SDL3 window bootstrap for CLI/headless replay execution.
@@ -276,33 +300,36 @@ int main(int argc, char* argv[])
 
 		// GeneralsX @bugfix felipebraz 16/02/2026
 		// Initialize SDL3 and Vulkan BEFORE creating GameEngine (fighter19 pattern)
-		// This prevents LLVM SIGSEGV crash during Vulkan driver enumeration
-		// Must be done here, not in SDL3GameEngine::init() which is too late
-		fprintf(stderr, "INFO: Initializing SDL3 video subsystem...\n");
+		fprintf(stderr, "INFO: Initializing SDL3 subsystems...\n");
 		if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
 			fprintf(stderr, "FATAL: Failed to initialize SDL3: %s\n", SDL_GetError());
 			return 1;
 		}
 
-		// Set DXVK WSI driver before loading Vulkan
+#if !defined(_WIN32)
+		// Set DXVK WSI driver before loading Vulkan (Linux/macOS native WSI)
 		setenv("DXVK_WSI_DRIVER", "SDL3", 1);
+#endif
 
 		// GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD before loading Vulkan.
-		// libvulkan_lvp.so crashes during static initialization with LLVM 20.x when the Vulkan
-		// loader enumerates all ICDs. Restrict to hardware ICDs first.
 		FilterSoftwareVulkanICDs();
 		FilterPipeWireOpenAL();
 
+#if !defined(_WIN32)
 		// Load Vulkan library for DXVK DirectX8→Vulkan translation
 		fprintf(stderr, "INFO: Loading Vulkan library...\n");
 		if (!SDL_Vulkan_LoadLibrary(nullptr)) {
 			fprintf(stderr, "WARNING: Failed to load Vulkan: %s\n", SDL_GetError());
 			fprintf(stderr, "WARNING: Continuing without Vulkan (may use software rendering)\n");
 		}
+#endif
 
-		// Create SDL3 window with Vulkan support
-		fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
-		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
+		// Create SDL3 window
+		fprintf(stderr, "INFO: Creating SDL3 window...\n");
+		Uint32 windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
+#if !defined(_WIN32)
+		windowFlags |= SDL_WINDOW_VULKAN;
+#endif
 		TheSDL3Window = SDL_CreateWindow(
 			"Command & Conquer Generals: Zero Hour",
 			1024, 768,  // Default resolution
@@ -315,9 +342,13 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 
-		// Store window handle globally (cast SDL_Window* to HWND for compatibility)
+		// Store window handle globally
+#if defined(_WIN32)
+		ApplicationHWnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(TheSDL3Window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+#else
 		ApplicationHWnd = (HWND)TheSDL3Window;
-		fprintf(stderr, "INFO: SDL3 window created successfully\n");
+#endif
+		fprintf(stderr, "INFO: SDL3 window created successfully (HWND=%p)\n", (void*)ApplicationHWnd);
 		}
 
 		// Call cross-platform game entry point
@@ -368,7 +399,11 @@ int main(int argc, char* argv[])
 	// pool block memory was already reused/overwritten during game shutdown.
 	// Windows never had this problem — ExitProcess() terminates without running C++ global dtors.
 	// _exit() matches that behavior. Explicit cleanup already done above (SDL_Quit, shutdownMemoryManager).
+#if defined(_WIN32)
+	ExitProcess(exitcode);
+#else
 	_exit(exitcode);
+#endif
 }
 
-#endif // !_WIN32
+#endif // SAGE_USE_SDL3

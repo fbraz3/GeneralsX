@@ -83,14 +83,19 @@ if(RTS_BUILD_OPTION_FFMPEG)
     endif()
 endif()
 
-target_sources(z_generals PRIVATE
-    $<$<BOOL:${WIN32}>:WinMain.cpp>
-    $<$<BOOL:${WIN32}>:WinMain.h>
-    # Linux SDL3 entry point (Phase 1.5 - TheSuperHackers @build 10/02/2026)
-    $<$<NOT:$<BOOL:${WIN32}>>:SDL3Main.cpp>
-    # Linux stubs for P2-P3 platform functions (P2-P3 - TheSuperHackers @build 13/02/2026 BenderAI Session 37)
-    $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
-)
+# GeneralsX @build fbraz3 29/09/2026 Use SDL3Main entry point across platforms when SAGE_USE_SDL3 is enabled
+if(SAGE_USE_SDL3)
+    target_sources(z_generals PRIVATE
+        SDL3Main.cpp
+        # Linux stubs for P2-P3 platform functions (Linux/macOS only)
+        $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
+    )
+else()
+    target_sources(z_generals PRIVATE
+        WinMain.cpp
+        WinMain.h
+    )
+endif()
 
 # RC files for Windows builds (MSVC + MinGW)
 # GeneralsX @feature GitHub Copilot 20/05/2026 Embed app icon and manifest on all Windows toolchains.

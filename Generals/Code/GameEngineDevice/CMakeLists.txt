@@ -170,21 +170,9 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
 )
 
-# GeneralsX @build BenderAI 10/03/2026 - Separate Windows and Linux platform-specific files
-if(WIN32)
-    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
-    list(APPEND GAMEENGINEDEVICE_SRC
-#       Source/Win32Device/Common/Win32BIGFile.cpp
-#       Source/Win32Device/Common/Win32BIGFileSystem.cpp
-        Source/Win32Device/Common/Win32GameEngine.cpp
-#       Source/Win32Device/Common/Win32LocalFile.cpp
-#       Source/Win32Device/Common/Win32LocalFileSystem.cpp
-        Source/Win32Device/Common/Win32OSDisplay.cpp
-        # GeneralsX @bugfix GitHub Copilot 22/05/2026 Reuse shared Bink stub implementation in Win64/MinGW builds when legacy Bink player is not built.
-        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/VideoDevice/BinkVideoPlayerStub.cpp
-    )
-else()
-    # Linux-specific files (SDL3, DXVK)
+# GeneralsX @build fbraz3 29/09/2026 Compile SDL3 backend files when SAGE_USE_SDL3 is enabled across all platforms
+if(SAGE_USE_SDL3)
+    # SDL3 platform files across Linux, macOS, and Windows
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/SDL3GameEngine.cpp
         Include/SDL3GameEngine.h
@@ -193,10 +181,19 @@ else()
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
         Include/SDL3Device/GameClient/SDL3Keyboard.h
     )
+else()
+    # Legacy Windows-specific files (DirectX 8, Miles Sound, Win32 API)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/Win32Device/Common/Win32GameEngine.cpp
+        Source/Win32Device/Common/Win32OSDisplay.cpp
+    )
+endif()
 
-    # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources now in Core/GameEngineDevice
-    # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
-    # are provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
+if(WIN32)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        # GeneralsX @bugfix GitHub Copilot 22/05/2026 Reuse shared Bink stub implementation in Win64/MinGW builds when legacy Bink player is not built.
+        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/VideoDevice/BinkVideoPlayerStub.cpp
+    )
 endif()
 
 add_library(g_gameenginedevice STATIC)

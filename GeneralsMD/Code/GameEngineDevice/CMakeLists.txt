@@ -186,36 +186,31 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
 )
 
-# GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Separate Windows and Linux platform-specific files
-if(WIN32)
-    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
-    # GeneralsX @bugfix GitHub Copilot 20/05/2026 Use Bink stub on MinGW when proprietary Bink runtime is unavailable.
-    list(APPEND GAMEENGINEDEVICE_SRC
-#        Source/Win32Device/Common/Win32BIGFile.cpp
-#        Source/Win32Device/Common/Win32BIGFileSystem.cpp
-        Source/Win32Device/Common/Win32GameEngine.cpp
-#        Source/Win32Device/Common/Win32LocalFile.cpp
-#        Source/Win32Device/Common/Win32LocalFileSystem.cpp
-        Source/Win32Device/Common/Win32OSDisplay.cpp
-        Source/VideoDevice/BinkVideoPlayerStub.cpp
-    )
-else()
-    # Linux-specific files (SDL3, OpenAL+FFmpeg audio, DXVK)
+# GeneralsX @build fbraz3 29/09/2026 Select SDL3 backend when SAGE_USE_SDL3 is enabled across all platforms
+if(SAGE_USE_SDL3)
+    # SDL3 backend files (Linux, macOS, and Windows modern path)
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/SDL3GameEngine.cpp
         Source/SDL3Device/GameClient/SDL3Mouse.cpp
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
         Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
+else()
+    # Legacy Win32-specific files (DirectX 8, Miles Sound, Win32 API)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/Win32Device/Common/Win32GameEngine.cpp
+        Source/Win32Device/Common/Win32OSDisplay.cpp
+        Source/VideoDevice/BinkVideoPlayerStub.cpp
+    )
+endif()
 
-    # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
-    # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
-    # are now provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
-    if(NOT SAGE_USE_OPENAL)
-        list(APPEND GAMEENGINEDEVICE_SRC
-            Source/OpenALAudioManager.cpp
-        )
-    endif()
+# GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
+# OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
+# are now provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
+if(NOT SAGE_USE_OPENAL)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/OpenALAudioManager.cpp
+    )
 endif()
 
 add_library(z_gameenginedevice STATIC)

@@ -28,7 +28,7 @@
 ** GeneralsX @feature fbraz3 07/02/2026 Integrate OpenAL audio backend (OpenALAudioManager, OpenALAudioStream, OpenALAudioCache)
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz3 29/09/2026 Support OpenAL audio across Windows, Linux, and macOS
 #ifdef SAGE_USE_OPENAL
 
 #include "OpenALAudioManager.h"
@@ -641,5 +641,4 @@ void OpenALAudioManager::setDeviceListenerPosition(void)
 }
 
 #endif // SAGE_USE_OPENAL
-#endif // !_WIN32
 

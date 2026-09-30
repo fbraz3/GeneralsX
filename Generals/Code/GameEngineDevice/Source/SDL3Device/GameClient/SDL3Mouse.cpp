@@ -25,7 +25,8 @@
 ** Replaces Win32Mouse/Win32DIMouse with SDL3 mouse APIs for Linux.
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz3 29/09/2026 Support SDL3 backend on Windows, Linux, and macOS
+#if defined(SAGE_USE_SDL3)
 
 // GeneralsX @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
 #include "SDL3Device/GameClient/SDL3Mouse.h"
@@ -232,9 +233,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 			int frame_index = 0;
 			int hot_spot_x = 0;
 			int hot_spot_y = 0;
-			#ifdef __linux__
 			bool has_hotspot = false;
-			#endif
 
 			RIFFChunk *frame = (RIFFChunk*)((char *)chunk + sizeof(RIFFChunk));
 			while (frame != NULL && (char *)frame < file_buffer + size)
@@ -254,18 +253,14 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 					}
 
 					// Allow specifying the hot spot via properties on the surface
+					// GeneralsX @refactor fbraz3 29/09/2026 Use first frame hotspot consistently across all platforms
 					SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
-					#ifdef __linux__
 					if (!has_hotspot)
 					{
 						hot_spot_x = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, 0);
 						hot_spot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, 0);
 						has_hotspot = true;
 					}
-					#else
-					hot_spot_x = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, 0);
-					hot_spot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, 0);
-					#endif
 
 					frame_index++;
 				}
@@ -284,10 +279,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 				cursor->m_frameCount = frame_index;
 				const int clamped_rate = (cursor->m_frameRate > 0) ? cursor->m_frameRate : 4;
 				const Uint32 frame_duration_ms = (Uint32)((clamped_rate * 1000) / 60);
-				SDL_CursorFrameInfo frame_infos[MAX_2D_CURSOR_ANIM_FRAMES];
-				#ifdef __linux__
 				SDL_Surface *first_surface = cursor->m_frameSurfaces[0];
-				#endif
 
 				for (int i = 0; i < frame_index; ++i)
 				{
@@ -295,7 +287,6 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 					frame_infos[i].duration = frame_duration_ms;
 				}
 
-				#ifdef __linux__
 				if (first_surface)
 				{
 					if (hot_spot_x < 0) hot_spot_x = 0;
@@ -303,15 +294,13 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 					if (hot_spot_x >= first_surface->w) hot_spot_x = first_surface->w - 1;
 					if (hot_spot_y >= first_surface->h) hot_spot_y = first_surface->h - 1;
 				}
-				#endif
 
 				// GeneralsX @bugfix felipebraz 28/04/2026 Use SDL native animated cursor to ensure frame playback.
 				cursor->m_cursor = SDL_CreateAnimatedCursor(frame_infos, frame_index, hot_spot_x, hot_spot_y);
 				if (!cursor->m_cursor)
 				{
 					DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: SDL_CreateAnimatedCursor failed [%s]", SDL_GetError()));
-					#ifdef __linux__
-					// GeneralsX @bugfix BenderAI 11/05/2026 Fallback to static cursor when ANI animation fails.
+					// GeneralsX @bugfix BenderAI 11/05/2026 Fallback to static cursor when ANI animation fails (all platforms).
 					if (first_surface)
 					{
 						cursor->m_cursor = SDL_CreateColorCursor(first_surface, hot_spot_x, hot_spot_y);
@@ -323,11 +312,6 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 						delete[] file_buffer;
 						return NULL;
 					}
-					#else
-					delete cursor;
-					delete[] file_buffer;
-					return NULL;
-					#endif
 				}
 			}
 
@@ -916,4 +900,4 @@ void SDL3Mouse::translateEvent(UnsignedInt eventIndex, MouseIO *result)
 	result->pos.y = scaledY;
 }
 
-#endif // !_WIN32
+#endif // SAGE_USE_SDL3
